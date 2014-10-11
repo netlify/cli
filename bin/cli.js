@@ -12,6 +12,7 @@ var program    = require("commander"),
 program
   .version("0.0.1")
   .option("-t --access-token <token>", "Override the default Access Token")
+  .option("-e --env <environment>", "Specify an environment for the local configuration")
 
 program
   .command("init")
@@ -21,10 +22,9 @@ program
 program
   .command("create")
   .description("Create a new site")
-  .option("-n --name [name]", "Set <name>.netlify.com")
-  .option("-d --domain [domain]", "Set the custom domain for the site")
+  .option("-n --name <name>", "Set <name>.netlify.com")
+  .option("-d --custom-domain [domain]", "Set the custom domain for the site")
   .option("-p --password [password]", "Set the password for the site")
-  .option("-w --write", "Save the site id to the local .netlify config file")
   .action(config.wrap(program, createSite.cmd));
 
 program
@@ -32,7 +32,7 @@ program
   .description("Updates attributes of a site")
   .option("-s --site-id [id]", "The site to update")
   .option("-n --name [name]", "Set <name>.netlify.com")
-  .option("-d --domain [domain]", "Set the custom domain for the site")
+  .option("-d --custom-domain [domain]", "Set the custom domain for the site")
   .option("-p --password [password]", "Set the password for the site")
   .action(config.wrap(program, updateSite.cmd));
 
@@ -42,7 +42,6 @@ program
   .option("-s --site-id [id]", "Deploy to site with <id>")
   .option("-p --path [path]", "Path to a folder or zip file to deploy")
   .option("-d --draft", "Deploy as a draft without publishing")
-  .option("-w --write", "Save the site id and path to the local .netlify file")
   .action(config.wrap(program, deploy.cmd));
 
 program
