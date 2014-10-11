@@ -24,7 +24,7 @@ program
   .option("-n --name [name]", "Set <name>.netlify.com")
   .option("-d --domain [domain]", "Set the custom domain for the site")
   .option("-p --password [password]", "Set the password for the site")
-  .option("-w --write", "Save the site id in a local .netlify config file")
+  .option("-w --write", "Save the site id to the local .netlify config file")
   .action(config.wrap(program, createSite.cmd));
 
 program
@@ -37,11 +37,12 @@ program
   .action(config.wrap(program, updateSite.cmd));
 
 program
-  .command("deploy [path]")
+  .command("deploy")
   .description("Deploy a new version")
   .option("-s --site-id [id]", "Deploy to site with <id>")
+  .option("-p --path [path]", "Path to a folder or zip file to deploy")
   .option("-d --draft", "Deploy as a draft without publishing")
-  .option("-w --write", "Save the site id in a local .netlify file")
+  .option("-w --write", "Save the site id and path to the local .netlify file")
   .action(config.wrap(program, deploy.cmd));
 
 program
