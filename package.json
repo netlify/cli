@@ -1,0 +1,26 @@
+{
+  "name": "netlify-cli",
+  "version": "0.0.1",
+  "description": "Netlify builds, deploys and hosts your static sites or apps straight from Github.",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "netlify": "./bin/cli.js"
+  },
+  "keywords": [
+    "netlify",
+    "hosting",
+    "cdn",
+    "deploy"
+  ],
+  "author": "Netlify",
+  "license": "MIT",
+  "dependencies": {
+    "open": "0.0.5",
+    "netlify": "^0.1.0",
+    "commander": "^2.3.0",
+    "chalk": "^0.5.1",
+    "home-dir": "^0.2.0"
+  }
+}
