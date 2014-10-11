@@ -21,6 +21,8 @@
     "netlify": "^0.1.0",
     "commander": "^2.3.0",
     "chalk": "^0.5.1",
-    "home-dir": "^0.2.0"
+    "home-dir": "^0.2.0",
+    "prompt": "^0.2.14",
+    "yesno": "0.0.1"
   }
 }
