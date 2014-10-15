@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "version": "0.0.1",
-  "description": "Netlify builds, deploys and hosts your static sites or apps straight from Github.",
+  "description": "Netlify builds, deploys and hosts your front-end straight from Github.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -16,6 +16,14 @@
   ],
   "author": "Netlify",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/netlify/netlify-cli/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/netlify/netlify-cli.git"
+  },
+  "homepage": "https://github.com/netlify/netlify-cli",
   "dependencies": {
     "open": "0.0.5",
     "netlify": "^0.1.0",
