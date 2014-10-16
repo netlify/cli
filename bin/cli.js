@@ -16,7 +16,7 @@ program
 
 program
   .command("init")
-  .description("Configure automated deployments for the current dir")
+  .description("Configure continuous deployment for the current dir")
   .action(config.wrap(program, init.cmd));
 
 program
