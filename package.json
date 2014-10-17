@@ -1,6 +1,6 @@
 {
   "name": "netlify-cli",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Netlify builds, deploys and hosts your front-end straight from Github.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -26,7 +26,7 @@
   "homepage": "https://github.com/netlify/netlify-cli",
   "dependencies": {
     "open": "0.0.5",
-    "netlify": "^0.1.0",
+    "netlify": "^0.2.0",
     "commander": "^2.3.0",
     "chalk": "^0.5.1",
     "home-dir": "^0.2.0",
