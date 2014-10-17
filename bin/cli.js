@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 
 var program    = require("commander"),
-    config     = require("./../lib/settings/config"),
-    createSite = require("./../lib/commands/create_site"),
-    deleteSite = require("./../lib/commands/delete_site"),
-    deploy     = require("./../lib/commands/deploy"),
-    publish    = require("./../lib/commands/publish"),
-    init       = require("./../lib/commands/init"),
-    updateSite = require("./../lib/commands/update_site");
+    config     = require("../lib/settings/config"),
+    createSite = require("../lib/commands/create_site"),
+    deleteSite = require("../lib/commands/delete_site"),
+    deploy     = require("../lib/commands/deploy"),
+    publish    = require("../lib/commands/publish"),
+    init       = require("../lib/commands/init"),
+    updateSite = require("../lib/commands/update_site"),
+    openSite   = require("../lib/commands/open");
 
 program
   .version("0.0.1")
@@ -48,6 +49,12 @@ program
   .command("publish <deploy_id>")
   .description("Publish a specific deploy")
   .action(config.wrap(program, publish.cmd));
+
+program
+  .command("open")
+  .description("Opens a site in the webui")
+  .option("-s --site-id [id]", "The id of the site to open")
+  .action(config.wrap(program, openSite.cmd));
 
 program
   .command("delete")
