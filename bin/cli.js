@@ -16,6 +16,14 @@ program
   .option("-e --env <environment>", "Specify an environment for the local configuration")
 
 program
+  .command("deploy")
+  .description("Deploy a new version")
+  .option("-s --site-id [id]", "Deploy to site with <id>")
+  .option("-p --path [path]", "Path to a folder or zip file to deploy")
+  .option("-d --draft", "Deploy as a draft without publishing")
+  .action(config.wrap(program, deploy.cmd));
+
+program
   .command("init")
   .description("Configure continuous deployment for the current dir")
   .action(config.wrap(program, init.cmd));
@@ -36,14 +44,6 @@ program
   .option("-d --custom-domain [domain]", "Set the custom domain for the site")
   .option("-p --password [password]", "Set the password for the site")
   .action(config.wrap(program, updateSite.cmd));
-
-program
-  .command("deploy")
-  .description("Deploy a new version")
-  .option("-s --site-id [id]", "Deploy to site with <id>")
-  .option("-p --path [path]", "Path to a folder or zip file to deploy")
-  .option("-d --draft", "Deploy as a draft without publishing")
-  .action(config.wrap(program, deploy.cmd));
 
 program
   .command("publish <deploy_id>")
