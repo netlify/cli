@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
 var program    = require("commander"),
+    fs         = require("fs"),
+    path       = require("path"),
     config     = require("../lib/settings/config"),
     createSite = require("../lib/commands/create_site"),
     deleteSite = require("../lib/commands/delete_site"),
@@ -10,8 +12,10 @@ var program    = require("commander"),
     updateSite = require("../lib/commands/update_site"),
     openSite   = require("../lib/commands/open");
 
+var p = JSON.parse(fs.readFileSync(path.join(__dirname, "../package.json"), {encoding: 'utf8'}));
+
 program
-  .version("0.0.1")
+  .version(p.version)
   .option("-t --access-token <token>", "Override the default Access Token")
   .option("-e --env <environment>", "Specify an environment for the local configuration")
 
@@ -62,6 +66,10 @@ program
   .option("-s --site-id [id]", "The id of the site to delete")
   .option("-y --yes", "Don't prompt for confirmation")
   .action(config.wrap(program, deleteSite.cmd));
+
+program
+  .command("*","",{noHelp: true})
+  .action(function(cmd) { console.log("Unknown command", cmd)});
 
 program.parse(process.argv);
 
