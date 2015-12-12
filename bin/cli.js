@@ -9,6 +9,7 @@ var program    = require("commander"),
     deploy     = require("../lib/commands/deploy"),
     publish    = require("../lib/commands/publish"),
     init       = require("../lib/commands/init"),
+    list       = require("../lib/commands/list_sites"),
     updateSite = require("../lib/commands/update_site"),
     openSite   = require("../lib/commands/open");
 
@@ -59,6 +60,11 @@ program
   .description("Opens a site in the webui")
   .option("-s --site-id [id]", "The id of the site to open")
   .action(config.wrap(program, openSite.cmd));
+
+program
+  .command("list")
+  .description("List all sites")
+  .action(config.wrap(program, list.cmd));
 
 program
   .command("delete")
