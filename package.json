@@ -1,6 +1,6 @@
 {
   "name": "netlify-cli",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Netlify builds, deploys and hosts your front-end straight from Github.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -32,6 +32,7 @@
     "inquirer": "^0.11.0",
     "netlify": "^0.3.3",
     "open": "0.0.5",
-    "prompt": "^0.2.14"
+    "prompt": "^0.2.14",
+    "update-notifier": "^0.6.0"
   }
 }
