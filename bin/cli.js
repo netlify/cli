@@ -77,7 +77,6 @@ program
   .description("Configure continuous deployment")
   .action(config.wrap(program, init.cmd));
 
-
 program
   .command("*","",{noHelp: true})
   .action(function(cmd) {
