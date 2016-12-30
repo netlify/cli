@@ -13,6 +13,7 @@ var program    = require("commander"),
     list       = require("../lib/commands/list_sites"),
     updateSite = require("../lib/commands/update_site"),
     openSite   = require("../lib/commands/open"),
+    env        = require("../lib/commands/env"),
     updateNotifier = require('update-notifier'),
     pkg = require('../package.json');
 
@@ -76,6 +77,13 @@ program
   .command("init")
   .description("Configure continuous deployment")
   .action(config.wrap(program, init.cmd));
+
+program
+  .command("env")
+  .description("Output configured env variables")
+  .option("-s --site-id [id]", "Fetch from site with <id>")
+  .option("-f --file [filename]", "Save to file called <filename>")
+  .action(config.wrap(program, env.cmd));
 
 program
   .command("*","",{noHelp: true})
