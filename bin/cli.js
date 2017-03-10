@@ -76,6 +76,7 @@ program
 program
   .command("init")
   .description("Configure continuous deployment")
+  .option("-m --manual", "Do a manual setup (no GitHub permissions required)")
   .action(config.wrap(program, init.cmd));
 
 program
