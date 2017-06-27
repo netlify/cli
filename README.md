@@ -36,3 +36,9 @@ netlify deploy dist -e production
 ```
 
 Netlify creates different sites with each their own URL for each of your environments and keeps track of them in the `.netlify` config file.
+
+## Caveats
+
+- netlify-cli is known to hang with an "ECONNRESET" error (parsed as JSON, it will look odd) when used from many CI environments.  This is a known issue that is only fixed in our alternate and current CLI:  https://github.com/netlify/netlifyctl
+
+- netlify-cli is known to hang when used with Node.js version 8.1.0.  Version 8.1.2 works well
