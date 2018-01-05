@@ -42,3 +42,5 @@ Netlify creates different sites with each their own URL for each of your environ
 - netlify-cli is known to hang with an "ECONNRESET" error (parsed as JSON, it will look odd) when used from many CI environments.  This is a known issue that is only fixed in our alternate and current CLI:  https://github.com/netlify/netlifyctl
 
 - netlify-cli is known to hang when used with Node.js version 8.1.0.  Version 8.1.2 works well
+
+- the local config file is named `.netlify.local` instead of `.netlify` when you run commands from within your home directory.
