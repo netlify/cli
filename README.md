@@ -2,6 +2,8 @@
 
 The Netlify CLI tools lets you create, deploy, and delete new sites straight from your terminal.
 
+This CLI utility is deprecated in favor of [netlifyctl](https://github.com/netlify/netlifyctl) which is the currently maintained CLI utility.
+
 ## Installation
 
 To install the CLI tools:
