@@ -265,6 +265,8 @@ _See code: [src/commands/sites/update/index.js](https://github.com/netlify/cli/b
 
 **Go CLI commands**
 
+via https://github.com/netlify/netlifyctl
+
 ```
 Available Commands:
   assets    # List assets attached to a site
@@ -282,7 +284,9 @@ Available Commands:
   version
 ```
 
-** Node CLI Commands **
+**Node CLI Commands**
+
+via https://github.com/netlify/netlify-cli
 
 ```
 createSite = require("../lib/commands/create_site"),
@@ -296,6 +300,7 @@ openSite   = require("../lib/commands/open"),
 env        = require("../lib/commands/env"),
 ```
 
-** Misc examples **
-https://github.com/feinoujc/gh-search-cli/blob/master/src/commands/code.ts#L16-L53
-https://github.com/oclif/plugin-plugins#what-is-this
+**Misc examples**
+
+- https://github.com/feinoujc/gh-search-cli/blob/master/src/commands/code.ts#L16-L53
+- https://github.com/oclif/plugin-plugins#what-is-this
