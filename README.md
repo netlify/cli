@@ -64,7 +64,7 @@ USAGE
 
 ## `netlify-cli functions`
 
-[36mManage netlify functions[39m
+Manage netlify functions
 
 ```
 USAGE
@@ -164,7 +164,7 @@ _See code: [src/commands/functions/update/index.js](https://github.com/netlify/c
 
 ## `netlify-cli login`
 
-[36mLogin to account[39m
+Login to account
 
 ```
 USAGE
@@ -175,7 +175,7 @@ _See code: [src/commands/login/index.js](https://github.com/netlify/cli/blob/v0.
 
 ## `netlify-cli logout`
 
-[36mLogout of account[39m
+Logout of account
 
 ```
 USAGE
@@ -186,7 +186,7 @@ _See code: [src/commands/logout/index.js](https://github.com/netlify/cli/blob/v0
 
 ## `netlify-cli sites`
 
-[36mHandle site operations[39m
+Handle site operations
 
 ```
 USAGE

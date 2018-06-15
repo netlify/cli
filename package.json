@@ -54,6 +54,6 @@
   "scripts": {
     "posttest": "eslint .",
     "test": "echo NO TESTS",
-    "docs": "oclif-dev readme"
+    "docs": "export DOCS_GEN=TRUE && oclif-dev readme && export DOCS_GEN=FALSE"
   }
 }
