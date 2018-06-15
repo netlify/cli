@@ -1,27 +1,6 @@
 Netlify-cli
 ===========
 
-## Netlify CLI
-
-Commands!
-
-Sub Commands! `commands:subCmd`
-
-Ability to install plugins https://github.com/oclif/plugin-plugins#what-is-this (re: third party integrations)
-
-"Did you mean X"?
-
-Programatic access
-
-Hooks!
-
-Docs gen
-
-```
-ntl command
-netlify command
-```
-
 <!-- toc -->
 * [Usage](#usage)
 * [Commands](#commands)
