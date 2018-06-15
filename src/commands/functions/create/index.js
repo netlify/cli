@@ -2,11 +2,11 @@ const { Command, flags } = require('@oclif/command')
 
 class FunctionsCreateCommand extends Command {
   async run() {
-    this.log(`create a function locally`)
+    this.log(`scaffold out a new function locally`)
   }
 }
 
-FunctionsCreateCommand.description = `create a new function
+FunctionsCreateCommand.description = `create a new function locally
 `
 
 FunctionsCreateCommand.flags = {

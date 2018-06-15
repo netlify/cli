@@ -6,7 +6,7 @@ class SitesListCommand extends Command {
   async run() {
     const {flags} = this.parse(SitesListCommand)
     const name = flags.name || 'world'
-    this.log(`list sites`)
+    // this.log(`list sites`)
     var table = new AsciiTable('Netlify Sites')
     table.setHeading('Name', 'Url', 'id')
     .addRow('my-site-xyz.netlify.com', 'my-custom-url.biz', '124123-ddhshs1212-1211')
