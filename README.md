@@ -4,9 +4,36 @@ Netlify-cli
 Pluggable CLI for Netlify. 🎉
 
 <!-- toc -->
+* [Prerequisites](#prerequisites)
 * [Local Development](#local-development)
 * [Commands](#commands)
 <!-- tocstop -->
+
+# Prerequisites
+
+The node-js sdk is generated via the [netlify OpenAPI spec](https://github.com/netlify/open-api). This entire process will go away eventually 😃.
+
+1. You will need java8 (or 7) to run the code-gen
+
+    ```bash
+    # install java 8 via homebrew
+    brew cask install homebrew/cask-versions/java8
+    ```
+
+2. Then install swagger codegen
+
+    ```bash
+    # install code-gen via homebrew
+    brew install swagger-codegen
+    ```
+
+3. Generate the node-sdk
+
+    This will create the node sdk in the `/vendor` folder
+
+    ```bash
+    npm run sdk
+    ```
 
 # Local Development
 
@@ -75,7 +102,7 @@ EXAMPLES
   $ netlify functions:update --name function-abc --timeout 30s
 ```
 
-_See code: [src/commands/functions/index.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/functions/index.js)_
+_See code: [src/commands/functions.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/functions.js)_
 
 ## `netlify-cli functions:build`
 
@@ -89,7 +116,7 @@ OPTIONS
   -n, --name=name  name to print
 ```
 
-_See code: [src/commands/functions/build/index.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/functions/build/index.js)_
+_See code: [src/commands/functions/build.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/functions/build.js)_
 
 ## `netlify-cli functions:create`
 
@@ -103,7 +130,7 @@ OPTIONS
   -n, --name=name  name to print
 ```
 
-_See code: [src/commands/functions/create/index.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/functions/create/index.js)_
+_See code: [src/commands/functions/create.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/functions/create.js)_
 
 ## `netlify-cli functions:list`
 
@@ -121,7 +148,7 @@ DESCRIPTION
   Extra documentation goes here
 ```
 
-_See code: [src/commands/functions/list/index.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/functions/list/index.js)_
+_See code: [src/commands/functions/list.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/functions/list.js)_
 
 ## `netlify-cli functions:serve`
 
@@ -139,7 +166,7 @@ DESCRIPTION
   Extra documentation goes here
 ```
 
-_See code: [src/commands/functions/serve/index.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/functions/serve/index.js)_
+_See code: [src/commands/functions/serve.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/functions/serve.js)_
 
 ## `netlify-cli functions:update`
 
@@ -157,7 +184,7 @@ DESCRIPTION
   Extra documentation goes here
 ```
 
-_See code: [src/commands/functions/update/index.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/functions/update/index.js)_
+_See code: [src/commands/functions/update.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/functions/update.js)_
 
 ## `netlify-cli login`
 
@@ -168,7 +195,7 @@ USAGE
   $ netlify-cli login
 ```
 
-_See code: [src/commands/login/index.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/login/index.js)_
+_See code: [src/commands/login.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/login.js)_
 
 ## `netlify-cli logout`
 
@@ -179,7 +206,7 @@ USAGE
   $ netlify-cli logout
 ```
 
-_See code: [src/commands/logout/index.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/logout/index.js)_
+_See code: [src/commands/logout.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/logout.js)_
 
 ## `netlify-cli sites`
 
@@ -197,7 +224,7 @@ EXAMPLES
   $ netlify sites:update -name my-new-site
 ```
 
-_See code: [src/commands/sites/index.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/sites/index.js)_
+_See code: [src/commands/sites.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/sites.js)_
 
 ## `netlify-cli sites:create`
 
@@ -215,7 +242,7 @@ DESCRIPTION
   Extra documentation goes here
 ```
 
-_See code: [src/commands/sites/create/index.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/sites/create/index.js)_
+_See code: [src/commands/sites/create.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/sites/create.js)_
 
 ## `netlify-cli sites:delete SITEID`
 
@@ -239,7 +266,7 @@ EXAMPLE
   $ netlify site:delete 123-432621211
 ```
 
-_See code: [src/commands/sites/delete/index.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/sites/delete/index.js)_
+_See code: [src/commands/sites/delete.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/sites/delete.js)_
 
 ## `netlify-cli sites:list`
 
@@ -257,7 +284,7 @@ DESCRIPTION
   Extra documentation goes here
 ```
 
-_See code: [src/commands/sites/list/index.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/sites/list/index.js)_
+_See code: [src/commands/sites/list.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/sites/list.js)_
 
 ## `netlify-cli sites:update`
 
@@ -275,7 +302,7 @@ DESCRIPTION
   Extra documentation goes here
 ```
 
-_See code: [src/commands/sites/update/index.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/sites/update/index.js)_
+_See code: [src/commands/sites/update.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/sites/update.js)_
 <!-- commandsstop -->
 
 ---

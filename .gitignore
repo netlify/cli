@@ -6,3 +6,9 @@
 /tmp
 node_modules
 misc
+
+# node sdk
+vendor
+
+# osx
+.DS_STORE
