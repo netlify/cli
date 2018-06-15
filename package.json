@@ -20,6 +20,7 @@
     "opn": "^5.3.0"
   },
   "devDependencies": {
+    "@oclif/dev-cli": "^1.13.31",
     "eslint": "^4",
     "eslint-config-oclif": "^1"
   },
@@ -52,6 +53,7 @@
   "repository": "netlify/cli",
   "scripts": {
     "posttest": "eslint .",
-    "test": "echo NO TESTS"
+    "test": "echo NO TESTS",
+    "docs": "oclif-dev readme"
   }
 }
