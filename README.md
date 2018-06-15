@@ -4,9 +4,31 @@ Netlify-cli
 Pluggable CLI for Netlify. 🎉
 
 <!-- toc -->
+* [Install](#install)
 * [Usage](#usage)
 * [Commands](#commands)
 <!-- tocstop -->
+
+# Install
+
+1. clone repo
+
+    ```bash
+    git clone git@github.com:DavidWells/cli.git
+    ```
+
+2. Install deps
+
+    ```bash
+    npm install
+    ```
+
+3. run local CLI
+
+    ```bash
+    ./bin/run [command]
+    ```
+
 # Usage
 <!-- usage -->
 ```sh-session
