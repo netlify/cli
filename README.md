@@ -1,12 +1,11 @@
 Netlify-cli
 ===========
 
+Pluggable CLI for Netlify. 🎉
+
 <!-- toc -->
 * [Usage](#usage)
 * [Commands](#commands)
-* [Go CLI commands](#go-cli-commands)
-* [Node CLI Commands](#node-cli-commands)
-* [Misc examples](#misc-examples)
 <!-- tocstop -->
 # Usage
 <!-- usage -->
@@ -260,7 +259,11 @@ DESCRIPTION
 _See code: [src/commands/sites/update/index.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/sites/update/index.js)_
 <!-- commandsstop -->
 
-# Go CLI commands
+---
+
+** Notes from previous CLIs **
+
+**Go CLI commands**
 
 ```
 Available Commands:
@@ -279,7 +282,7 @@ Available Commands:
   version
 ```
 
-# Node CLI Commands
+** Node CLI Commands **
 
 ```
 createSite = require("../lib/commands/create_site"),
@@ -293,6 +296,6 @@ openSite   = require("../lib/commands/open"),
 env        = require("../lib/commands/env"),
 ```
 
-# Misc examples
+** Misc examples **
 https://github.com/feinoujc/gh-search-cli/blob/master/src/commands/code.ts#L16-L53
 https://github.com/oclif/plugin-plugins#what-is-this
