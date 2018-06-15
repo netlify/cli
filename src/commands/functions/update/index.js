@@ -1,18 +1,18 @@
 const { Command, flags } = require('@oclif/command')
 
-class SitesUpdateCommand extends Command {
+class FunctionsUpdateCommand extends Command {
   async run() {
     this.log(`update a function`)
   }
 }
 
-SitesUpdateCommand.description = `update a function
+FunctionsUpdateCommand.description = `update a function
 ...
 Extra documentation goes here
 `
 
-SitesUpdateCommand.flags = {
+FunctionsUpdateCommand.flags = {
   name: flags.string({char: 'n', description: 'name to print'}),
 }
 
-module.exports = SitesUpdateCommand
+module.exports = FunctionsUpdateCommand

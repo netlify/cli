@@ -1,5 +1,6 @@
 const { Command } = require('@oclif/command')
 const openBrowser = require('../../utils/open-browser')
+const renderShortDesc = require('../../utils/renderShortDescription')
 
 class LoginCommand extends Command {
   async run() {
@@ -14,6 +15,6 @@ class LoginCommand extends Command {
   }
 }
 
-LoginCommand.description = `Login to account`
+LoginCommand.description = `${renderShortDesc('Login to account')}`
 
 module.exports = LoginCommand

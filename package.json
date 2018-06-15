@@ -37,7 +37,6 @@
     "bin": "netlify-cli",
     "commands": "./src/commands",
     "plugins": [
-      "@oclif/plugin-help",
       "@oclif/plugin-not-found"
     ],
     "hooks": {

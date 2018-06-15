@@ -2,9 +2,9 @@
 const {Command, flags} = require('@oclif/command')
 const AsciiTable = require('ascii-table')
 
-class SitesListCommand extends Command {
+class FunctionsListCommand extends Command {
   async run() {
-    const {flags} = this.parse(SitesListCommand)
+    const {flags} = this.parse(FunctionsListCommand)
     this.log(`list function`)
     var table = new AsciiTable('Netlify Functions')
     table.setHeading('Name', 'Url', 'id')
@@ -16,13 +16,13 @@ class SitesListCommand extends Command {
   }
 }
 
-SitesListCommand.description = `list sites
+FunctionsListCommand.description = `list sites
 ...
 Extra documentation goes here
 `
 
-SitesListCommand.flags = {
+FunctionsListCommand.flags = {
   name: flags.string({char: 'n', description: 'name to print'}),
 }
 
-module.exports = SitesListCommand
+module.exports = FunctionsListCommand

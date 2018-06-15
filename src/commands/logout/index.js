@@ -1,4 +1,5 @@
 const { Command } = require('@oclif/command')
+const renderShortDesc = require('../../utils/renderShortDescription')
 
 class LogoutCommand extends Command {
   async run() {
@@ -7,6 +8,6 @@ class LogoutCommand extends Command {
   }
 }
 
-LogoutCommand.description = `Logout of account`
+LogoutCommand.description = `${renderShortDesc('Logout of account')}`
 
 module.exports = LogoutCommand

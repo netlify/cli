@@ -1,16 +1,16 @@
 const { Command, flags } = require('@oclif/command')
 
-class SitesCreateCommand extends Command {
+class FunctionsCreateCommand extends Command {
   async run() {
     this.log(`create a function locally`)
   }
 }
 
-SitesCreateCommand.description = `create a new function
+FunctionsCreateCommand.description = `create a new function
 `
 
-SitesCreateCommand.flags = {
+FunctionsCreateCommand.flags = {
   name: flags.string({char: 'n', description: 'name to print'}),
 }
 
-module.exports = SitesCreateCommand
+module.exports = FunctionsCreateCommand
