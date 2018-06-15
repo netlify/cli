@@ -2,11 +2,11 @@ const { Command, flags } = require('@oclif/command')
 
 class SitesUpdateCommand extends Command {
   async run() {
-    this.log(`update a site`)
+    this.log(`update a function`)
   }
 }
 
-SitesUpdateCommand.description = `update a site
+SitesUpdateCommand.description = `update a function
 ...
 Extra documentation goes here
 `
