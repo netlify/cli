@@ -280,7 +280,7 @@ _See code: [src/commands/sites/update/index.js](https://github.com/netlify/cli/b
 
 ---
 
-** Notes from previous CLIs **
+**Notes from previous CLIs**
 
 **Go CLI commands**
 
