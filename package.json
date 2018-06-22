@@ -22,6 +22,7 @@
   },
   "devDependencies": {
     "@oclif/dev-cli": "^1.13.31",
+    "eslint-config-prettier": "^2.9.0",
     "eslint": "^4",
     "eslint-config-oclif": "^1"
   },
@@ -53,6 +54,7 @@
   },
   "repository": "netlify/cli",
   "scripts": {
-    "docs": "export DOCS_GEN=TRUE && oclif-dev readme && export DOCS_GEN=FALSE"
+    "docs": "export DOCS_GEN=TRUE && oclif-dev readme && export DOCS_GEN=FALSE",
+    "test": "eslint src"
   }
 }
