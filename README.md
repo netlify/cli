@@ -4,36 +4,9 @@ Netlify-cli
 Pluggable CLI for Netlify. 🎉
 
 <!-- toc -->
-* [Prerequisites](#prerequisites)
 * [Local Development](#local-development)
 * [Commands](#commands)
 <!-- tocstop -->
-
-# Prerequisites
-
-The node-js sdk is generated via the [netlify OpenAPI spec](https://github.com/netlify/open-api). This entire process will go away eventually 😃.
-
-1. You will need java8 (or 7) to run the code-gen
-
-    ```bash
-    # install java 8 via homebrew
-    brew cask install homebrew/cask-versions/java8
-    ```
-
-2. Then install swagger codegen
-
-    ```bash
-    # install code-gen via homebrew
-    brew install swagger-codegen
-    ```
-
-3. Generate the node-sdk
-
-    This will create the node sdk in the `/vendor` folder
-
-    ```bash
-    npm run sdk
-    ```
 
 # Local Development
 
