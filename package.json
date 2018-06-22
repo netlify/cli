@@ -1,6 +1,7 @@
 {
   "name": "netlify-cli",
   "version": "0.0.0",
+  "description": "CLI to interact with Netlify",
   "author": "davidwells @DavidWells",
   "bin": {
     "ntl": "./bin/run",
@@ -53,6 +54,6 @@
   },
   "repository": "netlify/cli",
   "scripts": {
-    "docs": "export DOCS_GEN=TRUE && oclif-dev readme && export DOCS_GEN=FALSE"
+    "docs": "export DOCS_GEN=TRUE && oclif-dev readme --multi && export DOCS_GEN=FALSE"
   }
 }
