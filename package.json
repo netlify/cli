@@ -23,8 +23,7 @@
   "devDependencies": {
     "@oclif/dev-cli": "^1.13.31",
     "eslint": "^4",
-    "eslint-config-oclif": "^1",
-    "napa": "^3.0.0"
+    "eslint-config-oclif": "^1"
   },
   "engines": {
     "node": ">=8.0.0"
@@ -54,9 +53,6 @@
   },
   "repository": "netlify/cli",
   "scripts": {
-    "install": "napa netlify/open-api",
-    "sdk": "swagger-codegen generate -i ./node_modules/open-api/swagger.yml -l javascript -o ./vendor/",
-    "postsdk": "echo 'install sdk deps' && cd vendor && npm i",
     "docs": "export DOCS_GEN=TRUE && oclif-dev readme && export DOCS_GEN=FALSE"
   }
 }
