@@ -55,7 +55,7 @@
   },
   "repository": "netlify/cli",
   "scripts": {
-    "docs": "export DOCS_GEN=TRUE && oclif-dev readme --multi && export DOCS_GEN=FALSE"
+    "docs": "export DOCS_GEN=TRUE && oclif-dev readme --multi && export DOCS_GEN=FALSE",
     "test": "eslint src"
   }
 }
