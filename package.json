@@ -16,6 +16,7 @@
     "ascii-table": "0.0.9",
     "chalk": "^2.4.1",
     "cli-ux": "^4.6.3",
+    "configstore": "github:bcomnes/configstore#custom-path",
     "is-docker": "^1.1.0",
     "netlifys_api_definition": "^0.1.0",
     "open": "0.0.5",
