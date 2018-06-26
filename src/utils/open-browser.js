@@ -14,7 +14,7 @@ function unableToOpenBrowserMessage(url, err) {
   return Promise.resolve()
 }
 
-module.exports = function openBrowser(url) {
+function openBrowser(url) {
   let browser = process.env.BROWSER
   if (browser === 'none' || isDockerContainer()) {
     return unableToOpenBrowserMessage(url)
@@ -27,3 +27,5 @@ module.exports = function openBrowser(url) {
     unableToOpenBrowserMessage(url, err)
   })
 }
+
+module.exports = openBrowser
