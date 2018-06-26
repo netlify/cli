@@ -2,6 +2,7 @@ const { Command } = require('@oclif/command')
 const openBrowser = require('../../utils/open-browser')
 const renderShortDesc = require('../../utils/renderShortDescription')
 const API = require('../../utils/api')
+const client = new API()
 const config = require('../../utils/config')
 
 function waitForTicket(ticket, waitUntil) {
@@ -14,13 +15,17 @@ function waitForTicket(ticket, waitUntil) {
   }
 
   const wait = new Promise(resolve => {
-    setTimeout(resolve(ticket), 500)
+    setTimeout(() => resolve(ticket), 500)
   })
     .then(ticket => {
-      // "Refresh" somehow
-      return ticket
+      return new Promise((resolve, reject) => {
+        client.api.showTicket(ticket.id, (err, data) => {
+          if (err) return reject(err)
+          resolve(data)
+        })
+      })
     })
-    .then(function(ticket) {
+    .then(ticket => {
       return waitForTicket(ticket, waitUntil)
     })
 
@@ -35,21 +40,23 @@ class LoginCommand extends Command {
       return this.exit()
     }
 
-    const client = new API()
     this.log(`Logging into Netlify account`)
 
+    let ticket
+
     const getTicket = new Promise((resolve, reject) => {
-      client.api.createTicket(config.get('clientId'), (err, ticket) => {
+      client.api.createTicket(config.get('clientId'), (err, tk) => {
         if (err) return reject(err)
+        ticket = tk
         resolve(ticket)
       })
     })
 
     getTicket
-      .then(ticket =>
-        openBrowser(`https://app.netlify.com/authorize?response_type=ticket&ticket=${ticket.id}`).then(() => ticket)
-      )
       .then(ticket => {
+        openBrowser(`https://app.netlify.com/authorize?response_type=ticket&ticket=${ticket.id}`)
+      })
+      .then(() => {
         const ts = new Date()
         ts.setHours(ts.getHours() + 1)
         return waitForTicket(ticket, ts)
@@ -62,12 +69,10 @@ class LoginCommand extends Command {
             })
           })
           .then(accessToken => {
-            config.set('accessToken', accessToken)
+            config.set('accessToken', accessToken.access_token)
             this.log('Logged in!')
           })
       })
-
-    return getTicket
   }
 }
 
