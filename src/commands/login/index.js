@@ -4,6 +4,7 @@ const renderShortDesc = require('../../utils/renderShortDescription')
 const API = require('../../utils/api')
 const client = new API()
 const config = require('../../utils/config')
+const { CLIError } = require('@oclif/errors')
 
 function waitForTicket(ticket, waitUntil) {
   if (waitUntil && new Date() > waitUntil) {
@@ -42,37 +43,30 @@ class LoginCommand extends Command {
 
     this.log(`Logging into Netlify account`)
 
-    let ticket
-
-    const getTicket = new Promise((resolve, reject) => {
-      client.api.createTicket(config.get('clientId'), (err, tk) => {
-        if (err) return reject(err)
-        ticket = tk
+    const ticket = await new Promise(resolve => {
+      client.api.createTicket(config.get('clientId'), (err, ticket) => {
+        if (err) throw new CLIError(err)
         resolve(ticket)
       })
     })
 
-    getTicket
-      .then(ticket => {
-        openBrowser(`https://app.netlify.com/authorize?response_type=ticket&ticket=${ticket.id}`)
+    openBrowser(`https://app.netlify.com/authorize?response_type=ticket&ticket=${ticket.id}`)
+
+    const ts = new Date()
+    ts.setHours(ts.getHours() + 1)
+
+    const authorizedTicket = await waitForTicket(ticket, ts)
+
+    const accessToken = await new Promise(resolve => {
+      client.api.exchangeTicket(authorizedTicket.id, (err, accessToken) => {
+        if (err) throw new CLIError(err)
+        resolve(accessToken.access_token)
       })
-      .then(() => {
-        const ts = new Date()
-        ts.setHours(ts.getHours() + 1)
-        return waitForTicket(ticket, ts)
-          .then(ticket => {
-            return new Promise((resolve, reject) => {
-              client.api.exchangeTicket(ticket.id, (err, accessToken) => {
-                if (err) return reject(err)
-                resolve(accessToken)
-              })
-            })
-          })
-          .then(accessToken => {
-            config.set('accessToken', accessToken.access_token)
-            this.log('Logged in!')
-          })
-      })
+    })
+
+    config.set('accessToken', accessToken.access_token)
+    this.log('Logged in!')
+    return this.exit()
   }
 }
 
