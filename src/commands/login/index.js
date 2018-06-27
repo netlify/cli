@@ -64,7 +64,7 @@ class LoginCommand extends Command {
       })
     })
 
-    config.set('accessToken', accessToken.access_token)
+    config.set('accessToken', accessToken)
     this.log('Logged in!')
     return this.exit()
   }
