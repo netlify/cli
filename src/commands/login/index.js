@@ -5,7 +5,6 @@ const API = require('../../utils/api')
 const client = new API()
 const config = require('../../utils/config')
 
-
 class LoginCommand extends Command {
   async run() {
     // const { flags, args } = this.parse(LoginCommand)
@@ -21,7 +20,7 @@ class LoginCommand extends Command {
     openBrowser(`https://app.netlify.com/authorize?response_type=ticket&ticket=${ticket.id}`)
     const accessToken = await client.waitForAccessToken(ticket)
 
-    config.set('accessToken', accessToken.access_token)
+    config.set('accessToken', accessToken)
     this.log('Logged in!')
     return this.exit()
   }
