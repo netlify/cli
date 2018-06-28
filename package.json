@@ -18,6 +18,7 @@
     "cli-ux": "^4.6.3",
     "configstore": "github:bcomnes/configstore#custom-path",
     "is-docker": "^1.1.0",
+    "lodash.snakecase": "^4.1.1",
     "netlifys_api_definition": "^0.1.0",
     "open": "0.0.5",
     "opn": "^5.3.0"
