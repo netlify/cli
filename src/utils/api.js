@@ -1,7 +1,6 @@
 const NetlifysApiDefinition = require('netlifys_api_definition')
+const promisify = require('util.promisify-all')
 
-// See https://github.com/bcomnes/open-api/tree/with-docs/node
-// TODO Fix the publishing workflow on the generated module
 class Netlify {
   constructor(accessToken) {
     if (accessToken) {
@@ -10,7 +9,35 @@ class Netlify {
       netlifyAuth.accessToken = accessToken
     }
 
-    this.api = new NetlifysApiDefinition.DefaultApi()
+    this.api = promisify(new NetlifysApiDefinition.DefaultApi())
+  }
+
+  async waitForAccessToken(ticket) {
+    const ts = new Date()
+    ts.setHours(ts.getHours() + 1)
+
+    const authorizedTicket = await this.waitForAuthorizedToken(ticket, ts)
+    const accessToken = await this.api.exchangeTicket(authorizedTicket.id)
+
+    return accessToken
+  }
+
+  waitForAuthorizedToken(ticket, waitUntil) {
+    if (waitUntil && new Date() > waitUntil) {
+      return Promise.reject(new Error('Timeout while waiting for ticket grant'))
+    }
+
+    if (ticket.authorized) {
+      return Promise.resolve(ticket)
+    }
+
+    const wait = new Promise(resolve => {
+      setTimeout(() => resolve(ticket), 500)
+    })
+      .then(ticket => this.api.showTicket(ticket.id))
+      .then(ticket => this.waitForAuthorizedToken(ticket, waitUntil))
+
+    return wait
   }
 }
 

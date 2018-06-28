@@ -24,9 +24,10 @@
   },
   "devDependencies": {
     "@oclif/dev-cli": "^1.13.31",
-    "eslint-config-prettier": "^2.9.0",
     "eslint": "^4",
-    "eslint-config-oclif": "^1"
+    "eslint-config-oclif": "^1",
+    "eslint-config-prettier": "^2.9.0",
+    "util.promisify-all": "^1.0.2"
   },
   "engines": {
     "node": ">=8.0.0"
