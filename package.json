@@ -21,14 +21,18 @@
     "lodash.snakecase": "^4.1.1",
     "netlifys_api_definition": "^0.1.0",
     "open": "0.0.5",
+    "util.promisify-all": "^1.0.2",
     "opn": "^5.3.0"
   },
   "devDependencies": {
     "@oclif/dev-cli": "^1.13.31",
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
     "eslint": "^4",
     "eslint-config-oclif": "^1",
     "eslint-config-prettier": "^2.9.0",
-    "util.promisify-all": "^1.0.2"
+    "mkdirp": "^0.5.1",
+    "rimraf": "^2.6.2"
   },
   "engines": {
     "node": ">=8.0.0"
@@ -39,7 +43,7 @@
   ],
   "homepage": "https://github.com/netlify/cli",
   "license": "MIT",
-  "main": "src/index.js",
+  "main": "dist/index.js",
   "oclif": {
     "bin": "netlify-cli",
     "commands": "./src/commands",
@@ -60,6 +64,9 @@
   "repository": "netlify/cli",
   "scripts": {
     "docs": "export DOCS_GEN=TRUE && oclif-dev readme --multi && export DOCS_GEN=FALSE",
-    "test": "eslint src"
+    "test": "eslint src",
+    "build": "rimraf dist && mkdirp dist && babel src --out-dir dist",
+    "watch": "rimraf dist && mkdirp dist && babel src --out-dir dist --watch",
+    "prepare": "npm run build"
   }
 }
