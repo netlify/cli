@@ -1,6 +1,7 @@
 const Configstore = require('configstore')
 const os = require('os')
 const path = require('path')
+const snakeCase = require('lodash.snakecase')
 const conf = new Configstore(
   null,
   {
@@ -9,4 +10,22 @@ const conf = new Configstore(
   { configPath: path.join(os.homedir(), '.netlify', 'config.json') }
 )
 
-module.exports = conf
+const envProxy = {
+  get: (cs, prop) => {
+    if (prop === 'get') {
+      return key => {
+        if (key.includes('.') || key.includes('[')) return cs.get(key) // dot-prop notation
+
+        return process.env[toEnvCase(key)] || cs.get(key)
+      }
+    }
+
+    return cs[prop]
+  }
+}
+
+function toEnvCase(key) {
+  return `NETLIFY_${snakeCase(key).toUpperCase()}`
+}
+
+module.exports = new Proxy(conf, envProxy)
