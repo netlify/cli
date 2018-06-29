@@ -1,28 +1,17 @@
-const netlify = require('netlifys_api_definition')
 const AsciiTable = require('ascii-table')
-const { Command, flags } = require('@oclif/command')
+const { Command } = require('@oclif/command')
 const { CLIError } = require('@oclif/errors')
-
-const accessToken = process.env.NETLIFY_ACCESS_TOKEN // to be replaced by
-netlify.ApiClient.instance.authentications['netlifyAuth'].accessToken = accessToken;
-
-const api = new netlify.DefaultApi()
+const config = require('../../../utils/config')
+const API = require('../../../utils/api')
 
 class SitesListCommand extends Command {
   async run() {
     // const { flags } = this.parse(SitesListCommand)
-
-    // Temp check
-    if (!process.env.NETLIFY_ACCESS_TOKEN) {
-      throw new CLIError(`Please set NETLIFY_ACCESS_TOKEN in session
-
-Run the following command in your terminal:
-
-export NETLIFY_ACCESS_TOKEN=YourTokenHere`)
-    }
+    await this.config.runHook('login')
+    const client = new API(config.get('accessToken'))
 
     // Fetch all sites!
-    api.listSites(null, (err, sites) => {
+    client.api.listSites(null, (err, sites) => {
       if (err) {
         throw new CLIError(err)
       }
