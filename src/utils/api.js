@@ -19,7 +19,7 @@ class Netlify {
     const authorizedTicket = await this.waitForAuthorizedToken(ticket, ts)
     const accessToken = await this.api.exchangeTicket(authorizedTicket.id)
 
-    return accessToken
+    return accessToken.access_token
   }
 
   waitForAuthorizedToken(ticket, waitUntil) {
