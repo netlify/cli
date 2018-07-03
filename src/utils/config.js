@@ -24,8 +24,9 @@ const envProxy = {
   }
 }
 
-function toEnvCase(key) {
+export function toEnvCase(key) {
   return `NETLIFY_${snakeCase(key).toUpperCase()}`
 }
 
-module.exports = new Proxy(conf, envProxy)
+const configStore = new Proxy(conf, envProxy)
+export default configStore
