@@ -16,28 +16,28 @@ class Netlify {
     const ts = new Date()
     ts.setHours(ts.getHours() + 1)
 
-    const authorizedTicket = await this.waitForAuthorizedToken(ticket, ts)
+    const waitForAuthorizedToken = (ticket, waitUntil) => {
+      if (waitUntil && new Date() > waitUntil) {
+        return Promise.reject(new Error('Timeout while waiting for ticket grant'))
+      }
+  
+      if (ticket.authorized) {
+        return Promise.resolve(ticket)
+      }
+  
+      const wait = new Promise(resolve => {
+        setTimeout(() => resolve(ticket), 500)
+      })
+        .then(ticket => this.api.showTicket(ticket.id))
+        .then(ticket => waitForAuthorizedToken(ticket, waitUntil))
+  
+      return wait
+    }
+
+    const authorizedTicket = await waitForAuthorizedToken(ticket, ts)
     const accessToken = await this.api.exchangeTicket(authorizedTicket.id)
 
     return accessToken.access_token
-  }
-
-  waitForAuthorizedToken(ticket, waitUntil) {
-    if (waitUntil && new Date() > waitUntil) {
-      return Promise.reject(new Error('Timeout while waiting for ticket grant'))
-    }
-
-    if (ticket.authorized) {
-      return Promise.resolve(ticket)
-    }
-
-    const wait = new Promise(resolve => {
-      setTimeout(() => resolve(ticket), 500)
-    })
-      .then(ticket => this.api.showTicket(ticket.id))
-      .then(ticket => this.waitForAuthorizedToken(ticket, waitUntil))
-
-    return wait
   }
 }
 
