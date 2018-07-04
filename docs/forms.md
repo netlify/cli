@@ -22,7 +22,7 @@ EXAMPLE
   $ netlify forms:list
 ```
 
-_See code: [src/commands/forms/index.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/forms/index.js)_
+_See code: [dist/commands/forms/index.js](https://github.com/netlify/cli/blob/v0.0.0/dist/commands/forms/index.js)_
 
 ## `netlify-cli forms:list`
 
@@ -37,4 +37,4 @@ DESCRIPTION
   Extra documentation goes here
 ```
 
-_See code: [src/commands/forms/list/index.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/forms/list/index.js)_
+_See code: [dist/commands/forms/list/index.js](https://github.com/netlify/cli/blob/v0.0.0/dist/commands/forms/list/index.js)_

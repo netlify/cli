@@ -25,18 +25,21 @@
     "util.promisify-all": "^1.0.2"
   },
   "devDependencies": {
+    "@babel/cli": "^7.0.0-beta.51",
+    "@babel/preset-env": "^7.0.0-beta.51",
+    "@babel/register": "^7.0.0-beta.51",
     "@oclif/dev-cli": "^1.13.31",
     "ava": "1.0.0-beta.6",
-    "babel-cli": "^6.26.0",
     "babel-eslint": "^8.2.5",
-    "babel-preset-env": "^1.7.0",
     "eslint": "^4",
     "eslint-config-prettier": "^2.9.0",
     "eslint-plugin-import": "^2.13.0",
     "eslint-plugin-prettier": "^2.6.1",
     "mkdirp": "^0.5.1",
     "npm-run-all": "^4.1.3",
-    "rimraf": "^2.6.2"
+    "prettier": "^1.13.7",
+    "rimraf": "^2.6.2",
+    "sitedown": "^3.3.0"
   },
   "engines": {
     "node": ">=8.0.0"
@@ -50,29 +53,47 @@
   "main": "dist/index.js",
   "oclif": {
     "bin": "netlify-cli",
-    "commands": "./src/commands",
+    "commands": "./dist/commands",
     "plugins": [
       "@oclif/plugin-not-found"
     ],
     "hooks": {
       "init": [
-        "./src/hooks/header"
+        "./dist/hooks/header"
       ],
       "analytics": [
-        "./src/hooks/analytics",
-        "./src/hooks/hooks-two"
+        "./dist/hooks/analytics",
+        "./dist/hooks/hooks-two"
       ],
-      "login": "./src/hooks/login"
+      "login": "./dist/hooks/login"
     }
+  },
+  "ava": {
+    "cache": true,
+    "concurrency": 5,
+    "failFast": false,
+    "failWithoutAssertions": false,
+    "tap": false,
+    "compileEnhancements": true,
+    "require": [
+      "@babel/register"
+    ]
   },
   "repository": "netlify/cli",
   "scripts": {
-    "docs": "export DOCS_GEN=TRUE && oclif-dev readme --multi && export DOCS_GEN=FALSE",
     "test": "run-s test:*",
-    "test:lint": "eslint src",
-    "test:ava": "ava src",
-    "build": "rimraf dist && mkdirp dist && babel src --out-dir dist",
-    "watch": "rimraf dist && mkdirp dist && babel src --out-dir dist --watch",
-    "prepare": "npm run build"
+    "test:lint": "eslint src/util",
+    "test:ava": "ava",
+    "build": "npm run clean && run-s build:*",
+    "build:babel": "npm run clean && babel src --out-dir dist",
+    "build:docs": "DOCS_GEN=TRUE oclif-dev readme --multi",
+    "build:site": "sitedown . -b site/ -l layout.html",
+    "clean": "rimraf dist site && mkdirp dist site",
+    "watch": "run-p watch:*",
+    "watch:babel": "npm run build -- '--watch'",
+    "watch:ava": "npm run test:ava -- '--watch'",
+    "prepare": "npm run build",
+    "start": "node ./bin/run",
+    "ci": "run-s test build"
   }
 }
