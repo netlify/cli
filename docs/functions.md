@@ -27,7 +27,7 @@ EXAMPLES
   $ netlify functions:update --name function-abc --timeout 30s
 ```
 
-_See code: [src/commands/functions/index.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/functions/index.js)_
+_See code: [dist/commands/functions/index.js](https://github.com/netlify/cli/blob/v0.0.0/dist/commands/functions/index.js)_
 
 ## `netlify-cli functions:build`
 
@@ -41,7 +41,7 @@ OPTIONS
   -n, --name=name  name to print
 ```
 
-_See code: [src/commands/functions/build/index.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/functions/build/index.js)_
+_See code: [dist/commands/functions/build/index.js](https://github.com/netlify/cli/blob/v0.0.0/dist/commands/functions/build/index.js)_
 
 ## `netlify-cli functions:create`
 
@@ -55,7 +55,7 @@ OPTIONS
   -n, --name=name  name to print
 ```
 
-_See code: [src/commands/functions/create/index.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/functions/create/index.js)_
+_See code: [dist/commands/functions/create/index.js](https://github.com/netlify/cli/blob/v0.0.0/dist/commands/functions/create/index.js)_
 
 ## `netlify-cli functions:list`
 
@@ -73,7 +73,7 @@ DESCRIPTION
   Extra documentation goes here
 ```
 
-_See code: [src/commands/functions/list/index.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/functions/list/index.js)_
+_See code: [dist/commands/functions/list/index.js](https://github.com/netlify/cli/blob/v0.0.0/dist/commands/functions/list/index.js)_
 
 ## `netlify-cli functions:serve`
 
@@ -91,7 +91,7 @@ DESCRIPTION
   Extra documentation goes here
 ```
 
-_See code: [src/commands/functions/serve/index.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/functions/serve/index.js)_
+_See code: [dist/commands/functions/serve/index.js](https://github.com/netlify/cli/blob/v0.0.0/dist/commands/functions/serve/index.js)_
 
 ## `netlify-cli functions:update`
 
@@ -109,4 +109,4 @@ DESCRIPTION
   Extra documentation goes here
 ```
 
-_See code: [src/commands/functions/update/index.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/functions/update/index.js)_
+_See code: [dist/commands/functions/update/index.js](https://github.com/netlify/cli/blob/v0.0.0/dist/commands/functions/update/index.js)_

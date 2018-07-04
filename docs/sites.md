@@ -26,7 +26,7 @@ EXAMPLES
   $ netlify sites:update -name my-new-site
 ```
 
-_See code: [src/commands/sites/index.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/sites/index.js)_
+_See code: [dist/commands/sites/index.js](https://github.com/netlify/cli/blob/v0.0.0/dist/commands/sites/index.js)_
 
 ## `netlify-cli sites:create`
 
@@ -44,7 +44,7 @@ DESCRIPTION
   Extra documentation goes here
 ```
 
-_See code: [src/commands/sites/create/index.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/sites/create/index.js)_
+_See code: [dist/commands/sites/create/index.js](https://github.com/netlify/cli/blob/v0.0.0/dist/commands/sites/create/index.js)_
 
 ## `netlify-cli sites:delete SITEID`
 
@@ -68,7 +68,7 @@ EXAMPLE
   $ netlify site:delete 123-432621211
 ```
 
-_See code: [src/commands/sites/delete/index.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/sites/delete/index.js)_
+_See code: [dist/commands/sites/delete/index.js](https://github.com/netlify/cli/blob/v0.0.0/dist/commands/sites/delete/index.js)_
 
 ## `netlify-cli sites:list`
 
@@ -78,15 +78,12 @@ list sites
 USAGE
   $ netlify-cli sites:list
 
-OPTIONS
-  -n, --name=name  name to print
-
 DESCRIPTION
   ...
   Extra documentation goes here
 ```
 
-_See code: [src/commands/sites/list/index.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/sites/list/index.js)_
+_See code: [dist/commands/sites/list/index.js](https://github.com/netlify/cli/blob/v0.0.0/dist/commands/sites/list/index.js)_
 
 ## `netlify-cli sites:update`
 
@@ -104,4 +101,4 @@ DESCRIPTION
   Extra documentation goes here
 ```
 
-_See code: [src/commands/sites/update/index.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/sites/update/index.js)_
+_See code: [dist/commands/sites/update/index.js](https://github.com/netlify/cli/blob/v0.0.0/dist/commands/sites/update/index.js)_

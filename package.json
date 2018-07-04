@@ -38,7 +38,8 @@
     "mkdirp": "^0.5.1",
     "npm-run-all": "^4.1.3",
     "prettier": "^1.13.7",
-    "rimraf": "^2.6.2"
+    "rimraf": "^2.6.2",
+    "sitedown": "^3.3.0"
   },
   "engines": {
     "node": ">=8.0.0"
@@ -80,16 +81,19 @@
   },
   "repository": "netlify/cli",
   "scripts": {
-    "docs": "export DOCS_GEN=TRUE && oclif-dev readme --multi && export DOCS_GEN=FALSE",
     "test": "run-s test:*",
     "test:lint": "eslint src/util",
     "test:ava": "ava",
-    "build": "npm run clean && babel src --out-dir dist",
-    "clean": "rimraf dist && mkdirp dist",
+    "build": "npm run clean && run-s build:*",
+    "build:babel": "npm run clean && babel src --out-dir dist",
+    "build:docs": "DOCS_GEN=TRUE oclif-dev readme --multi",
+    "build:site": "sitedown . -b site/ -l layout.html",
+    "clean": "rimraf dist site && mkdirp dist site",
     "watch": "run-p watch:*",
     "watch:babel": "npm run build -- '--watch'",
     "watch:ava": "npm run test:ava -- '--watch'",
     "prepare": "npm run build",
-    "start": "node ./bin/run"
+    "start": "node ./bin/run",
+    "ci": "run-s test build"
   }
 }

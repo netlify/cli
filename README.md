@@ -4,47 +4,26 @@ Netlify-cli
 Pluggable CLI for Netlify. 🎉
 
 <!-- toc -->
-* [Local Development](#local-development)
-* [Commands](#commands)
+* [Usage](#usage)
 * [Command Topics](#command-topics)
+* [Local Development](#local-development)
 <!-- tocstop -->
 
-# Local Development
-
-1. Clone down the repo
-
-    ```bash
-    git clone git@github.com:DavidWells/cli.git
-    ```
-
-2. Install dependencies
-
-    ```bash
-    npm install
-    ```
-
-3. Run CLI locally during development
-
-    ```bash
-    ./bin/run [command]
-    ```
-
-<!-- # Usage
-usaxge  
+# Usage
+<!-- usage -->
 ```sh-session
 $ npm install -g netlify-cli
 $ netlify-cli COMMAND
 running command...
 $ netlify-cli (-v|--version|version)
-netlify-cli/0.0.0 darwin-x64 node-v9.2.0
+netlify-cli/0.0.0 darwin-x64 node-v10.4.1
 $ netlify-cli --help [COMMAND]
 USAGE
   $ netlify-cli COMMAND
 ...
 ```
-<!-- usagxestop -->
+<!-- usagestop -->
 
-# Commands
 <!-- commands -->
 # Command Topics
 
@@ -102,3 +81,29 @@ env        = require("../lib/commands/env"),
 
 - https://github.com/feinoujc/gh-search-cli/blob/master/src/commands/code.ts#L16-L53
 - https://github.com/oclif/plugin-plugins#what-is-this
+
+# Local Development
+
+1. Clone down the repo
+
+```command
+$ git clone git@github.com:netlify/cli.git
+```
+
+2. Install dependencies
+
+```command
+$ npm install
+```
+
+3. Run CLI locally during development
+
+```command
+$ ./bin/run [command]
+```
+
+When developing, you can use watch mode which will automatically rebuild the cli and run tests with ava:
+
+```command
+$ npm run watch
+```
