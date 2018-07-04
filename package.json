@@ -93,7 +93,7 @@
     "build:site": "sitedown . -b site/ -l layout.html",
     "clean": "rimraf dist site && mkdirp dist site",
     "watch": "run-p watch:*",
-    "watch:babel": "npm run build -- '--watch'",
+    "watch:babel": "npm run build:babel -- '--watch'",
     "watch:ava": "npm run test:ava -- '--watch'",
     "prepare": "npm run build",
     "start": "node ./bin/run",
