@@ -41,36 +41,45 @@ function fileHasher(dir, opts) {
     progress.total++
     hasha
       .fromFile(fileObj.filepath, { algorithm: 'sha1' })
-      .then(sha1 => cb(null, Object.assign({}, fileObj, { sha1 })))
+      .then(sha1 => cb(null, { ...fileObj, sha1 }))
       .catch(err => cb(err))
   })
 
   const manifestCollector = objWriter(
     (fileObj, _, cb) => {
-      const filePath =
-        '/' +
-        fileObj.relname
-          .split(path.sep)
-          .map(segment => {
-            return encodeURIComponent(segment)
-          })
-          .join('/')
+      const filePath = manifestPath(fileObj.relname)
+
       manifest[filePath] = fileObj.sha1
       shaMap[fileObj.sha1] = fileObj
+
       progress.current++
       if (progressDue) {
         progressDue = false
-        opts.onProgress(Object.assign({}, progress))
+        opts.onProgress({ ...progress })
       }
+
       cb(null)
     },
     cb => {
+      opts.onProgress({ ...progress })
       clearInterval(throttle)
       cb(null)
     }
   )
 
   return pump(fileStream, filter, hasher, manifestCollector).then(() => ({ manifest, shaMap }))
+}
+
+function manifestPath(relname) {
+  return (
+    '/' +
+    relname
+      .split(path.sep)
+      .map(segment => {
+        return encodeURIComponent(segment)
+      })
+      .join('/')
+  )
 }
 
 function uploadFiles(manifest, dir) {}
