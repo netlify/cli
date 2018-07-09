@@ -1,5 +1,5 @@
 import test from 'ava'
-import { toEnvCase } from './config'
+import { toEnvCase } from './'
 
 test('camelCase to NETLIFY_ENV_CASE', t => {
   const envCase = toEnvCase('fooBar')

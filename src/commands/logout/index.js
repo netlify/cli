@@ -4,10 +4,12 @@ const config = require('../../utils/config')
 
 class LogoutCommand extends Command {
   async run() {
-    const { flags, args } = this.parse(LogoutCommand)
-    config.delete('accessToken')
-    this.log(`Logging you out of Netlify. Come back soon`)
-    this.exit()
+    if (config.get('accessToken')) {
+      config.delete('accessToken')
+      this.log(`Logging you out of Netlify. Come back soon!`)
+    } else {
+      this.log(`Already logged out`)
+    }
   }
 }
 

@@ -1,5 +1,7 @@
 const NetlifysApiDefinition = require('netlifys_api_definition')
-const promisify = require('util.promisify-all')
+const promisifyAll = require('util.promisify-all')
+const deploy = require('./deploy')
+const getAccessToken = require('access-token')
 
 class Netlify {
   constructor(accessToken) {
@@ -8,36 +10,23 @@ class Netlify {
       const netlifyAuth = defaultClient.authentications['netlifyAuth']
       netlifyAuth.accessToken = accessToken
     }
+    this.accessToken = accessToken
+    this.api = promisifyAll(new NetlifysApiDefinition.DefaultApi())
+  }
 
-    this.api = promisify(new NetlifysApiDefinition.DefaultApi())
+  async deploy(siteId, buildDir, opts) {
+    if (!this.accessToken) throw new Error('Missing access token')
+    return await deploy(this.api, siteId, buildDir, opts)
   }
 
   async waitForAccessToken(ticket) {
-    const ts = new Date()
-    ts.setHours(ts.getHours() + 1)
+    const accessToken = await getAccessToken(this.api, ticket)
 
-    const waitForAuthorizedToken = (ticket, waitUntil) => {
-      if (waitUntil && new Date() > waitUntil) {
-        return Promise.reject(new Error('Timeout while waiting for ticket grant'))
-      }
-  
-      if (ticket.authorized) {
-        return Promise.resolve(ticket)
-      }
-  
-      const wait = new Promise(resolve => {
-        setTimeout(() => resolve(ticket), 500)
-      })
-        .then(ticket => this.api.showTicket(ticket.id))
-        .then(ticket => waitForAuthorizedToken(ticket, waitUntil))
-  
-      return wait
-    }
+    // Update the API client with the access token
+    this.api.apiClient.authentications.netlifyAuth.accessToken = accessToken
+    this.accessToken = accessToken
 
-    const authorizedTicket = await waitForAuthorizedToken(ticket, ts)
-    const accessToken = await this.api.exchangeTicket(authorizedTicket.id)
-
-    return accessToken.access_token
+    return accessToken
   }
 }
 
