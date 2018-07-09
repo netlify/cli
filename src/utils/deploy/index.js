@@ -1,85 +1,58 @@
-const promisify = require('util.promisify')
-const walker = require('folder-walker')
-const pump = promisify(require('pump'))
-const objFilter = require('through2-filter').obj
-const transform = require('parallel-transform')
-const hasha = require('hasha')
-const objWriter = require('flush-write-stream').obj
-const path = require('path')
+const pMap = require('p-map')
+const fs = require('fs')
+const fileHasher = require('./file-hasher')
+const pWaitFor = require('p-wait-for')
+const pTimeout = require('p-timeout')
 
-const noop = () => {}
-
-function deploy(api, siteId, dir) {}
-
-exports.fileHasher = fileHasher
-function fileHasher(dir, opts) {
+exports.deploy = deploy
+async function deploy(api, siteId, dir, opts) {
   opts = {
-    onProgress: noop,
-    parallel: 100,
+    deployTimeout: 1.2e6, // 20 mins
     ...opts
   }
-  const manifest = {}
-  const shaMap = {}
 
-  const progress = {
-    total: 0,
-    current: 0
-  }
+  const { files, shaMap } = await fileHasher(dir, opts)
 
-  let progressDue = true
-  const throttle = setInterval(() => {
-    progressDue = true
-  }, 500)
+  const deployId = await uploadFiles(api, siteId, files, shaMap)
+  const deployObj = await waitForDeploy(api, deployId, opts.deployTimeout)
 
-  const fileStream = walker(dir)
+  return deployObj
+}
 
-  const filter = objFilter(
-    fileObj => fileObj.type === 'file' && (fileObj.relname.match(/(\/__MACOSX|\/\.)/) ? false : true)
-  )
+async function uploadFiles(api, siteId, files, shaMap) {
+  const { deploy_id: deployId, required } = await api.createSiteDeploy(siteId, { files })
 
-  const hasher = transform(opts.parallel, { objectMode: true }, (fileObj, cb) => {
-    progress.total++
-    hasha
-      .fromFile(fileObj.filepath, { algorithm: 'sha1' })
-      .then(sha1 => cb(null, { ...fileObj, sha1 }))
-      .catch(err => cb(err))
-  })
+  await pMap(required, uploadJob, { concurrency: 4 })
 
-  const manifestCollector = objWriter(
-    (fileObj, _, cb) => {
-      const filePath = manifestPath(fileObj.relname)
+  return deployId
 
-      manifest[filePath] = fileObj.sha1
-      shaMap[fileObj.sha1] = fileObj
-
-      progress.current++
-      if (progressDue) {
-        progressDue = false
-        opts.onProgress({ ...progress })
-      }
-
-      cb(null)
-    },
-    cb => {
-      opts.onProgress({ ...progress })
-      clearInterval(throttle)
-      cb(null)
+  function uploadJob(sha) {
+    return () => {
+      const fileObj = shaMap[sha]
+      const { normalizedPath } = fileObj
+      const readStream = fs.createReadStream(fileObj.path)
+      return api.uploadDeployFile(deployId, normalizedPath, readStream)
     }
-  )
-
-  return pump(fileStream, filter, hasher, manifestCollector).then(() => ({ manifest, shaMap }))
+  }
 }
 
-function manifestPath(relname) {
-  return (
-    '/' +
-    relname
-      .split(path.sep)
-      .map(segment => {
-        return encodeURIComponent(segment)
-      })
-      .join('/')
+async function waitForDeploy(api, deployId, timeout) {
+  let deploy
+  await pTimeout(
+    pWaitFor(loadDeploy, 1000), // poll every 1 second
+    timeout,
+    'Timeout while waiting for deploy'
   )
-}
 
-function uploadFiles(manifest, dir) {}
+  return deploy
+
+  async function loadDeploy() {
+    const d = await this.api.getDeploy(deployId)
+    if (d.state === 'ready') {
+      deploy = d
+      return true
+    } else {
+      return false
+    }
+  }
+}

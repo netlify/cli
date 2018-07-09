@@ -1,6 +1,8 @@
 const NetlifysApiDefinition = require('netlifys_api_definition')
-const promisify = require('util.promisify-all')
+const promisifyAll = require('util.promisify-all')
 const deploy = require('./deploy')
+const pWaitFor = require('p-wait-for')
+const pTimeout = require('p-timeout')
 
 class Netlify {
   constructor(accessToken) {
@@ -10,37 +12,28 @@ class Netlify {
       netlifyAuth.accessToken = accessToken
     }
     this.accessToken = accessToken
-    this.api = promisify(new NetlifysApiDefinition.DefaultApi())
+    this.api = promisifyAll(new NetlifysApiDefinition.DefaultApi())
   }
 
   async deploy(siteId, buildDir, opts) {
     if (!this.accessToken) throw new Error('Missing access token')
-    await deploy(this.api, buildDir, opts)
+    return await deploy(this.api, siteId, buildDir, opts)
   }
 
   async waitForAccessToken(ticket) {
-    const ts = new Date()
-    ts.setHours(ts.getHours() + 1)
+    const { id } = ticket
 
-    const waitForAuthorizedTicket = (ticket, waitUntil) => {
-      if (waitUntil && new Date() > waitUntil) {
-        return Promise.reject(new Error('Timeout while waiting for ticket grant'))
-      }
+    let authorizedTicket
+    await pTimeout(
+      pWaitFor(async () => {
+        const t = await this.api.showTicket(id)
+        if (t.authorized) authorizedTicket = t
+        return !!t.authorized
+      }, 1000), // poll every 1 second
+      3.6e6, // timeout after 1 hour
+      'Timeout while waiting for ticket grant'
+    )
 
-      if (ticket.authorized) {
-        return Promise.resolve(ticket)
-      }
-
-      const wait = new Promise(resolve => {
-        setTimeout(() => resolve(ticket), 500)
-      })
-        .then(ticket => this.api.showTicket(ticket.id))
-        .then(ticket => waitForAuthorizedTicket(ticket, waitUntil))
-
-      return wait
-    }
-
-    const authorizedTicket = await waitForAuthorizedTicket(ticket, ts)
     const accessToken = await this.api.exchangeTicket(authorizedTicket.id)
 
     // Update the API client with the access token
