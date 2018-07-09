@@ -1,7 +1,7 @@
 const pWaitFor = require('p-wait-for')
 const pTimeout = require('p-timeout')
 
-module.exports = async function getAccessToken(ticket) {
+module.exports = async function getAccessToken(api, ticket) {
   const { id } = ticket
   let authorizedTicket
   await pTimeout(
