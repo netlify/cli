@@ -1,2 +1,6 @@
 node_modules/
 .netlify
+.vscode
+netlify.toml
+yarn.lock
+package-lock.json
