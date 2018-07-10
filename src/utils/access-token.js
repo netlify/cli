@@ -6,7 +6,7 @@ module.exports = async function getAccessToken(api, ticket) {
   let authorizedTicket
   await pTimeout(
     pWaitFor(async () => {
-      const t = await this.api.showTicket(id)
+      const t = await api.showTicket(id)
       if (t.authorized) authorizedTicket = t
       return !!t.authorized
     }, 1000), // poll every 1 second
