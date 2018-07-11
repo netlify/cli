@@ -1,8 +1,22 @@
 {
   "name": "netlify-cli",
-  "version": "0.0.0",
   "description": "CLI to interact with Netlify",
+  "version": "0.0.0",
   "author": "davidwells @DavidWells",
+  "ava": {
+    "files": [
+      "src/**/*.test.js"
+    ],
+    "cache": true,
+    "concurrency": 5,
+    "failFast": false,
+    "failWithoutAssertions": false,
+    "tap": false,
+    "compileEnhancements": true,
+    "require": [
+      "@babel/register"
+    ]
+  },
   "bin": {
     "ntl": "./bin/run",
     "netlify": "./bin/run"
@@ -21,6 +35,8 @@
     "folder-walker": "^3.1.0",
     "hasha": "^3.0.0",
     "is-docker": "^1.1.0",
+    "lodash.get": "^4.4.2",
+    "lodash.set": "^4.3.2",
     "lodash.snakecase": "^4.1.1",
     "netlifys_api_definition": "^0.1.0",
     "open": "0.0.5",
@@ -62,6 +78,12 @@
     "/src"
   ],
   "homepage": "https://github.com/netlify/cli",
+  "keywords": [
+    "api",
+    "cli",
+    "netlify",
+    "static"
+  ],
   "license": "MIT",
   "main": "dist/index.js",
   "oclif": {
@@ -72,44 +94,30 @@
     ],
     "hooks": {
       "init": [
-        "./dist/hooks/header"
+        "./dist/hooks/init"
       ],
+      "login": "./dist/hooks/login",
       "analytics": [
         "./dist/hooks/analytics",
         "./dist/hooks/hooks-two"
-      ],
-      "login": "./dist/hooks/login"
+      ]
     }
-  },
-  "ava": {
-    "files": [
-      "src/**/*.test.js"
-    ],
-    "cache": true,
-    "concurrency": 5,
-    "failFast": false,
-    "failWithoutAssertions": false,
-    "tap": false,
-    "compileEnhancements": true,
-    "require": [
-      "@babel/register"
-    ]
   },
   "repository": "netlify/cli",
   "scripts": {
-    "test": "run-s test:*",
-    "test:lint": "eslint src/util",
-    "test:ava": "ava -vvvv",
     "build": "npm run clean && run-s build:*",
     "build:babel": "npm run clean && babel src --out-dir dist",
     "build:docs": "DOCS_GEN=TRUE oclif-dev readme --multi",
     "build:site": "sitedown . -b site/ -l layout.html",
+    "ci": "run-s test build",
     "clean": "rimraf dist site && mkdirp dist site",
-    "watch": "run-p watch:*",
-    "watch:babel": "npm run build:babel -- --watch --verbose",
-    "watch:ava": "npm run test:ava -- --watch",
     "prepare": "npm run build",
     "start": "node ./bin/run",
-    "ci": "run-s test build"
+    "test": "run-s test:*",
+    "test:ava": "ava -vvvv",
+    "test:lint": "eslint src/util",
+    "watch": "run-p watch:*",
+    "watch:ava": "npm run test:ava -- --watch",
+    "watch:babel": "npm run build:babel -- --watch --verbose"
   }
 }
