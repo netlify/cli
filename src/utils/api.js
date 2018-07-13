@@ -1,7 +1,7 @@
 const NetlifysApiDefinition = require('netlifys_api_definition')
 const promisifyAll = require('util.promisify-all')
 const deploy = require('./deploy')
-const getAccessToken = require('access-token')
+const getAccessToken = require('./access-token')
 
 class Netlify {
   constructor(accessToken) {
