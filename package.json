@@ -97,8 +97,8 @@
       "@oclif/plugin-not-found"
     ],
     "hooks": {
-      "init": [
-        "./src/hooks/init"
+      "prerun": [
+        "./src/hooks/prerun"
       ],
       "login": "./src/hooks/login",
       "analytics": [
