@@ -1,5 +1,5 @@
-import test from 'ava'
-import { toEnvCase } from './'
+const test = require('ava')
+const { toEnvCase } = require('./')
 
 test('camelCase to NETLIFY_ENV_CASE', t => {
   const envCase = toEnvCase('fooBar')

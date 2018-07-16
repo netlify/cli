@@ -2,11 +2,14 @@ const pWaitFor = require('p-wait-for')
 const pTimeout = require('p-timeout')
 
 module.exports = async function getAccessToken(api, ticket, opts) {
-  opts = {
-    poll: 1000,
-    timeout: 3.6e6,
-    ...opts
-  }
+  opts = Object.assign(
+    {
+      poll: 1000,
+      timeout: 3.6e6
+    },
+    opts
+  )
+
   const { id } = ticket
   let authorizedTicket
   await pTimeout(

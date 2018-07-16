@@ -1,7 +1,5 @@
-const { Command, flags } = require('@oclif/command')
-const AsciiTable = require('ascii-table')
+const { Command } = require('@oclif/command')
 const { execSync } = require('child_process')
-const chalk = require('chalk')
 const renderShortDesc = require('../../utils/renderShortDescription')
 
 class SitesCommand extends Command {
@@ -11,7 +9,7 @@ class SitesCommand extends Command {
     // Show help on empty sub command
     if (emptyCommand(flags, args)) {
       // run help command if no args passed
-      execSync(`./bin/run ${this.id} --help`, {stdio:[0,1,2]});
+      execSync(`./bin/run ${this.id} --help`, { stdio: [0, 1, 2] })
     }
   }
 }
@@ -29,9 +27,6 @@ SitesCommand.description = `${renderShortDesc('Handle site operations')}
 The sites command will help you manage all your sites
 `
 
-SitesCommand.examples = [
-  '$ netlify sites:create -name my-new-site',
-  '$ netlify sites:update -name my-new-site',
-]
+SitesCommand.examples = ['$ netlify sites:create -name my-new-site', '$ netlify sites:update -name my-new-site']
 
 module.exports = SitesCommand

@@ -25,6 +25,7 @@
   "dependencies": {
     "@oclif/command": "^1",
     "@oclif/config": "^1",
+    "@oclif/errors": "^1.1.2",
     "@oclif/plugin-help": "^2",
     "@oclif/plugin-not-found": "^1.1.0",
     "ascii-table": "0.0.9",
@@ -78,10 +79,6 @@
   "engines": {
     "node": ">=8.0.0"
   },
-  "files": [
-    "/bin",
-    "/src"
-  ],
   "homepage": "https://github.com/netlify/cli",
   "keywords": [
     "api",
