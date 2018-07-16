@@ -11,11 +11,13 @@ const noop = () => {}
 
 module.exports = fileHasher
 async function fileHasher(dir, opts) {
-  opts = {
-    onProgress: noop,
-    parallel: 100,
-    ...opts
-  }
+  opts = Object.assign(
+    {
+      onProgress: noop,
+      parallel: 100
+    },
+    opts
+  )
 
   // Written to by manifestCollector
   const files = {}
@@ -44,7 +46,7 @@ async function fileHasher(dir, opts) {
   const hasher = transform(opts.parallel, { objectMode: true }, (fileObj, cb) => {
     hasha
       .fromFile(fileObj.filepath, { algorithm: 'sha1' })
-      .then(sha1 => cb(null, { ...fileObj, sha1 }))
+      .then(sha1 => cb(null, Object.assign({}, fileObj, { sha1 })))
       .catch(err => cb(err))
   })
 
@@ -53,18 +55,18 @@ async function fileHasher(dir, opts) {
     const normalizedPath = normalizePath(fileObj.relname)
 
     files[normalizedPath] = fileObj.sha1
-    shaMap[fileObj.sha1] = { ...fileObj, normalizedPath }
+    shaMap[fileObj.sha1] = Object.assign({}, fileObj, { normalizedPath })
 
     progress.current++
     if (progressDue) {
       progressDue = false
-      opts.onProgress({ ...progress })
+      opts.onProgress(Object.assign({}, progress))
     }
 
     cb(null)
   }
   function flush(cb) {
-    opts.onProgress({ ...progress })
+    opts.onProgress(Object.assign({}, progress))
     clearInterval(throttle)
     cb(null)
   }

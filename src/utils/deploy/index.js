@@ -6,10 +6,12 @@ const pTimeout = require('p-timeout')
 
 exports.deploy = deploy
 async function deploy(api, siteId, dir, opts) {
-  opts = {
-    deployTimeout: 1.2e6, // 20 mins
-    ...opts
-  }
+  opts = Object.assign(
+    {
+      deployTimeout: 1.2e6 // 20 mins
+    },
+    opts
+  )
 
   const { files, shaMap } = await fileHasher(dir, opts)
 

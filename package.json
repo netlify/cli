@@ -12,19 +12,21 @@
     "failFast": false,
     "failWithoutAssertions": false,
     "tap": false,
-    "compileEnhancements": true,
-    "require": [
-      "@babel/register"
-    ]
+    "compileEnhancements": true
   },
   "bin": {
     "ntl": "./bin/run",
     "netlify": "./bin/run"
   },
+  "files": [
+    "/bin",
+    "/src"
+  ],
   "bugs": "https://github.com/netlify/cli/issues",
   "dependencies": {
     "@oclif/command": "^1",
     "@oclif/config": "^1",
+    "@oclif/errors": "^1.1.2",
     "@oclif/plugin-help": "^2",
     "@oclif/plugin-not-found": "^1.1.0",
     "ascii-table": "0.0.9",
@@ -58,12 +60,8 @@
     "write-file-atomic": "^2.3.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.0.0-beta.51",
-    "@babel/preset-env": "^7.0.0-beta.51",
-    "@babel/register": "^7.0.0-beta.51",
     "@oclif/dev-cli": "^1.13.31",
     "ava": "1.0.0-beta.6",
-    "babel-eslint": "^8.2.5",
     "eslint": "^4.19.1",
     "eslint-config-prettier": "^2.9.0",
     "eslint-plugin-import": "^2.13.0",
@@ -78,10 +76,6 @@
   "engines": {
     "node": ">=8.0.0"
   },
-  "files": [
-    "/bin",
-    "/src"
-  ],
   "homepage": "https://github.com/netlify/cli",
   "keywords": [
     "api",
@@ -110,17 +104,15 @@
   "repository": "netlify/cli",
   "scripts": {
     "build": "npm run clean && run-s build:*",
-    "build:babel": "npm run clean && babel src --out-dir dist",
     "build:docs": "DOCS_GEN=TRUE oclif-dev readme --multi",
     "build:site": "sitedown . -b site/ -l layout.html",
     "ci": "run-s test build",
-    "clean": "rimraf dist site && mkdirp dist site",
+    "clean": "rimraf site && mkdirp site",
     "start": "node ./bin/run",
     "test": "run-s test:*",
     "test:ava": "ava -vvvv",
     "test:lint": "eslint src",
     "watch": "run-p watch:*",
-    "watch:ava": "npm run test:ava -- --watch",
-    "watch:babel": "npm run build:babel -- --watch --verbose"
+    "watch:ava": "npm run test:ava -- --watch"
   }
 }

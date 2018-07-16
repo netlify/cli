@@ -1,5 +1,6 @@
-import test from 'ava'
-import fileHasher, { normalizePath } from './file-hasher'
+const test = require('ava')
+const fileHasher = require('./file-hasher')
+const { normalizePath } = fileHasher
 
 test('hashes files in a folder', async t => {
   let progressFired = false

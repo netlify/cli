@@ -1,5 +1,4 @@
 {
-  "parser": "babel-eslint",
   "extends": "eslint:recommended",
   "plugins": [
     "node",
@@ -26,5 +25,14 @@
         "ignoreRestSiblings": true
       }
     ]
-  }
+  },
+  "overrides": [
+    {
+      "files": "**/*.test.js",
+      "rules": {
+        "node/no-unpublished-require": 0,
+        "node/no-missing-require": 0
+      }
+    }
+  ]
 }
