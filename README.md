@@ -30,8 +30,6 @@ USAGE
 * [`netlify-cli forms`](docs/forms.md) - Handle form operations
 * [`netlify-cli functions`](docs/functions.md) - Manage netlify functions
 * [`netlify-cli init`](docs/init.md) - Configure continuous deployment in current working directory
-* [`netlify-cli login`](docs/login.md) - Login to account
-* [`netlify-cli logout`](docs/logout.md) - Logout of account
 * [`netlify-cli sites`](docs/sites.md) - Handle site operations
 
 <!-- commandsstop -->

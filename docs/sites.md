@@ -7,7 +7,6 @@ The sites command will help you manage all your sites
 * [`netlify-cli sites`](#netlify-cli-sites)
 * [`netlify-cli sites:create`](#netlify-cli-sitescreate)
 * [`netlify-cli sites:delete SITEID`](#netlify-cli-sitesdelete-siteid)
-* [`netlify-cli sites:list`](#netlify-cli-siteslist)
 * [`netlify-cli sites:update`](#netlify-cli-sitesupdate)
 
 ## `netlify-cli sites`
@@ -69,21 +68,6 @@ EXAMPLE
 ```
 
 _See code: [dist/commands/sites/delete/index.js](https://github.com/netlify/cli/blob/v0.0.0/dist/commands/sites/delete/index.js)_
-
-## `netlify-cli sites:list`
-
-list sites
-
-```
-USAGE
-  $ netlify-cli sites:list
-
-DESCRIPTION
-  ...
-  Extra documentation goes here
-```
-
-_See code: [dist/commands/sites/list/index.js](https://github.com/netlify/cli/blob/v0.0.0/dist/commands/sites/list/index.js)_
 
 ## `netlify-cli sites:update`
 

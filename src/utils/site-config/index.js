@@ -6,8 +6,6 @@ const writeFileAtomic = require('write-file-atomic')
 const dotProp = require('dot-prop')
 
 const permissionError = "You don't have access to this file."
-const makeDirOptions = { mode: 0o0700 }
-const writeFileOptions = { mode: 0o0600 }
 
 class SiteConfig {
   constructor(dir, defaults, opts) {
@@ -33,21 +31,9 @@ class SiteConfig {
     try {
       return JSON.parse(fs.readFileSync(this.path, 'utf8'))
     } catch (err) {
-      // Create dir if it doesn't exist
-      if (err.code === 'ENOENT') {
-        makeDir.sync(path.dirname(this.path), makeDirOptions)
-        return {}
-      }
-
       // Improve the message of permission errors
       if (err.code === 'EACCES') {
         err.message = `${err.message}\n${permissionError}\n`
-      }
-
-      // Empty the file if it encounters invalid JSON
-      if (err.name === 'SyntaxError') {
-        writeFileAtomic.sync(this.path, '', writeFileOptions)
-        return {}
       }
 
       throw err
@@ -57,9 +43,9 @@ class SiteConfig {
   set all(val) {
     try {
       // Make sure the folder exists as it could have been deleted in the meantime
-      makeDir.sync(path.dirname(this.path), makeDirOptions)
+      makeDir.sync(path.dirname(this.path))
 
-      writeFileAtomic.sync(this.path, JSON.stringify(val, null, '\t'), writeFileOptions)
+      writeFileAtomic.sync(this.path, JSON.stringify(val, null, '\t'))
     } catch (err) {
       // Improve the message of permission errors
       if (err.code === 'EACCES') {

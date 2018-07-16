@@ -89,21 +89,21 @@
     "static"
   ],
   "license": "MIT",
-  "main": "dist/index.js",
+  "main": "src/index.js",
   "oclif": {
     "bin": "netlify-cli",
-    "commands": "./dist/commands",
+    "commands": "./src/commands",
     "plugins": [
       "@oclif/plugin-not-found"
     ],
     "hooks": {
       "init": [
-        "./dist/hooks/init"
+        "./src/hooks/init"
       ],
-      "login": "./dist/hooks/login",
+      "login": "./src/hooks/login",
       "analytics": [
-        "./dist/hooks/analytics",
-        "./dist/hooks/hooks-two"
+        "./src/hooks/analytics",
+        "./src/hooks/hooks-two"
       ]
     }
   },

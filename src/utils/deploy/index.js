@@ -38,6 +38,7 @@ async function uploadFiles(api, siteId, files, shaMap) {
 
 async function waitForDeploy(api, deployId, timeout) {
   let deploy
+
   await pTimeout(
     pWaitFor(loadDeploy, 1000), // poll every 1 second
     timeout,
