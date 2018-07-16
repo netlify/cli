@@ -31,9 +31,20 @@ class SiteConfig {
     try {
       return JSON.parse(fs.readFileSync(this.path, 'utf8'))
     } catch (err) {
+      // Don't create if it doesn't exist
+      if (err.code === 'ENOENT') {
+        return {}
+      }
+
       // Improve the message of permission errors
       if (err.code === 'EACCES') {
         err.message = `${err.message}\n${permissionError}\n`
+      }
+
+      // Empty the file if it encounters invalid JSON
+      if (err.name === 'SyntaxError') {
+        writeFileAtomic.sync(this.path, '')
+        return {}
       }
 
       throw err

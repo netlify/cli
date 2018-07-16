@@ -1,12 +1,11 @@
-const { Command } = require('@oclif/command')
+const Command = require('../../base-command')
 const renderShortDesc = require('../../utils/renderShortDescription')
-const config = require('../../utils/config')
 
 class LoginCommand extends Command {
   async run() {
     // const { flags, args } = this.parse(LoginCommand)
 
-    if (config.get('accessToken')) {
+    if (this.globalConfig.get('accessToken')) {
       this.log('Already logged in')
       return this.exit()
     }
