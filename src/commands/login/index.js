@@ -1,16 +1,16 @@
-const Command = require('../../base-command')
+const Command = require('../../base')
 const renderShortDesc = require('../../utils/renderShortDescription')
 
 class LoginCommand extends Command {
   async run() {
     // const { flags, args } = this.parse(LoginCommand)
 
-    if (this.globalConfig.get('accessToken')) {
+    if (this.global.get('accessToken')) {
       this.log('Already logged in')
       return this.exit()
     }
 
-    await this.config.runHook('login')
+    await this.authenticate()
 
     return this.exit()
   }

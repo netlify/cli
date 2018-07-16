@@ -8,12 +8,14 @@ const dotProp = require('dot-prop')
 const permissionError = "You don't have access to this file."
 
 class SiteConfig {
-  constructor(dir, defaults, opts) {
-    opts = {
-      name: '.netlify.json',
-      rootIndicators: ['netlify.toml', '.git'],
-      ...opts
-    }
+  constructor(dir, opts) {
+    opts = Object.assign(
+      {
+        name: '.netlify.json',
+        rootIndicators: ['netlify.toml', '.git']
+      },
+      opts
+    )
 
     this.dir = dir
 
@@ -23,8 +25,6 @@ class SiteConfig {
       const rootIndicator = findUp.sync([opts.name, ...opts.rootIndicators], { cwd: dir })
       this.path = path.join(rootIndicator ? path.dirname(rootIndicator) : dir, opts.name)
     }
-
-    this.all = Object.assign({}, defaults, this.all)
   }
 
   get all() {
@@ -55,7 +55,6 @@ class SiteConfig {
     try {
       // Make sure the folder exists as it could have been deleted in the meantime
       makeDir.sync(path.dirname(this.path))
-
       writeFileAtomic.sync(this.path, JSON.stringify(val, null, '\t'))
     } catch (err) {
       // Improve the message of permission errors
