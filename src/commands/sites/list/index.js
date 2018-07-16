@@ -1,14 +1,12 @@
 const AsciiTable = require('ascii-table')
-const { Command } = require('@oclif/command')
+const Command = require('../../../base')
 const { CLIError } = require('@oclif/errors')
-const config = require('../../../utils/config')
-const API = require('../../../utils/api')
 
 class SitesListCommand extends Command {
   async run() {
     // const { flags } = this.parse(SitesListCommand)
-    await this.config.runHook('login')
-    const client = new API(config.get('accessToken'))
+    await this.authenticate()
+    const client = this.netlify
 
     // Fetch all sites!
     client.api.listSites(null, (err, sites) => {
@@ -17,7 +15,7 @@ class SitesListCommand extends Command {
       }
 
       if (sites && sites.length) {
-        const logSites = sites.map((site) => {
+        const logSites = sites.map(site => {
           return {
             id: site.id,
             name: site.name,
@@ -29,8 +27,8 @@ class SitesListCommand extends Command {
         const table = new AsciiTable('Netlify Sites')
         table.setHeading('Name', 'Url', 'id')
 
-        logSites.forEach((s) => {
-          table.addRow(s.name, s.ssl_url,  s.id)
+        logSites.forEach(s => {
+          table.addRow(s.name, s.ssl_url, s.id)
         })
 
         // Log da sites

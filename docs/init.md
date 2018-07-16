@@ -17,4 +17,4 @@ EXAMPLE
   $ netlify init
 ```
 
-_See code: [dist/commands/init/index.js](https://github.com/netlify/cli/blob/v0.0.0/dist/commands/init/index.js)_
+_See code: [src/commands/init/index.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/init/index.js)_

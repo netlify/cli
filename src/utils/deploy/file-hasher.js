@@ -30,6 +30,10 @@ async function fileHasher(dir, opts) {
   const throttle = setInterval(() => {
     progressDue = true
   }, 500)
+  const progressLookahead = walker(dir)
+  progressLookahead.on('data', () => {
+    progress.total++
+  })
 
   const fileStream = walker(dir)
 
@@ -38,7 +42,6 @@ async function fileHasher(dir, opts) {
   )
 
   const hasher = transform(opts.parallel, { objectMode: true }, (fileObj, cb) => {
-    progress.total++
     hasha
       .fromFile(fileObj.filepath, { algorithm: 'sha1' })
       .then(sha1 => cb(null, { ...fileObj, sha1 }))

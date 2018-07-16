@@ -3,15 +3,12 @@ const renderShortDesc = require('../../utils/renderShortDescription')
 
 class InitCommand extends Command {
   async run() {
-    this.log(`Do init! https://github.com/netlify/netlify-cli/tree/master/lib/commands/init`)
-    this.exit()
+    await this.config.runHook('login')
   }
 }
 
 InitCommand.description = `${renderShortDesc('Configure continuous deployment in current working directory')}`
 
-InitCommand.examples = [
-  '$ netlify init',
-]
+InitCommand.examples = ['$ netlify init']
 
 module.exports = InitCommand

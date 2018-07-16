@@ -1,7 +1,12 @@
 const pWaitFor = require('p-wait-for')
 const pTimeout = require('p-timeout')
 
-module.exports = async function getAccessToken(api, ticket) {
+module.exports = async function getAccessToken(api, ticket, opts) {
+  opts = {
+    poll: 1000,
+    timeout: 3.6e6,
+    ...opts
+  }
   const { id } = ticket
   let authorizedTicket
   await pTimeout(
@@ -9,8 +14,8 @@ module.exports = async function getAccessToken(api, ticket) {
       const t = await api.showTicket(id)
       if (t.authorized) authorizedTicket = t
       return !!t.authorized
-    }, 1000), // poll every 1 second
-    3.6e6, // timeout after 1 hour
+    }, opts.poll),
+    opts.timeout,
     'Timeout while waiting for ticket grant'
   )
 

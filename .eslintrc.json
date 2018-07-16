@@ -2,6 +2,7 @@
   "parser": "babel-eslint",
   "extends": "eslint:recommended",
   "plugins": [
+    "node",
     "prettier"
   ],
   "env": {
@@ -12,6 +13,7 @@
     "plugin:import/errors",
     "plugin:import/warnings",
     "eslint:recommended",
+    "plugin:node/recommended",
     "prettier"
   ],
   "rules": {
