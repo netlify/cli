@@ -1,12 +1,12 @@
 const AsciiTable = require('ascii-table')
-const { Command } = require('@oclif/command')
+const Command = require('../../../base')
 const { CLIError } = require('@oclif/errors')
 
 class SitesListCommand extends Command {
   async run() {
     // const { flags } = this.parse(SitesListCommand)
-    await this.config.runHook('login')
-    const client = this.client
+    await this.authenticate()
+    const client = this.netlify
 
     // Fetch all sites!
     client.api.listSites(null, (err, sites) => {
