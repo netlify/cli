@@ -20,8 +20,8 @@ async function fileHasher(dir, opts) {
   )
 
   // Written to by manifestCollector
-  const files = {}
-  const shaMap = {}
+  const files = {} // normalizedPath: sha1 (wanted by deploy API)
+  const shaMap = {} //sha1: [fileObj, fileObj, fileObj]
 
   // Progress tracking
   const progress = {
@@ -55,7 +55,14 @@ async function fileHasher(dir, opts) {
     const normalizedPath = normalizePath(fileObj.relname)
 
     files[normalizedPath] = fileObj.sha1
-    shaMap[fileObj.sha1] = Object.assign({}, fileObj, { normalizedPath })
+    // We map a sha1 to multiple fileObj's because the same file
+    // might live in two different locations
+    const normalizedFileObj = Object.assign({}, fileObj, { normalizedPath })
+    if (Array.isArray(shaMap[fileObj.sha1])) {
+      shaMap[fileObj.sha1].push(normalizedFileObj)
+    } else {
+      shaMap[fileObj.sha1] = [normalizedFileObj]
+    }
 
     progress.current++
     if (progressDue) {
