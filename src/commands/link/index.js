@@ -3,10 +3,10 @@ const { flags } = require('@oclif/command')
 const renderShortDesc = require('../../utils/renderShortDescription')
 const { CLIError } = require('@oclif/errors')
 
-class InitCommand extends Command {
+class LinkCommand extends Command {
   async run() {
     await this.authenticate()
-    const { flags } = this.parse(InitCommand)
+    const { flags } = this.parse(LinkCommand)
     const siteId = this.site.get('siteId')
 
     if (siteId && !flags.force) {
@@ -52,14 +52,14 @@ class InitCommand extends Command {
   }
 }
 
-InitCommand.description = `${renderShortDesc('Configure continuous deployment in current working directory')}`
+LinkCommand.description = `${renderShortDesc('Link a local repo or project folder to an existing site on Netlify')}`
 
-InitCommand.examples = ['$ netlify init --id 123-123-123-123', '$ netlify init --name my-site-name']
+LinkCommand.examples = ['$ netlify init --id 123-123-123-123', '$ netlify init --name my-site-name']
 
-InitCommand.flags = {
+LinkCommand.flags = {
   id: flags.string(),
   name: flags.string(),
   force: flags.boolean()
 }
 
-module.exports = InitCommand
+module.exports = LinkCommand
