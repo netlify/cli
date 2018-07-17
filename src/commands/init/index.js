@@ -33,7 +33,8 @@ class InitCommand extends Command {
       let results
       try {
         results = await this.netlify.api.listSites({
-          name: flags.name
+          name: flags.name,
+          filter: 'all'
         })
       } catch (e) {
         if (e.status === 404) throw new CLIError(`Site id ${flags.id} not found`)
