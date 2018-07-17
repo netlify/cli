@@ -3,6 +3,7 @@ const fs = require('fs')
 const fileHasher = require('./file-hasher')
 const pWaitFor = require('p-wait-for')
 const pTimeout = require('p-timeout')
+const flatten = require('lodash.flatten')
 
 exports.deploy = deploy
 async function deploy(api, siteId, dir, opts) {
@@ -23,17 +24,19 @@ async function deploy(api, siteId, dir, opts) {
 
 async function uploadFiles(api, siteId, files, shaMap) {
   const { deploy_id: deployId, required } = await api.createSiteDeploy(siteId, { files })
+  const flattenedFileObjArray = flatten(required.map(sha => shaMap[sha]))
 
-  await pMap(required, uploadJob, { concurrency: 4 })
+  await pMap(flattenedFileObjArray, uploadJob, { concurrency: 4 })
 
   return deployId
 
-  function uploadJob(sha) {
-    return () => {
-      const fileObj = shaMap[sha]
+  function uploadJob(fileObj) {
+    return async () => {
       const { normalizedPath } = fileObj
       const readStream = fs.createReadStream(fileObj.path)
-      return api.uploadDeployFile(deployId, normalizedPath, readStream)
+      const response = await api.uploadDeployFile(deployId, normalizedPath, readStream)
+      readStream.destroy()
+      return response
     }
   }
 }
