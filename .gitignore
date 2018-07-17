@@ -14,3 +14,4 @@ vendor
 .DS_STORE
 .vscode
 site
+.netlify
