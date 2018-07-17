@@ -26,10 +26,6 @@ async function uploadFiles(api, siteId, files, shaMap) {
   const { deploy_id: deployId, required } = await api.createSiteDeploy(siteId, { files })
   const flattenedFileObjArray = flatten(required.map(sha => shaMap[sha]))
 
-  await pMap(flattenedFileObjArray, uploadJob, { concurrency: 4 })
-
-  return deployId
-
   function uploadJob(fileObj) {
     return async () => {
       const { normalizedPath } = fileObj
@@ -39,6 +35,10 @@ async function uploadFiles(api, siteId, files, shaMap) {
       return response
     }
   }
+
+  await pMap(flattenedFileObjArray, uploadJob, { concurrency: 4 })
+
+  return deployId
 }
 
 async function waitForDeploy(api, deployId, timeout) {
