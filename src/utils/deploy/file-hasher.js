@@ -7,13 +7,10 @@ const hasha = require('hasha')
 const objWriter = require('flush-write-stream').obj
 const path = require('path')
 
-const noop = () => {}
-
 module.exports = fileHasher
 async function fileHasher(dir, opts) {
   opts = Object.assign(
     {
-      onProgress: noop,
       parallel: 100
     },
     opts
@@ -22,20 +19,6 @@ async function fileHasher(dir, opts) {
   // Written to by manifestCollector
   const files = {} // normalizedPath: sha1 (wanted by deploy API)
   const shaMap = {} //sha1: [fileObj, fileObj, fileObj]
-
-  // Progress tracking
-  const progress = {
-    total: 0,
-    current: 0
-  }
-  let progressDue = true
-  const throttle = setInterval(() => {
-    progressDue = true
-  }, 500)
-  const progressLookahead = walker(dir)
-  progressLookahead.on('data', () => {
-    progress.total++
-  })
 
   const fileStream = walker(dir)
 
@@ -50,7 +33,7 @@ async function fileHasher(dir, opts) {
       .catch(err => cb(err))
   })
 
-  const manifestCollector = objWriter(write, flush)
+  const manifestCollector = objWriter(write)
   function write(fileObj, _, cb) {
     const normalizedPath = normalizePath(fileObj.relname)
 
@@ -64,17 +47,6 @@ async function fileHasher(dir, opts) {
       shaMap[fileObj.sha1] = [normalizedFileObj]
     }
 
-    progress.current++
-    if (progressDue) {
-      progressDue = false
-      opts.onProgress(Object.assign({}, progress))
-    }
-
-    cb(null)
-  }
-  function flush(cb) {
-    opts.onProgress(Object.assign({}, progress))
-    clearInterval(throttle)
     cb(null)
   }
 
