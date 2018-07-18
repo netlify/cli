@@ -1,8 +1,8 @@
 const { Command } = require('@oclif/command')
 const globalConfig = require('./utils/global-config')
 const SiteConfig = require('./utils/site-config')
-const API = require('./utils/api')
 const openBrowser = require('./utils/open-browser')
+const API = require('./utils/api')
 
 class BaseCommand extends Command {
   constructor(...args) {

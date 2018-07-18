@@ -29,12 +29,8 @@ class Netlify {
   }
 
   async waitForAccessToken(ticket) {
-    const accessToken = await getAccessToken(this.api, ticket)
-
-    // Update the API client with the access token
-    this.accessToken = accessToken
-
-    return accessToken
+    this.accessToken = await getAccessToken(this.api, ticket)
+    return this.accessToken
   }
 }
 

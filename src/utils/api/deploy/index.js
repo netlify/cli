@@ -5,8 +5,7 @@ const pWaitFor = require('p-wait-for')
 const pTimeout = require('p-timeout')
 const flatten = require('lodash.flatten')
 
-exports.deploy = deploy
-async function deploy(api, siteId, dir, opts) {
+exports.deploy = async (api, siteId, dir, opts) => {
   opts = Object.assign(
     {
       deployTimeout: 1.2e6 // 20 mins
