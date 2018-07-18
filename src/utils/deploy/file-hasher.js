@@ -5,7 +5,7 @@ const objFilter = require('through2-filter').obj
 const transform = require('parallel-transform')
 const hasha = require('hasha')
 const objWriter = require('flush-write-stream').obj
-const path = require('path')
+const { normalizePath } = require('./util')
 
 module.exports = fileHasher
 async function fileHasher(dir, opts) {
@@ -53,17 +53,4 @@ async function fileHasher(dir, opts) {
   await pump(fileStream, filter, hasher, manifestCollector)
 
   return { files, shaMap }
-}
-
-module.exports.normalizePath = normalizePath
-function normalizePath(relname) {
-  return (
-    '/' +
-    relname
-      .split(path.sep)
-      .map(segment => {
-        return encodeURIComponent(segment)
-      })
-      .join('/')
-  )
 }
