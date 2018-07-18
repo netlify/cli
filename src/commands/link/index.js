@@ -25,7 +25,7 @@ class LinkCommand extends Command {
         else throw new CLIError(e)
       }
       this.site.set('siteId', site.id)
-      this.log(`Site initialized to ${site.name} in ${this.site.path}`)
+      this.log(`Linked to ${site.name} in ${this.site.path}`)
       return this.exit()
     }
 
@@ -46,7 +46,7 @@ class LinkCommand extends Command {
       }
       const site = results[0]
       this.site.set('siteId', site.id)
-      this.log(`Site initialized to ${site.name} in ${this.site.path}`)
+      this.log(`Linked to ${site.name} in ${this.site.path}`)
       return this.exit()
     }
   }
