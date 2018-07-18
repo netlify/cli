@@ -49,6 +49,8 @@ class LinkCommand extends Command {
       this.log(`Linked to ${site.name} in ${this.site.path}`)
       return this.exit()
     }
+
+    this.log(`TODO: Add inquisitor interactive mode here. Use flags instead`)
   }
 }
 
