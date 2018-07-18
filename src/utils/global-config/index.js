@@ -1,7 +1,8 @@
 const Configstore = require('configstore')
 const os = require('os')
 const path = require('path')
-const snakeCase = require('lodash.snakecase')
+const { toEnvCase, isDotProp } = require('./util')
+
 const conf = new Configstore(
   null, // configPath overrides the namespace
   {
@@ -11,6 +12,7 @@ const conf = new Configstore(
 )
 
 const envProxy = {}
+
 envProxy.get = (cs, prop) => {
   if (prop === 'get') {
     return key => {
@@ -23,15 +25,6 @@ envProxy.get = (cs, prop) => {
   return cs[prop]
 }
 
-function isDotProp(key) {
-  return key.includes('.') || key.includes('[')
-}
-
-function toEnvCase(key) {
-  return `NETLIFY_${snakeCase(key).toUpperCase()}`
-}
-
 const configStore = new Proxy(conf, envProxy)
 
 module.exports = configStore
-module.exports.toEnvCase = toEnvCase
