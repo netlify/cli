@@ -9,6 +9,7 @@ class SitesCommand extends Command {
     if (emptyCommand(flags, args)) {
       // run help command if no args passed
       await SitesCommand.run(['--help'])
+      this.exit()
     }
   }
 }
