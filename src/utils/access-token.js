@@ -1,6 +1,7 @@
 const pWaitFor = require('p-wait-for')
 const pTimeout = require('p-timeout')
 
+// exchange a ticket for an access token
 module.exports = async function getAccessToken(api, ticket, opts) {
   opts = Object.assign(
     {

@@ -11,7 +11,7 @@ class SiteConfig {
   constructor(dir, opts) {
     opts = Object.assign(
       {
-        name: path.join('.netlify', 'netlify.json'),
+        configPath: path.join('.netlify', 'config.json'),
         rootIndicators: ['.netlify', 'netlify.toml', '.git']
       },
       opts
@@ -20,10 +20,10 @@ class SiteConfig {
     this.dir = dir
 
     if (opts.path) {
-      this.path = path.join(opts.path, opts.name)
+      this.path = path.join(opts.path, opts.configPath)
     } else {
       const rootIndicator = findUp.sync(opts.rootIndicators, { cwd: dir })
-      this.path = path.join(rootIndicator ? path.dirname(rootIndicator) : dir, opts.name)
+      this.path = path.join(rootIndicator ? path.dirname(rootIndicator) : dir, opts.configPath)
     }
   }
 
