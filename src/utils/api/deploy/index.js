@@ -16,20 +16,31 @@ module.exports = async (api, siteId, dir, opts) => {
   )
 
   const { files, shaMap } = await fileHasher(dir, opts)
+  let deploy = await api.createSiteDeploy(siteId, { files }, {})
 
-  const deployId = await uploadFiles(api, siteId, files, shaMap)
-  const deployObj = await waitForDeploy(api, deployId, opts.deployTimeout)
+  const { id: deployId, required } = deploy
+  const uploadList = getUploadList(required, shaMap)
 
-  return deployObj
+  await uploadFiles(api, deployId, uploadList)
+
+  // Update deploy object
+  deploy = await waitForDeploy(api, deployId, opts.deployTimeout)
+
+  const deployManifest = {
+    deployId,
+    deploy,
+    uploadList
+  }
+
+  return deployManifest
 }
 
-async function uploadFiles(api, siteId, files, shaMap) {
-  const response = await api.createSiteDeploy(siteId, { files }, {})
-  const { id: deployId, required } = response
-  const flattenedFileObjArray = flatten(required.map(sha => shaMap[sha]))
-  console.log(required)
+function getUploadList(required, shaMap) {
+  return flatten(required.map(sha => shaMap[sha]))
+}
 
-  const mapper = fileObj => {
+async function uploadFiles(api, deployId, uploadList) {
+  const uploadFile = fileObj => {
     const { normalizedPath } = fileObj
     const readStream = fs.createReadStream(fileObj.filepath)
     const reqOpts = {
@@ -37,22 +48,32 @@ async function uploadFiles(api, siteId, files, shaMap) {
       headers: {
         'User-agent': 'Netlify CLI (oclif)',
         Authorization: 'Bearer ' + get(api, 'apiClient.authentications.netlifyAuth.accessToken'),
-        'Content-Type': 'application/octet-stream',
-        body: readStream
-      }
+        'Content-Type': 'application/octet-stream'
+      },
+      body: readStream
     }
+
     return new Promise((resolve, reject) => {
-      request.post(reqOpts, (err, httpResponse, body) => {
+      request.put(reqOpts, (err, httpResponse, body) => {
         if (err) return reject(err)
+        if (httpResponse.statusCode >= 400) {
+          const apiError = new Error('There was an error with one of the file uploads')
+          apiError.response = httpResponse
+          return reject(apiError)
+        }
+        try {
+          body = JSON.parse(body)
+        } catch (_) {
+          // Ignore if body can't parse
+        }
         resolve({ httpResponse, body })
       })
     })
   }
 
-  const results = await pMap(flattenedFileObjArray, mapper, { concurrency: 4 })
-  console.log(results)
+  const results = await pMap(uploadList, uploadFile, { concurrency: 4 })
 
-  return deployId
+  return results
 }
 
 async function waitForDeploy(api, deployId, timeout) {

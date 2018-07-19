@@ -9,23 +9,22 @@ const TOML = require('@iarna/toml')
 const permissionError = "You don't have access to this file."
 
 class SiteConfig {
-  constructor(dir, opts) {
-    const configPath = path.join('.netlify', 'config.json')
+  constructor(projectDir, opts) {
     opts = Object.assign(
       {
         rootIndicators: ['.netlify', 'netlify.toml', '.git']
       },
       opts
     )
-
-    const rootIndicator = findUp.sync(opts.rootIndicators, { cwd: dir })
+    const configPath = path.join('.netlify', 'config.json')
+    const rootIndicator = findUp.sync(opts.rootIndicators, { cwd: projectDir })
     if (rootIndicator) {
       const root = path.dirname(rootIndicator)
       this.root = root
       this.path = path.join(root, configPath)
     } else {
-      this.root = dir
-      this.path = path.join(dir, configPath)
+      this.root = projectDir
+      this.path = path.join(projectDir, configPath)
     }
   }
 
