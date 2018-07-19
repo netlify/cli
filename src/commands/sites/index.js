@@ -1,5 +1,4 @@
 const { Command } = require('@oclif/command')
-const { execSync } = require('child_process')
 const renderShortDesc = require('../../utils/renderShortDescription')
 
 class SitesCommand extends Command {
@@ -9,7 +8,8 @@ class SitesCommand extends Command {
     // Show help on empty sub command
     if (emptyCommand(flags, args)) {
       // run help command if no args passed
-      execSync(`./bin/run ${this.id} --help`, { stdio: [0, 1, 2] })
+      await SitesCommand.run(['--help'])
+      this.exit()
     }
   }
 }

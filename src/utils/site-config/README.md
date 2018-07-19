@@ -45,17 +45,12 @@ A path to the project you want configuration for. e.g. `process.cwd()`
 
 #### options
 
-##### configPath
+##### rootIndicators
 
-Type: `string`<br>
-Default: `path.join('.netlify', 'config.json')`
+Type:  `string` array<br>
+Default: `['.netlify', 'netlify.toml', '.git']`
 
-The path name of the config file.
-
-##### path
-
-Type: `string`<br>
-Default: The path of any directory containing a `.netlify`, `netlify.toml`, or `.git` file at or above the `projectDir` argument, otherwise the `projectDir` argument.
+An array of file names that indicate a project root, when looking to find a location for the `.netlify/config.json` to be saved.
 
 ### Instance
 

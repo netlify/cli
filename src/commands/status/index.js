@@ -30,13 +30,16 @@ class StatusCommand extends Command {
       }
 
       this.log(`Current project linked to ${site.name} (${site.ssl_url})`)
-      this.log(`Config: ${this.site.path}`)
+      this.log(`CLI Cache: ${this.site.path}`)
+      this.log(`Netlify TOML: ${this.site.tomlPath}`)
       this.log(`Admin URL: ${site.admin_url}`)
     } else {
       this.log(`You don't appear to be in a folder that is linked to a site`)
       this.log('Did you run `netlify link` yet?')
       this.exit()
     }
+
+    console.log(this.site.toml)
   }
 }
 

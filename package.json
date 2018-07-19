@@ -24,6 +24,7 @@
   ],
   "bugs": "https://github.com/netlify/cli/issues",
   "dependencies": {
+    "@iarna/toml": "^1.7.1",
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/errors": "^1.1.2",
@@ -54,6 +55,7 @@
     "p-wait-for": "^1.0.0",
     "parallel-transform": "^1.1.0",
     "pump": "^3.0.0",
+    "request": "^2.87.0",
     "through2-filter": "^3.0.0",
     "through2-map": "^3.0.0",
     "util.promisify": "^1.0.0",
