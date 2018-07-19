@@ -16,11 +16,13 @@ class Netlify {
   }
 
   get accessToken() {
-    get(this.api, 'apiClient.authentications.netlifyAuth.accessToken')
+    const api = this.api
+    return get(api, 'apiClient.authentications.netlifyAuth.accessToken')
   }
 
   set accessToken(token) {
-    set(this.api, 'apiClient.authentications.netlifyAuth.accessToken', token)
+    const api = this.api
+    set(api, 'apiClient.authentications.netlifyAuth.accessToken', token)
   }
 
   async deploy(siteId, buildDir, opts) {

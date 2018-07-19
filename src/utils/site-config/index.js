@@ -4,27 +4,51 @@ const makeDir = require('make-dir')
 const fs = require('fs')
 const writeFileAtomic = require('write-file-atomic')
 const dotProp = require('dot-prop')
+const TOML = require('@iarna/toml')
 
 const permissionError = "You don't have access to this file."
 
 class SiteConfig {
   constructor(dir, opts) {
+    const configPath = path.join('.netlify', 'config.json')
     opts = Object.assign(
       {
-        configPath: path.join('.netlify', 'config.json'),
         rootIndicators: ['.netlify', 'netlify.toml', '.git']
       },
       opts
     )
 
-    this.dir = dir
-
-    if (opts.path) {
-      this.path = path.join(opts.path, opts.configPath)
+    const rootIndicator = findUp.sync(opts.rootIndicators, { cwd: dir })
+    if (rootIndicator) {
+      const root = path.dirname(rootIndicator)
+      this.root = root
+      this.path = path.join(root, configPath)
     } else {
-      const rootIndicator = findUp.sync(opts.rootIndicators, { cwd: dir })
-      this.path = path.join(rootIndicator ? path.dirname(rootIndicator) : dir, opts.configPath)
+      this.root = dir
+      this.path = path.join(dir, configPath)
     }
+  }
+
+  get toml() {
+    try {
+      return TOML.parse(fs.readFileSync(path.join(this.root, 'netlify.toml'), 'utf8'))
+    } catch (err) {
+      // Don't create if it doesn't exist
+      if (err.code === 'ENOENT') {
+        return {}
+      }
+
+      // Improve the message of permission errors
+      if (err.code === 'EACCES') {
+        err.message = `${err.message}\n${permissionError}\n`
+      }
+
+      throw err
+    }
+  }
+
+  get tomlPath() {
+    return path.join(this.root, 'netlify.toml')
   }
 
   get all() {
