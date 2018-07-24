@@ -6,8 +6,7 @@ class LoginCommand extends Command {
     // const { flags, args } = this.parse(LoginCommand)
 
     if (this.global.get('accessToken')) {
-      this.log('Already logged in')
-      return this.exit()
+      this.error('Already logged in')
     }
 
     await this.authenticate()

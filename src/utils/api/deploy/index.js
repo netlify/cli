@@ -16,11 +16,12 @@ module.exports = async (api, siteId, dir, opts) => {
   )
 
   const { files, shaMap } = await fileHasher(dir, opts)
+  console.log(files)
   let deploy = await api.createSiteDeploy(siteId, { files }, {})
 
   const { id: deployId, required } = deploy
   const uploadList = getUploadList(required, shaMap)
-
+  console.log(uploadList)
   await uploadFiles(api, deployId, uploadList)
 
   // Update deploy object
@@ -53,6 +54,7 @@ async function uploadFiles(api, deployId, uploadList) {
       body: readStream
     }
 
+    console.log(`uploading ${normalizedPath}`)
     return new Promise((resolve, reject) => {
       request.put(reqOpts, (err, httpResponse, body) => {
         if (err) return reject(err)
@@ -66,6 +68,7 @@ async function uploadFiles(api, deployId, uploadList) {
         } catch (_) {
           // Ignore if body can't parse
         }
+        console.log(`done uploading ${normalizedPath}`)
         resolve({ httpResponse, body })
       })
     })
