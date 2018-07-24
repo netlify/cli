@@ -30,6 +30,7 @@ const ensureDirectory = resolvedDeployPath => {
 
 class DeployCommand extends Command {
   async run() {
+    await this.authenticate()
     const { args } = this.parse(DeployCommand)
     const siteId = this.site.get('siteId')
     if (!siteId) {
