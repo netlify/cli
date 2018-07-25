@@ -4,6 +4,7 @@ const path = require('path')
 const get = require('lodash.get')
 const fs = require('fs')
 const cliUx = require('cli-ux').default
+const prettyjson = require('prettyjson')
 
 const ensureDirectory = resolvedDeployPath => {
   let stat
@@ -73,8 +74,13 @@ class DeployCommand extends Command {
     } catch (e) {
       this.error(JSON.stringify(e, null, ' '))
     }
-    cliUx.action.stop('Finished deploy')
-    console.log(results)
+    cliUx.action.stop(`Finished deploy ${results.deployId}`)
+    this.log(
+      prettyjson.render({
+        URL: results.deploy.ssl_url || results.deploy.url,
+        Admin: results.deploy.admin_url
+      })
+    )
   }
 }
 

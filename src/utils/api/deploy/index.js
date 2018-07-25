@@ -16,14 +16,14 @@ module.exports = async (api, siteId, dir, opts) => {
   )
 
   const { files, shaMap } = await fileHasher(dir, opts)
-  console.log(files)
+  console.log(`Hashed ${Object.keys(files).length} files`)
   let deploy = await api.createSiteDeploy(siteId, { files }, {})
 
   const { id: deployId, required } = deploy
   const uploadList = getUploadList(required, shaMap)
-  console.log(uploadList)
+  console.log(`Deploy requested ${uploadList.length} files`)
   await uploadFiles(api, deployId, uploadList)
-
+  console.log(`Done uploading files.  Waiting on deploy...`)
   // Update deploy object
   deploy = await waitForDeploy(api, deployId, opts.deployTimeout)
 

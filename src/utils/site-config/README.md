@@ -33,7 +33,7 @@ console.log(conf.get('awesome'));
 
 ## API
 
-### SiteConfig(projectDir, [options])
+### `SiteConfig(projectDir, [options])`
 
 Returns a new instance.
 
@@ -56,39 +56,39 @@ An array of file names that indicate a project root, when looking to find a loca
 
 You can use [dot-notation](https://github.com/sindresorhus/dot-prop) in a `key` to access nested properties.
 
-### .set(key, value)
+### `.set(key, value)`
 
 Set an item.
 
-### .set(object)
+### `.set(object)`
 
 Set multiple items at once.
 
-### .get(key)
+### `.get(key)`
 
 Get an item.
 
-### .has(key)
+### `.has(key)`
 
 Check if an item exists.
 
-### .delete(key)
+### `.delete(key)`
 
 Delete an item.
 
-### .clear()
+### `.clear()`
 
 Delete all items.
 
-### .size
+### `.size`
 
 Get the item count.
 
-### .path
+### `.path`
 
 Get the path to the config file. Can be used to show the user where the config file is located or even better open it for them.
 
-### .all
+### `.all`
 
 Get all the config as an object or replace the current config with an object:
 
