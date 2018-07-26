@@ -9,7 +9,7 @@ class SitesListCommand extends Command {
     const client = this.netlify
 
     // Fetch all sites!
-    client.api.listSites(null, (err, sites) => {
+    client.listSites(null, (err, sites) => {
       if (err) {
         throw new CLIError(err)
       }

@@ -27,7 +27,7 @@ USAGE
 <!-- commands -->
 # Command Topics
 
-* [`netlify-cli deploy`](docs/deploy.md) - Create a new deploy from the contents of a folder
+* [`netlify-cli deploy`](docs/deploy.md) - Create a new deploy from the contents of a folder.
 * [`netlify-cli forms`](docs/forms.md) - Handle form operations
 * [`netlify-cli functions`](docs/functions.md) - Manage netlify functions
 * [`netlify-cli link`](docs/link.md) - Link a local repo or project folder to an existing site on Netlify
@@ -35,7 +35,7 @@ USAGE
 * [`netlify-cli logout`](docs/logout.md) - Logout of account
 * [`netlify-cli sites`](docs/sites.md) - Handle site operations
 * [`netlify-cli status`](docs/status.md) - Print currently logged in use
-* [`netlify-cli whoami`](docs/whoami.md) - Print currently logged in use
+* [`netlify-cli whoami`](docs/whoami.md) - Print currently logged in user and account info
 
 <!-- commandsstop -->
 

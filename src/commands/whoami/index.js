@@ -8,7 +8,7 @@ class WhoamiCommand extends Command {
   async run() {
     const accessToken = this.global.get('accessToken')
     if (accessToken) {
-      const accounts = await this.netlify.api.listAccountsForUser()
+      const accounts = await this.netlify.listAccountsForUser()
       const personal = accounts.find(account => account.type === 'PERSONAL')
       const teams = accounts.filter(account => account.type !== 'PERSONAL')
       const data = {

@@ -22,8 +22,10 @@ DESCRIPTION
   The sites command will help you manage all your sites
 
 EXAMPLES
-  $ netlify sites:create -name my-new-site
-  $ netlify sites:update -name my-new-site
+  $ netlify sites:create --name my-new-site
+  $ netlify sites:update --name my-new-site
+  $ netlify sites:delete --name my-new-site
+  $ netlify sites:list
 ```
 
 _See code: [src/commands/sites/index.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/sites/index.js)_
