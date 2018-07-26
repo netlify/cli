@@ -25,7 +25,8 @@ Create a new instance of the Netlify API client with the provided `accessToken`.
   userAgent: 'netlify-js-client',
   scheme: 'https',
   host: 'api.netlify.com',
-  pathPrefix: '/api/v1'
+  pathPrefix: '/api/v1',
+  globalParams: {} // parameters you want available for every request
 }
 ```
 
