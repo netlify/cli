@@ -96,7 +96,7 @@ Optional `opts` include:
 }
 ```
 
-### `promise(deploy) = client.deploy(siteId, buildDir, [opts])`
+#### `promise(deploy) = client.deploy(siteId, buildDir, [opts])`
 
 **Node.js Only**: Pass in a `siteId` and a path to a folder you wan't to deploy.  This creates a new deploy for the `siteId`, scans the folder and begins an upload of changed files. 
 
