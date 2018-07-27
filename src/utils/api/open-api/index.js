@@ -8,8 +8,10 @@ function existy(val) {
   return val != null
 }
 
+exports.methods = require('./shape-swagger')
+
 // open-api 2.0
-module.exports = method => {
+exports.generateMethod = method => {
   return async function(params, opts) {
     opts = Object.assign({}, opts)
     params = Object.assign({}, this.globalParams, params)
