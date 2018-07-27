@@ -1,6 +1,5 @@
 const Command = require('../../base')
 const renderShortDesc = require('../../utils/renderShortDescription')
-const { CLIError } = require('@oclif/errors')
 const prettyjson = require('prettyjson')
 
 class StatusCommand extends Command {
@@ -9,7 +8,7 @@ class StatusCommand extends Command {
     const siteId = this.site.get('siteId')
     let personal
     if (accessToken) {
-      const accounts = await this.netlify.api.listAccountsForUser()
+      const accounts = await this.netlify.listAccountsForUser()
       personal = accounts.find(account => account.type === 'PERSONAL')
       // TODO: use users endpoint
     } else {
@@ -23,13 +22,13 @@ class StatusCommand extends Command {
 
     let site
     try {
-      site = await this.netlify.api.getSite(siteId)
+      site = await this.netlify.getSite({ siteId })
     } catch (e) {
       if (e.status === 401 /* unauthorized*/) {
         this.warn(`Log in with a different account or re-link to a site you have permission for`)
         this.error(`Not authorized to view the currently linked site (${siteId})`)
       }
-      throw new CLIError(e)
+      this.error(e)
     }
 
     const statusData = {

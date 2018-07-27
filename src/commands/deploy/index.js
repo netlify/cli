@@ -46,7 +46,7 @@ class DeployCommand extends Command {
       this.exit()
     } else {
       try {
-        await this.netlify.api.getSite(siteId)
+        await this.netlify.getSite({ siteId })
       } catch (e) {
         this.error(e.message)
       }
@@ -56,7 +56,7 @@ class DeployCommand extends Command {
     const deployFolder =
       args.publishFolder ||
       get(this.site.toml, 'build.publish') ||
-      get(await this.netlify.api.getSite(siteId), 'build_settings.dir')
+      get(await this.netlify.getSite({ siteId }), 'build_settings.dir')
 
     if (!deployFolder) {
       this.error(
@@ -72,7 +72,7 @@ class DeployCommand extends Command {
     try {
       results = await this.netlify.deploy(siteId, resolvedDeployPath)
     } catch (e) {
-      this.error(JSON.stringify(e, null, ' '))
+      this.error(e)
     }
     cliUx.action.stop(`Finished deploy ${results.deployId}`)
     this.log(

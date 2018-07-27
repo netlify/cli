@@ -11,7 +11,7 @@ module.exports = fileHasher
 async function fileHasher(dir, opts) {
   opts = Object.assign(
     {
-      parallel: 100
+      parallelHash: 100
     },
     opts
   )
@@ -26,7 +26,7 @@ async function fileHasher(dir, opts) {
     fileObj => fileObj.type === 'file' && (fileObj.relname.match(/(\/__MACOSX|\/\.)/) ? false : true)
   )
 
-  const hasher = transform(opts.parallel, { objectMode: true }, (fileObj, cb) => {
+  const hasher = transform(opts.parallelHash, { objectMode: true }, (fileObj, cb) => {
     hasha
       .fromFile(fileObj.filepath, { algorithm: 'sha1' })
       .then(sha1 => cb(null, Object.assign({}, fileObj, { sha1 })))

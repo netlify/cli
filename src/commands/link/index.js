@@ -10,7 +10,7 @@ class LinkCommand extends Command {
     const siteId = this.site.get('siteId')
 
     if (siteId && !flags.force) {
-      const site = await this.netlify.api.getSite(siteId)
+      const site = await this.netlify.getSite(siteId)
       this.log(`Site already linked to ${site.name}`)
       this.log(`Link: ${site.admin_url}`)
       return this.exit()
@@ -19,7 +19,7 @@ class LinkCommand extends Command {
     if (flags.id) {
       let site
       try {
-        site = await this.netlify.api.getSite(flags.id)
+        site = await this.netlify.getSite(flags.id)
       } catch (e) {
         if (e.status === 404) throw new CLIError(`Site id ${flags.id} not found`)
         else throw new CLIError(e)
@@ -32,7 +32,7 @@ class LinkCommand extends Command {
     if (flags.name) {
       let results
       try {
-        results = await this.netlify.api.listSites({
+        results = await this.netlify.listSites({
           name: flags.name,
           filter: 'all'
         })

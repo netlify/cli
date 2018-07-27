@@ -1,13 +1,13 @@
 `netlify-cli whoami`
 ====================
 
-Print currently logged in use
+Print currently logged in user and account info
 
 * [`netlify-cli whoami`](#netlify-cli-whoami)
 
 ## `netlify-cli whoami`
 
-Print currently logged in use
+Print currently logged in user and account info
 
 ```
 USAGE

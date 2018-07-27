@@ -12,7 +12,8 @@
     "failFast": false,
     "failWithoutAssertions": false,
     "tap": false,
-    "compileEnhancements": true
+    "babel": false,
+    "compileEnhancements": false
   },
   "bin": {
     "ntl": "./bin/run",
@@ -25,6 +26,7 @@
   "bugs": "https://github.com/netlify/cli/issues",
   "dependencies": {
     "@iarna/toml": "^1.7.1",
+    "@netlify/open-api": "^0.1.1",
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/errors": "^1.1.2",
@@ -41,12 +43,12 @@
     "folder-walker": "^3.1.0",
     "hasha": "^3.0.0",
     "is-docker": "^1.1.0",
+    "lodash.camelcase": "^4.3.0",
     "lodash.flatten": "^4.4.0",
     "lodash.get": "^4.4.2",
     "lodash.set": "^4.3.2",
     "lodash.snakecase": "^4.1.1",
     "make-dir": "^1.3.0",
-    "netlifys_api_definition": "^0.2.0",
     "open": "0.0.5",
     "opn": "^5.3.0",
     "p-all": "^1.0.0",
@@ -57,6 +59,8 @@
     "parallel-transform": "^1.1.0",
     "prettyjson": "^1.2.1",
     "pump": "^3.0.0",
+    "qs": "^6.5.2",
+    "r2": "^2.0.1",
     "request": "^2.87.0",
     "through2-filter": "^3.0.0",
     "through2-map": "^3.0.0",
@@ -67,13 +71,16 @@
   "devDependencies": {
     "@oclif/dev-cli": "^1.13.31",
     "ava": "1.0.0-beta.6",
+    "body": "^5.1.0",
     "eslint": "^4.19.1",
     "eslint-config-prettier": "^2.9.0",
     "eslint-plugin-import": "^2.13.0",
     "eslint-plugin-node": "^6.0.1",
     "eslint-plugin-prettier": "^2.6.1",
+    "from2-string": "^1.1.0",
     "mkdirp": "^0.5.1",
     "npm-run-all": "^4.1.3",
+    "nyc": "^12.0.2",
     "prettier": "^1.13.7",
     "rimraf": "^2.6.2",
     "sitedown": "^3.3.0"
@@ -115,9 +122,9 @@
     "clean": "rimraf site && mkdirp site",
     "start": "node ./bin/run",
     "test": "run-s test:*",
-    "test:ava": "ava -vvvv",
+    "test:ava": "nyc --reporter=lcov ava --verbose && nyc report",
     "test:lint": "eslint src",
     "watch": "run-p watch:*",
-    "watch:ava": "npm run test:ava -- --watch"
+    "watch:ava": "nyc --reporter=lcov ava --watch"
   }
 }

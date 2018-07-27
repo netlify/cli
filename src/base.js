@@ -18,9 +18,9 @@ class BaseCommand extends Command {
     }
     this.log(`Logging into your Netlify account...`)
     const client = this.netlify
-    const ticket = await client.api.createTicket(this.global.get('clientId'))
+    const ticket = await client.createTicket({ clientId: this.global.get('clientId') })
     openBrowser(`https://app.netlify.com/authorize?response_type=ticket&ticket=${ticket.id}`)
-    const accessToken = await client.waitForAccessToken(ticket)
+    const accessToken = await client.getAccessToken(ticket)
     this.global.set('accessToken', accessToken)
     this.log('Logged in...')
   }
