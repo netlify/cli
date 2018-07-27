@@ -73,6 +73,7 @@ module.exports = method => {
     if (response.status >= 400) {
       const err = new Error(response.statusText)
       err.status = response.status
+      err.statusText = response.statusText
       err.response = response
       err.path = path
       err.opts = opts
@@ -83,10 +84,15 @@ module.exports = method => {
       status: response.status,
       statusText: response.statusText
     }
-    const json = await req.json
-    // inject prototype props
-    Object.setPrototypeOf(status, Object.getPrototypeOf(json))
-    Object.setPrototypeOf(json, status)
-    return json
+
+    try {
+      const json = await req.json
+      // inject prototype props
+      Object.setPrototypeOf(status, Object.getPrototypeOf(json))
+      Object.setPrototypeOf(json, status)
+      return json
+    } catch (e) {
+      return await req.text
+    }
   }
 }
