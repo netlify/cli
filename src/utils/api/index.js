@@ -3,7 +3,6 @@ const get = require('lodash.get')
 const dfn = require('@netlify/open-api')
 const { methods, generateMethod } = require('./open-api')
 const pWaitFor = require('p-wait-for')
-const pTimeout = require('p-timeout')
 const deploy = require('./deploy')
 
 class NetlifyAPI {
@@ -68,7 +67,11 @@ class NetlifyAPI {
       return !!t.authorized
     }
 
-    await pTimeout(pWaitFor(checkTicket, opts.poll), opts.timeout, 'Timeout while waiting for ticket grant')
+    await pWaitFor(checkTicket, {
+      interval: opts.poll,
+      timeout: opts.timeout,
+      message: 'Timeout while waiting for ticket grant'
+    })
 
     const accessToken = await api.exchangeTicket({ ticketId: authorizedTicket.id })
     this.accessToken = accessToken.access_token

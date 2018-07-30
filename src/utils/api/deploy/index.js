@@ -2,7 +2,6 @@ const pMap = require('p-map')
 const fs = require('fs')
 const fileHasher = require('./file-hasher')
 const pWaitFor = require('p-wait-for')
-const pTimeout = require('p-timeout')
 const flatten = require('lodash.flatten')
 
 module.exports = async (api, siteId, dir, opts) => {
@@ -63,11 +62,11 @@ async function uploadFiles(api, deployId, uploadList, opts) {
 async function waitForDeploy(api, deployId, timeout) {
   let deploy
 
-  await pTimeout(
-    pWaitFor(loadDeploy, 1000), // poll every 1 second
+  await pWaitFor(loadDeploy, {
+    interval: 1000,
     timeout,
-    'Timeout while waiting for deploy'
-  )
+    message: 'Timeout while waiting for deploy'
+  })
 
   return deploy
 
