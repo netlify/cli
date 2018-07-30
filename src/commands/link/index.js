@@ -2,6 +2,7 @@ const Command = require('../../base')
 const { flags } = require('@oclif/command')
 const renderShortDesc = require('../../utils/renderShortDescription')
 const { CLIError } = require('@oclif/errors')
+const inquirer = require('inquirer')
 
 class LinkCommand extends Command {
   async run() {
@@ -10,7 +11,7 @@ class LinkCommand extends Command {
     const siteId = this.site.get('siteId')
 
     if (siteId && !flags.force) {
-      const site = await this.netlify.getSite(siteId)
+      const site = await this.netlify.getSite({ siteId })
       this.log(`Site already linked to ${site.name}`)
       this.log(`Link: ${site.admin_url}`)
       return this.exit()
@@ -19,10 +20,10 @@ class LinkCommand extends Command {
     if (flags.id) {
       let site
       try {
-        site = await this.netlify.getSite(flags.id)
+        site = await this.netlify.getSite({ site_id: flags.id })
       } catch (e) {
-        if (e.status === 404) throw new CLIError(`Site id ${flags.id} not found`)
-        else throw new CLIError(e)
+        if (e.status === 404) this.error(new Error(`Site id ${flags.id} not found`))
+        else this.error(e)
       }
       this.site.set('siteId', site.id)
       this.log(`Linked to ${site.name} in ${this.site.path}`)
@@ -37,12 +38,12 @@ class LinkCommand extends Command {
           filter: 'all'
         })
       } catch (e) {
-        if (e.status === 404) throw new CLIError(`Site id ${flags.id} not found`)
-        else throw new CLIError(e)
+        if (e.status === 404) this.error(new Error(`${flags.name} not found`))
+        else this.error(e)
       }
 
       if (results.length === 0) {
-        throw new CLIError(`No sites found named ${flags.name}`)
+        this.error(new Error(`No sites found named ${flags.name}`))
       }
       const site = results[0]
       this.site.set('siteId', site.id)
@@ -50,7 +51,80 @@ class LinkCommand extends Command {
       return this.exit()
     }
 
-    this.log(`TODO: Add inquisitor interactive mode here. Use flags instead`)
+    const { linkType } = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'linkType',
+        message: 'How do you want to link this folder to a site?',
+        choices: ['Site Name', 'Site ID']
+      }
+    ])
+
+    switch (linkType) {
+      case 'Site Name': {
+        const { siteName } = await inquirer.prompt([
+          {
+            type: 'input',
+            name: 'siteName',
+            message: 'What is the name of the site?'
+          }
+        ])
+        let sites
+        try {
+          sites = await this.netlify.listSites({
+            name: siteName,
+            filter: 'all'
+          })
+        } catch (e) {
+          if (e.status === 404) this.error(new Error(`${flags.name} not found`))
+          else this.error(e)
+        }
+
+        if (sites.length === 0) {
+          this.error(new Error(`No sites found named ${flags.name}`))
+        }
+        let site
+        if (sites.length > 1) {
+          const { siteName } = await inquirer.prompt([
+            {
+              type: 'list',
+              name: 'name',
+              paginated: true,
+              choices: sites.map(site => site.name)
+            }
+          ])
+          site = sites.find(site => (site.name = siteName))
+          if (!site) this.error('No site selected')
+        } else {
+          site = sites[0]
+        }
+        this.site.set('siteId', site.id)
+        this.log(`Linked to ${site.name} in ${this.site.path}`)
+        this.exit()
+        break
+      }
+      case 'Site ID': {
+        const { siteId } = await inquirer.prompt([
+          {
+            type: 'input',
+            name: 'siteId',
+            message: 'What is the site-id of the site?'
+          }
+        ])
+
+        let site
+        try {
+          site = await this.netlify.getSite({ siteId })
+        } catch (e) {
+          if (e.status === 404) this.error(new Error(`Site id ${siteId} not found`))
+          else this.error(e)
+        }
+        this.site.set('siteId', site.id)
+        this.log(`Linked to ${site.name} in ${this.site.path}`)
+        this.exit()
+        break
+      }
+    }
   }
 }
 
