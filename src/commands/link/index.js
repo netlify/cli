@@ -1,7 +1,6 @@
 const Command = require('../../base')
 const { flags } = require('@oclif/command')
 const renderShortDesc = require('../../utils/renderShortDescription')
-const { CLIError } = require('@oclif/errors')
 const inquirer = require('inquirer')
 
 class LinkCommand extends Command {
