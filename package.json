@@ -73,6 +73,7 @@
     "@oclif/dev-cli": "^1.13.31",
     "ava": "1.0.0-beta.6",
     "body": "^5.1.0",
+    "cpx": "^1.5.0",
     "eslint": "^4.19.1",
     "eslint-config-prettier": "^2.9.0",
     "eslint-plugin-import": "^2.13.0",
@@ -118,7 +119,7 @@
   "scripts": {
     "build": "npm run clean && run-s build:*",
     "build:docs": "DOCS_GEN=TRUE oclif-dev readme --multi",
-    "build:site": "sitedown . -b site/ -l layout.html",
+    "build:site": "sitedown . -b site/ -l layout.html && cpx 'coverage/lcov-report/**/*' 'site/coverage'",
     "ci": "run-s test build",
     "clean": "rimraf site && mkdirp site",
     "start": "node ./bin/run",
