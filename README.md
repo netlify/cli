@@ -16,7 +16,7 @@ $ npm install -g netlify-cli
 $ netlify-cli COMMAND
 running command...
 $ netlify-cli (-v|--version|version)
-netlify-cli/0.0.0 darwin-x64 node-v10.6.0
+netlify-cli/0.0.0 darwin-x64 node-v10.7.0
 $ netlify-cli --help [COMMAND]
 USAGE
   $ netlify-cli COMMAND
