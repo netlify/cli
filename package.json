@@ -37,6 +37,7 @@
     "clean-deep": "^3.0.2",
     "cli-ux": "^4.7.3",
     "configstore": "^3.1.2",
+    "debug": "^3.1.0",
     "dot-prop": "^4.2.0",
     "find-up": "^3.0.0",
     "flush-write-stream": "^1.0.3",

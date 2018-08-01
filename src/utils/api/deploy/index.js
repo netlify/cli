@@ -2,9 +2,10 @@ const pMap = require('p-map')
 const fs = require('fs')
 const fileHasher = require('./file-hasher')
 const pWaitFor = require('p-wait-for')
+const debug = require('debug')('netlify:deploy')
 const flatten = require('lodash.flatten')
 
-module.exports = async (api, siteId, dir, opts) => {
+module.exports = async (api, siteId, dir, fnDir, opts) => {
   opts = Object.assign(
     {
       deployTimeout: 1.2e6, // 20 mins
@@ -16,14 +17,20 @@ module.exports = async (api, siteId, dir, opts) => {
 
   // TODO Implement progress function
   const { files, shaMap } = await fileHasher(dir, opts)
-  console.log(`Hashed ${Object.keys(files).length} files`)
-  let deploy = await api.createSiteDeploy({ siteId, body: { files } })
+  const { functions, fnShaMap } = await functionHasher(fnDir, opts)
+
+  debug(`Hashed ${Object.keys(files).length} files`)
+  debug(`Hashed ${Object.keys(functions).length} functions`)
+
+  let deploy = await api.createSiteDeploy({ siteId, body: { files, functions } })
 
   const { id: deployId, required } = deploy
-  const uploadList = getUploadList(required, shaMap)
-  console.log(`Deploy requested ${uploadList.length} files`)
+  const uploadList = getUploadList(required, Object.assign({}, shaMap, fnShaMap))
+
+  debug(`Deploy requested ${uploadList.length} files`)
   await uploadFiles(api, deployId, uploadList, opts)
-  console.log(`Done uploading files.  Waiting on deploy...`)
+  debug(`Done uploading files.  Waiting on deploy...`)
+
   // Update deploy object
   deploy = await waitForDeploy(api, deployId, opts.deployTimeout)
 
@@ -44,13 +51,13 @@ async function uploadFiles(api, deployId, uploadList, opts) {
   const uploadFile = async fileObj => {
     const { normalizedPath } = fileObj
     const readStream = fs.createReadStream(fileObj.filepath)
-    console.log(`uploading ${normalizedPath}`)
+    debug(`uploading ${normalizedPath}`)
     const response = await api.uploadDeployFile({
       body: readStream,
       deployId,
       path: normalizedPath
     })
-    console.log(`done uploading ${normalizedPath}`)
+    debug(`done uploading ${normalizedPath}`)
     return response
   }
 

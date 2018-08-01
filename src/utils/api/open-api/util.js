@@ -20,7 +20,7 @@ exports.mergeParams = (...params) => {
 
   params.forEach(paramSet => {
     Object.entries(paramSet).forEach(([type, params]) => {
-      if (!merged[type]) merged[type] = {}
+      if (!merged[type]) merged[type] = {} // preserve empty objects
       Object.values(params).forEach((param, index) => {
         set(merged, `${param.in}.${param.name}`, Object.assign(param, { index }))
       })
