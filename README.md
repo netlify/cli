@@ -15,8 +15,8 @@ Pluggable CLI for Netlify. 🎉
 $ npm install -g netlify-cli
 $ netlify COMMAND
 running command...
-$ netlify (-v|--version|version)
-netlify/0.0.0 darwin-x64 node-v10.7.0
+$ netlify --version
+1.2.3
 $ netlify --help [COMMAND]
 USAGE
   $ netlify COMMAND
@@ -40,8 +40,14 @@ USAGE
 <!-- commandsstop -->
 
 ---
-
+<detail>
+  <summary>
+    
 **Notes from previous CLIs**
+
+  </summary>
+
+This CLI supercedes our [old Go CLI](https://github.com/netlify/netlifyctl) and [old Node CLI](https://github.com/netlify/netlify-cli).
 
 **Go CLI commands**
 
@@ -79,6 +85,8 @@ updateSite = require("../lib/commands/update_site"),
 openSite   = require("../lib/commands/open"),
 env        = require("../lib/commands/env"),
 ```
+
+</detail>
 
 **Misc examples**
 
