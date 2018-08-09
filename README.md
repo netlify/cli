@@ -40,12 +40,8 @@ USAGE
 <!-- commandsstop -->
 
 ---
-<detail>
-  <summary>
-    
-**Notes from previous CLIs**
-
-  </summary>
+<details>
+  <summary>Notes from previous CLIs</summary>
 
 This CLI supercedes our [old Go CLI](https://github.com/netlify/netlifyctl) and [old Node CLI](https://github.com/netlify/netlify-cli).
 
@@ -86,7 +82,8 @@ openSite   = require("../lib/commands/open"),
 env        = require("../lib/commands/env"),
 ```
 
-</detail>
+</details>
+
 
 **Misc examples**
 
