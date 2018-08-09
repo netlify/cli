@@ -13,13 +13,13 @@ Pluggable CLI for Netlify. 🎉
 <!-- usage -->
 ```sh-session
 $ npm install -g netlify-cli
-$ netlify-cli COMMAND
+$ netlify COMMAND
 running command...
-$ netlify-cli (-v|--version|version)
-netlify-cli/0.0.0 darwin-x64 node-v10.7.0
-$ netlify-cli --help [COMMAND]
+$ netlify (-v|--version|version)
+netlify/0.0.0 darwin-x64 node-v10.7.0
+$ netlify --help [COMMAND]
 USAGE
-  $ netlify-cli COMMAND
+  $ netlify COMMAND
 ...
 ```
 <!-- usagestop -->
@@ -27,15 +27,15 @@ USAGE
 <!-- commands -->
 # Command Topics
 
-* [`netlify-cli deploy`](docs/deploy.md) - Create a new deploy from the contents of a folder.
-* [`netlify-cli forms`](docs/forms.md) - Handle form operations
-* [`netlify-cli functions`](docs/functions.md) - Manage netlify functions
-* [`netlify-cli link`](docs/link.md) - Link a local repo or project folder to an existing site on Netlify
-* [`netlify-cli login`](docs/login.md) - Login to account
-* [`netlify-cli logout`](docs/logout.md) - Logout of account
-* [`netlify-cli sites`](docs/sites.md) - Handle site operations
-* [`netlify-cli status`](docs/status.md) - Print currently logged in use
-* [`netlify-cli whoami`](docs/whoami.md) - Print currently logged in user and account info
+* [`netlify deploy`](docs/deploy.md) - Create a new deploy from the contents of a folder.
+* [`netlify forms`](docs/forms.md) - Handle form operations
+* [`netlify functions`](docs/functions.md) - Manage netlify functions
+* [`netlify link`](docs/link.md) - Link a local repo or project folder to an existing site on Netlify
+* [`netlify login`](docs/login.md) - Login to account
+* [`netlify logout`](docs/logout.md) - Logout of account
+* [`netlify sites`](docs/sites.md) - Handle site operations
+* [`netlify status`](docs/status.md) - Print currently logged in use
+* [`netlify whoami`](docs/whoami.md) - Print currently logged in user and account info
 
 <!-- commandsstop -->
 
