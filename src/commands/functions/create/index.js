@@ -13,4 +13,7 @@ FunctionsCreateCommand.flags = {
   name: flags.string({char: 'n', description: 'name to print'}),
 }
 
+// TODO make visible once implementation complete
+FunctionsCreateCommand.hidden = true
+
 module.exports = FunctionsCreateCommand

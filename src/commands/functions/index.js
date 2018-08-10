@@ -1,12 +1,17 @@
-const { Command } = require('@oclif/command')
-const { execSync } = require('child_process')
 const chalk = require('chalk')
+const { Command } = require('@oclif/command')
+const showHelp = require('../../utils/showHelp')
+const { isEmptyCommand } = require('../../utils/checkCommandInputs')
 const renderShortDesc = require('../../utils/renderShortDescription')
 
 class FunctionsCommand extends Command {
   async run() {
+    const { flags, args } = this.parse(FunctionsCommand)
     // run help command if no args passed
-    execSync(`./bin/run ${this.id} --help`, { stdio: [0, 1, 2] })
+    if (isEmptyCommand(flags, args)) {
+      showHelp(this.id)
+      this.exit()
+    }
   }
 }
 
@@ -19,5 +24,8 @@ FunctionsCommand.examples = [
   '$ netlify functions:create --name function-xyz --runtime nodejs',
   '$ netlify functions:update --name function-abc --timeout 30s'
 ]
+
+// TODO make visible once implementation complete
+FunctionsCommand.hidden = true
 
 module.exports = FunctionsCommand
