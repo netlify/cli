@@ -1,26 +1,18 @@
 const { Command } = require('@oclif/command')
 const renderShortDesc = require('../../utils/renderShortDescription')
+const showHelp = require('../../utils/showHelp')
+const { isEmptyCommand } = require('../../utils/checkCommandInputs')
 
 class SitesCommand extends Command {
   async run() {
     const { flags, args } = this.parse(SitesCommand) // { args: {}, argv: [], flags: {}, raw: [] }
 
     // Show help on empty sub command
-    if (emptyCommand(flags, args)) {
-      // run help command if no args passed
-      await SitesCommand.run(['--help'])
+    if (isEmptyCommand(flags, args)) {
+      showHelp(this.id)
       this.exit()
     }
   }
-}
-
-function emptyCommand(flags, args) {
-  const hasFlags = Object.keys(flags).length
-  const hasArgs = Object.keys(args).length
-  if (!hasFlags && !hasArgs) {
-    return true
-  }
-  return false
 }
 
 SitesCommand.description = `${renderShortDesc('Handle site operations')}
