@@ -6,30 +6,6 @@ const fs = require('fs')
 const cliUx = require('cli-ux').default
 const prettyjson = require('prettyjson')
 
-const ensureDirectory = (resolvedDeployPath, exit) => {
-  let stat
-  try {
-    stat = fs.statSync(resolvedDeployPath)
-  } catch (e) {
-    if (e.code === 'ENOENT') {
-      console.log('No such directory! Make sure to run your build command locally first')
-      exit()
-    }
-
-    // Improve the message of permission errors
-    if (e.code === 'EACCES') {
-      console.log('Permission error when trying to access deploy folder')
-      exit()
-    }
-    throw e
-  }
-  if (!stat.isDirectory) {
-    console.log('Deploy target must be a directory')
-    exit()
-  }
-  return stat
-}
-
 class DeployCommand extends Command {
   async run() {
     await this.authenticate()
@@ -93,5 +69,29 @@ DeployCommand.args = [
     description: 'folder to deploy (optional)'
   }
 ]
+
+function ensureDirectory (resolvedDeployPath, exit) {
+  let stat
+  try {
+    stat = fs.statSync(resolvedDeployPath)
+  } catch (e) {
+    if (e.code === 'ENOENT') {
+      console.log('No such directory! Make sure to run your build command locally first')
+      exit()
+    }
+
+    // Improve the message of permission errors
+    if (e.code === 'EACCES') {
+      console.log('Permission error when trying to access deploy folder')
+      exit()
+    }
+    throw e
+  }
+  if (!stat.isDirectory) {
+    console.log('Deploy target must be a directory')
+    exit()
+  }
+  return stat
+}
 
 module.exports = DeployCommand
