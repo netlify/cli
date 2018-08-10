@@ -88,8 +88,14 @@ exports.generateMethod = method => {
     }
 
     try {
-      const json = await req.json
+      /*
+        This doesnt work for some reason. Node v10.4.1
+        const json = await req.json
+      */
+      const json = await response.json()
+
       // inject prototype props
+      // TODO @bret what is this doing and why do we need it?
       Object.setPrototypeOf(status, Object.getPrototypeOf(json))
       Object.setPrototypeOf(json, status)
       return json
