@@ -12,7 +12,6 @@
     "failFast": false,
     "failWithoutAssertions": false,
     "tap": false,
-    "babel": false,
     "compileEnhancements": false
   },
   "bin": {
