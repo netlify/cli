@@ -2,7 +2,7 @@ const test = require('ava')
 const http = require('http')
 const promisify = require('util.promisify')
 const NetlifyAPI = require('./index')
-const bodyParser = promisify(require('body'))
+const body = promisify(require('body'))
 const fromString = require('from2-string')
 const Headers = require('node-fetch').Headers
 
@@ -25,81 +25,102 @@ const client = new NetlifyAPI('1234', {
 })
 
 test.serial('can make basic requests', async t => {
-  const server = createServer(async (req, res) => {
-    t.is(req.url, '/v1/oauth/tickets?client_id=1234')
-    res.end('{"foo": "bar"}')
-  })
+  let server
+  try {
+    server = createServer((req, res) => {
+      t.is(req.url, '/v1/oauth/tickets?client_id=1234')
+      res.end('{"foo": "bar"}')
+    })
 
-  await server.listen(port)
+    await server.listen(port)
 
-  const body = await client.createTicket()
-  t.is(body.status, 200)
-  t.deepEqual(body, { foo: 'bar' })
-
+    const body = await client.createTicket()
+    t.is(body.status, 200)
+    t.deepEqual(body, { foo: 'bar' })
+  } catch (e) {
+    t.fail(e)
+  }
   await server.close()
 })
 
 test.serial('can make requests with a body', async t => {
-  const server = createServer(async (req, res) => {
-    t.is(req.url, '/v1/hooks?site_id=Site123')
-    t.is(await bodyParser(req), '{"some":"bodyParams","another":"one"}')
-    res.end('{"foo": "bar"}')
-  })
+  let server
+  try {
+    server = createServer(async (req, res) => {
+      t.is(req.url, '/v1/hooks?site_id=Site123')
+      t.is(await body(req), '{"some":"bodyParams","another":"one"}')
+      res.end('{"foo": "bar"}')
+    })
 
-  await server.listen(port)
+    await server.listen(port)
 
-  const response = await client.createHookBySiteId({
-    site_id: 'Site123',
-    body: {
-      some: 'bodyParams',
-      another: 'one'
-    }
-  })
-  t.is(response.status, 200)
-  t.deepEqual(response, { foo: 'bar' })
-
+    const response = await client.createHookBySiteId({
+      site_id: 'Site123',
+      body: {
+        some: 'bodyParams',
+        another: 'one'
+      }
+    })
+    t.is(response.status, 200)
+    t.deepEqual(response, { foo: 'bar' })
+  } catch (e) {
+    t.fail(e)
+  }
   await server.close()
 })
 
 test.serial('path parameter assignment', async t => {
-  const server = createServer(async (req, res) => {
-    t.is(req.url, '/v1/hooks?site_id=Site123')
-    res.end()
-  })
-  await server.listen(port)
-  const error = await t.throws(client.createHookBySiteId(/* missing args */))
-  t.is(error.message, 'Missing required param site_id')
-  const response = await client.createHookBySiteId({ siteId: 'Site123' })
-  t.deepEqual(response, { body: '' }, 'Testing other path branch')
+  let server
+  try {
+    server = createServer(async (req, res) => {
+      t.is(req.url, '/v1/hooks?site_id=Site123')
+      res.end()
+    })
+
+    await server.listen(port)
+
+    const error = await t.throws(client.createHookBySiteId(/* missing args */))
+    t.is(error.message, 'Missing required param site_id')
+    const response = await client.createHookBySiteId({ siteId: 'Site123' })
+    t.deepEqual(response, { body: '' }, 'Testing other path branch')
+  } catch (e) {
+    t.fail(e)
+  }
   await server.close()
 })
 
 test.serial('handles errors from API', async t => {
-  const server = createServer(async (req, res) => {
-    res.statusCode = 404
-    res.statusMessage = 'Test not found'
-    res.end()
-  })
+  let server
+  try {
+    server = createServer(async (req, res) => {
+      res.statusCode = 404
+      res.statusMessage = 'Test not found'
+      res.end()
+    })
 
-  await server.listen(port)
+    await server.listen(port)
 
-  const error = await t.throws(client.createHookBySiteId({ siteId: 'Site123' }))
-  t.is(error.status, 404, 'status code is captures on error')
-  t.is(error.statusText, 'Test not found', 'status text is captures on error')
-  t.truthy(error.response, 'Error has response object')
-  t.truthy(error.path, 'Error has response object')
-  t.deepEqual(
-    error.opts,
-    {
-      headers: new Headers({
-        Authorization: 'Bearer 1234',
-        'User-agent': 'netlify-js-client',
-        accept: 'application/json'
-      }),
-      method: 'POST'
-    },
-    'Opts look correct'
-  )
+    const error = await t.throws(client.createHookBySiteId({ siteId: 'Site123' }))
+    t.is(error.status, 404, 'status code is captures on error')
+    t.is(error.statusText, 'Test not found', 'status text is captures on error')
+    t.truthy(error.response, 'Error has response object')
+    t.truthy(error.path, 'Error has response object')
+    t.deepEqual(
+      error.opts,
+
+      {
+        method: 'POST',
+        headers: new Headers({
+          Authorization: 'Bearer 1234',
+          'User-agent': 'netlify-js-client',
+          accept: 'application/json'
+        })
+      },
+      'Opts look correct'
+    )
+  } catch (e) {
+    t.fail(e)
+  }
   await server.close()
 })
 
@@ -123,25 +144,29 @@ test.serial('basic api exists', async t => {
 })
 
 test.serial('binary uploads', async t => {
-  const server = createServer(async (req, res) => {
-    t.is(await bodyParser(req), 'hello world')
-    res.statusCode = 200
-    res.statusMessage = 'OK'
-    res.end('{"ok": true}')
-  })
+  let server
+  try {
+    server = createServer(async (req, res) => {
+      t.is(await body(req), 'hello world')
+      res.statusCode = 200
+      res.statusMessage = 'OK'
+      res.end('{"ok": true}')
+    })
 
-  await server.listen(port)
+    await server.listen(port)
 
-  const readStream = fromString('hello world')
-  const response = await client.uploadDeployFile({
-    body: readStream,
-    deployId: '123',
-    path: 'normalizedPath'
-  })
+    const readStream = fromString('hello world')
+    const response = await client.uploadDeployFile({
+      body: readStream,
+      deployId: '123',
+      path: 'normalizedPath'
+    })
 
-  t.deepEqual(response, { ok: true })
-  t.is(response.status, 200)
-
+    t.deepEqual(response, { ok: true })
+    t.is(response.status, 200)
+  } catch (e) {
+    t.fail(e)
+  }
   await server.close()
 })
 
@@ -163,39 +188,44 @@ test('variadic api', async t => {
 })
 
 test.serial('access token can poll', async t => {
-  let okayToResponse = false
-  setTimeout(() => {
-    okayToResponse = true
-  }, 1000)
-  const server = createServer(async (req, res) => {
-    if (req.url == '/v1/oauth/tickets/ticket-id') {
-      if (!okayToResponse) {
-        res.end('{}')
-      } else {
+  let server
+  try {
+    let okayToResponse = false
+    setTimeout(() => {
+      okayToResponse = true
+    }, 1000)
+    server = createServer(async (req, res) => {
+      if (req.url == '/v1/oauth/tickets/ticket-id') {
+        if (!okayToResponse) {
+          res.end('{}')
+        } else {
+          res.end(
+            JSON.stringify({
+              authorized: true,
+              id: 'ticket-id'
+            })
+          )
+        }
+      } else if (req.url == '/v1/oauth/tickets/ticket-id/exchange') {
         res.end(
           JSON.stringify({
-            authorized: true,
-            id: 'ticket-id'
+            access_token: 'open-sesame'
           })
         )
+      } else {
+        res.statusCode = 500
+        res.end(JSON.stringify({ path: req.url }))
       }
-    } else if (req.url == '/v1/oauth/tickets/ticket-id/exchange') {
-      res.end(
-        JSON.stringify({
-          access_token: 'open-sesame'
-        })
-      )
-    } else {
-      res.statusCode = 500
-      res.end(JSON.stringify({ path: req.url }))
-    }
-  })
+    })
 
-  await server.listen(port)
+    await server.listen(port)
 
-  const accessToken = await client.getAccessToken({ id: 'ticket-id' }, { poll: 200, timeout: 5000 })
+    const accessToken = await client.getAccessToken({ id: 'ticket-id' }, { poll: 200, timeout: 5000 })
 
-  t.is(accessToken, 'open-sesame')
+    t.is(accessToken, 'open-sesame')
+  } catch (e) {
+    t.fail(e)
+  }
 
   await server.close()
 })
