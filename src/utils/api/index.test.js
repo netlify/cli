@@ -199,7 +199,7 @@ test.serial('access token can poll', async t => {
     let okayToResponse = false
     setTimeout(() => {
       okayToResponse = true
-    }, 1000)
+    }, 100)
     server = createServer(async (req, res) => {
       if (req.url == '/v1/oauth/tickets/ticket-id') {
         if (!okayToResponse) {
@@ -226,7 +226,7 @@ test.serial('access token can poll', async t => {
 
     await server.listen(port)
 
-    const accessToken = await client.getAccessToken({ id: 'ticket-id' }, { poll: 200, timeout: 5000 })
+    const accessToken = await client.getAccessToken({ id: 'ticket-id' }, { poll: 50, timeout: 5000 })
 
     t.is(accessToken, 'open-sesame')
   } catch (e) {

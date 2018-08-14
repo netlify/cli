@@ -80,7 +80,7 @@ exports.generateMethod = method => {
       const err = new Error(response.statusText)
       err.status = response.status
       err.statusText = response.statusText
-      err.response = response
+      err.response = await response.clone()
       err.path = path
       err.opts = opts
       throw err
