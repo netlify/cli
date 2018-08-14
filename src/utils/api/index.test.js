@@ -79,8 +79,14 @@ test.serial('path parameter assignment', async t => {
 
     await server.listen(port)
 
-    const error = await t.throws(client.createHookBySiteId(/* missing args */))
-    t.is(error.message, 'Missing required param site_id')
+    t.throwsAsync(
+      async () => {
+        await client.createHookBySiteId(/* missing args */)
+      },
+      {
+        message: 'Missing required param site_id'
+      }
+    )
     const response = await client.createHookBySiteId({ siteId: 'Site123' })
     t.deepEqual(response, { body: '' }, 'Testing other path branch')
   } catch (e) {
@@ -100,7 +106,7 @@ test.serial('handles errors from API', async t => {
 
     await server.listen(port)
 
-    const error = await t.throws(client.createHookBySiteId({ siteId: 'Site123' }))
+    const error = await t.throwsAsync(client.createHookBySiteId({ siteId: 'Site123' }))
     t.is(error.status, 404, 'status code is captures on error')
     t.is(error.statusText, 'Test not found', 'status text is captures on error')
     t.truthy(error.response, 'Error has response object')
