@@ -2,6 +2,7 @@ const Command = require('../../base')
 const { flags } = require('@oclif/command')
 const renderShortDesc = require('../../utils/renderShortDescription')
 const inquirer = require('inquirer')
+const path = require('path')
 
 class LinkCommand extends Command {
   async run() {
@@ -25,7 +26,7 @@ class LinkCommand extends Command {
         else this.error(e)
       }
       this.site.set('siteId', site.id)
-      this.log(`Linked to ${site.name} in ${this.site.path}`)
+      this.log(`Linked to ${site.name} in ${path.relative(path.join(process.cwd(), '..'), this.site.path)}`)
       return this.exit()
     }
 
@@ -46,7 +47,7 @@ class LinkCommand extends Command {
       }
       const site = results[0]
       this.site.set('siteId', site.id)
-      this.log(`Linked to ${site.name} in ${this.site.path}`)
+      this.log(`Linked to ${site.name} in ${path.relative(path.join(process.cwd(), '..'), this.site.path)}`)
       return this.exit()
     }
 
@@ -75,12 +76,12 @@ class LinkCommand extends Command {
             filter: 'all'
           })
         } catch (e) {
-          if (e.status === 404) this.error(new Error(`${flags.name} not found`))
+          if (e.status === 404) this.error(`${siteName} not found`)
           else this.error(e)
         }
 
         if (sites.length === 0) {
-          this.error(new Error(`No sites found named ${flags.name}`))
+          this.error(`No sites found named ${siteName}`)
         }
         let site
         if (sites.length > 1) {
@@ -98,7 +99,7 @@ class LinkCommand extends Command {
           site = sites[0]
         }
         this.site.set('siteId', site.id)
-        this.log(`Linked to ${site.name} in ${this.site.path}`)
+        this.log(`Linked to ${site.name} in ${path.relative(path.join(process.cwd(), '..'), this.site.path)}`)
         this.exit()
         break
       }
@@ -119,7 +120,7 @@ class LinkCommand extends Command {
           else this.error(e)
         }
         this.site.set('siteId', site.id)
-        this.log(`Linked to ${site.name} in ${this.site.path}`)
+        this.log(`Linked to ${site.name} in ${path.relative(path.join(process.cwd(), '..'), this.site.path)}`)
         this.exit()
         break
       }
