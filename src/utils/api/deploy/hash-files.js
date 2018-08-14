@@ -3,8 +3,8 @@ const walker = require('folder-walker')
 const pump = promisify(require('pump'))
 const { hasherCtor, manifestCollectorCtor, fileFilterCtor } = require('./hasher-segments')
 
-module.exports = fileHasher
-async function fileHasher(dir, opts) {
+module.exports = hashFiles
+async function hashFiles(dir, opts) {
   opts = Object.assign(
     {
       concurrentHash: 100,

@@ -6,8 +6,8 @@ const fromArray = require('from2-array')
 
 const { hasherCtor, manifestCollectorCtor, fnStatFilterCtor } = require('./hasher-segments')
 
-module.exports = fnHasher
-async function fnHasher(dir, opts) {
+module.exports = hashFns
+async function hashFns(dir, opts) {
   opts = Object.assign(
     {
       concurrentHash: 100,

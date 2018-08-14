@@ -1,7 +1,7 @@
 const debug = require('debug')('netlify:deploy')
-const fileUploader = require('./file-uploader')
-const fileHasher = require('./file-hasher')
-const fnHasher = require('./fn-hasher')
+const uploadFiles = require('./upload-files')
+const hashFiles = require('./hash-files')
+const hashFns = require('./hash-fns')
 
 const { waitForDeploy, getUploadList } = require('./util')
 
@@ -17,8 +17,8 @@ module.exports = async (api, siteId, dir, fnDir, opts) => {
   )
 
   const [{ files, filesShaMap }, { functions, fnShaMap }] = await Promise.all([
-    fileHasher(dir, opts),
-    fnHasher(fnDir, opts)
+    hashFiles(dir, opts),
+    hashFns(fnDir, opts)
   ])
 
   debug(`Hashed ${Object.keys(files).length} files`)
@@ -30,9 +30,7 @@ module.exports = async (api, siteId, dir, fnDir, opts) => {
   const uploadList = getUploadList(required, filesShaMap, fnShaMap)
 
   debug(`Deploy requested ${uploadList.length} files`)
-  await fileUploader(api, deployId, uploadList, {
-    concurrentUpload: opts.concurrentUpload
-  })
+  await uploadFiles(api, deployId, uploadList, opts)
   debug(`Done uploading files.`)
 
   debug(`Polling deploy...`)
@@ -44,6 +42,8 @@ module.exports = async (api, siteId, dir, fnDir, opts) => {
     deploy,
     uploadList
   }
+
+  debug(deployManifest)
 
   return deployManifest
 }

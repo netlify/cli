@@ -2,8 +2,8 @@ const pMap = require('p-map')
 const fs = require('fs')
 const debug = require('debug')('netlify:deploy:file-uploader')
 
-module.exports = fileUploader
-async function fileUploader(api, deployId, uploadList, { concurrentUpload }) {
+module.exports = uploadFiles
+async function uploadFiles(api, deployId, uploadList, { concurrentUpload }) {
   if (!concurrentUpload) throw new Error('Missing required option concurrentUpload')
   const uploadFile = async fileObj => {
     const { normalizedPath, assetType, runtime } = fileObj
