@@ -58,7 +58,7 @@ exports.fnStatFilterCtor = ({ root, concurrentStat }) => {
         root,
         filepath,
         stat,
-        relname: path.relative(root, name),
+        relname: path.relative(root, filepath),
         basename: path.basename(name),
         extname: path.extname(name),
         type: stat.isFile() ? 'file' : stat.isDirectory() ? 'directory' : null
