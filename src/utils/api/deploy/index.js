@@ -10,7 +10,7 @@ module.exports = async (api, siteId, dir, fnDir, opts) => {
   opts = Object.assign(
     {
       deployTimeout: 1.2e6, // 20 mins
-      concurrentHash: 100, // Queue up 100 file hash ops at a time
+      concurrentHash: 100, // concurrent file hash calls
       concurrentUpload: 4 // Number of concurrent uploads
     },
     opts
@@ -30,7 +30,9 @@ module.exports = async (api, siteId, dir, fnDir, opts) => {
   const uploadList = getUploadList(required, filesShaMap, fnShaMap)
 
   debug(`Deploy requested ${uploadList.length} files`)
-  await fileUploader(api, deployId, uploadList, opts)
+  await fileUploader(api, deployId, uploadList, {
+    concurrentUpload: opts.concurrentUpload
+  })
   debug(`Done uploading files.`)
 
   debug(`Polling deploy...`)
