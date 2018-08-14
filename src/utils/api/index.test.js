@@ -2,16 +2,17 @@ const test = require('ava')
 const http = require('http')
 const promisify = require('util.promisify')
 const NetlifyAPI = require('./index')
-const body = promisify(require('body'))
+const bodyParser = promisify(require('body'))
 const fromString = require('from2-string')
+const Headers = require('node-fetch').Headers
 
 const createServer = handler => {
-  const server = http.createServer(handler)
-  server._close = server.close
-  server.close = promisify(cb => server._close(cb))
-  server._listen = server.listen
-  server.listen = promisify((port, cb) => server._listen(port, cb))
-  return server
+  const s = http.createServer(handler)
+  s._close = s.close
+  s.close = promisify(cb => s._close(cb))
+  s._listen = s.listen
+  s.listen = promisify((port, cb) => s._listen(port, cb))
+  return s
 }
 
 const port = 1123
@@ -24,7 +25,7 @@ const client = new NetlifyAPI('1234', {
 })
 
 test.serial('can make basic requests', async t => {
-  const server = createServer((req, res) => {
+  const server = createServer(async (req, res) => {
     t.is(req.url, '/v1/oauth/tickets?client_id=1234')
     res.end('{"foo": "bar"}')
   })
@@ -41,7 +42,7 @@ test.serial('can make basic requests', async t => {
 test.serial('can make requests with a body', async t => {
   const server = createServer(async (req, res) => {
     t.is(req.url, '/v1/hooks?site_id=Site123')
-    t.is(await body(req), '{"some":"bodyParams","another":"one"}')
+    t.is(await bodyParser(req), '{"some":"bodyParams","another":"one"}')
     res.end('{"foo": "bar"}')
   })
 
@@ -65,14 +66,11 @@ test.serial('path parameter assignment', async t => {
     t.is(req.url, '/v1/hooks?site_id=Site123')
     res.end()
   })
-
   await server.listen(port)
-
   const error = await t.throws(client.createHookBySiteId(/* missing args */))
   t.is(error.message, 'Missing required param site_id')
   const response = await client.createHookBySiteId({ siteId: 'Site123' })
-  t.is(response, '', 'Testing other path branch')
-
+  t.deepEqual(response, { body: '' }, 'Testing other path branch')
   await server.close()
 })
 
@@ -93,11 +91,12 @@ test.serial('handles errors from API', async t => {
   t.deepEqual(
     error.opts,
     {
-      headers: {
+      headers: new Headers({
         Authorization: 'Bearer 1234',
         'User-agent': 'netlify-js-client',
         accept: 'application/json'
-      }
+      }),
+      method: 'POST'
     },
     'Opts look correct'
   )
@@ -125,7 +124,7 @@ test.serial('basic api exists', async t => {
 
 test.serial('binary uploads', async t => {
   const server = createServer(async (req, res) => {
-    t.is(await body(req), 'hello world')
+    t.is(await bodyParser(req), 'hello world')
     res.statusCode = 200
     res.statusMessage = 'OK'
     res.end('{"ok": true}')

@@ -6,30 +6,6 @@ const fs = require('fs')
 const cliUx = require('cli-ux').default
 const prettyjson = require('prettyjson')
 
-const ensureDirectory = resolvedDeployPath => {
-  let stat
-  try {
-    stat = fs.statSync(resolvedDeployPath)
-  } catch (e) {
-    if (e.code === 'ENOENT') {
-      this.log('No such directory')
-      this.exit()
-    }
-
-    // Improve the message of permission errors
-    if (e.code === 'EACCES') {
-      this.log('Permission error when trying to access deploy folder')
-      this.exit()
-    }
-    throw e
-  }
-  if (!stat.isDirectory) {
-    this.log('Deploy target must be a directory')
-    this.exit()
-  }
-  return stat
-}
-
 class DeployCommand extends Command {
   async run() {
     await this.authenticate()
@@ -67,7 +43,7 @@ class DeployCommand extends Command {
     const resolvedDeployPath = path.resolve(process.cwd(), deployFolder)
     cliUx.action.start(`Starting a deploy from ${resolvedDeployPath}`)
 
-    ensureDirectory(resolvedDeployPath)
+    ensureDirectory(resolvedDeployPath, this.exit)
     let results
     try {
       results = await this.netlify.deploy(siteId, resolvedDeployPath)
@@ -93,5 +69,29 @@ DeployCommand.args = [
     description: 'folder to deploy (optional)'
   }
 ]
+
+function ensureDirectory (resolvedDeployPath, exit) {
+  let stat
+  try {
+    stat = fs.statSync(resolvedDeployPath)
+  } catch (e) {
+    if (e.code === 'ENOENT') {
+      console.log('No such directory! Make sure to run your build command locally first')
+      exit()
+    }
+
+    // Improve the message of permission errors
+    if (e.code === 'EACCES') {
+      console.log('Permission error when trying to access deploy folder')
+      exit()
+    }
+    throw e
+  }
+  if (!stat.isDirectory) {
+    console.log('Deploy target must be a directory')
+    exit()
+  }
+  return stat
+}
 
 module.exports = DeployCommand

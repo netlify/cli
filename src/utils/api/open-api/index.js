@@ -1,7 +1,8 @@
 const get = require('lodash.get')
 const set = require('lodash.set')
 const queryString = require('qs')
-const r2 = require('r2')
+const fetch = require('node-fetch')
+const Headers = fetch.Headers
 const camelCase = require('lodash.camelcase')
 
 function existy(val) {
@@ -17,6 +18,7 @@ exports.generateMethod = method => {
     params = Object.assign({}, this.globalParams, params)
 
     let path = this.basePath + method.path
+
     // Path parameters
     Object.values(method.parameters.path).forEach(param => {
       const val = params[param.name] || params[camelCase(param.name)]
@@ -26,6 +28,7 @@ exports.generateMethod = method => {
         throw new Error(`Missing required param ${param.name}`)
       }
     })
+
     // qs parameters
     let qs
     Object.values(method.parameters.query).forEach(param => {
@@ -38,6 +41,7 @@ exports.generateMethod = method => {
       }
     })
     if (qs) path = path += `?${queryString.stringify(qs)}`
+
     // body parameters
     let body
     let bodyType = 'json'
@@ -61,18 +65,18 @@ exports.generateMethod = method => {
         }
         case 'json':
         default: {
-          opts.json = body
+          opts.body = JSON.stringify(body)
           break
         }
       }
     }
 
-    opts.headers = Object.assign({}, this.defaultHeaders, discoveredHeaders, opts.headers)
+    opts.headers = new Headers(Object.assign({}, this.defaultHeaders, discoveredHeaders, opts.headers))
+    opts.method = method.verb.toUpperCase()
 
-    const req = await r2[method.verb](path, opts)
-    const response = await req.response
+    const response = await fetch(path, opts)
 
-    if (response.status >= 400) {
+    if (!response.ok) {
       const err = new Error(response.statusText)
       err.status = response.status
       err.statusText = response.statusText
@@ -81,20 +85,25 @@ exports.generateMethod = method => {
       err.opts = opts
       throw err
     }
+
     // Put the status on the prototype to prevent it from serializing
     const status = {
       status: response.status,
-      statusText: response.statusText
+      statusText: response.statusText,
+      ok: response.ok
     }
 
+    let json
     try {
-      const json = await req.json
-      // inject prototype props
-      Object.setPrototypeOf(status, Object.getPrototypeOf(json))
-      Object.setPrototypeOf(json, status)
-      return json
+      json = await response.clone().json()
     } catch (e) {
-      return await req.text
+      const text = await response.clone().text()
+      json = { body: text }
     }
+
+    // inject prototype props
+    Object.setPrototypeOf(status, Object.getPrototypeOf(json))
+    Object.setPrototypeOf(json, status)
+    return json
   }
 }

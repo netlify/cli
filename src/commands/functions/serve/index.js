@@ -15,4 +15,7 @@ FunctionsServeCommand.flags = {
   name: flags.string({char: 'n', description: 'name to print'}),
 }
 
+// TODO make visible once implementation complete
+FunctionsServeCommand.hidden = true
+
 module.exports = FunctionsServeCommand
