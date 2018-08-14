@@ -1,6 +1,5 @@
 const AsciiTable = require('ascii-table')
 const Command = require('../../../base')
-const { CLIError } = require('@oclif/errors')
 
 class SitesListCommand extends Command {
   async run() {
