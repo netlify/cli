@@ -32,6 +32,10 @@ async function hashFns(dir, opts) {
   const fnShaMap = {} //hash: [fileObj, fileObj, fileObj]
   const manifestCollector = manifestCollectorCtor(functions, fnShaMap)
 
+  // TODO: Zip up functions, hash then send.
+  // This is totally wrong wright now.
+  // See https://github.com/netlify/open-api/blob/master/go/porcelain/deploy.go#L544
+
   await pump(fileStream, fnStat, fnFilter, hasher, fnNormalizer, manifestCollector)
 
   return { functions, fnShaMap }
