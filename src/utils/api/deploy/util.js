@@ -1,7 +1,7 @@
 const path = require('path')
 const pWaitFor = require('p-wait-for')
 const flatten = require('lodash.flatten')
-const mergeWith = require('lodash.mergewith')
+const debug = require('debug')('netlify-cli:deploy:util')
 
 // normalize windows paths to unix paths
 exports.normalizePath = relname => {
@@ -28,6 +28,7 @@ async function waitForDeploy(api, deployId, timeout) {
 
   async function loadDeploy() {
     const d = await api.getDeploy({ deployId })
+    debug(`deploy state: ${d.state}`)
     if (d.state === 'ready') {
       deploy = d
       return true
@@ -39,15 +40,8 @@ async function waitForDeploy(api, deployId, timeout) {
 
 // Transform the fileShaMap and fnShaMap into a generic shaMap that file-uploader.js can use
 exports.getUploadList = getUploadList
-function getUploadList(required, fileShaMap, fnShaMap) {
-  const shaMap = mergeWith(fileShaMap, fnShaMap, concatArrays)
+function getUploadList(required, shaMap) {
   return flatten(required.map(sha => shaMap[sha]))
-}
-// concat arrays instead of merge them
-function concatArrays(objValue, srcValue) {
-  if (Array.isArray(objValue)) {
-    return objValue.concat(srcValue)
-  }
 }
 
 // given a Stat object, return if its executable or not

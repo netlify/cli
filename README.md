@@ -33,6 +33,7 @@ You can also access the cli from the following aliases:
 # Command Topics
 
 * [`netlify-cli deploy`](docs/deploy.md) - Create a new deploy from the contents of a folder.
+* [`netlify-cli help`](docs/help.md) - display help for netlify-cli
 * [`netlify-cli link`](docs/link.md) - Link a local repo or project folder to an existing site on Netlify
 * [`netlify-cli login`](docs/login.md) - Login to account
 * [`netlify-cli logout`](docs/logout.md) - Logout of account

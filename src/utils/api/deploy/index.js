@@ -1,4 +1,4 @@
-const debug = require('debug')('netlify:deploy')
+const debug = require('debug')('netlify-cli:deploy')
 const uploadFiles = require('./upload-files')
 const hashFiles = require('./hash-files')
 const hashFns = require('./hash-fns')
@@ -25,9 +25,13 @@ module.exports = async (api, siteId, dir, fnDir, opts) => {
   debug(`Hashed ${Object.keys(functions).length} functions`)
 
   let deploy = await api.createSiteDeploy({ siteId, body: { files, functions } })
-  const { id: deployId, required } = deploy
+  const { id: deployId, required: requiredFiles, required_functions: requiredFns } = deploy
 
-  const uploadList = getUploadList(required, filesShaMap, fnShaMap)
+  debug(`deploy id: ${deployId}`)
+  debug(`deploy requested ${requiredFiles.length} site files`)
+  debug(`deploy requested ${requiredFns.length} function files`)
+
+  const uploadList = getUploadList(requiredFiles, filesShaMap).concat(getUploadList(requiredFns, fnShaMap))
 
   debug(`Deploy requested ${uploadList.length} files`)
   await uploadFiles(api, deployId, uploadList, opts)
@@ -42,8 +46,5 @@ module.exports = async (api, siteId, dir, fnDir, opts) => {
     deploy,
     uploadList
   }
-
-  debug(deployManifest)
-
   return deployManifest
 }

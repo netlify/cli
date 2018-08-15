@@ -69,6 +69,7 @@ exports.generateMethod = method => {
         case 'json':
         default: {
           opts.body = JSON.stringify(body)
+          set(discoveredHeaders, 'Content-Type', 'application/json')
           break
         }
       }
