@@ -32,12 +32,12 @@ class DeployCommand extends Command {
     // TODO: abstract settings lookup
     const deployFolder =
       args.publishFolder ||
-      get(this.site.toml, 'build.functions') ||
+      get(this.site.toml, 'build.publish') ||
       get(await this.netlify.getSite({ siteId }), 'build_settings.dir')
 
     const functionsFolder =
       flags.functions ||
-      get(this.site.toml, 'build.publish') ||
+      get(this.site.toml, 'build.functions') ||
       get(await this.netlify.getSite({ siteId }), 'build_settings.functions_dir')
 
     if (!deployFolder) {

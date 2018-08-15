@@ -78,9 +78,9 @@ class NetlifyAPI {
     return accessToken.access_token
   }
 
-  async deploy(siteId, buildDir, opts) {
+  async deploy(siteId, buildDir, functionsDir, opts) {
     if (!this.accessToken) throw new Error('Missing access token')
-    return await deploy(this, siteId, buildDir, opts)
+    return await deploy(this, siteId, buildDir, functionsDir, opts)
   }
 }
 
