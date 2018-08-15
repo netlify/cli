@@ -1,6 +1,6 @@
 const objFilterCtor = require('through2-filter').objCtor
 const objWriter = require('flush-write-stream').obj
-const { normalizePath, isExe } = require('./util')
+const { isExe, normalizePath } = require('./util')
 const transform = require('parallel-transform')
 const hasha = require('hasha')
 const path = require('path')
@@ -54,17 +54,26 @@ exports.manifestCollectorCtor = (filesObj, shaMap) => {
 }
 
 // transform stream ctor that filters folder-walker results for only files
-exports.fileFilterCtor = objFilterCtor(
-  fileObj => fileObj.type === 'file' && (fileObj.relname.match(/(\/__MACOSX|\/\.)/) ? false : true)
-)
+exports.fileFilterCtor = objFilterCtor(fileObj => {
+  return fileObj.type === 'file' && (fileObj.relname.match(/(\/__MACOSX|\/\.)/) ? false : true)
+})
+
+exports.fnFilterCtor = objFilterCtor(fileObj => {
+  // filter additional files out of our fn pipeline
+  return (
+    fileObj.type === 'file' &&
+    !!fileObj.runtime &&
+    !fileObj.basename.startsWith('.') &&
+    !fileObj.basename.includes('__MACOSX')
+  )
+})
 
 // parallel stream ctor similar to folder-walker but specialized for netlify functions
 // Stream in names of files that may be functions, and this will stat the file and return a fileObj
-exports.fnStatFilterCtor = ({ root, concurrentStat }) => {
+exports.fnStatCtor = ({ root, concurrentStat }) => {
   if (!concurrentStat || !root) throw new Error('Missing required opts')
   return transform(concurrentStat, { objectMode: true, ordered: false }, (name, cb) => {
     const filepath = path.join(root, name)
-
     fs.stat(filepath, (err, stat) => {
       if (err) return cb(err)
 
@@ -78,8 +87,6 @@ exports.fnStatFilterCtor = ({ root, concurrentStat }) => {
         type: stat.isFile() ? 'file' : stat.isDirectory() ? 'directory' : null
       }
 
-      if (item.type !== 'file') return cb() // skip folders
-
       if (['.zip', '.js'].some(ext => item.extname === ext)) {
         item.runtime = 'js'
         return cb(null, item)
@@ -90,8 +97,7 @@ exports.fnStatFilterCtor = ({ root, concurrentStat }) => {
         return cb(null, item)
       }
 
-      // skip anything else
-      return cb()
+      return cb(null, item)
     })
   })
 }
