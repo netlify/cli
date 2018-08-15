@@ -13,6 +13,9 @@ exports.methods = require('./shape-swagger')
 
 // open-api 2.0
 exports.generateMethod = method => {
+  //
+  // Warning: Expects `this`. These methods expect to live on the client prototype
+  //
   return async function(params, opts) {
     opts = Object.assign({}, opts)
     params = Object.assign({}, this.globalParams, params)
@@ -66,6 +69,7 @@ exports.generateMethod = method => {
         case 'json':
         default: {
           opts.body = JSON.stringify(body)
+          set(discoveredHeaders, 'Content-Type', 'application/json')
           break
         }
       }
@@ -85,8 +89,6 @@ exports.generateMethod = method => {
       err.opts = opts
       throw err
     }
-
-    // Put the status on the prototype to prevent it from serializing
     const status = {
       status: response.status,
       statusText: response.statusText,
@@ -101,7 +103,8 @@ exports.generateMethod = method => {
       json = { body: text }
     }
 
-    // inject prototype props
+    // Provide access to request status info as properties, without it serializing, including arrays
+    // A weird idea, with nice API ergonomics
     Object.setPrototypeOf(status, Object.getPrototypeOf(json))
     Object.setPrototypeOf(json, status)
     return json
