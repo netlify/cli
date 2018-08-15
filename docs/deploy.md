@@ -17,4 +17,4 @@ ARGUMENTS
   PUBLISHFOLDER  folder to deploy (optional)
 ```
 
-_See code: [src/commands/deploy/index.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/deploy/index.js)_
+_See code: [src/commands/deploy.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/deploy.js)_
