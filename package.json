@@ -3,6 +3,21 @@
   "description": "CLI to interact with Netlify",
   "version": "0.0.0",
   "author": "davidwells @DavidWells",
+  "scripts": {
+    "build": "npm run clean && run-s build:*",
+    "build:deptree": "depcruise --exclude '^node_modules' --output-type dot src | dot -T svg > site/dependencygraph.svg",
+    "build:docs": "DOCS_GEN=TRUE oclif-dev readme --multi",
+    "build:site": "sitedown . -b site/ -l layout.html && cpx 'coverage/lcov-report/**/*' 'site/coverage'",
+    "ci": "run-s test build",
+    "clean": "rimraf site && mkdirp site",
+    "start": "node ./bin/run",
+    "test": "run-s test:*",
+    "test:ava": "nyc --reporter=lcov ava --verbose && nyc report",
+    "test:lint": "eslint src",
+    "test:deps": "dependency-check ./package.json --entry 'src/**/!(*.test).js' --unused --missing --no-dev --no-peer -i @oclif/plugin-help -i @oclif/plugin-not-found",
+    "watch": "run-p watch:*",
+    "watch:ava": "nyc --reporter=lcov ava --watch"
+  },
   "ava": {
     "files": [
       "src/**/*.test.js"
@@ -112,20 +127,5 @@
       ]
     }
   },
-  "repository": "netlify/cli",
-  "scripts": {
-    "build": "npm run clean && run-s build:*",
-    "build:deptree": "depcruise --exclude '^node_modules' --output-type dot src | dot -T svg > site/dependencygraph.svg",
-    "build:docs": "DOCS_GEN=TRUE oclif-dev readme --multi",
-    "build:site": "sitedown . -b site/ -l layout.html && cpx 'coverage/lcov-report/**/*' 'site/coverage'",
-    "ci": "run-s test build",
-    "clean": "rimraf site && mkdirp site",
-    "start": "node ./bin/run",
-    "test": "run-s test:*",
-    "test:ava": "nyc --reporter=lcov ava --verbose && nyc report",
-    "test:lint": "eslint src",
-    "test:deps": "dependency-check ./package.json --entry 'src/**/!(*.test).js' --unused --missing --no-dev --no-peer -i @oclif/plugin-help -i @oclif/plugin-not-found",
-    "watch": "run-p watch:*",
-    "watch:ava": "nyc --reporter=lcov ava --watch"
-  }
+  "repository": "netlify/cli"
 }

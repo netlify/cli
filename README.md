@@ -16,7 +16,7 @@ $ npm install -g netlify-cli
 $ netlify-cli COMMAND
 running command...
 $ netlify-cli (-v|--version|version)
-netlify-cli/0.0.0 darwin-x64 node-v10.8.0
+netlify-cli/0.0.0 darwin-x64 node-v10.4.1
 $ netlify-cli --help [COMMAND]
 USAGE
   $ netlify-cli COMMAND
@@ -33,14 +33,12 @@ You can also access the cli from the following aliases:
 # Command Topics
 
 * [`netlify-cli deploy`](docs/deploy.md) - Create a new deploy from the contents of a folder.
-* [`netlify-cli help`](docs/help.md) - display help for netlify-cli
 * [`netlify-cli link`](docs/link.md) - Link a local repo or project folder to an existing site on Netlify
 * [`netlify-cli login`](docs/login.md) - Login to account
 * [`netlify-cli logout`](docs/logout.md) - Logout of account
 * [`netlify-cli sites`](docs/sites.md) - Handle site operations
 * [`netlify-cli status`](docs/status.md) - Print currently logged in use
 * [`netlify-cli unlink`](docs/unlink.md) - Unlink a local repo from a Netlify site
-* [`netlify-cli whoami`](docs/whoami.md) - Print currently logged in user and account info
 
 <!-- commandsstop -->
 
