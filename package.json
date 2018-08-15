@@ -25,7 +25,6 @@
     "@netlify/open-api": "^0.1.1",
     "@oclif/command": "^1",
     "@oclif/errors": "^1.1.2",
-    "@oclif/plugin-help": "^2",
     "@oclif/plugin-not-found": "^1.1.0",
     "ascii-table": "0.0.9",
     "chalk": "^2.4.1",
@@ -100,7 +99,6 @@
     "bin": "netlify-cli",
     "commands": "./src/commands",
     "plugins": [
-      "@oclif/plugin-help",
       "@oclif/plugin-not-found"
     ],
     "hooks": {
