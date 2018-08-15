@@ -1,6 +1,7 @@
 const Command = require('../../base')
 const renderShortDesc = require('../../utils/renderShortDescription')
 const path = require('path')
+const { flags } = require('@oclif/command')
 const get = require('lodash.get')
 const fs = require('fs')
 const cliUx = require('cli-ux').default
@@ -9,7 +10,7 @@ const prettyjson = require('prettyjson')
 class DeployCommand extends Command {
   async run() {
     await this.authenticate()
-    const { args } = this.parse(DeployCommand)
+    const { args, flags } = this.parse(DeployCommand)
 
     const accessToken = this.global.get('accessToken')
     if (!accessToken) {
@@ -31,8 +32,13 @@ class DeployCommand extends Command {
     // TODO: abstract settings lookup
     const deployFolder =
       args.publishFolder ||
-      get(this.site.toml, 'build.publish') ||
+      get(this.site.toml, 'build.functions') ||
       get(await this.netlify.getSite({ siteId }), 'build_settings.dir')
+
+    const functionsFolder =
+      flags.functions ||
+      get(this.site.toml, 'build.publish') ||
+      get(await this.netlify.getSite({ siteId }), 'build_settings.functions_dir')
 
     if (!deployFolder) {
       this.error(
@@ -40,13 +46,19 @@ class DeployCommand extends Command {
       )
     }
 
-    const resolvedDeployPath = path.resolve(process.cwd(), deployFolder)
+    // TODO go through the above resolution, and make sure the resolve algorithm makes sense
+    const resolvedDeployPath = path.resolve(this.site.root, deployFolder)
+    let resolvedFunctionsPath
+    if (functionsFolder) resolvedFunctionsPath = path.resolve(this.site.root, functionsFolder)
+
     cliUx.action.start(`Starting a deploy from ${resolvedDeployPath}`)
 
     ensureDirectory(resolvedDeployPath, this.exit)
+    if (resolvedFunctionsPath) ensureDirectory(resolvedDeployPath, this.exit)
+
     let results
     try {
-      results = await this.netlify.deploy(siteId, resolvedDeployPath)
+      results = await this.netlify.deploy(siteId, resolvedDeployPath, resolvedFunctionsPath)
     } catch (e) {
       this.error(e)
     }
@@ -70,7 +82,11 @@ DeployCommand.args = [
   }
 ]
 
-function ensureDirectory (resolvedDeployPath, exit) {
+DeployCommand.flags = {
+  functions: flags.string()
+}
+
+function ensureDirectory(resolvedDeployPath, exit) {
   let stat
   try {
     stat = fs.statSync(resolvedDeployPath)

@@ -87,8 +87,15 @@ exports.generateMethod = method => {
       err.response = await response.clone()
       err.path = path
       err.opts = opts
+      try {
+        err.body = await response.clone().json()
+      } catch (e) {
+        const text = await response.clone().text()
+        err.body = text
+      }
       throw err
     }
+
     const status = {
       status: response.status,
       statusText: response.statusText,

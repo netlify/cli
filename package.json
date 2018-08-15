@@ -51,6 +51,7 @@
     "find-up": "^3.0.0",
     "flush-write-stream": "^1.0.3",
     "folder-walker": "^3.1.0",
+    "from2-array": "0.0.4",
     "hasha": "^3.0.0",
     "inquirer": "^6.0.0",
     "is-docker": "^1.1.0",
@@ -69,10 +70,10 @@
     "pump": "^3.0.0",
     "qs": "^6.5.2",
     "through2-filter": "^3.0.0",
+    "through2-map": "^3.0.0",
     "util.promisify": "^1.0.0",
     "util.promisify-all": "^1.0.2",
-    "write-file-atomic": "^2.3.0",
-    "from2-array": "0.0.4"
+    "write-file-atomic": "^2.3.0"
   },
   "devDependencies": {
     "@oclif/dev-cli": "^1.13.31",
