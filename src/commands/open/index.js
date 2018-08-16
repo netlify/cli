@@ -18,7 +18,7 @@ class OpenCommand extends Command {
 
     let site
     try {
-      site = await this.netlify.getSite(siteId)
+      site = await this.netlify.getSite({siteId})
     } catch (e) {
       if (e.status === 401 /* unauthorized*/) {
         this.warn(`Log in with a different account or re-link to a site you have permission for`)
