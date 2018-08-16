@@ -1,6 +1,18 @@
-node_modules/
-.netlify
+*-debug.log
+*-error.log
+/.nyc_output
+/dist
+/package-lock.json
+/tmp
+node_modules
+misc
+
+# node sdk
+vendor
+
+# osx
+.DS_STORE
 .vscode
-netlify.toml
-yarn.lock
-package-lock.json
+site
+.netlify
+coverage

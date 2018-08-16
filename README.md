@@ -1,46 +1,120 @@
-# Netlify CLI
+Netlify-cli
+===========
 
-The Netlify CLI tools lets you create, deploy, and delete new sites straight from your terminal.
+Pluggable CLI for Netlify. 🎉
 
-This CLI utility is deprecated in favor of [netlifyctl](https://github.com/netlify/netlifyctl) which is the currently maintained CLI utility.
+<!-- toc -->
+* [Usage](#usage)
+* [Command Topics](#command-topics)
+* [Local Development](#local-development)
+<!-- tocstop -->
 
-## Installation
+# Usage
+<!-- usage -->
+```sh-session
+$ npm install -g netlify-cli
+$ netlify-cli COMMAND
+running command...
+$ netlify-cli (-v|--version|version)
+netlify-cli/0.0.0 darwin-x64 node-v10.4.1
+$ netlify-cli --help [COMMAND]
+USAGE
+  $ netlify-cli COMMAND
+...
+```
+<!-- usagestop -->
 
-To install the CLI tools:
+You can also access the cli from the following aliases:
 
-```bash
-npm install netlify-cli -g
+- `netlify`
+- `ntl`
+
+<!-- commands -->
+# Command Topics
+
+* [`netlify-cli deploy`](docs/deploy.md) - Create a new deploy from the contents of a folder.
+* [`netlify-cli link`](docs/link.md) - Link a local repo or project folder to an existing site on Netlify
+* [`netlify-cli login`](docs/login.md) - Login to account
+* [`netlify-cli logout`](docs/logout.md) - Logout of account
+* [`netlify-cli sites`](docs/sites.md) - Handle site operations
+* [`netlify-cli status`](docs/status.md) - Print currently logged in use
+* [`netlify-cli unlink`](docs/unlink.md) - Unlink a local repo from a Netlify site
+
+<!-- commandsstop -->
+
+---
+<details>
+  <summary>Notes from previous CLIs</summary>
+
+This CLI supercedes our [old Go CLI](https://github.com/netlify/netlifyctl) and [old Node CLI](https://github.com/netlify/netlify-cli).
+
+**Go CLI commands**
+
+via https://github.com/netlify/netlifyctl
+
+```
+Available Commands:
+  assets    # List assets attached to a site
+  ├── add   # Add an asset to a site
+  └── info  # Show information for an asset or a group of them
+  deploy    # Deploy your site
+  form      # List forms
+  └── submissions # list form submissions
+  help      # Help about any command
+  init      # Configure continuous deployment
+  login     # Log user in
+  site      # Handle site operations
+  ├── create   # create site
+  └── update   # Update site settings
+  version
 ```
 
-## Usage
+**Node CLI Commands**
 
-Deploy a front-end project that lives in `my-project` and builds to `dist` directory:
+via https://github.com/netlify/netlify-cli
 
-```bash
-cd my-project/
-netlify deploy dist
+```
+createSite = require("../lib/commands/create_site"),
+deleteSite = require("../lib/commands/delete_site"),
+deploy     = require("../lib/commands/deploy"),
+publish    = require("../lib/commands/publish"),
+init       = require("../lib/commands/init"),
+list       = require("../lib/commands/list_sites"),
+updateSite = require("../lib/commands/update_site"),
+openSite   = require("../lib/commands/open"),
+env        = require("../lib/commands/env"),
 ```
 
-## Configuration and Authentication
+</details>
 
-The first time you use the netlify cli command you'll be asked to authenticate.
 
-Your access token is stored in `~/.netlify/config`.
+**Misc examples**
 
-Netlify also stores a local `.netlify` file in the folder where you run `netlify deploy` from where the `site_id` is stored.
+- https://github.com/feinoujc/gh-search-cli/blob/master/src/commands/code.ts#L16-L53
+- https://github.com/oclif/plugin-plugins#what-is-this
 
-## Environments
+# Local Development
 
-You can easily setup different environments like `staging` or `production`. Just use the `-e` flag:
+1. Clone down the repo
 
-```bash
-netlify deploy dist -e production
+```command
+$ git clone git@github.com:netlify/cli.git
 ```
 
-Netlify creates different sites with each their own URL for each of your environments and keeps track of them in the `.netlify` config file.
+2. Install dependencies
 
-## Caveats
+```command
+$ npm install
+```
 
-- netlify-cli is known to hang with an "ECONNRESET" error (parsed as JSON, it will look odd) when used from many CI environments.  This is a known issue that is only fixed in our alternate and current CLI:  https://github.com/netlify/netlifyctl
+3. Run CLI locally during development
 
-- netlify-cli is known to hang when used with Node.js version 8.1.0.  Version 8.1.2 works well
+```command
+$ ./bin/run [command]
+```
+
+When developing, you can use watch mode which will automatically rebuild the cli and run tests with ava:
+
+```command
+$ npm run watch
+```
