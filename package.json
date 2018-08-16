@@ -58,6 +58,7 @@
     "lodash.camelcase": "^4.3.0",
     "lodash.flatten": "^4.4.0",
     "lodash.get": "^4.4.2",
+    "lodash.isempty": "^4.4.0",
     "lodash.set": "^4.3.2",
     "lodash.snakecase": "^4.1.1",
     "make-dir": "^1.3.0",
