@@ -87,10 +87,10 @@ exports.generateMethod = method => {
       err.response = await response.clone()
       err.path = path
       err.opts = opts
+      const text = await response.text()
       try {
-        err.body = await response.clone().json()
+        err.body = JSON.parse(text)
       } catch (e) {
-        const text = await response.clone().text()
         err.body = text
       }
       throw err
@@ -102,11 +102,11 @@ exports.generateMethod = method => {
       ok: response.ok
     }
 
+    const text = await response.text()
     let json
     try {
-      json = await response.clone().json()
+      json = JSON.parse(text)
     } catch (e) {
-      const text = await response.clone().text()
       json = { body: text }
     }
 
