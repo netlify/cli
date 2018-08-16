@@ -1,8 +1,14 @@
 {
   "name": "netlify-cli",
   "description": "CLI to interact with Netlify",
-  "version": "0.0.0",
-  "author": "davidwells @DavidWells",
+  "version": "2.0.0-alpha.1",
+  "author": "Netlify Inc.",
+  "contributors": [
+    "Mathias Biilmann <matt@netlify.com> (https://twitter.com/biilmann)",
+    "David Calavera <david@netlify.com> (https://twitter.com/calavera)",
+    "David Wells <david.wells@netlify.com> (https://davidwells.io/)",
+    "Bret Comnes <bcomnes@gmail.com> (https://bret.io)"
+  ],
   "scripts": {
     "build": "npm run clean && run-s build:*",
     "build:deptree": "depcruise --exclude '^node_modules' --output-type dot src | dot -T svg > site/dependencygraph.svg",
