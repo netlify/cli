@@ -4,7 +4,6 @@ const renderShortDesc = require('../../utils/renderShortDescription')
 
 class OpenCommand extends Command {
   async run() {
-    this.log(`Opening {SITE XYZ} admin in your default browser`)
     const accessToken = this.global.get('accessToken')
     const siteId = this.site.get('siteId')
     if (!accessToken) {
@@ -19,6 +18,8 @@ class OpenCommand extends Command {
     let site
     try {
       site = await this.netlify.getSite({siteId})
+      this.log(`Opening "${site.name}" site admin UI:`)
+      this.log(`> ${site.admin_url}`)
     } catch (e) {
       if (e.status === 401 /* unauthorized*/) {
         this.warn(`Log in with a different account or re-link to a site you have permission for`)
