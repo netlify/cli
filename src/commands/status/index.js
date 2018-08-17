@@ -34,12 +34,17 @@ class StatusCommand extends Command {
       this.error(`Not logged in. Log in to see site status.`)
     }
 
+    this.log(`──────────────────────┐
+ Current Netlify User │
+──────────────────────┘`)
+    this.log(prettyjson.render(clean(accountData)))
+
     if (!siteId) {
-      this.warn('Did you run `netlify link` yet?')
-      this.error(`You don't appear to be in a folder that is linked to a site`)
+      return false
     }
 
     let site
+
     try {
       site = await this.netlify.getSite({ siteId })
     } catch (e) {
@@ -55,17 +60,16 @@ class StatusCommand extends Command {
       'CLI Cache': this.site.path,
       'Netlify TOML': this.site.tomlPath,
       'Admin URL': site.admin_url,
-      CWD: process.cwd()
+      'Site URL': site.ssl_url || site.url
     }
-    this.log(`──────────────────────┐
- Current Netlify User │
-──────────────────────┘`)
-    this.log(prettyjson.render(clean(accountData)))
+
+
     this.log(`────────────────────┐
  Netlify Site Info  │
 ────────────────────┘`)
 
     this.log(prettyjson.render(statusData))
+
 
   }
 }
