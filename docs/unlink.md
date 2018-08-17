@@ -14,4 +14,4 @@ USAGE
   $ netlify-cli unlink
 ```
 
-_See code: [src/commands/unlink.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/unlink.js)_
+_See code: [src/commands/unlink/index.js](https://github.com/netlify/cli/blob/v2.0.0-alpha.2/src/commands/unlink/index.js)_

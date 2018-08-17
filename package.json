@@ -1,8 +1,14 @@
 {
   "name": "netlify-cli",
   "description": "CLI to interact with Netlify",
-  "version": "0.0.0",
-  "author": "davidwells @DavidWells",
+  "version": "2.0.0-alpha.2",
+  "author": "Netlify Inc.",
+  "contributors": [
+    "Mathias Biilmann <matt@netlify.com> (https://twitter.com/biilmann)",
+    "David Calavera <david@netlify.com> (https://twitter.com/calavera)",
+    "David Wells <david.wells@netlify.com> (https://davidwells.io/)",
+    "Bret Comnes <bcomnes@gmail.com> (https://bret.io)"
+  ],
   "scripts": {
     "build": "npm run clean && run-s build:*",
     "build:deptree": "depcruise --exclude '^node_modules' --output-type dot src | dot -T svg > site/dependencygraph.svg",
@@ -14,9 +20,12 @@
     "test": "run-s test:*",
     "test:ava": "nyc --reporter=lcov ava --verbose && nyc report",
     "test:lint": "eslint src",
-    "test:deps": "dependency-check ./package.json --entry 'src/**/!(*.test).js' --unused --missing --no-dev --no-peer -i @oclif/plugin-help -i @oclif/plugin-not-found",
+    "test:deps": "dependency-check ./package.json --entry 'src/**/!(*.test).js' --unused --missing --no-dev --no-peer -i @oclif/plugin-not-found -i @oclif/config -i @oclif/plugin-help",
     "watch": "run-p watch:*",
-    "watch:ava": "nyc --reporter=lcov ava --watch"
+    "watch:ava": "nyc --reporter=lcov ava --watch",
+    "prepack": "oclif-dev manifest && oclif-dev readme && npm shrinkwrap",
+    "postpack": "rm -f oclif.manifest.json npm-shrinkwrap.json",
+    "version": "oclif-dev readme && git add README.md"
   },
   "ava": {
     "files": [
@@ -39,8 +48,10 @@
     "@iarna/toml": "^1.7.1",
     "@netlify/open-api": "^0.1.1",
     "@oclif/command": "^1",
+    "@oclif/config": "^1",
     "@oclif/errors": "^1.1.2",
-    "@oclif/plugin-not-found": "^1.1.0",
+    "@oclif/plugin-help": "^2",
+    "@oclif/plugin-not-found": "^1.1.4",
     "ascii-table": "0.0.9",
     "chalk": "^2.4.1",
     "clean-deep": "^3.0.2",
@@ -101,6 +112,8 @@
   },
   "files": [
     "/bin",
+    "/npm-shrinkwrap.json",
+    "/oclif.manifest.json",
     "/src"
   ],
   "homepage": "https://github.com/netlify/cli",
