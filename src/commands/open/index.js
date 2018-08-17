@@ -1,41 +1,28 @@
 const Command = require('../../base')
 const openBrowser = require('../../utils/open-browser')
+const OpenAdminCommand = require('./admin')
 const renderShortDesc = require('../../utils/renderShortDescription')
+const showHelp = require('../../utils/showHelp')
+const { isEmptyCommand } = require('../../utils/checkCommandInputs')
 
 class OpenCommand extends Command {
   async run() {
-    const accessToken = this.global.get('accessToken')
-    const siteId = this.site.get('siteId')
-    if (!accessToken) {
-      this.error(`Not logged in. Log in to see site status.`)
+    const { flags, args } = this.parse(OpenCommand)
+    // Show help on empty sub command
+    if (isEmptyCommand(flags, args)) {
+      showHelp(this.id)
     }
-
-    if (!siteId) {
-      this.warn('Did you run `netlify link` yet?')
-      this.error(`You don't appear to be in a folder that is linked to a site`)
-    }
-
-    let site
-    try {
-      site = await this.netlify.getSite({siteId})
-      this.log(`Opening "${site.name}" site admin UI:`)
-      this.log(`> ${site.admin_url}`)
-    } catch (e) {
-      if (e.status === 401 /* unauthorized*/) {
-        this.warn(`Log in with a different account or re-link to a site you have permission for`)
-        this.error(`Not authorized to view the currently linked site (${siteId})`)
-      }
-      this.error(e)
-    }
-
-    openBrowser(site.admin_url)
-    this.exit()
+    // Default open netlify admin
+    await OpenAdminCommand.run()
   }
 }
 
-OpenCommand.description = `${renderShortDesc('Opens current site admin UI in netlify')}`
+OpenCommand.description = `${renderShortDesc('Opens current project urls in browser')}`
 
-OpenCommand.examples = ['$ netlify open']
+OpenCommand.examples = [
+  '$ netlify open:admin',
+  '$ netlify open:site',
+]
 
 OpenCommand.hidden = true
 
