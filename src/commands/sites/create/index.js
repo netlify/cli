@@ -28,30 +28,6 @@ class SitesCreateCommand extends Command {
             value: account.slug,
             name: `${account.name || account.slug} ${account.slug === personal.slug ? ' (personal)' : ''}`
           }))
-        },
-        {
-          type: 'confirm',
-          name: 'force-tls',
-          message: 'Force TLS?:',
-          default: false
-        },
-        {
-          type: 'input',
-          name: 'sessionId',
-          message: 'Session ID (optional):',
-          filter: val => (val === '' ? undefined : val)
-        },
-        {
-          type: 'input',
-          name: 'customDomain',
-          message: 'Custom Domain (optional):',
-          filter: val => (val === '' ? undefined : val)
-        },
-        {
-          type: 'input',
-          name: 'password',
-          message: 'Password for password protected site (optional):',
-          filter: val => (val === '' ? undefined : val)
         }
       ])
 
@@ -67,6 +43,7 @@ class SitesCreateCommand extends Command {
           'Site ID': site.id
         })
       )
+      return site
     }
   }
 }
