@@ -44,7 +44,8 @@ class addonsDeleteCommand extends Command {
     // console.log('rawFlags', rawFlags)
 
     if (!currentAddon.id) {
-      console.log('No addon "${addonName}" found for site. Addon already deleted or never existed!')
+      console.log(`No addon "${addonName}" found for site. Addon already deleted or never existed!`)
+      console.log(`> Run \`netlify addons:create ${addonName}\` to create an instance for this site`)
       return false
     }
 

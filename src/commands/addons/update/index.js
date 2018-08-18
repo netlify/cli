@@ -42,7 +42,7 @@ class addonsUpdateCommand extends Command {
 
     if (!currentAddon || !currentAddon.id) {
       console.log(`Addon ${addonName} doesnt exist for ${site.name}`)
-      console.log(`Run \`netlify addons:create ${addonName}\` to create an instance for this site`)
+      console.log(`> Run \`netlify addons:create ${addonName}\` to create an instance for this site`)
       return false
     }
 
