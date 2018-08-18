@@ -109,6 +109,7 @@ class InitCommand extends Command {
 
     this.log('Configure continuous integration for a git remote')
     const site = await this.createOrFindSite()
+    this.log(site)
     //this.site.set('siteId', site.id)
   }
 }
