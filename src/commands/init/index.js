@@ -3,22 +3,39 @@ const renderShortDesc = require('../../utils/renderShortDescription')
 const SitesCreateCommand = require('../sites/create')
 const { flags } = require('@oclif/command')
 const inquirer = require('inquirer')
+const get = require('lodash.get')
 
 class InitCommand extends Command {
   async createOrFindSite() {
+    // TODO Encapsulate this better
+    // Prompt existing site if not set up
+    // or Create a new site
+    // or Search for an existing site
     const siteOpts = ['New site', 'Existing site']
-    console.log(this.site.get('siteId'))
+
+    let linkedSite
     if (this.site.get('siteId')) {
       try {
-        const linkedSite = await this.netlify.getSite({ siteId: this.site.get('siteId') })
-        siteOpts.unshift({
-          name: `Linked site: ${linkedSite.name}`,
-          value: 'Linked site'
-        })
+        linkedSite = await this.netlify.getSite({ siteId: this.site.get('siteId') })
       } catch (_) {
         // noop
       }
+
+      if (get(linkedSite, 'build_settings.repo_url')) {
+        this.warn(`Folder linked to a site that already has CI`)
+        this.error(
+          `${get(linkedSite, 'name')} already configured to deploy from ${get(linkedSite, 'build_settings.repo_url')}`
+        )
+      }
+
+      if (linkedSite) {
+        siteOpts.unshift({
+          name: `Linked site: ${linkedSite.name}`,
+          value: 'linked-site'
+        })
+      }
     }
+
     const { configureOption } = await inquirer.prompt([
       {
         type: 'list',
@@ -29,12 +46,12 @@ class InitCommand extends Command {
     ])
 
     // create site or search for one
-    let site
     if (configureOption === 'New site') {
-      site = await SitesCreateCommand.run([])
-    } else if (configureOption === 'Linked site') {
-      site = await this.netlify.getSite({ siteId: this.site.get('siteId') })
+      return await SitesCreateCommand.run([])
+    } else if (configureOption === 'linked-site') {
+      return linkedSite
     } else {
+      let site
       const { searchType } = await inquirer.prompt([
         {
           type: 'list',
@@ -96,16 +113,17 @@ class InitCommand extends Command {
           break
         }
       }
-    }
 
-    return site
+      if (get(site, 'build_settings.repo_url')) {
+        this.warn(`Folder linked to a site that already has CI`)
+        this.error(`${get(site, 'name')} already configured to deploy from ${get(site, 'build_settings.repo_url')}`)
+      }
+      return site
+    }
   }
 
   async run() {
     await this.authenticate()
-    //const siteId = this.site.get('siteId')
-
-    //const remotes = [] // TODO parse remotes
 
     this.log('Configure continuous integration for a git remote')
     const site = await this.createOrFindSite()
@@ -118,6 +136,7 @@ InitCommand.description = `${renderShortDesc('Configure continuous deployment')}
 
 InitCommand.flags = {
   manual: flags.boolean()
+  // force: flags.boolean()
 }
 
 module.exports = InitCommand
