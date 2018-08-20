@@ -85,7 +85,6 @@
     "prettyjson": "^1.2.1",
     "pump": "^3.0.0",
     "qs": "^6.5.2",
-    "remote-origin-url": "^1.0.0",
     "through2-filter": "^3.0.0",
     "through2-map": "^3.0.0",
     "util.promisify": "^1.0.0",
