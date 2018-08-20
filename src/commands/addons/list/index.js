@@ -1,10 +1,11 @@
 const AsciiTable = require('ascii-table')
+const { flags } = require('@oclif/command')
 const Command = require('../../../base')
 const { getAddons } = require('../../../utils/api/addons')
 
 class AddonsListCommand extends Command {
   async run() {
-    // const { flags } = this.parse(AddonsListCommand)
+    const { flags } = this.parse(AddonsListCommand)
     await this.authenticate()
 
     const accessToken = this.global.get('accessToken')
@@ -26,6 +27,12 @@ class AddonsListCommand extends Command {
     if (!addons || !addons.length) {
       console.log(`No addons currently installed for ${site.name}`)
       console.log(`> Run \`netlify addons:create addon-namespace\` to install an addon`)
+      return false
+    }
+
+    // Json response for piping commands
+    if (flags.json) {
+      console.log(JSON.stringify(addons, null, 2))
       return false
     }
 
@@ -54,5 +61,9 @@ AddonsListCommand.description = `list current site addons
 ...
 Addons are a way to extend the functionality of your Netlify site
 `
+
+AddonsListCommand.flags = {
+  json: flags.boolean()
+}
 
 module.exports = AddonsListCommand
