@@ -1,5 +1,4 @@
 const Command = require('../../base')
-const openBrowser = require('../../utils/open-browser')
 const OpenAdminCommand = require('./admin')
 const renderShortDesc = require('../../utils/renderShortDescription')
 const showHelp = require('../../utils/showHelp')
@@ -19,10 +18,7 @@ class OpenCommand extends Command {
 
 OpenCommand.description = `${renderShortDesc('Opens current project urls in browser')}`
 
-OpenCommand.examples = [
-  '$ netlify open:admin',
-  '$ netlify open:site',
-]
+OpenCommand.examples = ['$ netlify open:admin', '$ netlify open:site']
 
 OpenCommand.hidden = true
 

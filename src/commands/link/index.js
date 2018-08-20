@@ -11,10 +11,18 @@ class LinkCommand extends Command {
     const siteId = this.site.get('siteId')
 
     if (siteId && !flags.force) {
-      const site = await this.netlify.getSite({ siteId })
-      this.log(`Site already linked to ${site.name}`)
-      this.log(`Link: ${site.admin_url}`)
-      return this.exit()
+      let siteInaccessible = false
+      let site
+      try {
+        site = await this.netlify.getSite({ siteId })
+      } catch (e) {
+        if (!e.ok) siteInaccessible = true
+      }
+      if (!siteInaccessible) {
+        this.log(`Site already linked to ${site.name}`)
+        this.log(`Link: ${site.admin_url}`)
+        return this.exit()
+      }
     }
 
     if (flags.id) {
@@ -85,16 +93,16 @@ class LinkCommand extends Command {
         }
         let site
         if (sites.length > 1) {
-          const { siteName } = await inquirer.prompt([
+          const { selectedSite } = await inquirer.prompt([
             {
               type: 'list',
-              name: 'name',
+              name: 'selectedSite',
               paginated: true,
-              choices: sites.map(site => site.name)
+              choices: sites.map(site => ({ name: site.name, value: site }))
             }
           ])
-          site = sites.find(site => (site.name = siteName))
-          if (!site) this.error('No site selected')
+          if (!selectedSite) this.error('No site selected')
+          site = selectedSite
         } else {
           site = sites[0]
         }

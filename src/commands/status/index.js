@@ -9,6 +9,9 @@ class StatusCommand extends Command {
     const accessToken = this.global.get('accessToken')
     const siteId = this.site.get('siteId')
 
+    this.log(`──────────────────────┐
+ Current Netlify User │
+──────────────────────┘`)
     let personal
     let accountData
     if (accessToken) {
@@ -34,23 +37,26 @@ class StatusCommand extends Command {
       this.error(`Not logged in. Log in to see site status.`)
     }
 
-    this.log(`──────────────────────┐
- Current Netlify User │
-──────────────────────┘`)
     this.log(prettyjson.render(clean(accountData)))
 
+    this.log(`────────────────────┐
+ Netlify Site Info  │
+────────────────────┘`)
+
     if (!siteId) {
-      return false
+      this.warn('Did you run `netlify link` yet?')
+      this.error(`You don't appear to be in a folder that is linked to a site`)
     }
-
     let site
-
     try {
       site = await this.netlify.getSite({ siteId })
     } catch (e) {
       if (e.status === 401 /* unauthorized*/) {
         this.warn(`Log in with a different account or re-link to a site you have permission for`)
         this.error(`Not authorized to view the currently linked site (${siteId})`)
+      }
+      if (e.status === 404 /* missing */) {
+        this.error(`The site this folder is linked to can't be found`)
       }
       this.error(e)
     }
@@ -63,14 +69,7 @@ class StatusCommand extends Command {
       'Site URL': site.ssl_url || site.url
     }
 
-
-    this.log(`────────────────────┐
- Netlify Site Info  │
-────────────────────┘`)
-
     this.log(prettyjson.render(statusData))
-
-
   }
 }
 
