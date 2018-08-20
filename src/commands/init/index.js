@@ -4,11 +4,15 @@ const SitesCreateCommand = require('../sites/create')
 const { flags } = require('@oclif/command')
 const inquirer = require('inquirer')
 const get = require('lodash.get')
+const gitRemoteOriginUrl = require('git-remote-origin-url')
+const parseGitRemote = require('parse-github-url')
+const gitRepoInfo = require('git-repo-info')
 
 class InitCommand extends Command {
   async createOrFindSite() {
+    const { flags } = this.parse(InitCommand)
     // TODO Encapsulate this better
-    // Prompt existing site if not set up
+    // Prompt existing site
     // or Create a new site
     // or Search for an existing site
     const siteOpts = ['New site', 'Existing site']
@@ -21,16 +25,9 @@ class InitCommand extends Command {
         // noop
       }
 
-      if (get(linkedSite, 'build_settings.repo_url')) {
-        this.warn(`Folder linked to a site that already has CI`)
-        this.error(
-          `${get(linkedSite, 'name')} already configured to deploy from ${get(linkedSite, 'build_settings.repo_url')}`
-        )
-      }
-
       if (linkedSite) {
         siteOpts.unshift({
-          name: `Linked site: ${linkedSite.name}`,
+          name: `Linked site (${linkedSite.name})`,
           value: 'linked-site'
         })
       }
@@ -45,13 +42,14 @@ class InitCommand extends Command {
       }
     ])
 
+    let site
     // create site or search for one
     if (configureOption === 'New site') {
-      return await SitesCreateCommand.run([])
+      site = await SitesCreateCommand.run([])
     } else if (configureOption === 'linked-site') {
-      return linkedSite
+      site = linkedSite
     } else {
-      let site
+      // TODO share this with link site search step
       const { searchType } = await inquirer.prompt([
         {
           type: 'list',
@@ -107,36 +105,120 @@ class InitCommand extends Command {
           try {
             site = await this.netlify.getSite({ siteId })
           } catch (e) {
-            if (e.status === 404) this.error(new Error(`Site id ${siteId} not found`))
+            if (e.status === 404) this.error(`Site id ${siteId} not found`)
             else this.error(e)
           }
           break
         }
       }
-
-      if (get(site, 'build_settings.repo_url')) {
-        this.warn(`Folder linked to a site that already has CI`)
-        this.error(`${get(site, 'name')} already configured to deploy from ${get(site, 'build_settings.repo_url')}`)
-      }
-      return site
     }
+    if (get(site, 'build_settings.repo_url')) {
+      if (flags.force) {
+        this.warn(
+          `${get(site, 'name')} already configured to automatically deploy from ${get(site, 'build_settings.repo_url')}`
+        )
+      } else {
+        this.error(
+          `${get(site, 'name')} already configured to automatically deploy from ${get(
+            site,
+            'build_settings.repo_url'
+          )}. Use --force to override`
+        )
+      }
+    }
+    return site
+  }
+
+  async configureManual(site) {
+    const remoteUrl = await gitRemoteOriginUrl()
+
+    if (!remoteUrl) this.error('CI requires a git remote.  No git remote found.')
+    const parsedUrl = parseGitRemote(remoteUrl)
+    const repoInfo = gitRepoInfo()
+
+    const repo = {
+      provider: 'manual',
+      repo_path: parsedUrl.path,
+      repo_branch: repoInfo.branch,
+      allowed_branches: [repoInfo.branch]
+    }
+
+    const key = await this.netlify.createDeployKey()
+    this.log('\nGive this Netlify SSH public key access to your repository:\n')
+    this.log(`\n${key.public_key}\n\n`)
+    const { sshKeyAdded } = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'sshKeyAdded',
+        message: 'Continue?',
+        default: true
+      }
+    ])
+    if (!sshKeyAdded) this.exit()
+
+    repo.deploy_key_id = key.id
+
+    // TODO: Look these up and default to the lookup order
+    const { buildCmd, buildDir } = inquirer.prompt([
+      {
+        type: 'input',
+        name: 'buildCmd',
+        message: 'Your build command (hugo build/yarn run build/etc):',
+        filter: val => (val === '' ? undefined : val)
+      },
+      {
+        type: 'input',
+        name: 'buildDir',
+        message: 'Directory to deploy (blank for current dir):',
+        default: '.'
+      }
+    ])
+    repo.dir = buildDir
+    if (buildCmd) repo.cmd = buildCmd
+
+    site = this.netlify.updateSite({ siteId: site.id, body: { repo } })
+
+    this.log('\nGive this Netlify SSH public key access to your repository:\n')
+    this.log(`\n${site.deploy_hook}\n\n`)
+    const { deployHookAdded } = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'deployHookAdded',
+        message: 'Continue?',
+        default: true
+      }
+    ])
+    if (!deployHookAdded) this.exit()
+  }
+
+  async configureGithub(site, repo) {
+    throw new Error('Not implemented')
+  }
+
+  async configureGitlab(site, repo) {
+    throw new Error('Not implemented')
   }
 
   async run() {
+    const { flags } = this.parse(InitCommand)
     await this.authenticate()
 
-    this.log('Configure continuous integration for a git remote')
+    this.log('Configure continuous integration for a site')
     const site = await this.createOrFindSite()
-    this.log(site)
-    //this.site.set('siteId', site.id)
+
+    if (flags.manual) {
+      await this.configureManual(site)
+    } else {
+      this.error('No configurator found for the git hosting service')
+    }
   }
 }
 
 InitCommand.description = `${renderShortDesc('Configure continuous deployment')}`
 
 InitCommand.flags = {
-  manual: flags.boolean()
-  // force: flags.boolean()
+  manual: flags.boolean(),
+  force: flags.boolean()
 }
 
 module.exports = InitCommand
