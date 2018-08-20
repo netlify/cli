@@ -159,7 +159,7 @@ class InitCommand extends Command {
     repo.deploy_key_id = key.id
 
     // TODO: Look these up and default to the lookup order
-    const { buildCmd, buildDir } = inquirer.prompt([
+    const { buildCmd, buildDir } = await inquirer.prompt([
       {
         type: 'input',
         name: 'buildCmd',
@@ -176,9 +176,9 @@ class InitCommand extends Command {
     repo.dir = buildDir
     if (buildCmd) repo.cmd = buildCmd
 
-    site = this.netlify.updateSite({ siteId: site.id, body: { repo } })
-
-    this.log('\nGive this Netlify SSH public key access to your repository:\n')
+    site = await this.netlify.updateSite({ siteId: site.id, body: { repo } })
+    console.log(repo)
+    this.log('\nConfigure the following webhook for your repository:\n')
     this.log(`\n${site.deploy_hook}\n\n`)
     const { deployHookAdded } = await inquirer.prompt([
       {
