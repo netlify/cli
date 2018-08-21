@@ -23,7 +23,8 @@ class StatusCommand extends Command {
         'Account slug': get(personal, 'slug'),
         'Account id': get(personal, 'id'),
         Name: get(personal, 'billing_name'),
-        Email: get(personal, 'billing_email')
+        Email: get(personal, 'billing_email'),
+        Github: this.global.get('ghauth.user')
       }
       const teamsData = {}
 
