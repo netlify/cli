@@ -41,7 +41,6 @@ class InitCommand extends Command {
     await this.authenticate()
 
     this.log('Configure continuous integration for a site')
-    debugger
     const repo = await this.loadRepo()
     const site = await createOrFindSite(this, flags)
 
@@ -59,6 +58,7 @@ class InitCommand extends Command {
         }
       }
     }
+    this.log('Site is now configured to automatically deploy')
   }
 }
 

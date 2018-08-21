@@ -2,7 +2,9 @@ const promisify = require('util.promisify')
 const ghauth = promisify(require('ghauth'))
 const version = require('../../../package.json').version
 const os = require('os')
-const octokit = require('@octokit/rest')
+const octokit = require('@octokit/rest')()
+const parseGitRemote = require('parse-github-url')
+const inquirer = require('inquirer')
 
 const UA = 'Netlify CLI ' + version
 
@@ -21,12 +23,81 @@ async function configGithub(ctx, site, repo) {
     ghtoken = newToken
   }
 
-  const kit = octokit()
-
-  kit.authenticate({
+  octokit.authenticate({
     type: 'oauth',
     token: ghtoken.token
   })
 
-  // const key = await ctx.netlify.createDeployKey()
+  const key = await ctx.netlify.createDeployKey()
+  const parsedURL = parseGitRemote(repo.repo_path)
+  await octokit.repos.addDeployKey({
+    title: 'Netlify Deploy Key',
+    key: key.public_key,
+    repo: parsedURL.name,
+    owner: parsedURL.owner,
+    read_only: true
+  })
+
+  repo.deploy_key_id = key.id
+
+  // TODO: Look these up and default to the lookup order
+  const { buildCmd, buildDir } = await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'buildCmd',
+      message: 'Your build command (hugo build/yarn run build/etc):',
+      filter: val => (val === '' ? undefined : val)
+    },
+    {
+      type: 'input',
+      name: 'buildDir',
+      message: 'Directory to deploy (blank for current dir):',
+      default: '.'
+    }
+  ])
+  repo.dir = buildDir
+  if (buildCmd) repo.cmd = buildCmd
+
+  const results = await octokit.repos.get({
+    owner: parsedURL.owner,
+    repo: parsedURL.name
+  })
+
+  repo.id = results.data.id
+  repo.repo_path = results.data.full_name
+  repo.repo_branch = results.data.default_branch
+  repo.allowed_branches = [results.data.default_branch]
+
+  site = await ctx.netlify.updateSite({ siteId: site.id, body: { repo } })
+
+  const hooks = await octokit.repos.getHooks({
+    owner: parsedURL.owner,
+    repo: parsedURL.name,
+    per_page: 100
+  })
+
+  let hookExists = false
+
+  hooks.data.forEach(hook => {
+    if (hook.config.url === site.deploy_hook) hookExists = true
+  })
+
+  if (!hookExists) {
+    try {
+      await octokit.repos.createHook({
+        owner: parsedURL.owner,
+        repo: parsedURL.name,
+        name: 'web',
+        config: {
+          url: site.deploy_hook,
+          content_type: 'json'
+        },
+        events: ['push', 'pull_request', 'delete'],
+        active: true
+      })
+    } catch (e) {
+      // Ignore exists error if the list doesn't return all installed hooks
+      if (!e.message.includes('Hook already exists on this repository')) ctx.error(e)
+    }
+  }
 }
