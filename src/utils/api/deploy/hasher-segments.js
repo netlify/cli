@@ -6,6 +6,8 @@ const hasha = require('hasha')
 const path = require('path')
 const fs = require('fs')
 const map = require('through2-map').obj
+const pump = require('pump')
+const archiver = require('archiver')
 
 // a parallel transform stream segment ctor that hashes fileObj's created by folder-walker
 exports.hasherCtor = ({ concurrentHash, hashAlgorithm = 'sha1' }) => {
@@ -16,14 +18,6 @@ exports.hasherCtor = ({ concurrentHash, hashAlgorithm = 'sha1' }) => {
       // insert hash and asset type to file obj
       .then(hash => cb(null, Object.assign({}, fileObj, { hash })))
       .catch(err => cb(err))
-  })
-}
-
-// Inject normalized function names into normalizedPath and assetType
-exports.fnNormalizerCtor = fnNormalizerCtor
-function fnNormalizerCtor({ assetType = 'function' }) {
-  return map(fileObj => {
-    return Object.assign({}, fileObj, { assetType, normalizedPath: path.basename(fileObj.basename, fileObj.extname) })
   })
 }
 
@@ -68,10 +62,26 @@ exports.fnFilterCtor = objFilterCtor(fileObj => {
   )
 })
 
+function zipFunction(item, tmpDir, cb) {
+  const zipPath = path.join(tmpDir, item.normalizedPath + '.zip')
+  const output = fs.createWriteStream(zipPath)
+  const archive = archiver('zip')
+
+  archive.file(item.filepath, { name: item.basename })
+  archive.finalize()
+
+  pump(archive, output, err => {
+    if (err) return cb(err)
+    console.log(zipPath)
+    item.filepath = zipPath
+    cb(null, item)
+  })
+}
+
 // parallel stream ctor similar to folder-walker but specialized for netlify functions
 // Stream in names of files that may be functions, and this will stat the file and return a fileObj
-exports.fnStatCtor = ({ root, concurrentStat }) => {
-  if (!concurrentStat || !root) throw new Error('Missing required opts')
+exports.fnStatCtor = ({ root, concurrentStat, tmpDir }) => {
+  if (!concurrentStat || !root || !tmpDir) throw new Error('Missing required opts')
   return transform(concurrentStat, { objectMode: true, ordered: false }, (name, cb) => {
     const filepath = path.join(root, name)
     fs.stat(filepath, (err, stat) => {
@@ -84,17 +94,25 @@ exports.fnStatCtor = ({ root, concurrentStat }) => {
         relname: path.relative(root, filepath),
         basename: path.basename(name),
         extname: path.extname(name),
-        type: stat.isFile() ? 'file' : stat.isDirectory() ? 'directory' : null
+        type: stat.isFile() ? 'file' : stat.isDirectory() ? 'directory' : null,
+        assetType: 'function',
+        normalizedPath: path.basename(name, path.extname(name))
       }
 
-      if (['.zip', '.js'].some(ext => item.extname === ext)) {
+      if (['.zip'].some(ext => item.extname === ext)) {
         item.runtime = 'js'
         return cb(null, item)
       }
 
+      if (['.js'].some(ext => item.extname === ext)) {
+        item.runtime = 'js'
+
+        return zipFunction(item, tmpDir, cb)
+      }
+
       if (isExe(item.stat)) {
         item.runtime = 'go'
-        return cb(null, item)
+        return zipFunction(item, tmpDir, cb)
       }
 
       return cb(null, item)

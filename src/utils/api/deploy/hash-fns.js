@@ -3,8 +3,9 @@ const promisify = require('util.promisify')
 const pump = promisify(require('pump'))
 const fs = promisifyAll(require('fs'))
 const fromArray = require('from2-array')
+const tempy = require('tempy')
 
-const { hasherCtor, manifestCollectorCtor, fnStatCtor, fnNormalizerCtor, fnFilterCtor } = require('./hasher-segments')
+const { hasherCtor, manifestCollectorCtor, fnStatCtor, fnFilterCtor } = require('./hasher-segments')
 
 module.exports = hashFns
 async function hashFns(dir, opts) {
@@ -12,20 +13,22 @@ async function hashFns(dir, opts) {
     {
       concurrentHash: 100,
       assetType: 'function',
-      hashAlgorithm: 'sha256'
+      hashAlgorithm: 'sha256',
+      tmpDir: tempy.directory()
     },
     opts
   )
   // early out if the functions dir is omitted
   if (!dir) return { functions: {}, shaMap: {} }
 
-  const fileList = await fs.readdir(dir)
+  const fileList = await fs
+    .readdir(dir)
+    .then(files => files.filter(name => !name.startsWith('.') && !name.includes('__MACOSX')))
   const fileStream = fromArray.obj(fileList)
 
-  const fnStat = fnStatCtor({ root: dir, concurrentStat: opts.concurrentHash })
+  const fnStat = fnStatCtor({ root: dir, concurrentStat: opts.concurrentHash, tmpDir: opts.tmpDir })
   const fnFilter = fnFilterCtor()
   const hasher = hasherCtor(opts)
-  const fnNormalizer = fnNormalizerCtor(opts)
 
   // Written to by manifestCollector
   const functions = {} // normalizedPath: hash (wanted by deploy API)
@@ -36,7 +39,7 @@ async function hashFns(dir, opts) {
   // This is totally wrong wright now.
   // See https://github.com/netlify/open-api/blob/master/go/porcelain/deploy.go#L544
 
-  await pump(fileStream, fnStat, fnFilter, hasher, fnNormalizer, manifestCollector)
+  await pump(fileStream, fnStat, fnFilter, hasher, manifestCollector)
 
   return { functions, fnShaMap }
 }
