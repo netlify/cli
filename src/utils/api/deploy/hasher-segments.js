@@ -72,7 +72,7 @@ function zipFunction(item, tmpDir, cb) {
 
   pump(archive, output, err => {
     if (err) return cb(err)
-    console.log(zipPath)
+
     item.filepath = zipPath
     cb(null, item)
   })

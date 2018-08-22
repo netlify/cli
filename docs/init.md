@@ -1,20 +1,21 @@
 `netlify-cli init`
 ==================
 
-Configure continuous deployment in current working directory
+Configure continuous deployment
 
 * [`netlify-cli init`](#netlify-cli-init)
 
 ## `netlify-cli init`
 
-Configure continuous deployment in current working directory
+Configure continuous deployment
 
 ```
 USAGE
   $ netlify-cli init
 
-EXAMPLE
-  $ netlify init
+OPTIONS
+  --force
+  --manual
 ```
 
-_See code: [src/commands/init/index.js](https://github.com/netlify/cli/blob/v0.0.0/src/commands/init/index.js)_
+_See code: [src/commands/init.js](https://github.com/netlify/cli/blob/v2.0.0-alpha.3/src/commands/init.js)_

@@ -29,7 +29,7 @@ EXAMPLES
   $ netlify sites:list
 ```
 
-_See code: [src/commands/sites.js](https://github.com/netlify/cli/blob/v2.0.0-alpha.2/src/commands/sites.js)_
+_See code: [src/commands/sites/index.js](https://github.com/netlify/cli/blob/v2.0.0-alpha.3/src/commands/sites/index.js)_
 
 ## `netlify-cli sites:create`
 
@@ -52,7 +52,7 @@ DESCRIPTION
   Create an empty site
 ```
 
-_See code: [src/commands/sites/create.js](https://github.com/netlify/cli/blob/v2.0.0-alpha.2/src/commands/sites/create.js)_
+_See code: [src/commands/sites/create/index.js](https://github.com/netlify/cli/blob/v2.0.0-alpha.3/src/commands/sites/create/index.js)_
 
 ## `netlify-cli sites:delete SITEID`
 
@@ -76,7 +76,7 @@ EXAMPLE
   $ netlify site:delete 123-432621211
 ```
 
-_See code: [src/commands/sites/delete.js](https://github.com/netlify/cli/blob/v2.0.0-alpha.2/src/commands/sites/delete.js)_
+_See code: [src/commands/sites/delete/index.js](https://github.com/netlify/cli/blob/v2.0.0-alpha.3/src/commands/sites/delete/index.js)_
 
 ## `netlify-cli sites:list`
 
@@ -91,7 +91,7 @@ DESCRIPTION
   Extra documentation goes here
 ```
 
-_See code: [src/commands/sites/list.js](https://github.com/netlify/cli/blob/v2.0.0-alpha.2/src/commands/sites/list.js)_
+_See code: [src/commands/sites/list/index.js](https://github.com/netlify/cli/blob/v2.0.0-alpha.3/src/commands/sites/list/index.js)_
 
 ## `netlify-cli sites:update`
 
@@ -109,7 +109,7 @@ DESCRIPTION
   Extra documentation goes here
 ```
 
-_See code: [src/commands/sites/update.js](https://github.com/netlify/cli/blob/v2.0.0-alpha.2/src/commands/sites/update.js)_
+_See code: [src/commands/sites/update/index.js](https://github.com/netlify/cli/blob/v2.0.0-alpha.3/src/commands/sites/update/index.js)_
 
 ## `netlify-cli sites:watch`
 
@@ -124,4 +124,4 @@ DESCRIPTION
   Extra documentation goes here
 ```
 
-_See code: [src/commands/sites/watch.js](https://github.com/netlify/cli/blob/v2.0.0-alpha.2/src/commands/sites/watch.js)_
+_See code: [src/commands/sites/watch/index.js](https://github.com/netlify/cli/blob/v2.0.0-alpha.3/src/commands/sites/watch/index.js)_
