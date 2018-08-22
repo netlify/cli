@@ -28,7 +28,7 @@ EXAMPLES
   $ netlify addons:list
 ```
 
-_See code: [src/commands/addons/index.js](https://github.com/netlify/cli/blob/v2.0.0-alpha.3/src/commands/addons/index.js)_
+_See code: [src/commands/addons/index.js](https://github.com/netlify/cli/blob/v2.0.0-alpha.4/src/commands/addons/index.js)_
 
 ## `netlify-cli addons:create NAME`
 
@@ -46,7 +46,7 @@ DESCRIPTION
   Addons are a way to extend the functionality of your Netlify site
 ```
 
-_See code: [src/commands/addons/create/index.js](https://github.com/netlify/cli/blob/v2.0.0-alpha.3/src/commands/addons/create/index.js)_
+_See code: [src/commands/addons/create/index.js](https://github.com/netlify/cli/blob/v2.0.0-alpha.4/src/commands/addons/create/index.js)_
 
 ## `netlify-cli addons:delete NAME`
 
@@ -64,7 +64,7 @@ DESCRIPTION
   Addons are a way to extend the functionality of your Netlify site
 ```
 
-_See code: [src/commands/addons/delete/index.js](https://github.com/netlify/cli/blob/v2.0.0-alpha.3/src/commands/addons/delete/index.js)_
+_See code: [src/commands/addons/delete/index.js](https://github.com/netlify/cli/blob/v2.0.0-alpha.4/src/commands/addons/delete/index.js)_
 
 ## `netlify-cli addons:list`
 
@@ -82,7 +82,7 @@ DESCRIPTION
   Addons are a way to extend the functionality of your Netlify site
 ```
 
-_See code: [src/commands/addons/list/index.js](https://github.com/netlify/cli/blob/v2.0.0-alpha.3/src/commands/addons/list/index.js)_
+_See code: [src/commands/addons/list/index.js](https://github.com/netlify/cli/blob/v2.0.0-alpha.4/src/commands/addons/list/index.js)_
 
 ## `netlify-cli addons:update NAME`
 
@@ -100,4 +100,4 @@ DESCRIPTION
   Addons are a way to extend the functionality of your Netlify site
 ```
 
-_See code: [src/commands/addons/update/index.js](https://github.com/netlify/cli/blob/v2.0.0-alpha.3/src/commands/addons/update/index.js)_
+_See code: [src/commands/addons/update/index.js](https://github.com/netlify/cli/blob/v2.0.0-alpha.4/src/commands/addons/update/index.js)_

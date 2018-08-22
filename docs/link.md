@@ -23,4 +23,4 @@ EXAMPLES
   $ netlify init --name my-site-name
 ```
 
-_See code: [src/commands/link/index.js](https://github.com/netlify/cli/blob/v2.0.0-alpha.3/src/commands/link/index.js)_
+_See code: [src/commands/link/index.js](https://github.com/netlify/cli/blob/v2.0.0-alpha.4/src/commands/link/index.js)_

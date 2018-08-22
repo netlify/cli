@@ -14,4 +14,4 @@ USAGE
   $ netlify-cli logout
 ```
 
-_See code: [src/commands/logout/index.js](https://github.com/netlify/cli/blob/v2.0.0-alpha.3/src/commands/logout/index.js)_
+_See code: [src/commands/logout/index.js](https://github.com/netlify/cli/blob/v2.0.0-alpha.4/src/commands/logout/index.js)_
