@@ -5,6 +5,7 @@
 Pluggable CLI for Netlify. 🎉
 
 <!-- toc -->
+* [netlify-cli [![stability][0]][1]](#netlify-cli-stability-0-1)
 * [Usage](#usage)
 * [Command Topics](#command-topics)
 * [Local Development](#local-development)
@@ -13,11 +14,11 @@ Pluggable CLI for Netlify. 🎉
 # Usage
 <!-- usage -->
 ```sh-session
-$ npm install -g netlify-cli
+$ npm install -g netlify
 $ netlify-cli COMMAND
 running command...
 $ netlify-cli (-v|--version|version)
-netlify-cli/2.0.0-alpha.4 darwin-x64 node-v10.8.0
+netlify/2.0.0-alpha.4 darwin-x64 node-v10.9.0
 $ netlify-cli --help [COMMAND]
 USAGE
   $ netlify-cli COMMAND
