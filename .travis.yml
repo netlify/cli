@@ -9,6 +9,10 @@ cache:
 install:
   - npm i
 script:
+  - node --version
+  - npm --version
+  - npm start -- --version
+  - npm start -- --help
   - npm test
 after_success:
   - npm run report
