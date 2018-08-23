@@ -1,5 +1,5 @@
 {
-  "name": "netlify",
+  "name": "netlify-cli",
   "description": "CLI to interact with Netlify",
   "version": "2.0.0-alpha.4",
   "author": "Netlify Inc.",
@@ -12,7 +12,7 @@
   "scripts": {
     "build": "npm run clean && run-s build:*",
     "build:deptree": "depcruise --exclude '^node_modules' --output-type dot src | dot -T svg > site/dependencygraph.svg",
-    "build:docs": "npe name netlify && DOCS_GEN=TRUE oclif-dev readme --multi && npe netlify-cli",
+    "build:docs": "npe name netlify && DOCS_GEN=TRUE oclif-dev readme --multi && npe name netlify-cli",
     "build:site": "sitedown . -b site/ -l layout.html && cpx \"coverage/lcov-report/**/*\" 'site/coverage'",
     "ci": "run-s test build",
     "clean": "rimraf site && mkdirp site",
