@@ -1,5 +1,6 @@
-Netlify-cli
-===========
+# netlify-cli [![stability][0]][1]
+[![npm version][2]][3] [![build status][4]][5] [![windows build status][6]][7]
+[![coverage][12]][13] [![downloads][8]][9]
 
 Pluggable CLI for Netlify. 🎉
 
@@ -120,3 +121,17 @@ When developing, you can use watch mode which will automatically rebuild the cli
 ```command
 $ npm run watch
 ```
+
+
+[0]: https://img.shields.io/badge/stability-stable-green.svg
+[1]: https://nodejs.org/api/documentation.html#documentation_stability_index
+[2]: https://img.shields.io/npm/v/netlify-cli.svg
+[3]: https://npmjs.org/package/netlify-cli
+[4]: https://img.shields.io/travis/netlify/netlify-cli/master.svg
+[5]: https://travis-ci.org/netlify/netlify-cli
+[6]: https://ci.appveyor.com/api/projects/status/0vh59qjo64j7j8st?svg=true 
+[7]: https://ci.appveyor.com/project/bcomnes/netlify-cli
+[8]: http://img.shields.io/netlify/dm/netlify-cli.svg
+[9]: https://npmjs.org/package/netlify-cli
+[12]: https://img.shields.io/coveralls/netlify/netlify-cli/master.svg
+[13]: https://coveralls.io/github/netlify/netlify-cli
