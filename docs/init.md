@@ -1,17 +1,17 @@
-`netlify-cli init`
-==================
+`netlify init`
+==============
 
 Configure continuous deployment
 
-* [`netlify-cli init`](#netlify-cli-init)
+* [`netlify init`](#netlify-init)
 
-## `netlify-cli init`
+## `netlify init`
 
 Configure continuous deployment
 
 ```
 USAGE
-  $ netlify-cli init
+  $ netlify init
 
 OPTIONS
   --force

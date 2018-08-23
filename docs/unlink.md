@@ -1,17 +1,17 @@
-`netlify-cli unlink`
-====================
+`netlify unlink`
+================
 
 Unlink a local repo from a Netlify site
 
-* [`netlify-cli unlink`](#netlify-cli-unlink)
+* [`netlify unlink`](#netlify-unlink)
 
-## `netlify-cli unlink`
+## `netlify unlink`
 
 Unlink a local repo from a Netlify site
 
 ```
 USAGE
-  $ netlify-cli unlink
+  $ netlify unlink
 ```
 
-_See code: [src/commands/unlink/index.js](https://github.com/netlify/cli/blob/v2.0.0-alpha.4/src/commands/unlink/index.js)_
+_See code: [src/commands/unlink.js](https://github.com/netlify/cli/blob/v2.0.0-alpha.4/src/commands/unlink.js)_

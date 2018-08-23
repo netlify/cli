@@ -1,17 +1,17 @@
-`netlify-cli status`
-====================
+`netlify status`
+================
 
 Print currently logged in use
 
-* [`netlify-cli status`](#netlify-cli-status)
+* [`netlify status`](#netlify-status)
 
-## `netlify-cli status`
+## `netlify status`
 
 Print currently logged in use
 
 ```
 USAGE
-  $ netlify-cli status
+  $ netlify status
 ```
 
-_See code: [src/commands/status/index.js](https://github.com/netlify/cli/blob/v2.0.0-alpha.4/src/commands/status/index.js)_
+_See code: [src/commands/status.js](https://github.com/netlify/cli/blob/v2.0.0-alpha.4/src/commands/status.js)_
