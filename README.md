@@ -1,6 +1,6 @@
 # netlify-cli [![stability][0]][1]
 [![npm version][2]][3] [![build status][4]][5] [![windows build status][6]][7]
-[![coverage][12]][13] [![downloads][8]][9] [![dependencies][14]][15]
+[![coverage][12]][13] [![dependencies][14]][15] [![downloads][8]][9]
 
 Pluggable CLI for Netlify. 🎉
 
