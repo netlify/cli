@@ -1,6 +1,6 @@
 # netlify-cli [![stability][0]][1]
 [![npm version][2]][3] [![build status][4]][5] [![windows build status][6]][7]
-[![coverage][12]][13] [![downloads][8]][9]
+[![coverage][12]][13] [![downloads][8]][9] [![dependencies][14]][15]
 
 Pluggable CLI for Netlify. 🎉
 
@@ -135,3 +135,5 @@ $ npm run watch
 [9]: https://npmjs.org/package/netlify-cli
 [12]: https://img.shields.io/coveralls/netlify/netlify-cli/master.svg
 [13]: https://coveralls.io/github/netlify/netlify-cli
+[14]: https://david-dm.org/netlify/netlify-cli/status.svg
+[15]: https://david-dm.org/netlify/netlify-cli
