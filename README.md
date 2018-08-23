@@ -11,7 +11,7 @@ Pluggable CLI for Netlify. 🎉
 * [Local Development](#local-development)
 <!-- tocstop -->
 
-# Usage
+## Usage
 <!-- usage -->
 ```sh-session
 $ npm install -g netlify
@@ -32,7 +32,7 @@ You can also access the cli from the following aliases:
 - `ntl`
 
 <!-- commands -->
-# Command Topics
+## Command Topics
 
 * [`netlify-cli addons`](docs/addons.md) - Handle addon operations
 * [`netlify-cli deploy`](docs/deploy.md) - Create a new deploy from the contents of a folder.
