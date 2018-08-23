@@ -16,7 +16,5 @@ test_script:
   - npm test
   - npm start -- --version
   - npm start -- --help
-after_test:
-  - npm run report
 
 build: off
