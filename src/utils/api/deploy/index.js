@@ -2,6 +2,7 @@ const debug = require('debug')('netlify-cli:deploy')
 const uploadFiles = require('./upload-files')
 const hashFiles = require('./hash-files')
 const hashFns = require('./hash-fns')
+const path = require('path')
 
 const { waitForDeploy, getUploadList } = require('./util')
 
@@ -11,7 +12,18 @@ module.exports = async (api, siteId, dir, fnDir, opts) => {
     {
       deployTimeout: 1.2e6, // 20 mins
       concurrentHash: 100, // concurrent file hash calls
-      concurrentUpload: 4 // Number of concurrent uploads
+      concurrentUpload: 4, // Number of concurrent uploads
+      filter: filename => {
+        const n = path.basename(filename)
+        switch (true) {
+          case n === 'node_modules':
+          case n.startsWith('.') && n !== '.well-known':
+          case n.match(/(\/__MACOSX|\/\.)/):
+            return false
+          default:
+            return true
+        }
+      }
     },
     opts
   )
