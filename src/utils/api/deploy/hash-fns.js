@@ -20,10 +20,9 @@ async function hashFns(dir, opts) {
   )
   // early out if the functions dir is omitted
   if (!dir) return { functions: {}, shaMap: {} }
+  if (!opts.filter) throw new Error('Missing required filter function')
 
-  const fileList = await fs
-    .readdir(dir)
-    .then(files => files.filter(name => !name.startsWith('.') && !name.includes('__MACOSX')))
+  const fileList = await fs.readdir(dir).then(files => files.filter(opts.filter))
   const fileStream = fromArray.obj(fileList)
 
   const fnStat = fnStatCtor({ root: dir, concurrentStat: opts.concurrentHash, tmpDir: opts.tmpDir })

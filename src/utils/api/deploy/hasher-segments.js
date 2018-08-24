@@ -49,17 +49,12 @@ exports.manifestCollectorCtor = (filesObj, shaMap) => {
 
 // transform stream ctor that filters folder-walker results for only files
 exports.fileFilterCtor = objFilterCtor(fileObj => {
-  return fileObj.type === 'file' && (fileObj.relname.match(/(\/__MACOSX|\/\.)/) ? false : true)
+  return fileObj.type === 'file'
 })
 
 exports.fnFilterCtor = objFilterCtor(fileObj => {
   // filter additional files out of our fn pipeline
-  return (
-    fileObj.type === 'file' &&
-    !!fileObj.runtime &&
-    !fileObj.basename.startsWith('.') &&
-    !fileObj.basename.includes('__MACOSX')
-  )
+  return fileObj.type === 'file' && !!fileObj.runtime
 })
 
 function zipFunction(item, tmpDir, cb) {
