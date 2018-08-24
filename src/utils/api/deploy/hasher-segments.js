@@ -57,6 +57,7 @@ exports.fnFilterCtor = objFilterCtor(fileObj => {
   return fileObj.type === 'file' && !!fileObj.runtime
 })
 
+// Zip a file into a temporary directory
 function zipFunction(item, tmpDir, cb) {
   const zipPath = path.join(tmpDir, item.normalizedPath + '.zip')
   const output = fs.createWriteStream(zipPath)

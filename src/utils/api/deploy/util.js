@@ -3,6 +3,19 @@ const pWaitFor = require('p-wait-for')
 const flatten = require('lodash.flatten')
 const debug = require('debug')('netlify-cli:deploy:util')
 
+// Default filter when scanning for files
+exports.defaultFilter = filename => {
+  const n = path.basename(filename)
+  switch (true) {
+    case n === 'node_modules':
+    case n.startsWith('.') && n !== '.well-known':
+    case n.match(/(\/__MACOSX|\/\.)/):
+      return false
+    default:
+      return true
+  }
+}
+
 // normalize windows paths to unix paths
 exports.normalizePath = relname => {
   return (
