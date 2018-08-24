@@ -1,4 +1,4 @@
-const Command = require('../../../base')
+const Command = require('../base')
 const { CLIError } = require('@oclif/errors')
 const pWaitFor = require('p-wait-for')
 const cli = require('cli-ux').default
@@ -13,7 +13,7 @@ class SitesWatchCommand extends Command {
     const siteId = this.site.get('siteId')
 
     // wait for 1 sec for everything to kickoff
-    console.time('Deploy time');
+    console.time('Deploy time')
     await cli.wait(1000)
 
     // Get latest commit and look for that
@@ -43,7 +43,7 @@ class SitesWatchCommand extends Command {
 
       await waitForBuildFinish(client, siteId)
 
-      const siteData = await client.getSite({siteId})
+      const siteData = await client.getSite({ siteId })
 
       const message = chalk.cyanBright.bold.underline('Deploy complete')
       console.log()
@@ -54,7 +54,7 @@ class SitesWatchCommand extends Command {
           Admin: siteData.admin_url
         })
       )
-      console.timeEnd('Deploy time');
+      console.timeEnd('Deploy time')
     } catch (err) {
       throw new CLIError(err)
     }
@@ -80,10 +80,10 @@ async function waitForBuildFinish(api, siteId) {
   // return only when build done or timeout happens
   return buildDone
 
-  async function waitForBuildToFinish () {
-    const builds = await api.listSiteBuilds({siteId})
-    const currentBuilds = builds.filter((build) => {
-       return !build.done
+  async function waitForBuildToFinish() {
+    const builds = await api.listSiteBuilds({ siteId })
+    const currentBuilds = builds.filter(build => {
+      return !build.done
     })
     if (!currentBuilds || !currentBuilds.length) {
       cli.action.stop()
