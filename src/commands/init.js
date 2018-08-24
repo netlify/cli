@@ -2,6 +2,7 @@ const { flags } = require('@oclif/command')
 const gitRepoInfo = require('git-repo-info')
 const parseGitRemote = require('parse-github-url')
 const gitRemoteOriginUrl = require('git-remote-origin-url')
+const SitesWatchCommand = require('./watch')
 
 const Command = require('../base')
 const createOrFindSite = require('../utils/init/create-or-find-site')
@@ -59,6 +60,9 @@ class InitCommand extends Command {
       }
     }
     this.log('Site is now configured to automatically deploy')
+    if (flags.watch) {
+      await SitesWatchCommand.run([])
+    }
   }
 }
 
@@ -66,7 +70,8 @@ InitCommand.description = `${renderShortDesc('Configure continuous deployment')}
 
 InitCommand.flags = {
   manual: flags.boolean(),
-  force: flags.boolean()
+  force: flags.boolean(),
+  watch: flags.boolean()
 }
 
 module.exports = InitCommand
