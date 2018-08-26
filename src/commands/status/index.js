@@ -74,6 +74,6 @@ class StatusCommand extends Command {
   }
 }
 
-StatusCommand.description = `${renderShortDesc('Print currently logged in use')}`
+StatusCommand.description = `${renderShortDesc('Print currently logged in user')}`
 
 module.exports = StatusCommand
