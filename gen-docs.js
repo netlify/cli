@@ -40,11 +40,11 @@ const config = {
           }
           return {
             path: file,
-            cmd: cmd
+            data: cmd
           }
-        }).filter((cmdData) => {
+        }).filter((command) => {
           // return only live commands
-          return !cmdData.cmd.hidden
+          return !command.data.hidden
         })
 
         //commandGroups.
@@ -52,7 +52,11 @@ const config = {
         console.log('commandGroups', commandGroups)
         // console.log('commandFiles', commandFiles)
 
+        const subCommandData = generateSubCommandData(commandGroups)
+
         let md = `### ${formatName(file)}
+
+${subCommandData}
     `
         return md
       })
@@ -77,6 +81,41 @@ const config = {
     //   return md
     // },
   },
+}
+
+function generateSubCommandData(commandGroup) {
+
+  const md = commandGroup.map((command) => {
+    let cmdName = path.basename(command.path, '.js')
+    let cmdGroupName = path.dirname(path.dirname(command.path))
+    if (cmdGroupName === 'commands') {
+      cmdGroupName = ''
+    }
+    if (cmdName === 'index') {
+      cmdName = path.basename(path.dirname(command.path), '.js')
+    }
+    const data = command.data
+    const desc = data.description
+    const examples = data.examples
+
+    let examplesRender = ''
+    if (examples) {
+      examplesRender = `\`\`\`\n`
+      examples.forEach((example) => {
+        examplesRender += `${example}\n`
+      })
+      examplesRender += `\`\`\``
+    }
+
+    return `#### ${path.basename(path.dirname(path.dirname(command.path)))}:${cmdName}
+
+${desc}
+
+${examplesRender}
+`
+  })
+
+  return md.join('\n');
 }
 
 // build lessons table
