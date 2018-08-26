@@ -39,7 +39,6 @@ const navOrder = [
 
 const pageNames = {
   index: 'Introduction',
-  next: 'Next.js',
   ast: 'AST',
   projects: 'Projects Using MDX',
   'getting-started': 'Getting Started',

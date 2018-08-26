@@ -166,6 +166,9 @@ export const Nav = ({
   <React.Fragment>
     <NavBar {...props} />
     <Divider my={0} />
+    <div>
+      <input placeholder="Search"></input>
+    </div>
     <UL>
       {routes.map(route => (
         <LI key={route.key}>

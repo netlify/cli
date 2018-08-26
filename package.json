@@ -14,6 +14,7 @@
     "build:deptree": "depcruise --exclude '^node_modules' --output-type dot src | dot -T svg > site/dependencygraph.svg",
     "build:docs": "DOCS_GEN=TRUE oclif-dev readme --multi && md-magic --path '**/*.md' --ignore 'node_modules'",
     "build:site": "sitedown . -b site/ -l layout.html && cpx \"coverage/lcov-report/**/*\" 'site/coverage'",
+    "newdocs": "x0 docs",
     "ci": "run-s test build",
     "clean": "rimraf site && mkdirp site",
     "start": "node ./bin/run",
@@ -116,7 +117,10 @@
     "nyc": "^13.0.0",
     "prettier": "^1.13.7",
     "rimraf": "^2.6.2",
-    "sitedown": "^3.3.0"
+    "sitedown": "^3.3.0",
+    "@rebass/mdx": "^1.0.0-1",
+    "styled-components": "^3.3.3",
+    "@compositor/x0": "^6.0.5"
   },
   "engines": {
     "node": ">=8.0.0"
