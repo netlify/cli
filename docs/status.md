@@ -1,13 +1,13 @@
 `netlify status`
 ================
 
-Print currently logged in use
+Print currently logged in user
 
 * [`netlify status`](#netlify-status)
 
 ## `netlify status`
 
-Print currently logged in use
+Print currently logged in user
 
 ```
 USAGE
