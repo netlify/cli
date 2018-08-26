@@ -11,41 +11,18 @@ const scope = { ...createScope(), ...Rebass, code: LiveEditor, pre: ({ children 
 
 const navOrder = [
   'index',
-  'syntax',
   'getting-started',
-    'deeper',
-      'hello',
-    'webpack',
-    'parcel',
-    'next',
-    'create-react-app',
-    'gatsby',
-    'x0',
-    'typescript',
-  'plugins',
-  'advanced',
-    'ast',
-    'components',
-    'writing-a-plugin',
-    'retext-plugins',
-    'custom-loader',
-    'specification',
-    'sync-api',
-    'runtime',
-    'contributing',
+  'commands',
+    'login',
+    'logout',
+    '',
   'projects',
   'about'
 ]
 
 const pageNames = {
   index: 'Introduction',
-  ast: 'AST',
-  projects: 'Projects Using MDX',
   'getting-started': 'Getting Started',
-  'create-react-app': 'Create React App',
-  'writing-a-plugin': 'Writing a Plugin',
-  'retext-plugins': 'Using Retext Plugins',
-  'sync-api': 'Sync API'
 }
 
 const sortRoutes = routes => [
@@ -74,9 +51,9 @@ export default class App extends React.Component {
     const { routes } = this.props
 
     const nav = sortRoutes(routes)
-    console.log('nav', nav)
-    console.log('scope', scope)
-    console.log('this.props', this.props)
+    // console.log('nav', nav)
+    // console.log('scope', scope)
+    // console.log('this.props', this.props)
     return (
       <RebassMDX>
         <ScopeProvider scope={scope}>

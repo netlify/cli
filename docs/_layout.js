@@ -4,6 +4,7 @@ import {
   Link as RouterLink,
   NavLink as RouterNavLink
 } from 'react-router-dom'
+import { Helmet } from 'react-helmet'
 import styled from 'styled-components'
 import {
   Provider as RebassProvider,
@@ -276,8 +277,25 @@ export default class Layout extends React.Component {
       next: routes[index + 1]
     }
 
+    // Set page title
+    let pageTitle = '404 not found'
+    if (route.module) {
+      const frontMatter = route.module.frontMatter
+      if (frontMatter.title) {
+        pageTitle = frontMatter.title
+      } else {
+        pageTitle = this.props.route.name
+      }
+    }
+
     return (
       <React.Fragment>
+
+        <Helmet>
+          <meta charSet="utf-8" />
+          <title>{pageTitle}</title>
+        </Helmet>
+
         <MobileNav
           title={title}
           logo={logo}
