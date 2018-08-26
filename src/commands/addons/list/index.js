@@ -37,7 +37,9 @@ class AddonsListCommand extends Command {
     }
 
     const addonData = addons.map(addon => {
+      // console.log('addon', addon)
       return {
+        namespace: addon.service_path.replace('/.netlify/', ''),
         name: addon.service_name,
         id: addon.id,
       }
@@ -47,10 +49,10 @@ class AddonsListCommand extends Command {
     console.log(`site: ${site.name}`)
     const table = new AsciiTable(`Currently Installed addons`)
 
-    table.setHeading('Name', 'Instance Id')
+    table.setHeading('NameSpace', 'Name', 'Instance Id')
 
     addonData.forEach(s => {
-      table.addRow(s.name, s.id)
+      table.addRow(s.namespace, s.name, s.id)
     })
     // Log da addons
     console.log(table.toString())
