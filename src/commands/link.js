@@ -148,7 +148,7 @@ LinkCommand.flags = {
     description: 'Name of site to link to'
   }),
   force: flags.boolean({
-    description: '@bret what is this'
+    description: 'Force link a folder to a site, even if the folder is already linked'
   })
 }
 

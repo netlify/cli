@@ -70,13 +70,13 @@ InitCommand.description = `${renderShortDesc('Configure continuous deployment')}
 
 InitCommand.flags = {
   manual: flags.boolean({
-    description: 'What does this do @Bret',
+    description: 'Manually configure a git remote for CI'
   }),
   force: flags.boolean({
-    description: 'What does this do @Bret',
+    description: 'Force init a site that is already configured to use CI'
   }),
   watch: flags.boolean({
-    description: 'What does this do @Bret',
+    description: 'Make the CLI wait for the first deploy to complete after setting up CI'
   })
 }
 
