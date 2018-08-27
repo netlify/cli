@@ -9,6 +9,7 @@ Create a new deploy from the contents of a folder.
 <!-- AUTO-GENERATED-CONTENT:START (TOC) -->
 - [`netlify deploy`](#netlify-deploy)
 - [deploy](#deploy)
+
 <!-- AUTO-GENERATED-CONTENT:END -->
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
