@@ -31,27 +31,27 @@ ntl [command]
 ## Commands
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_LIST) -->
-### [deploy](/commands/deploy)
+### [deploy](/docs/commands/deploy.md)
 
 Create a new deploy from the contents of a folder.
 
-### [init](/commands/init)
+### [init](/docs/commands/init.md)
 
 Configure continuous deployment
 
-### [link](/commands/link)
+### [link](/docs/commands/link.md)
 
 Link a local repo or project folder to an existing site on Netlify
 
-### [login](/commands/login)
+### [login](/docs/commands/login.md)
 
 Login to your Netlify account
 
-### [logout](/commands/logout)
+### [logout](/docs/commands/logout.md)
 
 Logout of your Netlify account
 
-### [open](/commands/open)
+### [open](/docs/commands/open.md)
 
 Opens current project urls in browser
 
@@ -61,7 +61,7 @@ Opens current project urls in browser
 | open:site | Opens current site url in browser  |
 
 
-### [sites](/commands/sites)
+### [sites](/docs/commands/sites.md)
 
 Handle various site operations
 
@@ -71,15 +71,15 @@ Handle various site operations
 | sites:list | List existing sites  |
 
 
-### [status](/commands/status)
+### [status](/docs/commands/status.md)
 
 Print currently logged in user
 
-### [unlink](/commands/unlink)
+### [unlink](/docs/commands/unlink.md)
 
 Unlink a local repo from a Netlify site
 
-### [watch](/commands/watch)
+### [watch](/docs/commands/watch.md)
 
 Watch for site deploy to finish
 
