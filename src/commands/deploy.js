@@ -1,5 +1,5 @@
-const Command = require('../../base')
-const renderShortDesc = require('../../utils/renderShortDescription')
+const Command = require('../base')
+const renderShortDesc = require('../utils/renderShortDescription')
 const path = require('path')
 const { flags } = require('@oclif/command')
 const get = require('lodash.get')

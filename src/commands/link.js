@@ -1,9 +1,8 @@
-const Command = require('../../base')
+const Command = require('../base')
 const { flags } = require('@oclif/command')
-const renderShortDesc = require('../../utils/renderShortDescription')
+const renderShortDesc = require('../utils/renderShortDescription')
 const inquirer = require('inquirer')
 const path = require('path')
-const get = require('lodash.get')
 
 class LinkCommand extends Command {
   async run() {
@@ -60,41 +59,16 @@ class LinkCommand extends Command {
       return this.exit()
     }
 
-    const choices = ['Site Name', 'Site ID']
-
-    // TODO generalize solution to the case sensitivity issue
-    // see https://github.com/netlify/cli/issues/76
-    const tomlSiteSettings = get(this, 'site.toml.settings') || get(this, 'site.toml.Settings')
-    const tomlSiteId = get(tomlSiteSettings, 'id') || get(tomlSiteSettings, 'ID')
-    let tomlSite
-    if (tomlSiteId) {
-      try {
-        tomlSite = await this.netlify.getSite({ siteId: tomlSiteId })
-        choices.unshift({
-          name: `Site from netlify.toml (${get(tomlSite, 'name')})`,
-          value: 'toml-site'
-        })
-      } catch (e) {
-        // ignore toml if error
-      }
-    }
-
     const { linkType } = await inquirer.prompt([
       {
         type: 'list',
         name: 'linkType',
         message: 'How do you want to link this folder to a site?',
-        choices
+        choices: ['Site Name', 'Site ID']
       }
     ])
 
     switch (linkType) {
-      case 'toml-site': {
-        this.site.set('siteId', tomlSiteId.id)
-        this.log(`Linked to ${tomlSiteId.name} in ${path.relative(path.join(process.cwd(), '..'), this.site.path)}`)
-        this.exit()
-        break
-      }
       case 'Site Name': {
         const { siteName } = await inquirer.prompt([
           {
@@ -167,15 +141,9 @@ LinkCommand.description = `${renderShortDesc('Link a local repo or project folde
 LinkCommand.examples = ['$ netlify init --id 123-123-123-123', '$ netlify init --name my-site-name']
 
 LinkCommand.flags = {
-  id: flags.string({
-    description: 'Existing Netlify site id'
-  }),
-  name: flags.string({
-    description: 'Existing Netlify site name'
-  }),
-  force: flags.boolean({
-    description: '@Bret what does this do?'
-  })
+  id: flags.string(),
+  name: flags.string(),
+  force: flags.boolean()
 }
 
 module.exports = LinkCommand

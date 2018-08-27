@@ -1,5 +1,5 @@
-const Command = require('../../base')
-const renderShortDesc = require('../../utils/renderShortDescription')
+const Command = require('../base')
+const renderShortDesc = require('../utils/renderShortDescription')
 
 class LoginCommand extends Command {
   async run() {
