@@ -7,11 +7,6 @@ description: Initialize a new site locally
 
 Configure continuous deployment
 
-<!-- AUTO-GENERATED-CONTENT:START (TOC) -->
-- [init](#init)
-
-<!-- AUTO-GENERATED-CONTENT:END -->
-
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
 ## init
 
@@ -32,6 +27,7 @@ netlify init
 **Source code**
 
 Link to src
+
 
 
 <!-- AUTO-GENERATED-CONTENT:END -->

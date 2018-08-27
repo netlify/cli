@@ -3,26 +3,26 @@ title: Netlify CLI watch command
 hidden: true
 ---
 
-`netlify watch`
-===============
+# `netlify watch`
+
+<!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
+## watch
 
 Watch for site deploy to finish
 ...
 Extra documentation goes here
 
-* [`netlify watch`](#netlify-watch)
 
-## `netlify watch`
+**Usage**
 
-Watch for site deploy to finish
-
-```
-USAGE
-  $ netlify watch
-
-DESCRIPTION
-  ...
-  Extra documentation goes here
+```bash
+netlify watch
 ```
 
-_See code: [src/commands/watch.js](https://github.com/netlify/cli/blob/v2.0.0-alpha.4/src/commands/watch.js)_
+**Source code**
+
+Link to src
+
+
+
+<!-- AUTO-GENERATED-CONTENT:END -->

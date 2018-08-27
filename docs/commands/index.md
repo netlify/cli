@@ -12,10 +12,10 @@ description
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| addons:create | This is a longer description about what this thing does  |
-| addons:delete | This is a longer description about what this thing does  |
-| addons:list | This is a longer description about what this thing does  |
-| addons:update | This is a longer description about what this thing does  |
+| addons:create | Add an addon extension to your site  |
+| addons:delete | Remove an addon extension to your site  |
+| addons:list | list current site addons  |
+| addons:update | Update an addon extension  |
 
     
 ### [deploy](/commands/deploy)
@@ -60,10 +60,10 @@ description
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| sites:create | This is a longer description about what this thing does  |
-| sites:delete | This is a longer description about what this thing does  |
-| sites:list | This is a longer description about what this thing does  |
-| sites:update | This is a longer description about what this thing does  |
+| sites:create | create a site  |
+| sites:delete | delete a site  |
+| sites:list | list sites  |
+| sites:update | update a site  |
 
     
 ### [status](/commands/status)

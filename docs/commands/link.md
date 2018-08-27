@@ -7,11 +7,6 @@ description: Link an existing site to a local site directory
 
 Link a local repo or project folder to an existing site on Netlify
 
-<!-- AUTO-GENERATED-CONTENT:START (TOC) -->
-- [link](#link)
-
-<!-- AUTO-GENERATED-CONTENT:END -->
-
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
 ## link
 
@@ -32,6 +27,7 @@ netlify link
 **Source code**
 
 Link to src
+
 
 
 <!-- AUTO-GENERATED-CONTENT:END -->

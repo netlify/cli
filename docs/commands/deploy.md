@@ -6,12 +6,6 @@ title: Netlify CLI deploy command
 
 Create a new deploy from the contents of a folder.
 
-<!-- AUTO-GENERATED-CONTENT:START (TOC) -->
-- [`netlify deploy`](#netlify-deploy)
-- [deploy](#deploy)
-
-<!-- AUTO-GENERATED-CONTENT:END -->
-
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
 ## deploy
 
@@ -34,6 +28,7 @@ netlify deploy
 **Source code**
 
 Link to src
+
 
 
 <!-- AUTO-GENERATED-CONTENT:END -->
