@@ -5,7 +5,7 @@ import * as Rebass from 'rebass'
 import sortBy from 'lodash.sortby'
 import { ScopeProvider } from '@compositor/x0/components'
 import Layout from './_layout'
-import { LiveEditor, Logo } from './_ui'
+import { LiveEditor } from './_ui'
 
 const scope = { ...createScope(), ...Rebass, code: LiveEditor, pre: ({ children }) => children }
 
@@ -16,9 +16,9 @@ const navOrder = [
     'login',
     'logout',
     'init',
-    'deploy',
     'link',
     'unlink',
+    'deploy',
     'sites',
     'status',
   'contributing',

@@ -2,8 +2,6 @@ import React from 'react'
 import { Pre, Box, Border } from 'rebass'
 import { LiveEditor as Editor, LivePreview } from '@compositor/x0/components'
 
-export const Logo = () => '⊂◉‿◉つ'
-
 export const LiveEditor = props => {
   const lang = (props.className || '').replace(/^language\-/, '')
   const type = lang.charAt(0)
