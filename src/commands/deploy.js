@@ -84,7 +84,7 @@ DeployCommand.args = [
 
 DeployCommand.flags = {
   functions: flags.string({
-    description: '@bret what does this do'
+    description: 'Specify a function folder for a deploy'
   })
 }
 

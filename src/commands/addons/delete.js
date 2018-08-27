@@ -30,7 +30,7 @@ class addonsDeleteCommand extends Command {
 
     // Filter down addons to current args.name
     const currentAddon = addons.reduce((acc, current) => {
-      if (current.service_path && (current.service_path.replace('/.netlify/', '')) === addonName) {
+      if (current.service_path && current.service_path.replace('/.netlify/', '') === addonName) {
         return current
       }
       return {}
@@ -58,7 +58,6 @@ class addonsDeleteCommand extends Command {
       return false
     }
     this.log(`Addon "${addonName}" deleted`)
-
   }
 }
 
@@ -74,7 +73,7 @@ addonsDeleteCommand.args = [
   {
     name: 'name',
     required: true,
-    description: 'addon namespace',
+    description: 'addon namespace'
   }
 ]
 
