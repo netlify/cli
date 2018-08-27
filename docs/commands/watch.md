@@ -1,3 +1,8 @@
+---
+title: Netlify CLI watch command
+hidden: true
+---
+
 `netlify watch`
 ===============
 
