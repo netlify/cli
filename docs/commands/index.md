@@ -8,7 +8,6 @@ description: All netlify CLI command
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_LIST) -->
 ### [addons](/commands/addons)
 
-description
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -20,43 +19,36 @@ description
     
 ### [deploy](/commands/deploy)
 
-description
+Create a new deploy from the contents of a folder.
+
 
 
     
-### [functions](/commands/functions)
 
-description
-
-undefined
-    
 ### [link](/commands/link)
 
-description
+Link a local repo or project folder to an existing site on Netlify
+
 
 
     
 ### [login](/commands/login)
 
-description
+Login to account
+
 
 
     
 ### [logout](/commands/logout)
 
-description
+Logout of account
+
 
 
     
-### [open](/commands/open)
 
-description
-
-undefined
-    
 ### [sites](/commands/sites)
 
-description
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -68,13 +60,15 @@ description
     
 ### [status](/commands/status)
 
-description
+Print currently logged in user
+
 
 
     
 ### [unlink](/commands/unlink)
 
-description
+Unlink a local repo from a Netlify site
+
 
 
     
