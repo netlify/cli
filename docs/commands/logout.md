@@ -9,6 +9,7 @@ Logout of account
 
 <!-- AUTO-GENERATED-CONTENT:START (TOC) -->
 - [logout](#logout)
+
 <!-- AUTO-GENERATED-CONTENT:END -->
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->

@@ -14,6 +14,7 @@ The sites command will help you manage all your sites
 - [sites](#sites)
 - [sites:list](#siteslist)
 - [sites:update](#sitesupdate)
+
 <!-- AUTO-GENERATED-CONTENT:END -->
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->

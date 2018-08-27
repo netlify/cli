@@ -7,6 +7,7 @@ description: Login to your Netlify account
 
 <!-- AUTO-GENERATED-CONTENT:START (TOC) -->
 - [login](#login)
+
 <!-- AUTO-GENERATED-CONTENT:END -->
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
