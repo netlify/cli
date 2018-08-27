@@ -2,7 +2,6 @@ const fs = require('fs')
 const path = require('path')
 const markdownMagic = require('markdown-magic')
 const globby = require('markdown-magic').globby
-const util = require('util')
 
 process.env.DOCS_GEN = 'TRUE'
 
@@ -16,7 +15,6 @@ const config = {
 
       const command = path.basename(instance.originalPath, '.md')
       const info = commandData[command]
-      console.log('info', info)
 
       if (info) {
         let md = ''
@@ -71,7 +69,6 @@ markdownMagic(['README.md', 'docs/**/**.md'], config, () => {
   })
   console.log('Docs updated!')
 })
-
 
 function commandFromPath(p) {
   return p.replace(process.cwd(), '')
