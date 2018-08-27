@@ -25,6 +25,7 @@ import {
 import { borderColor, themeGet } from 'styled-system'
 
 const breakpoint = `@media screen and (min-width: 48em)`
+const repoUrl = 'https://github.com/netlify/cli'
 
 export const Root = styled(Flex)([], {
   minHeight: '100vh'
@@ -276,13 +277,16 @@ export default class Layout extends React.Component {
       title = 'Netlify CLI',
       logo,
     } = this.props
+
     const { menu, update } = this.state
 
     const opts = route ? route.props : {}
-    if (opts.layout === false) return children
-    const Wrapper = opts.fullWidth
-      ? React.Fragment
-      : MaxWidth
+
+    if (opts.layout === false) {
+      return children
+    }
+
+    const Wrapper = opts.fullWidth ? React.Fragment : MaxWidth
 
     const index = routes.findIndex(r => r.path === route.path)
     const pagination = {
@@ -300,6 +304,8 @@ export default class Layout extends React.Component {
         pageTitle = this.props.route.name
       }
     }
+
+    console.log('this.props', this.props.route.key)
 
     return (
       <React.Fragment>
@@ -328,6 +334,17 @@ export default class Layout extends React.Component {
             />
           </Sidebar>
           <Main tabIndex={menu ? -1 : undefined}>
+            <div style={{ position: 'absolute', right: 20, top: 20 }}>
+              <a
+                style={{
+                  color: '#333',
+                  textDecoration: 'none',
+                  fontSize: '12px'
+                }}
+                href={`${repoUrl}/edit/master/docs/${this.props.route.key}`}>
+                Edit the on github
+              </a>
+            </div>
             <Wrapper>
               <Content>
                 {children}
