@@ -1,6 +1,6 @@
-const Command = require('../../../base')
-const openBrowser = require('../../../utils/open-browser')
-const renderShortDesc = require('../../../utils/renderShortDescription')
+const Command = require('../../base')
+const openBrowser = require('../../utils/open-browser')
+const renderShortDesc = require('../../utils/renderShortDescription')
 
 class OpenAdminCommand extends Command {
   async run() {
@@ -11,8 +11,9 @@ class OpenAdminCommand extends Command {
     }
 
     if (!siteId) {
-      this.warn('Did you run `netlify link` yet?')
-      this.error(`You don't appear to be in a folder that is linked to a site`)
+      this.warn(`No Site ID found in current directory.
+Run \`netlify link\` to connect to this folder to a site`)
+      return false
     }
 
     let site
@@ -38,7 +39,5 @@ class OpenAdminCommand extends Command {
 OpenAdminCommand.description = `${renderShortDesc('Opens current site url in browser')}`
 
 OpenAdminCommand.examples = ['$ netlify open:site']
-
-OpenAdminCommand.hidden = true
 
 module.exports = OpenAdminCommand

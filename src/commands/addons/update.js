@@ -1,7 +1,7 @@
-const Command = require('../../../base')
 const mergewith = require('lodash.mergewith')
-const { getAddons, updateAddon } = require('../../../utils/api/addons')
-const parseRawFlags = require('../../../utils/parseRawFlags')
+const Command = require('../../base')
+const { getAddons, updateAddon } = require('../../utils/api/addons')
+const parseRawFlags = require('../../utils/parseRawFlags')
 
 
 class addonsUpdateCommand extends Command {

@@ -1,9 +1,10 @@
 const AsciiTable = require('ascii-table')
-const Command = require('../../../base')
+const { flags } = require('@oclif/command')
+const Command = require('../../base')
 
 class SitesListCommand extends Command {
   async run() {
-    // const { flags } = this.parse(SitesListCommand)
+    const { flags } = this.parse(SitesListCommand)
     await this.authenticate()
 
     const sites = await this.netlify.listSites()
@@ -16,6 +17,16 @@ class SitesListCommand extends Command {
           ssl_url: site.ssl_url
         }
       })
+
+      // Json response for piping commands
+      if (flags.json) {
+        const redactedSites = sites.map((site) => {
+          delete site.build_settings
+          return site
+        })
+        console.log(JSON.stringify(redactedSites, null, 2))
+        return false
+      }
 
       // Build a table out of sites
       const table = new AsciiTable('Netlify Sites')
@@ -31,9 +42,12 @@ class SitesListCommand extends Command {
   }
 }
 
-SitesListCommand.description = `list sites
-...
-Extra documentation goes here
-`
+SitesListCommand.description = `list sites`
+
+SitesListCommand.flags = {
+  json: flags.boolean({
+    description: 'Output site data as JSON'
+  })
+}
 
 module.exports = SitesListCommand

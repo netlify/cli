@@ -1,8 +1,8 @@
 const { flags } = require('@oclif/command')
 const inquirer = require('inquirer')
-const Command = require('../../../base')
-const { getAddons, deleteAddon } = require('../../../utils/api/addons')
-const parseRawFlags = require('../../../utils/parseRawFlags')
+const Command = require('../../base')
+const { getAddons, deleteAddon } = require('../../utils/api/addons')
+const parseRawFlags = require('../../utils/parseRawFlags')
 
 
 class addonsDeleteCommand extends Command {

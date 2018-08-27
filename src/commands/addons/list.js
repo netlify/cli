@@ -1,7 +1,7 @@
 const AsciiTable = require('ascii-table')
 const { flags } = require('@oclif/command')
-const Command = require('../../../base')
-const { getAddons } = require('../../../utils/api/addons')
+const Command = require('../../base')
+const { getAddons } = require('../../utils/api/addons')
 
 class AddonsListCommand extends Command {
   async run() {
@@ -69,7 +69,6 @@ AddonsListCommand.flags = {
     description: 'Output addon data as JSON'
   })
 }
-
 
 AddonsListCommand.hidden = true
 

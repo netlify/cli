@@ -1,7 +1,7 @@
 const inquirer = require('inquirer')
-const Command = require('../../../base')
-const { getAddons, createAddon } = require('../../../utils/api/addons')
-const parseRawFlags = require('../../../utils/parseRawFlags')
+const Command = require('../../base')
+const { getAddons, createAddon } = require('../../utils/api/addons')
+const parseRawFlags = require('../../utils/parseRawFlags')
 
 class addonsCreateCommand extends Command {
   async run() {

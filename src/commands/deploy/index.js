@@ -18,13 +18,12 @@ class DeployCommand extends Command {
     }
 
     const siteId = this.site.get('siteId')
-    let siteData
     if (!siteId) {
       this.log('Please link project to a netlify site first')
       this.exit()
     } else {
       try {
-        siteData = await this.netlify.getSite({ siteId })
+        await this.netlify.getSite({ siteId })
       } catch (e) {
         this.error(e.message)
       }
@@ -66,8 +65,7 @@ class DeployCommand extends Command {
     cliUx.action.stop(`Finished deploy ${results.deployId}`)
     this.log(
       prettyjson.render({
-        previewUrl: `https://${results.deployId}--${siteData.name}.netlify.com`,
-        siteUrl: results.deploy.ssl_url || results.deploy.url,
+        URL: results.deploy.ssl_url || results.deploy.url,
         Admin: results.deploy.admin_url
       })
     )
@@ -85,7 +83,9 @@ DeployCommand.args = [
 ]
 
 DeployCommand.flags = {
-  functions: flags.string()
+  functions: flags.string({
+    description: '@bret what does this do'
+  })
 }
 
 function ensureDirectory(resolvedDeployPath, exit) {

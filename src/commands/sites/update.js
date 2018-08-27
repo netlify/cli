@@ -15,4 +15,7 @@ SitesUpdateCommand.flags = {
   name: flags.string({char: 'n', description: 'name to print'}),
 }
 
+// TODO implement logic
+SitesUpdateCommand.hidden = true
+
 module.exports = SitesUpdateCommand

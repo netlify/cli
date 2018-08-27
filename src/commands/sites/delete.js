@@ -9,10 +9,7 @@ class SitesDeleteCommand extends Command {
   }
 }
 
-SitesDeleteCommand.description = `delete a site
-...
-Extra documentation goes here
-`
+SitesDeleteCommand.description = `delete a site`
 
 SitesDeleteCommand.flags = {
   name: flags.string({ char: 'n', description: 'name to print' })
@@ -31,5 +28,8 @@ SitesDeleteCommand.args = [
 ]
 
 SitesDeleteCommand.examples = ['$ netlify site:delete 123-432621211']
+
+// TODO implement logic
+SitesDeleteCommand.hidden = true
 
 module.exports = SitesDeleteCommand

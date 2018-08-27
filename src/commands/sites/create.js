@@ -1,6 +1,6 @@
 const { flags } = require('@oclif/command')
 const inquirer = require('inquirer')
-const Command = require('../../../base')
+const Command = require('../../base')
 const isEmpty = require('lodash.isempty')
 const prettyjson = require('prettyjson')
 
@@ -48,10 +48,7 @@ class SitesCreateCommand extends Command {
   }
 }
 
-SitesCreateCommand.description = `create a site
-...
-Create an empty site
-`
+SitesCreateCommand.description = `create a new site`
 
 SitesCreateCommand.flags = {
   name: flags.string({ char: 'n', description: 'name of site' }),
