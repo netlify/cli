@@ -21,61 +21,58 @@ netlify [command] help
 ## Commands
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_LIST) -->
-
 ### [deploy](/commands/deploy)
 
 Create a new deploy from the contents of a folder.
 
+### [init](/commands/init)
 
-
-    
+Configure continuous deployment
 
 ### [link](/commands/link)
 
 Link a local repo or project folder to an existing site on Netlify
 
-
-
-    
 ### [login](/commands/login)
 
-Login to account
+Login to your Netlify account
 
-
-
-    
 ### [logout](/commands/logout)
 
-Logout of account
+Logout of your Netlify account
 
+### [open](/commands/open)
 
-
-    
-
-### [sites](/commands/sites)
-
+Opens current project urls in browser
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| sites:create | create a site  |
-| sites:delete | delete a site  |
-| sites:list | list sites  |
-| sites:update | update a site  |
+| open:admin | Opens current site admin UI in netlify  |
+| open:site | Opens current site url in browser  |
 
-    
+
+### [sites](/commands/sites)
+
+Handle various site operations
+
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| sites:create | Create a new site  |
+| sites:list | List existing sites  |
+
+
 ### [status](/commands/status)
 
 Print currently logged in user
 
-
-
-    
 ### [unlink](/commands/unlink)
 
 Unlink a local repo from a Netlify site
 
+### [watch](/commands/watch)
+
+Watch for site deploy to finish
 
 
-    
 
 <!-- AUTO-GENERATED-CONTENT:END -->

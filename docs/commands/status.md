@@ -3,11 +3,9 @@ title: Netlify CLI status command
 description: Get the current context of the netlify CLI
 ---
 
-# `netlify status`
+# `status`
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
-## status
-
 Print currently logged in user
 
 **Usage**
@@ -15,10 +13,6 @@ Print currently logged in user
 ```bash
 netlify status
 ```
-
-**Source code**
-
-Link to src
 
 
 

@@ -7,7 +7,12 @@ import { ScopeProvider } from '@compositor/x0/components'
 import Layout from './_layout'
 import { LiveEditor } from './_ui'
 
-const scope = { ...createScope(), ...Rebass, code: LiveEditor, pre: ({ children }) => children }
+const scope = {
+  ...createScope(),
+  ...Rebass,
+  code: LiveEditor,
+  pre: ({ children }) => children
+}
 
 const navOrder = [
   'index',
@@ -20,6 +25,7 @@ const navOrder = [
     'unlink',
     'deploy',
     'sites',
+    'open',
     'status',
   'contributing',
 ]
@@ -35,8 +41,9 @@ const sortRoutes = routes => [
     return i < 0 ? Infinity : i
   })
 ].map(route => {
-  console.log('route', route)
-  if (!pageNames[route.name]) return route
+  if (!pageNames[route.name]) {
+    return route
+  }
   return {
     ...route,
     name: pageNames[route.name],
@@ -47,6 +54,7 @@ const sortRoutes = routes => [
 })
 
 export default class App extends React.Component {
+
   static defaultProps = {
     title: 'Netlify CLI'
   }

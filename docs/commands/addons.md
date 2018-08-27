@@ -3,7 +3,7 @@ title: Netlify CLI addons command
 hidden: true
 ---
 
-# `netlify addons`
+# `addons`
 
 The addons command will help you manage all your netlify addons
 

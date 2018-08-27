@@ -4,22 +4,16 @@ description: Login to your Netlify account
 hidden: true
 ---
 
-# `netlify logout`
+# `logout`
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
-## logout
-
-Logout of account
+Logout of your Netlify account
 
 **Usage**
 
 ```bash
 netlify logout
 ```
-
-**Source code**
-
-Link to src
 
 
 

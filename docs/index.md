@@ -5,9 +5,9 @@ description: Netlify Command line interface (CLI) documentation
 
 # Netlify CLI
 
-Welcome to Netlify's command line interface!
+Welcome to the Netlify CLI!
 
-The new CLI was designed from the ground up to help improve your Netlify site building experience.
+The new Netlify CLI was designed from the ground up to help improve the site building experience.
 
 - [Getting Started](/getting-started)
 - [Commands](/commands)

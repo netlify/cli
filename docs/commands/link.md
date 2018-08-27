@@ -3,13 +3,9 @@ title: Netlify CLI link command
 description: Link an existing site to a local site directory
 ---
 
-# `netlify link`
-
-Link a local repo or project folder to an existing site on Netlify
+# `link`
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
-## link
-
 Link a local repo or project folder to an existing site on Netlify
 
 **Usage**
@@ -20,13 +16,9 @@ netlify link
 
 **Flags**
 
-- id (option) - Existing Netlify site id
-- name (option) - Existing Netlify site name
-- force (boolean) - @Bret what does this do?
-
-**Source code**
-
-Link to src
+- id (option) - ID of site to link to
+- name (option) - Name of site to link to
+- force (boolean) - @bret what is this
 
 
 
