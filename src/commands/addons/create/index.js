@@ -1,3 +1,4 @@
+const inquirer = require('inquirer')
 const Command = require('../../../base')
 const { getAddons, createAddon } = require('../../../utils/api/addons')
 const parseRawFlags = require('../../../utils/parseRawFlags')
@@ -33,7 +34,7 @@ class addonsCreateCommand extends Command {
     // Filter down addons to current args.name
     const currentAddon = addons.reduce((acc, current) => {
       // return current addon
-      if (current.service_path && current.service_path.replace('/.netlify/', '') === addonName) {
+      if (current.service_path && (current.service_path.replace('/.netlify/', '')) === addonName) {
         return current
       }
       return {}
@@ -70,15 +71,19 @@ addonsCreateCommand.description = `Add an addon extension to your site
 Addons are a way to extend the functionality of your Netlify site
 `
 
+
 addonsCreateCommand.args = [
   {
     name: 'name',
     required: true,
-    description: 'addon namespace'
+    description: 'addon namespace',
   }
 ]
 
+
 // allow for any flags. Handy for variadic configuration options
 addonsCreateCommand.strict = false
+
+addonsCreateCommand.hidden = true
 
 module.exports = addonsCreateCommand

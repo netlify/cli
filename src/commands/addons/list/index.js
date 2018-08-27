@@ -65,7 +65,12 @@ Addons are a way to extend the functionality of your Netlify site
 `
 
 AddonsListCommand.flags = {
-  json: flags.boolean()
+  json: flags.boolean({
+    description: 'Output addon data as JSON'
+  })
 }
+
+
+AddonsListCommand.hidden = true
 
 module.exports = AddonsListCommand

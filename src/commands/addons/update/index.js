@@ -90,6 +90,8 @@ addonsUpdateCommand.args = [
 ]
 
 
+addonsUpdateCommand.hidden = true
+
 // allow for any flags. Handy for variadic configuration options
 addonsUpdateCommand.strict = false
 

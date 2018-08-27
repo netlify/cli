@@ -1,10 +1,14 @@
+const { flags } = require('@oclif/command')
+const inquirer = require('inquirer')
 const Command = require('../../../base')
 const { getAddons, deleteAddon } = require('../../../utils/api/addons')
+const parseRawFlags = require('../../../utils/parseRawFlags')
+
 
 class addonsDeleteCommand extends Command {
   async run() {
     await this.authenticate()
-    const { args } = this.parse(addonsDeleteCommand)
+    const { args, raw } = this.parse(addonsDeleteCommand)
     const accessToken = this.global.get('accessToken')
 
     if (!accessToken) {
@@ -29,7 +33,7 @@ class addonsDeleteCommand extends Command {
 
     // Filter down addons to current args.name
     const currentAddon = addons.reduce((acc, current) => {
-      if (current.service_path && current.service_path.replace('/.netlify/', '') === addonName) {
+      if (current.service_path && (current.service_path.replace('/.netlify/', '')) === addonName) {
         return current
       }
       return {}
@@ -57,6 +61,7 @@ class addonsDeleteCommand extends Command {
       return false
     }
     this.log(`Addon "${addonName}" deleted`)
+
   }
 }
 
@@ -72,8 +77,10 @@ addonsDeleteCommand.args = [
   {
     name: 'name',
     required: true,
-    description: 'addon namespace'
+    description: 'addon namespace',
   }
 ]
+
+addonsDeleteCommand.hidden = true
 
 module.exports = addonsDeleteCommand
