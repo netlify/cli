@@ -69,9 +69,15 @@ class InitCommand extends Command {
 InitCommand.description = `${renderShortDesc('Configure continuous deployment')}`
 
 InitCommand.flags = {
-  manual: flags.boolean(),
-  force: flags.boolean(),
-  watch: flags.boolean()
+  manual: flags.boolean({
+    description: 'What does this do @Bret',
+  }),
+  force: flags.boolean({
+    description: 'What does this do @Bret',
+  }),
+  watch: flags.boolean({
+    description: 'What does this do @Bret',
+  })
 }
 
 module.exports = InitCommand

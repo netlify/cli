@@ -20,6 +20,4 @@ OpenCommand.description = `${renderShortDesc('Opens current project urls in brow
 
 OpenCommand.examples = ['$ netlify open:admin', '$ netlify open:site']
 
-OpenCommand.hidden = true
-
 module.exports = OpenCommand
