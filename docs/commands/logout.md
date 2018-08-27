@@ -1,6 +1,7 @@
 ---
 title: Netlify CLI logout command
 description: Login to your Netlify account
+hidden: true
 ---
 
 # `netlify logout`

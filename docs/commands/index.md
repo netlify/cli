@@ -5,18 +5,23 @@ description: All netlify CLI command
 
 # Available CLI Commands
 
+To get a list of commands, run
+
+```
+netlify help
+```
+
+To get a list of available sub-commands, arguments & flags run
+
+
+```
+netlify [command] help
+```
+
+## Commands
+
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_LIST) -->
-### [addons](/commands/addons)
 
-
-| Subcommand | description  |
-|:--------------------------- |:-----|
-| addons:create | Add an addon extension to your site  |
-| addons:delete | Remove an addon extension to your site  |
-| addons:list | list current site addons  |
-| addons:update | Update an addon extension  |
-
-    
 ### [deploy](/commands/deploy)
 
 Create a new deploy from the contents of a folder.

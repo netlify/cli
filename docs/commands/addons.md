@@ -116,6 +116,4 @@ netlify addons:update
 **Source code**
 
 Link to src
-
-
 <!-- AUTO-GENERATED-CONTENT:END -->
