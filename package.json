@@ -15,6 +15,7 @@
     "build:docs": "DOCS_GEN=TRUE oclif-dev readme --multi && md-magic --path '**/*.md' --ignore 'node_modules'",
     "build:site": "sitedown . -b site/ -l layout.html && cpx \"coverage/lcov-report/**/*\" 'site/coverage'",
     "newdocs": "x0 docs",
+    "newdocsbuild": "x0 build docs",
     "ci": "run-s test build",
     "clean": "rimraf site && mkdirp site",
     "start": "node ./bin/run",
@@ -98,7 +99,9 @@
     "write-file-atomic": "^2.3.0"
   },
   "devDependencies": {
+    "@compositor/x0": "^6.0.5",
     "@oclif/dev-cli": "^1.13.31",
+    "@rebass/mdx": "^1.0.0-1",
     "ava": "1.0.0-beta.7",
     "body": "^5.1.0",
     "coveralls": "^3.0.2",
@@ -116,11 +119,10 @@
     "npm-run-all": "^4.1.3",
     "nyc": "^13.0.0",
     "prettier": "^1.13.7",
+    "react-helmet": "^5.2.0",
     "rimraf": "^2.6.2",
     "sitedown": "^3.3.0",
-    "@rebass/mdx": "^1.0.0-1",
-    "styled-components": "^3.3.3",
-    "@compositor/x0": "^6.0.5"
+    "styled-components": "^3.3.3"
   },
   "engines": {
     "node": ">=8.0.0"
