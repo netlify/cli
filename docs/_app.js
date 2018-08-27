@@ -15,9 +15,13 @@ const navOrder = [
   'commands',
     'login',
     'logout',
-    '',
-  'projects',
-  'about'
+    'init',
+    'deploy',
+    'link',
+    'unlink',
+    'sites',
+    'status',
+  'contributing',
 ]
 
 const pageNames = {

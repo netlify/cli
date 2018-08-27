@@ -140,7 +140,14 @@ Link.defaultProps = {
 
 const unhyphenate = str => str.replace(/(\w)(-)(\w)/g, '$1 $3')
 const upperFirst = str => str.charAt(0).toUpperCase() + str.slice(1)
-const format = str => upperFirst(unhyphenate(str))
+const format = (str, data) => {
+  console.log('str', str)
+  if (data && data.path && data.path.match((/commands/)) && str !== 'commands') {
+    return <span>{str}</span>
+  }
+  console.log(data)
+  return upperFirst(unhyphenate(str))
+}
 
 const NavBar = ({
   title,
@@ -167,23 +174,29 @@ export const Nav = ({
   <React.Fragment>
     <NavBar {...props} />
     <Divider my={0} />
-    <div>
+    <div style={{display: 'none'}}>
+      {/* TODO implement algolia search */}
       <input placeholder="Search"></input>
     </div>
     <UL>
-      {routes.map(route => (
-        <LI key={route.key}>
-          {/^https?:\/\//.test(route.path) ? (
-            <NavLink pl={3} href={route.path}>
-              {route.name}
-            </NavLink>
-          ) : (
-            <Link to={route.path} exact>
-              {format(route.name)}
-            </Link>
-          )}
-        </LI>
-      ))}
+      {routes.map(route => {
+        // Hide items from nav if frontMatter hidden: true
+        if (route.module && route.module.frontMatter && route.module.frontMatter.hidden) {
+          return null
+        }
+        return (<LI key={route.key}>
+            {/^https?:\/\//.test(route.path) ? (
+              <NavLink pl={3} href={route.path}>
+                {route.name}
+              </NavLink>
+            ) : (
+              <Link to={route.path} exact>
+                {format(route.name, route)}
+              </Link>
+            )}
+          </LI>
+        )}
+      )}
     </UL>
   </React.Fragment>
 
