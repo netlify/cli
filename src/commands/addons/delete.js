@@ -1,14 +1,11 @@
-const { flags } = require('@oclif/command')
-const inquirer = require('inquirer')
 const Command = require('../../base')
 const { getAddons, deleteAddon } = require('../../utils/api/addons')
-const parseRawFlags = require('../../utils/parseRawFlags')
-
+// const parseRawFlags = require('../../utils/parseRawFlags')
 
 class addonsDeleteCommand extends Command {
   async run() {
     await this.authenticate()
-    const { args, raw } = this.parse(addonsDeleteCommand)
+    const { args } = this.parse(addonsDeleteCommand)
     const accessToken = this.global.get('accessToken')
 
     if (!accessToken) {

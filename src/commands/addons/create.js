@@ -1,4 +1,3 @@
-const inquirer = require('inquirer')
 const Command = require('../../base')
 const { getAddons, createAddon } = require('../../utils/api/addons')
 const parseRawFlags = require('../../utils/parseRawFlags')
