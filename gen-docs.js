@@ -38,12 +38,15 @@ const config = {
         return md
       }
     },
-    GENERATE_COMMANDS_LIST(content, options) {
+    GENERATE_COMMANDS_LIST(content, options, instance) {
+
+      const context = path.basename(instance.originalPath, '.md')
+
       /* Generate Command List */
       let md = ''
       Object.keys(commandData).map((commandName) => {
         const info = commandData[commandName]
-        md += commandListTitle(commandName)
+        md += commandListTitle(commandName, context)
         md += commandListDescription(info.description)
         md += commandListSubCommandDisplay(info.commands)
       })
@@ -79,8 +82,9 @@ function commandFromPath(p) {
 }
 
 /* Start - Docs Templating logic */
-function commandListTitle(command) {
-  return `### [${command}](/commands/${command})${newLine}`
+function commandListTitle(command, context) {
+  const url  = (context === 'README') ? `/docs/commands/${command}.md` : `/commands/${command}`
+  return `### [${command}](${url})${newLine}`
 }
 
 function commandListDescription(desc) {
