@@ -18,7 +18,7 @@ netlify link
 
 - id (option) - ID of site to link to
 - name (option) - Name of site to link to
-- force (boolean) - @bret what is this
+- force (boolean) - Force link a folder to a site, even if the folder is already linked
 
 
 

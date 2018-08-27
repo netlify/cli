@@ -19,7 +19,7 @@ netlify deploy
 
 **Flags**
 
-- functions (option) - @bret what does this do
+- functions (option) - Specify a function folder for a deploy
 
 
 

@@ -16,9 +16,9 @@ netlify init
 
 **Flags**
 
-- manual (boolean) - What does this do @Bret
-- force (boolean) - What does this do @Bret
-- watch (boolean) - What does this do @Bret
+- manual (boolean) - Manually configure a git remote for CI
+- force (boolean) - Force init a site that is already configured to use CI
+- watch (boolean) - Make the CLI wait for the first deploy to complete after setting up CI
 
 
 
