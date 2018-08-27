@@ -1,6 +1,7 @@
 const AsciiTable = require('ascii-table')
 const { flags } = require('@oclif/command')
 const Command = require('../../base')
+const renderShortDesc = require('../../utils/renderShortDescription')
 
 class SitesListCommand extends Command {
   async run() {
@@ -42,7 +43,7 @@ class SitesListCommand extends Command {
   }
 }
 
-SitesListCommand.description = `list sites`
+SitesListCommand.description = `${renderShortDesc('List existing sites')}`
 
 SitesListCommand.flags = {
   json: flags.boolean({

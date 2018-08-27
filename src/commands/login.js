@@ -15,6 +15,6 @@ class LoginCommand extends Command {
   }
 }
 
-LoginCommand.description = `${renderShortDesc('Login to account')}`
+LoginCommand.description = `${renderShortDesc('Login to your Netlify account')}`
 
 module.exports = LoginCommand

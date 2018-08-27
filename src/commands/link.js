@@ -141,9 +141,15 @@ LinkCommand.description = `${renderShortDesc('Link a local repo or project folde
 LinkCommand.examples = ['$ netlify init --id 123-123-123-123', '$ netlify init --name my-site-name']
 
 LinkCommand.flags = {
-  id: flags.string(),
-  name: flags.string(),
-  force: flags.boolean()
+  id: flags.string({
+    description: 'ID of site to link to'
+  }),
+  name: flags.string({
+    description: 'Name of site to link to'
+  }),
+  force: flags.boolean({
+    description: '@bret what is this'
+  })
 }
 
 module.exports = LinkCommand

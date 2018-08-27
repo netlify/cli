@@ -1,8 +1,9 @@
 const { flags } = require('@oclif/command')
 const inquirer = require('inquirer')
-const Command = require('../../base')
 const isEmpty = require('lodash.isempty')
 const prettyjson = require('prettyjson')
+const Command = require('../../base')
+const renderShortDesc = require('../../utils/renderShortDescription')
 
 class SitesCreateCommand extends Command {
   async run() {
@@ -48,15 +49,33 @@ class SitesCreateCommand extends Command {
   }
 }
 
-SitesCreateCommand.description = `create a new site`
+SitesCreateCommand.description = `${renderShortDesc('Create a new site')}`
 
 SitesCreateCommand.flags = {
-  name: flags.string({ char: 'n', description: 'name of site' }),
-  password: flags.string({ char: 'p', description: 'password protect the site' }),
-  'force-tls': flags.boolean({ char: 's', description: 'force TLS connections' }),
-  'session-id': flags.string({ char: 'i', description: 'session ID for later site transfers' }),
-  'account-slug': flags.string({ char: 'a', description: 'account slug to create the site under' }),
-  'custom-domain': flags.string({ char: 'c', description: 'custom domain to use with the site' })
+  name: flags.string({
+    char: 'n',
+    description: 'name of site'
+  }),
+  password: flags.string({
+    char: 'p',
+    description: 'password protect the site'
+  }),
+  'force-tls': flags.boolean({
+    char: 's',
+    description: 'force TLS connections'
+  }),
+  'session-id': flags.string({
+    char: 'i',
+    description: 'session ID for later site transfers'
+  }),
+  'account-slug': flags.string({
+    char: 'a',
+    description: 'account slug to create the site under'
+  }),
+  'custom-domain': flags.string({
+    char: 'c',
+    description: 'custom domain to use with the site'
+  })
 }
 
 module.exports = SitesCreateCommand
