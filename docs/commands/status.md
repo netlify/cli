@@ -1,5 +1,9 @@
-`netlify status`
-================
+---
+title: Netlify CLI status command
+description: Get the current context of the netlify CLI
+---
+
+# `netlify status`
 
 Print currently logged in user
 
