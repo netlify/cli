@@ -136,12 +136,9 @@ class LinkCommand extends Command {
   }
 }
 
-LinkCommand.description = `${renderShortDesc('Link a local repo or project folder to an existing site on Netlify')}`
+LinkCommand.description = `${renderShortDesc('Link a local folder to a site on Netlify')}`
 
-LinkCommand.examples = [
-  '$ netlify init --id 123-123-123-123',
-  '$ netlify init --name my-site-name'
-]
+LinkCommand.examples = ['$ netlify init --id 123-123-123-123', '$ netlify init --name my-site-name', '$ netlify init']
 
 LinkCommand.flags = {
   id: flags.string({

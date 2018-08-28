@@ -26,6 +26,6 @@ class UnlinkCommand extends Command {
   }
 }
 
-UnlinkCommand.description = `${renderShortDesc('Unlink a local repo from a Netlify site')}`
+UnlinkCommand.description = `${renderShortDesc('Unlink a local folder from a Netlify site')}`
 
 module.exports = UnlinkCommand

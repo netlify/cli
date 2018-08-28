@@ -72,7 +72,7 @@ class DeployCommand extends Command {
   }
 }
 
-DeployCommand.description = `${renderShortDesc('Create a new deploy from the contents of a folder.')}`
+DeployCommand.description = `${renderShortDesc('Create a new deploy from the contents of a folder')}`
 
 DeployCommand.args = [
   {

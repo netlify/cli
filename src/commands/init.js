@@ -66,7 +66,7 @@ class InitCommand extends Command {
   }
 }
 
-InitCommand.description = `${renderShortDesc('Configure continuous deployment')}`
+InitCommand.description = `${renderShortDesc('Configure continuous deployment for a new or existing site')}`
 
 InitCommand.flags = {
   manual: flags.boolean({

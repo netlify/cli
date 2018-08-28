@@ -49,7 +49,7 @@ class SitesCreateCommand extends Command {
   }
 }
 
-SitesCreateCommand.description = `${renderShortDesc('Create a new site')}`
+SitesCreateCommand.description = `${renderShortDesc('Create an empty site (advanced)')}`
 
 SitesCreateCommand.flags = {
   name: flags.string({

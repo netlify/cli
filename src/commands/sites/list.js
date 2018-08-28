@@ -21,7 +21,7 @@ class SitesListCommand extends Command {
 
       // Json response for piping commands
       if (flags.json) {
-        const redactedSites = sites.map((site) => {
+        const redactedSites = sites.map(site => {
           delete site.build_settings
           return site
         })
@@ -43,7 +43,7 @@ class SitesListCommand extends Command {
   }
 }
 
-SitesListCommand.description = `${renderShortDesc('List existing sites')}`
+SitesListCommand.description = `${renderShortDesc('List all sites you have access too')}`
 
 SitesListCommand.flags = {
   json: flags.boolean({
