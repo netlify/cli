@@ -109,7 +109,7 @@ async function configGithub(ctx, site, repo) {
   const failedHook = ntlHooks.find(h => h.type === 'github_commit_status' && h.event === 'deploy_failed')
   const buildingHook = ntlHooks.find(h => h.type === 'github_commit_status' && h.event === 'deploy_building')
 
-  if (!createdHook) {
+  if (!createdHook || createdHook.disabled) {
     const h = await ctx.netlify.createHookBySiteId({
       site_id: site.id,
       body: {
@@ -133,7 +133,7 @@ async function configGithub(ctx, site, repo) {
     ctx.log(`Updated Github Created Hook: ${h.id}`)
   }
 
-  if (!failedHook) {
+  if (!failedHook || failedHook.disabled) {
     const h = await ctx.netlify.createHookBySiteId({
       site_id: site.id,
       body: {
@@ -157,7 +157,7 @@ async function configGithub(ctx, site, repo) {
     ctx.log(`Updated Github Created Hook: ${h.id}`)
   }
 
-  if (!buildingHook) {
+  if (!buildingHook || buildingHook.disabled) {
     const h = await ctx.netlify.createHookBySiteId({
       site_id: site.id,
       body: {
