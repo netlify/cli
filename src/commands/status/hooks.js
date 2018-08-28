@@ -52,6 +52,6 @@ Site Hook Status │
   }
 }
 
-StatusHooksCommand.description = `${renderShortDesc('Print the current hooks that are configured with the site')}`
+StatusHooksCommand.description = `${renderShortDesc('Print hook information of the linked site')}`
 
 module.exports = StatusHooksCommand

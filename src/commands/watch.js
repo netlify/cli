@@ -64,10 +64,7 @@ class SitesWatchCommand extends Command {
   }
 }
 
-SitesWatchCommand.description = `${renderShortDesc('Watch for site deploy to finish')}
-...
-Extra documentation goes here
-`
+SitesWatchCommand.description = `${renderShortDesc('Watch for site deploy to finish')}`
 
 async function waitForBuildFinish(api, siteId) {
   let buildDone = false

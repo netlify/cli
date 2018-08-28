@@ -72,7 +72,10 @@ class DeployCommand extends Command {
   }
 }
 
-DeployCommand.description = `${renderShortDesc('Create a new deploy from the contents of a folder.')}`
+DeployCommand.description = `${renderShortDesc(`Create a new deploy from the contents of a folder`)}
+
+If the deploy path argument is omitted, then the settings from the netlify.toml file or the settings from the API will be used instead.
+`
 
 DeployCommand.args = [
   {
