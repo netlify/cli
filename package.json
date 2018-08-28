@@ -93,6 +93,7 @@
     "tempy": "^0.2.1",
     "through2-filter": "^3.0.0",
     "through2-map": "^3.0.0",
+    "update-notifier": "^2.5.0",
     "util.promisify": "^1.0.0",
     "util.promisify-all": "^1.0.2",
     "write-file-atomic": "^2.3.0"
