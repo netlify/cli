@@ -18,10 +18,18 @@ netlify sites
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| sites:create | Create a new site  |
-| sites:list | List existing sites  |
+| [`sites:create`](/commands/sites#sitescreate) | Create a new site  |
+| [`sites:list`](/commands/sites#siteslist) | List existing sites  |
 
 
+**Examples**
+
+```bash
+$ netlify sites:create --name my-new-site
+$ netlify sites:list
+```
+
+---
 ## `sites:create`
 
 Create a new site

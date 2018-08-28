@@ -20,6 +20,13 @@ netlify link
 - name (option) - Name of site to link to
 - force (boolean) - Force link a folder to a site, even if the folder is already linked
 
+**Examples**
+
+```bash
+$ netlify init --id 123-123-123-123
+$ netlify init --name my-site-name
+```
+
 
 
 <!-- AUTO-GENERATED-CONTENT:END -->

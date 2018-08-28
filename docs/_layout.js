@@ -142,11 +142,9 @@ Link.defaultProps = {
 const unhyphenate = str => str.replace(/(\w)(-)(\w)/g, '$1 $3')
 const upperFirst = str => str.charAt(0).toUpperCase() + str.slice(1)
 const format = (str, data) => {
-  console.log('str', str)
   if (data && data.path && data.path.match((/commands/)) && str !== 'commands') {
     return <span>{str}</span>
   }
-  console.log(data)
   return upperFirst(unhyphenate(str))
 }
 
@@ -304,8 +302,6 @@ export default class Layout extends React.Component {
         pageTitle = this.props.route.name
       }
     }
-
-    console.log('this.props', this.props.route.key)
 
     return (
       <React.Fragment>

@@ -11,7 +11,8 @@ const scope = {
   ...createScope(),
   ...Rebass,
   code: LiveEditor,
-  pre: ({ children }) => children
+  pre: ({ children }) => children,
+  //a: ({ children, href }) => <a href={href}>{children}</a>
 }
 
 const navOrder = [

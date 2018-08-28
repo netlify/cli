@@ -57,8 +57,8 @@ Opens current project urls in browser
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| open:admin | Opens current site admin UI in netlify  |
-| open:site | Opens current site url in browser  |
+| [`open:admin`](/docs/commands/open.md#openadmin) | Opens current site admin UI in netlify  |
+| [`open:site`](/docs/commands/open.md#opensite) | Opens current site url in browser  |
 
 
 ### [sites](/docs/commands/sites.md)
@@ -67,8 +67,8 @@ Handle various site operations
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| sites:create | Create a new site  |
-| sites:list | List existing sites  |
+| [`sites:create`](/docs/commands/sites.md#sitescreate) | Create a new site  |
+| [`sites:list`](/docs/commands/sites.md#siteslist) | List existing sites  |
 
 
 ### [status](/docs/commands/status.md)

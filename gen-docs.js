@@ -15,7 +15,7 @@ const config = {
 
       const command = path.basename(instance.originalPath, '.md')
       const info = commandData[command]
-
+      console.log('info', info)
       if (info) {
         let md = ''
         // Parent Command
@@ -24,7 +24,9 @@ const config = {
         md += formatArgs(info.args)
         md += formatFlags(info.flags)
         md += commandListSubCommandDisplay(info.commands)
+        md += commandExamples(info.examples)
         if (info.commands.length) {
+          md += `---\n`
           info.commands.forEach((subCmd) => {
             // Child Commands
             md += formatSubCommandTitle(subCmd.name)
@@ -48,7 +50,7 @@ const config = {
         const info = commandData[commandName]
         md += commandListTitle(commandName, context)
         md += commandListDescription(info.description)
-        md += commandListSubCommandDisplay(info.commands)
+        md += commandListSubCommandDisplay(info.commands, context)
       })
 
       return md
@@ -82,6 +84,21 @@ function commandFromPath(p) {
 }
 
 /* Start - Docs Templating logic */
+function commandExamples(examples) {
+  if (!examples || !examples.length) {
+    return ''
+  }
+  let exampleRender = `**Examples**${newLine}`
+  exampleRender += '\`\`\`bash\n'
+  examples.forEach((ex) => {
+    console.log('ex', ex)
+    exampleRender += `${ex}\n`
+  })
+  exampleRender += `\`\`\`${newLine}`
+  return exampleRender
+}
+
+/* Start - Docs Templating logic */
 function commandListTitle(command, context) {
   const url  = (context === 'README') ? `/docs/commands/${command}.md` : `/commands/${command}`
   return `### [${command}](${url})${newLine}`
@@ -92,14 +109,18 @@ function commandListDescription(desc) {
   return `${cleanDescription}${newLine}`
 }
 
-function commandListSubCommandDisplay(commands) {
+function commandListSubCommandDisplay(commands, context) {
+
   if (!commands.length) {
     return ''
   }
   let table = '| Subcommand | description  |\n';
   table += '|:--------------------------- |:-----|\n';
   commands.forEach((cmd) => {
-    table += `| ${cmd.name} | ${cmd.description}  |\n`;
+    const commandBase = cmd.name.split(':')[0]
+    const baseUrl = (context === 'README') ? `/docs/commands/${commandBase}.md` : `/commands/${commandBase}`
+    const slug = cmd.name.replace(/:/g, '')
+    table += `| [\`${cmd.name}\`](${baseUrl}#${slug}) | ${cmd.description}  |\n`;
   })
   return `${table}${newLine}`
 }
@@ -152,7 +173,6 @@ function formatArgs(cmdArgs) {
   let renderArgs = `**Arguments**\n\n`
 
   renderArgs += cmdArgs.map((arg) => {
-    console.log('arg', arg)
     return `- ${arg.name} - ${arg.description}`
   }).join('\n')
   renderArgs += `\n\n`
