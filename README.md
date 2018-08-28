@@ -119,7 +119,7 @@ $ npm run watch
 [3]: https://npmjs.org/package/netlify-cli
 [4]: https://img.shields.io/travis/netlify/cli/master.svg
 [5]: https://travis-ci.org/netlify/cli
-[6]: https://ci.appveyor.com/api/projects/status/0vh59qjo64j7j8st?svg=true
+[6]: https://ci.appveyor.com/api/projects/status/imk2qjc34ly7x11b/branch/master?svg=true
 [7]: https://ci.appveyor.com/project/netlify/cli
 [8]: https://img.shields.io/npm/dm/netlify-cli.svg
 [9]: https://npmjs.org/package/netlify-cli
