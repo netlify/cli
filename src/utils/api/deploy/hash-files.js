@@ -14,7 +14,7 @@ async function hashFiles(dir, tomlPath, opts) {
   )
 
   if (!opts.filter) throw new Error('Missing filter function option')
-  const fileStream = walker([dir, tomlPath], { filter: opts.filter })
+  const fileStream = walker([tomlPath, dir], { filter: opts.filter })
   const filter = fileFilterCtor()
   const hasher = hasherCtor(opts)
   const fileNormalizer = fileNormalizerCtor(opts)
