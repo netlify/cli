@@ -15,7 +15,7 @@ async function configGithub(ctx, site, repo) {
   if (!ghtoken) {
     const newToken = await ghauth({
       noSave: true,
-      scopes: ['repo'],
+      scopes: ['admin:org', 'admin:public_key', 'repo', 'user'],
       userAgent: UA,
       note: `Netlify CLI ${os.userInfo().username}@${os.hostname()}`
     })
@@ -99,5 +99,85 @@ async function configGithub(ctx, site, repo) {
       // Ignore exists error if the list doesn't return all installed hooks
       if (!e.message.includes('Hook already exists on this repository')) ctx.error(e)
     }
+  }
+
+  // TODO: Generalize this so users can reset these automatically.
+  // Quick and dirty implementation
+  const ntlHooks = await ctx.netlify.listHooksBySiteId({ siteId: site.id })
+
+  const createdHook = ntlHooks.find(h => h.type === 'github_commit_status' && h.event === 'deploy_created')
+  const failedHook = ntlHooks.find(h => h.type === 'github_commit_status' && h.event === 'deploy_failed')
+  const buildingHook = ntlHooks.find(h => h.type === 'github_commit_status' && h.event === 'deploy_building')
+
+  if (!createdHook || createdHook.disabled) {
+    const h = await ctx.netlify.createHookBySiteId({
+      site_id: site.id,
+      body: {
+        type: 'github_commit_status',
+        event: 'deploy_created',
+        data: {
+          access_token: ctx.global.get('ghauth.token')
+        }
+      }
+    })
+    ctx.log(`Created Github Created Hook: ${h.id}`)
+  } else {
+    const h = await ctx.netlify.updateHook({
+      hook_id: createdHook.id,
+      body: {
+        data: {
+          access_token: ctx.global.get('ghauth.token')
+        }
+      }
+    })
+    ctx.log(`Updated Github Created Hook: ${h.id}`)
+  }
+
+  if (!failedHook || failedHook.disabled) {
+    const h = await ctx.netlify.createHookBySiteId({
+      site_id: site.id,
+      body: {
+        type: 'github_commit_status',
+        event: 'deploy_failed',
+        data: {
+          access_token: ctx.global.get('ghauth.token')
+        }
+      }
+    })
+    ctx.log(`Created Github Failed Hook: ${h.id}`)
+  } else {
+    const h = await ctx.netlify.updateHook({
+      hook_id: failedHook.id,
+      body: {
+        data: {
+          access_token: ctx.global.get('ghauth.token')
+        }
+      }
+    })
+    ctx.log(`Updated Github Created Hook: ${h.id}`)
+  }
+
+  if (!buildingHook || buildingHook.disabled) {
+    const h = await ctx.netlify.createHookBySiteId({
+      site_id: site.id,
+      body: {
+        type: 'github_commit_status',
+        event: 'deploy_building',
+        data: {
+          access_token: ctx.global.get('ghauth.token')
+        }
+      }
+    })
+    ctx.log(`Created Github Building Hook: ${h.id}`)
+  } else {
+    const h = await ctx.netlify.updateHook({
+      hook_id: buildingHook.id,
+      body: {
+        data: {
+          access_token: ctx.global.get('ghauth.token')
+        }
+      }
+    })
+    ctx.log(`Updated Github Building Hook: ${h.id}`)
   }
 }

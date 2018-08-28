@@ -1,5 +1,5 @@
-const Command = require('../base')
-const renderShortDesc = require('../utils/renderShortDescription')
+const Command = require('../../base')
+const renderShortDesc = require('../../utils/renderShortDescription')
 const prettyjson = require('prettyjson')
 const get = require('lodash.get')
 const clean = require('clean-deep')
