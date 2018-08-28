@@ -47,7 +47,13 @@ class SiteConfig {
   }
 
   get tomlPath() {
-    return path.join(this.root, 'netlify.toml')
+    const p = path.join(this.root, 'netlify.toml')
+    try {
+      fs.readFileSync(path.join(this.root, 'netlify.toml'), 'utf8')
+      return p
+    } catch (_) {
+      return undefined
+    }
   }
 
   get all() {

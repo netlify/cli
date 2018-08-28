@@ -58,7 +58,7 @@ class DeployCommand extends Command {
 
     let results
     try {
-      results = await this.netlify.deploy(siteId, resolvedDeployPath, resolvedFunctionsPath)
+      results = await this.netlify.deploy(siteId, resolvedDeployPath, resolvedFunctionsPath, this.site.tomlPath)
     } catch (e) {
       this.error(e)
     }

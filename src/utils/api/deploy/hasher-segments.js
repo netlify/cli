@@ -12,7 +12,7 @@ const archiver = require('archiver')
 // a parallel transform stream segment ctor that hashes fileObj's created by folder-walker
 exports.hasherCtor = ({ concurrentHash, hashAlgorithm = 'sha1' }) => {
   if (!concurrentHash) throw new Error('Missing required opts')
-  return transform(concurrentHash, { objectMode: true, ordered: false }, (fileObj, cb) => {
+  return transform(concurrentHash, { objectMode: true }, (fileObj, cb) => {
     hasha
       .fromFile(fileObj.filepath, { algorithm: hashAlgorithm })
       // insert hash and asset type to file obj
@@ -78,7 +78,7 @@ function zipFunction(item, tmpDir, cb) {
 // Stream in names of files that may be functions, and this will stat the file and return a fileObj
 exports.fnStatCtor = ({ root, concurrentStat, tmpDir }) => {
   if (!concurrentStat || !root || !tmpDir) throw new Error('Missing required opts')
-  return transform(concurrentStat, { objectMode: true, ordered: false }, (name, cb) => {
+  return transform(concurrentStat, { objectMode: true }, (name, cb) => {
     const filepath = path.join(root, name)
     fs.stat(filepath, (err, stat) => {
       if (err) return cb(err)

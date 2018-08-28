@@ -4,7 +4,7 @@ const pump = promisify(require('pump'))
 const { hasherCtor, manifestCollectorCtor, fileFilterCtor, fileNormalizerCtor } = require('./hasher-segments')
 
 module.exports = hashFiles
-async function hashFiles(dir, opts) {
+async function hashFiles(dir, tomlPath, opts) {
   opts = Object.assign(
     {
       concurrentHash: 100,
@@ -14,7 +14,7 @@ async function hashFiles(dir, opts) {
   )
 
   if (!opts.filter) throw new Error('Missing filter function option')
-  const fileStream = walker(dir, { filter: opts.filter })
+  const fileStream = walker([tomlPath, dir], { filter: opts.filter })
   const filter = fileFilterCtor()
   const hasher = hasherCtor(opts)
   const fileNormalizer = fileNormalizerCtor(opts)

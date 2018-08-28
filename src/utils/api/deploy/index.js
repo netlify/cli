@@ -2,11 +2,10 @@ const debug = require('debug')('netlify-cli:deploy')
 const uploadFiles = require('./upload-files')
 const hashFiles = require('./hash-files')
 const hashFns = require('./hash-fns')
-const { defaultFilter } = require('util')
 
-const { waitForDeploy, getUploadList } = require('./util')
+const { waitForDeploy, getUploadList, defaultFilter } = require('./util')
 
-module.exports = async (api, siteId, dir, fnDir, opts) => {
+module.exports = async (api, siteId, dir, fnDir, tomlPath, opts) => {
   // TODO Implement progress cb
   opts = Object.assign(
     {
@@ -19,7 +18,7 @@ module.exports = async (api, siteId, dir, fnDir, opts) => {
   )
 
   const [{ files, filesShaMap }, { functions, fnShaMap }] = await Promise.all([
-    hashFiles(dir, opts),
+    hashFiles(dir, tomlPath, opts),
     hashFns(fnDir, opts)
   ])
 
