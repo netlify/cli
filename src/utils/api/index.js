@@ -47,7 +47,6 @@ class NetlifyAPI {
     return `${this.scheme}://${this.host}${this.pathPrefix}`
   }
 
-  // Attach generic browser compatible methods here
   async getAccessToken(ticket, opts) {
     opts = Object.assign(
       {
@@ -78,10 +77,9 @@ class NetlifyAPI {
     return accessToken.access_token
   }
 
-  async deploy(siteId, buildDir, functionsDir, opts) {
+  async deploy(siteId, buildDir, functionsDir, tomlPath, opts) {
     if (!this.accessToken) throw new Error('Missing access token')
-    // TODO: Re-enable functions when its working.
-    return await deploy(this, siteId, buildDir, functionsDir, opts)
+    return await deploy(this, siteId, buildDir, functionsDir, tomlPath, opts)
   }
 }
 
