@@ -1,0 +1,20 @@
+environment:
+  matrix:
+    # node.js
+    - nodejs_version: '8'
+    - nodejs_version: '10'
+
+cache:
+  - '%APPDATA%\npm-cache'
+
+install:
+  - ps: Install-Product node $env:nodejs_version x64
+  - npm i
+test_script:
+  - node --version
+  - npm --version
+  - npm test
+  - npm start -- --version
+  - npm start -- --help
+
+build: off

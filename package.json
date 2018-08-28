@@ -1,39 +1,161 @@
 {
   "name": "netlify-cli",
-  "version": "1.2.3",
-  "description": "Netlify builds, deploys and hosts your front-end straight from Github.",
+  "description": "CLI to interact with Netlify",
+  "version": "2.0.0-alpha.4",
+  "author": "Netlify Inc.",
+  "contributors": [
+    "Mathias Biilmann <matt@netlify.com> (https://twitter.com/biilmann)",
+    "David Calavera <david@netlify.com> (https://twitter.com/calavera)",
+    "David Wells <david.wells@netlify.com> (https://davidwells.io/)",
+    "Bret Comnes <bcomnes@gmail.com> (https://bret.io)"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "npm run clean && run-s build:*",
+    "build:docs": "DOCS_GEN=TRUE node ./gen-docs.js",
+    "build:site": "x0 build docs",
+    "build:deptree": "depcruise --exclude '^node_modules' --output-type dot src | dot -T svg > dist/dependencygraph.svg",
+    "site": "x0 docs",
+    "ci": "run-s test build",
+    "clean": "rimraf site && mkdirp site",
+    "start": "node ./bin/run",
+    "test": "run-s test:*",
+    "test:ava": "nyc --reporter=lcov ava --verbose && nyc report",
+    "test:lint": "eslint src",
+    "test:deps": "dependency-check ./package.json --entry \"src/**/!(*.test).js\" --unused --missing --no-dev --no-peer -i @oclif/plugin-not-found -i @oclif/config -i @oclif/plugin-help",
+    "watch": "run-p watch:*",
+    "watch:ava": "nyc --reporter=lcov ava --watch",
+    "prepack": "oclif-dev manifest && oclif-dev readme && npm shrinkwrap",
+    "postpack": "rm -f oclif.manifest.json npm-shrinkwrap.json",
+    "version": "oclif-dev readme && git add README.md",
+    "report": "nyc report --reporter=text-lcov | coveralls"
+  },
+  "ava": {
+    "files": [
+      "src/**/*.test.js"
+    ],
+    "cache": true,
+    "concurrency": 5,
+    "failFast": false,
+    "failWithoutAssertions": false,
+    "tap": false,
+    "compileEnhancements": false,
+    "babel": false
   },
   "bin": {
-    "netlify": "./bin/cli.js"
+    "ntl": "./bin/run",
+    "netlify": "./bin/run"
   },
-  "keywords": [
-    "netlify",
-    "hosting",
-    "cdn",
-    "deploy"
-  ],
-  "author": "Netlify",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/netlify/netlify-cli/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/netlify/netlify-cli.git"
-  },
-  "homepage": "https://github.com/netlify/netlify-cli",
+  "bugs": "https://github.com/netlify/cli/issues",
   "dependencies": {
-    "chalk": "^0.5.1",
-    "commander": "^2.9.0",
-    "github": "^0.2.4",
-    "home-dir": "^0.2.0",
-    "inquirer": "^0.11.0",
-    "netlify": "^1.2.0",
-    "open": "0.0.5",
-    "prompt": "^0.2.14",
-    "update-notifier": "^0.6.0",
-    "when": "^3.7.5"
-  }
+    "@iarna/toml": "^1.7.1",
+    "@netlify/open-api": "^0.1.1",
+    "@oclif/command": "^1",
+    "@oclif/config": "^1",
+    "@oclif/errors": "^1.1.2",
+    "@oclif/plugin-help": "^2",
+    "@oclif/plugin-not-found": "^1.1.4",
+    "@octokit/rest": "^15.10.0",
+    "archiver": "^2.1.1",
+    "ascii-table": "0.0.9",
+    "chalk": "^2.4.1",
+    "clean-deep": "^3.0.2",
+    "cli-ux": "^4.7.3",
+    "configstore": "^4.0.0",
+    "debug": "^3.1.0",
+    "dot-prop": "^4.2.0",
+    "find-up": "^3.0.0",
+    "flush-write-stream": "^1.0.3",
+    "folder-walker": "^3.1.0",
+    "from2-array": "0.0.4",
+    "ghauth": "^3.2.1",
+    "git-remote-origin-url": "^2.0.0",
+    "git-repo-info": "^2.0.0",
+    "hasha": "^3.0.0",
+    "inquirer": "^6.0.0",
+    "is-docker": "^1.1.0",
+    "lodash.camelcase": "^4.3.0",
+    "lodash.flatten": "^4.4.0",
+    "lodash.get": "^4.4.2",
+    "lodash.isempty": "^4.4.0",
+    "lodash.mergewith": "^4.6.1",
+    "lodash.set": "^4.3.2",
+    "lodash.snakecase": "^4.1.1",
+    "make-dir": "^1.3.0",
+    "node-fetch": "^2.2.0",
+    "opn": "^5.3.0",
+    "p-map": "^1.2.0",
+    "p-wait-for": "^2.0.0",
+    "parallel-transform": "^1.1.0",
+    "parse-github-url": "^1.0.2",
+    "prettyjson": "^1.2.1",
+    "pump": "^3.0.0",
+    "qs": "^6.5.2",
+    "tempy": "^0.2.1",
+    "through2-filter": "^3.0.0",
+    "through2-map": "^3.0.0",
+    "util.promisify": "^1.0.0",
+    "util.promisify-all": "^1.0.2",
+    "write-file-atomic": "^2.3.0"
+  },
+  "devDependencies": {
+    "@compositor/x0": "^6.0.5",
+    "@oclif/dev-cli": "^1.13.31",
+    "@rebass/mdx": "^1.0.0-1",
+    "ava": "1.0.0-beta.7",
+    "body": "^5.1.0",
+    "coveralls": "^3.0.2",
+    "cpx": "^1.5.0",
+    "dependency-check": "^3.2.0",
+    "dependency-cruiser": "^3.1.0",
+    "eslint": "^5.3.0",
+    "eslint-config-prettier": "^3.0.1",
+    "eslint-plugin-import": "^2.13.0",
+    "eslint-plugin-node": "^7.0.1",
+    "eslint-plugin-prettier": "^2.6.1",
+    "from2-string": "^1.1.0",
+    "markdown-magic": "^0.1.25",
+    "mkdirp": "^0.5.1",
+    "npm-run-all": "^4.1.3",
+    "nyc": "^13.0.0",
+    "prettier": "^1.13.7",
+    "react-helmet": "^5.2.0",
+    "rimraf": "^2.6.2",
+    "sitedown": "^3.3.0",
+    "styled-components": "^3.3.3"
+  },
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "files": [
+    "/bin",
+    "/npm-shrinkwrap.json",
+    "/oclif.manifest.json",
+    "/src"
+  ],
+  "homepage": "https://github.com/netlify/cli",
+  "keywords": [
+    "api",
+    "cli",
+    "netlify",
+    "static"
+  ],
+  "license": "MIT",
+  "main": "src/index.js",
+  "oclif": {
+    "bin": "netlify",
+    "commands": "./src/commands",
+    "plugins": [
+      "@oclif/plugin-not-found"
+    ],
+    "hooks": {
+      "init": [
+        "./src/hooks/init"
+      ],
+      "analytics": [
+        "./src/hooks/analytics",
+        "./src/hooks/hooks-two"
+      ]
+    }
+  },
+  "repository": "netlify/cli"
 }

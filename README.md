@@ -1,46 +1,129 @@
-# Netlify CLI
+# netlify-cli
+[![npm version][2]][3] [![build status][4]][5] [![windows build status][6]][7]
+[![coverage][12]][13] [![dependencies][14]][15] [![downloads][8]][9]
 
-The Netlify CLI tools lets you create, deploy, and delete new sites straight from your terminal.
+Welcome to the Netlify CLI!
 
-This CLI utility is deprecated in favor of [netlifyctl](https://github.com/netlify/netlifyctl) which is the currently maintained CLI utility.
-
-## Installation
-
-To install the CLI tools:
-
-```bash
-npm install netlify-cli -g
-```
+<!-- AUTO-GENERATED-CONTENT:START (TOC) -->
+- [Usage](#usage)
+- [Commands](#commands)
+  * [deploy](#deploy)
+  * [init](#init)
+  * [link](#link)
+  * [login](#login)
+  * [logout](#logout)
+  * [open](#open)
+  * [sites](#sites)
+  * [status](#status)
+  * [unlink](#unlink)
+  * [watch](#watch)
+- [Local Development](#local-development)
+<!-- AUTO-GENERATED-CONTENT:END -->
 
 ## Usage
 
-Deploy a front-end project that lives in `my-project` and builds to `dist` directory:
-
-```bash
-cd my-project/
-netlify deploy dist
+```sh-session
+netlify [command]
+# shorthand
+ntl [command]
 ```
 
-## Configuration and Authentication
+## Commands
 
-The first time you use the netlify cli command you'll be asked to authenticate.
+<!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_LIST) -->
+### [deploy](/docs/commands/deploy.md)
 
-Your access token is stored in `~/.netlify/config`.
+Create a new deploy from the contents of a folder.
 
-Netlify also stores a local `.netlify` file in the folder where you run `netlify deploy` from where the `site_id` is stored.
+### [init](/docs/commands/init.md)
 
-## Environments
+Configure continuous deployment
 
-You can easily setup different environments like `staging` or `production`. Just use the `-e` flag:
+### [link](/docs/commands/link.md)
 
-```bash
-netlify deploy dist -e production
+Link a local repo or project folder to an existing site on Netlify
+
+### [login](/docs/commands/login.md)
+
+Login to your Netlify account
+
+### [logout](/docs/commands/logout.md)
+
+Logout of your Netlify account
+
+### [open](/docs/commands/open.md)
+
+Opens current project urls in browser
+
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`open:admin`](/docs/commands/open.md#openadmin) | Opens current site admin UI in netlify  |
+| [`open:site`](/docs/commands/open.md#opensite) | Opens current site url in browser  |
+
+
+### [sites](/docs/commands/sites.md)
+
+Handle various site operations
+
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`sites:create`](/docs/commands/sites.md#sitescreate) | Create a new site  |
+| [`sites:list`](/docs/commands/sites.md#siteslist) | List existing sites  |
+
+
+### [status](/docs/commands/status.md)
+
+Print currently logged in user
+
+### [unlink](/docs/commands/unlink.md)
+
+Unlink a local repo from a Netlify site
+
+### [watch](/docs/commands/watch.md)
+
+Watch for site deploy to finish
+
+
+<!-- AUTO-GENERATED-CONTENT:END -->
+
+# Local Development
+
+1. Clone down the repo
+
+```command
+$ git clone git@github.com:netlify/cli.git
 ```
 
-Netlify creates different sites with each their own URL for each of your environments and keeps track of them in the `.netlify` config file.
+2. Install dependencies
 
-## Caveats
+```command
+$ npm install
+```
 
-- netlify-cli is known to hang with an "ECONNRESET" error (parsed as JSON, it will look odd) when used from many CI environments.  This is a known issue that is only fixed in our alternate and current CLI:  https://github.com/netlify/netlifyctl
+3. Run CLI locally during development
 
-- netlify-cli is known to hang when used with Node.js version 8.1.0.  Version 8.1.2 works well
+```command
+$ ./bin/run [command]
+```
+
+When developing, you can use watch mode which will automatically rebuild the cli and run tests with ava:
+
+```command
+$ npm run watch
+```
+
+
+[0]: https://img.shields.io/badge/stability-stable-green.svg
+[1]: https://nodejs.org/api/documentation.html#documentation_stability_index
+[2]: https://img.shields.io/npm/v/netlify-cli.svg
+[3]: https://npmjs.org/package/netlify-cli
+[4]: https://img.shields.io/travis/netlify/netlify-cli/master.svg
+[5]: https://travis-ci.org/netlify/netlify-cli
+[6]: https://ci.appveyor.com/api/projects/status/0vh59qjo64j7j8st?svg=true
+[7]: https://ci.appveyor.com/project/bcomnes/netlify-cli
+[8]: https://img.shields.io/npm/dm/netlify-cli.svg
+[9]: https://npmjs.org/package/netlify-cli
+[12]: https://img.shields.io/coveralls/netlify/netlify-cli/master.svg
+[13]: https://coveralls.io/github/netlify/netlify-cli
+[14]: https://david-dm.org/netlify/netlify-cli/status.svg
+[15]: https://david-dm.org/netlify/netlify-cli
