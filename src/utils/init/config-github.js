@@ -15,7 +15,7 @@ async function configGithub(ctx, site, repo) {
   if (!ghtoken) {
     const newToken = await ghauth({
       noSave: true,
-      scopes: ['repo'],
+      scopes: ['admin:org', 'admin:public_key', 'repo', 'user'],
       userAgent: UA,
       note: `Netlify CLI ${os.userInfo().username}@${os.hostname()}`
     })
@@ -99,5 +99,21 @@ async function configGithub(ctx, site, repo) {
       // Ignore exists error if the list doesn't return all installed hooks
       if (!e.message.includes('Hook already exists on this repository')) ctx.error(e)
     }
+  }
+
+  const ntlHooks = await ctx.netlify.listHooksBySiteId({ siteId: site.id })
+
+  const createdHook = ntlHooks.find(h => h.type === 'github_commit_status' && h.event === 'deploy_created')
+  const failedHook = ntlHooks.find(h => h.type === 'github_commit_status' && h.event === 'deploy_failed')
+  const buildingHook = ntlHooks.find(h => h.type === 'github_commit_status' && h.event === 'deploy_building')
+
+  if (!createdHook) {
+  } else {
+  }
+  if (!failedHook) {
+  } else {
+  }
+  if (!buildingHook) {
+  } else {
   }
 }
