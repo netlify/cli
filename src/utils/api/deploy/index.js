@@ -12,7 +12,13 @@ module.exports = async (api, siteId, dir, fnDir, tomlPath, opts) => {
       deployTimeout: 1.2e6, // 20 mins
       concurrentHash: 100, // concurrent file hash calls
       concurrentUpload: 4, // Number of concurrent uploads
-      filter: defaultFilter
+      filter: defaultFilter,
+      statusCb: statusObj => {
+        /* noop */
+        /* statusObj: {
+            msg
+        } */
+      }
     },
     opts
   )
