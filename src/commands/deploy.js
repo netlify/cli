@@ -31,7 +31,7 @@ class DeployCommand extends Command {
 
     // TODO: abstract settings lookup
     const deployFolder =
-      flags['publish-folder'] ||
+      flags['publish'] ||
       get(this.site.toml, 'build.publish') ||
       get(await this.netlify.getSite({ siteId }), 'build_settings.dir')
 
@@ -42,9 +42,11 @@ class DeployCommand extends Command {
 
     if (!deployFolder) {
       this.error(
-        `Can't determine a deploy folder.  Please define one in your site settings, netlift.toml or pass one as an argument.`
+        `Can't determine a deploy folder.  Please define one in your site settings, netlift.toml or pass one as a flag.`
       )
     }
+
+    if (flags.draft) this.error('Draft deploys not implemented (yet)')
 
     // TODO go through the above resolution, and make sure the resolve algorithm makes sense
     const resolvedDeployPath = path.resolve(this.site.root, deployFolder)
@@ -82,9 +84,13 @@ DeployCommand.flags = {
     char: 'f',
     description: 'Specify a functions folder to deploy'
   }),
-  'publish-folder': flags.string({
+  publish: flags.string({
     char: 'p',
     description: 'Specify a folder to deploy'
+  }),
+  draft: flags.string({
+    char: 'd',
+    description: 'Create a draft deploy'
   })
 }
 
