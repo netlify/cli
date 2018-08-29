@@ -16,7 +16,9 @@ module.exports = async (api, siteId, dir, fnDir, tomlPath, opts) => {
       statusCb: statusObj => {
         /* noop */
         /* statusObj: {
-            msg
+            type: name-of-step
+            msg: msg to print
+            phase: [start, progress, stop]
         } */
       }
     },
