@@ -13,7 +13,7 @@ class NetlifyAPI {
     }
     opts = Object.assign(
       {
-        userAgent: 'netlify-js-client',
+        userAgent: '@netlify/js-client',
         scheme: dfn.schemes[0],
         host: dfn.host,
         pathPrefix: dfn.basePath

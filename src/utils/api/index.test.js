@@ -118,7 +118,7 @@ test.serial('handles errors from API', async t => {
         method: 'POST',
         headers: new Headers({
           Authorization: 'Bearer 1234',
-          'User-agent': 'netlify-js-client',
+          'User-agent': '@netlify/js-client',
           accept: 'application/json'
         })
       },
@@ -137,7 +137,7 @@ test.serial('basic api exists', async t => {
     client.defaultHeaders,
     {
       Authorization: 'Bearer 1234',
-      'User-agent': 'netlify-js-client',
+      'User-agent': '@netlify/js-client',
       accept: 'application/json'
     },
     'Default headers are set'

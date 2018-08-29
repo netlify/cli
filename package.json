@@ -22,8 +22,7 @@
     "test:ava": "nyc --reporter=lcov ava --verbose && nyc report",
     "test:lint": "eslint src",
     "test:deps": "dependency-check ./package.json --entry \"src/**/!(*.test).js\" --unused --missing --no-dev --no-peer -i @oclif/plugin-not-found -i @oclif/config -i @oclif/plugin-help",
-    "watch": "run-p watch:*",
-    "watch:ava": "nyc --reporter=lcov ava --watch",
+    "watch": "nyc --reporter=lcov ava --watch",
     "prepack": "oclif-dev manifest && oclif-dev readme && npm shrinkwrap",
     "postpack": "rm -f oclif.manifest.json npm-shrinkwrap.json",
     "version": "oclif-dev readme && git add README.md",
@@ -48,7 +47,7 @@
   "bugs": "https://github.com/netlify/cli/issues",
   "dependencies": {
     "@iarna/toml": "^2.0.0",
-    "@netlify/open-api": "^0.1.1",
+    "@netlify/open-api": "^0.2.0",
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/errors": "^1.1.2",

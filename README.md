@@ -106,7 +106,7 @@ $ npm install
 $ ./bin/run [command]
 ```
 
-When developing, you can use watch mode which will automatically rebuild the cli and run tests with ava:
+When developing, you can use watch mode which will automatically run ava tests:
 
 ```command
 $ npm run watch
