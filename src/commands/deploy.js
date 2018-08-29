@@ -10,7 +10,7 @@ const prettyjson = require('prettyjson')
 class DeployCommand extends Command {
   async run() {
     await this.authenticate()
-    const { args, flags } = this.parse(DeployCommand)
+    const { flags } = this.parse(DeployCommand)
 
     const accessToken = this.global.get('accessToken')
     if (!accessToken) {
@@ -31,7 +31,7 @@ class DeployCommand extends Command {
 
     // TODO: abstract settings lookup
     const deployFolder =
-      args.publishFolder ||
+      flags['publish-folder'] ||
       get(this.site.toml, 'build.publish') ||
       get(await this.netlify.getSite({ siteId }), 'build_settings.dir')
 
@@ -74,20 +74,17 @@ class DeployCommand extends Command {
 
 DeployCommand.description = `${renderShortDesc(`Create a new deploy from the contents of a folder`)}
 
-If the deploy path argument is omitted, then the settings from the netlify.toml file or the settings from the API will be used instead.
+Deploys from the build settings found in the netlify.toml file, or settings from the api.
 `
-
-DeployCommand.args = [
-  {
-    name: 'publishFolder',
-    required: false, // make the arg required with `required: true`
-    description: 'folder to deploy (optional)'
-  }
-]
 
 DeployCommand.flags = {
   functions: flags.string({
-    description: 'Specify a function folder for a deploy'
+    char: 'f',
+    description: 'Specify a functions folder to deploy'
+  }),
+  'publish-folder': flags.string({
+    char: 'p',
+    description: 'Specify a folder to deploy'
   })
 }
 
