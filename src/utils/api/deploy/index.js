@@ -33,12 +33,22 @@ module.exports = async (api, siteId, dir, fnDir, tomlPath, opts) => {
   debug(`Hashed ${Object.keys(files).length} files`)
   debug(`Hashed ${Object.keys(functions).length} functions`)
 
+  opts.statusCb({
+    type: 'create-deploy',
+    msg: 'Creating site deploy...',
+    phase: 'start'
+  })
   let deploy = await api.createSiteDeploy({ siteId, body: { files, functions } })
   const { id: deployId, required: requiredFiles, required_functions: requiredFns } = deploy
 
   debug(`deploy id: ${deployId}`)
   debug(`deploy requested ${requiredFiles.length} site files`)
   debug(`deploy requested ${requiredFns.length} function files`)
+  opts.statusCb({
+    type: 'create-deploy',
+    msg: `Site deploy requesting ${requiredFiles.length} files and ${requiredFns.length} functions`,
+    phase: 'stop'
+  })
 
   const uploadList = getUploadList(requiredFiles, filesShaMap).concat(getUploadList(requiredFns, fnShaMap))
 
@@ -47,8 +57,18 @@ module.exports = async (api, siteId, dir, fnDir, tomlPath, opts) => {
   debug(`Done uploading files.`)
 
   debug(`Polling deploy...`)
+  opts.statusCb({
+    type: 'wait-for-deploy',
+    msg: 'Waiting for deploy to go live...',
+    phase: 'start'
+  })
   deploy = await waitForDeploy(api, deployId, opts.deployTimeout)
   debug(`Deploy complete`)
+  opts.statusCb({
+    type: 'wait-for-deploy',
+    msg: 'Deploy is live!',
+    phase: 'stop'
+  })
 
   const deployManifest = {
     deployId,

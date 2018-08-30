@@ -13,7 +13,7 @@ async function hashFiles(dir, tomlPath, opts) {
     opts
   )
 
-  if (!opts.filter) throw new Error('Missing filter function option')
+  if (!opts.filter || !opts.statusCb) throw new Error('Missing filter function option')
   const fileStream = walker([tomlPath, dir], { filter: opts.filter })
   const filter = fileFilterCtor()
   const hasher = hasherCtor(opts)
@@ -22,7 +22,7 @@ async function hashFiles(dir, tomlPath, opts) {
   // Written to by manifestCollector
   const files = {} // normalizedPath: hash (wanted by deploy API)
   const filesShaMap = {} //hash: [fileObj, fileObj, fileObj]
-  const manifestCollector = manifestCollectorCtor(files, filesShaMap)
+  const manifestCollector = manifestCollectorCtor(files, filesShaMap, opts)
 
   await pump(fileStream, filter, hasher, fileNormalizer, manifestCollector)
 

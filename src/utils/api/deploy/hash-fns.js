@@ -21,6 +21,7 @@ async function hashFns(dir, opts) {
   // early out if the functions dir is omitted
   if (!dir) return { functions: {}, shaMap: {} }
   if (!opts.filter) throw new Error('Missing required filter function')
+  if (!opts.statusCb) throw new Error('Missing required statusCb')
 
   const fileList = await fs.readdir(dir).then(files => files.filter(opts.filter))
   const fileStream = fromArray.obj(fileList)
@@ -32,7 +33,7 @@ async function hashFns(dir, opts) {
   // Written to by manifestCollector
   const functions = {} // normalizedPath: hash (wanted by deploy API)
   const fnShaMap = {} //hash: [fileObj, fileObj, fileObj]
-  const manifestCollector = manifestCollectorCtor(functions, fnShaMap)
+  const manifestCollector = manifestCollectorCtor(functions, fnShaMap, opts)
 
   // TODO: Zip up functions, hash then send.
   // This is totally wrong wright now.
