@@ -14,7 +14,8 @@ async function hashFns(dir, opts) {
       concurrentHash: 100,
       assetType: 'function',
       hashAlgorithm: 'sha256',
-      tmpDir: tempy.directory()
+      tmpDir: tempy.directory(),
+      statusCb: () => {}
     },
     opts
   )
@@ -32,7 +33,7 @@ async function hashFns(dir, opts) {
   // Written to by manifestCollector
   const functions = {} // normalizedPath: hash (wanted by deploy API)
   const fnShaMap = {} //hash: [fileObj, fileObj, fileObj]
-  const manifestCollector = manifestCollectorCtor(functions, fnShaMap)
+  const manifestCollector = manifestCollectorCtor(functions, fnShaMap, opts)
 
   // TODO: Zip up functions, hash then send.
   // This is totally wrong wright now.

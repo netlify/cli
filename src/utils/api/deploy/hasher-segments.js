@@ -30,7 +30,8 @@ function fileNormalizerCtor({ assetType = 'file' }) {
 }
 
 // A writable stream segment ctor that normalizes file paths, and writes shaMap's
-exports.manifestCollectorCtor = (filesObj, shaMap) => {
+exports.manifestCollectorCtor = (filesObj, shaMap, { statusCb, assetType }) => {
+  if (!statusCb || !assetType) throw new Error('Missing required options')
   return objWriter((fileObj, _, cb) => {
     filesObj[fileObj.normalizedPath] = fileObj.hash
 
@@ -42,7 +43,11 @@ exports.manifestCollectorCtor = (filesObj, shaMap) => {
     } else {
       shaMap[fileObj.hash] = [fileObj]
     }
-
+    statusCb({
+      type: 'hashing',
+      msg: `Hashing ${fileObj.relname}`,
+      phase: 'progress'
+    })
     cb(null)
   })
 }

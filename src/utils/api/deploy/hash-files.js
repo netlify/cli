@@ -8,7 +8,8 @@ async function hashFiles(dir, tomlPath, opts) {
   opts = Object.assign(
     {
       concurrentHash: 100,
-      assetType: 'file'
+      assetType: 'file',
+      statusCb: () => {}
     },
     opts
   )
@@ -22,7 +23,7 @@ async function hashFiles(dir, tomlPath, opts) {
   // Written to by manifestCollector
   const files = {} // normalizedPath: hash (wanted by deploy API)
   const filesShaMap = {} //hash: [fileObj, fileObj, fileObj]
-  const manifestCollector = manifestCollectorCtor(files, filesShaMap)
+  const manifestCollector = manifestCollectorCtor(files, filesShaMap, opts)
 
   await pump(fileStream, filter, hasher, fileNormalizer, manifestCollector)
 

@@ -4,8 +4,11 @@ const path = require('path')
 const { flags } = require('@oclif/command')
 const get = require('lodash.get')
 const fs = require('fs')
-const cliUx = require('cli-ux').default
 const prettyjson = require('prettyjson')
+const ora = require('ora')
+const logSymbols = require('log-symbols')
+const cliSpinnerNames = Object.keys(require('cli-spinners'))
+const randomItem = require('random-item')
 
 class DeployCommand extends Command {
   async run() {
@@ -53,22 +56,25 @@ class DeployCommand extends Command {
     let resolvedFunctionsPath
     if (functionsFolder) resolvedFunctionsPath = path.resolve(this.site.root, functionsFolder)
 
-    cliUx.action.start(`Starting a deploy from ${resolvedDeployPath}`)
+    // cliUx.action.start(`Starting a deploy from ${resolvedDeployPath}`)
 
     ensureDirectory(resolvedDeployPath, this.exit)
-    if (resolvedFunctionsPath) ensureDirectory(resolvedDeployPath, this.exit)
+    if (resolvedFunctionsPath) ensureDirectory(resolvedFunctionsPath, this.exit)
 
     let results
     try {
-      results = await this.netlify.deploy(siteId, resolvedDeployPath, resolvedFunctionsPath, this.site.tomlPath)
+      results = await this.netlify.deploy(siteId, resolvedDeployPath, resolvedFunctionsPath, this.site.tomlPath, {
+        statusCb: deployProgressCb(this)
+      })
     } catch (e) {
       this.error(e)
     }
-    cliUx.action.stop(`Finished deploy ${results.deployId}`)
+    // cliUx.action.stop(`Finished deploy ${results.deployId}`)
     this.log(
       prettyjson.render({
         URL: results.deploy.ssl_url || results.deploy.url,
-        Admin: results.deploy.admin_url
+        Logs: `${get(results, 'deploy.admin_url')}/deploys/${get(results, 'deploy.id')}`,
+        'Deploy URL': get(results, 'deploy.deploy_ssl_url') || get(results, 'deploy.deploy_url')
       })
     )
   }
@@ -92,6 +98,41 @@ DeployCommand.flags = {
     char: 'd',
     description: 'Create a draft deploy'
   })
+}
+
+function deployProgressCb(ctx) {
+  const events = {}
+  /* statusObj: {
+            type: name-of-step
+            msg: msg to print
+            phase: [start, progress, stop]
+        } */
+  return ev => {
+    switch (ev.phase) {
+      case 'start': {
+        const spinner = ev.spinner || randomItem(cliSpinnerNames)
+        events[ev.type] = ora({
+          text: ev.msg,
+          spinner: spinner
+        }).start()
+        return
+      }
+      case 'progress': {
+        const spinner = events[ev.type]
+        if (spinner) spinner.text = ev.msg
+        return
+      }
+      case 'stop':
+      default: {
+        const spinner = events[ev.type]
+        if (spinner) {
+          spinner.stopAndPersist({ text: ev.msg, symbol: logSymbols.success })
+          delete events[ev.type]
+        }
+        return
+      }
+    }
+  }
 }
 
 function ensureDirectory(resolvedDeployPath, exit) {
