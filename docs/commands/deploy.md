@@ -20,7 +20,7 @@ netlify deploy
 
 - functions (option) - Specify a functions folder to deploy
 - publish (option) - Specify a folder to deploy
-- draft (option) - Create a draft deploy
+- draft (boolean) - Create a draft deploy
 
 
 
