@@ -86,7 +86,6 @@ async function waitForBuildFinish(api, siteId) {
     })
     if (!currentBuilds || !currentBuilds.length) {
       cli.action.stop()
-      buildDone = true
       return true
     }
     firstPass = false
