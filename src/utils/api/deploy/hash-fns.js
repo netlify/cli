@@ -14,14 +14,14 @@ async function hashFns(dir, opts) {
       concurrentHash: 100,
       assetType: 'function',
       hashAlgorithm: 'sha256',
-      tmpDir: tempy.directory()
+      tmpDir: tempy.directory(),
+      statusCb: () => {}
     },
     opts
   )
   // early out if the functions dir is omitted
   if (!dir) return { functions: {}, shaMap: {} }
   if (!opts.filter) throw new Error('Missing required filter function')
-  if (!opts.statusCb) throw new Error('Missing required statusCb')
 
   const fileList = await fs.readdir(dir).then(files => files.filter(opts.filter))
   const fileStream = fromArray.obj(fileList)

@@ -4,7 +4,6 @@ const path = require('path')
 const { flags } = require('@oclif/command')
 const get = require('lodash.get')
 const fs = require('fs')
-const cliUx = require('cli-ux').default
 const prettyjson = require('prettyjson')
 const ora = require('ora')
 const logSymbols = require('log-symbols')
