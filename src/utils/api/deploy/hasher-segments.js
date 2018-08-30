@@ -32,39 +32,24 @@ function fileNormalizerCtor({ assetType = 'file' }) {
 // A writable stream segment ctor that normalizes file paths, and writes shaMap's
 exports.manifestCollectorCtor = (filesObj, shaMap, { statusCb, assetType }) => {
   if (!statusCb || !assetType) throw new Error('Missing required options')
-  statusCb({
-    type: assetType,
-    msg: `Hashing ${assetType}s...`,
-    phase: 'start'
-  })
-  return objWriter(
-    (fileObj, _, cb) => {
-      filesObj[fileObj.normalizedPath] = fileObj.hash
+  return objWriter((fileObj, _, cb) => {
+    filesObj[fileObj.normalizedPath] = fileObj.hash
 
-      // We map a hash to multiple fileObj's because the same file
-      // might live in two different locations
+    // We map a hash to multiple fileObj's because the same file
+    // might live in two different locations
 
-      if (Array.isArray(shaMap[fileObj.hash])) {
-        shaMap[fileObj.hash].push(fileObj)
-      } else {
-        shaMap[fileObj.hash] = [fileObj]
-      }
-      statusCb({
-        type: assetType,
-        msg: `Hashing ${fileObj.relname}`,
-        phase: 'progress'
-      })
-      cb(null)
-    },
-    cb => {
-      statusCb({
-        type: assetType,
-        msg: `Finished hashing ${assetType}s`,
-        phase: 'stop'
-      })
-      cb(null)
+    if (Array.isArray(shaMap[fileObj.hash])) {
+      shaMap[fileObj.hash].push(fileObj)
+    } else {
+      shaMap[fileObj.hash] = [fileObj]
     }
-  )
+    statusCb({
+      type: 'hashing',
+      msg: `Hashing ${fileObj.relname}`,
+      phase: 'progress'
+    })
+    cb(null)
+  })
 }
 
 // transform stream ctor that filters folder-walker results for only files

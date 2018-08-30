@@ -14,7 +14,7 @@ module.exports = async (api, siteId, dir, fnDir, tomlPath, opts) => {
       concurrentUpload: 4, // Number of concurrent uploads
       filter: defaultFilter,
       statusCb: statusObj => {
-        /* noop */
+        /* default to noop */
         /* statusObj: {
             type: name-of-step
             msg: msg to print
@@ -25,10 +25,22 @@ module.exports = async (api, siteId, dir, fnDir, tomlPath, opts) => {
     opts
   )
 
+  opts.statusCb({
+    type: 'hashing',
+    msg: `Hashing files...`,
+    phase: 'start'
+  })
+
   const [{ files, filesShaMap }, { functions, fnShaMap }] = await Promise.all([
     hashFiles(dir, tomlPath, opts),
     hashFns(fnDir, opts)
   ])
+
+  opts.statusCb({
+    type: 'hashing',
+    msg: `Finisihed hashing ${Object.keys(files).length} files and ${Object.keys(functions).length} functions`,
+    phase: 'stop'
+  })
 
   debug(`Hashed ${Object.keys(files).length} files`)
   debug(`Hashed ${Object.keys(functions).length} functions`)

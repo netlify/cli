@@ -7,6 +7,8 @@ const fs = require('fs')
 const prettyjson = require('prettyjson')
 const ora = require('ora')
 const logSymbols = require('log-symbols')
+const cliSpinnerNames = Object.keys(require('cli-spinners'))
+const randomItem = require('random-item')
 
 class DeployCommand extends Command {
   async run() {
@@ -108,7 +110,11 @@ function deployProgressCb(ctx) {
   return ev => {
     switch (ev.phase) {
       case 'start': {
-        events[ev.type] = ora(ev.msg).start()
+        const spinner = ev.spinner || randomItem(cliSpinnerNames)
+        events[ev.type] = ora({
+          text: ev.msg,
+          spinner: spinner
+        }).start()
         return
       }
       case 'progress': {
