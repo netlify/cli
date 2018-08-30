@@ -35,7 +35,7 @@ module.exports = async (api, siteId, dir, fnDir, tomlPath, opts) => {
 
   opts.statusCb({
     type: 'create-deploy',
-    msg: 'Creating site deploy...',
+    msg: 'CDN diffing files...',
     phase: 'start'
   })
 
@@ -47,7 +47,7 @@ module.exports = async (api, siteId, dir, fnDir, tomlPath, opts) => {
   debug(`deploy requested ${requiredFns.length} function files`)
   opts.statusCb({
     type: 'create-deploy',
-    msg: `Site deploy requesting ${requiredFiles.length} files and ${requiredFns.length} functions`,
+    msg: `CDN requesting ${requiredFiles.length} files and ${requiredFns.length} functions`,
     phase: 'stop'
   })
 
