@@ -38,6 +38,7 @@ module.exports = async (api, siteId, dir, fnDir, tomlPath, opts) => {
     msg: 'Creating site deploy...',
     phase: 'start'
   })
+
   let deploy = await api.createSiteDeploy({ siteId, body: { files, functions } })
   const { id: deployId, required: requiredFiles, required_functions: requiredFns } = deploy
 

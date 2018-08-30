@@ -72,7 +72,8 @@ class DeployCommand extends Command {
     this.log(
       prettyjson.render({
         URL: results.deploy.ssl_url || results.deploy.url,
-        Admin: results.deploy.admin_url
+        Logs: `${get(results, 'deploy.admin_url')}/deploys/${get(results, 'deploy.id')}`,
+        'Deploy URL': get(results, 'deploy.deploy_ssl_url') || get(results, 'deploy.deploy_url')
       })
     )
   }
