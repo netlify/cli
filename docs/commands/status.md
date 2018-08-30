@@ -6,7 +6,7 @@ description: Get the current context of the netlify CLI
 # `status`
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
-Print currently logged in user
+Print status information
 
 **Usage**
 
@@ -14,6 +14,23 @@ Print currently logged in user
 netlify status
 ```
 
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`status:hooks`](/commands/status#statushooks) | Print hook information of the linked site  |
+
+
+---
+## `status:hooks`
+
+Print hook information of the linked site
+
+**Usage**
+
+```bash
+netlify status:hooks
+```
+
+---
 
 
 <!-- AUTO-GENERATED-CONTENT:END -->

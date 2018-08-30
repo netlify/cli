@@ -5,7 +5,10 @@ title: Netlify CLI deploy command
 # `deploy`
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
-Create a new deploy from the contents of a folder.
+Create a new deploy from the contents of a folder
+
+Deploys from the build settings found in the netlify.toml file, or settings from the api.
+
 
 **Usage**
 
@@ -13,13 +16,11 @@ Create a new deploy from the contents of a folder.
 netlify deploy
 ```
 
-**Arguments**
-
-- publishFolder - folder to deploy (optional)
-
 **Flags**
 
-- functions (option) - Specify a function folder for a deploy
+- functions (option) - Specify a functions folder to deploy
+- publish (option) - Specify a folder to deploy
+- draft (option) - Create a draft deploy
 
 
 

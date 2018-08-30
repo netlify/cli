@@ -5,7 +5,7 @@ title: Netlify CLI open command
 # `open`
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
-Opens current project urls in browser
+Open settings for the site linked to the current folder
 
 **Usage**
 
@@ -15,7 +15,7 @@ netlify open
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`open:admin`](/commands/open#openadmin) | Opens current site admin UI in netlify  |
+| [`open:admin`](/commands/open#openadmin) | Opens current site admin UI in Netlify  |
 | [`open:site`](/commands/open#opensite) | Opens current site url in browser  |
 
 
@@ -29,7 +29,7 @@ $ netlify open:site
 ---
 ## `open:admin`
 
-Opens current site admin UI in netlify
+Opens current site admin UI in Netlify
 
 **Usage**
 

@@ -33,15 +33,15 @@ ntl [command]
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_LIST) -->
 ### [deploy](/docs/commands/deploy.md)
 
-Create a new deploy from the contents of a folder.
+Create a new deploy from the contents of a folder
 
 ### [init](/docs/commands/init.md)
 
-Configure continuous deployment
+Configure continuous deployment for a new or existing site
 
 ### [link](/docs/commands/link.md)
 
-Link a local repo or project folder to an existing site on Netlify
+Link a local folder to a site on Netlify
 
 ### [login](/docs/commands/login.md)
 
@@ -53,11 +53,11 @@ Logout of your Netlify account
 
 ### [open](/docs/commands/open.md)
 
-Opens current project urls in browser
+Open settings for the site linked to the current folder
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`open:admin`](/docs/commands/open.md#openadmin) | Opens current site admin UI in netlify  |
+| [`open:admin`](/docs/commands/open.md#openadmin) | Opens current site admin UI in Netlify  |
 | [`open:site`](/docs/commands/open.md#opensite) | Opens current site url in browser  |
 
 
@@ -67,17 +67,22 @@ Handle various site operations
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`sites:create`](/docs/commands/sites.md#sitescreate) | Create a new site  |
-| [`sites:list`](/docs/commands/sites.md#siteslist) | List existing sites  |
+| [`sites:create`](/docs/commands/sites.md#sitescreate) | Create an empty site (advanced)  |
+| [`sites:list`](/docs/commands/sites.md#siteslist) | List all sites you have access too  |
 
 
 ### [status](/docs/commands/status.md)
 
-Print currently logged in user
+Print status information
+
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`status:hooks`](/docs/commands/status.md#statushooks) | Print hook information of the linked site  |
+
 
 ### [unlink](/docs/commands/unlink.md)
 
-Unlink a local repo from a Netlify site
+Unlink a local folder from a Netlify site
 
 ### [watch](/docs/commands/watch.md)
 
