@@ -49,8 +49,6 @@ class DeployCommand extends Command {
       )
     }
 
-    if (flags.draft) this.error('Draft deploys not implemented (yet)')
-
     // TODO go through the above resolution, and make sure the resolve algorithm makes sense
     const resolvedDeployPath = path.resolve(this.site.root, deployFolder)
     let resolvedFunctionsPath
@@ -64,19 +62,20 @@ class DeployCommand extends Command {
     let results
     try {
       results = await this.netlify.deploy(siteId, resolvedDeployPath, resolvedFunctionsPath, this.site.tomlPath, {
-        statusCb: deployProgressCb(this)
+        statusCb: deployProgressCb(this),
+        draft: flags.draft
       })
     } catch (e) {
       this.error(e)
     }
     // cliUx.action.stop(`Finished deploy ${results.deployId}`)
-    this.log(
-      prettyjson.render({
-        URL: results.deploy.ssl_url || results.deploy.url,
-        Logs: `${get(results, 'deploy.admin_url')}/deploys/${get(results, 'deploy.id')}`,
-        'Deploy URL': get(results, 'deploy.deploy_ssl_url') || get(results, 'deploy.deploy_url')
-      })
-    )
+    const msgData = {
+      URL: results.deploy.ssl_url || results.deploy.url,
+      Logs: `${get(results, 'deploy.admin_url')}/deploys/${get(results, 'deploy.id')}`,
+      'Deploy URL': get(results, 'deploy.deploy_ssl_url') || get(results, 'deploy.deploy_url')
+    }
+    if (flags.draft) delete msgData.URL
+    this.log(prettyjson.render(msgData))
   }
 }
 
@@ -94,7 +93,7 @@ DeployCommand.flags = {
     char: 'p',
     description: 'Specify a folder to deploy'
   }),
-  draft: flags.string({
+  draft: flags.boolean({
     char: 'd',
     description: 'Create a draft deploy'
   })

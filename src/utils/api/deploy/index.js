@@ -9,7 +9,8 @@ module.exports = async (api, siteId, dir, fnDir, tomlPath, opts) => {
   // TODO Implement progress cb
   opts = Object.assign(
     {
-      deployTimeout: 1.2e6, // 20 mins
+      draft: false,
+      deployTimeout: 1.2e6, // local deploy timeout: 20 mins
       concurrentHash: 100, // concurrent file hash calls
       concurrentUpload: 4, // Number of concurrent uploads
       filter: defaultFilter,
@@ -51,7 +52,7 @@ module.exports = async (api, siteId, dir, fnDir, tomlPath, opts) => {
     phase: 'start'
   })
 
-  let deploy = await api.createSiteDeploy({ siteId, body: { files, functions } })
+  let deploy = await api.createSiteDeploy({ siteId, body: { files, functions, draft: opts.draft } })
   const { id: deployId, required: requiredFiles, required_functions: requiredFns } = deploy
 
   debug(`deploy id: ${deployId}`)
@@ -79,7 +80,7 @@ module.exports = async (api, siteId, dir, fnDir, tomlPath, opts) => {
   debug(`Deploy complete`)
   opts.statusCb({
     type: 'wait-for-deploy',
-    msg: 'Deploy is live!',
+    msg: opts.draft ? 'Draft deploy is live!' : 'Deploy is live!',
     phase: 'stop'
   })
 
