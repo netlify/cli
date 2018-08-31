@@ -1,8 +1,8 @@
 [build]
   # This will be run the site build
-  command = "npm run build"
+  command = "cd site && npm install && npm run build"
   # This is the directory is publishing to netlify's CDN
-  publish = "dist"
+  publish = "site/dist"
 
 #####################
 #  Redirect Rules   #
@@ -32,7 +32,7 @@
   status = 302
   force = false
 [[redirects]]
-  # Old CLI download links. 
+  # Old CLI download links.
   from = "/download/latest/source-tar"
   to = "https://github.com/netlify/netlifyctl/archive/v0.4.0.tar.gz"
   status = 302
