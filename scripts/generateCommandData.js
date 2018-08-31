@@ -3,6 +3,7 @@ const globby = require('markdown-magic').globby
 
 module.exports = function generateCommandData() {
   const commandsPath = path.join(__dirname, '..', 'src/commands')
+  console.log('commandsPath', commandsPath)
   const commands = globby.sync([`${commandsPath}/**/**.js`])
 
   const allCommands = commands.map((file) => {
@@ -63,7 +64,11 @@ module.exports = function generateCommandData() {
 }
 
 function commandFromPath(p) {
-  return p.replace(process.cwd(), '')
+  console.log('commandFromPath', p)
+  console.log('process.cwd()', process.cwd())
+  const rootDir = path.join(__dirname, '..')
+  console.log('rootDir', rootDir)
+  return p.replace(rootDir, '')
     .replace('.js', '')
     .replace('/src/commands/', '')
     .replace('/index', '')
