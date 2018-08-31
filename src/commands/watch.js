@@ -32,7 +32,7 @@ class SitesWatchCommand extends Command {
         "created_at": "2018-07-17T17:14:03.423Z"
     }
     */
-    cli.action.start('Watching for site to finish deploy')
+    cli.action.start('Waitng for active site deploys to complete')
     try {
       // Fetch all builds!
       // const builds = await client.listSiteBuilds({siteId})
@@ -42,13 +42,13 @@ class SitesWatchCommand extends Command {
       //   return !build.done
       // })
 
-      await waitForBuildFinish(client, siteId)
+      const noActiveBuilds = await waitForBuildFinish(client, siteId)
 
       const siteData = await client.getSite({ siteId })
 
-      const message = chalk.cyanBright.bold.underline('Deploy complete')
-      console.log()
-      console.log(message)
+      const message = chalk.cyanBright.bold.underline(noActiveBuilds ? 'Last build' : 'Deploy complete')
+      this.log()
+      this.log(message)
       this.log(
         prettyjson.render({
           URL: siteData.ssl_url || siteData.url,
@@ -68,16 +68,16 @@ SitesWatchCommand.description = `${renderShortDesc('Watch for site deploy to fin
 SitesWatchCommand.examples = [`$ netlify watch`, `$ git push && netlify watch`]
 
 async function waitForBuildFinish(api, siteId) {
-  let buildDone = false
+  let firstPass = true
 
   await pWaitFor(waitForBuildToFinish, {
-    interval: 5000,
+    interval: 1000,
     timeout: 1.2e6, // 20 mins,
     message: 'Timeout while waiting for deploy to finish'
   })
 
   // return only when build done or timeout happens
-  return buildDone
+  return firstPass
 
   async function waitForBuildToFinish() {
     const builds = await api.listSiteBuilds({ siteId })
@@ -86,9 +86,9 @@ async function waitForBuildFinish(api, siteId) {
     })
     if (!currentBuilds || !currentBuilds.length) {
       cli.action.stop()
-      buildDone = true
       return true
     }
+    firstPass = false
     return false
   }
 }
