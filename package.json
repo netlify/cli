@@ -1,6 +1,6 @@
 {
   "name": "netlify-cli",
-  "description": "CLI to interact with Netlify",
+  "description": "Netlify command line tool",
   "version": "2.0.0-alpha.6",
   "author": "Netlify Inc.",
   "contributors": [
