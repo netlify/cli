@@ -28,5 +28,4 @@ $ netlify init --name my-site-name
 ```
 
 
-
 <!-- AUTO-GENERATED-CONTENT:END -->

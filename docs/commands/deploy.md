@@ -22,5 +22,4 @@ netlify deploy
 - functions (option) - Specify a function folder for a deploy
 
 
-
 <!-- AUTO-GENERATED-CONTENT:END -->
