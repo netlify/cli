@@ -68,17 +68,17 @@ const markdownFiles = [
 // Generate docs
 markdownMagic(markdownFiles, config, () => {
   /* Fix newline MDX TOC issue #https://github.com/mdx-js/mdx/issues/184#issuecomment-416093951 */
-  const processedDocs = globby.sync([
-    'docs/**/**.md',
-  ])
-
-  processedDocs.map((f) => {
-    const filePath = path.resolve(f)
-    const fileContents = fs.readFileSync(filePath, 'utf8')
-
-    const updatedContents = fileContents.replace('<!-- AUTO-GENERATED-CONTENT:END -->', '\n<!-- AUTO-GENERATED-CONTENT:END -->')
-    fs.writeFileSync(filePath, updatedContents)
-  })
+  // const processedDocs = globby.sync([
+  //   'docs/**/**.md',
+  // ])
+  //
+  // processedDocs.map((f) => {
+  //   const filePath = path.resolve(f)
+  //   const fileContents = fs.readFileSync(filePath, 'utf8')
+  //
+  //   const updatedContents = fileContents.replace('<!-- AUTO-GENERATED-CONTENT:END -->', '\n<!-- AUTO-GENERATED-CONTENT:END -->')
+  //   fs.writeFileSync(filePath, updatedContents)
+  // })
   console.log('Docs updated!')
 })
 
