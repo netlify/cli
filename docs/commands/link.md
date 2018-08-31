@@ -31,5 +31,4 @@ $ netlify init
 ```
 
 
-
 <!-- AUTO-GENERATED-CONTENT:END -->

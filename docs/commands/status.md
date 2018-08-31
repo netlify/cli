@@ -32,5 +32,4 @@ netlify status:hooks
 
 ---
 
-
 <!-- AUTO-GENERATED-CONTENT:END -->

@@ -12,7 +12,11 @@ const scope = {
   ...Rebass,
   code: LiveEditor,
   pre: ({ children }) => children,
-  //a: ({ children, href }) => <a href={href}>{children}</a>
+  a: ({ children, href }) => {
+    console.log('href', href)
+    // TODO single page routing Link here
+    return <Rebass.Link color="#00ad9f" href={href}>{children}</Rebass.Link>
+  }
 }
 
 const navOrder = [

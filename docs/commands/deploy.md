@@ -23,5 +23,4 @@ netlify deploy
 - draft (boolean) - Create a draft deploy
 
 
-
 <!-- AUTO-GENERATED-CONTENT:END -->

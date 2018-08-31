@@ -6,6 +6,8 @@
 /tmp
 node_modules
 misc
+coverage
+.netlify
 
 # node sdk
 vendor
@@ -13,6 +15,7 @@ vendor
 # osx
 .DS_STORE
 .vscode
-/site
-.netlify
-coverage
+
+# Ignore site files
+site/dist
+site/src/**/*.md
