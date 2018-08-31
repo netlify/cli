@@ -16,3 +16,4 @@ vendor
 /site
 .netlify
 coverage
+test-site
