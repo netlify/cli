@@ -59,8 +59,14 @@ const config = {
   },
 }
 
+const rootDir = path.join(__dirname, '..')
+const markdownFiles = [
+  path.join(rootDir, 'README.md'),
+  path.join(rootDir, 'docs/**/**.md')
+]
+
 // Generate docs
-markdownMagic(['README.md', 'docs/**/**.md'], config, () => {
+markdownMagic(markdownFiles, config, () => {
   /* Fix newline MDX TOC issue #https://github.com/mdx-js/mdx/issues/184#issuecomment-416093951 */
   const processedDocs = globby.sync([
     'docs/**/**.md',
@@ -144,9 +150,7 @@ function formatFlags(cmdFlags, command) {
   let renderFlags = `**Flags**\n\n`
 
   renderFlags += flagArray.map((flag) => {
-
     const flagData = cmdFlags[flag]
-    console.log('flag', flagData)
     if (!flagData.description) {
       throw new Error(`${command} missing flag description`)
     }
