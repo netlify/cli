@@ -9,41 +9,23 @@ const createOrFindSite = require('../utils/init/create-or-find-site')
 const configManual = require('../utils/init/config-manual')
 const configGithub = require('../utils/init/config-github')
 const renderShortDesc = require('../utils/renderShortDescription')
+const getRepoData = require('../utils/getRepoData')
+const isEmpty = require('lodash.isempty')
 
 class InitCommand extends Command {
-  async loadRepo() {
-    const remoteUrl = await gitRemoteOriginUrl()
-    if (!remoteUrl) this.error('CI requires a git remote.  No git remote found.')
-    const parsedUrl = parseGitRemote(remoteUrl)
-    const repoInfo = gitRepoInfo()
-
-    const repo = {
-      repo_path: parsedUrl.path,
-      repo_branch: repoInfo.branch,
-      allowed_branches: [repoInfo.branch]
-    }
-
-    switch (parsedUrl.host) {
-      case 'github.com': {
-        repo.provider = 'github'
-        break
-      }
-      case 'gitlab.com': {
-        repo.provider = 'gitlab'
-        break
-      }
-    }
-
-    return repo
-  }
-
   async run() {
     const { flags } = this.parse(InitCommand)
     await this.authenticate()
 
     this.log('Configure continuous integration for a site')
-    const repo = await this.loadRepo()
-    const site = await createOrFindSite(this, flags)
+    const repo = await getRepoData()
+    if (repo.error) {
+      this.error(repo.error)
+    }
+    if (isEmpty(repo)) {
+      this.error('CI requires a git remote.  No git remote found.')
+    }
+    const site = await createOrFindSite(this, flags, repo)
 
     if (flags.manual) {
       await configManual(this, site, repo)
