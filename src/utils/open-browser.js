@@ -1,4 +1,4 @@
-const opn = require('opn')
+const cli = require('cli-ux').default
 const chalk = require('chalk')
 const isDockerContainer = require('is-docker')
 
@@ -14,7 +14,7 @@ function unableToOpenBrowserMessage(url, err) {
   return Promise.resolve()
 }
 
-function openBrowser(url) {
+async function openBrowser(url) {
   let browser = process.env.BROWSER
   if (browser === 'none' || isDockerContainer()) {
     return unableToOpenBrowserMessage(url)
@@ -22,8 +22,8 @@ function openBrowser(url) {
   if (process.platform === 'darwin' && browser === 'open') {
     browser = undefined
   }
-  const options = { app: browser }
-  return opn(url, options).catch(err => {
+
+  await cli.open(url).catch(err => {
     unableToOpenBrowserMessage(url, err)
   })
 }
