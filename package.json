@@ -42,7 +42,9 @@
     "ntl": "./bin/run",
     "netlify": "./bin/run"
   },
-  "bugs": "https://github.com/netlify/cli/issues",
+  "bugs": {
+    "url": "https://github.com/netlify/cli/issues"
+  },
   "dependencies": {
     "@iarna/toml": "^2.0.0",
     "@netlify/open-api": "^0.2.0",
