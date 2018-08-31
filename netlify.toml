@@ -2,7 +2,7 @@
   # This will be run the site build
   command = "cd site && npm install && npm run build"
   # This is the directory is publishing to netlify's CDN
-  publish = "dist"
+  publish = "site/dist"
 
 #####################
 #  Redirect Rules   #
