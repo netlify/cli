@@ -3,6 +3,8 @@ const { flags } = require('@oclif/command')
 const renderShortDesc = require('../utils/renderShortDescription')
 const inquirer = require('inquirer')
 const path = require('path')
+const getRepoData = require('../utils/getRepoData')
+const isEmpty = require('lodash.isempty')
 
 class LinkCommand extends Command {
   async run() {
@@ -21,6 +23,8 @@ class LinkCommand extends Command {
       if (!siteInaccessible) {
         this.log(`Site already linked to ${site.name}`)
         this.log(`Link: ${site.admin_url}`)
+        this.log()
+        this.log(`To unlink this site, run: \`netlify unlink\``)
         return this.exit()
       }
     }
@@ -30,7 +34,9 @@ class LinkCommand extends Command {
       try {
         site = await this.netlify.getSite({ site_id: flags.id })
       } catch (e) {
-        if (e.status === 404) this.error(new Error(`Site id ${flags.id} not found`))
+        if (e.status === 404) {
+          this.error(new Error(`Site id ${flags.id} not found`))
+        }
         else this.error(e)
       }
       this.site.set('siteId', site.id)
@@ -59,17 +65,93 @@ class LinkCommand extends Command {
       return this.exit()
     }
 
+    const REMOTE_PROMPT = 'Use current git remote URL'
+    const SITE_NAME_PROMPT = 'Site Name'
+    const SITE_ID_PROMPT = 'Site ID'
+
+    // Get remote data if exists
+    const repoInfo = await getRepoData()
+
+    const LinkChoices = [
+      SITE_NAME_PROMPT,
+      SITE_ID_PROMPT
+    ]
+
+    if (!repoInfo.error) {
+      // Add git REMOTE_PROMPT if in a repo. TODO refactor to non mutating
+      LinkChoices.splice(0, 0, REMOTE_PROMPT)
+    }
+
     const { linkType } = await inquirer.prompt([
       {
         type: 'list',
         name: 'linkType',
         message: 'How do you want to link this folder to a site?',
-        choices: ['Site Name', 'Site ID']
+        choices: LinkChoices
       }
     ])
 
     switch (linkType) {
-      case 'Site Name': {
+      case REMOTE_PROMPT: {
+        let site
+        const sites = await this.netlify.listSites()
+
+        if (repoInfo.error) {
+          this.error(new Error(repoInfo.error))
+        }
+
+        if (isEmpty(repoInfo)) {
+          this.error(new Error(`No git remote found in this directory`))
+        }
+
+        // TODO improve this url construction
+        const repoUrl = `https://${repoInfo.provider}.com/${repoInfo.remoteData.repo}`
+
+        if (isEmpty(sites)) {
+          this.error(new Error(`No sites found in your netlify account`))
+        }
+
+        const matchingSites = sites.filter((site) => {
+          return repoUrl === site.build_settings.repo_url
+        })
+
+        // If no remote matches. Throw error
+        if (isEmpty(matchingSites)) {
+          this.error(new Error(`No site found with the remote ${repoInfo.repo_path}.`))
+        }
+
+        // Matches a single site hooray!
+        if (matchingSites.length === 1) {
+          site = matchingSites[0]
+        } else if (matchingSites.length > 1) {
+          // Matches multiple sites. Users much choose which to link.
+          console.log(`${matchingSites.length} matching sites! Please choose one:`)
+
+          const siteChoices = matchingSites.map((site) => {
+            return `${site.ssl_url} - ${site.name} - ${site.id}`
+          })
+
+          // Prompt which options
+          const { siteToConnect } = await inquirer.prompt([
+            {
+              type: 'list',
+              name: 'siteToConnect',
+              message: 'Which site do you want to link to?',
+              choices: siteChoices
+            }
+          ])
+
+          const siteName = siteToConnect.split(' ')[0]
+          site = matchingSites.filter((site) => {
+            // TODO does every site have ssl_url?
+            return siteName === site.ssl_url
+          })[0]
+        }
+
+        linkSite(site, this)
+        break
+      }
+      case SITE_NAME_PROMPT: {
         const { siteName } = await inquirer.prompt([
           {
             type: 'input',
@@ -106,12 +188,10 @@ class LinkCommand extends Command {
         } else {
           site = sites[0]
         }
-        this.site.set('siteId', site.id)
-        this.log(`Linked to ${site.name} in ${path.relative(path.join(process.cwd(), '..'), this.site.path)}`)
-        this.exit()
+        linkSite(site, this)
         break
       }
-      case 'Site ID': {
+      case SITE_ID_PROMPT: {
         const { siteId } = await inquirer.prompt([
           {
             type: 'input',
@@ -127,20 +207,30 @@ class LinkCommand extends Command {
           if (e.status === 404) this.error(new Error(`Site id ${siteId} not found`))
           else this.error(e)
         }
-        this.site.set('siteId', site.id)
-        this.log(`Linked to ${site.name} in ${path.relative(path.join(process.cwd(), '..'), this.site.path)}`)
-        this.exit()
+        linkSite(site, this)
         break
       }
     }
   }
 }
 
-LinkCommand.description = `${renderShortDesc('Link a local folder to a site on Netlify')}
+function linkSite(site, context) {
+  if (!site) {
+    context.error(new Error(`No site found`))
+  }
+  context.site.set('siteId', site.id)
+  context.log(`Linked to ${site.name} in ${path.relative(path.join(process.cwd(), '..'), context.site.path)}`)
+  context.log()
+  context.log(`You can now run other \`netlify\` commands in this directory`)
+  context.exit()
+}
 
-Required for performing operations on sites like deploys.  For interactive linking, omit all flags.`
+LinkCommand.description = `${renderShortDesc('Link a local repo or project folder to an existing site on Netlify')}`
 
-LinkCommand.examples = ['$ netlify init --id 123-123-123-123', '$ netlify init --name my-site-name', '$ netlify init']
+LinkCommand.examples = [
+  '$ netlify init --id 123-123-123-123',
+  '$ netlify init --name my-site-name'
+]
 
 LinkCommand.flags = {
   id: flags.string({
