@@ -1,0 +1,28 @@
+{
+  "name": "cli-docs-site",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "npm run clean && run-s build:*",
+    "build:docs": "DOCS_GEN=TRUE node ./scripts/docs.js",
+    "build:site": "x0 build src",
+    "build:deptree": "depcruise --exclude '^node_modules' --output-type dot src | dot -T svg > dist/dependencygraph.svg",
+    "start:docs": "node ./watch.js",
+    "start:site": "x0 src",
+    "start": "run-p start:*"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@compositor/x0": "^6.0.5",
+    "@rebass/mdx": "^1.0.0-1",
+    "react-helmet": "^5.2.0",
+    "react-instantsearch-dom": "^5.2.3",
+    "styled-components": "^3.3.3"
+  },
+  "devDependencies": {
+    "fs-extra": "^7.0.0",
+    "sane": "^3.0.0"
+  }
+}
