@@ -15,6 +15,9 @@ class DeployCommand extends Command {
     await this.authenticate()
     const { flags } = this.parse(DeployCommand)
 
+    const deployToProduction = flags.prod
+
+    // process.exit(1)
     const accessToken = this.global.get('accessToken')
     if (!accessToken) {
       this.error(`Not logged in. Log in to deploy to a site`)
@@ -34,7 +37,7 @@ class DeployCommand extends Command {
 
     // TODO: abstract settings lookup
     const deployFolder =
-      flags['publish'] ||
+      flags['dir'] ||
       get(this.site.toml, 'build.publish') ||
       get(await this.netlify.getSite({ siteId }), 'build_settings.dir')
 
@@ -45,7 +48,7 @@ class DeployCommand extends Command {
 
     if (!deployFolder) {
       this.error(
-        `Can't determine a deploy folder.  Please define one in your site settings, netlift.toml or pass one as a flag.`
+        `Can't determine a deploy folder.  Please define one in your site settings, netlify.toml or pass one as a flag.`
       )
     }
 
@@ -63,7 +66,7 @@ class DeployCommand extends Command {
     try {
       results = await this.netlify.deploy(siteId, resolvedDeployPath, resolvedFunctionsPath, this.site.tomlPath, {
         statusCb: deployProgressCb(this),
-        draft: flags.draft
+        draft: !deployToProduction
       })
     } catch (e) {
       this.error(e)
@@ -74,7 +77,9 @@ class DeployCommand extends Command {
       Logs: `${get(results, 'deploy.admin_url')}/deploys/${get(results, 'deploy.id')}`,
       'Deploy URL': get(results, 'deploy.deploy_ssl_url') || get(results, 'deploy.deploy_url')
     }
-    if (flags.draft) delete msgData.URL
+    if (!deployToProduction) {
+      delete msgData.URL
+    }
     this.log(prettyjson.render(msgData))
   }
 }
@@ -85,17 +90,18 @@ Deploys from the build settings found in the netlify.toml file, or settings from
 `
 
 DeployCommand.flags = {
+  dir: flags.string({
+    char: 'd',
+    description: 'Specify a folder to deploy'
+  }),
   functions: flags.string({
     char: 'f',
     description: 'Specify a functions folder to deploy'
   }),
-  publish: flags.string({
+  prod: flags.boolean({
     char: 'p',
-    description: 'Specify a folder to deploy'
-  }),
-  draft: flags.boolean({
-    char: 'd',
-    description: 'Create a draft deploy'
+    description: 'Deploy to production',
+    default: false,
   })
 }
 
@@ -105,7 +111,8 @@ function deployProgressCb(ctx) {
             type: name-of-step
             msg: msg to print
             phase: [start, progress, stop]
-        } */
+    }
+  */
   return ev => {
     switch (ev.phase) {
       case 'start': {
