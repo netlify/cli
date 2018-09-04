@@ -13,7 +13,10 @@ async function configManual(ctx, site, repo) {
       default: true
     }
   ])
-  if (!sshKeyAdded) ctx.exit()
+  
+  if (!sshKeyAdded) {
+    ctx.exit()
+  }
 
   repo.provider = 'manual'
   repo.deploy_key_id = key.id
