@@ -64,6 +64,12 @@ class DeployCommand extends Command {
 
     let results
     try {
+      if (deployToProduction) {
+        this.log('Deploying to live site...')
+      } else {
+        this.log('Deploying to draft site...')
+      }
+
       results = await this.netlify.deploy(siteId, resolvedDeployPath, resolvedFunctionsPath, this.site.tomlPath, {
         statusCb: deployProgressCb(this),
         draft: !deployToProduction
