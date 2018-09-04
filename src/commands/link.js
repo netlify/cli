@@ -3,6 +3,7 @@ const { flags } = require('@oclif/command')
 const renderShortDesc = require('../utils/renderShortDescription')
 const inquirer = require('inquirer')
 const path = require('path')
+const chalk = require('chalk')
 const getRepoData = require('../utils/getRepoData')
 const isEmpty = require('lodash.isempty')
 
@@ -117,7 +118,11 @@ class LinkCommand extends Command {
 
         // If no remote matches. Throw error
         if (isEmpty(matchingSites)) {
-          this.error(new Error(`No site found with the remote ${repoInfo.repo_path}.`))
+          this.error(new Error(`No site found with the remote ${repoInfo.repo_path}.
+
+Double check you are in the correct working directory & a remote git repo is configured.
+
+Run ${chalk.cyanBright('`git remote -v`')} to see a list of your git remotes.`))
         }
 
         // Matches a single site hooray!
@@ -204,8 +209,11 @@ class LinkCommand extends Command {
         try {
           site = await this.netlify.getSite({ siteId })
         } catch (e) {
-          if (e.status === 404) this.error(new Error(`Site id ${siteId} not found`))
-          else this.error(e)
+          if (e.status === 404) {
+            this.error(new Error(`Site id ${siteId} not found`))
+          } else {
+            this.error(e)
+          }
         }
         linkSite(site, this)
         break
@@ -219,9 +227,10 @@ function linkSite(site, context) {
     context.error(new Error(`No site found`))
   }
   context.site.set('siteId', site.id)
-  context.log(`Linked to ${site.name} in ${path.relative(path.join(process.cwd(), '..'), context.site.path)}`)
+  context.log(`This directory is now linked to site "${site.name}"`)
+  console.log(`Site ID ${site.id} saved to ${path.relative(path.join(process.cwd(), '..'), context.site.path)}`)
   context.log()
-  context.log(`You can now run other \`netlify\` commands in this directory`)
+  context.log(`You can now run other \`netlify\` cli commands in this directory`)
   context.exit()
 }
 
