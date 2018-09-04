@@ -21,5 +21,4 @@ netlify init
 - watch (boolean) - Make the CLI wait for the first deploy to complete after setting up CI
 
 
-
 <!-- AUTO-GENERATED-CONTENT:END -->

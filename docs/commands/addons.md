@@ -7,15 +7,6 @@ hidden: true
 
 The addons command will help you manage all your netlify addons
 
-<!-- AUTO-GENERATED-CONTENT:START (TOC) -->
-- [addons:create](#addonscreate)
-- [addons:delete](#addonsdelete)
-- [addons](#addons)
-- [addons:list](#addonslist)
-- [addons:update](#addonsupdate)
-
-<!-- AUTO-GENERATED-CONTENT:END -->
-
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
 ## addons:create
 
