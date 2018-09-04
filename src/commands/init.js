@@ -1,6 +1,6 @@
 const { flags } = require('@oclif/command')
 const SitesWatchCommand = require('./watch')
-
+const chalk = require('chalk')
 const Command = require('../base')
 const createOrFindSite = require('../utils/init/create-or-find-site')
 const configManual = require('../utils/init/config-manual')
@@ -14,14 +14,27 @@ class InitCommand extends Command {
     const { flags } = this.parse(InitCommand)
     await this.authenticate()
 
-    this.log('Configure continuous integration for a site')
+    // this.log('Configure continuous integration for a site')
     const repo = await getRepoData()
+
     if (repo.error) {
+      console.log()
+      console.log(`${chalk.redBright('Git Repo Error (╯°□°）╯︵ ┻━┻')}`)
+      console.log()
+      let message = ''
+      switch (repo.error) {
+        case 'Couldn\'t find origin url': {
+          message = `Unable to find a remote origin url. Please add a git remote.
+
+git remote add origin https://github.com/YourUserName/RepoName.git
+`
+          break
+        }
+      }
+      console.log(message)
       this.error(repo.error)
     }
-    if (isEmpty(repo)) {
-      this.error('CI requires a git remote.  No git remote found.')
-    }
+
     const site = await createOrFindSite(this, flags, repo)
 
     if (flags.manual) {
@@ -38,7 +51,13 @@ class InitCommand extends Command {
         }
       }
     }
-    this.log('Site is now configured to automatically deploy')
+
+    this.log(`Your site is now configured to automatically deploy from git
+
+${chalk.cyanBright.bold('git push')}       Push to your git repository to trigger new site builds
+${chalk.cyanBright.bold('netlify open')}   Open the netlify admin url of your site
+  `)
+
     if (flags.watch) {
       await SitesWatchCommand.run([])
     }
