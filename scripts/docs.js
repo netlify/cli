@@ -155,7 +155,7 @@ function formatFlags(cmdFlags, command) {
       throw new Error(`${command} missing flag description`)
     }
 
-    return `- ${flag} (${flagData.type}) - ${flagData.description}`
+    return `- \`${flag}\` (*${flagData.type}*) - ${flagData.description}`
   }).join('\n')
 
   renderFlags += `\n\n`

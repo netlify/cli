@@ -4,6 +4,7 @@ import createScope from '@rebass/markdown'
 import * as Rebass from 'rebass'
 import sortBy from 'lodash.sortby'
 import { ScopeProvider } from '@compositor/x0/components'
+import { Link } from 'react-router-dom'
 import Layout from './_layout'
 import { LiveEditor } from './_ui'
 
@@ -13,9 +14,19 @@ const scope = {
   code: LiveEditor,
   pre: ({ children }) => children,
   a: ({ children, href }) => {
-    console.log('href', href)
-    // TODO single page routing Link here
-    return <Rebass.Link color="#00ad9f" href={href}>{children}</Rebass.Link>
+    // handle external links
+    if (!href.match(/^\//)) {
+      return (
+        <Rebass.Link color="#00ad9f" href={href}>
+          {children}
+        </Rebass.Link>
+      )
+    }
+    return (
+      <Link style={{ color: "#00ad9f", textDecoration: 'none' }} to={href}>
+        {children}
+      </Link>
+    )
   }
 }
 

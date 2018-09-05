@@ -1,5 +1,6 @@
 const Command = require('../base')
 const renderShortDesc = require('../utils/renderShortDescription')
+const openBrowser = require('../utils/open-browser')
 const path = require('path')
 const { flags } = require('@oclif/command')
 const get = require('lodash.get')
@@ -60,7 +61,9 @@ class DeployCommand extends Command {
     // cliUx.action.start(`Starting a deploy from ${resolvedDeployPath}`)
 
     ensureDirectory(resolvedDeployPath, this.exit)
-    if (resolvedFunctionsPath) ensureDirectory(resolvedFunctionsPath, this.exit)
+    if (resolvedFunctionsPath) {
+      ensureDirectory(resolvedFunctionsPath, this.exit)
+    }
 
     let results
     try {
@@ -78,15 +81,25 @@ class DeployCommand extends Command {
       this.error(e)
     }
     // cliUx.action.stop(`Finished deploy ${results.deployId}`)
+
+    const siteUrl = results.deploy.ssl_url || results.deploy.url
+    const deployUrl = get(results, 'deploy.deploy_ssl_url') || get(results, 'deploy.deploy_url')
+
     const msgData = {
       URL: results.deploy.ssl_url || results.deploy.url,
       Logs: `${get(results, 'deploy.admin_url')}/deploys/${get(results, 'deploy.id')}`,
-      'Deploy URL': get(results, 'deploy.deploy_ssl_url') || get(results, 'deploy.deploy_url')
+      'Deploy URL': deployUrl
     }
     if (!deployToProduction) {
       delete msgData.URL
     }
     this.log(prettyjson.render(msgData))
+
+    if (flags['open']) {
+      const urlToOpen = (flags['prod']) ? siteUrl : deployUrl
+      await openBrowser(urlToOpen)
+      this.exit()
+    }
   }
 }
 
@@ -94,6 +107,12 @@ DeployCommand.description = `${renderShortDesc(`Create a new deploy from the con
 
 Deploys from the build settings found in the netlify.toml file, or settings from the api.
 `
+
+DeployCommand.examples = [
+  'netlify deploy',
+  'netlify deploy --prod',
+  'netlify deploy --prod --open'
+]
 
 DeployCommand.flags = {
   dir: flags.string({
@@ -107,6 +126,11 @@ DeployCommand.flags = {
   prod: flags.boolean({
     char: 'p',
     description: 'Deploy to production',
+    default: false,
+  }),
+  open: flags.boolean({
+    char: 'o',
+    description: 'Open site after deploy',
     default: false,
   })
 }

@@ -4,7 +4,12 @@
 
 Welcome to the Netlify CLI!
 
-<!-- AUTO-GENERATED-CONTENT:START (TOC) -->
+## Table of Contents
+
+<!-- AUTO-GENERATED-CONTENT:START (TOC:collapse=true&collapseText=Click to expand) -->
+<details>
+<summary>Click to expand</summary>
+
 - [Usage](#usage)
 - [Commands](#commands)
   * [deploy](#deploy)
@@ -18,6 +23,8 @@ Welcome to the Netlify CLI!
   * [unlink](#unlink)
   * [watch](#watch)
 - [Local Development](#local-development)
+
+</details>
 <!-- AUTO-GENERATED-CONTENT:END -->
 
 ## Usage
@@ -41,7 +48,7 @@ Configure continuous deployment for a new or existing site
 
 ### [link](/docs/commands/link.md)
 
-Link a local folder to a site on Netlify
+Link a local repo or project folder to an existing site on Netlify
 
 ### [login](/docs/commands/login.md)
 
