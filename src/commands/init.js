@@ -17,6 +17,34 @@ class InitCommand extends Command {
     // Check logged in status
     await this.authenticate()
 
+    const siteId = this.site.get('siteId')
+    // const hasFlags = !isEmpty(flags)
+    let site
+    try {
+      site = await this.netlify.getSite({ siteId })
+    } catch (e) {
+      // silent api error
+    }
+
+    if (siteId && site) {
+      const repoUrl = get(site, 'build_settings.repo_url')
+      if (repoUrl) {
+        this.log()
+        this.log(`${chalk.yellow('Warning:')} It looks like this site has already been initialized.`)
+        this.log()
+        this.log(`Site Name:  ${chalk.cyan(site.name)}`)
+        this.log(`Site Url:   ${chalk.cyan(site.ssl_url || site.url)}`)
+        this.log(`Site Repo:  ${chalk.cyan(repoUrl)}`)
+        this.log(`Site Id:    ${chalk.cyan(site.id)}`)
+        this.log(`Admin URL:  ${chalk.cyan(site.admin_url)}`)
+        this.log()
+
+        this.log(`To create a new site, Please run ${chalk.cyanBright.bold('netlify unlink')}`)
+        this.log(`Or delete the siteId from ${this.site.path}`)
+        this.exit()
+      }
+    }
+
     // Look for local repo
     const repo = await getRepoData()
 
@@ -41,9 +69,8 @@ git remote add origin https://github.com/YourUserName/RepoName.git
       this.error(repo.error)
     }
 
-    let site
-    const NEW_SITE = 'Configure a new site'
-    const EXISTING_SITE = 'Link to an existing site'
+    const NEW_SITE = 'Create & configure a new site in Netlify'
+    const EXISTING_SITE = 'Link to an existing site in your account'
 
     const initializeOpts = [
       NEW_SITE,
@@ -76,7 +103,7 @@ git remote add origin https://github.com/YourUserName/RepoName.git
       const siteName = get(site, 'name')
       this.log(`This site "${siteName}" is already configured to automatically deploy via ${remoteBuildRepo}`)
       // TODO add support for changing github repo in site:config command
-      
+
       if (flags.watch) {
         await SitesWatchCommand.run([])
       }
@@ -104,7 +131,7 @@ git remote add origin https://github.com/YourUserName/RepoName.git
     this.log()
     this.log(chalk.greenBright.bold.underline(`Netlify CI/CD Configured!`))
     this.log()
-    this.log(`Your site is now configured to automatically deploy from git`)
+    this.log(`This site is now configured to automatically deploy from ${repo.provider} branches & pull requests`)
     this.log()
     this.log(`Next steps:
 
