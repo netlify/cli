@@ -13,7 +13,7 @@ async function configManual(ctx, site, repo) {
       default: true
     }
   ])
-  
+
   if (!sshKeyAdded) {
     ctx.exit()
   }
@@ -37,7 +37,10 @@ async function configManual(ctx, site, repo) {
     }
   ])
   repo.dir = buildDir
-  if (buildCmd) repo.cmd = buildCmd
+  
+  if (buildCmd) {
+    repo.cmd = buildCmd
+  }
 
   site = await ctx.netlify.updateSite({ siteId: site.id, body: { repo } })
 
