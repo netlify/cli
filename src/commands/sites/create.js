@@ -2,6 +2,7 @@ const { flags } = require('@oclif/command')
 const inquirer = require('inquirer')
 const isEmpty = require('lodash.isempty')
 const prettyjson = require('prettyjson')
+const chalk = require('chalk')
 const Command = require('../../base')
 const renderShortDesc = require('../../utils/renderShortDescription')
 
@@ -13,6 +14,7 @@ class SitesCreateCommand extends Command {
     if (isEmpty(flags)) {
       const accounts = await this.netlify.listAccountsForUser()
       const personal = accounts.find(account => account.type === 'PERSONAL')
+      console.log('Choose a site name. One will be automatically generated if left blank. You will be able to update this at a later time.')
       const results = await inquirer.prompt([
         {
           type: 'input',
@@ -35,8 +37,18 @@ class SitesCreateCommand extends Command {
       const { accountSlug } = results
       delete results.accountSlug
 
-      const site = await this.netlify.createSiteInTeam({ accountSlug, body: results })
-      this.log(`Site created`)
+      let site
+      try {
+        site = await this.netlify.createSiteInTeam({ accountSlug, body: results })
+      } catch (error) {
+        console.log(`Error ${error.status}: ${error.message} from createSiteInTeam call`)
+        if (error.status === 422) {
+          this.error(`A site with name ${results.name} already exists. Please try a different slug`)
+        }
+      }
+      this.log()
+      this.log(chalk.greenBright.bold.underline(`Site Created`))
+      this.log()
       this.log(
         prettyjson.render({
           'Admin URL': site.admin_url,
@@ -44,6 +56,7 @@ class SitesCreateCommand extends Command {
           'Site ID': site.id
         })
       )
+      this.log()
       return site
     }
   }
@@ -55,26 +68,6 @@ SitesCreateCommand.flags = {
   name: flags.string({
     char: 'n',
     description: 'name of site'
-  }),
-  password: flags.string({
-    char: 'p',
-    description: 'password protect the site'
-  }),
-  'force-tls': flags.boolean({
-    char: 's',
-    description: 'force TLS connections'
-  }),
-  'session-id': flags.string({
-    char: 'i',
-    description: 'session ID for later site transfers'
-  }),
-  'account-slug': flags.string({
-    char: 'a',
-    description: 'account slug to create the site under'
-  }),
-  'custom-domain': flags.string({
-    char: 'c',
-    description: 'custom domain to use with the site'
   })
 }
 

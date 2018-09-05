@@ -1,21 +1,21 @@
-const { Command, flags } = require('@oclif/command')
+const { Command } = require('@oclif/command')
 
 class SitesDeleteCommand extends Command {
   async run() {
     const { args } = this.parse(SitesDeleteCommand)
 
     this.log(`delete a site id:`, args.siteID)
+    this.log(`Implementation coming soon`)
+
+    // 1. Prompt user for verification
+
+    // 2. delete site
+
+    // 3. --force flag to skip prompts
   }
 }
 
 SitesDeleteCommand.description = `delete a site`
-
-SitesDeleteCommand.flags = {
-  name: flags.string({
-    char: 'n',
-    description: 'name to print'
-  })
-}
 
 SitesDeleteCommand.args = [{
   name: 'siteID',

@@ -41,6 +41,9 @@ async function configGithub(ctx, site, repo) {
   repo.deploy_key_id = key.id
 
   // TODO: Look these up and default to the lookup order
+
+  // read netlify toml
+
   const { buildCmd, buildDir } = await inquirer.prompt([
     {
       type: 'input',
@@ -56,7 +59,9 @@ async function configGithub(ctx, site, repo) {
     }
   ])
   repo.dir = buildDir
-  if (buildCmd) repo.cmd = buildCmd
+  if (buildCmd) {
+    repo.cmd = buildCmd
+  }
 
   const results = await octokit.repos.get({
     owner: parsedURL.owner,
@@ -108,9 +113,11 @@ async function configGithub(ctx, site, repo) {
   const createdHook = ntlHooks.find(h => h.type === 'github_commit_status' && h.event === 'deploy_created')
   const failedHook = ntlHooks.find(h => h.type === 'github_commit_status' && h.event === 'deploy_failed')
   const buildingHook = ntlHooks.find(h => h.type === 'github_commit_status' && h.event === 'deploy_building')
+  ctx.log()
+  ctx.log(`Creating Netlify Github Notification Hooks...`)
 
   if (!createdHook || createdHook.disabled) {
-    const h = await ctx.netlify.createHookBySiteId({
+    await ctx.netlify.createHookBySiteId({
       site_id: site.id,
       body: {
         type: 'github_commit_status',
@@ -120,9 +127,9 @@ async function configGithub(ctx, site, repo) {
         }
       }
     })
-    ctx.log(`Created Github Created Hook: ${h.id}`)
+    // ctx.log(`Created Github deploy_created Hook: ${h.id}`)
   } else {
-    const h = await ctx.netlify.updateHook({
+    await ctx.netlify.updateHook({
       hook_id: createdHook.id,
       body: {
         data: {
@@ -130,11 +137,11 @@ async function configGithub(ctx, site, repo) {
         }
       }
     })
-    ctx.log(`Updated Github Created Hook: ${h.id}`)
+    // ctx.log(`Updated Github Created Hook: ${h.id}`)
   }
 
   if (!failedHook || failedHook.disabled) {
-    const h = await ctx.netlify.createHookBySiteId({
+    await ctx.netlify.createHookBySiteId({
       site_id: site.id,
       body: {
         type: 'github_commit_status',
@@ -144,9 +151,9 @@ async function configGithub(ctx, site, repo) {
         }
       }
     })
-    ctx.log(`Created Github Failed Hook: ${h.id}`)
+    // ctx.log(`Created Github deploy_failed hook: ${h.id}`)
   } else {
-    const h = await ctx.netlify.updateHook({
+    await ctx.netlify.updateHook({
       hook_id: failedHook.id,
       body: {
         data: {
@@ -154,11 +161,11 @@ async function configGithub(ctx, site, repo) {
         }
       }
     })
-    ctx.log(`Updated Github Created Hook: ${h.id}`)
+    // ctx.log(`Updated Github deploy_failed hook: ${h.id}`)
   }
 
   if (!buildingHook || buildingHook.disabled) {
-    const h = await ctx.netlify.createHookBySiteId({
+    await ctx.netlify.createHookBySiteId({
       site_id: site.id,
       body: {
         type: 'github_commit_status',
@@ -168,9 +175,9 @@ async function configGithub(ctx, site, repo) {
         }
       }
     })
-    ctx.log(`Created Github Building Hook: ${h.id}`)
+    // ctx.log(`Created Github deploy_building hook: ${h.id}`)
   } else {
-    const h = await ctx.netlify.updateHook({
+    await ctx.netlify.updateHook({
       hook_id: buildingHook.id,
       body: {
         data: {
@@ -178,6 +185,8 @@ async function configGithub(ctx, site, repo) {
         }
       }
     })
-    ctx.log(`Updated Github Building Hook: ${h.id}`)
+    // ctx.log(`Updated Github deploy_building hook: ${h.id}`)
   }
+
+  ctx.log(`Netlify Notification Hooks configured!`)
 }

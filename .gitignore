@@ -15,7 +15,8 @@ vendor
 # osx
 .DS_STORE
 .vscode
-
-# Ignore site files
+.netlify
+coverage
+test-site
 site/dist
 site/src/**/*.md

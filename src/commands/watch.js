@@ -82,8 +82,13 @@ async function waitForBuildFinish(api, siteId) {
   async function waitForBuildToFinish() {
     const builds = await api.listSiteBuilds({ siteId })
     const currentBuilds = builds.filter(build => {
+      // build.error
       return !build.done
     })
+
+    // if build.error
+    // @TODO implement build error messages into this
+
     if (!currentBuilds || !currentBuilds.length) {
       cli.action.stop()
       return true
