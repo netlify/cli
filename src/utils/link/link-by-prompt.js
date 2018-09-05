@@ -1,14 +1,15 @@
-const path = require('path')
 const inquirer = require('inquirer')
 const chalk = require('chalk')
 const getRepoData = require('../getRepoData')
 const isEmpty = require('lodash.isempty')
 
-module.exports = async function linkBy(context) {
-  const REMOTE_PROMPT = 'Use current git remote URL'
+module.exports = async function linkPrompts(context) {
+  let site
+  const GIT_REMOTE_PROMPT = 'Use current git remote URL'
   const SITE_NAME_PROMPT = 'Site Name'
   const SITE_ID_PROMPT = 'Site ID'
-  // Get remote data if exists
+
+  // Get git remote data if exists
   const repoInfo = await getRepoData()
 
   const LinkChoices = [
@@ -17,8 +18,8 @@ module.exports = async function linkBy(context) {
   ]
 
   if (!repoInfo.error) {
-    // Add git REMOTE_PROMPT if in a repo. TODO refactor to non mutating
-    LinkChoices.splice(0, 0, REMOTE_PROMPT)
+    // Add git GIT_REMOTE_PROMPT if in a repo. TODO refactor to non mutating
+    LinkChoices.splice(0, 0, GIT_REMOTE_PROMPT)
   }
 
   const { linkType } = await inquirer.prompt([
@@ -31,10 +32,7 @@ module.exports = async function linkBy(context) {
   ])
 
   switch (linkType) {
-    case REMOTE_PROMPT: {
-      let site
-      const sites = await context.netlify.listSites()
-
+    case GIT_REMOTE_PROMPT: {
       if (repoInfo.error) {
         context.error(new Error(repoInfo.error))
       }
@@ -46,6 +44,7 @@ module.exports = async function linkBy(context) {
       // TODO improve this url construction
       const repoUrl = `https://${repoInfo.provider}.com/${repoInfo.remoteData.repo}`
 
+      const sites = await context.netlify.listSites()
       if (isEmpty(sites)) {
         context.error(new Error(`No sites found in your netlify account`))
       }
@@ -56,11 +55,15 @@ module.exports = async function linkBy(context) {
 
       // If no remote matches. Throw error
       if (isEmpty(matchingSites)) {
-        context.error(new Error(`No site found with the remote ${repoInfo.repo_path}.
+        context.log(chalk.redBright.bold.underline(`No Matching Site Found`))
+        context.log()
+        context.log((`No site found with the remote ${repoInfo.repo_path}.
 
 Double check you are in the correct working directory & a remote git repo is configured.
 
 Run ${chalk.cyanBright('`git remote -v`')} to see a list of your git remotes.`))
+
+        context.exit()
       }
 
       // Matches a single site hooray!
@@ -68,7 +71,8 @@ Run ${chalk.cyanBright('`git remote -v`')} to see a list of your git remotes.`))
         site = matchingSites[0]
       } else if (matchingSites.length > 1) {
         // Matches multiple sites. Users much choose which to link.
-        console.log(`${matchingSites.length} matching sites! Please choose one:`)
+        console.log()
+        console.log(`Found ${matchingSites.length} matching sites! Please choose one:`)
 
         const siteChoices = matchingSites.map((site) => {
           return `${site.ssl_url} - ${site.name} - ${site.id}`
@@ -86,12 +90,10 @@ Run ${chalk.cyanBright('`git remote -v`')} to see a list of your git remotes.`))
 
         const siteName = siteToConnect.split(' ')[0]
         site = matchingSites.filter((site) => {
-          // TODO does every site have ssl_url?
-          return siteName === site.ssl_url
+          const url = site.ssl_url || site.url
+          return siteName === url
         })[0]
       }
-
-      linkSite(site, context)
       break
     }
     case SITE_NAME_PROMPT: {
@@ -119,7 +121,7 @@ Run ${chalk.cyanBright('`git remote -v`')} to see a list of your git remotes.`))
       if (sites.length === 0) {
         context.error(`No sites found named ${siteName}`)
       }
-      let site
+
       if (sites.length > 1) {
         const { selectedSite } = await inquirer.prompt([
           {
@@ -136,7 +138,6 @@ Run ${chalk.cyanBright('`git remote -v`')} to see a list of your git remotes.`))
       } else {
         site = sites[0]
       }
-      linkSite(site, context)
       break
     }
     case SITE_ID_PROMPT: {
@@ -148,7 +149,6 @@ Run ${chalk.cyanBright('`git remote -v`')} to see a list of your git remotes.`))
         }
       ])
 
-      let site
       try {
         site = await context.netlify.getSite({ siteId })
       } catch (e) {
@@ -158,20 +158,26 @@ Run ${chalk.cyanBright('`git remote -v`')} to see a list of your git remotes.`))
           context.error(e)
         }
       }
-      linkSite(site, context)
       break
     }
   }
-}
 
-function linkSite(site, context) {
   if (!site) {
     context.error(new Error(`No site found`))
   }
+
+  // Save site ID to config
   context.site.set('siteId', site.id)
-  context.log(`This directory is now linked to site "${site.name}"`)
-  console.log(`Site ID ${site.id} saved to ${path.relative(path.join(process.cwd(), '..'), context.site.path)}`)
+
+  // Log output
+  context.log()
+  context.log(chalk.greenBright.bold.underline(`Directory Linked`))
+  context.log()
+  context.log(`Admin url: ${chalk.magentaBright(site.admin_url)}`)
+  context.log(`Site url:  ${chalk.cyanBright(site.ssl_url || site.url)}`)
+  // context.log(`Local Config: .netlify/config.json`)
   context.log()
   context.log(`You can now run other \`netlify\` cli commands in this directory`)
-  context.exit()
+
+  return site
 }
