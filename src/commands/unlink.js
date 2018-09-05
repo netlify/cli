@@ -21,7 +21,7 @@ class UnlinkCommand extends Command {
     this.site.delete('siteId')
 
     this.log(
-      `Unlinked ${path.relative(path.join(process.cwd(), '..'), this.site.path)} from ${site ? site.name : siteId}`
+      `Unlinked ${this.site.path} from ${site ? site.name : siteId}`
     )
   }
 }
