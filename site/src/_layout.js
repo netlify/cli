@@ -34,9 +34,13 @@ injectGlobal`
 const breakpoint = `@media screen and (min-width: 48em)`
 const repoUrl = 'https://github.com/netlify/cli'
 
-export const Root = styled(Flex)([], {
-  minHeight: '100vh'
-})
+export const Root = styled.div`
+  min-height: 100vh;
+  display: flex;
+  .ais-InstantSearch__root {
+    width: 100%;
+  }
+`;
 
 export const Sidebar = styled('div')([], {
   width: '256px',
@@ -222,26 +226,26 @@ const NavBar = ({
   </Toolbar>
 
 
-  const EditLink = styled.div`
-    a {
-      display: flex;
-      align-items: center;
-    }
-    svg {
-      width: 18px;
-      height: 18px;
-      margin-left: 5px;
-      margin-bottom: 1px;
-      fill: #686868;
-    }
-    position: absolute;
+const EditLink = styled.div`
+  a {
+    display: flex;
+    align-items: center;
+  }
+  svg {
+    width: 18px;
+    height: 18px;
+    margin-left: 5px;
+    margin-bottom: 1px;
+    fill: #686868;
+  }
+  position: absolute;
+  right: 25px;
+  top: 25px;
+  @media (max-width: 768px) {
     right: 25px;
-    top: 25px;
-    @media (max-width: 768px) {
-      right: 25px;
-      top: 70px;
-    }
-  `;
+    top: 70px;
+  }
+`;
 
 
 const SearchBoxWrapper = styled.div`
