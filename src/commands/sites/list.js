@@ -12,13 +12,17 @@ class SitesListCommand extends Command {
 
     if (sites && sites.length) {
       const logSites = sites.map(site => {
-        //console.log('site', site)
-        return {
+        const siteInfo = {
           id: site.id,
           name: site.name,
-          ssl_url: site.ssl_url,
-          repo_url: site.build_settings.repo_url,
+          ssl_url: site.ssl_url
         }
+
+        if (site.build_settings && site.build_settings.repo_url) {
+          siteInfo.repo_url = site.build_settings.repo_url
+        }
+
+        return siteInfo
       })
 
       // Json response for piping commands
@@ -37,7 +41,9 @@ class SitesListCommand extends Command {
       logSites.forEach(s => {
         console.log(`${chalk.greenBright(s.name)} (id: ${s.id})`)
         console.log(`  ${chalk.whiteBright.bold('url:')}  ${chalk.yellowBright(s.ssl_url)}`)
-        console.log(`  ${chalk.whiteBright.bold('repo:')} ${chalk.white(s.repo_url)}`)
+        if (s.repo_url) {
+          console.log(`  ${chalk.whiteBright.bold('repo:')} ${chalk.white(s.repo_url)}`)
+        }
         console.log(`──────────────────────────────────────────`)
       })
     }
