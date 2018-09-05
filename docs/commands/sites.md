@@ -42,12 +42,7 @@ netlify sites:create
 
 **Flags**
 
-- name (option) - name of site
-- password (option) - password protect the site
-- force-tls (boolean) - force TLS connections
-- session-id (option) - session ID for later site transfers
-- account-slug (option) - account slug to create the site under
-- custom-domain (option) - custom domain to use with the site
+- `name` (*option*) - name of site
 
 ---
 ## `sites:list`
@@ -62,7 +57,7 @@ netlify sites:list
 
 **Flags**
 
-- json (boolean) - Output site data as JSON
+- `json` (*boolean*) - Output site data as JSON
 
 ---
 

@@ -18,9 +18,18 @@ netlify deploy
 
 **Flags**
 
-- functions (option) - Specify a functions folder to deploy
-- publish (option) - Specify a folder to deploy
-- draft (boolean) - Create a draft deploy
+- `dir` (*option*) - Specify a folder to deploy
+- `functions` (*option*) - Specify a functions folder to deploy
+- `prod` (*boolean*) - Deploy to production
+- `open` (*boolean*) - Open site after deploy
+
+**Examples**
+
+```bash
+netlify deploy
+netlify deploy --prod
+netlify deploy --prod --open
+```
 
 
 <!-- AUTO-GENERATED-CONTENT:END -->

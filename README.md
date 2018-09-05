@@ -41,7 +41,7 @@ Configure continuous deployment for a new or existing site
 
 ### [link](/docs/commands/link.md)
 
-Link a local folder to a site on Netlify
+Link a local repo or project folder to an existing site on Netlify
 
 ### [login](/docs/commands/login.md)
 
