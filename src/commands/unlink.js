@@ -1,6 +1,5 @@
 const Command = require('../base')
 const renderShortDesc = require('../utils/renderShortDescription')
-const path = require('path')
 
 class UnlinkCommand extends Command {
   async run() {
