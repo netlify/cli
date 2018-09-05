@@ -3,6 +3,7 @@ const { Command, flags } = require('@oclif/command')
 class SitesUpdateCommand extends Command {
   async run() {
     this.log(`update a site`)
+    this.log(`Implementation coming soon`)
   }
 }
 
