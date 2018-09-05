@@ -2,6 +2,7 @@ const Command = require('../../base')
 const renderShortDesc = require('../../utils/renderShortDescription')
 const prettyjson = require('prettyjson')
 const get = require('lodash.get')
+const chalk = require('chalk')
 const clean = require('clean-deep')
 
 class StatusCommand extends Command {
@@ -20,9 +21,9 @@ class StatusCommand extends Command {
       const teams = accounts.filter(account => account.type !== 'PERSONAL')
       accountData = {
         'Account name': get(personal, 'name'),
-        'Account slug': get(personal, 'slug'),
-        'Account id': get(personal, 'id'),
-        Name: get(personal, 'billing_name'),
+        //'Account slug': get(personal, 'slug'),
+        //'Account id': get(personal, 'id'),
+        // Name: get(personal, 'billing_name'),
         Email: get(personal, 'billing_email'),
         Github: this.global.get('ghauth.user')
       }
@@ -63,11 +64,10 @@ class StatusCommand extends Command {
     }
 
     const statusData = {
-      'Current project': `${site.name} (${site.ssl_url})`,
-      'CLI Cache': this.site.path,
+      'Current site': `${site.name}`,
       'Netlify TOML': this.site.tomlPath,
-      'Admin URL': site.admin_url,
-      'Site URL': site.ssl_url || site.url
+      'Admin URL': chalk.magentaBright(site.admin_url),
+      'Site URL': chalk.cyanBright(site.ssl_url || site.url)
     }
 
     this.log(prettyjson.render(statusData))
