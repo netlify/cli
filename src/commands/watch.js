@@ -32,7 +32,7 @@ class SitesWatchCommand extends Command {
         "created_at": "2018-07-17T17:14:03.423Z"
     }
     */
-    cli.action.start('Waitng for active site deploys to complete')
+    cli.action.start('Waiting for active site deploys to complete')
     try {
       // Fetch all builds!
       // const builds = await client.listSiteBuilds({siteId})
