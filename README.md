@@ -10,6 +10,7 @@ Welcome to the Netlify CLI!
 <details>
 <summary>Click to expand</summary>
 
+- [Install & Setup](#install--setup)
 - [Usage](#usage)
 - [Commands](#commands)
   * [deploy](#deploy)
@@ -27,12 +28,27 @@ Welcome to the Netlify CLI!
 </details>
 <!-- AUTO-GENERATED-CONTENT:END -->
 
+## Install & Setup
+
+To install the Netlify CLI, run the following command in your terminal window
+
+```sh-session
+npm install netlify-cli@next -g
+```
+
+After installing the CLI globally, login to your Netlify account.
+
+```sh-session
+netlify login
+```
+
 ## Usage
 
 ```sh-session
 netlify [command]
-# shorthand
-ntl [command]
+
+# Run `help` for detailed information about CLI commands
+netlify [command] help
 ```
 
 ## Commands
