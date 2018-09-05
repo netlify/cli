@@ -14,6 +14,7 @@ class SitesCreateCommand extends Command {
     if (isEmpty(flags)) {
       const accounts = await this.netlify.listAccountsForUser()
       const personal = accounts.find(account => account.type === 'PERSONAL')
+      console.log('Choose a site name. One will be automatically generated if left blank. You will be able to update this at a later time.')
       const results = await inquirer.prompt([
         {
           type: 'input',
@@ -36,7 +37,15 @@ class SitesCreateCommand extends Command {
       const { accountSlug } = results
       delete results.accountSlug
 
-      const site = await this.netlify.createSiteInTeam({ accountSlug, body: results })
+      let site
+      try {
+        site = await this.netlify.createSiteInTeam({ accountSlug, body: results })
+      } catch (error) {
+        console.log(`Error ${error.status}: ${error.message} from createSiteInTeam call`)
+        if (error.status === 422) {
+          this.error(`A site with name ${results.name} already exists. Please try a different slug`)
+        }
+      }
       this.log()
       this.log(chalk.greenBright.bold.underline(`Site Created`))
       this.log()
@@ -47,6 +56,7 @@ class SitesCreateCommand extends Command {
           'Site ID': site.id
         })
       )
+      this.log()
       return site
     }
   }
