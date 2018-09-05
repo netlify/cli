@@ -69,8 +69,8 @@ git remote add origin https://github.com/YourUserName/RepoName.git
       this.error(repo.error)
     }
 
-    const NEW_SITE = 'Create & configure a new site in Netlify'
-    const EXISTING_SITE = 'Link to an existing site in your account'
+    const NEW_SITE = '+  Create & configure a new site in Netlify'
+    const EXISTING_SITE = '⇄  Link this directory to an existing site in your Netlify account'
 
     const initializeOpts = [
       NEW_SITE,

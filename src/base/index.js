@@ -1,4 +1,5 @@
 const { Command } = require('@oclif/command')
+const chalk = require('chalk')
 const globalConfig = require('./global-config')
 const SiteConfig = require('./site-config')
 const openBrowser = require('../utils/open-browser')
@@ -26,7 +27,14 @@ class BaseCommand extends Command {
     await openBrowser(`https://app.netlify.com/authorize?response_type=ticket&ticket=${ticket.id}`)
     const accessToken = await client.getAccessToken(ticket)
     this.global.set('accessToken', accessToken)
-    this.log('Logged in...')
+    this.log()
+    this.log(`${chalk.greenBright('You are now logged into your Netlify account!')}`)
+    this.log()
+    this.log(`Run ${chalk.cyanBright('netlify status')} for account details`)
+    this.log()
+    this.log(`To see all available commands run: ${chalk.cyanBright('netlify help')}`)
+    this.log()
+
   }
 }
 

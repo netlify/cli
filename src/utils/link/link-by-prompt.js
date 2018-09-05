@@ -5,7 +5,7 @@ const isEmpty = require('lodash.isempty')
 
 module.exports = async function linkPrompts(context) {
   let site
-  const GIT_REMOTE_PROMPT = 'Use current git remote URL'
+  let GIT_REMOTE_PROMPT = `Use current git remote URL`
   const SITE_NAME_PROMPT = 'Site Name'
   const SITE_ID_PROMPT = 'Site ID'
 
@@ -17,11 +17,20 @@ module.exports = async function linkPrompts(context) {
     SITE_ID_PROMPT
   ]
 
+  let repoUrl = ''
   if (!repoInfo.error) {
+    // TODO improve this url construction
+    repoUrl = `https://${repoInfo.provider}.com/${repoInfo.remoteData.repo}`
+
+    GIT_REMOTE_PROMPT = `Use current git remote url ${repoUrl}`
+
     // Add git GIT_REMOTE_PROMPT if in a repo. TODO refactor to non mutating
     LinkChoices.splice(0, 0, GIT_REMOTE_PROMPT)
   }
 
+  context.log()
+  context.log(`${chalk.cyanBright('netlify link')} will connect a site in app.netlify.com to this folder`)
+  context.log()
   const { linkType } = await inquirer.prompt([
     {
       type: 'list',
@@ -40,11 +49,10 @@ module.exports = async function linkPrompts(context) {
       if (isEmpty(repoInfo)) {
         context.error(new Error(`No git remote found in this directory`))
       }
-
-      // TODO improve this url construction
-      const repoUrl = `https://${repoInfo.provider}.com/${repoInfo.remoteData.repo}`
-
+      context.log()
+      context.log(`Fetching sites and looking for site connected to "${repoUrl}" repo`)
       const sites = await context.netlify.listSites()
+
       if (isEmpty(sites)) {
         context.error(new Error(`No sites found in your netlify account`))
       }

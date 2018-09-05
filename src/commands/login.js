@@ -1,12 +1,19 @@
 const Command = require('../base')
 const renderShortDesc = require('../utils/renderShortDescription')
+const chalk = require('chalk')
 
 class LoginCommand extends Command {
   async run() {
     // const { flags, args } = this.parse(LoginCommand)
 
     if (this.global.get('accessToken')) {
-      this.error('Already logged in')
+      this.log('Already logged in!')
+      this.log()
+      this.log(`Run ${chalk.cyanBright('netlify status')} for account details`)
+      this.log()
+      this.log(`To see all available commands run: ${chalk.cyanBright('netlify help')}`)
+      this.log()
+      return this.exit()
     }
 
     await this.authenticate()
