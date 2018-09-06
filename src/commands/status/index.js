@@ -7,7 +7,9 @@ const clean = require('clean-deep')
 
 class StatusCommand extends Command {
   async run() {
-    const accessToken = this.global.get('accessToken')
+    const current = this.global.get('userId')
+    const accessToken = this.global.get(`users.${current}.auth.token`)
+
     const siteId = this.site.get('siteId')
 
     this.log(`──────────────────────┐
@@ -19,13 +21,14 @@ class StatusCommand extends Command {
       const accounts = await this.netlify.listAccountsForUser()
       personal = accounts.find(account => account.type === 'PERSONAL')
       const teams = accounts.filter(account => account.type !== 'PERSONAL')
+      const ghuser = this.global.get(`users.${current}.auth.github.user`)
       accountData = {
         'Account name': get(personal, 'name'),
-        //'Account slug': get(personal, 'slug'),
-        //'Account id': get(personal, 'id'),
+        // 'Account slug': get(personal, 'slug'),
+        // 'Account id': get(personal, 'id'),
         // Name: get(personal, 'billing_name'),
         Email: get(personal, 'billing_email'),
-        Github: this.global.get('ghauth.user')
+        Github: ghuser
       }
       const teamsData = {}
 

@@ -4,9 +4,8 @@ const { getAddons, deleteAddon } = require('../../utils/api/addons')
 
 class addonsDeleteCommand extends Command {
   async run() {
-    await this.authenticate()
+    const accessToken = await this.authenticate()
     const { args } = this.parse(addonsDeleteCommand)
-    const accessToken = this.global.get('accessToken')
 
     if (!accessToken) {
       this.error(`Not logged in`)

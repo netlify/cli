@@ -13,13 +13,11 @@ const randomItem = require('random-item')
 
 class DeployCommand extends Command {
   async run() {
-    await this.authenticate()
+    const accessToken = await this.authenticate()
     const { flags } = this.parse(DeployCommand)
 
     const deployToProduction = flags.prod
 
-    // process.exit(1)
-    const accessToken = this.global.get('accessToken')
     if (!accessToken) {
       this.error(`Not logged in. Log in to deploy to a site`)
     }

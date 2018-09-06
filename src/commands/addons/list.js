@@ -6,9 +6,7 @@ const { getAddons } = require('../../utils/api/addons')
 class AddonsListCommand extends Command {
   async run() {
     const { flags } = this.parse(AddonsListCommand)
-    await this.authenticate()
-
-    const accessToken = this.global.get('accessToken')
+    const accessToken = await this.authenticate()
 
     if (!accessToken) {
       this.error(`Not logged in`)
