@@ -1,7 +1,6 @@
-const promisify = require('util.promisify')
-const ghauth = promisify(require('ghauth'))
 const version = require('../../../package.json').version
 const os = require('os')
+const ghauth = require('../../utils/gh-auth')
 const octokit = require('@octokit/rest')()
 const parseGitRemote = require('parse-github-url')
 const inquirer = require('inquirer')
@@ -10,16 +9,19 @@ const UA = 'Netlify CLI ' + version
 
 module.exports = configGithub
 async function configGithub(ctx, site, repo) {
-  let ghtoken = ctx.global.get('ghauth')
 
-  if (!ghtoken) {
+  const current = ctx.global.get('userId')
+
+  let ghtoken = ctx.global.get(`users.${current}.auth.github`)
+
+  if (!ghtoken || !ghtoken.user || !ghtoken.token) {
     const newToken = await ghauth({
-      noSave: true,
       scopes: ['admin:org', 'admin:public_key', 'repo', 'user'],
       userAgent: UA,
       note: `Netlify CLI ${os.userInfo().username}@${os.hostname()}`
     })
-    ctx.global.set('ghauth', newToken)
+    console.log('newToken', newToken)
+    ctx.global.set(`users.${current}.auth.github`, newToken)
     ghtoken = newToken
   }
 
@@ -116,6 +118,7 @@ async function configGithub(ctx, site, repo) {
   ctx.log()
   ctx.log(`Creating Netlify Github Notification Hooks...`)
 
+
   if (!createdHook || createdHook.disabled) {
     await ctx.netlify.createHookBySiteId({
       site_id: site.id,
@@ -123,7 +126,7 @@ async function configGithub(ctx, site, repo) {
         type: 'github_commit_status',
         event: 'deploy_created',
         data: {
-          access_token: ctx.global.get('ghauth.token')
+          access_token: ghtoken.token
         }
       }
     })
@@ -133,7 +136,7 @@ async function configGithub(ctx, site, repo) {
       hook_id: createdHook.id,
       body: {
         data: {
-          access_token: ctx.global.get('ghauth.token')
+          access_token: ghtoken.token
         }
       }
     })
@@ -147,7 +150,7 @@ async function configGithub(ctx, site, repo) {
         type: 'github_commit_status',
         event: 'deploy_failed',
         data: {
-          access_token: ctx.global.get('ghauth.token')
+          access_token: ghtoken.token
         }
       }
     })
@@ -157,7 +160,7 @@ async function configGithub(ctx, site, repo) {
       hook_id: failedHook.id,
       body: {
         data: {
-          access_token: ctx.global.get('ghauth.token')
+          access_token: ghtoken.token
         }
       }
     })
@@ -171,7 +174,7 @@ async function configGithub(ctx, site, repo) {
         type: 'github_commit_status',
         event: 'deploy_building',
         data: {
-          access_token: ctx.global.get('ghauth.token')
+          access_token: ghtoken.token
         }
       }
     })
@@ -181,7 +184,7 @@ async function configGithub(ctx, site, repo) {
       hook_id: buildingHook.id,
       body: {
         data: {
-          access_token: ctx.global.get('ghauth.token')
+          access_token: ghtoken.token
         }
       }
     })
