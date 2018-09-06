@@ -39,6 +39,6 @@ Run \`netlify link\` to connect to this folder to a site`)
 
 OpenAdminCommand.description = `${renderShortDesc('Opens current site admin UI in Netlify')}`
 
-OpenAdminCommand.examples = ['$ netlify open:admin']
+OpenAdminCommand.examples = ['netlify open:admin']
 
 module.exports = OpenAdminCommand

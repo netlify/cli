@@ -40,6 +40,6 @@ Run \`netlify link\` to connect to this folder to a site`)
 
 OpenAdminCommand.description = `${renderShortDesc('Opens current site url in browser')}`
 
-OpenAdminCommand.examples = ['$ netlify open:site']
+OpenAdminCommand.examples = ['netlify open:site']
 
 module.exports = OpenAdminCommand

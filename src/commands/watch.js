@@ -65,7 +65,11 @@ class SitesWatchCommand extends Command {
 }
 
 SitesWatchCommand.description = `${renderShortDesc('Watch for site deploy to finish')}`
-SitesWatchCommand.examples = [`$ netlify watch`, `$ git push && netlify watch`]
+
+SitesWatchCommand.examples = [
+  `netlify watch`,
+  `git push && netlify watch`
+]
 
 async function waitForBuildFinish(api, siteId) {
   let firstPass = true
