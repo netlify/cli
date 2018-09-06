@@ -1,7 +1,6 @@
-const promisify = require('util.promisify')
-const ghauth = promisify(require('ghauth'))
 const version = require('../../../package.json').version
 const os = require('os')
+const ghauth = require('../../utils/gh-auth')
 const octokit = require('@octokit/rest')()
 const parseGitRemote = require('parse-github-url')
 const inquirer = require('inquirer')
@@ -14,7 +13,6 @@ async function configGithub(ctx, site, repo) {
 
   if (!ghtoken) {
     const newToken = await ghauth({
-      noSave: true,
       scopes: ['admin:org', 'admin:public_key', 'repo', 'user'],
       userAgent: UA,
       note: `Netlify CLI ${os.userInfo().username}@${os.hostname()}`
