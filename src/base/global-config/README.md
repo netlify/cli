@@ -4,7 +4,7 @@
 
 ```js
 const global = require('../util/global-config')
-global.get('accessToken')
+global.get('userId')
 global.get('foo', 'bar')
 ```
 

@@ -4,9 +4,10 @@ const chalk = require('chalk')
 
 class LoginCommand extends Command {
   async run() {
-    // const { flags, args } = this.parse(LoginCommand)
+    const current = this.global.get('userId')
+    const accessToken = this.global.get(`users.${current}.auth.token`)
 
-    if (this.global.get('accessToken')) {
+    if (accessToken) {
       this.log('Already logged in!')
       this.log()
       this.log(`Run ${chalk.cyanBright('netlify status')} for account details`)

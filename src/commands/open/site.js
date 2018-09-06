@@ -4,11 +4,13 @@ const renderShortDesc = require('../../utils/renderShortDescription')
 
 class OpenAdminCommand extends Command {
   async run() {
-    const accessToken = this.global.get('accessToken')
-    const siteId = this.site.get('siteId')
+    const current = this.global.get('userId')
+    const accessToken = this.global.get(`users.${current}.auth.token`)
     if (!accessToken) {
-      this.error(`Not logged in.`)
+      this.error(`Not logged in. Please run \`netlify login\` and try again`)
     }
+
+    const siteId = this.site.get('siteId')
 
     if (!siteId) {
       this.warn(`No Site ID found in current directory.
