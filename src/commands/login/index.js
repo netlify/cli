@@ -1,5 +1,5 @@
-const Command = require('../base')
-const renderShortDesc = require('../utils/renderShortDescription')
+const Command = require('../../base')
+const renderShortDesc = require('../../utils/renderShortDescription')
 
 class LoginCommand extends Command {
   async run() {
@@ -9,7 +9,7 @@ class LoginCommand extends Command {
       this.error('Already logged in')
     }
 
-    await this.authenticate()
+    // TODO Log in actually.
 
     return this.exit()
   }
