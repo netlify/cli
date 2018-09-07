@@ -14,33 +14,35 @@ const get = require('lodash.get')
 class InitCommand extends Command {
   async run() {
     const { flags } = this.parse(InitCommand)
+    const { site, api, state } = this.netlify
+
     // Check logged in status
     await this.authenticate()
 
-    const siteId = this.site.get('siteId')
+    const siteId = site.get('siteId')
     // const hasFlags = !isEmpty(flags)
-    let site
+    let siteData
     try {
-      site = await this.netlify.getSite({ siteId })
+      siteData = await api.getSite({ siteId })
     } catch (e) {
       // silent api error
     }
 
-    if (siteId && site) {
-      const repoUrl = get(site, 'build_settings.repo_url')
+    if (siteId && siteData) {
+      const repoUrl = get(siteData, 'build_settings.repo_url')
       if (repoUrl) {
         this.log()
         this.log(`${chalk.yellow('Warning:')} It looks like this site has already been initialized.`)
         this.log()
-        this.log(`Site Name:  ${chalk.cyan(site.name)}`)
-        this.log(`Site Url:   ${chalk.cyan(site.ssl_url || site.url)}`)
+        this.log(`Site Name:  ${chalk.cyan(siteData.name)}`)
+        this.log(`Site Url:   ${chalk.cyan(siteData.ssl_url || siteData.url)}`)
         this.log(`Site Repo:  ${chalk.cyan(repoUrl)}`)
-        this.log(`Site Id:    ${chalk.cyan(site.id)}`)
-        this.log(`Admin URL:  ${chalk.cyan(site.admin_url)}`)
+        this.log(`Site Id:    ${chalk.cyan(siteData.id)}`)
+        this.log(`Admin URL:  ${chalk.cyan(siteData.admin_url)}`)
         this.log()
 
         this.log(`To create a new site, Please run ${chalk.cyanBright.bold('netlify unlink')}`)
-        this.log(`Or delete the siteId from ${this.site.path}`)
+        // TODO remove this.log(`Or delete the siteId from ${this.siteData.path}`)
         this.exit()
       }
     }
@@ -69,8 +71,8 @@ git remote add origin https://github.com/YourUserName/RepoName.git
       this.error(repo.error)
     }
 
-    const NEW_SITE = 'Create & configure a new site in Netlify'
-    const EXISTING_SITE = 'Link to an existing site in your account'
+    const NEW_SITE = '+  Create & configure a new site in Netlify'
+    const EXISTING_SITE = '⇄  Link this directory to an existing site in your Netlify account'
 
     const initializeOpts = [
       NEW_SITE,
@@ -89,18 +91,18 @@ git remote add origin https://github.com/YourUserName/RepoName.git
     // create site or search for one
     if (initChoice === NEW_SITE) {
       // run site:create command
-      site = await SitesCreateCommand.run([])
+      siteData = await SitesCreateCommand.run([])
     } else if (initChoice === EXISTING_SITE) {
       // run link command
-      site = await LinkCommand.run([], false)
+      siteData = await LinkCommand.run([], false)
     }
 
     // Check for existing CI setup
-    const remoteBuildRepo = get(site, 'build_settings.repo_url')
+    const remoteBuildRepo = get(siteData, 'build_settings.repo_url')
     if (remoteBuildRepo) {
       this.log()
       this.log(chalk.underline.bold(`Existing Repo detected`))
-      const siteName = get(site, 'name')
+      const siteName = get(siteData, 'name')
       this.log(`This site "${siteName}" is already configured to automatically deploy via ${remoteBuildRepo}`)
       // TODO add support for changing github repo in site:config command
 
@@ -110,14 +112,15 @@ git remote add origin https://github.com/YourUserName/RepoName.git
       this.exit()
     }
 
-    this.site.set('siteId', site.id)
+    // Save to .netlify/state.json file
+    state.set('siteId', siteData.id)
 
     if (flags.manual) {
-      await configManual(this, site, repo)
+      await configManual(this, siteData, repo)
     } else {
       switch (repo.provider) {
         case 'github': {
-          await configGithub(this, site, repo)
+          await configGithub(this, siteData, repo)
           break
         }
         case 'gitlab':

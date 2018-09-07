@@ -20,10 +20,10 @@ The sites command will help you manage all your sites
 `
 
 SitesCommand.examples = [
-  '$ netlify sites:create --name my-new-site',
-  //'$ netlify sites:update --name my-new-site',
-  //'$ netlify sites:delete --name my-new-site',
-  '$ netlify sites:list'
+  'netlify sites:create --name my-new-site',
+  //'netlify sites:update --name my-new-site',
+  //'netlify sites:delete --name my-new-site',
+  'netlify sites:list'
 ]
 
 module.exports = SitesCommand

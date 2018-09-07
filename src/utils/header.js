@@ -6,6 +6,7 @@ module.exports = function header(context) {
   const docsMsg = `${chalk.greenBright('Read the docs:')} https://cli.netlify.com`
   const supportMsg = `${chalk.magentaBright('Support and bugs:')} ${pkg.bugs.url}`
 
+  // If not command show header
   if (!context.id) {
     console.log()
     console.log(title)

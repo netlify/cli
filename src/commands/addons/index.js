@@ -20,10 +20,10 @@ The addons command will help you manage all your netlify addons
 `
 
 AddonsCommand.examples = [
-  '$ netlify addons:create addon-xyz --value foo',
-  '$ netlify addons:update addon-xyz --value bar',
-  '$ netlify addons:delete addon-xyz',
-  '$ netlify addons:list'
+  'netlify addons:create addon-xyz --value foo',
+  'netlify addons:update addon-xyz --value bar',
+  'netlify addons:delete addon-xyz',
+  'netlify addons:list'
 ]
 
 AddonsCommand.hidden = true

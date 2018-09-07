@@ -9,27 +9,29 @@ const linkPrompt = require('../utils/link/link-by-prompt')
 class LinkCommand extends Command {
   async run() {
     await this.authenticate()
+
     const { flags } = this.parse(LinkCommand)
-    const siteId = this.site.get('siteId')
-    // const hasFlags = !isEmpty(flags)
-    let site
+    const { api, site, state } = this.netlify
+    const siteId = site.get('siteId')
+
+    let siteData
     try {
-      site = await this.netlify.getSite({ siteId })
+      siteData = await api.getSite({ siteId })
     } catch (e) {
       // silent api error
     }
 
     // Site id is incorrect
-    if (siteId && !site) {
+    if (siteId && !siteData) {
       console.log(`No site "${siteId}" found in your netlify account.`)
       console.log(`Please double check your siteID and which account you are logged into via \`netlify status\`.`)
       return this.exit()
     }
 
     // If already linked to site. exit and prompt for unlink
-    if (site) {
-      this.log(`Site already linked to "${site.name}"`)
-      this.log(`Admin url: ${site.admin_url}`)
+    if (siteData) {
+      this.log(`Site already linked to "${siteData.name}"`)
+      this.log(`Admin url: ${siteData.admin_url}`)
       this.log()
       this.log(`To unlink this site, run: ${chalk.cyanBright('netlify unlink')}`)
       return this.exit()
@@ -37,7 +39,7 @@ class LinkCommand extends Command {
 
     if (flags.id) {
       try {
-        site = await this.netlify.getSite({ site_id: flags.id })
+        siteData = await api.getSite({ site_id: flags.id })
       } catch (e) {
         if (e.status === 404) {
           this.error(new Error(`Site id ${flags.id} not found`))
@@ -45,15 +47,17 @@ class LinkCommand extends Command {
           this.error(e)
         }
       }
-      this.site.set('siteId', site.id)
-      this.log(`Linked to ${site.name} in ${path.relative(path.join(process.cwd(), '..'), this.site.path)}`)
+
+      // Save site ID
+      state.set('siteId', siteData.id)
+      this.log(`Linked to ${siteData.name} in ${state.path}`)
       return this.exit()
     }
 
     if (flags.name) {
       let results
       try {
-        results = await this.netlify.listSites({
+        results = await api.listSites({
           name: flags.name,
           filter: 'all'
         })
@@ -68,14 +72,14 @@ class LinkCommand extends Command {
       if (results.length === 0) {
         this.error(new Error(`No sites found named ${flags.name}`))
       }
-      const site = results[0]
-      this.site.set('siteId', site.id)
-      this.log(`Linked to ${site.name} in ${path.relative(path.join(process.cwd(), '..'), this.site.path)}`)
+      siteData = results[0]
+      state.set('siteId', siteData.id)
+      this.log(`Linked to ${siteData.name} in ${path.relative(path.join(process.cwd(), '..'), state.path)}`)
       return this.exit()
     }
 
-    site = await linkPrompt(this)
-    return site
+    siteData = await linkPrompt(this)
+    return siteData
   }
 }
 

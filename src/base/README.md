@@ -20,14 +20,17 @@ class OpenCommand extends Command {
     if (isEmptyCommand(flags, args)) {
       showHelp(this.id)
     }
-    // Default open netlify admin
+    // Default open Netlify admin
     await OpenAdminCommand.run()
   }
 }
 
 OpenCommand.description = `${renderShortDesc('Opens current project urls in browser')}`
 
-OpenCommand.examples = ['$ netlify open:admin', '$ netlify open:site']
+OpenCommand.examples = [
+  'netlify open:admin',
+  'netlify open:site'
+]
 
 OpenCommand.hidden = true
 
@@ -42,7 +45,7 @@ Import the the base class and extend it, the same way you do with `@oclif/comman
 Commands that extend this base class get access to the [same api](https://oclif.io/docs/commands.html) as `@oclif/command` plus a few extra properties:
 
 
-### `this.global`
+### `this.netlify.globalConfig`
 
 Provides access to configuration stored in the users home folder under `~/.netlify`.  
 See [global-config](global-config/README.md).
@@ -52,7 +55,7 @@ See [global-config](global-config/README.md).
 Provides access to site-level config relative to the `process.cwd`.
 See [site-config](global-config/README.md)
 
-### `this.netlify`
+### `this.netlify.api`
 
 An instance of the [`netlify`](../utils/api/README.md) api client.
 

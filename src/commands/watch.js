@@ -8,10 +8,9 @@ const renderShortDesc = require('../utils/renderShortDescription')
 
 class SitesWatchCommand extends Command {
   async run() {
-    // const { flags } = this.parse(SitesWatchCommand)
     await this.authenticate()
-    const client = this.netlify
-    const siteId = this.site.get('siteId')
+    const client = this.netlify.api
+    const siteId = this.netlify.site.get('siteId')
 
     // wait for 1 sec for everything to kickoff
     console.time('Deploy time')
@@ -32,7 +31,7 @@ class SitesWatchCommand extends Command {
         "created_at": "2018-07-17T17:14:03.423Z"
     }
     */
-    cli.action.start('Waitng for active site deploys to complete')
+    cli.action.start('Waiting for active site deploys to complete')
     try {
       // Fetch all builds!
       // const builds = await client.listSiteBuilds({siteId})
@@ -65,7 +64,11 @@ class SitesWatchCommand extends Command {
 }
 
 SitesWatchCommand.description = `${renderShortDesc('Watch for site deploy to finish')}`
-SitesWatchCommand.examples = [`$ netlify watch`, `$ git push && netlify watch`]
+
+SitesWatchCommand.examples = [
+  `netlify watch`,
+  `git push && netlify watch`
+]
 
 async function waitForBuildFinish(api, siteId) {
   let firstPass = true

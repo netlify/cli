@@ -3,8 +3,13 @@ const renderShortDesc = require('../utils/renderShortDescription')
 
 class LogoutCommand extends Command {
   async run() {
-    if (this.global.get('accessToken')) {
-      this.global.delete('accessToken')
+    const { globalConfig } = this.netlify
+    const current = globalConfig.get('userId')
+    const accessToken = globalConfig.get(`users.${current}.auth.token`)
+
+    if (accessToken) {
+      // unset userID without deleting key
+      this.netlify.globalConfig.set('userId', null)
       this.log(`Logging you out of Netlify. Come back soon!`)
     } else {
       this.log(`Already logged out`)

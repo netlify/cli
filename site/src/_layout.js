@@ -25,12 +25,6 @@ import {
 import { InstantSearch, Hits, SearchBox, createConnector, Configure, Highlight } from 'react-instantsearch-dom'
 import { borderColor, themeGet } from 'styled-system'
 
-injectGlobal`
-  .ais-InstantSearch__root {
-    width: 100%;
-  }
-`;
-
 const breakpoint = `@media screen and (min-width: 48em)`
 const repoUrl = 'https://github.com/netlify/cli'
 

@@ -6,26 +6,25 @@ const { getAddons } = require('../../utils/api/addons')
 class AddonsListCommand extends Command {
   async run() {
     const { flags } = this.parse(AddonsListCommand)
-    await this.authenticate()
-
-    const accessToken = this.global.get('accessToken')
+    const accessToken = await this.authenticate()
+    const { api, site } = this.netlify
 
     if (!accessToken) {
       this.error(`Not logged in`)
     }
 
-    const siteId = this.site.get('siteId')
+    const siteId = site.get('siteId')
 
     if (!siteId) {
       console.log('No site id found, please run inside a site folder or `netlify link`')
       return false
     }
 
-    const site = await this.netlify.getSite({ siteId })
+    const siteData = await api.getSite({ siteId })
 
     const addons = await getAddons(siteId, accessToken)
     if (!addons || !addons.length) {
-      console.log(`No addons currently installed for ${site.name}`)
+      console.log(`No addons currently installed for ${siteData.name}`)
       console.log(`> Run \`netlify addons:create addon-namespace\` to install an addon`)
       return false
     }
@@ -46,7 +45,7 @@ class AddonsListCommand extends Command {
     })
 
     // Build a table out of addons
-    console.log(`site: ${site.name}`)
+    console.log(`site: ${siteData.name}`)
     const table = new AsciiTable(`Currently Installed addons`)
 
     table.setHeading('NameSpace', 'Name', 'Instance Id')

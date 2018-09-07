@@ -6,9 +6,8 @@ const parseRawFlags = require('../../utils/parseRawFlags')
 
 class addonsUpdateCommand extends Command {
   async run() {
-    await this.authenticate()
+    const accessToken = await this.authenticate()
     const { args, raw } = this.parse(addonsUpdateCommand)
-    const accessToken = this.global.get('accessToken')
 
     if (!accessToken) {
       this.error(`Not logged in`)
@@ -16,14 +15,14 @@ class addonsUpdateCommand extends Command {
 
     const addonName = args.name
 
-    const siteId = this.site.get('siteId')
+    const siteId = this.netlify.site.get('siteId')
 
     if (!siteId) {
       console.log('No site id found, please run inside a site folder or `netlify link`')
       return false
     }
 
-    const site = await this.netlify.getSite({ siteId })
+    const site = await this.netlify.api.getSite({ siteId })
     // console.log(site)
     const addons = await getAddons(siteId, accessToken)
 

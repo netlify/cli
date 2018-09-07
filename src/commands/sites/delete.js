@@ -23,7 +23,7 @@ SitesDeleteCommand.args = [{
   description: 'Site ID to delete'
 }]
 
-SitesDeleteCommand.examples = ['$ netlify site:delete 123-432621211']
+SitesDeleteCommand.examples = ['netlify site:delete 123-432621211']
 
 // TODO implement logic
 SitesDeleteCommand.hidden = true

@@ -2,9 +2,11 @@ const inquirer = require('inquirer')
 
 module.exports = configManual
 async function configManual(ctx, site, repo) {
-  const key = await ctx.netlify.createDeployKey()
+  const key = await ctx.netlify.api.createDeployKey()
+
   ctx.log('\nGive this Netlify SSH public key access to your repository:\n')
   ctx.log(`\n${key.public_key}\n\n`)
+
   const { sshKeyAdded } = await inquirer.prompt([
     {
       type: 'confirm',
@@ -37,15 +39,16 @@ async function configManual(ctx, site, repo) {
     }
   ])
   repo.dir = buildDir
-  
+
   if (buildCmd) {
     repo.cmd = buildCmd
   }
 
-  site = await ctx.netlify.updateSite({ siteId: site.id, body: { repo } })
+  site = await ctx.netlify.api.updateSite({ siteId: site.id, body: { repo } })
 
   ctx.log('\nConfigure the following webhook for your repository:\n')
   ctx.log(`\n${site.deploy_hook}\n\n`)
+
   const { deployHookAdded } = await inquirer.prompt([
     {
       type: 'confirm',
@@ -54,5 +57,8 @@ async function configManual(ctx, site, repo) {
       default: true
     }
   ])
-  if (!deployHookAdded) ctx.exit()
+
+  if (!deployHookAdded) {
+    ctx.exit()
+  }
 }

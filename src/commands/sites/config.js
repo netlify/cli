@@ -4,6 +4,8 @@ class SitesConfigCommand extends Command {
   async run() {
     this.log(`update a site`)
     this.log(`Implementation coming soon`)
+
+    // TODO handle repo URL updates
   }
 }
 

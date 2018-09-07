@@ -18,6 +18,9 @@ class OpenCommand extends Command {
 
 OpenCommand.description = `${renderShortDesc('Open settings for the site linked to the current folder')}`
 
-OpenCommand.examples = ['$ netlify open:admin', '$ netlify open:site']
+OpenCommand.examples = [
+  'netlify open:admin',
+  'netlify open:site'
+]
 
 module.exports = OpenCommand
