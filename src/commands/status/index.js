@@ -9,7 +9,7 @@ class StatusCommand extends Command {
   async run() {
     const { globalConfig, api, site } = this.netlify
     const current = globalConfig.get('userId')
-    const accessToken = globalConfig.get(`users.${current}.auth.token`)
+    const accessToken = this.getAuthToken()
 
     const siteId = site.get('siteId')
 

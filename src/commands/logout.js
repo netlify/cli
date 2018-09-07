@@ -3,9 +3,7 @@ const renderShortDesc = require('../utils/renderShortDescription')
 
 class LogoutCommand extends Command {
   async run() {
-    const { globalConfig } = this.netlify
-    const current = globalConfig.get('userId')
-    const accessToken = globalConfig.get(`users.${current}.auth.token`)
+    const accessToken = this.getAuthToken()
 
     if (accessToken) {
       // unset userID without deleting key

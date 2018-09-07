@@ -22,11 +22,8 @@ class BaseCommand extends Command {
     // Pull in siteConfig from toml
     const siteConf = siteConfig(projectRoot, state)
 
-    // Get current logged in user
-    const currentUser = globalConfig.get('userId')
-
     // Grab netlify API token
-    const token = globalConfig.get(`users.${currentUser}.auth.token`)
+    const token = this.getAuthToken()
 
     this.netlify = {
       // api methods
@@ -37,21 +34,17 @@ class BaseCommand extends Command {
       globalConfig: globalConfig,
       // state of current site dir
       state: state,
-      // Current user
-      // user: {} // TODO @DWELLS
     }
   }
-  async getAuthToken() {
-    const currentUser = this.netlify.globalConfig.get('userId')
-    // TODO what should NETLIFY_AUTH_TOKEN be named
+  getAuthToken() {
     if (process.env.NETLIFY_AUTH_TOKEN) {
-      console.log('Using token set by env var')
       return process.env.NETLIFY_AUTH_TOKEN
     }
-    return this.netlify.globalConfig.get(`users.${currentUser}.auth.token`)
+    const userId = globalConfig.get('userId')
+    return globalConfig.get(`users.${userId}.auth.token`)
   }
   async authenticate() {
-    const token = await this.getAuthToken()
+    const token = this.getAuthToken()
     if (token) {
       return token
     }
