@@ -56,7 +56,7 @@ netlify login
 
 This will open a browser window, asking you to log in with Netlify and grant access to **Netlify Cli**.
 
-![](/img/docs/cli/authorize-ui.png)
+![](https://www.netlify.com/img/docs/cli/authorize-ui.png)
 
 Once authorized, Netlify CLI will store your access token in your home folder, under `.netlify/config.json`. Netlify CLI will use the token in this location automatically for all future commands.
 
@@ -92,7 +92,7 @@ To revoke access to your account for Netlify CLI, go to the [**OAuth application
 
 ## Continuous Deployment
 
-With [continuous deployment](/docs/continuous-deployment), Netlify will automatically deploy new versions of your site when you push commits to your connected Git repository. This also enables features like Deploy Previews, branch deploys, and [split testing](/docs/split-testing). (Some of these features must be enabled in the Netlify UI.)
+With [continuous deployment](https://www.netlify.com/docs/continuous-deployment), Netlify will automatically deploy new versions of your site when you push commits to your connected Git repository. This also enables features like Deploy Previews, branch deploys, and [split testing](https://www.netlify.com/docs/split-testing). (Some of these features must be enabled in the Netlify UI.)
 
 ### Automated Setup
 
@@ -117,10 +117,10 @@ netlify init --manual
 The tool will prompt you for your deploy settings, then provide you with two items you will need to add to your repository settings with your Git provider:
 
 * **Deploy/access key:** Netlify uses this key to fetch your repository via ssh for building and deploying.
-      ![Sample terminal output reads: 'Give this Netlify SSH public key access to your repository,' and displays a key code.](/img/docs/cli/deploy-key-cli.png)
+      ![Sample terminal output reads: 'Give this Netlify SSH public key access to your repository,' and displays a key code.](https://www.netlify.com/img/docs/cli/deploy-key-cli.png)
   Copy the key printed in the command line, then add it as a deploy key in the repository settings on your Git Provider. The deploy key does not require write access. Note that if you have more than one site connected to a repo, you will need a unique key for each one.
 * **Webhook:** Your Git provider will send a message to this webhook when you push changes to your repository, triggering a new deploy on Netlify.
-      ![Sample terminal output reads: 'Configure the following webhook for your repository,' and displays a URL.](/img/docs/cli/webhook-cli.png)
+      ![Sample terminal output reads: 'Configure the following webhook for your repository,' and displays a URL.](https://www.netlify.com/img/docs/cli/webhook-cli.png)
   Copy the webhook address printed in the command line, then add it as the Payload URL for a new webhook in the repository settings on your Git provider. If available, the **Content type** should be set to `application/json`. When selecting events to trigger the webhook, **Push** events will trigger production and branch deploys on watched branches, and **Pull/Merge request** events will trigger deploy previews.
 
 ## Manual Deploy
@@ -162,7 +162,7 @@ netlify deploy
 This command needs to know which folder to publish, and if your project includes functions, a functions folder to deploy. It will look for this information in three places, in the following order:
 
 * in flags specified in the command itself
-* in a [netlify.toml file](/docs/netlify-toml-reference) stored at the base of your project directory.
+* in a [netlify.toml file](https://www.netlify.com/docs/netlify-toml-reference) stored at the base of your project directory.
 * in your site settings in the Netlify UI.
 
 Here is an example using command flags to set the publish folder and functions folder:
