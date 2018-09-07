@@ -5,6 +5,7 @@ const siteConfig = require('./site-config')
 const State = require('./state')
 const openBrowser = require('../utils/open-browser')
 const projectRoot = require('./utils/projectRoot')
+const { track, identify } = require('../utils/telemetry')
 const API = require('../utils/api')
 
 // Netlify CLI client id. Lives in bot@netlify.com
@@ -35,7 +36,9 @@ class BaseCommand extends Command {
       // global cli config
       globalConfig: globalConfig,
       // state of current site dir
-      state: state
+      state: state,
+      // Current user
+      // user: {} // TODO @DWELLS
     }
   }
   async getAuthToken() {
@@ -87,6 +90,13 @@ class BaseCommand extends Command {
       this.netlify.globalConfig.set('userId', userID)
       // Set user data
       this.netlify.globalConfig.set(`users.${userID}`, userData)
+
+      identify({
+        name: accountInfo.name || accountInfo.billing_name,
+        email: accountInfo.billing_email,
+      }).then(() => {
+        track('cli:user_login')
+      })
 
     }
     // Log success
