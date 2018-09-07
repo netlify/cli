@@ -4,14 +4,15 @@ const renderShortDesc = require('../../utils/renderShortDescription')
 
 class OpenAdminCommand extends Command {
   async run() {
-    const current = this.global.get('userId')
-    const accessToken = this.global.get(`users.${current}.auth.token`)
+    const { globalConfig, api, site } = this.netlify
+    const current = globalConfig.get('userId')
+    const accessToken = globalConfig.get(`users.${current}.auth.token`)
 
     if (!accessToken) {
       this.error(`Not logged in. Please run \`netlify login\` and try again`)
     }
 
-    const siteId = this.site.get('siteId')
+    const siteId = site.get('siteId')
 
     if (!siteId) {
       this.warn(`No Site ID found in current directory.
@@ -19,20 +20,29 @@ Run \`netlify link\` to connect to this folder to a site`)
       return false
     }
 
-    let site
+    let siteData
     try {
-      site = await this.netlify.getSite({ siteId })
-      this.log(`Opening "${site.name}" site admin UI:`)
-      this.log(`> ${site.admin_url}`)
+      siteData = await api.getSite({ siteId })
+      this.log(`Opening "${siteData.name}" site admin UI:`)
+      this.log(`> ${siteData.admin_url}`)
     } catch (e) {
+      console.log('e', e)
       if (e.status === 401 /* unauthorized*/) {
         this.warn(`Log in with a different account or re-link to a site you have permission for`)
         this.error(`Not authorized to view the currently linked site (${siteId})`)
       }
+      if (e.status === 404 /* site not found */) {
+        this.log(`No site with id ${siteId} found.`)
+        this.log('Please double check this ID and verify you are logged in with the correct account')
+        this.log()
+        this.log('To fix this, run `netlify unlink` then `netlify link` to reconnect to the correct site ID')
+        this.log()
+        this.error(`Site (${siteId}) not found in account`)
+      }
       this.error(e)
     }
 
-    await openBrowser(site.admin_url)
+    await openBrowser(siteData.admin_url)
     this.exit()
   }
 }

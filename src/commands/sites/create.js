@@ -8,11 +8,13 @@ const renderShortDesc = require('../../utils/renderShortDescription')
 
 class SitesCreateCommand extends Command {
   async run() {
-    await this.authenticate()
     const { flags } = this.parse(SitesCreateCommand)
+    const { api } = this.netlify
+
+    await this.authenticate()
 
     if (isEmpty(flags)) {
-      const accounts = await this.netlify.listAccountsForUser()
+      const accounts = await api.listAccountsForUser()
       const personal = accounts.find(account => account.type === 'PERSONAL')
       console.log('Choose a site name. One will be automatically generated if left blank. You will be able to update this at a later time.')
       const results = await inquirer.prompt([
@@ -39,7 +41,7 @@ class SitesCreateCommand extends Command {
 
       let site
       try {
-        site = await this.netlify.createSiteInTeam({ accountSlug, body: results })
+        site = await api.createSiteInTeam({ accountSlug, body: results })
       } catch (error) {
         console.log(`Error ${error.status}: ${error.message} from createSiteInTeam call`)
         if (error.status === 422) {

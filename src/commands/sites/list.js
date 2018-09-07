@@ -6,9 +6,10 @@ const renderShortDesc = require('../../utils/renderShortDescription')
 class SitesListCommand extends Command {
   async run() {
     const { flags } = this.parse(SitesListCommand)
+    const { api } = this.netlify
     await this.authenticate()
 
-    const sites = await this.netlify.listSites()
+    const sites = await api.listSites()
 
     if (sites && sites.length) {
       const logSites = sites.map(site => {

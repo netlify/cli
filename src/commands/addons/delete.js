@@ -6,6 +6,7 @@ class addonsDeleteCommand extends Command {
   async run() {
     const accessToken = await this.authenticate()
     const { args } = this.parse(addonsDeleteCommand)
+    const { site } = this.netlify
 
     if (!accessToken) {
       this.error(`Not logged in`)
@@ -13,7 +14,7 @@ class addonsDeleteCommand extends Command {
 
     const addonName = args.name
 
-    const siteId = this.site.get('siteId')
+    const siteId = site.get('siteId')
 
     if (!siteId) {
       console.log('No site id found, please run inside a site folder or `netlify link`')

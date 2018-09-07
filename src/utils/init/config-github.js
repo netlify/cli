@@ -9,10 +9,10 @@ const UA = 'Netlify CLI ' + version
 
 module.exports = configGithub
 async function configGithub(ctx, site, repo) {
+  const { api, globalConfig } = ctx.netlify
+  const current = globalConfig.get('userId')
 
-  const current = ctx.global.get('userId')
-
-  let ghtoken = ctx.global.get(`users.${current}.auth.github`)
+  let ghtoken = globalConfig.get(`users.${current}.auth.github`)
 
   if (!ghtoken || !ghtoken.user || !ghtoken.token) {
     const newToken = await ghauth({
@@ -21,7 +21,7 @@ async function configGithub(ctx, site, repo) {
       note: `Netlify CLI ${os.userInfo().username}@${os.hostname()}`
     })
     console.log('newToken', newToken)
-    ctx.global.set(`users.${current}.auth.github`, newToken)
+    globalConfig.set(`users.${current}.auth.github`, newToken)
     ghtoken = newToken
   }
 
@@ -30,7 +30,7 @@ async function configGithub(ctx, site, repo) {
     token: ghtoken.token
   })
 
-  const key = await ctx.netlify.createDeployKey()
+  const key = await api.createDeployKey()
   const parsedURL = parseGitRemote(repo.repo_path)
   await octokit.repos.addDeployKey({
     title: 'Netlify Deploy Key',
@@ -60,7 +60,9 @@ async function configGithub(ctx, site, repo) {
       default: '.'
     }
   ])
+
   repo.dir = buildDir
+
   if (buildCmd) {
     repo.cmd = buildCmd
   }
@@ -75,7 +77,7 @@ async function configGithub(ctx, site, repo) {
   repo.repo_branch = results.data.default_branch
   repo.allowed_branches = [results.data.default_branch]
 
-  site = await ctx.netlify.updateSite({ siteId: site.id, body: { repo } })
+  site = await api.updateSite({ siteId: site.id, body: { repo } })
 
   const hooks = await octokit.repos.getHooks({
     owner: parsedURL.owner,
@@ -110,17 +112,17 @@ async function configGithub(ctx, site, repo) {
 
   // TODO: Generalize this so users can reset these automatically.
   // Quick and dirty implementation
-  const ntlHooks = await ctx.netlify.listHooksBySiteId({ siteId: site.id })
+  const ntlHooks = await api.listHooksBySiteId({ siteId: site.id })
 
   const createdHook = ntlHooks.find(h => h.type === 'github_commit_status' && h.event === 'deploy_created')
   const failedHook = ntlHooks.find(h => h.type === 'github_commit_status' && h.event === 'deploy_failed')
   const buildingHook = ntlHooks.find(h => h.type === 'github_commit_status' && h.event === 'deploy_building')
+
   ctx.log()
   ctx.log(`Creating Netlify Github Notification Hooks...`)
 
-
   if (!createdHook || createdHook.disabled) {
-    await ctx.netlify.createHookBySiteId({
+    await api.createHookBySiteId({
       site_id: site.id,
       body: {
         type: 'github_commit_status',
@@ -132,7 +134,7 @@ async function configGithub(ctx, site, repo) {
     })
     // ctx.log(`Created Github deploy_created Hook: ${h.id}`)
   } else {
-    await ctx.netlify.updateHook({
+    await api.updateHook({
       hook_id: createdHook.id,
       body: {
         data: {
@@ -144,7 +146,7 @@ async function configGithub(ctx, site, repo) {
   }
 
   if (!failedHook || failedHook.disabled) {
-    await ctx.netlify.createHookBySiteId({
+    await api.createHookBySiteId({
       site_id: site.id,
       body: {
         type: 'github_commit_status',
@@ -156,7 +158,7 @@ async function configGithub(ctx, site, repo) {
     })
     // ctx.log(`Created Github deploy_failed hook: ${h.id}`)
   } else {
-    await ctx.netlify.updateHook({
+    await api.updateHook({
       hook_id: failedHook.id,
       body: {
         data: {
@@ -168,7 +170,7 @@ async function configGithub(ctx, site, repo) {
   }
 
   if (!buildingHook || buildingHook.disabled) {
-    await ctx.netlify.createHookBySiteId({
+    await api.createHookBySiteId({
       site_id: site.id,
       body: {
         type: 'github_commit_status',
@@ -180,7 +182,7 @@ async function configGithub(ctx, site, repo) {
     })
     // ctx.log(`Created Github deploy_building hook: ${h.id}`)
   } else {
-    await ctx.netlify.updateHook({
+    await api.updateHook({
       hook_id: buildingHook.id,
       body: {
         data: {

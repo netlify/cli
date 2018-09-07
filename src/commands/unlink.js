@@ -3,25 +3,24 @@ const renderShortDesc = require('../utils/renderShortDescription')
 
 class UnlinkCommand extends Command {
   async run() {
-    const siteId = this.site.get('siteId')
+    const { site, state } = this.netlify
+    const siteId = site.get('siteId')
 
     if (!siteId) {
       this.log(`Folder is not linked to a Netlify site`)
       return this.exit()
     }
 
-    let site
+    let siteData
     try {
-      site = await this.netlify.getSite({ siteId })
+      siteData = await this.netlify.api.getSite({ siteId })
     } catch (e) {
       // ignore errors if we can't get the site
     }
 
-    this.site.delete('siteId')
+    state.delete('siteId')
 
-    this.log(
-      `Unlinked ${this.site.path} from ${site ? site.name : siteId}`
-    )
+    this.log(`Unlinked ${site.configPath} from ${siteData ? siteData.name : siteId}`)
   }
 }
 

@@ -4,8 +4,9 @@ const chalk = require('chalk')
 
 class LoginCommand extends Command {
   async run() {
-    const current = this.global.get('userId')
-    const accessToken = this.global.get(`users.${current}.auth.token`)
+    const { globalConfig } = this.netlify
+    const current = globalConfig.get('userId')
+    const accessToken = globalConfig.get(`users.${current}.auth.token`)
 
     if (accessToken) {
       this.log('Already logged in!')

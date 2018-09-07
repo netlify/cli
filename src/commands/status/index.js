@@ -7,10 +7,11 @@ const clean = require('clean-deep')
 
 class StatusCommand extends Command {
   async run() {
-    const current = this.global.get('userId')
-    const accessToken = this.global.get(`users.${current}.auth.token`)
+    const { globalConfig, api, site } = this.netlify
+    const current = globalConfig.get('userId')
+    const accessToken = globalConfig.get(`users.${current}.auth.token`)
 
-    const siteId = this.site.get('siteId')
+    const siteId = site.get('siteId')
 
     this.log(`──────────────────────┐
  Current Netlify User │
@@ -18,10 +19,10 @@ class StatusCommand extends Command {
     let personal
     let accountData
     if (accessToken) {
-      const accounts = await this.netlify.listAccountsForUser()
+      const accounts = await api.listAccountsForUser()
       personal = accounts.find(account => account.type === 'PERSONAL')
       const teams = accounts.filter(account => account.type !== 'PERSONAL')
-      const ghuser = this.global.get(`users.${current}.auth.github.user`)
+      const ghuser = this.netlify.globalConfig.get(`users.${current}.auth.github.user`)
       accountData = {
         'Account name': get(personal, 'name'),
         // 'Account slug': get(personal, 'slug'),
@@ -52,9 +53,9 @@ class StatusCommand extends Command {
       this.warn('Did you run `netlify link` yet?')
       this.error(`You don't appear to be in a folder that is linked to a site`)
     }
-    let site
+    let siteData
     try {
-      site = await this.netlify.getSite({ siteId })
+      siteData = await api.getSite({ siteId })
     } catch (e) {
       if (e.status === 401 /* unauthorized*/) {
         this.warn(`Log in with a different account or re-link to a site you have permission for`)
@@ -67,10 +68,10 @@ class StatusCommand extends Command {
     }
 
     const statusData = {
-      'Current site': `${site.name}`,
-      'Netlify TOML': this.site.tomlPath,
-      'Admin URL': chalk.magentaBright(site.admin_url),
-      'Site URL': chalk.cyanBright(site.ssl_url || site.url)
+      'Current site': `${siteData.name}`,
+      'Netlify TOML': site.configPath,
+      'Admin URL': chalk.magentaBright(siteData.admin_url),
+      'Site URL': chalk.cyanBright(siteData.ssl_url || siteData.url)
     }
 
     this.log(prettyjson.render(statusData))

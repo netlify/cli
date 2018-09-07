@@ -4,13 +4,15 @@ const renderShortDesc = require('../../utils/renderShortDescription')
 
 class OpenAdminCommand extends Command {
   async run() {
-    const current = this.global.get('userId')
-    const accessToken = this.global.get(`users.${current}.auth.token`)
+    const { globalConfig, api, site } = this.netlify
+    const current = globalConfig.get('userId')
+    const accessToken = globalConfig.get(`users.${current}.auth.token`)
+
     if (!accessToken) {
       this.error(`Not logged in. Please run \`netlify login\` and try again`)
     }
 
-    const siteId = this.site.get('siteId')
+    const siteId = site.get('siteId')
 
     if (!siteId) {
       this.warn(`No Site ID found in current directory.
@@ -18,12 +20,12 @@ Run \`netlify link\` to connect to this folder to a site`)
       return false
     }
 
-    let site
+    let siteData
     let url
     try {
-      site = await this.netlify.getSite({ siteId })
-      url = site.ssl_url || site.url
-      this.log(`Opening "${site.name}" site url:`)
+      siteData = await api.getSite({ siteId })
+      url = siteData.ssl_url || siteData.url
+      this.log(`Opening "${siteData.name}" site url:`)
       this.log(`> ${url}`)
     } catch (e) {
       if (e.status === 401 /* unauthorized*/) {

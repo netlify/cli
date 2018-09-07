@@ -5,21 +5,23 @@ const get = require('lodash.get')
 
 class StatusHooksCommand extends Command {
   async run() {
-    const accessToken = this.global.get('accessToken')
-    const siteId = this.site.get('siteId')
+    const { globalConfig, site, api } = this.netlify
+    const current = globalConfig.get('userId')
+    const accessToken = globalConfig.get(`users.${current}.auth.token`)
 
     if (!accessToken) {
       this.error(`Not logged in. Log in to see site status.`)
     }
 
+    const siteId = site.get('siteId')
     if (!siteId) {
       this.warn('Did you run `netlify link` yet?')
       this.error(`You don't appear to be in a folder that is linked to a site`)
     }
 
-    let site
+    let siteData
     try {
-      site = await this.netlify.getSite({ siteId })
+      siteData = await api.getSite({ siteId })
     } catch (e) {
       if (e.status === 401 /* unauthorized*/) {
         this.warn(`Log in with a different account or re-link to a site you have permission for`)
@@ -31,9 +33,9 @@ class StatusHooksCommand extends Command {
       this.error(e)
     }
 
-    const ntlHooks = await this.netlify.listHooksBySiteId({ siteId: site.id })
+    const ntlHooks = await api.listHooksBySiteId({ siteId: siteData.id })
     const data = {
-      site: site.name,
+      site: siteData.name,
       hooks: {}
     }
     ntlHooks.forEach(hook => {
@@ -43,7 +45,9 @@ class StatusHooksCommand extends Command {
         id: hook.id,
         disabled: hook.disabled
       }
-      if (get(site, 'build_settings.repo_url')) data.hooks[hook.id].repo_url = get(site, 'build_settings.repo_url')
+      if (get(siteData, 'build_settings.repo_url')) {
+        data.hooks[hook.id].repo_url = get(siteData, 'build_settings.repo_url')
+      }
     })
     this.log(`─────────────────┐
 Site Hook Status │

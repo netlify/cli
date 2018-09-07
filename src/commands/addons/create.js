@@ -6,6 +6,7 @@ class addonsCreateCommand extends Command {
   async run() {
     const accessToken = await this.authenticate()
     const { args, raw } = this.parse(addonsCreateCommand)
+    const { api, site } = this.netlify
 
     if (!accessToken) {
       this.error(`Not logged in`)
@@ -13,14 +14,14 @@ class addonsCreateCommand extends Command {
 
     const addonName = args.name
 
-    const siteId = this.site.get('siteId')
+    const siteId = site.get('siteId')
 
     if (!siteId) {
       console.log('No site id found, please run inside a site folder or `netlify link`')
       return false
     }
 
-    const site = await this.netlify.getSite({ siteId })
+    const siteData = await api.getSite({ siteId })
     // console.log(site)
     const addons = await getAddons(siteId, accessToken)
 
@@ -42,7 +43,7 @@ class addonsCreateCommand extends Command {
     const rawFlags = parseRawFlags(raw)
 
     if (currentAddon.id) {
-      console.log(`Addon ${addonName} already exists for ${site.name}`)
+      console.log(`Addon ${addonName} already exists for ${siteData.name}`)
       console.log(`> Run \`netlify addons:update ${addonName}\` to update settings`)
       console.log(`> Run \`netlify addons:delete ${addonName}\` to delete this addon`)
       return false
@@ -59,7 +60,7 @@ class addonsCreateCommand extends Command {
       console.log(`No addon "${addonName}" found. Please double check your addon name and try again`)
       return false
     }
-    this.log(`Addon "${addonName}" created for ${site.name}`)
+    this.log(`Addon "${addonName}" created for ${siteData.name}`)
     // console.log(addonResponse)
   }
 }

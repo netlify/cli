@@ -15,14 +15,14 @@ class addonsUpdateCommand extends Command {
 
     const addonName = args.name
 
-    const siteId = this.site.get('siteId')
+    const siteId = this.netlify.site.get('siteId')
 
     if (!siteId) {
       console.log('No site id found, please run inside a site folder or `netlify link`')
       return false
     }
 
-    const site = await this.netlify.getSite({ siteId })
+    const site = await this.netlify.api.getSite({ siteId })
     // console.log(site)
     const addons = await getAddons(siteId, accessToken)
 

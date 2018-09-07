@@ -4,6 +4,7 @@ const getRepoData = require('../getRepoData')
 const isEmpty = require('lodash.isempty')
 
 module.exports = async function linkPrompts(context) {
+  const { api, state } = context.netlify
   let site
   let GIT_REMOTE_PROMPT = `Use current git remote URL`
   const SITE_NAME_PROMPT = 'Site Name'
@@ -51,14 +52,15 @@ module.exports = async function linkPrompts(context) {
       }
       context.log()
       context.log(`Fetching sites and looking for site connected to "${repoUrl}" repo`)
-      const sites = await context.netlify.listSites()
+      const sites = await api.listSites()
 
       if (isEmpty(sites)) {
         context.error(new Error(`No sites found in your netlify account`))
       }
 
-      const matchingSites = sites.filter((site) => {
-        return repoUrl === site.build_settings.repo_url
+      const matchingSites = sites.filter((s) => {
+        const buildSettings = s.build_settings || {}
+        return repoUrl === buildSettings.repo_url
       })
 
       // If no remote matches. Throw error
@@ -114,7 +116,7 @@ Run ${chalk.cyanBright('`git remote -v`')} to see a list of your git remotes.`))
       ])
       let sites
       try {
-        sites = await context.netlify.listSites({
+        sites = await api.listSites({
           name: siteName,
           filter: 'all'
         })
@@ -158,7 +160,7 @@ Run ${chalk.cyanBright('`git remote -v`')} to see a list of your git remotes.`))
       ])
 
       try {
-        site = await context.netlify.getSite({ siteId })
+        site = await api.getSite({ siteId })
       } catch (e) {
         if (e.status === 404) {
           context.error(new Error(`Site id ${siteId} not found`))
@@ -175,7 +177,7 @@ Run ${chalk.cyanBright('`git remote -v`')} to see a list of your git remotes.`))
   }
 
   // Save site ID to config
-  context.site.set('siteId', site.id)
+  state.set('siteId', site.id)
 
   // Log output
   context.log()
@@ -184,7 +186,8 @@ Run ${chalk.cyanBright('`git remote -v`')} to see a list of your git remotes.`))
   context.log(`Admin url: ${chalk.magentaBright(site.admin_url)}`)
   context.log(`Site url:  ${chalk.cyanBright(site.ssl_url || site.url)}`)
   context.log()
-  context.log(`Site id saved to ${context.site.path}`)
+
+  context.log(`Site id saved to ${context.netlify.site.root}`)
   // context.log(`Local Config: .netlify/config.json`)
   context.log()
   context.log(`You can now run other \`netlify\` cli commands in this directory`)

@@ -15,6 +15,7 @@ class DeployCommand extends Command {
   async run() {
     const accessToken = await this.authenticate()
     const { flags } = this.parse(DeployCommand)
+    const { api, site } = this.netlify
 
     const deployToProduction = flags.prod
 
@@ -22,13 +23,13 @@ class DeployCommand extends Command {
       this.error(`Not logged in. Log in to deploy to a site`)
     }
 
-    const siteId = this.site.get('siteId')
+    const siteId = site.get('siteId')
     if (!siteId) {
       this.log('Please link project to a netlify site first')
       this.exit()
     } else {
       try {
-        await this.netlify.getSite({ siteId })
+        await api.getSite({ siteId })
       } catch (e) {
         this.error(e.message)
       }
@@ -37,13 +38,13 @@ class DeployCommand extends Command {
     // TODO: abstract settings lookup
     const deployFolder =
       flags['dir'] ||
-      get(this.site.toml, 'build.publish') ||
-      get(await this.netlify.getSite({ siteId }), 'build_settings.dir')
+      get(site.config, 'build.publish') ||
+      get(await api.getSite({ siteId }), 'build_settings.dir')
 
     const functionsFolder =
       flags.functions ||
-      get(this.site.toml, 'build.functions') ||
-      get(await this.netlify.getSite({ siteId }), 'build_settings.functions_dir')
+      get(site.config, 'build.functions') ||
+      get(await api.getSite({ siteId }), 'build_settings.functions_dir')
 
     if (!deployFolder) {
       this.error(
@@ -52,13 +53,14 @@ class DeployCommand extends Command {
     }
 
     // TODO go through the above resolution, and make sure the resolve algorithm makes sense
-    const resolvedDeployPath = path.resolve(this.site.root, deployFolder)
+    const resolvedDeployPath = path.resolve(site.root, deployFolder)
     let resolvedFunctionsPath
-    if (functionsFolder) resolvedFunctionsPath = path.resolve(this.site.root, functionsFolder)
+    if (functionsFolder) resolvedFunctionsPath = path.resolve(site.root, functionsFolder)
 
     // cliUx.action.start(`Starting a deploy from ${resolvedDeployPath}`)
 
     ensureDirectory(resolvedDeployPath, this.exit)
+    
     if (resolvedFunctionsPath) {
       ensureDirectory(resolvedFunctionsPath, this.exit)
     }
@@ -71,7 +73,7 @@ class DeployCommand extends Command {
         this.log('Deploying to draft site...')
       }
 
-      results = await this.netlify.deploy(siteId, resolvedDeployPath, resolvedFunctionsPath, this.site.tomlPath, {
+      results = await api.deploy(siteId, resolvedDeployPath, resolvedFunctionsPath, site.configPath, {
         statusCb: deployProgressCb(this),
         draft: !deployToProduction
       })

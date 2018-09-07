@@ -8,10 +8,9 @@ const renderShortDesc = require('../utils/renderShortDescription')
 
 class SitesWatchCommand extends Command {
   async run() {
-    // const { flags } = this.parse(SitesWatchCommand)
     await this.authenticate()
-    const client = this.netlify
-    const siteId = this.site.get('siteId')
+    const client = this.netlify.api
+    const siteId = this.netlify.site.get('siteId')
 
     // wait for 1 sec for everything to kickoff
     console.time('Deploy time')
