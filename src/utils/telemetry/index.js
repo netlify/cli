@@ -8,7 +8,7 @@ const globalConfig = GlobalConfig.all
 const TELEMETRY_DISABLED = globalConfig.telemetryDisabled
 const IS_INSIDE_CI = ci.isCI
 
-const DEBUG = true
+const DEBUG = false
 
 function send(type, payload) {
   const requestFile = path.join(__dirname, 'request.js')
@@ -45,13 +45,17 @@ function track(eventName, payload) {
   const properties = payload || {}
 
   if (IS_INSIDE_CI) {
-    console.log('Abort .identify call inside CI')
+    if (DEBUG) {
+      console.log('Abort .identify call inside CI')
+    }
     return Promise.resolve()
   }
 
   // exit early if tracking disabled
   if (TELEMETRY_DISABLED && !properties.force) {
-    console.log('Abort .track call TELEMETRY_DISABLED')
+    if (DEBUG) {
+      console.log('Abort .track call TELEMETRY_DISABLED')
+    }
     return Promise.resolve()
   }
 
@@ -87,13 +91,17 @@ function identify(payload) {
   const data = payload || {}
 
   if (IS_INSIDE_CI) {
-    console.log('Abort .identify call inside CI')
+    if (DEBUG) {
+      console.log('Abort .identify call inside CI')
+    }
     return Promise.resolve()
   }
 
   // exit early if tracking disabled
   if (TELEMETRY_DISABLED && !data.force) {
-    console.log('Abort .identify call TELEMETRY_DISABLED')
+    if (DEBUG) {
+      console.log('Abort .identify call TELEMETRY_DISABLED')
+    }    
     return Promise.resolve()
   }
 
