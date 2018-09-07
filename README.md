@@ -70,7 +70,7 @@ This will remove the access key from the `.netlify/config.json` file in your hom
 
 ### Obtain a Token in the Netlify UI
 
-You can generate an access token manually in your Netlify account settings under [**OAuth applications**](https://app.netlify.com/applications). 
+You can generate an access token manually in your Netlify account settings under [**OAuth applications**](https://app.netlify.com/applications).
 
 1. Under **Personal access tokens**, select **New access token**.
 2. Enter a description and select **Generate token**.
@@ -125,9 +125,9 @@ The tool will prompt you for your deploy settings, then provide you with two ite
 
 ## Manual Deploy
 
-It's also possible to deploy a site manually, without continuous deployment. This method uploads files directly from your local project directory to your site on Netlify, without running a build step. It also works with directories that are not Git repositories. 
+It's also possible to deploy a site manually, without continuous deployment. This method uploads files directly from your local project directory to your site on Netlify, without running a build step. It also works with directories that are not Git repositories.
 
-A common use case for this command is when you're using a separate Contiuous Integration (CI) tool, deploying prebuilt files to Netlify at the end of the CI tool tasks.
+A common use case for this command is when you're using a separate Continuous Integration (CI) tool, deploying prebuilt files to Netlify at the end of the CI tool tasks.
 
 ### Create a new site
 
@@ -168,18 +168,26 @@ This command needs to know which folder to publish, and if your project includes
 Here is an example using command flags to set the publish folder and functions folder:
 
 ```bash
-netlify deploy --publish-folder=_site --functions=functions
+netlify deploy --dir=build-folder --functions=functions
 ```
 
-### Draft Deploys
+By default, `deploy` will publish to draft previews. The draft site URL will display in the command line when the deploy is done.
 
-To preview a manual deploy without changing it in production, use the `--draft` flag:
+### Production Deploys
+
+By default, all `deploys` are set to a draft preview URL.
+
+To do a manual deploy to production, use the `--prod` flag:
 
 ```bash
-netlify deploy --draft
+# Deploy build folder to production
+netlify deploy --prod
+
+# Shorthand -p
+netlify deploy -p
 ```
 
-This will run a deploy just like your production deploy, but at a unique address. The draft site URL will display in the command line when the deploy is done.
+Deploying to production will publish the build directory at the live URL of your Netlify site.
 
 ## Inline Help
 
@@ -192,13 +200,13 @@ netlify help
 For more information about a specific command, run `help` with the name of the command.
 
 ```bash
-netlify help deploy
+netlify deploy help
 ```
 
 This also works for sub-commands.
 
 ```bash
-netlify help sites:create
+netlify sites:create help
 ```
 
 ## Full Command Reference
