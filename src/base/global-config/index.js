@@ -1,16 +1,20 @@
 const Configstore = require('configstore')
 const os = require('os')
 const path = require('path')
-const { toEnvCase, isDotProp } = require('./util')
+// const { toEnvCase, isDotProp } = require('./util')
 
-const conf = new Configstore(
-  null, // configPath overrides the namespace
-  {
-    // defaults
-  },
-  { configPath: path.join(os.homedir(), '.netlify', 'config.json') }
-)
+const globalConfigDefaults = {
+  /* disable stats from being sent to Netlify */
+  telemetryDisabled: false
+}
 
+const globalConfigOptions = {
+  configPath: path.join(os.homedir(), '.netlify', 'config.json')
+}
+
+module.exports = new Configstore(null, globalConfigDefaults, globalConfigOptions)
+
+/* disable proxy
 const envProxy = {}
 
 envProxy.get = (cs, prop) => {
@@ -26,5 +30,4 @@ envProxy.get = (cs, prop) => {
 }
 
 const configStore = new Proxy(conf, envProxy)
-
-module.exports = configStore
+*/

@@ -1,8 +1,10 @@
 const { Command } = require('@oclif/command')
 const chalk = require('chalk')
 const globalConfig = require('./global-config')
-const SiteConfig = require('./site-config')
+const siteConfig = require('./site-config')
+const State = require('./state')
 const openBrowser = require('../utils/open-browser')
+const projectRoot = require('./utils/projectRoot')
 const API = require('../utils/api')
 
 // Netlify CLI client id. Lives in bot@netlify.com
@@ -12,16 +14,41 @@ const CLIENT_ID = 'd6f37de6614df7ae58664cfca524744d73807a377f5ee71f1a254f78412e3
 class BaseCommand extends Command {
   constructor(...args) {
     super(...args)
-    this.global = globalConfig
-    this.site = new SiteConfig(process.cwd())
-    const currentUser = globalConfig.get('userId')
-    const token = globalConfig.get(`users.${currentUser}.auth.token`)
-    this.netlify = new API(token)
-  }
 
+    // Get site id & build state
+    const state = new State(projectRoot)
+
+    // Pull in siteConfig from toml
+    const siteConf = siteConfig(projectRoot, state)
+
+    // Get current logged in user
+    const currentUser = globalConfig.get('userId')
+
+    // Grab netlify API token
+    const token = globalConfig.get(`users.${currentUser}.auth.token`)
+
+    this.netlify = {
+      // api methods
+      api: new API(token),
+      // current site context
+      site: siteConf,
+      // global cli config
+      globalConfig: globalConfig,
+      // state of current site dir
+      state: state
+    }
+  }
+  async getAuthToken() {
+    const currentUser = this.netlify.globalConfig.get('userId')
+    // TODO what should NETLIFY_AUTH_TOKEN be named
+    if (process.env.NETLIFY_AUTH_TOKEN) {
+      console.log('Using token set by env var')
+      return process.env.NETLIFY_AUTH_TOKEN
+    }
+    return this.netlify.globalConfig.get(`users.${currentUser}.auth.token`)
+  }
   async authenticate() {
-    const currentUser = this.global.get('userId')
-    const token = this.global.get(`users.${currentUser}.auth.token`)
+    const token = await this.getAuthToken()
     if (token) {
       return token
     }
@@ -29,17 +56,17 @@ class BaseCommand extends Command {
     this.log(`Logging into your Netlify account...`)
 
     // Create ticket for auth
-    const ticket = await this.netlify.createTicket({
+    const ticket = await this.netlify.api.createTicket({
       clientId: CLIENT_ID
     })
 
     // Open browser for authentication
     await openBrowser(`https://app.netlify.com/authorize?response_type=ticket&ticket=${ticket.id}`)
 
-    const accessToken = await this.netlify.getAccessToken(ticket)
+    const accessToken = await this.netlify.api.getAccessToken(ticket)
 
     if (accessToken) {
-      const accounts = await this.netlify.listAccountsForUser()
+      const accounts = await this.netlify.api.listAccountsForUser()
       const accountInfo = accounts.find(account => account.type === 'PERSONAL')
       const userID = accountInfo.owner_ids[0]
 
@@ -57,11 +84,12 @@ class BaseCommand extends Command {
         }
       }
       // Set current userId
-      this.global.set('userId', userID)
+      this.netlify.globalConfig.set('userId', userID)
       // Set user data
-      this.global.set(`users.${userID}`, userData)
+      this.netlify.globalConfig.set(`users.${userID}`, userData)
 
     }
+    // Log success
     this.log()
     this.log(`${chalk.greenBright('You are now logged into your Netlify account!')}`)
     this.log()
@@ -69,7 +97,6 @@ class BaseCommand extends Command {
     this.log()
     this.log(`To see all available commands run: ${chalk.cyanBright('netlify help')}`)
     this.log()
-
   }
 }
 
