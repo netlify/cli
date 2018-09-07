@@ -36,16 +36,19 @@ class SitesListCommand extends Command {
         return false
       }
 
-      console.log('Netlify Sites')
-      console.log(`──────────────────────────────────────────`)
+this.log(`
+────────────────────────────┐
+   Current Netlify Sites    │
+────────────────────────────┘
+`)
 
       logSites.forEach(s => {
-        console.log(`${chalk.greenBright(s.name)} (id: ${s.id})`)
+        console.log(`${chalk.greenBright(s.name)} - ${s.id}`)
         console.log(`  ${chalk.whiteBright.bold('url:')}  ${chalk.yellowBright(s.ssl_url)}`)
         if (s.repo_url) {
           console.log(`  ${chalk.whiteBright.bold('repo:')} ${chalk.white(s.repo_url)}`)
         }
-        console.log(`──────────────────────────────────────────`)
+        console.log(`─────────────────────────────────────────────────`)
       })
     }
   }
