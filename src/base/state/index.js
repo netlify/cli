@@ -57,6 +57,10 @@ class StateConfig {
   }
 
   get(key) {
+    if (key === 'siteId' && process.env.NETLIFY_SITE_ID) {
+      // TODO figure out cleaner way of grabbing ENV vars
+      return process.env.NETLIFY_SITE_ID
+    }
     return dotProp.get(this.all, key)
   }
 
