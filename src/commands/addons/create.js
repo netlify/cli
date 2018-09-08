@@ -4,7 +4,7 @@ const parseRawFlags = require('../../utils/parseRawFlags')
 
 class addonsCreateCommand extends Command {
   async run() {
-    const accessToken = await this.authenticate()
+    const accessToken = this.getAuthToken()
     const { args, raw } = this.parse(addonsCreateCommand)
     const { api, site } = this.netlify
 

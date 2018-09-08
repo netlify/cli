@@ -4,7 +4,7 @@ const { getAddons, deleteAddon } = require('../../utils/api/addons')
 
 class addonsDeleteCommand extends Command {
   async run() {
-    const accessToken = await this.authenticate()
+    const accessToken = this.getAuthToken()
     const { args } = this.parse(addonsDeleteCommand)
     const { site } = this.netlify
 

@@ -13,7 +13,7 @@ const randomItem = require('random-item')
 
 class DeployCommand extends Command {
   async run() {
-    const accessToken = await this.authenticate()
+    const accessToken = this.getAuthToken()
     const { flags } = this.parse(DeployCommand)
     const { api, site } = this.netlify
 
@@ -60,7 +60,7 @@ class DeployCommand extends Command {
     // cliUx.action.start(`Starting a deploy from ${resolvedDeployPath}`)
 
     ensureDirectory(resolvedDeployPath, this.exit)
-    
+
     if (resolvedFunctionsPath) {
       ensureDirectory(resolvedFunctionsPath, this.exit)
     }
