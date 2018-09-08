@@ -6,7 +6,7 @@ const { getAddons } = require('../../utils/api/addons')
 class AddonsListCommand extends Command {
   async run() {
     const { flags } = this.parse(AddonsListCommand)
-    const accessToken = await this.authenticate()
+    const accessToken = this.getAuthToken()
     const { api, site } = this.netlify
 
     if (!accessToken) {
