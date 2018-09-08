@@ -1,11 +1,9 @@
 const path = require('path')
 const { spawn } = require('child_process')
 const isValidEventName = require('./validation')
-const GlobalConfig = require('../../base/global-config')
+const globalConfig = require('../../base/global-config')
 const ci = require('ci-info')
 
-const globalConfig = GlobalConfig.all
-const TELEMETRY_DISABLED = globalConfig.telemetryDisabled
 const IS_INSIDE_CI = ci.isCI
 
 const DEBUG = false
@@ -52,6 +50,7 @@ function track(eventName, payload) {
   }
 
   // exit early if tracking disabled
+  const TELEMETRY_DISABLED = globalConfig.get('telemetryDisabled')
   if (TELEMETRY_DISABLED && !properties.force) {
     if (DEBUG) {
       console.log('Abort .track call TELEMETRY_DISABLED')
@@ -59,7 +58,16 @@ function track(eventName, payload) {
     return Promise.resolve()
   }
 
-  const { userId, cliId } = globalConfig
+  let userId = properties.userID
+  let cliId = properties.cliId
+
+  if (!userId) {
+    userId = globalConfig.get('userId')
+  }
+
+  if (!cliId) {
+    cliId = globalConfig.get('cliId')
+  }
 
   // automatically add `cli:` prefix if missing
   if (eventName.indexOf('cli:') === -1) {
@@ -98,17 +106,26 @@ function identify(payload) {
   }
 
   // exit early if tracking disabled
+  const TELEMETRY_DISABLED = globalConfig.get('telemetryDisabled')
   if (TELEMETRY_DISABLED && !data.force) {
     if (DEBUG) {
       console.log('Abort .identify call TELEMETRY_DISABLED')
-    }    
+    }
     return Promise.resolve()
   }
 
+  let userId = data.userID
+  let cliId = data.cliId
 
-  const userId = globalConfig.userId
-  const userProfile = globalConfig.users[`${userId}`]
-  const cliId = globalConfig.cliId
+  if (!userId) {
+    userId = globalConfig.get('userId')
+  }
+
+  if (!cliId) {
+    cliId = globalConfig.get('cliId')
+  }
+
+  const userProfile = globalConfig.get(`users.${userId}`)
 
   const defaultTraits = {
     name: userProfile.name,
