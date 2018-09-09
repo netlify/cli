@@ -4,7 +4,7 @@ const renderShortDesc = require('../utils/renderShortDescription')
 const path = require('path')
 const chalk = require('chalk')
 const linkPrompt = require('../utils/link/link-by-prompt')
-
+const { track } = require('../utils/telemetry')
 
 class LinkCommand extends Command {
   async run() {
@@ -51,6 +51,13 @@ class LinkCommand extends Command {
       // Save site ID
       state.set('siteId', siteData.id)
       this.log(`Linked to ${siteData.name} in ${state.path}`)
+
+      await track('sites_linked',  {
+        siteId: siteData.id,
+        linkType: 'manual',
+        kind: 'byId'
+      })
+
       return this.exit()
     }
 
@@ -75,6 +82,13 @@ class LinkCommand extends Command {
       siteData = results[0]
       state.set('siteId', siteData.id)
       this.log(`Linked to ${siteData.name} in ${path.relative(path.join(process.cwd(), '..'), state.path)}`)
+
+      await track('sites_linked',  {
+        siteId: siteData.id,
+        linkType: 'manual',
+        kind: 'byName'
+      })
+
       return this.exit()
     }
 

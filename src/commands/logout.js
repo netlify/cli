@@ -1,14 +1,19 @@
 const Command = require('../base')
 const renderShortDesc = require('../utils/renderShortDescription')
+const { track } = require('../utils/telemetry')
 
 class LogoutCommand extends Command {
   async run() {
     const accessToken = this.getAuthToken()
 
     if (accessToken) {
+      await track('user_logout')
+
       // unset userID without deleting key
       this.netlify.globalConfig.set('userId', null)
+
       this.log(`Logging you out of Netlify. Come back soon!`)
+
     } else {
       this.log(`Already logged out`)
     }

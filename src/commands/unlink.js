@@ -1,5 +1,6 @@
 const Command = require('../base')
 const renderShortDesc = require('../utils/renderShortDescription')
+const { track } = require('../utils/telemetry')
 
 class UnlinkCommand extends Command {
   async run() {
@@ -19,6 +20,10 @@ class UnlinkCommand extends Command {
     }
 
     state.delete('siteId')
+
+    await track('sites_unlinked',  {
+      siteId: siteData.id,
+    })
 
     this.log(`Unlinked ${site.configPath} from ${siteData ? siteData.name : siteId}`)
   }

@@ -80,7 +80,7 @@ function track(eventName, payload) {
   }
 
   const defaultProperties = {
-    cliId: cliId
+    // cliId: cliId
   }
 
   delete properties.force

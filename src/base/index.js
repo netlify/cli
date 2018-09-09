@@ -84,11 +84,14 @@ class BaseCommand extends Command {
       // Set user data
       this.netlify.globalConfig.set(`users.${userID}`, userData)
 
-      identify({
+      const email = accountInfo.billing_email
+      await identify({
         name: accountInfo.name || accountInfo.billing_name,
-        email: accountInfo.billing_email,
+        email: email,
       }).then(() => {
-        track('cli:user_login')
+        return track('user_login', {
+          email: email
+        })
       })
 
     }

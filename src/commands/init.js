@@ -1,5 +1,6 @@
 const { flags } = require('@oclif/command')
 const chalk = require('chalk')
+const get = require('lodash.get')
 const Command = require('../base')
 const SitesWatchCommand = require('./watch')
 const configManual = require('../utils/init/config-manual')
@@ -9,7 +10,7 @@ const getRepoData = require('../utils/getRepoData')
 const inquirer = require('inquirer')
 const SitesCreateCommand = require('./sites/create')
 const LinkCommand = require('./link')
-const get = require('lodash.get')
+const { track } = require('../utils/telemetry')
 
 class InitCommand extends Command {
   async run() {
@@ -90,6 +91,9 @@ git remote add origin https://github.com/YourUserName/RepoName.git
 
     // create site or search for one
     if (initChoice === NEW_SITE) {
+      await track('sites_initStarted', {
+        type: 'new site'
+      })
       // run site:create command
       siteData = await SitesCreateCommand.run([])
     } else if (initChoice === EXISTING_SITE) {
