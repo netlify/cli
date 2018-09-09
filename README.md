@@ -68,31 +68,13 @@ netlify logout
 
 This will remove the access key from the `.netlify/config.json` file in your home folder.
 
-### Obtain a Token in the Netlify UI
-
-You can generate an access token manually in your Netlify account settings under [**OAuth applications**](https://app.netlify.com/applications).
-
-1. Under **Personal access tokens**, select **New access token**.
-2. Enter a description and select **Generate token**.
-3. Copy the generated token to your clipboard. Once you navigate from the page, the token cannot be seen again.
-4. On the computer where you want to run Netlify CLI, create a `.netlify` folder inside the home folder, and a `config.json` file inside of that.
-5. Add the following line to the `config.json` file:
-
-   ```json
-   {
-   "accessToken": "PASTE_YOUR_ACCESS_TOKEN_HERE"
-   }
-   ```
-
-Netlify CLI will use the access token in that location automatically.
-
 ### Revoking Access
 
 To revoke access to your account for Netlify CLI, go to the [**OAuth applications**](https://app.netlify.com/applications) section of your account settings. Find the appropriate token or application, and select **Revoke**.
 
 ## Continuous Deployment
 
-With [continuous deployment](https://www.netlify.com/docs/continuous-deployment), Netlify will automatically deploy new versions of your site when you push commits to your connected Git repository. This also enables features like Deploy Previews, branch deploys, and [split testing](https://www.netlify.com/docs/split-testing). (Some of these features must be enabled in the Netlify UI.)
+With [continuous deployment](https://www.netlify.com/docs/continuous-deployment), Netlify will automatically deploy new versions of your site when you push commits to your connected Git repository. This also enables features like Deploy Previews, branch deploys, and [split testing](https://www.netlify.com/docs/split-testing). (Split testing must be enabled in the Netlify UI.)
 
 ### Automated Setup
 
@@ -131,11 +113,15 @@ A common use case for this command is when you're using a separate Continuous In
 
 ### Create a new site
 
-In order manually deploy, you need to connect to a site on Netlify. You can create a site by dropping a folder into the Netlify UI, or you can create one from the command line with the following command:
+To create a new Netlify site with the CLI, run the `netlify init` command in your site folder.
 
 ```bash
-netlify sites:create
+netlify init
+
+# Then Choose "Create & configure a new site in Netlify"
 ```
+
+Proceed through the prompts to finish configuring your site.
 
 ### Link to a Site
 
@@ -145,7 +131,7 @@ Linking to a site tells Netlify CLI which site the current directory should depl
 netlify link
 ```
 
-This will add a `siteId` field to a new file inside your project folder, at `.netlify/config.json`. To unlink your folder from the site, you can remove this field, or you can run the following command from inside the project folder:
+This will add a `siteId` field to a new file inside your project folder, at `.netlify/state.json`. To unlink your folder from the site, you can remove this field, or you can run the following command from inside the project folder:
 
 ```bash
 netlify unlink
