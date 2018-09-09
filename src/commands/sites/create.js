@@ -5,6 +5,7 @@ const prettyjson = require('prettyjson')
 const chalk = require('chalk')
 const Command = require('../../base')
 const renderShortDesc = require('../../utils/renderShortDescription')
+const { track } = require('../../utils/telemetry')
 
 class SitesCreateCommand extends Command {
   async run() {
@@ -51,14 +52,24 @@ class SitesCreateCommand extends Command {
       this.log()
       this.log(chalk.greenBright.bold.underline(`Site Created`))
       this.log()
+
+      const url = site.ssl_url || site.url
       this.log(
         prettyjson.render({
           'Admin URL': site.admin_url,
-          URL: site.url,
+          URL: url,
           'Site ID': site.id
         })
       )
+
       this.log()
+
+      track('sites_created', {
+        siteId: site.id,
+        adminUrl: site.admin_url,
+        siteUrl: url
+      })
+
       return site
     }
   }

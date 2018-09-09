@@ -1,15 +1,17 @@
 const inquirer = require('inquirer')
 const chalk = require('chalk')
-const getRepoData = require('../getRepoData')
 const isEmpty = require('lodash.isempty')
+const getRepoData = require('../getRepoData')
+const { track } = require('../telemetry')
 
 module.exports = async function linkPrompts(context) {
   const { api, state } = context.netlify
-  let site
-  let GIT_REMOTE_PROMPT = `Use current git remote URL`
+
   const SITE_NAME_PROMPT = 'Site Name'
   const SITE_ID_PROMPT = 'Site ID'
 
+  let GIT_REMOTE_PROMPT = `Use current git remote URL`
+  let site
   // Get git remote data if exists
   const repoInfo = await getRepoData()
 
@@ -41,8 +43,10 @@ module.exports = async function linkPrompts(context) {
     }
   ])
 
+  let kind
   switch (linkType) {
     case GIT_REMOTE_PROMPT: {
+      kind = 'gitRemote'
       if (repoInfo.error) {
         context.error(new Error(repoInfo.error))
       }
@@ -107,6 +111,7 @@ Run ${chalk.cyanBright('`git remote -v`')} to see a list of your git remotes.`))
       break
     }
     case SITE_NAME_PROMPT: {
+      kind = 'byName'
       const { siteName } = await inquirer.prompt([
         {
           type: 'input',
@@ -151,6 +156,7 @@ Run ${chalk.cyanBright('`git remote -v`')} to see a list of your git remotes.`))
       break
     }
     case SITE_ID_PROMPT: {
+      kind = 'bySiteId'
       const { siteId } = await inquirer.prompt([
         {
           type: 'input',
@@ -178,6 +184,12 @@ Run ${chalk.cyanBright('`git remote -v`')} to see a list of your git remotes.`))
 
   // Save site ID to config
   state.set('siteId', site.id)
+
+  await track('sites_linked',  {
+    siteId: site.id,
+    linkType: 'prompt',
+    kind: kind
+  })
 
   // Log output
   context.log()
