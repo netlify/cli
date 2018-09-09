@@ -10,9 +10,20 @@ Welcome to the Netlify CLI! The new 2.0 version (now in beta) was rebuilt from t
 <details>
 <summary>Click to expand</summary>
 
-- [Install & Setup](#install--setup)
-- [Usage](#usage)
-- [Commands](#commands)
+- [Installation](#installation)
+- [Authentication](#authentication)
+  * [Command-line Login](#command-line-login)
+  * [Revoking Access](#revoking-access)
+- [Continuous Deployment](#continuous-deployment)
+  * [Automated Setup](#automated-setup)
+  * [Manual Setup](#manual-setup)
+- [Manual Deploy](#manual-deploy)
+  * [Create a new site](#create-a-new-site)
+  * [Link to a Site](#link-to-a-site)
+  * [Deploy Your Files and Functions](#deploy-your-files-and-functions)
+  * [Production Deploys](#production-deploys)
+- [Inline Help](#inline-help)
+- [Full Command Reference](#full-command-reference)
   * [deploy](#deploy)
   * [init](#init)
   * [link](#link)

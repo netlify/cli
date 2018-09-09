@@ -17,8 +17,8 @@ netlify watch
 **Examples**
 
 ```bash
-$ netlify watch
-$ git push && netlify watch
+netlify watch
+git push && netlify watch
 ```
 
 
