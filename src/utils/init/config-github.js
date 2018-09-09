@@ -20,7 +20,6 @@ async function configGithub(ctx, site, repo) {
       userAgent: UA,
       note: `Netlify CLI ${os.userInfo().username}@${os.hostname()}`
     })
-    console.log('newToken', newToken)
     globalConfig.set(`users.${current}.auth.github`, newToken)
     ghtoken = newToken
   }
