@@ -21,9 +21,8 @@
     "test:lint": "eslint src",
     "test:deps": "dependency-check ./package.json --entry \"src/**/!(*.test).js\" --unused --missing --no-dev --no-peer -i @oclif/plugin-not-found -i @oclif/config -i @oclif/plugin-help",
     "watch": "nyc --reporter=lcov ava --watch",
-    "prepack": "oclif-dev manifest && oclif-dev readme && npm shrinkwrap",
+    "prepack": "oclif-dev manifest && npm shrinkwrap",
     "postpack": "rm -f oclif.manifest.json npm-shrinkwrap.json",
-    "version": "oclif-dev readme && git add README.md",
     "report": "nyc report --reporter=text-lcov | coveralls"
   },
   "ava": {
