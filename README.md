@@ -28,6 +28,7 @@ Welcome to the Netlify CLI! The new 2.0 version (now in beta) was rebuilt from t
   * [status](#status)
   * [unlink](#unlink)
   * [watch](#watch)
+  * [telemetry](#telemetry)
 - [Local Development](#local-development)
 
 </details>
@@ -52,19 +53,7 @@ After installing the CLI globally, connect the CLI to your Netlify account with 
 netlify login
 ```
 
-This will open a browser window, asking you to log in with Netlify and grant access to **Netlify Cli**.
-
-Once authorized, Netlify CLI will store your access token in your home folder, under `.netlify/config.json`. Netlify CLI will use the token in this location automatically for all future commands.
-
-You can also log out using Netlify CLI, with the following command:
-
-```bash
-netlify logout
-```
-
-**Revoking CLI Access**
-
-To revoke access to your account for Netlify CLI, go to the [**OAuth applications**](https://app.netlify.com/applications) section of your account settings. Find the appropriate token or application, and select **Revoke**.
+This will open a browser window, asking you to log in with Netlify and grant access to **Netlify CLI**. This will store your Netlify access token in your home folder, under `~/.netlify/config.json`.
 
 ## Usage
 
@@ -81,7 +70,7 @@ netlify [command] help
 
 To setup continuous deployment with the CLI, run:
 
-```bash
+```sh-session
 netlify init
 ```
 
@@ -94,13 +83,13 @@ The access token will be stored in your home folder, under `.netlify/config.json
 
 Linking to a site tells Netlify CLI which site the current directory should deploy to. To do this, run the following command from the base of your project directory:
 
-```bash
+```sh-session
 netlify link
 ```
 
 This will add a `siteId` field to a new file inside your project folder, at `.netlify/state.json`. To unlink your folder from the site, you can remove this field, or you can run the following command from inside the project folder:
 
-```bash
+```sh-session
 netlify unlink
 ```
 
@@ -109,7 +98,7 @@ netlify unlink
 
 To create a new Netlify site with the CLI, run the `netlify init` command in your site folder.
 
-```bash
+```sh-session
 netlify init
 ```
 
@@ -125,7 +114,7 @@ A common use case for this command is when you're using a separate Continuous In
 
 **To do a manual deployment with the CLI run:**
 
-```bash
+```sh-session
 netlify deploy
 
 # Optionally pass in the build directory
@@ -148,7 +137,7 @@ By default, all `deploys` are set to a draft preview URL.
 
 To do a manual deploy to production, use the `--prod` flag:
 
-```bash
+```sh-session
 # Deploy build folder to production
 netlify deploy --prod
 
@@ -221,32 +210,48 @@ Watch for site deploy to finish
 
 <!-- AUTO-GENERATED-CONTENT:END -->
 
+### telemetry
+
+By default, the CLI collects usage stats from logged in Netlify users. This is to constantly improve the developer experience of the tool and bake in better features.
+
+If you'd like to opt out of sending telemetry data, you can do so with the `--telemetry-disable` flag
+
+```sh-session
+# opt out of telemetry
+netlify --telemetry-disable
+
+# turn on telemetry
+netlify --telemetry-enable
+```
+
+Or edit the `telemetryDisabled` property of the `~/.netlify/config.json` file in your computers root directory.
+
+
 # Local Development
 
 1. Clone down the repo
 
-```command
+```sh-session
 $ git clone git@github.com:netlify/cli.git
 ```
 
 2. Install dependencies
 
-```command
+```sh-session
 $ npm install
 ```
 
 3. Run CLI locally during development
 
-```command
+```sh-session
 $ ./bin/run [command]
 ```
 
 When developing, you can use watch mode which will automatically run ava tests:
 
-```command
+```sh-session
 $ npm run watch
 ```
-
 
 [0]: https://img.shields.io/badge/stability-stable-green.svg
 [1]: https://nodejs.org/api/documentation.html#documentation_stability_index
