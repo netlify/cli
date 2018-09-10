@@ -39,7 +39,7 @@ module.exports = async (api, siteId, dir, fnDir, tomlPath, opts) => {
 
   opts.statusCb({
     type: 'hashing',
-    msg: `Finisihed hashing ${Object.keys(files).length} files and ${Object.keys(functions).length} functions`,
+    msg: `Finished hashing ${Object.keys(files).length} files and ${Object.keys(functions).length} functions`,
     phase: 'stop'
   })
 
