@@ -22,8 +22,8 @@ netlify open
 **Examples**
 
 ```bash
-$ netlify open:admin
-$ netlify open:site
+netlify open:admin
+netlify open:site
 ```
 
 ---

@@ -2,6 +2,7 @@ const Command = require('../base')
 const renderShortDesc = require('../utils/renderShortDescription')
 const openBrowser = require('../utils/open-browser')
 const path = require('path')
+const chalk = require('chalk')
 const { flags } = require('@oclif/command')
 const get = require('lodash.get')
 const fs = require('fs')
@@ -47,9 +48,20 @@ class DeployCommand extends Command {
       get(await api.getSite({ siteId }), 'build_settings.functions_dir')
 
     if (!deployFolder) {
-      this.error(
-        `Can't determine a deploy folder.  Please define one in your site settings, netlify.toml or pass one as a flag.`
-      )
+
+      this.log(`Can't determine a deploy folder.`)
+      this.log()
+      this.log('Please define one in your site settings, netlify.toml or pass one as a flag')
+      this.log()
+      this.log(`Example using CLI flag:
+
+# deploy to preview URL
+${chalk.cyanBright.bold('netlify deploy --dir your-build-directory')}
+
+# deploy to live URL with the --prod flag
+${chalk.cyanBright.bold('netlify deploy --dir your-build-directory --prod')}
+`)
+    this.exit()
     }
 
     // TODO go through the above resolution, and make sure the resolve algorithm makes sense
@@ -68,9 +80,9 @@ class DeployCommand extends Command {
     let results
     try {
       if (deployToProduction) {
-        this.log('Deploying to live site...')
+        this.log('Deploying to live site url...')
       } else {
-        this.log('Deploying to draft site...')
+        this.log('Deploying to draft url...')
       }
 
       results = await api.deploy(siteId, resolvedDeployPath, resolvedFunctionsPath, site.configPath, {
@@ -86,14 +98,25 @@ class DeployCommand extends Command {
     const deployUrl = get(results, 'deploy.deploy_ssl_url') || get(results, 'deploy.deploy_url')
 
     const msgData = {
-      URL: results.deploy.ssl_url || results.deploy.url,
       Logs: `${get(results, 'deploy.admin_url')}/deploys/${get(results, 'deploy.id')}`,
-      'Deploy URL': deployUrl
+      'Unique Deploy URL': deployUrl
     }
-    if (!deployToProduction) {
-      delete msgData.URL
+
+    if (deployToProduction) {
+      msgData['Live Url'] = siteUrl
+    } else {
+      delete msgData['Unique Deploy URL']
+      msgData['Live Draft Url'] = deployUrl
     }
+    this.log()
     this.log(prettyjson.render(msgData))
+
+    if (!deployToProduction) {
+      console.log()
+      console.log('If everything looks good on your draft URL. Take it live with the --prod flag')
+      console.log(`${chalk.cyanBright.bold('netlify deploy --prod')}`)
+      console.log()
+    }
 
     if (flags['open']) {
       const urlToOpen = (flags['prod']) ? siteUrl : deployUrl

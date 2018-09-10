@@ -25,8 +25,8 @@ netlify sites
 **Examples**
 
 ```bash
-$ netlify sites:create --name my-new-site
-$ netlify sites:list
+netlify sites:create --name my-new-site
+netlify sites:list
 ```
 
 ---

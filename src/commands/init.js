@@ -21,6 +21,7 @@ class InitCommand extends Command {
     await this.authenticate()
 
     const siteId = site.get('siteId')
+
     // const hasFlags = !isEmpty(flags)
     let siteData
     try {
@@ -31,21 +32,23 @@ class InitCommand extends Command {
 
     if (siteId && siteData) {
       const repoUrl = get(siteData, 'build_settings.repo_url')
+      this.log()
+      this.log(`${chalk.yellow('Warning:')} It looks like this site has already been initialized.`)
+      this.log()
+      this.log(`Site Name:  ${chalk.cyan(siteData.name)}`)
+      this.log(`Site Url:   ${chalk.cyan(siteData.ssl_url || siteData.url)}`)
       if (repoUrl) {
-        this.log()
-        this.log(`${chalk.yellow('Warning:')} It looks like this site has already been initialized.`)
-        this.log()
-        this.log(`Site Name:  ${chalk.cyan(siteData.name)}`)
-        this.log(`Site Url:   ${chalk.cyan(siteData.ssl_url || siteData.url)}`)
         this.log(`Site Repo:  ${chalk.cyan(repoUrl)}`)
-        this.log(`Site Id:    ${chalk.cyan(siteData.id)}`)
-        this.log(`Admin URL:  ${chalk.cyan(siteData.admin_url)}`)
-        this.log()
-
-        this.log(`To create a new site, Please run ${chalk.cyanBright.bold('netlify unlink')}`)
-        // TODO remove this.log(`Or delete the siteId from ${this.siteData.path}`)
-        this.exit()
       }
+      this.log(`Site Id:    ${chalk.cyan(siteData.id)}`)
+      this.log(`Admin URL:  ${chalk.cyan(siteData.admin_url)}`)
+      this.log()
+
+      this.log(`To disconnect this directory and create a new site (or link to another siteId)`)
+      this.log(`1. Run ${chalk.cyanBright.bold('netlify unlink')}`)
+      this.log(`2. Then run ${chalk.cyanBright.bold('netlify init')} again`)
+      // TODO remove this.log(`Or delete the siteId from ${this.siteData.path}`)
+      this.exit()
     }
 
     // Look for local repo
@@ -53,8 +56,14 @@ class InitCommand extends Command {
 
     if (repo.error) {
       console.log()
-      console.log(`${chalk.redBright('Git Repo Error (╯°□°）╯︵ ┻━┻')}`)
-      console.log()
+      console.log(`${chalk.redBright('No git remote found. (╯°□°）╯︵ ┻━┻')}`)
+      console.log(`
+It is recommended that you initialize a site that has a remote repository in Github.
+
+This will allow for Netlify Continuous deployment to build branch & PR previews.
+
+For more details on Netlify CI checkout the docs: http://bit.ly/2N0Jhy5
+`)
       let message
       switch (repo.error) {
         case 'Couldn\'t find origin url': {
@@ -68,6 +77,70 @@ git remote add origin https://github.com/YourUserName/RepoName.git
       if (message) {
         console.log(message)
       }
+
+      const NEW_SITE_NO_GIT = 'Yes, create manually deploy site'
+      const NO_ABORT = 'No, I will connect this with directory with github first'
+
+      const { noGitRemoteChoice } = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'noGitRemoteChoice',
+          message: 'Do you want to create a netlify site without a git repository?',
+          choices: [
+            NEW_SITE_NO_GIT,
+            NO_ABORT
+          ]
+        }
+      ])
+
+      // create site or search for one
+      if (noGitRemoteChoice === NEW_SITE_NO_GIT) {
+        // run site:create command
+        siteData = await SitesCreateCommand.run([])
+
+        console.log(`"${siteData.name}" site was created`)
+        console.log()
+        this.log(`To deploy to this site. Run your site build and then ${chalk.cyanBright.bold('netlify deploy')}`)
+
+        // Save to .netlify/state.json file
+        state.set('siteId', siteData.id)
+
+        // no github remote
+        this.exit()
+
+      } else if (noGitRemoteChoice === NO_ABORT) {
+        console.log()
+        console.log(`${chalk.bold('To initialize a new git repo follow the steps below.')}
+
+1. Initialize a new repo:
+
+   ${chalk.cyanBright.bold('git init')}
+
+2. Commit your files
+
+   ${chalk.cyanBright.bold('git add .')}
+
+3. Commit your files
+
+   ${chalk.cyanBright.bold('git commit -m \'initial commit\'')}
+
+4. Create a new repo in github ${chalk.cyanBright.bold('https://github.com/new')}
+
+5. Link the remote repo with this local directory
+
+   ${chalk.cyanBright.bold('git remote add origin git@github.com:YourGithubName/your-repo-slug.git')}
+
+6. Push up your files
+
+   ${chalk.cyanBright.bold('git push -u origin master')}
+
+7. Initialize your Netlify Site
+
+   ${chalk.cyanBright.bold('netlify init')}
+`)
+        this.exit()
+      }
+
       // Throw github remote error
       this.error(repo.error)
     }
