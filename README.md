@@ -35,10 +35,15 @@ Welcome to the Netlify CLI! The new 2.0 version (now in beta) was rebuilt from t
 
 ## Install & Setup
 
-To install Netlify CLI, you must first download and install [Node.js](https://nodejs.org/en/download/) on your computer. After that, open your terminal and run the following command from any directory:
+**Prerequisites**
+
+- [Node.js](https://nodejs.org/en/download/) 8+.
+- [Netlify User Account](http://app.netlify.com/)
+
+To install the Netlify CLI, run the following command in your terminal window:
 
 ```sh-session
-npm install netlify-cli@next -g
+npm install netlify-cli@beta -g
 ```
 
 After installing the CLI globally, connect the CLI to your Netlify account with the following command:
@@ -48,8 +53,6 @@ netlify login
 ```
 
 This will open a browser window, asking you to log in with Netlify and grant access to **Netlify Cli**.
-
-![](https://www.netlify.com/img/docs/cli/authorize-ui.png)
 
 Once authorized, Netlify CLI will store your access token in your home folder, under `.netlify/config.json`. Netlify CLI will use the token in this location automatically for all future commands.
 
