@@ -18,7 +18,7 @@ class StateConfig {
       return JSON.parse(fs.readFileSync(this.path, 'utf8'))
     } catch (err) {
       // Don't create if it doesn't exist
-      if (err.code === 'ENOENT') {
+      if (err.code === 'ENOENT' || err.code === 'ENOTDIR') {
         return {}
       }
 
