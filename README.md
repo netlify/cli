@@ -44,7 +44,7 @@ Welcome to the Netlify CLI! The new 2.0 version (now in beta) was rebuilt from t
 To install the Netlify CLI, run the following command in your terminal window:
 
 ```sh-session
-npm install netlify-cli@beta -g
+npm install netlify-cli@next -g
 ```
 
 After installing the CLI globally, connect the CLI to your Netlify account with the following command:
