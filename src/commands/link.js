@@ -84,7 +84,7 @@ class LinkCommand extends Command {
       this.log(`Linked to ${siteData.name} in ${path.relative(path.join(process.cwd(), '..'), state.path)}`)
 
       await track('sites_linked',  {
-        siteId: siteData.id,
+        siteId: siteData && siteData.id || siteId,
         linkType: 'manual',
         kind: 'byName'
       })

@@ -12,7 +12,7 @@ class UnlinkCommand extends Command {
       return this.exit()
     }
 
-    let siteData
+    let siteData = {}
     try {
       siteData = await this.netlify.api.getSite({ siteId })
     } catch (e) {
@@ -22,7 +22,7 @@ class UnlinkCommand extends Command {
     state.delete('siteId')
 
     await track('sites_unlinked',  {
-      siteId: siteData.id,
+      siteId: siteData.id || siteId,
     })
 
     this.log(`Unlinked ${site.configPath} from ${siteData ? siteData.name : siteId}`)
