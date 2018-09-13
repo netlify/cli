@@ -1,5 +1,5 @@
 const Command = require('../../base')
-const { getAddons, createAddon } = require('../../utils/api/addons')
+const { getAddons, createAddon } = require('netlify/src/addons')
 const parseRawFlags = require('../../utils/parseRawFlags')
 
 class addonsCreateCommand extends Command {

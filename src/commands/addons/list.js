@@ -1,7 +1,7 @@
 const AsciiTable = require('ascii-table')
 const { flags } = require('@oclif/command')
 const Command = require('../../base')
-const { getAddons } = require('../../utils/api/addons')
+const { getAddons } = require('netlify/src/addons')
 
 class AddonsListCommand extends Command {
   async run() {
@@ -40,7 +40,7 @@ class AddonsListCommand extends Command {
       return {
         namespace: addon.service_path.replace('/.netlify/', ''),
         name: addon.service_name,
-        id: addon.id,
+        id: addon.id
       }
     })
 

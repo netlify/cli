@@ -1,6 +1,6 @@
 # netlify-cli [beta]
-[![npm version][2]][3] [![build status][4]][5] [![windows build status][6]][7]
-[![coverage][12]][13] [![dependencies][14]][15] [![downloads][8]][9]
+[![npm version][npm-img]][npm] [![build status][travis-img]][travis] [![windows build status][av-img]][av]
+[![coverage][coverage-img]][coverage] [![dependencies][david-img]][david] [![downloads][dl-img]][dl]
 
 Welcome to the Netlify CLI! The new 2.0 version (now in beta) was rebuilt from the ground up to help improve the site building experience.
 
@@ -252,18 +252,15 @@ When developing, you can use watch mode which will automatically run ava tests:
 ```sh-session
 $ npm run watch
 ```
-
-[0]: https://img.shields.io/badge/stability-stable-green.svg
-[1]: https://nodejs.org/api/documentation.html#documentation_stability_index
-[2]: https://img.shields.io/npm/v/netlify-cli.svg
-[3]: https://npmjs.org/package/netlify-cli
-[4]: https://img.shields.io/travis/netlify/cli/master.svg
-[5]: https://travis-ci.org/netlify/cli
-[6]: https://ci.appveyor.com/api/projects/status/imk2qjc34ly7x11b/branch/master?svg=true
-[7]: https://ci.appveyor.com/project/netlify/cli
-[8]: https://img.shields.io/npm/dm/netlify-cli.svg
-[9]: https://npmjs.org/package/netlify-cli
-[12]: https://img.shields.io/coveralls/netlify/cli/master.svg
-[13]: https://coveralls.io/github/netlify/cli
-[14]: https://david-dm.org/netlify/cli/status.svg
-[15]: https://david-dm.org/netlify/cli
+[npm-img]: https://img.shields.io/npm/v/netlify-cli.svg
+[npm]: https://npmjs.org/package/netlify-cli
+[travis-img]: https://img.shields.io/travis/netlify/cli/master.svg
+[travis]: https://travis-ci.org/netlify/cli
+[av-img]: https://ci.appveyor.com/api/projects/status/imk2qjc34ly7x11b/branch/master?svg=true
+[av]: https://ci.appveyor.com/project/netlify/cli
+[dl-img]: https://img.shields.io/npm/dm/netlify-cli.svg
+[dl]: https://npmjs.org/package/netlify-cli
+[coverage-img]: https://img.shields.io/coveralls/netlify/cli/master.svg
+[coverage]: https://coveralls.io/github/netlify/cli
+[david-img]: https://david-dm.org/netlify/cli/status.svg
+[david]: https://david-dm.org/netlify/cli
