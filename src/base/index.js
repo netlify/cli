@@ -6,7 +6,7 @@ const State = require('./state')
 const openBrowser = require('../utils/open-browser')
 const projectRoot = require('./utils/projectRoot')
 const { track, identify } = require('../utils/telemetry')
-const API = require('../utils/api')
+const API = require('netlify')
 
 // Netlify CLI client id. Lives in bot@netlify.com
 // Todo setup client for multiple environments
@@ -33,7 +33,7 @@ class BaseCommand extends Command {
       // global cli config
       globalConfig: globalConfig,
       // state of current site dir
-      state: state,
+      state: state
     }
   }
   getAuthToken() {
@@ -87,13 +87,12 @@ class BaseCommand extends Command {
       const email = accountInfo.billing_email
       await identify({
         name: accountInfo.name || accountInfo.billing_name,
-        email: email,
+        email: email
       }).then(() => {
         return track('user_login', {
           email: email
         })
       })
-
     }
     // Log success
     this.log()

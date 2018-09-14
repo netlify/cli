@@ -1,8 +1,7 @@
 const mergewith = require('lodash.mergewith')
 const Command = require('../../base')
-const { getAddons, updateAddon } = require('../../utils/api/addons')
+const { getAddons, updateAddon } = require('netlify/src/addons')
 const parseRawFlags = require('../../utils/parseRawFlags')
-
 
 class addonsUpdateCommand extends Command {
   async run() {
@@ -33,7 +32,7 @@ class addonsUpdateCommand extends Command {
 
     // Filter down addons to current args.name
     const currentAddon = addons.reduce((acc, current) => {
-      if (current.service_path && (current.service_path.replace('/.netlify/', '')) === addonName) {
+      if (current.service_path && current.service_path.replace('/.netlify/', '') === addonName) {
         return current
       }
       return {}
@@ -79,20 +78,17 @@ addonsUpdateCommand.description = `Update an addon extension
 Addons are a way to extend the functionality of your Netlify site
 `
 
-
 addonsUpdateCommand.args = [
   {
     name: 'name',
     required: true,
-    description: 'addon namespace',
+    description: 'addon namespace'
   }
 ]
-
 
 addonsUpdateCommand.hidden = true
 
 // allow for any flags. Handy for variadic configuration options
 addonsUpdateCommand.strict = false
-
 
 module.exports = addonsUpdateCommand

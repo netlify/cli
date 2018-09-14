@@ -57,7 +57,7 @@ See [site-config](global-config/README.md)
 
 ### `this.netlify.api`
 
-An instance of the [`netlify`](../utils/api/README.md) api client.
+An instance of the [`netlify`](https://github.com/netlify/js-client) api client.
 
 #### `this.authenticate()`
 

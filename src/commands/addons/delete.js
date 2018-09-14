@@ -1,5 +1,5 @@
 const Command = require('../../base')
-const { getAddons, deleteAddon } = require('../../utils/api/addons')
+const { getAddons, deleteAddon } = require('netlify/src/addons')
 // const parseRawFlags = require('../../utils/parseRawFlags')
 
 class addonsDeleteCommand extends Command {
