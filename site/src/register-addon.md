@@ -28,7 +28,7 @@ This would create a new instance of `your-addon-namespace` for that Netlify Site
 
 Do you have an addon idea that you'd like to create? Let us know
 
-<form name="register-addon" action="/register-addon-thanks" method="POST" netlify>
+<form name="register-addon" action="/register-addon-thanks" method="post" data-netlify="true">
   <input type="hidden" name="form-name" value="register-addon" />
   <p>
     <div>
