@@ -9,14 +9,15 @@ class SitesListCommand extends Command {
     const { api } = this.netlify
     await this.authenticate()
 
-    const sites = await api.listSites()
+    const sites = await api.listSites({ filter: 'all' })
 
     if (sites && sites.length) {
       const logSites = sites.map(site => {
         const siteInfo = {
           id: site.id,
           name: site.name,
-          ssl_url: site.ssl_url
+          ssl_url: site.ssl_url,
+          account_name: site.account_name
         }
 
         if (site.build_settings && site.build_settings.repo_url) {
@@ -36,7 +37,7 @@ class SitesListCommand extends Command {
         return false
       }
 
-this.log(`
+      this.log(`
 ────────────────────────────┐
    Current Netlify Sites    │
 ────────────────────────────┘
@@ -47,6 +48,9 @@ this.log(`
         console.log(`  ${chalk.whiteBright.bold('url:')}  ${chalk.yellowBright(s.ssl_url)}`)
         if (s.repo_url) {
           console.log(`  ${chalk.whiteBright.bold('repo:')} ${chalk.white(s.repo_url)}`)
+        }
+        if (s.account_name) {
+          console.log(`  ${chalk.whiteBright.bold('account:')} ${chalk.white(s.account_name)}`)
         }
         console.log(`─────────────────────────────────────────────────`)
       })

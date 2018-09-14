@@ -38,9 +38,7 @@ class DeployCommand extends Command {
 
     // TODO: abstract settings lookup
     const deployFolder =
-      flags['dir'] ||
-      get(site.config, 'build.publish') ||
-      get(await api.getSite({ siteId }), 'build_settings.dir')
+      flags['dir'] || get(site.config, 'build.publish') || get(await api.getSite({ siteId }), 'build_settings.dir')
 
     const functionsFolder =
       flags.functions ||
@@ -48,7 +46,6 @@ class DeployCommand extends Command {
       get(await api.getSite({ siteId }), 'build_settings.functions_dir')
 
     if (!deployFolder) {
-
       this.log(`Can't determine a deploy folder.`)
       this.log()
       this.log('Please define one in your site settings, netlify.toml or pass one as a flag')
@@ -61,7 +58,7 @@ ${chalk.cyanBright.bold('netlify deploy --dir your-build-directory')}
 # deploy to live URL with the --prod flag
 ${chalk.cyanBright.bold('netlify deploy --dir your-build-directory --prod')}
 `)
-    this.exit()
+      this.exit()
     }
 
     // TODO go through the above resolution, and make sure the resolve algorithm makes sense
@@ -85,7 +82,9 @@ ${chalk.cyanBright.bold('netlify deploy --dir your-build-directory --prod')}
         this.log('Deploying to draft url...')
       }
 
-      results = await api.deploy(siteId, resolvedDeployPath, resolvedFunctionsPath, site.configPath, {
+      results = await api.deploy(siteId, resolvedDeployPath, {
+        tomlPath: site.configPath,
+        fnDir: resolvedFunctionsPath,
         statusCb: deployProgressCb(this),
         draft: !deployToProduction
       })
@@ -119,7 +118,7 @@ ${chalk.cyanBright.bold('netlify deploy --dir your-build-directory --prod')}
     }
 
     if (flags['open']) {
-      const urlToOpen = (flags['prod']) ? siteUrl : deployUrl
+      const urlToOpen = flags['prod'] ? siteUrl : deployUrl
       await openBrowser(urlToOpen)
       this.exit()
     }
@@ -131,11 +130,7 @@ DeployCommand.description = `${renderShortDesc(`Create a new deploy from the con
 Deploys from the build settings found in the netlify.toml file, or settings from the api.
 `
 
-DeployCommand.examples = [
-  'netlify deploy',
-  'netlify deploy --prod',
-  'netlify deploy --prod --open'
-]
+DeployCommand.examples = ['netlify deploy', 'netlify deploy --prod', 'netlify deploy --prod --open']
 
 DeployCommand.flags = {
   dir: flags.string({
@@ -149,12 +144,12 @@ DeployCommand.flags = {
   prod: flags.boolean({
     char: 'p',
     description: 'Deploy to production',
-    default: false,
+    default: false
   }),
   open: flags.boolean({
     char: 'o',
     description: 'Open site after deploy',
-    default: false,
+    default: false
   })
 }
 
