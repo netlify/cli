@@ -457,6 +457,7 @@ export default class Layout extends React.Component {
 
     // Set page title
     let pageTitle = '404 not found'
+    console.log('route.module', route.module)
     if (route.module) {
       const frontMatter = route.module.frontMatter
       if (frontMatter.title) {
