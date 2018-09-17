@@ -97,7 +97,7 @@ ${chalk.cyanBright.bold('netlify deploy --dir your-build-directory --prod')}
       results = await api.deploy(siteId, resolvedDeployPath, {
         tomlPath: configPath,
         fnDir: resolvedFunctionsPath,
-        statusCb: deployProgressCb(this),
+        statusCb: deployProgressCb(),
         draft: !deployToProduction
       })
     } catch (e) {
@@ -165,7 +165,7 @@ DeployCommand.flags = {
   })
 }
 
-function deployProgressCb(ctx) {
+function deployProgressCb() {
   const events = {}
   /* statusObj: {
             type: name-of-step
