@@ -98,7 +98,8 @@ ${chalk.cyanBright.bold('netlify deploy --dir your-build-directory --prod')}
         tomlPath: configPath,
         fnDir: resolvedFunctionsPath,
         statusCb: deployProgressCb(),
-        draft: !deployToProduction
+        draft: !deployToProduction,
+        message: flags.message
       })
     } catch (e) {
       this.error(e)
@@ -162,6 +163,10 @@ DeployCommand.flags = {
     char: 'o',
     description: 'Open site after deploy',
     default: false
+  }),
+  message: flags.string({
+    char: 'm',
+    description: 'A short message to include in the deploy log'
   })
 }
 
