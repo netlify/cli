@@ -63,8 +63,20 @@ ${chalk.cyanBright.bold('netlify deploy --dir your-build-directory --prod')}
 
     // TODO go through the above resolution, and make sure the resolve algorithm makes sense
     const resolvedDeployPath = path.resolve(site.root, deployFolder)
+    const pathInfo = {
+      'Deploy path': resolvedDeployPath
+    }
     let resolvedFunctionsPath
-    if (functionsFolder) resolvedFunctionsPath = path.resolve(site.root, functionsFolder)
+    if (functionsFolder) {
+      resolvedFunctionsPath = path.resolve(site.root, functionsFolder)
+      pathInfo['Functions path'] = resolvedFunctionsPath
+    }
+    let configPath
+    if (site.configPath) {
+      configPath = site.configPath
+      pathInfo['Configuration path'] = configPath
+    }
+    this.log(prettyjson.render(pathInfo))
 
     // cliUx.action.start(`Starting a deploy from ${resolvedDeployPath}`)
 
@@ -83,9 +95,9 @@ ${chalk.cyanBright.bold('netlify deploy --dir your-build-directory --prod')}
       }
 
       results = await api.deploy(siteId, resolvedDeployPath, {
-        tomlPath: site.configPath,
+        tomlPath: configPath,
         fnDir: resolvedFunctionsPath,
-        statusCb: deployProgressCb(this),
+        statusCb: deployProgressCb(),
         draft: !deployToProduction
       })
     } catch (e) {
@@ -153,7 +165,7 @@ DeployCommand.flags = {
   })
 }
 
-function deployProgressCb(ctx) {
+function deployProgressCb() {
   const events = {}
   /* statusObj: {
             type: name-of-step
