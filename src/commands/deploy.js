@@ -102,7 +102,23 @@ ${chalk.cyanBright.bold('netlify deploy --dir your-build-directory --prod')}
         message: flags.message
       })
     } catch (e) {
-      this.error(e)
+      switch (true) {
+        case e.name === 'JSONHTTPError': {
+          this.error(e.json.message)
+          return
+        }
+        case e.name === 'TextHTTPError': {
+          this.error(e.data)
+          return
+        }
+        case e.message && e.message.includes('Invalid filename'): {
+          this.error(e.message)
+          return
+        }
+        default: {
+          this.error(JSON.stringify(e, null, ' '))
+        }
+      }
     }
     // cliUx.action.stop(`Finished deploy ${results.deployId}`)
 
