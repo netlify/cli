@@ -11,6 +11,7 @@ const ora = require('ora')
 const logSymbols = require('log-symbols')
 const cliSpinnerNames = Object.keys(require('cli-spinners'))
 const randomItem = require('random-item')
+const util = require('util')
 
 class DeployCommand extends Command {
   async run() {
@@ -78,8 +79,6 @@ ${chalk.cyanBright.bold('netlify deploy --dir your-build-directory --prod')}
     }
     this.log(prettyjson.render(pathInfo))
 
-    // cliUx.action.start(`Starting a deploy from ${resolvedDeployPath}`)
-
     ensureDirectory(resolvedDeployPath, this.exit)
 
     if (resolvedFunctionsPath) {
@@ -111,6 +110,13 @@ ${chalk.cyanBright.bold('netlify deploy --dir your-build-directory --prod')}
           this.error(e.data)
           return
         }
+        case e.name === 'FetchError': {
+          this.warn('An error occurred with the request:')
+          this.warn(e.url)
+          util.inspect(e.data, { depth: Infinity })
+          this.error(e)
+          return
+        }
         case e.message && e.message.includes('Invalid filename'): {
           this.error(e.message)
           return
@@ -120,7 +126,6 @@ ${chalk.cyanBright.bold('netlify deploy --dir your-build-directory --prod')}
         }
       }
     }
-    // cliUx.action.stop(`Finished deploy ${results.deployId}`)
 
     const siteUrl = results.deploy.ssl_url || results.deploy.url
     const deployUrl = get(results, 'deploy.deploy_ssl_url') || get(results, 'deploy.deploy_url')
