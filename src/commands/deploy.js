@@ -11,6 +11,7 @@ const ora = require('ora')
 const logSymbols = require('log-symbols')
 const cliSpinnerNames = Object.keys(require('cli-spinners'))
 const randomItem = require('random-item')
+const util = require('util')
 
 class DeployCommand extends Command {
   async run() {
@@ -78,8 +79,6 @@ ${chalk.cyanBright.bold('netlify deploy --dir your-build-directory --prod')}
     }
     this.log(prettyjson.render(pathInfo))
 
-    // cliUx.action.start(`Starting a deploy from ${resolvedDeployPath}`)
-
     ensureDirectory(resolvedDeployPath, this.exit)
 
     if (resolvedFunctionsPath) {
@@ -97,9 +96,10 @@ ${chalk.cyanBright.bold('netlify deploy --dir your-build-directory --prod')}
       results = await api.deploy(siteId, resolvedDeployPath, {
         tomlPath: configPath,
         fnDir: resolvedFunctionsPath,
-        statusCb: deployProgressCb(),
+        statusCb: deployProgressCb(this),
         draft: !deployToProduction,
-        message: flags.message
+        message: flags.message,
+        deployTimeout: flags['deploy-timeout']
       })
     } catch (e) {
       switch (true) {
@@ -111,6 +111,14 @@ ${chalk.cyanBright.bold('netlify deploy --dir your-build-directory --prod')}
           this.error(e.data)
           return
         }
+        case e.name === 'FetchError': {
+          this.warn('An error occurred with the request:')
+          this.warn(e.url)
+          util.inspect(e.data, { depth: Infinity })
+          this.warn(`Node version: ` + process.version)
+          this.error(e)
+          return
+        }
         case e.message && e.message.includes('Invalid filename'): {
           this.error(e.message)
           return
@@ -120,7 +128,6 @@ ${chalk.cyanBright.bold('netlify deploy --dir your-build-directory --prod')}
         }
       }
     }
-    // cliUx.action.stop(`Finished deploy ${results.deployId}`)
 
     const siteUrl = results.deploy.ssl_url || results.deploy.url
     const deployUrl = get(results, 'deploy.deploy_ssl_url') || get(results, 'deploy.deploy_url')
@@ -183,10 +190,13 @@ DeployCommand.flags = {
   message: flags.string({
     char: 'm',
     description: 'A short message to include in the deploy log'
+  }),
+  'deploy-timeout': flags.string({
+    description: 'The amount of time to wait before the CLI stops polling for the deploy to finish'
   })
 }
 
-function deployProgressCb() {
+function deployProgressCb(ctx) {
   const events = {}
   /* statusObj: {
             type: name-of-step
@@ -207,6 +217,10 @@ function deployProgressCb() {
       case 'progress': {
         const spinner = events[ev.type]
         if (spinner) spinner.text = ev.msg
+        return
+      }
+      case 'message': {
+        ctx.warn(ev.message)
         return
       }
       case 'stop':
