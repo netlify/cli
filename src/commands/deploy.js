@@ -114,6 +114,7 @@ ${chalk.cyanBright.bold('netlify deploy --dir your-build-directory --prod')}
           this.warn('An error occurred with the request:')
           this.warn(e.url)
           util.inspect(e.data, { depth: Infinity })
+          this.warn(`Node version: ` + process.version)
           this.error(e)
           return
         }
