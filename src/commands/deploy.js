@@ -96,9 +96,10 @@ ${chalk.cyanBright.bold('netlify deploy --dir your-build-directory --prod')}
       results = await api.deploy(siteId, resolvedDeployPath, {
         tomlPath: configPath,
         fnDir: resolvedFunctionsPath,
-        statusCb: deployProgressCb(),
+        statusCb: deployProgressCb(this),
         draft: !deployToProduction,
-        message: flags.message
+        message: flags.message,
+        deployTimeout: flags['deploy-timeout']
       })
     } catch (e) {
       switch (true) {
@@ -189,10 +190,13 @@ DeployCommand.flags = {
   message: flags.string({
     char: 'm',
     description: 'A short message to include in the deploy log'
+  }),
+  'deploy-timeout': flags.string({
+    description: 'The amount of time to wait before the CLI stops polling for the deploy to finish'
   })
 }
 
-function deployProgressCb() {
+function deployProgressCb(ctx) {
   const events = {}
   /* statusObj: {
             type: name-of-step
@@ -213,6 +217,10 @@ function deployProgressCb() {
       case 'progress': {
         const spinner = events[ev.type]
         if (spinner) spinner.text = ev.msg
+        return
+      }
+      case 'message': {
+        ctx.warn(ev.message)
         return
       }
       case 'stop':
