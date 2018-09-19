@@ -12,7 +12,7 @@ class StatusHooksCommand extends Command {
       this.error(`Not logged in. Log in to see site status.`)
     }
 
-    const siteId = site.get('siteId')
+    const siteId = site.id
     if (!siteId) {
       this.warn('Did you run `netlify link` yet?')
       this.error(`You don't appear to be in a folder that is linked to a site`)

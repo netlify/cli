@@ -20,7 +20,7 @@ class InitCommand extends Command {
     // Check logged in status
     await this.authenticate()
 
-    const siteId = site.get('siteId')
+    const siteId = site.id
 
     // const hasFlags = !isEmpty(flags)
     let siteData

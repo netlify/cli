@@ -14,7 +14,7 @@ class addonsDeleteCommand extends Command {
 
     const addonName = args.name
 
-    const siteId = site.get('siteId')
+    const siteId = site.id
 
     if (!siteId) {
       console.log('No site id found, please run inside a site folder or `netlify link`')

@@ -11,7 +11,7 @@ class OpenAdminCommand extends Command {
       this.error(`Not logged in. Please run \`netlify login\` and try again`)
     }
 
-    const siteId = site.get('siteId')
+    const siteId = site.id
 
     if (!siteId) {
       this.warn(`No Site ID found in current directory.

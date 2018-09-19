@@ -5,7 +5,7 @@ const { track } = require('../utils/telemetry')
 class UnlinkCommand extends Command {
   async run() {
     const { site, state } = this.netlify
-    const siteId = site.get('siteId')
+    const siteId = site.id
 
     if (!siteId) {
       this.log(`Folder is not linked to a Netlify site`)

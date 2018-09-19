@@ -12,7 +12,7 @@ class LinkCommand extends Command {
 
     const { flags } = this.parse(LinkCommand)
     const { api, site, state } = this.netlify
-    const siteId = site.get('siteId')
+    const siteId = site.id
 
     let siteData
     try {

@@ -13,7 +13,7 @@ class AddonsListCommand extends Command {
       this.error(`Not logged in`)
     }
 
-    const siteId = site.get('siteId')
+    const siteId = site.id
 
     if (!siteId) {
       console.log('No site id found, please run inside a site folder or `netlify link`')

@@ -24,7 +24,7 @@ class DeployCommand extends Command {
       this.error(`Not logged in. Log in to deploy to a site`)
     }
 
-    const siteId = site.get('siteId')
+    const siteId = site.id
     if (!siteId) {
       this.log('Please link project to a netlify site first')
       this.exit()

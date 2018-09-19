@@ -14,7 +14,7 @@ class addonsUpdateCommand extends Command {
 
     const addonName = args.name
 
-    const siteId = this.netlify.site.get('siteId')
+    const siteId = this.netlify.site.id
 
     if (!siteId) {
       console.log('No site id found, please run inside a site folder or `netlify link`')

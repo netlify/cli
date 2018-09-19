@@ -11,7 +11,7 @@ class StatusCommand extends Command {
     const current = globalConfig.get('userId')
     const accessToken = this.getAuthToken()
 
-    const siteId = site.get('siteId')
+    const siteId = site.id
 
     this.log(`──────────────────────┐
  Current Netlify User │

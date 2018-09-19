@@ -1,6 +1,7 @@
 const Command = require('../../base')
 const { getAddons, createAddon } = require('netlify/src/addons')
 const parseRawFlags = require('../../utils/parseRawFlags')
+const util = require('util')
 
 class addonsCreateCommand extends Command {
   async run() {
@@ -14,7 +15,13 @@ class addonsCreateCommand extends Command {
 
     const addonName = args.name
 
-    const siteId = site.get('siteId')
+    //if(!addonName) {
+      // console.log('create', this.netlify)
+      console.log(util.inspect(this.netlify, false, null, true /* enable colors */))
+      this.exit()
+    //}
+
+    const siteId = site.id
 
     if (!siteId) {
       console.log('No site id found, please run inside a site folder or `netlify link`')
