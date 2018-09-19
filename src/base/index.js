@@ -1,12 +1,14 @@
 const { Command } = require('@oclif/command')
 const chalk = require('chalk')
+const API = require('netlify')
+const path = require('path')
+const minimist = require('minimist')
+const Configorama = require('configorama')
 const globalConfig = require('./global-config')
-const siteConfig = require('./site-config')
 const State = require('./state')
 const openBrowser = require('../utils/open-browser')
 const projectRoot = require('./utils/projectRoot')
 const { track, identify } = require('../utils/telemetry')
-const API = require('netlify')
 
 // Netlify CLI client id. Lives in bot@netlify.com
 // Todo setup client for multiple environments
@@ -15,21 +17,33 @@ const CLIENT_ID = 'd6f37de6614df7ae58664cfca524744d73807a377f5ee71f1a254f78412e3
 class BaseCommand extends Command {
   constructor(...args) {
     super(...args)
+  }
+  // Initialize context
+  async init(err) {
+    // Grab netlify API token
+    const token = this.getAuthToken()
+
+    const configPath = path.join(projectRoot, 'netlify.toml')
 
     // Get site id & build state
     const state = new State(projectRoot)
 
-    // Pull in siteConfig from toml
-    const siteConf = siteConfig(projectRoot, state)
+    // populated configuration information
+    const configInstance = new Configorama(configPath)
 
-    // Grab netlify API token
-    const token = this.getAuthToken()
+    // resolve config values
+    const args = minimist(process.argv.slice(2))
+    const config = await configInstance.init(args)
 
     this.netlify = {
       // api methods
       api: new API(token),
       // current site context
-      site: siteConf,
+      site: {
+        id: state.get('siteId'),
+      },
+      // Configuration from netlify.[toml/yml]
+      config: config,
       // global cli config
       globalConfig: globalConfig,
       // state of current site dir
