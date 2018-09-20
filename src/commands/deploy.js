@@ -11,12 +11,15 @@ const ora = require('ora')
 const logSymbols = require('log-symbols')
 const cliSpinnerNames = Object.keys(require('cli-spinners'))
 const randomItem = require('random-item')
+const inquirer = require('inquirer')
+const SitesCreateCommand = require('./sites/create')
+const LinkCommand = require('./link')
 
 class DeployCommand extends Command {
   async run() {
     const accessToken = this.getAuthToken()
     const { flags } = this.parse(DeployCommand)
-    const { api, site } = this.netlify
+    const { api, site, state } = this.netlify
 
     const deployToProduction = flags.prod
 
@@ -24,52 +27,80 @@ class DeployCommand extends Command {
       this.error(`Not logged in. Log in to deploy to a site`)
     }
 
-    const siteId = site.get('siteId')
-    if (!siteId) {
-      this.log('Please link project to a netlify site first')
-      this.exit()
+    let siteData
+    if (!site.get('siteId')) {
+      this.log("This folder isn't linked to a site yet")
+      const NEW_SITE = '+  Create & configure a new site'
+      const EXISTING_SITE = '⇄  Link this directory to an existing site'
+
+      const initializeOpts = [EXISTING_SITE, NEW_SITE]
+
+      const { initChoice } = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'initChoice',
+          message: 'What would you like to do?',
+          choices: initializeOpts
+        }
+      ])
+      // create site or search for one
+      if (initChoice === NEW_SITE) {
+        // run site:create command
+        siteData = await SitesCreateCommand.run([])
+        state.set('siteId', siteData.id)
+      } else if (initChoice === EXISTING_SITE) {
+        // run link command
+        siteData = await LinkCommand.run([], false)
+      }
     } else {
       try {
-        await api.getSite({ siteId })
+        siteData = await api.getSite({ siteId: site.get('siteId') })
       } catch (e) {
+        // TODO specifically handle known cases (e.g. no account access)
         this.error(e.message)
       }
     }
 
     // TODO: abstract settings lookup
-    const deployFolder =
-      flags['dir'] || get(site.config, 'build.publish') || get(await api.getSite({ siteId }), 'build_settings.dir')
+    let deployFolder
+    if (flags['dir']) {
+      deployFolder = path.resolve(process.cwd(), flags['dir'])
+    } else if (get(site.config, 'build.publish')) {
+      deployFolder = path.resolve(site.root, get(site.config, 'build.publish'))
+    } else if (get(siteData, 'build_settings.dir')) {
+      deployFolder = path.resolve(site.root, get(siteData, 'build_settings.dir'))
+    }
 
-    const functionsFolder =
-      flags.functions ||
-      get(site.config, 'build.functions') ||
-      get(await api.getSite({ siteId }), 'build_settings.functions_dir')
+    let functionsFolder
+    if (flags['functions']) {
+      functionsFolder = path.resolve(process.cwd(), flags['functions'])
+    } else if (get(site.config, 'build.functions')) {
+      functionsFolder = path.resolve(site.root, get(site.config, 'build.functions'))
+    } else if (get(siteData, 'build_settings.functions_dir')) {
+      functionsFolder = path.resolve(site.root, get(siteData, 'build_settings.functions_dir'))
+    }
 
     if (!deployFolder) {
-      this.log(`Can't determine a deploy folder.`)
-      this.log()
-      this.log('Please define one in your site settings, netlify.toml or pass one as a flag')
-      this.log()
-      this.log(`Example using CLI flag:
-
-# deploy to preview URL
-${chalk.cyanBright.bold('netlify deploy --dir your-build-directory')}
-
-# deploy to live URL with the --prod flag
-${chalk.cyanBright.bold('netlify deploy --dir your-build-directory --prod')}
-`)
-      this.exit()
+      this.log('Please provide a deploy path relative to:')
+      this.log(process.cwd())
+      const { promptPath } = await inquirer.prompt([
+        {
+          type: 'input',
+          name: 'promptPath',
+          message: 'deploy path',
+          default: '.',
+          filter: input => path.resolve(process.cwd(), input)
+        }
+      ])
+      deployFolder = promptPath
     }
 
-    // TODO go through the above resolution, and make sure the resolve algorithm makes sense
-    const resolvedDeployPath = path.resolve(site.root, deployFolder)
     const pathInfo = {
-      'Deploy path': resolvedDeployPath
+      'Deploy path': deployFolder
     }
-    let resolvedFunctionsPath
+
     if (functionsFolder) {
-      resolvedFunctionsPath = path.resolve(site.root, functionsFolder)
-      pathInfo['Functions path'] = resolvedFunctionsPath
+      pathInfo['Functions path'] = functionsFolder
     }
     let configPath
     if (site.configPath) {
@@ -78,12 +109,10 @@ ${chalk.cyanBright.bold('netlify deploy --dir your-build-directory --prod')}
     }
     this.log(prettyjson.render(pathInfo))
 
-    // cliUx.action.start(`Starting a deploy from ${resolvedDeployPath}`)
+    ensureDirectory(deployFolder, this.exit)
 
-    ensureDirectory(resolvedDeployPath, this.exit)
-
-    if (resolvedFunctionsPath) {
-      ensureDirectory(resolvedFunctionsPath, this.exit)
+    if (functionsFolder) {
+      ensureDirectory(functionsFolder, this.exit)
     }
 
     let results
@@ -94,9 +123,9 @@ ${chalk.cyanBright.bold('netlify deploy --dir your-build-directory --prod')}
         this.log('Deploying to draft url...')
       }
 
-      results = await api.deploy(siteId, resolvedDeployPath, {
+      results = await api.deploy(site.get('siteId'), deployFolder, {
         tomlPath: configPath,
-        fnDir: resolvedFunctionsPath,
+        fnDir: functionsFolder,
         statusCb: deployProgressCb(),
         draft: !deployToProduction,
         message: flags.message
@@ -116,7 +145,7 @@ ${chalk.cyanBright.bold('netlify deploy --dir your-build-directory --prod')}
           return
         }
         default: {
-          this.error(JSON.stringify(e, null, ' '))
+          this.error(e)
         }
       }
     }
