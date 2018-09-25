@@ -124,7 +124,7 @@ class DeployCommand extends Command {
       }
 
       results = await api.deploy(site.get('siteId'), deployFolder, {
-        tomlPath: configPath,
+        configPath: configPath,
         fnDir: functionsFolder,
         statusCb: deployProgressCb(),
         draft: !deployToProduction,

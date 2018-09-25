@@ -11,14 +11,14 @@ function siteConfig(root, state) {
     root: root,
     configPath: configPath,
     config: getConfigData(configPath),
-    get: (key) => {
+    get: key => {
       if (key === 'siteId' || key === 'id') {
         // Get ID from state
         return state.get('siteId')
       }
       const currentConfig = siteConfig(root, state)
       return dotProp.get(currentConfig, key)
-    },
+    }
     // TODO set Set will need AST parser for yml support
   }
 
@@ -51,10 +51,10 @@ function getConfigData(configPath) {
 
 function getConfigPath(root) {
   // TODO support more formats
-  const tomlPath = path.join(root, 'netlify.toml')
+  const configPath = path.join(root, 'netlify.toml')
 
-  if (fileExistsSync(tomlPath)) {
-    return tomlPath
+  if (fileExistsSync(configPath)) {
+    return configPath
   }
 
   return undefined
