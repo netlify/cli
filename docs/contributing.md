@@ -6,4 +6,4 @@ title: Contributing to the Netlify CLI
 
 If you'd like to contribute to the CLI please checkout the repo!
 
-[CLI repo](https://github.com/netlify/cli)
+[CLI repo](https://github.com/netlify/cli/blob/master/CONTRIBUTING.md)
