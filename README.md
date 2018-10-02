@@ -34,18 +34,20 @@ Welcome to the Netlify CLI! The new 2.0 version (now in beta) was rebuilt from t
 </details>
 <!-- AUTO-GENERATED-CONTENT:END -->
 
-## Install & Setup
+## Installation
 
 **Prerequisites**
 
 - [Node.js](https://nodejs.org/en/download/) 8+.
 - [Netlify User Account](http://app.netlify.com/)
 
-To install the Netlify CLI, run the following command in your terminal window:
+To install the Netlify CLI, run the following command in your terminal:
 
 ```sh-session
 npm install netlify-cli@next -g
 ```
+
+## Usage
 
 After installing the CLI globally, connect the CLI to your Netlify account with the following command:
 
@@ -55,8 +57,6 @@ netlify login
 
 This will open a browser window, asking you to log in with Netlify and grant access to **Netlify CLI**. This will store your Netlify access token in your home folder, under `~/.netlify/config.json`.
 
-## Usage
-
 ```sh-session
 netlify [command]
 
@@ -64,88 +64,20 @@ netlify [command]
 netlify [command] help
 ```
 
-## Getting Started
+### CI and Environment Variables.
 
-[Netlify's continuous deployment](https://www.netlify.com/docs/continuous-deployment) will automatically deploy new versions of your site when you push commits to your connected Git repository.
+The following environment variables can be used to override configuration file lookups and prompts:
 
-To setup continuous deployment with the CLI, run:
+- `NETLIFY_AUTH_TOKEN` - an access token to use when authenticating commands. **KEEP THIS VALUE PRIVATE**
+- `NETLIFY_SITE_ID` - force the cli to think the cwd is linked to this site id. This can be made public.
 
-```sh-session
-netlify init
-```
+## Getting Started + Docs
 
-In order to connect your repository for continuous deployment, Netlify CLI will need access to create a deploy key and a webhook on the github repository. When you run the command above, you'll be prompted to log in to your GitHub account, which will create an account-level access token.
+Please see the getting started guide on our docs website:
 
-The access token will be stored in your home folder, under `.netlify/config.json`. Your login password will never be stored. You can revoke the access token at any time from your GitHub account settings.
+- [netlify.com/docs/cli](https://www.netlify.com/docs/cli)
 
-
-### Link to an existing site
-
-Linking to a site tells Netlify CLI which site the current directory should deploy to. To do this, run the following command from the base of your project directory:
-
-```sh-session
-netlify link
-```
-
-This will add a `siteId` field to a new file inside your project folder, at `.netlify/state.json`. To unlink your folder from the site, you can remove this field, or you can run the following command from inside the project folder:
-
-```sh-session
-netlify unlink
-```
-
-
-### Create a new site
-
-To create a new Netlify site with the CLI, run the `netlify init` command in your site folder.
-
-```sh-session
-netlify init
-```
-
-Then Choose "Create & configure a new site in Netlify"
-
-Proceed through the prompts to finish configuring your site.
-
-### Deploying a site
-
-It's also possible to deploy a site manually, without continuous deployment. This method uploads files directly from your local project directory to your site on Netlify.
-
-A common use case for this command is when you're using a separate Continuous Integration (CI) tool, deploying prebuilt files to Netlify at the end of the CI tool tasks.
-
-**To do a manual deployment with the CLI run:**
-
-```sh-session
-netlify deploy
-
-# Optionally pass in the build directory
-netlify deploy --dir your-build-directory
-
-# Deploying to production with --prod flag
-netlify deploy --dir your-build-directory --prod
-```
-
-This `deploy` command needs to know which folder to publish, and if your project includes functions, a functions folder to deploy. It will look for this information in three places, in the following order:
-
-* in flags specified in the command itself
-* in a [netlify.toml file](https://www.netlify.com/docs/netlify-toml-reference) stored at the base of your project directory.
-* in your site settings in the Netlify UI.
-
-
-### Production Deploys
-
-By default, all `deploys` are set to a draft preview URL.
-
-To do a manual deploy to production, use the `--prod` flag:
-
-```sh-session
-# Deploy build folder to production
-netlify deploy --prod
-
-# Shorthand -p
-netlify deploy -p
-```
-
-Deploying to production will publish the build directory at the live URL of your Netlify site.
+<!-- TODO: Grab a screenshot to make it pop more -->
 
 ## Full Command Reference
 
@@ -226,32 +158,14 @@ netlify --telemetry-enable
 
 Or edit the `telemetryDisabled` property of the `~/.netlify/config.json` file in your computers root directory.
 
+## Contributing
 
-# Local Development
+See [CONTRIBUTING.md](CONTRIBUTING.md) for more info on how to make contributions to this project.
 
-1. Clone down the repo
+## License
 
-```sh-session
-$ git clone git@github.com:netlify/cli.git
-```
+MIT. See [LICENSE](LICENSE) for more details.
 
-2. Install dependencies
-
-```sh-session
-$ npm install
-```
-
-3. Run CLI locally during development
-
-```sh-session
-$ ./bin/run [command]
-```
-
-When developing, you can use watch mode which will automatically run ava tests:
-
-```sh-session
-$ npm run watch
-```
 [npm-img]: https://img.shields.io/npm/v/netlify-cli.svg
 [npm]: https://npmjs.org/package/netlify-cli
 [travis-img]: https://img.shields.io/travis/netlify/cli/master.svg
