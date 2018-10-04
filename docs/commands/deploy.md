@@ -22,6 +22,7 @@ netlify deploy
 - `functions` (*option*) - Specify a functions folder to deploy
 - `prod` (*boolean*) - Deploy to production
 - `open` (*boolean*) - Open site after deploy
+- `message` (*string*) - Optional message to associate with deploy
 
 **Examples**
 
@@ -29,6 +30,7 @@ netlify deploy
 netlify deploy
 netlify deploy --prod
 netlify deploy --prod --open
+netlify deploy --message "Some String $ENV_VAR"
 ```
 
 
