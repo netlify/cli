@@ -11,19 +11,22 @@ class AssetMgmtSetupCommand extends Command {
     const { flags } = this.parse(AssetMgmtSetupCommand)
     const { api, site } = this.netlify
     const accessToken = this.getAuthToken()
-    let skipSetup = false
+    const exec = require('child_process').execFile
 
     if (!accessToken) {
       this.error(`Not logged in. Please run \`netlify login\` and try again`)
     }
 
-    if (flags['skip-setup-repo']) {
-      this.log('Setup Asset Management without setting up the repo')
-      skipSetup = true
-    }
+    // check if git lfs is installed locally
+    exec('git', ['lfs', '--version'], (error, stdout, stderr) => {
+      if (error) {
+        this.error('Git LFS is not installed. Please make sure to install it.', {exit: 1})
+      }
+    })
 
-    if (!skipSetup) {
+    if (!flags['skip-setup-repo']) {
       const siteId = site.get('siteId')
+      let siteData
 
       if (!siteId) {
         this.warn(`No Site ID found in current directory.
@@ -31,7 +34,6 @@ class AssetMgmtSetupCommand extends Command {
         return false
       }
 
-      let siteData
       try {
         siteData = await api.getSite({ siteId })
       } catch (e) {
@@ -50,25 +52,14 @@ class AssetMgmtSetupCommand extends Command {
         }
         this.error(e)
       }
-    }
 
-    const exec = require('child_process').execFile
-
-    // check if git lfs is installed locally
-    exec('git', ['lfs', '--version'], (error, stdout, stderr) => {
-      if (error) {
-        this.error('Git LFS is not installed. Please make sure to install it.', {exit: 1})
+      // check if the command is run from the git repo root
+      try {
+        fs.lstatSync('.git')
+      } catch (e) {
+        this.error('Please run the command in the git repository.', {exit: 1})
       }
-    })
 
-    // check if the command is run from the git repo root
-    try {
-      fs.lstatSync('.git')
-    } catch (e) {
-      this.error('Please run the command in the git repository.', {exit: 1})
-    }
-
-    if (!skipSetup) {
       if (!siteData.capabilities.asset_management) {
         this.warn(`This site has not configured with Asset Management yet.
   Please visit admin UI and enable it first:
@@ -86,6 +77,8 @@ class AssetMgmtSetupCommand extends Command {
           this.error('Failed to create .lfsconfig file.', {exit: 1})
         }
       })
+    } else {
+      this.log('Setup Asset Management without setting up the repo')
     }
 
     // global .gitconfig setup
@@ -99,7 +92,7 @@ class AssetMgmtSetupCommand extends Command {
     })
 
     this.log('Asset Management setup completed successfully.')
-    if (!skipSetup) {
+    if (!flags['skip-setup-repo']) {
       this.log('Please make sure to git add .lfsconfig file.')
       this.log('')
       this.log('Pro tips 💡:')
