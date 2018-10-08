@@ -186,6 +186,11 @@ class DeployCommand extends Command {
 DeployCommand.description = `${renderShortDesc(`Create a new deploy from the contents of a folder`)}
 
 Deploys from the build settings found in the netlify.toml file, or settings from the api.
+
+The following environment variables can be used to override configuration file lookups and prompts:
+
+- NETLIFY_AUTH_TOKEN - an access token to use when authenticating commands. KEEP THIS VALUE PRIVATE
+- NETLIFY_SITE_ID - force the cli to think the cwd is linked to this site id. This can be made public.
 `
 
 DeployCommand.examples = [
