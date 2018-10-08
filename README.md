@@ -10,13 +10,10 @@ Welcome to the Netlify CLI! The new 2.0 version (now in beta) was rebuilt from t
 <details>
 <summary>Click to expand</summary>
 
-- [Install & Setup](#install--setup)
+- [Installation](#installation)
 - [Usage](#usage)
-- [Getting Started](#getting-started)
-  * [Link to an existing site](#link-to-an-existing-site)
-  * [Create a new site](#create-a-new-site)
-  * [Deploying a site](#deploying-a-site)
-  * [Production Deploys](#production-deploys)
+  * [CI and Environment Variables.](#ci-and-environment-variables)
+- [Getting Started + Docs](#getting-started--docs)
 - [Full Command Reference](#full-command-reference)
   * [deploy](#deploy)
   * [init](#init)
@@ -29,7 +26,8 @@ Welcome to the Netlify CLI! The new 2.0 version (now in beta) was rebuilt from t
   * [unlink](#unlink)
   * [watch](#watch)
   * [telemetry](#telemetry)
-- [Local Development](#local-development)
+- [Contributing](#contributing)
+- [License](#license)
 
 </details>
 <!-- AUTO-GENERATED-CONTENT:END -->
@@ -118,7 +116,10 @@ Handle various site operations
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`sites:create`](/docs/commands/sites.md#sitescreate) | Create an empty site (advanced)  |
+| [`sites:create`](/docs/commands/sites.md#sitescreate) | Create an empty site (advanced)
+
+Create a blank site that isn't associated with any git remote.  Does not link to the current working directory.
+  |
 | [`sites:list`](/docs/commands/sites.md#siteslist) | List all sites you have access too  |
 
 

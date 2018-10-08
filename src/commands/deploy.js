@@ -188,7 +188,12 @@ DeployCommand.description = `${renderShortDesc(`Create a new deploy from the con
 Deploys from the build settings found in the netlify.toml file, or settings from the api.
 `
 
-DeployCommand.examples = ['netlify deploy', 'netlify deploy --prod', 'netlify deploy --prod --open']
+DeployCommand.examples = [
+  'netlify deploy',
+  'netlify deploy --prod',
+  'netlify deploy --prod --open',
+  'netlify deploy --message "A message with an $ENV_VAR"'
+]
 
 DeployCommand.flags = {
   dir: flags.string({
