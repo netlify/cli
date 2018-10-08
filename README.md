@@ -4,6 +4,9 @@
 
 Welcome to the Netlify CLI! The new 2.0 version (now in beta) was rebuilt from the ground up to help improve the site building experience.
 
+- See our [Getting Started Guide](https://www.netlify.com/docs/cli/) for a comprehensive introduction to the CLI.
+- See the [CLI website](http://cli.netlify.com/) for online access to CLI help text.
+
 ## Table of Contents
 
 <!-- AUTO-GENERATED-CONTENT:START (TOC:collapse=true&collapseText=Click to expand) -->
