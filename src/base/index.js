@@ -3,6 +3,7 @@ const chalk = require('chalk')
 const API = require('netlify')
 const path = require('path')
 const fs = require('fs')
+const util = require('util')
 const minimist = require('minimist')
 const Configorama = require('configorama')
 const globalConfig = require('./global-config')
@@ -38,7 +39,9 @@ class BaseCommand extends Command {
       const args = minimist(process.argv.slice(2))
       config = await configInstance.init(args)
     }
-
+    // // console.log('config',config)
+    // console.log(util.inspect(config, false, null, true /* enable colors */))
+    // process.exit()
 
     this.netlify = {
       // api methods
@@ -46,6 +49,7 @@ class BaseCommand extends Command {
       // current site context
       site: {
         id: state.get('siteId'),
+        root: projectRoot
       },
       // Configuration from netlify.[toml/yml]
       config: config,
