@@ -17,7 +17,6 @@ Welcome to the Netlify CLI! The new 2.0 version was rebuilt from the ground up t
   * [init](#init)
   * [link](#link)
   * [login](#login)
-  * [logout](#logout)
   * [open](#open)
   * [sites](#sites)
   * [status](#status)
@@ -61,10 +60,6 @@ Link a local repo or project folder to an existing site on Netlify
 ### [login](/docs/login.md)
 
 Login to your Netlify account
-
-### [logout](/docs/logout.md)
-
-Logout of your Netlify account
 
 ### [open](/docs/open.md)
 
