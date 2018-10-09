@@ -22,4 +22,6 @@ class LogoutCommand extends Command {
 
 LogoutCommand.description = `${renderShortDesc('Logout of your Netlify account')}`
 
+LogoutCommand.hidden = true
+
 module.exports = LogoutCommand
