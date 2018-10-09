@@ -2,6 +2,7 @@ const { Command } = require('@oclif/command')
 const chalk = require('chalk')
 const API = require('netlify')
 const path = require('path')
+const fs = require('fs')
 const minimist = require('minimist')
 const Configorama = require('configorama')
 const globalConfig = require('./global-config')
@@ -28,12 +29,16 @@ class BaseCommand extends Command {
     // Get site id & build state
     const state = new State(projectRoot)
 
-    // populated configuration information
-    const configInstance = new Configorama(configPath)
+    let config = {}
+    if (fs.existsSync(configPath)) {
+      // populated configuration information
+      const configInstance = new Configorama(configPath)
 
-    // resolve config values
-    const args = minimist(process.argv.slice(2))
-    const config = await configInstance.init(args)
+      // resolve config values
+      const args = minimist(process.argv.slice(2))
+      config = await configInstance.init(args)
+    }
+
 
     this.netlify = {
       // api methods
