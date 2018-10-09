@@ -119,10 +119,7 @@ Handle various site operations
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`sites:create`](/docs/commands/sites.md#sitescreate) | Create an empty site (advanced)
-
-Create a blank site that isn't associated with any git remote.  Does not link to the current working directory.
-  |
+| [`sites:create`](/docs/commands/sites.md#sitescreate) | Create an empty site (advanced)  |
 | [`sites:list`](/docs/commands/sites.md#siteslist) | List all sites you have access too  |
 
 

@@ -336,7 +336,7 @@ export const Nav = ({
 
     <Divider my={0} />
 
-    {searchRender}
+    { /* searchRender */ }
 
     <UL>
       {routes.map(route => {
