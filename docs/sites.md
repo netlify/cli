@@ -18,8 +18,8 @@ netlify sites
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`sites:create`](/commands/sites#sitescreate) | Create an empty site (advanced)  |
-| [`sites:list`](/commands/sites#siteslist) | List all sites you have access too  |
+| [`sites:create`](/sites#sitescreate) | Create an empty site (advanced)  |
+| [`sites:list`](/sites#siteslist) | List all sites you have access too  |
 
 
 **Examples**

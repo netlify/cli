@@ -23,7 +23,7 @@
     "prepack": "oclif-dev manifest && npm shrinkwrap",
     "postpack": "rm -f oclif.manifest.json npm-shrinkwrap.json",
     "report": "nyc report --reporter=text-lcov | coveralls",
-    "version": "DOCS_GEN=TRUE node ./scripts/docs.js && git add README.md docs"
+    "version": "node ./scripts/docs.js && git add README.md docs"
   },
   "ava": {
     "files": [
