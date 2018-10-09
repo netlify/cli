@@ -16,7 +16,7 @@ netlify status
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`status:hooks`](/commands/status#statushooks) | Print hook information of the linked site  |
+| [`status:hooks`](/status#statushooks) | Print hook information of the linked site  |
 
 
 ---

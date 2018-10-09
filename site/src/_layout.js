@@ -191,10 +191,7 @@ Link.defaultProps = {
 
 const unhyphenate = str => str.replace(/(\w)(-)(\w)/g, '$1 $3')
 const upperFirst = str => str.charAt(0).toUpperCase() + str.slice(1)
-const format = (str, data) => {
-  if (data && data.path && data.path.match((/commands/)) && str !== 'commands') {
-    return <span>{str}</span>
-  }
+const format = (str) => {
   return upperFirst(unhyphenate(str))
 }
 
@@ -507,7 +504,7 @@ export default class Layout extends React.Component {
               <HitBoxWrapper>
                  <MyHits />
               </HitBoxWrapper>
-              <EditLink>
+              {/* <EditLink>
                 <a
                   style={{
                     color: '#333',
@@ -518,7 +515,7 @@ export default class Layout extends React.Component {
                 >
                   Edit this doc <GithubIcon/>
                 </a>
-              </EditLink>
+              </EditLink> */}
               <Wrapper>
                 <Content>
                   {children}

@@ -64,11 +64,13 @@ module.exports = function generateCommandData() {
 }
 
 function commandFromPath(p) {
-  console.log('commandFromPath', p)
+  const normalized = path.normalize(p)
+  console.log('commandFromPath', normalized)
   console.log('process.cwd()', process.cwd())
   const rootDir = path.join(__dirname, '..')
   console.log('rootDir', rootDir)
-  return p.replace(rootDir, '')
+  return normalized.replace(rootDir, '')
+    .replace(/\\/g, '/')
     .replace('.js', '')
     .replace('/src/commands/', '')
     .replace('/index', '')
