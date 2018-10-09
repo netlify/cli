@@ -36,6 +36,17 @@ Netlify CLI requires [Node.js](https://nodejs.org) version 8 or above. To instal
 npm install netlify-cli -g
 ```
 
+## Usage
+
+Installing the CLI globally provides access to the `netlify` command.
+
+```sh-session
+netlify [command]
+
+# Run `help` for detailed information about CLI commands
+netlify [command] help
+```
+
 ## Documentation
 
 To learn how to log in to Netlify and start deploying sites, visit the [documentation on Nelify](https://www.netlify.com/docs/cli).
