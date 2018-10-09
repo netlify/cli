@@ -11,6 +11,7 @@ Welcome to the Netlify CLI! The new 2.0 version was rebuilt from the ground up t
 <summary>Click to expand</summary>
 
 - [Installation](#installation)
+- [Usage](#usage)
 - [Documentation](#documentation)
 - [Commands](#commands)
   * [deploy](#deploy)

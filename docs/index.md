@@ -41,10 +41,6 @@ Link a local repo or project folder to an existing site on Netlify
 
 Login to your Netlify account
 
-### [logout](/logout)
-
-Logout of your Netlify account
-
 ### [open](/open)
 
 Open settings for the site linked to the current folder
