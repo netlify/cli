@@ -4,15 +4,14 @@
 
 Welcome to the Netlify CLI! The new 2.0 version was rebuilt from the ground up to help improve the site building experience.
 
-- See our [Getting Started Guide](https://www.netlify.com/docs/cli/) for a comprehensive introduction to the CLI.
-- See the [CLI Command Reference site](http://cli.netlify.com/) for online access to CLI help text.
-
 ## Table of Contents
 
 <!-- AUTO-GENERATED-CONTENT:START (TOC:collapse=true&collapseText=Click to expand) -->
 <details>
 <summary>Click to expand</summary>
 
+- [Installation](#installation)
+- [Documentation](#documentation)
 - [Commands](#commands)
   * [deploy](#deploy)
   * [init](#init)
@@ -24,13 +23,25 @@ Welcome to the Netlify CLI! The new 2.0 version was rebuilt from the ground up t
   * [status](#status)
   * [unlink](#unlink)
   * [watch](#watch)
-  * [telemetry](#telemetry)
 - [Contributing](#contributing)
 - [License](#license)
 
 </details>
 <!-- AUTO-GENERATED-CONTENT:END -->
 
+## Installation
+
+Netlify CLI requires [Node.js](https://nodejs.org) version 8 or above. To install, run the following command from any directory in your terminal:
+
+```bash
+npm install netlify-cli -g
+```
+
+## Documentation
+
+To learn how to log in to Netlify and start deploying sites, visit the [documentation on Nelify](https://www.netlify.com/docs/cli).
+
+For a full command reference, see the list below, or visit [cli.netlify.com](https://www.netlify.com/docs/cli).
 
 ## Commands
 
