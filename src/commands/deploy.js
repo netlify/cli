@@ -189,8 +189,8 @@ Deploys from the build settings found in the netlify.toml file, or settings from
 
 The following environment variables can be used to override configuration file lookups and prompts:
 
-- NETLIFY_AUTH_TOKEN - an access token to use when authenticating commands. KEEP THIS VALUE PRIVATE
-- NETLIFY_SITE_ID - force the cli to think the cwd is linked to this site id. This can be made public.
+- \`NETLIFY_AUTH_TOKEN\` - an access token to use when authenticating commands. KEEP THIS VALUE PRIVATE
+- \`NETLIFY_SITE_ID\` - override any linked site in the current working directory.
 `
 
 DeployCommand.examples = [
