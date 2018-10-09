@@ -12,7 +12,7 @@ function findProjectRoot(cwd) {
 
   const rootIndicator = findUp.sync(rootIndicators, { cwd: cwd })
   
-  const indicatorRoot = path.basename(rootIndicator)
+  const indicatorRoot = path.dirname(rootIndicator)
   const root = rootIndicator && (indicatorRoot !== os.homedir()) ? indicatorRoot : cwd
   return root
 }
