@@ -119,7 +119,7 @@ function commandListSubCommandDisplay(commands, context) {
     const commandBase = cmd.name.split(':')[0]
     const baseUrl = (context === 'README') ? `/docs/commands/${commandBase}.md` : `/commands/${commandBase}`
     const slug = cmd.name.replace(/:/g, '')
-    table += `| [\`${cmd.name}\`](${baseUrl}#${slug}) | ${cmd.description}  |\n`;
+    table += `| [\`${cmd.name}\`](${baseUrl}#${slug}) | ${cmd.description.split('\n')[0]}  |\n`;
   })
   return `${table}${newLine}`
 }
