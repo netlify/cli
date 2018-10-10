@@ -3,9 +3,9 @@ const renderShortDesc = require('../../utils/renderShortDescription')
 const showHelp = require('../../utils/showHelp')
 const { isEmptyCommand } = require('../../utils/checkCommandInputs')
 
-class AssetMgmtCommand extends Command {
+class LfsCommand extends Command {
   async run() {
-    const { flags, args } = this.parse(AssetMgmtCommand)
+    const { flags, args } = this.parse(LfsCommand)
     // Show help on empty sub command
     if (isEmptyCommand(flags, args)) {
       showHelp(this.id)
@@ -14,10 +14,10 @@ class AssetMgmtCommand extends Command {
   }
 }
 
-AssetMgmtCommand.description = `${renderShortDesc('Handle Asset Management operations')}`
+LfsCommand.description = `${renderShortDesc('Handle Asset Management/Netlify LFS operations')}`
 
-AssetMgmtCommand.examples = [
-  'netlify asset-mgmt:setup'
+LfsCommand.examples = [
+  'netlify lfs:setup'
 ]
 
-module.exports = AssetMgmtCommand
+module.exports = LfsCommand

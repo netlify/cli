@@ -6,9 +6,9 @@ const fs = require('fs')
 const NETLIFY_GIT_LFS_SERVER_HOST = 'netlify-git-lfs.netlify.com'
 const NETLIFY_GIT_LFS_SERVER_PATH = '/.netlify/functions/lfs'
 
-class AssetMgmtSetupCommand extends Command {
+class LfsSetupCommand extends Command {
   async run() {
-    const { flags } = this.parse(AssetMgmtSetupCommand)
+    const { flags } = this.parse(LfsSetupCommand)
     const { api, site } = this.netlify
     const accessToken = this.getAuthToken()
     const exec = require('child_process').execFile
@@ -20,7 +20,15 @@ class AssetMgmtSetupCommand extends Command {
     // check if git lfs is installed locally
     exec('git', ['lfs', '--version'], (error, stdout, stderr) => {
       if (error) {
-        this.error('Git LFS is not installed. Please make sure to install it.', {exit: 1})
+        this.error('Git LFS must be installed to use Netlify LFS. https://git-lfs.github.com/', {exit: 1})
+      }
+      // stdout looks like:
+      // git-lfs/2.5.1 (GitHub; darwin amd64; go 1.10.3)
+      let version = stdout.split(' ')[0].split('/')[1]
+      let major = parseInt(version.split('.')[0])
+      let minor = parseInt(version.split('.')[1])
+      if (major < 2 || minor < 5) {
+        this.error('Git LFS version must be 2.5.0 or above.', {exit: 1})
       }
     })
 
@@ -105,14 +113,14 @@ class AssetMgmtSetupCommand extends Command {
   }
 }
 
-AssetMgmtSetupCommand.description = `${renderShortDesc('Setup Netlify Asset Management with the repo')}`
+LfsSetupCommand.description = `${renderShortDesc('Setup Netlify Asset Management/LFS with the repo')}`
 
-AssetMgmtSetupCommand.examples = ['netlify asset-mgmt:setup --skip-setup-repo']
+LfsSetupCommand.examples = ['netlify lfs:setup --skip-setup-repo']
 
-AssetMgmtSetupCommand.flags = {
+LfsSetupCommand.flags = {
   'skip-setup-repo': flags.boolean({
     description: 'Setup without setting up the repo'
   })
 }
 
-module.exports = AssetMgmtSetupCommand
+module.exports = LfsSetupCommand
