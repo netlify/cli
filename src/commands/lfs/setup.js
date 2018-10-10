@@ -2,6 +2,10 @@ const Command = require('../../base')
 const { flags } = require('@oclif/command')
 const renderShortDesc = require('../../utils/renderShortDescription')
 const fs = require('fs')
+const util = require('util')
+const exec = util.promisify(require('child_process').execFile)
+const inquirer = require('inquirer')
+const chalk = require('chalk')
 
 const NETLIFY_GIT_LFS_SERVER_HOST = 'netlify-git-lfs.netlify.com'
 const NETLIFY_GIT_LFS_SERVER_PATH = '/.netlify/functions/lfs'
@@ -11,27 +15,27 @@ class LfsSetupCommand extends Command {
     const { flags } = this.parse(LfsSetupCommand)
     const { api, site } = this.netlify
     const accessToken = this.getAuthToken()
-    const exec = require('child_process').execFile
 
     if (!accessToken) {
       this.error(`Not logged in. Please run \`netlify login\` and try again`)
     }
 
     // check if git lfs is installed locally
-    exec('git', ['lfs', '--version'], (error, stdout, stderr) => {
-      if (error) {
-        this.error('Git LFS must be installed to use Netlify LFS. https://git-lfs.github.com/', {exit: 1})
-      }
-      // stdout looks like:
-      // git-lfs/2.5.1 (GitHub; darwin amd64; go 1.10.3)
-      let version = stdout.split(' ')[0].split('/')[1]
-      let major = parseInt(version.split('.')[0])
-      let minor = parseInt(version.split('.')[1])
-      if (major < 2 || minor < 5) {
-        this.error('Git LFS version must be 2.5.0 or above.', {exit: 1})
-      }
-    })
+    let major, minor
+    try {
+      const { stdout } = await exec('git', ['lfs', '--version'])
+      let version = stdout.trim().split(' ')[0].split('/')[1]
+      major = parseInt(version.split('.')[0])
+      minor = parseInt(version.split('.')[1])
+    } catch (err) {
+      this.error('Git LFS must be installed to use Netlify LFS. https://git-lfs.github.com/', {exit: 1})
+    }
 
+    if (major < 2 || minor < 5) {
+      this.error('Git LFS version must be 2.5.0 or above.', {exit: 1})
+    }
+
+    // for non skip-setup-repo case, connect git repo and netlify site
     if (!flags['skip-setup-repo']) {
       const siteId = site.get('siteId')
       let siteData
@@ -80,16 +84,51 @@ class LfsSetupCommand extends Command {
       // .lfsconfig setup
       this.log('Creating .lfsconfig file with the custom lfs url...')
       const lfsUrl = `https://${siteData.id}:@${NETLIFY_GIT_LFS_SERVER_HOST}${NETLIFY_GIT_LFS_SERVER_PATH}`
-      exec('git', ['config', '-f', '.lfsconfig', 'lfs.url', lfsUrl], (error, stdout, stderr) => {
-        if (error) {
-          this.error('Failed to create .lfsconfig file.', {exit: 1})
+      try {
+        await exec('git', ['config', '-f', '.lfsconfig', 'lfs.url', lfsUrl])
+        await exec('git', ['add', '.lfsconfig'])
+      } catch (err) {
+        this.error('Failed to create .lfsconfig file.', {exit: 1})
+      }
+
+      // initial gitattribute setup
+      this.log()
+      this.log('Setup files to track with Git LFS...')
+      const { stdout } = await exec('git', ['lfs', 'track'])
+      if (stdout) {
+        this.log('The following patterns are tracked currently.')
+        this.log(stdout)
+      }
+      this.log(`${chalk.bold('Hint💡:')}`)
+      this.log(' * track all jpg files with: *.jpg')
+      this.log(' * track all files under assets folder with: assets/')
+      this.log(' * track multi conditions: *.jpg *.png *.gif')
+      const { gitLfsTrackFiles } = await inquirer.prompt([
+        {
+          type: 'input',
+          name: 'gitLfsTrackFiles',
+          message: 'Specify which files you want to track (optional):',
+          filter: val => (val === '' ? undefined : val)
         }
-      })
+      ])
+
+      if (gitLfsTrackFiles) {
+        try {
+          let trackFiles = gitLfsTrackFiles.split(' ')
+          await exec('git', ['lfs', 'track'].concat(trackFiles))
+          await exec('git', ['add', '.gitattributes'])
+        } catch (err) {
+          this.warn('Failed to trac files with given args. Skip this step.')
+        }
+      } else {
+        this.log('Skip tracking files.')
+      }
     } else {
       this.log('Setup Asset Management without setting up the repo')
     }
 
     // global .gitconfig setup
+    this.log()
     this.log('Setup global git config for the authentication with Netlify LFS server...')
     const extraHeader = `http.https://${NETLIFY_GIT_LFS_SERVER_HOST}${NETLIFY_GIT_LFS_SERVER_PATH}.extraheader`
     const header = `AuthToken: ${accessToken}`
@@ -99,15 +138,12 @@ class LfsSetupCommand extends Command {
       }
     })
 
-    this.log('Asset Management setup completed successfully.')
+    this.log(`${chalk.bold('Asset Management/LFS setup completed successfully')}`)
     if (!flags['skip-setup-repo']) {
-      this.log('Please make sure to git add .lfsconfig file.')
-      this.log('')
-      this.log('Pro tips 💡:')
-      this.log(' * Start tracking files using `git lfs track "*.jpg"`')
+      this.log(`${chalk.bold('Tips💡:')}`)
+      this.log(' * Tweak the tracking setting using `git lfs track`')
       this.log(' * Migrate existing files using `git lfs migrate --everything`')
-      this.log('Do not forget!💡:')
-      this.log(' * Make sure to git add .lfsconfig and .gitattributes!')
+      this.log(' * Check current staged files using `git lfs status`')
     }
     this.exit()
   }
