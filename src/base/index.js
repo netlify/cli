@@ -28,7 +28,7 @@ class BaseCommand extends Command {
     // Get site config from netlify.toml
     const configPath = path.join(projectRoot, 'netlify.toml')
     const config = readConfig(configPath)
-    console.log('config', config)
+
     // Get site id & build state
     const state = new State(projectRoot)
 
