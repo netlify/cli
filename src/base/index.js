@@ -5,7 +5,7 @@ const path = require('path')
 const fs = require('fs')
 const util = require('util')
 const minimist = require('minimist')
-const Configorama = require('configorama')
+const readConfig = require('./utils/readConfig')
 const globalConfig = require('./global-config')
 const State = require('./state')
 const openBrowser = require('../utils/open-browser')
@@ -25,23 +25,12 @@ class BaseCommand extends Command {
     // Grab netlify API token
     const token = this.getAuthToken()
 
+    // Get site config from netlify.toml
     const configPath = path.join(projectRoot, 'netlify.toml')
-
+    const config = readConfig(configPath)
+    console.log('config', config)
     // Get site id & build state
     const state = new State(projectRoot)
-
-    let config = {}
-    if (fs.existsSync(configPath)) {
-      // populated configuration information
-      const configInstance = new Configorama(configPath)
-
-      // resolve config values
-      const args = minimist(process.argv.slice(2))
-      config = await configInstance.init(args)
-    }
-    // // console.log('config',config)
-    // console.log(util.inspect(config, false, null, true /* enable colors */))
-    // process.exit()
 
     this.netlify = {
       // api methods
