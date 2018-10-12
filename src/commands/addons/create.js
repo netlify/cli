@@ -15,11 +15,11 @@ class addonsCreateCommand extends Command {
 
     const addonName = args.name
 
-    //if(!addonName) {
-      // console.log('create', this.netlify)
-      console.log(util.inspect(this.netlify, false, null, true /* enable colors */))
+    if (!addonName) {
+      console.log('Please provide an addon name to provision')
+      // console.log(util.inspect(myObject, false, null, true /* enable colors */))
       this.exit()
-    //}
+    }
 
     const siteId = site.id
 
