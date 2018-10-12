@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "2.0.0-beta.5",
+  "version": "2.0.0",
   "author": "Netlify Inc.",
   "contributors": [
     "Mathias Biilmann <matt@netlify.com> (https://twitter.com/biilmann)",
@@ -11,8 +11,7 @@
   ],
   "scripts": {
     "build": "run-s build:*",
-    "build:docs": "DOCS_GEN=TRUE node ./scripts/docs.js",
-    "build:site": "npm install && cd site && npm run build",
+    "build:site": "cd site && npm install && npm run build",
     "build:deptree": "depcruise --exclude '^node_modules' --output-type dot src | dot -T svg > site/dist/dependencygraph.svg",
     "ci": "run-s test build",
     "start": "node ./bin/run",
@@ -23,7 +22,8 @@
     "watch": "nyc --reporter=lcov ava --watch",
     "prepack": "oclif-dev manifest && npm shrinkwrap",
     "postpack": "rm -f oclif.manifest.json npm-shrinkwrap.json",
-    "report": "nyc report --reporter=text-lcov | coveralls"
+    "report": "nyc report --reporter=text-lcov | coveralls",
+    "version": "node ./scripts/docs.js && git add README.md docs"
   },
   "ava": {
     "files": [
@@ -71,8 +71,7 @@
     "lodash.snakecase": "^4.1.1",
     "log-symbols": "^2.2.0",
     "make-dir": "^1.3.0",
-    "minimist": "^1.2.0",
-    "netlify": "^2.0.1-beta.5",
+    "netlify": "2.0.1",
     "node-fetch": "^2.2.0",
     "ora": "^3.0.0",
     "p-wait-for": "^2.0.0",

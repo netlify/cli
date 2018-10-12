@@ -15,8 +15,8 @@ netlify open
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`open:admin`](/commands/open#openadmin) | Opens current site admin UI in Netlify  |
-| [`open:site`](/commands/open#opensite) | Opens current site url in browser  |
+| [`open:admin`](/open#openadmin) | Opens current site admin UI in Netlify  |
+| [`open:site`](/open#opensite) | Opens current site url in browser  |
 
 
 **Examples**

@@ -32,18 +32,15 @@ const scope = {
 
 const navOrder = [
   'index',
-  'getting-started',
-  'commands',
-    'login',
-    'logout',
-    'init',
-    'link',
-    'unlink',
-    'deploy',
-    'sites',
-    'open',
-    'status',
-  'contributing',
+  'login',
+  'logout',
+  'init',
+  'link',
+  'unlink',
+  'deploy',
+  'sites',
+  'open',
+  'status',
 ]
 
 const pageNames = {

@@ -66,7 +66,7 @@ For more details on Netlify CI checkout the docs: http://bit.ly/2N0Jhy5
 `)
       let message
       switch (repo.error) {
-        case 'Couldn\'t find origin url': {
+        case "Couldn't find origin url": {
           message = `Unable to find a remote origin url. Please add a git remote.
 
 git remote add origin https://github.com/YourUserName/RepoName.git
@@ -86,10 +86,7 @@ git remote add origin https://github.com/YourUserName/RepoName.git
           type: 'list',
           name: 'noGitRemoteChoice',
           message: 'Do you want to create a netlify site without a git repository?',
-          choices: [
-            NEW_SITE_NO_GIT,
-            NO_ABORT
-          ]
+          choices: [NEW_SITE_NO_GIT, NO_ABORT]
         }
       ])
 
@@ -107,7 +104,6 @@ git remote add origin https://github.com/YourUserName/RepoName.git
 
         // no github remote
         this.exit()
-
       } else if (noGitRemoteChoice === NO_ABORT) {
         console.log()
         console.log(`${chalk.bold('To initialize a new git repo follow the steps below.')}
@@ -122,7 +118,7 @@ git remote add origin https://github.com/YourUserName/RepoName.git
 
 3. Commit your files
 
-   ${chalk.cyanBright.bold('git commit -m \'initial commit\'')}
+   ${chalk.cyanBright.bold("git commit -m 'initial commit'")}
 
 4. Create a new repo in github ${chalk.cyanBright.bold('https://github.com/new')}
 
@@ -145,13 +141,10 @@ git remote add origin https://github.com/YourUserName/RepoName.git
       this.error(repo.error)
     }
 
-    const NEW_SITE = '+  Create & configure a new site in Netlify'
-    const EXISTING_SITE = '⇄  Link this directory to an existing site in your Netlify account'
+    const NEW_SITE = '+  Create & configure a new site'
+    const EXISTING_SITE = '⇄  Link this directory to an existing site'
 
-    const initializeOpts = [
-      NEW_SITE,
-      EXISTING_SITE
-    ]
+    const initializeOpts = [EXISTING_SITE, NEW_SITE]
 
     const { initChoice } = await inquirer.prompt([
       {

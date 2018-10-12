@@ -18,8 +18,8 @@ netlify sites
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`sites:create`](/commands/sites#sitescreate) | Create an empty site (advanced)  |
-| [`sites:list`](/commands/sites#siteslist) | List all sites you have access too  |
+| [`sites:create`](/sites#sitescreate) | Create an empty site (advanced)  |
+| [`sites:list`](/sites#siteslist) | List all sites you have access too  |
 
 
 **Examples**
@@ -34,6 +34,9 @@ netlify sites:list
 
 Create an empty site (advanced)
 
+Create a blank site that isn't associated with any git remote.  Does not link to the current working directory.
+
+
 **Usage**
 
 ```bash
@@ -43,6 +46,7 @@ netlify sites:create
 **Flags**
 
 - `name` (*option*) - name of site
+- `account-slug` (*option*) - account slug to create the site under
 
 ---
 ## `sites:list`

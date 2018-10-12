@@ -13,11 +13,12 @@ class SitesCreateCommand extends Command {
     const { api } = this.netlify
 
     await this.authenticate()
-
+    let accountSlug = flags['account-slug']
+    let name = flags.name
+    const accounts = await api.listAccountsForUser()
+    const personal = accounts.find(account => account.type === 'PERSONAL')
     if (isEmpty(flags)) {
-      const accounts = await api.listAccountsForUser()
-      const personal = accounts.find(account => account.type === 'PERSONAL')
-      console.log('Choose a site name. One will be automatically generated if left blank. You will be able to update this at a later time.')
+      console.log('Choose a site name or leave blank for a random name. You can update later.')
       const results = await inquirer.prompt([
         {
           type: 'input',
@@ -36,51 +37,64 @@ class SitesCreateCommand extends Command {
           }))
         }
       ])
-
-      const { accountSlug } = results
-      delete results.accountSlug
-
-      let site
-      try {
-        site = await api.createSiteInTeam({ accountSlug, body: results })
-      } catch (error) {
-        console.log(`Error ${error.status}: ${error.message} from createSiteInTeam call`)
-        if (error.status === 422) {
-          this.error(`A site with name ${results.name} already exists. Please try a different slug`)
-        }
-      }
-      this.log()
-      this.log(chalk.greenBright.bold.underline(`Site Created`))
-      this.log()
-
-      const url = site.ssl_url || site.url
-      this.log(
-        prettyjson.render({
-          'Admin URL': site.admin_url,
-          URL: url,
-          'Site ID': site.id
-        })
-      )
-
-      this.log()
-
-      track('sites_created', {
-        siteId: site.id,
-        adminUrl: site.admin_url,
-        siteUrl: url
-      })
-
-      return site
+      accountSlug, (name = results.accountSlug)
+      name = results.name
     }
+
+    let site
+    let body = {}
+    if (typeof name === 'string') {
+      body.name = name.trim()
+    }
+    try {
+      site = await api.createSiteInTeam({
+        accountSlug: flags['account-slug'] || accountSlug || personal.slug,
+        body
+      })
+    } catch (error) {
+      console.log(`Error ${error.status}: ${error.message} from createSiteInTeam call`)
+      if (error.status === 422) {
+        this.error(`A site with name ${name} already exists. Please try a different slug`)
+      }
+    }
+    this.log()
+    this.log(chalk.greenBright.bold.underline(`Site Created`))
+    this.log()
+
+    const url = site.ssl_url || site.url
+    this.log(
+      prettyjson.render({
+        'Admin URL': site.admin_url,
+        URL: url,
+        'Site ID': site.id
+      })
+    )
+
+    this.log()
+
+    track('sites_created', {
+      siteId: site.id,
+      adminUrl: site.admin_url,
+      siteUrl: url
+    })
+
+    return site
   }
 }
 
-SitesCreateCommand.description = `${renderShortDesc('Create an empty site (advanced)')}`
+SitesCreateCommand.description = `${renderShortDesc('Create an empty site (advanced)')}
+
+Create a blank site that isn't associated with any git remote.  Does not link to the current working directory.
+`
 
 SitesCreateCommand.flags = {
   name: flags.string({
     char: 'n',
     description: 'name of site'
+  }),
+  'account-slug': flags.string({
+    char: 'a',
+    description: 'account slug to create the site under'
   })
 }
 

@@ -99,7 +99,7 @@ function commandExamples(examples) {
 
 /* Start - Docs Templating logic */
 function commandListTitle(command, context) {
-  const url  = (context === 'README') ? `/docs/commands/${command}.md` : `/commands/${command}`
+  const url  = (context === 'README') ? `/docs/${command}.md` : `/${command}`
   return `### [${command}](${url})${newLine}`
 }
 
@@ -117,9 +117,9 @@ function commandListSubCommandDisplay(commands, context) {
   table += '|:--------------------------- |:-----|\n';
   commands.forEach((cmd) => {
     const commandBase = cmd.name.split(':')[0]
-    const baseUrl = (context === 'README') ? `/docs/commands/${commandBase}.md` : `/commands/${commandBase}`
+    const baseUrl = (context === 'README') ? `/docs/${commandBase}.md` : `/${commandBase}`
     const slug = cmd.name.replace(/:/g, '')
-    table += `| [\`${cmd.name}\`](${baseUrl}#${slug}) | ${cmd.description}  |\n`;
+    table += `| [\`${cmd.name}\`](${baseUrl}#${slug}) | ${cmd.description.split('\n')[0]}  |\n`;
   })
   return `${table}${newLine}`
 }

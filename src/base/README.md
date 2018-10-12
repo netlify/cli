@@ -50,14 +50,18 @@ Commands that extend this base class get access to the [same api](https://oclif.
 Provides access to configuration stored in the users home folder under `~/.netlify`.  
 See [global-config](global-config/README.md).
 
-### `this.site`
+### `this.netlify.state`
 
-Provides access to site-level config relative to the `process.cwd`.
+Provides access to site-level state relative to the `process.cwd`. (e.g. `project/.netlify/config.json`)
 See [site-config](global-config/README.md)
 
 ### `this.netlify.api`
 
-An instance of the [`netlify`](https://github.com/netlify/js-client) api client.
+An instance of the [`netlify`](https://github.com/netlify/js-client) api client.  If access tokens are found in global config, then this client will automatically be authenticated.
+
+### `this.netlify.site`
+
+Provides read access to `project/netlify.toml` config.
 
 #### `this.authenticate()`
 

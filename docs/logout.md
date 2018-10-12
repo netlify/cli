@@ -14,6 +14,4 @@ Logout of your Netlify account
 ```bash
 netlify logout
 ```
-
-
 <!-- AUTO-GENERATED-CONTENT:END -->
