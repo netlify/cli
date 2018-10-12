@@ -1,17 +1,12 @@
 const Command = require('../../base')
 const { getAddons, createAddon } = require('netlify/src/addons')
 const parseRawFlags = require('../../utils/parseRawFlags')
-const util = require('util')
 
 class addonsCreateCommand extends Command {
   async run() {
-    const accessToken = this.getAuthToken()
+    const accessToken = await this.authenticate()
     const { args, raw } = this.parse(addonsCreateCommand)
     const { api, site } = this.netlify
-
-    if (!accessToken) {
-      this.error(`Not logged in`)
-    }
 
     const addonName = args.name
 

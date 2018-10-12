@@ -17,18 +17,15 @@ const LinkCommand = require('./link')
 
 class DeployCommand extends Command {
   async run() {
-    const accessToken = this.getAuthToken()
     const { flags } = this.parse(DeployCommand)
     const { api, site, state } = this.netlify
-
+    
     const deployToProduction = flags.prod
+    await this.authenticate(flags.auth)
 
-    if (!accessToken) {
-      this.error(`Not logged in. Log in to deploy to a site`)
-    }
-
+    const siteId = flags.site || site.id
     let siteData
-    if (!site.id) {
+    if (!siteId) {
       this.log("This folder isn't linked to a site yet")
       const NEW_SITE = '+  Create & configure a new site'
       const EXISTING_SITE = '⇄  Link this directory to an existing site'
@@ -222,6 +219,16 @@ DeployCommand.flags = {
   message: flags.string({
     char: 'm',
     description: 'A short message to include in the deploy log'
+  }),
+  auth: flags.string({
+    char: 'a',
+    description: 'An auth token to log in with',
+    env: 'NETLIFY_AUTH_TOKEN'
+  }),
+  site: flags.string({
+    char: 's',
+    description: 'A site ID to deploy too',
+    env: 'NETLIFY_SITE_ID'
   })
 }
 

@@ -4,6 +4,7 @@ const os = require('os')
 
 // Finds cwd's parent root directory
 function findProjectRoot(cwd) {
+  if (!cwd) return process.cwd()
   const rootIndicators = [
     '.netlify',
     'netlify.toml',
@@ -13,7 +14,7 @@ function findProjectRoot(cwd) {
   const rootIndicator = findUp.sync(rootIndicators, { cwd: cwd })
   
   const indicatorRoot = path.dirname(rootIndicator)
-  const root = rootIndicator && (indicatorRoot !== os.homedir()) ? indicatorRoot : cwd
+  const root = (rootIndicator && (indicatorRoot !== os.homedir())) ? indicatorRoot : cwd
   return root
 }
 const root = findProjectRoot(process.cwd())

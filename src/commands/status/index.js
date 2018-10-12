@@ -9,18 +9,17 @@ class StatusCommand extends Command {
   async run() {
     const { globalConfig, api, site } = this.netlify
     const current = globalConfig.get('userId')
-    const accessToken = this.getAuthToken()
+    const accessToken = this.configToken
 
     const siteId = site.id
 
     this.log(`──────────────────────┐
  Current Netlify User │
 ──────────────────────┘`)
-    let personal
     let accountData
     if (accessToken) {
       const accounts = await api.listAccountsForUser()
-      personal = accounts.find(account => account.type === 'PERSONAL')
+      const personal = this.netlify.api.getCurrentUser()
       const teams = accounts.filter(account => account.type !== 'PERSONAL')
       const ghuser = this.netlify.globalConfig.get(`users.${current}.auth.github.user`)
       accountData = {

@@ -6,11 +6,7 @@ const get = require('lodash.get')
 class StatusHooksCommand extends Command {
   async run() {
     const { site, api } = this.netlify
-    const accessToken = this.getAuthToken()
-    
-    if (!accessToken) {
-      this.error(`Not logged in. Log in to see site status.`)
-    }
+    await this.authenticate()
 
     const siteId = site.id
     if (!siteId) {

@@ -1,4 +1,3 @@
-const path = require('path')
 const fs = require('fs')
 const TOML = require('@iarna/toml')
 const permissionError = "You don't have access to this file."

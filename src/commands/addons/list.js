@@ -6,13 +6,8 @@ const { getAddons } = require('netlify/src/addons')
 class AddonsListCommand extends Command {
   async run() {
     const { flags } = this.parse(AddonsListCommand)
-    const accessToken = this.getAuthToken()
     const { api, site } = this.netlify
-
-    if (!accessToken) {
-      this.error(`Not logged in`)
-    }
-
+    const accessToken = await this.authenticate()
     const siteId = site.id
 
     if (!siteId) {

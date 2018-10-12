@@ -2,14 +2,11 @@ const { Command } = require('@oclif/command')
 const chalk = require('chalk')
 const API = require('netlify')
 const path = require('path')
-const fs = require('fs')
-const util = require('util')
-const minimist = require('minimist')
-const readConfig = require('./utils/readConfig')
+const readConfig = require('./utils/read-config')
 const globalConfig = require('./global-config')
 const State = require('./state')
 const openBrowser = require('../utils/open-browser')
-const projectRoot = require('./utils/projectRoot')
+const projectRoot = require('./utils/project-root')
 const { track, identify } = require('../utils/telemetry')
 
 // Netlify CLI client id. Lives in bot@netlify.com
@@ -23,7 +20,7 @@ class BaseCommand extends Command {
   // Initialize context
   async init(err) {
     // Grab netlify API token
-    const token = this.getAuthToken()
+    const token = this.configToken
 
     // Get site config from netlify.toml
     const configPath = path.join(projectRoot, 'netlify.toml')
@@ -48,16 +45,36 @@ class BaseCommand extends Command {
       state: state
     }
   }
-  getAuthToken() {
-    if (process.env.NETLIFY_AUTH_TOKEN) {
-      return process.env.NETLIFY_AUTH_TOKEN
-    }
+
+  get clientToken () {
+    return this.netlify.api.accessToken
+  }
+
+  set clientToken (token) {
+    this.netlify.api.accessToken = token
+  }
+
+  get configToken() {
     const userId = globalConfig.get('userId')
     return globalConfig.get(`users.${userId}.auth.token`)
   }
-  async authenticate() {
-    const token = this.getAuthToken()
+
+  async isLoggedIn() {
+    try {
+      await this.netlify.api.getCurrentUser()
+      return true
+    } catch (_) {
+      return false
+    }
+  }
+
+  async authenticate(authToken) {
+    const token = authToken || this.configToken
     if (token) {
+      // Update the api client
+      this.clientToken = token
+      // Check if it works
+      await this.netlify.api.getCurrentUser()
       return token
     }
 
@@ -73,39 +90,38 @@ class BaseCommand extends Command {
 
     const accessToken = await this.netlify.api.getAccessToken(ticket)
 
-    if (accessToken) {
-      const accounts = await this.netlify.api.listAccountsForUser()
-      const accountInfo = accounts.find(account => account.type === 'PERSONAL')
-      const userID = accountInfo.owner_ids[0]
+    if (!accessToken) this.error('Could not retrieve access token')
 
-      const userData = {
-        id: userID,
-        name: accountInfo.name || accountInfo.billing_name,
-        email: accountInfo.billing_email,
-        slug: accountInfo.slug,
-        auth: {
-          token: accessToken,
-          github: {
-            user: null,
-            token: null
-          }
+    const accountInfo = await this.netlify.api.getCurrentUser()
+    const userID = accountInfo.id
+
+    const userData = {
+      id: userID,
+      name: accountInfo.name || accountInfo.billing_name,
+      email: accountInfo.billing_email,
+      slug: accountInfo.slug,
+      auth: {
+        token: accessToken,
+        github: {
+          user: null,
+          token: null
         }
       }
-      // Set current userId
-      this.netlify.globalConfig.set('userId', userID)
-      // Set user data
-      this.netlify.globalConfig.set(`users.${userID}`, userData)
-
-      const email = accountInfo.billing_email
-      await identify({
-        name: accountInfo.name || accountInfo.billing_name,
-        email: email
-      }).then(() => {
-        return track('user_login', {
-          email: email
-        })
-      })
     }
+    // Set current userId
+    this.netlify.globalConfig.set('userId', userID)
+    // Set user data
+    this.netlify.globalConfig.set(`users.${userID}`, userData)
+
+    const email = accountInfo.billing_email
+    await identify({
+      name: accountInfo.name || accountInfo.billing_name,
+      email: email
+    }).then(() => {
+      return track('user_login', {
+        email: email
+      })
+    })
     // Log success
     this.log()
     this.log(`${chalk.greenBright('You are now logged into your Netlify account!')}`)
@@ -114,6 +130,7 @@ class BaseCommand extends Command {
     this.log()
     this.log(`To see all available commands run: ${chalk.cyanBright('netlify help')}`)
     this.log()
+    return accessToken
   }
 }
 
