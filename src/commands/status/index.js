@@ -19,15 +19,16 @@ class StatusCommand extends Command {
     let accountData
     if (accessToken) {
       const accounts = await api.listAccountsForUser()
-      const personal = this.netlify.api.getCurrentUser()
+      const personal = accounts.find(account => account.type === 'PERSONAL')
+      const user = this.netlify.api.getCurrentUser()
       const teams = accounts.filter(account => account.type !== 'PERSONAL')
       const ghuser = this.netlify.globalConfig.get(`users.${current}.auth.github.user`)
       accountData = {
-        'Account name': get(personal, 'name'),
+        'Account name': get(user, 'full_name') || get(personal, 'name'),
         // 'Account slug': get(personal, 'slug'),
         // 'Account id': get(personal, 'id'),
         // Name: get(personal, 'billing_name'),
-        Email: get(personal, 'billing_email'),
+        Email: get(user, 'email') || get(personal, 'billing_email'),
         Github: ghuser
       }
       const teamsData = {}

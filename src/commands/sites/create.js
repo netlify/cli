@@ -37,7 +37,7 @@ class SitesCreateCommand extends Command {
           }))
         }
       ])
-      accountSlug, (name = results.accountSlug)
+      accountSlug = results.accountSlug
       name = results.name
     }
 
@@ -48,7 +48,7 @@ class SitesCreateCommand extends Command {
     }
     try {
       site = await api.createSiteInTeam({
-        accountSlug: flags['account-slug'] || accountSlug || personal.slug,
+        accountSlug: accountSlug || personal.slug,
         body
       })
     } catch (error) {

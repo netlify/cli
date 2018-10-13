@@ -4,7 +4,7 @@ const { track } = require('../utils/telemetry')
 
 class LogoutCommand extends Command {
   async run() {
-    const accessToken = this.configToken()
+    const accessToken = this.configToken
 
     if (accessToken) {
       await track('user_logout')

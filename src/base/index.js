@@ -8,6 +8,7 @@ const State = require('./state')
 const openBrowser = require('../utils/open-browser')
 const projectRoot = require('./utils/project-root')
 const { track, identify } = require('../utils/telemetry')
+const merge = require('lodash.merge')
 
 // Netlify CLI client id. Lives in bot@netlify.com
 // Todo setup client for multiple environments
@@ -34,8 +35,13 @@ class BaseCommand extends Command {
       api: new API(token),
       // current site context
       site: {
-        id: state.get('siteId'),
-        root: projectRoot
+        root: projectRoot,
+        get id() {
+          return state.get('siteId')
+        },
+        set id (id) {
+          state.set('siteId', id)
+        } 
       },
       // Configuration from netlify.[toml/yml]
       config: config,
@@ -86,36 +92,40 @@ class BaseCommand extends Command {
     })
 
     // Open browser for authentication
-    await openBrowser(`https://app.netlify.com/authorize?response_type=ticket&ticket=${ticket.id}`)
+    const authLink = `https://app.netlify.com/authorize?response_type=ticket&ticket=${ticket.id}`
+    this.log(`Opening ${authLink}`)
+    await openBrowser(authLink)
 
     const accessToken = await this.netlify.api.getAccessToken(ticket)
 
     if (!accessToken) this.error('Could not retrieve access token')
 
-    const accountInfo = await this.netlify.api.getCurrentUser()
-    const userID = accountInfo.id
+    const user = await this.netlify.api.getCurrentUser()
+    const userID = user.id
+    const accounts = await this.netlify.api.listAccountsForUser()
+    const account = accounts.find(account => account.type === 'PERSONAL')
 
-    const userData = {
+    const userData = merge(this.netlify.globalConfig.get(`users.${userID}`), {
       id: userID,
-      name: accountInfo.name || accountInfo.billing_name,
-      email: accountInfo.billing_email,
-      slug: accountInfo.slug,
+      name: user.full_name,
+      email: user.email,
+      slug: account.slug,
       auth: {
         token: accessToken,
         github: {
-          user: null,
-          token: null
-        }
+          user: undefined,
+          token: undefined
+       }
       }
-    }
+    })
     // Set current userId
     this.netlify.globalConfig.set('userId', userID)
     // Set user data
     this.netlify.globalConfig.set(`users.${userID}`, userData)
 
-    const email = accountInfo.billing_email
+    const email = user.email
     await identify({
-      name: accountInfo.name || accountInfo.billing_name,
+      name: user.full_name || account.name || account.billing_name,
       email: email
     }).then(() => {
       return track('user_login', {
