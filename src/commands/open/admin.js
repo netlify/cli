@@ -5,11 +5,7 @@ const renderShortDesc = require('../../utils/renderShortDescription')
 class OpenAdminCommand extends Command {
   async run() {
     const { api, site } = this.netlify
-    const accessToken = this.getAuthToken()
-
-    if (!accessToken) {
-      this.error(`Not logged in. Please run \`netlify login\` and try again`)
-    }
+    await this.authenticate()
 
     const siteId = site.id
 

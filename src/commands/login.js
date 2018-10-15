@@ -4,7 +4,7 @@ const chalk = require('chalk')
 
 class LoginCommand extends Command {
   async run() {
-    const accessToken = this.getAuthToken()
+    const accessToken = this.configToken
 
     if (accessToken) {
       this.log('Already logged in!')

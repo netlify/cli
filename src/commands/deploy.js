@@ -17,18 +17,15 @@ const LinkCommand = require('./link')
 
 class DeployCommand extends Command {
   async run() {
-    const accessToken = this.getAuthToken()
     const { flags } = this.parse(DeployCommand)
     const { api, site, state } = this.netlify
-
+    
     const deployToProduction = flags.prod
+    await this.authenticate(flags.auth)
 
-    if (!accessToken) {
-      this.error(`Not logged in. Log in to deploy to a site`)
-    }
-
+    const siteId = flags.site || site.id
     let siteData
-    if (!site.id) {
+    if (!siteId) {
       this.log("This folder isn't linked to a site yet")
       const NEW_SITE = '+  Create & configure a new site'
       const EXISTING_SITE = '⇄  Link this directory to an existing site'
@@ -54,7 +51,7 @@ class DeployCommand extends Command {
       }
     } else {
       try {
-        siteData = await api.getSite({ siteId: site.get('siteId') })
+        siteData = await api.getSite({ siteId })
       } catch (e) {
         // TODO specifically handle known cases (e.g. no account access)
         this.error(e.message)
@@ -123,7 +120,7 @@ class DeployCommand extends Command {
         this.log('Deploying to draft url...')
       }
 
-      results = await api.deploy(site.get('siteId'), deployFolder, {
+      results = await api.deploy(siteId, deployFolder, {
         configPath: configPath,
         fnDir: functionsFolder,
         statusCb: deployProgressCb(),
@@ -222,6 +219,16 @@ DeployCommand.flags = {
   message: flags.string({
     char: 'm',
     description: 'A short message to include in the deploy log'
+  }),
+  auth: flags.string({
+    char: 'a',
+    description: 'An auth token to log in with',
+    env: 'NETLIFY_AUTH_TOKEN'
+  }),
+  site: flags.string({
+    char: 's',
+    description: 'A site ID to deploy too',
+    env: 'NETLIFY_SITE_ID'
   })
 }
 

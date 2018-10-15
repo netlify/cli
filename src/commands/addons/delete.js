@@ -4,13 +4,9 @@ const { getAddons, deleteAddon } = require('netlify/src/addons')
 
 class addonsDeleteCommand extends Command {
   async run() {
-    const accessToken = this.getAuthToken()
+    const accessToken = await this.authenticate()
     const { args } = this.parse(addonsDeleteCommand)
     const { site } = this.netlify
-
-    if (!accessToken) {
-      this.error(`Not logged in`)
-    }
 
     const addonName = args.name
 

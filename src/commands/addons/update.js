@@ -5,12 +5,8 @@ const parseRawFlags = require('../../utils/parseRawFlags')
 
 class addonsUpdateCommand extends Command {
   async run() {
-    const accessToken = this.getAuthToken()
+    const accessToken = await this.authenticate()
     const { args, raw } = this.parse(addonsUpdateCommand)
-
-    if (!accessToken) {
-      this.error(`Not logged in`)
-    }
 
     const addonName = args.name
 
