@@ -50,7 +50,7 @@ netlify [command] help
 
 ## Documentation
 
-To learn how to log in to Netlify and start deploying sites, visit the [documentation on Nelify](https://www.netlify.com/docs/cli).
+To learn how to log in to Netlify and start deploying sites, visit the [documentation on Netlify](https://www.netlify.com/docs/cli).
 
 For a full command reference, see the list below, or visit [cli.netlify.com](https://cli.netlify.com/).
 
