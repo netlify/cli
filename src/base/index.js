@@ -2,6 +2,7 @@ const { Command } = require('@oclif/command')
 const chalk = require('chalk')
 const API = require('netlify')
 const path = require('path')
+const getConfigPath = require('./utils/get-config-path')
 const readConfig = require('./utils/read-config')
 const globalConfig = require('./global-config')
 const State = require('./state')
@@ -24,7 +25,7 @@ class BaseCommand extends Command {
     const token = this.configToken
 
     // Get site config from netlify.toml
-    const configPath = path.join(projectRoot, 'netlify.toml')
+    const configPath = getConfigPath(projectRoot)
     const config = readConfig(configPath)
 
     // Get site id & build state
@@ -36,12 +37,13 @@ class BaseCommand extends Command {
       // current site context
       site: {
         root: projectRoot,
+        configPath: configPath,
         get id() {
           return state.get('siteId')
         },
         set id (id) {
           state.set('siteId', id)
-        } 
+        }
       },
       // Configuration from netlify.[toml/yml]
       config: config,
