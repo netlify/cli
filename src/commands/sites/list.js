@@ -30,7 +30,9 @@ class SitesListCommand extends Command {
       // Json response for piping commands
       if (flags.json) {
         const redactedSites = sites.map(site => {
-          delete site.build_settings.env
+          if (site && site.build_settings) {
+            delete site.build_settings.env
+          }
           return site
         })
         console.log(JSON.stringify(redactedSites, null, 2))

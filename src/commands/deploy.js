@@ -18,8 +18,8 @@ const LinkCommand = require('./link')
 class DeployCommand extends Command {
   async run() {
     const { flags } = this.parse(DeployCommand)
-    const { api, site, state } = this.netlify
-    
+    const { api, site, config, state } = this.netlify
+
     const deployToProduction = flags.prod
     await this.authenticate(flags.auth)
 
@@ -62,8 +62,8 @@ class DeployCommand extends Command {
     let deployFolder
     if (flags['dir']) {
       deployFolder = path.resolve(process.cwd(), flags['dir'])
-    } else if (get(site.config, 'build.publish')) {
-      deployFolder = path.resolve(site.root, get(site.config, 'build.publish'))
+    } else if (get(config, 'build.publish')) {
+      deployFolder = path.resolve(site.root, get(config, 'build.publish'))
     } else if (get(siteData, 'build_settings.dir')) {
       deployFolder = path.resolve(site.root, get(siteData, 'build_settings.dir'))
     }
