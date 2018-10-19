@@ -1,7 +1,6 @@
 const { Command } = require('@oclif/command')
 const chalk = require('chalk')
 const API = require('netlify')
-const path = require('path')
 const getConfigPath = require('./utils/get-config-path')
 const readConfig = require('./utils/read-config')
 const globalConfig = require('./global-config')
