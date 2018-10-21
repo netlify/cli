@@ -90,7 +90,7 @@ Handle various site operations
 | Subcommand | description  |
 |:--------------------------- |:-----|
 | [`sites:create`](/docs/sites.md#sitescreate) | Create an empty site (advanced)  |
-| [`sites:list`](/docs/sites.md#siteslist) | List all sites you have access too  |
+| [`sites:list`](/docs/sites.md#siteslist) | List all sites you have access to  |
 
 
 ### [status](/docs/status.md)

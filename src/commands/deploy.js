@@ -16,7 +16,7 @@ const SitesCreateCommand = require('./sites/create')
 const LinkCommand = require('./link')
 
 class DeployCommand extends Command {
-  async run() {
+  async run () {
     const { flags } = this.parse(DeployCommand)
     const { api, site, config, state } = this.netlify
 
@@ -227,12 +227,12 @@ DeployCommand.flags = {
   }),
   site: flags.string({
     char: 's',
-    description: 'A site ID to deploy too',
+    description: 'A site ID to deploy to',
     env: 'NETLIFY_SITE_ID'
   })
 }
 
-function deployProgressCb() {
+function deployProgressCb () {
   const events = {}
   /* statusObj: {
             type: name-of-step
@@ -268,7 +268,7 @@ function deployProgressCb() {
   }
 }
 
-function ensureDirectory(resolvedDeployPath, exit) {
+function ensureDirectory (resolvedDeployPath, exit) {
   let stat
   try {
     stat = fs.statSync(resolvedDeployPath)

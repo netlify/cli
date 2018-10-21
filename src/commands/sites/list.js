@@ -60,7 +60,7 @@ class SitesListCommand extends Command {
   }
 }
 
-SitesListCommand.description = `${renderShortDesc('List all sites you have access too')}`
+SitesListCommand.description = `${renderShortDesc('List all sites you have access to')}`
 
 SitesListCommand.flags = {
   json: flags.boolean({

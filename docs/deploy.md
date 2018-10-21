@@ -29,7 +29,7 @@ netlify deploy
 - `open` (*boolean*) - Open site after deploy
 - `message` (*option*) - A short message to include in the deploy log
 - `auth` (*option*) - An auth token to log in with
-- `site` (*option*) - A site ID to deploy too
+- `site` (*option*) - A site ID to deploy to
 
 **Examples**
 
