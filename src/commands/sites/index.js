@@ -1,5 +1,4 @@
 const { Command } = require('@oclif/command')
-const renderShortDesc = require('../../utils/renderShortDescription')
 const showHelp = require('../../utils/showHelp')
 const { isEmptyCommand } = require('../../utils/checkCommandInputs')
 
@@ -15,7 +14,7 @@ class SitesCommand extends Command {
   }
 }
 
-SitesCommand.description = `${renderShortDesc('Handle various site operations')}
+SitesCommand.description = `Handle various site operations
 The sites command will help you manage all your sites
 `
 

@@ -1,5 +1,4 @@
 const Command = require('../base')
-const renderShortDesc = require('../utils/renderShortDescription')
 const chalk = require('chalk')
 
 class LoginCommand extends Command {
@@ -22,7 +21,7 @@ class LoginCommand extends Command {
   }
 }
 
-LoginCommand.description = `${renderShortDesc('Login to your Netlify account')}
+LoginCommand.description = `Login to your Netlify account
 
 Opens a web browser to acquire an OAuth token.  Use NETLIFY_WEB_UI to set the base URL of the ticket URL.
 `

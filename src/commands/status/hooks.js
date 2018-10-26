@@ -1,5 +1,4 @@
 const Command = require('../../base')
-const renderShortDesc = require('../../utils/renderShortDescription')
 const prettyjson = require('prettyjson')
 const get = require('lodash.get')
 
@@ -51,6 +50,6 @@ Site Hook Status │
   }
 }
 
-StatusHooksCommand.description = `${renderShortDesc('Print hook information of the linked site')}`
+StatusHooksCommand.description = `Print hook information of the linked site`
 
 module.exports = StatusHooksCommand

@@ -1,6 +1,5 @@
 const Command = require('../../base')
 const OpenAdminCommand = require('./admin')
-const renderShortDesc = require('../../utils/renderShortDescription')
 const showHelp = require('../../utils/showHelp')
 const { isEmptyCommand } = require('../../utils/checkCommandInputs')
 
@@ -16,7 +15,7 @@ class OpenCommand extends Command {
   }
 }
 
-OpenCommand.description = `${renderShortDesc('Open settings for the site linked to the current folder')}`
+OpenCommand.description = `Open settings for the site linked to the current folder`
 
 OpenCommand.examples = [
   'netlify open:admin',

@@ -1,6 +1,5 @@
 const Command = require('../../base')
 const openBrowser = require('../../utils/open-browser')
-const renderShortDesc = require('../../utils/renderShortDescription')
 
 class OpenAdminCommand extends Command {
   async run() {
@@ -42,7 +41,7 @@ Run \`netlify link\` to connect to this folder to a site`)
   }
 }
 
-OpenAdminCommand.description = `${renderShortDesc('Opens current site admin UI in Netlify')}`
+OpenAdminCommand.description = `Opens current site admin UI in Netlify`
 
 OpenAdminCommand.examples = ['netlify open:admin']
 

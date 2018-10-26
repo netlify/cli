@@ -4,7 +4,6 @@ const isEmpty = require('lodash.isempty')
 const prettyjson = require('prettyjson')
 const chalk = require('chalk')
 const Command = require('../../base')
-const renderShortDesc = require('../../utils/renderShortDescription')
 const { track } = require('../../utils/telemetry')
 
 class SitesCreateCommand extends Command {
@@ -82,7 +81,7 @@ class SitesCreateCommand extends Command {
   }
 }
 
-SitesCreateCommand.description = `${renderShortDesc('Create an empty site (advanced)')}
+SitesCreateCommand.description = `Create an empty site (advanced)
 
 Create a blank site that isn't associated with any git remote.  Does not link to the current working directory.
 `

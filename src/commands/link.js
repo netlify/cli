@@ -1,6 +1,5 @@
 const Command = require('../base')
 const { flags } = require('@oclif/command')
-const renderShortDesc = require('../utils/renderShortDescription')
 const path = require('path')
 const chalk = require('chalk')
 const linkPrompt = require('../utils/link/link-by-prompt')
@@ -97,7 +96,7 @@ class LinkCommand extends Command {
   }
 }
 
-LinkCommand.description = `${renderShortDesc('Link a local repo or project folder to an existing site on Netlify')}`
+LinkCommand.description = `Link a local repo or project folder to an existing site on Netlify`
 
 LinkCommand.examples = [
   'netlify link',

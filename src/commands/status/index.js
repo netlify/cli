@@ -1,5 +1,4 @@
 const Command = require('../../base')
-const renderShortDesc = require('../../utils/renderShortDescription')
 const prettyjson = require('prettyjson')
 const get = require('lodash.get')
 const chalk = require('chalk')
@@ -78,6 +77,6 @@ class StatusCommand extends Command {
   }
 }
 
-StatusCommand.description = `${renderShortDesc('Print status information')}`
+StatusCommand.description = `Print status information`
 
 module.exports = StatusCommand

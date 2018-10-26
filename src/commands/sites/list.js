@@ -1,7 +1,6 @@
 const { flags } = require('@oclif/command')
 const chalk = require('chalk')
 const Command = require('../../base')
-const renderShortDesc = require('../../utils/renderShortDescription')
 
 class SitesListCommand extends Command {
   async run() {
@@ -60,7 +59,7 @@ class SitesListCommand extends Command {
   }
 }
 
-SitesListCommand.description = `${renderShortDesc('List all sites you have access to')}`
+SitesListCommand.description = `List all sites you have access to`
 
 SitesListCommand.flags = {
   json: flags.boolean({
