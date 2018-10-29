@@ -190,7 +190,20 @@ git remote add origin https://github.com/YourUserName/RepoName.git
     } else {
       switch (repo.provider) {
         case 'github': {
-          await configGithub(this, siteData, repo)
+          try {
+            await configGithub(this, siteData, repo)
+          } catch (e) {
+            this.warn(`Github error: ${e.status}`)
+            if (e.code === 404) {
+              this.error(
+                `Does the repository ${
+                  repo.repo_path
+                } exist and do you have the correct permissions to set up deploy keys?`
+              )
+            } else {
+              throw e
+            }
+          }
           break
         }
         case 'gitlab':
