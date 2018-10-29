@@ -16,14 +16,14 @@ const SitesCreateCommand = require('./sites/create')
 const LinkCommand = require('./link')
 
 class DeployCommand extends Command {
-  async run () {
+  async run() {
     const { flags } = this.parse(DeployCommand)
-    const { api, site, config, state } = this.netlify
+    const { api, site, config } = this.netlify
 
     const deployToProduction = flags.prod
     await this.authenticate(flags.auth)
 
-    const siteId = flags.site || site.id
+    let siteId = flags.site || site.id
     let siteData
     if (!siteId) {
       this.log("This folder isn't linked to a site yet")
@@ -44,7 +44,8 @@ class DeployCommand extends Command {
       if (initChoice === NEW_SITE) {
         // run site:create command
         siteData = await SitesCreateCommand.run([])
-        state.set('siteId', siteData.id)
+        site.id = siteData.id
+        siteId = site.id
       } else if (initChoice === EXISTING_SITE) {
         // run link command
         siteData = await LinkCommand.run([], false)
@@ -232,7 +233,7 @@ DeployCommand.flags = {
   })
 }
 
-function deployProgressCb () {
+function deployProgressCb() {
   const events = {}
   /* statusObj: {
             type: name-of-step
@@ -268,7 +269,7 @@ function deployProgressCb () {
   }
 }
 
-function ensureDirectory (resolvedDeployPath, exit) {
+function ensureDirectory(resolvedDeployPath, exit) {
   let stat
   try {
     stat = fs.statSync(resolvedDeployPath)
