@@ -1,5 +1,6 @@
 const { flags } = require('@oclif/command')
 const chalk = require('chalk')
+const { cli } = require('cli-ux')
 const Command = require('../../base')
 const renderShortDesc = require('../../utils/renderShortDescription')
 
@@ -7,9 +8,11 @@ class SitesListCommand extends Command {
   async run() {
     const { flags } = this.parse(SitesListCommand)
     const { api } = this.netlify
+    cli.action.start('Loading your sites')
     await this.authenticate()
 
     const sites = await api.listSites({ filter: 'all' })
+    cli.action.stop()
 
     if (sites && sites.length) {
       const logSites = sites.map(site => {
