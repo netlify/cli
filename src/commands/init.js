@@ -235,6 +235,7 @@ InitCommand.description = `${renderShortDesc('Configure continuous deployment fo
 
 InitCommand.flags = {
   manual: flags.boolean({
+    char: 'm',
     description: 'Manually configure a git remote for CI'
   }),
   watch: flags.boolean({
