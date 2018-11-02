@@ -116,9 +116,9 @@ class DeployCommand extends Command {
     let results
     try {
       if (deployToProduction) {
-        this.log('Deploying to live site url...')
+        this.log('Deploying to live site URL...')
       } else {
-        this.log('Deploying to draft url...')
+        this.log('Deploying to draft URL...')
       }
 
       results = await api.deploy(siteId, deployFolder, {
@@ -158,17 +158,17 @@ class DeployCommand extends Command {
     }
 
     if (deployToProduction) {
-      msgData['Live Url'] = siteUrl
+      msgData['Live URL'] = siteUrl
     } else {
       delete msgData['Unique Deploy URL']
-      msgData['Live Draft Url'] = deployUrl
+      msgData['Live Draft URL'] = deployUrl
     }
     this.log()
     this.log(prettyjson.render(msgData))
 
     if (!deployToProduction) {
       console.log()
-      console.log('If everything looks good on your draft URL. Take it live with the --prod flag')
+      console.log('If everything looks good on your draft URL, take it live with the --prod flag.')
       console.log(`${chalk.cyanBright.bold('netlify deploy --prod')}`)
       console.log()
     }
@@ -183,7 +183,7 @@ class DeployCommand extends Command {
 
 DeployCommand.description = `${renderShortDesc(`Create a new deploy from the contents of a folder`)}
 
-Deploys from the build settings found in the netlify.toml file, or settings from the api.
+Deploys from the build settings found in the netlify.toml file, or settings from the API.
 
 The following environment variables can be used to override configuration file lookups and prompts:
 
