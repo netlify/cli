@@ -40,7 +40,7 @@ class BaseCommand extends Command {
         get id() {
           return state.get('siteId')
         },
-        set id (id) {
+        set id(id) {
           state.set('siteId', id)
         }
       },
@@ -53,11 +53,11 @@ class BaseCommand extends Command {
     }
   }
 
-  get clientToken () {
+  get clientToken() {
     return this.netlify.api.accessToken
   }
 
-  set clientToken (token) {
+  set clientToken(token) {
     this.netlify.api.accessToken = token
   }
 
@@ -76,6 +76,7 @@ class BaseCommand extends Command {
   }
 
   async authenticate(authToken) {
+    const webUI = process.env.NETLIFY_WEB_UI || 'https://app.netlify.com'
     const token = authToken || this.configToken
     if (token) {
       // Update the api client
@@ -93,7 +94,7 @@ class BaseCommand extends Command {
     })
 
     // Open browser for authentication
-    const authLink = `https://app.netlify.com/authorize?response_type=ticket&ticket=${ticket.id}`
+    const authLink = `${webUI}/authorize?response_type=ticket&ticket=${ticket.id}`
     this.log(`Opening ${authLink}`)
     await openBrowser(authLink)
 
@@ -116,7 +117,7 @@ class BaseCommand extends Command {
         github: {
           user: undefined,
           token: undefined
-       }
+        }
       }
     })
     // Set current userId
