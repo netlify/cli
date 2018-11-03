@@ -11,24 +11,24 @@ class addonsCreateCommand extends Command {
     const addonName = args.name
 
     if (!addonName) {
-      console.log('Please provide an addon name to provision')
-      // console.log(util.inspect(myObject, false, null, true /* enable colors */))
+      this.log('Please provide an addon name to provision')
+      // this.log(util.inspect(myObject, false, null, true /* enable colors */))
       this.exit()
     }
 
     const siteId = site.id
 
     if (!siteId) {
-      console.log('No site id found, please run inside a site folder or `netlify link`')
+      this.log('No site id found, please run inside a site folder or `netlify link`')
       return false
     }
 
     const siteData = await api.getSite({ siteId })
-    // console.log(site)
+    // this.log(site)
     const addons = await getAddons(siteId, accessToken)
 
     if (typeof addons === 'object' && addons.error) {
-      console.log('API Error', addons)
+      this.log('API Error', addons)
       return false
     }
 
@@ -45,9 +45,9 @@ class addonsCreateCommand extends Command {
     const rawFlags = parseRawFlags(raw)
 
     if (currentAddon.id) {
-      console.log(`Addon ${addonName} already exists for ${siteData.name}`)
-      console.log(`> Run \`netlify addons:update ${addonName}\` to update settings`)
-      console.log(`> Run \`netlify addons:delete ${addonName}\` to delete this addon`)
+      this.log(`Addon ${addonName} already exists for ${siteData.name}`)
+      this.log(`> Run \`netlify addons:update ${addonName}\` to update settings`)
+      this.log(`> Run \`netlify addons:delete ${addonName}\` to delete this addon`)
       return false
     }
 
@@ -59,11 +59,11 @@ class addonsCreateCommand extends Command {
     const addonResponse = await createAddon(settings, accessToken)
 
     if (addonResponse.code === 404) {
-      console.log(`No addon "${addonName}" found. Please double check your addon name and try again`)
+      this.log(`No addon "${addonName}" found. Please double check your addon name and try again`)
       return false
     }
     this.log(`Addon "${addonName}" created for ${siteData.name}`)
-    // console.log(addonResponse)
+    // this.log(addonResponse)
   }
 }
 

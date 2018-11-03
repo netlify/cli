@@ -13,16 +13,16 @@ class addonsUpdateCommand extends Command {
     const siteId = this.netlify.site.id
 
     if (!siteId) {
-      console.log('No site id found, please run inside a site folder or `netlify link`')
+      this.log('No site id found, please run inside a site folder or `netlify link`')
       return false
     }
 
     const site = await this.netlify.api.getSite({ siteId })
-    // console.log(site)
+    // this.log(site)
     const addons = await getAddons(siteId, accessToken)
 
     if (typeof addons === 'object' && addons.error) {
-      console.log('API Error', addons)
+      this.log('API Error', addons)
       return false
     }
 
@@ -35,8 +35,8 @@ class addonsUpdateCommand extends Command {
     }, addons)
 
     if (!currentAddon || !currentAddon.id) {
-      console.log(`Addon ${addonName} doesnt exist for ${site.name}`)
-      console.log(`> Run \`netlify addons:create ${addonName}\` to create an instance for this site`)
+      this.log(`Addon ${addonName} doesnt exist for ${site.name}`)
+      this.log(`> Run \`netlify addons:create ${addonName}\` to create an instance for this site`)
       return false
     }
 
@@ -59,10 +59,10 @@ class addonsUpdateCommand extends Command {
     }
 
     const updateAddonResponse = await updateAddon(settings, accessToken)
-    // console.log('addonResponse', updateAddonResponse)
+    // this.log('addonResponse', updateAddonResponse)
 
     if (updateAddonResponse.code === 404) {
-      console.log(`No addon "${addonName}" found. Please double check your addon name and try again`)
+      this.log(`No addon "${addonName}" found. Please double check your addon name and try again`)
       return false
     }
     this.log(`Addon "${addonName}" updated`)
