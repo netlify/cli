@@ -12,40 +12,35 @@ const NETLIFY_GIT_LFS_SERVER_PATH = '/.netlify/netlify-lfs-staging'
 
 class LfsSetupCommand extends Command {
   async run() {
+    const accessToken = await this.authenticate()
     const { flags } = this.parse(LfsSetupCommand)
     const { api, site } = this.netlify
-    const accessToken = this.getAuthToken()
 
-    if (!accessToken) {
-      this.error(`Not logged in. Please run \`netlify login\` and try again`)
-    }
-
-    // check if git lfs is installed locally
-    let major, minor
+    // check if git lfs is installed locally with version 2.5.0 or above
     try {
       const { stdout } = await exec('git', ['lfs', '--version'])
       let version = stdout.trim().split(' ')[0].split('/')[1]
-      major = parseInt(version.split('.')[0])
-      minor = parseInt(version.split('.')[1])
+      let major = parseInt(version.split('.')[0])
+      let minor = parseInt(version.split('.')[1])
+
+      if (major < 2 || minor < 5) {
+        this.error('Git LFS version must be 2.5.0 or above.', {exit: 1})
+      }
     } catch (err) {
       this.error('Git LFS must be installed to use Netlify LFS. https://git-lfs.github.com/', {exit: 1})
     }
 
-    if (major < 2 || minor < 5) {
-      this.error('Git LFS version must be 2.5.0 or above.', {exit: 1})
-    }
+    const siteId = site.id
 
-    // TODO provide a way to run setup for git pull for Netlify LFS-ed site
-    // (aka setup the authtoken for git global config)
-    const siteId = site.get('siteId')
-    let siteData
-
+    // TODO any nice CLI util that I can just reuse for these getting site id
+    // and data?
     if (!siteId) {
       this.warn(`No Site ID found in current directory.
 Run \`netlify link\` to connect to this folder to a site`)
       return false
     }
 
+    let siteData
     try {
       siteData = await api.getSite({ siteId })
     } catch (e) {
@@ -72,6 +67,7 @@ Run \`netlify link\` to connect to this folder to a site`)
       this.error('Please run the command in the git repository.', {exit: 1})
     }
 
+    // check if netlify lfs addon is provisioned to the site or not
     if (!siteData.capabilities.asset_management) {
       this.warn(`This site has not configured with Asset Management yet.
 Please visit admin UI and enable it first or run netlify addons:create:
