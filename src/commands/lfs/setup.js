@@ -74,7 +74,7 @@ Run \`netlify link\` to connect to this folder to a site`)
 
     if (!siteData.capabilities.asset_management) {
       this.warn(`This site has not configured with Asset Management yet.
-Please visit admin UI and enable it first:
+Please visit admin UI and enable it first or run netlify addons:create:
 > ${siteData.admin_url}`)
       return false
     }
@@ -91,7 +91,7 @@ Please visit admin UI and enable it first:
       this.error('Failed to create .lfsconfig file.', {exit: 1})
     }
 
-    // initial gitattribute setup
+    // initial .gitattribute setup
     this.log()
     this.log('Setup files to track with Git LFS...')
     const { stdout } = await exec('git', ['lfs', 'track'])
@@ -128,7 +128,7 @@ Please visit admin UI and enable it first:
     this.log()
     this.log('Setup git config for the authentication with Netlify LFS server...')
     const extraHeader = `http.${lfsUrl}.extraheader`
-    const header = `AuthToken: ${accessToken}`
+    const header = `NF-LFS-Authtoken: ${accessToken}`
     try {
       await exec('git', ['config', extraHeader, header])
     } catch (err) {
