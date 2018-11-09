@@ -6,6 +6,7 @@ const chalk = require('chalk')
 const Command = require('../../base')
 const renderShortDesc = require('../../utils/renderShortDescription')
 const { track } = require('../../utils/telemetry')
+const configManual = require("../../utils/init/config-manual");
 
 class SitesCreateCommand extends Command {
   async run() {
@@ -78,6 +79,19 @@ class SitesCreateCommand extends Command {
       siteUrl: url
     })
 
+    if (flags.manual) {
+        const { manualConfig } = await inquirer.prompt([
+            {
+                type: 'confirm',
+                name: 'manualConfig',
+                message: 'Would you like to configure this site\'s git repository manually?',
+                default: true
+            }
+        ]);
+
+        if (manualConfig) await configManual(this, site, {});
+    }
+
     return site
   }
 }
@@ -95,6 +109,12 @@ SitesCreateCommand.flags = {
   'account-slug': flags.string({
     char: 'a',
     description: 'account slug to create the site under'
+  }),
+  'manual': flags.boolean({
+    char: 'm',
+    default: true,
+    description: 'enable the option to configure git manually',
+    allowNo: true
   })
 }
 
