@@ -1,5 +1,6 @@
 const Command = require('../../base')
 const { flags } = require('@oclif/command')
+const { createAddon } = require('netlify/src/addons')
 const renderShortDesc = require('../../utils/renderShortDescription')
 const fs = require('fs')
 const util = require('util')
@@ -9,6 +10,7 @@ const chalk = require('chalk')
 
 // path is /.netlify/service-name, this is pointing the staging
 const NETLIFY_GIT_LFS_SERVER_PATH = '/.netlify/netlify-lfs-staging'
+const NETLIFY_LM_ADDON_NAME = 'netlify-lfs-staging'
 
 class LfsSetupCommand extends Command {
   async run() {
@@ -69,13 +71,23 @@ Run \`netlify link\` to connect to this folder to a site`)
 
     // check if netlify lfs addon is provisioned to the site or not
     if (!siteData.capabilities.asset_management) {
-      this.warn(`This site has not configured with Asset Management yet.
-Please visit admin UI and enable it first or run netlify addons:create:
-> ${siteData.admin_url}`)
-      return false
+      this.log(`Creating ${NETLIFY_LM_ADDON_NAME} addon for the site...`)
+      // if there is no addon, create it automatically.
+      // copying code from src/commands/addons/create, consider having some
+      // functions that can reuse
+      const settings = {
+        siteId: siteId,
+        addon: NETLIFY_LM_ADDON_NAME
+      }
+      try {
+        await createAddon(settings, accessToken)
+      } catch (err) {
+        this.error(`Tried to create an addon ${NETLIFY_LM_ADDON_NAME} but failed.
+Try \`netlify addons:create ${NETLIFY_LM_ADDON_NAME}\` to see more detail of the failure`, {exit: 1})
+      }
     }
 
-    this.log(`Setup Asset Management with site "${siteData.name}"`)
+    this.log(`Setup Netlify Large Media with site "${siteData.name}"`)
 
     // .lfsconfig setup
     this.log('Creating .lfsconfig file with the custom lfs url...')
@@ -133,7 +145,7 @@ Please visit admin UI and enable it first or run netlify addons:create:
     }
 
     this.log()
-    this.log(`${chalk.bold('Asset Management/LFS setup completed successfully')}`)
+    this.log(`${chalk.bold('Netlify Large Media setup completed successfully')}`)
     this.log(`${chalk.bold('Tips💡:')}`)
     this.log(' * Tweak the tracking setting using `git lfs track`')
     // TODO support better migration ex
@@ -143,7 +155,7 @@ Please visit admin UI and enable it first or run netlify addons:create:
   }
 }
 
-LfsSetupCommand.description = `${renderShortDesc('Setup Netlify Asset Management/LFS with the repo')}`
+LfsSetupCommand.description = `${renderShortDesc('Setup Netlify Large Media with the repo')}`
 
 LfsSetupCommand.flags = {
 }
