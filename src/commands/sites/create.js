@@ -1,6 +1,5 @@
 const { flags } = require('@oclif/command')
 const inquirer = require('inquirer')
-const isEmpty = require('lodash.isempty')
 const prettyjson = require('prettyjson')
 const chalk = require('chalk')
 const Command = require('../../base')
@@ -18,7 +17,7 @@ class SitesCreateCommand extends Command {
     let name = flags.name
     const accounts = await api.listAccountsForUser()
     const personal = accounts.find(account => account.type === 'PERSONAL')
-    if (isEmpty(flags)) {
+    if (!name || !accountSlug) {
       console.log('Choose a site name or leave blank for a random name. You can update later.')
       const results = await inquirer.prompt([
         {
