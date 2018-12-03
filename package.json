@@ -85,7 +85,7 @@
   },
   "devDependencies": {
     "@oclif/dev-cli": "^1.13.31",
-    "ava": "1.0.0-beta.7",
+    "ava": "^1.0.0-rc.2",
     "body": "^5.1.0",
     "coveralls": "^3.0.2",
     "cpx": "^1.5.0",
