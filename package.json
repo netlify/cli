@@ -51,7 +51,7 @@
     "@oclif/errors": "^1.1.2",
     "@oclif/plugin-help": "^2",
     "@oclif/plugin-not-found": "^1.1.4",
-    "@octokit/rest": "^15.10.0",
+    "@octokit/rest": "^16.1.0",
     "ascii-table": "0.0.9",
     "chalk": "^2.4.1",
     "ci-info": "^1.4.0",
@@ -85,7 +85,7 @@
   },
   "devDependencies": {
     "@oclif/dev-cli": "^1.13.31",
-    "ava": "1.0.0-beta.7",
+    "ava": "^1.0.0-rc.2",
     "body": "^5.1.0",
     "coveralls": "^3.0.2",
     "cpx": "^1.5.0",
