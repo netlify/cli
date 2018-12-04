@@ -125,7 +125,9 @@
     "bin": "netlify",
     "commands": "./src/commands",
     "plugins": [
-      "@oclif/plugin-not-found"
+      "@oclif/plugin-not-found",
+      "@oclif/plugin-help",
+      "@oclif/plugin-plugins"
     ],
     "hooks": {
       "init": [
