@@ -78,7 +78,7 @@ async function configGithub(ctx, site, repo) {
 
   site = await api.updateSite({ siteId: site.id, body: { repo } })
 
-  const hooks = await octokit.repos.getHooks({
+  const hooks = await octokit.repos.listHooks({
     owner: parsedURL.owner,
     repo: parsedURL.name,
     per_page: 100
