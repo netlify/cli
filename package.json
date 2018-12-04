@@ -18,7 +18,7 @@
     "test": "run-s test:*",
     "test:ava": "nyc --reporter=lcov ava --verbose && nyc report",
     "test:lint": "eslint src",
-    "test:deps": "dependency-check ./package.json --entry \"src/**/!(*.test).js\" --unused --missing --no-dev --no-peer -i @oclif/plugin-not-found -i @oclif/config -i @oclif/plugin-help",
+    "test:deps": "dependency-check ./package.json --entry \"src/**/!(*.test).js\" --unused --missing --no-dev --no-peer -i @oclif/plugin-not-found -i @oclif/config -i @oclif/plugin-help -i @oclif/plugin-plugins",
     "watch": "nyc --reporter=lcov ava --watch",
     "prepack": "oclif-dev manifest",
     "postpack": "rm -f oclif.manifest.json",
@@ -50,6 +50,7 @@
     "@oclif/config": "^1",
     "@oclif/errors": "^1.1.2",
     "@oclif/plugin-help": "^2",
+    "@oclif/plugin-plugins": "^1.7.3",
     "@oclif/plugin-not-found": "^1.1.4",
     "@octokit/rest": "^16.1.0",
     "ascii-table": "0.0.9",
@@ -125,7 +126,8 @@
     "bin": "netlify",
     "commands": "./src/commands",
     "plugins": [
-      "@oclif/plugin-not-found"
+      "@oclif/plugin-not-found",
+      "@oclif/plugin-plugins"
     ],
     "hooks": {
       "init": [
