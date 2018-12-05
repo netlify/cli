@@ -27,6 +27,8 @@ class InitCommand extends Command {
       siteData = await api.getSite({ siteId })
     } catch (e) {
       // silent api error
+      // TODO handle expected errors
+      // Throw unexpected ones
     }
 
     if (siteId && siteData && get(siteData, 'build_settings.repo_url') && !flags.force) {
@@ -170,7 +172,7 @@ git remote add origin https://github.com/YourUserName/RepoName.git
 
     // Check for existing CI setup
     const remoteBuildRepo = get(siteData, 'build_settings.repo_url')
-    if (remoteBuildRepo) {
+    if (remoteBuildRepo && !flags.force) {
       this.log()
       this.log(chalk.underline.bold(`Existing Repo detected`))
       const siteName = get(siteData, 'name')
