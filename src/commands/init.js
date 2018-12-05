@@ -27,9 +27,11 @@ class InitCommand extends Command {
       siteData = await api.getSite({ siteId })
     } catch (e) {
       // silent api error
+      // TODO handle expected errors
+      // Throw unexpected ones
     }
 
-    if (siteId && siteData) {
+    if (siteId && siteData && get(siteData, 'build_settings.repo_url') && !flags.force) {
       const repoUrl = get(siteData, 'build_settings.repo_url')
       this.log()
       this.log(`${chalk.yellow('Warning:')} It looks like this site has already been initialized.`)
@@ -140,35 +142,37 @@ git remote add origin https://github.com/YourUserName/RepoName.git
       this.error(repo.error)
     }
 
-    const NEW_SITE = '+  Create & configure a new site'
-    const EXISTING_SITE = '⇄  Link this directory to an existing site'
+    if (!siteData) {
+      const NEW_SITE = '+  Create & configure a new site'
+      const EXISTING_SITE = '⇄  Link this directory to an existing site'
 
-    const initializeOpts = [EXISTING_SITE, NEW_SITE]
+      const initializeOpts = [EXISTING_SITE, NEW_SITE]
 
-    const { initChoice } = await inquirer.prompt([
-      {
-        type: 'list',
-        name: 'initChoice',
-        message: 'What would you like to do?',
-        choices: initializeOpts
+      const { initChoice } = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'initChoice',
+          message: 'What would you like to do?',
+          choices: initializeOpts
+        }
+      ])
+
+      // create site or search for one
+      if (initChoice === NEW_SITE) {
+        await track('sites_initStarted', {
+          type: 'new site'
+        })
+        // run site:create command
+        siteData = await SitesCreateCommand.run([])
+      } else if (initChoice === EXISTING_SITE) {
+        // run link command
+        siteData = await LinkCommand.run([], false)
       }
-    ])
-
-    // create site or search for one
-    if (initChoice === NEW_SITE) {
-      await track('sites_initStarted', {
-        type: 'new site'
-      })
-      // run site:create command
-      siteData = await SitesCreateCommand.run([])
-    } else if (initChoice === EXISTING_SITE) {
-      // run link command
-      siteData = await LinkCommand.run([], false)
     }
 
     // Check for existing CI setup
     const remoteBuildRepo = get(siteData, 'build_settings.repo_url')
-    if (remoteBuildRepo) {
+    if (remoteBuildRepo && !flags.force) {
       this.log()
       this.log(chalk.underline.bold(`Existing Repo detected`))
       const siteName = get(siteData, 'name')
@@ -239,6 +243,9 @@ InitCommand.flags = {
   watch: flags.boolean({
     char: 'w',
     description: 'Make the CLI wait for the first deploy to complete after setting up CI'
+  }),
+  force: flags.boolean({
+    description: 'Reinitialize CI hooks if the linked site is already configured to use CI'
   })
 }
 
