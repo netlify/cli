@@ -11,7 +11,7 @@ class AddonsListCommand extends Command {
     const siteId = site.id
 
     if (!siteId) {
-      console.log('No site id found, please run inside a site folder or `netlify link`')
+      this.log('No site id found, please run inside a site folder or `netlify link`')
       return false
     }
 
@@ -19,19 +19,19 @@ class AddonsListCommand extends Command {
 
     const addons = await getAddons(siteId, accessToken)
     if (!addons || !addons.length) {
-      console.log(`No addons currently installed for ${siteData.name}`)
-      console.log(`> Run \`netlify addons:create addon-namespace\` to install an addon`)
+      this.log(`No addons currently installed for ${siteData.name}`)
+      this.log(`> Run \`netlify addons:create addon-namespace\` to install an addon`)
       return false
     }
 
     // Json response for piping commands
     if (flags.json) {
-      console.log(JSON.stringify(addons, null, 2))
+      this.log(JSON.stringify(addons, null, 2))
       return false
     }
 
     const addonData = addons.map(addon => {
-      // console.log('addon', addon)
+      // this.log('addon', addon)
       return {
         namespace: addon.service_path.replace('/.netlify/', ''),
         name: addon.service_name,
@@ -40,7 +40,7 @@ class AddonsListCommand extends Command {
     })
 
     // Build a table out of addons
-    console.log(`site: ${siteData.name}`)
+    this.log(`site: ${siteData.name}`)
     const table = new AsciiTable(`Currently Installed addons`)
 
     table.setHeading('NameSpace', 'Name', 'Instance Id')
@@ -49,7 +49,7 @@ class AddonsListCommand extends Command {
       table.addRow(s.namespace, s.name, s.id)
     })
     // Log da addons
-    console.log(table.toString())
+    this.log(table.toString())
   }
 }
 

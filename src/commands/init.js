@@ -238,6 +238,7 @@ InitCommand.description = `Configure continuous deployment for a new or existing
 
 InitCommand.flags = {
   manual: flags.boolean({
+    char: 'm',
     description: 'Manually configure a git remote for CI'
   }),
   watch: flags.boolean({

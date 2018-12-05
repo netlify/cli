@@ -13,14 +13,14 @@ class addonsDeleteCommand extends Command {
     const siteId = site.id
 
     if (!siteId) {
-      console.log('No site id found, please run inside a site folder or `netlify link`')
+      this.log('No site id found, please run inside a site folder or `netlify link`')
       return false
     }
 
     const addons = await getAddons(siteId, accessToken)
 
     if (typeof addons === 'object' && addons.error) {
-      console.log('API Error', addons)
+      this.log('API Error', addons)
       return false
     }
 
@@ -34,11 +34,11 @@ class addonsDeleteCommand extends Command {
 
     // If we need flags here
     // const rawFlags = parseRawFlags(raw)
-    // console.log('rawFlags', rawFlags)
+    // this.log('rawFlags', rawFlags)
 
     if (!currentAddon.id) {
-      console.log(`No addon "${addonName}" found for site. Addon already deleted or never existed!`)
-      console.log(`> Run \`netlify addons:create ${addonName}\` to create an instance for this site`)
+      this.log(`No addon "${addonName}" found for site. Addon already deleted or never existed!`)
+      this.log(`> Run \`netlify addons:create ${addonName}\` to create an instance for this site`)
       return false
     }
 
@@ -50,7 +50,7 @@ class addonsDeleteCommand extends Command {
     const addonResponse = await deleteAddon(settings, accessToken)
 
     if (addonResponse.code === 404) {
-      console.log(`No addon "${addonName}" found. Please double check your addon name and try again`)
+      this.log(`No addon "${addonName}" found. Please double check your addon name and try again`)
       return false
     }
     this.log(`Addon "${addonName}" deleted`)
