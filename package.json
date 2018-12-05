@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "2.2.3",
+  "version": "2.3.0",
   "author": "Netlify Inc.",
   "contributors": [
     "Mathias Biilmann <matt@netlify.com> (https://twitter.com/biilmann)",
@@ -23,7 +23,8 @@
     "prepack": "oclif-dev manifest",
     "postpack": "rm -f oclif.manifest.json",
     "report": "nyc report --reporter=text-lcov | coveralls",
-    "version": "node ./scripts/docs.js && git add README.md docs"
+    "version": "node ./scripts/docs.js && auto-changelog -p --template keepachangelog && git add README.md docs CHANGELOG.md",
+    "publish": "git push && git push --tags && gh-release"
   },
   "ava": {
     "files": [
@@ -86,6 +87,7 @@
   },
   "devDependencies": {
     "@oclif/dev-cli": "^1.13.31",
+    "auto-changelog": "^1.10.2",
     "ava": "^1.0.0-rc.2",
     "body": "^5.1.0",
     "coveralls": "^3.0.2",
@@ -98,6 +100,7 @@
     "eslint-plugin-node": "^8.0.0",
     "eslint-plugin-prettier": "^3.0.0",
     "from2-string": "^1.1.0",
+    "gh-release": "^3.4.0",
     "markdown-magic": "^0.1.25",
     "mkdirp": "^0.5.1",
     "npm-run-all": "^4.1.3",

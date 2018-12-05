@@ -62,6 +62,11 @@ We actively welcome your pull requests.
 4. Ensure the test suite passes.
 5. Make sure your code lints.
 
+## Releasing
+
+1. `npm version [major, minor, patch]`  Generate changelog and bump version.
+2. `npm publish` Publish to npm, push version commit + tag, push latest CHANGELOG entry to GitHub release page.
+
 ## License
 
 By contributing to Netlify Node Client, you agree that your contributions will be licensed
