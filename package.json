@@ -49,9 +49,9 @@
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/errors": "^1.1.2",
-    "@oclif/plugin-help": "^2",
-    "@oclif/plugin-plugins": "^1.7.3",
+    "@oclif/plugin-help": "^2.1.4",
     "@oclif/plugin-not-found": "^1.1.4",
+    "@oclif/plugin-plugins": "^1.7.3",
     "@octokit/rest": "^16.1.0",
     "ascii-table": "0.0.9",
     "chalk": "^2.4.1",
@@ -127,7 +127,8 @@
     "commands": "./src/commands",
     "plugins": [
       "@oclif/plugin-not-found",
-      "@oclif/plugin-plugins"
+      "@oclif/plugin-plugins",
+      "@oclif/plugin-help"
     ],
     "hooks": {
       "init": [
