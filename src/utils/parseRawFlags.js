@@ -14,13 +14,13 @@ module.exports = function parseRawFlags(raw) {
   const rawFlags = raw.reduce((acc, curr, index, array) => {
     if (curr.input.match(/^-{1,2}/)) {
       const key = curr.input.replace(/^-{1,2}/, '')
-      const next = array[index+1]
+      const next = array[index + 1]
       if (!next) {
         acc[key] = true
       } else if (next && next.input && next.input.match(/^-{1,2}/)) {
         acc[key] = true
       } else {
-        acc[key] = (next) ? truthy(next.input) : true
+        acc[key] = next ? truthy(next.input) : true
       }
     }
     return acc
@@ -35,5 +35,15 @@ function truthy(value) {
   if (value === 'false') {
     return false
   }
-  return value
+  let parsed
+  try {
+    parsed = JSON.parse(value)
+  } catch (e) {
+    try {
+      parsed = JSON.parse(`"${value}"`)
+    } catch (e) {
+      parsed = value
+    }
+  }
+  return parsed
 }
