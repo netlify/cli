@@ -93,7 +93,7 @@ git remote add origin https://github.com/YourUserName/RepoName.git
       // create site or search for one
       if (noGitRemoteChoice === NEW_SITE_NO_GIT) {
         // run site:create command
-        siteData = await SitesCreateCommand.run(['--no-manual'])
+        siteData = await SitesCreateCommand.run([])
 
         console.log(`"${siteData.name}" site was created`)
         console.log()
@@ -161,7 +161,7 @@ git remote add origin https://github.com/YourUserName/RepoName.git
         type: 'new site'
       })
       // run site:create command
-      siteData = await SitesCreateCommand.run(['--no-manual'])
+      siteData = await SitesCreateCommand.run([])
     } else if (initChoice === EXISTING_SITE) {
       // run link command
       siteData = await LinkCommand.run([], false)

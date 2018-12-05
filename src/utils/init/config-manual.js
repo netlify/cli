@@ -24,7 +24,7 @@ async function configManual(ctx, site, repo) {
   repo.deploy_key_id = key.id
 
   // TODO: Look these up and default to the lookup order
-  const { buildCmd, buildDir, repoPath } = await inquirer.prompt([
+  const { buildCmd, buildDir } = await inquirer.prompt([
     {
       type: 'input',
       name: 'buildCmd',
@@ -36,17 +36,23 @@ async function configManual(ctx, site, repo) {
       name: 'buildDir',
       message: 'Directory to deploy (blank for current dir):',
       default: '.'
-    },
-    {
-      type: 'input',
-      name: 'repoPath',
-      message: 'The SSH URL of the remote git repo:',
-      default: repo.repo_path,
-      validate: url => !!url.match(/(ssh:\/\/|[a-zA-Z]*@|[a-zA-Z.].*:(?!\/\/))/) || "The URL provided does not use the SSH protocol"
-     }
+    }
   ])
   repo.dir = buildDir
-  repo.repo_path = repoPath
+
+  if (!repo.repo_path) {
+    const { repoPath } = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'repoPath',
+        message: 'The SSH URL of the remote git repo:',
+        default: repo.repo_path,
+        validate: url =>
+          !!url.match(/(ssh:\/\/|[a-zA-Z]*@|[a-zA-Z.].*:(?!\/\/))/) || 'The URL provided does not use the SSH protocol'
+      }
+    ])
+    repo.repo_path = repoPath
+  }
 
   if (buildCmd) {
     repo.cmd = buildCmd

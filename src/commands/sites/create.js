@@ -5,7 +5,9 @@ const chalk = require('chalk')
 const Command = require('../../base')
 const renderShortDesc = require('../../utils/renderShortDescription')
 const { track } = require('../../utils/telemetry')
-const configManual = require("../../utils/init/config-manual");
+const configManual = require('../../utils/init/config-manual')
+const parseGitRemote = require('parse-github-url')
+const configGithub = require('../../utils/init/config-github')
 
 class SitesCreateCommand extends Command {
   async run() {
@@ -13,11 +15,12 @@ class SitesCreateCommand extends Command {
     const { api } = this.netlify
 
     await this.authenticate()
-    let accountSlug = flags['account-slug']
-    let name = flags.name
+
     const accounts = await api.listAccountsForUser()
     const personal = accounts.find(account => account.type === 'PERSONAL')
-    if (!name || !accountSlug) {
+
+    let name = flags.name
+    if (!name) {
       console.log('Choose a site name or leave blank for a random name. You can update later.')
       const results = await inquirer.prompt([
         {
@@ -25,7 +28,14 @@ class SitesCreateCommand extends Command {
           name: 'name',
           message: 'Site name (optional):',
           filter: val => (val === '' ? undefined : val)
-        },
+        }
+      ])
+      name = results.name
+    }
+
+    let accountSlug = flags['account-slug']
+    if (!accountSlug) {
+      const results = await inquirer.prompt([
         {
           type: 'list',
           name: 'accountSlug',
@@ -38,7 +48,6 @@ class SitesCreateCommand extends Command {
         }
       ])
       accountSlug = results.accountSlug
-      name = results.name
     }
 
     let site
@@ -70,25 +79,57 @@ class SitesCreateCommand extends Command {
       })
     )
 
-    this.log()
-
     track('sites_created', {
       siteId: site.id,
       adminUrl: site.admin_url,
       siteUrl: url
     })
 
-    if (flags.manual) {
-        const { manualConfig } = await inquirer.prompt([
-            {
-                type: 'confirm',
-                name: 'manualConfig',
-                message: 'Would you like to configure this site\'s git repository manually?',
-                default: true
-            }
-        ]);
+    if (flags['with-ci']) {
+      this.log('Configuring CI')
+      const { url } = await inquirer.prompt([
+        {
+          type: 'input',
+          name: 'url',
+          message: 'Git SSH remote URL to enable CI with:',
+          validate: input => (parseGitRemote(input) ? true : `Could not parse Git remote ${input}`)
+        }
+      ])
+      console.log(url)
+      const repoData = parseGitRemote(url)
+      const repo = {
+        repoData,
+        repo_path: url
+      }
 
-        if (manualConfig) await configManual(this, site, {});
+      switch (true) {
+        case flags.manual: {
+          await configManual(this, site, repo)
+          break
+        }
+        case repoData.host === 'github.com': {
+          try {
+            await configGithub(this, site, repo)
+          } catch (e) {
+            this.warn(`Github error: ${e.status}`)
+            if (e.code === 404) {
+              this.error(
+                `Does the repository ${
+                  repo.repo_path
+                } exist and do you have the correct permissions to set up deploy keys?`
+              )
+            } else {
+              throw e
+            }
+          }
+          break
+        }
+        default: {
+          this.log('No configurator found for the provided git remote. Configuring manually...')
+          await configManual(this, site, repo)
+          break
+        }
+      }
     }
 
     return site
@@ -109,11 +150,13 @@ SitesCreateCommand.flags = {
     char: 'a',
     description: 'account slug to create the site under'
   }),
-  'manual': flags.boolean({
+  'with-ci': flags.boolean({
+    char: 'c',
+    description: 'initialize CI hooks during site creation'
+  }),
+  manual: flags.boolean({
     char: 'm',
-    default: true,
-    description: 'enable the option to configure git manually',
-    allowNo: true
+    description: 'Force manual CI setup.  Used --with-ci flag'
   })
 }
 
