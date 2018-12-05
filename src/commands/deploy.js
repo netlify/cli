@@ -1,5 +1,4 @@
 const Command = require('../base')
-const renderShortDesc = require('../utils/renderShortDescription')
 const openBrowser = require('../utils/open-browser')
 const path = require('path')
 const chalk = require('chalk')
@@ -181,7 +180,7 @@ class DeployCommand extends Command {
   }
 }
 
-DeployCommand.description = `${renderShortDesc(`Create a new deploy from the contents of a folder`)}
+DeployCommand.description = `Create a new deploy from the contents of a folder
 
 Deploys from the build settings found in the netlify.toml file, or settings from the API.
 

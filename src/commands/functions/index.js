@@ -2,7 +2,6 @@ const chalk = require('chalk')
 const { Command } = require('@oclif/command')
 const showHelp = require('../../utils/showHelp')
 const { isEmptyCommand } = require('../../utils/checkCommandInputs')
-const renderShortDesc = require('../../utils/renderShortDescription')
 
 class FunctionsCommand extends Command {
   async run() {
@@ -17,7 +16,7 @@ class FunctionsCommand extends Command {
 
 const name = chalk.greenBright(`\`functions\``)
 
-FunctionsCommand.description = `${renderShortDesc('Manage netlify functions')}
+FunctionsCommand.description = `Manage netlify functions
 The ${name} command will help you manage the functions in this site
 `
 FunctionsCommand.examples = [

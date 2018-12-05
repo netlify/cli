@@ -1,5 +1,4 @@
 const Command = require('../base')
-const renderShortDesc = require('../utils/renderShortDescription')
 const { track } = require('../utils/telemetry')
 
 class UnlinkCommand extends Command {
@@ -29,6 +28,6 @@ class UnlinkCommand extends Command {
   }
 }
 
-UnlinkCommand.description = `${renderShortDesc('Unlink a local folder from a Netlify site')}`
+UnlinkCommand.description = `Unlink a local folder from a Netlify site`
 
 module.exports = UnlinkCommand

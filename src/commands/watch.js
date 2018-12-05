@@ -4,7 +4,6 @@ const pWaitFor = require('p-wait-for')
 const cli = require('cli-ux').default
 const prettyjson = require('prettyjson')
 const chalk = require('chalk')
-const renderShortDesc = require('../utils/renderShortDescription')
 
 class SitesWatchCommand extends Command {
   async run() {
@@ -63,7 +62,7 @@ class SitesWatchCommand extends Command {
   }
 }
 
-SitesWatchCommand.description = `${renderShortDesc('Watch for site deploy to finish')}`
+SitesWatchCommand.description = `Watch for site deploy to finish`
 
 SitesWatchCommand.examples = [
   `netlify watch`,

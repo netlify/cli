@@ -1,5 +1,4 @@
 const Command = require('../base')
-const renderShortDesc = require('../utils/renderShortDescription')
 const { track } = require('../utils/telemetry')
 
 class LogoutCommand extends Command {
@@ -20,7 +19,7 @@ class LogoutCommand extends Command {
   }
 }
 
-LogoutCommand.description = `${renderShortDesc('Logout of your Netlify account')}`
+LogoutCommand.description = `Logout of your Netlify account`
 
 LogoutCommand.hidden = true
 

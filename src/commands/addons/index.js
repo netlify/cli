@@ -1,5 +1,4 @@
 const { Command } = require('@oclif/command')
-const renderShortDesc = require('../../utils/renderShortDescription')
 const showHelp = require('../../utils/showHelp')
 const { isEmptyCommand } = require('../../utils/checkCommandInputs')
 
@@ -15,7 +14,7 @@ class AddonsCommand extends Command {
   }
 }
 
-AddonsCommand.description = `${renderShortDesc('Handle addon operations')}
+AddonsCommand.description = `Handle addon operations
 The addons command will help you manage all your netlify addons
 `
 
