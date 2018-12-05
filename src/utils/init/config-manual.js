@@ -40,6 +40,20 @@ async function configManual(ctx, site, repo) {
   ])
   repo.dir = buildDir
 
+  if (!repo.repo_path) {
+    const { repoPath } = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'repoPath',
+        message: 'The SSH URL of the remote git repo:',
+        default: repo.repo_path,
+        validate: url =>
+          !!url.match(/(ssh:\/\/|[a-zA-Z]*@|[a-zA-Z.].*:(?!\/\/))/) || 'The URL provided does not use the SSH protocol'
+      }
+    ])
+    repo.repo_path = repoPath
+  }
+
   if (buildCmd) {
     repo.cmd = buildCmd
   }
