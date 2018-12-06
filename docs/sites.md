@@ -47,6 +47,8 @@ netlify sites:create
 
 - `name` (*option*) - name of site
 - `account-slug` (*option*) - account slug to create the site under
+- `with-ci` (*boolean*) - initialize CI hooks during site creation
+- `manual` (*boolean*) - Force manual CI setup.  Used --with-ci flag
 
 ---
 ## `sites:list`
