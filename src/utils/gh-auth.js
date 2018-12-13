@@ -41,7 +41,7 @@ async function createGithubPAT(opts) {
 
   let response
   try {
-    response = await octokit.authorization.create({
+    response = await octokit.oauthAuthorizations.createAuthorization({
       note: opts.note + ' (' + new Date().toJSON() + ')',
       scopes: opts.scopes,
       headers: {
@@ -59,7 +59,7 @@ async function createGithubPAT(opts) {
           filter: input => input.trim()
         }
       ])
-      response = await octokit.authorization.create({
+      response = await octokit.oauthAuthorizations.createAuthorization({
         note: opts.note + ' (' + new Date().toJSON() + ')',
         scopes: opts.scopes,
         headers: {
