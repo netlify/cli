@@ -24,7 +24,7 @@
     "postpack": "rm -f oclif.manifest.json",
     "report": "nyc report --reporter=text-lcov | coveralls",
     "version": "node ./scripts/docs.js && auto-changelog -p --template keepachangelog && git add README.md docs CHANGELOG.md",
-    "publish": "git push && git push --tags && gh-release"
+    "prepublishOnly": "git push && git push --tags && gh-release"
   },
   "ava": {
     "files": [
