@@ -275,19 +275,19 @@ function ensureDirectory(resolvedDeployPath, exit) {
   } catch (e) {
     if (e.code === 'ENOENT') {
       console.log('No such directory! Make sure to run your build command locally first')
-      exit()
+      exit(1)
     }
 
     // Improve the message of permission errors
     if (e.code === 'EACCES') {
       console.log('Permission error when trying to access deploy folder')
-      exit()
+      exit(1)
     }
     throw e
   }
   if (!stat.isDirectory) {
     console.log('Deploy target must be a directory')
-    exit()
+    exit(1)
   }
   return stat
 }
