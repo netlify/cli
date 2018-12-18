@@ -18,7 +18,7 @@
     "test": "run-s test:*",
     "test:ava": "nyc --reporter=lcov ava --verbose && nyc report",
     "test:lint": "eslint src",
-    "test:deps": "dependency-check ./package.json --entry \"src/**/!(*.test).js\" --unused --missing --no-dev --no-peer -i @oclif/plugin-not-found -i @oclif/config -i @oclif/plugin-help -i @oclif/plugin-plugins",
+    "test:deps": "dependency-check ./package.json --entry \"src/**/!(*.test).js\" --unused --missing --no-dev --no-peer -i @oclif/plugin-not-found -i @oclif/config -i @oclif/plugin-help -i @oclif/plugin-plugins -i @oclif/plugin-autocomplete",
     "watch": "nyc --reporter=lcov ava --watch",
     "prepack": "oclif-dev manifest",
     "postpack": "rm -f oclif.manifest.json",
@@ -50,6 +50,7 @@
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/errors": "^1.1.2",
+    "@oclif/plugin-autocomplete": "^0.1.0",
     "@oclif/plugin-help": "^2.1.4",
     "@oclif/plugin-not-found": "^1.1.4",
     "@oclif/plugin-plugins": "^1.7.3",
@@ -131,7 +132,8 @@
     "plugins": [
       "@oclif/plugin-not-found",
       "@oclif/plugin-plugins",
-      "@oclif/plugin-help"
+      "@oclif/plugin-help",
+      "@oclif/plugin-autocomplete"
     ],
     "hooks": {
       "init": [
