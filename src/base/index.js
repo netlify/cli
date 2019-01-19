@@ -25,6 +25,7 @@ class BaseCommand extends Command {
 
     // Get site config from netlify.toml
     const configPath = getConfigPath(projectRoot)
+    // TODO: https://github.com/request/caseless to handle key casing issues
     const config = readConfig(configPath)
 
     // Get site id & build state
