@@ -130,19 +130,26 @@ class DeployCommand extends Command {
     } catch (e) {
       switch (true) {
         case e.name === 'JSONHTTPError': {
-          this.error(e.json.message)
+          this.warn(`JSONHTTPError: ${e.json.message} ${e.status}`)
+          this.warn(`\n${JSON.stringify(e, null, '  ')}\n`)
+          this.error(e)
           return
         }
         case e.name === 'TextHTTPError': {
-          this.error(e.data)
+          this.warn(`TextHTTPError: ${e.status}`)
+          this.warn(`\n${e}\n`)
+          this.error(e)
           return
         }
         case e.message && e.message.includes('Invalid filename'): {
-          this.error(e.message)
+          this.warn(e.message)
+          this.error(e)
           return
         }
         default: {
+          this.warn(`\n${JSON.stringify(e, null, '  ')}\n`)
           this.error(e)
+          return
         }
       }
     }
