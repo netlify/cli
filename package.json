@@ -20,8 +20,8 @@
     "test:lint": "eslint src",
     "test:deps": "dependency-check ./package.json --entry \"src/**/!(*.test).js\" --unused --missing --no-dev --no-peer -i @oclif/plugin-not-found -i @oclif/config -i @oclif/plugin-help -i @oclif/plugin-plugins",
     "watch": "nyc --reporter=lcov ava --watch",
-    "prepack": "oclif-dev manifest",
-    "postpack": "rm -f oclif.manifest.json",
+    "prepack": "oclif-dev manifest && npm shrinkwrap",
+    "postpack": "rm -f oclif.manifest.json npm-shrinkwrap.json",
     "report": "nyc report --reporter=text-lcov | coveralls",
     "version": "node ./scripts/docs.js && auto-changelog -p --template keepachangelog && git add README.md docs CHANGELOG.md",
     "prepublishOnly": "git push && git push --tags && gh-release"
