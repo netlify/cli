@@ -71,8 +71,8 @@ class DeployCommand extends Command {
     let functionsFolder
     if (flags['functions']) {
       functionsFolder = path.resolve(process.cwd(), flags['functions'])
-    } else if (get(site.config, 'build.functions')) {
-      functionsFolder = path.resolve(site.root, get(site.config, 'build.functions'))
+    } else if (get(config, 'build.functions')) {
+      functionsFolder = path.resolve(site.root, get(config, 'build.functions'))
     } else if (get(siteData, 'build_settings.functions_dir')) {
       functionsFolder = path.resolve(site.root, get(siteData, 'build_settings.functions_dir'))
     }
