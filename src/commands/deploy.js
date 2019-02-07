@@ -200,7 +200,7 @@ Lambda functions in the function folder can be in the following configurations f
 
 
 Built Go binaries:
-==================
+------------------
 
 \`\`\`
 functions/
@@ -211,7 +211,7 @@ Build binaries of your Go language functions into the functions folder as part o
 
 
 Single file Node.js functions:
-=============================
+-----------------------------
 
 Build dependency bundled Node.js lambda functions with tools like netlify-lambda, webpack or browserify into the function folder as part of your build process.
 
@@ -221,7 +221,7 @@ functions/
 \`\`\`
 
 Unbundled Node.js functions that have dependencies outside or inside of the functions folder:
-=============================================================================================
+---------------------------------------------------------------------------------------------
 
 You can ship unbundled Node.js functions with the CLI, utilizing top level project dependencies, or a nested package.json.
 If you use nested dependencies, be sure to populate the nested node_modules as part of your build process before deploying using npm or yarn.
@@ -243,7 +243,7 @@ Any mix of these configurations works as well.
 
 
 Node.js function entry points
-=============================
+-----------------------------
 
 Function entry points are determined by the file name and name of the folder they are in:
 
