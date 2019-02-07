@@ -202,8 +202,10 @@ Lambda functions in the function folder can be in the following configurations f
 Built Go binaries:
 ==================
 
+\`\`\`
 functions/
 └── nameOfGoFunction
+\`\`\`
 
 Build binaries of your Go language functions into the functions folder as part of your build process.
 
