@@ -23,8 +23,6 @@ class addonsCreateCommand extends Command {
       return false
     }
 
-    const siteData = await api.getSite({ siteId })
-    // this.log(site)
     const addons = await getAddons(siteId, accessToken)
 
     if (typeof addons === 'object' && addons.error) {
@@ -32,17 +30,10 @@ class addonsCreateCommand extends Command {
       return false
     }
 
-    // Filter down addons to current args.name
-    const currentAddon = addons.reduce((acc, current) => {
-      // return current addon
-      if (current.service_path && current.service_path.replace('/.netlify/', '') === addonName) {
-        return current
-      }
-      return {}
-    }, addons)
+    const siteData = await api.getSite({ siteId })
 
-    // GET flags from `raw` data
-    const rawFlags = parseRawFlags(raw)
+    // Filter down addons to current args.name
+    const currentAddon = addons.find((addon) => addon.service_path === `/.netlify/${addonName}`)
 
     if (currentAddon.id) {
       this.log(`Addon ${addonName} already exists for ${siteData.name}`)
@@ -54,7 +45,7 @@ class addonsCreateCommand extends Command {
     const settings = {
       siteId: siteId,
       addon: addonName,
-      config: rawFlags
+      config: parseRawFlags(raw)
     }
     const addonResponse = await createAddon(settings, accessToken)
 
@@ -63,7 +54,6 @@ class addonsCreateCommand extends Command {
       return false
     }
     this.log(`Addon "${addonName}" created for ${siteData.name}`)
-    // this.log(addonResponse)
   }
 }
 
