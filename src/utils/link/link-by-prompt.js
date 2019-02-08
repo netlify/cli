@@ -1,3 +1,4 @@
+const path = require('path')
 const inquirer = require('inquirer')
 const chalk = require('chalk')
 const isEmpty = require('lodash.isempty')
@@ -199,7 +200,7 @@ Run ${chalk.cyanBright('`git remote -v`')} to see a list of your git remotes.`))
   context.log(`Site url:  ${chalk.cyanBright(site.ssl_url || site.url)}`)
   context.log()
 
-  context.log(`Site id saved to ${context.netlify.site.root}/.netlify/state.json`)
+  context.log(`Site id saved to ${path.join(context.netlify.site.root, '/.netlify/state.json')}`)
   // context.log(`Local Config: .netlify/config.json`)
   context.log()
   context.log(`You can now run other \`netlify\` cli commands in this directory`)
