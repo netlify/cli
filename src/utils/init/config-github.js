@@ -1,7 +1,7 @@
 const version = require('../../../package.json').version
 const os = require('os')
 const ghauth = require('../../utils/gh-auth')
-const octokit = require('@octokit/rest')()
+const Octokit = require('@octokit/rest')
 const parseGitRemote = require('parse-github-url')
 const inquirer = require('inquirer')
 
@@ -23,14 +23,13 @@ async function configGithub(ctx, site, repo) {
     globalConfig.set(`users.${current}.auth.github`, newToken)
     ghtoken = newToken
   }
-
-  octokit.authenticate({
-    type: 'oauth',
-    token: ghtoken.token
+  const octokit = new Octokit({
+    auth: `token ${ghtoken.token}`
   })
 
   const key = await api.createDeployKey()
   const parsedURL = parseGitRemote(repo.repo_path)
+
   await octokit.repos.addDeployKey({
     title: 'Netlify Deploy Key',
     key: key.public_key,
