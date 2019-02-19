@@ -1,5 +1,5 @@
 // A simple ghauth inspired library for getting a personal access token
-const kit = require('@octokit/rest')
+const Octokit = require('@octokit/rest')
 const inquirer = require('inquirer')
 const get = require('lodash.get')
 
@@ -14,7 +14,6 @@ async function createGithubPAT(opts) {
     },
     opts
   )
-  const octokit = kit() // function local client
 
   const { username, password } = await inquirer.prompt([
     {
@@ -32,45 +31,39 @@ async function createGithubPAT(opts) {
     }
   ])
 
+
+  async function promptForOTP () {
+    const { otp } = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'otp',
+        message: 'Your GitHub OTP/2FA Code:',
+        filter: input => input.trim()
+      }
+    ])
+    return otp
+  }
+
+
   // configure basic auth
-  octokit.authenticate({
-    type: 'basic',
-    username,
-    password
+  const octokit = new Octokit ({
+    auth: {
+      username,
+      password,
+      async on2fa () {
+        return promptForOTP()
+      }
+    }
   })
 
-  let response
-  try {
-    response = await octokit.oauthAuthorizations.createAuthorization({
-      note: opts.note + ' (' + new Date().toJSON() + ')',
-      scopes: opts.scopes,
-      headers: {
-        'User-Agent': opts.userAgent
-      }
-    })
-  } catch (e) {
-    var otpHeader = e.headers['x-github-otp']
-    if (otpHeader && otpHeader.includes('required')) {
-      const { otp } = await inquirer.prompt([
-        {
-          type: 'input',
-          name: 'otp',
-          message: 'Your GitHub OTP/2FA Code:',
-          filter: input => input.trim()
-        }
-      ])
-      response = await octokit.oauthAuthorizations.createAuthorization({
-        note: opts.note + ' (' + new Date().toJSON() + ')',
-        scopes: opts.scopes,
-        headers: {
-          'x-github-otp': otp || null,
-          'User-Agent': opts.userAgent
-        }
-      })
-    } else {
-      throw e
+  let response = await octokit.oauthAuthorizations.createAuthorization({
+    note: opts.note + ' (' + new Date().toJSON() + ')',
+    note_url: 'https://cli.netlify.com/',
+    scopes: opts.scopes,
+    headers: {
+      'User-Agent': opts.userAgent
     }
-  }
+  })
 
   if (get(response, 'data.token')) {
     return { user: username, token: get(response, 'data.token') }
