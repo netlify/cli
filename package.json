@@ -114,7 +114,7 @@
     "/bin",
     "/npm-shrinkwrap.json",
     "/oclif.manifest.json",
-    "/src"
+    "/src/**/*.js"
   ],
   "homepage": "https://github.com/netlify/cli",
   "keywords": [
