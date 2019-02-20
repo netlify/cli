@@ -1,18 +1,36 @@
 const Command = require('../../base')
-const { getAddons, createAddon } = require('netlify/src/addons')
+const {
+  getAddons,
+  createAddon
+} = require('netlify/src/addons')
 const parseRawFlags = require('../../utils/parseRawFlags')
+const getAddonManifest = require('../../utils/addons/api')
+const {
+  requiredConfigValues,
+  missingConfigValues,
+  updateConfigValues
+} = require('../../utils/addons/validation')
+const generatePrompts = require('../../utils/addons/prompts')
+const render = require('../../utils/addons/render')
+const chalk = require('chalk')
+const inquirer = require('inquirer')
 
 class addonsCreateCommand extends Command {
   async run() {
     const accessToken = await this.authenticate()
-    const { args, raw } = this.parse(addonsCreateCommand)
-    const { api, site } = this.netlify
+    const {
+      args,
+      raw
+    } = this.parse(addonsCreateCommand)
+    const {
+      api,
+      site
+    } = this.netlify
 
     const addonName = args.name
 
     if (!addonName) {
-      this.log('Please provide an addon name to provision')
-      // this.log(util.inspect(myObject, false, null, true /* enable colors */))
+      this.log('Please provide an add-on name to provision')
       this.exit()
     }
 
@@ -23,6 +41,9 @@ class addonsCreateCommand extends Command {
       return false
     }
 
+    const siteData = await api.getSite({
+      siteId
+    })
     const addons = await getAddons(siteId, accessToken)
 
     if (typeof addons === 'object' && addons.error) {
@@ -30,49 +51,124 @@ class addonsCreateCommand extends Command {
       return false
     }
 
-    const siteData = await api.getSite({ siteId })
-
     // Filter down addons to current args.name
     const currentAddon = addons.find((addon) => addon.service_path === `/.netlify/${addonName}`)
 
-    if (currentAddon.id) {
-      this.log(`Addon ${addonName} already exists for ${siteData.name}`)
-      this.log(`> Run \`netlify addons:update ${addonName}\` to update settings`)
-      this.log(`> Run \`netlify addons:delete ${addonName}\` to delete this addon`)
+    // GET flags from `raw` data
+    const rawFlags = parseRawFlags(raw)
+
+    if (currentAddon && currentAddon.id) {
+      this.log(`The "${addonName} add-on" already exists for ${siteData.name}`)
+      this.log()
+      const cmd = chalk.cyan(`\`netlify addons:config ${addonName}\``)
+      this.log(`- To update this add-on run: ${cmd}`)
+      const deleteCmd = chalk.cyan(`\`netlify addons:delete ${addonName}\``)
+      this.log(`- To remove this add-on run: ${deleteCmd}`)
+      this.log()
       return false
     }
 
-    const settings = {
-      siteId: siteId,
-      addon: addonName,
-      config: parseRawFlags(raw)
-    }
-    const addonResponse = await createAddon(settings, accessToken)
+    const manifest = await getAddonManifest(addonName, accessToken)
 
-    if (addonResponse.code === 404) {
-      this.log(`No addon "${addonName}" found. Please double check your addon name and try again`)
-      return false
+    let configValues = rawFlags
+    if (manifest.config) {
+      const required = requiredConfigValues(manifest.config)
+      const missingValues = missingConfigValues(required, rawFlags)
+      console.log(`Starting the setup for "${addonName} add-on"`)
+      console.log()
+
+      if (Object.keys(rawFlags).length) {
+        const newConfig = updateConfigValues(manifest.config, {}, rawFlags)
+
+        if (missingValues.length) {
+          /* Warn user of missing required values */
+          console.log(`${chalk.redBright.underline.bold(`Error: Missing required configuration for "${addonName} add-on"`)}`)
+          console.log(`Please supply the configuration values as CLI flags`)
+          console.log()
+          render.missingValues(missingValues, manifest)
+          console.log()
+        }
+
+
+        await createSiteAddon({
+          addonName,
+          settings: {
+            siteId: siteId,
+            addon: addonName,
+            config: newConfig
+          },
+          accessToken,
+          siteData
+        })
+        return false
+      }
+
+      const words = `The ${addonName} add-on has the following configurable options:`
+      console.log(` ${chalk.yellowBright.bold(words)}`)
+      render.configValues(addonName, manifest.config)
+      console.log()
+      console.log(` ${chalk.greenBright.bold('Lets configure those!')}`)
+
+      console.log()
+      console.log(` - Hit ${chalk.white.bold('enter')} to confirm value or set empty value`)
+      console.log(` - Hit ${chalk.white.bold('ctrl + C')} to cancel & exit configuration`)
+      console.log()
+
+      const prompts = generatePrompts({
+        config: manifest.config,
+        configValues: rawFlags,
+      })
+
+      const userInput = await inquirer.prompt(prompts)
+      // Merge user input with the flags specified
+      configValues = updateConfigValues(manifest.config, rawFlags, userInput)
     }
-    this.log(`Addon "${addonName}" created for ${siteData.name}`)
+
+    await createSiteAddon({
+      addonName,
+      settings: {
+        siteId: siteId,
+        addon: addonName,
+        config: configValues
+      },
+      accessToken,
+      siteData
+    })
   }
 }
 
-addonsCreateCommand.description = `Add an addon extension to your site
+async function createSiteAddon({
+  addonName,
+  settings,
+  accessToken,
+  siteData
+}) {
+  const addonResponse = await createAddon(settings, accessToken)
+
+  if (addonResponse.code === 404) {
+    console.log(`No add-on "${addonName}" found. Please double check your add-on name and try again`)
+    return false
+  }
+  console.log(`Add-on "${addonName}" created for ${siteData.name}`)
+  if (addonResponse.config && addonResponse.config.message) {
+    console.log()
+    console.log(`${addonResponse.config.message}`)
+  }
+  return addonResponse
+}
+
+addonsCreateCommand.description = `Add an add-on extension to your site
 ...
-Addons are a way to extend the functionality of your Netlify site
+Add-ons are a way to extend the functionality of your Netlify site
 `
 
-addonsCreateCommand.args = [
-  {
-    name: 'name',
-    required: true,
-    description: 'addon namespace'
-  }
-]
+addonsCreateCommand.args = [{
+  name: 'name',
+  required: true,
+  description: 'Add-on namespace'
+}]
 
 // allow for any flags. Handy for variadic configuration options
 addonsCreateCommand.strict = false
-
-addonsCreateCommand.hidden = true
 
 module.exports = addonsCreateCommand

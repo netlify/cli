@@ -8,50 +8,6 @@ hidden: true
 The addons command will help you manage all your netlify addons
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
-## addons:create
-
-Add an addon extension to your site
-...
-Addons are a way to extend the functionality of your Netlify site
-
-
-**Usage**
-
-```bash
-netlify addons:create
-```
-
-**Arguments**
-
-- name - addon namespace
-
-**Source code**
-
-Link to src
-
-## addons:delete
-
-Remove an addon extension to your site
-...
-Addons are a way to extend the functionality of your Netlify site
-
-
-**Usage**
-
-```bash
-netlify addons:delete
-```
-
-**Arguments**
-
-- name - addon namespace
-
-**Source code**
-
-Link to src
-
-## addons
-
 Handle addon operations
 The addons command will help you manage all your netlify addons
 
@@ -62,15 +18,97 @@ The addons command will help you manage all your netlify addons
 netlify addons
 ```
 
-**Source code**
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`addons:auth`](/addons#addonsauth) | Login to add-on provider  |
+| [`addons:config`](/addons#addonsconfig) | Configure add-on settings  |
+| [`addons:create`](/addons#addonscreate) | Add an add-on extension to your site  |
+| [`addons:delete`](/addons#addonsdelete) | Remove an add-on extension to your site  |
+| [`addons:list`](/addons#addonslist) | list current site add-ons  |
 
-Link to src
 
-## addons:list
+**Examples**
 
-list current site addons
+```bash
+netlify addons:create addon-xyz --value foo
+netlify addons:update addon-xyz --value bar
+netlify addons:show addon-xyz
+netlify addons:delete addon-xyz
+netlify addons:list
+```
+
+---
+## `addons:auth`
+
+Login to add-on provider
+
+**Usage**
+
+```bash
+netlify addons:auth
+```
+
+**Arguments**
+
+- name - Add-on slug
+
+---
+## `addons:config`
+
+Configure add-on settings
+
+**Usage**
+
+```bash
+netlify addons:config
+```
+
+**Arguments**
+
+- name - Add-on namespace
+
+---
+## `addons:create`
+
+Add an add-on extension to your site
 ...
-Addons are a way to extend the functionality of your Netlify site
+Add-ons are a way to extend the functionality of your Netlify site
+
+
+**Usage**
+
+```bash
+netlify addons:create
+```
+
+**Arguments**
+
+- name - Add-on namespace
+
+---
+## `addons:delete`
+
+Remove an add-on extension to your site
+...
+Add-ons are a way to extend the functionality of your Netlify site
+
+
+**Usage**
+
+```bash
+netlify addons:delete
+```
+
+**Arguments**
+
+- name - Add-on namespace
+
+---
+## `addons:list`
+
+list current site add-ons
+...
+Add-ons are a way to extend the functionality of your Netlify site
 
 
 **Usage**
@@ -81,30 +119,8 @@ netlify addons:list
 
 **Flags**
 
-- json (boolean) - Output addon data as JSON
+- `json` (*boolean*) - Output add-on data as JSON
 
-**Source code**
+---
 
-Link to src
-
-## addons:update
-
-Update an addon extension
-...
-Addons are a way to extend the functionality of your Netlify site
-
-
-**Usage**
-
-```bash
-netlify addons:update
-```
-
-**Arguments**
-
-- name - addon namespace
-
-**Source code**
-
-Link to src
 <!-- AUTO-GENERATED-CONTENT:END -->

@@ -37,7 +37,7 @@ class addonsDeleteCommand extends Command {
     // this.log('rawFlags', rawFlags)
 
     if (!currentAddon.id) {
-      this.log(`No addon "${addonName}" found for site. Addon already deleted or never existed!`)
+      this.log(`No add-on "${addonName}" found for site. Add-on already deleted or never existed!`)
       this.log(`> Run \`netlify addons:create ${addonName}\` to create an instance for this site`)
       return false
     }
@@ -50,16 +50,16 @@ class addonsDeleteCommand extends Command {
     const addonResponse = await deleteAddon(settings, accessToken)
 
     if (addonResponse.code === 404) {
-      this.log(`No addon "${addonName}" found. Please double check your addon name and try again`)
+      this.log(`No addon "${addonName}" found. Please double check your add-on name and try again`)
       return false
     }
     this.log(`Addon "${addonName}" deleted`)
   }
 }
 
-addonsDeleteCommand.description = `Remove an addon extension to your site
+addonsDeleteCommand.description = `Remove an add-on extension to your site
 ...
-Addons are a way to extend the functionality of your Netlify site
+Add-ons are a way to extend the functionality of your Netlify site
 `
 
 // allow for any flags. Handy for variadic configuration options
@@ -69,10 +69,8 @@ addonsDeleteCommand.args = [
   {
     name: 'name',
     required: true,
-    description: 'addon namespace'
+    description: 'Add-on namespace'
   }
 ]
-
-addonsDeleteCommand.hidden = true
 
 module.exports = addonsDeleteCommand
