@@ -7,7 +7,7 @@ class UnlinkCommand extends Command {
     const siteId = site.id
 
     if (!siteId) {
-      this.log(`Folder is not linked to a Netlify site`)
+      this.log(`Folder is not linked to a Netlify site. Run 'netlify link' to link it`)
       return this.exit()
     }
 
@@ -24,7 +24,12 @@ class UnlinkCommand extends Command {
       siteId: siteData.id || siteId,
     })
 
-    this.log(`Unlinked ${site.configPath} from ${siteData ? siteData.name : siteId}`)
+    if (site) {
+      this.log(`Unlinked ${site.configPath} from ${siteData ? siteData.name : siteId}`)
+    } else {
+      this.log('Unlinked site')
+    }
+
   }
 }
 

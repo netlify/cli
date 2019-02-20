@@ -49,9 +49,16 @@ class AddonsConfigCommand extends Command {
     // Get Existing Config
     const currentConfig = currentAddon.config || {}
 
-    console.log(`Current "${addonName} add-on" config values:\n`)
-    render.configValues(currentConfig)
-    console.log()
+    const words = `Current "${addonName} add-on" Settings:`
+    console.log(` ${chalk.yellowBright.bold(words)}`)
+    if (manifest.config) {
+      render.configValues(addonName, manifest.config, currentConfig)
+    } else {
+      // For addons without manifest. TODO remove once we enfore manifests
+      Object.keys(currentConfig).forEach((key) => {
+        console.log(`${key} - ${currentConfig[key]}`)
+      })
+    }
 
     if (manifest.config) {
       const required = requiredConfigValues(manifest.config)
