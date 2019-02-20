@@ -3,7 +3,7 @@ const globby = require('markdown-magic').globby
 
 module.exports = function generateCommandData() {
   const commandsPath = path.join(__dirname, '..', 'src/commands')
-  console.log('commandsPath', commandsPath)
+  // console.log('commandsPath', commandsPath)
   const commands = globby.sync([`${commandsPath}/**/**.js`])
 
   const allCommands = commands.map((file) => {
@@ -29,7 +29,7 @@ module.exports = function generateCommandData() {
     return !cmd.data.hidden
   })
 
-  console.log('visibleCommands', visibleCommands)
+  // console.log('visibleCommands', visibleCommands)
 
   const groupedCommands = visibleCommands.reduce((acc, curr) => {
     if (curr.commandGroup === curr.command) {
@@ -48,14 +48,17 @@ module.exports = function generateCommandData() {
 
   const groupedCommandsWithData = visibleCommands.reduce((acc, curr) => {
     if (curr.commandGroup !== curr.command) {
-      acc[curr.commandGroup].commands = acc[curr.commandGroup].commands.concat({
-        name: curr.command,
-        description: curr.data.description,
-        flags: curr.data.flags,
-        args: curr.data.args,
-        examples: curr.data.examples,
-        strict: curr.data.strict
-      })
+      // account for hidden parent commands
+      if (acc[curr.commandGroup] && acc[curr.commandGroup].commands) {
+        acc[curr.commandGroup].commands = acc[curr.commandGroup].commands.concat({
+          name: curr.command,
+          description: curr.data.description,
+          flags: curr.data.flags,
+          args: curr.data.args,
+          examples: curr.data.examples,
+          strict: curr.data.strict
+        })
+      }
     }
     return acc
   }, groupedCommands)
@@ -65,10 +68,10 @@ module.exports = function generateCommandData() {
 
 function commandFromPath(p) {
   const normalized = path.normalize(p)
-  console.log('commandFromPath', normalized)
-  console.log('process.cwd()', process.cwd())
+  // console.log('commandFromPath', normalized)
+  // console.log('process.cwd()', process.cwd())
   const rootDir = path.join(__dirname, '..')
-  console.log('rootDir', rootDir)
+  // console.log('rootDir', rootDir)
   return normalized.replace(rootDir, '')
     .replace(/\\/g, '/')
     .replace('.js', '')
