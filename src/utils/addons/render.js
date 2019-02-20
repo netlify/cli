@@ -18,7 +18,7 @@ function configValues(addonName, configValues, currentValue) {
 
   table.setHeading(...tableHeader)
 
-  const display = Object.keys(configValues).map((key) => {
+  Object.keys(configValues).map((key) => {
     const { type, displayName, required } = configValues[key]
     let requiredText = (required) ? `true` : `false`
     const typeInfo = type || ''
@@ -29,7 +29,7 @@ function configValues(addonName, configValues, currentValue) {
     } else {
       table.addRow(key, description, typeInfo, requiredText)
     }
-  }).join('\n')
+  })
   console.log(table.toString())
 }
 
