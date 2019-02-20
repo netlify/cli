@@ -46,7 +46,7 @@
     "url": "https://github.com/netlify/cli/issues"
   },
   "dependencies": {
-    "@iarna/toml": "^2.2.2",
+    "@iarna/toml": "^2.2.3",
     "@oclif/command": "^1.5.10",
     "@oclif/config": "^1.12.8",
     "@oclif/errors": "^1.1.2",
@@ -88,13 +88,13 @@
     "write-file-atomic": "^2.4.2"
   },
   "devDependencies": {
-    "@oclif/dev-cli": "^1.21.0",
+    "@oclif/dev-cli": "^1.21.1",
     "auto-changelog": "^1.11.0",
     "ava": "^1.2.1",
     "body": "^5.1.0",
     "coveralls": "^3.0.2",
     "dependency-check": "^3.3.0",
-    "dependency-cruiser": "^4.13.1",
+    "dependency-cruiser": "^4.13.2",
     "eslint": "^5.14.1",
     "eslint-config-prettier": "^4.0.0",
     "eslint-plugin-import": "^2.16.0",
