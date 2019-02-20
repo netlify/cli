@@ -31,7 +31,6 @@ class addonsCreateCommand extends Command {
 
     if (!addonName) {
       this.log('Please provide an add-on name to provision')
-      // this.log(util.inspect(myObject, false, null, true /* enable colors */))
       this.exit()
     }
 
@@ -45,7 +44,6 @@ class addonsCreateCommand extends Command {
     const siteData = await api.getSite({
       siteId
     })
-    // this.log(site)
     const addons = await getAddons(siteId, accessToken)
 
     if (typeof addons === 'object' && addons.error) {
