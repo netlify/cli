@@ -31,21 +31,3 @@ module.exports = function compare(oldValues, newValues) {
     return acc
   }, initialData)
 }
-
-// const newValues = {
-//   lol: 'byelol',
-// }
-// const oldValues = {
-//   lol: 'bye',
-//   cool: 'dddd'
-// }
-
-// const diffs = compareNewToOld(newValues, oldValues)
-// console.log('diffs', diffs)
-
-// const diff = diffValues(oldValues, newValues)
-// if (diff) {
-//   console.log(`Config updates\n`)
-//   console.log(`${diff}\n`)
-//   //  from '${currentState}' to '${newInput}'
-// }
