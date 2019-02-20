@@ -76,7 +76,7 @@
     "lodash.snakecase": "^4.1.1",
     "log-symbols": "^2.2.0",
     "make-dir": "^2.0.0",
-    "netlify": "^2.3.1",
+    "netlify": "^2.4.0",
     "node-fetch": "^2.2.0",
     "ora": "^3.1.0",
     "p-wait-for": "^2.0.0",
