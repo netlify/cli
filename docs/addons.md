@@ -122,5 +122,4 @@ netlify addons:list
 - `json` (*boolean*) - Output add-on data as JSON
 
 ---
-
 <!-- AUTO-GENERATED-CONTENT:END -->

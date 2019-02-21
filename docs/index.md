@@ -25,19 +25,6 @@ netlify [command] help
 ## Commands
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_LIST) -->
-### [addons](/addons)
-
-Handle addon operations
-
-| Subcommand | description  |
-|:--------------------------- |:-----|
-| [`addons:auth`](/addons#addonsauth) | Login to add-on provider  |
-| [`addons:config`](/addons#addonsconfig) | Configure add-on settings  |
-| [`addons:create`](/addons#addonscreate) | Add an add-on extension to your site  |
-| [`addons:delete`](/addons#addonsdelete) | Remove an add-on extension to your site  |
-| [`addons:list`](/addons#addonslist) | list current site add-ons  |
-
-
 ### [deploy](/deploy)
 
 Create a new deploy from the contents of a folder
