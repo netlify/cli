@@ -53,7 +53,7 @@ class AddonsDeleteCommand extends Command {
       this.log(`No addon "${addonName}" found. Please double check your add-on name and try again`)
       return false
     }
-    this.log(`Addon "${addonName}" deleted`)
+    this.log(`Add-on "${addonName}" deleted`)
   }
 }
 
