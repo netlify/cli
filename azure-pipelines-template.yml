@@ -9,11 +9,11 @@ jobs:
       versionSpec: '10.x'
     displayName: 'Install Node.js'
   - script: |
-    node --version
-    npm --version
-    npm test
-    npm start -- --version
-    npm start -- --help
+      node --version
+      npm --version
+      npm test
+      npm start -- --version
+      npm start -- --help
     displayName: 'Install dependencies and run tests'
   - script: npm run report
     displayName: 'Run report'
