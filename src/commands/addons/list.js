@@ -18,20 +18,20 @@ class AddonsListCommand extends Command {
     const siteData = await api.getSite({ siteId })
 
     const addons = await getAddons(siteId, accessToken)
+
+    // Return json response for piping commands
+    if (flags.json) {
+      this.log(JSON.stringify(addons, null, 2))
+      return false
+    }
+
     if (!addons || !addons.length) {
       this.log(`No addons currently installed for ${siteData.name}`)
       this.log(`> Run \`netlify addons:create addon-namespace\` to install an addon`)
       return false
     }
 
-    // Json response for piping commands
-    if (flags.json) {
-      this.log(JSON.stringify(addons, null, 2))
-      return false
-    }
-
     const addonData = addons.map(addon => {
-      // this.log('addon', addon)
       return {
         namespace: addon.service_path.replace('/.netlify/', ''),
         name: addon.service_name,
@@ -63,6 +63,7 @@ AddonsListCommand.flags = {
     description: 'Output add-on data as JSON'
   })
 }
+
 AddonsListCommand.hidden = true
 
 module.exports = AddonsListCommand
