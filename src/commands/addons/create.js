@@ -1,31 +1,18 @@
 const Command = require('../../base')
-const {
-  getAddons,
-  createAddon
-} = require('netlify/src/addons')
+const { getAddons, createAddon } = require('netlify/src/addons')
 const parseRawFlags = require('../../utils/parseRawFlags')
 const getAddonManifest = require('../../utils/addons/api')
-const {
-  requiredConfigValues,
-  missingConfigValues,
-  updateConfigValues
-} = require('../../utils/addons/validation')
+const { requiredConfigValues, missingConfigValues, updateConfigValues } = require('../../utils/addons/validation')
 const generatePrompts = require('../../utils/addons/prompts')
 const render = require('../../utils/addons/render')
 const chalk = require('chalk')
 const inquirer = require('inquirer')
 
-class addonsCreateCommand extends Command {
+class AddonsCreateCommand extends Command {
   async run() {
     const accessToken = await this.authenticate()
-    const {
-      args,
-      raw
-    } = this.parse(addonsCreateCommand)
-    const {
-      api,
-      site
-    } = this.netlify
+    const { args, raw } = this.parse(AddonsCreateCommand)
+    const { api, site } = this.netlify
 
     const addonName = args.name
 
@@ -52,7 +39,7 @@ class addonsCreateCommand extends Command {
     }
 
     // Filter down addons to current args.name
-    const currentAddon = addons.find((addon) => addon.service_path === `/.netlify/${addonName}`)
+    const currentAddon = addons.find(addon => addon.service_path === `/.netlify/${addonName}`)
 
     // GET flags from `raw` data
     const rawFlags = parseRawFlags(raw)
@@ -82,13 +69,14 @@ class addonsCreateCommand extends Command {
 
         if (missingValues.length) {
           /* Warn user of missing required values */
-          console.log(`${chalk.redBright.underline.bold(`Error: Missing required configuration for "${addonName} add-on"`)}`)
+          console.log(
+            `${chalk.redBright.underline.bold(`Error: Missing required configuration for "${addonName} add-on"`)}`
+          )
           console.log(`Please supply the configuration values as CLI flags`)
           console.log()
           render.missingValues(missingValues, manifest)
           console.log()
         }
-
 
         await createSiteAddon({
           addonName,
@@ -116,7 +104,7 @@ class addonsCreateCommand extends Command {
 
       const prompts = generatePrompts({
         config: manifest.config,
-        configValues: rawFlags,
+        configValues: rawFlags
       })
 
       const userInput = await inquirer.prompt(prompts)
@@ -137,12 +125,7 @@ class addonsCreateCommand extends Command {
   }
 }
 
-async function createSiteAddon({
-  addonName,
-  settings,
-  accessToken,
-  siteData
-}) {
+async function createSiteAddon({ addonName, settings, accessToken, siteData }) {
   const addonResponse = await createAddon(settings, accessToken)
 
   if (addonResponse.code === 404) {
@@ -157,18 +140,21 @@ async function createSiteAddon({
   return addonResponse
 }
 
-addonsCreateCommand.description = `Add an add-on extension to your site
+AddonsCreateCommand.description = `Add an add-on extension to your site
 ...
 Add-ons are a way to extend the functionality of your Netlify site
 `
 
-addonsCreateCommand.args = [{
-  name: 'name',
-  required: true,
-  description: 'Add-on namespace'
-}]
+AddonsCreateCommand.args = [
+  {
+    name: 'name',
+    required: true,
+    description: 'Add-on namespace'
+  }
+]
 
 // allow for any flags. Handy for variadic configuration options
-addonsCreateCommand.strict = false
+AddonsCreateCommand.strict = false
+AddonsCreateCommand.hidden = true
 
-module.exports = addonsCreateCommand
+module.exports = AddonsCreateCommand

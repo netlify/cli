@@ -2,10 +2,10 @@ const Command = require('../../base')
 const { getAddons, deleteAddon } = require('netlify/src/addons')
 // const parseRawFlags = require('../../utils/parseRawFlags')
 
-class addonsDeleteCommand extends Command {
+class AddonsDeleteCommand extends Command {
   async run() {
     const accessToken = await this.authenticate()
-    const { args } = this.parse(addonsDeleteCommand)
+    const { args } = this.parse(AddonsDeleteCommand)
     const { site } = this.netlify
 
     const addonName = args.name
@@ -57,15 +57,16 @@ class addonsDeleteCommand extends Command {
   }
 }
 
-addonsDeleteCommand.description = `Remove an add-on extension to your site
+AddonsDeleteCommand.description = `Remove an add-on extension to your site
 ...
 Add-ons are a way to extend the functionality of your Netlify site
 `
 
 // allow for any flags. Handy for variadic configuration options
-addonsDeleteCommand.strict = false
+AddonsDeleteCommand.strict = false
+AddonsDeleteCommand.hidden = true
 
-addonsDeleteCommand.args = [
+AddonsDeleteCommand.args = [
   {
     name: 'name',
     required: true,
@@ -73,4 +74,4 @@ addonsDeleteCommand.args = [
   }
 ]
 
-module.exports = addonsDeleteCommand
+module.exports = AddonsDeleteCommand

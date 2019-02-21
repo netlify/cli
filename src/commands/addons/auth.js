@@ -15,7 +15,7 @@ class AddonsAuthCommand extends Command {
       console.log('No site id found, please run inside a site folder or `netlify link`')
       return false
     }
-    
+
     const site = await this.netlify.api.getSite({ siteId })
     const addons = await getAddons(siteId, accessToken)
 
@@ -25,13 +25,13 @@ class AddonsAuthCommand extends Command {
     }
 
     // Filter down addons to current args.name
-    const currentAddon = addons.find((addon) => addon.service_path === `/.netlify/${addonName}`)
+    const currentAddon = addons.find(addon => addon.service_path === `/.netlify/${addonName}`)
 
     if (!currentAddon || !currentAddon.id) {
       console.log(`Addon ${addonName} doesn't exist for ${site.name}`)
       return false
     }
-    
+
     if (!currentAddon.auth_url) {
       console.log(`No Admin URL found for the "${addonName} add-on"`)
       return false
@@ -55,5 +55,7 @@ AddonsAuthCommand.args = [
 ]
 
 AddonsAuthCommand.description = `Login to add-on provider`
+
+AddonsAuthCommand.hidden = true
 
 module.exports = AddonsAuthCommand

@@ -63,5 +63,6 @@ AddonsListCommand.flags = {
     description: 'Output add-on data as JSON'
   })
 }
+AddonsListCommand.hidden = true
 
 module.exports = AddonsListCommand

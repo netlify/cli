@@ -26,4 +26,6 @@ AddonsCommand.examples = [
   'netlify addons:list'
 ]
 
+AddonsCommand.hidden = true
+
 module.exports = AddonsCommand
