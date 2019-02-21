@@ -16,5 +16,3 @@ jobs:
       npm start -- --version
       npm start -- --help
     displayName: 'Install dependencies and run tests'
-  - script: npm run report
-    displayName: 'Run report'
