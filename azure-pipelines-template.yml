@@ -11,6 +11,7 @@ jobs:
   - script: |
       node --version
       npm --version
+      npm install
       npm test
       npm start -- --version
       npm start -- --help
