@@ -285,7 +285,7 @@ const SearchWrapper = styled.div`
 
 
 const Result = (props) => {
-  console.log(props)
+  // console.log(props)
   return <div>{props.hit.firstname}</div>
 }
 
@@ -454,7 +454,7 @@ export default class Layout extends React.Component {
 
     // Set page title
     let pageTitle = '404 not found'
-    console.log('route.module', route.module)
+    // console.log('route.module', route.module)
     if (route.module) {
       const frontMatter = route.module.frontMatter
       if (frontMatter.title) {

@@ -2,10 +2,10 @@ const Command = require('../../base')
 const { getAddons, deleteAddon } = require('netlify/src/addons')
 // const parseRawFlags = require('../../utils/parseRawFlags')
 
-class addonsDeleteCommand extends Command {
+class AddonsDeleteCommand extends Command {
   async run() {
     const accessToken = await this.authenticate()
-    const { args } = this.parse(addonsDeleteCommand)
+    const { args } = this.parse(AddonsDeleteCommand)
     const { site } = this.netlify
 
     const addonName = args.name
@@ -37,7 +37,7 @@ class addonsDeleteCommand extends Command {
     // this.log('rawFlags', rawFlags)
 
     if (!currentAddon.id) {
-      this.log(`No addon "${addonName}" found for site. Addon already deleted or never existed!`)
+      this.log(`No add-on "${addonName}" found for site. Add-on already deleted or never existed!`)
       this.log(`> Run \`netlify addons:create ${addonName}\` to create an instance for this site`)
       return false
     }
@@ -50,29 +50,28 @@ class addonsDeleteCommand extends Command {
     const addonResponse = await deleteAddon(settings, accessToken)
 
     if (addonResponse.code === 404) {
-      this.log(`No addon "${addonName}" found. Please double check your addon name and try again`)
+      this.log(`No addon "${addonName}" found. Please double check your add-on name and try again`)
       return false
     }
     this.log(`Addon "${addonName}" deleted`)
   }
 }
 
-addonsDeleteCommand.description = `Remove an addon extension to your site
+AddonsDeleteCommand.description = `Remove an add-on extension to your site
 ...
-Addons are a way to extend the functionality of your Netlify site
+Add-ons are a way to extend the functionality of your Netlify site
 `
 
 // allow for any flags. Handy for variadic configuration options
-addonsDeleteCommand.strict = false
+AddonsDeleteCommand.strict = false
+AddonsDeleteCommand.hidden = true
 
-addonsDeleteCommand.args = [
+AddonsDeleteCommand.args = [
   {
     name: 'name',
     required: true,
-    description: 'addon namespace'
+    description: 'Add-on namespace'
   }
 ]
 
-addonsDeleteCommand.hidden = true
-
-module.exports = addonsDeleteCommand
+module.exports = AddonsDeleteCommand

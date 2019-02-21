@@ -14,6 +14,7 @@ Welcome to the Netlify CLI! The new 2.0 version was rebuilt from the ground up t
 - [Usage](#usage)
 - [Documentation](#documentation)
 - [Commands](#commands)
+  * [addons](#addons)
   * [deploy](#deploy)
   * [init](#init)
   * [link](#link)
@@ -57,6 +58,19 @@ For a full command reference, see the list below, or visit [cli.netlify.com](htt
 ## Commands
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_LIST) -->
+### [addons](/docs/addons.md)
+
+Handle addon operations
+
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`addons:auth`](/docs/addons.md#addonsauth) | Login to add-on provider  |
+| [`addons:config`](/docs/addons.md#addonsconfig) | Configure add-on settings  |
+| [`addons:create`](/docs/addons.md#addonscreate) | Add an add-on extension to your site  |
+| [`addons:delete`](/docs/addons.md#addonsdelete) | Remove an add-on extension to your site  |
+| [`addons:list`](/docs/addons.md#addonslist) | list current site add-ons  |
+
+
 ### [deploy](/docs/deploy.md)
 
 Create a new deploy from the contents of a folder
