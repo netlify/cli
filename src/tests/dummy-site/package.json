@@ -1,0 +1,13 @@
+{
+  "name": "dummy-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "prebuild": "rm -rf build && mkdir build",
+    "build": "cp index.html build"
+  },
+  "author": "David Wells",
+  "license": "MIT"
+}
