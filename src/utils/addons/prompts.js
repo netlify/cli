@@ -42,7 +42,7 @@ module.exports = function generatePrompts(settings) {
     // const defaultValidation = (setting.required) ? validateRequired : noValidate
     const defaultValidation = noValidate
     const validateFunction = (setting.pattern) ? validate(setting.pattern) : defaultValidation
-    const isRequiredText = (setting.required) ? ' (required)' : ''
+    const isRequiredText = (setting.required) ? ` (${chalk.yellow('required')})` : ''
     if (setting.type === 'string' || setting.type.match((/string/))) {
       prompt = {
         type: 'input',
