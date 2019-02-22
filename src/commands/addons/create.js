@@ -72,10 +72,15 @@ class AddonsCreateCommand extends Command {
           console.log(
             `${chalk.redBright.underline.bold(`Error: Missing required configuration for "${addonName} add-on"`)}`
           )
-          console.log(`Please supply the configuration values as CLI flags`)
           console.log()
           render.missingValues(missingValues, manifest)
           console.log()
+          const msg = `netlify addons:create ${addonName}`
+          console.log(`Please supply the configuration values as CLI flags`)
+          console.log()
+          console.log(`Alternatively, you can run ${chalk.cyan(msg)} with no flags to walk through the setup steps`)
+          console.log()
+          return false
         }
 
         await createSiteAddon({
