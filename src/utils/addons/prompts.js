@@ -70,7 +70,8 @@ function noValidate() {
   return true
 }
 
-function validateRequired(value) {
+// Will use this soon
+function validateRequired(value) { // eslint-disable-line 
   if (value) {
     return true
   }
