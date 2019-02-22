@@ -110,6 +110,13 @@ class AddonsCreateCommand extends Command {
       const userInput = await inquirer.prompt(prompts)
       // Merge user input with the flags specified
       configValues = updateConfigValues(manifest.config, rawFlags, userInput)
+      const missingRequiredValues = missingConfigValues(required, configValues)
+      if (missingRequiredValues && missingRequiredValues.length) {
+        missingRequiredValues.forEach((val) => {
+          console.log(`Missing required value "${val}". Please run the command again`)
+        })
+        return false
+      }
     }
 
     await createSiteAddon({
