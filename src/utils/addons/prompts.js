@@ -38,13 +38,16 @@ module.exports = function generatePrompts(settings) {
       return prompt
     }
 
-    const validateFunction = (setting.pattern) ? validate(setting.pattern) : noValidate
-
+    // For future use. Once UX is decided
+    // const defaultValidation = (setting.required) ? validateRequired : noValidate
+    const defaultValidation = noValidate
+    const validateFunction = (setting.pattern) ? validate(setting.pattern) : defaultValidation
+    const isRequiredText = (setting.required) ? ` (${chalk.yellow('required')})` : ''
     if (setting.type === 'string' || setting.type.match((/string/))) {
       prompt = {
         type: 'input',
         name: key,
-        message: `${chalk.white(key)} - ${setting.displayName}` || `Please enter value for ${key}`,
+        message: `${chalk.white(key)}${isRequiredText} - ${setting.displayName}` || `Please enter value for ${key}`,
         validate: validateFunction
       }
       // if value previously set show it
@@ -65,6 +68,14 @@ module.exports = function generatePrompts(settings) {
 
 function noValidate() {
   return true
+}
+
+// Will use this soon
+function validateRequired(value) { // eslint-disable-line 
+  if (value) {
+    return true
+  }
+  return `Please enter a value this field is required`
 }
 
 function validate(pattern) {
