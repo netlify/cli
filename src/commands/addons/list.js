@@ -58,11 +58,14 @@ AddonsListCommand.description = `list current site add-ons
 Add-ons are a way to extend the functionality of your Netlify site
 `
 
-AddonsListCommand.flags = {
-  json: flags.boolean({
-    description: 'Output add-on data as JSON'
-  })
-}
+AddonsListCommand.flags = Object.assign(
+  {
+    json: flags.boolean({
+      description: 'Output add-on data as JSON'
+    })
+  },
+  Command.flags
+)
 AddonsListCommand.hidden = true
 
 module.exports = AddonsListCommand

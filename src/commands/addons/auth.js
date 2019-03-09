@@ -12,7 +12,7 @@ class AddonsAuthCommand extends Command {
     const siteId = this.netlify.site.id
 
     if (!siteId) {
-      console.log('No site id found, please run inside a site folder or `netlify link`')
+      this.log('No site id found, please run inside a site folder or `netlify link`')
       return false
     }
 
@@ -20,7 +20,7 @@ class AddonsAuthCommand extends Command {
     const addons = await getAddons(siteId, accessToken)
 
     if (typeof addons === 'object' && addons.error) {
-      console.log('API Error', addons)
+      this.log('API Error', addons)
       return false
     }
 
@@ -28,19 +28,19 @@ class AddonsAuthCommand extends Command {
     const currentAddon = addons.find(addon => addon.service_path === `/.netlify/${addonName}`)
 
     if (!currentAddon || !currentAddon.id) {
-      console.log(`Addon ${addonName} doesn't exist for ${site.name}`)
+      this.log(`Addon ${addonName} doesn't exist for ${site.name}`)
       return false
     }
 
     if (!currentAddon.auth_url) {
-      console.log(`No Admin URL found for the "${addonName} add-on"`)
+      this.log(`No Admin URL found for the "${addonName} add-on"`)
       return false
     }
-    console.log()
-    console.log(`Opening ${addonName} add-on admin URL:`)
-    console.log()
-    console.log(currentAddon.auth_url)
-    console.log()
+    this.log()
+    this.log(`Opening ${addonName} add-on admin URL:`)
+    this.log()
+    this.log(currentAddon.auth_url)
+    this.log()
     await openBrowser(currentAddon.auth_url)
     this.exit()
   }

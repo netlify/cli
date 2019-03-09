@@ -108,10 +108,10 @@ class DeployCommand extends Command {
     }
     this.log(prettyjson.render(pathInfo))
 
-    ensureDirectory(deployFolder, this.exit)
+    this.ensureDirectory(deployFolder, this.exit)
 
     if (functionsFolder) {
-      ensureDirectory(functionsFolder, this.exit)
+      this.ensureDirectory(functionsFolder, this.exit)
     }
 
     let results
@@ -125,7 +125,7 @@ class DeployCommand extends Command {
       results = await api.deploy(siteId, deployFolder, {
         configPath: configPath,
         fnDir: functionsFolder,
-        statusCb: deployProgressCb(),
+        statusCb: this.deployProgressCb(),
         draft: !deployToProduction,
         message: flags.message
       })
@@ -175,10 +175,10 @@ class DeployCommand extends Command {
     this.log(prettyjson.render(msgData))
 
     if (!deployToProduction) {
-      console.log()
-      console.log('If everything looks good on your draft URL, take it live with the --prod flag.')
-      console.log(`${chalk.cyanBright.bold('netlify deploy --prod')}`)
-      console.log()
+      this.log()
+      this.log('If everything looks good on your draft URL, take it live with the --prod flag.')
+      this.log(`${chalk.cyanBright.bold('netlify deploy --prod')}`)
+      this.log()
     }
 
     if (flags['open']) {
@@ -186,6 +186,66 @@ class DeployCommand extends Command {
       await openBrowser(urlToOpen)
       this.exit()
     }
+  }
+
+  deployProgressCb() {
+    const events = {}
+    /* statusObj: {
+              type: name-of-step
+              msg: msg to print
+              phase: [start, progress, stop]
+      }
+    */
+    return ev => {
+      switch (ev.phase) {
+        case 'start': {
+          const spinner = ev.spinner || randomItem(cliSpinnerNames)
+          events[ev.type] = ora({
+            text: ev.msg,
+            spinner: spinner
+          }).start()
+          return
+        }
+        case 'progress': {
+          const spinner = events[ev.type]
+          if (spinner) spinner.text = ev.msg
+          return
+        }
+        case 'stop':
+        default: {
+          const spinner = events[ev.type]
+          if (spinner) {
+            spinner.stopAndPersist({ text: ev.msg, symbol: logSymbols.success })
+            delete events[ev.type]
+          }
+          return
+        }
+      }
+    }
+  }
+
+  ensureDirectory(resolvedDeployPath, exit) {
+    let stat
+    try {
+      stat = fs.statSync(resolvedDeployPath)
+    } catch (e) {
+      if (e.code === 'ENOENT') {
+        this.log('No such directory! Make sure to run your build command locally first')
+        exit(1)
+      }
+
+      // Improve the message of permission errors
+      if (e.code === 'EACCES') {
+        this.log('Permission error when trying to access deploy folder')
+        exit(1)
+      }
+      throw e
+    }
+    if (!stat.isDirectory) {
+      this.log('Deploy target must be a directory')
+      exit(1)
+    }
+    return stat
   }
 }
 
@@ -267,99 +327,42 @@ DeployCommand.examples = [
   'netlify deploy --message "A message with an $ENV_VAR"'
 ]
 
-DeployCommand.flags = {
-  dir: flags.string({
-    char: 'd',
-    description: 'Specify a folder to deploy'
-  }),
-  functions: flags.string({
-    char: 'f',
-    description: 'Specify a functions folder to deploy'
-  }),
-  prod: flags.boolean({
-    char: 'p',
-    description: 'Deploy to production',
-    default: false
-  }),
-  open: flags.boolean({
-    char: 'o',
-    description: 'Open site after deploy',
-    default: false
-  }),
-  message: flags.string({
-    char: 'm',
-    description: 'A short message to include in the deploy log'
-  }),
-  auth: flags.string({
-    char: 'a',
-    description: 'An auth token to log in with',
-    env: 'NETLIFY_AUTH_TOKEN'
-  }),
-  site: flags.string({
-    char: 's',
-    description: 'A site ID to deploy to',
-    env: 'NETLIFY_SITE_ID'
-  })
-}
-
-function deployProgressCb() {
-  const events = {}
-  /* statusObj: {
-            type: name-of-step
-            msg: msg to print
-            phase: [start, progress, stop]
-    }
-  */
-  return ev => {
-    switch (ev.phase) {
-      case 'start': {
-        const spinner = ev.spinner || randomItem(cliSpinnerNames)
-        events[ev.type] = ora({
-          text: ev.msg,
-          spinner: spinner
-        }).start()
-        return
-      }
-      case 'progress': {
-        const spinner = events[ev.type]
-        if (spinner) spinner.text = ev.msg
-        return
-      }
-      case 'stop':
-      default: {
-        const spinner = events[ev.type]
-        if (spinner) {
-          spinner.stopAndPersist({ text: ev.msg, symbol: logSymbols.success })
-          delete events[ev.type]
-        }
-        return
-      }
-    }
-  }
-}
-
-function ensureDirectory(resolvedDeployPath, exit) {
-  let stat
-  try {
-    stat = fs.statSync(resolvedDeployPath)
-  } catch (e) {
-    if (e.code === 'ENOENT') {
-      console.log('No such directory! Make sure to run your build command locally first')
-      exit(1)
-    }
-
-    // Improve the message of permission errors
-    if (e.code === 'EACCES') {
-      console.log('Permission error when trying to access deploy folder')
-      exit(1)
-    }
-    throw e
-  }
-  if (!stat.isDirectory) {
-    console.log('Deploy target must be a directory')
-    exit(1)
-  }
-  return stat
-}
+DeployCommand.flags = Object.assign(
+  {
+    dir: flags.string({
+      char: 'd',
+      description: 'Specify a folder to deploy'
+    }),
+    functions: flags.string({
+      char: 'f',
+      description: 'Specify a functions folder to deploy'
+    }),
+    prod: flags.boolean({
+      char: 'p',
+      description: 'Deploy to production',
+      default: false
+    }),
+    open: flags.boolean({
+      char: 'o',
+      description: 'Open site after deploy',
+      default: false
+    }),
+    message: flags.string({
+      char: 'm',
+      description: 'A short message to include in the deploy log'
+    }),
+    auth: flags.string({
+      char: 'a',
+      description: 'An auth token to log in with',
+      env: 'NETLIFY_AUTH_TOKEN'
+    }),
+    site: flags.string({
+      char: 's',
+      description: 'A site ID to deploy to',
+      env: 'NETLIFY_SITE_ID'
+    })
+  },
+  Command.flags
+)
 
 module.exports = DeployCommand

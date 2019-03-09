@@ -18,7 +18,7 @@ class AddonsConfigCommand extends Command {
     const siteId = this.netlify.site.id
 
     if (!siteId) {
-      console.log('No site id found, please run inside a site folder or `netlify link`')
+      this.log('No site id found, please run inside a site folder or `netlify link`')
       return false
     }
 
@@ -26,7 +26,7 @@ class AddonsConfigCommand extends Command {
     const addons = await getAddons(siteId, accessToken)
 
     if (typeof addons === 'object' && addons.error) {
-      console.log('API Error', addons)
+      this.log('API Error', addons)
       return false
     }
 
@@ -34,8 +34,8 @@ class AddonsConfigCommand extends Command {
     const currentAddon = addons.find(addon => addon.service_path === `/.netlify/${addonName}`)
 
     if (!currentAddon || !currentAddon.id) {
-      console.log(`Add-on ${addonName} doesn't exist for ${site.name}`)
-      console.log(`> Run \`netlify addons:create ${addonName}\` to create an instance for this site`)
+      this.log(`Add-on ${addonName} doesn't exist for ${site.name}`)
+      this.log(`> Run \`netlify addons:create ${addonName}\` to create an instance for this site`)
       return false
     }
 
@@ -46,13 +46,13 @@ class AddonsConfigCommand extends Command {
     const currentConfig = currentAddon.config || {}
 
     const words = `Current "${addonName} add-on" Settings:`
-    console.log(` ${chalk.yellowBright.bold(words)}`)
+    this.log(` ${chalk.yellowBright.bold(words)}`)
     if (manifest.config) {
       render.configValues(addonName, manifest.config, currentConfig)
     } else {
       // For addons without manifest. TODO remove once we enfore manifests
       Object.keys(currentConfig).forEach(key => {
-        console.log(`${key} - ${currentConfig[key]}`)
+        this.log(`${key} - ${currentConfig[key]}`)
       })
     }
 
@@ -64,7 +64,7 @@ class AddonsConfigCommand extends Command {
       if (rawFlags && !missingValues.length) {
         const newConfig = updateConfigValues(manifest.config, currentConfig, rawFlags)
 
-        await update({
+        await this.update({
           addonName,
           currentConfig,
           newConfig,
@@ -88,16 +88,16 @@ class AddonsConfigCommand extends Command {
         }
       ])
       if (!updatePrompt.updateNow) {
-        console.log('Sounds good! Exiting configuration...')
+        this.log('Sounds good! Exiting configuration...')
         return false
       }
-      console.log()
-      console.log(` - Hit ${chalk.white.bold('enter')} to keep the existing value in (parentheses)`)
-      console.log(` - Hit ${chalk.white.bold('down arrow')} to remove the value`)
-      console.log(` - Hit ${chalk.white.bold('ctrl + C')} to cancel & exit configuration`)
-      console.log()
-      console.log(` You will need to verify the changed before we push them to your live site!`)
-      console.log()
+      this.log()
+      this.log(` - Hit ${chalk.white.bold('enter')} to keep the existing value in (parentheses)`)
+      this.log(` - Hit ${chalk.white.bold('down arrow')} to remove the value`)
+      this.log(` - Hit ${chalk.white.bold('ctrl + C')} to cancel & exit configuration`)
+      this.log()
+      this.log(` You will need to verify the changed before we push them to your live site!`)
+      this.log()
       const prompts = generatePrompts({
         config: manifest.config,
         configValues: currentConfig
@@ -107,20 +107,20 @@ class AddonsConfigCommand extends Command {
       const newConfig = updateConfigValues(manifest.config, currentConfig, userInput)
 
       const diffs = compare(currentConfig, newConfig)
-      // console.log('compare', diffs)
+      // this.log('compare', diffs)
       if (diffs.isEqual) {
-        console.log(`No changes. exiting early`)
+        this.log(`No changes. exiting early`)
         return false
       }
-      console.log()
-      console.log(`${chalk.yellowBright.bold.underline('Confirm your updates:')}`)
-      console.log()
+      this.log()
+      this.log(`${chalk.yellowBright.bold.underline('Confirm your updates:')}`)
+      this.log()
       diffs.keys.forEach(key => {
         const { newValue, oldValue } = diffs.diffs[key]
         const oldVal = oldValue || 'NO VALUE'
-        console.log(`${chalk.cyan(key)} changed from ${chalk.whiteBright(oldVal)} to ${chalk.green(newValue)}`)
+        this.log(`${chalk.cyan(key)} changed from ${chalk.whiteBright(oldVal)} to ${chalk.green(newValue)}`)
       })
-      console.log()
+      this.log()
 
       const confirmPrompt = await inquirer.prompt([
         {
@@ -132,11 +132,11 @@ class AddonsConfigCommand extends Command {
       ])
 
       if (!confirmPrompt.confirmChange) {
-        console.log('Canceling changes... You are good to go!')
+        this.log('Canceling changes... You are good to go!')
         return false
       }
 
-      await update({
+      await this.update({
         addonName,
         currentConfig,
         newConfig,
@@ -150,28 +150,28 @@ class AddonsConfigCommand extends Command {
       })
     }
   }
-}
 
-async function update({ addonName, currentConfig, newConfig, settings, accessToken }) {
-  const codeDiff = diffValues(currentConfig, newConfig)
-  if (!codeDiff) {
-    console.log('No changes, exiting early')
-    return false
-  }
-  console.log()
-  const msg = `Updating ${addonName} add-on config values...`
-  console.log(`${chalk.white.bold(msg)}`)
-  console.log()
-  console.log(`${codeDiff}\n`)
-  console.log()
+  async update({ addonName, currentConfig, newConfig, settings, accessToken }) {
+    const codeDiff = diffValues(currentConfig, newConfig)
+    if (!codeDiff) {
+      this.log('No changes, exiting early')
+      return false
+    }
+    this.log()
+    const msg = `Updating ${addonName} add-on config values...`
+    this.log(`${chalk.white.bold(msg)}`)
+    this.log()
+    this.log(`${codeDiff}\n`)
+    this.log()
 
-  const updateAddonResponse = await updateAddon(settings, accessToken)
-  if (updateAddonResponse.code === 404) {
-    console.log(`No add-on "${addonName}" found. Please double check your add-on name and try again`)
-    return false
+    const updateAddonResponse = await updateAddon(settings, accessToken)
+    if (updateAddonResponse.code === 404) {
+      this.log(`No add-on "${addonName}" found. Please double check your add-on name and try again`)
+      return false
+    }
+    this.log(`Add-on "${addonName}" successfully updated`)
+    return updateAddonResponse
   }
-  console.log(`Add-on "${addonName}" successfully updated`)
-  return updateAddonResponse
 }
 
 AddonsConfigCommand.args = [

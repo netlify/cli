@@ -1,4 +1,5 @@
 const { Command } = require('@oclif/command')
+const { flags } = require('@oclif/command')
 const chalk = require('chalk')
 const API = require('netlify')
 const getConfigPath = require('./utils/get-config-path')
@@ -18,6 +19,13 @@ class BaseCommand extends Command {
   constructor(...args) {
     super(...args)
   }
+
+  log(message, ...args) {
+    if (!this.argv.includes('--silent') && !process.env.NETLIFY_NINJA_MODE) {
+      args.length ? super.log(message, args) : super.log(message)
+    }
+  }
+
   // Initialize context
   async init(err) {
     // Grab netlify API token
@@ -145,6 +153,14 @@ class BaseCommand extends Command {
     this.log()
     return accessToken
   }
+}
+
+BaseCommand.flags = {
+  silent: flags.boolean({
+    name: 'silent',
+    description: 'Disable output back to stdout',
+    env: 'NETLIFY_NINJA_MODE'
+  })
 }
 
 module.exports = BaseCommand

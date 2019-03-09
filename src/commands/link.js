@@ -22,8 +22,8 @@ class LinkCommand extends Command {
 
     // Site id is incorrect
     if (siteId && !siteData) {
-      console.log(`No site "${siteId}" found in your netlify account.`)
-      console.log(`Please double check your siteID and which account you are logged into via \`netlify status\`.`)
+      this.log(`No site "${siteId}" found in your netlify account.`)
+      this.log(`Please double check your siteID and which account you are logged into via \`netlify status\`.`)
       return this.exit()
     }
 
@@ -51,7 +51,7 @@ class LinkCommand extends Command {
       state.set('siteId', siteData.id)
       this.log(`Linked to ${siteData.name} in ${state.path}`)
 
-      await track('sites_linked',  {
+      await track('sites_linked', {
         siteId: siteData.id,
         linkType: 'manual',
         kind: 'byId'
@@ -82,8 +82,8 @@ class LinkCommand extends Command {
       state.set('siteId', siteData.id)
       this.log(`Linked to ${siteData.name} in ${path.relative(path.join(process.cwd(), '..'), state.path)}`)
 
-      await track('sites_linked',  {
-        siteId: siteData && siteData.id || siteId,
+      await track('sites_linked', {
+        siteId: (siteData && siteData.id) || siteId,
         linkType: 'manual',
         kind: 'byName'
       })
@@ -98,19 +98,18 @@ class LinkCommand extends Command {
 
 LinkCommand.description = `Link a local repo or project folder to an existing site on Netlify`
 
-LinkCommand.examples = [
-  'netlify link',
-  'netlify link --id 123-123-123-123',
-  'netlify link --name my-site-name'
-]
+LinkCommand.examples = ['netlify link', 'netlify link --id 123-123-123-123', 'netlify link --name my-site-name']
 
-LinkCommand.flags = {
-  id: flags.string({
-    description: 'ID of site to link to'
-  }),
-  name: flags.string({
-    description: 'Name of site to link to'
-  })
-}
+LinkCommand.flags = Object.assign(
+  {
+    id: flags.string({
+      description: 'ID of site to link to'
+    }),
+    name: flags.string({
+      description: 'Name of site to link to'
+    })
+  },
+  Command.flags
+)
 
 module.exports = LinkCommand

@@ -56,9 +56,9 @@ class InitCommand extends Command {
     const repo = await getRepoData()
 
     if (repo.error) {
-      console.log()
-      console.log(`${chalk.redBright('No git remote found. (╯°□°）╯︵ ┻━┻')}`)
-      console.log(`
+      this.log()
+      this.log(`${chalk.redBright('No git remote found. (╯°□°）╯︵ ┻━┻')}`)
+      this.log(`
 It is recommended that you initialize a site that has a remote repository in Github.
 
 This will allow for Netlify Continuous deployment to build branch & PR previews.
@@ -76,7 +76,7 @@ git remote add origin https://github.com/YourUserName/RepoName.git
         }
       }
       if (message) {
-        console.log(message)
+        this.log(message)
       }
 
       const NEW_SITE_NO_GIT = 'Yes, create manually deploy site'
@@ -96,8 +96,8 @@ git remote add origin https://github.com/YourUserName/RepoName.git
         // run site:create command
         siteData = await SitesCreateCommand.run([])
 
-        console.log(`"${siteData.name}" site was created`)
-        console.log()
+        this.log(`"${siteData.name}" site was created`)
+        this.log()
         this.log(`To deploy to this site. Run your site build and then ${chalk.cyanBright.bold('netlify deploy')}`)
 
         // Save to .netlify/state.json file
@@ -106,8 +106,8 @@ git remote add origin https://github.com/YourUserName/RepoName.git
         // no github remote
         this.exit()
       } else if (noGitRemoteChoice === NO_ABORT) {
-        console.log()
-        console.log(`${chalk.bold('To initialize a new git repo follow the steps below.')}
+        this.log()
+        this.log(`${chalk.bold('To initialize a new git repo follow the steps below.')}
 
 1. Initialize a new repo:
 
@@ -236,18 +236,21 @@ git remote add origin https://github.com/YourUserName/RepoName.git
 
 InitCommand.description = `Configure continuous deployment for a new or existing site`
 
-InitCommand.flags = {
-  manual: flags.boolean({
-    char: 'm',
-    description: 'Manually configure a git remote for CI'
-  }),
-  watch: flags.boolean({
-    char: 'w',
-    description: 'Make the CLI wait for the first deploy to complete after setting up CI'
-  }),
-  force: flags.boolean({
-    description: 'Reinitialize CI hooks if the linked site is already configured to use CI'
-  })
-}
+InitCommand.flags = Object.assign(
+  {
+    manual: flags.boolean({
+      char: 'm',
+      description: 'Manually configure a git remote for CI'
+    }),
+    watch: flags.boolean({
+      char: 'w',
+      description: 'Make the CLI wait for the first deploy to complete after setting up CI'
+    }),
+    force: flags.boolean({
+      description: 'Reinitialize CI hooks if the linked site is already configured to use CI'
+    })
+  },
+  Command.flags
+)
 
 module.exports = InitCommand

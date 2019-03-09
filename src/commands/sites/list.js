@@ -37,7 +37,7 @@ class SitesListCommand extends Command {
           }
           return site
         })
-        console.log(JSON.stringify(redactedSites, null, 2))
+        this.log(JSON.stringify(redactedSites, null, 2))
         return false
       }
 
@@ -48,15 +48,15 @@ class SitesListCommand extends Command {
 `)
 
       logSites.forEach(s => {
-        console.log(`${chalk.greenBright(s.name)} - ${s.id}`)
-        console.log(`  ${chalk.whiteBright.bold('url:')}  ${chalk.yellowBright(s.ssl_url)}`)
+        this.log(`${chalk.greenBright(s.name)} - ${s.id}`)
+        this.log(`  ${chalk.whiteBright.bold('url:')}  ${chalk.yellowBright(s.ssl_url)}`)
         if (s.repo_url) {
-          console.log(`  ${chalk.whiteBright.bold('repo:')} ${chalk.white(s.repo_url)}`)
+          this.log(`  ${chalk.whiteBright.bold('repo:')} ${chalk.white(s.repo_url)}`)
         }
         if (s.account_name) {
-          console.log(`  ${chalk.whiteBright.bold('account:')} ${chalk.white(s.account_name)}`)
+          this.log(`  ${chalk.whiteBright.bold('account:')} ${chalk.white(s.account_name)}`)
         }
-        console.log(`─────────────────────────────────────────────────`)
+        this.log(`─────────────────────────────────────────────────`)
       })
     }
   }
@@ -64,10 +64,13 @@ class SitesListCommand extends Command {
 
 SitesListCommand.description = `List all sites you have access to`
 
-SitesListCommand.flags = {
-  json: flags.boolean({
-    description: 'Output site data as JSON'
-  })
-}
+SitesListCommand.flags = Object.assign(
+  {
+    json: flags.boolean({
+      description: 'Output site data as JSON'
+    })
+  },
+  Command.flags
+)
 
 module.exports = SitesListCommand

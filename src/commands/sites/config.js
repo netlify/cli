@@ -14,12 +14,15 @@ SitesConfigCommand.description = `update a site
 Extra documentation goes here
 `
 
-SitesConfigCommand.flags = {
-  name: flags.string({
-    char: 'n',
-    description: 'name to print'
-  }),
-}
+SitesConfigCommand.flags = Object.assign(
+  {
+    name: flags.string({
+      char: 'n',
+      description: 'name to print'
+    })
+  },
+  Command.flags
+)
 
 // TODO implement logic
 SitesConfigCommand.hidden = true

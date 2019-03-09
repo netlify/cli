@@ -20,7 +20,7 @@ class SitesCreateCommand extends Command {
 
     let name = flags.name
     if (!name) {
-      console.log('Choose a site name or leave blank for a random name. You can update later.')
+      this.log('Choose a site name or leave blank for a random name. You can update later.')
       const results = await inquirer.prompt([
         {
           type: 'input',
@@ -60,7 +60,7 @@ class SitesCreateCommand extends Command {
         body
       })
     } catch (error) {
-      console.log(`Error ${error.status}: ${error.message} from createSiteInTeam call`)
+      this.log(`Error ${error.status}: ${error.message} from createSiteInTeam call`)
       if (error.status === 422) {
         this.error(`A site with name ${name} already exists. Please try a different slug`)
       }
@@ -94,7 +94,7 @@ class SitesCreateCommand extends Command {
           validate: input => (parseGitRemote(input) ? true : `Could not parse Git remote ${input}`)
         }
       ])
-      console.log(url)
+      this.log(url)
       const repoData = parseGitRemote(url)
       const repo = {
         repoData,
@@ -140,23 +140,26 @@ SitesCreateCommand.description = `Create an empty site (advanced)
 Create a blank site that isn't associated with any git remote.  Does not link to the current working directory.
 `
 
-SitesCreateCommand.flags = {
-  name: flags.string({
-    char: 'n',
-    description: 'name of site'
-  }),
-  'account-slug': flags.string({
-    char: 'a',
-    description: 'account slug to create the site under'
-  }),
-  'with-ci': flags.boolean({
-    char: 'c',
-    description: 'initialize CI hooks during site creation'
-  }),
-  manual: flags.boolean({
-    char: 'm',
-    description: 'Force manual CI setup.  Used --with-ci flag'
-  })
-}
+SitesCreateCommand.flags = Object.assign(
+  {
+    name: flags.string({
+      char: 'n',
+      description: 'name of site'
+    }),
+    'account-slug': flags.string({
+      char: 'a',
+      description: 'account slug to create the site under'
+    }),
+    'with-ci': flags.boolean({
+      char: 'c',
+      description: 'initialize CI hooks during site creation'
+    }),
+    manual: flags.boolean({
+      char: 'm',
+      description: 'Force manual CI setup.  Used --with-ci flag'
+    })
+  },
+  Command.flags
+)
 
 module.exports = SitesCreateCommand
