@@ -39,6 +39,7 @@ class AddonsConfigCommand extends Command {
       return false
     }
 
+    // TODO update getAddonManifest to https://open-api.netlify.com/#/default/showServiceManifest
     const manifest = await getAddonManifest(addonName, accessToken)
     // Parse flags
     const rawFlags = parseRawFlags(raw)
@@ -165,6 +166,7 @@ async function update({ addonName, currentConfig, newConfig, settings, accessTok
   console.log(`${codeDiff}\n`)
   console.log()
 
+  // TODO update updateAddon to https://open-api.netlify.com/#/default/updateServiceInstance
   const updateAddonResponse = await updateAddon(settings, accessToken)
   if (updateAddonResponse.code === 404) {
     console.log(`No add-on "${addonName}" found. Please double check your add-on name and try again`)
