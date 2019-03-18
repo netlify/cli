@@ -42,8 +42,6 @@ async function configGithub(ctx, site, repo) {
 
   // TODO: Look these up and default to the lookup order
 
-  // read netlify toml
-
   let defaultBuildCmd,
     defaultBuildDir = '.'
   const { build } = ctx.netlify.config // read from netlify toml

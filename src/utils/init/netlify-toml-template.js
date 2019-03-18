@@ -5,11 +5,11 @@ const makeNetlifyTOMLtemplate = ({ command, publish }) => `# example netlify.tom
   publish = "${publish}"
 
 
-# COMMENT: This a rule for Single Page Applications
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+## COMMENT: This a redirect often used for Single Page Applications
+#[[redirects]]
+#  from = "/*"
+#  to = "/index.html"
+#  status = 200
 
 ## more info https://www.netlify.com/docs/netlify-toml-reference/
 `
