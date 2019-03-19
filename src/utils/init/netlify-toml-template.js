@@ -1,7 +1,7 @@
-const makeNetlifyTOMLtemplate = ({ command, publish }) => `# example netlify.toml
+const makeNetlifyTOMLtemplate = ({ command = '# no build command', publish = '.' }) => `# example netlify.toml
 [build]
   command = "${command}"
-  functions = "lambda" #  netlify-lambda reads this
+  functions = "functions" #  netlify-lambda reads this
   publish = "${publish}"
 
 
