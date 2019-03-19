@@ -1,11 +1,11 @@
 const makeNetlifyTOMLtemplate = ({ command = '# no build command', publish = '.' }) => `# example netlify.toml
 [build]
   command = "${command}"
-  functions = "functions" #  netlify-lambda reads this
+  functions = "functions"
   publish = "${publish}"
 
-
-## COMMENT: This a redirect often used for Single Page Applications
+## Uncomment to use this redirect for Single Page Applications. 
+## Not needed for static site generators.
 #[[redirects]]
 #  from = "/*"
 #  to = "/index.html"
