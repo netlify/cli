@@ -42,22 +42,45 @@ async function configGithub(ctx, site, repo) {
 
   // TODO: Look these up and default to the lookup order
 
-  // read netlify toml
-
+  let defaultBuildCmd,
+    defaultBuildDir = '.'
+  const { build } = ctx.netlify.config // read from netlify toml
+  if (build && build.command) defaultBuildCmd = build.command
+  if (build && build.publish) defaultBuildDir = build.publish
+  if (build && build.functions) console.log('Netlify functions folder is ' + build.functions)
   const { buildCmd, buildDir } = await inquirer.prompt([
     {
       type: 'input',
       name: 'buildCmd',
       message: 'Your build command (hugo build/yarn run build/etc):',
-      filter: val => (val === '' ? undefined : val)
+      filter: val => (val === '' ? '# no build command' : val),
+      default: defaultBuildCmd
     },
     {
       type: 'input',
       name: 'buildDir',
       message: 'Directory to deploy (blank for current dir):',
-      default: '.'
+      default: defaultBuildDir
     }
   ])
+
+  const tomlpath = path.join(ctx.netlify.site.root, 'netlify.toml')
+  const tomlDoesNotExist = !fs.existsSync(tomlpath)
+  if (tomlDoesNotExist && (!ctx.netlify.config || Object.keys(ctx.netlify.config).length === 0)) {
+    const { makeNetlifyTOML } = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'makeNetlifyTOML',
+        message: 'No netlify.toml detected. Would you like to create one with these build settings?',
+        default: true
+      }
+    ])
+    if (makeNetlifyTOML && ctx.netlify.site && ctx.netlify.site.root) {
+      fs.writeFileSync(tomlpath, makeNetlifyTOMLtemplate({ command: buildCmd, publish: buildDir }))
+    } else {
+      throw new Error('NetlifyCLIError: expected there to be a Netlify site root, please investigate', ctx.netlify.site)
+    }
+  }
 
   repo.dir = buildDir
 
