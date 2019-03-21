@@ -4,6 +4,9 @@ const ghauth = require('../../utils/gh-auth')
 const Octokit = require('@octokit/rest')
 const parseGitRemote = require('parse-github-url')
 const inquirer = require('inquirer')
+const path = require('path')
+const fs = require('fs')
+const { makeNetlifyTOMLtemplate } = require('./netlify-toml-template')
 
 const UA = 'Netlify CLI ' + version
 
