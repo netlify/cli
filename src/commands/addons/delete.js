@@ -1,11 +1,12 @@
 const Command = require('../../base')
 const { getAddons, deleteAddon } = require('netlify/src/addons')
-// const parseRawFlags = require('../../utils/parseRawFlags')
+const parseRawFlags = require('../../utils/parseRawFlags')
+const { flags } = require('@oclif/command')
 
 class AddonsDeleteCommand extends Command {
   async run() {
     const accessToken = await this.authenticate()
-    const { args } = this.parse(AddonsDeleteCommand)
+    const { args, raw } = this.parse(AddonsDeleteCommand)
     const { site } = this.netlify
 
     const addonName = args.name
@@ -32,9 +33,17 @@ class AddonsDeleteCommand extends Command {
       return {}
     }, addons)
 
-    // If we need flags here
-    // const rawFlags = parseRawFlags(raw)
-    // this.log('rawFlags', rawFlags)
+    const { force, f } = parseRawFlags(raw)
+    if (!force || !f) {
+      const inquirer = require('inquirer')
+      const { wantsToDelete } = await inquirer.prompt({
+        type: 'confirm',
+        name: 'wantsToDelete',
+        message: `Are you sure you want to delete the ${addonName} add-on? (to skip this prompt, pass a --force flag)`,
+        default: false
+      })
+      if (!wantsToDelete) this.exit()
+    }
 
     if (!currentAddon.id) {
       this.log(`No add-on "${addonName}" found for site. Add-on already deleted or never existed!`)
@@ -66,6 +75,9 @@ Add-ons are a way to extend the functionality of your Netlify site
 AddonsDeleteCommand.strict = false
 AddonsDeleteCommand.hidden = true
 
+AddonsDeleteCommand.flags = {
+  force: flags.boolean({ char: 'f', description: 'delete without prompting (useful for CI)' })
+}
 AddonsDeleteCommand.args = [
   {
     name: 'name',
