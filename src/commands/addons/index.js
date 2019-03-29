@@ -17,7 +17,7 @@ class AddonsCommand extends Command {
 AddonsCommand.description = `Handle addon operations
 The addons command will help you manage all your netlify addons
 `
-AddonsCommand.addons = ['addon']
+AddonsCommand.aliases = ['addon']
 AddonsCommand.examples = [
   'netlify addons:create addon-xyz --value foo',
   'netlify addons:update addon-xyz --value bar',

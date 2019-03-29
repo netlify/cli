@@ -156,7 +156,7 @@ AddonsCreateCommand.description = `Add an add-on extension to your site
 ...
 Add-ons are a way to extend the functionality of your Netlify site
 `
-AddonsCreateCommand.addons = ['addon:create']
+AddonsCreateCommand.aliases = ['addon:create']
 AddonsCreateCommand.args = [
   {
     name: 'name',
