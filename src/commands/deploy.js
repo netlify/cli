@@ -344,7 +344,9 @@ function ensureDirectory(resolvedDeployPath, exit) {
     stat = fs.statSync(resolvedDeployPath)
   } catch (e) {
     if (e.code === 'ENOENT') {
-      console.log('No such directory! Make sure to run your build command locally first')
+      console.log(
+        `No such directory ${resolvedDeployPath}! Did you forget to create a functions folder or run a build?`
+      )
       exit(1)
     }
 
