@@ -181,7 +181,7 @@ AddonsConfigCommand.args = [
     description: 'Add-on namespace'
   }
 ]
-
+AddonsConfigCommand.aliases = ['addon:config']
 AddonsConfigCommand.description = `Configure add-on settings`
 // allow for any flags. Handy for variadic configuration options
 AddonsConfigCommand.strict = false
