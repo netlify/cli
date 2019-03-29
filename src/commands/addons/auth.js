@@ -45,7 +45,7 @@ class AddonsAuthCommand extends Command {
     this.exit()
   }
 }
-
+AddonsAuthCommand.addons = ['addon:auth']
 AddonsAuthCommand.args = [
   {
     name: 'name',

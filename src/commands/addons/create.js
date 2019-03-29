@@ -117,7 +117,7 @@ class AddonsCreateCommand extends Command {
       configValues = updateConfigValues(manifest.config, rawFlags, userInput)
       const missingRequiredValues = missingConfigValues(required, configValues)
       if (missingRequiredValues && missingRequiredValues.length) {
-        missingRequiredValues.forEach((val) => {
+        missingRequiredValues.forEach(val => {
           console.log(`Missing required value "${val}". Please run the command again`)
         })
         return false
@@ -156,7 +156,7 @@ AddonsCreateCommand.description = `Add an add-on extension to your site
 ...
 Add-ons are a way to extend the functionality of your Netlify site
 `
-
+AddonsCreateCommand.addons = ['addon:create']
 AddonsCreateCommand.args = [
   {
     name: 'name',
