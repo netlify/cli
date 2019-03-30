@@ -27,7 +27,7 @@ class DeployCommand extends Command {
     if (!siteId) {
       this.log("This folder isn't linked to a site yet")
       const NEW_SITE = '+  Create & configure a new site'
-      const EXISTING_SITE = 'â‡„  Link this directory to an existing site'
+      const EXISTING_SITE = 'Link this directory to an existing site'
 
       const initializeOpts = [EXISTING_SITE, NEW_SITE]
 
