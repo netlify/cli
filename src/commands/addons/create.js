@@ -138,8 +138,8 @@ class AddonsCreateCommand extends Command {
 }
 
 async function createSiteAddon({ addonName, settings, accessToken, siteData }) {
+  // TODO update to https://open-api.netlify.com/#/default/createServiceInstance
   const addonResponse = await createAddon(settings, accessToken)
-
   if (addonResponse.code === 404) {
     console.log(`No add-on "${addonName}" found. Please double check your add-on name and try again`)
     return false

@@ -17,6 +17,7 @@ class AddonsListCommand extends Command {
 
     const siteData = await api.getSite({ siteId })
 
+    // TODO update getAddons to https://open-api.netlify.com/#/default/getServices
     const addons = await getAddons(siteId, accessToken)
     if (!addons || !addons.length) {
       this.log(`No addons currently installed for ${siteData.name}`)
