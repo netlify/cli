@@ -59,7 +59,7 @@ class InitCommand extends Command {
       console.log()
       console.log(`${chalk.redBright('No git remote found. (╯°□°）╯︵ ┻━┻')}`)
       console.log(`
-It is recommended that you initialize a site that has a remote repository in Github.
+It is recommended that you initialize a site that has a remote repository in GitHub.
 
 This will allow for Netlify Continuous deployment to build branch & PR previews.
 
@@ -68,7 +68,7 @@ For more details on Netlify CI checkout the docs: http://bit.ly/2N0Jhy5
       let message
       switch (repo.error) {
         case "Couldn't find origin url": {
-          message = `Unable to find a remote origin url. Please add a git remote.
+          message = `Unable to find a remote origin URL. Please add a git remote.
 
 git remote add origin https://github.com/YourUserName/RepoName.git
 `
@@ -80,13 +80,13 @@ git remote add origin https://github.com/YourUserName/RepoName.git
       }
 
       const NEW_SITE_NO_GIT = 'Yes, create manually deploy site'
-      const NO_ABORT = 'No, I will connect this with directory with github first'
+      const NO_ABORT = 'No, I will connect this with directory with GitHub first'
 
       const { noGitRemoteChoice } = await inquirer.prompt([
         {
           type: 'list',
           name: 'noGitRemoteChoice',
-          message: 'Do you want to create a netlify site without a git repository?',
+          message: 'Do you want to create a Netlify site without a git repository?',
           choices: [NEW_SITE_NO_GIT, NO_ABORT]
         }
       ])
@@ -121,7 +121,7 @@ git remote add origin https://github.com/YourUserName/RepoName.git
 
    ${chalk.cyanBright.bold("git commit -m 'initial commit'")}
 
-4. Create a new repo in github ${chalk.cyanBright.bold('https://github.com/new')}
+4. Create a new repo in GitHub ${chalk.cyanBright.bold('https://github.com/new')}
 
 5. Link the remote repo with this local directory
 
@@ -196,7 +196,7 @@ git remote add origin https://github.com/YourUserName/RepoName.git
           try {
             await configGithub(this, siteData, repo)
           } catch (e) {
-            this.warn(`Github error: ${e.status}`)
+            this.warn(`GitHub error: ${e.status}`)
             if (e.code === 404) {
               this.error(
                 `Does the repository ${
@@ -225,7 +225,7 @@ git remote add origin https://github.com/YourUserName/RepoName.git
     this.log(`Next steps:
 
   ${chalk.cyanBright.bold('git push')}       Push to your git repository to trigger new site builds
-  ${chalk.cyanBright.bold('netlify open')}   Open the netlify admin url of your site
+  ${chalk.cyanBright.bold('netlify open')}   Open the Netlify admin URL of your site
   `)
 
     if (flags.watch) {
