@@ -1,5 +1,5 @@
 # Netlify CLI
-[![npm version][npm-img]][npm] [![build status][azure-img]][azure] [![coverage][coverage-img]][coverage] [![dependencies][david-img]][david] [![downloads][dl-img]][dl]
+[![npm version][npm-img]][npm] [![build status][azure-img]][azure] [![coverage][coverage-img]][coverage] [![dependencies][david-img]][david] [![downloads][dl-img]][dl] [![netlify-status][netlify-img]][netlify]
 
 Welcome to the Netlify CLI! The new 2.0 version was rebuilt from the ground up to help improve the site building experience.
 
@@ -134,3 +134,5 @@ MIT. See [LICENSE](LICENSE) for more details.
 [coverage]: https://coveralls.io/github/netlify/cli
 [david-img]: https://david-dm.org/netlify/cli/status.svg
 [david]: https://david-dm.org/netlify/cli
+[netlify-img]: https://api.netlify.com/api/v1/badges/d3807379-2dcf-4a43-9c00-e7e8d90ecf70/deploy-status
+[netlify]: https://app.netlify.com/sites/cli/deploys
