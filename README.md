@@ -1,6 +1,5 @@
 # Netlify CLI
-[![npm version][npm-img]][npm] [![build status][travis-img]][travis] [![windows build status][av-img]][av]
-[![coverage][coverage-img]][coverage] [![dependencies][david-img]][david] [![downloads][dl-img]][dl]
+[![npm version][npm-img]][npm] [![build status][azure-img]][azure] [![coverage][coverage-img]][coverage] [![dependencies][david-img]][david] [![downloads][dl-img]][dl]
 
 Welcome to the Netlify CLI! The new 2.0 version was rebuilt from the ground up to help improve the site building experience.
 
@@ -123,6 +122,8 @@ MIT. See [LICENSE](LICENSE) for more details.
 
 [npm-img]: https://img.shields.io/npm/v/netlify-cli.svg
 [npm]: https://npmjs.org/package/netlify-cli
+[azure-img]: https://dev.azure.com/netlify/Netlify%20CLI/_apis/build/status/netlify.cli?branchName=master
+[azure]: https://dev.azure.com/netlify/Netlify%20CLI/_build?definitionId=3
 [travis-img]: https://img.shields.io/travis/netlify/cli/master.svg
 [travis]: https://travis-ci.org/netlify/cli
 [av-img]: https://ci.appveyor.com/api/projects/status/imk2qjc34ly7x11b/branch/master?svg=true
