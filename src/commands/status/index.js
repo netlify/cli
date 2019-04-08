@@ -18,26 +18,24 @@ class StatusCommand extends Command {
     let accountData
     if (accessToken) {
       const accounts = await api.listAccountsForUser()
-      const personal = accounts.find(account => account.type === 'PERSONAL')
-      const user = this.netlify.api.getCurrentUser()
-      const teams = accounts.filter(account => account.type !== 'PERSONAL')
+      const user = await this.netlify.api.getCurrentUser()
+
       const ghuser = this.netlify.globalConfig.get(`users.${current}.auth.github.user`)
       accountData = {
-        'Account name': get(user, 'full_name') || get(personal, 'name'),
+        Name: get(user, 'full_name'),
         // 'Account slug': get(personal, 'slug'),
         // 'Account id': get(personal, 'id'),
         // Name: get(personal, 'billing_name'),
-        Email: get(user, 'email') || get(personal, 'billing_email'),
+        Email: get(user, 'email'),
         Github: ghuser
       }
       const teamsData = {}
 
-      teams.forEach(team => {
+      accounts.forEach(team => {
         return (teamsData[team.name] = team.roles_allowed.join(' '))
       })
 
       accountData.Teams = teamsData
-      // TODO: use users endpoint
     } else {
       this.error(`Not logged in. Log in to see site status.`)
     }

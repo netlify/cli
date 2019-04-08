@@ -16,7 +16,6 @@ class SitesCreateCommand extends Command {
     await this.authenticate()
 
     const accounts = await api.listAccountsForUser()
-    const personal = accounts.find(account => account.type === 'PERSONAL')
 
     let name = flags.name
     if (!name) {
@@ -39,11 +38,10 @@ class SitesCreateCommand extends Command {
         {
           type: 'list',
           name: 'accountSlug',
-          message: 'Account:',
-          default: personal.slug,
+          message: 'Team:',
           choices: accounts.map(account => ({
             value: account.slug,
-            name: `${account.name || account.slug} ${account.slug === personal.slug ? ' (personal)' : ''}`
+            name: account.name
           }))
         }
       ])
@@ -57,7 +55,7 @@ class SitesCreateCommand extends Command {
     }
     try {
       site = await api.createSiteInTeam({
-        accountSlug: accountSlug || personal.slug,
+        accountSlug: accountSlug,
         body
       })
     } catch (error) {
