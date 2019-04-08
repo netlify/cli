@@ -22,7 +22,7 @@ class StatusCommand extends Command {
 
       const ghuser = this.netlify.globalConfig.get(`users.${current}.auth.github.user`)
       accountData = {
-        Name: `${get(user, 'full_name')}`,
+        Name: get(user, 'full_name'),
         // 'Account slug': get(personal, 'slug'),
         // 'Account id': get(personal, 'id'),
         // Name: get(personal, 'billing_name'),
