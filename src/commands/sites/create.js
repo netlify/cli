@@ -41,7 +41,7 @@ class SitesCreateCommand extends Command {
           message: 'Team:',
           choices: accounts.map(account => ({
             value: account.slug,
-            name: `${account.slug}${account.name ? ' (' + account.name + ')' : ''}`
+            name: account.name
           }))
         }
       ])
