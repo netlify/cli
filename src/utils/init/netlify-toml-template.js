@@ -4,13 +4,20 @@ const makeNetlifyTOMLtemplate = ({ command = '# no build command', publish = '.'
   functions = "functions"
   publish = "${publish}"
 
-## Uncomment to use this redirect for Single Page Applications. 
-## Not needed for static site generators.
-#[[redirects]]
-#  from = "/*"
-#  to = "/index.html"
-#  status = 200
-
-## more info https://www.netlify.com/docs/netlify-toml-reference/
+  ## Uncomment to use this redirect for Single Page Applications like create-react-app. 
+  ## Not needed for static site generators.
+  #[[redirects]]
+  #  from = "/*"
+  #  to = "/index.html"
+  #  status = 200
+  
+  ## (optional) Settings for Netlify Dev
+  ## https://github.com/netlify/netlify-dev-plugin#project-detection
+  #[dev] 
+  #  command = "yarn start" # Command to start your dev server
+  #  port = 3000 # Port that the dev server will be listening on
+  #  publish = "dist" # Folder with the static content for _redirect file
+  
+  ## more info on configuring this file: https://www.netlify.com/docs/netlify-toml-reference/ 
 `
 module.exports = { makeNetlifyTOMLtemplate }

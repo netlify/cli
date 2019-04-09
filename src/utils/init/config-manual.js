@@ -1,4 +1,5 @@
 const inquirer = require('inquirer')
+const { makeNetlifyTOMLtemplate } = require('./netlify-toml-template')
 
 module.exports = configManual
 async function configManual(ctx, site, repo) {
@@ -38,6 +39,27 @@ async function configManual(ctx, site, repo) {
       default: '.'
     }
   ])
+
+  const fs = require('fs')
+  const path = require('path')
+  const tomlpath = path.join(ctx.netlify.site.root, 'netlify.toml')
+  const tomlDoesNotExist = !fs.existsSync(tomlpath)
+  if (tomlDoesNotExist && (!ctx.netlify.config || Object.keys(ctx.netlify.config).length === 0)) {
+    const { makeNetlifyTOML } = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'makeNetlifyTOML',
+        message: 'No netlify.toml detected. Would you like to create one with these build settings?',
+        default: true
+      }
+    ])
+    if (makeNetlifyTOML && ctx.netlify.site && ctx.netlify.site.root) {
+      fs.writeFileSync(tomlpath, makeNetlifyTOMLtemplate({ command: buildCmd, publish: buildDir }))
+    } else {
+      throw new Error('NetlifyCLIError: expected there to be a Netlify site root, please investigate', ctx.netlify.site)
+    }
+  }
+
   repo.dir = buildDir
 
   if (!repo.repo_path) {
