@@ -1,4 +1,4 @@
-const Command = require('../base')
+const Command = require('@netlify/cli-utils')
 const { track } = require('../utils/telemetry')
 
 class UnlinkCommand extends Command {
@@ -20,8 +20,8 @@ class UnlinkCommand extends Command {
 
     state.delete('siteId')
 
-    await track('sites_unlinked',  {
-      siteId: siteData.id || siteId,
+    await track('sites_unlinked', {
+      siteId: siteData.id || siteId
     })
 
     if (site) {
@@ -29,7 +29,6 @@ class UnlinkCommand extends Command {
     } else {
       this.log('Unlinked site')
     }
-
   }
 }
 

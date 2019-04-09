@@ -1,4 +1,4 @@
-const Command = require('../../base')
+const Command = require('@netlify/cli-utils')
 const { getAddons, createAddon } = require('netlify/src/addons')
 const parseRawFlags = require('../../utils/parseRawFlags')
 const getAddonManifest = require('../../utils/addons/api')

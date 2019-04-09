@@ -1,4 +1,4 @@
-const Command = require('../../base')
+const Command = require('@netlify/cli-utils')
 const OpenAdminCommand = require('./admin')
 const showHelp = require('../../utils/showHelp')
 const { isEmptyCommand } = require('../../utils/checkCommandInputs')

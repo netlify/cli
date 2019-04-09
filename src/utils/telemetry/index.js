@@ -1,7 +1,7 @@
 const path = require('path')
 const { spawn } = require('child_process')
 const isValidEventName = require('./validation')
-const globalConfig = require('../../base/global-config')
+const globalConfig = require('@netlify/cli-utils/src/global-config')
 const ci = require('ci-info')
 
 const IS_INSIDE_CI = ci.isCI
@@ -35,7 +35,7 @@ const eventConfig = {
   // Allowed objects
   objects: [
     'sites', // example cli:sites_created
-    'user',  // example cli:user_signup
+    'user' // example cli:user_signup
   ]
 }
 
@@ -89,7 +89,7 @@ function track(eventName, payload) {
     event: eventName,
     userId: userId,
     anonymousId: cliId,
-    properties: Object.assign({}, defaultProperties, properties),
+    properties: Object.assign({}, defaultProperties, properties)
   }
 
   return send('track', defaultData)
@@ -141,7 +141,7 @@ function identify(payload) {
   const identifyData = {
     anonymousId: cliId,
     userId: userId,
-    traits: Object.assign({}, defaultTraits, data),
+    traits: Object.assign({}, defaultTraits, data)
   }
 
   return send('identify', identifyData)

@@ -1,7 +1,7 @@
 const { flags } = require('@oclif/command')
 const chalk = require('chalk')
 const get = require('lodash.get')
-const Command = require('../base')
+const Command = require('@netlify/cli-utils')
 const SitesWatchCommand = require('./watch')
 const configManual = require('../utils/init/config-manual')
 const configGithub = require('../utils/init/config-github')

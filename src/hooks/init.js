@@ -1,5 +1,5 @@
 const header = require('../utils/header')
-const globalConfig = require('../base/global-config')
+const globalConfig = require('@netlify/cli-utils/src/global-config')
 const { track } = require('../utils/telemetry')
 
 module.exports = async context => {
