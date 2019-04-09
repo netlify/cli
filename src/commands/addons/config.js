@@ -6,7 +6,7 @@ const generatePrompts = require('../../utils/addons/prompts')
 const render = require('../../utils/addons/render')
 const diffValues = require('../../utils/addons/diffs/index')
 const compare = require('../../utils/addons/compare')
-const parseRawFlags = require('../../utils/parseRawFlags')
+const parseRawFlags = require('../../utils/parse-raw-flags')
 const chalk = require('chalk')
 const inquirer = require('inquirer')
 

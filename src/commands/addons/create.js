@@ -1,6 +1,6 @@
 const Command = require('@netlify/cli-utils')
 const { getAddons, createAddon } = require('netlify/src/addons')
-const parseRawFlags = require('../../utils/parseRawFlags')
+const parseRawFlags = require('../../utils/parse-raw-flags')
 const getAddonManifest = require('../../utils/addons/api')
 const { requiredConfigValues, missingConfigValues, updateConfigValues } = require('../../utils/addons/validation')
 const generatePrompts = require('../../utils/addons/prompts')

@@ -1,7 +1,7 @@
 const Command = require('@netlify/cli-utils')
 const OpenAdminCommand = require('./admin')
-const showHelp = require('../../utils/showHelp')
-const { isEmptyCommand } = require('../../utils/checkCommandInputs')
+const showHelp = require('../../utils/show-help')
+const { isEmptyCommand } = require('../../utils/check-command-inputs')
 
 class OpenCommand extends Command {
   async run() {
@@ -17,9 +17,6 @@ class OpenCommand extends Command {
 
 OpenCommand.description = `Open settings for the site linked to the current folder`
 
-OpenCommand.examples = [
-  'netlify open:admin',
-  'netlify open:site'
-]
+OpenCommand.examples = ['netlify open:admin', 'netlify open:site']
 
 module.exports = OpenCommand
