@@ -26,12 +26,9 @@ class AddonsDeleteCommand extends Command {
     }
 
     // Filter down addons to current args.name
-    const currentAddon = addons.reduce((acc, current) => {
-      if (current.service_path && current.service_path.replace('/.netlify/', '') === addonName) {
-        return current
-      }
-      return {}
-    }, addons)
+    const currentAddon = addons.find(
+      current => current.service_path && current.service_path.replace('/.netlify/', '') === addonName
+    )
 
     const { force, f } = parseRawFlags(raw)
     if (!force || !f) {
@@ -68,7 +65,11 @@ class AddonsDeleteCommand extends Command {
     if (addonResponse.status === 204) {
       this.log(`Addon "${addonName}" deleted`)
     } else {
-      this.log(`Addon "${addonName}" was not deleted "${addonName}". Returned status: ${addonResponse.status}. Addon deletion must return status 204 from "${addonName}" provider.`)
+      this.log(
+        `Addon "${addonName}" was not deleted "${addonName}". Returned status: ${
+          addonResponse.status
+        }. Addon deletion must return status 204 from "${addonName}" provider.`
+      )
     }
   }
 }
