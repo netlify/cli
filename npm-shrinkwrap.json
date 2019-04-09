@@ -484,9 +484,9 @@
       }
     },
     "@netlify/zip-it-and-ship-it": {
-      "version": "0.2.4",
-      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-0.2.4.tgz",
-      "integrity": "sha512-4ahGpz7CFu+799l7czxLjxroAhg2YwGs+TwnRZxsI0gITLJ0yWXAkV2zGRJ5YGdG5jPWTcOqpku1HVvEr/oOLA==",
+      "version": "0.2.5",
+      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-0.2.5.tgz",
+      "integrity": "sha512-SF0dM5FDgZkaa2u/3pDh23kEs2X2D6fYUbtz349pTKAYqY+48YEddCnlOLsjcUtGlEC+jVqOaR8zfAbS+covsQ==",
       "requires": {
         "archiver": "^3.0.0",
         "body-parser": "^1.18.3",
@@ -704,9 +704,9 @@
       "integrity": "sha512-60CHpq+eqnTxLZQ4PGHYNwUX572hgpMHGPtTWMjdTMsAvlm69lZV/4ly6O3sAYkomo4NggGcomrDpBe34rxUqw=="
     },
     "@octokit/endpoint": {
-      "version": "3.2.3",
-      "resolved": "https://registry.npmjs.org/@octokit/endpoint/-/endpoint-3.2.3.tgz",
-      "integrity": "sha512-yUPCt4vMIOclox13CUxzuKiPJIFo46b/6GhUnUTw5QySczN1L0DtSxgmIZrZV4SAb9EyAqrceoyrWoYVnfF2AA==",
+      "version": "4.0.0",
+      "resolved": "https://registry.npmjs.org/@octokit/endpoint/-/endpoint-4.0.0.tgz",
+      "integrity": "sha512-b8sptNUekjREtCTJFpOfSIL4SKh65WaakcyxWzRcSPOk5RxkZJ/S8884NGZFxZ+jCB2rDURU66pSHn14cVgWVg==",
       "requires": {
         "deepmerge": "3.2.0",
         "is-plain-object": "^2.0.4",
@@ -715,11 +715,11 @@
       }
     },
     "@octokit/request": {
-      "version": "2.4.2",
-      "resolved": "https://registry.npmjs.org/@octokit/request/-/request-2.4.2.tgz",
-      "integrity": "sha512-lxVlYYvwGbKSHXfbPk5vxEA8w4zHOH1wobado4a9EfsyD3Cbhuhus1w0Ye9Ro0eMubGO8kNy5d+xNFisM3Tvaw==",
+      "version": "3.0.0",
+      "resolved": "https://registry.npmjs.org/@octokit/request/-/request-3.0.0.tgz",
+      "integrity": "sha512-DZqmbm66tq+a9FtcKrn0sjrUpi0UaZ9QPUCxxyk/4CJ2rseTMpAWRf6gCwOSUCzZcx/4XVIsDk+kz5BVdaeenA==",
       "requires": {
-        "@octokit/endpoint": "^3.2.0",
+        "@octokit/endpoint": "^4.0.0",
         "deprecation": "^1.0.1",
         "is-plain-object": "^2.0.4",
         "node-fetch": "^2.3.0",
@@ -728,11 +728,11 @@
       }
     },
     "@octokit/rest": {
-      "version": "16.23.3",
-      "resolved": "https://registry.npmjs.org/@octokit/rest/-/rest-16.23.3.tgz",
-      "integrity": "sha512-kwL6gtvWC5j9mXK9O6V7wCwdGDUIoT2im1CfExqCunOHTcs4SPC1V29ajAPJ5sz2sErt0abiQzGORZBZ4GVbEw==",
+      "version": "16.23.4",
+      "resolved": "https://registry.npmjs.org/@octokit/rest/-/rest-16.23.4.tgz",
+      "integrity": "sha512-fQuYQ0vgNLkzeN0KEsqN0aS6EPzcuaePT5M5cE5qnKayaxFwRIQOMhNR/rTmEqo/zDK/20ZAcHsgLKodSsJtww==",
       "requires": {
-        "@octokit/request": "2.4.2",
+        "@octokit/request": "3.0.0",
         "atob-lite": "^2.0.0",
         "before-after-hook": "^1.4.0",
         "btoa-lite": "^1.0.0",
@@ -6822,9 +6822,9 @@
       "dev": true
     },
     "natural-orderby": {
-      "version": "2.0.2",
-      "resolved": "https://registry.npmjs.org/natural-orderby/-/natural-orderby-2.0.2.tgz",
-      "integrity": "sha512-ehKWiU0ZoYJw6JRlxcW3PPNW8xUpomrak7bXLyGzkx4f9eQVs7VpxEFMpGITdgrPuAWd5/9bD1MQha5w3z3v6A=="
+      "version": "2.0.3",
+      "resolved": "https://registry.npmjs.org/natural-orderby/-/natural-orderby-2.0.3.tgz",
+      "integrity": "sha512-p7KTHxU0CUrcOXe62Zfrb5Z13nLvPhSWR/so3kFulUQU0sgUll2Z0LwpsLN351eOOD+hRGu/F1g+6xDfPeD++Q=="
     },
     "negotiator": {
       "version": "0.6.1",
@@ -6870,9 +6870,9 @@
       }
     },
     "netlify-dev-plugin": {
-      "version": "1.0.2",
-      "resolved": "https://registry.npmjs.org/netlify-dev-plugin/-/netlify-dev-plugin-1.0.2.tgz",
-      "integrity": "sha512-X44IauUDum6EjAJygbJ84lYfgT4tmdPvBw+ZFVSCejW/YEtqRLsVNuwThT/HAfYo9WlxkBaafbiXNgF6rocAKQ==",
+      "version": "1.0.5",
+      "resolved": "https://registry.npmjs.org/netlify-dev-plugin/-/netlify-dev-plugin-1.0.5.tgz",
+      "integrity": "sha512-O8KQyKt92jvhpQnEMrEcxZcggVsjCIoAi7TDCvQnGRQn6SEJEiNMLfMIUQeX5W/74kOv4dDvxeoEBw7kakBb7Q==",
       "requires": {
         "@netlify/cli-utils": "^1.0.1",
         "@netlify/rules-proxy": "^0.1.2",
