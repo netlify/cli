@@ -3,6 +3,8 @@
 
 Welcome to the Netlify CLI! The new 2.0 version was rebuilt from the ground up to help improve the site building experience.
 
+> ⚠️ **If you are looking for docs or to report an issue on [Netlify Dev](https://www.netlify.com/blog/2019/04/09/netlify-dev--our-entire-platform-right-on-your-laptop/), head to the [netlify-dev-plugin repo](https://github.com/netlify/netlify-dev-plugin#what-is-netlify-dev).** This is a new release, we appreciate your patience and bug reports!
+
 ## Table of Contents
 
 <!-- AUTO-GENERATED-CONTENT:START (TOC:collapse=true&collapseText=Click to expand) -->
