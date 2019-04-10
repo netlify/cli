@@ -1,18 +1,17 @@
 jobs:
-- job: ${{ parameters.name }}
-  pool:
-    vmImage: ${{ parameters.vmImage }}
+  - job: ${{ parameters.name }}
+    pool:
+      vmImage: ${{ parameters.vmImage }}
 
-  steps:
-  - task: NodeTool@0
-    inputs:
-      versionSpec: '10.x'
-    displayName: 'Install Node.js'
-  - script: |
-      node --version
-      npm --version
-      npm install
-      npm test
-      npm start -- --version
-      npm start -- --help
-    displayName: 'Install dependencies and run tests'
+    steps:
+      - task: NodeTool@0
+        inputs:
+          versionSpec: "10.x"
+        displayName: "Install Node.js"
+      - script: |
+          node --version
+          npm --version
+          npm install
+        displayName: "Install deps"
+      - script: "npm test"
+        displayName: "Run tests"

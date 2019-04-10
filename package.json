@@ -19,6 +19,8 @@
     "test:ava": "nyc --reporter=lcov ava --verbose && nyc report",
     "test:lint": "eslint src",
     "test:deps": "dependency-check ./package.json --entry \"src/**/!(*.test).js\" --unused --missing --no-dev --no-peer -i @oclif/plugin-not-found -i @oclif/config -i @oclif/plugin-help -i @oclif/plugin-plugins -i netlify-dev-plugin",
+    "test:cli-version": "npm run start -- --version",
+    "test:cli-help": "npm run start -- --help",
     "watch": "nyc --reporter=lcov ava --watch",
     "prepack": "oclif-dev manifest",
     "postpack": "rm -f oclif.manifest.json",
