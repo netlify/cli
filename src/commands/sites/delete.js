@@ -3,7 +3,7 @@ const { Command, flags } = require('@oclif/command')
 
 class SitesDeleteCommand extends Command {
   async run() {
-    const { args, raw } = this.parse(SitesDeleteCommand)
+    const { args } = this.parse(SitesDeleteCommand)
 
     this.log(`delete a site id:`, args.siteID)
     this.log(`Implementation coming soon`)
