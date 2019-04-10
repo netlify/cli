@@ -6870,9 +6870,9 @@
       }
     },
     "netlify-dev-plugin": {
-      "version": "1.0.5",
-      "resolved": "https://registry.npmjs.org/netlify-dev-plugin/-/netlify-dev-plugin-1.0.5.tgz",
-      "integrity": "sha512-O8KQyKt92jvhpQnEMrEcxZcggVsjCIoAi7TDCvQnGRQn6SEJEiNMLfMIUQeX5W/74kOv4dDvxeoEBw7kakBb7Q==",
+      "version": "1.0.6",
+      "resolved": "https://registry.npmjs.org/netlify-dev-plugin/-/netlify-dev-plugin-1.0.6.tgz",
+      "integrity": "sha512-5m8WcEbHoabVmJVR82g/u+Ked3w6xosGAeC+HGQUuSSLW6xj4zHCPcrjLL7hMNIOlYZN4NAWHoODAEKRoAweoQ==",
       "requires": {
         "@netlify/cli-utils": "^1.0.1",
         "@netlify/rules-proxy": "^0.1.2",
@@ -10545,9 +10545,9 @@
       }
     },
     "type-fest": {
-      "version": "0.3.0",
-      "resolved": "https://registry.npmjs.org/type-fest/-/type-fest-0.3.0.tgz",
-      "integrity": "sha512-fg3sfdDdJDtdHLUpeGsf/fLyG1aapk6zgFiYG5+MDUPybGrJemH4SLk5tP7hGRe8ntxjg0q5LYW53b6YpJIQ9Q=="
+      "version": "0.3.1",
+      "resolved": "https://registry.npmjs.org/type-fest/-/type-fest-0.3.1.tgz",
+      "integrity": "sha512-cUGJnCdr4STbePCgqNFbpVNCepa+kAVohJs1sLhxzdH+gnEoOd8VhbYa7pD3zZYGiURWM2xzEII3fQcRizDkYQ=="
     },
     "type-is": {
       "version": "1.6.16",

@@ -78,7 +78,7 @@
     "log-symbols": "^2.2.0",
     "make-dir": "^2.1.0",
     "netlify": "^2.4.1",
-    "netlify-dev-plugin": "^1.0.5",
+    "netlify-dev-plugin": "^1.0.6",
     "node-fetch": "^2.2.0",
     "ora": "^3.4.0",
     "p-wait-for": "^2.0.0",
