@@ -6870,9 +6870,9 @@
       }
     },
     "netlify-dev-plugin": {
-      "version": "1.0.7",
-      "resolved": "https://registry.npmjs.org/netlify-dev-plugin/-/netlify-dev-plugin-1.0.7.tgz",
-      "integrity": "sha512-uGmDpD4bdQfZn63N0JTB+ar/7/EiPPQUUM8e2yMBpHF7iJRSpFScwXFEuDcX8rF5jXtcYfcPbIG9tHHekHksPA==",
+      "version": "1.0.9",
+      "resolved": "https://registry.npmjs.org/netlify-dev-plugin/-/netlify-dev-plugin-1.0.9.tgz",
+      "integrity": "sha512-ffP8/+sDT8f7rFTOgpXd5QbRcQ8RZa+MO1Tn4XXQcEC81f1uQxaRMv7U2Xnu53+olhHBJGXkpDTlKDonXgLuaA==",
       "requires": {
         "@netlify/cli-utils": "^1.0.1",
         "@netlify/rules-proxy": "^0.1.2",
