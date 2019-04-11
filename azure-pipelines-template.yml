@@ -11,7 +11,7 @@ jobs:
       - script: |
           node --version
           npm --version
-        displayName: "Install node + npm versions"
+        displayName: "Print node + npm versions"
       - task: Npm@1
         inputs:
           command: install
