@@ -1,6 +1,6 @@
 const { Command } = require('@oclif/command')
-const showHelp = require('../../utils/showHelp')
-const { isEmptyCommand } = require('../../utils/checkCommandInputs')
+const showHelp = require('../../utils/show-help')
+const { isEmptyCommand } = require('../../utils/check-command-inputs')
 
 class AddonsCommand extends Command {
   async run() {

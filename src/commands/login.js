@@ -1,4 +1,4 @@
-const Command = require('../base')
+const Command = require('@netlify/cli-utils')
 const chalk = require('chalk')
 
 class LoginCommand extends Command {

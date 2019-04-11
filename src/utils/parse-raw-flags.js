@@ -10,7 +10,8 @@ const rawFlags = parseRawFlags(raw)
 // rawFlags = {stuff: yay!}
 */
 
-module.exports = function parseRawFlags(raw) {
+exports.parseRawFlags = parseRawFlags
+function parseRawFlags(raw) {
   const rawFlags = raw.reduce((acc, curr, index, array) => {
     if (curr.input.match(/^-{1,2}/)) {
       const key = curr.input.replace(/^-{1,2}/, '')
@@ -20,7 +21,7 @@ module.exports = function parseRawFlags(raw) {
       } else if (next && next.input && next.input.match(/^-{1,2}/)) {
         acc[key] = true
       } else {
-        acc[key] = next ? truthy(next.input) : true
+        acc[key] = next ? aggressiveJSONParse(next.input) : true
       }
     }
     return acc
@@ -28,7 +29,8 @@ module.exports = function parseRawFlags(raw) {
   return rawFlags
 }
 
-function truthy(value) {
+exports.aggressiveJSONParse = aggressiveJSONParse
+function aggressiveJSONParse(value) {
   if (value === 'true') {
     return true
   }
