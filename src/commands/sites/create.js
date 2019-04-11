@@ -110,7 +110,7 @@ class SitesCreateCommand extends Command {
             await configGithub(this, site, repo)
           } catch (e) {
             this.warn(`Github error: ${e.status}`)
-            if (e.code === 404) {
+            if (e.status === 404) {
               this.error(
                 `Does the repository ${
                   repo.repo_path
