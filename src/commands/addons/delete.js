@@ -1,6 +1,6 @@
 const Command = require('@netlify/cli-utils')
 const { getAddons, deleteAddon } = require('netlify/src/addons')
-const parseRawFlags = require('../../utils/parse-raw-flags')
+const { parseRawFlags } = require('../../utils/parse-raw-flags')
 const { flags } = require('@oclif/command')
 
 class AddonsDeleteCommand extends Command {

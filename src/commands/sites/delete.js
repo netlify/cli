@@ -1,5 +1,5 @@
 const { Command, flags } = require('@oclif/command')
-// const parseRawFlags = require('../../utils/parse-raw-flags')
+// const {parseRawFlags} = require('../../utils/parse-raw-flags')
 
 class SitesDeleteCommand extends Command {
   async run() {
