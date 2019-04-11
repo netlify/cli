@@ -18,5 +18,6 @@ jobs:
         displayName: "Install deps with npm"
       - task: Npm@1
         inputs:
-          command: run test
+          command: custom
+          customCommand: test
         displayName: "Run tests"
