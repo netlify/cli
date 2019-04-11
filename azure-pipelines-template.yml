@@ -11,7 +11,12 @@ jobs:
       - script: |
           node --version
           npm --version
-          npm install
-        displayName: "Install deps"
-      - script: "npm test"
+        displayName: "Install node + npm versions"
+      - task: Npm@1
+        inputs:
+          command: install
+        displayName: "Install deps with npm"
+      - task: Npm@1
+        inputs:
+          command: test
         displayName: "Run tests"
