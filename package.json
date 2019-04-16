@@ -49,13 +49,8 @@
     "url": "https://github.com/netlify/cli/issues"
   },
   "dependencies": {
-<<<<<<< HEAD
-    "@iarna/toml": "^2.2.3",
     "@oclif/command": "^1.5.13",
-=======
     "@netlify/cli-utils": "^1.0.1",
-    "@oclif/command": "^1.5.12",
->>>>>>> b517775b907d3e5f428948502b30dc32ed2e46da
     "@oclif/config": "^1.12.12",
     "@oclif/errors": "^1.1.2",
     "@oclif/plugin-help": "^2.1.6",
