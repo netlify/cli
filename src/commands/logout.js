@@ -1,4 +1,4 @@
-const Command = require('../base')
+const Command = require('@netlify/cli-utils')
 const { track } = require('../utils/telemetry')
 
 class LogoutCommand extends Command {
@@ -12,7 +12,6 @@ class LogoutCommand extends Command {
       this.netlify.globalConfig.set('userId', null)
 
       this.log(`Logging you out of Netlify. Come back soon!`)
-
     } else {
       this.log(`Already logged out`)
     }

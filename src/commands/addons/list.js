@@ -1,6 +1,6 @@
 const AsciiTable = require('ascii-table')
 const { flags } = require('@oclif/command')
-const Command = require('../../base')
+const Command = require('@netlify/cli-utils')
 const { getAddons } = require('netlify/src/addons')
 
 class AddonsListCommand extends Command {

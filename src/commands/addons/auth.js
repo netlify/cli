@@ -1,4 +1,4 @@
-const Command = require('../../base')
+const Command = require('@netlify/cli-utils')
 const { getAddons } = require('netlify/src/addons')
 const openBrowser = require('../../utils/open-browser')
 
