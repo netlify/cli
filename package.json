@@ -74,7 +74,6 @@
     "lodash.isempty": "^4.4.0",
     "lodash.isequal": "^4.5.0",
     "log-symbols": "^2.2.0",
-    "make-dir": "^2.1.0",
     "netlify": "^2.4.2",
     "netlify-dev-plugin": "^1.0.11",
     "node-fetch": "^2.2.0",
