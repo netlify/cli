@@ -191,8 +191,14 @@ Link.defaultProps = {
 
 const unhyphenate = str => str.replace(/(\w)(-)(\w)/g, '$1 $3')
 const upperFirst = str => str.charAt(0).toUpperCase() + str.slice(1)
-const format = (str) => {
+/*const format = (str) => {
   return upperFirst(unhyphenate(str))
+}*/
+const format = (str, data) => {
+  if (data && data.path && data.path.match((/commands/)) && str !== 'commands') {
+    return <span>{str}</span>
+  }
+  return str
 }
 
 const NavBar = ({

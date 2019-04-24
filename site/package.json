@@ -11,7 +11,8 @@
   "scripts": {
     "start": "npm run sync && run-p start:*",
     "build": "npm run clean && run-s build:*",
-    "build:docs": "node ../scripts/docs.js",
+    "postbuild": "cp src/_redirects dist/_redirects",
+    "build:docs": "cross-env DOCS_GEN=TRUE node ../scripts/docs.js",
     "build:site": "npm run sync && x0 build src",
     "start:site": "x0 src",
     "start:watch": "node ./watch.js",

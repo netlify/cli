@@ -25,58 +25,77 @@ netlify [command] help
 ## Commands
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_LIST) -->
-### [deploy](/deploy)
+### [deploy](/commands/deploy)
 
 Create a new deploy from the contents of a folder
 
-### [init](/init)
+### [init](/commands/init)
 
 Configure continuous deployment for a new or existing site
 
-### [link](/link)
+### [link](/commands/link)
 
 Link a local repo or project folder to an existing site on Netlify
 
-### [login](/login)
+### [login](/commands/login)
 
 Login to your Netlify account
 
-### [open](/open)
+### [open](/commands/open)
 
 Open settings for the site linked to the current folder
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`open:admin`](/open#openadmin) | Opens current site admin UI in Netlify  |
-| [`open:site`](/open#opensite) | Opens current site url in browser  |
+| [`open:admin`](/commands/open#openadmin) | Opens current site admin UI in Netlify  |
+| [`open:site`](/commands/open#opensite) | Opens current site url in browser  |
 
 
-### [sites](/sites)
+### [sites](/commands/sites)
 
 Handle various site operations
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`sites:create`](/sites#sitescreate) | Create an empty site (advanced)  |
-| [`sites:list`](/sites#siteslist) | List all sites you have access to  |
+| [`sites:create`](/commands/sites#sitescreate) | Create an empty site (advanced)  |
+| [`sites:list`](/commands/sites#siteslist) | List all sites you have access to  |
 
 
-### [status](/status)
+### [status](/commands/status)
 
 Print status information
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`status:hooks`](/status#statushooks) | Print hook information of the linked site  |
+| [`status:hooks`](/commands/status#statushooks) | Print hook information of the linked site  |
 
 
-### [unlink](/unlink)
+### [unlink](/commands/unlink)
 
 Unlink a local folder from a Netlify site
 
-### [watch](/watch)
+### [watch](/commands/watch)
 
 Watch for site deploy to finish
+
+### [dev](/commands/dev)
+
+Local dev server
+
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`dev:exec`](/commands/dev#devexec) | Exec command  |
+
+
+### [functions](/commands/functions)
+
+Manage netlify functions
+
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`functions:build`](/commands/functions#functionsbuild) | build functions locally  |
+| [`functions:create`](/commands/functions#functionscreate) | create a new function locally  |
+
 
 
 <!-- AUTO-GENERATED-CONTENT:END -->

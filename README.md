@@ -24,6 +24,8 @@ Welcome to the Netlify CLI! The new 2.0 version was rebuilt from the ground up t
   * [status](#status)
   * [unlink](#unlink)
   * [watch](#watch)
+  * [dev](#dev)
+  * [functions](#functions)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -58,58 +60,77 @@ For a full command reference, see the list below, or visit [cli.netlify.com](htt
 ## Commands
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_LIST) -->
-### [deploy](/docs/deploy.md)
+### [deploy](/docs/commands/deploy.md)
 
 Create a new deploy from the contents of a folder
 
-### [init](/docs/init.md)
+### [init](/docs/commands/init.md)
 
 Configure continuous deployment for a new or existing site
 
-### [link](/docs/link.md)
+### [link](/docs/commands/link.md)
 
 Link a local repo or project folder to an existing site on Netlify
 
-### [login](/docs/login.md)
+### [login](/docs/commands/login.md)
 
 Login to your Netlify account
 
-### [open](/docs/open.md)
+### [open](/docs/commands/open.md)
 
 Open settings for the site linked to the current folder
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`open:admin`](/docs/open.md#openadmin) | Opens current site admin UI in Netlify  |
-| [`open:site`](/docs/open.md#opensite) | Opens current site url in browser  |
+| [`open:admin`](/docs/commands/open.md#openadmin) | Opens current site admin UI in Netlify  |
+| [`open:site`](/docs/commands/open.md#opensite) | Opens current site url in browser  |
 
 
-### [sites](/docs/sites.md)
+### [sites](/docs/commands/sites.md)
 
 Handle various site operations
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`sites:create`](/docs/sites.md#sitescreate) | Create an empty site (advanced)  |
-| [`sites:list`](/docs/sites.md#siteslist) | List all sites you have access to  |
+| [`sites:create`](/docs/commands/sites.md#sitescreate) | Create an empty site (advanced)  |
+| [`sites:list`](/docs/commands/sites.md#siteslist) | List all sites you have access to  |
 
 
-### [status](/docs/status.md)
+### [status](/docs/commands/status.md)
 
 Print status information
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`status:hooks`](/docs/status.md#statushooks) | Print hook information of the linked site  |
+| [`status:hooks`](/docs/commands/status.md#statushooks) | Print hook information of the linked site  |
 
 
-### [unlink](/docs/unlink.md)
+### [unlink](/docs/commands/unlink.md)
 
 Unlink a local folder from a Netlify site
 
-### [watch](/docs/watch.md)
+### [watch](/docs/commands/watch.md)
 
 Watch for site deploy to finish
+
+### [dev](/docs/commands/dev.md)
+
+Local dev server
+
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`dev:exec`](/docs/commands/dev.md#devexec) | Exec command  |
+
+
+### [functions](/docs/commands/functions.md)
+
+Manage netlify functions
+
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`functions:build`](/docs/commands/functions.md#functionsbuild) | build functions locally  |
+| [`functions:create`](/docs/commands/functions.md#functionscreate) | create a new function locally  |
+
 
 
 <!-- AUTO-GENERATED-CONTENT:END -->

@@ -1,0 +1,8 @@
+/login/ /command/login/ 301
+/init/ /command/init/ 301
+/link/ /command/link/ 301
+/unlink/ /command/unlink/ 301
+/deploy/ /command/deploy/ 301
+/sites/ /command/sites/ 301
+/open/ /command/open/ 301
+/status/ /command/status/ 301
