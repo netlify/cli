@@ -195,7 +195,7 @@ Deploys from the build settings found in the netlify.toml file, or settings from
 
 The following environment variables can be used to override configuration file lookups and prompts:
 
-- \`NETLIFY_AUTH_TOKEN\` - an access token to use when authenticating commands. KEEP THIS VALUE PRIVATE
+- \`NETLIFY_AUTH_TOKEN\` - an access token to use when authenticating commands. Keep this value private.
 - \`NETLIFY_SITE_ID\` - override any linked site in the current working directory.
 
 Lambda functions in the function folder can be in the following configurations for deployment:
