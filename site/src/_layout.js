@@ -37,10 +37,15 @@ export const Root = styled.div`
   pre {
     line-height: 26px;
   }
+
   li code {
-    background: #e6e6e6;
-    padding: 2px 8px;
+    padding: 4px 8px;
+    background: #f1f1f1;
     border-radius: 4px;
+  }
+  .doc-content li {
+    margin-bottom: 15px;
+    line-height: 26px;
   }
 `;
 
@@ -532,7 +537,9 @@ export default class Layout extends React.Component {
               </EditLink> */}
               <Wrapper>
                 <Content>
-                  {children}
+                  <div className='doc-content'>
+                    {children}
+                  </div>
                 </Content>
                 {!opts.hidePagination && <Pagination {...pagination} />}
               </Wrapper>
