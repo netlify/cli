@@ -34,6 +34,14 @@ export const Root = styled.div`
   .ais-InstantSearch__root {
     width: 100%;
   }
+  pre {
+    line-height: 26px;
+  }
+  li code {
+    background: #e6e6e6;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
 `;
 
 export const Sidebar = styled('div')([], {
