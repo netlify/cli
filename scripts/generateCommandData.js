@@ -3,8 +3,9 @@ const globby = require('markdown-magic').globby
 
 module.exports = function generateCommandData() {
   const commandsPath = path.join(__dirname, '..', 'src/commands')
+  const netlifyDevPath = path.join(__dirname, '..', 'node_modules/netlify-dev-plugin/src/commands')
   // console.log('commandsPath', commandsPath)
-  const commands = globby.sync([`${commandsPath}/**/**.js`])
+  const commands = globby.sync([`${commandsPath}/**/**.js`, `${netlifyDevPath}/**/**.js`])
 
   const allCommands = commands.map((file) => {
     let cmd = {}
@@ -28,8 +29,6 @@ module.exports = function generateCommandData() {
   const visibleCommands = allCommands.filter((cmd) => {
     return !cmd.data.hidden
   })
-
-  // console.log('visibleCommands', visibleCommands)
 
   const groupedCommands = visibleCommands.reduce((acc, curr) => {
     if (curr.commandGroup === curr.command) {
@@ -67,11 +66,19 @@ module.exports = function generateCommandData() {
 }
 
 function commandFromPath(p) {
-  const normalized = path.normalize(p)
+  let normalized = path.normalize(p)
+
   // console.log('commandFromPath', normalized)
   // console.log('process.cwd()', process.cwd())
   const rootDir = path.join(__dirname, '..')
-  // console.log('rootDir', rootDir)
+  // Replace node_modules path for CLI plugins
+  if (normalized.match(/node_modules/)) {
+    /*
+      in: /node_modules/netlify-dev-plugin/src/commands/dev/exec.js
+      out: /src/commands/dev/exec.js
+    */
+    normalized = normalized.replace(/\/node_modules\/((?:[^\/]+)*)?\//, '/')
+  }
   return normalized.replace(rootDir, '')
     .replace(/\\/g, '/')
     .replace('.js', '')

@@ -34,6 +34,19 @@ export const Root = styled.div`
   .ais-InstantSearch__root {
     width: 100%;
   }
+  pre {
+    line-height: 26px;
+  }
+
+  li code {
+    padding: 4px 8px;
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+  .doc-content li {
+    margin-bottom: 15px;
+    line-height: 26px;
+  }
 `;
 
 export const Sidebar = styled('div')([], {
@@ -191,8 +204,14 @@ Link.defaultProps = {
 
 const unhyphenate = str => str.replace(/(\w)(-)(\w)/g, '$1 $3')
 const upperFirst = str => str.charAt(0).toUpperCase() + str.slice(1)
-const format = (str) => {
+/*const format = (str) => {
   return upperFirst(unhyphenate(str))
+}*/
+const format = (str, data) => {
+  if (data && data.path && data.path.match((/commands/)) && str !== 'commands') {
+    return <span>{str}</span>
+  }
+  return str
 }
 
 const NavBar = ({
@@ -518,7 +537,9 @@ export default class Layout extends React.Component {
               </EditLink> */}
               <Wrapper>
                 <Content>
-                  {children}
+                  <div className='doc-content'>
+                    {children}
+                  </div>
                 </Content>
                 {!opts.hidePagination && <Pagination {...pagination} />}
               </Wrapper>

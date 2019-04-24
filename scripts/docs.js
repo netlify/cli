@@ -15,8 +15,9 @@ const config = {
     GENERATE_COMMANDS_DOCS(content, options, instance) {
 
       const command = path.basename(instance.originalPath, '.md')
+      //console.log('command', command)
       const info = commandData[command]
-      console.log('info', info)
+      // console.log('info', info)
       if (info) {
         let md = ''
         // Parent Command
@@ -44,7 +45,7 @@ const config = {
     GENERATE_COMMANDS_LIST(content, options, instance) {
 
       const context = path.basename(instance.originalPath, '.md')
-
+      console.log('context', context)
       /* Generate Command List */
       let md = ''
       Object.keys(commandData).map((commandName) => {
@@ -67,18 +68,18 @@ const markdownFiles = [
 
 // Generate docs
 markdownMagic(markdownFiles, config, () => {
-  /* Fix newline MDX TOC issue #https://github.com/mdx-js/mdx/issues/184#issuecomment-416093951 */
-  // const processedDocs = globby.sync([
-  //   'docs/**/**.md',
-  // ])
-  //
-  // processedDocs.map((f) => {
-  //   const filePath = path.resolve(f)
-  //   const fileContents = fs.readFileSync(filePath, 'utf8')
-  //
-  //   const updatedContents = fileContents.replace('<!-- AUTO-GENERATED-CONTENT:END -->', '\n<!-- AUTO-GENERATED-CONTENT:END -->')
-  //   fs.writeFileSync(filePath, updatedContents)
-  // })
+  /* Post process the docs */
+  const processedDocs = globby.sync([
+    '../docs/**/**.md',
+  ])
+  processedDocs.map((f) => {
+    const filePath = path.resolve(f)
+    const fileContents = fs.readFileSync(filePath, 'utf8')
+
+    // Fix garbage chalk output
+    const updatedContents = fileContents.replace(/\[92m/, '').replace(/\[39m/, '')
+    fs.writeFileSync(filePath, updatedContents)
+  })
   console.log('Docs updated!')
 })
 
@@ -99,7 +100,8 @@ function commandExamples(examples) {
 
 /* Start - Docs Templating logic */
 function commandListTitle(command, context) {
-  const url  = (context === 'README') ? `/docs/${command}.md` : `/${command}`
+  const url  = (context === 'README') ? `/docs/commands/${command}.md` : `/commands/${command}`
+  // const url  = (context === 'README') ? `/docs/${command}.md` : `/${command}`
   return `### [${command}](${url})${newLine}`
 }
 
@@ -117,7 +119,8 @@ function commandListSubCommandDisplay(commands, context) {
   table += '|:--------------------------- |:-----|\n';
   commands.forEach((cmd) => {
     const commandBase = cmd.name.split(':')[0]
-    const baseUrl = (context === 'README') ? `/docs/${commandBase}.md` : `/${commandBase}`
+    const baseUrl = (context === 'README') ? `/docs/commands/${commandBase}.md` : `/commands/${commandBase}`
+    // const baseUrl = (context === 'README') ? `/docs/${commandBase}.md` : `/${commandBase}`
     const slug = cmd.name.replace(/:/g, '')
     table += `| [\`${cmd.name}\`](${baseUrl}#${slug}) | ${cmd.description.split('\n')[0]}  |\n`;
   })
