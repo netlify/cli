@@ -9,6 +9,16 @@ Welcome to the Netlify CLI!  This site provides online access to all help string
 
 If you have questions, ideas, or would like to contribute, check out the [repository on Github](https://github.com/netlify/cli/).
 
+**Install the CLI**
+
+To install the CLI, pop open your terminal and install with `npm`.
+
+```bash
+npm install netlify-cli -g
+```
+
+**Listing commands**
+
 To get a list of commands, run:
 
 ```
