@@ -231,7 +231,7 @@ If you use nested dependencies, be sure to populate the nested node_modules as p
 \`\`\`
 project/
 ├── functions
-│   ├── finctionName/
+│   ├── functionName/
 │   │   ├── functionName.js  (Note the folder and the function name need to match)
 │   │   ├── package.json
 │   │   └── node_modules/
