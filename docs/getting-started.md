@@ -13,7 +13,7 @@ Lets get rolling with the Netlify CLI.
 1. **Install the CLI locally**
 
     ```bash
-    npm install netlify-cli@next -g
+    npm install netlify-cli -g
     ```
 
 2. **Login to your Netlify Account**
