@@ -125,7 +125,7 @@ class DeployCommand extends Command {
       results = await api.deploy(siteId, deployFolder, {
         configPath: configPath,
         fnDir: functionsFolder,
-        statusCb: deployProgressCb(),
+        statusCb: (flags.json) ? () => {} : deployProgressCb(),
         draft: !deployToProduction,
         message: flags.message
       })
@@ -160,8 +160,9 @@ class DeployCommand extends Command {
     const siteUrl = results.deploy.ssl_url || results.deploy.url
     const deployUrl = get(results, 'deploy.deploy_ssl_url') || get(results, 'deploy.deploy_url')
 
+    const logsUrl = `${get(results, 'deploy.admin_url')}/deploys/${get(results, 'deploy.id')}`
     const msgData = {
-      Logs: `${get(results, 'deploy.admin_url')}/deploys/${get(results, 'deploy.id')}`,
+      Logs: `${logsUrl}`,
       'Unique Deploy URL': deployUrl
     }
 
@@ -175,8 +176,20 @@ class DeployCommand extends Command {
     log('', this, flags)
 
     // Json response for piping commands
-    if (flags.json) {
-      this.log(JSON.stringify(msgData, null, 2))
+    if (flags.json && results) {
+
+      const jsonData = {
+        name: results.deploy.deployId,
+        // site_id: results.deploy.deployId,
+        deploy_id: results.deployId,
+        deploy_url: deployUrl,
+        logs: logsUrl,
+      }
+      if (deployToProduction) {
+        jsonData.url = siteUrl
+      }
+
+      this.log(JSON.stringify(jsonData, null, 2))
       return false
     }
 
