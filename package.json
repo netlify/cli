@@ -75,7 +75,7 @@
     "lodash.isequal": "^4.5.0",
     "log-symbols": "^2.2.0",
     "netlify": "^2.4.4",
-    "netlify-dev-plugin": "^1.0.18",
+    "netlify-dev-plugin": "^1.0.19",
     "node-fetch": "^2.5.0",
     "ora": "^3.4.0",
     "p-wait-for": "^2.0.0",
