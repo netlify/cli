@@ -56,9 +56,10 @@ class AddonsCreateCommand extends Command {
     }
 
     const manifest = await getAddonManifest(addonName, accessToken)
+     const hasConfig = manifest.config && Object.keys(manifest.config).length
 
     let configValues = rawFlags
-    if (manifest.config && Object.keys(manifest.config).length) {
+    if (hasConfig) {
       const required = requiredConfigValues(manifest.config)
       const missingValues = missingConfigValues(required, rawFlags)
       console.log(`Starting the setup for "${addonName} add-on"`)
