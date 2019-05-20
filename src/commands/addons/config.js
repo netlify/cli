@@ -41,6 +41,7 @@ class AddonsConfigCommand extends Command {
 
     // TODO update getAddonManifest to https://open-api.netlify.com/#/default/showServiceManifest
     const manifest = await getAddonManifest(addonName, accessToken)
+    const hasConfig = manifest.config && Object.keys(manifest.config).length
     // Parse flags
     const rawFlags = parseRawFlags(raw)
     // Get Existing Config
@@ -48,7 +49,7 @@ class AddonsConfigCommand extends Command {
 
     const words = `Current "${addonName} add-on" Settings:`
     console.log(` ${chalk.yellowBright.bold(words)}`)
-    if (manifest.config) {
+    if (hasConfig) {
       render.configValues(addonName, manifest.config, currentConfig)
     } else {
       // For addons without manifest. TODO remove once we enfore manifests
@@ -57,7 +58,7 @@ class AddonsConfigCommand extends Command {
       })
     }
 
-    if (manifest.config) {
+    if (hasConfig) {
       const required = requiredConfigValues(manifest.config)
       const missingValues = missingConfigValues(required, rawFlags)
 
