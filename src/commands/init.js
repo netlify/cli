@@ -57,7 +57,7 @@ class InitCommand extends Command {
 
     if (repo.error) {
       console.log()
-      console.log(`${chalk.redBright('No git remote found. (╯°□°）╯︵ ┻━┻')}`)
+      console.log(`${chalk.yellow('No git remote was found, would you like to set one up?')}`)
       console.log(`
 It is recommended that you initialize a site that has a remote repository in GitHub.
 
