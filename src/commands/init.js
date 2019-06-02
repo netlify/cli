@@ -174,9 +174,9 @@ git remote add origin https://github.com/YourUserName/RepoName.git
     const remoteBuildRepo = get(siteData, 'build_settings.repo_url')
     if (remoteBuildRepo && !flags.force) {
       this.log()
-      this.log(chalk.underline.bold(`Existing Repo detected`))
+      this.log(chalk.underline.bold(`Success`))
       const siteName = get(siteData, 'name')
-      this.log(`This site "${siteName}" is already configured to automatically deploy via ${remoteBuildRepo}`)
+      this.log(`This site "${siteName}" is configured to automatically deploy via ${remoteBuildRepo}`)
       // TODO add support for changing github repo in site:config command
 
       if (flags.watch) {
