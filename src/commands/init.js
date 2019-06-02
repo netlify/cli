@@ -218,7 +218,7 @@ git remote add origin https://github.com/YourUserName/RepoName.git
 
     // Success Message
     this.log()
-    this.log(chalk.greenBright.bold.underline(`Netlify CI/CD Configured!`))
+    this.log(chalk.greenBright.bold.underline(`Success! Netlify CI/CD Configured!`))
     this.log()
     this.log(`This site is now configured to automatically deploy from ${repo.provider} branches & pull requests`)
     this.log()
