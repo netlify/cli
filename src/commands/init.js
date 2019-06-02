@@ -34,7 +34,7 @@ class InitCommand extends Command {
     if (siteId && siteData && get(siteData, 'build_settings.repo_url') && !flags.force) {
       const repoUrl = get(siteData, 'build_settings.repo_url')
       this.log()
-      this.log(`${chalk.yellow('Warning:')} It looks like this site has already been initialized.`)
+      this.log(`This site has been initialized`)
       this.log()
       this.log(`Site Name:  ${chalk.cyan(siteData.name)}`)
       this.log(`Site Url:   ${chalk.cyan(siteData.ssl_url || siteData.url)}`)
