@@ -34,7 +34,7 @@ class InitCommand extends Command {
     if (siteId && siteData && get(siteData, 'build_settings.repo_url') && !flags.force) {
       const repoUrl = get(siteData, 'build_settings.repo_url')
       this.log()
-      this.log(`${chalk.yellow('Warning:')} It looks like this site has already been initialized.`)
+      this.log(`This site has been initialized`)
       this.log()
       this.log(`Site Name:  ${chalk.cyan(siteData.name)}`)
       this.log(`Site Url:   ${chalk.cyan(siteData.ssl_url || siteData.url)}`)
@@ -57,7 +57,7 @@ class InitCommand extends Command {
 
     if (repo.error) {
       console.log()
-      console.log(`${chalk.redBright('No git remote found. (╯°□°）╯︵ ┻━┻')}`)
+      console.log(`${chalk.yellow('No git remote was found, would you like to set one up?')}`)
       console.log(`
 It is recommended that you initialize a site that has a remote repository in GitHub.
 
@@ -174,9 +174,9 @@ git remote add origin https://github.com/YourUserName/RepoName.git
     const remoteBuildRepo = get(siteData, 'build_settings.repo_url')
     if (remoteBuildRepo && !flags.force) {
       this.log()
-      this.log(chalk.underline.bold(`Existing Repo detected`))
+      this.log(chalk.underline.bold(`Success`))
       const siteName = get(siteData, 'name')
-      this.log(`This site "${siteName}" is already configured to automatically deploy via ${remoteBuildRepo}`)
+      this.log(`This site "${siteName}" is configured to automatically deploy via ${remoteBuildRepo}`)
       // TODO add support for changing github repo in site:config command
 
       if (flags.watch) {
@@ -218,7 +218,7 @@ git remote add origin https://github.com/YourUserName/RepoName.git
 
     // Success Message
     this.log()
-    this.log(chalk.greenBright.bold.underline(`Netlify CI/CD Configured!`))
+    this.log(chalk.greenBright.bold.underline(`Success! Netlify CI/CD Configured!`))
     this.log()
     this.log(`This site is now configured to automatically deploy from ${repo.provider} branches & pull requests`)
     this.log()
