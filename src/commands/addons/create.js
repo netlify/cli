@@ -92,7 +92,8 @@ class AddonsCreateCommand extends Command {
             config: newConfig
           },
           accessToken,
-          siteData
+          siteData,
+          error: this.error
         })
         return false
       }
@@ -133,14 +134,21 @@ class AddonsCreateCommand extends Command {
         config: configValues
       },
       accessToken,
-      siteData
+      siteData,
+      error: this.error
     })
   }
 }
 
-async function createSiteAddon({ addonName, settings, accessToken, siteData }) {
-  // TODO update to https://open-api.netlify.com/#/default/createServiceInstance
-  const addonResponse = await createAddon(settings, accessToken)
+async function createSiteAddon({ addonName, settings, accessToken, siteData, error }) {
+  let addonResponse
+  try {
+    // TODO update to https://open-api.netlify.com/#/default/createServiceInstance
+    addonResponse = await createAddon(settings, accessToken)
+  } catch (e) {
+    error(e.message)
+  }
+
   if (addonResponse.code === 404) {
     console.log(`No add-on "${addonName}" found. Please double check your add-on name and try again`)
     return false
