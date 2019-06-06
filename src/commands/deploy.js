@@ -106,7 +106,7 @@ class DeployCommand extends Command {
       configPath = site.configPath
       pathInfo['Configuration path'] = configPath
     }
-    this.log(prettyjson.render(pathInfo))
+    log(prettyjson.render(pathInfo), this, flags)
 
     ensureDirectory(deployFolder, this.exit)
 
@@ -117,15 +117,15 @@ class DeployCommand extends Command {
     let results
     try {
       if (deployToProduction) {
-        this.log('Deploying to live site URL...')
+        log('Deploying to live site URL...', this, flags)
       } else {
-        this.log('Deploying to draft URL...')
+        log('Deploying to draft URL...', this, flags)
       }
 
       results = await api.deploy(siteId, deployFolder, {
         configPath: configPath,
         fnDir: functionsFolder,
-        statusCb: deployProgressCb(),
+        statusCb: (flags.json) ? () => {} : deployProgressCb(),
         draft: !deployToProduction,
         message: flags.message
       })
@@ -160,8 +160,9 @@ class DeployCommand extends Command {
     const siteUrl = results.deploy.ssl_url || results.deploy.url
     const deployUrl = get(results, 'deploy.deploy_ssl_url') || get(results, 'deploy.deploy_url')
 
+    const logsUrl = `${get(results, 'deploy.admin_url')}/deploys/${get(results, 'deploy.id')}`
     const msgData = {
-      Logs: `${get(results, 'deploy.admin_url')}/deploys/${get(results, 'deploy.id')}`,
+      Logs: `${logsUrl}`,
       'Unique Deploy URL': deployUrl
     }
 
@@ -171,7 +172,27 @@ class DeployCommand extends Command {
       delete msgData['Unique Deploy URL']
       msgData['Live Draft URL'] = deployUrl
     }
-    this.log()
+
+    log('', this, flags)
+
+    // Json response for piping commands
+    if (flags.json && results) {
+
+      const jsonData = {
+        name: results.deploy.deployId,
+        // site_id: results.deploy.deployId,
+        deploy_id: results.deployId,
+        deploy_url: deployUrl,
+        logs: logsUrl,
+      }
+      if (deployToProduction) {
+        jsonData.url = siteUrl
+      }
+
+      this.log(JSON.stringify(jsonData, null, 2))
+      return false
+    }
+
     this.log(prettyjson.render(msgData))
 
     if (!deployToProduction) {
@@ -186,6 +207,13 @@ class DeployCommand extends Command {
       await openBrowser(urlToOpen)
       this.exit()
     }
+  }
+}
+
+// Hide logs if --json flag used
+function log(message, context, flags) {
+  if (!flags.json) {
+    context.log(message)
   }
 }
 
@@ -299,6 +327,9 @@ DeployCommand.flags = {
     char: 's',
     description: 'A site ID to deploy to',
     env: 'NETLIFY_SITE_ID'
+  }),
+  json: flags.boolean({
+    description: 'Output deployment data as JSON'
   })
 }
 
