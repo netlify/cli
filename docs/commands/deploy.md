@@ -91,6 +91,7 @@ netlify deploy
 - `message` (*option*) - A short message to include in the deploy log
 - `auth` (*option*) - An auth token to log in with
 - `site` (*option*) - A site ID to deploy to
+- `json` (*boolean*) - Output deployment data as JSON
 
 **Examples**
 

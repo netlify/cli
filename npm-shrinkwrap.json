@@ -1,6 +1,6 @@
 {
   "name": "netlify-cli",
-  "version": "2.11.20",
+  "version": "2.11.21",
   "lockfileVersion": 1,
   "requires": true,
   "dependencies": {
