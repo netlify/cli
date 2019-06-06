@@ -73,7 +73,7 @@
     "lodash.isempty": "^4.4.0",
     "lodash.isequal": "^4.5.0",
     "log-symbols": "^2.2.0",
-    "netlify": "^2.4.5",
+    "netlify": "^2.4.6",
     "netlify-dev-plugin": "^1.0.21",
     "node-fetch": "^2.6.0",
     "ora": "^3.4.0",
