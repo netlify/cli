@@ -6,6 +6,7 @@ const parseGitRemote = require('parse-github-url')
 const inquirer = require('inquirer')
 const path = require('path')
 const fs = require('fs')
+const chalk = require('chalk')
 const { makeNetlifyTOMLtemplate } = require('./netlify-toml-template')
 
 const UA = 'Netlify CLI ' + version
@@ -50,7 +51,7 @@ async function configGithub(ctx, site, repo) {
   const { build } = ctx.netlify.config // read from netlify toml
   if (build && build.command) defaultBuildCmd = build.command
   if (build && build.publish) defaultBuildDir = build.publish
-  if (build && build.functions) console.log('Netlify functions folder is ' + build.functions)
+  if (build && build.functions) console.log('Netlify functions folder is ' + chalk.yellow(build.functions))
   const { buildCmd, buildDir } = await inquirer.prompt([
     {
       type: 'input',
