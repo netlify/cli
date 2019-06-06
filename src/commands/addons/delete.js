@@ -53,8 +53,13 @@ class AddonsDeleteCommand extends Command {
       addon: addonName,
       instanceId: currentAddon.id
     }
-    // TODO update deleteAddon to https://open-api.netlify.com/#/default/deleteServiceInstance
-    const addonResponse = await deleteAddon(settings, accessToken)
+    let addonResponse
+    try {
+      // TODO update deleteAddon to https://open-api.netlify.com/#/default/deleteServiceInstance
+      addonResponse = await deleteAddon(settings, accessToken)
+    } catch (e) {
+      this.error(e.message)
+    }
 
     if (addonResponse.status === 404) {
       this.log(`No addon "${addonName}" found. Please double check your add-on name and try again`)

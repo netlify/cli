@@ -76,7 +76,8 @@ class AddonsConfigCommand extends Command {
             addon: addonName,
             config: newConfig
           },
-          accessToken
+          accessToken,
+          error: this.error
         })
         return false
       }
@@ -148,13 +149,14 @@ class AddonsConfigCommand extends Command {
           addon: addonName,
           config: newConfig
         },
-        accessToken
+        accessToken,
+        error: this.error
       })
     }
   }
 }
 
-async function update({ addonName, currentConfig, newConfig, settings, accessToken }) {
+async function update({ addonName, currentConfig, newConfig, settings, accessToken, error }) {
   const codeDiff = diffValues(currentConfig, newConfig)
   if (!codeDiff) {
     console.log('No changes, exiting early')
@@ -167,8 +169,13 @@ async function update({ addonName, currentConfig, newConfig, settings, accessTok
   console.log(`${codeDiff}\n`)
   console.log()
 
-  // TODO update updateAddon to https://open-api.netlify.com/#/default/updateServiceInstance
-  const updateAddonResponse = await updateAddon(settings, accessToken)
+  let updateAddonResponse
+  try {
+    // TODO update updateAddon to https://open-api.netlify.com/#/default/updateServiceInstance
+    updateAddonResponse = await updateAddon(settings, accessToken)
+  } catch (e) {
+    error(e.message)
+  }
   if (updateAddonResponse.code === 404) {
     console.log(`No add-on "${addonName}" found. Please double check your add-on name and try again`)
     return false
