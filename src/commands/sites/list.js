@@ -19,7 +19,9 @@ class SitesListCommand extends Command {
           id: site.id,
           name: site.name,
           ssl_url: site.ssl_url,
-          account_name: site.account_name
+          account_name: site.account_name,
+          published_deploy: site.published_deploy,
+          admin_url: site.admin_url
         }
 
         if (site.build_settings && site.build_settings.repo_url) {
@@ -49,7 +51,13 @@ class SitesListCommand extends Command {
 
       logSites.forEach(s => {
         console.log(`${chalk.greenBright(s.name)} - ${s.id}`)
-        console.log(`  ${chalk.whiteBright.bold('url:')}  ${chalk.yellowBright(s.ssl_url)}`)
+
+        if (s.published_deploy) {
+          console.log(`  ${chalk.whiteBright.bold('url:')}  ${chalk.yellowBright(s.ssl_url)}`)
+        } else {
+          console.log(`  ${chalk.whiteBright.bold('url:')}  ${chalk.redBright('Site deploy failed')} (${s.admin_url}/deploys)`)
+        }
+
         if (s.repo_url) {
           console.log(`  ${chalk.whiteBright.bold('repo:')} ${chalk.white(s.repo_url)}`)
         }
