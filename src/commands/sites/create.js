@@ -27,8 +27,7 @@ class SitesCreateCommand extends Command {
         `${userName.slug}-makes-great-sites`,
         `netlify-thinks-${userName.slug}-is-great`,
         `the-great-${userName.slug}-site`,
-        `isnt-${userName.slug}-awesome`,
-        `${userName.slug}-blog`
+        `isnt-${userName.slug}-awesome`
       ]
       const siteSuggestion = sample(suggestions)
 
