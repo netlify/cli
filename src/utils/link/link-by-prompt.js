@@ -8,10 +8,10 @@ const { track } = require('../telemetry')
 module.exports = async function linkPrompts(context) {
   const { api, state } = context.netlify
 
-  const SITE_NAME_PROMPT = 'Site Name'
-  const SITE_ID_PROMPT = 'Site ID'
+  const SITE_NAME_PROMPT = 'Choose from a list of your sites'
+  const SITE_ID_PROMPT = `Use a site ID`
 
-  let GIT_REMOTE_PROMPT = `Use current git remote URL`
+  let GIT_REMOTE_PROMPT = `Use a current git remote URL`
   let site
   // Get git remote data if exists
   const repoInfo = await getRepoData()
@@ -110,47 +110,28 @@ Run ${chalk.cyanBright('`git remote -v`')} to see a list of your git remotes.`)
     }
     case SITE_NAME_PROMPT: {
       kind = 'byName'
-      const { siteName } = await inquirer.prompt([
-        {
-          type: 'input',
-          name: 'siteName',
-          message: 'What is the name of the site?'
-        }
-      ])
+
       let sites
       try {
-        sites = await api.listSites({
-          name: siteName,
-          filter: 'all'
-        })
+        sites = await api.listSites()
       } catch (e) {
-        if (e.status === 404) {
-          context.error(`${siteName} not found`)
-        } else {
-          context.error(e)
-        }
+        context.error(e)
       }
 
       if (sites.length === 0) {
-        context.error(`No sites found named ${siteName}`)
+        context.error(`You don't have any sites. Use netlify 'sites:create' to create a site.`)
       }
 
-      if (sites.length > 1) {
-        const { selectedSite } = await inquirer.prompt([
-          {
-            type: 'list',
-            name: 'selectedSite',
-            paginated: true,
-            choices: sites.map(site => ({ name: site.name, value: site }))
-          }
-        ])
-        if (!selectedSite) {
-          context.error('No site selected')
+      const siteSelection = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'siteName',
+          message: 'What is the name of the site?',
+          paginated: true,
+          choices: sites.map(site => ({ name: site.name, value: site }))
         }
-        site = selectedSite
-      } else {
-        site = sites[0]
-      }
+      ])
+      site = siteSelection.siteName
       break
     }
     case SITE_ID_PROMPT: {
