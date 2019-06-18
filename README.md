@@ -27,6 +27,7 @@ Welcome to the Netlify CLI! The new 2.0 version was rebuilt from the ground up t
   * [dev](#dev)
   * [functions](#functions)
 - [Contributing](#contributing)
+- [Development](#development)
 - [License](#license)
 
 </details>
@@ -138,6 +139,16 @@ Manage netlify functions
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for more info on how to make contributions to this project.
+
+## Development
+
+You'll need to follow these steps to run Netlify CLI locally:
+
+    uninstall any globally installed versions of netlify-cli
+    clone and install deps for https://github.com/netlify/cli
+    npm link from inside the cli folder
+
+Now you're both ready to start testing and to contribute to the project!
 
 ## License
 

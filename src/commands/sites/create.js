@@ -2,6 +2,7 @@ const { flags } = require('@oclif/command')
 const inquirer = require('inquirer')
 const prettyjson = require('prettyjson')
 const chalk = require('chalk')
+const sample = require('lodash.sample')
 const Command = require('@netlify/cli-utils')
 const { track } = require('../../utils/telemetry')
 const configManual = require('../../utils/init/config-manual')
@@ -19,7 +20,20 @@ class SitesCreateCommand extends Command {
 
     let name = flags.name
     if (!name) {
-      console.log('Choose a site name or leave blank for a random name. You can update later.')
+      const userName = await api.getCurrentUser()
+      const suggestions = [
+        `super-cool-site-by-${userName.slug}`,
+        `the-awesome-${userName.slug}-site`,
+        `${userName.slug}-makes-great-sites`,
+        `netlify-thinks-${userName.slug}-is-great`,
+        `the-great-${userName.slug}-site`,
+        `isnt-${userName.slug}-awesome`,
+        `${userName.slug}-blog`
+      ]
+      const siteSuggestion = sample(suggestions)
+
+
+      console.log(`Choose a unique site name (e.g. ${siteSuggestion}.netlify.com) or leave it blank for a random name. You can update the site name later.`)
       const results = await inquirer.prompt([
         {
           type: 'input',
@@ -59,9 +73,10 @@ class SitesCreateCommand extends Command {
         body
       })
     } catch (error) {
-      console.log(`Error ${error.status}: ${error.message} from createSiteInTeam call`)
       if (error.status === 422) {
-        this.error(`A site with name ${name} already exists. Please try a different slug`)
+        this.error(`${name}.netlify.com already exists. Please try a different slug.`)
+      } else {
+        this.error(`createSiteInTeam error: ${error.status}: ${error.message}`)
       }
     }
     this.log()
