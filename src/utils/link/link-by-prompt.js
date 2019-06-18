@@ -115,11 +115,7 @@ Run ${chalk.cyanBright('`git remote -v`')} to see a list of your git remotes.`)
       try {
         sites = await api.listSites()
       } catch (e) {
-        if (e.status === 404) {
-          context.error(`${siteName} not found`)
-        } else {
-          context.error(e)
-        }
+        context.error(e)
       }
 
       if (sites.length === 0) {
