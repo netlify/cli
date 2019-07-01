@@ -79,7 +79,7 @@ git remote add origin https://github.com/YourUserName/RepoName.git
         console.log(message)
       }
 
-      const NEW_SITE_NO_GIT = 'Yes, create manually deploy site'
+      const NEW_SITE_NO_GIT = 'Yes, create and deploy site manually'
       const NO_ABORT = 'No, I will connect this directory with GitHub first'
 
       const { noGitRemoteChoice } = await inquirer.prompt([
