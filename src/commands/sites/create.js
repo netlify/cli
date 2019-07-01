@@ -18,33 +18,6 @@ class SitesCreateCommand extends Command {
 
     const accounts = await api.listAccountsForUser()
 
-    let name = flags.name
-    if (!name) {
-      const userName = await api.getCurrentUser()
-      const suggestions = [
-        `super-cool-site-by-${userName.slug}`,
-        `the-awesome-${userName.slug}-site`,
-        `${userName.slug}-makes-great-sites`,
-        `netlify-thinks-${userName.slug}-is-great`,
-        `the-great-${userName.slug}-site`,
-        `isnt-${userName.slug}-awesome`
-      ]
-      const siteSuggestion = sample(suggestions)
-
-
-      console.log(`Choose a unique site name (e.g. ${siteSuggestion}.netlify.com) or leave it blank for a random name. You can update the site name later.`)
-      const results = await inquirer.prompt([
-        {
-          type: 'input',
-          name: 'name',
-          message: 'Site name (optional):',
-          filter: val => (val === '' ? undefined : val),
-          validate: input => /^[a-zA-Z0-9-]+$/.test(input) || 'Only alphanumeric characters and hyphens are allowed'
-        }
-      ])
-      name = results.name
-    }
-
     let accountSlug = flags['account-slug']
     if (!accountSlug) {
       const results = await inquirer.prompt([
@@ -61,23 +34,57 @@ class SitesCreateCommand extends Command {
       accountSlug = results.accountSlug
     }
 
+    let name = flags.name
     let site
-    let body = {}
-    if (typeof name === 'string') {
-      body.name = name.trim()
-    }
-    try {
-      site = await api.createSiteInTeam({
-        accountSlug: accountSlug,
-        body
-      })
-    } catch (error) {
-      if (error.status === 422) {
-        this.error(`${name}.netlify.com already exists. Please try a different slug.`)
-      } else {
-        this.error(`createSiteInTeam error: ${error.status}: ${error.message}`)
+
+    // Allow the user to reenter site name if selected one isn't available
+    const inputSiteName = async (name) => {
+      if (!name) {
+        const userName = await api.getCurrentUser()
+        const suggestions = [
+          `super-cool-site-by-${userName.slug}`,
+          `the-awesome-${userName.slug}-site`,
+          `${userName.slug}-makes-great-sites`,
+          `netlify-thinks-${userName.slug}-is-great`,
+          `the-great-${userName.slug}-site`,
+          `isnt-${userName.slug}-awesome`
+        ]
+        const siteSuggestion = sample(suggestions)
+
+
+        console.log(`Choose a unique site name (e.g. ${siteSuggestion}.netlify.com) or leave it blank for a random name. You can update the site name later.`)
+        const results = await inquirer.prompt([
+          {
+            type: 'input',
+            name: 'name',
+            message: 'Site name (optional):',
+            filter: val => (val === '' ? undefined : val),
+            validate: input => /^[a-zA-Z0-9-]+$/.test(input) || 'Only alphanumeric characters and hyphens are allowed'
+          }
+        ])
+        name = results.name
+      }
+
+      let body = {}
+      if (typeof name === 'string') {
+        body.name = name.trim()
+      }
+      try {
+        site = await api.createSiteInTeam({
+          accountSlug: accountSlug,
+          body
+        })
+      } catch (error) {
+        if (error.status === 422) {
+          this.warn(`${name}.netlify.com already exists. Please try a different slug.`)
+          await inputSiteName()
+        } else {
+          this.error(`createSiteInTeam error: ${error.status}: ${error.message}`)
+        }
       }
     }
+    await inputSiteName(name)
+
     this.log()
     this.log(chalk.greenBright.bold.underline(`Site Created`))
     this.log()
