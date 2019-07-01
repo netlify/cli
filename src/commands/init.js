@@ -144,7 +144,7 @@ git remote add origin https://github.com/YourUserName/RepoName.git
 
     if (!siteData) {
       const NEW_SITE = '+  Create & configure a new site'
-      const EXISTING_SITE = '⇄  Link this directory to an existing site'
+      const EXISTING_SITE = '⇄  Connect this directory to an existing Netlify site'
 
       const initializeOpts = [EXISTING_SITE, NEW_SITE]
 
