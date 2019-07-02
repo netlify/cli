@@ -22,7 +22,7 @@ class LinkCommand extends Command {
 
     // Site id is incorrect
     if (siteId && !siteData) {
-      console.log(`"${siteId}" not found in your Netlify account.`)
+      console.log(`"${siteId}" was not found in your Netlify account.`)
       console.log(`Please double check your siteID and which account you are logged into via \`netlify status\`.`)
       return this.exit()
     }
