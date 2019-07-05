@@ -35,12 +35,14 @@ class SitesCreateCommand extends Command {
     }
 
     let name = flags.name
+    let userName
     let site
 
     // Allow the user to reenter site name if selected one isn't available
     const inputSiteName = async (name) => {
+      if (!userName) userName = await api.getCurrentUser()
+
       if (!name) {
-        const userName = await api.getCurrentUser()
         const suggestions = [
           `super-cool-site-by-${userName.slug}`,
           `the-awesome-${userName.slug}-site`,
@@ -50,7 +52,6 @@ class SitesCreateCommand extends Command {
           `isnt-${userName.slug}-awesome`
         ]
         const siteSuggestion = sample(suggestions)
-
 
         console.log(`Choose a unique site name (e.g. ${siteSuggestion}.netlify.com) or leave it blank for a random name. You can update the site name later.`)
         const results = await inquirer.prompt([
