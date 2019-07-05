@@ -79,8 +79,8 @@ git remote add origin https://github.com/YourUserName/RepoName.git
         console.log(message)
       }
 
-      const NEW_SITE_NO_GIT = 'Yes, create manually deploy site'
-      const NO_ABORT = 'No, I will connect this with directory with GitHub first'
+      const NEW_SITE_NO_GIT = 'Yes, create and deploy site manually'
+      const NO_ABORT = 'No, I will connect this directory with GitHub first'
 
       const { noGitRemoteChoice } = await inquirer.prompt([
         {
@@ -144,7 +144,7 @@ git remote add origin https://github.com/YourUserName/RepoName.git
 
     if (!siteData) {
       const NEW_SITE = '+  Create & configure a new site'
-      const EXISTING_SITE = '⇄  Link this directory to an existing site'
+      const EXISTING_SITE = '⇄  Connect this directory to an existing Netlify site'
 
       const initializeOpts = [EXISTING_SITE, NEW_SITE]
 
