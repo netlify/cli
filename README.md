@@ -41,6 +41,8 @@ Netlify CLI requires [Node.js](https://nodejs.org) version 8 or above. To instal
 npm install netlify-cli -g
 ```
 
+Alternatively you may also use Homebrew: `brew install netlify-cli` (thanks [@cglong](https://github.com/netlify/cli/issues/291)).
+
 ## Usage
 
 Installing the CLI globally provides access to the `netlify` command.
