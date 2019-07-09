@@ -60,7 +60,9 @@ async function getGitHubToken(opts) {
       const parameters = querystring.parse(req.url.slice(req.url.indexOf('?') + 1))
       if (parameters.token) {
         deferredResolve(parameters)
-        res.end('OK')
+        res.end("<html><head><style>html{font-family:sans-serif}</style></head>" +
+          "<body><h3>You're now logged into Netlify CLI with your " +
+          parameters.provider + ' credentials. Please close this window.')
         server.close()
         return
       }
