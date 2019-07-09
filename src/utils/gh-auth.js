@@ -10,6 +10,8 @@ const getPort = require('get-port')
 module.exports = getGitHubToken
 
 async function getGitHubToken(opts) {
+  console.log('')
+
   opts = Object.assign(
     {
       userAgent: 'Netlify-cli-octokit',
