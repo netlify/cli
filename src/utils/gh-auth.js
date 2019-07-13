@@ -76,7 +76,8 @@ async function getGitHubToken(opts) {
       server.listen(port, resolve)
     })
 
-    const url = 'http://localhost:8080/cli?' + querystring.encode({
+    const webUI = process.env.NETLIFY_WEB_UI || 'https://app.netlify.com'
+    const url = webUI + '/cli?' + querystring.encode({
       host: 'http://localhost:' + port,
       provider: 'github',
     })
