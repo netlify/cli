@@ -6622,6 +6622,11 @@
       "resolved": "https://registry.npmjs.org/lodash.merge/-/lodash.merge-4.6.1.tgz",
       "integrity": "sha512-AOYza4+Hf5z1/0Hztxpm2/xiPZgi/cjMqdnKTUWTBSKchJlxXXuUSxCCl8rJlf4g6yww/j6mA8nC8Hw/EZWxKQ=="
     },
+    "lodash.sample": {
+      "version": "4.2.1",
+      "resolved": "https://registry.npmjs.org/lodash.sample/-/lodash.sample-4.2.1.tgz",
+      "integrity": "sha1-XkKRsMdT+hq+sKq4+ynfG2bwf20="
+    },
     "lodash.set": {
       "version": "4.3.2",
       "resolved": "https://registry.npmjs.org/lodash.set/-/lodash.set-4.3.2.tgz",
