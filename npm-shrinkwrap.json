@@ -1425,6 +1425,12 @@
           "integrity": "sha512-uQWrpRm+iZZUCAp7ZZJQbd4Za9I3AjR/3YTjmcnAtkauaIm/T5CT6U8zVI6e60T6OANqBFAzuR9/HB3NzuZCRA==",
           "dev": true
         },
+        "get-port": {
+          "version": "4.2.0",
+          "resolved": "https://registry.npmjs.org/get-port/-/get-port-4.2.0.tgz",
+          "integrity": "sha512-/b3jarXkH8KJoOMQc3uVGHASwGLPq3gSFJ7tgJm2diza+bydJPTGOibin2steecKeOylE8oY2JERlVWkAJO6yw==",
+          "dev": true
+        },
         "globby": {
           "version": "7.1.1",
           "resolved": "https://registry.npmjs.org/globby/-/globby-7.1.1.tgz",
@@ -4971,9 +4977,12 @@
       "dev": true
     },
     "get-port": {
-      "version": "4.2.0",
-      "resolved": "https://registry.npmjs.org/get-port/-/get-port-4.2.0.tgz",
-      "integrity": "sha512-/b3jarXkH8KJoOMQc3uVGHASwGLPq3gSFJ7tgJm2diza+bydJPTGOibin2steecKeOylE8oY2JERlVWkAJO6yw=="
+      "version": "5.0.0",
+      "resolved": "https://registry.npmjs.org/get-port/-/get-port-5.0.0.tgz",
+      "integrity": "sha512-imzMU0FjsZqNa6BqOjbbW6w5BivHIuQKopjpPqcnx0AVHJQKCxK1O+Ab3OrVXhrekqfVMjwA9ZYu062R+KcIsQ==",
+      "requires": {
+        "type-fest": "^0.3.0"
+      }
     },
     "get-proxy": {
       "version": "2.1.0",
@@ -7373,6 +7382,11 @@
         "wrap-ansi": "^5.1.0"
       },
       "dependencies": {
+        "get-port": {
+          "version": "4.2.0",
+          "resolved": "https://registry.npmjs.org/get-port/-/get-port-4.2.0.tgz",
+          "integrity": "sha512-/b3jarXkH8KJoOMQc3uVGHASwGLPq3gSFJ7tgJm2diza+bydJPTGOibin2steecKeOylE8oY2JERlVWkAJO6yw=="
+        },
         "netlify": {
           "version": "2.4.1",
           "resolved": "https://registry.npmjs.org/netlify/-/netlify-2.4.1.tgz",
@@ -7849,6 +7863,14 @@
       "integrity": "sha1-BnQoIw/WdEOyeUsiu6UotoZ5YtQ=",
       "requires": {
         "mimic-fn": "^1.0.0"
+      }
+    },
+    "open": {
+      "version": "6.4.0",
+      "resolved": "https://registry.npmjs.org/open/-/open-6.4.0.tgz",
+      "integrity": "sha512-IFenVPgF70fSm1keSd2iDBIDIBZkroLeuffXq+wKTzTJlBpesFWojV9lb8mzOfaAzM1sr7HQHuO0vtV0zYekGg==",
+      "requires": {
+        "is-wsl": "^1.1.0"
       }
     },
     "opn": {
