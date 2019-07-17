@@ -49,7 +49,7 @@
     "url": "https://github.com/netlify/cli/issues"
   },
   "dependencies": {
-    "@netlify/cli-utils": "^1.0.2",
+    "@netlify/cli-utils": "^1.0.5",
     "@oclif/command": "^1.5.14",
     "@oclif/errors": "^1.1.2",
     "@oclif/plugin-help": "^2.2.0",
