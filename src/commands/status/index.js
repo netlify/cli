@@ -8,7 +8,7 @@ class StatusCommand extends Command {
   async run() {
     const { globalConfig, api, site } = this.netlify
     const current = globalConfig.get('userId')
-    const [ accessToken, location ] = this.getConfigToken()
+    const [ accessToken ] = this.getConfigToken()
 
     if (!accessToken) {
       this.log(`Not logged in. Please log in to see site status.`)
