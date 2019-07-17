@@ -450,9 +450,9 @@
       }
     },
     "@netlify/cli-utils": {
-      "version": "1.0.3",
-      "resolved": "https://registry.npmjs.org/@netlify/cli-utils/-/cli-utils-1.0.3.tgz",
-      "integrity": "sha512-hOPAms3SWOabTBxohgj0ck/QreMjwZ1Ro7ze+/DzI7R0061gT2aiURN+zlZx/HNmDZ/5EeN+eZZYkVk8wdW5zA==",
+      "version": "1.0.5",
+      "resolved": "https://registry.npmjs.org/@netlify/cli-utils/-/cli-utils-1.0.5.tgz",
+      "integrity": "sha512-q5oCueTFB1/odXE+IRTiV2Q3eke5s2pHitvVZPesR5MZod30XiEiLqUw1/5YkjCU5Y0Whz9wEQEXbhFLb90Z6Q==",
       "requires": {
         "@iarna/toml": "^2.2.1",
         "@oclif/command": "^1.5.8",
