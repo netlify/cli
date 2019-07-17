@@ -8,7 +8,14 @@ class StatusCommand extends Command {
   async run() {
     const { globalConfig, api, site } = this.netlify
     const current = globalConfig.get('userId')
-    const accessToken = this.configToken
+    const [ accessToken, location ] = this.getConfigToken()
+
+    if (!accessToken) {
+      this.log(`Not logged in. Please log in to see site status.`)
+      this.log()
+      this.log('Login with "netlify login" command')
+      this.exit()
+    }
 
     const siteId = site.id
 
@@ -16,29 +23,26 @@ class StatusCommand extends Command {
  Current Netlify User │
 ──────────────────────┘`)
     let accountData
-    if (accessToken) {
-      const accounts = await api.listAccountsForUser()
-      const user = await this.netlify.api.getCurrentUser()
+    const accounts = await api.listAccountsForUser()
+    const user = await this.netlify.api.getCurrentUser()
 
-      const ghuser = this.netlify.globalConfig.get(`users.${current}.auth.github.user`)
-      accountData = {
-        Name: get(user, 'full_name'),
-        // 'Account slug': get(personal, 'slug'),
-        // 'Account id': get(personal, 'id'),
-        // Name: get(personal, 'billing_name'),
-        Email: get(user, 'email'),
-        Github: ghuser
-      }
-      const teamsData = {}
-
-      accounts.forEach(team => {
-        return (teamsData[team.name] = team.roles_allowed.join(' '))
-      })
-
-      accountData.Teams = teamsData
-    } else {
-      this.error(`Not logged in. Log in to see site status.`)
+    const ghuser = this.netlify.globalConfig.get(`users.${current}.auth.github.user`)
+    accountData = {
+      Name: get(user, 'full_name'),
+      // 'Account slug': get(personal, 'slug'),
+      // 'Account id': get(personal, 'id'),
+      // Name: get(personal, 'billing_name'),
+      Email: get(user, 'email'),
+      Github: ghuser
     }
+    const teamsData = {}
+
+    accounts.forEach(team => {
+      return (teamsData[team.name] = team.roles_allowed.join(' '))
+    })
+
+    accountData.Teams = teamsData
+
 
     this.log(prettyjson.render(clean(accountData)))
 
