@@ -3,18 +3,29 @@ const { track } = require('../utils/telemetry')
 
 class LogoutCommand extends Command {
   async run() {
-    const accessToken = this.configToken
+    const [ accessToken, location ] = this.getConfigToken()
 
-    if (accessToken) {
-      await track('user_logout')
-
-      // unset userID without deleting key
-      this.netlify.globalConfig.set('userId', null)
-
-      this.log(`Logging you out of Netlify. Come back soon!`)
-    } else {
+    if (!accessToken) {
       this.log(`Already logged out`)
+      this.log()
+      this.log('To login run "netlify login"')
+      this.exit()
     }
+
+    await track('user_logout')
+
+    // unset userID without deleting key
+    this.netlify.globalConfig.set('userId', null)
+
+    if (location === 'env') {
+      this.log('The "process.env.NETLIFY_AUTH_TOKEN" is still set in your terminal session')
+      this.log()
+      this.log('To logout completely, unset the environment variable')
+      this.log()
+      this.exit()
+    }
+
+    this.log(`Logging you out of Netlify. Come back soon!`)
   }
 }
 
