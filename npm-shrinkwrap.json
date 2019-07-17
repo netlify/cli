@@ -450,9 +450,9 @@
       }
     },
     "@netlify/cli-utils": {
-      "version": "1.0.5",
-      "resolved": "https://registry.npmjs.org/@netlify/cli-utils/-/cli-utils-1.0.5.tgz",
-      "integrity": "sha512-q5oCueTFB1/odXE+IRTiV2Q3eke5s2pHitvVZPesR5MZod30XiEiLqUw1/5YkjCU5Y0Whz9wEQEXbhFLb90Z6Q==",
+      "version": "1.0.6",
+      "resolved": "https://registry.npmjs.org/@netlify/cli-utils/-/cli-utils-1.0.6.tgz",
+      "integrity": "sha512-Y+hAPDuJn1CV05vSNSb0os8uNwnqEXEzONc5a40RggYNxQ7b7UdKn6hWbhDeT10UgYM4EwxKKxgGDTYF0TAIYQ==",
       "requires": {
         "@iarna/toml": "^2.2.1",
         "@oclif/command": "^1.5.8",
@@ -466,6 +466,7 @@
         "lodash.merge": "^4.6.1",
         "lodash.snakecase": "^4.1.1",
         "make-dir": "^1.3.0",
+        "minimist": "^1.2.0",
         "netlify": "^2.2.1",
         "node-fetch": "^2.3.0",
         "uuid": "^3.3.2",
