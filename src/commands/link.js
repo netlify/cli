@@ -21,6 +21,9 @@ class LinkCommand extends Command {
       // silent api error
     }
 
+    // Add .netlify to .gitignore file
+    await ensureNetlifyIgnore(site.root)
+
     // Site id is incorrect
     if (siteId && !siteData) {
       console.log(`"${siteId}" was not found in your Netlify account.`)
@@ -58,9 +61,6 @@ class LinkCommand extends Command {
         kind: 'byId'
       })
 
-      // Add .netlify to .gitignore file
-      await ensureNetlifyIgnore(site.root)
-
       return this.exit()
     }
 
@@ -92,9 +92,6 @@ class LinkCommand extends Command {
         linkType: 'manual',
         kind: 'byName'
       })
-
-      // Add .netlify to .gitignore file
-      await ensureNetlifyIgnore(site.root)
 
       return this.exit()
     }
