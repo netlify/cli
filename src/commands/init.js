@@ -6,6 +6,7 @@ const SitesWatchCommand = require('./watch')
 const configManual = require('../utils/init/config-manual')
 const configGithub = require('../utils/init/config-github')
 const getRepoData = require('../utils/get-repo-data')
+const { ensureNetlifyIgnore } = require('../utils/gitignore')
 const inquirer = require('inquirer')
 const SitesCreateCommand = require('./sites/create')
 const LinkCommand = require('./link')
@@ -31,6 +32,9 @@ class InitCommand extends Command {
       // Throw unexpected ones
     }
 
+    // Add .netlify to .gitignore file
+    await ensureNetlifyIgnore(site.root)
+
     if (siteId && siteData && get(siteData, 'build_settings.repo_url') && !flags.force) {
       const repoUrl = get(siteData, 'build_settings.repo_url')
       this.log()
@@ -49,6 +53,7 @@ class InitCommand extends Command {
       this.log(`1. Run ${chalk.cyanBright.bold('netlify unlink')}`)
       this.log(`2. Then run ${chalk.cyanBright.bold('netlify init')} again`)
       // TODO remove this.log(`Or delete the siteId from ${this.siteData.path}`)
+
       this.exit()
     }
 
