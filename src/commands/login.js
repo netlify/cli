@@ -3,10 +3,9 @@ const chalk = require('chalk')
 
 class LoginCommand extends Command {
   async run() {
-    const accessToken = this.configToken
-
+    const [ accessToken, location ] = this.getConfigToken()
     if (accessToken) {
-      this.log('Already logged in!')
+      this.log(`Already logged in ${msg(location)}`)
       this.log()
       this.log(`Run ${chalk.cyanBright('netlify status')} for account details`)
       this.log()
@@ -18,6 +17,19 @@ class LoginCommand extends Command {
     await this.authenticate()
 
     return this.exit()
+  }
+}
+
+function msg(location) {
+  switch(location) {
+    case 'env':
+      return 'via process.env.NETLIFY_AUTH_TOKEN set in your terminal session'
+    case 'flag':
+      return 'via CLI --auth flag'
+    case 'config':
+      return 'via netlify config on your machine'
+    default:
+      return ''
   }
 }
 

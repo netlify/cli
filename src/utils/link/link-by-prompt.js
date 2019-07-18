@@ -20,8 +20,7 @@ module.exports = async function linkPrompts(context) {
 
   let repoUrl = ''
   if (!repoInfo.error) {
-    // TODO improve this url construction
-    repoUrl = `https://${repoInfo.provider}.com/${repoInfo.remoteData.repo}`
+    repoUrl = `https://${repoInfo.host}/${repoInfo.remoteData.repo}`
 
     GIT_REMOTE_PROMPT = `Use current git remote url ${repoUrl}`
 
