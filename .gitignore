@@ -15,7 +15,6 @@ vendor
 # osx
 .DS_STORE
 .vscode
-.netlify
 coverage
 test-site
 site/dist
