@@ -3,7 +3,6 @@ const inquirer = require('inquirer')
 const chalk = require('chalk')
 const isEmpty = require('lodash.isempty')
 const getRepoData = require('../get-repo-data')
-const { ensureNetlifyIgnore } = require('../gitignore')
 const { track } = require('../telemetry')
 
 module.exports = async function linkPrompts(context) {
@@ -163,9 +162,6 @@ Run ${chalk.cyanBright('`git remote -v`')} to see a list of your git remotes.`)
 
   // Save site ID to config
   state.set('siteId', site.id)
-
-  // Add .netlify to .gitignore file
-  await ensureNetlifyIgnore(site.root)
 
   await track('sites_linked', {
     siteId: site.id,
