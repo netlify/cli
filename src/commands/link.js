@@ -2,6 +2,7 @@ const Command = require('@netlify/cli-utils')
 const { flags } = require('@oclif/command')
 const path = require('path')
 const chalk = require('chalk')
+const { ensureNetlifyIgnore } = require('../utils/gitignore')
 const linkPrompt = require('../utils/link/link-by-prompt')
 const { track } = require('../utils/telemetry')
 
@@ -57,6 +58,9 @@ class LinkCommand extends Command {
         kind: 'byId'
       })
 
+      // Add .netlify to .gitignore file
+      await ensureNetlifyIgnore(site.root)
+
       return this.exit()
     }
 
@@ -80,6 +84,7 @@ class LinkCommand extends Command {
       }
       siteData = results[0]
       state.set('siteId', siteData.id)
+
       this.log(`Linked to ${siteData.name} in ${path.relative(path.join(process.cwd(), '..'), state.path)}`)
 
       await track('sites_linked', {
@@ -87,6 +92,9 @@ class LinkCommand extends Command {
         linkType: 'manual',
         kind: 'byName'
       })
+
+      // Add .netlify to .gitignore file
+      await ensureNetlifyIgnore(site.root)
 
       return this.exit()
     }
