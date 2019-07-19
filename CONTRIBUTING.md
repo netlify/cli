@@ -64,8 +64,10 @@ We actively welcome your pull requests.
 
 ## Releasing
 
-1. `npm version [major, minor, patch]`  Generate changelog and bump version.
-2. `npm publish` Publish to npm, push version commit + tag, push latest CHANGELOG entry to GitHub release page.
+1. Clean out local `node_modules`. `rm -rf node_modules`. This is to counteract any oddities that may arise during the `shrinkwrap` process that happens when cli is released.
+2. Install dependencies. `npm install`.
+3. `npm version [major, minor, patch]`  Generate changelog and bump version.
+4. `npm publish` Publish to npm, push version commit + tag, push latest CHANGELOG entry to GitHub release page.
 
 ## License
 
