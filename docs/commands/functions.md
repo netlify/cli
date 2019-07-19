@@ -20,6 +20,7 @@ netlify functions
 |:--------------------------- |:-----|
 | [`functions:build`](/commands/functions#functionsbuild) | build functions locally  |
 | [`functions:create`](/commands/functions#functionscreate) | create a new function locally  |
+| [`functions:invoke`](/commands/functions#functionsinvoke) | trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions  |
 
 
 **Examples**
@@ -65,6 +66,29 @@ netlify functions:create
 
 - `name` (*option*) - function name
 - `url` (*option*) - pull template from URL
+
+---
+## `functions:invoke`
+
+trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions
+
+**Usage**
+
+```bash
+netlify functions:invoke
+```
+
+**Arguments**
+
+- name - function name to invoke
+
+**Flags**
+
+- `name` (*option*) - function name to invoke
+- `functions` (*option*) - Specify a functions folder to parse, overriding netlify.toml
+- `querystring` (*option*) - Querystring to add to your function invocation
+- `payload` (*option*) - Supply POST payload in stringified json, or a path to a json file
+- `auth` (*boolean*) - simulate Netlify Identity authentication JWT. pass --no-auth to affirm unauthenticated request
 
 ---
 
