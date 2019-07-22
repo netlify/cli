@@ -1,4 +1,5 @@
 const Command = require('@netlify/cli-utils')
+const inquirer = require('inquirer')
 const { getAddons, deleteAddon } = require('netlify/src/addons')
 const { flags } = require('@oclif/command')
 
@@ -29,15 +30,18 @@ class AddonsDeleteCommand extends Command {
       current => current.service_path && current.service_path.replace('/.netlify/', '') === addonName
     ) || {}
 
-    if (!flags.force) {
-      const inquirer = require('inquirer')
+
+    const { force, f } = parseRawFlags(raw)
+    if (!force && !f) {
       const { wantsToDelete } = await inquirer.prompt({
         type: 'confirm',
         name: 'wantsToDelete',
         message: `Are you sure you want to delete the ${addonName} add-on? (to skip this prompt, pass a --force flag)`,
         default: false
       })
-      if (!wantsToDelete) this.exit()
+      if (!wantsToDelete) {
+        this.exit()
+      }
     }
 
     if (!currentAddon.id) {
@@ -87,7 +91,10 @@ AddonsDeleteCommand.strict = false
 AddonsDeleteCommand.hidden = true
 AddonsDeleteCommand.aliases = ['addon:delete']
 AddonsDeleteCommand.flags = {
-  force: flags.boolean({ char: 'f', description: 'delete without prompting (useful for CI)' })
+  force: flags.boolean({
+    char: 'f',
+    description: 'delete without prompting (useful for CI)'
+  })
 }
 AddonsDeleteCommand.args = [
   {
