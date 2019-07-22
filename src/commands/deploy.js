@@ -285,7 +285,8 @@ DeployCommand.examples = [
   'netlify deploy',
   'netlify deploy --prod',
   'netlify deploy --prod --open',
-  'netlify deploy --message "A message with an $ENV_VAR"'
+  'netlify deploy --message "A message with an $ENV_VAR"',
+  'netlify deploy --auth $NETLIFY_AUTH_TOKEN',
 ]
 
 DeployCommand.flags = {
@@ -313,7 +314,7 @@ DeployCommand.flags = {
   }),
   auth: flags.string({
     char: 'a',
-    description: 'An auth token to log in with',
+    description: 'Netlify auth token to deploy with',
     env: 'NETLIFY_AUTH_TOKEN'
   }),
   site: flags.string({
