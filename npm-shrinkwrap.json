@@ -6977,9 +6977,9 @@
       "dev": true
     },
     "netlify": {
-      "version": "2.4.6",
-      "resolved": "https://registry.npmjs.org/netlify/-/netlify-2.4.6.tgz",
-      "integrity": "sha512-p/Uad5WxS6q+QeJwxGT8P2GPL8x7oUYJSaimsmRYHTuP+qMyvS0ff5jufd41WT9P+lyT9CaFjcH5UgPOcW/6CA==",
+      "version": "2.4.7",
+      "resolved": "https://registry.npmjs.org/netlify/-/netlify-2.4.7.tgz",
+      "integrity": "sha512-6UkqQM8Qmr0Nm5gExNDgEzzUydZHImhPGKf1EZ0n5eodG6mw7dvoXDAJtTHy9HXbEuhZvgkYPv0rOX6KgkrXHQ==",
       "requires": {
         "@netlify/open-api": "^0.9.0",
         "@netlify/zip-it-and-ship-it": "^0.3.1",

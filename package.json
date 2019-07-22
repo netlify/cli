@@ -77,7 +77,7 @@
     "lodash.isequal": "^4.5.0",
     "lodash.sample": "^4.2.1",
     "log-symbols": "^2.2.0",
-    "netlify": "^2.4.6",
+    "netlify": "^2.4.7",
     "netlify-dev-plugin": "^1.0.23",
     "node-fetch": "^2.6.0",
     "open": "^6.4.0",
