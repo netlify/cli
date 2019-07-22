@@ -85,10 +85,12 @@ class StatusCommand extends Command {
     }
 
     // Json only logs out if --json flag is passed
-    this.logJson({
-      account: cleanAccountData,
-      siteData: statusData,
-    })
+    if (flags.json) {
+      this.logJson({
+        account: cleanAccountData,
+        siteData: statusData,
+      })
+    }
 
     this.log(prettyjson.render(statusData))
   }
