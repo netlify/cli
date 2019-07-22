@@ -7,6 +7,7 @@ const clean = require('clean-deep')
 class StatusCommand extends Command {
   async run() {
     const { globalConfig, api, site } = this.netlify
+    const { flags } = this.parse(StatusCommand)
     const current = globalConfig.get('userId')
     const [ accessToken ] = this.getConfigToken()
 
@@ -43,8 +44,16 @@ class StatusCommand extends Command {
 
     accountData.Teams = teamsData
 
+    const cleanAccountData = clean(accountData)
 
-    this.log(prettyjson.render(clean(accountData)))
+    this.log(prettyjson.render(cleanAccountData))
+
+    if (!site.configPath) {
+      this.logJson({
+        account: cleanAccountData
+      })
+      this.exit()
+    }
 
     this.log(`────────────────────┐
  Netlify Site Info  │
@@ -74,6 +83,12 @@ class StatusCommand extends Command {
       'Admin URL': chalk.magentaBright(siteData.admin_url),
       'Site URL': chalk.cyanBright(siteData.ssl_url || siteData.url)
     }
+
+    // Json only logs out if --json flag is passed
+    this.logJson({
+      account: cleanAccountData,
+      siteData: statusData,
+    })
 
     this.log(prettyjson.render(statusData))
   }
