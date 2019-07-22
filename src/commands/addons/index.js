@@ -14,7 +14,7 @@ class AddonsCommand extends Command {
   }
 }
 
-AddonsCommand.description = `Handle addon operations
+AddonsCommand.description = `Handle Netlify add-on operations
 The addons command will help you manage all your netlify addons
 `
 AddonsCommand.aliases = ['addon']
