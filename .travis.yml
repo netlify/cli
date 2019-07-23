@@ -28,7 +28,6 @@ jobs:
       provider: script
       script: npm publish
       on:
-        branch: master
         tags: true
         repo: netlify/cli
 after_success:

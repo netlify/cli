@@ -24,7 +24,7 @@ async function deleteAddon(name) {
 
 test.before(async t => {
   console.log('creating new site for tests: ' + siteName)
-  const cliResponse = await exec(`${cliPath} sites:create --name="${siteName}" --account-slug="netlify"`, execOptions)
+  const cliResponse = await exec(`${cliPath} sites:create --name="${siteName}" --account-slug="netlify-demo-team"`, execOptions)
   t.is(/Site Created/.test(cliResponse.stdout), true)
 
   const matches = /Site ID:\s+([a-zA-Z0-9-]+)/m.exec(stripAnsi(cliResponse.stdout))
@@ -74,8 +74,7 @@ test.after('cleanup', async t => {
   console.log('Performing cleanup')
   // Run cleanup
   await deleteAddon('demo')
-  console.log(`deleting test site "${siteName}". ${siteId}`)
-  if (siteId) {
-    await exec(`${cliPath} sites:delete ${siteId} --force`, execOptions)
-  }
+
+  console.log(`deleting test site "${siteName}". ${execOptions.env.NETLIFY_SITE_ID}`)
+  await exec(`${cliPath} sites:delete ${execOptions.env.NETLIFY_SITE_ID}`, execOptions)
 })
