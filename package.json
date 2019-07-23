@@ -9,6 +9,32 @@
     "David Wells <david.wells@netlify.com> (https://davidwells.io/)",
     "Bret Comnes <bcomnes@gmail.com> (https://bret.io)"
   ],
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "files": [
+    "/bin",
+    "/npm-shrinkwrap.json",
+    "/oclif.manifest.json",
+    "/src/**/*.js"
+  ],
+  "homepage": "https://github.com/netlify/cli",
+  "keywords": [
+    "api",
+    "cli",
+    "netlify",
+    "static"
+  ],
+  "license": "MIT",
+  "repository": "netlify/cli",
+  "main": "src/index.js",
+  "bin": {
+    "ntl": "./bin/run",
+    "netlify": "./bin/run"
+  },
+  "bugs": {
+    "url": "https://github.com/netlify/cli/issues"
+  },
   "scripts": {
     "build": "run-s build:*",
     "build:site": "cd site && npm install && npm run build",
@@ -30,25 +56,6 @@
     "prepublishOnly": "git push && git push --tags && gh-release",
     "update-semver": "npm --depth 9999 update",
     "postinstall": "node ./scripts/postinstall.js"
-  },
-  "ava": {
-    "files": [
-      "src/**/*.test.js"
-    ],
-    "cache": true,
-    "concurrency": 5,
-    "failFast": false,
-    "failWithoutAssertions": false,
-    "tap": false,
-    "compileEnhancements": false,
-    "babel": false
-  },
-  "bin": {
-    "ntl": "./bin/run",
-    "netlify": "./bin/run"
-  },
-  "bugs": {
-    "url": "https://github.com/netlify/cli/issues"
   },
   "dependencies": {
     "@netlify/cli-utils": "^1.0.7",
@@ -110,24 +117,18 @@
     "prettier": "^1.16.4",
     "strip-ansi": "^5.2.0"
   },
-  "engines": {
-    "node": ">=8.0.0"
+  "ava": {
+    "files": [
+      "src/**/*.test.js"
+    ],
+    "cache": true,
+    "concurrency": 5,
+    "failFast": false,
+    "failWithoutAssertions": false,
+    "tap": false,
+    "compileEnhancements": false,
+    "babel": false
   },
-  "files": [
-    "/bin",
-    "/npm-shrinkwrap.json",
-    "/oclif.manifest.json",
-    "/src/**/*.js"
-  ],
-  "homepage": "https://github.com/netlify/cli",
-  "keywords": [
-    "api",
-    "cli",
-    "netlify",
-    "static"
-  ],
-  "license": "MIT",
-  "main": "src/index.js",
   "oclif": {
     "bin": "netlify",
     "commands": "./src/commands",
@@ -145,6 +146,5 @@
         "./src/hooks/analytics"
       ]
     }
-  },
-  "repository": "netlify/cli"
+  }
 }
