@@ -1,4 +1,4 @@
-const Command = require('../base')
+const Command = require('@netlify/cli-utils')
 const openBrowser = require('../utils/open-browser')
 const path = require('path')
 const chalk = require('chalk')
@@ -27,7 +27,7 @@ class DeployCommand extends Command {
     if (!siteId) {
       this.log("This folder isn't linked to a site yet")
       const NEW_SITE = '+  Create & configure a new site'
-      const EXISTING_SITE = 'â‡„  Link this directory to an existing site'
+      const EXISTING_SITE = 'Link this directory to an existing site'
 
       const initializeOpts = [EXISTING_SITE, NEW_SITE]
 
@@ -69,10 +69,12 @@ class DeployCommand extends Command {
     }
 
     let functionsFolder
+    // Support "functions" and "Functions"
+    const funcConfig = get(config, 'build.functions') || get(config, 'build.Functions')
     if (flags['functions']) {
       functionsFolder = path.resolve(process.cwd(), flags['functions'])
-    } else if (get(config, 'build.functions')) {
-      functionsFolder = path.resolve(site.root, get(config, 'build.functions'))
+    } else if (funcConfig) {
+      functionsFolder = path.resolve(site.root, funcConfig)
     } else if (get(siteData, 'build_settings.functions_dir')) {
       functionsFolder = path.resolve(site.root, get(siteData, 'build_settings.functions_dir'))
     }
@@ -104,7 +106,7 @@ class DeployCommand extends Command {
       configPath = site.configPath
       pathInfo['Configuration path'] = configPath
     }
-    this.log(prettyjson.render(pathInfo))
+    log(prettyjson.render(pathInfo), this, flags)
 
     ensureDirectory(deployFolder, this.exit)
 
@@ -115,15 +117,15 @@ class DeployCommand extends Command {
     let results
     try {
       if (deployToProduction) {
-        this.log('Deploying to live site URL...')
+        log('Deploying to live site URL...', this, flags)
       } else {
-        this.log('Deploying to draft URL...')
+        log('Deploying to draft URL...', this, flags)
       }
 
       results = await api.deploy(siteId, deployFolder, {
         configPath: configPath,
         fnDir: functionsFolder,
-        statusCb: deployProgressCb(),
+        statusCb: (flags.json) ? () => {} : deployProgressCb(),
         draft: !deployToProduction,
         message: flags.message
       })
@@ -158,8 +160,9 @@ class DeployCommand extends Command {
     const siteUrl = results.deploy.ssl_url || results.deploy.url
     const deployUrl = get(results, 'deploy.deploy_ssl_url') || get(results, 'deploy.deploy_url')
 
+    const logsUrl = `${get(results, 'deploy.admin_url')}/deploys/${get(results, 'deploy.id')}`
     const msgData = {
-      Logs: `${get(results, 'deploy.admin_url')}/deploys/${get(results, 'deploy.id')}`,
+      Logs: `${logsUrl}`,
       'Unique Deploy URL': deployUrl
     }
 
@@ -169,7 +172,27 @@ class DeployCommand extends Command {
       delete msgData['Unique Deploy URL']
       msgData['Live Draft URL'] = deployUrl
     }
-    this.log()
+
+    log('', this, flags)
+
+    // Json response for piping commands
+    if (flags.json && results) {
+
+      const jsonData = {
+        name: results.deploy.deployId,
+        // site_id: results.deploy.deployId,
+        deploy_id: results.deployId,
+        deploy_url: deployUrl,
+        logs: logsUrl,
+      }
+      if (deployToProduction) {
+        jsonData.url = siteUrl
+      }
+
+      this.log(JSON.stringify(jsonData, null, 2))
+      return false
+    }
+
     this.log(prettyjson.render(msgData))
 
     if (!deployToProduction) {
@@ -187,13 +210,20 @@ class DeployCommand extends Command {
   }
 }
 
+// Hide logs if --json flag used
+function log(message, context, flags) {
+  if (!flags.json) {
+    context.log(message)
+  }
+}
+
 DeployCommand.description = `Create a new deploy from the contents of a folder
 
 Deploys from the build settings found in the netlify.toml file, or settings from the API.
 
 The following environment variables can be used to override configuration file lookups and prompts:
 
-- \`NETLIFY_AUTH_TOKEN\` - an access token to use when authenticating commands. KEEP THIS VALUE PRIVATE
+- \`NETLIFY_AUTH_TOKEN\` - an access token to use when authenticating commands. Keep this value private.
 - \`NETLIFY_SITE_ID\` - override any linked site in the current working directory.
 
 Lambda functions in the function folder can be in the following configurations for deployment:
@@ -229,7 +259,7 @@ If you use nested dependencies, be sure to populate the nested node_modules as p
 \`\`\`
 project/
 ├── functions
-│   ├── finctionName/
+│   ├── functionName/
 │   │   ├── functionName.js  (Note the folder and the function name need to match)
 │   │   ├── package.json
 │   │   └── node_modules/
@@ -297,6 +327,9 @@ DeployCommand.flags = {
     char: 's',
     description: 'A site ID to deploy to',
     env: 'NETLIFY_SITE_ID'
+  }),
+  json: flags.boolean({
+    description: 'Output deployment data as JSON'
   })
 }
 
@@ -342,7 +375,9 @@ function ensureDirectory(resolvedDeployPath, exit) {
     stat = fs.statSync(resolvedDeployPath)
   } catch (e) {
     if (e.code === 'ENOENT') {
-      console.log('No such directory! Make sure to run your build command locally first')
+      console.log(
+        `No such directory ${resolvedDeployPath}! Did you forget to create a functions folder or run a build?`
+      )
       exit(1)
     }
 

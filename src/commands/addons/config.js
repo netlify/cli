@@ -1,4 +1,4 @@
-const Command = require('../../base')
+const Command = require('@netlify/cli-utils')
 const { getAddons, updateAddon } = require('netlify/src/addons')
 const getAddonManifest = require('../../utils/addons/api')
 const { requiredConfigValues, missingConfigValues, updateConfigValues } = require('../../utils/addons/validation')
@@ -6,7 +6,7 @@ const generatePrompts = require('../../utils/addons/prompts')
 const render = require('../../utils/addons/render')
 const diffValues = require('../../utils/addons/diffs/index')
 const compare = require('../../utils/addons/compare')
-const parseRawFlags = require('../../utils/parseRawFlags')
+const { parseRawFlags } = require('../../utils/parse-raw-flags')
 const chalk = require('chalk')
 const inquirer = require('inquirer')
 
@@ -39,7 +39,9 @@ class AddonsConfigCommand extends Command {
       return false
     }
 
+    // TODO update getAddonManifest to https://open-api.netlify.com/#/default/showServiceManifest
     const manifest = await getAddonManifest(addonName, accessToken)
+    const hasConfig = manifest.config && Object.keys(manifest.config).length
     // Parse flags
     const rawFlags = parseRawFlags(raw)
     // Get Existing Config
@@ -47,7 +49,7 @@ class AddonsConfigCommand extends Command {
 
     const words = `Current "${addonName} add-on" Settings:`
     console.log(` ${chalk.yellowBright.bold(words)}`)
-    if (manifest.config) {
+    if (hasConfig) {
       render.configValues(addonName, manifest.config, currentConfig)
     } else {
       // For addons without manifest. TODO remove once we enfore manifests
@@ -56,7 +58,7 @@ class AddonsConfigCommand extends Command {
       })
     }
 
-    if (manifest.config) {
+    if (hasConfig) {
       const required = requiredConfigValues(manifest.config)
       const missingValues = missingConfigValues(required, rawFlags)
 
@@ -74,7 +76,8 @@ class AddonsConfigCommand extends Command {
             addon: addonName,
             config: newConfig
           },
-          accessToken
+          accessToken,
+          error: this.error
         })
         return false
       }
@@ -146,13 +149,14 @@ class AddonsConfigCommand extends Command {
           addon: addonName,
           config: newConfig
         },
-        accessToken
+        accessToken,
+        error: this.error
       })
     }
   }
 }
 
-async function update({ addonName, currentConfig, newConfig, settings, accessToken }) {
+async function update({ addonName, currentConfig, newConfig, settings, accessToken, error }) {
   const codeDiff = diffValues(currentConfig, newConfig)
   if (!codeDiff) {
     console.log('No changes, exiting early')
@@ -165,7 +169,13 @@ async function update({ addonName, currentConfig, newConfig, settings, accessTok
   console.log(`${codeDiff}\n`)
   console.log()
 
-  const updateAddonResponse = await updateAddon(settings, accessToken)
+  let updateAddonResponse
+  try {
+    // TODO update updateAddon to https://open-api.netlify.com/#/default/updateServiceInstance
+    updateAddonResponse = await updateAddon(settings, accessToken)
+  } catch (e) {
+    error(e.message)
+  }
   if (updateAddonResponse.code === 404) {
     console.log(`No add-on "${addonName}" found. Please double check your add-on name and try again`)
     return false
@@ -181,7 +191,7 @@ AddonsConfigCommand.args = [
     description: 'Add-on namespace'
   }
 ]
-
+AddonsConfigCommand.aliases = ['addon:config']
 AddonsConfigCommand.description = `Configure add-on settings`
 // allow for any flags. Handy for variadic configuration options
 AddonsConfigCommand.strict = false

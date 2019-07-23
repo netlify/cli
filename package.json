@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "2.8.0",
+  "version": "2.11.29",
   "author": "Netlify Inc.",
   "contributors": [
     "Mathias Biilmann <matt@netlify.com> (https://twitter.com/biilmann)",
@@ -19,13 +19,17 @@
     "ava": "ava --verbose",
     "test:ava": "nyc --reporter=lcov ava --verbose && nyc report",
     "test:lint": "eslint src",
-    "test:deps": "dependency-check ./package.json --entry \"src/**/!(*.test).js\" --unused --missing --no-dev --no-peer -i @oclif/plugin-not-found -i @oclif/config -i @oclif/plugin-help -i @oclif/plugin-plugins",
+    "test:deps": "dependency-check ./package.json --entry \"src/**/!(*.test).js\" --unused --missing --no-dev --no-peer -i @oclif/plugin-not-found -i @oclif/config -i @oclif/plugin-help -i @oclif/plugin-plugins -i netlify-dev-plugin",
+    "test:cli-version": "npm run start -- --version",
+    "test:cli-help": "npm run start -- --help",
     "watch": "nyc --reporter=lcov ava --watch",
     "prepack": "oclif-dev manifest && npm prune --prod && rm npm-shrinkwrap.json && npm shrinkwrap",
     "postpack": "rm -f oclif.manifest.json && git checkout -- npm-shrinkwrap.json && npm i",
     "report": "nyc report --reporter=text-lcov | coveralls",
     "version": "node ./scripts/docs.js && auto-changelog -p --template keepachangelog && git add README.md docs CHANGELOG.md",
-    "prepublishOnly": "git push && git push --tags && gh-release"
+    "prepublishOnly": "git push && git push --tags && gh-release",
+    "update-semver": "npm --depth 9999 update",
+    "postinstall": "node ./scripts/postinstall.js"
   },
   "ava": {
     "files": [
@@ -47,60 +51,56 @@
     "url": "https://github.com/netlify/cli/issues"
   },
   "dependencies": {
-    "@iarna/toml": "^2.2.3",
-    "@oclif/command": "^1.5.10",
-    "@oclif/config": "^1.12.8",
+    "@netlify/cli-utils": "^1.0.6",
+    "@oclif/command": "^1.5.14",
     "@oclif/errors": "^1.1.2",
-    "@oclif/plugin-help": "^2.1.6",
+    "@oclif/plugin-help": "^2.2.0",
     "@oclif/plugin-not-found": "^1.1.4",
-    "@oclif/plugin-plugins": "^1.7.7",
-    "@octokit/rest": "^16.16.0",
+    "@oclif/plugin-plugins": "^1.7.8",
+    "@octokit/rest": "^16.28.1",
     "ansi-styles": "^3.2.1",
     "ascii-table": "0.0.9",
     "chalk": "^2.4.2",
     "ci-info": "^2.0.0",
     "clean-deep": "^3.0.2",
     "cli-spinners": "^1.3.1",
-    "cli-ux": "^5.2.0",
+    "cli-ux": "^5.2.1",
     "concordance": "^4.0.0",
-    "configstore": "^4.0.0",
-    "dot-prop": "^4.2.0",
     "find-up": "^3.0.0",
+    "get-port": "^5.0.0",
     "git-remote-origin-url": "^2.0.0",
     "git-repo-info": "^2.1.0",
-    "inquirer": "^6.2.2",
+    "inquirer": "^6.3.1",
     "is-docker": "^1.1.0",
     "lodash.get": "^4.4.2",
     "lodash.isempty": "^4.4.0",
     "lodash.isequal": "^4.5.0",
-    "lodash.merge": "^4.6.1",
-    "lodash.snakecase": "^4.1.1",
+    "lodash.sample": "^4.2.1",
     "log-symbols": "^2.2.0",
-    "make-dir": "^2.0.0",
-    "netlify": "^2.4.0",
-    "node-fetch": "^2.2.0",
-    "ora": "^3.1.0",
+    "netlify": "^2.4.6",
+    "netlify-dev-plugin": "^1.0.23",
+    "node-fetch": "^2.6.0",
+    "open": "^6.4.0",
+    "ora": "^3.4.0",
     "p-wait-for": "^2.0.0",
     "parse-github-url": "^1.0.2",
     "prettyjson": "^1.2.1",
     "random-item": "^1.0.0",
-    "update-notifier": "^2.5.0",
-    "uuid": "^3.3.2",
-    "write-file-atomic": "^2.4.2"
+    "update-notifier": "^2.5.0"
   },
   "devDependencies": {
-    "@oclif/dev-cli": "^1.21.1",
-    "auto-changelog": "^1.11.0",
-    "ava": "^1.2.1",
+    "@oclif/dev-cli": "^1.22.0",
+    "auto-changelog": "^1.13.0",
+    "ava": "^1.4.1",
     "body": "^5.1.0",
-    "coveralls": "^3.0.2",
+    "coveralls": "^3.0.4",
     "dependency-check": "^3.3.0",
-    "dependency-cruiser": "^4.13.2",
-    "eslint": "^5.14.1",
-    "eslint-config-prettier": "^4.0.0",
-    "eslint-plugin-import": "^2.16.0",
+    "dependency-cruiser": "^4.22.0",
+    "eslint": "^5.16.0",
+    "eslint-config-prettier": "^4.3.0",
+    "eslint-plugin-import": "^2.17.3",
     "eslint-plugin-node": "^8.0.1",
-    "eslint-plugin-prettier": "^3.0.1",
+    "eslint-plugin-prettier": "^3.1.0",
     "from2-string": "^1.1.0",
     "gh-release": "^3.5.0",
     "markdown-magic": "^0.1.25",
@@ -134,15 +134,15 @@
     "plugins": [
       "@oclif/plugin-not-found",
       "@oclif/plugin-plugins",
-      "@oclif/plugin-help"
+      "@oclif/plugin-help",
+      "netlify-dev-plugin"
     ],
     "hooks": {
       "init": [
         "./src/hooks/init"
       ],
       "analytics": [
-        "./src/hooks/analytics",
-        "./src/hooks/hooks-two"
+        "./src/hooks/analytics"
       ]
     }
   },

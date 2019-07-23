@@ -2,29 +2,25 @@ const path = require('path')
 const inquirer = require('inquirer')
 const chalk = require('chalk')
 const isEmpty = require('lodash.isempty')
-const getRepoData = require('../getRepoData')
+const getRepoData = require('../get-repo-data')
 const { track } = require('../telemetry')
 
 module.exports = async function linkPrompts(context) {
   const { api, state } = context.netlify
 
-  const SITE_NAME_PROMPT = 'Site Name'
-  const SITE_ID_PROMPT = 'Site ID'
+  const SITE_NAME_PROMPT = 'Choose from a list of your sites'
+  const SITE_ID_PROMPT = `Use a site ID`
 
-  let GIT_REMOTE_PROMPT = `Use current git remote URL`
+  let GIT_REMOTE_PROMPT = `Use a current git remote URL`
   let site
   // Get git remote data if exists
   const repoInfo = await getRepoData()
 
-  const LinkChoices = [
-    SITE_NAME_PROMPT,
-    SITE_ID_PROMPT
-  ]
+  const LinkChoices = [SITE_NAME_PROMPT, SITE_ID_PROMPT]
 
   let repoUrl = ''
   if (!repoInfo.error) {
-    // TODO improve this url construction
-    repoUrl = `https://${repoInfo.provider}.com/${repoInfo.remoteData.repo}`
+    repoUrl = `https://${repoInfo.host}/${repoInfo.remoteData.repo}`
 
     GIT_REMOTE_PROMPT = `Use current git remote url ${repoUrl}`
 
@@ -63,7 +59,7 @@ module.exports = async function linkPrompts(context) {
         context.error(new Error(`No sites found in your netlify account`))
       }
 
-      const matchingSites = sites.filter((s) => {
+      const matchingSites = sites.filter(s => {
         const buildSettings = s.build_settings || {}
         return repoUrl === buildSettings.repo_url
       })
@@ -72,11 +68,11 @@ module.exports = async function linkPrompts(context) {
       if (isEmpty(matchingSites)) {
         context.log(chalk.redBright.bold.underline(`No Matching Site Found`))
         context.log()
-        context.log((`No site found with the remote ${repoInfo.repo_path}.
+        context.log(`No site found with the remote ${repoInfo.repo_path}.
 
 Double check you are in the correct working directory & a remote git repo is configured.
 
-Run ${chalk.cyanBright('`git remote -v`')} to see a list of your git remotes.`))
+Run ${chalk.cyanBright('`git remote -v`')} to see a list of your git remotes.`)
 
         context.exit()
       }
@@ -89,7 +85,7 @@ Run ${chalk.cyanBright('`git remote -v`')} to see a list of your git remotes.`))
         console.log()
         console.log(`Found ${matchingSites.length} matching sites! Please choose one:`)
 
-        const siteChoices = matchingSites.map((site) => {
+        const siteChoices = matchingSites.map(site => {
           return `${site.ssl_url} - ${site.name} - ${site.id}`
         })
 
@@ -104,7 +100,7 @@ Run ${chalk.cyanBright('`git remote -v`')} to see a list of your git remotes.`))
         ])
 
         const siteName = siteToConnect.split(' ')[0]
-        site = matchingSites.filter((site) => {
+        site = matchingSites.filter(site => {
           const url = site.ssl_url || site.url
           return siteName === url
         })[0]
@@ -113,47 +109,28 @@ Run ${chalk.cyanBright('`git remote -v`')} to see a list of your git remotes.`))
     }
     case SITE_NAME_PROMPT: {
       kind = 'byName'
-      const { siteName } = await inquirer.prompt([
-        {
-          type: 'input',
-          name: 'siteName',
-          message: 'What is the name of the site?'
-        }
-      ])
+
       let sites
       try {
-        sites = await api.listSites({
-          name: siteName,
-          filter: 'all'
-        })
+        sites = await api.listSites()
       } catch (e) {
-        if (e.status === 404) {
-          context.error(`${siteName} not found`)
-        } else {
-          context.error(e)
-        }
+        context.error(e)
       }
 
       if (sites.length === 0) {
-        context.error(`No sites found named ${siteName}`)
+        context.error(`You don't have any sites. Use netlify 'sites:create' to create a site.`)
       }
 
-      if (sites.length > 1) {
-        const { selectedSite } = await inquirer.prompt([
-          {
-            type: 'list',
-            name: 'selectedSite',
-            paginated: true,
-            choices: sites.map(site => ({ name: site.name, value: site }))
-          }
-        ])
-        if (!selectedSite) {
-          context.error('No site selected')
+      const siteSelection = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'siteName',
+          message: 'What is the name of the site?',
+          paginated: true,
+          choices: sites.map(site => ({ name: site.name, value: site }))
         }
-        site = selectedSite
-      } else {
-        site = sites[0]
-      }
+      ])
+      site = siteSelection.siteName
       break
     }
     case SITE_ID_PROMPT: {
@@ -186,7 +163,7 @@ Run ${chalk.cyanBright('`git remote -v`')} to see a list of your git remotes.`))
   // Save site ID to config
   state.set('siteId', site.id)
 
-  await track('sites_linked',  {
+  await track('sites_linked', {
     siteId: site.id,
     linkType: 'prompt',
     kind: kind

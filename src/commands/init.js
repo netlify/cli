@@ -1,11 +1,11 @@
 const { flags } = require('@oclif/command')
 const chalk = require('chalk')
 const get = require('lodash.get')
-const Command = require('../base')
+const Command = require('@netlify/cli-utils')
 const SitesWatchCommand = require('./watch')
 const configManual = require('../utils/init/config-manual')
 const configGithub = require('../utils/init/config-github')
-const getRepoData = require('../utils/getRepoData')
+const getRepoData = require('../utils/get-repo-data')
 const inquirer = require('inquirer')
 const SitesCreateCommand = require('./sites/create')
 const LinkCommand = require('./link')
@@ -34,7 +34,7 @@ class InitCommand extends Command {
     if (siteId && siteData && get(siteData, 'build_settings.repo_url') && !flags.force) {
       const repoUrl = get(siteData, 'build_settings.repo_url')
       this.log()
-      this.log(`${chalk.yellow('Warning:')} It looks like this site has already been initialized.`)
+      this.log(`This site has been initialized`)
       this.log()
       this.log(`Site Name:  ${chalk.cyan(siteData.name)}`)
       this.log(`Site Url:   ${chalk.cyan(siteData.ssl_url || siteData.url)}`)
@@ -57,9 +57,9 @@ class InitCommand extends Command {
 
     if (repo.error) {
       console.log()
-      console.log(`${chalk.redBright('No git remote found. (╯°□°）╯︵ ┻━┻')}`)
+      console.log(`${chalk.yellow('No git remote was found, would you like to set one up?')}`)
       console.log(`
-It is recommended that you initialize a site that has a remote repository in Github.
+It is recommended that you initialize a site that has a remote repository in GitHub.
 
 This will allow for Netlify Continuous deployment to build branch & PR previews.
 
@@ -68,7 +68,7 @@ For more details on Netlify CI checkout the docs: http://bit.ly/2N0Jhy5
       let message
       switch (repo.error) {
         case "Couldn't find origin url": {
-          message = `Unable to find a remote origin url. Please add a git remote.
+          message = `Unable to find a remote origin URL. Please add a git remote.
 
 git remote add origin https://github.com/YourUserName/RepoName.git
 `
@@ -79,14 +79,14 @@ git remote add origin https://github.com/YourUserName/RepoName.git
         console.log(message)
       }
 
-      const NEW_SITE_NO_GIT = 'Yes, create manually deploy site'
-      const NO_ABORT = 'No, I will connect this with directory with github first'
+      const NEW_SITE_NO_GIT = 'Yes, create and deploy site manually'
+      const NO_ABORT = 'No, I will connect this directory with GitHub first'
 
       const { noGitRemoteChoice } = await inquirer.prompt([
         {
           type: 'list',
           name: 'noGitRemoteChoice',
-          message: 'Do you want to create a netlify site without a git repository?',
+          message: 'Do you want to create a Netlify site without a git repository?',
           choices: [NEW_SITE_NO_GIT, NO_ABORT]
         }
       ])
@@ -121,7 +121,7 @@ git remote add origin https://github.com/YourUserName/RepoName.git
 
    ${chalk.cyanBright.bold("git commit -m 'initial commit'")}
 
-4. Create a new repo in github ${chalk.cyanBright.bold('https://github.com/new')}
+4. Create a new repo in GitHub ${chalk.cyanBright.bold('https://github.com/new')}
 
 5. Link the remote repo with this local directory
 
@@ -144,7 +144,7 @@ git remote add origin https://github.com/YourUserName/RepoName.git
 
     if (!siteData) {
       const NEW_SITE = '+  Create & configure a new site'
-      const EXISTING_SITE = '⇄  Link this directory to an existing site'
+      const EXISTING_SITE = '⇄  Connect this directory to an existing Netlify site'
 
       const initializeOpts = [EXISTING_SITE, NEW_SITE]
 
@@ -174,9 +174,9 @@ git remote add origin https://github.com/YourUserName/RepoName.git
     const remoteBuildRepo = get(siteData, 'build_settings.repo_url')
     if (remoteBuildRepo && !flags.force) {
       this.log()
-      this.log(chalk.underline.bold(`Existing Repo detected`))
+      this.log(chalk.underline.bold(`Success`))
       const siteName = get(siteData, 'name')
-      this.log(`This site "${siteName}" is already configured to automatically deploy via ${remoteBuildRepo}`)
+      this.log(`This site "${siteName}" is configured to automatically deploy via ${remoteBuildRepo}`)
       // TODO add support for changing github repo in site:config command
 
       if (flags.watch) {
@@ -196,7 +196,7 @@ git remote add origin https://github.com/YourUserName/RepoName.git
           try {
             await configGithub(this, siteData, repo)
           } catch (e) {
-            this.warn(`Github error: ${e.status}`)
+            this.warn(`GitHub error: ${e.status}`)
             if (e.code === 404) {
               this.error(
                 `Does the repository ${
@@ -218,14 +218,14 @@ git remote add origin https://github.com/YourUserName/RepoName.git
 
     // Success Message
     this.log()
-    this.log(chalk.greenBright.bold.underline(`Netlify CI/CD Configured!`))
+    this.log(chalk.greenBright.bold.underline(`Success! Netlify CI/CD Configured!`))
     this.log()
     this.log(`This site is now configured to automatically deploy from ${repo.provider} branches & pull requests`)
     this.log()
     this.log(`Next steps:
 
   ${chalk.cyanBright.bold('git push')}       Push to your git repository to trigger new site builds
-  ${chalk.cyanBright.bold('netlify open')}   Open the netlify admin url of your site
+  ${chalk.cyanBright.bold('netlify open')}   Open the Netlify admin URL of your site
   `)
 
     if (flags.watch) {

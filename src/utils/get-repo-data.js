@@ -34,7 +34,8 @@ async function getRepoData() {
       repoData: repoData,
       repo_path: remoteData.path,
       repo_branch: repoData.branch,
-      allowed_branches: [repoData.branch]
+      allowed_branches: [repoData.branch],
+      host: remoteData.host,
     }
 
     switch (remoteData.host) {

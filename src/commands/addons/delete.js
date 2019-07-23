@@ -1,11 +1,12 @@
-const Command = require('../../base')
+const Command = require('@netlify/cli-utils')
 const { getAddons, deleteAddon } = require('netlify/src/addons')
-// const parseRawFlags = require('../../utils/parseRawFlags')
+const { parseRawFlags } = require('../../utils/parse-raw-flags')
+const { flags } = require('@oclif/command')
 
 class AddonsDeleteCommand extends Command {
   async run() {
     const accessToken = await this.authenticate()
-    const { args } = this.parse(AddonsDeleteCommand)
+    const { args, raw } = this.parse(AddonsDeleteCommand)
     const { site } = this.netlify
 
     const addonName = args.name
@@ -25,16 +26,21 @@ class AddonsDeleteCommand extends Command {
     }
 
     // Filter down addons to current args.name
-    const currentAddon = addons.reduce((acc, current) => {
-      if (current.service_path && current.service_path.replace('/.netlify/', '') === addonName) {
-        return current
-      }
-      return {}
-    }, addons)
+    const currentAddon = addons.find(
+      current => current.service_path && current.service_path.replace('/.netlify/', '') === addonName
+    )
 
-    // If we need flags here
-    // const rawFlags = parseRawFlags(raw)
-    // this.log('rawFlags', rawFlags)
+    const { force, f } = parseRawFlags(raw)
+    if (!force || !f) {
+      const inquirer = require('inquirer')
+      const { wantsToDelete } = await inquirer.prompt({
+        type: 'confirm',
+        name: 'wantsToDelete',
+        message: `Are you sure you want to delete the ${addonName} add-on? (to skip this prompt, pass a --force flag)`,
+        default: false
+      })
+      if (!wantsToDelete) this.exit()
+    }
 
     if (!currentAddon.id) {
       this.log(`No add-on "${addonName}" found for site. Add-on already deleted or never existed!`)
@@ -47,13 +53,29 @@ class AddonsDeleteCommand extends Command {
       addon: addonName,
       instanceId: currentAddon.id
     }
-    const addonResponse = await deleteAddon(settings, accessToken)
+    let addonResponse
+    try {
+      // TODO update deleteAddon to https://open-api.netlify.com/#/default/deleteServiceInstance
+      addonResponse = await deleteAddon(settings, accessToken)
+    } catch (e) {
+      this.error(e.message)
+    }
 
-    if (addonResponse.code === 404) {
+    if (addonResponse.status === 404) {
       this.log(`No addon "${addonName}" found. Please double check your add-on name and try again`)
       return false
     }
-    this.log(`Add-on "${addonName}" deleted`)
+
+    /* Deleting addons must return with 204 status */
+    if (addonResponse.status === 204) {
+      this.log(`Addon "${addonName}" deleted`)
+    } else {
+      this.log(
+        `Addon "${addonName}" was not deleted "${addonName}". Returned status: ${
+          addonResponse.status
+        }. Addon deletion must return status 204 from "${addonName}" provider.`
+      )
+    }
   }
 }
 
@@ -65,7 +87,10 @@ Add-ons are a way to extend the functionality of your Netlify site
 // allow for any flags. Handy for variadic configuration options
 AddonsDeleteCommand.strict = false
 AddonsDeleteCommand.hidden = true
-
+AddonsDeleteCommand.aliases = ['addon:delete']
+AddonsDeleteCommand.flags = {
+  force: flags.boolean({ char: 'f', description: 'delete without prompting (useful for CI)' })
+}
 AddonsDeleteCommand.args = [
   {
     name: 'name',

@@ -1,12 +1,11 @@
-const Command = require('../base')
+const Command = require('@netlify/cli-utils')
 const chalk = require('chalk')
 
 class LoginCommand extends Command {
   async run() {
-    const accessToken = this.configToken
-
+    const [ accessToken, location ] = this.getConfigToken()
     if (accessToken) {
-      this.log('Already logged in!')
+      this.log(`Already logged in ${msg(location)}`)
       this.log()
       this.log(`Run ${chalk.cyanBright('netlify status')} for account details`)
       this.log()
@@ -21,9 +20,22 @@ class LoginCommand extends Command {
   }
 }
 
+function msg(location) {
+  switch(location) {
+    case 'env':
+      return 'via process.env.NETLIFY_AUTH_TOKEN set in your terminal session'
+    case 'flag':
+      return 'via CLI --auth flag'
+    case 'config':
+      return 'via netlify config on your machine'
+    default:
+      return ''
+  }
+}
+
 LoginCommand.description = `Login to your Netlify account
 
-Opens a web browser to acquire an OAuth token.  Use NETLIFY_WEB_UI to set the base URL of the ticket URL.
+Opens a web browser to acquire an OAuth token.
 `
 
 module.exports = LoginCommand

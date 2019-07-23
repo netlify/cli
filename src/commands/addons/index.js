@@ -1,6 +1,6 @@
 const { Command } = require('@oclif/command')
-const showHelp = require('../../utils/showHelp')
-const { isEmptyCommand } = require('../../utils/checkCommandInputs')
+const showHelp = require('../../utils/show-help')
+const { isEmptyCommand } = require('../../utils/check-command-inputs')
 
 class AddonsCommand extends Command {
   async run() {
@@ -17,7 +17,7 @@ class AddonsCommand extends Command {
 AddonsCommand.description = `Handle addon operations
 The addons command will help you manage all your netlify addons
 `
-
+AddonsCommand.aliases = ['addon']
 AddonsCommand.examples = [
   'netlify addons:list',
   'netlify addons:create addon-xyz',

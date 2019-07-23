@@ -32,20 +32,27 @@ const scope = {
 
 const navOrder = [
   'index',
-  'login',
-  'logout',
-  'init',
-  'link',
-  'unlink',
-  'deploy',
-  'sites',
-  'open',
-  'status',
+  'getting-started',
+  'commands',
+    'login',
+    'logout',
+    'init',
+    'link',
+    'unlink',
+    'deploy',
+    'functions',
+    'dev',
+    'sites',
+    'open',
+    'status',
+  'contributing',
 ]
 
 const pageNames = {
   index: 'Introduction',
   'getting-started': 'Getting Started',
+  'commands': 'CLI Commands',
+  'contributing': 'Contributing',
 }
 
 const sortRoutes = routes => [

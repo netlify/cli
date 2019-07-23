@@ -1,6 +1,6 @@
 const AsciiTable = require('ascii-table')
 const { flags } = require('@oclif/command')
-const Command = require('../../base')
+const Command = require('@netlify/cli-utils')
 const { getAddons } = require('netlify/src/addons')
 
 class AddonsListCommand extends Command {
@@ -17,6 +17,7 @@ class AddonsListCommand extends Command {
 
     const siteData = await api.getSite({ siteId })
 
+    // TODO update getAddons to https://open-api.netlify.com/#/default/getServices
     const addons = await getAddons(siteId, accessToken)
 
     // Return json response for piping commands
@@ -57,7 +58,7 @@ AddonsListCommand.description = `list current site add-ons
 ...
 Add-ons are a way to extend the functionality of your Netlify site
 `
-
+AddonsListCommand.aliases = ['addon:list']
 AddonsListCommand.flags = {
   json: flags.boolean({
     description: 'Output add-on data as JSON'

@@ -1,4 +1,4 @@
-const Command = require('../base')
+const Command = require('@netlify/cli-utils')
 const { CLIError } = require('@oclif/errors')
 const pWaitFor = require('p-wait-for')
 const cli = require('cli-ux').default
@@ -64,10 +64,7 @@ class SitesWatchCommand extends Command {
 
 SitesWatchCommand.description = `Watch for site deploy to finish`
 
-SitesWatchCommand.examples = [
-  `netlify watch`,
-  `git push && netlify watch`
-]
+SitesWatchCommand.examples = [`netlify watch`, `git push && netlify watch`]
 
 async function waitForBuildFinish(api, siteId) {
   let firstPass = true
