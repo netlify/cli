@@ -22,7 +22,7 @@ async function deleteAddon(name) {
 
 test.before(async t => {
   console.log('creating new site for tests: ' + siteName)
-  const cliResponse = await exec(`${cliPath} sites:create --name="${siteName}" --account-slug="raeesbhatti"`, execOptions)
+  const cliResponse = await exec(`${cliPath} sites:create --name="${siteName}" --account-slug="netlify"`, execOptions)
   t.is(/Site Created/.test(cliResponse.stdout), true)
 
   const matches = /Site ID:\s+([a-zA-Z0-9-]+)/m.exec(stripAnsi(cliResponse.stdout))
