@@ -7,7 +7,7 @@ const { flags } = require('@oclif/command')
 class AddonsDeleteCommand extends Command {
   async run() {
     const accessToken = await this.authenticate()
-    const { args, flags } = this.parse(AddonsDeleteCommand)
+    const { args, flags, raw } = this.parse(AddonsDeleteCommand)
     const { site } = this.netlify
 
     const addonName = args.name
