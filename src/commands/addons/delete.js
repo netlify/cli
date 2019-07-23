@@ -1,12 +1,11 @@
 const Command = require('@netlify/cli-utils')
 const { getAddons, deleteAddon } = require('netlify/src/addons')
-const { parseRawFlags } = require('../../utils/parse-raw-flags')
 const { flags } = require('@oclif/command')
 
 class AddonsDeleteCommand extends Command {
   async run() {
     const accessToken = await this.authenticate()
-    const { args, raw } = this.parse(AddonsDeleteCommand)
+    const { args, flags } = this.parse(AddonsDeleteCommand)
     const { site } = this.netlify
 
     const addonName = args.name
@@ -30,8 +29,7 @@ class AddonsDeleteCommand extends Command {
       current => current.service_path && current.service_path.replace('/.netlify/', '') === addonName
     ) || {}
 
-    const { force, f } = parseRawFlags(raw)
-    if (!force || !f) {
+    if (!flags.force) {
       const inquirer = require('inquirer')
       const { wantsToDelete } = await inquirer.prompt({
         type: 'confirm',
