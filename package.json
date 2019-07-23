@@ -16,6 +16,7 @@
     "ci": "run-s test build",
     "start": "node ./bin/run",
     "test": "run-s test:*",
+    "ava": "ava --verbose",
     "test:ava": "nyc --reporter=lcov ava --verbose && nyc report",
     "test:lint": "eslint src",
     "test:deps": "dependency-check ./package.json --entry \"src/**/!(*.test).js\" --unused --missing --no-dev --no-peer -i @oclif/plugin-not-found -i @oclif/config -i @oclif/plugin-help -i @oclif/plugin-plugins -i netlify-dev-plugin",
@@ -105,8 +106,9 @@
     "markdown-magic": "^0.1.25",
     "mkdirp": "^0.5.1",
     "npm-run-all": "^4.1.3",
-    "nyc": "^14.1.1",
-    "prettier": "^1.18.2"
+    "nyc": "^13.3.0",
+    "prettier": "^1.16.4",
+    "strip-ansi": "^5.2.0"
   },
   "engines": {
     "node": ">=8.0.0"
