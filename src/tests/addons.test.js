@@ -5,8 +5,6 @@ const cliPath = require('./utils/cliPath')
 const exec = require('./utils/exec')
 const sitePath = path.join(__dirname, 'dummy-site')
 
-let siteId
-
 const execOptions = {
   stdio: [0, 1, 2],
   cwd: sitePath,
@@ -31,8 +29,6 @@ test.before(async t => {
   t.truthy(matches)
   t.truthy(matches.hasOwnProperty(1))
   t.truthy(matches[1])
-
-  siteId = matches[1]
   // Set the site id
   execOptions.env.NETLIFY_SITE_ID = matches[1]
 })
