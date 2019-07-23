@@ -19,14 +19,12 @@ class SitesDeleteCommand extends Command {
       siteData = await api.getSite({ siteId })
     } catch (err) {
       if (err.status === 404) {
-        this.warn(`No site with id ${siteId} found. Please verify the siteId & try again.`)
-        this.exit()
+        this.error(`No site with id ${siteId} found. Please verify the siteId & try again.`)
       }
     }
 
     if (!siteData) {
-      this.warn(`Unable to process site`)
-      this.exit()
+      this.error(`Unable to process site`)
     }
 
     const { force, f } = parseRawFlags(raw)
@@ -78,8 +76,7 @@ class SitesDeleteCommand extends Command {
       await api.deleteSite({ site_id: siteId })
     } catch (error) {
       if (error.status === 404) {
-        this.warn(`No site with id ${siteId} found. Please verify the siteId & try again.`)
-        this.exit()
+        this.error(`No site with id ${siteId} found. Please verify the siteId & try again.`)
       } else {
         this.error(`Delete Site error: ${error.status}: ${error.message}`)
       }
