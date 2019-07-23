@@ -28,7 +28,7 @@ class AddonsDeleteCommand extends Command {
     // Filter down addons to current args.name
     const currentAddon = addons.find(
       current => current.service_path && current.service_path.replace('/.netlify/', '') === addonName
-    )
+    ) || {}
 
     const { force, f } = parseRawFlags(raw)
     if (!force || !f) {
