@@ -448,12 +448,13 @@
       }
     },
     "@netlify/cli-utils": {
-      "version": "1.0.6",
-      "resolved": "https://registry.npmjs.org/@netlify/cli-utils/-/cli-utils-1.0.6.tgz",
-      "integrity": "sha512-Y+hAPDuJn1CV05vSNSb0os8uNwnqEXEzONc5a40RggYNxQ7b7UdKn6hWbhDeT10UgYM4EwxKKxgGDTYF0TAIYQ==",
+      "version": "1.0.7",
+      "resolved": "https://registry.npmjs.org/@netlify/cli-utils/-/cli-utils-1.0.7.tgz",
+      "integrity": "sha512-Tt7vVjutcuW9a4QxQ9CmJ38uaGqffk1zd6wJg6TMcy6/x/3bW4J1BdEiz7ZZ5OGidvtx5QaLv51ExNHtEFsZ8g==",
       "requires": {
         "@iarna/toml": "^2.2.1",
         "@oclif/command": "^1.5.8",
+        "@oclif/parser": "^3.8.3",
         "chalk": "^2.4.1",
         "ci-info": "^2.0.0",
         "cli-ux": "^5.0.0",
@@ -469,6 +470,18 @@
         "node-fetch": "^2.3.0",
         "uuid": "^3.3.2",
         "write-file-atomic": "^2.3.0"
+      },
+      "dependencies": {
+        "@oclif/parser": {
+          "version": "3.8.3",
+          "resolved": "https://registry.npmjs.org/@oclif/parser/-/parser-3.8.3.tgz",
+          "integrity": "sha512-zN+3oGuv9Lg8NjFvxZTDKFEmhAMfAvd/JWeQp3Ri8pDezoyJQi4OSHHLM8sdHjBh8sePewfWI7+fDUXdrVbrqg==",
+          "requires": {
+            "@oclif/linewrap": "^1.0.0",
+            "chalk": "^2.4.2",
+            "tslib": "^1.9.3"
+          }
+        }
       }
     },
     "@netlify/open-api": {
