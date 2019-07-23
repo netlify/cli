@@ -5,6 +5,8 @@ const cliPath = require('./utils/cliPath')
 const exec = require('./utils/exec')
 const sitePath = path.join(__dirname, 'dummy-site')
 
+let siteId
+
 const execOptions = {
   stdio: [0, 1, 2],
   cwd: sitePath,
@@ -30,6 +32,7 @@ test.before(async t => {
   t.truthy(matches.hasOwnProperty(1))
   t.truthy(matches[1])
 
+  siteId = matches[1]
   // Set the site id
   execOptions.env.NETLIFY_SITE_ID = matches[1]
 })
@@ -71,6 +74,8 @@ test.after('cleanup', async t => {
   console.log('Performing cleanup')
   // Run cleanup
   await deleteAddon('demo')
-  console.log('deleting test site: '+ siteName)
-  await exec(`${cliPath} sites:delete ${siteName}`, execOptions)
+  console.log(`deleting test site "${siteName}". ${siteId}`)
+  if (siteId) {
+    await exec(`${cliPath} sites:delete ${siteId} --force`, execOptions)
+  }
 })
