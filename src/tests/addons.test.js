@@ -16,7 +16,7 @@ const execOptions = {
 const siteName = 'netlify-test-' + Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 8)
 
 async function deleteAddon(name) {
-  const cliResponse = await exec(`${cliPath} addons:delete ${name}`, execOptions)
+  const cliResponse = await exec(`${cliPath} addons:delete ${name} -f`, execOptions)
   return cliResponse
 }
 
@@ -62,7 +62,7 @@ test.serial('After creation netlify addons:list --json', async (t) => {
 })
 
 test.serial('netlify addon:delete demo', async (t) => {
-  const regex = /Add-on "demo" deleted/
+  const regex = /Addon "demo" deleted/
   const cliResponse = await deleteAddon('demo')
   t.is(regex.test(cliResponse.stdout), true)
 })
