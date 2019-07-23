@@ -72,5 +72,5 @@ test.after('cleanup', async t => {
   // Run cleanup
   await deleteAddon('demo')
   console.log('deleting test site: '+ siteName)
-  await exec(`${cliPath} sites:delete ${siteName}`, execOptions)
+  await exec(`${cliPath} sites:delete ${execOptions.env.NETLIFY_SITE_ID}`, execOptions)
 })
