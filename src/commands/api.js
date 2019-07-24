@@ -3,20 +3,16 @@ const AsciiTable = require('ascii-table')
 const chalk = require('chalk')
 const oclif = require('@oclif/command')
 const { methods } = require('netlify')
-const { parseRawFlags } = require('../utils/parse-raw-flags')
 const { isEmptyCommand } = require('../utils/check-command-inputs')
 
 class APICommand extends Command {
   async run() {
-    const { api, site } = this.netlify
-    const { args, flags, raw } = this.parse(APICommand)
-    const [ accessToken, location ] = this.getConfigToken()
+    const { api } = this.netlify
+    const { args, flags } = this.parse(APICommand)
 
-    const rawArgs = process.argv.slice(2)
-    const apiCommand = rawArgs.filter((arg) => arg !== 'api').find((arg) => !arg.match(/^-/))
-    const rawFlags = parseRawFlags(raw)
+    const { apiMethod } = args
 
-    if (isEmptyCommand(flags, args) || rawFlags.list) {
+    if (isEmptyCommand(flags, args) || flags.list) {
       const table = new AsciiTable(`Netlify API Methods`)
       table.setHeading('API Method', 'Docs Link')
       methods.forEach((method) => {
@@ -30,20 +26,24 @@ class APICommand extends Command {
       this.exit()
     }
 
-    if (!api[apiCommand] || typeof api[apiCommand] !== 'function') {
-      this.error(`${apiCommand} is not a valid api method. Run "netlify api --list" to see available methods`)
+    if (!apiMethod) {
+      this.error(`You must provider an API method. Run "netlify api --list" to see available methods`)
+    }
+
+    if (!api[apiMethod] || typeof api[apiMethod] !== 'function') {
+      this.error(`"${apiMethod}"" is not a valid api method. Run "netlify api --list" to see available methods`)
     }
 
     if (flags.data) {
       const payload = (typeof flags.data === 'string') ? JSON.parse(flags.data) : flags.data
       let apiResponse
       try {
-        apiResponse = await api[apiCommand](payload)
+        apiResponse = await api[apiMethod](payload)
       } catch (e) {
         this.error(e)
       }
       if (apiResponse) {
-        this.log(apiResponse)
+        this.log(JSON.stringify(apiResponse, null, 2))
       }
     }
   }
@@ -57,7 +57,6 @@ For more information on available methods checkout https://open-api.netlify.com/
 APICommand.args = [
   {
     name: 'apiMethod',
-    required: true,
     description: 'Open API method to run'
   }
 ]
