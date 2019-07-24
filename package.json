@@ -16,6 +16,7 @@
     "/bin",
     "/npm-shrinkwrap.json",
     "/oclif.manifest.json",
+    "/scripts/postinstall.js",
     "/src/**/*.js"
   ],
   "homepage": "https://github.com/netlify/cli",
