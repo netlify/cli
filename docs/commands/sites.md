@@ -19,6 +19,7 @@ netlify sites
 | Subcommand | description  |
 |:--------------------------- |:-----|
 | [`sites:create`](/commands/sites#sitescreate) | Create an empty site (advanced)  |
+| [`sites:delete`](/commands/sites#sitesdelete) | Delete a site  |
 | [`sites:list`](/commands/sites#siteslist) | List all sites you have access to  |
 
 
@@ -49,6 +50,34 @@ netlify sites:create
 - `account-slug` (*option*) - account slug to create the site under
 - `with-ci` (*boolean*) - initialize CI hooks during site creation
 - `manual` (*boolean*) - Force manual CI setup.  Used --with-ci flag
+
+---
+## `sites:delete`
+
+Delete a site
+
+This command will permanently delete the site on Netlify. Use with caution.
+
+
+**Usage**
+
+```bash
+netlify sites:delete {site-id}
+```
+
+**Arguments**
+
+- siteId - Site ID to delete. `netlify delete 1234-5678-890`
+
+**Flags**
+
+- `force` (*boolean*) - delete without prompting (useful for CI)
+
+**Examples**
+
+```bash
+netlify site:delete 1234-3262-1211
+```
 
 ---
 ## `sites:list`

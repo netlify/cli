@@ -96,6 +96,7 @@ Handle various site operations
 | Subcommand | description  |
 |:--------------------------- |:-----|
 | [`sites:create`](/docs/commands/sites.md#sitescreate) | Create an empty site (advanced)  |
+| [`sites:delete`](/docs/commands/sites.md#sitesdelete) | Delete a site  |
 | [`sites:list`](/docs/commands/sites.md#siteslist) | List all sites you have access to  |
 
 

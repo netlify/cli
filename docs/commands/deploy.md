@@ -89,7 +89,7 @@ netlify deploy
 - `prod` (*boolean*) - Deploy to production
 - `open` (*boolean*) - Open site after deploy
 - `message` (*option*) - A short message to include in the deploy log
-- `auth` (*option*) - An auth token to log in with
+- `auth` (*option*) - Netlify auth token to deploy with
 - `site` (*option*) - A site ID to deploy to
 - `json` (*boolean*) - Output deployment data as JSON
 
@@ -100,6 +100,7 @@ netlify deploy
 netlify deploy --prod
 netlify deploy --prod --open
 netlify deploy --message "A message with an $ENV_VAR"
+netlify deploy --auth $NETLIFY_AUTH_TOKEN
 ```
 
 
