@@ -23,9 +23,9 @@ jobs:
     - npm test
   - stage: deploy
     name: Deploy to NPM
+    script: npm i
     deploy:
       provider: npm
-      script: npm i
       email: 'services@netlify.com'
       api_key:
         secure: "MPCF4xpvrsmcOxVcEKutdSVA0T6fH3q/QB59NnQ7AgJaqBXrqr61sRD/C+SMf47B1d/CJbm9iYlD/D2IPZ0yWgpt2SwFFpZi9ezbUqBwC05TbKj+j/uP0klDMQ9QZSNXOkSGCsjOc2F1NyxN1hNJJ+ElBO4EpU9+M0s/sazTUqM="
