@@ -25,7 +25,7 @@ jobs:
     name: Deploy to NPM
     deploy:
       provider: script
-      script: npm publish
+      script: npm i && npm publish
       on:
         tags: true
         repo: netlify/cli
