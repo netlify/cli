@@ -35,4 +35,3 @@ after_success:
 env:
   global:
   - secure: fN+jOrIf8/RZINDXDcG/KOS92LaiYdMiPcUtEEsJiz6dHmkxNYlMgTmTTTHLF/3Wjl3YP6xKkHaetvThoRlNHByC2uTeBUqHkCYwXBOpRpycekheIsz96WPyRidJwLAi5Jx+NnoAp8mFl/SFtQouu2IjxK/GUtPAg2wlCsFYYSU=
-  - secure: XowiKDihfAUoPIXg/2qsMnDEeYyyTKmN+u6Pw5Ww6Vtk1qMj1dFGlFU9CntJnQqd7tio3JVakFcQkTy80TB7ayES/80/3JMnJ+L4LpeALgYvoFd4XxPRlkgs/ggNrhgqUw9CCiXVPSir3tQA7DBpSW6qebTBV9dYjsUopFa16SE=
