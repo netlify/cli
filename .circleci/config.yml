@@ -27,8 +27,6 @@ jobs:
             - npm-dependencies-{{ checksum "npm-shrinkwrap.json" }}
             - npm-dependencies-
       - run: npm install
-      - run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
-      - run: npm publish
 
 workflows:
   version: 2
