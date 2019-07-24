@@ -1,48 +1,25 @@
 version: 2
 jobs:
-  build:
+  test:
     docker:
-      # specify the version you desire here
       - image: circleci/node:8
-
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/mongo:3.4.4
-
     working_directory: ~/cli
-
     steps:
       - checkout
-
-      # Download and cache dependencies
       - restore_cache:
           keys:
             - npm-dependencies-{{ checksum "npm-shrinkwrap.json" }}
-            # fallback to using the latest cache if no exact match is found
             - npm-dependencies-
-
       - run: npm install
-
       - save_cache:
           paths:
             - node_modules
           key: npm-dependencies-{{ checksum "npm-shrinkwrap.json" }}
-
-      # run tests!
       - run: npm test
-
   deploy:
     docker:
       - image: circleci/node:8
     working_directory: ~/cli
-    requires:
-      - build
-    filters:
-      branches:
-        ignore: /.*/
-      tags:
-        only: /.*/
     steps:
       - checkout
       - restore_cache:
@@ -50,9 +27,22 @@ jobs:
             - npm-dependencies-{{ checksum "npm-shrinkwrap.json" }}
             - npm-dependencies-
       - run: npm install
-      - save_cache:
-          paths:
-            - node_modules
-          key: npm-dependencies-{{ checksum "npm-shrinkwrap.json" }}
+      - run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
       - run: npm publish
 
+workflows:
+  version: 2
+  test-n-deploy:
+    jobs:
+      - test:
+          filters:  # required since `deploy` has tag filters AND requires `build`
+            tags:
+              only: /.*/
+      - deploy:
+          requires:
+            - test
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              only: master
