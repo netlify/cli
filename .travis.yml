@@ -24,8 +24,9 @@ jobs:
   - stage: deploy
     name: Deploy to NPM
     deploy:
-      provider: script
-      script: npm i && npm publish
+      provider: npm
+      email: 'services@netlify.com'
+      api_key: secure: "MPCF4xpvrsmcOxVcEKutdSVA0T6fH3q/QB59NnQ7AgJaqBXrqr61sRD/C+SMf47B1d/CJbm9iYlD/D2IPZ0yWgpt2SwFFpZi9ezbUqBwC05TbKj+j/uP0klDMQ9QZSNXOkSGCsjOc2F1NyxN1hNJJ+ElBO4EpU9+M0s/sazTUqM="
       on:
         tags: true
         repo: netlify/cli
