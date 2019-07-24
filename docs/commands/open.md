@@ -13,6 +13,11 @@ Open settings for the site linked to the current folder
 netlify open
 ```
 
+**Flags**
+
+- `site` (*boolean*) - Open site
+- `admin` (*boolean*) - Open Netlify site
+
 | Subcommand | description  |
 |:--------------------------- |:-----|
 | [`open:admin`](/commands/open#openadmin) | Opens current site admin UI in Netlify  |
@@ -22,6 +27,8 @@ netlify open
 **Examples**
 
 ```bash
+netlify open --site
+netlify open --admin
 netlify open:admin
 netlify open:site
 ```
@@ -37,12 +44,24 @@ Opens current site admin UI in Netlify
 netlify open:admin
 ```
 
+**Examples**
+
+```bash
+netlify open:admin
+```
+
 ---
 ## `open:site`
 
 Opens current site url in browser
 
 **Usage**
+
+```bash
+netlify open:site
+```
+
+**Examples**
 
 ```bash
 netlify open:site

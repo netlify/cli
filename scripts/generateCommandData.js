@@ -34,6 +34,7 @@ module.exports = function generateCommandData() {
     if (curr.commandGroup === curr.command) {
       acc[curr.commandGroup] = {
         name: curr.command,
+        usage: curr.data.usage,
         description: curr.data.description,
         flags: curr.data.flags,
         args: curr.data.args,
@@ -51,6 +52,7 @@ module.exports = function generateCommandData() {
       if (acc[curr.commandGroup] && acc[curr.commandGroup].commands) {
         acc[curr.commandGroup].commands = acc[curr.commandGroup].commands.concat({
           name: curr.command,
+          usage: curr.data.usage,
           description: curr.data.description,
           flags: curr.data.flags,
           args: curr.data.args,

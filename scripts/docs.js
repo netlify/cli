@@ -22,7 +22,7 @@ const config = {
         let md = ''
         // Parent Command
         md += formatDescription(info.description)
-        md += formatUsage(command)
+        md += formatUsage(command, info)
         md += formatArgs(info.args)
         md += formatFlags(info.flags)
         md += commandListSubCommandDisplay(info.commands)
@@ -33,9 +33,10 @@ const config = {
             // Child Commands
             md += formatSubCommandTitle(subCmd.name)
             md += formatDescription(subCmd.description)
-            md += formatUsage(subCmd.name)
+            md += formatUsage(subCmd.name, subCmd)
             md += formatArgs(subCmd.args)
             md += formatFlags(subCmd.flags)
+            md += commandExamples(subCmd.examples)
             md += `---\n`
           })
         }
@@ -126,11 +127,18 @@ function commandListSubCommandDisplay(commands, context) {
   })
   return `${table}${newLine}`
 }
-function formatUsage(commandName) {
+function formatUsage(commandName, info) {
+  const defaultUsage = `netlify ${commandName}`
+
+  if (commandName === 'sites:delete') {
+    console.log(info)
+  }
+
+  const usageString = info.usage || defaultUsage
   return `**Usage**
 
 \`\`\`bash
-netlify ${commandName}
+${usageString}
 \`\`\`\n\n`
 }
 

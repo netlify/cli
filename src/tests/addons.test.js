@@ -29,7 +29,6 @@ test.before(async t => {
   t.truthy(matches)
   t.truthy(matches.hasOwnProperty(1))
   t.truthy(matches[1])
-
   // Set the site id
   execOptions.env.NETLIFY_SITE_ID = matches[1]
 })
@@ -71,6 +70,7 @@ test.after('cleanup', async t => {
   console.log('Performing cleanup')
   // Run cleanup
   await deleteAddon('demo')
-  console.log('deleting test site: '+ siteName)
-  await exec(`${cliPath} sites:delete ${execOptions.env.NETLIFY_SITE_ID}`, execOptions)
+
+  console.log(`deleting test site "${siteName}". ${execOptions.env.NETLIFY_SITE_ID}`)
+  await exec(`${cliPath} sites:delete ${execOptions.env.NETLIFY_SITE_ID} --force`, execOptions)
 })

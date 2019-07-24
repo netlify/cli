@@ -7,7 +7,7 @@ description: Run netlify dev locally
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
 Manage netlify functions
-The [92m`functions`[39m command will help you manage the functions in this site
+The `functions` command will help you manage the functions in this site
 
 
 **Usage**
@@ -67,6 +67,14 @@ netlify functions:create
 - `name` (*option*) - function name
 - `url` (*option*) - pull template from URL
 
+**Examples**
+
+```bash
+netlify functions:create
+netlify functions:create hello-world
+netlify functions:create --name hello-world
+```
+
 ---
 ## `functions:invoke`
 
@@ -88,7 +96,20 @@ netlify functions:invoke
 - `functions` (*option*) - Specify a functions folder to parse, overriding netlify.toml
 - `querystring` (*option*) - Querystring to add to your function invocation
 - `payload` (*option*) - Supply POST payload in stringified json, or a path to a json file
-- `auth` (*boolean*) - simulate Netlify Identity authentication JWT. pass --no-auth to affirm unauthenticated request
+- `identity` (*boolean*) - simulate Netlify Identity authentication JWT. pass --no-identity to affirm unauthenticated request
+
+**Examples**
+
+```bash
+$ netlify functions:invoke
+$ netlify functions:invoke myfunction
+$ netlify functions:invoke --name myfunction
+$ netlify functions:invoke --name myfunction --identity
+$ netlify functions:invoke --name myfunction --no-identity
+$ netlify functions:invoke myfunction --payload "{"foo": 1}"
+$ netlify functions:invoke myfunction --querystring "foo=1
+$ netlify functions:invoke myfunction --payload "./pathTo.json"
+```
 
 ---
 

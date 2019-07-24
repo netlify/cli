@@ -51,6 +51,12 @@ Runs a command within the netlify dev environment, e.g. with env variables from 
 netlify dev:exec
 ```
 
+**Examples**
+
+```bash
+$ netlify exec npm run bootstrap
+```
+
 ---
 
 <!-- AUTO-GENERATED-CONTENT:END -->

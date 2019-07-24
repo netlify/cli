@@ -106,7 +106,7 @@ class DeployCommand extends Command {
       configPath = site.configPath
       pathInfo['Configuration path'] = configPath
     }
-    log(prettyjson.render(pathInfo), this, flags)
+    this.log(prettyjson.render(pathInfo))
 
     ensureDirectory(deployFolder, this.exit)
 
@@ -117,15 +117,15 @@ class DeployCommand extends Command {
     let results
     try {
       if (deployToProduction) {
-        log('Deploying to live site URL...', this, flags)
+        this.log('Deploying to live site URL...')
       } else {
-        log('Deploying to draft URL...', this, flags)
+        this.log('Deploying to draft URL...')
       }
 
       results = await api.deploy(siteId, deployFolder, {
         configPath: configPath,
         fnDir: functionsFolder,
-        statusCb: (flags.json) ? () => {} : deployProgressCb(),
+        statusCb: (flags.json || flags.silent) ? () => {} : deployProgressCb(),
         draft: !deployToProduction,
         message: flags.message
       })
@@ -173,14 +173,14 @@ class DeployCommand extends Command {
       msgData['Live Draft URL'] = deployUrl
     }
 
-    log('', this, flags)
+    // Spacer
+    this.log()
 
     // Json response for piping commands
     if (flags.json && results) {
-
       const jsonData = {
         name: results.deploy.deployId,
-        // site_id: results.deploy.deployId,
+        site_id: results.deploy.site_id,
         deploy_id: results.deployId,
         deploy_url: deployUrl,
         logs: logsUrl,
@@ -189,17 +189,17 @@ class DeployCommand extends Command {
         jsonData.url = siteUrl
       }
 
-      this.log(JSON.stringify(jsonData, null, 2))
+      this.logJson(jsonData)
       return false
     }
 
     this.log(prettyjson.render(msgData))
 
     if (!deployToProduction) {
-      console.log()
-      console.log('If everything looks good on your draft URL, take it live with the --prod flag.')
-      console.log(`${chalk.cyanBright.bold('netlify deploy --prod')}`)
-      console.log()
+      this.log()
+      this.log('If everything looks good on your draft URL, take it live with the --prod flag.')
+      this.log(`${chalk.cyanBright.bold('netlify deploy --prod')}`)
+      this.log()
     }
 
     if (flags['open']) {
@@ -207,13 +207,6 @@ class DeployCommand extends Command {
       await openBrowser(urlToOpen)
       this.exit()
     }
-  }
-}
-
-// Hide logs if --json flag used
-function log(message, context, flags) {
-  if (!flags.json) {
-    context.log(message)
   }
 }
 
@@ -292,7 +285,8 @@ DeployCommand.examples = [
   'netlify deploy',
   'netlify deploy --prod',
   'netlify deploy --prod --open',
-  'netlify deploy --message "A message with an $ENV_VAR"'
+  'netlify deploy --message "A message with an $ENV_VAR"',
+  'netlify deploy --auth $NETLIFY_AUTH_TOKEN',
 ]
 
 DeployCommand.flags = {
@@ -320,7 +314,7 @@ DeployCommand.flags = {
   }),
   auth: flags.string({
     char: 'a',
-    description: 'An auth token to log in with',
+    description: 'Netlify auth token to deploy with',
     env: 'NETLIFY_AUTH_TOKEN'
   }),
   site: flags.string({

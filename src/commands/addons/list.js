@@ -22,7 +22,7 @@ class AddonsListCommand extends Command {
 
     // Return json response for piping commands
     if (flags.json) {
-      this.log(JSON.stringify(addons, null, 2))
+      this.logJson(addons)
       return false
     }
 

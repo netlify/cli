@@ -28,9 +28,7 @@ class AddonsCreateCommand extends Command {
       return false
     }
 
-    const siteData = await api.getSite({
-      siteId
-    })
+    const siteData = await api.getSite({ siteId })
     const addons = await getAddons(siteId, accessToken)
 
     if (typeof addons === 'object' && addons.error) {
@@ -62,25 +60,25 @@ class AddonsCreateCommand extends Command {
     if (hasConfig) {
       const required = requiredConfigValues(manifest.config)
       const missingValues = missingConfigValues(required, rawFlags)
-      console.log(`Starting the setup for "${addonName} add-on"`)
-      console.log()
+      this.log(`Starting the setup for "${addonName} add-on"`)
+      this.log()
 
       if (Object.keys(rawFlags).length) {
         const newConfig = updateConfigValues(manifest.config, {}, rawFlags)
 
         if (missingValues.length) {
           /* Warn user of missing required values */
-          console.log(
+          this.log(
             `${chalk.redBright.underline.bold(`Error: Missing required configuration for "${addonName} add-on"`)}`
           )
-          console.log()
+          this.log()
           render.missingValues(missingValues, manifest)
-          console.log()
+          this.log()
           const msg = `netlify addons:create ${addonName}`
-          console.log(`Please supply the configuration values as CLI flags`)
-          console.log()
-          console.log(`Alternatively, you can run ${chalk.cyan(msg)} with no flags to walk through the setup steps`)
-          console.log()
+          this.log(`Please supply the configuration values as CLI flags`)
+          this.log()
+          this.log(`Alternatively, you can run ${chalk.cyan(msg)} with no flags to walk through the setup steps`)
+          this.log()
           return false
         }
 
@@ -94,20 +92,20 @@ class AddonsCreateCommand extends Command {
           accessToken,
           siteData,
           error: this.error
-        })
+        }, this.log)
         return false
       }
 
       const words = `The ${addonName} add-on has the following configurable options:`
-      console.log(` ${chalk.yellowBright.bold(words)}`)
+      this.log(` ${chalk.yellowBright.bold(words)}`)
       render.configValues(addonName, manifest.config)
-      console.log()
-      console.log(` ${chalk.greenBright.bold('Lets configure those!')}`)
+      this.log()
+      this.log(` ${chalk.greenBright.bold('Lets configure those!')}`)
 
-      console.log()
-      console.log(` - Hit ${chalk.white.bold('enter')} to confirm value or set empty value`)
-      console.log(` - Hit ${chalk.white.bold('ctrl + C')} to cancel & exit configuration`)
-      console.log()
+      this.log()
+      this.log(` - Hit ${chalk.white.bold('enter')} to confirm value or set empty value`)
+      this.log(` - Hit ${chalk.white.bold('ctrl + C')} to cancel & exit configuration`)
+      this.log()
 
       const prompts = generatePrompts({
         config: manifest.config,
@@ -120,7 +118,7 @@ class AddonsCreateCommand extends Command {
       const missingRequiredValues = missingConfigValues(required, configValues)
       if (missingRequiredValues && missingRequiredValues.length) {
         missingRequiredValues.forEach(val => {
-          console.log(`Missing required value "${val}". Please run the command again`)
+          this.log(`Missing required value "${val}". Please run the command again`)
         })
         return false
       }
@@ -136,11 +134,11 @@ class AddonsCreateCommand extends Command {
       accessToken,
       siteData,
       error: this.error
-    })
+    }, this.log)
   }
 }
 
-async function createSiteAddon({ addonName, settings, accessToken, siteData, error }) {
+async function createSiteAddon({ addonName, settings, accessToken, siteData, error }, logger) {
   let addonResponse
   try {
     // TODO update to https://open-api.netlify.com/#/default/createServiceInstance
@@ -150,13 +148,13 @@ async function createSiteAddon({ addonName, settings, accessToken, siteData, err
   }
 
   if (addonResponse.code === 404) {
-    console.log(`No add-on "${addonName}" found. Please double check your add-on name and try again`)
+    logger(`No add-on "${addonName}" found. Please double check your add-on name and try again`)
     return false
   }
-  console.log(`Add-on "${addonName}" created for ${siteData.name}`)
+  logger(`Add-on "${addonName}" created for ${siteData.name}`)
   if (addonResponse.config && addonResponse.config.message) {
-    console.log()
-    console.log(`${addonResponse.config.message}`)
+    logger()
+    logger(`${addonResponse.config.message}`)
   }
   return addonResponse
 }

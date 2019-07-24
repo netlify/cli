@@ -54,6 +54,7 @@ Handle various site operations
 | Subcommand | description  |
 |:--------------------------- |:-----|
 | [`sites:create`](/commands/sites#sitescreate) | Create an empty site (advanced)  |
+| [`sites:delete`](/commands/sites#sitesdelete) | Delete a site  |
 | [`sites:list`](/commands/sites#siteslist) | List all sites you have access to  |
 
 

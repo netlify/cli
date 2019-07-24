@@ -7,11 +7,15 @@ class SitesListCommand extends Command {
   async run() {
     const { flags } = this.parse(SitesListCommand)
     const { api } = this.netlify
-    cli.action.start('Loading your sites')
+    if (!flags.json) {
+      cli.action.start('Loading your sites')
+    }
     await this.authenticate()
 
     const sites = await api.listSites({ filter: 'all' })
-    cli.action.stop()
+    if (!flags.json) {
+      cli.action.stop()
+    }
 
     if (sites && sites.length) {
       const logSites = sites.map(site => {
@@ -37,7 +41,7 @@ class SitesListCommand extends Command {
           }
           return site
         })
-        console.log(JSON.stringify(redactedSites, null, 2))
+        this.logJson(redactedSites)
         return false
       }
 
@@ -45,18 +49,20 @@ class SitesListCommand extends Command {
 ────────────────────────────┐
    Current Netlify Sites    │
 ────────────────────────────┘
+
+Count: ${logSites.length}
 `)
 
       logSites.forEach(s => {
-        console.log(`${chalk.greenBright(s.name)} - ${s.id}`)
-        console.log(`  ${chalk.whiteBright.bold('url:')}  ${chalk.yellowBright(s.ssl_url)}`)
+        this.log(`${chalk.greenBright(s.name)} - ${s.id}`)
+        this.log(`  ${chalk.whiteBright.bold('url:')}  ${chalk.yellowBright(s.ssl_url)}`)
         if (s.repo_url) {
-          console.log(`  ${chalk.whiteBright.bold('repo:')} ${chalk.white(s.repo_url)}`)
+          this.log(`  ${chalk.whiteBright.bold('repo:')} ${chalk.white(s.repo_url)}`)
         }
         if (s.account_name) {
-          console.log(`  ${chalk.whiteBright.bold('account:')} ${chalk.white(s.account_name)}`)
+          this.log(`  ${chalk.whiteBright.bold('account:')} ${chalk.white(s.account_name)}`)
         }
-        console.log(`─────────────────────────────────────────────────`)
+        this.log(`─────────────────────────────────────────────────`)
       })
     }
   }
