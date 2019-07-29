@@ -77,6 +77,18 @@ class StatusCommand extends Command {
       this.error(e)
     }
 
+    if (flags.verbose) {
+      this.log(chalk.bold('\nEnvironment Info:'));
+      const data = await envinfo
+      .run({
+          System: ['OS', 'CPU'],
+          Binaries: ['Node', 'Yarn', 'npm'],
+          Browsers: ['Chrome', 'Edge', 'Firefox', 'Safari'],
+          npmGlobalPackages: ['netlify'],
+      });
+      this.log(data);
+    }
+
     const statusData = {
       'Current site': `${siteData.name}`,
       'Netlify TOML': site.configPath,
