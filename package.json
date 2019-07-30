@@ -85,7 +85,7 @@
     "lodash.sample": "^4.2.1",
     "log-symbols": "^2.2.0",
     "netlify": "^2.4.7",
-    "netlify-dev-plugin": "^1.0.26",
+    "netlify-dev-plugin": "^1.0.27",
     "node-fetch": "^2.6.0",
     "open": "^6.4.0",
     "ora": "^3.4.0",
