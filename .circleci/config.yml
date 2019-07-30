@@ -8,13 +8,13 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - npm-dependencies-{{ checksum "npm-shrinkwrap.json" }}
+            - npm-dependencies-{{ checksum "package-lock.json" }}
             - npm-dependencies-
       - run: npm install
       - save_cache:
           paths:
             - node_modules
-          key: npm-dependencies-{{ checksum "npm-shrinkwrap.json" }}
+          key: npm-dependencies-{{ checksum "package-lock.json" }}
       - run: npm test
   deploy:
     docker:
@@ -24,7 +24,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - npm-dependencies-{{ checksum "npm-shrinkwrap.json" }}
+            - npm-dependencies-{{ checksum "package-lock.json" }}
             - npm-dependencies-
       - run: npm install
       - run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
