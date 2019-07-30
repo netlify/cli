@@ -3,6 +3,7 @@ const prettyjson = require('prettyjson')
 const get = require('lodash.get')
 const chalk = require('chalk')
 const clean = require('clean-deep')
+const envinfo = require('envinfo')
 
 class StatusCommand extends Command {
   async run() {
