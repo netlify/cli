@@ -36,14 +36,11 @@ class APICommand extends Command {
 
     if (flags.data) {
       const payload = (typeof flags.data === 'string') ? JSON.parse(flags.data) : flags.data
-      let apiResponse
       try {
-        apiResponse = await api[apiMethod](payload)
+        const apiResponse = await api[apiMethod](payload)
+        this.log(JSON.stringify(apiResponse, null, 2))
       } catch (e) {
         this.error(e)
-      }
-      if (apiResponse) {
-        this.log(JSON.stringify(apiResponse, null, 2))
       }
     }
   }
