@@ -103,7 +103,11 @@ class LinkCommand extends Command {
 
 LinkCommand.description = `Link a local repo or project folder to an existing site on Netlify`
 
-LinkCommand.examples = ['netlify link', 'netlify link --id 123-123-123-123', 'netlify link --name my-site-name']
+LinkCommand.examples = [
+  'netlify link',
+  'netlify link --id 123-123-123-123',
+  'netlify link --name my-site-name'
+]
 
 LinkCommand.flags = {
   id: flags.string({
