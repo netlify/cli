@@ -77,35 +77,41 @@ class StatusCommand extends Command {
       }
       this.error(e)
     }
-
+    
     if (flags.verbose) {
-      this.log(chalk.bold('\nEnvironment Info:'));
-      const data = await envinfo
-      .run({
-          System: ['OS', 'CPU'],
-          Binaries: ['Node', 'Yarn', 'npm'],
-          Browsers: ['Chrome', 'Edge', 'Firefox', 'Safari'],
-          npmGlobalPackages: ['netlify'],
+      this.log()
+      this.log(chalk.bold('Environment Info:'));
+      const data = await envinfo.run({
+        System: ['OS', 'CPU'],
+        Binaries: ['Node', 'Yarn', 'npm'],
+        Browsers: ['Chrome', 'Edge', 'Firefox', 'Safari'],
+        npmGlobalPackages: ['netlify'],
       });
       this.log(data);
     }
-
-    const statusData = {
-      'Current site': `${siteData.name}`,
-      'Netlify TOML': site.configPath,
-      'Admin URL': chalk.magentaBright(siteData.admin_url),
-      'Site URL': chalk.cyanBright(siteData.ssl_url || siteData.url)
-    }
-
     // Json only logs out if --json flag is passed
     if (flags.json) {
       this.logJson({
         account: cleanAccountData,
-        siteData: statusData,
+        siteData: {
+          'site-name': `${siteData.name}`,
+          'config-path': site.configPath,
+          'admin-url': siteData.admin_url,
+          'site-url': siteData.ssl_url || siteData.url,
+          'site-id': siteData.id,
+        },
       })
     }
 
-    this.log(prettyjson.render(statusData))
+    this.log(prettyjson.render({
+      'Current site': `${siteData.name}`,
+      'Netlify TOML': site.configPath,
+      'Admin URL': chalk.magentaBright(siteData.admin_url),
+      'Site URL': chalk.cyanBright(siteData.ssl_url || siteData.url),
+      'Site Id': chalk.yellowBright(siteData.id),
+    }))
+    
+
   }
 }
 
