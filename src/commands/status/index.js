@@ -76,23 +76,27 @@ class StatusCommand extends Command {
       }
       this.error(e)
     }
-
-    const statusData = {
-      'Current site': `${siteData.name}`,
-      'Netlify TOML': site.configPath,
-      'Admin URL': chalk.magentaBright(siteData.admin_url),
-      'Site URL': chalk.cyanBright(siteData.ssl_url || siteData.url)
-    }
-
     // Json only logs out if --json flag is passed
     if (flags.json) {
       this.logJson({
         account: cleanAccountData,
-        siteData: statusData,
+        siteData: {
+          'site-name': `${siteData.name}`,
+          'config-path': site.configPath,
+          'admin-url': siteData.admin_url,
+          'site-url': siteData.ssl_url || siteData.url,
+          'site-id': siteData.id,
+        },
       })
     }
 
-    this.log(prettyjson.render(statusData))
+    this.log(prettyjson.render({
+      'Current site': `${siteData.name}`,
+      'Netlify TOML': site.configPath,
+      'Admin URL': chalk.magentaBright(siteData.admin_url),
+      'Site URL': chalk.cyanBright(siteData.ssl_url || siteData.url),
+      'Site Id': chalk.yellowBright(siteData.id),
+    }))
   }
 }
 
