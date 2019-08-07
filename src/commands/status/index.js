@@ -4,6 +4,7 @@ const get = require('lodash.get')
 const chalk = require('chalk')
 const clean = require('clean-deep')
 const envinfo = require('envinfo')
+const { flags } = require('@oclif/command')
 
 class StatusCommand extends Command {
   async run() {
@@ -56,10 +57,6 @@ class StatusCommand extends Command {
       this.exit()
     }
 
-    this.log(`────────────────────┐
- Netlify Site Info  │
-────────────────────┘`)
-
     if (!siteId) {
       this.warn('Did you run `netlify link` yet?')
       this.error(`You don't appear to be in a folder that is linked to a site`)
@@ -77,17 +74,19 @@ class StatusCommand extends Command {
       }
       this.error(e)
     }
-    
+
     if (flags.verbose) {
       this.log()
-      this.log(chalk.bold('Environment Info:'));
+      this.log(`────────────────────┐
+ Environment Info   │
+────────────────────┘`)
       const data = await envinfo.run({
         System: ['OS', 'CPU'],
         Binaries: ['Node', 'Yarn', 'npm'],
         Browsers: ['Chrome', 'Edge', 'Firefox', 'Safari'],
         npmGlobalPackages: ['netlify'],
-      });
-      this.log(data);
+      })
+      this.log(data)
     }
     // Json only logs out if --json flag is passed
     if (flags.json) {
@@ -103,6 +102,9 @@ class StatusCommand extends Command {
       })
     }
 
+    this.log(`────────────────────┐
+ Netlify Site Info  │
+────────────────────┘`)
     this.log(prettyjson.render({
       'Current site': `${siteData.name}`,
       'Netlify TOML': site.configPath,
@@ -110,11 +112,16 @@ class StatusCommand extends Command {
       'Site URL': chalk.cyanBright(siteData.ssl_url || siteData.url),
       'Site Id': chalk.yellowBright(siteData.id),
     }))
-    
-
+    this.log()
   }
 }
 
 StatusCommand.description = `Print status information`
+
+StatusCommand.flags = {
+  verbose: flags.boolean({
+    description: 'Output system info'
+  })
+}
 
 module.exports = StatusCommand
