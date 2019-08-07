@@ -2,6 +2,7 @@ const Command = require('@netlify/cli-utils')
 const { flags } = require('@oclif/command')
 const path = require('path')
 const chalk = require('chalk')
+const { ensureNetlifyIgnore } = require('../utils/gitignore')
 const linkPrompt = require('../utils/link/link-by-prompt')
 const { track } = require('../utils/telemetry')
 
@@ -19,6 +20,9 @@ class LinkCommand extends Command {
     } catch (e) {
       // silent api error
     }
+
+    // Add .netlify to .gitignore file
+    await ensureNetlifyIgnore(site.root)
 
     // Site id is incorrect
     if (siteId && !siteData) {
@@ -80,6 +84,7 @@ class LinkCommand extends Command {
       }
       siteData = results[0]
       state.set('siteId', siteData.id)
+
       this.log(`Linked to ${siteData.name} in ${path.relative(path.join(process.cwd(), '..'), state.path)}`)
 
       await track('sites_linked', {
@@ -98,7 +103,11 @@ class LinkCommand extends Command {
 
 LinkCommand.description = `Link a local repo or project folder to an existing site on Netlify`
 
-LinkCommand.examples = ['netlify link', 'netlify link --id 123-123-123-123', 'netlify link --name my-site-name']
+LinkCommand.examples = [
+  'netlify link',
+  'netlify link --id 123-123-123-123',
+  'netlify link --name my-site-name'
+]
 
 LinkCommand.flags = {
   id: flags.string({

@@ -93,6 +93,7 @@
     "ora": "^3.4.0",
     "p-wait-for": "^2.0.0",
     "parse-github-url": "^1.0.2",
+    "parse-gitignore": "^1.0.1",
     "prettyjson": "^1.2.1",
     "random-item": "^1.0.0",
     "update-notifier": "^2.5.0"
