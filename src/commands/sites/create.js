@@ -3,6 +3,7 @@ const inquirer = require('inquirer')
 const prettyjson = require('prettyjson')
 const chalk = require('chalk')
 const sample = require('lodash.sample')
+const pick = require('lodash.pick')
 const Command = require('@netlify/cli-utils')
 const { track } = require('../../utils/telemetry')
 const configManual = require('../../utils/init/config-manual')
@@ -150,6 +151,10 @@ class SitesCreateCommand extends Command {
           break
         }
       }
+    }
+
+    if (flags.json) {
+      this.logJson(pick(site, ["id","state","plan","name","custom_domain","domain_aliases","url","ssl_url","admin_url","screenshot_url","created_at","updated_at","user_id","ssl","force_ssl","managed_dns","deploy_url","account_name","account_slug","git_provider","deploy_hook","capabilities","id_domain"]))
     }
 
     return site
