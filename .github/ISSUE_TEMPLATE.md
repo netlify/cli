@@ -24,4 +24,5 @@ You do NOT have to include this information if this is a FEATURE REQUEST
 
 **- What is the expected behavior?**
 
-**- Please mention your node.js, and operating system version.**
+**- Local Environment Information**
+Paste the results of `netlify --info` here
