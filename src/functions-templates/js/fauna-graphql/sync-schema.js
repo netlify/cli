@@ -15,14 +15,14 @@ function createFaunaGraphQL() {
     .toString(); // name of your schema file
 
   // encoded authorization header similar to https://www.npmjs.com/package/request#http-authentication
-  const Authorization = Buffer.from(
+  const token = Buffer.from(
     process.env.FAUNADB_SERVER_SECRET + ":"
   ).toString("base64");
 
   var options = {
     method: "POST",
     body: dataString,
-    headers: { Authorization }
+    headers: { Authorization: `Basic ${token}` }
   };
 
   fetch("https://graphql.fauna.com/import", options)
