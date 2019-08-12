@@ -118,7 +118,7 @@ function createHandler(dir) {
     }
 
     let remoteAddress = (request.headers['x-forwarded-for'] || request.headers['X-Forwarded-for'] || request.connection.remoteAddress || '')
-    remoteAddress = (remoteAddress.includes('.') ? remoteAddress.split(':') : remoteAddress.split(',')).pop().trim()
+    remoteAddress = remoteAddress.split(remoteAddress.includes('.') ? ':' : ',').pop().trim()
 
     const lambdaRequest = {
       path: request.path,
