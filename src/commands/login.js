@@ -1,10 +1,12 @@
+const { flags } = require('@oclif/command')
 const Command = require('@netlify/cli-utils')
 const chalk = require('chalk')
 
 class LoginCommand extends Command {
   async run() {
+    const { flags } = this.parse(LoginCommand)
     const [ accessToken, location ] = this.getConfigToken()
-    if (accessToken) {
+    if (accessToken && !flags.new) {
       this.log(`Already logged in ${msg(location)}`)
       this.log()
       this.log(`Run ${chalk.cyanBright('netlify status')} for account details`)
@@ -14,7 +16,7 @@ class LoginCommand extends Command {
       return this.exit()
     }
 
-    await this.authenticate()
+    await this.expensivelyAuthenticate()
 
     return this.exit()
   }
@@ -33,6 +35,11 @@ function msg(location) {
   }
 }
 
+LoginCommand.flags = {
+  new: flags.boolean({
+    description: 'Login to new Netlify account'
+  }),
+}
 LoginCommand.description = `Login to your Netlify account
 
 Opens a web browser to acquire an OAuth token.
