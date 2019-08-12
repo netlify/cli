@@ -84,6 +84,7 @@ function initializeProxy(port) {
     web: (req, res, options) => {
       req.proxyOptions = options;
       req.alternativePaths = alternativePathsFor(req.url);
+      req.headers['x-forwarded-for'] = req.connection.remoteAddress;
       return proxy.web(req, res, options);
     },
     ws: (req, socket, head) => proxy.ws(req, socket, head)
