@@ -105,17 +105,8 @@ function createHandler(dir) {
       return;
     }
 
-    var isBase64Encoded = false;
-    var body = request.body;
-
-    if (body instanceof Buffer) {
-      isBase64Encoded = true;
-      body = body.toString("base64");
-    } else if (typeof body === "string") {
-      // body is already processed as string
-    } else {
-      body = "";
-    }
+    const body = request.body.toString();
+    var isBase64Encoded = Buffer.from(body, 'base64').toString('base64') === body;
 
     let remoteAddress = (request.headers['x-forwarded-for'] || request.headers['X-Forwarded-for'] || request.connection.remoteAddress || '')
     remoteAddress = remoteAddress.split(remoteAddress.includes('.') ? ':' : ',').pop().trim()
