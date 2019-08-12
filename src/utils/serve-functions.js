@@ -117,11 +117,14 @@ function createHandler(dir) {
       body = "";
     }
 
+    let remoteAddress = (request.headers['x-forwarded-for'] || request.connection.remoteAddress || '')
+    remoteAddress = (remoteAddress.includes('.') ? remoteAddress.split(':') : remoteAddress.split(',')).pop().trim()
+
     const lambdaRequest = {
       path: request.path,
       httpMethod: request.method,
       queryStringParameters: queryString.parse(request.url.split(/\?(.+)/)[1]),
-      headers: request.headers,
+      headers: Object.assign({}, request.headers, { 'client-ip': remoteAddress }),
       body: body,
       isBase64Encoded: isBase64Encoded
     };
