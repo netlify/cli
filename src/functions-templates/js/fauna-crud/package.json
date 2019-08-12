@@ -1,0 +1,20 @@
+{
+  "name": "fauna-crud",
+  "version": "1.0.0",
+  "description": "netlify functions:create - CRUD functionality with Fauna DB",
+  "main": "fauna-crud.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "netlify",
+    "serverless",
+    "js",
+    "faunadb"
+  ],
+  "author": "Netlify",
+  "license": "MIT",
+  "dependencies": {
+    "faunadb": "^2.6.1"
+  }
+}

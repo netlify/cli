@@ -1,0 +1,23 @@
+{
+  "name": "node-fetch",
+  "version": "1.0.0",
+  "description": "netlify functions:create - using node-fetch in typescript",
+  "main": "node-fetch.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "netlify",
+    "serverless",
+    "typescript"
+  ],
+  "author": "Netlify",
+  "license": "MIT",
+  "dependencies": {
+    "node-fetch": "^2.3.0",
+    "@types/node-fetch": "^2.1.4",
+    "@types/node": "^10.12.12",
+    "typescript": "^3.2.2",
+    "@types/aws-lambda": "^8.10.15"
+  }
+}
