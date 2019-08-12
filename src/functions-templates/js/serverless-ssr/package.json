@@ -1,0 +1,25 @@
+{
+  "name": "serverless-ssr",
+  "version": "1.0.0",
+  "description": "netlify functions:create - default template for a serverless SSR function",
+  "main": "serverless-ssr.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "netlify",
+    "serverless",
+    "js"
+  ],
+  "author": "Netlify",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "express": "^4.16.4",
+    "morgan": "^1.9.1",
+    "node-fetch": "^2.3.0",
+    "serverless-http": "^1.9.1"
+  }
+}

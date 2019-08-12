@@ -1,0 +1,23 @@
+{
+  "name": "google-analytics",
+  "version": "1.0.0",
+  "description": "netlify functions:create - Google Analytics: proxy for GA on your domain to avoid adblock",
+  "main": "google-analytics.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "netlify",
+    "serverless",
+    "apis",
+    "email",
+    "js"
+  ],
+  "author": "Netlify",
+  "license": "MIT",
+  "dependencies": {
+    "querystring": "^0.2.0",
+    "request": "^2.88.0",
+    "uuid": "^3.3.2"
+  }
+}

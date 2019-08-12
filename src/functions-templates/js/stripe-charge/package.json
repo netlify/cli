@@ -1,0 +1,21 @@
+{
+  "name": "stripe-charge",
+  "version": "1.0.0",
+  "description": "netlify functions:create - Charge a user with Stripe",
+  "main": "stripe-charge.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "netlify",
+    "serverless",
+    "apis",
+    "stripe",
+    "js"
+  ],
+  "author": "Netlify",
+  "license": "MIT",
+  "dependencies": {
+    "stripe": "^6.28.0"
+  }
+}
