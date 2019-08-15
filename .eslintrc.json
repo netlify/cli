@@ -1,5 +1,4 @@
 {
-  "extends": "eslint:recommended",
   "plugins": [
     "node",
     "prettier"
