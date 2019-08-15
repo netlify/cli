@@ -187,6 +187,8 @@ A number of function templates are available to get you started, and you can add
 $ netlify functions:create
 ```
 
+Important note: Your functions will likely have `node_modules` in each folder. These are usually gitignored. You can write bash scripts to install them for production, or use the lightweight [`netlify-lambda install`](https://github.com/netlify/netlify-lambda/blob/master/README.md#netlify-lambda-install) CLI to do it for you.
+
 <details>
 <summary>
 <b>More detailed usage examples</b>
@@ -208,13 +210,7 @@ $ netlify functions:create hello-world --url https://github.com/netlify-labs/all
 
 **Deploying unbundled function folders**
 
-Functions that have `node_modules` inside their own folders require these `node_modules` to be installed when deployed. For the time being, **the Netlify build process does not recursively install dependencies for your function folders yet**. So the recommended way to deploy these functions is to use the CLI command:
-
-```
-netlify deploy --prod
-```
-
-Or write a `prebuild` npm script yourself to `cd` into your function folders and install them yourself. We are hoping to improve this flow in future, [follow this issue for more updates](https://github.com/netlify/netlify-dev-plugin/issues/140).
+Functions that have `node_modules` inside their own folders require these `node_modules` to be installed when deployed. For the time being, **the Netlify build process does not recursively install dependencies for your function folders yet**. You can write `prebuild` or `postinstall` bash scripts to install them for production, or use the lightweight [`netlify-lambda install`](https://github.com/netlify/netlify-lambda/blob/master/README.md#netlify-lambda-install) CLI to do it for you.
 
 **Writing your own Function Templates**
 
