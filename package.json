@@ -46,7 +46,7 @@
     "ava": "ava --verbose",
     "test:ava": "nyc --reporter=lcov ava --verbose && nyc report",
     "test:lint": "eslint src",
-    "test:deps": "dependency-check ./package.json --entry \"src/**/!(*.test).js\" --unused --missing --no-dev --no-peer -i @oclif/plugin-not-found -i @oclif/config -i @oclif/plugin-help -i @oclif/plugin-plugins -i netlify-dev-plugin",
+    "test:deps": "dependency-check ./package.json --entry \"src/**/!(*.test).js\" --unused --missing --no-dev --no-peer -i @oclif/plugin-not-found -i @oclif/config -i @oclif/plugin-help -i @oclif/plugin-plugins",
     "test:cli-version": "npm run start -- --version",
     "test:cli-help": "npm run start -- --help",
     "watch": "nyc --reporter=lcov ava --watch",
@@ -112,7 +112,6 @@
     "mocha": "^6.2.0",
     "netlify": "^2.4.8",
     "netlify-cli-logo": "^1.0.0",
-    "netlify-dev-plugin": "^1.0.28",
     "nock": "^10.0.6",
     "node-fetch": "^2.6.0",
     "npm-packlist": "^1.4.4",
@@ -173,8 +172,7 @@
     "plugins": [
       "@oclif/plugin-not-found",
       "@oclif/plugin-plugins",
-      "@oclif/plugin-help",
-      "netlify-dev-plugin"
+      "@oclif/plugin-help"
     ],
     "hooks": {
       "init": [
