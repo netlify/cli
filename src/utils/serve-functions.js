@@ -171,6 +171,10 @@ function createHandler(dir) {
         for (const key in lambdaResponse.headers) {
           response.setHeader(key, lambdaResponse.headers[key]);
         }
+        for (const key in lambdaResponse.multiValueHeaders) {
+          const items = lambdaResponse.multiValueHeaders[key];
+          response.setHeader(key, items);
+        }
         response.write(
           lambdaResponse.isBase64Encoded
             ? Buffer.from(lambdaResponse.body, "base64")
