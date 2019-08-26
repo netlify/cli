@@ -126,13 +126,7 @@ module.exports.serverSettings = async devConfig => {
         tellUser("command")
       ); // if settings.command is empty, its bc no settings matched
     }
-    if (devConfig.port) {
-      settings.proxyPort = devConfig.port || settings.proxyPort;
-      const regexp =
-        devConfig.urlRegexp ||
-        new RegExp(`(http://)([^:]+:)${devConfig.port}(/)?`, "g");
-      settings.urlRegexp = settings.urlRegexp || regexp;
-    }
+    if (devConfig.port) settings.port = devConfig.port
     settings.dist = devConfig.publish || settings.dist; // dont loudassign if they dont need it
   }
   return settings;
