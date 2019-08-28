@@ -14,6 +14,10 @@ Print status information
 netlify status
 ```
 
+**Flags**
+
+- `verbose` (*boolean*) - Output system info
+
 | Subcommand | description  |
 |:--------------------------- |:-----|
 | [`status:hooks`](/commands/status#statushooks) | Print hook information of the linked site  |

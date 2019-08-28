@@ -17,5 +17,9 @@ Opens a web browser to acquire an OAuth token.
 netlify login
 ```
 
+**Flags**
+
+- `new` (*boolean*) - Login to new Netlify account
+
 
 <!-- AUTO-GENERATED-CONTENT:END -->

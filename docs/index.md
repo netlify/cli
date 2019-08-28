@@ -35,9 +35,33 @@ netlify [command] help
 ## Commands
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_LIST) -->
+### [api](/commands/api)
+
+Run Netlify API Methods
+
 ### [deploy](/commands/deploy)
 
 Create a new deploy from the contents of a folder
+
+### [dev](/commands/dev)
+
+Local dev server
+
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`dev:exec`](/commands/dev#devexec) | Exec command  |
+
+
+### [functions](/commands/functions)
+
+Manage netlify functions
+
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`functions:build`](/commands/functions#functionsbuild) | build functions locally  |
+| [`functions:create`](/commands/functions#functionscreate) | create a new function locally  |
+| [`functions:invoke`](/commands/functions#functionsinvoke) | trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions  |
+
 
 ### [init](/commands/init)
 
@@ -81,6 +105,10 @@ Print status information
 | [`status:hooks`](/commands/status#statushooks) | Print hook information of the linked site  |
 
 
+### [switch](/commands/switch)
+
+Switch your active Netlify account
+
 ### [unlink](/commands/unlink)
 
 Unlink a local folder from a Netlify site
@@ -88,26 +116,6 @@ Unlink a local folder from a Netlify site
 ### [watch](/commands/watch)
 
 Watch for site deploy to finish
-
-### [dev](/commands/dev)
-
-Local dev server
-
-| Subcommand | description  |
-|:--------------------------- |:-----|
-| [`dev:exec`](/commands/dev#devexec) | Exec command  |
-
-
-### [functions](/commands/functions)
-
-Manage netlify functions
-
-| Subcommand | description  |
-|:--------------------------- |:-----|
-| [`functions:build`](/commands/functions#functionsbuild) | build functions locally  |
-| [`functions:create`](/commands/functions#functionscreate) | create a new function locally  |
-| [`functions:invoke`](/commands/functions#functionsinvoke) | trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions  |
-
 
 
 <!-- AUTO-GENERATED-CONTENT:END -->
