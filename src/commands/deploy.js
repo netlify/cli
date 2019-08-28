@@ -128,7 +128,7 @@ class DeployCommand extends Command {
         statusCb: (flags.json || flags.silent) ? () => {} : deployProgressCb(),
         draft: !deployToProduction,
         message: flags.message,
-        deployTimeout: flags.timeout || 1.2e6,
+        deployTimeout: (flags.timeout * 1000) || 1.2e6,
       })
     } catch (e) {
       switch (true) {
