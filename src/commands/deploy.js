@@ -327,7 +327,6 @@ DeployCommand.flags = {
     description: 'Output deployment data as JSON'
   }),
   timeout: flags.integer({
-    char: 'p',
     description: 'Timeout to wait for deployment to finish'
   }),
 }
