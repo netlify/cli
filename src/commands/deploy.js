@@ -127,7 +127,8 @@ class DeployCommand extends Command {
         fnDir: functionsFolder,
         statusCb: (flags.json || flags.silent) ? () => {} : deployProgressCb(),
         draft: !deployToProduction,
-        message: flags.message
+        message: flags.message,
+        deployTimeout: flags.timeout || 1.2e6,
       })
     } catch (e) {
       switch (true) {
@@ -324,7 +325,11 @@ DeployCommand.flags = {
   }),
   json: flags.boolean({
     description: 'Output deployment data as JSON'
-  })
+  }),
+  timeout: flags.integer({
+    char: 'p',
+    description: 'Timeout to wait for deployment to finish'
+  }),
 }
 
 function deployProgressCb() {
