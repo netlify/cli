@@ -73,8 +73,9 @@ async function connectTunnel(session, netlifyApiToken, localPort, log) {
 }
 
 async function installTunnelClient(log) {
+  const win = isWindows();
   const binPath = path.join(os.homedir(), ".netlify", "tunnel", "bin");
-  const execName = isWindows() ? "live-tunnel-client.exe" : "live-tunnel-client";
+  const execName = win ? "live-tunnel-client.exe" : "live-tunnel-client";
   const execPath = path.join(binPath, execName);
   const newVersion = await fetchTunnelClient(execPath);
   if (!newVersion) {
@@ -83,7 +84,6 @@ async function installTunnelClient(log) {
 
   log(`${NETLIFYDEVLOG} Installing Live Tunnel Client`);
 
-  const win = isWindows();
   const platform = win ? "windows" : process.platform;
   const extension = win ? "zip" : "tar.gz";
   const release = {
