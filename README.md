@@ -15,17 +15,19 @@ Welcome to the Netlify CLI! The new 2.0 version was rebuilt from the ground up t
 - [Usage](#usage)
 - [Documentation](#documentation)
 - [Commands](#commands)
+  * [api](#api)
   * [deploy](#deploy)
+  * [dev](#dev)
+  * [functions](#functions)
   * [init](#init)
   * [link](#link)
   * [login](#login)
   * [open](#open)
   * [sites](#sites)
   * [status](#status)
+  * [switch](#switch)
   * [unlink](#unlink)
   * [watch](#watch)
-  * [dev](#dev)
-  * [functions](#functions)
 - [Contributing](#contributing)
 - [Development](#development)
 - [License](#license)
@@ -63,9 +65,33 @@ For a full command reference, see the list below, or visit [cli.netlify.com](htt
 ## Commands
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_LIST) -->
+### [api](/docs/commands/api.md)
+
+Run Netlify API Methods
+
 ### [deploy](/docs/commands/deploy.md)
 
 Create a new deploy from the contents of a folder
+
+### [dev](/docs/commands/dev.md)
+
+Local dev server
+
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`dev:exec`](/docs/commands/dev.md#devexec) | Exec command  |
+
+
+### [functions](/docs/commands/functions.md)
+
+Manage netlify functions
+
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`functions:build`](/docs/commands/functions.md#functionsbuild) | build functions locally  |
+| [`functions:create`](/docs/commands/functions.md#functionscreate) | create a new function locally  |
+| [`functions:invoke`](/docs/commands/functions.md#functionsinvoke) | trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions  |
+
 
 ### [init](/docs/commands/init.md)
 
@@ -109,6 +135,10 @@ Print status information
 | [`status:hooks`](/docs/commands/status.md#statushooks) | Print hook information of the linked site  |
 
 
+### [switch](/docs/commands/switch.md)
+
+Switch your active Netlify account
+
 ### [unlink](/docs/commands/unlink.md)
 
 Unlink a local folder from a Netlify site
@@ -116,26 +146,6 @@ Unlink a local folder from a Netlify site
 ### [watch](/docs/commands/watch.md)
 
 Watch for site deploy to finish
-
-### [dev](/docs/commands/dev.md)
-
-Local dev server
-
-| Subcommand | description  |
-|:--------------------------- |:-----|
-| [`dev:exec`](/docs/commands/dev.md#devexec) | Exec command  |
-
-
-### [functions](/docs/commands/functions.md)
-
-Manage netlify functions
-
-| Subcommand | description  |
-|:--------------------------- |:-----|
-| [`functions:build`](/docs/commands/functions.md#functionsbuild) | build functions locally  |
-| [`functions:create`](/docs/commands/functions.md#functionscreate) | create a new function locally  |
-| [`functions:invoke`](/docs/commands/functions.md#functionsinvoke) | trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions  |
-
 
 
 <!-- AUTO-GENERATED-CONTENT:END -->
