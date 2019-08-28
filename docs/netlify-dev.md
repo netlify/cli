@@ -3,7 +3,7 @@
 <div align="center">
   <h3>Watch the introduction (24 minutes)</h3>
   <a href="https://youtu.be/RL_gtVZ_79Q?t=812">
-    <img src="http://i3.ytimg.com/vi/RL_gtVZ_79Q/hqdefault.jpg" height="200" alt="link to netlify dev talk" />
+    <img src="https://i3.ytimg.com/vi/RL_gtVZ_79Q/hqdefault.jpg" height="200" alt="link to netlify dev talk" />
   </a>
 </div>
 
