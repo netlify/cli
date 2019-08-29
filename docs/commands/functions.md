@@ -7,7 +7,7 @@ description: Run netlify dev locally
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
 Manage netlify functions
-The `functions` command will help you manage the functions in this site
+The [92m`functions`[39m command will help you manage the functions in this site
 
 
 **Usage**
