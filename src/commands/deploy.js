@@ -123,7 +123,7 @@ class DeployCommand extends Command {
         }
         // Improve the message of permission errors
         if (e.code === 'EACCES') {
-          console.log('Permission error when trying to access deploy folder')
+          console.log('Permission error when trying to access functions directory')
           this.exit(1)
         }
       }
