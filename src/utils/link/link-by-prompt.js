@@ -170,20 +170,23 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
         context.error(e)
       }
 
-      if (sites.length === 0) {
+      if (isEmpty(sites)) {
         context.error(`You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
       }
 
-      const siteSelection = await inquirer.prompt([
+      const { selectedSite } = await inquirer.prompt([
         {
           type: 'list',
-          name: 'siteName',
+          name: 'selectedSite',
           message: 'Which site do you want to link?',
           paginated: true,
           choices: sites.map(site => ({ name: site.name, value: site }))
         }
       ])
-      site = siteSelection.siteName
+      if (!selectedSite) {
+        context.error('No site selected')
+      }
+      site = selectedSite
       break
     }
     case SITE_ID_PROMPT: {
