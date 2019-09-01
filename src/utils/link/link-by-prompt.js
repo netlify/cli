@@ -83,27 +83,25 @@ Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
       if (matchingSites.length === 1) {
         site = matchingSites[0]
       } else if (matchingSites.length > 1) {
-        // Matches multiple sites. Users much choose which to link.
+        // Matches multiple sites. Users must choose which to link.
         console.log(`Found ${matchingSites.length} matching sites!`)
 
-        const siteChoices = matchingSites.map(site => {
-          return `${site.name} - ${site.ssl_url}`
-        })
-
         // Prompt which options
-        const { siteToConnect } = await inquirer.prompt([
+        const { selectedSite } = await inquirer.prompt([
           {
             type: 'list',
-            name: 'siteToConnect',
+            name: 'selectedSite',
             message: 'Which site do you want to link?',
-            choices: siteChoices
+            choices: matchingSites.map(site => ({ 
+              name: `${site.name} - ${site.ssl_url}`, 
+              value: site 
+            }))
           }
         ])
-
-        const siteName = siteToConnect.split(' ')[0]
-        site = matchingSites.filter(site => {
-          return siteName === site.name
-        })[0]
+        if (!selectedSite) {
+          context.error('No site selected')
+        }
+        site = selectedSite
       }
       break
     }
