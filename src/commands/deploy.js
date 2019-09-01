@@ -110,8 +110,27 @@ class DeployCommand extends Command {
 
     ensureDirectory(deployFolder, this.exit)
 
-    if (functionsFolder) {
-      ensureDirectory(functionsFolder, this.exit)
+    if (functionsFolder) { 
+      // we used to hard error if functions folder is specified but doesnt exist
+      // but this was too strict for onboarding. we can just log a warning.
+      let stat
+      try {
+        stat = fs.statSync(functionsFolder)
+      } catch (e) {
+        if (e.code === 'ENOENT') {
+          console.log(`Functions folder "${functionsFolder}" specified but it doesn't exist! Will proceed without deploying functions`)      
+          functionsFolder = undefined
+        }
+        // Improve the message of permission errors
+        if (e.code === 'EACCES') {
+          console.log('Permission error when trying to access functions directory')
+          this.exit(1)
+        }
+      }
+      if (functionsFolder && !stat.isDirectory) {
+        console.log('Deploy target must be a directory')
+        this.exit(1)
+      }
     }
 
     let results
