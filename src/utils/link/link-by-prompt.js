@@ -53,7 +53,7 @@ module.exports = async function linkPrompts(context) {
       }
       context.log()
       context.log(`Fetching sites and looking for site connected to "${repoUrl}" repo`)
-      const sites = await api.listSites()
+      const sites = await api.listSites({ filter: 'all' })
 
       if (isEmpty(sites)) {
         context.error(new Error(`No sites found in your netlify account`))
@@ -112,7 +112,7 @@ Run ${chalk.cyanBright('`git remote -v`')} to see a list of your git remotes.`)
 
       let sites
       try {
-        sites = await api.listSites()
+        sites = await api.listSites({ filter: 'all' })
       } catch (e) {
         context.error(e)
       }
