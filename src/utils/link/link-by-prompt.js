@@ -68,7 +68,7 @@ module.exports = async function linkPrompts(context) {
       if (isEmpty(matchingSites)) {
         context.log(chalk.redBright.bold.underline(`No Matching Site Found`))
         context.log()
-        context.log(`No site found with the remote ${repoInfo.repo_path}.
+        context.log(`No site found with the remote ${repoUrl}.
 
 Double check you are in the correct working directory & a remote git repo is configured.
 
