@@ -8,15 +8,16 @@ const { track } = require('../telemetry')
 module.exports = async function linkPrompts(context) {
   const { api, state } = context.netlify
 
-  const SITE_NAME_PROMPT = 'Choose from a list of your sites'
-  const SITE_ID_PROMPT = `Use a site ID`
+  const SITE_NAME_PROMPT = 'Search by full or partial site name'
+  const SITE_LIST_PROMPT = 'Choose from a list of your recently updated sites'
+  const SITE_ID_PROMPT = `Enter a site ID`
 
-  let GIT_REMOTE_PROMPT = `Use a current git remote URL`
+  let GIT_REMOTE_PROMPT = `Use the current git remote origin URL`
   let site
   // Get git remote data if exists
   const repoInfo = await getRepoData()
 
-  const LinkChoices = [SITE_NAME_PROMPT, SITE_ID_PROMPT]
+  const LinkChoices = [SITE_NAME_PROMPT, SITE_LIST_PROMPT, SITE_ID_PROMPT]
 
   let repoUrl = ''
   if (!repoInfo.error) {
@@ -109,6 +110,59 @@ Run ${chalk.cyanBright('`git remote -v`')} to see a list of your git remotes.`)
     }
     case SITE_NAME_PROMPT: {
       kind = 'byName'
+      const { searchTerm } = await inquirer.prompt([
+        {
+          type: 'input',
+          name: 'searchTerm',
+          message: 'Enter the site name (or just part of it):'
+        }
+      ])
+      context.log(`Looking for sites with names containing '${searchTerm}'...`)
+      context.log()
+
+      let matchingSites
+      try {
+        matchingSites = await api.listSites({
+          name: searchTerm,
+          filter: 'all'
+        })
+      } catch (e) {
+        if (e.status === 404) {
+          context.error(`'${searchTerm}' not found`)
+        } else {
+          context.error(e)
+        }
+      }
+
+      if (isEmpty(matchingSites)) {
+        context.error(`No site names found containing '${searchTerm}'
+
+Run ${chalk.cyanBright('netlify link')} again to try a new search,
+or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
+      }
+
+      if (matchingSites.length > 1) {
+        console.log(`Found ${matchingSites.length} matching sites!`)
+        const { selectedSite } = await inquirer.prompt([
+          {
+            type: 'list',
+            name: 'selectedSite',
+            message: 'Which site do you want to link?',
+            paginated: true,
+            choices: matchingSites.map(site => ({ name: site.name, value: site }))
+          }
+        ])
+        if (!selectedSite) {
+          context.error('No site selected')
+        }
+        site = selectedSite
+      } else {
+        site = matchingSites[0]
+      }
+      break
+    }
+    case SITE_LIST_PROMPT: {
+      kind = 'fromList'
 
       let sites
       try {
