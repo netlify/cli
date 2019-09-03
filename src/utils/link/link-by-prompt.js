@@ -132,7 +132,7 @@ Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
       }
 
       if (isEmpty(matchingSites)) {
-        context.error(`No site names found containing '${searchTerm}'
+        context.error(`No site names found containing '${searchTerm}'.
 
 Run ${chalk.cyanBright('netlify link')} again to try a new search,
 or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
