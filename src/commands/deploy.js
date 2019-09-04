@@ -86,7 +86,7 @@ class DeployCommand extends Command {
         {
           type: 'input',
           name: 'promptPath',
-          message: 'Publish Directory',
+          message: 'Publish directory',
           default: '.',
           filter: input => path.resolve(process.cwd(), input)
         }
