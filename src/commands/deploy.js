@@ -80,13 +80,13 @@ class DeployCommand extends Command {
     }
 
     if (!deployFolder) {
-      this.log('Please provide a deploy path relative to:')
+      this.log('Please provide a publish directory (e.g. "public" or "dist" or "."):')
       this.log(process.cwd())
       const { promptPath } = await inquirer.prompt([
         {
           type: 'input',
           name: 'promptPath',
-          message: 'deploy path',
+          message: 'Publish Directory',
           default: '.',
           filter: input => path.resolve(process.cwd(), input)
         }
