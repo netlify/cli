@@ -13,7 +13,7 @@ const inquirer = require('inquirer')
 class AddonsConfigCommand extends Command {
   async run() {
     const accessToken = await this.authenticate()
-    const { args, raw, flags } = this.parse(AddonsConfigCommand)
+    const { args, raw } = this.parse(AddonsConfigCommand)
     const addonName = args.name
     const siteId = this.netlify.site.id
 

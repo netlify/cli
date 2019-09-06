@@ -5,7 +5,7 @@ const openBrowser = require('../../utils/open-browser')
 class AddonsAuthCommand extends Command {
   async run() {
     let accessToken = await this.authenticate()
-    const { args, flags } = this.parse(AddonsAuthCommand)
+    const { args } = this.parse(AddonsAuthCommand)
 
     const addonName = args.name
 
