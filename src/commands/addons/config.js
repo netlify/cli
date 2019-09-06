@@ -13,7 +13,7 @@ const inquirer = require('inquirer')
 class AddonsConfigCommand extends Command {
   async run() {
     const accessToken = await this.authenticate()
-    const { args, raw } = this.parse(AddonsConfigCommand)
+    const { args, raw, flags } = this.parse(AddonsConfigCommand)
     const addonName = args.name
     const siteId = this.netlify.site.id
 
@@ -59,6 +59,13 @@ class AddonsConfigCommand extends Command {
         this.log(`${key} - ${currentConfig[key]}`)
       })
     }
+
+    await this.config.runHook('analytics', {
+      eventName: 'command',
+      payload: {
+        command: "addons:config",
+      },
+    });
 
     if (hasConfig) {
       const required = requiredConfigValues(manifest.config)

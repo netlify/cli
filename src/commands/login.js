@@ -16,6 +16,14 @@ class LoginCommand extends Command {
       return this.exit()
     }
 
+    await this.config.runHook('analytics', {
+      eventName: 'command',
+      payload: {
+        command: "login",
+        new: flags.new,
+      },
+    });
+
     await this.expensivelyAuthenticate()
 
     return this.exit()

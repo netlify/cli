@@ -9,7 +9,6 @@ const { serveFunctions } = require("../../utils/serve-functions");
 const { serverSettings } = require("../../utils/detect-server");
 const { detectFunctionsBuilder } = require("../../utils/detect-functions-builder");
 const Command = require("@netlify/cli-utils");
-const { track } = require("@netlify/cli-utils/src/utils/telemetry");
 const chalk = require("chalk");
 const {
   NETLIFYDEV,
@@ -280,11 +279,13 @@ class DevCommand extends Command {
       await connectTunnel(liveSession, accessToken, port, this.log);
     }
 
-    // Todo hoist this telemetry `command` to CLI hook
-    track("command", {
-      command: "dev",
-      projectType: settings.type || "custom",
-      live: flags.live || false
+    await this.config.runHook('analytics', {
+      eventName: 'command',
+      payload: {
+        command: "dev",
+        projectType: settings.type || "custom",
+        live: flags.live || false,
+      },
     });
 
     // boxen doesnt support text wrapping yet https://github.com/sindresorhus/boxen/issues/16

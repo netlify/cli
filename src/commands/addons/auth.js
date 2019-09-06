@@ -5,7 +5,7 @@ const openBrowser = require('../../utils/open-browser')
 class AddonsAuthCommand extends Command {
   async run() {
     let accessToken = await this.authenticate()
-    const { args } = this.parse(AddonsAuthCommand)
+    const { args, flags } = this.parse(AddonsAuthCommand)
 
     const addonName = args.name
 
@@ -36,6 +36,14 @@ class AddonsAuthCommand extends Command {
       console.log(`No Admin URL found for the "${addonName} add-on"`)
       return false
     }
+
+    await this.config.runHook('analytics', {
+      eventName: 'command',
+      payload: {
+        command: "addons:auth",
+      },
+    });
+
     this.log()
     this.log(`Opening ${addonName} add-on admin URL:`)
     this.log()

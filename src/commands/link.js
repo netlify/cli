@@ -14,6 +14,13 @@ class LinkCommand extends Command {
     const { api, site, state } = this.netlify
     const siteId = site.id
 
+    await this.config.runHook('analytics', {
+      eventName: 'command',
+      payload: {
+        command: "link",
+      },
+    });
+
     let siteData
     try {
       siteData = await api.getSite({ siteId })

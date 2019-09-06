@@ -1,6 +1,5 @@
 const execa = require("execa");
 const Command = require("@netlify/cli-utils");
-const { track } = require("@netlify/cli-utils/src/utils/telemetry");
 const {
   // NETLIFYDEV,
   NETLIFYDEVLOG,
@@ -27,9 +26,11 @@ class ExecCommand extends Command {
       env: process.env,
       stdio: "inherit"
     });
-    // Todo hoist this telemetry `command` to CLI hook
-    track("command", {
-      command: "dev:exec"
+    await this.config.runHook('analytics', {
+      eventName: 'command',
+      payload: {
+        command: "dev:exec",
+      },
     });
   }
 }
