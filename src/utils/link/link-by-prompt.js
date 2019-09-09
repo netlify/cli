@@ -55,7 +55,7 @@ module.exports = async function linkPrompts(context) {
       context.log()
       context.log(`Looking for sites connected to '${repoUrl}'...`)
       context.log()
-      const sites = await api.listSites()
+      const sites = await api.listSites({ filter: 'all' })
 
       if (isEmpty(sites)) {
         context.error(new Error(`You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`))
@@ -70,7 +70,7 @@ module.exports = async function linkPrompts(context) {
       if (isEmpty(matchingSites)) {
         context.log(chalk.redBright.bold.underline(`No Matching Site Found`))
         context.log()
-        context.log(`No site found with the remote ${repoInfo.repo_path}.
+        context.log(`No site found with the remote ${repoUrl}.
 
 Double check you are in the correct working directory and a remote origin repo is configured.
 
@@ -165,7 +165,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
 
       let sites
       try {
-        sites = await api.listSites()
+        sites = await api.listSites({ filter: 'all' })
       } catch (e) {
         context.error(e)
       }
