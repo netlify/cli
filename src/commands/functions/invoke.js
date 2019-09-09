@@ -56,6 +56,13 @@ class FunctionsInvokeCommand extends Command {
     let headers = {};
     let body = {};
 
+    await this.config.runHook('analytics', {
+      eventName: 'command',
+      payload: {
+        command: "functions:invoke",
+      },
+    });
+
     if (eventTriggeredFunctions.includes(functionToTrigger)) {
       /** handle event triggered fns  */
       // https://www.netlify.com/docs/functions/#event-triggered-functions

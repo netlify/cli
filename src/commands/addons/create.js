@@ -57,6 +57,14 @@ class AddonsCreateCommand extends Command {
      const hasConfig = manifest.config && Object.keys(manifest.config).length
 
     let configValues = rawFlags
+
+    await this.config.runHook('analytics', {
+      eventName: 'command',
+      payload: {
+        command: "addons:create",
+      },
+    });
+
     if (hasConfig) {
       const required = requiredConfigValues(manifest.config)
       const missingValues = missingConfigValues(required, rawFlags)

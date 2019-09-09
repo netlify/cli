@@ -36,9 +36,11 @@ class FunctionsCreateCommand extends Command {
     } else {
       await scaffoldFromTemplate.call(this, flags, args, functionsDir);
     }
-    track("command", {
-      command: "functions:create",
-      url: flags.url
+    await this.config.runHook('analytics', {
+      eventName: 'command',
+      payload: {
+        command: "functions:create",
+      },
     });
   }
 }

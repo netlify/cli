@@ -13,6 +13,13 @@ class OpenCommand extends Command {
       showHelp(this.id)
     }
 
+    await this.config.runHook('analytics', {
+      eventName: 'command',
+      payload: {
+        command: "open",
+      },
+    });
+
     if (flags.site) {
     	await OpenSiteCommand.run()
     }

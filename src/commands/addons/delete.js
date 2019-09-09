@@ -51,6 +51,13 @@ class AddonsDeleteCommand extends Command {
       return false
     }
 
+    await this.config.runHook('analytics', {
+      eventName: 'command',
+      payload: {
+        command: "addons:delete",
+      },
+    });
+
     const settings = {
       siteId: siteId,
       addon: addonName,

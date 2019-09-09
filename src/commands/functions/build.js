@@ -36,6 +36,13 @@ class FunctionsBuildCommand extends Command {
       process.exit(1);
     }
 
+    await this.config.runHook('analytics', {
+      eventName: 'command',
+      payload: {
+        command: "functions:build",
+      },
+    });
+
     fs.mkdirSync(dst, { recursive: true });
 
     this.log(`${NETLIFYDEVLOG} Building functions`);

@@ -12,6 +12,13 @@ class APICommand extends Command {
 
     const { apiMethod } = args
 
+    await this.config.runHook('analytics', {
+      eventName: 'command',
+      payload: {
+        command: "api",
+      },
+    });
+
     if (isEmptyCommand(flags, args) || flags.list) {
       const table = new AsciiTable(`Netlify API Methods`)
       table.setHeading('API Method', 'Docs Link')
