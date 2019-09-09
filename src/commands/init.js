@@ -22,6 +22,16 @@ class InitCommand extends Command {
 
     const siteId = site.id
 
+    await this.config.runHook('analytics', {
+      eventName: 'command',
+      payload: {
+        command: "init",
+        manual: flags.manual,
+        watch: flags.watch,
+        force: flags.force,
+      },
+    });
+
     // const hasFlags = !isEmpty(flags)
     let siteData
     try {

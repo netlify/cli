@@ -11,6 +11,13 @@ class AddonsCommand extends Command {
       showHelp(this.id)
       this.exit()
     }
+
+    await this.config.runHook('analytics', {
+      eventName: 'command',
+      payload: {
+        command: "addons",
+      },
+    });
   }
 }
 

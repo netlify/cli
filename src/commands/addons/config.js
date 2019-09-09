@@ -60,6 +60,13 @@ class AddonsConfigCommand extends Command {
       })
     }
 
+    await this.config.runHook('analytics', {
+      eventName: 'command',
+      payload: {
+        command: "addons:config",
+      },
+    });
+
     if (hasConfig) {
       const required = requiredConfigValues(manifest.config)
       const missingValues = missingConfigValues(required, rawFlags)

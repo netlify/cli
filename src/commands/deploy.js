@@ -22,6 +22,16 @@ class DeployCommand extends Command {
     const deployToProduction = flags.prod
     await this.authenticate(flags.auth)
 
+    await this.config.runHook('analytics', {
+      eventName: 'command',
+      payload: {
+        command: "deploy",
+        open: flags.open,
+        prod: flags.prod,
+        json: flags.json,
+      },
+    });
+
     let siteId = flags.site || site.id
     let siteData
     if (!siteId) {
@@ -80,13 +90,13 @@ class DeployCommand extends Command {
     }
 
     if (!deployFolder) {
-      this.log('Please provide a deploy path relative to:')
+      this.log('Please provide a publish directory (e.g. "public" or "dist" or "."):')
       this.log(process.cwd())
       const { promptPath } = await inquirer.prompt([
         {
           type: 'input',
           name: 'promptPath',
-          message: 'deploy path',
+          message: 'Publish directory',
           default: '.',
           filter: input => path.resolve(process.cwd(), input)
         }
@@ -110,7 +120,7 @@ class DeployCommand extends Command {
 
     ensureDirectory(deployFolder, this.exit)
 
-    if (functionsFolder) { 
+    if (functionsFolder) {
       // we used to hard error if functions folder is specified but doesnt exist
       // but this was too strict for onboarding. we can just log a warning.
       let stat
@@ -118,7 +128,7 @@ class DeployCommand extends Command {
         stat = fs.statSync(functionsFolder)
       } catch (e) {
         if (e.code === 'ENOENT') {
-          console.log(`Functions folder "${functionsFolder}" specified but it doesn't exist! Will proceed without deploying functions`)      
+          console.log(`Functions folder "${functionsFolder}" specified but it doesn't exist! Will proceed without deploying functions`)
           functionsFolder = undefined
         }
         // Improve the message of permission errors

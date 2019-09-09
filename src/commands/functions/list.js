@@ -1,4 +1,3 @@
-const chalk = require("chalk");
 const Command = require("@netlify/cli-utils");
 const { flags } = require("@oclif/command");
 const AsciiTable = require("ascii-table");
@@ -34,6 +33,13 @@ class FunctionsListCommand extends Command {
     }
     const deploy = siteData.published_deploy || {};
     const deployed_functions = deploy.available_functions || [];
+
+    await this.config.runHook('analytics', {
+      eventName: 'command',
+      payload: {
+        command: "functions:list",
+      },
+    });
 
     const functionsDir =
       flags.functions ||

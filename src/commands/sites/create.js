@@ -17,6 +17,13 @@ class SitesCreateCommand extends Command {
 
     await this.authenticate()
 
+    await this.config.runHook('analytics', {
+      eventName: 'command',
+      payload: {
+        command: "sites:create",
+      },
+    });
+
     const accounts = await api.listAccountsForUser()
 
     let accountSlug = flags['account-slug']

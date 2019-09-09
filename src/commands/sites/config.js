@@ -5,6 +5,13 @@ class SitesConfigCommand extends Command {
     this.log(`update a site`)
     this.log(`Implementation coming soon`)
 
+    await this.config.runHook('analytics', {
+      eventName: 'command',
+      payload: {
+        command: "sites:config",
+      },
+    });
+
     // TODO handle repo URL updates
   }
 }
