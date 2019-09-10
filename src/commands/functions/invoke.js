@@ -60,9 +60,9 @@ class FunctionsInvokeCommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: "functions:invoke",
-      },
-    });
+        command: 'functions:invoke'
+      }
+    })
 
     if (eventTriggeredFunctions.includes(functionToTrigger)) {
       /** handle event triggered fns  */
@@ -191,7 +191,7 @@ async function getNameFromArgs(functions, args, flags) {
 
   const isValidFn = Object.keys(functions).includes(functionToTrigger)
   if (!functionToTrigger || !isValidFn) {
-    if (!isValidFn) {
+    if (functionToTrigger && !isValidFn) {
       console.warn(
         `Function name ${chalk.yellow(
           functionToTrigger
