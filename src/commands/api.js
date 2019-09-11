@@ -53,9 +53,9 @@ class APICommand extends Command {
   }
 }
 
-APICommand.description = `Run Netlify API Methods
+APICommand.description = `Run any Netlify API method
 
-For more information on available methods checkout https://open-api.netlify.com/#/default or run "netlify api --list"
+For more information on available methods checkout https://open-api.netlify.com/ or run "netlify api --list"
 `
 
 APICommand.args = [
@@ -63,6 +63,11 @@ APICommand.args = [
     name: 'apiMethod',
     description: 'Open API method to run'
   }
+]
+
+APICommand.examples = [
+  'netlify api --list',
+  "netlify api getSite --data '{ \"site_id\": \"123456\"}'",
 ]
 
 APICommand.flags = {

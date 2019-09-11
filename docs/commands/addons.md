@@ -1,16 +1,17 @@
 ---
 title: Netlify CLI addons command
-hidden: true
 ---
 
 # `addons`
 
-The addons command will help you manage all your netlify addons
+The addons command will manage Netlify addons.
+
+For more information on add-ons see our [Netlify partner add-ons docs](https://www.netlify.com/docs/partner-add-ons/)
+
+## About
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
-Handle addon operations
-The addons command will help you manage all your netlify addons
-
+(Beta) Manage Netlify Add-ons
 
 **Usage**
 
@@ -20,21 +21,21 @@ netlify addons
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`addons:auth`](/addons#addonsauth) | Login to add-on provider  |
-| [`addons:config`](/addons#addonsconfig) | Configure add-on settings  |
-| [`addons:create`](/addons#addonscreate) | Add an add-on extension to your site  |
-| [`addons:delete`](/addons#addonsdelete) | Remove an add-on extension to your site  |
-| [`addons:list`](/addons#addonslist) | list current site add-ons  |
+| [`addons:auth`](/commands/addons#addonsauth) | Login to add-on provider  |
+| [`addons:config`](/commands/addons#addonsconfig) | Configure add-on settings  |
+| [`addons:create`](/commands/addons#addonscreate) | Add an add-on extension to your site  |
+| [`addons:delete`](/commands/addons#addonsdelete) | Remove an add-on extension to your site  |
+| [`addons:list`](/commands/addons#addonslist) | List currently installed add-ons for site  |
 
 
 **Examples**
 
 ```bash
-netlify addons:create addon-xyz --value foo
-netlify addons:update addon-xyz --value bar
-netlify addons:show addon-xyz
-netlify addons:delete addon-xyz
+netlify addons:create addon-xyz
 netlify addons:list
+netlify addons:config addon-xyz
+netlify addons:delete addon-xyz
+netlify addons:auth addon-xyz
 ```
 
 ---
@@ -103,13 +104,14 @@ netlify addons:delete
 
 - name - Add-on namespace
 
+**Flags**
+
+- `force` (*boolean*) - delete without prompting (useful for CI)
+
 ---
 ## `addons:list`
 
-list current site add-ons
-...
-Add-ons are a way to extend the functionality of your Netlify site
-
+List currently installed add-ons for site
 
 **Usage**
 
@@ -122,4 +124,5 @@ netlify addons:list
 - `json` (*boolean*) - Output add-on data as JSON
 
 ---
+
 <!-- AUTO-GENERATED-CONTENT:END -->
