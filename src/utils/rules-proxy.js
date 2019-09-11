@@ -140,7 +140,7 @@ module.exports = function(config) {
     getMatcher().then(matcher => {
       const reqUrl = new url.URL(
         req.url,
-        `${req.protocol || req.headers.scheme || 'http'}://${req.hostname ||
+        `${req.protocol || (req.headers.scheme && req.headers.scheme + ':') || 'http:'}//${req.hostname ||
         req.headers['host']}`
       )
       const cookies = cookie.parse(req.headers.cookie || '')
