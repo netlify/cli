@@ -96,7 +96,6 @@ Add-ons are a way to extend the functionality of your Netlify site
 
 // allow for any flags. Handy for variadic configuration options
 AddonsDeleteCommand.strict = false
-AddonsDeleteCommand.hidden = true
 AddonsDeleteCommand.aliases = ['addon:delete']
 AddonsDeleteCommand.flags = {
   force: flags.boolean({
