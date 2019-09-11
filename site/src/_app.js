@@ -45,8 +45,9 @@ const navOrder = [
     "logout",
     "open",
     "sites",
-    "status", 
+    "status",
     "unlink",
+  'netlify-dev',
   'contributing',
 ]
 
@@ -55,6 +56,7 @@ const pageNames = {
   'getting-started': 'Getting Started',
   'commands': 'CLI Commands',
   'contributing': 'Contributing',
+  'netlify-dev': 'Netlify Dev',
 }
 
 const sortRoutes = routes => [
