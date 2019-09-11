@@ -140,7 +140,7 @@ module.exports = function(config) {
     getMatcher().then(matcher => {
       const reqUrl = new url.URL(
         req.url,
-        `${req.protocol || req.headers.scheme || 'http'}://${req.hostname ||
+        `${req.protocol || (req.headers.scheme && req.headers.scheme + ':') || 'http:'}//${req.hostname ||
         req.headers['host']}`
       )
       const cookies = cookie.parse(req.headers.cookie || '')
@@ -170,7 +170,7 @@ module.exports = function(config) {
         if (match.force || notStatic(reqUrl.pathname)) {
           const dest = new url.URL(
             match.to,
-            `${reqUrl.protocol}//${reqUrl.hostname}`
+            `${reqUrl.protocol}//${reqUrl.host}`
           )
           reqUrl.searchParams.forEach((v, k) => {
             dest.searchParams.append(k, v)
@@ -187,7 +187,7 @@ module.exports = function(config) {
           if (isExternal(match)) {
             console.log(`${NETLIFYDEVLOG} Proxying to `, match.to)
             const handler = proxy({
-              target: `${dest.protocol}//${dest.hostname}`,
+              target: `${dest.protocol}//${dest.host}`,
               changeOrigin: true,
               pathRewrite: (path, req) =>
                 match.to.replace(/https?:\/\/[^\/]+/, ''),
