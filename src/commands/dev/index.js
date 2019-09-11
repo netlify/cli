@@ -251,7 +251,7 @@ class DevCommand extends Command {
 
     let { url, port } = await startProxy(settings, addonUrls)
     if (!url) {
-      url = proxyUrl
+      throw new Error('Unable to start proxy server')
     }
 
     if (flags.live) {
