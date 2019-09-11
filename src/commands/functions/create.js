@@ -320,7 +320,7 @@ async function scaffoldFromTemplate(flags, args, functionsDir) {
     }
   } else if (chosentemplate === "report") {
     this.log(
-      `${NETLIFYDEVLOG} Open in browser: https://github.com/netlify/netlify-dev-plugin/issues/new`
+      `${NETLIFYDEVLOG} Open in browser: https://github.com/netlify/cli/issues/new`
     );
   } else {
     const {
