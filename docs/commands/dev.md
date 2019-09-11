@@ -20,6 +20,7 @@ netlify dev
 
 - `command` (*option*) - command to run
 - `port` (*option*) - port of netlify dev
+- `functionsPort` (*option*) - port for functions server
 - `dir` (*option*) - dir with static files
 - `functions` (*option*) - Specify a functions folder to serve
 - `offline` (*boolean*) - disables any features that require network access
