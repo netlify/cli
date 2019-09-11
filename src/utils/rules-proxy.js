@@ -170,8 +170,11 @@ module.exports = function(config) {
         if (match.force || notStatic(reqUrl.pathname)) {
           const dest = new url.URL(
             match.to,
-            `${req.protocol}://${req.hostname}`
+            `${reqUrl.protocol}//${reqUrl.hostname}`
           )
+          reqUrl.searchParams.forEach((v, k) => {
+            dest.searchParams.append(k, v)
+          })
           if (isRedirect(match)) {
             res.writeHead(match.status, {
               Location: match.to,
@@ -191,7 +194,7 @@ module.exports = function(config) {
             })
             return handler(req, res, next)
           } else {
-            req.url = dest.pathname
+            req.url = dest.pathname + dest.search
             console.log(`${NETLIFYDEVLOG} Rewrote URL to `, req.url)
             return next()
           }
