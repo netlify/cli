@@ -238,7 +238,7 @@ class DevCommand extends Command {
         functionWatcher.on('change', functionBuilder.build)
         functionWatcher.on('unlink', functionBuilder.build)
       }
-      const functionsPort = await getPort({ port: 34567 })
+      const functionsPort = await getPort({ port: settings.functionsPort || 34567 })
 
       // returns a value but we dont use it
       await serveFunctions({
@@ -304,6 +304,9 @@ DevCommand.flags = {
   port: flags.integer({
     char: 'p',
     description: 'port of netlify dev'
+  }),
+  functionsPort: flags.integer({
+    description: 'port for functions server'
   }),
   dir: flags.string({
     char: 'd',
