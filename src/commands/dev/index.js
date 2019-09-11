@@ -197,7 +197,7 @@ class DevCommand extends Command {
         this.log(
           `${NETLIFYDEVWARN} Setup a netlify.toml file with a [dev] section to specify your dev server settings.`
         )
-        this.log(`${NETLIFYDEVWARN} See docs at: https://github.com/netlify/netlify-dev-plugin#project-detection`)
+        this.log(`${NETLIFYDEVWARN} See docs at: https://github.com/netlify/cli/blob/master/docs/netlify-dev.md#project-detection`)
         this.log(`${NETLIFYDEVWARN} Using current working directory for now...`)
         dist = process.cwd()
       }
@@ -230,7 +230,7 @@ class DevCommand extends Command {
           )} detected: Running npm script ${chalk.yellow(functionBuilder.npmScript)}`
         )
         this.warn(
-          `${NETLIFYDEVWARN} This is a beta feature, please give us feedback on how to improve at https://github.com/netlify/netlify-dev-plugin/`
+          `${NETLIFYDEVWARN} This is a beta feature, please give us feedback on how to improve at https://github.com/netlify/cli/`
         )
         await functionBuilder.build()
         const functionWatcher = chokidar.watch(functionBuilder.src)
