@@ -170,7 +170,7 @@ module.exports = function(config) {
         if (match.force || notStatic(reqUrl.pathname)) {
           const dest = new url.URL(
             match.to,
-            `${reqUrl.protocol}//${reqUrl.hostname}`
+            `${reqUrl.protocol}//${reqUrl.host}`
           )
           reqUrl.searchParams.forEach((v, k) => {
             dest.searchParams.append(k, v)
@@ -187,7 +187,7 @@ module.exports = function(config) {
           if (isExternal(match)) {
             console.log(`${NETLIFYDEVLOG} Proxying to `, match.to)
             const handler = proxy({
-              target: `${dest.protocol}//${dest.hostname}`,
+              target: `${dest.protocol}//${dest.host}`,
               changeOrigin: true,
               pathRewrite: (path, req) =>
                 match.to.replace(/https?:\/\/[^\/]+/, ''),
