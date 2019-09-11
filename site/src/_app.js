@@ -41,6 +41,8 @@ const navOrder = [
     'unlink',
     'deploy',
     'functions',
+    'api',
+    'addons',
     'dev',
     'sites',
     'open',
