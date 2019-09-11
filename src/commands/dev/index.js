@@ -305,6 +305,9 @@ DevCommand.flags = {
     char: 'p',
     description: 'port of netlify dev'
   }),
+  functionsPort: flags.integer({
+    description: 'port for functions server'
+  }),
   dir: flags.string({
     char: 'd',
     description: 'dir with static files'
