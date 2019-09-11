@@ -170,7 +170,7 @@ module.exports = function(config) {
         if (match.force || notStatic(reqUrl.pathname)) {
           const dest = new url.URL(
             match.to,
-            `${req.protocol}://${req.hostname}`
+            `${reqUrl.protocol}://${reqUrl.hostname}`
           )
           reqUrl.searchParams.forEach((v, k) => {
             dest.searchParams.append(k, v)
