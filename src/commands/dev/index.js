@@ -87,7 +87,7 @@ function initializeProxy(port) {
 }
 
 async function startProxy(settings, addonUrls) {
-  const rulesProxy = require('@netlify/rules-proxy')
+  const rulesProxy = require('../../utils/rules-proxy')
 
   await waitPort({ port: settings.proxyPort })
   if (settings.functionsPort) {
