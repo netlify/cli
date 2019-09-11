@@ -182,6 +182,5 @@ AddonsCreateCommand.args = [
 
 // allow for any flags. Handy for variadic configuration options
 AddonsCreateCommand.strict = false
-AddonsCreateCommand.hidden = true
 
 module.exports = AddonsCreateCommand

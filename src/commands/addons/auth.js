@@ -64,6 +64,4 @@ AddonsAuthCommand.args = [
 
 AddonsAuthCommand.description = `Login to add-on provider`
 
-AddonsAuthCommand.hidden = true
-
 module.exports = AddonsAuthCommand

@@ -205,6 +205,4 @@ AddonsConfigCommand.description = `Configure add-on settings`
 // allow for any flags. Handy for variadic configuration options
 AddonsConfigCommand.strict = false
 
-AddonsConfigCommand.hidden = true
-
 module.exports = AddonsConfigCommand
