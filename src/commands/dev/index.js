@@ -154,8 +154,8 @@ function startDevServer(settings, log) {
     env: { ...settings.env, FORCE_COLOR: 'true' },
     stdio: settings.stdio || 'inherit'
   })
-  if (ps.stdout) ps.stdout.on('data', settings.onStdout || (() => {}))
-  if (ps.stderr) ps.stderr.on('data', settings.onStderr || (() => {}))
+  if (ps.stdout) ps.stdout.on('data', settings.onStdout || ((buff) => process.stdout.write(buff.toString('utf8'))))
+  if (ps.stderr) ps.stderr.on('data', settings.onStderr || ((buff) => process.stderr.write(buff.toString('utf8'))))
   ps.on('close', code => process.exit(code))
   ps.on('SIGINT', process.exit)
   ps.on('SIGTERM', process.exit)
