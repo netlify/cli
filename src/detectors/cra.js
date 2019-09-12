@@ -32,6 +32,13 @@ module.exports = function() {
     port: 8888, // the port that the Netlify Dev User will use
     proxyPort: 3000, // the port that create-react-app normally outputs
     env: { ...process.env, BROWSER: "none", PORT: 3000 },
+    stdio: ['inherit', 'pipe', 'pipe'],
+    onStdout: function(buffer) {
+      process.stdout.write(buffer.toString('utf8'))
+    },
+    onStderr: function(buffer) {
+      process.stderr.write(buffer.toString('utf8'))
+    },
     possibleArgsArrs,
     urlRegexp: new RegExp(`(http://)([^:]+:)${3000}(/)?`, "g"),
     dist: "public"
