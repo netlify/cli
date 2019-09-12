@@ -31,34 +31,49 @@ function parseFile(parser, name, data) {
   return result.success
 }
 
-function parseRules(redirectFilePath, distTomlPath, baseTomlPath) {
+function parseRules(projectDir, publicDir) {
   let rules = []
-  if (fs.existsSync(redirectFilePath)) {
+
+  const generatedRedirectsPath = path.resolve(publicDir, '_redirects')
+  if (fs.existsSync(generatedRedirectsPath)) {
     rules = rules.concat(
       parseFile(
         redirectParser.parseRedirectsFormat,
         '_redirects',
-        fs.readFileSync(redirectFilePath, 'utf-8')
+        fs.readFileSync(generatedRedirectsPath, 'utf-8')
       )
     )
   }
 
-  if (fs.existsSync(distTomlPath)) {
+  const baseRedirectsPath = path.resolve(projectDir, '_redirects')
+  if (fs.existsSync(baseRedirectsPath)) {
+    rules = rules.concat(
+      parseFile(
+        redirectParser.parseRedirectsFormat,
+        '_redirects',
+        fs.readFileSync(baseRedirectsPath, 'utf-8')
+      )
+    )
+  }
+
+  const generatedTOMLPath = path.resolve(projectDir, 'netlify.toml')
+  if (fs.existsSync(generatedTOMLPath)) {
     rules = rules.concat(
       parseFile(
         redirectParser.parseTomlFormat,
         'generated netlify.toml',
-        fs.readFileSync(distTomlPath, 'utf-8')
+        fs.readFileSync(generatedTOMLPath, 'utf-8')
       )
     )
   }
 
-  if (fs.existsSync(baseTomlPath)) {
+  const baseTOMLPath = path.resolve(projectDir, 'netlify.toml')
+  if (fs.existsSync(baseTOMLPath)) {
     rules = rules.concat(
       parseFile(
         redirectParser.parseTomlFormat,
         'base netlify.toml',
-        fs.readFileSync(baseTomlPath, 'utf-8')
+        fs.readFileSync(baseTOMLPath, 'utf-8')
       )
     )
   }
@@ -87,14 +102,14 @@ function getCountry(req) {
 
 module.exports = function(config) {
   let matcher = null
-  const baseTomlPath = path.resolve(
-    config.baseFolder || process.cwd(),
-    'netlify.toml'
-  )
-  const distTomlPath = path.resolve(config.publicFolder, 'netlify.toml')
-  const redirectFilePath = path.resolve(config.publicFolder, '_redirects')
+  const projectDir = path.resolve(config.baseFolder || process.cwd())
 
-  onChanges([baseTomlPath, distTomlPath, redirectFilePath], () => {
+  onChanges([
+    path.resolve(projectDir, 'netlify.toml'),
+    path.resolve(projectDir, '_redirects'),
+    path.resolve(config.publicFolder, 'netlify.toml'),
+    path.resolve(config.publicFolder, '_redirects'),
+  ], () => {
     matcher = null
   })
 
@@ -103,7 +118,7 @@ module.exports = function(config) {
       return Promise.resolve(matcher)
     }
 
-    const rules = parseRules(redirectFilePath, distTomlPath, baseTomlPath)
+    const rules = parseRules(projectDir, config.publicFolder)
       .filter(r => !(r.path === '/*' && r.to === '/index.html' && r.status === 200))
 
     if (rules.length) {
