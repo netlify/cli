@@ -129,6 +129,7 @@ Netlify Dev will attempt to detect the SSG or build command that you are using, 
 [dev]
   command = "yarn start" # Command to start your dev server
   port = 3000 # Port that the dev server will be listening on
+  functionsPort = 34567 # port for functions server
   publish = "dist" # If you use a _redirect file, provide the path to your static content folder
 ```
 
