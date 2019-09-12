@@ -104,6 +104,7 @@ module.exports = function(config) {
     }
 
     const rules = parseRules(redirectFilePath, distTomlPath, baseTomlPath)
+      .filter(r => !(r.path === '/*' && r.to === '/index.html' && r.status === 200))
 
     if (rules.length) {
       return redirector
