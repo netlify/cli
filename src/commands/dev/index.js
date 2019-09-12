@@ -152,14 +152,10 @@ function startDevServer(settings, log) {
   const args = settings.command === 'npm' ? ['run', ...settings.args] : settings.args
   const ps = execa(settings.command, args, {
     env: { ...settings.env, FORCE_COLOR: 'true' },
-    stdio: ['inherit', 'pipe', 'pipe']
+    stdio: settings.stdio || 'inherit'
   })
-  ps.stdout.on('data', function(buffer) {
-    process.stdout.write(buffer.toString('utf8'))
-  })
-  ps.stderr.on('data', function(buffer) {
-    process.stderr.write(buffer.toString('utf8'))
-  })
+  if (ps.stdout) ps.stdout.on('data', ((buff) => process.stdout.write(buff.toString('utf8'))))
+  if (ps.stderr) ps.stderr.on('data', ((buff) => process.stderr.write(buff.toString('utf8'))))
   ps.on('close', code => process.exit(code))
   ps.on('SIGINT', process.exit)
   ps.on('SIGTERM', process.exit)
