@@ -184,9 +184,15 @@ class DevCommand extends Command {
 
     let settings = await serverSettings(Object.assign({}, config.dev, flags))
 
-    if (!(settings && settings.command)) {
-      this.log(`${NETLIFYDEVWARN} No dev server detected, using simple static server`)
-      let dist = (config.dev && config.dev.publish) || (config.build && config.build.publish)
+    if (flags.dir || !(settings && settings.command)) {
+      let dist
+      if (flags.dir) {
+        this.log(`${NETLIFYDEVWARN} Using simple static server because --dir flag was specified`)
+        dist = flags.dir
+      } else {
+        this.log(`${NETLIFYDEVWARN} No dev server detected, using simple static server`)
+        dist = (config.dev && config.dev.publish) || (config.build && config.build.publish)
+      }
       if (!dist) {
         this.log(`${NETLIFYDEVLOG} Using current working directory`)
         this.log(`${NETLIFYDEVWARN} Unable to determine public folder to serve files from.`)
