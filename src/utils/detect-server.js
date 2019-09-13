@@ -132,8 +132,8 @@ module.exports.serverSettings = async devConfig => {
         devConfig.urlRegexp ||
         new RegExp(`(http://)([^:]+:)${devConfig.port}(/)?`, "g");
       settings.urlRegexp = settings.urlRegexp || regexp;
-      settings.functionsPort = devConfig.functionsPort
     }
+    if (devConfig.functionsPort) settings.functionsPort = devConfig.functionsPort
     settings.dist = devConfig.publish || settings.dist; // dont loudassign if they dont need it
   }
   return settings;
