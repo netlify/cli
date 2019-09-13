@@ -11,21 +11,24 @@ class AddonsCommand extends Command {
       showHelp(this.id)
       this.exit()
     }
+
+    await this.config.runHook('analytics', {
+      eventName: 'command',
+      payload: {
+        command: "addons",
+      },
+    });
   }
 }
 
-AddonsCommand.description = `Handle Netlify add-on operations
-The addons command will help you manage all your netlify addons
-`
+AddonsCommand.description = `(Beta) Manage Netlify Add-ons`
 AddonsCommand.aliases = ['addon']
 AddonsCommand.examples = [
-  'netlify addons:list',
   'netlify addons:create addon-xyz',
+  'netlify addons:list',
   'netlify addons:config addon-xyz',
   'netlify addons:delete addon-xyz',
   'netlify addons:auth addon-xyz'
 ]
-
-AddonsCommand.hidden = true
 
 module.exports = AddonsCommand

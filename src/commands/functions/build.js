@@ -1,61 +1,72 @@
-const fs = require("fs");
-const { flags } = require("@oclif/command");
-const Command = require("@netlify/cli-utils");
-const { zipFunctions } = require("@netlify/zip-it-and-ship-it");
+const fs = require('fs')
+const { flags } = require('@oclif/command')
+const Command = require('@netlify/cli-utils')
+const { zipFunctions } = require('@netlify/zip-it-and-ship-it')
 const {
   // NETLIFYDEV,
   NETLIFYDEVLOG,
   // NETLIFYDEVWARN,
   NETLIFYDEVERR
-} = require("netlify-cli-logo");
+} = require('netlify-cli-logo')
 
 class FunctionsBuildCommand extends Command {
   async run() {
-    const { flags } = this.parse(FunctionsBuildCommand);
-    const { config } = this.netlify;
+    const { flags } = this.parse(FunctionsBuildCommand)
+    const { config } = this.netlify
 
-    const src = flags.src || config.build.functionsSource;
-    const dst = flags.functions || config.build.functions;
+    const src = flags.src || config.build.functionsSource
+    const dst =
+      flags.functions ||
+      (config.dev && config.dev.functions) ||
+      (config.build && config.build.functions) ||
+      flags.Functions ||
+      (config.dev && config.dev.Functions) ||
+      (config.build && config.build.Functions)
 
     if (src === dst) {
-      this.log(
-        `${NETLIFYDEVERR} Source and destination for function build can't be the same`
-      );
-      process.exit(1);
+      this.log(`${NETLIFYDEVERR} Source and destination for function build can't be the same`)
+      process.exit(1)
     }
 
     if (!src || !dst) {
       if (!src)
         this.log(
           `${NETLIFYDEVERR} Error: You must specify a source folder with a --src flag or a functionsSource field in your config`
-        );
+        )
       if (!dst)
         this.log(
           `${NETLIFYDEVERR} Error: You must specify a destination functions folder with a --functions flag or a functions field in your config`
-        );
-      process.exit(1);
+        )
+      process.exit(1)
     }
 
-    fs.mkdirSync(dst, { recursive: true });
+    await this.config.runHook('analytics', {
+      eventName: 'command',
+      payload: {
+        command: 'functions:build'
+      }
+    })
 
-    this.log(`${NETLIFYDEVLOG} Building functions`);
-    zipFunctions(src, dst, { skipGo: true });
-    this.log(`${NETLIFYDEVLOG} Functions built to `, dst);
+    fs.mkdirSync(dst, { recursive: true })
+
+    this.log(`${NETLIFYDEVLOG} Building functions`)
+    zipFunctions(src, dst, { skipGo: true })
+    this.log(`${NETLIFYDEVLOG} Functions built to `, dst)
   }
 }
 
 FunctionsBuildCommand.description = `build functions locally
-`;
-FunctionsBuildCommand.aliases = ["function:build"];
+`
+FunctionsBuildCommand.aliases = ['function:build']
 FunctionsBuildCommand.flags = {
   functions: flags.string({
-    char: "f",
-    description: "Specify a functions folder to build to"
+    char: 'f',
+    description: 'Specify a functions folder to build to'
   }),
   src: flags.string({
-    char: "s",
-    description: "Specify the source folder for the functions"
+    char: 's',
+    description: 'Specify the source folder for the functions'
   })
-};
+}
 
-module.exports = FunctionsBuildCommand;
+module.exports = FunctionsBuildCommand

@@ -15,6 +15,13 @@ class SitesWatchCommand extends Command {
     console.time('Deploy time')
     await cli.wait(1000)
 
+    await this.config.runHook('analytics', {
+      eventName: 'command',
+      payload: {
+        command: 'watch',
+      },
+    });
+
     // Get latest commit and look for that
     // git rev-parse HEAD
 

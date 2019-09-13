@@ -25,4 +25,4 @@ You do NOT have to include this information if this is a FEATURE REQUEST
 **- What is the expected behavior?**
 
 **- Local Environment Information**
-Paste the results of `netlify status --info` here
+Paste the results of `netlify status --verbose` here

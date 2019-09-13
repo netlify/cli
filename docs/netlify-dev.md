@@ -3,7 +3,7 @@
 <div align="center">
   <h3>Watch the introduction (24 minutes)</h3>
   <a href="https://youtu.be/RL_gtVZ_79Q?t=812">
-    <img src="http://i3.ytimg.com/vi/RL_gtVZ_79Q/hqdefault.jpg" height=200 alt="link to netlify dev talk" />
+    <img src="https://i3.ytimg.com/vi/RL_gtVZ_79Q/hqdefault.jpg" height="200" alt="link to netlify dev talk" />
   </a>
 </div>
 
@@ -113,6 +113,7 @@ Netlify Dev is meant to work with zero config for the majority of users, by usin
 [dev]
   command = "yarn start" # Command to start your dev server
   port = 3000 # Port that the dev server will be listening on
+  functionsPort = 34567 # port for functions server
   publish = "dist" # If you use a _redirect file, provide the path to your static content folder
 ```
 
@@ -128,6 +129,7 @@ Netlify Dev will attempt to detect the SSG or build command that you are using, 
 [dev]
   command = "yarn start" # Command to start your dev server
   port = 3000 # Port that the dev server will be listening on
+  functionsPort = 34567 # port for functions server
   publish = "dist" # If you use a _redirect file, provide the path to your static content folder
 ```
 

@@ -14,6 +14,13 @@ Run \`netlify link\` to connect to this folder to a site`)
       return false
     }
 
+    await this.config.runHook('analytics', {
+      eventName: 'command',
+      payload: {
+        command: "open:admin",
+      },
+    });
+
     let siteData
     try {
       siteData = await api.getSite({ siteId })

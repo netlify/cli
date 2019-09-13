@@ -60,6 +60,13 @@ class AddonsConfigCommand extends Command {
       })
     }
 
+    await this.config.runHook('analytics', {
+      eventName: 'command',
+      payload: {
+        command: "addons:config",
+      },
+    });
+
     if (hasConfig) {
       const required = requiredConfigValues(manifest.config)
       const missingValues = missingConfigValues(required, rawFlags)
@@ -197,7 +204,5 @@ AddonsConfigCommand.aliases = ['addon:config']
 AddonsConfigCommand.description = `Configure add-on settings`
 // allow for any flags. Handy for variadic configuration options
 AddonsConfigCommand.strict = false
-
-AddonsConfigCommand.hidden = true
 
 module.exports = AddonsConfigCommand

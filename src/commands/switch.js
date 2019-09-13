@@ -9,6 +9,13 @@ class SwitchCommand extends Command {
     const availableUsersChoices = Object.values(this.netlify.globalConfig.get('users')).reduce(
       (prev, current) => Object.assign(prev, { [current.id]: current.name ? `${current.name} (${current.email})` : current.email }), {})
 
+    await this.config.runHook('analytics', {
+      eventName: 'command',
+      payload: {
+        command: 'switch',
+      },
+    });
+
     const { accountSwitchChoice } = await inquirer.prompt([
       {
         type: 'list',

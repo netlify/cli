@@ -92,6 +92,7 @@ netlify deploy
 - `auth` (*option*) - Netlify auth token to deploy with
 - `site` (*option*) - A site ID to deploy to
 - `json` (*boolean*) - Output deployment data as JSON
+- `timeout` (*option*) - Timeout to wait for deployment to finish
 
 **Examples**
 

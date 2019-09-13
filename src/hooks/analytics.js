@@ -1,6 +1,6 @@
+const { track } = require("@netlify/cli-utils/src/utils/telemetry");
+
 const hook = async function (options) {
-  // code to post options.id to analytics server
-  // console.log(options)
-  console.log('run analytics hook')
+  track(options.eventName, options.payload)
 }
 module.exports = hook

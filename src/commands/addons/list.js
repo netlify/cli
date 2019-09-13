@@ -32,6 +32,13 @@ class AddonsListCommand extends Command {
       return false
     }
 
+    await this.config.runHook('analytics', {
+      eventName: 'command',
+      payload: {
+        command: "addons:list",
+      },
+    });
+
     const addonData = addons.map(addon => {
       return {
         namespace: addon.service_path.replace('/.netlify/', ''),
@@ -54,17 +61,12 @@ class AddonsListCommand extends Command {
   }
 }
 
-AddonsListCommand.description = `list current site add-ons
-...
-Add-ons are a way to extend the functionality of your Netlify site
-`
+AddonsListCommand.description = `List currently installed add-ons for site`
 AddonsListCommand.aliases = ['addon:list']
 AddonsListCommand.flags = {
   json: flags.boolean({
     description: 'Output add-on data as JSON'
   })
 }
-
-AddonsListCommand.hidden = true
 
 module.exports = AddonsListCommand

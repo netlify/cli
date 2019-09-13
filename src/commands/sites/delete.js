@@ -27,6 +27,14 @@ class SitesDeleteCommand extends Command {
       this.error(`Unable to process site`)
     }
 
+    await this.config.runHook('analytics', {
+      eventName: 'command',
+      payload: {
+        command: "sites:delete",
+        force: flags.force,
+      },
+    });
+
     const { force, f } = parseRawFlags(raw)
     const noForce = !force && !f
 

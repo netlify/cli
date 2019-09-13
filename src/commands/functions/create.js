@@ -36,9 +36,11 @@ class FunctionsCreateCommand extends Command {
     } else {
       await scaffoldFromTemplate.call(this, flags, args, functionsDir);
     }
-    track("command", {
-      command: "functions:create",
-      url: flags.url
+    await this.config.runHook('analytics', {
+      eventName: 'command',
+      payload: {
+        command: "functions:create",
+      },
     });
   }
 }
@@ -318,7 +320,7 @@ async function scaffoldFromTemplate(flags, args, functionsDir) {
     }
   } else if (chosentemplate === "report") {
     this.log(
-      `${NETLIFYDEVLOG} Open in browser: https://github.com/netlify/netlify-dev-plugin/issues/new`
+      `${NETLIFYDEVLOG} Open in browser: https://github.com/netlify/cli/issues/new`
     );
   } else {
     const {

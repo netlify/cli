@@ -1,39 +1,32 @@
-const axios = require("axios");
-const qs = require("qs");
+const axios = require("axios")
+const qs = require("qs")
 
-exports.handler = function(event, context, callback) {
+exports.handler = async function(event, context) {
   // apply our function to the queryStringParameters and assign it to a variable
-  const API_PARAMS = qs.stringify(event.queryStringParameters);
+  const API_PARAMS = qs.stringify(event.queryStringParameters)
   // Get env var values defined in our Netlify site UI
-  const { API_TOKEN, API_URL } = process.env;
-  // In this example, the API Key needs to be passed in the params with a key of key.
-  // We're assuming that the ApiParams var will contain the initial ?
-  const URL = `${API_URL}?${API_PARAMS}&key=${API_TOKEN}`;
+  
+  // TODO: customize your URL and API keys set in the Netlify Dashboard
+  // this is secret too, your frontend won't see this
+  const { API_SECRET = "shiba" } = process.env
+  const URL = `https://dog.ceo/api/breed/${API_SECRET}/images`
 
-  // Let's log some stuff we already have.
-  console.log("Injecting token to", API_URL);
-  console.log("logging event.....", event);
-  console.log("Constructed URL is ...", URL);
+  console.log("Constructed URL is ...", URL)
 
-  // Here's a function we'll use to define how our response will look like when we call callback
-  const pass = body => {
-    callback(null, {
+  try {
+    const { data } = await axios.get(URL)
+    // refer to axios docs for other methods if you need them
+    // for example if you want to POST data:
+    //    axios.post('/user', { firstName: 'Fred' })
+    return {
       statusCode: 200,
-      body: JSON.stringify(body)
-    });
-  };
-
-  // Perform the API call.
-  const get = () => {
-    axios
-      .get(URL)
-      .then(response => {
-        console.log(response.data);
-        pass(response.data);
-      })
-      .catch(err => pass(err));
-  };
-  if (event.httpMethod == "GET") {
-    get();
+      body: JSON.stringify(data),
+    }
+  } catch (error) {
+    const { status, statusText, headers, data } = error.response
+    return {
+      statusCode: error.response.status,
+      body: JSON.stringify({ status, statusText, headers, data }),
+    }
   }
-};
+}
