@@ -233,11 +233,11 @@ module.exports.createRewriter = function(config) {
                 match.to.replace(/https?:\/\/[^\/]+/, ''),
             })
             return handler(req, res, next)
-          } else {
-            req.url = match.to
-            console.log(`${NETLIFYDEVLOG} Rewrote URL to `, req.url)
-            return next()
           }
+
+          req.url = match.to
+          console.log(`${NETLIFYDEVLOG} Rewrote URL to `, req.url)
+          return next()
         }
         return next()
       }
