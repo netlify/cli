@@ -127,6 +127,7 @@ module.exports.serverSettings = async devConfig => {
       ); // if settings.command is empty, its bc no settings matched
     }
     if (devConfig.port) settings.port = devConfig.port
+    if (devConfig.targetPort) settings.proxyPort = devConfig.targetPort
     if (devConfig.functionsPort) settings.functionsPort = devConfig.functionsPort
     settings.dist = devConfig.publish || settings.dist; // dont loudassign if they dont need it
   }

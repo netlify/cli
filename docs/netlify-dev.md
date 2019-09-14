@@ -114,6 +114,7 @@ Netlify Dev is meant to work with zero config for the majority of users, by usin
   command = "yarn start" # Command to start your dev server
   port = 3000 # Port that the dev server will be listening on
   functionsPort = 34567 # port for functions server
+  targetPort = 3000 # Port of target app server
   publish = "dist" # If you use a _redirect file, provide the path to your static content folder
 ```
 
