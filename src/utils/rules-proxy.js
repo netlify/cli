@@ -186,18 +186,17 @@ module.exports.createRewriter = function(config) {
       )
       const cookies = cookie.parse(req.headers.cookie || '')
       const matchReq = {
-        cookies: cookies,
         scheme: reqUrl.protocol,
         host: reqUrl.hostname,
         path: reqUrl.pathname,
-        query: reqUrl.search,
-        getCookie: key => cookies[key] || '',
-        getHeader: name =>
-          ({
+        query: reqUrl.search.slice(1),
+        headers: Object.assign({},
+          {
             'x-language': cookies.nf_lang || getLanguage(req),
             'x-country': cookies.nf_country || getCountry(req),
-            ...req.headers,
-          }[name.toLowerCase()]),
+          },
+          req.headers),
+        cookieValues: cookies,
       }
       const match = matcher.match(matchReq)
 
@@ -235,7 +234,7 @@ module.exports.createRewriter = function(config) {
             })
             return handler(req, res, next)
           } else {
-            req.url = dest.pathname + dest.search
+            req.url = match.to
             console.log(`${NETLIFYDEVLOG} Rewrote URL to `, req.url)
             return next()
           }
