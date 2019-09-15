@@ -64,11 +64,9 @@ function initializeProxy(port) {
   })
 
   proxy.on('proxyRes', (proxyRes, req, res) => {
-    console.log(req.url)
     if (proxyRes.statusCode === 404) {
       if (req.alternativePaths && req.alternativePaths.length > 0) {
         req.url = req.alternativePaths.shift()
-        console.log('trying alternative route', req.url)
         return proxy.web(req, res, req.proxyOptions)
       }
       if (req.proxyOptions && req.proxyOptions.match) {
@@ -127,7 +125,6 @@ function initializeProxy(port) {
 
   const handlers = {
     web: (req, res, options) => {
-      console.log('WEB', req.url)
       req.proxyOptions = options
       req.alternativePaths = alternativePathsFor(req.url)
       req.headers['x-forwarded-for'] = req.connection.remoteAddress
