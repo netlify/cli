@@ -235,7 +235,7 @@ module.exports.createRewriter = function(config) {
             return handler(req, res, next)
           }
 
-          req.url = match.to
+          req.url = dest.pathname + dest.search
           console.log(`${NETLIFYDEVLOG} Rewrote URL to `, req.url)
           return next()
         }
