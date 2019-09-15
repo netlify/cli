@@ -112,15 +112,11 @@ function initializeProxy(port) {
 
           req.url = dest.pathname + dest.search
           console.log(`${NETLIFYDEVLOG} Rewrote URL to `, req.url)
-          return handlers.web(req, res, Object.assign({}, req.proxyOptions, { is404: true }))
+          return handlers.web(req, res, Object.assign({}, req.proxyOptions, { status: 404 }))
         }
       }
     }
-    if (req.proxyOptions.is404) {
-      res.writeHead(404, proxyRes.headers)
-    } else {
-      res.writeHead(proxyRes.statusCode, proxyRes.headers)
-    }
+    res.writeHead(req.proxyOptions.status || proxyRes.statusCode, proxyRes.headers)
     proxyRes.on('data', function(data) {
       res.write(data)
     })
