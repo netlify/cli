@@ -276,7 +276,7 @@ test('complicated _redirects file', t => {
 })
 
 test('long _redirects file', t => {
-  const source = fs.readFileSync('./test-files/redirects', {
+  const source = fs.readFileSync(__dirname + '/test-files/redirects', {
     encoding: 'utf-8',
   })
 
