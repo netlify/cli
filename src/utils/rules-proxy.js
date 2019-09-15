@@ -3,22 +3,9 @@ const fs = require('fs')
 const url = require('url')
 const redirector = require('netlify-redirector')
 const chokidar = require('chokidar')
-const proxy = require('http-proxy-middleware')
 const cookie = require('cookie')
 const redirectParser = require('./redirect-parser')
-const {
-  NETLIFYDEVLOG,
-  NETLIFYDEVERR,
-  NETLIFYDEVWARN,
-} = require('netlify-cli-logo')
-
-function isExternal(match) {
-  return match.to && match.to.match(/^https?:\/\//)
-}
-
-function isRedirect(match) {
-  return match.status && (match.status >= 300 && match.status <= 400)
-}
+const { NETLIFYDEVWARN, } = require('netlify-cli-logo')
 
 function parseFile(parser, name, data) {
   const result = parser(data)
@@ -163,20 +150,6 @@ module.exports.createRewriter = function(config) {
     })
   }
 
-  function notStatic(pathname) {
-    return alternativePathsFor(pathname)
-      .map(p => path.resolve(config.publicFolder, p))
-      .every(p => !fs.existsSync(p))
-  }
-
-  function render404() {
-    const maybe404Page = path.resolve(config.publicFolder, '404.html')
-    if (fs.existsSync(maybe404Page)) {
-      return fs.readFileSync(maybe404Page)
-    }
-    return 'Not Found'
-  }
-
   return function(req, res, next) {
     getMatcher().then(matcher => {
       const reqUrl = new url.URL(
@@ -199,48 +172,7 @@ module.exports.createRewriter = function(config) {
         cookieValues: cookies,
       }
       const match = matcher.match(matchReq)
-
-      if (match) {
-        if (match.force404) {
-          res.writeHead(404)
-          res.end(render404())
-          return
-        }
-
-        if (match.force || notStatic(reqUrl.pathname)) {
-          const dest = new url.URL(
-            match.to,
-            `${reqUrl.protocol}//${reqUrl.host}`
-          )
-          reqUrl.searchParams.forEach((v, k) => {
-            dest.searchParams.append(k, v)
-          })
-          if (isRedirect(match)) {
-            res.writeHead(match.status, {
-              Location: match.to,
-              'Cache-Control': 'no-cache',
-            })
-            res.end(`Redirecting to ${match.to}`)
-            return
-          }
-
-          if (isExternal(match)) {
-            console.log(`${NETLIFYDEVLOG} Proxying to `, match.to)
-            const handler = proxy({
-              target: `${dest.protocol}//${dest.host}`,
-              changeOrigin: true,
-              pathRewrite: (path, req) =>
-                match.to.replace(/https?:\/\/[^\/]+/, ''),
-            })
-            return handler(req, res, next)
-          }
-
-          req.url = dest.pathname + dest.search
-          console.log(`${NETLIFYDEVLOG} Rewrote URL to `, req.url)
-          return next()
-        }
-        return next()
-      }
+      if (match) return next(match)
 
       next()
     })
