@@ -184,19 +184,24 @@ module.exports.createRewriter = function(config) {
         `${req.protocol || (req.headers.scheme && req.headers.scheme + ':') || 'http:'}//${req.hostname ||
         req.headers['host']}`
       )
-      const cookies = cookie.parse(req.headers.cookie || '')
+      const cookieValues = cookie.parse(req.headers.cookie || '')
+      const headers = Object.assign({},
+        {
+          'x-language': cookieValues.nf_lang || getLanguage(req),
+          'x-country': cookieValues.nf_country || getCountry(req),
+        },
+        req.headers)
+
+      // Definition: https://github.com/netlify/libredirect/blob/e81bbeeff9f7c260a5fb74cad296ccc67a92325b/node/src/redirects.cpp#L28-L60
       const matchReq = {
         scheme: reqUrl.protocol,
         host: reqUrl.hostname,
         path: reqUrl.pathname,
         query: reqUrl.search.slice(1),
-        headers: Object.assign({},
-          {
-            'x-language': cookies.nf_lang || getLanguage(req),
-            'x-country': cookies.nf_country || getCountry(req),
-          },
-          req.headers),
-        cookieValues: cookies,
+        headers,
+        cookieValues,
+        getHeader: (name) => headers[name.toLowerCase()] || '',
+        getCookie: (key) => cookieValues[key] || '',
       }
       const match = matcher.match(matchReq)
 
