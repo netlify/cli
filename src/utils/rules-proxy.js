@@ -164,9 +164,9 @@ module.exports.createRewriter = function(config) {
   }
 
   function notStatic(pathname) {
-    return alternativePathsFor(pathname)
+    return !alternativePathsFor(pathname)
       .map(p => path.resolve(config.publicFolder, p))
-      .every(p => !fs.existsSync(p))
+      .some(p => fs.existsSync(p))
   }
 
   function render404() {
