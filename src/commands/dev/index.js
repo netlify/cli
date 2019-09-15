@@ -22,7 +22,7 @@ const {
 } = require('netlify-cli-logo')
 const boxen = require('boxen')
 const { createTunnel, connectTunnel } = require('../../utils/live-tunnel')
-const { createRewriter, alternativePathsFor } = require('../../utils/rules-proxy')
+const createRewriter  = require('../../utils/rules-proxy')
 
 function isFunction(settings, req) {
   return settings.functionsPort && req.url.match(/^\/.netlify\/functions\/.+/)
@@ -52,6 +52,29 @@ function render404(publicFolder) {
   const maybe404Page = path.resolve(publicFolder, '404.html')
   if (fs.existsSync(maybe404Page)) return fs.readFileSync(maybe404Page)
   return 'Not Found'
+}
+
+// Used as an optimization to avoid dual lookups for missing assets
+const assetExtensionRegExp = /\.(html?|png|jpg|js|css|svg|gif|ico|woff|woff2)$/
+
+function alternativePathsFor(url) {
+  const paths = []
+  if (url[url.length - 1] === '/') {
+    const end = url.length - 1
+    if (url !== '/') {
+      paths.push(url.slice(0, end) + '.html')
+      paths.push(url.slice(0, end) + '.htm')
+    }
+    paths.push(url + 'index.html')
+    paths.push(url + 'index.htm')
+  } else if (!url.match(assetExtensionRegExp)) {
+    paths.push(url + '.html')
+    paths.push(url + '.htm')
+    paths.push(url + '/index.html')
+    paths.push(url + '/index.htm')
+  }
+
+  return paths
 }
 
 function initializeProxy(port) {

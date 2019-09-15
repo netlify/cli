@@ -87,31 +87,7 @@ function getCountry(req) {
   return 'us'
 }
 
-// Used as an optimization to avoid dual lookups for missing assets
-const assetExtensionRegExp = /\.(html?|png|jpg|js|css|svg|gif|ico|woff|woff2)$/
-
-function alternativePathsFor(url) {
-  const paths = []
-  if (url[url.length - 1] === '/') {
-    const end = url.length - 1
-    if (url !== '/') {
-      paths.push(url.slice(0, end) + '.html')
-      paths.push(url.slice(0, end) + '.htm')
-    }
-    paths.push(url + 'index.html')
-    paths.push(url + 'index.htm')
-  } else if (!url.match(assetExtensionRegExp)) {
-    paths.push(url + '.html')
-    paths.push(url + '.htm')
-    paths.push(url + '/index.html')
-    paths.push(url + '/index.htm')
-  }
-
-  return paths
-}
-module.exports.alternativePathsFor = alternativePathsFor
-
-module.exports.createRewriter = function(config) {
+module.exports = function(config) {
   let matcher = null
   const projectDir = path.resolve(config.baseFolder || process.cwd())
 
