@@ -1,13 +1,10 @@
-const fs = require("fs");
 const express = require("express");
 const bodyParser = require("body-parser");
 const expressLogging = require("express-logging");
 const queryString = require("querystring");
-const path = require("path");
 const getPort = require("get-port");
 const chokidar = require("chokidar");
 const jwtDecode = require("jwt-decode");
-const chalk = require("chalk");
 const {
   NETLIFYDEVLOG,
   // NETLIFYDEVWARN,

@@ -27,7 +27,7 @@ const eventTriggeredFunctions = [
 class FunctionsInvokeCommand extends Command {
   async run() {
     let { flags, args } = this.parse(FunctionsInvokeCommand)
-    const { api, site, config } = this.netlify
+    const { config } = this.netlify
 
     const functionsDir =
       flags.functions ||

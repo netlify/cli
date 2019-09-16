@@ -10,7 +10,6 @@ const { createSiteAddon } = require("../../utils/addons");
 const fetch = require("node-fetch");
 const cp = require("child_process");
 const ora = require("ora");
-const { track } = require("@netlify/cli-utils/src/utils/telemetry");
 const chalk = require("chalk");
 const {
   // NETLIFYDEV,
