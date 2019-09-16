@@ -133,7 +133,7 @@ function initializeProxy(port) {
 
           req.url = dest.pathname + dest.search
           console.log(`${NETLIFYDEVLOG} Rewrote URL to `, req.url)
-          return handlers.web(req, res, Object.assign({}, req.proxyOptions, { status: 404 }))
+          return handlers.web(req, res, Object.assign({}, req.proxyOptions, { status: match.status } ))
         }
       }
     }
