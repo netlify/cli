@@ -1,8 +1,5 @@
 {
-  "plugins": [
-    "node",
-    "prettier"
-  ],
+  "plugins": ["node", "prettier"],
   "parserOptions": {
     "sourceType": "module",
     "ecmaFeatures": {

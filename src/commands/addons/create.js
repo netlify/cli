@@ -54,16 +54,16 @@ class AddonsCreateCommand extends Command {
     }
 
     const manifest = await getAddonManifest(addonName, accessToken)
-     const hasConfig = manifest.config && Object.keys(manifest.config).length
+    const hasConfig = manifest.config && Object.keys(manifest.config).length
 
     let configValues = rawFlags
 
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: "addons:create",
-      },
-    });
+        command: 'addons:create'
+      }
+    })
 
     if (hasConfig) {
       const required = requiredConfigValues(manifest.config)
@@ -90,17 +90,20 @@ class AddonsCreateCommand extends Command {
           return false
         }
 
-        await createSiteAddon({
-          addonName,
-          settings: {
-            siteId: siteId,
-            addon: addonName,
-            config: newConfig
+        await createSiteAddon(
+          {
+            addonName,
+            settings: {
+              siteId: siteId,
+              addon: addonName,
+              config: newConfig
+            },
+            accessToken,
+            siteData,
+            error: this.error
           },
-          accessToken,
-          siteData,
-          error: this.error
-        }, this.log)
+          this.log
+        )
         return false
       }
 
@@ -132,17 +135,20 @@ class AddonsCreateCommand extends Command {
       }
     }
 
-    await createSiteAddon({
-      addonName,
-      settings: {
-        siteId: siteId,
-        addon: addonName,
-        config: configValues
+    await createSiteAddon(
+      {
+        addonName,
+        settings: {
+          siteId: siteId,
+          addon: addonName,
+          config: configValues
+        },
+        accessToken,
+        siteData,
+        error: this.error
       },
-      accessToken,
-      siteData,
-      error: this.error
-    }, this.log)
+      this.log
+    )
   }
 }
 

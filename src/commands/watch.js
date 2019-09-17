@@ -18,9 +18,9 @@ class SitesWatchCommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: 'watch',
-      },
-    });
+        command: 'watch'
+      }
+    })
 
     // Get latest commit and look for that
     // git rev-parse HEAD

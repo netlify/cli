@@ -8,9 +8,9 @@ class SitesConfigCommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: "sites:config",
-      },
-    });
+        command: 'sites:config'
+      }
+    })
 
     // TODO handle repo URL updates
   }
@@ -25,7 +25,7 @@ SitesConfigCommand.flags = {
   name: flags.string({
     char: 'n',
     description: 'name to print'
-  }),
+  })
 }
 
 // TODO implement logic

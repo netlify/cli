@@ -154,8 +154,8 @@ function startDevServer(settings, log) {
     env: { ...settings.env, FORCE_COLOR: 'true' },
     stdio: settings.stdio || 'inherit'
   })
-  if (ps.stdout) ps.stdout.on('data', ((buff) => process.stdout.write(buff.toString('utf8'))))
-  if (ps.stderr) ps.stderr.on('data', ((buff) => process.stderr.write(buff.toString('utf8'))))
+  if (ps.stdout) ps.stdout.on('data', buff => process.stdout.write(buff.toString('utf8')))
+  if (ps.stderr) ps.stderr.on('data', buff => process.stderr.write(buff.toString('utf8')))
   ps.on('close', code => process.exit(code))
   ps.on('SIGINT', process.exit)
   ps.on('SIGTERM', process.exit)
@@ -199,7 +199,9 @@ class DevCommand extends Command {
         this.log(
           `${NETLIFYDEVWARN} Setup a netlify.toml file with a [dev] section to specify your dev server settings.`
         )
-        this.log(`${NETLIFYDEVWARN} See docs at: https://github.com/netlify/cli/blob/master/docs/netlify-dev.md#project-detection`)
+        this.log(
+          `${NETLIFYDEVWARN} See docs at: https://github.com/netlify/cli/blob/master/docs/netlify-dev.md#project-detection`
+        )
         this.log(`${NETLIFYDEVWARN} Using current working directory for now...`)
         dist = process.cwd()
       }
