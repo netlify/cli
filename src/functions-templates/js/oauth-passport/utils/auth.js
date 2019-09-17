@@ -15,7 +15,7 @@ passport.use(
       clientID: GITHUB_CLIENT_ID,
       clientSecret: GITHUB_CLIENT_SECRET,
       callbackURL: `${BASE_URL}${ENDPOINT}/auth/github/callback`,
-      scope: ['user:email'],
+      scope: ['user:email']
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -28,8 +28,8 @@ passport.use(
       } catch (error) {
         return done(error)
       }
-    },
-  ),
+    }
+  )
 )
 
 passport.use(
@@ -39,7 +39,7 @@ passport.use(
         if (!req.cookies) throw new Error('Missing cookie-parser middleware')
         return req.cookies.jwt
       },
-      secretOrKey: SECRET,
+      secretOrKey: SECRET
     },
     async ({ user: { email } }, done) => {
       try {
@@ -51,6 +51,6 @@ passport.use(
       } catch (error) {
         return done(error)
       }
-    },
-  ),
+    }
+  )
 )

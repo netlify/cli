@@ -25,12 +25,12 @@ class InitCommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: "init",
+        command: 'init',
         manual: flags.manual,
         watch: flags.watch,
-        force: flags.force,
-      },
-    });
+        force: flags.force
+      }
+    })
 
     // const hasFlags = !isEmpty(flags)
     let siteData
@@ -214,9 +214,7 @@ git remote add origin https://github.com/YourUserName/RepoName.git
             this.warn(`GitHub error: ${e.status}`)
             if (e.code === 404) {
               this.error(
-                `Does the repository ${
-                  repo.repo_path
-                } exist and do you have the correct permissions to set up deploy keys?`
+                `Does the repository ${repo.repo_path} exist and do you have the correct permissions to set up deploy keys?`
               )
             } else {
               throw e

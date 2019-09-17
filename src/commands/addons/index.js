@@ -15,9 +15,9 @@ class AddonsCommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: "addons",
-      },
-    });
+        command: 'addons'
+      }
+    })
   }
 }
 

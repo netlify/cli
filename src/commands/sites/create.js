@@ -20,9 +20,9 @@ class SitesCreateCommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: "sites:create",
-      },
-    });
+        command: 'sites:create'
+      }
+    })
 
     const accounts = await api.listAccountsForUser()
 
@@ -47,7 +47,7 @@ class SitesCreateCommand extends Command {
     let site
 
     // Allow the user to reenter site name if selected one isn't available
-    const inputSiteName = async (name) => {
+    const inputSiteName = async name => {
       if (!userName) userName = await api.getCurrentUser()
 
       if (!name) {
@@ -61,7 +61,9 @@ class SitesCreateCommand extends Command {
         ]
         const siteSuggestion = sample(suggestions)
 
-        console.log(`Choose a unique site name (e.g. ${siteSuggestion}.netlify.com) or leave it blank for a random name. You can update the site name later.`)
+        console.log(
+          `Choose a unique site name (e.g. ${siteSuggestion}.netlify.com) or leave it blank for a random name. You can update the site name later.`
+        )
         const results = await inquirer.prompt([
           {
             type: 'input',
@@ -142,9 +144,7 @@ class SitesCreateCommand extends Command {
             this.warn(`Github error: ${e.status}`)
             if (e.code === 404) {
               this.error(
-                `Does the repository ${
-                  repo.repo_path
-                } exist and do you have the correct permissions to set up deploy keys?`
+                `Does the repository ${repo.repo_path} exist and do you have the correct permissions to set up deploy keys?`
               )
             } else {
               throw e
@@ -161,7 +161,33 @@ class SitesCreateCommand extends Command {
     }
 
     if (flags.json) {
-      this.logJson(pick(site, ["id","state","plan","name","custom_domain","domain_aliases","url","ssl_url","admin_url","screenshot_url","created_at","updated_at","user_id","ssl","force_ssl","managed_dns","deploy_url","account_name","account_slug","git_provider","deploy_hook","capabilities","id_domain"]))
+      this.logJson(
+        pick(site, [
+          'id',
+          'state',
+          'plan',
+          'name',
+          'custom_domain',
+          'domain_aliases',
+          'url',
+          'ssl_url',
+          'admin_url',
+          'screenshot_url',
+          'created_at',
+          'updated_at',
+          'user_id',
+          'ssl',
+          'force_ssl',
+          'managed_dns',
+          'deploy_url',
+          'account_name',
+          'account_slug',
+          'git_provider',
+          'deploy_hook',
+          'capabilities',
+          'id_domain'
+        ])
+      )
     }
 
     return site

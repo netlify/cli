@@ -1,17 +1,17 @@
-const axios = require("axios")
-const qs = require("qs")
+const axios = require('axios')
+const qs = require('qs')
 
 exports.handler = async function(event, context) {
   // apply our function to the queryStringParameters and assign it to a variable
   const API_PARAMS = qs.stringify(event.queryStringParameters)
   // Get env var values defined in our Netlify site UI
-  
+
   // TODO: customize your URL and API keys set in the Netlify Dashboard
   // this is secret too, your frontend won't see this
-  const { API_SECRET = "shiba" } = process.env
+  const { API_SECRET = 'shiba' } = process.env
   const URL = `https://dog.ceo/api/breed/${API_SECRET}/images`
 
-  console.log("Constructed URL is ...", URL)
+  console.log('Constructed URL is ...', URL)
 
   try {
     const { data } = await axios.get(URL)
@@ -20,13 +20,13 @@ exports.handler = async function(event, context) {
     //    axios.post('/user', { firstName: 'Fred' })
     return {
       statusCode: 200,
-      body: JSON.stringify(data),
+      body: JSON.stringify(data)
     }
   } catch (error) {
     const { status, statusText, headers, data } = error.response
     return {
       statusCode: error.response.status,
-      body: JSON.stringify({ status, statusText, headers, data }),
+      body: JSON.stringify({ status, statusText, headers, data })
     }
   }
 }

@@ -11,7 +11,7 @@ class StatusCommand extends Command {
     const { globalConfig, api, site } = this.netlify
     const { flags } = this.parse(StatusCommand)
     const current = globalConfig.get('userId')
-    const [ accessToken ] = this.getConfigToken()
+    const [accessToken] = this.getConfigToken()
 
     if (!accessToken) {
       this.log(`Not logged in. Please log in to see site status.`)
@@ -84,7 +84,7 @@ class StatusCommand extends Command {
         System: ['OS', 'CPU'],
         Binaries: ['Node', 'Yarn', 'npm'],
         Browsers: ['Chrome', 'Edge', 'Firefox', 'Safari'],
-        npmGlobalPackages: ['netlify'],
+        npmGlobalPackages: ['netlify']
       })
       this.log(data)
     }
@@ -97,21 +97,23 @@ class StatusCommand extends Command {
           'config-path': site.configPath,
           'admin-url': siteData.admin_url,
           'site-url': siteData.ssl_url || siteData.url,
-          'site-id': siteData.id,
-        },
+          'site-id': siteData.id
+        }
       })
     }
 
     this.log(`────────────────────┐
  Netlify Site Info  │
 ────────────────────┘`)
-    this.log(prettyjson.render({
-      'Current site': `${siteData.name}`,
-      'Netlify TOML': site.configPath,
-      'Admin URL': chalk.magentaBright(siteData.admin_url),
-      'Site URL': chalk.cyanBright(siteData.ssl_url || siteData.url),
-      'Site Id': chalk.yellowBright(siteData.id),
-    }))
+    this.log(
+      prettyjson.render({
+        'Current site': `${siteData.name}`,
+        'Netlify TOML': site.configPath,
+        'Admin URL': chalk.magentaBright(siteData.admin_url),
+        'Site URL': chalk.cyanBright(siteData.ssl_url || siteData.url),
+        'Site Id': chalk.yellowBright(siteData.id)
+      })
+    )
     this.log()
   }
 }

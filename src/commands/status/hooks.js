@@ -16,9 +16,9 @@ class StatusHooksCommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: "status:hooks",
-      },
-    });
+        command: 'status:hooks'
+      }
+    })
 
     let siteData
     try {

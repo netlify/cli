@@ -16,12 +16,12 @@ class OpenCommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: "open",
-      },
-    });
+        command: 'open'
+      }
+    })
 
     if (flags.site) {
-    	await OpenSiteCommand.run()
+      await OpenSiteCommand.run()
     }
     // Default open netlify admin
     await OpenAdminCommand.run()
@@ -39,11 +39,6 @@ OpenCommand.flags = {
 
 OpenCommand.description = `Open settings for the site linked to the current folder`
 
-OpenCommand.examples = [
-	'netlify open --site',
-	'netlify open --admin',
-	'netlify open:admin',
-	'netlify open:site'
-]
+OpenCommand.examples = ['netlify open --site', 'netlify open --admin', 'netlify open:admin', 'netlify open:site']
 
 module.exports = OpenCommand

@@ -30,10 +30,10 @@ class SitesDeleteCommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: "sites:delete",
-        force: flags.force,
-      },
-    });
+        command: 'sites:delete',
+        force: flags.force
+      }
+    })
 
     const { force, f } = parseRawFlags(raw)
     const noForce = !force && !f
@@ -59,7 +59,7 @@ class SitesDeleteCommand extends Command {
     }
 
     /* Validation logic if siteId passed in does not match current site ID */
-    if (noForce && (cwdSiteId && (cwdSiteId !== siteId))) {
+    if (noForce && (cwdSiteId && cwdSiteId !== siteId)) {
       this.log(`${chalk.redBright('Warning')}: The siteId supplied does not match the current working directory siteId`)
       this.log()
       this.log(`Supplied:       "${siteId}"`)
@@ -115,8 +115,6 @@ SitesDeleteCommand.flags = {
   })
 }
 
-SitesDeleteCommand.examples = [
-  'netlify site:delete 1234-3262-1211'
-]
+SitesDeleteCommand.examples = ['netlify site:delete 1234-3262-1211']
 
 module.exports = SitesDeleteCommand

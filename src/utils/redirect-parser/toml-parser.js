@@ -3,14 +3,7 @@ const Result = require('./result')
 const common = require('./common')
 
 function splatForwardRule(path, obj, dest) {
-  return (
-    path.match(/\/\*$/) &&
-    dest == null &&
-    obj.status &&
-    obj.status >= 200 &&
-    obj.status < 300 &&
-    obj.force
-  )
+  return path.match(/\/\*$/) && dest == null && obj.status && obj.status >= 200 && obj.status < 300 && obj.force
 }
 
 function isPlainObj(o) {
@@ -28,10 +21,7 @@ function fetch(obj, options) {
 
 function redirectMatch(obj) {
   const origin = fetch(obj, ['from', 'origin'])
-  const redirect =
-    origin && origin.match(common.FULL_URL_MATCHER)
-      ? common.parseFullOrigin(origin)
-      : { path: origin }
+  const redirect = origin && origin.match(common.FULL_URL_MATCHER) ? common.parseFullOrigin(origin) : { path: origin }
   if (redirect == null || (redirect.path == null && redirect.host == null)) {
     return null
   }
@@ -89,7 +79,7 @@ function parse(source) {
 
     if (common.isInvalidSource(redirect)) {
       result.addError(idx, JSON.stringify(obj), {
-        reason: 'Invalid /.netlify path in redirect source',
+        reason: 'Invalid /.netlify path in redirect source'
       })
       return
     }

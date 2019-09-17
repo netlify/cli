@@ -1,31 +1,23 @@
 /* eslint no-console: 0 */
-const { getAddons, createAddon } = require("netlify/src/addons");
+const { getAddons, createAddon } = require('netlify/src/addons')
 // const chalk = require("chalk");
 // const fetch = require("node-fetch");
 
 /** main section - shamelessly adapted from CLI. we can extract and dedupe later. */
 /** but we can DRY things up later. */
 // eslint-disable-next-line max-params
-module.exports.createSiteAddon = async function(
-  accessToken,
-  addonName,
-  siteId,
-  siteData,
-  log
-) {
-  const addons = await getAddons(siteId, accessToken);
-  if (typeof addons === "object" && addons.error) {
-    log("API Error", addons);
-    return false;
+module.exports.createSiteAddon = async function(accessToken, addonName, siteId, siteData, log) {
+  const addons = await getAddons(siteId, accessToken)
+  if (typeof addons === 'object' && addons.error) {
+    log('API Error', addons)
+    return false
   }
   // Filter down addons to current args.name
-  const currentAddon = addons.find(
-    addon => addon.service_path === `/.netlify/${addonName}`
-  );
-  const rawFlags = {};
+  const currentAddon = addons.find(addon => addon.service_path === `/.netlify/${addonName}`)
+  const rawFlags = {}
 
   if (currentAddon && currentAddon.id) {
-    log(`The "${addonName} add-on" already exists for ${siteData.name}`);
+    log(`The "${addonName} add-on" already exists for ${siteData.name}`)
     // // just exit
     // log()
     // const cmd = chalk.cyan(`\`netlify addons:config ${addonName}\``)
@@ -33,12 +25,12 @@ module.exports.createSiteAddon = async function(
     // const deleteCmd = chalk.cyan(`\`netlify addons:delete ${addonName}\``)
     // log(`- To remove this add-on run: ${deleteCmd}`)
     // log()
-    return false;
+    return false
   }
 
   // const manifest = await getAddonManifest(addonName, accessToken);
 
-  let configValues = rawFlags;
+  let configValues = rawFlags
   // if (manifest.config) {
   //   const required = requiredConfigValues(manifest.config);
   //   console.log(`Starting the setup for "${addonName} add-on"`);
@@ -120,30 +112,23 @@ module.exports.createSiteAddon = async function(
     },
     accessToken,
     siteData
-  });
-  return addonName; // we dont really use this right now but may be helpful to know that an addon installation was successful
-};
+  })
+  return addonName // we dont really use this right now but may be helpful to know that an addon installation was successful
+}
 
-async function actuallyCreateSiteAddon({
-  addonName,
-  settings,
-  accessToken,
-  siteData
-}) {
-  const addonResponse = await createAddon(settings, accessToken);
+async function actuallyCreateSiteAddon({ addonName, settings, accessToken, siteData }) {
+  const addonResponse = await createAddon(settings, accessToken)
 
   if (addonResponse.code === 404) {
-    console.log(
-      `No add-on "${addonName}" found. Please double check your add-on name and try again`
-    );
-    return false;
+    console.log(`No add-on "${addonName}" found. Please double check your add-on name and try again`)
+    return false
   }
-  console.log(`Add-on "${addonName}" created for ${siteData.name}`);
+  console.log(`Add-on "${addonName}" created for ${siteData.name}`)
   if (addonResponse.config && addonResponse.config.message) {
-    console.log();
-    console.log(`${addonResponse.config.message}`);
+    console.log()
+    console.log(`${addonResponse.config.message}`)
   }
-  return addonResponse;
+  return addonResponse
 }
 
 /** all the utils used in the main section */
