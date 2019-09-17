@@ -160,6 +160,17 @@
     "prettier": "^1.18.2",
     "strip-ansi": "^5.2.0"
   },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.js": [
+      "npm run test:prettier",
+      "git add"
+    ]
+  },
   "ava": {
     "files": [
       "src/**/*.test.js"
