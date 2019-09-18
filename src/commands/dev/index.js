@@ -172,7 +172,10 @@ async function startProxy(settings, addonUrls) {
 
   const proxy = initializeProxy(settings.proxyPort)
 
-  const rewriter = createRewriter({ publicFolder: settings.dist })
+  const rewriter = createRewriter({
+    publicFolder: settings.dist,
+    jwtRole: settings.jwtRolePath,
+  })
 
   const server = http.createServer(function(req, res) {
     if (isFunction(settings, req)) {
@@ -217,9 +220,9 @@ async function startProxy(settings, addonUrls) {
           if ((jwtValue.exp || 0) < Math.round((new Date().getTime() / 1000))) {
             console.warn(NETLIFYDEVWARN, 'Expired JWT provided in request', req.url)
           } else {
-            const presentedRoles = get(jwtValue, ['app_metadata','authorization','roles']) || []
+            const presentedRoles = get(jwtValue, settings.jwtRolePath) || []
             if (!Array.isArray(presentedRoles)) {
-              console.warn(NETLIFYDEVWARN, 'Invalid roles value provided in JWT app_metadata.authorization.roles', presentedRoles)
+              console.warn(NETLIFYDEVWARN, `Invalid roles value provided in JWT ${settings.jwtRolePath}`, presentedRoles)
               res.writeHead(400)
               res.end('Invalid JWT provided. Please see logs for more info.')
               return
@@ -324,7 +327,8 @@ class DevCommand extends Command {
         noCmd: true,
         port: 8888,
         proxyPort: await getPort({ port: 3999 }),
-        dist
+        dist,
+        jwtRolePath: config.dev && config.dev.jwtRolePath,
       }
     }
 

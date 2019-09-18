@@ -115,6 +115,7 @@ Netlify Dev is meant to work with zero config for the majority of users, by usin
   port = 3000 # Port that the dev server will be listening on
   functionsPort = 34567 # port for functions server
   publish = "dist" # If you use a _redirect file, provide the path to your static content folder
+  jwtRolePath = "app_metadata.authorization.roles" # Object path we should look for role values for JWT based redirects
 ```
 
 ## Project detection
