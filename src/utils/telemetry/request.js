@@ -7,7 +7,7 @@ const CLIENT_ID = 'NETLIFY_CLI'
 const TRACK_URL = 'https://cli.netlify.com/telemetry/track'
 const IDENTIFY_URL = 'https://cli.netlify.com/telemetry/identify'
 
-const API_URL = options.type && options.type === 'track' ? TRACK_URL : IDENTIFY_URL
+const API_URL = (options.type && options.type === 'track') ? TRACK_URL : IDENTIFY_URL
 
 // Make telemetry call
 fetch(API_URL, {
