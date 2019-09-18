@@ -9,6 +9,7 @@ const waitPort = require('wait-port')
 const getPort = require('get-port')
 const chokidar = require('chokidar')
 const proxyMiddleware = require('http-proxy-middleware')
+const isEmpty = require('lodash.isempty')
 const { serveFunctions } = require('../../utils/serve-functions')
 const { serverSettings } = require('../../utils/detect-server')
 const { detectFunctionsBuilder } = require('../../utils/detect-functions-builder')
@@ -106,6 +107,10 @@ function initializeProxy(port) {
         }
 
         if (match.force || notStatic(reqUrl.pathname, req.proxyOptions.publicFolder)) {
+          if (!isEmpty(match.proxyHeaders)) {
+            Object.entries(match.proxyHeaders).forEach(([k,v]) => req.headers[k] = v)
+          }
+
           const dest = new url.URL(
             match.to,
             `${reqUrl.protocol}//${reqUrl.host}`
@@ -133,7 +138,16 @@ function initializeProxy(port) {
 
           req.url = dest.pathname + dest.search
           console.log(`${NETLIFYDEVLOG} Rewrote URL to `, req.url)
-          return handlers.web(req, res, Object.assign({}, req.proxyOptions, { status: match.status } ))
+
+          if (isFunction({ functionsPort: req.proxyOptions.functionsPort }, req)) {
+            return proxy.web(req, res, { target: req.proxyOptions.functionsServer })
+          }
+          const addonUrl = addonUrl(req.proxyOptions.addonUrls, req)
+          if (addonUrl) {
+            return proxy.web(req, res, { target: addonUrl })
+          }
+
+          return proxy.web(req, res, Object.assign({}, req.proxyOptions, { status: match.status } ))
         }
       }
     }
@@ -181,6 +195,10 @@ async function startProxy(settings, addonUrls) {
     }
 
     rewriter(req, res, (match) => {
+      if (match && !isEmpty(match.proxyHeaders)) {
+        Object.entries(match.proxyHeaders).forEach(([k,v]) => req.headers[k] = v)
+      }
+
       if (isFunction(settings, req)) {
         return proxy.web(req, res, { target: functionsServer })
       }
@@ -189,7 +207,13 @@ async function startProxy(settings, addonUrls) {
         return proxy.web(req, res, { target: url })
       }
 
-      proxy.web(req, res, { target: `http://localhost:${settings.proxyPort}`, match, publicFolder: settings.dist })
+      proxy.web(req, res, {
+        target: `http://localhost:${settings.proxyPort}`,
+        match, publicFolder: settings.dist,
+        functionsServer,
+        functionsPort: settings.functionsPort,
+        addonUrls,
+      })
     })
   })
 
