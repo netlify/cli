@@ -1,3 +1,6 @@
+const url = require('url')
+const path = require('path')
+const fs = require('fs')
 const { flags } = require('@oclif/command')
 const execa = require('execa')
 const http = require('http')
@@ -5,6 +8,7 @@ const httpProxy = require('http-proxy')
 const waitPort = require('wait-port')
 const getPort = require('get-port')
 const chokidar = require('chokidar')
+const proxyMiddleware = require('http-proxy-middleware')
 const { serveFunctions } = require('../../utils/serve-functions')
 const { serverSettings } = require('../../utils/detect-server')
 const { detectFunctionsBuilder } = require('../../utils/detect-functions-builder')
@@ -18,7 +22,7 @@ const {
 } = require('netlify-cli-logo')
 const boxen = require('boxen')
 const { createTunnel, connectTunnel } = require('../../utils/live-tunnel')
-const { createRewriter, alternativePathsFor } = require('../../utils/rules-proxy')
+const createRewriter  = require('../../utils/rules-proxy')
 
 function isFunction(settings, req) {
   return settings.functionsPort && req.url.match(/^\/.netlify\/functions\/.+/)
@@ -30,21 +34,110 @@ function addonUrl(addonUrls, req) {
   return addonUrl ? `${addonUrl}${m[2]}` : null
 }
 
+function notStatic(pathname, publicFolder) {
+  return alternativePathsFor(pathname)
+    .map(p => path.resolve(publicFolder, p))
+    .every(p => !fs.existsSync(p))
+}
+
+function isExternal(match) {
+  return match.to && match.to.match(/^https?:\/\//)
+}
+
+function isRedirect(match) {
+  return match.status && (match.status >= 300 && match.status <= 400)
+}
+
+function render404(publicFolder) {
+  const maybe404Page = path.resolve(publicFolder, '404.html')
+  if (fs.existsSync(maybe404Page)) return fs.readFileSync(maybe404Page)
+  return 'Not Found'
+}
+
+// Used as an optimization to avoid dual lookups for missing assets
+const assetExtensionRegExp = /\.(html?|png|jpg|js|css|svg|gif|ico|woff|woff2)$/
+
+function alternativePathsFor(url) {
+  const paths = []
+  if (url[url.length - 1] === '/') {
+    const end = url.length - 1
+    if (url !== '/') {
+      paths.push(url.slice(0, end) + '.html')
+      paths.push(url.slice(0, end) + '.htm')
+    }
+    paths.push(url + 'index.html')
+    paths.push(url + 'index.htm')
+  } else if (!url.match(assetExtensionRegExp)) {
+    paths.push(url + '.html')
+    paths.push(url + '.htm')
+    paths.push(url + '/index.html')
+    paths.push(url + '/index.htm')
+  }
+
+  return paths
+}
+
 function initializeProxy(port) {
   const proxy = httpProxy.createProxyServer({
     selfHandleResponse: true,
     target: {
       host: 'localhost',
       port: port
-    }
+    },
   })
 
   proxy.on('proxyRes', (proxyRes, req, res) => {
-    if (proxyRes.statusCode === 404 && req.alternativePaths && req.alternativePaths.length > 0) {
-      req.url = req.alternativePaths.shift()
-      return proxy.web(req, res, req.proxyOptions)
+    if (proxyRes.statusCode === 404) {
+      if (req.alternativePaths && req.alternativePaths.length > 0) {
+        req.url = req.alternativePaths.shift()
+        return proxy.web(req, res, req.proxyOptions)
+      }
+      if (req.proxyOptions && req.proxyOptions.match) {
+        const match = req.proxyOptions.match
+        req.proxyOptions.match = null
+        const reqUrl = new url.URL(
+          req.url,
+          `${req.protocol || (req.headers.scheme && req.headers.scheme + ':') || 'http:'}//${req.hostname ||
+          req.headers['host']}`
+        )
+        if (match.force404) {
+          res.writeHead(404)
+          return render404(req.proxyOptions.publicFolder)
+        }
+
+        if (match.force || notStatic(reqUrl.pathname, req.proxyOptions.publicFolder)) {
+          const dest = new url.URL(
+            match.to,
+            `${reqUrl.protocol}//${reqUrl.host}`
+          )
+          reqUrl.searchParams.forEach((v, k) => dest.searchParams.append(k, v))
+          if (isRedirect(match)) {
+            res.writeHead(match.status, {
+              Location: match.to,
+              'Cache-Control': 'no-cache',
+            })
+            res.end(`Redirecting to ${match.to}`)
+            return
+          }
+
+          if (isExternal(match)) {
+            console.log(`${NETLIFYDEVLOG} Proxying to `, match.to)
+            const handler = proxyMiddleware({
+              target: `${dest.protocol}//${dest.host}`,
+              changeOrigin: true,
+              pathRewrite: (path, req) =>
+                match.to.replace(/https?:\/\/[^\/]+/, ''),
+            })
+            return handler(req, res, {})
+          }
+
+          req.url = dest.pathname + dest.search
+          console.log(`${NETLIFYDEVLOG} Rewrote URL to `, req.url)
+          return handlers.web(req, res, Object.assign({}, req.proxyOptions, { status: match.status } ))
+        }
+      }
     }
-    res.writeHead(proxyRes.statusCode, proxyRes.headers)
+    res.writeHead(req.proxyOptions.status || proxyRes.statusCode, proxyRes.headers)
     proxyRes.on('data', function(data) {
       res.write(data)
     })
@@ -53,7 +146,7 @@ function initializeProxy(port) {
     })
   })
 
-  return {
+  const handlers = {
     web: (req, res, options) => {
       req.proxyOptions = options
       req.alternativePaths = alternativePathsFor(req.url)
@@ -62,6 +155,8 @@ function initializeProxy(port) {
     },
     ws: (req, socket, head) => proxy.ws(req, socket, head)
   }
+
+  return handlers
 }
 
 async function startProxy(settings, addonUrls) {
@@ -85,7 +180,7 @@ async function startProxy(settings, addonUrls) {
       return proxy.web(req, res, { target: url })
     }
 
-    rewriter(req, res, () => {
+    rewriter(req, res, (match) => {
       if (isFunction(settings, req)) {
         return proxy.web(req, res, { target: functionsServer })
       }
@@ -94,7 +189,7 @@ async function startProxy(settings, addonUrls) {
         return proxy.web(req, res, { target: url })
       }
 
-      proxy.web(req, res, { target: `http://localhost:${settings.proxyPort}` })
+      proxy.web(req, res, { target: `http://localhost:${settings.proxyPort}`, match, publicFolder: settings.dist })
     })
   })
 
