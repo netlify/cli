@@ -9,11 +9,14 @@ const waitPort = require('wait-port')
 const getPort = require('get-port')
 const chokidar = require('chokidar')
 const proxyMiddleware = require('http-proxy-middleware')
+const cookie = require('cookie')
+const get = require('lodash.get')
 const { serveFunctions } = require('../../utils/serve-functions')
 const { serverSettings } = require('../../utils/detect-server')
 const { detectFunctionsBuilder } = require('../../utils/detect-functions-builder')
 const Command = require('@netlify/cli-utils')
 const chalk = require('chalk')
+const jwtDecode = require('jwt-decode')
 const {
   NETLIFYDEV,
   NETLIFYDEVLOG,
@@ -187,6 +190,47 @@ async function startProxy(settings, addonUrls) {
       url = addonUrl(addonUrls, req)
       if (url) {
         return proxy.web(req, res, { target: url })
+      }
+
+      if (match && match.exceptions && match.exceptions.JWT) {
+        // Some values of JWT can start with :, so, make sure to normalize them
+        const expectedRoles = match.exceptions.JWT.split(',').map(r => r.startsWith(':') ? r.slice(1) : r)
+
+        const cookieValues = cookie.parse(req.headers.cookie || '')
+        const token = cookieValues['nf_jwt']
+
+        // Serve not found by default
+        const originalURL = req.url
+        req.url = '/.netlify/non-existent-path'
+
+        if (token) {
+          let jwtValue = {}
+          try {
+            jwtValue = jwtDecode(token) || {}
+          } catch (err) {
+            console.warn(NETLIFYDEVWARN, 'Error while decoding JWT provided in request', err.message)
+            res.writeHead(400)
+            res.end('Invalid JWT provided. Please see logs for more info.')
+            return
+          }
+
+          if ((jwtValue.exp || 0) < Math.round((new Date().getTime() / 1000))) {
+            console.warn(NETLIFYDEVWARN, 'Expired JWT provided in request', req.url)
+          } else {
+            const presentedRoles = get(jwtValue, ['app_metadata','authorization','roles']) || []
+            if (!Array.isArray(presentedRoles)) {
+              console.warn(NETLIFYDEVWARN, 'Invalid roles key provided in JWT app_metadata.authorization.roles', presentedRoles)
+              res.writeHead(400)
+              res.end('Invalid JWT provided. Please see logs for more info.')
+              return
+            }
+
+            // Restore the URL if everything is correct
+            if(presentedRoles.some(pr => expectedRoles.includes(pr))) {
+              req.url = originalURL
+            }
+          }
+        }
       }
 
       proxy.web(req, res, { target: `http://localhost:${settings.proxyPort}`, match, publicFolder: settings.dist })
