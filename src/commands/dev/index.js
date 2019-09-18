@@ -18,6 +18,7 @@ const {
 } = require('netlify-cli-logo')
 const boxen = require('boxen')
 const { createTunnel, connectTunnel } = require('../../utils/live-tunnel')
+const { createRewriter, alternativePathsFor } = require('../../utils/rules-proxy')
 
 function isFunction(settings, req) {
   return settings.functionsPort && req.url.match(/^\/.netlify\/functions\/.+/)
@@ -27,29 +28,6 @@ function addonUrl(addonUrls, req) {
   const m = req.url.match(/^\/.netlify\/([^\/]+)(\/.*)/) // eslint-disable-line no-useless-escape
   const addonUrl = m && addonUrls[m[1]]
   return addonUrl ? `${addonUrl}${m[2]}` : null
-}
-
-// Used as an optimization to avoid dual lookups for missing assets
-const assetExtensionRegExp = /\.(html?|png|jpg|js|css|svg|gif|ico|woff|woff2)$/
-
-function alternativePathsFor(url) {
-  const paths = []
-  if (url[url.length - 1] === '/') {
-    const end = url.length - 1
-    if (url !== '/') {
-      paths.push(url.slice(0, end) + '.html')
-      paths.push(url.slice(0, end) + '.htm')
-    }
-    paths.push(url + 'index.html')
-    paths.push(url + 'index.htm')
-  } else if (!url.match(assetExtensionRegExp)) {
-    paths.push(url + '.html')
-    paths.push(url + '.htm')
-    paths.push(url + '/index.html')
-    paths.push(url + '/index.htm')
-  }
-
-  return paths
 }
 
 function initializeProxy(port) {
@@ -87,8 +65,6 @@ function initializeProxy(port) {
 }
 
 async function startProxy(settings, addonUrls) {
-  const rulesProxy = require('../../utils/rules-proxy')
-
   await waitPort({ port: settings.proxyPort })
   if (settings.functionsPort) {
     await waitPort({ port: settings.functionsPort })
@@ -98,7 +74,7 @@ async function startProxy(settings, addonUrls) {
 
   const proxy = initializeProxy(settings.proxyPort)
 
-  const rewriter = rulesProxy({ publicFolder: settings.dist })
+  const rewriter = createRewriter({ publicFolder: settings.dist })
 
   const server = http.createServer(function(req, res) {
     if (isFunction(settings, req)) {
