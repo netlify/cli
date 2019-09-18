@@ -219,7 +219,7 @@ async function startProxy(settings, addonUrls) {
           } else {
             const presentedRoles = get(jwtValue, ['app_metadata','authorization','roles']) || []
             if (!Array.isArray(presentedRoles)) {
-              console.warn(NETLIFYDEVWARN, 'Invalid roles key provided in JWT app_metadata.authorization.roles', presentedRoles)
+              console.warn(NETLIFYDEVWARN, 'Invalid roles value provided in JWT app_metadata.authorization.roles', presentedRoles)
               res.writeHead(400)
               res.end('Invalid JWT provided. Please see logs for more info.')
               return
