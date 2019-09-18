@@ -1,16 +1,16 @@
-const cookie = require("cookie");
+const cookie = require('cookie')
 
 exports.handler = async (event, context) => {
-  var hour = 3600000;
-  var twoWeeks = 14 * 24 * hour;
-  const myCookie = cookie.serialize("my_cookie", "lolHi", {
+  var hour = 3600000
+  var twoWeeks = 14 * 24 * hour
+  const myCookie = cookie.serialize('my_cookie', 'lolHi', {
     secure: true,
     httpOnly: true,
-    path: "/",
+    path: '/',
     maxAge: twoWeeks
-  });
+  })
 
-  const redirectUrl = "https://google.com";
+  const redirectUrl = 'https://google.com'
   // Do redirects via html
   const html = `
   <html lang="en">
@@ -27,15 +27,15 @@ exports.handler = async (event, context) => {
         window.location.href = ${JSON.stringify(redirectUrl)}
       }, 0)
     </script>
-  </html>`;
+  </html>`
 
   return {
     statusCode: 200,
     headers: {
-      "Set-Cookie": myCookie,
-      "Cache-Control": "no-cache",
-      "Content-Type": "text/html"
+      'Set-Cookie': myCookie,
+      'Cache-Control': 'no-cache',
+      'Content-Type': 'text/html'
     },
     body: html
-  };
-};
+  }
+}

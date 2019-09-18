@@ -15,9 +15,9 @@ class SitesListCommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: "sites:list",
-      },
-    });
+        command: 'sites:list'
+      }
+    })
 
     const sites = await api.listSites({ filter: 'all' })
     if (!flags.json) {

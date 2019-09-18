@@ -5,7 +5,7 @@ const chalk = require('chalk')
 class LoginCommand extends Command {
   async run() {
     const { flags } = this.parse(LoginCommand)
-    const [ accessToken, location ] = this.getConfigToken()
+    const [accessToken, location] = this.getConfigToken()
     if (accessToken && !flags.new) {
       this.log(`Already logged in ${msg(location)}`)
       this.log()
@@ -19,10 +19,10 @@ class LoginCommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: "login",
-        new: flags.new,
-      },
-    });
+        command: 'login',
+        new: flags.new
+      }
+    })
 
     await this.expensivelyAuthenticate()
 
@@ -31,7 +31,7 @@ class LoginCommand extends Command {
 }
 
 function msg(location) {
-  switch(location) {
+  switch (location) {
     case 'env':
       return 'via process.env.NETLIFY_AUTH_TOKEN set in your terminal session'
     case 'flag':
@@ -46,7 +46,7 @@ function msg(location) {
 LoginCommand.flags = {
   new: flags.boolean({
     description: 'Login to new Netlify account'
-  }),
+  })
 }
 LoginCommand.description = `Login to your Netlify account
 

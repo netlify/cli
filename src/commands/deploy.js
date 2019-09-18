@@ -25,12 +25,12 @@ class DeployCommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: "deploy",
+        command: 'deploy',
         open: flags.open,
         prod: flags.prod,
-        json: flags.json,
-      },
-    });
+        json: flags.json
+      }
+    })
 
     let siteId = flags.site || site.id
     let siteData
@@ -128,7 +128,9 @@ class DeployCommand extends Command {
         stat = fs.statSync(functionsFolder)
       } catch (e) {
         if (e.code === 'ENOENT') {
-          console.log(`Functions folder "${functionsFolder}" specified but it doesn't exist! Will proceed without deploying functions`)
+          console.log(
+            `Functions folder "${functionsFolder}" specified but it doesn't exist! Will proceed without deploying functions`
+          )
           functionsFolder = undefined
         }
         // Improve the message of permission errors
@@ -154,10 +156,10 @@ class DeployCommand extends Command {
       results = await api.deploy(siteId, deployFolder, {
         configPath: configPath,
         fnDir: functionsFolder,
-        statusCb: (flags.json || flags.silent) ? () => {} : deployProgressCb(),
+        statusCb: flags.json || flags.silent ? () => {} : deployProgressCb(),
         draft: !deployToProduction,
         message: flags.message,
-        deployTimeout: (flags.timeout * 1000) || 1.2e6,
+        deployTimeout: flags.timeout * 1000 || 1.2e6
       })
     } catch (e) {
       switch (true) {
@@ -213,7 +215,7 @@ class DeployCommand extends Command {
         site_id: results.deploy.site_id,
         deploy_id: results.deployId,
         deploy_url: deployUrl,
-        logs: logsUrl,
+        logs: logsUrl
       }
       if (deployToProduction) {
         jsonData.url = siteUrl
@@ -316,7 +318,7 @@ DeployCommand.examples = [
   'netlify deploy --prod',
   'netlify deploy --prod --open',
   'netlify deploy --message "A message with an $ENV_VAR"',
-  'netlify deploy --auth $NETLIFY_AUTH_TOKEN',
+  'netlify deploy --auth $NETLIFY_AUTH_TOKEN'
 ]
 
 DeployCommand.flags = {
@@ -357,7 +359,7 @@ DeployCommand.flags = {
   }),
   timeout: flags.integer({
     description: 'Timeout to wait for deployment to finish'
-  }),
+  })
 }
 
 function deployProgressCb() {

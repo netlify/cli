@@ -1,4 +1,3 @@
-
 // Checks for args or flags supplied to command
 function isEmptyCommand(flags, args) {
   if (!hasFlags(flags) && !hasArgs(args)) {

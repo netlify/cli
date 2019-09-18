@@ -15,9 +15,9 @@ class SitesCommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: "sites",
-      },
-    });
+        command: 'sites'
+      }
+    })
   }
 }
 

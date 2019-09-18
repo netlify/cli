@@ -63,9 +63,9 @@ class AddonsConfigCommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: "addons:config",
-      },
-    });
+        command: 'addons:config'
+      }
+    })
 
     if (hasConfig) {
       const required = requiredConfigValues(manifest.config)
@@ -75,19 +75,22 @@ class AddonsConfigCommand extends Command {
       if (rawFlags && !missingValues.length) {
         const newConfig = updateConfigValues(manifest.config, currentConfig, rawFlags)
 
-        await update({
-          addonName,
-          currentConfig,
-          newConfig,
-          settings: {
-            siteId: siteId,
-            instanceId: currentAddon.id,
-            addon: addonName,
-            config: newConfig
+        await update(
+          {
+            addonName,
+            currentConfig,
+            newConfig,
+            settings: {
+              siteId: siteId,
+              instanceId: currentAddon.id,
+              addon: addonName,
+              config: newConfig
+            },
+            accessToken,
+            error: this.error
           },
-          accessToken,
-          error: this.error
-        }, this.log)
+          this.log
+        )
         return false
       }
 
@@ -148,19 +151,22 @@ class AddonsConfigCommand extends Command {
         return false
       }
 
-      await update({
-        addonName,
-        currentConfig,
-        newConfig,
-        settings: {
-          siteId: siteId,
-          instanceId: currentAddon.id,
-          addon: addonName,
-          config: newConfig
+      await update(
+        {
+          addonName,
+          currentConfig,
+          newConfig,
+          settings: {
+            siteId: siteId,
+            instanceId: currentAddon.id,
+            addon: addonName,
+            config: newConfig
+          },
+          accessToken,
+          error: this.error
         },
-        accessToken,
-        error: this.error
-      }, this.log)
+        this.log
+      )
     }
   }
 }
