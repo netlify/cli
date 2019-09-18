@@ -3,18 +3,9 @@ const fs = require('fs')
 const url = require('url')
 const redirector = require('netlify-redirector')
 const chokidar = require('chokidar')
-const proxy = require('http-proxy-middleware')
 const cookie = require('cookie')
 const redirectParser = require('./redirect-parser')
-const { NETLIFYDEVLOG, NETLIFYDEVERR, NETLIFYDEVWARN } = require('netlify-cli-logo')
-
-function isExternal(match) {
-  return match.to && match.to.match(/^https?:\/\//)
-}
-
-function isRedirect(match) {
-  return match.status && (match.status >= 300 && match.status <= 400)
-}
+const { NETLIFYDEVWARN, } = require('netlify-cli-logo')
 
 function parseFile(parser, name, data) {
   const result = parser(data)
@@ -80,31 +71,7 @@ function getCountry(req) {
   return 'us'
 }
 
-// Used as an optimization to avoid dual lookups for missing assets
-const assetExtensionRegExp = /\.(html?|png|jpg|js|css|svg|gif|ico|woff|woff2)$/
-
-function alternativePathsFor(url) {
-  const paths = []
-  if (url[url.length - 1] === '/') {
-    const end = url.length - 1
-    if (url !== '/') {
-      paths.push(url.slice(0, end) + '.html')
-      paths.push(url.slice(0, end) + '.htm')
-    }
-    paths.push(url + 'index.html')
-    paths.push(url + 'index.htm')
-  } else if (!url.match(assetExtensionRegExp)) {
-    paths.push(url + '.html')
-    paths.push(url + '.htm')
-    paths.push(url + '/index.html')
-    paths.push(url + '/index.htm')
-  }
-
-  return paths
-}
-module.exports.alternativePathsFor = alternativePathsFor
-
-module.exports.createRewriter = function(config) {
+module.exports = function(config) {
   let matcher = null
   const projectDir = path.resolve(config.baseFolder || process.cwd())
 
@@ -147,20 +114,6 @@ module.exports.createRewriter = function(config) {
     })
   }
 
-  function notStatic(pathname) {
-    return !alternativePathsFor(pathname)
-      .map(p => path.resolve(config.publicFolder, p))
-      .some(p => fs.existsSync(p))
-  }
-
-  function render404() {
-    const maybe404Page = path.resolve(config.publicFolder, '404.html')
-    if (fs.existsSync(maybe404Page)) {
-      return fs.readFileSync(maybe404Page)
-    }
-    return 'Not Found'
-  }
-
   return function(req, res, next) {
     getMatcher().then(matcher => {
       const reqUrl = new url.URL(
@@ -168,60 +121,27 @@ module.exports.createRewriter = function(config) {
         `${req.protocol || (req.headers.scheme && req.headers.scheme + ':') || 'http:'}//${req.hostname ||
           req.headers['host']}`
       )
-      const cookies = cookie.parse(req.headers.cookie || '')
+      const cookieValues = cookie.parse(req.headers.cookie || '')
+      const headers = Object.assign({},
+        {
+          'x-language': cookieValues.nf_lang || getLanguage(req),
+          'x-country': cookieValues.nf_country || getCountry(req),
+        },
+        req.headers)
+
+      // Definition: https://github.com/netlify/libredirect/blob/e81bbeeff9f7c260a5fb74cad296ccc67a92325b/node/src/redirects.cpp#L28-L60
       const matchReq = {
-        cookies: cookies,
         scheme: reqUrl.protocol,
         host: reqUrl.hostname,
         path: reqUrl.pathname,
-        query: reqUrl.search,
-        getCookie: key => cookies[key] || '',
-        getHeader: name =>
-          ({
-            'x-language': cookies.nf_lang || getLanguage(req),
-            'x-country': cookies.nf_country || getCountry(req),
-            ...req.headers
-          }[name.toLowerCase()])
+        query: reqUrl.search.slice(1),
+        headers,
+        cookieValues,
+        getHeader: (name) => headers[name.toLowerCase()] || '',
+        getCookie: (key) => cookieValues[key] || '',
       }
       const match = matcher.match(matchReq)
-
-      if (match) {
-        if (match.force404) {
-          res.writeHead(404)
-          res.end(render404())
-          return
-        }
-
-        if (match.force || notStatic(reqUrl.pathname)) {
-          const dest = new url.URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
-          reqUrl.searchParams.forEach((v, k) => {
-            dest.searchParams.append(k, v)
-          })
-          if (isRedirect(match)) {
-            res.writeHead(match.status, {
-              Location: match.to,
-              'Cache-Control': 'no-cache'
-            })
-            res.end(`Redirecting to ${match.to}`)
-            return
-          }
-
-          if (isExternal(match)) {
-            console.log(`${NETLIFYDEVLOG} Proxying to `, match.to)
-            const handler = proxy({
-              target: `${dest.protocol}//${dest.host}`,
-              changeOrigin: true,
-              pathRewrite: (path, req) => match.to.replace(/https?:\/\/[^\/]+/, '')
-            })
-            return handler(req, res, next)
-          } else {
-            req.url = dest.pathname + dest.search
-            console.log(`${NETLIFYDEVLOG} Rewrote URL to `, req.url)
-            return next()
-          }
-        }
-        return next()
-      }
+      if (match) return next(match)
 
       next()
     })
