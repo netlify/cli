@@ -110,7 +110,7 @@ module.exports.serverSettings = async devConfig => {
     if (devConfig.functionsPort) settings.functionsPort = devConfig.functionsPort
     settings.dist = devConfig.publish || settings.dist // dont loudassign if they dont need it
 
-    settings.jwtRolePath = devConfig.jwtRolePath || 'app_metadata.authorization.roles'
+    if (devConfig.jwtRolePath) settings.jwtRolePath = devConfig.jwtRolePath
   }
   return settings
 }

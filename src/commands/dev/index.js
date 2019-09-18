@@ -331,6 +331,7 @@ class DevCommand extends Command {
         jwtRolePath: config.dev && config.dev.jwtRolePath,
       }
     }
+    if (!settings.jwtRolePath) settings.jwtRolePath = 'app_metadata.authorization.roles'
 
     // Reset port if not manually specified, to make it dynamic
     if (!(config.dev && config.dev.port) && !flags.port) {
