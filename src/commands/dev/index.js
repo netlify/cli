@@ -107,10 +107,6 @@ function initializeProxy(port) {
         }
 
         if (match.force || notStatic(reqUrl.pathname, req.proxyOptions.publicFolder)) {
-          if (!isEmpty(match.proxyHeaders)) {
-            Object.entries(match.proxyHeaders).forEach(([k,v]) => req.headers[k] = v)
-          }
-
           const dest = new url.URL(
             match.to,
             `${reqUrl.protocol}//${reqUrl.host}`
