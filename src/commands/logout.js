@@ -3,7 +3,7 @@ const { track } = require('../utils/telemetry')
 
 class LogoutCommand extends Command {
   async run() {
-    const [ accessToken, location ] = this.getConfigToken()
+    const [accessToken, location] = this.getConfigToken()
 
     if (!accessToken) {
       this.log(`Already logged out`)

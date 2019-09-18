@@ -13,7 +13,7 @@ class Result {
     this.errors.push({
       lineNum: idx + 1,
       line,
-      reason,
+      reason
     })
   }
 }

@@ -16,7 +16,7 @@ redirects = [
       { path: '/home', to: '/' },
       { path: '/admin/*', to: '/admin/:splat', status: 200, force: true },
       { path: '/index', to: '/', status: 302 },
-      { path: '/from', to: '/to', status: 302 },
+      { path: '/from', to: '/to', status: 302 }
     ],
     result.success
   )
@@ -40,8 +40,8 @@ test('redirects with parameter matches', t => {
         path: '/',
         to: '/about',
         params: { _escaped_fragment_: '/about' },
-        status: 301,
-      },
+        status: 301
+      }
     ],
     result.success
   )
@@ -61,8 +61,8 @@ redirects = [
         host: 'hello.bitballoon.com',
         scheme: 'http',
         path: '/*',
-        to: 'http://www.hello.com/:splat',
-      },
+        to: 'http://www.hello.com/:splat'
+      }
     ],
     result.success
   )
@@ -82,8 +82,8 @@ test('proxy instruction', t => {
         path: '/api/*',
         to: 'https://api.bitballoon.com/*',
         status: 200,
-        proxy: true,
-      },
+        proxy: true
+      }
     ],
     result.success
   )
@@ -104,8 +104,8 @@ test('headers on proxy rule', t => {
         to: 'https://api.bitballoon.com',
         status: 200,
         headers: { anything: 'something' },
-        proxy: true,
-      },
+        proxy: true
+      }
     ],
     result.success
   )
@@ -126,14 +126,14 @@ test('redirect country conditions', t => {
         path: '/',
         to: '/china',
         status: 302,
-        conditions: { Country: ['ch', 'tw'] },
+        conditions: { Country: ['ch', 'tw'] }
       },
       {
         path: '/',
         to: '/china',
         status: 302,
-        conditions: { Country: ['il'], Language: ['en'] },
-      },
+        conditions: { Country: ['il'], Language: ['en'] }
+      }
     ],
     result.success
   )
@@ -166,14 +166,14 @@ test('redirect role conditions', t => {
         path: '/admin/*',
         to: '/admin/:splat',
         status: 200,
-        conditions: { Role: ['admin'] },
+        conditions: { Role: ['admin'] }
       },
       {
         path: '/admin/*',
         to: '/admin/:splat',
         status: 200,
-        conditions: { Role: ['admin', 'member'] },
-      },
+        conditions: { Role: ['admin', 'member'] }
+      }
     ],
     result.success
   )

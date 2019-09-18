@@ -2,7 +2,7 @@
  * Utility to validating analytic event names for clean data
  */
 
- module.exports = function isValidEventName(eventName, config) {
+module.exports = function isValidEventName(eventName, config) {
   const validProject = [config.projectName] || []
   const validObjects = config.objects || []
   const matches = eventName.match(/([a-zA-Z]*):([a-zA-Z]*)_([a-zA-Z]*$)/)
@@ -28,20 +28,20 @@
     return formattingWarning(eventName, error)
   }
   return true
- }
+}
 
 function containsSeparators(eventName) {
- const underscores = (eventName.match(/_/g) || []).length
- if (underscores !== 1) {
-   console.log(`Event name must have single underscore. "${eventName}" contains ${underscores}`) // eslint-disable-line
-   return false
- }
- const colons = (eventName.match(/:/g) || []).length
- if (colons !== 1) {
-   console.log(`Event name must have single colon. "${eventName}" contains ${colons}`) // eslint-disable-line
-   return false
- }
- return true
+  const underscores = (eventName.match(/_/g) || []).length
+  if (underscores !== 1) {
+    console.log(`Event name must have single underscore. "${eventName}" contains ${underscores}`) // eslint-disable-line
+    return false
+  }
+  const colons = (eventName.match(/:/g) || []).length
+  if (colons !== 1) {
+    console.log(`Event name must have single colon. "${eventName}" contains ${colons}`) // eslint-disable-line
+    return false
+  }
+  return true
 }
 
 function formattingWarning(eventName, errorMsg) {

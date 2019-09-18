@@ -15,14 +15,14 @@ class APICommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: "api",
-      },
-    });
+        command: 'api'
+      }
+    })
 
     if (isEmptyCommand(flags, args) || flags.list) {
       const table = new AsciiTable(`Netlify API Methods`)
       table.setHeading('API Method', 'Docs Link')
-      methods.forEach((method) => {
+      methods.forEach(method => {
         const { operationId } = method
         table.addRow(operationId, `https://open-api.netlify.com/#/default/${operationId}`)
       })
@@ -42,7 +42,7 @@ class APICommand extends Command {
     }
 
     if (flags.data) {
-      const payload = (typeof flags.data === 'string') ? JSON.parse(flags.data) : flags.data
+      const payload = typeof flags.data === 'string' ? JSON.parse(flags.data) : flags.data
       try {
         const apiResponse = await api[apiMethod](payload)
         this.log(JSON.stringify(apiResponse, null, 2))
@@ -65,10 +65,7 @@ APICommand.args = [
   }
 ]
 
-APICommand.examples = [
-  'netlify api --list',
-  "netlify api getSite --data '{ \"site_id\": \"123456\"}'",
-]
+APICommand.examples = ['netlify api --list', 'netlify api getSite --data \'{ "site_id": "123456"}\'']
 
 APICommand.flags = {
   data: oclif.flags.string({
@@ -77,7 +74,7 @@ APICommand.flags = {
   }),
   list: oclif.flags.boolean({
     description: 'List out available API methods'
-  }),
+  })
 }
 
 APICommand.strict = false

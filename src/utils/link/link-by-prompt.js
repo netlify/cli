@@ -58,7 +58,9 @@ module.exports = async function linkPrompts(context) {
       const sites = await api.listSites({ filter: 'all' })
 
       if (isEmpty(sites)) {
-        context.error(new Error(`You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`))
+        context.error(
+          new Error(`You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
+        )
       }
 
       const matchingSites = sites.filter(s => {
@@ -92,9 +94,9 @@ Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
             type: 'list',
             name: 'selectedSite',
             message: 'Which site do you want to link?',
-            choices: matchingSites.map(site => ({ 
-              name: `${site.name} - ${site.ssl_url}`, 
-              value: site 
+            choices: matchingSites.map(site => ({
+              name: `${site.name} - ${site.ssl_url}`,
+              value: site
             }))
           }
         ])

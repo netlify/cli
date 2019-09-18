@@ -27,8 +27,8 @@ async function getGitHubToken(opts) {
         type: 'input',
         name: 'otp',
         message: 'Your GitHub OTP/2FA Code:',
-        filter: input => input.trim(),
-      },
+        filter: input => input.trim()
+      }
     ])
     return otp
   }
@@ -41,28 +41,32 @@ async function getGitHubToken(opts) {
     {
       type: 'list',
       name: 'initChoice',
-      message: 'Netlify CLI needs access to your GitHub account to configure Webhooks and Deploy Keys. ' +
+      message:
+        'Netlify CLI needs access to your GitHub account to configure Webhooks and Deploy Keys. ' +
         'What would you like to do?',
-      choices: authChoices,
-    },
+      choices: authChoices
+    }
   ])
 
   if (initChoice === authChoiceNetlify) {
     const port = await getPort({ port: 3000 })
     let deferredResolve
     let deferredReject
-    const deferredPromise = new Promise(function (resolve, reject) {
+    const deferredPromise = new Promise(function(resolve, reject) {
       deferredResolve = resolve
       deferredReject = reject
     })
 
-    const server = http.createServer(function (req, res) {
+    const server = http.createServer(function(req, res) {
       const parameters = querystring.parse(req.url.slice(req.url.indexOf('?') + 1))
       if (parameters.token) {
         deferredResolve(parameters)
-        res.end("<html><head><script>if(history.replaceState){history.replaceState({},'','/')}</script><style>html{font-family:sans-serif;background:#0e1e25}body{overflow:hidden;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;width:100vw;}h3{margin:0}.card{position:relative;display:flex;flex-direction:column;width:75%;max-width:364px;padding:24px;background:white;color:rgb(14,30,37);border-radius:8px;box-shadow:0 2px 4px 0 rgba(14,30,37,.16);}</style></head>" +
-          "<body><div class=card><h3>Logged In</h3><p>You're now logged into Netlify CLI with your " +
-          parameters.provider + " credentials. Please close this window.</p></div>")
+        res.end(
+          "<html><head><script>if(history.replaceState){history.replaceState({},'','/')}</script><style>html{font-family:sans-serif;background:#0e1e25}body{overflow:hidden;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;width:100vw;}h3{margin:0}.card{position:relative;display:flex;flex-direction:column;width:75%;max-width:364px;padding:24px;background:white;color:rgb(14,30,37);border-radius:8px;box-shadow:0 2px 4px 0 rgba(14,30,37,.16);}</style></head>" +
+            "<body><div class=card><h3>Logged In</h3><p>You're now logged into Netlify CLI with your " +
+            parameters.provider +
+            ' credentials. Please close this window.</p></div>'
+        )
         server.close()
         return
       }
@@ -71,22 +75,26 @@ async function getGitHubToken(opts) {
       deferredReject(new Error('Got invalid parameters for CLI login'))
     })
 
-    await new Promise(function (resolve, reject) {
+    await new Promise(function(resolve, reject) {
       server.on('error', reject)
       server.listen(port, resolve)
     })
 
     const webUI = process.env.NETLIFY_WEB_UI || 'https://app.netlify.com'
-    const url = webUI + '/cli?' + querystring.encode({
-      host: 'http://localhost:' + port,
-      provider: 'github',
-    })
+    const url =
+      webUI +
+      '/cli?' +
+      querystring.encode({
+        host: 'http://localhost:' + port,
+        provider: 'github'
+      })
 
     try {
       await open(url)
     } catch (err) {
-      console.log('Netlify CLI could not open the browser for you.' +
-        ' Please visit this URL in a browser on this device: ' + url)
+      console.log(
+        'Netlify CLI could not open the browser for you.' + ' Please visit this URL in a browser on this device: ' + url
+      )
     }
 
     return await deferredPromise
@@ -96,17 +104,16 @@ async function getGitHubToken(opts) {
         type: 'input',
         name: 'username',
         message: 'Your GitHub username:',
-        filter: input => input.trim(),
+        filter: input => input.trim()
       },
       {
         type: 'password',
         name: 'password',
         message: 'Your GitHub password:',
         mask: '*',
-        filter: input => input.trim(),
-      },
+        filter: input => input.trim()
+      }
     ])
-
 
     // configure basic auth
     const octokit = new Octokit({
@@ -115,8 +122,8 @@ async function getGitHubToken(opts) {
         password,
         async on2fa() {
           return promptForOTP()
-        },
-      },
+        }
+      }
     })
 
     let response = await octokit.oauthAuthorizations.createAuthorization({
@@ -124,8 +131,8 @@ async function getGitHubToken(opts) {
       note_url: 'https://cli.netlify.com/',
       scopes: opts.scopes,
       headers: {
-        'User-Agent': opts.userAgent,
-      },
+        'User-Agent': opts.userAgent
+      }
     })
 
     if (get(response, 'data.token')) {

@@ -7,7 +7,7 @@ const writeFile = promisify(fs.writeFile)
 
 function fileExists(filePath) {
   return new Promise((resolve, reject) => {
-    fs.access(filePath, fs.F_OK, (err) => {
+    fs.access(filePath, fs.F_OK, err => {
       if (err) return resolve(false)
       return resolve(true)
     })
@@ -42,7 +42,7 @@ function parser(input, fn = line => line) {
 }
 
 function stringify(state) {
-  return parseIgnore.stringify(state.sections, (section) => {
+  return parseIgnore.stringify(state.sections, section => {
     if (!section.patterns.length) {
       return ''
     }
@@ -54,7 +54,7 @@ function stringify(state) {
 function parse(input, fn) {
   const state = parser(input, fn)
 
-  state.concat = (i) => {
+  state.concat = i => {
     const newState = parser(i, fn)
 
     for (let s2 in newState.sections) {
@@ -88,7 +88,7 @@ async function ensureNetlifyIgnore(dir) {
   const ignoreContent = '# Local Netlify folder\n.netlify'
 
   /* No .gitignore file. Create one and ignore .netlify folder */
-  if (!await hasGitIgnore(dir)) {
+  if (!(await hasGitIgnore(dir))) {
     await writeFile(gitIgnorePath, ignoreContent, 'utf8')
     return false
   }

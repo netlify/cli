@@ -1,26 +1,23 @@
 /* Express App */
-const express = require("express");
-const cors = require("cors");
-const morgan = require("morgan");
-const bodyParser = require("body-parser");
-const compression = require("compression");
+const express = require('express')
+const cors = require('cors')
+const morgan = require('morgan')
+const bodyParser = require('body-parser')
+const compression = require('compression')
 
 /* My express App */
 module.exports = function expressApp(functionName) {
-  const app = express();
-  const router = express.Router();
+  const app = express()
+  const router = express.Router()
 
   // gzip responses
-  router.use(compression());
+  router.use(compression())
 
   // Set router base path for local dev
-  const routerBasePath =
-    process.env.NODE_ENV === "dev"
-      ? `/${functionName}`
-      : `/.netlify/functions/${functionName}/`;
+  const routerBasePath = process.env.NODE_ENV === 'dev' ? `/${functionName}` : `/.netlify/functions/${functionName}/`
 
   /* define routes */
-  router.get("/", (req, res) => {
+  router.get('/', (req, res) => {
     const html = `
     <html>
       <head>
@@ -64,55 +61,55 @@ module.exports = function expressApp(functionName) {
         </div>
       </body>
     </html>
-  `;
-    res.send(html);
-  });
+  `
+    res.send(html)
+  })
 
-  router.get("/users", (req, res) => {
+  router.get('/users', (req, res) => {
     res.json({
       users: [
         {
-          name: "steve"
+          name: 'steve'
         },
         {
-          name: "joe"
+          name: 'joe'
         }
       ]
-    });
-  });
+    })
+  })
 
-  router.get("/hello/", function(req, res) {
-    res.send("hello world");
-  });
+  router.get('/hello/', function(req, res) {
+    res.send('hello world')
+  })
 
   // Attach logger
-  app.use(morgan(customLogger));
+  app.use(morgan(customLogger))
 
   // Setup routes
-  app.use(routerBasePath, router);
+  app.use(routerBasePath, router)
 
   // Apply express middlewares
-  router.use(cors());
-  router.use(bodyParser.json());
-  router.use(bodyParser.urlencoded({ extended: true }));
+  router.use(cors())
+  router.use(bodyParser.json())
+  router.use(bodyParser.urlencoded({ extended: true }))
 
-  return app;
-};
+  return app
+}
 
 function customLogger(tokens, req, res) {
   const log = [
     tokens.method(req, res),
     tokens.url(req, res),
     tokens.status(req, res),
-    tokens.res(req, res, "content-length"),
-    "-",
-    tokens["response-time"](req, res),
-    "ms"
-  ].join(" ");
+    tokens.res(req, res, 'content-length'),
+    '-',
+    tokens['response-time'](req, res),
+    'ms'
+  ].join(' ')
 
-  if (process.env.NODE_ENV !== "dev") {
+  if (process.env.NODE_ENV !== 'dev') {
     // Log only in AWS context to get back function logs
-    console.log(log);
+    console.log(log)
   }
-  return log;
+  return log
 }

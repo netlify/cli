@@ -35,9 +35,9 @@ class AddonsListCommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: "addons:list",
-      },
-    });
+        command: 'addons:list'
+      }
+    })
 
     const addonData = addons.map(addon => {
       return {

@@ -8,7 +8,6 @@ async function getRepoData() {
   const cwd = process.cwd()
   let repo = {}
   try {
-
     const remoteUrl = await gitRemoteOriginUrl()
     const gitDirectory = findUp.sync(['.git'], { cwd: cwd })
     const baseGitPath = path.dirname(gitDirectory)
@@ -35,7 +34,7 @@ async function getRepoData() {
       repo_path: remoteData.path,
       repo_branch: repoData.branch,
       allowed_branches: [repoData.branch],
-      host: remoteData.host,
+      host: remoteData.host
     }
 
     switch (remoteData.host) {

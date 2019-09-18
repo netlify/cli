@@ -40,9 +40,9 @@ class AddonsAuthCommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: "addons:auth",
-      },
-    });
+        command: 'addons:auth'
+      }
+    })
 
     this.log()
     this.log(`Opening ${addonName} add-on admin URL:`)
