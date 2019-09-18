@@ -24,7 +24,7 @@ class APICommand extends Command {
       table.setHeading('API Method', 'Docs Link')
       methods.forEach(method => {
         const { operationId } = method
-        table.addRow(operationId, `https://open-api.netlify.com/#/default/${operationId}`)
+        table.addRow(operationId, `https://open-api.netlify.com/#/operation/${operationId}`)
       })
       this.log(table.toString())
       this.log()

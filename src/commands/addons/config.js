@@ -39,7 +39,7 @@ class AddonsConfigCommand extends Command {
       return false
     }
 
-    // TODO update getAddonManifest to https://open-api.netlify.com/#/default/showServiceManifest
+    // TODO update getAddonManifest to https://open-api.netlify.com/#/operation/showServiceManifest
     const manifest = await getAddonManifest(addonName, accessToken)
     const hasConfig = manifest.config && Object.keys(manifest.config).length
     // Parse flags
@@ -186,7 +186,7 @@ async function update({ addonName, currentConfig, newConfig, settings, accessTok
 
   let updateAddonResponse
   try {
-    // TODO update updateAddon to https://open-api.netlify.com/#/default/updateServiceInstance
+    // TODO update updateAddon to https://open-api.netlify.com/#/operation/updateServiceInstance
     updateAddonResponse = await updateAddon(settings, accessToken)
   } catch (e) {
     error(e.message)
