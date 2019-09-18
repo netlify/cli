@@ -62,6 +62,8 @@
   },
   "dependencies": {
     "@iarna/toml": "^2.2.3",
+    "@netlify/build": "0.0.22",
+    "@netlify/cli-utils": "^1.0.7",
     "@netlify/zip-it-and-ship-it": "^0.3.1",
     "@oclif/command": "^1.5.18",
     "@oclif/config": "^1.13.2",
