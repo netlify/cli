@@ -146,7 +146,7 @@ function initializeProxy(port) {
             return proxy.web(req, res, { target: addonUrl })
           }
 
-          return proxy.web(req, res, Object.assign({}, req.proxyOptions, { status: match.status } ))
+          return handlers.web(req, res, Object.assign({}, req.proxyOptions, { status: match.status } ))
         }
       }
     }
