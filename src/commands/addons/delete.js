@@ -63,7 +63,7 @@ class AddonsDeleteCommand extends Command {
     }
     let addonResponse
     try {
-      // TODO update deleteAddon to https://open-api.netlify.com/#/operation/deleteServiceInstance
+      // TODO update deleteAddon to https://open-api.netlify.com/#operation/deleteServiceInstance
       addonResponse = await deleteAddon(settings, accessToken)
     } catch (e) {
       this.error(e.message)
