@@ -155,7 +155,7 @@ class AddonsCreateCommand extends Command {
 async function createSiteAddon({ addonName, settings, accessToken, siteData, error }, logger) {
   let addonResponse
   try {
-    // TODO update to https://open-api.netlify.com/#/default/createServiceInstance
+    // TODO update to https://open-api.netlify.com/#operation/createServiceInstance
     addonResponse = await createAddon(settings, accessToken)
   } catch (e) {
     error(e.message)
