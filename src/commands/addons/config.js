@@ -186,7 +186,7 @@ async function update({ addonName, currentConfig, newConfig, settings, accessTok
 
   let updateAddonResponse
   try {
-    // TODO update updateAddon to https://open-api.netlify.com/#/operation/updateServiceInstance
+    // TODO update updateAddon to https://open-api.netlify.com/#operation/updateServiceInstance
     updateAddonResponse = await updateAddon(settings, accessToken)
   } catch (e) {
     error(e.message)
