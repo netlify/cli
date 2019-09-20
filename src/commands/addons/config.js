@@ -39,7 +39,7 @@ class AddonsConfigCommand extends Command {
       return false
     }
 
-    // TODO update getAddonManifest to https://open-api.netlify.com/#/operation/showServiceManifest
+    // TODO update getAddonManifest to https://open-api.netlify.com/#operation/showServiceManifest
     const manifest = await getAddonManifest(addonName, accessToken)
     const hasConfig = manifest.config && Object.keys(manifest.config).length
     // Parse flags
