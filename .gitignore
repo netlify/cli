@@ -6,7 +6,7 @@
 node_modules
 misc
 coverage
-.netlify
+/.netlify
 .idea
 
 # node sdk
