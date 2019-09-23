@@ -76,7 +76,7 @@ function track(eventName, payload) {
 
   const allowed = () => true
   // event 'cli:command' bypasses validation
-  const isValid = (eventName === 'cli:command') ? allowed : isValidEventName
+  const isValid = eventName === 'cli:command' ? allowed : isValidEventName
   // to ensure clean data, validate event name
   if (!isValid(eventName, eventConfig)) {
     return false

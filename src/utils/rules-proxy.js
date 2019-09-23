@@ -5,7 +5,7 @@ const redirector = require('netlify-redirector')
 const chokidar = require('chokidar')
 const cookie = require('cookie')
 const redirectParser = require('./redirect-parser')
-const { NETLIFYDEVWARN, } = require('netlify-cli-logo')
+const { NETLIFYDEVWARN } = require('netlify-cli-logo')
 
 function parseFile(parser, name, data) {
   const result = parser(data)
@@ -122,12 +122,14 @@ module.exports = function(config) {
           req.headers['host']}`
       )
       const cookieValues = cookie.parse(req.headers.cookie || '')
-      const headers = Object.assign({},
+      const headers = Object.assign(
+        {},
         {
           'x-language': cookieValues.nf_lang || getLanguage(req),
-          'x-country': cookieValues.nf_country || getCountry(req),
+          'x-country': cookieValues.nf_country || getCountry(req)
         },
-        req.headers)
+        req.headers
+      )
 
       // Definition: https://github.com/netlify/libredirect/blob/e81bbeeff9f7c260a5fb74cad296ccc67a92325b/node/src/redirects.cpp#L28-L60
       const matchReq = {
@@ -137,8 +139,8 @@ module.exports = function(config) {
         query: reqUrl.search.slice(1),
         headers,
         cookieValues,
-        getHeader: (name) => headers[name.toLowerCase()] || '',
-        getCookie: (key) => cookieValues[key] || '',
+        getHeader: name => headers[name.toLowerCase()] || '',
+        getCookie: key => cookieValues[key] || ''
       }
       const match = matcher.match(matchReq)
       if (match) return next(match)
