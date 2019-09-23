@@ -13,7 +13,7 @@ const isEmpty = require('lodash.isempty')
 const { serveFunctions } = require('../../utils/serve-functions')
 const { serverSettings } = require('../../utils/detect-server')
 const { detectFunctionsBuilder } = require('../../utils/detect-functions-builder')
-const Command = require('@netlify/cli-utils')
+const Command = require('../../utils/command')
 const chalk = require('chalk')
 const {
   NETLIFYDEV,

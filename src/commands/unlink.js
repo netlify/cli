@@ -1,4 +1,4 @@
-const Command = require('@netlify/cli-utils')
+const Command = require('../utils/command')
 const { track } = require('../utils/telemetry')
 
 class UnlinkCommand extends Command {

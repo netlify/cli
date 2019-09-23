@@ -1,5 +1,5 @@
 const { flags } = require('@oclif/command')
-const Command = require('@netlify/cli-utils')
+const Command = require('../utils/command')
 const chalk = require('chalk')
 
 class LoginCommand extends Command {

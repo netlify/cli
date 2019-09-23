@@ -1,7 +1,7 @@
 const path = require('path')
 const { spawn } = require('child_process')
 const isValidEventName = require('./validation')
-const globalConfig = require('@netlify/cli-utils/src/global-config')
+const globalConfig = require('../global-config')
 const ci = require('ci-info')
 
 const IS_INSIDE_CI = ci.isCI

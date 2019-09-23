@@ -1,7 +1,7 @@
 const { flags } = require('@oclif/command')
 const chalk = require('chalk')
 const { cli } = require('cli-ux')
-const Command = require('@netlify/cli-utils')
+const Command = require('../../utils/command')
 
 class SitesListCommand extends Command {
   async run() {

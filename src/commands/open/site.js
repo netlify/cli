@@ -1,4 +1,4 @@
-const Command = require('@netlify/cli-utils')
+const Command = require('../../utils/command')
 const openBrowser = require('../../utils/open-browser')
 
 class OpenAdminCommand extends Command {

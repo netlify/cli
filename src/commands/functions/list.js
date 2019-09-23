@@ -1,4 +1,4 @@
-const Command = require('@netlify/cli-utils')
+const Command = require('../../utils/command')
 const { flags } = require('@oclif/command')
 const AsciiTable = require('ascii-table')
 const { getFunctions } = require('../../utils/get-functions')

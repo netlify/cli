@@ -1,5 +1,5 @@
 const chalk = require('chalk')
-const Command = require('@netlify/cli-utils')
+const Command = require('../../utils/command')
 const { flags } = require('@oclif/command')
 const inquirer = require('inquirer')
 const { serverSettings } = require('../../utils/detect-server')

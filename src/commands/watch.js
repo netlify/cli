@@ -1,4 +1,4 @@
-const Command = require('@netlify/cli-utils')
+const Command = require('../utils/command')
 const { CLIError } = require('@oclif/errors')
 const pWaitFor = require('p-wait-for')
 const cli = require('cli-ux').default
