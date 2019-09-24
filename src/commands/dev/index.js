@@ -123,7 +123,7 @@ function initializeProxy(port) {
             const handler = proxyMiddleware({
               target: `${dest.protocol}//${dest.host}`,
               changeOrigin: true,
-              pathRewrite: (path, req) => match.to.replace(/https?:\/\/[^\/]+/, '')
+              pathRewrite: (path, req) => match.to.replace(/https?:\/\/[^/]+/, '')
             })
             return handler(req, res, {})
           }

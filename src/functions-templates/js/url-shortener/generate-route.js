@@ -3,7 +3,7 @@
 var request = require('request')
 var Hashids = require('hashids')
 
-export function handler(event, context, callback) {
+module.exports = function handler(event, context, callback) {
   // Set the root URL according to the Netlify site we are within
   var rootURL = process.env.URL + '/'
 

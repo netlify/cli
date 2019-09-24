@@ -13,7 +13,6 @@ const newLine = '\n\n'
 const config = {
   transforms: {
     GENERATE_COMMANDS_DOCS(content, options, instance) {
-
       const command = path.basename(instance.originalPath, '.md')
       //console.log('command', command)
       const info = commandData[command]
@@ -29,7 +28,7 @@ const config = {
         md += commandExamples(info.examples)
         if (info.commands.length) {
           md += `---\n`
-          info.commands.forEach((subCmd) => {
+          info.commands.forEach(subCmd => {
             // Child Commands
             md += formatSubCommandTitle(subCmd.name)
             md += formatDescription(subCmd.description)
@@ -44,12 +43,11 @@ const config = {
       }
     },
     GENERATE_COMMANDS_LIST(content, options, instance) {
-
       const context = path.basename(instance.originalPath, '.md')
       console.log('context', context)
       /* Generate Command List */
       let md = ''
-      Object.keys(commandData).map((commandName) => {
+      Object.keys(commandData).map(commandName => {
         const info = commandData[commandName]
         md += commandListTitle(commandName, context)
         md += commandListDescription(info.description)
@@ -57,23 +55,18 @@ const config = {
       })
 
       return md
-    },
-  },
+    }
+  }
 }
 
 const rootDir = path.join(__dirname, '..')
-const markdownFiles = [
-  path.join(rootDir, 'README.md'),
-  path.join(rootDir, 'docs/**/**.md')
-]
+const markdownFiles = [path.join(rootDir, 'README.md'), path.join(rootDir, 'docs/**/**.md')]
 
 // Generate docs
 markdownMagic(markdownFiles, config, () => {
   /* Post process the docs */
-  const processedDocs = globby.sync([
-    '../docs/**/**.md',
-  ])
-  processedDocs.map((f) => {
+  const processedDocs = globby.sync(['../docs/**/**.md'])
+  processedDocs.map(f => {
     const filePath = path.resolve(f)
     const fileContents = fs.readFileSync(filePath, 'utf8')
 
@@ -90,8 +83,8 @@ function commandExamples(examples) {
     return ''
   }
   let exampleRender = `**Examples**${newLine}`
-  exampleRender += '\`\`\`bash\n'
-  examples.forEach((ex) => {
+  exampleRender += '```bash\n'
+  examples.forEach(ex => {
     console.log('ex', ex)
     exampleRender += `${ex}\n`
   })
@@ -101,7 +94,7 @@ function commandExamples(examples) {
 
 /* Start - Docs Templating logic */
 function commandListTitle(command, context) {
-  const url  = (context === 'README') ? `/docs/commands/${command}.md` : `/commands/${command}`
+  const url = context === 'README' ? `/docs/commands/${command}.md` : `/commands/${command}`
   // const url  = (context === 'README') ? `/docs/${command}.md` : `/${command}`
   return `### [${command}](${url})${newLine}`
 }
@@ -112,18 +105,17 @@ function commandListDescription(desc) {
 }
 
 function commandListSubCommandDisplay(commands, context) {
-
   if (!commands.length) {
     return ''
   }
-  let table = '| Subcommand | description  |\n';
-  table += '|:--------------------------- |:-----|\n';
-  commands.forEach((cmd) => {
+  let table = '| Subcommand | description  |\n'
+  table += '|:--------------------------- |:-----|\n'
+  commands.forEach(cmd => {
     const commandBase = cmd.name.split(':')[0]
-    const baseUrl = (context === 'README') ? `/docs/commands/${commandBase}.md` : `/commands/${commandBase}`
+    const baseUrl = context === 'README' ? `/docs/commands/${commandBase}.md` : `/commands/${commandBase}`
     // const baseUrl = (context === 'README') ? `/docs/${commandBase}.md` : `/${commandBase}`
     const slug = cmd.name.replace(/:/g, '')
-    table += `| [\`${cmd.name}\`](${baseUrl}#${slug}) | ${cmd.description.split('\n')[0]}  |\n`;
+    table += `| [\`${cmd.name}\`](${baseUrl}#${slug}) | ${cmd.description.split('\n')[0]}  |\n`
   })
   return `${table}${newLine}`
 }
@@ -160,14 +152,16 @@ function formatFlags(cmdFlags, command) {
   }
   let renderFlags = `**Flags**\n\n`
 
-  renderFlags += flagArray.map((flag) => {
-    const flagData = cmdFlags[flag]
-    if (!flagData.description) {
-      throw new Error(`${command} missing flag description`)
-    }
+  renderFlags += flagArray
+    .map(flag => {
+      const flagData = cmdFlags[flag]
+      if (!flagData.description) {
+        throw new Error(`${command} missing flag description`)
+      }
 
-    return `- \`${flag}\` (*${flagData.type}*) - ${flagData.description}`
-  }).join('\n')
+      return `- \`${flag}\` (*${flagData.type}*) - ${flagData.description}`
+    })
+    .join('\n')
 
   renderFlags += `\n\n`
 
@@ -180,9 +174,11 @@ function formatArgs(cmdArgs) {
   }
   let renderArgs = `**Arguments**\n\n`
 
-  renderArgs += cmdArgs.map((arg) => {
-    return `- ${arg.name} - ${arg.description}`
-  }).join('\n')
+  renderArgs += cmdArgs
+    .map(arg => {
+      return `- ${arg.name} - ${arg.description}`
+    })
+    .join('\n')
   renderArgs += `\n\n`
   return renderArgs
 }

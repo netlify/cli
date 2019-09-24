@@ -4,6 +4,7 @@ const qs = require('qs')
 exports.handler = async function(event, context) {
   // apply our function to the queryStringParameters and assign it to a variable
   const API_PARAMS = qs.stringify(event.queryStringParameters)
+  console.log('API_PARAMS', API_PARAMS)
   // Get env var values defined in our Netlify site UI
 
   // TODO: customize your URL and API keys set in the Netlify Dashboard

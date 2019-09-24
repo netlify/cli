@@ -133,6 +133,7 @@ class FunctionsInvokeCommand extends Command {
         try {
           // data = response.json();
           data = JSON.parse(data)
+          // eslint-disable-next-line no-empty
         } catch (err) {}
         return data
       })
@@ -157,7 +158,7 @@ function processPayloadFromFlag(payloadString) {
   if (payloadString) {
     // case 1: jsonstring
     let payload = tryParseJSON(payloadString)
-    if (!!payload) return payload
+    if (payload) return payload
     // case 2: jsonpath
     const payloadpath = path.join(process.cwd(), payloadString)
     const pathexists = fs.existsSync(payloadpath)
@@ -269,6 +270,7 @@ function tryParseJSON(jsonString) {
     if (o && typeof o === 'object') {
       return o
     }
+    // eslint-disable-next-line no-empty
   } catch (e) {}
 
   return false

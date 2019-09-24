@@ -1,11 +1,15 @@
 let URLclass = null
 
 function parseURL(url) {
+  // eslint-disable-next-line no-undef
   if (typeof window !== 'undefined' && window.URL) {
+    // eslint-disable-next-line no-undef
     return new window.URL(url)
   }
 
   URLclass = URLclass || require('url')
+  // TODO: use `url.URL()` instead
+  // eslint-disable-next-line node/no-deprecated-api
   return URLclass.parse(url)
 }
 

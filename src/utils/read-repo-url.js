@@ -12,6 +12,8 @@ const GITHUB = Symbol('GITHUB')
  * and returns https://api.github.com/repos/netlify-labs/all-the-functions/contents/functions/9-using-middleware
  */
 async function readRepoURL(_url) {
+  // TODO: use `url.URL()` instead
+  // eslint-disable-next-line node/no-deprecated-api
   const URL = url.parse(_url)
   const repoHost = validateRepoURL(_url)
   if (repoHost !== GITHUB) throw new Error('only github repos are supported for now')
@@ -35,6 +37,8 @@ async function getRepoURLContents(repoHost, owner_and_repo, contents_path) {
 }
 
 function validateRepoURL(_url) {
+  // TODO: use `url.URL()` instead
+  // eslint-disable-next-line node/no-deprecated-api
   const URL = url.parse(_url)
   if (URL.host !== 'github.com') return null
   // other validation logic here

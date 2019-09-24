@@ -2,7 +2,7 @@
 
 var request = require('request')
 
-export function handler(event, context, callback) {
+module.exports = function handler(event, context, callback) {
   // which URL code are we trying to retrieve?
   var code = event.queryStringParameters['code']
 
