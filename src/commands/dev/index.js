@@ -134,7 +134,7 @@ async function startProxy(settings, addonUrls) {
 
   const rewriter = createRewriter({
     publicFolder: settings.dist,
-    jwtRole: settings.jwtRolePath,
+    jwtRole: settings.jwtRolePath
   })
 
   const server = http.createServer(function(req, res) {
@@ -154,7 +154,7 @@ async function startProxy(settings, addonUrls) {
         publicFolder: settings.dist,
         functionsServer,
         functionsPort: settings.functionsPort,
-        jwtRolePath: settings.jwtRolePath,
+        jwtRolePath: settings.jwtRolePath
       }
 
       if (match) return serveRedirect(req, res, proxy, match, options)
@@ -172,7 +172,7 @@ async function startProxy(settings, addonUrls) {
 }
 
 function serveRedirect(req, res, proxy, match, options) {
-  if(!match) return proxy.web(req, res, options)
+  if (!match) return proxy.web(req, res, options)
 
   options = options || req.proxyOptions || {}
   options.match = null
@@ -191,7 +191,7 @@ function serveRedirect(req, res, proxy, match, options) {
 
   if (match.exceptions && match.exceptions.JWT) {
     // Some values of JWT can start with :, so, make sure to normalize them
-    const expectedRoles = match.exceptions.JWT.split(',').map(r => r.startsWith(':') ? r.slice(1) : r)
+    const expectedRoles = match.exceptions.JWT.split(',').map(r => (r.startsWith(':') ? r.slice(1) : r))
 
     const cookieValues = cookie.parse(req.headers.cookie || '')
     const token = cookieValues['nf_jwt']
@@ -211,7 +211,7 @@ function serveRedirect(req, res, proxy, match, options) {
         return
       }
 
-      if ((jwtValue.exp || 0) < Math.round((new Date().getTime() / 1000))) {
+      if ((jwtValue.exp || 0) < Math.round(new Date().getTime() / 1000)) {
         console.warn(NETLIFYDEVWARN, 'Expired JWT provided in request', req.url)
       } else {
         const presentedRoles = get(jwtValue, options.jwtRolePath) || []
@@ -223,7 +223,7 @@ function serveRedirect(req, res, proxy, match, options) {
         }
 
         // Restore the URL if everything is correct
-        if(presentedRoles.some(pr => expectedRoles.includes(pr))) {
+        if (presentedRoles.some(pr => expectedRoles.includes(pr))) {
           req.url = originalURL
         }
       }
@@ -232,14 +232,15 @@ function serveRedirect(req, res, proxy, match, options) {
 
   const reqUrl = new url.URL(
     req.url,
-    `${req.protocol || (req.headers.scheme && req.headers.scheme + ':') || 'http:'}//${req.headers['host'] || req.hostname}`
+    `${req.protocol || (req.headers.scheme && req.headers.scheme + ':') || 'http:'}//${req.headers['host'] ||
+      req.hostname}`
   )
   if (match.force404) {
     res.writeHead(404)
     return render404(options.publicFolder)
   }
 
-  if (match.force || (notStatic(reqUrl.pathname, options.publicFolder)) && match.status !== 404) {
+  if (match.force || (notStatic(reqUrl.pathname, options.publicFolder) && match.status !== 404)) {
     const dest = new url.URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
     if (isRedirect(match)) {
       res.writeHead(match.status, {
@@ -271,7 +272,7 @@ function serveRedirect(req, res, proxy, match, options) {
       return proxy.web(req, res, { target: urlForAddons })
     }
 
-    return proxy.web(req, res, Object.assign({}, options, { status: match.status } ))
+    return proxy.web(req, res, Object.assign({}, options, { status: match.status }))
   }
 
   return proxy.web(req, res, options)
@@ -357,7 +358,7 @@ class DevCommand extends Command {
         port: 8888,
         proxyPort: await getPort({ port: 3999 }),
         dist,
-        jwtRolePath: config.dev && config.dev.jwtRolePath,
+        jwtRolePath: config.dev && config.dev.jwtRolePath
       }
     }
     if (!settings.jwtRolePath) settings.jwtRolePath = 'app_metadata.authorization.roles'

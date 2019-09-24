@@ -225,14 +225,14 @@ Function templates can specify `addons` that they rely on as well as execute arb
 module.exports = {
   addons: [
     {
-      addonName: "fauna",
+      addonName: 'fauna',
       addonDidInstall: () => {} // post install function to run after installing addon, eg. for setting up schema
     }
   ],
   onComplete() {
-    console.log(`custom-template function created from template!`);
+    console.log(`custom-template function created from template!`)
   }
-};
+}
 ```
 
 Instead of using our basic templates, you can use your own by passing it with a --url flag: `netlify functions:create hello-world --url https://github.com/netlify-labs/all-the-functions/tree/master/functions/9-using-middleware`, specifying any addons and postinstall/complete steps as shown above.
@@ -265,7 +265,6 @@ netlify functions:invoke myfunction --payload "./pathTo.json"
 There are special cases for [event triggered functions](https://www.netlify.com/docs/functions/?utm_source=blog&utm_medium=netlifydev&utm_campaign=devex#event-triggered-functions) (eg `identity-signup`) which will also give you mock data for testing. This makes manual local testing of event triggered functions possible, which drastically improves the development experience.
 
 This is a new feature; ideas and feedback and issues and PR's welcome!
-
 
 ### Function Builders, Function Builder Detection, and Relationship with `netlify-lambda`
 
