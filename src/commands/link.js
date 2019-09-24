@@ -1,4 +1,4 @@
-const Command = require('@netlify/cli-utils')
+const Command = require('../utils/command')
 const { flags } = require('@oclif/command')
 const path = require('path')
 const chalk = require('chalk')

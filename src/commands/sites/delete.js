@@ -1,6 +1,6 @@
 const inquirer = require('inquirer')
 const chalk = require('chalk')
-const Command = require('@netlify/cli-utils')
+const Command = require('../../utils/command')
 const { flags } = require('@oclif/command')
 const { parseRawFlags } = require('../../utils/parse-raw-flags')
 

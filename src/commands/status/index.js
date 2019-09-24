@@ -1,4 +1,4 @@
-const Command = require('@netlify/cli-utils')
+const Command = require('../../utils/command')
 const prettyjson = require('prettyjson')
 const get = require('lodash.get')
 const chalk = require('chalk')
