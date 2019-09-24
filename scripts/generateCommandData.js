@@ -7,7 +7,7 @@ module.exports = function generateCommandData() {
   // console.log('commandsPath', commandsPath)
   const commands = globby.sync([`${commandsPath}/**/**.js`, `${netlifyDevPath}/**/**.js`])
 
-  const allCommands = commands.map((file) => {
+  const allCommands = commands.map(file => {
     let cmd = {}
     try {
       cmd = require(file)
@@ -16,7 +16,7 @@ module.exports = function generateCommandData() {
     }
     const command = commandFromPath(file)
     const parentCommand = command.split(':')[0]
-    const parent = (command === parentCommand) ? true : false
+    const parent = command === parentCommand ? true : false
     return {
       command: command,
       commandGroup: parentCommand,
@@ -26,7 +26,7 @@ module.exports = function generateCommandData() {
     }
   })
 
-  const visibleCommands = allCommands.filter((cmd) => {
+  const visibleCommands = allCommands.filter(cmd => {
     return !cmd.data.hidden
   })
 
@@ -79,9 +79,10 @@ function commandFromPath(p) {
       in: /node_modules/netlify-dev-plugin/src/commands/dev/exec.js
       out: /src/commands/dev/exec.js
     */
-    normalized = normalized.replace(/\/node_modules\/((?:[^\/]+)*)?\//, '/')
+    normalized = normalized.replace(/\/node_modules\/((?:[^/]+)*)?\//, '/')
   }
-  return normalized.replace(rootDir, '')
+  return normalized
+    .replace(rootDir, '')
     .replace(/\\/g, '/')
     .replace('.js', '')
     .replace('/src/commands/', '')

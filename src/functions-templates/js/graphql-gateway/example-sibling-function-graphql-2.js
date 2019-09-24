@@ -71,7 +71,7 @@ const resolvers = {
       return books
     },
     book: (root, args, context) => {
-      return find(books, { id: args.id })
+      return books.find(book => book.id === args.id)
     }
   }
 }

@@ -46,7 +46,7 @@
     "test": "run-s test:*",
     "ava": "ava --verbose",
     "test:ava": "nyc --reporter=lcov ava --verbose && nyc report",
-    "test:lint": "eslint src",
+    "test:lint": "eslint --fix \"{src,scripts}/**/*.js\"",
     "test:prettier": "prettier --write --loglevel warn \"src/**/*.js\" \"*.{js,md,yml,json}\"",
     "test:deps": "dependency-check ./package.json --entry \"src/**/!(*.test).js\" --unused --missing --no-dev --no-peer -i @oclif/plugin-not-found -i @oclif/config -i @oclif/plugin-help -i @oclif/plugin-plugins",
     "test:cli-version": "npm run start -- --version",
@@ -133,6 +133,7 @@
   "devDependencies": {
     "@oclif/dev-cli": "^1.22.2",
     "@oclif/test": "^1.2.5",
+    "algoliasearch": "^3.34.0",
     "auto-changelog": "^1.14.1",
     "ava": "^1.4.1",
     "body": "^5.1.0",
