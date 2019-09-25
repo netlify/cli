@@ -2,6 +2,7 @@ const path = require('path')
 const chalk = require('chalk')
 const { NETLIFYDEVLOG } = require('netlify-cli-logo')
 const inquirer = require('inquirer')
+const fuzzy = require('fuzzy')
 const fs = require('fs')
 const detectors = fs
   .readdirSync(path.join(__dirname, '..', 'detectors'))
@@ -46,7 +47,6 @@ module.exports.serverSettings = async devConfig => {
     /** multiple matching detectors, make the user choose */
     // lazy loading on purpose
     inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'))
-    const fuzzy = require('fuzzy')
     const scriptInquirerOptions = formatSettingsArrForInquirer(settingsArr)
     const { chosenSetting } = await inquirer.prompt({
       name: 'chosenSetting',
@@ -62,28 +62,6 @@ module.exports.serverSettings = async devConfig => {
     })
     settings = chosenSetting // finally! we have a selected option
     // TODO: offer to save this setting to netlify.toml so you dont keep doing this
-
-    /** utiltities for the inquirer section above */
-    function filterSettings(scriptInquirerOptions, input) {
-      const filteredSettings = fuzzy.filter(input, scriptInquirerOptions.map(x => x.name))
-      const filteredSettingNames = filteredSettings.map(x => (input ? x.string : x))
-      return scriptInquirerOptions.filter(t => filteredSettingNames.includes(t.name))
-    }
-
-    /** utiltities for the inquirer section above */
-    function formatSettingsArrForInquirer(settingsArr) {
-      let ans = []
-      settingsArr.forEach(setting => {
-        setting.possibleArgsArrs.forEach(args => {
-          ans.push({
-            name: `[${chalk.yellow(setting.type)}] ${setting.command} ${args.join(' ')}`,
-            value: { ...setting, args },
-            short: setting.type + '-' + args.join(' ')
-          })
-        })
-      })
-      return ans
-    }
   }
 
   /** everything below assumes we have settled on one detector */
@@ -115,6 +93,27 @@ module.exports.serverSettings = async devConfig => {
   return settings
 }
 
+/** utilities for the inquirer section above */
+function filterSettings(scriptInquirerOptions, input) {
+  const filteredSettings = fuzzy.filter(input, scriptInquirerOptions.map(x => x.name))
+  const filteredSettingNames = filteredSettings.map(x => (input ? x.string : x))
+  return scriptInquirerOptions.filter(t => filteredSettingNames.includes(t.name))
+}
+
+/** utiltities for the inquirer section above */
+function formatSettingsArrForInquirer(settingsArr) {
+  let ans = []
+  settingsArr.forEach(setting => {
+    setting.possibleArgsArrs.forEach(args => {
+      ans.push({
+        name: `[${chalk.yellow(setting.type)}] ${setting.command} ${args.join(' ')}`,
+        value: { ...setting, args },
+        short: setting.type + '-' + args.join(' ')
+      })
+    })
+  })
+  return ans
+}
 // if first arg is undefined, use default, but tell user about it in case it is unintentional
 function assignLoudly(
   optionalValue,

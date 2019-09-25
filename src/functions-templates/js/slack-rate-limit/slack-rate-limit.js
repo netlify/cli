@@ -70,7 +70,7 @@ function updateUser(identity, user, app_metadata) {
 }
 
 const oneHour = 60 * 60 * 1000
-export function handler(event, context, callback) {
+module.exports = function handler(event, context, callback) {
   if (event.httpMethod !== 'POST') {
     return callback(null, {
       statusCode: 410,
@@ -117,7 +117,7 @@ export function handler(event, context, callback) {
         .catch(err => {
           callback(null, {
             statusCode: 500,
-            body: 'Internal Server Error: ' + e
+            body: 'Internal Server Error: ' + err
           })
         })
     } catch (e) {

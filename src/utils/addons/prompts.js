@@ -74,13 +74,13 @@ function noValidate() {
 }
 
 // Will use this soon
-function validateRequired(value) {
-  // eslint-disable-line
-  if (value) {
-    return true
-  }
-  return `Please enter a value this field is required`
-}
+// function validateRequired(value) {
+//   // eslint-disable-line
+//   if (value) {
+//     return true
+//   }
+//   return `Please enter a value this field is required`
+// }
 
 function validate(pattern) {
   return function(value) {

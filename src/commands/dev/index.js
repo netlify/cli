@@ -15,7 +15,7 @@ const isEmpty = require('lodash.isempty')
 const { serveFunctions } = require('../../utils/serve-functions')
 const { serverSettings } = require('../../utils/detect-server')
 const { detectFunctionsBuilder } = require('../../utils/detect-functions-builder')
-const Command = require('@netlify/cli-utils')
+const Command = require('../../utils/command')
 const chalk = require('chalk')
 const jwtDecode = require('jwt-decode')
 const {
@@ -26,7 +26,7 @@ const {
 } = require('netlify-cli-logo')
 const boxen = require('boxen')
 const { createTunnel, connectTunnel } = require('../../utils/live-tunnel')
-const createRewriter  = require('../../utils/rules-proxy')
+const createRewriter = require('../../utils/rules-proxy')
 
 function isFunction(settings, req) {
   return settings.functionsPort && req.url.match(/^\/.netlify\/functions\/.+/)
@@ -87,7 +87,7 @@ function initializeProxy(port) {
     target: {
       host: 'localhost',
       port: port
-    },
+    }
   })
 
   proxy.on('proxyRes', (proxyRes, req, res) => {
@@ -102,7 +102,7 @@ function initializeProxy(port) {
         const reqUrl = new url.URL(
           req.url,
           `${req.protocol || (req.headers.scheme && req.headers.scheme + ':') || 'http:'}//${req.hostname ||
-          req.headers['host']}`
+            req.headers['host']}`
         )
         if (match.force404) {
           res.writeHead(404)
@@ -110,15 +110,12 @@ function initializeProxy(port) {
         }
 
         if (match.force || notStatic(reqUrl.pathname, req.proxyOptions.publicFolder)) {
-          const dest = new url.URL(
-            match.to,
-            `${reqUrl.protocol}//${reqUrl.host}`
-          )
+          const dest = new url.URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
           reqUrl.searchParams.forEach((v, k) => dest.searchParams.append(k, v))
           if (isRedirect(match)) {
             res.writeHead(match.status, {
               Location: match.to,
-              'Cache-Control': 'no-cache',
+              'Cache-Control': 'no-cache'
             })
             res.end(`Redirecting to ${match.to}`)
             return
@@ -129,8 +126,7 @@ function initializeProxy(port) {
             const handler = proxyMiddleware({
               target: `${dest.protocol}//${dest.host}`,
               changeOrigin: true,
-              pathRewrite: (path, req) =>
-                match.to.replace(/https?:\/\/[^\/]+/, ''),
+              pathRewrite: (path, req) => match.to.replace(/https?:\/\/[^/]+/, '')
             })
             return handler(req, res, {})
           }
@@ -196,9 +192,9 @@ async function startProxy(settings, addonUrls) {
       return proxy.web(req, res, { target: url })
     }
 
-    rewriter(req, res, (match) => {
+    rewriter(req, res, match => {
       if (match && !isEmpty(match.proxyHeaders)) {
-        Object.entries(match.proxyHeaders).forEach(([k,v]) => req.headers[k] = v)
+        Object.entries(match.proxyHeaders).forEach(([k, v]) => (req.headers[k] = v))
       }
 
       if (isFunction(settings, req)) {
@@ -252,10 +248,11 @@ async function startProxy(settings, addonUrls) {
 
       proxy.web(req, res, {
         target: `http://localhost:${settings.proxyPort}`,
-        match, publicFolder: settings.dist,
+        match,
+        publicFolder: settings.dist,
         functionsServer,
         functionsPort: settings.functionsPort,
-        addonUrls,
+        addonUrls
       })
     })
   })

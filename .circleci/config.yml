@@ -2,7 +2,7 @@ version: 2
 jobs:
   test:
     docker:
-      - image: circleci/node:8
+      - image: circleci/node:8.12.0
     working_directory: ~/cli
     steps:
       - checkout
@@ -18,7 +18,7 @@ jobs:
       - run: npm test
   deploy:
     docker:
-      - image: circleci/node:8
+      - image: circleci/node:8.12.0
     working_directory: ~/cli
     steps:
       - checkout
@@ -35,7 +35,7 @@ workflows:
   test-n-deploy:
     jobs:
       - test:
-          filters:  # required since `deploy` has tag filters AND requires `build`
+          filters: # required since `deploy` has tag filters AND requires `build`
             tags:
               only: /.*/
       - deploy:

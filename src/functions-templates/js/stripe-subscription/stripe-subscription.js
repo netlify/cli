@@ -2,7 +2,7 @@
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 
-const respond = (fulfillmentText: any): any => {
+const respond = fulfillmentText => {
   return {
     statusCode: 200,
     body: JSON.stringify(fulfillmentText),
@@ -15,9 +15,9 @@ const respond = (fulfillmentText: any): any => {
 }
 
 exports.handler = async function(event, context) {
+  let incoming
   try {
-    const incoming = JSON.parse(event.body)
-    const { stripeToken, email, productPlan } = incoming
+    incoming = JSON.parse(event.body)
   } catch (err) {
     console.error(`error with parsing function parameters: `, err)
     return {
@@ -26,6 +26,7 @@ exports.handler = async function(event, context) {
     }
   }
   try {
+    const { stripeToken, email, productPlan } = incoming
     const data = await createCustomerAndSubscribeToPlan(stripeToken, email, productPlan)
     return respond(data)
   } catch (err) {
@@ -33,7 +34,7 @@ exports.handler = async function(event, context) {
   }
 }
 
-async function createCustomerAndSubscribeToPlan(stripeToken: string, email: string, productPlan: string) {
+async function createCustomerAndSubscribeToPlan(stripeToken, email, productPlan) {
   // create a customer
   const customer = await stripe.customers.create({
     email: email,

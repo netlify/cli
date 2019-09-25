@@ -1,5 +1,5 @@
-const Command = require('@netlify/cli-utils')
 const { getAddons } = require('netlify/src/addons')
+const Command = require('../../utils/command')
 const openBrowser = require('../../utils/open-browser')
 
 class AddonsAuthCommand extends Command {

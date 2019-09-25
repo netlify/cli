@@ -1,6 +1,6 @@
 const AsciiTable = require('ascii-table')
 const { flags } = require('@oclif/command')
-const Command = require('@netlify/cli-utils')
+const Command = require('../../utils/command')
 const { getAddons } = require('netlify/src/addons')
 
 class AddonsListCommand extends Command {
@@ -17,7 +17,7 @@ class AddonsListCommand extends Command {
 
     const siteData = await api.getSite({ siteId })
 
-    // TODO update getAddons to https://open-api.netlify.com/#/default/getServices
+    // TODO update getAddons to https://open-api.netlify.com/#operation/getServices
     const addons = await getAddons(siteId, accessToken)
 
     // Return json response for piping commands

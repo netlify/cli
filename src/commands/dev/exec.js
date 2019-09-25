@@ -1,5 +1,5 @@
 const execa = require('execa')
-const Command = require('@netlify/cli-utils')
+const Command = require('../../utils/command')
 const {
   // NETLIFYDEV,
   NETLIFYDEVLOG,
