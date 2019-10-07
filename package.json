@@ -116,7 +116,7 @@
     "minimist": "^1.2.0",
     "netlify": "^2.4.8",
     "netlify-cli-logo": "^1.0.0",
-    "netlify-redirector": "0.0.4",
+    "netlify-redirector": "^0.1.0",
     "node-fetch": "^2.6.0",
     "npm-packlist": "^1.4.4",
     "open": "^6.4.0",
