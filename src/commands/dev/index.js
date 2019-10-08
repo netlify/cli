@@ -400,6 +400,9 @@ DevCommand.flags = {
   functionsPort: flags.integer({
     description: 'port for functions server'
   }),
+  targetPort: flags.integer({
+    description: 'port of target app server'
+  }),
   dir: flags.string({
     char: 'd',
     description: 'dir with static files'

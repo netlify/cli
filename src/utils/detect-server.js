@@ -80,10 +80,10 @@ module.exports.serverSettings = async devConfig => {
       if (devConfigArgs[0] === 'run') devConfigArgs = devConfigArgs.slice(1)
       settings.args = assignLoudly(devConfigArgs, settings.command || null, tellUser('command')) // if settings.command is empty, its bc no settings matched
     }
-    if (devConfig.port) {
-      settings.proxyPort = devConfig.port || settings.proxyPort
-      const regexp = devConfig.urlRegexp || new RegExp(`(http://)([^:]+:)${devConfig.port}(/)?`, 'g')
-      settings.urlRegexp = settings.urlRegexp || regexp
+    if (devConfig.port) settings.port = devConfig.port
+    if (devConfig.targetPort) {
+      settings.proxyPort = devConfig.targetPort
+      settings.urlRegexp = devConfig.urlRegexp || new RegExp(`(http://)([^:]+:)${devConfig.targetPort}(/)?`, 'g')
     }
     if (devConfig.functionsPort) settings.functionsPort = devConfig.functionsPort
     settings.dist = devConfig.publish || settings.dist // dont loudassign if they dont need it
