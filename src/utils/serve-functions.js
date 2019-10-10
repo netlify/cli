@@ -190,6 +190,7 @@ function promiseCallback(promise, callback) {
 async function serveFunctions(settings) {
   const app = express()
   const dir = settings.functionsDir
+  const quiet = settings.quiet || false
   const port = await getPort({
     port: assignLoudly(settings.port, defaultPort)
   })
@@ -201,29 +202,31 @@ async function serveFunctions(settings) {
     })
   )
   app.use(bodyParser.raw({ limit: '6mb', type: '*/*' }))
-  app.use(
-    expressLogging(console, {
-      blacklist: ['/favicon.ico']
-    })
-  )
+  if (!quiet) {
+    app.use(
+      expressLogging(console, {
+        blacklist: ['/favicon.ico']
+      })
+    )
+  }
 
   app.get('/favicon.ico', function(req, res) {
     res.status(204).end()
   })
   app.all('*', createHandler(dir))
 
-  app.listen(port, function(err) {
-    if (err) {
-      console.error(`${NETLIFYDEVERR} Unable to start lambda server: `, err) // eslint-disable-line no-console
-      process.exit(1)
-    }
+  return new Promise(resolve => {
+    const server = app.listen(port, function(err) {
+      if (err) {
+        console.error(`${NETLIFYDEVERR} Unable to start lambda server: `, err) // eslint-disable-line no-console
+        process.exit(1)
+      }
 
-    // add newline because this often appears alongside the client devserver's output
-    console.log(`\n${NETLIFYDEVLOG} Lambda server is listening on ${port}`) // eslint-disable-line no-console
-  })
+      // add newline because this often appears alongside the client devserver's output
+      console.log(`\n${NETLIFYDEVLOG} Lambda server is listening on ${port}`) // eslint-disable-line no-console
 
-  return Promise.resolve({
-    port
+      resolve({ port, server })
+    })
   })
 }
 
