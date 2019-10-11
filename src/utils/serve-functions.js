@@ -55,7 +55,7 @@ function buildClientContext(headers) {
   }
 }
 
-function createHandler(dir) {
+function createHandler(dir, watch) {
   const functions = getFunctions(dir)
 
   const clearCache = action => path => {
@@ -64,8 +64,10 @@ function createHandler(dir) {
       delete require.cache[k]
     })
   }
-  const watcher = chokidar.watch(dir, { ignored: /node_modules/ })
-  watcher.on('change', clearCache('modified')).on('unlink', clearCache('deleted'))
+  if (watch) {
+    const watcher = chokidar.watch(dir, { ignored: /node_modules/ })
+    watcher.on('change', clearCache('modified')).on('unlink', clearCache('deleted'))
+  }
 
   return function(request, response) {
     // handle proxies without path re-writes (http-servr)
@@ -191,6 +193,7 @@ async function serveFunctions(settings) {
   const app = express()
   const dir = settings.functionsDir
   const quiet = settings.quiet || false
+  const watch = settings.watch !== undefined ? settings.watch : true;
   const port = await getPort({
     port: assignLoudly(settings.port, defaultPort)
   })
@@ -213,7 +216,7 @@ async function serveFunctions(settings) {
   app.get('/favicon.ico', function(req, res) {
     res.status(204).end()
   })
-  app.all('*', createHandler(dir))
+  app.all('*', createHandler(dir, watch))
 
   return new Promise(resolve => {
     const server = app.listen(port, function(err) {
