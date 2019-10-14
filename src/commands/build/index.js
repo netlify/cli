@@ -3,7 +3,7 @@ const chalk = require('chalk')
 const netlifyBuild = require('@netlify/build')
 const { parseRawFlags } = require('../../utils/parse-raw-flags')
 const { flags } = require('@oclif/command')
-const { getNelifyConfigFile } = require('@netlify/build')
+const { getConfigPath } = require('@netlify/build')
 
 class BuildCommand extends Command {
   async run() {
@@ -11,33 +11,33 @@ class BuildCommand extends Command {
     const { site } = this.netlify
     // GET flags from `raw` data
     const rawFlags = parseRawFlags(raw)
+    const cwd = process.cwd()
+    const [ token ] = this.getConfigToken()
+
     let configPath
     try {
-      configPath = await getNelifyConfigFile(site.root)
+      // First try CWD
+      configPath = await getConfigPath(cwd)
     } catch (err) {
-      console.log(`No Netlify Config file found in ${site.root}`)
+      try {
+        // Then try site root when top level git folder lives
+        configPath = await getConfigPath(site.root)
+      } catch (error) {} // eslint-disable-line
+      const location = (site.root === process.cwd()) ? site.root : `${site.root} OR ${cwd}`
+      console.log(`No Netlify Config file found in ${location}`)
       this.exit()
     }
 
     try {
-      await netlifyBuild(configPath, rawFlags)
+      await netlifyBuild({
+        config: configPath,
+        token: token,
+        dry: rawFlags.dry,
+        verbose: rawFlags.verbose,
+      })
     } catch (err) {
-      console.log()
-      console.log(chalk.redBright.bold('┌────────────────────────┐'))
-      console.log(chalk.redBright.bold('│  Netlify Build Error!  │'))
-      console.log(chalk.redBright.bold('└────────────────────────┘'))
-      console.log(chalk.bold(` ${err.message}`))
-      console.log()
-      console.log(chalk.redBright.bold('┌────────────────────────┐'))
-      console.log(chalk.redBright.bold('│      Stack Trace:      │'))
-      console.log(chalk.redBright.bold('└────────────────────────┘'))
-      console.log(` ${chalk.bold(err.stack)}`)
-      console.log()
       this.exit()
     }
-
-    const sparkles = chalk.cyanBright('(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧')
-    console.log(`\n${sparkles} Finished with the build process!\n`)
     /*
     await this.config.runHook('analytics', {
       eventName: 'command',
@@ -51,7 +51,7 @@ class BuildCommand extends Command {
 
 /* duplicate functionality from @netlify/build */
 BuildCommand.flags = {
-  plan: flags.boolean({
+  dry: flags.boolean({
     description: 'Dry run of build'
   })
 }
