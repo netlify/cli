@@ -28,6 +28,18 @@ class BuildCommand extends Command {
       this.exit()
     }
 
+    // Needed because dry process.exits in netlify-build. Need to refactor how it exits
+    const isDryRun = rawFlags.dry || false
+    if (isDryRun) {
+      await this.config.runHook('analytics', {
+        eventName: 'command',
+        payload: {
+          command: 'build',
+          dry: isDryRun
+        }
+      })
+    }
+    /* run build */
     try {
       await netlifyBuild({
         config: configPath,
@@ -36,16 +48,19 @@ class BuildCommand extends Command {
         verbose: rawFlags.verbose,
       })
     } catch (err) {
+      console.log(err)
       this.exit()
     }
-    /*
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'build'
-      }
-    })
-    */
+    // TODO refactor once netlifyBuild doesnt process.exit
+    if (!isDryRun) {
+      await this.config.runHook('analytics', {
+        eventName: 'command',
+        payload: {
+          command: 'build',
+          dry: isDryRun
+        }
+      })
+    }
   }
 }
 
