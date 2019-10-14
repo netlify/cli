@@ -1,5 +1,4 @@
 const Command = require('@netlify/cli-utils')
-const chalk = require('chalk')
 const netlifyBuild = require('@netlify/build')
 const { parseRawFlags } = require('../../utils/parse-raw-flags')
 const { flags } = require('@oclif/command')
