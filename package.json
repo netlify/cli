@@ -48,7 +48,6 @@
     "test:ava": "nyc --reporter=lcov ava --verbose && nyc report",
     "test:lint": "eslint --fix \"{src,scripts}/**/*.js\"",
     "test:prettier": "prettier --write --loglevel warn \"src/**/*.js\" \"*.{js,md,yml,json}\"",
-    "test:deps": "dependency-check ./package.json --entry \"src/**/!(*.test).js\" --unused --missing --no-dev --no-peer -i @oclif/plugin-not-found -i @oclif/config -i @oclif/plugin-help -i @oclif/plugin-plugins",
     "test:cli-version": "npm run start -- --version",
     "test:cli-help": "npm run start -- --help",
     "watch": "nyc --reporter=lcov ava --watch",
@@ -62,6 +61,8 @@
   },
   "dependencies": {
     "@iarna/toml": "^2.2.3",
+    "@netlify/build": "0.0.22",
+    "@netlify/cli-utils": "^1.0.7",
     "@netlify/zip-it-and-ship-it": "^0.3.1",
     "@oclif/command": "^1.5.18",
     "@oclif/config": "^1.13.2",
