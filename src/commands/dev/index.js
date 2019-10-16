@@ -28,8 +28,8 @@ const boxen = require('boxen')
 const { createTunnel, connectTunnel } = require('../../utils/live-tunnel')
 const createRewriter = require('../../utils/rules-proxy')
 
-function isFunction(settings, req) {
-  return settings.functionsPort && req.url.match(/^\/.netlify\/functions\/.+/)
+function isFunction(functionsPort, req) {
+  return functionsPort && req.url.match(/^\/.netlify\/functions\/.+/)
 }
 
 function addonUrl(addonUrls, req) {
@@ -97,53 +97,7 @@ function initializeProxy(port) {
         return proxy.web(req, res, req.proxyOptions)
       }
       if (req.proxyOptions && req.proxyOptions.match) {
-        const match = req.proxyOptions.match
-        req.proxyOptions.match = null
-        const reqUrl = new url.URL(
-          req.url,
-          `${req.protocol || (req.headers.scheme && req.headers.scheme + ':') || 'http:'}//${req.hostname ||
-            req.headers['host']}`
-        )
-        if (match.force404) {
-          res.writeHead(404)
-          return render404(req.proxyOptions.publicFolder)
-        }
-
-        if (match.force || notStatic(reqUrl.pathname, req.proxyOptions.publicFolder)) {
-          const dest = new url.URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
-          reqUrl.searchParams.forEach((v, k) => dest.searchParams.append(k, v))
-          if (isRedirect(match)) {
-            res.writeHead(match.status, {
-              Location: match.to,
-              'Cache-Control': 'no-cache'
-            })
-            res.end(`Redirecting to ${match.to}`)
-            return
-          }
-
-          if (isExternal(match)) {
-            console.log(`${NETLIFYDEVLOG} Proxying to `, match.to)
-            const handler = proxyMiddleware({
-              target: `${dest.protocol}//${dest.host}`,
-              changeOrigin: true,
-              pathRewrite: (path, req) => match.to.replace(/https?:\/\/[^/]+/, '')
-            })
-            return handler(req, res, {})
-          }
-
-          req.url = dest.pathname + dest.search
-          console.log(`${NETLIFYDEVLOG} Rewrote URL to `, req.url)
-
-          if (isFunction({ functionsPort: req.proxyOptions.functionsPort }, req)) {
-            return proxy.web(req, res, { target: req.proxyOptions.functionsServer })
-          }
-          const urlForAddons = addonUrl(req.proxyOptions.addonUrls, req)
-          if (urlForAddons) {
-            return proxy.web(req, res, { target: urlForAddons })
-          }
-
-          return handlers.web(req, res, Object.assign({}, req.proxyOptions, { status: match.status } ))
-        }
+        return serveRedirect(req, res, handlers, req.proxyOptions.match, req.proxyOptions)
       }
     }
     res.writeHead(req.proxyOptions.status || proxyRes.statusCode, proxyRes.headers)
@@ -184,7 +138,7 @@ async function startProxy(settings, addonUrls) {
   })
 
   const server = http.createServer(function(req, res) {
-    if (isFunction(settings, req)) {
+    if (isFunction(settings.functionsPort, req)) {
       return proxy.web(req, res, { target: functionsServer })
     }
     let urlForAddons = addonUrl(addonUrls, req)
@@ -193,67 +147,19 @@ async function startProxy(settings, addonUrls) {
     }
 
     rewriter(req, res, match => {
-      if (match && !isEmpty(match.proxyHeaders)) {
-        Object.entries(match.proxyHeaders).forEach(([k, v]) => (req.headers[k] = v))
-      }
-
-      if (isFunction(settings, req)) {
-        return proxy.web(req, res, { target: functionsServer })
-      }
-      urlForAddons = addonUrl(addonUrls, req)
-      if (urlForAddons) {
-        return proxy.web(req, res, { target: urlForAddons })
-      }
-
-      if (match && match.exceptions && match.exceptions.JWT) {
-        // Some values of JWT can start with :, so, make sure to normalize them
-        const expectedRoles = match.exceptions.JWT.split(',').map(r => r.startsWith(':') ? r.slice(1) : r)
-
-        const cookieValues = cookie.parse(req.headers.cookie || '')
-        const token = cookieValues['nf_jwt']
-
-        // Serve not found by default
-        const originalURL = req.url
-        req.url = '/.netlify/non-existent-path'
-
-        if (token) {
-          let jwtValue = {}
-          try {
-            jwtValue = jwtDecode(token) || {}
-          } catch (err) {
-            console.warn(NETLIFYDEVWARN, 'Error while decoding JWT provided in request', err.message)
-            res.writeHead(400)
-            res.end('Invalid JWT provided. Please see logs for more info.')
-            return
-          }
-
-          if ((jwtValue.exp || 0) < Math.round((new Date().getTime() / 1000))) {
-            console.warn(NETLIFYDEVWARN, 'Expired JWT provided in request', req.url)
-          } else {
-            const presentedRoles = get(jwtValue, settings.jwtRolePath) || []
-            if (!Array.isArray(presentedRoles)) {
-              console.warn(NETLIFYDEVWARN, `Invalid roles value provided in JWT ${settings.jwtRolePath}`, presentedRoles)
-              res.writeHead(400)
-              res.end('Invalid JWT provided. Please see logs for more info.')
-              return
-            }
-
-            // Restore the URL if everything is correct
-            if(presentedRoles.some(pr => expectedRoles.includes(pr))) {
-              req.url = originalURL
-            }
-          }
-        }
-      }
-
-      proxy.web(req, res, {
-        target: `http://localhost:${settings.proxyPort}`,
+      const options = {
         match,
+        addonUrls,
+        target: `http://localhost:${settings.proxyPort}`,
         publicFolder: settings.dist,
         functionsServer,
         functionsPort: settings.functionsPort,
-        addonUrls
-      })
+        jwtRolePath: settings.jwtRolePath,
+      }
+
+      if (match) return serveRedirect(req, res, proxy, match, options)
+
+      proxy.web(req, res, options)
     })
   })
 
@@ -263,6 +169,113 @@ async function startProxy(settings, addonUrls) {
 
   server.listen(port)
   return { url: `http://localhost:${port}`, port }
+}
+
+function serveRedirect(req, res, proxy, match, options) {
+  if(!match) return proxy.web(req, res, options)
+
+  options = options || req.proxyOptions || {}
+  options.match = null
+
+  if (!isEmpty(match.proxyHeaders)) {
+    Object.entries(match.proxyHeaders).forEach(([k, v]) => (req.headers[k] = v))
+  }
+
+  if (isFunction(options.functionsPort, req)) {
+    return proxy.web(req, res, { target: options.functionsServer })
+  }
+  const urlForAddons = addonUrl(options.addonUrls, req)
+  if (urlForAddons) {
+    return proxy.web(req, res, { target: urlForAddons })
+  }
+
+  if (match.exceptions && match.exceptions.JWT) {
+    // Some values of JWT can start with :, so, make sure to normalize them
+    const expectedRoles = match.exceptions.JWT.split(',').map(r => r.startsWith(':') ? r.slice(1) : r)
+
+    const cookieValues = cookie.parse(req.headers.cookie || '')
+    const token = cookieValues['nf_jwt']
+
+    // Serve not found by default
+    const originalURL = req.url
+    req.url = '/.netlify/non-existent-path'
+
+    if (token) {
+      let jwtValue = {}
+      try {
+        jwtValue = jwtDecode(token) || {}
+      } catch (err) {
+        console.warn(NETLIFYDEVWARN, 'Error while decoding JWT provided in request', err.message)
+        res.writeHead(400)
+        res.end('Invalid JWT provided. Please see logs for more info.')
+        return
+      }
+
+      if ((jwtValue.exp || 0) < Math.round((new Date().getTime() / 1000))) {
+        console.warn(NETLIFYDEVWARN, 'Expired JWT provided in request', req.url)
+      } else {
+        const presentedRoles = get(jwtValue, options.jwtRolePath) || []
+        if (!Array.isArray(presentedRoles)) {
+          console.warn(NETLIFYDEVWARN, `Invalid roles value provided in JWT ${options.jwtRolePath}`, presentedRoles)
+          res.writeHead(400)
+          res.end('Invalid JWT provided. Please see logs for more info.')
+          return
+        }
+
+        // Restore the URL if everything is correct
+        if(presentedRoles.some(pr => expectedRoles.includes(pr))) {
+          req.url = originalURL
+        }
+      }
+    }
+  }
+
+  const reqUrl = new url.URL(
+    req.url,
+    `${req.protocol || (req.headers.scheme && req.headers.scheme + ':') || 'http:'}//${req.headers['host'] || req.hostname}`
+  )
+  if (match.force404) {
+    res.writeHead(404)
+    return render404(options.publicFolder)
+  }
+
+  if (match.force || (notStatic(reqUrl.pathname, options.publicFolder)) && match.status !== 404) {
+    const dest = new url.URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
+    reqUrl.searchParams.forEach((v, k) => dest.searchParams.append(k, v))
+    if (isRedirect(match)) {
+      res.writeHead(match.status, {
+        Location: match.to,
+        'Cache-Control': 'no-cache'
+      })
+      res.end(`Redirecting to ${match.to}`)
+      return
+    }
+
+    if (isExternal(match)) {
+      console.log(`${NETLIFYDEVLOG} Proxying to `, match.to)
+      const handler = proxyMiddleware({
+        target: `${dest.protocol}//${dest.host}`,
+        changeOrigin: true,
+        pathRewrite: (path, req) => match.to.replace(/https?:\/\/[^/]+/, '')
+      })
+      return handler(req, res, {})
+    }
+
+    req.url = dest.pathname + dest.search
+    console.log(`${NETLIFYDEVLOG} Rewrote URL to `, req.url)
+
+    if (isFunction({ functionsPort: options.functionsPort }, req)) {
+      return proxy.web(req, res, { target: options.functionsServer })
+    }
+    const urlForAddons = addonUrl(options.addonUrls, req)
+    if (urlForAddons) {
+      return proxy.web(req, res, { target: urlForAddons })
+    }
+
+    return proxy.web(req, res, Object.assign({}, options, { status: match.status } ))
+  }
+
+  return proxy.web(req, res, options)
 }
 
 function startDevServer(settings, log) {
