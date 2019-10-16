@@ -241,7 +241,6 @@ function serveRedirect(req, res, proxy, match, options) {
 
   if (match.force || (notStatic(reqUrl.pathname, options.publicFolder)) && match.status !== 404) {
     const dest = new url.URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
-    reqUrl.searchParams.forEach((v, k) => dest.searchParams.append(k, v))
     if (isRedirect(match)) {
       res.writeHead(match.status, {
         Location: match.to,
