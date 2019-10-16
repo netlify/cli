@@ -134,9 +134,9 @@ function initializeProxy(port) {
           if (isFunction({ functionsPort: req.proxyOptions.functionsPort }, req)) {
             return proxy.web(req, res, { target: req.proxyOptions.functionsServer })
           }
-          const addonUrl = addonUrl(req.proxyOptions.addonUrls, req)
-          if (addonUrl) {
-            return proxy.web(req, res, { target: addonUrl })
+          const url = addonUrl(req.proxyOptions.addonUrls, req)
+          if (url) {
+            return proxy.web(req, res, { target: url })
           }
 
           return proxy.web(req, res, Object.assign({}, req.proxyOptions, { status: match.status }))
