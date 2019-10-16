@@ -102,10 +102,7 @@ module.exports = function(config) {
           jwtSecret: config.jwtSecret || 'secret',
           jwtRole: config.jwtRole || 'app_metadata.authorization.roles'
         })
-        .then(m => {
-          matcher = m
-          return matcher
-        })
+        .then(m => matcher = m)
     }
     return Promise.resolve({
       match() {
