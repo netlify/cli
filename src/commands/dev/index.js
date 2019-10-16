@@ -137,9 +137,9 @@ function initializeProxy(port) {
           if (isFunction({ functionsPort: req.proxyOptions.functionsPort }, req)) {
             return proxy.web(req, res, { target: req.proxyOptions.functionsServer })
           }
-          const addonUrl = addonUrl(req.proxyOptions.addonUrls, req)
-          if (addonUrl) {
-            return proxy.web(req, res, { target: addonUrl })
+          const urlForAddons = addonUrl(req.proxyOptions.addonUrls, req)
+          if (urlForAddons) {
+            return proxy.web(req, res, { target: urlForAddons })
           }
 
           return handlers.web(req, res, Object.assign({}, req.proxyOptions, { status: match.status } ))
@@ -187,9 +187,9 @@ async function startProxy(settings, addonUrls) {
     if (isFunction(settings, req)) {
       return proxy.web(req, res, { target: functionsServer })
     }
-    let url = addonUrl(addonUrls, req)
-    if (url) {
-      return proxy.web(req, res, { target: url })
+    let urlForAddons = addonUrl(addonUrls, req)
+    if (urlForAddons) {
+      return proxy.web(req, res, { target: urlForAddons })
     }
 
     rewriter(req, res, match => {
@@ -200,9 +200,9 @@ async function startProxy(settings, addonUrls) {
       if (isFunction(settings, req)) {
         return proxy.web(req, res, { target: functionsServer })
       }
-      url = addonUrl(addonUrls, req)
-      if (url) {
-        return proxy.web(req, res, { target: url })
+      urlForAddons = addonUrl(addonUrls, req)
+      if (urlForAddons) {
+        return proxy.web(req, res, { target: urlForAddons })
       }
 
       if (match && match.exceptions && match.exceptions.JWT) {
