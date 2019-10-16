@@ -9,12 +9,15 @@ const waitPort = require('wait-port')
 const getPort = require('get-port')
 const chokidar = require('chokidar')
 const proxyMiddleware = require('http-proxy-middleware')
+const cookie = require('cookie')
+const get = require('lodash.get')
 const isEmpty = require('lodash.isempty')
 const { serveFunctions } = require('../../utils/serve-functions')
 const { serverSettings } = require('../../utils/detect-server')
 const { detectFunctionsBuilder } = require('../../utils/detect-functions-builder')
 const Command = require('../../utils/command')
 const chalk = require('chalk')
+const jwtDecode = require('jwt-decode')
 const {
   NETLIFYDEV,
   NETLIFYDEVLOG,
@@ -139,7 +142,7 @@ function initializeProxy(port) {
             return proxy.web(req, res, { target: addonUrl })
           }
 
-          return proxy.web(req, res, Object.assign({}, req.proxyOptions, { status: match.status }))
+          return handlers.web(req, res, Object.assign({}, req.proxyOptions, { status: match.status } ))
         }
       }
     }
@@ -175,7 +178,10 @@ async function startProxy(settings, addonUrls) {
 
   const proxy = initializeProxy(settings.proxyPort)
 
-  const rewriter = createRewriter({ publicFolder: settings.dist })
+  const rewriter = createRewriter({
+    publicFolder: settings.dist,
+    jwtRole: settings.jwtRolePath,
+  })
 
   const server = http.createServer(function(req, res) {
     if (isFunction(settings, req)) {
@@ -197,6 +203,47 @@ async function startProxy(settings, addonUrls) {
       url = addonUrl(addonUrls, req)
       if (url) {
         return proxy.web(req, res, { target: url })
+      }
+
+      if (match && match.exceptions && match.exceptions.JWT) {
+        // Some values of JWT can start with :, so, make sure to normalize them
+        const expectedRoles = match.exceptions.JWT.split(',').map(r => r.startsWith(':') ? r.slice(1) : r)
+
+        const cookieValues = cookie.parse(req.headers.cookie || '')
+        const token = cookieValues['nf_jwt']
+
+        // Serve not found by default
+        const originalURL = req.url
+        req.url = '/.netlify/non-existent-path'
+
+        if (token) {
+          let jwtValue = {}
+          try {
+            jwtValue = jwtDecode(token) || {}
+          } catch (err) {
+            console.warn(NETLIFYDEVWARN, 'Error while decoding JWT provided in request', err.message)
+            res.writeHead(400)
+            res.end('Invalid JWT provided. Please see logs for more info.')
+            return
+          }
+
+          if ((jwtValue.exp || 0) < Math.round((new Date().getTime() / 1000))) {
+            console.warn(NETLIFYDEVWARN, 'Expired JWT provided in request', req.url)
+          } else {
+            const presentedRoles = get(jwtValue, settings.jwtRolePath) || []
+            if (!Array.isArray(presentedRoles)) {
+              console.warn(NETLIFYDEVWARN, `Invalid roles value provided in JWT ${settings.jwtRolePath}`, presentedRoles)
+              res.writeHead(400)
+              res.end('Invalid JWT provided. Please see logs for more info.')
+              return
+            }
+
+            // Restore the URL if everything is correct
+            if(presentedRoles.some(pr => expectedRoles.includes(pr))) {
+              req.url = originalURL
+            }
+          }
+        }
       }
 
       proxy.web(req, res, {
@@ -297,9 +344,11 @@ class DevCommand extends Command {
         noCmd: true,
         port: 8888,
         proxyPort: await getPort({ port: 3999 }),
-        dist
+        dist,
+        jwtRolePath: config.dev && config.dev.jwtRolePath,
       }
     }
+    if (!settings.jwtRolePath) settings.jwtRolePath = 'app_metadata.authorization.roles'
 
     // Reset port if not manually specified, to make it dynamic
     if (!(config.dev && config.dev.port) && !flags.port) {
