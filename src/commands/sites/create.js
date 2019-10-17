@@ -4,6 +4,9 @@ const prettyjson = require('prettyjson')
 const chalk = require('chalk')
 const sample = require('lodash.sample')
 const pick = require('lodash.pick')
+const path = require('path')
+const fs = require('fs')
+const ini = require('ini')
 const Command = require('../../utils/command')
 const { track } = require('../../utils/telemetry')
 const configManual = require('../../utils/init/config-manual')
@@ -117,14 +120,36 @@ class SitesCreateCommand extends Command {
 
     if (flags['with-ci']) {
       this.log('Configuring CI')
-      const { url } = await inquirer.prompt([
-        {
-          type: 'input',
-          name: 'url',
-          message: 'Git SSH remote URL to enable CI with:',
-          validate: input => (parseGitRemote(input) ? true : `Could not parse Git remote ${input}`)
+      
+      let url
+      if (flags['ci-remote-url']) {
+        url = flags['ci-remote-url']
+      } 
+      else{
+        // Attempt to retrieve git remote url from git config
+        let defaultInput
+        const gitConfigPath = path.resolve(this.netlify.site.root, '.git/config')
+
+        if (fs.existsSync(gitConfigPath)) {
+          const gitConf = ini.parse(fs.readFileSync(gitConfigPath, 'utf-8'))
+
+          if (gitConf['remote "origin"'] && gitConf['remote "origin"'].url) {
+            defaultInput = gitConf['remote "origin"'].url
+          }
         }
-      ])
+        
+        const answer = await inquirer.prompt([
+          {
+            type: 'input',
+            name: 'url',
+            message: 'Git SSH remote URL to enable CI with:',
+            validate: input => (parseGitRemote(input) ? true : `Could not parse Git remote ${input}`),
+            default: defaultInput
+          }
+        ])
+        url = answer.url
+      }
+    
       console.log(url)
       const repoData = parseGitRemote(url)
       const repo = {
@@ -215,7 +240,11 @@ SitesCreateCommand.flags = {
   manual: flags.boolean({
     char: 'm',
     description: 'Force manual CI setup.  Used --with-ci flag'
-  })
+  }),
+  'ci-remote-url': flags.string({
+    char: 'r',
+    description: 'git remote url used for ci initialization'
+  }),
 }
 
 module.exports = SitesCreateCommand
