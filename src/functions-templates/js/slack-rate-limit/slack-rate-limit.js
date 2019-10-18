@@ -38,7 +38,7 @@ class IdentityAPI {
 
       if (!response.ok) {
         return response.text().then(data => {
-          return Promise.reject({ stauts: response.status, data })
+          return Promise.reject({ status: response.status, data })
         })
       }
       return response.text().then(data => {
@@ -70,58 +70,51 @@ function updateUser(identity, user, app_metadata) {
 }
 
 const oneHour = 60 * 60 * 1000
-module.exports = function handler(event, context, callback) {
+module.exports = async function handler(event, context) {
   if (event.httpMethod !== 'POST') {
-    return callback(null, {
+    console.error('Unsupported Request Method')
+    return {
       statusCode: 410,
       body: 'Unsupported Request Method'
-    })
+    }
   }
 
   const claims = context.clientContext && context.clientContext.user
   if (!claims) {
-    return callback(null, {
+    console.error('You must be signed in to call this function')
+    return {
       statusCode: 401,
       body: 'You must be signed in to call this function'
-    })
+    }
   }
 
-  fetchUser(context.clientContext.identity, claims.sub).then(user => {
-    const lastMessage = new Date(user.app_metadata.last_message_at || 0).getTime()
-    const cutOff = new Date().getTime() - oneHour
+  try {
+    const user = await fetchUser(context.clientContext.identity, claims.sub),
+      lastMessage = new Date(user.app_metadata.last_message_at || 0).getTime(),
+      cutOff = new Date().getTime() - oneHour
+
     if (lastMessage > cutOff) {
-      return callback(null, {
+      return {
         statusCode: 401,
         body: 'Only one message an hour allowed'
-      })
+      }
     }
+    const payload = JSON.parse(event.body)
 
-    try {
-      const payload = JSON.parse(event.body)
-
-      fetch(slackURL, {
-        method: 'POST',
-        body: JSON.stringify({
-          text: payload.text,
-          attachments: [{ text: `From ${user.email}` }]
-        })
+    await fetch(slackURL, {
+      method: 'POST',
+      body: JSON.stringify({
+        text: payload.text,
+        attachments: [{ text: `From ${user.email}` }]
       })
-        .then(() =>
-          updateUser(context.clientContext.identity, user, {
-            last_message_at: new Date().getTime()
-          })
-        )
-        .then(() => {
-          callback(null, { statusCode: 204 })
-        })
-        .catch(err => {
-          callback(null, {
-            statusCode: 500,
-            body: 'Internal Server Error: ' + err
-          })
-        })
-    } catch (e) {
-      callback(null, { statusCode: 500, body: 'Internal Server Error: ' + e })
-    }
-  })
+    })
+
+    await updateUser(context.clientContext.identity, user, {
+      last_message_at: new Date().getTime()
+    })
+
+    return { statusCode: 204 }
+  } catch (e) {
+    return { statusCode: 500, body: 'Internal Server Error: ' + e }
+  }
 }
