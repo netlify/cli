@@ -34,7 +34,7 @@ class APICommand extends Command {
     }
 
     if (!apiMethod) {
-      this.error(`You must provider an API method. Run "netlify api --list" to see available methods`)
+      this.error(`You must provide an API method. Run "netlify api --list" to see available methods`)
     }
 
     if (!api[apiMethod] || typeof api[apiMethod] !== 'function') {
