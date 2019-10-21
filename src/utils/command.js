@@ -12,7 +12,7 @@ const readConfig = require('./read-config')
 const getConfigPath = require('./get-config-path')
 
 const argv = require('minimist')(process.argv.slice(2))
-const { NETLIFY_AUTH_TOKEN } = process.env
+const { NETLIFY_AUTH_TOKEN, NETLIFY_API_URL } = process.env
 
 // Netlify CLI client id. Lives in bot@netlify.com
 // Todo setup client for multiple environments
@@ -37,9 +37,17 @@ class BaseCommand extends Command {
     // Get site id & build state
     const state = new StateConfig(projectRoot)
 
+    const apiOpts = {}
+    if (NETLIFY_API_URL) {
+      const apiUrl = new URL(NETLIFY_API_URL)
+      apiOpts.scheme = apiUrl.protocol.substring(0, apiUrl.protocol.length - 1)
+      apiOpts.host = apiUrl.host
+      apiOpts.pathPrefix = NETLIFY_API_URL === `${apiUrl.protocol}//${apiUrl.host}` ? '/api/v1' : apiUrl.pathname
+    }
+
     this.netlify = {
       // api methods
-      api: new API(token),
+      api: new API(token || '', apiOpts),
       // current site context
       site: {
         root: projectRoot,
