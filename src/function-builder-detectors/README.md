@@ -12,5 +12,5 @@ module.exports = {
 
 example
 
-- [src](https://github.com/netlify/netlify-dev-plugin/blob/6a3992746ae490881105fbed2e11ca444f79e44e/src/function-builder-detectors/netlify-lambda.js#L29)
-- [npmScript](https://github.com/netlify/netlify-dev-plugin/blob/6a3992746ae490881105fbed2e11ca444f79e44e/src/function-builder-detectors/netlify-lambda.js#L30)
+- [src](https://github.com/netlify/cli/blob/f7b7c6adda3903fa02cf1b3fadcef026a4e56c13/src/function-builder-detectors/netlify-lambda.js#L22)
+- [npmScript](https://github.com/netlify/cli/blob/f7b7c6adda3903fa02cf1b3fadcef026a4e56c13/src/function-builder-detectors/netlify-lambda.js#L23)
