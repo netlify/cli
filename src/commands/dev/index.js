@@ -12,6 +12,7 @@ const proxyMiddleware = require('http-proxy-middleware')
 const cookie = require('cookie')
 const get = require('lodash.get')
 const isEmpty = require('lodash.isempty')
+const debounce = require('lodash.debounce')
 const { serveFunctions } = require('../../utils/serve-functions')
 const { serverSettings } = require('../../utils/detect-server')
 const { detectFunctionsBuilder } = require('../../utils/detect-functions-builder')
@@ -385,11 +386,16 @@ class DevCommand extends Command {
         this.warn(
           `${NETLIFYDEVWARN} This is a beta feature, please give us feedback on how to improve at https://github.com/netlify/cli/`
         )
-        await functionBuilder.build()
-        const functionWatcher = chokidar.watch(functionBuilder.src)
-        functionWatcher.on('add', functionBuilder.build)
-        functionWatcher.on('change', functionBuilder.build)
-        functionWatcher.on('unlink', functionBuilder.build)
+
+        const build = functionBuilder.build
+        const debounceTime = settings.functionsBuildDebounceMs || 100
+        const buildDebounced = debounce(build, debounceTime)
+
+        await buildDebounced()
+        const functionWatcher = chokidar.watch(functionBuilder.src, { ignoreInitial: true })
+        functionWatcher.on('add', buildDebounced)
+        functionWatcher.on('change', buildDebounced)
+        functionWatcher.on('unlink', buildDebounced)
       }
       const functionsPort = await getPort({ port: settings.functionsPort || 34567 })
 
