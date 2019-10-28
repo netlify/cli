@@ -11,7 +11,7 @@ class BuildCommand extends Command {
     // GET flags from `raw` data
     const rawFlags = parseRawFlags(raw)
     const cwd = process.cwd()
-    const [ token ] = this.getConfigToken()
+    const [token] = this.getConfigToken()
 
     let configPath
     try {
@@ -22,7 +22,7 @@ class BuildCommand extends Command {
         // Then try site root when top level git folder lives
         configPath = await getConfigPath(site.root)
       } catch (error) {} // eslint-disable-line
-      const location = (site.root === process.cwd()) ? site.root : `${site.root} OR ${cwd}`
+      const location = site.root === process.cwd() ? site.root : `${site.root} OR ${cwd}`
       console.log(`No Netlify Config file found in ${location}`)
       this.exit()
     }
@@ -44,7 +44,7 @@ class BuildCommand extends Command {
         config: configPath,
         token: token,
         dry: rawFlags.dry,
-        verbose: rawFlags.verbose,
+        verbose: rawFlags.verbose
       })
     } catch (err) {
       console.log(err)

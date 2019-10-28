@@ -16,7 +16,7 @@ Use the commands below to provide key information from your environment:
 You do NOT have to include this information if this is a FEATURE REQUEST
 -->
 
-**- Do you want to request a *feature* or report a *bug*?**
+**- Do you want to request a _feature_ or report a _bug_?**
 
 **- What is the current behavior?**
 

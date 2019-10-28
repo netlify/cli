@@ -12,27 +12,25 @@ Lets get rolling with the Netlify CLI.
 
 1. **Install the CLI locally**
 
-    ```bash
-    npm install netlify-cli -g
-    ```
+   ```bash
+   npm install netlify-cli -g
+   ```
 
 2. **Login to your Netlify Account**
 
-    ```bash
-    netlify login
-    ```
+   ```bash
+   netlify login
+   ```
 
-    If you are new to Netlify, you can [create an account here](https://app.netlify.com/).
+   If you are new to Netlify, you can [create an account here](https://app.netlify.com/).
 
+3) **Initialize a new site**
 
-3. **Initialize a new site**
+   Inside of your sites `cwd`, run the following CLI command:
 
-    Inside of your sites `cwd`, run the following CLI command:
-
-    ```bash
-    netlify init
-    ```
-
+   ```bash
+   netlify init
+   ```
 
 ## Link an existing site
 

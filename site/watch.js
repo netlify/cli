@@ -6,25 +6,25 @@ const config = require('./config')
 const watcher = sane(config.docs.srcPath, { glob: ['**/*.md'] })
 
 /* Watch Files */
-watcher.on('ready', function () {
+watcher.on('ready', function() {
   console.log(`Watching ${config.docs.srcPath} files for changes`)
 })
 
-watcher.on('change', function (filepath, root, stat) {
+watcher.on('change', function(filepath, root, stat) {
   console.log('file changed', filepath)
   syncFile(filepath).then(() => {
     // console.log('done')
   })
 })
 
-watcher.on('add', function (filepath, root, stat) {
+watcher.on('add', function(filepath, root, stat) {
   console.log('file added')
   syncFile(filepath).then(() => {
     // console.log('done')
   })
 })
 
-watcher.on('delete', function (filepath, root) {
+watcher.on('delete', function(filepath, root) {
   console.log('file deleted', filepath)
   deleteFile(filepath).then(() => {
     console.log('File deletion complete')

@@ -47,7 +47,7 @@
     "ava": "ava --verbose",
     "test:ava": "nyc --reporter=lcov ava --verbose && nyc report",
     "test:lint": "eslint --fix \"{src,scripts}/**/*.js\"",
-    "test:prettier": "prettier --write --loglevel warn \"src/**/*.js\" \"*.{js,md,yml,json}\"",
+    "test:prettier": "prettier --write --loglevel warn \"{src,scripts,docs,site/src,.circleci,.github}/**/*.{js,md,yml,json,html}\" \"site/*.{js,md}\" \"*.{js,md,yml,json,html}\"",
     "test:cli-version": "npm run start -- --version",
     "test:cli-help": "npm run start -- --help",
     "watch": "nyc --reporter=lcov ava --watch",
