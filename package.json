@@ -66,6 +66,7 @@
     "@netlify/zip-it-and-ship-it": "^0.3.1",
     "@oclif/command": "^1.5.18",
     "@oclif/config": "^1.13.2",
+    "@oclif/dev-cli": "^1.22.2",
     "@oclif/errors": "^1.1.2",
     "@oclif/parser": "^3.8.4",
     "@oclif/plugin-help": "^2.2.0",
@@ -140,7 +141,6 @@
     "write-file-atomic": "^3.0.0"
   },
   "devDependencies": {
-    "@oclif/dev-cli": "^1.22.2",
     "@oclif/test": "^1.2.5",
     "algoliasearch": "^3.34.0",
     "auto-changelog": "^1.14.1",
