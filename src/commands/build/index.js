@@ -1,5 +1,3 @@
-const { cwd } = require('process')
-
 const build = require('@netlify/build')
 const { getConfigPath } = require('@netlify/config')
 const { flags } = require('@oclif/command')
@@ -35,10 +33,14 @@ class BuildCommand extends Command {
   // Try current directory first, then site root
   async getConfig() {
     try {
-      return await getConfigPath([cwd(), this.netlify.site.root])
+      return await getConfigPath()
     } catch (error) {
-      console.error(error.message)
-      this.exit(1)
+      try {
+        return await getConfigPath(undefined, this.netlify.site.root)
+      } catch (error) {
+        console.error(error.message)
+        this.exit(1)
+      }
     }
   }
 }
