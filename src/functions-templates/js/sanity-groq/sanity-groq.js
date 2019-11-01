@@ -26,9 +26,12 @@ const client = sanityClient({
  * Useful for querying private datasets with a token. Usually you will restrict
  * access to this function with for example Netlify Identity.
  *
+ * To explore what queries you can do with GROQ, check out the cheat sheet at
+ * https://www.sanity.io/docs/query-cheat-sheet
+ *
  * Create Sanity.io tokens at https://manage.sanity.io
  *
- * Read more about restricting access to your functions at
+ * Read more about restricting access to your Netlify functions at
  * https://www.netlify.com/blog/2018/03/29/jamstack-architecture-on-netlify-how-identity-and-functions-work-together/#restricting-access
  */
 exports.handler = async event => {
