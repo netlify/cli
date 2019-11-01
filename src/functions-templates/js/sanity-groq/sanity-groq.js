@@ -2,8 +2,8 @@
 const sanityClient = require('@sanity/client')
 
 /*
- * You will need to configure environment variables for Sanity project id and
- * Sanity dataset. Optionally you may also configure a Sanity token, useful for
+ * You will need to configure environment variables for Sanity.io project id
+ * and dataset name. Optionally you may also configure a token, useful for
  * reading private datasets or mutating data. The variables are named
  *
  * SANITY_PROJECTID
@@ -17,16 +17,16 @@ const client = sanityClient({
   projectId: process.env.SANITY_PROJECTID,
   dataset: process.env.SANITY_DATASET,
   token: process.env.SANITY_TOKEN,
-  useCdn: true // `false` if you want to ensure fresh data
+  useCdn: true // CDN will not be used if token is set
 })
 
 /*
- * A proxy for Sanity groq queries.
+ * A proxy for Sanity.io GROQ queries.
  *
  * Useful for querying private datasets with a token. Usually you will restrict
  * access to this function with for example Netlify Identity.
  *
- * Create Sanity tokens at https://manage.sanity.io
+ * Create Sanity.io tokens at https://manage.sanity.io
  *
  * Read more about restricting access to your functions at
  * https://www.netlify.com/blog/2018/03/29/jamstack-architecture-on-netlify-how-identity-and-functions-work-together/#restricting-access
