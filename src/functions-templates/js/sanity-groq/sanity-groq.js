@@ -40,19 +40,18 @@ exports.handler = async event => {
 
   return client
     .fetch(query, params)
-    .then(rows => {
+    .then(result => {
       return {
         statusCode: 200,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(rows)
+        body: JSON.stringify(result)
       }
     })
     .catch(error => {
-      const contentType = error.response.headers['content-type'] || 'application/json'
       return {
-        headers: { 'Content-Type': contentType },
+        headers: { 'Content-Type': 'application/json' },
         statusCode: error.statusCode || 500,
-        body: error.responseBody
+        body: error.responseBody || JSON.stringify({ error: 'Unknown error occurred' })
       }
     })
 }
