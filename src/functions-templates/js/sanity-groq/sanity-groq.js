@@ -2,7 +2,7 @@
 const sanityClient = require('@sanity/client')
 
 /*
- * You will need to configure environemnt variables for Sanity project id and
+ * You will need to configure environment variables for Sanity project id and
  * Sanity dataset. Optionally you may also configure a Sanity token, useful for
  * reading private datasets or mutating data. The variables are named
  *
