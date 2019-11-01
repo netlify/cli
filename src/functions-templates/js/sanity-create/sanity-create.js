@@ -25,14 +25,15 @@ const client = sanityClient({
 /*
  * A function for writing to a Sanity.io dataset with a write access token.
  *
- * In this example we accept POST request with the following JSON body
+ * In this example we accept POST requests with the following JSON body
  *
  * {
  *    "author": "A name",
  *    "message": "What I want to say"
  * }
  *
- * and then we save this in Sanity.io, returning the full saved object
+ * Then we construct an object to save in Sanity.io and return the full saved
+ * object back to our caller
  */
 exports.handler = async event => {
   if (!event.httpMethod === 'POST') {
@@ -49,6 +50,7 @@ exports.handler = async event => {
 
   const document = {
     _type: 'comment',
+    status: 'waitingApproval', // Some workflow state
     author: payload.author || 'Anonymous',
     message: payload.message
   }
