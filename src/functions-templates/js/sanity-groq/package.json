@@ -1,7 +1,7 @@
 {
   "name": "sanity-groq",
   "version": "1.0.0",
-  "description": "netlify functions:create - Query a Sanity.io dataset with groq",
+  "description": "netlify functions:create - Query a Sanity.io dataset with GROQ",
   "main": "sanity-groq.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -11,7 +11,7 @@
     "serverless",
     "js",
     "sanity",
-    "groq"
+    "GROQ"
   ],
   "author": "Sanity.io",
   "license": "MIT",
