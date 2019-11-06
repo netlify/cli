@@ -21,8 +21,8 @@ const jwtDecode = require('jwt-decode')
 const {
   NETLIFYDEV,
   NETLIFYDEVLOG,
-  NETLIFYDEVWARN
-  // NETLIFYDEVERR
+  NETLIFYDEVWARN,
+  NETLIFYDEVERR
 } = require('netlify-cli-logo')
 const boxen = require('boxen')
 const { createTunnel, connectTunnel } = require('../../utils/live-tunnel')
@@ -123,7 +123,14 @@ function initializeProxy(port) {
 }
 
 async function startProxy(settings, addonUrls) {
-  await waitPort({ port: settings.proxyPort })
+  try {
+    await waitPort({ port: settings.proxyPort })
+  } catch(err) {
+    console.error(NETLIFYDEVERR, `Netlify Dev doesn't know what port your site is running on.`)
+    console.error(NETLIFYDEVERR, `Please set --targetPort.`)
+    process.exit(1)
+  }
+
   if (settings.functionsPort) {
     await waitPort({ port: settings.functionsPort })
   }
