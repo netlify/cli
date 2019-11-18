@@ -140,7 +140,7 @@ class BaseCommand extends Command {
       Object.assign(
         {},
         {
-          context: 'foo'
+          context: this
         },
         opts
       )
