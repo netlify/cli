@@ -9,8 +9,8 @@ const StateConfig = require('./state-config')
 const globalConfig = require('./global-config')
 const findRoot = require('./find-root')
 const chalkInstance = require('./chalk')
-const readConfig = require('./read-config')
-const getConfigPath = require('./get-config-path')
+const resolveConfig = require('@netlify/config')
+const getConfigPath = require('@netlify/config').getConfigPath
 
 const argv = require('minimist')(process.argv.slice(2))
 const { NETLIFY_AUTH_TOKEN, NETLIFY_API_URL } = process.env
@@ -25,16 +25,19 @@ class BaseCommand extends Command {
   }
   // Initialize context
   async init(_projectRoot) {
-    const projectRoot = findRoot(_projectRoot || process.cwd()) // if calling programmatically, can use a supplied root, else in normal CLI context it just uses process.cwd()
+    const cwd = argv.cwd || process.cwd()
+    const projectRoot = findRoot(_projectRoot || cwd) // if calling programmatically, can use a supplied root, else in normal CLI context it just uses process.cwd()
     // Grab netlify API token
     const authViaFlag = getAuthArg(argv)
 
     const [token] = this.getConfigToken(authViaFlag)
-    // Get site config from netlify.toml
-    const configPath = getConfigPath(projectRoot)
-    // TODO: https://github.com/request/caseless to handle key casing issues
-    const config = readConfig(configPath)
 
+    // Read new netlify.toml/yml/json
+    const configPath = await getConfigPath(argv.config, cwd)
+    const config = await resolveConfig(configPath, {
+      cwd: cwd,
+      context: argv.context
+    })
     // Get site id & build state
     const state = new StateConfig(projectRoot)
 
@@ -137,7 +140,7 @@ class BaseCommand extends Command {
       Object.assign(
         {},
         {
-          context: this
+          context: 'foo'
         },
         opts
       )
