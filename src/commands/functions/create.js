@@ -16,7 +16,7 @@ const {
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
   NETLIFYDEVERR
-} = require('netlify-cli-logo')
+} = require('../../utils/logo')
 
 const templatesDir = path.resolve(__dirname, '../../functions-templates')
 

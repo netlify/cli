@@ -24,7 +24,7 @@ const {
   NETLIFYDEVLOG,
   NETLIFYDEVWARN
   // NETLIFYDEVERR
-} = require('netlify-cli-logo')
+} = require('../../utils/logo')
 const boxen = require('boxen')
 const { createTunnel, connectTunnel } = require('../../utils/live-tunnel')
 const createRewriter = require('../../utils/rules-proxy')

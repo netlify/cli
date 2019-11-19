@@ -5,7 +5,7 @@ const redirector = require('netlify-redirector')
 const chokidar = require('chokidar')
 const cookie = require('cookie')
 const redirectParser = require('./redirect-parser')
-const { NETLIFYDEVWARN } = require('netlify-cli-logo')
+const { NETLIFYDEVWARN } = require('./logo')
 
 function parseFile(parser, name, data) {
   const result = parser(data)

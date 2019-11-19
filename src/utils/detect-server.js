@@ -1,6 +1,6 @@
 const path = require('path')
 const chalk = require('chalk')
-const { NETLIFYDEVLOG } = require('netlify-cli-logo')
+const { NETLIFYDEVLOG } = require('./logo')
 const inquirer = require('inquirer')
 const fuzzy = require('fuzzy')
 const fs = require('fs')
