@@ -33,11 +33,20 @@ class BaseCommand extends Command {
     const [token] = this.getConfigToken(authViaFlag)
 
     // Read new netlify.toml/yml/json
-    const configPath = await getConfigPath(argv.config, cwd)
-    const config = await resolveConfig(configPath, {
-      cwd: cwd,
-      context: argv.context
-    })
+    let configPath = projectRoot
+    let config = {}
+    try {
+      configPath = await getConfigPath(argv.config, cwd)
+      config = await resolveConfig(configPath, {
+        cwd: cwd,
+        context: argv.context
+      })
+    } catch (err) {
+      // Suppress config not found error for CLI. @TODO Revisit
+      if (err.message.indexOf('No netlify configuration file was found') === -1) {
+        throw err
+      }
+    }
     // Get site id & build state
     const state = new StateConfig(projectRoot)
 
