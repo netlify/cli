@@ -33,7 +33,7 @@ class BaseCommand extends Command {
     const [token] = this.getConfigToken(authViaFlag)
 
     // Read new netlify.toml/yml/json
-    let configPath = projectRoot
+    let configPath
     let config = {}
     try {
       configPath = await getConfigPath(argv.config, cwd)
