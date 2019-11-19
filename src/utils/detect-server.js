@@ -4,25 +4,25 @@ const { NETLIFYDEVLOG } = require('./logo')
 const inquirer = require('inquirer')
 const fuzzy = require('fuzzy')
 const fs = require('fs')
-const detectors = fs
-  .readdirSync(path.join(__dirname, '..', 'detectors'))
-  .filter(x => x.endsWith('.js')) // only accept .js detector files
-  .map(det => {
-    try {
-      return require(path.join(__dirname, '..', `detectors/${det}`))
-    } catch (err) {
-      console.error(
-        `failed to load detector: ${chalk.yellow(
-          det
-        )}, this is likely a bug in the detector, please file an issue in netlify-dev-plugin`,
-        err
-      )
-      return null
-    }
-  })
-  .filter(Boolean)
 
 module.exports.serverSettings = async devConfig => {
+  const detectors = fs
+    .readdirSync(path.join(__dirname, '..', 'detectors'))
+    .filter(x => x.endsWith('.js')) // only accept .js detector files
+    .map(det => {
+      try {
+        return require(path.join(__dirname, '..', `detectors/${det}`))
+      } catch (err) {
+        console.error(
+          `failed to load detector: ${chalk.yellow(
+            det
+          )}, this is likely a bug in the detector, please file an issue in netlify-dev-plugin`,
+          err
+        )
+        return null
+      }
+    })
+    .filter(Boolean)
   let settingsArr = []
   let settings = null
   for (const i in detectors) {
