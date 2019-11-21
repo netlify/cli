@@ -25,23 +25,10 @@ class BuildCommand extends Command {
     const { dry = false } = parseRawFlags(raw)
     const [token] = this.getConfigToken()
 
-    const config = await this.getConfig()
+    // Try current directory first, then site root
+    const config = (await getConfigPath()) || (await getConfigPath(undefined, this.netlify.site.root))
 
     return { config, token, dry }
-  }
-
-  // Try current directory first, then site root
-  async getConfig() {
-    try {
-      return await getConfigPath()
-    } catch (error) {
-      try {
-        return await getConfigPath(undefined, this.netlify.site.root)
-      } catch (error) {
-        console.error(error.message)
-        this.exit(1)
-      }
-    }
   }
 }
 
