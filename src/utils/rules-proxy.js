@@ -4,7 +4,7 @@ const url = require('url')
 const redirector = require('netlify-redirector')
 const chokidar = require('chokidar')
 const cookie = require('cookie')
-const redirectParser = require('./redirect-parser')
+const redirectParser = require('netlify-redirect-parser')
 const { NETLIFYDEVWARN } = require('netlify-cli-logo')
 
 function parseFile(parser, name, data) {
@@ -19,35 +19,50 @@ function parseFile(parser, name, data) {
 }
 
 function parseRules(projectDir, publicDir) {
-  let rules = []
+  const rules = []
 
   const generatedRedirectsPath = path.resolve(publicDir, '_redirects')
   if (fs.existsSync(generatedRedirectsPath)) {
-    rules = rules.concat(
+    rules.push(...
       parseFile(redirectParser.parseRedirectsFormat, '_redirects', fs.readFileSync(generatedRedirectsPath, 'utf-8'))
     )
   }
 
   const baseRedirectsPath = path.resolve(projectDir, '_redirects')
   if (fs.existsSync(baseRedirectsPath)) {
-    rules = rules.concat(
+    rules.push(...
       parseFile(redirectParser.parseRedirectsFormat, '_redirects', fs.readFileSync(baseRedirectsPath, 'utf-8'))
     )
   }
 
   const generatedTOMLPath = path.resolve(projectDir, 'netlify.toml')
   if (fs.existsSync(generatedTOMLPath)) {
-    rules = rules.concat(
+    rules.push(...
       parseFile(redirectParser.parseTomlFormat, 'generated netlify.toml', fs.readFileSync(generatedTOMLPath, 'utf-8'))
     )
   }
 
   const baseTOMLPath = path.resolve(projectDir, 'netlify.toml')
   if (fs.existsSync(baseTOMLPath)) {
-    rules = rules.concat(
+    rules.push(...
       parseFile(redirectParser.parseTomlFormat, 'base netlify.toml', fs.readFileSync(baseTOMLPath, 'utf-8'))
     )
   }
+
+  const generatedYAMLPath = path.resolve(projectDir, 'netlify.yml')
+  if (fs.existsSync(generatedYAMLPath)) {
+    rules.push(...
+      parseFile(redirectParser.parseYamlFormat, 'generated netlify.yml', fs.readFileSync(generatedYAMLPath, 'utf-8'))
+    )
+  }
+
+  const baseYAMLPath = path.resolve(projectDir, 'netlify.yml')
+  if (fs.existsSync(baseYAMLPath)) {
+    rules.push(...
+      parseFile(redirectParser.parseYamlFormat, 'base netlify.yml', fs.readFileSync(baseYAMLPath, 'utf-8'))
+    )
+  }
+
   return rules
 }
 
