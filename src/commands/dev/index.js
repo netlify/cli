@@ -431,11 +431,14 @@ class DevCommand extends Command {
         }
       })
 
-      try {
-        await open(url)
-      } catch (err) {
-        console.warn(NETLIFYDEVWARN, 'Error while opening dev server URL in browser', err.message)
+      if (!isEmpty(config.dev) && (!config.dev.hasOwnProperty('autoLaunch') || config.dev.autoLaunch !== false)) {
+        try {
+          await open(url)
+        } catch (err) {
+          console.warn(NETLIFYDEVWARN, 'Error while opening dev server URL in browser', err.message)
+        }
       }
+
       // boxen doesnt support text wrapping yet https://github.com/sindresorhus/boxen/issues/16
       const banner = require('wrap-ansi')(chalk.bold(`${NETLIFYDEVLOG} Server now ready on ${url}`), 70)
       process.env.URL = url
