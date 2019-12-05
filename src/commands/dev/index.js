@@ -316,7 +316,6 @@ function startDevServer(settings, log) {
 
 class DevCommand extends Command {
   async run() {
-    let ps
     this.log(`${NETLIFYDEV}`)
     let { flags } = this.parse(DevCommand)
     const { api, site, config } = this.netlify
@@ -377,7 +376,7 @@ class DevCommand extends Command {
       }
     }
 
-    ps = startDevServer(settings, this.log)
+    const ps = startDevServer(settings, this.log)
     await Promise.all([ps, (async () => {
       // serve functions from zip-it-and-ship-it
       // env variables relies on `url`, careful moving this code
