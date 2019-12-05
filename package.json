@@ -69,7 +69,6 @@
     "@oclif/errors": "^1.1.2",
     "@oclif/parser": "^3.8.4",
     "@oclif/plugin-help": "^2.2.0",
-    "@oclif/plugin-not-found": "^1.1.4",
     "@oclif/plugin-plugins": "^1.7.8",
     "@octokit/rest": "^16.28.1",
     "ansi-styles": "^3.2.1",
@@ -189,7 +188,6 @@
     "bin": "netlify",
     "commands": "./src/commands",
     "plugins": [
-      "@oclif/plugin-not-found",
       "@oclif/plugin-plugins",
       "@oclif/plugin-help"
     ],
