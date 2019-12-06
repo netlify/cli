@@ -103,7 +103,7 @@ class LinkCommand extends Command {
       return this.exit()
     }
 
-    siteData = await linkPrompt(this)
+    siteData = await linkPrompt({...this, flags})
     return siteData
   }
 }
@@ -118,7 +118,10 @@ LinkCommand.flags = {
   }),
   name: flags.string({
     description: 'Name of site to link to'
-  })
+  }),
+  gitRemoteName: flags.string({
+    description: 'Name of Git remote to use. e.g. "origin"'
+  }),
 }
 
 module.exports = LinkCommand
