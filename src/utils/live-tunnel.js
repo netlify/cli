@@ -9,7 +9,7 @@ const {
   NETLIFYDEVLOG,
   // NETLIFYDEVWARN,
   NETLIFYDEVERR
-} = require('netlify-cli-logo')
+} = require('./logo')
 
 async function createTunnel(siteId, netlifyApiToken, log) {
   await installTunnelClient(log)
