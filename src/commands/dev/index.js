@@ -457,7 +457,7 @@ class DevCommand extends Command {
       for (const proc of list) {
         process.kill(proc.pid)
       }
-      process.kill(ps.pid)
+      if (!isEmpty(ps)) process.kill(ps.pid)
     })
   }
 }
