@@ -7,6 +7,11 @@ const { parseRawFlags } = require('../../utils/parse-raw-flags')
 class BuildCommand extends Command {
   // Run Netlify Build
   async run() {
+    /*
+      @TODO remove this.getOptions() & use the parsed config from Command.
+      this.netlify.config contains resolved config via @netlify/config
+      @netlify/build currently takes a path to config and resolves config values again
+    */
     const options = await this.getOptions()
 
     await this.config.runHook('analytics', {
