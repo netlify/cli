@@ -21,6 +21,7 @@ class BuildCommand extends Command {
 
   // Retrieve Netlify Build options
   async getOptions() {
+    const { site } = this.netlify
     const { raw } = this.parse(BuildCommand)
     const { dry = false } = parseRawFlags(raw)
     const [token] = this.getConfigToken()
@@ -28,7 +29,15 @@ class BuildCommand extends Command {
     // Try current directory first, then site root
     const config = (await getConfigPath()) || (await getConfigPath(undefined, this.netlify.site.root))
 
-    return { config, token, dry }
+    let options = {
+      config,
+      token,
+      dry
+    }
+    if (site.id) {
+      options.siteId = site.id
+    }
+    return options
   }
 }
 
