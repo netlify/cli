@@ -46,7 +46,7 @@ function getDependencies(filename, basedir) {
   const localFilesToProcess = [filename]
 
   function handle(name, basedir, optionalDependencies) {
-    const moduleName = requirePackageName(name.replace(/\\/, '/'))
+    const moduleName = requirePackageName(name.replace(/\\/g, '/'))
 
     if (alwaysIgnored.has(moduleName)) {
       return
