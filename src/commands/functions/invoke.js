@@ -168,7 +168,6 @@ function processPayloadFromFlag(payloadString) {
         return payload
       } catch (err) {
         console.error(err)
-        payload = false
       }
     }
     // case 3: invalid string, invalid path
