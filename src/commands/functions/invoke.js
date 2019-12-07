@@ -162,7 +162,7 @@ function processPayloadFromFlag(payloadString) {
     // case 2: jsonpath
     const payloadpath = path.join(process.cwd(), payloadString)
     const pathexists = fs.existsSync(payloadpath)
-    if (!payload && pathexists) {
+    if (pathexists) {
       try {
         payload = require(payloadpath) // there is code execution potential here
         return payload
