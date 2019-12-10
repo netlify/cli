@@ -1,8 +1,6 @@
-const fs = require('fs')
 const path = require('path')
 const markdownMagic = require('markdown-magic')
 const stripAnsi = require('strip-ansi')
-const globby = require('markdown-magic').globby
 const generateCommandData = require('./generateCommandData')
 
 process.env.DOCS_GEN = 'TRUE'
