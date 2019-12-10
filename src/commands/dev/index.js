@@ -338,7 +338,7 @@ class DevCommand extends Command {
     let settings = await serverSettings(Object.assign({}, config.dev, flags))
     
     if (!settings.proxyPort) {
-      settings.proxyPort = await getPort({ port: 3999 }) // in case detector is bypassed
+      settings.proxyPort = config.dev.proxyPort || 8080 // in case detector is bypassed
     }
     
     if (flags.dir || !(settings && settings.command)) {
