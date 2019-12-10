@@ -1,6 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const markdownMagic = require('markdown-magic')
+const stripAnsi = require('strip-ansi')
 const globby = require('markdown-magic').globby
 const generateCommandData = require('./generateCommandData')
 
@@ -20,7 +21,7 @@ const config = {
       if (info) {
         let md = ''
         // Parent Command
-        md += formatDescription(info.description)
+        md += formatDescription(stripAnsi(info.description))
         md += formatUsage(command, info)
         md += formatArgs(info.args)
         md += formatFlags(info.flags)
@@ -31,7 +32,7 @@ const config = {
           info.commands.forEach(subCmd => {
             // Child Commands
             md += formatSubCommandTitle(subCmd.name)
-            md += formatDescription(subCmd.description)
+            md += formatDescription(stripAnsi(subCmd.description))
             md += formatUsage(subCmd.name, subCmd)
             md += formatArgs(subCmd.args)
             md += formatFlags(subCmd.flags)
@@ -50,7 +51,7 @@ const config = {
       Object.keys(commandData).map(commandName => {
         const info = commandData[commandName]
         md += commandListTitle(commandName, context)
-        md += commandListDescription(info.description)
+        md += commandListDescription(stripAnsi(info.description))
         md += commandListSubCommandDisplay(info.commands, context)
       })
 
@@ -64,16 +65,6 @@ const markdownFiles = [path.join(rootDir, 'README.md'), path.join(rootDir, 'docs
 
 // Generate docs
 markdownMagic(markdownFiles, config, () => {
-  /* Post process the docs */
-  const processedDocs = globby.sync(['../docs/**/**.md'])
-  processedDocs.map(f => {
-    const filePath = path.resolve(f)
-    const fileContents = fs.readFileSync(filePath, 'utf8')
-
-    // Fix garbage chalk output
-    const updatedContents = fileContents.replace(/\[92m/, '').replace(/\[39m/, '')
-    fs.writeFileSync(filePath, updatedContents)
-  })
   console.log('Docs updated!')
 })
 
