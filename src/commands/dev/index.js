@@ -336,7 +336,11 @@ class DevCommand extends Command {
     process.env.NETLIFY_DEV = 'true'
 
     let settings = await serverSettings(Object.assign({}, config.dev, flags))
-
+    
+    if (!settings.proxyPort) {
+      settings.proxyPort = await getPort({ port: 3999 }) // in case detector is bypassed
+    }
+    
     if (flags.dir || !(settings && settings.command)) {
       let dist
       if (flags.dir) {
