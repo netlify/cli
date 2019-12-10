@@ -7,7 +7,7 @@ description: Run netlify dev locally
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
 Manage netlify functions
-The [92m`functions`[39m command will help you manage the functions in this site
+The `functions` command will help you manage the functions in this site
 
 
 **Usage**
@@ -18,9 +18,9 @@ netlify functions
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`functions:build`](/commands/functions#functionsbuild) | build functions locally  |
-| [`functions:create`](/commands/functions#functionscreate) | create a new function locally  |
-| [`functions:invoke`](/commands/functions#functionsinvoke) | trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions  |
+| [`functions:build`](/commands/functions#functionsbuild) | Build functions locally  |
+| [`functions:create`](/commands/functions#functionscreate) | Create a new function locally  |
+| [`functions:invoke`](/commands/functions#functionsinvoke) | Trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions  |
 
 
 **Examples**
@@ -33,7 +33,7 @@ netlify functions:build --name function-abc --timeout 30s
 ---
 ## `functions:build`
 
-build functions locally
+Build functions locally
 
 
 **Usage**
@@ -50,7 +50,7 @@ netlify functions:build
 ---
 ## `functions:create`
 
-create a new function locally
+Create a new function locally
 
 **Usage**
 
@@ -78,7 +78,7 @@ netlify functions:create --name hello-world
 ---
 ## `functions:invoke`
 
-trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions
+Trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions
 
 **Usage**
 

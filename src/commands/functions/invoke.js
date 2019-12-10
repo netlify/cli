@@ -212,7 +212,7 @@ async function getNameFromArgs(functions, args, flags) {
   return functionToTrigger
 }
 
-FunctionsInvokeCommand.description = `trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions`
+FunctionsInvokeCommand.description = `Trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions`
 FunctionsInvokeCommand.aliases = ['function:trigger']
 
 FunctionsInvokeCommand.examples = [

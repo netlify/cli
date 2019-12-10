@@ -1,10 +1,10 @@
 # Netlify CLI
 
-[![npm version][npm-img]][npm] [![build status][azure-img]][azure] [![coverage][coverage-img]][coverage] [![dependencies][david-img]][david] [![downloads][dl-img]][dl] [![netlify-status][netlify-img]][netlify]
+[![npm version][npm-img]][npm] [![downloads][dl-img]][dl] [![netlify-status][netlify-img]][netlify] [![dependencies][david-img]][david]
 
-Welcome to the Netlify CLI! The new 2.0 version was rebuilt from the ground up to help improve the site building experience.
+Interact with [Netlify](http://netlify.com/) from the comfort of your CLI.
 
-> ⚠️ **If you are looking for docs on [Netlify Dev](https://www.netlify.com/blog/2019/04/09/netlify-dev--our-entire-platform-right-on-your-laptop/)**, the `netlify-dev-plugin` repo was recently merged into this one. [See Netlify Dev Docs here](https://github.com/netlify/cli/blob/master/docs/netlify-dev.md).
+See the [CLI command line reference](https://cli.netlify.com/commands/) to get started and the docs on using [Netlify Dev](https://github.com/netlify/cli/blob/master/docs/netlify-dev.md) to run your site locally.
 
 ## Table of Contents
 
@@ -103,9 +103,9 @@ Manage netlify functions
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`functions:build`](/docs/commands/functions.md#functionsbuild) | build functions locally  |
-| [`functions:create`](/docs/commands/functions.md#functionscreate) | create a new function locally  |
-| [`functions:invoke`](/docs/commands/functions.md#functionsinvoke) | trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions  |
+| [`functions:build`](/docs/commands/functions.md#functionsbuild) | Build functions locally  |
+| [`functions:create`](/docs/commands/functions.md#functionscreate) | Create a new function locally  |
+| [`functions:invoke`](/docs/commands/functions.md#functionsinvoke) | Trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions  |
 
 
 ### [init](/docs/commands/init.md)
@@ -185,16 +185,10 @@ MIT. See [LICENSE](LICENSE) for more details.
 
 [npm-img]: https://img.shields.io/npm/v/netlify-cli.svg
 [npm]: https://npmjs.org/package/netlify-cli
-[azure-img]: https://dev.azure.com/netlify/Netlify%20CLI/_apis/build/status/netlify.cli?branchName=master
-[azure]: https://dev.azure.com/netlify/Netlify%20CLI/_build?definitionId=3
-[travis-img]: https://img.shields.io/travis/netlify/cli/master.svg
-[travis]: https://travis-ci.org/netlify/cli
 [av-img]: https://ci.appveyor.com/api/projects/status/imk2qjc34ly7x11b/branch/master?svg=true
 [av]: https://ci.appveyor.com/project/netlify/cli
 [dl-img]: https://img.shields.io/npm/dm/netlify-cli.svg
 [dl]: https://npmjs.org/package/netlify-cli
-[coverage-img]: https://img.shields.io/coveralls/netlify/cli/master.svg
-[coverage]: https://coveralls.io/github/netlify/cli
 [david-img]: https://david-dm.org/netlify/cli/status.svg
 [david]: https://david-dm.org/netlify/cli
 [netlify-img]: https://api.netlify.com/api/v1/badges/d3807379-2dcf-4a43-9c00-e7e8d90ecf70/deploy-status
