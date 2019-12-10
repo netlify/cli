@@ -60,7 +60,6 @@
     "postinstall": "node ./scripts/postinstall.js"
   },
   "dependencies": {
-    "@iarna/toml": "^2.2.3",
     "@netlify/build": "^0.1.7",
     "@netlify/config": "^0.1.7",
     "@netlify/zip-it-and-ship-it": "^0.3.1",
@@ -117,7 +116,6 @@
     "make-dir": "^3.0.0",
     "minimist": "^1.2.0",
     "netlify": "^2.4.8",
-    "netlify-cli-logo": "^1.0.0",
     "netlify-redirect-parser": "^1.0.3",
     "netlify-redirector": "^0.1.0",
     "node-fetch": "^2.6.0",
