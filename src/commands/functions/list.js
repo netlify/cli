@@ -46,7 +46,9 @@ class FunctionsListCommand extends Command {
       (config.build && config.build.Functions)
 
     if (typeof functionsDir === 'undefined') {
-      this.error('Functions directory is undefined, did you forget to set it in netlify.toml?')
+      this.log('Functions directory is undefined')
+      this.log('Please verify build.functions is set in your Netlify configuration file (netlify.toml/yml/json)')
+      this.log('See https://docs.netlify.com/configure-builds/file-based-configuration/ for more information')
       process.exit(1)
     }
 
