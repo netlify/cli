@@ -58,6 +58,8 @@ class DeployCommand extends Command {
       } else if (initChoice === EXISTING_SITE) {
         // run link command
         siteData = await LinkCommand.run([], false)
+        site.id = siteData.id
+        siteId = site.id
       }
     } else {
       try {
