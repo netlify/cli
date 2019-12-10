@@ -70,9 +70,9 @@ Manage netlify functions
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`functions:build`](/commands/functions#functionsbuild) | build functions locally  |
-| [`functions:create`](/commands/functions#functionscreate) | create a new function locally  |
-| [`functions:invoke`](/commands/functions#functionsinvoke) | trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions  |
+| [`functions:build`](/commands/functions#functionsbuild) | Build functions locally  |
+| [`functions:create`](/commands/functions#functionscreate) | Create a new function locally  |
+| [`functions:invoke`](/commands/functions#functionsinvoke) | Trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions  |
 
 
 ### [init](/commands/init)

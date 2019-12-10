@@ -86,7 +86,7 @@ class FunctionsListCommand extends Command {
   }
 }
 
-FunctionsListCommand.description = `list functions that exist locally
+FunctionsListCommand.description = `List functions that exist locally
 
 Helpful for making sure that you have formatted your functions correctly
 

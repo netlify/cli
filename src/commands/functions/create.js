@@ -51,7 +51,7 @@ FunctionsCreateCommand.args = [
   }
 ]
 
-FunctionsCreateCommand.description = `create a new function locally`
+FunctionsCreateCommand.description = `Create a new function locally`
 
 FunctionsCreateCommand.examples = [
   'netlify functions:create',
