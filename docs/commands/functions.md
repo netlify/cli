@@ -18,9 +18,9 @@ netlify functions
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`functions:build`](/commands/functions#functionsbuild) | Build functions locally  |
-| [`functions:create`](/commands/functions#functionscreate) | Create a new function locally  |
-| [`functions:invoke`](/commands/functions#functionsinvoke) | Trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions  |
+| [`functions:build`](/commands/functions.md#functionsbuild) | Build functions locally  |
+| [`functions:create`](/commands/functions.md#functionscreate) | Create a new function locally  |
+| [`functions:invoke`](/commands/functions.md#functionsinvoke) | Trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions  |
 
 
 **Examples**
