@@ -43,7 +43,6 @@ const config = {
     },
     GENERATE_COMMANDS_LIST(content, options, instance) {
       const context = path.basename(instance.originalPath, '.md')
-      console.log('context', context)
       /* Generate Command List */
       let md = ''
       Object.keys(commandData).map(commandName => {
@@ -74,7 +73,7 @@ function commandExamples(examples) {
   let exampleRender = `**Examples**${newLine}`
   exampleRender += '```bash\n'
   examples.forEach(ex => {
-    console.log('ex', ex)
+    // console.log('ex', ex)
     exampleRender += `${ex}\n`
   })
   exampleRender += `\`\`\`${newLine}`
@@ -83,7 +82,7 @@ function commandExamples(examples) {
 
 /* Start - Docs Templating logic */
 function commandListTitle(command, context) {
-  const url = context === 'README' ? `/docs/commands/${command}.md` : `/commands/${command}`
+  const url = `/docs/commands/${command}.md`
   // const url  = (context === 'README') ? `/docs/${command}.md` : `/${command}`
   return `### [${command}](${url})${newLine}`
 }
@@ -101,7 +100,7 @@ function commandListSubCommandDisplay(commands, context) {
   table += '|:--------------------------- |:-----|\n'
   commands.forEach(cmd => {
     const commandBase = cmd.name.split(':')[0]
-    const baseUrl = context === 'README' ? `/docs/commands/${commandBase}.md` : `/commands/${commandBase}`
+    const baseUrl = `/docs/commands/${commandBase}.md`
     // const baseUrl = (context === 'README') ? `/docs/${commandBase}.md` : `/${commandBase}`
     const slug = cmd.name.replace(/:/g, '')
     table += `| [\`${cmd.name}\`](${baseUrl}#${slug}) | ${cmd.description.split('\n')[0]}  |\n`
@@ -112,7 +111,7 @@ function formatUsage(commandName, info) {
   const defaultUsage = `netlify ${commandName}`
 
   if (commandName === 'sites:delete') {
-    console.log(info)
+    // console.log(info)
   }
 
   const usageString = info.usage || defaultUsage

@@ -21,11 +21,11 @@ netlify addons
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`addons:auth`](/commands/addons#addonsauth) | Login to add-on provider  |
-| [`addons:config`](/commands/addons#addonsconfig) | Configure add-on settings  |
-| [`addons:create`](/commands/addons#addonscreate) | Add an add-on extension to your site  |
-| [`addons:delete`](/commands/addons#addonsdelete) | Remove an add-on extension to your site  |
-| [`addons:list`](/commands/addons#addonslist) | List currently installed add-ons for site  |
+| [`addons:auth`](/docs/commands/addons.md#addonsauth) | Login to add-on provider  |
+| [`addons:config`](/docs/commands/addons.md#addonsconfig) | Configure add-on settings  |
+| [`addons:create`](/docs/commands/addons.md#addonscreate) | Add an add-on extension to your site  |
+| [`addons:delete`](/docs/commands/addons.md#addonsdelete) | Remove an add-on extension to your site  |
+| [`addons:list`](/docs/commands/addons.md#addonslist) | List currently installed add-ons for site  |
 
 
 **Examples**
