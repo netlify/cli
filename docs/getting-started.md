@@ -24,7 +24,7 @@ Lets get rolling with the Netlify CLI.
 
    If you are new to Netlify, you can [create an account here](https://app.netlify.com/).
 
-3) **Initialize a new site**
+3. **Initialize a new site**
 
    Inside of your sites `cwd`, run the following CLI command:
 
