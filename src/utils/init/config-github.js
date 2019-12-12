@@ -49,8 +49,12 @@ async function configGithub(ctx, site, repo) {
   let defaultBuildCmd,
     defaultBuildDir = '.'
   const { build } = ctx.netlify.config // read from netlify toml
-  if (build && build.command) defaultBuildCmd = build.command
-  if (build && build.publish) defaultBuildDir = build.publish
+  if (build && build.command) {
+    defaultBuildCmd = build.command
+  }
+  if (build && build.publish) {
+    defaultBuildDir = build.publish
+  }
   if (build && build.functions) console.log('Netlify functions folder is ' + chalk.yellow(build.functions))
   const { buildCmd, buildDir } = await inquirer.prompt([
     {

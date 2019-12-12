@@ -162,13 +162,12 @@ function processPayloadFromFlag(payloadString) {
     // case 2: jsonpath
     const payloadpath = path.join(process.cwd(), payloadString)
     const pathexists = fs.existsSync(payloadpath)
-    if (!payload && pathexists) {
+    if (pathexists) {
       try {
         payload = require(payloadpath) // there is code execution potential here
         return payload
       } catch (err) {
         console.error(err)
-        payload = false
       }
     }
     // case 3: invalid string, invalid path
@@ -213,7 +212,7 @@ async function getNameFromArgs(functions, args, flags) {
   return functionToTrigger
 }
 
-FunctionsInvokeCommand.description = `trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions`
+FunctionsInvokeCommand.description = `Trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions`
 FunctionsInvokeCommand.aliases = ['function:trigger']
 
 FunctionsInvokeCommand.examples = [

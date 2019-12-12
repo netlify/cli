@@ -7,6 +7,11 @@ const { parseRawFlags } = require('../../utils/parse-raw-flags')
 class BuildCommand extends Command {
   // Run Netlify Build
   async run() {
+    /*
+      @TODO remove this.getOptions() & use the parsed config from Command.
+      this.netlify.config contains resolved config via @netlify/config
+      @netlify/build currently takes a path to config and resolves config values again
+    */
     const options = await this.getOptions()
 
     await this.config.runHook('analytics', {
@@ -21,27 +26,23 @@ class BuildCommand extends Command {
 
   // Retrieve Netlify Build options
   async getOptions() {
+    const { site } = this.netlify
     const { raw } = this.parse(BuildCommand)
     const { dry = false } = parseRawFlags(raw)
     const [token] = this.getConfigToken()
 
-    const config = await this.getConfig()
+    // Try current directory first, then site root
+    const config = (await getConfigPath()) || (await getConfigPath(undefined, this.netlify.site.root))
 
-    return { config, token, dry }
-  }
-
-  // Try current directory first, then site root
-  async getConfig() {
-    try {
-      return await getConfigPath()
-    } catch (error) {
-      try {
-        return await getConfigPath(undefined, this.netlify.site.root)
-      } catch (error) {
-        console.error(error.message)
-        this.exit(1)
-      }
+    let options = {
+      config,
+      token,
+      dry
     }
+    if (site.id) {
+      options.siteId = site.id
+    }
+    return options
   }
 }
 

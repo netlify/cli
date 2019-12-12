@@ -44,37 +44,49 @@ class FunctionsListCommand extends Command {
       flags.Functions ||
       (config.dev && config.dev.Functions) ||
       (config.build && config.build.Functions)
+
     if (typeof functionsDir === 'undefined') {
-      this.error('functions directory is undefined, did you forget to set it in netlify.toml?')
+      this.log('Functions directory is undefined')
+      this.log('Please verify build.functions is set in your Netlify configuration file (netlify.toml/yml/json)')
+      this.log('See https://docs.netlify.com/configure-builds/file-based-configuration/ for more information')
       process.exit(1)
     }
-    var table = new AsciiTable(`Netlify Functions (based on local functions folder "${functionsDir}")`)
+
     const functions = getFunctions(functionsDir)
+    const functionData = Object.entries(functions)
 
+    if (!functionData.length) {
+      this.log(`No functions found in ${functionsDir}`)
+      this.exit()
+    }
+
+    if (flags.json) {
+      const jsonData = functionData.map(([functionName, { moduleDir }]) => {
+        const isDeployed = deployed_functions.map(({ n }) => n).includes(functionName)
+        return {
+          name: functionName,
+          url: `/.netlify/functions/${functionName}`,
+          moduleDir: moduleDir,
+          isDeployed: isDeployed ? true : false
+        }
+      })
+      this.logJson(jsonData)
+      this.exit()
+    }
+
+    // Make table
+    this.log(`Based on local functions folder ${functionsDir}, these are the functions detected`)
+    var table = new AsciiTable(`Netlify Functions (in local functions folder)`)
     table.setHeading('Name', 'Url', 'moduleDir', 'deployed')
-    Object.entries(functions).forEach(([functionName, { moduleDir }]) => {
+    functionData.forEach(([functionName, { moduleDir }]) => {
       const isDeployed = deployed_functions.map(({ n }) => n).includes(functionName)
-
-      // this.log(`${chalk.yellow("function name")}: ${functionName}`);
-      // this.log(
-      //   `          ${chalk.yellow(
-      //     "url"
-      //   )}: ${`/.netlify/functions/${functionName}`}`
-      // );
-      // this.log(`    ${chalk.yellow("moduleDir")}: ${moduleDir}`);
-      // this.log(
-      //   `     ${chalk.yellow("deployed")}: ${
-      //     isDeployed ? chalk.green("yes") : chalk.yellow("no")
-      //   }`
-      // );
-      // this.log("----------");
       table.addRow(functionName, `/.netlify/functions/${functionName}`, moduleDir, isDeployed ? 'yes' : 'no')
     })
     this.log(table.toString())
   }
 }
 
-FunctionsListCommand.description = `list functions that exist locally
+FunctionsListCommand.description = `List functions that exist locally
 
 Helpful for making sure that you have formatted your functions correctly
 
@@ -89,6 +101,9 @@ FunctionsListCommand.flags = {
   functions: flags.string({
     char: 'f',
     description: 'Specify a functions folder to serve'
+  }),
+  json: flags.boolean({
+    description: 'Output function data as JSON'
   })
 }
 

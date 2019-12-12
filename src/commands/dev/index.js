@@ -18,12 +18,14 @@ const { detectFunctionsBuilder } = require('../../utils/detect-functions-builder
 const Command = require('../../utils/command')
 const chalk = require('chalk')
 const jwtDecode = require('jwt-decode')
+const open = require('open')
+const find = require('find-process')
 const {
   NETLIFYDEV,
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
   NETLIFYDEVERR
-} = require('netlify-cli-logo')
+} = require('../../utils/logo')
 const boxen = require('boxen')
 const { createTunnel, connectTunnel } = require('../../utils/live-tunnel')
 const createRewriter = require('../../utils/rules-proxy')
@@ -307,13 +309,16 @@ function startDevServer(settings, log) {
   const args = settings.command === 'npm' ? ['run', ...settings.args] : settings.args
   const ps = execa(settings.command, args, {
     env: { ...settings.env, FORCE_COLOR: 'true' },
-    stdio: settings.stdio || 'inherit'
+    stdio: settings.stdio || 'inherit',
+    reject: false,
   })
   if (ps.stdout) ps.stdout.on('data', buff => process.stdout.write(buff.toString('utf8')))
   if (ps.stderr) ps.stderr.on('data', buff => process.stderr.write(buff.toString('utf8')))
   ps.on('close', code => process.exit(code))
   ps.on('SIGINT', process.exit)
   ps.on('SIGTERM', process.exit)
+
+  return ps
 }
 
 class DevCommand extends Command {
@@ -322,12 +327,12 @@ class DevCommand extends Command {
     let { flags } = this.parse(DevCommand)
     const { api, site, config } = this.netlify
     const functionsDir =
-      flags.functions ||
-      (config.dev && config.dev.functions) ||
-      (config.build && config.build.functions) ||
-      flags.Functions ||
-      (config.dev && config.dev.Functions) ||
-      (config.build && config.build.Functions)
+        flags.functions ||
+        (config.dev && config.dev.functions) ||
+        (config.build && config.build.functions) ||
+        flags.Functions ||
+        (config.dev && config.dev.Functions) ||
+        (config.build && config.build.Functions)
     let addonUrls = {}
 
     let accessToken = api.accessToken
@@ -352,10 +357,10 @@ class DevCommand extends Command {
         this.log(`${NETLIFYDEVLOG} Using current working directory`)
         this.log(`${NETLIFYDEVWARN} Unable to determine public folder to serve files from.`)
         this.log(
-          `${NETLIFYDEVWARN} Setup a netlify.toml file with a [dev] section to specify your dev server settings.`
+            `${NETLIFYDEVWARN} Setup a netlify.toml file with a [dev] section to specify your dev server settings.`
         )
         this.log(
-          `${NETLIFYDEVWARN} See docs at: https://github.com/netlify/cli/blob/master/docs/netlify-dev.md#project-detection`
+            `${NETLIFYDEVWARN} See docs at: https://github.com/netlify/cli/blob/master/docs/netlify-dev.md#project-detection`
         )
         this.log(`${NETLIFYDEVWARN} Using current working directory for now...`)
         dist = process.cwd()
@@ -378,74 +383,89 @@ class DevCommand extends Command {
       }
     }
 
-    startDevServer(settings, this.log)
+    const ps = startDevServer(settings, this.log)
+    await Promise.all([ps, (async () => {
+      // serve functions from zip-it-and-ship-it
+      // env variables relies on `url`, careful moving this code
+      if (functionsDir) {
+        const functionBuilder = await detectFunctionsBuilder(settings)
+        if (functionBuilder) {
+          this.log(
+              `${NETLIFYDEVLOG} Function builder ${chalk.yellow(
+                  functionBuilder.builderName
+              )} detected: Running npm script ${chalk.yellow(functionBuilder.npmScript)}`
+          )
+          this.warn(
+              `${NETLIFYDEVWARN} This is a beta feature, please give us feedback on how to improve at https://github.com/netlify/cli/`
+          )
+          await functionBuilder.build()
+          const functionWatcher = chokidar.watch(functionBuilder.src)
+          functionWatcher.on('add', functionBuilder.build)
+          functionWatcher.on('change', functionBuilder.build)
+          functionWatcher.on('unlink', functionBuilder.build)
+        }
+        const functionsPort = await getPort({ port: settings.functionsPort || 34567 })
 
-    // serve functions from zip-it-and-ship-it
-    // env variables relies on `url`, careful moving this code
-    if (functionsDir) {
-      const functionBuilder = await detectFunctionsBuilder(settings)
-      if (functionBuilder) {
-        this.log(
-          `${NETLIFYDEVLOG} Function builder ${chalk.yellow(
-            functionBuilder.builderName
-          )} detected: Running npm script ${chalk.yellow(functionBuilder.npmScript)}`
-        )
-        this.warn(
-          `${NETLIFYDEVWARN} This is a beta feature, please give us feedback on how to improve at https://github.com/netlify/cli/`
-        )
-        await functionBuilder.build()
-        const functionWatcher = chokidar.watch(functionBuilder.src)
-        functionWatcher.on('add', functionBuilder.build)
-        functionWatcher.on('change', functionBuilder.build)
-        functionWatcher.on('unlink', functionBuilder.build)
+        // returns a value but we dont use it
+        await serveFunctions({
+          ...settings,
+          port: functionsPort,
+          functionsDir
+        })
+        settings.functionsPort = functionsPort
       }
-      const functionsPort = await getPort({ port: settings.functionsPort || 34567 })
 
-      // returns a value but we dont use it
-      await serveFunctions({
-        ...settings,
-        port: functionsPort,
-        functionsDir
+      let { url, port } = await startProxy(settings, addonUrls)
+      if (!url) {
+        throw new Error('Unable to start proxy server')
+      }
+
+      if (flags.live) {
+        await waitPort({ port })
+        const liveSession = await createTunnel(site.id, accessToken, this.log)
+        url = liveSession.session_url
+        process.env.BASE_URL = url
+
+        await connectTunnel(liveSession, accessToken, port, this.log)
+      }
+
+      await this.config.runHook('analytics', {
+        eventName: 'command',
+        payload: {
+          command: 'dev',
+          projectType: settings.type || 'custom',
+          live: flags.live || false
+        }
       })
-      settings.functionsPort = functionsPort
-    }
 
-    let { url, port } = await startProxy(settings, addonUrls)
-    if (!url) {
-      throw new Error('Unable to start proxy server')
-    }
-
-    if (flags.live) {
-      await waitPort({ port })
-      const liveSession = await createTunnel(site.id, accessToken, this.log)
-      url = liveSession.session_url
-      process.env.BASE_URL = url
-
-      await connectTunnel(liveSession, accessToken, port, this.log)
-    }
-
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'dev',
-        projectType: settings.type || 'custom',
-        live: flags.live || false
+      if (!isEmpty(config.dev) && (!config.dev.hasOwnProperty('autoLaunch') || config.dev.autoLaunch !== false)) {
+        try {
+          await open(url)
+        } catch (err) {
+          console.warn(NETLIFYDEVWARN, 'Error while opening dev server URL in browser', err.message)
+        }
       }
+
+      // boxen doesnt support text wrapping yet https://github.com/sindresorhus/boxen/issues/16
+      const banner = require('wrap-ansi')(chalk.bold(`${NETLIFYDEVLOG} Server now ready on ${url}`), 70)
+      process.env.URL = url
+      process.env.DEPLOY_URL = process.env.URL
+
+      this.log(
+          boxen(banner, {
+            padding: 1,
+            margin: 1,
+            align: 'center',
+            borderColor: '#00c7b7'
+          })
+      )
+    })()]).finally(async () => {
+      const list = await find('port', settings.proxyPort)
+      for (const proc of list) {
+        process.kill(proc.pid)
+      }
+      if (!isEmpty(ps)) process.kill(ps.pid)
     })
-
-    // boxen doesnt support text wrapping yet https://github.com/sindresorhus/boxen/issues/16
-    const banner = require('wrap-ansi')(chalk.bold(`${NETLIFYDEVLOG} Server now ready on ${url}`), 70)
-    process.env.URL = url
-    process.env.DEPLOY_URL = process.env.URL
-
-    this.log(
-      boxen(banner, {
-        padding: 1,
-        margin: 1,
-        align: 'center',
-        borderColor: '#00c7b7'
-      })
-    )
   }
 }
 

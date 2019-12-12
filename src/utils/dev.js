@@ -8,7 +8,7 @@ const {
   NETLIFYDEVLOG,
   // NETLIFYDEVWARN,
   NETLIFYDEVERR
-} = require('netlify-cli-logo')
+} = require('./logo')
 /**
  * inject environment variables from netlify addons and buildbot
  * into your local dev process.env

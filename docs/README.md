@@ -1,68 +1,35 @@
-# Netlify CLI
+---
+title: Netlify CLI Command List
+description: All Netlify CLI commands
+---
 
-[![npm version][npm-img]][npm] [![downloads][dl-img]][dl] [![netlify-status][netlify-img]][netlify] [![dependencies][david-img]][david]
+# Netlify CLI Command List
 
-Interact with [Netlify](http://netlify.com/) from the comfort of your CLI.
+Welcome to the Netlify CLI! This site provides online access to all help strings in the Netlify CLI. For a more in-depth guide, please see our [Getting Started](https://www.netlify.com/docs/cli/) guide on our main docs site.
 
-See the [CLI command line reference](https://cli.netlify.com/commands/) to get started and the docs on using [Netlify Dev](https://github.com/netlify/cli/blob/master/docs/netlify-dev.md) to run your site locally.
+If you have questions, ideas, or would like to contribute, check out the [repository on Github](https://github.com/netlify/cli/).
 
-## Table of Contents
+**Install the CLI**
 
-<!-- AUTO-GENERATED-CONTENT:START (TOC:collapse=true&collapseText=Click to expand) -->
-<details>
-<summary>Click to expand</summary>
-
-- [Installation](#installation)
-- [Usage](#usage)
-- [Documentation](#documentation)
-- [Commands](#commands)
-  * [addons](#addons)
-  * [api](#api)
-  * [deploy](#deploy)
-  * [dev](#dev)
-  * [functions](#functions)
-  * [init](#init)
-  * [link](#link)
-  * [login](#login)
-  * [open](#open)
-  * [sites](#sites)
-  * [status](#status)
-  * [switch](#switch)
-  * [unlink](#unlink)
-  * [watch](#watch)
-- [Contributing](#contributing)
-- [Development](#development)
-- [License](#license)
-
-</details>
-<!-- AUTO-GENERATED-CONTENT:END -->
-
-## Installation
-
-Netlify CLI requires [Node.js](https://nodejs.org) version 8 or above. To install, run the following command from any directory in your terminal:
+To install the CLI, pop open your terminal and install with `npm`.
 
 ```bash
 npm install netlify-cli -g
 ```
 
-Alternatively you may also use Homebrew: `brew install netlify-cli` (thanks [@cglong](https://github.com/netlify/cli/issues/291)).
+**Listing commands**
 
-## Usage
+To get a list of commands, run:
 
-Installing the CLI globally provides access to the `netlify` command.
-
-```sh-session
-netlify [command]
-
-# Run `help` for detailed information about CLI commands
-netlify [command] help
+```
+netlify help
 ```
 
-## Documentation
+To get a list of available sub-commands, arguments, and flags, run:
 
-To learn how to log in to Netlify and start deploying sites, visit the [documentation on Netlify](https://www.netlify.com/docs/cli).
-
-For a full command reference, see the list below, or visit [cli.netlify.com](https://cli.netlify.com/).
+```
+netlify [command] help
+```
 
 ## Commands
 
@@ -164,32 +131,3 @@ Watch for site deploy to finish
 
 
 <!-- AUTO-GENERATED-CONTENT:END -->
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for more info on how to make contributions to this project.
-
-## Development
-
-You'll need to follow these steps to run Netlify CLI locally:
-
-    uninstall any globally installed versions of netlify-cli
-    clone and install deps for https://github.com/netlify/cli
-    npm link from inside the cli folder
-
-Now you're both ready to start testing and to contribute to the project!
-
-## License
-
-MIT. See [LICENSE](LICENSE) for more details.
-
-[npm-img]: https://img.shields.io/npm/v/netlify-cli.svg
-[npm]: https://npmjs.org/package/netlify-cli
-[av-img]: https://ci.appveyor.com/api/projects/status/imk2qjc34ly7x11b/branch/master?svg=true
-[av]: https://ci.appveyor.com/project/netlify/cli
-[dl-img]: https://img.shields.io/npm/dm/netlify-cli.svg
-[dl]: https://npmjs.org/package/netlify-cli
-[david-img]: https://david-dm.org/netlify/cli/status.svg
-[david]: https://david-dm.org/netlify/cli
-[netlify-img]: https://api.netlify.com/api/v1/badges/d3807379-2dcf-4a43-9c00-e7e8d90ecf70/deploy-status
-[netlify]: https://app.netlify.com/sites/cli/deploys

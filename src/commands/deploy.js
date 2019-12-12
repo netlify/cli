@@ -58,6 +58,8 @@ class DeployCommand extends Command {
       } else if (initChoice === EXISTING_SITE) {
         // run link command
         siteData = await LinkCommand.run([], false)
+        site.id = siteData.id
+        siteId = site.id
       }
     } else {
       try {
@@ -213,6 +215,7 @@ class DeployCommand extends Command {
       const jsonData = {
         name: results.deploy.deployId,
         site_id: results.deploy.site_id,
+        site_name: results.deploy.name,
         deploy_id: results.deployId,
         deploy_url: deployUrl,
         logs: logsUrl

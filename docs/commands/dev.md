@@ -29,7 +29,7 @@ netlify dev
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`dev:exec`](/commands/dev#devexec) | Exec command  |
+| [`dev:exec`](/docs/commands/dev.md#devexec) | Exec command  |
 
 
 **Examples**

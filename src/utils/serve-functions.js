@@ -9,7 +9,7 @@ const {
   NETLIFYDEVLOG,
   // NETLIFYDEVWARN,
   NETLIFYDEVERR
-} = require('netlify-cli-logo')
+} = require('./logo')
 const { getFunctions } = require('./get-functions')
 
 const defaultPort = 34567
