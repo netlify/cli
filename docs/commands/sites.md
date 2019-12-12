@@ -18,9 +18,9 @@ netlify sites
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`sites:create`](/commands/sites#sitescreate) | Create an empty site (advanced)  |
-| [`sites:delete`](/commands/sites#sitesdelete) | Delete a site  |
-| [`sites:list`](/commands/sites#siteslist) | List all sites you have access to  |
+| [`sites:create`](/docs/commands/sites.md#sitescreate) | Create an empty site (advanced)  |
+| [`sites:delete`](/docs/commands/sites.md#sitesdelete) | Delete a site  |
+| [`sites:list`](/docs/commands/sites.md#siteslist) | List all sites you have access to  |
 
 
 **Examples**

@@ -1,17 +1,31 @@
 ---
-title: Netlify CLI Commands List
-description: All netlify CLI command
+title: Netlify CLI Command List
+description: All Netlify CLI commands
 ---
 
-# Available CLI Commands
+# Netlify CLI Command List
 
-To get a list of commands, run
+Welcome to the Netlify CLI! This site provides online access to all help strings in the Netlify CLI. For a more in-depth guide, please see our [Getting Started](https://www.netlify.com/docs/cli/) guide on our main docs site.
+
+If you have questions, ideas, or would like to contribute, check out the [repository on Github](https://github.com/netlify/cli/).
+
+**Install the CLI**
+
+To install the CLI, pop open your terminal and install with `npm`.
+
+```bash
+npm install netlify-cli -g
+```
+
+**Listing commands**
+
+To get a list of commands, run:
 
 ```
 netlify help
 ```
 
-To get a list of available sub-commands, arguments & flags run
+To get a list of available sub-commands, arguments, and flags, run:
 
 ```
 netlify [command] help
