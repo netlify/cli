@@ -23,8 +23,8 @@ const find = require('find-process')
 const {
   NETLIFYDEV,
   NETLIFYDEVLOG,
-  NETLIFYDEVWARN
-  // NETLIFYDEVERR
+  NETLIFYDEVWARN,
+  NETLIFYDEVERR
 } = require('../../utils/logo')
 const boxen = require('boxen')
 const { createTunnel, connectTunnel } = require('../../utils/live-tunnel')
@@ -125,7 +125,14 @@ function initializeProxy(port) {
 }
 
 async function startProxy(settings, addonUrls) {
-  await waitPort({ port: settings.proxyPort })
+  try {
+    await waitPort({ port: settings.proxyPort })
+  } catch(err) {
+    console.error(NETLIFYDEVERR, `Netlify Dev doesn't know what port your site is running on.`)
+    console.error(NETLIFYDEVERR, `Please set --targetPort.`)
+    this.exit(1)
+  }
+
   if (settings.functionsPort) {
     await waitPort({ port: settings.functionsPort })
   }
