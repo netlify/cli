@@ -130,7 +130,7 @@ async function startProxy(settings, addonUrls) {
   } catch(err) {
     console.error(NETLIFYDEVERR, `Netlify Dev doesn't know what port your site is running on.`)
     console.error(NETLIFYDEVERR, `Please set --targetPort.`)
-    process.exit(1)
+    this.exit(1)
   }
 
   if (settings.functionsPort) {
