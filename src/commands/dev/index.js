@@ -314,9 +314,9 @@ function startDevServer(settings, log) {
   })
   if (ps.stdout) ps.stdout.on('data', buff => process.stdout.write(buff.toString('utf8')))
   if (ps.stderr) ps.stderr.on('data', buff => process.stderr.write(buff.toString('utf8')))
-  ps.on('close', code => process.exit(code))
-  ps.on('SIGINT', process.exit)
-  ps.on('SIGTERM', process.exit)
+  process.on('close', ps.exit)
+  process.on('SIGINT', ps.exit)
+  process.on('SIGTERM', ps.exit)
 
   return ps
 }
