@@ -315,12 +315,11 @@ function startDevServer(settings, log) {
   if (ps.stdout) ps.stdout.on('data', buff => process.stdout.write(buff.toString('utf8')))
   if (ps.stderr) ps.stderr.on('data', buff => process.stderr.write(buff.toString('utf8')))
   
-  ps.on('close', code => process.exit(code))
-  ps.on('exit', code => process.exit(code))
-  process.on('SIGINT', signal => ps.kill(signal))
-  process.on('SIGTERM', signal => ps.kill(signal))
-  process.on('SIGKILL', signal => ps.kill(signal))
+  ps.on('close', code => process.exit(code || 0))
+  ps.on('exit', code => process.exit(code || 0))
 
+  process.on('SIGINT', ps.kill)
+  process.on('SIGTERM', ps.kill)
   return ps
 }
 
