@@ -124,7 +124,7 @@ function initializeProxy(port) {
   return handlers
 }
 
-async function startProxy(settings, addonUrls) {
+async function startProxy(settings, addonUrls, configPath) {
   try {
     await waitPort({ port: settings.proxyPort })
   } catch(err) {
@@ -143,7 +143,8 @@ async function startProxy(settings, addonUrls) {
 
   const rewriter = createRewriter({
     publicFolder: settings.dist,
-    jwtRole: settings.jwtRolePath
+    jwtRole: settings.jwtRolePath,
+    configPath,
   })
 
   const server = http.createServer(function(req, res) {
@@ -415,7 +416,7 @@ class DevCommand extends Command {
         settings.functionsPort = functionsPort
       }
 
-      let { url, port } = await startProxy(settings, addonUrls)
+      let { url, port } = await startProxy(settings, addonUrls, site.configPath)
       if (!url) {
         throw new Error('Unable to start proxy server')
       }
