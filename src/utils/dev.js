@@ -77,7 +77,7 @@ async function addEnvVariables(api, site, accessToken) {
   if (apiSite.build_settings && apiSite.build_settings.env) {
     for (const key in apiSite.build_settings.env) {
       const msg = () =>
-        console.log(`${NETLIFYDEVLOG} Injected ${chalk.blue.bold('build setting')} env var: `, chalk.yellow(key))
+        console.log(`${NETLIFYDEVLOG} Injected ${chalk.blue.bold('build setting')} env var: ${chalk.yellow(key)}`)
       process.env[key] = assignLoudly(process.env[key], apiSite.build_settings.env[key], msg)
     }
   }
