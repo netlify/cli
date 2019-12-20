@@ -15,7 +15,7 @@ module.exports = async function linkPrompts(context) {
   let GIT_REMOTE_PROMPT = 'Use the current git remote origin URL'
   let site
   // Get git remote data if exists
-  const repoInfo = await getRepoData()
+  const repoInfo = await getRepoData(context.flags.gitRemoteName)
 
   const LinkChoices = [SITE_NAME_PROMPT, SITE_LIST_PROMPT, SITE_ID_PROMPT]
 
