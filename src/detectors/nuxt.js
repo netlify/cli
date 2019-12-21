@@ -10,7 +10,7 @@ module.exports = function() {
 
   const possibleArgsArrs = scanScripts({
     preferredScriptsArr: ['start', 'dev', 'run'],
-    preferredCommand: 'nuxt start'
+    preferredCommand: 'nuxt'
   })
 
   if (possibleArgsArrs.length === 0) {
