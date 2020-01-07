@@ -408,7 +408,7 @@ class DevCommand extends Command {
           functionWatcher.on('change', functionBuilder.build)
           functionWatcher.on('unlink', functionBuilder.build)
         }
-        const functionsPort = settings.functionsPort
+        const functionsPort = settings.functionsPort || 34567
 
         // returns a value but we dont use it
         await serveFunctions({
