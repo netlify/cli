@@ -117,7 +117,7 @@
     "make-dir": "^3.0.0",
     "minimist": "^1.2.0",
     "netlify": "^2.4.8",
-    "netlify-redirect-parser": "^1.0.3",
+    "netlify-redirect-parser": "^2.0.2",
     "netlify-redirector": "^0.1.0",
     "node-fetch": "^2.6.0",
     "npm-packlist": "^1.4.4",
