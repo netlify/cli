@@ -8,16 +8,17 @@ module.exports = function() {
   /** everything below now assumes that we are within expo */
 
   const possibleArgsArrs = scanScripts({
-    // prefer the `start:web` script instead of expo's default `web` since that runs
-    // `expo start --web`, which auto launches the (non-proxied) web browser.
-    preferredScriptsArr: ['start:web'],
-    // `expo start:web` does not auto launch the web browser
-    preferredCommand: 'expo start:web'
+    // This script will run `expo start --web` in a new Expo project.
+    // Note: Expo will automatically launch the browser with your app's
+    // Webpack server listening on port 19006, but the instance proxied
+    // by `netlify dev` will be running on port 8888.
+    preferredScriptsArr: ['web'],
+    preferredCommand: 'expo start --web'
   })
 
   if (possibleArgsArrs.length === 0) {
     // ofer to run it when the user doesnt have any scripts setup! 🤯
-    possibleArgsArrs.push(['expo', 'start:web'])
+    possibleArgsArrs.push(['expo', 'start', '--web'])
   }
   return {
     type: 'expo',
