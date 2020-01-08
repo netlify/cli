@@ -103,7 +103,7 @@ class LinkCommand extends Command {
       return this.exit()
     }
 
-    siteData = await linkPrompt({...this, flags})
+    siteData = await linkPrompt(this, flags)
     return siteData
   }
 }
