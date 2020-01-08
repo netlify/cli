@@ -380,14 +380,6 @@ class DevCommand extends Command {
     }
     if (!settings.jwtRolePath) settings.jwtRolePath = 'app_metadata.authorization.roles'
 
-    // Reset port if not manually specified, to make it dynamic
-    if (!(config.dev && config.dev.port) && !flags.port) {
-      settings = {
-        port: await getPort({ port: settings.port }),
-        ...settings
-      }
-    }
-
     const ps = startDevServer(settings, this.log)
     await Promise.all([ps, (async () => {
       // serve functions from zip-it-and-ship-it
