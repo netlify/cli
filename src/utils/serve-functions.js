@@ -2,7 +2,6 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const expressLogging = require('express-logging')
 const queryString = require('querystring')
-const getPort = require('get-port')
 const chokidar = require('chokidar')
 const jwtDecode = require('jwt-decode')
 const {
@@ -11,8 +10,6 @@ const {
   NETLIFYDEVERR
 } = require('./logo')
 const { getFunctions } = require('./get-functions')
-
-const defaultPort = 34567
 
 function handleErr(err, response) {
   response.statusCode = 500
@@ -190,9 +187,6 @@ function promiseCallback(promise, callback) {
 async function serveFunctions(settings) {
   const app = express()
   const dir = settings.functionsDir
-  const port = await getPort({
-    port: assignLoudly(settings.port, defaultPort)
-  })
 
   app.use(
     bodyParser.text({
@@ -212,33 +206,17 @@ async function serveFunctions(settings) {
   })
   app.all('*', createHandler(dir))
 
-  app.listen(port, function(err) {
+  app.listen(settings.functionsPort, function(err) {
     if (err) {
       console.error(`${NETLIFYDEVERR} Unable to start lambda server: `, err) // eslint-disable-line no-console
       process.exit(1)
     }
 
     // add newline because this often appears alongside the client devserver's output
-    console.log(`\n${NETLIFYDEVLOG} Lambda server is listening on ${port}`) // eslint-disable-line no-console
+    console.log(`\n${NETLIFYDEVLOG} Lambda server is listening on ${settings.functionsPort}`) // eslint-disable-line no-console
   })
 
-  return Promise.resolve({
-    port
-  })
+  return Promise.resolve()
 }
 
 module.exports = { serveFunctions }
-
-// if first arg is undefined, use default, but tell user about it in case it is unintentional
-function assignLoudly(
-  optionalValue,
-  fallbackValue,
-  tellUser = dV => console.log(`${NETLIFYDEVLOG} No port specified, using defaultPort of `, dV) // eslint-disable-line no-console
-) {
-  if (fallbackValue === undefined) throw new Error('must have a fallbackValue')
-  if (fallbackValue !== optionalValue && optionalValue === undefined) {
-    tellUser(fallbackValue)
-    return fallbackValue
-  }
-  return optionalValue
-}

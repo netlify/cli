@@ -409,15 +409,13 @@ class DevCommand extends Command {
           functionWatcher.on('change', functionBuilder.build)
           functionWatcher.on('unlink', functionBuilder.build)
         }
-        const functionsPort = settings.functionsPort
+        const functionsPort = await getPort({ port: settings.functionsPort || 34567 })
+        settings.functionsPort = functionsPort
 
-        // returns a value but we dont use it
         await serveFunctions({
           ...settings,
-          port: functionsPort,
           functionsDir
         })
-        settings.functionsPort = functionsPort
       }
 
       let { url, port } = await startProxy(settings, addonUrls, site.configPath)
