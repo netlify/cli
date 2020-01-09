@@ -19,7 +19,6 @@ const Command = require('../../utils/command')
 const chalk = require('chalk')
 const jwtDecode = require('jwt-decode')
 const open = require('open')
-const find = require('find-process')
 const {
   NETLIFYDEV,
   NETLIFYDEVLOG,
@@ -311,7 +310,6 @@ function startDevServer(settings, log) {
   const ps = execa(settings.command, args, {
     env: { ...settings.env, FORCE_COLOR: 'true' },
     stdio: settings.stdio || 'inherit',
-    reject: false,
   })
   if (ps.stdout) ps.stdout.on('data', buff => process.stdout.write(buff.toString('utf8')))
   if (ps.stderr) ps.stderr.on('data', buff => process.stderr.write(buff.toString('utf8')))
@@ -380,8 +378,9 @@ class DevCommand extends Command {
     }
     if (!settings.jwtRolePath) settings.jwtRolePath = 'app_metadata.authorization.roles'
 
-    const ps = startDevServer(settings, this.log)
-    await Promise.all([ps, (async () => {
+    const devServerProcess = startDevServer(settings, this.log)
+
+    try {
       // serve functions from zip-it-and-ship-it
       // env variables relies on `url`, careful moving this code
       if (functionsDir) {
@@ -458,13 +457,11 @@ class DevCommand extends Command {
             borderColor: '#00c7b7'
           })
       )
-    })()]).finally(async () => {
-      const list = await find('port', settings.proxyPort)
-      for (const proc of list) {
-        process.kill(proc.pid)
-      }
-      if (!isEmpty(ps)) process.kill(ps.pid)
-    })
+
+      await devServerProcess
+    } catch (err) {
+      console.error(NETLIFYDEVERR, err)
+    }
   }
 }
 
