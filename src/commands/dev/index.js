@@ -50,6 +50,10 @@ function isExternal(match) {
   return match.to && match.to.match(/^https?:\/\//)
 }
 
+function isNetlifyDir(dir, projectDir) {
+  return dir.startsWith(path.resolve(projectDir, '.netlify'))
+}
+
 function isRedirect(match) {
   return match.status && (match.status >= 300 && match.status <= 400)
 }
@@ -356,7 +360,8 @@ class DevCommand extends Command {
         dist = flags.dir
       } else {
         this.log(`${NETLIFYDEVWARN} No dev server detected, using simple static server`)
-        dist = (config.dev && config.dev.publish) || (config.build && config.build.publish)
+        dist = (config.dev && config.dev.publish) ||
+            (config.build && !isNetlifyDir(config.build.publish, site.root) && config.build.publish)
       }
       if (!dist) {
         this.log(`${NETLIFYDEVLOG} Using current working directory`)
