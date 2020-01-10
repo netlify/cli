@@ -2,7 +2,7 @@ const url = require('url')
 const path = require('path')
 const fs = require('fs')
 const { flags } = require('@oclif/command')
-const execa = require('execa')
+const child_process = require('child_process')
 const http = require('http')
 const httpProxy = require('http-proxy')
 const waitPort = require('wait-port')
@@ -311,15 +311,22 @@ function startDevServer(settings, log) {
   }
   log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.type}`)
   const args = settings.command === 'npm' ? ['run', ...settings.args] : settings.args
-  const ps = execa(settings.command, args, {
+  const ps = child_process.spawn(settings.command, args, {
     env: { ...settings.env, FORCE_COLOR: 'true' },
     stdio: settings.stdio || 'inherit',
+    detached: true,
+    shell: true,
   })
   if (ps.stdout) ps.stdout.on('data', buff => process.stdout.write(buff.toString('utf8')))
   if (ps.stderr) ps.stderr.on('data', buff => process.stderr.write(buff.toString('utf8')))
   ps.on('close', code => process.exit(code))
   ps.on('SIGINT', process.exit)
-  ps.on('SIGTERM', process.exit)
+  ps.on('SIGTERM', process.exit);
+
+  ['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach(signal => process.on(signal, () => {
+      process.kill(-ps.pid)
+      process.exit()
+    }))
 
   return ps
 }
@@ -383,90 +390,84 @@ class DevCommand extends Command {
     }
     if (!settings.jwtRolePath) settings.jwtRolePath = 'app_metadata.authorization.roles'
 
-    const devServerProcess = startDevServer(settings, this.log)
+    startDevServer(settings, this.log)
 
-    try {
-      // serve functions from zip-it-and-ship-it
-      // env variables relies on `url`, careful moving this code
-      if (functionsDir) {
-        const functionBuilder = await detectFunctionsBuilder(settings)
-        if (functionBuilder) {
-          this.log(
-              `${NETLIFYDEVLOG} Function builder ${chalk.yellow(
-                  functionBuilder.builderName
-              )} detected: Running npm script ${chalk.yellow(functionBuilder.npmScript)}`
-          )
-          this.warn(
-              `${NETLIFYDEVWARN} This is a beta feature, please give us feedback on how to improve at https://github.com/netlify/cli/`
-          )
-          await functionBuilder.build()
-          const functionWatcher = chokidar.watch(functionBuilder.src)
-          functionWatcher.on('add', functionBuilder.build)
-          functionWatcher.on('change', functionBuilder.build)
-          functionWatcher.on('unlink', functionBuilder.build)
-        }
-        const functionsPort = await getPort({ port: settings.functionsPort || 34567 })
-        settings.functionsPort = functionsPort
-
-        await serveFunctions({
-          ...settings,
-          functionsDir
-        })
+    // serve functions from zip-it-and-ship-it
+    // env variables relies on `url`, careful moving this code
+    if (functionsDir) {
+      const functionBuilder = await detectFunctionsBuilder(settings)
+      if (functionBuilder) {
+        this.log(
+          `${NETLIFYDEVLOG} Function builder ${chalk.yellow(
+            functionBuilder.builderName
+          )} detected: Running npm script ${chalk.yellow(functionBuilder.npmScript)}`
+        )
+        this.warn(
+          `${NETLIFYDEVWARN} This is a beta feature, please give us feedback on how to improve at https://github.com/netlify/cli/`
+        )
+        await functionBuilder.build()
+        const functionWatcher = chokidar.watch(functionBuilder.src)
+        functionWatcher.on('add', functionBuilder.build)
+        functionWatcher.on('change', functionBuilder.build)
+        functionWatcher.on('unlink', functionBuilder.build)
       }
+      const functionsPort = await getPort({ port: settings.functionsPort || 34567 })
+      settings.functionsPort = functionsPort
 
-      let { url, port } = await startProxy(settings, addonUrls, site.configPath)
-      if (!url) {
-        throw new Error('Unable to start proxy server')
-      }
-
-      if (flags.live) {
-        await waitPort({ port })
-        const liveSession = await createTunnel(site.id, accessToken, this.log)
-        url = liveSession.session_url
-        process.env.BASE_URL = url
-
-        await connectTunnel(liveSession, accessToken, port, this.log)
-      }
-
-      await this.config.runHook('analytics', {
-        eventName: 'command',
-        payload: {
-          command: 'dev',
-          projectType: settings.type || 'custom',
-          live: flags.live || false
-        }
+      await serveFunctions({
+        ...settings,
+        functionsDir
       })
-
-      if (
-        isEmpty(config.dev) ||
-        !config.dev.hasOwnProperty('autoLaunch') ||
-        (config.dev.hasOwnProperty('autoLaunch') && config.dev.autoLaunch !== false)
-      ) {
-        try {
-          await open(url)
-        } catch (err) {
-          console.warn(NETLIFYDEVWARN, 'Error while opening dev server URL in browser', err.message)
-        }
-      }
-
-      // boxen doesnt support text wrapping yet https://github.com/sindresorhus/boxen/issues/16
-      const banner = require('wrap-ansi')(chalk.bold(`${NETLIFYDEVLOG} Server now ready on ${url}`), 70)
-      process.env.URL = url
-      process.env.DEPLOY_URL = process.env.URL
-
-      this.log(
-          boxen(banner, {
-            padding: 1,
-            margin: 1,
-            align: 'center',
-            borderColor: '#00c7b7'
-          })
-      )
-
-      await devServerProcess
-    } catch (err) {
-      console.error(NETLIFYDEVERR, err)
     }
+
+    let { url, port } = await startProxy(settings, addonUrls, site.configPath)
+    if (!url) {
+      throw new Error('Unable to start proxy server')
+    }
+
+    if (flags.live) {
+      await waitPort({ port })
+      const liveSession = await createTunnel(site.id, accessToken, this.log)
+      url = liveSession.session_url
+      process.env.BASE_URL = url
+
+      await connectTunnel(liveSession, accessToken, port, this.log)
+    }
+
+    await this.config.runHook('analytics', {
+      eventName: 'command',
+      payload: {
+        command: 'dev',
+        projectType: settings.type || 'custom',
+        live: flags.live || false
+      }
+    })
+
+    if (
+      isEmpty(config.dev) ||
+      !config.dev.hasOwnProperty('autoLaunch') ||
+      (config.dev.hasOwnProperty('autoLaunch') && config.dev.autoLaunch !== false)
+    ) {
+      try {
+        await open(url)
+      } catch (err) {
+        console.warn(NETLIFYDEVWARN, 'Error while opening dev server URL in browser', err.message)
+      }
+    }
+
+    // boxen doesnt support text wrapping yet https://github.com/sindresorhus/boxen/issues/16
+    const banner = require('wrap-ansi')(chalk.bold(`${NETLIFYDEVLOG} Server now ready on ${url}`), 70)
+    process.env.URL = url
+    process.env.DEPLOY_URL = process.env.URL
+
+    this.log(
+      boxen(banner, {
+        padding: 1,
+        margin: 1,
+        align: 'center',
+        borderColor: '#00c7b7'
+      })
+    )
   }
 }
 
