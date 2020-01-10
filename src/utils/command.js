@@ -19,6 +19,8 @@ const { NETLIFY_AUTH_TOKEN, NETLIFY_API_URL } = process.env
 // Todo setup client for multiple environments
 const CLIENT_ID = 'd6f37de6614df7ae58664cfca524744d73807a377f5ee71f1a254f78412e3750'
 
+const MESSAGE_CONFIG_NOT_FOUND = 'No netlify configuration file was found'
+
 class BaseCommand extends Command {
   constructor(...args) {
     super(...args)
@@ -33,20 +35,22 @@ class BaseCommand extends Command {
     const [token] = this.getConfigToken(authViaFlag)
 
     // Read new netlify.toml/yml/json
-    let configPath
+    const configPath = await getConfigPath(argv.config, cwd)
+    if (!configPath) {
+      throw new Error(MESSAGE_CONFIG_NOT_FOUND)
+    }
     let config = {}
     try {
-      configPath = await getConfigPath(argv.config, cwd)
       config = await resolveConfig(configPath, {
         cwd: cwd,
         context: argv.context
       })
     } catch (err) {
-      // Suppress config not found error for CLI. @TODO Revisit
-      if (err.message.indexOf('No netlify configuration file was found') === -1) {
+      if (err.message.indexOf(MESSAGE_CONFIG_NOT_FOUND) === -1) {
         throw err
       }
     }
+
     // Get site id & build state
     const state = new StateConfig(projectRoot)
 
