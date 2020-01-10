@@ -61,7 +61,7 @@ module.exports = function({ publicFolder, baseFolder, jwtSecret, jwtRole, config
   const configFiles = [
     path.resolve(projectDir, '_redirects'),
     path.resolve(publicFolder, '_redirects'),
-    path.resolve(configPath),
+    path.resolve(configPath || path.resolve(publicFolder, 'netlify.yml')),
   ]
 
   onChanges(configFiles, () => {matcher = null})
