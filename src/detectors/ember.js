@@ -7,7 +7,7 @@ module.exports = function() {
   // REQUIRED DEPS
   if (!hasRequiredDeps(['ember-cli'])) return false
 
-  /** everything below now assumes that we are within vue */
+  /** everything below now assumes that we are within ember */
 
   const possibleArgsArrs = scanScripts({
     preferredScriptsArr: ['serve', 'start', 'run'],
