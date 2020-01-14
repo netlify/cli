@@ -63,6 +63,7 @@
   "dependencies": {
     "@netlify/build": "^0.1.7",
     "@netlify/config": "^0.1.7",
+    "@netlify/heuristics": "^0.0.1",
     "@netlify/zip-it-and-ship-it": "^0.3.1",
     "@oclif/command": "^1.5.18",
     "@oclif/config": "^1.13.2",

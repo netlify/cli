@@ -1,11 +1,11 @@
 const { flags } = require('@oclif/command')
 const chalk = require('chalk')
 const get = require('lodash.get')
+const { detectGitRepo } = require('@netlify/heuristics')
 const Command = require('../utils/command')
 const SitesWatchCommand = require('./watch')
 const configManual = require('../utils/init/config-manual')
 const configGithub = require('../utils/init/config-github')
-const getRepoData = require('../utils/get-repo-data')
 const { ensureNetlifyIgnore } = require('../utils/gitignore')
 const inquirer = require('inquirer')
 const SitesCreateCommand = require('./sites/create')
@@ -68,7 +68,7 @@ class InitCommand extends Command {
     }
 
     // Look for local repo
-    const repo = await getRepoData(flags.gitRemoteName)
+    const repo = await detectGitRepo(flags.gitRemoteName)
 
     if (repo.error) {
       console.log()

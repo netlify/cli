@@ -2,7 +2,7 @@ const path = require('path')
 const inquirer = require('inquirer')
 const chalk = require('chalk')
 const isEmpty = require('lodash.isempty')
-const getRepoData = require('../get-repo-data')
+const { detectGitRepo } = require('@netlify/heuristics')
 const { track } = require('../telemetry')
 
 module.exports = async function linkPrompts(context, flags = {}) {
@@ -15,7 +15,7 @@ module.exports = async function linkPrompts(context, flags = {}) {
   let GIT_REMOTE_PROMPT = 'Use the current git remote origin URL'
   let site
   // Get git remote data if exists
-  const repoInfo = await getRepoData(flags.gitRemoteName)
+  const repoInfo = await detectGitRepo(flags.gitRemoteName)
 
   const LinkChoices = [SITE_NAME_PROMPT, SITE_LIST_PROMPT, SITE_ID_PROMPT]
 
