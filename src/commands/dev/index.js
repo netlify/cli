@@ -312,7 +312,7 @@ function startDevServer(settings, log) {
   log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.type}`)
   const args = settings.command === 'npm' ? ['run', ...settings.args] : settings.args
   const ps = child_process.spawn(settings.command, args, {
-    env: { ...settings.env, FORCE_COLOR: 'true' },
+    env: { ...process.env, ...settings.env, FORCE_COLOR: 'true' },
     stdio: settings.stdio || 'inherit',
     detached: true,
     shell: true,
@@ -324,7 +324,11 @@ function startDevServer(settings, log) {
   ps.on('SIGTERM', process.exit);
 
   ['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach(signal => process.on(signal, () => {
-      process.kill(-ps.pid)
+      try {
+        process.kill(-ps.pid)
+      } catch (err) {
+        console.error(`${NETLIFYDEVERR} Error while killing child process: ${err.message}`)
+      }
       process.exit()
     }))
 
