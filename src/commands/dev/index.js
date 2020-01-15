@@ -324,7 +324,11 @@ function startDevServer(settings, log) {
   ps.on('SIGTERM', process.exit);
 
   ['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach(signal => process.on(signal, () => {
-      process.kill(-ps.pid)
+      try {
+        process.kill(-ps.pid)
+      } catch (err) {
+        console.error(`${NETLIFYDEVERR} Error while killing child process: ${err.message}`)
+      }
       process.exit()
     }))
 
