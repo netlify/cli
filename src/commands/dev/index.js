@@ -1,4 +1,5 @@
 const url = require('url')
+const { URLSearchParams } = require('url')
 const path = require('path')
 const fs = require('fs')
 const { flags } = require('@oclif/command')
@@ -275,7 +276,9 @@ function serveRedirect(req, res, proxy, match, options) {
       return handler(req, res, {})
     }
 
-    req.url = dest.pathname + dest.search
+    const urlParams = new URLSearchParams(reqUrl.searchParams)
+    dest.searchParams.forEach((val, key) => urlParams.set(key, val))
+    req.url = dest.pathname + (urlParams.toString() && '?' + urlParams.toString())
     console.log(`${NETLIFYDEVLOG} Rewrote URL to `, req.url)
 
     if (isFunction({ functionsPort: options.functionsPort }, req)) {
