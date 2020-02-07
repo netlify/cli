@@ -21,7 +21,7 @@ module.exports = function() {
     command: getYarnOrNPMCommand(),
     port: 8888,
     proxyPort: 8000,
-    env: { ...process.env },
+    env: { ...process.env, GATSBY_LOGGER: 'yurnalist' },
     possibleArgsArrs,
     urlRegexp: new RegExp(`(http://)([^:]+:)${8000}(/)?`, 'g'),
     dist: 'public'
