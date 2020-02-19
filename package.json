@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "2.32.0",
+  "version": "2.33.0",
   "author": "Netlify Inc.",
   "contributors": [
     "Mathias Biilmann <matt@netlify.com> (https://twitter.com/biilmann)",
@@ -88,6 +88,7 @@
     "copy-template-dir": "^1.4.0",
     "debug": "^4.1.1",
     "dot-prop": "^5.1.0",
+    "dotenv": "^8.2.0",
     "envinfo": "^7.3.1",
     "execa": "^2.0.3",
     "express": "^4.17.1",
@@ -105,6 +106,7 @@
     "inquirer-autocomplete-prompt": "^1.0.1",
     "is-docker": "^1.1.0",
     "jwt-decode": "^2.2.0",
+    "lambda-local": "^1.7.1",
     "lodash.get": "^4.4.2",
     "lodash.isempty": "^4.4.0",
     "lodash.isequal": "^4.5.0",
