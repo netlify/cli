@@ -147,6 +147,7 @@ function createHandler(dir) {
       callback: callback,
       envfile: path.resolve(moduleDir, '.env'),
       envdestroy: false,
+      verboseLevel: 0,
     })
   }
 }
