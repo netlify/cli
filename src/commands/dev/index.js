@@ -20,6 +20,7 @@ const Command = require('../../utils/command')
 const chalk = require('chalk')
 const jwtDecode = require('jwt-decode')
 const open = require('open')
+const dotenv = require('dotenv')
 const {
   NETLIFYDEV,
   NETLIFYDEVLOG,
@@ -313,10 +314,16 @@ function startDevServer(settings, log) {
     })
     return
   }
+
+  let envConfig = {}
+  if (fs.existsSync('.env')) {
+    envConfig = dotenv.parse(fs.readFileSync('.env'))
+  }
+
   log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.type}`)
   const args = settings.command === 'npm' ? ['run', ...settings.args] : settings.args
   const ps = child_process.spawn(settings.command, args, {
-    env: { ...process.env, ...settings.env, FORCE_COLOR: 'true' },
+    env: { ...process.env, ...settings.env, FORCE_COLOR: 'true', ...envConfig },
     stdio: settings.stdio || 'inherit',
     detached: true,
     shell: true,
