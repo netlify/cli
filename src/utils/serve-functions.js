@@ -102,8 +102,14 @@ function createHandler(dir) {
       .pop()
       .trim()
 
+    let path = request.path
+    if (request.headers['x-netlify-original-pathname']) {
+      path = request.headers['x-netlify-original-pathname']
+      delete request.headers['x-netlify-original-pathname']
+    }
+
     const lambdaRequest = {
-      path: request.path,
+      path: path,
       httpMethod: request.method,
       queryStringParameters: queryString.parse(request.url.split(/\?(.+)/)[1]),
       headers: Object.assign({}, request.headers, { 'client-ip': remoteAddress }),
