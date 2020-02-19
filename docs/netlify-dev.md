@@ -173,6 +173,12 @@ The order of precedence for applying redirect rules is:
 
 See the [Redirects Documentation](https://www.netlify.com/docs/redirects/) for more information on Netlify's redirect and proxying capabilities.
 
+## Environment Variables
+
+Netlify Dev supports local environment variables through `.env` files.
+Netlify Dev will look in project root directory and each of your JavaScript based Netlify Functions directories for
+`.env` file and will provide those variables to the spawned site generator/server and Netlify Functions.
+
 ## Netlify Functions
 
 Netlify can also create serverless functions for you locally as part of Netlify Functions. The serverless functions can then be run by Netlify Dev in the same way that wold be when deployed to the cloud.
