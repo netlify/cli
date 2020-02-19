@@ -146,6 +146,7 @@ function createHandler(dir) {
       clientContext: JSON.stringify(buildClientContext(request.headers) || {}),
       callback: callback,
       envfile: path.resolve(moduleDir, '.env'),
+      envdestroy: false,
     })
   }
 }
