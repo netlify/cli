@@ -283,6 +283,7 @@ function serveRedirect(req, res, proxy, match, options) {
     console.log(`${NETLIFYDEVLOG} Rewrote URL to `, req.url)
 
     if (isFunction({ functionsPort: options.functionsPort }, req)) {
+      req.headers['x-netlify-original-pathname'] = reqUrl.pathname
       return proxy.web(req, res, { target: options.functionsServer })
     }
     const urlForAddons = addonUrl(options.addonUrls, req)
