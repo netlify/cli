@@ -8,9 +8,7 @@ const sitePath = path.join(__dirname, 'dummy-site')
 const execOptions = {
   stdio: [0, 1, 2],
   cwd: sitePath,
-  env: Object.assign(process.env, {
-    NETLIFY_AUTH_TOKEN: process.env.NETLIFY_AUTH_TOKEN
-  })
+  env: Object.assign(process.env)
 }
 
 const siteName =
