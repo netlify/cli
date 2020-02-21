@@ -7,6 +7,7 @@ const queryString = require('querystring')
 const chokidar = require('chokidar')
 const jwtDecode = require('jwt-decode')
 const lambdaLocal = require('lambda-local')
+const winston = require('winston')
 const {
   NETLIFYDEVLOG,
   // NETLIFYDEVWARN,
@@ -104,6 +105,14 @@ function createHandler(dir) {
   const watcher = chokidar.watch(dir, { ignored: /node_modules/ })
   watcher.on('change', clearCache('modified')).on('unlink', clearCache('deleted'))
 
+  const logger = winston.createLogger({
+    levels: winston.config.npm.levels,
+    transports: [
+      new winston.transports.Console( { level: 'warn' }),
+    ]
+  })
+  lambdaLocal.setLogger(logger)
+
   return function(request, response) {
     // handle proxies without path re-writes (http-servr)
     const cleanPath = request.path.replace(/^\/.netlify\/functions/, '')
@@ -153,7 +162,7 @@ function createHandler(dir) {
       callback: callback,
       envfile: path.resolve(moduleDir, '.env'),
       envdestroy: false,
-      verboseLevel: 0,
+      verboseLevel: 3,
     })
   }
 }
