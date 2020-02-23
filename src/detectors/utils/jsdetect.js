@@ -7,7 +7,7 @@ const { existsSync, readFileSync } = require('fs')
 let pkgJSON = null
 let yarnExists = false
 let warnedAboutEmptyScript = false
-const { NETLIFYDEVWARN } = require('netlify-cli-logo')
+const { NETLIFYDEVWARN } = require('../../utils/logo')
 
 /** hold package.json in a singleton so we dont do expensive parsing repeatedly */
 function getPkgJSON() {

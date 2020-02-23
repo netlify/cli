@@ -7,7 +7,7 @@ const {
   NETLIFYDEVLOG,
   // NETLIFYDEVWARN,
   NETLIFYDEVERR
-} = require('netlify-cli-logo')
+} = require('../../utils/logo')
 
 class FunctionsBuildCommand extends Command {
   async run() {
@@ -55,7 +55,7 @@ class FunctionsBuildCommand extends Command {
   }
 }
 
-FunctionsBuildCommand.description = `build functions locally
+FunctionsBuildCommand.description = `Build functions locally
 `
 FunctionsBuildCommand.aliases = ['function:build']
 FunctionsBuildCommand.flags = {

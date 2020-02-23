@@ -68,7 +68,7 @@ class InitCommand extends Command {
     }
 
     // Look for local repo
-    const repo = await getRepoData()
+    const repo = await getRepoData(flags.gitRemoteName)
 
     if (repo.error) {
       console.log()
@@ -260,7 +260,10 @@ InitCommand.flags = {
   }),
   force: flags.boolean({
     description: 'Reinitialize CI hooks if the linked site is already configured to use CI'
-  })
+  }),
+  gitRemoteName: flags.string({
+    description: 'Name of Git remote to use. e.g. "origin"'
+  }),
 }
 
 module.exports = InitCommand

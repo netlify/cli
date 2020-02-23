@@ -16,7 +16,6 @@ const algoliaClient = algoliaSearch(algoliaApplicationID, ALGOLIA_API_KEY)
 // Get CLI command data
 const commandData = generateCommandData()
 
-
 const flattenedData = Object.keys(commandData).reduce((acc, curr) => {
   const command = commandData[curr]
   if (command.commands.length) {
@@ -37,7 +36,6 @@ const flattenedData = Object.keys(commandData).reduce((acc, curr) => {
   return acc
 }, {})
 
-
 /*
 function getCommandData(commandData) {
   return Object.keys(commandData).reduce((a, c) => {
@@ -56,12 +54,12 @@ function getCommandData(commandData) {
 // console.log('flattenedData', flattenedData)
 // console.log('commandData', commandData)
 
-const algoliaData = Object.keys(flattenedData).map((key) => {
+const algoliaData = Object.keys(flattenedData).map(key => {
   const command = flattenedData[key]
   // delete command.commands
 
   const data = Object.assign({}, command, {
-    objectID: key,
+    objectID: key
   })
 
   return data

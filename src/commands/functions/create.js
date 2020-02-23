@@ -16,7 +16,7 @@ const {
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
   NETLIFYDEVERR
-} = require('netlify-cli-logo')
+} = require('../../utils/logo')
 
 const templatesDir = path.resolve(__dirname, '../../functions-templates')
 
@@ -51,7 +51,7 @@ FunctionsCreateCommand.args = [
   }
 ]
 
-FunctionsCreateCommand.description = `create a new function locally`
+FunctionsCreateCommand.description = `Create a new function locally`
 
 FunctionsCreateCommand.examples = [
   'netlify functions:create',

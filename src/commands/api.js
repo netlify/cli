@@ -41,14 +41,17 @@ class APICommand extends Command {
       this.error(`"${apiMethod}"" is not a valid api method. Run "netlify api --list" to see available methods`)
     }
 
+    let payload
     if (flags.data) {
-      const payload = typeof flags.data === 'string' ? JSON.parse(flags.data) : flags.data
-      try {
-        const apiResponse = await api[apiMethod](payload)
-        this.log(JSON.stringify(apiResponse, null, 2))
-      } catch (e) {
-        this.error(e)
-      }
+      payload = typeof flags.data === 'string' ? JSON.parse(flags.data) : flags.data
+    } else {
+      payload = {}
+    }
+    try {
+      const apiResponse = await api[apiMethod](payload)
+      this.log(JSON.stringify(apiResponse, null, 2))
+    } catch (e) {
+      this.error(e)
     }
   }
 }

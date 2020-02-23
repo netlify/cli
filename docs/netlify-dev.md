@@ -118,13 +118,14 @@ Netlify Dev is meant to work with zero config for the majority of users, by usin
   targetPort = 3000 # Port of target app server
   publish = "dist" # If you use a _redirect file, provide the path to your static content folder
   jwtRolePath = "app_metadata.authorization.roles" # Object path we should look for role values for JWT based redirects
+  autoLaunch = true # a Boolean value that determines if Netlify Dev launches the local server address in your browser
 ```
 
 ## Project detection
 
 Netlify Dev will attempt to detect the SSG or build command that you are using, and run these on your behalf, while adding other development utilities. If you have a JavaScript project, it looks for the best `package.json` script to run for you, using simple heuristics, so you can use the full flexibility of npm scripts. We may add more intelligence to this in future.
 
-**Overriding the detectors**: The number of [project types which Netlify Dev can detect](https://github.com/netlify/netlify-dev-plugin/tree/master/src/detectors) is growing, but if yours is not yet supported (contributions welcome!), you can instruct Netlify Dev to run the project on your behalf by declaring it in a `[dev]` block of your `netlify.toml` file.
+**Overriding the detectors**: The number of [project types which Netlify Dev can detect](https://github.com/netlify/cli/tree/master/src/detectors) is growing, but if yours is not yet supported (contributions welcome!), you can instruct Netlify Dev to run the project on your behalf by declaring it in a `[dev]` block of your `netlify.toml` file.
 
 ```toml
 # sample dev block in the toml
@@ -173,6 +174,12 @@ The order of precedence for applying redirect rules is:
 1. `netlify.toml` file (in the project's root folder)
 
 See the [Redirects Documentation](https://www.netlify.com/docs/redirects/) for more information on Netlify's redirect and proxying capabilities.
+
+## Environment Variables
+
+Netlify Dev supports local environment variables through `.env` files.
+Netlify Dev will look in project root directory and each of your JavaScript based Netlify Functions directories for
+`.env` file and will provide those variables to the spawned site generator/server and Netlify Functions.
 
 ## Netlify Functions
 
@@ -227,14 +234,14 @@ Function templates can specify `addons` that they rely on as well as execute arb
 module.exports = {
   addons: [
     {
-      addonName: "fauna",
+      addonName: 'fauna',
       addonDidInstall: () => {} // post install function to run after installing addon, eg. for setting up schema
     }
   ],
   onComplete() {
-    console.log(`custom-template function created from template!`);
+    console.log(`custom-template function created from template!`)
   }
-};
+}
 ```
 
 Instead of using our basic templates, you can use your own by passing it with a --url flag: `netlify functions:create hello-world --url https://github.com/netlify-labs/all-the-functions/tree/master/functions/9-using-middleware`, specifying any addons and postinstall/complete steps as shown above.
@@ -267,7 +274,6 @@ netlify functions:invoke myfunction --payload "./pathTo.json"
 There are special cases for [event triggered functions](https://www.netlify.com/docs/functions/?utm_source=blog&utm_medium=netlifydev&utm_campaign=devex#event-triggered-functions) (eg `identity-signup`) which will also give you mock data for testing. This makes manual local testing of event triggered functions possible, which drastically improves the development experience.
 
 This is a new feature; ideas and feedback and issues and PR's welcome!
-
 
 ### Function Builders, Function Builder Detection, and Relationship with `netlify-lambda`
 

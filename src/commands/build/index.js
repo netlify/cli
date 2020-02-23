@@ -1,76 +1,62 @@
-const Command = require('@netlify/cli-utils')
-const netlifyBuild = require('@netlify/build')
-const { parseRawFlags } = require('../../utils/parse-raw-flags')
+const build = require('@netlify/build')
+const { getConfigPath } = require('@netlify/config')
 const { flags } = require('@oclif/command')
-const { getConfigPath } = require('@netlify/build')
+const Command = require('../../utils/command')
+const { parseRawFlags } = require('../../utils/parse-raw-flags')
 
 class BuildCommand extends Command {
+  // Run Netlify Build
   async run() {
-    const { raw } = this.parse(BuildCommand)
+    /*
+      @TODO remove this.getOptions() & use the parsed config from Command.
+      this.netlify.config contains resolved config via @netlify/config
+      @netlify/build currently takes a path to config and resolves config values again
+    */
+    const options = await this.getOptions()
+
+    await this.config.runHook('analytics', {
+      eventName: 'command',
+      payload: { command: 'build', dry: options.dry }
+    })
+
+    const success = await build(options)
+    const exitCode = success ? 0 : 1
+    this.exit(exitCode)
+  }
+
+  // Retrieve Netlify Build options
+  async getOptions() {
     const { site } = this.netlify
-    // GET flags from `raw` data
-    const rawFlags = parseRawFlags(raw)
-    const cwd = process.cwd()
-    const [ token ] = this.getConfigToken()
+    const { raw } = this.parse(BuildCommand)
+    const { dry = false } = parseRawFlags(raw)
+    const [token] = this.getConfigToken()
 
-    let configPath
-    try {
-      // First try CWD
-      configPath = await getConfigPath(cwd)
-    } catch (err) {
-      try {
-        // Then try site root when top level git folder lives
-        configPath = await getConfigPath(site.root)
-      } catch (error) {} // eslint-disable-line
-      const location = (site.root === process.cwd()) ? site.root : `${site.root} OR ${cwd}`
-      console.log(`No Netlify Config file found in ${location}`)
-      this.exit()
-    }
+    // Try current directory first, then site root
+    const config = (await getConfigPath()) || (await getConfigPath(undefined, this.netlify.site.root))
 
-    // Needed because dry process.exits in netlify-build. Need to refactor how it exits
-    const isDryRun = rawFlags.dry || false
-    if (isDryRun) {
-      await this.config.runHook('analytics', {
-        eventName: 'command',
-        payload: {
-          command: 'build',
-          dry: isDryRun
-        }
-      })
+    let options = {
+      config,
+      token,
+      dry
     }
-    /* run build */
-    try {
-      await netlifyBuild({
-        config: configPath,
-        token: token,
-        dry: rawFlags.dry,
-        verbose: rawFlags.verbose,
-      })
-    } catch (err) {
-      console.log(err)
-      this.exit()
+    if (site.id) {
+      options.siteId = site.id
     }
-    // TODO refactor once netlifyBuild doesnt process.exit
-    if (!isDryRun) {
-      await this.config.runHook('analytics', {
-        eventName: 'command',
-        payload: {
-          command: 'build',
-          dry: isDryRun
-        }
-      })
-    }
+    return options
   }
 }
 
-/* duplicate functionality from @netlify/build */
+// Netlify Build programmatic options
 BuildCommand.flags = {
   dry: flags.boolean({
-    description: 'Dry run of build'
+    description: 'Dry run: show instructions without running them'
+  }),
+  context: flags.string({
+    description: 'Build context'
   })
 }
 
-BuildCommand.description = `Alpha - Netlify build`
+BuildCommand.description = `Beta - Netlify build`
 
 BuildCommand.examples = ['netlify build']
 

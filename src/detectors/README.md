@@ -34,35 +34,30 @@ not sure if we want to support gitbook yet
 requires a global install: https://github.com/GitbookIO/gitbook/blob/master/docs/setup.md
 
 ```js
-const {
-  hasRequiredDeps,
-  hasRequiredFiles,
-  getYarnOrNPMCommand,
-  scanScripts
-} = require("./utils/jsdetect");
+const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
 module.exports = function() {
   // REQUIRED FILES
-  if (!hasRequiredFiles(["README.md", "SUMMARY.md"])) return false;
+  if (!hasRequiredFiles(['README.md', 'SUMMARY.md'])) return false
   // // REQUIRED DEPS
   // if (!hasRequiredDeps(["hexo"])) return false;
 
   /** everything below now assumes that we are within gatsby */
 
-  const possibleArgsArrs = [["gitbook", "serve"]];
+  const possibleArgsArrs = [['gitbook', 'serve']]
   // scanScripts({
   //   preferredScriptsArr: ["start", "dev", "develop"],
   //   preferredCommand: "hexo server"
   // });
 
   return {
-    type: "gitbook",
+    type: 'gitbook',
     command: getYarnOrNPMCommand(),
     port: 8888,
     proxyPort: 4000,
     env: { ...process.env },
     possibleArgsArrs,
-    urlRegexp: new RegExp(`(http://)([^:]+:)${4000}(/)?`, "g"),
-    dist: "public"
-  };
-};
+    urlRegexp: new RegExp(`(http://)([^:]+:)${4000}(/)?`, 'g'),
+    dist: 'public'
+  }
+}
 ```

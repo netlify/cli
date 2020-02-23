@@ -23,7 +23,7 @@ const scope = {
       )
     }
     return (
-      <Link style={{ color: "#00ad9f", textDecoration: 'none' }} to={href}>
+      <Link style={{ color: '#00ad9f', textDecoration: 'none' }} to={href}>
         {children}
       </Link>
     )
@@ -34,56 +34,56 @@ const navOrder = [
   'index',
   'getting-started',
   'commands',
-    "addons",
-    "api",
-    "deploy",
-    "dev",
-    "functions",
-    "init",
-    "link",
-    "login",
-    "logout",
-    "open",
-    "sites",
-    "status",
-    "unlink",
+  'addons',
+  'api',
+  'deploy',
+  'dev',
+  'functions',
+  'init',
+  'link',
+  'login',
+  'logout',
+  'open',
+  'sites',
+  'status',
+  'unlink',
   'netlify-dev',
-  'contributing',
+  'contributing'
 ]
 
 const pageNames = {
   index: 'Introduction',
   'getting-started': 'Getting Started',
-  'commands': 'CLI Commands',
-  'contributing': 'Contributing',
-  'netlify-dev': 'Netlify Dev',
+  commands: 'CLI Commands',
+  contributing: 'Contributing',
+  'netlify-dev': 'Netlify Dev'
 }
 
-const sortRoutes = routes => [
-  ...sortBy([...routes], a => {
-    const i = navOrder.indexOf(a.name)
-    return i < 0 ? Infinity : i
-  })
-].map(route => {
-  if (!pageNames[route.name]) {
-    return route
-  }
-  return {
-    ...route,
-    name: pageNames[route.name],
-    props: {
-      hidePagination: true
+const sortRoutes = routes =>
+  [
+    ...sortBy([...routes], a => {
+      const i = navOrder.indexOf(a.name)
+      return i < 0 ? Infinity : i
+    })
+  ].map(route => {
+    if (!pageNames[route.name]) {
+      return route
     }
-  }
-})
+    return {
+      ...route,
+      name: pageNames[route.name],
+      props: {
+        hidePagination: true
+      }
+    }
+  })
 
 export default class App extends React.Component {
-
   static defaultProps = {
     title: 'Netlify CLI'
   }
 
-  render () {
+  render() {
     const { routes } = this.props
 
     const nav = sortRoutes(routes)

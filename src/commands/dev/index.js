@@ -1,8 +1,9 @@
 const url = require('url')
+const { URLSearchParams } = require('url')
 const path = require('path')
 const fs = require('fs')
 const { flags } = require('@oclif/command')
-const execa = require('execa')
+const child_process = require('child_process')
 const http = require('http')
 const httpProxy = require('http-proxy')
 const waitPort = require('wait-port')
@@ -19,12 +20,14 @@ const { detectFunctionsBuilder } = require('../../utils/detect-functions-builder
 const Command = require('../../utils/command')
 const chalk = require('chalk')
 const jwtDecode = require('jwt-decode')
+const open = require('open')
+const dotenv = require('dotenv')
 const {
   NETLIFYDEV,
   NETLIFYDEVLOG,
-  NETLIFYDEVWARN
-  // NETLIFYDEVERR
-} = require('netlify-cli-logo')
+  NETLIFYDEVWARN,
+  NETLIFYDEVERR
+} = require('../../utils/logo')
 const boxen = require('boxen')
 const { createTunnel, connectTunnel } = require('../../utils/live-tunnel')
 const createRewriter = require('../../utils/rules-proxy')
@@ -47,6 +50,10 @@ function notStatic(pathname, publicFolder) {
 
 function isExternal(match) {
   return match.to && match.to.match(/^https?:\/\//)
+}
+
+function isNetlifyDir(dir, projectDir) {
+  return dir.startsWith(path.resolve(projectDir, '.netlify'))
 }
 
 function isRedirect(match) {
@@ -114,7 +121,8 @@ function initializeProxy(port) {
     web: (req, res, options) => {
       req.proxyOptions = options
       req.alternativePaths = alternativePathsFor(req.url)
-      req.headers['x-forwarded-for'] = req.connection.remoteAddress
+      // Ref: https://nodejs.org/api/net.html#net_socket_remoteaddress
+      req.headers['x-forwarded-for'] = req.connection.remoteAddress || ''
       return proxy.web(req, res, options)
     },
     ws: (req, socket, head) => proxy.ws(req, socket, head)
@@ -123,8 +131,15 @@ function initializeProxy(port) {
   return handlers
 }
 
-async function startProxy(settings, addonUrls) {
-  await waitPort({ port: settings.proxyPort })
+async function startProxy(settings, addonUrls, configPath) {
+  try {
+    await waitPort({ port: settings.proxyPort })
+  } catch(err) {
+    console.error(NETLIFYDEVERR, `Netlify Dev doesn't know what port your site is running on.`)
+    console.error(NETLIFYDEVERR, `Please set --targetPort.`)
+    this.exit(1)
+  }
+
   if (settings.functionsPort) {
     await waitPort({ port: settings.functionsPort })
   }
@@ -136,6 +151,7 @@ async function startProxy(settings, addonUrls) {
   const rewriter = createRewriter({
     publicFolder: settings.dist,
     jwtRole: settings.jwtRolePath,
+    configPath,
   })
 
   const server = http.createServer(function(req, res) {
@@ -155,7 +171,7 @@ async function startProxy(settings, addonUrls) {
         publicFolder: settings.dist,
         functionsServer,
         functionsPort: settings.functionsPort,
-        jwtRolePath: settings.jwtRolePath,
+        jwtRolePath: settings.jwtRolePath
       }
 
       if (match) return serveRedirect(req, res, proxy, match, options)
@@ -173,7 +189,7 @@ async function startProxy(settings, addonUrls) {
 }
 
 function serveRedirect(req, res, proxy, match, options) {
-  if(!match) return proxy.web(req, res, options)
+  if (!match) return proxy.web(req, res, options)
 
   options = options || req.proxyOptions || {}
   options.match = null
@@ -192,7 +208,7 @@ function serveRedirect(req, res, proxy, match, options) {
 
   if (match.exceptions && match.exceptions.JWT) {
     // Some values of JWT can start with :, so, make sure to normalize them
-    const expectedRoles = match.exceptions.JWT.split(',').map(r => r.startsWith(':') ? r.slice(1) : r)
+    const expectedRoles = match.exceptions.JWT.split(',').map(r => (r.startsWith(':') ? r.slice(1) : r))
 
     const cookieValues = cookie.parse(req.headers.cookie || '')
     const token = cookieValues['nf_jwt']
@@ -212,7 +228,7 @@ function serveRedirect(req, res, proxy, match, options) {
         return
       }
 
-      if ((jwtValue.exp || 0) < Math.round((new Date().getTime() / 1000))) {
+      if ((jwtValue.exp || 0) < Math.round(new Date().getTime() / 1000)) {
         console.warn(NETLIFYDEVWARN, 'Expired JWT provided in request', req.url)
       } else {
         const presentedRoles = get(jwtValue, options.jwtRolePath) || []
@@ -224,7 +240,7 @@ function serveRedirect(req, res, proxy, match, options) {
         }
 
         // Restore the URL if everything is correct
-        if(presentedRoles.some(pr => expectedRoles.includes(pr))) {
+        if (presentedRoles.some(pr => expectedRoles.includes(pr))) {
           req.url = originalURL
         }
       }
@@ -233,14 +249,15 @@ function serveRedirect(req, res, proxy, match, options) {
 
   const reqUrl = new url.URL(
     req.url,
-    `${req.protocol || (req.headers.scheme && req.headers.scheme + ':') || 'http:'}//${req.headers['host'] || req.hostname}`
+    `${req.protocol || (req.headers.scheme && req.headers.scheme + ':') || 'http:'}//${req.headers['host'] ||
+      req.hostname}`
   )
   if (match.force404) {
     res.writeHead(404)
     return render404(options.publicFolder)
   }
 
-  if (match.force || (notStatic(reqUrl.pathname, options.publicFolder)) && match.status !== 404) {
+  if (match.force || (notStatic(reqUrl.pathname, options.publicFolder) && match.status !== 404)) {
     const dest = new url.URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
     if (isRedirect(match)) {
       res.writeHead(match.status, {
@@ -261,10 +278,13 @@ function serveRedirect(req, res, proxy, match, options) {
       return handler(req, res, {})
     }
 
-    req.url = dest.pathname + dest.search
+    const urlParams = new URLSearchParams(reqUrl.searchParams)
+    dest.searchParams.forEach((val, key) => urlParams.set(key, val))
+    req.url = dest.pathname + (urlParams.toString() && '?' + urlParams.toString())
     console.log(`${NETLIFYDEVLOG} Rewrote URL to `, req.url)
 
     if (isFunction({ functionsPort: options.functionsPort }, req)) {
+      req.headers['x-netlify-original-pathname'] = reqUrl.pathname
       return proxy.web(req, res, { target: options.functionsServer })
     }
     const urlForAddons = addonUrl(options.addonUrls, req)
@@ -272,7 +292,7 @@ function serveRedirect(req, res, proxy, match, options) {
       return proxy.web(req, res, { target: urlForAddons })
     }
 
-    return proxy.web(req, res, Object.assign({}, options, { status: match.status } ))
+    return proxy.web(req, res, Object.assign({}, options, { status: match.status }))
   }
 
   return proxy.web(req, res, options)
@@ -296,17 +316,36 @@ function startDevServer(settings, log) {
     })
     return
   }
+
+  let envConfig = {}
+  if (fs.existsSync('.env')) {
+    envConfig = dotenv.parse(fs.readFileSync('.env'))
+  }
+
   log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.type}`)
   const args = settings.command === 'npm' ? ['run', ...settings.args] : settings.args
-  const ps = execa(settings.command, args, {
-    env: { ...settings.env, FORCE_COLOR: 'true' },
-    stdio: settings.stdio || 'inherit'
+  const ps = child_process.spawn(settings.command, args, {
+    env: { ...process.env, ...settings.env, FORCE_COLOR: 'true', ...envConfig },
+    stdio: settings.stdio || 'inherit',
+    detached: true,
+    shell: true,
   })
   if (ps.stdout) ps.stdout.on('data', buff => process.stdout.write(buff.toString('utf8')))
   if (ps.stderr) ps.stderr.on('data', buff => process.stderr.write(buff.toString('utf8')))
   ps.on('close', code => process.exit(code))
   ps.on('SIGINT', process.exit)
-  ps.on('SIGTERM', process.exit)
+  ps.on('SIGTERM', process.exit);
+
+  ['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach(signal => process.on(signal, () => {
+      try {
+        process.kill(-ps.pid)
+      } catch (err) {
+        console.error(`${NETLIFYDEVERR} Error while killing child process: ${err.message}`)
+      }
+      process.exit()
+    }))
+
+  return ps
 }
 
 class DevCommand extends Command {
@@ -315,12 +354,12 @@ class DevCommand extends Command {
     let { flags } = this.parse(DevCommand)
     const { api, site, config } = this.netlify
     const functionsDir =
-      flags.functions ||
-      (config.dev && config.dev.functions) ||
-      (config.build && config.build.functions) ||
-      flags.Functions ||
-      (config.dev && config.dev.Functions) ||
-      (config.build && config.build.Functions)
+        flags.functions ||
+        (config.dev && config.dev.functions) ||
+        (config.build && config.build.functions) ||
+        flags.Functions ||
+        (config.dev && config.dev.Functions) ||
+        (config.build && config.build.Functions)
     let addonUrls = {}
 
     let accessToken = api.accessToken
@@ -332,6 +371,10 @@ class DevCommand extends Command {
 
     let settings = await serverSettings(Object.assign({}, config.dev, flags))
 
+    if (!settings.proxyPort) {
+      settings.proxyPort = config.dev && config.dev.proxyPort || 8080 // in case detector is bypassed
+    }
+
     if (flags.dir || !(settings && settings.command)) {
       let dist
       if (flags.dir) {
@@ -339,16 +382,17 @@ class DevCommand extends Command {
         dist = flags.dir
       } else {
         this.log(`${NETLIFYDEVWARN} No dev server detected, using simple static server`)
-        dist = (config.dev && config.dev.publish) || (config.build && config.build.publish)
+        dist = (config.dev && config.dev.publish) ||
+            (config.build && !isNetlifyDir(config.build.publish, site.root) && config.build.publish)
       }
       if (!dist) {
         this.log(`${NETLIFYDEVLOG} Using current working directory`)
         this.log(`${NETLIFYDEVWARN} Unable to determine public folder to serve files from.`)
         this.log(
-          `${NETLIFYDEVWARN} Setup a netlify.toml file with a [dev] section to specify your dev server settings.`
+            `${NETLIFYDEVWARN} Setup a netlify.toml file with a [dev] section to specify your dev server settings.`
         )
         this.log(
-          `${NETLIFYDEVWARN} See docs at: https://github.com/netlify/cli/blob/master/docs/netlify-dev.md#project-detection`
+            `${NETLIFYDEVWARN} See docs at: https://github.com/netlify/cli/blob/master/docs/netlify-dev.md#project-detection`
         )
         this.log(`${NETLIFYDEVWARN} Using current working directory for now...`)
         dist = process.cwd()
@@ -358,18 +402,10 @@ class DevCommand extends Command {
         port: 8888,
         proxyPort: await getPort({ port: 3999 }),
         dist,
-        jwtRolePath: config.dev && config.dev.jwtRolePath,
+        jwtRolePath: config.dev && config.dev.jwtRolePath
       }
     }
     if (!settings.jwtRolePath) settings.jwtRolePath = 'app_metadata.authorization.roles'
-
-    // Reset port if not manually specified, to make it dynamic
-    if (!(config.dev && config.dev.port) && !flags.port) {
-      settings = {
-        port: await getPort({ port: settings.port }),
-        ...settings
-      }
-    }
 
     startDevServer(settings, this.log)
 
@@ -398,17 +434,15 @@ class DevCommand extends Command {
         functionWatcher.on('unlink', buildDebounced)
       }
       const functionsPort = await getPort({ port: settings.functionsPort || 34567 })
+      settings.functionsPort = functionsPort
 
-      // returns a value but we dont use it
       await serveFunctions({
         ...settings,
-        port: functionsPort,
         functionsDir
       })
-      settings.functionsPort = functionsPort
     }
 
-    let { url, port } = await startProxy(settings, addonUrls)
+    let { url, port } = await startProxy(settings, addonUrls, site.configPath)
     if (!url) {
       throw new Error('Unable to start proxy server')
     }
@@ -430,6 +464,18 @@ class DevCommand extends Command {
         live: flags.live || false
       }
     })
+
+    if (
+      isEmpty(config.dev) ||
+      !config.dev.hasOwnProperty('autoLaunch') ||
+      (config.dev.hasOwnProperty('autoLaunch') && config.dev.autoLaunch !== false)
+    ) {
+      try {
+        await open(url)
+      } catch (err) {
+        console.warn(NETLIFYDEVWARN, 'Error while opening dev server URL in browser', err.message)
+      }
+    }
 
     // boxen doesnt support text wrapping yet https://github.com/sindresorhus/boxen/issues/16
     const banner = require('wrap-ansi')(chalk.bold(`${NETLIFYDEVLOG} Server now ready on ${url}`), 70)

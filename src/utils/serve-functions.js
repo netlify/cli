@@ -1,18 +1,19 @@
+const path = require('path')
+
 const express = require('express')
 const bodyParser = require('body-parser')
 const expressLogging = require('express-logging')
 const queryString = require('querystring')
-const getPort = require('get-port')
 const chokidar = require('chokidar')
 const jwtDecode = require('jwt-decode')
+const lambdaLocal = require('lambda-local')
+const winston = require('winston')
 const {
   NETLIFYDEVLOG,
   // NETLIFYDEVWARN,
   NETLIFYDEVERR
-} = require('netlify-cli-logo')
+} = require('./logo')
 const { getFunctions } = require('./get-functions')
-
-const defaultPort = 34567
 
 function handleErr(err, response) {
   response.statusCode = 500
@@ -27,6 +28,43 @@ function handleErr(err, response) {
 //   }
 //   return path.join(functionPath, `${path.basename(functionPath)}.js`);
 // }
+
+/** need to keep createCallback in scope so we can know if cb was called AND handler is async */
+function createCallback(response) {
+  return function(err, lambdaResponse) {
+    if (err) {
+      return handleErr(err, response)
+    }
+    if (lambdaResponse === undefined) {
+      return handleErr('lambda response was undefined. check your function code again.', response)
+    }
+    if (!Number(lambdaResponse.statusCode)) {
+      console.log(
+        `${NETLIFYDEVERR} Your function response must have a numerical statusCode. You gave: $`,
+        lambdaResponse.statusCode
+      )
+      return handleErr('Incorrect function response statusCode', response)
+    }
+    if (typeof lambdaResponse.body !== 'string') {
+      console.log(`${NETLIFYDEVERR} Your function response must have a string body. You gave:`, lambdaResponse.body)
+      return handleErr('Incorrect function response body', response)
+    }
+
+    response.statusCode = lambdaResponse.statusCode
+    // eslint-disable-line guard-for-in
+    for (const key in lambdaResponse.headers) {
+      response.setHeader(key, lambdaResponse.headers[key])
+    }
+    for (const key in lambdaResponse.multiValueHeaders) {
+      const items = lambdaResponse.multiValueHeaders[key]
+      response.setHeader(key, items)
+    }
+    response.write(
+      lambdaResponse.isBase64Encoded ? Buffer.from(lambdaResponse.body, 'base64') : lambdaResponse.body
+    )
+    response.end()
+  }
+}
 
 function buildClientContext(headers) {
   // inject a client context based on auth header, ported over from netlify-lambda (https://github.com/netlify/netlify-lambda/pull/57)
@@ -67,6 +105,14 @@ function createHandler(dir) {
   const watcher = chokidar.watch(dir, { ignored: /node_modules/ })
   watcher.on('change', clearCache('modified')).on('unlink', clearCache('deleted'))
 
+  const logger = winston.createLogger({
+    levels: winston.config.npm.levels,
+    transports: [
+      new winston.transports.Console( { level: 'warn' }),
+    ]
+  })
+  lambdaLocal.setLogger(logger)
+
   return function(request, response) {
     // handle proxies without path re-writes (http-servr)
     const cleanPath = request.path.replace(/^\/.netlify\/functions/, '')
@@ -80,20 +126,6 @@ function createHandler(dir) {
       return
     }
     const { functionPath, moduleDir } = functions[func]
-    let handler
-    let before = module.paths
-    try {
-      module.paths = [moduleDir]
-      handler = require(functionPath)
-      if (typeof handler.handler !== 'function') {
-        throw new Error(`function ${functionPath} must export a function named handler`)
-      }
-      module.paths = before
-    } catch (error) {
-      module.paths = before
-      handleErr(error, response)
-      return
-    }
 
     const body = request.body.toString()
     var isBase64Encoded = Buffer.from(body, 'base64').toString('base64') === body
@@ -105,8 +137,14 @@ function createHandler(dir) {
       .pop()
       .trim()
 
-    const lambdaRequest = {
-      path: request.path,
+    let requestPath = request.path
+    if (request.headers['x-netlify-original-pathname']) {
+      requestPath = request.headers['x-netlify-original-pathname']
+      delete request.headers['x-netlify-original-pathname']
+    }
+
+    const event = {
+      path: requestPath,
       httpMethod: request.method,
       queryStringParameters: queryString.parse(request.url.split(/\?(.+)/)[1]),
       headers: Object.assign({}, request.headers, { 'client-ip': remoteAddress }),
@@ -114,85 +152,24 @@ function createHandler(dir) {
       isBase64Encoded: isBase64Encoded
     }
 
-    let callbackWasCalled = false
     const callback = createCallback(response)
     // we already checked that it exports a function named handler above
-    const promise = handler.handler(
-      lambdaRequest,
-      { clientContext: buildClientContext(request.headers) || {} },
-      callback
-    )
-    /** guard against using BOTH async and callback */
-    if (callbackWasCalled && promise && typeof promise.then === 'function') {
-      throw new Error(
-        'Error: your function seems to be using both a callback and returning a promise (aka async function). This is invalid, pick one. (Hint: async!)'
-      )
-    } else {
-      // it is definitely an async function with no callback called, good.
-      promiseCallback(promise, callback)
-    }
 
-    /** need to keep createCallback in scope so we can know if cb was called AND handler is async */
-    function createCallback(response) {
-      return function(err, lambdaResponse) {
-        callbackWasCalled = true
-        if (err) {
-          return handleErr(err, response)
-        }
-        if (lambdaResponse === undefined) {
-          return handleErr('lambda response was undefined. check your function code again.', response)
-        }
-        if (!Number(lambdaResponse.statusCode)) {
-          console.log(
-            `${NETLIFYDEVERR} Your function response must have a numerical statusCode. You gave: $`,
-            lambdaResponse.statusCode
-          )
-          return handleErr('Incorrect function response statusCode', response)
-        }
-        if (typeof lambdaResponse.body !== 'string') {
-          console.log(`${NETLIFYDEVERR} Your function response must have a string body. You gave:`, lambdaResponse.body)
-          return handleErr('Incorrect function response body', response)
-        }
-
-        response.statusCode = lambdaResponse.statusCode
-        // eslint-disable-line guard-for-in
-        for (const key in lambdaResponse.headers) {
-          response.setHeader(key, lambdaResponse.headers[key])
-        }
-        for (const key in lambdaResponse.multiValueHeaders) {
-          const items = lambdaResponse.multiValueHeaders[key]
-          response.setHeader(key, items)
-        }
-        response.write(
-          lambdaResponse.isBase64Encoded ? Buffer.from(lambdaResponse.body, 'base64') : lambdaResponse.body
-        )
-        response.end()
-      }
-    }
+    return lambdaLocal.execute({
+      event: event,
+      lambdaPath: functionPath,
+      clientContext: JSON.stringify(buildClientContext(request.headers) || {}),
+      callback: callback,
+      envfile: path.resolve(moduleDir, '.env'),
+      envdestroy: false,
+      verboseLevel: 3,
+    })
   }
-}
-
-function promiseCallback(promise, callback) {
-  if (!promise) return // means no handler was written
-  if (typeof promise.then !== 'function') return
-  if (typeof callback !== 'function') return
-
-  promise.then(
-    function(data) {
-      callback(null, data)
-    },
-    function(err) {
-      callback(err, null)
-    }
-  )
 }
 
 async function serveFunctions(settings) {
   const app = express()
   const dir = settings.functionsDir
-  const port = await getPort({
-    port: assignLoudly(settings.port, defaultPort)
-  })
 
   app.use(
     bodyParser.text({
@@ -212,33 +189,17 @@ async function serveFunctions(settings) {
   })
   app.all('*', createHandler(dir))
 
-  app.listen(port, function(err) {
+  app.listen(settings.functionsPort, function(err) {
     if (err) {
       console.error(`${NETLIFYDEVERR} Unable to start lambda server: `, err) // eslint-disable-line no-console
       process.exit(1)
     }
 
     // add newline because this often appears alongside the client devserver's output
-    console.log(`\n${NETLIFYDEVLOG} Lambda server is listening on ${port}`) // eslint-disable-line no-console
+    console.log(`\n${NETLIFYDEVLOG} Lambda server is listening on ${settings.functionsPort}`) // eslint-disable-line no-console
   })
 
-  return Promise.resolve({
-    port
-  })
+  return Promise.resolve()
 }
 
 module.exports = { serveFunctions }
-
-// if first arg is undefined, use default, but tell user about it in case it is unintentional
-function assignLoudly(
-  optionalValue,
-  fallbackValue,
-  tellUser = dV => console.log(`${NETLIFYDEVLOG} No port specified, using defaultPort of `, dV) // eslint-disable-line no-console
-) {
-  if (fallbackValue === undefined) throw new Error('must have a fallbackValue')
-  if (fallbackValue !== optionalValue && optionalValue === undefined) {
-    tellUser(fallbackValue)
-    return fallbackValue
-  }
-  return optionalValue
-}
