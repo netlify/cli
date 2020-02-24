@@ -1,4 +1,4 @@
-*                 @netlify/oss-devs
-docs/             @netlify/oss-devs @netlify/docs
-site/             @netlify/oss-devs @netlify/docs
-/scripts/docs.js  @netlify/oss-devs @netlify/docs
+*                 @netlify/netlify-dev
+docs/             @netlify/netlify-dev @netlify/docs
+site/             @netlify/netlify-dev @netlify/docs
+/scripts/docs.js  @netlify/netlify-dev @netlify/docs
