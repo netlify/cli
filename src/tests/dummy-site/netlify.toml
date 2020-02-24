@@ -1,3 +1,5 @@
+[dev]
+	autoLaunch = false
 [build]
   command = "npm run build"
   publish = "build"
