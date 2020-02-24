@@ -46,7 +46,7 @@ test.before(async t => {
   )
 })
 
-test.serial('netlify addons:list', async t => {
+test.serial('netlify dev functions timeout', async t => {
   return new Promise((resolve, reject) => {
     const req = http.request({
       hostname: host,
