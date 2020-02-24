@@ -65,5 +65,5 @@ test.serial('netlify dev functions timeout', async t => {
 })
 
 test.after('cleanup', async t => {
-  if (ps && ps.pid) process.kill(-ps.pid, 'SIGINT')
+  if (ps && ps.pid) ps.kill('SIGHUP')
 })
