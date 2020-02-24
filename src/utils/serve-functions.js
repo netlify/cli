@@ -163,6 +163,7 @@ function createHandler(dir) {
       envfile: path.resolve(moduleDir, '.env'),
       envdestroy: false,
       verboseLevel: 3,
+      timeoutMs: 10 * 1000,
     })
   }
 }
