@@ -2,7 +2,6 @@ const build = require('@netlify/build')
 const { getConfigPath } = require('@netlify/config')
 const { flags } = require('@oclif/command')
 const Command = require('../../utils/command')
-const { parseRawFlags } = require('../../utils/parse-raw-flags')
 
 class BuildCommand extends Command {
   // Run Netlify Build
@@ -27,8 +26,9 @@ class BuildCommand extends Command {
   // Retrieve Netlify Build options
   async getOptions() {
     const { site } = this.netlify
-    const { raw } = this.parse(BuildCommand)
-    const { dry = false } = parseRawFlags(raw)
+    const {
+      flags: { dry = false, context }
+    } = this.parse(BuildCommand)
     const [token] = this.getConfigToken()
 
     // Try current directory first, then site root
@@ -37,7 +37,8 @@ class BuildCommand extends Command {
     let options = {
       config,
       token,
-      dry
+      dry,
+      context
     }
     if (site.id) {
       options.siteId = site.id
