@@ -459,11 +459,7 @@ class DevCommand extends Command {
       }
     })
 
-    if (
-      isEmpty(config.dev) ||
-      !config.dev.hasOwnProperty('autoLaunch') ||
-      (config.dev.hasOwnProperty('autoLaunch') && config.dev.autoLaunch !== false)
-    ) {
+    if (config.dev && config.dev.autoLaunch) {
       try {
         await open(url)
       } catch (err) {
