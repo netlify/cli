@@ -147,7 +147,7 @@ async function startProxy(settings, addonUrls, configPath) {
 
   const proxy = initializeProxy(settings.proxyPort)
 
-  const rewriter = createRewriter({
+  const rewriter = await createRewriter({
     publicFolder: settings.dist,
     jwtRole: settings.jwtRolePath,
     configPath,

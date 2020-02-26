@@ -63,31 +63,27 @@ module.exports = function({ publicFolder, baseFolder, jwtSecret, jwtRole, config
     path.resolve(publicFolder, '_redirects'),
     path.resolve(configPath || path.resolve(publicFolder, 'netlify.yml')),
   ]
+  let rules = []
 
-  onChanges(configFiles, () => {matcher = null})
+  onChanges(configFiles, async () => {
+    rules = (await parseRules(configFiles)).filter(r => !(r.path === '/*' && r.to === '/index.html' && r.status === 200))
+    matcher = null
+  })
 
   const getMatcher = async () => {
-    if (matcher) {
-      return Promise.resolve(matcher)
-    }
-
-    const rules = (await parseRules(configFiles)).filter(
-      r => !(r.path === '/*' && r.to === '/index.html' && r.status === 200)
-    )
+    if (matcher) return matcher
 
     if (rules.length) {
-      return redirector
-        .parseJSON(JSON.stringify(rules), {
-          jwtSecret: jwtSecret || 'secret',
-          jwtRole: jwtRole || 'app_metadata.authorization.roles'
-        })
-        .then(m => (matcher = m))
+      matcher = await redirector.parseJSON(JSON.stringify(rules), {
+        jwtSecret: jwtSecret || 'secret',
+        jwtRole: jwtRole || 'app_metadata.authorization.roles'
+      })
     }
-    return Promise.resolve({
+    return {
       match() {
         return null
       }
-    })
+    }
   }
 
   return function(req, res, next) {
