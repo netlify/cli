@@ -74,7 +74,7 @@ module.exports = function({ publicFolder, baseFolder, jwtSecret, jwtRole, config
     if (matcher) return matcher
 
     if (rules.length) {
-      matcher = await redirector.parseJSON(JSON.stringify(rules), {
+      return matcher = await redirector.parseJSON(JSON.stringify(rules), {
         jwtSecret: jwtSecret || 'secret',
         jwtRole: jwtRole || 'app_metadata.authorization.roles'
       })
