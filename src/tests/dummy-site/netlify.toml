@@ -3,3 +3,13 @@
 [build]
   command = "npm run build"
   publish = "build"
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  force = false
+[[redirects]]
+  from = "/something"
+  to = "/ping"
+  status = 200
+  force = false
