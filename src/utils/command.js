@@ -10,7 +10,6 @@ const globalConfig = require('./global-config')
 const findRoot = require('./find-root')
 const chalkInstance = require('./chalk')
 const resolveConfig = require('@netlify/config')
-const getConfigPath = require('@netlify/config').getConfigPath
 
 const argv = require('minimist')(process.argv.slice(2))
 const { NETLIFY_AUTH_TOKEN, NETLIFY_API_URL } = process.env
@@ -33,8 +32,7 @@ class BaseCommand extends Command {
     const [token] = this.getConfigToken(authViaFlag)
 
     // Read new netlify.toml/yml/json
-    const configPath = await getConfigPath(argv.config, cwd)
-    const config = await resolveConfig(configPath, {
+    const { configPath, config } = await resolveConfig(argv.config, {
       cwd: cwd,
       context: argv.context
     })
