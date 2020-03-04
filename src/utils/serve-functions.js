@@ -157,8 +157,9 @@ function createHandler(dir) {
     const callback = createCallback(response)
     // we already checked that it exports a function named handler above
     let envConfig = {}
-    if (fs.existsSync(path.resolve(path.dirname(functionPath)))) {
-      envConfig = dotenv.parse(fs.readFileSync(path.resolve(path.dirname(functionPath), '.env')))
+    const envPath = path.resolve(path.dirname(functionPath), '.env')
+    if (fs.existsSync(envPath)) {
+      envConfig = dotenv.parse(fs.readFileSync(envPath))
     }
 
     return lambdaLocal.execute({
