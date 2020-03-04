@@ -1,5 +1,7 @@
 const path = require('path')
+const fs = require('fs')
 
+const dotenv = require('dotenv')
 const express = require('express')
 const bodyParser = require('body-parser')
 const expressLogging = require('express-logging')
@@ -154,14 +156,18 @@ function createHandler(dir) {
 
     const callback = createCallback(response)
     // we already checked that it exports a function named handler above
+    let envConfig = {}
+    if (fs.existsSync(path.resolve(path.dirname(functionPath)))) {
+      envConfig = dotenv.parse(fs.readFileSync(path.resolve(path.dirname(functionPath), '.env')))
+    }
 
     return lambdaLocal.execute({
       event: event,
       lambdaPath: functionPath,
       clientContext: JSON.stringify(buildClientContext(request.headers) || {}),
       callback: callback,
-      envfile: path.resolve(path.dirname(functionPath), '.env'),
-      envdestroy: false,
+      environment: envConfig,
+      envdestroy: true,
       verboseLevel: 3,
       timeoutMs: 10 * 1000,
     })
@@ -188,7 +194,18 @@ async function serveFunctions(settings) {
   app.get('/favicon.ico', function(req, res) {
     res.status(204).end()
   })
-  app.all('*', createHandler(dir))
+
+  // Record the env variables before alteration
+  const envVars = Object.assign({}, process.env)
+
+  const catchAllHandler = createHandler(dir)
+  app.all('*', (req, resp) => {
+    const r = catchAllHandler(req, resp)
+
+    // Restore env variables after serving request
+    Object.entries(envVars).forEach(([key, val]) => process.env[key] = val)
+    return r
+  })
 
   app.listen(settings.functionsPort, function(err) {
     if (err) {
