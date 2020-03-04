@@ -97,6 +97,7 @@ function initializeProxy(port) {
     }
   })
 
+  proxy.on('error', err => console.error('error while proxying request:', err.message))
   proxy.on('proxyRes', (proxyRes, req, res) => {
     if (proxyRes.statusCode === 404) {
       if (req.alternativePaths && req.alternativePaths.length > 0) {
