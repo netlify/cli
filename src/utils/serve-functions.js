@@ -125,7 +125,7 @@ function createHandler(dir) {
       response.end('Function not found...')
       return
     }
-    const { functionPath, moduleDir } = functions[func]
+    const { functionPath } = functions[func]
 
     const body = request.body.toString()
     var isBase64Encoded = Buffer.from(body, 'base64').toString('base64') === body
@@ -160,7 +160,7 @@ function createHandler(dir) {
       lambdaPath: functionPath,
       clientContext: JSON.stringify(buildClientContext(request.headers) || {}),
       callback: callback,
-      envfile: path.resolve(moduleDir, '.env'),
+      envfile: path.resolve(path.dirname(functionPath), '.env'),
       envdestroy: false,
       verboseLevel: 3,
       timeoutMs: 10 * 1000,
