@@ -431,9 +431,18 @@ class DevCommand extends Command {
       const functionsPort = await getPort({ port: settings.functionsPort || 34567 })
       settings.functionsPort = functionsPort
 
-      await serveFunctions({
+      const functionsServer = await serveFunctions({
         ...settings,
         functionsDir
+      })
+      functionsServer.listen(settings.functionsPort, function(err) {
+        if (err) {
+          console.error(`${NETLIFYDEVERR} Unable to start lambda server: `, err) // eslint-disable-line no-console
+          process.exit(1)
+        }
+
+        // add newline because this often appears alongside the client devserver's output
+        console.log(`\n${NETLIFYDEVLOG} Lambda server is listening on ${settings.functionsPort}`) // eslint-disable-line no-console
       })
     }
 

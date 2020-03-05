@@ -208,17 +208,7 @@ async function serveFunctions(settings) {
     return r
   })
 
-  app.listen(settings.functionsPort, function(err) {
-    if (err) {
-      console.error(`${NETLIFYDEVERR} Unable to start lambda server: `, err) // eslint-disable-line no-console
-      process.exit(1)
-    }
-
-    // add newline because this often appears alongside the client devserver's output
-    console.log(`\n${NETLIFYDEVLOG} Lambda server is listening on ${settings.functionsPort}`) // eslint-disable-line no-console
-  })
-
-  return Promise.resolve()
+  return app
 }
 
 module.exports = { serveFunctions }
