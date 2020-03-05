@@ -9,7 +9,7 @@ const { serveFunctions } = require('../utils/serve-functions')
 
 test.before(async t => {
     // Explicitly set env var on process to simulate remote env vars
-    process.env.DUMMY_VAR = false
+    process.env.DUMMY_VAR = 'false'
 
     const port = await getPort({ port: 34567 })
     const server = await serveFunctions({
