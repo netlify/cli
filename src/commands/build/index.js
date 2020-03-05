@@ -61,8 +61,6 @@ BuildCommand.description = `Beta - Netlify build`
 
 BuildCommand.examples = ['netlify build']
 
-BuildCommand.strict = false
-
 BuildCommand.hidden = true
 
 module.exports = BuildCommand
