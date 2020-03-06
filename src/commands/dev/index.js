@@ -317,15 +317,10 @@ function startDevServer(settings, log) {
     return
   }
 
-  let envConfig = {}
-  if (fs.existsSync('.env')) {
-    envConfig = dotenv.parse(fs.readFileSync('.env'))
-  }
-
   log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.type}`)
   const args = settings.command === 'npm' ? ['run', ...settings.args] : settings.args
   const ps = child_process.spawn(settings.command, args, {
-    env: { ...process.env, ...settings.env, FORCE_COLOR: 'true', ...envConfig },
+    env: { ...process.env, ...settings.env, FORCE_COLOR: 'true' },
     stdio: settings.stdio || 'inherit',
     detached: true,
     shell: true,
@@ -406,6 +401,14 @@ class DevCommand extends Command {
       }
     }
     if (!settings.jwtRolePath) settings.jwtRolePath = 'app_metadata.authorization.roles'
+
+    // Override env variables with .env file
+    const envFile = path.resolve(site.root, '.env')
+    if (fs.existsSync(envFile)) {
+      const vars = dotenv.parse(fs.readFileSync(envFile)) || {}
+      console.log(`${NETLIFYDEVLOG} Overriding the following env variables with ${chalk.blue('.env')} file:`, chalk.yellow(Object.keys(vars)))
+      Object.values(vars).forEach(([key, val]) => process.env[key] = val)
+    }
 
     startDevServer(settings, this.log)
 
