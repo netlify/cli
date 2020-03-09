@@ -31,11 +31,8 @@ class BaseCommand extends Command {
 
     const [token] = this.getConfigToken(authViaFlag)
 
-    // Read new netlify.toml/yml/json
-    const { configPath, config } = await resolveConfig(argv.config, {
-      cwd: cwd,
-      context: argv.context
-    })
+    const cachedConfig = await this.getConfig(cwd, projectRoot)
+    const { configPath, config } = cachedConfig
 
     // Get site id & build state
     const state = new StateConfig(projectRoot)
@@ -64,10 +61,28 @@ class BaseCommand extends Command {
       },
       // Configuration from netlify.[toml/yml]
       config: config,
+      // Used to avoid calling @neltify/config again
+      cachedConfig: cachedConfig,
       // global cli config
       globalConfig: globalConfig,
       // state of current site dir
       state: state
+    }
+  }
+
+  // Find and resolve the Netlify configuration
+  async getConfig(cwd, projectRoot) {
+    try {
+      return await resolveConfig({
+        config: argv.config,
+        cwd: cwd,
+        repositoryRoot: projectRoot,
+        context: argv.context
+      })
+    } catch (error) {
+      const message = error.type === 'userError' ? error.message : error.stack
+      console.error(message)
+      this.exit(1)
     }
   }
 
