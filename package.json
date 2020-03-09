@@ -61,7 +61,7 @@
     "postinstall": "node ./scripts/postinstall.js"
   },
   "dependencies": {
-    "@netlify/build": "^0.1.83",
+    "@netlify/build": "^0.1.84",
     "@netlify/config": "^0.4.1",
     "@netlify/zip-it-and-ship-it": "^0.3.1",
     "@oclif/command": "^1.5.18",
