@@ -1,17 +1,11 @@
 const build = require('@netlify/build')
-const { getConfigPath } = require('@netlify/config')
 const { flags } = require('@oclif/command')
 const Command = require('../../utils/command')
 
 class BuildCommand extends Command {
   // Run Netlify Build
   async run() {
-    /*
-      @TODO remove this.getOptions() & use the parsed config from Command.
-      this.netlify.config contains resolved config via @netlify/config
-      @netlify/build currently takes a path to config and resolves config values again
-    */
-    const options = await this.getOptions()
+    const options = this.getOptions()
 
     await this.config.runHook('analytics', {
       eventName: 'command',
@@ -24,26 +18,20 @@ class BuildCommand extends Command {
   }
 
   // Retrieve Netlify Build options
-  async getOptions() {
-    const { site } = this.netlify
+  getOptions() {
     const {
-      flags: { dry = false, context }
+      site: { id: siteId },
+      cachedConfig
+    } = this.netlify
+    // We have already resolved the configuration using `@netlify/config`
+    // This is stored as `this.netlify.cachedConfig` and can be passed to
+    // `@netlify/build --cachedConfig`.
+    const cachedConfigOption = JSON.stringify(cachedConfig)
+    const {
+      flags: { dry = false }
     } = this.parse(BuildCommand)
     const [token] = this.getConfigToken()
-
-    // Try current directory first, then site root
-    const config = (await getConfigPath()) || (await getConfigPath(undefined, this.netlify.site.root))
-
-    let options = {
-      config,
-      token,
-      dry,
-      context
-    }
-    if (site.id) {
-      options.siteId = site.id
-    }
-    return options
+    return { cachedConfig: cachedConfigOption, token, dry, siteId }
   }
 }
 
