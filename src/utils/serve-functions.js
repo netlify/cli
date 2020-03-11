@@ -1,5 +1,3 @@
-const path = require('path')
-
 const express = require('express')
 const bodyParser = require('body-parser')
 const expressLogging = require('express-logging')
@@ -125,7 +123,7 @@ function createHandler(dir) {
       response.end('Function not found...')
       return
     }
-    const { functionPath, moduleDir } = functions[func]
+    const { functionPath } = functions[func]
 
     const body = request.body.toString()
     var isBase64Encoded = Buffer.from(body, 'base64').toString('base64') === body
@@ -153,15 +151,12 @@ function createHandler(dir) {
     }
 
     const callback = createCallback(response)
-    // we already checked that it exports a function named handler above
 
     return lambdaLocal.execute({
       event: event,
       lambdaPath: functionPath,
       clientContext: JSON.stringify(buildClientContext(request.headers) || {}),
       callback: callback,
-      envfile: path.resolve(moduleDir, '.env'),
-      envdestroy: false,
       verboseLevel: 3,
       timeoutMs: 10 * 1000,
     })
@@ -188,19 +183,10 @@ async function serveFunctions(settings) {
   app.get('/favicon.ico', function(req, res) {
     res.status(204).end()
   })
+
   app.all('*', createHandler(dir))
 
-  app.listen(settings.functionsPort, function(err) {
-    if (err) {
-      console.error(`${NETLIFYDEVERR} Unable to start lambda server: `, err) // eslint-disable-line no-console
-      process.exit(1)
-    }
-
-    // add newline because this often appears alongside the client devserver's output
-    console.log(`\n${NETLIFYDEVLOG} Lambda server is listening on ${settings.functionsPort}`) // eslint-disable-line no-console
-  })
-
-  return Promise.resolve()
+  return app
 }
 
 module.exports = { serveFunctions }
