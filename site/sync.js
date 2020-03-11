@@ -38,7 +38,7 @@ async function syncLocalContent() {
 
 async function removeMarkDownLinks(filePath) {
   const content = await readFile(filePath, 'utf-8')
-  const newContent = content.replace(/\.md#/gm, '#').replace(/\/docs\/commands\//gm, '/commands/')
+  const newContent = content.replace(/(\w+)\.md/gm, '$1').replace(/\/docs\/commands\//gm, '/commands/')
   // Rename README.md to index.md
   if (path.basename(filePath) === 'README.md') {
     const newPath = path.join(path.dirname(filePath), 'index.md')
