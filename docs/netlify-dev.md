@@ -325,9 +325,6 @@ Thanks for contributing! You'll need to follow these steps to run Netlify CLI an
 1. uninstall any globally installed versions of `netlify-cli`
 2. clone and install deps for https://github.com/netlify/cli
 3. `npm link` from inside the `cli` folder
-4. clone and install deps for this repo
-5. inside the `netlify-dev-plugin` folder, run `yarn link`
-6. inside the `cli` folder, run `yarn link "netlify-dev-plugin"`
 
 Now you're both ready to start testing `netlify dev` and to contribute to the project! Note these are untested instructions, please get in touch if you're unable to follow them clearly and we'll work with you. Or ping [@swyx](https://twitter.com/swyx).
 
