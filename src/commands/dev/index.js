@@ -407,7 +407,7 @@ class DevCommand extends Command {
     if (fs.existsSync(envFile)) {
       const vars = dotenv.parse(fs.readFileSync(envFile)) || {}
       console.log(`${NETLIFYDEVLOG} Overriding the following env variables with ${chalk.blue('.env')} file:`, chalk.yellow(Object.keys(vars)))
-      Object.values(vars).forEach(([key, val]) => process.env[key] = val)
+      Object.entries(vars).forEach(([key, val]) => process.env[key] = val)
     }
 
     startDevServer(settings, this.log)
