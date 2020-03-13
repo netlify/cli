@@ -3,6 +3,7 @@
 [build]
   command = "npm run build"
   publish = "build"
+  functions = "functions"
 [[redirects]]
   from = "/*"
   to = "/index.html"
