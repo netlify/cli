@@ -154,10 +154,7 @@ As for which port to use while doing local development in Netlify Dev, always lo
    └──────────────────────────────────────────────────────────────┘
 ```
 
-<details>
-<summary>
-<b>Specifying custom ports for Netlify Dev</b>
-</summary>
+**Specifying custom ports for Netlify Dev**
 
 Netlify Dev allows you to specify the following parameters for port as both flags and in config file (`netlify.toml` etc.):
 * `port`: The port for the main Netlify Dev server, the one you'll open in browser.
@@ -165,8 +162,6 @@ Netlify Dev allows you to specify the following parameters for port as both flag
 * `functionsPort`: The port for Netlify Functions server. This server is accessed internally within Netlify Dev, you shouldn't need to access it directly. And thus shouldn't need to change this port. You can access your functions at Netlify Dev main server port like so: `http://localhost:<port>/.netlify/functions/<your-function-slug>`.
 
 Netlify Dev tries to acquire these ports but if any of them is not available (already in use by another application), it assigns a random port instead of that.
-
-</details>
 
 ## Redirects
 
