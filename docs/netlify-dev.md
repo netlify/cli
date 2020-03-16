@@ -136,10 +136,7 @@ Netlify Dev will attempt to detect the SSG or build command that you are using, 
   publish = "dist" # If you use a _redirect file, provide the path to your static content folder
 ```
 
-<details>
-<summary>
-<b>Explanation of ports in Netlify Dev</b>
-</summary>
+## Explanation of ports in Netlify Dev
 
 There will be a number of ports that you will encounter when using Netlify Dev, especially when running a static site generator like Gatsby which has its own dev server. All the port numbers can be a bit confusing, so here is a brief explainer.
 
@@ -156,6 +153,18 @@ As for which port to use while doing local development in Netlify Dev, always lo
    │                                                              │
    └──────────────────────────────────────────────────────────────┘
 ```
+
+<details>
+<summary>
+<b>Specifying custom ports for Netlify Dev</b>
+</summary>
+
+Netlify Dev allows you to specify the following parameters for port as both flags and in config file (`netlify.toml` etc.):
+* `port`: The port for the main Netlify Dev server, the one you'll open in browser.
+* `targetPort`: The port for your application server or site generator.
+* `functionsPort`: The port for Netlify Functions server. This server is accessed internally within Netlify Dev, you shouldn't need to access it directly. And thus shouldn't need to change this port. You can access your functions at Netlify Dev main server port like so: `http://localhost:<port>/.netlify/functions/<your-function-slug>`.
+
+Netlify Dev tries to acquire these ports but if any of them is not available (already in use by another application), it assigns a random port instead of that.
 
 </details>
 
