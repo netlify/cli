@@ -30,6 +30,8 @@ const {
 const boxen = require('boxen')
 const { createTunnel, connectTunnel } = require('../../utils/live-tunnel')
 const createRewriter = require('../../utils/rules-proxy')
+const { onChanges } = require('../../utils/rules-proxy')
+const parseHeadersFile = require('../../utils/headers')
 
 function isFunction(functionsPort, req) {
   return functionsPort && req.url.match(/^\/.netlify\/functions\/.+/)
@@ -88,13 +90,24 @@ function alternativePathsFor(url) {
   return paths
 }
 
-function initializeProxy(port) {
+function initializeProxy(port, distDir, projectDir) {
   const proxy = httpProxy.createProxyServer({
     selfHandleResponse: true,
     target: {
       host: 'localhost',
       port: port
     }
+  })
+
+  const headersFiles = Array.from(new Set([
+    path.resolve(distDir, '_headers'),
+    path.resolve(projectDir, '_headers')
+  ]))
+
+  let headers = {}
+  onChanges(headersFiles, () => {
+    console.log(`${NETLIFYDEVLOG} Reloading headers files`, headersFiles.map(p => path.relative(projectDir, p)))
+    headers = headersFiles.reduce((prev, curr) => Object.assign(prev, parseHeadersFile(curr)), {})
   })
 
   proxy.on('error', err => console.error('error while proxying request:', err.message))
@@ -107,6 +120,10 @@ function initializeProxy(port) {
       if (req.proxyOptions && req.proxyOptions.match) {
         return serveRedirect(req, res, handlers, req.proxyOptions.match, req.proxyOptions)
       }
+    }
+    const requestURL = new url.URL(req.url, `http://${req.headers.host || 'localhost'}`)
+    if (headers.hasOwnProperty(requestURL.pathname)) {
+      Object.entries(headers[requestURL.pathname]).forEach(([key, val]) => res.setHeader(key, val))
     }
     res.writeHead(req.proxyOptions.status || proxyRes.statusCode, proxyRes.headers)
     proxyRes.on('data', function(data) {
@@ -131,7 +148,7 @@ function initializeProxy(port) {
   return handlers
 }
 
-async function startProxy(settings, addonUrls, configPath) {
+async function startProxy(settings, addonUrls, configPath, projectDir) {
   try {
     await waitPort({ port: settings.proxyPort })
   } catch(err) {
@@ -146,7 +163,7 @@ async function startProxy(settings, addonUrls, configPath) {
   const port = await getPort({ port: settings.port || 8888 })
   const functionsServer = settings.functionsPort ? `http://localhost:${settings.functionsPort}` : null
 
-  const proxy = initializeProxy(settings.proxyPort)
+  const proxy = initializeProxy(settings.proxyPort, settings.dist, projectDir)
 
   const rewriter = await createRewriter({
     publicFolder: settings.dist,
@@ -449,7 +466,7 @@ class DevCommand extends Command {
       })
     }
 
-    let { url, port } = await startProxy(settings, addonUrls, site.configPath)
+    let { url, port } = await startProxy(settings, addonUrls, site.configPath, site.root)
     if (!url) {
       throw new Error('Unable to start proxy server')
     }
