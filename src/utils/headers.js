@@ -4,15 +4,15 @@ const TOKEN_COMMENT = "#"
 const TOKEN_PATH = "/"
 
 function parseHeadersFile(filePath) {
-    const headers = {}
-    if (!fs.existsSync(filePath)) return headers
+    const rules = {}
+    if (!fs.existsSync(filePath)) return rules
     if (fs.statSync(filePath).isDirectory()) {
         console.warn('expected _headers file but found a directory at:', filePath)
-        return headers
+        return rules
     }
 
     const lines  = fs.readFileSync(filePath, { encoding: 'utf8' }).split('\n')
-    if (lines.length < 1) return headers
+    if (lines.length < 1) return rules
 
     let path
     for (let i = 0; i <= lines.length; i++) {
@@ -33,19 +33,19 @@ function parseHeadersFile(filePath) {
             const key = line.substr(0, sepIndex)
             const value = line.substr(sepIndex + 1).trim()
 
-            if (headers.hasOwnProperty(path)) {
-                if (headers[path].hasOwnProperty(key)) {
-                    headers[path][key].push(value)
+            if (rules.hasOwnProperty(path)) {
+                if (rules[path].hasOwnProperty(key)) {
+                    rules[path][key].push(value)
                 } else {
-                    headers[path][key] = [value]
+                    rules[path][key] = [value]
                 }
             } else {
-                headers[path] = {[key]: [value]}
+                rules[path] = {[key]: [value]}
             }
         }
     }
 
-    return headers
+    return rules
 }
 
 module.exports = parseHeadersFile

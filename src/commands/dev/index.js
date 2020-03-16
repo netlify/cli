@@ -104,10 +104,10 @@ function initializeProxy(port, distDir, projectDir) {
     path.resolve(projectDir, '_headers')
   ]))
 
-  let headers = {}
+  let headerRules = {}
   onChanges(headersFiles, () => {
     console.log(`${NETLIFYDEVLOG} Reloading headers files`, headersFiles.map(p => path.relative(projectDir, p)))
-    headers = headersFiles.reduce((prev, curr) => Object.assign(prev, parseHeadersFile(curr)), {})
+    headerRules = headersFiles.reduce((prev, curr) => Object.assign(prev, parseHeadersFile(curr)), {})
   })
 
   proxy.on('error', err => console.error('error while proxying request:', err.message))
@@ -122,8 +122,8 @@ function initializeProxy(port, distDir, projectDir) {
       }
     }
     const requestURL = new url.URL(req.url, `http://${req.headers.host || 'localhost'}`)
-    if (headers.hasOwnProperty(requestURL.pathname)) {
-      Object.entries(headers[requestURL.pathname]).forEach(([key, val]) => res.setHeader(key, val))
+    if (headerRules.hasOwnProperty(requestURL.pathname)) {
+      Object.entries(headerRules[requestURL.pathname]).forEach(([key, val]) => res.setHeader(key, val))
     }
     res.writeHead(req.proxyOptions.status || proxyRes.statusCode, proxyRes.headers)
     proxyRes.on('data', function(data) {
