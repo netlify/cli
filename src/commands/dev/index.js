@@ -100,8 +100,8 @@ function initializeProxy(port, distDir, projectDir) {
   })
 
   const headersFiles = Array.from(new Set([
+    path.resolve(projectDir, '_headers'),
     path.resolve(distDir, '_headers'),
-    path.resolve(projectDir, '_headers')
   ]))
 
   let headerRules = {}
