@@ -402,6 +402,21 @@ class DevCommand extends Command {
     }
     if (!settings.jwtRolePath) settings.jwtRolePath = 'app_metadata.authorization.roles'
 
+    // Flags have highest priority, then configuration file (netlify.toml etc.) then detectors
+    Object.assign(
+        settings,
+        {
+          ...(config.dev.port && { port: config.dev.port }),
+          ...(config.dev.targetPort && { proxyPort: config.dev.targetPort }),
+          ...(config.dev.functionsPort && { functionsPort: config.dev.functionsPort })
+        },
+        {
+          ...(flags.port && { port: flags.port }),
+          ...(flags.targetPort && { proxyPort: flags.targetPort }),
+          ...(flags.functionsPort && { functionsPort: flags.functionsPort })
+        },
+    )
+
     // Override env variables with .env file
     const envFile = path.resolve(site.root, '.env')
     if (fs.existsSync(envFile)) {
@@ -431,8 +446,7 @@ class DevCommand extends Command {
         functionWatcher.on('change', functionBuilder.build)
         functionWatcher.on('unlink', functionBuilder.build)
       }
-      const functionsPort = await getPort({ port: settings.functionsPort || 34567 })
-      settings.functionsPort = functionsPort
+      settings.functionsPort = await getPort({ port: settings.functionsPort || 34567 })
 
       const functionsServer = await serveFunctions({
         ...settings,
