@@ -378,7 +378,7 @@ class DevCommand extends Command {
       } else {
         this.log(`${NETLIFYDEVWARN} No dev server detected, using simple static server`)
         dist = (config.dev && config.dev.publish) ||
-            (config.build && !isNetlifyDir(config.build.publish, site.root) && config.build.publish)
+            (config.build && config.build.publish && !isNetlifyDir(config.build.publish, site.root) && config.build.publish)
       }
       if (!dist) {
         this.log(`${NETLIFYDEVLOG} Using current working directory`)
