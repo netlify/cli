@@ -18,11 +18,15 @@ You do NOT have to include this information if this is a FEATURE REQUEST
 
 **- Do you want to request a _feature_ or report a _bug_?**
 
+
 **- What is the current behavior?**
+
 
 **- If the current behavior is a bug, please provide the steps to reproduce.**
 
+
 **- What is the expected behavior?**
 
+
 **- Local Environment Information**
-Paste the results of `netlify status --verbose` and `netlify version` here
+<!-- Paste the results of `netlify version` here -->
