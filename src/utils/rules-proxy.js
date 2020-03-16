@@ -121,3 +121,5 @@ module.exports = function({ publicFolder, baseFolder, jwtSecret, jwtRole, config
     })
   }
 }
+
+module.exports.onChanges = onChanges
