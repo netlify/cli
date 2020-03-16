@@ -66,7 +66,11 @@ class DeployCommand extends Command {
         siteData = await api.getSite({ siteId })
       } catch (e) {
         // TODO specifically handle known cases (e.g. no account access)
-        this.error(e.message)
+        if (e.status === 404) {
+          this.error("Site not found")
+        } else {
+          this.error(e.message)
+        }
       }
     }
 
