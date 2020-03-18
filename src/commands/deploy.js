@@ -82,7 +82,7 @@ class DeployCommand extends Command {
         return
       } catch (err) {
         if (err.status === 404) {
-          this.error('Site not found. Please rerun "netlify link" and make sure that your site has a deployment source configured.')
+          this.error('Site not found. Please rerun "netlify link" and make sure that your site has CI configured.')
         } else {
           this.error(err.message)
         }
