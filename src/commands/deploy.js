@@ -13,6 +13,7 @@ const randomItem = require('random-item')
 const inquirer = require('inquirer')
 const SitesCreateCommand = require('./sites/create')
 const LinkCommand = require('./link')
+const { NETLIFYDEV } = require('../utils/logo')
 
 class DeployCommand extends Command {
   async run() {
@@ -70,6 +71,20 @@ class DeployCommand extends Command {
           this.error("Site not found")
         } else {
           this.error(e.message)
+        }
+      }
+    }
+
+    if (flags.trigger) {
+      try {
+        const siteBuild = await api.createSiteBuild({ siteId: siteId })
+        this.log(`${NETLIFYDEV} A new deployment was triggered successfully. Visit https://app.netlify.com/sites/${siteData.name}/deploys/${siteBuild.deploy_id} to see the logs.`)
+        return
+      } catch (err) {
+        if (err.status === 404) {
+          this.error('Site not found. Please rerun "netlify link" and make sure that your site has a deployment source configured.')
+        } else {
+          this.error(err.message)
         }
       }
     }
@@ -325,7 +340,8 @@ DeployCommand.examples = [
   'netlify deploy --prod',
   'netlify deploy --prod --open',
   'netlify deploy --message "A message with an $ENV_VAR"',
-  'netlify deploy --auth $NETLIFY_AUTH_TOKEN'
+  'netlify deploy --auth $NETLIFY_AUTH_TOKEN',
+  'netlify deploy --trigger'
 ]
 
 DeployCommand.flags = {
@@ -366,6 +382,9 @@ DeployCommand.flags = {
   }),
   timeout: flags.integer({
     description: 'Timeout to wait for deployment to finish'
+  }),
+  trigger: flags.boolean({
+    description: 'Trigger a new build of your site on Netlify without uploading local files'
   })
 }
 
