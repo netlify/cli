@@ -34,6 +34,10 @@ function matchPaths(rulePath, targetPath) {
     return false
 }
 
+function objectForPath(rules, pathname) {
+    return Object.entries(rules).reduce((prev, [rulePath, pathHeaders]) => Object.assign({}, prev, matchPaths(rulePath, pathname) && pathHeaders), {})
+}
+
 function parseHeadersFile(filePath) {
     const rules = {}
     if (!fs.existsSync(filePath)) return rules
