@@ -1,31 +1,80 @@
 const test = require('ava')
 const path = require('path')
-const parseHeadersFile  = require('./headers.js')
+const { parseHeadersFile, objectForPath }  = require('./headers.js')
 
 test('_headers: validate correct parsing', t => {
     const sitePath = path.join(__dirname, '../tests/dummy-site')
     const rules = parseHeadersFile(path.resolve(sitePath, '_headers'))
 
     t.deepEqual(rules, {
-        "/": {
-            "X-Frame-Options": [
-                "SAMEORIGIN",
+        "/":{
+            "X-Frame-Options":[
+                "SAMEORIGIN"
+            ]
+        },
+        "/*":{
+            "X-Frame-Thing":[
+                "SAMEORIGIN"
+            ]
+        },
+        "/something/*":{
+            "X-Frame-Options":[
                 "DENY"
             ],
-            "X-XSS-Protection": [
+            "X-XSS-Protection":[
                 "1; mode=block"
             ],
-            "cache-control": [
+            "cache-control":[
                 "max-age=0",
                 "no-cache",
                 "no-store",
                 "must-revalidate"
             ]
         },
-        "/templates/index2.html": {
-            "X-Frame-Options": [
+        "/:ding/index.html":{
+            "X-Frame-Options":[
                 "SAMEORIGIN"
             ]
         }
+    })
+})
+
+test('_headers: rulesForPath testing', t => {
+    const sitePath = path.join(__dirname, '../tests/dummy-site')
+    const rules = parseHeadersFile(path.resolve(sitePath, '_headers'))
+    t.deepEqual(objectForPath(rules, '/'),  {
+        "X-Frame-Options":[
+            "SAMEORIGIN"
+        ]
+    })
+    t.deepEqual(objectForPath(rules, '/ding'),  {
+        "X-Frame-Thing":[
+            "SAMEORIGIN"
+        ]
+    })
+    t.deepEqual(objectForPath(rules, '/something/ding'),  {
+        "X-Frame-Thing":[
+            "SAMEORIGIN"
+        ],
+        "X-Frame-Options":[
+            "DENY"
+        ],
+        "X-XSS-Protection":[
+            "1; mode=block"
+        ],
+        "cache-control":[
+            "max-age=0",
+            "no-cache",
+            "no-store",
+            "must-revalidate"
+        ]
+    })
+    t.deepEqual(objectForPath(rules, '/ding/index.html'),  {
+        "X-Frame-Options":[
+            "SAMEORIGIN"
+        ],
+        "X-Frame-Thing":[
+            "SAMEORIGIN"
+        ]
     })
 })
