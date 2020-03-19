@@ -30,7 +30,7 @@ function parseHeadersFile(filePath) {
             const sepIndex = line.indexOf(':')
             if (sepIndex < 1) throw new Error(`invalid header at line: ${i}\n${lines[i]}\n`)
 
-            const key = line.substr(0, sepIndex)
+            const key = line.substr(0, sepIndex).trim()
             const value = line.substr(sepIndex + 1).trim()
 
             if (rules.hasOwnProperty(path)) {
