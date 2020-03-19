@@ -22,6 +22,9 @@ function parseHeadersFile(filePath) {
 
         if (line.startsWith(TOKEN_COMMENT) || line.length < 1) continue
         if (line.startsWith(TOKEN_PATH)) {
+            if (line.includes('*') && line.indexOf('*') !== line.length - 1) {
+                throw new Error(`invalid rule (A path rule cannot contain anything after * token) at line: ${i}\n${lines[i]}\n`)
+            }
             path = line
             continue
         }
