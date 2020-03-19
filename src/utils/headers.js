@@ -29,6 +29,8 @@ function parseHeadersFile(filePath) {
             continue
         }
 
+        if (!path) throw new Error('path should come before headers')
+
         if (line.includes(':')) {
             const sepIndex = line.indexOf(':')
             if (sepIndex < 1) throw new Error(`invalid header at line: ${i}\n${lines[i]}\n`)

@@ -1,7 +1,10 @@
 /
   # headers for that path:
   X-Frame-Options: SAMEORIGIN
-/
+/*
+  # headers for that path:
+  X-Frame-Thing: SAMEORIGIN
+/something/*
   # headers for that path:
   X-Frame-Options: DENY
   X-XSS-Protection: 1; mode=block
@@ -10,6 +13,6 @@
   cache-control: no-store
   cache-control: must-revalidate
 # another path:
-/templates/index2.html
+/:ding/index.html
   # headers for that path:
   X-Frame-Options: SAMEORIGIN
