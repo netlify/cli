@@ -3,6 +3,37 @@ const fs = require('fs')
 const TOKEN_COMMENT = "#"
 const TOKEN_PATH = "/"
 
+function matchPaths(rulePath, targetPath) {
+    const rulePathParts = rulePath.split('/').filter(Boolean)
+    const targetPathParts = targetPath.split('/').filter(Boolean)
+
+    if (rulePathParts.length < 1 && targetPathParts.length < 1) {
+        return true
+    }
+
+    for (let i = 0; i < rulePathParts.length; i++) {
+        if (i >= targetPathParts.length) return false
+
+        const rulePart = rulePathParts[i]
+        const target = targetPathParts[i]
+
+        if (rulePart === '*') return true
+
+        if (rulePart.startsWith(':')) {
+            if (i === rulePathParts.length - 1) {
+                return i === targetPathParts.length - 1
+            }
+            if (i === targetPathParts.length - 1) {
+                return false
+            }
+        } else {
+            return rulePart === target
+        }
+    }
+
+    return false
+}
+
 function parseHeadersFile(filePath) {
     const rules = {}
     if (!fs.existsSync(filePath)) return rules
