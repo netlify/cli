@@ -31,7 +31,7 @@ const boxen = require('boxen')
 const { createTunnel, connectTunnel } = require('../../utils/live-tunnel')
 const createRewriter = require('../../utils/rules-proxy')
 const { onChanges } = require('../../utils/rules-proxy')
-const parseHeadersFile = require('../../utils/headers')
+const { parseHeadersFile, objectForPath } = require('../../utils/headers')
 
 function isFunction(functionsPort, req) {
   return functionsPort && req.url.match(/^\/.netlify\/functions\/.+/)
@@ -122,8 +122,9 @@ function initializeProxy(port, distDir, projectDir) {
       }
     }
     const requestURL = new url.URL(req.url, `http://${req.headers.host || 'localhost'}`)
-    if (headerRules.hasOwnProperty(requestURL.pathname)) {
-      Object.entries(headerRules[requestURL.pathname]).forEach(([key, val]) => res.setHeader(key, val))
+    const pathHeaderRules = objectForPath(headerRules, requestURL.pathname)
+    if (Object.keys(pathHeaderRules).length) {
+      Object.entries(pathHeaderRules).forEach(([key, val]) => res.setHeader(key, val))
     }
     res.writeHead(req.proxyOptions.status || proxyRes.statusCode, proxyRes.headers)
     proxyRes.on('data', function(data) {

@@ -88,4 +88,7 @@ function parseHeadersFile(filePath) {
     return rules
 }
 
-module.exports = parseHeadersFile
+module.exports = {
+    objectForPath,
+    parseHeadersFile,
+}
