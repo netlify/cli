@@ -5,7 +5,7 @@ const getLogStreamer = require('./log_streamers')
 
 async function waitForBuildFinish(api, siteId, deployId, accessToken) {
     let firstPass = true
-    let p = Promise.resolve()
+    let p = new Promise(() => {})
 
     if (deployId) {
         let rej
