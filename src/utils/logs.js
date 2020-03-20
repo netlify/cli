@@ -8,21 +8,21 @@ async function waitForBuildFinish(api, siteId, deployId, accessToken) {
     let p = new Promise(() => {})
 
     if (deployId) {
-        let rej
-        p = new Promise((_, reject) => rej = reject)
-        const deployment = await api.getDeploy({ deploy_id: deployId })
-        const streamer = getLogStreamer(
-            {
-                ...deployment.log_access_attributes,
-                deployId: deployment.id,
-                buildId: deployment.build_id,
-                date: deployment.created_at,
-                resource: 'build',
-                accessToken: accessToken,
-            },
-            () => deployment.log_access_attributes,
-        )
-        streamer.listen(bit => console.log(bit && `${new Date(bit.ts || bit.time).toLocaleTimeString()}: ${bit.log}`), rej)
+        p = new Promise(async (_, reject) => {
+            const deployment = await api.getDeploy({ deploy_id: deployId })
+            const streamer = getLogStreamer(
+                {
+                    ...deployment.log_access_attributes,
+                    deployId: deployment.id,
+                    buildId: deployment.build_id,
+                    date: deployment.created_at,
+                    resource: 'build',
+                    accessToken: accessToken,
+                },
+                () => deployment.log_access_attributes,
+            )
+            streamer.listen(bit => console.log(bit && `${new Date(bit.ts || bit.time).toLocaleTimeString()}: ${bit.log}`), reject)
+        })
     }
 
     await Promise.race([p, pWaitFor(waitForBuildToFinish, {
