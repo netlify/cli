@@ -34,7 +34,7 @@ class SocketeerStreamer {
   _initBuildLog(attributes) {
     this.path = "/build/logs";
     this.subscribeMsg = {
-      access_token: attributes.apiToken,
+      access_token: attributes.accessToken,
       project_id:
         attributes.fbProjectId || projectIdFromEndpoint(attributes.endpoint),
       build_id: attributes.buildId
@@ -44,7 +44,7 @@ class SocketeerStreamer {
   _initFunctionLog(attributes) {
     this.path = "/function/logs";
     this.subscribeMsg = {
-      access_token: attributes.apiToken,
+      access_token: attributes.accessToken,
       account_id: attributes.awsAccountId,
       function_id: attributes.functionId,
       site_id: attributes.siteId

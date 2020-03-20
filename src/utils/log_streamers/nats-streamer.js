@@ -1,7 +1,7 @@
 const WebSocket = require('isomorphic-ws');
 
 class NatsStreamer {
-  constructor({ deployId, date, persisted }, accessToken, fetchLog) {
+  constructor({ deployId, date, persisted, accessToken }, fetchLog) {
     this.deployId = deployId;
     this.date = new Date(date);
     this.backoff = 1000;

@@ -39,7 +39,7 @@ class FirebaseStreamer {
     this.endpoint = attributes.endpoint;
     this.path = attributes.path.replace(/\./g, "-");
     this.startAt = attributes.startAt;
-    this.token = attributes.token;
+    this.token = attributes.accessToken;
   }
 
   listen(updater, errorHandler = logError) {
