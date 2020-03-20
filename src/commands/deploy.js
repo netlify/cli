@@ -14,6 +14,7 @@ const inquirer = require('inquirer')
 const SitesCreateCommand = require('./sites/create')
 const LinkCommand = require('./link')
 const { NETLIFYDEV } = require('../utils/logo')
+const { waitForBuildFinish } = require('../utils/logs.js')
 
 class DeployCommand extends Command {
   async run() {
@@ -22,6 +23,8 @@ class DeployCommand extends Command {
 
     const deployToProduction = flags.prod
     await this.authenticate(flags.auth)
+
+    const [accessToken] = this.getConfigToken()
 
     await this.config.runHook('analytics', {
       eventName: 'command',
@@ -78,15 +81,19 @@ class DeployCommand extends Command {
     if (flags.trigger) {
       try {
         const siteBuild = await api.createSiteBuild({ siteId: siteId })
-        this.log(`${NETLIFYDEV} A new deployment was triggered successfully. Visit https://app.netlify.com/sites/${siteData.name}/deploys/${siteBuild.deploy_id} to see the logs.`)
-        return
+        this.log(`${NETLIFYDEV} A new deployment was triggered successfully. Waiting for the build to start`)
+        const deployData = await api.getDeploy({ deployId: siteBuild.deploy_id })
+        if (deployData && deployData.log_access_attributes && Object.keys(deployData.log_access_attributes).length) {
+          await waitForBuildFinish(api, site.id, siteBuild.deploy_id, accessToken)
+        }
       } catch (err) {
         if (err.status === 404) {
           this.error('Site not found. Please rerun "netlify link" and make sure that your site has CI configured.')
         } else {
-          this.error(err.message)
+          this.error(err)
         }
       }
+      this.exit()
     }
 
     // TODO: abstract settings lookup
