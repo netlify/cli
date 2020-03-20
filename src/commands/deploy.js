@@ -13,7 +13,7 @@ const randomItem = require('random-item')
 const inquirer = require('inquirer')
 const SitesCreateCommand = require('./sites/create')
 const LinkCommand = require('./link')
-const { NETLIFYDEV } = require('../utils/logo')
+const { NETLIFYDEVLOG } = require('../utils/logo')
 const { waitForBuildFinish } = require('../utils/logs.js')
 
 class DeployCommand extends Command {
@@ -81,7 +81,8 @@ class DeployCommand extends Command {
     if (flags.trigger) {
       try {
         const siteBuild = await api.createSiteBuild({ siteId: siteId })
-        this.log(`${NETLIFYDEV} A new deployment was triggered successfully. Waiting for the build to start`)
+        this.log(`${NETLIFYDEVLOG} A new deployment was triggered successfully.`)
+        this.log(`${NETLIFYDEVLOG} Waiting for the build to start ⏳`)
         const deployData = await api.getDeploy({ deployId: siteBuild.deploy_id })
         if (deployData && deployData.log_access_attributes && Object.keys(deployData.log_access_attributes).length) {
           await waitForBuildFinish(api, site.id, siteBuild.deploy_id, accessToken)
