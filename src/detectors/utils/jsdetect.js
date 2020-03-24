@@ -19,10 +19,11 @@ function getPkgJSON() {
   return pkgJSON
 }
 
-function getPackageManagerCommand() {
-  return existsSync('yarn.lock') ? 'yarn'
-    : existsSync('pnpm-lock.yaml') ? 'pnpm'
-    : 'npm'
+function getYarnOrNPMCommand() {
+  if (!yarnExists) {
+    yarnExists = existsSync('yarn.lock') ? 'yes' : 'no'
+  }
+  return yarnExists === 'yes' ? 'yarn' : 'npm'
 }
 
 /**
@@ -93,6 +94,6 @@ function scanScripts({ preferredScriptsArr, preferredCommand }) {
 module.exports = {
   hasRequiredDeps,
   hasRequiredFiles,
-  getYarnOrNPMCommand: getPackageManagerCommand,
+  getYarnOrNPMCommand,
   scanScripts
 }
