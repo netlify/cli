@@ -405,9 +405,9 @@ class DevCommand extends Command {
     // Flags have highest priority, then configuration file (netlify.toml etc.) then detectors
     settings = {
       ...settings,
-      port: flags.port || config.dev.port || settings.port,
-      proxyPort: flags.targetPort || config.dev.targetPort || settings.proxyPort,
-      functionsPort: flags.functionsPort || config.dev.functionsPort || settings.functionsPort,
+      port: (flags && flags.port) || (config && config.dev && config.dev.port) || settings.port,
+      proxyPort: (flags && flags.targetPort) || (config && config.dev && config.dev.targetPort) || settings.proxyPort,
+      functionsPort: (flags && flags.functionsPort) || (config && config.dev && config.dev.functionsPort) || settings.functionsPort,
     }
 
     // Override env variables with .env file
