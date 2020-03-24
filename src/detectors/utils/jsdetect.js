@@ -18,7 +18,6 @@ function getPkgJSON() {
   pkgJSON = JSON.parse(readFileSync('package.json', { encoding: 'utf8' }))
   return pkgJSON
 }
-
 function getYarnOrNPMCommand() {
   if (!yarnExists) {
     yarnExists = existsSync('yarn.lock') ? 'yes' : 'no'
