@@ -437,7 +437,7 @@ function ensureDirectory(resolvedDeployPath, exit) {
   try {
     stat = fs.statSync(resolvedDeployPath)
   } catch (e) {
-    if (e.code === 'ENOENT') {
+    if (e.status === 'ENOENT') {
       console.log(
         `No such directory ${resolvedDeployPath}! Did you forget to create a functions folder or run a build?`
       )
@@ -445,7 +445,7 @@ function ensureDirectory(resolvedDeployPath, exit) {
     }
 
     // Improve the message of permission errors
-    if (e.code === 'EACCES') {
+    if (e.status === 'EACCES') {
       console.log('Permission error when trying to access deploy folder')
       exit(1)
     }
