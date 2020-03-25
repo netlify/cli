@@ -13,6 +13,8 @@ const randomItem = require('random-item')
 const inquirer = require('inquirer')
 const SitesCreateCommand = require('./sites/create')
 const LinkCommand = require('./link')
+const { NETLIFYDEVLOG } = require('../utils/logo')
+const { waitForBuildFinish } = require('../utils/logs.js')
 
 class DeployCommand extends Command {
   async run() {
@@ -21,6 +23,8 @@ class DeployCommand extends Command {
 
     const deployToProduction = flags.prod
     await this.authenticate(flags.auth)
+
+    const [accessToken] = this.getConfigToken()
 
     await this.config.runHook('analytics', {
       eventName: 'command',
@@ -72,6 +76,25 @@ class DeployCommand extends Command {
           this.error(e.message)
         }
       }
+    }
+
+    if (flags.trigger) {
+      try {
+        const siteBuild = await api.createSiteBuild({ siteId: siteId })
+        this.log(`${NETLIFYDEVLOG} A new deployment was triggered successfully.`)
+        this.log(`${NETLIFYDEVLOG} Waiting for the build to start ⏳`)
+        const deployData = await api.getDeploy({ deployId: siteBuild.deploy_id })
+        if (deployData && deployData.log_access_attributes && Object.keys(deployData.log_access_attributes).length) {
+          await waitForBuildFinish(api, site.id, siteBuild.deploy_id, accessToken)
+        }
+      } catch (err) {
+        if (err.status === 404) {
+          this.error('Site not found. Please rerun "netlify link" and make sure that your site has CI configured.')
+        } else {
+          this.error(err)
+        }
+      }
+      this.exit()
     }
 
     // TODO: abstract settings lookup
@@ -325,7 +348,8 @@ DeployCommand.examples = [
   'netlify deploy --prod',
   'netlify deploy --prod --open',
   'netlify deploy --message "A message with an $ENV_VAR"',
-  'netlify deploy --auth $NETLIFY_AUTH_TOKEN'
+  'netlify deploy --auth $NETLIFY_AUTH_TOKEN',
+  'netlify deploy --trigger'
 ]
 
 DeployCommand.flags = {
@@ -366,6 +390,9 @@ DeployCommand.flags = {
   }),
   timeout: flags.integer({
     description: 'Timeout to wait for deployment to finish'
+  }),
+  trigger: flags.boolean({
+    description: 'Trigger a new build of your site on Netlify without uploading local files'
   })
 }
 
@@ -410,7 +437,7 @@ function ensureDirectory(resolvedDeployPath, exit) {
   try {
     stat = fs.statSync(resolvedDeployPath)
   } catch (e) {
-    if (e.code === 'ENOENT') {
+    if (e.status === 'ENOENT') {
       console.log(
         `No such directory ${resolvedDeployPath}! Did you forget to create a functions folder or run a build?`
       )
@@ -418,7 +445,7 @@ function ensureDirectory(resolvedDeployPath, exit) {
     }
 
     // Improve the message of permission errors
-    if (e.code === 'EACCES') {
+    if (e.status === 'EACCES') {
       console.log('Permission error when trying to access deploy folder')
       exit(1)
     }
