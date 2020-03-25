@@ -1,3 +1,16 @@
+[dev]
+	autoLaunch = false
 [build]
   command = "npm run build"
   publish = "build"
+  functions = "functions"
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  force = false
+[[redirects]]
+  from = "/something"
+  to = "/ping"
+  status = 200
+  force = false

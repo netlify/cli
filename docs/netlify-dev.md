@@ -124,7 +124,7 @@ Netlify Dev is meant to work with zero config for the majority of users, by usin
 
 Netlify Dev will attempt to detect the SSG or build command that you are using, and run these on your behalf, while adding other development utilities. If you have a JavaScript project, it looks for the best `package.json` script to run for you, using simple heuristics, so you can use the full flexibility of npm scripts. We may add more intelligence to this in future.
 
-**Overriding the detectors**: The number of [project types which Netlify Dev can detect](https://github.com/netlify/netlify-dev-plugin/tree/master/src/detectors) is growing, but if yours is not yet supported (contributions welcome!), you can instruct Netlify Dev to run the project on your behalf by declaring it in a `[dev]` block of your `netlify.toml` file.
+**Overriding the detectors**: The number of [project types which Netlify Dev can detect](https://github.com/netlify/cli/tree/master/src/detectors) is growing, but if yours is not yet supported (contributions welcome!), you can instruct Netlify Dev to run the project on your behalf by declaring it in a `[dev]` block of your `netlify.toml` file.
 
 ```toml
 # sample dev block in the toml
@@ -136,10 +136,7 @@ Netlify Dev will attempt to detect the SSG or build command that you are using, 
   publish = "dist" # If you use a _redirect file, provide the path to your static content folder
 ```
 
-<details>
-<summary>
-<b>Explanation of ports in Netlify Dev</b>
-</summary>
+## Explanation of ports in Netlify Dev
 
 There will be a number of ports that you will encounter when using Netlify Dev, especially when running a static site generator like Gatsby which has its own dev server. All the port numbers can be a bit confusing, so here is a brief explainer.
 
@@ -157,7 +154,14 @@ As for which port to use while doing local development in Netlify Dev, always lo
    └──────────────────────────────────────────────────────────────┘
 ```
 
-</details>
+**Specifying custom ports for Netlify Dev**
+
+Netlify Dev allows you to specify the following parameters for port as both flags and in config file (`netlify.toml` etc.):
+* `port`: The port for the main Netlify Dev server, the one you'll open in browser.
+* `targetPort`: The port for your application server or site generator.
+* `functionsPort`: The port for Netlify Functions server. This server is accessed internally within Netlify Dev, you shouldn't need to access it directly. And thus shouldn't need to change this port. You can access your functions at Netlify Dev main server port like so: `http://localhost:<port>/.netlify/functions/<your-function-slug>`.
+
+Netlify Dev tries to acquire these ports but if any of them is not available (already in use by another application), it assigns a random port instead of that.
 
 ## Redirects
 
@@ -172,6 +176,13 @@ The order of precedence for applying redirect rules is:
 1. `netlify.toml` file (in the project's root folder)
 
 See the [Redirects Documentation](https://www.netlify.com/docs/redirects/) for more information on Netlify's redirect and proxying capabilities.
+
+## Environment Variables
+
+If the current project is linked to a Netlify site (`netlify link`), enviornment variables are pulled down from production and populated in `netlify dev` server. This functionality requires that you're logged in (`netlify login`) and connected to the internet when running `netlify dev`.
+
+Netlify Dev also supports local environment variables through `.env` files.
+Netlify Dev will look in project root directory for `.env` file and will provide those variables to the spawned site generator/server and Netlify Functions.
 
 ## Netlify Functions
 
@@ -318,9 +329,6 @@ Thanks for contributing! You'll need to follow these steps to run Netlify CLI an
 1. uninstall any globally installed versions of `netlify-cli`
 2. clone and install deps for https://github.com/netlify/cli
 3. `npm link` from inside the `cli` folder
-4. clone and install deps for this repo
-5. inside the `netlify-dev-plugin` folder, run `yarn link`
-6. inside the `cli` folder, run `yarn link "netlify-dev-plugin"`
 
 Now you're both ready to start testing `netlify dev` and to contribute to the project! Note these are untested instructions, please get in touch if you're unable to follow them clearly and we'll work with you. Or ping [@swyx](https://twitter.com/swyx).
 

@@ -15,15 +15,15 @@ module.exports = function() {
   })
 
   if (possibleArgsArrs.length === 0) {
-    // ofer to run this default when the user doesnt have any matching scripts setup!
-    possibleArgsArrs.push(['quasar', 'dev'])
+    // offer to run this default when the user doesnt have any matching scripts setup!
+    possibleArgsArrs.push(['quasar', 'dev', '-p 8081'])
   }
 
   return {
     type: 'quasar-cli',
     command: getYarnOrNPMCommand(),
     port: 8888,
-    proxyPort: 8080,
+    proxyPort: 8081,
     env: { ...process.env },
     possibleArgsArrs,
     urlRegexp: new RegExp(`(http://)([^:]+:)${8080}(/)?`, 'g'),

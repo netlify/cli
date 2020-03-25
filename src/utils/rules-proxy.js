@@ -7,8 +7,8 @@ const cookie = require('cookie')
 const redirectParser = require('netlify-redirect-parser')
 const { NETLIFYDEVWARN } = require('../utils/logo')
 
-function parseFile(parser, name, data) {
-  const result = parser(data)
+async function parseFile(parser, name, filePath) {
+  const result = await parser(filePath)
   if (result.errors.length) {
     console.error(`${NETLIFYDEVWARN} Warnings while parsing ${name} file:`)
     result.errors.forEach(err => {
@@ -18,49 +18,18 @@ function parseFile(parser, name, data) {
   return result.success
 }
 
-function parseRules(projectDir, publicDir) {
+async function parseRules(configFiles) {
   const rules = []
 
-  const generatedRedirectsPath = path.resolve(publicDir, '_redirects')
-  if (fs.existsSync(generatedRedirectsPath)) {
-    rules.push(...
-      parseFile(redirectParser.parseRedirectsFormat, '_redirects', fs.readFileSync(generatedRedirectsPath, 'utf-8'))
-    )
-  }
+  for (const file of configFiles) {
+    if (!fs.existsSync(file)) continue
 
-  const baseRedirectsPath = path.resolve(projectDir, '_redirects')
-  if (fs.existsSync(baseRedirectsPath)) {
-    rules.push(...
-      parseFile(redirectParser.parseRedirectsFormat, '_redirects', fs.readFileSync(baseRedirectsPath, 'utf-8'))
-    )
-  }
-
-  const generatedTOMLPath = path.resolve(projectDir, 'netlify.toml')
-  if (fs.existsSync(generatedTOMLPath)) {
-    rules.push(...
-      parseFile(redirectParser.parseTomlFormat, 'generated netlify.toml', fs.readFileSync(generatedTOMLPath, 'utf-8'))
-    )
-  }
-
-  const baseTOMLPath = path.resolve(projectDir, 'netlify.toml')
-  if (fs.existsSync(baseTOMLPath)) {
-    rules.push(...
-      parseFile(redirectParser.parseTomlFormat, 'base netlify.toml', fs.readFileSync(baseTOMLPath, 'utf-8'))
-    )
-  }
-
-  const generatedYAMLPath = path.resolve(projectDir, 'netlify.yml')
-  if (fs.existsSync(generatedYAMLPath)) {
-    rules.push(...
-      parseFile(redirectParser.parseYamlFormat, 'generated netlify.yml', fs.readFileSync(generatedYAMLPath, 'utf-8'))
-    )
-  }
-
-  const baseYAMLPath = path.resolve(projectDir, 'netlify.yml')
-  if (fs.existsSync(baseYAMLPath)) {
-    rules.push(...
-      parseFile(redirectParser.parseYamlFormat, 'base netlify.yml', fs.readFileSync(baseYAMLPath, 'utf-8'))
-    )
+    const fileName = file.split(path.sep).pop()
+    if (fileName.endsWith('_redirects')) {
+      rules.push(...(await parseFile(redirectParser.parseRedirectsFormat, fileName, file)))
+    } else {
+      rules.push(...(await parseFile(redirectParser.parseNetlifyConfig, fileName, file)))
+    }
   }
 
   return rules
@@ -86,44 +55,35 @@ function getCountry(req) {
   return 'us'
 }
 
-module.exports = function(config) {
+module.exports = function({ publicFolder, baseFolder, jwtSecret, jwtRole, configPath }) {
   let matcher = null
-  const projectDir = path.resolve(config.baseFolder || process.cwd())
+  const projectDir = path.resolve(baseFolder || process.cwd())
+  const configFiles = [
+    path.resolve(projectDir, '_redirects'),
+    path.resolve(publicFolder, '_redirects'),
+    path.resolve(configPath || path.resolve(publicFolder, 'netlify.yml')),
+  ]
+  let rules = []
 
-  onChanges(
-    [
-      path.resolve(projectDir, 'netlify.toml'),
-      path.resolve(projectDir, '_redirects'),
-      path.resolve(config.publicFolder, 'netlify.toml'),
-      path.resolve(config.publicFolder, '_redirects')
-    ],
-    () => {
-      matcher = null
-    }
-  )
+  onChanges(configFiles, async () => {
+    rules = (await parseRules(configFiles)).filter(r => !(r.path === '/*' && r.to === '/index.html' && r.status === 200))
+    matcher = null
+  })
 
-  const getMatcher = () => {
-    if (matcher) {
-      return Promise.resolve(matcher)
-    }
-
-    const rules = parseRules(projectDir, config.publicFolder).filter(
-      r => !(r.path === '/*' && r.to === '/index.html' && r.status === 200)
-    )
+  const getMatcher = async () => {
+    if (matcher) return matcher
 
     if (rules.length) {
-      return redirector
-        .parseJSON(JSON.stringify(rules), {
-          jwtSecret: config.jwtSecret || 'secret',
-          jwtRole: config.jwtRole || 'app_metadata.authorization.roles'
-        })
-        .then(m => (matcher = m))
+      return matcher = await redirector.parseJSON(JSON.stringify(rules), {
+        jwtSecret: jwtSecret || 'secret',
+        jwtRole: jwtRole || 'app_metadata.authorization.roles'
+      })
     }
-    return Promise.resolve({
+    return {
       match() {
         return null
       }
-    })
+    }
   }
 
   return function(req, res, next) {
@@ -161,3 +121,5 @@ module.exports = function(config) {
     })
   }
 }
+
+module.exports.onChanges = onChanges

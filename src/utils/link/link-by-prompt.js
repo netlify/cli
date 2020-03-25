@@ -5,7 +5,7 @@ const isEmpty = require('lodash.isempty')
 const getRepoData = require('../get-repo-data')
 const { track } = require('../telemetry')
 
-module.exports = async function linkPrompts(context) {
+module.exports = async function linkPrompts(context, flags = {}) {
   const { api, state } = context.netlify
 
   const SITE_NAME_PROMPT = 'Search by full or partial site name'
@@ -15,7 +15,7 @@ module.exports = async function linkPrompts(context) {
   let GIT_REMOTE_PROMPT = 'Use the current git remote origin URL'
   let site
   // Get git remote data if exists
-  const repoInfo = await getRepoData(context.flags.gitRemoteName)
+  const repoInfo = await getRepoData(flags.gitRemoteName)
 
   const LinkChoices = [SITE_NAME_PROMPT, SITE_LIST_PROMPT, SITE_ID_PROMPT]
 

@@ -212,7 +212,7 @@ git remote add origin https://github.com/YourUserName/RepoName.git
             await configGithub(this, siteData, repo)
           } catch (e) {
             this.warn(`GitHub error: ${e.status}`)
-            if (e.code === 404) {
+            if (e.status === 404) {
               this.error(
                 `Does the repository ${repo.repo_path} exist and do you have the correct permissions to set up deploy keys?`
               )

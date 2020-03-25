@@ -1,8 +1,9 @@
 const url = require('url')
+const { URLSearchParams } = require('url')
 const path = require('path')
 const fs = require('fs')
 const { flags } = require('@oclif/command')
-const execa = require('execa')
+const child_process = require('child_process')
 const http = require('http')
 const httpProxy = require('http-proxy')
 const waitPort = require('wait-port')
@@ -19,7 +20,7 @@ const Command = require('../../utils/command')
 const chalk = require('chalk')
 const jwtDecode = require('jwt-decode')
 const open = require('open')
-const find = require('find-process')
+const dotenv = require('dotenv')
 const {
   NETLIFYDEV,
   NETLIFYDEVLOG,
@@ -29,6 +30,8 @@ const {
 const boxen = require('boxen')
 const { createTunnel, connectTunnel } = require('../../utils/live-tunnel')
 const createRewriter = require('../../utils/rules-proxy')
+const { onChanges } = require('../../utils/rules-proxy')
+const { parseHeadersFile, objectForPath } = require('../../utils/headers')
 
 function isFunction(functionsPort, req) {
   return functionsPort && req.url.match(/^\/.netlify\/functions\/.+/)
@@ -48,6 +51,10 @@ function notStatic(pathname, publicFolder) {
 
 function isExternal(match) {
   return match.to && match.to.match(/^https?:\/\//)
+}
+
+function isNetlifyDir(dir, projectDir) {
+  return dir.startsWith(path.resolve(projectDir, '.netlify'))
 }
 
 function isRedirect(match) {
@@ -83,7 +90,7 @@ function alternativePathsFor(url) {
   return paths
 }
 
-function initializeProxy(port) {
+function initializeProxy(port, distDir, projectDir) {
   const proxy = httpProxy.createProxyServer({
     selfHandleResponse: true,
     target: {
@@ -92,6 +99,18 @@ function initializeProxy(port) {
     }
   })
 
+  const headersFiles = Array.from(new Set([
+    path.resolve(projectDir, '_headers'),
+    path.resolve(distDir, '_headers'),
+  ]))
+
+  let headerRules = {}
+  onChanges(headersFiles, () => {
+    console.log(`${NETLIFYDEVLOG} Reloading headers files`, headersFiles.map(p => path.relative(projectDir, p)))
+    headerRules = headersFiles.reduce((prev, curr) => Object.assign(prev, parseHeadersFile(curr)), {})
+  })
+
+  proxy.on('error', err => console.error('error while proxying request:', err.message))
   proxy.on('proxyRes', (proxyRes, req, res) => {
     if (proxyRes.statusCode === 404) {
       if (req.alternativePaths && req.alternativePaths.length > 0) {
@@ -101,6 +120,11 @@ function initializeProxy(port) {
       if (req.proxyOptions && req.proxyOptions.match) {
         return serveRedirect(req, res, handlers, req.proxyOptions.match, req.proxyOptions)
       }
+    }
+    const requestURL = new url.URL(req.url, `http://${req.headers.host || 'localhost'}`)
+    const pathHeaderRules = objectForPath(headerRules, requestURL.pathname)
+    if (Object.keys(pathHeaderRules).length) {
+      Object.entries(pathHeaderRules).forEach(([key, val]) => res.setHeader(key, val))
     }
     res.writeHead(req.proxyOptions.status || proxyRes.statusCode, proxyRes.headers)
     proxyRes.on('data', function(data) {
@@ -115,7 +139,8 @@ function initializeProxy(port) {
     web: (req, res, options) => {
       req.proxyOptions = options
       req.alternativePaths = alternativePathsFor(req.url)
-      req.headers['x-forwarded-for'] = req.connection.remoteAddress
+      // Ref: https://nodejs.org/api/net.html#net_socket_remoteaddress
+      req.headers['x-forwarded-for'] = req.connection.remoteAddress || ''
       return proxy.web(req, res, options)
     },
     ws: (req, socket, head) => proxy.ws(req, socket, head)
@@ -124,7 +149,7 @@ function initializeProxy(port) {
   return handlers
 }
 
-async function startProxy(settings, addonUrls) {
+async function startProxy(settings, addonUrls, configPath, projectDir) {
   try {
     await waitPort({ port: settings.proxyPort })
   } catch(err) {
@@ -139,11 +164,12 @@ async function startProxy(settings, addonUrls) {
   const port = await getPort({ port: settings.port || 8888 })
   const functionsServer = settings.functionsPort ? `http://localhost:${settings.functionsPort}` : null
 
-  const proxy = initializeProxy(settings.proxyPort)
+  const proxy = initializeProxy(settings.proxyPort, settings.dist, projectDir)
 
-  const rewriter = createRewriter({
+  const rewriter = await createRewriter({
     publicFolder: settings.dist,
-    jwtRole: settings.jwtRolePath
+    jwtRole: settings.jwtRolePath,
+    configPath,
   })
 
   const server = http.createServer(function(req, res) {
@@ -270,10 +296,13 @@ function serveRedirect(req, res, proxy, match, options) {
       return handler(req, res, {})
     }
 
-    req.url = dest.pathname + dest.search
+    const urlParams = new URLSearchParams(reqUrl.searchParams)
+    dest.searchParams.forEach((val, key) => urlParams.set(key, val))
+    req.url = dest.pathname + (urlParams.toString() && '?' + urlParams.toString())
     console.log(`${NETLIFYDEVLOG} Rewrote URL to `, req.url)
 
     if (isFunction({ functionsPort: options.functionsPort }, req)) {
+      req.headers['x-netlify-original-pathname'] = reqUrl.pathname
       return proxy.web(req, res, { target: options.functionsServer })
     }
     const urlForAddons = addonUrl(options.addonUrls, req)
@@ -305,18 +334,29 @@ function startDevServer(settings, log) {
     })
     return
   }
+
   log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.type}`)
   const args = settings.command === 'npm' ? ['run', ...settings.args] : settings.args
-  const ps = execa(settings.command, args, {
-    env: { ...settings.env, FORCE_COLOR: 'true' },
+  const ps = child_process.spawn(settings.command, args, {
+    env: { ...process.env, ...settings.env, FORCE_COLOR: 'true' },
     stdio: settings.stdio || 'inherit',
-    reject: false,
+    detached: true,
+    shell: true,
   })
   if (ps.stdout) ps.stdout.on('data', buff => process.stdout.write(buff.toString('utf8')))
   if (ps.stderr) ps.stderr.on('data', buff => process.stderr.write(buff.toString('utf8')))
   ps.on('close', code => process.exit(code))
   ps.on('SIGINT', process.exit)
-  ps.on('SIGTERM', process.exit)
+  ps.on('SIGTERM', process.exit);
+
+  ['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach(signal => process.on(signal, () => {
+      try {
+        process.kill(-ps.pid)
+      } catch (err) {
+        console.error(`${NETLIFYDEVERR} Error while killing child process: ${err.message}`)
+      }
+      process.exit()
+    }))
 
   return ps
 }
@@ -343,11 +383,11 @@ class DevCommand extends Command {
     process.env.NETLIFY_DEV = 'true'
 
     let settings = await serverSettings(Object.assign({}, config.dev, flags))
-    
+
     if (!settings.proxyPort) {
-      settings.proxyPort = config.dev.proxyPort || 8080 // in case detector is bypassed
+      settings.proxyPort = config.dev && config.dev.proxyPort || 8080 // in case detector is bypassed
     }
-    
+
     if (flags.dir || !(settings && settings.command)) {
       let dist
       if (flags.dir) {
@@ -355,7 +395,8 @@ class DevCommand extends Command {
         dist = flags.dir
       } else {
         this.log(`${NETLIFYDEVWARN} No dev server detected, using simple static server`)
-        dist = (config.dev && config.dev.publish) || (config.build && config.build.publish)
+        dist = (config.dev && config.dev.publish) ||
+            (config.build && config.build.publish && !isNetlifyDir(config.build.publish, site.root) && config.build.publish)
       }
       if (!dist) {
         this.log(`${NETLIFYDEVLOG} Using current working directory`)
@@ -379,97 +420,108 @@ class DevCommand extends Command {
     }
     if (!settings.jwtRolePath) settings.jwtRolePath = 'app_metadata.authorization.roles'
 
-    // Reset port if not manually specified, to make it dynamic
-    if (!(config.dev && config.dev.port) && !flags.port) {
-      settings = {
-        port: await getPort({ port: settings.port }),
-        ...settings
+    // Flags have highest priority, then configuration file (netlify.toml etc.) then detectors
+    settings = {
+      ...settings,
+      port: (flags && flags.port) || (config && config.dev && config.dev.port) || settings.port,
+      proxyPort: (flags && flags.targetPort) || (config && config.dev && config.dev.targetPort) || settings.proxyPort,
+      functionsPort: (flags && flags.functionsPort) || (config && config.dev && config.dev.functionsPort) || settings.functionsPort,
+    }
+
+    // Override env variables with .env file
+    const envFile = path.resolve(site.root, '.env')
+    if (fs.existsSync(envFile)) {
+      const vars = dotenv.parse(fs.readFileSync(envFile)) || {}
+      console.log(`${NETLIFYDEVLOG} Overriding the following env variables with ${chalk.blue('.env')} file:`, chalk.yellow(Object.keys(vars)))
+      Object.entries(vars).forEach(([key, val]) => process.env[key] = val)
+    }
+
+    startDevServer(settings, this.log)
+
+    // serve functions from zip-it-and-ship-it
+    // env variables relies on `url`, careful moving this code
+    if (functionsDir) {
+      const functionBuilder = await detectFunctionsBuilder(settings)
+      if (functionBuilder) {
+        this.log(
+          `${NETLIFYDEVLOG} Function builder ${chalk.yellow(
+            functionBuilder.builderName
+          )} detected: Running npm script ${chalk.yellow(functionBuilder.npmScript)}`
+        )
+        this.warn(
+          `${NETLIFYDEVWARN} This is a beta feature, please give us feedback on how to improve at https://github.com/netlify/cli/`
+        )
+        await functionBuilder.build()
+        const functionWatcher = chokidar.watch(functionBuilder.src)
+        functionWatcher.on('add', functionBuilder.build)
+        functionWatcher.on('change', functionBuilder.build)
+        functionWatcher.on('unlink', functionBuilder.build)
+      }
+      settings.functionsPort = await getPort({ port: settings.functionsPort || 34567 })
+
+      const functionsServer = await serveFunctions({
+        ...settings,
+        functionsDir
+      })
+      functionsServer.listen(settings.functionsPort, function(err) {
+        if (err) {
+          console.error(`${NETLIFYDEVERR} Unable to start lambda server: `, err) // eslint-disable-line no-console
+          process.exit(1)
+        }
+
+        // add newline because this often appears alongside the client devserver's output
+        console.log(`\n${NETLIFYDEVLOG} Lambda server is listening on ${settings.functionsPort}`) // eslint-disable-line no-console
+      })
+    }
+
+    let { url, port } = await startProxy(settings, addonUrls, site.configPath, site.root)
+    if (!url) {
+      throw new Error('Unable to start proxy server')
+    }
+
+    if (flags.live) {
+      await waitPort({ port })
+      const liveSession = await createTunnel(site.id, accessToken, this.log)
+      url = liveSession.session_url
+      process.env.BASE_URL = url
+
+      await connectTunnel(liveSession, accessToken, port, this.log)
+    }
+
+    await this.config.runHook('analytics', {
+      eventName: 'command',
+      payload: {
+        command: 'dev',
+        projectType: settings.type || 'custom',
+        live: flags.live || false
+      }
+    })
+
+    if (
+      isEmpty(config.dev) ||
+      !config.dev.hasOwnProperty('autoLaunch') ||
+      (config.dev.hasOwnProperty('autoLaunch') && config.dev.autoLaunch !== false)
+    ) {
+      try {
+        await open(url)
+      } catch (err) {
+        console.warn(NETLIFYDEVWARN, 'Error while opening dev server URL in browser', err.message)
       }
     }
 
-    const ps = startDevServer(settings, this.log)
-    await Promise.all([ps, (async () => {
-      // serve functions from zip-it-and-ship-it
-      // env variables relies on `url`, careful moving this code
-      if (functionsDir) {
-        const functionBuilder = await detectFunctionsBuilder(settings)
-        if (functionBuilder) {
-          this.log(
-              `${NETLIFYDEVLOG} Function builder ${chalk.yellow(
-                  functionBuilder.builderName
-              )} detected: Running npm script ${chalk.yellow(functionBuilder.npmScript)}`
-          )
-          this.warn(
-              `${NETLIFYDEVWARN} This is a beta feature, please give us feedback on how to improve at https://github.com/netlify/cli/`
-          )
-          await functionBuilder.build()
-          const functionWatcher = chokidar.watch(functionBuilder.src)
-          functionWatcher.on('add', functionBuilder.build)
-          functionWatcher.on('change', functionBuilder.build)
-          functionWatcher.on('unlink', functionBuilder.build)
-        }
-        const functionsPort = await getPort({ port: settings.functionsPort || 34567 })
+    // boxen doesnt support text wrapping yet https://github.com/sindresorhus/boxen/issues/16
+    const banner = require('wrap-ansi')(chalk.bold(`${NETLIFYDEVLOG} Server now ready on ${url}`), 70)
+    process.env.URL = url
+    process.env.DEPLOY_URL = process.env.URL
 
-        // returns a value but we dont use it
-        await serveFunctions({
-          ...settings,
-          port: functionsPort,
-          functionsDir
-        })
-        settings.functionsPort = functionsPort
-      }
-
-      let { url, port } = await startProxy(settings, addonUrls)
-      if (!url) {
-        throw new Error('Unable to start proxy server')
-      }
-
-      if (flags.live) {
-        await waitPort({ port })
-        const liveSession = await createTunnel(site.id, accessToken, this.log)
-        url = liveSession.session_url
-        process.env.BASE_URL = url
-
-        await connectTunnel(liveSession, accessToken, port, this.log)
-      }
-
-      await this.config.runHook('analytics', {
-        eventName: 'command',
-        payload: {
-          command: 'dev',
-          projectType: settings.type || 'custom',
-          live: flags.live || false
-        }
+    this.log(
+      boxen(banner, {
+        padding: 1,
+        margin: 1,
+        align: 'center',
+        borderColor: '#00c7b7'
       })
-
-      if (!isEmpty(config.dev) && (!config.dev.hasOwnProperty('autoLaunch') || config.dev.autoLaunch !== false)) {
-        try {
-          await open(url)
-        } catch (err) {
-          console.warn(NETLIFYDEVWARN, 'Error while opening dev server URL in browser', err.message)
-        }
-      }
-
-      // boxen doesnt support text wrapping yet https://github.com/sindresorhus/boxen/issues/16
-      const banner = require('wrap-ansi')(chalk.bold(`${NETLIFYDEVLOG} Server now ready on ${url}`), 70)
-      process.env.URL = url
-      process.env.DEPLOY_URL = process.env.URL
-
-      this.log(
-          boxen(banner, {
-            padding: 1,
-            margin: 1,
-            align: 'center',
-            borderColor: '#00c7b7'
-          })
-      )
-    })()]).finally(async () => {
-      const list = await find('port', settings.proxyPort)
-      for (const proc of list) {
-        process.kill(proc.pid)
-      }
-      if (!isEmpty(ps)) process.kill(ps.pid)
-    })
+    )
   }
 }
 
