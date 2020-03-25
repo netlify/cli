@@ -338,7 +338,7 @@ function startDevServer(settings, log) {
   log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.type}`)
   const args = settings.command === 'npm' ? ['run', ...settings.args] : settings.args
   const ps = child_process.spawn(settings.command, args, {
-    env: { ...process.env, ...settings.env, FORCE_COLOR: 'true' },
+    env: { ...settings.env, FORCE_COLOR: 'true' },
     stdio: settings.stdio || 'inherit',
     detached: true,
     shell: true,
