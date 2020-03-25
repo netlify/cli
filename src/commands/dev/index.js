@@ -380,7 +380,15 @@ class DevCommand extends Command {
       const { addEnvVariables } = require('../../utils/dev')
       addonUrls = await addEnvVariables(api, site, accessToken)
     }
+
     process.env.NETLIFY_DEV = 'true'
+    // Override env variables with .env file
+    const envFile = path.resolve(site.root, '.env')
+    if (fs.existsSync(envFile)) {
+      const vars = dotenv.parse(fs.readFileSync(envFile)) || {}
+      console.log(`${NETLIFYDEVLOG} Overriding the following env variables with ${chalk.blue('.env')} file:`, chalk.yellow(Object.keys(vars)))
+      Object.entries(vars).forEach(([key, val]) => process.env[key] = val)
+    }
 
     let settings = await serverSettings(Object.assign({}, config.dev, flags))
 
@@ -419,14 +427,6 @@ class DevCommand extends Command {
       }
     }
     if (!settings.jwtRolePath) settings.jwtRolePath = 'app_metadata.authorization.roles'
-
-    // Override env variables with .env file
-    const envFile = path.resolve(site.root, '.env')
-    if (fs.existsSync(envFile)) {
-      const vars = dotenv.parse(fs.readFileSync(envFile)) || {}
-      console.log(`${NETLIFYDEVLOG} Overriding the following env variables with ${chalk.blue('.env')} file:`, chalk.yellow(Object.keys(vars)))
-      Object.entries(vars).forEach(([key, val]) => process.env[key] = val)
-    }
 
     startDevServer(settings, this.log)
 
