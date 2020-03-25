@@ -338,7 +338,7 @@ function startDevServer(settings, log) {
   log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.type}`)
   const args = settings.command === 'npm' ? ['run', ...settings.args] : settings.args
   const ps = child_process.spawn(settings.command, args, {
-    env: { ...process.env, ...settings.env, FORCE_COLOR: 'true' },
+    env: { ...settings.env, FORCE_COLOR: 'true' },
     stdio: settings.stdio || 'inherit',
     detached: true,
     shell: true,
@@ -380,7 +380,15 @@ class DevCommand extends Command {
       const { addEnvVariables } = require('../../utils/dev')
       addonUrls = await addEnvVariables(api, site, accessToken)
     }
+
     process.env.NETLIFY_DEV = 'true'
+    // Override env variables with .env file
+    const envFile = path.resolve(site.root, '.env')
+    if (fs.existsSync(envFile)) {
+      const vars = dotenv.parse(fs.readFileSync(envFile)) || {}
+      console.log(`${NETLIFYDEVLOG} Overriding the following env variables with ${chalk.blue('.env')} file:`, chalk.yellow(Object.keys(vars)))
+      Object.entries(vars).forEach(([key, val]) => process.env[key] = val)
+    }
 
     let settings = await serverSettings(Object.assign({}, config.dev, flags))
 
@@ -426,14 +434,6 @@ class DevCommand extends Command {
       port: (flags && flags.port) || (config && config.dev && config.dev.port) || settings.port,
       proxyPort: (flags && flags.targetPort) || (config && config.dev && config.dev.targetPort) || settings.proxyPort,
       functionsPort: (flags && flags.functionsPort) || (config && config.dev && config.dev.functionsPort) || settings.functionsPort,
-    }
-
-    // Override env variables with .env file
-    const envFile = path.resolve(site.root, '.env')
-    if (fs.existsSync(envFile)) {
-      const vars = dotenv.parse(fs.readFileSync(envFile)) || {}
-      console.log(`${NETLIFYDEVLOG} Overriding the following env variables with ${chalk.blue('.env')} file:`, chalk.yellow(Object.keys(vars)))
-      Object.entries(vars).forEach(([key, val]) => process.env[key] = val)
     }
 
     startDevServer(settings, this.log)
