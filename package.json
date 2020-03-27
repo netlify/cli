@@ -63,7 +63,7 @@
   "dependencies": {
     "@netlify/build": "^0.1.98",
     "@netlify/config": "^0.4.7",
-    "@netlify/zip-it-and-ship-it": "^0.3.1",
+    "@netlify/zip-it-and-ship-it": "^0.4.0-9",
     "@oclif/command": "^1.5.18",
     "@oclif/config": "^1.13.2",
     "@oclif/errors": "^1.1.2",
@@ -119,7 +119,7 @@
     "log-symbols": "^2.2.0",
     "make-dir": "^3.0.0",
     "minimist": "^1.2.0",
-    "netlify": "^3.0.0",
+    "netlify": "^4.0.0",
     "netlify-redirect-parser": "^2.3.0",
     "netlify-redirector": "^0.1.0",
     "node-fetch": "^2.6.0",
