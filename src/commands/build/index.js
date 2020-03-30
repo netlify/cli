@@ -9,7 +9,7 @@ class BuildCommand extends Command {
 
     await this.config.runHook('analytics', {
       eventName: 'command',
-      payload: { command: 'build', dry: options.dry }
+      payload: { command: 'build', dry: Boolean(options.dry) }
     })
 
     const success = await build(options)
@@ -28,7 +28,7 @@ class BuildCommand extends Command {
     // `@netlify/build --cachedConfig`.
     const cachedConfigOption = JSON.stringify(cachedConfig)
     const {
-      flags: { dry = false }
+      flags: { dry }
     } = this.parse(BuildCommand)
     const [token] = this.getConfigToken()
     return { cachedConfig: cachedConfigOption, token, dry, siteId }
