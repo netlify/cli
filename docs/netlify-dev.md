@@ -186,7 +186,7 @@ Netlify Dev will look in project root directory for `.env` file and will provide
 
 ## Netlify Functions
 
-Netlify can also create serverless functions for you locally as part of Netlify Functions. The serverless functions can then be run by Netlify Dev in the same way that wold be when deployed to the cloud.
+Netlify can also create serverless functions for you locally as part of Netlify Functions. The serverless functions can then be run by Netlify Dev in the same way that would be when deployed to the cloud.
 
 ```
 ## list of major functionality
