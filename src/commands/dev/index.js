@@ -45,7 +45,7 @@ function addonUrl(addonUrls, req) {
 
 function notStatic(pathname, publicFolder) {
   return alternativePathsFor(pathname)
-    .map(p => path.resolve(publicFolder, p.startsWith('/') ? p.substr(1) : p))
+    .map(p => path.resolve(publicFolder, p.substr(1)))
     .every(p => !fs.existsSync(p))
 }
 
