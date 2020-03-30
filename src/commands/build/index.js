@@ -45,10 +45,8 @@ BuildCommand.flags = {
   })
 }
 
-BuildCommand.description = `Beta - Netlify build`
+BuildCommand.description = `(Beta) Build on your local machine`
 
 BuildCommand.examples = ['netlify build']
-
-BuildCommand.hidden = true
 
 module.exports = BuildCommand
