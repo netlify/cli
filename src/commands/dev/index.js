@@ -419,6 +419,7 @@ class DevCommand extends Command {
         dist = process.cwd()
       }
       settings = {
+        env: { ...process.env },
         noCmd: true,
         port: 8888,
         proxyPort: await getPort({ port: 3999 }),
