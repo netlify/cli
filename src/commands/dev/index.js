@@ -11,11 +11,14 @@ const getPort = require('get-port')
 const chokidar = require('chokidar')
 const proxyMiddleware = require('http-proxy-middleware')
 const cookie = require('cookie')
+const mkdirp = require('mkdirp')
+const csvWriterPkg = require('csv-writer')
 const get = require('lodash.get')
 const isEmpty = require('lodash.isempty')
 const { serveFunctions } = require('../../utils/serve-functions')
 const { serverSettings } = require('../../utils/detect-server')
 const { detectFunctionsBuilder } = require('../../utils/detect-functions-builder')
+const { collectRequestBody } = require('../../utils/forms')
 const Command = require('../../utils/command')
 const chalk = require('chalk')
 const jwtDecode = require('jwt-decode')
@@ -172,7 +175,25 @@ async function startProxy(settings, addonUrls, configPath, projectDir) {
     configPath,
   })
 
+  mkdirp.sync(path.resolve(projectDir, '.netlify'))
+
+  const formSubmissionsFile = path.resolve(projectDir, '.netlify', 'form-submissions.csv')
+  const csvWriter = csvWriterPkg.createArrayCsvWriter({
+    alwaysQuote: true,
+    header: ['timestamp', 'path', 'body'],
+    path: formSubmissionsFile,
+    append: true,
+  })
+
   const server = http.createServer(function(req, res) {
+    if (req.method === 'POST') {
+      collectRequestBody(req, async body => {
+        await csvWriter.writeRecords([[new Date().toISOString(), req.url, body]])
+        res.end(body)
+      })
+      return
+    }
+
     if (isFunction(settings.functionsPort, req)) {
       return proxy.web(req, res, { target: functionsServer })
     }
