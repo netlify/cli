@@ -175,7 +175,7 @@ async function startProxy(settings, addonUrls, configPath, projectDir) {
     configPath,
   })
 
-  mkdirp.sync(path.resolve(projectDir, '.netlify'))
+  await mkdirp(path.resolve(projectDir, '.netlify'))
 
   const formSubmissionsFile = path.resolve(projectDir, '.netlify', 'form-submissions.csv')
   const csvWriter = csvWriterPkg.createArrayCsvWriter({
