@@ -19,7 +19,7 @@ test('pass dummy repository with *.js files', t => {
   const f = getFunctions(sitePath)
   t.deepEqual(f, {
     index: {
-      functionPath: sitePath + '/index.js',
+      functionPath: sitePath + path.sep + 'index.js',
       moduleDir: findModuleDir(sitePath)
     }
   })
