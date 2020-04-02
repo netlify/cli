@@ -18,25 +18,46 @@ const siteName =
     .replace(/[^a-z]+/g, '')
     .substr(0, 8)
 
+async function callCli(cmd) {
+  return (await exec(`${cliPath} ${cmd}`, execOptions)).stdout
+}
+
+async function listAccounts() {
+  return JSON.parse(await callCli(`api listAccountsForUser`))
+}
+
+async function createSite(siteName, accountSlug) {
+  const cliResponse = await callCli(`sites:create --name="${siteName}" --account-slug="${accountSlug}"`)
+
+  const isSiteCreated = /Site Created/.test(cliResponse)
+  if (!isSiteCreated) {
+    return null
+  }
+
+  const matches = /Site ID:\s+([a-zA-Z0-9-]+)/m.exec(stripAnsi(cliResponse))
+  if (matches && matches.hasOwnProperty(1) && matches[1]) {
+    return matches[1]
+  }
+
+  return null
+}
+
 async function deleteAddon(name) {
-  const cliResponse = await exec(`${cliPath} addons:delete ${name} -f`, execOptions)
-  return cliResponse
+  return await callCli(`addons:delete ${name} -f`)
 }
 
 test.before(async t => {
-  console.log('creating new site for tests: ' + siteName)
-  const cliResponse = await exec(
-    `${cliPath} sites:create --name="${siteName}" --account-slug="netlify-services"`,
-    execOptions
-  )
-  t.is(/Site Created/.test(cliResponse.stdout), true)
+  const accounts = await listAccounts()
+  t.is(Array.isArray(accounts), true)
+  t.truthy(accounts.length)
 
-  const matches = /Site ID:\s+([a-zA-Z0-9-]+)/m.exec(stripAnsi(cliResponse.stdout))
-  t.truthy(matches)
-  t.truthy(matches.hasOwnProperty(1))
-  t.truthy(matches[1])
-  // Set the site id
-  execOptions.env.NETLIFY_SITE_ID = matches[1]
+  const account = accounts[0]
+
+  console.log('creating new site for tests: ' + siteName)
+  const siteId = await createSite(siteName, account.slug)
+  t.truthy(siteId != null)
+
+  execOptions.env.NETLIFY_SITE_ID = siteId
 })
 
 test.serial('netlify addons:list', async t => {
@@ -69,7 +90,7 @@ test.serial('After creation netlify addons:list --json', async t => {
 test.serial('netlify addon:delete demo', async t => {
   const regex = /Addon "demo" deleted/
   const cliResponse = await deleteAddon('demo')
-  t.is(regex.test(cliResponse.stdout), true)
+  t.is(regex.test(cliResponse), true)
 })
 
 test.after('cleanup', async t => {
