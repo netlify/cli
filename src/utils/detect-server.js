@@ -85,7 +85,6 @@ module.exports.serverSettings = async devConfig => {
       settings.proxyPort = devConfig.targetPort
       settings.urlRegexp = devConfig.urlRegexp || new RegExp(`(http://)([^:]+:)${devConfig.targetPort}(/)?`, 'g')
     }
-    if (devConfig.functionsPort) settings.functionsPort = devConfig.functionsPort
     settings.dist = devConfig.publish || settings.dist // dont loudassign if they dont need it
 
     if (devConfig.jwtRolePath) settings.jwtRolePath = devConfig.jwtRolePath
