@@ -440,6 +440,7 @@ class DevCommand extends Command {
     if (port !== settings.port && ((flags && flags.port) || (config && config.dev && config.dev.port))) {
       throw new Error(`Could not acquire required "port": ${settings.port}`)
     }
+    settings.port = port
 
     startDevServer(settings, this.log)
 
