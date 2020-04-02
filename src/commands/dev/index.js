@@ -475,7 +475,7 @@ class DevCommand extends Command {
         }
 
         // add newline because this often appears alongside the client devserver's output
-        console.log(`\n${NETLIFYDEVLOG} Lambda server is listening on ${settings.functionsPort}`) // eslint-disable-line no-console
+        console.log(`\n${NETLIFYDEVLOG} Functions server is listening on ${settings.functionsPort}`) // eslint-disable-line no-console
       })
     }
 
