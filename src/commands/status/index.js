@@ -20,7 +20,7 @@ class StatusCommand extends Command {
         System: ['OS', 'CPU'],
         Binaries: ['Node', 'Yarn', 'npm'],
         Browsers: ['Chrome', 'Edge', 'Firefox', 'Safari'],
-        npmGlobalPackages: ['netlify']
+        npmGlobalPackages: ['netlify-cli']
       })
       this.log(data)
       this.exit()
