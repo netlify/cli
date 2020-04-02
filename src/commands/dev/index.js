@@ -433,16 +433,12 @@ class DevCommand extends Command {
       ...settings,
       port: (flags && flags.port) || (config && config.dev && config.dev.port) || settings.port || 8888,
       proxyPort: (flags && flags.targetPort) || (config && config.dev && config.dev.targetPort) || settings.proxyPort || 3999,
-      functionsPort: (flags && flags.functionsPort) || (config && config.dev && config.dev.functionsPort) || settings.functionsPort || 34567,
+      functionsPort: settings.functionsPort || 34567,
     }
 
     const port = await getPort({ port: settings.port })
     if (port !== settings.port && ((flags && flags.port) || (config && config.dev && config.dev.port))) {
       throw new Error(`Could not acquire required "port": ${settings.port}`)
-    }
-    const functionsPort = await getPort({ port: settings.functionsPort })
-    if (functionsPort !== settings.functionsPort && ((flags && flags.functionsPort) || (config && config.dev && config.dev.functionsPort))) {
-      throw new Error(`Could not acquire required "functionsPort": ${settings.functionsPort}`)
     }
 
     startDevServer(settings, this.log)
@@ -549,9 +545,6 @@ DevCommand.flags = {
   port: flags.integer({
     char: 'p',
     description: 'port of netlify dev'
-  }),
-  functionsPort: flags.integer({
-    description: 'port for functions server'
   }),
   targetPort: flags.integer({
     description: 'port of target app server'
