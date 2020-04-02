@@ -433,7 +433,7 @@ class DevCommand extends Command {
       ...settings,
       port: (flags && flags.port) || (config && config.dev && config.dev.port) || settings.port || 8888,
       proxyPort: (flags && flags.targetPort) || (config && config.dev && config.dev.targetPort) || settings.proxyPort || 3999,
-      functionsPort: settings.functionsPort || 34567,
+      functionsPort: await getPort({ port: settings.functionsPort || 34567 }),
     }
 
     const port = await getPort({ port: settings.port })
