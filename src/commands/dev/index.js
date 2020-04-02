@@ -440,10 +440,6 @@ class DevCommand extends Command {
     if (port !== settings.port && ((flags && flags.port) || (config && config.dev && config.dev.port))) {
       throw new Error(`Could not acquire required "port": ${settings.port}`)
     }
-    const proxyPort = await getPort({ port: settings.proxyPort })
-    if (proxyPort !== settings.proxyPort && ((flags && flags.targetPort) || (config && config.dev && config.dev.targetPort))) {
-      throw new Error(`Could not acquire required "targetPort": ${settings.targetPort}`)
-    }
     const functionsPort = await getPort({ port: settings.functionsPort })
     if (functionsPort !== settings.functionsPort && ((flags && flags.functionsPort) || (config && config.dev && config.dev.functionsPort))) {
       throw new Error(`Could not acquire required "functionsPort": ${settings.functionsPort}`)
