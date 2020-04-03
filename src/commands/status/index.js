@@ -23,7 +23,6 @@ class StatusCommand extends Command {
         npmGlobalPackages: ['netlify-cli']
       })
       this.log(data)
-      this.exit()
     }
 
     const current = globalConfig.get('userId')
