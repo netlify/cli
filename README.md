@@ -18,6 +18,7 @@ See the [CLI command line reference](https://cli.netlify.com/commands/) to get s
 - [Commands](#commands)
   * [addons](#addons)
   * [api](#api)
+  * [build](#build)
   * [deploy](#deploy)
   * [dev](#dev)
   * [functions](#functions)
@@ -83,6 +84,10 @@ For a full command reference, see the list below, or visit [cli.netlify.com](htt
 ### [api](/docs/commands/api.md)
 
 Run any Netlify API method
+
+### [build](/docs/commands/build.md)
+
+(Beta) Build on your local machine
 
 ### [deploy](/docs/commands/deploy.md)
 
