@@ -79,7 +79,8 @@ class BaseCommand extends Command {
         repositoryRoot: projectRoot,
         context: argv.context,
         siteId: state.get('siteId'),
-        token
+        token,
+        mode: 'cli'
       })
     } catch (error) {
       const message = error.type === 'userError' ? error.message : error.stack

@@ -27,7 +27,7 @@ class BuildCommand extends Command {
       flags: { dry }
     } = this.parse(BuildCommand)
     const [token] = this.getConfigToken()
-    return { cachedConfig, token, dry }
+    return { cachedConfig, token, dry, mode: 'cli' }
   }
 }
 
