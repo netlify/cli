@@ -1,6 +1,7 @@
 const url = require('url')
 const { URLSearchParams } = require('url')
 const path = require('path')
+const { Readable } = require('stream')
 const fs = require('fs')
 const { flags } = require('@oclif/command')
 const child_process = require('child_process')
@@ -11,14 +12,15 @@ const getPort = require('get-port')
 const chokidar = require('chokidar')
 const proxyMiddleware = require('http-proxy-middleware')
 const cookie = require('cookie')
-const mkdirp = require('mkdirp')
-const csvWriterPkg = require('csv-writer')
+const querystring = require('querystring')
+const contentType = require('content-type')
+const getRawBody = require('raw-body')
+const multiparty = require('multiparty')
 const get = require('lodash.get')
 const isEmpty = require('lodash.isempty')
 const { serveFunctions } = require('../../utils/serve-functions')
 const { serverSettings } = require('../../utils/detect-server')
 const { detectFunctionsBuilder } = require('../../utils/detect-functions-builder')
-const { collectRequestBody } = require('../../utils/forms')
 const Command = require('../../utils/command')
 const chalk = require('chalk')
 const jwtDecode = require('jwt-decode')
@@ -152,6 +154,10 @@ function initializeProxy(port, distDir, projectDir) {
   return handlers
 }
 
+function capitalize(t) {
+  return t.replace(/(^\w|\s\w)/g, m => m.toUpperCase())
+}
+
 async function startProxy(settings, addonUrls, configPath, projectDir) {
   try {
     await waitPort({ port: settings.proxyPort })
@@ -175,23 +181,52 @@ async function startProxy(settings, addonUrls, configPath, projectDir) {
     configPath,
   })
 
-  await mkdirp(path.resolve(projectDir, '.netlify'))
-
-  const formSubmissionsFile = path.resolve(projectDir, '.netlify', 'form-submissions.csv')
-  const csvWriter = csvWriterPkg.createArrayCsvWriter({
-    alwaysQuote: true,
-    header: ['timestamp', 'path', 'body'],
-    path: formSubmissionsFile,
-    append: true,
-  })
-
-  const server = http.createServer(function(req, res) {
+  const server = http.createServer(async (req, res) => {
     if (req.method === 'POST') {
-      collectRequestBody(req, async body => {
-        await csvWriter.writeRecords([[new Date().toISOString(), req.url, body]])
-        res.end(body)
+      const originalUrl = req.url
+      req.url = '.netlify/functions/submission-created'
+      const ct = contentType.parse(req)
+      let fields = {}
+      let files = {}
+      if (ct.type === 'application/x-www-form-urlencoded') {
+        const bodyData = await getRawBody(req, {
+          length: req.headers['content-length'],
+          limit: '10mb',
+          encoding: ct.parameters.charset,
+        })
+        fields = querystring.parse(bodyData.toString())
+      } else if (ct.type === 'multipart/form-data') {
+        const form = new multiparty.Form({ encoding:  ct.parameters.charset || 'utf8' })
+        form.parse(req, (err, Fields, Files) => {
+          // TODO: send this data to functions server
+          console.log(err, fields, files)
+        })
+      } else {
+        return console.error('Invalid Content-Type for Netlify Dev forms request')
+      }
+      const data = JSON.stringify({ payload: {
+          ...fields,
+          'data': {
+            ...fields,
+            'ip': req.connection.remoteAddress,
+            'user_agent': req.headers['user-agent'],
+            'referrer': req.headers['referrer'],
+          },
+          'created_at': new Date().toISOString(),
+          'human_fields': Object.entries(fields).reduce((prev, [key, val]) => ({ ...prev, [capitalize(key)]: val }), {}),
+          'ordered_human_fields': Object.entries(fields).map(([key, val]) => ({ title: capitalize(key), name: key, value: val })),
+      }})
+      const buff = Readable.from(data)
+      return proxy.web(req, res, {
+        target: functionsServer,
+        buffer: buff,
+        headers: {
+          ...req.headers,
+          'content-length': data.length,
+          'content-type': 'application/json',
+          'x-netlify-original-pathname': originalUrl,
+        },
       })
-      return
     }
 
     if (isFunction(settings.functionsPort, req)) {
