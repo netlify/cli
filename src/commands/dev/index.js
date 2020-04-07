@@ -71,7 +71,7 @@ function render404(publicFolder) {
 const assetExtensionRegExp = /\.(html?|png|jpg|js|css|svg|gif|ico|woff|woff2)$/
 
 function alternativePathsFor(url) {
-  const paths = []
+  const paths = [url]
   if (url[url.length - 1] === '/') {
     const end = url.length - 1
     if (url !== '/') {
@@ -169,6 +169,7 @@ async function startProxy(settings, addonUrls, configPath, projectDir) {
     publicFolder: settings.dist,
     jwtRole: settings.jwtRolePath,
     configPath,
+    noCmd: settings.noCmd,
   })
 
   const server = http.createServer(function(req, res) {

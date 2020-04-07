@@ -55,7 +55,7 @@ function getCountry(req) {
   return 'us'
 }
 
-module.exports = function({ publicFolder, baseFolder, jwtSecret, jwtRole, configPath }) {
+module.exports = function({ publicFolder, baseFolder, jwtSecret, jwtRole, configPath, noCmd }) {
   let matcher = null
   const projectDir = path.resolve(baseFolder || process.cwd())
   const configFiles = [
@@ -66,7 +66,8 @@ module.exports = function({ publicFolder, baseFolder, jwtSecret, jwtRole, config
   let rules = []
 
   onChanges(configFiles, async () => {
-    rules = (await parseRules(configFiles)).filter(r => !(r.path === '/*' && r.to === '/index.html' && r.status === 200))
+    rules = await parseRules(configFiles)
+    if (!noCmd) rules = rules.filter(r => !(r.path === '/*' && r.to === '/index.html' && r.status === 200))
     matcher = null
   })
 
