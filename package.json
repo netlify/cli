@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "2.40.0",
+  "version": "2.41.0",
   "author": "Netlify Inc.",
   "contributors": [
     "Mathias Biilmann <matt@netlify.com> (https://twitter.com/biilmann)",
@@ -61,9 +61,9 @@
     "postinstall": "node ./scripts/postinstall.js"
   },
   "dependencies": {
-    "@netlify/build": "^0.1.114",
-    "@netlify/config": "^0.5.2",
-    "@netlify/zip-it-and-ship-it": "^0.4.0-9",
+    "@netlify/build": "^0.2.3",
+    "@netlify/config": "^0.6.0",
+    "@netlify/zip-it-and-ship-it": "^0.4.0-12",
     "@oclif/command": "^1.5.18",
     "@oclif/config": "^1.13.2",
     "@oclif/errors": "^1.1.2",
@@ -95,7 +95,7 @@
     "express": "^4.17.1",
     "express-logging": "^1.1.1",
     "find-up": "^3.0.0",
-    "firebase": "^5.11.1",
+    "firebase": "^7.13.2",
     "fs-extra": "^8.1.0",
     "fuzzy": "^0.1.3",
     "get-port": "^5.1.0",
@@ -121,7 +121,7 @@
     "make-dir": "^3.0.0",
     "minimist": "^1.2.0",
     "multiparty": "^4.2.1",
-    "netlify": "^4.0.0",
+    "netlify": "^4.0.3",
     "netlify-redirect-parser": "^2.3.0",
     "netlify-redirector": "^0.1.0",
     "node-fetch": "^2.6.0",

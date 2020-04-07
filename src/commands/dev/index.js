@@ -170,7 +170,6 @@ async function startProxy(settings, addonUrls, configPath, projectDir) {
   if (settings.functionsPort) {
     await waitPort({ port: settings.functionsPort })
   }
-  const port = await getPort({ port: settings.port || 8888 })
   const functionsServer = settings.functionsPort ? `http://localhost:${settings.functionsPort}` : null
 
   const proxy = initializeProxy(settings.proxyPort, settings.dist, projectDir)
@@ -258,8 +257,8 @@ async function startProxy(settings, addonUrls, configPath, projectDir) {
     proxy.ws(req, socket, head)
   })
 
-  server.listen(port)
-  return { url: `http://localhost:${port}`, port }
+  server.listen(settings.port)
+  return { url: `http://localhost:${settings.port}`, port: settings.port }
 }
 
 function serveRedirect(req, res, proxy, match, options) {
@@ -475,9 +474,10 @@ class DevCommand extends Command {
         dist = process.cwd()
       }
       settings = {
+        env: { ...process.env },
         noCmd: true,
         port: 8888,
-        proxyPort: await getPort({ port: 3999 }),
+        proxyPort: 3999,
         dist,
         jwtRolePath: config.dev && config.dev.jwtRolePath
       }
@@ -487,10 +487,16 @@ class DevCommand extends Command {
     // Flags have highest priority, then configuration file (netlify.toml etc.) then detectors
     settings = {
       ...settings,
-      port: (flags && flags.port) || (config && config.dev && config.dev.port) || settings.port,
-      proxyPort: (flags && flags.targetPort) || (config && config.dev && config.dev.targetPort) || settings.proxyPort,
-      functionsPort: (flags && flags.functionsPort) || (config && config.dev && config.dev.functionsPort) || settings.functionsPort,
+      port: (flags && flags.port) || (config && config.dev && config.dev.port) || settings.port || 8888,
+      proxyPort: (flags && flags.targetPort) || (config && config.dev && config.dev.targetPort) || settings.proxyPort || 3999,
+      functionsPort: await getPort({ port: settings.functionsPort || 34567 }),
     }
+
+    const port = await getPort({ port: settings.port })
+    if (port !== settings.port && ((flags && flags.port) || (config && config.dev && config.dev.port))) {
+      throw new Error(`Could not acquire required "port": ${settings.port}`)
+    }
+    settings.port = port
 
     startDevServer(settings, this.log)
 
@@ -513,7 +519,6 @@ class DevCommand extends Command {
         functionWatcher.on('change', functionBuilder.build)
         functionWatcher.on('unlink', functionBuilder.build)
       }
-      settings.functionsPort = await getPort({ port: settings.functionsPort || 34567 })
 
       const functionsServer = await serveFunctions({
         ...settings,
@@ -526,22 +531,22 @@ class DevCommand extends Command {
         }
 
         // add newline because this often appears alongside the client devserver's output
-        console.log(`\n${NETLIFYDEVLOG} Lambda server is listening on ${settings.functionsPort}`) // eslint-disable-line no-console
+        console.log(`\n${NETLIFYDEVLOG} Functions server is listening on ${settings.functionsPort}`) // eslint-disable-line no-console
       })
     }
 
-    let { url, port } = await startProxy(settings, addonUrls, site.configPath, site.root)
+    let { url, proxyPortUsed } = await startProxy(settings, addonUrls, site.configPath, site.root)
     if (!url) {
       throw new Error('Unable to start proxy server')
     }
 
     if (flags.live) {
-      await waitPort({ port })
+      await waitPort({ proxyPortUsed })
       const liveSession = await createTunnel(site.id, accessToken, this.log)
       url = liveSession.session_url
       process.env.BASE_URL = url
 
-      await connectTunnel(liveSession, accessToken, port, this.log)
+      await connectTunnel(liveSession, accessToken, proxyPortUsed, this.log)
     }
 
     await this.config.runHook('analytics', {
@@ -597,9 +602,6 @@ DevCommand.flags = {
   port: flags.integer({
     char: 'p',
     description: 'port of netlify dev'
-  }),
-  functionsPort: flags.integer({
-    description: 'port for functions server'
   }),
   targetPort: flags.integer({
     description: 'port of target app server'

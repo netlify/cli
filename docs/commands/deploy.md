@@ -93,6 +93,7 @@ netlify deploy
 - `site` (*option*) - A site ID to deploy to
 - `json` (*boolean*) - Output deployment data as JSON
 - `timeout` (*option*) - Timeout to wait for deployment to finish
+- `trigger` (*boolean*) - Trigger a new build of your site on Netlify without uploading local files
 
 **Examples**
 
@@ -102,6 +103,7 @@ netlify deploy --prod
 netlify deploy --prod --open
 netlify deploy --message "A message with an $ENV_VAR"
 netlify deploy --auth $NETLIFY_AUTH_TOKEN
+netlify deploy --trigger
 ```
 
 

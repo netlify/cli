@@ -14,6 +14,10 @@ Watch for site deploy to finish
 netlify watch
 ```
 
+**Arguments**
+
+- deployId - undefined
+
 **Examples**
 
 ```bash

@@ -19,19 +19,15 @@ class BuildCommand extends Command {
 
   // Retrieve Netlify Build options
   getOptions() {
-    const {
-      site: { id: siteId },
-      cachedConfig
-    } = this.netlify
     // We have already resolved the configuration using `@netlify/config`
     // This is stored as `this.netlify.cachedConfig` and can be passed to
     // `@netlify/build --cachedConfig`.
-    const cachedConfigOption = JSON.stringify(cachedConfig)
+    const cachedConfig = JSON.stringify(this.netlify.cachedConfig)
     const {
       flags: { dry }
     } = this.parse(BuildCommand)
     const [token] = this.getConfigToken()
-    return { cachedConfig: cachedConfigOption, token, dry, siteId }
+    return { cachedConfig, token, dry }
   }
 }
 

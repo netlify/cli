@@ -37,6 +37,10 @@ netlify [command] help
 
 Run any Netlify API method
 
+### [build](/docs/commands/build.md)
+
+(Beta) Build on your local machine
+
 ### [deploy](/docs/commands/deploy.md)
 
 Create a new deploy from the contents of a folder

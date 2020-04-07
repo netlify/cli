@@ -31,11 +31,11 @@ class BaseCommand extends Command {
 
     const [token] = this.getConfigToken(authViaFlag)
 
-    const cachedConfig = await this.getConfig(cwd, projectRoot)
-    const { configPath, config } = cachedConfig
-
     // Get site id & build state
     const state = new StateConfig(projectRoot)
+
+    const cachedConfig = await this.getConfig(cwd, projectRoot, state, token)
+    const { configPath, config } = cachedConfig
 
     const apiOpts = {}
     if (NETLIFY_API_URL) {
@@ -71,13 +71,15 @@ class BaseCommand extends Command {
   }
 
   // Find and resolve the Netlify configuration
-  async getConfig(cwd, projectRoot) {
+  async getConfig(cwd, projectRoot, state, token) {
     try {
       return await resolveConfig({
         config: argv.config,
         cwd: cwd,
         repositoryRoot: projectRoot,
-        context: argv.context
+        context: argv.context,
+        siteId: state.get('siteId'),
+        token
       })
     } catch (error) {
       const message = error.type === 'userError' ? error.message : error.stack
