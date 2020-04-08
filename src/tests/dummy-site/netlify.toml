@@ -5,12 +5,12 @@
   publish = "build"
   functions = "functions"
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
+  from = "/something"
+  to = "/ping"
   status = 200
   force = false
 [[redirects]]
-  from = "/something"
-  to = "/ping"
+  from = "/*"
+  to = "/index.html"
   status = 200
   force = false

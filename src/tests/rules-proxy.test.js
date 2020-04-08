@@ -38,7 +38,14 @@ test('homepage rule', async t => {
   req.end()
 
   return new Promise((resolve, reject) => req.on('close', () => {
-    t.is(data.length, 0)
+    data = JSON.parse(data)
+    t.is(data.from, '/*')
+    t.is(data.to, '/index.html')
+    t.is(data.force, false)
+    t.is(data.host, '')
+    t.is(data.negative, false)
+    t.is(data.scheme, '')
+    t.is(data.status, 200)
     resolve()
   }))
 })
