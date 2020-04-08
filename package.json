@@ -119,7 +119,7 @@
     "minimist": "^1.2.5",
     "netlify": "^4.0.4",
     "netlify-redirect-parser": "^2.3.0",
-    "netlify-redirector": "^0.1.0",
+    "netlify-redirector": "^0.2.0",
     "node-fetch": "^2.6.0",
     "npm-packlist": "^1.4.4",
     "open": "^6.4.0",
