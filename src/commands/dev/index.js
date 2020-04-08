@@ -421,7 +421,7 @@ class DevCommand extends Command {
       settings = {
         env: { ...process.env },
         noCmd: true,
-        port: await getPort({ port: 8888 }),
+        port: 8888,
         proxyPort: await getPort({ port: 3999 }),
         dist,
         jwtRolePath: config.dev && config.dev.jwtRolePath
