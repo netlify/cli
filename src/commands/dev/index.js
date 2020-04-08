@@ -189,7 +189,8 @@ async function startProxy(settings, addonUrls, configPath, projectDir, functions
         publicFolder: settings.dist,
         functionsServer,
         functionsPort: settings.functionsPort,
-        jwtRolePath: settings.jwtRolePath
+        jwtRolePath: settings.jwtRolePath,
+        serverType: settings.type,
       }
 
       if (match) return serveRedirect(req, res, proxy, match, options)
@@ -275,7 +276,7 @@ function serveRedirect(req, res, proxy, match, options) {
     return render404(options.publicFolder)
   }
 
-  if (match.force || (notStatic(reqUrl.pathname, options.publicFolder) && match.status !== 404)) {
+  if (match.force || (!options.serverType && notStatic(reqUrl.pathname, options.publicFolder) && match.status !== 404)) {
     const dest = new url.URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
     if (isRedirect(match)) {
       res.writeHead(match.status, {
