@@ -29,4 +29,4 @@ You do NOT have to include this information if this is a FEATURE REQUEST
 
 
 **- Local Environment Information**
-<!-- Paste the results of `netlify version` here -->
+<!-- Paste the results of `netlify version --verbose` here -->
