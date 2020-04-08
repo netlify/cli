@@ -421,8 +421,8 @@ class DevCommand extends Command {
       settings = {
         env: { ...process.env },
         noCmd: true,
-        port: 8888,
-        proxyPort: 3999,
+        port: await getPort({ port: 8888 }),
+        proxyPort: await getPort({ port: 3999 }),
         dist,
         jwtRolePath: config.dev && config.dev.jwtRolePath
       }
@@ -432,8 +432,8 @@ class DevCommand extends Command {
     // Flags have highest priority, then configuration file (netlify.toml etc.) then detectors
     settings = {
       ...settings,
-      port: (flags && flags.port) || (config && config.dev && config.dev.port) || settings.port || 8888,
-      proxyPort: (flags && flags.targetPort) || (config && config.dev && config.dev.targetPort) || settings.proxyPort || 3999,
+      port: (flags && flags.port) || (config && config.dev && config.dev.port) || settings.port,
+      proxyPort: (flags && flags.targetPort) || (config && config.dev && config.dev.targetPort) || settings.proxyPort,
       functionsPort: await getPort({ port: settings.functionsPort || 34567 }),
     }
 
