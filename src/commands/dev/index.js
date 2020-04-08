@@ -149,7 +149,7 @@ function initializeProxy(port, distDir, projectDir) {
   return handlers
 }
 
-async function startProxy(settings, addonUrls, configPath, projectDir) {
+async function startProxy(settings, addonUrls, configPath, projectDir, functionsDir) {
   try {
     await waitPort({ port: settings.proxyPort })
   } catch(err) {
@@ -158,7 +158,7 @@ async function startProxy(settings, addonUrls, configPath, projectDir) {
     this.exit(1)
   }
 
-  if (settings.functionsPort) {
+  if (functionsDir && settings.functionsPort) {
     await waitPort({ port: settings.functionsPort })
   }
   const functionsServer = settings.functionsPort ? `http://localhost:${settings.functionsPort}` : null
@@ -480,7 +480,7 @@ class DevCommand extends Command {
       })
     }
 
-    let { url, proxyPortUsed } = await startProxy(settings, addonUrls, site.configPath, site.root)
+    let { url, proxyPortUsed } = await startProxy(settings, addonUrls, site.configPath, site.root, functionsDir)
     if (!url) {
       throw new Error('Unable to start proxy server')
     }
