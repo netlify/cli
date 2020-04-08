@@ -169,7 +169,6 @@ async function startProxy(settings, addonUrls, configPath, projectDir, functions
     publicFolder: settings.dist,
     jwtRole: settings.jwtRolePath,
     configPath,
-    noCmd: settings.noCmd,
   })
 
   const server = http.createServer(function(req, res) {
