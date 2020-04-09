@@ -53,10 +53,6 @@ function isExternal(match) {
   return match.to && match.to.match(/^https?:\/\//)
 }
 
-function isNetlifyDir(dir, projectDir) {
-  return dir.startsWith(path.resolve(projectDir, '.netlify'))
-}
-
 function isRedirect(match) {
   return match.status && (match.status >= 300 && match.status <= 400)
 }
