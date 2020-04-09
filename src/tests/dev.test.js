@@ -1,7 +1,7 @@
 const path = require('path')
 const { spawn } = require('child_process')
 const test = require('ava')
-const http = require('http')
+const fetch = require('node-fetch')
 const cliPath = require('./utils/cliPath')
 const sitePath = path.join(__dirname, 'dummy-site')
 
@@ -15,7 +15,7 @@ test.before(async t => {
     ['dev'],
     {
       cwd: sitePath,
-      env: Object.assign({}, process.env, { DUMMY_VAR: "true" }),
+      env: { ...process.env, DUMMY_VAR: 'true' },
       detached: true,
       shell: true,
     }
@@ -47,66 +47,33 @@ test.before(async t => {
 })
 
 test('netlify dev functions timeout', async t => {
-  return new Promise((resolve, reject) => {
-    const req = http.request({
-      hostname: host,
-      port: port,
-      path: '/.netlify/functions/timeout',
-      method: 'GET',
-    }, (res) =>
-    {
-      res.on('data', () => {})
-      res.on('end', resolve)
-    })
-    req.on('error', reject)
+  const response = await fetch(`http://${host}:${port}/.netlify/functions/timeout`).then(r => r.text())
 
-    req.end()
-  })
+  t.is(response, '"ping"')
 })
 
 test('netlify dev env file', async t => {
-  let data = ""
-  await new Promise((resolve, reject) => {
-    const req = http.request({
-      hostname: host,
-      port: port,
-      path: '/.netlify/functions/env',
-      method: 'GET',
-    }, (res) =>
-    {
-      res.on('data', (d) => {data += d.toString()})
-      res.on('end', resolve)
-    })
-    req.on('error', reject)
+  const response = await fetch(`http://${host}:${port}/.netlify/functions/env`).then(r => r.text())
 
-    req.end()
-  })
-
-  t.is(data, "true")
+  t.is(response, 'true')
 })
 
 
 test('netlify dev env file overriding prod var', async t => {
-  let data = ""
-  await new Promise((resolve, reject) => {
-    const req = http.request({
-      hostname: host,
-      port: port,
-      path: '/.netlify/functions/override-process-env',
-      method: 'GET',
-    }, (res) =>
-    {
-      res.on('data', (d) => {data += d.toString()})
-      res.on('end', resolve)
-    })
-    req.on('error', reject)
+  const response = await fetch(`http://${host}:${port}/.netlify/functions/override-process-env`).then(r => r.text())
 
-    req.end()
-  })
-
-  t.is(data, "false")
+  t.is(response, 'false')
 })
 
-test.after('cleanup', async t => {
+test('netlify dev: api rewrite', async t => {
+  // Wait for the redirect rules to be parsed
+  await new Promise((resolve, reject) => setTimeout(resolve, 1000))
+
+  const response = await fetch(`http://${host}:${port}/api/timeout`).then(r => r.text())
+
+  t.is(response, '"ping"')
+})
+
+test.after.always('cleanup', async t => {
   if (ps && ps.pid) ps.kill('SIGHUP')
 })
