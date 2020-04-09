@@ -33,8 +33,11 @@ const createRewriter = require('../../utils/rules-proxy')
 const { onChanges } = require('../../utils/rules-proxy')
 const { parseHeadersFile, objectForPath } = require('../../utils/headers')
 
-function isFunction(functionsPort, req) {
-  return functionsPort && req.url.match(/^\/.netlify\/functions\/.+/)
+function isInternal(url) {
+  return url.startsWith('/.netlify/')
+}
+function isFunction(functionsPort, url) {
+  return functionsPort && url.match(/^\/.netlify\/functions\/.+/)
 }
 
 function addonUrl(addonUrls, req) {
@@ -172,7 +175,7 @@ async function startProxy(settings, addonUrls, configPath, projectDir, functions
   })
 
   const server = http.createServer(function(req, res) {
-    if (isFunction(settings.functionsPort, req)) {
+    if (isFunction(settings.functionsPort, req.url)) {
       return proxy.web(req, res, { target: functionsServer })
     }
     let urlForAddons = addonUrl(addonUrls, req)
@@ -216,7 +219,7 @@ function serveRedirect(req, res, proxy, match, options) {
     Object.entries(match.proxyHeaders).forEach(([k, v]) => (req.headers[k] = v))
   }
 
-  if (isFunction(options.functionsPort, req)) {
+  if (isFunction(options.functionsPort, req.url)) {
     return proxy.web(req, res, { target: options.functionsServer })
   }
   const urlForAddons = addonUrl(options.addonUrls, req)
@@ -275,7 +278,7 @@ function serveRedirect(req, res, proxy, match, options) {
     return render404(options.publicFolder)
   }
 
-  if (match.force || (!options.serverType && notStatic(reqUrl.pathname, options.publicFolder) && match.status !== 404)) {
+  if (match.force || (notStatic(reqUrl.pathname, options.publicFolder) && match.status !== 404)) {
     const dest = new url.URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
     if (isRedirect(match)) {
       res.writeHead(match.status, {
@@ -298,10 +301,14 @@ function serveRedirect(req, res, proxy, match, options) {
 
     const urlParams = new URLSearchParams(reqUrl.searchParams)
     dest.searchParams.forEach((val, key) => urlParams.set(key, val))
-    req.url = dest.pathname + (urlParams.toString() && '?' + urlParams.toString())
-    console.log(`${NETLIFYDEVLOG} Rewrote URL to `, req.url)
+    const destURL = dest.pathname + (urlParams.toString() && '?' + urlParams.toString())
 
-    if (isFunction({ functionsPort: options.functionsPort }, req)) {
+    if (isInternal(destURL) || !options.serverType) {
+      req.url = destURL
+      console.log(`${NETLIFYDEVLOG} Rewrote URL to `, req.url)
+    }
+
+    if (isFunction(options.functionsPort, req.url)) {
       req.headers['x-netlify-original-pathname'] = reqUrl.pathname
       return proxy.web(req, res, { target: options.functionsServer })
     }
