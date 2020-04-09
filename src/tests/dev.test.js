@@ -65,6 +65,15 @@ test('netlify dev env file overriding prod var', async t => {
   t.is(response, 'false')
 })
 
+test('netlify dev: api rewrite', async t => {
+  // Wait for the redirect rules to be parsed
+  await new Promise((resolve, reject) => setTimeout(resolve, 1000))
+
+  const response = await fetch(`http://${host}:${port}/api/timeout`).then(r => r.text())
+
+  t.is(response, '"ping"')
+})
+
 test.after.always('cleanup', async t => {
   if (ps && ps.pid) ps.kill('SIGHUP')
 })
