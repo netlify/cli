@@ -26,3 +26,4 @@ jobs:
       - run: npm test
         env:
           CI: true
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
