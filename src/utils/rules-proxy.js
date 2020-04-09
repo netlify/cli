@@ -5,7 +5,7 @@ const redirector = require('netlify-redirector')
 const chokidar = require('chokidar')
 const cookie = require('cookie')
 const redirectParser = require('netlify-redirect-parser')
-const { NETLIFYDEVWARN } = require('../utils/logo')
+const { NETLIFYDEVWARN, NETLIFYDEVLOG } = require('../utils/logo')
 
 async function parseFile(parser, name, filePath) {
   const result = await parser(filePath)
@@ -55,17 +55,17 @@ function getCountry(req) {
   return 'us'
 }
 
-module.exports = function({ publicFolder, baseFolder, jwtSecret, jwtRole, configPath }) {
+module.exports = function createRewriter({ distDir, projectDir, jwtSecret, jwtRole, configPath }) {
   let matcher = null
-  const projectDir = path.resolve(baseFolder || process.cwd())
-  const configFiles = [
+  const configFiles = Array.from(new Set([
+    path.resolve(configPath),
+    path.resolve(distDir, '_redirects'),
     path.resolve(projectDir, '_redirects'),
-    path.resolve(publicFolder, '_redirects'),
-    path.resolve(configPath || path.resolve(publicFolder, 'netlify.yml')),
-  ]
+  ])).filter(f => fs.existsSync(f))
   let rules = []
 
   onChanges(configFiles, async () => {
+    console.log(`${NETLIFYDEVLOG} Reloading files`, configFiles.map(p => path.relative(projectDir, p)))
     rules = await parseRules(configFiles)
     matcher = null
   })
