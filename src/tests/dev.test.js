@@ -1,7 +1,6 @@
 const path = require('path')
 const { spawn } = require('child_process')
 const test = require('ava')
-const http = require('http')
 const fetch = require('node-fetch')
 const cliPath = require('./utils/cliPath')
 const sitePath = path.join(__dirname, 'dummy-site')
