@@ -9,11 +9,7 @@ let ps, host, port
 
 test.before(async t => {
   console.log('Running Netlify Dev server')
-  ps = await spawn(
-    // Remove quotes from path
-    cliPath.slice(1, cliPath.length - 1),
-    ['dev'],
-    {
+  ps = await spawn(cliPath, ['dev'], {
       cwd: sitePath,
       env: Object.assign({}, process.env, { DUMMY_VAR: "true" }),
       detached: true,
