@@ -1,7 +1,7 @@
 const path = require('path')
 const http = require('http')
-const fetch = require('node-fetch')
 
+const fetch = require('node-fetch')
 const test = require('ava')
 const getPort = require('get-port')
 
