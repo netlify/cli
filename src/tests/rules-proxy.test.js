@@ -1,6 +1,7 @@
 const path = require('path')
 const http = require('http')
 
+const fetch = require('node-fetch')
 const test = require('ava')
 const getPort = require('get-port')
 
@@ -9,7 +10,8 @@ const createRewriter = require('../utils/rules-proxy')
 
 test.before(async t => {
   const rewriter = createRewriter({
-    publicFolder: sitePath,
+    distDir: sitePath,
+    projectDir: sitePath,
     configPath: path.join(sitePath, 'netlify.toml')
   })
   const port = await getPort({ port: 8888 })
@@ -20,61 +22,31 @@ test.before(async t => {
   t.context.port = port
   t.context.server = server
 
-  return new Promise(resolve => server.listen(port, () => setTimeout(resolve, 200)))
+  return new Promise(resolve => server.listen(port, () => setTimeout(resolve, 2000)))
 })
 
 test('homepage rule', async t => {
-  const options = {
-    hostname: 'localhost',
-    port: t.context.port,
-    path: '/',
-    method: 'GET'
-  }
+  const response = await fetch(`http://localhost:${t.context.port}/`).then(r => r.json())
 
-  let data = ''
-  const req = http.request(options, (res) => res.on('data', (d) => data += d.toString()))
-
-  req.on('error', error => t.log('error', error))
-  req.end()
-
-  return new Promise((resolve, reject) => req.on('close', () => {
-    data = JSON.parse(data)
-    t.is(data.from, '/*')
-    t.is(data.to, '/index.html')
-    t.is(data.force, false)
-    t.is(data.host, '')
-    t.is(data.negative, false)
-    t.is(data.scheme, '')
-    t.is(data.status, 200)
-    resolve()
-  }))
+  t.is(response.from, '/*')
+  t.is(response.to, '/index.html')
+  t.is(response.force, false)
+  t.is(response.host, '')
+  t.is(response.negative, false)
+  t.is(response.scheme, '')
+  t.is(response.status, 200)
 })
 
 test('/something rule', async t => {
-  const options = {
-    hostname: 'localhost',
-    port: t.context.port,
-    path: '/something',
-    method: 'GET'
-  }
+  const response = await fetch(`http://localhost:${t.context.port}/something`).then(r => r.json())
 
-  let data = ''
-  const req = http.request(options, (res) => res.on('data', (d) => data += d.toString()))
-
-  req.on('error', error => t.log('error', error))
-  req.end()
-
-  return new Promise((resolve, reject) => req.on('close', () => {
-    data = JSON.parse(data)
-    t.is(data.from, '/something')
-    t.is(data.to, '/ping')
-    t.is(data.force, false)
-    t.is(data.host, '')
-    t.is(data.negative, false)
-    t.is(data.scheme, '')
-    t.is(data.status, 200)
-    resolve()
-  }))
+  t.is(response.from, '/something')
+  t.is(response.to, '/ping')
+  t.is(response.force, false)
+  t.is(response.host, '')
+  t.is(response.negative, false)
+  t.is(response.scheme, '')
+  t.is(response.status, 200)
 })
 
 test.after(t => {

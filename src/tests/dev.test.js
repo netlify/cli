@@ -39,10 +39,10 @@ test.before(async t => {
     }
   })
 
-  // Wait 10 seconds for the Dev server to start, otherwise timeout
+  // Wait 30 seconds for the Dev server to start, otherwise timeout
   return Promise.race([
     p,
-    new Promise((resolve, reject) => setTimeout(() => reject('Timedout waiting for Dev server to start'), 10000))]
+    new Promise((resolve, reject) => setTimeout(() => reject('Timedout waiting for Dev server to start'), 30000))]
   )
 })
 

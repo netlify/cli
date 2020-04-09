@@ -56,10 +56,6 @@ function isExternal(match) {
   return match.to && match.to.match(/^https?:\/\//)
 }
 
-function isNetlifyDir(dir, projectDir) {
-  return dir.startsWith(path.resolve(projectDir, '.netlify'))
-}
-
 function isRedirect(match) {
   return match.status && (match.status >= 300 && match.status <= 400)
 }
@@ -126,7 +122,7 @@ function initializeProxy(port, distDir, projectDir) {
     }
     const requestURL = new url.URL(req.url, `http://${req.headers.host || 'localhost'}`)
     const pathHeaderRules = objectForPath(headerRules, requestURL.pathname)
-    if (Object.keys(pathHeaderRules).length) {
+    if (!isEmpty(pathHeaderRules)) {
       Object.entries(pathHeaderRules).forEach(([key, val]) => res.setHeader(key, val))
     }
     res.writeHead(req.proxyOptions.status || proxyRes.statusCode, proxyRes.headers)
@@ -169,9 +165,10 @@ async function startProxy(settings, addonUrls, configPath, projectDir, functions
   const proxy = initializeProxy(settings.proxyPort, settings.dist, projectDir)
 
   const rewriter = await createRewriter({
-    publicFolder: settings.dist,
+    distDir: settings.dist,
     jwtRole: settings.jwtRolePath,
     configPath,
+    projectDir,
   })
 
   const server = http.createServer(function(req, res) {
@@ -373,13 +370,9 @@ class DevCommand extends Command {
     this.log(`${NETLIFYDEV}`)
     let { flags } = this.parse(DevCommand)
     const { api, site, config } = this.netlify
-    const functionsDir =
-        flags.functions ||
-        (config.dev && config.dev.functions) ||
-        (config.build && config.build.functions) ||
-        flags.Functions ||
-        (config.dev && config.dev.Functions) ||
-        (config.build && config.build.Functions)
+    config.dev = config.dev || {}
+    const devConfig = { ...config.dev, ...flags }
+    const functionsDir = devConfig.functions || (config.build && config.build.functions)
     let addonUrls = {}
 
     let accessToken = api.accessToken
@@ -397,11 +390,7 @@ class DevCommand extends Command {
       Object.entries(vars).forEach(([key, val]) => process.env[key] = val)
     }
 
-    let settings = await serverSettings(Object.assign({}, config.dev, flags))
-
-    if (!settings.proxyPort) {
-      settings.proxyPort = config.dev && config.dev.proxyPort || 8080 // in case detector is bypassed
-    }
+    let settings = await serverSettings(devConfig)
 
     if (flags.dir || !(settings && settings.command)) {
       let dist
@@ -410,8 +399,6 @@ class DevCommand extends Command {
         dist = flags.dir
       } else {
         this.log(`${NETLIFYDEVWARN} No dev server detected, using simple static server`)
-        dist = (config.dev && config.dev.publish) ||
-            (config.build && config.build.publish && !isNetlifyDir(config.build.publish, site.root) && config.build.publish)
       }
       if (!dist) {
         this.log(`${NETLIFYDEVLOG} Using current working directory`)
@@ -431,21 +418,20 @@ class DevCommand extends Command {
         port: 8888,
         proxyPort: await getPort({ port: 3999 }),
         dist,
-        jwtRolePath: config.dev && config.dev.jwtRolePath
       }
     }
-    if (!settings.jwtRolePath) settings.jwtRolePath = 'app_metadata.authorization.roles'
 
     // Flags have highest priority, then configuration file (netlify.toml etc.) then detectors
     settings = {
       ...settings,
-      port: (flags && flags.port) || (config && config.dev && config.dev.port) || settings.port,
-      proxyPort: (flags && flags.targetPort) || (config && config.dev && config.dev.targetPort) || settings.proxyPort,
+      jwtRolePath: devConfig.jwtRolePath || settings.jwtRolePath || 'app_metadata.authorization.roles',
+      port: devConfig.port || settings.port,
+      proxyPort: devConfig.targetPort || settings.proxyPort,
       functionsPort: await getPort({ port: settings.functionsPort || 34567 }),
     }
 
     const port = await getPort({ port: settings.port })
-    if (port !== settings.port && ((flags && flags.port) || (config && config.dev && config.dev.port))) {
+    if (port !== settings.port && devConfig.port) {
       throw new Error(`Could not acquire required "port": ${settings.port}`)
     }
     settings.port = port
@@ -510,11 +496,7 @@ class DevCommand extends Command {
       }
     })
 
-    if (
-      isEmpty(config.dev) ||
-      !config.dev.hasOwnProperty('autoLaunch') ||
-      (config.dev.hasOwnProperty('autoLaunch') && config.dev.autoLaunch !== false)
-    ) {
+    if (devConfig.autoLaunch && devConfig.autoLaunch !== false) {
       try {
         await open(url)
       } catch (err) {
