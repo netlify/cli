@@ -33,8 +33,11 @@ const createRewriter = require('../../utils/rules-proxy')
 const { onChanges } = require('../../utils/rules-proxy')
 const { parseHeadersFile, objectForPath } = require('../../utils/headers')
 
-function isFunction(functionsPort, req) {
-  return functionsPort && req.url.match(/^\/.netlify\/functions\/.+/)
+function isInternal(url) {
+  return url.startsWith('/.netlify/')
+}
+function isFunction(functionsPort, url) {
+  return functionsPort && url.match(/^\/.netlify\/functions\/.+/)
 }
 
 function addonUrl(addonUrls, req) {
@@ -51,10 +54,6 @@ function notStatic(pathname, publicFolder) {
 
 function isExternal(match) {
   return match.to && match.to.match(/^https?:\/\//)
-}
-
-function isNetlifyDir(dir, projectDir) {
-  return dir.startsWith(path.resolve(projectDir, '.netlify'))
 }
 
 function isRedirect(match) {
@@ -123,7 +122,7 @@ function initializeProxy(port, distDir, projectDir) {
     }
     const requestURL = new url.URL(req.url, `http://${req.headers.host || 'localhost'}`)
     const pathHeaderRules = objectForPath(headerRules, requestURL.pathname)
-    if (Object.keys(pathHeaderRules).length) {
+    if (!isEmpty(pathHeaderRules)) {
       Object.entries(pathHeaderRules).forEach(([key, val]) => res.setHeader(key, val))
     }
     res.writeHead(req.proxyOptions.status || proxyRes.statusCode, proxyRes.headers)
@@ -166,13 +165,14 @@ async function startProxy(settings, addonUrls, configPath, projectDir, functions
   const proxy = initializeProxy(settings.proxyPort, settings.dist, projectDir)
 
   const rewriter = await createRewriter({
-    publicFolder: settings.dist,
+    distDir: settings.dist,
     jwtRole: settings.jwtRolePath,
     configPath,
+    projectDir,
   })
 
   const server = http.createServer(function(req, res) {
-    if (isFunction(settings.functionsPort, req)) {
+    if (isFunction(settings.functionsPort, req.url)) {
       return proxy.web(req, res, { target: functionsServer })
     }
     let urlForAddons = addonUrl(addonUrls, req)
@@ -216,7 +216,7 @@ function serveRedirect(req, res, proxy, match, options) {
     Object.entries(match.proxyHeaders).forEach(([k, v]) => (req.headers[k] = v))
   }
 
-  if (isFunction(options.functionsPort, req)) {
+  if (isFunction(options.functionsPort, req.url)) {
     return proxy.web(req, res, { target: options.functionsServer })
   }
   const urlForAddons = addonUrl(options.addonUrls, req)
@@ -275,7 +275,7 @@ function serveRedirect(req, res, proxy, match, options) {
     return render404(options.publicFolder)
   }
 
-  if (match.force || (!options.serverType && notStatic(reqUrl.pathname, options.publicFolder) && match.status !== 404)) {
+  if (match.force || (notStatic(reqUrl.pathname, options.publicFolder) && match.status !== 404)) {
     const dest = new url.URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
     if (isRedirect(match)) {
       res.writeHead(match.status, {
@@ -298,10 +298,14 @@ function serveRedirect(req, res, proxy, match, options) {
 
     const urlParams = new URLSearchParams(reqUrl.searchParams)
     dest.searchParams.forEach((val, key) => urlParams.set(key, val))
-    req.url = dest.pathname + (urlParams.toString() && '?' + urlParams.toString())
-    console.log(`${NETLIFYDEVLOG} Rewrote URL to `, req.url)
+    const destURL = dest.pathname + (urlParams.toString() && '?' + urlParams.toString())
 
-    if (isFunction({ functionsPort: options.functionsPort }, req)) {
+    if (isInternal(destURL) || !options.serverType) {
+      req.url = destURL
+      console.log(`${NETLIFYDEVLOG} Rewrote URL to `, req.url)
+    }
+
+    if (isFunction(options.functionsPort, req.url)) {
       req.headers['x-netlify-original-pathname'] = reqUrl.pathname
       return proxy.web(req, res, { target: options.functionsServer })
     }
@@ -366,13 +370,9 @@ class DevCommand extends Command {
     this.log(`${NETLIFYDEV}`)
     let { flags } = this.parse(DevCommand)
     const { api, site, config } = this.netlify
-    const functionsDir =
-        flags.functions ||
-        (config.dev && config.dev.functions) ||
-        (config.build && config.build.functions) ||
-        flags.Functions ||
-        (config.dev && config.dev.Functions) ||
-        (config.build && config.build.Functions)
+    config.dev = config.dev || {}
+    const devConfig = { ...config.dev, ...flags }
+    const functionsDir = devConfig.functions || (config.build && config.build.functions)
     let addonUrls = {}
 
     let accessToken = api.accessToken
@@ -390,11 +390,7 @@ class DevCommand extends Command {
       Object.entries(vars).forEach(([key, val]) => process.env[key] = val)
     }
 
-    let settings = await serverSettings(Object.assign({}, config.dev, flags))
-
-    if (!settings.proxyPort) {
-      settings.proxyPort = config.dev && config.dev.proxyPort || 8080 // in case detector is bypassed
-    }
+    let settings = await serverSettings(devConfig)
 
     if (flags.dir || !(settings && settings.command)) {
       let dist
@@ -403,8 +399,6 @@ class DevCommand extends Command {
         dist = flags.dir
       } else {
         this.log(`${NETLIFYDEVWARN} No dev server detected, using simple static server`)
-        dist = (config.dev && config.dev.publish) ||
-            (config.build && config.build.publish && !isNetlifyDir(config.build.publish, site.root) && config.build.publish)
       }
       if (!dist) {
         this.log(`${NETLIFYDEVLOG} Using current working directory`)
@@ -424,21 +418,20 @@ class DevCommand extends Command {
         port: 8888,
         proxyPort: await getPort({ port: 3999 }),
         dist,
-        jwtRolePath: config.dev && config.dev.jwtRolePath
       }
     }
-    if (!settings.jwtRolePath) settings.jwtRolePath = 'app_metadata.authorization.roles'
 
     // Flags have highest priority, then configuration file (netlify.toml etc.) then detectors
     settings = {
       ...settings,
-      port: (flags && flags.port) || (config && config.dev && config.dev.port) || settings.port,
-      proxyPort: (flags && flags.targetPort) || (config && config.dev && config.dev.targetPort) || settings.proxyPort,
+      jwtRolePath: devConfig.jwtRolePath || settings.jwtRolePath || 'app_metadata.authorization.roles',
+      port: devConfig.port || settings.port,
+      proxyPort: devConfig.targetPort || settings.proxyPort,
       functionsPort: await getPort({ port: settings.functionsPort || 34567 }),
     }
 
     const port = await getPort({ port: settings.port })
-    if (port !== settings.port && ((flags && flags.port) || (config && config.dev && config.dev.port))) {
+    if (port !== settings.port && devConfig.port) {
       throw new Error(`Could not acquire required "port": ${settings.port}`)
     }
     settings.port = port
@@ -503,11 +496,7 @@ class DevCommand extends Command {
       }
     })
 
-    if (
-      isEmpty(config.dev) ||
-      !config.dev.hasOwnProperty('autoLaunch') ||
-      (config.dev.hasOwnProperty('autoLaunch') && config.dev.autoLaunch !== false)
-    ) {
+    if (devConfig.autoLaunch && devConfig.autoLaunch !== false) {
       try {
         await open(url)
       } catch (err) {

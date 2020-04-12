@@ -10,7 +10,8 @@ const createRewriter = require('../utils/rules-proxy')
 
 test.before(async t => {
   const rewriter = createRewriter({
-    publicFolder: sitePath,
+    distDir: sitePath,
+    projectDir: sitePath,
     configPath: path.join(sitePath, 'netlify.toml')
   })
   const port = await getPort({ port: 8888 })
