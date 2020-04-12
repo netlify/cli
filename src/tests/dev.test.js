@@ -16,30 +16,21 @@ test.before(async t => {
       shell: true,
     }
   )
-  let res, rej
-  const p = new Promise((resolve, reject) => {
-    res = resolve
-    rej = reject
+  return new Promise((resolve, reject) => {
+    ps.stdout.on('data', (data) => {
+      data = data.toString()
+      if (data.includes('Server now ready on')) {
+        const matches = data.match(/http:\/\/(.+):(\d+)/)
+
+        // If we didn't get the host and port
+        if (matches.length < 3) return reject('Unexpected output received from Dev server')
+
+        port = matches.pop()
+        host = matches.pop()
+        setTimeout(resolve, 1000)
+      }
+    })
   })
-  ps.stdout.on('data', (data) => {
-    data = data.toString()
-    if (data.includes('Server now ready on')) {
-      const matches = data.match(/http:\/\/(.+):(\d+)/)
-
-      // If we didn't get the host and port
-      if (matches.length < 3) return rej('Unexpected output received from Dev server')
-
-      port = matches.pop()
-      host = matches.pop()
-      res()
-    }
-  })
-
-  // Wait 30 seconds for the Dev server to start, otherwise timeout
-  return Promise.race([
-    p,
-    new Promise((resolve, reject) => setTimeout(() => reject('Timedout waiting for Dev server to start'), 30000))]
-  )
 })
 
 test('netlify dev functions timeout', async t => {
