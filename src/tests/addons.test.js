@@ -6,9 +6,10 @@ const exec = require('./utils/exec')
 const sitePath = path.join(__dirname, 'dummy-site')
 
 const execOptions = {
-  stdio: [0, 1, 2],
+  stdio: 'pipe',
   cwd: sitePath,
-  env: Object.assign({}, process.env)
+  env: { ...process.env },
+  shell: true,
 }
 
 const siteName =
