@@ -22,7 +22,7 @@ test.before(async t => {
   t.context.port = port
   t.context.server = server
 
-  return new Promise(resolve => server.listen(port, () => setTimeout(resolve, 2000)))
+  return new Promise(resolve => server.listen(port, () => setTimeout(resolve, process.platform === 'win32' ? 6000 : 2000)))
 })
 
 test('homepage rule', async t => {

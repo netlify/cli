@@ -27,7 +27,7 @@ test.before(async t => {
 
         port = matches.pop()
         host = matches.pop()
-        setTimeout(resolve, 1000)
+        setTimeout(resolve, process.platform === 'win32' ? 6000 : 2000)
       }
     })
   })
@@ -53,9 +53,6 @@ test('netlify dev env file overriding prod var', async t => {
 })
 
 test('netlify dev: api rewrite', async t => {
-  // Wait for the redirect rules to be parsed
-  await new Promise((resolve, reject) => setTimeout(resolve, 1000))
-
   const response = await fetch(`http://${host}:${port}/api/timeout`).then(r => r.text())
 
   t.is(response, '"ping"')
