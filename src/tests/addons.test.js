@@ -28,7 +28,7 @@ async function listAccounts() {
 }
 
 async function createSite(siteName, accountSlug) {
-  const cliResponse = await callCli(['sites:create', `--name`, siteName, `--account-slug`, accountSlug])
+  const cliResponse = await callCli(['sites:create', '--name', siteName, '--account-slug', accountSlug])
 
   const isSiteCreated = /Site Created/.test(cliResponse)
   if (!isSiteCreated) {
