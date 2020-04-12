@@ -11,8 +11,8 @@ test.before(async t => {
   console.log('Running Netlify Dev server')
   ps = await spawn(cliPath, ['dev'], {
       cwd: sitePath,
-      env: Object.assign({}, process.env, { DUMMY_VAR: "true" }),
-      detached: true,
+      env: { ...process.env, DUMMY_VAR: "true" },
+      stdio: 'pipe',
       shell: true,
     }
   )
@@ -104,5 +104,5 @@ test('netlify dev env file overriding prod var', async t => {
 })
 
 test.after('cleanup', async t => {
-  if (ps && ps.pid) ps.kill('SIGHUP')
+  if (ps && ps.pid) ps.kill(process.platform !== 'win32' ? 'SIGHUP' : undefined)
 })
