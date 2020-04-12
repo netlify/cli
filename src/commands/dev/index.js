@@ -8,6 +8,7 @@ const http = require('http')
 const httpProxy = require('http-proxy')
 const waitPort = require('wait-port')
 const getPort = require('get-port')
+const which = require('which')
 const chokidar = require('chokidar')
 const proxyMiddleware = require('http-proxy-middleware')
 const cookie = require('cookie')
@@ -320,7 +321,7 @@ function serveRedirect(req, res, proxy, match, options) {
   return proxy.web(req, res, options)
 }
 
-function startDevServer(settings, log) {
+async function startDevServer(settings, log) {
   if (settings.noCmd) {
     const StaticServer = require('static-server')
 
@@ -341,7 +342,7 @@ function startDevServer(settings, log) {
 
   log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.type}`)
   const args = settings.command === 'npm' ? ['run', ...settings.args] : settings.args
-  const ps = child_process.spawn(settings.command, args, {
+  const ps = child_process.spawn(await which(settings.command), args, {
     env: { ...settings.env, FORCE_COLOR: 'true' },
     stdio: settings.stdio || 'inherit',
     detached: true,
@@ -436,7 +437,7 @@ class DevCommand extends Command {
     }
     settings.port = port
 
-    startDevServer(settings, this.log)
+    await startDevServer(settings, this.log)
 
     // serve functions from zip-it-and-ship-it
     // env variables relies on `url`, careful moving this code
