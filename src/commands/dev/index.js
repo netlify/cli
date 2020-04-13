@@ -8,6 +8,7 @@ const http = require('http')
 const httpProxy = require('http-proxy')
 const waitPort = require('wait-port')
 const getPort = require('get-port')
+const stripAnsiCc = require('strip-ansi-control-characters')
 const which = require('which')
 const chokidar = require('chokidar')
 const proxyMiddleware = require('http-proxy-middleware')
@@ -354,8 +355,10 @@ async function startDevServer(settings, log) {
     env: { ...settings.env, FORCE_COLOR: 'true' },
     stdio: 'pipe',
   })
-  ps.stdout.pipe(process.stdout)
-  ps.stderr.pipe(process.stderr)
+
+  ps.stdout.pipe(stripAnsiCc()).pipe(process.stdout)
+  ps.stderr.pipe(stripAnsiCc()).pipe(process.stderr)
+
   process.stdin.pipe(process.stdin)
   ps.on('close', code => process.exit(code))
   ps.on('SIGINT', process.exit)
