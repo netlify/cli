@@ -190,7 +190,7 @@ async function startProxy(settings, addonUrls, configPath, projectDir, functions
         functionsServer,
         functionsPort: settings.functionsPort,
         jwtRolePath: settings.jwtRolePath,
-        serverType: settings.type,
+        serverFramework: settings.framework,
       }
 
       if (match) return serveRedirect(req, res, proxy, match, options)
@@ -301,7 +301,7 @@ function serveRedirect(req, res, proxy, match, options) {
     dest.searchParams.forEach((val, key) => urlParams.set(key, val))
     const destURL = dest.pathname + (urlParams.toString() && '?' + urlParams.toString())
 
-    if (isInternal(destURL) || !options.serverType) {
+    if (isInternal(destURL) || !options.serverFramework) {
       req.url = destURL
       console.log(`${NETLIFYDEVLOG} Rewrote URL to `, req.url)
     }
@@ -340,7 +340,7 @@ async function startDevServer(settings, log) {
     return
   }
 
-  log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.type}`)
+  log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.framework}`)
   const args = settings.command === 'npm' ? ['run', ...settings.args] : settings.args
   const commandBin = await which(settings.command)
   const ps = child_process.spawn(commandBin, args, {
@@ -494,7 +494,7 @@ class DevCommand extends Command {
       eventName: 'command',
       payload: {
         command: 'dev',
-        projectType: settings.type || 'custom',
+        projectType: settings.framework || 'custom',
         live: flags.live || false
       }
     })

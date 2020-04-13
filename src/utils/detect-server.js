@@ -124,9 +124,9 @@ function formatSettingsArrForInquirer(settingsArr) {
   settingsArr.forEach(setting => {
     setting.possibleArgsArrs.forEach(args => {
       ans.push({
-        name: `[${chalk.yellow(setting.type)}] ${setting.command} ${args.join(' ')}`,
+        name: `[${chalk.yellow(setting.framework)}] ${setting.command} ${args.join(' ')}`,
         value: { ...setting, args },
-        short: setting.type + '-' + args.join(' ')
+        short: setting.framework + '-' + args.join(' ')
       })
     })
   })
