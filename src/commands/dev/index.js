@@ -342,7 +342,8 @@ async function startDevServer(settings, log) {
 
   log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.type}`)
   const args = settings.command === 'npm' ? ['run', ...settings.args] : settings.args
-  const ps = child_process.spawn(await which(settings.command), args, {
+  const commandBin = await which(settings.command)
+  const ps = child_process.spawn(`"${commandBin}"`, args, {
     env: { ...settings.env, FORCE_COLOR: 'true' },
     stdio: settings.stdio || 'inherit',
     detached: true,
