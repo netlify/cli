@@ -6,10 +6,10 @@ const exec = require('./utils/exec')
 const sitePath = path.join(__dirname, 'dummy-site')
 
 const execOptions = {
-  stdio: 'pipe',
   cwd: sitePath,
   env: { ...process.env },
-  shell: true,
+  windowsHide: true,
+  windowsVerbatimArguments: true,
 }
 
 const siteName =
