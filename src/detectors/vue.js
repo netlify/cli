@@ -19,7 +19,7 @@ module.exports = function() {
   }
 
   return {
-    type: 'vue-cli',
+    framework: 'vue-cli',
     command: getYarnOrNPMCommand(),
     port: 8888,
     proxyPort: 8080,

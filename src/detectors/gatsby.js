@@ -17,7 +17,7 @@ module.exports = function() {
     possibleArgsArrs.push(['gatsby', 'develop'])
   }
   return {
-    type: 'gatsby',
+    framework: 'gatsby',
     command: getYarnOrNPMCommand(),
     port: 8888,
     proxyPort: 8000,

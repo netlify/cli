@@ -6,7 +6,7 @@ module.exports = function() {
   }
 
   return {
-    type: 'middleman',
+    framework: 'middleman',
     port: 8888,
     proxyPort: 4567,
     env: { ...process.env },

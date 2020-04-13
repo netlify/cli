@@ -17,7 +17,7 @@ module.exports = function() {
     possibleArgsArrs.push(['hexo', 'server'])
   }
   return {
-    type: 'hexo',
+    framework: 'hexo',
     command: getYarnOrNPMCommand(),
     port: 8888,
     proxyPort: 4000,

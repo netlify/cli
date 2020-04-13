@@ -6,7 +6,7 @@
 
 ```ts
 {
-    type: String, // e.g. gatsby, vue-cli
+    framework: String, // e.g. gatsby, vue-cli
     command: String, // e.g. yarn, npm
     port: Number, // e.g. 8888
     proxyPort: Number, // e.g. 3000
@@ -50,7 +50,7 @@ module.exports = function() {
   // });
 
   return {
-    type: 'gitbook',
+    framework: 'gitbook',
     command: getYarnOrNPMCommand(),
     port: 8888,
     proxyPort: 4000,

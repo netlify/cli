@@ -13,7 +13,7 @@ module.exports = function() {
   })
 
   return {
-    type: 'phenomic',
+    framework: 'phenomic',
     command: getYarnOrNPMCommand(),
     port: 8888,
     proxyPort: 3333,

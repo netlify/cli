@@ -12,7 +12,7 @@ module.exports = function() {
   // if (!hasRequiredDeps(["@11y/eleventy"])) return false;
 
   return {
-    type: 'eleventy',
+    framework: 'eleventy',
     port: 8888,
     proxyPort: 8080,
     env: { ...process.env },

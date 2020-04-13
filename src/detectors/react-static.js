@@ -17,7 +17,7 @@ module.exports = function() {
     possibleArgsArrs.push(['react-static', 'start'])
   }
   return {
-    type: 'react-static',
+    framework: 'react-static',
     command: getYarnOrNPMCommand(),
     port: 8888,
     proxyPort: 3000,

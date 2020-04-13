@@ -372,7 +372,7 @@ class DevCommand extends Command {
     let { flags } = this.parse(DevCommand)
     const { api, site, config } = this.netlify
     config.dev = config.dev || {}
-    const devConfig = { ...config.dev, ...flags }
+    const devConfig = { framework: '#auto', ...config.dev, ...flags }
     const functionsDir = devConfig.functions || (config.build && config.build.functions)
     let addonUrls = {}
 
@@ -393,11 +393,13 @@ class DevCommand extends Command {
 
     let settings = await serverSettings(devConfig)
 
-    if (flags.dir || !(settings && settings.command)) {
+    if (flags.dir || devConfig.framework === '#static' || !settings.framework) {
       let dist
       if (flags.dir) {
         this.log(`${NETLIFYDEVWARN} Using simple static server because --dir flag was specified`)
         dist = flags.dir
+      } else if (devConfig.framework === 'static') {
+        this.log(`${NETLIFYDEVWARN} Using simple static server because "framework" option was set to "#static" in config or flags`)
       } else {
         this.log(`${NETLIFYDEVWARN} No dev server detected, using simple static server`)
       }
@@ -556,6 +558,9 @@ DevCommand.flags = {
   live: flags.boolean({
     char: 'l',
     description: 'Start a public live session'
+  }),
+  framework: flags.string({
+    description: 'The application framework used by your project',
   })
 }
 

@@ -20,7 +20,7 @@ module.exports = function() {
   }
 
   return {
-    type: 'parcel',
+    framework: 'parcel',
     command: getYarnOrNPMCommand(),
     port: 8888,
     proxyPort: 1234,

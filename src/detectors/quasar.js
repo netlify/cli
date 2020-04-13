@@ -20,7 +20,7 @@ module.exports = function() {
   }
 
   return {
-    type: 'quasar-cli',
+    framework: 'quasar-cli',
     command: getYarnOrNPMCommand(),
     port: 8888,
     proxyPort: 8081,
