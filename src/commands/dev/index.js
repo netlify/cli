@@ -343,14 +343,12 @@ async function startDevServer(settings, log) {
   log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.type}`)
   const args = settings.command === 'npm' ? ['run', ...settings.args] : settings.args
   const commandBin = await which(settings.command)
-  const ps = child_process.spawn(`"${commandBin}"`, args, {
+  const ps = child_process.spawn(commandBin, args, {
     env: { ...settings.env, FORCE_COLOR: 'true' },
-    stdio: settings.stdio || 'inherit',
-    detached: true,
-    shell: true,
+    stdio: 'pipe',
   })
-  if (ps.stdout) ps.stdout.on('data', buff => process.stdout.write(buff.toString('utf8')))
-  if (ps.stderr) ps.stderr.on('data', buff => process.stderr.write(buff.toString('utf8')))
+  ps.stdout.pipe(process.stdout)
+  ps.stderr.pipe(process.stderr)
   ps.on('close', code => process.exit(code))
   ps.on('SIGINT', process.exit)
   ps.on('SIGTERM', process.exit);
