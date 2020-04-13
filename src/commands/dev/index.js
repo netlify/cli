@@ -356,7 +356,9 @@ async function startDevServer(settings, log) {
   ['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach(signal => process.on(signal, () => {
       try {
         process.kill(-ps.pid)
-      } catch (err) {}
+      } catch (err) {
+        // Ignore
+      }
       process.exit()
     }))
 
