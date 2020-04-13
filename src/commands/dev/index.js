@@ -349,6 +349,7 @@ async function startDevServer(settings, log) {
   })
   ps.stdout.pipe(process.stdout)
   ps.stderr.pipe(process.stderr)
+  process.stdin.pipe(process.stdin)
   ps.on('close', code => process.exit(code))
   ps.on('SIGINT', process.exit)
   ps.on('SIGTERM', process.exit);
