@@ -6,7 +6,7 @@ const fuzzy = require('fuzzy')
 const fs = require('fs')
 
 module.exports.serverSettings = async devConfig => {
-  let settings = {}
+  let settings = { env: { ...process.env } }
   const detectorsFiles = fs
     .readdirSync(path.join(__dirname, '..', 'detectors'))
     .filter(x => x.endsWith('.js')) // only accept .js detector files
