@@ -1,4 +1,5 @@
 const url = require('url')
+const util = require('util')
 const { URLSearchParams } = require('url')
 const path = require('path')
 const fs = require('fs')
@@ -34,6 +35,8 @@ const createRewriter = require('../../utils/rules-proxy')
 const { onChanges } = require('../../utils/rules-proxy')
 const { parseHeadersFile, objectForPath } = require('../../utils/headers')
 
+const stat = util.promisify(fs.stat)
+
 function isInternal(url) {
   return url.startsWith('/.netlify/')
 }
@@ -47,10 +50,18 @@ function addonUrl(addonUrls, req) {
   return addonUrl ? `${addonUrl}${m[2]}` : null
 }
 
-function notStatic(pathname, publicFolder) {
-  return alternativePathsFor(pathname)
-    .map(p => path.resolve(publicFolder, p.substr(1)))
-    .every(p => !fs.existsSync(p))
+async function isStatic(pathname, publicFolder) {
+  const alternatives = alternativePathsFor(pathname).map(p => path.resolve(publicFolder, p.substr(1)))
+
+  for (const p in alternatives) {
+    try {
+      const pathStats = await stat(p)
+      if (pathStats.isFile()) return true
+    } catch(err) {
+      // Ignore
+    }
+  }
+  return false
 }
 
 function isExternal(match) {
@@ -207,7 +218,7 @@ async function startProxy(settings, addonUrls, configPath, projectDir, functions
   return { url: `http://localhost:${settings.port}`, port: settings.port }
 }
 
-function serveRedirect(req, res, proxy, match, options) {
+async function serveRedirect(req, res, proxy, match, options) {
   if (!match) return proxy.web(req, res, options)
 
   options = options || req.proxyOptions || {}
@@ -276,7 +287,7 @@ function serveRedirect(req, res, proxy, match, options) {
     return render404(options.publicFolder)
   }
 
-  if (match.force || ((notStatic(reqUrl.pathname, options.publicFolder) || options.serverType) && match.status !== 404)) {
+  if (match.force || ((!(await isStatic(reqUrl.pathname, options.publicFolder)) || options.serverType) && match.status !== 404)) {
     const dest = new url.URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
     if (isRedirect(match)) {
       res.writeHead(match.status, {
