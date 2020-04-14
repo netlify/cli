@@ -190,7 +190,7 @@ async function startProxy(settings, addonUrls, configPath, projectDir, functions
         functionsServer,
         functionsPort: settings.functionsPort,
         jwtRolePath: settings.jwtRolePath,
-        serverFramework: settings.framework,
+        framework: settings.framework,
       }
 
       if (match) return serveRedirect(req, res, proxy, match, options)
@@ -276,7 +276,7 @@ function serveRedirect(req, res, proxy, match, options) {
     return render404(options.publicFolder)
   }
 
-  if (match.force || ((notStatic(reqUrl.pathname, options.publicFolder) || options.serverFramework) && match.status !== 404)) {
+  if (match.force || ((notStatic(reqUrl.pathname, options.publicFolder) || options.framework) && match.status !== 404)) {
     const dest = new url.URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
     if (isRedirect(match)) {
       res.writeHead(match.status, {
@@ -302,7 +302,7 @@ function serveRedirect(req, res, proxy, match, options) {
     const destURL = dest.pathname + (urlParams.toString() && '?' + urlParams.toString())
 
     let status
-    if (isInternal(destURL) || !options.serverFramework) {
+    if (isInternal(destURL) || !options.framework) {
       req.url = destURL
       status = match.status
       console.log(`${NETLIFYDEVLOG} Rewrote URL to `, req.url)
