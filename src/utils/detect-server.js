@@ -11,7 +11,7 @@ module.exports.serverSettings = async devConfig => {
     .readdirSync(path.join(__dirname, '..', 'detectors'))
     .filter(x => x.endsWith('.js')) // only accept .js detector files
 
-  if (typeof devConfig.framework !== 'string') throw new Error('Invalid "framework" option provided in config or flags')
+  if (typeof devConfig.framework !== 'string') throw new Error('Invalid "framework" option provided in config')
 
   if (devConfig.framework === '#auto') {
     let settingsArr = []
@@ -54,7 +54,7 @@ module.exports.serverSettings = async devConfig => {
     // Do nothing
   } else {
     const detectorName = detectorsFiles.find(dt => `${dt}.js` === devConfig.framework)
-    if (!detectorName) throw new Error('Unsupported value provided for "framework" option in config or flags')
+    if (!detectorName) throw new Error('Unsupported value provided for "framework" option in config')
 
     const detector = loadDetector(detectorName)
     const detectorResult = detector()

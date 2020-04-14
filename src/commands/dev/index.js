@@ -399,7 +399,7 @@ class DevCommand extends Command {
         this.log(`${NETLIFYDEVWARN} Using simple static server because --dir flag was specified`)
         dist = flags.dir
       } else if (devConfig.framework === 'static') {
-        this.log(`${NETLIFYDEVWARN} Using simple static server because "framework" option was set to "#static" in config or flags`)
+        this.log(`${NETLIFYDEVWARN} Using simple static server because "framework" option was set to "#static" in config`)
       } else {
         this.log(`${NETLIFYDEVWARN} No dev server detected, using simple static server`)
       }
@@ -559,9 +559,6 @@ DevCommand.flags = {
     char: 'l',
     description: 'Start a public live session'
   }),
-  framework: flags.string({
-    description: 'The application framework used by your project',
-  })
 }
 
 module.exports = DevCommand
