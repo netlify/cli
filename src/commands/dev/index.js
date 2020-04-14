@@ -276,7 +276,7 @@ function serveRedirect(req, res, proxy, match, options) {
     return render404(options.publicFolder)
   }
 
-  if (match.force || (notStatic(reqUrl.pathname, options.publicFolder) && match.status !== 404)) {
+  if (match.force || ((notStatic(reqUrl.pathname, options.publicFolder) || options.serverFramework) && match.status !== 404)) {
     const dest = new url.URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
     if (isRedirect(match)) {
       res.writeHead(match.status, {
@@ -301,8 +301,10 @@ function serveRedirect(req, res, proxy, match, options) {
     dest.searchParams.forEach((val, key) => urlParams.set(key, val))
     const destURL = dest.pathname + (urlParams.toString() && '?' + urlParams.toString())
 
+    let status
     if (isInternal(destURL) || !options.serverFramework) {
       req.url = destURL
+      status = match.status
       console.log(`${NETLIFYDEVLOG} Rewrote URL to `, req.url)
     }
 
@@ -315,7 +317,7 @@ function serveRedirect(req, res, proxy, match, options) {
       return proxy.web(req, res, { target: urlForAddons })
     }
 
-    return proxy.web(req, res, Object.assign({}, options, { status: match.status }))
+    return proxy.web(req, res, { ...options, status, })
   }
 
   return proxy.web(req, res, options)
@@ -342,7 +344,12 @@ async function startDevServer(settings, log) {
 
   log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.framework}`)
   const args = settings.command === 'npm' ? ['run', ...settings.args] : settings.args
-  const commandBin = await which(settings.command)
+  const commandBin = await which(settings.command).catch(err => {
+    if (err.code === 'ENOENT') {
+      throw new Error(`"${settings.command}" could not be found in your PATH. Please make sure that "${settings.command}" is installed and available in your PATH`)
+    }
+    throw err
+  })
   const ps = child_process.spawn(commandBin, args, {
     env: { ...settings.env, FORCE_COLOR: 'true' },
     stdio: 'pipe',
