@@ -7,7 +7,7 @@ module.exports = function() {
   // REQUIRED FILES
   if (
     !hasRequiredFiles(['package.json', '.eleventy.js']) &&
-    !hasRequiredDeps(["@11ty/eleventy"])
+    !(hasRequiredFiles(['package.json']) && hasRequiredDeps(["@11ty/eleventy"]))
   ) return false
 
   return {
