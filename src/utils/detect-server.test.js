@@ -34,7 +34,7 @@ test('serverSettings: "command" override npm', async t => {
   const settings = await serverSettings(devConfig)
   t.is(settings.framework, undefined)
   t.is(settings.command, devConfig.command.split(' ')[0])
-  t.deepEqual(settings.args, devConfig.command.split(' ').slice(2))
+  t.deepEqual(settings.args, devConfig.command.split(' ').slice(1))
   t.deepEqual(settings.env, env)
 })
 

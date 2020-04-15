@@ -67,7 +67,6 @@ module.exports.serverSettings = async devConfig => {
   if (devConfig.command) {
     settings.command = assignLoudly(devConfig.command.split(/\s/)[0], settings.command || null, tellUser('command')) // if settings.command is empty, its bc no settings matched
     let devConfigArgs = devConfig.command.split(/\s/).slice(1)
-    if (devConfigArgs[0] === 'run') devConfigArgs = devConfigArgs.slice(1)
     settings.args = assignLoudly(devConfigArgs, settings.command || null, tellUser('command')) // if settings.command is empty, its bc no settings matched
   }
   if (devConfig.port) settings.port = devConfig.port

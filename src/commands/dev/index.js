@@ -354,14 +354,13 @@ async function startDevServer(settings, log) {
   }
 
   log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.framework}`)
-  const args = settings.command === 'npm' ? ['run', ...settings.args] : settings.args
   const commandBin = await which(settings.command).catch(err => {
     if (err.code === 'ENOENT') {
       throw new Error(`"${settings.command}" could not be found in your PATH. Please make sure that "${settings.command}" is installed and available in your PATH`)
     }
     throw err
   })
-  const ps = child_process.spawn(commandBin, args, {
+  const ps = child_process.spawn(commandBin, settings.args, {
     env: { ...settings.env, FORCE_COLOR: 'true' },
     stdio: 'pipe',
   })
