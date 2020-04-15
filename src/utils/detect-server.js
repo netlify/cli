@@ -28,7 +28,8 @@ module.exports.serverSettings = async devConfig => {
       if (detectorResult) settingsArr.push(detectorResult)
     }
     if (settingsArr.length === 1) {
-      settings.args = chooseDefaultArgs(settingsArr[0])
+      settings = settingsArr[0]
+      settings.args = chooseDefaultArgs(settings.possibleArgsArrs)
     } else if (settingsArr.length > 1) {
       /** multiple matching detectors, make the user choose */
       // lazy loading on purpose
