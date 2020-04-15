@@ -117,11 +117,12 @@ Netlify Dev is meant to work with zero config for the majority of users, by usin
   publish = "dist" # If you use a _redirect file, provide the path to your static content folder
   jwtRolePath = "app_metadata.authorization.roles" # Object path we should look for role values for JWT based redirects
   autoLaunch = true # a Boolean value that determines if Netlify Dev launches the local server address in your browser
+  framework = "#auto" # a String value that determines which framework detector is tested and used against your project
 ```
 
 ## Project detection
 
-Netlify Dev will attempt to detect the SSG or build command that you are using, and run these on your behalf, while adding other development utilities. If you have a JavaScript project, it looks for the best `package.json` script to run for you, using simple heuristics, so you can use the full flexibility of npm scripts. We may add more intelligence to this in future.
+Netlify Dev will attempt to detect the SSG or build command that you are using, and run these on your behalf, while adding other development utilities. If you have a JavaScript project, it looks for the best `package.json` script to run for you, using simple heuristics, so you can use the full flexibility of npm scripts. We may add more intelligence to this in the future.
 
 **Overriding the detectors**: The number of [project types which Netlify Dev can detect](https://github.com/netlify/cli/tree/master/src/detectors) is growing, but if yours is not yet supported (contributions welcome!), you can instruct Netlify Dev to run the project on your behalf by declaring it in a `[dev]` block of your `netlify.toml` file.
 
@@ -133,6 +134,15 @@ Netlify Dev will attempt to detect the SSG or build command that you are using, 
   port = 3000 # Port that the dev server will be listening on
   publish = "dist" # If you use a _redirect file, provide the path to your static content folder
 ```
+
+Or you if your project is being detected incorrectly or positive by multiple
+detectors you can specify `framework` option to test only one detector
+against your project. The `framework` option should be one of available
+[project types which Netlify Dev can detect](https://github.com/netlify/cli/tree/master/src/detectors). 
+```toml
+[dev]
+  framework = "create-react-app" # or "#static" to force a static server
+``` 
 
 ## Explanation of ports in Netlify Dev
 
