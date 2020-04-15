@@ -9,7 +9,7 @@ const sitePath = path.join(__dirname, 'dummy-site')
 const createRewriter = require('../utils/rules-proxy')
 
 test.before(async t => {
-  const rewriter = createRewriter({
+  const rewriter = await createRewriter({
     distDir: sitePath,
     projectDir: sitePath,
     configPath: path.join(sitePath, 'netlify.toml')

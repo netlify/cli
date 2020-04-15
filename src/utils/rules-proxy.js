@@ -55,7 +55,7 @@ function getCountry(req) {
   return 'us'
 }
 
-module.exports = function createRewriter({ distDir, projectDir, jwtSecret, jwtRole, configPath }) {
+module.exports = async function createRewriter({ distDir, projectDir, jwtSecret, jwtRole, configPath }) {
   let matcher = null
   const configFiles = Array.from(
     new Set(
@@ -66,7 +66,7 @@ module.exports = function createRewriter({ distDir, projectDir, jwtSecret, jwtRo
         .concat(configPath ? path.resolve(configPath) : [])
     )
   ).filter(f => f !== projectDir && fs.existsSync(f))
-  let rules = []
+  let rules = await parseRules(configFiles)
 
   onChanges(configFiles, async () => {
     console.log(`${NETLIFYDEVLOG} Reloading redirect rules from`, configFiles.map(p => path.relative(projectDir, p)))
