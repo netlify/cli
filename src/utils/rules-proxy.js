@@ -64,7 +64,7 @@ module.exports = async function createRewriter({ distDir, projectDir, jwtSecret,
       ]
         .concat(configPath ? path.resolve(configPath) : [])
     )
-  ).filter(f => f !== projectDir && fs.existsSync(f))
+  ).filter(f => f !== projectDir)
   let rules = await parseRules(configFiles)
 
   onChanges(configFiles, async () => {
