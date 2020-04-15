@@ -137,7 +137,7 @@ Netlify Dev will attempt to detect the SSG or build command that you are using, 
 
 Or you if your project is being detected incorrectly or positive by multiple
 detectors you can specify `framework` option to test only one detector
-against your project. The `framework` option should be one of available
+against your project. The `framework` option should be one of the available
 [project types which Netlify Dev can detect](https://github.com/netlify/cli/tree/master/src/detectors). 
 ```toml
 [dev]
