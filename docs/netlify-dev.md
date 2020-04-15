@@ -134,14 +134,18 @@ Netlify Dev will attempt to detect the SSG or build command that you are using, 
   publish = "dist" # If you use a _redirect file, provide the path to your static content folder
 ```
 
+
 Or you if your project is being detected incorrectly or positive by multiple
 detectors you can specify `framework` option to test only one detector
-against your project. The `framework` option should be one of the available
-[project types which Netlify Dev can detect](https://github.com/netlify/cli/tree/master/src/detectors). 
+against your project. 
 ```toml
 [dev]
   framework = "create-react-app" # or "#static" to force a static server
 ``` 
+ The `framework` option should be one of the available
+[project types which Netlify Dev can detect](https://github.com/netlify/cli/tree/master/src/detectors)
+or `#auto` (default) to test all available detectors or `#staic` for a static
+file server.
 
 ## Explanation of ports in Netlify Dev
 
