@@ -28,12 +28,23 @@ test('serverSettings: "#static" as "framework', async t => {
   t.is(settings.framework, '#static')
 })
 
-test('serverSettings: "command" override', async t => {
+test('serverSettings: "command" override npm', async t => {
   const env = { ...process.env }
   const devConfig = { framework: '#auto', command: 'npm run dev' }
   const settings = await serverSettings(devConfig)
   t.is(settings.framework, undefined)
-  t.is(settings.command, devConfig.command)
+  t.is(settings.command, devConfig.command.split(' ')[0])
+  t.deepEqual(settings.args, devConfig.command.split(' ').slice(2))
+  t.deepEqual(settings.env, env)
+})
+
+test('serverSettings: "command" override yarn', async t => {
+  const env = { ...process.env }
+  const devConfig = { framework: '#auto', command: 'yarn dev' }
+  const settings = await serverSettings(devConfig)
+  t.is(settings.framework, undefined)
+  t.is(settings.command, devConfig.command.split(' ')[0])
+  t.deepEqual(settings.args, devConfig.command.split(' ').slice(1))
   t.deepEqual(settings.env, env)
 })
 
