@@ -68,7 +68,7 @@ module.exports = async function createRewriter({ distDir, projectDir, jwtSecret,
   let rules = await parseRules(configFiles)
 
   onChanges(configFiles, async () => {
-    console.log(`${NETLIFYDEVLOG} Reloading redirect rules from`, configFiles.map(p => path.relative(projectDir, p)))
+    console.log(`${NETLIFYDEVLOG} Reloading redirect rules from`, configFiles.filter(fs.existsSync).map(p => path.relative(projectDir, p)))
     rules = await parseRules(configFiles)
     matcher = null
   })
