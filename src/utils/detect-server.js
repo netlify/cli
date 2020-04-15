@@ -93,6 +93,7 @@ function loadDetector(detectorName) {
     throw new Error(`Failed to load detector: ${chalk.yellow(detectorName)}, this is likely a bug in the detector, please file an issue in netlify-cli\n ${err}`)
   }
 }
+module.exports.loadDetector = loadDetector
 
 function chooseDefaultArgs(possibleArgsArrs) {
   // vast majority of projects will only have one matching detector
@@ -107,6 +108,7 @@ function chooseDefaultArgs(possibleArgsArrs) {
 
   return args
 }
+module.exports.chooseDefaultArgs = chooseDefaultArgs
 
 /** utilities for the inquirer section above */
 function filterSettings(scriptInquirerOptions, input) {
