@@ -1,0 +1,5 @@
+[build]
+command = "echo testCommand"
+
+[context.staging]
+command = "echo testStaging"
