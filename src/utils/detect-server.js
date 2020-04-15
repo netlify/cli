@@ -28,7 +28,7 @@ module.exports.serverSettings = async devConfig => {
       if (detectorResult) settingsArr.push(detectorResult)
     }
     if (settingsArr.length === 1) {
-      settings = chooseDefaultSettings(settingsArr[0])
+      settings.args = chooseDefaultArgs(settingsArr[0])
     } else if (settingsArr.length > 1) {
       /** multiple matching detectors, make the user choose */
       // lazy loading on purpose
@@ -60,7 +60,7 @@ module.exports.serverSettings = async devConfig => {
     const detectorResult = detector()
     if (!detectorResult) throw new Error(`Specified "framework" detector "${devConfig.framework}" did not pass requirements for your project`)
 
-    settings = chooseDefaultSettings(detectorResult)
+    settings.args = chooseDefaultArgs(detectorResult.possibleArgsArrs)
   }
 
   if (devConfig.command) {
@@ -94,21 +94,18 @@ function loadDetector(detectorName) {
   }
 }
 
-function chooseDefaultSettings(settings) {
+function chooseDefaultArgs(possibleArgsArrs) {
   // vast majority of projects will only have one matching detector
-  settings.args = settings.possibleArgsArrs[0] // just pick the first one
-  if (!settings.args) {
+  const args = possibleArgsArrs[0] // just pick the first one
+  if (!args) {
     const { scripts } = JSON.parse(fs.readFileSync('package.json', { encoding: 'utf8' }))
-    // eslint-disable-next-line no-console
-    console.error(
-        'empty args assigned, this is an internal Netlify Dev bug, please report your settings and scripts so we can improve',
-        { scripts, settings }
-    )
-    // eslint-disable-next-line no-process-exit
-    process.exit(1)
+    const err = new Error('Empty args assigned, this is an internal Netlify Dev bug, please report your settings and scripts so we can improve')
+    err.scripts = scripts
+    err.possibleArgsArrs = possibleArgsArrs
+    throw err
   }
 
-  return settings
+  return args
 }
 
 /** utilities for the inquirer section above */
