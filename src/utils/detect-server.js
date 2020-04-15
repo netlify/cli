@@ -51,7 +51,7 @@ module.exports.serverSettings = async devConfig => {
       console.log(`Add "framework" = "${chosenSetting.framework}" to [dev] section of your netlify.toml to avoid this selection prompt next time`)
     }
   } else if (devConfig.framework === '#static') {
-    // Do nothing
+    settings.framework = devConfig.framework
   } else {
     const detectorName = detectorsFiles.find(dt => `${dt}.js` === devConfig.framework)
     if (!detectorName) throw new Error('Unsupported value provided for "framework" option in config')
