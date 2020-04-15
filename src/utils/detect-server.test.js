@@ -6,7 +6,7 @@ const sitePath = path.join(__dirname, '..', 'tests', 'dummy-site')
 process.chdir(sitePath)
 
 test('loadDetector: valid', t => {
-  const d = loadDetector('cra.js')
+  const d = loadDetector('create-react-app.js')
   t.is(typeof d, 'function')
 })
 
