@@ -48,7 +48,7 @@ module.exports.serverSettings = async devConfig => {
       })
       settings = chosenSetting // finally! we have a selected option
 
-      console.log(`Add "framework" = "${chosenSetting.framework}" to [dev] section of your netlify.toml to avoid this selection prompt next time`)
+      console.log(`Add \`framework = "${chosenSetting.framework}"\` to [dev] section of your netlify.toml to avoid this selection prompt next time`)
     }
   } else if (devConfig.framework === '#static') {
     settings.framework = devConfig.framework
