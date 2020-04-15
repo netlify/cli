@@ -39,7 +39,6 @@ function onChanges(files, cb) {
   files.forEach(file => {
     const watcher = chokidar.watch(file)
     watcher.on('change', cb)
-    watcher.on('add', cb)
     watcher.on('unlink', cb)
   })
 }
