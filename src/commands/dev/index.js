@@ -116,9 +116,9 @@ function initializeProxy(port, distDir, projectDir) {
     path.resolve(distDir, '_headers'),
   ]))
 
-  let headerRules = {}
+  let headerRules = headersFiles.reduce((prev, curr) => Object.assign(prev, parseHeadersFile(curr)), {})
   onChanges(headersFiles, () => {
-    console.log(`${NETLIFYDEVLOG} Reloading headers files`, headersFiles.map(p => path.relative(projectDir, p)))
+    console.log(`${NETLIFYDEVLOG} Reloading headers files`, headersFiles.filter(fs.existsSync).map(p => path.relative(projectDir, p)))
     headerRules = headersFiles.reduce((prev, curr) => Object.assign(prev, parseHeadersFile(curr)), {})
   })
 
