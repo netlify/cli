@@ -18,20 +18,20 @@ test('loadDetector: invalid', t => {
 
 test('serverSettings: minimal config', async t => {
   const env = { ...process.env }
-  const settings = await serverSettings({ framework: '#auto' })
+  const settings = await serverSettings({ framework: '#auto' }, {}, () => {})
   t.deepEqual(settings.env, env)
   t.is(settings.framework, undefined)
 })
 
 test('serverSettings: "#static" as "framework', async t => {
-  const settings = await serverSettings({ framework: '#static' })
-  t.is(settings.framework, '#static')
+  const settings = await serverSettings({ framework: '#static' }, {}, () => {})
+  t.is(settings.framework, undefined)
 })
 
 test('serverSettings: "command" override npm', async t => {
   const env = { ...process.env }
   const devConfig = { framework: '#auto', command: 'npm run dev' }
-  const settings = await serverSettings(devConfig)
+  const settings = await serverSettings(devConfig, {}, () => {})
   t.is(settings.framework, undefined)
   t.is(settings.command, devConfig.command.split(' ')[0])
   t.deepEqual(settings.args, devConfig.command.split(' ').slice(1))
@@ -41,11 +41,24 @@ test('serverSettings: "command" override npm', async t => {
 test('serverSettings: "command" override yarn', async t => {
   const env = { ...process.env }
   const devConfig = { framework: '#auto', command: 'yarn dev' }
-  const settings = await serverSettings(devConfig)
+  const settings = await serverSettings(devConfig, {}, () => {})
   t.is(settings.framework, undefined)
   t.is(settings.command, devConfig.command.split(' ')[0])
   t.deepEqual(settings.args, devConfig.command.split(' ').slice(1))
   t.deepEqual(settings.env, env)
+})
+
+test('serverSettings: custom framework parameters', async t => {
+  const env = { ...process.env }
+  const devConfig = { framework: '#auto', command: 'yarn dev', port: 8888, targetPort: 3000, publish: sitePath }
+  const settings = await serverSettings(devConfig, {}, () => {})
+  t.is(settings.framework, undefined)
+  t.is(settings.command, devConfig.command.split(' ')[0])
+  t.deepEqual(settings.args, devConfig.command.split(' ').slice(1))
+  t.deepEqual(settings.env, env)
+  t.deepEqual(settings.port, devConfig.port)
+  t.deepEqual(settings.targetPort, devConfig.proxyPort)
+  t.deepEqual(settings.dist, devConfig.publish)
 })
 
 test('chooseDefaultArgs', t => {
