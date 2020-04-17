@@ -61,6 +61,12 @@ test('serverSettings: custom framework parameters', async t => {
   t.is(settings.dist, devConfig.publish)
 })
 
+test('serverSettings: "functions" config', async t => {
+  const devConfig = { framework: '#auto', functions: path.join(sitePath, 'functions') }
+  const settings = await serverSettings(devConfig, {}, () => {})
+  t.is(settings.functions, devConfig.functions)
+})
+
 test('chooseDefaultArgs', t => {
   const possibleArgsArrs = [['run', 'dev'], ['run develop']]
   const args = chooseDefaultArgs(possibleArgsArrs)
