@@ -415,7 +415,7 @@ class DevCommand extends Command {
       if (flags.dir) {
         this.log(`${NETLIFYDEVWARN} Using simple static server because --dir flag was specified`)
         dist = flags.dir
-      } else if (devConfig.framework === 'static') {
+      } else if (devConfig.framework === '#static') {
         this.log(`${NETLIFYDEVWARN} Using simple static server because "framework" option was set to "#static" in config`)
       } else {
         this.log(`${NETLIFYDEVWARN} No dev server detected, using simple static server`)
