@@ -50,7 +50,7 @@ test('serverSettings: "command" override yarn', async t => {
 
 test('serverSettings: custom framework parameters', async t => {
   const env = { ...process.env }
-  const devConfig = { framework: '#auto', command: 'yarn dev', port: 8888, targetPort: 3000, publish: sitePath }
+  const devConfig = { framework: '#auto', command: 'yarn dev', port: 8987, targetPort: 3000, publish: sitePath }
   const settings = await serverSettings(devConfig, {}, () => {})
   t.is(settings.framework, undefined)
   t.is(settings.command, devConfig.command.split(' ')[0])
