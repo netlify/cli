@@ -82,6 +82,9 @@ module.exports.serverSettings = async devConfig => {
     }
     if (devConfig.port) settings.port = devConfig.port
     if (devConfig.targetPort) {
+      if (devConfig.targetPort === devConfig.port) {
+        throw new Error('"port" and "targetPort" options cannot have same values. Please consult the documentation for more details: https://cli.netlify.com/netlify-dev#netlifytoml-dev-block')
+      }
       settings.proxyPort = devConfig.targetPort
       settings.urlRegexp = devConfig.urlRegexp || new RegExp(`(http://)([^:]+:)${devConfig.targetPort}(/)?`, 'g')
     }
