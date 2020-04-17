@@ -408,52 +408,7 @@ class DevCommand extends Command {
       Object.entries(vars).forEach(([key, val]) => process.env[key] = val)
     }
 
-    let settings = await serverSettings(devConfig)
-
-    if (flags.dir || devConfig.framework === '#static' || (!settings.framework && !settings.proxyPort)) {
-      let dist = settings.dist
-      if (flags.dir) {
-        this.log(`${NETLIFYDEVWARN} Using simple static server because --dir flag was specified`)
-      } else if (devConfig.framework === '#static') {
-        this.log(`${NETLIFYDEVWARN} Using simple static server because "framework" option was set to "#static" in config`)
-      } else {
-        this.log(`${NETLIFYDEVWARN} No app server detected, using simple static server`)
-      }
-      if (!dist) {
-        this.log(`${NETLIFYDEVLOG} Using current working directory`)
-        this.log(`${NETLIFYDEVWARN} Unable to determine public folder to serve files from.`)
-        this.log(
-            `${NETLIFYDEVWARN} Setup a netlify.toml file with a [dev] section to specify your dev server settings.`
-        )
-        this.log(
-            `${NETLIFYDEVWARN} See docs at: https://cli.netlify.com/netlify-dev#project-detection`
-        )
-        this.log(`${NETLIFYDEVWARN} Using current working directory for now...`)
-        dist = process.cwd()
-      }
-      settings = {
-        env: { ...process.env },
-        noCmd: true,
-        port: 8888,
-        proxyPort: await getPort({ port: 3999 }),
-        dist,
-      }
-    }
-
-    // Flags have highest priority, then configuration file (netlify.toml etc.) then detectors
-    settings = {
-      ...settings,
-      jwtRolePath: devConfig.jwtRolePath || settings.jwtRolePath || 'app_metadata.authorization.roles',
-      port: devConfig.port || settings.port,
-      proxyPort: devConfig.targetPort || settings.proxyPort,
-      functionsPort: await getPort({ port: settings.functionsPort || 34567 }),
-    }
-
-    const port = await getPort({ port: settings.port })
-    if (port !== settings.port && devConfig.port) {
-      throw new Error(`Could not acquire required "port": ${settings.port}`)
-    }
-    settings.port = port
+    let settings = await serverSettings(devConfig, flags, this.log)
 
     await startDevServer(settings, this.log)
 

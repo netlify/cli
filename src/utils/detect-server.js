@@ -1,11 +1,12 @@
 const path = require('path')
 const chalk = require('chalk')
-const { NETLIFYDEVLOG } = require('./logo')
+const getPort = require('get-port')
+const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./logo')
 const inquirer = require('inquirer')
 const fuzzy = require('fuzzy')
 const fs = require('fs')
 
-module.exports.serverSettings = async devConfig => {
+module.exports.serverSettings = async (devConfig, flags, log) => {
   let settings = { env: { ...process.env } }
   const detectorsFiles = fs
     .readdirSync(path.join(__dirname, '..', 'detectors'))
@@ -69,12 +70,51 @@ module.exports.serverSettings = async devConfig => {
     let devConfigArgs = devConfig.command.split(/\s/).slice(1)
     settings.args = assignLoudly(devConfigArgs, settings.command || null, tellUser('command')) // if settings.command is empty, its bc no settings matched
   }
-  if (devConfig.port) settings.port = devConfig.port
+
+  settings.port = devConfig.port || settings.port
   if (devConfig.targetPort) {
     settings.proxyPort = devConfig.targetPort
     settings.urlRegexp = devConfig.urlRegexp || new RegExp(`(http://)([^:]+:)${devConfig.targetPort}(/)?`, 'g')
   }
   settings.dist = devConfig.publish || settings.dist // dont loudassign if they dont need it
+  settings.jwtRolePath = devConfig.jwtRolePath || 'app_metadata.authorization.roles'
+  settings.functionsPort = await getPort({ port: settings.functionsPort || 34567 })
+
+  if (flags.dir || devConfig.framework === '#static' || (!settings.framework && !settings.proxyPort)) {
+    let dist = settings.dist
+    if (flags.dir) {
+      log(`${NETLIFYDEVWARN} Using simple static server because --dir flag was specified`)
+    } else if (devConfig.framework === '#static') {
+      log(`${NETLIFYDEVWARN} Using simple static server because "framework" option was set to "#static" in config`)
+    } else {
+      log(`${NETLIFYDEVWARN} No app server detected, using simple static server`)
+    }
+    if (!dist) {
+      log(`${NETLIFYDEVLOG} Using current working directory`)
+      log(`${NETLIFYDEVWARN} Unable to determine public folder to serve files from.`)
+      log(
+        `${NETLIFYDEVWARN} Setup a netlify.toml file with a [dev] section to specify your dev server settings.`
+      )
+      log(
+        `${NETLIFYDEVWARN} See docs at: https://cli.netlify.com/netlify-dev#project-detection`
+      )
+      log(`${NETLIFYDEVWARN} Using current working directory for now...`)
+      dist = process.cwd()
+    }
+    settings = {
+      env: { ...process.env },
+      port: 8888,
+      proxyPort: await getPort({ port: 3999 }),
+      dist,
+      ...(settings.command ? { command: settings.command, args: settings.args } : { noCmd: true })
+    }
+  }
+
+  const port = await getPort({ port: settings.port })
+  if (port !== settings.port && devConfig.port) {
+    throw new Error(`Could not acquire required "port": ${settings.port}`)
+  }
+  settings.port = port
 
   return settings
 }
