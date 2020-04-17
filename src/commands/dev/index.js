@@ -427,7 +427,7 @@ class DevCommand extends Command {
             `${NETLIFYDEVWARN} Setup a netlify.toml file with a [dev] section to specify your dev server settings.`
         )
         this.log(
-            `${NETLIFYDEVWARN} See docs at: https://github.com/netlify/cli/blob/master/docs/netlify-dev.md#project-detection`
+            `${NETLIFYDEVWARN} See docs at: https://cli.netlify.com/netlify-dev#project-detection`
         )
         this.log(`${NETLIFYDEVWARN} Using current working directory for now...`)
         dist = process.cwd()
