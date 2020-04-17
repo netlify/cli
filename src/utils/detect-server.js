@@ -87,6 +87,8 @@ module.exports.serverSettings = async devConfig => {
       }
       settings.proxyPort = devConfig.targetPort
       settings.urlRegexp = devConfig.urlRegexp || new RegExp(`(http://)([^:]+:)${devConfig.targetPort}(/)?`, 'g')
+    } else if (devConfig.port && devConfig.port === settings.proxyPort) {
+      throw new Error('The "port" option you specified conflicts with the port of your application. Please use a different value for "port"')
     }
     settings.dist = devConfig.publish || settings.dist // dont loudassign if they dont need it
   }
