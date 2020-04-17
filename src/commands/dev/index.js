@@ -390,9 +390,9 @@ class DevCommand extends Command {
     this.log(`${NETLIFYDEV}`)
     let { flags } = this.parse(DevCommand)
     const { api, site, config } = this.netlify
-    config.dev = config.dev || {}
-    const devConfig = { framework: '#auto', ...config.dev, ...flags }
-    const functionsDir = devConfig.functions || (config.build && config.build.functions)
+    config.dev = { ...config.dev }
+    config.build = { ...config.build }
+    const devConfig = { framework: '#auto', ...(config.build.functions && { functions: config.build.functions }), ...config.dev, ...flags }
     let addonUrls = {}
 
     let accessToken = api.accessToken
@@ -416,7 +416,7 @@ class DevCommand extends Command {
 
     // serve functions from zip-it-and-ship-it
     // env variables relies on `url`, careful moving this code
-    if (functionsDir) {
+    if (settings.functions) {
       const functionBuilder = await detectFunctionsBuilder(settings)
       if (functionBuilder) {
         this.log(
@@ -434,10 +434,7 @@ class DevCommand extends Command {
         functionWatcher.on('unlink', functionBuilder.build)
       }
 
-      const functionsServer = await serveFunctions({
-        ...settings,
-        functionsDir
-      })
+      const functionsServer = await serveFunctions(settings.functions)
       functionsServer.listen(settings.functionsPort, function(err) {
         if (err) {
           console.error(`${NETLIFYDEVERR} Unable to start lambda server: `, err) // eslint-disable-line no-console
@@ -449,7 +446,7 @@ class DevCommand extends Command {
       })
     }
 
-    let { url, proxyPortUsed } = await startProxy(settings, addonUrls, site.configPath, site.root, functionsDir)
+    let { url, proxyPortUsed } = await startProxy(settings, addonUrls, site.configPath, site.root, settings.functions)
     if (!url) {
       throw new Error('Unable to start proxy server')
     }

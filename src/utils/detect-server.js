@@ -70,20 +70,7 @@ module.exports.serverSettings = async (devConfig, flags, log) => {
     let devConfigArgs = devConfig.command.split(/\s/).slice(1)
     settings.args = assignLoudly(devConfigArgs, settings.command || null, tellUser('command')) // if settings.command is empty, its bc no settings matched
   }
-
-  settings.port = devConfig.port || settings.port
-  if (devConfig.targetPort) {
-    if (devConfig.targetPort === devConfig.port) {
-      throw new Error('"port" and "targetPort" options cannot have same values. Please consult the documentation for more details: https://cli.netlify.com/netlify-dev#netlifytoml-dev-block')
-    }
-    settings.proxyPort = devConfig.targetPort
-    settings.urlRegexp = devConfig.urlRegexp || new RegExp(`(http://)([^:]+:)${devConfig.targetPort}(/)?`, 'g')
-  } else if (devConfig.port && devConfig.port === settings.proxyPort) {
-    throw new Error('The "port" option you specified conflicts with the port of your application. Please use a different value for "port"')
-  }
   settings.dist = devConfig.publish || settings.dist // dont loudassign if they dont need it
-  settings.jwtRolePath = devConfig.jwtRolePath || 'app_metadata.authorization.roles'
-  settings.functionsPort = await getPort({ port: settings.functionsPort || 34567 })
 
   if (flags.dir || devConfig.framework === '#static' || (!settings.framework && !settings.proxyPort)) {
     let dist = settings.dist
@@ -111,8 +98,19 @@ module.exports.serverSettings = async (devConfig, flags, log) => {
       port: 8888,
       proxyPort: await getPort({ port: 3999 }),
       dist,
-      ...(settings.command ? { command: settings.command, args: settings.args } : { noCmd: true })
+      ...(settings.command ? { command: settings.command, args: settings.args } : { noCmd: true }),
     }
+  }
+
+  settings.port = devConfig.port || settings.port
+  if (devConfig.targetPort) {
+    if (devConfig.targetPort === devConfig.port) {
+      throw new Error('"port" and "targetPort" options cannot have same values. Please consult the documentation for more details: https://cli.netlify.com/netlify-dev#netlifytoml-dev-block')
+    }
+    settings.proxyPort = devConfig.targetPort
+    settings.urlRegexp = devConfig.urlRegexp || new RegExp(`(http://)([^:]+:)${devConfig.targetPort}(/)?`, 'g')
+  } else if (devConfig.port && devConfig.port === settings.proxyPort) {
+    throw new Error('The "port" option you specified conflicts with the port of your application. Please use a different value for "port"')
   }
 
   const port = await getPort({ port: settings.port })
@@ -120,6 +118,10 @@ module.exports.serverSettings = async (devConfig, flags, log) => {
     throw new Error(`Could not acquire required "port": ${settings.port}`)
   }
   settings.port = port
+
+  settings.jwtRolePath = devConfig.jwtRolePath || 'app_metadata.authorization.roles'
+  settings.functionsPort = await getPort({ port: settings.functionsPort || 34567 })
+  settings.functions = devConfig.functions || settings.functions
 
   return settings
 }

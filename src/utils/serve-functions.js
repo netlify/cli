@@ -163,9 +163,8 @@ function createHandler(dir) {
   }
 }
 
-async function serveFunctions(settings) {
+async function serveFunctions(dir) {
   const app = express()
-  const dir = settings.functionsDir
 
   app.use(
     bodyParser.text({
