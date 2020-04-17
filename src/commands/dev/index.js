@@ -410,8 +410,7 @@ class DevCommand extends Command {
 
     let settings = await serverSettings(devConfig)
 
-    if (flags.dir || devConfig.framework === '#static' || !settings.framework) {
-      let dist
+    if (flags.dir || devConfig.framework === '#static' || (!settings.framework && !settings.proxyPort)) {
       let dist = settings.dist
       if (flags.dir) {
         this.log(`${NETLIFYDEVWARN} Using simple static server because --dir flag was specified`)
