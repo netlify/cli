@@ -22,7 +22,7 @@ module.exports = function() {
   }
 
   return {
-    type: 'create-react-app',
+    framework: 'create-react-app',
     command: getYarnOrNPMCommand(),
     port: 8888, // the port that the Netlify Dev User will use
     proxyPort: 3000, // the port that create-react-app normally outputs

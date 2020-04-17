@@ -19,7 +19,7 @@ module.exports = function() {
   }
 
   return {
-    type: 'vuepress',
+    framework: 'vuepress',
     command: getYarnOrNPMCommand(),
     port: 8888,
     proxyPort: 8080,

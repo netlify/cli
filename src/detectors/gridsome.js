@@ -13,7 +13,7 @@ module.exports = function() {
   })
 
   return {
-    type: 'gridsome',
+    framework: 'gridsome',
     command: getYarnOrNPMCommand(),
     port: 8888,
     proxyPort: 8080,

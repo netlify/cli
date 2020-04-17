@@ -11,7 +11,7 @@ module.exports = function() {
   ) return false
 
   return {
-    type: 'eleventy',
+    framework: 'eleventy',
     port: 8888,
     proxyPort: 8080,
     env: { ...process.env },

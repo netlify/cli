@@ -19,7 +19,7 @@ module.exports = function() {
   }
 
   return {
-    type: 'nuxt',
+    framework: 'nuxt',
     command: getYarnOrNPMCommand(),
     port: 8888,
     proxyPort: 3000,

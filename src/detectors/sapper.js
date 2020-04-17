@@ -19,7 +19,7 @@ module.exports = function() {
   }
 
   return {
-    type: 'sapper',
+    framework: 'sapper',
     command: getYarnOrNPMCommand(),
     port: 8888,
     proxyPort: 3000,

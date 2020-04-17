@@ -13,7 +13,7 @@ module.exports = function() {
   })
 
   return {
-    type: 'docusaurus',
+    framework: 'docusaurus',
     command: getYarnOrNPMCommand(),
     port: 8888,
     proxyPort: 3000,

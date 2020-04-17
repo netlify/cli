@@ -8,7 +8,6 @@ const child_process = require('child_process')
 const http = require('http')
 const httpProxy = require('http-proxy')
 const waitPort = require('wait-port')
-const getPort = require('get-port')
 const stripAnsiCc = require('strip-ansi-control-characters')
 const which = require('which')
 const chokidar = require('chokidar')
@@ -202,7 +201,7 @@ async function startProxy(settings, addonUrls, configPath, projectDir, functions
         functionsServer,
         functionsPort: settings.functionsPort,
         jwtRolePath: settings.jwtRolePath,
-        serverType: settings.type,
+        framework: settings.framework,
       }
 
       if (match) return serveRedirect(req, res, proxy, match, options)
@@ -288,7 +287,7 @@ async function serveRedirect(req, res, proxy, match, options) {
     return render404(options.publicFolder)
   }
 
-  if (match.force || ((!(await isStatic(reqUrl.pathname, options.publicFolder)) || options.serverType) && match.status !== 404)) {
+  if (match.force || ((!(await isStatic(reqUrl.pathname, options.publicFolder)) || options.framework) && match.status !== 404)) {
     const dest = new url.URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
     if (isRedirect(match)) {
       res.writeHead(match.status, {
@@ -314,7 +313,7 @@ async function serveRedirect(req, res, proxy, match, options) {
     const destURL = dest.pathname + (urlParams.toString() && '?' + urlParams.toString())
 
     let status
-    if (isInternal(destURL) || !options.serverType) {
+    if (isInternal(destURL) || !options.framework) {
       req.url = destURL
       status = match.status
       console.log(`${NETLIFYDEVLOG} Rewrote URL to `, req.url)
@@ -354,15 +353,14 @@ async function startDevServer(settings, log) {
     return
   }
 
-  log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.type}`)
-  const args = settings.command === 'npm' ? ['run', ...settings.args] : settings.args
+  log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.framework || 'custom config'}`)
   const commandBin = await which(settings.command).catch(err => {
     if (err.code === 'ENOENT') {
       throw new Error(`"${settings.command}" could not be found in your PATH. Please make sure that "${settings.command}" is installed and available in your PATH`)
     }
     throw err
   })
-  const ps = child_process.spawn(commandBin, args, {
+  const ps = child_process.spawn(commandBin, settings.args, {
     env: { ...settings.env, FORCE_COLOR: 'true' },
     stdio: 'pipe',
   })
@@ -392,9 +390,9 @@ class DevCommand extends Command {
     this.log(`${NETLIFYDEV}`)
     let { flags } = this.parse(DevCommand)
     const { api, site, config } = this.netlify
-    config.dev = config.dev || {}
-    const devConfig = { ...config.dev, ...flags }
-    const functionsDir = devConfig.functions || (config.build && config.build.functions)
+    config.dev = { ...config.dev }
+    config.build = { ...config.build }
+    const devConfig = { framework: '#auto', ...(config.build.functions && { functions: config.build.functions }), ...config.dev, ...flags }
     let addonUrls = {}
 
     let accessToken = api.accessToken
@@ -412,57 +410,13 @@ class DevCommand extends Command {
       Object.entries(vars).forEach(([key, val]) => process.env[key] = val)
     }
 
-    let settings = await serverSettings(devConfig)
-
-    if (flags.dir || !(settings && settings.command)) {
-      let dist
-      if (flags.dir) {
-        this.log(`${NETLIFYDEVWARN} Using simple static server because --dir flag was specified`)
-        dist = flags.dir
-      } else {
-        this.log(`${NETLIFYDEVWARN} No dev server detected, using simple static server`)
-      }
-      if (!dist) {
-        this.log(`${NETLIFYDEVLOG} Using current working directory`)
-        this.log(`${NETLIFYDEVWARN} Unable to determine public folder to serve files from.`)
-        this.log(
-            `${NETLIFYDEVWARN} Setup a netlify.toml file with a [dev] section to specify your dev server settings.`
-        )
-        this.log(
-            `${NETLIFYDEVWARN} See docs at: https://github.com/netlify/cli/blob/master/docs/netlify-dev.md#project-detection`
-        )
-        this.log(`${NETLIFYDEVWARN} Using current working directory for now...`)
-        dist = process.cwd()
-      }
-      settings = {
-        env: { ...process.env },
-        noCmd: true,
-        port: 8888,
-        proxyPort: await getPort({ port: 3999 }),
-        dist,
-      }
-    }
-
-    // Flags have highest priority, then configuration file (netlify.toml etc.) then detectors
-    settings = {
-      ...settings,
-      jwtRolePath: devConfig.jwtRolePath || settings.jwtRolePath || 'app_metadata.authorization.roles',
-      port: devConfig.port || settings.port,
-      proxyPort: devConfig.targetPort || settings.proxyPort,
-      functionsPort: await getPort({ port: settings.functionsPort || 34567 }),
-    }
-
-    const port = await getPort({ port: settings.port })
-    if (port !== settings.port && devConfig.port) {
-      throw new Error(`Could not acquire required "port": ${settings.port}`)
-    }
-    settings.port = port
+    let settings = await serverSettings(devConfig, flags, this.log)
 
     await startDevServer(settings, this.log)
 
     // serve functions from zip-it-and-ship-it
     // env variables relies on `url`, careful moving this code
-    if (functionsDir) {
+    if (settings.functions) {
       const functionBuilder = await detectFunctionsBuilder(settings)
       if (functionBuilder) {
         this.log(
@@ -480,10 +434,7 @@ class DevCommand extends Command {
         functionWatcher.on('unlink', functionBuilder.build)
       }
 
-      const functionsServer = await serveFunctions({
-        ...settings,
-        functionsDir
-      })
+      const functionsServer = await serveFunctions(settings.functions)
       functionsServer.listen(settings.functionsPort, function(err) {
         if (err) {
           console.error(`${NETLIFYDEVERR} Unable to start lambda server: `, err) // eslint-disable-line no-console
@@ -495,7 +446,7 @@ class DevCommand extends Command {
       })
     }
 
-    let { url } = await startProxy(settings, addonUrls, site.configPath, site.root, functionsDir)
+    let { url } = await startProxy(settings, addonUrls, site.configPath, site.root, settings.functions)
     if (!url) {
       throw new Error('Unable to start proxy server')
     }
@@ -513,7 +464,7 @@ class DevCommand extends Command {
       eventName: 'command',
       payload: {
         command: 'dev',
-        projectType: settings.type || 'custom',
+        projectType: settings.framework || 'custom',
         live: flags.live || false
       }
     })
@@ -577,7 +528,7 @@ DevCommand.flags = {
   live: flags.boolean({
     char: 'l',
     description: 'Start a public live session'
-  })
+  }),
 }
 
 module.exports = DevCommand

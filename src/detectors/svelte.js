@@ -21,7 +21,7 @@ module.exports = function() {
   }
 
   return {
-    type: 'svelte',
+    framework: 'svelte',
     command: getYarnOrNPMCommand(),
     port: 8888,
     proxyPort: 5000,

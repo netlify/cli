@@ -21,7 +21,7 @@ module.exports = function() {
     possibleArgsArrs.push(['expo', 'start', '--web'])
   }
   return {
-    type: 'expo',
+    framework: 'expo',
     command: getYarnOrNPMCommand(),
     port: 8888,
     proxyPort: 19006,
