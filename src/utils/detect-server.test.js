@@ -56,9 +56,9 @@ test('serverSettings: custom framework parameters', async t => {
   t.is(settings.command, devConfig.command.split(' ')[0])
   t.deepEqual(settings.args, devConfig.command.split(' ').slice(1))
   t.deepEqual(settings.env, env)
-  t.deepEqual(settings.port, devConfig.port)
-  t.deepEqual(settings.targetPort, devConfig.proxyPort)
-  t.deepEqual(settings.dist, devConfig.publish)
+  t.is(settings.port, devConfig.port)
+  t.is(settings.targetPort, devConfig.proxyPort)
+  t.is(settings.dist, devConfig.publish)
 })
 
 test('chooseDefaultArgs', t => {
