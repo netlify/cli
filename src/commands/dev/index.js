@@ -446,18 +446,18 @@ class DevCommand extends Command {
       })
     }
 
-    let { url, proxyPortUsed } = await startProxy(settings, addonUrls, site.configPath, site.root, settings.functions)
+    let { url } = await startProxy(settings, addonUrls, site.configPath, site.root, settings.functions)
     if (!url) {
       throw new Error('Unable to start proxy server')
     }
 
     if (flags.live) {
-      await waitPort({ proxyPortUsed })
+      await waitPort({ port: settings.proxyPort })
       const liveSession = await createTunnel(site.id, accessToken, this.log)
       url = liveSession.session_url
       process.env.BASE_URL = url
 
-      await connectTunnel(liveSession, accessToken, proxyPortUsed, this.log)
+      await connectTunnel(liveSession, accessToken, settings.proxyPort, this.log)
     }
 
     await this.config.runHook('analytics', {
