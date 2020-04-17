@@ -169,7 +169,7 @@ class DeployCommand extends Command {
     let results
     try {
       if (deployToProduction) {
-        this.log('Deploying to live site URL...')
+        this.log('Deploying to main site URL...')
       } else {
         this.log('Deploying to draft URL...')
       }
@@ -220,10 +220,10 @@ class DeployCommand extends Command {
     }
 
     if (deployToProduction) {
-      msgData['Live URL'] = siteUrl
+      msgData['Website URL'] = siteUrl
     } else {
       delete msgData['Unique Deploy URL']
-      msgData['Live Draft URL'] = deployUrl
+      msgData['Website Draft URL'] = deployUrl
     }
 
     // Spacer
@@ -251,7 +251,7 @@ class DeployCommand extends Command {
 
     if (!deployToProduction) {
       this.log()
-      this.log('If everything looks good on your draft URL, take it live with the --prod flag.')
+      this.log('If everything looks good on your draft URL, deploy it to your main site URL with the --prod flag.')
       this.log(`${chalk.cyanBright.bold('netlify deploy --prod')}`)
       this.log()
     }

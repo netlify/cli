@@ -9,7 +9,7 @@ const sitePath = path.join(__dirname, 'dummy-site')
 const createRewriter = require('../utils/rules-proxy')
 
 test.before(async t => {
-  const rewriter = createRewriter({
+  const rewriter = await createRewriter({
     distDir: sitePath,
     projectDir: sitePath,
     configPath: path.join(sitePath, 'netlify.toml')
@@ -22,7 +22,7 @@ test.before(async t => {
   t.context.port = port
   t.context.server = server
 
-  return new Promise(resolve => server.listen(port, () => setTimeout(resolve, process.platform === 'win32' ? 6000 : 2000)))
+  return server.listen(port)
 })
 
 test('homepage rule', async t => {

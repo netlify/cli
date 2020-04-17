@@ -27,7 +27,7 @@ test.before(async t => {
 
         port = matches.pop()
         host = matches.pop()
-        setTimeout(resolve, process.platform === 'win32' ? 6000 : 2000)
+        resolve()
       }
     })
   })

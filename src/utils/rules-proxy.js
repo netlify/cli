@@ -39,7 +39,6 @@ function onChanges(files, cb) {
   files.forEach(file => {
     const watcher = chokidar.watch(file)
     watcher.on('change', cb)
-    watcher.on('add', cb)
     watcher.on('unlink', cb)
   })
 }
@@ -55,7 +54,7 @@ function getCountry(req) {
   return 'us'
 }
 
-module.exports = function createRewriter({ distDir, projectDir, jwtSecret, jwtRole, configPath }) {
+module.exports = async function createRewriter({ distDir, projectDir, jwtSecret, jwtRole, configPath }) {
   let matcher = null
   const configFiles = Array.from(
     new Set(
@@ -65,11 +64,11 @@ module.exports = function createRewriter({ distDir, projectDir, jwtSecret, jwtRo
       ]
         .concat(configPath ? path.resolve(configPath) : [])
     )
-  ).filter(f => f !== projectDir && fs.existsSync(f))
-  let rules = []
+  ).filter(f => f !== projectDir)
+  let rules = await parseRules(configFiles)
 
   onChanges(configFiles, async () => {
-    console.log(`${NETLIFYDEVLOG} Reloading files`, configFiles.map(p => path.relative(projectDir, p)))
+    console.log(`${NETLIFYDEVLOG} Reloading redirect rules from`, configFiles.filter(fs.existsSync).map(p => path.relative(projectDir, p)))
     rules = await parseRules(configFiles)
     matcher = null
   })
