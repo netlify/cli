@@ -353,7 +353,7 @@ async function startDevServer(settings, log) {
     return
   }
 
-  log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.framework}`)
+  log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.framework || 'custom config'}`)
   const commandBin = await which(settings.command).catch(err => {
     if (err.code === 'ENOENT') {
       throw new Error(`"${settings.command}" could not be found in your PATH. Please make sure that "${settings.command}" is installed and available in your PATH`)
