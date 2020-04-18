@@ -112,7 +112,7 @@ Netlify Dev is meant to work with zero config for the majority of users, by usin
 # note: each of these fields are OPTIONAL
 [dev]
   command = "yarn start" # Command to start your dev server
-  port = 3000 # Port that the dev server will be listening on
+  port = 8888 # Port that the dev server will be listening on
   targetPort = 3000 # Port of target app server
   publish = "dist" # If you use a _redirect file, provide the path to your static content folder
   jwtRolePath = "app_metadata.authorization.roles" # Object path we should look for role values for JWT based redirects
@@ -130,7 +130,7 @@ Netlify Dev will attempt to detect the SSG or build command that you are using, 
 # note: each of these fields are OPTIONAL and should only be used if you need an override
 [dev]
   command = "yarn start" # Command to start your dev server
-  port = 3000 # Port that the dev server will be listening on
+  port = 8888 # Port that the dev server will be listening on
   publish = "dist" # If you use a _redirect file, provide the path to your static content folder
 ```
 
