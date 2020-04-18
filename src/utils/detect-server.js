@@ -14,7 +14,7 @@ module.exports.serverSettings = async (devConfig, flags, log) => {
 
   if (typeof devConfig.framework !== 'string') throw new Error('Invalid "framework" option provided in config')
 
-  if (devConfig.framework === '#auto') {
+  if (devConfig.framework === '#auto' && !(devConfig.command && devConfig.targetPort)) {
     let settingsArr = []
     const detectors = detectorsFiles.map(det => {
       try {
@@ -50,10 +50,16 @@ module.exports.serverSettings = async (devConfig, flags, log) => {
       })
       settings = chosenSetting // finally! we have a selected option
 
-      console.log(`Add \`framework = "${chosenSetting.framework}"\` to [dev] section of your netlify.toml to avoid this selection prompt next time`)
+      log(`Add \`framework = "${chosenSetting.framework}"\` to [dev] section of your netlify.toml to avoid this selection prompt next time`)
     }
+  } else if (devConfig.framework === '#custom' || (devConfig.command && devConfig.targetPort)) {
+    settings.framework = '#custom'
+    if (devConfig.framework && !['command', 'targetPort'].every(p => devConfig.hasOwnProperty(p))) {
+      throw new Error('"command" and "targetPort" properties are required when "framework" is set to "#custom"')
+    }
+    if (devConfig.command && devConfig.targetPort) log('Setting "framework" option to "#custom" because "command" and "targetPort" were specified')
   } else if (devConfig.framework === '#static') {
-    settings.framework = devConfig.framework
+    // Do nothing
   } else {
     const detectorName = detectorsFiles.find(dt => `${dt}.js` === devConfig.framework)
     if (!detectorName) throw new Error('Unsupported value provided for "framework" option in config')
@@ -72,33 +78,27 @@ module.exports.serverSettings = async (devConfig, flags, log) => {
   }
   settings.dist = devConfig.publish || settings.dist // dont loudassign if they dont need it
 
-  if (flags.dir || devConfig.framework === '#static' || (!settings.framework && !settings.proxyPort)) {
+  if ((flags.dir || !settings.command) && !settings.framework) {
     let dist = settings.dist
     if (flags.dir) {
       log(`${NETLIFYDEVWARN} Using simple static server because --dir flag was specified`)
-    } else if (devConfig.framework === '#static') {
-      log(`${NETLIFYDEVWARN} Using simple static server because "framework" option was set to "#static" in config`)
     } else {
-      log(`${NETLIFYDEVWARN} No app server detected, using simple static server`)
+      log(`${NETLIFYDEVWARN} No app server detected and no "command" specified, using simple static server`)
     }
     if (!dist) {
       log(`${NETLIFYDEVLOG} Using current working directory`)
       log(`${NETLIFYDEVWARN} Unable to determine public folder to serve files from.`)
-      log(
-        `${NETLIFYDEVWARN} Setup a netlify.toml file with a [dev] section to specify your dev server settings.`
-      )
-      log(
-        `${NETLIFYDEVWARN} See docs at: https://cli.netlify.com/netlify-dev#project-detection`
-      )
+      log(`${NETLIFYDEVWARN} Setup a netlify.toml file with a [dev] section to specify your dev server settings.`)
+      log(`${NETLIFYDEVWARN} See docs at: https://cli.netlify.com/netlify-dev#project-detection`)
       log(`${NETLIFYDEVWARN} Using current working directory for now...`)
       dist = process.cwd()
     }
     settings = {
       env: { ...process.env },
+      noCmd: true,
       port: 8888,
       proxyPort: await getPort({ port: 3999 }),
       dist,
-      ...(settings.command ? { command: settings.command, args: settings.args } : { noCmd: true }),
     }
   }
 
@@ -107,11 +107,17 @@ module.exports.serverSettings = async (devConfig, flags, log) => {
     if (devConfig.targetPort === devConfig.port) {
       throw new Error('"port" and "targetPort" options cannot have same values. Please consult the documentation for more details: https://cli.netlify.com/netlify-dev#netlifytoml-dev-block')
     }
+
+    if (!settings.command) throw new Error('No "command" specified or detected. A "command" option is required to use "targetPort" option.')
+    if (flags.dir) throw new Error('"targetPort" option cannot be used in conjunction with "dir" flag which is used to run a static server.')
+
     settings.proxyPort = devConfig.targetPort
     settings.urlRegexp = devConfig.urlRegexp || new RegExp(`(http://)([^:]+:)${devConfig.targetPort}(/)?`, 'g')
   } else if (devConfig.port && devConfig.port === settings.proxyPort) {
     throw new Error('The "port" option you specified conflicts with the port of your application. Please use a different value for "port"')
   }
+
+  if (!settings.proxyPort) throw new Error('No "targetPort" option specified or detected.')
 
   const port = await getPort({ port: settings.port })
   if (port !== settings.port && devConfig.port) {

@@ -1,5 +1,6 @@
 const test = require('ava')
 const path = require('path')
+const getPort = require('get-port')
 const { loadDetector, serverSettings, chooseDefaultArgs } = require('./detect-server')
 const sitePath = path.join(__dirname, '..', 'tests', 'dummy-site')
 
@@ -28,11 +29,18 @@ test('serverSettings: "#static" as "framework', async t => {
   t.is(settings.framework, undefined)
 })
 
+test('serverSettings: throw if "port" not available', async t => {
+  const port = await getPort({ port: 1 })
+  await t.throwsAsync(async () => {
+    await serverSettings({ framework: '#auto', port }, {}, () => {})
+  }, /Could not acquire required "port"/)
+})
+
 test('serverSettings: "command" override npm', async t => {
   const env = { ...process.env }
-  const devConfig = { framework: '#auto', command: 'npm run dev' }
+  const devConfig = { framework: '#custom', command: 'npm run dev', targetPort: 1234 }
   const settings = await serverSettings(devConfig, {}, () => {})
-  t.is(settings.framework, undefined)
+  t.is(settings.framework, devConfig.framework)
   t.is(settings.command, devConfig.command.split(' ')[0])
   t.deepEqual(settings.args, devConfig.command.split(' ').slice(1))
   t.deepEqual(settings.env, env)
@@ -40,9 +48,9 @@ test('serverSettings: "command" override npm', async t => {
 
 test('serverSettings: "command" override yarn', async t => {
   const env = { ...process.env }
-  const devConfig = { framework: '#auto', command: 'yarn dev' }
+  const devConfig = { framework: '#custom', command: 'yarn dev', targetPort: 1234 }
   const settings = await serverSettings(devConfig, {}, () => {})
-  t.is(settings.framework, undefined)
+  t.is(settings.framework, devConfig.framework)
   t.is(settings.command, devConfig.command.split(' ')[0])
   t.deepEqual(settings.args, devConfig.command.split(' ').slice(1))
   t.deepEqual(settings.env, env)
@@ -50,15 +58,35 @@ test('serverSettings: "command" override yarn', async t => {
 
 test('serverSettings: custom framework parameters', async t => {
   const env = { ...process.env }
-  const devConfig = { framework: '#auto', command: 'yarn dev', port: 8987, targetPort: 3000, publish: sitePath }
+  const devConfig = { framework: '#auto', command: 'yarn dev', targetPort: 3000, publish: sitePath }
   const settings = await serverSettings(devConfig, {}, () => {})
-  t.is(settings.framework, undefined)
+  t.is(settings.framework, '#custom')
   t.is(settings.command, devConfig.command.split(' ')[0])
   t.deepEqual(settings.args, devConfig.command.split(' ').slice(1))
   t.deepEqual(settings.env, env)
-  t.is(settings.port, devConfig.port)
   t.is(settings.targetPort, devConfig.proxyPort)
   t.is(settings.dist, devConfig.publish)
+})
+
+test('serverSettings: set "framework" to "#custom" but no "command"', async t => {
+  const devConfig = { framework: '#custom', targetPort: 3000, publish: sitePath }
+  await t.throwsAsync(async () => {
+     await serverSettings(devConfig, {}, () => {})
+  }, /"command" and "targetPort" properties are required when "framework" is set to "#custom"/)
+})
+
+test('serverSettings: set "framework" to "#custom" but no "targetPort"', async t => {
+  const devConfig = { framework: '#custom', command: "npm run dev", publish: sitePath }
+  await t.throwsAsync(async () => {
+     await serverSettings(devConfig, {}, () => {})
+  }, /"command" and "targetPort" properties are required when "framework" is set to "#custom"/)
+})
+
+test('serverSettings: set "framework" to "#custom" but no "targetPort" or "command"', async t => {
+  const devConfig = { framework: '#custom', publish: sitePath }
+  await t.throwsAsync(async () => {
+     await serverSettings(devConfig, {}, () => {})
+  }, /"command" and "targetPort" properties are required when "framework" is set to "#custom"/)
 })
 
 test('serverSettings: "functions" config', async t => {

@@ -144,8 +144,9 @@ against your project.
 ``` 
  The `framework` option should be one of the available
 [project types which Netlify Dev can detect](https://github.com/netlify/cli/tree/master/src/detectors)
-or `#auto` (default) to test all available detectors or `#staic` for a static
-file server.
+or `#auto` (default) to test all available detectors, `#staic` for a static
+file server or `#custom` to use `command` option to run an app server and
+`targetPort` option to connect to it.
 
 ## Explanation of ports in Netlify Dev
 
