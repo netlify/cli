@@ -24,7 +24,7 @@ test('serverSettings: minimal config', async t => {
   t.is(settings.framework, undefined)
 })
 
-test('serverSettings: "#static" as "framework', async t => {
+test('serverSettings: "#static" as "framework"', async t => {
   const settings = await serverSettings({ framework: '#static' }, {}, () => {})
   t.is(settings.framework, undefined)
 })
