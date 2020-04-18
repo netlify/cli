@@ -416,7 +416,7 @@ class DevCommand extends Command {
       Object.entries(vars).forEach(([key, val]) => process.env[key] = val)
     }
 
-    let settings = await serverSettings(devConfig, flags, this.log)
+    let settings = await serverSettings(devConfig, flags, site.root, this.log)
 
     await startDevServer(settings, this.log)
 
