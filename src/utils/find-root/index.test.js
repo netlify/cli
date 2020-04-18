@@ -34,5 +34,5 @@ test('Find root with no indicators', t => {
   const tmp = tempy.directory()
   const subPath = path.join(tmp, 'some', 'sub', 'dir')
   mkdirp.sync(subPath)
-  t.is(findRoot(subPath), subPath, 'CWD if no indicators are located')
+  t.is(findRoot(subPath, { rootIndicators: ['.non-existent'] }), subPath, 'CWD if no indicators are located')
 })
