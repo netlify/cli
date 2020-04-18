@@ -96,13 +96,22 @@ test('serverSettings: "functions" config', async t => {
 })
 
 test('serverSettings: "dir" flag', async t => {
-  const devConfig = { framework: '#auto', dir: sitePath, functions: path.join(sitePath, 'functions') }
-  const settings = await serverSettings(devConfig, {}, () => {})
+  const devConfig = { framework: '#auto', functions: path.join(sitePath, 'functions') }
+  const flags = { dir: sitePath }
+  const settings = await serverSettings(devConfig, flags, () => {})
   t.is(settings.functions, devConfig.functions)
-  t.is(settings.dist, devConfig.dir)
+  t.is(settings.dist, flags.dir)
   t.is(settings.framework, undefined)
   t.is(settings.cmd, undefined)
   t.is(settings.noCmd, true)
+})
+
+test('serverSettings: "dir" flag with "targetPort"', async t => {
+  const devConfig = { framework: '#auto', targetPort: 1234, functions: path.join(sitePath, 'functions') }
+  const flags = { dir: sitePath }
+  await t.throwsAsync(async () => {
+    await serverSettings(devConfig, flags, () => {})
+  }, /"command" or "targetPort" options cannot be used in conjunction with "dir" flag/)
 })
 
 test('serverSettings: when no framework is detected', async t => {

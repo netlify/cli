@@ -16,6 +16,9 @@ module.exports.serverSettings = async (devConfig, flags, log) => {
 
   if (flags.dir) {
     settings = await getStaticServerSettings(settings, flags, log)
+    if (['command','targetPort'].some(p => devConfig.hasOwnProperty(p))) {
+      throw new Error('"command" or "targetPort" options cannot be used in conjunction with "dir" flag')
+    }
   } else if (devConfig.framework === '#auto' && !(devConfig.command && devConfig.targetPort)) {
     let settingsArr = []
     const detectors = detectorsFiles.map(det => {
@@ -80,13 +83,8 @@ module.exports.serverSettings = async (devConfig, flags, log) => {
     let devConfigArgs = devConfig.command.split(/\s/).slice(1)
     settings.args = assignLoudly(devConfigArgs, settings.command || null, tellUser('command')) // if settings.command is empty, its bc no settings matched
   }
-  settings.dist = devConfig.publish || settings.dist // dont loudassign if they dont need it
+  settings.dist = flags.dir || devConfig.publish || settings.dist // dont loudassign if they dont need it
 
-  if (!settings.command && !settings.framework && !settings.noCmd) {
-    settings = await getStaticServerSettings(settings, flags, log)
-  }
-
-  settings.port = devConfig.port || settings.port
   if (devConfig.targetPort) {
     if (devConfig.targetPort === devConfig.port) {
       throw new Error('"port" and "targetPort" options cannot have same values. Please consult the documentation for more details: https://cli.netlify.com/netlify-dev#netlifytoml-dev-block')
@@ -97,13 +95,19 @@ module.exports.serverSettings = async (devConfig, flags, log) => {
 
     settings.proxyPort = devConfig.targetPort
     settings.urlRegexp = devConfig.urlRegexp || new RegExp(`(http://)([^:]+:)${devConfig.targetPort}(/)?`, 'g')
-  } else if (devConfig.port && devConfig.port === settings.proxyPort) {
-    throw new Error('The "port" option you specified conflicts with the port of your application. Please use a different value for "port"')
+  }
+
+  if (!settings.command && !settings.framework && !settings.noCmd) {
+    settings = await getStaticServerSettings(settings, flags, log)
   }
 
   if (!settings.proxyPort) throw new Error('No "targetPort" option specified or detected.')
 
-  const port = await getPort({ port: settings.port })
+  settings.port = devConfig.port || settings.port
+  if (devConfig.port && devConfig.port === settings.proxyPort) {
+    throw new Error('The "port" option you specified conflicts with the port of your application. Please use a different value for "port"')
+  }
+  const port = await getPort({ port: settings.port || 8888 })
   if (port !== settings.port && devConfig.port) {
     throw new Error(`Could not acquire required "port": ${settings.port}`)
   }
