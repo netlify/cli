@@ -57,7 +57,9 @@ module.exports.serverSettings = async (devConfig, flags, log) => {
     if (devConfig.framework && !['command', 'targetPort'].every(p => devConfig.hasOwnProperty(p))) {
       throw new Error('"command" and "targetPort" properties are required when "framework" is set to "#custom"')
     }
-    if (devConfig.command && devConfig.targetPort) log('Setting "framework" option to "#custom" because "command" and "targetPort" were specified')
+    if (devConfig.framework !== '#custom' && devConfig.command && devConfig.targetPort) {
+      throw new Error('"framework" option must be set to "#custom" when specifying both "command" and "targetPort" options')
+    }
   } else if (devConfig.framework === '#static') {
     // Do nothing
   } else {
