@@ -14,7 +14,9 @@ module.exports.serverSettings = async (devConfig, flags, log) => {
 
   if (typeof devConfig.framework !== 'string') throw new Error('Invalid "framework" option provided in config')
 
-  if (devConfig.framework === '#auto' && !(devConfig.command && devConfig.targetPort)) {
+  if (flags.dir) {
+    settings = await getStaticServerSettings(settings, flags, log)
+  } else if (devConfig.framework === '#auto' && !(devConfig.command && devConfig.targetPort)) {
     let settingsArr = []
     const detectors = detectorsFiles.map(det => {
       try {
@@ -80,28 +82,8 @@ module.exports.serverSettings = async (devConfig, flags, log) => {
   }
   settings.dist = devConfig.publish || settings.dist // dont loudassign if they dont need it
 
-  if ((flags.dir || !settings.command) && !settings.framework) {
-    let dist = settings.dist
-    if (flags.dir) {
-      log(`${NETLIFYDEVWARN} Using simple static server because --dir flag was specified`)
-    } else {
-      log(`${NETLIFYDEVWARN} No app server detected and no "command" specified, using simple static server`)
-    }
-    if (!dist) {
-      log(`${NETLIFYDEVLOG} Using current working directory`)
-      log(`${NETLIFYDEVWARN} Unable to determine public folder to serve files from.`)
-      log(`${NETLIFYDEVWARN} Setup a netlify.toml file with a [dev] section to specify your dev server settings.`)
-      log(`${NETLIFYDEVWARN} See docs at: https://cli.netlify.com/netlify-dev#project-detection`)
-      log(`${NETLIFYDEVWARN} Using current working directory for now...`)
-      dist = process.cwd()
-    }
-    settings = {
-      env: { ...process.env },
-      noCmd: true,
-      port: 8888,
-      proxyPort: await getPort({ port: 3999 }),
-      dist,
-    }
+  if (!settings.command && !settings.framework && !settings.noCmd) {
+    settings = await getStaticServerSettings(settings, flags, log)
   }
 
   settings.port = devConfig.port || settings.port
@@ -132,6 +114,31 @@ module.exports.serverSettings = async (devConfig, flags, log) => {
   settings.functions = devConfig.functions || settings.functions
 
   return settings
+}
+
+async function getStaticServerSettings(settings, flags, log) {
+  let dist = settings.dist
+  if (flags.dir) {
+    log(`${NETLIFYDEVWARN} Using simple static server because --dir flag was specified`)
+    dist = flags.dir
+  } else {
+    log(`${NETLIFYDEVWARN} No app server detected and no "command" specified, using simple static server`)
+  }
+  if (!dist) {
+    log(`${NETLIFYDEVLOG} Using current working directory`)
+    log(`${NETLIFYDEVWARN} Unable to determine public folder to serve files from.`)
+    log(`${NETLIFYDEVWARN} Setup a netlify.toml file with a [dev] section to specify your dev server settings.`)
+    log(`${NETLIFYDEVWARN} See docs at: https://cli.netlify.com/netlify-dev#project-detection`)
+    log(`${NETLIFYDEVWARN} Using current working directory for now...`)
+    dist = process.cwd()
+  }
+  return {
+    env: { ...process.env },
+    noCmd: true,
+    port: 8888,
+    proxyPort: await getPort({ port: 3999 }),
+    dist,
+  }
 }
 
 const tellUser = settingsField => dV =>

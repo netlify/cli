@@ -58,7 +58,7 @@ test('serverSettings: "command" override yarn', async t => {
 
 test('serverSettings: custom framework parameters', async t => {
   const env = { ...process.env }
-  const devConfig = { framework: '#auto', command: 'yarn dev', targetPort: 3000, publish: sitePath }
+  const devConfig = { framework: '#custom', command: 'yarn dev', targetPort: 3000, publish: sitePath }
   const settings = await serverSettings(devConfig, {}, () => {})
   t.is(settings.framework, '#custom')
   t.is(settings.command, devConfig.command.split(' ')[0])
@@ -93,6 +93,26 @@ test('serverSettings: "functions" config', async t => {
   const devConfig = { framework: '#auto', functions: path.join(sitePath, 'functions') }
   const settings = await serverSettings(devConfig, {}, () => {})
   t.is(settings.functions, devConfig.functions)
+})
+
+test('serverSettings: "dir" flag', async t => {
+  const devConfig = { framework: '#auto', dir: sitePath, functions: path.join(sitePath, 'functions') }
+  const settings = await serverSettings(devConfig, {}, () => {})
+  t.is(settings.functions, devConfig.functions)
+  t.is(settings.dist, devConfig.dir)
+  t.is(settings.framework, undefined)
+  t.is(settings.cmd, undefined)
+  t.is(settings.noCmd, true)
+})
+
+test('serverSettings: when no framework is detected', async t => {
+  const devConfig = { framework: '#auto', functions: path.join(sitePath, 'functions') }
+  const settings = await serverSettings(devConfig, {}, () => {})
+  t.is(settings.functions, devConfig.functions)
+  t.is(settings.dist, sitePath)
+  t.is(settings.framework, undefined)
+  t.is(settings.cmd, undefined)
+  t.is(settings.noCmd, true)
 })
 
 test('chooseDefaultArgs', t => {
