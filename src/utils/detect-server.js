@@ -110,7 +110,7 @@ module.exports.serverSettings = async (devConfig, flags, log) => {
       throw new Error('"port" and "targetPort" options cannot have same values. Please consult the documentation for more details: https://cli.netlify.com/netlify-dev#netlifytoml-dev-block')
     }
 
-    if (!settings.command) throw new Error('No "command" specified or detected. A "command" option is required to use "targetPort" option.')
+    if (!settings.command) throw new Error('No "command" specified or detected. The "command" option is required to use "targetPort" option.')
     if (flags.dir) throw new Error('"targetPort" option cannot be used in conjunction with "dir" flag which is used to run a static server.')
 
     settings.proxyPort = devConfig.targetPort
