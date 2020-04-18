@@ -124,6 +124,18 @@ test('serverSettings: when no framework is detected', async t => {
   t.is(settings.noCmd, true)
 })
 
+
+test('serverSettings: no config', async t => {
+  const devConfig = { framework: '#auto' }
+  const settings = await serverSettings(devConfig, {}, sitePath, () => {})
+  t.is(settings.dist, sitePath)
+  t.is(settings.framework, undefined)
+  t.is(settings.cmd, undefined)
+  t.truthy(settings.port)
+  t.truthy(settings.proxyPort)
+  t.is(settings.noCmd, true)
+})
+
 test('chooseDefaultArgs', t => {
   const possibleArgsArrs = [['run', 'dev'], ['run develop']]
   const args = chooseDefaultArgs(possibleArgsArrs)
