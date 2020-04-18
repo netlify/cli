@@ -392,7 +392,13 @@ class DevCommand extends Command {
     const { api, site, config } = this.netlify
     config.dev = { ...config.dev }
     config.build = { ...config.build }
-    const devConfig = { framework: '#auto', ...(config.build.functions && { functions: config.build.functions }), ...config.dev, ...flags }
+    const devConfig = {
+      framework: '#auto',
+      ...(config.build.functions && { functions: config.build.functions }),
+      ...(config.build.publish && { publish: config.build.publish }),
+      ...config.dev,
+      ...flags,
+    }
     let addonUrls = {}
 
     let accessToken = api.accessToken
