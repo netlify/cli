@@ -6,7 +6,7 @@ const inquirer = require('inquirer')
 const fuzzy = require('fuzzy')
 const fs = require('fs')
 
-module.exports.serverSettings = async (devConfig, flags, log) => {
+module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
   let settings = { env: { ...process.env } }
   const detectorsFiles = fs
     .readdirSync(path.join(__dirname, '..', 'detectors'))
@@ -15,7 +15,7 @@ module.exports.serverSettings = async (devConfig, flags, log) => {
   if (typeof devConfig.framework !== 'string') throw new Error('Invalid "framework" option provided in config')
 
   if (flags.dir) {
-    settings = await getStaticServerSettings(settings, flags, log)
+    settings = await getStaticServerSettings(settings, flags, projectDir, log)
     if (['command','targetPort'].some(p => devConfig.hasOwnProperty(p))) {
       throw new Error('"command" or "targetPort" options cannot be used in conjunction with "dir" flag')
     }
@@ -98,7 +98,7 @@ module.exports.serverSettings = async (devConfig, flags, log) => {
   }
 
   if (!settings.command && !settings.framework && !settings.noCmd) {
-    settings = await getStaticServerSettings(settings, flags, log)
+    settings = await getStaticServerSettings(settings, flags, projectDir, log)
   }
 
   if (!settings.proxyPort) throw new Error('No "targetPort" option specified or detected.')
@@ -120,22 +120,22 @@ module.exports.serverSettings = async (devConfig, flags, log) => {
   return settings
 }
 
-async function getStaticServerSettings(settings, flags, log) {
+async function getStaticServerSettings(settings, flags, projectDir, log) {
   let dist = settings.dist
   if (flags.dir) {
     log(`${NETLIFYDEVWARN} Using simple static server because --dir flag was specified`)
     dist = flags.dir
   } else {
-    log(`${NETLIFYDEVWARN} No app server detected and no "command" specified, using simple static server`)
+    log(`${NETLIFYDEVWARN} No app server detected and no "command" specified`)
   }
   if (!dist) {
     log(`${NETLIFYDEVLOG} Using current working directory`)
-    log(`${NETLIFYDEVWARN} Unable to determine public folder to serve files from.`)
+    log(`${NETLIFYDEVWARN} Unable to determine public folder to serve files from`)
     log(`${NETLIFYDEVWARN} Setup a netlify.toml file with a [dev] section to specify your dev server settings.`)
     log(`${NETLIFYDEVWARN} See docs at: https://cli.netlify.com/netlify-dev#project-detection`)
-    log(`${NETLIFYDEVWARN} Using current working directory for now...`)
     dist = process.cwd()
   }
+  log(`${NETLIFYDEVWARN} Running static server from "${path.relative(path.dirname(projectDir), dist)}"`)
   return {
     env: { ...process.env },
     noCmd: true,
