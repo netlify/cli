@@ -11,6 +11,7 @@ const logSymbols = require('log-symbols')
 const cliSpinnerNames = Object.keys(require('cli-spinners'))
 const randomItem = require('random-item')
 const inquirer = require('inquirer')
+const isObject = require('lodash.isobject')
 const SitesCreateCommand = require('./sites/create')
 const LinkCommand = require('./link')
 const { NETLIFYDEV } = require('../utils/logo')
@@ -168,6 +169,11 @@ class DeployCommand extends Command {
 
     let results
     try {
+      if (isObject(siteData.published_deploy) && siteData.published_deploy.locked) {
+        console.error(`Deployments are "locked" for fr=or this context. Please "Start auto publishing" from ${siteData.admin_url}/deploys`)
+        this.exit(1)
+      }
+
       if (deployToProduction) {
         this.log('Deploying to main site URL...')
       } else {
