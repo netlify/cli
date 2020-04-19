@@ -5,11 +5,18 @@ const cli = require('cli-ux').default
 const prettyjson = require('prettyjson')
 const chalk = require('chalk')
 
+const InitCommand = require('./init')
+
 class SitesWatchCommand extends Command {
   async run() {
     await this.authenticate()
     const client = this.netlify.api
-    const siteId = this.netlify.site.id
+    let siteId = this.netlify.site.id
+
+    if (!siteId) {
+      const siteData = await InitCommand.run([])
+      siteId = siteData.id
+    }
 
     // wait for 1 sec for everything to kickoff
     console.time('Deploy time')

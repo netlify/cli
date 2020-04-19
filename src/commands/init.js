@@ -244,6 +244,8 @@ git remote add origin https://github.com/YourUserName/RepoName.git
     if (flags.watch) {
       await SitesWatchCommand.run([])
     }
+
+    return siteData
   }
 }
 
