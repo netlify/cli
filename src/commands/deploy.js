@@ -170,7 +170,7 @@ class DeployCommand extends Command {
     let results
     try {
       if (isObject(siteData.published_deploy) && siteData.published_deploy.locked) {
-        console.error(`Deployments are "locked" for fr=or this context. Please "Start auto publishing" from ${siteData.admin_url}/deploys`)
+        console.error(`Deployments are "locked" for this context. Please "Start auto publishing" from ${siteData.admin_url}/deploys`)
         this.exit(1)
       }
 
