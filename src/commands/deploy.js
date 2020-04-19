@@ -34,7 +34,7 @@ class DeployCommand extends Command {
     })
 
     let siteId = flags.site || site.id
-    let siteData
+    let siteData = {}
     if (!siteId) {
       this.log("This folder isn't linked to a site yet")
       const NEW_SITE = '+  Create & configure a new site'
