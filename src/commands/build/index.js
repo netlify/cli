@@ -6,6 +6,7 @@ class BuildCommand extends Command {
   // Run Netlify Build
   async run() {
     const options = this.getOptions()
+    this.checkOptions(options)
 
     await this.config.runHook('analytics', {
       eventName: 'command',
@@ -28,6 +29,19 @@ class BuildCommand extends Command {
     } = this.parse(BuildCommand)
     const [token] = this.getConfigToken()
     return { cachedConfig, token, dry, mode: 'cli' }
+  }
+
+  checkOptions({ cachedConfig, token }) {
+    const { siteInfo = {} } = JSON.parse(cachedConfig)
+    if (!siteInfo.id && process.env.NODE_ENV !== 'test') {
+      console.error('Could not find the site ID. Please run netlify link.')
+      this.exit(1)
+    }
+
+    if (!token) {
+      console.error('Could not find the access token. Please run netlify login.')
+      this.exit(1)
+    }
   }
 }
 
