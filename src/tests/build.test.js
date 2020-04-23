@@ -15,8 +15,13 @@ const runBuildCommand = async function(t, fixtureSubDir, { exitCode: expectedExi
     env: { FORCE_COLOR: '1' },
     all: true
   })
-  t.is(exitCode, expectedExitCode)
+
+  if (exitCode !== expectedExitCode) {
+    console.error(all)
+  }
+
   t.true(all.includes(output))
+  t.is(exitCode, expectedExitCode)
 }
 
 test('build command - succeeds', async t => {
