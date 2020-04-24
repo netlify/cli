@@ -62,7 +62,7 @@ module.exports.serverSettings = async (devConfig, flags, log) => {
     const detector = loadDetector(detectorName)
     const detectorResult = detector()
     if (!detectorResult) throw new Error(`Specified "framework" detector "${devConfig.framework}" did not pass requirements for your project`)
-    
+
     settings.args = chooseDefaultArgs(detectorResult.possibleArgsArrs)
     // Merge detectorResult default settings into settings Object.
     Object.assign(settings, detectorResult)
