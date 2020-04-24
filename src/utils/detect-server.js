@@ -58,12 +58,14 @@ module.exports.serverSettings = async (devConfig, flags, log) => {
     // detectorsFiles end in '.js`; but devConfig.framework shouldn't. To test for match, append '.js' to devConfig.framework.
     const detectorName = detectorsFiles.find(dt => dt === `${devConfig.framework}.js`)
     if (!detectorName) throw new Error(`Unsupported value '${devConfig.framework}' provided for "framework" option in config`)
-
+    
     const detector = loadDetector(detectorName)
     const detectorResult = detector()
     if (!detectorResult) throw new Error(`Specified "framework" detector "${devConfig.framework}" did not pass requirements for your project`)
-
+    
     settings.args = chooseDefaultArgs(detectorResult.possibleArgsArrs)
+    // Merge detectorResult default settings into settings Object.
+    Object.assign(settings, detectorResult)
   }
 
   if (devConfig.command) {
