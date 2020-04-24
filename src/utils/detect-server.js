@@ -55,8 +55,9 @@ module.exports.serverSettings = async (devConfig, flags, log) => {
   } else if (devConfig.framework === '#static') {
     settings.framework = devConfig.framework
   } else {
-    const detectorName = detectorsFiles.find(dt => `${dt}.js` === devConfig.framework)
-    if (!detectorName) throw new Error('Unsupported value provided for "framework" option in config')
+    // detectorsFiles end in '.js`; but devConfig.framework shouldn't. To test for match, append '.js' to devConfig.framework.
+    const detectorName = detectorsFiles.find(dt => dt === `${devConfig.framework}.js`)
+    if (!detectorName) throw new Error(`Unsupported value '${devConfig.framework}' provided for "framework" option in config`)
 
     const detector = loadDetector(detectorName)
     const detectorResult = detector()
