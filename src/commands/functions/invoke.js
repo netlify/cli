@@ -41,7 +41,8 @@ class FunctionsInvokeCommand extends Command {
       process.exit(1)
     }
 
-    let settings = await serverSettings(Object.assign({}, config.dev, flags))
+    // Pass in console.log as the logger for now.
+    let settings = await serverSettings(config.dev, flags, console.log)
 
     if (!(settings && settings.command)) {
       settings = {
