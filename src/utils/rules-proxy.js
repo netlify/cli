@@ -58,17 +58,18 @@ module.exports = async function createRewriter({ distDir, projectDir, jwtSecret,
   let matcher = null
   const configFiles = Array.from(
     new Set(
-      [
-        path.resolve(distDir, '_redirects'),
-        path.resolve(projectDir, '_redirects'),
-      ]
-        .concat(configPath ? path.resolve(configPath) : [])
+      [path.resolve(distDir, '_redirects'), path.resolve(projectDir, '_redirects')].concat(
+        configPath ? path.resolve(configPath) : []
+      )
     )
   ).filter(f => f !== projectDir)
   let rules = await parseRules(configFiles)
 
   onChanges(configFiles, async () => {
-    console.log(`${NETLIFYDEVLOG} Reloading redirect rules from`, configFiles.filter(fs.existsSync).map(p => path.relative(projectDir, p)))
+    console.log(
+      `${NETLIFYDEVLOG} Reloading redirect rules from`,
+      configFiles.filter(fs.existsSync).map(p => path.relative(projectDir, p))
+    )
     rules = await parseRules(configFiles)
     matcher = null
   })
@@ -77,10 +78,10 @@ module.exports = async function createRewriter({ distDir, projectDir, jwtSecret,
     if (matcher) return matcher
 
     if (rules.length) {
-      return matcher = await redirector.parseJSON(JSON.stringify(rules), {
+      return (matcher = await redirector.parseJSON(JSON.stringify(rules), {
         jwtSecret: jwtSecret || 'secret',
         jwtRole: jwtRole || 'app_metadata.authorization.roles'
-      })
+      }))
     }
     return {
       match() {

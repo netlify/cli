@@ -11,6 +11,7 @@ For more information on add-ons see our [Netlify partner add-ons docs](https://w
 ## About
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
+
 (Beta) Manage Netlify Add-ons
 
 **Usage**
@@ -19,14 +20,13 @@ For more information on add-ons see our [Netlify partner add-ons docs](https://w
 netlify addons
 ```
 
-| Subcommand | description  |
-|:--------------------------- |:-----|
-| [`addons:auth`](/docs/commands/addons.md#addonsauth) | Login to add-on provider  |
-| [`addons:config`](/docs/commands/addons.md#addonsconfig) | Configure add-on settings  |
-| [`addons:create`](/docs/commands/addons.md#addonscreate) | Add an add-on extension to your site  |
-| [`addons:delete`](/docs/commands/addons.md#addonsdelete) | Remove an add-on extension to your site  |
-| [`addons:list`](/docs/commands/addons.md#addonslist) | List currently installed add-ons for site  |
-
+| Subcommand                                               | description                               |
+| :------------------------------------------------------- | :---------------------------------------- |
+| [`addons:auth`](/docs/commands/addons.md#addonsauth)     | Login to add-on provider                  |
+| [`addons:config`](/docs/commands/addons.md#addonsconfig) | Configure add-on settings                 |
+| [`addons:create`](/docs/commands/addons.md#addonscreate) | Add an add-on extension to your site      |
+| [`addons:delete`](/docs/commands/addons.md#addonsdelete) | Remove an add-on extension to your site   |
+| [`addons:list`](/docs/commands/addons.md#addonslist)     | List currently installed add-ons for site |
 
 **Examples**
 
@@ -39,6 +39,7 @@ netlify addons:auth addon-xyz
 ```
 
 ---
+
 ## `addons:auth`
 
 Login to add-on provider
@@ -54,6 +55,7 @@ netlify addons:auth
 - name - Add-on slug
 
 ---
+
 ## `addons:config`
 
 Configure add-on settings
@@ -69,12 +71,12 @@ netlify addons:config
 - name - Add-on namespace
 
 ---
+
 ## `addons:create`
 
 Add an add-on extension to your site
 ...
 Add-ons are a way to extend the functionality of your Netlify site
-
 
 **Usage**
 
@@ -87,12 +89,12 @@ netlify addons:create
 - name - Add-on namespace
 
 ---
+
 ## `addons:delete`
 
 Remove an add-on extension to your site
 ...
 Add-ons are a way to extend the functionality of your Netlify site
-
 
 **Usage**
 
@@ -106,9 +108,10 @@ netlify addons:delete
 
 **Flags**
 
-- `force` (*boolean*) - delete without prompting (useful for CI)
+- `force` (_boolean_) - delete without prompting (useful for CI)
 
 ---
+
 ## `addons:list`
 
 List currently installed add-ons for site
@@ -121,7 +124,7 @@ netlify addons:list
 
 **Flags**
 
-- `json` (*boolean*) - Output add-on data as JSON
+- `json` (_boolean_) - Output add-on data as JSON
 
 ---
 
