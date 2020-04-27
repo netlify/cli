@@ -57,9 +57,7 @@ function createCallback(response) {
       const items = lambdaResponse.multiValueHeaders[key]
       response.setHeader(key, items)
     }
-    response.write(
-      lambdaResponse.isBase64Encoded ? Buffer.from(lambdaResponse.body, 'base64') : lambdaResponse.body
-    )
+    response.write(lambdaResponse.isBase64Encoded ? Buffer.from(lambdaResponse.body, 'base64') : lambdaResponse.body)
     response.end()
   }
 }
@@ -105,9 +103,7 @@ function createHandler(dir) {
 
   const logger = winston.createLogger({
     levels: winston.config.npm.levels,
-    transports: [
-      new winston.transports.Console( { level: 'warn' }),
-    ]
+    transports: [new winston.transports.Console({ level: 'warn' })]
   })
   lambdaLocal.setLogger(logger)
 
@@ -158,7 +154,7 @@ function createHandler(dir) {
       clientContext: JSON.stringify(buildClientContext(request.headers) || {}),
       callback: callback,
       verboseLevel: 3,
-      timeoutMs: 10 * 1000,
+      timeoutMs: 10 * 1000
     })
   }
 }
