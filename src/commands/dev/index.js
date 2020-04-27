@@ -132,7 +132,12 @@ function initializeProxy(port, distDir, projectDir) {
     if (!isEmpty(pathHeaderRules)) {
       Object.entries(pathHeaderRules).forEach(([key, val]) => res.setHeader(key, val))
     }
-    res.writeHead(req.proxyOptions.status || proxyRes.statusCode, proxyRes.headers)
+    // leave 3xx redirects handling to browser
+    if (proxyRes.statusCode >= 300 && proxyRes.statusCode < 400) {
+      res.writeHead(proxyRes.statusCode, proxyRes.headers);
+    } else {
+      res.writeHead(req.proxyOptions.status || proxyRes.statusCode, proxyRes.headers)
+    }
     proxyRes.on('data', function(data) {
       res.write(data)
     })
