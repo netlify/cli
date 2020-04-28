@@ -288,7 +288,7 @@ async function serveRedirect(req, res, proxy, match, options) {
     return render404(options.publicFolder)
   }
 
-  if (match.force || ((!(await isStatic(reqUrl.pathname, options.publicFolder)) || options.framework) && match.status !== 404)) {
+  if (match.force || (!(await isStatic(reqUrl.pathname, options.publicFolder) || options.framework) && match.status !== 404)) {
     const dest = new url.URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
     if (isRedirect(match)) {
       res.writeHead(match.status, {
@@ -314,7 +314,7 @@ async function serveRedirect(req, res, proxy, match, options) {
     const destURL = dest.pathname + (urlParams.toString() && '?' + urlParams.toString())
 
     let status
-    if (isInternal(destURL) || !options.framework) {
+    if (match.force || isInternal(destURL) || !options.framework) {
       req.url = destURL
       status = match.status
       console.log(`${NETLIFYDEVLOG} Rewrote URL to `, req.url)
