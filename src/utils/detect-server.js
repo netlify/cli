@@ -66,7 +66,7 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
   } else if (devConfig.framework === '#static') {
     // Do nothing
   } else {
-    const detectorName = detectorsFiles.find(dt => `${dt}.js` === devConfig.framework)
+    const detectorName = detectorsFiles.find(dt => dt === `${devConfig.framework}.js`)
     if (!detectorName) throw new Error('Unsupported value provided for "framework" option in config')
 
     const detector = loadDetector(detectorName)
