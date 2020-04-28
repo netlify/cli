@@ -53,7 +53,8 @@ function addonUrl(addonUrls, req) {
 async function isStatic(pathname, publicFolder) {
   const alternatives = alternativePathsFor(pathname).map(p => path.resolve(publicFolder, p.substr(1)))
 
-  for (const p in alternatives) {
+  for (const i in alternatives) {
+    const p = alternatives[i]
     try {
       const pathStats = await stat(p)
       if (pathStats.isFile()) return true
