@@ -58,6 +58,6 @@ test('netlify dev: api rewrite', async t => {
   t.is(response, '"ping"')
 })
 
-test.after('cleanup', async t => {
+test.after.always('cleanup', async t => {
   if (ps && ps.pid) ps.kill(process.platform !== 'win32' ? 'SIGHUP' : undefined)
 })
