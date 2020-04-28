@@ -76,6 +76,7 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
         `Specified "framework" detector "${devConfig.framework}" did not pass requirements for your project`
       )
 
+    settings = detectorResult
     settings.args = chooseDefaultArgs(detectorResult.possibleArgsArrs)
   }
 
