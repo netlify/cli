@@ -1,4 +1,4 @@
-const path = require('path')
+  const path = require('path')
 const chalk = require('chalk')
 const getPort = require('get-port')
 const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./logo')
@@ -8,9 +8,7 @@ const fs = require('fs')
 
 module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
   let settings = { env: { ...process.env } }
-  const detectorsFiles = fs
-    .readdirSync(path.join(__dirname, '..', 'detectors'))
-    .filter(x => x.endsWith('.js')) // only accept .js detector files
+  const detectorsFiles = fs.readdirSync(path.join(__dirname, '..', 'detectors')).filter(x => x.endsWith('.js')) // only accept .js detector files
 
   if (typeof devConfig.framework !== 'string') throw new Error('Invalid "framework" option provided in config')
 
@@ -73,7 +71,10 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
 
     const detector = loadDetector(detectorName)
     const detectorResult = detector()
-    if (!detectorResult) throw new Error(`Specified "framework" detector "${devConfig.framework}" did not pass requirements for your project`)
+    if (!detectorResult)
+      throw new Error(
+        `Specified "framework" detector "${devConfig.framework}" did not pass requirements for your project`
+      )
 
     settings.args = chooseDefaultArgs(detectorResult.possibleArgsArrs)
   }
@@ -87,7 +88,9 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
 
   if (devConfig.targetPort) {
     if (devConfig.targetPort === devConfig.port) {
-      throw new Error('"port" and "targetPort" options cannot have same values. Please consult the documentation for more details: https://cli.netlify.com/netlify-dev#netlifytoml-dev-block')
+      throw new Error(
+        '"port" and "targetPort" options cannot have same values. Please consult the documentation for more details: https://cli.netlify.com/netlify-dev#netlifytoml-dev-block'
+      )
     }
 
     if (!settings.command) throw new Error('No "command" specified or detected. The "command" option is required to use "targetPort" option.')
@@ -95,6 +98,10 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
 
     settings.proxyPort = devConfig.targetPort
     settings.urlRegexp = devConfig.urlRegexp || new RegExp(`(http://)([^:]+:)${devConfig.targetPort}(/)?`, 'g')
+  } else if (devConfig.port && devConfig.port === settings.proxyPort) {
+    throw new Error(
+      'The "port" option you specified conflicts with the port of your application. Please use a different value for "port"'
+    )
   }
 
   if (!settings.command && !settings.framework && !settings.noCmd) {
@@ -146,17 +153,21 @@ async function getStaticServerSettings(settings, flags, projectDir, log) {
 }
 
 const tellUser = settingsField => dV =>
-    // eslint-disable-next-line no-console
-    console.log(
-        `${NETLIFYDEVLOG} Overriding ${chalk.yellow(settingsField)} with setting derived from netlify.toml [dev] block: `,
-        dV
-    )
+  // eslint-disable-next-line no-console
+  console.log(
+    `${NETLIFYDEVLOG} Overriding ${chalk.yellow(settingsField)} with setting derived from netlify.toml [dev] block: `,
+    dV
+  )
 
 function loadDetector(detectorName) {
   try {
     return require(path.join(__dirname, '..', 'detectors', detectorName))
   } catch (err) {
-    throw new Error(`Failed to load detector: ${chalk.yellow(detectorName)}, this is likely a bug in the detector, please file an issue in netlify-cli\n ${err}`)
+    throw new Error(
+      `Failed to load detector: ${chalk.yellow(
+        detectorName
+      )}, this is likely a bug in the detector, please file an issue in netlify-cli\n ${err}`
+    )
   }
 }
 module.exports.loadDetector = loadDetector
@@ -166,7 +177,9 @@ function chooseDefaultArgs(possibleArgsArrs) {
   const args = possibleArgsArrs[0] // just pick the first one
   if (!args) {
     const { scripts } = JSON.parse(fs.readFileSync('package.json', { encoding: 'utf8' }))
-    const err = new Error('Empty args assigned, this is an internal Netlify Dev bug, please report your settings and scripts so we can improve')
+    const err = new Error(
+      'Empty args assigned, this is an internal Netlify Dev bug, please report your settings and scripts so we can improve'
+    )
     err.scripts = scripts
     err.possibleArgsArrs = possibleArgsArrs
     throw err
@@ -178,7 +191,10 @@ module.exports.chooseDefaultArgs = chooseDefaultArgs
 
 /** utilities for the inquirer section above */
 function filterSettings(scriptInquirerOptions, input) {
-  const filteredSettings = fuzzy.filter(input, scriptInquirerOptions.map(x => x.name))
+  const filteredSettings = fuzzy.filter(
+    input,
+    scriptInquirerOptions.map(x => x.name)
+  )
   const filteredSettingNames = filteredSettings.map(x => (input ? x.string : x))
   return scriptInquirerOptions.filter(t => filteredSettingNames.includes(t.name))
 }

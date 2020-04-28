@@ -68,7 +68,7 @@ class DeployCommand extends Command {
       } catch (e) {
         // TODO specifically handle known cases (e.g. no account access)
         if (e.status === 404) {
-          this.error("Site not found")
+          this.error('Site not found')
         } else {
           this.error(e.message)
         }
@@ -78,7 +78,9 @@ class DeployCommand extends Command {
     if (flags.trigger) {
       try {
         const siteBuild = await api.createSiteBuild({ siteId: siteId })
-        this.log(`${NETLIFYDEV} A new deployment was triggered successfully. Visit https://app.netlify.com/sites/${siteData.name}/deploys/${siteBuild.deploy_id} to see the logs.`)
+        this.log(
+          `${NETLIFYDEV} A new deployment was triggered successfully. Visit https://app.netlify.com/sites/${siteData.name}/deploys/${siteBuild.deploy_id} to see the logs.`
+        )
         return
       } catch (err) {
         if (err.status === 404) {

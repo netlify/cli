@@ -1,5 +1,5 @@
 const { promisify } = require('util')
-const { execFile : execSyncOriginal } = require('child_process')
+const { execFile: execSyncOriginal } = require('child_process')
 
 const execFile = promisify(execSyncOriginal)
 

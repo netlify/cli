@@ -10,14 +10,13 @@ let ps, host, port
 test.before(async t => {
   console.log('Running Netlify Dev server')
   ps = await spawn(cliPath, ['dev'], {
-      cwd: sitePath,
-      env: { ...process.env, DUMMY_VAR: "true" },
-      stdio: 'pipe',
-      shell: true,
-    }
-  )
+    cwd: sitePath,
+    env: { ...process.env, DUMMY_VAR: 'true' },
+    stdio: 'pipe',
+    shell: true
+  })
   return new Promise((resolve, reject) => {
-    ps.stdout.on('data', (data) => {
+    ps.stdout.on('data', data => {
       data = data.toString()
       if (data.includes('Server now ready on')) {
         const matches = data.match(/http:\/\/(.+):(\d+)/)
@@ -44,7 +43,6 @@ test('netlify dev env file', async t => {
 
   t.is(response, 'true')
 })
-
 
 test('netlify dev env file overriding prod var', async t => {
   const response = await fetch(`http://${host}:${port}/.netlify/functions/override-process-env`).then(r => r.text())
