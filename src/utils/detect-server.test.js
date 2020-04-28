@@ -2,7 +2,7 @@ const test = require('ava')
 const path = require('path')
 const getPort = require('get-port')
 const { loadDetector, serverSettings, chooseDefaultArgs } = require('./detect-server')
-const sitePath = path.join(__dirname, '..', 'tests', 'dummy-site')
+const sitePath = path.join(__dirname, '..', '..', 'tests', 'dummy-site')
 
 process.chdir(sitePath)
 

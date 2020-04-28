@@ -1,9 +1,9 @@
 const test = require('ava')
 const path = require('path')
 const { parseHeadersFile, objectForPath } = require('./headers.js')
+const sitePath = path.join(__dirname, '..', '..', 'tests', 'dummy-site')
 
 test('_headers: validate correct parsing', t => {
-  const sitePath = path.join(__dirname, '../tests/dummy-site')
   const rules = parseHeadersFile(path.resolve(sitePath, '_headers'))
 
   t.deepEqual(rules, {
@@ -25,7 +25,6 @@ test('_headers: validate correct parsing', t => {
 })
 
 test('_headers: rulesForPath testing', t => {
-  const sitePath = path.join(__dirname, '../tests/dummy-site')
   const rules = parseHeadersFile(path.resolve(sitePath, '_headers'))
   t.deepEqual(objectForPath(rules, '/'), {
     'X-Frame-Options': ['SAMEORIGIN']
