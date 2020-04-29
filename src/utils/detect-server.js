@@ -1,4 +1,4 @@
-  const path = require('path')
+const path = require('path')
 const chalk = require('chalk')
 const getPort = require('get-port')
 const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./logo')
