@@ -16,7 +16,7 @@ let ps, host, port
 
 test.before(async t => {
   console.log('Running Netlify Dev server in Create React App project')
-  ps = await spawn(cliPath, ['dev'], {
+  ps = await spawn(cliPath, ['dev', '-p', '2'+Math.random().toString().substr(2, 4)], {
       cwd: sitePath,
       env: { ...process.env, DUMMY_VAR: 'true', SKIP_PREFLIGHT_CHECK: 'true' },
       stdio: ['inherit', 'pipe', 'inherit'],
