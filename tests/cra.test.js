@@ -6,6 +6,7 @@ const test = require('ava')
 const fetch = require('node-fetch')
 const mkdirp = require('mkdirp')
 const cliPath = require('./utils/cliPath')
+const { randomPort } = require('./utils/')
 const sitePath = path.join(__dirname, 'site-cra')
 
 const fileOpen = util.promisify(fs.open)
@@ -16,7 +17,7 @@ let ps, host, port
 
 test.before(async t => {
   console.log('Running Netlify Dev server in Create React App project')
-  ps = await spawn(cliPath, ['dev', '-p', '2'+Math.random().toString().substr(2, 4)], {
+  ps = await spawn(cliPath, ['dev', '-p', randomPort()], {
       cwd: sitePath,
       env: { ...process.env, DUMMY_VAR: 'true', SKIP_PREFLIGHT_CHECK: 'true' },
       stdio: ['inherit', 'pipe', 'inherit'],
