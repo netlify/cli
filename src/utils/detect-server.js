@@ -8,9 +8,7 @@ const fs = require('fs')
 
 module.exports.serverSettings = async (devConfig, flags, log) => {
   let settings = { env: { ...process.env } }
-  const detectorsFiles = fs
-    .readdirSync(path.join(__dirname, '..', 'detectors'))
-    .filter(x => x.endsWith('.js')) // only accept .js detector files
+  const detectorsFiles = fs.readdirSync(path.join(__dirname, '..', 'detectors')).filter(x => x.endsWith('.js')) // only accept .js detector files
 
   if (typeof devConfig.framework !== 'string') throw new Error('Invalid "framework" option provided in config')
 
@@ -50,7 +48,9 @@ module.exports.serverSettings = async (devConfig, flags, log) => {
       })
       settings = chosenSetting // finally! we have a selected option
 
-      console.log(`Add \`framework = "${chosenSetting.framework}"\` to [dev] section of your netlify.toml to avoid this selection prompt next time`)
+      console.log(
+        `Add \`framework = "${chosenSetting.framework}"\` to [dev] section of your netlify.toml to avoid this selection prompt next time`
+      )
     }
   } else if (devConfig.framework === '#static') {
     settings.framework = devConfig.framework
@@ -61,7 +61,10 @@ module.exports.serverSettings = async (devConfig, flags, log) => {
     
     const detector = loadDetector(detectorName)
     const detectorResult = detector()
-    if (!detectorResult) throw new Error(`Specified "framework" detector "${devConfig.framework}" did not pass requirements for your project`)
+    if (!detectorResult)
+      throw new Error(
+        `Specified "framework" detector "${devConfig.framework}" did not pass requirements for your project`
+      )
 
     settings.args = chooseDefaultArgs(detectorResult.possibleArgsArrs)
     // Merge detectorResult default settings into settings Object.
@@ -87,12 +90,8 @@ module.exports.serverSettings = async (devConfig, flags, log) => {
     if (!dist) {
       log(`${NETLIFYDEVLOG} Using current working directory`)
       log(`${NETLIFYDEVWARN} Unable to determine public folder to serve files from.`)
-      log(
-        `${NETLIFYDEVWARN} Setup a netlify.toml file with a [dev] section to specify your dev server settings.`
-      )
-      log(
-        `${NETLIFYDEVWARN} See docs at: https://cli.netlify.com/netlify-dev#project-detection`
-      )
+      log(`${NETLIFYDEVWARN} Setup a netlify.toml file with a [dev] section to specify your dev server settings.`)
+      log(`${NETLIFYDEVWARN} See docs at: https://cli.netlify.com/netlify-dev#project-detection`)
       log(`${NETLIFYDEVWARN} Using current working directory for now...`)
       dist = process.cwd()
     }
@@ -101,19 +100,23 @@ module.exports.serverSettings = async (devConfig, flags, log) => {
       port: 8888,
       proxyPort: await getPort({ port: 3999 }),
       dist,
-      ...(settings.command ? { command: settings.command, args: settings.args } : { noCmd: true }),
+      ...(settings.command ? { command: settings.command, args: settings.args } : { noCmd: true })
     }
   }
 
   settings.port = devConfig.port || settings.port
   if (devConfig.targetPort) {
     if (devConfig.targetPort === devConfig.port) {
-      throw new Error('"port" and "targetPort" options cannot have same values. Please consult the documentation for more details: https://cli.netlify.com/netlify-dev#netlifytoml-dev-block')
+      throw new Error(
+        '"port" and "targetPort" options cannot have same values. Please consult the documentation for more details: https://cli.netlify.com/netlify-dev#netlifytoml-dev-block'
+      )
     }
     settings.proxyPort = devConfig.targetPort
     settings.urlRegexp = devConfig.urlRegexp || new RegExp(`(http://)([^:]+:)${devConfig.targetPort}(/)?`, 'g')
   } else if (devConfig.port && devConfig.port === settings.proxyPort) {
-    throw new Error('The "port" option you specified conflicts with the port of your application. Please use a different value for "port"')
+    throw new Error(
+      'The "port" option you specified conflicts with the port of your application. Please use a different value for "port"'
+    )
   }
 
   const port = await getPort({ port: settings.port })
@@ -130,17 +133,21 @@ module.exports.serverSettings = async (devConfig, flags, log) => {
 }
 
 const tellUser = settingsField => dV =>
-    // eslint-disable-next-line no-console
-    console.log(
-        `${NETLIFYDEVLOG} Overriding ${chalk.yellow(settingsField)} with setting derived from netlify.toml [dev] block: `,
-        dV
-    )
+  // eslint-disable-next-line no-console
+  console.log(
+    `${NETLIFYDEVLOG} Overriding ${chalk.yellow(settingsField)} with setting derived from netlify.toml [dev] block: `,
+    dV
+  )
 
 function loadDetector(detectorName) {
   try {
     return require(path.join(__dirname, '..', 'detectors', detectorName))
   } catch (err) {
-    throw new Error(`Failed to load detector: ${chalk.yellow(detectorName)}, this is likely a bug in the detector, please file an issue in netlify-cli\n ${err}`)
+    throw new Error(
+      `Failed to load detector: ${chalk.yellow(
+        detectorName
+      )}, this is likely a bug in the detector, please file an issue in netlify-cli\n ${err}`
+    )
   }
 }
 module.exports.loadDetector = loadDetector
@@ -150,7 +157,9 @@ function chooseDefaultArgs(possibleArgsArrs) {
   const args = possibleArgsArrs[0] // just pick the first one
   if (!args) {
     const { scripts } = JSON.parse(fs.readFileSync('package.json', { encoding: 'utf8' }))
-    const err = new Error('Empty args assigned, this is an internal Netlify Dev bug, please report your settings and scripts so we can improve')
+    const err = new Error(
+      'Empty args assigned, this is an internal Netlify Dev bug, please report your settings and scripts so we can improve'
+    )
     err.scripts = scripts
     err.possibleArgsArrs = possibleArgsArrs
     throw err
@@ -162,7 +171,10 @@ module.exports.chooseDefaultArgs = chooseDefaultArgs
 
 /** utilities for the inquirer section above */
 function filterSettings(scriptInquirerOptions, input) {
-  const filteredSettings = fuzzy.filter(input, scriptInquirerOptions.map(x => x.name))
+  const filteredSettings = fuzzy.filter(
+    input,
+    scriptInquirerOptions.map(x => x.name)
+  )
   const filteredSettingNames = filteredSettings.map(x => (input ? x.string : x))
   return scriptInquirerOptions.filter(t => filteredSettingNames.includes(t.name))
 }

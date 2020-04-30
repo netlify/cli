@@ -59,7 +59,7 @@ class SitesDeleteCommand extends Command {
     }
 
     /* Validation logic if siteId passed in does not match current site ID */
-    if (noForce && (cwdSiteId && cwdSiteId !== siteId)) {
+    if (noForce && cwdSiteId && cwdSiteId !== siteId) {
       this.log(`${chalk.redBright('Warning')}: The siteId supplied does not match the current working directory siteId`)
       this.log()
       this.log(`Supplied:       "${siteId}"`)

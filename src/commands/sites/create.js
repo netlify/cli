@@ -62,7 +62,7 @@ class SitesCreateCommand extends Command {
         const siteSuggestion = sample(suggestions)
 
         console.log(
-          `Choose a unique site name (e.g. ${siteSuggestion}.netlify.com) or leave it blank for a random name. You can update the site name later.`
+          `Choose a unique site name (e.g. ${siteSuggestion}.netlify.app) or leave it blank for a random name. You can update the site name later.`
         )
         const results = await inquirer.prompt([
           {
@@ -87,7 +87,7 @@ class SitesCreateCommand extends Command {
         })
       } catch (error) {
         if (error.status === 422) {
-          this.warn(`${name}.netlify.com already exists. Please try a different slug.`)
+          this.warn(`${name}.netlify.app already exists. Please try a different slug.`)
           await inputSiteName()
         } else {
           this.error(`createSiteInTeam error: ${error.status}: ${error.message}`)

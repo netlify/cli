@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "2.47.0",
+  "version": "2.48.0",
   "author": "Netlify Inc.",
   "contributors": [
     "Mathias Biilmann <matt@netlify.com> (https://twitter.com/biilmann)",
@@ -61,9 +61,9 @@
     "postinstall": "node ./scripts/postinstall.js"
   },
   "dependencies": {
-    "@netlify/build": "^0.4.1",
-    "@netlify/config": "^0.11.0",
-    "@netlify/zip-it-and-ship-it": "^0.4.0-14",
+    "@netlify/build": "^0.4.5",
+    "@netlify/config": "^0.11.1",
+    "@netlify/zip-it-and-ship-it": "^0.4.0-15",
     "@oclif/command": "^1.5.18",
     "@oclif/config": "^1.13.2",
     "@oclif/errors": "^1.1.2",
@@ -117,7 +117,7 @@
     "log-symbols": "^2.2.0",
     "make-dir": "^3.0.0",
     "minimist": "^1.2.5",
-    "netlify": "^4.0.5",
+    "netlify": "^4.1.1",
     "netlify-redirect-parser": "^2.4.0",
     "netlify-redirector": "^0.2.0",
     "node-fetch": "^2.6.0",
