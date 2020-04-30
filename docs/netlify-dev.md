@@ -27,7 +27,7 @@ Netlify Dev brings the power of Netlify's Edge Logic layer, [serverless function
        └──────────┘
 ```
 
-With project detectors, it automatically detects common tools like Gatsby, Hugo, React Static, Eleventy, and more, to give a zero config setup for your local dev server and can help scaffolding new functions as you work on them. Read our blogpost for [more on detectors and how you can contribute](https://www.netlify.com/blog/2019/04/24/zero-config-yet-technology-agnostic-how-netlify-dev-detectors-work/)!
+With project detectors, it automatically detects common tools like Gatsby, Hugo, React Static, Eleventy, and more, to give a zero config setup for your local dev server and can help scaffolding new functions as you work on them. Read our blog post for [more on detectors and how you can contribute](https://www.netlify.com/blog/2019/04/24/zero-config-yet-technology-agnostic-how-netlify-dev-detectors-work/)!
 
 ## Prerequisites
 
@@ -145,7 +145,7 @@ against your project.
 
 The `framework` option should be one of the available
 [project types which Netlify Dev can detect](https://github.com/netlify/cli/tree/master/src/detectors)
-or `#auto` (default) to test all available detectors or `#staic` for a static
+or `#auto` (default) to test all available detectors or `#static` for a static
 file server.
 
 ## Explanation of ports in Netlify Dev
@@ -192,7 +192,7 @@ See the [Redirects Documentation](https://www.netlify.com/docs/redirects/) for m
 
 ## Environment Variables
 
-If the current project is linked to a Netlify site (`netlify link`), enviornment variables are pulled down from production and populated in `netlify dev` server. This functionality requires that you're logged in (`netlify login`) and connected to the internet when running `netlify dev`.
+If the current project is linked to a Netlify site (`netlify link`), environment variables are pulled down from production and populated in `netlify dev` server. This functionality requires that you're logged in (`netlify login`) and connected to the internet when running `netlify dev`.
 
 Netlify Dev also supports local environment variables through `.env` files.
 Netlify Dev will look in project root directory for `.env` file and will provide those variables to the spawned site generator/server and Netlify Functions.
@@ -309,11 +309,11 @@ We don't expect everyone to use function builders, but we expect many will, and 
 
 With this feature, pre-Netlify Dev projects like https://github.com/netlify/create-react-app-lambda can immediately use the `netlify dev` command with no change to code. Currently, we only offer detection for scripts with `netlify-lambda build $SRCFOLDER`. More ideas are welcome.
 
-Netlify Dev will watch `netlify-lambda`'s source folder and rebuild whenever the source file changes, eliminating the need for `netlify-lambda serve` since we dont want a duplicate functions server.
+Netlify Dev will watch `netlify-lambda`'s source folder and rebuild whenever the source file changes, eliminating the need for `netlify-lambda serve` since we don't want a duplicate functions server.
 
 **Bring Your Own Function Builder**
 
-We may offer detection for more function builders in future, and also let you specify function build commands in the `netlify.toml` `[dev]` block. Please share your usecase with us if you are likely to need this.
+We may offer detection for more function builders in future, and also let you specify function build commands in the `netlify.toml` `[dev]` block. Please share your use case with us if you are likely to need this.
 
 ### Using Add-ons
 
