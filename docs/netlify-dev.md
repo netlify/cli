@@ -192,7 +192,7 @@ See the [Redirects Documentation](https://www.netlify.com/docs/redirects/) for m
 
 ## Environment Variables
 
-If the current project is linked to a Netlify site (`netlify link`), enviornment variables are pulled down from production and populated in `netlify dev` server. This functionality requires that you're logged in (`netlify login`) and connected to the internet when running `netlify dev`.
+If the current project is linked to a Netlify site (`netlify link`), environment variables are pulled down from production and populated in `netlify dev` server. This functionality requires that you're logged in (`netlify login`) and connected to the internet when running `netlify dev`.
 
 Netlify Dev also supports local environment variables through `.env` files.
 Netlify Dev will look in project root directory for `.env` file and will provide those variables to the spawned site generator/server and Netlify Functions.
