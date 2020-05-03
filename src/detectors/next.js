@@ -17,7 +17,7 @@ module.exports = function() {
     possibleArgsArrs.push(['next'])
   }
   return {
-    framework: 'next.js',
+    framework: 'next',
     command: getYarnOrNPMCommand(),
     port: 8888,
     proxyPort: 3000,
