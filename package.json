@@ -177,7 +177,8 @@
   },
   "ava": {
     "files": [
-      "src/**/*.test.js"
+      "src/**/*.test.js",
+      "tests/*.test.js"
     ],
     "cache": true,
     "concurrency": 5,

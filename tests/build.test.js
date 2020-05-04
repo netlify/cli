@@ -1,7 +1,8 @@
+const path = require('path')
 const test = require('ava')
 const execa = require('execa')
 
-const BIN_PATH = `${__dirname}/../../bin/run`
+const BIN_PATH = path.join(__dirname, '..', 'bin', 'run')
 const FIXTURE_DIR = __dirname
 
 // Runs `netlify build ...flags` then verify:

@@ -48,7 +48,8 @@ function addonUrl(addonUrls, req) {
 async function isStatic(pathname, publicFolder) {
   const alternatives = alternativePathsFor(pathname).map(p => path.resolve(publicFolder, p.substr(1)))
 
-  for (const p in alternatives) {
+  for (const i in alternatives) {
+    const p = alternatives[i]
     try {
       const pathStats = await stat(p)
       if (pathStats.isFile()) return true
@@ -282,10 +283,7 @@ async function serveRedirect(req, res, proxy, match, options) {
     return render404(options.publicFolder)
   }
 
-  if (
-    match.force ||
-    ((!(await isStatic(reqUrl.pathname, options.publicFolder)) || options.framework) && match.status !== 404)
-  ) {
+  if (match.force || (!(await isStatic(reqUrl.pathname, options.publicFolder) || options.framework) && match.status !== 404)) {
     const dest = new url.URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
     if (isRedirect(match)) {
       res.writeHead(match.status, {
@@ -311,7 +309,7 @@ async function serveRedirect(req, res, proxy, match, options) {
     const destURL = dest.pathname + (urlParams.toString() && '?' + urlParams.toString())
 
     let status
-    if (isInternal(destURL) || !options.framework) {
+    if (match.force || isInternal(destURL) || !options.framework) {
       req.url = destURL
       status = match.status
       console.log(`${NETLIFYDEVLOG} Rewrote URL to `, req.url)
@@ -397,8 +395,9 @@ class DevCommand extends Command {
     const devConfig = {
       framework: '#auto',
       ...(config.build.functions && { functions: config.build.functions }),
+      ...(config.build.publish && { publish: config.build.publish }),
       ...config.dev,
-      ...flags
+      ...flags,
     }
     let addonUrls = {}
 
@@ -420,7 +419,7 @@ class DevCommand extends Command {
       Object.entries(vars).forEach(([key, val]) => (process.env[key] = val))
     }
 
-    let settings = await serverSettings(devConfig, flags, this.log)
+    let settings = await serverSettings(devConfig, flags, site.root, this.log)
 
     await startDevServer(settings, this.log)
 

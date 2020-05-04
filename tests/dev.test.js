@@ -3,13 +3,14 @@ const { spawn } = require('child_process')
 const test = require('ava')
 const fetch = require('node-fetch')
 const cliPath = require('./utils/cliPath')
+const { randomPort } = require('./utils/')
 const sitePath = path.join(__dirname, 'dummy-site')
 
 let ps, host, port
 
 test.before(async t => {
   console.log('Running Netlify Dev server')
-  ps = await spawn(cliPath, ['dev'], {
+  ps = await spawn(cliPath, ['dev', '-p', randomPort()], {
     cwd: sitePath,
     env: { ...process.env, DUMMY_VAR: 'true' },
     stdio: 'pipe',
@@ -56,6 +57,6 @@ test('netlify dev: api rewrite', async t => {
   t.is(response, '"ping"')
 })
 
-test.after('cleanup', async t => {
+test.after.always('cleanup', async t => {
   if (ps && ps.pid) ps.kill(process.platform !== 'win32' ? 'SIGHUP' : undefined)
 })
