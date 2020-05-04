@@ -82,12 +82,12 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
     settings.args = chooseDefaultArgs(detectorResult.possibleArgsArrs)
   }
 
+  if (settings.command === 'npm' && !['start', 'run'].includes(settings.args[0])) {
+    settings.args.unshift('run')
+  }
   if (devConfig.command) {
     settings.command = assignLoudly(devConfig.command.split(/\s/)[0], settings.command || null, tellUser('command')) // if settings.command is empty, its bc no settings matched
     settings.args = assignLoudly(devConfig.command.split(/\s/).slice(1), [], tellUser('command')) // if settings.command is empty, its bc no settings matched
-  }
-  if (settings.command === 'npm' && !['start', 'run'].includes(settings.args[0])) {
-    settings.args.unshift('run')
   }
   settings.dist = flags.dir || devConfig.publish || settings.dist // dont loudassign if they dont need it
 
