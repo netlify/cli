@@ -81,7 +81,7 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
   }
 
   if (devConfig.command) {
-    settings.command = assignLoudly(devConfig.command.split(/\s/)[0], settings.command, tellUser('command')) // if settings.command is empty, its bc no settings matched
+    settings.command = assignLoudly(devConfig.command.split(/\s/)[0], settings.command || null, tellUser('command')) // if settings.command is empty, its bc no settings matched
     settings.args = assignLoudly(devConfig.command.split(/\s/).slice(1), [], tellUser('command')) // if settings.command is empty, its bc no settings matched
   }
   if (settings.command === 'npm' && !['start', 'run'].includes(settings.args[0])) {
