@@ -67,7 +67,9 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
     // Do nothing
   } else {
     const detectorName = detectorsFiles.find(dt => dt === `${devConfig.framework}.js`)
-    if (!detectorName) throw new Error('Unsupported value provided for "framework" option in config')
+    if (!detectorName) throw new Error('Unsupported value provided for "framework" option in config. Please use "#custom"' +
+      ` if you're using a framework not intrinsically supported by Netlify Dev. E.g. with "command" and "targetPort" options.` +
+      ` Or use one of following values: ${detectorsFiles.map(f => `"${path.parse(f).name}"`).join(', ')}`)
 
     const detector = loadDetector(detectorName)
     const detectorResult = detector()
