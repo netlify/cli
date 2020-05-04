@@ -20,7 +20,7 @@ module.exports = function() {
   }
 
   return {
-    framework: 'ember-cli',
+    framework: 'ember',
     command: getYarnOrNPMCommand(),
     port: 8888,
     proxyPort: 4200,

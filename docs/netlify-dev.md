@@ -106,10 +106,10 @@ Netlify Dev is meant to work with zero config for the majority of users, by usin
 # sample netlify.toml
 [build]
   command = "yarn run build"
-  functions = "functions" # netlify dev uses this to know where to scaffold and serve your functions
+  functions = "functions" # netlify dev uses this directory to scaffold and serve your functions
   publish = "dist"
 
-# note: each of these fields are OPTIONAL
+# note: each of these fields are OPTIONAL, with an exception that when you're specifying "command" and "port", you must specify framework = "#custom" 
 [dev]
   command = "yarn start" # Command to start your dev server
   port = 8888 # Port that the dev server will be accessible on
@@ -129,6 +129,7 @@ Netlify Dev will attempt to detect the SSG or build command that you are using, 
 # sample dev block in the toml
 # note: each of these fields are OPTIONAL and should only be used if you need an override
 [dev]
+  framework = "#custom"
   command = "yarn start" # Command to start your dev server
   port = 8888 # Port that the dev server will be accessible on
   publish = "dist" # If you use a _redirect file, provide the path to your static content folder
@@ -145,8 +146,9 @@ against your project.
 
 The `framework` option should be one of the available
 [project types which Netlify Dev can detect](https://github.com/netlify/cli/tree/master/src/detectors)
-or `#auto` (default) to test all available detectors or `#static` for a static
-file server.
+or `#auto` (default) to test all available detectors, `#static` for a static
+file server or `#custom` to use `command` option to run an app server and
+`targetPort` option to connect to it.
 
 ## Explanation of ports in Netlify Dev
 
