@@ -14,7 +14,7 @@ const inquirer = require('inquirer')
 const isObject = require('lodash.isobject')
 const SitesCreateCommand = require('./sites/create')
 const LinkCommand = require('./link')
-const { NETLIFYDEV } = require('../utils/logo')
+const { NETLIFYDEV, NETLIFYDEVLOG, NETLIFYDEVERR } = require('../utils/logo')
 
 class DeployCommand extends Command {
   async run() {
@@ -169,12 +169,21 @@ class DeployCommand extends Command {
 
     let results
     try {
-      if (isObject(siteData.published_deploy) && siteData.published_deploy.locked) {
-        console.error(`Deployments are "locked" for this context. Please "Start auto publishing" from ${siteData.admin_url}/deploys`)
-        this.exit(1)
-      }
-
       if (deployToProduction) {
+        if (isObject(siteData.published_deploy) && siteData.published_deploy.locked) {
+          this.log(`\n${NETLIFYDEVERR} Deployments are "locked" for production context of this site\n`)
+          const { unlockChoice } = await inquirer.prompt([
+            {
+              type: 'confirm',
+              name: 'unlockChoice',
+              message: 'Would you like to "unlock" deployments for production context to proceed?',
+              default: false,
+            }
+          ])
+          if (!unlockChoice) this.exit(0)
+          await api.unlockDeploy({ deploy_id: siteData.published_deploy.id })
+          this.log(`\n${NETLIFYDEVLOG} "Auto publishing" has been enabled for production context\n`)
+        }
         this.log('Deploying to main site URL...')
       } else {
         this.log('Deploying to draft URL...')
