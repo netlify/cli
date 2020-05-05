@@ -15,7 +15,7 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
   if (flags.dir) {
     settings = await getStaticServerSettings(settings, flags, projectDir, log)
     if (['command','targetPort'].some(p => devConfig.hasOwnProperty(p))) {
-      throw new Error('"command" or "targetPort" options cannot be used in conjunction with "dir" flag')
+      throw new Error('"command" or "targetPort" options cannot be used in conjunction with "dir" flag which is used to run a static server')
     }
   } else if (devConfig.framework === '#auto' && !(devConfig.command && devConfig.targetPort)) {
     let settingsArr = []
