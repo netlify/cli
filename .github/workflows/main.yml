@@ -22,7 +22,8 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - run: npm ci && npm ci --prefix tests/site-cra
+      - run: npm ci
+      - run: npm ci --prefix tests/site-cra
       - run: npm test
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
