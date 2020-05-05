@@ -9,9 +9,7 @@ const cliPath = require('./utils/cliPath')
 const { randomPort } = require('./utils/')
 const sitePath = path.join(__dirname, 'site-cra')
 
-const fileOpen = util.promisify(fs.open)
-const fileWriteTo = util.promisify(fs.write)
-const fileClose = util.promisify(fs.close)
+const fileWrite = util.promisify(fs.writeFile)
 
 let ps, host, port
 
@@ -63,9 +61,7 @@ test('netlify dev cra: static file under build/', async t => {
 
   const expectedContent = '<html><h1>Test content'
 
-  const file = await fileOpen(path.join(publicPath, 'test.html'), 'w')
-  await fileWriteTo(file, expectedContent)
-  await fileClose(file)
+  await fileWrite(path.join(publicPath, 'test.html'), expectedContent)
 
   const response = await fetch(`http://${host}:${port}/test.html`)
   const body = await response.text()
@@ -79,9 +75,7 @@ test('netlify dev cra: force rewrite', async t => {
   const publicPath = path.join(sitePath, 'public')
   await mkdirp(publicPath)
 
-  const file = await fileOpen(path.join(publicPath, 'force.html'), 'w')
-  await fileWriteTo(file, '<html><h1>This should never show')
-  await fileClose(file)
+  await fileWrite(path.join(publicPath, 'force.html'), '<html><h1>This should never show')
 
   const response = await fetch(`http://${host}:${port}/force.html`)
   const body = await response.text()
