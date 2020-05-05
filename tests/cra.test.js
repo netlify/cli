@@ -18,7 +18,7 @@ test.before(async t => {
   ps = await spawn(cliPath, ['dev', '-p', randomPort()], {
       cwd: sitePath,
       env: { ...process.env, DUMMY_VAR: 'true', SKIP_PREFLIGHT_CHECK: 'true' },
-      stdio: ['inherit', 'pipe', 'inherit'],
+      stdio: 'pipe',
       shell: true,
     }
   )
