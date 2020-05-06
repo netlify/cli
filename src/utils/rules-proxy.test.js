@@ -19,8 +19,8 @@ test('parseFile: netlify.toml', async t => {
       status: 200,
     },
     {
-      path: '/something',
-      to: '/ping',
+      path: '/*',
+      to: '/index.html',
       status: 200,
       force: false,
     },
@@ -33,8 +33,8 @@ test('parseFile: _redirects', async t => {
   const rules = await parseFile(redirectParser.parseRedirectsFormat, path.join(sitePath, '_redirects'));
   const expected = [
     {
-      path: '/*',
-      to: '/index.html',
+      path: '/something',
+      to: '/ping',
       status: 200,
     },
   ]
@@ -44,24 +44,24 @@ test('parseFile: _redirects', async t => {
 
 
 test('parseRules', async t => {
-  const files = [path.join(sitePath, 'netlify.toml'), path.join(sitePath, '_redirects')]
+  const files = [path.join(sitePath, '_redirects'), path.join(sitePath, 'netlify.toml')]
   const rules = await parseRules(files);
   const expected = [
+    {
+      path: '/something',
+      to: '/ping',
+      status: 200,
+    },
     {
       path: '/api/*',
       to: '/.netlify/functions/:splat',
       status: 200,
     },
     {
-      path: '/something',
-      to: '/ping',
-      status: 200,
-      force: false,
-    },
-    {
       path: '/*',
       to: '/index.html',
       status: 200,
+      force: false,
     },
   ]
 
