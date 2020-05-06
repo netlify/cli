@@ -42,9 +42,9 @@ function onChanges(files, cb) {
   })
 }
 
-function getLanguage(req) {
-  if (req.headers['accept-language']) {
-    return req.headers['accept-language'].split(',')[0].slice(0, 2)
+function getLanguage(headers) {
+  if (headers['accept-language']) {
+    return headers['accept-language'].split(',')[0].slice(0, 2)
   }
   return 'en'
 }
@@ -100,7 +100,7 @@ module.exports.createRewriter = async function createRewriter({ distDir, project
       const headers = Object.assign(
         {},
         {
-          'x-language': cookieValues.nf_lang || getLanguage(req),
+          'x-language': cookieValues.nf_lang || getLanguage(req.headers),
           'x-country': cookieValues.nf_country || getCountry(req)
         },
         req.headers
