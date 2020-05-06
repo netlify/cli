@@ -36,6 +36,12 @@ test.before(async t => {
   })
 })
 
+test('netlify dev: /', async t => {
+  const response = await fetch(`http://${host}:${port}/`).then(r => r.text())
+
+  t.regex(response, /⊂◉‿◉つ/)
+})
+
 test('netlify dev functions timeout', async t => {
   const response = await fetch(`http://${host}:${port}/.netlify/functions/timeout`).then(r => r.text())
 
