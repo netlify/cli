@@ -2,11 +2,11 @@ const chalk = require('chalk')
 const Command = require('../../utils/command')
 const { flags } = require('@oclif/command')
 const inquirer = require('inquirer')
-const { serverSettings } = require('../../utils/detect-server')
 const fetch = require('node-fetch')
 const fs = require('fs')
 const path = require('path')
 
+const { NETLIFYDEVWARN } = require('../../utils/logo')
 const { getFunctions } = require('../../utils/get-functions')
 
 // https://www.netlify.com/docs/functions/#event-triggered-functions
@@ -29,27 +29,14 @@ class FunctionsInvokeCommand extends Command {
     let { flags, args } = this.parse(FunctionsInvokeCommand)
     const { config } = this.netlify
 
-    const functionsDir =
-      flags.functions ||
-      (config.dev && config.dev.functions) ||
-      (config.build && config.build.functions) ||
-      flags.Functions ||
-      (config.dev && config.dev.Functions) ||
-      (config.build && config.build.Functions)
+    const functionsDir = flags.functions || (config.dev && config.dev.functions) || (config.build && config.build.functions)
     if (typeof functionsDir === 'undefined') {
       this.error('functions directory is undefined, did you forget to set it in netlify.toml?')
       process.exit(1)
     }
 
-    let settings = await serverSettings(Object.assign({}, config.dev, flags))
-
-    if (!(settings && settings.command)) {
-      settings = {
-        noCmd: true,
-        port: 8888,
-        proxyPort: 3999
-      }
-    }
+    if (!flags.port) console.warn(`${NETLIFYDEVWARN} "port" flag was not specified. Attempting to connect to localhost:8888 by default`)
+    const port = flags.port || 8888
 
     const functions = getFunctions(functionsDir)
     const functionToTrigger = await getNameFromArgs(functions, args, flags)
@@ -120,7 +107,7 @@ class FunctionsInvokeCommand extends Command {
 
     // fetch
     fetch(
-      `http://localhost:${settings.port}/.netlify/functions/${functionToTrigger}` + formatQstring(flags.querystring),
+      `http://localhost:${port}/.netlify/functions/${functionToTrigger}` + formatQstring(flags.querystring),
       {
         method: 'post',
         headers,
@@ -252,6 +239,9 @@ FunctionsInvokeCommand.flags = {
   identity: flags.boolean({
     description: 'simulate Netlify Identity authentication JWT. pass --no-identity to affirm unauthenticated request',
     allowNo: true
+  }),
+  port: flags.integer({
+    description: 'Port where netlify dev is accessible. e.g. 8888',
   })
 }
 
