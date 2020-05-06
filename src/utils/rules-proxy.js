@@ -7,10 +7,10 @@ const cookie = require('cookie')
 const redirectParser = require('netlify-redirect-parser')
 const { NETLIFYDEVWARN, NETLIFYDEVLOG } = require('../utils/logo')
 
-async function parseFile(parser, name, filePath) {
+async function parseFile(parser, filePath) {
   const result = await parser(filePath)
   if (result.errors.length) {
-    console.error(`${NETLIFYDEVWARN} Warnings while parsing ${name} file:`)
+    console.error(`${NETLIFYDEVWARN} Warnings while parsing ${path.basename(filePath)} file:`)
     result.errors.forEach(err => {
       console.error(`  ${err.lineNum}: ${err.line} -- ${err.reason}`)
     })
@@ -26,9 +26,9 @@ async function parseRules(configFiles) {
 
     const fileName = file.split(path.sep).pop()
     if (fileName.endsWith('_redirects')) {
-      rules.push(...(await parseFile(redirectParser.parseRedirectsFormat, fileName, file)))
+      rules.push(...(await parseFile(redirectParser.parseRedirectsFormat, file)))
     } else {
-      rules.push(...(await parseFile(redirectParser.parseNetlifyConfig, fileName, file)))
+      rules.push(...(await parseFile(redirectParser.parseNetlifyConfig, file)))
     }
   }
 
