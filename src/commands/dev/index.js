@@ -26,7 +26,7 @@ const dotenv = require('dotenv')
 const { NETLIFYDEV, NETLIFYDEVLOG, NETLIFYDEVWARN, NETLIFYDEVERR } = require('../../utils/logo')
 const boxen = require('boxen')
 const { createTunnel, connectTunnel } = require('../../utils/live-tunnel')
-const createRewriter = require('../../utils/rules-proxy')
+const { createRewriter } = require('../../utils/rules-proxy')
 const { onChanges } = require('../../utils/rules-proxy')
 const { parseHeadersFile, objectForPath } = require('../../utils/headers')
 

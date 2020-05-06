@@ -53,7 +53,7 @@ function getCountry(req) {
   return 'us'
 }
 
-module.exports = async function createRewriter({ distDir, projectDir, jwtSecret, jwtRole, configPath }) {
+module.exports.createRewriter = async function createRewriter({ distDir, projectDir, jwtSecret, jwtRole, configPath }) {
   let matcher = null
   const configFiles = Array.from(
     new Set(
