@@ -4,7 +4,6 @@ exports.handler = async (event, context) => {
   await new Promise((resolve, reject) => setTimeout(resolve, 4000))
   return {
     statusCode: 200,
-    body: JSON.stringify('ping'),
-  };
-};
-
+    body: JSON.stringify('ping')
+  }
+}

@@ -11,9 +11,10 @@ const logSymbols = require('log-symbols')
 const cliSpinnerNames = Object.keys(require('cli-spinners'))
 const randomItem = require('random-item')
 const inquirer = require('inquirer')
+const isObject = require('lodash.isobject')
 const SitesCreateCommand = require('./sites/create')
 const LinkCommand = require('./link')
-const { NETLIFYDEV } = require('../utils/logo')
+const { NETLIFYDEV, NETLIFYDEVLOG, NETLIFYDEVERR } = require('../utils/logo')
 
 class DeployCommand extends Command {
   async run() {
@@ -34,7 +35,7 @@ class DeployCommand extends Command {
     })
 
     let siteId = flags.site || site.id
-    let siteData
+    let siteData = {}
     if (!siteId) {
       this.log("This folder isn't linked to a site yet")
       const NEW_SITE = '+  Create & configure a new site'
@@ -68,7 +69,7 @@ class DeployCommand extends Command {
       } catch (e) {
         // TODO specifically handle known cases (e.g. no account access)
         if (e.status === 404) {
-          this.error("Site not found")
+          this.error('Site not found')
         } else {
           this.error(e.message)
         }
@@ -78,7 +79,9 @@ class DeployCommand extends Command {
     if (flags.trigger) {
       try {
         const siteBuild = await api.createSiteBuild({ siteId: siteId })
-        this.log(`${NETLIFYDEV} A new deployment was triggered successfully. Visit https://app.netlify.com/sites/${siteData.name}/deploys/${siteBuild.deploy_id} to see the logs.`)
+        this.log(
+          `${NETLIFYDEV} A new deployment was triggered successfully. Visit https://app.netlify.com/sites/${siteData.name}/deploys/${siteBuild.deploy_id} to see the logs.`
+        )
         return
       } catch (err) {
         if (err.status === 404) {
@@ -169,6 +172,20 @@ class DeployCommand extends Command {
     let results
     try {
       if (deployToProduction) {
+        if (isObject(siteData.published_deploy) && siteData.published_deploy.locked) {
+          this.log(`\n${NETLIFYDEVERR} Deployments are "locked" for production context of this site\n`)
+          const { unlockChoice } = await inquirer.prompt([
+            {
+              type: 'confirm',
+              name: 'unlockChoice',
+              message: 'Would you like to "unlock" deployments for production context to proceed?',
+              default: false,
+            }
+          ])
+          if (!unlockChoice) this.exit(0)
+          await api.unlockDeploy({ deploy_id: siteData.published_deploy.id })
+          this.log(`\n${NETLIFYDEVLOG} "Auto publishing" has been enabled for production context\n`)
+        }
         this.log('Deploying to main site URL...')
       } else {
         this.log('Deploying to draft URL...')

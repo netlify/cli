@@ -21,8 +21,11 @@ module.exports = async context => {
     process.exit() // eslint-disable-line
   }
 
-  if (process.argv.length > 3 &&
-      ['-v', '--version', 'version'].includes(process.argv[2]) && process.argv[3] === '--verbose') {
+  if (
+    process.argv.length > 3 &&
+    ['-v', '--version', 'version'].includes(process.argv[2]) &&
+    process.argv[3] === '--verbose'
+  ) {
     console.log(`────────────────────┐
  Environment Info   │
 ────────────────────┘`)

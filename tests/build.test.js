@@ -1,22 +1,32 @@
+const path = require('path')
 const test = require('ava')
 const execa = require('execa')
 
-const BIN_PATH = `${__dirname}/../../bin/run`
+const BIN_PATH = path.join(__dirname, '..', 'bin', 'run')
 const FIXTURE_DIR = __dirname
 
 // Runs `netlify build ...flags` then verify:
 //  - its exit code is `exitCode`
 //  - that its output contains `output`
 // The command is run in the fixture directory `fixtureSubDir`.
-const runBuildCommand = async function(t, fixtureSubDir, { exitCode: expectedExitCode = 0, output, flags = [] } = {}) {
+const runBuildCommand = async function(
+  t,
+  fixtureSubDir,
+  { exitCode: expectedExitCode = 0, output, flags = [], env } = {}
+) {
   const { all, exitCode } = await execa(BIN_PATH, ['build', ...flags], {
     reject: false,
     cwd: `${FIXTURE_DIR}/${fixtureSubDir}`,
-    env: { FORCE_COLOR: '1' },
+    env: { FORCE_COLOR: '1', NETLIFY_AUTH_TOKEN: 'test', ...env },
     all: true
   })
-  t.is(exitCode, expectedExitCode)
+
+  if (exitCode !== expectedExitCode) {
+    console.error(all)
+  }
+
   t.true(all.includes(output))
+  t.is(exitCode, expectedExitCode)
 }
 
 test('build command - succeeds', async t => {
@@ -45,4 +55,12 @@ test('build command - can run in subdirectories', async t => {
 
 test('build command - wrong config', async t => {
   await runBuildCommand(t, 'wrong-config-site', { exitCode: 1, output: 'Invalid syntax' })
+})
+
+test('build command - missing siteId', async t => {
+  await runBuildCommand(t, 'success-site', {
+    exitCode: 1,
+    output: 'Could not find the site ID',
+    env: { NODE_ENV: '' }
+  })
 })

@@ -20,7 +20,7 @@ module.exports = function() {
   }
 
   return {
-    framework: '@angular/cli',
+    framework: 'angular',
     command: getYarnOrNPMCommand(),
     port: 8888,
     proxyPort: 4200,

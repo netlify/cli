@@ -9,7 +9,7 @@ const execOptions = {
   cwd: sitePath,
   env: { ...process.env },
   windowsHide: true,
-  windowsVerbatimArguments: true,
+  windowsVerbatimArguments: true
 }
 
 const siteName =

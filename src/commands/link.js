@@ -121,7 +121,7 @@ LinkCommand.flags = {
   }),
   gitRemoteName: flags.string({
     description: 'Name of Git remote to use. e.g. "origin"'
-  }),
+  })
 }
 
 module.exports = LinkCommand
