@@ -46,7 +46,7 @@ test('netlify functions:invoke', async t => {
   const { stdout } = await execProcess([cliPath, 'functions:invoke', 'timeout', '--identity', '--port='+port].join(' '), {
     cwd: sitePath,
     env: process.env,
-    timeout: 7000,
+    timeout: 20000,
   })
 
   t.is(stdout, '"ping"\n')
