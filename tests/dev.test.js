@@ -1,10 +1,13 @@
 const path = require('path')
-const { spawn } = require('child_process')
+const util = require('util')
+const { spawn, exec } = require('child_process')
 const test = require('ava')
 const fetch = require('node-fetch')
 const cliPath = require('./utils/cliPath')
 const { randomPort } = require('./utils/')
 const sitePath = path.join(__dirname, 'dummy-site')
+
+const execProcess = util.promisify(exec)
 
 let ps, host, port
 
@@ -37,6 +40,16 @@ test('netlify dev functions timeout', async t => {
   const response = await fetch(`http://${host}:${port}/.netlify/functions/timeout`).then(r => r.text())
 
   t.is(response, '"ping"')
+})
+
+test('netlify functions:invoke', async t => {
+  const { stdout } = await execProcess([cliPath, 'functions:invoke', 'timeout', '--identity', '--port='+port].join(' '), {
+    cwd: sitePath,
+    env: process.env,
+    timeout: 7000,
+  })
+
+  t.is(stdout, '"ping"\n')
 })
 
 test('netlify dev env file', async t => {
