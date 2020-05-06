@@ -42,7 +42,7 @@ test('netlify dev: /', async t => {
   t.regex(response, /⊂◉‿◉つ/)
 })
 
-test('netlify dev functions timeout', async t => {
+test('netlify dev: functions timeout', async t => {
   const response = await fetch(`http://${host}:${port}/.netlify/functions/timeout`).then(r => r.text())
 
   t.is(response, '"ping"')
@@ -57,13 +57,13 @@ test('netlify functions:invoke', async t => {
   t.is(stdout, '"ping"\n')
 })
 
-test('netlify dev env file', async t => {
+test('netlify dev: functions env file', async t => {
   const response = await fetch(`http://${host}:${port}/.netlify/functions/env`).then(r => r.text())
 
   t.is(response, 'true')
 })
 
-test('netlify dev env file overriding prod var', async t => {
+test('netlify dev: functions env file overriding prod var', async t => {
   const response = await fetch(`http://${host}:${port}/.netlify/functions/override-process-env`).then(r => r.text())
 
   t.is(response, 'false')
