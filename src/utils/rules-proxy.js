@@ -24,8 +24,7 @@ async function parseRules(configFiles) {
   for (const file of configFiles) {
     if (!fs.existsSync(file)) continue
 
-    const fileName = file.split(path.sep).pop()
-    if (fileName.endsWith('_redirects')) {
+    if (path.basename(file) === '_redirects') {
       rules.push(...(await parseFile(redirectParser.parseRedirectsFormat, file)))
     } else {
       rules.push(...(await parseFile(redirectParser.parseNetlifyConfig, file)))
