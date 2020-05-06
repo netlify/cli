@@ -18,6 +18,8 @@ async function parseFile(parser, filePath) {
   return result.success
 }
 
+module.exports.parseFile = parseFile
+
 async function parseRules(configFiles) {
   const rules = []
 
@@ -34,6 +36,8 @@ async function parseRules(configFiles) {
   return rules
 }
 
+module.exports.parseRules = parseRules
+
 function onChanges(files, cb) {
   files.forEach(file => {
     const watcher = chokidar.watch(file)
@@ -42,12 +46,16 @@ function onChanges(files, cb) {
   })
 }
 
+module.exports.onChanges = onChanges
+
 function getLanguage(headers) {
   if (headers['accept-language']) {
     return headers['accept-language'].split(',')[0].slice(0, 2)
   }
   return 'en'
 }
+
+module.exports.getLanguage = getLanguage
 
 function getCountry(req) {
   return 'us'
@@ -124,5 +132,3 @@ module.exports.createRewriter = async function createRewriter({ distDir, project
     })
   }
 }
-
-module.exports.onChanges = onChanges
