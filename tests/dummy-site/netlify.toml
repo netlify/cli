@@ -9,11 +9,6 @@
   to = "/.netlify/functions/:splat"
   status = 200
 [[redirects]]
-  from = "/something"
-  to = "/ping"
-  status = 200
-  force = false
-[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
