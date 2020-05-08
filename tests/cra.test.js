@@ -2,6 +2,7 @@ const fs = require('fs')
 const path = require('path')
 const util = require('util')
 const { spawn } = require('child_process')
+const url = require('url')
 const test = require('ava')
 const fetch = require('node-fetch')
 const mkdirp = require('mkdirp')
@@ -67,14 +68,15 @@ test('static file under public/', async t => {
 })
 
 test('redirect test', async t => {
-  const expectedContent = '<html><h1>other thing'
+  const requestURL = new url.URL(`http://${host}:${port}/something`)
+  const response = await fetch(requestURL, { redirect: 'manual' })
 
-  const response = await fetch(`http://${host}:${port}/something`)
-  const body = await response.text()
+  const expectedUrl = new url.URL(requestURL.toString())
+  expectedUrl.pathname = '/otherthing.html'
 
-  t.is(response.status, 200)
-  t.truthy(response.headers.get('content-type').startsWith('text/html'))
-  t.is(body, expectedContent)
+  t.is(response.status, 301)
+  t.is(response.headers.get('location'), expectedUrl.toString())
+  t.is(await response.text(), 'Redirecting to /otherthing.html')
 })
 
 test('normal rewrite', async t => {
