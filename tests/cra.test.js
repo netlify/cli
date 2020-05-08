@@ -1,16 +1,11 @@
-const fs = require('fs')
 const path = require('path')
-const util = require('util')
 const { spawn } = require('child_process')
 const url = require('url')
 const test = require('ava')
 const fetch = require('node-fetch')
-const mkdirp = require('mkdirp')
 const cliPath = require('./utils/cliPath')
 const { randomPort } = require('./utils/')
 const sitePath = path.join(__dirname, 'site-cra')
-
-const fileWrite = util.promisify(fs.writeFile)
 
 let ps, host, port
 
