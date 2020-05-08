@@ -6,7 +6,7 @@ const test = require('ava')
 const getPort = require('get-port')
 
 const sitePath = path.join(__dirname, 'dummy-site')
-const createRewriter = require('../src/utils/rules-proxy')
+const { createRewriter } = require('../src/utils/rules-proxy')
 
 test.before(async t => {
   const rewriter = await createRewriter({
