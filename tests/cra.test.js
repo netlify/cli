@@ -57,14 +57,12 @@ test('static/js/bundle.js', async t => {
 })
 
 test('static file under public/', async t => {
-  const expectedContent = '<html><h1>Test content'
-
   const response = await fetch(`http://${host}:${port}/test.html`)
   const body = await response.text()
 
   t.is(response.status, 200)
   t.truthy(response.headers.get('content-type').startsWith('text/html'))
-  t.is(body, expectedContent)
+  t.is(body, '<html><h1>Test content')
 })
 
 test('redirect test', async t => {
