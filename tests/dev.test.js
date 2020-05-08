@@ -78,33 +78,33 @@ test('api rewrite', async t => {
 test('shadowing: foo', async t => {
   const response = await fetch(`http://${host}:${port}/foo`).then(r => r.text())
 
-  t.is(response, '<html><h1>foo\n')
+  t.is(response, '<html><h1>foo')
 })
 
 test('shadowing: foo.html', async t => {
   const response = await fetch(`http://${host}:${port}/foo.html`).then(r => r.text())
 
-  t.is(response, '<html><h1>foo\n')
+  t.is(response, '<html><h1>foo')
 })
 
 
 test('shadowing: not-foo', async t => {
   const response = await fetch(`http://${host}:${port}/not-foo`).then(r => r.text())
 
-  t.is(response, '<html><h1>foo\n')
+  t.is(response, '<html><h1>foo')
 })
 
 test('shadowing: not-foo/', async t => {
   const response = await fetch(`http://${host}:${port}/not-foo/`).then(r => r.text())
 
-  t.is(response, '<html><h1>foo\n')
+  t.is(response, '<html><h1>foo')
 })
 
 
 test('shadowing: not-foo/index.html', async t => {
   const response = await fetch(`http://${host}:${port}/not-foo/index.html`).then(r => r.text())
 
-  t.is(response, '<html><h1>not-foo\n')
+  t.is(response, '<html><h1>not-foo')
 })
 
 test('404.html', async t => {
@@ -117,21 +117,21 @@ test('test 404 shadow - no static file', async t => {
   const response = await fetch(`http://${host}:${port}/test-404a`)
 
   t.is(response.status, 404)
-  t.is(await response.text(), '<html><h1>foo\n')
+  t.is(await response.text(), '<html><h1>foo')
 })
 
 test('test 404 shadow - with static file', async t => {
   const response = await fetch(`http://${host}:${port}/test-404b`)
 
   t.is(response.status, 200)
-  t.is(await response.text(), '<html><h1>This page actually exists\n')
+  t.is(await response.text(), '<html><h1>This page actually exists')
 })
 
 test('test 404 shadow - with static file but force', async t => {
   const response = await fetch(`http://${host}:${port}/test-404c`)
 
   t.is(response.status, 404)
-  t.is(await response.text(), '<html><h1>foo\n')
+  t.is(await response.text(), '<html><h1>foo')
 })
 
 test.after.always('cleanup', async t => {
