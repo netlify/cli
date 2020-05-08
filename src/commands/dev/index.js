@@ -283,7 +283,7 @@ async function serveRedirect(req, res, proxy, match, options) {
     return render404(options.publicFolder)
   }
 
-  if (match.force || (!(await isStatic(reqUrl.pathname, options.publicFolder) || options.framework) && match.status !== 404)) {
+  if (match.force || (!(await isStatic(reqUrl.pathname, options.publicFolder) && options.framework) && match.status !== 404)) {
     const dest = new url.URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
     if (isRedirect(match)) {
       res.writeHead(match.status, {
