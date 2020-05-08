@@ -39,13 +39,13 @@ test.before(async t => {
   })
 })
 
-test('netlify dev cra: homepage', async t => {
+test('homepage', async t => {
   const response = await fetch(`http://${host}:${port}/`).then(r => r.text())
 
   t.regex(response, /Web site created using create-react-app/)
 })
 
-test('netlify dev cra: static/js/bundle.js', async t => {
+test('static/js/bundle.js', async t => {
   const response = await fetch(`http://${host}:${port}/static/js/bundle.js`)
   const body = await response.text()
 
@@ -55,13 +55,8 @@ test('netlify dev cra: static/js/bundle.js', async t => {
   t.regex(body, /webpackBootstrap/)
 })
 
-test('netlify dev cra: static file under public/', async t => {
-  const publicPath = path.join(sitePath, 'public')
-  await mkdirp(publicPath)
-
+test('static file under public/', async t => {
   const expectedContent = '<html><h1>Test content'
-
-  await fileWrite(path.join(publicPath, 'test.html'), expectedContent)
 
   const response = await fetch(`http://${host}:${port}/test.html`)
   const body = await response.text()
@@ -71,13 +66,8 @@ test('netlify dev cra: static file under public/', async t => {
   t.is(body, expectedContent)
 })
 
-test('netlify dev cra: redirect test', async t => {
-  const publicPath = path.join(sitePath, 'public')
-  await mkdirp(publicPath)
-
+test('redirect test', async t => {
   const expectedContent = '<html><h1>other thing'
-
-  await fileWrite(path.join(publicPath, 'otherthing.html'), expectedContent)
 
   const response = await fetch(`http://${host}:${port}/something`)
   const body = await response.text()
@@ -87,13 +77,8 @@ test('netlify dev cra: redirect test', async t => {
   t.is(body, expectedContent)
 })
 
-test('netlify dev cra: force rewrite', async t => {
-  const publicPath = path.join(sitePath, 'public')
-  await mkdirp(publicPath)
-
-  await fileWrite(path.join(publicPath, 'force.html'), '<html><h1>This should never show')
-
-  const response = await fetch(`http://${host}:${port}/force.html`)
+test('normal rewrite', async t => {
+  const response = await fetch(`http://${host}:${port}/doesnt-exist`)
   const body = await response.text()
 
   t.is(response.status, 200)
@@ -101,7 +86,16 @@ test('netlify dev cra: force rewrite', async t => {
   t.regex(body, /Web site created using create-react-app/)
 })
 
-test('netlify dev cra: robots.txt', async t => {
+test('force rewrite', async t => {
+  const response = await fetch(`http://${host}:${port}/force.html`)
+  const body = await response.text()
+
+  t.is(response.status, 200)
+  t.truthy(response.headers.get('content-type').startsWith('text/html'))
+  t.is(body, '<html><h1>Test content')
+})
+
+test('robots.txt', async t => {
   const response = await fetch(`http://${host}:${port}/robots.txt`)
   const body = await response.text()
 
