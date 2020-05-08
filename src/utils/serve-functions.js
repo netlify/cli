@@ -121,8 +121,9 @@ function createHandler(dir) {
     }
     const { functionPath } = functions[func]
 
-    const body = request.body.toString()
-    var isBase64Encoded = Buffer.from(body, 'base64').toString('base64') === body
+    const body = request.get('content-length') ? request.body.toString() : undefined
+    let isBase64Encoded = false
+    if (body) isBase64Encoded = Buffer.from(body, 'base64').toString('base64') === body
 
     let remoteAddress = request.get('x-forwarded-for') || request.connection.remoteAddress || ''
     remoteAddress = remoteAddress
