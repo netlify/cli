@@ -55,7 +55,7 @@ test('netlify dev cra: static/js/bundle.js', async t => {
   t.regex(body, /webpackBootstrap/)
 })
 
-test('netlify dev cra: static file under build/', async t => {
+test('netlify dev cra: static file under public/', async t => {
   const publicPath = path.join(sitePath, 'public')
   await mkdirp(publicPath)
 
@@ -64,6 +64,22 @@ test('netlify dev cra: static file under build/', async t => {
   await fileWrite(path.join(publicPath, 'test.html'), expectedContent)
 
   const response = await fetch(`http://${host}:${port}/test.html`)
+  const body = await response.text()
+
+  t.is(response.status, 200)
+  t.truthy(response.headers.get('content-type').startsWith('text/html'))
+  t.is(body, expectedContent)
+})
+
+test('netlify dev cra: redirect test', async t => {
+  const publicPath = path.join(sitePath, 'public')
+  await mkdirp(publicPath)
+
+  const expectedContent = '<html><h1>other thing'
+
+  await fileWrite(path.join(publicPath, 'otherthing.html'), expectedContent)
+
+  const response = await fetch(`http://${host}:${port}/something`)
   const body = await response.text()
 
   t.is(response.status, 200)
