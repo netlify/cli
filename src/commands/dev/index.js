@@ -285,7 +285,7 @@ async function serveRedirect(req, res, proxy, match, options) {
     return render404(options.publicFolder)
   }
 
-  if (match.force || (!(staticFile && options.framework) && match.status !== 404)) {
+  if (match.force || (!(staticFile && options.framework))) {
     const dest = new url.URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
     const destStaticFile = await getStatic(dest.pathname, options.publicFolder)
     if (isRedirect(match)) {
