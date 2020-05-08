@@ -124,16 +124,15 @@ function createHandler(dir) {
     const body = request.body.toString()
     var isBase64Encoded = Buffer.from(body, 'base64').toString('base64') === body
 
-    let remoteAddress =
-      request.headers['x-forwarded-for'] || request.headers['X-Forwarded-for'] || request.connection.remoteAddress || ''
+    let remoteAddress = request.get('x-forwarded-for') || request.connection.remoteAddress || ''
     remoteAddress = remoteAddress
       .split(remoteAddress.includes('.') ? ':' : ',')
       .pop()
       .trim()
 
     let requestPath = request.path
-    if (request.headers['x-netlify-original-pathname']) {
-      requestPath = request.headers['x-netlify-original-pathname']
+    if (request.get('x-netlify-original-pathname')) {
+      requestPath = request.get('x-netlify-original-pathname')
       delete request.headers['x-netlify-original-pathname']
     }
 
