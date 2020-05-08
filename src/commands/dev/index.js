@@ -363,8 +363,8 @@ async function startDevServer(settings, log) {
     stdio: 'pipe'
   })
 
-  ps.stdout.pipe(stripAnsiCc()).pipe(process.stdout)
-  ps.stderr.pipe(stripAnsiCc()).pipe(process.stderr)
+  ps.stdout.pipe(stripAnsiCc.stream()).pipe(process.stdout)
+  ps.stderr.pipe(stripAnsiCc.stream()).pipe(process.stderr)
 
   process.stdin.pipe(process.stdin)
   ps.on('close', code => process.exit(code))
