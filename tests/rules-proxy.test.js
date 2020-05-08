@@ -25,18 +25,6 @@ test.before(async t => {
   return server.listen(port)
 })
 
-test('homepage rule', async t => {
-  const response = await fetch(`http://localhost:${t.context.port}/`).then(r => r.json())
-
-  t.is(response.from, '/*')
-  t.is(response.to, '/index.html')
-  t.is(response.force, false)
-  t.is(response.host, '')
-  t.is(response.negative, false)
-  t.is(response.scheme, '')
-  t.is(response.status, 200)
-})
-
 test('/something rule', async t => {
   const response = await fetch(`http://localhost:${t.context.port}/something`).then(r => r.json())
 
