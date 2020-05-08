@@ -1,20 +1,22 @@
 [dev]
 	autoLaunch = false
 [build]
-  command = "npm run build"
-  publish = "build"
   functions = "functions"
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200
 [[redirects]]
-  from = "/something"
-  to = "/ping"
+  from = "/foo"
+  to = "/not-foo"
   status = 200
   force = false
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
+  from = "/foo.html"
+  to = "/not-foo"
   status = 200
-  force = false
+[[redirects]]
+  from = "/not-foo"
+  to = "/foo"
+  status = 200
+  force = true

@@ -36,19 +36,19 @@ test.before(async t => {
   })
 })
 
-test('netlify dev: /', async t => {
+test('/', async t => {
   const response = await fetch(`http://${host}:${port}/`).then(r => r.text())
 
   t.regex(response, /⊂◉‿◉つ/)
 })
 
-test('netlify dev: functions timeout', async t => {
+test('functions timeout', async t => {
   const response = await fetch(`http://${host}:${port}/.netlify/functions/timeout`).then(r => r.text())
 
   t.is(response, '"ping"')
 })
 
-test('netlify functions:invoke', async t => {
+test('functions:invoke', async t => {
   const { stdout } = await execProcess([cliPath, 'functions:invoke', 'timeout', '--identity', '--port='+port].join(' '), {
     cwd: sitePath,
     env: process.env,
@@ -57,22 +57,60 @@ test('netlify functions:invoke', async t => {
   t.is(stdout, '"ping"\n')
 })
 
-test('netlify dev: functions env file', async t => {
+test('functions env file', async t => {
   const response = await fetch(`http://${host}:${port}/.netlify/functions/env`).then(r => r.text())
 
   t.is(response, 'true')
 })
 
-test('netlify dev: functions env file overriding prod var', async t => {
+test('functions env file overriding prod var', async t => {
   const response = await fetch(`http://${host}:${port}/.netlify/functions/override-process-env`).then(r => r.text())
 
   t.is(response, 'false')
 })
 
-test('netlify dev: api rewrite', async t => {
+test('api rewrite', async t => {
   const response = await fetch(`http://${host}:${port}/api/timeout`).then(r => r.text())
 
   t.is(response, '"ping"')
+})
+
+test('shadowing: foo', async t => {
+  const response = await fetch(`http://${host}:${port}/foo`).then(r => r.text())
+
+  t.is(response, '<html><h1>foo\n')
+})
+
+test('shadowing: foo.html', async t => {
+  const response = await fetch(`http://${host}:${port}/foo.html`).then(r => r.text())
+
+  t.is(response, '<html><h1>foo\n')
+})
+
+
+test('shadowing: not-foo', async t => {
+  const response = await fetch(`http://${host}:${port}/not-foo`).then(r => r.text())
+
+  t.is(response, '<html><h1>foo\n')
+})
+
+test('shadowing: not-foo/', async t => {
+  const response = await fetch(`http://${host}:${port}/not-foo/`).then(r => r.text())
+
+  t.is(response, '<html><h1>foo\n')
+})
+
+
+test('shadowing: not-foo/index.html', async t => {
+  const response = await fetch(`http://${host}:${port}/not-foo/index.html`).then(r => r.text())
+
+  t.is(response, '<html><h1>not-foo\n')
+})
+
+test('404.html', async t => {
+  const response = await fetch(`http://${host}:${port}/non-existent`).then(r => r.text())
+
+  t.regex(response, /<h1>404 - Page not found<\/h1>/)
 })
 
 test.after.always('cleanup', async t => {
