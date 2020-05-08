@@ -113,6 +113,27 @@ test('404.html', async t => {
   t.regex(response, /<h1>404 - Page not found<\/h1>/)
 })
 
+test('test 404 shadow - no static file', async t => {
+  const response = await fetch(`http://${host}:${port}/test-404a`)
+
+  t.is(response.status, 404)
+  t.is(await response.text(), '<html><h1>foo\n')
+})
+
+test('test 404 shadow - with static file', async t => {
+  const response = await fetch(`http://${host}:${port}/test-404b`)
+
+  t.is(response.status, 200)
+  t.is(await response.text(), '<html><h1>This page actually exists\n')
+})
+
+test('test 404 shadow - with static file but force', async t => {
+  const response = await fetch(`http://${host}:${port}/test-404c`)
+
+  t.is(response.status, 404)
+  t.is(await response.text(), '<html><h1>foo\n')
+})
+
 test.after.always('cleanup', async t => {
   if (ps && ps.pid) ps.kill(process.platform !== 'win32' ? 'SIGHUP' : undefined)
 })
