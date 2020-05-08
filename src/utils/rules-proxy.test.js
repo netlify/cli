@@ -19,10 +19,37 @@ test('parseFile: netlify.toml', async t => {
       status: 200,
     },
     {
-      path: '/*',
-      to: '/index.html',
+      path: '/foo',
+      to: '/not-foo',
       status: 200,
       force: false,
+    },
+    {
+      path: '/foo.html',
+      to: '/not-foo',
+      status: 200,
+    },
+    {
+      path: '/not-foo',
+      to: '/foo',
+      status: 200,
+      force: true,
+    },
+    {
+      path: '/test-404a',
+      to: '/foo',
+      status: 404,
+    },
+    {
+      path: '/test-404b',
+      to: '/foo',
+      status: 404,
+    },
+    {
+      path: '/test-404c',
+      to: '/foo',
+      status: 404,
+      force: true,
     },
   ]
 
@@ -58,10 +85,37 @@ test('parseRules', async t => {
       status: 200,
     },
     {
-      path: '/*',
-      to: '/index.html',
+      path: '/foo',
+      to: '/not-foo',
       status: 200,
       force: false,
+    },
+    {
+      path: '/foo.html',
+      to: '/not-foo',
+      status: 200,
+    },
+    {
+      path: '/not-foo',
+      to: '/foo',
+      status: 200,
+      force: true,
+    },
+    {
+      path: '/test-404a',
+      to: '/foo',
+      status: 404,
+    },
+    {
+      path: '/test-404b',
+      to: '/foo',
+      status: 404,
+    },
+    {
+      path: '/test-404c',
+      to: '/foo',
+      status: 404,
+      force: true,
     },
   ]
 
