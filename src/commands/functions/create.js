@@ -184,7 +184,7 @@ async function pickTemplate() {
 
 /* get functions dir (and make it if necessary) */
 function ensureFunctionDirExists(flags, config) {
-  const functionsDir = config.build && config.build.functions
+  const functionsDir = config.build && config.build.functionsSource
   if (!functionsDir) {
     this.log(`${NETLIFYDEVLOG} No functions folder specified in netlify.toml`)
     process.exit(1)
