@@ -1,6 +1,8 @@
 
 function randomPort(){
-  return '2'+Math.random().toString().substr(2, 4)
+  const min = Math.ceil(2000);
+  const max = Math.floor(7999);
+  return (Math.floor(Math.random() * (max - min + 1)) + min).toString();
 }
 
 module.exports = {
