@@ -29,7 +29,9 @@ const { createTunnel, connectTunnel } = require('../../utils/live-tunnel')
 const { createRewriter } = require('../../utils/rules-proxy')
 const { onChanges } = require('../../utils/rules-proxy')
 const { parseHeadersFile, objectForPath } = require('../../utils/headers')
+const { getEnvFile } = require('../../utils/env')
 
+const readFile = util.promisify(fs.readFile)
 const stat = util.promisify(fs.stat)
 
 function isInternal(url) {
@@ -409,11 +411,11 @@ class DevCommand extends Command {
 
     process.env.NETLIFY_DEV = 'true'
     // Override env variables with .env file
-    const envFile = path.resolve(site.root, '.env')
-    if (fs.existsSync(envFile)) {
-      const vars = dotenv.parse(fs.readFileSync(envFile)) || {}
+    const envFile = await getEnvFile(site.root)
+    if (envFile) {
+      const vars = dotenv.parse(await readFile(envFile)) || {}
       console.log(
-        `${NETLIFYDEVLOG} Overriding the following env variables with ${chalk.blue('.env')} file:`,
+        `${NETLIFYDEVLOG} Overriding the following env variables with ${chalk.blue(path.relative(site.root, envFile))} file:`,
         chalk.yellow(Object.keys(vars))
       )
       Object.entries(vars).forEach(([key, val]) => (process.env[key] = val))
