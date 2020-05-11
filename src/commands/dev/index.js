@@ -426,7 +426,7 @@ class DevCommand extends Command {
     // serve functions from zip-it-and-ship-it
     // env variables relies on `url`, careful moving this code
     if (settings.functions) {
-      const functionBuilder = await detectFunctionsBuilder(settings)
+      const functionBuilder = await detectFunctionsBuilder(site.root)
       if (functionBuilder) {
         this.log(
           `${NETLIFYDEVLOG} Function builder ${chalk.yellow(

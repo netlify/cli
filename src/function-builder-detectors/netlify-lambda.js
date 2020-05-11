@@ -2,7 +2,7 @@ const { existsSync, readFileSync } = require('fs')
 const execa = require('execa')
 const dotenv = require('dotenv')
 
-module.exports = async function() {
+module.exports = async function(projectDir) {
   if (!existsSync('package.json')) {
     return false
   }
