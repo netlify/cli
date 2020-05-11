@@ -13,12 +13,12 @@ async function getEnvSettings(projectDir) {
   const settings = {}
 
   try {
-    if ((await fileStat(envDevelopmentFile)).isFile()) settings.file = envDevelopmentFile
+    if ((await fileStat(envFile)).isFile()) settings.file = envFile
   } catch (err) {
     // nothing
   }
   try {
-    if ((await fileStat(envFile)).isFile()) settings.file = envFile
+    if ((await fileStat(envDevelopmentFile)).isFile()) settings.file = envDevelopmentFile
   } catch (err) {
     // nothing
   }
