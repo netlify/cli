@@ -1,4 +1,6 @@
+const path = require('path')
 const execa = require('execa')
+const chalk = require('chalk')
 const Command = require('../../utils/command')
 const {
   // NETLIFYDEV,
@@ -6,6 +8,7 @@ const {
   // NETLIFYDEVWARN,
   NETLIFYDEVERR
 } = require('../../utils/logo')
+const { getEnvSettings } = require('../../utils/env')
 
 class ExecCommand extends Command {
   async run() {
@@ -20,6 +23,16 @@ class ExecCommand extends Command {
         `${NETLIFYDEVERR} No Site ID detected. You probably forgot to run \`netlify link\` or \`netlify init\`. `
       )
     }
+
+    const envSettings = await getEnvSettings(site.root)
+    if (envSettings.file) {
+      console.log(
+        `${NETLIFYDEVLOG} Overriding the following env variables with ${chalk.blue(path.relative(site.root, envSettings.file))} file:`,
+        chalk.yellow(Object.keys(envSettings.vars))
+      )
+      Object.entries(envSettings.vars).forEach(([key, val]) => (process.env[key] = val))
+    }
+
     execa(this.argv[0], this.argv.slice(1), {
       env: process.env,
       stdio: 'inherit'
