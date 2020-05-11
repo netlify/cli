@@ -14,9 +14,7 @@ async function getEnvFile(projectDir) {
     // nothing
   }
   try {
-    if ((await fileStat(envFile)).isFile()) {
-      return envFile
-    }
+    if ((await fileStat(envFile)).isFile()) return envFile
   } catch (err) {
     // nothing
   }
