@@ -22,16 +22,14 @@ const Command = require('../../utils/command')
 const chalk = require('chalk')
 const jwtDecode = require('jwt-decode')
 const open = require('open')
-const dotenv = require('dotenv')
 const { NETLIFYDEV, NETLIFYDEVLOG, NETLIFYDEVWARN, NETLIFYDEVERR } = require('../../utils/logo')
 const boxen = require('boxen')
 const { createTunnel, connectTunnel } = require('../../utils/live-tunnel')
 const { createRewriter } = require('../../utils/rules-proxy')
 const { onChanges } = require('../../utils/rules-proxy')
 const { parseHeadersFile, objectForPath } = require('../../utils/headers')
-const { getEnvFile } = require('../../utils/env')
+const { getEnvSettings } = require('../../utils/env')
 
-const readFile = util.promisify(fs.readFile)
 const stat = util.promisify(fs.stat)
 
 function isInternal(url) {
@@ -411,14 +409,13 @@ class DevCommand extends Command {
 
     process.env.NETLIFY_DEV = 'true'
     // Override env variables with .env file
-    const envFile = await getEnvFile(site.root)
-    if (envFile) {
-      const vars = dotenv.parse(await readFile(envFile)) || {}
+    const envSettings = await getEnvSettings(site.root)
+    if (envSettings.file) {
       console.log(
-        `${NETLIFYDEVLOG} Overriding the following env variables with ${chalk.blue(path.relative(site.root, envFile))} file:`,
-        chalk.yellow(Object.keys(vars))
+        `${NETLIFYDEVLOG} Overriding the following env variables with ${chalk.blue(path.relative(site.root, envSettings.file))} file:`,
+        chalk.yellow(Object.keys(envSettings.vars))
       )
-      Object.entries(vars).forEach(([key, val]) => (process.env[key] = val))
+      Object.entries(envSettings.vars).forEach(([key, val]) => (process.env[key] = val))
     }
 
     let settings = await serverSettings(devConfig, flags, site.root, this.log)
