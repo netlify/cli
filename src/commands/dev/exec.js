@@ -37,7 +37,7 @@ ExecCommand.description = `Exec command
 Runs a command within the netlify dev environment, e.g. with env variables from any installed addons
 `
 
-ExecCommand.examples = ['$ netlify exec npm run bootstrap']
+ExecCommand.examples = ['$ netlify dev:exec npm run bootstrap']
 
 ExecCommand.strict = false
 ExecCommand.parse = false
