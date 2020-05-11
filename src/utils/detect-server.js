@@ -27,8 +27,8 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
         return null
       }
     })
-    for (const i in detectors) {
-      const detectorResult = detectors[i]()
+    for (const detector of detectors) {
+      const detectorResult = detector(projectDir)
       if (detectorResult) settingsArr.push(detectorResult)
     }
     if (settingsArr.length === 1) {
@@ -72,7 +72,7 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
       ` Or use one of following values: ${detectorsFiles.map(f => `"${path.parse(f).name}"`).join(', ')}`)
 
     const detector = loadDetector(detectorName)
-    const detectorResult = detector()
+    const detectorResult = detector(projectDir)
     if (!detectorResult)
       throw new Error(
         `Specified "framework" detector "${devConfig.framework}" did not pass requirements for your project`

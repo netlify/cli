@@ -1,8 +1,12 @@
-const { existsSync, readFileSync } = require('fs')
+const { existsSync, readFileSync, readFile: readFileAsync } = require('fs')
+const util = require('util')
 const execa = require('execa')
 const dotenv = require('dotenv')
+const { getEnvFile } = require('../utils/env')
 
-module.exports = function() {
+const readFile = util.promisify(readFileAsync)
+
+module.exports = async function(projectDir) {
   if (!existsSync('package.json')) {
     return false
   }
@@ -27,8 +31,9 @@ module.exports = function() {
   }
 
   let envConfig = {}
-  if (existsSync('.env')) {
-    envConfig = dotenv.parse(readFileSync('.env'))
+  const envFile = await getEnvFile(projectDir)
+  if (envFile) {
+    envConfig = dotenv.parse(await readFile(envFile))
   }
 
   if (settings.npmScript) {
