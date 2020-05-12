@@ -13,10 +13,12 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
   if (typeof devConfig.framework !== 'string') throw new Error('Invalid "framework" option provided in config')
 
   if (flags.dir) {
-    settings = await getStaticServerSettings(settings, flags, projectDir, log)
-    if (['command','targetPort'].some(p => devConfig.hasOwnProperty(p))) {
-      throw new Error('"command" or "targetPort" options cannot be used in conjunction with "dir" flag which is used to run a static server')
-    }
+    settings = await getStaticServerSettings(settings, flags, projectDir, log);
+    ['command','targetPort'].forEach(p => {
+      if (devConfig.hasOwnProperty(p)) {
+        throw new Error(`"${p}" options cannot be used in conjunction with "dir" flag which is used to run a static server`)
+      }
+    })
   } else if (devConfig.framework === '#auto' && !(devConfig.command && devConfig.targetPort)) {
     let settingsArr = []
     const detectors = detectorsFiles.map(det => {
