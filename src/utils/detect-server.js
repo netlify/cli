@@ -16,7 +16,7 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
     settings = await getStaticServerSettings(settings, flags, projectDir, log)
     ;['command','targetPort'].forEach(p => {
       if (devConfig.hasOwnProperty(p)) {
-        throw new Error(`"${p}" options cannot be used in conjunction with "dir" flag which is used to run a static server`)
+        throw new Error(`"${p}" option cannot be used in conjunction with "dir" flag which is used to run a static server`)
       }
     })
   } else if (devConfig.framework === '#auto' && !(devConfig.command && devConfig.targetPort)) {
