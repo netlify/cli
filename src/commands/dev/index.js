@@ -372,7 +372,7 @@ async function startDevServer(settings, log) {
   process.stdin.pipe(process.stdin)
 
   function handleProcessExit(code) {
-    log(NETLIFYDEVWARN,`"${[settings.command, ...settings.args].join(' ')}" exited with code ${code}. Shutting down Netlify Dev server`)
+    log(code > 0 ? NETLIFYDEVERR : NETLIFYDEVWARN, `"${[settings.command, ...settings.args].join(' ')}" exited with code ${code}. Shutting down Netlify Dev server`)
     process.exit(code)
   }
   ps.on('close', handleProcessExit)
