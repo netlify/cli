@@ -172,7 +172,6 @@ As for which port to use while doing local development in Netlify Dev, always lo
 
 Netlify Dev allows you to specify the following parameters for port as both flags and in config file (`netlify.toml` etc.):
 
-- `functionsPort`: The port for Netlify Functions server. This server is accessed internally within Netlify Dev, you shouldn't need to access it directly. And thus shouldn't need to change this port. You can access your functions at Netlify Dev main server port like so: `http://localhost:<port>/.netlify/functions/<your-function-slug>`.
 - `port`: The port for the main Netlify Dev server, the one you'll open in the browser.
 - `targetPort`: The port for your application server, framework or site generator.
 
