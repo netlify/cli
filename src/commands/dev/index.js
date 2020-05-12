@@ -468,7 +468,7 @@ class DevCommand extends Command {
       url = liveSession.session_url
       process.env.BASE_URL = url
 
-      await connectTunnel(liveSession, accessToken, settings.proxyPort, this.log)
+      await connectTunnel(liveSession, accessToken, settings.port, this.log)
     }
 
     await this.config.runHook('analytics', {
