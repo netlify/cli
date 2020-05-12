@@ -25,7 +25,7 @@ module.exports = function() {
     framework: 'create-react-app',
     command: getYarnOrNPMCommand(),
     port: 8888, // the port that the Netlify Dev User will use
-    proxyPort: 3000, // the port that create-react-app normally outputs
+    frameworkPort: 3000, // the port that create-react-app normally outputs
     env: { ...process.env, BROWSER: 'none', PORT: 3000 },
     stdio: ['inherit', 'pipe', 'pipe'],
     possibleArgsArrs,

@@ -158,7 +158,7 @@ function initializeProxy(port, distDir, projectDir) {
 
 async function startProxy(settings, addonUrls, configPath, projectDir, functionsDir) {
   try {
-    await waitPort({ port: settings.proxyPort })
+    await waitPort({ port: settings.frameworkPort })
   } catch (err) {
     console.error(NETLIFYDEVERR, `Netlify Dev doesn't know what port your site is running on.`)
     console.error(NETLIFYDEVERR, `Please set --targetPort.`)
@@ -170,7 +170,7 @@ async function startProxy(settings, addonUrls, configPath, projectDir, functions
   }
   const functionsServer = settings.functionsPort ? `http://localhost:${settings.functionsPort}` : null
 
-  const proxy = initializeProxy(settings.proxyPort, settings.dist, projectDir)
+  const proxy = initializeProxy(settings.frameworkPort, settings.dist, projectDir)
 
   const rewriter = await createRewriter({
     distDir: settings.dist,
@@ -192,7 +192,7 @@ async function startProxy(settings, addonUrls, configPath, projectDir, functions
       const options = {
         match,
         addonUrls,
-        target: `http://localhost:${settings.proxyPort}`,
+        target: `http://localhost:${settings.frameworkPort}`,
         publicFolder: settings.dist,
         functionsServer,
         functionsPort: settings.functionsPort,
@@ -340,14 +340,14 @@ async function startDevServer(settings, log) {
     const server = new StaticServer({
       rootPath: settings.dist,
       name: 'netlify-dev',
-      port: settings.proxyPort,
+      port: settings.frameworkPort,
       templates: {
         notFound: '404.html'
       }
     })
 
     server.start(function() {
-      log(`\n${NETLIFYDEVLOG} Server listening to`, settings.proxyPort)
+      log(`\n${NETLIFYDEVLOG} Server listening to`, settings.frameworkPort)
     })
     return
   }
@@ -463,7 +463,7 @@ class DevCommand extends Command {
     }
 
     if (flags.live) {
-      await waitPort({ port: settings.proxyPort })
+      await waitPort({ port: settings.frameworkPort })
       const liveSession = await createTunnel(site.id, accessToken, this.log)
       url = liveSession.session_url
       process.env.BASE_URL = url

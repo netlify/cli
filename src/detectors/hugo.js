@@ -8,7 +8,7 @@ module.exports = function() {
   return {
     framework: 'hugo',
     port: 8888,
-    proxyPort: 1313,
+    frameworkPort: 1313,
     env: { ...process.env },
     command: 'hugo',
     possibleArgsArrs: [['server', '-w']],

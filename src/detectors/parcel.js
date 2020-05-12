@@ -23,7 +23,7 @@ module.exports = function() {
     framework: 'parcel',
     command: getYarnOrNPMCommand(),
     port: 8888,
-    proxyPort: 1234,
+    frameworkPort: 1234,
     env: { ...process.env },
     possibleArgsArrs,
     urlRegexp: new RegExp(`(http://)([^:]+:)${1234}(/)?`, 'g'),

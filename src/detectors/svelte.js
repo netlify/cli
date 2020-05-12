@@ -24,7 +24,7 @@ module.exports = function() {
     framework: 'svelte',
     command: getYarnOrNPMCommand(),
     port: 8888,
-    proxyPort: 5000,
+    frameworkPort: 5000,
     env: { ...process.env },
     possibleArgsArrs,
     urlRegexp: new RegExp(`(http://)([^:]+:)${5000}(/)?`, 'g'),

@@ -64,7 +64,7 @@ test('serverSettings: custom framework parameters', async t => {
   t.is(settings.command, devConfig.command.split(' ')[0])
   t.deepEqual(settings.args, devConfig.command.split(' ').slice(1))
   t.deepEqual(settings.env, env)
-  t.is(settings.targetPort, devConfig.proxyPort)
+  t.is(settings.targetPort, devConfig.frameworkPort)
   t.is(settings.dist, devConfig.publish)
 })
 
@@ -132,7 +132,7 @@ test('serverSettings: no config', async t => {
   t.is(settings.framework, undefined)
   t.is(settings.cmd, undefined)
   t.truthy(settings.port)
-  t.truthy(settings.proxyPort)
+  t.truthy(settings.frameworkPort)
   t.is(settings.noCmd, true)
 })
 
