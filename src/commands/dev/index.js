@@ -421,7 +421,13 @@ class DevCommand extends Command {
       Object.entries(envSettings.vars).forEach(([key, val]) => (process.env[key] = val))
     }
 
-    let settings = await serverSettings(devConfig, flags, site.root, this.log)
+    let settings = {}
+    try {
+      settings = await serverSettings(devConfig, flags, site.root, this.log)
+    } catch (err) {
+      this.log(NETLIFYDEVERR, err.message)
+      this.exit(1)
+    }
 
     await startDevServer(settings, this.log)
 
