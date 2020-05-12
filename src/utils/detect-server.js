@@ -103,7 +103,8 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
 
     settings.frameworkPort = devConfig.targetPort
     settings.urlRegexp = devConfig.urlRegexp || new RegExp(`(http://)([^:]+:)${devConfig.targetPort}(/)?`, 'g')
-  } else if (devConfig.port && devConfig.port === settings.frameworkPort) {
+  }
+  if (devConfig.port && devConfig.port === settings.frameworkPort) {
     throw new Error(
       'The "port" option you specified conflicts with the port of your application. Please use a different value for "port"'
     )
