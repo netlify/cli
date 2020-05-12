@@ -23,7 +23,7 @@ module.exports = function() {
     framework: 'ember',
     command: getYarnOrNPMCommand(),
     port: 8888,
-    proxyPort: 4200,
+    frameworkPort: 4200,
     env: { ...process.env },
     possibleArgsArrs,
     urlRegexp: new RegExp(`(http://)([^:]+:)${4200}(/)?`, 'g'),

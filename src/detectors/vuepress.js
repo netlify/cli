@@ -22,7 +22,7 @@ module.exports = function() {
     framework: 'vuepress',
     command: getYarnOrNPMCommand(),
     port: 8888,
-    proxyPort: 8080,
+    frameworkPort: 8080,
     env: { ...process.env },
     possibleArgsArrs,
     urlRegexp: new RegExp(`(http://)([^:]+:)${8080}(/)?`, 'g'),

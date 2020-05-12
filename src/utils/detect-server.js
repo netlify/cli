@@ -101,9 +101,9 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
     if (!settings.command) throw new Error('No "command" specified or detected. The "command" option is required to use "targetPort" option.')
     if (flags.dir) throw new Error('"targetPort" option cannot be used in conjunction with "dir" flag which is used to run a static server.')
 
-    settings.proxyPort = devConfig.targetPort
+    settings.frameworkPort = devConfig.targetPort
     settings.urlRegexp = devConfig.urlRegexp || new RegExp(`(http://)([^:]+:)${devConfig.targetPort}(/)?`, 'g')
-  } else if (devConfig.port && devConfig.port === settings.proxyPort) {
+  } else if (devConfig.port && devConfig.port === settings.frameworkPort) {
     throw new Error(
       'The "port" option you specified conflicts with the port of your application. Please use a different value for "port"'
     )
@@ -113,10 +113,10 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
     settings = await getStaticServerSettings(settings, flags, projectDir, log)
   }
 
-  if (!settings.proxyPort) throw new Error('No "targetPort" option specified or detected.')
+  if (!settings.frameworkPort) throw new Error('No "targetPort" option specified or detected.')
 
   settings.port = devConfig.port || settings.port
-  if (devConfig.port && devConfig.port === settings.proxyPort) {
+  if (devConfig.port && devConfig.port === settings.frameworkPort) {
     throw new Error('The "port" option you specified conflicts with the port of your application. Please use a different value for "port"')
   }
   const port = await getPort({ port: settings.port || 8888 })
@@ -152,7 +152,7 @@ async function getStaticServerSettings(settings, flags, projectDir, log) {
     env: { ...process.env },
     noCmd: true,
     port: 8888,
-    proxyPort: await getPort({ port: 3999 }),
+    frameworkPort: await getPort({ port: 3999 }),
     dist,
   }
 }

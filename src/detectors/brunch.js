@@ -16,7 +16,7 @@ module.exports = function() {
     framework: 'brunch',
     command: getYarnOrNPMCommand(),
     port: 8888,
-    proxyPort: 3333,
+    frameworkPort: 3333,
     env: { ...process.env },
     possibleArgsArrs,
     urlRegexp: new RegExp(`(http://)([^:]+:)${3333}(/)?`, 'g'),

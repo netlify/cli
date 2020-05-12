@@ -23,7 +23,7 @@ module.exports = function() {
     framework: 'quasar',
     command: getYarnOrNPMCommand(),
     port: 8888,
-    proxyPort: 8081,
+    frameworkPort: 8081,
     env: { ...process.env },
     possibleArgsArrs,
     urlRegexp: new RegExp(`(http://)([^:]+:)${8080}(/)?`, 'g'),
