@@ -111,7 +111,7 @@ test('serverSettings: "dir" flag with "targetPort"', async t => {
   const flags = { dir: sitePath }
   await t.throwsAsync(async () => {
     await serverSettings(devConfig, flags, sitePath, () => {})
-  }, /"command" or "targetPort" options cannot be used in conjunction with "dir" flag/)
+  }, /"targetPort" option cannot be used in conjunction with "dir" flag/)
 })
 
 test('serverSettings: when no framework is detected', async t => {
