@@ -161,7 +161,7 @@ async function startProxy(settings, addonUrls, configPath, projectDir, functions
     await waitPort({ port: settings.proxyPort })
   } catch (err) {
     console.error(NETLIFYDEVERR, `Netlify Dev could not connect to localhost:${settings.port}.`)
-    console.error(NETLIFYDEVERR, `Please make sure your application server is running on port ${settings.port}`)
+    console.error(NETLIFYDEVERR, `Please make sure your framework server is running on port ${settings.port}`)
     exit(1)
   }
 
