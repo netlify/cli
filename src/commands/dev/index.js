@@ -315,7 +315,7 @@ async function serveRedirect(req, res, proxy, match, options) {
     if (match.force || isInternal(destURL) || (!staticFile && !options.framework && destStaticFile)) {
       req.url = destStaticFile ? destStaticFile : destURL
       status = match.status
-      console.log(`${NETLIFYDEVLOG} Rewrote URL to `, req.url)
+      console.log(`${NETLIFYDEVLOG} Rewrote URL to`, req.url)
     }
 
     if (isFunction(options.functionsPort, req.url)) {
@@ -468,7 +468,7 @@ class DevCommand extends Command {
       url = liveSession.session_url
       process.env.BASE_URL = url
 
-      await connectTunnel(liveSession, accessToken, settings.proxyPort, this.log)
+      await connectTunnel(liveSession, accessToken, settings.port, this.log)
     }
 
     await this.config.runHook('analytics', {
