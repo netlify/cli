@@ -315,7 +315,7 @@ async function serveRedirect(req, res, proxy, match, options) {
     if (match.force || isInternal(destURL) || (!staticFile && !options.framework && destStaticFile)) {
       req.url = destStaticFile ? destStaticFile : destURL
       status = match.status
-      console.log(`${NETLIFYDEVLOG} Rewrote URL to `, req.url)
+      console.log(`${NETLIFYDEVLOG} Rewrote URL to`, req.url)
     }
 
     if (isFunction(options.functionsPort, req.url)) {
