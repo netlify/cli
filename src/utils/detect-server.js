@@ -126,7 +126,7 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
   settings.port = port
 
   settings.jwtRolePath = devConfig.jwtRolePath || 'app_metadata.authorization.roles'
-  settings.functionsPort = await getPort({ port: settings.functionsPort || 34567 })
+  settings.functionsPort = await getPort({ port: settings.functionsPort || 0 })
   settings.functions = devConfig.functions || settings.functions
 
   return settings

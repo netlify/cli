@@ -121,19 +121,16 @@ function createHandler(dir) {
     }
     const { functionPath } = functions[func]
 
-    const body = request.body.toString()
-    var isBase64Encoded = Buffer.from(body, 'base64').toString('base64') === body
+    const body = request.get('content-length') ? request.body.toString() : undefined
+    let isBase64Encoded = false
+    if (body) isBase64Encoded = Buffer.from(body, 'base64').toString('base64') === body
 
-    let remoteAddress =
-      request.headers['x-forwarded-for'] || request.headers['X-Forwarded-for'] || request.connection.remoteAddress || ''
-    remoteAddress = remoteAddress
-      .split(remoteAddress.includes('.') ? ':' : ',')
-      .pop()
-      .trim()
+    let remoteAddress = request.get('x-forwarded-for') || request.connection.remoteAddress || ''
+    remoteAddress = remoteAddress.split(remoteAddress.includes('.') ? ':' : ',').pop().trim()
 
     let requestPath = request.path
-    if (request.headers['x-netlify-original-pathname']) {
-      requestPath = request.headers['x-netlify-original-pathname']
+    if (request.get('x-netlify-original-pathname')) {
+      requestPath = request.get('x-netlify-original-pathname')
       delete request.headers['x-netlify-original-pathname']
     }
 
@@ -141,7 +138,7 @@ function createHandler(dir) {
       path: requestPath,
       httpMethod: request.method,
       queryStringParameters: queryString.parse(request.url.split(/\?(.+)/)[1]),
-      headers: Object.assign({}, request.headers, { 'client-ip': remoteAddress }),
+      headers: { ...request.headers, 'client-ip': remoteAddress },
       body: body,
       isBase64Encoded: isBase64Encoded
     }

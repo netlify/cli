@@ -3,6 +3,7 @@ const util = require('util')
 const { spawn, exec } = require('child_process')
 const test = require('ava')
 const fetch = require('node-fetch')
+const FormData = require('form-data')
 const cliPath = require('./utils/cliPath')
 const { randomPort } = require('./utils/')
 const sitePath = path.join(__dirname, 'dummy-site')
@@ -36,19 +37,19 @@ test.before(async t => {
   })
 })
 
-test('netlify dev: /', async t => {
+test('/', async t => {
   const response = await fetch(`http://${host}:${port}/`).then(r => r.text())
 
   t.regex(response, /⊂◉‿◉つ/)
 })
 
-test('netlify dev: functions timeout', async t => {
+test('functions timeout', async t => {
   const response = await fetch(`http://${host}:${port}/.netlify/functions/timeout`).then(r => r.text())
 
   t.is(response, '"ping"')
 })
 
-test('netlify functions:invoke', async t => {
+test('functions:invoke', async t => {
   const { stdout } = await execProcess([cliPath, 'functions:invoke', 'timeout', '--identity', '--port='+port].join(' '), {
     cwd: sitePath,
     env: process.env,
@@ -57,22 +58,153 @@ test('netlify functions:invoke', async t => {
   t.is(stdout, '"ping"\n')
 })
 
-test('netlify dev: functions env file', async t => {
+test('functions env file', async t => {
   const response = await fetch(`http://${host}:${port}/.netlify/functions/env`).then(r => r.text())
 
   t.is(response, 'true')
 })
 
-test('netlify dev: functions env file overriding prod var', async t => {
+test('functions rewrite echo without body', async t => {
+  const response = await fetch(`http://${host}:${port}/api/echo?ding=dong`).then(r => r.json())
+
+  t.is(response.body, undefined)
+  t.deepEqual(response.headers, {
+    accept: '*/*',
+    'accept-encoding': 'gzip,deflate',
+    'client-ip': '127.0.0.1',
+    connection: 'close',
+    host: `${host}:${port}`,
+    'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
+    'x-forwarded-for': '::ffff:127.0.0.1',
+  })
+  t.is(response.httpMethod, 'GET')
+  t.is(response.isBase64Encoded, false)
+  t.is(response.path, '/api/echo')
+  t.deepEqual(response.queryStringParameters, { ding: 'dong' })
+})
+
+test('functions rewrite echo with body', async t => {
+  const response = await fetch(`http://${host}:${port}/api/echo?ding=dong`, {
+    method: 'POST',
+    body: 'some=thing',
+  }).then(r => r.json())
+
+  t.is(response.body, 'some=thing')
+  t.deepEqual(response.headers, {
+    'accept': '*/*',
+    'accept-encoding': 'gzip,deflate',
+    'client-ip': '127.0.0.1',
+    'connection': 'close',
+    'host': `${host}:${port}`,
+    'content-type': 'text/plain;charset=UTF-8',
+    'content-length': '10',
+    'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
+    'x-forwarded-for': '::ffff:127.0.0.1',
+  })
+  t.is(response.httpMethod, 'POST')
+  t.is(response.isBase64Encoded, false)
+  t.is(response.path, '/api/echo')
+  t.deepEqual(response.queryStringParameters, { ding: 'dong' })
+})
+
+test('functions rewrite echo with Form body', async t => {
+  const form = new FormData()
+  form.append('some', 'thing')
+  const response = await fetch(`http://${host}:${port}/api/echo?ding=dong`, {
+    method: 'POST',
+    body: form.getBuffer(),
+    headers: form.getHeaders(),
+  }).then(r => r.json())
+
+  const formBoundary = form.getBoundary()
+
+  t.deepEqual(response.headers, {
+    'accept': '*/*',
+    'accept-encoding': 'gzip,deflate',
+    'client-ip': '127.0.0.1',
+    'connection': 'close',
+    'host': `${host}:${port}`,
+    'content-length': form.getLengthSync().toString(),
+    'content-type': `multipart/form-data; boundary=${formBoundary}`,
+    'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
+    'x-forwarded-for': '::ffff:127.0.0.1',
+  })
+  t.is(response.httpMethod, 'POST')
+  t.is(response.isBase64Encoded, false)
+  t.is(response.path, '/api/echo')
+  t.deepEqual(response.queryStringParameters, { ding: 'dong' })
+  t.regex(response.body, new RegExp(formBoundary))
+})
+
+test('functions env file overriding prod var', async t => {
   const response = await fetch(`http://${host}:${port}/.netlify/functions/override-process-env`).then(r => r.text())
 
   t.is(response, 'false')
 })
 
-test('netlify dev: api rewrite', async t => {
+test('api rewrite', async t => {
   const response = await fetch(`http://${host}:${port}/api/timeout`).then(r => r.text())
 
   t.is(response, '"ping"')
+})
+
+test('shadowing: foo', async t => {
+  const response = await fetch(`http://${host}:${port}/foo`).then(r => r.text())
+
+  t.is(response, '<html><h1>foo')
+})
+
+test('shadowing: foo.html', async t => {
+  const response = await fetch(`http://${host}:${port}/foo.html`).then(r => r.text())
+
+  t.is(response, '<html><h1>foo')
+})
+
+
+test('shadowing: not-foo', async t => {
+  const response = await fetch(`http://${host}:${port}/not-foo`).then(r => r.text())
+
+  t.is(response, '<html><h1>foo')
+})
+
+test('shadowing: not-foo/', async t => {
+  const response = await fetch(`http://${host}:${port}/not-foo/`).then(r => r.text())
+
+  t.is(response, '<html><h1>foo')
+})
+
+
+test('shadowing: not-foo/index.html', async t => {
+  const response = await fetch(`http://${host}:${port}/not-foo/index.html`).then(r => r.text())
+
+  t.is(response, '<html><h1>not-foo')
+})
+
+test('404.html', async t => {
+  const response = await fetch(`http://${host}:${port}/non-existent`).then(r => r.text())
+
+  t.regex(response, /<h1>404 - Page not found<\/h1>/)
+})
+
+test('test 404 shadow - no static file', async t => {
+  const response = await fetch(`http://${host}:${port}/test-404a`)
+
+  t.is(response.status, 404)
+  t.is(await response.text(), '<html><h1>foo')
+})
+
+test('test 404 shadow - with static file', async t => {
+  const response = await fetch(`http://${host}:${port}/test-404b`)
+
+  t.is(response.status, 200)
+  t.is(await response.text(), '<html><h1>This page actually exists')
+})
+
+test('test 404 shadow - with static file but force', async t => {
+  const response = await fetch(`http://${host}:${port}/test-404c`)
+
+  t.is(response.status, 404)
+  t.is(await response.text(), '<html><h1>foo')
 })
 
 test.after.always('cleanup', async t => {

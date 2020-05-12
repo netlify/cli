@@ -1,15 +1,11 @@
-const fs = require('fs')
 const path = require('path')
-const util = require('util')
 const { spawn } = require('child_process')
+const url = require('url')
 const test = require('ava')
 const fetch = require('node-fetch')
-const mkdirp = require('mkdirp')
 const cliPath = require('./utils/cliPath')
 const { randomPort } = require('./utils/')
 const sitePath = path.join(__dirname, 'site-cra')
-
-const fileWrite = util.promisify(fs.writeFile)
 
 let ps, host, port
 
@@ -39,13 +35,13 @@ test.before(async t => {
   })
 })
 
-test('netlify dev cra: homepage', async t => {
+test('homepage', async t => {
   const response = await fetch(`http://${host}:${port}/`).then(r => r.text())
 
   t.regex(response, /Web site created using create-react-app/)
 })
 
-test('netlify dev cra: static/js/bundle.js', async t => {
+test('static/js/bundle.js', async t => {
   const response = await fetch(`http://${host}:${port}/static/js/bundle.js`)
   const body = await response.text()
 
@@ -55,29 +51,29 @@ test('netlify dev cra: static/js/bundle.js', async t => {
   t.regex(body, /webpackBootstrap/)
 })
 
-test('netlify dev cra: static file under build/', async t => {
-  const publicPath = path.join(sitePath, 'public')
-  await mkdirp(publicPath)
-
-  const expectedContent = '<html><h1>Test content'
-
-  await fileWrite(path.join(publicPath, 'test.html'), expectedContent)
-
+test('static file under public/', async t => {
   const response = await fetch(`http://${host}:${port}/test.html`)
   const body = await response.text()
 
   t.is(response.status, 200)
   t.truthy(response.headers.get('content-type').startsWith('text/html'))
-  t.is(body, expectedContent)
+  t.is(body, '<html><h1>Test content')
 })
 
-test('netlify dev cra: force rewrite', async t => {
-  const publicPath = path.join(sitePath, 'public')
-  await mkdirp(publicPath)
+test('redirect test', async t => {
+  const requestURL = new url.URL(`http://${host}:${port}/something`)
+  const response = await fetch(requestURL, { redirect: 'manual' })
 
-  await fileWrite(path.join(publicPath, 'force.html'), '<html><h1>This should never show')
+  const expectedUrl = new url.URL(requestURL.toString())
+  expectedUrl.pathname = '/otherthing.html'
 
-  const response = await fetch(`http://${host}:${port}/force.html`)
+  t.is(response.status, 301)
+  t.is(response.headers.get('location'), expectedUrl.toString())
+  t.is(await response.text(), 'Redirecting to /otherthing.html')
+})
+
+test('normal rewrite', async t => {
+  const response = await fetch(`http://${host}:${port}/doesnt-exist`)
   const body = await response.text()
 
   t.is(response.status, 200)
@@ -85,7 +81,16 @@ test('netlify dev cra: force rewrite', async t => {
   t.regex(body, /Web site created using create-react-app/)
 })
 
-test('netlify dev cra: robots.txt', async t => {
+test('force rewrite', async t => {
+  const response = await fetch(`http://${host}:${port}/force.html`)
+  const body = await response.text()
+
+  t.is(response.status, 200)
+  t.truthy(response.headers.get('content-type').startsWith('text/html'))
+  t.is(body, '<html><h1>Test content')
+})
+
+test('robots.txt', async t => {
   const response = await fetch(`http://${host}:${port}/robots.txt`)
   const body = await response.text()
 
@@ -93,6 +98,50 @@ test('netlify dev cra: robots.txt', async t => {
   t.truthy(response.headers.get('content-type').startsWith('text/plain'))
   // First line of the file
   t.regex(body, /# https:\/\/www.robotstxt.org\/robotstxt.html/)
+})
+
+
+test('functions rewrite echo without body', async t => {
+  const response = await fetch(`http://${host}:${port}/api/echo?ding=dong`).then(r => r.json())
+
+  t.is(response.body, undefined)
+  t.deepEqual(response.headers, {
+    accept: '*/*',
+    'accept-encoding': 'gzip,deflate',
+    'client-ip': '127.0.0.1',
+    connection: 'close',
+    host: `${host}:${port}`,
+    'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
+    'x-forwarded-for': '::ffff:127.0.0.1',
+  })
+  t.is(response.httpMethod, 'GET')
+  t.is(response.isBase64Encoded, false)
+  t.is(response.path, '/api/echo')
+  t.deepEqual(response.queryStringParameters, { ding: 'dong' })
+})
+
+test('functions rewrite echo with body', async t => {
+  const response = await fetch(`http://${host}:${port}/api/echo?ding=dong`, {
+    method: 'POST',
+    body: 'some=thing',
+  }).then(r => r.json())
+
+  t.is(response.body, 'some=thing')
+  t.deepEqual(response.headers, {
+    'accept': '*/*',
+    'accept-encoding': 'gzip,deflate',
+    'client-ip': '127.0.0.1',
+    'connection': 'close',
+    'host': `${host}:${port}`,
+    'content-type': 'text/plain;charset=UTF-8',
+    'content-length': '10',
+    'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
+    'x-forwarded-for': '::ffff:127.0.0.1',
+  })
+  t.is(response.httpMethod, 'POST')
+  t.is(response.isBase64Encoded, false)
+  t.is(response.path, '/api/echo')
+  t.deepEqual(response.queryStringParameters, { ding: 'dong' })
 })
 
 test.after.always('cleanup', async t => {

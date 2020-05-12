@@ -45,14 +45,14 @@ function addonUrl(addonUrls, req) {
   return addonUrl ? `${addonUrl}${m[2]}` : null
 }
 
-async function isStatic(pathname, publicFolder) {
+async function getStatic(pathname, publicFolder) {
   const alternatives = alternativePathsFor(pathname).map(p => path.resolve(publicFolder, p.substr(1)))
 
   for (const i in alternatives) {
     const p = alternatives[i]
     try {
       const pathStats = await stat(p)
-      if (pathStats.isFile()) return true
+      if (pathStats.isFile()) return '/'+path.relative(publicFolder, p)
     } catch (err) {
       // Ignore
     }
@@ -273,6 +273,8 @@ async function serveRedirect(req, res, proxy, match, options) {
     }
   }
 
+  const staticFile = await getStatic(req.url, options.publicFolder)
+  if (staticFile) req.url = staticFile
   const reqUrl = new url.URL(
     req.url,
     `${req.protocol || (req.headers.scheme && req.headers.scheme + ':') || 'http:'}//${req.headers['host'] ||
@@ -283,8 +285,9 @@ async function serveRedirect(req, res, proxy, match, options) {
     return render404(options.publicFolder)
   }
 
-  if (match.force || (!(await isStatic(reqUrl.pathname, options.publicFolder) || options.framework) && match.status !== 404)) {
+  if (match.force || (!(staticFile && options.framework))) {
     const dest = new url.URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
+    const destStaticFile = await getStatic(dest.pathname, options.publicFolder)
     if (isRedirect(match)) {
       res.writeHead(match.status, {
         Location: match.to,
@@ -309,8 +312,8 @@ async function serveRedirect(req, res, proxy, match, options) {
     const destURL = dest.pathname + (urlParams.toString() && '?' + urlParams.toString())
 
     let status
-    if (match.force || isInternal(destURL) || !options.framework) {
-      req.url = destURL
+    if (match.force || isInternal(destURL) || (!staticFile && !options.framework && destStaticFile)) {
+      req.url = destStaticFile ? destStaticFile : destURL
       status = match.status
       console.log(`${NETLIFYDEVLOG} Rewrote URL to `, req.url)
     }
