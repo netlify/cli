@@ -14,9 +14,11 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
 
   if (flags.dir) {
     settings = await getStaticServerSettings(settings, flags, projectDir, log)
-    if (['command','targetPort'].some(p => devConfig.hasOwnProperty(p))) {
-      throw new Error('"command" or "targetPort" options cannot be used in conjunction with "dir" flag which is used to run a static server')
-    }
+    ;['command','targetPort'].forEach(p => {
+      if (devConfig.hasOwnProperty(p)) {
+        throw new Error(`"${p}" option cannot be used in conjunction with "dir" flag which is used to run a static server`)
+      }
+    })
   } else if (devConfig.framework === '#auto' && !(devConfig.command && devConfig.targetPort)) {
     let settingsArr = []
     const detectors = detectorsFiles.map(det => {
@@ -92,6 +94,10 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
   settings.dist = flags.dir || devConfig.publish || settings.dist // dont loudassign if they dont need it
 
   if (devConfig.targetPort) {
+    if (devConfig.targetPort && typeof devConfig.targetPort !== 'number') {
+      throw new Error('Invalid "targetPort" option specified. The value of "targetPort" option must be an integer')
+    }
+
     if (devConfig.targetPort === devConfig.port) {
       throw new Error(
         '"port" and "targetPort" options cannot have same values. Please consult the documentation for more details: https://cli.netlify.com/netlify-dev#netlifytoml-dev-block'
@@ -103,7 +109,8 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
 
     settings.frameworkPort = devConfig.targetPort
     settings.urlRegexp = devConfig.urlRegexp || new RegExp(`(http://)([^:]+:)${devConfig.targetPort}(/)?`, 'g')
-  } else if (devConfig.port && devConfig.port === settings.frameworkPort) {
+  }
+  if (devConfig.port && devConfig.port === settings.frameworkPort) {
     throw new Error(
       'The "port" option you specified conflicts with the port of your application. Please use a different value for "port"'
     )
@@ -114,6 +121,10 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
   }
 
   if (!settings.frameworkPort) throw new Error('No "targetPort" option specified or detected.')
+
+  if (devConfig.port && typeof devConfig.port !== 'number') {
+    throw new Error('Invalid "port" option specified. The value of "port" option must be an integer')
+  }
 
   settings.port = devConfig.port || settings.port
   if (devConfig.port && devConfig.port === settings.frameworkPort) {

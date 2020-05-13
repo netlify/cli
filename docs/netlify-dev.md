@@ -112,9 +112,9 @@ Netlify Dev is meant to work with zero config for the majority of users, by usin
 # note: each of these fields are OPTIONAL, with an exception that when you're specifying "command" and "port", you must specify framework = "#custom" 
 [dev]
   command = "yarn start" # Command to start your dev server
-  port = 8888 # Port that the dev server will be accessible on
-  targetPort = 3000 # Port of target app server
-  publish = "dist" # If you use a _redirect file, provide the path to your static content folder
+  port = 8888 # The port that the netlify dev will be accessible on
+  targetPort = 3000 # The port for your application server, framework or site generator
+  publish = "dist" # The path to your static content folder
   jwtRolePath = "app_metadata.authorization.roles" # Object path we should look for role values for JWT based redirects
   autoLaunch = true # a Boolean value that determines if Netlify Dev launches the local server address in your browser
 ```
@@ -131,7 +131,7 @@ Netlify Dev will attempt to detect the SSG or build command that you are using, 
 [dev]
   framework = "#custom"
   command = "yarn start" # Command to start your dev server
-  port = 8888 # Port that the dev server will be accessible on
+  port = 8888 # The port that the netlify dev will be accessible on
   publish = "dist" # If you use a _redirect file, provide the path to your static content folder
 ```
 
@@ -172,9 +172,8 @@ As for which port to use while doing local development in Netlify Dev, always lo
 
 Netlify Dev allows you to specify the following parameters for port as both flags and in config file (`netlify.toml` etc.):
 
-- `port`: The port for the main Netlify Dev server, the one you'll open in browser.
-- `targetPort`: The port for your application server or site generator.
-- `functionsPort`: The port for Netlify Functions server. This server is accessed internally within Netlify Dev, you shouldn't need to access it directly. And thus shouldn't need to change this port. You can access your functions at Netlify Dev main server port like so: `http://localhost:<port>/.netlify/functions/<your-function-slug>`.
+- `port`: The port for the main Netlify Dev server, the one you'll open in the browser.
+- `targetPort`: The port for your application server, framework or site generator.
 
 Netlify Dev tries to acquire these ports but if any of them is not available (already in use by another application), it assigns a random port instead of that.
 

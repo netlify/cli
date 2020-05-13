@@ -370,9 +370,14 @@ async function startDevServer(settings, log) {
   ps.stderr.pipe(stripAnsiCc.stream()).pipe(process.stderr)
 
   process.stdin.pipe(process.stdin)
-  ps.on('close', code => process.exit(code))
-  ps.on('SIGINT', process.exit)
-  ps.on('SIGTERM', process.exit)
+
+  function handleProcessExit(code) {
+    log(code > 0 ? NETLIFYDEVERR : NETLIFYDEVWARN, `"${[settings.command, ...settings.args].join(' ')}" exited with code ${code}. Shutting down Netlify Dev server`)
+    process.exit(code)
+  }
+  ps.on('close', handleProcessExit)
+  ps.on('SIGINT', handleProcessExit)
+  ps.on('SIGTERM', handleProcessExit)
 
   ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach(signal =>
     process.on(signal, () => {
@@ -421,7 +426,13 @@ class DevCommand extends Command {
       Object.entries(envSettings.vars).forEach(([key, val]) => (process.env[key] = val))
     }
 
-    let settings = await serverSettings(devConfig, flags, site.root, this.log)
+    let settings = {}
+    try {
+      settings = await serverSettings(devConfig, flags, site.root, this.log)
+    } catch (err) {
+      this.log(NETLIFYDEVERR, err.message)
+      this.exit(1)
+    }
 
     await startDevServer(settings, this.log)
 
