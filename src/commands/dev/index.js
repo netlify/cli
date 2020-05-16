@@ -158,7 +158,7 @@ function initializeProxy(port, distDir, projectDir) {
 
 async function startProxy(settings, addonUrls, configPath, projectDir, functionsDir, exit) {
   try {
-    await waitPort({ port: settings.frameworkPort })
+    await waitPort({ port: settings.frameworkPort, output: 'silent' })
   } catch (err) {
     console.error(NETLIFYDEVERR, `Netlify Dev could not connect to localhost:${settings.port}.`)
     console.error(NETLIFYDEVERR, `Please make sure your framework server is running on port ${settings.port}`)
@@ -166,7 +166,7 @@ async function startProxy(settings, addonUrls, configPath, projectDir, functions
   }
 
   if (functionsDir && settings.functionsPort) {
-    await waitPort({ port: settings.functionsPort })
+    await waitPort({ port: settings.functionsPort, output: 'silent' })
   }
   const functionsServer = settings.functionsPort ? `http://localhost:${settings.functionsPort}` : null
 
@@ -474,7 +474,7 @@ class DevCommand extends Command {
     }
 
     if (flags.live) {
-      await waitPort({ port: settings.frameworkPort })
+      await waitPort({ port: settings.frameworkPort, output: 'silent' })
       const liveSession = await createTunnel(site.id, accessToken, this.log)
       url = liveSession.session_url
       process.env.BASE_URL = url
