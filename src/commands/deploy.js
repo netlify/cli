@@ -142,7 +142,7 @@ class DeployCommand extends Command {
     }
     this.log(prettyjson.render(pathInfo))
 
-    ensureDirectory(deployFolder, this.exit)
+    ensureDirectory(deployFolder, this.error)
 
     if (functionsFolder) {
       // we used to hard error if functions folder is specified but doesnt exist
@@ -441,28 +441,23 @@ function deployProgressCb() {
   }
 }
 
-function ensureDirectory(resolvedDeployPath, exit) {
+function ensureDirectory(resolvedDeployPath, error) {
   let stat
   try {
     stat = fs.statSync(resolvedDeployPath)
   } catch (e) {
     if (e.status === 'ENOENT') {
-      console.log(
-        `No such directory ${resolvedDeployPath}! Did you forget to create a functions folder or run a build?`
-      )
-      exit(1)
+      return error(`No such directory ${resolvedDeployPath}! Did you forget to create a functions folder or run a build?`)
     }
 
     // Improve the message of permission errors
     if (e.status === 'EACCES') {
-      console.log('Permission error when trying to access deploy folder')
-      exit(1)
+      return error('Permission error when trying to access deploy folder')
     }
     throw e
   }
   if (!stat.isDirectory) {
-    console.log('Deploy target must be a directory')
-    exit(1)
+    return error('Deploy target must be a directory')
   }
   return stat
 }
