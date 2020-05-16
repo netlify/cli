@@ -22,8 +22,8 @@ class DeployCommand extends Command {
     const { api, site, config } = this.netlify
 
     const deployToProduction = flags.prod
-    if (deployToProduction && flags.context) {
-      this.error(`--prod and --context flags cannot be used at the same time`)
+    if (deployToProduction && flags.branch) {
+      this.error(`--prod and --branch flags cannot be used at the same time`)
     }
     await this.authenticate(flags.auth)
 
@@ -34,7 +34,7 @@ class DeployCommand extends Command {
         open: flags.open,
         prod: flags.prod,
         json: flags.json,
-        context: Boolean(flags.context),
+        branch: Boolean(flags.branch),
       }
     })
 
@@ -199,10 +199,10 @@ class DeployCommand extends Command {
         configPath: configPath,
         fnDir: functionsFolder,
         statusCb: flags.json || flags.silent ? () => {} : deployProgressCb(),
-        draft: !deployToProduction && !flags.context,
+        draft: !deployToProduction && !flags.branch,
         message: flags.message,
         deployTimeout: flags.timeout * 1000 || 1.2e6,
-        branch: flags.context,
+        branch: flags.branch,
       })
     } catch (e) {
       switch (true) {
@@ -380,9 +380,9 @@ DeployCommand.flags = {
     description: 'Deploy to production',
     default: false
   }),
-  context: flags.string({
-    char: 'c',
-    description: 'Context of deployment. This will determine the branch of deployment URL'
+  branch: flags.string({
+    char: 'b',
+    description: "Specifies the branch for deployment. Useful for creating specific deployment URL's"
   }),
   open: flags.boolean({
     char: 'o',
