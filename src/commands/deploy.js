@@ -22,6 +22,9 @@ class DeployCommand extends Command {
     const { api, site, config } = this.netlify
 
     const deployToProduction = flags.prod
+    if (deployToProduction && flags.context) {
+      this.error(`--prod and --context flags cannot be used at the same time`)
+    }
     await this.authenticate(flags.auth)
 
     await this.config.runHook('analytics', {
@@ -30,7 +33,8 @@ class DeployCommand extends Command {
         command: 'deploy',
         open: flags.open,
         prod: flags.prod,
-        json: flags.json
+        json: flags.json,
+        context: Boolean(flags.context),
       }
     })
 
@@ -195,9 +199,10 @@ class DeployCommand extends Command {
         configPath: configPath,
         fnDir: functionsFolder,
         statusCb: flags.json || flags.silent ? () => {} : deployProgressCb(),
-        draft: !deployToProduction,
+        draft: !deployToProduction && !flags.context,
         message: flags.message,
-        deployTimeout: flags.timeout * 1000 || 1.2e6
+        deployTimeout: flags.timeout * 1000 || 1.2e6,
+        branch: flags.context,
       })
     } catch (e) {
       switch (true) {
@@ -374,6 +379,10 @@ DeployCommand.flags = {
     char: 'p',
     description: 'Deploy to production',
     default: false
+  }),
+  context: flags.string({
+    char: 'c',
+    description: 'Context of deployment. This will determine the branch of deployment URL'
   }),
   open: flags.boolean({
     char: 'o',
