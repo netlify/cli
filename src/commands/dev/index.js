@@ -452,6 +452,8 @@ async function startDevServer(settings, log) {
 class DevCommand extends Command {
   async run() {
     this.log(`${NETLIFYDEV}`)
+    const errorExit = this.error
+    const log = this.log
     let { flags } = this.parse(DevCommand)
     const { api, site, config } = this.netlify
     config.dev = { ...config.dev }
@@ -515,12 +517,11 @@ class DevCommand extends Command {
       const functionsServer = await serveFunctions(settings.functions)
       functionsServer.listen(settings.functionsPort, function(err) {
         if (err) {
-          console.error(`${NETLIFYDEVERR} Unable to start lambda server: `, err) // eslint-disable-line no-console
-          process.exit(1)
+          errorExit(`${NETLIFYDEVERR} Unable to start lambda server: ${err}`)
         }
 
         // add newline because this often appears alongside the client devserver's output
-        console.log(`\n${NETLIFYDEVLOG} Functions server is listening on ${settings.functionsPort}`) // eslint-disable-line no-console
+        log(`\n${NETLIFYDEVLOG} Functions server is listening on ${settings.functionsPort}`)
       })
     }
 
