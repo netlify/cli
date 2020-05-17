@@ -19,10 +19,10 @@ module.exports = function() {
   }
 
   return {
-    type: 'nuxt',
+    framework: 'nuxt',
     command: getYarnOrNPMCommand(),
     port: 8888,
-    proxyPort: 3000,
+    frameworkPort: 3000,
     env: { ...process.env },
     possibleArgsArrs,
     urlRegexp: new RegExp(`(http://)([^:]+:)${3000}(/)?`, 'g'),

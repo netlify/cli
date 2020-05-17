@@ -55,7 +55,7 @@ netlify dev:exec
 **Examples**
 
 ```bash
-$ netlify exec npm run bootstrap
+$ netlify dev:exec npm run bootstrap
 ```
 
 ---

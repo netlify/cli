@@ -1,0 +1,35 @@
+[dev]
+	autoLaunch = false
+[build]
+  functions = "functions"
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+[[redirects]]
+  from = "/foo"
+  to = "/not-foo"
+  status = 200
+  force = false
+[[redirects]]
+  from = "/foo.html"
+  to = "/not-foo"
+  status = 200
+[[redirects]]
+  from = "/not-foo"
+  to = "/foo"
+  status = 200
+  force = true
+[[redirects]]
+  from = "/test-404a"
+  to = "/foo"
+  status = 404
+[[redirects]]
+  from = "/test-404b"
+  to = "/foo"
+  status = 404
+[[redirects]]
+  from = "/test-404c"
+  to = "/foo"
+  status = 404
+  force = true

@@ -1,0 +1,4 @@
+/force.html         /test.html                      200!
+/something          /otherthing.html
+/api/*              /.netlify/functions/:splat      200
+/*                  /index.html                     200

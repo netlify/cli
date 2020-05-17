@@ -6,9 +6,9 @@ module.exports = function() {
   }
 
   return {
-    type: 'middleman',
+    framework: 'middleman',
     port: 8888,
-    proxyPort: 4567,
+    frameworkPort: 4567,
     env: { ...process.env },
     command: 'bundle',
     possibleArgsArrs: [['exec', 'middleman', 'server']],

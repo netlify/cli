@@ -17,10 +17,10 @@ module.exports = function() {
     possibleArgsArrs.push(['hexo', 'server'])
   }
   return {
-    type: 'hexo',
+    framework: 'hexo',
     command: getYarnOrNPMCommand(),
     port: 8888,
-    proxyPort: 4000,
+    frameworkPort: 4000,
     env: { ...process.env },
     possibleArgsArrs,
     urlRegexp: new RegExp(`(http://)([^:]+:)${4000}(/)?`, 'g'),

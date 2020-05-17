@@ -21,10 +21,10 @@ module.exports = function() {
     possibleArgsArrs.push(['expo', 'start', '--web'])
   }
   return {
-    type: 'expo',
+    framework: 'expo',
     command: getYarnOrNPMCommand(),
     port: 8888,
-    proxyPort: 19006,
+    frameworkPort: 19006,
     env: { ...process.env },
     possibleArgsArrs,
     urlRegexp: new RegExp(`(http://)([^:]+:)${19006}(/)?`, 'g'),

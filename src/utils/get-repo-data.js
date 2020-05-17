@@ -29,7 +29,9 @@ async function getRepoData(remote) {
     }
 
     if (!gitConfig.remote.hasOwnProperty(remote) || isEmpty(gitConfig.remote[remote])) {
-      throw new Error(`The specified remote "${remote}" is not defined in Git repo. Please use --gitRemoteName flag to specify a remote.`)
+      throw new Error(
+        `The specified remote "${remote}" is not defined in Git repo. Please use --gitRemoteName flag to specify a remote.`
+      )
     }
 
     const remoteData = parseGitRemote(gitConfig.remote[remote].url)

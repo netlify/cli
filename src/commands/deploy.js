@@ -11,10 +11,10 @@ const logSymbols = require('log-symbols')
 const cliSpinnerNames = Object.keys(require('cli-spinners'))
 const randomItem = require('random-item')
 const inquirer = require('inquirer')
+const isObject = require('lodash.isobject')
 const SitesCreateCommand = require('./sites/create')
 const LinkCommand = require('./link')
-const { NETLIFYDEVLOG } = require('../utils/logo')
-const { waitForBuildFinish } = require('../utils/logs.js')
+const { NETLIFYDEV, NETLIFYDEVLOG, NETLIFYDEVERR } = require('../utils/logo')
 
 class DeployCommand extends Command {
   async run() {
@@ -23,8 +23,6 @@ class DeployCommand extends Command {
 
     const deployToProduction = flags.prod
     await this.authenticate(flags.auth)
-
-    const [accessToken] = this.getConfigToken()
 
     await this.config.runHook('analytics', {
       eventName: 'command',
@@ -37,7 +35,7 @@ class DeployCommand extends Command {
     })
 
     let siteId = flags.site || site.id
-    let siteData
+    let siteData = {}
     if (!siteId) {
       this.log("This folder isn't linked to a site yet")
       const NEW_SITE = '+  Create & configure a new site'
@@ -71,7 +69,7 @@ class DeployCommand extends Command {
       } catch (e) {
         // TODO specifically handle known cases (e.g. no account access)
         if (e.status === 404) {
-          this.error("Site not found")
+          this.error('Site not found')
         } else {
           this.error(e.message)
         }
@@ -81,20 +79,17 @@ class DeployCommand extends Command {
     if (flags.trigger) {
       try {
         const siteBuild = await api.createSiteBuild({ siteId: siteId })
-        this.log(`${NETLIFYDEVLOG} A new deployment was triggered successfully.`)
-        this.log(`${NETLIFYDEVLOG} Waiting for the build to start ⏳`)
-        const deployData = await api.getDeploy({ deployId: siteBuild.deploy_id })
-        if (deployData && deployData.log_access_attributes && Object.keys(deployData.log_access_attributes).length) {
-          await waitForBuildFinish(api, site.id, siteBuild.deploy_id, accessToken)
-        }
+        this.log(
+          `${NETLIFYDEV} A new deployment was triggered successfully. Visit https://app.netlify.com/sites/${siteData.name}/deploys/${siteBuild.deploy_id} to see the logs.`
+        )
+        return
       } catch (err) {
         if (err.status === 404) {
           this.error('Site not found. Please rerun "netlify link" and make sure that your site has CI configured.')
         } else {
-          this.error(err)
+          this.error(err.message)
         }
       }
-      this.exit()
     }
 
     // TODO: abstract settings lookup
@@ -177,7 +172,21 @@ class DeployCommand extends Command {
     let results
     try {
       if (deployToProduction) {
-        this.log('Deploying to live site URL...')
+        if (isObject(siteData.published_deploy) && siteData.published_deploy.locked) {
+          this.log(`\n${NETLIFYDEVERR} Deployments are "locked" for production context of this site\n`)
+          const { unlockChoice } = await inquirer.prompt([
+            {
+              type: 'confirm',
+              name: 'unlockChoice',
+              message: 'Would you like to "unlock" deployments for production context to proceed?',
+              default: false,
+            }
+          ])
+          if (!unlockChoice) this.exit(0)
+          await api.unlockDeploy({ deploy_id: siteData.published_deploy.id })
+          this.log(`\n${NETLIFYDEVLOG} "Auto publishing" has been enabled for production context\n`)
+        }
+        this.log('Deploying to main site URL...')
       } else {
         this.log('Deploying to draft URL...')
       }
@@ -228,10 +237,10 @@ class DeployCommand extends Command {
     }
 
     if (deployToProduction) {
-      msgData['Live URL'] = siteUrl
+      msgData['Website URL'] = siteUrl
     } else {
       delete msgData['Unique Deploy URL']
-      msgData['Live Draft URL'] = deployUrl
+      msgData['Website Draft URL'] = deployUrl
     }
 
     // Spacer
@@ -259,7 +268,7 @@ class DeployCommand extends Command {
 
     if (!deployToProduction) {
       this.log()
-      this.log('If everything looks good on your draft URL, take it live with the --prod flag.')
+      this.log('If everything looks good on your draft URL, deploy it to your main site URL with the --prod flag.')
       this.log(`${chalk.cyanBright.bold('netlify deploy --prod')}`)
       this.log()
     }

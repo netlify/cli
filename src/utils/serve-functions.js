@@ -57,9 +57,7 @@ function createCallback(response) {
       const items = lambdaResponse.multiValueHeaders[key]
       response.setHeader(key, items)
     }
-    response.write(
-      lambdaResponse.isBase64Encoded ? Buffer.from(lambdaResponse.body, 'base64') : lambdaResponse.body
-    )
+    response.write(lambdaResponse.isBase64Encoded ? Buffer.from(lambdaResponse.body, 'base64') : lambdaResponse.body)
     response.end()
   }
 }
@@ -105,9 +103,7 @@ function createHandler(dir) {
 
   const logger = winston.createLogger({
     levels: winston.config.npm.levels,
-    transports: [
-      new winston.transports.Console( { level: 'warn' }),
-    ]
+    transports: [new winston.transports.Console({ level: 'warn' })]
   })
   lambdaLocal.setLogger(logger)
 
@@ -125,19 +121,16 @@ function createHandler(dir) {
     }
     const { functionPath } = functions[func]
 
-    const body = request.body.toString()
-    var isBase64Encoded = Buffer.from(body, 'base64').toString('base64') === body
+    const body = request.get('content-length') ? request.body.toString() : undefined
+    let isBase64Encoded = false
+    if (body) isBase64Encoded = Buffer.from(body, 'base64').toString('base64') === body
 
-    let remoteAddress =
-      request.headers['x-forwarded-for'] || request.headers['X-Forwarded-for'] || request.connection.remoteAddress || ''
-    remoteAddress = remoteAddress
-      .split(remoteAddress.includes('.') ? ':' : ',')
-      .pop()
-      .trim()
+    let remoteAddress = request.get('x-forwarded-for') || request.connection.remoteAddress || ''
+    remoteAddress = remoteAddress.split(remoteAddress.includes('.') ? ':' : ',').pop().trim()
 
     let requestPath = request.path
-    if (request.headers['x-netlify-original-pathname']) {
-      requestPath = request.headers['x-netlify-original-pathname']
+    if (request.get('x-netlify-original-pathname')) {
+      requestPath = request.get('x-netlify-original-pathname')
       delete request.headers['x-netlify-original-pathname']
     }
 
@@ -145,7 +138,7 @@ function createHandler(dir) {
       path: requestPath,
       httpMethod: request.method,
       queryStringParameters: queryString.parse(request.url.split(/\?(.+)/)[1]),
-      headers: Object.assign({}, request.headers, { 'client-ip': remoteAddress }),
+      headers: { ...request.headers, 'client-ip': remoteAddress },
       body: body,
       isBase64Encoded: isBase64Encoded
     }
@@ -158,14 +151,13 @@ function createHandler(dir) {
       clientContext: JSON.stringify(buildClientContext(request.headers) || {}),
       callback: callback,
       verboseLevel: 3,
-      timeoutMs: 10 * 1000,
+      timeoutMs: 10 * 1000
     })
   }
 }
 
-async function serveFunctions(settings) {
+async function serveFunctions(dir) {
   const app = express()
-  const dir = settings.functionsDir
 
   app.use(
     bodyParser.text({

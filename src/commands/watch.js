@@ -1,19 +1,22 @@
 const Command = require('../utils/command')
 const { CLIError } = require('@oclif/errors')
+const pWaitFor = require('p-wait-for')
 const cli = require('cli-ux').default
 const prettyjson = require('prettyjson')
 const chalk = require('chalk')
 
-const { waitForBuildFinish } = require('../utils/logs')
+const InitCommand = require('./init')
 
 class SitesWatchCommand extends Command {
   async run() {
-    const { args } = this.parse(SitesWatchCommand)
     await this.authenticate()
     const client = this.netlify.api
-    const siteId = this.netlify.site.id
+    let siteId = this.netlify.site.id
 
-    const [accessToken] = this.getConfigToken()
+    if (!siteId) {
+      const siteData = await InitCommand.run([])
+      siteId = siteData.id
+    }
 
     // wait for 1 sec for everything to kickoff
     console.time('Deploy time')
@@ -51,7 +54,7 @@ class SitesWatchCommand extends Command {
       //   return !build.done
       // })
 
-      const noActiveBuilds = await waitForBuildFinish(client, siteId, args.deployId, accessToken)
+      const noActiveBuilds = await waitForBuildFinish(client, siteId)
 
       const siteData = await client.getSite({ siteId })
 
@@ -77,8 +80,35 @@ SitesWatchCommand.description = `Watch for site deploy to finish`
 
 SitesWatchCommand.examples = [`netlify watch`, `git push && netlify watch`]
 
-SitesWatchCommand.args = [
-  { name: 'deployId' },
-]
+async function waitForBuildFinish(api, siteId) {
+  let firstPass = true
+
+  await pWaitFor(waitForBuildToFinish, {
+    interval: 1000,
+    timeout: 1.2e6, // 20 mins,
+    message: 'Timeout while waiting for deploy to finish'
+  })
+
+  // return only when build done or timeout happens
+  return firstPass
+
+  async function waitForBuildToFinish() {
+    const builds = await api.listSiteBuilds({ siteId })
+    const currentBuilds = builds.filter(build => {
+      // build.error
+      return !build.done
+    })
+
+    // if build.error
+    // @TODO implement build error messages into this
+
+    if (!currentBuilds || !currentBuilds.length) {
+      cli.action.stop()
+      return true
+    }
+    firstPass = false
+    return false
+  }
+}
 
 module.exports = SitesWatchCommand

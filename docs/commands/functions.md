@@ -97,6 +97,7 @@ netlify functions:invoke
 - `querystring` (*option*) - Querystring to add to your function invocation
 - `payload` (*option*) - Supply POST payload in stringified json, or a path to a json file
 - `identity` (*boolean*) - simulate Netlify Identity authentication JWT. pass --no-identity to affirm unauthenticated request
+- `port` (*option*) - Port where netlify dev is accessible. e.g. 8888
 
 **Examples**
 

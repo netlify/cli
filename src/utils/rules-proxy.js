@@ -5,12 +5,12 @@ const redirector = require('netlify-redirector')
 const chokidar = require('chokidar')
 const cookie = require('cookie')
 const redirectParser = require('netlify-redirect-parser')
-const { NETLIFYDEVWARN } = require('../utils/logo')
+const { NETLIFYDEVWARN, NETLIFYDEVLOG } = require('../utils/logo')
 
-async function parseFile(parser, name, filePath) {
+async function parseFile(parser, filePath) {
   const result = await parser(filePath)
   if (result.errors.length) {
-    console.error(`${NETLIFYDEVWARN} Warnings while parsing ${name} file:`)
+    console.error(`${NETLIFYDEVWARN} Warnings while parsing ${path.basename(filePath)} file:`)
     result.errors.forEach(err => {
       console.error(`  ${err.lineNum}: ${err.line} -- ${err.reason}`)
     })
@@ -18,55 +18,66 @@ async function parseFile(parser, name, filePath) {
   return result.success
 }
 
+module.exports.parseFile = parseFile
+
 async function parseRules(configFiles) {
   const rules = []
 
   for (const file of configFiles) {
     if (!fs.existsSync(file)) continue
 
-    const fileName = file.split(path.sep).pop()
-    if (fileName.endsWith('_redirects')) {
-      rules.push(...(await parseFile(redirectParser.parseRedirectsFormat, fileName, file)))
+    if (path.basename(file) === '_redirects') {
+      rules.push(...(await parseFile(redirectParser.parseRedirectsFormat, file)))
     } else {
-      rules.push(...(await parseFile(redirectParser.parseNetlifyConfig, fileName, file)))
+      rules.push(...(await parseFile(redirectParser.parseNetlifyConfig, file)))
     }
   }
 
   return rules
 }
 
+module.exports.parseRules = parseRules
+
 function onChanges(files, cb) {
   files.forEach(file => {
     const watcher = chokidar.watch(file)
     watcher.on('change', cb)
-    watcher.on('add', cb)
     watcher.on('unlink', cb)
   })
 }
 
-function getLanguage(req) {
-  if (req.headers['accept-language']) {
-    return req.headers['accept-language'].split(',')[0].slice(0, 2)
+module.exports.onChanges = onChanges
+
+function getLanguage(headers) {
+  if (headers['accept-language']) {
+    return headers['accept-language'].split(',')[0].slice(0, 2)
   }
   return 'en'
 }
+
+module.exports.getLanguage = getLanguage
 
 function getCountry(req) {
   return 'us'
 }
 
-module.exports = function({ publicFolder, baseFolder, jwtSecret, jwtRole, configPath }) {
+module.exports.createRewriter = async function createRewriter({ distDir, projectDir, jwtSecret, jwtRole, configPath }) {
   let matcher = null
-  const projectDir = path.resolve(baseFolder || process.cwd())
-  const configFiles = [
-    path.resolve(projectDir, '_redirects'),
-    path.resolve(publicFolder, '_redirects'),
-    path.resolve(configPath || path.resolve(publicFolder, 'netlify.yml')),
-  ]
-  let rules = []
+  const configFiles = Array.from(
+    new Set(
+      [path.resolve(distDir, '_redirects'), path.resolve(projectDir, '_redirects')].concat(
+        configPath ? path.resolve(configPath) : []
+      )
+    )
+  ).filter(f => f !== projectDir)
+  let rules = await parseRules(configFiles)
 
   onChanges(configFiles, async () => {
-    rules = (await parseRules(configFiles)).filter(r => !(r.path === '/*' && r.to === '/index.html' && r.status === 200))
+    console.log(
+      `${NETLIFYDEVLOG} Reloading redirect rules from`,
+      configFiles.filter(fs.existsSync).map(p => path.relative(projectDir, p))
+    )
+    rules = await parseRules(configFiles)
     matcher = null
   })
 
@@ -74,10 +85,10 @@ module.exports = function({ publicFolder, baseFolder, jwtSecret, jwtRole, config
     if (matcher) return matcher
 
     if (rules.length) {
-      return matcher = await redirector.parseJSON(JSON.stringify(rules), {
+      return (matcher = await redirector.parseJSON(JSON.stringify(rules), {
         jwtSecret: jwtSecret || 'secret',
         jwtRole: jwtRole || 'app_metadata.authorization.roles'
-      })
+      }))
     }
     return {
       match() {
@@ -97,7 +108,7 @@ module.exports = function({ publicFolder, baseFolder, jwtSecret, jwtRole, config
       const headers = Object.assign(
         {},
         {
-          'x-language': cookieValues.nf_lang || getLanguage(req),
+          'x-language': cookieValues.nf_lang || getLanguage(req.headers),
           'x-country': cookieValues.nf_country || getCountry(req)
         },
         req.headers
@@ -121,5 +132,3 @@ module.exports = function({ publicFolder, baseFolder, jwtSecret, jwtRole, config
     })
   }
 }
-
-module.exports.onChanges = onChanges

@@ -6,10 +6,10 @@
 
 ```ts
 {
-    type: String, // e.g. gatsby, vue-cli
+    framework: String, // e.g. gatsby, vue-cli
     command: String, // e.g. yarn, npm
     port: Number, // e.g. 8888
-    proxyPort: Number, // e.g. 3000
+    frameworkPort: Number, // e.g. 3000
     env: Object, // env variables, see examples
     possibleArgsArrs: [[String]], // e.g [['run develop]], so that the combined command is 'npm run develop', but we allow for multiple
     urlRegexp: RegExp, // see examples
@@ -50,10 +50,10 @@ module.exports = function() {
   // });
 
   return {
-    type: 'gitbook',
+    framework: 'gitbook',
     command: getYarnOrNPMCommand(),
     port: 8888,
-    proxyPort: 4000,
+    frameworkPort: 4000,
     env: { ...process.env },
     possibleArgsArrs,
     urlRegexp: new RegExp(`(http://)([^:]+:)${4000}(/)?`, 'g'),

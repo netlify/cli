@@ -1,3 +1,4 @@
+const envinfo = require('envinfo')
 const header = require('../utils/header')
 const globalConfig = require('../utils/global-config')
 const { track } = require('../utils/telemetry')
@@ -18,6 +19,23 @@ module.exports = async context => {
       force: true
     })
     process.exit() // eslint-disable-line
+  }
+
+  if (
+    process.argv.length > 3 &&
+    ['-v', '--version', 'version'].includes(process.argv[2]) &&
+    process.argv[3] === '--verbose'
+  ) {
+    console.log(`────────────────────┐
+ Environment Info   │
+────────────────────┘`)
+    const data = await envinfo.run({
+      System: ['OS', 'CPU'],
+      Binaries: ['Node', 'Yarn', 'npm'],
+      Browsers: ['Chrome', 'Edge', 'Firefox', 'Safari'],
+      npmGlobalPackages: ['netlify-cli']
+    })
+    console.log(data)
   }
 
   header(context)
