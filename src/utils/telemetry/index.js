@@ -12,7 +12,7 @@ function send(type, payload) {
   const requestFile = path.join(__dirname, 'request.js')
   const options = JSON.stringify({
     data: payload,
-    type: type
+    type: type,
   })
 
   if (DEBUG) {
@@ -23,7 +23,7 @@ function send(type, payload) {
   // spawn detached child process to handle send
   spawn(process.execPath, [requestFile, options], {
     detached: true,
-    stdio: 'ignore'
+    stdio: 'ignore',
   }).unref()
 
   return Promise.resolve()
@@ -35,8 +35,8 @@ const eventConfig = {
   // Allowed objects
   objects: [
     'sites', // example cli:sites_created
-    'user' // example cli:user_signup
-  ]
+    'user', // example cli:user_signup
+  ],
 }
 
 function track(eventName, payload) {
@@ -92,7 +92,7 @@ function track(eventName, payload) {
     event: eventName,
     userId: userId,
     anonymousId: cliId,
-    properties: Object.assign({}, defaultProperties, properties)
+    properties: Object.assign({}, defaultProperties, properties),
   }
 
   return send('track', defaultData)
@@ -134,7 +134,7 @@ function identify(payload) {
     name: userProfile.name,
     email: userProfile.email,
     cliId: cliId,
-    telemetryDisabled: TELEMETRY_DISABLED
+    telemetryDisabled: TELEMETRY_DISABLED,
   }
 
   // remove force key
@@ -144,7 +144,7 @@ function identify(payload) {
   const identifyData = {
     anonymousId: cliId,
     userId: userId,
-    traits: Object.assign({}, defaultTraits, data)
+    traits: Object.assign({}, defaultTraits, data),
   }
 
   return send('identify', identifyData)
@@ -152,5 +152,5 @@ function identify(payload) {
 
 module.exports = {
   track: track,
-  identify: identify
+  identify: identify,
 }

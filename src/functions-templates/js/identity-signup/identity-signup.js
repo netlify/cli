@@ -12,15 +12,15 @@ exports.handler = async function(event, context) {
   const responseBody = {
     app_metadata: {
       roles: user.email.split('@')[1] === 'trust-this-company.com' ? ['editor'] : ['visitor'],
-      my_user_info: 'this is some user info'
+      my_user_info: 'this is some user info',
     },
     user_metadata: {
       ...user.user_metadata, // append current user metadata
-      custom_data_from_function: 'hurray this is some extra metadata'
-    }
+      custom_data_from_function: 'hurray this is some extra metadata',
+    },
   }
   return {
     statusCode: 200,
-    body: JSON.stringify(responseBody)
+    body: JSON.stringify(responseBody),
   }
 }

@@ -6,7 +6,7 @@ const {
   // NETLIFYDEV,
   NETLIFYDEVLOG,
   // NETLIFYDEVWARN,
-  NETLIFYDEVERR
+  NETLIFYDEVERR,
 } = require('../../utils/logo')
 const { getEnvSettings } = require('../../utils/env')
 
@@ -37,13 +37,13 @@ class ExecCommand extends Command {
 
     execa(this.argv[0], this.argv.slice(1), {
       env: process.env,
-      stdio: 'inherit'
+      stdio: 'inherit',
     })
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: 'dev:exec'
-      }
+        command: 'dev:exec',
+      },
     })
   }
 }

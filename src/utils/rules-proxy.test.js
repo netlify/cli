@@ -16,41 +16,41 @@ test('parseFile: netlify.toml', async t => {
     {
       path: '/api/*',
       to: '/.netlify/functions/:splat',
-      status: 200
+      status: 200,
     },
     {
       path: '/foo',
       to: '/not-foo',
       status: 200,
-      force: false
+      force: false,
     },
     {
       path: '/foo.html',
       to: '/not-foo',
-      status: 200
+      status: 200,
     },
     {
       path: '/not-foo',
       to: '/foo',
       status: 200,
-      force: true
+      force: true,
     },
     {
       path: '/test-404a',
       to: '/foo',
-      status: 404
+      status: 404,
     },
     {
       path: '/test-404b',
       to: '/foo',
-      status: 404
+      status: 404,
     },
     {
       path: '/test-404c',
       to: '/foo',
       status: 404,
-      force: true
-    }
+      force: true,
+    },
   ]
 
   t.deepEqual(rules, expected)
@@ -62,8 +62,8 @@ test('parseFile: _redirects', async t => {
     {
       path: '/something',
       to: '/ping',
-      status: 200
-    }
+      status: 200,
+    },
   ]
 
   t.deepEqual(rules, expected)
@@ -76,46 +76,46 @@ test('parseRules', async t => {
     {
       path: '/something',
       to: '/ping',
-      status: 200
+      status: 200,
     },
     {
       path: '/api/*',
       to: '/.netlify/functions/:splat',
-      status: 200
+      status: 200,
     },
     {
       path: '/foo',
       to: '/not-foo',
       status: 200,
-      force: false
+      force: false,
     },
     {
       path: '/foo.html',
       to: '/not-foo',
-      status: 200
+      status: 200,
     },
     {
       path: '/not-foo',
       to: '/foo',
       status: 200,
-      force: true
+      force: true,
     },
     {
       path: '/test-404a',
       to: '/foo',
-      status: 404
+      status: 404,
     },
     {
       path: '/test-404b',
       to: '/foo',
-      status: 404
+      status: 404,
     },
     {
       path: '/test-404c',
       to: '/foo',
       status: 404,
-      force: true
-    }
+      force: true,
+    },
   ]
 
   t.deepEqual(rules, expected)

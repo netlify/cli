@@ -5,5 +5,5 @@ function randomPort() {
 }
 
 module.exports = {
-  randomPort: randomPort
+  randomPort: randomPort,
 }

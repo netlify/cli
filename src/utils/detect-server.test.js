@@ -99,7 +99,7 @@ test('serverSettings: "dir" flag', async t => {
   const devConfig = {
     framework: '#auto',
     publish: path.join(sitePath, 'build'),
-    functions: path.join(sitePath, 'functions')
+    functions: path.join(sitePath, 'functions'),
   }
   const flags = { dir: sitePath }
   const settings = await serverSettings(devConfig, flags, sitePath, () => {})
@@ -130,7 +130,7 @@ test('serverSettings: when no framework is detected', async t => {
   const devConfig = {
     framework: '#auto',
     publish: path.join(sitePath, 'build'),
-    functions: path.join(sitePath, 'functions')
+    functions: path.join(sitePath, 'functions'),
   }
   const settings = await serverSettings(devConfig, {}, sitePath, () => {})
   t.is(settings.functions, devConfig.functions)

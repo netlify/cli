@@ -35,15 +35,15 @@ class AddonsListCommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: 'addons:list'
-      }
+        command: 'addons:list',
+      },
     })
 
     const addonData = addons.map(addon => {
       return {
         namespace: addon.service_path.replace('/.netlify/', ''),
         name: addon.service_name,
-        id: addon.id
+        id: addon.id,
       }
     })
 
@@ -65,8 +65,8 @@ AddonsListCommand.description = `List currently installed add-ons for site`
 AddonsListCommand.aliases = ['addon:list']
 AddonsListCommand.flags = {
   json: flags.boolean({
-    description: 'Output add-on data as JSON'
-  })
+    description: 'Output add-on data as JSON',
+  }),
 }
 
 module.exports = AddonsListCommand

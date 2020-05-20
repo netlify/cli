@@ -13,9 +13,9 @@ exports.handler = async event => {
     method: 'POST',
     headers: {
       Authorization: `Token ${EMAIL_TOKEN}`,
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ email })
+    body: JSON.stringify({ email }),
   })
     .then(response => response.json())
     .then(data => {

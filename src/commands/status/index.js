@@ -36,7 +36,7 @@ class StatusCommand extends Command {
       // 'Account id': get(personal, 'id'),
       // Name: get(personal, 'billing_name'),
       Email: get(user, 'email'),
-      Github: ghuser
+      Github: ghuser,
     }
     const teamsData = {}
 
@@ -52,7 +52,7 @@ class StatusCommand extends Command {
 
     if (!site.configPath) {
       this.logJson({
-        account: cleanAccountData
+        account: cleanAccountData,
       })
       this.exit()
     }
@@ -84,8 +84,8 @@ class StatusCommand extends Command {
           'config-path': site.configPath,
           'admin-url': siteData.admin_url,
           'site-url': siteData.ssl_url || siteData.url,
-          'site-id': siteData.id
-        }
+          'site-id': siteData.id,
+        },
       })
     }
 
@@ -98,7 +98,7 @@ class StatusCommand extends Command {
         'Netlify TOML': site.configPath,
         'Admin URL': chalk.magentaBright(siteData.admin_url),
         'Site URL': chalk.cyanBright(siteData.ssl_url || siteData.url),
-        'Site Id': chalk.yellowBright(siteData.id)
+        'Site Id': chalk.yellowBright(siteData.id),
       })
     )
     this.log()
@@ -109,8 +109,8 @@ StatusCommand.description = `Print status information`
 
 StatusCommand.flags = {
   verbose: flags.boolean({
-    description: 'Output system info'
-  })
+    description: 'Output system info',
+  }),
 }
 
 module.exports = StatusCommand

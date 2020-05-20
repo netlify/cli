@@ -9,7 +9,7 @@ module.exports = function() {
 
   const possibleArgsArrs = scanScripts({
     preferredScriptsArr: ['start'],
-    preferredCommand: 'brunch watch --server'
+    preferredCommand: 'brunch watch --server',
   })
 
   return {
@@ -20,6 +20,6 @@ module.exports = function() {
     env: { ...process.env },
     possibleArgsArrs,
     urlRegexp: new RegExp(`(http://)([^:]+:)${3333}(/)?`, 'g'),
-    dist: 'app/assets'
+    dist: 'app/assets',
   }
 }

@@ -20,8 +20,8 @@ class SitesCreateCommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: 'sites:create'
-      }
+        command: 'sites:create',
+      },
     })
 
     const accounts = await api.listAccountsForUser()
@@ -35,9 +35,9 @@ class SitesCreateCommand extends Command {
           message: 'Team:',
           choices: accounts.map(account => ({
             value: account.slug,
-            name: account.name
-          }))
-        }
+            name: account.name,
+          })),
+        },
       ])
       accountSlug = results.accountSlug
     }
@@ -57,7 +57,7 @@ class SitesCreateCommand extends Command {
           `${userName.slug}-makes-great-sites`,
           `netlify-thinks-${userName.slug}-is-great`,
           `the-great-${userName.slug}-site`,
-          `isnt-${userName.slug}-awesome`
+          `isnt-${userName.slug}-awesome`,
         ]
         const siteSuggestion = sample(suggestions)
 
@@ -70,8 +70,8 @@ class SitesCreateCommand extends Command {
             name: 'name',
             message: 'Site name (optional):',
             filter: val => (val === '' ? undefined : val),
-            validate: input => /^[a-zA-Z0-9-]+$/.test(input) || 'Only alphanumeric characters and hyphens are allowed'
-          }
+            validate: input => /^[a-zA-Z0-9-]+$/.test(input) || 'Only alphanumeric characters and hyphens are allowed',
+          },
         ])
         name = results.name
       }
@@ -83,7 +83,7 @@ class SitesCreateCommand extends Command {
       try {
         site = await api.createSiteInTeam({
           accountSlug: accountSlug,
-          body
+          body,
         })
       } catch (error) {
         if (error.status === 422) {
@@ -105,14 +105,14 @@ class SitesCreateCommand extends Command {
       prettyjson.render({
         'Admin URL': site.admin_url,
         URL: url,
-        'Site ID': site.id
+        'Site ID': site.id,
       })
     )
 
     track('sites_created', {
       siteId: site.id,
       adminUrl: site.admin_url,
-      siteUrl: url
+      siteUrl: url,
     })
 
     if (flags['with-ci']) {
@@ -122,14 +122,14 @@ class SitesCreateCommand extends Command {
           type: 'input',
           name: 'url',
           message: 'Git SSH remote URL to enable CI with:',
-          validate: input => (parseGitRemote(input) ? true : `Could not parse Git remote ${input}`)
-        }
+          validate: input => (parseGitRemote(input) ? true : `Could not parse Git remote ${input}`),
+        },
       ])
       console.log(url)
       const repoData = parseGitRemote(url)
       const repo = {
         repoData,
-        repo_path: url
+        repo_path: url,
       }
 
       switch (true) {
@@ -185,7 +185,7 @@ class SitesCreateCommand extends Command {
           'git_provider',
           'deploy_hook',
           'capabilities',
-          'id_domain'
+          'id_domain',
         ])
       )
     }
@@ -202,20 +202,20 @@ Create a blank site that isn't associated with any git remote.  Does not link to
 SitesCreateCommand.flags = {
   name: flags.string({
     char: 'n',
-    description: 'name of site'
+    description: 'name of site',
   }),
   'account-slug': flags.string({
     char: 'a',
-    description: 'account slug to create the site under'
+    description: 'account slug to create the site under',
   }),
   'with-ci': flags.boolean({
     char: 'c',
-    description: 'initialize CI hooks during site creation'
+    description: 'initialize CI hooks during site creation',
   }),
   manual: flags.boolean({
     char: 'm',
-    description: 'Force manual CI setup.  Used --with-ci flag'
-  })
+    description: 'Force manual CI setup.  Used --with-ci flag',
+  }),
 }
 
 module.exports = SitesCreateCommand

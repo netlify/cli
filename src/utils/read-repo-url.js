@@ -56,5 +56,5 @@ function parseRepoURL(repoHost, URL) {
 
 module.exports = {
   readRepoURL,
-  validateRepoURL
+  validateRepoURL,
 }

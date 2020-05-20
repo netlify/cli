@@ -18,7 +18,7 @@ function createFaunaGraphQL() {
   var options = {
     method: 'POST',
     body: dataString,
-    headers: { Authorization: `Basic ${token}` }
+    headers: { Authorization: `Basic ${token}` },
   }
 
   fetch('https://graphql.fauna.com/import', options)

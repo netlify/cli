@@ -15,8 +15,8 @@ class APICommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: 'api'
-      }
+        command: 'api',
+      },
     })
 
     if (isEmptyCommand(flags, args) || flags.list) {
@@ -64,8 +64,8 @@ For more information on available methods checkout https://open-api.netlify.com/
 APICommand.args = [
   {
     name: 'apiMethod',
-    description: 'Open API method to run'
-  }
+    description: 'Open API method to run',
+  },
 ]
 
 APICommand.examples = ['netlify api --list', 'netlify api getSite --data \'{ "site_id": "123456"}\'']
@@ -73,11 +73,11 @@ APICommand.examples = ['netlify api --list', 'netlify api getSite --data \'{ "si
 APICommand.flags = {
   data: oclif.flags.string({
     char: 'd',
-    description: 'Data to use'
+    description: 'Data to use',
   }),
   list: oclif.flags.boolean({
-    description: 'List out available API methods'
-  })
+    description: 'List out available API methods',
+  }),
 }
 
 APICommand.strict = false

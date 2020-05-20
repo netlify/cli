@@ -20,8 +20,8 @@ class LoginCommand extends Command {
       eventName: 'command',
       payload: {
         command: 'login',
-        new: flags.new
-      }
+        new: flags.new,
+      },
     })
 
     await this.expensivelyAuthenticate()
@@ -45,8 +45,8 @@ function msg(location) {
 
 LoginCommand.flags = {
   new: flags.boolean({
-    description: 'Login to new Netlify account'
-  })
+    description: 'Login to new Netlify account',
+  }),
 }
 LoginCommand.description = `Login to your Netlify account
 

@@ -6,5 +6,5 @@ module.exports = {
     console.log(
       'REMINDER: Make sure to call this function with the Netlify Identity JWT. See https://netlify-gotrue-in-react.netlify.com/ for demo'
     )
-  }
+  },
 }

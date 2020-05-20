@@ -9,8 +9,8 @@ const respond = fulfillmentText => {
     headers: {
       'Access-Control-Allow-Credentials': true,
       'Access-Control-Allow-Origin': '*',
-      'Content-Type': 'application/json'
-    }
+      'Content-Type': 'application/json',
+    },
   }
 }
 
@@ -22,7 +22,7 @@ exports.handler = async function(event, context) {
     console.error(`error with parsing function parameters: `, err)
     return {
       statusCode: 400,
-      body: JSON.stringify(err)
+      body: JSON.stringify(err),
     }
   }
   try {
@@ -38,14 +38,14 @@ async function createCustomerAndSubscribeToPlan(stripeToken, email, productPlan)
   // create a customer
   const customer = await stripe.customers.create({
     email: email,
-    source: stripeToken
+    source: stripeToken,
   })
   // retrieve created customer id to add customer to subscription plan
   const customerId = customer.id
   // create a subscription for the newly created customer
   const subscription = await stripe.subscriptions.create({
     customer: customerId,
-    items: [{ plan: productPlan }]
+    items: [{ plan: productPlan }],
   })
   return subscription
 }

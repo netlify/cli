@@ -16,7 +16,7 @@ module.exports = async context => {
     console.log('Netlify telemetry has been enabled')
     console.log('You can disable it anytime with the --telemetry-disable flag')
     track('user_telemetryEnabled', {
-      force: true
+      force: true,
     })
     process.exit() // eslint-disable-line
   }
@@ -33,7 +33,7 @@ module.exports = async context => {
       System: ['OS', 'CPU'],
       Binaries: ['Node', 'Yarn', 'npm'],
       Browsers: ['Chrome', 'Edge', 'Firefox', 'Safari'],
-      npmGlobalPackages: ['netlify-cli']
+      npmGlobalPackages: ['netlify-cli'],
     })
     console.log(data)
   }

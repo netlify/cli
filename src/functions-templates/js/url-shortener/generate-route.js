@@ -25,7 +25,7 @@ module.exports = function handler(event, context, callback) {
     'form-name': 'routes',
     destination: destination,
     code: code,
-    expires: ''
+    expires: '',
   }
 
   // post the new route to the Routes form
@@ -41,7 +41,7 @@ module.exports = function handler(event, context, callback) {
     return callback(null, {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: rootURL + code })
+      body: JSON.stringify({ url: rootURL + code }),
     })
   })
 

@@ -6,7 +6,7 @@ exports.handler = (event, context, callback) => {
   if (!process.env.CONTACT_EMAIL) {
     return callback(null, {
       statusCode: 500,
-      body: 'process.env.CONTACT_EMAIL must be defined'
+      body: 'process.env.CONTACT_EMAIL must be defined',
     })
   }
 
@@ -17,7 +17,7 @@ exports.handler = (event, context, callback) => {
   } catch (e) {
     return callback(null, {
       statusCode: 403,
-      body: e.message
+      body: e.message,
     })
   }
 
@@ -26,7 +26,7 @@ exports.handler = (event, context, callback) => {
   } catch (e) {
     return callback(null, {
       statusCode: 403,
-      body: e.message
+      body: e.message,
     })
   }
 
@@ -35,7 +35,7 @@ exports.handler = (event, context, callback) => {
   } catch (e) {
     return callback(null, {
       statusCode: 403,
-      body: e.message
+      body: e.message,
     })
   }
 
@@ -43,19 +43,19 @@ exports.handler = (event, context, callback) => {
     from: `"${body.email}" <no-reply@gql-modules.com>`,
     to: process.env.CONTACT_EMAIL,
     subject: `${body.name} sent you a message from gql-modules.com`,
-    text: body.details
+    text: body.details,
   }
 
   sendMail(descriptor, e => {
     if (e) {
       callback(null, {
         statusCode: 500,
-        body: e.message
+        body: e.message,
       })
     } else {
       callback(null, {
         statusCode: 200,
-        body: ''
+        body: '',
       })
     }
   })

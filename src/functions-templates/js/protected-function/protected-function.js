@@ -9,15 +9,15 @@ exports.handler = async (event, context) => {
     return {
       statusCode: 401,
       body: JSON.stringify({
-        data: 'NOT ALLOWED'
-      })
+        data: 'NOT ALLOWED',
+      }),
     }
   }
 
   return {
     statusCode: 200,
     body: JSON.stringify({
-      data: 'auth true'
-    })
+      data: 'auth true',
+    }),
   }
 }

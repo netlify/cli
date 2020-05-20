@@ -15,7 +15,7 @@ test.before(async t => {
     cwd: sitePath,
     env: { ...process.env, DUMMY_VAR: 'true', SKIP_PREFLIGHT_CHECK: 'true' },
     stdio: 'pipe',
-    shell: true
+    shell: true,
   })
   return new Promise((resolve, reject) => {
     ps.stdout.on('data', data => {
@@ -110,7 +110,7 @@ test('functions rewrite echo without body', async t => {
     connection: 'close',
     host: `${host}:${port}`,
     'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
-    'x-forwarded-for': '::ffff:127.0.0.1'
+    'x-forwarded-for': '::ffff:127.0.0.1',
   })
   t.is(response.httpMethod, 'GET')
   t.is(response.isBase64Encoded, false)
@@ -121,7 +121,7 @@ test('functions rewrite echo without body', async t => {
 test('functions rewrite echo with body', async t => {
   const response = await fetch(`http://${host}:${port}/api/echo?ding=dong`, {
     method: 'POST',
-    body: 'some=thing'
+    body: 'some=thing',
   }).then(r => r.json())
 
   t.is(response.body, 'some=thing')
@@ -134,7 +134,7 @@ test('functions rewrite echo with body', async t => {
     'content-type': 'text/plain;charset=UTF-8',
     'content-length': '10',
     'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
-    'x-forwarded-for': '::ffff:127.0.0.1'
+    'x-forwarded-for': '::ffff:127.0.0.1',
   })
   t.is(response.httpMethod, 'POST')
   t.is(response.isBase64Encoded, false)

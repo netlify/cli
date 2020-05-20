@@ -17,7 +17,7 @@ exports.handler = async (event, context) => {
         return {
           statusCode: 500,
           body:
-            'too many segments in GET request, must be either /.netlify/functions/fauna-crud or /.netlify/functions/fauna-crud/123456'
+            'too many segments in GET request, must be either /.netlify/functions/fauna-crud or /.netlify/functions/fauna-crud/123456',
         }
       }
     case 'POST':
@@ -31,7 +31,7 @@ exports.handler = async (event, context) => {
       } else {
         return {
           statusCode: 500,
-          body: 'invalid segments in POST request, must be /.netlify/functions/fauna-crud/123456'
+          body: 'invalid segments in POST request, must be /.netlify/functions/fauna-crud/123456',
         }
       }
     case 'DELETE':
@@ -42,12 +42,12 @@ exports.handler = async (event, context) => {
       } else {
         return {
           statusCode: 500,
-          body: 'invalid segments in DELETE request, must be /.netlify/functions/fauna-crud/123456'
+          body: 'invalid segments in DELETE request, must be /.netlify/functions/fauna-crud/123456',
         }
       }
   }
   return {
     statusCode: 500,
-    body: 'unrecognized HTTP Method, must be one of GET/POST/PUT/DELETE'
+    body: 'unrecognized HTTP Method, must be one of GET/POST/PUT/DELETE',
   }
 }

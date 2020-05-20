@@ -102,8 +102,8 @@ function initializeProxy(port, distDir, projectDir) {
     selfHandleResponse: true,
     target: {
       host: 'localhost',
-      port: port
-    }
+      port: port,
+    },
   })
 
   const headersFiles = Array.from(new Set([path.resolve(projectDir, '_headers'), path.resolve(distDir, '_headers')]))
@@ -150,7 +150,7 @@ function initializeProxy(port, distDir, projectDir) {
       req.headers['x-forwarded-for'] = req.connection.remoteAddress || ''
       return proxy.web(req, res, options)
     },
-    ws: (req, socket, head) => proxy.ws(req, socket, head)
+    ws: (req, socket, head) => proxy.ws(req, socket, head),
   }
 
   return handlers
@@ -176,7 +176,7 @@ async function startProxy(settings, addonUrls, configPath, projectDir, functions
     distDir: settings.dist,
     jwtRole: settings.jwtRolePath,
     configPath,
-    projectDir
+    projectDir,
   })
 
   const server = http.createServer(function(req, res) {
@@ -197,7 +197,7 @@ async function startProxy(settings, addonUrls, configPath, projectDir, functions
         functionsServer,
         functionsPort: settings.functionsPort,
         jwtRolePath: settings.jwtRolePath,
-        framework: settings.framework
+        framework: settings.framework,
       }
 
       if (match) return serveRedirect(req, res, proxy, match, options)
@@ -291,7 +291,7 @@ async function serveRedirect(req, res, proxy, match, options) {
     if (isRedirect(match)) {
       res.writeHead(match.status, {
         Location: match.to,
-        'Cache-Control': 'no-cache'
+        'Cache-Control': 'no-cache',
       })
       res.end(`Redirecting to ${match.to}`)
       return
@@ -302,7 +302,7 @@ async function serveRedirect(req, res, proxy, match, options) {
       const handler = proxyMiddleware({
         target: `${dest.protocol}//${dest.host}`,
         changeOrigin: true,
-        pathRewrite: (path, req) => match.to.replace(/https?:\/\/[^/]+/, '')
+        pathRewrite: (path, req) => match.to.replace(/https?:\/\/[^/]+/, ''),
       })
       return handler(req, res, {})
     }
@@ -342,8 +342,8 @@ async function startDevServer(settings, log) {
       name: 'netlify-dev',
       port: settings.frameworkPort,
       templates: {
-        notFound: '404.html'
-      }
+        notFound: '404.html',
+      },
     })
 
     server.start(function() {
@@ -363,7 +363,7 @@ async function startDevServer(settings, log) {
   })
   const ps = child_process.spawn(commandBin, settings.args, {
     env: { ...settings.env, FORCE_COLOR: 'true' },
-    stdio: 'pipe'
+    stdio: 'pipe',
   })
 
   ps.stdout.pipe(stripAnsiCc.stream()).pipe(process.stdout)
@@ -407,7 +407,7 @@ class DevCommand extends Command {
       ...(config.build.functions && { functions: config.build.functions }),
       ...(config.build.publish && { publish: config.build.publish }),
       ...config.dev,
-      ...flags
+      ...flags,
     }
     let addonUrls = {}
 
@@ -491,8 +491,8 @@ class DevCommand extends Command {
       payload: {
         command: 'dev',
         projectType: settings.framework || 'custom',
-        live: flags.live || false
-      }
+        live: flags.live || false,
+      },
     })
 
     if (devConfig.autoLaunch && devConfig.autoLaunch !== false) {
@@ -513,7 +513,7 @@ class DevCommand extends Command {
         padding: 1,
         margin: 1,
         align: 'center',
-        borderColor: '#00c7b7'
+        borderColor: '#00c7b7',
       })
     )
   }
@@ -530,31 +530,31 @@ DevCommand.strict = false
 DevCommand.flags = {
   command: flags.string({
     char: 'c',
-    description: 'command to run'
+    description: 'command to run',
   }),
   port: flags.integer({
     char: 'p',
-    description: 'port of netlify dev'
+    description: 'port of netlify dev',
   }),
   targetPort: flags.integer({
-    description: 'port of target app server'
+    description: 'port of target app server',
   }),
   dir: flags.string({
     char: 'd',
-    description: 'dir with static files'
+    description: 'dir with static files',
   }),
   functions: flags.string({
     char: 'f',
-    description: 'Specify a functions folder to serve'
+    description: 'Specify a functions folder to serve',
   }),
   offline: flags.boolean({
     char: 'o',
-    description: 'disables any features that require network access'
+    description: 'disables any features that require network access',
   }),
   live: flags.boolean({
     char: 'l',
-    description: 'Start a public live session'
-  })
+    description: 'Start a public live session',
+  }),
 }
 
 module.exports = DevCommand

@@ -5,20 +5,20 @@ test.serial('JSONTruthy works with various inputs', async t => {
   const testPairs = [
     {
       input: 'true',
-      wanted: true
+      wanted: true,
     },
     {
       input: 'false',
-      wanted: false
+      wanted: false,
     },
     {
       input: JSON.stringify({ foo: 'bar' }),
-      wanted: { foo: 'bar' }
+      wanted: { foo: 'bar' },
     },
     {
       input: 'Hello-world 1234',
-      wanted: 'Hello-world 1234'
-    }
+      wanted: 'Hello-world 1234',
+    },
   ]
 
   testPairs.forEach(pair => {
@@ -33,7 +33,7 @@ test.serial('parseRawFlags works', async t => {
     { type: 'arg', input: 'BAR' },
     { type: 'arg', input: '--hey' },
     { type: 'arg', input: 'hi' },
-    { type: 'arg', input: '--heep' }
+    { type: 'arg', input: '--heep' },
   ]
 
   const expected = { hey: 'hi', heep: true }

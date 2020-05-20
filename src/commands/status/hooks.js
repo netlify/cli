@@ -16,8 +16,8 @@ class StatusHooksCommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: 'status:hooks'
-      }
+        command: 'status:hooks',
+      },
     })
 
     let siteData
@@ -37,14 +37,14 @@ class StatusHooksCommand extends Command {
     const ntlHooks = await api.listHooksBySiteId({ siteId: siteData.id })
     const data = {
       site: siteData.name,
-      hooks: {}
+      hooks: {},
     }
     ntlHooks.forEach(hook => {
       data.hooks[hook.id] = {
         type: hook.type,
         event: hook.event,
         id: hook.id,
-        disabled: hook.disabled
+        disabled: hook.disabled,
       }
       if (get(siteData, 'build_settings.repo_url')) {
         data.hooks[hook.id].repo_url = get(siteData, 'build_settings.repo_url')

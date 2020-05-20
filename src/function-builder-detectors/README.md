@@ -6,7 +6,7 @@ similar to project detectors, each file here detects function builders. this is 
 module.exports = {
   src: 'functions-source', // source for your functions
   build: () => {}, // chokidar will call this to build and rebuild your function
-  npmScript: 'build:functions' // optional, the matching package.json script that calls your function builder
+  npmScript: 'build:functions', // optional, the matching package.json script that calls your function builder
 }
 ```
 

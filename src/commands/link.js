@@ -17,8 +17,8 @@ class LinkCommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: 'link'
-      }
+        command: 'link',
+      },
     })
 
     let siteData
@@ -65,7 +65,7 @@ class LinkCommand extends Command {
       await track('sites_linked', {
         siteId: siteData.id,
         linkType: 'manual',
-        kind: 'byId'
+        kind: 'byId',
       })
 
       return this.exit()
@@ -76,7 +76,7 @@ class LinkCommand extends Command {
       try {
         results = await api.listSites({
           name: flags.name,
-          filter: 'all'
+          filter: 'all',
         })
       } catch (e) {
         if (e.status === 404) {
@@ -97,7 +97,7 @@ class LinkCommand extends Command {
       await track('sites_linked', {
         siteId: (siteData && siteData.id) || siteId,
         linkType: 'manual',
-        kind: 'byName'
+        kind: 'byName',
       })
 
       return this.exit()
@@ -114,14 +114,14 @@ LinkCommand.examples = ['netlify link', 'netlify link --id 123-123-123-123', 'ne
 
 LinkCommand.flags = {
   id: flags.string({
-    description: 'ID of site to link to'
+    description: 'ID of site to link to',
   }),
   name: flags.string({
-    description: 'Name of site to link to'
+    description: 'Name of site to link to',
   }),
   gitRemoteName: flags.string({
-    description: 'Name of Git remote to use. e.g. "origin"'
-  })
+    description: 'Name of Git remote to use. e.g. "origin"',
+  }),
 }
 
 module.exports = LinkCommand

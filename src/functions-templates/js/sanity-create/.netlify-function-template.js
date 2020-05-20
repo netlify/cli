@@ -1,4 +1,4 @@
 module.exports = {
   name: 'sanity-create',
-  description: 'Create documents in Sanity.io'
+  description: 'Create documents in Sanity.io',
 }

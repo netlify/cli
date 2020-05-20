@@ -25,7 +25,7 @@ module.exports = function generatePrompts(settings) {
           prompt = {
             type: 'input',
             name: key,
-            message: `Enter string value for '${key}':`
+            message: `Enter string value for '${key}':`,
           }
           // if current stage value set show as default
           if (configValues[key]) {
@@ -35,7 +35,7 @@ module.exports = function generatePrompts(settings) {
           prompt = {
             type: 'confirm',
             name: key,
-            message: `Do you want '${key}':`
+            message: `Do you want '${key}':`,
           }
         }
         return prompt
@@ -51,7 +51,7 @@ module.exports = function generatePrompts(settings) {
           type: 'input',
           name: key,
           message: `${chalk.white(key)}${isRequiredText} - ${setting.displayName}` || `Please enter value for ${key}`,
-          validate: validateFunction
+          validate: validateFunction,
         }
         // if value previously set show it
         if (configValues[key]) {

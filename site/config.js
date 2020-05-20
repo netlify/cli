@@ -6,6 +6,6 @@ module.exports = {
   rootDir: rootDir,
   docs: {
     srcPath: path.join(rootDir, 'docs'),
-    outputPath: path.join(rootDir, 'site/src')
-  }
+    outputPath: path.join(rootDir, 'site/src'),
+  },
 }

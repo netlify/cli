@@ -31,8 +31,8 @@ class SitesDeleteCommand extends Command {
       eventName: 'command',
       payload: {
         command: 'sites:delete',
-        force: flags.force
-      }
+        force: flags.force,
+      },
     })
 
     const { force, f } = parseRawFlags(raw)
@@ -50,7 +50,7 @@ class SitesDeleteCommand extends Command {
         type: 'confirm',
         name: 'wantsToDelete',
         message: `WARNING: Are you sure you want to delete the "${siteData.name}" site?`,
-        default: false
+        default: false,
       })
       this.log()
       if (!wantsToDelete) {
@@ -71,7 +71,7 @@ class SitesDeleteCommand extends Command {
         type: 'confirm',
         name: 'wantsToDelete',
         message: `Verify & Proceed with deletion of site "${siteId}"?`,
-        default: false
+        default: false,
       })
       if (!wantsToDelete) {
         this.exit()
@@ -104,15 +104,15 @@ SitesDeleteCommand.args = [
   {
     name: 'siteId',
     required: true,
-    description: 'Site ID to delete. `netlify delete 1234-5678-890`'
-  }
+    description: 'Site ID to delete. `netlify delete 1234-5678-890`',
+  },
 ]
 
 SitesDeleteCommand.flags = {
   force: flags.boolean({
     char: 'f',
-    description: 'delete without prompting (useful for CI)'
-  })
+    description: 'delete without prompting (useful for CI)',
+  }),
 }
 
 SitesDeleteCommand.examples = ['netlify site:delete 1234-3262-1211']

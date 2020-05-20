@@ -9,7 +9,7 @@ const execOptions = {
   cwd: sitePath,
   env: { ...process.env },
   windowsHide: true,
-  windowsVerbatimArguments: true
+  windowsVerbatimArguments: true,
 }
 
 const siteName =
@@ -52,35 +52,35 @@ if (process.env.IS_FORK !== 'true') {
     const accounts = await listAccounts()
     t.is(Array.isArray(accounts), true)
     t.truthy(accounts.length)
-  
+
     const account = accounts[0]
-  
+
     console.log('creating new site for tests: ' + siteName)
     const siteId = await createSite(siteName, account.slug)
     t.truthy(siteId != null)
-  
+
     execOptions.env.NETLIFY_SITE_ID = siteId
   })
-  
+
   test.serial('netlify addons:list', async t => {
     const regex = /No addons currently installed/
     const cliResponse = await exec(cliPath, ['addons:list'], execOptions)
     t.is(regex.test(cliResponse.stdout), true)
   })
-  
+
   test.serial('netlify addons:list --json', async t => {
     const cliResponse = await exec(cliPath, ['addons:list', '--json'], execOptions)
     const json = JSON.parse(cliResponse.stdout)
     t.is(Array.isArray(json), true)
     t.is(json.length, 0)
   })
-  
+
   test.serial('netlify addons:create demo', async t => {
     const regex = /Add-on "demo" created/
     const cliResponse = await exec(cliPath, ['addons:create', 'demo', '--TWILIO_ACCOUNT_SID', 'lol'], execOptions)
     t.is(regex.test(cliResponse.stdout), true)
   })
-  
+
   test.serial('After creation netlify addons:list --json', async t => {
     const cliResponse = await exec(cliPath, ['addons:list', '--json'], execOptions)
     const json = JSON.parse(cliResponse.stdout)
@@ -88,19 +88,19 @@ if (process.env.IS_FORK !== 'true') {
     t.is(json.length, 1)
     t.is(json[0].service_slug, 'demo')
   })
-  
+
   test.serial('netlify addon:delete demo', async t => {
     const regex = /Addon "demo" deleted/
     const cliResponse = await deleteAddon('demo')
     t.is(regex.test(cliResponse), true)
   })
-  
+
   test.after('cleanup', async t => {
     console.log('Performing cleanup')
     // Run cleanup
     await deleteAddon('demo')
-  
+
     console.log(`deleting test site "${siteName}". ${execOptions.env.NETLIFY_SITE_ID}`)
     await exec(cliPath, ['sites:delete', execOptions.env.NETLIFY_SITE_ID, '--force'], execOptions)
-  })  
+  })
 }

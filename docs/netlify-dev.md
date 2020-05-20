@@ -252,12 +252,12 @@ module.exports = {
   addons: [
     {
       addonName: 'fauna',
-      addonDidInstall: () => {} // post install function to run after installing addon, eg. for setting up schema
-    }
+      addonDidInstall: () => {}, // post install function to run after installing addon, eg. for setting up schema
+    },
   ],
   onComplete() {
     console.log(`custom-template function created from template!`)
-  }
+  },
 }
 ```
 

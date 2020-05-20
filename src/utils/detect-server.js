@@ -53,7 +53,7 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
           }
           // only show filtered results
           return filterSettings(scriptInquirerOptions, input)
-        }
+        },
       })
       settings = chosenSetting // finally! we have a selected option
 
@@ -181,7 +181,7 @@ async function getStaticServerSettings(settings, flags, projectDir, log) {
     noCmd: true,
     port: 8888,
     frameworkPort: await getPort({ port: 3999 }),
-    dist
+    dist,
   }
 }
 
@@ -240,7 +240,7 @@ function formatSettingsArrForInquirer(settingsArr) {
       ans.push({
         name: `[${chalk.yellow(setting.framework)}] ${setting.command} ${args.join(' ')}`,
         value: { ...setting, args },
-        short: setting.framework + '-' + args.join(' ')
+        short: setting.framework + '-' + args.join(' '),
       })
     })
   })
