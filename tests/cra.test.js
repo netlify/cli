@@ -11,7 +11,7 @@ let ps, host, port
 
 test.before(async t => {
   console.log('Installing Create React App project dependencies')
-  const { stdout, stderr, status, error } = spawnSync('npm', ['ci', '--prefix', 'tests/site-cra'])
+  const { stdout, stderr, status, error } = spawnSync('npm', ['ci', '--prefix', 'tests/site-cra'], { shell: true })
   if (status !== 0) {
     const message = `Failed installing Create React App project dependencies from path '${sitePath}'`
     console.error(message)
