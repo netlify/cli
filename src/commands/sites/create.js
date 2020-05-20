@@ -104,7 +104,7 @@ class SitesCreateCommand extends Command {
     this.log(
       prettyjson.render({
         'Admin URL': site.admin_url,
-        URL: url,
+        'URL': url,
         'Site ID': site.id,
       })
     )
@@ -200,7 +200,7 @@ Create a blank site that isn't associated with any git remote.  Does not link to
 `
 
 SitesCreateCommand.flags = {
-  name: flags.string({
+  'name': flags.string({
     char: 'n',
     description: 'name of site',
   }),
@@ -212,7 +212,7 @@ SitesCreateCommand.flags = {
     char: 'c',
     description: 'initialize CI hooks during site creation',
   }),
-  manual: flags.boolean({
+  'manual': flags.boolean({
     char: 'm',
     description: 'Force manual CI setup.  Used --with-ci flag',
   }),

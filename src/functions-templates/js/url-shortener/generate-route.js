@@ -23,9 +23,9 @@ module.exports = function handler(event, context, callback) {
   // prepare a payload to post
   var payload = {
     'form-name': 'routes',
-    destination: destination,
-    code: code,
-    expires: '',
+    'destination': destination,
+    'code': code,
+    'expires': '',
   }
 
   // post the new route to the Routes form

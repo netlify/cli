@@ -6,7 +6,7 @@ async function getAddonManifest(addonName, netlifyApiToken) {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${netlifyApiToken}`,
+      'Authorization': `Bearer ${netlifyApiToken}`,
     },
   })
 

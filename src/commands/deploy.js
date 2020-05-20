@@ -232,7 +232,7 @@ class DeployCommand extends Command {
 
     const logsUrl = `${get(results, 'deploy.admin_url')}/deploys/${get(results, 'deploy.id')}`
     const msgData = {
-      Logs: `${logsUrl}`,
+      'Logs': `${logsUrl}`,
       'Unique Deploy URL': deployUrl,
     }
 
