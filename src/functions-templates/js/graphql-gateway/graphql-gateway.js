@@ -35,20 +35,20 @@ exports.handler = async function(event, context) {
             operation: 'query',
             fieldName: 'authorByName', // reuse what's implemented in schema1
             args: {
-              name: book.authorName
+              name: book.authorName,
             },
             context,
-            info
+            info,
           })
-        }
-      }
-    }
+        },
+      },
+    },
   }
 
   // more docs https://www.apollographql.com/docs/graphql-tools/schema-stitching#api
   const schema = mergeSchemas({
     schemas,
-    resolvers
+    resolvers,
   })
   const server = new ApolloServer({ schema })
   return new Promise((yay, nay) => {

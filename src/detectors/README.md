@@ -57,7 +57,7 @@ module.exports = function() {
     env: { ...process.env },
     possibleArgsArrs,
     urlRegexp: new RegExp(`(http://)([^:]+:)${4000}(/)?`, 'g'),
-    dist: 'public'
+    dist: 'public',
   }
 }
 ```

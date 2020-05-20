@@ -53,8 +53,8 @@ const config = {
       })
 
       return md
-    }
-  }
+    },
+  },
 }
 
 const rootDir = path.join(__dirname, '..')

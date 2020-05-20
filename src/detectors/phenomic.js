@@ -9,7 +9,7 @@ module.exports = function() {
 
   const possibleArgsArrs = scanScripts({
     preferredScriptsArr: ['start'],
-    preferredCommand: 'phenomic start'
+    preferredCommand: 'phenomic start',
   })
 
   return {
@@ -20,6 +20,6 @@ module.exports = function() {
     env: { ...process.env },
     possibleArgsArrs,
     urlRegexp: new RegExp(`(http://)([^:]+:)${3333}(/)?`, 'g'),
-    dist: 'public'
+    dist: 'public',
   }
 }

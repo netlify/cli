@@ -13,8 +13,8 @@ async function configManual(ctx, site, repo) {
       type: 'confirm',
       name: 'sshKeyAdded',
       message: 'Continue?',
-      default: true
-    }
+      default: true,
+    },
   ])
 
   if (!sshKeyAdded) {
@@ -30,14 +30,14 @@ async function configManual(ctx, site, repo) {
       type: 'input',
       name: 'buildCmd',
       message: 'Your build command (hugo build/yarn run build/etc):',
-      filter: val => (val === '' ? undefined : val)
+      filter: val => (val === '' ? undefined : val),
     },
     {
       type: 'input',
       name: 'buildDir',
       message: 'Directory to deploy (blank for current dir):',
-      default: '.'
-    }
+      default: '.',
+    },
   ])
 
   const fs = require('fs')
@@ -50,8 +50,8 @@ async function configManual(ctx, site, repo) {
         type: 'confirm',
         name: 'makeNetlifyTOML',
         message: 'No netlify.toml detected. Would you like to create one with these build settings?',
-        default: true
-      }
+        default: true,
+      },
     ])
     if (makeNetlifyTOML && ctx.netlify.site && ctx.netlify.site.root) {
       fs.writeFileSync(tomlpath, makeNetlifyTOMLtemplate({ command: buildCmd, publish: buildDir }))
@@ -70,8 +70,8 @@ async function configManual(ctx, site, repo) {
         message: 'The SSH URL of the remote git repo:',
         default: repo.repo_path,
         validate: url =>
-          !!url.match(/(ssh:\/\/|[a-zA-Z]*@|[a-zA-Z.].*:(?!\/\/))/) || 'The URL provided does not use the SSH protocol'
-      }
+          !!url.match(/(ssh:\/\/|[a-zA-Z]*@|[a-zA-Z.].*:(?!\/\/))/) || 'The URL provided does not use the SSH protocol',
+      },
     ])
     repo.repo_path = repoPath
   }
@@ -90,8 +90,8 @@ async function configManual(ctx, site, repo) {
       type: 'confirm',
       name: 'deployHookAdded',
       message: 'Continue?',
-      default: true
-    }
+      default: true,
+    },
   ])
 
   if (!deployHookAdded) {

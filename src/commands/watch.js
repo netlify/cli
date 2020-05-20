@@ -25,8 +25,8 @@ class SitesWatchCommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: 'watch'
-      }
+        command: 'watch',
+      },
     })
 
     // Get latest commit and look for that
@@ -64,7 +64,7 @@ class SitesWatchCommand extends Command {
       this.log(
         prettyjson.render({
           URL: siteData.ssl_url || siteData.url,
-          Admin: siteData.admin_url
+          Admin: siteData.admin_url,
         })
       )
       console.timeEnd('Deploy time')
@@ -86,7 +86,7 @@ async function waitForBuildFinish(api, siteId) {
   await pWaitFor(waitForBuildToFinish, {
     interval: 1000,
     timeout: 1.2e6, // 20 mins,
-    message: 'Timeout while waiting for deploy to finish'
+    message: 'Timeout while waiting for deploy to finish',
   })
 
   // return only when build done or timeout happens

@@ -13,9 +13,9 @@ const API_URL = options.type && options.type === 'track' ? TRACK_URL : IDENTIFY_
 fetch(API_URL, {
   method: 'POST',
   headers: {
-    'X-Netlify-Client': CLIENT_ID
+    'X-Netlify-Client': CLIENT_ID,
   },
-  body: JSON.stringify(options.data)
+  body: JSON.stringify(options.data),
 })
   .then(() => {
     process.exit()

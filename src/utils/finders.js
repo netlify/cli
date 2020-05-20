@@ -20,7 +20,7 @@ const ignoredExtensions = new Set([
   '.jpg',
   '.gif',
   '.css',
-  '.patch'
+  '.patch',
 ])
 
 function ignoreMissing(dependency, optional) {
@@ -54,7 +54,7 @@ function getDependencies(filename, basedir) {
 
     try {
       const pathToModule = resolve.sync(path.join(moduleName, 'package.json'), {
-        basedir
+        basedir,
       })
       const pkg = readPkgUp.sync({ cwd: pathToModule })
 
@@ -96,7 +96,7 @@ Please ensure "${moduleName}" is installed in the project.`)
     precinct.paperwork(currentLocalFile, { includeCore: false }).forEach(dependency => {
       if (dependency.indexOf('.') === 0) {
         const abs = resolve.sync(dependency, {
-          basedir: path.dirname(currentLocalFile)
+          basedir: path.dirname(currentLocalFile),
         })
         localFilesToProcess.push(abs)
       } else {

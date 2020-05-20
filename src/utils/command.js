@@ -57,7 +57,7 @@ class BaseCommand extends Command {
         },
         set id(id) {
           state.set('siteId', id)
-        }
+        },
       },
       // Configuration from netlify.[toml/yml]
       config: config,
@@ -66,7 +66,7 @@ class BaseCommand extends Command {
       // global cli config
       globalConfig: globalConfig,
       // state of current site dir
-      state: state
+      state: state,
     }
   }
 
@@ -80,7 +80,7 @@ class BaseCommand extends Command {
         context: argv.context,
         siteId: state.get('siteId'),
         token,
-        mode: 'cli'
+        mode: 'cli',
       })
     } catch (error) {
       const message = error.type === 'userError' ? error.message : error.stack
@@ -128,7 +128,7 @@ class BaseCommand extends Command {
         parse: (b, _) => b,
         description: 'Silence CLI output',
         allowNo: false,
-        type: 'boolean'
+        type: 'boolean',
       }
     }
     if (!opts.flags.json) {
@@ -136,7 +136,7 @@ class BaseCommand extends Command {
         parse: (b, _) => b,
         description: 'Output return values as JSON',
         allowNo: false,
-        type: 'boolean'
+        type: 'boolean',
       }
     }
     if (!opts.flags.auth) {
@@ -145,7 +145,7 @@ class BaseCommand extends Command {
         description: 'Netlify auth token',
         input: [],
         multiple: false,
-        type: 'option'
+        type: 'option',
       }
     }
 
@@ -157,7 +157,7 @@ class BaseCommand extends Command {
       Object.assign(
         {},
         {
-          context: this
+          context: this,
         },
         opts
       )
@@ -206,7 +206,7 @@ class BaseCommand extends Command {
 
     // Create ticket for auth
     const ticket = await this.netlify.api.createTicket({
-      clientId: CLIENT_ID
+      clientId: CLIENT_ID,
     })
 
     // Open browser for authentication
@@ -232,9 +232,9 @@ class BaseCommand extends Command {
         token: accessToken,
         github: {
           user: undefined,
-          token: undefined
-        }
-      }
+          token: undefined,
+        },
+      },
     })
     // Set current userId
     this.netlify.globalConfig.set('userId', userID)
@@ -244,10 +244,10 @@ class BaseCommand extends Command {
     const email = user.email
     await identify({
       name: user.full_name,
-      email: email
+      email: email,
     }).then(() => {
       return track('user_login', {
-        email: email
+        email: email,
       })
     })
 

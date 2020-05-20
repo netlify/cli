@@ -7,11 +7,11 @@ const globalConfigDefaults = {
   /* disable stats from being sent to Netlify */
   telemetryDisabled: false,
   /* cliId */
-  cliId: uuidv4()
+  cliId: uuidv4(),
 }
 
 const globalConfigOptions = {
-  configPath: path.join(os.homedir(), '.netlify', 'config.json')
+  configPath: path.join(os.homedir(), '.netlify', 'config.json'),
 }
 
 module.exports = new Configstore(null, globalConfigDefaults, globalConfigOptions)

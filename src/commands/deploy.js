@@ -30,8 +30,8 @@ class DeployCommand extends Command {
         command: 'deploy',
         open: flags.open,
         prod: flags.prod,
-        json: flags.json
-      }
+        json: flags.json,
+      },
     })
 
     let siteId = flags.site || site.id
@@ -48,8 +48,8 @@ class DeployCommand extends Command {
           type: 'list',
           name: 'initChoice',
           message: 'What would you like to do?',
-          choices: initializeOpts
-        }
+          choices: initializeOpts,
+        },
       ])
       // create site or search for one
       if (initChoice === NEW_SITE) {
@@ -122,14 +122,14 @@ class DeployCommand extends Command {
           name: 'promptPath',
           message: 'Publish directory',
           default: '.',
-          filter: input => path.resolve(process.cwd(), input)
-        }
+          filter: input => path.resolve(process.cwd(), input),
+        },
       ])
       deployFolder = promptPath
     }
 
     const pathInfo = {
-      'Deploy path': deployFolder
+      'Deploy path': deployFolder,
     }
 
     if (functionsFolder) {
@@ -180,7 +180,7 @@ class DeployCommand extends Command {
               name: 'unlockChoice',
               message: 'Would you like to "unlock" deployments for production context to proceed?',
               default: false,
-            }
+            },
           ])
           if (!unlockChoice) this.exit(0)
           await api.unlockDeploy({ deploy_id: siteData.published_deploy.id })
@@ -197,7 +197,7 @@ class DeployCommand extends Command {
         statusCb: flags.json || flags.silent ? () => {} : deployProgressCb(),
         draft: !deployToProduction,
         message: flags.message,
-        deployTimeout: flags.timeout * 1000 || 1.2e6
+        deployTimeout: flags.timeout * 1000 || 1.2e6,
       })
     } catch (e) {
       switch (true) {
@@ -232,8 +232,8 @@ class DeployCommand extends Command {
 
     const logsUrl = `${get(results, 'deploy.admin_url')}/deploys/${get(results, 'deploy.id')}`
     const msgData = {
-      Logs: `${logsUrl}`,
-      'Unique Deploy URL': deployUrl
+      'Logs': `${logsUrl}`,
+      'Unique Deploy URL': deployUrl,
     }
 
     if (deployToProduction) {
@@ -254,7 +254,7 @@ class DeployCommand extends Command {
         site_name: results.deploy.name,
         deploy_id: results.deployId,
         deploy_url: deployUrl,
-        logs: logsUrl
+        logs: logsUrl,
       }
       if (deployToProduction) {
         jsonData.url = siteUrl
@@ -358,51 +358,51 @@ DeployCommand.examples = [
   'netlify deploy --prod --open',
   'netlify deploy --message "A message with an $ENV_VAR"',
   'netlify deploy --auth $NETLIFY_AUTH_TOKEN',
-  'netlify deploy --trigger'
+  'netlify deploy --trigger',
 ]
 
 DeployCommand.flags = {
   dir: flags.string({
     char: 'd',
-    description: 'Specify a folder to deploy'
+    description: 'Specify a folder to deploy',
   }),
   functions: flags.string({
     char: 'f',
-    description: 'Specify a functions folder to deploy'
+    description: 'Specify a functions folder to deploy',
   }),
   prod: flags.boolean({
     char: 'p',
     description: 'Deploy to production',
-    default: false
+    default: false,
   }),
   open: flags.boolean({
     char: 'o',
     description: 'Open site after deploy',
-    default: false
+    default: false,
   }),
   message: flags.string({
     char: 'm',
-    description: 'A short message to include in the deploy log'
+    description: 'A short message to include in the deploy log',
   }),
   auth: flags.string({
     char: 'a',
     description: 'Netlify auth token to deploy with',
-    env: 'NETLIFY_AUTH_TOKEN'
+    env: 'NETLIFY_AUTH_TOKEN',
   }),
   site: flags.string({
     char: 's',
     description: 'A site ID to deploy to',
-    env: 'NETLIFY_SITE_ID'
+    env: 'NETLIFY_SITE_ID',
   }),
   json: flags.boolean({
-    description: 'Output deployment data as JSON'
+    description: 'Output deployment data as JSON',
   }),
   timeout: flags.integer({
-    description: 'Timeout to wait for deployment to finish'
+    description: 'Timeout to wait for deployment to finish',
   }),
   trigger: flags.boolean({
-    description: 'Trigger a new build of your site on Netlify without uploading local files'
-  })
+    description: 'Trigger a new build of your site on Netlify without uploading local files',
+  }),
 }
 
 function deployProgressCb() {
@@ -419,7 +419,7 @@ function deployProgressCb() {
         const spinner = ev.spinner || randomItem(cliSpinnerNames)
         events[ev.type] = ora({
           text: ev.msg,
-          spinner: spinner
+          spinner: spinner,
         }).start()
         return
       }

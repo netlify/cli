@@ -6,7 +6,7 @@ const {
   // NETLIFYDEV,
   NETLIFYDEVLOG,
   // NETLIFYDEVWARN,
-  NETLIFYDEVERR
+  NETLIFYDEVERR,
 } = require('../../utils/logo')
 const { getEnvSettings } = require('../../utils/env')
 
@@ -27,7 +27,9 @@ class ExecCommand extends Command {
     const envSettings = await getEnvSettings(site.root)
     if (envSettings.file) {
       console.log(
-        `${NETLIFYDEVLOG} Overriding the following env variables with ${chalk.blue(path.relative(site.root, envSettings.file))} file:`,
+        `${NETLIFYDEVLOG} Overriding the following env variables with ${chalk.blue(
+          path.relative(site.root, envSettings.file)
+        )} file:`,
         chalk.yellow(Object.keys(envSettings.vars))
       )
       Object.entries(envSettings.vars).forEach(([key, val]) => (process.env[key] = val))
@@ -35,13 +37,13 @@ class ExecCommand extends Command {
 
     execa(this.argv[0], this.argv.slice(1), {
       env: process.env,
-      stdio: 'inherit'
+      stdio: 'inherit',
     })
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: 'dev:exec'
-      }
+        command: 'dev:exec',
+      },
     })
   }
 }

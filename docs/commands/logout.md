@@ -7,6 +7,7 @@ hidden: true
 # `logout`
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
+
 Logout of your Netlify account
 
 **Usage**
@@ -14,4 +15,5 @@ Logout of your Netlify account
 ```bash
 netlify logout
 ```
+
 <!-- AUTO-GENERATED-CONTENT:END -->

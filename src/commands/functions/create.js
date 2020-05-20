@@ -15,7 +15,7 @@ const {
   // NETLIFYDEV,
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
-  NETLIFYDEVERR
+  NETLIFYDEVERR,
 } = require('../../utils/logo')
 
 const templatesDir = path.resolve(__dirname, '../../functions-templates')
@@ -38,8 +38,8 @@ class FunctionsCreateCommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: 'functions:create'
-      }
+        command: 'functions:create',
+      },
     })
   }
 }
@@ -47,8 +47,8 @@ class FunctionsCreateCommand extends Command {
 FunctionsCreateCommand.args = [
   {
     name: 'name',
-    description: 'name of your new function file inside your functions folder'
-  }
+    description: 'name of your new function file inside your functions folder',
+  },
 ]
 
 FunctionsCreateCommand.description = `Create a new function locally`
@@ -56,12 +56,12 @@ FunctionsCreateCommand.description = `Create a new function locally`
 FunctionsCreateCommand.examples = [
   'netlify functions:create',
   'netlify functions:create hello-world',
-  'netlify functions:create --name hello-world'
+  'netlify functions:create --name hello-world',
 ]
 FunctionsCreateCommand.aliases = ['function:create']
 FunctionsCreateCommand.flags = {
   name: flags.string({ char: 'n', description: 'function name' }),
-  url: flags.string({ char: 'u', description: 'pull template from URL' })
+  url: flags.string({ char: 'u', description: 'pull template from URL' }),
 }
 module.exports = FunctionsCreateCommand
 
@@ -85,10 +85,10 @@ async function getNameFromArgs(args, flags, defaultName) {
         message: 'name your function: ',
         default: defaultName,
         type: 'input',
-        validate: val => Boolean(val) && /^[\w\-.]+$/i.test(val)
+        validate: val => Boolean(val) && /^[\w\-.]+$/i.test(val),
         // make sure it is not undefined and is a valid filename.
         // this has some nuance i have ignored, eg crossenv and i18n concerns
-      }
+      },
     ])
     name = responses.name
   }
@@ -102,10 +102,10 @@ async function pickTemplate() {
   const fuzzy = require('fuzzy')
   // doesnt scale but will be ok for now
   const [
-    jsreg
+    jsreg,
     // tsreg, goreg
   ] = [
-    'js'
+    'js',
     // 'ts', 'go'
   ].map(formatRegistryArrayForInquirer)
   const specialCommands = [
@@ -113,13 +113,13 @@ async function pickTemplate() {
     {
       name: `*** Clone template from Github URL ***`,
       value: 'url',
-      short: 'gh-url'
+      short: 'gh-url',
     },
     {
       name: `*** Report issue with, or suggest a new template ***`,
       value: 'report',
-      short: 'gh-report'
-    }
+      short: 'gh-report',
+    },
   ]
   const { chosentemplate } = await inquirer.prompt({
     name: 'chosentemplate',
@@ -136,7 +136,7 @@ async function pickTemplate() {
           // ...tsreg,
           // new inquirer.Separator(`----[GO]----`),
           // ...goreg
-          ...specialCommands
+          ...specialCommands,
         ]
       }
       // only show filtered results sorted by score
@@ -144,10 +144,10 @@ async function pickTemplate() {
         ...filterRegistry(jsreg, input),
         // ...filterRegistry(tsreg, input),
         // ...filterRegistry(goreg, input)
-        ...specialCommands
+        ...specialCommands,
       ].sort((a, b) => b.score - a.score)
       return ans
-    }
+    },
   })
   return chosentemplate
   function filterRegistry(registry, input) {
@@ -175,7 +175,7 @@ async function pickTemplate() {
           // confusing but this is the format inquirer wants
           name: `[${t.name}] ` + t.description,
           value: t,
-          short: lang + '-' + t.name
+          short: lang + '-' + t.name,
         }
       })
     return registry
@@ -269,10 +269,10 @@ async function scaffoldFromTemplate(flags, args, functionsDir) {
         name: 'chosenurl',
         message: 'URL to clone: ',
         type: 'input',
-        validate: val => Boolean(validateRepoURL(val))
+        validate: val => Boolean(validateRepoURL(val)),
         // make sure it is not undefined and is a valid filename.
         // this has some nuance i have ignored, eg crossenv and i18n concerns
-      }
+      },
     ])
     flags.url = chosenurl.trim()
     try {
@@ -320,7 +320,7 @@ async function scaffoldFromTemplate(flags, args, functionsDir) {
       if (hasPackageJSON) {
         const spinner = ora({
           text: `installing dependencies for ${name}`,
-          spinner: 'moon'
+          spinner: 'moon',
         }).start()
         await installDeps(functionPath)
         spinner.succeed(`installed dependencies for ${name}`)
@@ -362,8 +362,8 @@ async function installAddons(addons = [], fnPath) {
                     type: 'confirm',
                     name: 'confirmPostInstall',
                     message: `This template has an optional setup script that runs after addon install. This can be helpful for first time users to try out templates. Run the script?`,
-                    default: false
-                  }
+                    default: false,
+                  },
                 ])
                 if (confirmPostInstall) addonDidInstall(fnPath)
               }

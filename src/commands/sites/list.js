@@ -15,8 +15,8 @@ class SitesListCommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: 'sites:list'
-      }
+        command: 'sites:list',
+      },
     })
 
     const sites = await api.listSites({ filter: 'all' })
@@ -30,7 +30,7 @@ class SitesListCommand extends Command {
           id: site.id,
           name: site.name,
           ssl_url: site.ssl_url,
-          account_name: site.account_name
+          account_name: site.account_name,
         }
 
         if (site.build_settings && site.build_settings.repo_url) {
@@ -79,8 +79,8 @@ SitesListCommand.description = `List all sites you have access to`
 
 SitesListCommand.flags = {
   json: flags.boolean({
-    description: 'Output site data as JSON'
-  })
+    description: 'Output site data as JSON',
+  }),
 }
 
 module.exports = SitesListCommand

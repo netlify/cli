@@ -93,5 +93,5 @@ function parseHeadersFile(filePath) {
 
 module.exports = {
   objectForPath,
-  parseHeadersFile
+  parseHeadersFile,
 }

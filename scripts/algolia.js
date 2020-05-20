@@ -59,7 +59,7 @@ const algoliaData = Object.keys(flattenedData).map(key => {
   // delete command.commands
 
   const data = Object.assign({}, command, {
-    objectID: key
+    objectID: key,
   })
 
   return data
