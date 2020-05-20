@@ -1,7 +1,7 @@
 const version = require('../../../package.json').version
 const os = require('os')
 const ghauth = require('../../utils/gh-auth')
-const Octokit = require('@octokit/rest')
+const { Octokit } = require('@octokit/rest')
 const parseGitRemote = require('parse-github-url')
 const inquirer = require('inquirer')
 const path = require('path')
