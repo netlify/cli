@@ -18,16 +18,16 @@ module.exports = {
         if (path.extname(functionPath) === '.js') {
           functions[file.replace(/\.js$/, '')] = {
             functionPath,
-            moduleDir: findModuleDir(functionPath)
+            moduleDir: findModuleDir(functionPath),
           }
         } else if (fs.lstatSync(functionPath).isDirectory()) {
           functions[file] = {
             functionPath: handlerPath,
-            moduleDir: findModuleDir(functionPath)
+            moduleDir: findModuleDir(functionPath),
           }
         }
       })
     }
     return functions
-  }
+  },
 }

@@ -18,7 +18,7 @@ test.before(async t => {
     cwd: sitePath,
     env: { ...process.env, DUMMY_VAR: 'true' },
     stdio: 'pipe',
-    shell: true
+    shell: true,
   })
   return new Promise((resolve, reject) => {
     ps.stdout.on('data', data => {
@@ -50,10 +50,13 @@ test('functions timeout', async t => {
 })
 
 test('functions:invoke', async t => {
-  const { stdout } = await execProcess([cliPath, 'functions:invoke', 'timeout', '--identity', '--port='+port].join(' '), {
-    cwd: sitePath,
-    env: process.env,
-  })
+  const { stdout } = await execProcess(
+    [cliPath, 'functions:invoke', 'timeout', '--identity', '--port=' + port].join(' '),
+    {
+      cwd: sitePath,
+      env: process.env,
+    }
+  )
 
   t.is(stdout, '"ping"\n')
 })
@@ -69,11 +72,11 @@ test('functions rewrite echo without body', async t => {
 
   t.is(response.body, undefined)
   t.deepEqual(response.headers, {
-    accept: '*/*',
+    'accept': '*/*',
     'accept-encoding': 'gzip,deflate',
     'client-ip': '127.0.0.1',
-    connection: 'close',
-    host: `${host}:${port}`,
+    'connection': 'close',
+    'host': `${host}:${port}`,
     'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
     'x-forwarded-for': '::ffff:127.0.0.1',
   })
@@ -160,7 +163,6 @@ test('shadowing: foo.html', async t => {
   t.is(response, '<html><h1>foo')
 })
 
-
 test('shadowing: not-foo', async t => {
   const response = await fetch(`http://${host}:${port}/not-foo`).then(r => r.text())
 
@@ -172,7 +174,6 @@ test('shadowing: not-foo/', async t => {
 
   t.is(response, '<html><h1>foo')
 })
-
 
 test('shadowing: not-foo/index.html', async t => {
   const response = await fetch(`http://${host}:${port}/not-foo/index.html`).then(r => r.text())

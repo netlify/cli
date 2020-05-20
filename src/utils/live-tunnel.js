@@ -8,7 +8,7 @@ const { fetchLatest, updateAvailable } = require('gh-release-fetch')
 const {
   NETLIFYDEVLOG,
   // NETLIFYDEVWARN,
-  NETLIFYDEVERR
+  NETLIFYDEVERR,
 } = require('./logo')
 
 async function createTunnel(siteId, netlifyApiToken, log) {
@@ -30,9 +30,9 @@ async function createTunnel(siteId, netlifyApiToken, log) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${netlifyApiToken}`
+      'Authorization': `Bearer ${netlifyApiToken}`,
     },
-    body: JSON.stringify({})
+    body: JSON.stringify({}),
   })
 
   const data = await response.json()
@@ -76,7 +76,7 @@ async function installTunnelClient(log) {
     repository: 'netlify/live-tunnel-client',
     package: `live-tunnel-client-${platform}-amd64.${extension}`,
     destination: binPath,
-    extract: true
+    extract: true,
   }
   await fetchLatest(release)
 }
@@ -124,5 +124,5 @@ function isWindows() {
 
 module.exports = {
   createTunnel: createTunnel,
-  connectTunnel: connectTunnel
+  connectTunnel: connectTunnel,
 }

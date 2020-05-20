@@ -1,4 +1,4 @@
 module.exports = {
   name: 'serverless-ssr',
-  description: 'Dynamic serverside rendering via functions'
+  description: 'Dynamic serverside rendering via functions',
 }

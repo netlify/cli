@@ -9,8 +9,8 @@ const businessLogic = (event, context, callback) => {
     statusCode: 200,
     body: JSON.stringify({
       result: 'success',
-      message: `Hi ${name} ⊂◉‿◉つ`
-    })
+      message: `Hi ${name} ⊂◉‿◉つ`,
+    }),
   })
 }
 
@@ -23,11 +23,11 @@ const schema = {
         type: 'object',
         required: ['name'],
         properties: {
-          name: { type: 'string' }
-        }
-      }
+          name: { type: 'string' },
+        },
+      },
     },
-    required: ['body']
+    required: ['body'],
   },
   output: {
     type: 'object',
@@ -37,12 +37,12 @@ const schema = {
         required: ['result', 'message'],
         properties: {
           result: { type: 'string' },
-          message: { type: 'string' }
-        }
-      }
+          message: { type: 'string' },
+        },
+      },
     },
-    required: ['body']
-  }
+    required: ['body'],
+  },
 }
 
 /* Export inputSchema & outputSchema for automatic documentation */

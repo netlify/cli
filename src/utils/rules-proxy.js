@@ -87,13 +87,13 @@ module.exports.createRewriter = async function createRewriter({ distDir, project
     if (rules.length) {
       return (matcher = await redirector.parseJSON(JSON.stringify(rules), {
         jwtSecret: jwtSecret || 'secret',
-        jwtRole: jwtRole || 'app_metadata.authorization.roles'
+        jwtRole: jwtRole || 'app_metadata.authorization.roles',
       }))
     }
     return {
       match() {
         return null
-      }
+      },
     }
   }
 
@@ -109,7 +109,7 @@ module.exports.createRewriter = async function createRewriter({ distDir, project
         {},
         {
           'x-language': cookieValues.nf_lang || getLanguage(req.headers),
-          'x-country': cookieValues.nf_country || getCountry(req)
+          'x-country': cookieValues.nf_country || getCountry(req),
         },
         req.headers
       )
@@ -123,7 +123,7 @@ module.exports.createRewriter = async function createRewriter({ distDir, project
         headers,
         cookieValues,
         getHeader: name => headers[name.toLowerCase()] || '',
-        getCookie: key => cookieValues[key] || ''
+        getCookie: key => cookieValues[key] || '',
       }
       const match = matcher.match(matchReq)
       if (match) return next(match)

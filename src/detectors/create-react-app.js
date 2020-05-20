@@ -13,7 +13,7 @@ module.exports = function() {
 
   const possibleArgsArrs = scanScripts({
     preferredScriptsArr: ['start', 'serve', 'run'],
-    preferredCommand: 'react-scripts start'
+    preferredCommand: 'react-scripts start',
   })
 
   if (possibleArgsArrs.length === 0) {
@@ -30,6 +30,6 @@ module.exports = function() {
     stdio: ['inherit', 'pipe', 'pipe'],
     possibleArgsArrs,
     urlRegexp: new RegExp(`(http://)([^:]+:)${3000}(/)?`, 'g'),
-    dist: 'public'
+    dist: 'public',
   }
 }

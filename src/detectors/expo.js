@@ -13,7 +13,7 @@ module.exports = function() {
     // Webpack server listening on port 19006, but the instance proxied
     // by `netlify dev` will be running on port 8888.
     preferredScriptsArr: ['web'],
-    preferredCommand: 'expo start --web'
+    preferredCommand: 'expo start --web',
   })
 
   if (possibleArgsArrs.length === 0) {
@@ -28,6 +28,6 @@ module.exports = function() {
     env: { ...process.env },
     possibleArgsArrs,
     urlRegexp: new RegExp(`(http://)([^:]+:)${19006}(/)?`, 'g'),
-    dist: 'web-build'
+    dist: 'web-build',
   }
 }

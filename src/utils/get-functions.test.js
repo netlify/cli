@@ -20,7 +20,7 @@ test('pass dummy repository with *.js files', t => {
   t.deepEqual(f, {
     index: {
       functionPath: path.join(sitePath, 'index.js'),
-      moduleDir: findModuleDir(sitePath)
-    }
+      moduleDir: findModuleDir(sitePath),
+    },
   })
 })

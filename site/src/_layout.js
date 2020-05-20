@@ -17,7 +17,7 @@ import {
   NavLink,
   BlockLink,
   Button,
-  ButtonTransparent
+  ButtonTransparent,
 } from 'rebass'
 import { InstantSearch, Hits, SearchBox, createConnector, Configure, Highlight } from 'react-instantsearch-dom'
 import { borderColor, themeGet } from 'styled-system'
@@ -60,18 +60,18 @@ export const Sidebar = styled('div')(
     position: 'fixed',
     top: 0,
     left: 0,
-    bottom: 0
+    bottom: 0,
   },
   props => ({
     transform: props.open ? 'translateX(0)' : 'translateX(-100%)',
     [breakpoint]: {
-      transform: 'none'
-    }
+      transform: 'none',
+    },
   }),
   borderColor
 )
 Sidebar.defaultProps = {
-  borderColor: 'gray'
+  borderColor: 'gray',
 }
 
 export const Overlay = styled('div')([], {
@@ -79,13 +79,13 @@ export const Overlay = styled('div')([], {
   top: 0,
   right: 0,
   bottom: 0,
-  left: 0
+  left: 0,
 })
 
 export const MobileOnly = styled.div([], {
   [breakpoint]: {
-    display: 'none'
-  }
+    display: 'none',
+  },
 })
 
 export const MenuIcon = ({ size = 24, ...props }) => {
@@ -165,14 +165,14 @@ export const Main = props => <Box {...props} is="main" flex="1 1 auto" w={1} pl=
 export const MaxWidth = props => <Container {...props} maxWidth={768} px={4} pt={4} pb={6} />
 
 export const Content = styled(Box)([], {
-  minHeight: 'calc(100vh - 208px)'
+  minHeight: 'calc(100vh - 208px)',
 })
 
 export const UL = styled('ul')([], {
   listStyle: 'none',
   margin: 0,
   paddingLeft: 0,
-  paddingBottom: '48px'
+  paddingBottom: '48px',
 })
 
 export const LI = styled('li')([], {})
@@ -188,20 +188,20 @@ const depthPad = ({ to = '' }) =>
 const Link = styled(props => <NavLink {...props} is={RouterNavLink} w={1} pl={depthPad(props) - 4 + 'px'} />)(
   [],
   props => ({
-    borderLeft: '4px solid',
-    borderColor: 'transparent',
+    'borderLeft': '4px solid',
+    'borderColor': 'transparent',
     '&.active, &:focus': {
       color: '#00c2b2', //'#00ad9f', // themeGet('colors.blue', '#07c')(props),
-      outline: 'none'
+      outline: 'none',
     },
     '&:focus': {
-      borderColor: 'inherit'
-    }
+      borderColor: 'inherit',
+    },
   })
 )
 
 Link.defaultProps = {
-  to: ''
+  to: '',
 }
 
 const unhyphenate = str => str.replace(/(\w)(-)(\w)/g, '$1 $3')
@@ -308,7 +308,7 @@ const MyHits = createConnector({
   getProvidedProps(props, searchState, searchResults) {
     const { query, hits } = searchResults.results ? searchResults.results : {}
     return { query, hits }
-  }
+  },
 })(({ query, hits }) => {
   if (hits && query) {
     return hits.map((hit, i) => {
@@ -408,12 +408,12 @@ const close = state => ({ menu: false })
 
 export default class Layout extends React.Component {
   static propTypes = {
-    routes: PropTypes.array.isRequired
+    routes: PropTypes.array.isRequired,
   }
 
   state = {
     menu: false,
-    update: fn => this.setState(fn)
+    update: fn => this.setState(fn),
   }
 
   render() {
@@ -432,7 +432,7 @@ export default class Layout extends React.Component {
     const index = routes.findIndex(r => r.path === route.path)
     const pagination = {
       previous: routes[index - 1],
-      next: routes[index + 1]
+      next: routes[index + 1],
     }
 
     // Set page title

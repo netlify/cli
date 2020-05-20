@@ -26,8 +26,8 @@ class InitCommand extends Command {
       payload: {
         command: 'init',
         manual: flags.manual,
-        force: flags.force
-      }
+        force: flags.force,
+      },
     })
 
     // const hasFlags = !isEmpty(flags)
@@ -100,8 +100,8 @@ git remote add origin https://github.com/YourUserName/RepoName.git
           type: 'list',
           name: 'noGitRemoteChoice',
           message: 'Do you want to create a Netlify site without a git repository?',
-          choices: [NEW_SITE_NO_GIT, NO_ABORT]
-        }
+          choices: [NEW_SITE_NO_GIT, NO_ABORT],
+        },
       ])
 
       // create site or search for one
@@ -166,14 +166,14 @@ git remote add origin https://github.com/YourUserName/RepoName.git
           type: 'list',
           name: 'initChoice',
           message: 'What would you like to do?',
-          choices: initializeOpts
-        }
+          choices: initializeOpts,
+        },
       ])
 
       // create site or search for one
       if (initChoice === NEW_SITE) {
         await track('sites_initStarted', {
-          type: 'new site'
+          type: 'new site',
         })
         // run site:create command
         siteData = await SitesCreateCommand.run([])
@@ -244,14 +244,14 @@ InitCommand.description = `Configure continuous deployment for a new or existing
 InitCommand.flags = {
   manual: flags.boolean({
     char: 'm',
-    description: 'Manually configure a git remote for CI'
+    description: 'Manually configure a git remote for CI',
   }),
   force: flags.boolean({
-    description: 'Reinitialize CI hooks if the linked site is already configured to use CI'
+    description: 'Reinitialize CI hooks if the linked site is already configured to use CI',
   }),
   gitRemoteName: flags.string({
-    description: 'Name of Git remote to use. e.g. "origin"'
-  })
+    description: 'Name of Git remote to use. e.g. "origin"',
+  }),
 }
 
 module.exports = InitCommand

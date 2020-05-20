@@ -3,7 +3,7 @@ const faunadb = require('faunadb')
 /* configure faunaDB Client with our secret */
 const q = faunadb.query
 const client = new faunadb.Client({
-  secret: process.env.FAUNADB_SERVER_SECRET
+  secret: process.env.FAUNADB_SERVER_SECRET,
 })
 
 /* export our lambda function as named "handler" export */
@@ -12,7 +12,7 @@ exports.handler = async (event, context) => {
   const data = JSON.parse(event.body)
   console.log('Function `create` invoked', data)
   const item = {
-    data: data
+    data: data,
   }
   /* construct the fauna query */
   return client
@@ -22,7 +22,7 @@ exports.handler = async (event, context) => {
       /* Success! return the response with statusCode 200 */
       return {
         statusCode: 200,
-        body: JSON.stringify(response)
+        body: JSON.stringify(response),
       }
     })
     .catch(error => {
@@ -30,7 +30,7 @@ exports.handler = async (event, context) => {
       /* Error! return the error with statusCode 400 */
       return {
         statusCode: 400,
-        body: JSON.stringify(error)
+        body: JSON.stringify(error),
       }
     })
 }

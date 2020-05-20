@@ -9,7 +9,7 @@ module.exports = function() {
 
   const possibleArgsArrs = scanScripts({
     preferredScriptsArr: ['develop'],
-    preferredCommand: 'gridsome develop'
+    preferredCommand: 'gridsome develop',
   })
 
   return {
@@ -20,6 +20,6 @@ module.exports = function() {
     env: { ...process.env },
     possibleArgsArrs,
     urlRegexp: new RegExp(`(http://)([^:]+:)${8080}(/)?`, 'g'),
-    dist: 'dist'
+    dist: 'dist',
   }
 }

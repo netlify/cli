@@ -45,7 +45,7 @@ async function getRepoData(remote) {
       repo_path: remoteData.path,
       repo_branch: repoData.branch,
       allowed_branches: [repoData.branch],
-      host: remoteData.host
+      host: remoteData.host,
     }
 
     switch (remoteData.host) {
@@ -61,7 +61,7 @@ async function getRepoData(remote) {
   } catch (error) {
     // console.log('error', error)
     return {
-      error: error.message
+      error: error.message,
     }
   }
 

@@ -12,7 +12,7 @@ test.before(async t => {
   const rewriter = await createRewriter({
     distDir: sitePath,
     projectDir: sitePath,
-    configPath: path.join(sitePath, 'netlify.toml')
+    configPath: path.join(sitePath, 'netlify.toml'),
   })
   const port = await getPort({ port: 8888 })
   const server = http.createServer(function(req, res) {

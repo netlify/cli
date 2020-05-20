@@ -13,6 +13,6 @@ module.exports = function() {
     command: 'hugo',
     possibleArgsArrs: [['server', '-w']],
     urlRegexp: new RegExp(`(http://)([^:]+:)${1313}(/)?`, 'g'),
-    dist: 'public'
+    dist: 'public',
   }
 }

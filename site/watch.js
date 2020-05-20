@@ -35,7 +35,7 @@ watcher.on('delete', function(filepath, root) {
 function getFullPath(filePath) {
   return {
     src: path.join(config.docs.srcPath, filePath),
-    destination: path.join(config.docs.outputPath, filePath)
+    destination: path.join(config.docs.outputPath, filePath),
   }
 }
 

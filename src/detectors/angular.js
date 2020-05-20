@@ -11,7 +11,7 @@ module.exports = function() {
 
   const possibleArgsArrs = scanScripts({
     preferredScriptsArr: ['serve', 'start', 'build'],
-    preferredCommand: 'ng build --prod'
+    preferredCommand: 'ng build --prod',
   })
 
   if (possibleArgsArrs.length === 0) {
@@ -27,6 +27,6 @@ module.exports = function() {
     env: { ...process.env },
     possibleArgsArrs,
     urlRegexp: new RegExp(`(http://)([^:]+:)${4200}(/)?`, 'g'),
-    dist: 'dist'
+    dist: 'dist',
   }
 }
