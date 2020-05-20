@@ -12,14 +12,13 @@ let ps, host, port
 test.before(async t => {
   console.log('Running Netlify Dev server in Create React App project')
   ps = await spawn(cliPath, ['dev', '-p', randomPort()], {
-      cwd: sitePath,
-      env: { ...process.env, DUMMY_VAR: 'true', SKIP_PREFLIGHT_CHECK: 'true' },
-      stdio: 'pipe',
-      shell: true,
-    }
-  )
+    cwd: sitePath,
+    env: { ...process.env, DUMMY_VAR: 'true', SKIP_PREFLIGHT_CHECK: 'true' },
+    stdio: 'pipe',
+    shell: true
+  })
   return new Promise((resolve, reject) => {
-    ps.stdout.on('data', (data) => {
+    ps.stdout.on('data', data => {
       data = data.toString()
       if (data.includes('Server now ready on')) {
         const matches = data.match(/http:\/\/(.+):(\d+)/)
@@ -100,7 +99,6 @@ test('robots.txt', async t => {
   t.regex(body, /# https:\/\/www.robotstxt.org\/robotstxt.html/)
 })
 
-
 test('functions rewrite echo without body', async t => {
   const response = await fetch(`http://${host}:${port}/api/echo?ding=dong`).then(r => r.json())
 
@@ -112,7 +110,7 @@ test('functions rewrite echo without body', async t => {
     connection: 'close',
     host: `${host}:${port}`,
     'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
-    'x-forwarded-for': '::ffff:127.0.0.1',
+    'x-forwarded-for': '::ffff:127.0.0.1'
   })
   t.is(response.httpMethod, 'GET')
   t.is(response.isBase64Encoded, false)
@@ -123,20 +121,20 @@ test('functions rewrite echo without body', async t => {
 test('functions rewrite echo with body', async t => {
   const response = await fetch(`http://${host}:${port}/api/echo?ding=dong`, {
     method: 'POST',
-    body: 'some=thing',
+    body: 'some=thing'
   }).then(r => r.json())
 
   t.is(response.body, 'some=thing')
   t.deepEqual(response.headers, {
-    'accept': '*/*',
+    accept: '*/*',
     'accept-encoding': 'gzip,deflate',
     'client-ip': '127.0.0.1',
-    'connection': 'close',
-    'host': `${host}:${port}`,
+    connection: 'close',
+    host: `${host}:${port}`,
     'content-type': 'text/plain;charset=UTF-8',
     'content-length': '10',
     'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
-    'x-forwarded-for': '::ffff:127.0.0.1',
+    'x-forwarded-for': '::ffff:127.0.0.1'
   })
   t.is(response.httpMethod, 'POST')
   t.is(response.isBase64Encoded, false)

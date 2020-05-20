@@ -52,7 +52,7 @@ async function getStatic(pathname, publicFolder) {
     const p = alternatives[i]
     try {
       const pathStats = await stat(p)
-      if (pathStats.isFile()) return '/'+path.relative(publicFolder, p)
+      if (pathStats.isFile()) return '/' + path.relative(publicFolder, p)
     } catch (err) {
       // Ignore
     }
@@ -285,7 +285,7 @@ async function serveRedirect(req, res, proxy, match, options) {
     return render404(options.publicFolder)
   }
 
-  if (match.force || (!(staticFile && options.framework))) {
+  if (match.force || !(staticFile && options.framework)) {
     const dest = new url.URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
     const destStaticFile = await getStatic(dest.pathname, options.publicFolder)
     if (isRedirect(match)) {
@@ -372,13 +372,15 @@ async function startDevServer(settings, log) {
   process.stdin.pipe(process.stdin)
 
   function handleProcessExit(code) {
-    log(code > 0 ? NETLIFYDEVERR : NETLIFYDEVWARN, `"${[settings.command, ...settings.args].join(' ')}" exited with code ${code}. Shutting down Netlify Dev server`)
+    log(
+      code > 0 ? NETLIFYDEVERR : NETLIFYDEVWARN,
+      `"${[settings.command, ...settings.args].join(' ')}" exited with code ${code}. Shutting down Netlify Dev server`
+    )
     process.exit(code)
   }
   ps.on('close', handleProcessExit)
   ps.on('SIGINT', handleProcessExit)
   ps.on('SIGTERM', handleProcessExit)
-
   ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach(signal =>
     process.on(signal, () => {
       try {
@@ -405,7 +407,7 @@ class DevCommand extends Command {
       ...(config.build.functions && { functions: config.build.functions }),
       ...(config.build.publish && { publish: config.build.publish }),
       ...config.dev,
-      ...flags,
+      ...flags
     }
     let addonUrls = {}
 
@@ -420,7 +422,9 @@ class DevCommand extends Command {
     const envSettings = await getEnvSettings(site.root)
     if (envSettings.file) {
       console.log(
-        `${NETLIFYDEVLOG} Overriding the following env variables with ${chalk.blue(path.relative(site.root, envSettings.file))} file:`,
+        `${NETLIFYDEVLOG} Overriding the following env variables with ${chalk.blue(
+          path.relative(site.root, envSettings.file)
+        )} file:`,
         chalk.yellow(Object.keys(envSettings.vars))
       )
       Object.entries(envSettings.vars).forEach(([key, val]) => (process.env[key] = val))

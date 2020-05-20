@@ -25,7 +25,7 @@ test('serverSettings: minimal config', async t => {
 })
 
 test('serverSettings: "#static" as "framework"', async t => {
-  const settings = await serverSettings({ framework: '#static' }, {}, sitePath,  () => {})
+  const settings = await serverSettings({ framework: '#static' }, {}, sitePath, () => {})
   t.is(settings.framework, undefined)
 })
 
@@ -71,21 +71,21 @@ test('serverSettings: custom framework parameters', async t => {
 test('serverSettings: set "framework" to "#custom" but no "command"', async t => {
   const devConfig = { framework: '#custom', targetPort: 3000, publish: sitePath }
   await t.throwsAsync(async () => {
-     await serverSettings(devConfig, {}, sitePath,  () => {})
+    await serverSettings(devConfig, {}, sitePath, () => {})
   }, /"command" and "targetPort" properties are required when "framework" is set to "#custom"/)
 })
 
 test('serverSettings: set "framework" to "#custom" but no "targetPort"', async t => {
-  const devConfig = { framework: '#custom', command: "npm run dev", publish: sitePath }
+  const devConfig = { framework: '#custom', command: 'npm run dev', publish: sitePath }
   await t.throwsAsync(async () => {
-     await serverSettings(devConfig, {}, sitePath,  () => {})
+    await serverSettings(devConfig, {}, sitePath, () => {})
   }, /"command" and "targetPort" properties are required when "framework" is set to "#custom"/)
 })
 
 test('serverSettings: set "framework" to "#custom" but no "targetPort" or "command"', async t => {
   const devConfig = { framework: '#custom', publish: sitePath }
   await t.throwsAsync(async () => {
-     await serverSettings(devConfig, {}, sitePath, () => {})
+    await serverSettings(devConfig, {}, sitePath, () => {})
   }, /"command" and "targetPort" properties are required when "framework" is set to "#custom"/)
 })
 
@@ -96,7 +96,11 @@ test('serverSettings: "functions" config', async t => {
 })
 
 test('serverSettings: "dir" flag', async t => {
-  const devConfig = { framework: '#auto', publish: path.join(sitePath, 'build'), functions: path.join(sitePath, 'functions') }
+  const devConfig = {
+    framework: '#auto',
+    publish: path.join(sitePath, 'build'),
+    functions: path.join(sitePath, 'functions')
+  }
   const flags = { dir: sitePath }
   const settings = await serverSettings(devConfig, flags, sitePath, () => {})
   t.is(settings.functions, devConfig.functions)
@@ -115,7 +119,7 @@ test('serverSettings: "dir" flag with "targetPort"', async t => {
 })
 
 test('serverSettings: "dir" flag with "command"', async t => {
-  const devConfig = { framework: '#auto', command: "ding", functions: path.join(sitePath, 'functions') }
+  const devConfig = { framework: '#auto', command: 'ding', functions: path.join(sitePath, 'functions') }
   const flags = { dir: sitePath }
   await t.throwsAsync(async () => {
     await serverSettings(devConfig, flags, sitePath, () => {})
@@ -123,7 +127,11 @@ test('serverSettings: "dir" flag with "command"', async t => {
 })
 
 test('serverSettings: when no framework is detected', async t => {
-  const devConfig = { framework: '#auto', publish: path.join(sitePath, 'build'), functions: path.join(sitePath, 'functions') }
+  const devConfig = {
+    framework: '#auto',
+    publish: path.join(sitePath, 'build'),
+    functions: path.join(sitePath, 'functions')
+  }
   const settings = await serverSettings(devConfig, {}, sitePath, () => {})
   t.is(settings.functions, devConfig.functions)
   t.is(settings.dist, devConfig.publish)
@@ -131,7 +139,6 @@ test('serverSettings: when no framework is detected', async t => {
   t.is(settings.cmd, undefined)
   t.is(settings.noCmd, true)
 })
-
 
 test('serverSettings: no config', async t => {
   const devConfig = { framework: '#auto' }

@@ -17,8 +17,8 @@ test('.env.development file', async t => {
     file: path.resolve(dummySite, '.env.development'),
     vars: {
       EASY_VAR: 'true',
-      DUMMY_VAR: 'false',
-    },
+      DUMMY_VAR: 'false'
+    }
   })
 })
 
@@ -26,6 +26,6 @@ test('.env file', async t => {
   const vars = await getEnvSettings(craSite)
   t.deepEqual(vars, {
     file: path.resolve(craSite, '.env'),
-    vars: {},
+    vars: {}
   })
 })

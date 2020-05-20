@@ -27,7 +27,9 @@ class ExecCommand extends Command {
     const envSettings = await getEnvSettings(site.root)
     if (envSettings.file) {
       console.log(
-        `${NETLIFYDEVLOG} Overriding the following env variables with ${chalk.blue(path.relative(site.root, envSettings.file))} file:`,
+        `${NETLIFYDEVLOG} Overriding the following env variables with ${chalk.blue(
+          path.relative(site.root, envSettings.file)
+        )} file:`,
         chalk.yellow(Object.keys(envSettings.vars))
       )
       Object.entries(envSettings.vars).forEach(([key, val]) => (process.env[key] = val))

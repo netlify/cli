@@ -179,7 +179,7 @@ class DeployCommand extends Command {
               type: 'confirm',
               name: 'unlockChoice',
               message: 'Would you like to "unlock" deployments for production context to proceed?',
-              default: false,
+              default: false
             }
           ])
           if (!unlockChoice) this.exit(0)

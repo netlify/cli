@@ -29,13 +29,17 @@ class FunctionsInvokeCommand extends Command {
     let { flags, args } = this.parse(FunctionsInvokeCommand)
     const { config } = this.netlify
 
-    const functionsDir = flags.functions || (config.dev && config.dev.functions) || (config.build && config.build.functions)
+    const functionsDir =
+      flags.functions || (config.dev && config.dev.functions) || (config.build && config.build.functions)
     if (typeof functionsDir === 'undefined') {
       this.error('functions directory is undefined, did you forget to set it in netlify.toml?')
       process.exit(1)
     }
 
-    if (!flags.port) console.warn(`${NETLIFYDEVWARN} "port" flag was not specified. Attempting to connect to localhost:8888 by default`)
+    if (!flags.port)
+      console.warn(
+        `${NETLIFYDEVWARN} "port" flag was not specified. Attempting to connect to localhost:8888 by default`
+      )
     const port = flags.port || 8888
 
     const functions = getFunctions(functionsDir)
@@ -106,14 +110,11 @@ class FunctionsInvokeCommand extends Command {
     body = Object.assign({}, body, payload)
 
     // fetch
-    fetch(
-      `http://localhost:${port}/.netlify/functions/${functionToTrigger}` + formatQstring(flags.querystring),
-      {
-        method: 'post',
-        headers,
-        body: JSON.stringify(body)
-      }
-    )
+    fetch(`http://localhost:${port}/.netlify/functions/${functionToTrigger}` + formatQstring(flags.querystring), {
+      method: 'post',
+      headers,
+      body: JSON.stringify(body)
+    })
       .then(response => {
         let data
         data = response.text()
@@ -241,7 +242,7 @@ FunctionsInvokeCommand.flags = {
     allowNo: true
   }),
   port: flags.integer({
-    description: 'Port where netlify dev is accessible. e.g. 8888',
+    description: 'Port where netlify dev is accessible. e.g. 8888'
   })
 }
 

@@ -14,9 +14,11 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
 
   if (flags.dir) {
     settings = await getStaticServerSettings(settings, flags, projectDir, log)
-    ;['command','targetPort'].forEach(p => {
+    ;['command', 'targetPort'].forEach(p => {
       if (devConfig.hasOwnProperty(p)) {
-        throw new Error(`"${p}" option cannot be used in conjunction with "dir" flag which is used to run a static server`)
+        throw new Error(
+          `"${p}" option cannot be used in conjunction with "dir" flag which is used to run a static server`
+        )
       }
     })
   } else if (devConfig.framework === '#auto' && !(devConfig.command && devConfig.targetPort)) {
@@ -55,7 +57,9 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
       })
       settings = chosenSetting // finally! we have a selected option
 
-      log(`Add \`framework = "${chosenSetting.framework}"\` to [dev] section of your netlify.toml to avoid this selection prompt next time`)
+      log(
+        `Add \`framework = "${chosenSetting.framework}"\` to [dev] section of your netlify.toml to avoid this selection prompt next time`
+      )
     }
   } else if (devConfig.framework === '#custom' || (devConfig.command && devConfig.targetPort)) {
     settings.framework = '#custom'
@@ -63,15 +67,20 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
       throw new Error('"command" and "targetPort" properties are required when "framework" is set to "#custom"')
     }
     if (devConfig.framework !== '#custom' && devConfig.command && devConfig.targetPort) {
-      throw new Error('"framework" option must be set to "#custom" when specifying both "command" and "targetPort" options')
+      throw new Error(
+        '"framework" option must be set to "#custom" when specifying both "command" and "targetPort" options'
+      )
     }
   } else if (devConfig.framework === '#static') {
     // Do nothing
   } else {
     const detectorName = detectorsFiles.find(dt => dt === `${devConfig.framework}.js`)
-    if (!detectorName) throw new Error('Unsupported value provided for "framework" option in config. Please use "#custom"' +
-      ` if you're using a framework not intrinsically supported by Netlify Dev. E.g. with "command" and "targetPort" options.` +
-      ` Or use one of following values: ${detectorsFiles.map(f => `"${path.parse(f).name}"`).join(', ')}`)
+    if (!detectorName)
+      throw new Error(
+        'Unsupported value provided for "framework" option in config. Please use "#custom"' +
+          ` if you're using a framework not intrinsically supported by Netlify Dev. E.g. with "command" and "targetPort" options.` +
+          ` Or use one of following values: ${detectorsFiles.map(f => `"${path.parse(f).name}"`).join(', ')}`
+      )
 
     const detector = loadDetector(detectorName)
     const detectorResult = detector(projectDir)
@@ -104,8 +113,14 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
       )
     }
 
-    if (!settings.command) throw new Error('No "command" specified or detected. The "command" option is required to use "targetPort" option.')
-    if (flags.dir) throw new Error('"targetPort" option cannot be used in conjunction with "dir" flag which is used to run a static server.')
+    if (!settings.command)
+      throw new Error(
+        'No "command" specified or detected. The "command" option is required to use "targetPort" option.'
+      )
+    if (flags.dir)
+      throw new Error(
+        '"targetPort" option cannot be used in conjunction with "dir" flag which is used to run a static server.'
+      )
 
     settings.frameworkPort = devConfig.targetPort
     settings.urlRegexp = devConfig.urlRegexp || new RegExp(`(http://)([^:]+:)${devConfig.targetPort}(/)?`, 'g')
@@ -128,7 +143,9 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
 
   settings.port = devConfig.port || settings.port
   if (devConfig.port && devConfig.port === settings.frameworkPort) {
-    throw new Error('The "port" option you specified conflicts with the port of your application. Please use a different value for "port"')
+    throw new Error(
+      'The "port" option you specified conflicts with the port of your application. Please use a different value for "port"'
+    )
   }
   const port = await getPort({ port: settings.port || 8888 })
   if (port !== settings.port && devConfig.port) {
@@ -164,7 +181,7 @@ async function getStaticServerSettings(settings, flags, projectDir, log) {
     noCmd: true,
     port: 8888,
     frameworkPort: await getPort({ port: 3999 }),
-    dist,
+    dist
   }
 }
 
