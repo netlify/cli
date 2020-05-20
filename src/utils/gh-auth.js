@@ -1,5 +1,5 @@
 // A simple ghauth inspired library for getting a personal access token
-const Octokit = require('@octokit/rest')
+const { Octokit }  = require('@octokit/rest')
 const inquirer = require('inquirer')
 const querystring = require('querystring')
 const get = require('lodash.get')
