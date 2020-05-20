@@ -13,10 +13,10 @@ test.before(async t => {
   console.log('Installing Create React App project dependencies')
   const { stdout, stderr, status  } = spawnSync('npm', ['ci'], { cwd: sitePath })
   if (status !== 0) {
-    const message = 'Failed installing Create React App project dependencies'
+    const message = `Failed installing Create React App project dependencies from path '${sitePath}'`
     console.error(message)
-    console.log('stdout:', stdout)
-    console.log('stderr:', stderr)
+    console.log('stdout:', stdout.toString())
+    console.log('stderr:', stderr.toString())
     throw new Error(message)
   }
   console.log('Running Netlify Dev server in Create React App project')
