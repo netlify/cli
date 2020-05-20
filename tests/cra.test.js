@@ -1,5 +1,5 @@
 const path = require('path')
-const { spawn } = require('child_process')
+const { spawn, spawnSync } = require('child_process')
 const url = require('url')
 const test = require('ava')
 const fetch = require('node-fetch')
@@ -10,6 +10,8 @@ const sitePath = path.join(__dirname, 'site-cra')
 let ps, host, port
 
 test.before(async t => {
+  console.log('Installing Create React App project dependencies')
+  spawnSync('npm', ['ci'], { cwd: sitePath })
   console.log('Running Netlify Dev server in Create React App project')
   ps = await spawn(cliPath, ['dev', '-p', randomPort()], {
       cwd: sitePath,
