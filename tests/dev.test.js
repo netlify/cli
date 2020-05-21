@@ -10,11 +10,13 @@ const sitePath = path.join(__dirname, 'dummy-site')
 
 const execProcess = util.promisify(exec)
 
-let ps, host, port
+let ps
+const port = randomPort()
+const host = 'localhost:' + port
 
 test.before(async t => {
   console.log('Running Netlify Dev server')
-  ps = await spawn(cliPath, ['dev', '-p', randomPort()], {
+  ps = await spawn(cliPath, ['dev', '-p', port], {
     cwd: sitePath,
     env: { ...process.env, DUMMY_VAR: 'true' },
     stdio: 'pipe',
@@ -24,13 +26,6 @@ test.before(async t => {
     ps.stdout.on('data', data => {
       data = data.toString()
       if (data.includes('Server now ready on')) {
-        const matches = data.match(/http:\/\/(.+):(\d+)/)
-
-        // If we didn't get the host and port
-        if (matches.length < 3) return reject('Unexpected output received from Dev server')
-
-        port = matches.pop()
-        host = matches.pop()
         resolve()
       }
     })
@@ -38,13 +33,13 @@ test.before(async t => {
 })
 
 test('/', async t => {
-  const response = await fetch(`http://${host}:${port}/`).then(r => r.text())
+  const response = await fetch(`http://${host}/`).then(r => r.text())
 
   t.regex(response, /⊂◉‿◉つ/)
 })
 
 test('functions timeout', async t => {
-  const response = await fetch(`http://${host}:${port}/.netlify/functions/timeout`).then(r => r.text())
+  const response = await fetch(`http://${host}/.netlify/functions/timeout`).then(r => r.text())
 
   t.is(response, '"ping"')
 })
@@ -62,13 +57,13 @@ test('functions:invoke', async t => {
 })
 
 test('functions env file', async t => {
-  const response = await fetch(`http://${host}:${port}/.netlify/functions/env`).then(r => r.text())
+  const response = await fetch(`http://${host}/.netlify/functions/env`).then(r => r.text())
 
   t.is(response, 'true')
 })
 
 test('functions rewrite echo without body', async t => {
-  const response = await fetch(`http://${host}:${port}/api/echo?ding=dong`).then(r => r.json())
+  const response = await fetch(`http://${host}/api/echo?ding=dong`).then(r => r.json())
 
   t.is(response.body, undefined)
   t.deepEqual(response.headers, {
@@ -76,7 +71,7 @@ test('functions rewrite echo without body', async t => {
     'accept-encoding': 'gzip,deflate',
     'client-ip': '127.0.0.1',
     'connection': 'close',
-    'host': `${host}:${port}`,
+    'host': `${host}`,
     'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
     'x-forwarded-for': '::ffff:127.0.0.1',
   })
@@ -87,7 +82,7 @@ test('functions rewrite echo without body', async t => {
 })
 
 test('functions rewrite echo with body', async t => {
-  const response = await fetch(`http://${host}:${port}/api/echo?ding=dong`, {
+  const response = await fetch(`http://${host}/api/echo?ding=dong`, {
     method: 'POST',
     body: 'some=thing',
   }).then(r => r.json())
@@ -98,7 +93,7 @@ test('functions rewrite echo with body', async t => {
     'accept-encoding': 'gzip,deflate',
     'client-ip': '127.0.0.1',
     'connection': 'close',
-    'host': `${host}:${port}`,
+    'host': `${host}`,
     'content-type': 'text/plain;charset=UTF-8',
     'content-length': '10',
     'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
@@ -113,7 +108,7 @@ test('functions rewrite echo with body', async t => {
 test('functions rewrite echo with Form body', async t => {
   const form = new FormData()
   form.append('some', 'thing')
-  const response = await fetch(`http://${host}:${port}/api/echo?ding=dong`, {
+  const response = await fetch(`http://${host}/api/echo?ding=dong`, {
     method: 'POST',
     body: form.getBuffer(),
     headers: form.getHeaders(),
@@ -126,7 +121,7 @@ test('functions rewrite echo with Form body', async t => {
     'accept-encoding': 'gzip,deflate',
     'client-ip': '127.0.0.1',
     'connection': 'close',
-    'host': `${host}:${port}`,
+    'host': `${host}`,
     'content-length': form.getLengthSync().toString(),
     'content-type': `multipart/form-data; boundary=${formBoundary}`,
     'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
@@ -140,69 +135,69 @@ test('functions rewrite echo with Form body', async t => {
 })
 
 test('functions env file overriding prod var', async t => {
-  const response = await fetch(`http://${host}:${port}/.netlify/functions/override-process-env`).then(r => r.text())
+  const response = await fetch(`http://${host}/.netlify/functions/override-process-env`).then(r => r.text())
 
   t.is(response, 'false')
 })
 
 test('api rewrite', async t => {
-  const response = await fetch(`http://${host}:${port}/api/timeout`).then(r => r.text())
+  const response = await fetch(`http://${host}/api/timeout`).then(r => r.text())
 
   t.is(response, '"ping"')
 })
 
 test('shadowing: foo', async t => {
-  const response = await fetch(`http://${host}:${port}/foo`).then(r => r.text())
+  const response = await fetch(`http://${host}/foo`).then(r => r.text())
 
   t.is(response, '<html><h1>foo')
 })
 
 test('shadowing: foo.html', async t => {
-  const response = await fetch(`http://${host}:${port}/foo.html`).then(r => r.text())
+  const response = await fetch(`http://${host}/foo.html`).then(r => r.text())
 
   t.is(response, '<html><h1>foo')
 })
 
 test('shadowing: not-foo', async t => {
-  const response = await fetch(`http://${host}:${port}/not-foo`).then(r => r.text())
+  const response = await fetch(`http://${host}/not-foo`).then(r => r.text())
 
   t.is(response, '<html><h1>foo')
 })
 
 test('shadowing: not-foo/', async t => {
-  const response = await fetch(`http://${host}:${port}/not-foo/`).then(r => r.text())
+  const response = await fetch(`http://${host}/not-foo/`).then(r => r.text())
 
   t.is(response, '<html><h1>foo')
 })
 
 test('shadowing: not-foo/index.html', async t => {
-  const response = await fetch(`http://${host}:${port}/not-foo/index.html`).then(r => r.text())
+  const response = await fetch(`http://${host}/not-foo/index.html`).then(r => r.text())
 
   t.is(response, '<html><h1>not-foo')
 })
 
 test('404.html', async t => {
-  const response = await fetch(`http://${host}:${port}/non-existent`).then(r => r.text())
+  const response = await fetch(`http://${host}/non-existent`).then(r => r.text())
 
   t.regex(response, /<h1>404 - Page not found<\/h1>/)
 })
 
 test('test 404 shadow - no static file', async t => {
-  const response = await fetch(`http://${host}:${port}/test-404a`)
+  const response = await fetch(`http://${host}/test-404a`)
 
   t.is(response.status, 404)
   t.is(await response.text(), '<html><h1>foo')
 })
 
 test('test 404 shadow - with static file', async t => {
-  const response = await fetch(`http://${host}:${port}/test-404b`)
+  const response = await fetch(`http://${host}/test-404b`)
 
   t.is(response.status, 200)
   t.is(await response.text(), '<html><h1>This page actually exists')
 })
 
 test('test 404 shadow - with static file but force', async t => {
-  const response = await fetch(`http://${host}:${port}/test-404c`)
+  const response = await fetch(`http://${host}/test-404c`)
 
   t.is(response.status, 404)
   t.is(await response.text(), '<html><h1>foo')
