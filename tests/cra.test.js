@@ -9,7 +9,7 @@ const sitePath = path.join(__dirname, 'site-cra')
 
 let ps
 const port = randomPort()
-const host = 'localhost:'+port
+const host = 'localhost:' + port
 
 test.before(async t => {
   console.log('Running Netlify Dev server in Create React App project')

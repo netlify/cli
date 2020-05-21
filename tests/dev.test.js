@@ -12,7 +12,7 @@ const execProcess = util.promisify(exec)
 
 let ps
 const port = randomPort()
-const host = 'localhost:'+port
+const host = 'localhost:' + port
 
 test.before(async t => {
   console.log('Running Netlify Dev server')
