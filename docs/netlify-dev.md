@@ -112,8 +112,8 @@ Netlify Dev is meant to work with zero config for the majority of users, by usin
 # note: each of these fields are OPTIONAL, with an exception that when you're specifying "command" and "port", you must specify framework = "#custom"
 [dev]
   command = "yarn start" # Command to start your dev server
-  port = 8888 # The port that the netlify dev will be accessible on
   targetPort = 3000 # The port for your application server, framework or site generator
+  port = 8888 # The port that the netlify dev will be accessible on
   publish = "dist" # The path to your static content folder
   jwtRolePath = "app_metadata.authorization.roles" # Object path we should look for role values for JWT based redirects
   autoLaunch = true # a Boolean value that determines if Netlify Dev launches the local server address in your browser
@@ -121,7 +121,7 @@ Netlify Dev is meant to work with zero config for the majority of users, by usin
 
 ## Project detection
 
-Netlify Dev will attempt to detect the SSG or build command that you are using, and run these on your behalf, while adding other development utilities. If you have a JavaScript project, it looks for the best `package.json` script to run for you, using simple heuristics, so you can use the full flexibility of npm scripts. We may add more intelligence to this in the future.
+Netlify Dev will attempt to detect the site generator or build command that you are using, and run these on your behalf, while adding other development utilities. If you have a JavaScript project, it looks for the best `package.json` script to run for you, using simple heuristics, so you can use the full flexibility of npm scripts. We may add more intelligence to this in the future.
 
 **Overriding the detectors**: The number of [project types which Netlify Dev can detect](https://github.com/netlify/cli/tree/master/src/detectors) is growing, but if yours is not yet supported (contributions welcome!), you can instruct Netlify Dev to run the project on your behalf by declaring it in a `[dev]` block of your `netlify.toml` file.
 
@@ -154,9 +154,9 @@ file server or `#custom` to use `command` option to run an app server and
 
 There will be a number of ports that you will encounter when using Netlify Dev, especially when running a static site generator like Gatsby which has its own dev server. All the port numbers can be a bit confusing, so here is a brief explainer.
 
-- If your SSG has a devserver on port 8000 for example, Netlify Dev needs to be told to proxy that port so it can merge it in with the rest of the local Netlify environment (say, running on port 8888), which is what you want to get the full Netlify Dev experience with Functions, Redirects, and so on.
+- If your site generator runs on port 8000 for example, Netlify Dev needs to be told to connect to that port, so, it can route the requests successfully to the site generator along with the rest of the local Netlify environment
 - If you're running a project we have a detector for, we hardcode those conventional ports so you don't have to supply it yourself. If we have multiple detectors that match, we'll ask you to choose.
-- However, sometimes you're using some other project (we welcome contributions for detectors!) or just have a custom port you want Netlify Dev to point to for some reason. This is when you go to the `netlify.toml` `[dev]` block to specify exactly what port we should listen to.
+- However, sometimes you're using some unrecogized site generator or just have a server you want Netlify Dev to connect to. This is when you go to the `netlify.toml` `[dev]` block to specify exactly what port we should listen to.
 
 As for which port to use while doing local development in Netlify Dev, always look for this box in your console output and use that:
 
@@ -172,10 +172,10 @@ As for which port to use while doing local development in Netlify Dev, always lo
 
 Netlify Dev allows you to specify the following parameters for port as both flags and in config file (`netlify.toml` etc.):
 
-- `port`: The port for the main Netlify Dev server, the one you'll open in the browser.
 - `targetPort`: The port for your application server, framework or site generator.
+- `port`: The port for the Netlify Dev server, the one you'll open in the browser.
 
-Netlify Dev tries to acquire these ports but if any of them is not available (already in use by another application), it assigns a random port instead of that.
+Netlify Dev tries to acquire these ports but if any of them is not available (already in use by another application), it will throw an error and let you know.
 
 ## Redirects
 
