@@ -1,5 +1,5 @@
 const path = require('path')
-const { spawn } = require('child_process')
+const { spawn, spawnSync } = require('child_process')
 const url = require('url')
 const test = require('ava')
 const fetch = require('node-fetch')
@@ -12,6 +12,22 @@ const port = randomPort()
 const host = 'localhost:' + port
 
 test.before(async t => {
+  console.log('Installing Create React App project dependencies')
+  const { stdout, stderr, status, error } = spawnSync('npm', ['ci', '--prefix', 'tests/site-cra'], { shell: true })
+  if (status !== 0) {
+    const message = `Failed installing Create React App project dependencies from path '${sitePath}'`
+    console.error(message)
+    if (error) {
+      console.log('error:', error.message)
+    }
+    if (stdout) {
+      console.log('stdout:', stdout.toString())
+    }
+    if (stderr) {
+      console.log('stderr:', stderr.toString())
+    }
+    throw new Error(message)
+  }
   console.log('Running Netlify Dev server in Create React App project')
   ps = await spawn(cliPath, ['dev', '-p', port], {
     cwd: sitePath,
@@ -24,6 +40,17 @@ test.before(async t => {
       data = data.toString()
       if (data.includes('Server now ready on')) {
         resolve()
+      }
+    })
+
+    let error = ''
+    ps.stderr.on('data', data => {
+      error = error + data.toString()
+    })
+    ps.on('close', code => {
+      if (code !== 0) {
+        console.error(error)
+        reject(error)
       }
     })
   })
