@@ -49,10 +49,10 @@ test.before(async t => {
     })
 
     let error = ''
-    ps.stderr.on('data' ,(data) => {
+    ps.stderr.on('data', data => {
       error = error + data.toString()
     })
-    ps.on('close', (code) => {
+    ps.on('close', code => {
       if (code !== 0) {
         console.error(error)
         reject(error)
