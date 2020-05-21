@@ -7,11 +7,13 @@ const cliPath = require('./utils/cliPath')
 const { randomPort } = require('./utils/')
 const sitePath = path.join(__dirname, 'site-cra')
 
-let ps, host, port
+let ps
+const port = randomPort()
+const host = 'localhost:'+port
 
 test.before(async t => {
   console.log('Running Netlify Dev server in Create React App project')
-  ps = await spawn(cliPath, ['dev', '-p', randomPort()], {
+  ps = await spawn(cliPath, ['dev', '-p', port], {
     cwd: sitePath,
     env: { ...process.env, DUMMY_VAR: 'true', SKIP_PREFLIGHT_CHECK: 'true' },
     stdio: 'pipe',
@@ -21,13 +23,6 @@ test.before(async t => {
     ps.stdout.on('data', data => {
       data = data.toString()
       if (data.includes('Server now ready on')) {
-        const matches = data.match(/http:\/\/(.+):(\d+)/)
-
-        // If we didn't get the host and port
-        if (matches.length < 3) return reject('Unexpected output received from Dev server')
-
-        port = matches.pop()
-        host = matches.pop()
         resolve()
       }
     })
@@ -35,13 +30,13 @@ test.before(async t => {
 })
 
 test('homepage', async t => {
-  const response = await fetch(`http://${host}:${port}/`).then(r => r.text())
+  const response = await fetch(`http://${host}/`).then(r => r.text())
 
   t.regex(response, /Web site created using create-react-app/)
 })
 
 test('static/js/bundle.js', async t => {
-  const response = await fetch(`http://${host}:${port}/static/js/bundle.js`)
+  const response = await fetch(`http://${host}/static/js/bundle.js`)
   const body = await response.text()
 
   t.is(response.status, 200)
@@ -51,7 +46,7 @@ test('static/js/bundle.js', async t => {
 })
 
 test('static file under public/', async t => {
-  const response = await fetch(`http://${host}:${port}/test.html`)
+  const response = await fetch(`http://${host}/test.html`)
   const body = await response.text()
 
   t.is(response.status, 200)
@@ -60,7 +55,7 @@ test('static file under public/', async t => {
 })
 
 test('redirect test', async t => {
-  const requestURL = new url.URL(`http://${host}:${port}/something`)
+  const requestURL = new url.URL(`http://${host}/something`)
   const response = await fetch(requestURL, { redirect: 'manual' })
 
   const expectedUrl = new url.URL(requestURL.toString())
@@ -72,7 +67,7 @@ test('redirect test', async t => {
 })
 
 test('normal rewrite', async t => {
-  const response = await fetch(`http://${host}:${port}/doesnt-exist`)
+  const response = await fetch(`http://${host}/doesnt-exist`)
   const body = await response.text()
 
   t.is(response.status, 200)
@@ -81,7 +76,7 @@ test('normal rewrite', async t => {
 })
 
 test('force rewrite', async t => {
-  const response = await fetch(`http://${host}:${port}/force.html`)
+  const response = await fetch(`http://${host}/force.html`)
   const body = await response.text()
 
   t.is(response.status, 200)
@@ -90,7 +85,7 @@ test('force rewrite', async t => {
 })
 
 test('robots.txt', async t => {
-  const response = await fetch(`http://${host}:${port}/robots.txt`)
+  const response = await fetch(`http://${host}/robots.txt`)
   const body = await response.text()
 
   t.is(response.status, 200)
@@ -100,7 +95,7 @@ test('robots.txt', async t => {
 })
 
 test('functions rewrite echo without body', async t => {
-  const response = await fetch(`http://${host}:${port}/api/echo?ding=dong`).then(r => r.json())
+  const response = await fetch(`http://${host}/api/echo?ding=dong`).then(r => r.json())
 
   t.is(response.body, undefined)
   t.deepEqual(response.headers, {
@@ -108,7 +103,7 @@ test('functions rewrite echo without body', async t => {
     'accept-encoding': 'gzip,deflate',
     'client-ip': '127.0.0.1',
     'connection': 'close',
-    'host': `${host}:${port}`,
+    'host': `${host}`,
     'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
     'x-forwarded-for': '::ffff:127.0.0.1',
   })
@@ -119,7 +114,7 @@ test('functions rewrite echo without body', async t => {
 })
 
 test('functions rewrite echo with body', async t => {
-  const response = await fetch(`http://${host}:${port}/api/echo?ding=dong`, {
+  const response = await fetch(`http://${host}/api/echo?ding=dong`, {
     method: 'POST',
     body: 'some=thing',
   }).then(r => r.json())
@@ -130,7 +125,7 @@ test('functions rewrite echo with body', async t => {
     'accept-encoding': 'gzip,deflate',
     'client-ip': '127.0.0.1',
     'connection': 'close',
-    'host': `${host}:${port}`,
+    'host': `${host}`,
     'content-type': 'text/plain;charset=UTF-8',
     'content-length': '10',
     'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
