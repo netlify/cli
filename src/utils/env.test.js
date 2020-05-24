@@ -13,6 +13,7 @@ test('should return empty object for a site with no .env file', async t => {
 })
 
 test('should read env vars from .env.development file', async t => {
+  process.env.NODE_ENV = 'development'
   await withSiteBuilder('site-with-envs-file', async builder => {
     builder
       .withEnvFile({
@@ -27,7 +28,7 @@ test('should read env vars from .env.development file', async t => {
 
     const vars = await getEnvSettings(builder.directory)
     t.deepEqual(vars, {
-      file: path.resolve(builder.directory, '.env.development'),
+      files: [path.resolve(builder.directory, '.env.development'), path.resolve(builder.directory, '.env')],
       vars: {
         TEST: 'FROM_DEVELOPMENT_ENV',
       },
@@ -45,7 +46,7 @@ test('should handle empty .env file', async t => {
 
     const vars = await getEnvSettings(builder.directory)
     t.deepEqual(vars, {
-      file: path.resolve(builder.directory, '.env'),
+      files: [path.resolve(builder.directory, '.env')],
       vars: {},
     })
   })
