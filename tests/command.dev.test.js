@@ -94,7 +94,7 @@ testMatrix.forEach(({ args }) => {
 
       await builder.buildAsync()
 
-      await withDevServer({ cwd: builder.directory, args }, async server => {
+      await withDevServer({ cwd: builder.directory, env: { NODE_ENV: undefined }, args }, async server => {
         const response = await fetch(`${server.url}/.netlify/functions/env`).then(r => r.text())
         t.is(response, 'FROM_DEV_FILE')
       })
@@ -122,7 +122,7 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
-  test(testName('should override process env vars with ones in .env.development', args), async t => {
+  test(testName('should override .env.development with process env', args), async t => {
     await withSiteBuilder('site-with-override', async builder => {
       builder
         .withNetlifyToml({ config: { build: { functions: 'functions' } } })
@@ -139,10 +139,13 @@ testMatrix.forEach(({ args }) => {
 
       await builder.buildAsync()
 
-      await withDevServer({ cwd: builder.directory, env: { TEST: 'FROM_PROCESS_ENV' }, args }, async server => {
-        const response = await fetch(`${server.url}/.netlify/functions/env`).then(r => r.text())
-        t.is(response, 'FROM_DEV_FILE')
-      })
+      await withDevServer(
+        { cwd: builder.directory, env: { TEST: 'FROM_PROCESS_ENV', NODE_ENV: undefined }, args },
+        async server => {
+          const response = await fetch(`${server.url}/.netlify/functions/env`).then(r => r.text())
+          t.is(response, 'FROM_PROCESS_ENV')
+        }
+      )
     })
   })
 

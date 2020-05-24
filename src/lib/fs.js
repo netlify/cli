@@ -23,4 +23,13 @@ const fileExistsAsync = async filePath => {
   }
 }
 
-module.exports = { statAsync, readFileAsync, readFileAsyncCatchError, writeFileAsync, fileExistsAsync }
+const isFileAsync = async filePath => {
+  try {
+    const stat = await statAsync(filePath)
+    return stat.isFile()
+  } catch (_) {
+    return false
+  }
+}
+
+module.exports = { statAsync, readFileAsync, readFileAsyncCatchError, writeFileAsync, fileExistsAsync, isFileAsync }

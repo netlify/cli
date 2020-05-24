@@ -2,7 +2,7 @@
 
 const path = require('path')
 const dotenv = require('dotenv')
-const { statAsync, readFileAsync } = require('../lib/fs')
+const { isFileAsync, readFileAsync } = require('../lib/fs')
 const dotenvExpand = require('dotenv-expand')
 
 async function getEnvSettings(projectDir) {
@@ -28,14 +28,12 @@ async function getEnvSettings(projectDir) {
   // https://github.com/motdotla/dotenv
   // https://github.com/motdotla/dotenv-expand
   for (const dotenvFile of dotenvFiles) {
-    const exists = await statAsync(dotenvFile).then(
-      s => s.isFile(),
-      () => false
-    )
-    if (exists) {
+    const isFile = await isFileAsync(dotenvFile)
+    if (isFile) {
       settings.files = settings.files || []
       settings.files.push(dotenvFile)
-      const env = dotenvExpand({ parsed: dotenv.parse(await readFileAsync(dotenvFile)) })
+      const content = await readFileAsync(dotenvFile)
+      const env = dotenvExpand({ parsed: dotenv.parse(content) })
       settings.vars = { ...env.parsed, ...settings.vars }
     }
   }
