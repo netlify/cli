@@ -102,13 +102,14 @@ const getAddonsUrlsAndAddEnvVariablesToProcessEnv = async ({ api, site, flags })
   }
 }
 
-const addDotFileEnvs = async ({ site }) => {
+const addDotFileEnvs = async ({ site, log }) => {
+  // Override env variables with .env file
   const envSettings = await getEnvSettings(site.root)
-  if (envSettings.file) {
-    console.log(
+  if (envSettings.files) {
+    log(
       `${NETLIFYDEVLOG} Overriding the following env variables with ${chalk.blue(
-        path.relative(site.root, envSettings.file)
-      )} file:`,
+        envSettings.files.map(x => path.relative(site.root, x))
+      )} file${envSettings.files.length > 1 ? 's' : ''}:`,
       chalk.yellow(Object.keys(envSettings.vars))
     )
     Object.entries(envSettings.vars).forEach(([key, val]) => (process.env[key] = val))
@@ -206,7 +207,7 @@ class DevCommand extends Command {
 
     const addonUrls = await getAddonsUrlsAndAddEnvVariablesToProcessEnv({ api, site, flags })
     process.env.NETLIFY_DEV = 'true'
-    await addDotFileEnvs({ site })
+    await addDotFileEnvs({ site, log })
 
     let settings = {}
     try {

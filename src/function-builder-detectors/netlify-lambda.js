@@ -28,7 +28,7 @@ module.exports = async function(projectDir) {
 
   let env = {}
   const envSettings = await getEnvSettings(projectDir)
-  if (envSettings.file) {
+  if (envSettings.files) {
     env = envSettings.vars
   }
 

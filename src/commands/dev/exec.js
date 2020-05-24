@@ -24,11 +24,11 @@ class ExecCommand extends Command {
     }
 
     const envSettings = await getEnvSettings(site.root)
-    if (envSettings.file) {
+    if (envSettings.files) {
       console.log(
         `${NETLIFYDEVLOG} Overriding the following env variables with ${chalk.blue(
-          path.relative(site.root, envSettings.file)
-        )} file:`,
+          envSettings.files.map(x => path.relative(site.root, x))
+        )} file${envSettings.files.length > 1 ? 's' : ''}:`,
         chalk.yellow(Object.keys(envSettings.vars))
       )
       Object.entries(envSettings.vars).forEach(([key, val]) => (process.env[key] = val))
