@@ -287,6 +287,11 @@ async function serveRedirect(req, res, proxy, match, options) {
 
   if (match.force || !(staticFile && options.framework)) {
     const dest = new url.URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
+    const urlParams = new URLSearchParams(reqUrl.searchParams)
+    dest.searchParams.forEach((val, key) => urlParams.set(key, val))
+    urlParams.forEach((val, key) => dest.searchParams.set(key, val))
+    const destURL = dest.toString().replace(dest.origin, '')
+
     const destStaticFile = await getStatic(dest.pathname, options.publicFolder)
     if (isRedirect(match)) {
       res.writeHead(match.status, {
@@ -298,18 +303,14 @@ async function serveRedirect(req, res, proxy, match, options) {
     }
 
     if (isExternal(match)) {
-      console.log(`${NETLIFYDEVLOG} Proxying to `, match.to)
+      console.log(`${NETLIFYDEVLOG} Proxying to `, dest.toString())
       const handler = proxyMiddleware({
         target: `${dest.protocol}//${dest.host}`,
         changeOrigin: true,
-        pathRewrite: (path, req) => match.to.replace(/https?:\/\/[^/]+/, ''),
+        pathRewrite: (path, req) => destURL.replace(/https?:\/\/[^/]+/, ''),
       })
       return handler(req, res, {})
     }
-
-    const urlParams = new URLSearchParams(reqUrl.searchParams)
-    dest.searchParams.forEach((val, key) => urlParams.set(key, val))
-    const destURL = dest.pathname + (urlParams.toString() && '?' + urlParams.toString())
 
     let status
     if (match.force || isInternal(destURL) || (!staticFile && !options.framework && destStaticFile)) {
