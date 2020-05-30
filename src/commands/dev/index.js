@@ -287,9 +287,13 @@ async function serveRedirect(req, res, proxy, match, options) {
 
   if (match.force || !(staticFile && options.framework)) {
     const dest = new url.URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
+
+    // Use query params of request URL as base, so that, destination query params can supersede
     const urlParams = new URLSearchParams(reqUrl.searchParams)
     dest.searchParams.forEach((val, key) => urlParams.set(key, val))
     urlParams.forEach((val, key) => dest.searchParams.set(key, val))
+
+    // Get the URL after http://host:port
     const destURL = dest.toString().replace(dest.origin, '')
 
     const destStaticFile = await getStatic(dest.pathname, options.publicFolder)
