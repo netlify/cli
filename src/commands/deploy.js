@@ -382,7 +382,7 @@ DeployCommand.flags = {
   }),
   branch: flags.string({
     char: 'b',
-    description: "Specifies the branch for deployment. Useful for creating specific deployment URL's"
+    description: "Specifies the branch for deployment. Useful for creating specific deployment URL's",
   }),
   open: flags.boolean({
     char: 'o',
@@ -456,7 +456,9 @@ function ensureDirectory(resolvedDeployPath, error) {
     stat = fs.statSync(resolvedDeployPath)
   } catch (e) {
     if (e.status === 'ENOENT') {
-      return error(`No such directory ${resolvedDeployPath}! Did you forget to create a functions folder or run a build?`)
+      return error(
+        `No such directory ${resolvedDeployPath}! Did you forget to create a functions folder or run a build?`
+      )
     }
 
     // Improve the message of permission errors
