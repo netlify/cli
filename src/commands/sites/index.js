@@ -15,8 +15,8 @@ class SitesCommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: 'sites'
-      }
+        command: 'sites',
+      },
     })
   }
 }
@@ -29,7 +29,7 @@ SitesCommand.examples = [
   'netlify sites:create --name my-new-site',
   //'netlify sites:update --name my-new-site',
   //'netlify sites:delete --name my-new-site',
-  'netlify sites:list'
+  'netlify sites:list',
 ]
 
 module.exports = SitesCommand

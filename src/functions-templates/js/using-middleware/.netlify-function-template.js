@@ -1,4 +1,4 @@
 module.exports = {
   name: 'using-middleware',
-  description: 'Using Middleware with middy'
+  description: 'Using Middleware with middy',
 }

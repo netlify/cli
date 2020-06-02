@@ -7,7 +7,7 @@ const chalk = require('chalk')
 const {
   NETLIFYDEVLOG,
   // NETLIFYDEVWARN,
-  NETLIFYDEVERR
+  NETLIFYDEVERR,
 } = require('./logo')
 /**
  * inject environment variables from netlify addons and buildbot
@@ -101,7 +101,7 @@ async function addEnvVariables(api, site, accessToken) {
 }
 
 module.exports = {
-  addEnvVariables
+  addEnvVariables,
 }
 
 // if first arg is undefined, use default, but tell user about it in case it is unintentional

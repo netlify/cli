@@ -5,13 +5,13 @@ const { getLanguage, parseFile, parseRules } = require('./rules-proxy.js')
 const sitePath = path.join(__dirname, '..', '..', 'tests', 'dummy-site')
 
 test('getLanguage', t => {
-  const language = getLanguage({ 'accept-language': 'ur' });
+  const language = getLanguage({ 'accept-language': 'ur' })
 
   t.is(language, 'ur')
 })
 
 test('parseFile: netlify.toml', async t => {
-  const rules = await parseFile(redirectParser.parseNetlifyConfig, path.join(sitePath, 'netlify.toml'));
+  const rules = await parseFile(redirectParser.parseNetlifyConfig, path.join(sitePath, 'netlify.toml'))
   const expected = [
     {
       path: '/api/*',
@@ -57,7 +57,7 @@ test('parseFile: netlify.toml', async t => {
 })
 
 test('parseFile: _redirects', async t => {
-  const rules = await parseFile(redirectParser.parseRedirectsFormat, path.join(sitePath, '_redirects'));
+  const rules = await parseFile(redirectParser.parseRedirectsFormat, path.join(sitePath, '_redirects'))
   const expected = [
     {
       path: '/something',
@@ -69,10 +69,9 @@ test('parseFile: _redirects', async t => {
   t.deepEqual(rules, expected)
 })
 
-
 test('parseRules', async t => {
   const files = [path.join(sitePath, '_redirects'), path.join(sitePath, 'netlify.toml')]
-  const rules = await parseRules(files);
+  const rules = await parseRules(files)
   const expected = [
     {
       path: '/something',

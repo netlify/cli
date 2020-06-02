@@ -7,7 +7,7 @@ exports.handler = async (event, context) => {
     secure: true,
     httpOnly: true,
     path: '/',
-    maxAge: twoWeeks
+    maxAge: twoWeeks,
   })
 
   const redirectUrl = 'https://google.com'
@@ -34,8 +34,8 @@ exports.handler = async (event, context) => {
     headers: {
       'Set-Cookie': myCookie,
       'Cache-Control': 'no-cache',
-      'Content-Type': 'text/html'
+      'Content-Type': 'text/html',
     },
-    body: html
+    body: html,
   }
 }

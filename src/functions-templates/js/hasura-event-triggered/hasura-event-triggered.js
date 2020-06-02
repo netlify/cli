@@ -26,7 +26,7 @@ exports.handler = async (event, context) => {
   const variables = {
     id: request.event.data.new.id,
     title: filter.clean(request.event.data.new.title),
-    content: filter.clean(request.event.data.new.content)
+    content: filter.clean(request.event.data.new.content),
   }
   try {
     await axios.post(hgeEndpoint + '/v1alpha1/graphql', { query, variables })

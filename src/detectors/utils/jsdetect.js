@@ -94,5 +94,5 @@ module.exports = {
   hasRequiredDeps,
   hasRequiredFiles,
   getYarnOrNPMCommand,
-  scanScripts
+  scanScripts,
 }

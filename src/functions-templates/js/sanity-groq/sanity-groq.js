@@ -17,7 +17,7 @@ const client = sanityClient({
   projectId: process.env.SANITY_PROJECTID,
   dataset: process.env.SANITY_DATASET,
   token: process.env.SANITY_TOKEN,
-  useCdn: true // CDN will not be used if token is set
+  useCdn: true, // CDN will not be used if token is set
 })
 
 /*
@@ -38,7 +38,7 @@ exports.handler = async event => {
   const { query = '' } = event.queryStringParameters
   // The rest of the query params are handled as parameters to the query
   const params = Object.assign({}, event.queryStringParameters, {
-    query: null
+    query: null,
   })
 
   return client
@@ -47,14 +47,14 @@ exports.handler = async event => {
       return {
         statusCode: 200,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(result)
+        body: JSON.stringify(result),
       }
     })
     .catch(error => {
       return {
         headers: { 'Content-Type': 'application/json' },
         statusCode: error.statusCode || 500,
-        body: error.responseBody || JSON.stringify({ error: 'Unknown error occurred' })
+        body: error.responseBody || JSON.stringify({ error: 'Unknown error occurred' }),
       }
     })
 }

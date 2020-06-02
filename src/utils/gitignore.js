@@ -112,5 +112,5 @@ module.exports = {
   parse: parse,
   stringify: stringify,
   format: parseIgnore.format,
-  ensureNetlifyIgnore
+  ensureNetlifyIgnore,
 }

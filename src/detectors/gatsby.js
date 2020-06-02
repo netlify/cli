@@ -9,7 +9,7 @@ module.exports = function() {
 
   const possibleArgsArrs = scanScripts({
     preferredScriptsArr: ['start', 'develop', 'dev'],
-    preferredCommand: 'gatsby develop'
+    preferredCommand: 'gatsby develop',
   })
 
   if (possibleArgsArrs.length === 0) {
@@ -24,6 +24,6 @@ module.exports = function() {
     env: { ...process.env, GATSBY_LOGGER: 'yurnalist' },
     possibleArgsArrs,
     urlRegexp: new RegExp(`(http://)([^:]+:)${8000}(/)?`, 'g'),
-    dist: 'public'
+    dist: 'public',
   }
 }

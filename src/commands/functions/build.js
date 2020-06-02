@@ -6,7 +6,7 @@ const {
   // NETLIFYDEV,
   NETLIFYDEVLOG,
   // NETLIFYDEVWARN,
-  NETLIFYDEVERR
+  NETLIFYDEVERR,
 } = require('../../utils/logo')
 
 class FunctionsBuildCommand extends Command {
@@ -43,8 +43,8 @@ class FunctionsBuildCommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: 'functions:build'
-      }
+        command: 'functions:build',
+      },
     })
 
     fs.mkdirSync(dst, { recursive: true })
@@ -61,12 +61,12 @@ FunctionsBuildCommand.aliases = ['function:build']
 FunctionsBuildCommand.flags = {
   functions: flags.string({
     char: 'f',
-    description: 'Specify a functions folder to build to'
+    description: 'Specify a functions folder to build to',
   }),
   src: flags.string({
     char: 's',
-    description: 'Specify the source folder for the functions'
-  })
+    description: 'Specify the source folder for the functions',
+  }),
 }
 
 module.exports = FunctionsBuildCommand

@@ -40,8 +40,8 @@ class AddonsAuthCommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: 'addons:auth'
-      }
+        command: 'addons:auth',
+      },
     })
 
     this.log()
@@ -58,8 +58,8 @@ AddonsAuthCommand.args = [
   {
     name: 'name',
     required: true,
-    description: 'Add-on slug'
-  }
+    description: 'Add-on slug',
+  },
 ]
 
 AddonsAuthCommand.description = `Login to add-on provider`

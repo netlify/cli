@@ -27,7 +27,7 @@ const scope = {
         {children}
       </Link>
     )
-  }
+  },
 }
 
 const navOrder = [
@@ -36,6 +36,7 @@ const navOrder = [
   'commands',
   'addons',
   'api',
+  'build',
   'deploy',
   'dev',
   'functions',
@@ -48,15 +49,15 @@ const navOrder = [
   'status',
   'unlink',
   'netlify-dev',
-  'contributing'
+  'contributing',
 ]
 
 const pageNames = {
-  index: 'Introduction',
+  'index': 'Introduction',
   'getting-started': 'Getting Started',
-  commands: 'CLI Commands',
-  contributing: 'Contributing',
-  'netlify-dev': 'Netlify Dev'
+  'commands': 'CLI Commands',
+  'contributing': 'Contributing',
+  'netlify-dev': 'Netlify Dev',
 }
 
 const sortRoutes = routes =>
@@ -64,7 +65,7 @@ const sortRoutes = routes =>
     ...sortBy([...routes], a => {
       const i = navOrder.indexOf(a.name)
       return i < 0 ? Infinity : i
-    })
+    }),
   ].map(route => {
     if (!pageNames[route.name]) {
       return route
@@ -73,14 +74,14 @@ const sortRoutes = routes =>
       ...route,
       name: pageNames[route.name],
       props: {
-        hidePagination: true
-      }
+        hidePagination: true,
+      },
     }
   })
 
 export default class App extends React.Component {
   static defaultProps = {
-    title: 'Netlify CLI'
+    title: 'Netlify CLI',
   }
 
   render() {

@@ -22,44 +22,44 @@ const books = [
     id: 1,
     title: "The Philosopher's Stone",
     year: 1997,
-    authorName: 'JK Rowling'
+    authorName: 'JK Rowling',
   },
   {
     id: 2,
     title: 'Pet Sematary',
     year: 1983,
-    authorName: 'Stephen King'
+    authorName: 'Stephen King',
   },
   {
     id: 3,
     title: 'Going Postal',
     year: 2004,
-    authorName: 'Terry Pratchett'
+    authorName: 'Terry Pratchett',
   },
   {
     id: 4,
     title: 'Small Gods',
     year: 1992,
-    authorName: 'Terry Pratchett'
+    authorName: 'Terry Pratchett',
   },
   {
     id: 5,
     title: 'Night Watch',
     year: 2002,
-    authorName: 'Terry Pratchett'
+    authorName: 'Terry Pratchett',
   },
   {
     id: 6,
     title: 'The Shining',
     year: 1977,
-    authorName: 'Stephen King'
+    authorName: 'Stephen King',
   },
   {
     id: 7,
     title: 'The Deathly Hallows',
     year: 2007,
-    authorName: 'JK Rowling'
-  }
+    authorName: 'JK Rowling',
+  },
 ]
 
 const resolvers = {
@@ -72,13 +72,13 @@ const resolvers = {
     },
     book: (root, args, context) => {
       return books.find(book => book.id === args.id)
-    }
-  }
+    },
+  },
 }
 
 const server = new ApolloServer({
   typeDefs,
-  resolvers
+  resolvers,
 })
 
 exports.handler = server.createHandler()

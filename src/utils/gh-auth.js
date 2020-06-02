@@ -1,5 +1,5 @@
 // A simple ghauth inspired library for getting a personal access token
-const Octokit = require('@octokit/rest')
+const { Octokit } = require('@octokit/rest')
 const inquirer = require('inquirer')
 const querystring = require('querystring')
 const get = require('lodash.get')
@@ -16,7 +16,7 @@ async function getGitHubToken(opts) {
     {
       userAgent: 'Netlify-cli-octokit',
       note: 'Netlify-cli-gh-auth',
-      scopes: []
+      scopes: [],
     },
     opts
   )
@@ -27,8 +27,8 @@ async function getGitHubToken(opts) {
         type: 'input',
         name: 'otp',
         message: 'Your GitHub OTP/2FA Code:',
-        filter: input => input.trim()
-      }
+        filter: input => input.trim(),
+      },
     ])
     return otp
   }
@@ -44,8 +44,8 @@ async function getGitHubToken(opts) {
       message:
         'Netlify CLI needs access to your GitHub account to configure Webhooks and Deploy Keys. ' +
         'What would you like to do?',
-      choices: authChoices
-    }
+      choices: authChoices,
+    },
   ])
 
   if (initChoice === authChoiceNetlify) {
@@ -86,7 +86,7 @@ async function getGitHubToken(opts) {
       '/cli?' +
       querystring.encode({
         host: 'http://localhost:' + port,
-        provider: 'github'
+        provider: 'github',
       })
 
     try {
@@ -104,15 +104,15 @@ async function getGitHubToken(opts) {
         type: 'input',
         name: 'username',
         message: 'Your GitHub username:',
-        filter: input => input.trim()
+        filter: input => input.trim(),
       },
       {
         type: 'password',
         name: 'password',
         message: 'Your GitHub password:',
         mask: '*',
-        filter: input => input.trim()
-      }
+        filter: input => input.trim(),
+      },
     ])
 
     // configure basic auth
@@ -122,8 +122,8 @@ async function getGitHubToken(opts) {
         password,
         async on2fa() {
           return promptForOTP()
-        }
-      }
+        },
+      },
     })
 
     let response = await octokit.oauthAuthorizations.createAuthorization({
@@ -131,8 +131,8 @@ async function getGitHubToken(opts) {
       note_url: 'https://cli.netlify.com/',
       scopes: opts.scopes,
       headers: {
-        'User-Agent': opts.userAgent
-      }
+        'User-Agent': opts.userAgent,
+      },
     })
 
     if (get(response, 'data.token')) {

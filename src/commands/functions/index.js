@@ -33,8 +33,8 @@ class FunctionsCommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: 'functions'
-      }
+        command: 'functions',
+      },
     })
   }
 }
@@ -46,7 +46,7 @@ The ${name} command will help you manage the functions in this site
 `
 FunctionsCommand.examples = [
   'netlify functions:create --name function-xyz',
-  'netlify functions:build --name function-abc --timeout 30s'
+  'netlify functions:build --name function-abc --timeout 30s',
 ]
 
 module.exports = FunctionsCommand

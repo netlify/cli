@@ -5,7 +5,7 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 const statusCode = 200
 const headers = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type'
+  'Access-Control-Allow-Headers': 'Content-Type',
 }
 
 exports.handler = function(event, context, callback) {
@@ -14,7 +14,7 @@ exports.handler = function(event, context, callback) {
     callback(null, {
       statusCode,
       headers,
-      body: ''
+      body: '',
     })
   }
 
@@ -28,7 +28,7 @@ exports.handler = function(event, context, callback) {
     callback(null, {
       statusCode,
       headers,
-      body: JSON.stringify({ status: 'missing-information' })
+      body: JSON.stringify({ status: 'missing-information' }),
     })
 
     return
@@ -40,10 +40,10 @@ exports.handler = function(event, context, callback) {
       amount: data.amount,
       source: data.token.id,
       receipt_email: data.token.email,
-      description: `charge for a widget`
+      description: `charge for a widget`,
     },
     {
-      idempotency_key: data.idempotency_key
+      idempotency_key: data.idempotency_key,
     },
     (err, charge) => {
       if (err !== null) {
@@ -55,7 +55,7 @@ exports.handler = function(event, context, callback) {
       callback(null, {
         statusCode,
         headers,
-        body: JSON.stringify({ status })
+        body: JSON.stringify({ status }),
       })
     }
   )

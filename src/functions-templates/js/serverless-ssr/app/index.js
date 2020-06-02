@@ -69,12 +69,12 @@ module.exports = function expressApp(functionName) {
     res.json({
       users: [
         {
-          name: 'steve'
+          name: 'steve',
         },
         {
-          name: 'joe'
-        }
-      ]
+          name: 'joe',
+        },
+      ],
     })
   })
 
@@ -104,7 +104,7 @@ function customLogger(tokens, req, res) {
     tokens.res(req, res, 'content-length'),
     '-',
     tokens['response-time'](req, res),
-    'ms'
+    'ms',
   ].join(' ')
 
   if (process.env.NODE_ENV !== 'dev') {

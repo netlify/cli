@@ -10,7 +10,7 @@ class BuildCommand extends Command {
 
     await this.config.runHook('analytics', {
       eventName: 'command',
-      payload: { command: 'build', dry: Boolean(options.dry) }
+      payload: { command: 'build', dry: Boolean(options.dry) },
     })
 
     const success = await build(options)
@@ -25,7 +25,7 @@ class BuildCommand extends Command {
     // `@netlify/build --cachedConfig`.
     const cachedConfig = JSON.stringify(this.netlify.cachedConfig)
     const {
-      flags: { dry }
+      flags: { dry },
     } = this.parse(BuildCommand)
     const [token] = this.getConfigToken()
     return { cachedConfig, token, dry, mode: 'cli' }
@@ -48,11 +48,11 @@ class BuildCommand extends Command {
 // Netlify Build programmatic options
 BuildCommand.flags = {
   dry: flags.boolean({
-    description: 'Dry run: show instructions without running them'
+    description: 'Dry run: show instructions without running them',
   }),
   context: flags.string({
-    description: 'Build context'
-  })
+    description: 'Build context',
+  }),
 }
 
 BuildCommand.description = `(Beta) Build on your local machine`

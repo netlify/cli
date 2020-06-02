@@ -9,7 +9,7 @@ const winston = require('winston')
 const {
   NETLIFYDEVLOG,
   // NETLIFYDEVWARN,
-  NETLIFYDEVERR
+  NETLIFYDEVERR,
 } = require('./logo')
 const { getFunctions } = require('./get-functions')
 
@@ -74,7 +74,7 @@ function buildClientContext(headers) {
       identity: {
         url: 'https://netlify-dev-locally-emulated-identity.netlify.com/.netlify/identity',
         token:
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzb3VyY2UiOiJuZXRsaWZ5IGRldiIsInRlc3REYXRhIjoiTkVUTElGWV9ERVZfTE9DQUxMWV9FTVVMQVRFRF9JREVOVElUWSJ9.2eSDqUOZAOBsx39FHFePjYj12k0LrxldvGnlvDu3GMI'
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzb3VyY2UiOiJuZXRsaWZ5IGRldiIsInRlc3REYXRhIjoiTkVUTElGWV9ERVZfTE9DQUxMWV9FTVVMQVRFRF9JREVOVElUWSJ9.2eSDqUOZAOBsx39FHFePjYj12k0LrxldvGnlvDu3GMI',
         // you can decode this with https://jwt.io/
         // just says
         // {
@@ -82,7 +82,7 @@ function buildClientContext(headers) {
         //   "testData": "NETLIFY_DEV_LOCALLY_EMULATED_IDENTITY"
         // }
       },
-      user: jwtDecode(parts[1])
+      user: jwtDecode(parts[1]),
     }
   } catch (_) {
     // Ignore errors - bearer token is not a JWT, probably not intended for us
@@ -103,7 +103,7 @@ function createHandler(dir) {
 
   const logger = winston.createLogger({
     levels: winston.config.npm.levels,
-    transports: [new winston.transports.Console({ level: 'warn' })]
+    transports: [new winston.transports.Console({ level: 'warn' })],
   })
   lambdaLocal.setLogger(logger)
 
@@ -126,7 +126,10 @@ function createHandler(dir) {
     if (body) isBase64Encoded = Buffer.from(body, 'base64').toString('base64') === body
 
     let remoteAddress = request.get('x-forwarded-for') || request.connection.remoteAddress || ''
-    remoteAddress = remoteAddress.split(remoteAddress.includes('.') ? ':' : ',').pop().trim()
+    remoteAddress = remoteAddress
+      .split(remoteAddress.includes('.') ? ':' : ',')
+      .pop()
+      .trim()
 
     let requestPath = request.path
     if (request.get('x-netlify-original-pathname')) {
@@ -140,7 +143,7 @@ function createHandler(dir) {
       queryStringParameters: queryString.parse(request.url.split(/\?(.+)/)[1]),
       headers: { ...request.headers, 'client-ip': remoteAddress },
       body: body,
-      isBase64Encoded: isBase64Encoded
+      isBase64Encoded: isBase64Encoded,
     }
 
     const callback = createCallback(response)
@@ -151,7 +154,7 @@ function createHandler(dir) {
       clientContext: JSON.stringify(buildClientContext(request.headers) || {}),
       callback: callback,
       verboseLevel: 3,
-      timeoutMs: 10 * 1000
+      timeoutMs: 10 * 1000,
     })
   }
 }
@@ -162,13 +165,13 @@ async function serveFunctions(dir) {
   app.use(
     bodyParser.text({
       limit: '6mb',
-      type: ['text/*', 'application/json', 'multipart/form-data']
+      type: ['text/*', 'application/json', 'multipart/form-data'],
     })
   )
   app.use(bodyParser.raw({ limit: '6mb', type: '*/*' }))
   app.use(
     expressLogging(console, {
-      blacklist: ['/favicon.ico']
+      blacklist: ['/favicon.ico'],
     })
   )
 

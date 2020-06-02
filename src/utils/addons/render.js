@@ -38,5 +38,5 @@ function configValues(addonName, configValues, currentValue) {
 
 module.exports = {
   missingValues,
-  configValues
+  configValues,
 }

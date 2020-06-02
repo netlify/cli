@@ -13,7 +13,7 @@ exports.handler = async function(event, context) {
     console.error(msg)
     return {
       statusCode: 500,
-      body: JSON.stringify({ msg })
+      body: JSON.stringify({ msg }),
     }
   }
   const b64encodedSecret = Buffer.from(
@@ -25,15 +25,15 @@ exports.handler = async function(event, context) {
   const link = createHttpLink({
     uri: 'https://graphql.fauna.com/graphql', // modify as you see fit
     fetch,
-    headers
+    headers,
   })
   const schema = await introspectSchema(link)
   const executableSchema = makeRemoteExecutableSchema({
     schema,
-    link
+    link,
   })
   const server = new ApolloServer({
-    schema: executableSchema
+    schema: executableSchema,
   })
   return new Promise((yay, nay) => {
     const cb = (err, args) => (err ? nay(err) : yay(args))

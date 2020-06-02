@@ -20,7 +20,7 @@ const typeDefs = gql`
 const authors = [
   { id: 1, name: 'Terry Pratchett', age: 67 },
   { id: 2, name: 'Stephen King', age: 71 },
-  { id: 3, name: 'JK Rowling', age: 53 }
+  { id: 3, name: 'JK Rowling', age: 53 },
 ]
 
 const resolvers = {
@@ -36,13 +36,13 @@ const resolvers = {
     },
     authorByName: (root, args, context) => {
       return authors.find(x => x.name === args.name) || 'NOTFOUND'
-    }
-  }
+    },
+  },
 }
 
 const server = new ApolloServer({
   typeDefs,
-  resolvers
+  resolvers,
 })
 
 exports.handler = server.createHandler()

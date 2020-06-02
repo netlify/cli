@@ -13,7 +13,7 @@ module.exports = function() {
 
   const possibleArgsArrs = scanScripts({
     preferredScriptsArr: ['start'],
-    preferredCommand: 'stencil build --dev --watch --serve'
+    preferredCommand: 'stencil build --dev --watch --serve',
   })
 
   return {
@@ -24,6 +24,6 @@ module.exports = function() {
     env: { ...process.env, BROWSER: 'none', PORT: 3000 },
     possibleArgsArrs,
     urlRegexp: new RegExp(`(http://)([^:]+:)${3000}(/)?`, 'g'),
-    dist: 'www'
+    dist: 'www',
   }
 }

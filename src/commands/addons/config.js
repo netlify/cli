@@ -63,8 +63,8 @@ class AddonsConfigCommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: 'addons:config'
-      }
+        command: 'addons:config',
+      },
     })
 
     if (hasConfig) {
@@ -84,10 +84,10 @@ class AddonsConfigCommand extends Command {
               siteId: siteId,
               instanceId: currentAddon.id,
               addon: addonName,
-              config: newConfig
+              config: newConfig,
             },
             accessToken,
-            error: this.error
+            error: this.error,
           },
           this.log
         )
@@ -99,8 +99,8 @@ class AddonsConfigCommand extends Command {
           type: 'confirm',
           name: 'updateNow',
           message: `Do you want to update config values?`,
-          default: false
-        }
+          default: false,
+        },
       ])
       if (!updatePrompt.updateNow) {
         this.log('Sounds good! Exiting configuration...')
@@ -115,7 +115,7 @@ class AddonsConfigCommand extends Command {
       this.log()
       const prompts = generatePrompts({
         config: manifest.config,
-        configValues: currentConfig
+        configValues: currentConfig,
       })
       const userInput = await inquirer.prompt(prompts)
       // Merge user input with the flags specified
@@ -142,8 +142,8 @@ class AddonsConfigCommand extends Command {
           type: 'confirm',
           name: 'confirmChange',
           message: `Do you want to publish the updated "${addonName} add-on" settings for ${chalk.cyan(site.name)}?`,
-          default: false
-        }
+          default: false,
+        },
       ])
 
       if (!confirmPrompt.confirmChange) {
@@ -160,10 +160,10 @@ class AddonsConfigCommand extends Command {
             siteId: siteId,
             instanceId: currentAddon.id,
             addon: addonName,
-            config: newConfig
+            config: newConfig,
           },
           accessToken,
-          error: this.error
+          error: this.error,
         },
         this.log
       )
@@ -203,8 +203,8 @@ AddonsConfigCommand.args = [
   {
     name: 'name',
     required: true,
-    description: 'Add-on namespace'
-  }
+    description: 'Add-on namespace',
+  },
 ]
 AddonsConfigCommand.aliases = ['addon:config']
 AddonsConfigCommand.description = `Configure add-on settings`

@@ -6,7 +6,7 @@ const os = require('os')
 function findRoot(cwd = process.cwd(), opts) {
   opts = Object.assign(
     {
-      rootIndicators: ['.netlify', 'netlify.toml', '.git']
+      rootIndicators: ['.netlify', 'netlify.toml', '.git'],
     },
     opts
   )

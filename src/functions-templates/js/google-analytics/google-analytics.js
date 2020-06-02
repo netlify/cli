@@ -35,10 +35,10 @@ function proxyToGoogleAnalytics(event, done) {
   const reqOptions = {
     method: 'POST',
     headers: {
-      'Content-Type': 'image/gif'
+      'Content-Type': 'image/gif',
     },
     url: GA_ENDPOINT,
-    body: qs
+    body: qs,
   }
 
   request(reqOptions, (error, result) => {
@@ -63,14 +63,14 @@ exports.handler = function(event, context, callback) {
     //'Access-Control-Allow-Origin': '*', // allow all domains to POST. Use for localhost development only
     'Access-Control-Allow-Origin': isOriginWhitelisted ? origin : originWhitelist[0],
     'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type,Accept'
+    'Access-Control-Allow-Headers': 'Content-Type,Accept',
   }
 
   const done = () => {
     callback(null, {
       statusCode: 200,
       headers,
-      body: ''
+      body: '',
     })
   }
 

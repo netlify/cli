@@ -19,7 +19,7 @@ const client = sanityClient({
   projectId: process.env.SANITY_PROJECTID,
   dataset: process.env.SANITY_DATASET,
   token: process.env.SANITY_TOKEN,
-  useCdn: false
+  useCdn: false,
 })
 
 /*
@@ -39,7 +39,7 @@ exports.handler = async event => {
   if (!event.httpMethod === 'POST') {
     return {
       statusCode: 400,
-      body: 'unrecognized HTTP Method, only POST allowed'
+      body: 'unrecognized HTTP Method, only POST allowed',
     }
   }
 
@@ -52,7 +52,7 @@ exports.handler = async event => {
     _type: 'comment',
     status: 'waitingApproval', // Some workflow state
     author: payload.author || 'Anonymous',
-    message: payload.message
+    message: payload.message,
   }
 
   return client
@@ -61,14 +61,14 @@ exports.handler = async event => {
       return {
         statusCode: 200,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(result)
+        body: JSON.stringify(result),
       }
     })
     .catch(error => {
       return {
         headers: { 'Content-Type': 'application/json' },
         statusCode: 500,
-        body: error.responseBody || JSON.stringify({ error: 'An error occurred' })
+        body: error.responseBody || JSON.stringify({ error: 'An error occurred' }),
       }
     })
 }

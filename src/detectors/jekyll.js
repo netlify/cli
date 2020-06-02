@@ -13,6 +13,6 @@ module.exports = function() {
     command: 'bundle',
     possibleArgsArrs: [['exec', 'jekyll', 'serve', '-w']],
     urlRegexp: new RegExp(`(http://)([^:]+:)${4000}(/)?`, 'g'),
-    dist: '_site'
+    dist: '_site',
   }
 }

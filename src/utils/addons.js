@@ -108,10 +108,10 @@ module.exports.createSiteAddon = async function(accessToken, addonName, siteId, 
     settings: {
       siteId: siteId,
       addon: addonName,
-      config: configValues
+      config: configValues,
     },
     accessToken,
-    siteData
+    siteData,
   })
   return addonName // we dont really use this right now but may be helpful to know that an addon installation was successful
 }
