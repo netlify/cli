@@ -11,7 +11,7 @@ function createFaunaDB() {
   }
   console.log('Create the database!')
   const client = new faunadb.Client({
-    secret: process.env.FAUNADB_SERVER_SECRET
+    secret: process.env.FAUNADB_SERVER_SECRET,
   })
 
   /* Based on your requirements, change the schema here */
@@ -23,7 +23,7 @@ function createFaunaDB() {
         q.Create(q.Ref('indexes'), {
           name: 'all_items',
           source: q.Ref('classes/items'),
-          active: true
+          active: true,
         })
       )
     })

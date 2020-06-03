@@ -87,6 +87,7 @@ netlify deploy
 - `dir` (*option*) - Specify a folder to deploy
 - `functions` (*option*) - Specify a functions folder to deploy
 - `prod` (*boolean*) - Deploy to production
+- `branch` (*option*) - Specifies the branch for deployment. Useful for creating specific deployment URL's
 - `open` (*boolean*) - Open site after deploy
 - `message` (*option*) - A short message to include in the deploy log
 - `auth` (*option*) - Netlify auth token to deploy with

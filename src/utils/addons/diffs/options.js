@@ -3,7 +3,7 @@ const chalk = require('chalk')
 const ansiStyles = require('ansi-styles') // eslint-disable-line
 
 const forceColor = new chalk.constructor({
-  enabled: true
+  enabled: true,
 })
 
 const colorTheme = {
@@ -11,34 +11,34 @@ const colorTheme = {
   circular: forceColor.grey('[Circular]'),
   date: {
     invalid: forceColor.red('invalid'),
-    value: ansiStyles.blue
+    value: ansiStyles.blue,
   },
   diffGutters: {
     actual: forceColor.red('-') + ' ',
     expected: forceColor.green('+') + ' ',
-    padding: '  '
+    padding: '  ',
   },
   error: {
     ctor: {
       open: ansiStyles.grey.open + '(',
-      close: ')' + ansiStyles.grey.close
+      close: ')' + ansiStyles.grey.close,
     },
-    name: ansiStyles.magenta
+    name: ansiStyles.magenta,
   },
   function: {
     name: ansiStyles.blue,
-    stringTag: ansiStyles.magenta
+    stringTag: ansiStyles.magenta,
   },
   global: ansiStyles.magenta,
   item: {
-    after: forceColor.grey(',')
+    after: forceColor.grey(','),
   },
   list: {
     openBracket: forceColor.grey('['),
-    closeBracket: forceColor.grey(']')
+    closeBracket: forceColor.grey(']'),
   },
   mapEntry: {
-    after: forceColor.grey(',')
+    after: forceColor.grey(','),
   },
   maxDepth: forceColor.grey('…'),
   null: ansiStyles.yellow,
@@ -49,24 +49,24 @@ const colorTheme = {
     ctor: ansiStyles.magenta,
     stringTag: {
       open: ansiStyles.magenta.open + '@',
-      close: ansiStyles.magenta.close
+      close: ansiStyles.magenta.close,
     },
     secondaryStringTag: {
       open: ansiStyles.grey.open + '@',
-      close: ansiStyles.grey.close
-    }
+      close: ansiStyles.grey.close,
+    },
   },
   property: {
     after: forceColor.grey(','),
     keyBracket: { open: forceColor.grey('['), close: forceColor.grey(']') },
-    valueFallback: forceColor.grey('…')
+    valueFallback: forceColor.grey('…'),
   },
   regexp: {
     source: {
       open: ansiStyles.blue.open + '/',
-      close: '/' + ansiStyles.blue.close
+      close: '/' + ansiStyles.blue.close,
     },
-    flags: ansiStyles.yellow
+    flags: ansiStyles.yellow,
   },
   stats: { separator: forceColor.grey('---') },
   string: {
@@ -78,28 +78,28 @@ const colorTheme = {
     diff: {
       insert: {
         open: ansiStyles.bgGreen.open + ansiStyles.black.open,
-        close: ansiStyles.black.close + ansiStyles.bgGreen.close
+        close: ansiStyles.black.close + ansiStyles.bgGreen.close,
       },
       delete: {
         open: ansiStyles.bgRed.open + ansiStyles.black.open,
-        close: ansiStyles.black.close + ansiStyles.bgRed.close
+        close: ansiStyles.black.close + ansiStyles.bgRed.close,
       },
       equal: ansiStyles.white,
       insertLine: {
         open: ansiStyles.green.open,
-        close: ansiStyles.green.close
+        close: ansiStyles.green.close,
       },
       deleteLine: {
         open: ansiStyles.red.open,
-        close: ansiStyles.red.close
-      }
-    }
+        close: ansiStyles.red.close,
+      },
+    },
   },
   symbol: ansiStyles.yellow,
   typedArray: {
-    bytes: ansiStyles.yellow
+    bytes: ansiStyles.yellow,
   },
-  undefined: ansiStyles.yellow
+  undefined: ansiStyles.yellow,
 }
 
 const plugins = []

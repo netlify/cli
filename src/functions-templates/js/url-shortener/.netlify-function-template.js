@@ -15,7 +15,7 @@ module.exports = {
       let siteData = { name: 'YOURSITENAMEHERE' }
       try {
         siteData = await this.netlify.api.getSite({
-          siteId: this.netlify.site.id
+          siteId: this.netlify.site.id,
         })
       } catch (e) {
         // silent error, not important
@@ -24,5 +24,5 @@ module.exports = {
         `Set them at: https://app.netlify.com/sites/${siteData.name}/settings/deploys#environment-variables (must have CD setup)`
       )
     }
-  }
+  },
 }

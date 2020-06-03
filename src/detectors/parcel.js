@@ -11,7 +11,7 @@ module.exports = function() {
 
   const possibleArgsArrs = scanScripts({
     preferredScriptsArr: ['start', 'dev', 'run'],
-    preferredCommand: 'parcel'
+    preferredCommand: 'parcel',
   })
 
   if (possibleArgsArrs.length === 0) {
@@ -27,6 +27,6 @@ module.exports = function() {
     env: { ...process.env },
     possibleArgsArrs,
     urlRegexp: new RegExp(`(http://)([^:]+:)${1234}(/)?`, 'g'),
-    dist: 'dist'
+    dist: 'dist',
   }
 }

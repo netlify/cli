@@ -27,15 +27,15 @@ module.exports = function handler(event, context, callback) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               code: code,
-              url: routes[item].data.destination
-            })
+              url: routes[item].data.destination,
+            }),
           })
         }
       }
     } else {
       return callback(null, {
         statusCode: 200,
-        body: err
+        body: err,
       })
     }
   })

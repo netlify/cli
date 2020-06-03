@@ -15,8 +15,8 @@ class AddonsCommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: 'addons'
-      }
+        command: 'addons',
+      },
     })
   }
 }
@@ -28,7 +28,7 @@ AddonsCommand.examples = [
   'netlify addons:list',
   'netlify addons:config addon-xyz',
   'netlify addons:delete addon-xyz',
-  'netlify addons:auth addon-xyz'
+  'netlify addons:auth addon-xyz',
 ]
 
 module.exports = AddonsCommand

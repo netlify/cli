@@ -9,7 +9,7 @@ module.exports = function() {
 
   const possibleArgsArrs = scanScripts({
     preferredScriptsArr: ['start', 'develop', 'dev'],
-    preferredCommand: 'react-static start'
+    preferredCommand: 'react-static start',
   })
 
   if (possibleArgsArrs.length === 0) {
@@ -24,6 +24,6 @@ module.exports = function() {
     env: { ...process.env },
     possibleArgsArrs,
     urlRegexp: new RegExp(`(http://)([^:]+:)${3000}(/)?`, 'g'),
-    dist: 'dist'
+    dist: 'dist',
   }
 }

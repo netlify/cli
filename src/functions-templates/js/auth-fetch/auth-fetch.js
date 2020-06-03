@@ -7,8 +7,8 @@ exports.handler = async function(event, context) {
     return {
       statusCode: 500,
       body: JSON.stringify({
-        msg: 'No identity instance detected. Did you enable it?'
-      }) // Could be a custom message or object i.e. JSON.stringify(err)
+        msg: 'No identity instance detected. Did you enable it?',
+      }), // Could be a custom message or object i.e. JSON.stringify(err)
     }
   }
   const { identity, user } = context.clientContext
@@ -22,13 +22,13 @@ exports.handler = async function(event, context) {
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ identity, user, msg: data.value })
+      body: JSON.stringify({ identity, user, msg: data.value }),
     }
   } catch (err) {
     console.log(err) // output to netlify function log
     return {
       statusCode: 500,
-      body: JSON.stringify({ msg: err.message }) // Could be a custom message or object i.e. JSON.stringify(err)
+      body: JSON.stringify({ msg: err.message }), // Could be a custom message or object i.e. JSON.stringify(err)
     }
   }
 }

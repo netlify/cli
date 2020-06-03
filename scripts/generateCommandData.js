@@ -22,7 +22,7 @@ module.exports = function generateCommandData() {
       commandGroup: parentCommand,
       isParent: parent,
       path: file,
-      data: cmd
+      data: cmd,
     }
   })
 
@@ -40,7 +40,7 @@ module.exports = function generateCommandData() {
         args: curr.data.args,
         examples: curr.data.examples,
         strict: curr.data.strict,
-        commands: []
+        commands: [],
       }
     }
     return acc
@@ -57,7 +57,7 @@ module.exports = function generateCommandData() {
           flags: curr.data.flags,
           args: curr.data.args,
           examples: curr.data.examples,
-          strict: curr.data.strict
+          strict: curr.data.strict,
         })
       }
     }

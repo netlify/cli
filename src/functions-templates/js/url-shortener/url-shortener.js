@@ -19,6 +19,6 @@ exports.handler = (event, context, callback) => {
   }
   return callback({
     statusCode: 500,
-    body: 'unrecognized HTTP Method, must be one of GET/POST/PUT/DELETE'
+    body: 'unrecognized HTTP Method, must be one of GET/POST/PUT/DELETE',
   })
 }

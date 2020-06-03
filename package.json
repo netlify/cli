@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "2.51.0",
+  "version": "2.53.0",
   "author": "Netlify Inc.",
   "contributors": [
     "Mathias Biilmann <matt@netlify.com> (https://twitter.com/biilmann)",
@@ -45,9 +45,10 @@
     "start": "node ./bin/run",
     "test": "run-s test:*",
     "ava": "ava --verbose",
+    "format": "prettier --write \"{src,scripts,docs,site/src,.circleci,.github}/**/*.{js,md,yml,json,html}\" \"site/*.{js,md}\" \"*.{js,md,yml,json,html}\" \"tests/**/*.js\" \"!CHANGELOG.md\"",
     "test:ava": "nyc --reporter=lcov ava --verbose && nyc report",
     "test:lint": "eslint --fix \"{src,scripts}/**/*.js\"",
-    "test:prettier": "prettier --write --loglevel warn \"{src,scripts,docs,site/src,.circleci,.github}/**/*.{js,md,yml,json,html}\" \"site/*.{js,md}\" \"*.{js,md,yml,json,html}\"",
+    "test:format": "prettier --check \"{src,scripts,docs,site/src,.circleci,.github}/**/*.{js,md,yml,json,html}\" \"site/*.{js,md}\" \"*.{js,md,yml,json,html}\" \"tests/**/*.js\" \"!CHANGELOG.md\"",
     "test:cli-version": "npm run start -- --version",
     "test:cli-help": "npm run start -- --help",
     "docs": "node ./scripts/docs.js",
@@ -61,9 +62,9 @@
     "postinstall": "node ./scripts/postinstall.js"
   },
   "dependencies": {
-    "@netlify/build": "^0.4.15",
-    "@netlify/config": "^0.11.5",
-    "@netlify/zip-it-and-ship-it": "^0.4.0-16",
+    "@netlify/build": "^1.0.12",
+    "@netlify/config": "^1.0.7",
+    "@netlify/zip-it-and-ship-it": "^1.0.0",
     "@oclif/command": "^1.5.18",
     "@oclif/config": "^1.13.2",
     "@oclif/errors": "^1.1.2",
@@ -120,7 +121,7 @@
     "make-dir": "^3.0.0",
     "minimist": "^1.2.5",
     "multiparty": "^4.2.1",
-    "netlify": "^4.1.2",
+    "netlify": "^4.3.0",
     "netlify-redirect-parser": "^2.5.0",
     "netlify-redirector": "^0.2.0",
     "node-fetch": "^2.6.0",

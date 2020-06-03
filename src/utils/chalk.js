@@ -43,7 +43,7 @@ function neverNull(obj) {
           obj[key] = val
         }
         return true
-      }
+      },
     }
   )
 }

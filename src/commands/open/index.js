@@ -16,8 +16,8 @@ class OpenCommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: 'open'
-      }
+        command: 'open',
+      },
     })
 
     if (flags.site) {
@@ -30,11 +30,11 @@ class OpenCommand extends Command {
 
 OpenCommand.flags = {
   site: flags.boolean({
-    description: 'Open site'
+    description: 'Open site',
   }),
   admin: flags.boolean({
-    description: 'Open Netlify site'
-  })
+    description: 'Open Netlify site',
+  }),
 }
 
 OpenCommand.description = `Open settings for the site linked to the current folder`

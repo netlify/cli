@@ -18,7 +18,7 @@ const runBuildCommand = async function(
     reject: false,
     cwd: `${FIXTURE_DIR}/${fixtureSubDir}`,
     env: { FORCE_COLOR: '1', NETLIFY_AUTH_TOKEN: 'test', ...env },
-    all: true
+    all: true,
   })
 
   if (exitCode !== expectedExitCode) {
@@ -61,6 +61,6 @@ test('build command - missing siteId', async t => {
   await runBuildCommand(t, 'success-site', {
     exitCode: 1,
     output: 'Could not find the site ID',
-    env: { NODE_ENV: '' }
+    env: { NODE_ENV: '' },
   })
 })

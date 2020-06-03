@@ -57,7 +57,7 @@ async function getStatic(pathname, publicFolder) {
     const p = alternatives[i]
     try {
       const pathStats = await stat(p)
-      if (pathStats.isFile()) return '/'+path.relative(publicFolder, p)
+      if (pathStats.isFile()) return '/' + path.relative(publicFolder, p)
     } catch (err) {
       // Ignore
     }
@@ -107,8 +107,8 @@ function initializeProxy(port, distDir, projectDir) {
     selfHandleResponse: true,
     target: {
       host: 'localhost',
-      port: port
-    }
+      port: port,
+    },
   })
 
   const headersFiles = Array.from(new Set([path.resolve(projectDir, '_headers'), path.resolve(distDir, '_headers')]))
@@ -155,7 +155,7 @@ function initializeProxy(port, distDir, projectDir) {
       req.headers['x-forwarded-for'] = req.connection.remoteAddress || ''
       return proxy.web(req, res, options)
     },
-    ws: (req, socket, head) => proxy.ws(req, socket, head)
+    ws: (req, socket, head) => proxy.ws(req, socket, head),
   }
 
   return handlers
@@ -167,7 +167,7 @@ function capitalize(t) {
 
 async function startProxy(settings, addonUrls, configPath, projectDir, functionsDir, exit) {
   try {
-    await waitPort({ port: settings.frameworkPort })
+    await waitPort({ port: settings.frameworkPort, output: 'silent' })
   } catch (err) {
     console.error(NETLIFYDEVERR, `Netlify Dev could not connect to localhost:${settings.port}.`)
     console.error(NETLIFYDEVERR, `Please make sure your framework server is running on port ${settings.port}`)
@@ -175,7 +175,7 @@ async function startProxy(settings, addonUrls, configPath, projectDir, functions
   }
 
   if (functionsDir && settings.functionsPort) {
-    await waitPort({ port: settings.functionsPort })
+    await waitPort({ port: settings.functionsPort, output: 'silent' })
   }
   const functionsServer = settings.functionsPort ? `http://localhost:${settings.functionsPort}` : null
 
@@ -185,7 +185,7 @@ async function startProxy(settings, addonUrls, configPath, projectDir, functions
     distDir: settings.dist,
     jwtRole: settings.jwtRolePath,
     configPath,
-    projectDir
+    projectDir,
   })
 
   const server = http.createServer(async (req, res) => {
@@ -253,7 +253,7 @@ async function startProxy(settings, addonUrls, configPath, projectDir, functions
         functionsServer,
         functionsPort: settings.functionsPort,
         jwtRolePath: settings.jwtRolePath,
-        framework: settings.framework
+        framework: settings.framework,
       }
 
       if (match) return serveRedirect(req, res, proxy, match, options)
@@ -341,31 +341,36 @@ async function serveRedirect(req, res, proxy, match, options) {
     return render404(options.publicFolder)
   }
 
-  if (match.force || (!(staticFile && options.framework))) {
+  if (match.force || !(staticFile && options.framework)) {
     const dest = new url.URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
+
+    // Use query params of request URL as base, so that, destination query params can supersede
+    const urlParams = new URLSearchParams(reqUrl.searchParams)
+    dest.searchParams.forEach((val, key) => urlParams.set(key, val))
+    urlParams.forEach((val, key) => dest.searchParams.set(key, val))
+
+    // Get the URL after http://host:port
+    const destURL = dest.toString().replace(dest.origin, '')
+
     const destStaticFile = await getStatic(dest.pathname, options.publicFolder)
     if (isRedirect(match)) {
       res.writeHead(match.status, {
-        Location: match.to,
-        'Cache-Control': 'no-cache'
+        'Location': match.to,
+        'Cache-Control': 'no-cache',
       })
       res.end(`Redirecting to ${match.to}`)
       return
     }
 
     if (isExternal(match)) {
-      console.log(`${NETLIFYDEVLOG} Proxying to `, match.to)
+      console.log(`${NETLIFYDEVLOG} Proxying to `, dest.toString())
       const handler = proxyMiddleware({
         target: `${dest.protocol}//${dest.host}`,
         changeOrigin: true,
-        pathRewrite: (path, req) => match.to.replace(/https?:\/\/[^/]+/, '')
+        pathRewrite: (path, req) => destURL.replace(/https?:\/\/[^/]+/, ''),
       })
       return handler(req, res, {})
     }
-
-    const urlParams = new URLSearchParams(reqUrl.searchParams)
-    dest.searchParams.forEach((val, key) => urlParams.set(key, val))
-    const destURL = dest.pathname + (urlParams.toString() && '?' + urlParams.toString())
 
     let status
     if (match.force || isInternal(destURL) || (!staticFile && !options.framework && destStaticFile)) {
@@ -398,8 +403,8 @@ async function startDevServer(settings, log) {
       name: 'netlify-dev',
       port: settings.frameworkPort,
       templates: {
-        notFound: '404.html'
-      }
+        notFound: '404.html',
+      },
     })
 
     server.start(function() {
@@ -419,7 +424,7 @@ async function startDevServer(settings, log) {
   })
   const ps = child_process.spawn(commandBin, settings.args, {
     env: { ...settings.env, FORCE_COLOR: 'true' },
-    stdio: 'pipe'
+    stdio: 'pipe',
   })
 
   ps.stdout.pipe(stripAnsiCc.stream()).pipe(process.stdout)
@@ -428,13 +433,15 @@ async function startDevServer(settings, log) {
   process.stdin.pipe(process.stdin)
 
   function handleProcessExit(code) {
-    log(code > 0 ? NETLIFYDEVERR : NETLIFYDEVWARN, `"${[settings.command, ...settings.args].join(' ')}" exited with code ${code}. Shutting down Netlify Dev server`)
+    log(
+      code > 0 ? NETLIFYDEVERR : NETLIFYDEVWARN,
+      `"${[settings.command, ...settings.args].join(' ')}" exited with code ${code}. Shutting down Netlify Dev server`
+    )
     process.exit(code)
   }
   ps.on('close', handleProcessExit)
   ps.on('SIGINT', handleProcessExit)
   ps.on('SIGTERM', handleProcessExit)
-
   ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach(signal =>
     process.on(signal, () => {
       try {
@@ -478,7 +485,9 @@ class DevCommand extends Command {
     const envSettings = await getEnvSettings(site.root)
     if (envSettings.file) {
       console.log(
-        `${NETLIFYDEVLOG} Overriding the following env variables with ${chalk.blue(path.relative(site.root, envSettings.file))} file:`,
+        `${NETLIFYDEVLOG} Overriding the following env variables with ${chalk.blue(
+          path.relative(site.root, envSettings.file)
+        )} file:`,
         chalk.yellow(Object.keys(envSettings.vars))
       )
       Object.entries(envSettings.vars).forEach(([key, val]) => (process.env[key] = val))
@@ -531,7 +540,7 @@ class DevCommand extends Command {
     }
 
     if (flags.live) {
-      await waitPort({ port: settings.frameworkPort })
+      await waitPort({ port: settings.frameworkPort, output: 'silent' })
       const liveSession = await createTunnel(site.id, accessToken, this.log)
       url = liveSession.session_url
       process.env.BASE_URL = url
@@ -544,8 +553,8 @@ class DevCommand extends Command {
       payload: {
         command: 'dev',
         projectType: settings.framework || 'custom',
-        live: flags.live || false
-      }
+        live: flags.live || false,
+      },
     })
 
     if (devConfig.autoLaunch && devConfig.autoLaunch !== false) {
@@ -566,7 +575,7 @@ class DevCommand extends Command {
         padding: 1,
         margin: 1,
         align: 'center',
-        borderColor: '#00c7b7'
+        borderColor: '#00c7b7',
       })
     )
   }
@@ -583,31 +592,31 @@ DevCommand.strict = false
 DevCommand.flags = {
   command: flags.string({
     char: 'c',
-    description: 'command to run'
+    description: 'command to run',
   }),
   port: flags.integer({
     char: 'p',
-    description: 'port of netlify dev'
+    description: 'port of netlify dev',
   }),
   targetPort: flags.integer({
-    description: 'port of target app server'
+    description: 'port of target app server',
   }),
   dir: flags.string({
     char: 'd',
-    description: 'dir with static files'
+    description: 'dir with static files',
   }),
   functions: flags.string({
     char: 'f',
-    description: 'Specify a functions folder to serve'
+    description: 'Specify a functions folder to serve',
   }),
   offline: flags.boolean({
     char: 'o',
-    description: 'disables any features that require network access'
+    description: 'disables any features that require network access',
   }),
   live: flags.boolean({
     char: 'l',
-    description: 'Start a public live session'
-  })
+    description: 'Start a public live session',
+  }),
 }
 
 module.exports = DevCommand

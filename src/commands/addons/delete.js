@@ -36,7 +36,7 @@ class AddonsDeleteCommand extends Command {
         type: 'confirm',
         name: 'wantsToDelete',
         message: `Are you sure you want to delete the ${addonName} add-on? (to skip this prompt, pass a --force flag)`,
-        default: false
+        default: false,
       })
       if (!wantsToDelete) {
         this.exit()
@@ -52,14 +52,14 @@ class AddonsDeleteCommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: 'addons:delete'
-      }
+        command: 'addons:delete',
+      },
     })
 
     const settings = {
       siteId: siteId,
       addon: addonName,
-      instanceId: currentAddon.id
+      instanceId: currentAddon.id,
     }
     let addonResponse
     try {
@@ -96,15 +96,15 @@ AddonsDeleteCommand.aliases = ['addon:delete']
 AddonsDeleteCommand.flags = {
   force: flags.boolean({
     char: 'f',
-    description: 'delete without prompting (useful for CI)'
-  })
+    description: 'delete without prompting (useful for CI)',
+  }),
 }
 AddonsDeleteCommand.args = [
   {
     name: 'name',
     required: true,
-    description: 'Add-on namespace'
-  }
+    description: 'Add-on namespace',
+  },
 ]
 
 module.exports = AddonsDeleteCommand

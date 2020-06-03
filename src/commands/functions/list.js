@@ -33,8 +33,8 @@ class FunctionsListCommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: 'functions:list'
-      }
+        command: 'functions:list',
+      },
     })
 
     const functionsDir =
@@ -67,7 +67,7 @@ class FunctionsListCommand extends Command {
           name: functionName,
           url: `/.netlify/functions/${functionName}`,
           moduleDir: moduleDir,
-          isDeployed: isDeployed ? true : false
+          isDeployed: isDeployed ? true : false,
         }
       })
       this.logJson(jsonData)
@@ -96,15 +96,15 @@ FunctionsListCommand.aliases = ['function:list']
 FunctionsListCommand.flags = {
   name: flags.string({
     char: 'n',
-    description: 'name to print'
+    description: 'name to print',
   }),
   functions: flags.string({
     char: 'f',
-    description: 'Specify a functions folder to serve'
+    description: 'Specify a functions folder to serve',
   }),
   json: flags.boolean({
-    description: 'Output function data as JSON'
-  })
+    description: 'Output function data as JSON',
+  }),
 }
 
 // TODO make visible once implementation complete

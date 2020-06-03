@@ -21,13 +21,13 @@ exports.handler = async function(event, context) {
     //    axios.post('/user', { firstName: 'Fred' })
     return {
       statusCode: 200,
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
     }
   } catch (error) {
     const { status, statusText, headers, data } = error.response
     return {
       statusCode: error.response.status,
-      body: JSON.stringify({ status, statusText, headers, data })
+      body: JSON.stringify({ status, statusText, headers, data }),
     }
   }
 }

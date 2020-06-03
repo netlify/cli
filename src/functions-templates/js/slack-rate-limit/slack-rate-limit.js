@@ -13,8 +13,8 @@ class IdentityAPI {
   headers(headers = {}) {
     return {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${this.token}`,
-      ...headers
+      'Authorization': `Bearer ${this.token}`,
+      ...headers,
     }
   }
 
@@ -65,7 +65,7 @@ function updateUser(identity, user, app_metadata) {
 
   return api.request(`/admin/users/${user.id}`, {
     method: 'PUT',
-    body: JSON.stringify({ app_metadata: new_app_metadata })
+    body: JSON.stringify({ app_metadata: new_app_metadata }),
   })
 }
 
@@ -74,7 +74,7 @@ module.exports = function handler(event, context, callback) {
   if (event.httpMethod !== 'POST') {
     return callback(null, {
       statusCode: 410,
-      body: 'Unsupported Request Method'
+      body: 'Unsupported Request Method',
     })
   }
 
@@ -82,7 +82,7 @@ module.exports = function handler(event, context, callback) {
   if (!claims) {
     return callback(null, {
       statusCode: 401,
-      body: 'You must be signed in to call this function'
+      body: 'You must be signed in to call this function',
     })
   }
 
@@ -92,7 +92,7 @@ module.exports = function handler(event, context, callback) {
     if (lastMessage > cutOff) {
       return callback(null, {
         statusCode: 401,
-        body: 'Only one message an hour allowed'
+        body: 'Only one message an hour allowed',
       })
     }
 
@@ -103,12 +103,12 @@ module.exports = function handler(event, context, callback) {
         method: 'POST',
         body: JSON.stringify({
           text: payload.text,
-          attachments: [{ text: `From ${user.email}` }]
-        })
+          attachments: [{ text: `From ${user.email}` }],
+        }),
       })
         .then(() =>
           updateUser(context.clientContext.identity, user, {
-            last_message_at: new Date().getTime()
+            last_message_at: new Date().getTime(),
           })
         )
         .then(() => {
@@ -117,7 +117,7 @@ module.exports = function handler(event, context, callback) {
         .catch(err => {
           callback(null, {
             statusCode: 500,
-            body: 'Internal Server Error: ' + err
+            body: 'Internal Server Error: ' + err,
           })
         })
     } catch (e) {

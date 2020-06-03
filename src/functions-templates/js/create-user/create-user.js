@@ -22,13 +22,13 @@ exports.handler = async (event, context) => {
       password,
       confirm: true,
       user_metadata: {
-        full_name
-      }
-    })
+        full_name,
+      },
+    }),
   })
 
   return {
     statusCode: 200,
-    body: 'success!'
+    body: 'success!',
   }
 }

@@ -61,8 +61,8 @@ class AddonsCreateCommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: 'addons:create'
-      }
+        command: 'addons:create',
+      },
     })
 
     if (hasConfig) {
@@ -96,11 +96,11 @@ class AddonsCreateCommand extends Command {
             settings: {
               siteId: siteId,
               addon: addonName,
-              config: newConfig
+              config: newConfig,
             },
             accessToken,
             siteData,
-            error: this.error
+            error: this.error,
           },
           this.log
         )
@@ -120,7 +120,7 @@ class AddonsCreateCommand extends Command {
 
       const prompts = generatePrompts({
         config: manifest.config,
-        configValues: rawFlags
+        configValues: rawFlags,
       })
 
       const userInput = await inquirer.prompt(prompts)
@@ -141,11 +141,11 @@ class AddonsCreateCommand extends Command {
         settings: {
           siteId: siteId,
           addon: addonName,
-          config: configValues
+          config: configValues,
         },
         accessToken,
         siteData,
-        error: this.error
+        error: this.error,
       },
       this.log
     )
@@ -182,8 +182,8 @@ AddonsCreateCommand.args = [
   {
     name: 'name',
     required: true,
-    description: 'Add-on namespace'
-  }
+    description: 'Add-on namespace',
+  },
 ]
 
 // allow for any flags. Handy for variadic configuration options

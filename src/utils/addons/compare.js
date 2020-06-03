@@ -7,7 +7,7 @@ module.exports = function compare(oldValues, newValues) {
     // Keys that are different
     keys: [],
     // Values of the keys that are different
-    diffs: {}
+    diffs: {},
   }
 
   const oldKeys = Object.keys(oldValues)
@@ -23,9 +23,9 @@ module.exports = function compare(oldValues, newValues) {
         diffs: Object.assign({}, acc.diffs, {
           [`${current}`]: {
             newValue: newValues[current],
-            oldValue: oldValues[current]
-          }
-        })
+            oldValue: oldValues[current],
+          },
+        }),
       }
     }
     return acc
