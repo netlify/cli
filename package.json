@@ -119,7 +119,7 @@
     "log-symbols": "^2.2.0",
     "make-dir": "^3.0.0",
     "minimist": "^1.2.5",
-    "netlify": "^4.1.8",
+    "netlify": "^4.3.0",
     "netlify-redirect-parser": "^2.5.0",
     "netlify-redirector": "^0.2.0",
     "node-fetch": "^2.6.0",

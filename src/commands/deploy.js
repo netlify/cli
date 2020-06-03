@@ -22,6 +22,9 @@ class DeployCommand extends Command {
     const { api, site, config } = this.netlify
 
     const deployToProduction = flags.prod
+    if (deployToProduction && flags.branch) {
+      this.error(`--prod and --branch flags cannot be used at the same time`)
+    }
     await this.authenticate(flags.auth)
 
     await this.config.runHook('analytics', {
@@ -31,6 +34,7 @@ class DeployCommand extends Command {
         open: flags.open,
         prod: flags.prod,
         json: flags.json,
+        branch: Boolean(flags.branch),
       },
     })
 
@@ -142,7 +146,7 @@ class DeployCommand extends Command {
     }
     this.log(prettyjson.render(pathInfo))
 
-    ensureDirectory(deployFolder, this.exit)
+    ensureDirectory(deployFolder, this.error)
 
     if (functionsFolder) {
       // we used to hard error if functions folder is specified but doesnt exist
@@ -195,9 +199,10 @@ class DeployCommand extends Command {
         configPath: configPath,
         fnDir: functionsFolder,
         statusCb: flags.json || flags.silent ? () => {} : deployProgressCb(),
-        draft: !deployToProduction,
+        draft: !deployToProduction && !flags.branch,
         message: flags.message,
         deployTimeout: flags.timeout * 1000 || 1.2e6,
+        branch: flags.branch,
       })
     } catch (e) {
       switch (true) {
@@ -375,6 +380,10 @@ DeployCommand.flags = {
     description: 'Deploy to production',
     default: false,
   }),
+  branch: flags.string({
+    char: 'b',
+    description: "Specifies the branch for deployment. Useful for creating specific deployment URL's",
+  }),
   open: flags.boolean({
     char: 'o',
     description: 'Open site after deploy',
@@ -441,28 +450,25 @@ function deployProgressCb() {
   }
 }
 
-function ensureDirectory(resolvedDeployPath, exit) {
+function ensureDirectory(resolvedDeployPath, error) {
   let stat
   try {
     stat = fs.statSync(resolvedDeployPath)
   } catch (e) {
     if (e.status === 'ENOENT') {
-      console.log(
+      return error(
         `No such directory ${resolvedDeployPath}! Did you forget to create a functions folder or run a build?`
       )
-      exit(1)
     }
 
     // Improve the message of permission errors
     if (e.status === 'EACCES') {
-      console.log('Permission error when trying to access deploy folder')
-      exit(1)
+      return error('Permission error when trying to access deploy folder')
     }
     throw e
   }
   if (!stat.isDirectory) {
-    console.log('Deploy target must be a directory')
-    exit(1)
+    return error('Deploy target must be a directory')
   }
   return stat
 }
