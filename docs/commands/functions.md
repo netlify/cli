@@ -6,9 +6,9 @@ description: Run netlify dev locally
 # `functions`
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
+
 Manage netlify functions
 The `functions` command will help you manage the functions in this site
-
 
 **Usage**
 
@@ -16,12 +16,11 @@ The `functions` command will help you manage the functions in this site
 netlify functions
 ```
 
-| Subcommand | description  |
-|:--------------------------- |:-----|
-| [`functions:build`](/docs/commands/functions.md#functionsbuild) | Build functions locally  |
-| [`functions:create`](/docs/commands/functions.md#functionscreate) | Create a new function locally  |
-| [`functions:invoke`](/docs/commands/functions.md#functionsinvoke) | Trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions  |
-
+| Subcommand                                                        | description                                                                                                                                |
+| :---------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------- |
+| [`functions:build`](/docs/commands/functions.md#functionsbuild)   | Build functions locally                                                                                                                    |
+| [`functions:create`](/docs/commands/functions.md#functionscreate) | Create a new function locally                                                                                                              |
+| [`functions:invoke`](/docs/commands/functions.md#functionsinvoke) | Trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions |
 
 **Examples**
 
@@ -31,10 +30,10 @@ netlify functions:build --name function-abc --timeout 30s
 ```
 
 ---
+
 ## `functions:build`
 
 Build functions locally
-
 
 **Usage**
 
@@ -44,10 +43,11 @@ netlify functions:build
 
 **Flags**
 
-- `functions` (*option*) - Specify a functions folder to build to
-- `src` (*option*) - Specify the source folder for the functions
+- `functions` (_option_) - Specify a functions folder to build to
+- `src` (_option_) - Specify the source folder for the functions
 
 ---
+
 ## `functions:create`
 
 Create a new function locally
@@ -64,8 +64,8 @@ netlify functions:create
 
 **Flags**
 
-- `name` (*option*) - function name
-- `url` (*option*) - pull template from URL
+- `name` (_option_) - function name
+- `url` (_option_) - pull template from URL
 
 **Examples**
 
@@ -76,6 +76,7 @@ netlify functions:create --name hello-world
 ```
 
 ---
+
 ## `functions:invoke`
 
 Trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions
@@ -92,12 +93,12 @@ netlify functions:invoke
 
 **Flags**
 
-- `name` (*option*) - function name to invoke
-- `functions` (*option*) - Specify a functions folder to parse, overriding netlify.toml
-- `querystring` (*option*) - Querystring to add to your function invocation
-- `payload` (*option*) - Supply POST payload in stringified json, or a path to a json file
-- `identity` (*boolean*) - simulate Netlify Identity authentication JWT. pass --no-identity to affirm unauthenticated request
-- `port` (*option*) - Port where netlify dev is accessible. e.g. 8888
+- `name` (_option_) - function name to invoke
+- `functions` (_option_) - Specify a functions folder to parse, overriding netlify.toml
+- `querystring` (_option_) - Querystring to add to your function invocation
+- `payload` (_option_) - Supply POST payload in stringified json, or a path to a json file
+- `identity` (_boolean_) - simulate Netlify Identity authentication JWT. pass --no-identity to affirm unauthenticated request
+- `port` (_option_) - Port where netlify dev is accessible. e.g. 8888
 
 **Examples**
 

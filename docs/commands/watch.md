@@ -6,6 +6,7 @@ hidden: true
 # `watch`
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
+
 Watch for site deploy to finish
 
 **Usage**
@@ -20,6 +21,5 @@ netlify watch
 netlify watch
 git push && netlify watch
 ```
-
 
 <!-- AUTO-GENERATED-CONTENT:END -->
