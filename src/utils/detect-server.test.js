@@ -113,7 +113,7 @@ test('serverSettings: "dir" flag', async t => {
 test('serverSettings: "dir" flag and "command" as config param', async t => {
   const devConfig = {
     framework: '#auto',
-    command: "npm start",
+    command: 'npm start',
     publish: path.join(sitePath, 'build'),
     functions: path.join(sitePath, 'functions'),
   }
