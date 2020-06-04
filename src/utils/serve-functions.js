@@ -1,16 +1,10 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const expressLogging = require('express-logging')
-const queryString = require('querystring')
-const chokidar = require('chokidar')
 const jwtDecode = require('jwt-decode')
 const lambdaLocal = require('lambda-local')
 const winston = require('winston')
-const {
-  NETLIFYDEVLOG,
-  // NETLIFYDEVWARN,
-  NETLIFYDEVERR,
-} = require('./logo')
+const { NETLIFYDEVERR } = require('./logo')
 const { getFunctions } = require('./get-functions')
 
 function handleErr(err, response) {
@@ -92,15 +86,6 @@ function buildClientContext(headers) {
 function createHandler(dir) {
   const functions = getFunctions(dir)
 
-  const clearCache = action => path => {
-    console.log(`${NETLIFYDEVLOG} ${path} ${action}, reloading...`) // eslint-disable-line no-console
-    Object.keys(require.cache).forEach(k => {
-      delete require.cache[k]
-    })
-  }
-  const watcher = chokidar.watch(dir, { ignored: /node_modules/ })
-  watcher.on('change', clearCache('modified')).on('unlink', clearCache('deleted'))
-
   const logger = winston.createLogger({
     levels: winston.config.npm.levels,
     transports: [new winston.transports.Console({ level: 'warn' })],
@@ -136,12 +121,16 @@ function createHandler(dir) {
       requestPath = request.get('x-netlify-original-pathname')
       delete request.headers['x-netlify-original-pathname']
     }
+    const queryParams = Object.entries(request.query).reduce((prev, [k,v]) => ({...prev, [k]: Array.isArray(v) ? v : [v] }), {})
+    const headers = Object.entries({ ...request.headers, 'client-ip': [remoteAddress] }).reduce((prev, [k,v]) => Object.assign(prev, {[k]: Array.isArray(v) ? v : [v]}), {})
 
     const event = {
       path: requestPath,
       httpMethod: request.method,
-      queryStringParameters: queryString.parse(request.url.split(/\?(.+)/)[1]),
-      headers: { ...request.headers, 'client-ip': remoteAddress },
+      queryStringParameters: Object.entries(queryParams).reduce((prev, [k,v]) => ({...prev, [k]: Array.isArray(v) ? v.join(', ') : v }), {}),
+      multiValueQueryStringParameters: queryParams,
+      headers: Object.entries(headers).reduce((prev, [k,v]) => Object.assign(prev, {[k]: Array.isArray(v) ? v.join('; ') : v}), {}),
+      multiValueHeaders: headers,
       body: body,
       isBase64Encoded: isBase64Encoded,
     }
