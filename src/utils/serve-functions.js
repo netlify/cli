@@ -135,15 +135,21 @@ function createHandler(dir) {
       requestPath = request.get('x-netlify-original-pathname')
       delete request.headers['x-netlify-original-pathname']
     }
-    const queryParams = Object.entries(request.query).reduce((prev, [k,v]) => ({...prev, [k]: Array.isArray(v) ? v : [v] }), {})
-    const headers = Object.entries({ ...request.headers, 'client-ip': [remoteAddress] }).reduce((prev, [k,v]) => ({...prev, [k]: Array.isArray(v) ? v : [v]}), {})
+    const queryParams = Object.entries(request.query).reduce(
+      (prev, [k, v]) => ({ ...prev, [k]: Array.isArray(v) ? v : [v] }),
+      {}
+    )
+    const headers = Object.entries({ ...request.headers, 'client-ip': [remoteAddress] }).reduce(
+      (prev, [k, v]) => ({ ...prev, [k]: Array.isArray(v) ? v : [v] }),
+      {}
+    )
 
     const event = {
       path: requestPath,
       httpMethod: request.method,
-      queryStringParameters: Object.entries(queryParams).reduce((prev, [k,v]) => ({...prev, [k]: v.join(', ')}), {}),
+      queryStringParameters: Object.entries(queryParams).reduce((prev, [k, v]) => ({ ...prev, [k]: v.join(', ') }), {}),
       multiValueQueryStringParameters: queryParams,
-      headers: Object.entries(headers).reduce((prev, [k,v]) => ({...prev, [k]: v.join(', ')}), {}),
+      headers: Object.entries(headers).reduce((prev, [k, v]) => ({ ...prev, [k]: v.join(', ') }), {}),
       multiValueHeaders: headers,
       body: body,
       isBase64Encoded: isBase64Encoded,
