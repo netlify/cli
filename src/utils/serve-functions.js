@@ -1,10 +1,15 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const expressLogging = require('express-logging')
+const chokidar = require('chokidar')
 const jwtDecode = require('jwt-decode')
 const lambdaLocal = require('lambda-local')
 const winston = require('winston')
-const { NETLIFYDEVERR } = require('./logo')
+const {
+  NETLIFYDEVLOG,
+  // NETLIFYDEVWARN,
+  NETLIFYDEVERR,
+} = require('./logo')
 const { getFunctions } = require('./get-functions')
 
 function handleErr(err, response) {
@@ -95,6 +100,15 @@ function createHandler(dir) {
   return function(request, response) {
     // handle proxies without path re-writes (http-servr)
     const cleanPath = request.path.replace(/^\/.netlify\/functions/, '')
+
+    const clearCache = action => path => {
+      console.log(`${NETLIFYDEVLOG} ${path} ${action}, reloading...`) // eslint-disable-line no-console
+      Object.keys(require.cache).forEach(k => {
+        delete require.cache[k]
+      })
+    }
+    const watcher = chokidar.watch(dir, { ignored: /node_modules/ })
+    watcher.on('change', clearCache('modified')).on('unlink', clearCache('deleted'))
 
     const func = cleanPath.split('/').filter(function(e) {
       return e
