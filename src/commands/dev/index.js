@@ -146,7 +146,7 @@ function initializeProxy(port, distDir, projectDir) {
     web: (req, res, options) => {
       const requestURL = new url.URL(req.url, 'http://localhost')
       req.proxyOptions = options
-      req.alternativePaths = alternativePathsFor(requestURL.pathname).map(p => p+requestURL.search)
+      req.alternativePaths = alternativePathsFor(requestURL.pathname).map(p => p + requestURL.search)
       // Ref: https://nodejs.org/api/net.html#net_socket_remoteaddress
       req.headers['x-forwarded-for'] = req.connection.remoteAddress || ''
       return proxy.web(req, res, options)
@@ -277,7 +277,7 @@ async function serveRedirect(req, res, proxy, match, options) {
   const reqUrl = new url.URL(
     req.url,
     `${req.protocol || (req.headers.scheme && req.headers.scheme + ':') || 'http:'}//${req.headers['host'] ||
-    req.hostname}`
+      req.hostname}`
   )
 
   const staticFile = await getStatic(reqUrl.pathname, options.publicFolder)
