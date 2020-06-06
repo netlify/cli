@@ -20,10 +20,15 @@ class DeployCommand extends Command {
   async run() {
     const { flags } = this.parse(DeployCommand)
     const { api, site, config } = this.netlify
+    const alias = flags.alias || flags.branch
+
+    if (flags.branch) {
+      this.warn('--branch flag has been renamed to --alias and will be removed in future versions')
+    }
 
     const deployToProduction = flags.prod
-    if (deployToProduction && flags.branch) {
-      this.error(`--prod and --branch flags cannot be used at the same time`)
+    if (deployToProduction && alias) {
+      this.error(`--prod and --alias flags cannot be used at the same time`)
     }
     await this.authenticate(flags.auth)
 
@@ -34,7 +39,7 @@ class DeployCommand extends Command {
         open: flags.open,
         prod: flags.prod,
         json: flags.json,
-        branch: Boolean(flags.branch),
+        alias: Boolean(alias),
       },
     })
 
@@ -199,10 +204,10 @@ class DeployCommand extends Command {
         configPath: configPath,
         fnDir: functionsFolder,
         statusCb: flags.json || flags.silent ? () => {} : deployProgressCb(),
-        draft: !deployToProduction && !flags.branch,
+        draft: !deployToProduction && !alias,
         message: flags.message,
         deployTimeout: flags.timeout * 1000 || 1.2e6,
-        branch: flags.branch,
+        branch: alias,
       })
     } catch (e) {
       switch (true) {
@@ -380,9 +385,12 @@ DeployCommand.flags = {
     description: 'Deploy to production',
     default: false,
   }),
+  alias: flags.string({
+    description: "Specifies the alias for deployment. Useful for creating predictable deployment URL's",
+  }),
   branch: flags.string({
     char: 'b',
-    description: "Specifies the branch for deployment. Useful for creating specific deployment URL's",
+    description: "Serves the same functionality as --alias. Deprecated and will be removed in future versions",
   }),
   open: flags.boolean({
     char: 'o',
