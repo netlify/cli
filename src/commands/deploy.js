@@ -390,7 +390,7 @@ DeployCommand.flags = {
   }),
   branch: flags.string({
     char: 'b',
-    description: "Serves the same functionality as --alias. Deprecated and will be removed in future versions",
+    description: 'Serves the same functionality as --alias. Deprecated and will be removed in future versions',
   }),
   open: flags.boolean({
     char: 'o',
