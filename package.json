@@ -46,6 +46,7 @@
     "test": "run-s test:*",
     "ava": "ava --verbose",
     "format": "prettier --write \"{src,scripts,docs,site/src,.circleci,.github}/**/*.{js,md,yml,json,html}\" \"site/*.{js,md}\" \"*.{js,md,yml,json,html}\" \"tests/**/*.js\" \"!CHANGELOG.md\"",
+    "test:install-deps": "npm --prefix tests/site-cra",
     "test:ava": "nyc --reporter=lcov ava --verbose && nyc report",
     "test:lint": "eslint --fix \"{src,scripts}/**/*.js\"",
     "test:format": "prettier --check \"{src,scripts,docs,site/src,.circleci,.github}/**/*.{js,md,yml,json,html}\" \"site/*.{js,md}\" \"*.{js,md,yml,json,html}\" \"tests/**/*.js\" \"!CHANGELOG.md\"",
