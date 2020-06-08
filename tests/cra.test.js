@@ -164,6 +164,25 @@ test('functions rewrite echo with body', async t => {
   t.deepEqual(response.queryStringParameters, { ding: 'dong' })
 })
 
+test('functions echo with multiple query params', async t => {
+  const response = await fetch(`http://${host}/.netlify/functions/echo?category=a&category=b`).then(r => r.json())
+
+  t.deepEqual(response.headers, {
+    'accept': '*/*',
+    'accept-encoding': 'gzip,deflate',
+    'client-ip': '127.0.0.1',
+    'connection': 'close',
+    'host': `${host}`,
+    'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
+    'x-forwarded-for': '::ffff:127.0.0.1',
+  })
+  t.is(response.httpMethod, 'GET')
+  t.is(response.isBase64Encoded, false)
+  t.is(response.path, '/.netlify/functions/echo')
+  t.deepEqual(response.queryStringParameters, { category: 'a, b' })
+  t.deepEqual(response.multiValueQueryStringParameters, { category: ['a', 'b'] })
+})
+
 test.after.always('cleanup', async t => {
   if (ps && ps.pid) ps.kill(process.platform !== 'win32' ? 'SIGHUP' : undefined)
 })
