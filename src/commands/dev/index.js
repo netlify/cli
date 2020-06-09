@@ -144,8 +144,9 @@ function initializeProxy(port, distDir, projectDir) {
 
   const handlers = {
     web: (req, res, options) => {
+      const requestURL = new url.URL(req.url, 'http://localhost')
       req.proxyOptions = options
-      req.alternativePaths = alternativePathsFor(req.url)
+      req.alternativePaths = alternativePathsFor(requestURL.pathname).map(p => p + requestURL.search)
       // Ref: https://nodejs.org/api/net.html#net_socket_remoteaddress
       req.headers['x-forwarded-for'] = req.connection.remoteAddress || ''
       return proxy.web(req, res, options)
@@ -273,13 +274,14 @@ async function serveRedirect(req, res, proxy, match, options) {
     }
   }
 
-  const staticFile = await getStatic(req.url, options.publicFolder)
-  if (staticFile) req.url = staticFile
   const reqUrl = new url.URL(
     req.url,
     `${req.protocol || (req.headers.scheme && req.headers.scheme + ':') || 'http:'}//${req.headers['host'] ||
       req.hostname}`
   )
+
+  const staticFile = await getStatic(reqUrl.pathname, options.publicFolder)
+  if (staticFile) req.url = staticFile + reqUrl.search
   if (match.force404) {
     res.writeHead(404)
     return render404(options.publicFolder)
@@ -296,7 +298,6 @@ async function serveRedirect(req, res, proxy, match, options) {
     // Get the URL after http://host:port
     const destURL = dest.toString().replace(dest.origin, '')
 
-    const destStaticFile = await getStatic(dest.pathname, options.publicFolder)
     if (isRedirect(match)) {
       res.writeHead(match.status, {
         'Location': match.to,
@@ -316,9 +317,10 @@ async function serveRedirect(req, res, proxy, match, options) {
       return handler(req, res, {})
     }
 
+    const destStaticFile = await getStatic(dest.pathname, options.publicFolder)
     let status
     if (match.force || isInternal(destURL) || (!staticFile && !options.framework && destStaticFile)) {
-      req.url = destStaticFile ? destStaticFile : destURL
+      req.url = destStaticFile ? destStaticFile + dest.search : destURL
       status = match.status
       console.log(`${NETLIFYDEVLOG} Rewrote URL to`, req.url)
     }

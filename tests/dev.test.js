@@ -147,7 +147,7 @@ test('api rewrite', async t => {
 })
 
 test('shadowing: foo', async t => {
-  const response = await fetch(`http://${host}/foo`).then(r => r.text())
+  const response = await fetch(`http://${host}/foo?ping=pong`).then(r => r.text())
 
   t.is(response, '<html><h1>foo')
 })
