@@ -12,22 +12,6 @@ const port = randomPort()
 const host = 'localhost:' + port
 
 test.before(async t => {
-  console.log('Installing Create React App project dependencies')
-  const { stdout, stderr, status, error } = spawnSync('npm', ['ci', '--prefix', 'tests/site-cra'], { shell: true })
-  if (status !== 0) {
-    const message = `Failed installing Create React App project dependencies from path '${sitePath}'`
-    console.error(message)
-    if (error) {
-      console.log('error:', error.message)
-    }
-    if (stdout) {
-      console.log('stdout:', stdout.toString())
-    }
-    if (stderr) {
-      console.log('stderr:', stderr.toString())
-    }
-    throw new Error(message)
-  }
   console.log('Running Netlify Dev server in Create React App project')
   ps = await spawn(cliPath, ['dev', '-p', port], {
     cwd: sitePath,
