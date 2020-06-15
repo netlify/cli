@@ -204,11 +204,20 @@ async function startProxy(settings, addonUrls, configPath, projectDir, functions
         })
         fields = querystring.parse(bodyData.toString())
       } else if (ct.type === 'multipart/form-data') {
-        const form = new multiparty.Form({ encoding:  ct.parameters.charset || 'utf8' })
-        form.parse(req, (err, Fields, Files) => {
-          // TODO: send this data to functions server
-          console.log(err, fields, files)
-        })
+        try {
+          [fields, files] = await new Promise((resolve, reject) => {
+            const form = new multiparty.Form({ encoding:  ct.parameters.charset || 'utf8' })
+            form.parse(req, (err, Fields, Files) => {
+              if (err) return reject(err)
+              return resolve([
+                Object.entries(Fields).reduce((prev, [name, values]) => ({...prev, [name]: values.length > 1 ? values : values[0]}), {}),
+                Object.entries(Files).reduce((prev, [name, values]) => ({...prev, [name]: values.length > 1 ? values : values[0]}), {}),
+              ])
+            })
+          })
+        } catch (err) {
+          return console.error(err)
+        }
       } else {
         return console.error('Invalid Content-Type for Netlify Dev forms request')
       }
