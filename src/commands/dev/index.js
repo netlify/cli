@@ -192,7 +192,7 @@ async function startProxy(settings, addonUrls, configPath, projectDir, functions
   const server = http.createServer(async (req, res) => {
     if (req.method === 'POST' && !req.url.startsWith('/.netlify/')) {
       const originalUrl = req.url
-      req.url = '.netlify/functions/submission-created'
+      req.url = '/.netlify/functions/submission-created'
       const ct = contentType.parse(req)
       let fields = {}
       let files = {}
