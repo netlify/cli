@@ -166,7 +166,7 @@ function capitalize(t) {
   return t.replace(/(^\w|\s\w)/g, m => m.toUpperCase())
 }
 
-async function startProxy(settings, addonUrls, configPath, projectDir, functionsDir, exit) {
+async function startProxy(settings, siteInfo = {}, addonUrls, configPath, projectDir, functionsDir, exit) {
   try {
     await waitPort({ port: settings.frameworkPort, output: 'silent' })
   } catch (err) {
@@ -221,7 +221,8 @@ async function startProxy(settings, addonUrls, configPath, projectDir, functions
       } else {
         return console.error('Invalid Content-Type for Netlify Dev forms request')
       }
-      const data = JSON.stringify({ payload: {
+      const data = JSON.stringify({
+        payload: {
           company: fields[Object.keys(fields).find(name => ['company', 'business', 'employer'].includes(name.toLowerCase()))],
           last_name: fields[Object.keys(fields).find(name => ['lastname', 'surname', 'byname'].includes(name.toLowerCase()))],
           first_name: fields[Object.keys(fields).find(name => ['firstname', 'givenname', 'forename'].includes(name.toLowerCase()))],
@@ -237,7 +238,9 @@ async function startProxy(settings, addonUrls, configPath, projectDir, functions
           'created_at': new Date().toISOString(),
           'human_fields': Object.entries(fields).reduce((prev, [key, val]) => ({ ...prev, [capitalize(key)]: val }), {}),
           'ordered_human_fields': Object.entries(fields).map(([key, val]) => ({ title: capitalize(key), name: key, value: val })),
-      }})
+        },
+        site: siteInfo,
+      })
       const buff = Readable.from(data)
       return proxy.web(req, res, {
         target: functionsServer,
@@ -550,7 +553,7 @@ class DevCommand extends Command {
       })
     }
 
-    let { url } = await startProxy(settings, addonUrls, site.configPath, site.root, settings.functions, this.exit)
+    let { url } = await startProxy(settings, this.netlify.cachedConfig.siteInfo, addonUrls, site.configPath, site.root, settings.functions, this.exit)
     if (!url) {
       throw new Error('Unable to start proxy server')
     }
