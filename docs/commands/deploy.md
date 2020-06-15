@@ -80,7 +80,8 @@ netlify deploy
 - `dir` (_option_) - Specify a folder to deploy
 - `functions` (_option_) - Specify a functions folder to deploy
 - `prod` (_boolean_) - Deploy to production
-- `branch` (_option_) - Specifies the branch for deployment. Useful for creating specific deployment URL's
+- `alias` (_option_) - Specifies the alias for deployment. Useful for creating predictable deployment URL's
+- `branch` (_option_) - Serves the same functionality as --alias. Deprecated and will be removed in future versions
 - `open` (_boolean_) - Open site after deploy
 - `message` (_option_) - A short message to include in the deploy log
 - `auth` (_option_) - Netlify auth token to deploy with
