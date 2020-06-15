@@ -196,7 +196,7 @@ async function startProxy(settings, addonUrls, configPath, projectDir, functions
       const ct = contentType.parse(req)
       let fields = {}
       let files = {}
-      if (ct.type === 'application/x-www-form-urlencoded') {
+      if (ct.type.endsWith('/x-www-form-urlencoded')) {
         const bodyData = await getRawBody(req, {
           length: req.headers['content-length'],
           limit: '10mb',
