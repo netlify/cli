@@ -296,7 +296,7 @@ async function serveRedirect(req, res, proxy, match, options) {
     return render404(options.publicFolder)
   }
 
-  if (match.force || (!staticFile || !options.framework) || req.method === 'POST') {
+  if (match.force || !staticFile || !options.framework || req.method === 'POST') {
     const dest = new url.URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
 
     // Use query params of request URL as base, so that, destination query params can supersede
@@ -493,7 +493,15 @@ class DevCommand extends Command {
       })
     }
 
-    let { url } = await startProxy(settings, this.netlify.cachedConfig.siteInfo, addonUrls, site.configPath, site.root, settings.functions, this.exit)
+    let { url } = await startProxy(
+      settings,
+      this.netlify.cachedConfig.siteInfo,
+      addonUrls,
+      site.configPath,
+      site.root,
+      settings.functions,
+      this.exit
+    )
     if (!url) {
       throw new Error('Unable to start proxy server')
     }
