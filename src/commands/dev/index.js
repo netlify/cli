@@ -222,7 +222,12 @@ async function startProxy(settings, addonUrls, configPath, projectDir, functions
         return console.error('Invalid Content-Type for Netlify Dev forms request')
       }
       const data = JSON.stringify({ payload: {
-          ...fields,
+          company: fields[Object.keys(fields).find(name => ['company', 'business', 'employer'].includes(name.toLowerCase()))],
+          last_name: fields[Object.keys(fields).find(name => ['lastname', 'surname', 'byname'].includes(name.toLowerCase()))],
+          first_name: fields[Object.keys(fields).find(name => ['firstname', 'givenname', 'forename'].includes(name.toLowerCase()))],
+          name: fields[Object.keys(fields).find(name => ['name', 'fullname'].includes(name.toLowerCase()))],
+          email: fields[Object.keys(fields).find(name => ['email', 'mail', 'from', 'twitter', 'sender'].includes(name.toLowerCase()))],
+          title: fields[Object.keys(fields).find(name => ['title', 'subject'].includes(name.toLowerCase()))],
           'data': {
             ...fields,
             'ip': req.connection.remoteAddress,
