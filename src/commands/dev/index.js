@@ -119,18 +119,14 @@ function initializeProxy(port, distDir, projectDir) {
 
   proxy.on('error', err => console.error('error while proxying request:', err.message))
   proxy.on('proxyRes', (proxyRes, req, res) => {
-    console.log(res.statusCode)
     if (proxyRes.statusCode === 404) {
       if (req.alternativePaths && req.alternativePaths.length > 0) {
-        console.log('1', req.url, req.alternativePaths)
         req.url = req.alternativePaths.shift()
         return proxy.web(req, res, req.proxyOptions)
       }
       if (req.proxyOptions && req.proxyOptions.match) {
-        console.log('2')
         return serveRedirect(req, res, handlers, req.proxyOptions.match, req.proxyOptions)
       }
-      console.log('3')
     }
     const requestURL = new url.URL(req.url, `http://${req.headers.host || 'localhost'}`)
     const pathHeaderRules = objectForPath(headerRules, requestURL.pathname)
