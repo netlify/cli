@@ -6,6 +6,11 @@ const chokidar = require('chokidar')
 const jwtDecode = require('jwt-decode')
 const lambdaLocal = require('lambda-local')
 const winston = require('winston')
+const querystring = require('querystring')
+const contentType = require('content-type')
+const getRawBody = require('raw-body')
+const multiparty = require('multiparty')
+const { Readable } = require('stream')
 const {
   NETLIFYDEVLOG,
   // NETLIFYDEVWARN,
@@ -18,6 +23,10 @@ function handleErr(err, response) {
   response.write(`${NETLIFYDEVERR} Function invocation failed: ` + err.toString())
   response.end()
   console.log(`${NETLIFYDEVERR} Error during invocation: `, err) // eslint-disable-line no-console
+}
+
+function capitalize(t) {
+  return t.replace(/(^\w|\s\w)/g, m => m.toUpperCase())
 }
 
 // function getHandlerPath(functionPath) {
@@ -159,6 +168,73 @@ function createHandler(dir) {
   }
 }
 
+async function handleFormSubmission(req, res, proxy, siteInfo, functionsServer) {
+  const originalUrl = req.url
+  req.url = '/.netlify/functions/submission-created'
+  const ct = contentType.parse(req)
+  let fields = {}
+  let files = {}
+  if (ct.type.endsWith('/x-www-form-urlencoded')) {
+    const bodyData = await getRawBody(req, {
+      length: req.headers['content-length'],
+      limit: '10mb',
+      encoding: ct.parameters.charset,
+    })
+    fields = querystring.parse(bodyData.toString())
+  } else if (ct.type === 'multipart/form-data') {
+    try {
+      [fields, files] = await new Promise((resolve, reject) => {
+        const form = new multiparty.Form({ encoding:  ct.parameters.charset || 'utf8' })
+        form.parse(req, (err, Fields, Files) => {
+          if (err) return reject(err)
+          Files = Object.entries(Files).reduce((prev, [name, values]) => ({ ...prev, [name]: values.map(v => ({filename: v['originalFilename'], size: v['size'], type: v['headers'] && v['headers']['content-type'], url: v['path']})) }), {})
+          return resolve([
+            Object.entries(Fields).reduce((prev, [name, values]) => ({...prev, [name]: values.length > 1 ? values : values[0]}), {}),
+            Object.entries(Files).reduce((prev, [name, values]) => ({...prev, [name]: values.length > 1 ? values : values[0]}), {}),
+          ])
+        })
+      })
+    } catch (err) {
+      return console.error(err)
+    }
+  } else {
+    return console.error('Invalid Content-Type for Netlify Dev forms request')
+  }
+  const data = JSON.stringify({
+    payload: {
+      'company': fields[Object.keys(fields).find(name => ['company', 'business', 'employer'].includes(name.toLowerCase()))],
+      'last_name': fields[Object.keys(fields).find(name => ['lastname', 'surname', 'byname'].includes(name.toLowerCase()))],
+      'first_name': fields[Object.keys(fields).find(name => ['firstname', 'givenname', 'forename'].includes(name.toLowerCase()))],
+      'name': fields[Object.keys(fields).find(name => ['name', 'fullname'].includes(name.toLowerCase()))],
+      'email': fields[Object.keys(fields).find(name => ['email', 'mail', 'from', 'twitter', 'sender'].includes(name.toLowerCase()))],
+      'title': fields[Object.keys(fields).find(name => ['title', 'subject'].includes(name.toLowerCase()))],
+      'data': {
+        ...fields,
+        ...files,
+        'ip': req.connection.remoteAddress,
+        'user_agent': req.headers['user-agent'],
+        'referrer': req.headers['referer'],
+      },
+      'created_at': new Date().toISOString(),
+      'human_fields': Object.entries({ ...fields, ...(Object.entries(files).reduce((prev, [name, data]) => ({...prev, [name]: data['url']}), {})) }).reduce((prev, [key, val]) => ({ ...prev, [capitalize(key)]: val }), {}),
+      'ordered_human_fields': Object.entries({ ...fields, ...(Object.entries(files).reduce((prev, [name, data]) => ({...prev, [name]: data['url']}), {})) }).map(([key, val]) => ({ title: capitalize(key), name: key, value: val })),
+      'site_url': siteInfo['ssl_url'],
+    },
+    site: siteInfo,
+  })
+  const buff = Readable.from(data)
+  return proxy.web(req, res, {
+    target: functionsServer,
+    buffer: buff,
+    headers: {
+      ...req.headers,
+      'content-length': data.length,
+      'content-type': 'application/json',
+      'x-netlify-original-pathname': originalUrl,
+    },
+  })
+}
+
 async function serveFunctions(dir) {
   const app = express()
 
@@ -184,4 +260,4 @@ async function serveFunctions(dir) {
   return app
 }
 
-module.exports = { serveFunctions }
+module.exports = { serveFunctions, handleFormSubmission }

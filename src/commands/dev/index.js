@@ -2,7 +2,6 @@ const url = require('url')
 const util = require('util')
 const { URLSearchParams } = require('url')
 const path = require('path')
-const { Readable } = require('stream')
 const fs = require('fs')
 const { flags } = require('@oclif/command')
 const child_process = require('child_process')
@@ -14,13 +13,9 @@ const which = require('which')
 const chokidar = require('chokidar')
 const proxyMiddleware = require('http-proxy-middleware')
 const cookie = require('cookie')
-const querystring = require('querystring')
-const contentType = require('content-type')
-const getRawBody = require('raw-body')
-const multiparty = require('multiparty')
 const get = require('lodash.get')
 const isEmpty = require('lodash.isempty')
-const { serveFunctions } = require('../../utils/serve-functions')
+const { serveFunctions, handleFormSubmission } = require('../../utils/serve-functions')
 const { serverSettings } = require('../../utils/detect-server')
 const { detectFunctionsBuilder } = require('../../utils/detect-functions-builder')
 const Command = require('../../utils/command')
@@ -124,14 +119,18 @@ function initializeProxy(port, distDir, projectDir) {
 
   proxy.on('error', err => console.error('error while proxying request:', err.message))
   proxy.on('proxyRes', (proxyRes, req, res) => {
+    console.log(res.statusCode)
     if (proxyRes.statusCode === 404) {
       if (req.alternativePaths && req.alternativePaths.length > 0) {
+        console.log('1', req.url, req.alternativePaths)
         req.url = req.alternativePaths.shift()
         return proxy.web(req, res, req.proxyOptions)
       }
       if (req.proxyOptions && req.proxyOptions.match) {
+        console.log('2')
         return serveRedirect(req, res, handlers, req.proxyOptions.match, req.proxyOptions)
       }
+      console.log('3')
     }
     const requestURL = new url.URL(req.url, `http://${req.headers.host || 'localhost'}`)
     const pathHeaderRules = objectForPath(headerRules, requestURL.pathname)
@@ -162,10 +161,6 @@ function initializeProxy(port, distDir, projectDir) {
   return handlers
 }
 
-function capitalize(t) {
-  return t.replace(/(^\w|\s\w)/g, m => m.toUpperCase())
-}
-
 async function startProxy(settings, siteInfo = {}, addonUrls, configPath, projectDir, functionsDir, exit) {
   try {
     await waitPort({ port: settings.frameworkPort, output: 'silent' })
@@ -190,73 +185,6 @@ async function startProxy(settings, siteInfo = {}, addonUrls, configPath, projec
   })
 
   const server = http.createServer(async (req, res) => {
-    if (req.method === 'POST' && !req.url.startsWith('/.netlify/')) {
-      const originalUrl = req.url
-      req.url = '/.netlify/functions/submission-created'
-      const ct = contentType.parse(req)
-      let fields = {}
-      let files = {}
-      if (ct.type.endsWith('/x-www-form-urlencoded')) {
-        const bodyData = await getRawBody(req, {
-          length: req.headers['content-length'],
-          limit: '10mb',
-          encoding: ct.parameters.charset,
-        })
-        fields = querystring.parse(bodyData.toString())
-      } else if (ct.type === 'multipart/form-data') {
-        try {
-          [fields, files] = await new Promise((resolve, reject) => {
-            const form = new multiparty.Form({ encoding:  ct.parameters.charset || 'utf8' })
-            form.parse(req, (err, Fields, Files) => {
-              if (err) return reject(err)
-              Files = Object.entries(Files).reduce((prev, [name, values]) => ({ ...prev, [name]: values.map(v => ({filename: v['originalFilename'], size: v['size'], type: v['headers'] && v['headers']['content-type'], url: v['path']})) }), {})
-              return resolve([
-                Object.entries(Fields).reduce((prev, [name, values]) => ({...prev, [name]: values.length > 1 ? values : values[0]}), {}),
-                Object.entries(Files).reduce((prev, [name, values]) => ({...prev, [name]: values.length > 1 ? values : values[0]}), {}),
-              ])
-            })
-          })
-        } catch (err) {
-          return console.error(err)
-        }
-      } else {
-        return console.error('Invalid Content-Type for Netlify Dev forms request')
-      }
-      const data = JSON.stringify({
-        payload: {
-          'company': fields[Object.keys(fields).find(name => ['company', 'business', 'employer'].includes(name.toLowerCase()))],
-          'last_name': fields[Object.keys(fields).find(name => ['lastname', 'surname', 'byname'].includes(name.toLowerCase()))],
-          'first_name': fields[Object.keys(fields).find(name => ['firstname', 'givenname', 'forename'].includes(name.toLowerCase()))],
-          'name': fields[Object.keys(fields).find(name => ['name', 'fullname'].includes(name.toLowerCase()))],
-          'email': fields[Object.keys(fields).find(name => ['email', 'mail', 'from', 'twitter', 'sender'].includes(name.toLowerCase()))],
-          'title': fields[Object.keys(fields).find(name => ['title', 'subject'].includes(name.toLowerCase()))],
-          'data': {
-            ...fields,
-            ...files,
-            'ip': req.connection.remoteAddress,
-            'user_agent': req.headers['user-agent'],
-            'referrer': req.headers['referer'],
-          },
-          'created_at': new Date().toISOString(),
-          'human_fields': Object.entries({ ...fields, ...(Object.entries(files).reduce((prev, [name, data]) => ({...prev, [name]: data['url']}), {})) }).reduce((prev, [key, val]) => ({ ...prev, [capitalize(key)]: val }), {}),
-          'ordered_human_fields': Object.entries({ ...fields, ...(Object.entries(files).reduce((prev, [name, data]) => ({...prev, [name]: data['url']}), {})) }).map(([key, val]) => ({ title: capitalize(key), name: key, value: val })),
-          'site_url': siteInfo['ssl_url'],
-        },
-        site: siteInfo,
-      })
-      const buff = Readable.from(data)
-      return proxy.web(req, res, {
-        target: functionsServer,
-        buffer: buff,
-        headers: {
-          ...req.headers,
-          'content-length': data.length,
-          'content-type': 'application/json',
-          'x-netlify-original-pathname': originalUrl,
-        },
-      })
-    }
-
     if (isFunction(settings.functionsPort, req.url)) {
       return proxy.web(req, res, { target: functionsServer })
     }
@@ -275,9 +203,14 @@ async function startProxy(settings, siteInfo = {}, addonUrls, configPath, projec
         functionsPort: settings.functionsPort,
         jwtRolePath: settings.jwtRolePath,
         framework: settings.framework,
+        siteInfo: siteInfo,
       }
 
       if (match) return serveRedirect(req, res, proxy, match, options)
+
+      if (req.method === 'POST' && !isInternal(req.url)) {
+        return handleFormSubmission(req, res, proxy, siteInfo, functionsServer)
+      }
 
       proxy.web(req, res, options)
     })
@@ -363,7 +296,7 @@ async function serveRedirect(req, res, proxy, match, options) {
     return render404(options.publicFolder)
   }
 
-  if (match.force || !(staticFile && options.framework)) {
+  if (match.force || (!staticFile || !options.framework) || req.method === 'POST') {
     const dest = new url.URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
 
     // Use query params of request URL as base, so that, destination query params can supersede
@@ -391,6 +324,10 @@ async function serveRedirect(req, res, proxy, match, options) {
         pathRewrite: (path, req) => destURL.replace(/https?:\/\/[^/]+/, ''),
       })
       return handler(req, res, {})
+    }
+
+    if (req.method === 'POST' && !isInternal(req.url) && !isInternal(destURL)) {
+      return handleFormSubmission(req, res, proxy, options.siteInfo, options.functionsServer)
     }
 
     const destStaticFile = await getStatic(dest.pathname, options.publicFolder)
