@@ -319,7 +319,7 @@ async function serveRedirect(req, res, proxy, match, options) {
 
     const destStaticFile = await getStatic(dest.pathname, options.publicFolder)
     let status
-    if (match.force || (!staticFile && !options.framework && destStaticFile)) {
+    if (match.force || (!staticFile && ((!options.framework && destStaticFile) || isInternal(destURL)))) {
       req.url = destStaticFile ? destStaticFile + dest.search : destURL
       status = match.status
       console.log(`${NETLIFYDEVLOG} Rewrote URL to`, req.url)
