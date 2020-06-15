@@ -218,7 +218,7 @@ async function startProxy(settings, addonUrls, configPath, projectDir, functions
             ...fields,
             'ip': req.connection.remoteAddress,
             'user_agent': req.headers['user-agent'],
-            'referrer': req.headers['referrer'],
+            'referrer': req.headers['referer'],
           },
           'created_at': new Date().toISOString(),
           'human_fields': Object.entries(fields).reduce((prev, [key, val]) => ({ ...prev, [capitalize(key)]: val }), {}),
