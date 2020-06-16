@@ -252,7 +252,12 @@ async function handleFormSubmission(req, res, proxy, siteInfo, functionsServer) 
     },
     site: siteInfo,
   })
-  const buff = Readable.from(data)
+  const buff = new Readable({
+    read(size) {
+      this.push(data)
+      this.push(null)
+    },
+  })
   return proxy.web(req, res, {
     target: functionsServer,
     buffer: buff,
