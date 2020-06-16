@@ -180,7 +180,7 @@ async function startProxy(settings, siteInfo = {}, addonUrls, configPath, projec
     projectDir,
   })
 
-  const server = http.createServer(async (req, res) => {
+  const server = http.createServer(async function(req, res) {
     if (isFunction(settings.functionsPort, req.url)) {
       return proxy.web(req, res, { target: functionsServer })
     }
