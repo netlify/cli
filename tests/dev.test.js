@@ -163,21 +163,21 @@ test('Netlify Forms support', async t => {
   t.deepEqual(body, {
     payload: {
       created_at: body.payload.created_at,
-        data: {
-          ip: '::ffff:127.0.0.1',
-          some: 'thing',
-          user_agent: 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
+      data: {
+        ip: '::ffff:127.0.0.1',
+        some: 'thing',
+        user_agent: 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
+      },
+      human_fields: {
+        Some: 'thing',
+      },
+      ordered_human_fields: [
+        {
+          name: 'some',
+          title: 'Some',
+          value: 'thing',
         },
-        human_fields: {
-          Some: 'thing',
-        },
-        ordered_human_fields: [
-          {
-            name: 'some',
-            title: 'Some',
-            value: 'thing',
-          },
-        ],
+      ],
     },
     site: {},
   })

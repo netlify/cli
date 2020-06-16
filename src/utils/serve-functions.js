@@ -171,7 +171,7 @@ function createHandler(dir) {
 
 async function handleFormSubmission(req, res, proxy, siteInfo, functionsServer) {
   const originalUrl = new URL(req.url, 'http://localhost')
-  req.url = '/.netlify/functions/submission-created'+originalUrl.search
+  req.url = '/.netlify/functions/submission-created' + originalUrl.search
   const ct = contentType.parse(req)
   let fields = {}
   let files = {}
