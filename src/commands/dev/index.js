@@ -15,7 +15,7 @@ const proxyMiddleware = require('http-proxy-middleware')
 const cookie = require('cookie')
 const get = require('lodash.get')
 const isEmpty = require('lodash.isempty')
-const { serveFunctions } = require('../../utils/serve-functions')
+const { serveFunctions, handleFormSubmission } = require('../../utils/serve-functions')
 const { serverSettings } = require('../../utils/detect-server')
 const { detectFunctionsBuilder } = require('../../utils/detect-functions-builder')
 const Command = require('../../utils/command')
@@ -157,7 +157,7 @@ function initializeProxy(port, distDir, projectDir) {
   return handlers
 }
 
-async function startProxy(settings, addonUrls, configPath, projectDir, functionsDir, exit) {
+async function startProxy(settings, siteInfo = {}, addonUrls, configPath, projectDir, functionsDir, exit) {
   try {
     await waitPort({ port: settings.frameworkPort, output: 'silent' })
   } catch (err) {
@@ -180,7 +180,7 @@ async function startProxy(settings, addonUrls, configPath, projectDir, functions
     projectDir,
   })
 
-  const server = http.createServer(function(req, res) {
+  const server = http.createServer(async function(req, res) {
     if (isFunction(settings.functionsPort, req.url)) {
       return proxy.web(req, res, { target: functionsServer })
     }
@@ -199,9 +199,14 @@ async function startProxy(settings, addonUrls, configPath, projectDir, functions
         functionsPort: settings.functionsPort,
         jwtRolePath: settings.jwtRolePath,
         framework: settings.framework,
+        siteInfo: siteInfo,
       }
 
       if (match) return serveRedirect(req, res, proxy, match, options)
+
+      if (req.method === 'POST' && !isInternal(req.url)) {
+        return handleFormSubmission(req, res, proxy, siteInfo, functionsServer)
+      }
 
       proxy.web(req, res, options)
     })
@@ -287,7 +292,7 @@ async function serveRedirect(req, res, proxy, match, options) {
     return render404(options.publicFolder)
   }
 
-  if (match.force || !(staticFile && options.framework)) {
+  if (match.force || !staticFile || !options.framework || req.method === 'POST') {
     const dest = new url.URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
 
     // Use query params of request URL as base, so that, destination query params can supersede
@@ -315,6 +320,10 @@ async function serveRedirect(req, res, proxy, match, options) {
         pathRewrite: (path, req) => destURL.replace(/https?:\/\/[^/]+/, ''),
       })
       return handler(req, res, {})
+    }
+
+    if (req.method === 'POST' && !isInternal(req.url) && !isInternal(destURL)) {
+      return handleFormSubmission(req, res, proxy, options.siteInfo, options.functionsServer)
     }
 
     const destStaticFile = await getStatic(dest.pathname, options.publicFolder)
@@ -405,6 +414,8 @@ async function startDevServer(settings, log) {
 class DevCommand extends Command {
   async run() {
     this.log(`${NETLIFYDEV}`)
+    const errorExit = this.error
+    const log = this.log
     let { flags } = this.parse(DevCommand)
     const { api, site, config } = this.netlify
     config.dev = { ...config.dev }
@@ -470,16 +481,23 @@ class DevCommand extends Command {
       const functionsServer = await serveFunctions(settings.functions)
       functionsServer.listen(settings.functionsPort, function(err) {
         if (err) {
-          console.error(`${NETLIFYDEVERR} Unable to start lambda server: `, err) // eslint-disable-line no-console
-          process.exit(1)
+          errorExit(`${NETLIFYDEVERR} Unable to start lambda server: ${err}`)
         }
 
         // add newline because this often appears alongside the client devserver's output
-        console.log(`\n${NETLIFYDEVLOG} Functions server is listening on ${settings.functionsPort}`) // eslint-disable-line no-console
+        log(`\n${NETLIFYDEVLOG} Functions server is listening on ${settings.functionsPort}`)
       })
     }
 
-    let { url } = await startProxy(settings, addonUrls, site.configPath, site.root, settings.functions, this.exit)
+    let { url } = await startProxy(
+      settings,
+      this.netlify.cachedConfig.siteInfo,
+      addonUrls,
+      site.configPath,
+      site.root,
+      settings.functions,
+      this.exit
+    )
     if (!url) {
       throw new Error('Unable to start proxy server')
     }
