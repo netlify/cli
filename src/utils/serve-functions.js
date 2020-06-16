@@ -1,3 +1,4 @@
+const { URL } = require('url')
 const express = require('express')
 const bodyParser = require('body-parser')
 const expressLogging = require('express-logging')
@@ -169,8 +170,8 @@ function createHandler(dir) {
 }
 
 async function handleFormSubmission(req, res, proxy, siteInfo, functionsServer) {
-  const originalUrl = req.url
-  req.url = '/.netlify/functions/submission-created'
+  const originalUrl = new URL(req.url, 'http://localhost')
+  req.url = '/.netlify/functions/submission-created'+originalUrl.search
   const ct = contentType.parse(req)
   let fields = {}
   let files = {}
@@ -259,7 +260,7 @@ async function handleFormSubmission(req, res, proxy, siteInfo, functionsServer) 
       ...req.headers,
       'content-length': data.length,
       'content-type': 'application/json',
-      'x-netlify-original-pathname': originalUrl,
+      'x-netlify-original-pathname': originalUrl.pathname,
     },
   })
 }
