@@ -110,17 +110,31 @@ test('serverSettings: "dir" flag', async t => {
   t.is(settings.noCmd, true)
 })
 
-test('serverSettings: "dir" flag with "targetPort"', async t => {
-  const devConfig = { framework: '#auto', targetPort: 1234, functions: path.join(sitePath, 'functions') }
+test('serverSettings: "dir" flag and "command" as config param', async t => {
+  const devConfig = {
+    framework: '#auto',
+    command: 'npm start',
+    publish: path.join(sitePath, 'build'),
+    functions: path.join(sitePath, 'functions'),
+  }
   const flags = { dir: sitePath }
+  const settings = await serverSettings(devConfig, flags, sitePath, () => {})
+  t.is(settings.command, undefined)
+  t.is(settings.noCmd, true)
+  t.is(settings.dist, flags.dir)
+})
+
+test('serverSettings: "dir" and "targetPort" flags', async t => {
+  const devConfig = { framework: '#auto', functions: path.join(sitePath, 'functions') }
+  const flags = { dir: sitePath, targetPort: 1234 }
   await t.throwsAsync(async () => {
     await serverSettings(devConfig, flags, sitePath, () => {})
   }, /"targetPort" option cannot be used in conjunction with "dir" flag/)
 })
 
-test('serverSettings: "dir" flag with "command"', async t => {
-  const devConfig = { framework: '#auto', command: 'ding', functions: path.join(sitePath, 'functions') }
-  const flags = { dir: sitePath }
+test('serverSettings: "dir" and "command" flags', async t => {
+  const devConfig = { framework: '#auto', functions: path.join(sitePath, 'functions') }
+  const flags = { dir: sitePath, command: 'ding' }
   await t.throwsAsync(async () => {
     await serverSettings(devConfig, flags, sitePath, () => {})
   }, /"command" option cannot be used in conjunction with "dir" flag/)

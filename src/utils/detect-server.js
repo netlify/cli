@@ -15,7 +15,7 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
   if (flags.dir) {
     settings = await getStaticServerSettings(settings, flags, projectDir, log)
     ;['command', 'targetPort'].forEach(p => {
-      if (devConfig.hasOwnProperty(p)) {
+      if (flags[p]) {
         throw new Error(
           `"${p}" option cannot be used in conjunction with "dir" flag which is used to run a static server`
         )
@@ -96,7 +96,7 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
   if (settings.command === 'npm' && !['start', 'run'].includes(settings.args[0])) {
     settings.args.unshift('run')
   }
-  if (devConfig.command) {
+  if (!settings.noCmd && devConfig.command) {
     settings.command = assignLoudly(devConfig.command.split(/\s/)[0], settings.command || null, tellUser('command')) // if settings.command is empty, its bc no settings matched
     settings.args = assignLoudly(devConfig.command.split(/\s/).slice(1), [], tellUser('command')) // if settings.command is empty, its bc no settings matched
   }
