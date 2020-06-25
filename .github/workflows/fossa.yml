@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - fix-fossa
 
 defaults:
   run:
