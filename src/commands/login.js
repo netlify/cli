@@ -44,6 +44,7 @@ function msg(location) {
 }
 
 LoginCommand.flags = {
+  ...LoginCommand.flags,
   new: flags.boolean({
     description: 'Login to new Netlify account',
   }),

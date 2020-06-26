@@ -113,6 +113,7 @@ LinkCommand.description = `Link a local repo or project folder to an existing si
 LinkCommand.examples = ['netlify link', 'netlify link --id 123-123-123-123', 'netlify link --name my-site-name']
 
 LinkCommand.flags = {
+  ...LinkCommand.flags,
   id: flags.string({
     description: 'ID of site to link to',
   }),

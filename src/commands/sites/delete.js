@@ -109,6 +109,7 @@ SitesDeleteCommand.args = [
 ]
 
 SitesDeleteCommand.flags = {
+  ...SitesDeleteCommand.flags,
   force: flags.boolean({
     char: 'f',
     description: 'delete without prompting (useful for CI)',

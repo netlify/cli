@@ -25,10 +25,10 @@ class BuildCommand extends Command {
     // `@netlify/build --cachedConfig`.
     const cachedConfig = JSON.stringify(this.netlify.cachedConfig)
     const {
-      flags: { dry },
+      flags: { dry, debug },
     } = this.parse(BuildCommand)
     const [token] = this.getConfigToken()
-    return { cachedConfig, token, dry, mode: 'cli' }
+    return { cachedConfig, token, dry, debug, mode: 'cli' }
   }
 
   checkOptions({ cachedConfig, token }) {
@@ -47,6 +47,7 @@ class BuildCommand extends Command {
 
 // Netlify Build programmatic options
 BuildCommand.flags = {
+  ...BuildCommand.flags,
   dry: flags.boolean({
     description: 'Dry run: show instructions without running them',
   }),

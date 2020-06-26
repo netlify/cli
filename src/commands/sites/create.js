@@ -200,6 +200,7 @@ Create a blank site that isn't associated with any git remote.  Does not link to
 `
 
 SitesCreateCommand.flags = {
+  ...SitesCreateCommand.flags,
   'name': flags.string({
     char: 'n',
     description: 'name of site',
