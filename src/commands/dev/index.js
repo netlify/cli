@@ -46,7 +46,7 @@ function addonUrl(addonUrls, req) {
 }
 
 async function getStatic(pathname, publicFolder) {
-  const alternatives = alternativePathsFor(pathname).map(p => path.resolve(publicFolder, p.substr(1)))
+  const alternatives = [pathname, ...alternativePathsFor(pathname)].map(p => path.resolve(publicFolder, p.substr(1)))
 
   for (const i in alternatives) {
     const p = alternatives[i]
@@ -78,7 +78,7 @@ function render404(publicFolder) {
 const assetExtensionRegExp = /\.(html?|png|jpg|js|css|svg|gif|ico|woff|woff2)$/
 
 function alternativePathsFor(url) {
-  const paths = [url]
+  const paths = []
   if (url[url.length - 1] === '/') {
     const end = url.length - 1
     if (url !== '/') {
