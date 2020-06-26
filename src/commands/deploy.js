@@ -372,6 +372,7 @@ DeployCommand.examples = [
 ]
 
 DeployCommand.flags = {
+  ...DeployCommand.flags,
   dir: flags.string({
     char: 'd',
     description: 'Specify a folder to deploy',

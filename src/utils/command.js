@@ -1,4 +1,4 @@
-const { Command } = require('@oclif/command')
+const { Command, flags } = require('@oclif/command')
 const API = require('netlify')
 const merge = require('lodash.merge')
 const { format, inspect } = require('util')
@@ -78,6 +78,7 @@ class BaseCommand extends Command {
         cwd: cwd,
         repositoryRoot: projectRoot,
         context: argv.context,
+        debug: argv.debug,
         siteId: state.get('siteId'),
         token,
         mode: 'cli',
@@ -269,6 +270,12 @@ function getAuthArg(cliArgs) {
     return cliArgs.auth || cliArgs.a
   }
   return cliArgs.auth
+}
+
+BaseCommand.flags = {
+  debug: flags.boolean({
+    description: 'Print debugging information',
+  }),
 }
 
 module.exports = BaseCommand

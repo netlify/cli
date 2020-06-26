@@ -94,6 +94,7 @@ NOT the same as listing the functions that have been deployed. For that info you
 `
 FunctionsListCommand.aliases = ['function:list']
 FunctionsListCommand.flags = {
+  ...FunctionsListCommand.flags,
   name: flags.string({
     char: 'n',
     description: 'name to print',

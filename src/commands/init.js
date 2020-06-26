@@ -242,6 +242,7 @@ git remote add origin https://github.com/YourUserName/RepoName.git
 InitCommand.description = `Configure continuous deployment for a new or existing site`
 
 InitCommand.flags = {
+  ...InitCommand.flags,
   manual: flags.boolean({
     char: 'm',
     description: 'Manually configure a git remote for CI',
