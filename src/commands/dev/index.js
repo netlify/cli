@@ -29,6 +29,7 @@ const { createRewriter } = require('../../utils/rules-proxy')
 const { onChanges } = require('../../utils/rules-proxy')
 const { parseHeadersFile, objectForPath } = require('../../utils/headers')
 const { getEnvSettings } = require('../../utils/env')
+const { createStreamPromise } = require('../../utils/create-stream-promise')
 
 const stat = util.promisify(fs.stat)
 
@@ -118,6 +119,11 @@ function initializeProxy(port, distDir, projectDir) {
   })
 
   proxy.on('error', err => console.error('error while proxying request:', err.message))
+  proxy.on('proxyReq', (proxyReq, req) => {
+    if (req.originalBody) {
+      proxyReq.write(req.originalBody)
+    }
+  })
   proxy.on('proxyRes', (proxyRes, req, res) => {
     if (proxyRes.statusCode === 404) {
       if (req.alternativePaths && req.alternativePaths.length > 0) {
@@ -181,6 +187,8 @@ async function startProxy(settings, siteInfo = {}, addonUrls, configPath, projec
   })
 
   const server = http.createServer(async function(req, res) {
+    req.originalBody = ['GET', 'OPTIONS', 'HEAD'].includes(req.method) ? null : await createStreamPromise(req, 30)
+
     if (isFunction(settings.functionsPort, req.url)) {
       return proxy.web(req, res, { target: functionsServer })
     }
