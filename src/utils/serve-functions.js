@@ -292,7 +292,7 @@ async function serveFunctions(dir) {
   app.use(
     bodyParser.text({
       limit: '6mb',
-      type: ['text/*', 'application/json', 'multipart/form-data'],
+      type: ['text/*', 'application/json'],
     })
   )
   app.use(bodyParser.raw({ limit: '6mb', type: '*/*' }))
