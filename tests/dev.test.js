@@ -134,6 +134,15 @@ test('functions rewrite echo with Form body', async t => {
   t.regex(response.body, new RegExp(formBoundary))
 })
 
+test('functions: not found', async t => {
+  const response = await fetch(`http://${host}/api/none`, {
+    method: 'POST',
+    body: 'nothing',
+  })
+
+  t.is(response.status, 404)
+})
+
 test('Netlify Forms support', async t => {
   const form = new FormData()
   form.append('some', 'thing')
