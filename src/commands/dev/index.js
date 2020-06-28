@@ -15,7 +15,7 @@ const proxyMiddleware = require('http-proxy-middleware')
 const cookie = require('cookie')
 const get = require('lodash.get')
 const isEmpty = require('lodash.isempty')
-const { serveFunctions, handleFormSubmission } = require('../../utils/serve-functions')
+const { serveFunctions } = require('../../utils/serve-functions')
 const { serverSettings } = require('../../utils/detect-server')
 const { detectFunctionsBuilder } = require('../../utils/detect-functions-builder')
 const Command = require('../../utils/command')
@@ -163,7 +163,7 @@ function initializeProxy(port, distDir, projectDir) {
   return handlers
 }
 
-async function startProxy(settings, siteInfo = {}, addonUrls, configPath, projectDir, functionsDir, exit) {
+async function startProxy(settings = {}, addonUrls, configPath, projectDir, functionsDir, exit) {
   try {
     await waitPort({ port: settings.frameworkPort, output: 'silent' })
   } catch (err) {
@@ -207,13 +207,12 @@ async function startProxy(settings, siteInfo = {}, addonUrls, configPath, projec
         functionsPort: settings.functionsPort,
         jwtRolePath: settings.jwtRolePath,
         framework: settings.framework,
-        siteInfo: siteInfo,
       }
 
       if (match) return serveRedirect(req, res, proxy, match, options)
 
       if (req.method === 'POST' && !isInternal(req.url)) {
-        return handleFormSubmission(req, res, proxy, siteInfo, functionsServer)
+        return proxy.web(req, res, { target: functionsServer })
       }
 
       proxy.web(req, res, options)
@@ -331,7 +330,7 @@ async function serveRedirect(req, res, proxy, match, options) {
     }
 
     if (req.method === 'POST' && !isInternal(req.url) && !isInternal(destURL)) {
-      return handleFormSubmission(req, res, proxy, options.siteInfo, options.functionsServer)
+      return proxy.web(req, res, { target: options.functionsServer })
     }
 
     const destStaticFile = await getStatic(dest.pathname, options.publicFolder)
@@ -486,7 +485,7 @@ class DevCommand extends Command {
         functionWatcher.on('unlink', functionBuilder.build)
       }
 
-      const functionsServer = await serveFunctions(settings.functions)
+      const functionsServer = await serveFunctions(settings.functions, this.netlify.cachedConfig.siteInfo)
       functionsServer.listen(settings.functionsPort, function(err) {
         if (err) {
           errorExit(`${NETLIFYDEVERR} Unable to start lambda server: ${err}`)
@@ -499,7 +498,6 @@ class DevCommand extends Command {
 
     let { url } = await startProxy(
       settings,
-      this.netlify.cachedConfig.siteInfo,
       addonUrls,
       site.configPath,
       site.root,
