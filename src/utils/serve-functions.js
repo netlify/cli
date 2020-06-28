@@ -184,8 +184,15 @@ async function handleFormSubmission(req, res, proxy, siteInfo, functionsServer) 
   const ct = contentType.parse(req)
   let fields = {}
   let files = {}
+  const requestClone = new Readable({
+    read() {
+      this.push(req.originalBody)
+      this.push(null)
+    }
+  })
+  requestClone.headers = req.headers
   if (ct.type.endsWith('/x-www-form-urlencoded')) {
-    const bodyData = await getRawBody(req, {
+    const bodyData = await getRawBody(requestClone, {
       length: req.headers['content-length'],
       limit: '10mb',
       encoding: ct.parameters.charset,
@@ -195,7 +202,7 @@ async function handleFormSubmission(req, res, proxy, siteInfo, functionsServer) 
     try {
       ;[fields, files] = await new Promise((resolve, reject) => {
         const form = new multiparty.Form({ encoding: ct.parameters.charset || 'utf8' })
-        form.parse(req, (err, Fields, Files) => {
+        form.parse(requestClone, (err, Fields, Files) => {
           if (err) return reject(err)
           Files = Object.entries(Files).reduce(
             (prev, [name, values]) => ({
