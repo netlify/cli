@@ -496,14 +496,7 @@ class DevCommand extends Command {
       })
     }
 
-    let { url } = await startProxy(
-      settings,
-      addonUrls,
-      site.configPath,
-      site.root,
-      settings.functions,
-      this.exit
-    )
+    let { url } = await startProxy(settings, addonUrls, site.configPath, site.root, settings.functions, this.exit)
     if (!url) {
       throw new Error('Unable to start proxy server')
     }

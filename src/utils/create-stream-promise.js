@@ -39,4 +39,4 @@ function createStreamPromise(stream, timeoutSeconds, bytesLimit = 1024 * 1024 * 
   })
 }
 
-module.exports = {createStreamPromise}
+module.exports = { createStreamPromise }

@@ -186,7 +186,7 @@ function createFormSubmissionHandler(siteInfo) {
       read(size) {
         this.push(req.body)
         this.push(null)
-      }
+      },
     })
     fakeRequest.headers = req.headers
 
@@ -250,8 +250,10 @@ function createFormSubmissionHandler(siteInfo) {
         name: fields[Object.keys(fields).find(name => ['name', 'fullname'].includes(name.toLowerCase()))],
         email:
           fields[
-            Object.keys(fields).find(name => ['email', 'mail', 'from', 'twitter', 'sender'].includes(name.toLowerCase()))
-            ],
+            Object.keys(fields).find(name =>
+              ['email', 'mail', 'from', 'twitter', 'sender'].includes(name.toLowerCase())
+            )
+          ],
         title: fields[Object.keys(fields).find(name => ['title', 'subject'].includes(name.toLowerCase()))],
         data: {
           ...fields,
