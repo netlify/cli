@@ -29,6 +29,7 @@ class OpenCommand extends Command {
 }
 
 OpenCommand.flags = {
+  ...OpenCommand.flags,
   site: flags.boolean({
     description: 'Open site',
   }),

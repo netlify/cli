@@ -59,6 +59,7 @@ FunctionsBuildCommand.description = `Build functions locally
 `
 FunctionsBuildCommand.aliases = ['function:build']
 FunctionsBuildCommand.flags = {
+  ...FunctionsBuildCommand.flags,
   functions: flags.string({
     char: 'f',
     description: 'Specify a functions folder to build to',

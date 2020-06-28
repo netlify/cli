@@ -221,6 +221,7 @@ FunctionsInvokeCommand.args = [
 ]
 
 FunctionsInvokeCommand.flags = {
+  ...FunctionsInvokeCommand.flags,
   name: flags.string({
     char: 'n',
     description: 'function name to invoke',

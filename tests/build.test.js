@@ -49,6 +49,10 @@ test('build command - can use the --context flag', async t => {
   await runBuildCommand(t, 'context-site', { flags: ['--context=staging'], output: 'testStaging' })
 })
 
+test('build command - can use the --debug flag', async t => {
+  await runBuildCommand(t, 'success-site', { flags: ['--debug'], output: 'Resolved config' })
+})
+
 test('build command - can run in subdirectories', async t => {
   await runBuildCommand(t, 'subdir-site/subdir', { output: 'testCommand' })
 })

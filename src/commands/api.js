@@ -71,6 +71,7 @@ APICommand.args = [
 APICommand.examples = ['netlify api --list', 'netlify api getSite --data \'{ "site_id": "123456"}\'']
 
 APICommand.flags = {
+  ...APICommand.flags,
   data: oclif.flags.string({
     char: 'd',
     description: 'Data to use',
