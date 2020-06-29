@@ -15,7 +15,7 @@ const proxyMiddleware = require('http-proxy-middleware')
 const cookie = require('cookie')
 const get = require('lodash.get')
 const isEmpty = require('lodash.isempty')
-const { serveFunctions, handleFormSubmission } = require('../../utils/serve-functions')
+const { serveFunctions } = require('../../utils/serve-functions')
 const { serverSettings } = require('../../utils/detect-server')
 const { detectFunctionsBuilder } = require('../../utils/detect-functions-builder')
 const Command = require('../../utils/command')
@@ -29,6 +29,7 @@ const { createRewriter } = require('../../utils/rules-proxy')
 const { onChanges } = require('../../utils/rules-proxy')
 const { parseHeadersFile, objectForPath } = require('../../utils/headers')
 const { getEnvSettings } = require('../../utils/env')
+const { createStreamPromise } = require('../../utils/create-stream-promise')
 
 const stat = util.promisify(fs.stat)
 
@@ -46,7 +47,7 @@ function addonUrl(addonUrls, req) {
 }
 
 async function getStatic(pathname, publicFolder) {
-  const alternatives = alternativePathsFor(pathname).map(p => path.resolve(publicFolder, p.substr(1)))
+  const alternatives = [pathname, ...alternativePathsFor(pathname)].map(p => path.resolve(publicFolder, p.substr(1)))
 
   for (const i in alternatives) {
     const p = alternatives[i]
@@ -78,7 +79,7 @@ function render404(publicFolder) {
 const assetExtensionRegExp = /\.(html?|png|jpg|js|css|svg|gif|ico|woff|woff2)$/
 
 function alternativePathsFor(url) {
-  const paths = [url]
+  const paths = []
   if (url[url.length - 1] === '/') {
     const end = url.length - 1
     if (url !== '/') {
@@ -118,6 +119,11 @@ function initializeProxy(port, distDir, projectDir) {
   })
 
   proxy.on('error', err => console.error('error while proxying request:', err.message))
+  proxy.on('proxyReq', (proxyReq, req) => {
+    if (req.originalBody) {
+      proxyReq.write(req.originalBody)
+    }
+  })
   proxy.on('proxyRes', (proxyRes, req, res) => {
     if (proxyRes.statusCode === 404) {
       if (req.alternativePaths && req.alternativePaths.length > 0) {
@@ -157,7 +163,7 @@ function initializeProxy(port, distDir, projectDir) {
   return handlers
 }
 
-async function startProxy(settings, siteInfo = {}, addonUrls, configPath, projectDir, functionsDir, exit) {
+async function startProxy(settings = {}, addonUrls, configPath, projectDir, functionsDir, exit) {
   try {
     await waitPort({ port: settings.frameworkPort, output: 'silent' })
   } catch (err) {
@@ -181,6 +187,8 @@ async function startProxy(settings, siteInfo = {}, addonUrls, configPath, projec
   })
 
   const server = http.createServer(async function(req, res) {
+    req.originalBody = ['GET', 'OPTIONS', 'HEAD'].includes(req.method) ? null : await createStreamPromise(req, 30)
+
     if (isFunction(settings.functionsPort, req.url)) {
       return proxy.web(req, res, { target: functionsServer })
     }
@@ -199,13 +207,12 @@ async function startProxy(settings, siteInfo = {}, addonUrls, configPath, projec
         functionsPort: settings.functionsPort,
         jwtRolePath: settings.jwtRolePath,
         framework: settings.framework,
-        siteInfo: siteInfo,
       }
 
       if (match) return serveRedirect(req, res, proxy, match, options)
 
       if (req.method === 'POST' && !isInternal(req.url)) {
-        return handleFormSubmission(req, res, proxy, siteInfo, functionsServer)
+        return proxy.web(req, res, { target: functionsServer })
       }
 
       proxy.web(req, res, options)
@@ -323,7 +330,7 @@ async function serveRedirect(req, res, proxy, match, options) {
     }
 
     if (req.method === 'POST' && !isInternal(req.url) && !isInternal(destURL)) {
-      return handleFormSubmission(req, res, proxy, options.siteInfo, options.functionsServer)
+      return proxy.web(req, res, { target: options.functionsServer })
     }
 
     const destStaticFile = await getStatic(dest.pathname, options.publicFolder)
@@ -478,7 +485,7 @@ class DevCommand extends Command {
         functionWatcher.on('unlink', functionBuilder.build)
       }
 
-      const functionsServer = await serveFunctions(settings.functions)
+      const functionsServer = await serveFunctions(settings.functions, this.netlify.cachedConfig.siteInfo)
       functionsServer.listen(settings.functionsPort, function(err) {
         if (err) {
           errorExit(`${NETLIFYDEVERR} Unable to start lambda server: ${err}`)
@@ -489,15 +496,7 @@ class DevCommand extends Command {
       })
     }
 
-    let { url } = await startProxy(
-      settings,
-      this.netlify.cachedConfig.siteInfo,
-      addonUrls,
-      site.configPath,
-      site.root,
-      settings.functions,
-      this.exit
-    )
+    let { url } = await startProxy(settings, addonUrls, site.configPath, site.root, settings.functions, this.exit)
     if (!url) {
       throw new Error('Unable to start proxy server')
     }

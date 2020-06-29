@@ -178,117 +178,126 @@ function createHandler(dir) {
   }
 }
 
-async function handleFormSubmission(req, res, proxy, siteInfo, functionsServer) {
-  const originalUrl = new URL(req.url, 'http://localhost')
-  req.url = '/.netlify/functions/submission-created' + originalUrl.search
-  const ct = contentType.parse(req)
-  let fields = {}
-  let files = {}
-  if (ct.type.endsWith('/x-www-form-urlencoded')) {
-    const bodyData = await getRawBody(req, {
-      length: req.headers['content-length'],
-      limit: '10mb',
-      encoding: ct.parameters.charset,
-    })
-    fields = querystring.parse(bodyData.toString())
-  } else if (ct.type === 'multipart/form-data') {
-    try {
-      ;[fields, files] = await new Promise((resolve, reject) => {
-        const form = new multiparty.Form({ encoding: ct.parameters.charset || 'utf8' })
-        form.parse(req, (err, Fields, Files) => {
-          if (err) return reject(err)
-          Files = Object.entries(Files).reduce(
-            (prev, [name, values]) => ({
-              ...prev,
-              [name]: values.map(v => ({
-                filename: v['originalFilename'],
-                size: v['size'],
-                type: v['headers'] && v['headers']['content-type'],
-                url: v['path'],
-              })),
-            }),
-            {}
-          )
-          return resolve([
-            Object.entries(Fields).reduce(
-              (prev, [name, values]) => ({ ...prev, [name]: values.length > 1 ? values : values[0] }),
-              {}
-            ),
-            Object.entries(Files).reduce(
-              (prev, [name, values]) => ({ ...prev, [name]: values.length > 1 ? values : values[0] }),
-              {}
-            ),
-          ])
-        })
-      })
-    } catch (err) {
-      return console.error(err)
-    }
-  } else {
-    return console.error('Invalid Content-Type for Netlify Dev forms request')
-  }
-  const data = JSON.stringify({
-    payload: {
-      company:
-        fields[Object.keys(fields).find(name => ['company', 'business', 'employer'].includes(name.toLowerCase()))],
-      last_name:
-        fields[Object.keys(fields).find(name => ['lastname', 'surname', 'byname'].includes(name.toLowerCase()))],
-      first_name:
-        fields[Object.keys(fields).find(name => ['firstname', 'givenname', 'forename'].includes(name.toLowerCase()))],
-      name: fields[Object.keys(fields).find(name => ['name', 'fullname'].includes(name.toLowerCase()))],
-      email:
-        fields[
-          Object.keys(fields).find(name => ['email', 'mail', 'from', 'twitter', 'sender'].includes(name.toLowerCase()))
-        ],
-      title: fields[Object.keys(fields).find(name => ['title', 'subject'].includes(name.toLowerCase()))],
-      data: {
-        ...fields,
-        ...files,
-        ip: req.connection.remoteAddress,
-        user_agent: req.headers['user-agent'],
-        referrer: req.headers['referer'],
+function createFormSubmissionHandler(siteInfo) {
+  return async function(req, res, next) {
+    if (req.url.startsWith('/.netlify/') || req.method !== 'POST') return next()
+
+    const fakeRequest = new Readable({
+      read(size) {
+        this.push(req.body)
+        this.push(null)
       },
-      created_at: new Date().toISOString(),
-      human_fields: Object.entries({
-        ...fields,
-        ...Object.entries(files).reduce((prev, [name, data]) => ({ ...prev, [name]: data['url'] }), {}),
-      }).reduce((prev, [key, val]) => ({ ...prev, [capitalize(key)]: val }), {}),
-      ordered_human_fields: Object.entries({
-        ...fields,
-        ...Object.entries(files).reduce((prev, [name, data]) => ({ ...prev, [name]: data['url'] }), {}),
-      }).map(([key, val]) => ({ title: capitalize(key), name: key, value: val })),
-      site_url: siteInfo['ssl_url'],
-    },
-    site: siteInfo,
-  })
-  const buff = new Readable({
-    read(size) {
-      this.push(data)
-      this.push(null)
-    },
-  })
-  return proxy.web(req, res, {
-    target: functionsServer,
-    buffer: buff,
-    headers: {
+    })
+    fakeRequest.headers = req.headers
+
+    const originalUrl = new URL(req.url, 'http://localhost')
+    req.url = '/.netlify/functions/submission-created' + originalUrl.search
+
+    const ct = contentType.parse(req)
+    let fields = {}
+    let files = {}
+    if (ct.type.endsWith('/x-www-form-urlencoded')) {
+      const bodyData = await getRawBody(fakeRequest, {
+        length: req.headers['content-length'],
+        limit: '10mb',
+        encoding: ct.parameters.charset,
+      })
+      fields = querystring.parse(bodyData.toString())
+    } else if (ct.type === 'multipart/form-data') {
+      try {
+        ;[fields, files] = await new Promise((resolve, reject) => {
+          const form = new multiparty.Form({ encoding: ct.parameters.charset || 'utf8' })
+          form.parse(fakeRequest, (err, Fields, Files) => {
+            if (err) return reject(err)
+            Files = Object.entries(Files).reduce(
+              (prev, [name, values]) => ({
+                ...prev,
+                [name]: values.map(v => ({
+                  filename: v['originalFilename'],
+                  size: v['size'],
+                  type: v['headers'] && v['headers']['content-type'],
+                  url: v['path'],
+                })),
+              }),
+              {}
+            )
+            return resolve([
+              Object.entries(Fields).reduce(
+                (prev, [name, values]) => ({ ...prev, [name]: values.length > 1 ? values : values[0] }),
+                {}
+              ),
+              Object.entries(Files).reduce(
+                (prev, [name, values]) => ({ ...prev, [name]: values.length > 1 ? values : values[0] }),
+                {}
+              ),
+            ])
+          })
+        })
+      } catch (err) {
+        return console.error(err)
+      }
+    } else {
+      return console.error('Invalid Content-Type for Netlify Dev forms request')
+    }
+    const data = JSON.stringify({
+      payload: {
+        company:
+          fields[Object.keys(fields).find(name => ['company', 'business', 'employer'].includes(name.toLowerCase()))],
+        last_name:
+          fields[Object.keys(fields).find(name => ['lastname', 'surname', 'byname'].includes(name.toLowerCase()))],
+        first_name:
+          fields[Object.keys(fields).find(name => ['firstname', 'givenname', 'forename'].includes(name.toLowerCase()))],
+        name: fields[Object.keys(fields).find(name => ['name', 'fullname'].includes(name.toLowerCase()))],
+        email:
+          fields[
+            Object.keys(fields).find(name =>
+              ['email', 'mail', 'from', 'twitter', 'sender'].includes(name.toLowerCase())
+            )
+          ],
+        title: fields[Object.keys(fields).find(name => ['title', 'subject'].includes(name.toLowerCase()))],
+        data: {
+          ...fields,
+          ...files,
+          ip: req.connection.remoteAddress,
+          user_agent: req.headers['user-agent'],
+          referrer: req.headers['referer'],
+        },
+        created_at: new Date().toISOString(),
+        human_fields: Object.entries({
+          ...fields,
+          ...Object.entries(files).reduce((prev, [name, data]) => ({ ...prev, [name]: data['url'] }), {}),
+        }).reduce((prev, [key, val]) => ({ ...prev, [capitalize(key)]: val }), {}),
+        ordered_human_fields: Object.entries({
+          ...fields,
+          ...Object.entries(files).reduce((prev, [name, data]) => ({ ...prev, [name]: data['url'] }), {}),
+        }).map(([key, val]) => ({ title: capitalize(key), name: key, value: val })),
+        site_url: siteInfo['ssl_url'],
+      },
+      site: siteInfo,
+    })
+    req.body = data
+    req.headers = {
       ...req.headers,
       'content-length': data.length,
       'content-type': 'application/json',
       'x-netlify-original-pathname': originalUrl.pathname,
-    },
-  })
+    }
+
+    next()
+  }
 }
 
-async function serveFunctions(dir) {
+async function serveFunctions(dir, siteInfo = {}) {
   const app = express()
 
   app.use(
     bodyParser.text({
       limit: '6mb',
-      type: ['text/*', 'application/json', 'multipart/form-data'],
+      type: ['text/*', 'application/json'],
     })
   )
   app.use(bodyParser.raw({ limit: '6mb', type: '*/*' }))
+  app.use(createFormSubmissionHandler(siteInfo))
   app.use(
     expressLogging(console, {
       blacklist: ['/favicon.ico'],
@@ -304,4 +313,4 @@ async function serveFunctions(dir) {
   return app
 }
 
-module.exports = { serveFunctions, handleFormSubmission }
+module.exports = { serveFunctions }
