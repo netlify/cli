@@ -6,7 +6,6 @@ description: Get the current context of the netlify CLI
 # `status`
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
-
 Print status information
 
 **Usage**
@@ -17,14 +16,15 @@ netlify status
 
 **Flags**
 
-- `verbose` (_boolean_) - Output system info
+- `debug` (*boolean*) - Print debugging information
+- `verbose` (*boolean*) - Output system info
 
-| Subcommand                                             | description                               |
-| :----------------------------------------------------- | :---------------------------------------- |
-| [`status:hooks`](/docs/commands/status.md#statushooks) | Print hook information of the linked site |
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`status:hooks`](/docs/commands/status.md#statushooks) | Print hook information of the linked site  |
+
 
 ---
-
 ## `status:hooks`
 
 Print hook information of the linked site
@@ -34,6 +34,10 @@ Print hook information of the linked site
 ```bash
 netlify status:hooks
 ```
+
+**Flags**
+
+- `debug` (*boolean*) - Print debugging information
 
 ---
 
