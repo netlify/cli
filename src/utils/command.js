@@ -7,7 +7,6 @@ const { track, identify } = require('./telemetry')
 const openBrowser = require('./open-browser')
 const StateConfig = require('./state-config')
 const globalConfig = require('./global-config')
-const findRoot = require('./find-root')
 const chalkInstance = require('./chalk')
 const resolveConfig = require('@netlify/config')
 
@@ -23,19 +22,18 @@ class BaseCommand extends Command {
     super(...args)
   }
   // Initialize context
-  async init(_projectRoot) {
+  async init() {
     const cwd = argv.cwd || process.cwd()
-    const projectRoot = findRoot(_projectRoot || cwd) // if calling programmatically, can use a supplied root, else in normal CLI context it just uses process.cwd()
     // Grab netlify API token
     const authViaFlag = getAuthArg(argv)
 
     const [token] = this.getConfigToken(authViaFlag)
 
     // Get site id & build state
-    const state = new StateConfig(projectRoot)
+    const state = new StateConfig(cwd)
 
-    const cachedConfig = await this.getConfig(cwd, projectRoot, state, token)
-    const { configPath, config } = cachedConfig
+    const cachedConfig = await this.getConfig(cwd, state, token)
+    const { configPath, config, buildDir } = cachedConfig
 
     const apiOpts = {}
     if (NETLIFY_API_URL) {
@@ -50,7 +48,7 @@ class BaseCommand extends Command {
       api: new API(token || '', apiOpts),
       // current site context
       site: {
-        root: projectRoot,
+        root: buildDir,
         configPath: configPath,
         get id() {
           return state.get('siteId')
@@ -71,12 +69,11 @@ class BaseCommand extends Command {
   }
 
   // Find and resolve the Netlify configuration
-  async getConfig(cwd, projectRoot, state, token) {
+  async getConfig(cwd, state, token) {
     try {
       return await resolveConfig({
         config: argv.config,
         cwd: cwd,
-        repositoryRoot: projectRoot,
         context: argv.context,
         debug: argv.debug,
         siteId: state.get('siteId'),
