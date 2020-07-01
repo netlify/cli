@@ -22,6 +22,7 @@ const Command = require('../../utils/command')
 const chalk = require('chalk')
 const jwtDecode = require('jwt-decode')
 const open = require('open')
+const contentType = require('content-type')
 const { NETLIFYDEV, NETLIFYDEVLOG, NETLIFYDEVWARN, NETLIFYDEVERR } = require('../../utils/logo')
 const boxen = require('boxen')
 const { createTunnel, connectTunnel } = require('../../utils/live-tunnel')
@@ -211,7 +212,8 @@ async function startProxy(settings = {}, addonUrls, configPath, projectDir, func
 
       if (match) return serveRedirect(req, res, proxy, match, options)
 
-      if (req.method === 'POST' && !isInternal(req.url)) {
+      const ct = req.headers['content-type'] ? contentType.parse(req) : {}
+      if (req.method === 'POST' && !isInternal(req.url) && (ct.type.endsWith('/x-www-form-urlencoded') || ct.type === 'multipart/form-data')) {
         return proxy.web(req, res, { target: functionsServer })
       }
 
@@ -329,7 +331,8 @@ async function serveRedirect(req, res, proxy, match, options) {
       return handler(req, res, {})
     }
 
-    if (req.method === 'POST' && !isInternal(req.url) && !isInternal(destURL)) {
+    const ct = req.headers['content-type'] ? contentType.parse(req) : {}
+    if (req.method === 'POST' && !isInternal(req.url) && !isInternal(destURL) && (ct.type.endsWith('/x-www-form-urlencoded') || ct.type === 'multipart/form-data')) {
       return proxy.web(req, res, { target: options.functionsServer })
     }
 
