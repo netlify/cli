@@ -192,6 +192,18 @@ test('Netlify Forms support', async t => {
   })
 })
 
+test('Netlify Forms: False positive', async t => {
+  const response = await fetch(`http://${host}/?ding=dong`, {
+    method: 'POST',
+    body: 'Something',
+    headers: {
+      'content-type': 'text/plain',
+    },
+  }).then(r => r.text())
+
+  t.deepEqual(response, 'Method Not Allowed')
+})
+
 test('functions env file overriding prod var', async t => {
   const response = await fetch(`http://${host}/.netlify/functions/override-process-env`).then(r => r.text())
 
