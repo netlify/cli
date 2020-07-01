@@ -195,9 +195,9 @@ test('Netlify Forms support', async t => {
 test('Netlify Forms: False positive', async t => {
   const response = await fetch(`http://${host}/?ding=dong`, {
     method: 'POST',
-    body: "Something",
+    body: 'Something',
     headers: {
-      "content-type": "text/plain",
+      'content-type': 'text/plain',
     },
   }).then(r => r.text())
 
