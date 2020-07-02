@@ -11,6 +11,7 @@ const waitPort = require('wait-port')
 const stripAnsiCc = require('strip-ansi-control-characters')
 const which = require('which')
 const chokidar = require('chokidar')
+const debounce = require('lodash.debounce')
 const proxyMiddleware = require('http-proxy-middleware')
 const cookie = require('cookie')
 const get = require('lodash.get')
@@ -490,11 +491,31 @@ class DevCommand extends Command {
         this.warn(
           `${NETLIFYDEVWARN} This is a beta feature, please give us feedback on how to improve at https://github.com/netlify/cli/`
         )
-        await functionBuilder.build()
+
+        const debouncedBuild = debounce(
+          async () => {
+            this.log(
+              `${NETLIFYDEVLOG} Function builder ${chalk.yellow(
+                functionBuilder.builderName
+              )} building functions from ${chalk.yellow(functionBuilder.src)}`
+            )
+            await functionBuilder.build()
+          },
+          300,
+          {
+            leading: true,
+            trailing: true,
+          }
+        )
+
+        await debouncedBuild()
+
         const functionWatcher = chokidar.watch(functionBuilder.src)
-        functionWatcher.on('add', functionBuilder.build)
-        functionWatcher.on('change', functionBuilder.build)
-        functionWatcher.on('unlink', functionBuilder.build)
+        functionWatcher.on('ready', () => {
+          functionWatcher.on('add', debouncedBuild)
+          functionWatcher.on('change', debouncedBuild)
+          functionWatcher.on('unlink', debouncedBuild)
+        })
       }
 
       const functionsServer = await serveFunctions(settings.functions, this.netlify.cachedConfig.siteInfo)
