@@ -52,9 +52,11 @@ function createCallback(response) {
       )
       return handleErr('Incorrect function response statusCode', response)
     }
-    if (typeof lambdaResponse.body !== 'string') {
-      console.log(`${NETLIFYDEVERR} Your function response must have a string body. You gave:`, lambdaResponse.body)
-      return handleErr('Incorrect function response body', response)
+    if (lambdaResponse.body) {
+      if(typeof lambdaResponse.body !== 'string'){
+        console.log(`${NETLIFYDEVERR} Your function response must have a string body. You gave:`, lambdaResponse.body)
+        return handleErr('Incorrect function response body', response)
+      }
     }
 
     response.statusCode = lambdaResponse.statusCode
