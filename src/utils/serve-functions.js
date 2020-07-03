@@ -98,6 +98,15 @@ function buildClientContext(headers) {
   }
 }
 
+function paramsToObject(entries) {
+  const result = {}
+  for(let entry of entries) { // each 'entry' is a [key, value] tupple
+    const [key, value] = entry;
+    result[key] = value;
+  }
+  return result;
+}
+
 function createHandler(dir) {
   const functions = getFunctions(dir)
 
@@ -147,7 +156,9 @@ function createHandler(dir) {
       requestPath = request.get('x-netlify-original-pathname')
       delete request.headers['x-netlify-original-pathname']
     }
-    const queryParams = Object.entries(request.query).reduce(
+    const requestURL = new URL(request.originalUrl, 'http://localhost')
+
+    const queryParams = Object.entries(paramsToObject(requestURL.searchParams)).reduce(
       (prev, [k, v]) => ({ ...prev, [k]: Array.isArray(v) ? v : [v] }),
       {}
     )
