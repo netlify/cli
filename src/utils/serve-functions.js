@@ -103,7 +103,7 @@ function paramsToObject(entries) {
   for (let entry of entries) {
     // each 'entry' is a [key, value] tupple
     const [key, value] = entry
-    result[key] = value
+    result[key] = [...(result[key] || []), value]
   }
   return result
 }
