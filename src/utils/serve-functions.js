@@ -130,7 +130,7 @@ function createHandler(dir) {
     }
     const { functionPath } = functions[func]
 
-    const isBase64Encoded = !!(request.headers['content-type'] || '').match(
+    const isBase64Encoded = !!(request.headers['content-type'] || '').toLowerCase().match(
       /image|audio|video|application\/pdf|application\/zip|applicaton\/octet-stream/
     )
 
