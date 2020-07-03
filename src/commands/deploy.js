@@ -207,7 +207,7 @@ class DeployCommand extends Command {
         draft: !deployToProduction && !alias,
         message: flags.message,
         deployTimeout: flags.timeout * 1000 || 1.2e6,
-        syncFileLimit: 1,
+        syncFileLimit: 100,
         branch: alias,
       })
     } catch (e) {
