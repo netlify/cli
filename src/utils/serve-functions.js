@@ -130,7 +130,13 @@ function createHandler(dir) {
     }
     const { functionPath } = functions[func]
 
-    const body = request.get('content-length') ? request.body.toString() : undefined
+    const encoding = (request.headers["content-type"] || "").match(
+      /image|audio|video|application\/pdf|application\/zip|applicaton\/octet-stream/
+    )
+      ? "base64"
+      : "utf8";
+
+    const body = request.get('content-length') ? request.body.toString(encoding) : undefined
     let isBase64Encoded = false
     if (body) isBase64Encoded = Buffer.from(body, 'base64').toString('base64') === body
 
