@@ -132,11 +132,9 @@ function createHandler(dir) {
 
     const isBase64Encoded = !!(request.headers['content-type'] || '').match(
       /image|audio|video|application\/pdf|application\/zip|applicaton\/octet-stream/
-    );
+    )
 
-    const body = request.get('content-length') ?
-      request.body.toString(isBase64Encoded ? 'base64' : 'utf8') :
-      undefined;
+    const body = request.get('content-length') ? request.body.toString(isBase64Encoded ? 'base64' : 'utf8') : undefined
 
     let remoteAddress = request.get('x-forwarded-for') || request.connection.remoteAddress || ''
     remoteAddress = remoteAddress
