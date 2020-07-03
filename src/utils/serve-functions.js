@@ -100,11 +100,12 @@ function buildClientContext(headers) {
 
 function paramsToObject(entries) {
   const result = {}
-  for(let entry of entries) { // each 'entry' is a [key, value] tupple
-    const [key, value] = entry;
-    result[key] = value;
+  for (let entry of entries) {
+    // each 'entry' is a [key, value] tupple
+    const [key, value] = entry
+    result[key] = value
   }
-  return result;
+  return result
 }
 
 function createHandler(dir) {
