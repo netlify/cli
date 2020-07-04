@@ -66,7 +66,9 @@ function createCallback(response) {
       const items = lambdaResponse.multiValueHeaders[key]
       response.setHeader(key, items)
     }
-    response.write(lambdaResponse.isBase64Encoded ? Buffer.from(lambdaResponse.body, 'base64') : lambdaResponse.body)
+    if (lambdaResponse.body) {
+      response.write(lambdaResponse.isBase64Encoded ? Buffer.from(lambdaResponse.body, 'base64') : lambdaResponse.body)
+    }
     response.end()
   }
 }
