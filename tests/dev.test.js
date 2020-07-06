@@ -153,6 +153,12 @@ test('functions: not found', async t => {
   t.is(response.status, 404)
 })
 
+test('functions: query parameters parsing', async t => {
+  const response = await fetch(`http://${host}/api/echo?category[SOMETHING][]=something`).then(r => r.json())
+
+  t.deepEqual(response.queryStringParameters, { 'category[SOMETHING][]': 'something' })
+})
+
 test('Netlify Forms support', async t => {
   const form = new FormData()
   form.append('some', 'thing')

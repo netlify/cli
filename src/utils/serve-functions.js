@@ -293,6 +293,7 @@ function createFormSubmissionHandler(siteInfo) {
 
 async function serveFunctions(dir, siteInfo = {}) {
   const app = express()
+  app.set('query parser', 'simple')
 
   app.use(
     bodyParser.text({
