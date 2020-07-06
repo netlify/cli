@@ -98,16 +98,6 @@ function buildClientContext(headers) {
   }
 }
 
-function paramsToObject(entries) {
-  const result = {}
-  for (let entry of entries) {
-    // each 'entry' is a [key, value] tupple
-    const [key, value] = entry
-    result[key] = [...(result[key] || []), value]
-  }
-  return result
-}
-
 function createHandler(dir) {
   const functions = getFunctions(dir)
 
@@ -159,10 +149,10 @@ function createHandler(dir) {
     }
     const requestURL = new URL(request.originalUrl, 'http://localhost')
 
-    const queryParams = Object.entries(paramsToObject(requestURL.searchParams)).reduce(
-      (prev, [k, v]) => ({ ...prev, [k]: Array.isArray(v) ? v : [v] }),
-      {}
-    )
+    const queryParams = {}
+    for (const [k, v] of requestURL.searchParams) {
+      queryParams[k] = Array.isArray(v) ? v : [v]
+    }
     const headers = Object.entries({ ...request.headers, 'client-ip': [remoteAddress] }).reduce(
       (prev, [k, v]) => ({ ...prev, [k]: Array.isArray(v) ? v : [v] }),
       {}
