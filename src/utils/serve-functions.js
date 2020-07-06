@@ -52,7 +52,7 @@ function createCallback(response) {
       )
       return handleErr('Incorrect function response statusCode', response)
     }
-    if (typeof lambdaResponse.body !== 'string') {
+    if (lambdaResponse.body && typeof lambdaResponse.body !== 'string') {
       console.log(`${NETLIFYDEVERR} Your function response must have a string body. You gave:`, lambdaResponse.body)
       return handleErr('Incorrect function response body', response)
     }
@@ -66,7 +66,9 @@ function createCallback(response) {
       const items = lambdaResponse.multiValueHeaders[key]
       response.setHeader(key, items)
     }
-    response.write(lambdaResponse.isBase64Encoded ? Buffer.from(lambdaResponse.body, 'base64') : lambdaResponse.body)
+    if (lambdaResponse.body) {
+      response.write(lambdaResponse.isBase64Encoded ? Buffer.from(lambdaResponse.body, 'base64') : lambdaResponse.body)
+    }
     response.end()
   }
 }

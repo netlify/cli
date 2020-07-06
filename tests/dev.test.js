@@ -105,6 +105,16 @@ test('functions rewrite echo with body', async t => {
   t.deepEqual(response.queryStringParameters, { ding: 'dong' })
 })
 
+test('functions: no body', async t => {
+  const response = await fetch(`http://${host}/api/no-body?ding=dong`, {
+    method: 'POST',
+    body: 'some=thing',
+  })
+
+  t.is(await response.text(), '')
+  t.is(response.status, 200)
+})
+
 test('functions rewrite echo with Form body', async t => {
   const form = new FormData()
   form.append('some', 'thing')
