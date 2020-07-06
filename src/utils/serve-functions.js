@@ -147,12 +147,10 @@ function createHandler(dir) {
       requestPath = request.get('x-netlify-original-pathname')
       delete request.headers['x-netlify-original-pathname']
     }
-    const requestURL = new URL(request.originalUrl, 'http://localhost')
-
-    const queryParams = {}
-    for (const [k, v] of requestURL.searchParams) {
-      queryParams[k] = Array.isArray(v) ? v : [v]
-    }
+    const queryParams = Object.entries(request.query).reduce(
+      (prev, [k, v]) => ({ ...prev, [k]: Array.isArray(v) ? v : [v] }),
+      {}
+    )
     const headers = Object.entries({ ...request.headers, 'client-ip': [remoteAddress] }).reduce(
       (prev, [k, v]) => ({ ...prev, [k]: Array.isArray(v) ? v : [v] }),
       {}
@@ -293,6 +291,7 @@ function createFormSubmissionHandler(siteInfo) {
 
 async function serveFunctions(dir, siteInfo = {}) {
   const app = express()
+  app.set('query parser', 'simple')
 
   app.use(
     bodyParser.text({
