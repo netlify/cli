@@ -63,10 +63,18 @@ class FunctionsInvokeCommand extends Command {
         // https://www.netlify.com/docs/functions/#identity-event-functions
         body.event = parts[1]
         body.user = {
+          id: '1111a1a1-a11a-1111-aa11-aaa11111a11a',
+          aud: '',
+          role: '',
           email: 'foo@trust-this-company.com',
-          user_metadata: {
-            TODO: 'mock our netlify identity user data better',
+          app_metadata: {
+            provider: 'email',
           },
+          user_metadata: {
+            full_name: 'Test Person',
+          },
+          created_at: new Date(Date.now()).toISOString(),
+          update_at: new Date(Date.now()).toISOString(),
         }
       } else {
         // non identity functions seem to have a different shape
