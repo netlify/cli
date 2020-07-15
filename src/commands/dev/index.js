@@ -431,6 +431,33 @@ async function startDevServer(settings, log) {
   return ps
 }
 
+const getBuildFunction = functionBuilder =>
+  async function build() {
+    this.log(
+      `${NETLIFYDEVLOG} Function builder ${chalk.yellow(functionBuilder.builderName)} ${chalk.magenta(
+        'building'
+      )} functions from ${chalk.yellow(functionBuilder.src)}`
+    )
+
+    try {
+      await functionBuilder.build()
+      this.log(
+        `${NETLIFYDEVLOG} Function builder ${chalk.yellow(functionBuilder.builderName)} ${chalk.green(
+          'finished'
+        )} building functions from ${chalk.yellow(functionBuilder.src)}`
+      )
+    } catch (error) {
+      const errorMessage = (error.stderr && error.stderr.toString()) || error.message
+      this.log(
+        `${NETLIFYDEVLOG} Function builder ${chalk.yellow(functionBuilder.builderName)} ${chalk.red(
+          'failed'
+        )} building functions from ${chalk.yellow(functionBuilder.src)}${
+          errorMessage ? ` with error:\n${errorMessage}` : ''
+        }`
+      )
+    }
+  }
+
 class DevCommand extends Command {
   async run() {
     this.log(`${NETLIFYDEV}`)
@@ -492,21 +519,10 @@ class DevCommand extends Command {
           `${NETLIFYDEVWARN} This is a beta feature, please give us feedback on how to improve at https://github.com/netlify/cli/`
         )
 
-        const debouncedBuild = debounce(
-          async () => {
-            this.log(
-              `${NETLIFYDEVLOG} Function builder ${chalk.yellow(
-                functionBuilder.builderName
-              )} building functions from ${chalk.yellow(functionBuilder.src)}`
-            )
-            await functionBuilder.build()
-          },
-          300,
-          {
-            leading: true,
-            trailing: true,
-          }
-        )
+        const debouncedBuild = debounce(getBuildFunction(functionBuilder).bind(this), 300, {
+          leading: true,
+          trailing: true,
+        })
 
         await debouncedBuild()
 

@@ -108,6 +108,7 @@ function createHandler(dir) {
     Object.keys(require.cache).forEach(k => {
       delete require.cache[k]
     })
+    console.log(`${NETLIFYDEVLOG} ${path} ${action}, successfully reloaded!`)
   }
   const watcher = chokidar.watch(dir, { ignored: /node_modules/ })
   watcher.on('change', clearCache('modified')).on('unlink', clearCache('deleted'))
