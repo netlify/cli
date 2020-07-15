@@ -436,7 +436,7 @@ const getBuildFunction = functionBuilder =>
     this.log(
       `${NETLIFYDEVLOG} Function builder ${chalk.yellow(functionBuilder.builderName)} ${chalk.magenta(
         'building'
-      )} functions from ${chalk.yellow(functionBuilder.src)}`
+      )} functions from directory ${chalk.yellow(functionBuilder.src)}`
     )
 
     try {
@@ -444,14 +444,14 @@ const getBuildFunction = functionBuilder =>
       this.log(
         `${NETLIFYDEVLOG} Function builder ${chalk.yellow(functionBuilder.builderName)} ${chalk.green(
           'finished'
-        )} building functions from ${chalk.yellow(functionBuilder.src)}`
+        )} building functions from directory ${chalk.yellow(functionBuilder.src)}`
       )
     } catch (error) {
       const errorMessage = (error.stderr && error.stderr.toString()) || error.message
       this.log(
         `${NETLIFYDEVLOG} Function builder ${chalk.yellow(functionBuilder.builderName)} ${chalk.red(
           'failed'
-        )} building functions from ${chalk.yellow(functionBuilder.src)}${
+        )} building functions from directory ${chalk.yellow(functionBuilder.src)}${
           errorMessage ? ` with error:\n${errorMessage}` : ''
         }`
       )
