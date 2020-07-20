@@ -77,6 +77,9 @@ class BaseCommand extends Command {
         context: argv.context,
         debug: argv.debug,
         siteId: argv.siteId || (typeof argv.site === 'string' && argv.site) || state.get('siteId'),
+        inlineConfig: {
+          functions: argv.functions,
+        },
         token,
         mode: 'cli',
       })
