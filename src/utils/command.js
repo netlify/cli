@@ -76,7 +76,7 @@ class BaseCommand extends Command {
         cwd: cwd,
         context: argv.context,
         debug: argv.debug,
-        siteId: argv.siteId || typeof argv.site === 'string' && argv.site || state.get('siteId'),
+        siteId: argv.siteId || (typeof argv.site === 'string' && argv.site) || state.get('siteId'),
         token,
         mode: 'cli',
       })
