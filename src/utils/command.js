@@ -79,6 +79,7 @@ class BaseCommand extends Command {
         siteId: argv.siteId || (typeof argv.site === 'string' && argv.site) || state.get('siteId'),
         inlineConfig: {
           functions: argv.functions,
+          publish: argv.dir,
         },
         token,
         mode: 'cli',

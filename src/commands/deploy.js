@@ -103,9 +103,7 @@ class DeployCommand extends Command {
 
     // TODO: abstract settings lookup
     let deployFolder
-    if (flags['dir']) {
-      deployFolder = path.resolve(process.cwd(), flags['dir'])
-    } else if (get(config, 'build.publish')) {
+    if (get(config, 'build.publish')) {
       deployFolder = path.resolve(site.root, get(config, 'build.publish'))
     } else if (get(siteData, 'build_settings.dir')) {
       deployFolder = path.resolve(site.root, get(siteData, 'build_settings.dir'))
