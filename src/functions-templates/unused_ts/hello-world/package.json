@@ -15,7 +15,7 @@
   "license": "MIT",
   "dependencies": {
     "node-fetch": "^2.3.0",
-    "@types/node": "^10.12.12",
+    "@types/node": "^10.17.27",
     "typescript": "^3.2.2",
     "@types/aws-lambda": "^8.10.15"
   }
