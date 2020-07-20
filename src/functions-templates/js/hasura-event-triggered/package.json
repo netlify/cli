@@ -16,6 +16,6 @@
   "license": "MIT",
   "dependencies": {
     "axios": "^0.18.0",
-    "bad-words": "^3.0.2"
+    "bad-words": "^3.0.3"
   }
 }
