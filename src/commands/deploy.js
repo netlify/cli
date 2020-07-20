@@ -105,8 +105,6 @@ class DeployCommand extends Command {
     let deployFolder
     if (get(config, 'build.publish')) {
       deployFolder = get(config, 'build.publish')
-    } else if (get(siteData, 'build_settings.dir')) {
-      deployFolder = path.resolve(site.root, get(siteData, 'build_settings.dir'))
     }
 
     let functionsFolder
