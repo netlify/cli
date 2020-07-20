@@ -5,6 +5,7 @@ const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./logo')
 const inquirer = require('inquirer')
 const fuzzy = require('fuzzy')
 const fs = require('fs')
+const get = require('lodash.get')
 
 module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
   let settings = { env: { ...process.env } }
@@ -12,8 +13,8 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
 
   if (typeof devConfig.framework !== 'string') throw new Error('Invalid "framework" option provided in config')
 
-  if (flags.dir) {
-    settings = await getStaticServerSettings(settings, flags, projectDir, log)
+  if (get(devConfig, 'build.publish')) {
+    settings = await getStaticServerSettings(devConfig, settings, flags, projectDir, log)
     ;['command', 'targetPort'].forEach(p => {
       if (flags[p]) {
         throw new Error(
@@ -100,7 +101,7 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
     settings.command = assignLoudly(devConfig.command.split(/\s/)[0], settings.command || null, tellUser('command')) // if settings.command is empty, its bc no settings matched
     settings.args = assignLoudly(devConfig.command.split(/\s/).slice(1), [], tellUser('command')) // if settings.command is empty, its bc no settings matched
   }
-  settings.dist = flags.dir || devConfig.publish || settings.dist // dont loudassign if they dont need it
+  settings.dist = devConfig.publish || settings.dist // dont loudassign if they dont need it
 
   if (devConfig.targetPort) {
     if (devConfig.targetPort && typeof devConfig.targetPort !== 'number') {
@@ -132,7 +133,7 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
   }
 
   if (!settings.command && !settings.framework && !settings.noCmd) {
-    settings = await getStaticServerSettings(settings, flags, projectDir, log)
+    settings = await getStaticServerSettings(devConfig, settings, flags, projectDir, log)
   }
 
   if (!settings.frameworkPort) throw new Error('No "targetPort" option specified or detected.')
@@ -160,11 +161,11 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
   return settings
 }
 
-async function getStaticServerSettings(settings, flags, projectDir, log) {
+async function getStaticServerSettings(devConfig, settings, flags, projectDir, log) {
   let dist = settings.dist
   if (flags.dir) {
     log(`${NETLIFYDEVWARN} Using simple static server because --dir flag was specified`)
-    dist = flags.dir
+    dist = get(devConfig, 'build.publish')
   } else {
     log(`${NETLIFYDEVWARN} No app server detected and no "command" specified`)
   }
