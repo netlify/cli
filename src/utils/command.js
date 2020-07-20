@@ -32,7 +32,7 @@ class BaseCommand extends Command {
     // Get site id & build state
     const state = new StateConfig(cwd)
 
-    const cachedConfig = await this.getConfig(cwd, state, token)
+    const cachedConfig = await this.getConfig(cwd, state, token, argv)
     const { configPath, config, buildDir } = cachedConfig
 
     const apiOpts = {}
@@ -69,14 +69,14 @@ class BaseCommand extends Command {
   }
 
   // Find and resolve the Netlify configuration
-  async getConfig(cwd, state, token) {
+  async getConfig(cwd, state, token, argv) {
     try {
       return await resolveConfig({
         config: argv.config,
         cwd: cwd,
         context: argv.context,
         debug: argv.debug,
-        siteId: state.get('siteId'),
+        siteId: argv.siteId || typeof argv.site === 'string' && argv.site || state.get('siteId'),
         token,
         mode: 'cli',
       })
