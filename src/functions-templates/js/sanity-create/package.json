@@ -15,6 +15,6 @@
   "author": "Sanity.io",
   "license": "MIT",
   "dependencies": {
-    "@sanity/client": "^0.144.0"
+    "@sanity/client": "^0.147.3"
   }
 }
