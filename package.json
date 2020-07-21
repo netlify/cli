@@ -174,7 +174,7 @@
     "globby": "^10.0.1",
     "husky": "^3.0.3",
     "lint-staged": "^9.2.1",
-    "markdown-magic": "^0.1.25",
+    "markdown-magic": "^0.2.0",
     "mkdirp": "^1.0.4",
     "mocha": "^6.2.0",
     "nock": "^10.0.6",
