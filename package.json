@@ -103,7 +103,7 @@
     "git-repo-info": "^2.1.0",
     "gitconfiglocal": "^2.1.0",
     "http-proxy": "^1.18.0",
-    "http-proxy-middleware": "^0.20.0",
+    "http-proxy-middleware": "^0.21.0",
     "inquirer": "^6.5.1",
     "inquirer-autocomplete-prompt": "^1.0.1",
     "is-docker": "^1.1.0",
