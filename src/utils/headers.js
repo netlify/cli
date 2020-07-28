@@ -76,8 +76,8 @@ function parseHeadersFile(filePath) {
       const key = line.substr(0, sepIndex).trim()
       const value = line.substr(sepIndex + 1).trim()
 
-      if (rules.hasOwnProperty(path)) {
-        if (rules[path].hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(rules, path)) {
+        if (Object.prototype.hasOwnProperty.call(rules[path], key)) {
           rules[path][key].push(value)
         } else {
           rules[path][key] = [value]

@@ -65,6 +65,7 @@ async function addEnvVariables(api, site, accessToken) {
           )
 
           process.exit()
+        // eslint-disable-next-line no-fallthrough
         default:
           console.error(
             `${NETLIFYDEVERR} Error retrieving site data for site ${chalk.yellow(

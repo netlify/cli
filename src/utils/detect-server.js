@@ -22,7 +22,7 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
       }
     })
   } else if (devConfig.framework === '#auto' && !(devConfig.command && devConfig.targetPort)) {
-    let settingsArr = []
+    const settingsArr = []
     const detectors = detectorsFiles.map(det => {
       try {
         return loadDetector(det)
@@ -47,7 +47,7 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
         name: 'chosenSetting',
         message: `Multiple possible start commands found`,
         type: 'autocomplete',
-        source: async function(_, input) {
+        async source(_, input) {
           if (!input || input === '') {
             return scriptInquirerOptions
           }
@@ -63,7 +63,10 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
     }
   } else if (devConfig.framework === '#custom' || (devConfig.command && devConfig.targetPort)) {
     settings.framework = '#custom'
-    if (devConfig.framework && !['command', 'targetPort'].every(p => devConfig.hasOwnProperty(p))) {
+    if (
+      devConfig.framework &&
+      !['command', 'targetPort'].every(p => Object.prototype.hasOwnProperty.call(devConfig, p))
+    ) {
       throw new Error('"command" and "targetPort" properties are required when "framework" is set to "#custom"')
     }
     if (devConfig.framework !== '#custom' && devConfig.command && devConfig.targetPort) {
@@ -186,7 +189,6 @@ async function getStaticServerSettings(settings, flags, projectDir, log) {
 }
 
 const tellUser = settingsField => dV =>
-  // eslint-disable-next-line no-console
   console.log(
     `${NETLIFYDEVLOG} Overriding ${chalk.yellow(settingsField)} with setting derived from netlify.toml [dev] block: `,
     dV
@@ -234,7 +236,7 @@ function filterSettings(scriptInquirerOptions, input) {
 
 /** utiltities for the inquirer section above */
 function formatSettingsArrForInquirer(settingsArr) {
-  let ans = []
+  const ans = []
   settingsArr.forEach(setting => {
     setting.possibleArgsArrs.forEach(args => {
       ans.push({
@@ -250,7 +252,6 @@ function formatSettingsArrForInquirer(settingsArr) {
 function assignLoudly(
   optionalValue,
   defaultValue,
-  // eslint-disable-next-line no-console
   tellUser = dV => console.log(`No value specified, using fallback of `, dV)
 ) {
   if (defaultValue === undefined) throw new Error('must have a defaultValue')

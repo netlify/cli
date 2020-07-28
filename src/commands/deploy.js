@@ -87,7 +87,7 @@ class DeployCommand extends Command {
 
     if (flags.trigger) {
       try {
-        const siteBuild = await api.createSiteBuild({ siteId: siteId })
+        const siteBuild = await api.createSiteBuild({ siteId })
         this.log(
           `${NETLIFYDEV} A new deployment was triggered successfully. Visit https://app.netlify.com/sites/${siteData.name}/deploys/${siteBuild.deploy_id} to see the logs.`
         )
@@ -201,7 +201,7 @@ class DeployCommand extends Command {
       }
 
       results = await api.deploy(siteId, deployFolder, {
-        configPath: configPath,
+        configPath,
         fnDir: functionsFolder,
         statusCb: flags.json || flags.silent ? () => {} : deployProgressCb(),
         draft: !deployToProduction && !alias,
@@ -438,7 +438,7 @@ function deployProgressCb() {
         const spinner = ev.spinner || randomItem(cliSpinnerNames)
         events[ev.type] = ora({
           text: ev.msg,
-          spinner: spinner,
+          spinner,
         }).start()
         return
       }

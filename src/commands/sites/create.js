@@ -42,7 +42,7 @@ class SitesCreateCommand extends Command {
       accountSlug = results.accountSlug
     }
 
-    let name = flags.name
+    const name = flags.name
     let userName
     let site
 
@@ -76,13 +76,13 @@ class SitesCreateCommand extends Command {
         name = results.name
       }
 
-      let body = {}
+      const body = {}
       if (typeof name === 'string') {
         body.name = name.trim()
       }
       try {
         site = await api.createSiteInTeam({
-          accountSlug: accountSlug,
+          accountSlug,
           body,
         })
       } catch (error) {

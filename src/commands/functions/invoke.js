@@ -26,7 +26,7 @@ const eventTriggeredFunctions = [
 ]
 class FunctionsInvokeCommand extends Command {
   async run() {
-    let { flags, args } = this.parse(FunctionsInvokeCommand)
+    const { flags, args } = this.parse(FunctionsInvokeCommand)
     const { config } = this.netlify
 
     const functionsDir =

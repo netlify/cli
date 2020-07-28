@@ -15,7 +15,6 @@ async function createTunnel(siteId, netlifyApiToken, log) {
   await installTunnelClient(log)
 
   if (!siteId) {
-    // eslint-disable-next-line no-console
     console.error(
       `${NETLIFYDEVERR} Error: no siteId defined, did you forget to run ${chalk.yellow(
         'netlify init'
@@ -123,6 +122,6 @@ function isWindows() {
 }
 
 module.exports = {
-  createTunnel: createTunnel,
-  connectTunnel: connectTunnel,
+  createTunnel,
+  connectTunnel,
 }

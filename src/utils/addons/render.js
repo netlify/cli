@@ -23,7 +23,7 @@ function configValues(addonName, configValues, currentValue) {
 
   Object.keys(configValues).map(key => {
     const { type, displayName, required } = configValues[key]
-    let requiredText = required ? `true` : `false`
+    const requiredText = required ? `true` : `false`
     const typeInfo = type || ''
     const description = displayName || ''
     if (currentValue) {

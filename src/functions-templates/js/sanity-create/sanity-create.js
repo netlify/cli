@@ -1,4 +1,3 @@
-/* eslint-disable */
 const sanityClient = require('@sanity/client')
 
 /*

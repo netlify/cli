@@ -22,7 +22,7 @@ function handleErr(err, response) {
   response.statusCode = 500
   response.write(`${NETLIFYDEVERR} Function invocation failed: ` + err.toString())
   response.end()
-  console.log(`${NETLIFYDEVERR} Error during invocation: `, err) // eslint-disable-line no-console
+  console.log(`${NETLIFYDEVERR} Error during invocation: `, err)
 }
 
 function capitalize(t) {
@@ -58,7 +58,6 @@ function createCallback(response) {
     }
 
     response.statusCode = lambdaResponse.statusCode
-    // eslint-disable-line guard-for-in
     for (const key in lambdaResponse.headers) {
       response.setHeader(key, lambdaResponse.headers[key])
     }
@@ -104,7 +103,7 @@ function createHandler(dir) {
   const functions = getFunctions(dir)
 
   const clearCache = action => path => {
-    console.log(`${NETLIFYDEVLOG} ${path} ${action}, reloading...`) // eslint-disable-line no-console
+    console.log(`${NETLIFYDEVLOG} ${path} ${action}, reloading...`)
     Object.keys(require.cache).forEach(k => {
       delete require.cache[k]
     })
@@ -166,17 +165,17 @@ function createHandler(dir) {
       multiValueQueryStringParameters: queryParams,
       headers: Object.entries(headers).reduce((prev, [k, v]) => ({ ...prev, [k]: v.join(', ') }), {}),
       multiValueHeaders: headers,
-      body: body,
-      isBase64Encoded: isBase64Encoded,
+      body,
+      isBase64Encoded,
     }
 
     const callback = createCallback(response)
 
     return lambdaLocal.execute({
-      event: event,
+      event,
       lambdaPath: functionPath,
       clientContext: JSON.stringify(buildClientContext(request.headers) || {}),
-      callback: callback,
+      callback,
       verboseLevel: 3,
       timeoutMs: 10 * 1000,
     })

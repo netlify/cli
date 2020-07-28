@@ -37,7 +37,7 @@ exports.handler = async function(event, context) {
 async function createCustomerAndSubscribeToPlan(stripeToken, email, productPlan) {
   // create a customer
   const customer = await stripe.customers.create({
-    email: email,
+    email,
     source: stripeToken,
   })
   // retrieve created customer id to add customer to subscription plan

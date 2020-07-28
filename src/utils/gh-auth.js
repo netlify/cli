@@ -126,7 +126,7 @@ async function getGitHubToken(opts) {
       },
     })
 
-    let response = await octokit.oauthAuthorizations.createAuthorization({
+    const response = await octokit.oauthAuthorizations.createAuthorization({
       note: opts.note + ' (' + new Date().toJSON() + ')',
       note_url: 'https://cli.netlify.com/',
       scopes: opts.scopes,

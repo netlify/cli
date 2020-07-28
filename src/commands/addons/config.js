@@ -81,7 +81,7 @@ class AddonsConfigCommand extends Command {
             currentConfig,
             newConfig,
             settings: {
-              siteId: siteId,
+              siteId,
               instanceId: currentAddon.id,
               addon: addonName,
               config: newConfig,
@@ -157,7 +157,7 @@ class AddonsConfigCommand extends Command {
           currentConfig,
           newConfig,
           settings: {
-            siteId: siteId,
+            siteId,
             instanceId: currentAddon.id,
             addon: addonName,
             config: newConfig,

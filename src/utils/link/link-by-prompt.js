@@ -224,7 +224,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
   await track('sites_linked', {
     siteId: site.id,
     linkType: 'prompt',
-    kind: kind,
+    kind,
   })
 
   // Log output

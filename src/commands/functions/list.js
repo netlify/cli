@@ -4,7 +4,7 @@ const AsciiTable = require('ascii-table')
 const { getFunctions } = require('../../utils/get-functions')
 class FunctionsListCommand extends Command {
   async run() {
-    let { flags } = this.parse(FunctionsListCommand)
+    const { flags } = this.parse(FunctionsListCommand)
     const { api, site, config } = this.netlify
 
     // get deployed site details
@@ -66,7 +66,7 @@ class FunctionsListCommand extends Command {
         return {
           name: functionName,
           url: `/.netlify/functions/${functionName}`,
-          moduleDir: moduleDir,
+          moduleDir,
           isDeployed: isDeployed ? true : false,
         }
       })

@@ -15,7 +15,7 @@ function hasArgs(args) {
 }
 
 module.exports = {
-  hasFlags: hasFlags,
-  hasArgs: hasArgs,
-  isEmptyCommand: isEmptyCommand,
+  hasFlags,
+  hasArgs,
+  isEmptyCommand,
 }

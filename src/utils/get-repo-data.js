@@ -11,7 +11,7 @@ async function getRepoData(remote) {
   let repo = {}
   try {
     const gitConfig = await util.promisify(gitconfiglocal)(cwd)
-    const gitDirectory = findUp.sync(['.git'], { cwd: cwd })
+    const gitDirectory = findUp.sync(['.git'], { cwd })
     const baseGitPath = path.dirname(gitDirectory)
 
     if (cwd !== baseGitPath) {
@@ -25,10 +25,12 @@ async function getRepoData(remote) {
     }
 
     if (!remote) {
-      remote = gitConfig.hasOwnProperty('origin') ? 'origin' : Object.keys(gitConfig.remote).shift()
+      remote = Object.prototype.hasOwnProperty.call(gitConfig, 'origin')
+        ? 'origin'
+        : Object.keys(gitConfig.remote).shift()
     }
 
-    if (!gitConfig.remote.hasOwnProperty(remote) || isEmpty(gitConfig.remote[remote])) {
+    if (!Object.prototype.hasOwnProperty.call(gitConfig.remote, remote) || isEmpty(gitConfig.remote[remote])) {
       throw new Error(
         `The specified remote "${remote}" is not defined in Git repo. Please use --gitRemoteName flag to specify a remote.`
       )
@@ -40,8 +42,8 @@ async function getRepoData(remote) {
     // TODO refactor shape
     repo = {
       gitDirectoryPath: gitDirectory,
-      remoteData: remoteData,
-      repoData: repoData,
+      remoteData,
+      repoData,
       repo_path: remoteData.path,
       repo_branch: repoData.branch,
       allowed_branches: [repoData.branch],

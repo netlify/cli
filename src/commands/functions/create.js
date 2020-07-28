@@ -80,7 +80,7 @@ async function getNameFromArgs(args, flags, defaultName) {
 
   // if neither are specified, prompt for it
   if (!name) {
-    let responses = await inquirer.prompt([
+    const responses = await inquirer.prompt([
       {
         name: 'name',
         message: 'name your function: ',
@@ -127,7 +127,7 @@ async function pickTemplate() {
     message: 'Pick a template',
     type: 'autocomplete',
     // suggestOnly: true, // we can explore this for entering URL in future
-    source: async function(answersSoFar, input) {
+    async source(answersSoFar, input) {
       if (!input || input === '') {
         // show separators
         return [
@@ -141,7 +141,7 @@ async function pickTemplate() {
         ]
       }
       // only show filtered results sorted by score
-      let ans = [
+      const ans = [
         ...filterRegistry(jsreg, input),
         // ...filterRegistry(tsreg, input),
         // ...filterRegistry(goreg, input)

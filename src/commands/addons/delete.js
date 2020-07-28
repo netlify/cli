@@ -57,7 +57,7 @@ class AddonsDeleteCommand extends Command {
     })
 
     const settings = {
-      siteId: siteId,
+      siteId,
       addon: addonName,
       instanceId: currentAddon.id,
     }
