@@ -26,7 +26,7 @@ module.exports = function handler(event, context, callback) {
             statusCode: 200,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              code: code,
+              code,
               url: routes[item].data.destination,
             }),
           })

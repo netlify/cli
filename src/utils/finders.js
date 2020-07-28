@@ -128,9 +128,7 @@ Please ensure "${moduleName}" is installed in the project.`)
 
   modulePaths.forEach(modulePath => {
     const packageJson = pkgs[modulePath]
-    let moduleFilePaths
-
-    moduleFilePaths = packList.sync({ path: modulePath })
+    const moduleFilePaths = packList.sync({ path: modulePath })
 
     moduleFilePaths.forEach(moduleFilePath => {
       if (includeModuleFile(packageJson, moduleFilePath)) {

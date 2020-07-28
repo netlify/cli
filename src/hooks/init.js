@@ -9,7 +9,7 @@ module.exports = async context => {
     globalConfig.set('telemetryDisabled', true)
     console.log('Netlify telemetry has been disabled')
     console.log('You can renable it anytime with the --telemetry-enable flag')
-    process.exit() // eslint-disable-line
+    process.exit()
   }
   if (context.id === '--telemetry-enable') {
     globalConfig.set('telemetryDisabled', false)
@@ -18,7 +18,7 @@ module.exports = async context => {
     track('user_telemetryEnabled', {
       force: true,
     })
-    process.exit() // eslint-disable-line
+    process.exit()
   }
 
   if (

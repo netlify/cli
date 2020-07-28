@@ -50,7 +50,7 @@ exports.handler = function(event, context, callback) {
         console.log(err)
       }
 
-      let status = charge === null || charge.status !== 'succeeded' ? 'failed' : charge.status
+      const status = charge === null || charge.status !== 'succeeded' ? 'failed' : charge.status
 
       callback(null, {
         statusCode,

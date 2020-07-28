@@ -12,7 +12,7 @@ function send(type, payload) {
   const requestFile = path.join(__dirname, 'request.js')
   const options = JSON.stringify({
     data: payload,
-    type: type,
+    type,
   })
 
   if (DEBUG) {
@@ -90,7 +90,7 @@ function track(eventName, payload) {
 
   const defaultData = {
     event: eventName,
-    userId: userId,
+    userId,
     anonymousId: cliId,
     properties: Object.assign({}, defaultProperties, properties),
   }
@@ -133,7 +133,7 @@ function identify(payload) {
   const defaultTraits = {
     name: userProfile.name,
     email: userProfile.email,
-    cliId: cliId,
+    cliId,
     telemetryDisabled: TELEMETRY_DISABLED,
   }
 
@@ -143,7 +143,7 @@ function identify(payload) {
   // Payload to send to segment
   const identifyData = {
     anonymousId: cliId,
-    userId: userId,
+    userId,
     traits: Object.assign({}, defaultTraits, data),
   }
 
@@ -151,6 +151,6 @@ function identify(payload) {
 }
 
 module.exports = {
-  track: track,
-  identify: identify,
+  track,
+  identify,
 }

@@ -105,7 +105,7 @@ function initializeProxy(port, distDir, projectDir) {
     selfHandleResponse: true,
     target: {
       host: 'localhost',
-      port: port,
+      port,
     },
   })
 
@@ -194,7 +194,7 @@ async function startProxy(settings = {}, addonUrls, configPath, projectDir, func
     if (isFunction(settings.functionsPort, req.url)) {
       return proxy.web(req, res, { target: functionsServer })
     }
-    let urlForAddons = addonUrl(addonUrls, req)
+    const urlForAddons = addonUrl(addonUrls, req)
     if (urlForAddons) {
       return proxy.web(req, res, { target: urlForAddons })
     }
@@ -463,7 +463,7 @@ class DevCommand extends Command {
     this.log(`${NETLIFYDEV}`)
     const errorExit = this.error
     const log = this.log
-    let { flags } = this.parse(DevCommand)
+    const { flags } = this.parse(DevCommand)
     const { api, site, config } = this.netlify
     config.dev = { ...config.dev }
     config.build = { ...config.build }
@@ -476,7 +476,7 @@ class DevCommand extends Command {
     }
     let addonUrls = {}
 
-    let accessToken = api.accessToken
+    const accessToken = api.accessToken
     if (site.id && !flags.offline) {
       const { addEnvVariables } = require('../../utils/dev')
       addonUrls = await addEnvVariables(api, site, accessToken)

@@ -32,7 +32,7 @@ function getYarnOrNPMCommand() {
 
 function hasRequiredDeps(requiredDepArray) {
   const { dependencies, devDependencies } = getPkgJSON()
-  for (let depName of requiredDepArray) {
+  for (const depName of requiredDepArray) {
     const hasItInDeps = dependencies && dependencies[depName]
     const hasItInDevDeps = devDependencies && devDependencies[depName]
     if (!hasItInDeps && !hasItInDevDeps) {
@@ -55,9 +55,7 @@ function scanScripts({ preferredScriptsArr, preferredCommand }) {
   const { scripts } = getPkgJSON()
 
   if (!scripts && !warnedAboutEmptyScript) {
-    // eslint-disable-next-line no-console
     console.log(`${NETLIFYDEVWARN} You have a package.json without any npm scripts.`)
-    // eslint-disable-next-line no-console
     console.log(
       `${NETLIFYDEVWARN} Netlify Dev's detector system works best with a script, or you can specify a command to run in the netlify.toml [dev]  block `
     )
@@ -76,7 +74,7 @@ function scanScripts({ preferredScriptsArr, preferredCommand }) {
    *  */
   // this is very simplistic logic, we can offer far more intelligent logic later
   // eg make a dependency tree of npm scripts and offer the parentest node first
-  let possibleArgsArrs = preferredScriptsArr
+  const possibleArgsArrs = preferredScriptsArr
     .filter(s => Object.keys(scripts).includes(s))
     .filter(s => !scripts[s].includes('netlify dev')) // prevent netlify dev calling netlify dev
     .map(x => [x]) // make into arr of arrs

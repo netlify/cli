@@ -21,11 +21,11 @@ async function hasGitIgnore(dir) {
 }
 
 function parser(input, fn = line => line) {
-  let lines = input.toString().split(/\r?\n/)
+  const lines = input.toString().split(/\r?\n/)
   let section = { name: 'default', patterns: [] }
-  let state = { patterns: [], sections: [section] }
+  const state = { patterns: [], sections: [section] }
 
-  for (let line of lines) {
+  for (const line of lines) {
     if (line.charAt(0) === '#') {
       section = { name: line.slice(1).trim(), patterns: [] }
       state.sections.push(section)
@@ -33,7 +33,7 @@ function parser(input, fn = line => line) {
     }
 
     if (line.trim() !== '') {
-      let pattern = fn(line, section, state)
+      const pattern = fn(line, section, state)
       section.patterns.push(pattern)
       state.patterns.push(pattern)
     }
@@ -57,11 +57,11 @@ function parse(input, fn) {
   state.concat = i => {
     const newState = parser(i, fn)
 
-    for (let s2 in newState.sections) {
+    for (const s2 in newState.sections) {
       const sec2 = newState.sections[s2]
 
       let sectionExists = false
-      for (let s1 in state.sections) {
+      for (const s1 in state.sections) {
         const sec1 = state.sections[s1]
 
         // Join sections under common name
@@ -109,8 +109,8 @@ async function ensureNetlifyIgnore(dir) {
 }
 
 module.exports = {
-  parse: parse,
-  stringify: stringify,
+  parse,
+  stringify,
   format: parseIgnore.format,
   ensureNetlifyIgnore,
 }

@@ -5,7 +5,6 @@ const { getAddons, createAddon } = require('netlify/src/addons')
 
 /** main section - shamelessly adapted from CLI. we can extract and dedupe later. */
 /** but we can DRY things up later. */
-// eslint-disable-next-line max-params
 module.exports.createSiteAddon = async function(accessToken, addonName, siteId, siteData, log) {
   const addons = await getAddons(siteId, accessToken)
   if (typeof addons === 'object' && addons.error) {
@@ -30,7 +29,7 @@ module.exports.createSiteAddon = async function(accessToken, addonName, siteId, 
 
   // const manifest = await getAddonManifest(addonName, accessToken);
 
-  let configValues = rawFlags
+  const configValues = rawFlags
   // if (manifest.config) {
   //   const required = requiredConfigValues(manifest.config);
   //   console.log(`Starting the setup for "${addonName} add-on"`);
@@ -106,7 +105,7 @@ module.exports.createSiteAddon = async function(accessToken, addonName, siteId, 
   await actuallyCreateSiteAddon({
     addonName,
     settings: {
-      siteId: siteId,
+      siteId,
       addon: addonName,
       config: configValues,
     },

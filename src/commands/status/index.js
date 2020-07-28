@@ -25,12 +25,11 @@ class StatusCommand extends Command {
     this.log(`──────────────────────┐
  Current Netlify User │
 ──────────────────────┘`)
-    let accountData
     const accounts = await api.listAccountsForUser()
     const user = await this.netlify.api.getCurrentUser()
 
     const ghuser = this.netlify.globalConfig.get(`users.${current}.auth.github.user`)
-    accountData = {
+    const accountData = {
       Name: get(user, 'full_name'),
       // 'Account slug': get(personal, 'slug'),
       // 'Account id': get(personal, 'id'),

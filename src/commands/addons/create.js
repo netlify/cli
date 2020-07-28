@@ -94,7 +94,7 @@ class AddonsCreateCommand extends Command {
           {
             addonName,
             settings: {
-              siteId: siteId,
+              siteId,
               addon: addonName,
               config: newConfig,
             },
@@ -139,7 +139,7 @@ class AddonsCreateCommand extends Command {
       {
         addonName,
         settings: {
-          siteId: siteId,
+          siteId,
           addon: addonName,
           config: configValues,
         },

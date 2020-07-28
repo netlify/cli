@@ -12,7 +12,7 @@ exports.handler = async (event, context) => {
   const data = JSON.parse(event.body)
   console.log('Function `create` invoked', data)
   const item = {
-    data: data,
+    data,
   }
   /* construct the fauna query */
   return client

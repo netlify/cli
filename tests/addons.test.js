@@ -36,7 +36,7 @@ async function createSite(siteName, accountSlug) {
   }
 
   const matches = /Site ID:\s+([a-zA-Z0-9-]+)/m.exec(stripAnsi(cliResponse))
-  if (matches && matches.hasOwnProperty(1) && matches[1]) {
+  if (matches && Object.prototype.hasOwnProperty.call(matches, 1) && matches[1]) {
     return matches[1]
   }
 

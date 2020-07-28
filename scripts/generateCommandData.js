@@ -8,17 +8,12 @@ module.exports = function generateCommandData() {
   const commands = globby.sync([`${commandsPath}/**/**.js`, `${netlifyDevPath}/**/**.js`])
 
   const allCommands = commands.map(file => {
-    let cmd = {}
-    try {
-      cmd = require(file)
-    } catch (e) {
-      throw e
-    }
+    const cmd = require(file)
     const command = commandFromPath(file)
     const parentCommand = command.split(':')[0]
     const parent = command === parentCommand ? true : false
     return {
-      command: command,
+      command,
       commandGroup: parentCommand,
       isParent: parent,
       path: file,

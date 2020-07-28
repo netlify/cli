@@ -49,7 +49,7 @@ class BaseCommand extends Command {
       // current site context
       site: {
         root: buildDir,
-        configPath: configPath,
+        configPath,
         get id() {
           return state.get('siteId')
         },
@@ -58,13 +58,13 @@ class BaseCommand extends Command {
         },
       },
       // Configuration from netlify.[toml/yml]
-      config: config,
+      config,
       // Used to avoid calling @neltify/config again
-      cachedConfig: cachedConfig,
+      cachedConfig,
       // global cli config
-      globalConfig: globalConfig,
+      globalConfig,
       // state of current site dir
-      state: state,
+      state,
     }
   }
 
@@ -73,7 +73,7 @@ class BaseCommand extends Command {
     try {
       return await resolveConfig({
         config: argv.config,
-        cwd: cwd,
+        cwd,
         context: argv.context,
         debug: argv.debug,
         siteId: argv.siteId || (typeof argv.site === 'string' && argv.site) || state.get('siteId'),
@@ -242,10 +242,10 @@ class BaseCommand extends Command {
     const email = user.email
     await identify({
       name: user.full_name,
-      email: email,
+      email,
     }).then(() => {
       return track('user_login', {
-        email: email,
+        email,
       })
     })
 

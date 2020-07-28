@@ -23,8 +23,8 @@ module.exports = function handler(event, context, callback) {
   // prepare a payload to post
   var payload = {
     'form-name': 'routes',
-    'destination': destination,
-    'code': code,
+    destination,
+    code,
     'expires': '',
   }
 

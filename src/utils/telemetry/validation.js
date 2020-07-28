@@ -33,19 +33,18 @@ module.exports = function isValidEventName(eventName, config) {
 function containsSeparators(eventName) {
   const underscores = (eventName.match(/_/g) || []).length
   if (underscores !== 1) {
-    console.log(`Event name must have single underscore. "${eventName}" contains ${underscores}`) // eslint-disable-line
+    console.log(`Event name must have single underscore. "${eventName}" contains ${underscores}`)
     return false
   }
   const colons = (eventName.match(/:/g) || []).length
   if (colons !== 1) {
-    console.log(`Event name must have single colon. "${eventName}" contains ${colons}`) // eslint-disable-line
+    console.log(`Event name must have single colon. "${eventName}" contains ${colons}`)
     return false
   }
   return true
 }
 
 function formattingWarning(eventName, errorMsg) {
-  /* eslint-disable no-console */
   console.log('-----------------------------')
   console.log('Tracking Error:')
   console.log(`Incorrect tracking event format: "${eventName}"`)
@@ -58,6 +57,5 @@ function formattingWarning(eventName, errorMsg) {
   console.log(`eventName must be camelCased: 'camelCase:camelCase_camelCase'`)
   console.log(`Example: cli:sites_deploySucceeded`)
   console.log('-----------------------------')
-  /* eslint-enable */
   return false
 }

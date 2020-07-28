@@ -1,6 +1,6 @@
 /* eslint prefer-template: 0 */
 const chalk = require('chalk')
-const ansiStyles = require('ansi-styles') // eslint-disable-line
+const ansiStyles = require('ansi-styles')
 
 const forceColor = new chalk.constructor({
   enabled: true,

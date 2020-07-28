@@ -1,6 +1,5 @@
-/* eslint-disable */
 exports.handler = async (event, context) => {
-  const path = event.path.replace(/\.netlify\/functions\/[^\/]+/, '')
+  const path = event.path.replace(/\.netlify\/functions\/[^/]+/, '')
   const segments = path.split('/').filter(e => e)
 
   switch (event.httpMethod) {
