@@ -55,7 +55,6 @@
     "watch": "nyc --reporter=lcov ava --watch",
     "prepack": "oclif-dev manifest && npm prune --prod",
     "postpack": "rm -f oclif.manifest.json && npm i",
-    "report": "nyc report --reporter=text-lcov | coveralls",
     "version": "npm run docs && auto-changelog -p --template keepachangelog && git add README.md docs CHANGELOG.md",
     "prepublishOnly": "git push && git push --tags && gh-release",
     "update-semver": "npm --depth 9999 update",
@@ -156,10 +155,6 @@
     "algoliasearch": "^3.34.0",
     "auto-changelog": "^1.14.1",
     "ava": "^1.4.1",
-    "body": "^5.1.0",
-    "chai": "^4.2.0",
-    "coveralls": "^3.0.4",
-    "dependency-check": "^3.4.1",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^4.3.0",
     "eslint-plugin-import": "^2.22.0",
@@ -169,17 +164,12 @@
     "from2-string": "^1.1.0",
     "gh-release": "^3.5.0",
     "globby": "^10.0.1",
-    "husky": "^3.0.3",
-    "lint-staged": "^9.2.1",
     "markdown-magic": "^0.2.0",
     "mkdirp": "^1.0.4",
-    "mocha": "^6.2.0",
-    "nock": "^10.0.6",
     "npm-run-all": "^4.1.5",
     "nyc": "^14.1.1",
     "prettier": "^1.18.2",
-    "strip-ansi": "^5.2.0",
-    "tempy": "^0.3.0"
+    "strip-ansi": "^5.2.0"
   },
   "ava": {
     "files": [
