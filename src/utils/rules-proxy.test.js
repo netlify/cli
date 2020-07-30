@@ -2,121 +2,193 @@ const path = require('path')
 const test = require('ava')
 const redirectParser = require('netlify-redirect-parser')
 const { getLanguage, parseFile, parseRules } = require('./rules-proxy.js')
-const sitePath = path.join(__dirname, '..', '..', 'tests', 'dummy-site')
-
+const { withSiteBuilder } = require('../../tests/utils/siteBuilder')
 test('getLanguage', t => {
   const language = getLanguage({ 'accept-language': 'ur' })
 
   t.is(language, 'ur')
 })
 
-test('parseFile: netlify.toml', async t => {
-  const rules = await parseFile(redirectParser.parseNetlifyConfig, path.join(sitePath, 'netlify.toml'))
-  const expected = [
+const config = {
+  redirects: [
     {
-      path: '/api/*',
+      from: '/api/*',
+      status: 200,
       to: '/.netlify/functions/:splat',
-      status: 200,
     },
     {
-      path: '/foo',
-      to: '/not-foo',
-      status: 200,
       force: false,
-    },
-    {
-      path: '/foo.html',
+      from: '/foo',
+      status: 200,
       to: '/not-foo',
+    },
+    {
+      from: '/foo.html',
       status: 200,
+      to: '/not-foo',
     },
     {
-      path: '/not-foo',
-      to: '/foo',
+      force: true,
+      from: '/not-foo',
       status: 200,
+      to: '/foo',
+    },
+    {
+      from: '/test-404a',
+      status: 404,
+      to: '/foo',
+    },
+    {
+      from: '/test-404b',
+      status: 404,
+      to: '/foo',
+    },
+    {
       force: true,
-    },
-    {
-      path: '/test-404a',
-      to: '/foo',
+      from: '/test-404c',
       status: 404,
-    },
-    {
-      path: '/test-404b',
       to: '/foo',
-      status: 404,
     },
-    {
-      path: '/test-404c',
-      to: '/foo',
-      status: 404,
-      force: true,
-    },
-  ]
+  ],
+}
 
-  t.deepEqual(rules, expected)
+const redirects = [{ from: '/something ', to: '/ping', status: 200 }]
+
+test('should parse redirect rules from netlify.toml', async t => {
+  await withSiteBuilder('site-with-redirects-in-netlify-toml', async builder => {
+    builder.withNetlifyToml({
+      config,
+    })
+
+    await builder.buildAsync()
+
+    const rules = await parseFile(redirectParser.parseNetlifyConfig, path.join(builder.directory, 'netlify.toml'))
+    const expected = [
+      {
+        path: '/api/*',
+        to: '/.netlify/functions/:splat',
+        status: 200,
+      },
+      {
+        path: '/foo',
+        to: '/not-foo',
+        status: 200,
+        force: false,
+      },
+      {
+        path: '/foo.html',
+        to: '/not-foo',
+        status: 200,
+      },
+      {
+        path: '/not-foo',
+        to: '/foo',
+        status: 200,
+        force: true,
+      },
+      {
+        path: '/test-404a',
+        to: '/foo',
+        status: 404,
+      },
+      {
+        path: '/test-404b',
+        to: '/foo',
+        status: 404,
+      },
+      {
+        path: '/test-404c',
+        to: '/foo',
+        status: 404,
+        force: true,
+      },
+    ]
+
+    t.deepEqual(rules, expected)
+  })
 })
 
-test('parseFile: _redirects', async t => {
-  const rules = await parseFile(redirectParser.parseRedirectsFormat, path.join(sitePath, '_redirects'))
-  const expected = [
-    {
-      path: '/something',
-      to: '/ping',
-      status: 200,
-    },
-  ]
+test('should parse redirect rules from _redirects file', async t => {
+  await withSiteBuilder('site-with-redirects-file', async builder => {
+    builder.withRedirectsFile({
+      redirects,
+    })
 
-  t.deepEqual(rules, expected)
+    await builder.buildAsync()
+
+    const rules = await parseFile(redirectParser.parseRedirectsFormat, path.join(builder.directory, '_redirects'))
+    const expected = [
+      {
+        path: '/something',
+        to: '/ping',
+        status: 200,
+      },
+    ]
+
+    t.deepEqual(rules, expected)
+  })
 })
 
-test('parseRules', async t => {
-  const files = [path.join(sitePath, '_redirects'), path.join(sitePath, 'netlify.toml')]
-  const rules = await parseRules(files)
-  const expected = [
-    {
-      path: '/something',
-      to: '/ping',
-      status: 200,
-    },
-    {
-      path: '/api/*',
-      to: '/.netlify/functions/:splat',
-      status: 200,
-    },
-    {
-      path: '/foo',
-      to: '/not-foo',
-      status: 200,
-      force: false,
-    },
-    {
-      path: '/foo.html',
-      to: '/not-foo',
-      status: 200,
-    },
-    {
-      path: '/not-foo',
-      to: '/foo',
-      status: 200,
-      force: true,
-    },
-    {
-      path: '/test-404a',
-      to: '/foo',
-      status: 404,
-    },
-    {
-      path: '/test-404b',
-      to: '/foo',
-      status: 404,
-    },
-    {
-      path: '/test-404c',
-      to: '/foo',
-      status: 404,
-      force: true,
-    },
-  ]
+test('should parse redirect rules from _redirects file and netlify.toml', async t => {
+  await withSiteBuilder('site-with-redirects-file-and-netlify-toml', async builder => {
+    builder
+      .withRedirectsFile({
+        redirects,
+      })
+      .withNetlifyToml({
+        config,
+      })
 
-  t.deepEqual(rules, expected)
+    await builder.buildAsync()
+
+    const files = [path.join(builder.directory, '_redirects'), path.join(builder.directory, 'netlify.toml')]
+    const rules = await parseRules(files)
+    const expected = [
+      {
+        path: '/something',
+        to: '/ping',
+        status: 200,
+      },
+      {
+        path: '/api/*',
+        to: '/.netlify/functions/:splat',
+        status: 200,
+      },
+      {
+        path: '/foo',
+        to: '/not-foo',
+        status: 200,
+        force: false,
+      },
+      {
+        path: '/foo.html',
+        to: '/not-foo',
+        status: 200,
+      },
+      {
+        path: '/not-foo',
+        to: '/foo',
+        status: 200,
+        force: true,
+      },
+      {
+        path: '/test-404a',
+        to: '/foo',
+        status: 404,
+      },
+      {
+        path: '/test-404b',
+        to: '/foo',
+        status: 404,
+      },
+      {
+        path: '/test-404c',
+        to: '/foo',
+        status: 404,
+        force: true,
+      },
+    ]
+
+    t.deepEqual(rules, expected)
+  })
 })

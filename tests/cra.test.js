@@ -1,53 +1,31 @@
 const path = require('path')
-const { spawn, spawnSync } = require('child_process')
-const url = require('url')
 const test = require('ava')
+const waitPort = require('wait-port')
 const fetch = require('node-fetch')
-const cliPath = require('./utils/cliPath')
-const { randomPort } = require('./utils/')
+const { startDevServer } = require('./utils/')
 const sitePath = path.join(__dirname, 'site-cra')
 
-let ps
-const port = randomPort()
-const host = 'localhost:' + port
-
 test.before(async t => {
-  console.log('Running Netlify Dev server in Create React App project')
-  ps = await spawn(cliPath, ['dev', '-p', port], {
+  const server = await startDevServer({
     cwd: sitePath,
-    env: { ...process.env, DUMMY_VAR: 'true', SKIP_PREFLIGHT_CHECK: 'true' },
-    stdio: 'pipe',
-    shell: true,
+    env: { SKIP_PREFLIGHT_CHECK: 'true' },
   })
-  return new Promise((resolve, reject) => {
-    ps.stdout.on('data', data => {
-      data = data.toString()
-      if (data.includes('Server now ready on')) {
-        resolve()
-      }
-    })
 
-    let error = ''
-    ps.stderr.on('data', data => {
-      error = error + data.toString()
-    })
-    ps.on('close', code => {
-      if (code !== 0) {
-        console.error(error)
-        reject(error)
-      }
-    })
-  })
+  // wait for react app dev server to start
+  await waitPort({ port: 3000, timeout: 15 * 1000, output: 'silent' })
+  t.context.server = server
 })
 
 test('homepage', async t => {
-  const response = await fetch(`http://${host}/`).then(r => r.text())
+  const { url } = t.context.server
+  const response = await fetch(`${url}/`).then(r => r.text())
 
   t.regex(response, /Web site created using create-react-app/)
 })
 
 test('static/js/bundle.js', async t => {
-  const response = await fetch(`http://${host}/static/js/bundle.js`)
+  const { url } = t.context.server
+  const response = await fetch(`${url}/static/js/bundle.js`)
   const body = await response.text()
 
   t.is(response.status, 200)
@@ -57,7 +35,8 @@ test('static/js/bundle.js', async t => {
 })
 
 test('static file under public/', async t => {
-  const response = await fetch(`http://${host}/test.html`)
+  const { url } = t.context.server
+  const response = await fetch(`${url}/test.html`)
   const body = await response.text()
 
   t.is(response.status, 200)
@@ -66,19 +45,17 @@ test('static file under public/', async t => {
 })
 
 test('redirect test', async t => {
-  const requestURL = new url.URL(`http://${host}/something`)
-  const response = await fetch(requestURL, { redirect: 'manual' })
-
-  const expectedUrl = new url.URL(requestURL.toString())
-  expectedUrl.pathname = '/otherthing.html'
+  const { url } = t.context.server
+  const response = await fetch(`${url}/something`, { redirect: 'manual' })
 
   t.is(response.status, 301)
-  t.is(response.headers.get('location'), expectedUrl.toString())
+  t.is(response.headers.get('location'), `${url}/otherthing.html`)
   t.is(await response.text(), 'Redirecting to /otherthing.html')
 })
 
 test('normal rewrite', async t => {
-  const response = await fetch(`http://${host}/doesnt-exist`)
+  const { url } = t.context.server
+  const response = await fetch(`${url}/doesnt-exist`)
   const body = await response.text()
 
   t.is(response.status, 200)
@@ -87,7 +64,8 @@ test('normal rewrite', async t => {
 })
 
 test('force rewrite', async t => {
-  const response = await fetch(`http://${host}/force.html`)
+  const { url } = t.context.server
+  const response = await fetch(`${url}/force.html`)
   const body = await response.text()
 
   t.is(response.status, 200)
@@ -96,7 +74,8 @@ test('force rewrite', async t => {
 })
 
 test('robots.txt', async t => {
-  const response = await fetch(`http://${host}/robots.txt`)
+  const { url } = t.context.server
+  const response = await fetch(`${url}/robots.txt`)
   const body = await response.text()
 
   t.is(response.status, 200)
@@ -106,7 +85,8 @@ test('robots.txt', async t => {
 })
 
 test('functions rewrite echo without body', async t => {
-  const response = await fetch(`http://${host}/api/echo?ding=dong`).then(r => r.json())
+  const { url, host, port } = t.context.server
+  const response = await fetch(`${url}/api/echo?ding=dong`).then(r => r.json())
 
   t.is(response.body, undefined)
   t.deepEqual(response.headers, {
@@ -114,7 +94,7 @@ test('functions rewrite echo without body', async t => {
     'accept-encoding': 'gzip,deflate',
     'client-ip': '127.0.0.1',
     'connection': 'close',
-    'host': `${host}`,
+    'host': `${host}:${port}`,
     'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
     'x-forwarded-for': '::ffff:127.0.0.1',
   })
@@ -125,7 +105,8 @@ test('functions rewrite echo without body', async t => {
 })
 
 test('functions rewrite echo with body', async t => {
-  const response = await fetch(`http://${host}/api/echo?ding=dong`, {
+  const { url, host, port } = t.context.server
+  const response = await fetch(`${url}/api/echo?ding=dong`, {
     method: 'POST',
     body: 'some=thing',
   }).then(r => r.json())
@@ -136,7 +117,7 @@ test('functions rewrite echo with body', async t => {
     'accept-encoding': 'gzip,deflate',
     'client-ip': '127.0.0.1',
     'connection': 'close',
-    'host': `${host}`,
+    'host': `${host}:${port}`,
     'content-type': 'text/plain;charset=UTF-8',
     'content-length': '10',
     'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
@@ -149,14 +130,15 @@ test('functions rewrite echo with body', async t => {
 })
 
 test('functions echo with multiple query params', async t => {
-  const response = await fetch(`http://${host}/.netlify/functions/echo?category=a&category=b`).then(r => r.json())
+  const { url, host, port } = t.context.server
+  const response = await fetch(`${url}/.netlify/functions/echo?category=a&category=b`).then(r => r.json())
 
   t.deepEqual(response.headers, {
     'accept': '*/*',
     'accept-encoding': 'gzip,deflate',
     'client-ip': '127.0.0.1',
     'connection': 'close',
-    'host': `${host}`,
+    'host': `${host}:${port}`,
     'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
     'x-forwarded-for': '::ffff:127.0.0.1',
   })
@@ -167,6 +149,7 @@ test('functions echo with multiple query params', async t => {
   t.deepEqual(response.multiValueQueryStringParameters, { category: ['a', 'b'] })
 })
 
-test.after.always('cleanup', async t => {
-  if (ps && ps.pid) ps.kill(process.platform !== 'win32' ? 'SIGHUP' : undefined)
+test.after(async t => {
+  const { server } = t.context
+  server.close()
 })

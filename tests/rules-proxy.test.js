@@ -4,15 +4,21 @@ const http = require('http')
 const fetch = require('node-fetch')
 const test = require('ava')
 const getPort = require('get-port')
-
-const sitePath = path.join(__dirname, 'dummy-site')
 const { createRewriter } = require('../src/utils/rules-proxy')
+const { createSiteBuilder } = require('./utils/siteBuilder')
 
 test.before(async t => {
+  const builder = createSiteBuilder({ siteName: 'site-with-redirects-file' })
+  builder.withRedirectsFile({
+    redirects: [{ from: '/something ', to: '/ping', status: 200 }],
+  })
+
+  await builder.buildAsync()
+
   const rewriter = await createRewriter({
-    distDir: sitePath,
-    projectDir: sitePath,
-    configPath: path.join(sitePath, 'netlify.toml'),
+    distDir: builder.directory,
+    projectDir: builder.directory,
+    configPath: path.join(builder.directory, 'netlify.toml'),
   })
   const port = await getPort({ port: 8888 })
   const server = http.createServer(function(req, res) {
@@ -21,11 +27,12 @@ test.before(async t => {
 
   t.context.port = port
   t.context.server = server
+  t.context.builder = builder
 
   return server.listen(port)
 })
 
-test('/something rule', async t => {
+test('should apply re-write rule based on _redirects file', async t => {
   const response = await fetch(`http://localhost:${t.context.port}/something`).then(r => r.json())
 
   t.is(response.from, '/something')
@@ -37,6 +44,7 @@ test('/something rule', async t => {
   t.is(response.status, 200)
 })
 
-test.after(t => {
+test.after(async t => {
   t.context.server.close()
+  await t.context.builder.cleanupAsync()
 })

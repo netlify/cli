@@ -1,9 +1,65 @@
-function randomPort() {
-  const min = Math.ceil(2000)
-  const max = Math.floor(7999)
-  return (Math.floor(Math.random() * (max - min + 1)) + min).toString()
+const cliPath = require('./cliPath')
+const path = require('path')
+const getPort = require('get-port')
+const seedrandom = require('seedrandom')
+const { spawn } = require('child_process')
+
+// each process gets a starting port based on the pid
+const rng = seedrandom(`${process.pid}`)
+function getRandomPortStart(rng) {
+  const startPort = Math.floor(rng() * 10000) + 10000 // 10000 to avoid collisions with frameworks ports
+  return startPort
+}
+
+let currentPort = getRandomPortStart(rng)
+
+const startServer = async ({ cwd, env = {} }) => {
+  const tryPort = currentPort++
+  const port = await getPort({ port: tryPort })
+  const host = 'localhost'
+  const url = `http://${host}:${port}`
+  console.log(`Starting dev server on port: ${port} in directory ${path.basename(cwd)}`)
+  const ps = await spawn(cliPath, ['dev', '-p', port], {
+    cwd,
+    stdio: 'pipe',
+    shell: true,
+    env: { ...process.env, ...env },
+  })
+  return new Promise((resolve, reject) => {
+    ps.stdout.on('data', data => {
+      if (data.toString().includes('Server now ready on')) {
+        resolve({ url, host, port, close: () => ps.kill() })
+      }
+    })
+
+    let error = ''
+    ps.stderr.on('data', data => {
+      error = error + data.toString()
+    })
+    ps.on('close', code => {
+      if (code !== 0) {
+        console.error(error)
+        reject(error)
+      }
+    })
+  })
+}
+
+const startDevServer = async options => {
+  const maxAttempts = 5
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const server = await startServer(options)
+      return server
+    } catch (e) {
+      if (attempt === maxAttempts) {
+        throw e
+      }
+      console.warn('Retrying startDevServer', e)
+    }
+  }
 }
 
 module.exports = {
-  randomPort: randomPort,
+  startDevServer,
 }
