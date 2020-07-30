@@ -19,7 +19,6 @@ module.exports = function() {
   return {
     framework: 'hexo',
     command: getYarnOrNPMCommand(),
-    port: 8888,
     frameworkPort: 4000,
     env: { ...process.env },
     possibleArgsArrs,

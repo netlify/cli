@@ -15,7 +15,6 @@ module.exports = function() {
   return {
     framework: 'phenomic',
     command: getYarnOrNPMCommand(),
-    port: 8888,
     frameworkPort: 3333,
     env: { ...process.env },
     possibleArgsArrs,

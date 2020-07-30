@@ -8,7 +8,6 @@
 {
     framework: String, // e.g. gatsby, vue-cli
     command: String, // e.g. yarn, npm
-    port: Number, // e.g. 8888
     frameworkPort: Number, // e.g. 3000
     env: Object, // env variables, see examples
     possibleArgsArrs: [[String]], // e.g [['run develop]], so that the combined command is 'npm run develop', but we allow for multiple
@@ -52,7 +51,6 @@ module.exports = function() {
   return {
     framework: 'gitbook',
     command: getYarnOrNPMCommand(),
-    port: 8888,
     frameworkPort: 4000,
     env: { ...process.env },
     possibleArgsArrs,

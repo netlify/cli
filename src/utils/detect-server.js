@@ -144,17 +144,16 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
     throw new Error('Invalid "port" option specified. The value of "port" option must be an integer')
   }
 
-  settings.port = devConfig.port || settings.port
   if (devConfig.port && devConfig.port === settings.frameworkPort) {
     throw new Error(
       'The "port" option you specified conflicts with the port of your application. Please use a different value for "port"'
     )
   }
-  const port = await getPort({ port: settings.port || 8888 })
-  if (port !== settings.port && devConfig.port) {
-    throw new Error(`Could not acquire required "port": ${settings.port}`)
+  const triedPort = devConfig.port || DEFAULT_PORT
+  settings.port = await getPort({ port: triedPort })
+  if (triedPort !== settings.port && devConfig.port) {
+    throw new Error(`Could not acquire required "port": ${triedPort}`)
   }
-  settings.port = port
 
   settings.jwtRolePath = devConfig.jwtRolePath || 'app_metadata.authorization.roles'
   settings.functionsPort = await getPort({ port: settings.functionsPort || 0 })
@@ -162,6 +161,8 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
 
   return settings
 }
+
+const DEFAULT_PORT = 8888
 
 async function getStaticServerSettings(settings, flags, projectDir, log) {
   let dist = settings.dist
@@ -182,7 +183,6 @@ async function getStaticServerSettings(settings, flags, projectDir, log) {
   return {
     env: { ...process.env },
     noCmd: true,
-    port: 8888,
     frameworkPort: await getPort({ port: 3999 }),
     dist,
   }
