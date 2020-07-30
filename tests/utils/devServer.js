@@ -34,7 +34,7 @@ const startServer = async ({ cwd, env = {} }) => {
           host,
           port,
           close: async () => {
-            ps.kill()
+            ps.kill('SIGKILL')
             await ps
           },
         })

@@ -1,6 +1,6 @@
 const test = require('ava')
 const path = require('path')
-const { withDevServer } = require('./utils')
+const { withDevServer } = require('./utils/devServer')
 const fetch = require('node-fetch')
 const FormData = require('form-data')
 const { withSiteBuilder } = require('./utils/siteBuilder')

@@ -1,6 +1,6 @@
 const test = require('ava')
 const cliPath = require('./utils/cliPath')
-const { withDevServer } = require('./utils')
+const { withDevServer } = require('./utils/devServer')
 const execa = require('execa')
 const { withSiteBuilder } = require('./utils/siteBuilder')
 
