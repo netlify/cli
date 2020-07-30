@@ -50,7 +50,7 @@ test('should return response from a function with setTimeout', async t => {
 })
 
 test('should serve function from a subdirectory', async t => {
-  await withSiteBuilder('site-with-set-timeout-function', async builder => {
+  await withSiteBuilder('site-with-from-subdirectory', async builder => {
     builder.withNetlifyToml({ config: { build: { functions: 'functions' } } }).withFunction({
       path: path.join('echo', 'echo.js'),
       handler: async (event, context) => {

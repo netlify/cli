@@ -1,11 +1,12 @@
 const { toToml } = require('tomlify-j0.4')
 const fs = require('fs-extra')
 const path = require('path')
-const tempy = require('tempy')
+const { v4: uuid } = require('uuid')
+const tempDirectory = require('temp-dir')
 const os = require('os')
 
 const createSiteBuilder = ({ siteName }) => {
-  const directory = path.join(tempy.directory({ prefix: `netlify-cli-tests-${process.version}` }), siteName)
+  const directory = path.join(tempDirectory, `netlify-cli-tests-${process.version}`, `${process.pid}`, uuid(), siteName)
   const tasks = [() => fs.ensureDir(directory)]
 
   const builder = {

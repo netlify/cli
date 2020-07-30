@@ -173,7 +173,7 @@
     "prettier": "^1.18.2",
     "seedrandom": "^3.0.5",
     "strip-ansi": "^5.2.0",
-    "tempy": "^0.3.0",
+    "temp-dir": "^2.0.0",
     "tomlify-j0.4": "^3.0.0"
   },
   "ava": {
