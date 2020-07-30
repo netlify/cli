@@ -12,7 +12,6 @@ module.exports = function() {
     framework: 'eleventy',
     port: 8888,
     frameworkPort: 8080,
-    env: { ...process.env },
     command: 'npx',
     possibleArgsArrs: [['eleventy', '--serve', '--watch']],
     urlRegexp: new RegExp(`(http://)([^:]+:)${8080}(/)?`, 'g'),

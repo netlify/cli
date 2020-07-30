@@ -9,7 +9,6 @@ module.exports = function() {
     framework: 'hugo',
     port: 8888,
     frameworkPort: 1313,
-    env: { ...process.env },
     command: 'hugo',
     possibleArgsArrs: [['server', '-w']],
     urlRegexp: new RegExp(`(http://)([^:]+:)${1313}(/)?`, 'g'),

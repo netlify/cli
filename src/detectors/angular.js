@@ -24,7 +24,6 @@ module.exports = function() {
     command: getYarnOrNPMCommand(),
     port: 8888,
     frameworkPort: 4200,
-    env: { ...process.env },
     possibleArgsArrs,
     urlRegexp: new RegExp(`(http://)([^:]+:)${4200}(/)?`, 'g'),
     dist: 'dist',

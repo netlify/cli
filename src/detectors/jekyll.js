@@ -9,7 +9,6 @@ module.exports = function() {
     framework: 'jekyll',
     port: 8888,
     frameworkPort: 4000,
-    env: { ...process.env },
     command: 'bundle',
     possibleArgsArrs: [['exec', 'jekyll', 'serve', '-w']],
     urlRegexp: new RegExp(`(http://)([^:]+:)${4000}(/)?`, 'g'),
