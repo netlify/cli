@@ -45,6 +45,9 @@ test('should apply re-write rule based on _redirects file', async t => {
 })
 
 test.after(async t => {
-  t.context.server.close()
+  await new Promise(resolve => {
+    t.context.server.on('close', resolve)
+    t.context.server.close()
+  })
   await t.context.builder.cleanupAsync()
 })
