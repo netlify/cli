@@ -1,6 +1,6 @@
 const test = require('ava')
 const path = require('path')
-const { startDevServer } = require('./utils')
+const { withDevServer } = require('./utils')
 const fetch = require('node-fetch')
 const FormData = require('form-data')
 const { withSiteBuilder } = require('./utils/siteBuilder')
@@ -14,12 +14,10 @@ test('should return index file when / is accessed', async t => {
 
     await builder.buildAsync()
 
-    const server = await startDevServer({ cwd: builder.directory })
-
-    const response = await fetch(server.url).then(r => r.text())
-    t.is(response, '<h1>⊂◉‿◉つ</h1>')
-
-    server.close()
+    await withDevServer({ cwd: builder.directory }, async server => {
+      const response = await fetch(server.url).then(r => r.text())
+      t.is(response, '<h1>⊂◉‿◉つ</h1>')
+    })
   })
 })
 
@@ -40,12 +38,10 @@ test('should return response from a function with setTimeout', async t => {
 
     await builder.buildAsync()
 
-    const server = await startDevServer({ cwd: builder.directory })
-
-    const response = await fetch(`${server.url}/.netlify/functions/timeout`).then(r => r.text())
-    t.is(response, 'ping')
-
-    server.close()
+    await withDevServer({ cwd: builder.directory }, async server => {
+      const response = await fetch(`${server.url}/.netlify/functions/timeout`).then(r => r.text())
+      t.is(response, 'ping')
+    })
   })
 })
 
@@ -63,12 +59,10 @@ test('should serve function from a subdirectory', async t => {
 
     await builder.buildAsync()
 
-    const server = await startDevServer({ cwd: builder.directory })
-
-    const response = await fetch(`${server.url}/.netlify/functions/echo`).then(r => r.text())
-    t.is(response, 'ping')
-
-    server.close()
+    await withDevServer({ cwd: builder.directory }, async server => {
+      const response = await fetch(`${server.url}/.netlify/functions/echo`).then(r => r.text())
+      t.is(response, 'ping')
+    })
   })
 })
 
@@ -89,12 +83,10 @@ test('should pass .env.development vars to function', async t => {
 
     await builder.buildAsync()
 
-    const server = await startDevServer({ cwd: builder.directory })
-
-    const response = await fetch(`${server.url}/.netlify/functions/env`).then(r => r.text())
-    t.is(response, 'FROM_DEV_FILE')
-
-    server.close()
+    await withDevServer({ cwd: builder.directory }, async server => {
+      const response = await fetch(`${server.url}/.netlify/functions/env`).then(r => r.text())
+      t.is(response, 'FROM_DEV_FILE')
+    })
   })
 })
 
@@ -112,12 +104,10 @@ test('should pass process env vars to function', async t => {
 
     await builder.buildAsync()
 
-    const server = await startDevServer({ cwd: builder.directory, env: { TEST: 'FROM_PROCESS_ENV' } })
-
-    const response = await fetch(`${server.url}/.netlify/functions/env`).then(r => r.text())
-    t.is(response, 'FROM_PROCESS_ENV')
-
-    server.close()
+    await withDevServer({ cwd: builder.directory, env: { TEST: 'FROM_PROCESS_ENV' } }, async server => {
+      const response = await fetch(`${server.url}/.netlify/functions/env`).then(r => r.text())
+      t.is(response, 'FROM_PROCESS_ENV')
+    })
   })
 })
 
@@ -138,12 +128,10 @@ test('should override process env vars with ones in .env.development', async t =
 
     await builder.buildAsync()
 
-    const server = await startDevServer({ cwd: builder.directory, env: { TEST: 'FROM_PROCESS_ENV' } })
-
-    const response = await fetch(`${server.url}/.netlify/functions/env`).then(r => r.text())
-    t.is(response, 'FROM_DEV_FILE')
-
-    server.close()
+    await withDevServer({ cwd: builder.directory, env: { TEST: 'FROM_PROCESS_ENV' } }, async server => {
+      const response = await fetch(`${server.url}/.netlify/functions/env`).then(r => r.text())
+      t.is(response, 'FROM_DEV_FILE')
+    })
   })
 })
 
@@ -168,13 +156,10 @@ test('should redirect using a wildcard when set in netlify.toml', async t => {
 
     await builder.buildAsync()
 
-    const server = await startDevServer({ cwd: builder.directory })
-
-    const response = await fetch(`${server.url}/api/ping`).then(r => r.text())
-
-    t.is(response, 'ping')
-
-    server.close()
+    await withDevServer({ cwd: builder.directory }, async server => {
+      const response = await fetch(`${server.url}/api/ping`).then(r => r.text())
+      t.is(response, 'ping')
+    })
   })
 })
 
@@ -199,25 +184,23 @@ test('should pass undefined body to functions event for GET requests when redire
 
     await builder.buildAsync()
 
-    const server = await startDevServer({ cwd: builder.directory })
-
-    const response = await fetch(`${server.url}/api/echo?ding=dong`).then(r => r.json())
-    t.is(response.body, undefined)
-    t.deepEqual(response.headers, {
-      'accept': '*/*',
-      'accept-encoding': 'gzip,deflate',
-      'client-ip': '127.0.0.1',
-      'connection': 'close',
-      'host': `${server.host}:${server.port}`,
-      'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
-      'x-forwarded-for': '::ffff:127.0.0.1',
+    await withDevServer({ cwd: builder.directory }, async server => {
+      const response = await fetch(`${server.url}/api/echo?ding=dong`).then(r => r.json())
+      t.is(response.body, undefined)
+      t.deepEqual(response.headers, {
+        'accept': '*/*',
+        'accept-encoding': 'gzip,deflate',
+        'client-ip': '127.0.0.1',
+        'connection': 'close',
+        'host': `${server.host}:${server.port}`,
+        'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
+        'x-forwarded-for': '::ffff:127.0.0.1',
+      })
+      t.is(response.httpMethod, 'GET')
+      t.is(response.isBase64Encoded, false)
+      t.is(response.path, '/api/echo')
+      t.deepEqual(response.queryStringParameters, { ding: 'dong' })
     })
-    t.is(response.httpMethod, 'GET')
-    t.is(response.isBase64Encoded, false)
-    t.is(response.path, '/api/echo')
-    t.deepEqual(response.queryStringParameters, { ding: 'dong' })
-
-    server.close()
   })
 })
 
@@ -242,31 +225,29 @@ test('should pass body to functions event for POST requests when redirecting', a
 
     await builder.buildAsync()
 
-    const server = await startDevServer({ cwd: builder.directory })
+    await withDevServer({ cwd: builder.directory }, async server => {
+      const response = await fetch(`${server.url}/api/echo?ding=dong`, {
+        method: 'POST',
+        body: 'some=thing',
+      }).then(r => r.json())
 
-    const response = await fetch(`${server.url}/api/echo?ding=dong`, {
-      method: 'POST',
-      body: 'some=thing',
-    }).then(r => r.json())
-
-    t.is(response.body, 'some=thing')
-    t.deepEqual(response.headers, {
-      'accept': '*/*',
-      'accept-encoding': 'gzip,deflate',
-      'client-ip': '127.0.0.1',
-      'connection': 'close',
-      'host': `${server.host}:${server.port}`,
-      'content-type': 'text/plain;charset=UTF-8',
-      'content-length': '10',
-      'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
-      'x-forwarded-for': '::ffff:127.0.0.1',
+      t.is(response.body, 'some=thing')
+      t.deepEqual(response.headers, {
+        'accept': '*/*',
+        'accept-encoding': 'gzip,deflate',
+        'client-ip': '127.0.0.1',
+        'connection': 'close',
+        'host': `${server.host}:${server.port}`,
+        'content-type': 'text/plain;charset=UTF-8',
+        'content-length': '10',
+        'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
+        'x-forwarded-for': '::ffff:127.0.0.1',
+      })
+      t.is(response.httpMethod, 'POST')
+      t.is(response.isBase64Encoded, false)
+      t.is(response.path, '/api/echo')
+      t.deepEqual(response.queryStringParameters, { ding: 'dong' })
     })
-    t.is(response.httpMethod, 'POST')
-    t.is(response.isBase64Encoded, false)
-    t.is(response.path, '/api/echo')
-    t.deepEqual(response.queryStringParameters, { ding: 'dong' })
-
-    server.close()
   })
 })
 
@@ -290,17 +271,15 @@ test('should return an empty body for a function with no body when redirecting',
 
     await builder.buildAsync()
 
-    const server = await startDevServer({ cwd: builder.directory })
+    await withDevServer({ cwd: builder.directory }, async server => {
+      const response = await fetch(`${server.url}/api/echo?ding=dong`, {
+        method: 'POST',
+        body: 'some=thing',
+      })
 
-    const response = await fetch(`${server.url}/api/echo?ding=dong`, {
-      method: 'POST',
-      body: 'some=thing',
+      t.is(await response.text(), '')
+      t.is(response.status, 200)
     })
-
-    t.is(await response.text(), '')
-    t.is(response.status, 200)
-
-    server.close()
   })
 })
 
@@ -325,37 +304,35 @@ test('should handle multipart form data when redirecting', async t => {
 
     await builder.buildAsync()
 
-    const server = await startDevServer({ cwd: builder.directory })
+    await withDevServer({ cwd: builder.directory }, async server => {
+      const form = new FormData()
+      form.append('some', 'thing')
 
-    const form = new FormData()
-    form.append('some', 'thing')
+      const response = await fetch(`${server.url}/api/echo?ding=dong`, {
+        method: 'POST',
+        body: form.getBuffer(),
+        headers: form.getHeaders(),
+      }).then(r => r.json())
 
-    const response = await fetch(`${server.url}/api/echo?ding=dong`, {
-      method: 'POST',
-      body: form.getBuffer(),
-      headers: form.getHeaders(),
-    }).then(r => r.json())
+      const formBoundary = form.getBoundary()
 
-    const formBoundary = form.getBoundary()
-
-    t.deepEqual(response.headers, {
-      'accept': '*/*',
-      'accept-encoding': 'gzip,deflate',
-      'client-ip': '127.0.0.1',
-      'connection': 'close',
-      'host': `${server.host}:${server.port}`,
-      'content-length': form.getLengthSync().toString(),
-      'content-type': `multipart/form-data; boundary=${formBoundary}`,
-      'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
-      'x-forwarded-for': '::ffff:127.0.0.1',
+      t.deepEqual(response.headers, {
+        'accept': '*/*',
+        'accept-encoding': 'gzip,deflate',
+        'client-ip': '127.0.0.1',
+        'connection': 'close',
+        'host': `${server.host}:${server.port}`,
+        'content-length': form.getLengthSync().toString(),
+        'content-type': `multipart/form-data; boundary=${formBoundary}`,
+        'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
+        'x-forwarded-for': '::ffff:127.0.0.1',
+      })
+      t.is(response.httpMethod, 'POST')
+      t.is(response.isBase64Encoded, false)
+      t.is(response.path, '/api/echo')
+      t.deepEqual(response.queryStringParameters, { ding: 'dong' })
+      t.is(response.body, form.getBuffer().toString())
     })
-    t.is(response.httpMethod, 'POST')
-    t.is(response.isBase64Encoded, false)
-    t.is(response.path, '/api/echo')
-    t.deepEqual(response.queryStringParameters, { ding: 'dong' })
-    t.is(response.body, form.getBuffer().toString())
-
-    server.close()
   })
 })
 
@@ -370,19 +347,14 @@ test('should return 404 when redirecting to a non existing function', async t =>
 
     await builder.buildAsync()
 
-    const server = await startDevServer({ cwd: builder.directory })
+    await withDevServer({ cwd: builder.directory }, async server => {
+      const response = await fetch(`${server.url}/api/none`, {
+        method: 'POST',
+        body: 'nothing',
+      })
 
-    const form = new FormData()
-    form.append('some', 'thing')
-
-    const response = await fetch(`${server.url}/api/none`, {
-      method: 'POST',
-      body: 'nothing',
+      t.is(response.status, 404)
     })
-
-    t.is(response.status, 404)
-
-    server.close()
   })
 })
 
@@ -406,17 +378,17 @@ test('should parse function query parameters using simple parsing', async t => {
 
     await builder.buildAsync()
 
-    const server = await startDevServer({ cwd: builder.directory })
+    await withDevServer({ cwd: builder.directory }, async server => {
+      const response1 = await fetch(`${server.url}/.netlify/functions/echo?category[SOMETHING][]=something`).then(r =>
+        r.json()
+      )
+      const response2 = await fetch(`${server.url}/.netlify/functions/echo?category=one&category=two`).then(r =>
+        r.json()
+      )
 
-    const response1 = await fetch(`${server.url}/.netlify/functions/echo?category[SOMETHING][]=something`).then(r =>
-      r.json()
-    )
-    const response2 = await fetch(`${server.url}/.netlify/functions/echo?category=one&category=two`).then(r => r.json())
-
-    t.deepEqual(response1.queryStringParameters, { 'category[SOMETHING][]': 'something' })
-    t.deepEqual(response2.queryStringParameters, { category: 'one, two' })
-
-    server.close()
+      t.deepEqual(response1.queryStringParameters, { 'category[SOMETHING][]': 'something' })
+      t.deepEqual(response2.queryStringParameters, { category: 'one, two' })
+    })
   })
 })
 
@@ -444,56 +416,54 @@ test('should handle form submission', async t => {
 
     await builder.buildAsync()
 
-    const server = await startDevServer({ cwd: builder.directory })
+    await withDevServer({ cwd: builder.directory }, async server => {
+      const form = new FormData()
+      form.append('some', 'thing')
+      const response = await fetch(`${server.url}/?ding=dong`, {
+        method: 'POST',
+        body: form.getBuffer(),
+        headers: form.getHeaders(),
+      }).then(r => r.json())
 
-    const form = new FormData()
-    form.append('some', 'thing')
-    const response = await fetch(`${server.url}/?ding=dong`, {
-      method: 'POST',
-      body: form.getBuffer(),
-      headers: form.getHeaders(),
-    }).then(r => r.json())
+      const body = JSON.parse(response.body)
 
-    const body = JSON.parse(response.body)
-
-    t.deepEqual(response.headers, {
-      'accept': '*/*',
-      'accept-encoding': 'gzip,deflate',
-      'client-ip': '127.0.0.1',
-      'connection': 'close',
-      'host': `${server.host}:${server.port}`,
-      'content-length': '285',
-      'content-type': 'application/json',
-      'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
-      'x-forwarded-for': '::ffff:127.0.0.1',
-    })
-    t.is(response.httpMethod, 'POST')
-    t.is(response.isBase64Encoded, false)
-    t.is(response.path, '/')
-    t.deepEqual(response.queryStringParameters, { ding: 'dong' })
-    t.deepEqual(body, {
-      payload: {
-        created_at: body.payload.created_at,
-        data: {
-          ip: '::ffff:127.0.0.1',
-          some: 'thing',
-          user_agent: 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
-        },
-        human_fields: {
-          Some: 'thing',
-        },
-        ordered_human_fields: [
-          {
-            name: 'some',
-            title: 'Some',
-            value: 'thing',
+      t.deepEqual(response.headers, {
+        'accept': '*/*',
+        'accept-encoding': 'gzip,deflate',
+        'client-ip': '127.0.0.1',
+        'connection': 'close',
+        'host': `${server.host}:${server.port}`,
+        'content-length': '285',
+        'content-type': 'application/json',
+        'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
+        'x-forwarded-for': '::ffff:127.0.0.1',
+      })
+      t.is(response.httpMethod, 'POST')
+      t.is(response.isBase64Encoded, false)
+      t.is(response.path, '/')
+      t.deepEqual(response.queryStringParameters, { ding: 'dong' })
+      t.deepEqual(body, {
+        payload: {
+          created_at: body.payload.created_at,
+          data: {
+            ip: '::ffff:127.0.0.1',
+            some: 'thing',
+            user_agent: 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
           },
-        ],
-      },
-      site: {},
+          human_fields: {
+            Some: 'thing',
+          },
+          ordered_human_fields: [
+            {
+              name: 'some',
+              title: 'Some',
+              value: 'thing',
+            },
+          ],
+        },
+        site: {},
+      })
     })
-
-    server.close()
   })
 })
 
@@ -521,19 +491,16 @@ test('should not handle form submission when content type is `text/plain`', asyn
 
     await builder.buildAsync()
 
-    const server = await startDevServer({ cwd: builder.directory })
-
-    const response = await fetch(`${server.url}/?ding=dong`, {
-      method: 'POST',
-      body: 'Something',
-      headers: {
-        'content-type': 'text/plain',
-      },
-    }).then(r => r.text())
-
-    t.is(response, 'Method Not Allowed')
-
-    server.close()
+    await withDevServer({ cwd: builder.directory }, async server => {
+      const response = await fetch(`${server.url}/?ding=dong`, {
+        method: 'POST',
+        body: 'Something',
+        headers: {
+          'content-type': 'text/plain',
+        },
+      }).then(r => r.text())
+      t.is(response, 'Method Not Allowed')
+    })
   })
 })
 
@@ -556,13 +523,10 @@ test('should return existing local file even when redirect matches when force=fa
 
     await builder.buildAsync()
 
-    const server = await startDevServer({ cwd: builder.directory })
-
-    const response = await fetch(`${server.url}/foo?ping=pong`).then(r => r.text())
-
-    t.is(response, '<html><h1>foo')
-
-    server.close()
+    await withDevServer({ cwd: builder.directory }, async server => {
+      const response = await fetch(`${server.url}/foo?ping=pong`).then(r => r.text())
+      t.is(response, '<html><h1>foo')
+    })
   })
 })
 
@@ -585,13 +549,10 @@ test('should ignore existing local file when redirect matches and force=true', a
 
     await builder.buildAsync()
 
-    const server = await startDevServer({ cwd: builder.directory })
-
-    const response = await fetch(`${server.url}/foo`).then(r => r.text())
-
-    t.is(response, '<html><h1>not-foo')
-
-    server.close()
+    await withDevServer({ cwd: builder.directory }, async server => {
+      const response = await fetch(`${server.url}/foo`).then(r => r.text())
+      t.is(response, '<html><h1>not-foo')
+    })
   })
 })
 
@@ -614,13 +575,10 @@ test('should use existing file when rule contains file extension and force=false
 
     await builder.buildAsync()
 
-    const server = await startDevServer({ cwd: builder.directory })
-
-    const response = await fetch(`${server.url}/foo.html`).then(r => r.text())
-
-    t.is(response, '<html><h1>foo')
-
-    server.close()
+    await withDevServer({ cwd: builder.directory }, async server => {
+      const response = await fetch(`${server.url}/foo.html`).then(r => r.text())
+      t.is(response, '<html><h1>foo')
+    })
   })
 })
 
@@ -643,13 +601,10 @@ test('should redirect when rule contains file extension and force=true', async t
 
     await builder.buildAsync()
 
-    const server = await startDevServer({ cwd: builder.directory })
-
-    const response = await fetch(`${server.url}/foo.html`).then(r => r.text())
-
-    t.is(response, '<html><h1>not-foo')
-
-    server.close()
+    await withDevServer({ cwd: builder.directory }, async server => {
+      const response = await fetch(`${server.url}/foo.html`).then(r => r.text())
+      t.is(response, '<html><h1>not-foo')
+    })
   })
 })
 
@@ -672,19 +627,17 @@ test('should redirect from sub directory to root directory', async t => {
 
     await builder.buildAsync()
 
-    const server = await startDevServer({ cwd: builder.directory })
+    await withDevServer({ cwd: builder.directory }, async server => {
+      const response1 = await fetch(`${server.url}/not-foo`).then(r => r.text())
+      const response2 = await fetch(`${server.url}/not-foo/`).then(r => r.text())
 
-    const response1 = await fetch(`${server.url}/not-foo`).then(r => r.text())
-    const response2 = await fetch(`${server.url}/not-foo/`).then(r => r.text())
+      // TODO: check why this doesn't redirect
+      const response3 = await fetch(`${server.url}/not-foo/index.html`).then(r => r.text())
 
-    // TODO: check why this doesn't redirect
-    const response3 = await fetch(`${server.url}/not-foo/index.html`).then(r => r.text())
-
-    t.is(response1, '<html><h1>foo')
-    t.is(response2, '<html><h1>foo')
-    t.is(response3, '<html><h1>not-foo')
-
-    server.close()
+      t.is(response1, '<html><h1>foo')
+      t.is(response2, '<html><h1>foo')
+      t.is(response3, '<html><h1>not-foo')
+    })
   })
 })
 
@@ -697,12 +650,10 @@ test('should return 404.html if exists for non existing routes', async t => {
 
     await builder.buildAsync()
 
-    const server = await startDevServer({ cwd: builder.directory })
-
-    const response = await fetch(`${server.url}/non-existent`).then(r => r.text())
-    t.is(response, '<h1>404 - Page not found</h1>')
-
-    server.close()
+    await withDevServer({ cwd: builder.directory }, async server => {
+      const response = await fetch(`${server.url}/non-existent`).then(r => r.text())
+      t.is(response, '<h1>404 - Page not found</h1>')
+    })
   })
 })
 
@@ -721,14 +672,11 @@ test('should return 404 for redirect', async t => {
 
     await builder.buildAsync()
 
-    const server = await startDevServer({ cwd: builder.directory })
-
-    const response = await fetch(`${server.url}/test-404`)
-
-    t.is(response.status, 404)
-    t.is(await response.text(), '<html><h1>foo')
-
-    server.close()
+    await withDevServer({ cwd: builder.directory }, async server => {
+      const response = await fetch(`${server.url}/test-404`)
+      t.is(response.status, 404)
+      t.is(await response.text(), '<html><h1>foo')
+    })
   })
 })
 
@@ -751,14 +699,12 @@ test('should ignore 404 redirect for existing file', async t => {
 
     await builder.buildAsync()
 
-    const server = await startDevServer({ cwd: builder.directory })
+    await withDevServer({ cwd: builder.directory }, async server => {
+      const response = await fetch(`${server.url}/test-404`)
 
-    const response = await fetch(`${server.url}/test-404`)
-
-    t.is(response.status, 200)
-    t.is(await response.text(), '<html><h1>This page actually exists')
-
-    server.close()
+      t.is(response.status, 200)
+      t.is(await response.text(), '<html><h1>This page actually exists')
+    })
   })
 })
 
@@ -781,13 +727,11 @@ test('should follow 404 redirect even with existing file when force=true', async
 
     await builder.buildAsync()
 
-    const server = await startDevServer({ cwd: builder.directory })
+    await withDevServer({ cwd: builder.directory }, async server => {
+      const response = await fetch(`${server.url}/test-404`)
 
-    const response = await fetch(`${server.url}/test-404`)
-
-    t.is(response.status, 404)
-    t.is(await response.text(), '<html><h1>foo')
-
-    server.close()
+      t.is(response.status, 404)
+      t.is(await response.text(), '<html><h1>foo')
+    })
   })
 })

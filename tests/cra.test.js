@@ -151,5 +151,5 @@ test('functions echo with multiple query params', async t => {
 
 test.after(async t => {
   const { server } = t.context
-  server.close()
+  await server.close()
 })

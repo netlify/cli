@@ -2,7 +2,7 @@ const cliPath = require('./cliPath')
 const path = require('path')
 const getPort = require('get-port')
 const seedrandom = require('seedrandom')
-const { spawn } = require('child_process')
+const execa = require('execa')
 
 // each process gets a starting port based on the pid
 const rng = seedrandom(`${process.pid}`)
@@ -19,16 +19,25 @@ const startServer = async ({ cwd, env = {} }) => {
   const host = 'localhost'
   const url = `http://${host}:${port}`
   console.log(`Starting dev server on port: ${port} in directory ${path.basename(cwd)}`)
-  const ps = await spawn(cliPath, ['dev', '-p', port], {
+  const ps = execa(cliPath, ['dev', '-p', port], {
     cwd,
     stdio: 'pipe',
     shell: true,
     env: { ...process.env, ...env },
+    reject: false,
   })
   return new Promise((resolve, reject) => {
     ps.stdout.on('data', data => {
       if (data.toString().includes('Server now ready on')) {
-        resolve({ url, host, port, close: () => ps.kill() })
+        resolve({
+          url,
+          host,
+          port,
+          close: async () => {
+            ps.kill()
+            await ps
+          },
+        })
       }
     })
 
@@ -60,6 +69,17 @@ const startDevServer = async options => {
   }
 }
 
+const withDevServer = async (options, testHandler) => {
+  let server
+  try {
+    server = await startDevServer(options)
+    return await testHandler(server)
+  } finally {
+    await server.close()
+  }
+}
+
 module.exports = {
+  withDevServer,
   startDevServer,
 }
