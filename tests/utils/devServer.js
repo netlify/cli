@@ -3,6 +3,7 @@ const path = require('path')
 const getPort = require('get-port')
 const seedrandom = require('seedrandom')
 const execa = require('execa')
+const pidtree = require('pidtree')
 
 // each process gets a starting port based on the pid
 const rng = seedrandom(`${process.pid}`)
@@ -32,8 +33,16 @@ const startServer = async ({ cwd, env = {} }) => {
           host,
           port,
           close: async () => {
-            ps.kill('SIGKILL')
-            await ps
+            const pids = await pidtree(ps.pid).catch(() => [])
+            pids.forEach(pid => () => {
+              try {
+                process.kill(pid)
+              } catch (e) {
+                // no-op
+              }
+            })
+            ps.kill()
+            await Promise.race([ps, new Promise(resolve => setTimeout(resolve, 1000))])
           },
         })
       }
