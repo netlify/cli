@@ -49,5 +49,6 @@ test.after(async t => {
     t.context.server.on('close', resolve)
     t.context.server.close()
   })
-  await t.context.builder.cleanupAsync()
+  // TODO: check why this line breaks the rewriter on windows
+  // await t.context.builder.cleanupAsync()
 })
