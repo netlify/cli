@@ -21,8 +21,6 @@ const startServer = async ({ cwd, env = {} }) => {
   console.log(`Starting dev server on port: ${port} in directory ${path.basename(cwd)}`)
   const ps = execa(cliPath, ['dev', '-p', port], {
     cwd,
-    stdio: 'pipe',
-    shell: true,
     env: { ...process.env, ...env },
     reject: false,
   })
