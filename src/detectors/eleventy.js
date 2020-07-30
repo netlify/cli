@@ -15,7 +15,6 @@ module.exports = function() {
     env: { ...process.env },
     command: 'npx',
     possibleArgsArrs: [['eleventy', '--serve', '--watch']],
-    urlRegexp: new RegExp(`(http://)([^:]+:)${8080}(/)?`, 'g'),
     dist: '_site',
   }
 }

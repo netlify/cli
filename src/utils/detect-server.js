@@ -126,7 +126,6 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
       )
 
     settings.frameworkPort = devConfig.targetPort
-    settings.urlRegexp = devConfig.urlRegexp || new RegExp(`(http://)([^:]+:)${devConfig.targetPort}(/)?`, 'g')
   }
   if (devConfig.port && devConfig.port === settings.frameworkPort) {
     throw new Error(

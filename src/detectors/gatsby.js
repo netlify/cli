@@ -23,7 +23,6 @@ module.exports = function() {
     frameworkPort: 8000,
     env: { ...process.env, GATSBY_LOGGER: 'yurnalist' },
     possibleArgsArrs,
-    urlRegexp: new RegExp(`(http://)([^:]+:)${8000}(/)?`, 'g'),
     dist: 'public',
   }
 }

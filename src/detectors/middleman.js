@@ -12,7 +12,6 @@ module.exports = function() {
     env: { ...process.env },
     command: 'bundle',
     possibleArgsArrs: [['exec', 'middleman', 'server']],
-    urlRegexp: new RegExp(`(http://)([^:]+:)${4567}(/)?`, 'g'),
     dist: 'build',
   }
 }

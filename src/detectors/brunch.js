@@ -19,7 +19,6 @@ module.exports = function() {
     frameworkPort: 3333,
     env: { ...process.env },
     possibleArgsArrs,
-    urlRegexp: new RegExp(`(http://)([^:]+:)${3333}(/)?`, 'g'),
     dist: 'app/assets',
   }
 }
