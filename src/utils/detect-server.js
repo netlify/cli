@@ -100,8 +100,9 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
     settings.args.unshift('run')
   }
   if (!settings.noCmd && devConfig.command) {
-    settings.command = assignLoudly(devConfig.command.split(/\s/)[0], settings.command || null, 'command') // if settings.command is empty, its bc no settings matched
-    settings.args = assignLoudly(devConfig.command.split(/\s/).slice(1), [], 'command') // if settings.command is empty, its bc no settings matched
+    const [devConfigCommand, ...devConfigArgs] = devConfig.command.split(/\s+/)
+    settings.command = assignLoudly(devConfigCommand, settings.command || null, 'command') // if settings.command is empty, its bc no settings matched
+    settings.args = assignLoudly(devConfigArgs, [], 'command') // if settings.command is empty, its bc no settings matched
   }
   settings.dist = flags.dir || devConfig.publish || settings.dist // dont loudassign if they dont need it
 
