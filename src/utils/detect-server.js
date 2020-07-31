@@ -240,7 +240,6 @@ function formatSettingsArrForInquirer(settingsArr) {
 }
 // if first arg is undefined, use default, but tell user about it in case it is unintentional
 function assignLoudly(optionalValue, defaultValue, settingsField) {
-  if (defaultValue === undefined) throw new Error('must have a defaultValue')
   if (defaultValue !== optionalValue && optionalValue === undefined) {
     console.log(
       `${NETLIFYDEVLOG} Overriding ${chalk.yellow(settingsField)} with setting derived from netlify.toml [dev] block: `,
