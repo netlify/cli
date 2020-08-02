@@ -234,17 +234,15 @@ function filterSettings(scriptInquirerOptions, input) {
 
 /** utiltities for the inquirer section above */
 function formatSettingsArrForInquirer(settingsArr) {
-  const ans = []
-  settingsArr.forEach(setting => {
-    setting.possibleArgsArrs.forEach(args => {
-      ans.push({
+  return [].concat(
+    ...settingsArr.map(setting =>
+      setting.possibleArgsArrs.map(args => ({
         name: `[${chalk.yellow(setting.framework)}] ${setting.command} ${args.join(' ')}`,
         value: { ...setting, args },
         short: setting.framework + '-' + args.join(' '),
-      })
-    })
-  })
-  return ans
+      }))
+    )
+  )
 }
 // if first arg is undefined, use default, but tell user about it in case it is unintentional
 function assignLoudly(
