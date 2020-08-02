@@ -19,7 +19,6 @@ module.exports = function() {
   return {
     framework: 'react-static',
     command: getYarnOrNPMCommand(),
-    port: 8888,
     frameworkPort: 3000,
     env: { ...process.env },
     possibleArgsArrs,

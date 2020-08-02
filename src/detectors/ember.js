@@ -22,7 +22,6 @@ module.exports = function() {
   return {
     framework: 'ember',
     command: getYarnOrNPMCommand(),
-    port: 8888,
     frameworkPort: 4200,
     env: { ...process.env },
     possibleArgsArrs,

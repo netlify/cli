@@ -10,7 +10,6 @@ module.exports = function() {
 
   return {
     framework: 'eleventy',
-    port: 8888,
     frameworkPort: 8080,
     env: { ...process.env },
     command: 'npx',

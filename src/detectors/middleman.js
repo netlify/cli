@@ -7,7 +7,6 @@ module.exports = function() {
 
   return {
     framework: 'middleman',
-    port: 8888,
     frameworkPort: 4567,
     env: { ...process.env },
     command: 'bundle',

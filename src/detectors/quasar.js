@@ -22,7 +22,6 @@ module.exports = function() {
   return {
     framework: 'quasar',
     command: getYarnOrNPMCommand(),
-    port: 8888,
     frameworkPort: 8081,
     env: { ...process.env },
     possibleArgsArrs,

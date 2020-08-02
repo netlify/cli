@@ -23,7 +23,6 @@ module.exports = function() {
   return {
     framework: 'expo',
     command: getYarnOrNPMCommand(),
-    port: 8888,
     frameworkPort: 19006,
     env: { ...process.env },
     possibleArgsArrs,
