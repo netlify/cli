@@ -100,8 +100,8 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
     settings.args.unshift('run')
   }
   if (!settings.noCmd && devConfig.command) {
-    settings.command = assignLoudly(devConfig.command.split(/\s/)[0], settings.command || null, tellUser('command')) // if settings.command is empty, its bc no settings matched
-    settings.args = assignLoudly(devConfig.command.split(/\s/).slice(1), [], tellUser('command')) // if settings.command is empty, its bc no settings matched
+    settings.command = assignLoudly(devConfig.command.split(/\s/)[0], settings.command || null, 'command') // if settings.command is empty, its bc no settings matched
+    settings.args = assignLoudly(devConfig.command.split(/\s/).slice(1), [], 'command') // if settings.command is empty, its bc no settings matched
   }
   settings.dist = flags.dir || devConfig.publish || settings.dist // dont loudassign if they dont need it
 
@@ -186,12 +186,6 @@ async function getStaticServerSettings(settings, flags, projectDir, log) {
   }
 }
 
-const tellUser = settingsField => dV =>
-  console.log(
-    `${NETLIFYDEVLOG} Overriding ${chalk.yellow(settingsField)} with setting derived from netlify.toml [dev] block: `,
-    dV
-  )
-
 function loadDetector(detectorName) {
   try {
     return require(path.join(__dirname, '..', 'detectors', detectorName))
@@ -245,14 +239,13 @@ function formatSettingsArrForInquirer(settingsArr) {
   )
 }
 // if first arg is undefined, use default, but tell user about it in case it is unintentional
-function assignLoudly(
-  optionalValue,
-  defaultValue,
-  tellUser = dV => console.log(`No value specified, using fallback of `, dV)
-) {
+function assignLoudly(optionalValue, defaultValue, settingsField) {
   if (defaultValue === undefined) throw new Error('must have a defaultValue')
   if (defaultValue !== optionalValue && optionalValue === undefined) {
-    tellUser(defaultValue)
+    console.log(
+      `${NETLIFYDEVLOG} Overriding ${chalk.yellow(settingsField)} with setting derived from netlify.toml [dev] block: `,
+      defaultValue
+    )
     return defaultValue
   }
   return optionalValue
