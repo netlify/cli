@@ -1,10 +1,7 @@
 {
   "plugins": ["node", "prettier"],
   "parserOptions": {
-    "sourceType": "module",
-    "ecmaFeatures": {
-      "jsx": true
-    }
+    "sourceType": "module"
   },
   "env": {
     "node": true,

@@ -1,0 +1,21 @@
+{
+  "root": true,
+  "parser": "babel-eslint",
+  "plugins": ["node", "prettier"],
+  "extends": ["eslint:recommended", "plugin:react/recommended", "prettier/react"],
+  "overrides": [
+    {
+      "files": "*.js",
+      "env": {
+        "node": true,
+        "es6": true
+      }
+    }
+  ],
+  "rules": { "react/prop-types": 0 },
+  "settings": {
+    "react": {
+      "version": "16.13.1" // from @compositor/x0@6.0.7
+    }
+  }
+}
