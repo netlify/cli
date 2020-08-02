@@ -22,7 +22,7 @@ const startServer = async ({ cwd, env = {} }) => {
   console.log(`Starting dev server on port: ${port} in directory ${path.basename(cwd)}`)
   const ps = execa(cliPath, ['dev', '-p', port], {
     cwd,
-    env: { ...process.env, ...env },
+    env,
     reject: false,
   })
   return new Promise((resolve, reject) => {
