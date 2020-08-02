@@ -28,7 +28,6 @@ module.exports = function() {
     env: { ...process.env, BROWSER: 'none', PORT: 3000 },
     stdio: ['inherit', 'pipe', 'pipe'],
     possibleArgsArrs,
-    urlRegexp: new RegExp(`(http://)([^:]+:)${3000}(/)?`, 'g'),
     dist: 'public',
   }
 }

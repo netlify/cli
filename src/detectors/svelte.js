@@ -26,7 +26,6 @@ module.exports = function() {
     frameworkPort: 5000,
     env: { ...process.env },
     possibleArgsArrs,
-    urlRegexp: new RegExp(`(http://)([^:]+:)${5000}(/)?`, 'g'),
     dist: 'public',
   }
 }

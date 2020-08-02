@@ -11,7 +11,6 @@ module.exports = function() {
     env: { ...process.env },
     command: 'hugo',
     possibleArgsArrs: [['server', '-w']],
-    urlRegexp: new RegExp(`(http://)([^:]+:)${1313}(/)?`, 'g'),
     dist: 'public',
   }
 }

@@ -25,7 +25,6 @@ module.exports = function() {
     frameworkPort: 8080,
     env: { ...process.env },
     possibleArgsArrs,
-    urlRegexp: new RegExp(`(http://)([^:]+:)${8080}(/)?`, 'g'),
     dist: '.quasar',
   }
 }
