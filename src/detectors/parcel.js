@@ -23,7 +23,6 @@ module.exports = function() {
     framework: 'parcel',
     command: getYarnOrNPMCommand(),
     frameworkPort: 1234,
-    env: { ...process.env },
     possibleArgsArrs,
     dist: 'dist',
   }

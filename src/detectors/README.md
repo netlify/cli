@@ -51,7 +51,7 @@ module.exports = function() {
     framework: 'gitbook',
     command: getYarnOrNPMCommand(),
     frameworkPort: 4000,
-    env: { ...process.env },
+    env: { NAME: 'value' },
     possibleArgsArrs,
     dist: 'public',
   }

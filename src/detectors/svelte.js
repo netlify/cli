@@ -24,7 +24,6 @@ module.exports = function() {
     framework: 'svelte',
     command: getYarnOrNPMCommand(),
     frameworkPort: 5000,
-    env: { ...process.env },
     possibleArgsArrs,
     dist: 'public',
   }

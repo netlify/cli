@@ -16,7 +16,6 @@ module.exports = function() {
     framework: 'gridsome',
     command: getYarnOrNPMCommand(),
     frameworkPort: 8080,
-    env: { ...process.env },
     possibleArgsArrs,
     dist: 'dist',
   }

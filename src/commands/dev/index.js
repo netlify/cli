@@ -398,7 +398,7 @@ async function startDevServer(settings, log) {
     throw err
   })
   const ps = child_process.spawn(commandBin, settings.args, {
-    env: { ...settings.env, FORCE_COLOR: 'true' },
+    env: { ...process.env, ...settings.env, FORCE_COLOR: 'true' },
     stdio: 'pipe',
   })
 

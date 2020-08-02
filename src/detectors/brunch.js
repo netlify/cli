@@ -16,7 +16,6 @@ module.exports = function() {
     framework: 'brunch',
     command: getYarnOrNPMCommand(),
     frameworkPort: 3333,
-    env: { ...process.env },
     possibleArgsArrs,
     dist: 'app/assets',
   }

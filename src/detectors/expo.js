@@ -24,7 +24,6 @@ module.exports = function() {
     framework: 'expo',
     command: getYarnOrNPMCommand(),
     frameworkPort: 19006,
-    env: { ...process.env },
     possibleArgsArrs,
     dist: 'web-build',
   }

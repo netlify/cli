@@ -22,7 +22,6 @@ module.exports = function() {
     framework: 'vuepress',
     command: getYarnOrNPMCommand(),
     frameworkPort: 8080,
-    env: { ...process.env },
     possibleArgsArrs,
     dist: '.vuepress/dist',
   }

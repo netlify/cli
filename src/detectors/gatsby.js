@@ -20,7 +20,7 @@ module.exports = function() {
     framework: 'gatsby',
     command: getYarnOrNPMCommand(),
     frameworkPort: 8000,
-    env: { ...process.env, GATSBY_LOGGER: 'yurnalist' },
+    env: { GATSBY_LOGGER: 'yurnalist' },
     possibleArgsArrs,
     dist: 'public',
   }

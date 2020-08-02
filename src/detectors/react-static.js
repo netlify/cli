@@ -20,7 +20,6 @@ module.exports = function() {
     framework: 'react-static',
     command: getYarnOrNPMCommand(),
     frameworkPort: 3000,
-    env: { ...process.env },
     possibleArgsArrs,
     dist: 'dist',
   }

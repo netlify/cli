@@ -8,7 +8,6 @@ module.exports = function() {
   return {
     framework: 'middleman',
     frameworkPort: 4567,
-    env: { ...process.env },
     command: 'bundle',
     possibleArgsArrs: [['exec', 'middleman', 'server']],
     dist: 'build',

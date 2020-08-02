@@ -23,7 +23,6 @@ module.exports = function() {
     framework: 'quasar-cli-v0.17',
     command: getYarnOrNPMCommand(),
     frameworkPort: 8080,
-    env: { ...process.env },
     possibleArgsArrs,
     dist: '.quasar',
   }

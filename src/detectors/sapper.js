@@ -22,7 +22,6 @@ module.exports = function() {
     framework: 'sapper',
     command: getYarnOrNPMCommand(),
     frameworkPort: 3000,
-    env: { ...process.env },
     possibleArgsArrs,
     dist: 'static',
   }

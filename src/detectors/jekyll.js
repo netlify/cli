@@ -8,7 +8,6 @@ module.exports = function() {
   return {
     framework: 'jekyll',
     frameworkPort: 4000,
-    env: { ...process.env },
     command: 'bundle',
     possibleArgsArrs: [['exec', 'jekyll', 'serve', '-w']],
     dist: '_site',

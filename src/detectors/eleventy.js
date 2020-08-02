@@ -11,7 +11,6 @@ module.exports = function() {
   return {
     framework: 'eleventy',
     frameworkPort: 8080,
-    env: { ...process.env },
     command: 'npx',
     possibleArgsArrs: [['eleventy', '--serve', '--watch']],
     dist: '_site',

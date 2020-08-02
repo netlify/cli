@@ -8,7 +8,6 @@ module.exports = function() {
   return {
     framework: 'hugo',
     frameworkPort: 1313,
-    env: { ...process.env },
     command: 'hugo',
     possibleArgsArrs: [['server', '-w']],
     dist: 'public',

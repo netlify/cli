@@ -20,7 +20,6 @@ module.exports = function() {
     framework: 'hexo',
     command: getYarnOrNPMCommand(),
     frameworkPort: 4000,
-    env: { ...process.env },
     possibleArgsArrs,
     dist: 'public',
   }

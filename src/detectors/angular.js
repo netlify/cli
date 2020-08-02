@@ -23,7 +23,6 @@ module.exports = function() {
     framework: 'angular',
     command: getYarnOrNPMCommand(),
     frameworkPort: 4200,
-    env: { ...process.env },
     possibleArgsArrs,
     dist: 'dist',
   }

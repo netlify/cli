@@ -7,7 +7,7 @@ const fuzzy = require('fuzzy')
 const fs = require('fs')
 
 module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
-  let settings = { env: { ...process.env } }
+  let settings = {}
   const detectorsFiles = fs.readdirSync(path.join(__dirname, '..', 'detectors')).filter(x => x.endsWith('.js')) // only accept .js detector files
 
   if (typeof devConfig.framework !== 'string') throw new Error('Invalid "framework" option provided in config')
@@ -180,7 +180,6 @@ async function getStaticServerSettings(settings, flags, projectDir, log) {
   }
   log(`${NETLIFYDEVWARN} Running static server from "${path.relative(path.dirname(projectDir), dist)}"`)
   return {
-    env: { ...process.env },
     noCmd: true,
     frameworkPort: await getPort({ port: 3999 }),
     dist,
