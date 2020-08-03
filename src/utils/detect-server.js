@@ -101,8 +101,8 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
   }
   if (!settings.noCmd && devConfig.command) {
     const [devConfigCommand, ...devConfigArgs] = devConfig.command.split(/\s+/)
-    settings.command = assignLoudly(devConfigCommand, settings.command || null, 'command') // if settings.command is empty, its bc no settings matched
-    settings.args = assignLoudly(devConfigArgs, [], 'command') // if settings.command is empty, its bc no settings matched
+    settings.command = assignLoudly(devConfigCommand, settings.command || null)
+    settings.args = assignLoudly(devConfigArgs, [])
   }
   settings.dist = flags.dir || devConfig.publish || settings.dist // dont loudassign if they dont need it
 
@@ -240,10 +240,10 @@ function formatSettingsArrForInquirer(settingsArr) {
   )
 }
 // if first arg is undefined, use default, but tell user about it in case it is unintentional
-function assignLoudly(optionalValue, defaultValue, settingsField) {
+function assignLoudly(optionalValue, defaultValue) {
   if (defaultValue !== optionalValue && optionalValue === undefined) {
     console.log(
-      `${NETLIFYDEVLOG} Overriding ${chalk.yellow(settingsField)} with setting derived from netlify.toml [dev] block: `,
+      `${NETLIFYDEVLOG} Overriding ${chalk.yellow('command')} with setting derived from netlify.toml [dev] block: `,
       defaultValue
     )
     return defaultValue
