@@ -16,6 +16,6 @@
   "author": "Netlify",
   "license": "MIT",
   "dependencies": {
-    "sendmail": "1.4.1"
+    "sendmail": "1.6.1"
   }
 }
