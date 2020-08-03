@@ -8,8 +8,7 @@ module.exports = function() {
   return {
     framework: 'hugo',
     frameworkPort: 1313,
-    command: 'hugo',
-    possibleArgsArrs: [['server', '-w']],
+    watchCommands: ['hugo server -w'],
     dist: 'public',
   }
 }

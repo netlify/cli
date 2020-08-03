@@ -1,4 +1,4 @@
-const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
+const { hasRequiredDeps, hasRequiredFiles, getWatchCommands } = require('./utils/jsdetect')
 
 module.exports = function() {
   // REQUIRED FILES
@@ -8,16 +8,15 @@ module.exports = function() {
 
   /** everything below now assumes that we are within Sapper */
 
-  const possibleArgsArrs = scanScripts({
+  const watchCommands = getWatchCommands({
     preferredScriptsArr: ['dev', 'start'],
     preferredCommand: 'sapper dev',
   })
 
   return {
     framework: 'sapper',
-    command: getYarnOrNPMCommand(),
     frameworkPort: 3000,
-    possibleArgsArrs,
+    watchCommands,
     dist: 'static',
   }
 }

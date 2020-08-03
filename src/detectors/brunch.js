@@ -1,4 +1,4 @@
-const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
+const { hasRequiredDeps, hasRequiredFiles, getWatchCommands } = require('./utils/jsdetect')
 module.exports = function() {
   // REQUIRED FILES
   if (!hasRequiredFiles(['package.json', 'brunch-config.js'])) return false
@@ -7,16 +7,15 @@ module.exports = function() {
 
   /** everything below now assumes that we are within gatsby */
 
-  const possibleArgsArrs = scanScripts({
+  const watchCommands = getWatchCommands({
     preferredScriptsArr: ['start'],
     preferredCommand: 'brunch watch --server',
   })
 
   return {
     framework: 'brunch',
-    command: getYarnOrNPMCommand(),
     frameworkPort: 3333,
-    possibleArgsArrs,
+    watchCommands,
     dist: 'app/assets',
   }
 }

@@ -1,4 +1,4 @@
-const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
+const { hasRequiredDeps, hasRequiredFiles, getWatchCommands } = require('./utils/jsdetect')
 
 module.exports = function() {
   // REQUIRED FILES
@@ -9,16 +9,15 @@ module.exports = function() {
 
   /** everything below now assumes that we are within ember */
 
-  const possibleArgsArrs = scanScripts({
+  const watchCommands = getWatchCommands({
     preferredScriptsArr: ['serve', 'start', 'run'],
     preferredCommand: 'ember serve',
   })
 
   return {
     framework: 'ember',
-    command: getYarnOrNPMCommand(),
     frameworkPort: 4200,
-    possibleArgsArrs,
+    watchCommands,
     dist: 'dist',
   }
 }

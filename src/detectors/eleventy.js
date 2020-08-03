@@ -11,8 +11,7 @@ module.exports = function() {
   return {
     framework: 'eleventy',
     frameworkPort: 8080,
-    command: 'npx',
-    possibleArgsArrs: [['eleventy', '--serve', '--watch']],
+    watchCommands: ['npx eleventy --serve --watch'],
     dist: '_site',
   }
 }

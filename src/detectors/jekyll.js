@@ -8,8 +8,7 @@ module.exports = function() {
   return {
     framework: 'jekyll',
     frameworkPort: 4000,
-    command: 'bundle',
-    possibleArgsArrs: [['exec', 'jekyll', 'serve', '-w']],
+    watchCommands: ['bundle exec jekyll serve -w'],
     dist: '_site',
   }
 }

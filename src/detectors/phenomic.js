@@ -1,4 +1,4 @@
-const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
+const { hasRequiredDeps, hasRequiredFiles, getWatchCommands } = require('./utils/jsdetect')
 module.exports = function() {
   // REQUIRED FILES
   if (!hasRequiredFiles(['package.json'])) return false
@@ -7,16 +7,15 @@ module.exports = function() {
 
   /** everything below now assumes that we are within gatsby */
 
-  const possibleArgsArrs = scanScripts({
+  const watchCommands = getWatchCommands({
     preferredScriptsArr: ['start'],
     preferredCommand: 'phenomic start',
   })
 
   return {
     framework: 'phenomic',
-    command: getYarnOrNPMCommand(),
     frameworkPort: 3333,
-    possibleArgsArrs,
+    watchCommands,
     dist: 'public',
   }
 }

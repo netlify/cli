@@ -8,8 +8,7 @@ module.exports = function() {
   return {
     framework: 'middleman',
     frameworkPort: 4567,
-    command: 'bundle',
-    possibleArgsArrs: [['exec', 'middleman', 'server']],
+    watchCommands: ['bundle exec middleman server'],
     dist: 'build',
   }
 }

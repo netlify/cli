@@ -1,4 +1,4 @@
-const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
+const { hasRequiredDeps, hasRequiredFiles, getWatchCommands } = require('./utils/jsdetect')
 
 module.exports = function() {
   /* REQUIRED FILES */
@@ -9,16 +9,15 @@ module.exports = function() {
 
   /* Everything below now assumes that we are within parcel */
 
-  const possibleArgsArrs = scanScripts({
+  const watchCommands = getWatchCommands({
     preferredScriptsArr: ['start', 'dev', 'run'],
     preferredCommand: 'parcel',
   })
 
   return {
     framework: 'parcel',
-    command: getYarnOrNPMCommand(),
     frameworkPort: 1234,
-    possibleArgsArrs,
+    watchCommands,
     dist: 'dist',
   }
 }

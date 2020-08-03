@@ -1,4 +1,4 @@
-const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
+const { hasRequiredDeps, hasRequiredFiles, getWatchCommands } = require('./utils/jsdetect')
 
 module.exports = function() {
   // REQUIRED FILES
@@ -8,7 +8,7 @@ module.exports = function() {
 
   /** everything below now assumes that we are within Quasar */
 
-  const possibleArgsArrs = scanScripts({
+  const watchCommands = getWatchCommands({
     preferredScriptsArr: ['serve', 'start', 'run', 'dev'],
     // NOTE: this is comented out as it was picking this up in cordova related scripts.
     // preferredCommand: "quasar dev"
@@ -16,9 +16,8 @@ module.exports = function() {
 
   return {
     framework: 'quasar',
-    command: getYarnOrNPMCommand(),
     frameworkPort: 8081,
-    possibleArgsArrs,
+    watchCommands,
     dist: '.quasar',
   }
 }

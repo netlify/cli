@@ -1,4 +1,4 @@
-const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
+const { hasRequiredDeps, hasRequiredFiles, getWatchCommands } = require('./utils/jsdetect')
 
 module.exports = function() {
   // REQUIRED FILES
@@ -10,16 +10,15 @@ module.exports = function() {
 
   /** everything below now assumes that we are within svelte */
 
-  const possibleArgsArrs = scanScripts({
+  const watchCommands = getWatchCommands({
     preferredScriptsArr: ['dev', 'start', 'run'],
     preferredCommand: 'npm run dev',
   })
 
   return {
     framework: 'svelte',
-    command: getYarnOrNPMCommand(),
     frameworkPort: 5000,
-    possibleArgsArrs,
+    watchCommands,
     dist: 'public',
   }
 }

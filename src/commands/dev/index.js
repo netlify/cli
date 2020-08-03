@@ -389,15 +389,16 @@ async function startDevServer(settings, log) {
   }
 
   log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.framework || 'custom config'}`)
-  const commandBin = await which(settings.command).catch(err => {
+  const [watchCommand, ...watchCommandArgs] = settings.watchCommand.split(/\s+/)
+  const watchCommandBin = await which(watchCommand).catch(err => {
     if (err.code === 'ENOENT') {
       throw new Error(
-        `"${settings.command}" could not be found in your PATH. Please make sure that "${settings.command}" is installed and available in your PATH`
+        `"${watchCommand}" could not be found in your PATH. Please make sure that "${watchCommand}" is installed and available in your PATH`
       )
     }
     throw err
   })
-  const ps = child_process.spawn(commandBin, settings.args, {
+  const ps = child_process.spawn(watchCommandBin, watchCommandArgs, {
     env: { ...process.env, ...settings.env, FORCE_COLOR: 'true' },
     stdio: 'pipe',
   })
@@ -410,7 +411,7 @@ async function startDevServer(settings, log) {
   function handleProcessExit(code) {
     log(
       code > 0 ? NETLIFYDEVERR : NETLIFYDEVWARN,
-      `"${[settings.command, ...settings.args].join(' ')}" exited with code ${code}. Shutting down Netlify Dev server`
+      `"${settings.watchCommand}" exited with code ${code}. Shutting down Netlify Dev server`
     )
     process.exit(code)
   }

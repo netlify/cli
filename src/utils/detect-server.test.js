@@ -48,24 +48,21 @@ test('serverSettings: "command" override npm', async t => {
   const devConfig = { framework: '#custom', command: 'npm run dev', targetPort: 1234 }
   const settings = await serverSettings(devConfig, {}, t.context.sitePath, () => {})
   t.is(settings.framework, devConfig.framework)
-  t.is(settings.command, devConfig.command.split(' ')[0])
-  t.deepEqual(settings.args, devConfig.command.split(' ').slice(1))
+  t.is(settings.watchCommand, devConfig.command)
 })
 
 test('serverSettings: "command" override yarn', async t => {
   const devConfig = { framework: '#custom', command: 'yarn dev', targetPort: 1234 }
   const settings = await serverSettings(devConfig, {}, t.context.sitePath, () => {})
   t.is(settings.framework, devConfig.framework)
-  t.is(settings.command, devConfig.command.split(' ')[0])
-  t.deepEqual(settings.args, devConfig.command.split(' ').slice(1))
+  t.is(settings.watchCommand, devConfig.command)
 })
 
 test('serverSettings: custom framework parameters', async t => {
   const devConfig = { framework: '#custom', command: 'yarn dev', targetPort: 3000, publish: t.context.sitePath }
   const settings = await serverSettings(devConfig, {}, t.context.sitePath, () => {})
   t.is(settings.framework, '#custom')
-  t.is(settings.command, devConfig.command.split(' ')[0])
-  t.deepEqual(settings.args, devConfig.command.split(' ').slice(1))
+  t.is(settings.watchCommand, devConfig.command)
   t.is(settings.targetPort, devConfig.frameworkPort)
   t.is(settings.dist, devConfig.publish)
 })

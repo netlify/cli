@@ -1,4 +1,4 @@
-const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
+const { hasRequiredDeps, hasRequiredFiles, getWatchCommands } = require('./utils/jsdetect')
 module.exports = function() {
   // REQUIRED FILES
   if (!hasRequiredFiles(['package.json', 'gridsome.config.js'])) return false
@@ -7,16 +7,15 @@ module.exports = function() {
 
   /** everything below now assumes that we are within gridsome */
 
-  const possibleArgsArrs = scanScripts({
+  const watchCommands = getWatchCommands({
     preferredScriptsArr: ['develop'],
     preferredCommand: 'gridsome develop',
   })
 
   return {
     framework: 'gridsome',
-    command: getYarnOrNPMCommand(),
     frameworkPort: 8080,
-    possibleArgsArrs,
+    watchCommands,
     dist: 'dist',
   }
 }

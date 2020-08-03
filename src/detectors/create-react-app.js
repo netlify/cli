@@ -1,4 +1,4 @@
-const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
+const { hasRequiredDeps, hasRequiredFiles, getWatchCommands } = require('./utils/jsdetect')
 
 /**
  * detection logic - artificial intelligence!
@@ -11,18 +11,17 @@ module.exports = function() {
 
   /** everything below now assumes that we are within create-react-app */
 
-  const possibleArgsArrs = scanScripts({
+  const watchCommands = getWatchCommands({
     preferredScriptsArr: ['start', 'serve', 'run'],
     preferredCommand: 'react-scripts start',
   })
 
   return {
     framework: 'create-react-app',
-    command: getYarnOrNPMCommand(),
     frameworkPort: 3000, // the port that create-react-app normally outputs
     env: { BROWSER: 'none', PORT: 3000 },
     stdio: ['inherit', 'pipe', 'pipe'],
-    possibleArgsArrs,
+    watchCommands,
     dist: 'public',
   }
 }

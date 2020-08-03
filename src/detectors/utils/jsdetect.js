@@ -22,7 +22,7 @@ function getYarnOrNPMCommand() {
   if (!yarnExists) {
     yarnExists = existsSync('yarn.lock') ? 'yes' : 'no'
   }
-  return yarnExists === 'yes' ? 'yarn' : 'npm'
+  return yarnExists === 'yes' ? 'yarn' : 'npm run'
 }
 
 /**
@@ -51,7 +51,7 @@ function hasRequiredFiles(filenameArr) {
 }
 
 // preferredScriptsArr is in decreasing order of preference
-function scanScripts({ preferredScriptsArr, preferredCommand }) {
+function getWatchCommands({ preferredScriptsArr, preferredCommand }) {
   const { scripts } = getPkgJSON()
 
   if (!scripts && !warnedAboutEmptyScript) {
@@ -62,31 +62,22 @@ function scanScripts({ preferredScriptsArr, preferredCommand }) {
     warnedAboutEmptyScript = true // dont spam message with every detector
     return [] // not going to match any scripts anyway
   }
-  /**
-   *
-   * NOTE: we return an array of arrays (args)
-   * because we may want to supply extra args in some setups
-   *
-   * e.g. ['eleventy', '--serve', '--watch']
-   *
-   * array will in future be sorted by likelihood of what we want
-   *
-   *  */
   // this is very simplistic logic, we can offer far more intelligent logic later
   // eg make a dependency tree of npm scripts and offer the parentest node first
+  const command = getYarnOrNPMCommand()
   return Object.entries(scripts)
     .filter(
       ([scriptName, scriptCommand]) =>
-        (preferredScriptsArr.includes(scriptName) || scriptCommand.includes(preferredCommand)) &&
+        (preferredScriptsArr.includes(scriptName) ||
+          (preferredCommand !== undefined && scriptCommand.includes(preferredCommand))) &&
         // prevent netlify dev calling netlify dev
         !scriptCommand.includes('netlify dev')
     )
-    .map(([scriptName]) => [scriptName])
+    .map(([scriptName]) => `${command} ${scriptName}`)
 }
 
 module.exports = {
   hasRequiredDeps,
   hasRequiredFiles,
-  getYarnOrNPMCommand,
-  scanScripts,
+  getWatchCommands,
 }

@@ -1,4 +1,4 @@
-const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
+const { hasRequiredDeps, hasRequiredFiles, getWatchCommands } = require('./utils/jsdetect')
 
 module.exports = function() {
   // REQUIRED FILES
@@ -8,16 +8,15 @@ module.exports = function() {
 
   /** everything below now assumes that we are within vue */
 
-  const possibleArgsArrs = scanScripts({
+  const watchCommands = getWatchCommands({
     preferredScriptsArr: ['serve', 'start', 'run'],
     preferredCommand: 'vue-cli-service serve',
   })
 
   return {
     framework: 'vue',
-    command: getYarnOrNPMCommand(),
     frameworkPort: 8080,
-    possibleArgsArrs,
+    watchCommands,
     dist: 'dist',
   }
 }

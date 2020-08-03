@@ -1,4 +1,4 @@
-const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
+const { hasRequiredDeps, hasRequiredFiles, getWatchCommands } = require('./utils/jsdetect')
 module.exports = function() {
   // REQUIRED FILES
   if (!hasRequiredFiles(['package.json', 'static.config.js'])) return false
@@ -7,16 +7,15 @@ module.exports = function() {
 
   /** everything below now assumes that we are within react-static */
 
-  const possibleArgsArrs = scanScripts({
+  const watchCommands = getWatchCommands({
     preferredScriptsArr: ['start', 'develop', 'dev'],
     preferredCommand: 'react-static start',
   })
 
   return {
     framework: 'react-static',
-    command: getYarnOrNPMCommand(),
     frameworkPort: 3000,
-    possibleArgsArrs,
+    watchCommands,
     dist: 'dist',
   }
 }

@@ -37,7 +37,7 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
     }
     if (settingsArr.length === 1) {
       settings = settingsArr[0]
-      settings.args = chooseDefaultArgs(settings.possibleArgsArrs)
+      settings.watchCommand = chooseDefaultArgs(settings.watchCommands)
     } else if (settingsArr.length > 1) {
       /** multiple matching detectors, make the user choose */
       // lazy loading on purpose
@@ -93,11 +93,7 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
       )
 
     settings = detectorResult
-    settings.args = chooseDefaultArgs(detectorResult.possibleArgsArrs)
-  }
-
-  if (settings.command === 'npm' && !['start', 'run'].includes(settings.args[0])) {
-    settings.args.unshift('run')
+    settings.watchCommand = chooseDefaultArgs(detectorResult.watchCommands)
   }
 
   if (!settings.noCmd && devConfig.command) {
@@ -105,9 +101,7 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
       `${NETLIFYDEVLOG} Overriding ${chalk.yellow('command')} with setting derived from netlify.toml [dev] block: `,
       devConfig.command
     )
-    const [devConfigCommand, ...devConfigArgs] = devConfig.command.split(/\s+/)
-    settings.command = devConfigCommand
-    settings.args = devConfigArgs
+    settings.watchCommand = devConfig.command
   }
 
   settings.dist = flags.dir || devConfig.publish || settings.dist
@@ -123,7 +117,7 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
       )
     }
 
-    if (!settings.command)
+    if (!settings.watchCommand)
       throw new Error(
         'No "command" specified or detected. The "command" option is required to use "targetPort" option.'
       )
@@ -140,7 +134,7 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
     )
   }
 
-  if (!settings.command && !settings.framework && !settings.noCmd) {
+  if (!settings.watchCommand && !settings.framework && !settings.noCmd) {
     settings = await getStaticServerSettings(settings, flags, projectDir, log)
   }
 
@@ -237,10 +231,10 @@ function filterSettings(scriptInquirerOptions, input) {
 function formatSettingsArrForInquirer(settingsArr) {
   return [].concat(
     ...settingsArr.map(setting =>
-      setting.possibleArgsArrs.map(args => ({
-        name: `[${chalk.yellow(setting.framework)}] ${setting.command} ${args.join(' ')}`,
-        value: { ...setting, args },
-        short: setting.framework + '-' + args.join(' '),
+      setting.watchCommands.map(watchCommand => ({
+        name: `[${chalk.yellow(setting.framework)}] ${watchCommand}`,
+        short: `${setting.framework} - ${watchCommand}`,
+        value: { ...setting, watchCommand },
       }))
     )
   )

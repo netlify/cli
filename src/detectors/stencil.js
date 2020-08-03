@@ -1,4 +1,4 @@
-const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
+const { hasRequiredDeps, hasRequiredFiles, getWatchCommands } = require('./utils/jsdetect')
 
 /**
  * detection logic - artificial intelligence!
@@ -11,17 +11,16 @@ module.exports = function() {
 
   /** everything below now assumes that we are within stencil */
 
-  const possibleArgsArrs = scanScripts({
+  const watchCommands = getWatchCommands({
     preferredScriptsArr: ['start'],
     preferredCommand: 'stencil build --dev --watch --serve',
   })
 
   return {
     framework: 'stencil',
-    command: getYarnOrNPMCommand(),
     frameworkPort: 3333, // the port that stencil normally outputs
     env: { BROWSER: 'none', PORT: 3000 },
-    possibleArgsArrs,
+    watchCommands,
     dist: 'www',
   }
 }
