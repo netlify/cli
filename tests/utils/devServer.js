@@ -23,9 +23,9 @@ const startServer = async ({ cwd, env = {} }) => {
   const ps = execa(cliPath, ['dev', '-p', port], {
     cwd,
     env,
-    reject: false,
   })
   return new Promise((resolve, reject) => {
+    let selfKilled = false
     ps.stdout.on('data', data => {
       if (data.toString().includes('Server now ready on')) {
         resolve({
@@ -33,6 +33,7 @@ const startServer = async ({ cwd, env = {} }) => {
           host,
           port,
           close: async () => {
+            selfKilled = true
             const pids = await pidtree(ps.pid).catch(() => [])
             pids.forEach(pid => () => {
               try {
@@ -42,22 +43,12 @@ const startServer = async ({ cwd, env = {} }) => {
               }
             })
             ps.kill()
-            await Promise.race([ps, new Promise(resolve => setTimeout(resolve, 1000))])
+            await Promise.race([ps.catch(() => undefined), new Promise(resolve => setTimeout(resolve, 1000))])
           },
         })
       }
     })
-
-    let error = ''
-    ps.stderr.on('data', data => {
-      error = error + data.toString()
-    })
-    ps.on('close', code => {
-      if (code !== 0) {
-        console.error(error)
-        reject(error)
-      }
-    })
+    ps.catch(error => !selfKilled && reject(error))
   })
 }
 
@@ -82,7 +73,9 @@ const withDevServer = async (options, testHandler) => {
     server = await startDevServer(options)
     return await testHandler(server)
   } finally {
-    await server.close()
+    if (server) {
+      await server.close()
+    }
   }
 }
 
