@@ -99,12 +99,18 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
   if (settings.command === 'npm' && !['start', 'run'].includes(settings.args[0])) {
     settings.args.unshift('run')
   }
+
   if (!settings.noCmd && devConfig.command) {
+    console.log(
+      `${NETLIFYDEVLOG} Overriding ${chalk.yellow('command')} with setting derived from netlify.toml [dev] block: `,
+      devConfig.command
+    )
     const [devConfigCommand, ...devConfigArgs] = devConfig.command.split(/\s+/)
-    settings.command = assignLoudly(devConfigCommand, settings.command || null)
-    settings.args = assignLoudly(devConfigArgs, [])
+    settings.command = devConfigCommand
+    settings.args = devConfigArgs
   }
-  settings.dist = flags.dir || devConfig.publish || settings.dist // dont loudassign if they dont need it
+
+  settings.dist = flags.dir || devConfig.publish || settings.dist
 
   if (devConfig.targetPort) {
     if (devConfig.targetPort && typeof devConfig.targetPort !== 'number') {
@@ -238,15 +244,4 @@ function formatSettingsArrForInquirer(settingsArr) {
       }))
     )
   )
-}
-// if first arg is undefined, use default, but tell user about it in case it is unintentional
-function assignLoudly(optionalValue, defaultValue) {
-  if (defaultValue !== optionalValue && optionalValue === undefined) {
-    console.log(
-      `${NETLIFYDEVLOG} Overriding ${chalk.yellow('command')} with setting derived from netlify.toml [dev] block: `,
-      defaultValue
-    )
-    return defaultValue
-  }
-  return optionalValue
 }
