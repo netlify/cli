@@ -15,11 +15,6 @@ module.exports = function() {
     preferredCommand: 'npm run dev',
   })
 
-  if (possibleArgsArrs.length === 0) {
-    // ofer to run it when the user doesnt have any scripts setup! 🤯
-    possibleArgsArrs.push(['npm', 'dev'])
-  }
-
   return {
     framework: 'svelte',
     command: getYarnOrNPMCommand(),

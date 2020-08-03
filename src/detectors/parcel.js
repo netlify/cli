@@ -14,11 +14,6 @@ module.exports = function() {
     preferredCommand: 'parcel',
   })
 
-  if (possibleArgsArrs.length === 0) {
-    /* Offer to run it when the user doesnt have any scripts setup! 🤯 */
-    possibleArgsArrs.push(['parcel'])
-  }
-
   return {
     framework: 'parcel',
     command: getYarnOrNPMCommand(),

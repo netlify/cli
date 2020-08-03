@@ -14,11 +14,6 @@ module.exports = function() {
     preferredCommand: 'ember serve',
   })
 
-  if (possibleArgsArrs.length === 0) {
-    // ofer to run it when the user doesnt have any scripts setup! 🤯
-    possibleArgsArrs.push(['ember', 'serve'])
-  }
-
   return {
     framework: 'ember',
     command: getYarnOrNPMCommand(),

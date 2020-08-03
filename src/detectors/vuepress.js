@@ -13,11 +13,6 @@ module.exports = function() {
     preferredCommand: 'vuepress dev',
   })
 
-  if (possibleArgsArrs.length === 0) {
-    // ofer to run it when the user doesnt have any scripts setup! 🤯
-    possibleArgsArrs.push(['vuepress', 'dev'])
-  }
-
   return {
     framework: 'vuepress',
     command: getYarnOrNPMCommand(),

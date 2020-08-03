@@ -14,11 +14,6 @@ module.exports = function() {
     preferredCommand: 'ng build --prod',
   })
 
-  if (possibleArgsArrs.length === 0) {
-    // offer to run it when the user does not have any scripts setup! 🤯
-    possibleArgsArrs.push(['ng', 'build', '--prod'])
-  }
-
   return {
     framework: 'angular',
     command: getYarnOrNPMCommand(),

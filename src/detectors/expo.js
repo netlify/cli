@@ -16,10 +16,6 @@ module.exports = function() {
     preferredCommand: 'expo start --web',
   })
 
-  if (possibleArgsArrs.length === 0) {
-    // ofer to run it when the user doesnt have any scripts setup! 🤯
-    possibleArgsArrs.push(['expo', 'start', '--web'])
-  }
   return {
     framework: 'expo',
     command: getYarnOrNPMCommand(),
