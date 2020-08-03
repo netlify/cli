@@ -14,11 +14,6 @@ module.exports = function() {
     // preferredCommand: "quasar dev"
   })
 
-  if (possibleArgsArrs.length === 0) {
-    // ofer to run this default when the user doesnt have any matching scripts setup!
-    possibleArgsArrs.push(['quasar', 'dev'])
-  }
-
   return {
     framework: 'quasar-cli-v0.17',
     command: getYarnOrNPMCommand(),

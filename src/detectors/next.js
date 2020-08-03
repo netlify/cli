@@ -12,10 +12,6 @@ module.exports = function() {
     preferredCommand: 'next',
   })
 
-  if (possibleArgsArrs.length === 0) {
-    // ofer to run it when the user doesnt have any scripts setup! 🤯
-    possibleArgsArrs.push(['next'])
-  }
   return {
     framework: 'next',
     command: getYarnOrNPMCommand(),

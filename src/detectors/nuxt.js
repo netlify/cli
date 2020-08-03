@@ -13,11 +13,6 @@ module.exports = function() {
     preferredCommand: 'nuxt',
   })
 
-  if (possibleArgsArrs.length === 0) {
-    // ofer to run it when the user doesnt have any scripts setup! 🤯
-    possibleArgsArrs.push(['nuxt'])
-  }
-
   return {
     framework: 'nuxt',
     command: getYarnOrNPMCommand(),

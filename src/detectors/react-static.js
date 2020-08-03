@@ -12,10 +12,6 @@ module.exports = function() {
     preferredCommand: 'react-static start',
   })
 
-  if (possibleArgsArrs.length === 0) {
-    // ofer to run it when the user doesnt have any scripts setup! 🤯
-    possibleArgsArrs.push(['react-static', 'start'])
-  }
   return {
     framework: 'react-static',
     command: getYarnOrNPMCommand(),

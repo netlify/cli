@@ -13,11 +13,6 @@ module.exports = function() {
     preferredCommand: 'sapper dev',
   })
 
-  if (possibleArgsArrs.length === 0) {
-    // ofer to run it when the user doesnt have any scripts setup! 🤯
-    possibleArgsArrs.push(['sapper', 'dev'])
-  }
-
   return {
     framework: 'sapper',
     command: getYarnOrNPMCommand(),
