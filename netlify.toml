@@ -1,8 +1,11 @@
 [build]
   # This will be run the site build
-  command = "npm install && cd site && npm install && npm run build"
+  command = "npm install && cd site && npm ci && npm run build"
   # This is the directory is publishing to netlify's CDN
   publish = "site/dist"
+
+  [build.environment]
+    NODE_VERSION = "12"
 
 #####################
 #  Redirect Rules   #
