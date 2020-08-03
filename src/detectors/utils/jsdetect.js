@@ -74,18 +74,14 @@ function scanScripts({ preferredScriptsArr, preferredCommand }) {
    *  */
   // this is very simplistic logic, we can offer far more intelligent logic later
   // eg make a dependency tree of npm scripts and offer the parentest node first
-  const possibleArgsArrs = preferredScriptsArr
-    .filter(s => Object.keys(scripts).includes(s))
-    .filter(s => !scripts[s].includes('netlify dev')) // prevent netlify dev calling netlify dev
-    .map(x => [x]) // make into arr of arrs
-
-  Object.entries(scripts)
-    .filter(([k]) => !preferredScriptsArr.includes(k))
-    .forEach(([k, v]) => {
-      if (v.includes(preferredCommand)) possibleArgsArrs.push([k])
-    })
-
-  return possibleArgsArrs
+  return Object.entries(scripts)
+    .filter(
+      ([scriptName, scriptCommand]) =>
+        (preferredScriptsArr.includes(scriptName) || scriptCommand.includes(preferredCommand)) &&
+        // prevent netlify dev calling netlify dev
+        !scriptCommand.includes('netlify dev')
+    )
+    .map(([scriptName]) => [scriptName])
 }
 
 module.exports = {
