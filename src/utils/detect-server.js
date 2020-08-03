@@ -6,9 +6,10 @@ const inquirer = require('inquirer')
 const fuzzy = require('fuzzy')
 const fs = require('fs')
 
+const { DETECTORS } = require('../detectors')
+
 module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
   let settings = {}
-  const detectorsFiles = fs.readdirSync(path.join(__dirname, '..', 'detectors')).filter(x => x.endsWith('.js')) // only accept .js detector files
 
   if (typeof devConfig.framework !== 'string') throw new Error('Invalid "framework" option provided in config')
 
@@ -22,19 +23,10 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
       }
     })
   } else if (devConfig.framework === '#auto' && !(devConfig.command && devConfig.targetPort)) {
-    const settingsArr = []
-    const detectors = detectorsFiles.map(det => {
-      try {
-        return loadDetector(det)
-      } catch (err) {
-        console.error(err)
-        return null
-      }
-    })
-    for (const detector of detectors) {
-      const detectorResult = detector(projectDir)
-      if (detectorResult) settingsArr.push(detectorResult)
-    }
+    const settingsArr = Object.values(DETECTORS)
+      .map(detector => detector())
+      .filter(Boolean)
+
     if (settingsArr.length === 1) {
       settings = settingsArr[0]
       settings.args = chooseDefaultArgs(settings.possibleArgsArrs)
@@ -77,23 +69,23 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
   } else if (devConfig.framework === '#static') {
     // Do nothing
   } else {
-    const detectorName = detectorsFiles.find(dt => dt === `${devConfig.framework}.js`)
-    if (!detectorName)
+    const detector = DETECTORS[devConfig.framework]
+    if (detector === undefined)
       throw new Error(
         'Unsupported value provided for "framework" option in config. Please use "#custom"' +
           ` if you're using a framework not intrinsically supported by Netlify Dev. E.g. with "command" and "targetPort" options.` +
-          ` Or use one of following values: ${detectorsFiles.map(f => `"${path.parse(f).name}"`).join(', ')}`
+          ` Or use one of following values: ${Object.keys(DETECTORS)
+            .map(detectorName => `"${detectorName}"`)
+            .join(', ')}`
       )
 
-    const detector = loadDetector(detectorName)
-    const detectorResult = detector(projectDir)
-    if (!detectorResult)
+    settings = detector()
+    if (!settings)
       throw new Error(
         `Specified "framework" detector "${devConfig.framework}" did not pass requirements for your project`
       )
 
-    settings = detectorResult
-    settings.args = chooseDefaultArgs(detectorResult.possibleArgsArrs)
+    settings.args = chooseDefaultArgs(settings.possibleArgsArrs)
   }
 
   if (settings.command === 'npm' && !['start', 'run'].includes(settings.args[0])) {
@@ -192,19 +184,6 @@ async function getStaticServerSettings(settings, flags, projectDir, log) {
     dist,
   }
 }
-
-function loadDetector(detectorName) {
-  try {
-    return require(path.join(__dirname, '..', 'detectors', detectorName))
-  } catch (err) {
-    throw new Error(
-      `Failed to load detector: ${chalk.yellow(
-        detectorName
-      )}, this is likely a bug in the detector, please file an issue in netlify-cli\n ${err}`
-    )
-  }
-}
-module.exports.loadDetector = loadDetector
 
 function chooseDefaultArgs(possibleArgsArrs) {
   // vast majority of projects will only have one matching detector

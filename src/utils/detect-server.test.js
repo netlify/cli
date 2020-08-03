@@ -1,8 +1,9 @@
 const test = require('ava')
 const path = require('path')
 const getPort = require('get-port')
-const { loadDetector, serverSettings, chooseDefaultArgs } = require('./detect-server')
+const { serverSettings, chooseDefaultArgs } = require('./detect-server')
 const { createSiteBuilder } = require('../../tests/utils/siteBuilder')
+const createReactAppDetector = require('../detectors/create-react-app')
 
 test.before(async t => {
   const builder = createSiteBuilder({ siteName: 'site-for-detecting-server' })
@@ -17,14 +18,7 @@ test.before(async t => {
 })
 
 test('loadDetector: valid', t => {
-  const d = loadDetector('create-react-app.js')
-  t.is(typeof d, 'function')
-})
-
-test('loadDetector: invalid', t => {
-  t.throws(() => {
-    loadDetector('cry.js')
-  }, /Failed to load detector/)
+  t.is(createReactAppDetector(), false)
 })
 
 test('serverSettings: minimal config', async t => {
