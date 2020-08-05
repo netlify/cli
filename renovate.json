@@ -2,5 +2,12 @@
   "extends": ["github>netlify/renovate-config:default"],
   "ignorePresets": [":prHourlyLimit2"],
   "semanticCommits": true,
-  "masterIssue": true
+  "masterIssue": true,
+  "packageRules": [
+    {
+      "packagePatterns": ["^@netlify", "^netlify"],
+      "groupName": "netlify packages",
+      "schedule": null
+    }
+  ]
 }
