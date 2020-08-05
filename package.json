@@ -61,9 +61,9 @@
     "postinstall": "node ./scripts/postinstall.js"
   },
   "dependencies": {
-    "@netlify/build": "^3.1.2",
-    "@netlify/config": "^2.0.6",
-    "@netlify/zip-it-and-ship-it": "^1.3.6",
+    "@netlify/build": "^3.1.10",
+    "@netlify/config": "^2.0.9",
+    "@netlify/zip-it-and-ship-it": "^1.3.9",
     "@oclif/command": "^1.5.18",
     "@oclif/config": "^1.13.2",
     "@oclif/errors": "^1.1.2",
@@ -121,7 +121,7 @@
     "make-dir": "^3.0.0",
     "minimist": "^1.2.5",
     "multiparty": "^4.2.1",
-    "netlify": "^4.3.7",
+    "netlify": "^4.3.10",
     "netlify-redirect-parser": "^2.5.0",
     "netlify-redirector": "^0.2.0",
     "node-fetch": "^2.6.0",
