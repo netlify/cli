@@ -4,6 +4,7 @@ const { withDevServer } = require('./utils/devServer')
 const fetch = require('node-fetch')
 const FormData = require('form-data')
 const { withSiteBuilder } = require('./utils/siteBuilder')
+const { startExternalServer } = require('./utils/externalServer')
 
 test('should return index file when / is accessed', async t => {
   await withSiteBuilder('site-with-index-file', async builder => {
@@ -733,5 +734,33 @@ test('should follow 404 redirect even with existing file when force=true', async
       t.is(response.status, 404)
       t.is(await response.text(), '<html><h1>foo')
     })
+  })
+})
+
+test('should redirect requests to an external server', async t => {
+  await withSiteBuilder('site-redirects-file-to-external', async builder => {
+    const server = startExternalServer()
+    const port = server.address().port
+    builder.withRedirectsFile({
+      redirects: [{ from: '/api/*', to: `http://localhost:${port}/:splat`, status: 200 }],
+    })
+
+    await builder.buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async server => {
+      const getResponse = await fetch(`${server.url}/api/ping`).then(r => r.json())
+      t.deepEqual(getResponse, { body: {}, method: 'GET', url: '/ping' })
+
+      const postResponse = await fetch(`${server.url}/api/ping`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'param=value',
+      }).then(r => r.json())
+      t.deepEqual(postResponse, { body: { param: 'value' }, method: 'POST', url: '/ping' })
+    })
+
+    server.close()
   })
 })
