@@ -31,7 +31,8 @@ const { createRewriter } = require('../../utils/rules-proxy')
 const { onChanges } = require('../../utils/rules-proxy')
 const { parseHeadersFile, objectForPath } = require('../../utils/headers')
 const { getEnvSettings } = require('../../utils/env')
-const { createStreamPromise, bufferToStream } = require('../../utils/stream')
+const { createStreamPromise } = require('../../utils/create-stream-promise')
+const toReadableStream = require('to-readable-stream')
 
 const stat = util.promisify(fs.stat)
 
@@ -332,7 +333,7 @@ async function serveRedirect(req, res, proxy, match, options) {
         target: `${dest.protocol}//${dest.host}`,
         changeOrigin: true,
         pathRewrite: (path, req) => destURL.replace(/https?:\/\/[^/]+/, ''),
-        ...(Buffer.isBuffer(req.originalBody) && { buffer: bufferToStream(req.originalBody) }),
+        ...(Buffer.isBuffer(req.originalBody) && { buffer: toReadableStream(req.originalBody) }),
       })
       return handler(req, res, {})
     }

@@ -1,5 +1,3 @@
-const { Readable } = require('stream')
-
 function createStreamPromise(stream, timeoutSeconds, bytesLimit = 1024 * 1024 * 6) {
   return new Promise(function(resolve, reject) {
     let data = []
@@ -41,15 +39,4 @@ function createStreamPromise(stream, timeoutSeconds, bytesLimit = 1024 * 1024 * 
   })
 }
 
-function bufferToStream(buffer) {
-  const readableInstanceStream = new Readable({
-    read() {
-      this.push(buffer)
-      this.push(null)
-    },
-  })
-
-  return readableInstanceStream
-}
-
-module.exports = { createStreamPromise, bufferToStream }
+module.exports = { createStreamPromise }
