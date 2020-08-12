@@ -764,3 +764,42 @@ test('should redirect requests to an external server', async t => {
     server.close()
   })
 })
+
+test('should redirect POST request if content-type is missing', async t => {
+  await withSiteBuilder('site-with-post-no-content-type', async builder => {
+    builder.withNetlifyToml({
+      config: {
+        build: { functions: 'functions' },
+        redirects: [{ from: '/api/*', to: '/other/:splat', status: 200 }],
+      },
+    })
+
+    await builder.buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async server => {
+      // we use http.request since fetch automatically sends a content-type header
+      const http = require('http')
+      const options = {
+        host: server.host,
+        port: server.port,
+        path: '/api/echo',
+        method: 'POST',
+      }
+      let data = ''
+      await new Promise(resolve => {
+        const callback = response => {
+          response.on('data', chunk => {
+            data += chunk
+          })
+          response.on('end', resolve)
+        }
+        const req = http.request(options, callback)
+        req.write('param=value')
+        req.end()
+      })
+
+      // we're testing Netlify Dev didn't crash
+      t.is(data, 'Method Not Allowed')
+    })
+  })
+})

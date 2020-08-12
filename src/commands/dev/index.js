@@ -214,11 +214,11 @@ async function startProxy(settings = {}, addonUrls, configPath, projectDir, func
 
       if (match) return serveRedirect(req, res, proxy, match, options)
 
-      const ct = req.headers['content-type'] ? contentType.parse(req) : {}
+      const ct = req.headers['content-type'] ? contentType.parse(req).type : ''
       if (
         req.method === 'POST' &&
         !isInternal(req.url) &&
-        (ct.type.endsWith('/x-www-form-urlencoded') || ct.type === 'multipart/form-data')
+        (ct.endsWith('/x-www-form-urlencoded') || ct === 'multipart/form-data')
       ) {
         return proxy.web(req, res, { target: functionsServer })
       }
@@ -338,12 +338,12 @@ async function serveRedirect(req, res, proxy, match, options) {
       return handler(req, res, {})
     }
 
-    const ct = req.headers['content-type'] ? contentType.parse(req) : {}
+    const ct = req.headers['content-type'] ? contentType.parse(req).type : ''
     if (
       req.method === 'POST' &&
       !isInternal(req.url) &&
       !isInternal(destURL) &&
-      (ct.type.endsWith('/x-www-form-urlencoded') || ct.type === 'multipart/form-data')
+      (ct.endsWith('/x-www-form-urlencoded') || ct === 'multipart/form-data')
     ) {
       return proxy.web(req, res, { target: options.functionsServer })
     }
