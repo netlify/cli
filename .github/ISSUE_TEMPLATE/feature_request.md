@@ -23,7 +23,4 @@ Add any other context or screenshots about the feature request here.
 
 Yes/No.
 
-<!--
-Pull requests are welcome! If you would like to help us add this feature, please check our
-[contributions guidelines](../../CONTRIBUTING.md).
--->
+>Pull requests are welcome! If you would like to help us add this feature, please check our [contributions guidelines](../../CONTRIBUTING.md).
