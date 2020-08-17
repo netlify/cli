@@ -17,6 +17,6 @@
     "node-fetch": "^2.6.0",
     "@types/node": "^10.17.28",
     "typescript": "^3.9.7",
-    "@types/aws-lambda": "^8.10.59"
+    "@types/aws-lambda": "^8.10.61"
   }
 }
