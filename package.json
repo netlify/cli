@@ -71,7 +71,7 @@
     "@oclif/plugin-help": "^2.2.0",
     "@oclif/plugin-not-found": "^1.1.4",
     "@oclif/plugin-plugins": "^1.7.8",
-    "@octokit/rest": "^16.28.1",
+    "@octokit/rest": "^18.0.0",
     "ansi-styles": "^3.2.1",
     "ascii-table": "0.0.9",
     "body-parser": "^1.19.0",
