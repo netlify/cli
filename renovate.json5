@@ -1,0 +1,20 @@
+{
+  extends: ['github>netlify/renovate-config:default'],
+  ignorePresets: [':prHourlyLimit2'],
+  semanticCommits: true,
+  masterIssue: true,
+  packageRules: [
+    {
+      packagePatterns: ['^@netlify', '^netlify'],
+      groupName: 'netlify packages',
+      schedule: null,
+    },
+    {
+      // Those cannot be upgraded to a major version until we drop support for Node 8
+      packageNames: ['eslint', 'ava', 'globby', '@octokit/rest', 'chalk', 'prettier'],
+      major: {
+        enabled: false,
+      },
+    },
+  ],
+}
