@@ -13,10 +13,10 @@ A clear and concise description of what the bug is.
 **To Reproduce**
 Steps to reproduce the behavior:
 
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+1. Run `git clone git@github.com:owner/repo-with-cli-bug.git`
+2. Navigate to the cloned repository
+3. Run `netlify dev`
+4. See that the CLI exits with an error
 
 **Configuration**
 
@@ -28,10 +28,13 @@ npx envinfo --system --binaries --npmPackages netlify-cli --npmGlobalPackages ne
 ```
 
 **Expected behavior**
+
 A clear and concise description of what you expected to happen.
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+**CLI Output**
+
+If applicable, add the CLI Output to help explain your problem.
 
 **Additional context**
+
 Add any other context about the problem here.
