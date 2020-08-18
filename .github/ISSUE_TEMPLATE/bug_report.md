@@ -8,9 +8,11 @@ assignees: ''
 ---
 
 **Describe the bug**
+
 A clear and concise description of what the bug is.
 
 **To Reproduce**
+
 Steps to reproduce the behavior:
 
 1. Run `git clone git@github.com:owner/repo-with-cli-bug.git`
