@@ -35,7 +35,7 @@ A clear and concise description of what you expected to happen.
 
 **CLI Output**
 
-If applicable, add the CLI Output to help explain your problem.
+If applicable, add the CLI output to help explain your problem.
 
 **Additional context**
 
