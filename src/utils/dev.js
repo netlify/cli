@@ -15,18 +15,17 @@ const {
  *
  * ```
  * // usage example
- * const { site, api } = this.netlify
+ * const { api, site } = this.netlify
  * if (site.id) {
- *   const accessToken = api.accessToken
- *   const addonUrls = await addEnvVariables(site, accessToken)
+ *   const addonUrls = await addEnvVariables(api, site)
  *   // addonUrls is only for startProxy in netlify dev:index
  * }
  * ```
  */
-async function addEnvVariables(api, site, accessToken) {
+async function addEnvVariables(api, site) {
   /** from addons */
   const addonUrls = {}
-  const addons = await getAddons(site.id, accessToken).catch(error => {
+  const addons = await getAddons(site.id, api.accessToken).catch(error => {
     console.error(error)
     switch (error.status) {
       default:

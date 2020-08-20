@@ -15,9 +15,8 @@ class ExecCommand extends Command {
     const { site, api } = this.netlify
     if (site.id) {
       this.log(`${NETLIFYDEVLOG} Checking your site's environment variables...`) // just to show some visual response first
-      const accessToken = api.accessToken
       const { addEnvVariables } = require('../../utils/dev')
-      await addEnvVariables(api, site, accessToken)
+      await addEnvVariables(api, site)
     } else {
       this.log(
         `${NETLIFYDEVERR} No Site ID detected. You probably forgot to run \`netlify link\` or \`netlify init\`. `
