@@ -16,7 +16,7 @@
   "author": "Netlify",
   "license": "MIT",
   "dependencies": {
-    "hashids": "^1.2.2",
+    "hashids": "^2.0.0",
     "request": "^2.88.0"
   }
 }
