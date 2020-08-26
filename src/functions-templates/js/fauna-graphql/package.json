@@ -20,7 +20,7 @@
     "apollo-link-context": "^1.0.20",
     "apollo-server-lambda": "^2.16.1",
     "graphql": "^14.1.1",
-    "graphql-tools": "^4.0.8",
+    "graphql-tools": "^6.1.0",
     "node-fetch": "^2.6.0"
   }
 }
