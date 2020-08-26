@@ -127,7 +127,7 @@
     "node-fetch": "^2.6.0",
     "npm-packlist": "^1.4.4",
     "open": "^6.4.0",
-    "ora": "^5.0.0",
+    "ora": "^4.1.1",
     "p-wait-for": "^3.0.0",
     "parse-github-url": "^1.0.2",
     "parse-gitignore": "^1.0.1",
