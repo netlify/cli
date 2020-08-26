@@ -12,7 +12,7 @@ const stripAnsiCc = require('strip-ansi-control-characters')
 const which = require('which')
 const chokidar = require('chokidar')
 const debounce = require('lodash.debounce')
-const proxyMiddleware = require('http-proxy-middleware')
+const { createProxyMiddleware } = require('http-proxy-middleware')
 const cookie = require('cookie')
 const get = require('lodash.get')
 const isEmpty = require('lodash.isempty')
@@ -329,7 +329,7 @@ async function serveRedirect(req, res, proxy, match, options) {
 
     if (isExternal(match)) {
       console.log(`${NETLIFYDEVLOG} Proxying to `, dest.toString())
-      const handler = proxyMiddleware({
+      const handler = createProxyMiddleware({
         target: `${dest.protocol}//${dest.host}`,
         changeOrigin: true,
         pathRewrite: (path, req) => destURL.replace(/https?:\/\/[^/]+/, ''),
