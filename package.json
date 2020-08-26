@@ -117,7 +117,7 @@
     "lodash.pick": "^4.4.0",
     "lodash.sample": "^4.2.1",
     "lodash.snakecase": "^4.1.1",
-    "log-symbols": "^2.2.0",
+    "log-symbols": "^4.0.0",
     "make-dir": "^3.0.0",
     "minimist": "^1.2.5",
     "multiparty": "^4.2.1",
