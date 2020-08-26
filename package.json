@@ -103,7 +103,7 @@
     "gitconfiglocal": "^2.1.0",
     "http-proxy": "^1.18.0",
     "http-proxy-middleware": "^0.21.0",
-    "inquirer": "^6.5.1",
+    "inquirer": "^7.0.0",
     "inquirer-autocomplete-prompt": "^1.0.1",
     "is-docker": "^2.0.0",
     "jwt-decode": "^2.2.0",
