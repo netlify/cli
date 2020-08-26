@@ -460,6 +460,29 @@ const getBuildFunction = functionBuilder =>
     }
   }
 
+const getAddonsUrlsAndAddEnvVariablesToProcessEnv = async ({ api, site, flags }) => {
+  if (site.id && !flags.offline) {
+    const { addEnvVariables } = require('../../utils/dev')
+    const addonUrls = await addEnvVariables(api, site)
+    return addonUrls
+  } else {
+    return {}
+  }
+}
+
+const addDotFileEnvs = async ({ site }) => {
+  const envSettings = await getEnvSettings(site.root)
+  if (envSettings.file) {
+    console.log(
+      `${NETLIFYDEVLOG} Overriding the following env variables with ${chalk.blue(
+        path.relative(site.root, envSettings.file)
+      )} file:`,
+      chalk.yellow(Object.keys(envSettings.vars))
+    )
+    Object.entries(envSettings.vars).forEach(([key, val]) => (process.env[key] = val))
+  }
+}
+
 class DevCommand extends Command {
   async run() {
     this.log(`${NETLIFYDEV}`)
@@ -476,26 +499,10 @@ class DevCommand extends Command {
       ...config.dev,
       ...flags,
     }
-    let addonUrls = {}
 
-    const accessToken = api.accessToken
-    if (site.id && !flags.offline) {
-      const { addEnvVariables } = require('../../utils/dev')
-      addonUrls = await addEnvVariables(api, site, accessToken)
-    }
-
+    const addonUrls = await getAddonsUrlsAndAddEnvVariablesToProcessEnv({ api, site, flags })
     process.env.NETLIFY_DEV = 'true'
-    // Override env variables with .env file
-    const envSettings = await getEnvSettings(site.root)
-    if (envSettings.file) {
-      console.log(
-        `${NETLIFYDEVLOG} Overriding the following env variables with ${chalk.blue(
-          path.relative(site.root, envSettings.file)
-        )} file:`,
-        chalk.yellow(Object.keys(envSettings.vars))
-      )
-      Object.entries(envSettings.vars).forEach(([key, val]) => (process.env[key] = val))
-    }
+    await addDotFileEnvs({ site })
 
     let settings = {}
     try {
@@ -553,6 +560,7 @@ class DevCommand extends Command {
     }
 
     if (flags.live) {
+      const accessToken = api.accessToken
       await waitPort({ port: settings.frameworkPort, output: 'silent' })
       const liveSession = await createTunnel(site.id, accessToken, this.log)
       url = liveSession.session_url

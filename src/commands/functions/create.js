@@ -246,7 +246,7 @@ async function downloadFromURL(flags, args, functionsDir) {
 
     await installAddons.call(this, addons, path.resolve(fnFolder))
     if (onComplete) {
-      await addEnvVariables(this.netlify.api, this.netlify.site, this.netlify.api.accessToken)
+      await addEnvVariables(this.netlify.api, this.netlify.site)
       await onComplete.call(this)
     }
     fs.unlinkSync(fnTemplateFile) // delete
@@ -329,7 +329,7 @@ async function scaffoldFromTemplate(flags, args, functionsDir) {
 
       installAddons.call(this, addons, path.resolve(functionPath))
       if (onComplete) {
-        await addEnvVariables(this.netlify.api, this.netlify.site, this.netlify.api.accessToken)
+        await addEnvVariables(this.netlify.api, this.netlify.site)
         await onComplete.call(this)
       }
     })
@@ -357,7 +357,7 @@ async function installAddons(addons = [], fnPath) {
               // spinner.success("installed addon: " + addonName);
               if (addonDidInstall) {
                 const { addEnvVariables } = require('../../utils/dev')
-                await addEnvVariables(api, site, accessToken)
+                await addEnvVariables(api, site)
                 const { confirmPostInstall } = await inquirer.prompt([
                   {
                     type: 'confirm',
