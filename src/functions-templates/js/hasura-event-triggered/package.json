@@ -15,7 +15,7 @@
   "author": "Netlify",
   "license": "MIT",
   "dependencies": {
-    "axios": "^0.19.2",
+    "axios": "^0.20.0",
     "bad-words": "^3.0.3"
   }
 }
