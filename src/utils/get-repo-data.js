@@ -11,7 +11,7 @@ async function getRepoData(remote) {
   let repo = {}
   try {
     const gitConfig = await util.promisify(gitconfiglocal)(cwd)
-    const gitDirectory = findUp.sync(['.git'], { cwd })
+    const gitDirectory = findUp.sync(['.git'], { cwd, type: 'directory' })
     const baseGitPath = path.dirname(gitDirectory)
 
     if (cwd !== baseGitPath) {
