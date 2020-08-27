@@ -35,7 +35,6 @@ class ExecCommand extends Command {
     }
 
     execa(this.argv[0], this.argv.slice(1), {
-      env: process.env,
       stdio: 'inherit',
     })
     await this.config.runHook('analytics', {
