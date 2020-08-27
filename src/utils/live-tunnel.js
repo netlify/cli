@@ -1,6 +1,5 @@
 const fetch = require('node-fetch')
 const fs = require('fs')
-const os = require('os')
 const path = require('path')
 const execa = require('execa')
 const chalk = require('chalk')
@@ -10,6 +9,7 @@ const {
   // NETLIFYDEVWARN,
   NETLIFYDEVERR,
 } = require('./logo')
+const { getPathInHome } = require('../lib/settings')
 
 async function createTunnel(siteId, netlifyApiToken, log) {
   await installTunnelClient(log)
@@ -44,7 +44,7 @@ async function createTunnel(siteId, netlifyApiToken, log) {
 }
 
 async function connectTunnel(session, netlifyApiToken, localPort, log) {
-  const execPath = path.join(os.homedir(), '.netlify', 'tunnel', 'bin', 'live-tunnel-client')
+  const execPath = getPathInHome(['tunnel', 'bin', 'live-tunnel-client'])
   const args = ['connect', '-s', session.id, '-t', netlifyApiToken, '-l', localPort]
   if (process.env.DEBUG) {
     args.push('-v')
@@ -59,7 +59,7 @@ async function connectTunnel(session, netlifyApiToken, localPort, log) {
 
 async function installTunnelClient(log) {
   const win = isWindows()
-  const binPath = path.join(os.homedir(), '.netlify', 'tunnel', 'bin')
+  const binPath = getPathInHome(['tunnel', 'bin'])
   const execName = win ? 'live-tunnel-client.exe' : 'live-tunnel-client'
   const execPath = path.join(binPath, execName)
   const newVersion = await fetchTunnelClient(execPath)
