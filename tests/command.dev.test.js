@@ -803,3 +803,26 @@ test('should redirect POST request if content-type is missing', async t => {
     })
   })
 })
+
+test('should return .html file when file and folder have the same name', async t => {
+  await withSiteBuilder('site-with-same-name-for-file-and-folder', async builder => {
+    builder
+      .withContentFile({
+        path: 'foo.html',
+        content: '<html><h1>foo',
+      })
+      .withContentFile({
+        path: 'foo/file.html',
+        content: '<html><h1>file in folder',
+      })
+
+    await builder.buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async server => {
+      const response = await fetch(`${server.url}/foo`)
+
+      t.is(response.status, 200)
+      t.is(await response.text(), '<html><h1>foo')
+    })
+  })
+})

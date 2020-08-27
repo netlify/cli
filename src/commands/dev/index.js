@@ -128,7 +128,7 @@ function initializeProxy(port, distDir, projectDir) {
     }
   })
   proxy.on('proxyRes', (proxyRes, req, res) => {
-    if (proxyRes.statusCode === 404) {
+    if (proxyRes.statusCode === 404 || proxyRes.statusCode === 403) {
       if (req.alternativePaths && req.alternativePaths.length > 0) {
         req.url = req.alternativePaths.shift()
         return proxy.web(req, res, req.proxyOptions)
