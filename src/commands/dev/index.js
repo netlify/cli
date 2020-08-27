@@ -380,7 +380,7 @@ async function startDevServer(settings, log) {
       name: 'netlify-dev',
       port: settings.frameworkPort,
       templates: {
-        notFound: '404.html',
+        notFound: path.join(settings.dist, '404.html'),
       },
     })
 
