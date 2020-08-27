@@ -7,7 +7,6 @@ module.exports = {
       addonName: 'fauna',
       addonDidInstall(fnPath) {
         execa.sync(fnPath + '/sync-schema.js', undefined, {
-          env: process.env,
           stdio: 'inherit',
         })
       },

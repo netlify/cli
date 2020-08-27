@@ -26,15 +26,14 @@ module.exports = async function(projectDir) {
     }
   }
 
-  let envConfig = {}
+  let env = {}
   const envSettings = await getEnvSettings(projectDir)
   if (envSettings.file) {
-    envConfig = envSettings.vars
+    env = envSettings.vars
   }
 
   if (settings.npmScript) {
-    settings.build = () =>
-      execa(yarnExists ? 'yarn' : 'npm', ['run', settings.npmScript], { env: { ...process.env, ...envConfig } })
+    settings.build = () => execa(yarnExists ? 'yarn' : 'npm', ['run', settings.npmScript], { env })
     settings.builderName = 'netlify-lambda'
     return settings
   }
