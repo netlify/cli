@@ -116,7 +116,7 @@ module.exports.createRewriter = async function createRewriter({ distDir, project
 
       // Definition: https://github.com/netlify/libredirect/blob/e81bbeeff9f7c260a5fb74cad296ccc67a92325b/node/src/redirects.cpp#L28-L60
       const matchReq = {
-        scheme: reqUrl.protocol,
+        scheme: reqUrl.protocol.replace(/\:.*$/, ''),
         host: reqUrl.hostname,
         path: reqUrl.pathname,
         query: reqUrl.search.slice(1),
