@@ -1,15 +1,15 @@
 const fetch = require('node-fetch')
-const fs = require('fs')
-const path = require('path')
 const execa = require('execa')
 const chalk = require('chalk')
-const { fetchLatest, updateAvailable } = require('gh-release-fetch')
 const {
   NETLIFYDEVLOG,
   // NETLIFYDEVWARN,
   NETLIFYDEVERR,
 } = require('./logo')
 const { getPathInHome } = require('../lib/settings')
+const { shouldFetchLatestVersion, fetchLatestVersion } = require('../lib/exec-fetcher')
+
+const PACKAGE_NAME = 'live-tunnel-client'
 
 async function createTunnel(siteId, netlifyApiToken, log) {
   await installTunnelClient(log)
@@ -44,7 +44,7 @@ async function createTunnel(siteId, netlifyApiToken, log) {
 }
 
 async function connectTunnel(session, netlifyApiToken, localPort, log) {
-  const execPath = getPathInHome(['tunnel', 'bin', 'live-tunnel-client'])
+  const execPath = getPathInHome(['tunnel', 'bin', PACKAGE_NAME])
   const args = ['connect', '-s', session.id, '-t', netlifyApiToken, '-l', localPort]
   if (process.env.DEBUG) {
     args.push('-v')
@@ -58,67 +58,18 @@ async function connectTunnel(session, netlifyApiToken, localPort, log) {
 }
 
 async function installTunnelClient(log) {
-  const win = isWindows()
   const binPath = getPathInHome(['tunnel', 'bin'])
-  const execName = win ? 'live-tunnel-client.exe' : 'live-tunnel-client'
-  const execPath = path.join(binPath, execName)
-  const newVersion = await fetchTunnelClient(execPath)
-  if (!newVersion) {
+  const shouldFetch = await shouldFetchLatestVersion({ binPath, packageName: PACKAGE_NAME })
+  if (!shouldFetch) {
     return
   }
 
   log(`${NETLIFYDEVLOG} Installing Live Tunnel Client`)
 
-  const platform = win ? 'windows' : process.platform
-  const extension = win ? 'zip' : 'tar.gz'
-  const release = {
-    repository: 'netlify/live-tunnel-client',
-    package: `live-tunnel-client-${platform}-amd64.${extension}`,
+  await fetchLatestVersion({
+    packageName: PACKAGE_NAME,
     destination: binPath,
-    extract: true,
-  }
-  await fetchLatest(release)
-}
-
-async function fetchTunnelClient(execPath) {
-  if (!execExist(execPath)) {
-    return true
-  }
-
-  const { stdout } = await execa(execPath, ['version'])
-  if (!stdout) {
-    return false
-  }
-
-  const match = stdout.match(/^live-tunnel-client\/v?([^\s]+)/)
-  if (!match) {
-    return false
-  }
-
-  return updateAvailable('netlify/live-tunnel-client', match[1])
-}
-
-function execExist(binPath) {
-  if (!fs.existsSync(binPath)) {
-    return false
-  }
-  const stat = fs.statSync(binPath)
-  return stat && stat.isFile() && isExe(stat.mode, stat.gid, stat.uid)
-}
-
-function isExe(mode, gid, uid) {
-  if (isWindows()) {
-    return true
-  }
-
-  const isGroup = gid ? process.getgid && gid === process.getgid() : true
-  const isUser = uid ? process.getuid && uid === process.getuid() : true
-
-  return Boolean(mode & 0o0001 || (mode & 0o0010 && isGroup) || (mode & 0o0100 && isUser))
-}
-
-function isWindows() {
-  return process.platform === 'win32'
+  })
 }
 
 module.exports = {
