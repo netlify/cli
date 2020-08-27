@@ -10,9 +10,11 @@ test.beforeEach(t => {
   t.context.binPath = directory
 })
 
-const packages = ['live-tunnel-client']
+const packages = [
+  { packageName: 'live-tunnel-client', execArgs: ['version'], pattern: 'live-tunnel-client\\/v?([^\\s]+)' },
+]
 
-packages.forEach(packageName => {
+packages.forEach(({ packageName, execArgs, pattern }) => {
   test(`${packageName} - should postix exec with .exe on windows`, t => {
     if (process.platform === 'win32') {
       t.is(getExecName({ packageName }), `${packageName}.exe`)
@@ -23,7 +25,7 @@ packages.forEach(packageName => {
 
   test(`${packageName} - should return true on empty directory`, async t => {
     const { binPath } = t.context
-    const actual = await shouldFetchLatestVersion({ binPath, packageName })
+    const actual = await shouldFetchLatestVersion({ binPath, packageName, execArgs, pattern })
     t.is(actual, true)
   })
 
@@ -32,7 +34,7 @@ packages.forEach(packageName => {
 
     await fetchLatestVersion({ packageName, destination: binPath })
 
-    const actual = await shouldFetchLatestVersion({ binPath, packageName })
+    const actual = await shouldFetchLatestVersion({ binPath, packageName, execArgs, pattern })
     t.is(actual, false)
   })
 

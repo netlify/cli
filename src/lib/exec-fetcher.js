@@ -39,7 +39,7 @@ const isVersionOutdated = async ({ packageName, currentVersion }) => {
   return outdated
 }
 
-const shouldFetchLatestVersion = async ({ binPath, packageName }) => {
+const shouldFetchLatestVersion = async ({ binPath, packageName, execArgs, pattern }) => {
   const execName = getExecName({ packageName })
   const execPath = path.join(binPath, execName)
 
@@ -48,13 +48,13 @@ const shouldFetchLatestVersion = async ({ binPath, packageName }) => {
     return true
   }
 
-  const { stdout } = await execa(execPath, ['version'])
+  const { stdout } = await execa(execPath, execArgs)
+
   if (!stdout) {
     return false
   }
 
-  const regex = new RegExp(`${packageName}\\/v?([^\\s]+)`)
-  const match = stdout.match(regex)
+  const match = stdout.match(new RegExp(pattern))
   if (!match) {
     return false
   }

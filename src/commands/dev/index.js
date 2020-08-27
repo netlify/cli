@@ -33,6 +33,7 @@ const { parseHeadersFile, objectForPath } = require('../../utils/headers')
 const { getEnvSettings } = require('../../utils/env')
 const { createStreamPromise } = require('../../utils/create-stream-promise')
 const toReadableStream = require('to-readable-stream')
+const { startForwardServer } = require('../../utils/traffic-mesh')
 
 const stat = util.promisify(fs.stat)
 
@@ -500,6 +501,10 @@ class DevCommand extends Command {
       ...flags,
     }
 
+    if (flags.trafficMesh) {
+      await startForwardServer({ log })
+    }
+
     const addonUrls = await getAddonsUrlsAndAddEnvVariablesToProcessEnv({ api, site, flags })
     process.env.NETLIFY_DEV = 'true'
     await addDotFileEnvs({ site })
@@ -642,6 +647,11 @@ DevCommand.flags = {
   live: flags.boolean({
     char: 'l',
     description: 'Start a public live session',
+  }),
+  trafficMesh: flags.boolean({
+    char: 't',
+    hidden: true,
+    description: 'Uses Traffic Mesh for proxying requests',
   }),
 }
 

@@ -1,11 +1,7 @@
 const fetch = require('node-fetch')
 const execa = require('execa')
 const chalk = require('chalk')
-const {
-  NETLIFYDEVLOG,
-  // NETLIFYDEVWARN,
-  NETLIFYDEVERR,
-} = require('./logo')
+const { NETLIFYDEVLOG, NETLIFYDEVERR } = require('./logo')
 const { getPathInHome } = require('../lib/settings')
 const { shouldFetchLatestVersion, fetchLatestVersion } = require('../lib/exec-fetcher')
 
@@ -59,7 +55,12 @@ async function connectTunnel(session, netlifyApiToken, localPort, log) {
 
 async function installTunnelClient(log) {
   const binPath = getPathInHome(['tunnel', 'bin'])
-  const shouldFetch = await shouldFetchLatestVersion({ binPath, packageName: PACKAGE_NAME })
+  const shouldFetch = await shouldFetchLatestVersion({
+    binPath,
+    packageName: PACKAGE_NAME,
+    execArgs: ['version'],
+    pattern: `${PACKAGE_NAME}\\/v?([^\\s]+)`,
+  })
   if (!shouldFetch) {
     return
   }
