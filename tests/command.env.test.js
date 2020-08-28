@@ -12,6 +12,27 @@ const siteName =
     .replace(/[^a-z]+/g, '')
     .substr(0, 8)
 
+// Input and return values for each test scenario:
+const ENV_VAR_STATES = {
+  set: {
+    SOME_VAR1: 'FOO',
+  },
+  update: {
+    SOME_VAR1: 'FOOBAR',
+  },
+  get: {
+    SOME_VAR1: 'FOOBAR',
+  },
+  import: {
+    SOME_VAR1: 'FOOBARBUZZ', // update existing SOME_VAR1
+    SOME_VAR2: 'FOO', // import new var
+  },
+  netlifyToml: { SOME_VAR2: 'FOO_NETLIFY_TOML' }, // should take priority over existing SOME_VAR2
+  unset: { SOME_VAR1: '' },
+}
+const ENV_FILE_NAME = '.env'
+const FAIL_ENV_FILE_NAME = '.env.unknown' // file which should result in error
+
 async function listAccounts() {
   return JSON.parse(await callCli(['api', 'listAccountsForUser']))
 }
@@ -20,14 +41,23 @@ async function injectNetlifyToml(builder) {
   const builderWithToml = builder.withNetlifyToml({
     config: {
       build: {
-        environment: {
-          SOME_VAR2: 'FOO_NETLIFY_TOML',
-        },
+        environment: ENV_VAR_STATES.netlifyToml,
       },
     },
   })
   await builderWithToml.buildAsync()
   return builderWithToml
+}
+
+function checkResultState({ t, state, result }) {
+  const expectedPairs = Object.entries(state)
+  expectedPairs.forEach(([key, value]) => {
+    t.is(result[key], value)
+  })
+}
+
+function getArgsFromState(state) {
+  return Object.entries(state)[0]
 }
 
 if (process.env.IS_FORK !== 'true') {
@@ -39,8 +69,8 @@ if (process.env.IS_FORK !== 'true') {
     const account = accounts[0]
 
     const builder = createSiteBuilder({ siteName: 'site-with-env-vars' }).withEnvFile({
-      path: '.env',
-      env: { SOME_VAR1: 'FOOBARBUZZ', SOME_VAR2: 'FOO' },
+      path: ENV_FILE_NAME,
+      env: ENV_VAR_STATES.import,
     })
     await builder.buildAsync()
 
@@ -67,7 +97,9 @@ if (process.env.IS_FORK !== 'true') {
   })
 
   test.serial('env:get --json should return empty object if var not set', async t => {
-    const cliResponse = await callCli(['env:get', '--json', 'SOME_VAR'], t.context.execOptions)
+    const key = getArgsFromState(ENV_VAR_STATES.get)[0]
+
+    const cliResponse = await callCli(['env:get', '--json', key], t.context.execOptions)
     const json = JSON.parse(cliResponse)
 
     t.true(isObject(json))
@@ -75,88 +107,84 @@ if (process.env.IS_FORK !== 'true') {
   })
 
   test.serial('env:set --json should create and return new var', async t => {
-    const name = 'SOME_VAR1'
-    const value = 'FOO'
+    const state = ENV_VAR_STATES.set
 
-    const cliResponse = await callCli(['env:set', '--json', name, value], t.context.execOptions)
+    const cliResponse = await callCli(['env:set', '--json', ...getArgsFromState(state)], t.context.execOptions)
     const json = JSON.parse(cliResponse)
 
     t.true(isObject(json))
-    t.is(json[name], value)
+    checkResultState({ t, result: json, state })
   })
 
   test.serial('env:set --json should update existing var', async t => {
-    const name = 'SOME_VAR1'
-    const value = 'FOOBAR'
+    const state = ENV_VAR_STATES.update
 
-    const cliResponse = await callCli(['env:set', '--json', name, value], t.context.execOptions)
+    const cliResponse = await callCli(['env:set', '--json', ...getArgsFromState(state)], t.context.execOptions)
     const json = JSON.parse(cliResponse)
 
     t.true(isObject(json))
-    t.is(json[name], value)
+    checkResultState({ t, result: json, state })
   })
 
   test.serial('env:get --json should return value of existing var', async t => {
-    const name = 'SOME_VAR1'
-    const value = 'FOOBAR'
+    const [key, value] = getArgsFromState(ENV_VAR_STATES.get)
 
-    const cliResponse = await callCli(['env:get', '--json', name], t.context.execOptions)
+    const cliResponse = await callCli(['env:get', '--json', key], t.context.execOptions)
     const json = JSON.parse(cliResponse)
 
     t.true(isObject(json))
     t.is(Object.keys(json).length, 1)
-    t.is(json[name], value)
+    t.is(json[key], value)
   })
 
   test.serial('env:import should throw error if file not exists', async t => {
-    const fileName = '.env.unknown'
-
     await t.throwsAsync(async () => {
-      await callCli(['env:import', fileName], t.context.execOptions)
+      await callCli(['env:import', FAIL_ENV_FILE_NAME], t.context.execOptions)
     })
   })
 
   test.serial('env:import --json should set new vars and update existing vars', async t => {
-    const fileName = '.env'
-
-    const cliResponse = await callCli(['env:import', '--json', fileName], t.context.execOptions)
+    const cliResponse = await callCli(['env:import', '--json', ENV_FILE_NAME], t.context.execOptions)
     const json = JSON.parse(cliResponse)
 
     t.true(isObject(json))
-    t.is(json['SOME_VAR1'], 'FOOBARBUZZ') // updated var
-    t.is(json['SOME_VAR2'], 'FOO') // new var
+    checkResultState({ t, result: json, state: ENV_VAR_STATES.import })
   })
 
-  test.serial('env:list --json should return list of vars with netlify.toml taking priority', async t => {
+  test.serial('env:get --json should return value of var from netlify.toml', async t => {
     // Add netlify.toml before running all following tests as they check
     // right behavior with netlify.toml.
     t.context.builder = await injectNetlifyToml(t.context.builder)
 
-    const cliResponse = await callCli(['env:list', '--json'], t.context.execOptions)
-    const json = JSON.parse(cliResponse)
+    const [key, value] = getArgsFromState(ENV_VAR_STATES.netlifyToml)
 
-    t.true(isObject(json))
-    t.is(json['SOME_VAR1'], 'FOOBARBUZZ')
-    t.is(json['SOME_VAR2'], 'FOO_NETLIFY_TOML')
-  })
-
-  test.serial('env:get --json should return value of var from netlify.toml', async t => {
-    const cliResponse = await callCli(['env:get', '--json', 'SOME_VAR2'], t.context.execOptions)
+    const cliResponse = await callCli(['env:get', '--json', key], t.context.execOptions)
     const json = JSON.parse(cliResponse)
 
     t.true(isObject(json))
     t.is(Object.keys(json).length, 1)
-    t.is(json['SOME_VAR2'], 'FOO_NETLIFY_TOML')
+    t.is(json[key], value)
   })
 
-  test.serial('env:set --json should unset var if value is set empty', async t => {
-    const name = 'SOME_VAR1'
-
-    const cliResponse = await callCli(['env:set', '--json', name, ''], t.context.execOptions)
+  test.serial('env:list --json should return list of vars with netlify.toml taking priority', async t => {
+    const cliResponse = await callCli(['env:list', '--json'], t.context.execOptions)
     const json = JSON.parse(cliResponse)
 
     t.true(isObject(json))
-    t.falsy(name in json)
+
+    const merged = { ...ENV_VAR_STATES.import, ...ENV_VAR_STATES.netlifyToml } // netlifyToml last, so that it overrides duplicates from import
+    checkResultState({ t, result: json, state: merged })
+  })
+
+  test.serial('env:set --json should unset var if value is set empty', async t => {
+    const args = getArgsFromState(ENV_VAR_STATES.unset)
+    const key = args[0]
+
+    const cliResponse = await callCli(['env:set', '--json', ...args], t.context.execOptions)
+    const json = JSON.parse(cliResponse)
+
+    t.true(isObject(json))
+    t.falsy(key in json)
   })
 
   test.after('cleanup', async t => {
