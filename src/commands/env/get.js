@@ -24,11 +24,11 @@ class EnvGetCommand extends Command {
     } = config
 
     const { name } = args
-    const value = environment[name] || ''
+    const value = environment[name]
 
     // Return json response for piping commands
     if (flags.json) {
-      this.logJson({ [name]: value })
+      this.logJson(!value ? {} : { [name]: value })
       return false
     }
 
