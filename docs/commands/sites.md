@@ -78,7 +78,7 @@ netlify sites:delete {site-id}
 **Examples**
 
 ```bash
-netlify site:delete 1234-3262-1211
+netlify sites:delete 1234-3262-1211
 ```
 
 ---
