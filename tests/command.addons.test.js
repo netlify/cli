@@ -1,38 +1,17 @@
 const test = require('ava')
-const stripAnsi = require('strip-ansi')
-const cliPath = require('./utils/cliPath')
-const execa = require('execa')
 const { createSiteBuilder } = require('./utils/siteBuilder')
+const callCli = require('./utils/callCli')
+const createLiveTestSite = require('./utils/createLiveTestSite')
 
 const siteName =
-  'netlify-test-' +
+  'netlify-test-addons-' +
   Math.random()
     .toString(36)
     .replace(/[^a-z]+/g, '')
     .substr(0, 8)
 
-async function callCli(args, execOptions) {
-  return (await execa(cliPath, args, execOptions)).stdout
-}
-
 async function listAccounts() {
   return JSON.parse(await callCli(['api', 'listAccountsForUser']))
-}
-
-async function createSite(siteName, accountSlug, execOptions) {
-  const cliResponse = await callCli(['sites:create', '--name', siteName, '--account-slug', accountSlug], execOptions)
-
-  const isSiteCreated = /Site Created/.test(cliResponse)
-  if (!isSiteCreated) {
-    return null
-  }
-
-  const matches = /Site ID:\s+([a-zA-Z0-9-]+)/m.exec(stripAnsi(cliResponse))
-  if (matches && Object.prototype.hasOwnProperty.call(matches, 1) && matches[1]) {
-    return matches[1]
-  }
-
-  return null
 }
 
 if (process.env.IS_FORK !== 'true') {
@@ -53,7 +32,7 @@ if (process.env.IS_FORK !== 'true') {
     }
 
     console.log('creating new site for tests: ' + siteName)
-    const siteId = await createSite(siteName, account.slug, execOptions)
+    const siteId = await createLiveTestSite(siteName, account.slug, execOptions)
     t.truthy(siteId != null)
 
     t.context.execOptions = { ...execOptions, env: { ...process.env, NETLIFY_SITE_ID: siteId } }

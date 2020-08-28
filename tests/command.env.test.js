@@ -1,8 +1,7 @@
 const test = require('ava')
-const stripAnsi = require('strip-ansi')
-const cliPath = require('./utils/cliPath')
-const execa = require('execa')
 const { createSiteBuilder } = require('./utils/siteBuilder')
+const callCli = require('./utils/callCli')
+const createLiveTestSite = require('./utils/createLiveTestSite')
 const isObject = require('lodash.isobject')
 const isEmpty = require('lodash.isempty')
 
@@ -13,31 +12,11 @@ const siteName =
     .replace(/[^a-z]+/g, '')
     .substr(0, 8)
 
-async function callCli(args, execOptions) {
-  return (await execa(cliPath, args, execOptions)).stdout
-}
-
 async function listAccounts() {
   return JSON.parse(await callCli(['api', 'listAccountsForUser']))
 }
 
-async function createSite(siteName, accountSlug, execOptions) {
-  const cliResponse = await callCli(['sites:create', '--name', siteName, '--account-slug', accountSlug], execOptions)
-
-  const isSiteCreated = /Site Created/.test(cliResponse)
-  if (!isSiteCreated) {
-    return null
-  }
-
-  const matches = /Site ID:\s+([a-zA-Z0-9-]+)/m.exec(stripAnsi(cliResponse))
-  if (matches && Object.prototype.hasOwnProperty.call(matches, 1) && matches[1]) {
-    return matches[1]
-  }
-
-  return null
-}
-
-async function addTestNetlifyToml(builder) {
+async function injectNetlifyToml(builder) {
   const builderWithToml = builder.withNetlifyToml({
     config: {
       build: {
@@ -72,7 +51,7 @@ if (process.env.IS_FORK !== 'true') {
     }
 
     console.log('creating new site for tests: ' + siteName)
-    const siteId = await createSite(siteName, account.slug, execOptions)
+    const siteId = await createLiveTestSite(siteName, account.slug, execOptions)
     t.truthy(siteId != null)
 
     t.context.execOptions = { ...execOptions, env: { ...process.env, NETLIFY_SITE_ID: siteId } }
@@ -151,7 +130,7 @@ if (process.env.IS_FORK !== 'true') {
   test.serial('env:list --json should return list of vars with netlify.toml taking priority', async t => {
     // Add netlify.toml before running all following tests as they check
     // right behavior with netlify.toml.
-    t.context.builder = await addTestNetlifyToml(t.context.builder)
+    t.context.builder = await injectNetlifyToml(t.context.builder)
 
     const cliResponse = await callCli(['env:list', '--json'], t.context.execOptions)
     const json = JSON.parse(cliResponse)
