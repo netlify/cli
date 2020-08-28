@@ -46,9 +46,9 @@ class EnvSetCommand extends Command {
       },
     })
 
-    // Return updated site object if using json flag
+    // Return new environment variables of site if using json flag
     if (flags.json) {
-      this.logJson(siteResult)
+      this.logJson(siteResult.build_settings.env)
       return false
     }
 
