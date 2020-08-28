@@ -29,8 +29,14 @@ const ENV_VAR_STATES = {
   },
   netlifyToml: { SOME_VAR2: 'FOO_NETLIFY_TOML' }, // should take priority over existing SOME_VAR2
   unset: { SOME_VAR1: '' },
+  importReplace: {
+    SOME_VAR1: 'BAR1',
+    SOME_VAR2: 'BAR2',
+    SOME_VAR3: 'BAR3',
+  },
 }
 const ENV_FILE_NAME = '.env'
+const REPLACE_ENV_FILE_NAME = '.env.replace'
 const FAIL_ENV_FILE_NAME = '.env.unknown' // file which should result in error
 
 async function listAccounts() {
@@ -68,10 +74,15 @@ if (process.env.IS_FORK !== 'true') {
 
     const account = accounts[0]
 
-    const builder = createSiteBuilder({ siteName: 'site-with-env-vars' }).withEnvFile({
-      path: ENV_FILE_NAME,
-      env: ENV_VAR_STATES.import,
-    })
+    const builder = createSiteBuilder({ siteName: 'site-with-env-vars' })
+      .withEnvFile({
+        path: ENV_FILE_NAME,
+        env: ENV_VAR_STATES.import,
+      })
+      .withEnvFile({
+        path: REPLACE_ENV_FILE_NAME,
+        env: ENV_VAR_STATES.importReplace,
+      })
     await builder.buildAsync()
 
     const execOptions = {
@@ -143,7 +154,7 @@ if (process.env.IS_FORK !== 'true') {
     })
   })
 
-  test.serial('env:import --json should set new vars and update existing vars', async t => {
+  test.serial('env:import --json should import new vars and override existing vars', async t => {
     const cliResponse = await callCli(['env:import', '--json', ENV_FILE_NAME], t.context.execOptions)
     const json = JSON.parse(cliResponse)
 
@@ -185,6 +196,17 @@ if (process.env.IS_FORK !== 'true') {
 
     t.true(isObject(json))
     t.falsy(key in json)
+  })
+
+  test.serial('env:import --json --replace-existing should replace all existing vars and return imported', async t => {
+    const state = ENV_VAR_STATES.importReplace
+
+    const cliResponse = await callCli(['env:import', '--json', REPLACE_ENV_FILE_NAME], t.context.execOptions)
+    const json = JSON.parse(cliResponse)
+
+    t.true(isObject(json))
+    t.is(Object.keys(json).length, Object.keys(state).length)
+    checkResultState({ t, result: json, state })
   })
 
   test.after('cleanup', async t => {

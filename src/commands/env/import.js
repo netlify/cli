@@ -1,8 +1,21 @@
+const { flags } = require('@oclif/command')
 const AsciiTable = require('ascii-table')
 const Command = require('../../utils/command')
 const dotenv = require('dotenv')
 const fs = require('fs')
 const isEmpty = require('lodash.isempty')
+
+function mergeEnvVars(sourceEnv, mergeEnv) {
+  const result = sourceEnv
+  for (const [key, value] of Object.entries(mergeEnv)) {
+    if (!value.trim()) {
+      delete result[key] // delete variable if value is unset
+    } else {
+      result[key] = value
+    }
+  }
+  return result
+}
 
 class EnvImportCommand extends Command {
   async run() {
@@ -29,8 +42,6 @@ class EnvImportCommand extends Command {
       build_settings: { env = {} },
     } = siteData
 
-    const newEnv = env
-
     // Import environment variables from specified .env file
     const { fileName } = args
     let importedEnv = {}
@@ -46,21 +57,12 @@ class EnvImportCommand extends Command {
       return false
     }
 
-    // Merge imported variables with the existing ones
-    for (const [key, value] of Object.entries(importedEnv)) {
-      if (!value.trim()) {
-        delete newEnv[key] // delete variable if value is unset
-      } else {
-        newEnv[key] = value
-      }
-    }
-
     // Apply environment variable updates
     const siteResult = await api.updateSite({
       siteId,
       body: {
         build_settings: {
-          env: newEnv,
+          env: flags.replaceExisting ? importedEnv : mergeEnvVars(env, importedEnv),
         },
       },
     })
@@ -84,6 +86,14 @@ class EnvImportCommand extends Command {
 }
 
 EnvImportCommand.description = `Import and set environment variables from .env file`
+EnvImportCommand.flags = {
+  ...EnvImportCommand.flags,
+  replaceExisting: flags.boolean({
+    char: 'r',
+    description: 'Replace all existing variables instead of merging them with the current ones',
+    default: false,
+  }),
+}
 EnvImportCommand.args = [
   {
     name: 'fileName',
