@@ -104,7 +104,7 @@ SitesDeleteCommand.args = [
   {
     name: 'siteId',
     required: true,
-    description: 'Site ID to delete. `netlify delete 1234-5678-890`',
+    description: 'Site ID to delete.',
   },
 ]
 
@@ -116,6 +116,6 @@ SitesDeleteCommand.flags = {
   }),
 }
 
-SitesDeleteCommand.examples = ['netlify site:delete 1234-3262-1211']
+SitesDeleteCommand.examples = ['netlify sites:delete 1234-3262-1211']
 
 module.exports = SitesDeleteCommand

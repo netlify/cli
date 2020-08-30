@@ -68,7 +68,7 @@ netlify sites:delete {site-id}
 
 **Arguments**
 
-- siteId - Site ID to delete. `netlify delete 1234-5678-890`
+- siteId - Site ID to delete.
 
 **Flags**
 
@@ -78,7 +78,7 @@ netlify sites:delete {site-id}
 **Examples**
 
 ```bash
-netlify site:delete 1234-3262-1211
+netlify sites:delete 1234-3262-1211
 ```
 
 ---
