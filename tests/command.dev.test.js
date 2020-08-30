@@ -658,6 +658,31 @@ test('should return 404.html if exists for non existing routes', async t => {
   })
 })
 
+test('should return 404.html from publish folder if exists for non existing routes', async t => {
+  await withSiteBuilder('site-with-shadowing-404-in-publish-folder', async builder => {
+    builder
+      .withContentFile({
+        path: 'public/404.html',
+        content: '<h1>404 - My Custom 404 Page</h1>',
+      })
+      .withNetlifyToml({
+        config: {
+          build: {
+            publish: 'public/',
+          },
+        },
+      })
+
+    await builder.buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async server => {
+      const response = await fetch(`${server.url}/non-existent`)
+      t.is(response.status, 404)
+      t.is(await response.text(), '<h1>404 - My Custom 404 Page</h1>')
+    })
+  })
+})
+
 test('should return 404 for redirect', async t => {
   await withSiteBuilder('site-with-shadowing-404-redirect', async builder => {
     builder
