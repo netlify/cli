@@ -135,7 +135,7 @@
     "prettyjson": "^1.2.1",
     "random-item": "^1.0.0",
     "raw-body": "^2.4.1",
-    "read-pkg-up": "^6.0.0",
+    "read-pkg-up": "^7.0.0",
     "require-package-name": "^2.0.1",
     "resolve": "^1.12.0",
     "safe-join": "^0.1.3",
