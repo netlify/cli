@@ -369,7 +369,7 @@ async function serveRedirect(req, res, proxy, match, options) {
   return proxy.web(req, res, options)
 }
 
-async function startDevServer({ settings, log }) {
+async function startFrameworkServer({ settings, log }) {
   if (settings.noCmd) {
     const StaticServer = require('static-server')
 
@@ -485,7 +485,7 @@ class DevCommand extends Command {
     }
 
     await startFunctionsServer({ settings, site, log, warn, errorExit, siteInfo: this.netlify.cachedConfig.siteInfo })
-    await startDevServer({ settings, log })
+    await startFrameworkServer({ settings, log })
 
     let { url } = await startProxy(settings, addonUrls, site.configPath, site.root, settings.functions, this.exit)
     if (!url) {
