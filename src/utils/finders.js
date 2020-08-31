@@ -1,33 +1,5 @@
 const path = require('path')
 const fs = require('fs')
-const alwaysIgnored = new Set(['aws-sdk'])
-
-const ignoredExtensions = new Set([
-  '.log',
-  '.lock',
-  '.html',
-  '.md',
-  '.map',
-  '.ts',
-  '.png',
-  '.jpeg',
-  '.jpg',
-  '.gif',
-  '.css',
-  '.patch',
-])
-
-function ignoreMissing(dependency, optional) {
-  return alwaysIgnored.has(dependency) || (optional && dependency in optional)
-}
-
-function includeModuleFile(packageJson, moduleFilePath) {
-  if (packageJson.files) {
-    return true
-  }
-
-  return !ignoredExtensions.has(path.extname(moduleFilePath))
-}
 
 function findModuleDir(dir) {
   let basedir = dir
