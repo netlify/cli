@@ -1,7 +1,7 @@
 const Configstore = require('configstore')
 const os = require('os')
 const path = require('path')
-const uuidv4 = require('uuid/v4')
+const { v4: uuidv4 } = require('uuid')
 
 const globalConfigDefaults = {
   /* disable stats from being sent to Netlify */
