@@ -11,7 +11,23 @@
     },
     {
       // Those cannot be upgraded to a major version until we drop support for Node 8
-      packageNames: ['eslint', 'ava', 'globby', '@octokit/rest', 'chalk', 'prettier'],
+      packageNames: [
+        '@octokit/rest',
+        'ava',
+        'chalk',
+        'concordance',
+        'cosmiconfig',
+        'eslint',
+        'execa',
+        'find-up',
+        'fs-extra',
+        'globby',
+        'log-symbols',
+        'npm-packlist',
+        'ora',
+        'prettier',
+        'wrap-ansi',
+      ],
       major: {
         enabled: false,
       },
