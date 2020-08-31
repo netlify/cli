@@ -188,7 +188,7 @@ async function getStaticServerSettings(settings, flags, projectDir, log) {
   log(`${NETLIFYDEVWARN} Running static server from "${path.relative(path.dirname(projectDir), dist)}"`)
   return {
     noCmd: true,
-    frameworkPort: await getPort({ port: 3999 }),
+    frameworkPort: await getPort({ port: flags.staticServerPort || 3999 }),
     dist,
   }
 }

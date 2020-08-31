@@ -623,6 +623,10 @@ DevCommand.flags = {
   targetPort: flags.integer({
     description: 'port of target app server',
   }),
+  staticServerPort: flags.integer({
+    description: 'port of the static app server used when no framework is detected',
+    hidden: true,
+  }),
   dir: flags.string({
     char: 'd',
     description: 'dir with static files',
