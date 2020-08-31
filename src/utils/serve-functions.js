@@ -1,4 +1,5 @@
 const { URL } = require('url')
+const chalk = require('chalk')
 const express = require('express')
 const bodyParser = require('body-parser')
 const expressLogging = require('express-logging')
@@ -11,12 +12,10 @@ const contentType = require('content-type')
 const getRawBody = require('raw-body')
 const multiparty = require('multiparty')
 const { Readable } = require('stream')
-const {
-  NETLIFYDEVLOG,
-  // NETLIFYDEVWARN,
-  NETLIFYDEVERR,
-} = require('./logo')
+const debounce = require('lodash.debounce')
+const { NETLIFYDEVLOG, NETLIFYDEVWARN, NETLIFYDEVERR } = require('./logo')
 const { getFunctions } = require('./get-functions')
+const { detectFunctionsBuilder } = require('./detect-functions-builder')
 
 function handleErr(err, response) {
   response.statusCode = 500
@@ -28,13 +27,6 @@ function handleErr(err, response) {
 function capitalize(t) {
   return t.replace(/(^\w|\s\w)/g, m => m.toUpperCase())
 }
-
-// function getHandlerPath(functionPath) {
-//   if (functionPath.match(/\.js$/)) {
-//     return functionPath;
-//   }
-//   return path.join(functionPath, `${path.basename(functionPath)}.js`);
-// }
 
 /** need to keep createCallback in scope so we can know if cb was called AND handler is async */
 function createCallback(response) {
@@ -318,4 +310,77 @@ async function serveFunctions(dir, siteInfo = {}) {
   return app
 }
 
-module.exports = { serveFunctions }
+const getBuildFunction = ({ functionBuilder, log }) => {
+  return async function build() {
+    log(
+      `${NETLIFYDEVLOG} Function builder ${chalk.yellow(functionBuilder.builderName)} ${chalk.magenta(
+        'building'
+      )} functions from directory ${chalk.yellow(functionBuilder.src)}`
+    )
+
+    try {
+      await functionBuilder.build()
+      log(
+        `${NETLIFYDEVLOG} Function builder ${chalk.yellow(functionBuilder.builderName)} ${chalk.green(
+          'finished'
+        )} building functions from directory ${chalk.yellow(functionBuilder.src)}`
+      )
+    } catch (error) {
+      const errorMessage = (error.stderr && error.stderr.toString()) || error.message
+      log(
+        `${NETLIFYDEVLOG} Function builder ${chalk.yellow(functionBuilder.builderName)} ${chalk.red(
+          'failed'
+        )} building functions from directory ${chalk.yellow(functionBuilder.src)}${
+          errorMessage ? ` with error:\n${errorMessage}` : ''
+        }`
+      )
+    }
+  }
+}
+
+const startFunctionsServer = async ({ settings, site, log, warn, errorExit, siteInfo }) => {
+  // serve functions from zip-it-and-ship-it
+  // env variables relies on `url`, careful moving this code
+  if (settings.functions) {
+    const functionBuilder = await detectFunctionsBuilder(site.root)
+    if (functionBuilder) {
+      log(
+        `${NETLIFYDEVLOG} Function builder ${chalk.yellow(
+          functionBuilder.builderName
+        )} detected: Running npm script ${chalk.yellow(functionBuilder.npmScript)}`
+      )
+      warn(
+        `${NETLIFYDEVWARN} This is a beta feature, please give us feedback on how to improve at https://github.com/netlify/cli/`
+      )
+
+      const debouncedBuild = debounce(getBuildFunction({ functionBuilder, log }), 300, {
+        leading: true,
+        trailing: true,
+      })
+
+      await debouncedBuild()
+
+      const functionWatcher = chokidar.watch(functionBuilder.src)
+      functionWatcher.on('ready', () => {
+        functionWatcher.on('add', debouncedBuild)
+        functionWatcher.on('change', debouncedBuild)
+        functionWatcher.on('unlink', debouncedBuild)
+      })
+    }
+
+    const functionsServer = await serveFunctions(settings.functions, siteInfo)
+
+    await new Promise(resolve => {
+      functionsServer.listen(settings.functionsPort, err => {
+        if (err) {
+          errorExit(`${NETLIFYDEVERR} Unable to start lambda server: ${err}`)
+        } else {
+          log(`${NETLIFYDEVLOG} Functions server is listening on ${settings.functionsPort}`)
+        }
+        resolve()
+      })
+    })
+  }
+}
+
+module.exports = { startFunctionsServer }

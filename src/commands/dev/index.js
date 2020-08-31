@@ -10,15 +10,13 @@ const httpProxy = require('http-proxy')
 const waitPort = require('wait-port')
 const stripAnsiCc = require('strip-ansi-control-characters')
 const which = require('which')
-const chokidar = require('chokidar')
-const debounce = require('lodash.debounce')
+
 const { createProxyMiddleware } = require('http-proxy-middleware')
 const cookie = require('cookie')
 const get = require('lodash.get')
 const isEmpty = require('lodash.isempty')
-const { serveFunctions } = require('../../utils/serve-functions')
 const { serverSettings } = require('../../utils/detect-server')
-const { detectFunctionsBuilder } = require('../../utils/detect-functions-builder')
+const { startFunctionsServer } = require('../../utils/serve-functions')
 const Command = require('../../utils/command')
 const chalk = require('chalk')
 const jwtDecode = require('jwt-decode')
@@ -33,7 +31,6 @@ const { parseHeadersFile, objectForPath } = require('../../utils/headers')
 const { getEnvSettings } = require('../../utils/env')
 const { createStreamPromise } = require('../../utils/create-stream-promise')
 const toReadableStream = require('to-readable-stream')
-const { startForwardServer } = require('../../utils/traffic-mesh')
 
 const stat = util.promisify(fs.stat)
 
@@ -372,7 +369,7 @@ async function serveRedirect(req, res, proxy, match, options) {
   return proxy.web(req, res, options)
 }
 
-async function startDevServer(settings, log) {
+async function startDevServer({ settings, log }) {
   if (settings.noCmd) {
     const StaticServer = require('static-server')
 
@@ -434,33 +431,6 @@ async function startDevServer(settings, log) {
   return ps
 }
 
-const getBuildFunction = functionBuilder =>
-  async function build() {
-    this.log(
-      `${NETLIFYDEVLOG} Function builder ${chalk.yellow(functionBuilder.builderName)} ${chalk.magenta(
-        'building'
-      )} functions from directory ${chalk.yellow(functionBuilder.src)}`
-    )
-
-    try {
-      await functionBuilder.build()
-      this.log(
-        `${NETLIFYDEVLOG} Function builder ${chalk.yellow(functionBuilder.builderName)} ${chalk.green(
-          'finished'
-        )} building functions from directory ${chalk.yellow(functionBuilder.src)}`
-      )
-    } catch (error) {
-      const errorMessage = (error.stderr && error.stderr.toString()) || error.message
-      this.log(
-        `${NETLIFYDEVLOG} Function builder ${chalk.yellow(functionBuilder.builderName)} ${chalk.red(
-          'failed'
-        )} building functions from directory ${chalk.yellow(functionBuilder.src)}${
-          errorMessage ? ` with error:\n${errorMessage}` : ''
-        }`
-      )
-    }
-  }
-
 const getAddonsUrlsAndAddEnvVariablesToProcessEnv = async ({ api, site, flags }) => {
   if (site.id && !flags.offline) {
     const { addEnvVariables } = require('../../utils/dev')
@@ -489,6 +459,7 @@ class DevCommand extends Command {
     this.log(`${NETLIFYDEV}`)
     const errorExit = this.error
     const log = this.log
+    const warn = this.warn
     const { flags } = this.parse(DevCommand)
     const { api, site, config } = this.netlify
     config.dev = { ...config.dev }
@@ -499,10 +470,6 @@ class DevCommand extends Command {
       ...(config.build.publish && { publish: config.build.publish }),
       ...config.dev,
       ...flags,
-    }
-
-    if (flags.trafficMesh) {
-      await startForwardServer({ log })
     }
 
     const addonUrls = await getAddonsUrlsAndAddEnvVariablesToProcessEnv({ api, site, flags })
@@ -517,47 +484,8 @@ class DevCommand extends Command {
       this.exit(1)
     }
 
-    await startDevServer(settings, this.log)
-
-    // serve functions from zip-it-and-ship-it
-    // env variables relies on `url`, careful moving this code
-    if (settings.functions) {
-      const functionBuilder = await detectFunctionsBuilder(site.root)
-      if (functionBuilder) {
-        this.log(
-          `${NETLIFYDEVLOG} Function builder ${chalk.yellow(
-            functionBuilder.builderName
-          )} detected: Running npm script ${chalk.yellow(functionBuilder.npmScript)}`
-        )
-        this.warn(
-          `${NETLIFYDEVWARN} This is a beta feature, please give us feedback on how to improve at https://github.com/netlify/cli/`
-        )
-
-        const debouncedBuild = debounce(getBuildFunction(functionBuilder).bind(this), 300, {
-          leading: true,
-          trailing: true,
-        })
-
-        await debouncedBuild()
-
-        const functionWatcher = chokidar.watch(functionBuilder.src)
-        functionWatcher.on('ready', () => {
-          functionWatcher.on('add', debouncedBuild)
-          functionWatcher.on('change', debouncedBuild)
-          functionWatcher.on('unlink', debouncedBuild)
-        })
-      }
-
-      const functionsServer = await serveFunctions(settings.functions, this.netlify.cachedConfig.siteInfo)
-      functionsServer.listen(settings.functionsPort, function(err) {
-        if (err) {
-          errorExit(`${NETLIFYDEVERR} Unable to start lambda server: ${err}`)
-        }
-
-        // add newline because this often appears alongside the client devserver's output
-        log(`\n${NETLIFYDEVLOG} Functions server is listening on ${settings.functionsPort}`)
-      })
-    }
+    await startFunctionsServer({ settings, site, log, warn, errorExit, siteInfo: this.netlify.cachedConfig.siteInfo })
+    await startDevServer({ settings, log })
 
     let { url } = await startProxy(settings, addonUrls, site.configPath, site.root, settings.functions, this.exit)
     if (!url) {
