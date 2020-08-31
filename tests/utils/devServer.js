@@ -20,7 +20,7 @@ const startServer = async ({ cwd, env = {} }) => {
   const host = 'localhost'
   const url = `http://${host}:${port}`
   console.log(`Starting dev server on port: ${port} in directory ${path.basename(cwd)}`)
-  const ps = execa(cliPath, ['dev', '-p', port], {
+  const ps = execa(cliPath, ['dev', '-p', port, '--staticServerPort', port + 1000], {
     cwd,
     env,
   })
