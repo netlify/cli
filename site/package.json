@@ -30,7 +30,7 @@
     "cosmiconfig": "^5.2.1",
     "react-helmet": "^5.2.1",
     "react-instantsearch-dom": "^5.7.0",
-    "styled-components": "^3.4.10"
+    "styled-components": "^5.0.0"
   },
   "devDependencies": {
     "fs-extra": "^9.0.1",
