@@ -7,7 +7,7 @@ const { shouldFetchLatestVersion, fetchLatestVersion } = require('../lib/exec-fe
 
 const PACKAGE_NAME = 'live-tunnel-client'
 
-async function createTunnel(siteId, netlifyApiToken, log) {
+async function createTunnel({ siteId, netlifyApiToken, log }) {
   await installTunnelClient(log)
 
   if (!siteId) {
@@ -39,7 +39,7 @@ async function createTunnel(siteId, netlifyApiToken, log) {
   return data
 }
 
-async function connectTunnel(session, netlifyApiToken, localPort, log) {
+async function connectTunnel({ session, netlifyApiToken, localPort, log }) {
   const execPath = getPathInHome(['tunnel', 'bin', PACKAGE_NAME])
   const args = ['connect', '-s', session.id, '-t', netlifyApiToken, '-l', localPort]
   if (process.env.DEBUG) {
@@ -73,7 +73,16 @@ async function installTunnelClient(log) {
   })
 }
 
-module.exports = {
-  createTunnel,
-  connectTunnel,
+const startLiveTunnel = async ({ siteId, netlifyApiToken, localPort, log }) => {
+  const session = await createTunnel({
+    siteId,
+    netlifyApiToken,
+    log,
+  })
+
+  await connectTunnel({ session, netlifyApiToken, localPort, log })
+
+  return session.session_url
 }
+
+module.exports = { startLiveTunnel }
