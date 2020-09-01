@@ -1,4 +1,7 @@
 const path = require('path')
+// This dependency is installed in `site/package.json`
+// eslint-disable-next-line node/no-extraneous-require
+const filterObj = require('filter-obj')
 const globby = require('markdown-magic').globby
 
 module.exports = function generateCommandData() {
@@ -8,16 +11,18 @@ module.exports = function generateCommandData() {
   const commands = globby.sync([`${commandsPath}/**/**.js`, `${netlifyDevPath}/**/**.js`])
 
   const allCommands = commands.map(file => {
-    const cmd = require(file)
+    const data = require(file)
     const command = commandFromPath(file)
     const parentCommand = command.split(':')[0]
     const parent = command === parentCommand ? true : false
+    // remove hidden flags
+    const flags = data.flags && filterObj(data.flags, (_, value) => value.hidden !== true)
     return {
       command,
       commandGroup: parentCommand,
       isParent: parent,
       path: file,
-      data: cmd,
+      data: { ...data, flags },
     }
   })
 
