@@ -28,7 +28,8 @@ const ENV_VAR_STATES = {
     SOME_VAR2: 'FOO', // import new var
   },
   netlifyToml: { SOME_VAR2: 'FOO_NETLIFY_TOML' }, // should take priority over existing SOME_VAR2
-  unset: { SOME_VAR1: '' },
+  setEmpty: { SOME_VAR1: '' },
+  unset: { SOME_VAR1: null },
   importReplace: {
     SOME_VAR1: 'BAR1',
     SOME_VAR2: 'BAR2',
@@ -187,11 +188,22 @@ if (process.env.IS_FORK !== 'true') {
     checkResultState({ t, result: json, state: merged })
   })
 
-  test.serial('env:set --json should unset var if value is set empty', async t => {
-    const args = getArgsFromState(ENV_VAR_STATES.unset)
+  test.serial('env:set --json should be able to set var with empty value', async t => {
+    const args = getArgsFromState(ENV_VAR_STATES.setEmpty)
     const key = args[0]
 
     const cliResponse = await callCli(['env:set', '--json', ...args], t.context.execOptions)
+    const json = JSON.parse(cliResponse)
+
+    t.true(isObject(json))
+    t.truthy(key in json)
+    checkResultState({ t, result: json, state: ENV_VAR_STATES.setEmpty })
+  })
+
+  test.serial('env:unset --json should unset var if value is set empty', async t => {
+    const key = getArgsFromState(ENV_VAR_STATES.unset)[0]
+
+    const cliResponse = await callCli(['env:unset', '--json', key], t.context.execOptions)
     const json = JSON.parse(cliResponse)
 
     t.true(isObject(json))

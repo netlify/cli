@@ -1,10 +1,11 @@
 const Command = require('../../utils/command')
 
-class EnvSetCommand extends Command {
+class EnvUnsetCommand extends Command {
   async run() {
-    const { args, flags } = this.parse(EnvSetCommand)
+    const { args, flags } = this.parse(EnvUnsetCommand)
     const { api, site } = this.netlify
     const siteId = site.id
+    const name = args.name
 
     if (!siteId) {
       this.log('No site id found, please run inside a site folder or `netlify link`')
@@ -14,7 +15,7 @@ class EnvSetCommand extends Command {
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
-        command: 'env:set',
+        command: 'env:unset',
       },
     })
 
@@ -25,12 +26,10 @@ class EnvSetCommand extends Command {
       build_settings: { env = {} },
     } = siteData
 
-    // Merge new enviroment variable with currently set variables
-    const { name, value } = args
-    const newEnv = {
-      ...env,
-      [name]: value,
-    }
+    const newEnv = env
+
+    // Delete environment variable from current variables
+    delete newEnv[args.name]
 
     // Apply environment variable updates
     const siteResult = await api.updateSite({
@@ -48,23 +47,18 @@ class EnvSetCommand extends Command {
       return false
     }
 
-    this.log(`Set environment variable ${name}=${value} for site ${siteData.name}`)
+    this.log(`Unset environment variable ${name} for site ${siteData.name}`)
   }
 }
 
-EnvSetCommand.description = `Set value of environment variable`
-EnvSetCommand.args = [
+EnvUnsetCommand.description = `Unset an environment variable which removes it from the UI`
+EnvUnsetCommand.aliases = ['env:delete', 'env:remove']
+EnvUnsetCommand.args = [
   {
     name: 'name',
     required: true,
     description: 'Environment variable name',
   },
-  {
-    name: 'value',
-    required: false,
-    default: '',
-    description: 'Value to set to',
-  },
 ]
 
-module.exports = EnvSetCommand
+module.exports = EnvUnsetCommand

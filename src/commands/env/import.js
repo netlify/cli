@@ -5,18 +5,6 @@ const dotenv = require('dotenv')
 const fs = require('fs')
 const isEmpty = require('lodash.isempty')
 
-function mergeEnvVars(sourceEnv, mergeEnv) {
-  const result = sourceEnv
-  for (const [key, value] of Object.entries(mergeEnv)) {
-    if (!value.trim()) {
-      delete result[key] // delete variable if value is unset
-    } else {
-      result[key] = value
-    }
-  }
-  return result
-}
-
 class EnvImportCommand extends Command {
   async run() {
     const { args, flags } = this.parse(EnvImportCommand)
@@ -62,7 +50,9 @@ class EnvImportCommand extends Command {
       siteId,
       body: {
         build_settings: {
-          env: flags.replaceExisting ? importedEnv : mergeEnvVars(env, importedEnv),
+          // Only set imported variables if --replaceExisting or otherwise merge
+          // imported ones with the current environment variables.
+          env: flags.replaceExisting ? importedEnv : { ...env, ...importedEnv },
         },
       },
     })
