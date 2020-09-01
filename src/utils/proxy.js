@@ -336,8 +336,11 @@ async function startProxy(settings = {}, addonUrls, configPath, projectDir) {
     proxy.ws(req, socket, head)
   })
 
-  server.listen(settings.port)
-  return { url: `http://localhost:${settings.port}`, port: settings.port }
+  return new Promise(resolve => {
+    server.listen({ port: settings.port }, () => {
+      resolve(`http://localhost:${settings.port}`)
+    })
+  })
 }
 
 module.exports = { startProxy }

@@ -14,6 +14,7 @@ const boxen = require('boxen')
 const { startLiveTunnel } = require('../../utils/live-tunnel')
 const { getEnvSettings } = require('../../utils/env')
 const { startProxy } = require('../../utils/proxy')
+const { startForwardProxy } = require('../../utils/traffic-mesh')
 
 async function startFrameworkServer({ settings, log, exit }) {
   if (settings.noCmd) {
@@ -78,10 +79,13 @@ async function startFrameworkServer({ settings, log, exit }) {
   )
 
   try {
-    await waitPort({ port: settings.frameworkPort, output: 'silent' })
+    const open = await waitPort({ port: settings.frameworkPort, output: 'silent', timeout: 10 * 60 * 1000 })
+    if (!open) {
+      throw new Error(`Timed out waiting for port '${settings.frameworkPort}' to be open`)
+    }
   } catch (err) {
-    console.error(NETLIFYDEVERR, `Netlify Dev could not connect to localhost:${settings.frameworkPort}.`)
-    console.error(NETLIFYDEVERR, `Please make sure your framework server is running on port ${settings.frameworkPort}`)
+    log(NETLIFYDEVERR, `Netlify Dev could not connect to localhost:${settings.frameworkPort}.`)
+    log(NETLIFYDEVERR, `Please make sure your framework server is running on port ${settings.frameworkPort}`)
     exit(1)
   }
 
@@ -109,6 +113,30 @@ const addDotFileEnvs = async ({ site }) => {
     )
     Object.entries(envSettings.vars).forEach(([key, val]) => (process.env[key] = val))
   }
+}
+
+const startProxyServer = async ({ flags, settings, site, log, exit, addonUrls }) => {
+  let url
+  if (flags.trafficMesh) {
+    url = await startForwardProxy({
+      port: settings.port,
+      frameworkPort: settings.frameworkPort,
+      projectDir: site.root,
+      log,
+      debug: flags.debug,
+    })
+    if (!url) {
+      log(NETLIFYDEVERR, `Unable to start forward proxy on port '${settings.port}'`)
+      exit(1)
+    }
+  } else {
+    url = await startProxy(settings, addonUrls, site.configPath, site.root)
+    if (!url) {
+      log(NETLIFYDEVERR, `Unable to start proxy server on port '${settings.port}'`)
+      exit(1)
+    }
+  }
+  return url
 }
 
 const handleLiveTunnel = async ({ flags, site, api, settings, log }) => {
@@ -175,8 +203,6 @@ class DevCommand extends Command {
       ...flags,
     }
 
-    debugger
-
     const addonUrls = await getAddonsUrlsAndAddEnvVariablesToProcessEnv({ api, site, flags })
     process.env.NETLIFY_DEV = 'true'
     await addDotFileEnvs({ site })
@@ -192,10 +218,7 @@ class DevCommand extends Command {
     await startFunctionsServer({ settings, site, log, warn, errorExit, siteInfo: this.netlify.cachedConfig.siteInfo })
     await startFrameworkServer({ settings, log, exit })
 
-    let { url } = await startProxy(settings, addonUrls, site.configPath, site.root)
-    if (!url) {
-      throw new Error('Unable to start proxy server')
-    }
+    let url = await startProxyServer({ flags, settings, site, log, exit, addonUrls })
 
     const liveTunnelUrl = await handleLiveTunnel({ flags, site, api, settings, log })
     url = liveTunnelUrl || url
