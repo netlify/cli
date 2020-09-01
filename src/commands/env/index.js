@@ -21,7 +21,7 @@ class EnvCommand extends Command {
   }
 }
 
-EnvCommand.description = `Control environment variables for the current site`
+EnvCommand.description = `(Beta) Control environment variables for the current site`
 EnvCommand.examples = [
   'netlify env:list',
   'netlify env:get VAR_NAME',
