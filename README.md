@@ -113,6 +113,7 @@ Control environment variables for the current site
 | [`env:import`](/docs/commands/env.md#envimport) | Import and set environment variables from .env file  |
 | [`env:list`](/docs/commands/env.md#envlist) | Lists resolved environment variables for site (includes netlify.toml)  |
 | [`env:set`](/docs/commands/env.md#envset) | Set value of environment variable  |
+| [`env:unset`](/docs/commands/env.md#envunset) | Unset an environment variable which removes it from the UI  |
 
 
 ### [functions](/docs/commands/functions.md)

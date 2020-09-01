@@ -24,6 +24,7 @@ netlify env
 | [`env:import`](/docs/commands/env.md#envimport) | Import and set environment variables from .env file  |
 | [`env:list`](/docs/commands/env.md#envlist) | Lists resolved environment variables for site (includes netlify.toml)  |
 | [`env:set`](/docs/commands/env.md#envset) | Set value of environment variable  |
+| [`env:unset`](/docs/commands/env.md#envunset) | Unset an environment variable which removes it from the UI  |
 
 
 **Examples**
@@ -32,7 +33,7 @@ netlify env
 netlify env:list
 netlify env:get VAR_NAME
 netlify env:set VAR_NAME value
-netlify env:delete VAR_NAME
+netlify env:unset VAR_NAME
 netlify env:import fileName
 ```
 
@@ -104,7 +105,26 @@ netlify env:set
 **Arguments**
 
 - name - Environment variable name
-- value - Value to set to (leave empty to delete)
+- value - Value to set to
+
+**Flags**
+
+- `debug` (*boolean*) - Print debugging information
+
+---
+## `env:unset`
+
+Unset an environment variable which removes it from the UI
+
+**Usage**
+
+```bash
+netlify env:unset
+```
+
+**Arguments**
+
+- name - Environment variable name
 
 **Flags**
 
