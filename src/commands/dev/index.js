@@ -111,6 +111,54 @@ const addDotFileEnvs = async ({ site }) => {
   }
 }
 
+const handleLiveTunnel = async ({ flags, site, api, settings, log }) => {
+  if (flags.live) {
+    const sessionUrl = await startLiveTunnel({
+      siteId: site.id,
+      netlifyApiToken: api.accessToken,
+      localPort: settings.port,
+      log,
+    })
+    process.env.BASE_URL = sessionUrl
+    return sessionUrl
+  }
+}
+
+const openBrowser = async ({ devConfig, url, warn }) => {
+  if (devConfig.autoLaunch && devConfig.autoLaunch !== false) {
+    try {
+      await open(url)
+    } catch (err) {
+      warn(NETLIFYDEVWARN, 'Error while opening dev server URL in browser', err.message)
+    }
+  }
+}
+
+const reportAnalytics = async ({ config, settings }) => {
+  await config.runHook('analytics', {
+    eventName: 'command',
+    payload: {
+      command: 'dev',
+      projectType: settings.framework || 'custom',
+      live: flags.live || false,
+    },
+  })
+}
+
+const printBanner = ({ url, log }) => {
+  // boxen doesnt support text wrapping yet https://github.com/sindresorhus/boxen/issues/16
+  const banner = require('wrap-ansi')(chalk.bold(`${NETLIFYDEVLOG} Server now ready on ${url}`), 70)
+
+  log(
+    boxen(banner, {
+      padding: 1,
+      margin: 1,
+      align: 'center',
+      borderColor: '#00c7b7',
+    })
+  )
+}
+
 class DevCommand extends Command {
   async run() {
     this.log(`${NETLIFYDEV}`)
@@ -126,6 +174,8 @@ class DevCommand extends Command {
       ...config.dev,
       ...flags,
     }
+
+    debugger
 
     const addonUrls = await getAddonsUrlsAndAddEnvVariablesToProcessEnv({ api, site, flags })
     process.env.NETLIFY_DEV = 'true'
@@ -147,45 +197,16 @@ class DevCommand extends Command {
       throw new Error('Unable to start proxy server')
     }
 
-    if (flags.live) {
-      process.env.BASE_URL = url = await startLiveTunnel({
-        siteId: site.id,
-        netlifyApiToken: api.accessToken,
-        localPort: settings.port,
-        log,
-      })
-    }
+    const liveTunnelUrl = await handleLiveTunnel({ flags, site, api, settings, log })
+    url = liveTunnelUrl || url
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'dev',
-        projectType: settings.framework || 'custom',
-        live: flags.live || false,
-      },
-    })
+    await openBrowser({ devConfig, url, warn })
 
-    if (devConfig.autoLaunch && devConfig.autoLaunch !== false) {
-      try {
-        await open(url)
-      } catch (err) {
-        warn(NETLIFYDEVWARN, 'Error while opening dev server URL in browser', err.message)
-      }
-    }
+    await reportAnalytics({ config: this.config, settings })
 
     process.env.DEPLOY_URL = process.env.URL = url
 
-    // boxen doesnt support text wrapping yet https://github.com/sindresorhus/boxen/issues/16
-    const banner = require('wrap-ansi')(chalk.bold(`${NETLIFYDEVLOG} Server now ready on ${url}`), 70)
-
-    log(
-      boxen(banner, {
-        padding: 1,
-        margin: 1,
-        align: 'center',
-        borderColor: '#00c7b7',
-      })
-    )
+    printBanner({ url, log })
   }
 }
 
