@@ -200,7 +200,7 @@ if (process.env.IS_FORK !== 'true') {
     checkResultState({ t, result: json, state: ENV_VAR_STATES.setEmpty })
   })
 
-  test.serial('env:unset --json should unset var if value is set empty', async t => {
+  test.serial('env:unset --json should remove existing variable', async t => {
     const key = getArgsFromState(ENV_VAR_STATES.unset)[0]
 
     const cliResponse = await callCli(['env:unset', '--json', key], t.context.execOptions)
