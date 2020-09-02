@@ -166,7 +166,7 @@ function initializeProxy(port, distDir, projectDir) {
   return handlers
 }
 
-async function startProxy(settings = {}, addonUrls, configPath, projectDir, functionsDir, exit) {
+async function startProxy(settings = {}, addonUrls, configPath, projectDir, functionsDir, exit, trafficMesh = false) {
   try {
     await waitPort({ port: settings.frameworkPort, output: 'silent' })
   } catch (err) {
@@ -554,7 +554,15 @@ class DevCommand extends Command {
       })
     }
 
-    let { url } = await startProxy(settings, addonUrls, site.configPath, site.root, settings.functions, this.exit)
+    let { url } = await startProxy(
+      settings,
+      addonUrls,
+      site.configPath,
+      site.root,
+      settings.functions,
+      this.exit,
+      flags.experimentalTrafficMesh
+    )
     if (!url) {
       throw new Error('Unable to start proxy server')
     }
@@ -642,6 +650,9 @@ DevCommand.flags = {
   live: flags.boolean({
     char: 'l',
     description: 'Start a public live session',
+  }),
+  experimentalTrafficMesh: flags.boolean({
+    description: 'Use TrafficMesh as a reverse proxy',
   }),
 }
 
