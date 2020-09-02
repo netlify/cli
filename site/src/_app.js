@@ -40,6 +40,7 @@ const navOrder = [
   'build',
   'deploy',
   'dev',
+  'env',
   'functions',
   'init',
   'link',
