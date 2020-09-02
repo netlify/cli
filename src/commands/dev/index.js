@@ -175,6 +175,31 @@ async function startProxy(settings = {}, addonUrls, configPath, projectDir, func
     exit(1)
   }
 
+  if (trafficMesh) {
+    // start server
+    const trafficMeshArgs = [
+      '--debug',
+      '--port',
+      settings.port,
+      '--watch',
+      settings.dist,
+      '--forward-proxy',
+      `http://localhost:${settings.frameworkPort}`,
+    ]
+
+    const ps = child_process.spawn('traffic-mesh', trafficMeshArgs, {
+      stdio: 'pipe',
+    })
+
+    ps.stdout.pipe(stripAnsiCc.stream()).pipe(process.stdout)
+    ps.stderr.pipe(stripAnsiCc.stream()).pipe(process.stderr)
+
+    // wait for port
+    await waitPort({ port: settings.port, output: 'silent' })
+
+    return
+  }
+
   if (functionsDir && settings.functionsPort) {
     await waitPort({ port: settings.functionsPort, output: 'silent' })
   }
