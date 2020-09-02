@@ -197,7 +197,7 @@ async function startProxy(settings = {}, addonUrls, configPath, projectDir, func
     // wait for port
     await waitPort({ port: settings.port, output: 'silent' })
 
-    return
+    return { url: `http://localhost:${settings.port}`, port: settings.port }
   }
 
   if (functionsDir && settings.functionsPort) {
