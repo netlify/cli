@@ -6,6 +6,7 @@ const { getPathInHome } = require('../lib/settings')
 const { shouldFetchLatestVersion, fetchLatestVersion } = require('../lib/exec-fetcher')
 
 const PACKAGE_NAME = 'live-tunnel-client'
+const EXEC_NAME = PACKAGE_NAME
 
 async function createTunnel({ siteId, netlifyApiToken, log }) {
   await installTunnelClient(log)
@@ -40,7 +41,7 @@ async function createTunnel({ siteId, netlifyApiToken, log }) {
 }
 
 async function connectTunnel({ session, netlifyApiToken, localPort, log }) {
-  const execPath = getPathInHome(['tunnel', 'bin', PACKAGE_NAME])
+  const execPath = getPathInHome(['tunnel', 'bin', EXEC_NAME])
   const args = ['connect', '-s', session.id, '-t', netlifyApiToken, '-l', localPort]
   if (process.env.DEBUG) {
     args.push('-v')
@@ -60,6 +61,7 @@ async function installTunnelClient(log) {
     packageName: PACKAGE_NAME,
     execArgs: ['version'],
     pattern: `${PACKAGE_NAME}\\/v?([^\\s]+)`,
+    execName: EXEC_NAME,
   })
   if (!shouldFetch) {
     return
@@ -69,7 +71,9 @@ async function installTunnelClient(log) {
 
   await fetchLatestVersion({
     packageName: PACKAGE_NAME,
+    execName: EXEC_NAME,
     destination: binPath,
+    extension: process.platform === 'win32' ? 'zip' : 'tar.gz',
   })
 }
 

@@ -10,40 +10,56 @@ test.beforeEach(t => {
   t.context.binPath = directory
 })
 
+test(`should postix exec with .exe on windows`, t => {
+  const execName = 'some-binary-file'
+  if (process.platform === 'win32') {
+    t.is(getExecName({ execName }), `${execName}.exe`)
+  } else {
+    t.is(getExecName({ execName }), execName)
+  }
+})
+
 const packages = [
-  { packageName: 'live-tunnel-client', execArgs: ['version'], pattern: 'live-tunnel-client\\/v?([^\\s]+)' },
+  {
+    packageName: 'live-tunnel-client',
+    execName: 'live-tunnel-client',
+    execArgs: ['version'],
+    pattern: 'live-tunnel-client\\/v?([^\\s]+)',
+    extension: process.platform === 'win32' ? 'zip' : 'tar.gz',
+  },
+  {
+    packageName: 'traffic-mesh-agent',
+    execName: 'traffic-mesh',
+    execArgs: ['--version'],
+    pattern: '\\sv(.+)',
+    extension: 'zip',
+  },
 ]
 
-packages.forEach(({ packageName, execArgs, pattern }) => {
-  test(`${packageName} - should postix exec with .exe on windows`, t => {
-    if (process.platform === 'win32') {
-      t.is(getExecName({ packageName }), `${packageName}.exe`)
-    } else {
-      t.is(getExecName({ packageName }), packageName)
-    }
-  })
+packages.forEach(({ packageName, execName, execArgs, pattern, extension }) => {
+  const log = console.log
 
   test(`${packageName} - should return true on empty directory`, async t => {
     const { binPath } = t.context
-    const actual = await shouldFetchLatestVersion({ binPath, packageName, execArgs, pattern })
+    const actual = await shouldFetchLatestVersion({ binPath, packageName, execName, execArgs, pattern, log })
     t.is(actual, true)
   })
 
   test(`${packageName} - should return false after latest version is fetched`, async t => {
     const { binPath } = t.context
 
-    await fetchLatestVersion({ packageName, destination: binPath })
+    await fetchLatestVersion({ packageName, execName, destination: binPath, extension })
 
-    const actual = await shouldFetchLatestVersion({ binPath, packageName, execArgs, pattern })
+    const actual = await shouldFetchLatestVersion({ binPath, packageName, execName, execArgs, pattern, log })
     t.is(actual, false)
   })
 
   test(`${packageName} - should download latest version on empty directory`, async t => {
     const { binPath } = t.context
 
-    await fetchLatestVersion({ packageName, destination: binPath })
+    await fetchLatestVersion({ packageName, execName, destination: binPath, extension })
 
-    const execPath = path.join(binPath, getExecName({ packageName }))
+    const execPath = path.join(binPath, getExecName({ execName }))
     const stats = await fs.stat(execPath)
     t.is(stats.size >= 5000, true)
   })

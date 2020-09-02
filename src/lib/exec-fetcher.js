@@ -2,6 +2,7 @@ const fs = require('fs-extra')
 const path = require('path')
 const execa = require('execa')
 const { fetchLatest, updateAvailable } = require('gh-release-fetch')
+const { NETLIFYDEVWARN } = require('../utils/logo')
 
 const isWindows = () => {
   return process.platform === 'win32'
@@ -9,9 +10,8 @@ const isWindows = () => {
 
 const getRepository = ({ packageName }) => `netlify/${packageName}`
 
-const getExecName = ({ packageName }) => {
-  const execName = isWindows() ? `${packageName}.exe` : packageName
-  return execName
+const getExecName = ({ execName }) => {
+  return isWindows() ? `${execName}.exe` : execName
 }
 
 const isExe = (mode, gid, uid) => {
@@ -39,9 +39,8 @@ const isVersionOutdated = async ({ packageName, currentVersion }) => {
   return outdated
 }
 
-const shouldFetchLatestVersion = async ({ binPath, packageName, execArgs, pattern }) => {
-  const execName = getExecName({ packageName })
-  const execPath = path.join(binPath, execName)
+const shouldFetchLatestVersion = async ({ binPath, packageName, execName, execArgs, pattern, log }) => {
+  const execPath = path.join(binPath, getExecName({ execName }))
 
   const exists = await execExist(execPath)
   if (!exists) {
@@ -59,19 +58,28 @@ const shouldFetchLatestVersion = async ({ binPath, packageName, execArgs, patter
     return false
   }
 
-  return isVersionOutdated({
-    packageName,
-    currentVersion: match[1],
-  })
+  try {
+    const outdated = await isVersionOutdated({
+      packageName,
+      currentVersion: match[1],
+    })
+    return outdated
+  } catch (e) {
+    if (exists) {
+      log(NETLIFYDEVWARN, `failed checking for new version of '${packageName}'. Using existing version`)
+      return false
+    } else {
+      throw e
+    }
+  }
 }
 
-const fetchLatestVersion = async ({ packageName, destination }) => {
+const fetchLatestVersion = async ({ packageName, execName, destination, extension }) => {
   const win = isWindows()
   const platform = win ? 'windows' : process.platform
-  const extension = win ? 'zip' : 'tar.gz'
   const release = {
     repository: getRepository({ packageName }),
-    package: `${packageName}-${platform}-amd64.${extension}`,
+    package: `${execName}-${platform}-amd64.${extension}`,
     destination,
     extract: true,
   }
