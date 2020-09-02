@@ -21,13 +21,6 @@ test(`should postix exec with .exe on windows`, t => {
 
 const packages = [
   {
-    packageName: 'live-tunnel-client',
-    execName: 'live-tunnel-client',
-    execArgs: ['version'],
-    pattern: 'live-tunnel-client\\/v?([^\\s]+)',
-    extension: process.platform === 'win32' ? 'zip' : 'tar.gz',
-  },
-  {
     packageName: 'traffic-mesh-agent',
     execName: 'traffic-mesh',
     execArgs: ['--version'],
