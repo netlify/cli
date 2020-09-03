@@ -121,6 +121,7 @@ const startProxyServer = async ({ flags, settings, site, log, exit, addonUrls })
     url = await startForwardProxy({
       port: settings.port,
       frameworkPort: settings.frameworkPort,
+      functionsPort: settings.functionsPort,
       projectDir: site.root,
       log,
       debug: flags.debug,
