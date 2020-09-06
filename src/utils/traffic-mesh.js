@@ -35,7 +35,16 @@ const installTrafficMesh = async ({ log }) => {
 
 const startForwardProxy = async ({ port, frameworkPort, functionsPort, projectDir, log, debug }) => {
   await installTrafficMesh({ log })
-  const args = ['start', 'local', '--port', port, '--forward-proxy', `http://localhost:${frameworkPort}`, '--watch', projectDir]
+  const args = [
+    'start',
+    'local',
+    '--port',
+    port,
+    '--forward-proxy',
+    `http://localhost:${frameworkPort}`,
+    '--watch',
+    projectDir,
+  ]
 
   if (functionsPort) {
     args.push('--local-services-uri', `http://localhost:${functionsPort}`)
