@@ -16,7 +16,7 @@
   "dependencies": {
     "node-fetch": "^2.6.0",
     "@types/node-fetch": "^2.5.7",
-    "@types/node": "^10.17.28",
+    "@types/node": "^10.17.29",
     "typescript": "^3.9.7",
     "@types/aws-lambda": "^8.10.61"
   }
