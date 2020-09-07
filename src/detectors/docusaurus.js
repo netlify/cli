@@ -16,6 +16,7 @@ module.exports = function() {
     framework: 'docusaurus',
     command: getYarnOrNPMCommand(),
     frameworkPort: 3000,
+    env: { BROWSER: 'none' },
     possibleArgsArrs,
     dist: 'static',
   }
