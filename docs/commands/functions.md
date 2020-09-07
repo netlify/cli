@@ -110,7 +110,7 @@ $ netlify functions:invoke myfunction
 $ netlify functions:invoke --name myfunction
 $ netlify functions:invoke --name myfunction --identity
 $ netlify functions:invoke --name myfunction --no-identity
-$ netlify functions:invoke myfunction --payload "{"foo": 1}"
+$ netlify functions:invoke myfunction --payload '{"foo": 1}'
 $ netlify functions:invoke myfunction --querystring "foo=1
 $ netlify functions:invoke myfunction --payload "./pathTo.json"
 ```
