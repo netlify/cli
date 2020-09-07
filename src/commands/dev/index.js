@@ -154,7 +154,7 @@ const handleLiveTunnel = async ({ flags, site, api, settings, log }) => {
 }
 
 const openBrowser = async ({ devConfig, url, warn }) => {
-  if (devConfig.autoLaunch && devConfig.autoLaunch !== false) {
+  if (devConfig.autoLaunch !== false && process.env.BROWSER !== 'none') {
     try {
       await open(url)
     } catch (err) {

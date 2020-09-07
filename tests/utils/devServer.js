@@ -22,7 +22,7 @@ const startServer = async ({ cwd, env = {}, args = [] }) => {
   console.log(`Starting dev server on port: ${port} in directory ${path.basename(cwd)}`)
   const ps = execa(cliPath, ['dev', '-p', port, '--staticServerPort', port + 1000, ...args], {
     cwd,
-    env,
+    env: { BROWSER: 'none', ...env },
   })
   return new Promise((resolve, reject) => {
     let selfKilled = false
