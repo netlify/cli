@@ -1,6 +1,4 @@
 const path = require('path')
-// This dependency is installed in `site/package.json`
-// eslint-disable-next-line node/no-extraneous-require
 const filterObj = require('filter-obj')
 const globby = require('markdown-magic').globby
 
