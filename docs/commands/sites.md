@@ -51,6 +51,8 @@ netlify sites:create
 - `with-ci` (*boolean*) - initialize CI hooks during site creation
 - `manual` (*boolean*) - Force manual CI setup.  Used --with-ci flag
 - `debug` (*boolean*) - Print debugging information
+- `httpProxy` (*option*) - Proxy server address to route requests through.
+- `httpProxyCertificateFilename` (*option*) - Certificate file to use when connecting using a proxy server
 
 ---
 ## `sites:delete`
@@ -74,6 +76,8 @@ netlify sites:delete {site-id}
 
 - `force` (*boolean*) - delete without prompting (useful for CI)
 - `debug` (*boolean*) - Print debugging information
+- `httpProxy` (*option*) - Proxy server address to route requests through.
+- `httpProxyCertificateFilename` (*option*) - Certificate file to use when connecting using a proxy server
 
 **Examples**
 
@@ -96,6 +100,8 @@ netlify sites:list
 
 - `json` (*boolean*) - Output site data as JSON
 - `debug` (*boolean*) - Print debugging information
+- `httpProxy` (*option*) - Proxy server address to route requests through.
+- `httpProxyCertificateFilename` (*option*) - Certificate file to use when connecting using a proxy server
 
 ---
 

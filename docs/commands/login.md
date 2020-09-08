@@ -21,6 +21,8 @@ netlify login
 
 - `new` (*boolean*) - Login to new Netlify account
 - `debug` (*boolean*) - Print debugging information
+- `httpProxy` (*option*) - Proxy server address to route requests through.
+- `httpProxyCertificateFilename` (*option*) - Certificate file to use when connecting using a proxy server
 
 
 <!-- AUTO-GENERATED-CONTENT:END -->

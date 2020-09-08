@@ -26,6 +26,8 @@ netlify dev
 - `offline` (*boolean*) - disables any features that require network access
 - `live` (*boolean*) - Start a public live session
 - `debug` (*boolean*) - Print debugging information
+- `httpProxy` (*option*) - Proxy server address to route requests through.
+- `httpProxyCertificateFilename` (*option*) - Certificate file to use when connecting using a proxy server
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -56,6 +58,8 @@ netlify dev:exec
 **Flags**
 
 - `debug` (*boolean*) - Print debugging information
+- `httpProxy` (*option*) - Proxy server address to route requests through.
+- `httpProxyCertificateFilename` (*option*) - Certificate file to use when connecting using a proxy server
 
 **Examples**
 
