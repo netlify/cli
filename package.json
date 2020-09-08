@@ -55,11 +55,12 @@
     "watch": "nyc --reporter=lcov ava --watch",
     "prepack": "oclif-dev manifest && npm prune --prod",
     "postpack": "rm -f oclif.manifest.json && npm i",
-    "release": "run-s docs release:*",
-    "release:changelog": "auto-changelog -p --template keepachangelog && git add README.md docs CHANGELOG.md",
+    "release": "run-s release:*",
+    "release:docs": "npm run docs && git add docs",
+    "release:changelog": "auto-changelog -p --template keepachangelog && git add README.md CHANGELOG.md",
     "release:standard-version": "standard-version --no-verify --skip.changelog --commit-all",
     "release:version": "git push && git push --tags && gh-release",
-    "release:npm-publish": "npm publish",
+    "release:publish": "npm publish",
     "postinstall": "node ./scripts/postinstall.js"
   },
   "dependencies": {
