@@ -3,8 +3,8 @@ const filterObj = require('filter-obj')
 const globby = require('markdown-magic').globby
 
 module.exports = function generateCommandData() {
-  const commandsPath = path.join(__dirname, '..', 'src/commands')
-  const netlifyDevPath = path.join(__dirname, '..', 'node_modules/netlify-dev-plugin/src/commands')
+  const commandsPath = path.join(__dirname, '..', '..', 'src/commands')
+  const netlifyDevPath = path.join(__dirname, '..', '..', 'node_modules/netlify-dev-plugin/src/commands')
   // console.log('commandsPath', commandsPath)
   const commands = globby.sync([`${commandsPath}/**/**.js`, `${netlifyDevPath}/**/**.js`])
 
@@ -70,7 +70,7 @@ function commandFromPath(p) {
 
   // console.log('commandFromPath', normalized)
   // console.log('process.cwd()', process.cwd())
-  const rootDir = path.join(__dirname, '..')
+  const rootDir = path.join(__dirname, '..', '..')
   // Replace node_modules path for CLI plugins
   if (normalized.match(/node_modules/)) {
     /*

@@ -57,7 +57,7 @@ const config = {
   },
 }
 
-const rootDir = path.join(__dirname, '..')
+const rootDir = path.join(__dirname, '..', '..')
 const markdownFiles = [path.join(rootDir, 'README.md'), path.join(rootDir, 'docs/**/**.md')]
 
 // Generate docs
