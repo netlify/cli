@@ -81,7 +81,7 @@ function commandExamples(examples) {
 }
 
 /* Start - Docs Templating logic */
-function commandListTitle(command, context) {
+function commandListTitle(command) {
   const url = `/docs/commands/${command}.md`
   // const url  = (context === 'README') ? `/docs/${command}.md` : `/${command}`
   return `### [${command}](${url})${newLine}`
@@ -92,7 +92,7 @@ function commandListDescription(desc) {
   return `${cleanDescription}${newLine}`
 }
 
-function commandListSubCommandDisplay(commands, context) {
+function commandListSubCommandDisplay(commands) {
   if (!commands.length) {
     return ''
   }
