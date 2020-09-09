@@ -55,9 +55,12 @@
     "watch": "nyc --reporter=lcov ava --watch",
     "prepack": "oclif-dev manifest && npm prune --prod",
     "postpack": "rm -f oclif.manifest.json && npm i",
-    "version": "npm run docs && auto-changelog -p --template keepachangelog && git add README.md docs CHANGELOG.md",
-    "prepublishOnly": "git push && git push --tags && gh-release",
-    "update-semver": "npm --depth 9999 update",
+    "release": "run-s release:*",
+    "release:docs": "npm run docs && git add docs",
+    "release:changelog": "auto-changelog -p --template keepachangelog && git add README.md CHANGELOG.md",
+    "release:standard-version": "standard-version --no-verify --skip.changelog --commit-all",
+    "release:version": "git push && git push --tags && gh-release",
+    "release:publish": "npm publish",
     "postinstall": "node ./scripts/postinstall.js"
   },
   "dependencies": {
@@ -173,6 +176,7 @@
     "pidtree": "^0.5.0",
     "prettier": "^1.18.2",
     "seedrandom": "^3.0.5",
+    "standard-version": "^9.0.0",
     "strip-ansi": "^6.0.0",
     "temp-dir": "^2.0.0",
     "tomlify-j0.4": "^3.0.0"
