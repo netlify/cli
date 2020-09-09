@@ -94,11 +94,11 @@ Add-ons are a way to extend the functionality of your Netlify site
 AddonsDeleteCommand.strict = false
 AddonsDeleteCommand.aliases = ['addon:delete']
 AddonsDeleteCommand.flags = {
-  ...AddonsDeleteCommand.flags,
   force: flags.boolean({
     char: 'f',
     description: 'delete without prompting (useful for CI)',
   }),
+  ...AddonsDeleteCommand.flags,
 }
 AddonsDeleteCommand.args = [
   {

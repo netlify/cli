@@ -18,7 +18,6 @@ netlify dev
 
 **Flags**
 
-- `debug` (*boolean*) - Print debugging information
 - `command` (*option*) - command to run
 - `port` (*option*) - port of netlify dev
 - `targetPort` (*option*) - port of target app server
@@ -26,6 +25,7 @@ netlify dev
 - `functions` (*option*) - Specify a functions folder to serve
 - `offline` (*boolean*) - disables any features that require network access
 - `live` (*boolean*) - Start a public live session
+- `debug` (*boolean*) - Print debugging information
 
 | Subcommand | description  |
 |:--------------------------- |:-----|

@@ -22,11 +22,11 @@ Extra documentation goes here
 `
 
 SitesConfigCommand.flags = {
-  ...SitesConfigCommand.flags,
   name: flags.string({
     char: 'n',
     description: 'name to print',
   }),
+  ...SitesConfigCommand.flags,
 }
 
 // TODO implement logic

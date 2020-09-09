@@ -229,7 +229,6 @@ FunctionsInvokeCommand.args = [
 ]
 
 FunctionsInvokeCommand.flags = {
-  ...FunctionsInvokeCommand.flags,
   name: flags.string({
     char: 'n',
     description: 'function name to invoke',
@@ -253,6 +252,7 @@ FunctionsInvokeCommand.flags = {
   port: flags.integer({
     description: 'Port where netlify dev is accessible. e.g. 8888',
   }),
+  ...FunctionsInvokeCommand.flags,
 }
 
 module.exports = FunctionsInvokeCommand

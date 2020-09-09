@@ -107,10 +107,10 @@ class StatusCommand extends Command {
 StatusCommand.description = `Print status information`
 
 StatusCommand.flags = {
-  ...StatusCommand.flags,
   verbose: flags.boolean({
     description: 'Output system info',
   }),
+  ...StatusCommand.flags,
 }
 
 module.exports = StatusCommand

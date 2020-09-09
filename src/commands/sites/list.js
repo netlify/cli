@@ -78,10 +78,10 @@ Count: ${logSites.length}
 SitesListCommand.description = `List all sites you have access to`
 
 SitesListCommand.flags = {
-  ...SitesListCommand.flags,
   json: flags.boolean({
     description: 'Output site data as JSON',
   }),
+  ...SitesListCommand.flags,
 }
 
 module.exports = SitesListCommand

@@ -15,9 +15,9 @@ netlify build
 
 **Flags**
 
-- `debug` (*boolean*) - Print debugging information
 - `dry` (*boolean*) - Dry run: show instructions without running them
 - `context` (*option*) - Build context
+- `debug` (*boolean*) - Print debugging information
 
 **Examples**
 

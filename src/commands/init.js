@@ -242,7 +242,6 @@ git remote add origin https://github.com/YourUserName/RepoName.git
 InitCommand.description = `Configure continuous deployment for a new or existing site`
 
 InitCommand.flags = {
-  ...InitCommand.flags,
   manual: flags.boolean({
     char: 'm',
     description: 'Manually configure a git remote for CI',
@@ -253,6 +252,7 @@ InitCommand.flags = {
   gitRemoteName: flags.string({
     description: 'Name of Git remote to use. e.g. "origin"',
   }),
+  ...InitCommand.flags,
 }
 
 module.exports = InitCommand

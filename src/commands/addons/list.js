@@ -64,10 +64,10 @@ class AddonsListCommand extends Command {
 AddonsListCommand.description = `List currently installed add-ons for site`
 AddonsListCommand.aliases = ['addon:list']
 AddonsListCommand.flags = {
-  ...AddonsListCommand.flags,
   json: flags.boolean({
     description: 'Output add-on data as JSON',
   }),
+  ...AddonsListCommand.flags,
 }
 
 module.exports = AddonsListCommand

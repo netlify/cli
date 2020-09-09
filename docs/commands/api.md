@@ -24,9 +24,9 @@ netlify api
 
 **Flags**
 
-- `debug` (*boolean*) - Print debugging information
 - `data` (*option*) - Data to use
 - `list` (*boolean*) - List out available API methods
+- `debug` (*boolean*) - Print debugging information
 
 **Examples**
 

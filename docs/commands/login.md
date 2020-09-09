@@ -19,8 +19,8 @@ netlify login
 
 **Flags**
 
-- `debug` (*boolean*) - Print debugging information
 - `new` (*boolean*) - Login to new Netlify account
+- `debug` (*boolean*) - Print debugging information
 
 
 <!-- AUTO-GENERATED-CONTENT:END -->

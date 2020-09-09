@@ -73,8 +73,8 @@ netlify env:import
 
 **Flags**
 
-- `debug` (*boolean*) - Print debugging information
 - `replaceExisting` (*boolean*) - Replace all existing variables instead of merging them with the current ones
+- `debug` (*boolean*) - Print debugging information
 
 ---
 ## `env:list`

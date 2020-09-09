@@ -84,7 +84,6 @@ netlify deploy
 
 **Flags**
 
-- `debug` (*boolean*) - Print debugging information
 - `dir` (*option*) - Specify a folder to deploy
 - `functions` (*option*) - Specify a functions folder to deploy
 - `prod` (*boolean*) - Deploy to production
@@ -97,6 +96,7 @@ netlify deploy
 - `json` (*boolean*) - Output deployment data as JSON
 - `timeout` (*option*) - Timeout to wait for deployment to finish
 - `trigger` (*boolean*) - Trigger a new build of your site on Netlify without uploading local files
+- `debug` (*boolean*) - Print debugging information
 
 **Examples**
 

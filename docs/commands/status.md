@@ -16,8 +16,8 @@ netlify status
 
 **Flags**
 
-- `debug` (*boolean*) - Print debugging information
 - `verbose` (*boolean*) - Output system info
+- `debug` (*boolean*) - Print debugging information
 
 | Subcommand | description  |
 |:--------------------------- |:-----|

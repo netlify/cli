@@ -243,7 +243,6 @@ DevCommand.examples = ['$ netlify dev', '$ netlify dev -c "yarn start"', '$ netl
 DevCommand.strict = false
 
 DevCommand.flags = {
-  ...DevCommand.flags,
   command: flags.string({
     char: 'c',
     description: 'command to run',
@@ -280,6 +279,7 @@ DevCommand.flags = {
     hidden: true,
     description: 'Uses Traffic Mesh for proxying requests',
   }),
+  ...DevCommand.flags,
 }
 
 module.exports = DevCommand

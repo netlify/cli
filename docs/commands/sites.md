@@ -46,11 +46,11 @@ netlify sites:create
 
 **Flags**
 
-- `debug` (*boolean*) - Print debugging information
 - `name` (*option*) - name of site
 - `account-slug` (*option*) - account slug to create the site under
 - `with-ci` (*boolean*) - initialize CI hooks during site creation
 - `manual` (*boolean*) - Force manual CI setup.  Used --with-ci flag
+- `debug` (*boolean*) - Print debugging information
 
 ---
 ## `sites:delete`
@@ -72,8 +72,8 @@ netlify sites:delete {site-id}
 
 **Flags**
 
-- `debug` (*boolean*) - Print debugging information
 - `force` (*boolean*) - delete without prompting (useful for CI)
+- `debug` (*boolean*) - Print debugging information
 
 **Examples**
 
@@ -94,8 +94,8 @@ netlify sites:list
 
 **Flags**
 
-- `debug` (*boolean*) - Print debugging information
 - `json` (*boolean*) - Output site data as JSON
+- `debug` (*boolean*) - Print debugging information
 
 ---
 
