@@ -60,9 +60,9 @@ FunctionsCreateCommand.examples = [
 ]
 FunctionsCreateCommand.aliases = ['function:create']
 FunctionsCreateCommand.flags = {
-  ...FunctionsCreateCommand.flags,
   name: flags.string({ char: 'n', description: 'function name' }),
   url: flags.string({ char: 'u', description: 'pull template from URL' }),
+  ...FunctionsCreateCommand.flags,
 }
 module.exports = FunctionsCreateCommand
 

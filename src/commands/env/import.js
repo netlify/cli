@@ -78,12 +78,12 @@ class EnvImportCommand extends Command {
 
 EnvImportCommand.description = `Import and set environment variables from .env file`
 EnvImportCommand.flags = {
-  ...EnvImportCommand.flags,
   replaceExisting: flags.boolean({
     char: 'r',
     description: 'Replace all existing variables instead of merging them with the current ones',
     default: false,
   }),
+  ...EnvImportCommand.flags,
 }
 EnvImportCommand.args = [
   {

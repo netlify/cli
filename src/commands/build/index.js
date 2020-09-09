@@ -47,13 +47,13 @@ class BuildCommand extends Command {
 
 // Netlify Build programmatic options
 BuildCommand.flags = {
-  ...BuildCommand.flags,
   dry: flags.boolean({
     description: 'Dry run: show instructions without running them',
   }),
   context: flags.string({
     description: 'Build context',
   }),
+  ...BuildCommand.flags,
 }
 
 BuildCommand.description = `(Beta) Build on your local machine`

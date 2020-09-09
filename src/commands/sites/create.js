@@ -200,7 +200,6 @@ Create a blank site that isn't associated with any git remote.  Does not link to
 `
 
 SitesCreateCommand.flags = {
-  ...SitesCreateCommand.flags,
   'name': flags.string({
     char: 'n',
     description: 'name of site',
@@ -217,6 +216,7 @@ SitesCreateCommand.flags = {
     char: 'm',
     description: 'Force manual CI setup.  Used --with-ci flag',
   }),
+  ...SitesCreateCommand.flags,
 }
 
 module.exports = SitesCreateCommand

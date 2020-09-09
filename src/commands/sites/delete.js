@@ -109,11 +109,11 @@ SitesDeleteCommand.args = [
 ]
 
 SitesDeleteCommand.flags = {
-  ...SitesDeleteCommand.flags,
   force: flags.boolean({
     char: 'f',
     description: 'delete without prompting (useful for CI)',
   }),
+  ...SitesDeleteCommand.flags,
 }
 
 SitesDeleteCommand.examples = ['netlify sites:delete 1234-3262-1211']
