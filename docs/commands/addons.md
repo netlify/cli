@@ -118,8 +118,8 @@ netlify addons:delete
 
 **Flags**
 
-- `debug` (*boolean*) - Print debugging information
 - `force` (*boolean*) - delete without prompting (useful for CI)
+- `debug` (*boolean*) - Print debugging information
 
 ---
 ## `addons:list`
@@ -134,8 +134,8 @@ netlify addons:list
 
 **Flags**
 
-- `debug` (*boolean*) - Print debugging information
 - `json` (*boolean*) - Output add-on data as JSON
+- `debug` (*boolean*) - Print debugging information
 
 ---
 

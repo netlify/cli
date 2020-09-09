@@ -44,9 +44,9 @@ netlify functions:build
 
 **Flags**
 
-- `debug` (*boolean*) - Print debugging information
 - `functions` (*option*) - Specify a functions folder to build to
 - `src` (*option*) - Specify the source folder for the functions
+- `debug` (*boolean*) - Print debugging information
 
 ---
 ## `functions:create`
@@ -65,9 +65,9 @@ netlify functions:create
 
 **Flags**
 
-- `debug` (*boolean*) - Print debugging information
 - `name` (*option*) - function name
 - `url` (*option*) - pull template from URL
+- `debug` (*boolean*) - Print debugging information
 
 **Examples**
 
@@ -94,13 +94,13 @@ netlify functions:invoke
 
 **Flags**
 
-- `debug` (*boolean*) - Print debugging information
 - `name` (*option*) - function name to invoke
 - `functions` (*option*) - Specify a functions folder to parse, overriding netlify.toml
 - `querystring` (*option*) - Querystring to add to your function invocation
 - `payload` (*option*) - Supply POST payload in stringified json, or a path to a json file
 - `identity` (*boolean*) - simulate Netlify Identity authentication JWT. pass --no-identity to affirm unauthenticated request
 - `port` (*option*) - Port where netlify dev is accessible. e.g. 8888
+- `debug` (*boolean*) - Print debugging information
 
 **Examples**
 
