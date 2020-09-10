@@ -39,7 +39,11 @@ test(`should exit with error when proxy is no available`, async t => {
 
   await t.throwsAsync(getAgent({ httpProxy, log, exit }))
 
-  t.is('https://unknown:7979 is not available.', log.getCall(0).args[1])
+  if (process.platform === 'win32') {
+    t.is("Could not connect to 'https://unknown:7979'", log.getCall(0).args[1])
+  } else {
+    t.is('https://unknown:7979 is not available.', log.getCall(0).args[1])
+  }
 })
 
 test(`should return agent for a valid proxy`, async t => {
