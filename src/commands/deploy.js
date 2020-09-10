@@ -12,6 +12,7 @@ const randomItem = require('random-item')
 const inquirer = require('inquirer')
 const isObject = require('lodash.isobject')
 const SitesCreateCommand = require('./sites/create')
+const { getBuildOptions, runBuild } = require('../lib/build')
 const LinkCommand = require('./link')
 const { NETLIFYDEV, NETLIFYDEVLOG, NETLIFYDEVERR } = require('../utils/logo')
 const { statAsync } = require('../lib/fs')
@@ -348,6 +349,18 @@ class DeployCommand extends Command {
       return await triggerDeploy({ api, siteId, siteData, log, error })
     }
 
+    if (flags.build) {
+      const options = getBuildOptions({
+        netlify: this.netlify,
+        token: this.getConfigToken()[0],
+        flags,
+      })
+      const exitCode = await runBuild(options)
+      if (exitCode !== 0) {
+        this.exit(exitCode)
+      }
+    }
+
     const deployFolder = await getDeployFolder({ flags, config, site, siteData, log })
     const functionsFolder = getFunctionsFolder({ flags, config, site, siteData })
     const configPath = site.configPath
@@ -524,6 +537,10 @@ DeployCommand.flags = {
   }),
   trigger: flags.boolean({
     description: 'Trigger a new build of your site on Netlify without uploading local files',
+    exclusive: ['build'],
+  }),
+  build: flags.boolean({
+    description: 'Run build command before deploying',
   }),
   ...DeployCommand.flags,
 }
