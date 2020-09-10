@@ -47,6 +47,8 @@ netlify functions:build
 - `functions` (*string*) - Specify a functions folder to build to
 - `src` (*string*) - Specify the source folder for the functions
 - `debug` (*boolean*) - Print debugging information
+- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
 ## `functions:create`
@@ -68,6 +70,8 @@ netlify functions:create
 - `name` (*string*) - function name
 - `url` (*string*) - pull template from URL
 - `debug` (*boolean*) - Print debugging information
+- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 **Examples**
 
@@ -101,6 +105,8 @@ netlify functions:invoke
 - `identity` (*boolean*) - simulate Netlify Identity authentication JWT. pass --no-identity to affirm unauthenticated request
 - `port` (*string*) - Port where netlify dev is accessible. e.g. 8888
 - `debug` (*boolean*) - Print debugging information
+- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 **Examples**
 

@@ -9,7 +9,7 @@ const StateConfig = require('./state-config')
 const globalConfig = require('./global-config')
 const chalkInstance = require('./chalk')
 const resolveConfig = require('@netlify/config')
-
+const { getAgent } = require('../lib/http-agent')
 const argv = require('minimist')(process.argv.slice(2))
 const { NETLIFY_AUTH_TOKEN, NETLIFY_API_URL } = process.env
 
@@ -35,7 +35,14 @@ class BaseCommand extends Command {
     const cachedConfig = await this.getConfig(cwd, state, token, argv)
     const { configPath, config, buildDir } = cachedConfig
 
-    const apiOpts = {}
+    const { flags } = this.parse(BaseCommand)
+    const agent = await getAgent({
+      log: this.log,
+      exit: this.exit,
+      httpProxy: flags.httpProxy,
+      certificateFile: flags.httpProxyCertificateFilename,
+    })
+    const apiOpts = { agent }
     if (NETLIFY_API_URL) {
       const apiUrl = new URL(NETLIFY_API_URL)
       apiOpts.scheme = apiUrl.protocol.substring(0, apiUrl.protocol.length - 1)
@@ -269,9 +276,18 @@ function getAuthArg(cliArgs) {
   return cliArgs.auth
 }
 
+BaseCommand.strict = false
 BaseCommand.flags = {
   debug: flags.boolean({
     description: 'Print debugging information',
+  }),
+  httpProxy: flags.string({
+    description: 'Proxy server address to route requests through.',
+    default: process.env.HTTP_PROXY || process.env.HTTPS_PROXY,
+  }),
+  httpProxyCertificateFilename: flags.string({
+    description: 'Certificate file to use when connecting using a proxy server',
+    default: process.env.NETLIFY_PROXY_CERTIFICATE_FILENAME,
   }),
 }
 
