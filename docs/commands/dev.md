@@ -18,11 +18,11 @@ netlify dev
 
 **Flags**
 
-- `command` (*option*) - command to run
-- `port` (*option*) - port of netlify dev
-- `targetPort` (*option*) - port of target app server
-- `dir` (*option*) - dir with static files
-- `functions` (*option*) - Specify a functions folder to serve
+- `command` (*string*) - command to run
+- `port` (*string*) - port of netlify dev
+- `targetPort` (*string*) - port of target app server
+- `dir` (*string*) - dir with static files
+- `functions` (*string*) - Specify a functions folder to serve
 - `offline` (*boolean*) - disables any features that require network access
 - `live` (*boolean*) - Start a public live session
 - `debug` (*boolean*) - Print debugging information
