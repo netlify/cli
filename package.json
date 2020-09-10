@@ -55,7 +55,6 @@
     "postpack": "rm -f oclif.manifest.json && npm i",
     "release": "run-s release:*",
     "release:docs": "npm run docs && git add docs",
-    "release:changelog": "auto-changelog -p --template keepachangelog && git add README.md CHANGELOG.md",
     "release:standard-version": "standard-version --no-verify --skip.changelog --commit-all",
     "release:version": "git push && git push --tags && gh-release",
     "release:publish": "npm publish",
@@ -210,6 +209,11 @@
   "husky": {
     "hooks": {
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "standard-version": {
+    "scripts": {
+      "postbump": "auto-changelog -p --template keepachangelog && git add README.md CHANGELOG.md"
     }
   }
 }
