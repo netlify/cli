@@ -38,18 +38,23 @@ const getAgent = async ({ httpProxy, certificateFile, log, exit }) => {
     exit(1)
   }
 
+  let open
   try {
-    const open = await waitPort({
+    open = await waitPort({
       port: parseInt(proxyUrl.port) || (scheme === 'http' ? 80 : 443),
       host: proxyUrl.hostname,
       timeout: 50,
       output: 'silent',
     })
-    if (!open) {
-      throw new Error(`Can't connect to '${httpProxy}'`)
-    }
-  } catch (e) {
-    log(NETLIFYDEVERR, `${httpProxy} is not available`)
+  } catch (error) {
+    // unknown error
+    log(NETLIFYDEVERR, `${httpProxy} is not available.`, error.message)
+    exit(1)
+  }
+
+  if (!open) {
+    // timeout error
+    log(NETLIFYDEVERR, `Could not connect to '${httpProxy}'`)
     exit(1)
   }
 
@@ -58,7 +63,7 @@ const getAgent = async ({ httpProxy, certificateFile, log, exit }) => {
     try {
       certificate = await fs.readFile(certificateFile)
     } catch (error) {
-      log(NETLIFYDEVWARN, `could not read certificate file '${certificateFile}'`)
+      log(NETLIFYDEVWARN, `Could not read certificate file '${certificateFile}'.`, error.message)
     }
   }
 
