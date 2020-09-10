@@ -17,8 +17,8 @@ netlify watch
 **Flags**
 
 - `debug` (*boolean*) - Print debugging information
-- `httpProxy` (*option*) - Proxy server address to route requests through.
-- `httpProxyCertificateFilename` (*option*) - Certificate file to use when connecting using a proxy server
+- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 **Examples**
 

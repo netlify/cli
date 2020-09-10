@@ -17,8 +17,8 @@ netlify env
 **Flags**
 
 - `debug` (*boolean*) - Print debugging information
-- `httpProxy` (*option*) - Proxy server address to route requests through.
-- `httpProxyCertificateFilename` (*option*) - Certificate file to use when connecting using a proxy server
+- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -57,8 +57,8 @@ netlify env:get
 **Flags**
 
 - `debug` (*boolean*) - Print debugging information
-- `httpProxy` (*option*) - Proxy server address to route requests through.
-- `httpProxyCertificateFilename` (*option*) - Certificate file to use when connecting using a proxy server
+- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
 ## `env:import`
@@ -79,8 +79,8 @@ netlify env:import
 
 - `replaceExisting` (*boolean*) - Replace all existing variables instead of merging them with the current ones
 - `debug` (*boolean*) - Print debugging information
-- `httpProxy` (*option*) - Proxy server address to route requests through.
-- `httpProxyCertificateFilename` (*option*) - Certificate file to use when connecting using a proxy server
+- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
 ## `env:list`
@@ -96,8 +96,8 @@ netlify env:list
 **Flags**
 
 - `debug` (*boolean*) - Print debugging information
-- `httpProxy` (*option*) - Proxy server address to route requests through.
-- `httpProxyCertificateFilename` (*option*) - Certificate file to use when connecting using a proxy server
+- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
 ## `env:set`
@@ -118,8 +118,8 @@ netlify env:set
 **Flags**
 
 - `debug` (*boolean*) - Print debugging information
-- `httpProxy` (*option*) - Proxy server address to route requests through.
-- `httpProxyCertificateFilename` (*option*) - Certificate file to use when connecting using a proxy server
+- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
 ## `env:unset`
@@ -139,8 +139,8 @@ netlify env:unset
 **Flags**
 
 - `debug` (*boolean*) - Print debugging information
-- `httpProxy` (*option*) - Proxy server address to route requests through.
-- `httpProxyCertificateFilename` (*option*) - Certificate file to use when connecting using a proxy server
+- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
 
