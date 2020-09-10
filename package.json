@@ -49,7 +49,7 @@
     "test:format": "prettier --check \"{src,scripts,site/src,.circleci,.github}/**/*.{js,yml,json,html}\" \"site/*.{js}\" \"*.{js,yml,json,html}\" \"tests/**/*.js\"",
     "test:cli-version": "npm run start -- --version",
     "test:cli-help": "npm run start -- --help",
-    "docs": "node ./scripts/docs.js",
+    "docs": "node ./site/scripts/docs.js",
     "watch": "nyc --reporter=lcov ava --watch",
     "prepack": "oclif-dev manifest && npm prune --prod",
     "postpack": "rm -f oclif.manifest.json && npm i",
