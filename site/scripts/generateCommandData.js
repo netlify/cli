@@ -1,5 +1,6 @@
 const path = require('path')
 const filterObj = require('filter-obj')
+const mapObj = require('map-obj')
 const globby = require('markdown-magic').globby
 
 module.exports = function generateCommandData() {
@@ -14,7 +15,12 @@ module.exports = function generateCommandData() {
     const parentCommand = command.split(':')[0]
     const parent = command === parentCommand ? true : false
     // remove hidden flags
-    const flags = data.flags && filterObj(data.flags, (_, value) => value.hidden !== true)
+    const flags =
+      data.flags &&
+      mapObj(
+        filterObj(data.flags, (_, value) => value.hidden !== true),
+        (flag, flagData) => [flag, { ...flagData, type: flagData.type === 'option' ? 'string' : flagData.type }]
+      )
     return {
       command,
       commandGroup: parentCommand,

@@ -18,7 +18,7 @@ netlify init
 
 - `manual` (*boolean*) - Manually configure a git remote for CI
 - `force` (*boolean*) - Reinitialize CI hooks if the linked site is already configured to use CI
-- `gitRemoteName` (*option*) - Name of Git remote to use. e.g. "origin"
+- `gitRemoteName` (*string*) - Name of Git remote to use. e.g. "origin"
 - `debug` (*boolean*) - Print debugging information
 
 
