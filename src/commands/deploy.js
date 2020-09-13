@@ -209,6 +209,7 @@ class DeployCommand extends Command {
         deployTimeout: flags.timeout * 1000 || 1.2e6,
         syncFileLimit: 100,
         branch: alias,
+        deployDir: flags.dir,
       })
     } catch (e) {
       switch (true) {
