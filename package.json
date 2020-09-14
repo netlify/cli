@@ -172,7 +172,7 @@
     "pidtree": "^0.5.0",
     "prettier": "^1.18.2",
     "seedrandom": "^3.0.5",
-    "sinon": "^8.1.1",
+    "sinon": "^9.0.0",
     "standard-version": "^9.0.0",
     "strip-ansi": "^6.0.0",
     "temp-dir": "^2.0.0",
