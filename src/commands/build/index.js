@@ -13,8 +13,7 @@ class BuildCommand extends Command {
       payload: { command: 'build', dry: Boolean(options.dry) },
     })
 
-    const { success } = await build(options)
-    const exitCode = success ? 0 : 1
+    const { severityCode: exitCode } = await build(options)
     this.exit(exitCode)
   }
 
