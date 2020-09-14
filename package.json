@@ -163,7 +163,7 @@
     "eslint-plugin-react": "^7.20.5",
     "form-data": "^3.0.0",
     "from2-string": "^1.1.0",
-    "gh-release": "^3.5.0",
+    "gh-release": "^4.0.0",
     "globby": "^10.0.1",
     "husky": "^4.3.0",
     "mkdirp": "^1.0.4",
