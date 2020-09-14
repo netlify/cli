@@ -148,8 +148,8 @@
     "write-file-atomic": "^3.0.0"
   },
   "devDependencies": {
-    "@commitlint/cli": "^9.1.2",
-    "@commitlint/config-conventional": "^9.1.2",
+    "@commitlint/cli": "^11.0.0",
+    "@commitlint/config-conventional": "^11.0.0",
     "@oclif/dev-cli": "^1.22.2",
     "@oclif/test": "^1.2.5",
     "auto-changelog": "^2.0.0",
