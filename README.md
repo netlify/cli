@@ -1,6 +1,6 @@
 # Netlify CLI
 
-[![npm version][npm-img]][npm] [![downloads][dl-img]][dl] [![netlify-status][netlify-img]][netlify] [![security][snyk-img]][snyk][![FOSSA Status](https://app.fossa.com/api/projects/custom%2B17679%2Fgit%40github.com%3Anetlify%2Fcli.git.svg?type=shield)](https://app.fossa.com/projects/custom%2B17679%2Fgit%40github.com%3Anetlify%2Fcli.git?ref=badge_shield)
+[![npm version][npm-img]][npm] [![downloads][dl-img]][dl] [![netlify-status][netlify-img]][netlify] [![dependencies][david-img]][david] [![security][snyk-img]][snyk][![FOSSA Status](https://app.fossa.com/api/projects/custom%2B17679%2Fgit%40github.com%3Anetlify%2Fcli.git.svg?type=shield)](https://app.fossa.com/projects/custom%2B17679%2Fgit%40github.com%3Anetlify%2Fcli.git?ref=badge_shield)
 
 Interact with [Netlify](http://netlify.com/) from the comfort of your CLI.
 
@@ -208,6 +208,8 @@ MIT. See [LICENSE](LICENSE) for more details.
 [av]: https://ci.appveyor.com/project/netlify/cli
 [dl-img]: https://img.shields.io/npm/dm/netlify-cli.svg
 [dl]: https://npmjs.org/package/netlify-cli
+[david-img]: https://david-dm.org/netlify/cli/status.svg
+[david]: https://david-dm.org/netlify/cli
 [snyk-img]: https://snyk.io/test/npm/netlify-cli/badge.svg
 [snyk]: https://snyk.io/test/npm/netlify-cli
 [netlify-img]: https://api.netlify.com/api/v1/badges/d3807379-2dcf-4a43-9c00-e7e8d90ecf70/deploy-status
