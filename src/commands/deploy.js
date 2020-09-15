@@ -4,7 +4,8 @@ const path = require('path')
 const chalk = require('chalk')
 const { flags } = require('@oclif/command')
 const get = require('lodash.get')
-const fs = require('fs-extra')
+const fs = require('fs')
+const { promisify } = require('util')
 const prettyjson = require('prettyjson')
 const ora = require('ora')
 const logSymbols = require('log-symbols')
@@ -15,6 +16,8 @@ const isObject = require('lodash.isobject')
 const SitesCreateCommand = require('./sites/create')
 const LinkCommand = require('./link')
 const { NETLIFYDEV, NETLIFYDEVLOG, NETLIFYDEVERR } = require('../utils/logo')
+
+const statAsync = promisify(fs.stat)
 
 const triggerDeploy = async ({ api, siteId, siteData, log, error }) => {
   try {
@@ -62,7 +65,7 @@ const getDeployFolder = async ({ flags, config, site, siteData, log }) => {
 const validateDeployFolder = async ({ deployFolder, error }) => {
   let stat
   try {
-    stat = await fs.stat(deployFolder)
+    stat = await statAsync(deployFolder)
   } catch (e) {
     if (e.code === 'ENOENT') {
       return error(`No such directory ${deployFolder}! Did you forget to run a build?`)
@@ -101,7 +104,7 @@ const validateFunctionsFolder = async ({ functionsFolder, log, error }) => {
     // we used to hard error if functions folder is specified but doesn't exist
     // but this was too strict for onboarding. we can just log a warning.
     try {
-      stat = await fs.stat(functionsFolder)
+      stat = await statAsync(functionsFolder)
     } catch (e) {
       if (e.code === 'ENOENT') {
         log(
