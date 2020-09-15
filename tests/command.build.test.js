@@ -41,7 +41,7 @@ test('should print output for a failed command', async t => {
 
     await builder.buildAsync()
 
-    await runBuildCommand(t, builder.directory, { exitCode: 1, output: 'doesNotExist' })
+    await runBuildCommand(t, builder.directory, { exitCode: 2, output: 'doesNotExist' })
   })
 })
 
