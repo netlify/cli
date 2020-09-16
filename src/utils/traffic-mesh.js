@@ -44,6 +44,8 @@ const startForwardProxy = async ({ port, frameworkPort, functionsPort, projectDi
     `http://localhost:${frameworkPort}`,
     '--watch',
     projectDir,
+    '--log-file',
+    path.normalize('.netlify/logs/traffic-mesh.log')
   ]
 
   if (functionsPort) {
