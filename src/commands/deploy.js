@@ -19,6 +19,8 @@ const { NETLIFYDEV, NETLIFYDEVLOG, NETLIFYDEVERR } = require('../utils/logo')
 
 const statAsync = promisify(fs.stat)
 
+const DEFAULT_DEPLOY_TIMEOUT = 1.2e6
+
 const triggerDeploy = async ({ api, siteId, siteData, log, error }) => {
   try {
     const siteBuild = await api.createSiteBuild({ siteId })
@@ -174,7 +176,7 @@ const runDeploy = async ({
       statusCb: flags.json || flags.silent ? () => {} : deployProgressCb(),
       draft: !deployToProduction && !alias,
       message: flags.message,
-      deployTimeout: flags.timeout * 1000 || 1.2e6,
+      deployTimeout: flags.timeout * 1000 || DEFAULT_DEPLOY_TIMEOUT,
       syncFileLimit: 100,
       branch: alias,
     })
