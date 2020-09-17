@@ -43,6 +43,19 @@ const createSiteBuilder = ({ siteName }) => {
       })
       return builder
     },
+    withEdgeHandlers: ({ handlers }) => {
+      const dest = path.join(directory, 'edge-handlers', 'index.js')
+      tasks.push(async () => {
+        await fs.ensureFile(dest)
+        const content = Object.entries(handlers)
+          .map(([event, handler]) => {
+            return `export const ${event} = ${handler.toString()}`
+          })
+          .join('\n')
+        await fs.writeFile(dest, content)
+      })
+      return builder
+    },
     withRedirectsFile: ({ redirects = [], pathPrefix = '' }) => {
       const dest = path.join(directory, pathPrefix, '_redirects')
       tasks.push(async () => {
