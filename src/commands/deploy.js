@@ -177,9 +177,10 @@ const runDeploy = async ({
     await deployEdgeHandlers({
       edgeHandlersFolder: flags.edgeHandlers,
       deployId,
-      apiToken: api.accessToken,
+      api,
       silent,
       error,
+      warn,
     })
     results = await api.deploy(siteId, deployFolder, {
       configPath,

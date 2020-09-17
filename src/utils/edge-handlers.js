@@ -67,7 +67,7 @@ const updateProgress = (spinner, text, symbol) => {
   })
 }
 
-const deployEdgeHandlers = async ({ edgeHandlersFolder, deployId, apiToken, silent, error }) => {
+const deployEdgeHandlers = async ({ edgeHandlersFolder, deployId, api, silent, error, warn }) => {
   const edgeHandlersResolvedFolder = await validateEdgeHandlerFolder({ edgeHandlersFolder, error })
   if (edgeHandlersResolvedFolder) {
     let spinner
@@ -80,7 +80,7 @@ const deployEdgeHandlers = async ({ edgeHandlersFolder, deployId, apiToken, sile
 
       const { bundle, manifest } = await readBundleAndManifest({ edgeHandlersResolvedFolder, error })
       // returns false if the bundle exists, true on success, throws on error
-      const success = await uploadEdgeHandlersBundle(bundle, manifest, deployId, apiToken)
+      const success = await uploadEdgeHandlersBundle(bundle, manifest, deployId, api.accessToken)
       if (!success) {
         updateProgress(spinner, `Skipped deploying Edge Handlers since the bundle already exists`, logSymbols.success)
       } else {
@@ -92,6 +92,11 @@ const deployEdgeHandlers = async ({ edgeHandlersFolder, deployId, apiToken, sile
       }
     } catch (e) {
       updateProgress(spinner, `Failed deploying Edge Handlers: ${e.message}`, logSymbols.error)
+      try {
+        await api.cancelSiteDeploy({ deploy_id: deployId })
+      } catch (e) {
+        warn(`Failed canceling deploy with id ${deployId}: ${e.message}`)
+      }
       // no need to report the error again
       error('')
     }
