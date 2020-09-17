@@ -118,13 +118,13 @@ if (process.env.IS_FORK !== 'true') {
         })
 
         t.is(resp.status, 200)
-        const { created_at, sha, ...rest } = await resp.json()
+        const { created_at, sha, content_length, ...rest } = await resp.json()
         t.deepEqual(rest, {
-          content_length: 445,
           content_type: 'application/javascript',
           handlers: ['index'],
           valid: true,
         })
+        t.is(content_length > 400, true)
       })
     })
   }
