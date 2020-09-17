@@ -2,7 +2,7 @@ const path = require('path')
 const execa = require('execa')
 const waitPort = require('wait-port')
 const { NETLIFYDEVLOG, NETLIFYDEVERR } = require('./logo')
-const { getPathInHome } = require('../lib/settings')
+const { getPathInHome, getPathInProject } = require('../lib/settings')
 const { shouldFetchLatestVersion, fetchLatestVersion } = require('../lib/exec-fetcher')
 
 const PACKAGE_NAME = 'traffic-mesh-agent'
@@ -44,6 +44,8 @@ const startForwardProxy = async ({ port, frameworkPort, functionsPort, projectDi
     `http://localhost:${frameworkPort}`,
     '--watch',
     projectDir,
+    '--log-file',
+    getPathInProject(['logs', 'traffic-mesh.log']),
   ]
 
   if (functionsPort) {
