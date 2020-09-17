@@ -1,41 +1,17 @@
 const test = require('ava')
 const { createSiteBuilder } = require('./utils/siteBuilder')
 const callCli = require('./utils/callCli')
-const createLiveTestSite = require('./utils/createLiveTestSite')
+const { generateSiteName, createLiveTestSite } = require('./utils/createLiveTestSite')
 
-const siteName =
-  'netlify-test-addons-' +
-  Math.random()
-    .toString(36)
-    .replace(/[^a-z]+/g, '')
-    .substr(0, 8)
-
-async function listAccounts() {
-  return JSON.parse(await callCli(['api', 'listAccountsForUser']))
-}
+const siteName = generateSiteName('netlify-test-addons-')
 
 if (process.env.IS_FORK !== 'true') {
   test.before(async t => {
-    const accounts = await listAccounts()
-    t.is(Array.isArray(accounts), true)
-    t.truthy(accounts.length)
-
-    const account = accounts[0]
-
+    const siteId = await createLiveTestSite(siteName)
     const builder = createSiteBuilder({ siteName: 'site-with-addons' })
     await builder.buildAsync()
 
-    const execOptions = {
-      cwd: builder.directory,
-      windowsHide: true,
-      windowsVerbatimArguments: true,
-    }
-
-    console.log('creating new site for tests: ' + siteName)
-    const siteId = await createLiveTestSite(siteName, account.slug, execOptions)
-    t.truthy(siteId != null)
-
-    t.context.execOptions = { ...execOptions, env: { ...process.env, NETLIFY_SITE_ID: siteId } }
+    t.context.execOptions = { cwd: builder.directory, env: { NETLIFY_SITE_ID: siteId } }
     t.context.builder = builder
   })
 
