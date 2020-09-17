@@ -5,6 +5,7 @@ const chalk = require('chalk')
 const { flags } = require('@oclif/command')
 const get = require('lodash.get')
 const fs = require('fs')
+const { promisify } = require('util')
 const prettyjson = require('prettyjson')
 const ora = require('ora')
 const logSymbols = require('log-symbols')
@@ -16,20 +17,267 @@ const SitesCreateCommand = require('./sites/create')
 const LinkCommand = require('./link')
 const { NETLIFYDEV, NETLIFYDEVLOG, NETLIFYDEVERR } = require('../utils/logo')
 
+const statAsync = promisify(fs.stat)
+
+const DEFAULT_DEPLOY_TIMEOUT = 1.2e6
+
+const triggerDeploy = async ({ api, siteId, siteData, log, error }) => {
+  try {
+    const siteBuild = await api.createSiteBuild({ siteId })
+    log(
+      `${NETLIFYDEV} A new deployment was triggered successfully. Visit https://app.netlify.com/sites/${siteData.name}/deploys/${siteBuild.deploy_id} to see the logs.`
+    )
+  } catch (err) {
+    if (err.status === 404) {
+      error('Site not found. Please rerun "netlify link" and make sure that your site has CI configured.')
+    } else {
+      error(err.message)
+    }
+  }
+}
+
+const getDeployFolder = async ({ flags, config, site, siteData, log }) => {
+  let deployFolder
+  if (flags['dir']) {
+    deployFolder = path.resolve(process.cwd(), flags['dir'])
+  } else if (get(config, 'build.publish')) {
+    deployFolder = path.resolve(site.root, get(config, 'build.publish'))
+  } else if (get(siteData, 'build_settings.dir')) {
+    deployFolder = path.resolve(site.root, get(siteData, 'build_settings.dir'))
+  }
+
+  if (!deployFolder) {
+    log('Please provide a publish directory (e.g. "public" or "dist" or "."):')
+    log(process.cwd())
+    const { promptPath } = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'promptPath',
+        message: 'Publish directory',
+        default: '.',
+        filter: input => path.resolve(process.cwd(), input),
+      },
+    ])
+    deployFolder = promptPath
+  }
+
+  return deployFolder
+}
+
+const validateDeployFolder = async ({ deployFolder, error }) => {
+  let stat
+  try {
+    stat = await statAsync(deployFolder)
+  } catch (e) {
+    if (e.code === 'ENOENT') {
+      return error(`No such directory ${deployFolder}! Did you forget to run a build?`)
+    }
+
+    // Improve the message of permission errors
+    if (e.code === 'EACCES') {
+      return error('Permission error when trying to access deploy folder')
+    }
+    throw e
+  }
+
+  if (!stat.isDirectory()) {
+    return error('Deploy target must be a path to a directory')
+  }
+  return stat
+}
+
+const getFunctionsFolder = ({ flags, config, site, siteData }) => {
+  let functionsFolder
+  // Support "functions" and "Functions"
+  const funcConfig = get(config, 'build.functions') || get(config, 'build.Functions')
+  if (flags['functions']) {
+    functionsFolder = path.resolve(process.cwd(), flags['functions'])
+  } else if (funcConfig) {
+    functionsFolder = path.resolve(site.root, funcConfig)
+  } else if (get(siteData, 'build_settings.functions_dir')) {
+    functionsFolder = path.resolve(site.root, get(siteData, 'build_settings.functions_dir'))
+  }
+  return functionsFolder
+}
+
+const validateFunctionsFolder = async ({ functionsFolder, log, error }) => {
+  let stat
+  if (functionsFolder) {
+    // we used to hard error if functions folder is specified but doesn't exist
+    // but this was too strict for onboarding. we can just log a warning.
+    try {
+      stat = await statAsync(functionsFolder)
+    } catch (e) {
+      if (e.code === 'ENOENT') {
+        log(
+          `Functions folder "${functionsFolder}" specified but it doesn't exist! Will proceed without deploying functions`
+        )
+      }
+      // Improve the message of permission errors
+      if (e.code === 'EACCES') {
+        error('Permission error when trying to access functions folder')
+      }
+    }
+  }
+
+  if (stat && !stat.isDirectory()) {
+    error('Functions folder must be a path to a directory')
+  }
+
+  return stat
+}
+
+const validateFolders = async ({ deployFolder, functionsFolder, error, log }) => {
+  const deployFolderStat = await validateDeployFolder({ deployFolder, error })
+  const functionsFolderStat = await validateFunctionsFolder({ functionsFolder, error, log })
+  return { deployFolderStat, functionsFolderStat }
+}
+
+const runDeploy = async ({
+  flags,
+  deployToProduction,
+  siteData,
+  api,
+  siteId,
+  deployFolder,
+  configPath,
+  functionsFolder,
+  alias,
+  log,
+  warn,
+  error,
+  exit,
+}) => {
+  let results
+  try {
+    if (deployToProduction) {
+      if (isObject(siteData.published_deploy) && siteData.published_deploy.locked) {
+        log(`\n${NETLIFYDEVERR} Deployments are "locked" for production context of this site\n`)
+        const { unlockChoice } = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'unlockChoice',
+            message: 'Would you like to "unlock" deployments for production context to proceed?',
+            default: false,
+          },
+        ])
+        if (!unlockChoice) exit(0)
+        await api.unlockDeploy({ deploy_id: siteData.published_deploy.id })
+        log(`\n${NETLIFYDEVLOG} "Auto publishing" has been enabled for production context\n`)
+      }
+      log('Deploying to main site URL...')
+    } else {
+      log('Deploying to draft URL...')
+    }
+
+    results = await api.deploy(siteId, deployFolder, {
+      configPath,
+      fnDir: functionsFolder,
+      statusCb: flags.json || flags.silent ? () => {} : deployProgressCb(),
+      draft: !deployToProduction && !alias,
+      message: flags.message,
+      deployTimeout: flags.timeout * 1000 || DEFAULT_DEPLOY_TIMEOUT,
+      syncFileLimit: 100,
+      branch: alias,
+    })
+  } catch (e) {
+    switch (true) {
+      case e.name === 'JSONHTTPError': {
+        warn(`JSONHTTPError: ${e.json.message} ${e.status}`)
+        warn(`\n${JSON.stringify(e, null, '  ')}\n`)
+        error(e)
+        return
+      }
+      case e.name === 'TextHTTPError': {
+        warn(`TextHTTPError: ${e.status}`)
+        warn(`\n${e}\n`)
+        error(e)
+        return
+      }
+      case e.message && e.message.includes('Invalid filename'): {
+        warn(e.message)
+        error(e)
+        return
+      }
+      default: {
+        warn(`\n${JSON.stringify(e, null, '  ')}\n`)
+        error(e)
+        return
+      }
+    }
+  }
+
+  const siteUrl = results.deploy.ssl_url || results.deploy.url
+  const deployUrl = get(results, 'deploy.deploy_ssl_url') || get(results, 'deploy.deploy_url')
+  const logsUrl = `${get(results, 'deploy.admin_url')}/deploys/${get(results, 'deploy.id')}`
+
+  return {
+    name: results.deploy.deployId,
+    siteId: results.deploy.site_id,
+    siteName: results.deploy.name,
+    deployId: results.deployId,
+    siteUrl,
+    deployUrl,
+    logsUrl,
+  }
+}
+
+const printResults = ({ flags, results, deployToProduction, log, logJson, exit }) => {
+  const msgData = {
+    'Logs': `${results.logsUrl}`,
+    'Unique Deploy URL': results.deployUrl,
+  }
+
+  if (deployToProduction) {
+    msgData['Website URL'] = results.siteUrl
+  } else {
+    delete msgData['Unique Deploy URL']
+    msgData['Website Draft URL'] = results.deployUrl
+  }
+
+  // Spacer
+  log()
+
+  // Json response for piping commands
+  if (flags.json) {
+    const jsonData = {
+      name: results.name,
+      site_id: results.site_id,
+      site_name: results.siteName,
+      deploy_id: results.deployId,
+      deploy_url: results.deployUrl,
+      logs: results.logsUrl,
+    }
+    if (deployToProduction) {
+      jsonData.url = results.siteUrl
+    }
+
+    logJson(jsonData)
+    exit(0)
+  } else {
+    log(prettyjson.render(msgData))
+
+    if (!deployToProduction) {
+      log()
+      log('If everything looks good on your draft URL, deploy it to your main site URL with the --prod flag.')
+      log(`${chalk.cyanBright.bold('netlify deploy --prod')}`)
+      log()
+    }
+  }
+}
+
 class DeployCommand extends Command {
   async run() {
     const { flags } = this.parse(DeployCommand)
+    const { log, logJson, warn, error, exit } = this
     const { api, site, config } = this.netlify
     const alias = flags.alias || flags.branch
 
     if (flags.branch) {
-      this.warn('--branch flag has been renamed to --alias and will be removed in future versions')
+      warn('--branch flag has been renamed to --alias and will be removed in future versions')
     }
 
     const deployToProduction = flags.prod
-    if (deployToProduction && alias) {
-      this.error(`--prod and --alias flags cannot be used at the same time`)
-    }
     await this.authenticate(flags.auth)
 
     await this.config.runHook('analytics', {
@@ -78,216 +326,59 @@ class DeployCommand extends Command {
       } catch (e) {
         // TODO specifically handle known cases (e.g. no account access)
         if (e.status === 404) {
-          this.error('Site not found')
+          error('Site not found')
         } else {
-          this.error(e.message)
+          error(e.message)
         }
       }
     }
 
     if (flags.trigger) {
-      try {
-        const siteBuild = await api.createSiteBuild({ siteId })
-        this.log(
-          `${NETLIFYDEV} A new deployment was triggered successfully. Visit https://app.netlify.com/sites/${siteData.name}/deploys/${siteBuild.deploy_id} to see the logs.`
-        )
-        return
-      } catch (err) {
-        if (err.status === 404) {
-          this.error('Site not found. Please rerun "netlify link" and make sure that your site has CI configured.')
-        } else {
-          this.error(err.message)
-        }
-      }
+      return await triggerDeploy({ api, siteId, siteData, log, error })
     }
 
-    // TODO: abstract settings lookup
-    let deployFolder
-    if (flags['dir']) {
-      deployFolder = path.resolve(process.cwd(), flags['dir'])
-    } else if (get(config, 'build.publish')) {
-      deployFolder = path.resolve(site.root, get(config, 'build.publish'))
-    } else if (get(siteData, 'build_settings.dir')) {
-      deployFolder = path.resolve(site.root, get(siteData, 'build_settings.dir'))
-    }
+    const deployFolder = await getDeployFolder({ flags, config, site, siteData, log })
+    const functionsFolder = getFunctionsFolder({ flags, config, site, siteData })
+    const configPath = site.configPath
 
-    let functionsFolder
-    // Support "functions" and "Functions"
-    const funcConfig = get(config, 'build.functions') || get(config, 'build.Functions')
-    if (flags['functions']) {
-      functionsFolder = path.resolve(process.cwd(), flags['functions'])
-    } else if (funcConfig) {
-      functionsFolder = path.resolve(site.root, funcConfig)
-    } else if (get(siteData, 'build_settings.functions_dir')) {
-      functionsFolder = path.resolve(site.root, get(siteData, 'build_settings.functions_dir'))
-    }
-
-    if (!deployFolder) {
-      this.log('Please provide a publish directory (e.g. "public" or "dist" or "."):')
-      this.log(process.cwd())
-      const { promptPath } = await inquirer.prompt([
-        {
-          type: 'input',
-          name: 'promptPath',
-          message: 'Publish directory',
-          default: '.',
-          filter: input => path.resolve(process.cwd(), input),
-        },
-      ])
-      deployFolder = promptPath
-    }
-
-    const pathInfo = {
-      'Deploy path': deployFolder,
-    }
-
-    if (functionsFolder) {
-      pathInfo['Functions path'] = functionsFolder
-    }
-    let configPath
-    if (site.configPath) {
-      configPath = site.configPath
-      pathInfo['Configuration path'] = configPath
-    }
-    this.log(prettyjson.render(pathInfo))
-
-    ensureDirectory(deployFolder, this.error)
-
-    if (functionsFolder) {
-      // we used to hard error if functions folder is specified but doesnt exist
-      // but this was too strict for onboarding. we can just log a warning.
-      let stat
-      try {
-        stat = fs.statSync(functionsFolder)
-      } catch (e) {
-        if (e.code === 'ENOENT') {
-          console.log(
-            `Functions folder "${functionsFolder}" specified but it doesn't exist! Will proceed without deploying functions`
-          )
-          functionsFolder = undefined
-        }
-        // Improve the message of permission errors
-        if (e.code === 'EACCES') {
-          console.log('Permission error when trying to access functions directory')
-          this.exit(1)
-        }
-      }
-      if (functionsFolder && !stat.isDirectory) {
-        console.log('Deploy target must be a directory')
-        this.exit(1)
-      }
-    }
-
-    let results
-    try {
-      if (deployToProduction) {
-        if (isObject(siteData.published_deploy) && siteData.published_deploy.locked) {
-          this.log(`\n${NETLIFYDEVERR} Deployments are "locked" for production context of this site\n`)
-          const { unlockChoice } = await inquirer.prompt([
-            {
-              type: 'confirm',
-              name: 'unlockChoice',
-              message: 'Would you like to "unlock" deployments for production context to proceed?',
-              default: false,
-            },
-          ])
-          if (!unlockChoice) this.exit(0)
-          await api.unlockDeploy({ deploy_id: siteData.published_deploy.id })
-          this.log(`\n${NETLIFYDEVLOG} "Auto publishing" has been enabled for production context\n`)
-        }
-        this.log('Deploying to main site URL...')
-      } else {
-        this.log('Deploying to draft URL...')
-      }
-
-      results = await api.deploy(siteId, deployFolder, {
-        configPath,
-        fnDir: functionsFolder,
-        statusCb: flags.json || flags.silent ? () => {} : deployProgressCb(),
-        draft: !deployToProduction && !alias,
-        message: flags.message,
-        deployTimeout: flags.timeout * 1000 || 1.2e6,
-        syncFileLimit: 100,
-        branch: alias,
+    log(
+      prettyjson.render({
+        'Deploy path': deployFolder,
+        'Functions path': functionsFolder,
+        'Configuration path': configPath,
       })
-    } catch (e) {
-      switch (true) {
-        case e.name === 'JSONHTTPError': {
-          this.warn(`JSONHTTPError: ${e.json.message} ${e.status}`)
-          this.warn(`\n${JSON.stringify(e, null, '  ')}\n`)
-          this.error(e)
-          return
-        }
-        case e.name === 'TextHTTPError': {
-          this.warn(`TextHTTPError: ${e.status}`)
-          this.warn(`\n${e}\n`)
-          this.error(e)
-          return
-        }
-        case e.message && e.message.includes('Invalid filename'): {
-          this.warn(e.message)
-          this.error(e)
-          return
-        }
-        default: {
-          this.warn(`\n${JSON.stringify(e, null, '  ')}\n`)
-          this.error(e)
-          return
-        }
-      }
-    }
-    // cliUx.action.stop(`Finished deploy ${results.deployId}`)
+    )
 
-    const siteUrl = results.deploy.ssl_url || results.deploy.url
-    const deployUrl = get(results, 'deploy.deploy_ssl_url') || get(results, 'deploy.deploy_url')
+    const { functionsFolderStat } = await validateFolders({
+      deployFolder,
+      functionsFolder,
+      error,
+      log,
+    })
 
-    const logsUrl = `${get(results, 'deploy.admin_url')}/deploys/${get(results, 'deploy.id')}`
-    const msgData = {
-      'Logs': `${logsUrl}`,
-      'Unique Deploy URL': deployUrl,
-    }
+    const results = await runDeploy({
+      flags,
+      deployToProduction,
+      siteData,
+      api,
+      siteId,
+      deployFolder,
+      configPath,
+      // pass undefined functionsFolder if doesn't exist
+      functionsFolder: functionsFolderStat && functionsFolder,
+      alias,
+      log,
+      warn,
+      error,
+      exit,
+    })
 
-    if (deployToProduction) {
-      msgData['Website URL'] = siteUrl
-    } else {
-      delete msgData['Unique Deploy URL']
-      msgData['Website Draft URL'] = deployUrl
-    }
+    printResults({ flags, results, deployToProduction, log, logJson, exit })
 
-    // Spacer
-    this.log()
-
-    // Json response for piping commands
-    if (flags.json && results) {
-      const jsonData = {
-        name: results.deploy.deployId,
-        site_id: results.deploy.site_id,
-        site_name: results.deploy.name,
-        deploy_id: results.deployId,
-        deploy_url: deployUrl,
-        logs: logsUrl,
-      }
-      if (deployToProduction) {
-        jsonData.url = siteUrl
-      }
-
-      this.logJson(jsonData)
-      return false
-    }
-
-    this.log(prettyjson.render(msgData))
-
-    if (!deployToProduction) {
-      this.log()
-      this.log('If everything looks good on your draft URL, deploy it to your main site URL with the --prod flag.')
-      this.log(`${chalk.cyanBright.bold('netlify deploy --prod')}`)
-      this.log()
-    }
-
-    if (flags['open']) {
-      const urlToOpen = flags['prod'] ? siteUrl : deployUrl
+    if (flags.open) {
+      const urlToOpen = deployToProduction ? results.siteUrl : results.deployUrl
       await openBrowser(urlToOpen)
-      this.exit()
+      exit()
     }
   }
 }
@@ -385,6 +476,7 @@ DeployCommand.flags = {
     char: 'p',
     description: 'Deploy to production',
     default: false,
+    exclusive: ['alias', 'branch'],
   }),
   alias: flags.string({
     description: "Specifies the alias for deployment. Useful for creating predictable deployment URL's",
@@ -458,29 +550,6 @@ function deployProgressCb() {
       }
     }
   }
-}
-
-function ensureDirectory(resolvedDeployPath, error) {
-  let stat
-  try {
-    stat = fs.statSync(resolvedDeployPath)
-  } catch (e) {
-    if (e.status === 'ENOENT') {
-      return error(
-        `No such directory ${resolvedDeployPath}! Did you forget to create a functions folder or run a build?`
-      )
-    }
-
-    // Improve the message of permission errors
-    if (e.status === 'EACCES') {
-      return error('Permission error when trying to access deploy folder')
-    }
-    throw e
-  }
-  if (!stat.isDirectory) {
-    return error('Deploy target must be a directory')
-  }
-  return stat
 }
 
 module.exports = DeployCommand
