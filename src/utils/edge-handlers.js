@@ -1,7 +1,6 @@
 const path = require('path')
-const ora = require('ora')
-const logSymbols = require('log-symbols')
 const { statAsync, readFileAsyncCatchError } = require('../lib/fs')
+const { startSpinner, stopSpinner } = require('../lib/spinner')
 const uploadEdgeHandlersBundle = require('@netlify/plugin-edge-handlers/src/upload')
 
 const MANIFEST_FILENAME = 'manifest.json'
@@ -57,16 +56,6 @@ const readBundleAndManifest = async ({ edgeHandlersResolvedFolder, error }) => {
   return { bundle, manifest: manifestJson }
 }
 
-const updateProgress = (spinner, text, symbol) => {
-  if (!spinner) {
-    return
-  }
-  spinner.stopAndPersist({
-    text,
-    symbol,
-  })
-}
-
 const deployEdgeHandlers = async ({ site, edgeHandlersFolder, deployId, api, silent, error, warn }) => {
   const edgeHandlersResolvedFolder = await validateEdgeHandlerFolder({ site, edgeHandlersFolder, error })
   if (edgeHandlersResolvedFolder) {
@@ -74,24 +63,19 @@ const deployEdgeHandlers = async ({ site, edgeHandlersFolder, deployId, api, sil
     try {
       spinner = silent
         ? null
-        : ora({
-            text: `Deploying Edge Handlers from directory ${edgeHandlersResolvedFolder}`,
-          }).start()
+        : startSpinner({ text: `Deploying Edge Handlers from directory ${edgeHandlersResolvedFolder}` })
 
       const { bundle, manifest } = await readBundleAndManifest({ edgeHandlersResolvedFolder, error })
       // returns false if the bundle exists, true on success, throws on error
       const success = await uploadEdgeHandlersBundle(bundle, manifest, deployId, api.accessToken)
-      if (!success) {
-        updateProgress(spinner, `Skipped deploying Edge Handlers since the bundle already exists`, logSymbols.success)
-      } else {
-        updateProgress(
-          spinner,
-          `Finished deploying Edge Handlers from directory: ${edgeHandlersResolvedFolder}`,
-          logSymbols.success
-        )
-      }
+
+      const text = success
+        ? `Finished deploying Edge Handlers from directory: ${edgeHandlersResolvedFolder}`
+        : `Skipped deploying Edge Handlers since the bundle already exists`
+      spinner && stopSpinner({ spinner, text, error: false })
     } catch (e) {
-      updateProgress(spinner, `Failed deploying Edge Handlers: ${e.message}`, logSymbols.error)
+      const text = `Failed deploying Edge Handlers: ${e.message}`
+      spinner && stopSpinner({ spinner, text, error: true })
       try {
         await api.cancelSiteDeploy({ deploy_id: deployId })
       } catch (e) {
