@@ -134,6 +134,7 @@ const validateFolders = async ({ deployFolder, functionsFolder, error, log }) =>
 const runDeploy = async ({
   flags,
   deployToProduction,
+  site,
   siteData,
   api,
   siteId,
@@ -175,6 +176,7 @@ const runDeploy = async ({
 
     const silent = flags.json || flags.silent
     await deployEdgeHandlers({
+      site,
       edgeHandlersFolder: flags.edgeHandlers,
       deployId,
       api,
@@ -369,6 +371,7 @@ class DeployCommand extends Command {
     const results = await runDeploy({
       flags,
       deployToProduction,
+      site,
       siteData,
       api,
       siteId,

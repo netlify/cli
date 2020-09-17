@@ -6,9 +6,9 @@ const uploadEdgeHandlersBundle = require('@netlify/plugin-edge-handlers/src/uplo
 
 const MANIFEST_FILENAME = 'manifest.json'
 
-const validateEdgeHandlerFolder = async ({ edgeHandlersFolder, error }) => {
+const validateEdgeHandlerFolder = async ({ site, edgeHandlersFolder, error }) => {
   try {
-    const resolvedFolder = path.resolve(process.cwd(), edgeHandlersFolder || '.netlify/edge-handlers')
+    const resolvedFolder = path.resolve(site.root, edgeHandlersFolder || '.netlify/edge-handlers')
     const stat = await statAsync(resolvedFolder)
     if (!stat.isDirectory()) {
       error(`Edge Handlers folder ${edgeHandlersFolder} must be a path to a directory`)
@@ -67,8 +67,8 @@ const updateProgress = (spinner, text, symbol) => {
   })
 }
 
-const deployEdgeHandlers = async ({ edgeHandlersFolder, deployId, api, silent, error, warn }) => {
-  const edgeHandlersResolvedFolder = await validateEdgeHandlerFolder({ edgeHandlersFolder, error })
+const deployEdgeHandlers = async ({ site, edgeHandlersFolder, deployId, api, silent, error, warn }) => {
+  const edgeHandlersResolvedFolder = await validateEdgeHandlerFolder({ site, edgeHandlersFolder, error })
   if (edgeHandlersResolvedFolder) {
     let spinner
     try {
