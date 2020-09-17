@@ -57,11 +57,22 @@ const readBundleAndManifest = async ({ edgeHandlersResolvedFolder, error }) => {
   return { bundle, manifest: manifestJson }
 }
 
+const updateProgress = (spinner, text, symbol) => {
+  if (!spinner) {
+    return
+  }
+  spinner.stopAndPersist({
+    text,
+    symbol,
+  })
+}
+
 const deployEdgeHandlers = async ({ edgeHandlersFolder, deployId, apiToken, silent, error }) => {
   const edgeHandlersResolvedFolder = await validateEdgeHandlerFolder({ edgeHandlersFolder, error })
   if (edgeHandlersResolvedFolder) {
+    let spinner
     try {
-      const spinner = silent
+      spinner = silent
         ? null
         : ora({
             text: `Deploying Edge Handlers from directory ${edgeHandlersResolvedFolder}`,
@@ -71,20 +82,18 @@ const deployEdgeHandlers = async ({ edgeHandlersFolder, deployId, apiToken, sile
       // returns false if the bundle exists, true on success, throws on error
       const success = await uploadEdgeHandlersBundle(bundle, manifest, deployId, apiToken)
       if (!success) {
-        spinner &&
-          spinner.stopAndPersist({
-            text: `Skipped deploying Edge Handlers since the bundle already exists`,
-            symbol: logSymbols.success,
-          })
+        updateProgress(spinner, `Skipped deploying Edge Handlers since the bundle already exists`, logSymbols.success)
       } else {
-        spinner &&
-          spinner.stopAndPersist({
-            text: `Finished deploying Edge Handlers from directory: ${edgeHandlersResolvedFolder}`,
-            symbol: logSymbols.success,
-          })
+        updateProgress(
+          spinner,
+          `Finished deploying Edge Handlers from directory: ${edgeHandlersResolvedFolder}`,
+          logSymbols.success
+        )
       }
     } catch (e) {
-      error(`Failed deploying Edge Handlers: ${e.message}`)
+      updateProgress(spinner, `Failed deploying Edge Handlers: ${e.message}`, logSymbols.error)
+      // no need to report the error again
+      error('')
     }
   }
 }
