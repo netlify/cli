@@ -25,15 +25,17 @@ async function createLiveTestSite(siteName) {
 
   const isSiteCreated = /Site Created/.test(cliResponse)
   if (!isSiteCreated) {
-    return null
+    throw new Error(`Failed creating site: ${cliResponse}`)
   }
 
   const matches = /Site ID:\s+([a-zA-Z0-9-]+)/m.exec(stripAnsi(cliResponse))
   if (matches && Object.prototype.hasOwnProperty.call(matches, 1) && matches[1]) {
-    return matches[1]
+    const siteId = matches[1]
+    console.log(`Done creating site ${siteName} for account '${accountSlug}'. Site Id: ${siteId}`)
+    return siteId
   }
 
-  return null
+  throw new Error(`Failed creating site: ${cliResponse}`)
 }
 
 module.exports = { generateSiteName, createLiveTestSite }
