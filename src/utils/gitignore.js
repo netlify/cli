@@ -1,18 +1,11 @@
 const path = require('path')
-const fs = require('fs')
 const parseIgnore = require('parse-gitignore')
 
-const { readFileAsync, writeFileAsync, accessAsync } = require('../lib/fs')
-
-function fileExists(filePath) {
-  return accessAsync(filePath, fs.F_OK)
-    .then(() => true)
-    .catch(() => false)
-}
+const { readFileAsync, writeFileAsync, fileExistsAsync } = require('../lib/fs')
 
 async function hasGitIgnore(dir) {
   const gitIgnorePath = path.join(dir, '.gitignore')
-  const hasIgnore = await fileExists(gitIgnorePath)
+  const hasIgnore = await fileExistsAsync(gitIgnorePath)
   return hasIgnore
 }
 
