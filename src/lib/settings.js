@@ -12,4 +12,9 @@ const getPathInHome = paths => {
   return pathInHome
 }
 
-module.exports = { getPathInHome }
+const getPathInProject = paths => {
+  const pathInProject = path.join(NETLIFY_HOME, ...paths)
+  return pathInProject
+}
+
+module.exports = { getPathInHome, getPathInProject }

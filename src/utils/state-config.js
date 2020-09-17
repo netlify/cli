@@ -4,8 +4,8 @@ const makeDir = require('make-dir')
 const fs = require('fs')
 const writeFileAtomic = require('write-file-atomic')
 const dotProp = require('dot-prop')
-
-const STATE_PATH = path.join('.netlify', 'state.json')
+const { getPathInProject } = require('../lib/settings')
+const STATE_PATH = getPathInProject(['state.json'])
 const permissionError = "You don't have access to this file."
 
 class StateConfig {
