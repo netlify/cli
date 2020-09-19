@@ -146,7 +146,7 @@ async function serveRedirect(req, res, proxy, match, options) {
       req.hostname}`
   )
 
-  const staticFile = await getStatic(reqUrl.pathname, options.publicFolder)
+  const staticFile = await getStatic(decodeURIComponent(reqUrl.pathname), options.publicFolder)
   if (staticFile) req.url = staticFile + reqUrl.search
   if (match.force404) {
     res.writeHead(404)
