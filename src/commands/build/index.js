@@ -51,7 +51,4 @@ BuildCommand.description = `(Beta) Build on your local machine`
 
 BuildCommand.examples = ['netlify build']
 
-BuildCommand.getBuildOptions = getBuildOptions
-BuildCommand.runBuild = runBuild
-
 module.exports = BuildCommand
