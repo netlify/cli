@@ -861,4 +861,40 @@ testMatrix.forEach(({ args }) => {
       })
     })
   })
+
+  test(testName('should not shadow an existing file that has unsafe URL characters', args), async t => {
+    await withSiteBuilder('site-with-same-name-for-file-and-folder', async builder => {
+      builder
+        .withContentFile({
+          path: 'public/index.html',
+          content: '<html>index</html>',
+        })
+        .withContentFile({
+          path: 'public/files/file with spaces.html',
+          content: '<html>file with spaces</html>',
+        })
+        .withContentFile({
+          path: 'public/files/[file_with_brackets].html',
+          content: '<html>file with brackets</html>',
+        })
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'public' },
+            redirects: [{ from: '/*', to: '/index.html', status: 200 }],
+          },
+        })
+
+      await builder.buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async server => {
+        const [spaces, brackets] = await Promise.all([
+          fetch(`${server.url}/files/file with spaces`).then(r => r.text()),
+          fetch(`${server.url}/files/[file_with_brackets]`).then(r => r.text()),
+        ])
+
+        t.is(spaces, '<html>file with spaces</html>')
+        t.is(brackets, '<html>file with brackets</html>')
+      })
+    })
+  })
 })
