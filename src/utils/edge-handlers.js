@@ -4,27 +4,20 @@ const { uploadEdgeHandlers } = require('../lib/api')
 const { startSpinner, stopSpinner } = require('../lib/spinner')
 
 const MANIFEST_FILENAME = 'manifest.json'
+const EDGE_HANDLERS_FOLDER = '.netlify/edge-handlers'
 
-const validateEdgeHandlerFolder = async ({ site, edgeHandlersFolder, error }) => {
+const validateEdgeHandlerFolder = async ({ site, error }) => {
   try {
-    const resolvedFolder = path.resolve(site.root, edgeHandlersFolder || '.netlify/edge-handlers')
+    const resolvedFolder = path.resolve(site.root, EDGE_HANDLERS_FOLDER)
     const stat = await statAsync(resolvedFolder)
     if (!stat.isDirectory()) {
-      error(`Edge Handlers folder ${edgeHandlersFolder} must be a path to a directory`)
+      error(`Edge Handlers folder ${EDGE_HANDLERS_FOLDER} must be a path to a directory`)
     }
     return resolvedFolder
   } catch (e) {
-    // only error if edgeHandlers was passed as an argument
-    if (edgeHandlersFolder) {
-      if (e.code === 'ENOENT') {
-        return error(`No such directory ${edgeHandlersFolder}!`)
-      }
-      // Improve the message of permission errors
-      if (e.code === 'EACCES') {
-        return error('Permission error when trying to access Edge Handlers folder')
-      }
-      throw e
-    }
+    // ignore errors at the moment
+    // TODO: report error if 'edge_handlers' config exists after
+    // https://github.com/netlify/build/pull/1829 is published
   }
 }
 
@@ -56,8 +49,8 @@ const readBundleAndManifest = async ({ edgeHandlersResolvedFolder, error }) => {
   return { bundleBuffer, manifest: manifestJson }
 }
 
-const deployEdgeHandlers = async ({ site, edgeHandlersFolder, deployId, api, silent, error, warn }) => {
-  const edgeHandlersResolvedFolder = await validateEdgeHandlerFolder({ site, edgeHandlersFolder, error })
+const deployEdgeHandlers = async ({ site, deployId, api, silent, error, warn }) => {
+  const edgeHandlersResolvedFolder = await validateEdgeHandlerFolder({ site, error })
   if (edgeHandlersResolvedFolder) {
     let spinner
     try {

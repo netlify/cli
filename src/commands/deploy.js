@@ -177,7 +177,6 @@ const runDeploy = async ({
     const silent = flags.json || flags.silent
     await deployEdgeHandlers({
       site,
-      edgeHandlersFolder: flags.edgeHandlers,
       deployId,
       api,
       silent,
@@ -484,11 +483,6 @@ DeployCommand.flags = {
   functions: flags.string({
     char: 'f',
     description: 'Specify a functions folder to deploy',
-  }),
-  edgeHandlers: flags.string({
-    char: 'e',
-    description: 'Edge Handlers bundle location',
-    hidden: true,
   }),
   prod: flags.boolean({
     char: 'p',
