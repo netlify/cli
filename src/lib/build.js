@@ -6,7 +6,7 @@ const build = require('@netlify/build')
 const getBuildOptions = ({ netlify, token, flags }) => {
   const cachedConfig = JSON.stringify(netlify.cachedConfig)
   const { dry, debug } = flags
-  return { cachedConfig, token, dry, debug, mode: 'cli' }
+  return { cachedConfig, token, dry, debug, mode: 'cli', telemetry: false }
 }
 
 const runBuild = async options => {
