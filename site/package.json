@@ -21,7 +21,7 @@
     "clean": "rimraf dist"
   },
   "engines": {
-    "node": ">=v12.18.3"
+    "node": ">=v12.18.4"
   },
   "license": "MIT",
   "dependencies": {
