@@ -1,11 +1,16 @@
-const build = require('@netlify/build')
 const { flags } = require('@oclif/command')
 const Command = require('../../utils/command')
+const { getBuildOptions, runBuild } = require('../../lib/build')
 
 class BuildCommand extends Command {
   // Run Netlify Build
   async run() {
-    const options = this.getOptions()
+    // Retrieve Netlify Build options
+    const options = getBuildOptions({
+      netlify: this.netlify,
+      token: this.getConfigToken()[0],
+      flags: this.parse(BuildCommand).flags,
+    })
     this.checkOptions(options)
 
     await this.config.runHook('analytics', {
@@ -13,21 +18,8 @@ class BuildCommand extends Command {
       payload: { command: 'build', dry: Boolean(options.dry) },
     })
 
-    const { severityCode: exitCode } = await build(options)
+    const exitCode = await runBuild(options)
     this.exit(exitCode)
-  }
-
-  // Retrieve Netlify Build options
-  getOptions() {
-    // We have already resolved the configuration using `@netlify/config`
-    // This is stored as `this.netlify.cachedConfig` and can be passed to
-    // `@netlify/build --cachedConfig`.
-    const cachedConfig = JSON.stringify(this.netlify.cachedConfig)
-    const {
-      flags: { dry, debug },
-    } = this.parse(BuildCommand)
-    const [token] = this.getConfigToken()
-    return { cachedConfig, token, dry, debug, mode: 'cli' }
   }
 
   checkOptions({ cachedConfig, token }) {
