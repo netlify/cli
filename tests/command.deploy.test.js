@@ -129,6 +129,31 @@ if (process.env.IS_FORK !== 'true') {
     })
   }
 
+  test.serial('should run build command before deploy when build flag is passed', async t => {
+    await withSiteBuilder('site-with-public-folder', async builder => {
+      const content = '<h1>⊂◉‿◉つ</h1>'
+      builder
+        .withContentFile({
+          path: 'public/index.html',
+          content,
+        })
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'public' },
+          },
+        })
+
+      await builder.buildAsync()
+
+      const output = await callCli(['deploy', '--build'], {
+        cwd: builder.directory,
+        env: { NETLIFY_SITE_ID: t.context.siteId },
+      })
+
+      t.is(output.includes('Netlify Build completed in'), true)
+    })
+  })
+
   test.after('cleanup', async t => {
     const { siteId } = t.context
     console.log(`deleting test site "${siteName}". ${siteId}`)
