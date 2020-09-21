@@ -1,16 +1,11 @@
 const test = require('ava')
 const { createSiteBuilder } = require('./utils/siteBuilder')
 const callCli = require('./utils/callCli')
-const createLiveTestSite = require('./utils/createLiveTestSite')
+const { generateSiteName, createLiveTestSite } = require('./utils/createLiveTestSite')
 const isObject = require('lodash.isobject')
 const isEmpty = require('lodash.isempty')
 
-const siteName =
-  'netlify-test-env-' +
-  Math.random()
-    .toString(36)
-    .replace(/[^a-z]+/g, '')
-    .substr(0, 8)
+const siteName = generateSiteName('netlify-test-env-')
 
 // Input and return values for each test scenario:
 const ENV_VAR_STATES = {
@@ -40,10 +35,6 @@ const ENV_FILE_NAME = '.env'
 const REPLACE_ENV_FILE_NAME = '.env.replace'
 const FAIL_ENV_FILE_NAME = '.env.unknown' // file which should result in error
 
-async function listAccounts() {
-  return JSON.parse(await callCli(['api', 'listAccountsForUser']))
-}
-
 async function injectNetlifyToml(builder) {
   const builderWithToml = builder.withNetlifyToml({
     config: {
@@ -69,12 +60,7 @@ function getArgsFromState(state) {
 
 if (process.env.IS_FORK !== 'true') {
   test.before(async t => {
-    const accounts = await listAccounts()
-    t.is(Array.isArray(accounts), true)
-    t.truthy(accounts.length)
-
-    const account = accounts[0]
-
+    const siteId = await createLiveTestSite(siteName)
     const builder = createSiteBuilder({ siteName: 'site-with-env-vars' })
       .withEnvFile({
         path: ENV_FILE_NAME,
@@ -86,17 +72,7 @@ if (process.env.IS_FORK !== 'true') {
       })
     await builder.buildAsync()
 
-    const execOptions = {
-      cwd: builder.directory,
-      windowsHide: true,
-      windowsVerbatimArguments: true,
-    }
-
-    console.log('creating new site for tests: ' + siteName)
-    const siteId = await createLiveTestSite(siteName, account.slug, execOptions)
-    t.truthy(siteId != null)
-
-    t.context.execOptions = { ...execOptions, env: { ...process.env, NETLIFY_SITE_ID: siteId } }
+    t.context.execOptions = { cwd: builder.directory, env: { NETLIFY_SITE_ID: siteId } }
     t.context.builder = builder
   })
 

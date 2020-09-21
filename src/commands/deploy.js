@@ -4,8 +4,6 @@ const path = require('path')
 const chalk = require('chalk')
 const { flags } = require('@oclif/command')
 const get = require('lodash.get')
-const fs = require('fs')
-const { promisify } = require('util')
 const prettyjson = require('prettyjson')
 const ora = require('ora')
 const logSymbols = require('log-symbols')
@@ -16,8 +14,8 @@ const isObject = require('lodash.isobject')
 const SitesCreateCommand = require('./sites/create')
 const LinkCommand = require('./link')
 const { NETLIFYDEV, NETLIFYDEVLOG, NETLIFYDEVERR } = require('../utils/logo')
-
-const statAsync = promisify(fs.stat)
+const { statAsync } = require('../lib/fs')
+const { deployEdgeHandlers } = require('../utils/edge-handlers')
 
 const DEFAULT_DEPLOY_TIMEOUT = 1.2e6
 
@@ -136,6 +134,7 @@ const validateFolders = async ({ deployFolder, functionsFolder, error, log }) =>
 const runDeploy = async ({
   flags,
   deployToProduction,
+  site,
   siteData,
   api,
   siteId,
@@ -170,15 +169,28 @@ const runDeploy = async ({
       log('Deploying to draft URL...')
     }
 
+    const draft = !deployToProduction && !alias
+    const title = flags.message
+    results = await api.createSiteDeploy({ siteId, title, body: { draft, branch: alias } })
+    const deployId = results.id
+
+    const silent = flags.json || flags.silent
+    await deployEdgeHandlers({
+      site,
+      deployId,
+      api,
+      silent,
+      error,
+      warn,
+    })
     results = await api.deploy(siteId, deployFolder, {
       configPath,
       fnDir: functionsFolder,
-      statusCb: flags.json || flags.silent ? () => {} : deployProgressCb(),
-      draft: !deployToProduction && !alias,
-      message: flags.message,
+      statusCb: silent ? () => {} : deployProgressCb(),
       deployTimeout: flags.timeout * 1000 || DEFAULT_DEPLOY_TIMEOUT,
       syncFileLimit: 100,
-      branch: alias,
+      // pass an existing deployId to update
+      deployId,
     })
   } catch (e) {
     switch (true) {
@@ -212,7 +224,6 @@ const runDeploy = async ({
   const logsUrl = `${get(results, 'deploy.admin_url')}/deploys/${get(results, 'deploy.id')}`
 
   return {
-    name: results.deploy.deployId,
     siteId: results.deploy.site_id,
     siteName: results.deploy.name,
     deployId: results.deployId,
@@ -359,6 +370,7 @@ class DeployCommand extends Command {
     const results = await runDeploy({
       flags,
       deployToProduction,
+      site,
       siteData,
       api,
       siteId,

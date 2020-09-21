@@ -17,6 +17,24 @@ const { NETLIFY_AUTH_TOKEN, NETLIFY_API_URL } = process.env
 // Todo setup client for multiple environments
 const CLIENT_ID = 'd6f37de6614df7ae58664cfca524744d73807a377f5ee71f1a254f78412e3750'
 
+const getToken = tokenFromFlag => {
+  // 1. First honor command flag --auth
+  if (tokenFromFlag) {
+    return [tokenFromFlag, 'flag']
+  }
+  // 2. then Check ENV var
+  if (NETLIFY_AUTH_TOKEN && NETLIFY_AUTH_TOKEN !== 'null') {
+    return [NETLIFY_AUTH_TOKEN, 'env']
+  }
+  // 3. If no env var use global user setting
+  const userId = globalConfig.get('userId')
+  const tokenFromConfig = globalConfig.get(`users.${userId}.auth.token`)
+  if (tokenFromConfig) {
+    return [tokenFromConfig, 'config']
+  }
+  return [null, 'not found']
+}
+
 class BaseCommand extends Command {
   constructor(...args) {
     super(...args)
@@ -179,21 +197,7 @@ class BaseCommand extends Command {
    * @return {[string, string]} - tokenValue & location of resolved Netlify API token
    */
   getConfigToken(tokenFromFlag) {
-    // 1. First honor command flag --auth
-    if (tokenFromFlag) {
-      return [tokenFromFlag, 'flag']
-    }
-    // 2. then Check ENV var
-    if (NETLIFY_AUTH_TOKEN && NETLIFY_AUTH_TOKEN !== 'null') {
-      return [NETLIFY_AUTH_TOKEN, 'env']
-    }
-    // 3. If no env var use global user setting
-    const userId = globalConfig.get('userId')
-    const tokenFromConfig = globalConfig.get(`users.${userId}.auth.token`)
-    if (tokenFromConfig) {
-      return [tokenFromConfig, 'config']
-    }
-    return [null, 'not found']
+    return getToken(tokenFromFlag)
   }
 
   async authenticate(tokenFromFlag) {
@@ -291,4 +295,5 @@ BaseCommand.flags = {
   }),
 }
 
+BaseCommand.getToken = getToken
 module.exports = BaseCommand

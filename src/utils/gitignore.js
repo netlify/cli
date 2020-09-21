@@ -1,22 +1,11 @@
 const path = require('path')
-const fs = require('fs')
 const parseIgnore = require('parse-gitignore')
-const { promisify } = require('util')
-const readFile = promisify(fs.readFile)
-const writeFile = promisify(fs.writeFile)
 
-function fileExists(filePath) {
-  return new Promise((resolve, reject) => {
-    fs.access(filePath, fs.F_OK, err => {
-      if (err) return resolve(false)
-      return resolve(true)
-    })
-  })
-}
+const { readFileAsync, writeFileAsync, fileExistsAsync } = require('../lib/fs')
 
 async function hasGitIgnore(dir) {
   const gitIgnorePath = path.join(dir, '.gitignore')
-  const hasIgnore = await fileExists(gitIgnorePath)
+  const hasIgnore = await fileExistsAsync(gitIgnorePath)
   return hasIgnore
 }
 
@@ -89,14 +78,14 @@ async function ensureNetlifyIgnore(dir) {
 
   /* No .gitignore file. Create one and ignore .netlify folder */
   if (!(await hasGitIgnore(dir))) {
-    await writeFile(gitIgnorePath, ignoreContent, 'utf8')
+    await writeFileAsync(gitIgnorePath, ignoreContent, 'utf8')
     return false
   }
 
   let gitIgnoreContents
   let ignorePatterns
   try {
-    gitIgnoreContents = await readFile(gitIgnorePath, 'utf8')
+    gitIgnoreContents = await readFileAsync(gitIgnorePath, 'utf8')
     ignorePatterns = parseIgnore.parse(gitIgnoreContents)
   } catch (e) {
     // ignore
@@ -104,7 +93,7 @@ async function ensureNetlifyIgnore(dir) {
   /* Not ignoring .netlify folder. Add to .gitignore */
   if (!ignorePatterns || !ignorePatterns.patterns.includes('.netlify')) {
     const newContents = `${gitIgnoreContents}\n${ignoreContent}`
-    await writeFile(gitIgnorePath, newContents, 'utf8')
+    await writeFileAsync(gitIgnorePath, newContents, 'utf8')
   }
 }
 

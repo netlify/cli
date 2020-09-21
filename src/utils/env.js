@@ -1,10 +1,6 @@
 const path = require('path')
-const fs = require('fs')
-const { promisify } = require('util')
 const dotenv = require('dotenv')
-
-const fileStat = promisify(fs.stat)
-const readFile = promisify(fs.readFile)
+const { statAsync, readFileAsync } = require('../lib/fs')
 
 async function getEnvSettings(projectDir) {
   const envDevelopmentFile = path.resolve(projectDir, '.env.development')
@@ -13,17 +9,17 @@ async function getEnvSettings(projectDir) {
   const settings = {}
 
   try {
-    if ((await fileStat(envFile)).isFile()) settings.file = envFile
+    if ((await statAsync(envFile)).isFile()) settings.file = envFile
   } catch (err) {
     // nothing
   }
   try {
-    if ((await fileStat(envDevelopmentFile)).isFile()) settings.file = envDevelopmentFile
+    if ((await statAsync(envDevelopmentFile)).isFile()) settings.file = envDevelopmentFile
   } catch (err) {
     // nothing
   }
 
-  if (settings.file) settings.vars = dotenv.parse(await readFile(settings.file)) || {}
+  if (settings.file) settings.vars = dotenv.parse(await readFileAsync(settings.file)) || {}
 
   return settings
 }
