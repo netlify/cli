@@ -7,6 +7,19 @@ const { generateSiteName, createLiveTestSite } = require('./utils/createLiveTest
 
 const siteName = generateSiteName('netlify-test-deploy-')
 
+const validateContent = async ({ siteUrl, path, content, t }) => {
+  let actualContent
+  try {
+    const response = await fetch(`${siteUrl}${path}`)
+    if (response.ok) {
+      actualContent = await response.text()
+    }
+  } catch (e) {
+    // no op
+  }
+  t.is(actualContent, content)
+}
+
 const validateDeploy = async ({ deploy, siteName, content, t }) => {
   t.truthy(deploy.site_name)
   t.truthy(deploy.deploy_url)
@@ -14,11 +27,7 @@ const validateDeploy = async ({ deploy, siteName, content, t }) => {
   t.truthy(deploy.logs)
   t.is(deploy.site_name, siteName)
 
-  const actualContent = await fetch(deploy.deploy_url)
-    .then(r => r.text())
-    .catch(() => undefined)
-
-  t.is(actualContent, content)
+  await validateContent({ siteUrl: deploy.deploy_url, path: '', content, t })
 }
 
 if (process.env.IS_FORK !== 'true') {
@@ -42,7 +51,7 @@ if (process.env.IS_FORK !== 'true') {
         env: { NETLIFY_SITE_ID: t.context.siteId },
       }).then(output => JSON.parse(output))
 
-      validateDeploy({ deploy, siteName, content, t })
+      await validateDeploy({ deploy, siteName, content, t })
     })
   })
 
@@ -67,7 +76,7 @@ if (process.env.IS_FORK !== 'true') {
         env: { NETLIFY_SITE_ID: t.context.siteId },
       }).then(output => JSON.parse(output))
 
-      validateDeploy({ deploy, siteName, content, t })
+      await validateDeploy({ deploy, siteName, content, t })
     })
   })
 
@@ -105,7 +114,7 @@ if (process.env.IS_FORK !== 'true') {
         await callCli(['build'], options)
         const deploy = await callCli(['deploy', '--json'], options).then(output => JSON.parse(output))
 
-        validateDeploy({ deploy, siteName, content, t })
+        await validateDeploy({ deploy, siteName, content, t })
 
         // validate edge handlers
         // use this until we can use `netlify api`
@@ -151,6 +160,134 @@ if (process.env.IS_FORK !== 'true') {
       })
 
       t.is(output.includes('Netlify Build completed in'), true)
+    })
+  })
+
+  test.serial('should deploy hidden public folder but ignore hidden/__MACOSX files', async t => {
+    await withSiteBuilder('site-with-a-dedicated-publish-folder', async builder => {
+      builder
+        .withContentFiles([
+          {
+            path: '.public/index.html',
+            content: 'index',
+          },
+          {
+            path: '.public/.hidden-file.html',
+            content: 'hidden-file',
+          },
+          {
+            path: '.public/.hidden-dir/index.html',
+            content: 'hidden-dir',
+          },
+          {
+            path: '.public/__MACOSX/index.html',
+            content: 'macosx',
+          },
+        ])
+        .withNetlifyToml({
+          config: {
+            build: { publish: '.public' },
+          },
+        })
+
+      await builder.buildAsync()
+
+      const deploy = await callCli(['deploy', '--json'], {
+        cwd: builder.directory,
+        env: { NETLIFY_SITE_ID: t.context.siteId },
+      }).then(output => JSON.parse(output))
+
+      await validateDeploy({ deploy, siteName, content: 'index', t })
+      await validateContent({
+        siteUrl: deploy.deploy_url,
+        content: undefined,
+        path: '/.hidden-file',
+        t,
+      })
+      await validateContent({
+        siteUrl: deploy.deploy_url,
+        content: undefined,
+        path: '/.hidden-dir',
+        t,
+      })
+      await validateContent({
+        siteUrl: deploy.deploy_url,
+        content: undefined,
+        path: '/__MACOSX',
+        t,
+      })
+    })
+  })
+
+  test.serial('should filter node_modules from root directory', async t => {
+    await withSiteBuilder('site-with-a-project-directory', async builder => {
+      builder
+        .withContentFiles([
+          {
+            path: 'index.html',
+            content: 'index',
+          },
+          {
+            path: 'node_modules/package.json',
+            content: '{}',
+          },
+        ])
+        .withNetlifyToml({
+          config: {
+            build: { publish: '.' },
+          },
+        })
+
+      await builder.buildAsync()
+
+      const deploy = await callCli(['deploy', '--json'], {
+        cwd: builder.directory,
+        env: { NETLIFY_SITE_ID: t.context.siteId },
+      }).then(output => JSON.parse(output))
+
+      await validateDeploy({ deploy, siteName, content: 'index', t })
+      await validateContent({
+        siteUrl: deploy.deploy_url,
+        content: undefined,
+        path: '/node_modules/package.json',
+        t,
+      })
+    })
+  })
+
+  test.serial('should not filter node_modules from publish directory', async t => {
+    await withSiteBuilder('site-with-a-project-directory', async builder => {
+      builder
+        .withContentFiles([
+          {
+            path: 'public/index.html',
+            content: 'index',
+          },
+          {
+            path: 'public/node_modules/package.json',
+            content: '{}',
+          },
+        ])
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'public' },
+          },
+        })
+
+      await builder.buildAsync()
+
+      const deploy = await callCli(['deploy', '--json'], {
+        cwd: builder.directory,
+        env: { NETLIFY_SITE_ID: t.context.siteId },
+      }).then(output => JSON.parse(output))
+
+      await validateDeploy({ deploy, siteName, content: 'index', t })
+      await validateContent({
+        siteUrl: deploy.deploy_url,
+        content: '{}',
+        path: '/node_modules/package.json',
+        t,
+      })
     })
   })
 

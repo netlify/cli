@@ -86,6 +86,10 @@ const createSiteBuilder = ({ siteName }) => {
       })
       return builder
     },
+    withContentFiles: files => {
+      files.forEach(file => builder.withContentFile(file))
+      return builder
+    },
     withEnvFile: ({ path: filePath = '.env', pathPrefix = '', env = {} }) => {
       const dest = path.join(directory, pathPrefix, filePath)
       tasks.push(async () => {

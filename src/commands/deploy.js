@@ -132,6 +132,31 @@ const validateFolders = async ({ deployFolder, functionsFolder, error, log }) =>
   return { deployFolderStat, functionsFolderStat }
 }
 
+const getDeployFilesFilter = ({ site, deployFolder }) => {
+  // site.root === deployFolder can happen when users run `netlify deploy --dir .`
+  // in that specific case we don't want to publish the repo node_modules
+  // when site.root !== deployFolder the behaviour matches our buildbot
+  const skipNodeModules = site.root === deployFolder
+
+  return filename => {
+    if (filename == null) {
+      return false
+    }
+    if (filename === deployFolder) {
+      return true
+    }
+
+    const basename = path.basename(filename)
+    const skipFile =
+      (skipNodeModules && basename === 'node_modules') ||
+      (basename.startsWith('.') && basename !== '.well-known') ||
+      basename.startsWith('__MACOSX') ||
+      basename.includes('/.')
+
+    return !skipFile
+  }
+}
+
 const runDeploy = async ({
   flags,
   deployToProduction,
@@ -192,6 +217,7 @@ const runDeploy = async ({
       syncFileLimit: 100,
       // pass an existing deployId to update
       deployId,
+      filter: getDeployFilesFilter({ site, deployFolder }),
     })
   } catch (e) {
     switch (true) {
