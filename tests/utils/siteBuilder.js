@@ -87,7 +87,7 @@ const createSiteBuilder = ({ siteName }) => {
       return builder
     },
     withContentFiles: files => {
-      files.forEach(file => builder.withContentFile(file))
+      files.forEach(builder.withContentFile)
       return builder
     },
     withEnvFile: ({ path: filePath = '.env', pathPrefix = '', env = {} }) => {
