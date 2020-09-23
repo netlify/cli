@@ -29,7 +29,7 @@ const fileExistsAsync = async filePath => {
 const isFileAsync = filePath => pathType.isFile(filePath)
 
 const mkdirRecursiveSync = path => makeDir.sync(path)
-const mkdirRecursiveAsync = path => makeDir(path)
+const mkdirRecursiveAsync = async path => makeDir(path)
 
 const rmdirRecursiveAsync = path => del(path, { force: true })
 
