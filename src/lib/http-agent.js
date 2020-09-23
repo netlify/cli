@@ -1,8 +1,14 @@
 const { URL } = require('url')
-const { NETLIFYDEVERR, NETLIFYDEVWARN } = require('../utils/logo')
+const _fs = require('fs')
+const util = require('util')
 const waitPort = require('wait-port')
 const { HttpsProxyAgent } = require('https-proxy-agent')
-const fs = require('fs-extra')
+
+const { NETLIFYDEVERR, NETLIFYDEVWARN } = require('../utils/logo')
+
+const fs = {
+  readFile: util.promisify(_fs.readFile),
+}
 
 // https://github.com/TooTallNate/node-https-proxy-agent/issues/89
 class HttpsProxyAgentWithCA extends HttpsProxyAgent {

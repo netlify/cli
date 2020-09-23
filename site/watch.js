@@ -1,9 +1,17 @@
 /* Syncs blog content from repo to /site/blog */
 const path = require('path')
 const sane = require('sane')
-const fs = require('fs-extra')
+const _fs = require('fs')
+const util = require('util')
+
 const config = require('./config')
+
 const watcher = sane(config.docs.srcPath, { glob: ['**/*.md'] })
+
+const fs = {
+  copyFile: util.promisify(_fs.copyFile),
+  unlink: util.promisify(_fs.unlink),
+}
 
 /* Watch Files */
 watcher.on('ready', function() {
@@ -41,14 +49,14 @@ function getFullPath(filePath) {
 
 function syncFile(filePath) {
   const { src, destination } = getFullPath(filePath)
-  return fs.copy(src, destination).then(() => {
+  return fs.copyFile(src, destination).then(() => {
     console.log(`${filePath} synced to ${destination}`)
   })
 }
 
 function deleteFile(filePath) {
   const { destination } = getFullPath(filePath)
-  return fs.remove(destination).then(() => {
+  return fs.unlink(destination).then(() => {
     console.log(`${filePath} removed from ${destination}`)
   })
 }

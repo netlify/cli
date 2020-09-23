@@ -1,6 +1,6 @@
 const path = require('path')
 const http = require('http')
-const fs = require('fs-extra')
+const fs = require('fs')
 const url = require('url')
 const httpProxy = require('http-proxy')
 const { createProxyMiddleware } = require('http-proxy-middleware')
@@ -10,6 +10,7 @@ const isEmpty = require('lodash.isempty')
 const jwtDecode = require('jwt-decode')
 const contentType = require('content-type')
 const toReadableStream = require('to-readable-stream')
+
 const { createRewriter } = require('./rules-proxy')
 const { createStreamPromise } = require('./create-stream-promise')
 const { onChanges } = require('./rules-proxy')
@@ -29,13 +30,13 @@ function addonUrl(addonUrls, req) {
   return addonUrl ? `${addonUrl}${m[2]}` : null
 }
 
-async function getStatic(pathname, publicFolder) {
+function getStatic(pathname, publicFolder) {
   const alternatives = [pathname, ...alternativePathsFor(pathname)].map(p => path.resolve(publicFolder, p.slice(1)))
 
   for (const i in alternatives) {
     const p = alternatives[i]
     try {
-      const pathStats = await fs.stat(p)
+      const pathStats = fs.statSync(p)
       if (pathStats.isFile()) return '/' + path.relative(publicFolder, p)
     } catch (error) {
       // Ignore

@@ -1,8 +1,9 @@
-const fs = require('fs-extra')
 const path = require('path')
 const execa = require('execa')
 const { fetchLatest, updateAvailable } = require('gh-release-fetch')
+
 const { NETLIFYDEVWARN } = require('../utils/logo')
+const fs = require('./fs')
 
 const isWindows = () => {
   return process.platform === 'win32'
@@ -26,12 +27,13 @@ const isExe = (mode, gid, uid) => {
 }
 
 const execExist = async binPath => {
-  const binExists = await fs.exists(binPath)
-  if (!binExists) {
-    return false
+  try {
+    const stat = await fs.statAsync(binPath)
+    return stat.isFile() && isExe(stat.mode, stat.gid, stat.uid)
+  } catch (error) {
+    if (error.code === 'ENOENT') return false
+    throw error
   }
-  const stat = fs.statSync(binPath)
-  return stat && stat.isFile() && isExe(stat.mode, stat.gid, stat.uid)
 }
 
 const isVersionOutdated = async ({ packageName, currentVersion }) => {
