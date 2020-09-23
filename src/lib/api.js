@@ -1,5 +1,3 @@
-// This file should be used to wrap API methods that are not part of our open API spec yet
-// Once they become part of the spec, js-client should be used
 const fetch = require('node-fetch')
 
 const getHeaders = ({ token }) => {
@@ -47,6 +45,7 @@ const apiPost = async ({ api, path, data }) => {
 }
 
 const uploadEdgeHandlers = async ({ api, deployId, bundleBuffer, manifest }) => {
+  // TODO: use open-api spec via api when it is exposed
   const response = await apiPost({ api, path: `deploys/${deployId}/edge_handlers`, data: manifest })
   const { error, exists, upload_url: uploadUrl } = await response.json()
   if (error) {
@@ -75,4 +74,12 @@ const uploadEdgeHandlers = async ({ api, deployId, bundleBuffer, manifest }) => 
   return true
 }
 
-module.exports = { uploadEdgeHandlers }
+const cancelDeploy = async ({ api, deployId, warn }) => {
+  try {
+    await api.cancelSiteDeploy({ deploy_id: deployId })
+  } catch (e) {
+    warn(`Failed canceling deploy with id ${deployId}: ${e.message}`)
+  }
+}
+
+module.exports = { uploadEdgeHandlers, cancelDeploy }
