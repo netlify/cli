@@ -1,19 +1,8 @@
 const path = require('path')
-const _fs = require('fs')
-const { promisify } = require('util')
+const fs = require('fs').promises
 
 const config = require('./config')
-
-// When Node.js 8 support is dropped we can just remove this
-// and change the _fs above to fs = require('fs').promises
-const fs = {
-  copyFile: promisify(_fs.copyFile),
-  readdir: promisify(_fs.readdir),
-  stat: promisify(_fs.stat),
-  readFile: promisify(_fs.readFile),
-  writeFile: promisify(_fs.writeFile),
-  unlink: promisify(_fs.unlink),
-}
+const { copyDirRecursiveAsync } = require('./fs')
 
 async function readDir(dir, allFiles = []) {
   const files = (await fs.readdir(dir)).map(f => path.join(dir, f))
@@ -26,7 +15,7 @@ async function syncLocalContent() {
   const src = path.join(config.docs.srcPath)
   const destination = path.join(config.docs.outputPath)
 
-  await fs.copyFile(src, destination)
+  await copyDirRecursiveAsync(src, destination)
   console.log(`Docs synced to ${destination}`)
 
   const files = await readDir(destination)
