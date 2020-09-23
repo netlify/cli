@@ -33,7 +33,7 @@ const installTrafficMesh = async ({ log }) => {
   })
 }
 
-const startForwardProxy = async ({ port, frameworkPort, functionsPort, projectDir, log, debug }) => {
+const startForwardProxy = async ({ port, frameworkPort, functionsPort, publishDir, log, debug }) => {
   await installTrafficMesh({ log })
   const args = [
     'start',
@@ -43,7 +43,7 @@ const startForwardProxy = async ({ port, frameworkPort, functionsPort, projectDi
     '--forward-proxy',
     `http://localhost:${frameworkPort}`,
     '--watch',
-    projectDir,
+    publishDir,
     '--log-file',
     getPathInProject(['logs', 'traffic-mesh.log']),
   ]

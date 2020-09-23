@@ -772,6 +772,34 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
+  test(testName('should source redirects file from publish directory', args), async t => {
+    await withSiteBuilder('site-redirects-file-inside-publish', async builder => {
+      builder
+        .withContentFile({
+          path: 'public/index.html',
+          content: 'index',
+        })
+        .withRedirectsFile({
+          pathPrefix: 'public',
+          redirects: [{ from: '/*', to: `/index.html`, status: 200 }],
+        })
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'public' },
+          },
+        })
+
+      await builder.buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async server => {
+        const response = await fetch(`${server.url}/test`)
+
+        t.is(response.status, 200)
+        t.is(await response.text(), 'index')
+      })
+    })
+  })
+
   test(testName('should redirect requests to an external server', args), async t => {
     await withSiteBuilder('site-redirects-file-to-external', async builder => {
       const server = startExternalServer()
