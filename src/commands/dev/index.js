@@ -122,7 +122,7 @@ const startProxyServer = async ({ flags, settings, site, log, exit, addonUrls })
       port: settings.port,
       frameworkPort: settings.frameworkPort,
       functionsPort: settings.functionsPort,
-      projectDir: site.root,
+      publishDir: settings.dist,
       log,
       debug: flags.debug,
     })
