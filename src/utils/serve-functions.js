@@ -283,7 +283,7 @@ function createFormSubmissionHandler(siteInfo) {
   }
 }
 
-async function serveFunctions(dir, siteInfo = {}) {
+function serveFunctions(dir, siteInfo = {}) {
   const app = express()
   app.set('query parser', 'simple')
 

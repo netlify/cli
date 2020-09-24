@@ -22,7 +22,7 @@ async function readRepoURL(_url) {
   return folderContents
 }
 
-async function getRepoURLContents(repoHost, owner_and_repo, contents_path) {
+function getRepoURLContents(repoHost, owner_and_repo, contents_path) {
   // naive joining strategy for now
   if (repoHost === GITHUB) {
     // https://developer.github.com/v3/repos/contents/#get-contents

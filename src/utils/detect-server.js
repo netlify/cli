@@ -47,7 +47,7 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
         name: 'chosenSetting',
         message: `Multiple possible start commands found`,
         type: 'autocomplete',
-        async source(_, input) {
+        source(_, input) {
           if (!input || input === '') {
             return scriptInquirerOptions
           }

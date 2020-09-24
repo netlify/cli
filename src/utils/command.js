@@ -200,7 +200,7 @@ class BaseCommand extends Command {
     return getToken(tokenFromFlag)
   }
 
-  async authenticate(tokenFromFlag) {
+  authenticate(tokenFromFlag) {
     const [token] = this.getConfigToken(tokenFromFlag)
     if (!token) {
       return this.expensivelyAuthenticate()

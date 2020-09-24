@@ -127,7 +127,7 @@ async function pickTemplate() {
     message: 'Pick a template',
     type: 'autocomplete',
     // suggestOnly: true, // we can explore this for entering URL in future
-    async source(answersSoFar, input) {
+    source(answersSoFar, input) {
       if (!input || input === '') {
         // show separators
         return [
@@ -253,7 +253,7 @@ async function downloadFromURL(flags, args, functionsDir) {
   }
 }
 
-async function installDeps(functionPath) {
+function installDeps(functionPath) {
   return new Promise(resolve => {
     cp.exec('npm i', { cwd: path.join(functionPath) }, () => {
       resolve()
@@ -336,7 +336,7 @@ async function scaffoldFromTemplate(flags, args, functionsDir) {
   }
 }
 
-async function installAddons(addons = [], fnPath) {
+function installAddons(addons = [], fnPath) {
   if (addons.length > 0) {
     const { api, site } = this.netlify
     const siteId = site.id
@@ -346,7 +346,7 @@ async function installAddons(addons = [], fnPath) {
     }
     this.log(`${NETLIFYDEVLOG} checking Netlify APIs...`)
 
-    return api.getSite({ siteId }).then(async siteData => {
+    return api.getSite({ siteId }).then(siteData => {
       const accessToken = api.accessToken
       const arr = addons.map(({ addonName, addonDidInstall }) => {
         this.log(`${NETLIFYDEVLOG} installing addon: ` + chalk.yellow.inverse(addonName))
