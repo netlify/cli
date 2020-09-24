@@ -925,4 +925,38 @@ testMatrix.forEach(({ args }) => {
       })
     })
   })
+
+  test(testName('should follow redirect for fully qualified rule', args), async t => {
+    await withSiteBuilder('site-with-fully-qualified-redirect-rule', async builder => {
+      const publicDir = 'public'
+      builder
+        .withNetlifyToml({
+          config: {
+            build: { publish: publicDir },
+          },
+        })
+        .withContentFiles([
+          {
+            path: path.join(publicDir, 'index.html'),
+            content: '<html>index</html>',
+          },
+          {
+            path: path.join(publicDir, 'local-hello.html'),
+            content: '<html>hello</html>',
+          },
+        ])
+        .withRedirectsFile({
+          redirects: [{ from: `http://localhost/hello-world`, to: `/local-hello`, status: 200 }],
+        })
+
+      await builder.buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async server => {
+        const response = await fetch(`${server.url}/hello-world`)
+
+        t.is(response.status, 200)
+        t.is(await response.text(), '<html>hello</html>')
+      })
+    })
+  })
 })
