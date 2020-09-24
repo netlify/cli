@@ -1,6 +1,6 @@
 const path = require('path')
 const { statAsync, readFileAsyncCatchError } = require('../lib/fs')
-const { uploadEdgeHandlers } = require('../lib/api')
+const { uploadEdgeHandlers, cancelDeploy } = require('../lib/api')
 const { startSpinner, stopSpinner } = require('../lib/spinner')
 
 const MANIFEST_FILENAME = 'manifest.json'
@@ -74,11 +74,7 @@ const deployEdgeHandlers = async ({ site, deployId, api, silent, error, warn }) 
     } catch (e) {
       const text = `Failed deploying Edge Handlers: ${e.message}`
       stopSpinner({ spinner, text, error: true })
-      try {
-        await api.cancelSiteDeploy({ deploy_id: deployId })
-      } catch (e) {
-        warn(`Failed canceling deploy with id ${deployId}: ${e.message}`)
-      }
+      await cancelDeploy({ api, deployId, warn })
       // no need to report the error again
       error('')
     }

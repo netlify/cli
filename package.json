@@ -122,7 +122,7 @@
     "make-dir": "^3.0.0",
     "minimist": "^1.2.5",
     "multiparty": "^4.2.1",
-    "netlify": "^4.3.10",
+    "netlify": "^4.5.2",
     "netlify-redirect-parser": "^2.5.0",
     "netlify-redirector": "^0.2.0",
     "node-fetch": "^2.6.0",

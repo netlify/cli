@@ -16,6 +16,7 @@ const { getBuildOptions, runBuild } = require('../lib/build')
 const LinkCommand = require('./link')
 const { NETLIFYDEV, NETLIFYDEVLOG, NETLIFYDEVERR } = require('../utils/logo')
 const { statAsync } = require('../lib/fs')
+const { cancelDeploy } = require('../lib/api')
 const { deployEdgeHandlers } = require('../utils/edge-handlers')
 
 const DEFAULT_DEPLOY_TIMEOUT = 1.2e6
@@ -174,6 +175,7 @@ const runDeploy = async ({
   exit,
 }) => {
   let results
+  let deployId
   try {
     if (deployToProduction) {
       if (isObject(siteData.published_deploy) && siteData.published_deploy.locked) {
@@ -198,7 +200,7 @@ const runDeploy = async ({
     const draft = !deployToProduction && !alias
     const title = flags.message
     results = await api.createSiteDeploy({ siteId, title, body: { draft, branch: alias } })
-    const deployId = results.id
+    deployId = results.id
 
     const silent = flags.json || flags.silent
     await deployEdgeHandlers({
@@ -220,6 +222,9 @@ const runDeploy = async ({
       filter: getDeployFilesFilter({ site, deployFolder }),
     })
   } catch (e) {
+    if (deployId) {
+      await cancelDeploy({ api, deployId, warn })
+    }
     switch (true) {
       case e.name === 'JSONHTTPError': {
         warn(`JSONHTTPError: ${e.json.message} ${e.status}`)
