@@ -14,7 +14,7 @@ function getPkgJSON() {
   if (pkgJSON) {
     return pkgJSON
   }
-  if (!existsSync('package.json')) throw new Error('dont call this method unless you already checked for pkg json')
+  if (!existsSync('package.json')) throw new Error("don't call this method unless you already checked for pkg json")
   pkgJSON = JSON.parse(readFileSync('package.json', { encoding: 'utf8' }))
   return pkgJSON
 }

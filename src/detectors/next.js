@@ -5,7 +5,7 @@ module.exports = function() {
   // REQUIRED DEPS
   if (!hasRequiredDeps(['next'])) return false
 
-  /** everything below now assumes that we are within gatsby */
+  /** everything below now assumes that we are within next */
 
   const possibleArgsArrs = scanScripts({
     preferredScriptsArr: ['dev', 'develop', 'start'],
