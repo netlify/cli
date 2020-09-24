@@ -935,14 +935,16 @@ testMatrix.forEach(({ args }) => {
             build: { publish: publicDir },
           },
         })
-        .withContentFile({
-          path: path.join(publicDir, 'index.html'),
-          content: '<html>index</html>',
-        })
-        .withContentFile({
-          path: path.join(publicDir, 'local-hello.html'),
-          content: '<html>hello</html>',
-        })
+        .withContentFiles([
+          {
+            path: path.join(publicDir, 'index.html'),
+            content: '<html>index</html>',
+          },
+          {
+            path: path.join(publicDir, 'local-hello.html'),
+            content: '<html>hello</html>',
+          },
+        ])
         .withRedirectsFile({
           redirects: [{ from: `http://localhost/hello-world`, to: `/local-hello`, status: 200 }],
         })
