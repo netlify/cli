@@ -291,6 +291,21 @@ if (process.env.IS_FORK !== 'true') {
     })
   })
 
+  test('should exit with error when deploying an empty directory', async t => {
+    await withSiteBuilder('site-with-an-empty-directory', async builder => {
+      await builder.buildAsync()
+
+      try {
+        await callCli(['deploy', '--dir', '.'], {
+          cwd: builder.directory,
+          env: { NETLIFY_SITE_ID: t.context.siteId },
+        })
+      } catch (e) {
+        t.is(e.stderr.includes('Error: No files or functions to deploy'), true)
+      }
+    })
+  })
+
   test.after('cleanup', async t => {
     const { siteId } = t.context
     console.log(`deleting test site "${siteName}". ${siteId}`)
