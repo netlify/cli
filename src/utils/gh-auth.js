@@ -120,7 +120,7 @@ async function getGitHubToken(opts) {
       auth: {
         username,
         password,
-        async on2fa() {
+        on2fa() {
           return promptForOTP()
         },
       },

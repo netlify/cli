@@ -40,7 +40,7 @@ async function createTunnel({ siteId, netlifyApiToken, log }) {
   return data
 }
 
-async function connectTunnel({ session, netlifyApiToken, localPort, log }) {
+function connectTunnel({ session, netlifyApiToken, localPort, log }) {
   const execPath = getPathInHome(['tunnel', 'bin', EXEC_NAME])
   const args = ['connect', '-s', session.id, '-t', netlifyApiToken, '-l', localPort]
   if (process.env.DEBUG) {

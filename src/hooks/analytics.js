@@ -1,6 +1,6 @@
 const { track } = require('../utils/telemetry')
 
-const hook = async function(options) {
+const hook = function(options) {
   track(options.eventName, options.payload)
 }
 module.exports = hook

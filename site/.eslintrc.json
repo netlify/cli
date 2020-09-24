@@ -12,7 +12,7 @@
       }
     }
   ],
-  "rules": { "react/prop-types": 0 },
+  "rules": { "react/prop-types": 0, "require-await": "error" },
   "settings": {
     "react": {
       "version": "16.13.1" // from @compositor/x0@6.0.7
