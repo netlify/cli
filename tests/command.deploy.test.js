@@ -133,7 +133,7 @@ if (process.env.IS_FORK !== 'true') {
           handlers: ['index'],
           valid: true,
         })
-        t.is(content_length > 400, true)
+        t.is(content_length > 50, true)
       })
     })
   }
