@@ -80,9 +80,9 @@ if (process.env.IS_FORK !== 'true') {
     })
   })
 
-  // the edge handlers plugin only works on node >= 10 and not on windows at the moment
+  // the edge handlers plugin only works on node >= 10
   const version = parseInt(process.version.substring(1).split('.')[0])
-  if (process.platform !== 'win32' && version >= 10) {
+  if (version >= 10) {
     test.serial('should deploy edge handlers when directory exists', async t => {
       await withSiteBuilder('site-with-public-folder', async builder => {
         const content = '<h1>⊂◉‿◉つ</h1>'
