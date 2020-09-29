@@ -2,14 +2,12 @@
 
 const path = require('path')
 const dotenv = require('dotenv')
+const filterObject = require('filter-obj')
 const { isFileAsync, readFileAsync } = require('../lib/fs')
-const dotenvExpand = require('dotenv-expand')
 
 async function getEnvSettings(projectDir) {
   const NODE_ENV = process.env.NODE_ENV || 'development'
   const dotenvPath = path.resolve(projectDir, '.env')
-
-  const settings = {}
 
   // https://github.com/bkeepers/dotenv#what-other-env-files-can-i-use
   const dotenvFiles = [
@@ -22,22 +20,29 @@ async function getEnvSettings(projectDir) {
     dotenvPath,
   ].filter(Boolean)
 
-  // Load environment variables from .env* files. Suppress warnings using silent
-  // if this file is missing. dotenv will never modify any environment variables
-  // that have already been set.  Variable expansion is supported in .env files.
-  // https://github.com/motdotla/dotenv
-  // https://github.com/motdotla/dotenv-expand
-  for (const dotenvFile of dotenvFiles) {
-    const isFile = await isFileAsync(dotenvFile)
-    if (isFile) {
-      settings.files = settings.files || []
-      settings.files.push(dotenvFile)
-      const content = await readFileAsync(dotenvFile)
-      const env = dotenvExpand({ parsed: dotenv.parse(content) })
-      settings.vars = { ...env.parsed, ...settings.vars }
-    }
-  }
-  return settings
+  // Load environment variables from .env* files.
+  // Ignore missing files
+  const results = await Promise.all(
+    dotenvFiles.map(async file => {
+      const isFile = await isFileAsync(file)
+      if (!isFile) {
+        return
+      }
+      const content = await readFileAsync(file)
+      const parsed = dotenv.parse(content)
+      // only keep envs not configured in process.env
+      const env = filterObject(parsed, key => !Object.prototype.hasOwnProperty.call(process.env, key))
+      return { file, env }
+    })
+  )
+
+  const settings = results.filter(Boolean).reduce(
+    ({ files, vars }, { file, env }) => {
+      return { files: [...files, file], vars: { ...env, ...vars } }
+    },
+    { files: [], vars: {} }
+  )
+  return { ...settings, vars: Object.entries(settings.vars) }
 }
 
 module.exports.getEnvSettings = getEnvSettings
