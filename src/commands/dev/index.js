@@ -103,16 +103,16 @@ const getAddonsUrlsAndAddEnvVariablesToProcessEnv = async ({ api, site, flags })
 }
 
 const addDotFileEnvs = async ({ site, log }) => {
-  // Override env variables with .env file
+  // add .env file environment variables
   const envSettings = await getEnvSettings(site.root)
-  if (envSettings.files) {
+  if (envSettings.vars.length > 0) {
     log(
       `${NETLIFYDEVLOG} Overriding the following env variables with ${chalk.blue(
         envSettings.files.map(x => path.relative(site.root, x))
       )} file${envSettings.files.length > 1 ? 's' : ''}:`,
-      chalk.yellow(Object.keys(envSettings.vars))
+      chalk.yellow(envSettings.vars.map(([key]) => key))
     )
-    Object.entries(envSettings.vars).forEach(([key, val]) => (process.env[key] = val))
+    envSettings.vars.forEach(([key, val]) => (process.env[key] = val))
   }
 }
 

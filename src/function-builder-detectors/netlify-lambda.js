@@ -26,11 +26,8 @@ module.exports = async function(projectDir) {
     }
   }
 
-  let env = {}
   const envSettings = await getEnvSettings(projectDir)
-  if (envSettings.files) {
-    env = envSettings.vars
-  }
+  const env = envSettings.vars.reduce((env, [key, value]) => ({ ...env, [key]: value }), {})
 
   if (settings.npmScript) {
     settings.build = () => execa(yarnExists ? 'yarn' : 'npm', ['run', settings.npmScript], { env })

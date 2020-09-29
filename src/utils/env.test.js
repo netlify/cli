@@ -3,12 +3,12 @@ const path = require('path')
 const { getEnvSettings } = require('./env')
 const { withSiteBuilder } = require('../../tests/utils/siteBuilder')
 
-test('should return empty object for a site with no .env file', async t => {
+test('should return an object with empty files, vars arrays for a site with no .env file', async t => {
   await withSiteBuilder('site-without-env-file', async builder => {
     await builder.buildAsync()
 
     const vars = await getEnvSettings(builder.directory)
-    t.deepEqual(vars, {})
+    t.deepEqual(vars, { files: [], vars: [] })
   })
 })
 
@@ -29,9 +29,7 @@ test('should read env vars from .env.development file', async t => {
     const vars = await getEnvSettings(builder.directory)
     t.deepEqual(vars, {
       files: [path.resolve(builder.directory, '.env.development'), path.resolve(builder.directory, '.env')],
-      vars: {
-        TEST: 'FROM_DEVELOPMENT_ENV',
-      },
+      vars: [['TEST', 'FROM_DEVELOPMENT_ENV']],
     })
   })
 })
@@ -47,7 +45,7 @@ test('should handle empty .env file', async t => {
     const vars = await getEnvSettings(builder.directory)
     t.deepEqual(vars, {
       files: [path.resolve(builder.directory, '.env')],
-      vars: {},
+      vars: [],
     })
   })
 })
