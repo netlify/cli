@@ -5,13 +5,18 @@ const dotenv = require('dotenv')
 const filterObject = require('filter-obj')
 const { isFileAsync, readFileAsync } = require('../lib/fs')
 
-async function getEnvSettings(projectDir) {
+async function getEnvSettings({ projectDir, warn }) {
   const dotenvFiles = ['.env.development', '.env']
   const results = await Promise.all(
     dotenvFiles.map(async file => {
       const filepath = path.resolve(projectDir, file)
-      const isFile = await isFileAsync(filepath)
-      if (!isFile) {
+      try {
+        const isFile = await isFileAsync(filepath)
+        if (!isFile) {
+          return
+        }
+      } catch (error) {
+        warn(`Failed reading env variables from file: ${filepath}: ${error.message}`)
         return
       }
       const content = await readFileAsync(filepath)
@@ -22,13 +27,10 @@ async function getEnvSettings(projectDir) {
     })
   )
 
-  const settings = results.filter(Boolean).reduce(
-    ({ files, vars }, { file, env }) => {
-      return { files: [...files, file], vars: { ...env, ...vars } }
-    },
-    { files: [], vars: {} }
-  )
-  return { ...settings, vars: Object.entries(settings.vars) }
+  const allResults = results.filter(Boolean)
+  const files = allResults.map(({ file }) => file)
+  const vars = Object.entries(Object.assign({}, ...allResults.reverse().map(({ env }) => env)))
+  return { files, vars }
 }
 
 module.exports.getEnvSettings = getEnvSettings
