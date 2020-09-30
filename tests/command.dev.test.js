@@ -94,7 +94,7 @@ testMatrix.forEach(({ args }) => {
 
       await builder.buildAsync()
 
-      await withDevServer({ cwd: builder.directory, env: { NODE_ENV: 'development' }, args }, async server => {
+      await withDevServer({ cwd: builder.directory, args }, async server => {
         const response = await fetch(`${server.url}/.netlify/functions/env`).then(r => r.text())
         t.is(response, 'FROM_DEV_FILE')
       })
@@ -139,13 +139,10 @@ testMatrix.forEach(({ args }) => {
 
       await builder.buildAsync()
 
-      await withDevServer(
-        { cwd: builder.directory, env: { TEST: 'FROM_PROCESS_ENV', NODE_ENV: 'development' }, args },
-        async server => {
-          const response = await fetch(`${server.url}/.netlify/functions/env`).then(r => r.text())
-          t.is(response, 'FROM_PROCESS_ENV')
-        }
-      )
+      await withDevServer({ cwd: builder.directory, env: { TEST: 'FROM_PROCESS_ENV' }, args }, async server => {
+        const response = await fetch(`${server.url}/.netlify/functions/env`).then(r => r.text())
+        t.is(response, 'FROM_PROCESS_ENV')
+      })
     })
   })
 

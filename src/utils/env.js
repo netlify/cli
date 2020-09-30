@@ -6,29 +6,15 @@ const filterObject = require('filter-obj')
 const { isFileAsync, readFileAsync } = require('../lib/fs')
 
 async function getEnvSettings(projectDir) {
-  const NODE_ENV = process.env.NODE_ENV || 'development'
-  const dotenvPath = path.resolve(projectDir, '.env')
-
-  // https://github.com/bkeepers/dotenv#what-other-env-files-can-i-use
-  const dotenvFiles = [
-    `${dotenvPath}.${NODE_ENV}.local`,
-    `${dotenvPath}.${NODE_ENV}`,
-    // Don't include `.env.local` for `test` environment
-    // since normally you expect tests to produce the same
-    // results for everyone
-    NODE_ENV !== 'test' && `${dotenvPath}.local`,
-    dotenvPath,
-  ].filter(Boolean)
-
-  // Load environment variables from .env* files.
-  // Ignore missing files
+  const dotenvFiles = ['.env.development', '.env']
   const results = await Promise.all(
     dotenvFiles.map(async file => {
-      const isFile = await isFileAsync(file)
+      const filepath = path.resolve(projectDir, file)
+      const isFile = await isFileAsync(filepath)
       if (!isFile) {
         return
       }
-      const content = await readFileAsync(file)
+      const content = await readFileAsync(filepath)
       const parsed = dotenv.parse(content)
       // only keep envs not configured in process.env
       const env = filterObject(parsed, key => !Object.prototype.hasOwnProperty.call(process.env, key))
