@@ -132,6 +132,7 @@
     "p-wait-for": "^3.0.0",
     "parse-github-url": "^1.0.2",
     "parse-gitignore": "^1.0.1",
+    "path-type": "^4.0.0",
     "prettyjson": "^1.2.1",
     "random-item": "^3.0.0",
     "raw-body": "^2.4.1",

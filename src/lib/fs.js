@@ -1,4 +1,5 @@
 const fs = require('fs')
+const pathType = require('path-type')
 const { promisify } = require('util')
 
 const statAsync = promisify(fs.stat)
@@ -25,8 +26,8 @@ const fileExistsAsync = async filePath => {
 
 const isFileAsync = async filePath => {
   try {
-    const stat = await statAsync(filePath)
-    return stat.isFile()
+    const isFile = await pathType.isFile(filePath)
+    return isFile
   } catch (_) {
     return false
   }
