@@ -36,7 +36,7 @@ Run \`netlify link\` to connect to this folder to a site`)
       this.error(e)
     }
 
-    await openBrowser(url)
+    await openBrowser({ url, log: this.log })
     this.exit()
   }
 }

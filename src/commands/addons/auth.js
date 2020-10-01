@@ -49,7 +49,7 @@ class AddonsAuthCommand extends Command {
     this.log()
     this.log(currentAddon.auth_url)
     this.log()
-    await openBrowser(currentAddon.auth_url)
+    await openBrowser({ url: currentAddon.auth_url, log: this.log })
     this.exit()
   }
 }

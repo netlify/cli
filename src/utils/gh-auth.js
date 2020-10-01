@@ -3,14 +3,14 @@ const { Octokit } = require('@octokit/rest')
 const inquirer = require('inquirer')
 const querystring = require('querystring')
 const get = require('lodash.get')
-const open = require('open')
+const openBrowser = require('./open-browser')
 const http = require('http')
 const getPort = require('get-port')
 
 module.exports = getGitHubToken
 
-async function getGitHubToken(opts) {
-  console.log('')
+async function getGitHubToken({ opts, log }) {
+  log('')
 
   opts = Object.assign(
     {
@@ -89,13 +89,7 @@ async function getGitHubToken(opts) {
         provider: 'github',
       })
 
-    try {
-      await open(url)
-    } catch (err) {
-      console.log(
-        'Netlify CLI could not open the browser for you.' + ' Please visit this URL in a browser on this device: ' + url
-      )
-    }
+    await openBrowser({ url, log })
 
     return await deferredPromise
   } else {

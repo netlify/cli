@@ -20,9 +20,12 @@ async function configGithub(ctx, site, repo) {
 
   if (!ghtoken || !ghtoken.user || !ghtoken.token) {
     const newToken = await ghauth({
-      scopes: ['admin:org', 'admin:public_key', 'repo', 'user'],
-      userAgent: UA,
-      note: `Netlify CLI ${os.userInfo().username}@${os.hostname()}`,
+      opts: {
+        scopes: ['admin:org', 'admin:public_key', 'repo', 'user'],
+        userAgent: UA,
+        note: `Netlify CLI ${os.userInfo().username}@${os.hostname()}`,
+      },
+      log: ctx.log,
     })
     globalConfig.set(`users.${current}.auth.github`, newToken)
     ghtoken = newToken

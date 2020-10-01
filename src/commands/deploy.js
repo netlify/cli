@@ -433,7 +433,7 @@ class DeployCommand extends Command {
 
     if (flags.open) {
       const urlToOpen = deployToProduction ? results.siteUrl : results.deployUrl
-      await openBrowser(urlToOpen)
+      await openBrowser({ url: urlToOpen, log })
       exit()
     }
   }
