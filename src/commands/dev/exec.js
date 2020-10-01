@@ -1,5 +1,6 @@
 const execa = require('execa')
 const chalk = require('chalk')
+const fromEntries = require('@ungap/from-entries')
 const Command = require('../../utils/command')
 const {
   // NETLIFYDEV,
@@ -28,11 +29,11 @@ class ExecCommand extends Command {
         `${NETLIFYDEVLOG} Adding the following env variables from ${envSettings.files.map(f => chalk.blue(f))}:`,
         chalk.yellow(envSettings.vars.map(([key]) => key))
       )
-      envSettings.vars.forEach(([key, val]) => (process.env[key] = val))
     }
 
     execa(this.argv[0], this.argv.slice(1), {
       stdio: 'inherit',
+      env: fromEntries(envSettings.vars),
     })
     await this.config.runHook('analytics', {
       eventName: 'command',
