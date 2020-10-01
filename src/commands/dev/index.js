@@ -102,16 +102,15 @@ const getAddonsUrlsAndAddEnvVariablesToProcessEnv = async ({ api, site, flags })
   }
 }
 
-const addDotFileEnvs = async ({ site }) => {
-  const envSettings = await getEnvSettings(site.root)
-  if (envSettings.file) {
-    console.log(
-      `${NETLIFYDEVLOG} Overriding the following env variables with ${chalk.blue(
-        path.relative(site.root, envSettings.file)
-      )} file:`,
-      chalk.yellow(Object.keys(envSettings.vars))
+const addDotFileEnvs = async ({ site, log, warn }) => {
+  // add .env file environment variables
+  const envSettings = await getEnvSettings({ projectDir: site.root, warn })
+  if (envSettings.vars.length > 0) {
+    log(
+      `${NETLIFYDEVLOG} Adding the following env variables from ${envSettings.files.map(f => chalk.blue(f))}:`,
+      chalk.yellow(envSettings.vars.map(([key]) => key))
     )
-    Object.entries(envSettings.vars).forEach(([key, val]) => (process.env[key] = val))
+    envSettings.vars.forEach(([key, val]) => (process.env[key] = val))
   }
 }
 
@@ -206,7 +205,7 @@ class DevCommand extends Command {
 
     const addonUrls = await getAddonsUrlsAndAddEnvVariablesToProcessEnv({ api, site, flags })
     process.env.NETLIFY_DEV = 'true'
-    await addDotFileEnvs({ site })
+    await addDotFileEnvs({ site, log, warn })
 
     let settings = {}
     try {

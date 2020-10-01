@@ -1,4 +1,5 @@
 const fs = require('fs')
+const pathType = require('path-type')
 const { promisify } = require('util')
 
 const statAsync = promisify(fs.stat)
@@ -23,4 +24,6 @@ const fileExistsAsync = async filePath => {
   }
 }
 
-module.exports = { statAsync, readFileAsync, readFileAsyncCatchError, writeFileAsync, fileExistsAsync }
+const isFileAsync = filePath => pathType.isFile(filePath)
+
+module.exports = { statAsync, readFileAsync, readFileAsyncCatchError, writeFileAsync, fileExistsAsync, isFileAsync }

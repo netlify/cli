@@ -1,4 +1,3 @@
-const path = require('path')
 const execa = require('execa')
 const chalk = require('chalk')
 const Command = require('../../utils/command')
@@ -23,15 +22,13 @@ class ExecCommand extends Command {
       )
     }
 
-    const envSettings = await getEnvSettings(site.root)
-    if (envSettings.file) {
-      console.log(
-        `${NETLIFYDEVLOG} Overriding the following env variables with ${chalk.blue(
-          path.relative(site.root, envSettings.file)
-        )} file:`,
-        chalk.yellow(Object.keys(envSettings.vars))
+    const envSettings = await getEnvSettings({ projectDir: site.root, warn: this.warn })
+    if (envSettings.vars.length > 0) {
+      this.log(
+        `${NETLIFYDEVLOG} Adding the following env variables from ${envSettings.files.map(f => chalk.blue(f))}:`,
+        chalk.yellow(envSettings.vars.map(([key]) => key))
       )
-      Object.entries(envSettings.vars).forEach(([key, val]) => (process.env[key] = val))
+      envSettings.vars.forEach(([key, val]) => (process.env[key] = val))
     }
 
     execa(this.argv[0], this.argv.slice(1), {
