@@ -13,6 +13,6 @@ test('should pass .env variables to exec command', async t => {
     })
 
     t.is(output.includes('Adding the following env variables from .env: TEST'), true)
-    t.is(output.trim().endsWith('TEST=ENV_VAR'), true)
+    t.is(output.includes('TEST=ENV_VAR'), true)
   })
 })
