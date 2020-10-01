@@ -2,12 +2,20 @@ const { existsSync, readFileSync } = require('fs')
 
 const execa = require('execa')
 
-module.exports = function handler() {
-  if (!existsSync('package.json')) {
-    return false
+/**
+ * Function builder detector for netlify-lambda.
+ *
+ * @param {object} [packageSettings] npm package.json format, if not provided, defaults to reading package.json from the file system.
+ */
+module.exports = function handler(packageSettings) {
+  if (!packageSettings) {
+    if (!existsSync('package.json')) {
+      return false
+    }
+
+    packageSettings = JSON.parse(readFileSync('package.json', { encoding: 'utf8' }))
   }
 
-  const packageSettings = JSON.parse(readFileSync('package.json', { encoding: 'utf8' }))
   const { dependencies, devDependencies, scripts } = packageSettings
   if (!((dependencies && dependencies['netlify-lambda']) || (devDependencies && devDependencies['netlify-lambda']))) {
     return false
@@ -18,7 +26,9 @@ module.exports = function handler() {
 
   for (const key in scripts) {
     const script = scripts[key]
-    const match = script.match(/netlify-lambda build (\S+)/)
+
+    const match = script.match(/netlify-lambda build.* (\S+)\s*$/)
+    console.log(match)
     if (match) {
       const [, src] = match
       settings.src = src
