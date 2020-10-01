@@ -222,7 +222,7 @@ class BaseCommand extends Command {
     const authLink = `${webUI}/authorize?response_type=ticket&ticket=${ticket.id}`
 
     this.log(`Opening ${authLink}`)
-    await openBrowser(authLink)
+    await openBrowser({ url: authLink, log: this.log })
 
     const accessToken = await this.netlify.api.getAccessToken(ticket)
 

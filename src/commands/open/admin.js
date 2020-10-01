@@ -42,7 +42,7 @@ Run \`netlify link\` to connect to this folder to a site`)
       this.error(e)
     }
 
-    await openBrowser(siteData.admin_url)
+    await openBrowser({ url: siteData.admin_url, log: this.log })
     this.exit()
   }
 }

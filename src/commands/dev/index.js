@@ -8,7 +8,7 @@ const { serverSettings } = require('../../utils/detect-server')
 const { startFunctionsServer } = require('../../utils/serve-functions')
 const Command = require('../../utils/command')
 const chalk = require('chalk')
-const open = require('open')
+const openBrowser = require('../../utils/open-browser')
 const { NETLIFYDEV, NETLIFYDEVLOG, NETLIFYDEVWARN, NETLIFYDEVERR } = require('../../utils/logo')
 const boxen = require('boxen')
 const { startLiveTunnel } = require('../../utils/live-tunnel')
@@ -152,16 +152,6 @@ const handleLiveTunnel = async ({ flags, site, api, settings, log }) => {
   }
 }
 
-const openBrowser = async ({ devConfig, url, warn }) => {
-  if (devConfig.autoLaunch !== false && process.env.BROWSER !== 'none') {
-    try {
-      await open(url)
-    } catch (err) {
-      warn(NETLIFYDEVWARN, 'Error while opening dev server URL in browser', err.message)
-    }
-  }
-}
-
 const reportAnalytics = async ({ config, settings }) => {
   await config.runHook('analytics', {
     eventName: 'command',
@@ -223,7 +213,9 @@ class DevCommand extends Command {
     const liveTunnelUrl = await handleLiveTunnel({ flags, site, api, settings, log })
     url = liveTunnelUrl || url
 
-    await openBrowser({ devConfig, url, warn })
+    if (devConfig.autoLaunch !== false) {
+      await openBrowser({ url, log, silentBrowserNoneError: true })
+    }
 
     await reportAnalytics({ config: this.config, settings })
 
