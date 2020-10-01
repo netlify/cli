@@ -1,0 +1,18 @@
+const test = require('ava')
+const callCli = require('./utils/callCli')
+const { withSiteBuilder } = require('./utils/siteBuilder')
+
+test('should pass .env variables to exec command', async t => {
+  await withSiteBuilder('site-env-file', async builder => {
+    builder.withEnvFile({ env: { TEST: 'ENV_VAR' } })
+    await builder.buildAsync()
+
+    const cmd = process.platform === 'win32' ? 'set' : 'printenv'
+    const output = await callCli(['dev:exec', cmd], {
+      cwd: builder.directory,
+    })
+
+    t.is(output.includes('Adding the following env variables from .env: TEST'), true)
+    t.is(output.includes('TEST=ENV_VAR'), true)
+  })
+})
