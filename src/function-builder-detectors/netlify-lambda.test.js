@@ -129,7 +129,8 @@ test(`should use the value of the parameter if no directory was provided`, t => 
 test(`should ignore spaces in the directory name`, t => {
   const packageJson = {
     scripts: {
-      'some-build-step': 'netlify-lambda build -s --another-option --config config/webpack.config.js some directory/name',
+      'some-build-step':
+        'netlify-lambda build -s --another-option --config config/webpack.config.js some directory/name',
     },
     dependencies: {},
     devDependencies: {
@@ -144,4 +145,3 @@ test(`should ignore spaces in the directory name`, t => {
   t.is(match.builderName, 'netlify-lambda')
   t.is(match.npmScript, 'some-build-step')
 })
-
