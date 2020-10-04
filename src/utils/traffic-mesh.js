@@ -62,7 +62,7 @@ const startForwardProxy = async ({ port, frameworkPort, functionsPort, publishDi
   subprocess.on('SIGTERM', process.exit)
   ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach(signal =>
     process.on(signal, () => {
-      const sig = signal == 'exit' ? 'SIGTERM' : signal
+      const sig = signal === 'exit' ? 'SIGTERM' : signal
       subprocess.kill(sig, {
         forceKillAfterTimeout: 2000,
       })

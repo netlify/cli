@@ -16,7 +16,7 @@ module.exports = function handler(event, context, callback) {
   var code = hash.encode(number)
 
   // ensure that a protocol was provided
-  if (destination.indexOf('://') == -1) {
+  if (destination.indexOf('://') === -1) {
     destination = 'http://' + destination
   }
 

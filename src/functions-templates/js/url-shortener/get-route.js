@@ -20,7 +20,7 @@ module.exports = function handler(event, context, callback) {
 
       for (var item in routes) {
         // return the result when we find the match
-        if (routes[item].data.code == code) {
+        if (routes[item].data.code === code) {
           console.log('We searched for ' + code + ' and we found ' + routes[item].data.destination)
           return callback(null, {
             statusCode: 200,
