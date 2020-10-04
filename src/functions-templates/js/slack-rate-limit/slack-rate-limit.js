@@ -41,9 +41,7 @@ class IdentityAPI {
           return Promise.reject({ stauts: response.status, data })
         })
       }
-      return response.text().then(data => {
-        data
-      })
+      return response.text()
     })
   }
 }
