@@ -1,6 +1,6 @@
 const path = require('path')
 const { flags } = require('@oclif/command')
-const child_process = require('child_process')
+const childProcess = require('child_process')
 const waitPort = require('wait-port')
 const stripAnsiCc = require('strip-ansi-control-characters')
 const which = require('which')
@@ -47,7 +47,7 @@ async function startFrameworkServer({ settings, log, exit }) {
     }
     throw err
   })
-  const ps = child_process.spawn(commandBin, settings.args, {
+  const ps = childProcess.spawn(commandBin, settings.args, {
     env: { ...process.env, ...settings.env, FORCE_COLOR: 'true' },
     stdio: 'pipe',
   })

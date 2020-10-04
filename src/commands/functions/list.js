@@ -28,7 +28,7 @@ class FunctionsListCommand extends Command {
       this.error(e)
     }
     const deploy = siteData.published_deploy || {}
-    const deployed_functions = deploy.available_functions || []
+    const deployedFunctions = deploy.available_functions || []
 
     await this.config.runHook('analytics', {
       eventName: 'command',
@@ -62,7 +62,7 @@ class FunctionsListCommand extends Command {
 
     if (flags.json) {
       const jsonData = functionData.map(([functionName, { moduleDir }]) => {
-        const isDeployed = deployed_functions.map(({ n }) => n).includes(functionName)
+        const isDeployed = deployedFunctions.map(({ n }) => n).includes(functionName)
         return {
           name: functionName,
           url: `/.netlify/functions/${functionName}`,
@@ -79,7 +79,7 @@ class FunctionsListCommand extends Command {
     var table = new AsciiTable(`Netlify Functions (in local functions folder)`)
     table.setHeading('Name', 'Url', 'moduleDir', 'deployed')
     functionData.forEach(([functionName, { moduleDir }]) => {
-      const isDeployed = deployed_functions.map(({ n }) => n).includes(functionName)
+      const isDeployed = deployedFunctions.map(({ n }) => n).includes(functionName)
       table.addRow(functionName, `/.netlify/functions/${functionName}`, moduleDir, isDeployed ? 'yes' : 'no')
     })
     this.log(table.toString())
