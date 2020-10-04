@@ -1,4 +1,4 @@
-exports.handler = async (event, context, callback) => {
+exports.handler = (event, context, callback) => {
   const path = event.path.replace(/\.netlify\/functions\/[^/]+/, '')
   const segments = path.split('/').filter(e => e)
   console.log('segments', segments)
