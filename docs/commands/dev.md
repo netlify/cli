@@ -32,6 +32,7 @@ netlify dev
 | Subcommand | description  |
 |:--------------------------- |:-----|
 | [`dev:exec`](/docs/commands/dev.md#devexec) | Exec command  |
+| [`dev:trace`](/docs/commands/dev.md#devtrace) | Trace command  |
 
 
 **Examples**
@@ -65,6 +66,36 @@ netlify dev:exec
 
 ```bash
 $ netlify dev:exec npm run bootstrap
+```
+
+---
+## `dev:trace`
+
+Trace command
+Simulates Netlify's Edge routing logic to match specific requests. 
+This command is designed to mimic cURL's command line, so the flags are more familiar.
+
+
+**Usage**
+
+```bash
+netlify dev:trace
+```
+
+**Flags**
+
+- `debug` (*boolean*) - Print debugging information
+- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
+
+**Examples**
+
+```bash
+$ netlify dev:trace http://localhost/routing-path
+$ netlify dev:trace -w dist-directory http://localhost/routing-path
+$ netlify dev:trace -X POST http://localhost/routing-path
+$ netlify dev:trace -H "Accept-Language es" http://localhost/routing-path
+$ netlify dev:trace --cookie nf_jwt=token http://localhost/routing-path
 ```
 
 ---

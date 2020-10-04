@@ -101,6 +101,7 @@ Local dev server
 | Subcommand | description  |
 |:--------------------------- |:-----|
 | [`dev:exec`](/docs/commands/dev.md#devexec) | Exec command  |
+| [`dev:trace`](/docs/commands/dev.md#devtrace) | Trace command  |
 
 
 ### [env](/docs/commands/env.md)
