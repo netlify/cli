@@ -1,5 +1,5 @@
 {
-  "plugins": ["node", "prettier"],
+  "plugins": ["prettier"],
   "parserOptions": {
     "sourceType": "module"
   },
@@ -8,11 +8,10 @@
     "es6": true
   },
   "extends": [
-    "plugin:import/errors",
-    "plugin:import/warnings",
     "eslint:recommended",
-    "plugin:node/recommended",
+    "standard",
     "prettier",
+    "prettier/standard",
     "plugin:you-dont-need-lodash-underscore/all"
   ],
   "rules": {
