@@ -34,7 +34,6 @@ const installTrafficMesh = async ({ log }) => {
 }
 
 const startForwardProxy = async ({ port, frameworkPort, functionsPort, publishDir, log, debug }) => {
-  await installTrafficMesh({ log })
   const args = [
     'start',
     'local',
@@ -56,8 +55,7 @@ const startForwardProxy = async ({ port, frameworkPort, functionsPort, publishDi
     args.push('--debug')
   }
 
-  const execPath = path.join(getBinPath(), EXEC_NAME)
-  const subprocess = execa(execPath, args, { stdio: 'inherit' })
+  const subprocess = await runProcess({ log, args })
 
   subprocess.on('close', process.exit)
   subprocess.on('SIGINT', process.exit)
@@ -82,4 +80,11 @@ const startForwardProxy = async ({ port, frameworkPort, functionsPort, publishDi
   }
 }
 
-module.exports = { startForwardProxy }
+const runProcess = async ({ log, args }) => {
+  await installTrafficMesh({ log })
+
+  const execPath = path.join(getBinPath(), EXEC_NAME)
+  execa(execPath, args, { stdio: 'inherit' })
+}
+
+module.exports = { runProcess, startForwardProxy }
