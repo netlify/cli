@@ -21,7 +21,8 @@ class IdentityAPI {
   parseJsonResponse(response) {
     return response.json().then(json => {
       if (!response.ok) {
-        return Promise.reject({ status: response.status, json })
+        const error = `JSON: ${JSON.stringify(json)}. Status: ${response.status}`
+        return Promise.reject(new Error(error))
       }
 
       return json
@@ -38,7 +39,8 @@ class IdentityAPI {
 
       if (!response.ok) {
         return response.text().then(data => {
-          return Promise.reject({ stauts: response.status, data })
+          const error = `Data: ${data}. Status: ${response.status}`
+          return Promise.reject(new Error(error))
         })
       }
       return response.text()
