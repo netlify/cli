@@ -30,5 +30,6 @@ TraceCommand.examples = [
 
 TraceCommand.strict = false
 TraceCommand.parse = false
+TraceCommand.hidden = true
 
 module.exports = TraceCommand
