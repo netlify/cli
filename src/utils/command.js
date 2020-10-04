@@ -36,10 +36,6 @@ const getToken = tokenFromFlag => {
 }
 
 class BaseCommand extends Command {
-  constructor(...args) {
-    super(...args)
-  }
-
   // Initialize context
   async init() {
     const cwd = argv.cwd || process.cwd()
