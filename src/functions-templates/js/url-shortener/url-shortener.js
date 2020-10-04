@@ -1,4 +1,4 @@
-exports.handler = (event, context, callback) => {
+exports.handler = async (event, context, callback) => {
   const path = event.path.replace(/\.netlify\/functions\/[^/]+/, '')
   const segments = path.split('/').filter(e => e)
   console.log('segments', segments)
@@ -17,8 +17,6 @@ exports.handler = (event, context, callback) => {
       // your code here
       return
   }
-  return callback({
-    statusCode: 500,
-    body: 'unrecognized HTTP Method, must be one of GET/POST/PUT/DELETE',
-  })
+
+  return callback(Error('unrecognized HTTP Method, must be one of GET/POST/PUT/DELETE'))
 }
