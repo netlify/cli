@@ -13,7 +13,7 @@ module.exports = function generateCommandData() {
     const data = require(file)
     const command = commandFromPath(file)
     const parentCommand = command.split(':')[0]
-    const parent = command === parentCommand ? true : false
+    const parent = command === parentCommand
     // remove hidden flags
     const flags =
       data.flags &&

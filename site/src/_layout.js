@@ -167,7 +167,7 @@ const Link = styled(props => <NavLink {...props} is={RouterNavLink} w={1} pl={de
     'borderLeft': '4px solid',
     'borderColor': 'transparent',
     '&.active, &:focus': {
-      color: '#00c2b2', //'#00ad9f', // themeGet('colors.blue', '#07c')(props),
+      color: '#00c2b2', // '#00ad9f', // themeGet('colors.blue', '#07c')(props),
       outline: 'none',
     },
     '&:focus': {

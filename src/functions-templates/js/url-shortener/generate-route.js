@@ -8,7 +8,7 @@ module.exports = function handler(event, context, callback) {
   var rootURL = process.env.URL + '/'
 
   // get the details of what we are creating
-  var destination = event.queryStringParameters['to']
+  var destination = event.queryStringParameters.to
 
   // generate a unique short code (stupidly for now)
   var hash = new Hashids()

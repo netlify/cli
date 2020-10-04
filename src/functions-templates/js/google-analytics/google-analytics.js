@@ -53,14 +53,14 @@ function proxyToGoogleAnalytics(event, done) {
 }
 
 exports.handler = function(event, context, callback) {
-  const origin = event.headers['origin'] || event.headers['Origin'] || ''
+  const origin = event.headers.origin || event.headers.Origin || ''
   console.log(`Received ${event.httpMethod} request from, origin: ${origin}`)
 
   const isOriginWhitelisted = originWhitelist.indexOf(origin) >= 0
   console.info('is whitelisted?', isOriginWhitelisted)
 
   const headers = {
-    //'Access-Control-Allow-Origin': '*', // allow all domains to POST. Use for localhost development only
+    // 'Access-Control-Allow-Origin': '*', // allow all domains to POST. Use for localhost development only
     'Access-Control-Allow-Origin': isOriginWhitelisted ? origin : originWhitelist[0],
     'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type,Accept',

@@ -13,7 +13,7 @@ const config = {
   transforms: {
     GENERATE_COMMANDS_DOCS(content, options, instance) {
       const command = path.basename(instance.originalPath, '.md')
-      //console.log('command', command)
+      // console.log('command', command)
       const info = commandData[command]
       // console.log('info', info)
       if (info) {

@@ -39,6 +39,7 @@ class BaseCommand extends Command {
   constructor(...args) {
     super(...args)
   }
+
   // Initialize context
   async init() {
     const cwd = argv.cwd || process.cwd()
@@ -147,7 +148,7 @@ class BaseCommand extends Command {
     /* enrich parse with global flags */
     const globalFlags = {}
     if (!opts.flags.silent) {
-      globalFlags['silent'] = {
+      globalFlags.silent = {
         parse: (b, _) => b,
         description: 'Silence CLI output',
         allowNo: false,
@@ -155,7 +156,7 @@ class BaseCommand extends Command {
       }
     }
     if (!opts.flags.json) {
-      globalFlags['json'] = {
+      globalFlags.json = {
         parse: (b, _) => b,
         description: 'Output return values as JSON',
         allowNo: false,
@@ -163,7 +164,7 @@ class BaseCommand extends Command {
       }
     }
     if (!opts.flags.auth) {
-      globalFlags['auth'] = {
+      globalFlags.auth = {
         parse: (b, _) => b,
         description: 'Netlify auth token',
         input: [],
@@ -191,6 +192,7 @@ class BaseCommand extends Command {
     // If --json flag disable chalk colors
     return chalkInstance(argv.json)
   }
+
   /**
    * Get user netlify API token
    * @param  {string} - [tokenFromFlag] - value passed in by CLI flag

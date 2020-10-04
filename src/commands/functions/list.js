@@ -18,7 +18,7 @@ class FunctionsListCommand extends Command {
     try {
       siteData = await api.getSite({ siteId })
     } catch (e) {
-      if (e.status === 401 /* unauthorized*/) {
+      if (e.status === 401 /* unauthorized */) {
         this.warn(`Log in with a different account or re-link to a site you have permission for`)
         this.error(`Not authorized to view the currently linked site (${siteId})`)
       }
@@ -67,7 +67,7 @@ class FunctionsListCommand extends Command {
           name: functionName,
           url: `/.netlify/functions/${functionName}`,
           moduleDir,
-          isDeployed: isDeployed ? true : false,
+          isDeployed,
         }
       })
       this.logJson(jsonData)

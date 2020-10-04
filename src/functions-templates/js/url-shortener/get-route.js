@@ -4,7 +4,7 @@ var request = require('request')
 
 module.exports = function handler(event, context, callback) {
   // which URL code are we trying to retrieve?
-  var code = event.queryStringParameters['code']
+  var code = event.queryStringParameters.code
 
   // where is the data?
   var url =
