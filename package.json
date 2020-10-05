@@ -109,7 +109,7 @@
     "inquirer": "^6.5.1",
     "inquirer-autocomplete-prompt": "^1.0.1",
     "is-docker": "^2.0.0",
-    "jwt-decode": "^2.2.0",
+    "jwt-decode": "^3.0.0",
     "lambda-local": "^1.7.1",
     "lodash.debounce": "^4.0.8",
     "lodash.get": "^4.4.2",
