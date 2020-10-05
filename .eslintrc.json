@@ -12,7 +12,8 @@
     "plugin:import/warnings",
     "eslint:recommended",
     "plugin:node/recommended",
-    "prettier"
+    "prettier",
+    "plugin:you-dont-need-lodash-underscore/all"
   ],
   "rules": {
     "no-unused-vars": [
