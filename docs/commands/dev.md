@@ -82,11 +82,17 @@ This command is designed to mimic cURL's command line, so the flags are more fam
 netlify dev:trace
 ```
 
+**Arguments**
+
+- url - Sets the request URL
+
 **Flags**
 
+- `request` (*string*) - Specifies a custom request method [default: GET]
+- `cookie` (*string*) - Request cookie, this flag can be used multiple times. Example: "nf_jwt=token"
+- `header` (*string*) - Request header, this flag can be used multiple times. Example: "Host: netlify.test"
+- `watch` (*string*) - Path to the publish directory
 - `debug` (*boolean*) - Print debugging information
-- `httpProxy` (*string*) - Proxy server address to route requests through.
-- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 **Examples**
 
