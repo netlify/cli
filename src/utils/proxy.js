@@ -104,7 +104,7 @@ async function serveRedirect(req, res, proxy, match, options) {
     const expectedRoles = match.exceptions.JWT.split(',').map(r => (r.startsWith(':') ? r.slice(1) : r))
 
     const cookieValues = cookie.parse(req.headers.cookie || '')
-    const token = cookieValues['nf_jwt']
+    const token = cookieValues.nf_jwt
 
     // Serve not found by default
     const originalURL = req.url
@@ -142,7 +142,7 @@ async function serveRedirect(req, res, proxy, match, options) {
 
   const reqUrl = new url.URL(
     req.url,
-    `${req.protocol || (req.headers.scheme && req.headers.scheme + ':') || 'http:'}//${req.headers['host'] ||
+    `${req.protocol || (req.headers.scheme && req.headers.scheme + ':') || 'http:'}//${req.headers.host ||
       req.hostname}`
   )
 

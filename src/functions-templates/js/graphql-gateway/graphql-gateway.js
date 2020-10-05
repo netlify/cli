@@ -51,8 +51,8 @@ exports.handler = async function(event, context) {
     resolvers,
   })
   const server = new ApolloServer({ schema })
-  return new Promise((yay, nay) => {
-    const cb = (err, args) => (err ? nay(err) : yay(args))
+  return new Promise((resolve, reject) => {
+    const cb = (err, args) => (err ? reject(err) : resolve(args))
     server.createHandler()(event, context, cb)
   })
 }

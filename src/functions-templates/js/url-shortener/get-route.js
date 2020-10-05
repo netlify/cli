@@ -4,7 +4,7 @@ var request = require('request')
 
 module.exports = function handler(event, context, callback) {
   // which URL code are we trying to retrieve?
-  var code = event.queryStringParameters['code']
+  var code = event.queryStringParameters.code
 
   // where is the data?
   var url =
@@ -20,7 +20,7 @@ module.exports = function handler(event, context, callback) {
 
       for (var item in routes) {
         // return the result when we find the match
-        if (routes[item].data.code == code) {
+        if (routes[item].data.code === code) {
           console.log('We searched for ' + code + ' and we found ' + routes[item].data.destination)
           return callback(null, {
             statusCode: 200,

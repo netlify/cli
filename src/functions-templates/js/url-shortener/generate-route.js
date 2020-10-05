@@ -8,7 +8,7 @@ module.exports = function handler(event, context, callback) {
   var rootURL = process.env.URL + '/'
 
   // get the details of what we are creating
-  var destination = event.queryStringParameters['to']
+  var destination = event.queryStringParameters.to
 
   // generate a unique short code (stupidly for now)
   var hash = new Hashids()
@@ -16,7 +16,7 @@ module.exports = function handler(event, context, callback) {
   var code = hash.encode(number)
 
   // ensure that a protocol was provided
-  if (destination.indexOf('://') == -1) {
+  if (destination.indexOf('://') === -1) {
     destination = 'http://' + destination
   }
 

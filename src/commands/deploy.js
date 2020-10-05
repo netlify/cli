@@ -38,8 +38,8 @@ const triggerDeploy = async ({ api, siteId, siteData, log, error }) => {
 
 const getDeployFolder = async ({ flags, config, site, siteData, log }) => {
   let deployFolder
-  if (flags['dir']) {
-    deployFolder = path.resolve(process.cwd(), flags['dir'])
+  if (flags.dir) {
+    deployFolder = path.resolve(process.cwd(), flags.dir)
   } else if (get(config, 'build.publish')) {
     deployFolder = path.resolve(site.root, get(config, 'build.publish'))
   } else if (get(siteData, 'build_settings.dir')) {
@@ -90,8 +90,8 @@ const getFunctionsFolder = ({ flags, config, site, siteData }) => {
   let functionsFolder
   // Support "functions" and "Functions"
   const funcConfig = get(config, 'build.functions') || get(config, 'build.Functions')
-  if (flags['functions']) {
-    functionsFolder = path.resolve(process.cwd(), flags['functions'])
+  if (flags.functions) {
+    functionsFolder = path.resolve(process.cwd(), flags.functions)
   } else if (funcConfig) {
     functionsFolder = path.resolve(site.root, funcConfig)
   } else if (get(siteData, 'build_settings.functions_dir')) {
@@ -606,7 +606,6 @@ function deployProgressCb() {
           spinner.stopAndPersist({ text: ev.msg, symbol: logSymbols.success })
           delete events[ev.type]
         }
-        return
       }
     }
   }

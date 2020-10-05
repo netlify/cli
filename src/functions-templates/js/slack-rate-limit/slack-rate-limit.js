@@ -21,7 +21,8 @@ class IdentityAPI {
   parseJsonResponse(response) {
     return response.json().then(json => {
       if (!response.ok) {
-        return Promise.reject({ status: response.status, json })
+        const error = `JSON: ${JSON.stringify(json)}. Status: ${response.status}`
+        return Promise.reject(new Error(error))
       }
 
       return json
@@ -38,12 +39,11 @@ class IdentityAPI {
 
       if (!response.ok) {
         return response.text().then(data => {
-          return Promise.reject({ stauts: response.status, data })
+          const error = `Data: ${data}. Status: ${response.status}`
+          return Promise.reject(new Error(error))
         })
       }
-      return response.text().then(data => {
-        data
-      })
+      return response.text()
     })
   }
 }
@@ -59,13 +59,12 @@ function fetchUser(identity, id) {
 /*
  Update the app_metadata of a user
 */
-function updateUser(identity, user, app_metadata) {
+function updateUser(identity, user, appMetadata) {
   const api = new IdentityAPI(identity.url, identity.token)
-  const new_app_metadata = { ...user.app_metadata, ...app_metadata }
 
   return api.request(`/admin/users/${user.id}`, {
     method: 'PUT',
-    body: JSON.stringify({ app_metadata: new_app_metadata }),
+    body: JSON.stringify({ app_metadata: { ...user.app_metadata, ...appMetadata } }),
   })
 }
 

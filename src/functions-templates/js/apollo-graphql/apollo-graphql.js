@@ -28,9 +28,7 @@ const resolvers = {
     allAuthors: (root, args, context) => {
       return authors
     },
-    author: (root, args, context) => {
-      return
-    },
+    author: (root, args, context) => {},
     authorByName: (root, args, context) => {
       console.log('hihhihi', args.name)
       return authors.find(x => x.name === args.name) || 'NOTFOUND'

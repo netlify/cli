@@ -102,7 +102,7 @@ module.exports.createRewriter = async function createRewriter({ distDir, project
       const reqUrl = new url.URL(
         req.url,
         `${req.protocol || (req.headers.scheme && req.headers.scheme + ':') || 'http:'}//${req.hostname ||
-          req.headers['host']}`
+          req.headers.host}`
       )
       const cookieValues = cookie.parse(req.headers.cookie || '')
       const headers = Object.assign(

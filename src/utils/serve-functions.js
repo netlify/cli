@@ -209,10 +209,10 @@ function createFormSubmissionHandler(siteInfo) {
               (prev, [name, values]) => ({
                 ...prev,
                 [name]: values.map(v => ({
-                  filename: v['originalFilename'],
-                  size: v['size'],
-                  type: v['headers'] && v['headers']['content-type'],
-                  url: v['path'],
+                  filename: v.originalFilename,
+                  size: v.size,
+                  type: v.headers && v.headers['content-type'],
+                  url: v.path,
                 })),
               }),
               {}
@@ -256,18 +256,18 @@ function createFormSubmissionHandler(siteInfo) {
           ...files,
           ip: req.connection.remoteAddress,
           user_agent: req.headers['user-agent'],
-          referrer: req.headers['referer'],
+          referrer: req.headers.referer,
         },
         created_at: new Date().toISOString(),
         human_fields: Object.entries({
           ...fields,
-          ...Object.entries(files).reduce((prev, [name, data]) => ({ ...prev, [name]: data['url'] }), {}),
+          ...Object.entries(files).reduce((prev, [name, data]) => ({ ...prev, [name]: data.url }), {}),
         }).reduce((prev, [key, val]) => ({ ...prev, [capitalize(key)]: val }), {}),
         ordered_human_fields: Object.entries({
           ...fields,
-          ...Object.entries(files).reduce((prev, [name, data]) => ({ ...prev, [name]: data['url'] }), {}),
+          ...Object.entries(files).reduce((prev, [name, data]) => ({ ...prev, [name]: data.url }), {}),
         }).map(([key, val]) => ({ title: capitalize(key), name: key, value: val })),
-        site_url: siteInfo['ssl_url'],
+        site_url: siteInfo.ssl_url,
       },
       site: siteInfo,
     })

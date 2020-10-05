@@ -9,7 +9,7 @@ const headers = {
 }
 
 exports.handler = function(event, context, callback) {
-  //-- We only care to do anything if this is our POST request.
+  // -- We only care to do anything if this is our POST request.
   if (event.httpMethod !== 'POST' || !event.body) {
     callback(null, {
       statusCode,
@@ -18,10 +18,10 @@ exports.handler = function(event, context, callback) {
     })
   }
 
-  //-- Parse the body contents into an object.
+  // -- Parse the body contents into an object.
   const data = JSON.parse(event.body)
 
-  //-- Make sure we have all required data. Otherwise, escape.
+  // -- Make sure we have all required data. Otherwise, escape.
   if (!data.token || !data.amount || !data.idempotency_key) {
     console.error('Required information is missing.')
 
