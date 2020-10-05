@@ -27,6 +27,7 @@
         'ora',
         'prettier',
         'wrap-ansi',
+        'update-notifier',
       ],
       major: {
         enabled: false,
