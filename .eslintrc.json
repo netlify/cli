@@ -1,12 +1,5 @@
 {
   "plugins": ["prettier"],
-  "parserOptions": {
-    "sourceType": "module"
-  },
-  "env": {
-    "node": true,
-    "es6": true
-  },
   "extends": [
     "eslint:recommended",
     "standard",
@@ -15,17 +8,8 @@
     "plugin:you-dont-need-lodash-underscore/all"
   ],
   "rules": {
-    "no-unused-vars": [
-      "error",
-      {
-        "vars": "all",
-        "args": "none",
-        "ignoreRestSiblings": true
-      }
-    ],
     "no-process-exit": 0,
     "object-shorthand": "error",
-    "prefer-const": "error",
     "require-await": "error"
   },
   "overrides": [
