@@ -84,7 +84,7 @@ const runProcess = async ({ log, args }) => {
   await installTrafficMesh({ log })
 
   const execPath = path.join(getBinPath(), EXEC_NAME)
-  execa(execPath, args, { stdio: 'inherit' })
+  await execa(execPath, args, { stdio: 'inherit' })
 }
 
 module.exports = { runProcess, startForwardProxy }
