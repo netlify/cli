@@ -19,4 +19,4 @@ async function getAddonManifest(addonName, netlifyApiToken) {
   return data
 }
 
-module.exports = getAddonManifest
+module.exports = { getAddonManifest }
