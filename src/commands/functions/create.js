@@ -353,7 +353,6 @@ async function installAddons(addons = [], fnPath) {
         const addonCreated = await createSiteAddon(api.accessToken, addonName, siteId, siteData, this.log)
         if (addonCreated) {
           if (addonDidInstall) {
-            const { addEnvVariables } = require('../../utils/dev')
             await addEnvVariables(api, site)
             const { confirmPostInstall } = await inquirer.prompt([
               {
