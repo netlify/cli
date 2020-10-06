@@ -327,7 +327,7 @@ async function scaffoldFromTemplate(flags, args, functionsDir) {
         spinner.succeed(`installed dependencies for ${name}`)
       }
 
-      installAddons.call(this, addons, path.resolve(functionPath))
+      await installAddons.call(this, addons, path.resolve(functionPath))
       if (onComplete) {
         await addEnvVariables(this.netlify.api, this.netlify.site)
         await onComplete.call(this)
@@ -336,7 +336,7 @@ async function scaffoldFromTemplate(flags, args, functionsDir) {
   }
 }
 
-function installAddons(addons = [], fnPath) {
+async function installAddons(addons = [], fnPath) {
   if (addons.length > 0) {
     const { api, site } = this.netlify
     const siteId = site.id
@@ -346,36 +346,33 @@ function installAddons(addons = [], fnPath) {
     }
     this.log(`${NETLIFYDEVLOG} checking Netlify APIs...`)
 
-    return api.getSite({ siteId }).then(siteData => {
-      const accessToken = api.accessToken
-      const arr = addons.map(({ addonName, addonDidInstall }) => {
-        this.log(`${NETLIFYDEVLOG} installing addon: ` + chalk.yellow.inverse(addonName))
-        // will prompt for configs if not supplied - we do not yet allow for addon configs supplied by `netlify functions:create` command and may never do so
-        return createSiteAddon(accessToken, addonName, siteId, siteData, this.log)
-          .then(async addonCreateMsg => {
-            if (addonCreateMsg) {
-              // spinner.success("installed addon: " + addonName);
-              if (addonDidInstall) {
-                const { addEnvVariables } = require('../../utils/dev')
-                await addEnvVariables(api, site)
-                const { confirmPostInstall } = await inquirer.prompt([
-                  {
-                    type: 'confirm',
-                    name: 'confirmPostInstall',
-                    message: `This template has an optional setup script that runs after addon install. This can be helpful for first time users to try out templates. Run the script?`,
-                    default: false,
-                  },
-                ])
-                if (confirmPostInstall) addonDidInstall(fnPath)
-              }
+    const siteData = await api.getSite({ siteId })
+    const arr = addons.map(async ({ addonName, addonDidInstall }) => {
+      this.log(`${NETLIFYDEVLOG} installing addon: ` + chalk.yellow.inverse(addonName))
+      try {
+        const addonCreated = await createSiteAddon(api.accessToken, addonName, siteId, siteData, this.log)
+        if (addonCreated) {
+          if (addonDidInstall) {
+            const { addEnvVariables } = require('../../utils/dev')
+            await addEnvVariables(api, site)
+            const { confirmPostInstall } = await inquirer.prompt([
+              {
+                type: 'confirm',
+                name: 'confirmPostInstall',
+                message: `This template has an optional setup script that runs after addon install. This can be helpful for first time users to try out templates. Run the script?`,
+                default: false,
+              },
+            ])
+            if (confirmPostInstall) {
+              addonDidInstall(fnPath)
             }
-          })
-          .catch(error => {
-            this.error(`${NETLIFYDEVERR} Error installing addon: `, error)
-          })
-      })
-      return Promise.all(arr)
+          }
+        }
+      } catch (error) {
+        this.error(`${NETLIFYDEVERR} Error installing addon: `, error)
+      }
     })
+    return Promise.all(arr)
   }
 }
 
