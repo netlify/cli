@@ -163,6 +163,31 @@ if (process.env.IS_FORK !== 'true') {
     })
   })
 
+  test.serial('should return valid json when both --build and --json are passed', async t => {
+    await withSiteBuilder('site-with-public-folder', async builder => {
+      const content = '<h1>⊂◉‿◉つ</h1>'
+      builder
+        .withContentFile({
+          path: 'public/index.html',
+          content,
+        })
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'public' },
+          },
+        })
+
+      await builder.buildAsync()
+
+      const output = await callCli(['deploy', '--build', '--json'], {
+        cwd: builder.directory,
+        env: { NETLIFY_SITE_ID: t.context.siteId },
+      })
+
+      JSON.parse(output)
+    })
+  })
+
   test.serial('should deploy hidden public folder but ignore hidden/__MACOSX files', async t => {
     await withSiteBuilder('site-with-a-dedicated-publish-folder', async builder => {
       builder
