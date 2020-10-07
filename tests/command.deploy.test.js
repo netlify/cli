@@ -14,7 +14,7 @@ const validateContent = async ({ siteUrl, path, content, t }) => {
     if (response.ok) {
       actualContent = await response.text()
     }
-  } catch (e) {
+  } catch (error) {
     // no op
   }
   t.is(actualContent, content)
@@ -330,8 +330,8 @@ if (process.env.IS_FORK !== 'true') {
           cwd: builder.directory,
           env: { NETLIFY_SITE_ID: t.context.siteId },
         })
-      } catch (e) {
-        t.is(e.stderr.includes('Error: No files or functions to deploy'), true)
+      } catch (error) {
+        t.is(error.stderr.includes('Error: No files or functions to deploy'), true)
       }
     })
   })

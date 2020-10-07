@@ -36,8 +36,8 @@ class EnvImportCommand extends Command {
     try {
       const envFileContents = fs.readFileSync(fileName)
       importedEnv = dotenv.parse(envFileContents)
-    } catch (e) {
-      this.log(e.message)
+    } catch (error) {
+      this.log(error.message)
       this.exit(1)
     }
 

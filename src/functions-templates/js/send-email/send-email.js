@@ -14,28 +14,28 @@ exports.handler = (event, context, callback) => {
 
   try {
     validateLength('body.name', body.name, 3, 50)
-  } catch (e) {
+  } catch (error) {
     return callback(null, {
       statusCode: 403,
-      body: e.message,
+      body: error.message,
     })
   }
 
   try {
     validateEmail('body.email', body.email)
-  } catch (e) {
+  } catch (error) {
     return callback(null, {
       statusCode: 403,
-      body: e.message,
+      body: error.message,
     })
   }
 
   try {
     validateLength('body.details', body.details, 10, 1000)
-  } catch (e) {
+  } catch (error) {
     return callback(null, {
       statusCode: 403,
-      body: e.message,
+      body: error.message,
     })
   }
 

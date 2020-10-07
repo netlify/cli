@@ -24,7 +24,7 @@ class LinkCommand extends Command {
     let siteData
     try {
       siteData = await api.getSite({ siteId })
-    } catch (e) {
+    } catch (error) {
       // silent api error
     }
 
@@ -50,11 +50,11 @@ class LinkCommand extends Command {
     if (flags.id) {
       try {
         siteData = await api.getSite({ site_id: flags.id })
-      } catch (e) {
-        if (e.status === 404) {
+      } catch (error) {
+        if (error.status === 404) {
           this.error(new Error(`Site id ${flags.id} not found`))
         } else {
-          this.error(e)
+          this.error(error)
         }
       }
 
@@ -78,11 +78,11 @@ class LinkCommand extends Command {
           name: flags.name,
           filter: 'all',
         })
-      } catch (e) {
-        if (e.status === 404) {
+      } catch (error) {
+        if (error.status === 404) {
           this.error(new Error(`${flags.name} not found`))
         } else {
-          this.error(e)
+          this.error(error)
         }
       }
 

@@ -39,13 +39,13 @@ async function startFrameworkServer({ settings, log, exit }) {
   }
 
   log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.framework || 'custom config'}`)
-  const commandBin = await which(settings.command).catch(err => {
-    if (err.code === 'ENOENT') {
+  const commandBin = await which(settings.command).catch(error => {
+    if (error.code === 'ENOENT') {
       throw new Error(
         `"${settings.command}" could not be found in your PATH. Please make sure that "${settings.command}" is installed and available in your PATH`
       )
     }
-    throw err
+    throw error
   })
   const ps = childProcess.spawn(commandBin, settings.args, {
     env: { ...process.env, ...settings.env, FORCE_COLOR: 'true' },
@@ -71,7 +71,7 @@ async function startFrameworkServer({ settings, log, exit }) {
     process.on(signal, () => {
       try {
         process.kill(-ps.pid)
-      } catch (err) {
+      } catch (error) {
         // Ignore
       }
       process.exit()
@@ -83,7 +83,7 @@ async function startFrameworkServer({ settings, log, exit }) {
     if (!open) {
       throw new Error(`Timed out waiting for port '${settings.frameworkPort}' to be open`)
     }
-  } catch (err) {
+  } catch (error) {
     log(NETLIFYDEVERR, `Netlify Dev could not connect to localhost:${settings.frameworkPort}.`)
     log(NETLIFYDEVERR, `Please make sure your framework server is running on port ${settings.frameworkPort}`)
     exit(1)
@@ -200,8 +200,8 @@ class DevCommand extends Command {
     let settings = {}
     try {
       settings = await serverSettings(devConfig, flags, site.root, log)
-    } catch (err) {
-      log(NETLIFYDEVERR, err.message)
+    } catch (error) {
+      log(NETLIFYDEVERR, error.message)
       exit(1)
     }
 

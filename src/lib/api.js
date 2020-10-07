@@ -77,8 +77,8 @@ const uploadEdgeHandlers = async ({ api, deployId, bundleBuffer, manifest }) => 
 const cancelDeploy = async ({ api, deployId, warn }) => {
   try {
     await api.cancelSiteDeploy({ deploy_id: deployId })
-  } catch (e) {
-    warn(`Failed canceling deploy with id ${deployId}: ${e.message}`)
+  } catch (error) {
+    warn(`Failed canceling deploy with id ${deployId}: ${error.message}`)
   }
 }
 

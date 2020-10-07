@@ -157,8 +157,8 @@ async function createSiteAddon({ addonName, settings, accessToken, siteData, err
   try {
     // TODO update to https://open-api.netlify.com/#operation/createServiceInstance
     addonResponse = await createAddon(settings, accessToken)
-  } catch (e) {
-    error(e.message)
+  } catch (error_) {
+    error(error_.message)
   }
 
   if (addonResponse.code === 404) {

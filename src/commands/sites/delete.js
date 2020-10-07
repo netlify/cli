@@ -17,8 +17,8 @@ class SitesDeleteCommand extends Command {
     let siteData
     try {
       siteData = await api.getSite({ siteId })
-    } catch (err) {
-      if (err.status === 404) {
+    } catch (error) {
+      if (error.status === 404) {
         this.error(`No site with id ${siteId} found. Please verify the siteId & try again.`)
       }
     }

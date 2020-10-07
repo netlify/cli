@@ -29,7 +29,7 @@ function getRepoURLContents(repoHost, ownerAndRepo, contentsPath) {
     const APIURL = safeJoin('https://api.github.com/repos', ownerAndRepo, 'contents', contentsPath)
     return fetch(APIURL)
       .then(x => x.json())
-      .catch(error => console.error('Error occurred while fetching ', APIURL, error))
+      .catch(error => console.error(`Error occurred while fetching ${APIURL}`, error))
   }
   throw new Error('unsupported host ', repoHost)
 }

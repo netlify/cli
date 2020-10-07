@@ -125,11 +125,11 @@ Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
           name: searchTerm,
           filter: 'all',
         })
-      } catch (e) {
-        if (e.status === 404) {
+      } catch (error) {
+        if (error.status === 404) {
           context.error(`'${searchTerm}' not found`)
         } else {
-          context.error(e)
+          context.error(error)
         }
       }
 
@@ -168,8 +168,8 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
       let sites
       try {
         sites = await api.listSites({ filter: 'all' })
-      } catch (e) {
-        context.error(e)
+      } catch (error) {
+        context.error(error)
       }
 
       if (isEmpty(sites)) {
@@ -203,11 +203,11 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
 
       try {
         site = await api.getSite({ siteId })
-      } catch (e) {
-        if (e.status === 404) {
+      } catch (error) {
+        if (error.status === 404) {
           context.error(new Error(`Site ID '${siteId}' not found`))
         } else {
-          context.error(e)
+          context.error(error)
         }
       }
       break

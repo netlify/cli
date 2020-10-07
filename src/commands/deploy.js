@@ -27,11 +27,11 @@ const triggerDeploy = async ({ api, siteId, siteData, log, error }) => {
     log(
       `${NETLIFYDEV} A new deployment was triggered successfully. Visit https://app.netlify.com/sites/${siteData.name}/deploys/${siteBuild.deploy_id} to see the logs.`
     )
-  } catch (err) {
-    if (err.status === 404) {
+  } catch (error_) {
+    if (error_.status === 404) {
       error('Site not found. Please rerun "netlify link" and make sure that your site has CI configured.')
     } else {
-      error(err.message)
+      error(error_.message)
     }
   }
 }
@@ -68,16 +68,16 @@ const validateDeployFolder = async ({ deployFolder, error }) => {
   let stat
   try {
     stat = await statAsync(deployFolder)
-  } catch (e) {
-    if (e.code === 'ENOENT') {
+  } catch (error_) {
+    if (error_.code === 'ENOENT') {
       return error(`No such directory ${deployFolder}! Did you forget to run a build?`)
     }
 
     // Improve the message of permission errors
-    if (e.code === 'EACCES') {
+    if (error_.code === 'EACCES') {
       return error('Permission error when trying to access deploy folder')
     }
-    throw e
+    throw error_
   }
 
   if (!stat.isDirectory()) {
@@ -107,14 +107,14 @@ const validateFunctionsFolder = async ({ functionsFolder, log, error }) => {
     // but this was too strict for onboarding. we can just log a warning.
     try {
       stat = await statAsync(functionsFolder)
-    } catch (e) {
-      if (e.code === 'ENOENT') {
+    } catch (error_) {
+      if (error_.code === 'ENOENT') {
         log(
           `Functions folder "${functionsFolder}" specified but it doesn't exist! Will proceed without deploying functions`
         )
       }
       // Improve the message of permission errors
-      if (e.code === 'EACCES') {
+      if (error_.code === 'EACCES') {
         error('Permission error when trying to access functions folder')
       }
     }
@@ -221,31 +221,31 @@ const runDeploy = async ({
       deployId,
       filter: getDeployFilesFilter({ site, deployFolder }),
     })
-  } catch (e) {
+  } catch (error_) {
     if (deployId) {
       await cancelDeploy({ api, deployId, warn })
     }
     switch (true) {
-      case e.name === 'JSONHTTPError': {
-        warn(`JSONHTTPError: ${e.json.message} ${e.status}`)
-        warn(`\n${JSON.stringify(e, null, '  ')}\n`)
-        error(e)
+      case error_.name === 'JSONHTTPError': {
+        warn(`JSONHTTPError: ${error_.json.message} ${error_.status}`)
+        warn(`\n${JSON.stringify(error_, null, '  ')}\n`)
+        error(error_)
         return
       }
-      case e.name === 'TextHTTPError': {
-        warn(`TextHTTPError: ${e.status}`)
-        warn(`\n${e}\n`)
-        error(e)
+      case error_.name === 'TextHTTPError': {
+        warn(`TextHTTPError: ${error_.status}`)
+        warn(`\n${error_}\n`)
+        error(error_)
         return
       }
-      case e.message && e.message.includes('Invalid filename'): {
-        warn(e.message)
-        error(e)
+      case error_.message && error_.message.includes('Invalid filename'): {
+        warn(error_.message)
+        error(error_)
         return
       }
       default: {
-        warn(`\n${JSON.stringify(e, null, '  ')}\n`)
-        error(e)
+        warn(`\n${JSON.stringify(error_, null, '  ')}\n`)
+        error(error_)
         return
       }
     }
@@ -366,12 +366,12 @@ class DeployCommand extends Command {
     } else {
       try {
         siteData = await api.getSite({ siteId })
-      } catch (e) {
+      } catch (error_) {
         // TODO specifically handle known cases (e.g. no account access)
-        if (e.status === 404) {
+        if (error_.status === 404) {
           error('Site not found')
         } else {
-          error(e.message)
+          error(error_.message)
         }
       }
     }

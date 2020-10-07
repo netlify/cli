@@ -21,7 +21,7 @@ class UnlinkCommand extends Command {
     let siteData = {}
     try {
       siteData = await this.netlify.api.getSite({ siteId })
-    } catch (e) {
+    } catch (error) {
       // ignore errors if we can't get the site
     }
 

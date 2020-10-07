@@ -19,7 +19,7 @@ exports.handler = async (event, context) => {
   let request
   try {
     request = JSON.parse(event.body)
-  } catch (e) {
+  } catch (error) {
     return { statusCode: 400, body: 'c annot parse hasura event' }
   }
 
@@ -31,7 +31,7 @@ exports.handler = async (event, context) => {
   try {
     await axios.post(hgeEndpoint + '/v1alpha1/graphql', { query, variables })
     return { statusCode: 200, body: 'success' }
-  } catch (err) {
-    return { statusCode: 500, body: err.toString() }
+  } catch (error) {
+    return { statusCode: 500, body: error.toString() }
   }
 }

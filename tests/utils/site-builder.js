@@ -110,8 +110,8 @@ const createSiteBuilder = ({ siteName }) => {
       return builder
     },
     cleanupAsync: async () => {
-      await fs.remove(directory).catch(e => {
-        console.warn(e)
+      await fs.remove(directory).catch(error => {
+        console.warn(error)
       })
       return builder
     },

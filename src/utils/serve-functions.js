@@ -230,8 +230,8 @@ function createFormSubmissionHandler(siteInfo) {
             ])
           })
         })
-      } catch (err) {
-        return console.error(err)
+      } catch (error) {
+        return console.error(error)
       }
     } else {
       return console.error('Invalid Content-Type for Netlify Dev forms request')

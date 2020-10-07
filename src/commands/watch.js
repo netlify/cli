@@ -68,8 +68,8 @@ class SitesWatchCommand extends Command {
         })
       )
       console.timeEnd('Deploy time')
-    } catch (err) {
-      throw new CLIError(err)
+    } catch (error) {
+      throw new CLIError(error)
     }
 
     this.exit()

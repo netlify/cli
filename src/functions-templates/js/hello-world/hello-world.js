@@ -9,7 +9,7 @@ exports.handler = async (event, context) => {
       // headers: { "headerName": "headerValue", ... },
       // isBase64Encoded: true,
     }
-  } catch (err) {
-    return { statusCode: 500, body: err.toString() }
+  } catch (error) {
+    return { statusCode: 500, body: error.toString() }
   }
 }

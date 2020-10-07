@@ -188,8 +188,8 @@ async function update({ addonName, currentConfig, newConfig, settings, accessTok
   try {
     // TODO update updateAddon to https://open-api.netlify.com/#operation/updateServiceInstance
     updateAddonResponse = await updateAddon(settings, accessToken)
-  } catch (e) {
-    error(e.message)
+  } catch (error_) {
+    error(error_.message)
   }
   if (updateAddonResponse.code === 404) {
     logger(`No add-on "${addonName}" found. Please double check your add-on name and try again`)

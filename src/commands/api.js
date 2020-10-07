@@ -50,8 +50,8 @@ class APICommand extends Command {
     try {
       const apiResponse = await api[apiMethod](payload)
       this.log(JSON.stringify(apiResponse, null, 2))
-    } catch (e) {
-      this.error(e)
+    } catch (error) {
+      this.error(error)
     }
   }
 }

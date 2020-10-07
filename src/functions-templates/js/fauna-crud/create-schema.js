@@ -28,11 +28,11 @@ function createFaunaDB() {
       )
     })
 
-    .catch(e => {
-      if (e.requestResult.statusCode === 400 && e.message === 'instance not unique') {
+    .catch(error => {
+      if (error.requestResult.statusCode === 400 && error.message === 'instance not unique') {
         console.log('DB already exists')
       }
-      throw e
+      throw error
     })
 }
 

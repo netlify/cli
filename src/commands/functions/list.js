@@ -17,15 +17,15 @@ class FunctionsListCommand extends Command {
     let siteData
     try {
       siteData = await api.getSite({ siteId })
-    } catch (e) {
-      if (e.status === 401 /* unauthorized */) {
+    } catch (error) {
+      if (error.status === 401 /* unauthorized */) {
         this.warn(`Log in with a different account or re-link to a site you have permission for`)
         this.error(`Not authorized to view the currently linked site (${siteId})`)
       }
-      if (e.status === 404 /* missing */) {
+      if (error.status === 404 /* missing */) {
         this.error(`The site this folder is linked to can't be found`)
       }
-      this.error(e)
+      this.error(error)
     }
     const deploy = siteData.published_deploy || {}
     const deployedFunctions = deploy.available_functions || []

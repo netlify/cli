@@ -27,24 +27,24 @@ class StateConfig {
   get all() {
     try {
       return JSON.parse(fs.readFileSync(this.path, 'utf8'))
-    } catch (err) {
+    } catch (error) {
       // Don't create if it doesn't exist
-      if (err.code === 'ENOENT' || err.code === 'ENOTDIR') {
+      if (error.code === 'ENOENT' || error.code === 'ENOTDIR') {
         return {}
       }
 
       // Improve the message of permission errors
-      if (err.code === 'EACCES') {
-        err.message = `${err.message}\n${permissionError}\n`
+      if (error.code === 'EACCES') {
+        error.message = `${error.message}\n${permissionError}\n`
       }
 
       // Empty the file if it encounters invalid JSON
-      if (err.name === 'SyntaxError') {
+      if (error.name === 'SyntaxError') {
         writeFileAtomic.sync(this.path, '')
         return {}
       }
 
-      throw err
+      throw error
     }
   }
 
@@ -53,13 +53,13 @@ class StateConfig {
       // Make sure the folder exists as it could have been deleted in the meantime
       makeDir.sync(path.dirname(this.path))
       writeFileAtomic.sync(this.path, JSON.stringify(val, null, '\t'))
-    } catch (err) {
+    } catch (error) {
       // Improve the message of permission errors
-      if (err.code === 'EACCES') {
-        err.message = `${err.message}\n${permissionError}\n`
+      if (error.code === 'EACCES') {
+        error.message = `${error.message}\n${permissionError}\n`
       }
 
-      throw err
+      throw error
     }
   }
 

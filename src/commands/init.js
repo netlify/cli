@@ -34,7 +34,7 @@ class InitCommand extends Command {
     let siteData
     try {
       siteData = await api.getSite({ siteId })
-    } catch (e) {
+    } catch (error) {
       // silent api error
       // TODO handle expected errors
       // Throw unexpected ones
@@ -204,14 +204,14 @@ git remote add origin https://github.com/YourUserName/RepoName.git
         case 'github': {
           try {
             await configGithub(this, siteData, repo)
-          } catch (e) {
-            this.warn(`GitHub error: ${e.status}`)
-            if (e.status === 404) {
+          } catch (error) {
+            this.warn(`GitHub error: ${error.status}`)
+            if (error.status === 404) {
               this.error(
                 `Does the repository ${repo.repo_path} exist and do you have the correct permissions to set up deploy keys?`
               )
             } else {
-              throw e
+              throw error
             }
           }
           break
