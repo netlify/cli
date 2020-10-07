@@ -16,7 +16,7 @@ const { createStreamPromise } = require('./create-stream-promise')
 const { onChanges } = require('./rules-proxy')
 const { parseHeadersFile, objectForPath } = require('./headers')
 const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./logo')
-const { statAsync } = require('../lib/fs.js')
+const { statAsync, readFileAsync } = require('../lib/fs.js')
 
 function isInternal(url) {
   return url.startsWith('/.netlify/')
@@ -54,10 +54,15 @@ function isRedirect(match) {
   return match.status && match.status >= 300 && match.status <= 400
 }
 
-function render404(publicFolder) {
+async function render404(publicFolder) {
   const maybe404Page = path.resolve(publicFolder, '404.html')
-  if (fs.existsSync(maybe404Page)) return fs.readFileSync(maybe404Page)
-  return 'Not Found'
+  try {
+    const stat404Page = await statAsync(maybe404Page)
+    if (stat404Page.isFile()) return await readFileAsync(maybe404Page)
+    return 'Not Found'
+  } catch (err) {
+    // Ignore
+  }
 }
 
 // Used as an optimization to avoid dual lookups for missing assets
@@ -152,7 +157,7 @@ async function serveRedirect(req, res, proxy, match, options) {
   if (staticFile) req.url = staticFile + reqUrl.search
   if (match.force404) {
     res.writeHead(404)
-    return render404(options.publicFolder)
+    return await render404(options.publicFolder)
   }
 
   if (match.force || !staticFile || !options.framework || req.method === 'POST') {
