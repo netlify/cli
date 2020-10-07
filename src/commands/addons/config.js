@@ -162,6 +162,7 @@ async function update({ addonName, currentConfig, newConfig, siteId, instanceId,
       instanceId,
       body: { config: newConfig },
     })
+    log(`Add-on "${addonName}" successfully updated`)
   } catch (error_) {
     error(error_.message)
   }

@@ -43,6 +43,7 @@ if (process.env.IS_FORK !== 'true') {
   test.serial('netlify addons:config demo', async t => {
     const cliResponse = await callCli(['addons:config', 'demo', '--TWILIO_ACCOUNT_SID', 'bar'], t.context.execOptions)
     t.is(cliResponse.includes('Updating demo add-on config values'), true)
+    t.is(cliResponse.includes('Add-on "demo" successfully updated'), true)
   })
 
   test.serial('netlify addon:delete demo', async t => {
