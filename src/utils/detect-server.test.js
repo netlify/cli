@@ -16,6 +16,11 @@ test.before(async t => {
   t.context.sitePath = builder.directory
 })
 
+test.after(async t => {
+  process.chdir(t.context.cwd)
+  await t.context.builder.cleanupAsync()
+})
+
 test('loadDetector: valid', t => {
   const d = loadDetector('create-react-app.js')
   t.is(typeof d, 'function')
@@ -171,9 +176,4 @@ test('chooseDefaultArgs', t => {
   const possibleArgsArrs = [['run', 'dev'], ['run develop']]
   const args = chooseDefaultArgs(possibleArgsArrs)
   t.deepEqual(args, possibleArgsArrs[0])
-})
-
-test.after(async t => {
-  process.chdir(t.context.cwd)
-  await t.context.builder.cleanupAsync()
 })

@@ -7,11 +7,16 @@
     "standard",
     "prettier",
     "prettier/standard",
+    "plugin:ava/recommended",
     "plugin:react/recommended",
     "prettier/react",
     "plugin:you-dont-need-lodash-underscore/all"
   ],
-  "rules": { "react/prop-types": 0, "require-await": "error" },
+  "rules": {
+    "react/prop-types": 0,
+    "require-await": "error",
+    "ava/no-skip-test": 0
+  },
   "settings": {
     "react": {
       "version": "16.13.1" // from @compositor/x0@6.0.7
