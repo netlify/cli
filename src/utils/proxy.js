@@ -16,6 +16,7 @@ const { createStreamPromise } = require('./create-stream-promise')
 const { onChanges } = require('./rules-proxy')
 const { parseHeadersFile, objectForPath } = require('./headers')
 const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./logo')
+const { statAsync } = require('../lib/fs.js')
 
 function isInternal(url) {
   return url.startsWith('/.netlify/')
@@ -30,13 +31,13 @@ function addonUrl(addonUrls, req) {
   return addonUrl ? `${addonUrl}${m[2]}` : null
 }
 
-function getStatic(pathname, publicFolder) {
+async function getStatic(pathname, publicFolder) {
   const alternatives = [pathname, ...alternativePathsFor(pathname)].map(p => path.resolve(publicFolder, p.slice(1)))
 
   for (const i in alternatives) {
     const p = alternatives[i]
     try {
-      const pathStats = fs.statSync(p)
+      const pathStats = await statAsync(p)
       if (pathStats.isFile()) return '/' + path.relative(publicFolder, p)
     } catch (error) {
       // Ignore
