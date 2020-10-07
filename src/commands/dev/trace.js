@@ -4,7 +4,8 @@ const { runProcess } = require('../../utils/traffic-mesh')
 class TraceCommand extends Command {
   async run() {
     const args = ['trace'].concat(this.argv)
-    await runProcess({ log: this.log, args })
+    const { subprocess } = await runProcess({ log: this.log, args })
+    await subprocess
 
     await this.config.runHook('analytics', {
       eventName: 'command',

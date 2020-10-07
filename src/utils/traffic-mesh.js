@@ -55,7 +55,7 @@ const startForwardProxy = async ({ port, frameworkPort, functionsPort, publishDi
     args.push('--debug')
   }
 
-  const subprocess = await runProcess({ log, args })
+  const { subprocess } = await runProcess({ log, args })
 
   subprocess.on('close', process.exit)
   subprocess.on('SIGINT', process.exit)
@@ -84,7 +84,8 @@ const runProcess = async ({ log, args }) => {
   await installTrafficMesh({ log })
 
   const execPath = path.join(getBinPath(), EXEC_NAME)
-  await execa(execPath, args, { stdio: 'inherit' })
+  const subprocess = execa(execPath, args, { stdio: 'inherit' })
+  return { subprocess }
 }
 
 module.exports = { runProcess, startForwardProxy }
