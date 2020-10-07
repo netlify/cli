@@ -1,10 +1,10 @@
 // Handlers are meant to be async outside tests
 /* eslint-disable require-await */
 const test = require('ava')
-const cliPath = require('./utils/cliPath')
-const { withDevServer } = require('./utils/devServer')
+const cliPath = require('./utils/cli-path')
+const { withDevServer } = require('./utils/dev-server')
 const execa = require('execa')
-const { withSiteBuilder } = require('./utils/siteBuilder')
+const { withSiteBuilder } = require('./utils/site-builder')
 
 test('should return function response when invoked', async t => {
   await withSiteBuilder('site-with-ping-function', async builder => {

@@ -2,7 +2,7 @@ const test = require('ava')
 const path = require('path')
 const getPort = require('get-port')
 const { loadDetector, serverSettings, chooseDefaultArgs } = require('./detect-server')
-const { createSiteBuilder } = require('../../tests/utils/siteBuilder')
+const { createSiteBuilder } = require('../../tests/utils/site-builder')
 
 test.before(async t => {
   const builder = createSiteBuilder({ siteName: 'site-for-detecting-server' })

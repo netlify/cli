@@ -1,9 +1,9 @@
 const path = require('path')
 const test = require('ava')
 const execa = require('execa')
-const { withSiteBuilder } = require('./utils/siteBuilder')
+const { withSiteBuilder } = require('./utils/site-builder')
 
-const cliPath = require('./utils/cliPath')
+const cliPath = require('./utils/cli-path')
 
 // Runs `netlify build ...flags` then verify:
 //  - its exit code is `exitCode`

@@ -1,6 +1,6 @@
 const test = require('ava')
 const path = require('path')
-const { withSiteBuilder } = require('../../tests/utils/siteBuilder')
+const { withSiteBuilder } = require('../../tests/utils/site-builder')
 const { getFunctions } = require('./get-functions.js')
 const { findModuleDir } = require('./finders')
 

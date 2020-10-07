@@ -2,7 +2,7 @@ const path = require('path')
 const test = require('ava')
 const redirectParser = require('netlify-redirect-parser')
 const { getLanguage, parseFile, parseRules } = require('./rules-proxy.js')
-const { withSiteBuilder } = require('../../tests/utils/siteBuilder')
+const { withSiteBuilder } = require('../../tests/utils/site-builder')
 test('getLanguage', t => {
   const language = getLanguage({ 'accept-language': 'ur' })
 

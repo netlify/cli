@@ -1,5 +1,5 @@
 const stripAnsi = require('strip-ansi')
-const callCli = require('./callCli')
+const callCli = require('./call-cli')
 
 function generateSiteName(prefix) {
   const randomString = Math.random()
