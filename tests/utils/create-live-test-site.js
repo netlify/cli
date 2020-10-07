@@ -5,7 +5,7 @@ function generateSiteName(prefix) {
   const randomString = Math.random()
     .toString(36)
     .replace(/[^a-z]+/g, '')
-    .substr(0, 8)
+    .slice(0, 8)
   return `${prefix}${randomString}`
 }
 

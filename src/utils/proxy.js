@@ -30,7 +30,7 @@ function addonUrl(addonUrls, req) {
 }
 
 async function getStatic(pathname, publicFolder) {
-  const alternatives = [pathname, ...alternativePathsFor(pathname)].map(p => path.resolve(publicFolder, p.substr(1)))
+  const alternatives = [pathname, ...alternativePathsFor(pathname)].map(p => path.resolve(publicFolder, p.slice(1)))
 
   for (const i in alternatives) {
     const p = alternatives[i]
