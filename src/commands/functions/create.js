@@ -154,9 +154,9 @@ async function pickTemplate() {
   function filterRegistry(registry, input) {
     const temp = registry.map(x => x.name + x.description)
     const filteredTemplates = fuzzy.filter(input, temp)
-    const filteredTemplateNames = filteredTemplates.map(x => (input ? x.string : x))
+    const filteredTemplateNames = new Set(filteredTemplates.map(x => (input ? x.string : x)))
     return registry
-      .filter(t => filteredTemplateNames.includes(t.name + t.description))
+      .filter(t => filteredTemplateNames.has(t.name + t.description))
       .map(t => {
         // add the score
         const { score } = filteredTemplates.find(f => f.string === t.name + t.description)

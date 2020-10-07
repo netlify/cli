@@ -231,8 +231,8 @@ function filterSettings(scriptInquirerOptions, input) {
     input,
     scriptInquirerOptions.map(x => x.name)
   )
-  const filteredSettingNames = filteredSettings.map(x => (input ? x.string : x))
-  return scriptInquirerOptions.filter(t => filteredSettingNames.includes(t.name))
+  const filteredSettingNames = new Set(filteredSettings.map(x => (input ? x.string : x)))
+  return scriptInquirerOptions.filter(t => filteredSettingNames.has(t.name))
 }
 
 /** utiltities for the inquirer section above */

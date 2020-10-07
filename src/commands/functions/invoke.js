@@ -10,7 +10,7 @@ const { NETLIFYDEVWARN } = require('../../utils/logo')
 const { getFunctions } = require('../../utils/get-functions')
 
 // https://www.netlify.com/docs/functions/#event-triggered-functions
-const eventTriggeredFunctions = [
+const eventTriggeredFunctions = new Set([
   'deploy-building',
   'deploy-succeeded',
   'deploy-failed',
@@ -23,7 +23,7 @@ const eventTriggeredFunctions = [
   'identity-validate',
   'identity-signup',
   'identity-login',
-]
+])
 class FunctionsInvokeCommand extends Command {
   async run() {
     const { flags, args } = this.parse(FunctionsInvokeCommand)
@@ -55,7 +55,7 @@ class FunctionsInvokeCommand extends Command {
       },
     })
 
-    if (eventTriggeredFunctions.includes(functionToTrigger)) {
+    if (eventTriggeredFunctions.has(functionToTrigger)) {
       /** handle event triggered fns  */
       // https://www.netlify.com/docs/functions/#event-triggered-functions
       const parts = functionToTrigger.split('-')
