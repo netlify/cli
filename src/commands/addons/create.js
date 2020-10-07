@@ -1,53 +1,44 @@
 const Command = require('../../utils/command')
-const { getAddons, createAddon, showServiceManifest } = require('../../lib/api')
 const { parseRawFlags } = require('../../utils/parse-raw-flags')
 const { requiredConfigValues, missingConfigValues, updateConfigValues } = require('../../utils/addons/validation')
 const generatePrompts = require('../../utils/addons/prompts')
 const render = require('../../utils/addons/render')
 const chalk = require('chalk')
 const inquirer = require('inquirer')
+const { prepareAddonCommand, ADDON_VALIDATION } = require('../../utils/addons/prepare')
+
+const createAddon = async ({ api, siteId, addonName, config, siteData, log, error }) => {
+  try {
+    const response = await api.createServiceInstance({
+      siteId,
+      addon: addonName,
+      body: { config },
+    })
+    log(`Add-on "${addonName}" created for ${siteData.name}`)
+    if (response.config && response.config.message) {
+      log()
+      log(`${response.config.message}`)
+    }
+  } catch (e) {
+    error(e.message)
+  }
+}
 
 class AddonsCreateCommand extends Command {
   async run() {
     const { args, raw } = this.parse(AddonsCreateCommand)
     const addonName = args.name
+    const { siteId, manifest, siteData } = await prepareAddonCommand({
+      context: this,
+      addonName,
+      validation: ADDON_VALIDATION.NOT_EXISTS,
+    })
 
-    await this.authenticate()
-    const { api, site } = this.netlify
-    const siteId = site.id
-
-    if (!siteId) {
-      this.log('No site id found, please run inside a site folder or `netlify link`')
-      return false
-    }
-
-    let addons
-    try {
-      addons = await getAddons({ api, siteId })
-    } catch (error) {
-      this.log(`API Error: ${error.message}`)
-      return false
-    }
-
-    // Filter down addons to current args.name
-    const currentAddon = addons.find(addon => addon.service_path === `/.netlify/${addonName}`)
+    const { log, error, netlify } = this
+    const { api } = netlify
 
     // GET flags from `raw` data
     const rawFlags = parseRawFlags(raw)
-
-    const siteData = await this.netlify.api.getSite({ siteId })
-    if (currentAddon && currentAddon.id) {
-      this.log(`The "${addonName} add-on" already exists for ${siteData.name}`)
-      this.log()
-      const cmd = chalk.cyan(`\`netlify addons:config ${addonName}\``)
-      this.log(`- To update this add-on run: ${cmd}`)
-      const deleteCmd = chalk.cyan(`\`netlify addons:delete ${addonName}\``)
-      this.log(`- To remove this add-on run: ${deleteCmd}`)
-      this.log()
-      return false
-    }
-
-    const manifest = await showServiceManifest({ api, addonName })
     const hasConfig = manifest.config && Object.keys(manifest.config).length
 
     let configValues = rawFlags
@@ -84,12 +75,7 @@ class AddonsCreateCommand extends Command {
           return false
         }
 
-        try {
-          await createAddon({ api, siteId, addon: addonName, config: newConfig })
-          this.log(`Add-on "${addonName}" created for ${siteData.name}`)
-        } catch (e) {
-          this.error(e.message)
-        }
+        await createAddon({ api, siteId, addonName, config: newConfig, siteData, log, error })
 
         return false
       }
@@ -122,12 +108,7 @@ class AddonsCreateCommand extends Command {
       }
     }
 
-    try {
-      await createAddon({ api, siteId, addon: addonName, config: configValues })
-      this.log(`Add-on "${addonName}" created for ${siteData.name}`)
-    } catch (error) {
-      this.error(error.message)
-    }
+    await createAddon({ api, siteId, addonName, config: configValues, siteData, log, error })
   }
 }
 

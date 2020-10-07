@@ -16,8 +16,7 @@ const {
   NETLIFYDEVWARN,
   NETLIFYDEVERR,
 } = require('../../utils/logo')
-const { getAddons, createAddon } = require('../../lib/api')
-
+const { getSiteData, getAddons, getCurrentAddon } = require('../../utils/addons/prepare')
 const templatesDir = path.resolve(__dirname, '../../functions-templates')
 
 /**
@@ -336,31 +335,27 @@ async function scaffoldFromTemplate(flags, args, functionsDir) {
   }
 }
 
-async function createFunctionAddon({ api, siteId, addonName, siteData, log, error }) {
-  let addons
+async function createFunctionAddon({ api, addons, siteId, addonName, siteData, log, error }) {
   try {
-    addons = await getAddons({ api, siteId })
-  } catch (error) {
-    log(`API Error: ${error.message}`)
-    return false
-  }
-
-  const currentAddon = addons.find(addon => addon.service_path === `/.netlify/${addonName}`)
-  if (currentAddon && currentAddon.id) {
-    log(`The "${addonName} add-on" already exists for ${siteData.name}`)
-    return false
-  }
-
-  try {
-    await createAddon({ api, siteId, addon: addonName, config: {} })
+    const addon = getCurrentAddon({ addons, addonName })
+    if (addon && addon.id) {
+      log(`The "${addonName} add-on" already exists for ${siteData.name}`)
+      return false
+    }
+    await api.createServiceInstance({
+      siteId,
+      addon: addonName,
+      body: { config: {} },
+    })
     log(`Add-on "${addonName}" created for ${siteData.name}`)
+    return true
   } catch (e) {
     error(e.message)
   }
 }
 
-async function installAddons(addons = [], fnPath) {
-  if (addons.length !== 0) {
+async function installAddons(functionAddons = [], fnPath) {
+  if (functionAddons.length !== 0) {
     const { log, error } = this
     const { api, site } = this.netlify
     const siteId = site.id
@@ -370,25 +365,35 @@ async function installAddons(addons = [], fnPath) {
     }
     log(`${NETLIFYDEVLOG} checking Netlify APIs...`)
 
-    const siteData = await api.getSite({ siteId })
-    const arr = addons.map(async ({ addonName, addonDidInstall }) => {
+    const [siteData, siteAddons] = await Promise.all([
+      getSiteData({ api, siteId, error }),
+      getAddons({ api, siteId, error }),
+    ])
+
+    const arr = functionAddons.map(async ({ addonName, addonDidInstall }) => {
       log(`${NETLIFYDEVLOG} installing addon: ` + chalk.yellow.inverse(addonName))
       try {
-        const addonCreated = await createFunctionAddon({ api, siteId, addonName, siteData, log, error })
-        if (addonCreated) {
-          if (addonDidInstall) {
-            await addEnvVariables(api, site)
-            const { confirmPostInstall } = await inquirer.prompt([
-              {
-                type: 'confirm',
-                name: 'confirmPostInstall',
-                message: `This template has an optional setup script that runs after addon install. This can be helpful for first time users to try out templates. Run the script?`,
-                default: false,
-              },
-            ])
-            if (confirmPostInstall) {
-              addonDidInstall(fnPath)
-            }
+        const addonCreated = await createFunctionAddon({
+          api,
+          addons: siteAddons,
+          siteId,
+          addonName,
+          siteData,
+          log,
+          error,
+        })
+        if (addonCreated && addonDidInstall) {
+          await addEnvVariables(api, site)
+          const { confirmPostInstall } = await inquirer.prompt([
+            {
+              type: 'confirm',
+              name: 'confirmPostInstall',
+              message: `This template has an optional setup script that runs after addon install. This can be helpful for first time users to try out templates. Run the script?`,
+              default: false,
+            },
+          ])
+          if (confirmPostInstall) {
+            addonDidInstall(fnPath)
           }
         }
       } catch (e) {

@@ -82,46 +82,7 @@ const cancelDeploy = async ({ api, deployId, warn }) => {
   }
 }
 
-async function getAddons({ api, siteId }) {
-  const result = await api.listServiceInstancesForSite({ siteId })
-  return result
-}
-
-async function createAddon({ api, siteId, addon, config }) {
-  const result = await api.createServiceInstance({
-    siteId,
-    addon,
-    body: { config },
-  })
-  return result
-}
-
-async function updateAddon({ api, siteId, addon, instanceId, config }) {
-  const result = await api.updateServiceInstance({
-    siteId,
-    addon,
-    instanceId,
-    body: { config },
-  })
-  return result
-}
-
-async function deleteAddon({ api, siteId, addon, instanceId }) {
-  const result = await api.deleteServiceInstance({ siteId, addon, instanceId })
-  return result
-}
-
-async function showServiceManifest({ api, addonName }) {
-  const result = await api.showServiceManifest({ addonName })
-  return result
-}
-
 module.exports = {
   uploadEdgeHandlers,
   cancelDeploy,
-  getAddons,
-  createAddon,
-  updateAddon,
-  deleteAddon,
-  showServiceManifest,
 }

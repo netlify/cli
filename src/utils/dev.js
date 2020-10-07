@@ -2,7 +2,6 @@
 
 // reusable code for netlify dev
 // bit of a hasty abstraction but recommended by oclif
-const { getAddons } = require('../lib/api')
 const chalk = require('chalk')
 const {
   NETLIFYDEVLOG,
@@ -25,7 +24,7 @@ const {
 async function addEnvVariables(api, site) {
   /** from addons */
   const addonUrls = {}
-  const addons = await getAddons({ api, siteId: site.id }).catch(error => {
+  const addons = await api.listServiceInstancesForSite({ siteId: site.id }).catch(error => {
     console.error(error)
     switch (error.status) {
       default:

@@ -1,34 +1,18 @@
 const Command = require('../../utils/command')
 const inquirer = require('inquirer')
-const { getAddons, deleteAddon } = require('../../lib/api')
 const { parseRawFlags } = require('../../utils/parse-raw-flags')
 const { flags } = require('@oclif/command')
+const { prepareAddonCommand, ADDON_VALIDATION } = require('../../utils/addons/prepare')
 
 class AddonsDeleteCommand extends Command {
   async run() {
-    await this.authenticate()
     const { args, raw } = this.parse(AddonsDeleteCommand)
-    const { api, site } = this.netlify
-
     const addonName = args.name
-
-    const siteId = site.id
-
-    if (!siteId) {
-      this.log('No site id found, please run inside a site folder or `netlify link`')
-      return false
-    }
-
-    const addons = await getAddons({ api, siteId })
-
-    if (typeof addons === 'object' && addons.error) {
-      this.log('API Error', addons)
-      return false
-    }
-
-    // Filter down addons to current args.name
-    const currentAddon =
-      addons.find(current => current.service_path && current.service_path.replace('/.netlify/', '') === addonName) || {}
+    const { siteId, addon } = await prepareAddonCommand({
+      context: this,
+      addonName,
+      validation: ADDON_VALIDATION.EXISTS,
+    })
 
     const { force, f } = parseRawFlags(raw)
     if (!force && !f) {
@@ -43,12 +27,6 @@ class AddonsDeleteCommand extends Command {
       }
     }
 
-    if (!currentAddon.id) {
-      this.log(`No add-on "${addonName}" found for site. Add-on already deleted or never existed!`)
-      this.log(`> Run \`netlify addons:create ${addonName}\` to create an instance for this site`)
-      return false
-    }
-
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
@@ -57,7 +35,7 @@ class AddonsDeleteCommand extends Command {
     })
 
     try {
-      await deleteAddon({ api, siteId, addon: addonName, instanceId: currentAddon.id })
+      await this.netlify.api.deleteServiceInstance({ siteId, addon: addonName, instanceId: addon.id })
       this.log(`Addon "${addonName}" deleted`)
     } catch (error) {
       this.error(error.message)

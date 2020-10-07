@@ -16,9 +16,8 @@ if (process.env.IS_FORK !== 'true') {
   })
 
   test.serial('netlify addons:list', async t => {
-    const regex = /No addons currently installed/
     const cliResponse = await callCli(['addons:list'], t.context.execOptions)
-    t.is(regex.test(cliResponse), true)
+    t.is(cliResponse.includes('No addons currently installed'), true)
   })
 
   test.serial('netlify addons:list --json', async t => {
@@ -29,9 +28,8 @@ if (process.env.IS_FORK !== 'true') {
   })
 
   test.serial('netlify addons:create demo', async t => {
-    const regex = /Add-on "demo" created/
-    const cliResponse = await callCli(['addons:create', 'demo', '--TWILIO_ACCOUNT_SID', 'lol'], t.context.execOptions)
-    t.is(regex.test(cliResponse), true)
+    const cliResponse = await callCli(['addons:create', 'demo', '--TWILIO_ACCOUNT_SID', 'foo'], t.context.execOptions)
+    t.is(cliResponse.includes('Add-on "demo" created'), true)
   })
 
   test.serial('After creation netlify addons:list --json', async t => {
@@ -42,19 +40,19 @@ if (process.env.IS_FORK !== 'true') {
     t.is(json[0].service_slug, 'demo')
   })
 
+  test.serial('netlify addons:config demo', async t => {
+    const cliResponse = await callCli(['addons:config', 'demo', '--TWILIO_ACCOUNT_SID', 'bar'], t.context.execOptions)
+    t.is(cliResponse.includes('Updating demo add-on config values'), true)
+  })
+
   test.serial('netlify addon:delete demo', async t => {
-    const regex = /Addon "demo" deleted/
     const cliResponse = await callCli(['addons:delete', 'demo', '-f'], t.context.execOptions)
-    t.is(regex.test(cliResponse), true)
+    t.is(cliResponse.includes('Addon "demo" deleted'), true)
   })
 
   test.after('cleanup', async t => {
     const { execOptions, builder } = t.context
-
     console.log('Performing cleanup')
-    // Run cleanup
-    await callCli(['addons:delete', 'demo', '-f'], execOptions)
-
     console.log(`deleting test site "${siteName}". ${execOptions.env.NETLIFY_SITE_ID}`)
     await callCli(['sites:delete', execOptions.env.NETLIFY_SITE_ID, '--force'], execOptions)
 
