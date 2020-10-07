@@ -6,7 +6,6 @@ const Command = require('../../utils/command')
 const inquirer = require('inquirer')
 const { readRepoURL, validateRepoURL } = require('../../utils/read-repo-url')
 const { addEnvVariables } = require('../../utils/dev')
-const { createSiteAddon } = require('../../utils/addons')
 const fetch = require('node-fetch')
 const cp = require('child_process')
 const ora = require('ora')
@@ -17,6 +16,7 @@ const {
   NETLIFYDEVWARN,
   NETLIFYDEVERR,
 } = require('../../utils/logo')
+const { getAddons, createAddon } = require('../../lib/api')
 
 const templatesDir = path.resolve(__dirname, '../../functions-templates')
 
@@ -154,9 +154,9 @@ async function pickTemplate() {
   function filterRegistry(registry, input) {
     const temp = registry.map(x => x.name + x.description)
     const filteredTemplates = fuzzy.filter(input, temp)
-    const filteredTemplateNames = new Set(filteredTemplates.map(x => (input ? x.string : x)))
+    const filteredTemplateNames = filteredTemplates.map(x => (input ? x.string : x))
     return registry
-      .filter(t => filteredTemplateNames.has(t.name + t.description))
+      .filter(t => filteredTemplateNames.includes(t.name + t.description))
       .map(t => {
         // add the score
         const { score } = filteredTemplates.find(f => f.string === t.name + t.description)
@@ -297,7 +297,7 @@ async function scaffoldFromTemplate(flags, args, functionsDir) {
 
     const name = await getNameFromArgs(args, flags, templateName)
     this.log(`${NETLIFYDEVLOG} Creating function ${chalk.cyan.inverse(name)}`)
-    const functionPath = ensureFunctionPathIsOk.call(this, functionsDir, flags, name)
+    const functionPath = ensureFunctionPathIsOk.call(this, functionsDir, name)
 
     // // SWYX: note to future devs - useful for debugging source to output issues
     // this.log('from ', pathToTemplate, ' to ', functionPath)
@@ -336,21 +336,45 @@ async function scaffoldFromTemplate(flags, args, functionsDir) {
   }
 }
 
+async function createFunctionAddon({ api, siteId, addonName, siteData, log, error }) {
+  let addons
+  try {
+    addons = await getAddons({ api, siteId })
+  } catch (error) {
+    log(`API Error: ${error.message}`)
+    return false
+  }
+
+  const currentAddon = addons.find(addon => addon.service_path === `/.netlify/${addonName}`)
+  if (currentAddon && currentAddon.id) {
+    log(`The "${addonName} add-on" already exists for ${siteData.name}`)
+    return false
+  }
+
+  try {
+    await createAddon({ api, siteId, addon: addonName, config: {} })
+    log(`Add-on "${addonName}" created for ${siteData.name}`)
+  } catch (e) {
+    error(e.message)
+  }
+}
+
 async function installAddons(addons = [], fnPath) {
   if (addons.length !== 0) {
+    const { log, error } = this
     const { api, site } = this.netlify
     const siteId = site.id
     if (!siteId) {
-      this.log('No site id found, please run inside a site folder or `netlify link`')
+      log('No site id found, please run inside a site folder or `netlify link`')
       return false
     }
-    this.log(`${NETLIFYDEVLOG} checking Netlify APIs...`)
+    log(`${NETLIFYDEVLOG} checking Netlify APIs...`)
 
     const siteData = await api.getSite({ siteId })
     const arr = addons.map(async ({ addonName, addonDidInstall }) => {
-      this.log(`${NETLIFYDEVLOG} installing addon: ` + chalk.yellow.inverse(addonName))
+      log(`${NETLIFYDEVLOG} installing addon: ` + chalk.yellow.inverse(addonName))
       try {
-        const addonCreated = await createSiteAddon(api.accessToken, addonName, siteId, siteData, this.log)
+        const addonCreated = await createFunctionAddon({ api, siteId, addonName, siteData, log, error })
         if (addonCreated) {
           if (addonDidInstall) {
             await addEnvVariables(api, site)
@@ -367,8 +391,8 @@ async function installAddons(addons = [], fnPath) {
             }
           }
         }
-      } catch (error) {
-        this.error(`${NETLIFYDEVERR} Error installing addon: `, error)
+      } catch (e) {
+        error(`${NETLIFYDEVERR} Error installing addon: `, e)
       }
     })
     return Promise.all(arr)
@@ -377,7 +401,7 @@ async function installAddons(addons = [], fnPath) {
 
 // we used to allow for a --dir command,
 // but have retired that to force every scaffolded function to be a folder
-function ensureFunctionPathIsOk(functionsDir, flags, name) {
+function ensureFunctionPathIsOk(functionsDir, name) {
   const functionPath = path.join(functionsDir, name)
   if (fs.existsSync(functionPath)) {
     this.log(`${NETLIFYDEVLOG} Function ${functionPath} already exists, cancelling...`)

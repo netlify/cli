@@ -1,34 +1,35 @@
-const { getAddons } = require('netlify/src/addons')
+const { getAddons } = require('../../lib/api')
 const Command = require('../../utils/command')
 const openBrowser = require('../../utils/open-browser')
 
 class AddonsAuthCommand extends Command {
   async run() {
-    const accessToken = await this.authenticate()
     const { args } = this.parse(AddonsAuthCommand)
-
     const addonName = args.name
 
-    const siteId = this.netlify.site.id
+    await this.authenticate()
+    const { api, site } = this.netlify
+    const siteId = site.id
 
     if (!siteId) {
       this.log('No site id found, please run inside a site folder or `netlify link`')
       return false
     }
 
-    const site = await this.netlify.api.getSite({ siteId })
-    const addons = await getAddons(siteId, accessToken)
-
-    if (typeof addons === 'object' && addons.error) {
-      this.log('API Error', addons)
+    let addons
+    try {
+      addons = await getAddons({ api, siteId })
+    } catch (error) {
+      this.log(`API Error: ${error.message}`)
       return false
     }
 
     // Filter down addons to current args.name
     const currentAddon = addons.find(addon => addon.service_path === `/.netlify/${addonName}`)
 
+    const siteData = await this.netlify.api.getSite({ siteId })
     if (!currentAddon || !currentAddon.id) {
-      this.log(`Addon ${addonName} doesn't exist for ${site.name}`)
+      this.log(`Addon ${addonName} doesn't exist for ${siteData.name}`)
       return false
     }
 

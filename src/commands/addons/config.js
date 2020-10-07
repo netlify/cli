@@ -1,6 +1,5 @@
 const Command = require('../../utils/command')
-const { getAddons, updateAddon } = require('netlify/src/addons')
-const { getAddonManifest } = require('../../utils/addons/api')
+const { getAddons, updateAddon, showServiceManifest } = require('../../lib/api')
 const { requiredConfigValues, missingConfigValues, updateConfigValues } = require('../../utils/addons/validation')
 const generatePrompts = require('../../utils/addons/prompts')
 const render = require('../../utils/addons/render')
@@ -12,35 +11,37 @@ const inquirer = require('inquirer')
 
 class AddonsConfigCommand extends Command {
   async run() {
-    const accessToken = await this.authenticate()
     const { args, raw } = this.parse(AddonsConfigCommand)
     const addonName = args.name
-    const siteId = this.netlify.site.id
+
+    await this.authenticate()
+    const { api, site } = this.netlify
+    const siteId = site.id
 
     if (!siteId) {
       this.log('No site id found, please run inside a site folder or `netlify link`')
       return false
     }
 
-    const site = await this.netlify.api.getSite({ siteId })
-    const addons = await getAddons(siteId, accessToken)
-
-    if (typeof addons === 'object' && addons.error) {
-      this.log('API Error', addons)
+    let addons
+    try {
+      addons = await getAddons({ api, siteId })
+    } catch (error) {
+      this.log(`API Error: ${error.message}`)
       return false
     }
 
     // Filter down addons to current args.name
     const currentAddon = addons.find(addon => addon.service_path === `/.netlify/${addonName}`)
 
+    const siteData = await this.netlify.api.getSite({ siteId })
     if (!currentAddon || !currentAddon.id) {
-      this.log(`Add-on ${addonName} doesn't exist for ${site.name}`)
+      this.log(`Add-on ${addonName} doesn't exist for ${siteData.name}`)
       this.log(`> Run \`netlify addons:create ${addonName}\` to create an instance for this site`)
       return false
     }
 
-    // TODO update getAddonManifest to https://open-api.netlify.com/#operation/showServiceManifest
-    const manifest = await getAddonManifest(addonName, accessToken)
+    const manifest = await showServiceManifest({ api, addonName })
     const hasConfig = manifest.config && Object.keys(manifest.config).length
     // Parse flags
     const rawFlags = parseRawFlags(raw)
@@ -86,7 +87,7 @@ class AddonsConfigCommand extends Command {
               addon: addonName,
               config: newConfig,
             },
-            accessToken,
+            api,
             error: this.error,
           },
           this.log
@@ -162,7 +163,7 @@ class AddonsConfigCommand extends Command {
             addon: addonName,
             config: newConfig,
           },
-          accessToken,
+          api,
           error: this.error,
         },
         this.log
@@ -171,7 +172,7 @@ class AddonsConfigCommand extends Command {
   }
 }
 
-async function update({ addonName, currentConfig, newConfig, settings, accessToken, error }, logger) {
+async function update({ addonName, currentConfig, newConfig, settings, api, error }, logger) {
   const codeDiff = diffValues(currentConfig, newConfig)
   if (!codeDiff) {
     logger('No changes, exiting early')
@@ -184,19 +185,11 @@ async function update({ addonName, currentConfig, newConfig, settings, accessTok
   logger(`${codeDiff}\n`)
   logger()
 
-  let updateAddonResponse
   try {
-    // TODO update updateAddon to https://open-api.netlify.com/#operation/updateServiceInstance
-    updateAddonResponse = await updateAddon(settings, accessToken)
+    await updateAddon({ api, ...settings })
   } catch (error_) {
     error(error_.message)
   }
-  if (updateAddonResponse.code === 404) {
-    logger(`No add-on "${addonName}" found. Please double check your add-on name and try again`)
-    return false
-  }
-  logger(`Add-on "${addonName}" successfully updated`)
-  return updateAddonResponse
 }
 
 AddonsConfigCommand.args = [

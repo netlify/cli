@@ -1,14 +1,14 @@
 const Command = require('../../utils/command')
 const inquirer = require('inquirer')
-const { getAddons, deleteAddon } = require('netlify/src/addons')
+const { getAddons, deleteAddon } = require('../../lib/api')
 const { parseRawFlags } = require('../../utils/parse-raw-flags')
 const { flags } = require('@oclif/command')
 
 class AddonsDeleteCommand extends Command {
   async run() {
-    const accessToken = await this.authenticate()
+    await this.authenticate()
     const { args, raw } = this.parse(AddonsDeleteCommand)
-    const { site } = this.netlify
+    const { api, site } = this.netlify
 
     const addonName = args.name
 
@@ -19,7 +19,7 @@ class AddonsDeleteCommand extends Command {
       return false
     }
 
-    const addons = await getAddons(siteId, accessToken)
+    const addons = await getAddons({ api, siteId })
 
     if (typeof addons === 'object' && addons.error) {
       this.log('API Error', addons)
@@ -56,31 +56,11 @@ class AddonsDeleteCommand extends Command {
       },
     })
 
-    const settings = {
-      siteId,
-      addon: addonName,
-      instanceId: currentAddon.id,
-    }
-    let addonResponse
     try {
-      // TODO update deleteAddon to https://open-api.netlify.com/#operation/deleteServiceInstance
-      addonResponse = await deleteAddon(settings, accessToken)
+      await deleteAddon({ api, siteId, addon: addonName, instanceId: currentAddon.id })
+      this.log(`Addon "${addonName}" deleted`)
     } catch (error) {
       this.error(error.message)
-    }
-
-    if (addonResponse.status === 404) {
-      this.log(`No addon "${addonName}" found. Please double check your add-on name and try again`)
-      return false
-    }
-
-    /* Deleting addons must return with 204 status */
-    if (addonResponse.status === 204) {
-      this.log(`Addon "${addonName}" deleted`)
-    } else {
-      this.log(
-        `Addon "${addonName}" was not deleted "${addonName}". Returned status: ${addonResponse.status}. Addon deletion must return status 204 from "${addonName}" provider.`
-      )
     }
   }
 }

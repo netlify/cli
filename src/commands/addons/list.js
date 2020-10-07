@@ -1,13 +1,14 @@
 const AsciiTable = require('ascii-table')
 const { flags } = require('@oclif/command')
 const Command = require('../../utils/command')
-const { getAddons } = require('netlify/src/addons')
+const { getAddons } = require('../../lib/api')
 
 class AddonsListCommand extends Command {
   async run() {
     const { flags } = this.parse(AddonsListCommand)
+
+    await this.authenticate()
     const { api, site } = this.netlify
-    const accessToken = await this.authenticate()
     const siteId = site.id
 
     if (!siteId) {
@@ -15,10 +16,13 @@ class AddonsListCommand extends Command {
       return false
     }
 
-    const siteData = await api.getSite({ siteId })
-
-    // TODO update getAddons to https://open-api.netlify.com/#operation/getServices
-    const addons = await getAddons(siteId, accessToken)
+    let addons
+    try {
+      addons = await getAddons({ api, siteId })
+    } catch (error) {
+      this.log(`API Error: ${error.message}`)
+      return false
+    }
 
     // Return json response for piping commands
     if (flags.json) {
@@ -26,6 +30,7 @@ class AddonsListCommand extends Command {
       return false
     }
 
+    const siteData = await api.getSite({ siteId })
     if (!addons || addons.length === 0) {
       this.log(`No addons currently installed for ${siteData.name}`)
       this.log(`> Run \`netlify addons:create addon-namespace\` to install an addon`)
