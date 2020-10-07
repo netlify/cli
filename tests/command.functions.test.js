@@ -10,7 +10,7 @@ test('should return function response when invoked', async t => {
   await withSiteBuilder('site-with-ping-function', async builder => {
     builder.withNetlifyToml({ config: { build: { functions: 'functions' } } }).withFunction({
       path: 'ping.js',
-      handler: async (event, context) => {
+      handler: async () => {
         return {
           statusCode: 200,
           body: 'ping',

@@ -180,7 +180,7 @@ function createFormSubmissionHandler(siteInfo) {
     if (req.url.startsWith('/.netlify/') || req.method !== 'POST') return next()
 
     const fakeRequest = new Readable({
-      read(size) {
+      read() {
         this.push(req.body)
         this.push(null)
       },

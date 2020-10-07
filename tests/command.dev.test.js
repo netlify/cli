@@ -38,10 +38,10 @@ testMatrix.forEach(({ args }) => {
     await withSiteBuilder('site-with-set-timeout-function', async builder => {
       builder.withNetlifyToml({ config: { build: { functions: 'functions' } } }).withFunction({
         path: 'timeout.js',
-        handler: async (event, context) => {
+        handler: async () => {
           console.log('ding')
           // Wait for 4 seconds
-          await new Promise((resolve, reject) => setTimeout(resolve, 4000))
+          await new Promise(resolve => setTimeout(resolve, 4000))
           return {
             statusCode: 200,
             body: 'ping',
@@ -62,7 +62,7 @@ testMatrix.forEach(({ args }) => {
     await withSiteBuilder('site-with-from-subdirectory', async builder => {
       builder.withNetlifyToml({ config: { build: { functions: 'functions' } } }).withFunction({
         path: path.join('echo', 'echo.js'),
-        handler: async (event, context) => {
+        handler: async () => {
           return {
             statusCode: 200,
             body: 'ping',
@@ -86,7 +86,7 @@ testMatrix.forEach(({ args }) => {
         .withEnvFile({ path: '.env.development', env: { TEST: 'FROM_DEV_FILE' } })
         .withFunction({
           path: 'env.js',
-          handler: async (event, context) => {
+          handler: async () => {
             return {
               statusCode: 200,
               body: `${process.env.TEST}`,
@@ -107,7 +107,7 @@ testMatrix.forEach(({ args }) => {
     await withSiteBuilder('site-with-process-env', async builder => {
       builder.withNetlifyToml({ config: { build: { functions: 'functions' } } }).withFunction({
         path: 'env.js',
-        handler: async (event, context) => {
+        handler: async () => {
           return {
             statusCode: 200,
             body: `${process.env.TEST}`,
@@ -131,7 +131,7 @@ testMatrix.forEach(({ args }) => {
         .withEnvFile({ path: '.env.development', env: { TEST: 'FROM_DEV_FILE' } })
         .withFunction({
           path: 'env.js',
-          handler: async (event, context) => {
+          handler: async () => {
             return {
               statusCode: 200,
               body: `${process.env.TEST}`,
@@ -159,7 +159,7 @@ testMatrix.forEach(({ args }) => {
         })
         .withFunction({
           path: 'ping.js',
-          handler: async (event, context) => {
+          handler: async () => {
             return {
               statusCode: 200,
               body: 'ping',
@@ -187,7 +187,7 @@ testMatrix.forEach(({ args }) => {
         })
         .withFunction({
           path: 'echo.js',
-          handler: async (event, context) => {
+          handler: async event => {
             return {
               statusCode: 200,
               body: JSON.stringify(event),
@@ -228,7 +228,7 @@ testMatrix.forEach(({ args }) => {
         })
         .withFunction({
           path: 'echo.js',
-          handler: async (event, context) => {
+          handler: async event => {
             return {
               statusCode: 200,
               body: JSON.stringify(event),
@@ -275,7 +275,7 @@ testMatrix.forEach(({ args }) => {
         })
         .withFunction({
           path: 'echo.js',
-          handler: async (event, context) => {
+          handler: async () => {
             return {
               statusCode: 200,
             }
@@ -307,7 +307,7 @@ testMatrix.forEach(({ args }) => {
         })
         .withFunction({
           path: 'echo.js',
-          handler: async (event, context) => {
+          handler: async event => {
             return {
               statusCode: 200,
               body: JSON.stringify(event),
@@ -381,7 +381,7 @@ testMatrix.forEach(({ args }) => {
         })
         .withFunction({
           path: 'echo.js',
-          handler: async (event, context) => {
+          handler: async event => {
             return {
               statusCode: 200,
               body: JSON.stringify(event),
@@ -419,7 +419,7 @@ testMatrix.forEach(({ args }) => {
         })
         .withFunction({
           path: 'submission-created.js',
-          handler: async (event, context) => {
+          handler: async event => {
             return {
               statusCode: 200,
               body: JSON.stringify(event),
@@ -494,7 +494,7 @@ testMatrix.forEach(({ args }) => {
         })
         .withFunction({
           path: 'submission-created.js',
-          handler: async (event, context) => {
+          handler: async event => {
             return {
               statusCode: 200,
               body: JSON.stringify(event),

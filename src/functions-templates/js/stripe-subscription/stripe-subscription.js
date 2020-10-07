@@ -14,7 +14,7 @@ const respond = fulfillmentText => {
   }
 }
 
-exports.handler = async function(event, context) {
+exports.handler = async function(event) {
   let incoming
   try {
     incoming = JSON.parse(event.body)

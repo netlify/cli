@@ -6,7 +6,7 @@ const hgeEndpoint = 'https://live-coding-netlify.herokuapp.com'
 
 const query = `
 mutation verifiedp($id: uuid!, $title: String!, $content: String!) {
-  update_posts(_set: { verified: true, content: $content, title: $title }, 
+  update_posts(_set: { verified: true, content: $content, title: $title },
     where:{ id: { _eq: $id } }) {
     returning {
       id
@@ -15,7 +15,7 @@ mutation verifiedp($id: uuid!, $title: String!, $content: String!) {
 }
 `
 
-exports.handler = async (event, context) => {
+exports.handler = async event => {
   let request
   try {
     request = JSON.parse(event.body)
