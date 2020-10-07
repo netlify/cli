@@ -16,6 +16,11 @@ test.before(async t => {
   t.context.server = server
 })
 
+test.after(async t => {
+  const { server } = t.context
+  await server.close()
+})
+
 test('homepage', async t => {
   const { url } = t.context.server
   const response = await fetch(`${url}/`).then(r => r.text())
@@ -29,7 +34,7 @@ test('static/js/bundle.js', async t => {
   const body = await response.text()
 
   t.is(response.status, 200)
-  t.truthy(body.length > 100)
+  t.true(body.length > 100)
   t.truthy(response.headers.get('content-type').startsWith('application/javascript'))
   t.regex(body, /webpackBootstrap/)
 })
@@ -147,9 +152,4 @@ test('functions echo with multiple query params', async t => {
   t.is(response.path, '/.netlify/functions/echo')
   t.deepEqual(response.queryStringParameters, { category: 'a, b' })
   t.deepEqual(response.multiValueQueryStringParameters, { category: ['a', 'b'] })
-})
-
-test.after(async t => {
-  const { server } = t.context
-  await server.close()
 })

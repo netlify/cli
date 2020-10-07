@@ -127,13 +127,13 @@ if (process.env.IS_FORK !== 'true') {
         })
 
         t.is(resp.status, 200)
-        const { created_at, sha, content_length, ...rest } = await resp.json()
+        const { created_at: createdAt, sha, content_length: contentLength, ...rest } = await resp.json()
         t.deepEqual(rest, {
           content_type: 'application/javascript',
           handlers: ['index'],
           valid: true,
         })
-        t.is(content_length > 50, true)
+        t.is(contentLength > 50, true)
       })
     })
   }
@@ -316,6 +316,11 @@ if (process.env.IS_FORK !== 'true') {
     })
   })
 
+  test.after('cleanup', async t => {
+    const { siteId } = t.context
+    console.log(`deleting test site "${siteName}". ${siteId}`)
+    await callCli(['sites:delete', siteId, '--force'])
+  })
   test('should exit with error when deploying an empty directory', async t => {
     await withSiteBuilder('site-with-an-empty-directory', async builder => {
       await builder.buildAsync()
@@ -329,11 +334,5 @@ if (process.env.IS_FORK !== 'true') {
         t.is(e.stderr.includes('Error: No files or functions to deploy'), true)
       }
     })
-  })
-
-  test.after('cleanup', async t => {
-    const { siteId } = t.context
-    console.log(`deleting test site "${siteName}". ${siteId}`)
-    await callCli(['sites:delete', siteId, '--force'])
   })
 }
