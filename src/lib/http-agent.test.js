@@ -17,7 +17,7 @@ test(`should exit with error on invalid url`, async t => {
 
   await t.throwsAsync(getAgent({ httpProxy, log, exit }))
 
-  t.is('invalid_url is not a valid URL', log.getCall(0).args[1])
+  t.is(log.getCall(0).args[1], 'invalid_url is not a valid URL')
 })
 
 test(`should exit with error on when scheme is not http or https`, async t => {
@@ -28,7 +28,7 @@ test(`should exit with error on when scheme is not http or https`, async t => {
 
   await t.throwsAsync(getAgent({ httpProxy, log, exit }))
 
-  t.is('file://localhost must have a scheme of http or https', log.getCall(0).args[1])
+  t.is(log.getCall(0).args[1], 'file://localhost must have a scheme of http or https')
 })
 
 test(`should exit with error when proxy is no available`, async t => {
@@ -40,9 +40,9 @@ test(`should exit with error when proxy is no available`, async t => {
   await t.throwsAsync(getAgent({ httpProxy, log, exit }))
 
   if (process.platform === 'win32') {
-    t.is("Could not connect to 'https://unknown:7979'", log.getCall(0).args[1])
+    t.is(log.getCall(0).args[1], "Could not connect to 'https://unknown:7979'")
   } else {
-    t.is('https://unknown:7979 is not available.', log.getCall(0).args[1])
+    t.is(log.getCall(0).args[1], 'https://unknown:7979 is not available.')
   }
 })
 
@@ -63,7 +63,7 @@ test(`should return agent for a valid proxy`, async t => {
 
   const agent = await getAgent({ httpProxy: httpProxyUrl, log, exit })
 
-  t.is(true, agent instanceof HttpsProxyAgent)
+  t.is(agent instanceof HttpsProxyAgent, true)
 
   server.close()
 })

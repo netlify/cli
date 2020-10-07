@@ -31,6 +31,10 @@ test.before(async t => {
   t.context.builder = builder
 })
 
+test.after(async t => {
+  await t.context.builder.cleanupAsync()
+})
+
 test('_headers: validate correct parsing', t => {
   const rules = parseHeadersFile(path.resolve(t.context.builder.directory, '_headers'))
   t.deepEqual(rules, {
@@ -69,8 +73,4 @@ test('_headers: rulesForPath testing', t => {
     'X-Frame-Options': ['SAMEORIGIN'],
     'X-Frame-Thing': ['SAMEORIGIN'],
   })
-})
-
-test.after(async t => {
-  await t.context.builder.cleanupAsync()
 })

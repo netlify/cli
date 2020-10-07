@@ -5,12 +5,14 @@
     "standard",
     "prettier",
     "prettier/standard",
+    "plugin:ava/recommended",
     "plugin:you-dont-need-lodash-underscore/all"
   ],
   "rules": {
     "no-process-exit": 0,
     "object-shorthand": "error",
-    "require-await": "error"
+    "require-await": "error",
+    "ava/no-skip-test": 0
   },
   "overrides": [
     {

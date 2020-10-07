@@ -10,6 +10,10 @@ test.beforeEach(t => {
   t.context.binPath = directory
 })
 
+test.afterEach(async t => {
+  await fs.remove(t.context.binPath)
+})
+
 test(`should postix exec with .exe on windows`, t => {
   const execName = 'some-binary-file'
   if (process.platform === 'win32') {
@@ -58,8 +62,4 @@ packages.forEach(({ packageName, execName, execArgs, pattern, extension }) => {
     const stats = await fs.stat(execPath)
     t.is(stats.size >= 5000, true)
   })
-})
-
-test.afterEach(async t => {
-  await fs.remove(t.context.binPath)
 })
