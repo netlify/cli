@@ -18,12 +18,12 @@ module.exports = function isValidEventName(eventName, config) {
     return formattingWarning(eventName)
   }
   // validate project name
-  if (validProject.indexOf(project) === -1) {
+  if (!validProject.includes(project)) {
     error = `> "${project}" is invalid tracking project. Must be one of ${JSON.stringify(validProject)}`
     return formattingWarning(eventName, error)
   }
   // validate object name
-  if (validObjects.indexOf(object) === -1) {
+  if (!validObjects.includes(object)) {
     error = `> "${object}" is invalid tracking object. Must be one of ${JSON.stringify(validObjects)}`
     return formattingWarning(eventName, error)
   }

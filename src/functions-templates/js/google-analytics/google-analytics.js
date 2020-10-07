@@ -56,7 +56,7 @@ exports.handler = function(event, context, callback) {
   const origin = event.headers.origin || event.headers.Origin || ''
   console.log(`Received ${event.httpMethod} request from, origin: ${origin}`)
 
-  const isOriginWhitelisted = originWhitelist.indexOf(origin) >= 0
+  const isOriginWhitelisted = originWhitelist.includes(origin)
   console.info('is whitelisted?', isOriginWhitelisted)
 
   const headers = {
