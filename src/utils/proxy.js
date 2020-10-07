@@ -174,7 +174,7 @@ async function serveRedirect(req, res, proxy, match, options) {
     }
 
     if (isExternal(match)) {
-      console.log(`${NETLIFYDEVLOG} Proxying to `, dest.toString())
+      console.log(`${NETLIFYDEVLOG} Proxying to ${dest}`)
       const handler = createProxyMiddleware({
         target: `${dest.protocol}//${dest.host}`,
         changeOrigin: true,

@@ -102,8 +102,9 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
 
   if (!settings.noCmd && devConfig.command) {
     console.log(
-      `${NETLIFYDEVLOG} Overriding ${chalk.yellow('command')} with setting derived from netlify.toml [dev] block: `,
-      devConfig.command
+      `${NETLIFYDEVLOG} Overriding ${chalk.yellow('command')} with setting derived from netlify.toml [dev] block: ${
+        devConfig.command
+      }`
     )
     const [devConfigCommand, ...devConfigArgs] = devConfig.command.split(/\s+/)
     settings.command = devConfigCommand

@@ -21,7 +21,7 @@ function handleErr(err, response) {
   response.statusCode = 500
   response.write(`${NETLIFYDEVERR} Function invocation failed: ` + err.toString())
   response.end()
-  console.log(`${NETLIFYDEVERR} Error during invocation: `, err)
+  console.log(`${NETLIFYDEVERR} Error during invocation:`, err)
 }
 
 function capitalize(t) {
