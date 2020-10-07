@@ -82,7 +82,4 @@ const cancelDeploy = async ({ api, deployId, warn }) => {
   }
 }
 
-module.exports = {
-  uploadEdgeHandlers,
-  cancelDeploy,
-}
+module.exports = { uploadEdgeHandlers, cancelDeploy }
