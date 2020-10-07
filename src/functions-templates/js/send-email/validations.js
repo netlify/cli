@@ -1,12 +1,12 @@
 exports.validateEmail = (ctx, str) => {
   if (typeof str !== 'string' && !(str instanceof String)) {
-    throw TypeError(`${ctx} must be a string`)
+    throw new TypeError(`${ctx} must be a string`)
   }
 
   exports.validateLength(ctx, str, 5, 30)
 
   if (!/^[\w.-]+@[\w.-]+\.\w+$/.test(str)) {
-    throw TypeError(`${ctx} is not an email address`)
+    throw new TypeError(`${ctx} is not an email address`)
   }
 }
 
@@ -22,14 +22,14 @@ exports.validateLength = (ctx, str, ...args) => {
   }
 
   if (typeof str !== 'string' && !(str instanceof String)) {
-    throw TypeError(`${ctx} must be a string`)
+    throw new TypeError(`${ctx} must be a string`)
   }
 
   if (str.length < min) {
-    throw TypeError(`${ctx} must be at least ${min} chars long`)
+    throw new TypeError(`${ctx} must be at least ${min} chars long`)
   }
 
   if (str.length > max) {
-    throw TypeError(`${ctx} must contain ${max} chars at most`)
+    throw new TypeError(`${ctx} must contain ${max} chars at most`)
   }
 }

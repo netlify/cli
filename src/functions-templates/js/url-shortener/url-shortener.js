@@ -18,5 +18,5 @@ exports.handler = (event, context, callback) => {
       return
   }
 
-  return callback(Error('unrecognized HTTP Method, must be one of GET/POST/PUT/DELETE'))
+  return callback(new Error('unrecognized HTTP Method, must be one of GET/POST/PUT/DELETE'))
 }
