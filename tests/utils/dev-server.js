@@ -43,7 +43,7 @@ const startServer = async ({ cwd, env = {}, args = [] }) => {
               }
             })
             ps.kill()
-            await Promise.race([ps.catch(() => undefined), new Promise(resolve => setTimeout(resolve, 1000))])
+            await Promise.race([ps.catch(() => {}), new Promise(resolve => setTimeout(resolve, 1000))])
           },
         })
       }

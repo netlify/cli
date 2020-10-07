@@ -21,7 +21,7 @@ class HttpsProxyAgentWithCA extends HttpsProxyAgent {
 
 const getAgent = async ({ httpProxy, certificateFile, log, exit }) => {
   if (!httpProxy) {
-    return undefined
+    return
   }
 
   let proxyUrl
