@@ -17,7 +17,7 @@ app.use(bodyParser.json())
 app.use(cookieParser())
 app.use(passport.initialize())
 
-const handleCallback = () => (req, res) => {
+const handleCallback = (req, res) => {
   res.cookie('jwt', req.user.jwt, { httpOnly: true, COOKIE_SECURE }).redirect('/')
 }
 
@@ -25,7 +25,7 @@ app.get(`${ENDPOINT}/auth/github`, passport.authenticate('github', { session: fa
 app.get(
   `${ENDPOINT}/auth/github/callback`,
   passport.authenticate('github', { failureRedirect: '/', session: false }),
-  handleCallback()
+  handleCallback
 )
 
 app.get(`${ENDPOINT}/auth/status`, passport.authenticate('jwt', { session: false }), (req, res) =>
