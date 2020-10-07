@@ -1,5 +1,5 @@
 {
-  "plugins": ["prettier"],
+  "plugins": ["prettier", "markdown", "html"],
   "extends": [
     "eslint:recommended",
     "standard",
@@ -31,6 +31,13 @@
         "node/no-missing-require": 0,
         "node/shebang": 0,
         "require-await": 0
+      }
+    },
+    {
+      "files": ["**/*.md"],
+      "rules": {
+        "no-undef": 0,
+        "no-unused-vars": 0
       }
     }
   ]

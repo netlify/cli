@@ -41,7 +41,7 @@ test('static file under public/', async t => {
 
   t.is(response.status, 200)
   t.truthy(response.headers.get('content-type').startsWith('text/html'))
-  t.is(body, '<html><h1>Test content')
+  t.true(body.includes('<h1>Test content</h1>'))
 })
 
 test('redirect test', async t => {
@@ -70,7 +70,7 @@ test('force rewrite', async t => {
 
   t.is(response.status, 200)
   t.truthy(response.headers.get('content-type').startsWith('text/html'))
-  t.is(body, '<html><h1>Test content')
+  t.true(body.includes('<h1>Test content</h1>'))
 })
 
 test('robots.txt', async t => {

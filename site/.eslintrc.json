@@ -1,7 +1,7 @@
 {
   "root": true,
   "parser": "babel-eslint",
-  "plugins": ["prettier"],
+  "plugins": ["prettier", "markdown", "html"],
   "extends": [
     "eslint:recommended",
     "standard",
@@ -17,9 +17,18 @@
     "require-await": "error",
     "ava/no-skip-test": 0
   },
+  "overrides": [
+    {
+      "files": ["**/*.md"],
+      "rules": {
+        "no-undef": 0,
+        "no-unused-vars": 0
+      }
+    }
+  ],
   "settings": {
     "react": {
-      "version": "16.13.1" // from @compositor/x0@6.0.7
+      "version": "16.13.1"
     }
   }
 }
