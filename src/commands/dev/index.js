@@ -105,7 +105,7 @@ const getAddonsUrlsAndAddEnvVariablesToProcessEnv = async ({ api, site, flags })
 const addDotFileEnvs = async ({ site, log, warn }) => {
   // add .env file environment variables
   const envSettings = await getEnvSettings({ projectDir: site.root, warn })
-  if (envSettings.vars.length > 0) {
+  if (envSettings.vars.length !== 0) {
     log(
       `${NETLIFYDEVLOG} Adding the following env variables from ${envSettings.files.map(f => chalk.blue(f))}:`,
       chalk.yellow(envSettings.vars.map(([key]) => key))

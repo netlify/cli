@@ -71,10 +71,10 @@ class AddonsCreateCommand extends Command {
       this.log(`Starting the setup for "${addonName} add-on"`)
       this.log()
 
-      if (Object.keys(rawFlags).length) {
+      if (Object.keys(rawFlags).length !== 0) {
         const newConfig = updateConfigValues(manifest.config, {}, rawFlags)
 
-        if (missingValues.length) {
+        if (missingValues.length !== 0) {
           /* Warn user of missing required values */
           this.log(
             `${chalk.redBright.underline.bold(`Error: Missing required configuration for "${addonName} add-on"`)}`
@@ -127,7 +127,7 @@ class AddonsCreateCommand extends Command {
       // Merge user input with the flags specified
       configValues = updateConfigValues(manifest.config, rawFlags, userInput)
       const missingRequiredValues = missingConfigValues(required, configValues)
-      if (missingRequiredValues && missingRequiredValues.length) {
+      if (missingRequiredValues && missingRequiredValues.length !== 0) {
         missingRequiredValues.forEach(val => {
           this.log(`Missing required value "${val}". Please run the command again`)
         })

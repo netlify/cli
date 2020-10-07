@@ -102,7 +102,7 @@ async function waitForBuildFinish(api, siteId) {
     // if build.error
     // @TODO implement build error messages into this
 
-    if (!currentBuilds || !currentBuilds.length) {
+    if (!currentBuilds || currentBuilds.length === 0) {
       cli.action.stop()
       return true
     }

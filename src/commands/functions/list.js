@@ -55,7 +55,7 @@ class FunctionsListCommand extends Command {
     const functions = getFunctions(functionsDir)
     const functionData = Object.entries(functions)
 
-    if (!functionData.length) {
+    if (functionData.length === 0) {
       this.log(`No functions found in ${functionsDir}`)
       this.exit()
     }

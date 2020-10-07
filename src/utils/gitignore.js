@@ -32,7 +32,7 @@ function parser(input, fn = line => line) {
 
 function stringify(state) {
   return parseIgnore.stringify(state.sections, section => {
-    if (!section.patterns.length) {
+    if (section.patterns.length === 0) {
       return ''
     }
 

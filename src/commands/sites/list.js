@@ -24,7 +24,7 @@ class SitesListCommand extends Command {
       cli.action.stop()
     }
 
-    if (sites && sites.length) {
+    if (sites && sites.length !== 0) {
       const logSites = sites.map(site => {
         const siteInfo = {
           id: site.id,

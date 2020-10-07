@@ -9,7 +9,7 @@ const { NETLIFYDEVWARN, NETLIFYDEVLOG } = require('../utils/logo')
 
 async function parseFile(parser, filePath) {
   const result = await parser(filePath)
-  if (result.errors.length) {
+  if (result.errors.length !== 0) {
     console.error(`${NETLIFYDEVWARN} Warnings while parsing ${path.basename(filePath)} file:`)
     result.errors.forEach(err => {
       console.error(`  ${err.lineNum}: ${err.line} -- ${err.reason}`)
@@ -84,7 +84,7 @@ module.exports.createRewriter = async function createRewriter({ distDir, project
   const getMatcher = async () => {
     if (matcher) return matcher
 
-    if (rules.length) {
+    if (rules.length !== 0) {
       return (matcher = await redirector.parseJSON(JSON.stringify(rules), {
         jwtSecret: jwtSecret || 'secret',
         jwtRole: jwtRole || 'app_metadata.authorization.roles',

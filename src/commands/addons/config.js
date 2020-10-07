@@ -72,7 +72,7 @@ class AddonsConfigCommand extends Command {
       const missingValues = missingConfigValues(required, rawFlags)
 
       /* Config set by command line flags */
-      if (rawFlags && !missingValues.length) {
+      if (rawFlags && missingValues.length === 0) {
         const newConfig = updateConfigValues(manifest.config, currentConfig, rawFlags)
 
         await update(

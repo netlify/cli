@@ -26,7 +26,7 @@ class AddonsListCommand extends Command {
       return false
     }
 
-    if (!addons || !addons.length) {
+    if (!addons || addons.length === 0) {
       this.log(`No addons currently installed for ${siteData.name}`)
       this.log(`> Run \`netlify addons:create addon-namespace\` to install an addon`)
       return false

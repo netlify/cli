@@ -7,7 +7,7 @@ function matchPaths(rulePath, targetPath) {
   const rulePathParts = rulePath.split('/').filter(Boolean)
   const targetPathParts = targetPath.split('/').filter(Boolean)
 
-  if (rulePathParts.length < 1 && targetPathParts.length < 1) {
+  if (rulePathParts.length === 0 && targetPathParts.length === 0) {
     return true
   }
 
@@ -50,7 +50,7 @@ function parseHeadersFile(filePath) {
   }
 
   const lines = fs.readFileSync(filePath, { encoding: 'utf8' }).split('\n')
-  if (lines.length < 1) return rules
+  if (lines.length === 0) return rules
 
   let path
   for (let i = 0; i <= lines.length; i++) {
@@ -58,7 +58,7 @@ function parseHeadersFile(filePath) {
 
     const line = lines[i].trim()
 
-    if (line.startsWith(TOKEN_COMMENT) || line.length < 1) continue
+    if (line.startsWith(TOKEN_COMMENT) || line.length === 0) continue
     if (line.startsWith(TOKEN_PATH)) {
       if (line.includes('*') && line.indexOf('*') !== line.length - 1) {
         throw new Error(`invalid rule (A path rule cannot contain anything after * token) at line: ${i}\n${lines[i]}\n`)
