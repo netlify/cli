@@ -1,3 +1,5 @@
+// Handlers are meant to be async outside tests
+/* eslint-disable require-await */
 const test = require('ava')
 const path = require('path')
 const { withDevServer } = require('./utils/devServer')
@@ -960,3 +962,4 @@ testMatrix.forEach(({ args }) => {
     })
   })
 })
+/* eslint-enable require-await */

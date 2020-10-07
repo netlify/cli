@@ -1,3 +1,5 @@
+// Handlers are meant to be async outside tests
+/* eslint-disable require-await */
 const test = require('ava')
 const cliPath = require('./utils/cliPath')
 const { withDevServer } = require('./utils/devServer')
@@ -27,3 +29,4 @@ test('should return function response when invoked', async t => {
     })
   })
 })
+/* eslint-enable require-await */

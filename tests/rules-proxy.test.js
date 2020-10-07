@@ -32,6 +32,15 @@ test.before(async t => {
   return server.listen(port)
 })
 
+test.after(async t => {
+  await new Promise(resolve => {
+    t.context.server.on('close', resolve)
+    t.context.server.close()
+  })
+  // TODO: check why this line breaks the rewriter on windows
+  // await t.context.builder.cleanupAsync()
+})
+
 test('should apply re-write rule based on _redirects file', async t => {
   const response = await fetch(`http://localhost:${t.context.port}/something`).then(r => r.json())
 
@@ -42,13 +51,4 @@ test('should apply re-write rule based on _redirects file', async t => {
   t.is(response.negative, false)
   t.is(response.scheme, '')
   t.is(response.status, 200)
-})
-
-test.after(async t => {
-  await new Promise(resolve => {
-    t.context.server.on('close', resolve)
-    t.context.server.close()
-  })
-  // TODO: check why this line breaks the rewriter on windows
-  // await t.context.builder.cleanupAsync()
 })
