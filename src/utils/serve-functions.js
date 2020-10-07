@@ -114,9 +114,9 @@ function createHandler(dir) {
     // handle proxies without path re-writes (http-servr)
     const cleanPath = request.path.replace(/^\/.netlify\/functions/, '')
 
-    const func = cleanPath.split('/').filter(function(e) {
+    const func = cleanPath.split('/').find(function(e) {
       return e
-    })[0]
+    })
     if (!functions[func]) {
       response.statusCode = 404
       response.end('Function not found...')
