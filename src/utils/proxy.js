@@ -1,6 +1,5 @@
 const path = require('path')
 const http = require('http')
-const fs = require('fs')
 const url = require('url')
 const httpProxy = require('http-proxy')
 const { createProxyMiddleware } = require('http-proxy-middleware')
@@ -10,13 +9,13 @@ const isEmpty = require('lodash.isempty')
 const jwtDecode = require('jwt-decode')
 const contentType = require('content-type')
 const toReadableStream = require('to-readable-stream')
-
+const pFilter = require('p-filter')
 const { createRewriter } = require('./rules-proxy')
 const { createStreamPromise } = require('./create-stream-promise')
 const { onChanges } = require('./rules-proxy')
 const { parseHeadersFile, objectForPath } = require('./headers')
 const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./logo')
-const { statAsync, readFileAsync } = require('../lib/fs.js')
+const { statAsync, readFileAsync, fileExistsAsync } = require('../lib/fs.js')
 
 function isInternal(url) {
   return url.startsWith('/.netlify/')
@@ -236,10 +235,10 @@ function initializeProxy(port, distDir, projectDir) {
   const headersFiles = [...new Set([path.resolve(projectDir, '_headers'), path.resolve(distDir, '_headers')])]
 
   let headerRules = headersFiles.reduce((prev, curr) => Object.assign(prev, parseHeadersFile(curr)), {})
-  onChanges(headersFiles, () => {
+  onChanges(headersFiles, async () => {
     console.log(
       `${NETLIFYDEVLOG} Reloading headers files`,
-      headersFiles.filter(fs.existsSync).map(p => path.relative(projectDir, p))
+      (await pFilter(headersFiles, fileExistsAsync)).map(p => path.relative(projectDir, p))
     )
     headerRules = headersFiles.reduce((prev, curr) => Object.assign(prev, parseHeadersFile(curr)), {})
   })
