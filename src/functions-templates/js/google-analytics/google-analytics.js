@@ -83,7 +83,7 @@ exports.handler = function(event, context, callback) {
     // allow GET or POST, but only for whitelisted domains
     proxyToGoogleAnalytics(event, done)
   } else {
-    callback(Error('Not found'))
+    callback(new Error('Not found'))
   }
 }
 
