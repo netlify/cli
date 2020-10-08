@@ -355,53 +355,55 @@ async function createFunctionAddon({ api, addons, siteId, addonName, siteData, l
 }
 
 async function installAddons(functionAddons = [], fnPath) {
-  if (functionAddons.length !== 0) {
-    const { log, error } = this
-    const { api, site } = this.netlify
-    const siteId = site.id
-    if (!siteId) {
-      log('No site id found, please run inside a site folder or `netlify link`')
-      return false
-    }
-    log(`${NETLIFYDEVLOG} checking Netlify APIs...`)
-
-    const [siteData, siteAddons] = await Promise.all([
-      getSiteData({ api, siteId, error }),
-      getAddons({ api, siteId, error }),
-    ])
-
-    const arr = functionAddons.map(async ({ addonName, addonDidInstall }) => {
-      log(`${NETLIFYDEVLOG} installing addon: ` + chalk.yellow.inverse(addonName))
-      try {
-        const addonCreated = await createFunctionAddon({
-          api,
-          addons: siteAddons,
-          siteId,
-          addonName,
-          siteData,
-          log,
-          error,
-        })
-        if (addonCreated && addonDidInstall) {
-          await addEnvVariables(api, site)
-          const { confirmPostInstall } = await inquirer.prompt([
-            {
-              type: 'confirm',
-              name: 'confirmPostInstall',
-              message: `This template has an optional setup script that runs after addon install. This can be helpful for first time users to try out templates. Run the script?`,
-              default: false,
-            },
-          ])
-          if (confirmPostInstall) {
-            addonDidInstall(fnPath)
-          }
-        }
-      } catch (e) {
-        error(`${NETLIFYDEVERR} Error installing addon: `, e)
-      }
-    })
-    return Promise.all(arr)
+  if (functionAddons.length === 0) {
+    return
   }
+
+  const { log, error } = this
+  const { api, site } = this.netlify
+  const siteId = site.id
+  if (!siteId) {
+    log('No site id found, please run inside a site folder or `netlify link`')
+    return false
+  }
+  log(`${NETLIFYDEVLOG} checking Netlify APIs...`)
+
+  const [siteData, siteAddons] = await Promise.all([
+    getSiteData({ api, siteId, error }),
+    getAddons({ api, siteId, error }),
+  ])
+
+  const arr = functionAddons.map(async ({ addonName, addonDidInstall }) => {
+    log(`${NETLIFYDEVLOG} installing addon: ` + chalk.yellow.inverse(addonName))
+    try {
+      const addonCreated = await createFunctionAddon({
+        api,
+        addons: siteAddons,
+        siteId,
+        addonName,
+        siteData,
+        log,
+        error,
+      })
+      if (addonCreated && addonDidInstall) {
+        await addEnvVariables(api, site)
+        const { confirmPostInstall } = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'confirmPostInstall',
+            message: `This template has an optional setup script that runs after addon install. This can be helpful for first time users to try out templates. Run the script?`,
+            default: false,
+          },
+        ])
+        if (confirmPostInstall) {
+          addonDidInstall(fnPath)
+        }
+      }
+    } catch (e) {
+      error(`${NETLIFYDEVERR} Error installing addon: `, e)
+    }
+  })
+  return Promise.all(arr)
 }
 
 // we used to allow for a --dir command,
