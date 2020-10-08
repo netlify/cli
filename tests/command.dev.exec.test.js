@@ -1,6 +1,6 @@
 const test = require('ava')
-const callCli = require('./utils/callCli')
-const { withSiteBuilder } = require('./utils/siteBuilder')
+const callCli = require('./utils/call-cli')
+const { withSiteBuilder } = require('./utils/site-builder')
 
 test('should pass .env variables to exec command', async t => {
   await withSiteBuilder('site-env-file', async builder => {

@@ -1,7 +1,7 @@
 const test = require('ava')
-const { createSiteBuilder } = require('./utils/siteBuilder')
-const callCli = require('./utils/callCli')
-const { generateSiteName, createLiveTestSite } = require('./utils/createLiveTestSite')
+const { createSiteBuilder } = require('./utils/site-builder')
+const callCli = require('./utils/call-cli')
+const { generateSiteName, createLiveTestSite } = require('./utils/create-live-test-site')
 
 const siteName = generateSiteName('netlify-test-addons-')
 

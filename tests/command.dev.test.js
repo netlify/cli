@@ -2,11 +2,11 @@
 /* eslint-disable require-await */
 const test = require('ava')
 const path = require('path')
-const { withDevServer } = require('./utils/devServer')
+const { withDevServer } = require('./utils/dev-server')
 const fetch = require('node-fetch')
 const FormData = require('form-data')
-const { withSiteBuilder } = require('./utils/siteBuilder')
-const { startExternalServer } = require('./utils/externalServer')
+const { withSiteBuilder } = require('./utils/site-builder')
+const { startExternalServer } = require('./utils/external-server')
 
 const testMatrix = [
   { args: [] },

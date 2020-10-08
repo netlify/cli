@@ -1,6 +1,6 @@
 const test = require('ava')
-const { withSiteBuilder } = require('./utils/siteBuilder')
-const callCli = require('./utils/callCli')
+const { withSiteBuilder } = require('./utils/site-builder')
+const callCli = require('./utils/call-cli')
 
 test.serial('should not match redirect for empty site', async t => {
   await withSiteBuilder('empty-site', async builder => {

@@ -1,4 +1,4 @@
-const cliPath = require('./cliPath')
+const cliPath = require('./cli-path')
 const path = require('path')
 const getPort = require('get-port')
 const seedrandom = require('seedrandom')

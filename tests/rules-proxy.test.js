@@ -5,7 +5,7 @@ const fetch = require('node-fetch')
 const test = require('ava')
 const getPort = require('get-port')
 const { createRewriter } = require('../src/utils/rules-proxy')
-const { createSiteBuilder } = require('./utils/siteBuilder')
+const { createSiteBuilder } = require('./utils/site-builder')
 
 test.before(async t => {
   const builder = createSiteBuilder({ siteName: 'site-with-redirects-file' })
