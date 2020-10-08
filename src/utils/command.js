@@ -60,7 +60,7 @@ class BaseCommand extends Command {
     const apiOpts = { agent }
     if (NETLIFY_API_URL) {
       const apiUrl = new URL(NETLIFY_API_URL)
-      apiOpts.scheme = apiUrl.protocol.substring(0, apiUrl.protocol.length - 1)
+      apiOpts.scheme = apiUrl.protocol.slice(0, -1)
       apiOpts.host = apiUrl.host
       apiOpts.pathPrefix = NETLIFY_API_URL === `${apiUrl.protocol}//${apiUrl.host}` ? '/api/v1' : apiUrl.pathname
     }

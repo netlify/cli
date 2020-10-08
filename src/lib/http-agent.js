@@ -32,7 +32,7 @@ const getAgent = async ({ httpProxy, certificateFile, log, exit }) => {
     exit(1)
   }
 
-  const scheme = proxyUrl.protocol.substr(0, proxyUrl.protocol.length - 1)
+  const scheme = proxyUrl.protocol.slice(0, -1)
   if (!['http', 'https'].includes(scheme)) {
     log(NETLIFYDEVERR, `${httpProxy} must have a scheme of http or https`)
     exit(1)
