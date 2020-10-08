@@ -83,14 +83,14 @@ const getAddons = async ({ api, siteId, error }) => {
 }
 
 const prepareAddonCommand = async ({ context, addonName, validation }) => {
-  const { authenticate, netlify, log, warn, error, exit } = context
+  const { netlify, log, warn, error, exit } = context
   const { api, site } = netlify
   const siteId = site.id
   if (!siteId) {
     error('No site id found, please run inside a site folder or `netlify link`')
   }
 
-  await authenticate.call(context)
+  await context.authenticate()
 
   const [manifest, siteData, addons] = await Promise.all([
     addonName ? getAddonManifest({ api, addonName, error }) : Promise.resolve(),
