@@ -27,7 +27,7 @@ const validateNotExists = ({ addon, addonName, siteData, log, exit }) => {
 }
 
 const getCurrentAddon = ({ addons, addonName }) => {
-  const addon = addons.find(addon => addon.service_path === `/.netlify/${addonName}`)
+  const addon = addons.find(addon => addon.service_slug === addonName)
   return addon
 }
 
