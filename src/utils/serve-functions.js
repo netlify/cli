@@ -91,16 +91,17 @@ function buildClientContext(headers) {
   }
 }
 
+const clearCache = action => path => {
+  console.log(`${NETLIFYDEVLOG} ${path} ${action}, reloading...`)
+  Object.keys(require.cache).forEach(k => {
+    delete require.cache[k]
+  })
+  console.log(`${NETLIFYDEVLOG} ${path} ${action}, successfully reloaded!`)
+}
+
 function createHandler(dir) {
   const functions = getFunctions(dir)
 
-  const clearCache = action => path => {
-    console.log(`${NETLIFYDEVLOG} ${path} ${action}, reloading...`)
-    Object.keys(require.cache).forEach(k => {
-      delete require.cache[k]
-    })
-    console.log(`${NETLIFYDEVLOG} ${path} ${action}, successfully reloaded!`)
-  }
   const watcher = chokidar.watch(dir, { ignored: /node_modules/ })
   watcher.on('change', clearCache('modified')).on('unlink', clearCache('deleted'))
 
