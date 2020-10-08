@@ -226,7 +226,7 @@ function initializeProxy(port, distDir, projectDir) {
     },
   })
 
-  const headersFiles = Array.from(new Set([path.resolve(projectDir, '_headers'), path.resolve(distDir, '_headers')]))
+  const headersFiles = [...new Set([path.resolve(projectDir, '_headers'), path.resolve(distDir, '_headers')])]
 
   let headerRules = headersFiles.reduce((prev, curr) => Object.assign(prev, parseHeadersFile(curr)), {})
   onChanges(headersFiles, () => {

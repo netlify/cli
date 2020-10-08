@@ -14,7 +14,7 @@ module.exports = function compare(oldValues, newValues) {
   const newKeys = Object.keys(newValues)
   const set = new Set(newKeys.concat(oldKeys))
 
-  return Array.from(set).reduce((acc, current) => {
+  return [...set].reduce((acc, current) => {
     // if values not deep equal. There are changes
     if (!isEqual(newValues[current], oldValues[current])) {
       return {

@@ -63,13 +63,13 @@ function getCountry(req) {
 
 module.exports.createRewriter = async function createRewriter({ distDir, projectDir, jwtSecret, jwtRole, configPath }) {
   let matcher = null
-  const configFiles = Array.from(
-    new Set(
+  const configFiles = [
+    ...new Set(
       [path.resolve(distDir, '_redirects'), path.resolve(projectDir, '_redirects')].concat(
         configPath ? path.resolve(configPath) : []
       )
-    )
-  ).filter(f => f !== projectDir)
+    ),
+  ].filter(f => f !== projectDir)
   let rules = await parseRules(configFiles)
 
   onChanges(configFiles, async () => {

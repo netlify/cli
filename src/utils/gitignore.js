@@ -56,7 +56,7 @@ function parse(input, fn) {
         // Join sections under common name
         if (sec1.name === sec2.name) {
           sectionExists = true
-          sec1.patterns = Array.from(new Set(sec1.patterns.concat(sec2.patterns)))
+          sec1.patterns = [...new Set(sec1.patterns.concat(sec2.patterns))]
         }
       }
 
