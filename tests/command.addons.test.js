@@ -17,7 +17,7 @@ if (process.env.IS_FORK !== 'true') {
 
   test.serial('netlify addons:list', async t => {
     const cliResponse = await callCli(['addons:list'], t.context.execOptions)
-    t.is(cliResponse.includes('No addons currently installed'), true)
+    t.true(cliResponse.includes('No addons currently installed'))
   })
 
   test.serial('netlify addons:list --json', async t => {
