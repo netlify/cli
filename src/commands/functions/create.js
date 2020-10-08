@@ -86,7 +86,7 @@ async function getNameFromArgs(args, flags, defaultName) {
         message: 'name your function: ',
         default: defaultName,
         type: 'input',
-        validate: val => Boolean(val) && /^[\w\-.]+$/i.test(val),
+        validate: val => Boolean(val) && /^[\w.-]+$/i.test(val),
         // make sure it is not undefined and is a valid filename.
         // this has some nuance i have ignored, eg crossenv and i18n concerns
       },

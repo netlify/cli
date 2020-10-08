@@ -24,7 +24,7 @@ function isFunction(functionsPort, url) {
 }
 
 function addonUrl(addonUrls, req) {
-  const m = req.url.match(/^\/.netlify\/([^\/]+)(\/.*)/) // eslint-disable-line no-useless-escape
+  const m = req.url.match(/^\/.netlify\/([^/]+)(\/.*)/)
   const addonUrl = m && addonUrls[m[1]]
   return addonUrl ? `${addonUrl}${m[2]}` : null
 }
