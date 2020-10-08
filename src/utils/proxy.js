@@ -101,7 +101,7 @@ async function serveRedirect(req, res, proxy, match, options) {
 
   if (match.exceptions && match.exceptions.JWT) {
     // Some values of JWT can start with :, so, make sure to normalize them
-    const expectedRoles = match.exceptions.JWT.split(',').map(r => (r.startsWith(':') ? r.slice(1) : r))
+    const expectedRoles = new Set(match.exceptions.JWT.split(',').map(r => (r.startsWith(':') ? r.slice(1) : r)))
 
     const cookieValues = cookie.parse(req.headers.cookie || '')
     const token = cookieValues.nf_jwt
@@ -133,7 +133,7 @@ async function serveRedirect(req, res, proxy, match, options) {
         }
 
         // Restore the URL if everything is correct
-        if (presentedRoles.some(pr => expectedRoles.includes(pr))) {
+        if (presentedRoles.some(pr => expectedRoles.has(pr))) {
           req.url = originalURL
         }
       }
