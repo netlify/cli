@@ -42,7 +42,7 @@ async function addEnvVariables(api, site) {
       addonUrls[addon.slug] = `${addon.config.site_url}/.netlify/${addon.slug}`
       for (const key in addon.env) {
         const msg = () =>
-          console.log(`${NETLIFYDEVLOG} Injected ${chalk.yellow.bold('addon')} env var: `, chalk.yellow(key))
+          console.log(`${NETLIFYDEVLOG} Injected ${chalk.yellow.bold('addon')} env var: ${chalk.yellow(key)}`)
         process.env[key] = assignLoudly(process.env[key], addon.env[key], msg)
       }
     })
@@ -108,7 +108,7 @@ module.exports = {
 function assignLoudly(
   optionalValue,
   defaultValue,
-  tellUser = dV => console.log(`No value specified, using fallback of `, dV)
+  tellUser = dV => console.log(`No value specified, using fallback of ${dV}`)
 ) {
   if (defaultValue === undefined) throw new Error('must have a defaultValue')
   if (defaultValue !== optionalValue && optionalValue === undefined) {
