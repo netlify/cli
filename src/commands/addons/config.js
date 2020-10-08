@@ -13,14 +13,15 @@ class AddonsConfigCommand extends Command {
   async run() {
     const { args, raw } = this.parse(AddonsConfigCommand)
     const addonName = args.name
-    const { siteId, manifest, addon, siteData } = await prepareAddonCommand({
+    const { manifest, addon, siteData } = await prepareAddonCommand({
       context: this,
       addonName,
       validation: ADDON_VALIDATION.EXISTS,
     })
 
     const { netlify } = this
-    const { api } = netlify
+    const { api, site } = netlify
+    const siteId = site.id
 
     const hasConfig = manifest.config && Object.keys(manifest.config).length
     // Parse flags

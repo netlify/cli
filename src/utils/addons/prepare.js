@@ -104,7 +104,7 @@ const prepareAddonCommand = async ({ context, addonName, validation }) => {
     validateCurrentAddon({ addon, validation, addonName, siteData, log, warn, exit })
   }
 
-  return { siteId, manifest, addons, addon, siteData }
+  return { manifest, addons, addon, siteData }
 }
 
 module.exports = { ADDON_VALIDATION, prepareAddonCommand, getAddonManifest, getSiteData, getAddons, getCurrentAddon }

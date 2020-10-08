@@ -28,14 +28,15 @@ class AddonsCreateCommand extends Command {
   async run() {
     const { args, raw } = this.parse(AddonsCreateCommand)
     const addonName = args.name
-    const { siteId, manifest, siteData } = await prepareAddonCommand({
+    const { manifest, siteData } = await prepareAddonCommand({
       context: this,
       addonName,
       validation: ADDON_VALIDATION.NOT_EXISTS,
     })
 
     const { log, error, netlify } = this
-    const { api } = netlify
+    const { api, site } = netlify
+    const siteId = site.id
 
     // GET flags from `raw` data
     const rawFlags = parseRawFlags(raw)

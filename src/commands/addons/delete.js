@@ -8,7 +8,7 @@ class AddonsDeleteCommand extends Command {
   async run() {
     const { args, raw } = this.parse(AddonsDeleteCommand)
     const addonName = args.name
-    const { siteId, addon } = await prepareAddonCommand({
+    const { addon } = await prepareAddonCommand({
       context: this,
       addonName,
       validation: ADDON_VALIDATION.EXISTS,
@@ -35,7 +35,11 @@ class AddonsDeleteCommand extends Command {
     })
 
     try {
-      await this.netlify.api.deleteServiceInstance({ siteId, addon: addonName, instanceId: addon.id })
+      await this.netlify.api.deleteServiceInstance({
+        siteId: this.netlify.site.id,
+        addon: addonName,
+        instanceId: addon.id,
+      })
       this.log(`Addon "${addonName}" deleted`)
     } catch (error) {
       this.error(error.message)
