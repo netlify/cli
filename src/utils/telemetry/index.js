@@ -70,7 +70,7 @@ function track(eventName, payload) {
   }
 
   // automatically add `cli:` prefix if missing
-  if (eventName.indexOf('cli:') === -1) {
+  if (!eventName.includes('cli:')) {
     eventName = `cli:${eventName}`
   }
 
