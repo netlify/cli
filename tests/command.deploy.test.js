@@ -81,7 +81,7 @@ if (process.env.IS_FORK !== 'true') {
   })
 
   // the edge handlers plugin only works on node >= 10
-  const version = parseInt(process.version.substring(1).split('.')[0])
+  const version = Number.parseInt(process.version.substring(1).split('.')[0])
   if (version >= 10) {
     test.serial('should deploy edge handlers when directory exists', async t => {
       await withSiteBuilder('site-with-public-folder', async builder => {

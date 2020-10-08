@@ -41,7 +41,7 @@ const getAgent = async ({ httpProxy, certificateFile, log, exit }) => {
   let open
   try {
     open = await waitPort({
-      port: parseInt(proxyUrl.port) || (scheme === 'http' ? 80 : 443),
+      port: Number.parseInt(proxyUrl.port) || (scheme === 'http' ? 80 : 443),
       host: proxyUrl.hostname,
       timeout: 50,
       output: 'silent',
