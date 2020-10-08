@@ -25,7 +25,7 @@ const config = {
         md += formatFlags(info.flags)
         md += commandListSubCommandDisplay(info.commands)
         md += commandExamples(info.examples)
-        if (info.commands.length) {
+        if (info.commands.length !== 0) {
           md += `---\n`
           info.commands.forEach(subCmd => {
             // Child Commands
@@ -67,7 +67,7 @@ markdownMagic(markdownFiles, config, () => {
 
 /* Start - Docs Templating logic */
 function commandExamples(examples) {
-  if (!examples || !examples.length) {
+  if (!examples || examples.length === 0) {
     return ''
   }
   let exampleRender = `**Examples**${newLine}`
@@ -93,7 +93,7 @@ function commandListDescription(desc) {
 }
 
 function commandListSubCommandDisplay(commands) {
-  if (!commands.length) {
+  if (commands.length === 0) {
     return ''
   }
   let table = '| Subcommand | description  |\n'
@@ -135,7 +135,7 @@ function formatFlags(cmdFlags, command) {
     return ''
   }
   const flagArray = Object.keys(cmdFlags)
-  if (!flagArray.length) {
+  if (flagArray.length === 0) {
     return ''
   }
   let renderFlags = `**Flags**\n\n`

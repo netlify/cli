@@ -337,7 +337,7 @@ async function scaffoldFromTemplate(flags, args, functionsDir) {
 }
 
 async function installAddons(addons = [], fnPath) {
-  if (addons.length > 0) {
+  if (addons.length !== 0) {
     const { api, site } = this.netlify
     const siteId = site.id
     if (!siteId) {
