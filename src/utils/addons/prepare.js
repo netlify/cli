@@ -52,11 +52,11 @@ const getAddonManifest = async ({ api, addonName, error }) => {
   let manifest
   try {
     manifest = await api.showServiceManifest({ addonName })
-  } catch (e) {
-    if (typeof e.message === 'string' && e.message.includes('Not Found')) {
+  } catch (error_) {
+    if (typeof error_.message === 'string' && error_.message.includes('Not Found')) {
       error(`No add-on "${addonName}" found. Please double check your add-on name and try again`)
     } else {
-      error(e.message)
+      error(error_.message)
     }
   }
   return manifest
@@ -66,8 +66,8 @@ const getSiteData = async ({ api, siteId, error }) => {
   let siteData
   try {
     siteData = await api.getSite({ siteId })
-  } catch (e) {
-    error(`Failed getting list of site data: ${e.message}`)
+  } catch (error_) {
+    error(`Failed getting list of site data: ${error_.message}`)
   }
   return siteData
 }
@@ -76,8 +76,8 @@ const getAddons = async ({ api, siteId, error }) => {
   let addons
   try {
     addons = await api.listServiceInstancesForSite({ siteId })
-  } catch (e) {
-    error(`Failed getting list of addons: ${e.message}`)
+  } catch (error_) {
+    error(`Failed getting list of addons: ${error_.message}`)
   }
   return addons
 }

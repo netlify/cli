@@ -19,8 +19,8 @@ const createAddon = async ({ api, siteId, addonName, config, siteData, log, erro
       log()
       log(`${response.config.message}`)
     }
-  } catch (e) {
-    error(e.message)
+  } catch (error_) {
+    error(error_.message)
   }
 }
 

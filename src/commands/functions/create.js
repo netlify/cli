@@ -153,9 +153,9 @@ async function pickTemplate() {
   function filterRegistry(registry, input) {
     const temp = registry.map(x => x.name + x.description)
     const filteredTemplates = fuzzy.filter(input, temp)
-    const filteredTemplateNames = filteredTemplates.map(x => (input ? x.string : x))
+    const filteredTemplateNames = new Set(filteredTemplates.map(x => (input ? x.string : x)))
     return registry
-      .filter(t => filteredTemplateNames.includes(t.name + t.description))
+      .filter(t => filteredTemplateNames.has(t.name + t.description))
       .map(t => {
         // add the score
         const { score } = filteredTemplates.find(f => f.string === t.name + t.description)
@@ -349,8 +349,8 @@ async function createFunctionAddon({ api, addons, siteId, addonName, siteData, l
     })
     log(`Add-on "${addonName}" created for ${siteData.name}`)
     return true
-  } catch (e) {
-    error(e.message)
+  } catch (error_) {
+    error(error_.message)
   }
 }
 
@@ -399,8 +399,8 @@ async function installAddons(functionAddons = [], fnPath) {
           addonDidInstall(fnPath)
         }
       }
-    } catch (e) {
-      error(`${NETLIFYDEVERR} Error installing addon: `, e)
+    } catch (error_) {
+      error(`${NETLIFYDEVERR} Error installing addon: `, error_)
     }
   })
   return Promise.all(arr)
