@@ -70,7 +70,7 @@ class SitesCreateCommand extends Command {
             name: 'name',
             message: 'Site name (optional):',
             filter: val => (val === '' ? undefined : val),
-            validate: input => /^[a-zA-Z0-9-]+$/.test(input) || 'Only alphanumeric characters and hyphens are allowed',
+            validate: input => /^[a-zA-Z\d-]+$/.test(input) || 'Only alphanumeric characters and hyphens are allowed',
           },
         ])
         name = results.name

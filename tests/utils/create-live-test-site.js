@@ -28,7 +28,7 @@ async function createLiveTestSite(siteName) {
     throw new Error(`Failed creating site: ${cliResponse}`)
   }
 
-  const matches = /Site ID:\s+([a-zA-Z0-9-]+)/m.exec(stripAnsi(cliResponse))
+  const matches = /Site ID:\s+([a-zA-Z\d-]+)/m.exec(stripAnsi(cliResponse))
   if (matches && Object.prototype.hasOwnProperty.call(matches, 1) && matches[1]) {
     const siteId = matches[1]
     console.log(`Done creating site ${siteName} for account '${accountSlug}'. Site Id: ${siteId}`)
