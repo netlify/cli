@@ -2,7 +2,7 @@ const test = require('ava')
 const { withSiteBuilder } = require('./utils/site-builder')
 const callCli = require('./utils/call-cli')
 
-test.serial('should not match redirect for empty site', async t => {
+test.serial.skip('should not match redirect for empty site', async t => {
   await withSiteBuilder('empty-site', async builder => {
     await builder.buildAsync()
 
@@ -14,7 +14,7 @@ test.serial('should not match redirect for empty site', async t => {
   })
 })
 
-test.serial('should match redirect when url matches', async t => {
+test.serial.skip('should match redirect when url matches', async t => {
   await withSiteBuilder('site-with-redirects', async builder => {
     builder.withRedirectsFile({
       redirects: [{ from: '/*', to: `/index.html`, status: 200 }],
