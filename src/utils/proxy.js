@@ -178,7 +178,7 @@ async function serveRedirect(req, res, proxy, match, options) {
       const handler = createProxyMiddleware({
         target: `${dest.protocol}//${dest.host}`,
         changeOrigin: true,
-        pathRewrite: (path, req) => destURL.replace(/https?:\/\/[^/]+/, ''),
+        pathRewrite: () => destURL.replace(/https?:\/\/[^/]+/, ''),
         ...(Buffer.isBuffer(req.originalBody) && { buffer: toReadableStream(req.originalBody) }),
       })
       return handler(req, res, {})

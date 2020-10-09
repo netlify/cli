@@ -57,7 +57,7 @@ function getLanguage(headers) {
 
 module.exports.getLanguage = getLanguage
 
-function getCountry(req) {
+function getCountry() {
   return 'us'
 }
 

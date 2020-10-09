@@ -64,13 +64,13 @@ const books = [
 
 const resolvers = {
   Query: {
-    hello: (root, args, context) => {
+    hello: () => {
       return 'Hello, world!'
     },
-    allBooks: (root, args, context) => {
+    allBooks: () => {
       return books
     },
-    book: (root, args, context) => {
+    book: (root, args) => {
       return books.find(book => book.id === args.id)
     },
   },

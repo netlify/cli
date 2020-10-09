@@ -22,14 +22,14 @@ const authors = [
 
 const resolvers = {
   Query: {
-    hello: (root, args, context) => {
+    hello: () => {
       return 'Hello, world!'
     },
-    allAuthors: (root, args, context) => {
+    allAuthors: () => {
       return authors
     },
-    author: (root, args, context) => {},
-    authorByName: (root, args, context) => {
+    author: () => {},
+    authorByName: (root, args) => {
       console.log('hihhihi', args.name)
       return authors.find(x => x.name === args.name) || 'NOTFOUND'
     },

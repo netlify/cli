@@ -1,6 +1,7 @@
 const test = require('ava')
 const { getToken } = require('../src/utils/command')
 const fetch = require('node-fetch')
+const omit = require('omit.js').default
 const { withSiteBuilder } = require('./utils/site-builder')
 const callCli = require('./utils/call-cli')
 const { generateSiteName, createLiveTestSite } = require('./utils/create-live-test-site')
@@ -127,8 +128,8 @@ if (process.env.IS_FORK !== 'true') {
         })
 
         t.is(resp.status, 200)
-        const { created_at: createdAt, sha, content_length: contentLength, ...rest } = await resp.json()
-        t.deepEqual(rest, {
+        const { content_length: contentLength, ...rest } = await resp.json()
+        t.deepEqual(omit(rest, ['created_at', 'sha']), {
           content_type: 'application/javascript',
           handlers: ['index'],
           valid: true,

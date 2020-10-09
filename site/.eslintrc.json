@@ -15,7 +15,8 @@
   "rules": {
     "react/prop-types": 0,
     "require-await": "error",
-    "ava/no-skip-test": 0
+    "ava/no-skip-test": 0,
+    "no-unused-vars": [2, {}]
   },
   "overrides": [
     {
