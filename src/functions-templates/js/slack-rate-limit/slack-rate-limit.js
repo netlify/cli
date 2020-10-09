@@ -113,14 +113,14 @@ module.exports = function handler(event, context, callback) {
         .then(() => {
           callback(null, { statusCode: 204 })
         })
-        .catch(err => {
+        .catch(error => {
           callback(null, {
             statusCode: 500,
-            body: 'Internal Server Error: ' + err,
+            body: 'Internal Server Error: ' + error,
           })
         })
-    } catch (e) {
-      callback(null, { statusCode: 500, body: 'Internal Server Error: ' + e })
+    } catch (error) {
+      callback(null, { statusCode: 500, body: 'Internal Server Error: ' + error })
     }
   })
 }

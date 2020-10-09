@@ -75,8 +75,8 @@ const startForwardProxy = async ({ port, frameworkPort, functionsPort, publishDi
       throw new Error(`Timed out waiting for forward proxy to be ready on port '${port}'`)
     }
     return `http://localhost:${port}`
-  } catch (e) {
-    log(`${NETLIFYDEVERR}`, e)
+  } catch (error) {
+    log(`${NETLIFYDEVERR}`, error)
   }
 }
 

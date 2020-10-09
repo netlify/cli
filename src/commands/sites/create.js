@@ -140,14 +140,14 @@ class SitesCreateCommand extends Command {
         case repoData.host === 'github.com': {
           try {
             await configGithub(this, site, repo)
-          } catch (e) {
-            this.warn(`Github error: ${e.status}`)
-            if (e.status === 404) {
+          } catch (error) {
+            this.warn(`Github error: ${error.status}`)
+            if (error.status === 404) {
               this.error(
                 `Does the repository ${repo.repo_path} exist and do you have the correct permissions to set up deploy keys?`
               )
             } else {
-              throw e
+              throw error
             }
           }
           break

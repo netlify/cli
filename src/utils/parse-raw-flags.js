@@ -40,10 +40,10 @@ function aggressiveJSONParse(value) {
   let parsed
   try {
     parsed = JSON.parse(value)
-  } catch (e) {
+  } catch (error) {
     try {
       parsed = JSON.parse(`"${value}"`)
-    } catch (e) {
+    } catch (error) {
       parsed = value
     }
   }

@@ -87,7 +87,7 @@ async function ensureNetlifyIgnore(dir) {
   try {
     gitIgnoreContents = await readFileAsync(gitIgnorePath, 'utf8')
     ignorePatterns = parseIgnore.parse(gitIgnoreContents)
-  } catch (e) {
+  } catch (error) {
     // ignore
   }
   /* Not ignoring .netlify folder. Add to .gitignore */

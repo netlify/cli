@@ -26,8 +26,8 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
     const detectors = detectorsFiles.map(det => {
       try {
         return loadDetector(det)
-      } catch (err) {
-        console.error(err)
+      } catch (error) {
+        console.error(error)
         return null
       }
     })
@@ -199,11 +199,11 @@ async function getStaticServerSettings(settings, flags, projectDir, log) {
 function loadDetector(detectorName) {
   try {
     return require(path.join(__dirname, '..', 'detectors', detectorName))
-  } catch (err) {
+  } catch (error) {
     throw new Error(
       `Failed to load detector: ${chalk.yellow(
         detectorName
-      )}, this is likely a bug in the detector, please file an issue in netlify-cli\n ${err}`
+      )}, this is likely a bug in the detector, please file an issue in netlify-cli\n ${error}`
     )
   }
 }

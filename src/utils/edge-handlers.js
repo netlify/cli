@@ -14,7 +14,7 @@ const validateEdgeHandlerFolder = async ({ site, error }) => {
       error(`Edge Handlers folder ${EDGE_HANDLERS_FOLDER} must be a path to a directory`)
     }
     return resolvedFolder
-  } catch (e) {
+  } catch (error_) {
     // ignore errors at the moment
     // TODO: report error if 'edge_handlers' config exists after
     // https://github.com/netlify/build/pull/1829 is published
@@ -31,8 +31,8 @@ const readBundleAndManifest = async ({ edgeHandlersResolvedFolder, error }) => {
   let manifestJson
   try {
     manifestJson = JSON.parse(manifest)
-  } catch (e) {
-    error(`Edge Handlers manifest file is not a valid JSON file: ${e.message}`)
+  } catch (error_) {
+    error(`Edge Handlers manifest file is not a valid JSON file: ${error_.message}`)
   }
 
   if (!manifestJson.sha) {
@@ -71,8 +71,8 @@ const deployEdgeHandlers = async ({ site, deployId, api, silent, error, warn }) 
         ? `Finished deploying Edge Handlers from directory: ${edgeHandlersResolvedFolder}`
         : `Skipped deploying Edge Handlers since the bundle already exists`
       stopSpinner({ spinner, text, error: false })
-    } catch (e) {
-      const text = `Failed deploying Edge Handlers: ${e.message}`
+    } catch (error_) {
+      const text = `Failed deploying Edge Handlers: ${error_.message}`
       stopSpinner({ spinner, text, error: true })
       await cancelDeploy({ api, deployId, warn })
       // no need to report the error again

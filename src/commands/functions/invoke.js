@@ -130,13 +130,13 @@ class FunctionsInvokeCommand extends Command {
           // data = response.json();
           data = JSON.parse(data)
           // eslint-disable-next-line no-empty
-        } catch (err) {}
+        } catch (error) {}
         return data
       })
       .then(console.log)
-      .catch(err => {
+      .catch(error => {
         console.error('ran into an error invoking your function')
-        console.error(err)
+        console.error(error)
       })
   }
 }
@@ -162,8 +162,8 @@ function processPayloadFromFlag(payloadString) {
       try {
         payload = require(payloadpath) // there is code execution potential here
         return payload
-      } catch (err) {
-        console.error(err)
+      } catch (error) {
+        console.error(error)
       }
     }
     // case 3: invalid string, invalid path
@@ -270,7 +270,7 @@ function tryParseJSON(jsonString) {
       return o
     }
     // eslint-disable-next-line no-empty
-  } catch (e) {}
+  } catch (error) {}
 
   return false
 }

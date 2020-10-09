@@ -37,7 +37,7 @@ async function getStatic(pathname, publicFolder) {
     try {
       const pathStats = await fs.stat(p)
       if (pathStats.isFile()) return '/' + path.relative(publicFolder, p)
-    } catch (err) {
+    } catch (error) {
       // Ignore
     }
   }
@@ -114,8 +114,8 @@ async function serveRedirect(req, res, proxy, match, options) {
       let jwtValue = {}
       try {
         jwtValue = jwtDecode(token) || {}
-      } catch (err) {
-        console.warn(NETLIFYDEVWARN, 'Error while decoding JWT provided in request', err.message)
+      } catch (error) {
+        console.warn(NETLIFYDEVWARN, 'Error while decoding JWT provided in request', error.message)
         res.writeHead(400)
         res.end('Invalid JWT provided. Please see logs for more info.')
         return

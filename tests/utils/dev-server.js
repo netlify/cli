@@ -38,7 +38,7 @@ const startServer = async ({ cwd, env = {}, args = [] }) => {
             pids.forEach(pid => () => {
               try {
                 process.kill(pid)
-              } catch (e) {
+              } catch (error) {
                 // no-op
               }
             })
@@ -58,11 +58,11 @@ const startDevServer = async options => {
     try {
       const server = await startServer(options)
       return server
-    } catch (e) {
+    } catch (error) {
       if (attempt === maxAttempts) {
-        throw e
+        throw error
       }
-      console.warn('Retrying startDevServer', e)
+      console.warn('Retrying startDevServer', error)
     }
   }
 }

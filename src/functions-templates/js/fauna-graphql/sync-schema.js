@@ -28,7 +28,7 @@ function createFaunaGraphQL() {
       console.log('Netlify Functions:Create - `fauna-graphql/sync-schema.js` success!')
       console.log(body)
     })
-    .catch(err => console.error('something wrong happened: ', { err }))
+    .catch(error => console.error('something wrong happened:', { err: error }))
 }
 
 createFaunaGraphQL()

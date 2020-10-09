@@ -27,7 +27,7 @@ const getAgent = async ({ httpProxy, certificateFile, log, exit }) => {
   let proxyUrl
   try {
     proxyUrl = new URL(httpProxy)
-  } catch (e) {
+  } catch (error) {
     log(NETLIFYDEVERR, `${httpProxy} is not a valid URL`)
     exit(1)
   }

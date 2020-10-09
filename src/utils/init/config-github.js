@@ -136,9 +136,9 @@ async function configGithub(ctx, site, repo) {
         events: ['push', 'pull_request', 'delete'],
         active: true,
       })
-    } catch (e) {
+    } catch (error) {
       // Ignore exists error if the list doesn't return all installed hooks
-      if (!e.message.includes('Hook already exists on this repository')) ctx.error(e)
+      if (!error.message.includes('Hook already exists on this repository')) ctx.error(error)
     }
   }
 

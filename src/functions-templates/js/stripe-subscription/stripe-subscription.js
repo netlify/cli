@@ -18,19 +18,19 @@ exports.handler = async function(event, context) {
   let incoming
   try {
     incoming = JSON.parse(event.body)
-  } catch (err) {
-    console.error(`error with parsing function parameters: `, err)
+  } catch (error) {
+    console.error(`error with parsing function parameters:`, error)
     return {
       statusCode: 400,
-      body: JSON.stringify(err),
+      body: JSON.stringify(error),
     }
   }
   try {
     const { stripeToken, email, productPlan } = incoming
     const data = await createCustomerAndSubscribeToPlan(stripeToken, email, productPlan)
     return respond(data)
-  } catch (err) {
-    return respond(err)
+  } catch (error) {
+    return respond(error)
   }
 }
 
