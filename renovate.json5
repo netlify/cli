@@ -20,7 +20,6 @@
         'eslint',
         'execa',
         'find-up',
-        'fs-extra',
         'globby',
         'log-symbols',
         'npm-packlist',

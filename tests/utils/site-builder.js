@@ -1,9 +1,14 @@
 const { toToml } = require('tomlify-j0.4')
-const fs = require('fs-extra')
 const path = require('path')
 const { v4: uuidv4 } = require('uuid')
 const tempDirectory = require('temp-dir')
 const os = require('os')
+
+const fs = require('../../src/lib/fs')
+
+const ensureDir = path => {
+  return fs.mkdirRecursiveAsync(path)
+}
 
 const createSiteBuilder = ({ siteName }) => {
   const directory = path.join(
@@ -13,7 +18,7 @@ const createSiteBuilder = ({ siteName }) => {
     uuidv4(),
     siteName
   )
-  const tasks = [() => fs.ensureDir(directory)]
+  const tasks = [() => ensureDir(directory)]
 
   const builder = {
     directory,
@@ -22,67 +27,68 @@ const createSiteBuilder = ({ siteName }) => {
       const dest = path.join(directory, pathPrefix, 'netlify.toml')
       const content = toToml(config, { space: 2 })
       tasks.push(async () => {
-        await fs.ensureFile(dest)
-        await fs.writeFile(dest, content)
+        await ensureDir(path.dirname(dest))
+        await fs.writeFileAsync(dest, content)
       })
       return builder
     },
     withPackageJson: ({ object, pathPrefix = '' }) => {
       const dest = path.join(directory, pathPrefix, 'package.json')
       tasks.push(async () => {
-        await fs.ensureFile(dest)
-        await fs.writeJSON(dest, object, { spaces: 2 })
+        const content = JSON.stringify(object, null, 2)
+        await ensureDir(path.dirname(dest))
+        await fs.writeFileAsync(dest, `${content}\n`)
       })
       return builder
     },
     withFunction: ({ pathPrefix = 'functions', path: filePath, handler }) => {
       const dest = path.join(directory, pathPrefix, filePath)
       tasks.push(async () => {
-        await fs.ensureFile(dest)
-        await fs.writeFile(dest, `exports.handler = ${handler.toString()}`)
+        await ensureDir(path.dirname(dest))
+        await fs.writeFileAsync(dest, `exports.handler = ${handler.toString()}`)
       })
       return builder
     },
     withEdgeHandlers: ({ handlers }) => {
       const dest = path.join(directory, 'edge-handlers', 'index.js')
       tasks.push(async () => {
-        await fs.ensureFile(dest)
         const content = Object.entries(handlers)
           .map(([event, handler]) => {
             return `export const ${event} = ${handler.toString()}`
           })
           .join('\n')
-        await fs.writeFile(dest, content)
+        await ensureDir(path.dirname(dest))
+        await fs.writeFileAsync(dest, content)
       })
       return builder
     },
     withRedirectsFile: ({ redirects = [], pathPrefix = '' }) => {
       const dest = path.join(directory, pathPrefix, '_redirects')
       tasks.push(async () => {
-        await fs.ensureFile(dest)
         const content = redirects.map(({ from, to, status }) => `${from}      ${to}       ${status}`).join(os.EOL)
-        await fs.writeFile(dest, content)
+        await ensureDir(path.dirname(dest))
+        await fs.writeFileAsync(dest, content)
       })
       return builder
     },
     withHeadersFile: ({ headers = [], pathPrefix = '' }) => {
       const dest = path.join(directory, pathPrefix, '_headers')
       tasks.push(async () => {
-        await fs.ensureFile(dest)
         const content = headers
           .map(
             ({ path: headerPath, headers }) => `${headerPath}${os.EOL}${headers.map(h => `  ${h}`).join(`${os.EOL}`)}`
           )
           .join(os.EOL)
-        await fs.writeFile(dest, content)
+        await ensureDir(path.dirname(dest))
+        await fs.writeFileAsync(dest, content)
       })
       return builder
     },
     withContentFile: ({ path: filePath, content }) => {
       const dest = path.join(directory, filePath)
       tasks.push(async () => {
-        await fs.ensureFile(dest)
-        await fs.writeFile(dest, content)
+        await ensureDir(path.dirname(dest))
+        await fs.writeFileAsync(dest, content)
       })
       return builder
     },
@@ -93,8 +99,8 @@ const createSiteBuilder = ({ siteName }) => {
     withEnvFile: ({ path: filePath = '.env', pathPrefix = '', env = {} }) => {
       const dest = path.join(directory, pathPrefix, filePath)
       tasks.push(async () => {
-        await fs.ensureFile(dest)
-        await fs.writeFile(
+        await ensureDir(path.dirname(dest))
+        await fs.writeFileAsync(
           dest,
           Object.entries(env)
             .map(([key, value]) => `${key}=${value}`)
@@ -110,7 +116,7 @@ const createSiteBuilder = ({ siteName }) => {
       return builder
     },
     cleanupAsync: async () => {
-      await fs.remove(directory).catch(error => {
+      await fs.rmdirRecursiveAsync(directory).catch(error => {
         console.warn(error)
       })
       return builder

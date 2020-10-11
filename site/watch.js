@@ -1,8 +1,11 @@
 /* Syncs blog content from repo to /site/blog */
 const path = require('path')
 const sane = require('sane')
-const fs = require('fs-extra')
+const fs = require('fs').promises
+
 const config = require('./config')
+const { ensureFilePathAsync, removeRecursiveAsync } = require('./fs')
+
 const watcher = sane(config.docs.srcPath, { glob: ['**/*.md'] })
 
 /* Watch Files */
@@ -10,25 +13,20 @@ watcher.on('ready', function() {
   console.log(`Watching ${config.docs.srcPath} files for changes`)
 })
 
-watcher.on('change', function(filepath) {
+watcher.on('change', async function(filepath) {
   console.log('file changed', filepath)
-  syncFile(filepath).then(() => {
-    // console.log('done')
-  })
+  await syncFile(filepath)
 })
 
-watcher.on('add', function(filepath) {
+watcher.on('add', async function(filepath) {
   console.log('file added')
-  syncFile(filepath).then(() => {
-    // console.log('done')
-  })
+  await syncFile(filepath)
 })
 
-watcher.on('delete', function(filepath) {
+watcher.on('delete', async function(filepath) {
   console.log('file deleted', filepath)
-  deleteFile(filepath).then(() => {
-    console.log('File deletion complete')
-  })
+  await deleteFile(filepath)
+  console.log('File deletion complete')
 })
 
 /* utils */
@@ -39,16 +37,15 @@ function getFullPath(filePath) {
   }
 }
 
-function syncFile(filePath) {
+async function syncFile(filePath) {
   const { src, destination } = getFullPath(filePath)
-  return fs.copy(src, destination).then(() => {
-    console.log(`${filePath} synced to ${destination}`)
-  })
+  await ensureFilePathAsync(destination)
+  await fs.copyFile(src, destination)
+  console.log(`${filePath} synced to ${destination}`)
 }
 
-function deleteFile(filePath) {
+async function deleteFile(filePath) {
   const { destination } = getFullPath(filePath)
-  return fs.remove(destination).then(() => {
-    console.log(`${filePath} removed from ${destination}`)
-  })
+  await removeRecursiveAsync(destination)
+  console.log(`${filePath} removed from ${destination}`)
 }

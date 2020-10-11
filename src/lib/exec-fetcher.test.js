@@ -1,9 +1,10 @@
 const test = require('ava')
 const path = require('path')
-const fs = require('fs-extra')
 const tempDirectory = require('temp-dir')
 const { v4: uuid } = require('uuid')
+
 const { getExecName, shouldFetchLatestVersion, fetchLatestVersion } = require('./exec-fetcher')
+const fs = require('./fs')
 
 test.beforeEach(t => {
   const directory = path.join(tempDirectory, `netlify-cli-exec-fetcher`, uuid())
@@ -11,7 +12,7 @@ test.beforeEach(t => {
 })
 
 test.afterEach(async t => {
-  await fs.remove(t.context.binPath)
+  await fs.rmdirRecursiveAsync(t.context.binPath)
 })
 
 test(`should postix exec with .exe on windows`, t => {
@@ -59,7 +60,7 @@ packages.forEach(({ packageName, execName, execArgs, pattern, extension }) => {
     await fetchLatestVersion({ packageName, execName, destination: binPath, extension })
 
     const execPath = path.join(binPath, getExecName({ execName }))
-    const stats = await fs.stat(execPath)
+    const stats = await fs.statAsync(execPath)
     t.is(stats.size >= 5000, true)
   })
 })

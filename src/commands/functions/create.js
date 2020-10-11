@@ -1,15 +1,17 @@
-const fs = require('fs-extra')
+const fs = require('fs')
 const path = require('path')
 const copy = require('copy-template-dir')
 const { flags } = require('@oclif/command')
-const Command = require('../../utils/command')
 const inquirer = require('inquirer')
-const { readRepoURL, validateRepoURL } = require('../../utils/read-repo-url')
-const { addEnvVariables } = require('../../utils/dev')
 const fetch = require('node-fetch')
 const cp = require('child_process')
 const ora = require('ora')
 const chalk = require('chalk')
+
+const { mkdirRecursiveSync } = require('../../lib/fs')
+const Command = require('../../utils/command')
+const { readRepoURL, validateRepoURL } = require('../../utils/read-repo-url')
+const { addEnvVariables } = require('../../utils/dev')
 const {
   // NETLIFYDEV,
   NETLIFYDEVLOG,
@@ -215,7 +217,7 @@ async function downloadFromURL(flags, args, functionsDir) {
   }
 
   try {
-    fs.mkdirSync(fnFolder, { recursive: true })
+    mkdirRecursiveSync(fnFolder)
   } catch (error) {
     // Ignore
   }
