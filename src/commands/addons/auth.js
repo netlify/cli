@@ -1,38 +1,18 @@
-const { getAddons } = require('netlify/src/addons')
 const Command = require('../../utils/command')
 const openBrowser = require('../../utils/open-browser')
+const { prepareAddonCommand, ADDON_VALIDATION } = require('../../utils/addons/prepare')
 
 class AddonsAuthCommand extends Command {
   async run() {
-    const accessToken = await this.authenticate()
     const { args } = this.parse(AddonsAuthCommand)
-
     const addonName = args.name
+    const { addon } = await prepareAddonCommand({
+      context: this,
+      addonName,
+      validation: ADDON_VALIDATION.EXISTS,
+    })
 
-    const siteId = this.netlify.site.id
-
-    if (!siteId) {
-      this.log('No site id found, please run inside a site folder or `netlify link`')
-      return false
-    }
-
-    const site = await this.netlify.api.getSite({ siteId })
-    const addons = await getAddons(siteId, accessToken)
-
-    if (typeof addons === 'object' && addons.error) {
-      this.log('API Error', addons)
-      return false
-    }
-
-    // Filter down addons to current args.name
-    const currentAddon = addons.find(addon => addon.service_path === `/.netlify/${addonName}`)
-
-    if (!currentAddon || !currentAddon.id) {
-      this.log(`Addon ${addonName} doesn't exist for ${site.name}`)
-      return false
-    }
-
-    if (!currentAddon.auth_url) {
+    if (!addon.auth_url) {
       console.log(`No Admin URL found for the "${addonName} add-on"`)
       return false
     }
@@ -47,9 +27,9 @@ class AddonsAuthCommand extends Command {
     this.log()
     this.log(`Opening ${addonName} add-on admin URL:`)
     this.log()
-    this.log(currentAddon.auth_url)
+    this.log(addon.auth_url)
     this.log()
-    await openBrowser({ url: currentAddon.auth_url, log: this.log })
+    await openBrowser({ url: addon.auth_url, log: this.log })
     this.exit()
   }
 }

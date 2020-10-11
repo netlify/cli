@@ -1,59 +1,45 @@
 const Command = require('../../utils/command')
-const { getAddons, createAddon } = require('netlify/src/addons')
 const { parseRawFlags } = require('../../utils/parse-raw-flags')
-const getAddonManifest = require('../../utils/addons/api')
 const { requiredConfigValues, missingConfigValues, updateConfigValues } = require('../../utils/addons/validation')
 const generatePrompts = require('../../utils/addons/prompts')
 const render = require('../../utils/addons/render')
 const chalk = require('chalk')
 const inquirer = require('inquirer')
+const { prepareAddonCommand, ADDON_VALIDATION } = require('../../utils/addons/prepare')
+
+const createAddon = async ({ api, siteId, addonName, config, siteData, log, error }) => {
+  try {
+    const response = await api.createServiceInstance({
+      siteId,
+      addon: addonName,
+      body: { config },
+    })
+    log(`Add-on "${addonName}" created for ${siteData.name}`)
+    if (response.config && response.config.message) {
+      log()
+      log(`${response.config.message}`)
+    }
+  } catch (error_) {
+    error(error_.message)
+  }
+}
 
 class AddonsCreateCommand extends Command {
   async run() {
-    const accessToken = await this.authenticate()
     const { args, raw } = this.parse(AddonsCreateCommand)
-    const { api, site } = this.netlify
-
     const addonName = args.name
+    const { manifest, siteData } = await prepareAddonCommand({
+      context: this,
+      addonName,
+      validation: ADDON_VALIDATION.NOT_EXISTS,
+    })
 
-    if (!addonName) {
-      this.log('Please provide an add-on name to provision')
-      this.exit()
-    }
-
+    const { log, error, netlify } = this
+    const { api, site } = netlify
     const siteId = site.id
-
-    if (!siteId) {
-      this.log('No site id found, please run inside a site folder or `netlify link`')
-      return false
-    }
-
-    const siteData = await api.getSite({ siteId })
-    const addons = await getAddons(siteId, accessToken)
-
-    if (typeof addons === 'object' && addons.error) {
-      this.log('API Error', addons)
-      return false
-    }
-
-    // Filter down addons to current args.name
-    const currentAddon = addons.find(addon => addon.service_path === `/.netlify/${addonName}`)
 
     // GET flags from `raw` data
     const rawFlags = parseRawFlags(raw)
-
-    if (currentAddon && currentAddon.id) {
-      this.log(`The "${addonName} add-on" already exists for ${siteData.name}`)
-      this.log()
-      const cmd = chalk.cyan(`\`netlify addons:config ${addonName}\``)
-      this.log(`- To update this add-on run: ${cmd}`)
-      const deleteCmd = chalk.cyan(`\`netlify addons:delete ${addonName}\``)
-      this.log(`- To remove this add-on run: ${deleteCmd}`)
-      this.log()
-      return false
-    }
-
-    const manifest = await getAddonManifest(addonName, accessToken)
     const hasConfig = manifest.config && Object.keys(manifest.config).length
 
     let configValues = rawFlags
@@ -90,20 +76,8 @@ class AddonsCreateCommand extends Command {
           return false
         }
 
-        await createSiteAddon(
-          {
-            addonName,
-            settings: {
-              siteId,
-              addon: addonName,
-              config: newConfig,
-            },
-            accessToken,
-            siteData,
-            error: this.error,
-          },
-          this.log
-        )
+        await createAddon({ api, siteId, addonName, config: newConfig, siteData, log, error })
+
         return false
       }
 
@@ -135,42 +109,8 @@ class AddonsCreateCommand extends Command {
       }
     }
 
-    await createSiteAddon(
-      {
-        addonName,
-        settings: {
-          siteId,
-          addon: addonName,
-          config: configValues,
-        },
-        accessToken,
-        siteData,
-        error: this.error,
-      },
-      this.log
-    )
+    await createAddon({ api, siteId, addonName, config: configValues, siteData, log, error })
   }
-}
-
-async function createSiteAddon({ addonName, settings, accessToken, siteData, error }, logger) {
-  let addonResponse
-  try {
-    // TODO update to https://open-api.netlify.com/#operation/createServiceInstance
-    addonResponse = await createAddon(settings, accessToken)
-  } catch (error_) {
-    error(error_.message)
-  }
-
-  if (addonResponse.code === 404) {
-    logger(`No add-on "${addonName}" found. Please double check your add-on name and try again`)
-    return false
-  }
-  logger(`Add-on "${addonName}" created for ${siteData.name}`)
-  if (addonResponse.config && addonResponse.config.message) {
-    logger()
-    logger(`${addonResponse.config.message}`)
-  }
-  return addonResponse
 }
 
 AddonsCreateCommand.description = `Add an add-on extension to your site

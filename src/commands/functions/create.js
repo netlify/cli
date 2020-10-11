@@ -6,7 +6,6 @@ const Command = require('../../utils/command')
 const inquirer = require('inquirer')
 const { readRepoURL, validateRepoURL } = require('../../utils/read-repo-url')
 const { addEnvVariables } = require('../../utils/dev')
-const { createSiteAddon } = require('../../utils/addons')
 const fetch = require('node-fetch')
 const cp = require('child_process')
 const ora = require('ora')
@@ -17,7 +16,7 @@ const {
   NETLIFYDEVWARN,
   NETLIFYDEVERR,
 } = require('../../utils/logo')
-
+const { getSiteData, getAddons, getCurrentAddon } = require('../../utils/addons/prepare')
 const templatesDir = path.resolve(__dirname, '../../functions-templates')
 
 /**
@@ -297,7 +296,7 @@ async function scaffoldFromTemplate(flags, args, functionsDir) {
 
     const name = await getNameFromArgs(args, flags, templateName)
     this.log(`${NETLIFYDEVLOG} Creating function ${chalk.cyan.inverse(name)}`)
-    const functionPath = ensureFunctionPathIsOk.call(this, functionsDir, flags, name)
+    const functionPath = ensureFunctionPathIsOk.call(this, functionsDir, name)
 
     // // SWYX: note to future devs - useful for debugging source to output issues
     // this.log('from ', pathToTemplate, ' to ', functionPath)
@@ -336,48 +335,80 @@ async function scaffoldFromTemplate(flags, args, functionsDir) {
   }
 }
 
-async function installAddons(addons = [], fnPath) {
-  if (addons.length !== 0) {
-    const { api, site } = this.netlify
-    const siteId = site.id
-    if (!siteId) {
-      this.log('No site id found, please run inside a site folder or `netlify link`')
+async function createFunctionAddon({ api, addons, siteId, addonName, siteData, log, error }) {
+  try {
+    const addon = getCurrentAddon({ addons, addonName })
+    if (addon && addon.id) {
+      log(`The "${addonName} add-on" already exists for ${siteData.name}`)
       return false
     }
-    this.log(`${NETLIFYDEVLOG} checking Netlify APIs...`)
-
-    const siteData = await api.getSite({ siteId })
-    const arr = addons.map(async ({ addonName, addonDidInstall }) => {
-      this.log(`${NETLIFYDEVLOG} installing addon: ` + chalk.yellow.inverse(addonName))
-      try {
-        const addonCreated = await createSiteAddon(api.accessToken, addonName, siteId, siteData, this.log)
-        if (addonCreated) {
-          if (addonDidInstall) {
-            await addEnvVariables(api, site)
-            const { confirmPostInstall } = await inquirer.prompt([
-              {
-                type: 'confirm',
-                name: 'confirmPostInstall',
-                message: `This template has an optional setup script that runs after addon install. This can be helpful for first time users to try out templates. Run the script?`,
-                default: false,
-              },
-            ])
-            if (confirmPostInstall) {
-              addonDidInstall(fnPath)
-            }
-          }
-        }
-      } catch (error) {
-        this.error(`${NETLIFYDEVERR} Error installing addon: `, error)
-      }
+    await api.createServiceInstance({
+      siteId,
+      addon: addonName,
+      body: { config: {} },
     })
-    return Promise.all(arr)
+    log(`Add-on "${addonName}" created for ${siteData.name}`)
+    return true
+  } catch (error_) {
+    error(error_.message)
   }
+}
+
+async function installAddons(functionAddons = [], fnPath) {
+  if (functionAddons.length === 0) {
+    return
+  }
+
+  const { log, error } = this
+  const { api, site } = this.netlify
+  const siteId = site.id
+  if (!siteId) {
+    log('No site id found, please run inside a site folder or `netlify link`')
+    return false
+  }
+  log(`${NETLIFYDEVLOG} checking Netlify APIs...`)
+
+  const [siteData, siteAddons] = await Promise.all([
+    getSiteData({ api, siteId, error }),
+    getAddons({ api, siteId, error }),
+  ])
+
+  const arr = functionAddons.map(async ({ addonName, addonDidInstall }) => {
+    log(`${NETLIFYDEVLOG} installing addon: ` + chalk.yellow.inverse(addonName))
+    try {
+      const addonCreated = await createFunctionAddon({
+        api,
+        addons: siteAddons,
+        siteId,
+        addonName,
+        siteData,
+        log,
+        error,
+      })
+      if (addonCreated && addonDidInstall) {
+        await addEnvVariables(api, site)
+        const { confirmPostInstall } = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'confirmPostInstall',
+            message: `This template has an optional setup script that runs after addon install. This can be helpful for first time users to try out templates. Run the script?`,
+            default: false,
+          },
+        ])
+        if (confirmPostInstall) {
+          addonDidInstall(fnPath)
+        }
+      }
+    } catch (error_) {
+      error(`${NETLIFYDEVERR} Error installing addon: `, error_)
+    }
+  })
+  return Promise.all(arr)
 }
 
 // we used to allow for a --dir command,
 // but have retired that to force every scaffolded function to be a folder
-function ensureFunctionPathIsOk(functionsDir, flags, name) {
+function ensureFunctionPathIsOk(functionsDir, name) {
   const functionPath = path.join(functionsDir, name)
   if (fs.existsSync(functionPath)) {
     this.log(`${NETLIFYDEVLOG} Function ${functionPath} already exists, cancelling...`)

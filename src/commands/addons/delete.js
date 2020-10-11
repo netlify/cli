@@ -1,34 +1,18 @@
 const Command = require('../../utils/command')
 const inquirer = require('inquirer')
-const { getAddons, deleteAddon } = require('netlify/src/addons')
 const { parseRawFlags } = require('../../utils/parse-raw-flags')
 const { flags } = require('@oclif/command')
+const { prepareAddonCommand, ADDON_VALIDATION } = require('../../utils/addons/prepare')
 
 class AddonsDeleteCommand extends Command {
   async run() {
-    const accessToken = await this.authenticate()
     const { args, raw } = this.parse(AddonsDeleteCommand)
-    const { site } = this.netlify
-
     const addonName = args.name
-
-    const siteId = site.id
-
-    if (!siteId) {
-      this.log('No site id found, please run inside a site folder or `netlify link`')
-      return false
-    }
-
-    const addons = await getAddons(siteId, accessToken)
-
-    if (typeof addons === 'object' && addons.error) {
-      this.log('API Error', addons)
-      return false
-    }
-
-    // Filter down addons to current args.name
-    const currentAddon =
-      addons.find(current => current.service_path && current.service_path.replace('/.netlify/', '') === addonName) || {}
+    const { addon } = await prepareAddonCommand({
+      context: this,
+      addonName,
+      validation: ADDON_VALIDATION.EXISTS,
+    })
 
     const { force, f } = parseRawFlags(raw)
     if (!force && !f) {
@@ -43,12 +27,6 @@ class AddonsDeleteCommand extends Command {
       }
     }
 
-    if (!currentAddon.id) {
-      this.log(`No add-on "${addonName}" found for site. Add-on already deleted or never existed!`)
-      this.log(`> Run \`netlify addons:create ${addonName}\` to create an instance for this site`)
-      return false
-    }
-
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
@@ -56,31 +34,15 @@ class AddonsDeleteCommand extends Command {
       },
     })
 
-    const settings = {
-      siteId,
-      addon: addonName,
-      instanceId: currentAddon.id,
-    }
-    let addonResponse
     try {
-      // TODO update deleteAddon to https://open-api.netlify.com/#operation/deleteServiceInstance
-      addonResponse = await deleteAddon(settings, accessToken)
+      await this.netlify.api.deleteServiceInstance({
+        siteId: this.netlify.site.id,
+        addon: addonName,
+        instanceId: addon.id,
+      })
+      this.log(`Addon "${addonName}" deleted`)
     } catch (error) {
       this.error(error.message)
-    }
-
-    if (addonResponse.status === 404) {
-      this.log(`No addon "${addonName}" found. Please double check your add-on name and try again`)
-      return false
-    }
-
-    /* Deleting addons must return with 204 status */
-    if (addonResponse.status === 204) {
-      this.log(`Addon "${addonName}" deleted`)
-    } else {
-      this.log(
-        `Addon "${addonName}" was not deleted "${addonName}". Returned status: ${addonResponse.status}. Addon deletion must return status 204 from "${addonName}" provider.`
-      )
     }
   }
 }
