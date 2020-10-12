@@ -18,6 +18,8 @@
         'concordance',
         'cosmiconfig',
         'eslint',
+        'del',
+        'dot-prop',
         'execa',
         'find-up',
         'globby',
