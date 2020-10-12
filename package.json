@@ -90,7 +90,7 @@
     "copy-template-dir": "^1.4.0",
     "debug": "^4.1.1",
     "del": "^5.1.0",
-    "dot-prop": "^5.1.0",
+    "dot-prop": "^6.0.0",
     "dotenv": "^8.2.0",
     "envinfo": "^7.3.1",
     "execa": "^3.4.0",
