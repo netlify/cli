@@ -17,13 +17,19 @@ jobs:
       fail-fast: false
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Git checkout
+        uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - run: npm ci
-      - run: npm test
+      - name: Install dependencies
+        run: npm ci
+      - name: Linting
+        run: npm run format:ci
+        if: "${{ matrix.node-version == '14.x' }}"
+      - name: Tests
+        run: npm run test:ci
         env:
           # GitHub secrets are not available when running on PR from forks
           # We set a flag so we can skip tests that access Netlify API
