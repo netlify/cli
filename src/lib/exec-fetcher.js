@@ -15,6 +15,16 @@ const getExecName = ({ execName }) => {
   return isWindows() ? `${execName}.exe` : execName
 }
 
+const getOptions = () => {
+  // this is used in out CI tests to avoid hitting GitHub API limit
+  // when calling gh-release-fetch
+  if (process.env._NETLIFY_GITHUB_TOKEN) {
+    return {
+      headers: { Authorization: `token ${process.env._NETLIFY_GITHUB_TOKEN}` },
+    }
+  }
+}
+
 const isExe = (mode, gid, uid) => {
   if (isWindows()) {
     return true
@@ -37,7 +47,8 @@ const execExist = async binPath => {
 }
 
 const isVersionOutdated = async ({ packageName, currentVersion }) => {
-  const outdated = await updateAvailable(getRepository({ packageName }), currentVersion)
+  const options = getOptions()
+  const outdated = await updateAvailable(getRepository({ packageName }), currentVersion, options)
   return outdated
 }
 
@@ -86,7 +97,8 @@ const fetchLatestVersion = async ({ packageName, execName, destination, extensio
     extract: true,
   }
 
-  await fetchLatest(release)
+  const options = getOptions()
+  await fetchLatest(release, options)
 }
 
 module.exports = { getExecName, shouldFetchLatestVersion, fetchLatestVersion }
