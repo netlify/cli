@@ -40,15 +40,22 @@
   "scripts": {
     "build:site": "cd site && npm ci && npm run build",
     "start": "node ./bin/run",
-    "test": "run-s test:*",
-    "ava": "ava --verbose",
-    "format": "prettier --write \"{src,scripts,site,tests,.github}/**/*.{js,md,yml,json,html}\" \"*.{js,yml,json,html}\"",
-    "test:lint": "eslint --fix \"{src,scripts,site,tests,.github}/**/*.{js,md,html}\"",
-    "test:format": "prettier --check \"{src,scripts,site,tests,.github}/**/*.{js,md,yml,json,html}\" \"*.{js,yml,json,html}\"",
-    "test:cli-version": "npm run start -- --version",
-    "test:cli-help": "npm run start -- --help",
-    "test:install-deps": "npm ci --prefix tests/site-cra",
-    "test:ava": "nyc --reporter=lcov ava --verbose && nyc report",
+    "test": "run-s format test:dev",
+    "format": "run-s format:check-fix:*",
+    "format:ci": "run-s format:check:*",
+    "format:check-fix:lint": "./scripts/run-on-error.js format:check:lint format:fix:lint",
+    "format:check:lint": "cross-env-shell eslint $npm_package_scriptsArgs_eslint",
+    "format:fix:lint": "cross-env-shell eslint --fix $npm_package_scriptsArgs_eslint",
+    "format:check-fix:prettier": "./scripts/run-on-error.js format:check:prettier format:fix:prettier",
+    "format:check:prettier": "cross-env-shell prettier --check $npm_package_scriptsArgs_prettier",
+    "format:fix:prettier": "cross-env-shell prettier --write $npm_package_scriptsArgs_prettier",
+    "test:dev": "run-s test:init:* test:dev:*",
+    "test:ci": "run-s test:init:* test:ci:*",
+    "test:init:cli-version": "npm run start -- --version",
+    "test:init:cli-help": "npm run start -- --help",
+    "test:init:install-deps": "npm ci --prefix tests/site-cra",
+    "test:dev:ava": "ava --verbose",
+    "test:ci:ava": "nyc -r lcovonly -r text -r json ava --verbose",
     "docs": "node ./site/scripts/docs.js",
     "watch": "nyc --reporter=lcov ava --watch",
     "prepack": "oclif-dev manifest && npm prune --prod",
@@ -59,6 +66,10 @@
     "release:version": "git push && git push --tags && gh-release",
     "release:publish": "npm publish",
     "postinstall": "node ./scripts/postinstall.js"
+  },
+  "scriptsArgs": {
+    "eslint": "--cache --format=codeframe --max-warnings=0 \"{src,scripts,site,tests,.github}/**/*.{js,md,html}\"",
+    "prettier": "--loglevel=warn \"{src,scripts,site,tests,.github}/**/*.{js,md,yml,json,html}\" \"*.{js,yml,json,html}\""
   },
   "dependencies": {
     "@netlify/build": "^5.0.0",
@@ -158,6 +169,7 @@
     "auto-changelog": "^2.0.0",
     "ava": "^2.4.0",
     "babel-eslint": "^10.1.0",
+    "cross-env": "^7.0.2",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.0.0",
     "eslint-config-standard": "^14.1.1",
@@ -222,7 +234,8 @@
   },
   "husky": {
     "hooks": {
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
+      "pre-push": "npm run format"
     }
   },
   "standard-version": {
