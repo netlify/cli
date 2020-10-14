@@ -59,7 +59,7 @@ async function render404(publicFolder) {
     const stat404Page = await statAsync(maybe404Page)
     if (stat404Page.isFile()) return await readFileAsync(maybe404Page)
     return 'Not Found'
-  } catch (err) {
+  } catch (error) {
     // Ignore
   }
 }
