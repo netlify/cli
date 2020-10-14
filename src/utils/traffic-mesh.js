@@ -88,4 +88,4 @@ const runProcess = async ({ log, args }) => {
   return { subprocess }
 }
 
-module.exports = { runProcess, startForwardProxy }
+module.exports = { runProcess, startForwardProxy, installTrafficMesh }
