@@ -88,7 +88,7 @@ const createRewriter = async function ({ distDir, projectDir, jwtSecret, jwtRole
     getMatcher().then((matcher) => {
       const reqUrl = new url.URL(
         req.url,
-        `${req.protocol || (req.headers.scheme && req.headers.scheme + ':') || 'http:'}//${
+        `${req.protocol || (req.headers.scheme && `${req.headers.scheme}:`) || 'http:'}//${
           req.hostname || req.headers.host
         }`
       )

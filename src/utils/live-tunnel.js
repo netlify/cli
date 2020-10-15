@@ -19,7 +19,7 @@ async function createTunnel({ siteId, netlifyApiToken, log }) {
     )
     process.exit(1)
   }
-  log(`${NETLIFYDEVLOG} Creating Live Tunnel for ` + siteId)
+  log(`${NETLIFYDEVLOG} Creating Live Tunnel for ${siteId}`)
   const url = `https://api.netlify.com/api/v1/live_sessions?site_id=${siteId}`
 
   const response = await fetch(url, {

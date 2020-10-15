@@ -29,7 +29,7 @@ const handler = async (event) => {
     content: filter.clean(request.event.data.new.content),
   }
   try {
-    await axios.post(hgeEndpoint + '/v1alpha1/graphql', { query, variables })
+    await axios.post(`${hgeEndpoint}/v1alpha1/graphql`, { query, variables })
     return { statusCode: 200, body: 'success' }
   } catch (error) {
     return { statusCode: 500, body: error.toString() }

@@ -161,7 +161,7 @@ const depthPad = ({ to = '' }) =>
       .slice(1).length) *
   16
 
-const Link = styled((props) => <NavLink {...props} is={RouterNavLink} w={1} pl={depthPad(props) - 4 + 'px'} />)(
+const Link = styled((props) => <NavLink {...props} is={RouterNavLink} w={1} pl={`${depthPad(props) - 4}px`} />)(
   [],
   () => ({
     'borderLeft': '4px solid',

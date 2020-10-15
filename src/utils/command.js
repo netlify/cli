@@ -132,7 +132,7 @@ class BaseCommand extends Command {
       return
     }
     message = typeof message === 'string' ? message : inspect(message)
-    process.stdout.write(format(message, ...args) + '\n')
+    process.stdout.write(`${format(message, ...args)}\n`)
   }
 
   /* Modified flag parser to support global --auth, --json, & --silent flags */

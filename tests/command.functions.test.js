@@ -21,7 +21,7 @@ test('should return function response when invoked', async (t) => {
     await builder.buildAsync()
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
-      const { stdout } = await execa(cliPath, ['functions:invoke', 'ping', '--identity', '--port=' + server.port], {
+      const { stdout } = await execa(cliPath, ['functions:invoke', 'ping', '--identity', `--port=${server.port}`], {
         cwd: builder.directory,
       })
 
