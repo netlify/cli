@@ -157,7 +157,7 @@ async function serveRedirect({ req, res, proxy, match, options }) {
   if (staticFile) req.url = staticFile + reqUrl.search
   if (match.force404) {
     res.writeHead(404)
-    return await render404(options.publicFolder)
+    return render404(options.publicFolder)
   }
 
   if (match.force || !staticFile || !options.framework || req.method === 'POST') {

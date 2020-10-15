@@ -377,7 +377,7 @@ class DeployCommand extends Command {
     }
 
     if (flags.trigger) {
-      return await triggerDeploy({ api, siteId, siteData, log, error })
+      return triggerDeploy({ api, siteId, siteData, log, error })
     }
 
     if (flags.build) {
