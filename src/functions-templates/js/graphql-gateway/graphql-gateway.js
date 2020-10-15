@@ -11,8 +11,9 @@ const fetch = require('node-fetch')
 const { ApolloServer } = require('apollo-server-lambda')
 
 const handler = async function (event, context) {
-  const schema1 = await getSchema('graphql-1') // other Netlify functions which are graphql lambdas
-  const schema2 = await getSchema('graphql-2') // other Netlify functions which are graphql lambdas
+  // other Netlify functions which are graphql lambdas
+  const schema1 = await getSchema('graphql-1')
+  const schema2 = await getSchema('graphql-2')
   const schemas = [schema1, schema2]
 
   /**
@@ -33,7 +34,8 @@ const handler = async function (event, context) {
           return info.mergeInfo.delegateToSchema({
             schema: schema1,
             operation: 'query',
-            fieldName: 'authorByName', // reuse what's implemented in schema1
+            // reuse what's implemented in schema1
+            fieldName: 'authorByName',
             args: {
               name: book.authorName,
             },

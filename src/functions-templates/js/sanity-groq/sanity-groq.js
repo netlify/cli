@@ -14,7 +14,8 @@ const client = sanityClient({
   projectId: process.env.SANITY_PROJECTID,
   dataset: process.env.SANITY_DATASET,
   token: process.env.SANITY_TOKEN,
-  useCdn: true, // CDN will not be used if token is set
+  // CDN will not be used if token is set
+  useCdn: true,
 })
 
 // A proxy for Sanity.io GROQ queries.

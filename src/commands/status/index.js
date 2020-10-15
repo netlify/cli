@@ -64,11 +64,13 @@ class StatusCommand extends Command {
     try {
       siteData = await api.getSite({ siteId })
     } catch (error) {
-      if (error.status === 401 /* unauthorized */) {
+      // unauthorized
+      if (error.status === 401) {
         this.warn(`Log in with a different account or re-link to a site you have permission for`)
         this.error(`Not authorized to view the currently linked site (${siteId})`)
       }
-      if (error.status === 404 /* missing */) {
+      // missing
+      if (error.status === 404) {
         this.error(`The site this folder is linked to can't be found`)
       }
       this.error(error)

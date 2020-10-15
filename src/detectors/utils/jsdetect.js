@@ -59,8 +59,10 @@ function scanScripts({ preferredScriptsArr, preferredCommand }) {
     console.log(
       `${NETLIFYDEVWARN} Netlify Dev's detector system works best with a script, or you can specify a command to run in the netlify.toml [dev]  block `,
     )
-    warnedAboutEmptyScript = true // dont spam message with every detector
-    return [] // not going to match any scripts anyway
+    // dont spam message with every detector
+    warnedAboutEmptyScript = true
+    // not going to match any scripts anyway
+    return []
   }
   //
   //

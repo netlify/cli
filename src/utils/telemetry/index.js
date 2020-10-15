@@ -34,8 +34,10 @@ const eventConfig = {
   projectName: 'cli',
   // Allowed objects
   objects: [
-    'sites', // example cli:sites_created
-    'user', // example cli:user_signup
+    // example cli:sites_created
+    'sites',
+    // example cli:user_signup
+    'user',
   ],
 }
 

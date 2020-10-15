@@ -46,7 +46,8 @@ function parseRepoURL(repoHost, URL) {
   // naive splitting strategy for now
   if (repoHost === GITHUB) {
     // https://developer.github.com/v3/repos/contents/#get-contents
-    const [ownerAndRepo, contentsPath] = URL.path.split('/tree/master') // what if it's not master? note that our contents retrieval may assume it is master
+    // what if it's not master? note that our contents retrieval may assume it is master
+    const [ownerAndRepo, contentsPath] = URL.path.split('/tree/master')
     return [ownerAndRepo, contentsPath]
   }
   throw new Error('unsupported host ', repoHost)

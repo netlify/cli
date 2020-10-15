@@ -45,7 +45,8 @@ const handler = async (event) => {
 
   const document = {
     _type: 'comment',
-    status: 'waitingApproval', // Some workflow state
+    // Some workflow state
+    status: 'waitingApproval',
     author: payload.author || 'Anonymous',
     message: payload.message,
   }

@@ -162,7 +162,8 @@ function processPayloadFromFlag(payloadString) {
     const pathexists = fs.existsSync(payloadpath)
     if (pathexists) {
       try {
-        payload = require(payloadpath) // there is code execution potential here
+        // there is code execution potential here
+        payload = require(payloadpath)
         return payload
       } catch (error) {
         console.error(error)

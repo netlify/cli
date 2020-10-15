@@ -15,10 +15,12 @@ const handler = async function () {
       body: JSON.stringify({ msg: data.joke }),
     }
   } catch (error) {
-    console.log(error) // output to netlify function log
+    // output to netlify function log
+    console.log(error)
     return {
       statusCode: 500,
-      body: JSON.stringify({ msg: error.message }), // Could be a custom message or object i.e. JSON.stringify(err)
+      // Could be a custom message or object i.e. JSON.stringify(err)
+      body: JSON.stringify({ msg: error.message }),
     }
   }
 }

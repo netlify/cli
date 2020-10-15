@@ -15,7 +15,8 @@ const handler = async function (event) {
       my_user_info: 'this is some user info',
     },
     user_metadata: {
-      ...user.user_metadata, // append current user metadata
+      // append current user metadata
+      ...user.user_metadata,
       custom_data_from_function: 'hurray this is some extra metadata',
     },
   }

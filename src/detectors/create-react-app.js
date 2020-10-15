@@ -1,5 +1,6 @@
 const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
 
+// the port that create-react-app normally outputs
 const FRAMEWORK_PORT = 3000
 
 //
@@ -21,7 +22,7 @@ module.exports = function detector() {
   return {
     framework: 'create-react-app',
     command: getYarnOrNPMCommand(),
-    frameworkPort: FRAMEWORK_PORT, // the port that create-react-app normally outputs
+    frameworkPort: FRAMEWORK_PORT,
     env: { BROWSER: 'none', PORT: FRAMEWORK_PORT },
     stdio: ['inherit', 'pipe', 'pipe'],
     possibleArgsArrs,

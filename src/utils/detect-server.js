@@ -8,7 +8,8 @@ const fs = require('fs')
 
 const serverSettings = async (devConfig, flags, projectDir, log) => {
   let settings = {}
-  const detectorsFiles = fs.readdirSync(path.join(__dirname, '..', 'detectors')).filter((x) => x.endsWith('.js')) // only accept .js detector files
+  // only accept .js detector files
+  const detectorsFiles = fs.readdirSync(path.join(__dirname, '..', 'detectors')).filter((x) => x.endsWith('.js'))
 
   if (typeof devConfig.framework !== 'string') throw new Error('Invalid "framework" option provided in config')
 
@@ -56,7 +57,8 @@ const serverSettings = async (devConfig, flags, projectDir, log) => {
           return filterSettings(scriptInquirerOptions, input)
         },
       })
-      settings = chosenSetting // finally! we have a selected option
+      // finally! we have a selected option
+      settings = chosenSetting
 
       log(
         `Add \`framework = "${chosenSetting.framework}"\` to [dev] section of your netlify.toml to avoid this selection prompt next time`,
@@ -213,7 +215,8 @@ function loadDetector(detectorName) {
 
 function chooseDefaultArgs(possibleArgsArrs) {
   // vast majority of projects will only have one matching detector
-  const [args] = possibleArgsArrs // just pick the first one
+  // just pick the first one
+  const [args] = possibleArgsArrs
   if (!args) {
     const { scripts } = JSON.parse(fs.readFileSync('package.json', { encoding: 'utf8' }))
     const err = new Error(

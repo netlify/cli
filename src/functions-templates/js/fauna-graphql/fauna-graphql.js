@@ -16,14 +16,13 @@ const handler = async function (event, context) {
       body: JSON.stringify({ msg }),
     }
   }
-  const b64encodedSecret = Buffer.from(
-    `${process.env.FAUNADB_SERVER_SECRET}:`, // weird but they
-  ).toString('base64')
+  const b64encodedSecret = Buffer.from(`${process.env.FAUNADB_SERVER_SECRET}:`).toString('base64')
   const headers = { Authorization: `Basic ${b64encodedSecret}` }
 
   /** standard creation of apollo-server executable schema */
   const link = createHttpLink({
-    uri: 'https://graphql.fauna.com/graphql', // modify as you see fit
+    // modify as you see fit
+    uri: 'https://graphql.fauna.com/graphql',
     fetch,
     headers,
   })

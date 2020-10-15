@@ -14,7 +14,8 @@ class ExecCommand extends Command {
   async run() {
     const { site, api } = this.netlify
     if (site.id) {
-      this.log(`${NETLIFYDEVLOG} Checking your site's environment variables...`) // just to show some visual response first
+      // just to show some visual response first
+      this.log(`${NETLIFYDEVLOG} Checking your site's environment variables...`)
       const { addEnvVariables } = require('../../utils/dev')
       await addEnvVariables(api, site)
     } else {

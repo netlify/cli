@@ -3,7 +3,8 @@ const path = require('path')
 const detectFunctionsBuilder = async function (projectDir) {
   const detectors = require('fs')
     .readdirSync(path.join(__dirname, '..', 'function-builder-detectors'))
-    .filter((x) => x.endsWith('.js')) // only accept .js detector files
+    // only accept .js detector files
+    .filter((x) => x.endsWith('.js'))
     .map((det) => require(path.join(__dirname, '..', `function-builder-detectors/${det}`)))
 
   for (const detector of detectors) {

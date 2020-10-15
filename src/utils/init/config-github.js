@@ -53,7 +53,8 @@ async function configGithub(ctx, site, repo) {
 
   let defaultBuildCmd
   let defaultBuildDir = '.'
-  const { build } = ctx.netlify.config // read from netlify toml
+  // read from netlify toml
+  const { build } = ctx.netlify.config
   if (build && build.command) {
     defaultBuildCmd = build.command
   }
