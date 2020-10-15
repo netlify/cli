@@ -85,7 +85,7 @@ function alternativePathsFor(url) {
   return paths
 }
 
-async function serveRedirect(req, res, proxy, match, options) {
+async function serveRedirect({ req, res, proxy, match, options }) {
   if (!match) return proxy.web(req, res, options)
 
   options = options || req.proxyOptions || {}
@@ -262,7 +262,7 @@ function initializeProxy(port, distDir, projectDir) {
         return proxy.web(req, res, req.proxyOptions)
       }
       if (req.proxyOptions && req.proxyOptions.match) {
-        return serveRedirect(req, res, handlers, req.proxyOptions.match, req.proxyOptions)
+        return serveRedirect({ req, res, proxy: handlers, match: req.proxyOptions.match, options: req.proxyOptions })
       }
     }
     const requestURL = new url.URL(req.url, `http://${req.headers.host || 'localhost'}`)
@@ -331,7 +331,7 @@ async function startProxy(settings = {}, addonUrls, configPath, projectDir) {
         framework: settings.framework,
       }
 
-      if (match) return serveRedirect(req, res, proxy, match, options)
+      if (match) return serveRedirect({ req, res, proxy, match, options })
 
       const ct = req.headers['content-type'] ? contentType.parse(req).type : ''
       if (
