@@ -28,6 +28,7 @@ module.exports = {
     'array-callback-return': [2, { allowImplicit: true, checkForEach: true }],
     'multiline-comment-style': [2, 'separate-lines'],
     'no-else-return': [2, { allowElseIf: false }],
+    'no-var': 2,
 
     // This version of eslint-plugin-unicorn requires Node 10
     // TODO: remove after dropping Node 8 support
