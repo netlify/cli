@@ -18,9 +18,9 @@ const getExecName = ({ execName }) => {
 const getOptions = () => {
   // this is used in out CI tests to avoid hitting GitHub API limit
   // when calling gh-release-fetch
-  if (process.env._NETLIFY_GITHUB_TOKEN) {
+  if (process.env.NETLIFY_TEST_GITHUB_TOKEN) {
     return {
-      headers: { Authorization: `token ${process.env._NETLIFY_GITHUB_TOKEN}` },
+      headers: { Authorization: `token ${process.env.NETLIFY_TEST_GITHUB_TOKEN}` },
     }
   }
 }

@@ -46,6 +46,7 @@ module.exports = {
     'no-negated-condition': 2,
     'no-nested-ternary': 2,
     'no-plusplus': [2, { allowForLoopAfterthoughts: true }],
+    'no-underscore-dangle': [2, { enforceInMethodNames: true }],
     'no-unreachable-loop': 2,
     'no-useless-backreference': 2,
     'no-useless-computed-key': [2, { enforceForClassMembers: true }],
