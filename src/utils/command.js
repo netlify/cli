@@ -170,18 +170,12 @@ class BaseCommand extends Command {
     }
 
     // enrich with flags here
-    opts.flags = Object.assign({}, opts.flags, globalFlags)
+    opts.flags = { ...opts.flags, ...globalFlags }
 
-    return require('@oclif/parser').parse(
-      argv,
-      Object.assign(
-        {},
-        {
-          context: this,
-        },
-        opts
-      )
-    )
+    return require('@oclif/parser').parse(argv, {
+      context: this,
+      ...opts,
+    })
   }
 
   get chalk() {

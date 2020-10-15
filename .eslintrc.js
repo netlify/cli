@@ -30,6 +30,7 @@ module.exports = {
     'multiline-comment-style': [2, 'separate-lines'],
     'no-else-return': [2, { allowElseIf: false }],
     'no-var': 2,
+    'prefer-object-spread': 2,
 
     // This version of eslint-plugin-unicorn requires Node 10
     // TODO: remove after dropping Node 8 support

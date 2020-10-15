@@ -115,7 +115,7 @@ class FunctionsInvokeCommand extends Command {
       }
     }
     const payload = processPayloadFromFlag(flags.payload)
-    body = Object.assign({}, body, payload)
+    body = { ...body, ...payload }
 
     // fetch
     fetch(`http://localhost:${port}/.netlify/functions/${functionToTrigger}` + formatQstring(flags.querystring), {
