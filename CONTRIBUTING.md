@@ -3,32 +3,44 @@
 Contributions are always welcome, no matter how large or small. Before contributing,
 please read the [code of conduct](CODE_OF_CONDUCT.md).
 
-## Setup
+## Development process
 
-Install Node.js 8+ on your system: https://nodejs.org/en/download/
+First fork and clone the repository. If you're not sure how to do this, please watch
+[these videos](https://egghead.io/courses/how-to-contribute-to-an-open-source-project-on-github).
 
-1. Clone down the repo
+Run:
 
-```sh-session
-$ git clone git@github.com:netlify/cli.git
+```bash
+npm install
 ```
 
-2. Install dependencies
+Tests are run with:
 
-```sh-session
-$ npm install
+```bash
+npm test
 ```
 
-3. Run CLI locally during development
+In watch mode:
 
-```sh-session
-$ ./bin/run [command]
+```bash
+npm run watch
 ```
 
-When developing, you can use watch mode which will automatically run ava tests:
+Make sure everything is correctly setup by running those tests first.
 
-```sh-session
-$ npm run watch
+ESLint and Prettier are performed automatically on `git push`. However, we recommend you setup your IDE or text editor
+to run ESLint and Prettier automatically on file save. Otherwise, you should run them manually using:
+
+```bash
+npm run format
+```
+
+Alternatively you can setup your IDE to integrate with Prettier and ESLint for JavaScript and Markdown files.
+
+To run the CLI locally:
+
+```bash
+./bin/run [command]
 ```
 
 ## Architecture
