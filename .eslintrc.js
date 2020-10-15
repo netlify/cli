@@ -29,6 +29,7 @@ module.exports = {
     'func-name-matching': [2, { considerPropertyDescriptor: true }],
     'multiline-comment-style': [2, 'separate-lines'],
     'no-else-return': [2, { allowElseIf: false }],
+    'no-implicit-coercion': 2,
     'no-var': 2,
 
     // This version of eslint-plugin-unicorn requires Node 10

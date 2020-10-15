@@ -69,8 +69,7 @@ async function configManual(ctx, site, repo) {
         name: 'repoPath',
         message: 'The SSH URL of the remote git repo:',
         default: repo.repo_path,
-        validate: (url) =>
-          !!url.match(/(ssh:\/\/|[a-zA-Z]*@|[a-zA-Z.].*:(?!\/\/))/) || 'The URL provided does not use the SSH protocol',
+        validate: (url) => SSH_URL_REGEXP.test(url) || 'The URL provided does not use the SSH protocol',
       },
     ])
     repo.repo_path = repoPath
@@ -98,3 +97,5 @@ async function configManual(ctx, site, repo) {
     ctx.exit()
   }
 }
+
+const SSH_URL_REGEXP = /(ssh:\/\/|[a-zA-Z]*@|[a-zA-Z.].*:(?!\/\/))/
