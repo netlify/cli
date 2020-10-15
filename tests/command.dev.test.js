@@ -41,7 +41,9 @@ testMatrix.forEach(({ args }) => {
         handler: async () => {
           console.log('ding')
           // Wait for 4 seconds
-          await new Promise((resolve) => setTimeout(resolve, 4000))
+          await new Promise((resolve) => {
+            setTimeout(resolve, 4000)
+          })
           return {
             statusCode: 200,
             body: 'ping',
