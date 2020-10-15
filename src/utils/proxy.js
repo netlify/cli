@@ -60,7 +60,7 @@ async function render404(publicFolder) {
     if (exists404Page) return await readFileAsync(maybe404Page)
     return 'Not Found'
   } catch (error) {
-    // Ignore
+    return 'Not Found'
   }
 }
 
