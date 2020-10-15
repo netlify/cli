@@ -10,7 +10,8 @@ exports.handler = async (event, context) => {
       }
       // e.g. GET /.netlify/functions/fauna-crud/123456
       if (segments.length === 1) {
-        event.id = segments[0]
+        const [id] = segments
+        event.id = id
         return require('./read').handler(event, context)
       }
       return {
@@ -25,7 +26,8 @@ exports.handler = async (event, context) => {
     case 'PUT':
       // e.g. PUT /.netlify/functions/fauna-crud/123456 with a body of key value pair objects, NOT strings
       if (segments.length === 1) {
-        event.id = segments[0]
+        const [id] = segments
+        event.id = id
         return require('./update').handler(event, context)
       }
       return {
@@ -36,7 +38,8 @@ exports.handler = async (event, context) => {
     case 'DELETE':
       // e.g. DELETE /.netlify/functions/fauna-crud/123456
       if (segments.length === 1) {
-        event.id = segments[0]
+        const [id] = segments
+        event.id = id
         return require('./delete').handler(event, context)
       }
       return {

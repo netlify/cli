@@ -37,7 +37,7 @@ const packages = [
 ]
 
 packages.forEach(({ packageName, execName, execArgs, pattern, extension }) => {
-  const log = console.log
+  const { log } = console
 
   test(`${packageName} - should return true on empty directory`, async (t) => {
     const { binPath } = t.context

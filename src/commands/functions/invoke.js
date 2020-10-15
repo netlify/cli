@@ -58,10 +58,10 @@ class FunctionsInvokeCommand extends Command {
     if (eventTriggeredFunctions.has(functionToTrigger)) {
       /** handle event triggered fns  */
       // https://www.netlify.com/docs/functions/#event-triggered-functions
-      const parts = functionToTrigger.split('-')
-      if (parts[0] === 'identity') {
+      const [name, event] = functionToTrigger.split('-')
+      if (name === 'identity') {
         // https://www.netlify.com/docs/functions/#identity-event-functions
-        body.event = parts[1]
+        body.event = event
         body.user = {
           id: '1111a1a1-a11a-1111-aa11-aaa11111a11a',
           aud: '',

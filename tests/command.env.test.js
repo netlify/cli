@@ -85,7 +85,7 @@ if (process.env.IS_FORK !== 'true') {
   })
 
   test.serial('env:get --json should return empty object if var not set', async (t) => {
-    const key = getArgsFromState(ENV_VAR_STATES.get)[0]
+    const [key] = getArgsFromState(ENV_VAR_STATES.get)
 
     const cliResponse = await callCli(['env:get', '--json', key], t.context.execOptions)
     const json = JSON.parse(cliResponse)
@@ -166,7 +166,7 @@ if (process.env.IS_FORK !== 'true') {
 
   test.serial('env:set --json should be able to set var with empty value', async (t) => {
     const args = getArgsFromState(ENV_VAR_STATES.setEmpty)
-    const key = args[0]
+    const [key] = args
 
     const cliResponse = await callCli(['env:set', '--json', ...args], t.context.execOptions)
     const json = JSON.parse(cliResponse)
@@ -177,7 +177,7 @@ if (process.env.IS_FORK !== 'true') {
   })
 
   test.serial('env:unset --json should remove existing variable', async (t) => {
-    const key = getArgsFromState(ENV_VAR_STATES.unset)[0]
+    const [key] = getArgsFromState(ENV_VAR_STATES.unset)
 
     const cliResponse = await callCli(['env:unset', '--json', key], t.context.execOptions)
     const json = JSON.parse(cliResponse)

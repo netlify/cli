@@ -28,7 +28,7 @@ class SitesCreateCommand extends Command {
 
     let accountSlug = flags['account-slug']
     if (!accountSlug) {
-      const results = await inquirer.prompt([
+      const { accountSlug: accountSlugInput } = await inquirer.prompt([
         {
           type: 'list',
           name: 'accountSlug',
@@ -39,10 +39,10 @@ class SitesCreateCommand extends Command {
           })),
         },
       ])
-      accountSlug = results.accountSlug
+      accountSlug = accountSlugInput
     }
 
-    const name = flags.name
+    const { name } = flags
     let userName
     let site
 
@@ -64,7 +64,7 @@ class SitesCreateCommand extends Command {
         console.log(
           `Choose a unique site name (e.g. ${siteSuggestion}.netlify.app) or leave it blank for a random name. You can update the site name later.`
         )
-        const results = await inquirer.prompt([
+        const { name: nameInput } = await inquirer.prompt([
           {
             type: 'input',
             name: 'name',
@@ -73,7 +73,7 @@ class SitesCreateCommand extends Command {
             validate: (input) => /^[a-zA-Z\d-]+$/.test(input) || 'Only alphanumeric characters and hyphens are allowed',
           },
         ])
-        name = results.name
+        name = nameInput
       }
 
       const body = {}

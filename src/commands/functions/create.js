@@ -204,7 +204,7 @@ function ensureFunctionDirExists(flags, config) {
 // Download files from a given github URL
 async function downloadFromURL(flags, args, functionsDir) {
   const folderContents = await readRepoURL(flags.url)
-  const functionName = flags.url.split('/').slice(-1)[0]
+  const [functionName] = flags.url.split('/').slice(-1)
   const nameToUse = await getNameFromArgs(args, flags, functionName)
   const fnFolder = path.join(functionsDir, nameToUse)
   if (fs.existsSync(fnFolder + '.js') && fs.lstatSync(fnFolder + '.js').isFile()) {

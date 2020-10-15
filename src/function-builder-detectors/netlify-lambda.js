@@ -19,7 +19,8 @@ module.exports = function () {
     const script = scripts[key]
     const match = script.match(/netlify-lambda build (\S+)/)
     if (match) {
-      settings.src = match[1]
+      const [, src] = match
+      settings.src = src
       settings.npmScript = key
       break
     }

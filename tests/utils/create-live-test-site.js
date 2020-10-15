@@ -30,7 +30,7 @@ async function createLiveTestSite(siteName) {
 
   const matches = /Site ID:\s+([a-zA-Z\d-]+)/m.exec(stripAnsi(cliResponse))
   if (matches && Object.prototype.hasOwnProperty.call(matches, 1) && matches[1]) {
-    const siteId = matches[1]
+    const [, siteId] = matches
     console.log(`Done creating site ${siteName} for account '${accountSlug}'. Site Id: ${siteId}`)
     return siteId
   }

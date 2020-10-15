@@ -241,7 +241,7 @@ class BaseCommand extends Command {
     // Set user data
     this.netlify.globalConfig.set(`users.${userID}`, userData)
 
-    const email = user.email
+    const { email } = user
     await identify({
       name: user.full_name,
       email,

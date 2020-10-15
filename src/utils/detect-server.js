@@ -36,7 +36,8 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
       if (detectorResult) settingsArr.push(detectorResult)
     }
     if (settingsArr.length === 1) {
-      settings = settingsArr[0]
+      const [firstSettings] = settingsArr
+      settings = firstSettings
       settings.args = chooseDefaultArgs(settings.possibleArgsArrs)
     } else if (settingsArr.length > 1) {
       /** multiple matching detectors, make the user choose */
@@ -174,7 +175,7 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
 const DEFAULT_PORT = 8888
 
 async function getStaticServerSettings(settings, flags, projectDir, log) {
-  let dist = settings.dist
+  let { dist } = settings
   if (flags.dir) {
     log(`${NETLIFYDEVWARN} Using simple static server because --dir flag was specified`)
     dist = flags.dir
@@ -211,7 +212,7 @@ module.exports.loadDetector = loadDetector
 
 function chooseDefaultArgs(possibleArgsArrs) {
   // vast majority of projects will only have one matching detector
-  const args = possibleArgsArrs[0] // just pick the first one
+  const [args] = possibleArgsArrs // just pick the first one
   if (!args) {
     const { scripts } = JSON.parse(fs.readFileSync('package.json', { encoding: 'utf8' }))
     const err = new Error(
