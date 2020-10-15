@@ -62,16 +62,16 @@ function scanScripts({ preferredScriptsArr, preferredCommand }) {
     warnedAboutEmptyScript = true // dont spam message with every detector
     return [] // not going to match any scripts anyway
   }
-  /**
-   *
-   * NOTE: we return an array of arrays (args)
-   * because we may want to supply extra args in some setups
-   *
-   * e.g. ['eleventy', '--serve', '--watch']
-   *
-   * array will in future be sorted by likelihood of what we want
-   *
-   *  */
+  //
+  //
+  // NOTE: we return an array of arrays (args)
+  // because we may want to supply extra args in some setups
+  //
+  // e.g. ['eleventy', '--serve', '--watch']
+  //
+  // array will in future be sorted by likelihood of what we want
+  //
+  //
   // this is very simplistic logic, we can offer far more intelligent logic later
   // eg make a dependency tree of npm scripts and offer the parentest node first
   return Object.entries(scripts)

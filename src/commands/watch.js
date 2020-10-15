@@ -33,17 +33,17 @@ class SitesWatchCommand extends Command {
     // git rev-parse HEAD
 
     // if no sha, its a manual "triggered deploy"
-    /*
-    {
-        "id": "5b4e23db82d3f1780abd74f3",
-        "deploy_id": "5b4e23db82d3f1780abd74f2",
-        "sha": "pull/1/head",
-        "log": [],
-        "done": false,
-        "error": null,
-        "created_at": "2018-07-17T17:14:03.423Z"
-    }
-    */
+    //
+    // {
+    //     "id": "5b4e23db82d3f1780abd74f3",
+    //     "deploy_id": "5b4e23db82d3f1780abd74f2",
+    //     "sha": "pull/1/head",
+    //     "log": [],
+    //     "done": false,
+    //     "error": null,
+    //     "created_at": "2018-07-17T17:14:03.423Z"
+    // }
+    //
     cli.action.start('Waiting for active site deploys to complete')
     try {
       // Fetch all builds!
