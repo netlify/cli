@@ -36,8 +36,8 @@ async function getStatic(pathname, publicFolder) {
   for (const i in alternatives) {
     const p = alternatives[i]
     try {
-      const pathStats = await statAsync(p)
-      if (pathStats.isFile()) return '/' + path.relative(publicFolder, p)
+      const isExistsPath = await isFileAsync(p)
+      if (isExistsPath) return '/' + path.relative(publicFolder, p)
     } catch (error) {
       // Ignore
     }
@@ -56,8 +56,8 @@ function isRedirect(match) {
 async function render404(publicFolder) {
   const maybe404Page = path.resolve(publicFolder, '404.html')
   try {
-    const stat404Page = await statAsync(maybe404Page)
-    if (stat404Page.isFile()) return await readFileAsync(maybe404Page)
+    const isExists404Page = await isFileAsync(maybe404Page)
+    if (exists404Page) return await readFileAsync(maybe404Page)
     return 'Not Found'
   } catch (error) {
     // Ignore
