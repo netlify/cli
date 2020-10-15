@@ -8,7 +8,7 @@ const { isFileAsync, readFileAsync } = require('../lib/fs')
 async function getEnvSettings({ projectDir, warn }) {
   const dotenvFiles = ['.env.development', '.env']
   const results = await Promise.all(
-    dotenvFiles.map(async file => {
+    dotenvFiles.map(async (file) => {
       const filepath = path.resolve(projectDir, file)
       try {
         const isFile = await isFileAsync(filepath)
@@ -22,7 +22,7 @@ async function getEnvSettings({ projectDir, warn }) {
       const content = await readFileAsync(filepath)
       const parsed = dotenv.parse(content)
       // only keep envs not configured in process.env
-      const env = filterObject(parsed, key => !Object.prototype.hasOwnProperty.call(process.env, key))
+      const env = filterObject(parsed, (key) => !Object.prototype.hasOwnProperty.call(process.env, key))
       return { file, env }
     })
   )

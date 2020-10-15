@@ -55,7 +55,7 @@ const getDeployFolder = async ({ flags, config, site, siteData, log }) => {
         name: 'promptPath',
         message: 'Publish directory',
         default: '.',
-        filter: input => path.resolve(process.cwd(), input),
+        filter: (input) => path.resolve(process.cwd(), input),
       },
     ])
     deployFolder = promptPath
@@ -139,7 +139,7 @@ const getDeployFilesFilter = ({ site, deployFolder }) => {
   // when site.root !== deployFolder the behaviour matches our buildbot
   const skipNodeModules = site.root === deployFolder
 
-  return filename => {
+  return (filename) => {
     if (filename == null) {
       return false
     }
@@ -584,7 +584,7 @@ function deployProgressCb() {
             phase: [start, progress, stop]
     }
   */
-  return ev => {
+  return (ev) => {
     switch (ev.phase) {
       case 'start': {
         const spinner = ev.spinner || randomItem(cliSpinnerNames)

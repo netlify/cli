@@ -27,7 +27,7 @@ const config = {
         md += commandExamples(info.examples)
         if (info.commands.length !== 0) {
           md += `---\n`
-          info.commands.forEach(subCmd => {
+          info.commands.forEach((subCmd) => {
             // Child Commands
             md += formatSubCommandTitle(subCmd.name)
             md += formatDescription(stripAnsi(subCmd.description))
@@ -45,7 +45,7 @@ const config = {
       const context = path.basename(instance.originalPath, '.md')
       /* Generate Command List */
       let md = ''
-      Object.keys(commandData).map(commandName => {
+      Object.keys(commandData).map((commandName) => {
         const info = commandData[commandName]
         md += commandListTitle(commandName, context)
         md += commandListDescription(stripAnsi(info.description))
@@ -72,7 +72,7 @@ function commandExamples(examples) {
   }
   let exampleRender = `**Examples**${newLine}`
   exampleRender += '```bash\n'
-  examples.forEach(ex => {
+  examples.forEach((ex) => {
     // console.log('ex', ex)
     exampleRender += `${ex}\n`
   })
@@ -98,7 +98,7 @@ function commandListSubCommandDisplay(commands) {
   }
   let table = '| Subcommand | description  |\n'
   table += '|:--------------------------- |:-----|\n'
-  commands.forEach(cmd => {
+  commands.forEach((cmd) => {
     const commandBase = cmd.name.split(':')[0]
     const baseUrl = `/docs/commands/${commandBase}.md`
     // const baseUrl = (context === 'README') ? `/docs/${commandBase}.md` : `/${commandBase}`
@@ -141,7 +141,7 @@ function formatFlags(cmdFlags, command) {
   let renderFlags = `**Flags**\n\n`
 
   renderFlags += flagArray
-    .map(flag => {
+    .map((flag) => {
       const flagData = cmdFlags[flag]
       if (!flagData.description) {
         throw new Error(`${command} missing flag description`)
@@ -163,7 +163,7 @@ function formatArgs(cmdArgs) {
   let renderArgs = `**Arguments**\n\n`
 
   renderArgs += cmdArgs
-    .map(arg => {
+    .map((arg) => {
       return `- ${arg.name} - ${arg.description}`
     })
     .join('\n')

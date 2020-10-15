@@ -20,7 +20,7 @@ const headers = [
   { path: '/:ding/index.html', headers: ['X-Frame-Options: SAMEORIGIN'] },
 ]
 
-test.before(async t => {
+test.before(async (t) => {
   const builder = createSiteBuilder({ siteName: 'site-for-detecting-server' })
   builder.withHeadersFile({
     headers,
@@ -31,11 +31,11 @@ test.before(async t => {
   t.context.builder = builder
 })
 
-test.after(async t => {
+test.after(async (t) => {
   await t.context.builder.cleanupAsync()
 })
 
-test('_headers: validate correct parsing', t => {
+test('_headers: validate correct parsing', (t) => {
   const rules = parseHeadersFile(path.resolve(t.context.builder.directory, '_headers'))
   t.deepEqual(rules, {
     '/': {
@@ -55,7 +55,7 @@ test('_headers: validate correct parsing', t => {
   })
 })
 
-test('_headers: rulesForPath testing', t => {
+test('_headers: rulesForPath testing', (t) => {
   const rules = parseHeadersFile(path.resolve(t.context.builder.directory, '_headers'))
   t.deepEqual(objectForPath(rules, '/'), {
     'X-Frame-Options': ['SAMEORIGIN'],

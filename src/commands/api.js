@@ -22,7 +22,7 @@ class APICommand extends Command {
     if (isEmptyCommand(flags, args) || flags.list) {
       const table = new AsciiTable(`Netlify API Methods`)
       table.setHeading('API Method', 'Docs Link')
-      methods.forEach(method => {
+      methods.forEach((method) => {
         const { operationId } = method
         table.addRow(operationId, `https://open-api.netlify.com/#/operation/${operationId}`)
       })

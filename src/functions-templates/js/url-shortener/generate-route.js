@@ -29,7 +29,7 @@ module.exports = function handler(event, context, callback) {
   }
 
   // post the new route to the Routes form
-  request.post({ url: rootURL, formData: payload }, function(err) {
+  request.post({ url: rootURL, formData: payload }, function (err) {
     var msg
     if (err) {
       msg = 'Post to Routes stash failed: ' + err

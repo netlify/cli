@@ -39,7 +39,7 @@ class StatusHooksCommand extends Command {
       site: siteData.name,
       hooks: {},
     }
-    ntlHooks.forEach(hook => {
+    ntlHooks.forEach((hook) => {
       data.hooks[hook.id] = {
         type: hook.type,
         event: hook.event,

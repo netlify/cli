@@ -1,5 +1,5 @@
 const fetch = require('node-fetch')
-exports.handler = async function() {
+exports.handler = async function () {
   try {
     const response = await fetch('https://icanhazdadjoke.com', {
       headers: { Accept: 'application/json' },

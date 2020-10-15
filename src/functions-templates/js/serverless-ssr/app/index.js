@@ -78,7 +78,7 @@ module.exports = function expressApp(functionName) {
     })
   })
 
-  router.get('/hello/', function(req, res) {
+  router.get('/hello/', function (req, res) {
     res.send('hello world')
   })
 

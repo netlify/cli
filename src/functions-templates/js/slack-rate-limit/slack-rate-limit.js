@@ -19,7 +19,7 @@ class IdentityAPI {
   }
 
   parseJsonResponse(response) {
-    return response.json().then(json => {
+    return response.json().then((json) => {
       if (!response.ok) {
         const error = `JSON: ${JSON.stringify(json)}. Status: ${response.status}`
         return Promise.reject(new Error(error))
@@ -31,14 +31,14 @@ class IdentityAPI {
 
   request(path, options = {}) {
     const headers = this.headers(options.headers || {})
-    return fetch(this.apiURL + path, { ...options, headers }).then(response => {
+    return fetch(this.apiURL + path, { ...options, headers }).then((response) => {
       const contentType = response.headers.get('Content-Type')
       if (contentType && contentType.match(/json/)) {
         return this.parseJsonResponse(response)
       }
 
       if (!response.ok) {
-        return response.text().then(data => {
+        return response.text().then((data) => {
           const error = `Data: ${data}. Status: ${response.status}`
           return Promise.reject(new Error(error))
         })
@@ -85,7 +85,7 @@ module.exports = function handler(event, context, callback) {
     })
   }
 
-  fetchUser(context.clientContext.identity, claims.sub).then(user => {
+  fetchUser(context.clientContext.identity, claims.sub).then((user) => {
     const lastMessage = new Date(user.app_metadata.last_message_at || 0).getTime()
     const cutOff = new Date().getTime() - oneHour
     if (lastMessage > cutOff) {
@@ -113,7 +113,7 @@ module.exports = function handler(event, context, callback) {
         .then(() => {
           callback(null, { statusCode: 204 })
         })
-        .catch(error => {
+        .catch((error) => {
           callback(null, {
             statusCode: 500,
             body: 'Internal Server Error: ' + error,

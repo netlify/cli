@@ -7,7 +7,7 @@ const client = new faunadb.Client({
 })
 
 /* export our lambda function as named "handler" export */
-exports.handler = async event => {
+exports.handler = async (event) => {
   /* parse the string body into a useable JS object */
   const data = JSON.parse(event.body)
   console.log('Function `create` invoked', data)
@@ -17,7 +17,7 @@ exports.handler = async event => {
   /* construct the fauna query */
   return client
     .query(q.Create(q.Ref('classes/items'), item))
-    .then(response => {
+    .then((response) => {
       console.log('success', response)
       /* Success! return the response with statusCode 200 */
       return {
@@ -25,7 +25,7 @@ exports.handler = async event => {
         body: JSON.stringify(response),
       }
     })
-    .catch(error => {
+    .catch((error) => {
       console.log('error', error)
       /* Error! return the error with statusCode 400 */
       return {

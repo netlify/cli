@@ -87,7 +87,7 @@ async function getNameFromArgs(args, flags, defaultName) {
         message: 'name your function: ',
         default: defaultName,
         type: 'input',
-        validate: val => Boolean(val) && /^[\w.-]+$/i.test(val),
+        validate: (val) => Boolean(val) && /^[\w.-]+$/i.test(val),
         // make sure it is not undefined and is a valid filename.
         // this has some nuance i have ignored, eg crossenv and i18n concerns
       },
@@ -153,14 +153,14 @@ async function pickTemplate() {
   })
   return chosentemplate
   function filterRegistry(registry, input) {
-    const temp = registry.map(x => x.name + x.description)
+    const temp = registry.map((x) => x.name + x.description)
     const filteredTemplates = fuzzy.filter(input, temp)
-    const filteredTemplateNames = new Set(filteredTemplates.map(x => (input ? x.string : x)))
+    const filteredTemplateNames = new Set(filteredTemplates.map((x) => (input ? x.string : x)))
     return registry
-      .filter(t => filteredTemplateNames.has(t.name + t.description))
-      .map(t => {
+      .filter((t) => filteredTemplateNames.has(t.name + t.description))
+      .map((t) => {
         // add the score
-        const { score } = filteredTemplates.find(f => f.string === t.name + t.description)
+        const { score } = filteredTemplates.find((f) => f.string === t.name + t.description)
         t.score = score
         return t
       })
@@ -168,10 +168,10 @@ async function pickTemplate() {
   function formatRegistryArrayForInquirer(lang) {
     const folderNames = fs.readdirSync(path.join(templatesDir, lang))
     const registry = folderNames
-      .filter(x => !x.endsWith('.md')) // filter out markdown files
-      .map(name => require(path.join(templatesDir, lang, name, '.netlify-function-template.js')))
+      .filter((x) => !x.endsWith('.md')) // filter out markdown files
+      .map((name) => require(path.join(templatesDir, lang, name, '.netlify-function-template.js')))
       .sort((a, b) => (a.priority || 999) - (b.priority || 999))
-      .map(t => {
+      .map((t) => {
         t.lang = lang
         return {
           // confusing but this is the format inquirer wants
@@ -224,12 +224,12 @@ async function downloadFromURL(flags, args, functionsDir) {
   await Promise.all(
     folderContents.map(({ name, download_url: downloadUrl }) => {
       return fetch(downloadUrl)
-        .then(res => {
+        .then((res) => {
           const finalName = path.basename(name, '.js') === functionName ? nameToUse + '.js' : name
           const dest = fs.createWriteStream(path.join(fnFolder, finalName))
           res.body.pipe(dest)
         })
-        .catch(error => {
+        .catch((error) => {
           throw new Error('Error while retrieving ' + downloadUrl + ` ${error}`)
         })
     })
@@ -255,7 +255,7 @@ async function downloadFromURL(flags, args, functionsDir) {
 }
 
 function installDeps(functionPath) {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     cp.exec('npm i', { cwd: path.join(functionPath) }, () => {
       resolve()
     })
@@ -271,7 +271,7 @@ async function scaffoldFromTemplate(flags, args, functionsDir) {
         name: 'chosenurl',
         message: 'URL to clone: ',
         type: 'input',
-        validate: val => Boolean(validateRepoURL(val)),
+        validate: (val) => Boolean(validateRepoURL(val)),
         // make sure it is not undefined and is a valid filename.
         // this has some nuance i have ignored, eg crossenv and i18n concerns
       },
@@ -306,7 +306,7 @@ async function scaffoldFromTemplate(flags, args, functionsDir) {
     let hasPackageJSON = false
     copy(pathToTemplate, functionPath, vars, async (err, createdFiles) => {
       if (err) throw err
-      createdFiles.forEach(filePath => {
+      createdFiles.forEach((filePath) => {
         if (filePath.endsWith('.netlify-function-template.js')) return
         this.log(`${NETLIFYDEVLOG} ${chalk.greenBright('Created')} ${filePath}`)
         require('fs').chmodSync(path.resolve(filePath), 0o777)

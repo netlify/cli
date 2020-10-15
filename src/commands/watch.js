@@ -94,7 +94,7 @@ async function waitForBuildFinish(api, siteId) {
 
   async function waitForBuildToFinish() {
     const builds = await api.listSiteBuilds({ siteId })
-    const currentBuilds = builds.filter(build => {
+    const currentBuilds = builds.filter((build) => {
       // build.error
       return !build.done
     })

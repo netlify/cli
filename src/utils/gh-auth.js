@@ -27,7 +27,7 @@ async function getGitHubToken({ opts, log }) {
         type: 'input',
         name: 'otp',
         message: 'Your GitHub OTP/2FA Code:',
-        filter: input => input.trim(),
+        filter: (input) => input.trim(),
       },
     ])
     return otp
@@ -52,12 +52,12 @@ async function getGitHubToken({ opts, log }) {
     const port = await getPort({ port: 3000 })
     let deferredResolve
     let deferredReject
-    const deferredPromise = new Promise(function(resolve, reject) {
+    const deferredPromise = new Promise(function (resolve, reject) {
       deferredResolve = resolve
       deferredReject = reject
     })
 
-    const server = http.createServer(function(req, res) {
+    const server = http.createServer(function (req, res) {
       const parameters = querystring.parse(req.url.slice(req.url.indexOf('?') + 1))
       if (parameters.token) {
         deferredResolve(parameters)
@@ -75,7 +75,7 @@ async function getGitHubToken({ opts, log }) {
       deferredReject(new Error('Got invalid parameters for CLI login'))
     })
 
-    await new Promise(function(resolve, reject) {
+    await new Promise(function (resolve, reject) {
       server.on('error', reject)
       server.listen(port, resolve)
     })
@@ -98,14 +98,14 @@ async function getGitHubToken({ opts, log }) {
         type: 'input',
         name: 'username',
         message: 'Your GitHub username:',
-        filter: input => input.trim(),
+        filter: (input) => input.trim(),
       },
       {
         type: 'password',
         name: 'password',
         message: 'Your GitHub password:',
         mask: '*',
-        filter: input => input.trim(),
+        filter: (input) => input.trim(),
       },
     ])
 

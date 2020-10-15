@@ -32,13 +32,13 @@ const validateDeploy = async ({ deploy, siteName, content, t }) => {
 }
 
 if (process.env.IS_FORK !== 'true') {
-  test.before(async t => {
+  test.before(async (t) => {
     const siteId = await createLiveTestSite(siteName)
     t.context.siteId = siteId
   })
 
-  test.serial('should deploy site when dir flag is passed', async t => {
-    await withSiteBuilder('site-with-public-folder', async builder => {
+  test.serial('should deploy site when dir flag is passed', async (t) => {
+    await withSiteBuilder('site-with-public-folder', async (builder) => {
       const content = '<h1>⊂◉‿◉つ</h1>'
       builder.withContentFile({
         path: 'public/index.html',
@@ -50,14 +50,14 @@ if (process.env.IS_FORK !== 'true') {
       const deploy = await callCli(['deploy', '--json', '--dir', 'public'], {
         cwd: builder.directory,
         env: { NETLIFY_SITE_ID: t.context.siteId },
-      }).then(output => JSON.parse(output))
+      }).then((output) => JSON.parse(output))
 
       await validateDeploy({ deploy, siteName, content, t })
     })
   })
 
-  test.serial('should deploy site when publish directory set in netlify.toml', async t => {
-    await withSiteBuilder('site-with-public-folder', async builder => {
+  test.serial('should deploy site when publish directory set in netlify.toml', async (t) => {
+    await withSiteBuilder('site-with-public-folder', async (builder) => {
       const content = '<h1>⊂◉‿◉つ</h1>'
       builder
         .withContentFile({
@@ -75,7 +75,7 @@ if (process.env.IS_FORK !== 'true') {
       const deploy = await callCli(['deploy', '--json'], {
         cwd: builder.directory,
         env: { NETLIFY_SITE_ID: t.context.siteId },
-      }).then(output => JSON.parse(output))
+      }).then((output) => JSON.parse(output))
 
       await validateDeploy({ deploy, siteName, content, t })
     })
@@ -84,8 +84,8 @@ if (process.env.IS_FORK !== 'true') {
   // the edge handlers plugin only works on node >= 10
   const version = Number.parseInt(process.version.slice(1).split('.')[0])
   if (version >= 10) {
-    test.serial('should deploy edge handlers when directory exists', async t => {
-      await withSiteBuilder('site-with-public-folder', async builder => {
+    test.serial('should deploy edge handlers when directory exists', async (t) => {
+      await withSiteBuilder('site-with-public-folder', async (builder) => {
         const content = '<h1>⊂◉‿◉つ</h1>'
         builder
           .withContentFile({
@@ -99,7 +99,7 @@ if (process.env.IS_FORK !== 'true') {
           })
           .withEdgeHandlers({
             handlers: {
-              onRequest: event => {
+              onRequest: (event) => {
                 console.log(`Incoming request for ${event.request.url}`)
               },
             },
@@ -113,7 +113,7 @@ if (process.env.IS_FORK !== 'true') {
         }
         // build the edge handlers first
         await callCli(['build'], options)
-        const deploy = await callCli(['deploy', '--json'], options).then(output => JSON.parse(output))
+        const deploy = await callCli(['deploy', '--json'], options).then((output) => JSON.parse(output))
 
         await validateDeploy({ deploy, siteName, content, t })
 
@@ -139,8 +139,8 @@ if (process.env.IS_FORK !== 'true') {
     })
   }
 
-  test.serial('should run build command before deploy when build flag is passed', async t => {
-    await withSiteBuilder('site-with-public-folder', async builder => {
+  test.serial('should run build command before deploy when build flag is passed', async (t) => {
+    await withSiteBuilder('site-with-public-folder', async (builder) => {
       const content = '<h1>⊂◉‿◉つ</h1>'
       builder
         .withContentFile({
@@ -164,8 +164,8 @@ if (process.env.IS_FORK !== 'true') {
     })
   })
 
-  test.serial('should return valid json when both --build and --json are passed', async t => {
-    await withSiteBuilder('site-with-public-folder', async builder => {
+  test.serial('should return valid json when both --build and --json are passed', async (t) => {
+    await withSiteBuilder('site-with-public-folder', async (builder) => {
       const content = '<h1>⊂◉‿◉つ</h1>'
       builder
         .withContentFile({
@@ -189,8 +189,8 @@ if (process.env.IS_FORK !== 'true') {
     })
   })
 
-  test.serial('should deploy hidden public folder but ignore hidden/__MACOSX files', async t => {
-    await withSiteBuilder('site-with-a-dedicated-publish-folder', async builder => {
+  test.serial('should deploy hidden public folder but ignore hidden/__MACOSX files', async (t) => {
+    await withSiteBuilder('site-with-a-dedicated-publish-folder', async (builder) => {
       builder
         .withContentFiles([
           {
@@ -221,7 +221,7 @@ if (process.env.IS_FORK !== 'true') {
       const deploy = await callCli(['deploy', '--json'], {
         cwd: builder.directory,
         env: { NETLIFY_SITE_ID: t.context.siteId },
-      }).then(output => JSON.parse(output))
+      }).then((output) => JSON.parse(output))
 
       await validateDeploy({ deploy, siteName, content: 'index', t })
       await validateContent({
@@ -245,8 +245,8 @@ if (process.env.IS_FORK !== 'true') {
     })
   })
 
-  test.serial('should filter node_modules from root directory', async t => {
-    await withSiteBuilder('site-with-a-project-directory', async builder => {
+  test.serial('should filter node_modules from root directory', async (t) => {
+    await withSiteBuilder('site-with-a-project-directory', async (builder) => {
       builder
         .withContentFiles([
           {
@@ -269,7 +269,7 @@ if (process.env.IS_FORK !== 'true') {
       const deploy = await callCli(['deploy', '--json'], {
         cwd: builder.directory,
         env: { NETLIFY_SITE_ID: t.context.siteId },
-      }).then(output => JSON.parse(output))
+      }).then((output) => JSON.parse(output))
 
       await validateDeploy({ deploy, siteName, content: 'index', t })
       await validateContent({
@@ -281,8 +281,8 @@ if (process.env.IS_FORK !== 'true') {
     })
   })
 
-  test.serial('should not filter node_modules from publish directory', async t => {
-    await withSiteBuilder('site-with-a-project-directory', async builder => {
+  test.serial('should not filter node_modules from publish directory', async (t) => {
+    await withSiteBuilder('site-with-a-project-directory', async (builder) => {
       builder
         .withContentFiles([
           {
@@ -305,7 +305,7 @@ if (process.env.IS_FORK !== 'true') {
       const deploy = await callCli(['deploy', '--json'], {
         cwd: builder.directory,
         env: { NETLIFY_SITE_ID: t.context.siteId },
-      }).then(output => JSON.parse(output))
+      }).then((output) => JSON.parse(output))
 
       await validateDeploy({ deploy, siteName, content: 'index', t })
       await validateContent({
@@ -317,13 +317,13 @@ if (process.env.IS_FORK !== 'true') {
     })
   })
 
-  test.after('cleanup', async t => {
+  test.after('cleanup', async (t) => {
     const { siteId } = t.context
     console.log(`deleting test site "${siteName}". ${siteId}`)
     await callCli(['sites:delete', siteId, '--force'])
   })
-  test('should exit with error when deploying an empty directory', async t => {
-    await withSiteBuilder('site-with-an-empty-directory', async builder => {
+  test('should exit with error when deploying an empty directory', async (t) => {
+    await withSiteBuilder('site-with-an-empty-directory', async (builder) => {
       await builder.buildAsync()
 
       try {

@@ -36,7 +36,7 @@ const isExe = (mode, gid, uid) => {
   return Boolean(mode & 0o0001 || (mode & 0o0010 && isGroup) || (mode & 0o0100 && isUser))
 }
 
-const execExist = async binPath => {
+const execExist = async (binPath) => {
   try {
     const stat = await fs.statAsync(binPath)
     return stat.isFile() && isExe(stat.mode, stat.gid, stat.uid)

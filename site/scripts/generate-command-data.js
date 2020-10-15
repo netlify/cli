@@ -9,7 +9,7 @@ module.exports = function generateCommandData() {
   // console.log('commandsPath', commandsPath)
   const commands = globby.sync([`${commandsPath}/**/**.js`, `${netlifyDevPath}/**/**.js`])
 
-  const allCommands = commands.map(file => {
+  const allCommands = commands.map((file) => {
     const data = require(file)
     const command = commandFromPath(file)
     const parentCommand = command.split(':')[0]
@@ -30,7 +30,7 @@ module.exports = function generateCommandData() {
     }
   })
 
-  const visibleCommands = allCommands.filter(cmd => {
+  const visibleCommands = allCommands.filter((cmd) => {
     return !cmd.data.hidden
   })
 

@@ -29,8 +29,8 @@ async function startFrameworkServer({ settings, log, exit }) {
       },
     })
 
-    await new Promise(resolve => {
-      server.start(function() {
+    await new Promise((resolve) => {
+      server.start(function () {
         log(`\n${NETLIFYDEVLOG} Server listening to`, settings.frameworkPort)
         resolve()
       })
@@ -39,7 +39,7 @@ async function startFrameworkServer({ settings, log, exit }) {
   }
 
   log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.framework || 'custom config'}`)
-  const commandBin = await which(settings.command).catch(error => {
+  const commandBin = await which(settings.command).catch((error) => {
     if (error.code === 'ENOENT') {
       throw new Error(
         `"${settings.command}" could not be found in your PATH. Please make sure that "${settings.command}" is installed and available in your PATH`
@@ -67,7 +67,7 @@ async function startFrameworkServer({ settings, log, exit }) {
   ps.on('close', handleProcessExit)
   ps.on('SIGINT', handleProcessExit)
   ps.on('SIGTERM', handleProcessExit)
-  ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach(signal =>
+  ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) =>
     process.on(signal, () => {
       try {
         process.kill(-ps.pid)
@@ -107,7 +107,7 @@ const addDotFileEnvs = async ({ site, log, warn }) => {
   const envSettings = await getEnvSettings({ projectDir: site.root, warn })
   if (envSettings.vars.length !== 0) {
     log(
-      `${NETLIFYDEVLOG} Adding the following env variables from ${envSettings.files.map(f => chalk.blue(f))}:`,
+      `${NETLIFYDEVLOG} Adding the following env variables from ${envSettings.files.map((f) => chalk.blue(f))}:`,
       chalk.yellow(envSettings.vars.map(([key]) => key))
     )
     envSettings.vars.forEach(([key, val]) => (process.env[key] = val))

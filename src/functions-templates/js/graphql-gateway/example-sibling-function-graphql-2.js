@@ -71,7 +71,7 @@ const resolvers = {
       return books
     },
     book: (root, args) => {
-      return books.find(book => book.id === args.id)
+      return books.find((book) => book.id === args.id)
     },
   },
 }

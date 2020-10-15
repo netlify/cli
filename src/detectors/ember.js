@@ -1,6 +1,6 @@
 const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
 
-module.exports = function() {
+module.exports = function () {
   // REQUIRED FILES
   if (!hasRequiredFiles(['package.json'])) return false
   if (!hasRequiredFiles(['ember-cli-build.js'])) return false

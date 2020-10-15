@@ -3,7 +3,7 @@ const test = require('ava')
 const redirectParser = require('netlify-redirect-parser')
 const { getLanguage, parseFile, parseRules } = require('./rules-proxy.js')
 const { withSiteBuilder } = require('../../tests/utils/site-builder')
-test('getLanguage', t => {
+test('getLanguage', (t) => {
   const language = getLanguage({ 'accept-language': 'ur' })
 
   t.is(language, 'ur')
@@ -54,8 +54,8 @@ const config = {
 
 const redirects = [{ from: '/something ', to: '/ping', status: 200 }]
 
-test('should parse redirect rules from netlify.toml', async t => {
-  await withSiteBuilder('site-with-redirects-in-netlify-toml', async builder => {
+test('should parse redirect rules from netlify.toml', async (t) => {
+  await withSiteBuilder('site-with-redirects-in-netlify-toml', async (builder) => {
     builder.withNetlifyToml({
       config,
     })
@@ -108,8 +108,8 @@ test('should parse redirect rules from netlify.toml', async t => {
   })
 })
 
-test('should parse redirect rules from _redirects file', async t => {
-  await withSiteBuilder('site-with-redirects-file', async builder => {
+test('should parse redirect rules from _redirects file', async (t) => {
+  await withSiteBuilder('site-with-redirects-file', async (builder) => {
     builder.withRedirectsFile({
       redirects,
     })
@@ -129,8 +129,8 @@ test('should parse redirect rules from _redirects file', async t => {
   })
 })
 
-test('should parse redirect rules from _redirects file and netlify.toml', async t => {
-  await withSiteBuilder('site-with-redirects-file-and-netlify-toml', async builder => {
+test('should parse redirect rules from _redirects file and netlify.toml', async (t) => {
+  await withSiteBuilder('site-with-redirects-file-and-netlify-toml', async (builder) => {
     builder
       .withRedirectsFile({
         redirects,

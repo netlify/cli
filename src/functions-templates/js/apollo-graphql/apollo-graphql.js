@@ -31,7 +31,7 @@ const resolvers = {
     author: () => {},
     authorByName: (root, args) => {
       console.log('hihhihi', args.name)
-      return authors.find(x => x.name === args.name) || 'NOTFOUND'
+      return authors.find((x) => x.name === args.name) || 'NOTFOUND'
     },
   },
 }

@@ -8,13 +8,13 @@ const fs = require('fs')
 
 module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
   let settings = {}
-  const detectorsFiles = fs.readdirSync(path.join(__dirname, '..', 'detectors')).filter(x => x.endsWith('.js')) // only accept .js detector files
+  const detectorsFiles = fs.readdirSync(path.join(__dirname, '..', 'detectors')).filter((x) => x.endsWith('.js')) // only accept .js detector files
 
   if (typeof devConfig.framework !== 'string') throw new Error('Invalid "framework" option provided in config')
 
   if (flags.dir) {
     settings = await getStaticServerSettings(settings, flags, projectDir, log)
-    ;['command', 'targetPort'].forEach(p => {
+    ;['command', 'targetPort'].forEach((p) => {
       if (flags[p]) {
         throw new Error(
           `"${p}" option cannot be used in conjunction with "dir" flag which is used to run a static server`
@@ -23,7 +23,7 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
     })
   } else if (devConfig.framework === '#auto' && !(devConfig.command && devConfig.targetPort)) {
     const settingsArr = []
-    const detectors = detectorsFiles.map(det => {
+    const detectors = detectorsFiles.map((det) => {
       try {
         return loadDetector(det)
       } catch (error) {
@@ -65,7 +65,7 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
     settings.framework = '#custom'
     if (
       devConfig.framework &&
-      !['command', 'targetPort'].every(p => Object.prototype.hasOwnProperty.call(devConfig, p))
+      !['command', 'targetPort'].every((p) => Object.prototype.hasOwnProperty.call(devConfig, p))
     ) {
       throw new Error('"command" and "targetPort" properties are required when "framework" is set to "#custom"')
     }
@@ -77,12 +77,12 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
   } else if (devConfig.framework === '#static') {
     // Do nothing
   } else {
-    const detectorName = detectorsFiles.find(dt => dt === `${devConfig.framework}.js`)
+    const detectorName = detectorsFiles.find((dt) => dt === `${devConfig.framework}.js`)
     if (!detectorName)
       throw new Error(
         'Unsupported value provided for "framework" option in config. Please use "#custom"' +
           ` if you're using a framework not intrinsically supported by Netlify Dev. E.g. with "command" and "targetPort" options.` +
-          ` Or use one of following values: ${detectorsFiles.map(f => `"${path.parse(f).name}"`).join(', ')}`
+          ` Or use one of following values: ${detectorsFiles.map((f) => `"${path.parse(f).name}"`).join(', ')}`
       )
 
     const detector = loadDetector(detectorName)
@@ -230,17 +230,17 @@ module.exports.chooseDefaultArgs = chooseDefaultArgs
 function filterSettings(scriptInquirerOptions, input) {
   const filteredSettings = fuzzy.filter(
     input,
-    scriptInquirerOptions.map(x => x.name)
+    scriptInquirerOptions.map((x) => x.name)
   )
-  const filteredSettingNames = new Set(filteredSettings.map(x => (input ? x.string : x)))
-  return scriptInquirerOptions.filter(t => filteredSettingNames.has(t.name))
+  const filteredSettingNames = new Set(filteredSettings.map((x) => (input ? x.string : x)))
+  return scriptInquirerOptions.filter((t) => filteredSettingNames.has(t.name))
 }
 
 /** utiltities for the inquirer section above */
 function formatSettingsArrForInquirer(settingsArr) {
   return [].concat(
-    ...settingsArr.map(setting =>
-      setting.possibleArgsArrs.map(args => ({
+    ...settingsArr.map((setting) =>
+      setting.possibleArgsArrs.map((args) => ({
         name: `[${chalk.yellow(setting.framework)}] ${setting.command} ${args.join(' ')}`,
         value: { ...setting, args },
         short: setting.framework + '-' + args.join(' '),

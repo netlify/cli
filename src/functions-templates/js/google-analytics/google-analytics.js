@@ -16,7 +16,7 @@ function whitelistDomain(domain, addWww = true) {
     prefixes.push('https://www.')
     prefixes.push('http://www.')
   }
-  prefixes.forEach(prefix => originWhitelist.push(prefix + domain))
+  prefixes.forEach((prefix) => originWhitelist.push(prefix + domain))
 }
 
 function proxyToGoogleAnalytics(event, done) {
@@ -52,7 +52,7 @@ function proxyToGoogleAnalytics(event, done) {
   done()
 }
 
-exports.handler = function(event, context, callback) {
+exports.handler = function (event, context, callback) {
   const origin = event.headers.origin || event.headers.Origin || ''
   console.log(`Received ${event.httpMethod} request from, origin: ${origin}`)
 

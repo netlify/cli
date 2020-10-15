@@ -5,9 +5,9 @@ const config = require('./config')
 const { copyDirRecursiveAsync } = require('./fs')
 
 async function readDir(dir, allFiles = []) {
-  const files = (await fs.readdir(dir)).map(f => path.join(dir, f))
+  const files = (await fs.readdir(dir)).map((f) => path.join(dir, f))
   allFiles.push(...files)
-  await Promise.all(files.map(async f => (await fs.stat(f)).isDirectory() && readDir(f, allFiles)))
+  await Promise.all(files.map(async (f) => (await fs.stat(f)).isDirectory() && readDir(f, allFiles)))
   return allFiles
 }
 
@@ -20,10 +20,10 @@ async function syncLocalContent() {
 
   const files = await readDir(destination)
   const mdFiles = files
-    .filter(file => {
+    .filter((file) => {
       return file.endsWith('.md')
     })
-    .map(path => {
+    .map((path) => {
       return removeMarkDownLinks(path)
     })
 

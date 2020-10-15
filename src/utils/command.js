@@ -17,7 +17,7 @@ const { NETLIFY_AUTH_TOKEN, NETLIFY_API_URL } = process.env
 // Todo setup client for multiple environments
 const CLIENT_ID = 'd6f37de6614df7ae58664cfca524744d73807a377f5ee71f1a254f78412e3750'
 
-const getToken = tokenFromFlag => {
+const getToken = (tokenFromFlag) => {
   // 1. First honor command flag --auth
   if (tokenFromFlag) {
     return [tokenFromFlag, 'flag']
@@ -145,7 +145,7 @@ class BaseCommand extends Command {
     const globalFlags = {}
     if (!opts.flags.silent) {
       globalFlags.silent = {
-        parse: b => b,
+        parse: (b) => b,
         description: 'Silence CLI output',
         allowNo: false,
         type: 'boolean',
@@ -153,7 +153,7 @@ class BaseCommand extends Command {
     }
     if (!opts.flags.json) {
       globalFlags.json = {
-        parse: b => b,
+        parse: (b) => b,
         description: 'Output return values as JSON',
         allowNo: false,
         type: 'boolean',
@@ -161,7 +161,7 @@ class BaseCommand extends Command {
     }
     if (!opts.flags.auth) {
       globalFlags.auth = {
-        parse: b => b,
+        parse: (b) => b,
         description: 'Netlify auth token',
         input: [],
         multiple: false,
