@@ -11,7 +11,7 @@ const getBuildOptions = ({ netlify, token, flags }) => {
   return { cachedConfig, token, dry, debug, mode: 'cli', telemetry: false, buffer }
 }
 
-const runBuild = async options => {
+const runBuild = async (options) => {
   const { severityCode: exitCode } = await build(options)
   return exitCode
 }

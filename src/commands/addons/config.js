@@ -37,7 +37,7 @@ class AddonsConfigCommand extends Command {
       }
     } else {
       // For addons without manifest. TODO remove once we enfore manifests
-      Object.keys(currentConfig).forEach(key => {
+      Object.keys(currentConfig).forEach((key) => {
         this.log(`${key} - ${currentConfig[key]}`)
       })
     }
@@ -106,7 +106,7 @@ class AddonsConfigCommand extends Command {
       this.log()
       this.log(`${chalk.yellowBright.bold.underline('Confirm your updates:')}`)
       this.log()
-      diffs.keys.forEach(key => {
+      diffs.keys.forEach((key) => {
         const { newValue, oldValue } = diffs.diffs[key]
         const oldVal = oldValue || 'NO VALUE'
         this.log(`${chalk.cyan(key)} changed from ${chalk.whiteBright(oldVal)} to ${chalk.green(newValue)}`)

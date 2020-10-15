@@ -1,7 +1,7 @@
 // for a full working demo of Netlify Identity + Functions, see https://netlify-gotrue-in-react.netlify.com/
 
 const fetch = require('node-fetch')
-exports.handler = async function(event, context) {
+exports.handler = async function (event, context) {
   if (!context.clientContext && !context.clientContext.identity) {
     return {
       statusCode: 500,

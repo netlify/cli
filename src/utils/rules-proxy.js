@@ -11,7 +11,7 @@ async function parseFile(parser, filePath) {
   const result = await parser(filePath)
   if (result.errors.length !== 0) {
     console.error(`${NETLIFYDEVWARN} Warnings while parsing ${path.basename(filePath)} file:`)
-    result.errors.forEach(err => {
+    result.errors.forEach((err) => {
       console.error(`  ${err.lineNum}: ${err.line} -- ${err.reason}`)
     })
   }
@@ -39,7 +39,7 @@ async function parseRules(configFiles) {
 module.exports.parseRules = parseRules
 
 function onChanges(files, cb) {
-  files.forEach(file => {
+  files.forEach((file) => {
     const watcher = chokidar.watch(file)
     watcher.on('change', cb)
     watcher.on('unlink', cb)
@@ -69,13 +69,13 @@ module.exports.createRewriter = async function createRewriter({ distDir, project
         configPath ? path.resolve(configPath) : []
       )
     ),
-  ].filter(f => f !== projectDir)
+  ].filter((f) => f !== projectDir)
   let rules = await parseRules(configFiles)
 
   onChanges(configFiles, async () => {
     console.log(
       `${NETLIFYDEVLOG} Reloading redirect rules from`,
-      configFiles.filter(fs.existsSync).map(p => path.relative(projectDir, p))
+      configFiles.filter(fs.existsSync).map((p) => path.relative(projectDir, p))
     )
     rules = await parseRules(configFiles)
     matcher = null
@@ -97,12 +97,13 @@ module.exports.createRewriter = async function createRewriter({ distDir, project
     }
   }
 
-  return function(req, res, next) {
-    getMatcher().then(matcher => {
+  return function (req, res, next) {
+    getMatcher().then((matcher) => {
       const reqUrl = new url.URL(
         req.url,
-        `${req.protocol || (req.headers.scheme && req.headers.scheme + ':') || 'http:'}//${req.hostname ||
-          req.headers.host}`
+        `${req.protocol || (req.headers.scheme && req.headers.scheme + ':') || 'http:'}//${
+          req.hostname || req.headers.host
+        }`
       )
       const cookieValues = cookie.parse(req.headers.cookie || '')
       const headers = Object.assign(
@@ -122,8 +123,8 @@ module.exports.createRewriter = async function createRewriter({ distDir, project
         query: reqUrl.search.slice(1),
         headers,
         cookieValues,
-        getHeader: name => headers[name.toLowerCase()] || '',
-        getCookie: key => cookieValues[key] || '',
+        getHeader: (name) => headers[name.toLowerCase()] || '',
+        getCookie: (key) => cookieValues[key] || '',
       }
       const match = matcher.match(matchReq)
       if (match) return next(match)

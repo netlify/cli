@@ -25,12 +25,12 @@ function handleErr(err, response) {
 }
 
 function capitalize(t) {
-  return t.replace(/(^\w|\s\w)/g, m => m.toUpperCase())
+  return t.replace(/(^\w|\s\w)/g, (m) => m.toUpperCase())
 }
 
 /** need to keep createCallback in scope so we can know if cb was called AND handler is async */
 function createCallback(response) {
-  return function(err, lambdaResponse) {
+  return function (err, lambdaResponse) {
     if (err) {
       return handleErr(err, response)
     }
@@ -91,9 +91,9 @@ function buildClientContext(headers) {
   }
 }
 
-const clearCache = action => path => {
+const clearCache = (action) => (path) => {
   console.log(`${NETLIFYDEVLOG} ${path} ${action}, reloading...`)
-  Object.keys(require.cache).forEach(k => {
+  Object.keys(require.cache).forEach((k) => {
     delete require.cache[k]
   })
   console.log(`${NETLIFYDEVLOG} ${path} ${action}, successfully reloaded!`)
@@ -111,11 +111,11 @@ function createHandler(dir) {
   })
   lambdaLocal.setLogger(logger)
 
-  return function(request, response) {
+  return function (request, response) {
     // handle proxies without path re-writes (http-servr)
     const cleanPath = request.path.replace(/^\/.netlify\/functions/, '')
 
-    const func = cleanPath.split('/').find(function(e) {
+    const func = cleanPath.split('/').find(function (e) {
       return e
     })
     if (!functions[func]) {
@@ -176,7 +176,7 @@ function createHandler(dir) {
 }
 
 function createFormSubmissionHandler(siteInfo) {
-  return async function(req, res, next) {
+  return async function (req, res, next) {
     if (req.url.startsWith('/.netlify/') || req.method !== 'POST') return next()
 
     const fakeRequest = new Readable({
@@ -209,7 +209,7 @@ function createFormSubmissionHandler(siteInfo) {
             Files = Object.entries(Files).reduce(
               (prev, [name, values]) => ({
                 ...prev,
-                [name]: values.map(v => ({
+                [name]: values.map((v) => ({
                   filename: v.originalFilename,
                   size: v.size,
                   type: v.headers && v.headers['content-type'],
@@ -239,19 +239,21 @@ function createFormSubmissionHandler(siteInfo) {
     const data = JSON.stringify({
       payload: {
         company:
-          fields[Object.keys(fields).find(name => ['company', 'business', 'employer'].includes(name.toLowerCase()))],
+          fields[Object.keys(fields).find((name) => ['company', 'business', 'employer'].includes(name.toLowerCase()))],
         last_name:
-          fields[Object.keys(fields).find(name => ['lastname', 'surname', 'byname'].includes(name.toLowerCase()))],
+          fields[Object.keys(fields).find((name) => ['lastname', 'surname', 'byname'].includes(name.toLowerCase()))],
         first_name:
-          fields[Object.keys(fields).find(name => ['firstname', 'givenname', 'forename'].includes(name.toLowerCase()))],
-        name: fields[Object.keys(fields).find(name => ['name', 'fullname'].includes(name.toLowerCase()))],
+          fields[
+            Object.keys(fields).find((name) => ['firstname', 'givenname', 'forename'].includes(name.toLowerCase()))
+          ],
+        name: fields[Object.keys(fields).find((name) => ['name', 'fullname'].includes(name.toLowerCase()))],
         email:
           fields[
-            Object.keys(fields).find(name =>
+            Object.keys(fields).find((name) =>
               ['email', 'mail', 'from', 'twitter', 'sender'].includes(name.toLowerCase())
             )
           ],
-        title: fields[Object.keys(fields).find(name => ['title', 'subject'].includes(name.toLowerCase()))],
+        title: fields[Object.keys(fields).find((name) => ['title', 'subject'].includes(name.toLowerCase()))],
         data: {
           ...fields,
           ...files,
@@ -302,7 +304,7 @@ function serveFunctions(dir, siteInfo = {}) {
     })
   )
 
-  app.get('/favicon.ico', function(req, res) {
+  app.get('/favicon.ico', function (req, res) {
     res.status(204).end()
   })
 
@@ -371,8 +373,8 @@ const startFunctionsServer = async ({ settings, site, log, warn, errorExit, site
 
     const functionsServer = await serveFunctions(settings.functions, siteInfo)
 
-    await new Promise(resolve => {
-      functionsServer.listen(settings.functionsPort, err => {
+    await new Promise((resolve) => {
+      functionsServer.listen(settings.functionsPort, (err) => {
         if (err) {
           errorExit(`${NETLIFYDEVERR} Unable to start lambda server: ${err}`)
         } else {

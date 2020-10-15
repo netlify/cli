@@ -39,7 +39,7 @@ class StatusCommand extends Command {
     }
     const teamsData = {}
 
-    accounts.forEach(team => {
+    accounts.forEach((team) => {
       return (teamsData[team.name] = team.roles_allowed.join(' '))
     })
 

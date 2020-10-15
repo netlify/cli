@@ -15,7 +15,7 @@ const copyDirRecursiveAsync = async (src, dest) => {
   const childrenItems = await fs.readdir(src)
 
   await Promise.all(
-    childrenItems.map(async item => {
+    childrenItems.map(async (item) => {
       const srcPath = path.join(src, item)
       const destPath = path.join(dest, item)
 
@@ -30,7 +30,7 @@ const copyDirRecursiveAsync = async (src, dest) => {
   )
 }
 
-const ensureFilePathAsync = async filePath => {
+const ensureFilePathAsync = async (filePath) => {
   try {
     await fs.mkdir(path.dirname(filePath), { recursive: true })
   } catch (_) {
@@ -38,7 +38,7 @@ const ensureFilePathAsync = async filePath => {
   }
 }
 
-const removeRecursiveAsync = async path => {
+const removeRecursiveAsync = async (path) => {
   await rimrafAsync(path)
 }
 

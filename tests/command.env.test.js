@@ -59,7 +59,7 @@ function getArgsFromState(state) {
 }
 
 if (process.env.IS_FORK !== 'true') {
-  test.before(async t => {
+  test.before(async (t) => {
     const siteId = await createLiveTestSite(siteName)
     const builder = createSiteBuilder({ siteName: 'site-with-env-vars' })
       .withEnvFile({
@@ -76,7 +76,7 @@ if (process.env.IS_FORK !== 'true') {
     t.context.builder = builder
   })
 
-  test.serial('env:list --json should return empty object if no vars set', async t => {
+  test.serial('env:list --json should return empty object if no vars set', async (t) => {
     const cliResponse = await callCli(['env:list', '--json'], t.context.execOptions)
     const json = JSON.parse(cliResponse)
 
@@ -84,7 +84,7 @@ if (process.env.IS_FORK !== 'true') {
     t.true(isEmpty(json))
   })
 
-  test.serial('env:get --json should return empty object if var not set', async t => {
+  test.serial('env:get --json should return empty object if var not set', async (t) => {
     const key = getArgsFromState(ENV_VAR_STATES.get)[0]
 
     const cliResponse = await callCli(['env:get', '--json', key], t.context.execOptions)
@@ -94,7 +94,7 @@ if (process.env.IS_FORK !== 'true') {
     t.true(isEmpty(json))
   })
 
-  test.serial('env:set --json should create and return new var', async t => {
+  test.serial('env:set --json should create and return new var', async (t) => {
     const state = ENV_VAR_STATES.set
 
     const cliResponse = await callCli(['env:set', '--json', ...getArgsFromState(state)], t.context.execOptions)
@@ -104,7 +104,7 @@ if (process.env.IS_FORK !== 'true') {
     checkResultState({ t, result: json, state })
   })
 
-  test.serial('env:set --json should update existing var', async t => {
+  test.serial('env:set --json should update existing var', async (t) => {
     const state = ENV_VAR_STATES.update
 
     const cliResponse = await callCli(['env:set', '--json', ...getArgsFromState(state)], t.context.execOptions)
@@ -114,7 +114,7 @@ if (process.env.IS_FORK !== 'true') {
     checkResultState({ t, result: json, state })
   })
 
-  test.serial('env:get --json should return value of existing var', async t => {
+  test.serial('env:get --json should return value of existing var', async (t) => {
     const [key, value] = getArgsFromState(ENV_VAR_STATES.get)
 
     const cliResponse = await callCli(['env:get', '--json', key], t.context.execOptions)
@@ -125,13 +125,13 @@ if (process.env.IS_FORK !== 'true') {
     t.is(json[key], value)
   })
 
-  test.serial('env:import should throw error if file not exists', async t => {
+  test.serial('env:import should throw error if file not exists', async (t) => {
     await t.throwsAsync(async () => {
       await callCli(['env:import', FAIL_ENV_FILE_NAME], t.context.execOptions)
     })
   })
 
-  test.serial('env:import --json should import new vars and override existing vars', async t => {
+  test.serial('env:import --json should import new vars and override existing vars', async (t) => {
     const cliResponse = await callCli(['env:import', '--json', ENV_FILE_NAME], t.context.execOptions)
     const json = JSON.parse(cliResponse)
 
@@ -139,7 +139,7 @@ if (process.env.IS_FORK !== 'true') {
     checkResultState({ t, result: json, state: ENV_VAR_STATES.import })
   })
 
-  test.serial('env:get --json should return value of var from netlify.toml', async t => {
+  test.serial('env:get --json should return value of var from netlify.toml', async (t) => {
     // Add netlify.toml before running all following tests as they check
     // right behavior with netlify.toml.
     t.context.builder = await injectNetlifyToml(t.context.builder)
@@ -154,7 +154,7 @@ if (process.env.IS_FORK !== 'true') {
     t.is(json[key], value)
   })
 
-  test.serial('env:list --json should return list of vars with netlify.toml taking priority', async t => {
+  test.serial('env:list --json should return list of vars with netlify.toml taking priority', async (t) => {
     const cliResponse = await callCli(['env:list', '--json'], t.context.execOptions)
     const json = JSON.parse(cliResponse)
 
@@ -164,7 +164,7 @@ if (process.env.IS_FORK !== 'true') {
     checkResultState({ t, result: json, state: merged })
   })
 
-  test.serial('env:set --json should be able to set var with empty value', async t => {
+  test.serial('env:set --json should be able to set var with empty value', async (t) => {
     const args = getArgsFromState(ENV_VAR_STATES.setEmpty)
     const key = args[0]
 
@@ -176,7 +176,7 @@ if (process.env.IS_FORK !== 'true') {
     checkResultState({ t, result: json, state: ENV_VAR_STATES.setEmpty })
   })
 
-  test.serial('env:unset --json should remove existing variable', async t => {
+  test.serial('env:unset --json should remove existing variable', async (t) => {
     const key = getArgsFromState(ENV_VAR_STATES.unset)[0]
 
     const cliResponse = await callCli(['env:unset', '--json', key], t.context.execOptions)
@@ -186,18 +186,21 @@ if (process.env.IS_FORK !== 'true') {
     t.falsy(key in json)
   })
 
-  test.serial('env:import --json --replace-existing should replace all existing vars and return imported', async t => {
-    const state = ENV_VAR_STATES.importReplace
+  test.serial(
+    'env:import --json --replace-existing should replace all existing vars and return imported',
+    async (t) => {
+      const state = ENV_VAR_STATES.importReplace
 
-    const cliResponse = await callCli(['env:import', '--json', REPLACE_ENV_FILE_NAME], t.context.execOptions)
-    const json = JSON.parse(cliResponse)
+      const cliResponse = await callCli(['env:import', '--json', REPLACE_ENV_FILE_NAME], t.context.execOptions)
+      const json = JSON.parse(cliResponse)
 
-    t.true(isObject(json))
-    t.is(Object.keys(json).length, Object.keys(state).length)
-    checkResultState({ t, result: json, state })
-  })
+      t.true(isObject(json))
+      t.is(Object.keys(json).length, Object.keys(state).length)
+      checkResultState({ t, result: json, state })
+    }
+  )
 
-  test.after('cleanup', async t => {
+  test.after('cleanup', async (t) => {
     const { execOptions, builder } = t.context
 
     console.log('Performing cleanup')

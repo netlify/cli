@@ -6,7 +6,7 @@ module.exports = {
   getFunctions(dir) {
     const functions = {}
     if (fs.existsSync(dir)) {
-      fs.readdirSync(dir).forEach(file => {
+      fs.readdirSync(dir).forEach((file) => {
         if (dir === 'node_modules') {
           return
         }

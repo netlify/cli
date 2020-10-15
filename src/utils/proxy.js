@@ -31,7 +31,7 @@ function addonUrl(addonUrls, req) {
 }
 
 async function getStatic(pathname, publicFolder) {
-  const alternatives = [pathname, ...alternativePathsFor(pathname)].map(p => path.resolve(publicFolder, p.slice(1)))
+  const alternatives = [pathname, ...alternativePathsFor(pathname)].map((p) => path.resolve(publicFolder, p.slice(1)))
 
   for (const i in alternatives) {
     const p = alternatives[i]
@@ -108,7 +108,7 @@ async function serveRedirect(req, res, proxy, match, options) {
 
   if (match.exceptions && match.exceptions.JWT) {
     // Some values of JWT can start with :, so, make sure to normalize them
-    const expectedRoles = new Set(match.exceptions.JWT.split(',').map(r => (r.startsWith(':') ? r.slice(1) : r)))
+    const expectedRoles = new Set(match.exceptions.JWT.split(',').map((r) => (r.startsWith(':') ? r.slice(1) : r)))
 
     const cookieValues = cookie.parse(req.headers.cookie || '')
     const token = cookieValues.nf_jwt
@@ -140,7 +140,7 @@ async function serveRedirect(req, res, proxy, match, options) {
         }
 
         // Restore the URL if everything is correct
-        if (presentedRoles.some(pr => expectedRoles.has(pr))) {
+        if (presentedRoles.some((pr) => expectedRoles.has(pr))) {
           req.url = originalURL
         }
       }
@@ -149,8 +149,9 @@ async function serveRedirect(req, res, proxy, match, options) {
 
   const reqUrl = new url.URL(
     req.url,
-    `${req.protocol || (req.headers.scheme && req.headers.scheme + ':') || 'http:'}//${req.headers.host ||
-      req.hostname}`
+    `${req.protocol || (req.headers.scheme && req.headers.scheme + ':') || 'http:'}//${
+      req.headers.host || req.hostname
+    }`
   )
 
   const staticFile = await getStatic(decodeURIComponent(reqUrl.pathname), options.publicFolder)
@@ -239,12 +240,12 @@ function initializeProxy(port, distDir, projectDir) {
   onChanges(headersFiles, async () => {
     console.log(
       `${NETLIFYDEVLOG} Reloading headers files`,
-      (await pFilter(headersFiles, fileExistsAsync)).map(p => path.relative(projectDir, p))
+      (await pFilter(headersFiles, fileExistsAsync)).map((p) => path.relative(projectDir, p))
     )
     headerRules = headersFiles.reduce((prev, curr) => Object.assign(prev, parseHeadersFile(curr)), {})
   })
 
-  proxy.on('error', err => console.error('error while proxying request:', err.message))
+  proxy.on('error', (err) => console.error('error while proxying request:', err.message))
   proxy.on('proxyReq', (proxyReq, req) => {
     if (req.originalBody) {
       proxyReq.write(req.originalBody)
@@ -266,10 +267,10 @@ function initializeProxy(port, distDir, projectDir) {
       Object.entries(pathHeaderRules).forEach(([key, val]) => res.setHeader(key, val))
     }
     res.writeHead(req.proxyOptions.status || proxyRes.statusCode, proxyRes.headers)
-    proxyRes.on('data', function(data) {
+    proxyRes.on('data', function (data) {
       res.write(data)
     })
-    proxyRes.on('end', function() {
+    proxyRes.on('end', function () {
       res.end()
     })
   })
@@ -278,7 +279,7 @@ function initializeProxy(port, distDir, projectDir) {
     web: (req, res, options) => {
       const requestURL = new url.URL(req.url, 'http://localhost')
       req.proxyOptions = options
-      req.alternativePaths = alternativePathsFor(requestURL.pathname).map(p => p + requestURL.search)
+      req.alternativePaths = alternativePathsFor(requestURL.pathname).map((p) => p + requestURL.search)
       // Ref: https://nodejs.org/api/net.html#net_socket_remoteaddress
       req.headers['x-forwarded-for'] = req.connection.remoteAddress || ''
       return proxy.web(req, res, options)
@@ -301,7 +302,7 @@ async function startProxy(settings = {}, addonUrls, configPath, projectDir) {
     projectDir,
   })
 
-  const server = http.createServer(async function(req, res) {
+  const server = http.createServer(async function (req, res) {
     req.originalBody = ['GET', 'OPTIONS', 'HEAD'].includes(req.method) ? null : await createStreamPromise(req, 30)
 
     if (isFunction(settings.functionsPort, req.url)) {
@@ -312,7 +313,7 @@ async function startProxy(settings = {}, addonUrls, configPath, projectDir) {
       return proxy.web(req, res, { target: urlForAddons })
     }
 
-    rewriter(req, res, match => {
+    rewriter(req, res, (match) => {
       const options = {
         match,
         addonUrls,
@@ -339,11 +340,11 @@ async function startProxy(settings = {}, addonUrls, configPath, projectDir) {
     })
   })
 
-  server.on('upgrade', function(req, socket, head) {
+  server.on('upgrade', function (req, socket, head) {
     proxy.ws(req, socket, head)
   })
 
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     server.listen({ port: settings.port }, () => {
       resolve(`http://localhost:${settings.port}`)
     })

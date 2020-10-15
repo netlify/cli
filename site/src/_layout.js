@@ -46,7 +46,7 @@ export const Sidebar = styled('div')(
     left: 0,
     bottom: 0,
   },
-  props => ({
+  (props) => ({
     transform: props.open ? 'translateX(0)' : 'translateX(-100%)',
     [breakpoint]: {
       transform: 'none',
@@ -136,9 +136,9 @@ const NetlifyLogo = () => {
   )
 }
 
-export const Main = props => <Box {...props} is="main" flex="1 1 auto" w={1} pl={[null, null, 256]} />
+export const Main = (props) => <Box {...props} is="main" flex="1 1 auto" w={1} pl={[null, null, 256]} />
 
-export const MaxWidth = props => <Container {...props} maxWidth={768} px={4} pt={4} pb={6} />
+export const MaxWidth = (props) => <Container {...props} maxWidth={768} px={4} pt={4} pb={6} />
 
 export const Content = styled(Box)([], {
   minHeight: 'calc(100vh - 208px)',
@@ -157,11 +157,11 @@ const depthPad = ({ to = '' }) =>
   (1 +
     to
       .split('/')
-      .filter(s => s.length)
+      .filter((s) => s.length)
       .slice(1).length) *
   16
 
-const Link = styled(props => <NavLink {...props} is={RouterNavLink} w={1} pl={depthPad(props) - 4 + 'px'} />)(
+const Link = styled((props) => <NavLink {...props} is={RouterNavLink} w={1} pl={depthPad(props) - 4 + 'px'} />)(
   [],
   () => ({
     'borderLeft': '4px solid',
@@ -275,7 +275,7 @@ export const Nav = ({ routes = [], ...props }) => (
     <Divider my={0} />
 
     <UL>
-      {routes.map(route => {
+      {routes.map((route) => {
         // Hide items from nav if frontMatter hidden: true
         if (route.module && route.module.frontMatter && route.module.frontMatter.hidden) {
           return null
@@ -340,7 +340,7 @@ const MobileNav = ({ title, logo, update }) => (
   </MobileOnly>
 )
 
-const toggle = key => state => ({ [key]: !state[key] })
+const toggle = (key) => (state) => ({ [key]: !state[key] })
 const close = () => ({ menu: false })
 
 export default class Layout extends React.Component {
@@ -350,7 +350,7 @@ export default class Layout extends React.Component {
 
   state = {
     menu: false,
-    update: fn => this.setState(fn),
+    update: (fn) => this.setState(fn),
   }
 
   render() {
@@ -366,7 +366,7 @@ export default class Layout extends React.Component {
 
     const Wrapper = opts.fullWidth ? React.Fragment : MaxWidth
 
-    const index = routes.findIndex(r => r.path === route.path)
+    const index = routes.findIndex((r) => r.path === route.path)
     const pagination = {
       previous: routes[index - 1],
       next: routes[index + 1],

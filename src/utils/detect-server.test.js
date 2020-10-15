@@ -4,7 +4,7 @@ const getPort = require('get-port')
 const { loadDetector, serverSettings, chooseDefaultArgs } = require('./detect-server')
 const { createSiteBuilder } = require('../../tests/utils/site-builder')
 
-test.before(async t => {
+test.before(async (t) => {
   const builder = createSiteBuilder({ siteName: 'site-for-detecting-server' })
   await builder.buildAsync()
 
@@ -16,40 +16,40 @@ test.before(async t => {
   t.context.sitePath = builder.directory
 })
 
-test.after(async t => {
+test.after(async (t) => {
   process.chdir(t.context.cwd)
   await t.context.builder.cleanupAsync()
 })
 
-test('loadDetector: valid', t => {
+test('loadDetector: valid', (t) => {
   const d = loadDetector('create-react-app.js')
   t.is(typeof d, 'function')
 })
 
-test('loadDetector: invalid', t => {
+test('loadDetector: invalid', (t) => {
   t.throws(() => {
     loadDetector('cry.js')
   }, /Failed to load detector/)
 })
 
-test('serverSettings: minimal config', async t => {
+test('serverSettings: minimal config', async (t) => {
   const settings = await serverSettings({ framework: '#auto' }, {}, t.context.sitePath, () => {})
   t.is(settings.framework, undefined)
 })
 
-test('serverSettings: "#static" as "framework"', async t => {
+test('serverSettings: "#static" as "framework"', async (t) => {
   const settings = await serverSettings({ framework: '#static' }, {}, t.context.sitePath, () => {})
   t.is(settings.framework, undefined)
 })
 
-test('serverSettings: throw if "port" not available', async t => {
+test('serverSettings: throw if "port" not available', async (t) => {
   const port = await getPort({ port: 1 })
   await t.throwsAsync(async () => {
     await serverSettings({ framework: '#auto', port }, {}, t.context.sitePath, () => {})
   }, /Could not acquire required "port"/)
 })
 
-test('serverSettings: "command" override npm', async t => {
+test('serverSettings: "command" override npm', async (t) => {
   const devConfig = { framework: '#custom', command: 'npm run dev', targetPort: 1234 }
   const settings = await serverSettings(devConfig, {}, t.context.sitePath, () => {})
   t.is(settings.framework, devConfig.framework)
@@ -57,7 +57,7 @@ test('serverSettings: "command" override npm', async t => {
   t.deepEqual(settings.args, devConfig.command.split(' ').slice(1))
 })
 
-test('serverSettings: "command" override yarn', async t => {
+test('serverSettings: "command" override yarn', async (t) => {
   const devConfig = { framework: '#custom', command: 'yarn dev', targetPort: 1234 }
   const settings = await serverSettings(devConfig, {}, t.context.sitePath, () => {})
   t.is(settings.framework, devConfig.framework)
@@ -65,7 +65,7 @@ test('serverSettings: "command" override yarn', async t => {
   t.deepEqual(settings.args, devConfig.command.split(' ').slice(1))
 })
 
-test('serverSettings: custom framework parameters', async t => {
+test('serverSettings: custom framework parameters', async (t) => {
   const devConfig = { framework: '#custom', command: 'yarn dev', targetPort: 3000, publish: t.context.sitePath }
   const settings = await serverSettings(devConfig, {}, t.context.sitePath, () => {})
   t.is(settings.framework, '#custom')
@@ -75,34 +75,34 @@ test('serverSettings: custom framework parameters', async t => {
   t.is(settings.dist, devConfig.publish)
 })
 
-test('serverSettings: set "framework" to "#custom" but no "command"', async t => {
+test('serverSettings: set "framework" to "#custom" but no "command"', async (t) => {
   const devConfig = { framework: '#custom', targetPort: 3000, publish: t.context.sitePath }
   await t.throwsAsync(async () => {
     await serverSettings(devConfig, {}, t.context.sitePath, () => {})
   }, /"command" and "targetPort" properties are required when "framework" is set to "#custom"/)
 })
 
-test('serverSettings: set "framework" to "#custom" but no "targetPort"', async t => {
+test('serverSettings: set "framework" to "#custom" but no "targetPort"', async (t) => {
   const devConfig = { framework: '#custom', command: 'npm run dev', publish: t.context.sitePath }
   await t.throwsAsync(async () => {
     await serverSettings(devConfig, {}, t.context.sitePath, () => {})
   }, /"command" and "targetPort" properties are required when "framework" is set to "#custom"/)
 })
 
-test('serverSettings: set "framework" to "#custom" but no "targetPort" or "command"', async t => {
+test('serverSettings: set "framework" to "#custom" but no "targetPort" or "command"', async (t) => {
   const devConfig = { framework: '#custom', publish: t.context.sitePath }
   await t.throwsAsync(async () => {
     await serverSettings(devConfig, {}, t.context.sitePath, () => {})
   }, /"command" and "targetPort" properties are required when "framework" is set to "#custom"/)
 })
 
-test('serverSettings: "functions" config', async t => {
+test('serverSettings: "functions" config', async (t) => {
   const devConfig = { framework: '#auto', functions: path.join(t.context.sitePath, 'functions') }
   const settings = await serverSettings(devConfig, {}, t.context.sitePath, () => {})
   t.is(settings.functions, devConfig.functions)
 })
 
-test('serverSettings: "dir" flag', async t => {
+test('serverSettings: "dir" flag', async (t) => {
   const devConfig = {
     framework: '#auto',
     publish: path.join(t.context.sitePath, 'build'),
@@ -117,7 +117,7 @@ test('serverSettings: "dir" flag', async t => {
   t.is(settings.noCmd, true)
 })
 
-test('serverSettings: "dir" flag and "command" as config param', async t => {
+test('serverSettings: "dir" flag and "command" as config param', async (t) => {
   const devConfig = {
     framework: '#auto',
     command: 'npm start',
@@ -131,7 +131,7 @@ test('serverSettings: "dir" flag and "command" as config param', async t => {
   t.is(settings.dist, flags.dir)
 })
 
-test('serverSettings: "dir" and "targetPort" flags', async t => {
+test('serverSettings: "dir" and "targetPort" flags', async (t) => {
   const devConfig = { framework: '#auto', functions: path.join(t.context.sitePath, 'functions') }
   const flags = { dir: t.context.sitePath, targetPort: 1234 }
   await t.throwsAsync(async () => {
@@ -139,7 +139,7 @@ test('serverSettings: "dir" and "targetPort" flags', async t => {
   }, /"targetPort" option cannot be used in conjunction with "dir" flag/)
 })
 
-test('serverSettings: "dir" and "command" flags', async t => {
+test('serverSettings: "dir" and "command" flags', async (t) => {
   const devConfig = { framework: '#auto', functions: path.join(t.context.sitePath, 'functions') }
   const flags = { dir: t.context.sitePath, command: 'ding' }
   await t.throwsAsync(async () => {
@@ -147,7 +147,7 @@ test('serverSettings: "dir" and "command" flags', async t => {
   }, /"command" option cannot be used in conjunction with "dir" flag/)
 })
 
-test('serverSettings: when no framework is detected', async t => {
+test('serverSettings: when no framework is detected', async (t) => {
   const devConfig = {
     framework: '#auto',
     publish: path.join(t.context.sitePath, 'build'),
@@ -161,7 +161,7 @@ test('serverSettings: when no framework is detected', async t => {
   t.is(settings.noCmd, true)
 })
 
-test('serverSettings: no config', async t => {
+test('serverSettings: no config', async (t) => {
   const devConfig = { framework: '#auto' }
   const settings = await serverSettings(devConfig, {}, t.context.sitePath, () => {})
   t.is(settings.dist, t.context.sitePath)
@@ -172,7 +172,7 @@ test('serverSettings: no config', async t => {
   t.is(settings.noCmd, true)
 })
 
-test('chooseDefaultArgs', t => {
+test('chooseDefaultArgs', (t) => {
   const possibleArgsArrs = [['run', 'dev'], ['run develop']]
   const args = chooseDefaultArgs(possibleArgsArrs)
   t.deepEqual(args, possibleArgsArrs[0])

@@ -9,7 +9,7 @@ async function hasGitIgnore(dir) {
   return hasIgnore
 }
 
-function parser(input, fn = line => line) {
+function parser(input, fn = (line) => line) {
   const lines = input.toString().split(/\r?\n/)
   let section = { name: 'default', patterns: [] }
   const state = { patterns: [], sections: [section] }
@@ -31,7 +31,7 @@ function parser(input, fn = line => line) {
 }
 
 function stringify(state) {
-  return parseIgnore.stringify(state.sections, section => {
+  return parseIgnore.stringify(state.sections, (section) => {
     if (section.patterns.length === 0) {
       return ''
     }
@@ -43,7 +43,7 @@ function stringify(state) {
 function parse(input, fn) {
   const state = parser(input, fn)
 
-  state.concat = i => {
+  state.concat = (i) => {
     const newState = parser(i, fn)
 
     for (const s2 in newState.sections) {

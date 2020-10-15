@@ -63,7 +63,7 @@ module.exports = async function linkPrompts(context, flags = {}) {
         )
       }
 
-      const matchingSites = sites.filter(s => {
+      const matchingSites = sites.filter((s) => {
         const buildSettings = s.build_settings || {}
         return repoUrl === buildSettings.repo_url
       })
@@ -94,7 +94,7 @@ Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
             type: 'list',
             name: 'selectedSite',
             message: 'Which site do you want to link?',
-            choices: matchingSites.map(site => ({
+            choices: matchingSites.map((site) => ({
               name: `${site.name} - ${site.ssl_url}`,
               value: site,
             })),
@@ -148,7 +148,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
             name: 'selectedSite',
             message: 'Which site do you want to link?',
             paginated: true,
-            choices: matchingSites.map(site => ({ name: site.name, value: site })),
+            choices: matchingSites.map((site) => ({ name: site.name, value: site })),
           },
         ])
         if (!selectedSite) {
@@ -182,7 +182,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
           name: 'selectedSite',
           message: 'Which site do you want to link?',
           paginated: true,
-          choices: sites.map(site => ({ name: site.name, value: site })),
+          choices: sites.map((site) => ({ name: site.name, value: site })),
         },
       ])
       if (!selectedSite) {

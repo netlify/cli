@@ -26,7 +26,7 @@ const startServer = async ({ cwd, env = {}, args = [] }) => {
   })
   return new Promise((resolve, reject) => {
     let selfKilled = false
-    ps.stdout.on('data', data => {
+    ps.stdout.on('data', (data) => {
       if (data.toString().includes('Server now ready on')) {
         resolve({
           url,
@@ -35,7 +35,7 @@ const startServer = async ({ cwd, env = {}, args = [] }) => {
           close: async () => {
             selfKilled = true
             const pids = await pidtree(ps.pid).catch(() => [])
-            pids.forEach(pid => () => {
+            pids.forEach((pid) => () => {
               try {
                 process.kill(pid)
               } catch (error) {
@@ -43,16 +43,16 @@ const startServer = async ({ cwd, env = {}, args = [] }) => {
               }
             })
             ps.kill()
-            await Promise.race([ps.catch(() => {}), new Promise(resolve => setTimeout(resolve, 1000))])
+            await Promise.race([ps.catch(() => {}), new Promise((resolve) => setTimeout(resolve, 1000))])
           },
         })
       }
     })
-    ps.catch(error => !selfKilled && reject(error))
+    ps.catch((error) => !selfKilled && reject(error))
   })
 }
 
-const startDevServer = async options => {
+const startDevServer = async (options) => {
   const maxAttempts = 5
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {

@@ -13,7 +13,7 @@ module.exports = function handler(event, context, callback) {
     '/submissions/?access_token=' +
     process.env.API_AUTH
 
-  request(url, function(err, response, body) {
+  request(url, function (err, response, body) {
     // look for this code in our stash
     if (!err && response.statusCode === 200) {
       var routes = JSON.parse(body)

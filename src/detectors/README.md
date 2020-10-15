@@ -33,7 +33,7 @@ requires a global install: https://github.com/GitbookIO/gitbook/blob/master/docs
 
 ```js
 const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
-module.exports = function() {
+module.exports = function () {
   // REQUIRED FILES
   if (!hasRequiredFiles(['README.md', 'SUMMARY.md'])) return false
   // // REQUIRED DEPS

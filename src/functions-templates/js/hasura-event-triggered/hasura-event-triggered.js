@@ -15,7 +15,7 @@ mutation verifiedp($id: uuid!, $title: String!, $content: String!) {
 }
 `
 
-exports.handler = async event => {
+exports.handler = async (event) => {
   let request
   try {
     request = JSON.parse(event.body)

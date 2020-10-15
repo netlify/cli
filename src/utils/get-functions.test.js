@@ -4,13 +4,13 @@ const { withSiteBuilder } = require('../../tests/utils/site-builder')
 const { getFunctions } = require('./get-functions.js')
 const { findModuleDir } = require('./finders')
 
-test('should return empty object when an empty string is provided', t => {
+test('should return empty object when an empty string is provided', (t) => {
   const f = getFunctions('')
   t.deepEqual(f, {})
 })
 
-test('should return an empty object for a directory with no js files', async t => {
-  await withSiteBuilder('site-without-functions', async builder => {
+test('should return an empty object for a directory with no js files', async (t) => {
+  await withSiteBuilder('site-without-functions', async (builder) => {
     await builder.buildAsync()
 
     const f = getFunctions(builder.directory)
@@ -18,8 +18,8 @@ test('should return an empty object for a directory with no js files', async t =
   })
 })
 
-test('should return object with function details for a directory with js files', async t => {
-  await withSiteBuilder('site-without-functions', async builder => {
+test('should return object with function details for a directory with js files', async (t) => {
+  await withSiteBuilder('site-without-functions', async (builder) => {
     builder.withFunction({
       path: 'index.js',
       handler: '',

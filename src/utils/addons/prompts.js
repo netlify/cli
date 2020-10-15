@@ -63,7 +63,7 @@ module.exports = function generatePrompts(settings) {
         return prompt
       }
     })
-    .filter(item => {
+    .filter((item) => {
       return typeof item !== 'undefined'
     })
   return prompts
@@ -83,7 +83,7 @@ function noValidate() {
 // }
 
 function validate(pattern) {
-  return function(value) {
+  return function (value) {
     const regex = new RegExp(pattern)
     if (value.match(regex)) {
       return true

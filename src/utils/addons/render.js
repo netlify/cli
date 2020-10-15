@@ -3,7 +3,7 @@ const AsciiTable = require('ascii-table')
 
 function missingValues(values, manifest) {
   const display = values
-    .map(item => {
+    .map((item) => {
       const itemDisplay = chalk.redBright.bold(`${item}`)
       const niceNameDisplay = manifest.config[item].displayName
       return ` - ${itemDisplay} ${niceNameDisplay}`
@@ -21,7 +21,7 @@ function configValues(addonName, configValues, currentValue) {
 
   table.setHeading(...tableHeader)
 
-  Object.keys(configValues).map(key => {
+  Object.keys(configValues).map((key) => {
     const { type, displayName, required } = configValues[key]
     const requiredText = required ? `true` : `false`
     const typeInfo = type || ''

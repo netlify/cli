@@ -102,7 +102,7 @@ class AddonsCreateCommand extends Command {
       configValues = updateConfigValues(manifest.config, rawFlags, userInput)
       const missingRequiredValues = missingConfigValues(required, configValues)
       if (missingRequiredValues && missingRequiredValues.length !== 0) {
-        missingRequiredValues.forEach(val => {
+        missingRequiredValues.forEach((val) => {
           this.log(`Missing required value "${val}". Please run the command again`)
         })
         return false

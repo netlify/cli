@@ -1,11 +1,11 @@
 module.exports.requiredConfigValues = function requiredConfigValues(config) {
-  return Object.keys(config).filter(key => {
+  return Object.keys(config).filter((key) => {
     return config[key].required
   })
 }
 
 module.exports.missingConfigValues = function missingConfigValues(requiredConfig, providedConfig) {
-  return requiredConfig.filter(key => {
+  return requiredConfig.filter((key) => {
     return !providedConfig[key]
   })
 }

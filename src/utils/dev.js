@@ -24,7 +24,7 @@ const {
 async function addEnvVariables(api, site) {
   /** from addons */
   const addonUrls = {}
-  const addons = await api.listServiceInstancesForSite({ siteId: site.id }).catch(error => {
+  const addons = await api.listServiceInstancesForSite({ siteId: site.id }).catch((error) => {
     console.error(error)
     switch (error.status) {
       default:
@@ -37,7 +37,7 @@ async function addEnvVariables(api, site) {
     }
   })
   if (Array.isArray(addons)) {
-    addons.forEach(addon => {
+    addons.forEach((addon) => {
       addonUrls[addon.slug] = `${addon.config.site_url}/.netlify/${addon.slug}`
       for (const key in addon.env) {
         const msg = () =>
@@ -49,7 +49,7 @@ async function addEnvVariables(api, site) {
 
   /** from web UI */
   const [apiSite, accounts] = await Promise.all([api.getSite({ site_id: site.id }), api.listAccountsForUser()]).catch(
-    error => {
+    (error) => {
       console.error(error)
       switch (error.status) {
         case 401:
@@ -85,7 +85,7 @@ async function addEnvVariables(api, site) {
     }
   }
 
-  const siteAccount = accounts.find(acc => acc.slug === apiSite.account_slug)
+  const siteAccount = accounts.find((acc) => acc.slug === apiSite.account_slug)
   if (siteAccount && siteAccount.site_env) {
     for (const key in siteAccount.site_env) {
       const msg = () =>
@@ -107,7 +107,7 @@ module.exports = {
 function assignLoudly(
   optionalValue,
   defaultValue,
-  tellUser = dV => console.log(`No value specified, using fallback of ${dV}`)
+  tellUser = (dV) => console.log(`No value specified, using fallback of ${dV}`)
 ) {
   if (defaultValue === undefined) throw new Error('must have a defaultValue')
   if (defaultValue !== optionalValue && optionalValue === undefined) {

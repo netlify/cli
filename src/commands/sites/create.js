@@ -33,7 +33,7 @@ class SitesCreateCommand extends Command {
           type: 'list',
           name: 'accountSlug',
           message: 'Team:',
-          choices: accounts.map(account => ({
+          choices: accounts.map((account) => ({
             value: account.slug,
             name: account.name,
           })),
@@ -47,7 +47,7 @@ class SitesCreateCommand extends Command {
     let site
 
     // Allow the user to reenter site name if selected one isn't available
-    const inputSiteName = async name => {
+    const inputSiteName = async (name) => {
       if (!userName) userName = await api.getCurrentUser()
 
       if (!name) {
@@ -69,8 +69,8 @@ class SitesCreateCommand extends Command {
             type: 'input',
             name: 'name',
             message: 'Site name (optional):',
-            filter: val => (val === '' ? undefined : val),
-            validate: input => /^[a-zA-Z\d-]+$/.test(input) || 'Only alphanumeric characters and hyphens are allowed',
+            filter: (val) => (val === '' ? undefined : val),
+            validate: (input) => /^[a-zA-Z\d-]+$/.test(input) || 'Only alphanumeric characters and hyphens are allowed',
           },
         ])
         name = results.name
@@ -122,7 +122,7 @@ class SitesCreateCommand extends Command {
           type: 'input',
           name: 'url',
           message: 'Git SSH remote URL to enable CI with:',
-          validate: input => (parseGitRemote(input) ? true : `Could not parse Git remote ${input}`),
+          validate: (input) => (parseGitRemote(input) ? true : `Could not parse Git remote ${input}`),
         },
       ])
       console.log(url)

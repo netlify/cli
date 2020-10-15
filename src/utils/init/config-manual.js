@@ -30,7 +30,7 @@ async function configManual(ctx, site, repo) {
       type: 'input',
       name: 'buildCmd',
       message: 'Your build command (hugo build/yarn run build/etc):',
-      filter: val => (val === '' ? undefined : val),
+      filter: (val) => (val === '' ? undefined : val),
     },
     {
       type: 'input',
@@ -69,7 +69,7 @@ async function configManual(ctx, site, repo) {
         name: 'repoPath',
         message: 'The SSH URL of the remote git repo:',
         default: repo.repo_path,
-        validate: url =>
+        validate: (url) =>
           !!url.match(/(ssh:\/\/|[a-zA-Z]*@|[a-zA-Z.].*:(?!\/\/))/) || 'The URL provided does not use the SSH protocol',
       },
     ])

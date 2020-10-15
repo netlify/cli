@@ -123,7 +123,7 @@ class FunctionsInvokeCommand extends Command {
       headers,
       body: JSON.stringify(body),
     })
-      .then(response => {
+      .then((response) => {
         let data
         data = response.text()
         try {
@@ -134,7 +134,7 @@ class FunctionsInvokeCommand extends Command {
         return data
       })
       .then(console.log)
-      .catch(error => {
+      .catch((error) => {
         console.error('ran into an error invoking your function')
         console.error(error)
       })

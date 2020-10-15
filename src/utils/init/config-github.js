@@ -64,7 +64,7 @@ async function configGithub(ctx, site, repo) {
       type: 'input',
       name: 'buildCmd',
       message: 'Your build command (hugo build/yarn run build/etc):',
-      filter: val => (val === '' ? '# no build command' : val),
+      filter: (val) => (val === '' ? '# no build command' : val),
       default: defaultBuildCmd,
     },
     {
@@ -119,7 +119,7 @@ async function configGithub(ctx, site, repo) {
 
   let hookExists = false
 
-  hooks.data.forEach(hook => {
+  hooks.data.forEach((hook) => {
     if (hook.config.url === site.deploy_hook) hookExists = true
   })
 
@@ -146,9 +146,9 @@ async function configGithub(ctx, site, repo) {
   // Quick and dirty implementation
   const ntlHooks = await api.listHooksBySiteId({ siteId: site.id })
 
-  const createdHook = ntlHooks.find(h => h.type === 'github_commit_status' && h.event === 'deploy_created')
-  const failedHook = ntlHooks.find(h => h.type === 'github_commit_status' && h.event === 'deploy_failed')
-  const buildingHook = ntlHooks.find(h => h.type === 'github_commit_status' && h.event === 'deploy_building')
+  const createdHook = ntlHooks.find((h) => h.type === 'github_commit_status' && h.event === 'deploy_created')
+  const failedHook = ntlHooks.find((h) => h.type === 'github_commit_status' && h.event === 'deploy_failed')
+  const buildingHook = ntlHooks.find((h) => h.type === 'github_commit_status' && h.event === 'deploy_building')
 
   ctx.log()
   ctx.log(`Creating Netlify Github Notification Hooks...`)

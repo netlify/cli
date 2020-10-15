@@ -1,6 +1,6 @@
 exports.handler = (event, context, callback) => {
   const path = event.path.replace(/\.netlify\/functions\/[^/]+/, '')
-  const segments = path.split('/').filter(e => e)
+  const segments = path.split('/').filter((e) => e)
   console.log('segments', segments)
 
   switch (event.httpMethod) {

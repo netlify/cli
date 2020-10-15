@@ -62,13 +62,13 @@ const pageNames = {
   'netlify-dev': 'Netlify Dev',
 }
 
-const sortRoutes = routes =>
+const sortRoutes = (routes) =>
   [
-    ...sortBy([...routes], a => {
+    ...sortBy([...routes], (a) => {
       const i = navOrder.indexOf(a.name)
       return i < 0 ? Infinity : i
     }),
-  ].map(route => {
+  ].map((route) => {
     if (!pageNames[route.name]) {
       return route
     }

@@ -5,7 +5,7 @@ const fetch = require('node-fetch')
 const { startDevServer } = require('./utils/dev-server')
 const sitePath = path.join(__dirname, 'site-cra')
 
-test.before(async t => {
+test.before(async (t) => {
   const server = await startDevServer({
     cwd: sitePath,
     env: { SKIP_PREFLIGHT_CHECK: 'true' },
@@ -16,19 +16,19 @@ test.before(async t => {
   t.context.server = server
 })
 
-test.after(async t => {
+test.after(async (t) => {
   const { server } = t.context
   await server.close()
 })
 
-test('homepage', async t => {
+test('homepage', async (t) => {
   const { url } = t.context.server
-  const response = await fetch(`${url}/`).then(r => r.text())
+  const response = await fetch(`${url}/`).then((r) => r.text())
 
   t.regex(response, /Web site created using create-react-app/)
 })
 
-test('static/js/bundle.js', async t => {
+test('static/js/bundle.js', async (t) => {
   const { url } = t.context.server
   const response = await fetch(`${url}/static/js/bundle.js`)
   const body = await response.text()
@@ -39,7 +39,7 @@ test('static/js/bundle.js', async t => {
   t.regex(body, /webpackBootstrap/)
 })
 
-test('static file under public/', async t => {
+test('static file under public/', async (t) => {
   const { url } = t.context.server
   const response = await fetch(`${url}/test.html`)
   const body = await response.text()
@@ -49,7 +49,7 @@ test('static file under public/', async t => {
   t.true(body.includes('<h1>Test content</h1>'))
 })
 
-test('redirect test', async t => {
+test('redirect test', async (t) => {
   const { url } = t.context.server
   const response = await fetch(`${url}/something`, { redirect: 'manual' })
 
@@ -58,7 +58,7 @@ test('redirect test', async t => {
   t.is(await response.text(), 'Redirecting to /otherthing.html')
 })
 
-test('normal rewrite', async t => {
+test('normal rewrite', async (t) => {
   const { url } = t.context.server
   const response = await fetch(`${url}/doesnt-exist`)
   const body = await response.text()
@@ -68,7 +68,7 @@ test('normal rewrite', async t => {
   t.regex(body, /Web site created using create-react-app/)
 })
 
-test('force rewrite', async t => {
+test('force rewrite', async (t) => {
   const { url } = t.context.server
   const response = await fetch(`${url}/force.html`)
   const body = await response.text()
@@ -78,7 +78,7 @@ test('force rewrite', async t => {
   t.true(body.includes('<h1>Test content</h1>'))
 })
 
-test('robots.txt', async t => {
+test('robots.txt', async (t) => {
   const { url } = t.context.server
   const response = await fetch(`${url}/robots.txt`)
   const body = await response.text()
@@ -89,9 +89,9 @@ test('robots.txt', async t => {
   t.regex(body, /# https:\/\/www.robotstxt.org\/robotstxt.html/)
 })
 
-test('functions rewrite echo without body', async t => {
+test('functions rewrite echo without body', async (t) => {
   const { url, host, port } = t.context.server
-  const response = await fetch(`${url}/api/echo?ding=dong`).then(r => r.json())
+  const response = await fetch(`${url}/api/echo?ding=dong`).then((r) => r.json())
 
   t.is(response.body, undefined)
   t.deepEqual(response.headers, {
@@ -109,12 +109,12 @@ test('functions rewrite echo without body', async t => {
   t.deepEqual(response.queryStringParameters, { ding: 'dong' })
 })
 
-test('functions rewrite echo with body', async t => {
+test('functions rewrite echo with body', async (t) => {
   const { url, host, port } = t.context.server
   const response = await fetch(`${url}/api/echo?ding=dong`, {
     method: 'POST',
     body: 'some=thing',
-  }).then(r => r.json())
+  }).then((r) => r.json())
 
   t.is(response.body, 'some=thing')
   t.deepEqual(response.headers, {
@@ -134,9 +134,9 @@ test('functions rewrite echo with body', async t => {
   t.deepEqual(response.queryStringParameters, { ding: 'dong' })
 })
 
-test('functions echo with multiple query params', async t => {
+test('functions echo with multiple query params', async (t) => {
   const { url, host, port } = t.context.server
-  const response = await fetch(`${url}/.netlify/functions/echo?category=a&category=b`).then(r => r.json())
+  const response = await fetch(`${url}/.netlify/functions/echo?category=a&category=b`).then((r) => r.json())
 
   t.deepEqual(response.headers, {
     'accept': '*/*',

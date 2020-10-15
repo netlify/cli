@@ -26,7 +26,7 @@ class ExecCommand extends Command {
     const envSettings = await getEnvSettings({ projectDir: site.root, warn: this.warn })
     if (envSettings.vars.length !== 0) {
       this.log(
-        `${NETLIFYDEVLOG} Adding the following env variables from ${envSettings.files.map(f => chalk.blue(f))}:`,
+        `${NETLIFYDEVLOG} Adding the following env variables from ${envSettings.files.map((f) => chalk.blue(f))}:`,
         chalk.yellow(envSettings.vars.map(([key]) => key))
       )
     }

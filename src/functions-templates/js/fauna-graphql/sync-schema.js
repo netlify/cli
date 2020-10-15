@@ -23,12 +23,12 @@ function createFaunaGraphQL() {
 
   fetch('https://graphql.fauna.com/import', options)
     // // uncomment for debugging
-    .then(res => res.text())
-    .then(body => {
+    .then((res) => res.text())
+    .then((body) => {
       console.log('Netlify Functions:Create - `fauna-graphql/sync-schema.js` success!')
       console.log(body)
     })
-    .catch(error => console.error('something wrong happened:', { err: error }))
+    .catch((error) => console.error('something wrong happened:', { err: error }))
 }
 
 createFaunaGraphQL()

@@ -2,7 +2,7 @@
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 
-const respond = fulfillmentText => {
+const respond = (fulfillmentText) => {
   return {
     statusCode: 200,
     body: JSON.stringify(fulfillmentText),
@@ -14,7 +14,7 @@ const respond = fulfillmentText => {
   }
 }
 
-exports.handler = async function(event) {
+exports.handler = async function (event) {
   let incoming
   try {
     incoming = JSON.parse(event.body)

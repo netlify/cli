@@ -6,7 +6,7 @@ const os = require('os')
 
 const fs = require('../../src/lib/fs')
 
-const ensureDir = path => {
+const ensureDir = (path) => {
   return fs.mkdirRecursiveAsync(path)
 }
 
@@ -76,7 +76,7 @@ const createSiteBuilder = ({ siteName }) => {
       tasks.push(async () => {
         const content = headers
           .map(
-            ({ path: headerPath, headers }) => `${headerPath}${os.EOL}${headers.map(h => `  ${h}`).join(`${os.EOL}`)}`
+            ({ path: headerPath, headers }) => `${headerPath}${os.EOL}${headers.map((h) => `  ${h}`).join(`${os.EOL}`)}`
           )
           .join(os.EOL)
         await ensureDir(path.dirname(dest))
@@ -92,7 +92,7 @@ const createSiteBuilder = ({ siteName }) => {
       })
       return builder
     },
-    withContentFiles: files => {
+    withContentFiles: (files) => {
       files.forEach(builder.withContentFile)
       return builder
     },
@@ -116,7 +116,7 @@ const createSiteBuilder = ({ siteName }) => {
       return builder
     },
     cleanupAsync: async () => {
-      await fs.rmdirRecursiveAsync(directory).catch(error => {
+      await fs.rmdirRecursiveAsync(directory).catch((error) => {
         console.warn(error)
       })
       return builder

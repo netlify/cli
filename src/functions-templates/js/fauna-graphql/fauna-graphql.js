@@ -3,7 +3,7 @@ const { createHttpLink } = require('apollo-link-http')
 const fetch = require('node-fetch')
 const { introspectSchema, makeRemoteExecutableSchema } = require('graphql-tools')
 
-exports.handler = async function(event, context) {
+exports.handler = async function (event, context) {
   /** required for Fauna GraphQL auth */
   if (!process.env.FAUNADB_SERVER_SECRET) {
     const msg = `

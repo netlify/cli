@@ -1,6 +1,6 @@
 const { hasRequiredDeps, hasRequiredFiles } = require('./utils/jsdetect')
 
-module.exports = function() {
+module.exports = function () {
   // REQUIRED FILES
   if (
     !hasRequiredFiles(['package.json', '.eleventy.js']) &&
