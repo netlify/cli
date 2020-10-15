@@ -1,6 +1,5 @@
 const path = require('path')
 const http = require('http')
-const fs = require('fs')
 const url = require('url')
 const httpProxy = require('http-proxy')
 const { createProxyMiddleware } = require('http-proxy-middleware')
@@ -10,12 +9,13 @@ const isEmpty = require('lodash.isempty')
 const jwtDecode = require('jwt-decode')
 const contentType = require('content-type')
 const toReadableStream = require('to-readable-stream')
-
+const pFilter = require('p-filter')
 const { createRewriter } = require('./rules-proxy')
 const { createStreamPromise } = require('./create-stream-promise')
 const { onChanges } = require('./rules-proxy')
 const { parseHeadersFile, objectForPath } = require('./headers')
 const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./logo')
+const { readFileAsync, fileExistsAsync, isFileAsync } = require('../lib/fs.js')
 
 function isInternal(url) {
   return url.startsWith('/.netlify/')
@@ -30,14 +30,14 @@ function addonUrl(addonUrls, req) {
   return addonUrl ? `${addonUrl}${m[2]}` : null
 }
 
-function getStatic(pathname, publicFolder) {
+async function getStatic(pathname, publicFolder) {
   const alternatives = [pathname, ...alternativePathsFor(pathname)].map(p => path.resolve(publicFolder, p.slice(1)))
 
   for (const i in alternatives) {
     const p = alternatives[i]
     try {
-      const pathStats = fs.statSync(p)
-      if (pathStats.isFile()) return '/' + path.relative(publicFolder, p)
+      const isFile = await isFileAsync(p)
+      if (isFile) return '/' + path.relative(publicFolder, p)
     } catch (error) {
       // Ignore
     }
@@ -53,9 +53,15 @@ function isRedirect(match) {
   return match.status && match.status >= 300 && match.status <= 400
 }
 
-function render404(publicFolder) {
+async function render404(publicFolder) {
   const maybe404Page = path.resolve(publicFolder, '404.html')
-  if (fs.existsSync(maybe404Page)) return fs.readFileSync(maybe404Page)
+  try {
+    const isFile = await isFileAsync(maybe404Page)
+    if (isFile) return await readFileAsync(maybe404Page)
+  } catch (error) {
+    console.warn(NETLIFYDEVWARN, 'Error while serving 404.html file', error.message)
+  }
+
   return 'Not Found'
 }
 
@@ -151,7 +157,7 @@ async function serveRedirect(req, res, proxy, match, options) {
   if (staticFile) req.url = staticFile + reqUrl.search
   if (match.force404) {
     res.writeHead(404)
-    return render404(options.publicFolder)
+    return await render404(options.publicFolder)
   }
 
   if (match.force || !staticFile || !options.framework || req.method === 'POST') {
@@ -230,10 +236,10 @@ function initializeProxy(port, distDir, projectDir) {
   const headersFiles = [...new Set([path.resolve(projectDir, '_headers'), path.resolve(distDir, '_headers')])]
 
   let headerRules = headersFiles.reduce((prev, curr) => Object.assign(prev, parseHeadersFile(curr)), {})
-  onChanges(headersFiles, () => {
+  onChanges(headersFiles, async () => {
     console.log(
       `${NETLIFYDEVLOG} Reloading headers files`,
-      headersFiles.filter(fs.existsSync).map(p => path.relative(projectDir, p))
+      (await pFilter(headersFiles, fileExistsAsync)).map(p => path.relative(projectDir, p))
     )
     headerRules = headersFiles.reduce((prev, curr) => Object.assign(prev, parseHeadersFile(curr)), {})
   })
