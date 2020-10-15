@@ -36,8 +36,8 @@ async function getStatic(pathname, publicFolder) {
   for (const i in alternatives) {
     const p = alternatives[i]
     try {
-      const isExistsPath = await isFileAsync(p)
-      if (isExistsPath) return '/' + path.relative(publicFolder, p)
+      const isFile = await isFileAsync(p)
+      if (isFile) return '/' + path.relative(publicFolder, p)
     } catch (error) {
       // Ignore
     }
@@ -56,12 +56,13 @@ function isRedirect(match) {
 async function render404(publicFolder) {
   const maybe404Page = path.resolve(publicFolder, '404.html')
   try {
-    const isExists404Page = await isFileAsync(maybe404Page)
-    if (isExists404Page) return await readFileAsync(maybe404Page)
-    return 'Not Found'
+    const isFile = await isFileAsync(maybe404Page)
+    if (isFile) return await readFileAsync(maybe404Page)
   } catch (error) {
-    return 'Not Found'
+    console.warn(NETLIFYDEVWARN, 'Error while serving 404.html file', error.message)
   }
+
+  return 'Not Found'
 }
 
 // Used as an optimization to avoid dual lookups for missing assets
