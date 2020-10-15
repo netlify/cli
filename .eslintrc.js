@@ -30,6 +30,7 @@ module.exports = {
     'multiline-comment-style': [2, 'separate-lines'],
     'no-else-return': [2, { allowElseIf: false }],
     'no-implicit-coercion': 2,
+    'no-invalid-this': 2,
     'no-var': 2,
     'prefer-object-spread': 2,
 

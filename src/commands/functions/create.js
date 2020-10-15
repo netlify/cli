@@ -28,11 +28,11 @@ class FunctionsCreateCommand extends Command {
   async run() {
     const { flags, args } = this.parse(FunctionsCreateCommand)
     const { config } = this.netlify
-    const functionsDir = ensureFunctionDirExists.call(this, flags, config)
+    const functionsDir = ensureFunctionDirExists(this, flags, config)
 
     /* either download from URL or scaffold from template */
     const mainFunc = flags.url ? downloadFromURL : scaffoldFromTemplate
-    await mainFunc.call(this, flags, args, functionsDir)
+    await mainFunc(this, flags, args, functionsDir)
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
@@ -183,32 +183,32 @@ async function pickTemplate() {
 }
 
 /* get functions dir (and make it if necessary) */
-function ensureFunctionDirExists(flags, config) {
+function ensureFunctionDirExists(context, flags, config) {
   const functionsDir = config.build && config.build.functions
   if (!functionsDir) {
-    this.log(`${NETLIFYDEVLOG} No functions folder specified in netlify.toml`)
+    context.log(`${NETLIFYDEVLOG} No functions folder specified in netlify.toml`)
     process.exit(1)
   }
   if (!fs.existsSync(functionsDir)) {
-    this.log(
+    context.log(
       `${NETLIFYDEVLOG} functions folder ${chalk.magenta.inverse(
         functionsDir
       )} specified in netlify.toml but folder not found, creating it...`
     )
     fs.mkdirSync(functionsDir)
-    this.log(`${NETLIFYDEVLOG} functions folder ${chalk.magenta.inverse(functionsDir)} created`)
+    context.log(`${NETLIFYDEVLOG} functions folder ${chalk.magenta.inverse(functionsDir)} created`)
   }
   return functionsDir
 }
 
 // Download files from a given github URL
-async function downloadFromURL(flags, args, functionsDir) {
+async function downloadFromURL(context, flags, args, functionsDir) {
   const folderContents = await readRepoURL(flags.url)
   const functionName = flags.url.split('/').slice(-1)[0]
   const nameToUse = await getNameFromArgs(args, flags, functionName)
   const fnFolder = path.join(functionsDir, nameToUse)
   if (fs.existsSync(fnFolder + '.js') && fs.lstatSync(fnFolder + '.js').isFile()) {
-    this.log(
+    context.log(
       `${NETLIFYDEVWARN}: A single file version of the function ${nameToUse} already exists at ${fnFolder}.js. Terminating without further action.`
     )
     process.exit(1)
@@ -233,9 +233,9 @@ async function downloadFromURL(flags, args, functionsDir) {
     })
   )
 
-  this.log(`${NETLIFYDEVLOG} Installing dependencies for ${nameToUse}...`)
+  context.log(`${NETLIFYDEVLOG} Installing dependencies for ${nameToUse}...`)
   cp.exec('npm i', { cwd: path.join(functionsDir, nameToUse) }, () => {
-    this.log(`${NETLIFYDEVLOG} Installing dependencies for ${nameToUse} complete `)
+    context.log(`${NETLIFYDEVLOG} Installing dependencies for ${nameToUse} complete `)
   })
 
   // read, execute, and delete function template file if exists
@@ -243,10 +243,10 @@ async function downloadFromURL(flags, args, functionsDir) {
   if (fs.existsSync(fnTemplateFile)) {
     const { onComplete, addons = [] } = require(fnTemplateFile)
 
-    await installAddons.call(this, addons, path.resolve(fnFolder))
+    await installAddons(context, addons, path.resolve(fnFolder))
     if (onComplete) {
-      await addEnvVariables(this.netlify.api, this.netlify.site)
-      await onComplete.call(this)
+      await addEnvVariables(context.netlify.api, context.netlify.site)
+      await onComplete.call(context)
     }
     fs.unlinkSync(fnTemplateFile) // delete
   }
@@ -261,8 +261,8 @@ function installDeps(functionPath) {
 }
 
 // no --url flag specified, pick from a provided template
-async function scaffoldFromTemplate(flags, args, functionsDir) {
-  const chosentemplate = await pickTemplate.call(this) // pull the rest of the metadata from the template
+async function scaffoldFromTemplate(context, flags, args, functionsDir) {
+  const chosentemplate = await pickTemplate() // pull the rest of the metadata from the template
   if (chosentemplate === 'url') {
     const { chosenurl } = await inquirer.prompt([
       {
@@ -276,14 +276,14 @@ async function scaffoldFromTemplate(flags, args, functionsDir) {
     ])
     flags.url = chosenurl.trim()
     try {
-      await downloadFromURL.call(this, flags, args, functionsDir)
+      await downloadFromURL(context, flags, args, functionsDir)
     } catch (error) {
-      this.error(`$${NETLIFYDEVERR} Error downloading from URL: ` + flags.url)
-      this.error(error)
+      context.error(`$${NETLIFYDEVERR} Error downloading from URL: ` + flags.url)
+      context.error(error)
       process.exit(1)
     }
   } else if (chosentemplate === 'report') {
-    this.log(`${NETLIFYDEVLOG} Open in browser: https://github.com/netlify/cli/issues/new`)
+    context.log(`${NETLIFYDEVLOG} Open in browser: https://github.com/netlify/cli/issues/new`)
   } else {
     const { onComplete, name: templateName, lang, addons = [] } = chosentemplate
 
@@ -295,8 +295,8 @@ async function scaffoldFromTemplate(flags, args, functionsDir) {
     }
 
     const name = await getNameFromArgs(args, flags, templateName)
-    this.log(`${NETLIFYDEVLOG} Creating function ${chalk.cyan.inverse(name)}`)
-    const functionPath = ensureFunctionPathIsOk.call(this, functionsDir, name)
+    context.log(`${NETLIFYDEVLOG} Creating function ${chalk.cyan.inverse(name)}`)
+    const functionPath = ensureFunctionPathIsOk(context, functionsDir, name)
 
     // // SWYX: note to future devs - useful for debugging source to output issues
     // this.log('from ', pathToTemplate, ' to ', functionPath)
@@ -306,7 +306,7 @@ async function scaffoldFromTemplate(flags, args, functionsDir) {
       if (err) throw err
       createdFiles.forEach((filePath) => {
         if (filePath.endsWith('.netlify-function-template.js')) return
-        this.log(`${NETLIFYDEVLOG} ${chalk.greenBright('Created')} ${filePath}`)
+        context.log(`${NETLIFYDEVLOG} ${chalk.greenBright('Created')} ${filePath}`)
         require('fs').chmodSync(path.resolve(filePath), 0o777)
         if (filePath.includes('package.json')) hasPackageJSON = true
       })
@@ -326,10 +326,10 @@ async function scaffoldFromTemplate(flags, args, functionsDir) {
         spinner.succeed(`installed dependencies for ${name}`)
       }
 
-      await installAddons.call(this, addons, path.resolve(functionPath))
+      await installAddons(context, addons, path.resolve(functionPath))
       if (onComplete) {
-        await addEnvVariables(this.netlify.api, this.netlify.site)
-        await onComplete.call(this)
+        await addEnvVariables(context.netlify.api, context.netlify.site)
+        await onComplete.call(context)
       }
     })
   }
@@ -354,13 +354,13 @@ async function createFunctionAddon({ api, addons, siteId, addonName, siteData, l
   }
 }
 
-async function installAddons(functionAddons = [], fnPath) {
+async function installAddons(context, functionAddons = [], fnPath) {
   if (functionAddons.length === 0) {
     return
   }
 
-  const { log, error } = this
-  const { api, site } = this.netlify
+  const { log, error } = context
+  const { api, site } = context.netlify
   const siteId = site.id
   if (!siteId) {
     log('No site id found, please run inside a site folder or `netlify link`')
@@ -408,10 +408,10 @@ async function installAddons(functionAddons = [], fnPath) {
 
 // we used to allow for a --dir command,
 // but have retired that to force every scaffolded function to be a folder
-function ensureFunctionPathIsOk(functionsDir, name) {
+function ensureFunctionPathIsOk(context, functionsDir, name) {
   const functionPath = path.join(functionsDir, name)
   if (fs.existsSync(functionPath)) {
-    this.log(`${NETLIFYDEVLOG} Function ${functionPath} already exists, cancelling...`)
+    context.log(`${NETLIFYDEVLOG} Function ${functionPath} already exists, cancelling...`)
     process.exit(1)
   }
   return functionPath
