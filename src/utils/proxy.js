@@ -57,7 +57,7 @@ async function render404(publicFolder) {
   const maybe404Page = path.resolve(publicFolder, '404.html')
   try {
     const isExists404Page = await isFileAsync(maybe404Page)
-    if (exists404Page) return await readFileAsync(maybe404Page)
+    if (isExists404Page) return await readFileAsync(maybe404Page)
     return 'Not Found'
   } catch (error) {
     return 'Not Found'
