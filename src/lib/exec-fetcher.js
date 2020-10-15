@@ -81,9 +81,8 @@ const shouldFetchLatestVersion = async ({ binPath, packageName, execName, execAr
     if (exists) {
       log(NETLIFYDEVWARN, `failed checking for new version of '${packageName}'. Using existing version`)
       return false
-    } else {
-      throw error
     }
+    throw error
   }
 }
 

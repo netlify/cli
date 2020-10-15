@@ -33,9 +33,8 @@ function neverNull(obj) {
         const obj = target()
         if (obj !== null && typeof obj === 'object') {
           return neverNull(obj[key])
-        } else {
-          return neverNull()
         }
+        return neverNull()
       },
       set: (target, key, val) => {
         const obj = target()

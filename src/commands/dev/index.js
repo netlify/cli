@@ -97,9 +97,8 @@ const getAddonsUrlsAndAddEnvVariablesToProcessEnv = async ({ api, site, flags })
     const { addEnvVariables } = require('../../utils/dev')
     const addonUrls = await addEnvVariables(api, site)
     return addonUrls
-  } else {
-    return {}
   }
+  return {}
 }
 
 const addDotFileEnvs = async ({ site, log, warn }) => {

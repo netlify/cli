@@ -144,9 +144,8 @@ class FunctionsInvokeCommand extends Command {
 function formatQstring(querystring) {
   if (querystring) {
     return '?' + querystring
-  } else {
-    return ''
   }
+  return ''
 }
 
 /** process payloads from flag */
