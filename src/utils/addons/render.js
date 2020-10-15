@@ -21,7 +21,7 @@ function configValues(addonName, configValues, currentValue) {
 
   table.setHeading(...tableHeader)
 
-  Object.keys(configValues).map((key) => {
+  Object.keys(configValues).forEach((key) => {
     const { type, displayName, required } = configValues[key]
     const requiredText = required ? `true` : `false`
     const typeInfo = type || ''

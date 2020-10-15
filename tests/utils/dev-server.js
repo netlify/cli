@@ -35,7 +35,7 @@ const startServer = async ({ cwd, env = {}, args = [] }) => {
           close: async () => {
             selfKilled = true
             const pids = await pidtree(ps.pid).catch(() => [])
-            pids.forEach((pid) => () => {
+            pids.forEach((pid) => {
               try {
                 process.kill(pid)
               } catch (error) {

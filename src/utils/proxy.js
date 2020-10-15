@@ -95,7 +95,9 @@ async function serveRedirect(req, res, proxy, match, options) {
   options.match = null
 
   if (!isEmpty(match.proxyHeaders)) {
-    Object.entries(match.proxyHeaders).forEach(([k, v]) => (req.headers[k] = v))
+    Object.entries(match.proxyHeaders).forEach(([k, v]) => {
+      req.headers[k] = v
+    })
   }
 
   if (isFunction(options.functionsPort, req.url)) {
@@ -166,8 +168,12 @@ async function serveRedirect(req, res, proxy, match, options) {
 
     // Use query params of request URL as base, so that, destination query params can supersede
     const urlParams = new url.URLSearchParams(reqUrl.searchParams)
-    dest.searchParams.forEach((val, key) => urlParams.set(key, val))
-    urlParams.forEach((val, key) => dest.searchParams.set(key, val))
+    dest.searchParams.forEach((val, key) => {
+      urlParams.set(key, val)
+    })
+    urlParams.forEach((val, key) => {
+      dest.searchParams.set(key, val)
+    })
 
     // Get the URL after http://host:port
     const destURL = dest.toString().replace(dest.origin, '')
@@ -264,7 +270,9 @@ function initializeProxy(port, distDir, projectDir) {
     const requestURL = new url.URL(req.url, `http://${req.headers.host || 'localhost'}`)
     const pathHeaderRules = objectForPath(headerRules, requestURL.pathname)
     if (!isEmpty(pathHeaderRules)) {
-      Object.entries(pathHeaderRules).forEach(([key, val]) => res.setHeader(key, val))
+      Object.entries(pathHeaderRules).forEach(([key, val]) => {
+        res.setHeader(key, val)
+      })
     }
     res.writeHead(req.proxyOptions.status || proxyRes.statusCode, proxyRes.headers)
     proxyRes.on('data', function (data) {

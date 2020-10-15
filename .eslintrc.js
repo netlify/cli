@@ -23,6 +23,10 @@ module.exports = {
     'no-unused-vars': [2, {}],
     'ava/no-skip-test': 0,
 
+    // Those ESLint rules are not enabled by Prettier, ESLint recommended rules
+    // nor standard JavaScript. However, they are still useful
+    'array-callback-return': [2, { allowImplicit: true, checkForEach: true }],
+
     // This version of eslint-plugin-unicorn requires Node 10
     // TODO: remove after dropping Node 8 support
     ...(isNode8
