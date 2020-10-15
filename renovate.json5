@@ -26,7 +26,6 @@
         'log-symbols',
         'npm-packlist',
         'ora',
-        'prettier',
         'wrap-ansi',
         'update-notifier',
       ],
