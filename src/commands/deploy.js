@@ -336,7 +336,18 @@ class DeployCommand extends Command {
 
     let siteId = flags.site || site.id
     let siteData = {}
-    if (!siteId) {
+    if (siteId) {
+      try {
+        siteData = await api.getSite({ siteId })
+      } catch (error_) {
+        // TODO specifically handle known cases (e.g. no account access)
+        if (error_.status === 404) {
+          error('Site not found')
+        } else {
+          error(error_.message)
+        }
+      }
+    } else {
       this.log("This folder isn't linked to a site yet")
       const NEW_SITE = '+  Create & configure a new site'
       const EXISTING_SITE = 'Link this directory to an existing site'
@@ -362,17 +373,6 @@ class DeployCommand extends Command {
         siteData = await LinkCommand.run([], false)
         site.id = siteData.id
         siteId = site.id
-      }
-    } else {
-      try {
-        siteData = await api.getSite({ siteId })
-      } catch (error_) {
-        // TODO specifically handle known cases (e.g. no account access)
-        if (error_.status === 404) {
-          error('Site not found')
-        } else {
-          error(error_.message)
-        }
       }
     }
 

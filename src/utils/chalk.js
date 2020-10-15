@@ -17,7 +17,7 @@ function noop() {}
 
 function neverNull(obj) {
   function match(some, none = noop) {
-    return obj != null ? some(obj) : none()
+    return obj == null ? none() : some(obj)
   }
   return new Proxy(
     (some, none) => {

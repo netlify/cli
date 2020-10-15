@@ -42,6 +42,7 @@ module.exports = {
     'no-loop-func': 2,
     'no-loss-of-precision': 2,
     'no-multi-assign': 2,
+    'no-negated-condition': 2,
     'no-nested-ternary': 2,
     'no-plusplus': [2, { allowForLoopAfterthoughts: true }],
     'no-unreachable-loop': 2,
