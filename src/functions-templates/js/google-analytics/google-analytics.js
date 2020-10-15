@@ -16,7 +16,9 @@ function whitelistDomain(domain, addWww = true) {
     prefixes.push('https://www.')
     prefixes.push('http://www.')
   }
-  prefixes.forEach((prefix) => originWhitelist.push(prefix + domain))
+  prefixes.forEach((prefix) => {
+    originWhitelist.push(prefix + domain)
+  })
 }
 
 function proxyToGoogleAnalytics(event, done) {
@@ -107,8 +109,8 @@ sr: 1440x900
 vp: 945x777
 je: 0
 _u: blabla~
-jid: 
-gjid: 
+jid:
+gjid:
 cid: 1837873423.1522911810
 tid: UA-116530991-1
 _gid: 1828045325.1524815793

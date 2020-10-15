@@ -67,7 +67,7 @@ async function startFrameworkServer({ settings, log, exit }) {
   ps.on('close', handleProcessExit)
   ps.on('SIGINT', handleProcessExit)
   ps.on('SIGTERM', handleProcessExit)
-  ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) =>
+  ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) => {
     process.on(signal, () => {
       try {
         process.kill(-ps.pid)
@@ -76,7 +76,7 @@ async function startFrameworkServer({ settings, log, exit }) {
       }
       process.exit()
     })
-  )
+  })
 
   try {
     const open = await waitPort({ port: settings.frameworkPort, output: 'silent', timeout: 10 * 60 * 1000 })
@@ -110,7 +110,9 @@ const addDotFileEnvs = async ({ site, log, warn }) => {
       `${NETLIFYDEVLOG} Adding the following env variables from ${envSettings.files.map((f) => chalk.blue(f))}:`,
       chalk.yellow(envSettings.vars.map(([key]) => key))
     )
-    envSettings.vars.forEach(([key, val]) => (process.env[key] = val))
+    envSettings.vars.forEach(([key, val]) => {
+      process.env[key] = val
+    })
   }
 }
 

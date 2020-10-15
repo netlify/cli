@@ -5,7 +5,7 @@ module.exports = function generatePrompts(settings) {
   const { config, configValues } = settings
   const configItems = Object.keys(config)
 
-  const prompts = configItems
+  return configItems
     .map((key, i) => {
       const setting = config[key]
       // const { type, displayName } = setting
@@ -62,11 +62,10 @@ module.exports = function generatePrompts(settings) {
         }
         return prompt
       }
+
+      return false
     })
-    .filter((item) => {
-      return typeof item !== 'undefined'
-    })
-  return prompts
+    .filter(Boolean)
 }
 
 function noValidate() {
