@@ -15,7 +15,7 @@ const { createStreamPromise } = require('./create-stream-promise')
 const { onChanges } = require('./rules-proxy')
 const { parseHeadersFile, objectForPath } = require('./headers')
 const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./logo')
-const { statAsync, readFileAsync, fileExistsAsync } = require('../lib/fs.js')
+const { readFileAsync, fileExistsAsync, isFileAsync } = require('../lib/fs.js')
 
 function isInternal(url) {
   return url.startsWith('/.netlify/')
