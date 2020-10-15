@@ -12,10 +12,9 @@ const getErrorMessage = async ({ response }) => {
   if (contentType && contentType.includes('application/json')) {
     const json = await response.json()
     return json.message
-  } else {
-    const text = await response.text()
-    return text
   }
+  const text = await response.text()
+  return text
 }
 
 const checkResponse = async ({ response }) => {

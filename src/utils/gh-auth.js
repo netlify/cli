@@ -92,49 +92,47 @@ async function getGitHubToken({ opts, log }) {
     await openBrowser({ url, log })
 
     return await deferredPromise
-  } else {
-    const { username, password } = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'username',
-        message: 'Your GitHub username:',
-        filter: (input) => input.trim(),
-      },
-      {
-        type: 'password',
-        name: 'password',
-        message: 'Your GitHub password:',
-        mask: '*',
-        filter: (input) => input.trim(),
-      },
-    ])
-
-    // configure basic auth
-    const octokit = new Octokit({
-      auth: {
-        username,
-        password,
-        on2fa() {
-          return promptForOTP()
-        },
-      },
-    })
-
-    const response = await octokit.oauthAuthorizations.createAuthorization({
-      note: opts.note + ' (' + new Date().toJSON() + ')',
-      note_url: 'https://cli.netlify.com/',
-      scopes: opts.scopes,
-      headers: {
-        'User-Agent': opts.userAgent,
-      },
-    })
-
-    if (get(response, 'data.token')) {
-      return { user: username, token: get(response, 'data.token') }
-    } else {
-      const error = new Error('Github authentication failed')
-      error.response = response
-      throw error
-    }
   }
+  const { username, password } = await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'username',
+      message: 'Your GitHub username:',
+      filter: (input) => input.trim(),
+    },
+    {
+      type: 'password',
+      name: 'password',
+      message: 'Your GitHub password:',
+      mask: '*',
+      filter: (input) => input.trim(),
+    },
+  ])
+
+  // configure basic auth
+  const octokit = new Octokit({
+    auth: {
+      username,
+      password,
+      on2fa() {
+        return promptForOTP()
+      },
+    },
+  })
+
+  const response = await octokit.oauthAuthorizations.createAuthorization({
+    note: opts.note + ' (' + new Date().toJSON() + ')',
+    note_url: 'https://cli.netlify.com/',
+    scopes: opts.scopes,
+    headers: {
+      'User-Agent': opts.userAgent,
+    },
+  })
+
+  if (get(response, 'data.token')) {
+    return { user: username, token: get(response, 'data.token') }
+  }
+  const error = new Error('Github authentication failed')
+  error.response = response
+  throw error
 }
