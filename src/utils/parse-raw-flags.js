@@ -1,14 +1,14 @@
-/* Get flags from `raw` data
+// Get flags from `raw` data
+//
+// Needed for commands using Command.strict = false
+//
 
-Needed for commands using Command.strict = false
-*/
-
-/** Usage:
-const { flags, raw } = this.parse(addonsCreateCommand)
-// flags = {}
-const rawFlags = parseRawFlags(raw)
-// rawFlags = {stuff: yay!}
-*/
+// Usage:
+// const { flags, raw } = this.parse(addonsCreateCommand)
+// // flags = {}
+// const rawFlags = parseRawFlags(raw)
+// // rawFlags = {stuff: yay!}
+//
 
 exports.parseRawFlags = parseRawFlags
 function parseRawFlags(raw) {

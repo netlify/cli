@@ -48,17 +48,17 @@ class IdentityAPI {
   }
 }
 
-/*
-  Fetch a user from GoTrue via id
-*/
+//
+// Fetch a user from GoTrue via id
+//
 function fetchUser(identity, id) {
   const api = new IdentityAPI(identity.url, identity.token)
   return api.request(`/admin/users/${id}`)
 }
 
-/*
- Update the app_metadata of a user
-*/
+//
+// Update the app_metadata of a user
+//
 function updateUser(identity, user, appMetadata) {
   const api = new IdentityAPI(identity.url, identity.token)
 

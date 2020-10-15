@@ -1,8 +1,8 @@
 const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
 
-/**
- * detection logic - artificial intelligence!
- * */
+//
+// detection logic - artificial intelligence!
+//
 module.exports = function () {
   // REQUIRED FILES
   if (!hasRequiredFiles(['package.json', 'stencil.config.ts'])) return false

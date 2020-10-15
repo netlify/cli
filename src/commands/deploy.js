@@ -578,12 +578,12 @@ DeployCommand.flags = {
 
 function deployProgressCb() {
   const events = {}
-  /* statusObj: {
-            type: name-of-step
-            msg: msg to print
-            phase: [start, progress, stop]
-    }
-  */
+  // statusObj: {
+  //         type: name-of-step
+  //         msg: msg to print
+  //         phase: [start, progress, stop]
+  // }
+  //
   return (ev) => {
     switch (ev.phase) {
       case 'start': {
