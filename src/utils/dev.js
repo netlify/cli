@@ -1,5 +1,3 @@
-/* eslint no-console: 0 */
-
 // reusable code for netlify dev
 // bit of a hasty abstraction but recommended by oclif
 const chalk = require('chalk')
@@ -63,7 +61,6 @@ async function addEnvVariables(api, site) {
           )
 
           process.exit()
-        // eslint-disable-next-line no-fallthrough
         default:
           console.error(
             `${NETLIFYDEVERR} Error retrieving site data for site ${chalk.yellow(
