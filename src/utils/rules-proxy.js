@@ -4,36 +4,31 @@ const url = require('url')
 const redirector = require('netlify-redirector')
 const chokidar = require('chokidar')
 const cookie = require('cookie')
-const redirectParser = require('netlify-redirect-parser')
+const { parseRedirectsFormat, parseNetlifyConfig } = require('netlify-redirect-parser')
 const { NETLIFYDEVWARN, NETLIFYDEVLOG } = require('../utils/logo')
+const { fileExistsAsync } = require('../lib/fs')
 
-async function parseFile(parser, filePath) {
-  const result = await parser(filePath)
-  if (result.errors.length !== 0) {
+async function parseFile(filePath) {
+  if (!(await fileExistsAsync(filePath))) {
+    return []
+  }
+
+  const parser = path.basename(filePath) === '_redirects' ? parseRedirectsFormat : parseNetlifyConfig
+  const { success, errors } = await parser(filePath)
+  if (errors.length !== 0) {
     console.error(`${NETLIFYDEVWARN} Warnings while parsing ${path.basename(filePath)} file:`)
-    result.errors.forEach((err) => {
+    errors.forEach((err) => {
       console.error(`  ${err.lineNum}: ${err.line} -- ${err.reason}`)
     })
   }
-  return result.success
+  return success
 }
 
 module.exports.parseFile = parseFile
 
 async function parseRules(configFiles) {
-  const rules = []
-
-  for (const file of configFiles) {
-    if (!fs.existsSync(file)) continue
-
-    if (path.basename(file) === '_redirects') {
-      rules.push(...(await parseFile(redirectParser.parseRedirectsFormat, file)))
-    } else {
-      rules.push(...(await parseFile(redirectParser.parseNetlifyConfig, file)))
-    }
-  }
-
-  return rules
+  const results = await Promise.all(configFiles.map(parseFile))
+  return [].concat(...results)
 }
 
 module.exports.parseRules = parseRules

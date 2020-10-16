@@ -1,6 +1,5 @@
 const path = require('path')
 const test = require('ava')
-const redirectParser = require('netlify-redirect-parser')
 const { getLanguage, parseFile, parseRules } = require('./rules-proxy.js')
 const { withSiteBuilder } = require('../../tests/utils/site-builder')
 test('getLanguage', (t) => {
@@ -62,7 +61,7 @@ test('should parse redirect rules from netlify.toml', async (t) => {
 
     await builder.buildAsync()
 
-    const rules = await parseFile(redirectParser.parseNetlifyConfig, path.join(builder.directory, 'netlify.toml'))
+    const rules = await parseFile(path.join(builder.directory, 'netlify.toml'))
     const expected = [
       {
         path: '/api/*',
@@ -116,7 +115,7 @@ test('should parse redirect rules from _redirects file', async (t) => {
 
     await builder.buildAsync()
 
-    const rules = await parseFile(redirectParser.parseRedirectsFormat, path.join(builder.directory, '_redirects'))
+    const rules = await parseFile(path.join(builder.directory, '_redirects'))
     const expected = [
       {
         path: '/something',
