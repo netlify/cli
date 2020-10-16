@@ -1,7 +1,7 @@
 const inquirer = require('inquirer')
 const chalk = require('chalk')
 const Command = require('../../utils/command')
-const { flags } = require('@oclif/command')
+const { flags: flagsLib } = require('@oclif/command')
 const { parseRawFlags } = require('../../utils/parse-raw-flags')
 
 class SitesDeleteCommand extends Command {
@@ -109,7 +109,7 @@ SitesDeleteCommand.args = [
 ]
 
 SitesDeleteCommand.flags = {
-  force: flags.boolean({
+  force: flagsLib.boolean({
     char: 'f',
     description: 'delete without prompting (useful for CI)',
   }),

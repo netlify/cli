@@ -2,7 +2,7 @@ const Command = require('../utils/command')
 const openBrowser = require('../utils/open-browser')
 const path = require('path')
 const chalk = require('chalk')
-const { flags } = require('@oclif/command')
+const { flags: flagsLib } = require('@oclif/command')
 const get = require('lodash.get')
 const prettyjson = require('prettyjson')
 const ora = require('ora')
@@ -520,57 +520,57 @@ DeployCommand.examples = [
 ]
 
 DeployCommand.flags = {
-  dir: flags.string({
+  dir: flagsLib.string({
     char: 'd',
     description: 'Specify a folder to deploy',
   }),
-  functions: flags.string({
+  functions: flagsLib.string({
     char: 'f',
     description: 'Specify a functions folder to deploy',
   }),
-  prod: flags.boolean({
+  prod: flagsLib.boolean({
     char: 'p',
     description: 'Deploy to production',
     default: false,
     exclusive: ['alias', 'branch'],
   }),
-  alias: flags.string({
+  alias: flagsLib.string({
     description: "Specifies the alias for deployment. Useful for creating predictable deployment URL's",
   }),
-  branch: flags.string({
+  branch: flagsLib.string({
     char: 'b',
     description: 'Serves the same functionality as --alias. Deprecated and will be removed in future versions',
   }),
-  open: flags.boolean({
+  open: flagsLib.boolean({
     char: 'o',
     description: 'Open site after deploy',
     default: false,
   }),
-  message: flags.string({
+  message: flagsLib.string({
     char: 'm',
     description: 'A short message to include in the deploy log',
   }),
-  auth: flags.string({
+  auth: flagsLib.string({
     char: 'a',
     description: 'Netlify auth token to deploy with',
     env: 'NETLIFY_AUTH_TOKEN',
   }),
-  site: flags.string({
+  site: flagsLib.string({
     char: 's',
     description: 'A site ID to deploy to',
     env: 'NETLIFY_SITE_ID',
   }),
-  json: flags.boolean({
+  json: flagsLib.boolean({
     description: 'Output deployment data as JSON',
   }),
-  timeout: flags.integer({
+  timeout: flagsLib.integer({
     description: 'Timeout to wait for deployment to finish',
   }),
-  trigger: flags.boolean({
+  trigger: flagsLib.boolean({
     description: 'Trigger a new build of your site on Netlify without uploading local files',
     exclusive: ['build'],
   }),
-  build: flags.boolean({
+  build: flagsLib.boolean({
     description: 'Run build command before deploying',
   }),
   ...DeployCommand.flags,

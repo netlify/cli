@@ -1,4 +1,4 @@
-const { Command, flags } = require('@oclif/command')
+const { Command, flags: flagsLib } = require('@oclif/command')
 const API = require('netlify')
 const merge = require('lodash.merge')
 const { format, inspect } = require('util')
@@ -47,7 +47,7 @@ class BaseCommand extends Command {
     // Get site id & build state
     const state = new StateConfig(cwd)
 
-    const cachedConfig = await this.getConfig(cwd, state, token, argv)
+    const cachedConfig = await this.getConfig(cwd, state, token)
     const { configPath, config, buildDir } = cachedConfig
 
     const { flags } = this.parse(BaseCommand)
@@ -91,7 +91,7 @@ class BaseCommand extends Command {
   }
 
   // Find and resolve the Netlify configuration
-  async getConfig(cwd, state, token, argv) {
+  async getConfig(cwd, state, token) {
     try {
       return await resolveConfig({
         config: argv.config,
@@ -136,7 +136,7 @@ class BaseCommand extends Command {
   }
 
   /* Modified flag parser to support global --auth, --json, & --silent flags */
-  parse(opts, argv = this.argv) {
+  parse(opts, args = this.argv) {
     /* Set flags object for commands without flags */
     if (!opts.flags) {
       opts.flags = {}
@@ -172,7 +172,7 @@ class BaseCommand extends Command {
     // enrich with flags here
     opts.flags = { ...opts.flags, ...globalFlags }
 
-    return require('@oclif/parser').parse(argv, {
+    return require('@oclif/parser').parse(args, {
       context: this,
       ...opts,
     })
@@ -273,14 +273,14 @@ function getAuthArg(cliArgs) {
 
 BaseCommand.strict = false
 BaseCommand.flags = {
-  debug: flags.boolean({
+  debug: flagsLib.boolean({
     description: 'Print debugging information',
   }),
-  httpProxy: flags.string({
+  httpProxy: flagsLib.string({
     description: 'Proxy server address to route requests through.',
     default: process.env.HTTP_PROXY || process.env.HTTPS_PROXY,
   }),
-  httpProxyCertificateFilename: flags.string({
+  httpProxyCertificateFilename: flagsLib.string({
     description: 'Certificate file to use when connecting using a proxy server',
     default: process.env.NETLIFY_PROXY_CERTIFICATE_FILENAME,
   }),

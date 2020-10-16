@@ -1,7 +1,7 @@
 const test = require('ava')
 const sinon = require('sinon')
 const http = require('http')
-const httpProxy = require('http-proxy')
+const { createProxyServer } = require('http-proxy')
 const { HttpsProxyAgent } = require('https-proxy-agent')
 const { getAgent } = require('./http-agent')
 
@@ -47,7 +47,7 @@ test(`should exit with error when proxy is no available`, async (t) => {
 })
 
 test(`should return agent for a valid proxy`, async (t) => {
-  const proxy = httpProxy.createProxyServer()
+  const proxy = createProxyServer()
   const server = http.createServer(function onRequest(req, res) {
     proxy.web(req, res, { target: 'http://localhost:5555' })
   })

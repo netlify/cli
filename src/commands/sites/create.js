@@ -1,4 +1,4 @@
-const { flags } = require('@oclif/command')
+const { flags: flagsLib } = require('@oclif/command')
 const inquirer = require('inquirer')
 const prettyjson = require('prettyjson')
 const chalk = require('chalk')
@@ -42,7 +42,7 @@ class SitesCreateCommand extends Command {
       accountSlug = accountSlugInput
     }
 
-    const { name } = flags
+    const { name: nameFlag } = flags
     let userName
     let site
 
@@ -94,17 +94,17 @@ class SitesCreateCommand extends Command {
         }
       }
     }
-    await inputSiteName(name)
+    await inputSiteName(nameFlag)
 
     this.log()
     this.log(chalk.greenBright.bold.underline(`Site Created`))
     this.log()
 
-    const url = site.ssl_url || site.url
+    const siteUrl = site.ssl_url || site.url
     this.log(
       prettyjson.render({
         'Admin URL': site.admin_url,
-        'URL': url,
+        'URL': siteUrl,
         'Site ID': site.id,
       }),
     )
@@ -112,7 +112,7 @@ class SitesCreateCommand extends Command {
     track('sites_created', {
       siteId: site.id,
       adminUrl: site.admin_url,
-      siteUrl: url,
+      siteUrl,
     })
 
     if (flags['with-ci']) {
@@ -200,19 +200,19 @@ Create a blank site that isn't associated with any git remote.  Does not link to
 `
 
 SitesCreateCommand.flags = {
-  'name': flags.string({
+  'name': flagsLib.string({
     char: 'n',
     description: 'name of site',
   }),
-  'account-slug': flags.string({
+  'account-slug': flagsLib.string({
     char: 'a',
     description: 'account slug to create the site under',
   }),
-  'with-ci': flags.boolean({
+  'with-ci': flagsLib.boolean({
     char: 'c',
     description: 'initialize CI hooks during site creation',
   }),
-  'manual': flags.boolean({
+  'manual': flagsLib.boolean({
     char: 'm',
     description: 'Force manual CI setup.  Used --with-ci flag',
   }),

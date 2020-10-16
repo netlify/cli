@@ -41,7 +41,7 @@ function aggressiveJSONParse(value) {
   } catch (error) {
     try {
       parsed = JSON.parse(`"${value}"`)
-    } catch (error) {
+    } catch (error_) {
       parsed = value
     }
   }

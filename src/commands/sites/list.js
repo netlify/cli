@@ -1,4 +1,4 @@
-const { flags } = require('@oclif/command')
+const { flags: flagsLib } = require('@oclif/command')
 const chalk = require('chalk')
 const { cli } = require('cli-ux')
 const Command = require('../../utils/command')
@@ -78,7 +78,7 @@ Count: ${logSites.length}
 SitesListCommand.description = `List all sites you have access to`
 
 SitesListCommand.flags = {
-  json: flags.boolean({
+  json: flagsLib.boolean({
     description: 'Output site data as JSON',
   }),
   ...SitesListCommand.flags,

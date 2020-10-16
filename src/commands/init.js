@@ -1,4 +1,4 @@
-const { flags } = require('@oclif/command')
+const { flags: flagsLib } = require('@oclif/command')
 const chalk = require('chalk')
 const get = require('lodash.get')
 const Command = require('../utils/command')
@@ -235,14 +235,14 @@ git remote add origin https://github.com/YourUserName/RepoName.git
 InitCommand.description = `Configure continuous deployment for a new or existing site`
 
 InitCommand.flags = {
-  manual: flags.boolean({
+  manual: flagsLib.boolean({
     char: 'm',
     description: 'Manually configure a git remote for CI',
   }),
-  force: flags.boolean({
+  force: flagsLib.boolean({
     description: 'Reinitialize CI hooks if the linked site is already configured to use CI',
   }),
-  gitRemoteName: flags.string({
+  gitRemoteName: flagsLib.string({
     description: 'Name of Git remote to use. e.g. "origin"',
   }),
   ...InitCommand.flags,

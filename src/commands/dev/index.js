@@ -1,5 +1,5 @@
 const path = require('path')
-const { flags } = require('@oclif/command')
+const { flags: flagsLib } = require('@oclif/command')
 const childProcess = require('child_process')
 const waitPort = require('wait-port')
 const stripAnsiCc = require('strip-ansi-control-characters')
@@ -159,7 +159,7 @@ const reportAnalytics = async ({ config, settings }) => {
     payload: {
       command: 'dev',
       projectType: settings.framework || 'custom',
-      live: flags.live || false,
+      live: flagsLib.live || false,
     },
   })
 }
@@ -236,38 +236,38 @@ DevCommand.examples = ['$ netlify dev', '$ netlify dev -c "yarn start"', '$ netl
 DevCommand.strict = false
 
 DevCommand.flags = {
-  command: flags.string({
+  command: flagsLib.string({
     char: 'c',
     description: 'command to run',
   }),
-  port: flags.integer({
+  port: flagsLib.integer({
     char: 'p',
     description: 'port of netlify dev',
   }),
-  targetPort: flags.integer({
+  targetPort: flagsLib.integer({
     description: 'port of target app server',
   }),
-  staticServerPort: flags.integer({
+  staticServerPort: flagsLib.integer({
     description: 'port of the static app server used when no framework is detected',
     hidden: true,
   }),
-  dir: flags.string({
+  dir: flagsLib.string({
     char: 'd',
     description: 'dir with static files',
   }),
-  functions: flags.string({
+  functions: flagsLib.string({
     char: 'f',
     description: 'Specify a functions folder to serve',
   }),
-  offline: flags.boolean({
+  offline: flagsLib.boolean({
     char: 'o',
     description: 'disables any features that require network access',
   }),
-  live: flags.boolean({
+  live: flagsLib.boolean({
     char: 'l',
     description: 'Start a public live session',
   }),
-  trafficMesh: flags.boolean({
+  trafficMesh: flagsLib.boolean({
     char: 't',
     hidden: true,
     description: 'Uses Traffic Mesh for proxying requests',

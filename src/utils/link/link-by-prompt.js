@@ -95,9 +95,9 @@ Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
             type: 'list',
             name: 'selectedSite',
             message: 'Which site do you want to link?',
-            choices: matchingSites.map((site) => ({
-              name: `${site.name} - ${site.ssl_url}`,
-              value: site,
+            choices: matchingSites.map((matchingSite) => ({
+              name: `${matchingSite.name} - ${matchingSite.ssl_url}`,
+              value: matchingSite,
             })),
           },
         ])
@@ -149,7 +149,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
             name: 'selectedSite',
             message: 'Which site do you want to link?',
             paginated: true,
-            choices: matchingSites.map((site) => ({ name: site.name, value: site })),
+            choices: matchingSites.map((matchingSite) => ({ name: matchingSite.name, value: matchingSite })),
           },
         ])
         if (!selectedSite) {
@@ -184,7 +184,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
           name: 'selectedSite',
           message: 'Which site do you want to link?',
           paginated: true,
-          choices: sites.map((site) => ({ name: site.name, value: site })),
+          choices: sites.map((matchingSite) => ({ name: matchingSite.name, value: matchingSite })),
         },
       ])
       if (!selectedSite) {

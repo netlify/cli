@@ -18,8 +18,8 @@ const runOnError = async function () {
   process.exitCode = exitCode
 }
 
-const runNpmScript = function (npmScript) {
-  return execa.command(`npm run ${npmScript}`, { stdio: 'inherit', reject: false })
+const runNpmScript = function (npmScriptName) {
+  return execa.command(`npm run ${npmScriptName}`, { stdio: 'inherit', reject: false })
 }
 
 const DEFAULT_ERROR_EXIT_CODE = 1

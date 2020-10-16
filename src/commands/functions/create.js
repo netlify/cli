@@ -1,7 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const copy = require('copy-template-dir')
-const { flags } = require('@oclif/command')
+const { flags: flagsLib } = require('@oclif/command')
 const inquirer = require('inquirer')
 const fetch = require('node-fetch')
 const cp = require('child_process')
@@ -58,8 +58,8 @@ FunctionsCreateCommand.examples = [
 ]
 FunctionsCreateCommand.aliases = ['function:create']
 FunctionsCreateCommand.flags = {
-  name: flags.string({ char: 'n', description: 'function name' }),
-  url: flags.string({ char: 'u', description: 'pull template from URL' }),
+  name: flagsLib.string({ char: 'n', description: 'function name' }),
+  url: flagsLib.string({ char: 'u', description: 'pull template from URL' }),
   ...FunctionsCreateCommand.flags,
 }
 module.exports = FunctionsCreateCommand
