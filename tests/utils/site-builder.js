@@ -76,8 +76,8 @@ const createSiteBuilder = ({ siteName }) => {
       tasks.push(async () => {
         const content = headers
           .map(
-            ({ path: headerPath, headers: headerValues }) =>
-              `${headerPath}${os.EOL}${headerValues.map((h) => `  ${h}`).join(`${os.EOL}`)}`,
+            ({ path: headerPath, headers: headersValues }) =>
+              `${headerPath}${os.EOL}${headersValues.map((header) => `  ${header}`).join(`${os.EOL}`)}`,
           )
           .join(os.EOL)
         await ensureDir(path.dirname(dest))

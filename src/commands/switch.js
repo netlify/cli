@@ -31,7 +31,9 @@ class SwitchCommand extends Command {
     if (accountSwitchChoice === LOGIN_NEW) {
       await LoginCommand.run(['--new'])
     } else {
-      const selectedAccount = Object.entries(availableUsersChoices).find(([, v]) => v === accountSwitchChoice)
+      const selectedAccount = Object.entries(availableUsersChoices).find(
+        ([, availableUsersChoice]) => availableUsersChoice === accountSwitchChoice,
+      )
       this.netlify.globalConfig.set('userId', selectedAccount[0])
       this.log('')
       this.log(`You're now using ${chalk.bold(selectedAccount[1])}.`)

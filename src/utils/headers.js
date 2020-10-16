@@ -11,19 +11,19 @@ function matchPaths(rulePath, targetPath) {
     return true
   }
 
-  for (let i = 0; i < rulePathParts.length; i++) {
-    if (i >= targetPathParts.length) return false
+  for (let index = 0; index < rulePathParts.length; index++) {
+    if (index >= targetPathParts.length) return false
 
-    const rulePart = rulePathParts[i]
-    const target = targetPathParts[i]
+    const rulePart = rulePathParts[index]
+    const target = targetPathParts[index]
 
     if (rulePart === '*') return true
 
     if (rulePart.startsWith(':')) {
-      if (i === rulePathParts.length - 1) {
-        return i === targetPathParts.length - 1
+      if (index === rulePathParts.length - 1) {
+        return index === targetPathParts.length - 1
       }
-      if (i === targetPathParts.length - 1) {
+      if (index === targetPathParts.length - 1) {
         return false
       }
     } else {
@@ -53,15 +53,17 @@ function parseHeadersFile(filePath) {
   if (lines.length === 0) return rules
 
   let path
-  for (let i = 0; i <= lines.length; i++) {
-    if (!lines[i]) continue
+  for (let index = 0; index <= lines.length; index++) {
+    if (!lines[index]) continue
 
-    const line = lines[i].trim()
+    const line = lines[index].trim()
 
     if (line.startsWith(TOKEN_COMMENT) || line.length === 0) continue
     if (line.startsWith(TOKEN_PATH)) {
       if (line.includes('*') && line.indexOf('*') !== line.length - 1) {
-        throw new Error(`invalid rule (A path rule cannot contain anything after * token) at line: ${i}\n${lines[i]}\n`)
+        throw new Error(
+          `invalid rule (A path rule cannot contain anything after * token) at line: ${index}\n${lines[index]}\n`,
+        )
       }
       path = line
       continue
@@ -71,7 +73,7 @@ function parseHeadersFile(filePath) {
 
     if (line.includes(':')) {
       const sepIndex = line.indexOf(':')
-      if (sepIndex < 1) throw new Error(`invalid header at line: ${i}\n${lines[i]}\n`)
+      if (sepIndex < 1) throw new Error(`invalid header at line: ${index}\n${lines[index]}\n`)
 
       const key = line.slice(0, sepIndex).trim()
       const value = line.slice(sepIndex + 1).trim()

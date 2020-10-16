@@ -145,7 +145,7 @@ class BaseCommand extends Command {
     const globalFlags = {}
     if (!opts.flags.silent) {
       globalFlags.silent = {
-        parse: (b) => b,
+        parse: (value) => value,
         description: 'Silence CLI output',
         allowNo: false,
         type: 'boolean',
@@ -153,7 +153,7 @@ class BaseCommand extends Command {
     }
     if (!opts.flags.json) {
       globalFlags.json = {
-        parse: (b) => b,
+        parse: (value) => value,
         description: 'Output return values as JSON',
         allowNo: false,
         type: 'boolean',
@@ -161,7 +161,7 @@ class BaseCommand extends Command {
     }
     if (!opts.flags.auth) {
       globalFlags.auth = {
-        parse: (b) => b,
+        parse: (value) => value,
         description: 'Netlify auth token',
         input: [],
         multiple: false,

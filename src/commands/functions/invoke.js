@@ -263,14 +263,14 @@ module.exports = FunctionsInvokeCommand
 // https://stackoverflow.com/questions/3710204/how-to-check-if-a-string-is-a-valid-json-string-in-javascript-without-using-try
 function tryParseJSON(jsonString) {
   try {
-    const o = JSON.parse(jsonString)
+    const parsedValue = JSON.parse(jsonString)
 
     // Handle non-exception-throwing cases:
     // Neither JSON.parse(false) or JSON.parse(1234) throw errors, hence the type-checking,
     // but... JSON.parse(null) returns null, and typeof null === "object",
     // so we must check for that, too. Thankfully, null is falsey, so this suffices:
-    if (o && typeof o === 'object') {
-      return o
+    if (parsedValue && typeof parsedValue === 'object') {
+      return parsedValue
     }
     // eslint-disable-next-line no-empty
   } catch (error) {}

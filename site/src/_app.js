@@ -13,7 +13,7 @@ const scope = {
   ...Rebass,
   code: LiveEditor,
   pre: ({ children }) => children,
-  // eslint-disable-next-line react/display-name
+  // eslint-disable-next-line react/display-name, id-length
   a: ({ children, href }) => {
     // handle external links
     if (!href.match(/^\//)) {
@@ -64,9 +64,9 @@ const pageNames = {
 
 const sortRoutes = (routes) =>
   [
-    ...sortBy([...routes], (a) => {
-      const i = navOrder.indexOf(a.name)
-      return i < 0 ? Infinity : i
+    ...sortBy([...routes], ({ name }) => {
+      const index = navOrder.indexOf(name)
+      return index < 0 ? Infinity : index
     }),
   ].map((route) => {
     if (!pageNames[route.name]) {

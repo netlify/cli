@@ -71,8 +71,8 @@ module.exports = function generateCommandData() {
   return groupedCommandsWithData
 }
 
-function commandFromPath(p) {
-  let normalized = path.normalize(p)
+function commandFromPath(filePath) {
+  let normalized = path.normalize(filePath)
 
   // console.log('commandFromPath', normalized)
   // console.log('process.cwd()', process.cwd())

@@ -51,11 +51,11 @@ const handler = (event, context, callback) => {
     text: body.details,
   }
 
-  sendMail(descriptor, (e) => {
-    if (e) {
+  sendMail(descriptor, (error) => {
+    if (error) {
       callback(null, {
         statusCode: 500,
-        body: e.message,
+        body: error.message,
       })
     } else {
       callback(null, {

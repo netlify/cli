@@ -26,13 +26,15 @@ function isFunction(functionsPort, url) {
 }
 
 function getAddonUrl(addonUrls, req) {
-  const m = req.url.match(/^\/.netlify\/([^/]+)(\/.*)/)
-  const addonUrl = m && addonUrls[m[1]]
-  return addonUrl ? `${addonUrl}${m[2]}` : null
+  const matches = req.url.match(/^\/.netlify\/([^/]+)(\/.*)/)
+  const addonUrl = matches && addonUrls[matches[1]]
+  return addonUrl ? `${addonUrl}${matches[2]}` : null
 }
 
 async function getStatic(pathname, publicFolder) {
-  const alternatives = [pathname, ...alternativePathsFor(pathname)].map((p) => path.resolve(publicFolder, p.slice(1)))
+  const alternatives = [pathname, ...alternativePathsFor(pathname)].map((filePath) =>
+    path.resolve(publicFolder, filePath.slice(1)),
+  )
 
   const file = await locatePath(alternatives)
   if (file === undefined) {
@@ -92,8 +94,8 @@ async function serveRedirect({ req, res, proxy, match, options }) {
   options.match = null
 
   if (!isEmpty(match.proxyHeaders)) {
-    Object.entries(match.proxyHeaders).forEach(([k, v]) => {
-      req.headers[k] = v
+    Object.entries(match.proxyHeaders).forEach(([key, value]) => {
+      req.headers[key] = value
     })
   }
 
@@ -107,7 +109,9 @@ async function serveRedirect({ req, res, proxy, match, options }) {
 
   if (match.exceptions && match.exceptions.JWT) {
     // Some values of JWT can start with :, so, make sure to normalize them
-    const expectedRoles = new Set(match.exceptions.JWT.split(',').map((r) => (r.startsWith(':') ? r.slice(1) : r)))
+    const expectedRoles = new Set(
+      match.exceptions.JWT.split(',').map((value) => (value.startsWith(':') ? value.slice(1) : value)),
+    )
 
     const cookieValues = cookie.parse(req.headers.cookie || '')
     const token = cookieValues.nf_jwt
@@ -246,7 +250,7 @@ function initializeProxy(port, distDir, projectDir) {
   onChanges(headersFiles, async () => {
     console.log(
       `${NETLIFYDEVLOG} Reloading headers files`,
-      (await pFilter(headersFiles, fileExistsAsync)).map((p) => path.relative(projectDir, p)),
+      (await pFilter(headersFiles, fileExistsAsync)).map((headerFile) => path.relative(projectDir, headerFile)),
     )
     headerRules = headersFiles.reduce((prev, curr) => Object.assign(prev, parseHeadersFile(curr)), {})
   })
@@ -287,7 +291,7 @@ function initializeProxy(port, distDir, projectDir) {
     web: (req, res, options) => {
       const requestURL = new URL(req.url, 'http://localhost')
       req.proxyOptions = options
-      req.alternativePaths = alternativePathsFor(requestURL.pathname).map((p) => p + requestURL.search)
+      req.alternativePaths = alternativePathsFor(requestURL.pathname).map((filePath) => filePath + requestURL.search)
       // Ref: https://nodejs.org/api/net.html#net_socket_remoteaddress
       req.headers['x-forwarded-for'] = req.connection.remoteAddress || ''
       return proxy.web(req, res, options)

@@ -8,17 +8,19 @@ const fs = require('fs')
 
 const serverSettings = async (devConfig, flags, projectDir, log) => {
   let settings = {}
-  // only accept .js detector files
-  const detectorsFiles = fs.readdirSync(path.join(__dirname, '..', 'detectors')).filter((x) => x.endsWith('.js'))
+  const detectorsFiles = fs
+    .readdirSync(path.join(__dirname, '..', 'detectors'))
+    // only accept .js detector files
+    .filter((filename) => filename.endsWith('.js'))
 
   if (typeof devConfig.framework !== 'string') throw new Error('Invalid "framework" option provided in config')
 
   if (flags.dir) {
     settings = await getStaticServerSettings(settings, flags, projectDir, log)
-    ;['command', 'targetPort'].forEach((p) => {
-      if (flags[p]) {
+    ;['command', 'targetPort'].forEach((property) => {
+      if (flags[property]) {
         throw new Error(
-          `"${p}" option cannot be used in conjunction with "dir" flag which is used to run a static server`,
+          `"${property}" option cannot be used in conjunction with "dir" flag which is used to run a static server`,
         )
       }
     })
@@ -68,7 +70,7 @@ const serverSettings = async (devConfig, flags, projectDir, log) => {
     settings.framework = '#custom'
     if (
       devConfig.framework &&
-      !['command', 'targetPort'].every((p) => Object.prototype.hasOwnProperty.call(devConfig, p))
+      !['command', 'targetPort'].every((property) => Object.prototype.hasOwnProperty.call(devConfig, property))
     ) {
       throw new Error('"command" and "targetPort" properties are required when "framework" is set to "#custom"')
     }
@@ -85,7 +87,9 @@ const serverSettings = async (devConfig, flags, projectDir, log) => {
       throw new Error(
         'Unsupported value provided for "framework" option in config. Please use "#custom"' +
           ` if you're using a framework not intrinsically supported by Netlify Dev. E.g. with "command" and "targetPort" options.` +
-          ` Or use one of following values: ${detectorsFiles.map((f) => `"${path.parse(f).name}"`).join(', ')}`,
+          ` Or use one of following values: ${detectorsFiles
+            .map((detectorFile) => `"${path.parse(detectorFile).name}"`)
+            .join(', ')}`,
       )
 
     const detector = loadDetector(detectorName)
@@ -234,9 +238,11 @@ function chooseDefaultArgs(possibleArgsArrs) {
 function filterSettings(scriptInquirerOptions, input) {
   const filteredSettings = fuzzy.filter(
     input,
-    scriptInquirerOptions.map((x) => x.name),
+    scriptInquirerOptions.map((scriptInquirerOption) => scriptInquirerOption.name),
   )
-  const filteredSettingNames = new Set(filteredSettings.map((x) => (input ? x.string : x)))
+  const filteredSettingNames = new Set(
+    filteredSettings.map((filteredSetting) => (input ? filteredSetting.string : filteredSetting)),
+  )
   return scriptInquirerOptions.filter((t) => filteredSettingNames.has(t.name))
 }
 

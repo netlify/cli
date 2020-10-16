@@ -25,7 +25,7 @@ function handleErr(err, response) {
 }
 
 function capitalize(t) {
-  return t.replace(/(^\w|\s\w)/g, (m) => m.toUpperCase())
+  return t.replace(/(^\w|\s\w)/g, (string) => string.toUpperCase())
 }
 
 /** need to keep createCallback in scope so we can know if cb was called AND handler is async */
@@ -93,8 +93,8 @@ function buildClientContext(headers) {
 
 const clearCache = (action) => (path) => {
   console.log(`${NETLIFYDEVLOG} ${path} ${action}, reloading...`)
-  Object.keys(require.cache).forEach((k) => {
-    delete require.cache[k]
+  Object.keys(require.cache).forEach((key) => {
+    delete require.cache[key]
   })
   console.log(`${NETLIFYDEVLOG} ${path} ${action}, successfully reloaded!`)
 }
@@ -144,20 +144,23 @@ function createHandler(dir) {
       delete request.headers['x-netlify-original-pathname']
     }
     const queryParams = Object.entries(request.query).reduce(
-      (prev, [k, v]) => ({ ...prev, [k]: Array.isArray(v) ? v : [v] }),
+      (prev, [key, value]) => ({ ...prev, [key]: Array.isArray(value) ? value : [value] }),
       {},
     )
     const headers = Object.entries({ ...request.headers, 'client-ip': [remoteAddress] }).reduce(
-      (prev, [k, v]) => ({ ...prev, [k]: Array.isArray(v) ? v : [v] }),
+      (prev, [key, value]) => ({ ...prev, [key]: Array.isArray(value) ? value : [value] }),
       {},
     )
 
     const event = {
       path: requestPath,
       httpMethod: request.method,
-      queryStringParameters: Object.entries(queryParams).reduce((prev, [k, v]) => ({ ...prev, [k]: v.join(', ') }), {}),
+      queryStringParameters: Object.entries(queryParams).reduce(
+        (prev, [key, value]) => ({ ...prev, [key]: value.join(', ') }),
+        {},
+      ),
       multiValueQueryStringParameters: queryParams,
-      headers: Object.entries(headers).reduce((prev, [k, v]) => ({ ...prev, [k]: v.join(', ') }), {}),
+      headers: Object.entries(headers).reduce((prev, [key, value]) => ({ ...prev, [key]: value.join(', ') }), {}),
       multiValueHeaders: headers,
       body,
       isBase64Encoded,
@@ -213,11 +216,11 @@ function createFormSubmissionHandler(siteInfo) {
             Files = Object.entries(Files).reduce(
               (prev, [name, values]) => ({
                 ...prev,
-                [name]: values.map((v) => ({
-                  filename: v.originalFilename,
-                  size: v.size,
-                  type: v.headers && v.headers['content-type'],
-                  url: v.path,
+                [name]: values.map((value) => ({
+                  filename: value.originalFilename,
+                  size: value.size,
+                  type: value.headers && value.headers['content-type'],
+                  url: value.path,
                 })),
               }),
               {},

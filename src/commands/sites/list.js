@@ -60,14 +60,14 @@ class SitesListCommand extends Command {
 Count: ${logSites.length}
 `)
 
-      logSites.forEach((s) => {
-        this.log(`${chalk.greenBright(s.name)} - ${s.id}`)
-        this.log(`  ${chalk.whiteBright.bold('url:')}  ${chalk.yellowBright(s.ssl_url)}`)
-        if (s.repo_url) {
-          this.log(`  ${chalk.whiteBright.bold('repo:')} ${chalk.white(s.repo_url)}`)
+      logSites.forEach((logSite) => {
+        this.log(`${chalk.greenBright(logSite.name)} - ${logSite.id}`)
+        this.log(`  ${chalk.whiteBright.bold('url:')}  ${chalk.yellowBright(logSite.ssl_url)}`)
+        if (logSite.repo_url) {
+          this.log(`  ${chalk.whiteBright.bold('repo:')} ${chalk.white(logSite.repo_url)}`)
         }
-        if (s.account_name) {
-          this.log(`  ${chalk.whiteBright.bold('account:')} ${chalk.white(s.account_name)}`)
+        if (logSite.account_name) {
+          this.log(`  ${chalk.whiteBright.bold('account:')} ${chalk.white(logSite.account_name)}`)
         }
         this.log(`─────────────────────────────────────────────────`)
       })

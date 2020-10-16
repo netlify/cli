@@ -14,8 +14,8 @@ class AddonsDeleteCommand extends Command {
       validation: ADDON_VALIDATION.EXISTS,
     })
 
-    const { force, f } = parseRawFlags(raw)
-    if (!force && !f) {
+    const rawFlags = parseRawFlags(raw)
+    if (!rawFlags.force && !rawFlags.f) {
       const { wantsToDelete } = await inquirer.prompt({
         type: 'confirm',
         name: 'wantsToDelete',
