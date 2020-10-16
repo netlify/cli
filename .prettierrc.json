@@ -1,7 +1,6 @@
 {
   "semi": false,
   "singleQuote": true,
-  "printWidth": 120,
   "proseWrap": "always",
   "quoteProps": "consistent",
   "trailingComma": "es5"
