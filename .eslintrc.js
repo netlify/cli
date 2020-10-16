@@ -18,6 +18,9 @@ module.exports = {
     'require-await': 2,
     'no-unused-vars': [2, {}],
     'no-undef': [2, { typeof: true }],
+
+    // The autofix makes it impossible to use those in debugging
+    'ava/no-only-test': 0,
     'ava/no-skip-test': 0,
 
     // Those ESLint rules are not enabled by Prettier, ESLint recommended rules
