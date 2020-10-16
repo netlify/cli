@@ -1,4 +1,5 @@
 module.exports = {
+  parser: 'babel-eslint',
   plugins: ['prettier', 'markdown', 'html'],
   extends: [
     'eslint:recommended',
@@ -7,6 +8,8 @@ module.exports = {
     'prettier/standard',
     'plugin:unicorn/recommended',
     'plugin:ava/recommended',
+    'plugin:react/recommended',
+    'prettier/react',
     'plugin:you-dont-need-lodash-underscore/all',
   ],
   rules: {
@@ -28,6 +31,8 @@ module.exports = {
     'no-var': 2,
     'prefer-destructuring': 2,
     'prefer-object-spread': 2,
+
+    'react/prop-types': 0,
 
     // Not enabled by default in unicorn/recommended, but still pretty useful
     'unicorn/custom-error-definition': 2,
@@ -84,4 +89,9 @@ module.exports = {
       },
     },
   ],
+  settings: {
+    react: {
+      version: '16.13.1',
+    },
+  },
 }

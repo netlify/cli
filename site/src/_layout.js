@@ -350,6 +350,7 @@ export default class Layout extends React.Component {
 
   state = {
     menu: false,
+    // eslint-disable-next-line no-invalid-this
     update: (fn) => this.setState(fn),
   }
 
@@ -376,7 +377,7 @@ export default class Layout extends React.Component {
     let pageTitle = '404 not found'
     // console.log('route.module', route.module)
     if (route.module) {
-      const frontMatter = route.module.frontMatter
+      const { frontMatter } = route.module
       pageTitle = frontMatter.title ? frontMatter.title : this.props.route.name
     }
 

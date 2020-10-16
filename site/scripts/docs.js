@@ -45,7 +45,7 @@ const config = {
       const context = path.basename(instance.originalPath, '.md')
       /* Generate Command List */
       let md = ''
-      Object.keys(commandData).map((commandName) => {
+      Object.keys(commandData).forEach((commandName) => {
         const info = commandData[commandName]
         md += commandListTitle(commandName, context)
         md += commandListDescription(stripAnsi(info.description))
@@ -88,7 +88,7 @@ function commandListTitle(command) {
 }
 
 function commandListDescription(desc) {
-  const cleanDescription = desc.split('\n')[0]
+  const [cleanDescription] = desc.split('\n')
   return `${cleanDescription}${newLine}`
 }
 
@@ -99,7 +99,7 @@ function commandListSubCommandDisplay(commands) {
   let table = '| Subcommand | description  |\n'
   table += '|:--------------------------- |:-----|\n'
   commands.forEach((cmd) => {
-    const commandBase = cmd.name.split(':')[0]
+    const [commandBase] = cmd.name.split(':')
     const baseUrl = `/docs/commands/${commandBase}.md`
     // const baseUrl = (context === 'README') ? `/docs/${commandBase}.md` : `/${commandBase}`
     const slug = cmd.name.replace(/:/g, '')
