@@ -27,7 +27,7 @@ module.exports = function handler(event, context, callback) {
     'form-name': 'routes',
     destination,
     code,
-    'expires': '',
+    expires: '',
   }
 
   // post the new route to the Routes form

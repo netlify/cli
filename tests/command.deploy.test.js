@@ -125,7 +125,7 @@ if (process.env.IS_FORK !== 'true') {
         const resp = await fetch(`https://api.netlify.com/api/v1/deploys/${deploy.deploy_id}/edge_handlers`, {
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiToken}`,
+            Authorization: `Bearer ${apiToken}`,
           },
         })
 

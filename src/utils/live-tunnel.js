@@ -26,7 +26,7 @@ async function createTunnel({ siteId, netlifyApiToken, log }) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${netlifyApiToken}`,
+      Authorization: `Bearer ${netlifyApiToken}`,
     },
     body: JSON.stringify({}),
   })

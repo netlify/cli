@@ -3,7 +3,7 @@ const fetch = require('node-fetch')
 const getHeaders = ({ token }) => {
   return {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,
+    Authorization: `Bearer ${token}`,
   }
 }
 

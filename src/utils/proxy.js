@@ -177,7 +177,7 @@ async function serveRedirect({ req, res, proxy, match, options }) {
 
     if (isRedirect(match)) {
       res.writeHead(match.status, {
-        'Location': match.to,
+        Location: match.to,
         'Cache-Control': 'no-cache',
       })
       res.end(`Redirecting to ${match.to}`)

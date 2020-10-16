@@ -102,11 +102,11 @@ test('functions rewrite echo without body', async (t) => {
 
   t.is(response.body, undefined)
   t.deepEqual(response.headers, {
-    'accept': '*/*',
+    accept: '*/*',
     'accept-encoding': 'gzip,deflate',
     'client-ip': '127.0.0.1',
-    'connection': 'close',
-    'host': `${host}:${port}`,
+    connection: 'close',
+    host: `${host}:${port}`,
     'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
     'x-forwarded-for': '::ffff:127.0.0.1',
   })
@@ -125,11 +125,11 @@ test('functions rewrite echo with body', async (t) => {
 
   t.is(response.body, 'some=thing')
   t.deepEqual(response.headers, {
-    'accept': '*/*',
+    accept: '*/*',
     'accept-encoding': 'gzip,deflate',
     'client-ip': '127.0.0.1',
-    'connection': 'close',
-    'host': `${host}:${port}`,
+    connection: 'close',
+    host: `${host}:${port}`,
     'content-type': 'text/plain;charset=UTF-8',
     'content-length': '10',
     'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
@@ -146,11 +146,11 @@ test('functions echo with multiple query params', async (t) => {
   const response = await fetch(`${url}/.netlify/functions/echo?category=a&category=b`).then((r) => r.json())
 
   t.deepEqual(response.headers, {
-    'accept': '*/*',
+    accept: '*/*',
     'accept-encoding': 'gzip,deflate',
     'client-ip': '127.0.0.1',
-    'connection': 'close',
-    'host': `${host}:${port}`,
+    connection: 'close',
+    host: `${host}:${port}`,
     'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
     'x-forwarded-for': '::ffff:127.0.0.1',
   })

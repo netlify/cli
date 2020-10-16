@@ -271,7 +271,7 @@ const runDeploy = async ({
 
 const printResults = ({ flags, results, deployToProduction, log, logJson, exit }) => {
   const msgData = {
-    'Logs': `${results.logsUrl}`,
+    Logs: `${results.logsUrl}`,
     'Unique Deploy URL': results.deployUrl,
   }
 

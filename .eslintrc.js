@@ -100,7 +100,7 @@ module.exports = {
     'prefer-rest-params': 2,
     'prefer-spread': 2,
     'prefer-template': 2,
-    'radix': [2, 'as-needed'],
+    radix: [2, 'as-needed'],
 
     // TODO: enable the following rules
     // 'class-methods-use-this': 2,
