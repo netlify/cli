@@ -72,7 +72,8 @@ export const MobileOnly = styled.div([], {
   },
 })
 
-export const MenuIcon = ({ size = 24, ...props }) => {
+const MENU_ICON_SIZE = 24
+export const MenuIcon = ({ size = MENU_ICON_SIZE, ...props }) => {
   return (
     <svg {...props} viewBox="0 0 24 24" width={size} height={size} fill="currentcolor">
       <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
@@ -136,7 +137,8 @@ const NetlifyLogo = () => {
   )
 }
 
-export const Main = (props) => <Box {...props} is="main" flex="1 1 auto" w={1} pl={[null, null, 256]} />
+const MAIN_WIDTH = 256
+export const Main = (props) => <Box {...props} is="main" flex="1 1 auto" w={1} pl={[null, null, MAIN_WIDTH]} />
 
 export const MaxWidth = (props) => <Container {...props} maxWidth={768} px={4} pt={4} pb={6} />
 
@@ -153,28 +155,29 @@ export const UL = styled('ul')([], {
 
 export const LI = styled('li')([], {})
 
+const DEPTH_PAD_INCREMENT = 16
+const DEPTH_PATH_SHIFT = 4
 const depthPad = ({ to = '' }) =>
   (1 +
     to
       .split('/')
       .filter((s) => s.length)
       .slice(1).length) *
-  16
+  DEPTH_PAD_INCREMENT
 
-const Link = styled((props) => <NavLink {...props} is={RouterNavLink} w={1} pl={`${depthPad(props) - 4}px`} />)(
-  [],
-  () => ({
-    'borderLeft': '4px solid',
-    'borderColor': 'transparent',
-    '&.active, &:focus': {
-      color: '#00c2b2', // '#00ad9f', // themeGet('colors.blue', '#07c')(props),
-      outline: 'none',
-    },
-    '&:focus': {
-      borderColor: 'inherit',
-    },
-  }),
-)
+const Link = styled((props) => (
+  <NavLink {...props} is={RouterNavLink} w={1} pl={`${depthPad(props) - DEPTH_PATH_SHIFT}px`} />
+))([], () => ({
+  'borderLeft': '4px solid',
+  'borderColor': 'transparent',
+  '&.active, &:focus': {
+    color: '#00c2b2', // '#00ad9f', // themeGet('colors.blue', '#07c')(props),
+    outline: 'none',
+  },
+  '&:focus': {
+    borderColor: 'inherit',
+  },
+}))
 
 Link.defaultProps = {
   to: '',
@@ -242,6 +245,7 @@ const HitsOverlay = styled.div`
   background-color: #fff;
 `
 
+const MIN_WIDTH = 110
 const MyHits = createConnector({
   displayName: 'ConditionalQuery',
   getProvidedProps(props, searchState, searchResults) {
@@ -255,7 +259,7 @@ const MyHits = createConnector({
       return (
         <HitsOverlay key={i}>
           <a href={`/commands/${slug}`}>
-            <span style={{ minWidth: 110, display: 'inline-block', fontWeight: 'bold' }}>
+            <span style={{ minWidth: MIN_WIDTH, display: 'inline-block', fontWeight: 'bold' }}>
               <Highlight attribute="name" hit={hit} />
             </span>
             <Highlight attribute="description" hit={hit} />

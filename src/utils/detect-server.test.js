@@ -4,6 +4,9 @@ const getPort = require('get-port')
 const { loadDetector, serverSettings, chooseDefaultArgs } = require('./detect-server')
 const { createSiteBuilder } = require('../../tests/utils/site-builder')
 
+const TARGET_PORT = 1234
+const CUSTOM_PORT = 3000
+
 test.before(async (t) => {
   const builder = createSiteBuilder({ siteName: 'site-for-detecting-server' })
   await builder.buildAsync()
@@ -50,7 +53,7 @@ test('serverSettings: throw if "port" not available', async (t) => {
 })
 
 test('serverSettings: "command" override npm', async (t) => {
-  const devConfig = { framework: '#custom', command: 'npm run dev', targetPort: 1234 }
+  const devConfig = { framework: '#custom', command: 'npm run dev', targetPort: TARGET_PORT }
   const settings = await serverSettings(devConfig, {}, t.context.sitePath, () => {})
   t.is(settings.framework, devConfig.framework)
   t.is(settings.command, devConfig.command.split(' ')[0])
@@ -58,7 +61,7 @@ test('serverSettings: "command" override npm', async (t) => {
 })
 
 test('serverSettings: "command" override yarn', async (t) => {
-  const devConfig = { framework: '#custom', command: 'yarn dev', targetPort: 1234 }
+  const devConfig = { framework: '#custom', command: 'yarn dev', targetPort: TARGET_PORT }
   const settings = await serverSettings(devConfig, {}, t.context.sitePath, () => {})
   t.is(settings.framework, devConfig.framework)
   t.is(settings.command, devConfig.command.split(' ')[0])
@@ -66,7 +69,7 @@ test('serverSettings: "command" override yarn', async (t) => {
 })
 
 test('serverSettings: custom framework parameters', async (t) => {
-  const devConfig = { framework: '#custom', command: 'yarn dev', targetPort: 3000, publish: t.context.sitePath }
+  const devConfig = { framework: '#custom', command: 'yarn dev', targetPort: CUSTOM_PORT, publish: t.context.sitePath }
   const settings = await serverSettings(devConfig, {}, t.context.sitePath, () => {})
   t.is(settings.framework, '#custom')
   t.is(settings.command, devConfig.command.split(' ')[0])
@@ -76,7 +79,7 @@ test('serverSettings: custom framework parameters', async (t) => {
 })
 
 test('serverSettings: set "framework" to "#custom" but no "command"', async (t) => {
-  const devConfig = { framework: '#custom', targetPort: 3000, publish: t.context.sitePath }
+  const devConfig = { framework: '#custom', targetPort: CUSTOM_PORT, publish: t.context.sitePath }
   await t.throwsAsync(async () => {
     await serverSettings(devConfig, {}, t.context.sitePath, () => {})
   }, /"command" and "targetPort" properties are required when "framework" is set to "#custom"/)
@@ -133,7 +136,7 @@ test('serverSettings: "dir" flag and "command" as config param', async (t) => {
 
 test('serverSettings: "dir" and "targetPort" flags', async (t) => {
   const devConfig = { framework: '#auto', functions: path.join(t.context.sitePath, 'functions') }
-  const flags = { dir: t.context.sitePath, targetPort: 1234 }
+  const flags = { dir: t.context.sitePath, targetPort: TARGET_PORT }
   await t.throwsAsync(async () => {
     await serverSettings(devConfig, flags, t.context.sitePath, () => {})
   }, /"targetPort" option cannot be used in conjunction with "dir" flag/)

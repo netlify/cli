@@ -1,5 +1,7 @@
 const { hasRequiredDeps, hasRequiredFiles } = require('./utils/jsdetect')
 
+const FRAMEWORK_PORT = 8080
+
 module.exports = function detector() {
   // REQUIRED FILES
   if (
@@ -10,7 +12,7 @@ module.exports = function detector() {
 
   return {
     framework: 'eleventy',
-    frameworkPort: 8080,
+    frameworkPort: FRAMEWORK_PORT,
     command: 'npx',
     possibleArgsArrs: [['eleventy', '--serve', '--watch']],
     dist: '_site',

@@ -1,5 +1,7 @@
 const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
 
+const FRAMEWORK_PORT = 3000
+
 //
 // detection logic - artificial intelligence!
 //
@@ -19,8 +21,8 @@ module.exports = function detector() {
   return {
     framework: 'create-react-app',
     command: getYarnOrNPMCommand(),
-    frameworkPort: 3000, // the port that create-react-app normally outputs
-    env: { BROWSER: 'none', PORT: 3000 },
+    frameworkPort: FRAMEWORK_PORT, // the port that create-react-app normally outputs
+    env: { BROWSER: 'none', PORT: FRAMEWORK_PORT },
     stdio: ['inherit', 'pipe', 'pipe'],
     possibleArgsArrs,
     dist: 'public',

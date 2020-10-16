@@ -1,10 +1,13 @@
 const updateNotifier = require('update-notifier')
 const pkg = require('../package.json')
 
+// 12 hours
+const UPDATE_CHECK_INTERVAL = 432e5
+
 try {
   updateNotifier({
     pkg,
-    updateCheckInterval: 1000 * 60 * 60 * 12, // check every 1/2 day
+    updateCheckInterval: UPDATE_CHECK_INTERVAL,
   }).notify()
 } catch (error) {
   console.log('Error checking for updates:')

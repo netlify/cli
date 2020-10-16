@@ -1,5 +1,7 @@
 const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
 
+const FRAMEWORK_PORT = 8081
+
 module.exports = function detector() {
   // REQUIRED FILES
   if (!hasRequiredFiles(['package.json'])) return false
@@ -17,7 +19,7 @@ module.exports = function detector() {
   return {
     framework: 'quasar',
     command: getYarnOrNPMCommand(),
-    frameworkPort: 8081,
+    frameworkPort: FRAMEWORK_PORT,
     possibleArgsArrs,
     dist: '.quasar',
   }

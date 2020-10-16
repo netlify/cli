@@ -1,4 +1,7 @@
 const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
+
+const FRAMEWORK_PORT = 3000
+
 module.exports = function detector() {
   // REQUIRED FILES
   if (!hasRequiredFiles(['package.json'])) return false
@@ -31,7 +34,7 @@ module.exports = function detector() {
   return {
     framework: 'docusaurus',
     command: getYarnOrNPMCommand(),
-    frameworkPort: 3000,
+    frameworkPort: FRAMEWORK_PORT,
     env: { BROWSER: 'none' },
     possibleArgsArrs,
     dist: 'static',

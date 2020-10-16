@@ -127,7 +127,7 @@ async function serveRedirect({ req, res, proxy, match, options }) {
         return
       }
 
-      if ((jwtValue.exp || 0) < Math.round(new Date().getTime() / 1000)) {
+      if ((jwtValue.exp || 0) < Math.round(new Date().getTime() / MILLISEC_TO_SEC)) {
         console.warn(NETLIFYDEVWARN, 'Expired JWT provided in request', req.url)
       } else {
         const presentedRoles = get(jwtValue, options.jwtRolePath) || []
@@ -229,6 +229,8 @@ async function serveRedirect({ req, res, proxy, match, options }) {
   return proxy.web(req, res, options)
 }
 
+const MILLISEC_TO_SEC = 1e3
+
 function initializeProxy(port, distDir, projectDir) {
   const proxy = httpProxy.createProxyServer({
     selfHandleResponse: true,
@@ -309,7 +311,9 @@ async function startProxy(settings = {}, addonUrls, configPath, projectDir) {
   })
 
   const server = http.createServer(async function onRequest(req, res) {
-    req.originalBody = ['GET', 'OPTIONS', 'HEAD'].includes(req.method) ? null : await createStreamPromise(req, 30)
+    req.originalBody = ['GET', 'OPTIONS', 'HEAD'].includes(req.method)
+      ? null
+      : await createStreamPromise(req, BYTES_LIMIT)
 
     if (isFunction(settings.functionsPort, req.url)) {
       return proxy.web(req, res, { target: functionsServer })
@@ -356,5 +360,7 @@ async function startProxy(settings = {}, addonUrls, configPath, projectDir) {
     })
   })
 }
+
+const BYTES_LIMIT = 30
 
 module.exports = { startProxy }

@@ -12,9 +12,14 @@ test.before(async (t) => {
   })
 
   // wait for react app dev server to start
-  await waitPort({ port: 3000, timeout: 15 * 1000, output: 'silent' })
+  await waitPort({ port: SERVER_PORT, timeout: REACT_APP_START_TIMEOUT, output: 'silent' })
   t.context.server = server
 })
+
+const SERVER_PORT = 3000
+
+// 15 seconds
+const REACT_APP_START_TIMEOUT = 15e3
 
 test.after(async (t) => {
   const { server } = t.context
@@ -34,10 +39,12 @@ test('static/js/bundle.js', async (t) => {
   const body = await response.text()
 
   t.is(response.status, 200)
-  t.true(body.length > 100)
+  t.true(body.length > BUNDLE_MIN_LENGTH)
   t.truthy(response.headers.get('content-type').startsWith('application/javascript'))
   t.regex(body, /webpackBootstrap/)
 })
+
+const BUNDLE_MIN_LENGTH = 1e2
 
 test('static file under public/', async (t) => {
   const { url } = t.context.server

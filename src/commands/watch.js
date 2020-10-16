@@ -7,6 +7,9 @@ const chalk = require('chalk')
 
 const InitCommand = require('./init')
 
+// 1 second
+const INIT_WAIT = 1e3
+
 class SitesWatchCommand extends Command {
   async run() {
     await this.authenticate()
@@ -20,7 +23,7 @@ class SitesWatchCommand extends Command {
 
     // wait for 1 sec for everything to kickoff
     console.time('Deploy time')
-    await cli.wait(1000)
+    await cli.wait(INIT_WAIT)
 
     await this.config.runHook('analytics', {
       eventName: 'command',
@@ -80,12 +83,17 @@ SitesWatchCommand.description = `Watch for site deploy to finish`
 
 SitesWatchCommand.examples = [`netlify watch`, `git push && netlify watch`]
 
+// 1 second
+const BUILD_FINISH_INTERVAL = 1e3
+// 20 minutes
+const BUILD_FINISH_TIMEOUT = 12e5
+
 async function waitForBuildFinish(api, siteId) {
   let firstPass = true
 
   await pWaitFor(waitForBuildToFinish, {
-    interval: 1000,
-    timeout: 1.2e6, // 20 mins,
+    interval: BUILD_FINISH_INTERVAL,
+    timeout: BUILD_FINISH_TIMEOUT,
     message: 'Timeout while waiting for deploy to finish',
   })
 

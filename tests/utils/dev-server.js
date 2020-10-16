@@ -8,9 +8,13 @@ const pidtree = require('pidtree')
 // each process gets a starting port based on the pid
 const rng = seedrandom(`${process.pid}`)
 function getRandomPortStart() {
-  const startPort = Math.floor(rng() * 10000) + 10000 // 10000 to avoid collisions with frameworks ports
+  const startPort = Math.floor(rng() * RANDOM_PORT_SHIFT) + RANDOM_PORT_SHIFT
   return startPort
 }
+
+// To avoid collisions with frameworks ports
+const RANDOM_PORT_SHIFT = 1e4
+const FRAMEWORK_PORT_SHIFT = 1e3
 
 let currentPort = getRandomPortStart()
 
@@ -21,7 +25,7 @@ const startServer = async ({ cwd, env = {}, args = [] }) => {
   const host = 'localhost'
   const url = `http://${host}:${port}`
   console.log(`Starting dev server on port: ${port} in directory ${path.basename(cwd)}`)
-  const ps = execa(cliPath, ['dev', '-p', port, '--staticServerPort', port + 1000, ...args], {
+  const ps = execa(cliPath, ['dev', '-p', port, '--staticServerPort', port + FRAMEWORK_PORT_SHIFT, ...args], {
     cwd,
     env: { BROWSER: 'none', ...env },
   })
@@ -48,7 +52,7 @@ const startServer = async ({ cwd, env = {}, args = [] }) => {
               ps.catch(() => {}),
               // eslint-disable-next-line no-shadow
               new Promise((resolve) => {
-                setTimeout(resolve, 1000)
+                setTimeout(resolve, SERVER_EXIT_TIMEOUT)
               }),
             ])
           },
@@ -58,6 +62,9 @@ const startServer = async ({ cwd, env = {}, args = [] }) => {
     ps.catch((error) => !selfKilled && reject(error))
   })
 }
+
+// One second
+const SERVER_EXIT_TIMEOUT = 1e3
 
 const startDevServer = async (options) => {
   const maxAttempts = 5

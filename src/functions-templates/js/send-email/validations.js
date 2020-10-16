@@ -3,12 +3,15 @@ const validateEmail = (ctx, str) => {
     throw new TypeError(`${ctx} must be a string`)
   }
 
-  validateLength(ctx, str, 5, 30)
+  validateLength(ctx, str, EMAIL_MIN_LENGTH, EMAIL_MAX_LENGTH)
 
   if (!/^[\w.-]+@[\w.-]+\.\w+$/.test(str)) {
     throw new TypeError(`${ctx} is not an email address`)
   }
 }
+
+const EMAIL_MIN_LENGTH = 5
+const EMAIL_MAX_LENGTH = 30
 
 const validateLength = (ctx, str, min, max) => {
   if (max === undefined) {

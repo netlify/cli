@@ -69,13 +69,13 @@ const startForwardProxy = async ({ port, frameworkPort, functionsPort, publishDi
     process.on(signal, () => {
       const sig = signal === 'exit' ? 'SIGTERM' : signal
       subprocess.kill(sig, {
-        forceKillAfterTimeout: 2000,
+        forceKillAfterTimeout: PROXY_EXIT_TIMEOUT,
       })
     })
   })
 
   try {
-    const open = await waitPort({ port, output: 'silent', timeout: 30 * 1000 })
+    const open = await waitPort({ port, output: 'silent', timeout: PROXY_READY_TIMEOUT })
     if (!open) {
       throw new Error(`Timed out waiting for forward proxy to be ready on port '${port}'`)
     }
@@ -84,6 +84,11 @@ const startForwardProxy = async ({ port, frameworkPort, functionsPort, publishDi
     log(`${NETLIFYDEVERR}`, error)
   }
 }
+
+// 30 seconds
+const PROXY_READY_TIMEOUT = 3e4
+// 2 seconds
+const PROXY_EXIT_TIMEOUT = 2e3
 
 const runProcess = async ({ log, args }) => {
   await installTrafficMesh({ log })

@@ -2,6 +2,11 @@
 const sendMail = require('sendmail')()
 const { validateEmail, validateLength } = require('./validations')
 
+const NAME_MIN_LENGTH = 3
+const NAME_MAX_LENGTH = 50
+const DETAILS_MIN_LENGTH = 10
+const DETAILS_MAX_LENGTH = 1e3
+
 const handler = (event, context, callback) => {
   if (!process.env.CONTACT_EMAIL) {
     return callback(null, {
@@ -13,7 +18,7 @@ const handler = (event, context, callback) => {
   const body = JSON.parse(event.body)
 
   try {
-    validateLength('body.name', body.name, 3, 50)
+    validateLength('body.name', body.name, NAME_MIN_LENGTH, NAME_MAX_LENGTH)
   } catch (error) {
     return callback(null, {
       statusCode: 403,
@@ -31,7 +36,7 @@ const handler = (event, context, callback) => {
   }
 
   try {
-    validateLength('body.details', body.details, 10, 1000)
+    validateLength('body.details', body.details, DETAILS_MIN_LENGTH, DETAILS_MAX_LENGTH)
   } catch (error) {
     return callback(null, {
       statusCode: 403,

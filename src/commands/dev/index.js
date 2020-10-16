@@ -79,7 +79,7 @@ async function startFrameworkServer({ settings, log, exit }) {
   })
 
   try {
-    const open = await waitPort({ port: settings.frameworkPort, output: 'silent', timeout: 10 * 60 * 1000 })
+    const open = await waitPort({ port: settings.frameworkPort, output: 'silent', timeout: FRAMEWORK_PORT_TIMEOUT })
     if (!open) {
       throw new Error(`Timed out waiting for port '${settings.frameworkPort}' to be open`)
     }
@@ -91,6 +91,9 @@ async function startFrameworkServer({ settings, log, exit }) {
 
   return ps
 }
+
+// 1 minute
+const FRAMEWORK_PORT_TIMEOUT = 6e5
 
 const getAddonsUrlsAndAddEnvVariablesToProcessEnv = async ({ api, site, flags }) => {
   if (site.id && !flags.offline) {
@@ -164,9 +167,11 @@ const reportAnalytics = async ({ config, settings }) => {
   })
 }
 
+const BANNER_LENGTH = 70
+
 const printBanner = ({ url, log }) => {
   // boxen doesnt support text wrapping yet https://github.com/sindresorhus/boxen/issues/16
-  const banner = require('wrap-ansi')(chalk.bold(`${NETLIFYDEVLOG} Server now ready on ${url}`), 70)
+  const banner = require('wrap-ansi')(chalk.bold(`${NETLIFYDEVLOG} Server now ready on ${url}`), BANNER_LENGTH)
 
   log(
     boxen(banner, {
