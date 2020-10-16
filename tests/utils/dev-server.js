@@ -57,6 +57,7 @@ const startDevServer = async (options) => {
   const maxAttempts = 5
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
+      // eslint-disable-next-line no-await-in-loop
       const server = await startServer(options)
       return server
     } catch (error) {
