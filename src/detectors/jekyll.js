@@ -1,6 +1,6 @@
 const { existsSync } = require('fs')
 
-module.exports = function () {
+module.exports = function detector() {
   if (!existsSync('_config.yml')) {
     return false
   }

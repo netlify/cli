@@ -3,11 +3,11 @@ const { createHttpLink } = require('apollo-link-http')
 const fetch = require('node-fetch')
 const { introspectSchema, makeRemoteExecutableSchema } = require('graphql-tools')
 
-exports.handler = async function (event, context) {
+const handler = async function (event, context) {
   /** required for Fauna GraphQL auth */
   if (!process.env.FAUNADB_SERVER_SECRET) {
     const msg = `
-    FAUNADB_SERVER_SECRET missing. 
+    FAUNADB_SERVER_SECRET missing.
     Did you forget to install the fauna addon or forgot to run inside Netlify Dev?
     `
     console.error(msg)
@@ -40,3 +40,5 @@ exports.handler = async function (event, context) {
     server.createHandler()(event, context, cb)
   })
 }
+
+module.exports = { handler }

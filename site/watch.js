@@ -9,21 +9,21 @@ const { ensureFilePathAsync, removeRecursiveAsync } = require('./fs')
 const watcher = sane(config.docs.srcPath, { glob: ['**/*.md'] })
 
 /* Watch Files */
-watcher.on('ready', function () {
+watcher.on('ready', function onReady() {
   console.log(`Watching ${config.docs.srcPath} files for changes`)
 })
 
-watcher.on('change', async function (filepath) {
+watcher.on('change', async function onChange(filepath) {
   console.log('file changed', filepath)
   await syncFile(filepath)
 })
 
-watcher.on('add', async function (filepath) {
+watcher.on('add', async function onAdd(filepath) {
   console.log('file added')
   await syncFile(filepath)
 })
 
-watcher.on('delete', async function (filepath) {
+watcher.on('delete', async function onDelete(filepath) {
   console.log('file deleted', filepath)
   await deleteFile(filepath)
   console.log('File deletion complete')

@@ -6,7 +6,7 @@ const client = new faunadb.Client({
   secret: process.env.FAUNADB_SERVER_SECRET,
 })
 
-exports.handler = async () => {
+const handler = async () => {
   console.log('Function `read-all` invoked')
   return client
     .query(q.Paginate(q.Match(q.Ref('indexes/all_items'))))
@@ -32,3 +32,5 @@ exports.handler = async () => {
       }
     })
 }
+
+module.exports = { handler }

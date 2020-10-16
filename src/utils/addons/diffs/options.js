@@ -105,5 +105,10 @@ const colorTheme = {
 const plugins = []
 const theme = colorTheme
 
-module.exports.concordanceOptions = { maxDepth: 3, plugins, theme }
-module.exports.concordanceDiffOptions = { maxDepth: 1, plugins, theme }
+const concordanceOptions = { maxDepth: 3, plugins, theme }
+const concordanceDiffOptions = { maxDepth: 1, plugins, theme }
+
+module.exports = {
+  concordanceOptions,
+  concordanceDiffOptions,
+}

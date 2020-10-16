@@ -273,10 +273,10 @@ function initializeProxy(port, distDir, projectDir) {
       })
     }
     res.writeHead(req.proxyOptions.status || proxyRes.statusCode, proxyRes.headers)
-    proxyRes.on('data', function (data) {
+    proxyRes.on('data', function onData(data) {
       res.write(data)
     })
-    proxyRes.on('end', function () {
+    proxyRes.on('end', function onEnd() {
       res.end()
     })
   })
@@ -308,7 +308,7 @@ async function startProxy(settings = {}, addonUrls, configPath, projectDir) {
     projectDir,
   })
 
-  const server = http.createServer(async function (req, res) {
+  const server = http.createServer(async function onRequest(req, res) {
     req.originalBody = ['GET', 'OPTIONS', 'HEAD'].includes(req.method) ? null : await createStreamPromise(req, 30)
 
     if (isFunction(settings.functionsPort, req.url)) {
@@ -346,7 +346,7 @@ async function startProxy(settings = {}, addonUrls, configPath, projectDir) {
     })
   })
 
-  server.on('upgrade', function (req, socket, head) {
+  server.on('upgrade', function onUpgrade(req, socket, head) {
     proxy.ws(req, socket, head)
   })
 

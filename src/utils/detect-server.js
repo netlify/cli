@@ -6,7 +6,7 @@ const inquirer = require('inquirer')
 const fuzzy = require('fuzzy')
 const fs = require('fs')
 
-module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
+const serverSettings = async (devConfig, flags, projectDir, log) => {
   let settings = {}
   const detectorsFiles = fs.readdirSync(path.join(__dirname, '..', 'detectors')).filter((x) => x.endsWith('.js')) // only accept .js detector files
 
@@ -208,7 +208,6 @@ function loadDetector(detectorName) {
     )
   }
 }
-module.exports.loadDetector = loadDetector
 
 function chooseDefaultArgs(possibleArgsArrs) {
   // vast majority of projects will only have one matching detector
@@ -225,7 +224,6 @@ function chooseDefaultArgs(possibleArgsArrs) {
 
   return args
 }
-module.exports.chooseDefaultArgs = chooseDefaultArgs
 
 /** utilities for the inquirer section above */
 function filterSettings(scriptInquirerOptions, input) {
@@ -248,4 +246,10 @@ function formatSettingsArrForInquirer(settingsArr) {
       }))
     )
   )
+}
+
+module.exports = {
+  serverSettings,
+  loadDetector,
+  chooseDefaultArgs,
 }

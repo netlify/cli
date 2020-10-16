@@ -82,7 +82,7 @@ function noValidate() {
 // }
 
 function validate(pattern) {
-  return function (value) {
+  return function validateValue(value) {
     const regex = new RegExp(pattern)
     if (value.match(regex)) {
       return true

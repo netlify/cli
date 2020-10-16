@@ -30,7 +30,7 @@ async function startFrameworkServer({ settings, log, exit }) {
     })
 
     await new Promise((resolve) => {
-      server.start(function () {
+      server.start(function onListening() {
         log(`\n${NETLIFYDEVLOG} Server listening to`, settings.frameworkPort)
         resolve()
       })

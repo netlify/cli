@@ -17,7 +17,7 @@ module.exports = function expressApp(functionName) {
   const routerBasePath = process.env.NODE_ENV === 'dev' ? `/${functionName}` : `/.netlify/functions/${functionName}/`
 
   /* define routes */
-  router.get('/', (req, res) => {
+  router.get('/', function onRequest(req, res) {
     const html = `
     <html>
       <head>
@@ -65,7 +65,7 @@ module.exports = function expressApp(functionName) {
     res.send(html)
   })
 
-  router.get('/users', (req, res) => {
+  router.get('/users', function onRequest(req, res) {
     res.json({
       users: [
         {
@@ -78,7 +78,7 @@ module.exports = function expressApp(functionName) {
     })
   })
 
-  router.get('/hello/', function (req, res) {
+  router.get('/hello/', function onRequest(req, res) {
     res.send('hello world')
   })
 

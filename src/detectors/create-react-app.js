@@ -3,7 +3,7 @@ const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = 
 //
 // detection logic - artificial intelligence!
 //
-module.exports = function () {
+module.exports = function detector() {
   // REQUIRED FILES
   if (!hasRequiredFiles(['package.json'])) return false
   // REQUIRED DEPS

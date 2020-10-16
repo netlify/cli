@@ -4,7 +4,7 @@
 // // details in https://css-tricks.com/using-netlify-forms-and-netlify-functions-to-build-an-email-sign-up-widget
 const fetch = require('node-fetch')
 const { EMAIL_TOKEN } = process.env
-exports.handler = async (event) => {
+const handler = async (event) => {
   const { email } = JSON.parse(event.body).payload
   console.log(`Recieved a submission: ${email}`)
   return fetch('https://api.buttondown.email/v1/subscribers', {
@@ -21,3 +21,5 @@ exports.handler = async (event) => {
     })
     .catch((error) => ({ statusCode: 422, body: String(error) }))
 }
+
+module.exports = { handler }

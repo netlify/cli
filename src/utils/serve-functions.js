@@ -30,7 +30,7 @@ function capitalize(t) {
 
 /** need to keep createCallback in scope so we can know if cb was called AND handler is async */
 function createCallback(response) {
-  return function (err, lambdaResponse) {
+  return function callbackHandler(err, lambdaResponse) {
     if (err) {
       return handleErr(err, response)
     }
@@ -117,13 +117,11 @@ function createHandler(dir) {
   })
   lambdaLocal.setLogger(logger)
 
-  return function (request, response) {
+  return function handler(request, response) {
     // handle proxies without path re-writes (http-servr)
     const cleanPath = request.path.replace(/^\/.netlify\/functions/, '')
 
-    const func = cleanPath.split('/').find(function (e) {
-      return e
-    })
+    const func = cleanPath.split('/').find(Boolean)
     if (!functions[func]) {
       response.statusCode = 404
       response.end('Function not found...')
@@ -179,7 +177,7 @@ function createHandler(dir) {
 }
 
 function createFormSubmissionHandler(siteInfo) {
-  return async function (req, res, next) {
+  return async function formSubmissionHandler(req, res, next) {
     if (req.url.startsWith('/.netlify/') || req.method !== 'POST') return next()
 
     const fakeRequest = new Readable({
@@ -307,7 +305,7 @@ function serveFunctions(dir, siteInfo = {}) {
     })
   )
 
-  app.get('/favicon.ico', function (req, res) {
+  app.get('/favicon.ico', function onRequest(req, res) {
     res.status(204).end()
   })
 

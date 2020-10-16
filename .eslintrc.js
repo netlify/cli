@@ -26,6 +26,7 @@ module.exports = {
     'default-case': 2,
     'default-case-last': 2,
     'func-name-matching': [2, { considerPropertyDescriptor: true }],
+    'func-names': [2, 'as-needed'],
     'max-classes-per-file': 2,
     'max-params': [2, { max: 4 }],
     'multiline-comment-style': [2, 'separate-lines'],

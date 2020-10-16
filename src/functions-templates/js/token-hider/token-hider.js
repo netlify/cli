@@ -1,7 +1,7 @@
 const axios = require('axios')
 const qs = require('qs')
 
-exports.handler = async function (event) {
+const handler = async function (event) {
   // apply our function to the queryStringParameters and assign it to a variable
   const API_PARAMS = qs.stringify(event.queryStringParameters)
   console.log('API_PARAMS', API_PARAMS)
@@ -31,3 +31,5 @@ exports.handler = async function (event) {
     }
   }
 }
+
+module.exports = { handler }

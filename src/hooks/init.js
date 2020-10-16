@@ -3,7 +3,7 @@ const header = require('../utils/header')
 const globalConfig = require('../utils/global-config')
 const { track } = require('../utils/telemetry')
 
-module.exports = async (context) => {
+module.exports = async function initHooks(context) {
   // Enable/disable telemetry Global flags. TODO refactor where these fire
   if (context.id === '--telemetry-disable') {
     globalConfig.set('telemetryDisabled', true)

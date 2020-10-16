@@ -10,7 +10,7 @@ const { createHttpLink } = require('apollo-link-http')
 const fetch = require('node-fetch')
 const { ApolloServer } = require('apollo-server-lambda')
 
-exports.handler = async function (event, context) {
+const handler = async function (event, context) {
   const schema1 = await getSchema('graphql-1') // other Netlify functions which are graphql lambdas
   const schema2 = await getSchema('graphql-2') // other Netlify functions which are graphql lambdas
   const schemas = [schema1, schema2]
@@ -68,3 +68,5 @@ async function getSchema(endpoint) {
   const executableSchema = makeRemoteExecutableSchema({ schema, link })
   return executableSchema
 }
+
+module.exports = { handler }

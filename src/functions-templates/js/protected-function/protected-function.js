@@ -1,4 +1,4 @@
-exports.handler = async (event, context) => {
+const handler = async (event, context) => {
   console.log('protected function!')
   // Reading the context.clientContext will give us the current user
   const claims = context.clientContext && context.clientContext.user
@@ -21,3 +21,5 @@ exports.handler = async (event, context) => {
     }),
   }
 }
+
+module.exports = { handler }

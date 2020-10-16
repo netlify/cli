@@ -6,7 +6,7 @@ const client = new faunadb.Client({
   secret: process.env.FAUNADB_SERVER_SECRET,
 })
 
-exports.handler = async (event) => {
+const handler = async (event) => {
   const { id } = event
   console.log(`Function 'delete' invoked. delete id: ${id}`)
   return client
@@ -26,3 +26,5 @@ exports.handler = async (event) => {
       }
     })
 }
+
+module.exports = { handler }

@@ -43,4 +43,6 @@ const server = new ApolloServer({
   resolvers,
 })
 
-exports.handler = server.createHandler()
+const handler = server.createHandler()
+
+module.exports = { handler }

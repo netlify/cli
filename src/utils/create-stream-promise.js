@@ -1,5 +1,5 @@
 function createStreamPromise(stream, timeoutSeconds, bytesLimit = 1024 * 1024 * 6) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function streamPromiseFunc(resolve, reject) {
     let data = []
     let dataLength = 0
 
@@ -11,7 +11,7 @@ function createStreamPromise(stream, timeoutSeconds, bytesLimit = 1024 * 1024 * 
       }, timeoutSeconds * 1000)
     }
 
-    stream.on('data', function (chunk) {
+    stream.on('data', function onData(chunk) {
       if (!Array.isArray(data)) {
         // Stream harvesting closed
         return
@@ -25,12 +25,12 @@ function createStreamPromise(stream, timeoutSeconds, bytesLimit = 1024 * 1024 * 
       }
     })
 
-    stream.on('error', function (error) {
+    stream.on('error', function onError(error) {
       data = null
       reject(error)
       clearTimeout(timeoutId)
     })
-    stream.on('end', function () {
+    stream.on('end', function onEnd() {
       clearTimeout(timeoutId)
       if (data) {
         resolve(Buffer.concat(data))
