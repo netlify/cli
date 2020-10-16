@@ -1,9 +1,10 @@
-const Command = require('../utils/command')
+const oclif = require('@oclif/command')
 const AsciiTable = require('ascii-table')
 const chalk = require('chalk')
-const oclif = require('@oclif/command')
 const { methods } = require('netlify')
+
 const { isEmptyCommand } = require('../utils/check-command-inputs')
+const Command = require('../utils/command')
 
 class APICommand extends Command {
   async run() {

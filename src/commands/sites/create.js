@@ -1,14 +1,15 @@
 const { flags: flagsLib } = require('@oclif/command')
-const inquirer = require('inquirer')
-const prettyjson = require('prettyjson')
 const chalk = require('chalk')
-const sample = require('lodash.sample')
+const inquirer = require('inquirer')
 const pick = require('lodash.pick')
-const Command = require('../../utils/command')
-const { track } = require('../../utils/telemetry')
-const configManual = require('../../utils/init/config-manual')
+const sample = require('lodash.sample')
 const parseGitRemote = require('parse-github-url')
+const prettyjson = require('prettyjson')
+
+const Command = require('../../utils/command')
 const configGithub = require('../../utils/init/config-github')
+const configManual = require('../../utils/init/config-manual')
+const { track } = require('../../utils/telemetry')
 
 class SitesCreateCommand extends Command {
   async run() {

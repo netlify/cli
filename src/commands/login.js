@@ -1,6 +1,7 @@
 const { flags: flagsLib } = require('@oclif/command')
-const Command = require('../utils/command')
 const chalk = require('chalk')
+
+const Command = require('../utils/command')
 
 class LoginCommand extends Command {
   async run() {

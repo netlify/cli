@@ -1,7 +1,7 @@
-const { ApolloServer } = require('apollo-server-lambda')
 const { createHttpLink } = require('apollo-link-http')
-const fetch = require('node-fetch')
+const { ApolloServer } = require('apollo-server-lambda')
 const { introspectSchema, makeRemoteExecutableSchema } = require('graphql-tools')
+const fetch = require('node-fetch')
 
 const handler = async function (event, context) {
   /** required for Fauna GraphQL auth */

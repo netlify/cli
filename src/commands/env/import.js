@@ -1,9 +1,11 @@
+const fs = require('fs')
+
 const { flags: flagsLib } = require('@oclif/command')
 const AsciiTable = require('ascii-table')
-const Command = require('../../utils/command')
 const dotenv = require('dotenv')
-const fs = require('fs')
 const isEmpty = require('lodash.isempty')
+
+const Command = require('../../utils/command')
 
 class EnvImportCommand extends Command {
   async run() {

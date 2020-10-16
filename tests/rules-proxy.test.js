@@ -1,10 +1,12 @@
-const path = require('path')
 const http = require('http')
+const path = require('path')
 
-const fetch = require('node-fetch')
 const test = require('ava')
 const getPort = require('get-port')
+const fetch = require('node-fetch')
+
 const { createRewriter } = require('../src/utils/rules-proxy')
+
 const { createSiteBuilder } = require('./utils/site-builder')
 
 test.before(async (t) => {

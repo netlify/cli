@@ -1,7 +1,9 @@
 const path = require('path')
-const inquirer = require('inquirer')
+
 const chalk = require('chalk')
+const inquirer = require('inquirer')
 const isEmpty = require('lodash.isempty')
+
 const getRepoData = require('../get-repo-data')
 const { track } = require('../telemetry')
 

@@ -1,8 +1,11 @@
-const test = require('ava')
 const path = require('path')
+
+const test = require('ava')
 const getPort = require('get-port')
-const { loadDetector, serverSettings, chooseDefaultArgs } = require('./detect-server')
+
 const { createSiteBuilder } = require('../../tests/utils/site-builder')
+
+const { loadDetector, serverSettings, chooseDefaultArgs } = require('./detect-server')
 
 const TARGET_PORT = 1234
 const CUSTOM_PORT = 3000

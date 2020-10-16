@@ -1,12 +1,14 @@
 // Handlers are meant to be async outside tests
 /* eslint-disable require-await */
-const test = require('ava')
 const path = require('path')
-const { withDevServer } = require('./utils/dev-server')
-const fetch = require('node-fetch')
+
+const test = require('ava')
 const FormData = require('form-data')
-const { withSiteBuilder } = require('./utils/site-builder')
+const fetch = require('node-fetch')
+
+const { withDevServer } = require('./utils/dev-server')
 const { startExternalServer } = require('./utils/external-server')
+const { withSiteBuilder } = require('./utils/site-builder')
 
 const testMatrix = [
   { args: [] },

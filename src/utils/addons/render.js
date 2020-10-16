@@ -1,5 +1,5 @@
-const chalk = require('chalk')
 const AsciiTable = require('ascii-table')
+const chalk = require('chalk')
 
 function missingValues(values, manifest) {
   const display = values

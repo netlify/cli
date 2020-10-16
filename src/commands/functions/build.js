@@ -1,7 +1,9 @@
 const fs = require('fs')
-const { flags: flagsLib } = require('@oclif/command')
-const Command = require('../../utils/command')
+
 const { zipFunctions } = require('@netlify/zip-it-and-ship-it')
+const { flags: flagsLib } = require('@oclif/command')
+
+const Command = require('../../utils/command')
 const {
   // NETLIFYDEV,
   NETLIFYDEVLOG,

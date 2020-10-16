@@ -1,6 +1,6 @@
-const open = require('open')
 const chalk = require('chalk')
 const isDockerContainer = require('is-docker')
+const open = require('open')
 
 function unableToOpenBrowserMessage({ url, log, message }) {
   log('---------------------------')

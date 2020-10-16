@@ -1,10 +1,10 @@
-import React from 'react'
 import PropTypes from 'prop-types'
-import { Link as RouterLink, NavLink as RouterNavLink } from 'react-router-dom'
+import React from 'react'
 import { Helmet } from 'react-helmet'
-import styled from 'styled-components'
-import { Flex, Box, Container, Text, Toolbar, Divider, Heading, NavLink, BlockLink, ButtonTransparent } from 'rebass'
 import { InstantSearch, SearchBox, createConnector, Configure, Highlight } from 'react-instantsearch-dom'
+import { Link as RouterLink, NavLink as RouterNavLink } from 'react-router-dom'
+import { Flex, Box, Container, Text, Toolbar, Divider, Heading, NavLink, BlockLink, ButtonTransparent } from 'rebass'
+import styled from 'styled-components'
 import { borderColor } from 'styled-system'
 
 const breakpoint = `@media screen and (min-width: 48em)`

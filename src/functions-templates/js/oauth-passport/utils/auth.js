@@ -1,6 +1,6 @@
 const { sign } = require('jsonwebtoken')
-const { Strategy: GitHubStrategy } = require('passport-github2')
 const passport = require('passport')
+const { Strategy: GitHubStrategy } = require('passport-github2')
 const passportJwt = require('passport-jwt')
 
 const { BASE_URL, ENDPOINT, GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, SECRET } = require('./config')

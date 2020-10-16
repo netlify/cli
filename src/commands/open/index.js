@@ -1,9 +1,11 @@
-const Command = require('../../utils/command')
 const { flags: flagsLib } = require('@oclif/command')
+
+const { isEmptyCommand } = require('../../utils/check-command-inputs')
+const Command = require('../../utils/command')
+const showHelp = require('../../utils/show-help')
+
 const OpenAdminCommand = require('./admin')
 const OpenSiteCommand = require('./site')
-const showHelp = require('../../utils/show-help')
-const { isEmptyCommand } = require('../../utils/check-command-inputs')
 
 class OpenCommand extends Command {
   async run() {

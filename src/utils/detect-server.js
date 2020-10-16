@@ -1,10 +1,12 @@
-const path = require('path')
-const chalk = require('chalk')
-const getPort = require('get-port')
-const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./logo')
-const inquirer = require('inquirer')
-const fuzzy = require('fuzzy')
 const fs = require('fs')
+const path = require('path')
+
+const chalk = require('chalk')
+const fuzzy = require('fuzzy')
+const getPort = require('get-port')
+const inquirer = require('inquirer')
+
+const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./logo')
 
 const serverSettings = async (devConfig, flags, projectDir, log) => {
   let settings = {}

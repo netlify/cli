@@ -1,15 +1,17 @@
 const { flags: flagsLib } = require('@oclif/command')
 const chalk = require('chalk')
+const inquirer = require('inquirer')
 const get = require('lodash.get')
+
 const Command = require('../utils/command')
-const configManual = require('../utils/init/config-manual')
-const configGithub = require('../utils/init/config-github')
 const getRepoData = require('../utils/get-repo-data')
 const { ensureNetlifyIgnore } = require('../utils/gitignore')
-const inquirer = require('inquirer')
-const SitesCreateCommand = require('./sites/create')
-const LinkCommand = require('./link')
+const configGithub = require('../utils/init/config-github')
+const configManual = require('../utils/init/config-manual')
 const { track } = require('../utils/telemetry')
+
+const LinkCommand = require('./link')
+const SitesCreateCommand = require('./sites/create')
 
 class InitCommand extends Command {
   async run() {

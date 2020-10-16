@@ -1,12 +1,14 @@
-const path = require('path')
 const fs = require('fs')
+const path = require('path')
 const url = require('url')
-const redirector = require('netlify-redirector')
+
 const chokidar = require('chokidar')
 const cookie = require('cookie')
 const { parseRedirectsFormat, parseNetlifyConfig } = require('netlify-redirect-parser')
-const { NETLIFYDEVWARN, NETLIFYDEVLOG } = require('../utils/logo')
+const redirector = require('netlify-redirector')
+
 const { fileExistsAsync } = require('../lib/fs')
+const { NETLIFYDEVWARN, NETLIFYDEVLOG } = require('../utils/logo')
 
 async function parseFile(filePath) {
   if (!(await fileExistsAsync(filePath))) {

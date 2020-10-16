@@ -1,6 +1,7 @@
 const path = require('path')
-const { statAsync, readFileAsyncCatchError } = require('../lib/fs')
+
 const { uploadEdgeHandlers, cancelDeploy } = require('../lib/api')
+const { statAsync, readFileAsyncCatchError } = require('../lib/fs')
 const { startSpinner, stopSpinner } = require('../lib/spinner')
 
 const MANIFEST_FILENAME = 'manifest.json'

@@ -1,4 +1,5 @@
 const test = require('ava')
+
 const { parseRawFlags, aggressiveJSONParse } = require('./parse-raw-flags')
 
 test.serial('JSONTruthy works with various inputs', (t) => {

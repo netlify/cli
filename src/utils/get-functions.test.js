@@ -1,8 +1,11 @@
-const test = require('ava')
 const path = require('path')
+
+const test = require('ava')
+
 const { withSiteBuilder } = require('../../tests/utils/site-builder')
-const { getFunctions } = require('./get-functions.js')
+
 const { findModuleDir } = require('./finders')
+const { getFunctions } = require('./get-functions.js')
 
 test('should return empty object when an empty string is provided', (t) => {
   const funcs = getFunctions('')

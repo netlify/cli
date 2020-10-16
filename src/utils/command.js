@@ -1,16 +1,20 @@
-const { Command, flags: flagsLib } = require('@oclif/command')
-const API = require('netlify')
-const merge = require('lodash.merge')
-const { format, inspect } = require('util')
 const { URL } = require('url')
-const { track, identify } = require('./telemetry')
+const { format, inspect } = require('util')
+
+const resolveConfig = require('@netlify/config')
+const { Command, flags: flagsLib } = require('@oclif/command')
+const merge = require('lodash.merge')
+const argv = require('minimist')(process.argv.slice(2))
+const API = require('netlify')
+
+const { getAgent } = require('../lib/http-agent')
+
+const chalkInstance = require('./chalk')
+const globalConfig = require('./global-config')
 const openBrowser = require('./open-browser')
 const StateConfig = require('./state-config')
-const globalConfig = require('./global-config')
-const chalkInstance = require('./chalk')
-const resolveConfig = require('@netlify/config')
-const { getAgent } = require('../lib/http-agent')
-const argv = require('minimist')(process.argv.slice(2))
+const { track, identify } = require('./telemetry')
+
 const { NETLIFY_AUTH_TOKEN, NETLIFY_API_URL } = process.env
 
 // Netlify CLI client id. Lives in bot@netlify.com

@@ -1,6 +1,7 @@
-const chalk = require('chalk')
-const { Command } = require('@oclif/command')
 const { execSync } = require('child_process')
+
+const { Command } = require('@oclif/command')
+const chalk = require('chalk')
 
 function showHelp(command) {
   execSync(`netlify ${command} --help`, { stdio: [0, 1, 2] })

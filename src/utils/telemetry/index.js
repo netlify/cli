@@ -1,8 +1,11 @@
-const path = require('path')
 const { spawn } = require('child_process')
-const isValidEventName = require('./validation')
-const globalConfig = require('../global-config')
+const path = require('path')
+
 const ci = require('ci-info')
+
+const globalConfig = require('../global-config')
+
+const isValidEventName = require('./validation')
 
 const IS_INSIDE_CI = ci.isCI
 

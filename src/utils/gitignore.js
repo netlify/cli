@@ -1,4 +1,5 @@
 const path = require('path')
+
 const parseIgnore = require('parse-gitignore')
 
 const { readFileAsync, writeFileAsync, fileExistsAsync } = require('../lib/fs')

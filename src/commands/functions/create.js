@@ -1,16 +1,17 @@
+const cp = require('child_process')
 const fs = require('fs')
 const path = require('path')
-const copy = require('copy-template-dir')
+
 const { flags: flagsLib } = require('@oclif/command')
+const chalk = require('chalk')
+const copy = require('copy-template-dir')
 const inquirer = require('inquirer')
 const fetch = require('node-fetch')
-const cp = require('child_process')
 const ora = require('ora')
-const chalk = require('chalk')
 
 const { mkdirRecursiveSync } = require('../../lib/fs')
+const { getSiteData, getAddons, getCurrentAddon } = require('../../utils/addons/prepare')
 const Command = require('../../utils/command')
-const { readRepoURL, validateRepoURL } = require('../../utils/read-repo-url')
 const { addEnvVariables } = require('../../utils/dev')
 const {
   // NETLIFYDEV,
@@ -18,7 +19,7 @@ const {
   NETLIFYDEVWARN,
   NETLIFYDEVERR,
 } = require('../../utils/logo')
-const { getSiteData, getAddons, getCurrentAddon } = require('../../utils/addons/prepare')
+const { readRepoURL, validateRepoURL } = require('../../utils/read-repo-url')
 const templatesDir = path.resolve(__dirname, '../../functions-templates')
 
 /**

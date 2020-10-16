@@ -1,4 +1,5 @@
 const test = require('ava')
+
 const isValidEventName = require('./validation')
 
 const getEventForProject = (projectName, eventName) => `${projectName}:${eventName}`

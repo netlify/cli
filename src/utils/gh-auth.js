@@ -1,11 +1,13 @@
 // A simple ghauth inspired library for getting a personal access token
-const { Octokit } = require('@octokit/rest')
-const inquirer = require('inquirer')
-const querystring = require('querystring')
-const get = require('lodash.get')
-const openBrowser = require('./open-browser')
 const http = require('http')
+const querystring = require('querystring')
+
+const { Octokit } = require('@octokit/rest')
 const getPort = require('get-port')
+const inquirer = require('inquirer')
+const get = require('lodash.get')
+
+const openBrowser = require('./open-browser')
 
 module.exports = getGitHubToken
 

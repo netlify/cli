@@ -1,4 +1,5 @@
 const updateNotifier = require('update-notifier')
+
 const pkg = require('../package.json')
 
 // 12 hours

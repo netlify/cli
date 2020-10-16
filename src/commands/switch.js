@@ -1,6 +1,8 @@
-const Command = require('../utils/command')
 const chalk = require('chalk')
 const inquirer = require('inquirer')
+
+const Command = require('../utils/command')
+
 const LoginCommand = require('./login')
 
 class SwitchCommand extends Command {

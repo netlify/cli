@@ -1,10 +1,12 @@
 const test = require('ava')
-const { getToken } = require('../src/utils/command')
 const fetch = require('node-fetch')
 const omit = require('omit.js').default
-const { withSiteBuilder } = require('./utils/site-builder')
+
+const { getToken } = require('../src/utils/command')
+
 const callCli = require('./utils/call-cli')
 const { generateSiteName, createLiveTestSite } = require('./utils/create-live-test-site')
+const { withSiteBuilder } = require('./utils/site-builder')
 
 const SITE_NAME = generateSiteName('netlify-test-deploy-')
 

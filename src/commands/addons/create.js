@@ -1,11 +1,12 @@
-const Command = require('../../utils/command')
-const { parseRawFlags } = require('../../utils/parse-raw-flags')
-const { requiredConfigValues, missingConfigValues, updateConfigValues } = require('../../utils/addons/validation')
-const generatePrompts = require('../../utils/addons/prompts')
-const render = require('../../utils/addons/render')
 const chalk = require('chalk')
 const inquirer = require('inquirer')
+
 const { prepareAddonCommand, ADDON_VALIDATION } = require('../../utils/addons/prepare')
+const generatePrompts = require('../../utils/addons/prompts')
+const render = require('../../utils/addons/render')
+const { requiredConfigValues, missingConfigValues, updateConfigValues } = require('../../utils/addons/validation')
+const Command = require('../../utils/command')
+const { parseRawFlags } = require('../../utils/parse-raw-flags')
 
 const createAddon = async ({ api, siteId, addonName, config, siteData, log, error }) => {
   try {

@@ -1,7 +1,8 @@
 const fs = require('fs').promises
 const path = require('path')
-const rimraf = require('rimraf')
 const util = require('util')
+
+const rimraf = require('rimraf')
 
 const rimrafAsync = util.promisify(rimraf)
 

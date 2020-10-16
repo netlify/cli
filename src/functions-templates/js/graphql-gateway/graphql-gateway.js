@@ -5,10 +5,10 @@
  * Of course, feel free to modify this gateway to suit your needs.
  */
 
-const { introspectSchema, makeRemoteExecutableSchema, mergeSchemas } = require('graphql-tools')
 const { createHttpLink } = require('apollo-link-http')
-const fetch = require('node-fetch')
 const { ApolloServer } = require('apollo-server-lambda')
+const { introspectSchema, makeRemoteExecutableSchema, mergeSchemas } = require('graphql-tools')
+const fetch = require('node-fetch')
 
 const handler = async function (event, context) {
   // other Netlify functions which are graphql lambdas

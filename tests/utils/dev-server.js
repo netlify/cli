@@ -1,9 +1,11 @@
-const cliPath = require('./cli-path')
 const path = require('path')
-const getPort = require('get-port')
-const seedrandom = require('seedrandom')
+
 const execa = require('execa')
+const getPort = require('get-port')
 const pidtree = require('pidtree')
+const seedrandom = require('seedrandom')
+
+const cliPath = require('./cli-path')
 
 // each process gets a starting port based on the pid
 const rng = seedrandom(`${process.pid}`)

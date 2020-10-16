@@ -1,5 +1,5 @@
-const path = require('path')
 const fs = require('fs').promises
+const path = require('path')
 
 const config = require('./config')
 const { copyDirRecursiveAsync } = require('./fs')

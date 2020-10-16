@@ -1,7 +1,8 @@
 /* Syncs blog content from repo to /site/blog */
-const path = require('path')
-const sane = require('sane')
 const fs = require('fs').promises
+const path = require('path')
+
+const sane = require('sane')
 
 const config = require('./config')
 const { ensureFilePathAsync, removeRecursiveAsync } = require('./fs')

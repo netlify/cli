@@ -1,8 +1,9 @@
 const fs = require('fs')
-const pathType = require('path-type')
 const { promisify } = require('util')
-const makeDir = require('make-dir')
+
 const del = require('del')
+const makeDir = require('make-dir')
+const pathType = require('path-type')
 
 const statAsync = promisify(fs.stat)
 const readFileAsync = promisify(fs.readFile)

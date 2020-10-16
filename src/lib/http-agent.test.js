@@ -1,8 +1,10 @@
-const test = require('ava')
-const sinon = require('sinon')
 const http = require('http')
+
+const test = require('ava')
 const { createProxyServer } = require('http-proxy')
 const { HttpsProxyAgent } = require('https-proxy-agent')
+const sinon = require('sinon')
+
 const { getAgent } = require('./http-agent')
 
 test(`should return undefined when there is no httpProxy`, async (t) => {

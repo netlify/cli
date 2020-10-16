@@ -1,7 +1,10 @@
 const path = require('path')
+
 const test = require('ava')
-const { getLanguage, parseFile, parseRules } = require('./rules-proxy.js')
+
 const { withSiteBuilder } = require('../../tests/utils/site-builder')
+
+const { getLanguage, parseFile, parseRules } = require('./rules-proxy.js')
 test('getLanguage', (t) => {
   const language = getLanguage({ 'accept-language': 'ur' })
 

@@ -1,6 +1,7 @@
 const { flags } = require('@oclif/command')
-const Command = require('../../utils/command')
+
 const { getBuildOptions, runBuild } = require('../../lib/build')
+const Command = require('../../utils/command')
 
 class BuildCommand extends Command {
   // Run Netlify Build

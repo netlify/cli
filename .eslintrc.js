@@ -120,6 +120,17 @@ module.exports = {
       { allow: ['eslint-disable-next-line', 'eslint-disable', 'eslint-enable', 'eslint-env'] },
     ],
 
+    'import/order': [
+      2,
+      {
+        'newlines-between': 'always',
+        alphabetize: {
+          order: 'asc',
+          caseInsensitive: true,
+        },
+      },
+    ],
+
     'react/prop-types': 0,
 
     // Not enabled by default in unicorn/recommended, but still pretty useful

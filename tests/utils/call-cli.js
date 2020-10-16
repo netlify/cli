@@ -1,4 +1,5 @@
 const execa = require('execa')
+
 const cliPath = require('./cli-path')
 
 async function callCli(args, execOptions) {
