@@ -74,11 +74,6 @@ module.exports = {
     {
       files: 'src/functions-templates/**/*.js',
       rules: {
-        'node/no-unsupported-features/es-syntax': 0,
-        'node/no-unsupported-features/es-builtins': 0,
-        'node/no-unsupported-features/node-builtins': 0,
-        'node/no-missing-require': 0,
-        'node/shebang': 0,
         'require-await': 0,
       },
     },
