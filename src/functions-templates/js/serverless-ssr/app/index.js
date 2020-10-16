@@ -96,7 +96,7 @@ module.exports = function expressApp(functionName) {
   return app
 }
 
-function customLogger(tokens, req, res) {
+const customLogger = function (tokens, req, res) {
   const log = [
     tokens.method(req, res),
     tokens.url(req, res),

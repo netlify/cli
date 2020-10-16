@@ -28,7 +28,7 @@ module.exports = function isValidEventName(eventName, config) {
   return true
 }
 
-function containsSeparators(eventName) {
+const containsSeparators = function (eventName) {
   const underscores = (eventName.match(/_/g) || []).length
   if (underscores !== 1) {
     console.log(`Event name must have single underscore. "${eventName}" contains ${underscores}`)
@@ -42,7 +42,7 @@ function containsSeparators(eventName) {
   return true
 }
 
-function formattingWarning(eventName, errorMsg) {
+const formattingWarning = function (eventName, errorMsg) {
   console.log('-----------------------------')
   console.log('Tracking Error:')
   console.log(`Incorrect tracking event format: "${eventName}"`)

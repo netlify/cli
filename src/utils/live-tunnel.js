@@ -10,7 +10,7 @@ const { NETLIFYDEVLOG, NETLIFYDEVERR } = require('./logo')
 const PACKAGE_NAME = 'live-tunnel-client'
 const EXEC_NAME = PACKAGE_NAME
 
-async function createTunnel({ siteId, netlifyApiToken, log }) {
+const createTunnel = async function ({ siteId, netlifyApiToken, log }) {
   await installTunnelClient(log)
 
   if (!siteId) {
@@ -42,7 +42,7 @@ async function createTunnel({ siteId, netlifyApiToken, log }) {
   return data
 }
 
-function connectTunnel({ session, netlifyApiToken, localPort, log }) {
+const connectTunnel = function ({ session, netlifyApiToken, localPort, log }) {
   const execPath = getPathInHome(['tunnel', 'bin', EXEC_NAME])
   const args = ['connect', '-s', session.id, '-t', netlifyApiToken, '-l', localPort]
   if (process.env.DEBUG) {
@@ -56,7 +56,7 @@ function connectTunnel({ session, netlifyApiToken, localPort, log }) {
   ps.on('SIGTERM', process.exit)
 }
 
-async function installTunnelClient(log) {
+const installTunnelClient = async function (log) {
   const binPath = getPathInHome(['tunnel', 'bin'])
   const shouldFetch = await shouldFetchLatestVersion({
     binPath,

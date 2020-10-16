@@ -19,19 +19,19 @@ const { detectFunctionsBuilder } = require('./detect-functions-builder')
 const { getFunctions } = require('./get-functions')
 const { NETLIFYDEVLOG, NETLIFYDEVWARN, NETLIFYDEVERR } = require('./logo')
 
-function handleErr(err, response) {
+const handleErr = function (err, response) {
   response.statusCode = 500
   response.write(`${NETLIFYDEVERR} Function invocation failed: ${err.toString()}`)
   response.end()
   console.log(`${NETLIFYDEVERR} Error during invocation:`, err)
 }
 
-function capitalize(t) {
+const capitalize = function (t) {
   return t.replace(/(^\w|\s\w)/g, (string) => string.toUpperCase())
 }
 
 /** need to keep createCallback in scope so we can know if cb was called AND handler is async */
-function createCallback(response) {
+const createCallback = function (response) {
   return function callbackHandler(err, lambdaResponse) {
     if (err) {
       return handleErr(err, response)
@@ -66,7 +66,7 @@ function createCallback(response) {
   }
 }
 
-function buildClientContext(headers) {
+const buildClientContext = function (headers) {
   // inject a client context based on auth header, ported over from netlify-lambda (https://github.com/netlify/netlify-lambda/pull/57)
   if (!headers.authorization) return
 
@@ -107,7 +107,7 @@ const shouldBase64Encode = function (contentType) {
 
 const BASE_64_MIME_REGEXP = /image|audio|video|application\/pdf|application\/zip|applicaton\/octet-stream/i
 
-function createHandler(dir) {
+const createHandler = function (dir) {
   const functions = getFunctions(dir)
 
   const watcher = chokidar.watch(dir, { ignored: /node_modules/ })
@@ -184,7 +184,7 @@ function createHandler(dir) {
 // 10 seconds
 const LAMBDA_LOCAL_TIMEOUT = 1e4
 
-function createFormSubmissionHandler(siteInfo) {
+const createFormSubmissionHandler = function (siteInfo) {
   return async function formSubmissionHandler(req, res, next) {
     if (req.url.startsWith('/.netlify/') || req.method !== 'POST') return next()
 
@@ -295,7 +295,7 @@ function createFormSubmissionHandler(siteInfo) {
   }
 }
 
-function serveFunctions(dir, siteInfo = {}) {
+const serveFunctions = function (dir, siteInfo = {}) {
   const app = express()
   app.set('query parser', 'simple')
 

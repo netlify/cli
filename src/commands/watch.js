@@ -89,19 +89,10 @@ const BUILD_FINISH_INTERVAL = 1e3
 // 20 minutes
 const BUILD_FINISH_TIMEOUT = 12e5
 
-async function waitForBuildFinish(api, siteId) {
+const waitForBuildFinish = async function (api, siteId) {
   let firstPass = true
 
-  await pWaitFor(waitForBuildToFinish, {
-    interval: BUILD_FINISH_INTERVAL,
-    timeout: BUILD_FINISH_TIMEOUT,
-    message: 'Timeout while waiting for deploy to finish',
-  })
-
-  // return only when build done or timeout happens
-  return firstPass
-
-  async function waitForBuildToFinish() {
+  const waitForBuildToFinish = async function () {
     const builds = await api.listSiteBuilds({ siteId })
     const currentBuilds = builds.filter((build) => {
       // build.error
@@ -118,6 +109,15 @@ async function waitForBuildFinish(api, siteId) {
     firstPass = false
     return false
   }
+
+  await pWaitFor(waitForBuildToFinish, {
+    interval: BUILD_FINISH_INTERVAL,
+    timeout: BUILD_FINISH_TIMEOUT,
+    message: 'Timeout while waiting for deploy to finish',
+  })
+
+  // return only when build done or timeout happens
+  return firstPass
 }
 
 module.exports = SitesWatchCommand

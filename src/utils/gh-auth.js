@@ -9,11 +9,9 @@ const get = require('lodash.get')
 
 const openBrowser = require('./open-browser')
 
-module.exports = getGitHubToken
-
 const SERVER_PORT = 3000
 
-async function getGitHubToken({ opts, log }) {
+module.exports = async function getGitHubToken({ opts, log }) {
   log('')
 
   opts = {
@@ -23,7 +21,7 @@ async function getGitHubToken({ opts, log }) {
     ...opts,
   }
 
-  async function promptForOTP() {
+  const promptForOTP = async function () {
     const { otp } = await inquirer.prompt([
       {
         type: 'input',

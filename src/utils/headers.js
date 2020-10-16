@@ -3,7 +3,7 @@ const fs = require('fs')
 const TOKEN_COMMENT = '#'
 const TOKEN_PATH = '/'
 
-function matchPaths(rulePath, targetPath) {
+const matchPaths = function (rulePath, targetPath) {
   const rulePathParts = rulePath.split('/').filter(Boolean)
   const targetPathParts = targetPath.split('/').filter(Boolean)
 
@@ -34,14 +34,14 @@ function matchPaths(rulePath, targetPath) {
   return false
 }
 
-function objectForPath(rules, pathname) {
+const objectForPath = function (rules, pathname) {
   return Object.entries(rules).reduce(
     (prev, [rulePath, pathHeaders]) => ({ ...prev, ...(matchPaths(rulePath, pathname) && pathHeaders) }),
     {},
   )
 }
 
-function parseHeadersFile(filePath) {
+const parseHeadersFile = function (filePath) {
   const rules = {}
   if (!fs.existsSync(filePath)) return rules
   if (fs.statSync(filePath).isDirectory()) {

@@ -144,7 +144,7 @@ class AddonsConfigCommand extends Command {
   }
 }
 
-async function update({ addonName, currentConfig, newConfig, siteId, instanceId, api, error, log }) {
+const update = async function ({ addonName, currentConfig, newConfig, siteId, instanceId, api, error, log }) {
   const codeDiff = diffValues(currentConfig, newConfig)
   if (!codeDiff) {
     log('No changes, exiting early')

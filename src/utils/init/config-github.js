@@ -16,8 +16,7 @@ const UA = `Netlify CLI ${version}`
 
 const PAGE_SIZE = 100
 
-module.exports = configGithub
-async function configGithub(ctx, site, repo) {
+module.exports = async function configGithub(ctx, site, repo) {
   const { api, globalConfig } = ctx.netlify
   const current = globalConfig.get('userId')
 

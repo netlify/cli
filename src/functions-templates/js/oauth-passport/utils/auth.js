@@ -5,7 +5,7 @@ const passportJwt = require('passport-jwt')
 
 const { BASE_URL, ENDPOINT, GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, SECRET } = require('./config')
 
-function authJwt(email) {
+const authJwt = function (email) {
   return sign({ user: { email } }, SECRET)
 }
 

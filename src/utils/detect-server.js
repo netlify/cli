@@ -182,7 +182,7 @@ const serverSettings = async (devConfig, flags, projectDir, log) => {
 
 const DEFAULT_PORT = 8888
 
-async function getStaticServerSettings(settings, flags, projectDir, log) {
+const getStaticServerSettings = async function (settings, flags, projectDir, log) {
   let { dist } = settings
   if (flags.dir) {
     log(`${NETLIFYDEVWARN} Using simple static server because --dir flag was specified`)
@@ -207,7 +207,7 @@ async function getStaticServerSettings(settings, flags, projectDir, log) {
 
 const DEFAULT_STATIC_PORT = 3999
 
-function loadDetector(detectorName) {
+const loadDetector = function (detectorName) {
   try {
     return require(path.join(__dirname, '..', 'detectors', detectorName))
   } catch (error) {
@@ -219,7 +219,7 @@ function loadDetector(detectorName) {
   }
 }
 
-function chooseDefaultArgs(possibleArgsArrs) {
+const chooseDefaultArgs = function (possibleArgsArrs) {
   // vast majority of projects will only have one matching detector
   // just pick the first one
   const [args] = possibleArgsArrs
@@ -237,7 +237,7 @@ function chooseDefaultArgs(possibleArgsArrs) {
 }
 
 /** utilities for the inquirer section above */
-function filterSettings(scriptInquirerOptions, input) {
+const filterSettings = function (scriptInquirerOptions, input) {
   const filteredSettings = fuzzy.filter(
     input,
     scriptInquirerOptions.map((scriptInquirerOption) => scriptInquirerOption.name),
@@ -249,7 +249,7 @@ function filterSettings(scriptInquirerOptions, input) {
 }
 
 /** utiltities for the inquirer section above */
-function formatSettingsArrForInquirer(settingsArr) {
+const formatSettingsArrForInquirer = function (settingsArr) {
   return [].concat(
     ...settingsArr.map((setting) =>
       setting.possibleArgsArrs.map((args) => ({

@@ -68,7 +68,7 @@ module.exports = function generatePrompts(settings) {
     .filter(Boolean)
 }
 
-function noValidate() {
+const noValidate = function () {
   return true
 }
 
@@ -81,7 +81,7 @@ function noValidate() {
 //   return `Please enter a value this field is required`
 // }
 
-function validate(pattern) {
+const validate = function (pattern) {
   return function validateValue(value) {
     const regex = new RegExp(pattern)
     if (value.match(regex)) {

@@ -1,4 +1,4 @@
-function createStreamPromise(stream, timeoutSeconds, bytesLimit = DEFAULT_BYTES_LIMIT) {
+const createStreamPromise = function (stream, timeoutSeconds, bytesLimit = DEFAULT_BYTES_LIMIT) {
   return new Promise(function streamPromiseFunc(resolve, reject) {
     let data = []
     let dataLength = 0

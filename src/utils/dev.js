@@ -20,7 +20,7 @@ const {
  * }
  * ```
  */
-async function addEnvVariables(api, site) {
+const addEnvVariables = async function (api, site) {
   /** from addons */
   const addonUrls = {}
   const addons = await api.listServiceInstancesForSite({ siteId: site.id }).catch((error) => {
@@ -102,7 +102,7 @@ module.exports = {
 }
 
 // if first arg is undefined, use default, but tell user about it in case it is unintentional
-function assignLoudly(
+const assignLoudly = function (
   optionalValue,
   defaultValue,
   tellUser = (dV) => console.log(`No value specified, using fallback of ${dV}`),

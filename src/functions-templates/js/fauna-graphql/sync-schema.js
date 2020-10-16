@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /* sync GraphQL schema to your FaunaDB account - use with `netlify dev:exec <path-to-this-file>` */
-function createFaunaGraphQL() {
+const createFaunaGraphQL = function () {
   if (!process.env.FAUNADB_SERVER_SECRET) {
     console.log('No FAUNADB_SERVER_SECRET in environment, skipping DB setup')
   }

@@ -3,7 +3,7 @@
 /* bootstrap database in your FaunaDB account - use with `netlify dev:exec <path-to-this-file>` */
 const { query, Client } = require('faunadb')
 
-function createFaunaDB() {
+const createFaunaDB = function () {
   if (!process.env.FAUNADB_SERVER_SECRET) {
     console.log('No FAUNADB_SERVER_SECRET in environment, skipping DB setup')
   }

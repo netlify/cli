@@ -11,7 +11,7 @@ let warnedAboutEmptyScript = false
 const { NETLIFYDEVWARN } = require('../../utils/logo')
 
 /** hold package.json in a singleton so we dont do expensive parsing repeatedly */
-function getPkgJSON() {
+const getPkgJSON = function () {
   if (pkgJSON) {
     return pkgJSON
   }
@@ -19,7 +19,7 @@ function getPkgJSON() {
   pkgJSON = JSON.parse(readFileSync('package.json', { encoding: 'utf8' }))
   return pkgJSON
 }
-function getYarnOrNPMCommand() {
+const getYarnOrNPMCommand = function () {
   if (!yarnExists) {
     yarnExists = existsSync('yarn.lock') ? 'yes' : 'no'
   }
@@ -31,7 +31,7 @@ function getYarnOrNPMCommand() {
  *
  */
 
-function hasRequiredDeps(requiredDepArray) {
+const hasRequiredDeps = function (requiredDepArray) {
   const { dependencies, devDependencies } = getPkgJSON()
   for (const depName of requiredDepArray) {
     const hasItInDeps = dependencies && dependencies[depName]
@@ -42,7 +42,7 @@ function hasRequiredDeps(requiredDepArray) {
   }
   return true
 }
-function hasRequiredFiles(filenameArr) {
+const hasRequiredFiles = function (filenameArr) {
   for (const filename of filenameArr) {
     if (!existsSync(filename)) {
       return false
@@ -52,7 +52,7 @@ function hasRequiredFiles(filenameArr) {
 }
 
 // preferredScriptsArr is in decreasing order of preference
-function scanScripts({ preferredScriptsArr, preferredCommand }) {
+const scanScripts = function ({ preferredScriptsArr, preferredCommand }) {
   const { scripts } = getPkgJSON()
 
   if (!scripts && !warnedAboutEmptyScript) {

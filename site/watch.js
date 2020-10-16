@@ -31,21 +31,21 @@ watcher.on('delete', async function onDelete(filepath) {
 })
 
 /* utils */
-function getFullPath(filePath) {
+const getFullPath = function (filePath) {
   return {
     src: path.join(config.docs.srcPath, filePath),
     destination: path.join(config.docs.outputPath, filePath),
   }
 }
 
-async function syncFile(filePath) {
+const syncFile = async function (filePath) {
   const { src, destination } = getFullPath(filePath)
   await ensureFilePathAsync(destination)
   await fs.copyFile(src, destination)
   console.log(`${filePath} synced to ${destination}`)
 }
 
-async function deleteFile(filePath) {
+const deleteFile = async function (filePath) {
   const { destination } = getFullPath(filePath)
   await removeRecursiveAsync(destination)
   console.log(`${filePath} removed from ${destination}`)
