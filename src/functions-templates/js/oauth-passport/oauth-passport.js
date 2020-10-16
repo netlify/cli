@@ -25,11 +25,11 @@ app.get(`${ENDPOINT}/auth/github`, passport.authenticate('github', { session: fa
 app.get(
   `${ENDPOINT}/auth/github/callback`,
   passport.authenticate('github', { failureRedirect: '/', session: false }),
-  handleCallback
+  handleCallback,
 )
 
 app.get(`${ENDPOINT}/auth/status`, passport.authenticate('jwt', { session: false }), (req, res) =>
-  res.json({ email: req.user.email })
+  res.json({ email: req.user.email }),
 )
 
 const handler = serverless(app)

@@ -28,8 +28,8 @@ passport.use(
       } catch (error) {
         return done(error)
       }
-    }
-  )
+    },
+  ),
 )
 
 passport.use(
@@ -51,6 +51,6 @@ passport.use(
       } catch (error) {
         return done(error)
       }
-    }
-  )
+    },
+  ),
 )

@@ -19,7 +19,7 @@ module.exports = function generateCommandData() {
       data.flags &&
       mapObj(
         filterObj(data.flags, (_, value) => value.hidden !== true),
-        (flag, flagData) => [flag, { ...flagData, type: flagData.type === 'option' ? 'string' : flagData.type }]
+        (flag, flagData) => [flag, { ...flagData, type: flagData.type === 'option' ? 'string' : flagData.type }],
       )
     return {
       command,

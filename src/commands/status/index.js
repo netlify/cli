@@ -98,7 +98,7 @@ class StatusCommand extends Command {
         'Admin URL': chalk.magentaBright(siteData.admin_url),
         'Site URL': chalk.cyanBright(siteData.ssl_url || siteData.url),
         'Site Id': chalk.yellowBright(siteData.id),
-      })
+      }),
     )
     this.log()
   }

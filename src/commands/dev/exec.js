@@ -19,7 +19,7 @@ class ExecCommand extends Command {
       await addEnvVariables(api, site)
     } else {
       this.log(
-        `${NETLIFYDEVERR} No Site ID detected. You probably forgot to run \`netlify link\` or \`netlify init\`. `
+        `${NETLIFYDEVERR} No Site ID detected. You probably forgot to run \`netlify link\` or \`netlify init\`. `,
       )
     }
 
@@ -27,7 +27,7 @@ class ExecCommand extends Command {
     if (envSettings.vars.length !== 0) {
       this.log(
         `${NETLIFYDEVLOG} Adding the following env variables from ${envSettings.files.map((f) => chalk.blue(f))}:`,
-        chalk.yellow(envSettings.vars.map(([key]) => key))
+        chalk.yellow(envSettings.vars.map(([key]) => key)),
       )
     }
 

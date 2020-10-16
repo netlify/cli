@@ -25,7 +25,7 @@ const triggerDeploy = async ({ api, siteId, siteData, log, error }) => {
   try {
     const siteBuild = await api.createSiteBuild({ siteId })
     log(
-      `${NETLIFYDEV} A new deployment was triggered successfully. Visit https://app.netlify.com/sites/${siteData.name}/deploys/${siteBuild.deploy_id} to see the logs.`
+      `${NETLIFYDEV} A new deployment was triggered successfully. Visit https://app.netlify.com/sites/${siteData.name}/deploys/${siteBuild.deploy_id} to see the logs.`,
     )
   } catch (error_) {
     if (error_.status === 404) {
@@ -110,7 +110,7 @@ const validateFunctionsFolder = async ({ functionsFolder, log, error }) => {
     } catch (error_) {
       if (error_.code === 'ENOENT') {
         log(
-          `Functions folder "${functionsFolder}" specified but it doesn't exist! Will proceed without deploying functions`
+          `Functions folder "${functionsFolder}" specified but it doesn't exist! Will proceed without deploying functions`,
         )
       }
       // Improve the message of permission errors
@@ -401,7 +401,7 @@ class DeployCommand extends Command {
         'Deploy path': deployFolder,
         'Functions path': functionsFolder,
         'Configuration path': configPath,
-      })
+      }),
     )
 
     const { functionsFolderStat } = await validateFolders({

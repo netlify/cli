@@ -38,7 +38,7 @@ class FunctionsInvokeCommand extends Command {
 
     if (!flags.port)
       console.warn(
-        `${NETLIFYDEVWARN} "port" flag was not specified. Attempting to connect to localhost:8888 by default`
+        `${NETLIFYDEVWARN} "port" flag was not specified. Attempting to connect to localhost:8888 by default`,
       )
     const port = flags.port || 8888
 
@@ -189,8 +189,8 @@ async function getNameFromArgs(functions, args, flags) {
     if (functionToTrigger && !isValidFn) {
       console.warn(
         `Function name ${chalk.yellow(
-          functionToTrigger
-        )} supplied but no matching function found in your functions folder, forcing you to pick a valid one...`
+          functionToTrigger,
+        )} supplied but no matching function found in your functions folder, forcing you to pick a valid one...`,
       )
     }
     const { trigger } = await inquirer.prompt([

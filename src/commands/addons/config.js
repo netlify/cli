@@ -118,7 +118,7 @@ class AddonsConfigCommand extends Command {
           type: 'confirm',
           name: 'confirmChange',
           message: `Do you want to publish the updated "${addonName} add-on" settings for ${chalk.cyan(
-            siteData.name
+            siteData.name,
           )}?`,
           default: false,
         },

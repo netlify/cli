@@ -53,8 +53,8 @@ const createRewriter = async function ({ distDir, projectDir, jwtSecret, jwtRole
   const configFiles = [
     ...new Set(
       [path.resolve(distDir, '_redirects'), path.resolve(projectDir, '_redirects')].concat(
-        configPath ? path.resolve(configPath) : []
-      )
+        configPath ? path.resolve(configPath) : [],
+      ),
     ),
   ].filter((f) => f !== projectDir)
   let rules = await parseRules(configFiles)
@@ -62,7 +62,7 @@ const createRewriter = async function ({ distDir, projectDir, jwtSecret, jwtRole
   onChanges(configFiles, async () => {
     console.log(
       `${NETLIFYDEVLOG} Reloading redirect rules from`,
-      configFiles.filter(fs.existsSync).map((p) => path.relative(projectDir, p))
+      configFiles.filter(fs.existsSync).map((p) => path.relative(projectDir, p)),
     )
     rules = await parseRules(configFiles)
     matcher = null
@@ -90,7 +90,7 @@ const createRewriter = async function ({ distDir, projectDir, jwtSecret, jwtRole
         req.url,
         `${req.protocol || (req.headers.scheme && `${req.headers.scheme}:`) || 'http:'}//${
           req.hostname || req.headers.host
-        }`
+        }`,
       )
       const cookieValues = cookie.parse(req.headers.cookie || '')
       const headers = {

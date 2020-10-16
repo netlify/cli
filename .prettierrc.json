@@ -3,5 +3,5 @@
   "singleQuote": true,
   "proseWrap": "always",
   "quoteProps": "consistent",
-  "trailingComma": "es5"
+  "trailingComma": "all"
 }

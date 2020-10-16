@@ -150,7 +150,7 @@ async function serveRedirect({ req, res, proxy, match, options }) {
     req.url,
     `${req.protocol || (req.headers.scheme && `${req.headers.scheme}:`) || 'http:'}//${
       req.headers.host || req.hostname
-    }`
+    }`,
   )
 
   const staticFile = await getStatic(decodeURIComponent(reqUrl.pathname), options.publicFolder)
@@ -244,7 +244,7 @@ function initializeProxy(port, distDir, projectDir) {
   onChanges(headersFiles, async () => {
     console.log(
       `${NETLIFYDEVLOG} Reloading headers files`,
-      (await pFilter(headersFiles, fileExistsAsync)).map((p) => path.relative(projectDir, p))
+      (await pFilter(headersFiles, fileExistsAsync)).map((p) => path.relative(projectDir, p)),
     )
     headerRules = headersFiles.reduce((prev, curr) => Object.assign(prev, parseHeadersFile(curr)), {})
   })

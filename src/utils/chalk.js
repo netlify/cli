@@ -43,7 +43,7 @@ function neverNull(obj) {
         }
         return true
       },
-    }
+    },
   )
 }
 

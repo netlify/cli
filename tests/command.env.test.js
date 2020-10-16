@@ -197,7 +197,7 @@ if (process.env.IS_FORK !== 'true') {
       t.true(isObject(json))
       t.is(Object.keys(json).length, Object.keys(state).length)
       checkResultState({ t, result: json, state })
-    }
+    },
   )
 
   test.after('cleanup', async (t) => {

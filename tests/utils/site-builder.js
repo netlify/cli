@@ -16,7 +16,7 @@ const createSiteBuilder = ({ siteName }) => {
     `netlify-cli-tests-${process.version}`,
     `${process.pid}`,
     uuidv4(),
-    siteName
+    siteName,
   )
   const tasks = [() => ensureDir(directory)]
 
@@ -76,7 +76,8 @@ const createSiteBuilder = ({ siteName }) => {
       tasks.push(async () => {
         const content = headers
           .map(
-            ({ path: headerPath, headers }) => `${headerPath}${os.EOL}${headers.map((h) => `  ${h}`).join(`${os.EOL}`)}`
+            ({ path: headerPath, headers }) =>
+              `${headerPath}${os.EOL}${headers.map((h) => `  ${h}`).join(`${os.EOL}`)}`,
           )
           .join(os.EOL)
         await ensureDir(path.dirname(dest))
@@ -104,7 +105,7 @@ const createSiteBuilder = ({ siteName }) => {
           dest,
           Object.entries(env)
             .map(([key, value]) => `${key}=${value}`)
-            .join(os.EOL)
+            .join(os.EOL),
         )
       })
       return builder

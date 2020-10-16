@@ -14,7 +14,7 @@ module.exports = function generatePrompts(settings) {
       if (!setting.type) {
         console.log(`⚠️   ${chalk.yellowBright(`Warning: no \`type\` is set for config key: ${configItems[i]}`)}`)
         console.log(
-          `It's highly recommended that you type your configuration values. It will help with automatic documentation, sharing of your services, and make your services configurable through a GUI`
+          `It's highly recommended that you type your configuration values. It will help with automatic documentation, sharing of your services, and make your services configurable through a GUI`,
         )
         console.log('')
       }

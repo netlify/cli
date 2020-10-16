@@ -108,7 +108,7 @@ module.exports = function handler(event, context, callback) {
         .then(() =>
           updateUser(context.clientContext.identity, user, {
             last_message_at: new Date().getTime(),
-          })
+          }),
         )
         .then(() => {
           callback(null, { statusCode: 204 })

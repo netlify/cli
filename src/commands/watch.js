@@ -65,7 +65,7 @@ class SitesWatchCommand extends Command {
         prettyjson.render({
           URL: siteData.ssl_url || siteData.url,
           Admin: siteData.admin_url,
-        })
+        }),
       )
       console.timeEnd('Deploy time')
     } catch (error) {

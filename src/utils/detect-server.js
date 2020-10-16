@@ -17,7 +17,7 @@ const serverSettings = async (devConfig, flags, projectDir, log) => {
     ;['command', 'targetPort'].forEach((p) => {
       if (flags[p]) {
         throw new Error(
-          `"${p}" option cannot be used in conjunction with "dir" flag which is used to run a static server`
+          `"${p}" option cannot be used in conjunction with "dir" flag which is used to run a static server`,
         )
       }
     })
@@ -59,7 +59,7 @@ const serverSettings = async (devConfig, flags, projectDir, log) => {
       settings = chosenSetting // finally! we have a selected option
 
       log(
-        `Add \`framework = "${chosenSetting.framework}"\` to [dev] section of your netlify.toml to avoid this selection prompt next time`
+        `Add \`framework = "${chosenSetting.framework}"\` to [dev] section of your netlify.toml to avoid this selection prompt next time`,
       )
     }
   } else if (devConfig.framework === '#custom' || (devConfig.command && devConfig.targetPort)) {
@@ -72,7 +72,7 @@ const serverSettings = async (devConfig, flags, projectDir, log) => {
     }
     if (devConfig.framework !== '#custom' && devConfig.command && devConfig.targetPort) {
       throw new Error(
-        '"framework" option must be set to "#custom" when specifying both "command" and "targetPort" options'
+        '"framework" option must be set to "#custom" when specifying both "command" and "targetPort" options',
       )
     }
   } else if (devConfig.framework === '#static') {
@@ -83,14 +83,14 @@ const serverSettings = async (devConfig, flags, projectDir, log) => {
       throw new Error(
         'Unsupported value provided for "framework" option in config. Please use "#custom"' +
           ` if you're using a framework not intrinsically supported by Netlify Dev. E.g. with "command" and "targetPort" options.` +
-          ` Or use one of following values: ${detectorsFiles.map((f) => `"${path.parse(f).name}"`).join(', ')}`
+          ` Or use one of following values: ${detectorsFiles.map((f) => `"${path.parse(f).name}"`).join(', ')}`,
       )
 
     const detector = loadDetector(detectorName)
     const detectorResult = detector(projectDir)
     if (!detectorResult)
       throw new Error(
-        `Specified "framework" detector "${devConfig.framework}" did not pass requirements for your project`
+        `Specified "framework" detector "${devConfig.framework}" did not pass requirements for your project`,
       )
 
     settings = detectorResult
@@ -105,7 +105,7 @@ const serverSettings = async (devConfig, flags, projectDir, log) => {
     console.log(
       `${NETLIFYDEVLOG} Overriding ${chalk.yellow('command')} with setting derived from netlify.toml [dev] block: ${
         devConfig.command
-      }`
+      }`,
     )
     const [devConfigCommand, ...devConfigArgs] = devConfig.command.split(/\s+/)
     settings.command = devConfigCommand
@@ -121,24 +121,24 @@ const serverSettings = async (devConfig, flags, projectDir, log) => {
 
     if (devConfig.targetPort === devConfig.port) {
       throw new Error(
-        '"port" and "targetPort" options cannot have same values. Please consult the documentation for more details: https://cli.netlify.com/netlify-dev#netlifytoml-dev-block'
+        '"port" and "targetPort" options cannot have same values. Please consult the documentation for more details: https://cli.netlify.com/netlify-dev#netlifytoml-dev-block',
       )
     }
 
     if (!settings.command)
       throw new Error(
-        'No "command" specified or detected. The "command" option is required to use "targetPort" option.'
+        'No "command" specified or detected. The "command" option is required to use "targetPort" option.',
       )
     if (flags.dir)
       throw new Error(
-        '"targetPort" option cannot be used in conjunction with "dir" flag which is used to run a static server.'
+        '"targetPort" option cannot be used in conjunction with "dir" flag which is used to run a static server.',
       )
 
     settings.frameworkPort = devConfig.targetPort
   }
   if (devConfig.port && devConfig.port === settings.frameworkPort) {
     throw new Error(
-      'The "port" option you specified conflicts with the port of your application. Please use a different value for "port"'
+      'The "port" option you specified conflicts with the port of your application. Please use a different value for "port"',
     )
   }
 
@@ -154,7 +154,7 @@ const serverSettings = async (devConfig, flags, projectDir, log) => {
 
   if (devConfig.port && devConfig.port === settings.frameworkPort) {
     throw new Error(
-      'The "port" option you specified conflicts with the port of your application. Please use a different value for "port"'
+      'The "port" option you specified conflicts with the port of your application. Please use a different value for "port"',
     )
   }
   const triedPort = devConfig.port || DEFAULT_PORT
@@ -203,8 +203,8 @@ function loadDetector(detectorName) {
   } catch (error) {
     throw new Error(
       `Failed to load detector: ${chalk.yellow(
-        detectorName
-      )}, this is likely a bug in the detector, please file an issue in netlify-cli\n ${error}`
+        detectorName,
+      )}, this is likely a bug in the detector, please file an issue in netlify-cli\n ${error}`,
     )
   }
 }
@@ -215,7 +215,7 @@ function chooseDefaultArgs(possibleArgsArrs) {
   if (!args) {
     const { scripts } = JSON.parse(fs.readFileSync('package.json', { encoding: 'utf8' }))
     const err = new Error(
-      'Empty args assigned, this is an internal Netlify Dev bug, please report your settings and scripts so we can improve'
+      'Empty args assigned, this is an internal Netlify Dev bug, please report your settings and scripts so we can improve',
     )
     err.scripts = scripts
     err.possibleArgsArrs = possibleArgsArrs
@@ -229,7 +229,7 @@ function chooseDefaultArgs(possibleArgsArrs) {
 function filterSettings(scriptInquirerOptions, input) {
   const filteredSettings = fuzzy.filter(
     input,
-    scriptInquirerOptions.map((x) => x.name)
+    scriptInquirerOptions.map((x) => x.name),
   )
   const filteredSettingNames = new Set(filteredSettings.map((x) => (input ? x.string : x)))
   return scriptInquirerOptions.filter((t) => filteredSettingNames.has(t.name))
@@ -243,8 +243,8 @@ function formatSettingsArrForInquirer(settingsArr) {
         name: `[${chalk.yellow(setting.framework)}] ${setting.command} ${args.join(' ')}`,
         value: { ...setting, args },
         short: `${setting.framework}-${args.join(' ')}`,
-      }))
-    )
+      })),
+    ),
   )
 }
 
