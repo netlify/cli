@@ -122,6 +122,7 @@
     "is-docker": "^2.0.0",
     "jwt-decode": "^3.0.0",
     "lambda-local": "^1.7.1",
+    "locate-path": "^5.0.0",
     "lodash.debounce": "^4.0.8",
     "lodash.get": "^4.4.2",
     "lodash.isempty": "^4.4.0",
