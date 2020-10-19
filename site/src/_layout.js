@@ -377,11 +377,7 @@ export default class Layout extends React.Component {
     // console.log('route.module', route.module)
     if (route.module) {
       const frontMatter = route.module.frontMatter
-      if (frontMatter.title) {
-        pageTitle = frontMatter.title
-      } else {
-        pageTitle = this.props.route.name
-      }
+      pageTitle = frontMatter.title ? frontMatter.title : this.props.route.name
     }
 
     return (
