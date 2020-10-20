@@ -9,6 +9,7 @@ const isEmpty = require('lodash.isempty')
 const jwtDecode = require('jwt-decode')
 const contentType = require('content-type')
 const toReadableStream = require('to-readable-stream')
+const locatePath = require('locate-path')
 const pFilter = require('p-filter')
 const { createRewriter } = require('./rules-proxy')
 const { createStreamPromise } = require('./create-stream-promise')
@@ -33,16 +34,12 @@ function addonUrl(addonUrls, req) {
 async function getStatic(pathname, publicFolder) {
   const alternatives = [pathname, ...alternativePathsFor(pathname)].map((p) => path.resolve(publicFolder, p.slice(1)))
 
-  for (const i in alternatives) {
-    const p = alternatives[i]
-    try {
-      const isFile = await isFileAsync(p)
-      if (isFile) return '/' + path.relative(publicFolder, p)
-    } catch (error) {
-      // Ignore
-    }
+  const file = await locatePath(alternatives)
+  if (file === undefined) {
+    return false
   }
-  return false
+
+  return `/${path.relative(publicFolder, file)}`
 }
 
 function isExternal(match) {
