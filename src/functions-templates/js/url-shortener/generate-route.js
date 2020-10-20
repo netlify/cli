@@ -1,19 +1,19 @@
 'use strict'
 
-var request = require('request')
-var Hashids = require('hashids')
+const request = require('request')
+const Hashids = require('hashids')
 
 module.exports = function handler(event, context, callback) {
   // Set the root URL according to the Netlify site we are within
-  var rootURL = process.env.URL + '/'
+  const rootURL = process.env.URL + '/'
 
   // get the details of what we are creating
-  var destination = event.queryStringParameters.to
+  let destination = event.queryStringParameters.to
 
   // generate a unique short code (stupidly for now)
-  var hash = new Hashids()
-  var number = Math.round(new Date().getTime() / 100)
-  var code = hash.encode(number)
+  const hash = new Hashids()
+  const number = Math.round(new Date().getTime() / 100)
+  const code = hash.encode(number)
 
   // ensure that a protocol was provided
   if (!destination.includes('://')) {
@@ -21,7 +21,7 @@ module.exports = function handler(event, context, callback) {
   }
 
   // prepare a payload to post
-  var payload = {
+  const payload = {
     'form-name': 'routes',
     destination,
     code,
@@ -30,7 +30,7 @@ module.exports = function handler(event, context, callback) {
 
   // post the new route to the Routes form
   request.post({ url: rootURL, formData: payload }, function (err) {
-    var msg
+    let msg
     if (err) {
       msg = 'Post to Routes stash failed: ' + err
     } else {

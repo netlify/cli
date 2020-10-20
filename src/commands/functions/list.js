@@ -76,7 +76,7 @@ class FunctionsListCommand extends Command {
 
     // Make table
     this.log(`Based on local functions folder ${functionsDir}, these are the functions detected`)
-    var table = new AsciiTable(`Netlify Functions (in local functions folder)`)
+    const table = new AsciiTable(`Netlify Functions (in local functions folder)`)
     table.setHeading('Name', 'Url', 'moduleDir', 'deployed')
     functionData.forEach(([functionName, { moduleDir }]) => {
       const isDeployed = deployedFunctions.map(({ n }) => n).includes(functionName)

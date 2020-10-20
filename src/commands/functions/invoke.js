@@ -259,7 +259,7 @@ module.exports = FunctionsInvokeCommand
 // https://stackoverflow.com/questions/3710204/how-to-check-if-a-string-is-a-valid-json-string-in-javascript-without-using-try
 function tryParseJSON(jsonString) {
   try {
-    var o = JSON.parse(jsonString)
+    const o = JSON.parse(jsonString)
 
     // Handle non-exception-throwing cases:
     // Neither JSON.parse(false) or JSON.parse(1234) throw errors, hence the type-checking,

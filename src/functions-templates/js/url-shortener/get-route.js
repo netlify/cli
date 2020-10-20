@@ -1,13 +1,13 @@
 'use strict'
 
-var request = require('request')
+const request = require('request')
 
 module.exports = function handler(event, context, callback) {
   // which URL code are we trying to retrieve?
-  var code = event.queryStringParameters.code
+  const code = event.queryStringParameters.code
 
   // where is the data?
-  var url =
+  const url =
     'https://api.netlify.com/api/v1/forms/' +
     process.env.ROUTES_FORM_ID +
     '/submissions/?access_token=' +
@@ -16,9 +16,9 @@ module.exports = function handler(event, context, callback) {
   request(url, function (err, response, body) {
     // look for this code in our stash
     if (!err && response.statusCode === 200) {
-      var routes = JSON.parse(body)
+      const routes = JSON.parse(body)
 
-      for (var item in routes) {
+      for (const item in routes) {
         // return the result when we find the match
         if (routes[item].data.code === code) {
           console.log('We searched for ' + code + ' and we found ' + routes[item].data.destination)
