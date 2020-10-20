@@ -10,15 +10,10 @@ exports.validateEmail = (ctx, str) => {
   }
 }
 
-exports.validateLength = (ctx, str, ...args) => {
-  let min, max
-
-  if (args.length === 1) {
+exports.validateLength = (ctx, str, min, max) => {
+  if (max === undefined) {
+    max = min
     min = 0
-    max = args[0]
-  } else {
-    min = args[0]
-    max = args[1]
   }
 
   if (typeof str !== 'string' && !(str instanceof String)) {
