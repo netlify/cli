@@ -70,27 +70,28 @@ module.exports = FunctionsCreateCommand
 
 // prompt for a name if name not supplied
 async function getNameFromArgs(args, flags, defaultName) {
-  if (flags.name && args.name) throw new Error('function name specified in both flag and arg format, pick one')
-  let name
-  if (flags.name && !args.name) name = flags.name
-  // use flag if exists
-  else if (!flags.name && args.name) name = args.name
-
-  // if neither are specified, prompt for it
-  if (!name) {
-    const responses = await inquirer.prompt([
-      {
-        name: 'name',
-        message: 'name your function: ',
-        default: defaultName,
-        type: 'input',
-        validate: (val) => Boolean(val) && /^[\w.-]+$/i.test(val),
-        // make sure it is not undefined and is a valid filename.
-        // this has some nuance i have ignored, eg crossenv and i18n concerns
-      },
-    ])
-    name = responses.name
+  if (flags.name) {
+    if (args.name) {
+      throw new Error('function name specified in both flag and arg format, pick one')
+    }
+    return flags.name
   }
+
+  if (args.name) {
+    return args.name
+  }
+
+  const { name } = await inquirer.prompt([
+    {
+      name: 'name',
+      message: 'name your function: ',
+      default: defaultName,
+      type: 'input',
+      validate: (val) => Boolean(val) && /^[\w.-]+$/i.test(val),
+      // make sure it is not undefined and is a valid filename.
+      // this has some nuance i have ignored, eg crossenv and i18n concerns
+    },
+  ])
   return name
 }
 
