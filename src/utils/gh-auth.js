@@ -12,14 +12,12 @@ module.exports = getGitHubToken
 async function getGitHubToken({ opts, log }) {
   log('')
 
-  opts = Object.assign(
-    {
-      userAgent: 'Netlify-cli-octokit',
-      note: 'Netlify-cli-gh-auth',
-      scopes: [],
-    },
-    opts
-  )
+  opts = {
+    userAgent: 'Netlify-cli-octokit',
+    note: 'Netlify-cli-gh-auth',
+    scopes: [],
+    ...opts,
+  }
 
   async function promptForOTP() {
     const { otp } = await inquirer.prompt([

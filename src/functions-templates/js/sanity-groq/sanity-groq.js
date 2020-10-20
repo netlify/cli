@@ -32,9 +32,7 @@ const client = sanityClient({
 exports.handler = async (event) => {
   const { query = '' } = event.queryStringParameters
   // The rest of the query params are handled as parameters to the query
-  const params = Object.assign({}, event.queryStringParameters, {
-    query: null,
-  })
+  const params = { ...event.queryStringParameters, query: null }
 
   return client
     .fetch(query, params)

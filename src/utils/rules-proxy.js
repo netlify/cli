@@ -106,14 +106,11 @@ module.exports.createRewriter = async function createRewriter({ distDir, project
         }`
       )
       const cookieValues = cookie.parse(req.headers.cookie || '')
-      const headers = Object.assign(
-        {},
-        {
-          'x-language': cookieValues.nf_lang || getLanguage(req.headers),
-          'x-country': cookieValues.nf_country || getCountry(req),
-        },
-        req.headers
-      )
+      const headers = {
+        'x-language': cookieValues.nf_lang || getLanguage(req.headers),
+        'x-country': cookieValues.nf_country || getCountry(req),
+        ...req.headers,
+      }
 
       // Definition: https://github.com/netlify/libredirect/blob/e81bbeeff9f7c260a5fb74cad296ccc67a92325b/node/src/redirects.cpp#L28-L60
       const matchReq = {

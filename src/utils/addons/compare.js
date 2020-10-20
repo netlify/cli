@@ -20,12 +20,13 @@ module.exports = function compare(oldValues, newValues) {
       return {
         isEqual: false,
         keys: acc.keys.concat(current),
-        diffs: Object.assign({}, acc.diffs, {
+        diffs: {
+          ...acc.diffs,
           [`${current}`]: {
             newValue: newValues[current],
             oldValue: oldValues[current],
           },
-        }),
+        },
       }
     }
     return acc

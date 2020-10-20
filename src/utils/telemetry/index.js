@@ -91,7 +91,7 @@ function track(eventName, payload) {
     event: eventName,
     userId,
     anonymousId: cliId,
-    properties: Object.assign({}, defaultProperties, properties),
+    properties: { ...defaultProperties, ...properties },
   }
 
   return send('track', defaultData)
@@ -143,7 +143,7 @@ function identify(payload) {
   const identifyData = {
     anonymousId: cliId,
     userId,
-    traits: Object.assign({}, defaultTraits, data),
+    traits: { ...defaultTraits, ...data },
   }
 
   return send('identify', identifyData)
