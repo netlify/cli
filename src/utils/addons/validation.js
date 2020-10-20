@@ -10,7 +10,7 @@ module.exports.missingConfigValues = function missingConfigValues(requiredConfig
   })
 }
 
-module.exports.updateConfigValues = function missingConfigValues(allowedConfig, currentConfig, newConfig) {
+module.exports.updateConfigValues = function updateConfigValues(allowedConfig, currentConfig, newConfig) {
   return Object.keys(allowedConfig).reduce((acc, key) => {
     if (newConfig[key]) {
       acc[key] = newConfig[key]
