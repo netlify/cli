@@ -59,7 +59,7 @@ function track(eventName, payload) {
   }
 
   let userId = properties.userID
-  let cliId = properties.cliId
+  let { cliId } = properties
 
   if (!userId) {
     userId = globalConfig.get('userId')
@@ -117,7 +117,7 @@ function identify(payload) {
   }
 
   let userId = data.userID
-  let cliId = data.cliId
+  let { cliId } = data
 
   if (!userId) {
     userId = globalConfig.get('userId')

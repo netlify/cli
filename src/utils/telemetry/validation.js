@@ -9,9 +9,7 @@ module.exports = function isValidEventName(eventName, config) {
   if (!containsSeparators(eventName) || !matches) {
     return formattingWarning(eventName)
   }
-  const project = matches[1]
-  const object = matches[2]
-  const action = matches[3]
+  const [, project, object, action] = matches
   let error
   // if missing any parts of event, exit
   if (!project || !object || !action) {

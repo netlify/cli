@@ -7,7 +7,7 @@ const client = new faunadb.Client({
 })
 
 exports.handler = async (event) => {
-  const id = event.id
+  const { id } = event
   console.log(`Function 'read' invoked. Read id: ${id}`)
   return client
     .query(q.Get(q.Ref(`classes/items/${id}`)))

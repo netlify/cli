@@ -89,13 +89,13 @@ class LinkCommand extends Command {
       if (results.length === 0) {
         this.error(new Error(`No sites found named ${flags.name}`))
       }
-      siteData = results[0]
-      state.set('siteId', siteData.id)
+      const [firstSiteData] = results
+      state.set('siteId', firstSiteData.id)
 
-      this.log(`Linked to ${siteData.name} in ${path.relative(path.join(process.cwd(), '..'), state.path)}`)
+      this.log(`Linked to ${firstSiteData.name} in ${path.relative(path.join(process.cwd(), '..'), state.path)}`)
 
       await track('sites_linked', {
-        siteId: (siteData && siteData.id) || siteId,
+        siteId: (firstSiteData && firstSiteData.id) || siteId,
         linkType: 'manual',
         kind: 'byName',
       })

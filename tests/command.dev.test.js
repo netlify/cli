@@ -805,7 +805,7 @@ testMatrix.forEach(({ args }) => {
   test(testName('should redirect requests to an external server', args), async (t) => {
     await withSiteBuilder('site-redirects-file-to-external', async (builder) => {
       const server = startExternalServer()
-      const port = server.address().port
+      const { port } = server.address()
       builder.withRedirectsFile({
         redirects: [{ from: '/api/*', to: `http://localhost:${port}/:splat`, status: 200 }],
       })

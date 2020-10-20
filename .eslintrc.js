@@ -31,6 +31,7 @@ module.exports = {
     'no-else-return': [2, { allowElseIf: false }],
     'no-implicit-coercion': 2,
     'no-var': 2,
+    'prefer-destructuring': 2,
     'prefer-object-spread': 2,
 
     // This version of eslint-plugin-unicorn requires Node 10

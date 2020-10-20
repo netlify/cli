@@ -1,4 +1,4 @@
-const version = require('../../../package.json').version
+const { version } = require('../../../package.json')
 const os = require('os')
 const ghauth = require('../../utils/gh-auth')
 const { Octokit } = require('@octokit/rest')

@@ -394,7 +394,7 @@ class DeployCommand extends Command {
 
     const deployFolder = await getDeployFolder({ flags, config, site, siteData, log })
     const functionsFolder = getFunctionsFolder({ flags, config, site, siteData })
-    const configPath = site.configPath
+    const { configPath } = site
 
     log(
       prettyjson.render({

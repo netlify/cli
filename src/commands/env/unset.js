@@ -5,7 +5,7 @@ class EnvUnsetCommand extends Command {
     const { args, flags } = this.parse(EnvUnsetCommand)
     const { api, site } = this.netlify
     const siteId = site.id
-    const name = args.name
+    const { name } = args
 
     if (!siteId) {
       this.log('No site id found, please run inside a site folder or `netlify link`')

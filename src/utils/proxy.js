@@ -209,10 +209,11 @@ async function serveRedirect(req, res, proxy, match, options) {
     }
 
     const destStaticFile = await getStatic(dest.pathname, options.publicFolder)
-    let status
+    let statusValue
     if (match.force || (!staticFile && ((!options.framework && destStaticFile) || isInternal(destURL)))) {
       req.url = destStaticFile ? destStaticFile + dest.search : destURL
-      status = match.status
+      const { status } = match
+      statusValue = status
       console.log(`${NETLIFYDEVLOG} Rewrote URL to`, req.url)
     }
 
@@ -225,7 +226,7 @@ async function serveRedirect(req, res, proxy, match, options) {
       return proxy.web(req, res, { target: urlForAddons })
     }
 
-    return proxy.web(req, res, { ...options, status })
+    return proxy.web(req, res, { ...options, status: statusValue })
   }
 
   return proxy.web(req, res, options)

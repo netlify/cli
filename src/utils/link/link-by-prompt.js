@@ -83,7 +83,8 @@ Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
 
       // Matches a single site hooray!
       if (matchingSites.length === 1) {
-        site = matchingSites[0]
+        const [firstSite] = matchingSites
+        site = firstSite
       } else if (matchingSites.length > 1) {
         // Matches multiple sites. Users must choose which to link.
         console.log(`Found ${matchingSites.length} matching sites!`)
@@ -156,7 +157,8 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
         }
         site = selectedSite
       } else {
-        site = matchingSites[0]
+        const [firstSite] = matchingSites
+        site = firstSite
       }
       break
     }
