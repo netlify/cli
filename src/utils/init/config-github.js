@@ -148,22 +148,19 @@ async function configGithub(ctx, site, repo) {
   // TODO: Generalize this so users can reset these automatically.
   // Quick and dirty implementation
   const ntlHooks = await api.listHooksBySiteId({ siteId: site.id })
-
-  await upsertHook({ ntlHooks, event: 'deploy_created', api, site, ghtoken })
-  await upsertHook({ ntlHooks, event: 'deploy_failed', api, site, ghtoken })
-  await upsertHook({ ntlHooks, event: 'deploy_building', api, site, ghtoken })
+  await Promise.all(GITHUB_HOOK_EVENTS.map((event) => upsertHook({ ntlHooks, event, api, site, ghtoken })))
 
   ctx.log(`Netlify Notification Hooks configured!`)
 }
 
 const upsertHook = function ({ ntlHooks, event, api, site, ghtoken }) {
-  const hook = ntlHooks.find((h) => h.type === 'github_commit_status' && h.event === event)
+  const hook = ntlHooks.find((h) => h.type === GITHUB_HOOK_TYPE && h.event === event)
 
   if (!hook || hook.disabled) {
     return api.createHookBySiteId({
       site_id: site.id,
       body: {
-        type: 'github_commit_status',
+        type: GITHUB_HOOK_TYPE,
         event,
         data: {
           access_token: ghtoken.token,
@@ -181,3 +178,6 @@ const upsertHook = function ({ ntlHooks, event, api, site, ghtoken }) {
     },
   })
 }
+
+const GITHUB_HOOK_EVENTS = ['deploy_created', 'deploy_failed', 'deploy_building']
+const GITHUB_HOOK_TYPE = 'github_commit_status'
