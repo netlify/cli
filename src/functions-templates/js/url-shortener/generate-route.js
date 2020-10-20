@@ -30,12 +30,9 @@ module.exports = function handler(event, context, callback) {
 
   // post the new route to the Routes form
   request.post({ url: rootURL, formData: payload }, function (err) {
-    let msg
-    if (err) {
-      msg = 'Post to Routes stash failed: ' + err
-    } else {
-      msg = 'Route registered. Site deploying to include it. ' + rootURL + code
-    }
+    const msg = err
+      ? `Post to Routes stash failed: ${err}`
+      : `Route registered. Site deploying to include it. ${rootURL}${code}`
     console.log(msg)
     // tell the user what their shortcode will be
     return callback(null, {

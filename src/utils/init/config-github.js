@@ -142,88 +142,42 @@ async function configGithub(ctx, site, repo) {
     }
   }
 
+  ctx.log()
+  ctx.log(`Creating Netlify Github Notification Hooks...`)
+
   // TODO: Generalize this so users can reset these automatically.
   // Quick and dirty implementation
   const ntlHooks = await api.listHooksBySiteId({ siteId: site.id })
 
-  const createdHook = ntlHooks.find((h) => h.type === 'github_commit_status' && h.event === 'deploy_created')
-  const failedHook = ntlHooks.find((h) => h.type === 'github_commit_status' && h.event === 'deploy_failed')
-  const buildingHook = ntlHooks.find((h) => h.type === 'github_commit_status' && h.event === 'deploy_building')
-
-  ctx.log()
-  ctx.log(`Creating Netlify Github Notification Hooks...`)
-
-  if (!createdHook || createdHook.disabled) {
-    await api.createHookBySiteId({
-      site_id: site.id,
-      body: {
-        type: 'github_commit_status',
-        event: 'deploy_created',
-        data: {
-          access_token: ghtoken.token,
-        },
-      },
-    })
-    // ctx.log(`Created Github deploy_created Hook: ${h.id}`)
-  } else {
-    await api.updateHook({
-      hook_id: createdHook.id,
-      body: {
-        data: {
-          access_token: ghtoken.token,
-        },
-      },
-    })
-    // ctx.log(`Updated Github Created Hook: ${h.id}`)
-  }
-
-  if (!failedHook || failedHook.disabled) {
-    await api.createHookBySiteId({
-      site_id: site.id,
-      body: {
-        type: 'github_commit_status',
-        event: 'deploy_failed',
-        data: {
-          access_token: ghtoken.token,
-        },
-      },
-    })
-    // ctx.log(`Created Github deploy_failed hook: ${h.id}`)
-  } else {
-    await api.updateHook({
-      hook_id: failedHook.id,
-      body: {
-        data: {
-          access_token: ghtoken.token,
-        },
-      },
-    })
-    // ctx.log(`Updated Github deploy_failed hook: ${h.id}`)
-  }
-
-  if (!buildingHook || buildingHook.disabled) {
-    await api.createHookBySiteId({
-      site_id: site.id,
-      body: {
-        type: 'github_commit_status',
-        event: 'deploy_building',
-        data: {
-          access_token: ghtoken.token,
-        },
-      },
-    })
-    // ctx.log(`Created Github deploy_building hook: ${h.id}`)
-  } else {
-    await api.updateHook({
-      hook_id: buildingHook.id,
-      body: {
-        data: {
-          access_token: ghtoken.token,
-        },
-      },
-    })
-    // ctx.log(`Updated Github deploy_building hook: ${h.id}`)
-  }
+  await upsertHook({ ntlHooks, event: 'deploy_created', api, site, ghtoken })
+  await upsertHook({ ntlHooks, event: 'deploy_failed', api, site, ghtoken })
+  await upsertHook({ ntlHooks, event: 'deploy_building', api, site, ghtoken })
 
   ctx.log(`Netlify Notification Hooks configured!`)
+}
+
+const upsertHook = function ({ ntlHooks, event, api, site, ghtoken }) {
+  const hook = ntlHooks.find((h) => h.type === 'github_commit_status' && h.event === event)
+
+  if (!hook || hook.disabled) {
+    return api.createHookBySiteId({
+      site_id: site.id,
+      body: {
+        type: 'github_commit_status',
+        event,
+        data: {
+          access_token: ghtoken.token,
+        },
+      },
+    })
+  }
+
+  return api.updateHook({
+    hook_id: hook.id,
+    body: {
+      data: {
+        access_token: ghtoken.token,
+      },
+    },
+  })
 }

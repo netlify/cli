@@ -31,11 +31,8 @@ class FunctionsCreateCommand extends Command {
     const functionsDir = ensureFunctionDirExists.call(this, flags, config)
 
     /* either download from URL or scaffold from template */
-    if (flags.url) {
-      await downloadFromURL.call(this, flags, args, functionsDir)
-    } else {
-      await scaffoldFromTemplate.call(this, flags, args, functionsDir)
-    }
+    const mainFunc = flags.url ? downloadFromURL : scaffoldFromTemplate
+    await mainFunc.call(this, flags, args, functionsDir)
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
