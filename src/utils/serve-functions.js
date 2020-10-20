@@ -99,6 +99,12 @@ const clearCache = (action) => (path) => {
   console.log(`${NETLIFYDEVLOG} ${path} ${action}, successfully reloaded!`)
 }
 
+const shouldBase64Encode = function (contentType) {
+  return Boolean(contentType) && BASE_64_MIME_REGEXP.test(contentType)
+}
+
+const BASE_64_MIME_REGEXP = /image|audio|video|application\/pdf|application\/zip|applicaton\/octet-stream/i
+
 function createHandler(dir) {
   const functions = getFunctions(dir)
 
@@ -125,10 +131,7 @@ function createHandler(dir) {
     }
     const { functionPath } = functions[func]
 
-    const isBase64Encoded = !!(request.headers['content-type'] || '')
-      .toLowerCase()
-      .match(/image|audio|video|application\/pdf|application\/zip|applicaton\/octet-stream/)
-
+    const isBase64Encoded = shouldBase64Encode(request.headers['content-type'])
     const body = request.get('content-length') ? request.body.toString(isBase64Encoded ? 'base64' : 'utf8') : undefined
 
     let remoteAddress = request.get('x-forwarded-for') || request.connection.remoteAddress || ''
