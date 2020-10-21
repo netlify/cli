@@ -7,6 +7,7 @@ const detectFunctionsBuilder = async function (projectDir) {
     .map((det) => require(path.join(__dirname, '..', `function-builder-detectors/${det}`)))
 
   for (const detector of detectors) {
+    // eslint-disable-next-line no-await-in-loop
     const settings = await detector(projectDir)
     if (settings) {
       return settings

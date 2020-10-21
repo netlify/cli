@@ -111,6 +111,7 @@ const createSiteBuilder = ({ siteName }) => {
     },
     buildAsync: async () => {
       for (const task of tasks) {
+        // eslint-disable-next-line no-await-in-loop
         await task()
       }
       return builder

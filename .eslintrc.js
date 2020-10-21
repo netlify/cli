@@ -32,6 +32,7 @@ module.exports = {
     'max-classes-per-file': 2,
     'max-params': [2, { max: 4 }],
     'multiline-comment-style': [2, 'separate-lines'],
+    'no-await-in-loop': 2,
     'no-bitwise': 2,
     'no-constructor-return': 2,
     'no-duplicate-imports': 2,
