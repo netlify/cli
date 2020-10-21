@@ -8,7 +8,7 @@ const jwtDecode = require('jwt-decode')
 const lambdaLocal = require('lambda-local')
 const winston = require('winston')
 const querystring = require('querystring')
-const contentType = require('content-type')
+const { parse: parseContentType } = require('content-type')
 const getRawBody = require('raw-body')
 const multiparty = require('multiparty')
 const { Readable } = require('stream')
@@ -191,7 +191,7 @@ function createFormSubmissionHandler(siteInfo) {
     const originalUrl = new URL(req.url, 'http://localhost')
     req.url = `/.netlify/functions/submission-created${originalUrl.search}`
 
-    const ct = contentType.parse(req)
+    const ct = parseContentType(req)
     let fields = {}
     let files = {}
     if (ct.type.endsWith('/x-www-form-urlencoded')) {
@@ -265,11 +265,11 @@ function createFormSubmissionHandler(siteInfo) {
         created_at: new Date().toISOString(),
         human_fields: Object.entries({
           ...fields,
-          ...Object.entries(files).reduce((prev, [name, data]) => ({ ...prev, [name]: data.url }), {}),
+          ...Object.entries(files).reduce((prev, [name, { url }]) => ({ ...prev, [name]: url }), {}),
         }).reduce((prev, [key, val]) => ({ ...prev, [capitalize(key)]: val }), {}),
         ordered_human_fields: Object.entries({
           ...fields,
-          ...Object.entries(files).reduce((prev, [name, data]) => ({ ...prev, [name]: data.url }), {}),
+          ...Object.entries(files).reduce((prev, [name, { url }]) => ({ ...prev, [name]: url }), {}),
         }).map(([key, val]) => ({ title: capitalize(key), name: key, value: val })),
         site_url: siteInfo.ssl_url,
       },

@@ -1,5 +1,5 @@
 const Command = require('../utils/command')
-const { flags } = require('@oclif/command')
+const { flags: flagsLib } = require('@oclif/command')
 const path = require('path')
 const chalk = require('chalk')
 const { ensureNetlifyIgnore } = require('../utils/gitignore')
@@ -113,13 +113,13 @@ LinkCommand.description = `Link a local repo or project folder to an existing si
 LinkCommand.examples = ['netlify link', 'netlify link --id 123-123-123-123', 'netlify link --name my-site-name']
 
 LinkCommand.flags = {
-  id: flags.string({
+  id: flagsLib.string({
     description: 'ID of site to link to',
   }),
-  name: flags.string({
+  name: flagsLib.string({
     description: 'Name of site to link to',
   }),
-  gitRemoteName: flags.string({
+  gitRemoteName: flagsLib.string({
     description: 'Name of Git remote to use. e.g. "origin"',
   }),
   ...LinkCommand.flags,

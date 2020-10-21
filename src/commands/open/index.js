@@ -1,5 +1,5 @@
 const Command = require('../../utils/command')
-const { flags } = require('@oclif/command')
+const { flags: flagsLib } = require('@oclif/command')
 const OpenAdminCommand = require('./admin')
 const OpenSiteCommand = require('./site')
 const showHelp = require('../../utils/show-help')
@@ -30,10 +30,10 @@ class OpenCommand extends Command {
 
 OpenCommand.flags = {
   ...OpenCommand.flags,
-  site: flags.boolean({
+  site: flagsLib.boolean({
     description: 'Open site',
   }),
-  admin: flags.boolean({
+  admin: flagsLib.boolean({
     description: 'Open Netlify site',
   }),
 }

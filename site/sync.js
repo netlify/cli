@@ -23,8 +23,8 @@ async function syncLocalContent() {
     .filter((file) => {
       return file.endsWith('.md')
     })
-    .map((path) => {
-      return removeMarkDownLinks(path)
+    .map((file) => {
+      return removeMarkDownLinks(file)
     })
 
   await Promise.all(mdFiles)

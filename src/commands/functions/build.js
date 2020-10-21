@@ -1,5 +1,5 @@
 const fs = require('fs')
-const { flags } = require('@oclif/command')
+const { flags: flagsLib } = require('@oclif/command')
 const Command = require('../../utils/command')
 const { zipFunctions } = require('@netlify/zip-it-and-ship-it')
 const {
@@ -59,11 +59,11 @@ FunctionsBuildCommand.description = `Build functions locally
 `
 FunctionsBuildCommand.aliases = ['function:build']
 FunctionsBuildCommand.flags = {
-  functions: flags.string({
+  functions: flagsLib.string({
     char: 'f',
     description: 'Specify a functions folder to build to',
   }),
-  src: flags.string({
+  src: flagsLib.string({
     char: 's',
     description: 'Specify the source folder for the functions',
   }),

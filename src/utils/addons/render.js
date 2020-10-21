@@ -12,7 +12,7 @@ function missingValues(values, manifest) {
   console.log(display)
 }
 
-function configValues(addonName, configValues, currentValue) {
+function configValues(addonName, values, currentValue) {
   const table = new AsciiTable(`${addonName} add-on settings`)
 
   const tableHeader = currentValue
@@ -21,8 +21,8 @@ function configValues(addonName, configValues, currentValue) {
 
   table.setHeading(...tableHeader)
 
-  Object.keys(configValues).forEach((key) => {
-    const { type, displayName, required } = configValues[key]
+  Object.keys(values).forEach((key) => {
+    const { type, displayName, required } = values[key]
     const requiredText = required ? `true` : `false`
     const typeInfo = type || ''
     const description = displayName || ''

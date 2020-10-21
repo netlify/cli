@@ -1,4 +1,4 @@
-const { flags } = require('@oclif/command')
+const { flags: flagsLib } = require('@oclif/command')
 const Command = require('../utils/command')
 const chalk = require('chalk')
 
@@ -44,7 +44,7 @@ function msg(location) {
 }
 
 LoginCommand.flags = {
-  new: flags.boolean({
+  new: flagsLib.boolean({
     description: 'Login to new Netlify account',
   }),
   ...LoginCommand.flags,

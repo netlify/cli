@@ -1,4 +1,4 @@
-const { flags } = require('@oclif/command')
+const { flags: flagsLib } = require('@oclif/command')
 const AsciiTable = require('ascii-table')
 const Command = require('../../utils/command')
 const dotenv = require('dotenv')
@@ -78,7 +78,7 @@ class EnvImportCommand extends Command {
 
 EnvImportCommand.description = `Import and set environment variables from .env file`
 EnvImportCommand.flags = {
-  replaceExisting: flags.boolean({
+  replaceExisting: flagsLib.boolean({
     char: 'r',
     description: 'Replace all existing variables instead of merging them with the current ones',
     default: false,

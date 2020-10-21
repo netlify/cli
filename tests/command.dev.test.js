@@ -806,8 +806,8 @@ testMatrix.forEach(({ args }) => {
 
   test(testName('should redirect requests to an external server', args), async (t) => {
     await withSiteBuilder('site-redirects-file-to-external', async (builder) => {
-      const server = startExternalServer()
-      const { port } = server.address()
+      const externalServer = startExternalServer()
+      const { port } = externalServer.address()
       builder.withRedirectsFile({
         redirects: [{ from: '/api/*', to: `http://localhost:${port}/:splat`, status: 200 }],
       })
@@ -828,7 +828,7 @@ testMatrix.forEach(({ args }) => {
         t.deepEqual(postResponse, { body: { param: 'value' }, method: 'POST', url: '/ping' })
       })
 
-      server.close()
+      externalServer.close()
     })
   })
 

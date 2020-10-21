@@ -29,7 +29,7 @@ const handler = async function (event, context) {
     Book: {
       author: {
         fragment: `... on Book { authorName }`,
-        resolve(book, args, context, info) {
+        resolve(book, args, resolveContext, info) {
           return info.mergeInfo.delegateToSchema({
             schema: schema1,
             operation: 'query',
@@ -37,7 +37,7 @@ const handler = async function (event, context) {
             args: {
               name: book.authorName,
             },
-            context,
+            context: resolveContext,
             info,
           })
         },

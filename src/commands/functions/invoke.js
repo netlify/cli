@@ -1,6 +1,6 @@
 const chalk = require('chalk')
 const Command = require('../../utils/command')
-const { flags } = require('@oclif/command')
+const { flags: flagsLib } = require('@oclif/command')
 const inquirer = require('inquirer')
 const fetch = require('node-fetch')
 const fs = require('fs')
@@ -228,27 +228,27 @@ FunctionsInvokeCommand.args = [
 ]
 
 FunctionsInvokeCommand.flags = {
-  name: flags.string({
+  name: flagsLib.string({
     char: 'n',
     description: 'function name to invoke',
   }),
-  functions: flags.string({
+  functions: flagsLib.string({
     char: 'f',
     description: 'Specify a functions folder to parse, overriding netlify.toml',
   }),
-  querystring: flags.string({
+  querystring: flagsLib.string({
     char: 'q',
     description: 'Querystring to add to your function invocation',
   }),
-  payload: flags.string({
+  payload: flagsLib.string({
     char: 'p',
     description: 'Supply POST payload in stringified json, or a path to a json file',
   }),
-  identity: flags.boolean({
+  identity: flagsLib.boolean({
     description: 'simulate Netlify Identity authentication JWT. pass --no-identity to affirm unauthenticated request',
     allowNo: true,
   }),
-  port: flags.integer({
+  port: flagsLib.integer({
     description: 'Port where netlify dev is accessible. e.g. 8888',
   }),
   ...FunctionsInvokeCommand.flags,

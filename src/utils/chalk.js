@@ -30,16 +30,16 @@ function neverNull(obj) {
     },
     {
       get: (target, key) => {
-        const obj = target()
-        if (obj !== null && typeof obj === 'object') {
-          return neverNull(obj[key])
+        const targetObj = target()
+        if (targetObj !== null && typeof targetObj === 'object') {
+          return neverNull(targetObj[key])
         }
         return neverNull()
       },
       set: (target, key, val) => {
-        const obj = target()
-        if (obj !== null && typeof obj === 'object') {
-          obj[key] = val
+        const targetObj = target()
+        if (targetObj !== null && typeof targetObj === 'object') {
+          targetObj[key] = val
         }
         return true
       },

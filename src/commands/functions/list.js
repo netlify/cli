@@ -1,5 +1,5 @@
 const Command = require('../../utils/command')
-const { flags } = require('@oclif/command')
+const { flags: flagsLib } = require('@oclif/command')
 const AsciiTable = require('ascii-table')
 const { getFunctions } = require('../../utils/get-functions')
 class FunctionsListCommand extends Command {
@@ -94,15 +94,15 @@ NOT the same as listing the functions that have been deployed. For that info you
 `
 FunctionsListCommand.aliases = ['function:list']
 FunctionsListCommand.flags = {
-  name: flags.string({
+  name: flagsLib.string({
     char: 'n',
     description: 'name to print',
   }),
-  functions: flags.string({
+  functions: flagsLib.string({
     char: 'f',
     description: 'Specify a functions folder to serve',
   }),
-  json: flags.boolean({
+  json: flagsLib.boolean({
     description: 'Output function data as JSON',
   }),
   ...FunctionsListCommand.flags,

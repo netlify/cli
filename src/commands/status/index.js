@@ -3,7 +3,7 @@ const prettyjson = require('prettyjson')
 const get = require('lodash.get')
 const chalk = require('chalk')
 const clean = require('clean-deep')
-const { flags } = require('@oclif/command')
+const { flags: flagsLib } = require('@oclif/command')
 
 class StatusCommand extends Command {
   async run() {
@@ -107,7 +107,7 @@ class StatusCommand extends Command {
 StatusCommand.description = `Print status information`
 
 StatusCommand.flags = {
-  verbose: flags.boolean({
+  verbose: flagsLib.boolean({
     description: 'Output system info',
   }),
   ...StatusCommand.flags,

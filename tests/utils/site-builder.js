@@ -6,8 +6,8 @@ const os = require('os')
 
 const fs = require('../../src/lib/fs')
 
-const ensureDir = (path) => {
-  return fs.mkdirRecursiveAsync(path)
+const ensureDir = (file) => {
+  return fs.mkdirRecursiveAsync(file)
 }
 
 const createSiteBuilder = ({ siteName }) => {
@@ -76,8 +76,8 @@ const createSiteBuilder = ({ siteName }) => {
       tasks.push(async () => {
         const content = headers
           .map(
-            ({ path: headerPath, headers }) =>
-              `${headerPath}${os.EOL}${headers.map((h) => `  ${h}`).join(`${os.EOL}`)}`,
+            ({ path: headerPath, headers: headerValues }) =>
+              `${headerPath}${os.EOL}${headerValues.map((h) => `  ${h}`).join(`${os.EOL}`)}`,
           )
           .join(os.EOL)
         await ensureDir(path.dirname(dest))

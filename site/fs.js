@@ -38,8 +38,8 @@ const ensureFilePathAsync = async (filePath) => {
   }
 }
 
-const removeRecursiveAsync = async (path) => {
-  await rimrafAsync(path)
+const removeRecursiveAsync = async (filePath) => {
+  await rimrafAsync(filePath)
 }
 
 module.exports = {

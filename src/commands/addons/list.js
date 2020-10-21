@@ -1,5 +1,5 @@
 const AsciiTable = require('ascii-table')
-const { flags } = require('@oclif/command')
+const { flags: flagsLib } = require('@oclif/command')
 const Command = require('../../utils/command')
 const { prepareAddonCommand } = require('../../utils/addons/prepare')
 
@@ -53,7 +53,7 @@ class AddonsListCommand extends Command {
 AddonsListCommand.description = `List currently installed add-ons for site`
 AddonsListCommand.aliases = ['addon:list']
 AddonsListCommand.flags = {
-  json: flags.boolean({
+  json: flagsLib.boolean({
     description: 'Output add-on data as JSON',
   }),
   ...AddonsListCommand.flags,

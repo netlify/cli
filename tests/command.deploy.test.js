@@ -6,7 +6,7 @@ const { withSiteBuilder } = require('./utils/site-builder')
 const callCli = require('./utils/call-cli')
 const { generateSiteName, createLiveTestSite } = require('./utils/create-live-test-site')
 
-const siteName = generateSiteName('netlify-test-deploy-')
+const SITE_NAME = generateSiteName('netlify-test-deploy-')
 
 const validateContent = async ({ siteUrl, path, content, t }) => {
   let actualContent
@@ -33,7 +33,7 @@ const validateDeploy = async ({ deploy, siteName, content, t }) => {
 
 if (process.env.IS_FORK !== 'true') {
   test.before(async (t) => {
-    const siteId = await createLiveTestSite(siteName)
+    const siteId = await createLiveTestSite(SITE_NAME)
     t.context.siteId = siteId
   })
 
@@ -52,7 +52,7 @@ if (process.env.IS_FORK !== 'true') {
         env: { NETLIFY_SITE_ID: t.context.siteId },
       }).then((output) => JSON.parse(output))
 
-      await validateDeploy({ deploy, siteName, content, t })
+      await validateDeploy({ deploy, siteName: SITE_NAME, content, t })
     })
   })
 
@@ -77,7 +77,7 @@ if (process.env.IS_FORK !== 'true') {
         env: { NETLIFY_SITE_ID: t.context.siteId },
       }).then((output) => JSON.parse(output))
 
-      await validateDeploy({ deploy, siteName, content, t })
+      await validateDeploy({ deploy, siteName: SITE_NAME, content, t })
     })
   })
 
@@ -115,7 +115,7 @@ if (process.env.IS_FORK !== 'true') {
         await callCli(['build'], options)
         const deploy = await callCli(['deploy', '--json'], options).then((output) => JSON.parse(output))
 
-        await validateDeploy({ deploy, siteName, content, t })
+        await validateDeploy({ deploy, siteName: SITE_NAME, content, t })
 
         // validate edge handlers
         // use this until we can use `netlify api`
@@ -223,7 +223,7 @@ if (process.env.IS_FORK !== 'true') {
         env: { NETLIFY_SITE_ID: t.context.siteId },
       }).then((output) => JSON.parse(output))
 
-      await validateDeploy({ deploy, siteName, content: 'index', t })
+      await validateDeploy({ deploy, siteName: SITE_NAME, content: 'index', t })
       await validateContent({
         siteUrl: deploy.deploy_url,
         content: undefined,
@@ -271,7 +271,7 @@ if (process.env.IS_FORK !== 'true') {
         env: { NETLIFY_SITE_ID: t.context.siteId },
       }).then((output) => JSON.parse(output))
 
-      await validateDeploy({ deploy, siteName, content: 'index', t })
+      await validateDeploy({ deploy, siteName: SITE_NAME, content: 'index', t })
       await validateContent({
         siteUrl: deploy.deploy_url,
         content: undefined,
@@ -307,7 +307,7 @@ if (process.env.IS_FORK !== 'true') {
         env: { NETLIFY_SITE_ID: t.context.siteId },
       }).then((output) => JSON.parse(output))
 
-      await validateDeploy({ deploy, siteName, content: 'index', t })
+      await validateDeploy({ deploy, siteName: SITE_NAME, content: 'index', t })
       await validateContent({
         siteUrl: deploy.deploy_url,
         content: '{}',
@@ -319,7 +319,7 @@ if (process.env.IS_FORK !== 'true') {
 
   test.after('cleanup', async (t) => {
     const { siteId } = t.context
-    console.log(`deleting test site "${siteName}". ${siteId}`)
+    console.log(`deleting test site "${SITE_NAME}". ${siteId}`)
     await callCli(['sites:delete', siteId, '--force'])
   })
   test('should exit with error when deploying an empty directory', async (t) => {
