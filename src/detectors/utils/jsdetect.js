@@ -57,7 +57,7 @@ function scanScripts({ preferredScriptsArr, preferredCommand }) {
   if (!scripts && !warnedAboutEmptyScript) {
     console.log(`${NETLIFYDEVWARN} You have a package.json without any npm scripts.`)
     console.log(
-      `${NETLIFYDEVWARN} Netlify Dev's detector system works best with a script, or you can specify a command to run in the netlify.toml [dev]  block `
+      `${NETLIFYDEVWARN} Netlify Dev's detector system works best with a script, or you can specify a command to run in the netlify.toml [dev]  block `,
     )
     warnedAboutEmptyScript = true // dont spam message with every detector
     return [] // not going to match any scripts anyway
@@ -79,7 +79,7 @@ function scanScripts({ preferredScriptsArr, preferredCommand }) {
       ([scriptName, scriptCommand]) =>
         (preferredScriptsArr.includes(scriptName) || scriptCommand.includes(preferredCommand)) &&
         // prevent netlify dev calling netlify dev
-        !scriptCommand.includes('netlify dev')
+        !scriptCommand.includes('netlify dev'),
     )
     .map(([scriptName]) => [scriptName])
 }

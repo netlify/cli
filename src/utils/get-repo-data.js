@@ -32,7 +32,7 @@ async function getRepoData(remote) {
 
     if (!Object.prototype.hasOwnProperty.call(gitConfig.remote, remote) || isEmpty(gitConfig.remote[remote])) {
       throw new Error(
-        `The specified remote "${remote}" is not defined in Git repo. Please use --gitRemoteName flag to specify a remote.`
+        `The specified remote "${remote}" is not defined in Git repo. Please use --gitRemoteName flag to specify a remote.`,
       )
     }
 

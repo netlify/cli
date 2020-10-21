@@ -24,7 +24,7 @@ function createFaunaDB() {
           name: 'all_items',
           source: q.Ref('classes/items'),
           active: true,
-        })
+        }),
       )
     })
 

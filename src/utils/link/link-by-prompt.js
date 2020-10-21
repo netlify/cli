@@ -59,7 +59,7 @@ module.exports = async function linkPrompts(context, flags = {}) {
 
       if (isEmpty(sites)) {
         context.error(
-          new Error(`You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
+          new Error(`You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`),
         )
       }
 

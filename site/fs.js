@@ -26,7 +26,7 @@ const copyDirRecursiveAsync = async (src, dest) => {
       } else {
         await copyDirRecursiveAsync(srcPath, destPath)
       }
-    })
+    }),
   )
 }
 

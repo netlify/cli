@@ -14,8 +14,8 @@ async function createTunnel({ siteId, netlifyApiToken, log }) {
   if (!siteId) {
     console.error(
       `${NETLIFYDEVERR} Error: no siteId defined, did you forget to run ${chalk.yellow(
-        'netlify init'
-      )} or ${chalk.yellow('netlify link')}?`
+        'netlify init',
+      )} or ${chalk.yellow('netlify link')}?`,
     )
     process.exit(1)
   }

@@ -52,7 +52,7 @@ export const Sidebar = styled('div')(
       transform: 'none',
     },
   }),
-  borderColor
+  borderColor,
 )
 Sidebar.defaultProps = {
   borderColor: 'gray',
@@ -173,7 +173,7 @@ const Link = styled((props) => <NavLink {...props} is={RouterNavLink} w={1} pl={
     '&:focus': {
       borderColor: 'inherit',
     },
-  })
+  }),
 )
 
 Link.defaultProps = {

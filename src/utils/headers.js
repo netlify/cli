@@ -37,7 +37,7 @@ function matchPaths(rulePath, targetPath) {
 function objectForPath(rules, pathname) {
   return Object.entries(rules).reduce(
     (prev, [rulePath, pathHeaders]) => ({ ...prev, ...(matchPaths(rulePath, pathname) && pathHeaders) }),
-    {}
+    {},
   )
 }
 

@@ -62,7 +62,7 @@ class SitesCreateCommand extends Command {
         const siteSuggestion = sample(suggestions)
 
         console.log(
-          `Choose a unique site name (e.g. ${siteSuggestion}.netlify.app) or leave it blank for a random name. You can update the site name later.`
+          `Choose a unique site name (e.g. ${siteSuggestion}.netlify.app) or leave it blank for a random name. You can update the site name later.`,
         )
         const { name: nameInput } = await inquirer.prompt([
           {
@@ -106,7 +106,7 @@ class SitesCreateCommand extends Command {
         'Admin URL': site.admin_url,
         'URL': url,
         'Site ID': site.id,
-      })
+      }),
     )
 
     track('sites_created', {
@@ -144,7 +144,7 @@ class SitesCreateCommand extends Command {
             this.warn(`Github error: ${error.status}`)
             if (error.status === 404) {
               this.error(
-                `Does the repository ${repo.repo_path} exist and do you have the correct permissions to set up deploy keys?`
+                `Does the repository ${repo.repo_path} exist and do you have the correct permissions to set up deploy keys?`,
               )
             } else {
               throw error
@@ -186,7 +186,7 @@ class SitesCreateCommand extends Command {
           'deploy_hook',
           'capabilities',
           'id_domain',
-        ])
+        ]),
       )
     }
 

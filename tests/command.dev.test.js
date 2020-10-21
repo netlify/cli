@@ -395,10 +395,10 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response1 = await fetch(
-          `${server.url}/.netlify/functions/echo?category[SOMETHING][]=something`
+          `${server.url}/.netlify/functions/echo?category[SOMETHING][]=something`,
         ).then((r) => r.json())
         const response2 = await fetch(`${server.url}/.netlify/functions/echo?category=one&category=two`).then((r) =>
-          r.json()
+          r.json(),
         )
 
         t.deepEqual(response1.queryStringParameters, { 'category[SOMETHING][]': 'something' })

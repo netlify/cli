@@ -57,7 +57,7 @@ const handler = function (event, context, callback) {
         headers,
         body: JSON.stringify({ status }),
       })
-    }
+    },
   )
 }
 

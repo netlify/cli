@@ -24,7 +24,7 @@ async function getEnvSettings({ projectDir, warn }) {
       // only keep envs not configured in process.env
       const env = filterObject(parsed, (key) => !Object.prototype.hasOwnProperty.call(process.env, key))
       return { file, env }
-    })
+    }),
   )
 
   const allResults = results.filter(Boolean)

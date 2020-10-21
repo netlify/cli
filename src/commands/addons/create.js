@@ -63,7 +63,7 @@ class AddonsCreateCommand extends Command {
         if (missingValues.length !== 0) {
           /* Warn user of missing required values */
           this.log(
-            `${chalk.redBright.underline.bold(`Error: Missing required configuration for "${addonName} add-on"`)}`
+            `${chalk.redBright.underline.bold(`Error: Missing required configuration for "${addonName} add-on"`)}`,
           )
           this.log()
           render.missingValues(missingValues, manifest)

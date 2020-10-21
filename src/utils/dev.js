@@ -28,8 +28,8 @@ async function addEnvVariables(api, site) {
       default:
         console.error(
           `${NETLIFYDEVERR} Error retrieving addons data for site ${chalk.yellow(
-            site.id
-          )}. Double-check your login status with 'netlify status' or contact support with details of your error.`
+            site.id,
+          )}. Double-check your login status with 'netlify status' or contact support with details of your error.`,
         )
         process.exit()
     }
@@ -53,23 +53,23 @@ async function addEnvVariables(api, site) {
         case 401:
           console.error(
             `${NETLIFYDEVERR} Unauthorized error: This Site ID ${chalk.yellow(
-              site.id
-            )} does not belong to your account.`
+              site.id,
+            )} does not belong to your account.`,
           )
           console.error(
-            `${NETLIFYDEVERR} If you cloned someone else's code, try running 'npm unlink' and then 'npm init' or 'npm link'.`
+            `${NETLIFYDEVERR} If you cloned someone else's code, try running 'npm unlink' and then 'npm init' or 'npm link'.`,
           )
 
           process.exit()
         default:
           console.error(
             `${NETLIFYDEVERR} Error retrieving site data for site ${chalk.yellow(
-              site.id
-            )}. Double-check your login status with 'netlify status' or contact support with details of your error.`
+              site.id,
+            )}. Double-check your login status with 'netlify status' or contact support with details of your error.`,
           )
           process.exit()
       }
-    }
+    },
   )
   // TODO: We should move the environment outside of build settings and possibly have a
   // `/api/v1/sites/:site_id/environment` endpoint for it that we can also gate access to
@@ -87,7 +87,7 @@ async function addEnvVariables(api, site) {
     for (const key in siteAccount.site_env) {
       const msg = () =>
         console.log(
-          `${NETLIFYDEVLOG} Injected ${chalk.blue.bold('shared build setting')} env var: ${chalk.yellow(key)}`
+          `${NETLIFYDEVLOG} Injected ${chalk.blue.bold('shared build setting')} env var: ${chalk.yellow(key)}`,
         )
       process.env[key] = assignLoudly(process.env[key], siteAccount.site_env[key], msg)
     }
@@ -104,7 +104,7 @@ module.exports = {
 function assignLoudly(
   optionalValue,
   defaultValue,
-  tellUser = (dV) => console.log(`No value specified, using fallback of ${dV}`)
+  tellUser = (dV) => console.log(`No value specified, using fallback of ${dV}`),
 ) {
   if (defaultValue === undefined) throw new Error('must have a defaultValue')
   if (defaultValue !== optionalValue && optionalValue === undefined) {

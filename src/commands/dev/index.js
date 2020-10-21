@@ -42,7 +42,7 @@ async function startFrameworkServer({ settings, log, exit }) {
   const commandBin = await which(settings.command).catch((error) => {
     if (error.code === 'ENOENT') {
       throw new Error(
-        `"${settings.command}" could not be found in your PATH. Please make sure that "${settings.command}" is installed and available in your PATH`
+        `"${settings.command}" could not be found in your PATH. Please make sure that "${settings.command}" is installed and available in your PATH`,
       )
     }
     throw error
@@ -60,7 +60,7 @@ async function startFrameworkServer({ settings, log, exit }) {
   function handleProcessExit(code) {
     log(
       code > 0 ? NETLIFYDEVERR : NETLIFYDEVWARN,
-      `"${[settings.command, ...settings.args].join(' ')}" exited with code ${code}. Shutting down Netlify Dev server`
+      `"${[settings.command, ...settings.args].join(' ')}" exited with code ${code}. Shutting down Netlify Dev server`,
     )
     process.exit(code)
   }
@@ -107,7 +107,7 @@ const addDotFileEnvs = async ({ site, log, warn }) => {
   if (envSettings.vars.length !== 0) {
     log(
       `${NETLIFYDEVLOG} Adding the following env variables from ${envSettings.files.map((f) => chalk.blue(f))}:`,
-      chalk.yellow(envSettings.vars.map(([key]) => key))
+      chalk.yellow(envSettings.vars.map(([key]) => key)),
     )
     envSettings.vars.forEach(([key, val]) => {
       process.env[key] = val
@@ -174,7 +174,7 @@ const printBanner = ({ url, log }) => {
       margin: 1,
       align: 'center',
       borderColor: '#00c7b7',
-    })
+    }),
   )
 }
 

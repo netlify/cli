@@ -31,11 +31,11 @@ class FunctionsBuildCommand extends Command {
     if (!src || !dst) {
       if (!src)
         this.log(
-          `${NETLIFYDEVERR} Error: You must specify a source folder with a --src flag or a functionsSource field in your config`
+          `${NETLIFYDEVERR} Error: You must specify a source folder with a --src flag or a functionsSource field in your config`,
         )
       if (!dst)
         this.log(
-          `${NETLIFYDEVERR} Error: You must specify a destination functions folder with a --functions flag or a functions field in your config`
+          `${NETLIFYDEVERR} Error: You must specify a destination functions folder with a --functions flag or a functions field in your config`,
         )
       process.exit(1)
     }

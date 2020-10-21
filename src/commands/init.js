@@ -201,7 +201,7 @@ git remote add origin https://github.com/YourUserName/RepoName.git
             this.warn(`GitHub error: ${error.status}`)
             if (error.status === 404) {
               this.error(
-                `Does the repository ${repo.repo_path} exist and do you have the correct permissions to set up deploy keys?`
+                `Does the repository ${repo.repo_path} exist and do you have the correct permissions to set up deploy keys?`,
               )
             } else {
               throw error
