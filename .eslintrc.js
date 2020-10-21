@@ -63,6 +63,7 @@ module.exports = {
     'prefer-regex-literals': [2, { disallowRedundantWrapping: true }],
     'prefer-rest-params': 2,
     'prefer-spread': 2,
+    'prefer-template': 2,
     'radix': [2, 'as-needed'],
 
     // TODO: enable the following rules

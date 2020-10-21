@@ -9,7 +9,7 @@ const fs = require('fs')
 const chalk = require('chalk')
 const { makeNetlifyTOMLtemplate } = require('./netlify-toml-template')
 
-const UA = 'Netlify CLI ' + version
+const UA = `Netlify CLI ${version}`
 
 module.exports = configGithub
 async function configGithub(ctx, site, repo) {
@@ -58,7 +58,7 @@ async function configGithub(ctx, site, repo) {
   if (build && build.publish) {
     defaultBuildDir = build.publish
   }
-  if (build && build.functions) console.log('Netlify functions folder is ' + chalk.yellow(build.functions))
+  if (build && build.functions) console.log(`Netlify functions folder is ${chalk.yellow(build.functions)}`)
   const { buildCmd, buildDir } = await inquirer.prompt([
     {
       type: 'input',

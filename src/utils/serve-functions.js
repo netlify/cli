@@ -19,7 +19,7 @@ const { detectFunctionsBuilder } = require('./detect-functions-builder')
 
 function handleErr(err, response) {
   response.statusCode = 500
-  response.write(`${NETLIFYDEVERR} Function invocation failed: ` + err.toString())
+  response.write(`${NETLIFYDEVERR} Function invocation failed: ${err.toString()}`)
   response.end()
   console.log(`${NETLIFYDEVERR} Error during invocation:`, err)
 }
@@ -189,7 +189,7 @@ function createFormSubmissionHandler(siteInfo) {
     fakeRequest.headers = req.headers
 
     const originalUrl = new URL(req.url, 'http://localhost')
-    req.url = '/.netlify/functions/submission-created' + originalUrl.search
+    req.url = `/.netlify/functions/submission-created${originalUrl.search}`
 
     const ct = contentType.parse(req)
     let fields = {}

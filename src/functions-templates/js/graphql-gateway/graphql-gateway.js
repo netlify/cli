@@ -62,7 +62,7 @@ async function getSchema(endpoint) {
   // process.env.URL is one of many build env variables:
   // https://www.netlify.com/docs/continuous-deployment/#build-environment-variables
   // Netlify Dev only supports URL and DEPLOY URL for now
-  const uri = process.env.URL + '/.netlify/functions/' + endpoint
+  const uri = `${process.env.URL}/.netlify/functions/${endpoint}`
   const link = createHttpLink({ uri, fetch })
   const schema = await introspectSchema(link)
   const executableSchema = makeRemoteExecutableSchema({ schema, link })

@@ -118,7 +118,7 @@ class FunctionsInvokeCommand extends Command {
     body = { ...body, ...payload }
 
     // fetch
-    fetch(`http://localhost:${port}/.netlify/functions/${functionToTrigger}` + formatQstring(flags.querystring), {
+    fetch(`http://localhost:${port}/.netlify/functions/${functionToTrigger}${formatQstring(flags.querystring)}`, {
       method: 'post',
       headers,
       body: JSON.stringify(body),
@@ -143,7 +143,7 @@ class FunctionsInvokeCommand extends Command {
 
 function formatQstring(querystring) {
   if (querystring) {
-    return '?' + querystring
+    return `?${querystring}`
   }
   return ''
 }

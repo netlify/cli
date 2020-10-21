@@ -17,7 +17,7 @@ const handler = async function (event, context) {
     }
   }
   const b64encodedSecret = Buffer.from(
-    process.env.FAUNADB_SERVER_SECRET + ':' // weird but they
+    `${process.env.FAUNADB_SERVER_SECRET}:` // weird but they
   ).toString('base64')
   const headers = { Authorization: `Basic ${b64encodedSecret}` }
 

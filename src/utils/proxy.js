@@ -70,16 +70,16 @@ function alternativePathsFor(url) {
   if (url[url.length - 1] === '/') {
     const end = url.length - 1
     if (url !== '/') {
-      paths.push(url.slice(0, end) + '.html')
-      paths.push(url.slice(0, end) + '.htm')
+      paths.push(`${url.slice(0, end)}.html`)
+      paths.push(`${url.slice(0, end)}.htm`)
     }
-    paths.push(url + 'index.html')
-    paths.push(url + 'index.htm')
+    paths.push(`${url}index.html`)
+    paths.push(`${url}index.htm`)
   } else if (!url.match(assetExtensionRegExp)) {
-    paths.push(url + '.html')
-    paths.push(url + '.htm')
-    paths.push(url + '/index.html')
-    paths.push(url + '/index.htm')
+    paths.push(`${url}.html`)
+    paths.push(`${url}.htm`)
+    paths.push(`${url}/index.html`)
+    paths.push(`${url}/index.htm`)
   }
 
   return paths
@@ -148,7 +148,7 @@ async function serveRedirect({ req, res, proxy, match, options }) {
 
   const reqUrl = new url.URL(
     req.url,
-    `${req.protocol || (req.headers.scheme && req.headers.scheme + ':') || 'http:'}//${
+    `${req.protocol || (req.headers.scheme && `${req.headers.scheme}:`) || 'http:'}//${
       req.headers.host || req.hostname
     }`
   )

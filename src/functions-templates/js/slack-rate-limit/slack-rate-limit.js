@@ -116,11 +116,11 @@ module.exports = function handler(event, context, callback) {
         .catch((error) => {
           callback(null, {
             statusCode: 500,
-            body: 'Internal Server Error: ' + error,
+            body: `Internal Server Error: ${error}`,
           })
         })
     } catch (error) {
-      callback(null, { statusCode: 500, body: 'Internal Server Error: ' + error })
+      callback(null, { statusCode: 500, body: `Internal Server Error: ${error}` })
     }
   })
 }

@@ -5,7 +5,7 @@ const Hashids = require('hashids')
 
 module.exports = function handler(event, context, callback) {
   // Set the root URL according to the Netlify site we are within
-  const rootURL = process.env.URL + '/'
+  const rootURL = `${process.env.URL}/`
 
   // get the details of what we are creating
   let destination = event.queryStringParameters.to
@@ -17,7 +17,7 @@ module.exports = function handler(event, context, callback) {
 
   // ensure that a protocol was provided
   if (!destination.includes('://')) {
-    destination = 'http://' + destination
+    destination = `http://${destination}`
   }
 
   // prepare a payload to post
