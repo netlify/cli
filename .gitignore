@@ -18,6 +18,7 @@ vendor
 coverage
 test-site
 site/dist
+site-cra
 
 site/src/**/*.md
 !site/src/register-addon.md
