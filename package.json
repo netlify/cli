@@ -74,6 +74,7 @@
   "dependencies": {
     "@netlify/build": "^5.0.0",
     "@netlify/config": "^2.0.9",
+    "@netlify/plugin-edge-handlers": "^1.8.0",
     "@netlify/zip-it-and-ship-it": "^1.3.9",
     "@oclif/command": "^1.5.18",
     "@oclif/config": "^1.13.2",

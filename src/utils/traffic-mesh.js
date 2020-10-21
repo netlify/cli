@@ -10,6 +10,11 @@ const EXEC_NAME = 'traffic-mesh'
 
 const LATEST_VERSION = 'v0.22.1'
 
+const EDGE_HANDLERS_BUNDLER_CLI_PATH = path.join(
+  path.dirname(require.resolve('@netlify/plugin-edge-handlers')),
+  'cli.js'
+)
+
 const getBinPath = () => getPathInHome([PACKAGE_NAME, 'bin'])
 
 const installTrafficMesh = async ({ log }) => {
@@ -48,6 +53,8 @@ const startForwardProxy = async ({ port, frameworkPort, functionsPort, publishDi
     `http://localhost:${frameworkPort}`,
     '--watch',
     publishDir,
+    '--bundler',
+    EDGE_HANDLERS_BUNDLER_CLI_PATH,
     '--log-file',
     getPathInProject(['logs', 'traffic-mesh.log']),
   ]
