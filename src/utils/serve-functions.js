@@ -20,11 +20,15 @@ const { detectFunctionsBuilder } = require('./detect-functions-builder')
 const { getFunctions } = require('./get-functions')
 const { NETLIFYDEVLOG, NETLIFYDEVWARN, NETLIFYDEVERR } = require('./logo')
 
+const formatJsError = (err) => `${err.name}: ${err.message}\n\t${err.stack.join('\n\t')}`
+const formatLambdaLocalError = (err) => `${err.errorType}: ${err.errorMessage}\n\t${err.stackTrace.join('\n\t')}`
+
 const handleErr = function (err, response) {
   response.statusCode = 500
-  response.write(`${NETLIFYDEVERR} Function invocation failed: ${err.toString()}`)
+  const errorString = err instanceof Error ? formatJsError(err) : formatLambdaLocalError(err)
+  response.write(`Function invocation failed: ${errorString}`)
   response.end()
-  console.log(`${NETLIFYDEVERR} Error during invocation:`, err)
+  console.log(`${NETLIFYDEVERR} Function invocation failed:`, errorString)
 }
 
 const formatLambdaError = (err) => chalk.red(`${err.errorType}: ${err.errorMessage}`)
