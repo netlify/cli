@@ -25,6 +25,7 @@ module.exports = {
     'no-else-return': [2, { allowElseIf: false }],
     'no-implicit-coercion': 2,
     'no-invalid-this': 2,
+    'no-multi-assign': 2,
     'no-var': 2,
     'prefer-destructuring': 2,
     'prefer-object-spread': 2,

@@ -220,7 +220,8 @@ class DevCommand extends Command {
 
     await reportAnalytics({ config: this.config, settings })
 
-    process.env.DEPLOY_URL = process.env.URL = url
+    process.env.URL = url
+    process.env.DEPLOY_URL = url
 
     printBanner({ url, log })
   }
