@@ -1,6 +1,6 @@
 const path = require('path')
 const execa = require('execa')
-const { fetchLatest, updateAvailable } = require('gh-release-fetch')
+const { fetchVersion, fetchLatest, updateAvailable, newerVersion } = require('gh-release-fetch')
 const isExe = require('isexe')
 
 const { NETLIFYDEVWARN } = require('../utils/logo')
@@ -25,13 +25,16 @@ const getOptions = () => {
   }
 }
 
-const isVersionOutdated = async ({ packageName, currentVersion }) => {
+const isVersionOutdated = async ({ packageName, currentVersion, latestVersion }) => {
+  if (latestVersion) {
+    return newerVersion(latestVersion, currentVersion)
+  }
   const options = getOptions()
   const outdated = await updateAvailable(getRepository({ packageName }), currentVersion, options)
   return outdated
 }
 
-const shouldFetchLatestVersion = async ({ binPath, packageName, execName, execArgs, pattern, log }) => {
+const shouldFetchLatestVersion = async ({ binPath, packageName, execName, execArgs, pattern, latestVersion, log }) => {
   const execPath = path.join(binPath, getExecName({ execName }))
 
   const exists = await isExe(execPath, { ignoreErrors: true })
@@ -51,9 +54,11 @@ const shouldFetchLatestVersion = async ({ binPath, packageName, execName, execAr
   }
 
   try {
+    const [, currentVersion] = match
     const outdated = await isVersionOutdated({
       packageName,
-      currentVersion: match[1],
+      currentVersion,
+      latestVersion,
     })
     return outdated
   } catch (error) {
@@ -65,7 +70,7 @@ const shouldFetchLatestVersion = async ({ binPath, packageName, execName, execAr
   }
 }
 
-const fetchLatestVersion = async ({ packageName, execName, destination, extension }) => {
+const fetchLatestVersion = async ({ packageName, execName, destination, extension, latestVersion }) => {
   const win = isWindows()
   const platform = win ? 'windows' : process.platform
   const release = {
@@ -76,7 +81,7 @@ const fetchLatestVersion = async ({ packageName, execName, destination, extensio
   }
 
   const options = getOptions()
-  await fetchLatest(release, options)
+  await (latestVersion ? fetchVersion({ ...release, version: latestVersion }, options) : fetchLatest(release, options))
 }
 
 module.exports = { getExecName, shouldFetchLatestVersion, fetchLatestVersion }
