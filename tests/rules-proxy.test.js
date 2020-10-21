@@ -21,7 +21,7 @@ test.before(async (t) => {
     configPath: path.join(builder.directory, 'netlify.toml'),
   })
   const port = await getPort({ port: 8888 })
-  const server = http.createServer(function (req, res) {
+  const server = http.createServer(function onRequest(req, res) {
     rewriter(req, res, (match) => res.end(JSON.stringify(match)))
   })
 

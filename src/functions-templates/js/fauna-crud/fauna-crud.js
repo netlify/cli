@@ -1,4 +1,4 @@
-exports.handler = async (event, context) => {
+const handler = async (event, context) => {
   const path = event.path.replace(/\.netlify\/functions\/[^/]+/, '')
   const segments = path.split('/').filter((e) => e)
 
@@ -53,3 +53,5 @@ exports.handler = async (event, context) => {
       }
   }
 }
+
+module.exports = { handler }

@@ -50,12 +50,12 @@ async function getGitHubToken({ opts, log }) {
     const port = await getPort({ port: 3000 })
     let deferredResolve
     let deferredReject
-    const deferredPromise = new Promise(function (resolve, reject) {
+    const deferredPromise = new Promise(function deferred(resolve, reject) {
       deferredResolve = resolve
       deferredReject = reject
     })
 
-    const server = http.createServer(function (req, res) {
+    const server = http.createServer(function onRequest(req, res) {
       const parameters = querystring.parse(req.url.slice(req.url.indexOf('?') + 1))
       if (parameters.token) {
         deferredResolve(parameters)
@@ -73,7 +73,7 @@ async function getGitHubToken({ opts, log }) {
       deferredReject(new Error('Got invalid parameters for CLI login'))
     })
 
-    await new Promise(function (resolve, reject) {
+    await new Promise(function waitForListening(resolve, reject) {
       server.on('error', reject)
       server.listen(port, resolve)
     })

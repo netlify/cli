@@ -33,4 +33,4 @@ async function getEnvSettings({ projectDir, warn }) {
   return { files, vars }
 }
 
-module.exports.getEnvSettings = getEnvSettings
+module.exports = { getEnvSettings }

@@ -14,7 +14,7 @@ const respond = (fulfillmentText) => {
   }
 }
 
-exports.handler = async function (event) {
+const handler = async function (event) {
   let incoming
   try {
     incoming = JSON.parse(event.body)
@@ -49,3 +49,5 @@ async function createCustomerAndSubscribeToPlan(stripeToken, email, productPlan)
   })
   return subscription
 }
+
+module.exports = { handler }

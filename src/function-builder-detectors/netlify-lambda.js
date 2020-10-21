@@ -1,7 +1,7 @@
 const { existsSync, readFileSync } = require('fs')
 const execa = require('execa')
 
-module.exports = function () {
+module.exports = function handler() {
   if (!existsSync('package.json')) {
     return false
   }

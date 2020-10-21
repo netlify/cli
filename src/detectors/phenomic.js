@@ -1,5 +1,5 @@
 const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
-module.exports = function () {
+module.exports = function detector() {
   // REQUIRED FILES
   if (!hasRequiredFiles(['package.json'])) return false
   // REQUIRED DEPS

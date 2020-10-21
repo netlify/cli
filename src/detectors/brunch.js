@@ -1,5 +1,5 @@
 const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
-module.exports = function () {
+module.exports = function detector() {
   // REQUIRED FILES
   if (!hasRequiredFiles(['package.json', 'brunch-config.js'])) return false
   // REQUIRED DEPS

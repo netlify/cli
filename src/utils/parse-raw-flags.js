@@ -10,7 +10,6 @@
 // // rawFlags = {stuff: yay!}
 //
 
-exports.parseRawFlags = parseRawFlags
 function parseRawFlags(raw) {
   const rawFlags = raw.reduce((acc, curr, index, array) => {
     if (curr.input.match(/^-{1,2}/)) {
@@ -29,7 +28,6 @@ function parseRawFlags(raw) {
   return rawFlags
 }
 
-exports.aggressiveJSONParse = aggressiveJSONParse
 function aggressiveJSONParse(value) {
   if (value === 'true') {
     return true
@@ -48,4 +46,9 @@ function aggressiveJSONParse(value) {
     }
   }
   return parsed
+}
+
+module.exports = {
+  parseRawFlags,
+  aggressiveJSONParse,
 }

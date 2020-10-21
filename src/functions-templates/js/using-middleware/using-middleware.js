@@ -14,7 +14,7 @@ const businessLogic = (event, context, callback) => {
   })
 }
 
-/* Input & Output Schema */
+/* Export inputSchema & outputSchema for automatic documentation */
 const schema = {
   input: {
     type: 'object',
@@ -45,10 +45,7 @@ const schema = {
   },
 }
 
-/* Export inputSchema & outputSchema for automatic documentation */
-exports.schema = schema
-
-exports.handler = middy(businessLogic)
+const handler = middy(businessLogic)
   .use(httpHeaderNormalizer())
   // parses the request body when it's a JSON and converts it to an object
   .use(jsonBodyParser())
@@ -56,3 +53,8 @@ exports.handler = middy(businessLogic)
   .use(validator({ inputSchema: schema.input }))
   // handles common http errors and returns proper responses
   .use(httpErrorHandler())
+
+module.exports = {
+  schema,
+  handler,
+}

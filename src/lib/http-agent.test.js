@@ -48,7 +48,7 @@ test(`should exit with error when proxy is no available`, async (t) => {
 
 test(`should return agent for a valid proxy`, async (t) => {
   const proxy = httpProxy.createProxyServer()
-  const server = http.createServer(function (req, res) {
+  const server = http.createServer(function onRequest(req, res) {
     proxy.web(req, res, { target: 'http://localhost:5555' })
   })
 

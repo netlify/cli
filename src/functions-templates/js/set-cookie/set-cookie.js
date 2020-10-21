@@ -1,6 +1,6 @@
 const cookie = require('cookie')
 
-exports.handler = async () => {
+const handler = async () => {
   const hour = 3600000
   const twoWeeks = 14 * 24 * hour
   const myCookie = cookie.serialize('my_cookie', 'lolHi', {
@@ -39,3 +39,5 @@ exports.handler = async () => {
     body: html,
   }
 }
+
+module.exports = { handler }

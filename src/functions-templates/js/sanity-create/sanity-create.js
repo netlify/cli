@@ -30,7 +30,7 @@ const client = sanityClient({
 //
 // Then we construct an object to save in Sanity.io and return the full saved
 // object back to our caller
-exports.handler = async (event) => {
+const handler = async (event) => {
   if (!event.httpMethod === 'POST') {
     return {
       statusCode: 400,
@@ -67,3 +67,5 @@ exports.handler = async (event) => {
       }
     })
 }
+
+module.exports = { handler }

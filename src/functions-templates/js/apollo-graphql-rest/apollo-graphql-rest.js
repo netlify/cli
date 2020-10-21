@@ -62,4 +62,6 @@ const server = new ApolloServer({
   }),
 })
 
-exports.handler = server.createHandler()
+const handler = server.createHandler()
+
+module.exports = { handler }

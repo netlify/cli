@@ -32,4 +32,6 @@ app.get(`${ENDPOINT}/auth/status`, passport.authenticate('jwt', { session: false
   res.json({ email: req.user.email })
 )
 
-module.exports.handler = serverless(app)
+const handler = serverless(app)
+
+module.exports = { handler }
