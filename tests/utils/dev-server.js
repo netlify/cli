@@ -15,7 +15,8 @@ function getRandomPortStart(rng) {
 let currentPort = getRandomPortStart(rng)
 
 const startServer = async ({ cwd, env = {}, args = [] }) => {
-  const tryPort = currentPort++
+  const tryPort = currentPort
+  currentPort += 1
   const port = await getPort({ port: tryPort })
   const host = 'localhost'
   const url = `http://${host}:${port}`
