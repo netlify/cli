@@ -46,9 +46,10 @@ exports.handler = async (event, context) => {
         statusCode: 500,
         body: 'invalid segments in DELETE request, must be /.netlify/functions/fauna-crud/123456',
       }
-  }
-  return {
-    statusCode: 500,
-    body: 'unrecognized HTTP Method, must be one of GET/POST/PUT/DELETE',
+    default:
+      return {
+        statusCode: 500,
+        body: 'unrecognized HTTP Method, must be one of GET/POST/PUT/DELETE',
+      }
   }
 }

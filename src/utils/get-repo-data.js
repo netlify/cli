@@ -48,17 +48,7 @@ async function getRepoData(remote) {
       repo_branch: repoData.branch,
       allowed_branches: [repoData.branch],
       host: remoteData.host,
-    }
-
-    switch (remoteData.host) {
-      case 'github.com': {
-        repo.provider = 'github'
-        break
-      }
-      case 'gitlab.com': {
-        repo.provider = 'gitlab'
-        break
-      }
+      provider: PROVIDERS[remoteData.host],
     }
   } catch (error) {
     // console.log('error', error)
@@ -68,6 +58,11 @@ async function getRepoData(remote) {
   }
 
   return repo
+}
+
+const PROVIDERS = {
+  'github.com': 'github',
+  'gitlab.com': 'gitlab',
 }
 
 module.exports = getRepoData

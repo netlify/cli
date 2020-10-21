@@ -78,18 +78,11 @@ This will allow for Netlify Continuous deployment to build branch & PR previews.
 
 For more details on Netlify CI checkout the docs: http://bit.ly/2N0Jhy5
 `)
-      let message
-      switch (repo.error) {
-        case "Couldn't find origin url": {
-          message = `Unable to find a remote origin URL. Please add a git remote.
+      if (repo.error === "Couldn't find origin url") {
+        console.log(`Unable to find a remote origin URL. Please add a git remote.
 
 git remote add origin https://github.com/YourUserName/RepoName.git
-`
-          break
-        }
-      }
-      if (message) {
-        console.log(message)
+`)
       }
 
       const NEW_SITE_NO_GIT = 'Yes, create and deploy site manually'

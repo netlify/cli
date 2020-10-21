@@ -214,6 +214,8 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
       }
       break
     }
+    default:
+      return
   }
 
   if (!site) {
