@@ -8,6 +8,8 @@ const { shouldFetchLatestVersion, fetchLatestVersion } = require('../lib/exec-fe
 const PACKAGE_NAME = 'traffic-mesh-agent'
 const EXEC_NAME = 'traffic-mesh'
 
+const LATEST_VERSION = 'v0.22.1'
+
 const getBinPath = () => getPathInHome([PACKAGE_NAME, 'bin'])
 
 const installTrafficMesh = async ({ log }) => {
@@ -18,6 +20,8 @@ const installTrafficMesh = async ({ log }) => {
     execArgs: ['--version'],
     pattern: '\\sv(.+)',
     execName: EXEC_NAME,
+    latestVersion: LATEST_VERSION,
+    log,
   })
   if (!shouldFetch) {
     return
@@ -30,6 +34,7 @@ const installTrafficMesh = async ({ log }) => {
     execName: EXEC_NAME,
     destination: binPath,
     extension: 'zip',
+    latestVersion: LATEST_VERSION,
   })
 }
 
