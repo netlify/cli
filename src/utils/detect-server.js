@@ -192,10 +192,12 @@ async function getStaticServerSettings(settings, flags, projectDir, log) {
   log(`${NETLIFYDEVWARN} Running static server from "${path.relative(path.dirname(projectDir), dist)}"`)
   return {
     noCmd: true,
-    frameworkPort: await getPort({ port: flags.staticServerPort || 3999 }),
+    frameworkPort: await getPort({ port: flags.staticServerPort || DEFAULT_STATIC_PORT }),
     dist,
   }
 }
+
+const DEFAULT_STATIC_PORT = 3999
 
 function loadDetector(detectorName) {
   try {

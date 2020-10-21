@@ -1,13 +1,14 @@
 const cookie = require('cookie')
 
+// 14 days
+const COOKIE_MAX_AGE = 12096e5
+
 const handler = async () => {
-  const hour = 3600000
-  const twoWeeks = 14 * 24 * hour
   const myCookie = cookie.serialize('my_cookie', 'lolHi', {
     secure: true,
     httpOnly: true,
     path: '/',
-    maxAge: twoWeeks,
+    maxAge: COOKIE_MAX_AGE,
   })
 
   const redirectUrl = 'https://google.com'

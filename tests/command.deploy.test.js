@@ -83,7 +83,9 @@ if (process.env.IS_FORK !== 'true') {
 
   // the edge handlers plugin only works on node >= 10
   const version = Number.parseInt(process.version.slice(1).split('.')[0])
-  if (version >= 10) {
+  const EDGE_HANDLER_MIN_VERSION = 10
+  const EDGE_HANDLER_MIN_LENGTH = 50
+  if (version >= EDGE_HANDLER_MIN_VERSION) {
     test.serial('should deploy edge handlers when directory exists', async (t) => {
       await withSiteBuilder('site-with-public-folder', async (builder) => {
         const content = '<h1>⊂◉‿◉つ</h1>'
@@ -134,7 +136,7 @@ if (process.env.IS_FORK !== 'true') {
           handlers: ['index'],
           valid: true,
         })
-        t.is(contentLength > 50, true)
+        t.is(contentLength > EDGE_HANDLER_MIN_LENGTH, true)
       })
     })
   }

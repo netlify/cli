@@ -20,7 +20,7 @@ test.before(async (t) => {
     projectDir: builder.directory,
     configPath: path.join(builder.directory, 'netlify.toml'),
   })
-  const port = await getPort({ port: 8888 })
+  const port = await getPort({ port: PORT })
   const server = http.createServer(function onRequest(req, res) {
     rewriter(req, res, (match) => res.end(JSON.stringify(match)))
   })
@@ -31,6 +31,8 @@ test.before(async (t) => {
 
   return server.listen(port)
 })
+
+const PORT = 8888
 
 test.after(async (t) => {
   await new Promise((resolve) => {

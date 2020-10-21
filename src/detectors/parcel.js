@@ -1,5 +1,7 @@
 const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
 
+const FRAMEWORK_PORT = 1234
+
 module.exports = function detector() {
   /* REQUIRED FILES */
   if (!hasRequiredFiles(['package.json'])) return false
@@ -17,7 +19,7 @@ module.exports = function detector() {
   return {
     framework: 'parcel',
     command: getYarnOrNPMCommand(),
-    frameworkPort: 1234,
+    frameworkPort: FRAMEWORK_PORT,
     possibleArgsArrs,
     dist: 'dist',
   }

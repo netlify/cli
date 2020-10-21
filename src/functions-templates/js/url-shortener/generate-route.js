@@ -3,6 +3,8 @@
 const request = require('request')
 const Hashids = require('hashids')
 
+const NUMBER_TO_CODE = 100
+
 module.exports = function handler(event, context, callback) {
   // Set the root URL according to the Netlify site we are within
   const rootURL = `${process.env.URL}/`
@@ -12,7 +14,7 @@ module.exports = function handler(event, context, callback) {
 
   // generate a unique short code (stupidly for now)
   const hash = new Hashids()
-  const number = Math.round(new Date().getTime() / 100)
+  const number = Math.round(new Date().getTime() / NUMBER_TO_CODE)
   const code = hash.encode(number)
 
   // ensure that a protocol was provided

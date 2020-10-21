@@ -1,4 +1,4 @@
-function createStreamPromise(stream, timeoutSeconds, bytesLimit = 1024 * 1024 * 6) {
+function createStreamPromise(stream, timeoutSeconds, bytesLimit = DEFAULT_BYTES_LIMIT) {
   return new Promise(function streamPromiseFunc(resolve, reject) {
     let data = []
     let dataLength = 0
@@ -8,7 +8,7 @@ function createStreamPromise(stream, timeoutSeconds, bytesLimit = 1024 * 1024 * 
       timeoutId = setTimeout(() => {
         data = null
         reject(new Error('Request timed out waiting for body'))
-      }, timeoutSeconds * 1000)
+      }, timeoutSeconds * SEC_TO_MILLISEC)
     }
 
     stream.on('data', function onData(chunk) {
@@ -38,5 +38,10 @@ function createStreamPromise(stream, timeoutSeconds, bytesLimit = 1024 * 1024 * 
     })
   })
 }
+
+const SEC_TO_MILLISEC = 1e3
+
+// 6 MiB
+const DEFAULT_BYTES_LIMIT = 6e6
 
 module.exports = { createStreamPromise }

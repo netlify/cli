@@ -171,10 +171,13 @@ function createHandler(dir) {
       clientContext: JSON.stringify(buildClientContext(request.headers) || {}),
       callback,
       verboseLevel: 3,
-      timeoutMs: 10 * 1000,
+      timeoutMs: LAMBDA_LOCAL_TIMEOUT,
     })
   }
 }
+
+// 10 seconds
+const LAMBDA_LOCAL_TIMEOUT = 1e4
 
 function createFormSubmissionHandler(siteInfo) {
   return async function formSubmissionHandler(req, res, next) {

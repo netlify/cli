@@ -68,7 +68,9 @@ function updateUser(identity, user, appMetadata) {
   })
 }
 
-const oneHour = 60 * 60 * 1000
+// One hour
+const MESSAGE_RATE_LIMIT = 36e5
+
 module.exports = function handler(event, context, callback) {
   if (event.httpMethod !== 'POST') {
     return callback(null, {
@@ -87,7 +89,7 @@ module.exports = function handler(event, context, callback) {
 
   fetchUser(context.clientContext.identity, claims.sub).then((user) => {
     const lastMessage = new Date(user.app_metadata.last_message_at || 0).getTime()
-    const cutOff = new Date().getTime() - oneHour
+    const cutOff = new Date().getTime() - MESSAGE_RATE_LIMIT
     if (lastMessage > cutOff) {
       return callback(null, {
         statusCode: 401,

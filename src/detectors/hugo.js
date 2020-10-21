@@ -1,5 +1,7 @@
 const { existsSync } = require('fs')
 
+const FRAMEWORK_PORT = 1313
+
 module.exports = function detector() {
   if (!existsSync('config.toml') && !existsSync('config.yaml')) {
     return false
@@ -7,7 +9,7 @@ module.exports = function detector() {
 
   return {
     framework: 'hugo',
-    frameworkPort: 1313,
+    frameworkPort: FRAMEWORK_PORT,
     command: 'hugo',
     possibleArgsArrs: [['server', '-w']],
     dist: 'public',

@@ -158,6 +158,10 @@ const getDeployFilesFilter = ({ site, deployFolder }) => {
   }
 }
 
+const SEC_TO_MILLISEC = 1e3
+// 100 bytes
+const SYNC_FILE_LIMIT = 1e2
+
 const runDeploy = async ({
   flags,
   deployToProduction,
@@ -215,8 +219,8 @@ const runDeploy = async ({
       configPath,
       fnDir: functionsFolder,
       statusCb: silent ? () => {} : deployProgressCb(),
-      deployTimeout: flags.timeout * 1000 || DEFAULT_DEPLOY_TIMEOUT,
-      syncFileLimit: 100,
+      deployTimeout: flags.timeout * SEC_TO_MILLISEC || DEFAULT_DEPLOY_TIMEOUT,
+      syncFileLimit: SYNC_FILE_LIMIT,
       // pass an existing deployId to update
       deployId,
       filter: getDeployFilesFilter({ site, deployFolder }),

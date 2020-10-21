@@ -9,6 +9,8 @@ const getPort = require('get-port')
 
 module.exports = getGitHubToken
 
+const SERVER_PORT = 3000
+
 async function getGitHubToken({ opts, log }) {
   log('')
 
@@ -47,7 +49,7 @@ async function getGitHubToken({ opts, log }) {
   ])
 
   if (initChoice === authChoiceNetlify) {
-    const port = await getPort({ port: 3000 })
+    const port = await getPort({ port: SERVER_PORT })
     let deferredResolve
     let deferredReject
     const deferredPromise = new Promise(function deferred(resolve, reject) {

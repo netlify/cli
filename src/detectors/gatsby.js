@@ -1,4 +1,7 @@
 const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
+
+const FRAMEWORK_PORT = 8000
+
 module.exports = function detector() {
   // REQUIRED FILES
   if (!hasRequiredFiles(['package.json', 'gatsby-config.js'])) return false
@@ -15,7 +18,7 @@ module.exports = function detector() {
   return {
     framework: 'gatsby',
     command: getYarnOrNPMCommand(),
-    frameworkPort: 8000,
+    frameworkPort: FRAMEWORK_PORT,
     env: { GATSBY_LOGGER: 'yurnalist' },
     possibleArgsArrs,
     dist: 'public',

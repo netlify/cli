@@ -11,6 +11,8 @@ const { makeNetlifyTOMLtemplate } = require('./netlify-toml-template')
 
 const UA = `Netlify CLI ${version}`
 
+const PAGE_SIZE = 100
+
 module.exports = configGithub
 async function configGithub(ctx, site, repo) {
   const { api, globalConfig } = ctx.netlify
@@ -114,7 +116,7 @@ async function configGithub(ctx, site, repo) {
   const hooks = await octokit.repos.listHooks({
     owner: parsedURL.owner,
     repo: parsedURL.name,
-    per_page: 100,
+    per_page: PAGE_SIZE,
   })
 
   let hookExists = false

@@ -1,5 +1,7 @@
 const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
 
+const FRAMEWORK_PORT = 8080
+
 module.exports = function detector() {
   // REQUIRED FILES
   if (!hasRequiredFiles(['package.json'])) return false
@@ -16,7 +18,7 @@ module.exports = function detector() {
   return {
     framework: 'vue',
     command: getYarnOrNPMCommand(),
-    frameworkPort: 8080,
+    frameworkPort: FRAMEWORK_PORT,
     possibleArgsArrs,
     dist: 'dist',
   }

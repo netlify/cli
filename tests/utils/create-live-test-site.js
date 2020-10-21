@@ -3,11 +3,14 @@ const callCli = require('./call-cli')
 
 function generateSiteName(prefix) {
   const randomString = Math.random()
-    .toString(36)
+    .toString(BASE_36)
     .replace(/[^a-z]+/g, '')
-    .slice(0, 8)
+    .slice(0, RANDOM_SITE_LENGTH)
   return `${prefix}${randomString}`
 }
+
+const BASE_36 = 36
+const RANDOM_SITE_LENGTH = 8
 
 async function listAccounts() {
   return JSON.parse(await callCli(['api', 'listAccountsForUser']))

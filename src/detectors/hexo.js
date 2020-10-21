@@ -1,4 +1,7 @@
 const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
+
+const FRAMEWORK_PORT = 4000
+
 module.exports = function detector() {
   // REQUIRED FILES
   if (!hasRequiredFiles(['package.json', '_config.yml'])) return false
@@ -15,7 +18,7 @@ module.exports = function detector() {
   return {
     framework: 'hexo',
     command: getYarnOrNPMCommand(),
-    frameworkPort: 4000,
+    frameworkPort: FRAMEWORK_PORT,
     possibleArgsArrs,
     dist: 'public',
   }

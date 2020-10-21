@@ -1,5 +1,7 @@
 const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
 
+const FRAMEWORK_PORT = 3000
+
 module.exports = function detector() {
   // REQUIRED FILES
   if (!hasRequiredFiles(['package.json'])) return false
@@ -16,7 +18,7 @@ module.exports = function detector() {
   return {
     framework: 'sapper',
     command: getYarnOrNPMCommand(),
-    frameworkPort: 3000,
+    frameworkPort: FRAMEWORK_PORT,
     possibleArgsArrs,
     dist: 'static',
   }

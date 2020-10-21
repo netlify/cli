@@ -35,6 +35,9 @@ requires a global install: https://github.com/GitbookIO/gitbook/blob/master/docs
 
 ```js
 const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
+
+const FRAMEWORK_PORT = 4000
+
 module.exports = function detector() {
   // REQUIRED FILES
   if (!hasRequiredFiles(['README.md', 'SUMMARY.md'])) return false
@@ -52,7 +55,7 @@ module.exports = function detector() {
   return {
     framework: 'gitbook',
     command: getYarnOrNPMCommand(),
-    frameworkPort: 4000,
+    frameworkPort: FRAMEWORK_PORT,
     env: { NAME: 'value' },
     possibleArgsArrs,
     dist: 'public',

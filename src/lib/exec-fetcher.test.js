@@ -61,6 +61,9 @@ packages.forEach(({ packageName, execName, execArgs, pattern, extension }) => {
 
     const execPath = path.join(binPath, getExecName({ execName }))
     const stats = await fs.statAsync(execPath)
-    t.is(stats.size >= 5000, true)
+    t.is(stats.size >= FILE_MIN_SIZE, true)
   })
 })
+
+// 5 KiB
+const FILE_MIN_SIZE = 5e3

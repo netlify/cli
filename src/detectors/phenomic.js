@@ -1,4 +1,7 @@
 const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
+
+const FRAMEWORK_PORT = 3333
+
 module.exports = function detector() {
   // REQUIRED FILES
   if (!hasRequiredFiles(['package.json'])) return false
@@ -15,7 +18,7 @@ module.exports = function detector() {
   return {
     framework: 'phenomic',
     command: getYarnOrNPMCommand(),
-    frameworkPort: 3333,
+    frameworkPort: FRAMEWORK_PORT,
     possibleArgsArrs,
     dist: 'public',
   }

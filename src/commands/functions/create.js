@@ -168,7 +168,7 @@ async function pickTemplate() {
     const registry = folderNames
       .filter((x) => !x.endsWith('.md')) // filter out markdown files
       .map((name) => require(path.join(templatesDir, lang, name, '.netlify-function-template.js')))
-      .sort((a, b) => (a.priority || 999) - (b.priority || 999))
+      .sort((a, b) => (a.priority || DEFAULT_PRIORITY) - (b.priority || DEFAULT_PRIORITY))
       .map((t) => {
         t.lang = lang
         return {
@@ -181,6 +181,8 @@ async function pickTemplate() {
     return registry
   }
 }
+
+const DEFAULT_PRIORITY = 999
 
 /* get functions dir (and make it if necessary) */
 function ensureFunctionDirExists(context, flags, config) {
@@ -307,7 +309,7 @@ async function scaffoldFromTemplate(context, flags, args, functionsDir) {
       createdFiles.forEach((filePath) => {
         if (filePath.endsWith('.netlify-function-template.js')) return
         context.log(`${NETLIFYDEVLOG} ${chalk.greenBright('Created')} ${filePath}`)
-        require('fs').chmodSync(path.resolve(filePath), 0o777)
+        require('fs').chmodSync(path.resolve(filePath), TEMPLATE_PERMISSIONS)
         if (filePath.includes('package.json')) hasPackageJSON = true
       })
       // delete function template file that was copied over by copydir
@@ -334,6 +336,8 @@ async function scaffoldFromTemplate(context, flags, args, functionsDir) {
     })
   }
 }
+
+const TEMPLATE_PERMISSIONS = 0o777
 
 async function createFunctionAddon({ api, addons, siteId, addonName, siteData, log, error }) {
   try {

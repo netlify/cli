@@ -24,6 +24,9 @@ const eventTriggeredFunctions = new Set([
   'identity-signup',
   'identity-login',
 ])
+
+const DEFAULT_PORT = 8888
+
 class FunctionsInvokeCommand extends Command {
   async run() {
     const { flags, args } = this.parse(FunctionsInvokeCommand)
@@ -40,7 +43,7 @@ class FunctionsInvokeCommand extends Command {
       console.warn(
         `${NETLIFYDEVWARN} "port" flag was not specified. Attempting to connect to localhost:8888 by default`,
       )
-    const port = flags.port || 8888
+    const port = flags.port || DEFAULT_PORT
 
     const functions = getFunctions(functionsDir)
     const functionToTrigger = await getNameFromArgs(functions, args, flags)
