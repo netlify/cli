@@ -7,11 +7,13 @@ module.exports = {
     'prettier',
     'prettier/standard',
     'plugin:unicorn/recommended',
+    'plugin:eslint-comments/recommended',
     'plugin:ava/recommended',
     'plugin:react/recommended',
     'prettier/react',
     'plugin:you-dont-need-lodash-underscore/all',
   ],
+  reportUnusedDisableDirectives: true,
   rules: {
     'require-await': 2,
     'no-unused-vars': [2, {}],
@@ -76,6 +78,12 @@ module.exports = {
     //   },
     // ],
     // strict: 2,
+
+    'eslint-comments/no-unused-disable': 0,
+    'eslint-comments/no-use': [
+      2,
+      { allow: ['eslint-disable-next-line', 'eslint-disable', 'eslint-enable', 'eslint-env'] },
+    ],
 
     'react/prop-types': 0,
 
