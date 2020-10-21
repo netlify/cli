@@ -1,6 +1,7 @@
 ## function builder detectors
 
-similar to project detectors, each file here detects function builders. this is so that netlify dev never manages the webpack or other config. the expected output is very simple:
+similar to project detectors, each file here detects function builders. this is so that netlify dev never manages the
+webpack or other config. the expected output is very simple:
 
 ```js
 module.exports = {

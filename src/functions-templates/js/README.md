@@ -4,7 +4,8 @@ place new templates here and our CLI will pick it up. each template must be in i
 
 ## not a long term solution
 
-we dont want people to update their CLI every time we add a template. see https://github.com/netlify/netlify-dev-plugin/issues/42 for how we may solve in future
+we dont want people to update their CLI every time we add a template. see
+https://github.com/netlify/netlify-dev-plugin/issues/42 for how we may solve in future
 
 ## template lifecycles
 
