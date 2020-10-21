@@ -88,7 +88,7 @@ class FunctionsInvokeCommand extends Command {
       }
     } else {
       // NOT an event triggered function, but may still want to simulate authentication locally
-      let _isAuthed = false
+      let isAuthenticated = false
       if (typeof flags.identity === 'undefined') {
         const { isAuthed } = await inquirer.prompt([
           {
@@ -98,11 +98,11 @@ class FunctionsInvokeCommand extends Command {
             default: true,
           },
         ])
-        _isAuthed = isAuthed
+        isAuthenticated = isAuthed
       } else {
-        _isAuthed = flags.identity
+        isAuthenticated = flags.identity
       }
-      if (_isAuthed) {
+      if (isAuthenticated) {
         headers = {
           authorization:
             'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzb3VyY2UiOiJuZXRsaWZ5IGZ1bmN0aW9uczp0cmlnZ2VyIiwidGVzdERhdGEiOiJORVRMSUZZX0RFVl9MT0NBTExZX0VNVUxBVEVEX0pXVCJ9.Xb6vOFrfLUZmyUkXBbCvU4bM7q8tPilF0F03Wupap_c',
