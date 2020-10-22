@@ -1,12 +1,14 @@
 const path = require('path')
 
+const es = require('event-stream')
 const execa = require('execa')
 const waitPort = require('wait-port')
 
 const { shouldFetchLatestVersion, fetchLatestVersion } = require('../lib/exec-fetcher')
 const { getPathInHome, getPathInProject } = require('../lib/settings')
+const { startSpinner, stopSpinner } = require('../lib/spinner')
 
-const { NETLIFYDEVLOG, NETLIFYDEVERR } = require('./logo')
+const { NETLIFYDEVLOG, NETLIFYDEVERR, NETLIFYDEVWARN } = require('./logo')
 
 const PACKAGE_NAME = 'traffic-mesh-agent'
 const EXEC_NAME = 'traffic-mesh'
@@ -57,6 +59,7 @@ const startForwardProxy = async ({ port, frameworkPort, functionsPort, publishDi
     EDGE_HANDLERS_BUNDLER_CLI_PATH,
     '--log-file',
     getPathInProject(['logs', 'traffic-mesh.log']),
+    '--progress',
   ]
 
   if (functionsPort) {
@@ -81,6 +84,8 @@ const startForwardProxy = async ({ port, frameworkPort, functionsPort, publishDi
     })
   })
 
+  forwardMessagesToLog({ log, subprocess })
+
   try {
     const open = await waitPort({ port, output: 'silent', timeout: PROXY_READY_TIMEOUT })
     if (!open) {
@@ -90,6 +95,65 @@ const startForwardProxy = async ({ port, frameworkPort, functionsPort, publishDi
   } catch (error) {
     log(`${NETLIFYDEVERR}`, error)
   }
+}
+
+const forwardMessagesToLog = ({ log, subprocess }) => {
+  let currentId = null
+  let spinner = null
+
+  subprocess.stderr
+    .pipe(es.split())
+    .pipe(
+      // eslint-disable-next-line array-callback-return
+      es.map((line, cb) => {
+        try {
+          const data = JSON.parse(line)
+          cb(null, data)
+        } catch (error) {
+          log(NETLIFYDEVERR, 'cannot parse log line as JSON, ignoring')
+          // don't call callback
+        }
+      }),
+    )
+    .on('data', ({ error, id, type }) => {
+      switch (type) {
+        case 'bundle:start':
+          currentId = id
+          spinner = startSpinner({ text: 'Bundling edge handlers...' })
+          break
+
+        case 'bundle:success':
+          if (currentId !== id) {
+            return
+          }
+
+          stopSpinner({ spinner, error: false, text: 'Done.' })
+
+          currentId = null
+          spinner = null
+          break
+
+        case 'bundle:fail':
+          if (currentId !== id) {
+            return
+          }
+
+          stopSpinner({
+            spinner,
+            error: true,
+            text: (error && error.msg) || 'Failed bundling Edge Handlers',
+          })
+          log(`${NETLIFYDEVLOG} Change any project file to trigger a re-bundle`)
+
+          currentId = null
+          spinner = null
+          break
+
+        default:
+          log(`${NETLIFYDEVWARN} Unknown mesh-forward event`)
+          break
+      }
+    })
 }
 
 // 30 seconds
