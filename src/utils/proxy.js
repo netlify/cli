@@ -302,7 +302,7 @@ function initializeProxy(port, distDir, projectDir) {
   return handlers
 }
 
-async function startProxy(settings = {}, addonUrls, configPath, projectDir) {
+async function startProxy(settings, addonUrls, configPath, projectDir) {
   const functionsServer = settings.functionsPort ? `http://localhost:${settings.functionsPort}` : null
 
   const proxy = initializeProxy(settings.frameworkPort, settings.dist, projectDir)

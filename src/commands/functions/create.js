@@ -369,7 +369,7 @@ async function createFunctionAddon({ api, addons, siteId, addonName, siteData, l
   }
 }
 
-async function installAddons(context, functionAddons = [], fnPath) {
+async function installAddons(context, functionAddons, fnPath) {
   if (functionAddons.length === 0) {
     return
   }
