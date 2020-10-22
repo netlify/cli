@@ -152,7 +152,7 @@ const forwardMessagesToLog = ({ log, subprocess }) => {
           break
 
         default:
-          log(`${NETLIFYDEVWARN} Unknown mesh-forward event`)
+          log(`${NETLIFYDEVWARN} Unknown mesh-forward event '${type}'`)
           break
       }
     })
