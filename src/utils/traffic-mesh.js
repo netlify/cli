@@ -110,7 +110,7 @@ const forwardMessagesToLog = ({ log, subprocess }) => {
           const data = JSON.parse(line)
           cb(null, data)
         } catch (error) {
-          log(NETLIFYDEVERR, 'cannot parse log line as JSON, ignoring')
+          log(NETLIFYDEVERR, 'cannot parse log line as JSON, ignoring:', error)
           // don't call callback
         }
       }),
