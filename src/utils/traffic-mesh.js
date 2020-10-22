@@ -167,7 +167,7 @@ const runProcess = async ({ log, args }) => {
   await installTrafficMesh({ log })
 
   const execPath = path.join(getBinPath(), EXEC_NAME)
-  const subprocess = execa(execPath, args, { stdio: 'inherit' })
+  const subprocess = execa(execPath, args, { stdio: ['inherit', 'inherit', 'pipe'] })
   return { subprocess }
 }
 
