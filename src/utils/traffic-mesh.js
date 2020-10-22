@@ -101,6 +101,11 @@ const forwardMessagesToLog = ({ log, subprocess }) => {
   let currentId = null
   let spinner = null
 
+  const reset = () => {
+    currentId = null
+    spinner = null
+  }
+
   rl.createInterface(subprocess.stderr)
     .on('line', (line) => {
       let data
@@ -127,8 +132,7 @@ const forwardMessagesToLog = ({ log, subprocess }) => {
 
           stopSpinner({ spinner, error: false, text: 'Done.' })
 
-          currentId = null
-          spinner = null
+          reset()
           break
 
         case 'bundle:fail':
@@ -143,14 +147,29 @@ const forwardMessagesToLog = ({ log, subprocess }) => {
           })
           log(`${NETLIFYDEVLOG} Change any project file to trigger a re-bundle`)
 
-          currentId = null
-          spinner = null
+          reset()
           break
 
         default:
           log(`${NETLIFYDEVWARN} Unknown mesh-forward event '${type}'`)
           break
       }
+    })
+    .on('end', () => {
+      if (spinner) {
+        spinner.stop()
+      }
+
+      reset()
+    })
+    .on('error', (err) => {
+      stopSpinner({
+        spinner,
+        error: true,
+        text: `${NETLIFYDEVERR} An error occured while bundling processing the messages from mesh-forward: ${err}`,
+      })
+
+      reset()
     })
 }
 
