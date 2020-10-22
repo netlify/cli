@@ -88,7 +88,7 @@ async function getGitHubToken({ opts, log }) {
 
     await openBrowser({ url, log })
 
-    return await deferredPromise
+    return deferredPromise
   }
   const { username, password } = await inquirer.prompt([
     {
