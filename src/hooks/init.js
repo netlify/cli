@@ -1,6 +1,7 @@
 const envinfo = require('envinfo')
-const header = require('../utils/header')
+
 const globalConfig = require('../utils/global-config')
+const header = require('../utils/header')
 const { track } = require('../utils/telemetry')
 
 module.exports = async function initHooks(context) {

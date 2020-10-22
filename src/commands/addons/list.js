@@ -1,7 +1,8 @@
-const AsciiTable = require('ascii-table')
 const { flags: flagsLib } = require('@oclif/command')
-const Command = require('../../utils/command')
+const AsciiTable = require('ascii-table')
+
 const { prepareAddonCommand } = require('../../utils/addons/prepare')
+const Command = require('../../utils/command')
 
 class AddonsListCommand extends Command {
   async run() {

@@ -1,6 +1,7 @@
 const { URL } = require('url')
-const waitPort = require('wait-port')
+
 const { HttpsProxyAgent } = require('https-proxy-agent')
+const waitPort = require('wait-port')
 
 const { NETLIFYDEVERR, NETLIFYDEVWARN } = require('../utils/logo')
 

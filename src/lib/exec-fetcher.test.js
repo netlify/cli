@@ -1,5 +1,6 @@
-const test = require('ava')
 const path = require('path')
+
+const test = require('ava')
 const tempDirectory = require('temp-dir')
 const { v4: uuid } = require('uuid')
 

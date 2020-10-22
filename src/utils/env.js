@@ -1,8 +1,10 @@
 // dotenv loading similar to create-react-app / react-scripts or dotenv-load
 
 const path = require('path')
+
 const dotenv = require('dotenv')
 const filterObject = require('filter-obj')
+
 const { isFileAsync, readFileAsync } = require('../lib/fs')
 
 async function getEnvSettings({ projectDir, warn }) {

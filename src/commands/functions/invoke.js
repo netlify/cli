@@ -1,13 +1,14 @@
-const chalk = require('chalk')
-const Command = require('../../utils/command')
-const { flags: flagsLib } = require('@oclif/command')
-const inquirer = require('inquirer')
-const fetch = require('node-fetch')
 const fs = require('fs')
 const path = require('path')
 
-const { NETLIFYDEVWARN } = require('../../utils/logo')
+const { flags: flagsLib } = require('@oclif/command')
+const chalk = require('chalk')
+const inquirer = require('inquirer')
+const fetch = require('node-fetch')
+
+const Command = require('../../utils/command')
 const { getFunctions } = require('../../utils/get-functions')
+const { NETLIFYDEVWARN } = require('../../utils/logo')
 
 // https://www.netlify.com/docs/functions/#event-triggered-functions
 const eventTriggeredFunctions = new Set([

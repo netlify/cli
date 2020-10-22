@@ -1,7 +1,7 @@
 'use strict'
 
-const request = require('request')
 const Hashids = require('hashids')
+const request = require('request')
 
 const NUMBER_TO_CODE = 100
 

@@ -1,12 +1,15 @@
-const { version } = require('../../../package.json')
-const os = require('os')
-const ghauth = require('../../utils/gh-auth')
-const { Octokit } = require('@octokit/rest')
-const parseGitRemote = require('parse-github-url')
-const inquirer = require('inquirer')
-const path = require('path')
 const fs = require('fs')
+const os = require('os')
+const path = require('path')
+
+const { Octokit } = require('@octokit/rest')
 const chalk = require('chalk')
+const inquirer = require('inquirer')
+const parseGitRemote = require('parse-github-url')
+
+const { version } = require('../../../package.json')
+const ghauth = require('../../utils/gh-auth')
+
 const { makeNetlifyTOMLtemplate } = require('./netlify-toml-template')
 
 const UA = `Netlify CLI ${version}`

@@ -1,7 +1,9 @@
-const Command = require('../utils/command')
-const { flags: flagsLib } = require('@oclif/command')
 const path = require('path')
+
+const { flags: flagsLib } = require('@oclif/command')
 const chalk = require('chalk')
+
+const Command = require('../utils/command')
 const { ensureNetlifyIgnore } = require('../utils/gitignore')
 const linkPrompt = require('../utils/link/link-by-prompt')
 const { track } = require('../utils/telemetry')

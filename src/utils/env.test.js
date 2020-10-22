@@ -1,7 +1,9 @@
 const test = require('ava')
 const sinon = require('sinon')
-const { getEnvSettings } = require('./env')
+
 const { withSiteBuilder } = require('../../tests/utils/site-builder')
+
+const { getEnvSettings } = require('./env')
 
 const warn = sinon.stub()
 

@@ -1,6 +1,7 @@
 // with thanks to https://github.com/codeniko/simple-tracker/blob/master/examples/server-examples/aws-lambda/google-analytics.js
-const request = require('request')
 const querystring = require('querystring')
+
+const request = require('request')
 const { v4: uuidv4 } = require('uuid')
 
 const GA_ENDPOINT = `https://www.google-analytics.com/collect`

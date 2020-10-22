@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-const execa = require('execa')
 const { argv } = require('process')
+
+const execa = require('execa')
 
 const [, , npmScript, npmScriptOnError] = argv
 

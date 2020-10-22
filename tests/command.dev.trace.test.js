@@ -1,7 +1,9 @@
 const test = require('ava')
-const { withSiteBuilder } = require('./utils/site-builder')
+
 const { installTrafficMesh } = require('../src/utils/traffic-mesh')
+
 const callCli = require('./utils/call-cli')
+const { withSiteBuilder } = require('./utils/site-builder')
 
 test.before(async () => {
   // pre-install the traffic mesh agent so we can run the tests in parallel

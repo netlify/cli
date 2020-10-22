@@ -1,9 +1,11 @@
-const fetch = require('node-fetch')
-const execa = require('execa')
 const chalk = require('chalk')
-const { NETLIFYDEVLOG, NETLIFYDEVERR } = require('./logo')
-const { getPathInHome } = require('../lib/settings')
+const execa = require('execa')
+const fetch = require('node-fetch')
+
 const { shouldFetchLatestVersion, fetchLatestVersion } = require('../lib/exec-fetcher')
+const { getPathInHome } = require('../lib/settings')
+
+const { NETLIFYDEVLOG, NETLIFYDEVERR } = require('./logo')
 
 const PACKAGE_NAME = 'live-tunnel-client'
 const EXEC_NAME = PACKAGE_NAME

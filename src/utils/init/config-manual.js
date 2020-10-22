@@ -1,4 +1,5 @@
 const inquirer = require('inquirer')
+
 const { makeNetlifyTOMLtemplate } = require('./netlify-toml-template')
 
 module.exports = configManual

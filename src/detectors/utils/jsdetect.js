@@ -4,6 +4,7 @@
  *
  */
 const { existsSync, readFileSync } = require('fs')
+
 let pkgJSON = null
 let yarnExists = false
 let warnedAboutEmptyScript = false

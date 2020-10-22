@@ -1,13 +1,14 @@
-const Command = require('../../utils/command')
-const { requiredConfigValues, missingConfigValues, updateConfigValues } = require('../../utils/addons/validation')
-const generatePrompts = require('../../utils/addons/prompts')
-const render = require('../../utils/addons/render')
-const diffValues = require('../../utils/addons/diffs')
-const compare = require('../../utils/addons/compare')
-const { parseRawFlags } = require('../../utils/parse-raw-flags')
 const chalk = require('chalk')
 const inquirer = require('inquirer')
+
+const compare = require('../../utils/addons/compare')
+const diffValues = require('../../utils/addons/diffs')
 const { prepareAddonCommand, ADDON_VALIDATION } = require('../../utils/addons/prepare')
+const generatePrompts = require('../../utils/addons/prompts')
+const render = require('../../utils/addons/render')
+const { requiredConfigValues, missingConfigValues, updateConfigValues } = require('../../utils/addons/validation')
+const Command = require('../../utils/command')
+const { parseRawFlags } = require('../../utils/parse-raw-flags')
 
 class AddonsConfigCommand extends Command {
   async run() {

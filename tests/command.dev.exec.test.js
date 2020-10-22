@@ -1,4 +1,5 @@
 const test = require('ava')
+
 const callCli = require('./utils/call-cli')
 const { withSiteBuilder } = require('./utils/site-builder')
 

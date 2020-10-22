@@ -1,7 +1,8 @@
-const inquirer = require('inquirer')
-const chalk = require('chalk')
-const Command = require('../../utils/command')
 const { flags: flagsLib } = require('@oclif/command')
+const chalk = require('chalk')
+const inquirer = require('inquirer')
+
+const Command = require('../../utils/command')
 const { parseRawFlags } = require('../../utils/parse-raw-flags')
 
 class SitesDeleteCommand extends Command {

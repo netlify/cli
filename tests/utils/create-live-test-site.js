@@ -1,4 +1,5 @@
 const stripAnsi = require('strip-ansi')
+
 const callCli = require('./call-cli')
 
 function generateSiteName(prefix) {

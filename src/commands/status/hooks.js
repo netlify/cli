@@ -1,6 +1,7 @@
-const Command = require('../../utils/command')
-const prettyjson = require('prettyjson')
 const get = require('lodash.get')
+const prettyjson = require('prettyjson')
+
+const Command = require('../../utils/command')
 
 class StatusHooksCommand extends Command {
   async run() {

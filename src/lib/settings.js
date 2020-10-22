@@ -1,5 +1,5 @@
-const path = require('path')
 const os = require('os')
+const path = require('path')
 
 const NETLIFY_HOME = '.netlify'
 

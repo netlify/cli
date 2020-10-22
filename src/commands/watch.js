@@ -1,9 +1,10 @@
-const Command = require('../utils/command')
 const { CLIError } = require('@oclif/errors')
-const pWaitFor = require('p-wait-for')
-const cli = require('cli-ux').default
-const prettyjson = require('prettyjson')
 const chalk = require('chalk')
+const cli = require('cli-ux').default
+const pWaitFor = require('p-wait-for')
+const prettyjson = require('prettyjson')
+
+const Command = require('../utils/command')
 
 const InitCommand = require('./init')
 

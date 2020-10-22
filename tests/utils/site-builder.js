@@ -1,8 +1,9 @@
-const { toToml } = require('tomlify-j0.4')
-const path = require('path')
-const { v4: uuidv4 } = require('uuid')
-const tempDirectory = require('temp-dir')
 const os = require('os')
+const path = require('path')
+
+const tempDirectory = require('temp-dir')
+const { toToml } = require('tomlify-j0.4')
+const { v4: uuidv4 } = require('uuid')
 
 const fs = require('../../src/lib/fs')
 

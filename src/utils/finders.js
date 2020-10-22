@@ -1,5 +1,5 @@
-const path = require('path')
 const fs = require('fs')
+const path = require('path')
 
 function findModuleDir(dir) {
   let basedir = dir

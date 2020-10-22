@@ -1,10 +1,11 @@
 const path = require('path')
 const util = require('util')
+
 const findUp = require('find-up')
 const gitRepoInfo = require('git-repo-info')
-const parseGitRemote = require('parse-github-url')
-const isEmpty = require('lodash.isempty')
 const gitconfiglocal = require('gitconfiglocal')
+const isEmpty = require('lodash.isempty')
+const parseGitRemote = require('parse-github-url')
 
 async function getRepoData(remote) {
   const cwd = process.cwd()

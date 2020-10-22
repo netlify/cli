@@ -1,6 +1,6 @@
+import { LiveEditor as Editor, LivePreview } from '@compositor/x0/components'
 import React from 'react'
 import { Pre } from 'rebass'
-import { LiveEditor as Editor, LivePreview } from '@compositor/x0/components'
 
 export const LiveEditor = (props) => {
   const lang = (props.className || '').replace(/^language-/, '')

@@ -1,9 +1,11 @@
+const fs = require('fs')
 const path = require('path')
+
+const dotProp = require('dot-prop')
 const findUp = require('find-up')
 const makeDir = require('make-dir')
-const fs = require('fs')
 const writeFileAtomic = require('write-file-atomic')
-const dotProp = require('dot-prop')
+
 const { getPathInProject } = require('../lib/settings')
 const STATE_PATH = getPathInProject(['state.json'])
 const permissionError = "You don't have access to this file."

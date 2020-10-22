@@ -1,9 +1,9 @@
 /* Express App */
-const express = require('express')
-const cors = require('cors')
-const morgan = require('morgan')
 const bodyParser = require('body-parser')
 const compression = require('compression')
+const cors = require('cors')
+const express = require('express')
+const morgan = require('morgan')
 
 /* My express App */
 module.exports = function expressApp(functionName) {

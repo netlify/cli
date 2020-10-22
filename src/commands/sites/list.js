@@ -1,6 +1,7 @@
 const { flags: flagsLib } = require('@oclif/command')
 const chalk = require('chalk')
 const { cli } = require('cli-ux')
+
 const Command = require('../../utils/command')
 
 class SitesListCommand extends Command {

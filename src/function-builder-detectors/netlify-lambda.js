@@ -1,4 +1,5 @@
 const { existsSync, readFileSync } = require('fs')
+
 const execa = require('execa')
 
 module.exports = function handler() {

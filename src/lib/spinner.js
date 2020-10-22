@@ -1,5 +1,5 @@
-const ora = require('ora')
 const logSymbols = require('log-symbols')
+const ora = require('ora')
 
 const startSpinner = ({ text }) => {
   return ora({

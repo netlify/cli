@@ -1,14 +1,15 @@
-const execa = require('execa')
-const chalk = require('chalk')
 const fromEntries = require('@ungap/from-entries')
+const chalk = require('chalk')
+const execa = require('execa')
+
 const Command = require('../../utils/command')
+const { getEnvSettings } = require('../../utils/env')
 const {
   // NETLIFYDEV,
   NETLIFYDEVLOG,
   // NETLIFYDEVWARN,
   NETLIFYDEVERR,
 } = require('../../utils/logo')
-const { getEnvSettings } = require('../../utils/env')
 
 class ExecCommand extends Command {
   async run() {
