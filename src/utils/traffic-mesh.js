@@ -1,6 +1,6 @@
 const path = require('path')
+const rl = require('readline')
 
-const es = require('event-stream')
 const execa = require('execa')
 const waitPort = require('wait-port')
 
@@ -101,21 +101,17 @@ const forwardMessagesToLog = ({ log, subprocess }) => {
   let currentId = null
   let spinner = null
 
-  subprocess.stderr
-    .pipe(es.split())
-    .pipe(
-      // eslint-disable-next-line array-callback-return
-      es.map((line, cb) => {
-        try {
-          const data = JSON.parse(line)
-          cb(null, data)
-        } catch (error) {
-          log(NETLIFYDEVERR, 'cannot parse log line as JSON, ignoring:', error)
-          // don't call callback
-        }
-      }),
-    )
-    .on('data', ({ error, id, type }) => {
+  rl.createInterface(subprocess.stderr)
+    .on('line', (line) => {
+      let data
+      try {
+        data = JSON.parse(line)
+      } catch (error) {
+        log(NETLIFYDEVERR, 'cannot parse log line as JSON, ignoring:', error)
+        return
+      }
+
+      const { error, id, type } = data
       switch (type) {
         case 'bundle:start':
           currentId = id
