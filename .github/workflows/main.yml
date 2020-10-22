@@ -36,3 +36,5 @@ jobs:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           IS_FORK: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true }}
           NETLIFY_TEST_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Codecov test coverage
+        run: bash scripts/coverage.sh "${{ matrix.os }}" "${{ matrix.node-version }}"
