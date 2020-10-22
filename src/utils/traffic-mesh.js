@@ -131,7 +131,6 @@ const forwardMessagesToLog = ({ log, subprocess }) => {
           }
 
           stopSpinner({ spinner, error: false, text: 'Done.' })
-
           reset()
           break
 
@@ -146,7 +145,6 @@ const forwardMessagesToLog = ({ log, subprocess }) => {
             text: (error && error.msg) || 'Failed bundling Edge Handlers',
           })
           log(`${NETLIFYDEVLOG} Change any project file to trigger a re-bundle`)
-
           reset()
           break
 
@@ -157,6 +155,7 @@ const forwardMessagesToLog = ({ log, subprocess }) => {
     })
     .on('end', () => {
       if (spinner) {
+        // Hide the spinner
         spinner.stop()
       }
 
