@@ -71,20 +71,21 @@ const startForwardProxy = async ({ port, frameworkPort, functionsPort, publishDi
   }
 
   const { subprocess } = await runProcess({ log, args })
+  const forwarder = forwardMessagesToLog({ log, subprocess })
 
   subprocess.on('close', process.exit)
   subprocess.on('SIGINT', process.exit)
   subprocess.on('SIGTERM', process.exit)
   ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) => {
     process.on(signal, () => {
+      forwarder.close()
+
       const sig = signal === 'exit' ? 'SIGTERM' : signal
       subprocess.kill(sig, {
         forceKillAfterTimeout: PROXY_EXIT_TIMEOUT,
       })
     })
   })
-
-  forwardMessagesToLog({ log, subprocess })
 
   try {
     const open = await waitPort({ port, output: 'silent', timeout: PROXY_READY_TIMEOUT })
@@ -106,7 +107,11 @@ const forwardMessagesToLog = ({ log, subprocess }) => {
     spinner = null
   }
 
-  rl.createInterface(subprocess.stderr)
+  const iface = rl.createInterface({
+    input: subprocess.stderr,
+  })
+
+  iface
     .on('line', (line) => {
       let data
       try {
@@ -153,7 +158,7 @@ const forwardMessagesToLog = ({ log, subprocess }) => {
           break
       }
     })
-    .on('end', () => {
+    .on('close', () => {
       if (spinner) {
         // Hide the spinner
         spinner.stop()
@@ -170,6 +175,8 @@ const forwardMessagesToLog = ({ log, subprocess }) => {
 
       reset()
     })
+
+  return iface
 }
 
 // 30 seconds
