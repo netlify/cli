@@ -140,25 +140,29 @@ async function pickTemplate() {
         ]
       }
       // only show filtered results sorted by score
-      const ans = [
+      const answers = [
         ...filterRegistry(jsreg, input),
         // ...filterRegistry(tsreg, input),
         // ...filterRegistry(goreg, input)
         ...specialCommands,
-      ].sort((a, b) => b.score - a.score)
-      return ans
+      ].sort((answerA, answerB) => answerB.score - answerA.score)
+      return answers
     },
   })
   return chosentemplate
   function filterRegistry(registry, input) {
-    const temp = registry.map((x) => x.name + x.description)
+    const temp = registry.map((value) => value.name + value.description)
     const filteredTemplates = fuzzy.filter(input, temp)
-    const filteredTemplateNames = new Set(filteredTemplates.map((x) => (input ? x.string : x)))
+    const filteredTemplateNames = new Set(
+      filteredTemplates.map((filteredTemplate) => (input ? filteredTemplate.string : filteredTemplate)),
+    )
     return registry
       .filter((t) => filteredTemplateNames.has(t.name + t.description))
       .map((t) => {
         // add the score
-        const { score } = filteredTemplates.find((f) => f.string === t.name + t.description)
+        const { score } = filteredTemplates.find(
+          (filteredTemplate) => filteredTemplate.string === t.name + t.description,
+        )
         t.score = score
         return t
       })
@@ -167,9 +171,12 @@ async function pickTemplate() {
     const folderNames = fs.readdirSync(path.join(templatesDir, lang))
     const registry = folderNames
       // filter out markdown files
-      .filter((x) => !x.endsWith('.md'))
-      .map((name) => require(path.join(templatesDir, lang, name, '.netlify-function-template.js')))
-      .sort((a, b) => (a.priority || DEFAULT_PRIORITY) - (b.priority || DEFAULT_PRIORITY))
+      .filter((folderName) => !folderName.endsWith('.md'))
+      .map((folderName) => require(path.join(templatesDir, lang, folderName, '.netlify-function-template.js')))
+      .sort(
+        (folderNameA, folderNameB) =>
+          (folderNameA.priority || DEFAULT_PRIORITY) - (folderNameB.priority || DEFAULT_PRIORITY),
+      )
       .map((t) => {
         t.lang = lang
         return {

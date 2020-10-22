@@ -1,8 +1,7 @@
 /* Import faunaDB sdk */
-const faunadb = require('faunadb')
+const { query, Client } = require('faunadb')
 
-const q = faunadb.query
-const client = new faunadb.Client({
+const client = new Client({
   secret: process.env.FAUNADB_SERVER_SECRET,
 })
 
@@ -11,7 +10,7 @@ const handler = async (event) => {
   const { id } = event
   console.log(`Function 'update' invoked. update id: ${id}`)
   return client
-    .query(q.Update(q.Ref(`classes/items/${id}`), { data }))
+    .query(query.Update(query.Ref(`classes/items/${id}`), { data }))
     .then((response) => {
       console.log('success', response)
       return {

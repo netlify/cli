@@ -44,7 +44,7 @@ test.after(async (t) => {
 })
 
 test('should apply re-write rule based on _redirects file', async (t) => {
-  const response = await fetch(`http://localhost:${t.context.port}/something`).then((r) => r.json())
+  const response = await fetch(`http://localhost:${t.context.port}/something`).then((res) => res.json())
 
   t.is(response.from, '/something')
   t.is(response.to, '/ping')

@@ -35,8 +35,8 @@ class SitesDeleteCommand extends Command {
       },
     })
 
-    const { force, f } = parseRawFlags(raw)
-    const noForce = !force && !f
+    const rawFlags = parseRawFlags(raw)
+    const noForce = !rawFlags.force && !rawFlags.f
 
     /* Verify the user wants to delete the site */
     if (noForce) {

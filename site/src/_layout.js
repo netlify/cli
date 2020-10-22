@@ -161,7 +161,7 @@ const depthPad = ({ to = '' }) =>
   (1 +
     to
       .split('/')
-      .filter((s) => s.length)
+      .filter((string) => string.length)
       .slice(1).length) *
   DEPTH_PAD_INCREMENT
 
@@ -254,10 +254,10 @@ const MyHits = createConnector({
   },
 })(({ query, hits }) => {
   if (hits && query) {
-    return hits.map((hit, i) => {
+    return hits.map((hit, index) => {
       const slug = hit.name.replace(/:/g, '')
       return (
-        <HitsOverlay key={i}>
+        <HitsOverlay key={index}>
           <a href={`/commands/${slug}`}>
             <span style={{ minWidth: MIN_WIDTH, display: 'inline-block', fontWeight: 'bold' }}>
               <Highlight attribute="name" hit={hit} />
@@ -371,7 +371,7 @@ export default class Layout extends React.Component {
 
     const Wrapper = opts.fullWidth ? React.Fragment : MaxWidth
 
-    const index = routes.findIndex((r) => r.path === route.path)
+    const index = routes.findIndex((thisRoute) => thisRoute.path === route.path)
     const pagination = {
       previous: routes[index - 1],
       next: routes[index + 1],

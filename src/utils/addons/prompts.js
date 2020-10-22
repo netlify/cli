@@ -6,13 +6,13 @@ module.exports = function generatePrompts(settings) {
   const configItems = Object.keys(config)
 
   return configItems
-    .map((key, i) => {
+    .map((key, index) => {
       const setting = config[key]
       // const { type, displayName } = setting
       let prompt
       // Tell user to use types
       if (!setting.type) {
-        console.log(`⚠️   ${chalk.yellowBright(`Warning: no \`type\` is set for config key: ${configItems[i]}`)}`)
+        console.log(`⚠️   ${chalk.yellowBright(`Warning: no \`type\` is set for config key: ${configItems[index]}`)}`)
         console.log(
           `It's highly recommended that you type your configuration values. It will help with automatic documentation, sharing of your services, and make your services configurable through a GUI`,
         )

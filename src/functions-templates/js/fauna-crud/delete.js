@@ -1,8 +1,7 @@
 /* Import faunaDB sdk */
-const faunadb = require('faunadb')
+const { query, Client } = require('faunadb')
 
-const q = faunadb.query
-const client = new faunadb.Client({
+const client = new Client({
   secret: process.env.FAUNADB_SERVER_SECRET,
 })
 
@@ -10,7 +9,7 @@ const handler = async (event) => {
   const { id } = event
   console.log(`Function 'delete' invoked. delete id: ${id}`)
   return client
-    .query(q.Delete(q.Ref(`classes/items/${id}`)))
+    .query(query.Delete(query.Ref(`classes/items/${id}`)))
     .then((response) => {
       console.log('success', response)
       return {

@@ -157,9 +157,9 @@ async function configGithub(ctx, site, repo) {
 }
 
 const upsertHook = function ({ ntlHooks, event, api, site, ghtoken }) {
-  const hook = ntlHooks.find((h) => h.type === GITHUB_HOOK_TYPE && h.event === event)
+  const ntlHook = ntlHooks.find((hook) => hook.type === GITHUB_HOOK_TYPE && hook.event === event)
 
-  if (!hook || hook.disabled) {
+  if (!ntlHook || ntlHook.disabled) {
     return api.createHookBySiteId({
       site_id: site.id,
       body: {
@@ -173,7 +173,7 @@ const upsertHook = function ({ ntlHooks, event, api, site, ghtoken }) {
   }
 
   return api.updateHook({
-    hook_id: hook.id,
+    hook_id: ntlHook.id,
     body: {
       data: {
         access_token: ghtoken.token,

@@ -109,7 +109,7 @@ const addDotFileEnvs = async ({ site, log, warn }) => {
   const envSettings = await getEnvSettings({ projectDir: site.root, warn })
   if (envSettings.vars.length !== 0) {
     log(
-      `${NETLIFYDEVLOG} Adding the following env variables from ${envSettings.files.map((f) => chalk.blue(f))}:`,
+      `${NETLIFYDEVLOG} Adding the following env variables from ${envSettings.files.map((file) => chalk.blue(file))}:`,
       chalk.yellow(envSettings.vars.map(([key]) => key)),
     )
     envSettings.vars.forEach(([key, val]) => {

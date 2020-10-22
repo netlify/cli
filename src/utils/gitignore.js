@@ -43,8 +43,8 @@ function stringify(state) {
 function parse(input, fn) {
   const state = parser(input, fn)
 
-  state.concat = (i) => {
-    const newState = parser(i, fn)
+  state.concat = (stateInput) => {
+    const newState = parser(stateInput, fn)
 
     for (const s2 in newState.sections) {
       const sec2 = newState.sections[s2]

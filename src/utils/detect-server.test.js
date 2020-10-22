@@ -25,8 +25,8 @@ test.after(async (t) => {
 })
 
 test('loadDetector: valid', (t) => {
-  const d = loadDetector('create-react-app.js')
-  t.is(typeof d, 'function')
+  const detector = loadDetector('create-react-app.js')
+  t.is(typeof detector, 'function')
 })
 
 test('loadDetector: invalid', (t) => {

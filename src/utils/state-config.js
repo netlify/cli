@@ -79,8 +79,8 @@ class StateConfig {
     const config = this.all
 
     if (arguments.length === 1) {
-      for (const k of Object.keys(key)) {
-        dotProp.set(config, k, key[k])
+      for (const keyPart of Object.keys(key)) {
+        dotProp.set(config, keyPart, key[keyPart])
       }
     } else {
       dotProp.set(config, key, val)
