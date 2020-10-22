@@ -10,9 +10,7 @@ const EXEC_NAME = 'traffic-mesh'
 
 const LATEST_VERSION = 'v0.22.1'
 
-const EDGE_HANDLERS_BUNDLER_CLI_PATH = path.resolve(
-  require.resolve('@netlify/plugin-edge-handlers'), '..', 'cli.js',
-)
+const EDGE_HANDLERS_BUNDLER_CLI_PATH = path.resolve(require.resolve('@netlify/plugin-edge-handlers'), '..', 'cli.js')
 
 const getBinPath = () => getPathInHome([PACKAGE_NAME, 'bin'])
 
