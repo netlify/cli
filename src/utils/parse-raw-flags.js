@@ -10,7 +10,7 @@
 // // rawFlags = {stuff: yay!}
 //
 
-function parseRawFlags(raw) {
+const parseRawFlags = function (raw) {
   const rawFlags = raw.reduce((acc, curr, index, array) => {
     if (curr.input.match(/^-{1,2}/)) {
       const key = curr.input.replace(/^-{1,2}/, '')
@@ -28,7 +28,7 @@ function parseRawFlags(raw) {
   return rawFlags
 }
 
-function aggressiveJSONParse(value) {
+const aggressiveJSONParse = function (value) {
   if (value === 'true') {
     return true
   }

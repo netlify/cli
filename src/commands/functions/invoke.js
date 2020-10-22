@@ -145,7 +145,7 @@ class FunctionsInvokeCommand extends Command {
   }
 }
 
-function formatQstring(querystring) {
+const formatQstring = function (querystring) {
   if (querystring) {
     return `?${querystring}`
   }
@@ -153,7 +153,7 @@ function formatQstring(querystring) {
 }
 
 /** process payloads from flag */
-function processPayloadFromFlag(payloadString) {
+const processPayloadFromFlag = function (payloadString) {
   if (payloadString) {
     // case 1: jsonstring
     let payload = tryParseJSON(payloadString)
@@ -177,7 +177,7 @@ function processPayloadFromFlag(payloadString) {
 
 // prompt for a name if name not supplied
 // also used in functions:create
-async function getNameFromArgs(functions, args, flags) {
+const getNameFromArgs = async function (functions, args, flags) {
   // let functionToTrigger = flags.name;
   // const isValidFn = Object.keys(functions).includes(functionToTrigger);
   if (flags.name && args.name) {
@@ -262,7 +262,7 @@ FunctionsInvokeCommand.flags = {
 module.exports = FunctionsInvokeCommand
 
 // https://stackoverflow.com/questions/3710204/how-to-check-if-a-string-is-a-valid-json-string-in-javascript-without-using-try
-function tryParseJSON(jsonString) {
+const tryParseJSON = function (jsonString) {
   try {
     const parsedValue = JSON.parse(jsonString)
 

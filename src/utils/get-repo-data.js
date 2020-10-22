@@ -7,7 +7,7 @@ const gitconfiglocal = require('gitconfiglocal')
 const isEmpty = require('lodash.isempty')
 const parseGitRemote = require('parse-github-url')
 
-async function getRepoData(remote) {
+const getRepoData = async function (remote) {
   const cwd = process.cwd()
   let repo = {}
   try {

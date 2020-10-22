@@ -31,7 +31,7 @@ class LoginCommand extends Command {
   }
 }
 
-function msg(location) {
+const msg = function (location) {
   switch (location) {
     case 'env':
       return 'via process.env.NETLIFY_AUTH_TOKEN set in your terminal session'

@@ -21,20 +21,20 @@ const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./logo')
 const { createRewriter } = require('./rules-proxy')
 const { onChanges } = require('./rules-proxy')
 
-function isInternal(url) {
+const isInternal = function (url) {
   return url.startsWith('/.netlify/')
 }
-function isFunction(functionsPort, url) {
+const isFunction = function (functionsPort, url) {
   return functionsPort && url.match(/^\/.netlify\/functions\/.+/)
 }
 
-function getAddonUrl(addonUrls, req) {
+const getAddonUrl = function (addonUrls, req) {
   const matches = req.url.match(/^\/.netlify\/([^/]+)(\/.*)/)
   const addonUrl = matches && addonUrls[matches[1]]
   return addonUrl ? `${addonUrl}${matches[2]}` : null
 }
 
-async function getStatic(pathname, publicFolder) {
+const getStatic = async function (pathname, publicFolder) {
   const alternatives = [pathname, ...alternativePathsFor(pathname)].map((filePath) =>
     path.resolve(publicFolder, filePath.slice(1)),
   )
@@ -47,15 +47,15 @@ async function getStatic(pathname, publicFolder) {
   return `/${path.relative(publicFolder, file)}`
 }
 
-function isExternal(match) {
+const isExternal = function (match) {
   return match.to && match.to.match(/^https?:\/\//)
 }
 
-function isRedirect(match) {
+const isRedirect = function (match) {
   return match.status && match.status >= 300 && match.status <= 400
 }
 
-async function render404(publicFolder) {
+const render404 = async function (publicFolder) {
   const maybe404Page = path.resolve(publicFolder, '404.html')
   try {
     const isFile = await isFileAsync(maybe404Page)
@@ -70,7 +70,7 @@ async function render404(publicFolder) {
 // Used as an optimization to avoid dual lookups for missing assets
 const assetExtensionRegExp = /\.(html?|png|jpg|js|css|svg|gif|ico|woff|woff2)$/
 
-function alternativePathsFor(url) {
+const alternativePathsFor = function (url) {
   const paths = []
   if (url[url.length - 1] === '/') {
     const end = url.length - 1
@@ -90,7 +90,7 @@ function alternativePathsFor(url) {
   return paths
 }
 
-async function serveRedirect({ req, res, proxy, match, options }) {
+const serveRedirect = async function ({ req, res, proxy, match, options }) {
   if (!match) return proxy.web(req, res, options)
 
   options = options || req.proxyOptions || {}
@@ -238,7 +238,7 @@ async function serveRedirect({ req, res, proxy, match, options }) {
 
 const MILLISEC_TO_SEC = 1e3
 
-function initializeProxy(port, distDir, projectDir) {
+const initializeProxy = function (port, distDir, projectDir) {
   const proxy = httpProxy.createProxyServer({
     selfHandleResponse: true,
     target: {
@@ -305,7 +305,7 @@ function initializeProxy(port, distDir, projectDir) {
   return handlers
 }
 
-async function startProxy(settings, addonUrls, configPath, projectDir) {
+const startProxy = async function (settings, addonUrls, configPath, projectDir) {
   const functionsServer = settings.functionsPort ? `http://localhost:${settings.functionsPort}` : null
 
   const proxy = initializeProxy(settings.frameworkPort, settings.dist, projectDir)

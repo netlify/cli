@@ -9,7 +9,7 @@ const cliPath = require('./cli-path')
 
 // each process gets a starting port based on the pid
 const rng = seedrandom(`${process.pid}`)
-function getRandomPortStart() {
+const getRandomPortStart = function () {
   const startPort = Math.floor(rng() * RANDOM_PORT_SHIFT) + RANDOM_PORT_SHIFT
   return startPort
 }

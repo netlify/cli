@@ -72,7 +72,7 @@ module.exports = function generateCommandData() {
   return groupedCommandsWithData
 }
 
-function commandFromPath(filePath) {
+const commandFromPath = function (filePath) {
   let normalized = path.normalize(filePath)
 
   // console.log('commandFromPath', normalized)

@@ -4,13 +4,13 @@ const parseIgnore = require('parse-gitignore')
 
 const { readFileAsync, writeFileAsync, fileExistsAsync } = require('../lib/fs')
 
-async function hasGitIgnore(dir) {
+const hasGitIgnore = async function (dir) {
   const gitIgnorePath = path.join(dir, '.gitignore')
   const hasIgnore = await fileExistsAsync(gitIgnorePath)
   return hasIgnore
 }
 
-function parser(input, fn = (line) => line) {
+const parser = function (input, fn = (line) => line) {
   const lines = input.toString().split(/\r?\n/)
   let section = { name: 'default', patterns: [] }
   const state = { patterns: [], sections: [section] }
@@ -31,7 +31,7 @@ function parser(input, fn = (line) => line) {
   return state
 }
 
-function stringify(state) {
+const stringify = function (state) {
   return parseIgnore.stringify(state.sections, (section) => {
     if (section.patterns.length === 0) {
       return ''
@@ -41,7 +41,7 @@ function stringify(state) {
   })
 }
 
-function parse(input, fn) {
+const parse = function (input, fn) {
   const state = parser(input, fn)
 
   state.concat = (stateInput) => {
@@ -73,7 +73,7 @@ function parse(input, fn) {
   return state
 }
 
-async function ensureNetlifyIgnore(dir) {
+const ensureNetlifyIgnore = async function (dir) {
   const gitIgnorePath = path.join(dir, '.gitignore')
   const ignoreContent = '# Local Netlify folder\n.netlify'
 

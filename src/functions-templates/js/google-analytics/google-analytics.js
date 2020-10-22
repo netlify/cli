@@ -6,13 +6,7 @@ const { v4: uuidv4 } = require('uuid')
 
 const GA_ENDPOINT = `https://www.google-analytics.com/collect`
 
-// Domains to whitelist. Replace with your own!
-// keep this empty and append domains to whitelist using whiteListDomain()
-const originWhitelist = []
-whitelistDomain('test.com')
-whitelistDomain('nfeld.com')
-
-function whitelistDomain(domain, addWww = true) {
+const whitelistDomain = function (domain, addWww = true) {
   const prefixes = ['https://', 'http://']
   if (addWww) {
     prefixes.push('https://www.')
@@ -23,7 +17,13 @@ function whitelistDomain(domain, addWww = true) {
   })
 }
 
-function proxyToGoogleAnalytics(event, done) {
+// Domains to whitelist. Replace with your own!
+// keep this empty and append domains to whitelist using whiteListDomain()
+const originWhitelist = []
+whitelistDomain('test.com')
+whitelistDomain('nfeld.com')
+
+const proxyToGoogleAnalytics = function (event, done) {
   // get GA params whether GET or POST request
   const params = event.httpMethod.toUpperCase() === 'GET' ? event.queryStringParameters : JSON.parse(event.body)
   const headers = event.headers || {}

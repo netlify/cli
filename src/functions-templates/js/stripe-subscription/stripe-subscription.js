@@ -34,7 +34,7 @@ const handler = async function (event) {
   }
 }
 
-async function createCustomerAndSubscribeToPlan(stripeToken, email, productPlan) {
+const createCustomerAndSubscribeToPlan = async function (stripeToken, email, productPlan) {
   // create a customer
   const customer = await stripe.customers.create({
     email,

@@ -2,8 +2,7 @@ const inquirer = require('inquirer')
 
 const { makeNetlifyTOMLtemplate } = require('./netlify-toml-template')
 
-module.exports = configManual
-async function configManual(ctx, site, repo) {
+module.exports = async function configManual(ctx, site, repo) {
   const key = await ctx.netlify.api.createDeployKey()
 
   ctx.log('\nGive this Netlify SSH public key access to your repository:\n')

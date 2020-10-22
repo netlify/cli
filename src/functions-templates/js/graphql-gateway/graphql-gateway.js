@@ -59,7 +59,7 @@ const handler = async function (event, context) {
   })
 }
 
-async function getSchema(endpoint) {
+const getSchema = async function (endpoint) {
   // you can't use relative URLs within Netlify Functions so need a base URL
   // process.env.URL is one of many build env variables:
   // https://www.netlify.com/docs/continuous-deployment/#build-environment-variables

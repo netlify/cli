@@ -2,7 +2,7 @@ const concordance = require('concordance')
 
 const { concordanceOptions, concordanceDiffOptions } = require('./options')
 
-function formatDescriptorDiff(actualDescriptor, expectedDescriptor, options) {
+const formatDescriptorDiff = function (actualDescriptor, expectedDescriptor, options) {
   const diffOptions = { ...options, ...concordanceDiffOptions }
   return concordance.diffDescriptors(actualDescriptor, expectedDescriptor, diffOptions)
 }

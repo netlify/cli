@@ -11,7 +11,7 @@ const IS_INSIDE_CI = ci.isCI
 
 const DEBUG = false
 
-function send(type, payload) {
+const send = function (type, payload) {
   const requestFile = path.join(__dirname, 'request.js')
   const options = JSON.stringify({
     data: payload,
@@ -44,7 +44,7 @@ const eventConfig = {
   ],
 }
 
-function track(eventName, payload) {
+const track = function (eventName, payload) {
   const properties = payload || {}
 
   if (IS_INSIDE_CI) {
@@ -102,7 +102,7 @@ function track(eventName, payload) {
   return send('track', defaultData)
 }
 
-function identify(payload) {
+const identify = function (payload) {
   const data = payload || {}
 
   if (IS_INSIDE_CI) {

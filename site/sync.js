@@ -4,14 +4,14 @@ const path = require('path')
 const config = require('./config')
 const { copyDirRecursiveAsync } = require('./fs')
 
-async function readDir(dir, allFiles = []) {
+const readDir = async function (dir, allFiles = []) {
   const files = (await fs.readdir(dir)).map((file) => path.join(dir, file))
   allFiles.push(...files)
   await Promise.all(files.map(async (file) => (await fs.stat(file)).isDirectory() && readDir(file, allFiles)))
   return allFiles
 }
 
-async function syncLocalContent() {
+const syncLocalContent = async function () {
   const src = path.join(config.docs.srcPath)
   const destination = path.join(config.docs.outputPath)
 
@@ -30,7 +30,7 @@ async function syncLocalContent() {
   await Promise.all(mdFiles)
 }
 
-async function removeMarkDownLinks(filePath) {
+const removeMarkDownLinks = async function (filePath) {
   const content = await fs.readFile(filePath, 'utf-8')
   const newContent = content.replace(/(\w+)\.md/gm, '$1').replace(/\/docs\/commands\//gm, '/commands/')
   // Rename README.md to index.md

@@ -1,7 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 
-function findModuleDir(dir) {
+const findModuleDir = function (dir) {
   let basedir = dir
   while (!fs.existsSync(path.join(basedir, 'package.json'))) {
     const newBasedir = path.dirname(basedir)
@@ -13,7 +13,7 @@ function findModuleDir(dir) {
   return basedir
 }
 
-function findHandler(functionPath) {
+const findHandler = function (functionPath) {
   if (fs.lstatSync(functionPath).isFile()) {
     return functionPath
   }

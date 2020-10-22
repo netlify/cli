@@ -10,7 +10,7 @@ const redirector = require('netlify-redirector')
 const { fileExistsAsync } = require('../lib/fs')
 const { NETLIFYDEVWARN, NETLIFYDEVLOG } = require('../utils/logo')
 
-async function parseFile(filePath) {
+const parseFile = async function (filePath) {
   if (!(await fileExistsAsync(filePath))) {
     return []
   }
@@ -26,12 +26,12 @@ async function parseFile(filePath) {
   return success
 }
 
-async function parseRules(configFiles) {
+const parseRules = async function (configFiles) {
   const results = await Promise.all(configFiles.map(parseFile))
   return [].concat(...results)
 }
 
-function onChanges(files, cb) {
+const onChanges = function (files, cb) {
   files.forEach((file) => {
     const watcher = chokidar.watch(file)
     watcher.on('change', cb)
@@ -39,14 +39,14 @@ function onChanges(files, cb) {
   })
 }
 
-function getLanguage(headers) {
+const getLanguage = function (headers) {
   if (headers['accept-language']) {
     return headers['accept-language'].split(',')[0].slice(0, 2)
   }
   return 'en'
 }
 
-function getCountry() {
+const getCountry = function () {
   return 'us'
 }
 
