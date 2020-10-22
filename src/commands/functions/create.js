@@ -166,7 +166,8 @@ async function pickTemplate() {
   function formatRegistryArrayForInquirer(lang) {
     const folderNames = fs.readdirSync(path.join(templatesDir, lang))
     const registry = folderNames
-      .filter((x) => !x.endsWith('.md')) // filter out markdown files
+      // filter out markdown files
+      .filter((x) => !x.endsWith('.md'))
       .map((name) => require(path.join(templatesDir, lang, name, '.netlify-function-template.js')))
       .sort((a, b) => (a.priority || DEFAULT_PRIORITY) - (b.priority || DEFAULT_PRIORITY))
       .map((t) => {
@@ -250,7 +251,8 @@ async function downloadFromURL(context, flags, args, functionsDir) {
       await addEnvVariables(context.netlify.api, context.netlify.site)
       await onComplete.call(context)
     }
-    fs.unlinkSync(fnTemplateFile) // delete
+    // delete
+    fs.unlinkSync(fnTemplateFile)
   }
 }
 
@@ -264,7 +266,8 @@ function installDeps(functionPath) {
 
 // no --url flag specified, pick from a provided template
 async function scaffoldFromTemplate(context, flags, args, functionsDir) {
-  const chosentemplate = await pickTemplate() // pull the rest of the metadata from the template
+  // pull the rest of the metadata from the template
+  const chosentemplate = await pickTemplate()
   if (chosentemplate === 'url') {
     const { chosenurl } = await inquirer.prompt([
       {
@@ -300,9 +303,10 @@ async function scaffoldFromTemplate(context, flags, args, functionsDir) {
     context.log(`${NETLIFYDEVLOG} Creating function ${chalk.cyan.inverse(name)}`)
     const functionPath = ensureFunctionPathIsOk(context, functionsDir, name)
 
-    // // SWYX: note to future devs - useful for debugging source to output issues
+    // SWYX: note to future devs - useful for debugging source to output issues
     // this.log('from ', pathToTemplate, ' to ', functionPath)
-    const vars = { NETLIFY_STUFF_TO_REPLACE: 'REPLACEMENT' } // SWYX: TODO
+    // SWYX: TODO
+    const vars = { NETLIFY_STUFF_TO_REPLACE: 'REPLACEMENT' }
     let hasPackageJSON = false
     copy(pathToTemplate, functionPath, vars, async (err, createdFiles) => {
       if (err) throw err

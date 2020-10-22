@@ -5,9 +5,10 @@ const handler = async function (event, context) {
   if (!context.clientContext && !context.clientContext.identity) {
     return {
       statusCode: 500,
+      // Could be a custom message or object i.e. JSON.stringify(err)
       body: JSON.stringify({
         msg: 'No identity instance detected. Did you enable it?',
-      }), // Could be a custom message or object i.e. JSON.stringify(err)
+      }),
     }
   }
   const { identity, user } = context.clientContext
@@ -24,10 +25,12 @@ const handler = async function (event, context) {
       body: JSON.stringify({ identity, user, msg: data.value }),
     }
   } catch (error) {
-    console.log(error) // output to netlify function log
+    // output to netlify function log
+    console.log(error)
     return {
       statusCode: 500,
-      body: JSON.stringify({ msg: error.message }), // Could be a custom message or object i.e. JSON.stringify(err)
+      // Could be a custom message or object i.e. JSON.stringify(err)
+      body: JSON.stringify({ msg: error.message }),
     }
   }
 }

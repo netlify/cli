@@ -19,10 +19,13 @@ const ENV_VAR_STATES = {
     SOME_VAR1: 'FOOBAR',
   },
   import: {
-    SOME_VAR1: 'FOOBARBUZZ', // update existing SOME_VAR1
-    SOME_VAR2: 'FOO', // import new var
+    // update existing SOME_VAR1
+    SOME_VAR1: 'FOOBARBUZZ',
+    // import new var
+    SOME_VAR2: 'FOO',
   },
-  netlifyToml: { SOME_VAR2: 'FOO_NETLIFY_TOML' }, // should take priority over existing SOME_VAR2
+  // should take priority over existing SOME_VAR2
+  netlifyToml: { SOME_VAR2: 'FOO_NETLIFY_TOML' },
   setEmpty: { SOME_VAR1: '' },
   unset: { SOME_VAR1: null },
   importReplace: {
@@ -33,7 +36,8 @@ const ENV_VAR_STATES = {
 }
 const ENV_FILE_NAME = '.env'
 const REPLACE_ENV_FILE_NAME = '.env.replace'
-const FAIL_ENV_FILE_NAME = '.env.unknown' // file which should result in error
+// file which should result in error
+const FAIL_ENV_FILE_NAME = '.env.unknown'
 
 async function injectNetlifyToml(builder) {
   const builderWithToml = builder.withNetlifyToml({
@@ -160,7 +164,8 @@ if (process.env.IS_FORK !== 'true') {
 
     t.true(isObject(json))
 
-    const merged = { ...ENV_VAR_STATES.import, ...ENV_VAR_STATES.netlifyToml } // netlifyToml last, so that it overrides duplicates from import
+    // netlifyToml last, so that it overrides duplicates from import
+    const merged = { ...ENV_VAR_STATES.import, ...ENV_VAR_STATES.netlifyToml }
     checkResultState({ t, result: json, state: merged })
   })
 

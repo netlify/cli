@@ -4,7 +4,7 @@ const { isEmptyCommand } = require('../../utils/check-command-inputs')
 
 class SitesCommand extends Command {
   async run() {
-    const { flags, args } = this.parse(SitesCommand) // { args: {}, argv: [], flags: {}, raw: [] }
+    const { flags, args } = this.parse(SitesCommand)
 
     // Show help on empty sub command
     if (isEmptyCommand(flags, args)) {

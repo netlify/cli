@@ -29,6 +29,7 @@ module.exports = {
     'default-case-last': 2,
     'func-name-matching': [2, { considerPropertyDescriptor: true }],
     'func-names': [2, 'as-needed'],
+    'line-comment-position': 2,
     'max-classes-per-file': 2,
     'max-params': [2, { max: 4 }],
     'multiline-comment-style': [2, 'separate-lines'],
@@ -40,6 +41,7 @@ module.exports = {
     'no-extra-label': 2,
     'no-implicit-coercion': 2,
     'no-implicit-globals': [2, { lexicalBindings: true }],
+    'no-inline-comments': 2,
     'no-invalid-this': 2,
     'no-label-var': 2,
     'no-lonely-if': 2,
@@ -166,6 +168,9 @@ module.exports = {
       rules: {
         'no-undef': 0,
         'no-unused-vars': 0,
+        // Inline comments making code samples vertically shorter are useful
+        'line-comment-position': 0,
+        'no-inline-comments': 0,
       },
     },
   ],

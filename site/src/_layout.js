@@ -171,7 +171,7 @@ const Link = styled((props) => (
   'borderLeft': '4px solid',
   'borderColor': 'transparent',
   '&.active, &:focus': {
-    color: '#00c2b2', // '#00ad9f', // themeGet('colors.blue', '#07c')(props),
+    color: '#00c2b2',
     outline: 'none',
   },
   '&:focus': {

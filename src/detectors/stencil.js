@@ -1,5 +1,6 @@
 const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
 
+// the port that stencil normally outputs
 const FRAMEWORK_PORT = 3333
 const ENV_PORT = 3000
 
@@ -22,7 +23,7 @@ module.exports = function detector() {
   return {
     framework: 'stencil',
     command: getYarnOrNPMCommand(),
-    frameworkPort: FRAMEWORK_PORT, // the port that stencil normally outputs
+    frameworkPort: FRAMEWORK_PORT,
     env: { BROWSER: 'none', PORT: ENV_PORT },
     possibleArgsArrs,
     dist: 'www',

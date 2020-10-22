@@ -6,7 +6,8 @@ const { v4: uuidv4 } = require('uuid')
 const GA_ENDPOINT = `https://www.google-analytics.com/collect`
 
 // Domains to whitelist. Replace with your own!
-const originWhitelist = [] // keep this empty and append domains to whitelist using whiteListDomain()
+// keep this empty and append domains to whitelist using whiteListDomain()
+const originWhitelist = []
 whitelistDomain('test.com')
 whitelistDomain('nfeld.com')
 
@@ -27,9 +28,12 @@ function proxyToGoogleAnalytics(event, done) {
   const headers = event.headers || {}
 
   // attach other GA params, required for IP address since client doesn't have access to it. UA and CID can be sent from client
-  params.uip = headers['x-forwarded-for'] || headers['x-bb-ip'] || '' // ip override. Look into headers for clients IP address, as opposed to IP address of host running lambda function
-  params.ua = params.ua || headers['user-agent'] || '' // user agent override
-  params.cid = params.cid || uuidv4() // REQUIRED: use given cid, or generate a new one as last resort. Generating should be avoided because one user can show up in GA multiple times. If user refresh page `n` times, you'll get `n` pageviews logged into GA from "different" users. Client should generate a uuid and store in cookies, local storage, or generate a fingerprint. Check simple-tracker client example
+  // ip override. Look into headers for clients IP address, as opposed to IP address of host running lambda function
+  params.uip = headers['x-forwarded-for'] || headers['x-bb-ip'] || ''
+  // user agent override
+  params.ua = params.ua || headers['user-agent'] || ''
+  // REQUIRED: use given cid, or generate a new one as last resort. Generating should be avoided because one user can show up in GA multiple times. If user refresh page `n` times, you'll get `n` pageviews logged into GA from "different" users. Client should generate a uuid and store in cookies, local storage, or generate a fingerprint. Check simple-tracker client example
+  params.cid = params.cid || uuidv4()
 
   console.info('proxying params:', params)
   const qs = querystring.stringify(params)
