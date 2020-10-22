@@ -13,7 +13,7 @@ class IdentityAPI {
   headers(headers = {}) {
     return {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${this.token}`,
+      Authorization: `Bearer ${this.token}`,
       ...headers,
     }
   }

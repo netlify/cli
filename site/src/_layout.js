@@ -168,8 +168,8 @@ const depthPad = ({ to = '' }) =>
 const Link = styled((props) => (
   <NavLink {...props} is={RouterNavLink} w={1} pl={`${depthPad(props) - DEPTH_PATH_SHIFT}px`} />
 ))([], () => ({
-  'borderLeft': '4px solid',
-  'borderColor': 'transparent',
+  borderLeft: '4px solid',
+  borderColor: 'transparent',
   '&.active, &:focus': {
     color: '#00c2b2',
     outline: 'none',

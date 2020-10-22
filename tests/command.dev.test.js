@@ -204,11 +204,11 @@ testMatrix.forEach(({ args }) => {
         const response = await fetch(`${server.url}/api/echo?ding=dong`).then((r) => r.json())
         t.is(response.body, undefined)
         t.deepEqual(response.headers, {
-          'accept': '*/*',
+          accept: '*/*',
           'accept-encoding': 'gzip,deflate',
           'client-ip': '127.0.0.1',
-          'connection': 'close',
-          'host': `${server.host}:${server.port}`,
+          connection: 'close',
+          host: `${server.host}:${server.port}`,
           'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
           'x-forwarded-for': '::ffff:127.0.0.1',
         })
@@ -249,11 +249,11 @@ testMatrix.forEach(({ args }) => {
 
         t.is(response.body, 'some=thing')
         t.deepEqual(response.headers, {
-          'accept': '*/*',
+          accept: '*/*',
           'accept-encoding': 'gzip,deflate',
           'client-ip': '127.0.0.1',
-          'connection': 'close',
-          'host': `${server.host}:${server.port}`,
+          connection: 'close',
+          host: `${server.host}:${server.port}`,
           'content-type': 'text/plain;charset=UTF-8',
           'content-length': '10',
           'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
@@ -333,11 +333,11 @@ testMatrix.forEach(({ args }) => {
         const formBoundary = form.getBoundary()
 
         t.deepEqual(response.headers, {
-          'accept': '*/*',
+          accept: '*/*',
           'accept-encoding': 'gzip,deflate',
           'client-ip': '127.0.0.1',
-          'connection': 'close',
-          'host': `${server.host}:${server.port}`,
+          connection: 'close',
+          host: `${server.host}:${server.port}`,
           'content-length': form.getLengthSync().toString(),
           'content-type': `multipart/form-data; boundary=${formBoundary}`,
           'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
@@ -444,11 +444,11 @@ testMatrix.forEach(({ args }) => {
         const body = JSON.parse(response.body)
 
         t.deepEqual(response.headers, {
-          'accept': '*/*',
+          accept: '*/*',
           'accept-encoding': 'gzip,deflate',
           'client-ip': '127.0.0.1',
-          'connection': 'close',
-          'host': `${server.host}:${server.port}`,
+          connection: 'close',
+          host: `${server.host}:${server.port}`,
           'content-length': '285',
           'content-type': 'application/json',
           'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',

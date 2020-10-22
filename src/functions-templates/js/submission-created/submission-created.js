@@ -10,7 +10,7 @@ const handler = async (event) => {
   return fetch('https://api.buttondown.email/v1/subscribers', {
     method: 'POST',
     headers: {
-      'Authorization': `Token ${EMAIL_TOKEN}`,
+      Authorization: `Token ${EMAIL_TOKEN}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ email }),
