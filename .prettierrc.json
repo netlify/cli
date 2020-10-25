@@ -1,6 +1,1 @@
-{
-  "semi": false,
-  "singleQuote": true,
-  "proseWrap": "always",
-  "trailingComma": "all"
-}
+"@netlify/eslint-config-node/.prettierrc.json"
