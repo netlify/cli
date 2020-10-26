@@ -1,6 +1,7 @@
 const path = require('path')
 const process = require('process')
 
+const { getTrafficMeshForLocalSystem } = require('@netlify/traffic-mesh-agent')
 const execa = require('execa')
 const waitPort = require('wait-port')
 
@@ -8,28 +9,7 @@ const { getPathInProject } = require('../lib/settings')
 
 const { NETLIFYDEVERR } = require('./logo')
 
-const EXEC_NAME = 'traffic-mesh'
-
 const EDGE_HANDLERS_BUNDLER_CLI_PATH = path.resolve(require.resolve('@netlify/plugin-edge-handlers'), '..', 'cli.js')
-
-const getForwardProxyPath = () => {
-  let platform
-  switch (process.platform) {
-    case 'darwin':
-      platform = 'x86_64-apple-darwin'
-      break
-    case 'linux':
-      platform = 'x86_64-unknown-linux-gnu'
-      break
-    case 'win32':
-      platform = 'x86_64-pc-windows-msvc'
-      break
-    default:
-      throw new Error(`There is no traffic-mesh binary for ${process.platform}.`)
-  }
-
-  return path.resolve(EDGE_HANDLERS_BUNDLER_CLI_PATH, platform, EXEC_NAME)
-}
 
 const startForwardProxy = async ({ port, frameworkPort, functionsPort, publishDir, log, debug }) => {
   const args = [
@@ -41,8 +21,8 @@ const startForwardProxy = async ({ port, frameworkPort, functionsPort, publishDi
     `http://localhost:${frameworkPort}`,
     '--watch',
     publishDir,
-    // '--bundler',
-    // EDGE_HANDLERS_BUNDLER_CLI_PATH,
+    '--bundler',
+    EDGE_HANDLERS_BUNDLER_CLI_PATH,
     '--log-file',
     getPathInProject(['logs', 'traffic-mesh.log']),
   ]
@@ -86,7 +66,7 @@ const PROXY_READY_TIMEOUT = 3e4
 const PROXY_EXIT_TIMEOUT = 2e3
 
 const runProcess = ({ args }) => {
-  const subprocess = execa(getForwardProxyPath(), args, { stdio: 'inherit' })
+  const subprocess = execa(getTrafficMeshForLocalSystem(), args, { stdio: 'inherit' })
   return { subprocess }
 }
 
