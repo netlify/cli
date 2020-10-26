@@ -1,3 +1,4 @@
+const { EOL } = require('os')
 const path = require('path')
 const rl = require('readline')
 
@@ -117,7 +118,7 @@ const forwardMessagesToLog = ({ log, subprocess }) => {
       try {
         data = JSON.parse(line.trim())
       } catch (error) {
-        log(NETLIFYDEVERR, 'cannot parse log line as JSON, ignoring:', error)
+        log(`${NETLIFYDEVERR} Cannot parse log line as JSON: ${line.trim()}${EOL}${EOL}${error}`)
         return
       }
 
