@@ -966,5 +966,57 @@ testMatrix.forEach(({ args }) => {
       })
     })
   })
+
+  // the edge handlers plugin only works on node >= 10
+  const version = Number.parseInt(process.version.slice(1).split('.')[0])
+  const EDGE_HANDLER_MIN_VERSION = 10
+  if (version >= EDGE_HANDLER_MIN_VERSION) {
+    test(testName('should serve edge handlers', args), async (t) => {
+      await withSiteBuilder('site-with-fully-qualified-redirect-rule', async (builder) => {
+        const publicDir = 'public'
+        builder
+          .withNetlifyToml({
+            config: {
+              build: { publish: publicDir },
+              redirects: [
+                {
+                  from: '/edge-handler',
+                  to: 'index.html',
+                  status: 200,
+                  edge_handler: 'index',
+                  force: true,
+                },
+              ],
+            },
+          })
+          .withEdgeHandlers({
+            handlers: {
+              onRequest: (event) => {
+                event.replaceResponse(
+                  // eslint-disable-next-line no-undef
+                  new Response(null, {
+                    headers: {
+                      Location: 'https://google.com',
+                    },
+                    status: 301,
+                  }),
+                )
+              },
+            },
+          })
+
+        await builder.buildAsync()
+
+        await withDevServer({ cwd: builder.directory, args: [...args, '-trafficMesh'] }, async (server) => {
+          const response = await fetch(`${server.url}/edge-handler`, {
+            redirect: 'manual',
+          })
+
+          t.is(response.status, 301)
+          t.is(response.headers.Location, 'https://google.com')
+        })
+      })
+    })
+  }
 })
 /* eslint-enable require-await */
