@@ -63,11 +63,11 @@ const createSiteBuilder = ({ siteName }) => {
       return builder
     },
     withEdgeHandlers: ({ name, handlers }) => {
-      const dest = path.join(
-        directory,
-        'edge-handlers',
-        name ? (path.extname(name) === '.js' ? name : `${name}.js`) : 'index.js',
-      )
+      if (!name) {
+        name = 'index.js'
+      }
+
+      const dest = path.join(directory, 'edge-handlers', path.extname(name) === '.js' ? name : `${name}.js`)
       tasks.push(async () => {
         const content = Object.entries(handlers)
           .map(([event, handler]) => {
