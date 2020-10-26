@@ -30,7 +30,7 @@ const createSiteBuilder = ({ siteName }) => {
         replace: (_, val) => {
           // Strip off `.0` from integers that tomlify normally generates
 
-          if (!Number.isFinite(val) || val % 1 !== 0) {
+          if (!Number.isInteger(val)) {
             // Output normal value
             return false
           }
