@@ -62,7 +62,7 @@ const createSiteBuilder = ({ siteName }) => {
       })
       return builder
     },
-    withEdgeHandlers: ({ name, handlers }) => {
+    withEdgeHandlers: ({ name = 'index.js', handlers }) => {
       if (!name) {
         name = 'index.js'
       }
