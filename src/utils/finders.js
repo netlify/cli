@@ -18,9 +18,15 @@ const findHandler = function (functionPath) {
     return functionPath
   }
 
-  const handlerPath = path.join(functionPath, `${path.basename(functionPath)}.js`)
-  if (!fs.existsSync(handlerPath)) {
-    return
+  let handlerPath
+  const indexHandlerPath = path.join(functionPath, `index.js`)
+  const namedHandlerPath = path.join(functionPath, `${path.basename(functionPath)}.js`)
+
+  if (fs.existsSync(namedHandlerPath)) {
+    handlerPath = namedHandlerPath
+  }
+  if (fs.existsSync(indexHandlerPath) && !fs.existsSync(namedHandlerPath)) {
+    handlerPath = indexHandlerPath
   }
   return handlerPath
 }
