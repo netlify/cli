@@ -50,14 +50,18 @@ const createSiteBuilder = ({ siteName }) => {
       })
       return builder
     },
-    withEdgeHandlers: ({ handlers }) => {
-      const dest = path.join(directory, 'edge-handlers', 'index.js')
+    withEdgeHandlers: ({ name, handlers }) => {
+      const dest = path.join(
+        directory,
+        'edge-handlers',
+        name ? (path.extname(name) === '.js' ? name : `${name}.js`) : 'index.js',
+      )
       tasks.push(async () => {
         const content = Object.entries(handlers)
           .map(([event, handler]) => {
             return `export const ${event} = ${handler.toString()}`
           })
-          .join('\n')
+          .join(os.EOL)
         await ensureDir(path.dirname(dest))
         await fs.writeFileAsync(dest, content)
       })
