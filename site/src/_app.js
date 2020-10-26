@@ -1,4 +1,4 @@
-import { ScopeProvider } from '@compositor/x0/components'
+import { ScopeProvider } from '@compositor/x0/components.js'
 import createScope from '@rebass/markdown'
 import RebassMDX from '@rebass/mdx'
 import sortBy from 'lodash.sortby'
@@ -6,8 +6,8 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import * as Rebass from 'rebass'
 
-import Layout from './_layout'
-import { LiveEditor } from './_ui'
+import Layout from './_layout.js'
+import { LiveEditor } from './_ui.js'
 
 const scope = {
   ...createScope(),
