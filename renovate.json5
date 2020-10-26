@@ -1,4 +1,7 @@
 {
+  constraints: {
+    npm: '6',
+  },
   extends: ['github>netlify/renovate-config:default'],
   ignorePresets: [':prHourlyLimit2'],
   semanticCommits: true,
