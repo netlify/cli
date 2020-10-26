@@ -26,7 +26,19 @@ const createSiteBuilder = ({ siteName }) => {
     siteName,
     withNetlifyToml: ({ config, pathPrefix = '' }) => {
       const dest = path.join(directory, pathPrefix, 'netlify.toml')
-      const content = toToml(config, { space: 2 })
+      const content = toToml(config, {
+        replace: (_, val) => {
+          // Strip off `.0` from integers that tomlify normally generates
+
+          if (!Number.isFinite(val) || val % 1 !== 0) {
+            // Output normal value
+            return false
+          }
+
+          return String(Math.round(val))
+        },
+        space: 2,
+      })
       tasks.push(async () => {
         await ensureDir(path.dirname(dest))
         await fs.writeFileAsync(dest, content)
