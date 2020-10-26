@@ -4,45 +4,31 @@ const process = require('process')
 const execa = require('execa')
 const waitPort = require('wait-port')
 
-const { shouldFetchLatestVersion, fetchLatestVersion } = require('../lib/exec-fetcher')
-const { getPathInHome, getPathInProject } = require('../lib/settings')
+const { getPathInProject } = require('../lib/settings')
 
-const { NETLIFYDEVLOG, NETLIFYDEVERR } = require('./logo')
+const { NETLIFYDEVERR } = require('./logo')
 
-const PACKAGE_NAME = 'traffic-mesh-agent'
 const EXEC_NAME = 'traffic-mesh'
 
-const LATEST_VERSION = 'v0.22.1'
+const EDGE_HANDLERS_BUNDLER_CLI_PATH = path.resolve(require.resolve('@netlify/plugin-edge-handlers'), '..', 'cli.js')
 
-// TODO: uncomment once we increment LATEST_VERSION
-// const EDGE_HANDLERS_BUNDLER_CLI_PATH = path.resolve(require.resolve('@netlify/plugin-edge-handlers'), '..', 'cli.js')
-
-const getBinPath = () => getPathInHome([PACKAGE_NAME, 'bin'])
-
-const installTrafficMesh = async ({ log }) => {
-  const binPath = getBinPath()
-  const shouldFetch = await shouldFetchLatestVersion({
-    binPath,
-    packageName: PACKAGE_NAME,
-    execArgs: ['--version'],
-    pattern: '\\sv(.+)',
-    execName: EXEC_NAME,
-    latestVersion: LATEST_VERSION,
-    log,
-  })
-  if (!shouldFetch) {
-    return
+const getForwardProxyPath = () => {
+  let platform
+  switch (process.platform) {
+    case 'darwin':
+      platform = 'x86_64-apple-darwin'
+      break
+    case 'linux':
+      platform = 'x86_64-unknown-linux-gnu'
+      break
+    case 'win32':
+      platform = 'x86_64-pc-windows-msvc'
+      break
+    default:
+      throw new Error(`There is no traffic-mesh binary for ${process.platform}.`)
   }
 
-  log(`${NETLIFYDEVLOG} Installing Traffic Mesh Agent`)
-
-  await fetchLatestVersion({
-    packageName: PACKAGE_NAME,
-    execName: EXEC_NAME,
-    destination: binPath,
-    extension: 'zip',
-    latestVersion: LATEST_VERSION,
-  })
+  return path.resolve(EDGE_HANDLERS_BUNDLER_CLI_PATH, platform, EXEC_NAME)
 }
 
 const startForwardProxy = async ({ port, frameworkPort, functionsPort, publishDir, log, debug }) => {
@@ -69,7 +55,7 @@ const startForwardProxy = async ({ port, frameworkPort, functionsPort, publishDi
     args.push('--debug')
   }
 
-  const { subprocess } = await runProcess({ log, args })
+  const { subprocess } = runProcess({ log, args })
 
   subprocess.on('close', process.exit)
   subprocess.on('SIGINT', process.exit)
@@ -99,12 +85,9 @@ const PROXY_READY_TIMEOUT = 3e4
 // 2 seconds
 const PROXY_EXIT_TIMEOUT = 2e3
 
-const runProcess = async ({ log, args }) => {
-  await installTrafficMesh({ log })
-
-  const execPath = path.join(getBinPath(), EXEC_NAME)
-  const subprocess = execa(execPath, args, { stdio: 'inherit' })
+const runProcess = ({ args }) => {
+  const subprocess = execa(getForwardProxyPath(), args, { stdio: 'inherit' })
   return { subprocess }
 }
 
-module.exports = { runProcess, startForwardProxy, installTrafficMesh }
+module.exports = { runProcess, startForwardProxy }
