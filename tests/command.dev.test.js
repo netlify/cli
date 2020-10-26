@@ -983,13 +983,20 @@ testMatrix.forEach(({ args }) => {
                   from: '/edge-handler',
                   to: 'index.html',
                   status: 200,
-                  edge_handler: 'index',
+                  edge_handler: 'smoke',
                   force: true,
                 },
               ],
             },
           })
+          .withContentFiles([
+            {
+              path: path.join(publicDir, 'index.html'),
+              content: '<html>index</html>',
+            },
+          ])
           .withEdgeHandlers({
+            name: 'smoke.js',
             handlers: {
               onRequest: (event) => {
                 event.replaceResponse(
@@ -1007,7 +1014,7 @@ testMatrix.forEach(({ args }) => {
 
         await builder.buildAsync()
 
-        await withDevServer({ cwd: builder.directory, args: [...args, '-trafficMesh'] }, async (server) => {
+        await withDevServer({ cwd: builder.directory, args: [...args, '--trafficMesh'] }, async (server) => {
           const response = await fetch(`${server.url}/edge-handler`, {
             redirect: 'manual',
           })
