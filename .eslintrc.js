@@ -40,14 +40,6 @@ module.exports = {
         'node/no-unsupported-features/es-syntax': 0,
       },
     },
-    // Document site's development scripts
-    {
-      files: ['site/*.js', 'site/scripts/**/*.js'],
-      rules: {
-        'node/no-unpublished-require': 0,
-        'node/no-extraneous-require': 0,
-      },
-    },
     // Example functions
     {
       files: ['src/functions-templates/**/*.js'],
