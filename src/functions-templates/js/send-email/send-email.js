@@ -56,16 +56,16 @@ const handler = (event, context, callback) => {
 
   sendMail(descriptor, (error) => {
     if (error) {
-      callback(null, {
+      return callback(null, {
         statusCode: 500,
         body: error.message,
       })
-    } else {
-      callback(null, {
-        statusCode: 200,
-        body: '',
-      })
     }
+
+    callback(null, {
+      statusCode: 200,
+      body: '',
+    })
   })
 }
 

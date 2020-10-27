@@ -27,7 +27,7 @@ module.exports = {
     // TODO: enable this
     'no-process-exit': 0,
     // 'node/no-sync': 2,
-    // 'node/callback-return': 2,
+    'node/callback-return': 2,
     // 'node/global-require': 2,
     'node/global-require': 2,
 
