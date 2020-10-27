@@ -39,7 +39,6 @@
     "url": "https://github.com/netlify/cli/issues"
   },
   "scripts": {
-    "build:site": "cd site && npm ci && npm run build",
     "start": "node ./bin/run",
     "test": "run-s format test:dev",
     "format": "run-s format:check-fix:*",
@@ -66,6 +65,9 @@
     "release:standard-version": "standard-version --no-verify --skip.changelog --commit-all",
     "release:version": "git push && git push --tags && gh-release",
     "release:publish": "npm publish",
+    "site:build": "run-s site:build:*",
+    "site:build:install": "cd site && npm ci",
+    "site:build:assets": "cd site && npm run build",
     "postinstall": "node ./scripts/postinstall.js"
   },
   "scriptsArgs": {

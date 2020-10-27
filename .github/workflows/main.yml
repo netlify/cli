@@ -23,8 +23,10 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Install dependencies
+      - name: Install core dependencies
         run: npm ci
+      - name: Install site dependencies
+        run: npm run site:build:install
       - name: Linting
         run: npm run format:ci
         if: "${{ matrix.node-version == '14.x' }}"
