@@ -26,11 +26,18 @@
   "license": "MIT",
   "dependencies": {
     "@compositor/x0": "^6.0.7",
+    "@rebass/markdown": "^1.0.0",
     "@rebass/mdx": "^1.0.0",
     "cosmiconfig": "^5.2.1",
+    "lodash.sortby": "^4.7.0",
+    "prop-types": "^15.7.2",
+    "react": "^16.14.0",
     "react-helmet": "^5.2.1",
     "react-instantsearch-dom": "^5.7.0",
-    "styled-components": "^3.4.10"
+    "react-router-dom": "^4.3.1",
+    "rebass": "^2.3.4",
+    "styled-components": "^3.4.10",
+    "styled-system": "^3.2.1"
   },
   "devDependencies": {
     "filter-obj": "^2.0.1",

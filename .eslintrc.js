@@ -38,8 +38,6 @@ module.exports = {
       },
       rules: {
         'node/no-unsupported-features/es-syntax': 0,
-        // TODO: enable
-        'node/no-extraneous-import': 0,
       },
     },
     // Document site's development scripts
