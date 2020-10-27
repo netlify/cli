@@ -35,6 +35,37 @@ test('should return object with function details for a directory with js files',
       index: {
         functionPath: path.join(functions, 'index.js'),
         moduleDir: findModuleDir(functions),
+        isBackground: false,
+      },
+    })
+  })
+})
+
+test('should mark background functions based on filenames', async (t) => {
+  await withSiteBuilder('site-without-functions', async (builder) => {
+    builder
+      .withFunction({
+        path: 'foo-background.js',
+        handler: '',
+      })
+      .withFunction({
+        path: 'bar-background/bar-background.js',
+        handler: '',
+      })
+    await builder.buildAsync()
+
+    const functions = path.join(builder.directory, 'functions')
+    const funcs = getFunctions(functions)
+    t.deepEqual(funcs, {
+      'foo-background': {
+        functionPath: path.join(functions, 'foo-background.js'),
+        moduleDir: findModuleDir(functions),
+        isBackground: true,
+      },
+      'bar-background': {
+        functionPath: path.join(functions, 'bar-background/bar-background.js'),
+        moduleDir: findModuleDir(functions),
+        isBackground: true,
       },
     })
   })

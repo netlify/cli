@@ -966,5 +966,26 @@ testMatrix.forEach(({ args }) => {
       })
     })
   })
+
+  test(testName('should return 202 ok and empty response for background function', args), async (t) => {
+    await withSiteBuilder('site-with-background-function', async (builder) => {
+      builder.withNetlifyToml({ config: { build: { functions: 'functions' } } }).withFunction({
+        path: 'hello-background.js',
+        handler: () => {
+          console.log("Look at me I'm a background task")
+        },
+      })
+
+      await builder.buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async (server) => {
+        const response = await fetch(`${server.url}/.netlify/functions/hello-background`)
+        const text = await response.text()
+        const expectedStatueCode = 202
+        t.is(response.status, expectedStatueCode)
+        t.is(text, '')
+      })
+    })
+  })
 })
 /* eslint-enable require-await */

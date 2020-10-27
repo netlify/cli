@@ -26,12 +26,15 @@ const handleErr = function (err, response) {
   console.log(`${NETLIFYDEVERR} Error during invocation:`, err)
 }
 
+const formatLambdaError = (err) => chalk.red(`${err.errorType}: ${err.errorMessage}`)
+
+const styleFunctionName = (name) => chalk.magenta(name)
+
 const capitalize = function (t) {
   return t.replace(/(^\w|\s\w)/g, (string) => string.toUpperCase())
 }
 
-/** need to keep createCallback in scope so we can know if cb was called AND handler is async */
-const createCallback = function (response) {
+const createSynchronousFunctionCallback = function (response) {
   return function callbackHandler(err, lambdaResponse) {
     if (err) {
       return handleErr(err, response)
@@ -64,6 +67,54 @@ const createCallback = function (response) {
     }
     response.end()
   }
+}
+
+const createBackgroundFunctionCallback = (functionName) => {
+  return (err) => {
+    if (err) {
+      console.log(
+        `${NETLIFYDEVERR} Error during background function ${styleFunctionName(functionName)} execution:`,
+        formatLambdaError(err),
+      )
+    } else {
+      console.log(`${NETLIFYDEVLOG} Done executing background function ${styleFunctionName(functionName)}`)
+    }
+  }
+}
+
+const DEFAULT_LAMBDA_OPTIONS = {
+  verboseLevel: 3,
+}
+
+// 10 seconds for synchronous functions
+const SYNCHRONOUS_FUNCTION_TIMEOUT = 1e4
+const executeSynchronousFunction = ({ event, lambdaPath, clientContext, response }) => {
+  return lambdaLocal.execute({
+    ...DEFAULT_LAMBDA_OPTIONS,
+    event,
+    lambdaPath,
+    clientContext,
+    callback: createSynchronousFunctionCallback(response),
+    timeoutMs: SYNCHRONOUS_FUNCTION_TIMEOUT,
+  })
+}
+
+// 15 minuets for background functions
+const BACKGROUND_FUNCTION_TIMEOUT = 9e5
+const BACKGROUND_FUNCTION_STATUS_CODE = 202
+const executeBackgroundFunction = ({ event, lambdaPath, clientContext, response, functionName }) => {
+  console.log(`${NETLIFYDEVLOG} Queueing background function ${styleFunctionName(functionName)} for execution`)
+  response.status(BACKGROUND_FUNCTION_STATUS_CODE)
+  response.end()
+
+  return lambdaLocal.execute({
+    ...DEFAULT_LAMBDA_OPTIONS,
+    event,
+    lambdaPath,
+    clientContext,
+    callback: createBackgroundFunctionCallback(functionName),
+    timeoutMs: BACKGROUND_FUNCTION_TIMEOUT,
+  })
 }
 
 const buildClientContext = function (headers) {
@@ -123,13 +174,13 @@ const createHandler = function (dir) {
     // handle proxies without path re-writes (http-servr)
     const cleanPath = request.path.replace(/^\/.netlify\/functions/, '')
 
-    const func = cleanPath.split('/').find(Boolean)
-    if (!functions[func]) {
+    const functionName = cleanPath.split('/').find(Boolean)
+    if (!functions[functionName]) {
       response.statusCode = 404
       response.end('Function not found...')
       return
     }
-    const { functionPath } = functions[func]
+    const { functionPath: lambdaPath, isBackground } = functions[functionName]
 
     const isBase64Encoded = shouldBase64Encode(request.headers['content-type'])
     const body = request.get('content-length') ? request.body.toString(isBase64Encoded ? 'base64' : 'utf8') : undefined
@@ -168,21 +219,19 @@ const createHandler = function (dir) {
       isBase64Encoded,
     }
 
-    const callback = createCallback(response)
-
-    return lambdaLocal.execute({
-      event,
-      lambdaPath: functionPath,
-      clientContext: JSON.stringify(buildClientContext(request.headers) || {}),
-      callback,
-      verboseLevel: 3,
-      timeoutMs: LAMBDA_LOCAL_TIMEOUT,
-    })
+    const clientContext = JSON.stringify(buildClientContext(request.headers) || {})
+    if (isBackground) {
+      return executeBackgroundFunction({
+        event,
+        lambdaPath,
+        clientContext,
+        response,
+        functionName,
+      })
+    }
+    return executeSynchronousFunction({ event, lambdaPath, clientContext, response })
   }
 }
-
-// 10 seconds
-const LAMBDA_LOCAL_TIMEOUT = 1e4
 
 const createFormSubmissionHandler = function (siteInfo) {
   return async function formSubmissionHandler(req, res, next) {

@@ -3,6 +3,13 @@ const path = require('path')
 
 const { findModuleDir, findHandler } = require('./finders')
 
+const BACKGROUND = '-background'
+
+const isBackground = (functionPath) => {
+  const filename = path.basename(functionPath, path.extname(functionPath))
+  return filename.endsWith(BACKGROUND)
+}
+
 module.exports = {
   getFunctions(dir) {
     const functions = {}
@@ -20,11 +27,13 @@ module.exports = {
           functions[file.replace(/\.js$/, '')] = {
             functionPath,
             moduleDir: findModuleDir(functionPath),
+            isBackground: isBackground(functionPath),
           }
         } else if (fs.lstatSync(functionPath).isDirectory()) {
           functions[file] = {
             functionPath: handlerPath,
             moduleDir: findModuleDir(functionPath),
+            isBackground: isBackground(handlerPath),
           }
         }
       })
