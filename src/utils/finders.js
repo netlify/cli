@@ -18,17 +18,15 @@ const findHandler = function (functionPath) {
     return functionPath
   }
 
-  let handlerPath
-  const indexHandlerPath = path.join(functionPath, `index.js`)
   const namedHandlerPath = path.join(functionPath, `${path.basename(functionPath)}.js`)
-
   if (fs.existsSync(namedHandlerPath)) {
-    handlerPath = namedHandlerPath
+    return namedHandlerPath
   }
-  if (fs.existsSync(indexHandlerPath) && !fs.existsSync(namedHandlerPath)) {
-    handlerPath = indexHandlerPath
+
+  const indexHandlerPath = path.join(functionPath, `index.js`)
+  if (fs.existsSync(indexHandlerPath)) {
+    return indexHandlerPath
   }
-  return handlerPath
 }
 
 module.exports = { findModuleDir, findHandler }
