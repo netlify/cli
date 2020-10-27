@@ -1,4 +1,6 @@
 // with thanks to https://github.com/Urigo/graphql-modules/blob/8cb2fd7d9938a856f83e4eee2081384533771904/website/lambda/contact.js
+const process = require('process')
+
 const sendMail = require('sendmail')()
 
 const { validateEmail, validateLength } = require('./validations')

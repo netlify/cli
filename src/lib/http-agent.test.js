@@ -1,4 +1,5 @@
 const http = require('http')
+const process = require('process')
 
 const test = require('ava')
 const { createProxyServer } = require('http-proxy')

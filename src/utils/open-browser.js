@@ -1,3 +1,5 @@
+const process = require('process')
+
 const chalk = require('chalk')
 const isDockerContainer = require('is-docker')
 const open = require('open')

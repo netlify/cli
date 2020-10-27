@@ -1,4 +1,5 @@
 const path = require('path')
+const process = require('process')
 
 const test = require('ava')
 const tempDirectory = require('temp-dir')

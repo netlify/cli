@@ -1,4 +1,5 @@
 // with thanks https://github.com/LukeMwila/stripe-subscriptions-backend/blob/master/stripe-api/index.ts
+const process = require('process')
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 

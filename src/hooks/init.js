@@ -1,3 +1,5 @@
+const process = require('process')
+
 const envinfo = require('envinfo')
 
 const globalConfig = require('../utils/global-config')

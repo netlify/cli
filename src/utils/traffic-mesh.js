@@ -1,4 +1,5 @@
 const path = require('path')
+const process = require('process')
 
 const execa = require('execa')
 const waitPort = require('wait-port')

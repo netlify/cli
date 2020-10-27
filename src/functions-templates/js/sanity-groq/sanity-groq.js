@@ -1,3 +1,5 @@
+const process = require('process')
+
 const sanityClient = require('@sanity/client')
 
 // You will need to configure environment variables for Sanity.io project id
