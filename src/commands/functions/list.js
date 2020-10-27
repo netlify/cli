@@ -58,38 +58,33 @@ class FunctionsListCommand extends Command {
       process.exit(1)
     }
 
-    const functions = getFunctions(functionsDir)
-    const functionData = Object.entries(functions)
+    const functions = await getFunctions(functionsDir)
+    const normalizedFunctions = functions.map(normalizeFunction.bind(null, deployedFunctions))
 
-    if (functionData.length === 0) {
+    if (normalizedFunctions.length === 0) {
       this.log(`No functions found in ${functionsDir}`)
       this.exit()
     }
 
     if (flags.json) {
-      const jsonData = functionData.map(([functionName, { moduleDir }]) => {
-        const isDeployed = deployedFunctions.map((deployedFunction) => deployedFunction.n).includes(functionName)
-        return {
-          name: functionName,
-          url: `/.netlify/functions/${functionName}`,
-          moduleDir,
-          isDeployed,
-        }
-      })
-      this.logJson(jsonData)
+      this.logJson(normalizedFunctions)
       this.exit()
     }
 
     // Make table
     this.log(`Based on local functions folder ${functionsDir}, these are the functions detected`)
     const table = new AsciiTable(`Netlify Functions (in local functions folder)`)
-    table.setHeading('Name', 'Url', 'moduleDir', 'deployed')
-    functionData.forEach(([functionName, { moduleDir }]) => {
-      const isDeployed = deployedFunctions.map((deployedFunction) => deployedFunction.n).includes(functionName)
-      table.addRow(functionName, `/.netlify/functions/${functionName}`, moduleDir, isDeployed ? 'yes' : 'no')
+    table.setHeading('Name', 'Url', 'deployed')
+    normalizedFunctions.forEach(({ name, url, isDeployed }) => {
+      table.addRow(name, url, isDeployed ? 'yes' : 'no')
     })
     this.log(table.toString())
   }
+}
+
+const normalizeFunction = function (deployedFunctions, { name, urlPath: url }) {
+  const isDeployed = deployedFunctions.some((deployedFunction) => deployedFunction.n === name)
+  return { name, url, isDeployed }
 }
 
 FunctionsListCommand.description = `List functions that exist locally
