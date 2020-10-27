@@ -63,10 +63,6 @@ const createSiteBuilder = ({ siteName }) => {
       return builder
     },
     withEdgeHandlers: ({ name = 'index.js', handlers }) => {
-      if (!name) {
-        name = 'index.js'
-      }
-
       const dest = path.join(directory, 'edge-handlers', path.extname(name) === '.js' ? name : `${name}.js`)
       tasks.push(async () => {
         const content = Object.entries(handlers)
