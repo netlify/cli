@@ -1,10 +1,12 @@
+const fs = require('fs')
 const path = require('path')
 
 const detectFunctionsBuilder = async function (projectDir) {
-  const detectors = require('fs')
+  const detectors = fs
     .readdirSync(path.join(__dirname, '..', 'function-builder-detectors'))
     // only accept .js detector files
     .filter((filename) => filename.endsWith('.js'))
+    // eslint-disable-next-line node/global-require
     .map((det) => require(path.join(__dirname, '..', `function-builder-detectors/${det}`)))
 
   for (const detector of detectors) {

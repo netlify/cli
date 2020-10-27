@@ -1,5 +1,6 @@
 // Handlers are meant to be async outside tests
 /* eslint-disable require-await */
+const http = require('http')
 const path = require('path')
 const process = require('process')
 
@@ -848,8 +849,6 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        // we use http.request since fetch automatically sends a content-type header
-        const http = require('http')
         const options = {
           host: server.host,
           port: server.port,

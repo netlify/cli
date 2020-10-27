@@ -6,6 +6,7 @@ const chalk = require('chalk')
 const fuzzy = require('fuzzy')
 const getPort = require('get-port')
 const inquirer = require('inquirer')
+const inquirerAutocompletePrompt = require('inquirer-autocomplete-prompt')
 
 const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./logo')
 
@@ -47,8 +48,7 @@ const serverSettings = async (devConfig, flags, projectDir, log) => {
       settings.args = chooseDefaultArgs(settings.possibleArgsArrs)
     } else if (settingsArr.length > 1) {
       /** multiple matching detectors, make the user choose */
-      // lazy loading on purpose
-      inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'))
+      inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
       const scriptInquirerOptions = formatSettingsArrForInquirer(settingsArr)
       const { chosenSetting } = await inquirer.prompt({
         name: 'chosenSetting',
@@ -210,6 +210,7 @@ const DEFAULT_STATIC_PORT = 3999
 
 const loadDetector = function (detectorName) {
   try {
+    // eslint-disable-next-line node/global-require
     return require(path.join(__dirname, '..', 'detectors', detectorName))
   } catch (error) {
     throw new Error(

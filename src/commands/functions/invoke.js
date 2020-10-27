@@ -165,6 +165,7 @@ const processPayloadFromFlag = function (payloadString) {
     if (pathexists) {
       try {
         // there is code execution potential here
+        // eslint-disable-next-line node/global-require
         payload = require(payloadpath)
         return payload
       } catch (error) {

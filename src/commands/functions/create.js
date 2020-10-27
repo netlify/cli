@@ -6,7 +6,9 @@ const process = require('process')
 const { flags: flagsLib } = require('@oclif/command')
 const chalk = require('chalk')
 const copy = require('copy-template-dir')
+const fuzzy = require('fuzzy')
 const inquirer = require('inquirer')
+const inquirerAutocompletePrompt = require('inquirer-autocomplete-prompt')
 const fetch = require('node-fetch')
 const ora = require('ora')
 
@@ -99,8 +101,6 @@ const getNameFromArgs = async function (args, flags, defaultName) {
 
 const filterRegistry = function (registry, input) {
   const temp = registry.map((value) => value.name + value.description)
-  // lazy loading on purpose
-  const fuzzy = require('fuzzy')
   const filteredTemplates = fuzzy.filter(input, temp)
   const filteredTemplateNames = new Set(
     filteredTemplates.map((filteredTemplate) => (input ? filteredTemplate.string : filteredTemplate)),
@@ -120,6 +120,7 @@ const formatRegistryArrayForInquirer = function (lang) {
   const registry = folderNames
     // filter out markdown files
     .filter((folderName) => !folderName.endsWith('.md'))
+    // eslint-disable-next-line node/global-require
     .map((folderName) => require(path.join(templatesDir, lang, folderName, '.netlify-function-template.js')))
     .sort(
       (folderNameA, folderNameB) =>
@@ -139,7 +140,7 @@ const formatRegistryArrayForInquirer = function (lang) {
 
 // pick template from our existing templates
 const pickTemplate = async function () {
-  inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'))
+  inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
   // doesnt scale but will be ok for now
   const [
     jsreg,
@@ -253,6 +254,7 @@ const downloadFromURL = async function (context, flags, args, functionsDir) {
   // read, execute, and delete function template file if exists
   const fnTemplateFile = path.join(fnFolder, '.netlify-function-template.js')
   if (fs.existsSync(fnTemplateFile)) {
+    // eslint-disable-next-line node/global-require
     const { onComplete, addons = [] } = require(fnTemplateFile)
 
     await installAddons(context, addons, path.resolve(fnFolder))
@@ -322,7 +324,7 @@ const scaffoldFromTemplate = async function (context, flags, args, functionsDir)
       createdFiles.forEach((filePath) => {
         if (filePath.endsWith('.netlify-function-template.js')) return
         context.log(`${NETLIFYDEVLOG} ${chalk.greenBright('Created')} ${filePath}`)
-        require('fs').chmodSync(path.resolve(filePath), TEMPLATE_PERMISSIONS)
+        fs.chmodSync(path.resolve(filePath), TEMPLATE_PERMISSIONS)
         if (filePath.includes('package.json')) hasPackageJSON = true
       })
       // delete function template file that was copied over by copydir
