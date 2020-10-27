@@ -1,4 +1,4 @@
-import { LiveEditor as Editor, LivePreview } from '@compositor/x0/components'
+import { LiveEditor as Editor, LivePreview } from '@compositor/x0/components.js'
 import React from 'react'
 import { Pre } from 'rebass'
 
