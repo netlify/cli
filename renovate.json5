@@ -1,9 +1,4 @@
 {
-  force: {
-    constraints: {
-      node: '< 15.0.0',
-    },
-  },
   extends: ['github>netlify/renovate-config:default'],
   ignorePresets: [':prHourlyLimit2'],
   semanticCommits: true,
