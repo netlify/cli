@@ -1,3 +1,6 @@
+const generateRoute = require('./generate-route')
+const getRoute = require('./get-route')
+
 const handler = (event, context, callback) => {
   const path = event.path.replace(/\.netlify\/functions\/[^/]+/, '')
   const segments = path.split('/').filter(Boolean)
@@ -6,10 +9,10 @@ const handler = (event, context, callback) => {
   switch (event.httpMethod) {
     case 'GET':
       // e.g. GET /.netlify/functions/url-shortener
-      return require('./get-route').handler(event, context, callback)
+      return getRoute(event, context, callback)
     case 'POST':
       // e.g. POST /.netlify/functions/url-shortener
-      return require('./generate-route').handler(event, context, callback)
+      return generateRoute(event, context, callback)
     case 'PUT':
       // your code here
       return

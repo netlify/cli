@@ -3,7 +3,7 @@ const chalk = require('chalk')
 const execa = require('execa')
 
 const Command = require('../../utils/command')
-const { getEnvSettings } = require('../../utils/env')
+const { addEnvVariables, getEnvSettings } = require('../../utils/env')
 const {
   // NETLIFYDEV,
   NETLIFYDEVLOG,
@@ -17,7 +17,6 @@ class ExecCommand extends Command {
     if (site.id) {
       // just to show some visual response first
       this.log(`${NETLIFYDEVLOG} Checking your site's environment variables...`)
-      const { addEnvVariables } = require('../../utils/dev')
       await addEnvVariables(api, site)
     } else {
       this.log(

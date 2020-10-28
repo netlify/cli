@@ -5,13 +5,15 @@ const process = require('process')
 const { flags: flagsLib } = require('@oclif/command')
 const boxen = require('boxen')
 const chalk = require('chalk')
+const StaticServer = require('static-server')
 const stripAnsiCc = require('strip-ansi-control-characters')
 const waitPort = require('wait-port')
 const which = require('which')
+const wrapAnsi = require('wrap-ansi')
 
 const Command = require('../../utils/command')
 const { serverSettings } = require('../../utils/detect-server')
-const { getEnvSettings } = require('../../utils/env')
+const { addEnvVariables, getEnvSettings } = require('../../utils/env')
 const { startLiveTunnel } = require('../../utils/live-tunnel')
 const { NETLIFYDEV, NETLIFYDEVLOG, NETLIFYDEVWARN, NETLIFYDEVERR } = require('../../utils/logo')
 const openBrowser = require('../../utils/open-browser')
@@ -21,8 +23,6 @@ const { startForwardProxy } = require('../../utils/traffic-mesh')
 
 const startFrameworkServer = async function ({ settings, log, exit }) {
   if (settings.noCmd) {
-    const StaticServer = require('static-server')
-
     const server = new StaticServer({
       rootPath: settings.dist,
       name: 'netlify-dev',
@@ -100,7 +100,6 @@ const FRAMEWORK_PORT_TIMEOUT = 6e5
 
 const getAddonsUrlsAndAddEnvVariablesToProcessEnv = async ({ api, site, flags }) => {
   if (site.id && !flags.offline) {
-    const { addEnvVariables } = require('../../utils/dev')
     const addonUrls = await addEnvVariables(api, site)
     return addonUrls
   }
@@ -174,7 +173,7 @@ const BANNER_LENGTH = 70
 
 const printBanner = ({ url, log }) => {
   // boxen doesnt support text wrapping yet https://github.com/sindresorhus/boxen/issues/16
-  const banner = require('wrap-ansi')(chalk.bold(`${NETLIFYDEVLOG} Server now ready on ${url}`), BANNER_LENGTH)
+  const banner = wrapAnsi(chalk.bold(`${NETLIFYDEVLOG} Server now ready on ${url}`), BANNER_LENGTH)
 
   log(
     boxen(banner, {

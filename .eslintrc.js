@@ -29,6 +29,7 @@ module.exports = {
     // 'node/no-sync': 2,
     // 'node/callback-return': 2,
     // 'node/global-require': 2,
+    'node/global-require': 2,
 
     // TODO: harmonize with filename snake_case in other Netlify Dev projects
     'unicorn/filename-case': [2, { case: 'kebabCase', ignore: ['.*.md'] }],

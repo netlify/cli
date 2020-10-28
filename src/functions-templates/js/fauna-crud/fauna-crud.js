@@ -1,3 +1,9 @@
+const createRoute = require('./create')
+const deleteRoute = require('./delete')
+const readRoute = require('./read')
+const readAllRoute = require('./read-all')
+const updateRoute = require('./update')
+
 const handler = async (event, context) => {
   const path = event.path.replace(/\.netlify\/functions\/[^/]+/, '')
   const segments = path.split('/').filter(Boolean)
@@ -6,13 +12,13 @@ const handler = async (event, context) => {
     case 'GET':
       // e.g. GET /.netlify/functions/fauna-crud
       if (segments.length === 0) {
-        return require('./read-all').handler(event, context)
+        return readAllRoute.handler(event, context)
       }
       // e.g. GET /.netlify/functions/fauna-crud/123456
       if (segments.length === 1) {
         const [id] = segments
         event.id = id
-        return require('./read').handler(event, context)
+        return readRoute.handler(event, context)
       }
       return {
         statusCode: 500,
@@ -22,13 +28,13 @@ const handler = async (event, context) => {
 
     case 'POST':
       // e.g. POST /.netlify/functions/fauna-crud with a body of key value pair objects, NOT strings
-      return require('./create').handler(event, context)
+      return createRoute.handler(event, context)
     case 'PUT':
       // e.g. PUT /.netlify/functions/fauna-crud/123456 with a body of key value pair objects, NOT strings
       if (segments.length === 1) {
         const [id] = segments
         event.id = id
-        return require('./update').handler(event, context)
+        return updateRoute.handler(event, context)
       }
       return {
         statusCode: 500,
@@ -40,7 +46,7 @@ const handler = async (event, context) => {
       if (segments.length === 1) {
         const [id] = segments
         event.id = id
-        return require('./delete').handler(event, context)
+        return deleteRoute.handler(event, context)
       }
       return {
         statusCode: 500,
