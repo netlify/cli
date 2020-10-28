@@ -124,7 +124,7 @@ module.exports = function handler(event, context, callback) {
           })
         })
     } catch (error) {
-      callback(null, { statusCode: 500, body: `Internal Server Error: ${error}` })
+      return callback(null, { statusCode: 500, body: `Internal Server Error: ${error}` })
     }
   })
 }
