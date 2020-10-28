@@ -30,10 +30,6 @@ module.exports = {
     // 'node/callback-return': 2,
     // 'node/global-require': 2,
     'node/global-require': 2,
-    // 'node/prefer-global/url-search-params': 2,
-    // 'node/prefer-global/url': 2,
-    // 'node/prefer-global/buffer': [2, 'never'],
-    // 'node/prefer-global/process': [2, 'never'],
 
     // TODO: harmonize with filename snake_case in other Netlify Dev projects
     'unicorn/filename-case': [2, { case: 'kebabCase', ignore: ['.*.md'] }],
