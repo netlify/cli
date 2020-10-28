@@ -1,6 +1,7 @@
 // Handlers are meant to be async outside tests
 /* eslint-disable require-await */
 const path = require('path')
+const process = require('process')
 
 const test = require('ava')
 const FormData = require('form-data')

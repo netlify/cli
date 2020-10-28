@@ -1,3 +1,4 @@
+const process = require('process')
 const { URL } = require('url')
 const { format, inspect } = require('util')
 

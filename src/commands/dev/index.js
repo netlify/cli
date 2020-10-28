@@ -1,5 +1,6 @@
 const childProcess = require('child_process')
 const path = require('path')
+const process = require('process')
 
 const { flags: flagsLib } = require('@oclif/command')
 const boxen = require('boxen')

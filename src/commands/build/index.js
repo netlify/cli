@@ -1,3 +1,5 @@
+const process = require('process')
+
 const { flags } = require('@oclif/command')
 
 const { getBuildOptions, runBuild } = require('../../lib/build')

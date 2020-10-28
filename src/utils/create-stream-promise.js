@@ -1,3 +1,5 @@
+const { Buffer } = require('buffer')
+
 const createStreamPromise = function (stream, timeoutSeconds, bytesLimit = DEFAULT_BYTES_LIMIT) {
   return new Promise(function streamPromiseFunc(resolve, reject) {
     let data = []

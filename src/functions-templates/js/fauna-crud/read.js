@@ -1,4 +1,6 @@
 /* Import faunaDB sdk */
+const process = require('process')
+
 const { query, Client } = require('faunadb')
 
 const client = new Client({

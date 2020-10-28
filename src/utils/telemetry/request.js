@@ -1,4 +1,6 @@
 // Spawn a detached process
+const process = require('process')
+
 const fetch = require('node-fetch')
 const options = JSON.parse(process.argv[2])
 

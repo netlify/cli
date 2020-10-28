@@ -10,8 +10,17 @@ module.exports = {
     'node/no-mixed-requires': 2,
     // Browser globals should not use `require()`. Non-browser globals should
     'node/prefer-global/console': 2,
-    'node/prefer-global/text-decoder': 2,
-    'node/prefer-global/text-encoder': 2,
+    'node/prefer-global/buffer': [2, 'never'],
+    'node/prefer-global/process': [2, 'never'],
+    // TODO: enable after dropping support for Node <10.0.0
+    'node/prefer-global/url-search-params': 0,
+    'node/prefer-global/url': 0,
+    // TODO: enable after dropping support for Node <11.0.0
+    'node/prefer-global/text-decoder': 0,
+    'node/prefer-global/text-encoder': 0,
+    // TODO: enable after dropping support for Node <11.4.0
+    'node/prefer-promises/fs': 0,
+    'node/prefer-promises/dns': 0,
     // This does not work well in a monorepo
     'node/shebang': 0,
 
@@ -20,10 +29,6 @@ module.exports = {
     // 'node/no-sync': 2,
     // 'node/callback-return': 2,
     // 'node/global-require': 2,
-    // 'node/prefer-global/url-search-params': 2,
-    // 'node/prefer-global/url': 2,
-    // 'node/prefer-global/buffer': [2, 'never'],
-    // 'node/prefer-global/process': [2, 'never'],
 
     // TODO: harmonize with filename snake_case in other Netlify Dev projects
     'unicorn/filename-case': [2, { case: 'kebabCase', ignore: ['.*.md'] }],

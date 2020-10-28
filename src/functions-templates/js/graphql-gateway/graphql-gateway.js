@@ -4,6 +4,7 @@
  *
  * Of course, feel free to modify this gateway to suit your needs.
  */
+const process = require('process')
 
 const { createHttpLink } = require('apollo-link-http')
 const { ApolloServer } = require('apollo-server-lambda')

@@ -1,3 +1,5 @@
+const process = require('process')
+
 const chalk = require('chalk')
 const execa = require('execa')
 const fetch = require('node-fetch')

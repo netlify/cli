@@ -1,6 +1,6 @@
 // dotenv loading similar to create-react-app / react-scripts or dotenv-load
-
 const path = require('path')
+const process = require('process')
 
 const dotenv = require('dotenv')
 const filterObject = require('filter-obj')

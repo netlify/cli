@@ -1,4 +1,6 @@
 /* Express App */
+const process = require('process')
+
 const bodyParser = require('body-parser')
 const compression = require('compression')
 const cors = require('cors')

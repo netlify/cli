@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+const { Buffer } = require('buffer')
+const process = require('process')
 
 /* sync GraphQL schema to your FaunaDB account - use with `netlify dev:exec <path-to-this-file>` */
 const createFaunaGraphQL = function () {

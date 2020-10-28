@@ -1,3 +1,4 @@
+const { Buffer } = require('buffer')
 const http = require('http')
 const path = require('path')
 const { URL, URLSearchParams } = require('url')

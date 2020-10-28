@@ -1,4 +1,5 @@
 // with thanks https://github.com/alexmacarthur/netlify-lambda-function-example/blob/68a0cdc05e201d68fe80b0926b0af7ff88f15802/lambda-src/purchase.js
+const process = require('process')
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 

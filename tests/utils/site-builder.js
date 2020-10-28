@@ -1,5 +1,6 @@
 const os = require('os')
 const path = require('path')
+const process = require('process')
 
 const tempDirectory = require('temp-dir')
 const { toToml } = require('tomlify-j0.4')

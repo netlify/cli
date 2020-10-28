@@ -1,3 +1,5 @@
+const process = require('process')
+
 const test = require('ava')
 const isEmpty = require('lodash.isempty')
 const isObject = require('lodash.isobject')
