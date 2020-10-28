@@ -1,6 +1,8 @@
 // code walkthrough: https://www.netlify.com/blog/2018/03/29/jamstack-architecture-on-netlify-how-identity-and-functions-work-together/#updating-user-data-with-the-identity-api
 // demo repo: https://github.com/biilmann/testing-slack-tutorial/tree/v3-one-message-an-hour
 // note: requires SLACK_WEBHOOK_URL environment variable
+const process = require('process')
+
 const slackURL = process.env.SLACK_WEBHOOK_URL
 const fetch = require('node-fetch')
 
@@ -122,7 +124,7 @@ module.exports = function handler(event, context, callback) {
           })
         })
     } catch (error) {
-      callback(null, { statusCode: 500, body: `Internal Server Error: ${error}` })
+      return callback(null, { statusCode: 500, body: `Internal Server Error: ${error}` })
     }
   })
 }

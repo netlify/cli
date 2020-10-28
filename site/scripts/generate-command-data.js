@@ -11,6 +11,7 @@ module.exports = function generateCommandData() {
   const commands = globby.sync([`${commandsPath}/**/**.js`, `${netlifyDevPath}/**/**.js`])
 
   const allCommands = commands.map((file) => {
+    // eslint-disable-next-line node/global-require
     const data = require(file)
     const command = commandFromPath(file)
     const [parentCommand] = command.split(':')

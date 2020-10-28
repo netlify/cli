@@ -23,8 +23,10 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Install dependencies
+      - name: Install core dependencies
         run: npm ci
+      - name: Install site dependencies
+        run: npm run site:build:install
       - name: Linting
         run: npm run format:ci
         if: "${{ matrix.node-version == '14.x' }}"
@@ -36,3 +38,5 @@ jobs:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           IS_FORK: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true }}
           NETLIFY_TEST_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Codecov test coverage
+        run: bash scripts/coverage.sh "${{ matrix.os }}" "${{ matrix.node-version }}"

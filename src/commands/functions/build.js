@@ -1,4 +1,5 @@
 const fs = require('fs')
+const process = require('process')
 
 const { zipFunctions } = require('@netlify/zip-it-and-ship-it')
 const { flags: flagsLib } = require('@oclif/command')

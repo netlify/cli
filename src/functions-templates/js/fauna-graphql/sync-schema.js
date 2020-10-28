@@ -1,4 +1,10 @@
 #!/usr/bin/env node
+const { Buffer } = require('buffer')
+const fs = require('fs')
+const path = require('path')
+const process = require('process')
+
+const fetch = require('node-fetch')
 
 /* sync GraphQL schema to your FaunaDB account - use with `netlify dev:exec <path-to-this-file>` */
 const createFaunaGraphQL = function () {
@@ -7,9 +13,6 @@ const createFaunaGraphQL = function () {
   }
   console.log('Upload GraphQL Schema!')
 
-  const fetch = require('node-fetch')
-  const fs = require('fs')
-  const path = require('path')
   // name of your schema file
   const dataString = fs.readFileSync(path.join(__dirname, 'schema.graphql')).toString()
 

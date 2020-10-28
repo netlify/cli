@@ -1,4 +1,5 @@
 const path = require('path')
+const process = require('process')
 
 const { flags: flagsLib } = require('@oclif/command')
 const chalk = require('chalk')

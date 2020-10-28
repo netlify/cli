@@ -1,3 +1,6 @@
+const fs = require('fs')
+const path = require('path')
+
 const inquirer = require('inquirer')
 
 const { makeNetlifyTOMLtemplate } = require('./netlify-toml-template')
@@ -40,8 +43,6 @@ module.exports = async function configManual(ctx, site, repo) {
     },
   ])
 
-  const fs = require('fs')
-  const path = require('path')
   const tomlpath = path.join(ctx.netlify.site.root, 'netlify.toml')
   const tomlDoesNotExist = !fs.existsSync(tomlpath)
   if (tomlDoesNotExist && (!ctx.netlify.config || Object.keys(ctx.netlify.config).length === 0)) {

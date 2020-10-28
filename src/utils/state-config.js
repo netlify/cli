@@ -1,5 +1,6 @@
 const fs = require('fs')
 const path = require('path')
+const process = require('process')
 
 const dotProp = require('dot-prop')
 const findUp = require('find-up')

@@ -1,4 +1,6 @@
 // with thanks to https://github.com/Urigo/graphql-modules/blob/8cb2fd7d9938a856f83e4eee2081384533771904/website/lambda/contact.js
+const process = require('process')
+
 const sendMail = require('sendmail')()
 
 const { validateEmail, validateLength } = require('./validations')
@@ -54,16 +56,16 @@ const handler = (event, context, callback) => {
 
   sendMail(descriptor, (error) => {
     if (error) {
-      callback(null, {
+      return callback(null, {
         statusCode: 500,
         body: error.message,
       })
-    } else {
-      callback(null, {
-        statusCode: 200,
-        body: '',
-      })
     }
+
+    callback(null, {
+      statusCode: 200,
+      body: '',
+    })
   })
 }
 

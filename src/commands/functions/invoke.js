@@ -1,5 +1,6 @@
 const fs = require('fs')
 const path = require('path')
+const process = require('process')
 
 const { flags: flagsLib } = require('@oclif/command')
 const chalk = require('chalk')
@@ -133,7 +134,6 @@ class FunctionsInvokeCommand extends Command {
         try {
           // data = response.json();
           data = JSON.parse(data)
-          // eslint-disable-next-line no-empty
         } catch (error) {}
         return data
       })
@@ -164,6 +164,7 @@ const processPayloadFromFlag = function (payloadString) {
     if (pathexists) {
       try {
         // there is code execution potential here
+        // eslint-disable-next-line node/global-require
         payload = require(payloadpath)
         return payload
       } catch (error) {
@@ -273,7 +274,6 @@ const tryParseJSON = function (jsonString) {
     if (parsedValue && typeof parsedValue === 'object') {
       return parsedValue
     }
-    // eslint-disable-next-line no-empty
   } catch (error) {}
 
   return false

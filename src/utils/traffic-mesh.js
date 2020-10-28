@@ -1,5 +1,6 @@
 const { EOL } = require('os')
 const path = require('path')
+const process = require('process')
 const rl = require('readline')
 
 const execa = require('execa')
@@ -16,7 +17,8 @@ const EXEC_NAME = 'traffic-mesh'
 
 const LATEST_VERSION = 'v0.22.1'
 
-const EDGE_HANDLERS_BUNDLER_CLI_PATH = path.resolve(require.resolve('@netlify/plugin-edge-handlers'), '..', 'cli.js')
+// TODO: uncomment once we increment LATEST_VERSION
+// const EDGE_HANDLERS_BUNDLER_CLI_PATH = path.resolve(require.resolve('@netlify/plugin-edge-handlers'), '..', 'cli.js')
 
 const getBinPath = () => getPathInHome([PACKAGE_NAME, 'bin'])
 
@@ -56,8 +58,8 @@ const startForwardProxy = async ({ port, frameworkPort, functionsPort, publishDi
     `http://localhost:${frameworkPort}`,
     '--watch',
     publishDir,
-    '--bundler',
-    EDGE_HANDLERS_BUNDLER_CLI_PATH,
+    // '--bundler',
+    // EDGE_HANDLERS_BUNDLER_CLI_PATH,
     '--log-file',
     getPathInProject(['logs', 'traffic-mesh.log']),
     '--progress',

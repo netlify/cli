@@ -1,3 +1,5 @@
+const process = require('process')
+
 const { query, Client } = require('faunadb')
 
 /* configure faunaDB Client with our secret */

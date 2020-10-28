@@ -1,5 +1,7 @@
 // reusable code for netlify dev
 // bit of a hasty abstraction but recommended by oclif
+const process = require('process')
+
 const chalk = require('chalk')
 
 const {

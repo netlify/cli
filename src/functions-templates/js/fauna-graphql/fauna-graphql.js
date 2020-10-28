@@ -1,3 +1,6 @@
+const { Buffer } = require('buffer')
+const process = require('process')
+
 const { createHttpLink } = require('apollo-link-http')
 const { ApolloServer } = require('apollo-server-lambda')
 const { introspectSchema, makeRemoteExecutableSchema } = require('graphql-tools')

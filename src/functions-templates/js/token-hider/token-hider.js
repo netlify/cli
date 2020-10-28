@@ -1,3 +1,5 @@
+const process = require('process')
+
 const axios = require('axios')
 const qs = require('qs')
 

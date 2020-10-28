@@ -1,4 +1,5 @@
 const path = require('path')
+const process = require('process')
 
 const execa = require('execa')
 const { fetchVersion, fetchLatest, updateAvailable, newerVersion } = require('gh-release-fetch')
