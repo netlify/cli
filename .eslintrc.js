@@ -1,35 +1,23 @@
 const { overrides } = require('@netlify/eslint-config-node')
 
 module.exports = {
-  extends: ['@netlify/eslint-config-node', 'plugin:node/recommended'],
+  extends: '@netlify/eslint-config-node',
   rules: {
-    'node/handle-callback-err': 2,
-    'node/no-new-require': 2,
-    'node/exports-style': 2,
-    'node/file-extension-in-import': 2,
-    'node/no-mixed-requires': 2,
-    // Browser globals should not use `require()`. Non-browser globals should
-    'node/prefer-global/console': 2,
-    'node/prefer-global/buffer': [2, 'never'],
-    'node/prefer-global/process': [2, 'never'],
-    // TODO: enable after dropping support for Node <10.0.0
-    'node/prefer-global/url-search-params': 0,
-    'node/prefer-global/url': 0,
-    // TODO: enable after dropping support for Node <11.0.0
-    'node/prefer-global/text-decoder': 0,
-    'node/prefer-global/text-encoder': 0,
-    // TODO: enable after dropping support for Node <11.4.0
-    'node/prefer-promises/fs': 0,
-    'node/prefer-promises/dns': 0,
-    // This does not work well in a monorepo
-    'node/shebang': 0,
-
-    // TODO: enable this
+    // Those rules from @netlify/eslint-config-node are currently disabled
+    // TODO: remove
+    'class-methods-use-this': 0,
+    complexity: 0,
+    'max-depth': 0,
+    'max-lines': 0,
+    'max-lines-per-function': 0,
+    'max-nested-callbacks': 0,
+    'max-statements': 0,
+    'no-param-reassign': 0,
     'no-process-exit': 0,
-    // 'node/no-sync': 2,
-    'node/callback-return': 2,
-    // 'node/global-require': 2,
-    'node/global-require': 2,
+    'fp/no-mutating-methods': 0,
+    'fp/no-mutation': 0,
+    'import/max-dependencies': 0,
+    'node/no-sync': 0,
 
     // TODO: harmonize with filename snake_case in other Netlify Dev projects
     'unicorn/filename-case': [2, { case: 'kebabCase', ignore: ['.*.md'] }],
