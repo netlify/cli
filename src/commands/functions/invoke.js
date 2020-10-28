@@ -134,7 +134,6 @@ class FunctionsInvokeCommand extends Command {
         try {
           // data = response.json();
           data = JSON.parse(data)
-          // eslint-disable-next-line no-empty
         } catch (error) {}
         return data
       })
@@ -275,7 +274,6 @@ const tryParseJSON = function (jsonString) {
     if (parsedValue && typeof parsedValue === 'object') {
       return parsedValue
     }
-    // eslint-disable-next-line no-empty
   } catch (error) {}
 
   return false
