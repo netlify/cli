@@ -47,12 +47,14 @@ const getTeamEnv = ({ siteData, accounts }) => {
   if (siteAccount && siteAccount.site_env) {
     return siteAccount.site_env
   }
+  return {}
 }
 
 const getSiteEnv = ({ siteData }) => {
   if (siteData.build_settings && siteData.build_settings.env) {
     return siteData.build_settings.env
   }
+  return {}
 }
 
 const getSiteInformation = async ({ flags = {}, api, site, warn, error }) => {
