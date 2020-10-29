@@ -73,58 +73,47 @@ const updateUser = function (identity, user, appMetadata) {
 // One hour
 const MESSAGE_RATE_LIMIT = 36e5
 
-module.exports = function handler(event, context, callback) {
+module.exports = async function handler(event, context) {
   if (event.httpMethod !== 'POST') {
-    return callback(null, {
+    return {
       statusCode: 410,
       body: 'Unsupported Request Method',
-    })
+    }
   }
 
   const claims = context.clientContext && context.clientContext.user
   if (!claims) {
-    return callback(null, {
+    return {
       statusCode: 401,
       body: 'You must be signed in to call this function',
-    })
+    }
   }
 
-  fetchUser(context.clientContext.identity, claims.sub).then((user) => {
-    const lastMessage = new Date(user.app_metadata.last_message_at || 0).getTime()
-    const cutOff = new Date().getTime() - MESSAGE_RATE_LIMIT
-    if (lastMessage > cutOff) {
-      return callback(null, {
-        statusCode: 401,
-        body: 'Only one message an hour allowed',
-      })
+  const user = await fetchUser(context.clientContext.identity, claims.sub)
+  const lastMessage = new Date(user.app_metadata.last_message_at || 0).getTime()
+  const cutOff = new Date().getTime() - MESSAGE_RATE_LIMIT
+  if (lastMessage > cutOff) {
+    return {
+      statusCode: 401,
+      body: 'Only one message an hour allowed',
     }
+  }
 
-    try {
-      const payload = JSON.parse(event.body)
+  try {
+    const payload = JSON.parse(event.body)
 
-      fetch(slackURL, {
-        method: 'POST',
-        body: JSON.stringify({
-          text: payload.text,
-          attachments: [{ text: `From ${user.email}` }],
-        }),
-      })
-        .then(() =>
-          updateUser(context.clientContext.identity, user, {
-            last_message_at: new Date().getTime(),
-          }),
-        )
-        .then(() => {
-          callback(null, { statusCode: 204 })
-        })
-        .catch((error) => {
-          callback(null, {
-            statusCode: 500,
-            body: `Internal Server Error: ${error}`,
-          })
-        })
-    } catch (error) {
-      return callback(null, { statusCode: 500, body: `Internal Server Error: ${error}` })
-    }
-  })
+    await fetch(slackURL, {
+      method: 'POST',
+      body: JSON.stringify({
+        text: payload.text,
+        attachments: [{ text: `From ${user.email}` }],
+      }),
+    })
+    await updateUser(context.clientContext.identity, user, {
+      last_message_at: new Date().getTime(),
+    })
+    return { statusCode: 204 }
+  } catch (error) {
+    return { statusCode: 500, body: `Internal Server Error: ${error}` }
+  }
 }

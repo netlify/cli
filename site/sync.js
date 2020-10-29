@@ -28,6 +28,7 @@ const syncLocalContent = async function () {
     })
 
   await Promise.all(mdFiles)
+  console.log('Synced!')
 }
 
 const removeMarkDownLinks = async function (filePath) {
@@ -46,6 +47,4 @@ const removeMarkDownLinks = async function (filePath) {
   return filePath
 }
 
-syncLocalContent().then(() => {
-  console.log('Synced!')
-})
+syncLocalContent()

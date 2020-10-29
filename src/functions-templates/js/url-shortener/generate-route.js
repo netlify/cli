@@ -1,12 +1,13 @@
 'use strict'
 const process = require('process')
 
+const fetch = require('fetch')
+const FormData = require('form-data')
 const Hashids = require('hashids')
-const request = require('request')
 
 const NUMBER_TO_CODE = 100
 
-module.exports = function handler(event, context, callback) {
+module.exports = async function handler(event) {
   // Set the root URL according to the Netlify site we are within
   const rootURL = `${process.env.URL}/`
 
@@ -24,26 +25,26 @@ module.exports = function handler(event, context, callback) {
   }
 
   // prepare a payload to post
-  const payload = {
-    'form-name': 'routes',
-    destination,
-    code,
-    expires: '',
-  }
+  const form = new FormData()
+  form.append('form-name', 'routes')
+  form.append('destination', destination)
+  form.append('code', code)
+  form.append('expires', '')
 
   // post the new route to the Routes form
-  request.post({ url: rootURL, formData: payload }, function onResponse(err) {
-    const msg = err
-      ? `Post to Routes stash failed: ${err}`
-      : `Route registered. Site deploying to include it. ${rootURL}${code}`
-    console.log(msg)
+  try {
+    await fetch(rootURL, { method: 'POST' })
+    const url = `${rootURL}${code}`
+    console.log(`Route registered. Site deploying to include it. ${url}`)
     // tell the user what their shortcode will be
-    return callback(null, {
+    return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: rootURL + code }),
-    })
-  })
+      body: JSON.stringify({ url }),
+    }
+  } catch (error) {
+    return { statusCode: 500, body: `Post to Routes stash failed: ${error.message}` }
+  }
 
   // ENHANCEMENT: check for uniqueness of shortcode
   // ENHANCEMENT: let the user provide their own shortcode

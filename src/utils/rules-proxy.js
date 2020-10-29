@@ -87,37 +87,38 @@ const createRewriter = async function ({ distDir, projectDir, jwtSecret, jwtRole
     }
   }
 
-  return function rewriter(req, res, next) {
-    getMatcher().then((matcherFunc) => {
-      const reqUrl = new url.URL(
-        req.url,
-        `${req.protocol || (req.headers.scheme && `${req.headers.scheme}:`) || 'http:'}//${
-          req.hostname || req.headers.host
-        }`,
-      )
-      const cookieValues = cookie.parse(req.headers.cookie || '')
-      const headers = {
-        'x-language': cookieValues.nf_lang || getLanguage(req.headers),
-        'x-country': cookieValues.nf_country || getCountry(req),
-        ...req.headers,
-      }
+  return async function rewriter(req) {
+    const matcherFunc = await getMatcher()
+    const reqUrl = new url.URL(
+      req.url,
+      `${req.protocol || (req.headers.scheme && `${req.headers.scheme}:`) || 'http:'}//${
+        req.hostname || req.headers.host
+      }`,
+    )
+    const cookieValues = cookie.parse(req.headers.cookie || '')
+    const headers = {
+      'x-language': cookieValues.nf_lang || getLanguage(req.headers),
+      'x-country': cookieValues.nf_country || getCountry(req),
+      ...req.headers,
+    }
 
-      // Definition: https://github.com/netlify/libredirect/blob/e81bbeeff9f7c260a5fb74cad296ccc67a92325b/node/src/redirects.cpp#L28-L60
-      const matchReq = {
-        scheme: reqUrl.protocol.replace(/:.*$/, ''),
-        host: reqUrl.hostname,
-        path: reqUrl.pathname,
-        query: reqUrl.search.slice(1),
-        headers,
-        cookieValues,
-        getHeader: (name) => headers[name.toLowerCase()] || '',
-        getCookie: (key) => cookieValues[key] || '',
-      }
-      const match = matcherFunc.match(matchReq)
-      if (match) return next(match)
+    // Definition: https://github.com/netlify/libredirect/blob/e81bbeeff9f7c260a5fb74cad296ccc67a92325b/node/src/redirects.cpp#L28-L60
+    const matchReq = {
+      scheme: reqUrl.protocol.replace(/:.*$/, ''),
+      host: reqUrl.hostname,
+      path: reqUrl.pathname,
+      query: reqUrl.search.slice(1),
+      headers,
+      cookieValues,
+      getHeader: (name) => headers[name.toLowerCase()] || '',
+      getCookie: (key) => cookieValues[key] || '',
+    }
+    const match = matcherFunc.match(matchReq)
+    if (!match) {
+      return
+    }
 
-      next()
-    })
+    return match
   }
 }
 

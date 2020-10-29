@@ -7,7 +7,7 @@ const process = require('process')
 const fetch = require('node-fetch')
 
 /* sync GraphQL schema to your FaunaDB account - use with `netlify dev:exec <path-to-this-file>` */
-const createFaunaGraphQL = function () {
+const createFaunaGraphQL = async function () {
   if (!process.env.FAUNADB_SERVER_SECRET) {
     console.log('No FAUNADB_SERVER_SECRET in environment, skipping DB setup')
   }
@@ -25,14 +25,14 @@ const createFaunaGraphQL = function () {
     headers: { Authorization: `Basic ${token}` },
   }
 
-  fetch('https://graphql.fauna.com/import', options)
-    // // uncomment for debugging
-    .then((res) => res.text())
-    .then((body) => {
-      console.log('Netlify Functions:Create - `fauna-graphql/sync-schema.js` success!')
-      console.log(body)
-    })
-    .catch((error) => console.error('something wrong happened:', { err: error }))
+  try {
+    const res = await fetch('https://graphql.fauna.com/import', options)
+    const body = await res.text()
+    console.log('Netlify Functions:Create - `fauna-graphql/sync-schema.js` success!')
+    console.log(body)
+  } catch (error) {
+    console.error('something wrong happened:', { err: error })
+  }
 }
 
 createFaunaGraphQL()
