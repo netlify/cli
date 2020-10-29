@@ -13,8 +13,7 @@ const wrapAnsi = require('wrap-ansi')
 
 const Command = require('../../utils/command')
 const { serverSettings } = require('../../utils/detect-server')
-const { addEnvVariables } = require('../../utils/dev')
-const { getEnvSettings } = require('../../utils/env')
+const { getSiteInformation, addEnvVariables } = require('../../utils/dev')
 const { startLiveTunnel } = require('../../utils/live-tunnel')
 const { NETLIFYDEV, NETLIFYDEVLOG, NETLIFYDEVWARN, NETLIFYDEVERR } = require('../../utils/logo')
 const openBrowser = require('../../utils/open-browser')
@@ -99,29 +98,7 @@ const startFrameworkServer = async function ({ settings, log, exit }) {
 // 1 minute
 const FRAMEWORK_PORT_TIMEOUT = 6e5
 
-const getAddonsUrlsAndAddEnvVariablesToProcessEnv = async ({ api, site, flags }) => {
-  if (site.id && !flags.offline) {
-    const addonUrls = await addEnvVariables(api, site)
-    return addonUrls
-  }
-  return {}
-}
-
-const addDotFileEnvs = async ({ site, log, warn }) => {
-  // add .env file environment variables
-  const envSettings = await getEnvSettings({ projectDir: site.root, warn })
-  if (envSettings.vars.length !== 0) {
-    log(
-      `${NETLIFYDEVLOG} Adding the following env variables from ${envSettings.files.map((file) => chalk.blue(file))}:`,
-      chalk.yellow(envSettings.vars.map(([key]) => key)),
-    )
-    envSettings.vars.forEach(([key, val]) => {
-      process.env[key] = val
-    })
-  }
-}
-
-const startProxyServer = async ({ flags, settings, site, log, exit, addonUrls }) => {
+const startProxyServer = async ({ flags, settings, site, log, exit, addonsUrls }) => {
   let url
   if (flags.trafficMesh) {
     url = await startForwardProxy({
@@ -137,7 +114,7 @@ const startProxyServer = async ({ flags, settings, site, log, exit, addonUrls })
       exit(1)
     }
   } else {
-    url = await startProxy(settings, addonUrls, site.configPath, site.root)
+    url = await startProxy(settings, addonsUrls, site.configPath, site.root)
     if (!url) {
       log(NETLIFYDEVERR, `Unable to start proxy server on port '${settings.port}'`)
       exit(1)
@@ -202,9 +179,15 @@ class DevCommand extends Command {
       ...flags,
     }
 
-    const addonUrls = await getAddonsUrlsAndAddEnvVariablesToProcessEnv({ api, site, flags })
-    process.env.NETLIFY_DEV = 'true'
-    await addDotFileEnvs({ site, log, warn })
+    const { addonsUrls, teamEnv, addonsEnv, siteEnv, dotFilesEnv } = await getSiteInformation({
+      flags,
+      api,
+      site,
+      warn,
+      error: errorExit,
+    })
+
+    await addEnvVariables({ log, teamEnv, addonsEnv, siteEnv, dotFilesEnv })
 
     let settings = {}
     try {
@@ -217,7 +200,7 @@ class DevCommand extends Command {
     await startFunctionsServer({ settings, site, log, warn, errorExit, siteInfo: this.netlify.cachedConfig.siteInfo })
     await startFrameworkServer({ settings, log, exit })
 
-    let url = await startProxyServer({ flags, settings, site, log, exit, addonUrls })
+    let url = await startProxyServer({ flags, settings, site, log, exit, addonsUrls })
 
     const liveTunnelUrl = await handleLiveTunnel({ flags, site, api, settings, log })
     url = liveTunnelUrl || url

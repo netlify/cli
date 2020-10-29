@@ -1,4 +1,3 @@
-// dotenv loading similar to create-react-app / react-scripts or dotenv-load
 const path = require('path')
 const process = require('process')
 
@@ -7,7 +6,7 @@ const filterObject = require('filter-obj')
 
 const { isFileAsync, readFileAsync } = require('../lib/fs')
 
-const getEnvSettings = async function ({ projectDir, warn }) {
+const loadDotEnvFiles = async function ({ projectDir, warn }) {
   const dotenvFiles = ['.env.development', '.env']
   const results = await Promise.all(
     dotenvFiles.map(async (file) => {
@@ -29,10 +28,7 @@ const getEnvSettings = async function ({ projectDir, warn }) {
     }),
   )
 
-  const allResults = results.filter(Boolean)
-  const files = allResults.map(({ file }) => file)
-  const vars = Object.entries(Object.assign({}, ...allResults.reverse().map(({ env }) => env)))
-  return { files, vars }
+  return results.filter(Boolean)
 }
 
-module.exports = { getEnvSettings }
+module.exports = { loadDotEnvFiles }
