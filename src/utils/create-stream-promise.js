@@ -1,3 +1,5 @@
+'use strict'
+
 const { Buffer } = require('buffer')
 
 const createStreamPromise = function (stream, timeoutSeconds, bytesLimit = DEFAULT_BYTES_LIMIT) {

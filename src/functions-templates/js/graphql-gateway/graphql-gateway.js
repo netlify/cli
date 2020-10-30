@@ -1,3 +1,5 @@
+'use strict'
+
 /**
  * This code assumes you have other graphql Netlify functions
  * and shows you how to stitch them together in a "gateway".

@@ -1,3 +1,5 @@
+'use strict'
+
 /**
  * responsible for any js based projects
  * and can therefore build in assumptions that only js projects have

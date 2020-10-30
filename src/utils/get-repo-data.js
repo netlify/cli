@@ -1,3 +1,5 @@
+'use strict'
+
 const path = require('path')
 const process = require('process')
 const util = require('util')

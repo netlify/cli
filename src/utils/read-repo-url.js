@@ -1,3 +1,5 @@
+'use strict'
+
 const url = require('url')
 
 const fetch = require('node-fetch')

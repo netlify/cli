@@ -1,3 +1,5 @@
+'use strict'
+
 const AsciiTable = require('ascii-table')
 const isEmpty = require('lodash.isempty')
 

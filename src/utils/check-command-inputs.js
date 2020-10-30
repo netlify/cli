@@ -1,3 +1,5 @@
+'use strict'
+
 // Checks for args or flags supplied to command
 const isEmptyCommand = function (flags, args) {
   if (!hasFlags(flags) && !hasArgs(args)) {

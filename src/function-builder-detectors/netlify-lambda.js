@@ -1,3 +1,5 @@
+'use strict'
+
 const { existsSync, readFileSync } = require('fs')
 
 const execa = require('execa')

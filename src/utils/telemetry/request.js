@@ -1,3 +1,5 @@
+'use strict'
+
 // Spawn a detached process
 const process = require('process')
 

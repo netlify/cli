@@ -1,3 +1,5 @@
+'use strict'
+
 const { flags: flagsLib } = require('@oclif/command')
 
 const { isEmptyCommand } = require('../../utils/check-command-inputs')

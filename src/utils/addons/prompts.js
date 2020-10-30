@@ -1,3 +1,5 @@
+'use strict'
+
 const chalk = require('chalk')
 
 /* programmatically generate CLI prompts */

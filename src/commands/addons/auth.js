@@ -1,3 +1,5 @@
+'use strict'
+
 const { prepareAddonCommand, ADDON_VALIDATION } = require('../../utils/addons/prepare')
 const Command = require('../../utils/command')
 const openBrowser = require('../../utils/open-browser')

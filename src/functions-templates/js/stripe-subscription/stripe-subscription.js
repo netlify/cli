@@ -1,3 +1,5 @@
+'use strict'
+
 // with thanks https://github.com/LukeMwila/stripe-subscriptions-backend/blob/master/stripe-api/index.ts
 const process = require('process')
 

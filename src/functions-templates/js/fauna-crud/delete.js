@@ -1,3 +1,5 @@
+'use strict'
+
 /* Import faunaDB sdk */
 const process = require('process')
 

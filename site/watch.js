@@ -1,3 +1,5 @@
+'use strict'
+
 /* Syncs blog content from repo to /site/blog */
 const fs = require('fs').promises
 const path = require('path')

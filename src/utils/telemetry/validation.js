@@ -1,3 +1,5 @@
+'use strict'
+
 /**
  * Utility to validating analytic event names for clean data
  */

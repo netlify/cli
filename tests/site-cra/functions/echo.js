@@ -1,3 +1,5 @@
+'use strict'
+
 const handler = async (event, context) => {
   return {
     statusCode: 200,

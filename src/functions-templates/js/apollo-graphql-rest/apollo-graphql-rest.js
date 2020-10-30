@@ -1,3 +1,5 @@
+'use strict'
+
 const { ApolloServer, gql } = require('apollo-server-lambda')
 
 const RandomUser = require('./random-user.js')

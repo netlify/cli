@@ -1,3 +1,5 @@
+'use strict'
+
 const { flags } = require('@oclif/command')
 
 const Command = require('../../utils/command')

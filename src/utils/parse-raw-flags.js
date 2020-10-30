@@ -1,3 +1,5 @@
+'use strict'
+
 // Get flags from `raw` data
 //
 // Needed for commands using Command.strict = false

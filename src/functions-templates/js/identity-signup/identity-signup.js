@@ -1,3 +1,5 @@
+'use strict'
+
 // note - this function MUST be named `identity-signup` to work
 // we do not yet offer local emulation of this functionality in Netlify Dev
 //

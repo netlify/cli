@@ -1,3 +1,5 @@
+'use strict'
+
 const isEqual = require('lodash.isequal')
 
 module.exports = function compare(oldValues, newValues) {

@@ -1,3 +1,5 @@
+'use strict'
+
 // // optionally configure local env vars
 // require('dotenv').config()
 

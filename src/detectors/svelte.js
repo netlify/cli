@@ -1,3 +1,5 @@
+'use strict'
+
 const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
 
 const FRAMEWORK_PORT = 5000

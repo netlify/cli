@@ -1,3 +1,5 @@
+'use strict'
+
 const { Command, flags } = require('@oclif/command')
 
 class SitesConfigCommand extends Command {

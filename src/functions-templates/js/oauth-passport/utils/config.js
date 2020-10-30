@@ -1,3 +1,5 @@
+'use strict'
+
 // lambda/utils/config.js
 // Circumvent problem with Netlify CLI.
 // https://github.com/netlify/netlify-dev-plugin/issues/147

@@ -1,3 +1,5 @@
+'use strict'
+
 const process = require('process')
 
 const { query, Client } = require('faunadb')

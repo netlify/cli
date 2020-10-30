@@ -1,3 +1,5 @@
+'use strict'
+
 const AsciiTable = require('ascii-table')
 const chalk = require('chalk')
 

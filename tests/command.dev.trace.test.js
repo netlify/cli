@@ -1,3 +1,5 @@
+'use strict'
+
 const test = require('ava')
 
 const callCli = require('./utils/call-cli')

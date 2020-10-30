@@ -1,8 +1,15 @@
+'use strict'
+
 const { overrides } = require('@netlify/eslint-config-node')
 
 module.exports = {
   extends: '@netlify/eslint-config-node',
+  parserOptions: {
+    sourceType: 'script',
+  },
   rules: {
+    strict: 2,
+
     // Those rules from @netlify/eslint-config-node are currently disabled
     // TODO: remove, so those rules are enabled
     'class-methods-use-this': 0,
@@ -38,6 +45,12 @@ module.exports = {
   },
   overrides: [
     ...overrides,
+    {
+      files: ['**/*.md'],
+      rules: {
+        strict: 0,
+      },
+    },
     // Documentation site's browser JavaScript
     {
       files: ['site/src/**/*.js'],

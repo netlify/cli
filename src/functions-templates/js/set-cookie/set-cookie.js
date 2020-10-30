@@ -1,3 +1,5 @@
+'use strict'
+
 const cookie = require('cookie')
 
 // 14 days

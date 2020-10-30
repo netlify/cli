@@ -1,3 +1,5 @@
+'use strict'
+
 const build = require('@netlify/build')
 
 // We have already resolved the configuration using `@netlify/config`

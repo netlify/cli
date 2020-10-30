@@ -1,3 +1,5 @@
+'use strict'
+
 const process = require('process')
 
 const { flags: flagsLib } = require('@oclif/command')

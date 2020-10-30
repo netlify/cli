@@ -1,3 +1,5 @@
+'use strict'
+
 const chalk = require('chalk')
 
 // eslint-disable-next-line no-magic-numbers

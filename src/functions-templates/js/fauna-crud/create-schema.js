@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+'use strict'
+
 const process = require('process')
 
 /* bootstrap database in your FaunaDB account - use with `netlify dev:exec <path-to-this-file>` */

@@ -1,3 +1,5 @@
+'use strict'
+
 // not meant to be run inside the graqhql-gateway function
 // but just shows a copy-pastable example sibling function
 // that would work with graphql-gateway

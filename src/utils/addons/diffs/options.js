@@ -1,3 +1,5 @@
+'use strict'
+
 const ansiStyles = require('ansi-styles')
 const chalk = require('chalk')
 

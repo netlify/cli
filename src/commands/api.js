@@ -1,3 +1,5 @@
+'use strict'
+
 const oclif = require('@oclif/command')
 const AsciiTable = require('ascii-table')
 const chalk = require('chalk')

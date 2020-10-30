@@ -1,3 +1,5 @@
+'use strict'
+
 // code walkthrough: https://www.netlify.com/blog/2018/03/29/jamstack-architecture-on-netlify-how-identity-and-functions-work-together/#updating-user-data-with-the-identity-api
 // demo repo: https://github.com/biilmann/testing-slack-tutorial/tree/v3-one-message-an-hour
 // note: requires SLACK_WEBHOOK_URL environment variable

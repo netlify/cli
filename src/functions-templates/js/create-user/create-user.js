@@ -1,3 +1,5 @@
+'use strict'
+
 const fetch = require('node-fetch')
 
 const handler = async (event, context) => {

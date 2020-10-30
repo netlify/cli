@@ -1,3 +1,5 @@
+'use strict'
+
 const path = require('path')
 
 const rootDir = path.join(__dirname, '..')

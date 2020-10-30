@@ -1,3 +1,5 @@
+'use strict'
+
 const concordance = require('concordance')
 
 const { concordanceOptions, concordanceDiffOptions } = require('./options')

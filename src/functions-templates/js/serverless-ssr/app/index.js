@@ -1,3 +1,5 @@
+'use strict'
+
 /* Express App */
 const process = require('process')
 

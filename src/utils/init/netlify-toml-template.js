@@ -1,3 +1,5 @@
+'use strict'
+
 const makeNetlifyTOMLtemplate = ({ command = '# no build command', publish = '.' }) => `# example netlify.toml
 [build]
   command = "${command}"

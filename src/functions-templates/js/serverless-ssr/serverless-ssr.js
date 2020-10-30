@@ -1,3 +1,5 @@
+'use strict'
+
 // for a full working demo check https://express-via-functions.netlify.com/.netlify/functions/serverless-http
 const serverless = require('serverless-http')
 

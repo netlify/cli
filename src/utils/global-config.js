@@ -1,3 +1,5 @@
+'use strict'
+
 const Configstore = require('configstore')
 const { v4: uuidv4 } = require('uuid')
 

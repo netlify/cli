@@ -1,3 +1,5 @@
+'use strict'
+
 const Command = require('../../utils/command')
 
 class EnvUnsetCommand extends Command {

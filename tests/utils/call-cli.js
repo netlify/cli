@@ -1,3 +1,5 @@
+'use strict'
+
 const execa = require('execa')
 
 const cliPath = require('./cli-path')

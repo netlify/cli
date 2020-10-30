@@ -1,3 +1,5 @@
+'use strict'
+
 // Handlers are meant to be async outside tests
 /* eslint-disable require-await */
 const test = require('ava')

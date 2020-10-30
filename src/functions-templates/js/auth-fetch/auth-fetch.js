@@ -1,3 +1,5 @@
+'use strict'
+
 // for a full working demo of Netlify Identity + Functions, see https://netlify-gotrue-in-react.netlify.com/
 
 const fetch = require('node-fetch')

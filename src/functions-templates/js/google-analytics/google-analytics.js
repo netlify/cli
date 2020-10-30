@@ -1,3 +1,5 @@
+'use strict'
+
 // with thanks to https://github.com/codeniko/simple-tracker/blob/master/examples/server-examples/aws-lambda/google-analytics.js
 const querystring = require('querystring')
 

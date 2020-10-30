@@ -1,3 +1,5 @@
+'use strict'
+
 const generateRoute = require('./generate-route')
 const getRoute = require('./get-route')
 

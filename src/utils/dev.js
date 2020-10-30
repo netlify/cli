@@ -1,3 +1,5 @@
+'use strict'
+
 const process = require('process')
 
 const fromEntries = require('@ungap/from-entries')

@@ -1,3 +1,5 @@
+'use strict'
+
 const test = require('ava')
 
 const { parseRawFlags, aggressiveJSONParse } = require('./parse-raw-flags')

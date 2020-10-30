@@ -1,3 +1,5 @@
+'use strict'
+
 const { sign } = require('jsonwebtoken')
 const passport = require('passport')
 const { Strategy: GitHubStrategy } = require('passport-github2')

@@ -1,3 +1,5 @@
+'use strict'
+
 const { Buffer } = require('buffer')
 const querystring = require('querystring')
 const { Readable } = require('stream')

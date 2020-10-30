@@ -1,3 +1,5 @@
+'use strict'
+
 const { CLIError } = require('@oclif/errors')
 const chalk = require('chalk')
 const cli = require('cli-ux').default

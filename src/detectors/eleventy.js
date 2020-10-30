@@ -1,3 +1,5 @@
+'use strict'
+
 const { hasRequiredDeps, hasRequiredFiles } = require('./utils/jsdetect')
 
 const FRAMEWORK_PORT = 8080

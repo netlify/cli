@@ -1,3 +1,5 @@
+'use strict'
+
 const createRoute = require('./create')
 const deleteRoute = require('./delete')
 const readRoute = require('./read')

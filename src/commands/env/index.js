@@ -1,3 +1,5 @@
+'use strict'
+
 const { isEmptyCommand } = require('../../utils/check-command-inputs')
 const Command = require('../../utils/command')
 const showHelp = require('../../utils/show-help')

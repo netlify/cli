@@ -1,3 +1,5 @@
+'use strict'
+
 const { existsSync } = require('fs')
 
 const FRAMEWORK_PORT = 4567

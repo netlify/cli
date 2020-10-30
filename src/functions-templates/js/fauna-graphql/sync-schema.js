@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+'use strict'
+
 const { Buffer } = require('buffer')
 const fs = require('fs')
 const path = require('path')

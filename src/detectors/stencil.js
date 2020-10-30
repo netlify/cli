@@ -1,3 +1,5 @@
+'use strict'
+
 const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
 
 // the port that stencil normally outputs

@@ -1,3 +1,5 @@
+'use strict'
+
 const { track } = require('../utils/telemetry')
 
 const hook = function (options) {

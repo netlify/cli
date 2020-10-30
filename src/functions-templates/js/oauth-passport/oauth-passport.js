@@ -1,3 +1,5 @@
+'use strict'
+
 // details: https://markus.oberlehner.net/blog/implementing-an-authentication-flow-with-passport-and-netlify-functions/
 
 const bodyParser = require('body-parser')

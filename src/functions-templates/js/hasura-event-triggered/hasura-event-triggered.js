@@ -1,3 +1,5 @@
+'use strict'
+
 // with thanks to https://github.com/vnovick/netlify-function-example/blob/master/functions/bad-words.js
 const axios = require('axios')
 const Filter = require('bad-words')

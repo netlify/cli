@@ -1,3 +1,5 @@
+'use strict'
+
 const logSymbols = require('log-symbols')
 const ora = require('ora')
 

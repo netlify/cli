@@ -1,3 +1,5 @@
+'use strict'
+
 const requiredConfigValues = function (config) {
   return Object.keys(config).filter((key) => {
     return config[key].required

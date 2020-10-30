@@ -1,3 +1,5 @@
+'use strict'
+
 const get = require('lodash.get')
 const prettyjson = require('prettyjson')
 

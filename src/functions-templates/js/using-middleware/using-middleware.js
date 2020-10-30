@@ -1,3 +1,5 @@
+'use strict'
+
 const middy = require('middy')
 const { jsonBodyParser, validator, httpErrorHandler, httpHeaderNormalizer } = require('middy/middlewares')
 
