@@ -1,4 +1,5 @@
 const { flags } = require('@oclif/command')
+
 const Command = require('../../utils/command')
 const { runProcess } = require('../../utils/traffic-mesh')
 
