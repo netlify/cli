@@ -8,6 +8,7 @@ const makeDir = require('make-dir')
 const writeFileAtomic = require('write-file-atomic')
 
 const { getPathInProject } = require('../lib/settings')
+
 const STATE_PATH = getPathInProject(['state.json'])
 const permissionError = "You don't have access to this file."
 

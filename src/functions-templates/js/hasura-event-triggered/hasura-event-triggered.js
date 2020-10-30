@@ -1,6 +1,7 @@
 // with thanks to https://github.com/vnovick/netlify-function-example/blob/master/functions/bad-words.js
 const axios = require('axios')
 const Filter = require('bad-words')
+
 const filter = new Filter()
 const hgeEndpoint = 'https://live-coding-netlify.herokuapp.com'
 

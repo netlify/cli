@@ -5,6 +5,7 @@
 const process = require('process')
 
 const fetch = require('node-fetch')
+
 const { EMAIL_TOKEN } = process.env
 const handler = async (event) => {
   const { email } = JSON.parse(event.body).payload

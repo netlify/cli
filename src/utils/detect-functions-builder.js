@@ -6,7 +6,7 @@ const detectFunctionsBuilder = async function (projectDir) {
     .readdirSync(path.join(__dirname, '..', 'function-builder-detectors'))
     // only accept .js detector files
     .filter((filename) => filename.endsWith('.js'))
-    // eslint-disable-next-line node/global-require
+    // eslint-disable-next-line node/global-require, import/no-dynamic-require
     .map((det) => require(path.join(__dirname, '..', `function-builder-detectors/${det}`)))
 
   for (const detector of detectors) {

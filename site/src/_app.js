@@ -4,6 +4,7 @@ import RebassMDX from '@rebass/mdx'
 import sortBy from 'lodash.sortby'
 import React from 'react'
 import { Link } from 'react-router-dom'
+// eslint-disable-next-line import/no-namespace
 import * as Rebass from 'rebass'
 
 import Layout from './_layout.js'

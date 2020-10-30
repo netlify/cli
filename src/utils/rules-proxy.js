@@ -8,7 +8,8 @@ const { parseRedirectsFormat, parseNetlifyConfig } = require('netlify-redirect-p
 const redirector = require('netlify-redirector')
 
 const { fileExistsAsync } = require('../lib/fs')
-const { NETLIFYDEVWARN, NETLIFYDEVLOG } = require('../utils/logo')
+
+const { NETLIFYDEVWARN, NETLIFYDEVLOG } = require('./logo')
 
 const parseFile = async function (filePath) {
   if (!(await fileExistsAsync(filePath))) {

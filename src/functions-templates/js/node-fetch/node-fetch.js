@@ -1,4 +1,5 @@
 const fetch = require('node-fetch')
+
 const handler = async function () {
   try {
     const response = await fetch('https://icanhazdadjoke.com', {
