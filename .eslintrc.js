@@ -1,7 +1,12 @@
 const { overrides } = require('@netlify/eslint-config-node')
 
 module.exports = {
-  extends: ['@netlify/eslint-config-node', 'plugin:promise/recommended', 'plugin:import/recommended'],
+  extends: [
+    '@netlify/eslint-config-node',
+    'plugin:promise/recommended',
+    'plugin:import/recommended',
+    'plugin:fp/recommended',
+  ],
   rules: {
     // Those rules from @netlify/eslint-config-node are currently disabled
     // TODO: remove
@@ -14,10 +19,24 @@ module.exports = {
     'max-statements': 0,
     'no-param-reassign': 0,
     'no-process-exit': 0,
+    'fp/no-class': 0,
+    'fp/no-delete': 0,
+    'fp/no-get-set': 0,
+    'fp/no-let': 0,
+    'fp/no-loops': 0,
+    'fp/no-mutating-assign': 0,
     'fp/no-mutating-methods': 0,
     'fp/no-mutation': 0,
+    'fp/no-proxy': 0,
+    'fp/no-this': 0,
     'import/max-dependencies': 0,
     'node/no-sync': 0,
+
+    // Those rules are too strict
+    'fp/no-rest-parameters': 0,
+    'fp/no-unused-expression': 0,
+    'fp/no-nil': 0,
+    'fp/no-throw': 0,
 
     // TODO: enable the disabled rules
     'promise/always-return': 0,
