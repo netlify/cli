@@ -9,8 +9,13 @@ const authJwt = function (email) {
   return sign({ user: { email } }, SECRET)
 }
 
-passport.use(
-  new GitHubStrategy(
+const applyPassportStrategies = function () {
+  passport.use(getGitHubStrategy())
+  passport.use(getJwtStrategy())
+}
+
+const getGitHubStrategy = function () {
+  return new GitHubStrategy(
     {
       clientID: GITHUB_CLIENT_ID,
       clientSecret: GITHUB_CLIENT_SECRET,
@@ -29,11 +34,11 @@ passport.use(
         return done(error)
       }
     },
-  ),
-)
+  )
+}
 
-passport.use(
-  new passportJwt.Strategy(
+const getJwtStrategy = function () {
+  return new passportJwt.Strategy(
     {
       jwtFromRequest(req) {
         if (!req.cookies) throw new Error('Missing cookie-parser middleware')
@@ -52,5 +57,9 @@ passport.use(
         return done(error)
       }
     },
-  ),
-)
+  )
+}
+
+module.exports = {
+  applyPassportStrategies,
+}

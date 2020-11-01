@@ -5,6 +5,7 @@ const fetch = require('node-fetch')
 const waitPort = require('wait-port')
 
 const { startDevServer } = require('./utils/dev-server')
+
 const sitePath = path.join(__dirname, 'site-cra')
 
 test.before(async (t) => {

@@ -21,7 +21,7 @@ class TraceCommand extends Command {
 }
 
 TraceCommand.description = `Trace command
-Simulates Netlify's Edge routing logic to match specific requests. 
+Simulates Netlify's Edge routing logic to match specific requests.
 This command is designed to mimic cURL's command line, so the flags are more familiar.
 `
 
