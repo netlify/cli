@@ -33,7 +33,7 @@ module.exports = async function handler(event) {
 
   // post the new route to the Routes form
   try {
-    await fetch(rootURL, { method: 'POST' })
+    await fetch(rootURL, { method: 'POST', body: form })
     const url = `${rootURL}${code}`
     console.log(`Route registered. Site deploying to include it. ${url}`)
     // tell the user what their shortcode will be
