@@ -72,7 +72,7 @@ $ netlify dev:exec npm run bootstrap
 ## `dev:trace`
 
 Trace command
-Simulates Netlify's Edge routing logic to match specific requests. 
+Simulates Netlify's Edge routing logic to match specific requests.
 This command is designed to mimic cURL's command line, so the flags are more familiar.
 
 
