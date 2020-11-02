@@ -1,15 +1,10 @@
 const { overrides } = require('@netlify/eslint-config-node')
 
 module.exports = {
-  extends: [
-    '@netlify/eslint-config-node',
-    'plugin:promise/recommended',
-    'plugin:import/recommended',
-    'plugin:fp/recommended',
-  ],
+  extends: '@netlify/eslint-config-node',
   rules: {
     // Those rules from @netlify/eslint-config-node are currently disabled
-    // TODO: remove
+    // TODO: remove, so those rules are enabled
     'class-methods-use-this': 0,
     complexity: 0,
     'max-depth': 0,
@@ -31,41 +26,13 @@ module.exports = {
     'fp/no-this': 0,
     'import/max-dependencies': 0,
     'node/no-sync': 0,
-
-    // Those rules are too strict
-    'fp/no-rest-parameters': 0,
-    'fp/no-unused-expression': 0,
-    'fp/no-nil': 0,
-    'fp/no-throw': 0,
-
-    // TODO: enable the disabled rules
     'promise/always-return': 0,
-    'promise/avoid-new': 0,
     'promise/catch-or-return': 0,
     'promise/no-callback-in-promise': 0,
     'promise/no-nesting': 0,
-    'promise/no-promise-in-callback': 2,
-    'promise/no-return-in-finally': 2,
     'promise/no-return-wrap': 0,
     'promise/prefer-await-to-callbacks': 0,
     'promise/prefer-await-to-then': 0,
-    'promise/valid-params': 2,
-
-    'import/extensions': [2, 'always', { ignorePackages: true }],
-    'import/newline-after-import': 2,
-    'import/no-amd': 2,
-    'import/no-anonymous-default-export': 2,
-    'import/no-cycle': [2, { commonjs: true }],
-    'import/no-deprecated': 2,
-    'import/no-dynamic-require': 2,
-    'import/no-extraneous-dependencies': 2,
-    'import/no-mutable-exports': 2,
-    'import/no-named-default': 2,
-    'import/no-namespace': 2,
-    'import/no-self-import': 2,
-    'import/no-unassigned-import': [2, { allow: ['*polyfill*', '**/*polyfill*', 'log-process-errors/**'] }],
-    'import/no-unresolved': [2, { commonjs: true }],
-    'import/no-useless-path-segments': [2, { commonjs: true }],
 
     // TODO: harmonize with filename snake_case in other Netlify Dev projects
     'unicorn/filename-case': [2, { case: 'kebabCase', ignore: ['.*.md'] }],
