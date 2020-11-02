@@ -8,7 +8,7 @@ class TraceCommand extends Command {
     this.parse(TraceCommand)
 
     const args = ['trace'].concat(this.argv)
-    const { subprocess } = await runProcess({ log: this.log, args })
+    const { subprocess } = runProcess({ log: this.log, args })
     await subprocess
 
     await this.config.runHook('analytics', {
