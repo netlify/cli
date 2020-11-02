@@ -60,7 +60,7 @@ const stripOrigin = function ({ pathname, search, hash }) {
 const proxyToExternalUrl = function ({ req, res, dest, destURL }) {
   console.log(`${NETLIFYDEVLOG} Proxying to ${dest}`)
   const handler = createProxyMiddleware({
-    target: `${dest.protocol}//${dest.host}`,
+    target: dest.origin,
     changeOrigin: true,
     pathRewrite: () => destURL,
     ...(Buffer.isBuffer(req.originalBody) && { buffer: toReadableStream(req.originalBody) }),
