@@ -53,7 +53,6 @@ const isExternal = function (match) {
 }
 
 const stripOrigin = function ({ pathname, search, hash }) {
-  // Get the URL after http://host:port
   return `${pathname}${search}${hash}`
 }
 
