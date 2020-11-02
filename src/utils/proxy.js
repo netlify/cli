@@ -52,9 +52,9 @@ const isExternal = function (match) {
   return match.to && match.to.match(/^https?:\/\//)
 }
 
-const stripOrigin = function (url) {
+const stripOrigin = function ({ pathname, search, hash }) {
   // Get the URL after http://host:port
-  return url.toString().replace(url.origin, '')
+  return `${pathname}${search}${hash}`
 }
 
 const proxyToExternalUrl = function ({ req, res, dest, destURL }) {
