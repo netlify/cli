@@ -388,20 +388,25 @@ const handleOnComplete = async ({ context, onComplete }) => {
 }
 
 const handleAddonDidInstall = async ({ addonCreated, addonDidInstall, context, fnPath }) => {
-  if (addonCreated && addonDidInstall) {
-    const { confirmPostInstall } = await inquirer.prompt([
-      {
-        type: 'confirm',
-        name: 'confirmPostInstall',
-        message: `This template has an optional setup script that runs after addon install. This can be helpful for first time users to try out templates. Run the script?`,
-        default: false,
-      },
-    ])
-    if (confirmPostInstall) {
-      await injectEnvVariables({ context })
-      addonDidInstall(fnPath)
-    }
+  if (!addonCreated || !addonDidInstall) {
+    return
   }
+
+  const { confirmPostInstall } = await inquirer.prompt([
+    {
+      type: 'confirm',
+      name: 'confirmPostInstall',
+      message: `This template has an optional setup script that runs after addon install. This can be helpful for first time users to try out templates. Run the script?`,
+      default: false,
+    },
+  ])
+
+  if (!confirmPostInstall) {
+    return
+  }
+
+  await injectEnvVariables({ context })
+  addonDidInstall(fnPath)
 }
 
 const installAddons = async function (context, functionAddons, fnPath) {
