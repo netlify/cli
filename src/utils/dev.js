@@ -104,22 +104,18 @@ const addEnvVariables = ({ log, teamEnv, addonsEnv, siteEnv, dotFilesEnv }) => {
   }
 
   for (const key in siteEnv) {
-    const msg = () =>
-      console.log(`${NETLIFYDEVLOG} Injected ${chalk.blue.bold('build setting')} env var: ${chalk.yellow(key)}`)
+    const msg = () => log(`${NETLIFYDEVLOG} Injected ${chalk.blue.bold('build setting')} env var: ${chalk.yellow(key)}`)
     process.env[key] = assignLoudly(process.env[key], siteEnv[key], msg)
   }
 
   for (const key in addonsEnv) {
-    const msg = () =>
-      console.log(`${NETLIFYDEVLOG} Injected ${chalk.yellow.bold('addon')} env var: ${chalk.yellow(key)}`)
+    const msg = () => log(`${NETLIFYDEVLOG} Injected ${chalk.yellow.bold('addon')} env var: ${chalk.yellow(key)}`)
     process.env[key] = assignLoudly(process.env[key], addonsEnv[key], msg)
   }
 
   for (const key in teamEnv) {
     const msg = () =>
-      console.log(
-        `${NETLIFYDEVLOG} Injected ${chalk.magenta.bold('shared build setting')} env var: ${chalk.yellow(key)}`,
-      )
+      log(`${NETLIFYDEVLOG} Injected ${chalk.magenta.bold('shared build setting')} env var: ${chalk.yellow(key)}`)
     process.env[key] = assignLoudly(process.env[key], teamEnv[key], msg)
   }
 
