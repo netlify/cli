@@ -114,10 +114,6 @@ const createRewriter = async function ({ distDir, projectDir, jwtSecret, jwtRole
       getCookie: (key) => cookieValues[key] || '',
     }
     const match = matcherFunc.match(matchReq)
-    if (!match) {
-      return
-    }
-
     return match
   }
 }
