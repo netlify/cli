@@ -3,7 +3,8 @@ const chalk = require('chalk')
 const execa = require('execa')
 
 const Command = require('../../utils/command')
-const { addEnvVariables, getEnvSettings } = require('../../utils/env')
+const { addEnvVariables } = require('../../utils/dev')
+const { getEnvSettings } = require('../../utils/env')
 const {
   // NETLIFYDEV,
   NETLIFYDEVLOG,

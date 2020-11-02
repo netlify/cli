@@ -5,6 +5,7 @@ const test = require('ava')
 const { withSiteBuilder } = require('../../tests/utils/site-builder')
 
 const { getLanguage, parseFile, parseRules } = require('./rules-proxy.js')
+
 test('getLanguage', (t) => {
   const language = getLanguage({ 'accept-language': 'ur' })
 

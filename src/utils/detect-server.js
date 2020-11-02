@@ -210,7 +210,7 @@ const DEFAULT_STATIC_PORT = 3999
 
 const loadDetector = function (detectorName) {
   try {
-    // eslint-disable-next-line node/global-require
+    // eslint-disable-next-line node/global-require, import/no-dynamic-require
     return require(path.join(__dirname, '..', 'detectors', detectorName))
   } catch (error) {
     throw new Error(

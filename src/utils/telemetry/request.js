@@ -2,6 +2,7 @@
 const process = require('process')
 
 const fetch = require('node-fetch')
+
 const options = JSON.parse(process.argv[2])
 
 const CLIENT_ID = 'NETLIFY_CLI'

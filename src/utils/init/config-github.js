@@ -8,7 +8,7 @@ const inquirer = require('inquirer')
 const parseGitRemote = require('parse-github-url')
 
 const { version } = require('../../../package.json')
-const ghauth = require('../../utils/gh-auth')
+const ghauth = require('../gh-auth')
 
 const { makeNetlifyTOMLtemplate } = require('./netlify-toml-template')
 

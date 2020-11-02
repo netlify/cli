@@ -23,6 +23,7 @@ const {
   NETLIFYDEVERR,
 } = require('../../utils/logo')
 const { readRepoURL, validateRepoURL } = require('../../utils/read-repo-url')
+
 const templatesDir = path.resolve(__dirname, '../../functions-templates')
 
 /**
@@ -120,7 +121,7 @@ const formatRegistryArrayForInquirer = function (lang) {
   const registry = folderNames
     // filter out markdown files
     .filter((folderName) => !folderName.endsWith('.md'))
-    // eslint-disable-next-line node/global-require
+    // eslint-disable-next-line node/global-require, import/no-dynamic-require
     .map((folderName) => require(path.join(templatesDir, lang, folderName, '.netlify-function-template.js')))
     .sort(
       (folderNameA, folderNameB) =>
@@ -254,7 +255,7 @@ const downloadFromURL = async function (context, flags, args, functionsDir) {
   // read, execute, and delete function template file if exists
   const fnTemplateFile = path.join(fnFolder, '.netlify-function-template.js')
   if (fs.existsSync(fnTemplateFile)) {
-    // eslint-disable-next-line node/global-require
+    // eslint-disable-next-line node/global-require, import/no-dynamic-require
     const { onComplete, addons = [] } = require(fnTemplateFile)
 
     await installAddons(context, addons, path.resolve(fnFolder))

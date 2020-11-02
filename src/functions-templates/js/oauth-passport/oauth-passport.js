@@ -6,9 +6,10 @@ const express = require('express')
 const passport = require('passport')
 const serverless = require('serverless-http')
 
-require('./utils/auth')
-
+const { applyPassportStrategies } = require('./utils/auth')
 const { COOKIE_SECURE, ENDPOINT } = require('./utils/config')
+
+applyPassportStrategies()
 
 const app = express()
 
