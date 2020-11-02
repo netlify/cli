@@ -9,30 +9,32 @@ const { NETLIFYDEVLOG } = require('./logo')
 const ERROR_CALL_TO_ACTION =
   "Double-check your login status with 'netlify status' or contact support with details of your error."
 
-const getSiteData = async ({ api, site, error }) => {
+const getSiteData = async ({ api, site, failAndExit }) => {
   try {
     const siteData = await api.getSite({ siteId: site.id })
     return siteData
-  } catch (error_) {
-    error(`Failed retrieving site data for site ${chalk.yellow(site.id)}: ${error_.message}. ${ERROR_CALL_TO_ACTION}`)
+  } catch (error) {
+    failAndExit(
+      `Failed retrieving site data for site ${chalk.yellow(site.id)}: ${error.message}. ${ERROR_CALL_TO_ACTION}`,
+    )
   }
 }
 
-const getAccounts = async ({ api, error }) => {
+const getAccounts = async ({ api, failAndExit }) => {
   try {
     const account = await api.listAccountsForUser()
     return account
-  } catch (error_) {
-    error(`Failed retrieving user account: ${error_.message}. ${ERROR_CALL_TO_ACTION}`)
+  } catch (error) {
+    failAndExit(`Failed retrieving user account: ${error.message}. ${ERROR_CALL_TO_ACTION}`)
   }
 }
 
-const getAddons = async ({ api, site, error }) => {
+const getAddons = async ({ api, site, failAndExit }) => {
   try {
     const addons = await api.listServiceInstancesForSite({ siteId: site.id })
     return addons
-  } catch (error_) {
-    error(`Failed retrieving addons for site ${chalk.yellow(site.id)}: ${error_.message}. ${ERROR_CALL_TO_ACTION}`)
+  } catch (error) {
+    failAndExit(`Failed retrieving addons for site ${chalk.yellow(site.id)}: ${error.message}. ${ERROR_CALL_TO_ACTION}`)
   }
 }
 
@@ -57,12 +59,12 @@ const getSiteEnv = ({ siteData }) => {
   return {}
 }
 
-const getSiteInformation = async ({ flags = {}, api, site, warn, error }) => {
+const getSiteInformation = async ({ flags = {}, api, site, warn, error: failAndExit }) => {
   if (site.id && !flags.offline) {
     const [siteData, accounts, addons, dotFilesEnv] = await Promise.all([
-      getSiteData({ api, site, error }),
-      getAccounts({ api, error }),
-      getAddons({ api, site, error }),
+      getSiteData({ api, site, failAndExit }),
+      getAccounts({ api, failAndExit }),
+      getAddons({ api, site, failAndExit }),
       loadDotEnvFiles({ projectDir: site.root, warn }),
     ])
 
