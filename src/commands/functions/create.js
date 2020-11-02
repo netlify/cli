@@ -15,7 +15,7 @@ const ora = require('ora')
 const { mkdirRecursiveSync } = require('../../lib/fs')
 const { getSiteData, getAddons, getCurrentAddon } = require('../../utils/addons/prepare')
 const Command = require('../../utils/command')
-const { addEnvVariables } = require('../../utils/dev')
+const { getSiteInformation, addEnvVariables } = require('../../utils/dev')
 const {
   // NETLIFYDEV,
   NETLIFYDEVLOG,
@@ -259,10 +259,7 @@ const downloadFromURL = async function (context, flags, args, functionsDir) {
     const { onComplete, addons = [] } = require(fnTemplateFile)
 
     await installAddons(context, addons, path.resolve(fnFolder))
-    if (onComplete) {
-      await addEnvVariables(context.netlify.api, context.netlify.site)
-      await onComplete.call(context)
-    }
+    await handleOnComplete({ context, onComplete })
     // delete
     fs.unlinkSync(fnTemplateFile)
   }
@@ -345,10 +342,7 @@ const scaffoldFromTemplate = async function (context, flags, args, functionsDir)
       }
 
       await installAddons(context, addons, path.resolve(functionPath))
-      if (onComplete) {
-        await addEnvVariables(context.netlify.api, context.netlify.site)
-        await onComplete.call(context)
-      }
+      await handleOnComplete({ context, onComplete })
     })
   }
 }
@@ -372,6 +366,47 @@ const createFunctionAddon = async function ({ api, addons, siteId, addonName, si
   } catch (error_) {
     error(error_.message)
   }
+}
+
+const injectEnvVariables = async ({ context }) => {
+  const { log, warn, error, netlify } = context
+  const { api, site } = netlify
+  const { teamEnv, addonsEnv, siteEnv, dotFilesEnv } = await getSiteInformation({
+    api,
+    site,
+    warn,
+    error,
+  })
+  await addEnvVariables({ log, teamEnv, addonsEnv, siteEnv, dotFilesEnv })
+}
+
+const handleOnComplete = async ({ context, onComplete }) => {
+  if (onComplete) {
+    await injectEnvVariables({ context })
+    await onComplete.call(context)
+  }
+}
+
+const handleAddonDidInstall = async ({ addonCreated, addonDidInstall, context, fnPath }) => {
+  if (!addonCreated || !addonDidInstall) {
+    return
+  }
+
+  const { confirmPostInstall } = await inquirer.prompt([
+    {
+      type: 'confirm',
+      name: 'confirmPostInstall',
+      message: `This template has an optional setup script that runs after addon install. This can be helpful for first time users to try out templates. Run the script?`,
+      default: false,
+    },
+  ])
+
+  if (!confirmPostInstall) {
+    return
+  }
+
+  await injectEnvVariables({ context })
+  addonDidInstall(fnPath)
 }
 
 const installAddons = async function (context, functionAddons, fnPath) {
@@ -405,20 +440,8 @@ const installAddons = async function (context, functionAddons, fnPath) {
         log,
         error,
       })
-      if (addonCreated && addonDidInstall) {
-        await addEnvVariables(api, site)
-        const { confirmPostInstall } = await inquirer.prompt([
-          {
-            type: 'confirm',
-            name: 'confirmPostInstall',
-            message: `This template has an optional setup script that runs after addon install. This can be helpful for first time users to try out templates. Run the script?`,
-            default: false,
-          },
-        ])
-        if (confirmPostInstall) {
-          addonDidInstall(fnPath)
-        }
-      }
+
+      await handleAddonDidInstall({ addonCreated, addonDidInstall, context, fnPath })
     } catch (error_) {
       error(`${NETLIFYDEVERR} Error installing addon: `, error_)
     }

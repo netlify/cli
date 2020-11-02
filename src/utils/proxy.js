@@ -29,9 +29,9 @@ const isFunction = function (functionsPort, url) {
   return functionsPort && url.match(/^\/.netlify\/functions\/.+/)
 }
 
-const getAddonUrl = function (addonUrls, req) {
+const getAddonUrl = function (addonsUrls, req) {
   const matches = req.url.match(/^\/.netlify\/([^/]+)(\/.*)/)
-  const addonUrl = matches && addonUrls[matches[1]]
+  const addonUrl = matches && addonsUrls[matches[1]]
   return addonUrl ? `${addonUrl}${matches[2]}` : null
 }
 
@@ -50,6 +50,28 @@ const getStatic = async function (pathname, publicFolder) {
 
 const isExternal = function (match) {
   return match.to && match.to.match(/^https?:\/\//)
+}
+
+const stripOrigin = function ({ pathname, search, hash }) {
+  return `${pathname}${search}${hash}`
+}
+
+const proxyToExternalUrl = function ({ req, res, dest, destURL }) {
+  console.log(`${NETLIFYDEVLOG} Proxying to ${dest}`)
+  const handler = createProxyMiddleware({
+    target: dest.origin,
+    changeOrigin: true,
+    pathRewrite: () => destURL,
+    ...(Buffer.isBuffer(req.originalBody) && { buffer: toReadableStream(req.originalBody) }),
+  })
+  return handler(req, res, {})
+}
+
+const handleAddonUrl = function ({ req, res, addonUrl }) {
+  const dest = new URL(addonUrl)
+  const destURL = stripOrigin(dest)
+
+  return proxyToExternalUrl({ req, res, dest, destURL })
 }
 
 const isRedirect = function (match) {
@@ -106,9 +128,9 @@ const serveRedirect = async function ({ req, res, proxy, match, options }) {
   if (isFunction(options.functionsPort, req.url)) {
     return proxy.web(req, res, { target: options.functionsServer })
   }
-  const urlForAddons = getAddonUrl(options.addonUrls, req)
+  const urlForAddons = getAddonUrl(options.addonsUrls, req)
   if (urlForAddons) {
-    return proxy.web(req, res, { target: urlForAddons })
+    return handleAddonUrl({ req, res, addonUrl: urlForAddons })
   }
 
   if (match.exceptions && match.exceptions.JWT) {
@@ -180,8 +202,7 @@ const serveRedirect = async function ({ req, res, proxy, match, options }) {
       dest.searchParams.set(key, val)
     })
 
-    // Get the URL after http://host:port
-    const destURL = dest.toString().replace(dest.origin, '')
+    const destURL = stripOrigin(dest)
 
     if (isRedirect(match)) {
       res.writeHead(match.status, {
@@ -193,14 +214,7 @@ const serveRedirect = async function ({ req, res, proxy, match, options }) {
     }
 
     if (isExternal(match)) {
-      console.log(`${NETLIFYDEVLOG} Proxying to ${dest}`)
-      const handler = createProxyMiddleware({
-        target: `${dest.protocol}//${dest.host}`,
-        changeOrigin: true,
-        pathRewrite: () => destURL.replace(/https?:\/\/[^/]+/, ''),
-        ...(Buffer.isBuffer(req.originalBody) && { buffer: toReadableStream(req.originalBody) }),
-      })
-      return handler(req, res, {})
+      return proxyToExternalUrl({ req, res, dest, destURL })
     }
 
     const ct = req.headers['content-type'] ? contentType.parse(req).type : ''
@@ -226,9 +240,9 @@ const serveRedirect = async function ({ req, res, proxy, match, options }) {
       req.headers['x-netlify-original-pathname'] = reqUrl.pathname
       return proxy.web(req, res, { target: options.functionsServer })
     }
-    const addonUrl = getAddonUrl(options.addonUrls, req)
+    const addonUrl = getAddonUrl(options.addonsUrls, req)
     if (addonUrl) {
-      return proxy.web(req, res, { target: addonUrl })
+      return handleAddonUrl({ req, res, addonUrl })
     }
 
     return proxy.web(req, res, { ...options, status: statusValue })
@@ -306,7 +320,7 @@ const initializeProxy = function (port, distDir, projectDir) {
   return handlers
 }
 
-const startProxy = async function (settings, addonUrls, configPath, projectDir) {
+const startProxy = async function (settings, addonsUrls, configPath, projectDir) {
   const functionsServer = settings.functionsPort ? `http://localhost:${settings.functionsPort}` : null
 
   const proxy = initializeProxy(settings.frameworkPort, settings.dist, projectDir)
@@ -326,15 +340,15 @@ const startProxy = async function (settings, addonUrls, configPath, projectDir) 
     if (isFunction(settings.functionsPort, req.url)) {
       return proxy.web(req, res, { target: functionsServer })
     }
-    const urlForAddons = getAddonUrl(addonUrls, req)
-    if (urlForAddons) {
-      return proxy.web(req, res, { target: urlForAddons })
+    const addonUrl = getAddonUrl(addonsUrls, req)
+    if (addonUrl) {
+      return handleAddonUrl({ req, res, addonUrl })
     }
 
     rewriter(req, res, (match) => {
       const options = {
         match,
-        addonUrls,
+        addonsUrls,
         target: `http://localhost:${settings.frameworkPort}`,
         publicFolder: settings.dist,
         functionsServer,
