@@ -345,31 +345,30 @@ const startProxy = async function (settings, addonsUrls, configPath, projectDir)
       return handleAddonUrl({ req, res, addonUrl })
     }
 
-    rewriter(req, res, (match) => {
-      const options = {
-        match,
-        addonsUrls,
-        target: `http://localhost:${settings.frameworkPort}`,
-        publicFolder: settings.dist,
-        functionsServer,
-        functionsPort: settings.functionsPort,
-        jwtRolePath: settings.jwtRolePath,
-        framework: settings.framework,
-      }
+    const match = await rewriter(req)
+    const options = {
+      match,
+      addonsUrls,
+      target: `http://localhost:${settings.frameworkPort}`,
+      publicFolder: settings.dist,
+      functionsServer,
+      functionsPort: settings.functionsPort,
+      jwtRolePath: settings.jwtRolePath,
+      framework: settings.framework,
+    }
 
-      if (match) return serveRedirect({ req, res, proxy, match, options })
+    if (match) return serveRedirect({ req, res, proxy, match, options })
 
-      const ct = req.headers['content-type'] ? contentType.parse(req).type : ''
-      if (
-        req.method === 'POST' &&
-        !isInternal(req.url) &&
-        (ct.endsWith('/x-www-form-urlencoded') || ct === 'multipart/form-data')
-      ) {
-        return proxy.web(req, res, { target: functionsServer })
-      }
+    const ct = req.headers['content-type'] ? contentType.parse(req).type : ''
+    if (
+      req.method === 'POST' &&
+      !isInternal(req.url) &&
+      (ct.endsWith('/x-www-form-urlencoded') || ct === 'multipart/form-data')
+    ) {
+      return proxy.web(req, res, { target: functionsServer })
+    }
 
-      proxy.web(req, res, options)
-    })
+    proxy.web(req, res, options)
   })
 
   server.on('upgrade', function onUpgrade(req, socket, head) {

@@ -1,7 +1,7 @@
 // with thanks to https://github.com/codeniko/simple-tracker/blob/master/examples/server-examples/aws-lambda/google-analytics.js
 const querystring = require('querystring')
 
-const request = require('request')
+const fetch = require('node-fetch')
 const { v4: uuidv4 } = require('uuid')
 
 const GA_ENDPOINT = `https://www.google-analytics.com/collect`
@@ -23,7 +23,7 @@ const originWhitelist = []
 whitelistDomain('test.com')
 whitelistDomain('nfeld.com')
 
-const proxyToGoogleAnalytics = function (event, done) {
+const proxyToGoogleAnalytics = async function (event) {
   // get GA params whether GET or POST request
   const params = event.httpMethod.toUpperCase() === 'GET' ? event.queryStringParameters : JSON.parse(event.body)
   const headers = event.headers || {}
@@ -39,29 +39,26 @@ const proxyToGoogleAnalytics = function (event, done) {
   console.info('proxying params:', params)
   const qs = querystring.stringify(params)
 
-  const reqOptions = {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'image/gif',
-    },
-    url: GA_ENDPOINT,
-    body: qs,
-  }
-
-  request(reqOptions, (error, result) => {
-    if (error) {
-      console.info('googleanalytics error!', error)
-    } else {
-      console.info('googleanalytics status code', result.statusCode, result.statusMessage)
+  try {
+    const { ok, status, statusText } = await fetch(GA_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'image/gif' },
+      body: qs,
+    })
+    if (!ok) {
+      throw new Error(`HTTP error ${status}`)
     }
-  })
-
-  done()
+    console.info('googleanalytics status code', status, statusText)
+  } catch (error) {
+    console.info('googleanalytics error!', error)
+  }
 }
 
-const handler = function (event, context, callback) {
+const handler = async function (event) {
   const origin = event.headers.origin || event.headers.Origin || ''
-  console.log(`Received ${event.httpMethod} request from, origin: ${origin}`)
+  const httpMethod = event.httpMethod.toUpperCase()
+
+  console.log(`Received ${httpMethod} request from, origin: ${origin}`)
 
   const isOriginWhitelisted = originWhitelist.includes(origin)
   console.info('is whitelisted?', isOriginWhitelisted)
@@ -73,25 +70,18 @@ const handler = function (event, context, callback) {
     'Access-Control-Allow-Headers': 'Content-Type,Accept',
   }
 
-  const done = () => {
-    callback(null, {
-      statusCode: 200,
-      headers,
-      body: '',
-    })
+  // CORS (required if you use a different subdomain to host this function, or a different domain entirely)
+  if (httpMethod === 'OPTIONS') {
+    return { statusCode: 200, headers, body: '' }
   }
 
-  const httpMethod = event.httpMethod.toUpperCase()
-
-  if (event.httpMethod === 'OPTIONS') {
-    // CORS (required if you use a different subdomain to host this function, or a different domain entirely)
-    done()
-  } else if ((httpMethod === 'GET' || httpMethod === 'POST') && isOriginWhitelisted) {
-    // allow GET or POST, but only for whitelisted domains
-    proxyToGoogleAnalytics(event, done)
-  } else {
-    return callback(new Error('Not found'))
+  // allow GET or POST, but only for whitelisted domains
+  if ((httpMethod === 'GET' || httpMethod === 'POST') && isOriginWhitelisted) {
+    await proxyToGoogleAnalytics(event)
+    return { statusCode: 200, headers, body: '' }
   }
+
+  return { statusCode: 404, headers, body: 'Not found' }
 }
 
 module.exports = { handler }
