@@ -1024,7 +1024,7 @@ testMatrix.forEach(({ args }) => {
                   // eslint-disable-next-line no-undef
                   new Response(null, {
                     headers: {
-                      Location: 'https://google.com',
+                      Location: 'https://google.com/',
                     },
                     status: 301,
                   }),
@@ -1041,7 +1041,7 @@ testMatrix.forEach(({ args }) => {
           })
 
           t.is(response.status, 301)
-          t.is(response.headers.Location, 'https://google.com')
+          t.is(response.headers.get('location'), 'https://google.com/')
         })
       })
     })
