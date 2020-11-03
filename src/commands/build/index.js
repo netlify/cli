@@ -28,11 +28,11 @@ class BuildCommand extends Command {
   checkOptions({ cachedConfig, token }) {
     const { siteInfo = {} } = JSON.parse(cachedConfig)
     if (!siteInfo.id && process.env.NODE_ENV !== 'test') {
-      this.error('Could not find the site ID. Please run netlify link.')
+      this.error('Could not find the site ID. Please run netlify link.', { exit: 1 })
     }
 
     if (!token) {
-      this.error('Could not find the access token. Please run netlify login.')
+      this.error('Could not find the access token. Please run netlify login.', { exit: 1 })
     }
   }
 }
