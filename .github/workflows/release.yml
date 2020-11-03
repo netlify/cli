@@ -19,7 +19,7 @@ jobs:
         id: version
         shell: bash
         run: |
-          VERSION=$(cat package.json | jq --raw .version)
+          VERSION=$(cat package.json | jq --raw-output .version)
           echo "::set-output name=tag::${VERSION}"
       - name: Create release if not exists
         # ignore failures if the release already exists
