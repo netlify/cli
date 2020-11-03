@@ -2,7 +2,7 @@ name: Publish Release Asset
 
 on:
   push:
-#    tags:
+    tags:
 
 env:
   GITHUB_TOKEN: ${{ github.token }}
@@ -26,8 +26,8 @@ jobs:
           echo "::set-output name=tag::${VERSION}"
       - name: Create release if not exists
         # ignore failures if the release already exists
-        run: gh release create v${{ steps.version.outputs.tag }}.ci-test || true
+        run: gh release create v${{ steps.version.outputs.tag }} || true
       - name: Upload release asset
         run: |
-          gh release upload --clobber v${{ steps.version.outputs.tag }}.ci-test \
+          gh release upload v${{ steps.version.outputs.tag }} \
           'dist/netlify-v${{ steps.version.outputs.tag }}/netlify-v${{ steps.version.outputs.tag }}.tar.gz#netlify-cli.tar.gz'
