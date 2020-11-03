@@ -389,8 +389,8 @@ class DeployCommand extends Command {
     }
 
     if (flags.build) {
-      const options = getBuildOptions({
-        netlify: this.netlify,
+      const options = await getBuildOptions({
+        context: this,
         token: this.getConfigToken()[0],
         flags,
       })
