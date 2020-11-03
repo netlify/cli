@@ -234,16 +234,15 @@ const downloadFromURL = async function (context, flags, args, functionsDir) {
     // Ignore
   }
   await Promise.all(
-    folderContents.map(({ name, download_url: downloadUrl }) => {
-      return fetch(downloadUrl)
-        .then((res) => {
-          const finalName = path.basename(name, '.js') === functionName ? `${nameToUse}.js` : name
-          const dest = fs.createWriteStream(path.join(fnFolder, finalName))
-          res.body.pipe(dest)
-        })
-        .catch((error) => {
-          throw new Error(`Error while retrieving ${downloadUrl} ${error}`)
-        })
+    folderContents.map(async ({ name, download_url: downloadUrl }) => {
+      try {
+        const res = await fetch(downloadUrl)
+        const finalName = path.basename(name, '.js') === functionName ? `${nameToUse}.js` : name
+        const dest = fs.createWriteStream(path.join(fnFolder, finalName))
+        res.body.pipe(dest)
+      } catch (error) {
+        throw new Error(`Error while retrieving ${downloadUrl} ${error}`)
+      }
     }),
   )
 
