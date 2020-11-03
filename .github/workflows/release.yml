@@ -3,6 +3,7 @@ name: Publish Release Asset
 on:
   push:
     tags:
+      - '*'
 
 env:
   GITHUB_TOKEN: ${{ github.token }}
