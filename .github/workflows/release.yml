@@ -30,4 +30,4 @@ jobs:
       - name: Upload release asset
         run: |
           gh release upload --clobber v${{ steps.version.outputs.tag }}.ci-test \
-          dist/netlify-v${{ steps.version.outputs.tag }}/netlify-v${{ steps.version.outputs.tag }}.tar.gz
+          'dist/netlify-v${{ steps.version.outputs.tag }}/netlify-v${{ steps.version.outputs.tag }}.tar.gz#netlify-cli.tar.gz'
