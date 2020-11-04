@@ -9,8 +9,8 @@ class BuildCommand extends Command {
   // Run Netlify Build
   async run() {
     // Retrieve Netlify Build options
-    const options = getBuildOptions({
-      netlify: this.netlify,
+    const options = await getBuildOptions({
+      context: this,
       token: this.getConfigToken()[0],
       flags: this.parse(BuildCommand).flags,
     })
@@ -28,13 +28,11 @@ class BuildCommand extends Command {
   checkOptions({ cachedConfig, token }) {
     const { siteInfo = {} } = JSON.parse(cachedConfig)
     if (!siteInfo.id && process.env.NODE_ENV !== 'test') {
-      console.error('Could not find the site ID. Please run netlify link.')
-      this.exit(1)
+      this.error('Could not find the site ID. Please run netlify link.', { exit: 1 })
     }
 
     if (!token) {
-      console.error('Could not find the access token. Please run netlify login.')
-      this.exit(1)
+      this.error('Could not find the access token. Please run netlify login.', { exit: 1 })
     }
   }
 }
