@@ -179,38 +179,42 @@ const processPayloadFromFlag = function (payloadString) {
 // prompt for a name if name not supplied
 // also used in functions:create
 const getNameFromArgs = async function (functions, args, flags) {
-  // let functionToTrigger = flags.name;
-  // const isValidFn = Object.keys(functions).includes(functionToTrigger);
-  if (flags.name && args.name) {
-    console.error('function name specified in both flag and arg format, pick one')
-    process.exit(1)
-  }
-  let functionToTrigger
-  if (flags.name && !args.name) functionToTrigger = flags.name
-  // use flag if exists
-  else if (!flags.name && args.name) functionToTrigger = args.name
+  const functionToTrigger = getFunctionToTrigger(args, flags)
+  const functionNames = Object.keys(functions)
 
-  const isValidFn = Object.keys(functions).includes(functionToTrigger)
-  if (!functionToTrigger || !isValidFn) {
-    if (functionToTrigger && !isValidFn) {
-      console.warn(
-        `Function name ${chalk.yellow(
-          functionToTrigger,
-        )} supplied but no matching function found in your functions folder, forcing you to pick a valid one...`,
-      )
+  if (functionToTrigger) {
+    if (functionNames.includes(functionToTrigger)) {
+      return functionToTrigger
     }
-    const { trigger } = await inquirer.prompt([
-      {
-        type: 'list',
-        message: 'Pick a function to trigger',
-        name: 'trigger',
-        choices: Object.keys(functions),
-      },
-    ])
-    functionToTrigger = trigger
+
+    console.warn(
+      `Function name ${chalk.yellow(
+        functionToTrigger,
+      )} supplied but no matching function found in your functions folder, forcing you to pick a valid one...`,
+    )
+  }
+  const { trigger } = await inquirer.prompt([
+    {
+      type: 'list',
+      message: 'Pick a function to trigger',
+      name: 'trigger',
+      choices: functionNames,
+    },
+  ])
+  return trigger
+}
+
+const getFunctionToTrigger = function (args, flags) {
+  if (flags.name) {
+    if (args.name) {
+      console.error('function name specified in both flag and arg format, pick one')
+      process.exit(1)
+    }
+
+    return flags.name
   }
 
-  return functionToTrigger
+  return args.name
 }
 
 FunctionsInvokeCommand.description = `Trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions`
