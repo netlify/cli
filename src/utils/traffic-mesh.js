@@ -11,7 +11,7 @@ const { NETLIFYDEVERR } = require('./logo')
 
 const EDGE_HANDLERS_BUNDLER_CLI_PATH = path.resolve(require.resolve('@netlify/plugin-edge-handlers'), '..', 'cli.js')
 
-const startForwardProxy = async ({ port, frameworkPort, functionsPort, publishDir, log, debug }) => {
+const startForwardProxy = async ({ port, frameworkPort, functionsPort, publishDir, log, debug, locationDb }) => {
   const args = [
     'start',
     'local',
@@ -33,6 +33,10 @@ const startForwardProxy = async ({ port, frameworkPort, functionsPort, publishDi
 
   if (debug) {
     args.push('--debug')
+  }
+
+  if (locationDb) {
+    args.push('--location-db', locationDb)
   }
 
   const { subprocess } = runProcess({ log, args })

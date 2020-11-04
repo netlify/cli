@@ -108,6 +108,7 @@ const startProxyServer = async ({ flags, settings, site, log, exit, addonsUrls }
       publishDir: settings.dist,
       log,
       debug: flags.debug,
+      locationDb: flags.locationDb,
     })
     if (!url) {
       log(NETLIFYDEVERR, `Unable to start forward proxy on port '${settings.port}'`)
@@ -248,7 +249,7 @@ DevCommand.flags = {
   }),
   functions: flagsLib.string({
     char: 'f',
-    description: 'Specify a functions folder to serve',
+    description: 'specify a functions folder to serve',
   }),
   offline: flagsLib.boolean({
     char: 'o',
@@ -256,12 +257,17 @@ DevCommand.flags = {
   }),
   live: flagsLib.boolean({
     char: 'l',
-    description: 'Start a public live session',
+    description: 'start a public live session',
   }),
   trafficMesh: flagsLib.boolean({
     char: 't',
     hidden: true,
-    description: 'Uses Traffic Mesh for proxying requests',
+    description: 'uses Traffic Mesh for proxying requests',
+  }),
+  locationDb: flagsLib.string({
+    description: 'specify the path to a local GeoIP location database in MMDB format',
+    char: 'g',
+    hidden: true,
   }),
   ...DevCommand.flags,
 }
