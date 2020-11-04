@@ -47,7 +47,7 @@ class FunctionsInvokeCommand extends Command {
       )
     const port = flags.port || DEFAULT_PORT
 
-    const functions = getFunctions(functionsDir)
+    const functions = await getFunctions(functionsDir)
     const functionToTrigger = await getNameFromArgs(functions, args, flags)
 
     let headers = {}
@@ -180,7 +180,7 @@ const processPayloadFromFlag = function (payloadString) {
 // also used in functions:create
 const getNameFromArgs = async function (functions, args, flags) {
   const functionToTrigger = getFunctionToTrigger(args, flags)
-  const functionNames = Object.keys(functions)
+  const functionNames = functions.map(getFunctionName)
 
   if (functionToTrigger) {
     if (functionNames.includes(functionToTrigger)) {
@@ -193,6 +193,7 @@ const getNameFromArgs = async function (functions, args, flags) {
       )} supplied but no matching function found in your functions folder, forcing you to pick a valid one...`,
     )
   }
+
   const { trigger } = await inquirer.prompt([
     {
       type: 'list',
@@ -215,6 +216,10 @@ const getFunctionToTrigger = function (args, flags) {
   }
 
   return args.name
+}
+
+const getFunctionName = function ({ name }) {
+  return name
 }
 
 FunctionsInvokeCommand.description = `Trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions`
