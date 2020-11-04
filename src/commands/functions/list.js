@@ -74,7 +74,7 @@ class FunctionsListCommand extends Command {
     // Make table
     this.log(`Based on local functions folder ${functionsDir}, these are the functions detected`)
     const table = new AsciiTable(`Netlify Functions (in local functions folder)`)
-    table.setHeading('Name', 'Url', 'deployed')
+    table.setHeading('Name', 'URL', 'deployed')
     normalizedFunctions.forEach(({ name, url, isDeployed }) => {
       table.addRow(name, url, isDeployed ? 'yes' : 'no')
     })
