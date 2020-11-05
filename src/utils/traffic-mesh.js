@@ -36,7 +36,7 @@ const startForwardProxy = async ({ port, frameworkPort, functionsPort, publishDi
   }
 
   if (locationDb) {
-    args.push('--location-db', locationDb)
+    args.push('--geo', locationDb)
   }
 
   const { subprocess } = runProcess({ log, args })
