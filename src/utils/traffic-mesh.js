@@ -10,6 +10,7 @@ const waitPort = require('wait-port')
 const { getPathInProject } = require('../lib/settings')
 const { startSpinner, stopSpinner } = require('../lib/spinner')
 
+const { createDeferred } = require('./deferred')
 const { NETLIFYDEVLOG, NETLIFYDEVERR, NETLIFYDEVWARN } = require('./logo')
 
 const EDGE_HANDLERS_BUNDLER_CLI_PATH = path.resolve(require.resolve('@netlify/plugin-edge-handlers'), '..', 'cli.js')
@@ -40,7 +41,7 @@ const startForwardProxy = async ({ port, frameworkPort, functionsPort, publishDi
   }
 
   const { subprocess } = runProcess({ log, args })
-  const forwarder = forwardMessagesToLog({ log, subprocess })
+  const { forwarder, firstBundleReady } = forwardMessagesToLog({ log, subprocess })
 
   subprocess.on('close', process.exit)
   subprocess.on('SIGINT', process.exit)
@@ -56,6 +57,11 @@ const startForwardProxy = async ({ port, frameworkPort, functionsPort, publishDi
     })
   })
 
+  // Wait until the first edge handlers bundle is ready
+  //
+  // In case of errors, this delays the startup process until the errors are fixed
+  await firstBundleReady
+
   try {
     const open = await waitPort({ port, output: 'silent', timeout: PROXY_READY_TIMEOUT })
     if (!open) {
@@ -68,6 +74,8 @@ const startForwardProxy = async ({ port, frameworkPort, functionsPort, publishDi
 }
 
 const forwardMessagesToLog = ({ log, subprocess }) => {
+  const { promise: firstBundleReady, reject: firstBundleReject, resolve: firstBundleResolve } = createDeferred()
+
   let currentId = null
   let spinner = null
 
@@ -76,11 +84,11 @@ const forwardMessagesToLog = ({ log, subprocess }) => {
     spinner = null
   }
 
-  const iface = rl.createInterface({
+  const forwarder = rl.createInterface({
     input: subprocess.stderr,
   })
 
-  iface
+  forwarder
     .on('line', (line) => {
       let data
       try {
@@ -104,6 +112,7 @@ const forwardMessagesToLog = ({ log, subprocess }) => {
             return
           }
 
+          firstBundleResolve()
           stopSpinner({ spinner, error: false, text: 'Done.' })
           reset()
           break
@@ -142,10 +151,11 @@ const forwardMessagesToLog = ({ log, subprocess }) => {
         text: `${NETLIFYDEVERR} An error occured while bundling processing the messages from mesh-forward: ${err}`,
       })
 
+      firstBundleReject(err)
       reset()
     })
 
-  return iface
+  return { forwarder, firstBundleReady }
 }
 
 // 30 seconds
