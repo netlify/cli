@@ -22,7 +22,7 @@ First fork and clone the repository. If you're not sure how to do this, please w
 Run:
 
 ```bash
-npm install
+npm install && npm run site:build:install
 ```
 
 Tests are run with:
