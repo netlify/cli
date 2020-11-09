@@ -159,8 +159,8 @@ const shouldBase64Encode = function (contentType) {
 
 const BASE_64_MIME_REGEXP = /image|audio|video|application\/pdf|application\/zip|applicaton\/octet-stream/i
 
-const createHandler = function (dir) {
-  const functions = getFunctions(dir)
+const createHandler = async function (dir) {
+  const functions = await getFunctions(dir)
 
   const watcher = chokidar.watch(dir, { ignored: /node_modules/ })
   watcher.on('change', clearCache('modified')).on('unlink', clearCache('deleted'))
@@ -176,12 +176,13 @@ const createHandler = function (dir) {
     const cleanPath = request.path.replace(/^\/.netlify\/functions/, '')
 
     const functionName = cleanPath.split('/').find(Boolean)
-    if (!functions[functionName]) {
+    const func = functions.find(({ name }) => name === functionName)
+    if (func === undefined) {
       response.statusCode = 404
       response.end('Function not found...')
       return
     }
-    const { functionPath: lambdaPath, isBackground } = functions[functionName]
+    const { mainFile: lambdaPath, isBackground } = func
 
     const isBase64Encoded = shouldBase64Encode(request.headers['content-type'])
     const body = request.get('content-length') ? request.body.toString(isBase64Encoded ? 'base64' : 'utf8') : undefined
@@ -345,7 +346,7 @@ const createFormSubmissionHandler = function (siteInfo) {
   }
 }
 
-const serveFunctions = function (dir, siteInfo = {}) {
+const serveFunctions = async function (dir, siteInfo = {}) {
   const app = express()
   app.set('query parser', 'simple')
 
@@ -367,7 +368,7 @@ const serveFunctions = function (dir, siteInfo = {}) {
     res.status(204).end()
   })
 
-  app.all('*', createHandler(dir))
+  app.all('*', await createHandler(dir))
 
   return app
 }

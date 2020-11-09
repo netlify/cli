@@ -22,9 +22,9 @@ netlify dev
 - `port` (*string*) - port of netlify dev
 - `targetPort` (*string*) - port of target app server
 - `dir` (*string*) - dir with static files
-- `functions` (*string*) - Specify a functions folder to serve
+- `functions` (*string*) - specify a functions folder to serve
 - `offline` (*boolean*) - disables any features that require network access
-- `live` (*boolean*) - Start a public live session
+- `live` (*boolean*) - start a public live session
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
