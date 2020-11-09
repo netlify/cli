@@ -86,7 +86,7 @@
     "@oclif/parser": "^3.8.4",
     "@oclif/plugin-help": "^2.2.0",
     "@oclif/plugin-not-found": "^1.1.4",
-    "@oclif/plugin-plugins": "1.9.0",
+    "@oclif/plugin-plugins": "1.9.1",
     "@octokit/rest": "^16.28.1",
     "@ungap/from-entries": "^0.2.1",
     "ansi-styles": "^4.0.0",
