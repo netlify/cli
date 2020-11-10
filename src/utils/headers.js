@@ -7,7 +7,10 @@ const matchPaths = function (rulePath, targetPath) {
   const rulePathParts = rulePath.split('/').filter(Boolean)
   const targetPathParts = targetPath.split('/').filter(Boolean)
 
-  if (rulePathParts.length === 0 && targetPathParts.length === 0) {
+  if (
+    targetPathParts.length === 0 &&
+    (rulePathParts.length === 0 || (rulePathParts.length === 1 && rulePathParts[0] === '*'))
+  ) {
     return true
   }
 
