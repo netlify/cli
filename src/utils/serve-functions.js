@@ -20,11 +20,12 @@ const { detectFunctionsBuilder } = require('./detect-functions-builder')
 const { getFunctions } = require('./get-functions')
 const { NETLIFYDEVLOG, NETLIFYDEVWARN, NETLIFYDEVERR } = require('./logo')
 
+const formatLambdaLocalError = (err) => `${err.errorType}: ${err.errorMessage}\n  ${err.stackTrace.join('\n  ')}`
+
 const handleErr = function (err, response) {
   response.statusCode = 500
-  response.write(`${NETLIFYDEVERR} Function invocation failed: ${err.toString()}`)
-  response.end()
-  console.log(`${NETLIFYDEVERR} Error during invocation:`, err)
+  const errorString = typeof err === 'string' ? err : formatLambdaLocalError(err)
+  response.end(errorString)
 }
 
 const formatLambdaError = (err) => chalk.red(`${err.errorType}: ${err.errorMessage}`)
@@ -35,24 +36,32 @@ const capitalize = function (t) {
   return t.replace(/(^\w|\s\w)/g, (string) => string.toUpperCase())
 }
 
+const validateLambdaResponse = (lambdaResponse) => {
+  if (lambdaResponse === undefined) {
+    return { error: 'lambda response was undefined. check your function code again' }
+  }
+  if (!Number(lambdaResponse.statusCode)) {
+    return {
+      error: `Your function response must have a numerical statusCode. You gave: $ ${lambdaResponse.statusCode}`,
+    }
+  }
+  if (lambdaResponse.body && typeof lambdaResponse.body !== 'string') {
+    return { error: `Your function response must have a string body. You gave: ${lambdaResponse.body}` }
+  }
+
+  return {}
+}
+
 const createSynchronousFunctionCallback = function (response) {
   return function callbackHandler(err, lambdaResponse) {
     if (err) {
       return handleErr(err, response)
     }
-    if (lambdaResponse === undefined) {
-      return handleErr('lambda response was undefined. check your function code again.', response)
-    }
-    if (!Number(lambdaResponse.statusCode)) {
-      console.log(
-        `${NETLIFYDEVERR} Your function response must have a numerical statusCode. You gave: $`,
-        lambdaResponse.statusCode,
-      )
-      return handleErr('Incorrect function response statusCode', response)
-    }
-    if (lambdaResponse.body && typeof lambdaResponse.body !== 'string') {
-      console.log(`${NETLIFYDEVERR} Your function response must have a string body. You gave:`, lambdaResponse.body)
-      return handleErr('Incorrect function response body', response)
+
+    const { error } = validateLambdaResponse(lambdaResponse)
+    if (error) {
+      console.log(`${NETLIFYDEVERR} ${error}`)
+      return handleErr(error, response)
     }
 
     response.statusCode = lambdaResponse.statusCode
