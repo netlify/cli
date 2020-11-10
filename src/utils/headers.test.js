@@ -10,7 +10,7 @@ const headers = [
   { path: '/', headers: ['X-Frame-Options: SAMEORIGIN'] },
   { path: '/*', headers: ['X-Frame-Thing: SAMEORIGIN'] },
   {
-    path: '/something/*',
+    path: '/static-path/*',
     headers: [
       'X-Frame-Options: DENY',
       'X-XSS-Protection: 1; mode=block',
@@ -20,7 +20,7 @@ const headers = [
       'cache-control: must-revalidate',
     ],
   },
-  { path: '/:ding/index.html', headers: ['X-Frame-Options: SAMEORIGIN'] },
+  { path: '/:placeholder/index.html', headers: ['X-Frame-Options: SAMEORIGIN'] },
 ]
 
 test.before(async (t) => {
@@ -47,12 +47,12 @@ test('_headers: validate correct parsing', (t) => {
     '/*': {
       'X-Frame-Thing': ['SAMEORIGIN'],
     },
-    '/something/*': {
+    '/static-path/*': {
       'X-Frame-Options': ['DENY'],
       'X-XSS-Protection': ['1; mode=block'],
       'cache-control': ['max-age=0', 'no-cache', 'no-store', 'must-revalidate'],
     },
-    '/:ding/index.html': {
+    '/:placeholder/index.html': {
       'X-Frame-Options': ['SAMEORIGIN'],
     },
   })
@@ -62,17 +62,24 @@ test('_headers: rulesForPath testing', (t) => {
   const rules = parseHeadersFile(path.resolve(t.context.builder.directory, '_headers'))
   t.deepEqual(objectForPath(rules, '/'), {
     'X-Frame-Options': ['SAMEORIGIN'],
-  })
-  t.deepEqual(objectForPath(rules, '/ding'), {
     'X-Frame-Thing': ['SAMEORIGIN'],
   })
-  t.deepEqual(objectForPath(rules, '/something/ding'), {
+  t.deepEqual(objectForPath(rules, '/placeholder'), {
+    'X-Frame-Thing': ['SAMEORIGIN'],
+  })
+  t.deepEqual(objectForPath(rules, '/static-path/placeholder'), {
     'X-Frame-Thing': ['SAMEORIGIN'],
     'X-Frame-Options': ['DENY'],
     'X-XSS-Protection': ['1; mode=block'],
     'cache-control': ['max-age=0', 'no-cache', 'no-store', 'must-revalidate'],
   })
-  t.deepEqual(objectForPath(rules, '/ding/index.html'), {
+  t.deepEqual(objectForPath(rules, '/static-path'), {
+    'X-Frame-Thing': ['SAMEORIGIN'],
+    'X-Frame-Options': ['DENY'],
+    'X-XSS-Protection': ['1; mode=block'],
+    'cache-control': ['max-age=0', 'no-cache', 'no-store', 'must-revalidate'],
+  })
+  t.deepEqual(objectForPath(rules, '/placeholder/index.html'), {
     'X-Frame-Options': ['SAMEORIGIN'],
     'X-Frame-Thing': ['SAMEORIGIN'],
   })
