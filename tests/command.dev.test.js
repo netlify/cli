@@ -92,6 +92,46 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
+  test(testName('should return user defined headers when / is accessed', args), async (t) => {
+    await withSiteBuilder('site-with-index-file', async (builder) => {
+      builder.withContentFile({
+        path: 'index.html',
+        content: '<h1>⊂◉‿◉つ</h1>',
+      })
+
+      const headerName = 'X-Frame-Options'
+      const headerValue = 'SAMEORIGIN'
+      builder.withHeadersFile({ headers: [{ path: '/*', headers: [`${headerName}: ${headerValue}`] }] })
+
+      await builder.buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async (server) => {
+        const responseHeaders = await fetch(server.url).then((res) => res.headers)
+        t.is(responseHeaders.get(headerName), headerValue)
+      })
+    })
+  })
+
+  test(testName('should return user defined headers when non-root path is accessed', args), async (t) => {
+    await withSiteBuilder('site-with-index-file', async (builder) => {
+      builder.withContentFile({
+        path: 'foo/index.html',
+        content: '<h1>⊂◉‿◉つ</h1>',
+      })
+
+      const headerName = 'X-Frame-Options'
+      const headerValue = 'SAMEORIGIN'
+      builder.withHeadersFile({ headers: [{ path: '/*', headers: [`${headerName}: ${headerValue}`] }] })
+
+      await builder.buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async (server) => {
+        const responseHeaders = await fetch(`${server.url}/foo`).then((res) => res.headers)
+        t.is(responseHeaders.get(headerName), headerValue)
+      })
+    })
+  })
+
   test(testName('should return response from a function with setTimeout', args), async (t) => {
     await withSiteBuilder('site-with-set-timeout-function', async (builder) => {
       builder.withNetlifyToml({ config: { build: { functions: 'functions' } } }).withFunction({
