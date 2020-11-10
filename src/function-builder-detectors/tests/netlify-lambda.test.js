@@ -1,20 +1,20 @@
 const test = require('ava')
 
-const netlifyLambda = require('./netlify-lambda')
+const { detectNetlifyLambda } = require('../netlify-lambda')
 
-test(`should not find netlify-lambda from netlify-cli package.json`, t => {
-  t.is(netlifyLambda(), false)
+test(`should not find netlify-lambda from netlify-cli package.json`, async (t) => {
+  t.is(await detectNetlifyLambda(), false)
 })
 
-test(`should not match if netlify-lambda is missing from dependencies`, t => {
+test(`should not match if netlify-lambda is missing from dependencies`, async (t) => {
   const packageJson = {
     dependencies: {},
     devDependencies: {},
   }
-  t.is(netlifyLambda(packageJson), false)
+  t.is(await detectNetlifyLambda(packageJson), false)
 })
 
-test(`should match if netlify-lambda is listed in dependencies and is mentioned in scripts`, t => {
+test(`should match if netlify-lambda is listed in dependencies and is mentioned in scripts`, async (t) => {
   const packageJson = {
     scripts: {
       'some-build-step': 'netlify-lambda build some/directory',
@@ -25,7 +25,7 @@ test(`should match if netlify-lambda is listed in dependencies and is mentioned 
     devDependencies: {},
   }
 
-  const match = netlifyLambda(packageJson)
+  const match = await detectNetlifyLambda(packageJson)
   t.not(match, false)
 
   t.is(match.src, 'some/directory')
@@ -33,7 +33,7 @@ test(`should match if netlify-lambda is listed in dependencies and is mentioned 
   t.is(match.npmScript, 'some-build-step')
 })
 
-test(`should match if netlify-lambda is listed in devDependencies and is mentioned in scripts`, t => {
+test(`should match if netlify-lambda is listed in devDependencies and is mentioned in scripts`, async (t) => {
   const packageJson = {
     scripts: {
       'some-build-step': 'netlify-lambda build some/directory',
@@ -44,7 +44,7 @@ test(`should match if netlify-lambda is listed in devDependencies and is mention
     },
   }
 
-  const match = netlifyLambda(packageJson)
+  const match = await detectNetlifyLambda(packageJson)
   t.not(match, false)
 
   t.is(match.src, 'some/directory')
@@ -52,7 +52,7 @@ test(`should match if netlify-lambda is listed in devDependencies and is mention
   t.is(match.npmScript, 'some-build-step')
 })
 
-test(`should not match if netlify-lambda misses function directory`, t => {
+test(`should not match if netlify-lambda misses function directory`, async (t) => {
   const packageJson = {
     scripts: {
       'some-build-step': 'netlify-lambda build',
@@ -63,11 +63,11 @@ test(`should not match if netlify-lambda misses function directory`, t => {
     },
   }
 
-  const match = netlifyLambda(packageJson)
+  const match = await detectNetlifyLambda(packageJson)
   t.not(match, true)
 })
 
-test(`should match if netlify-lambda is configured with an additional option`, t => {
+test(`should match if netlify-lambda is configured with an additional option`, async (t) => {
   const packageJson = {
     scripts: {
       'some-build-step': 'netlify-lambda build --config config/webpack.config.js some/directory',
@@ -78,7 +78,7 @@ test(`should match if netlify-lambda is configured with an additional option`, t
     },
   }
 
-  const match = netlifyLambda(packageJson)
+  const match = await detectNetlifyLambda(packageJson)
   t.not(match, false)
 
   t.is(match.src, 'some/directory')
@@ -86,7 +86,7 @@ test(`should match if netlify-lambda is configured with an additional option`, t
   t.is(match.npmScript, 'some-build-step')
 })
 
-test(`should match if netlify-lambda is configured with multiple additional options`, t => {
+test(`should match if netlify-lambda is configured with multiple additional options`, async (t) => {
   const packageJson = {
     scripts: {
       'some-build-step': 'netlify-lambda build -s --another-option --config config/webpack.config.js some/directory',
@@ -97,7 +97,7 @@ test(`should match if netlify-lambda is configured with multiple additional opti
     },
   }
 
-  const match = netlifyLambda(packageJson)
+  const match = await detectNetlifyLambda(packageJson)
   t.not(match, false)
 
   t.is(match.src, 'some/directory')
@@ -106,7 +106,7 @@ test(`should match if netlify-lambda is configured with multiple additional opti
 })
 
 // Note that this is less than ideal, but I preferred to keep it simple and not actually parse the arguments with a library
-test(`should use the value of the parameter if no directory was provided`, t => {
+test(`should use the value of the parameter if no directory was provided`, async (t) => {
   const packageJson = {
     scripts: {
       'some-build-step': 'netlify-lambda build -s --another-option --config config/webpack.config.js',
@@ -117,7 +117,7 @@ test(`should use the value of the parameter if no directory was provided`, t => 
     },
   }
 
-  const match = netlifyLambda(packageJson)
+  const match = await detectNetlifyLambda(packageJson)
   t.not(match, false)
 
   t.is(match.src, 'config/webpack.config.js')
@@ -126,7 +126,7 @@ test(`should use the value of the parameter if no directory was provided`, t => 
 })
 
 // Again, less than ideal, but it seems impossible to have @oclif/parser to parse a complete string instead of argv[]
-test(`should ignore spaces in the directory name`, t => {
+test(`should ignore spaces in the directory name`, async (t) => {
   const packageJson = {
     scripts: {
       'some-build-step':
@@ -138,7 +138,7 @@ test(`should ignore spaces in the directory name`, t => {
     },
   }
 
-  const match = netlifyLambda(packageJson)
+  const match = await detectNetlifyLambda(packageJson)
   t.not(match, false)
 
   t.is(match.src, 'directory/name')
