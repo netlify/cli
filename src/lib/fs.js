@@ -1,15 +1,16 @@
 const fs = require('fs')
-const pathType = require('path-type')
 const { promisify } = require('util')
-const makeDir = require('make-dir')
+
 const del = require('del')
+const makeDir = require('make-dir')
+const pathType = require('path-type')
 
 const statAsync = promisify(fs.stat)
 const readFileAsync = promisify(fs.readFile)
 const writeFileAsync = promisify(fs.writeFile)
 const accessAsync = promisify(fs.access)
 
-const readFileAsyncCatchError = async filepath => {
+const readFileAsyncCatchError = async (filepath) => {
   try {
     return { content: await readFileAsync(filepath) }
   } catch (error) {
@@ -17,7 +18,7 @@ const readFileAsyncCatchError = async filepath => {
   }
 }
 
-const fileExistsAsync = async filePath => {
+const fileExistsAsync = async (filePath) => {
   try {
     await accessAsync(filePath, fs.F_OK)
     return true
@@ -26,12 +27,12 @@ const fileExistsAsync = async filePath => {
   }
 }
 
-const isFileAsync = filePath => pathType.isFile(filePath)
+const isFileAsync = (filePath) => pathType.isFile(filePath)
 
-const mkdirRecursiveSync = path => makeDir.sync(path)
-const mkdirRecursiveAsync = path => makeDir(path)
+const mkdirRecursiveSync = (path) => makeDir.sync(path)
+const mkdirRecursiveAsync = (path) => makeDir(path)
 
-const rmdirRecursiveAsync = path => del(path, { force: true })
+const rmdirRecursiveAsync = (path) => del(path, { force: true })
 
 module.exports = {
   statAsync,

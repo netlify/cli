@@ -1,7 +1,1 @@
-{
-  "semi": false,
-  "singleQuote": true,
-  "printWidth": 120,
-  "quoteProps": "consistent",
-  "trailingComma": "es5"
-}
+"@netlify/eslint-config-node/.prettierrc.json"

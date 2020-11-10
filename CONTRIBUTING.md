@@ -1,34 +1,57 @@
-# CONTRIBUTING
+# Contributions
 
-Contributions are always welcome, no matter how large or small. Before contributing,
-please read the [code of conduct](CODE_OF_CONDUCT.md).
+🎉 Thanks for considering contributing to this project! 🎉
 
-## Setup
+These guidelines will help you send a pull request.
 
-Install Node.js 8+ on your system: https://nodejs.org/en/download/
+If you're submitting an issue instead, please skip this document.
 
-1. Clone down the repo
+If your pull request is related to a typo or the documentation being unclear, please click on the relevant page's `Edit`
+button (pencil icon) and directly suggest a correction instead.
 
-```sh-session
-$ git clone git@github.com:netlify/cli.git
+This project was made with ❤️. The simplest way to give back is by starring and sharing it online.
+
+Everyone is welcome regardless of personal background. We enforce a [Code of conduct](CODE_OF_CONDUCT.md) in order to
+promote a positive and inclusive environment.
+
+## Development process
+
+First fork and clone the repository. If you're not sure how to do this, please watch
+[these videos](https://egghead.io/courses/how-to-contribute-to-an-open-source-project-on-github).
+
+Run:
+
+```bash
+npm install && npm run site:build:install
 ```
 
-2. Install dependencies
+Tests are run with:
 
-```sh-session
-$ npm install
+```bash
+npm test
 ```
 
-3. Run CLI locally during development
+In watch mode:
 
-```sh-session
-$ ./bin/run [command]
+```bash
+npm run watch
 ```
 
-When developing, you can use watch mode which will automatically run ava tests:
+Make sure everything is correctly setup by running those tests first.
 
-```sh-session
-$ npm run watch
+ESLint and Prettier are performed automatically on `git push`. However, we recommend you setup your IDE or text editor
+to run ESLint and Prettier automatically on file save. Otherwise, you should run them manually using:
+
+```bash
+npm run format
+```
+
+Alternatively you can setup your IDE to integrate with Prettier and ESLint for JavaScript and Markdown files.
+
+To run the CLI locally:
+
+```bash
+./bin/run [command]
 ```
 
 ## Architecture

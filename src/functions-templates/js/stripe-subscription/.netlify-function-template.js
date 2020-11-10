@@ -8,8 +8,8 @@ module.exports = {
     if (!process.env.STRIPE_SECRET_KEY) {
       console.log(
         `note this function requires ${chalk.yellow(
-          'STRIPE_SECRET_KEY'
-        )} build environment variable set in your Netlify Site.`
+          'STRIPE_SECRET_KEY',
+        )} build environment variable set in your Netlify Site.`,
       )
       let siteData = { name: 'YOURSITENAMEHERE' }
       try {
@@ -20,7 +20,7 @@ module.exports = {
         // silent error, not important
       }
       console.log(
-        `Set it at: https://app.netlify.com/sites/${siteData.name}/settings/deploys#environment-variables (must have CD setup)`
+        `Set it at: https://app.netlify.com/sites/${siteData.name}/settings/deploys#environment-variables (must have CD setup)`,
       )
     }
   },

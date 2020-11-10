@@ -17,6 +17,7 @@ const typeDefs = gql`
   }
 `
 
+/* eslint-disable no-magic-numbers */
 const books = [
   {
     id: 1,
@@ -61,6 +62,7 @@ const books = [
     authorName: 'JK Rowling',
   },
 ]
+/* eslint-enable no-magic-numbers */
 
 const resolvers = {
   Query: {
@@ -71,7 +73,7 @@ const resolvers = {
       return books
     },
     book: (root, args) => {
-      return books.find(book => book.id === args.id)
+      return books.find((book) => book.id === args.id)
     },
   },
 }
@@ -81,4 +83,6 @@ const server = new ApolloServer({
   resolvers,
 })
 
-exports.handler = server.createHandler()
+const handler = server.createHandler()
+
+module.exports = { handler }

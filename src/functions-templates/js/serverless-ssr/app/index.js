@@ -1,9 +1,11 @@
 /* Express App */
-const express = require('express')
-const cors = require('cors')
-const morgan = require('morgan')
+const process = require('process')
+
 const bodyParser = require('body-parser')
 const compression = require('compression')
+const cors = require('cors')
+const express = require('express')
+const morgan = require('morgan')
 
 /* My express App */
 module.exports = function expressApp(functionName) {
@@ -17,7 +19,7 @@ module.exports = function expressApp(functionName) {
   const routerBasePath = process.env.NODE_ENV === 'dev' ? `/${functionName}` : `/.netlify/functions/${functionName}/`
 
   /* define routes */
-  router.get('/', (req, res) => {
+  router.get('/', function onRequest(req, res) {
     const html = `
     <html>
       <head>
@@ -65,7 +67,7 @@ module.exports = function expressApp(functionName) {
     res.send(html)
   })
 
-  router.get('/users', (req, res) => {
+  router.get('/users', function onRequest(req, res) {
     res.json({
       users: [
         {
@@ -78,7 +80,7 @@ module.exports = function expressApp(functionName) {
     })
   })
 
-  router.get('/hello/', function(req, res) {
+  router.get('/hello/', function onRequest(req, res) {
     res.send('hello world')
   })
 
@@ -96,7 +98,7 @@ module.exports = function expressApp(functionName) {
   return app
 }
 
-function customLogger(tokens, req, res) {
+const customLogger = function (tokens, req, res) {
   const log = [
     tokens.method(req, res),
     tokens.url(req, res),

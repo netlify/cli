@@ -1,9 +1,10 @@
-const Command = require('../utils/command')
+const oclif = require('@oclif/command')
 const AsciiTable = require('ascii-table')
 const chalk = require('chalk')
-const oclif = require('@oclif/command')
 const { methods } = require('netlify')
+
 const { isEmptyCommand } = require('../utils/check-command-inputs')
+const Command = require('../utils/command')
 
 class APICommand extends Command {
   async run() {
@@ -22,7 +23,7 @@ class APICommand extends Command {
     if (isEmptyCommand(flags, args) || flags.list) {
       const table = new AsciiTable(`Netlify API Methods`)
       table.setHeading('API Method', 'Docs Link')
-      methods.forEach(method => {
+      methods.forEach((method) => {
         const { operationId } = method
         table.addRow(operationId, `https://open-api.netlify.com/#/operation/${operationId}`)
       })

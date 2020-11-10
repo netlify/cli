@@ -1,29 +1,36 @@
-const path = require('path')
-const chalk = require('chalk')
-const getPort = require('get-port')
-const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./logo')
-const inquirer = require('inquirer')
-const fuzzy = require('fuzzy')
 const fs = require('fs')
+const path = require('path')
+const process = require('process')
 
-module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
+const chalk = require('chalk')
+const fuzzy = require('fuzzy')
+const getPort = require('get-port')
+const inquirer = require('inquirer')
+const inquirerAutocompletePrompt = require('inquirer-autocomplete-prompt')
+
+const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./logo')
+
+const serverSettings = async (devConfig, flags, projectDir, log) => {
   let settings = {}
-  const detectorsFiles = fs.readdirSync(path.join(__dirname, '..', 'detectors')).filter(x => x.endsWith('.js')) // only accept .js detector files
+  const detectorsFiles = fs
+    .readdirSync(path.join(__dirname, '..', 'detectors'))
+    // only accept .js detector files
+    .filter((filename) => filename.endsWith('.js'))
 
   if (typeof devConfig.framework !== 'string') throw new Error('Invalid "framework" option provided in config')
 
   if (flags.dir) {
     settings = await getStaticServerSettings(settings, flags, projectDir, log)
-    ;['command', 'targetPort'].forEach(p => {
-      if (flags[p]) {
+    ;['command', 'targetPort'].forEach((property) => {
+      if (flags[property]) {
         throw new Error(
-          `"${p}" option cannot be used in conjunction with "dir" flag which is used to run a static server`
+          `"${property}" option cannot be used in conjunction with "dir" flag which is used to run a static server`,
         )
       }
     })
   } else if (devConfig.framework === '#auto' && !(devConfig.command && devConfig.targetPort)) {
     const settingsArr = []
-    const detectors = detectorsFiles.map(det => {
+    const detectors = detectorsFiles.map((det) => {
       try {
         return loadDetector(det)
       } catch (error) {
@@ -36,12 +43,12 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
       if (detectorResult) settingsArr.push(detectorResult)
     }
     if (settingsArr.length === 1) {
-      settings = settingsArr[0]
+      const [firstSettings] = settingsArr
+      settings = firstSettings
       settings.args = chooseDefaultArgs(settings.possibleArgsArrs)
     } else if (settingsArr.length > 1) {
       /** multiple matching detectors, make the user choose */
-      // lazy loading on purpose
-      inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'))
+      inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
       const scriptInquirerOptions = formatSettingsArrForInquirer(settingsArr)
       const { chosenSetting } = await inquirer.prompt({
         name: 'chosenSetting',
@@ -55,41 +62,44 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
           return filterSettings(scriptInquirerOptions, input)
         },
       })
-      settings = chosenSetting // finally! we have a selected option
+      // finally! we have a selected option
+      settings = chosenSetting
 
       log(
-        `Add \`framework = "${chosenSetting.framework}"\` to [dev] section of your netlify.toml to avoid this selection prompt next time`
+        `Add \`framework = "${chosenSetting.framework}"\` to [dev] section of your netlify.toml to avoid this selection prompt next time`,
       )
     }
   } else if (devConfig.framework === '#custom' || (devConfig.command && devConfig.targetPort)) {
     settings.framework = '#custom'
     if (
       devConfig.framework &&
-      !['command', 'targetPort'].every(p => Object.prototype.hasOwnProperty.call(devConfig, p))
+      !['command', 'targetPort'].every((property) => Object.prototype.hasOwnProperty.call(devConfig, property))
     ) {
       throw new Error('"command" and "targetPort" properties are required when "framework" is set to "#custom"')
     }
     if (devConfig.framework !== '#custom' && devConfig.command && devConfig.targetPort) {
       throw new Error(
-        '"framework" option must be set to "#custom" when specifying both "command" and "targetPort" options'
+        '"framework" option must be set to "#custom" when specifying both "command" and "targetPort" options',
       )
     }
   } else if (devConfig.framework === '#static') {
     // Do nothing
   } else {
-    const detectorName = detectorsFiles.find(dt => dt === `${devConfig.framework}.js`)
+    const detectorName = detectorsFiles.find((dt) => dt === `${devConfig.framework}.js`)
     if (!detectorName)
       throw new Error(
         'Unsupported value provided for "framework" option in config. Please use "#custom"' +
           ` if you're using a framework not intrinsically supported by Netlify Dev. E.g. with "command" and "targetPort" options.` +
-          ` Or use one of following values: ${detectorsFiles.map(f => `"${path.parse(f).name}"`).join(', ')}`
+          ` Or use one of following values: ${detectorsFiles
+            .map((detectorFile) => `"${path.parse(detectorFile).name}"`)
+            .join(', ')}`,
       )
 
     const detector = loadDetector(detectorName)
     const detectorResult = detector(projectDir)
     if (!detectorResult)
       throw new Error(
-        `Specified "framework" detector "${devConfig.framework}" did not pass requirements for your project`
+        `Specified "framework" detector "${devConfig.framework}" did not pass requirements for your project`,
       )
 
     settings = detectorResult
@@ -104,7 +114,7 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
     console.log(
       `${NETLIFYDEVLOG} Overriding ${chalk.yellow('command')} with setting derived from netlify.toml [dev] block: ${
         devConfig.command
-      }`
+      }`,
     )
     const [devConfigCommand, ...devConfigArgs] = devConfig.command.split(/\s+/)
     settings.command = devConfigCommand
@@ -120,24 +130,24 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
 
     if (devConfig.targetPort === devConfig.port) {
       throw new Error(
-        '"port" and "targetPort" options cannot have same values. Please consult the documentation for more details: https://cli.netlify.com/netlify-dev#netlifytoml-dev-block'
+        '"port" and "targetPort" options cannot have same values. Please consult the documentation for more details: https://cli.netlify.com/netlify-dev#netlifytoml-dev-block',
       )
     }
 
     if (!settings.command)
       throw new Error(
-        'No "command" specified or detected. The "command" option is required to use "targetPort" option.'
+        'No "command" specified or detected. The "command" option is required to use "targetPort" option.',
       )
     if (flags.dir)
       throw new Error(
-        '"targetPort" option cannot be used in conjunction with "dir" flag which is used to run a static server.'
+        '"targetPort" option cannot be used in conjunction with "dir" flag which is used to run a static server.',
       )
 
     settings.frameworkPort = devConfig.targetPort
   }
   if (devConfig.port && devConfig.port === settings.frameworkPort) {
     throw new Error(
-      'The "port" option you specified conflicts with the port of your application. Please use a different value for "port"'
+      'The "port" option you specified conflicts with the port of your application. Please use a different value for "port"',
     )
   }
 
@@ -153,7 +163,7 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
 
   if (devConfig.port && devConfig.port === settings.frameworkPort) {
     throw new Error(
-      'The "port" option you specified conflicts with the port of your application. Please use a different value for "port"'
+      'The "port" option you specified conflicts with the port of your application. Please use a different value for "port"',
     )
   }
   const triedPort = devConfig.port || DEFAULT_PORT
@@ -162,6 +172,7 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
     throw new Error(`Could not acquire required "port": ${triedPort}`)
   }
 
+  settings.jwtSecret = devConfig.jwtSecret || 'secret'
   settings.jwtRolePath = devConfig.jwtRolePath || 'app_metadata.authorization.roles'
   settings.functions = devConfig.functions || settings.functions
   if (settings.functions) {
@@ -173,8 +184,8 @@ module.exports.serverSettings = async (devConfig, flags, projectDir, log) => {
 
 const DEFAULT_PORT = 8888
 
-async function getStaticServerSettings(settings, flags, projectDir, log) {
-  let dist = settings.dist
+const getStaticServerSettings = async function (settings, flags, projectDir, log) {
+  let { dist } = settings
   if (flags.dir) {
     log(`${NETLIFYDEVWARN} Using simple static server because --dir flag was specified`)
     dist = flags.dir
@@ -191,31 +202,34 @@ async function getStaticServerSettings(settings, flags, projectDir, log) {
   log(`${NETLIFYDEVWARN} Running static server from "${path.relative(path.dirname(projectDir), dist)}"`)
   return {
     noCmd: true,
-    frameworkPort: await getPort({ port: flags.staticServerPort || 3999 }),
+    frameworkPort: await getPort({ port: flags.staticServerPort || DEFAULT_STATIC_PORT }),
     dist,
   }
 }
 
-function loadDetector(detectorName) {
+const DEFAULT_STATIC_PORT = 3999
+
+const loadDetector = function (detectorName) {
   try {
+    // eslint-disable-next-line node/global-require, import/no-dynamic-require
     return require(path.join(__dirname, '..', 'detectors', detectorName))
   } catch (error) {
     throw new Error(
       `Failed to load detector: ${chalk.yellow(
-        detectorName
-      )}, this is likely a bug in the detector, please file an issue in netlify-cli\n ${error}`
+        detectorName,
+      )}, this is likely a bug in the detector, please file an issue in netlify-cli\n ${error}`,
     )
   }
 }
-module.exports.loadDetector = loadDetector
 
-function chooseDefaultArgs(possibleArgsArrs) {
+const chooseDefaultArgs = function (possibleArgsArrs) {
   // vast majority of projects will only have one matching detector
-  const args = possibleArgsArrs[0] // just pick the first one
+  // just pick the first one
+  const [args] = possibleArgsArrs
   if (!args) {
     const { scripts } = JSON.parse(fs.readFileSync('package.json', { encoding: 'utf8' }))
     const err = new Error(
-      'Empty args assigned, this is an internal Netlify Dev bug, please report your settings and scripts so we can improve'
+      'Empty args assigned, this is an internal Netlify Dev bug, please report your settings and scripts so we can improve',
     )
     err.scripts = scripts
     err.possibleArgsArrs = possibleArgsArrs
@@ -224,27 +238,34 @@ function chooseDefaultArgs(possibleArgsArrs) {
 
   return args
 }
-module.exports.chooseDefaultArgs = chooseDefaultArgs
 
 /** utilities for the inquirer section above */
-function filterSettings(scriptInquirerOptions, input) {
+const filterSettings = function (scriptInquirerOptions, input) {
   const filteredSettings = fuzzy.filter(
     input,
-    scriptInquirerOptions.map(x => x.name)
+    scriptInquirerOptions.map((scriptInquirerOption) => scriptInquirerOption.name),
   )
-  const filteredSettingNames = new Set(filteredSettings.map(x => (input ? x.string : x)))
-  return scriptInquirerOptions.filter(t => filteredSettingNames.has(t.name))
+  const filteredSettingNames = new Set(
+    filteredSettings.map((filteredSetting) => (input ? filteredSetting.string : filteredSetting)),
+  )
+  return scriptInquirerOptions.filter((t) => filteredSettingNames.has(t.name))
 }
 
 /** utiltities for the inquirer section above */
-function formatSettingsArrForInquirer(settingsArr) {
+const formatSettingsArrForInquirer = function (settingsArr) {
   return [].concat(
-    ...settingsArr.map(setting =>
-      setting.possibleArgsArrs.map(args => ({
+    ...settingsArr.map((setting) =>
+      setting.possibleArgsArrs.map((args) => ({
         name: `[${chalk.yellow(setting.framework)}] ${setting.command} ${args.join(' ')}`,
         value: { ...setting, args },
-        short: setting.framework + '-' + args.join(' '),
-      }))
-    )
+        short: `${setting.framework}-${args.join(' ')}`,
+      })),
+    ),
   )
+}
+
+module.exports = {
+  serverSettings,
+  loadDetector,
+  chooseDefaultArgs,
 }

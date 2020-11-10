@@ -1,6 +1,7 @@
-const { flags } = require('@oclif/command')
+const { flags: flagsLib } = require('@oclif/command')
 const chalk = require('chalk')
 const { cli } = require('cli-ux')
+
 const Command = require('../../utils/command')
 
 class SitesListCommand extends Command {
@@ -25,7 +26,7 @@ class SitesListCommand extends Command {
     }
 
     if (sites && sites.length !== 0) {
-      const logSites = sites.map(site => {
+      const logSites = sites.map((site) => {
         const siteInfo = {
           id: site.id,
           name: site.name,
@@ -42,7 +43,7 @@ class SitesListCommand extends Command {
 
       // Json response for piping commands
       if (flags.json) {
-        const redactedSites = sites.map(site => {
+        const redactedSites = sites.map((site) => {
           if (site && site.build_settings) {
             delete site.build_settings.env
           }
@@ -60,14 +61,14 @@ class SitesListCommand extends Command {
 Count: ${logSites.length}
 `)
 
-      logSites.forEach(s => {
-        this.log(`${chalk.greenBright(s.name)} - ${s.id}`)
-        this.log(`  ${chalk.whiteBright.bold('url:')}  ${chalk.yellowBright(s.ssl_url)}`)
-        if (s.repo_url) {
-          this.log(`  ${chalk.whiteBright.bold('repo:')} ${chalk.white(s.repo_url)}`)
+      logSites.forEach((logSite) => {
+        this.log(`${chalk.greenBright(logSite.name)} - ${logSite.id}`)
+        this.log(`  ${chalk.whiteBright.bold('url:')}  ${chalk.yellowBright(logSite.ssl_url)}`)
+        if (logSite.repo_url) {
+          this.log(`  ${chalk.whiteBright.bold('repo:')} ${chalk.white(logSite.repo_url)}`)
         }
-        if (s.account_name) {
-          this.log(`  ${chalk.whiteBright.bold('account:')} ${chalk.white(s.account_name)}`)
+        if (logSite.account_name) {
+          this.log(`  ${chalk.whiteBright.bold('account:')} ${chalk.white(logSite.account_name)}`)
         }
         this.log(`─────────────────────────────────────────────────`)
       })
@@ -78,7 +79,7 @@ Count: ${logSites.length}
 SitesListCommand.description = `List all sites you have access to`
 
 SitesListCommand.flags = {
-  json: flags.boolean({
+  json: flagsLib.boolean({
     description: 'Output site data as JSON',
   }),
   ...SitesListCommand.flags,

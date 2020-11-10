@@ -17,15 +17,35 @@ jobs:
       fail-fast: false
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Git checkout
+        uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - run: npm ci
-      - run: npm test
+      - name: Install core dependencies
+        run: npm ci
+      - name: Install site dependencies
+        run: npm run site:build:install
+      - name: Linting
+        run: npm run format:ci
+        if: "${{ matrix.node-version == '14.x' }}"
+      - name: Tests
+        run: npm run test:ci
         env:
           # GitHub secrets are not available when running on PR from forks
           # We set a flag so we can skip tests that access Netlify API
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           IS_FORK: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true }}
+      - name: Get test coverage flags
+        id: test-coverage-flags
+        run: |-
+          os=${{ matrix.os }}
+          node=${{ matrix.node-version }}
+          echo "::set-output name=os::${os/-latest/}"
+          echo "::set-output name=node::node_${node//./}"
+        shell: bash
+      - uses: codecov/codecov-action@v1
+        with:
+          file: coverage/coverage-final.json
+          flags: ${{ steps.test-coverage-flags.outputs.os }},${{ steps.test-coverage-flags.outputs.node }}

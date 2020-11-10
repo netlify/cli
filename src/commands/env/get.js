@@ -28,7 +28,7 @@ class EnvGetCommand extends Command {
 
     // Return json response for piping commands
     if (flags.json) {
-      this.logJson(!value ? {} : { [name]: value })
+      this.logJson(value ? { [name]: value } : {})
       return false
     }
 

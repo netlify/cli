@@ -9,9 +9,7 @@ module.exports = function isValidEventName(eventName, config) {
   if (!containsSeparators(eventName) || !matches) {
     return formattingWarning(eventName)
   }
-  const project = matches[1]
-  const object = matches[2]
-  const action = matches[3]
+  const [, project, object, action] = matches
   let error
   // if missing any parts of event, exit
   if (!project || !object || !action) {
@@ -30,7 +28,7 @@ module.exports = function isValidEventName(eventName, config) {
   return true
 }
 
-function containsSeparators(eventName) {
+const containsSeparators = function (eventName) {
   const underscores = (eventName.match(/_/g) || []).length
   if (underscores !== 1) {
     console.log(`Event name must have single underscore. "${eventName}" contains ${underscores}`)
@@ -44,7 +42,7 @@ function containsSeparators(eventName) {
   return true
 }
 
-function formattingWarning(eventName, errorMsg) {
+const formattingWarning = function (eventName, errorMsg) {
   console.log('-----------------------------')
   console.log('Tracking Error:')
   console.log(`Incorrect tracking event format: "${eventName}"`)

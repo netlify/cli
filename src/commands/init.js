@@ -1,15 +1,17 @@
-const { flags } = require('@oclif/command')
+const { flags: flagsLib } = require('@oclif/command')
 const chalk = require('chalk')
+const inquirer = require('inquirer')
 const get = require('lodash.get')
+
 const Command = require('../utils/command')
-const configManual = require('../utils/init/config-manual')
-const configGithub = require('../utils/init/config-github')
 const getRepoData = require('../utils/get-repo-data')
 const { ensureNetlifyIgnore } = require('../utils/gitignore')
-const inquirer = require('inquirer')
-const SitesCreateCommand = require('./sites/create')
-const LinkCommand = require('./link')
+const configGithub = require('../utils/init/config-github')
+const configManual = require('../utils/init/config-manual')
 const { track } = require('../utils/telemetry')
+
+const LinkCommand = require('./link')
+const SitesCreateCommand = require('./sites/create')
 
 class InitCommand extends Command {
   async run() {
@@ -78,18 +80,11 @@ This will allow for Netlify Continuous deployment to build branch & PR previews.
 
 For more details on Netlify CI checkout the docs: http://bit.ly/2N0Jhy5
 `)
-      let message
-      switch (repo.error) {
-        case "Couldn't find origin url": {
-          message = `Unable to find a remote origin URL. Please add a git remote.
+      if (repo.error === "Couldn't find origin url") {
+        console.log(`Unable to find a remote origin URL. Please add a git remote.
 
 git remote add origin https://github.com/YourUserName/RepoName.git
-`
-          break
-        }
-      }
-      if (message) {
-        console.log(message)
+`)
       }
 
       const NEW_SITE_NO_GIT = 'Yes, create and deploy site manually'
@@ -208,7 +203,7 @@ git remote add origin https://github.com/YourUserName/RepoName.git
             this.warn(`GitHub error: ${error.status}`)
             if (error.status === 404) {
               this.error(
-                `Does the repository ${repo.repo_path} exist and do you have the correct permissions to set up deploy keys?`
+                `Does the repository ${repo.repo_path} exist and do you have the correct permissions to set up deploy keys?`,
               )
             } else {
               throw error
@@ -242,14 +237,14 @@ git remote add origin https://github.com/YourUserName/RepoName.git
 InitCommand.description = `Configure continuous deployment for a new or existing site`
 
 InitCommand.flags = {
-  manual: flags.boolean({
+  manual: flagsLib.boolean({
     char: 'm',
     description: 'Manually configure a git remote for CI',
   }),
-  force: flags.boolean({
+  force: flagsLib.boolean({
     description: 'Reinitialize CI hooks if the linked site is already configured to use CI',
   }),
-  gitRemoteName: flags.string({
+  gitRemoteName: flagsLib.string({
     description: 'Name of Git remote to use. e.g. "origin"',
   }),
   ...InitCommand.flags,

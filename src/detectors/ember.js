@@ -1,6 +1,8 @@
 const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
 
-module.exports = function() {
+const FRAMEWORK_PORT = 4200
+
+module.exports = function detector() {
   // REQUIRED FILES
   if (!hasRequiredFiles(['package.json'])) return false
   if (!hasRequiredFiles(['ember-cli-build.js'])) return false
@@ -17,7 +19,7 @@ module.exports = function() {
   return {
     framework: 'ember',
     command: getYarnOrNPMCommand(),
-    frameworkPort: 4200,
+    frameworkPort: FRAMEWORK_PORT,
     possibleArgsArrs,
     dist: 'dist',
   }

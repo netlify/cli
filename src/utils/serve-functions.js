@@ -1,36 +1,42 @@
+const { Buffer } = require('buffer')
+const querystring = require('querystring')
+const { Readable } = require('stream')
 const { URL } = require('url')
-const chalk = require('chalk')
-const express = require('express')
+
 const bodyParser = require('body-parser')
-const expressLogging = require('express-logging')
+const chalk = require('chalk')
 const chokidar = require('chokidar')
+const { parse: parseContentType } = require('content-type')
+const express = require('express')
+const expressLogging = require('express-logging')
 const jwtDecode = require('jwt-decode')
 const lambdaLocal = require('lambda-local')
-const winston = require('winston')
-const querystring = require('querystring')
-const contentType = require('content-type')
-const getRawBody = require('raw-body')
-const multiparty = require('multiparty')
-const { Readable } = require('stream')
 const debounce = require('lodash.debounce')
-const { NETLIFYDEVLOG, NETLIFYDEVWARN, NETLIFYDEVERR } = require('./logo')
-const { getFunctions } = require('./get-functions')
-const { detectFunctionsBuilder } = require('./detect-functions-builder')
+const multiparty = require('multiparty')
+const getRawBody = require('raw-body')
+const winston = require('winston')
 
-function handleErr(err, response) {
+const { detectFunctionsBuilder } = require('./detect-functions-builder')
+const { getFunctions } = require('./get-functions')
+const { NETLIFYDEVLOG, NETLIFYDEVWARN, NETLIFYDEVERR } = require('./logo')
+
+const handleErr = function (err, response) {
   response.statusCode = 500
-  response.write(`${NETLIFYDEVERR} Function invocation failed: ` + err.toString())
+  response.write(`${NETLIFYDEVERR} Function invocation failed: ${err.toString()}`)
   response.end()
   console.log(`${NETLIFYDEVERR} Error during invocation:`, err)
 }
 
-function capitalize(t) {
-  return t.replace(/(^\w|\s\w)/g, m => m.toUpperCase())
+const formatLambdaError = (err) => chalk.red(`${err.errorType}: ${err.errorMessage}`)
+
+const styleFunctionName = (name) => chalk.magenta(name)
+
+const capitalize = function (t) {
+  return t.replace(/(^\w|\s\w)/g, (string) => string.toUpperCase())
 }
 
-/** need to keep createCallback in scope so we can know if cb was called AND handler is async */
-function createCallback(response) {
-  return function(err, lambdaResponse) {
+const createSynchronousFunctionCallback = function (response) {
+  return function callbackHandler(err, lambdaResponse) {
     if (err) {
       return handleErr(err, response)
     }
@@ -40,7 +46,7 @@ function createCallback(response) {
     if (!Number(lambdaResponse.statusCode)) {
       console.log(
         `${NETLIFYDEVERR} Your function response must have a numerical statusCode. You gave: $`,
-        lambdaResponse.statusCode
+        lambdaResponse.statusCode,
       )
       return handleErr('Incorrect function response statusCode', response)
     }
@@ -64,7 +70,55 @@ function createCallback(response) {
   }
 }
 
-function buildClientContext(headers) {
+const createBackgroundFunctionCallback = (functionName) => {
+  return (err) => {
+    if (err) {
+      console.log(
+        `${NETLIFYDEVERR} Error during background function ${styleFunctionName(functionName)} execution:`,
+        formatLambdaError(err),
+      )
+    } else {
+      console.log(`${NETLIFYDEVLOG} Done executing background function ${styleFunctionName(functionName)}`)
+    }
+  }
+}
+
+const DEFAULT_LAMBDA_OPTIONS = {
+  verboseLevel: 3,
+}
+
+// 10 seconds for synchronous functions
+const SYNCHRONOUS_FUNCTION_TIMEOUT = 1e4
+const executeSynchronousFunction = ({ event, lambdaPath, clientContext, response }) => {
+  return lambdaLocal.execute({
+    ...DEFAULT_LAMBDA_OPTIONS,
+    event,
+    lambdaPath,
+    clientContext,
+    callback: createSynchronousFunctionCallback(response),
+    timeoutMs: SYNCHRONOUS_FUNCTION_TIMEOUT,
+  })
+}
+
+// 15 minuets for background functions
+const BACKGROUND_FUNCTION_TIMEOUT = 9e5
+const BACKGROUND_FUNCTION_STATUS_CODE = 202
+const executeBackgroundFunction = ({ event, lambdaPath, clientContext, response, functionName }) => {
+  console.log(`${NETLIFYDEVLOG} Queueing background function ${styleFunctionName(functionName)} for execution`)
+  response.status(BACKGROUND_FUNCTION_STATUS_CODE)
+  response.end()
+
+  return lambdaLocal.execute({
+    ...DEFAULT_LAMBDA_OPTIONS,
+    event,
+    lambdaPath,
+    clientContext,
+    callback: createBackgroundFunctionCallback(functionName),
+    timeoutMs: BACKGROUND_FUNCTION_TIMEOUT,
+  })
+}
+
+const buildClientContext = function (headers) {
   // inject a client context based on auth header, ported over from netlify-lambda (https://github.com/netlify/netlify-lambda/pull/57)
   if (!headers.authorization) return
 
@@ -91,16 +145,22 @@ function buildClientContext(headers) {
   }
 }
 
-const clearCache = action => path => {
+const clearCache = (action) => (path) => {
   console.log(`${NETLIFYDEVLOG} ${path} ${action}, reloading...`)
-  Object.keys(require.cache).forEach(k => {
-    delete require.cache[k]
+  Object.keys(require.cache).forEach((key) => {
+    delete require.cache[key]
   })
   console.log(`${NETLIFYDEVLOG} ${path} ${action}, successfully reloaded!`)
 }
 
-function createHandler(dir) {
-  const functions = getFunctions(dir)
+const shouldBase64Encode = function (contentType) {
+  return Boolean(contentType) && BASE_64_MIME_REGEXP.test(contentType)
+}
+
+const BASE_64_MIME_REGEXP = /image|audio|video|application\/pdf|application\/zip|applicaton\/octet-stream/i
+
+const createHandler = async function (dir) {
+  const functions = await getFunctions(dir)
 
   const watcher = chokidar.watch(dir, { ignored: /node_modules/ })
   watcher.on('change', clearCache('modified')).on('unlink', clearCache('deleted'))
@@ -111,24 +171,20 @@ function createHandler(dir) {
   })
   lambdaLocal.setLogger(logger)
 
-  return function(request, response) {
+  return function handler(request, response) {
     // handle proxies without path re-writes (http-servr)
     const cleanPath = request.path.replace(/^\/.netlify\/functions/, '')
 
-    const func = cleanPath.split('/').find(function(e) {
-      return e
-    })
-    if (!functions[func]) {
+    const functionName = cleanPath.split('/').find(Boolean)
+    const func = functions.find(({ name }) => name === functionName)
+    if (func === undefined) {
       response.statusCode = 404
       response.end('Function not found...')
       return
     }
-    const { functionPath } = functions[func]
+    const { mainFile: lambdaPath, isBackground } = func
 
-    const isBase64Encoded = !!(request.headers['content-type'] || '')
-      .toLowerCase()
-      .match(/image|audio|video|application\/pdf|application\/zip|applicaton\/octet-stream/)
-
+    const isBase64Encoded = shouldBase64Encode(request.headers['content-type'])
     const body = request.get('content-length') ? request.body.toString(isBase64Encoded ? 'base64' : 'utf8') : undefined
 
     let remoteAddress = request.get('x-forwarded-for') || request.connection.remoteAddress || ''
@@ -143,40 +199,44 @@ function createHandler(dir) {
       delete request.headers['x-netlify-original-pathname']
     }
     const queryParams = Object.entries(request.query).reduce(
-      (prev, [k, v]) => ({ ...prev, [k]: Array.isArray(v) ? v : [v] }),
-      {}
+      (prev, [key, value]) => ({ ...prev, [key]: Array.isArray(value) ? value : [value] }),
+      {},
     )
     const headers = Object.entries({ ...request.headers, 'client-ip': [remoteAddress] }).reduce(
-      (prev, [k, v]) => ({ ...prev, [k]: Array.isArray(v) ? v : [v] }),
-      {}
+      (prev, [key, value]) => ({ ...prev, [key]: Array.isArray(value) ? value : [value] }),
+      {},
     )
 
     const event = {
       path: requestPath,
       httpMethod: request.method,
-      queryStringParameters: Object.entries(queryParams).reduce((prev, [k, v]) => ({ ...prev, [k]: v.join(', ') }), {}),
+      queryStringParameters: Object.entries(queryParams).reduce(
+        (prev, [key, value]) => ({ ...prev, [key]: value.join(', ') }),
+        {},
+      ),
       multiValueQueryStringParameters: queryParams,
-      headers: Object.entries(headers).reduce((prev, [k, v]) => ({ ...prev, [k]: v.join(', ') }), {}),
+      headers: Object.entries(headers).reduce((prev, [key, value]) => ({ ...prev, [key]: value.join(', ') }), {}),
       multiValueHeaders: headers,
       body,
       isBase64Encoded,
     }
 
-    const callback = createCallback(response)
-
-    return lambdaLocal.execute({
-      event,
-      lambdaPath: functionPath,
-      clientContext: JSON.stringify(buildClientContext(request.headers) || {}),
-      callback,
-      verboseLevel: 3,
-      timeoutMs: 10 * 1000,
-    })
+    const clientContext = JSON.stringify(buildClientContext(request.headers) || {})
+    if (isBackground) {
+      return executeBackgroundFunction({
+        event,
+        lambdaPath,
+        clientContext,
+        response,
+        functionName,
+      })
+    }
+    return executeSynchronousFunction({ event, lambdaPath, clientContext, response })
   }
 }
 
-function createFormSubmissionHandler(siteInfo) {
-  return async function(req, res, next) {
+const createFormSubmissionHandler = function (siteInfo) {
+  return async function formSubmissionHandler(req, res, next) {
     if (req.url.startsWith('/.netlify/') || req.method !== 'POST') return next()
 
     const fakeRequest = new Readable({
@@ -188,9 +248,9 @@ function createFormSubmissionHandler(siteInfo) {
     fakeRequest.headers = req.headers
 
     const originalUrl = new URL(req.url, 'http://localhost')
-    req.url = '/.netlify/functions/submission-created' + originalUrl.search
+    req.url = `/.netlify/functions/submission-created${originalUrl.search}`
 
-    const ct = contentType.parse(req)
+    const ct = parseContentType(req)
     let fields = {}
     let files = {}
     if (ct.type.endsWith('/x-www-form-urlencoded')) {
@@ -209,23 +269,23 @@ function createFormSubmissionHandler(siteInfo) {
             Files = Object.entries(Files).reduce(
               (prev, [name, values]) => ({
                 ...prev,
-                [name]: values.map(v => ({
-                  filename: v.originalFilename,
-                  size: v.size,
-                  type: v.headers && v.headers['content-type'],
-                  url: v.path,
+                [name]: values.map((value) => ({
+                  filename: value.originalFilename,
+                  size: value.size,
+                  type: value.headers && value.headers['content-type'],
+                  url: value.path,
                 })),
               }),
-              {}
+              {},
             )
             return resolve([
               Object.entries(Fields).reduce(
                 (prev, [name, values]) => ({ ...prev, [name]: values.length > 1 ? values : values[0] }),
-                {}
+                {},
               ),
               Object.entries(Files).reduce(
                 (prev, [name, values]) => ({ ...prev, [name]: values.length > 1 ? values : values[0] }),
-                {}
+                {},
               ),
             ])
           })
@@ -239,19 +299,21 @@ function createFormSubmissionHandler(siteInfo) {
     const data = JSON.stringify({
       payload: {
         company:
-          fields[Object.keys(fields).find(name => ['company', 'business', 'employer'].includes(name.toLowerCase()))],
+          fields[Object.keys(fields).find((name) => ['company', 'business', 'employer'].includes(name.toLowerCase()))],
         last_name:
-          fields[Object.keys(fields).find(name => ['lastname', 'surname', 'byname'].includes(name.toLowerCase()))],
+          fields[Object.keys(fields).find((name) => ['lastname', 'surname', 'byname'].includes(name.toLowerCase()))],
         first_name:
-          fields[Object.keys(fields).find(name => ['firstname', 'givenname', 'forename'].includes(name.toLowerCase()))],
-        name: fields[Object.keys(fields).find(name => ['name', 'fullname'].includes(name.toLowerCase()))],
+          fields[
+            Object.keys(fields).find((name) => ['firstname', 'givenname', 'forename'].includes(name.toLowerCase()))
+          ],
+        name: fields[Object.keys(fields).find((name) => ['name', 'fullname'].includes(name.toLowerCase()))],
         email:
           fields[
-            Object.keys(fields).find(name =>
-              ['email', 'mail', 'from', 'twitter', 'sender'].includes(name.toLowerCase())
+            Object.keys(fields).find((name) =>
+              ['email', 'mail', 'from', 'twitter', 'sender'].includes(name.toLowerCase()),
             )
           ],
-        title: fields[Object.keys(fields).find(name => ['title', 'subject'].includes(name.toLowerCase()))],
+        title: fields[Object.keys(fields).find((name) => ['title', 'subject'].includes(name.toLowerCase()))],
         data: {
           ...fields,
           ...files,
@@ -262,11 +324,11 @@ function createFormSubmissionHandler(siteInfo) {
         created_at: new Date().toISOString(),
         human_fields: Object.entries({
           ...fields,
-          ...Object.entries(files).reduce((prev, [name, data]) => ({ ...prev, [name]: data.url }), {}),
+          ...Object.entries(files).reduce((prev, [name, { url }]) => ({ ...prev, [name]: url }), {}),
         }).reduce((prev, [key, val]) => ({ ...prev, [capitalize(key)]: val }), {}),
         ordered_human_fields: Object.entries({
           ...fields,
-          ...Object.entries(files).reduce((prev, [name, data]) => ({ ...prev, [name]: data.url }), {}),
+          ...Object.entries(files).reduce((prev, [name, { url }]) => ({ ...prev, [name]: url }), {}),
         }).map(([key, val]) => ({ title: capitalize(key), name: key, value: val })),
         site_url: siteInfo.ssl_url,
       },
@@ -284,7 +346,7 @@ function createFormSubmissionHandler(siteInfo) {
   }
 }
 
-function serveFunctions(dir, siteInfo = {}) {
+const serveFunctions = async function (dir, siteInfo = {}) {
   const app = express()
   app.set('query parser', 'simple')
 
@@ -292,21 +354,21 @@ function serveFunctions(dir, siteInfo = {}) {
     bodyParser.text({
       limit: '6mb',
       type: ['text/*', 'application/json'],
-    })
+    }),
   )
   app.use(bodyParser.raw({ limit: '6mb', type: '*/*' }))
   app.use(createFormSubmissionHandler(siteInfo))
   app.use(
     expressLogging(console, {
       blacklist: ['/favicon.ico'],
-    })
+    }),
   )
 
-  app.get('/favicon.ico', function(req, res) {
+  app.get('/favicon.ico', function onRequest(req, res) {
     res.status(204).end()
   })
 
-  app.all('*', createHandler(dir))
+  app.all('*', await createHandler(dir))
 
   return app
 }
@@ -315,25 +377,25 @@ const getBuildFunction = ({ functionBuilder, log }) => {
   return async function build() {
     log(
       `${NETLIFYDEVLOG} Function builder ${chalk.yellow(functionBuilder.builderName)} ${chalk.magenta(
-        'building'
-      )} functions from directory ${chalk.yellow(functionBuilder.src)}`
+        'building',
+      )} functions from directory ${chalk.yellow(functionBuilder.src)}`,
     )
 
     try {
       await functionBuilder.build()
       log(
         `${NETLIFYDEVLOG} Function builder ${chalk.yellow(functionBuilder.builderName)} ${chalk.green(
-          'finished'
-        )} building functions from directory ${chalk.yellow(functionBuilder.src)}`
+          'finished',
+        )} building functions from directory ${chalk.yellow(functionBuilder.src)}`,
       )
     } catch (error) {
       const errorMessage = (error.stderr && error.stderr.toString()) || error.message
       log(
         `${NETLIFYDEVLOG} Function builder ${chalk.yellow(functionBuilder.builderName)} ${chalk.red(
-          'failed'
+          'failed',
         )} building functions from directory ${chalk.yellow(functionBuilder.src)}${
           errorMessage ? ` with error:\n${errorMessage}` : ''
-        }`
+        }`,
       )
     }
   }
@@ -347,11 +409,11 @@ const startFunctionsServer = async ({ settings, site, log, warn, errorExit, site
     if (functionBuilder) {
       log(
         `${NETLIFYDEVLOG} Function builder ${chalk.yellow(
-          functionBuilder.builderName
-        )} detected: Running npm script ${chalk.yellow(functionBuilder.npmScript)}`
+          functionBuilder.builderName,
+        )} detected: Running npm script ${chalk.yellow(functionBuilder.npmScript)}`,
       )
       warn(
-        `${NETLIFYDEVWARN} This is a beta feature, please give us feedback on how to improve at https://github.com/netlify/cli/`
+        `${NETLIFYDEVWARN} This is a beta feature, please give us feedback on how to improve at https://github.com/netlify/cli/`,
       )
 
       const debouncedBuild = debounce(getBuildFunction({ functionBuilder, log }), 300, {
@@ -371,8 +433,8 @@ const startFunctionsServer = async ({ settings, site, log, warn, errorExit, site
 
     const functionsServer = await serveFunctions(settings.functions, siteInfo)
 
-    await new Promise(resolve => {
-      functionsServer.listen(settings.functionsPort, err => {
+    await new Promise((resolve) => {
+      functionsServer.listen(settings.functionsPort, (err) => {
         if (err) {
           errorExit(`${NETLIFYDEVERR} Unable to start lambda server: ${err}`)
         } else {

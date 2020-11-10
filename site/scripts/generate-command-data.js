@@ -1,7 +1,8 @@
 const path = require('path')
+
 const filterObj = require('filter-obj')
 const mapObj = require('map-obj')
-const globby = require('markdown-magic').globby
+const { globby } = require('markdown-magic')
 
 module.exports = function generateCommandData() {
   const commandsPath = path.join(__dirname, '..', '..', 'src/commands')
@@ -9,17 +10,18 @@ module.exports = function generateCommandData() {
   // console.log('commandsPath', commandsPath)
   const commands = globby.sync([`${commandsPath}/**/**.js`, `${netlifyDevPath}/**/**.js`])
 
-  const allCommands = commands.map(file => {
+  const allCommands = commands.map((file) => {
+    // eslint-disable-next-line node/global-require, import/no-dynamic-require
     const data = require(file)
     const command = commandFromPath(file)
-    const parentCommand = command.split(':')[0]
+    const [parentCommand] = command.split(':')
     const parent = command === parentCommand
     // remove hidden flags
     const flags =
       data.flags &&
       mapObj(
         filterObj(data.flags, (_, value) => value.hidden !== true),
-        (flag, flagData) => [flag, { ...flagData, type: flagData.type === 'option' ? 'string' : flagData.type }]
+        (flag, flagData) => [flag, { ...flagData, type: flagData.type === 'option' ? 'string' : flagData.type }],
       )
     return {
       command,
@@ -30,7 +32,7 @@ module.exports = function generateCommandData() {
     }
   })
 
-  const visibleCommands = allCommands.filter(cmd => {
+  const visibleCommands = allCommands.filter((cmd) => {
     return !cmd.data.hidden
   })
 
@@ -71,18 +73,16 @@ module.exports = function generateCommandData() {
   return groupedCommandsWithData
 }
 
-function commandFromPath(p) {
-  let normalized = path.normalize(p)
+const commandFromPath = function (filePath) {
+  let normalized = path.normalize(filePath)
 
   // console.log('commandFromPath', normalized)
   // console.log('process.cwd()', process.cwd())
   const rootDir = path.join(__dirname, '..', '..')
   // Replace node_modules path for CLI plugins
   if (normalized.match(/node_modules/)) {
-    /*
-      in: /node_modules/netlify-dev-plugin/src/commands/dev/exec.js
-      out: /src/commands/dev/exec.js
-    */
+    // in: /node_modules/netlify-dev-plugin/src/commands/dev/exec.js
+    // out: /src/commands/dev/exec.js
     normalized = normalized.replace(/\/node_modules\/((?:[^/]+)*)?\//, '/')
   }
   return normalized

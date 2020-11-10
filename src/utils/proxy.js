@@ -1,108 +1,143 @@
-const path = require('path')
+const { Buffer } = require('buffer')
 const http = require('http')
-const fs = require('fs')
-const url = require('url')
+const path = require('path')
+const { URL, URLSearchParams } = require('url')
+
+const contentType = require('content-type')
+const cookie = require('cookie')
 const httpProxy = require('http-proxy')
 const { createProxyMiddleware } = require('http-proxy-middleware')
-const cookie = require('cookie')
+const jwtDecode = require('jwt-decode')
+const locatePath = require('locate-path')
 const get = require('lodash.get')
 const isEmpty = require('lodash.isempty')
-const jwtDecode = require('jwt-decode')
-const contentType = require('content-type')
+const pFilter = require('p-filter')
 const toReadableStream = require('to-readable-stream')
 
-const { createRewriter } = require('./rules-proxy')
+const { readFileAsync, fileExistsAsync, isFileAsync } = require('../lib/fs.js')
+
 const { createStreamPromise } = require('./create-stream-promise')
-const { onChanges } = require('./rules-proxy')
 const { parseHeadersFile, objectForPath } = require('./headers')
 const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./logo')
+const { createRewriter } = require('./rules-proxy')
+const { onChanges } = require('./rules-proxy')
 
-function isInternal(url) {
+const isInternal = function (url) {
   return url.startsWith('/.netlify/')
 }
-function isFunction(functionsPort, url) {
+const isFunction = function (functionsPort, url) {
   return functionsPort && url.match(/^\/.netlify\/functions\/.+/)
 }
 
-function addonUrl(addonUrls, req) {
-  const m = req.url.match(/^\/.netlify\/([^/]+)(\/.*)/)
-  const addonUrl = m && addonUrls[m[1]]
-  return addonUrl ? `${addonUrl}${m[2]}` : null
+const getAddonUrl = function (addonsUrls, req) {
+  const matches = req.url.match(/^\/.netlify\/([^/]+)(\/.*)/)
+  const addonUrl = matches && addonsUrls[matches[1]]
+  return addonUrl ? `${addonUrl}${matches[2]}` : null
 }
 
-function getStatic(pathname, publicFolder) {
-  const alternatives = [pathname, ...alternativePathsFor(pathname)].map(p => path.resolve(publicFolder, p.slice(1)))
+const getStatic = async function (pathname, publicFolder) {
+  const alternatives = [pathname, ...alternativePathsFor(pathname)].map((filePath) =>
+    path.resolve(publicFolder, filePath.slice(1)),
+  )
 
-  for (const i in alternatives) {
-    const p = alternatives[i]
-    try {
-      const pathStats = fs.statSync(p)
-      if (pathStats.isFile()) return '/' + path.relative(publicFolder, p)
-    } catch (error) {
-      // Ignore
-    }
+  const file = await locatePath(alternatives)
+  if (file === undefined) {
+    return false
   }
-  return false
+
+  return `/${path.relative(publicFolder, file)}`
 }
 
-function isExternal(match) {
+const isExternal = function (match) {
   return match.to && match.to.match(/^https?:\/\//)
 }
 
-function isRedirect(match) {
+const stripOrigin = function ({ pathname, search, hash }) {
+  return `${pathname}${search}${hash}`
+}
+
+const proxyToExternalUrl = function ({ req, res, dest, destURL }) {
+  console.log(`${NETLIFYDEVLOG} Proxying to ${dest}`)
+  const handler = createProxyMiddleware({
+    target: dest.origin,
+    changeOrigin: true,
+    pathRewrite: () => destURL,
+    ...(Buffer.isBuffer(req.originalBody) && { buffer: toReadableStream(req.originalBody) }),
+  })
+  return handler(req, res, {})
+}
+
+const handleAddonUrl = function ({ req, res, addonUrl }) {
+  const dest = new URL(addonUrl)
+  const destURL = stripOrigin(dest)
+
+  return proxyToExternalUrl({ req, res, dest, destURL })
+}
+
+const isRedirect = function (match) {
   return match.status && match.status >= 300 && match.status <= 400
 }
 
-function render404(publicFolder) {
+const render404 = async function (publicFolder) {
   const maybe404Page = path.resolve(publicFolder, '404.html')
-  if (fs.existsSync(maybe404Page)) return fs.readFileSync(maybe404Page)
+  try {
+    const isFile = await isFileAsync(maybe404Page)
+    if (isFile) return await readFileAsync(maybe404Page)
+  } catch (error) {
+    console.warn(NETLIFYDEVWARN, 'Error while serving 404.html file', error.message)
+  }
+
   return 'Not Found'
 }
 
 // Used as an optimization to avoid dual lookups for missing assets
 const assetExtensionRegExp = /\.(html?|png|jpg|js|css|svg|gif|ico|woff|woff2)$/
 
-function alternativePathsFor(url) {
+const alternativePathsFor = function (url) {
   const paths = []
   if (url[url.length - 1] === '/') {
     const end = url.length - 1
     if (url !== '/') {
-      paths.push(url.slice(0, end) + '.html')
-      paths.push(url.slice(0, end) + '.htm')
+      paths.push(`${url.slice(0, end)}.html`)
+      paths.push(`${url.slice(0, end)}.htm`)
     }
-    paths.push(url + 'index.html')
-    paths.push(url + 'index.htm')
+    paths.push(`${url}index.html`)
+    paths.push(`${url}index.htm`)
   } else if (!url.match(assetExtensionRegExp)) {
-    paths.push(url + '.html')
-    paths.push(url + '.htm')
-    paths.push(url + '/index.html')
-    paths.push(url + '/index.htm')
+    paths.push(`${url}.html`)
+    paths.push(`${url}.htm`)
+    paths.push(`${url}/index.html`)
+    paths.push(`${url}/index.htm`)
   }
 
   return paths
 }
 
-async function serveRedirect(req, res, proxy, match, options) {
+const serveRedirect = async function ({ req, res, proxy, match, options }) {
   if (!match) return proxy.web(req, res, options)
 
   options = options || req.proxyOptions || {}
   options.match = null
 
   if (!isEmpty(match.proxyHeaders)) {
-    Object.entries(match.proxyHeaders).forEach(([k, v]) => (req.headers[k] = v))
+    Object.entries(match.proxyHeaders).forEach(([key, value]) => {
+      req.headers[key] = value
+    })
   }
 
   if (isFunction(options.functionsPort, req.url)) {
     return proxy.web(req, res, { target: options.functionsServer })
   }
-  const urlForAddons = addonUrl(options.addonUrls, req)
+  const urlForAddons = getAddonUrl(options.addonsUrls, req)
   if (urlForAddons) {
-    return proxy.web(req, res, { target: urlForAddons })
+    return handleAddonUrl({ req, res, addonUrl: urlForAddons })
   }
 
   if (match.exceptions && match.exceptions.JWT) {
     // Some values of JWT can start with :, so, make sure to normalize them
-    const expectedRoles = new Set(match.exceptions.JWT.split(',').map(r => (r.startsWith(':') ? r.slice(1) : r)))
+    const expectedRoles = new Set(
+      match.exceptions.JWT.split(',').map((value) => (value.startsWith(':') ? value.slice(1) : value)),
+    )
 
     const cookieValues = cookie.parse(req.headers.cookie || '')
     const token = cookieValues.nf_jwt
@@ -122,7 +157,7 @@ async function serveRedirect(req, res, proxy, match, options) {
         return
       }
 
-      if ((jwtValue.exp || 0) < Math.round(new Date().getTime() / 1000)) {
+      if ((jwtValue.exp || 0) < Math.round(new Date().getTime() / MILLISEC_TO_SEC)) {
         console.warn(NETLIFYDEVWARN, 'Expired JWT provided in request', req.url)
       } else {
         const presentedRoles = get(jwtValue, options.jwtRolePath) || []
@@ -134,40 +169,45 @@ async function serveRedirect(req, res, proxy, match, options) {
         }
 
         // Restore the URL if everything is correct
-        if (presentedRoles.some(pr => expectedRoles.has(pr))) {
+        if (presentedRoles.some((pr) => expectedRoles.has(pr))) {
           req.url = originalURL
         }
       }
     }
   }
 
-  const reqUrl = new url.URL(
+  const reqUrl = new URL(
     req.url,
-    `${req.protocol || (req.headers.scheme && req.headers.scheme + ':') || 'http:'}//${req.headers.host ||
-      req.hostname}`
+    `${req.protocol || (req.headers.scheme && `${req.headers.scheme}:`) || 'http:'}//${
+      req.headers.host || req.hostname
+    }`,
   )
 
   const staticFile = await getStatic(decodeURIComponent(reqUrl.pathname), options.publicFolder)
   if (staticFile) req.url = staticFile + reqUrl.search
   if (match.force404) {
     res.writeHead(404)
-    return render404(options.publicFolder)
+    res.end(await render404(options.publicFolder))
+    return
   }
 
   if (match.force || !staticFile || !options.framework || req.method === 'POST') {
-    const dest = new url.URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
+    const dest = new URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
 
     // Use query params of request URL as base, so that, destination query params can supersede
-    const urlParams = new url.URLSearchParams(reqUrl.searchParams)
-    dest.searchParams.forEach((val, key) => urlParams.set(key, val))
-    urlParams.forEach((val, key) => dest.searchParams.set(key, val))
+    const urlParams = new URLSearchParams(reqUrl.searchParams)
+    dest.searchParams.forEach((val, key) => {
+      urlParams.set(key, val)
+    })
+    urlParams.forEach((val, key) => {
+      dest.searchParams.set(key, val)
+    })
 
-    // Get the URL after http://host:port
-    const destURL = dest.toString().replace(dest.origin, '')
+    const destURL = stripOrigin(dest)
 
     if (isRedirect(match)) {
       res.writeHead(match.status, {
-        'Location': match.to,
+        Location: match.to,
         'Cache-Control': 'no-cache',
       })
       res.end(`Redirecting to ${match.to}`)
@@ -175,14 +215,7 @@ async function serveRedirect(req, res, proxy, match, options) {
     }
 
     if (isExternal(match)) {
-      console.log(`${NETLIFYDEVLOG} Proxying to ${dest}`)
-      const handler = createProxyMiddleware({
-        target: `${dest.protocol}//${dest.host}`,
-        changeOrigin: true,
-        pathRewrite: () => destURL.replace(/https?:\/\/[^/]+/, ''),
-        ...(Buffer.isBuffer(req.originalBody) && { buffer: toReadableStream(req.originalBody) }),
-      })
-      return handler(req, res, {})
+      return proxyToExternalUrl({ req, res, dest, destURL })
     }
 
     const ct = req.headers['content-type'] ? contentType.parse(req).type : ''
@@ -196,10 +229,11 @@ async function serveRedirect(req, res, proxy, match, options) {
     }
 
     const destStaticFile = await getStatic(dest.pathname, options.publicFolder)
-    let status
+    let statusValue
     if (match.force || (!staticFile && ((!options.framework && destStaticFile) || isInternal(destURL)))) {
       req.url = destStaticFile ? destStaticFile + dest.search : destURL
-      status = match.status
+      const { status } = match
+      statusValue = status
       console.log(`${NETLIFYDEVLOG} Rewrote URL to`, req.url)
     }
 
@@ -207,18 +241,20 @@ async function serveRedirect(req, res, proxy, match, options) {
       req.headers['x-netlify-original-pathname'] = reqUrl.pathname
       return proxy.web(req, res, { target: options.functionsServer })
     }
-    const urlForAddons = addonUrl(options.addonUrls, req)
-    if (urlForAddons) {
-      return proxy.web(req, res, { target: urlForAddons })
+    const addonUrl = getAddonUrl(options.addonsUrls, req)
+    if (addonUrl) {
+      return handleAddonUrl({ req, res, addonUrl })
     }
 
-    return proxy.web(req, res, { ...options, status })
+    return proxy.web(req, res, { ...options, status: statusValue })
   }
 
   return proxy.web(req, res, options)
 }
 
-function initializeProxy(port, distDir, projectDir) {
+const MILLISEC_TO_SEC = 1e3
+
+const initializeProxy = function (port, distDir, projectDir) {
   const proxy = httpProxy.createProxyServer({
     selfHandleResponse: true,
     target: {
@@ -230,15 +266,15 @@ function initializeProxy(port, distDir, projectDir) {
   const headersFiles = [...new Set([path.resolve(projectDir, '_headers'), path.resolve(distDir, '_headers')])]
 
   let headerRules = headersFiles.reduce((prev, curr) => Object.assign(prev, parseHeadersFile(curr)), {})
-  onChanges(headersFiles, () => {
+  onChanges(headersFiles, async () => {
     console.log(
       `${NETLIFYDEVLOG} Reloading headers files`,
-      headersFiles.filter(fs.existsSync).map(p => path.relative(projectDir, p))
+      (await pFilter(headersFiles, fileExistsAsync)).map((headerFile) => path.relative(projectDir, headerFile)),
     )
     headerRules = headersFiles.reduce((prev, curr) => Object.assign(prev, parseHeadersFile(curr)), {})
   })
 
-  proxy.on('error', err => console.error('error while proxying request:', err.message))
+  proxy.on('error', (err) => console.error('error while proxying request:', err.message))
   proxy.on('proxyReq', (proxyReq, req) => {
     if (req.originalBody) {
       proxyReq.write(req.originalBody)
@@ -251,28 +287,30 @@ function initializeProxy(port, distDir, projectDir) {
         return proxy.web(req, res, req.proxyOptions)
       }
       if (req.proxyOptions && req.proxyOptions.match) {
-        return serveRedirect(req, res, handlers, req.proxyOptions.match, req.proxyOptions)
+        return serveRedirect({ req, res, proxy: handlers, match: req.proxyOptions.match, options: req.proxyOptions })
       }
     }
-    const requestURL = new url.URL(req.url, `http://${req.headers.host || 'localhost'}`)
+    const requestURL = new URL(req.url, `http://${req.headers.host || 'localhost'}`)
     const pathHeaderRules = objectForPath(headerRules, requestURL.pathname)
     if (!isEmpty(pathHeaderRules)) {
-      Object.entries(pathHeaderRules).forEach(([key, val]) => res.setHeader(key, val))
+      Object.entries(pathHeaderRules).forEach(([key, val]) => {
+        res.setHeader(key, val)
+      })
     }
     res.writeHead(req.proxyOptions.status || proxyRes.statusCode, proxyRes.headers)
-    proxyRes.on('data', function(data) {
+    proxyRes.on('data', function onData(data) {
       res.write(data)
     })
-    proxyRes.on('end', function() {
+    proxyRes.on('end', function onEnd() {
       res.end()
     })
   })
 
   const handlers = {
     web: (req, res, options) => {
-      const requestURL = new url.URL(req.url, 'http://localhost')
+      const requestURL = new URL(req.url, 'http://localhost')
       req.proxyOptions = options
-      req.alternativePaths = alternativePathsFor(requestURL.pathname).map(p => p + requestURL.search)
+      req.alternativePaths = alternativePathsFor(requestURL.pathname).map((filePath) => filePath + requestURL.search)
       // Ref: https://nodejs.org/api/net.html#net_socket_remoteaddress
       req.headers['x-forwarded-for'] = req.connection.remoteAddress || ''
       return proxy.web(req, res, options)
@@ -283,65 +321,69 @@ function initializeProxy(port, distDir, projectDir) {
   return handlers
 }
 
-async function startProxy(settings = {}, addonUrls, configPath, projectDir) {
+const startProxy = async function (settings, addonsUrls, configPath, projectDir) {
   const functionsServer = settings.functionsPort ? `http://localhost:${settings.functionsPort}` : null
 
   const proxy = initializeProxy(settings.frameworkPort, settings.dist, projectDir)
 
   const rewriter = await createRewriter({
     distDir: settings.dist,
-    jwtRole: settings.jwtRolePath,
+    jwtSecret: settings.jwtSecret,
+    jwtRoleClaim: settings.jwtRolePath,
     configPath,
     projectDir,
   })
 
-  const server = http.createServer(async function(req, res) {
-    req.originalBody = ['GET', 'OPTIONS', 'HEAD'].includes(req.method) ? null : await createStreamPromise(req, 30)
+  const server = http.createServer(async function onRequest(req, res) {
+    req.originalBody = ['GET', 'OPTIONS', 'HEAD'].includes(req.method)
+      ? null
+      : await createStreamPromise(req, BYTES_LIMIT)
 
     if (isFunction(settings.functionsPort, req.url)) {
       return proxy.web(req, res, { target: functionsServer })
     }
-    const urlForAddons = addonUrl(addonUrls, req)
-    if (urlForAddons) {
-      return proxy.web(req, res, { target: urlForAddons })
+    const addonUrl = getAddonUrl(addonsUrls, req)
+    if (addonUrl) {
+      return handleAddonUrl({ req, res, addonUrl })
     }
 
-    rewriter(req, res, match => {
-      const options = {
-        match,
-        addonUrls,
-        target: `http://localhost:${settings.frameworkPort}`,
-        publicFolder: settings.dist,
-        functionsServer,
-        functionsPort: settings.functionsPort,
-        jwtRolePath: settings.jwtRolePath,
-        framework: settings.framework,
-      }
+    const match = await rewriter(req)
+    const options = {
+      match,
+      addonsUrls,
+      target: `http://localhost:${settings.frameworkPort}`,
+      publicFolder: settings.dist,
+      functionsServer,
+      functionsPort: settings.functionsPort,
+      jwtRolePath: settings.jwtRolePath,
+      framework: settings.framework,
+    }
 
-      if (match) return serveRedirect(req, res, proxy, match, options)
+    if (match) return serveRedirect({ req, res, proxy, match, options })
 
-      const ct = req.headers['content-type'] ? contentType.parse(req).type : ''
-      if (
-        req.method === 'POST' &&
-        !isInternal(req.url) &&
-        (ct.endsWith('/x-www-form-urlencoded') || ct === 'multipart/form-data')
-      ) {
-        return proxy.web(req, res, { target: functionsServer })
-      }
+    const ct = req.headers['content-type'] ? contentType.parse(req).type : ''
+    if (
+      req.method === 'POST' &&
+      !isInternal(req.url) &&
+      (ct.endsWith('/x-www-form-urlencoded') || ct === 'multipart/form-data')
+    ) {
+      return proxy.web(req, res, { target: functionsServer })
+    }
 
-      proxy.web(req, res, options)
-    })
+    proxy.web(req, res, options)
   })
 
-  server.on('upgrade', function(req, socket, head) {
+  server.on('upgrade', function onUpgrade(req, socket, head) {
     proxy.ws(req, socket, head)
   })
 
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     server.listen({ port: settings.port }, () => {
       resolve(`http://localhost:${settings.port}`)
     })
   })
 }
+
+const BYTES_LIMIT = 30
 
 module.exports = { startProxy }

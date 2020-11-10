@@ -4,13 +4,14 @@
  *
  */
 const { existsSync, readFileSync } = require('fs')
+
 let pkgJSON = null
 let yarnExists = false
 let warnedAboutEmptyScript = false
 const { NETLIFYDEVWARN } = require('../../utils/logo')
 
 /** hold package.json in a singleton so we dont do expensive parsing repeatedly */
-function getPkgJSON() {
+const getPkgJSON = function () {
   if (pkgJSON) {
     return pkgJSON
   }
@@ -18,7 +19,7 @@ function getPkgJSON() {
   pkgJSON = JSON.parse(readFileSync('package.json', { encoding: 'utf8' }))
   return pkgJSON
 }
-function getYarnOrNPMCommand() {
+const getYarnOrNPMCommand = function () {
   if (!yarnExists) {
     yarnExists = existsSync('yarn.lock') ? 'yes' : 'no'
   }
@@ -30,7 +31,7 @@ function getYarnOrNPMCommand() {
  *
  */
 
-function hasRequiredDeps(requiredDepArray) {
+const hasRequiredDeps = function (requiredDepArray) {
   const { dependencies, devDependencies } = getPkgJSON()
   for (const depName of requiredDepArray) {
     const hasItInDeps = dependencies && dependencies[depName]
@@ -41,7 +42,7 @@ function hasRequiredDeps(requiredDepArray) {
   }
   return true
 }
-function hasRequiredFiles(filenameArr) {
+const hasRequiredFiles = function (filenameArr) {
   for (const filename of filenameArr) {
     if (!existsSync(filename)) {
       return false
@@ -51,48 +52,48 @@ function hasRequiredFiles(filenameArr) {
 }
 
 // preferredScriptsArr is in decreasing order of preference
-function scanScripts({ preferredScriptsArr, preferredCommand }) {
+const scanScripts = function ({ preferredScriptsArr, preferredCommand }) {
   const { scripts } = getPkgJSON()
 
   if (!scripts && !warnedAboutEmptyScript) {
     console.log(`${NETLIFYDEVWARN} You have a package.json without any npm scripts.`)
     console.log(
-      `${NETLIFYDEVWARN} Netlify Dev's detector system works best with a script, or you can specify a command to run in the netlify.toml [dev]  block `
+      `${NETLIFYDEVWARN} Netlify Dev's detector system works best with a script, or you can specify a command to run in the netlify.toml [dev]  block `,
     )
-    warnedAboutEmptyScript = true // dont spam message with every detector
-    return [] // not going to match any scripts anyway
+    // dont spam message with every detector
+    warnedAboutEmptyScript = true
+    // not going to match any scripts anyway
+    return []
   }
-  /**
-   *
-   * NOTE: we return an array of arrays (args)
-   * because we may want to supply extra args in some setups
-   *
-   * e.g. ['eleventy', '--serve', '--watch']
-   *
-   * array will in future be sorted by likelihood of what we want
-   *
-   *  */
+  //
+  //
+  // NOTE: we return an array of arrays (args)
+  // because we may want to supply extra args in some setups
+  //
+  // e.g. ['eleventy', '--serve', '--watch']
+  //
+  // array will in future be sorted by likelihood of what we want
+  //
+  //
   // this is very simplistic logic, we can offer far more intelligent logic later
   // eg make a dependency tree of npm scripts and offer the parentest node first
-  return (
-    Object.entries(scripts)
-      .filter(
-        ([scriptName, scriptCommand]) =>
-          (preferredScriptsArr.includes(scriptName) || scriptCommand.includes(preferredCommand)) &&
-          // prevent netlify dev calling netlify dev
-          !scriptCommand.includes('netlify dev')
-      )
-      .map(([scriptName]) => [scriptName])
+  return Object.entries(scripts)
+    .filter(
+      ([scriptName, scriptCommand]) =>
+        (preferredScriptsArr.includes(scriptName) || scriptCommand.includes(preferredCommand)) &&
+        // prevent netlify dev calling netlify dev
+        !scriptCommand.includes('netlify dev'),
+    )
+    .map(([scriptName]) => [scriptName])
       // We can sort this to prefer commands that exist within `preferredScriptsArr`
-      .sort(([firstScript], [secondScript]) => {
-        const hasFirstElem = preferredScriptsArr.includes(firstScript)
-        const hasSecondElem = preferredScriptsArr.includes(secondScript)
+    .sort(([firstScript], [secondScript]) => {
+      const hasFirstElem = preferredScriptsArr.includes(firstScript)
+      const hasSecondElem = preferredScriptsArr.includes(secondScript)
 
-        if (hasFirstElem && !hasSecondElem) return -1
-        if (hasFirstElem && hasSecondElem) return 0
-        if (!hasFirstElem && hasSecondElem) return 1
-      })
-  )
+      if (hasFirstElem && !hasSecondElem) return -1
+      if (hasFirstElem && hasSecondElem) return 0
+      if (!hasFirstElem && hasSecondElem) return 1
+    })
 }
 
 module.exports = {

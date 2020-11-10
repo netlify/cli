@@ -1,5 +1,7 @@
-function createStreamPromise(stream, timeoutSeconds, bytesLimit = 1024 * 1024 * 6) {
-  return new Promise(function(resolve, reject) {
+const { Buffer } = require('buffer')
+
+const createStreamPromise = function (stream, timeoutSeconds, bytesLimit = DEFAULT_BYTES_LIMIT) {
+  return new Promise(function streamPromiseFunc(resolve, reject) {
     let data = []
     let dataLength = 0
 
@@ -8,10 +10,10 @@ function createStreamPromise(stream, timeoutSeconds, bytesLimit = 1024 * 1024 * 
       timeoutId = setTimeout(() => {
         data = null
         reject(new Error('Request timed out waiting for body'))
-      }, timeoutSeconds * 1000)
+      }, timeoutSeconds * SEC_TO_MILLISEC)
     }
 
-    stream.on('data', function(chunk) {
+    stream.on('data', function onData(chunk) {
       if (!Array.isArray(data)) {
         // Stream harvesting closed
         return
@@ -25,12 +27,12 @@ function createStreamPromise(stream, timeoutSeconds, bytesLimit = 1024 * 1024 * 
       }
     })
 
-    stream.on('error', function(error) {
+    stream.on('error', function onError(error) {
       data = null
       reject(error)
       clearTimeout(timeoutId)
     })
-    stream.on('end', function() {
+    stream.on('end', function onEnd() {
       clearTimeout(timeoutId)
       if (data) {
         resolve(Buffer.concat(data))
@@ -38,5 +40,10 @@ function createStreamPromise(stream, timeoutSeconds, bytesLimit = 1024 * 1024 * 
     })
   })
 }
+
+const SEC_TO_MILLISEC = 1e3
+
+// 6 MiB
+const DEFAULT_BYTES_LIMIT = 6e6
 
 module.exports = { createStreamPromise }

@@ -1,7 +1,8 @@
 const fs = require('fs').promises
 const path = require('path')
-const rimraf = require('rimraf')
 const util = require('util')
+
+const rimraf = require('rimraf')
 
 const rimrafAsync = util.promisify(rimraf)
 
@@ -15,7 +16,7 @@ const copyDirRecursiveAsync = async (src, dest) => {
   const childrenItems = await fs.readdir(src)
 
   await Promise.all(
-    childrenItems.map(async item => {
+    childrenItems.map(async (item) => {
       const srcPath = path.join(src, item)
       const destPath = path.join(dest, item)
 
@@ -26,11 +27,11 @@ const copyDirRecursiveAsync = async (src, dest) => {
       } else {
         await copyDirRecursiveAsync(srcPath, destPath)
       }
-    })
+    }),
   )
 }
 
-const ensureFilePathAsync = async filePath => {
+const ensureFilePathAsync = async (filePath) => {
   try {
     await fs.mkdir(path.dirname(filePath), { recursive: true })
   } catch (_) {
@@ -38,8 +39,8 @@ const ensureFilePathAsync = async filePath => {
   }
 }
 
-const removeRecursiveAsync = async path => {
-  await rimrafAsync(path)
+const removeRecursiveAsync = async (filePath) => {
+  await rimrafAsync(filePath)
 }
 
 module.exports = {

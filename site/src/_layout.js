@@ -1,10 +1,10 @@
-import React from 'react'
 import PropTypes from 'prop-types'
-import { Link as RouterLink, NavLink as RouterNavLink } from 'react-router-dom'
+import React from 'react'
 import { Helmet } from 'react-helmet'
-import styled from 'styled-components'
-import { Flex, Box, Container, Text, Toolbar, Divider, Heading, NavLink, BlockLink, ButtonTransparent } from 'rebass'
 import { InstantSearch, SearchBox, createConnector, Configure, Highlight } from 'react-instantsearch-dom'
+import { Link as RouterLink, NavLink as RouterNavLink } from 'react-router-dom'
+import { Flex, Box, Container, Text, Toolbar, Divider, Heading, NavLink, BlockLink, ButtonTransparent } from 'rebass'
+import styled from 'styled-components'
 import { borderColor } from 'styled-system'
 
 const breakpoint = `@media screen and (min-width: 48em)`
@@ -46,13 +46,13 @@ export const Sidebar = styled('div')(
     left: 0,
     bottom: 0,
   },
-  props => ({
+  (props) => ({
     transform: props.open ? 'translateX(0)' : 'translateX(-100%)',
     [breakpoint]: {
       transform: 'none',
     },
   }),
-  borderColor
+  borderColor,
 )
 Sidebar.defaultProps = {
   borderColor: 'gray',
@@ -72,7 +72,8 @@ export const MobileOnly = styled.div([], {
   },
 })
 
-export const MenuIcon = ({ size = 24, ...props }) => {
+const MENU_ICON_SIZE = 24
+export const MenuIcon = ({ size = MENU_ICON_SIZE, ...props }) => {
   return (
     <svg {...props} viewBox="0 0 24 24" width={size} height={size} fill="currentcolor">
       <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
@@ -136,9 +137,10 @@ const NetlifyLogo = () => {
   )
 }
 
-export const Main = props => <Box {...props} is="main" flex="1 1 auto" w={1} pl={[null, null, 256]} />
+const MAIN_WIDTH = 256
+export const Main = (props) => <Box {...props} is="main" flex="1 1 auto" w={1} pl={[null, null, MAIN_WIDTH]} />
 
-export const MaxWidth = props => <Container {...props} maxWidth={768} px={4} pt={4} pb={6} />
+export const MaxWidth = (props) => <Container {...props} maxWidth={768} px={4} pt={4} pb={6} />
 
 export const Content = styled(Box)([], {
   minHeight: 'calc(100vh - 208px)',
@@ -153,28 +155,29 @@ export const UL = styled('ul')([], {
 
 export const LI = styled('li')([], {})
 
+const DEPTH_PAD_INCREMENT = 16
+const DEPTH_PATH_SHIFT = 4
 const depthPad = ({ to = '' }) =>
   (1 +
     to
       .split('/')
-      .filter(s => s.length)
+      .filter((string) => string.length)
       .slice(1).length) *
-  16
+  DEPTH_PAD_INCREMENT
 
-const Link = styled(props => <NavLink {...props} is={RouterNavLink} w={1} pl={depthPad(props) - 4 + 'px'} />)(
-  [],
-  () => ({
-    'borderLeft': '4px solid',
-    'borderColor': 'transparent',
-    '&.active, &:focus': {
-      color: '#00c2b2', // '#00ad9f', // themeGet('colors.blue', '#07c')(props),
-      outline: 'none',
-    },
-    '&:focus': {
-      borderColor: 'inherit',
-    },
-  })
-)
+const Link = styled((props) => (
+  <NavLink {...props} is={RouterNavLink} w={1} pl={`${depthPad(props) - DEPTH_PATH_SHIFT}px`} />
+))([], () => ({
+  borderLeft: '4px solid',
+  borderColor: 'transparent',
+  '&.active, &:focus': {
+    color: '#00c2b2',
+    outline: 'none',
+  },
+  '&:focus': {
+    borderColor: 'inherit',
+  },
+}))
 
 Link.defaultProps = {
   to: '',
@@ -242,6 +245,7 @@ const HitsOverlay = styled.div`
   background-color: #fff;
 `
 
+const MIN_WIDTH = 110
 const MyHits = createConnector({
   displayName: 'ConditionalQuery',
   getProvidedProps(props, searchState, searchResults) {
@@ -250,12 +254,12 @@ const MyHits = createConnector({
   },
 })(({ query, hits }) => {
   if (hits && query) {
-    return hits.map((hit, i) => {
+    return hits.map((hit, index) => {
       const slug = hit.name.replace(/:/g, '')
       return (
-        <HitsOverlay key={i}>
+        <HitsOverlay key={index}>
           <a href={`/commands/${slug}`}>
-            <span style={{ minWidth: 110, display: 'inline-block', fontWeight: 'bold' }}>
+            <span style={{ minWidth: MIN_WIDTH, display: 'inline-block', fontWeight: 'bold' }}>
               <Highlight attribute="name" hit={hit} />
             </span>
             <Highlight attribute="description" hit={hit} />
@@ -275,7 +279,7 @@ export const Nav = ({ routes = [], ...props }) => (
     <Divider my={0} />
 
     <UL>
-      {routes.map(route => {
+      {routes.map((route) => {
         // Hide items from nav if frontMatter hidden: true
         if (route.module && route.module.frontMatter && route.module.frontMatter.hidden) {
           return null
@@ -340,7 +344,7 @@ const MobileNav = ({ title, logo, update }) => (
   </MobileOnly>
 )
 
-const toggle = key => state => ({ [key]: !state[key] })
+const toggle = (key) => (state) => ({ [key]: !state[key] })
 const close = () => ({ menu: false })
 
 export default class Layout extends React.Component {
@@ -350,7 +354,8 @@ export default class Layout extends React.Component {
 
   state = {
     menu: false,
-    update: fn => this.setState(fn),
+    // eslint-disable-next-line no-invalid-this
+    update: (fn) => this.setState(fn),
   }
 
   render() {
@@ -366,7 +371,7 @@ export default class Layout extends React.Component {
 
     const Wrapper = opts.fullWidth ? React.Fragment : MaxWidth
 
-    const index = routes.findIndex(r => r.path === route.path)
+    const index = routes.findIndex((thisRoute) => thisRoute.path === route.path)
     const pagination = {
       previous: routes[index - 1],
       next: routes[index + 1],
@@ -376,12 +381,8 @@ export default class Layout extends React.Component {
     let pageTitle = '404 not found'
     // console.log('route.module', route.module)
     if (route.module) {
-      const frontMatter = route.module.frontMatter
-      if (frontMatter.title) {
-        pageTitle = frontMatter.title
-      } else {
-        pageTitle = this.props.route.name
-      }
+      const { frontMatter } = route.module
+      pageTitle = frontMatter.title ? frontMatter.title : this.props.route.name
     }
 
     return (

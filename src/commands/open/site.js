@@ -29,7 +29,8 @@ Run \`netlify link\` to connect to this folder to a site`)
       this.log(`Opening "${siteData.name}" site url:`)
       this.log(`> ${url}`)
     } catch (error) {
-      if (error.status === 401 /* unauthorized */) {
+      // unauthorized
+      if (error.status === 401) {
         this.warn(`Log in with a different account or re-link to a site you have permission for`)
         this.error(`Not authorized to view the currently linked site (${siteId})`)
       }

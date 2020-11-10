@@ -1,9 +1,11 @@
+const { flags: flagsLib } = require('@oclif/command')
+
+const { isEmptyCommand } = require('../../utils/check-command-inputs')
 const Command = require('../../utils/command')
-const { flags } = require('@oclif/command')
+const showHelp = require('../../utils/show-help')
+
 const OpenAdminCommand = require('./admin')
 const OpenSiteCommand = require('./site')
-const showHelp = require('../../utils/show-help')
-const { isEmptyCommand } = require('../../utils/check-command-inputs')
 
 class OpenCommand extends Command {
   async run() {
@@ -30,10 +32,10 @@ class OpenCommand extends Command {
 
 OpenCommand.flags = {
   ...OpenCommand.flags,
-  site: flags.boolean({
+  site: flagsLib.boolean({
     description: 'Open site',
   }),
-  admin: flags.boolean({
+  admin: flagsLib.boolean({
     description: 'Open Netlify site',
   }),
 }

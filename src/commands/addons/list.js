@@ -1,7 +1,8 @@
+const { flags: flagsLib } = require('@oclif/command')
 const AsciiTable = require('ascii-table')
-const { flags } = require('@oclif/command')
-const Command = require('../../utils/command')
+
 const { prepareAddonCommand } = require('../../utils/addons/prepare')
+const Command = require('../../utils/command')
 
 class AddonsListCommand extends Command {
   async run() {
@@ -28,7 +29,7 @@ class AddonsListCommand extends Command {
       },
     })
 
-    const addonData = addons.map(addon => {
+    const addonData = addons.map((addon) => {
       return {
         namespace: addon.service_path.replace('/.netlify/', ''),
         name: addon.service_name,
@@ -42,8 +43,8 @@ class AddonsListCommand extends Command {
 
     table.setHeading('NameSpace', 'Name', 'Instance Id')
 
-    addonData.forEach(s => {
-      table.addRow(s.namespace, s.name, s.id)
+    addonData.forEach(({ namespace, name, id }) => {
+      table.addRow(namespace, name, id)
     })
     // Log da addons
     this.log(table.toString())
@@ -53,7 +54,7 @@ class AddonsListCommand extends Command {
 AddonsListCommand.description = `List currently installed add-ons for site`
 AddonsListCommand.aliases = ['addon:list']
 AddonsListCommand.flags = {
-  json: flags.boolean({
+  json: flagsLib.boolean({
     description: 'Output add-on data as JSON',
   }),
   ...AddonsListCommand.flags,

@@ -17,11 +17,13 @@ const typeDefs = gql`
   }
 `
 
+/* eslint-disable no-magic-numbers */
 const authors = [
   { id: 1, name: 'Terry Pratchett', age: 67 },
   { id: 2, name: 'Stephen King', age: 71 },
   { id: 3, name: 'JK Rowling', age: 53 },
 ]
+/* eslint-enable no-magic-numbers */
 
 const resolvers = {
   Query: {
@@ -33,7 +35,7 @@ const resolvers = {
     },
     author: () => {},
     authorByName: (root, args) => {
-      return authors.find(x => x.name === args.name) || 'NOTFOUND'
+      return authors.find((author) => author.name === args.name) || 'NOTFOUND'
     },
   },
 }
@@ -43,4 +45,6 @@ const server = new ApolloServer({
   resolvers,
 })
 
-exports.handler = server.createHandler()
+const handler = server.createHandler()
+
+module.exports = { handler }

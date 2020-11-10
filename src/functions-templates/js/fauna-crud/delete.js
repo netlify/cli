@@ -1,24 +1,25 @@
 /* Import faunaDB sdk */
-const faunadb = require('faunadb')
+const process = require('process')
 
-const q = faunadb.query
-const client = new faunadb.Client({
+const { query, Client } = require('faunadb')
+
+const client = new Client({
   secret: process.env.FAUNADB_SERVER_SECRET,
 })
 
-exports.handler = async event => {
-  const id = event.id
+const handler = async (event) => {
+  const { id } = event
   console.log(`Function 'delete' invoked. delete id: ${id}`)
   return client
-    .query(q.Delete(q.Ref(`classes/items/${id}`)))
-    .then(response => {
+    .query(query.Delete(query.Ref(`classes/items/${id}`)))
+    .then((response) => {
       console.log('success', response)
       return {
         statusCode: 200,
         body: JSON.stringify(response),
       }
     })
-    .catch(error => {
+    .catch((error) => {
       console.log('error', error)
       return {
         statusCode: 400,
@@ -26,3 +27,5 @@ exports.handler = async event => {
       }
     })
 }
+
+module.exports = { handler }

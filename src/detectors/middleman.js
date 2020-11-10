@@ -1,13 +1,15 @@
 const { existsSync } = require('fs')
 
-module.exports = function() {
+const FRAMEWORK_PORT = 4567
+
+module.exports = function detector() {
   if (!existsSync('config.rb')) {
     return false
   }
 
   return {
     framework: 'middleman',
-    frameworkPort: 4567,
+    frameworkPort: FRAMEWORK_PORT,
     command: 'bundle',
     possibleArgsArrs: [['exec', 'middleman', 'server']],
     dist: 'build',

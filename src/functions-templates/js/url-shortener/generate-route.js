@@ -1,49 +1,50 @@
 'use strict'
+const process = require('process')
 
-var request = require('request')
-var Hashids = require('hashids')
+const fetch = require('fetch')
+const FormData = require('form-data')
+const Hashids = require('hashids')
 
-module.exports = function handler(event, context, callback) {
+const NUMBER_TO_CODE = 100
+
+module.exports = async function handler(event) {
   // Set the root URL according to the Netlify site we are within
-  var rootURL = process.env.URL + '/'
+  const rootURL = `${process.env.URL}/`
 
   // get the details of what we are creating
-  var destination = event.queryStringParameters.to
+  let destination = event.queryStringParameters.to
 
   // generate a unique short code (stupidly for now)
-  var hash = new Hashids()
-  var number = Math.round(new Date().getTime() / 100)
-  var code = hash.encode(number)
+  const hash = new Hashids()
+  const number = Math.round(new Date().getTime() / NUMBER_TO_CODE)
+  const code = hash.encode(number)
 
   // ensure that a protocol was provided
   if (!destination.includes('://')) {
-    destination = 'http://' + destination
+    destination = `http://${destination}`
   }
 
   // prepare a payload to post
-  var payload = {
-    'form-name': 'routes',
-    destination,
-    code,
-    'expires': '',
-  }
+  const form = new FormData()
+  form.append('form-name', 'routes')
+  form.append('destination', destination)
+  form.append('code', code)
+  form.append('expires', '')
 
   // post the new route to the Routes form
-  request.post({ url: rootURL, formData: payload }, function(err) {
-    var msg
-    if (err) {
-      msg = 'Post to Routes stash failed: ' + err
-    } else {
-      msg = 'Route registered. Site deploying to include it. ' + rootURL + code
-    }
-    console.log(msg)
+  try {
+    await fetch(rootURL, { method: 'POST', body: form })
+    const url = `${rootURL}${code}`
+    console.log(`Route registered. Site deploying to include it. ${url}`)
     // tell the user what their shortcode will be
-    return callback(null, {
+    return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: rootURL + code }),
-    })
-  })
+      body: JSON.stringify({ url }),
+    }
+  } catch (error) {
+    return { statusCode: 500, body: `Post to Routes stash failed: ${error.message}` }
+  }
 
   // ENHANCEMENT: check for uniqueness of shortcode
   // ENHANCEMENT: let the user provide their own shortcode

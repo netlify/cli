@@ -6,9 +6,10 @@ const express = require('express')
 const passport = require('passport')
 const serverless = require('serverless-http')
 
-require('./utils/auth')
-
+const { applyPassportStrategies } = require('./utils/auth')
 const { COOKIE_SECURE, ENDPOINT } = require('./utils/config')
+
+applyPassportStrategies()
 
 const app = express()
 
@@ -25,11 +26,13 @@ app.get(`${ENDPOINT}/auth/github`, passport.authenticate('github', { session: fa
 app.get(
   `${ENDPOINT}/auth/github/callback`,
   passport.authenticate('github', { failureRedirect: '/', session: false }),
-  handleCallback
+  handleCallback,
 )
 
 app.get(`${ENDPOINT}/auth/status`, passport.authenticate('jwt', { session: false }), (req, res) =>
-  res.json({ email: req.user.email })
+  res.json({ email: req.user.email }),
 )
 
-module.exports.handler = serverless(app)
+const handler = serverless(app)
+
+module.exports = { handler }

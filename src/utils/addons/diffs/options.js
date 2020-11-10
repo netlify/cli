@@ -1,6 +1,5 @@
-/* eslint prefer-template: 0 */
-const chalk = require('chalk')
 const ansiStyles = require('ansi-styles')
+const chalk = require('chalk')
 
 const forceColor = new chalk.constructor({
   enabled: true,
@@ -14,14 +13,14 @@ const colorTheme = {
     value: ansiStyles.blue,
   },
   diffGutters: {
-    actual: forceColor.red('-') + ' ',
-    expected: forceColor.green('+') + ' ',
+    actual: `${forceColor.red('-')} `,
+    expected: `${forceColor.green('+')} `,
     padding: '  ',
   },
   error: {
     ctor: {
-      open: ansiStyles.grey.open + '(',
-      close: ')' + ansiStyles.grey.close,
+      open: `${ansiStyles.grey.open}(`,
+      close: `)${ansiStyles.grey.close}`,
     },
     name: ansiStyles.magenta,
   },
@@ -48,11 +47,11 @@ const colorTheme = {
     closeBracket: forceColor.grey('}'),
     ctor: ansiStyles.magenta,
     stringTag: {
-      open: ansiStyles.magenta.open + '@',
+      open: `${ansiStyles.magenta.open}@`,
       close: ansiStyles.magenta.close,
     },
     secondaryStringTag: {
-      open: ansiStyles.grey.open + '@',
+      open: `${ansiStyles.grey.open}@`,
       close: ansiStyles.grey.close,
     },
   },
@@ -63,8 +62,8 @@ const colorTheme = {
   },
   regexp: {
     source: {
-      open: ansiStyles.blue.open + '/',
-      close: '/' + ansiStyles.blue.close,
+      open: `${ansiStyles.blue.open}/`,
+      close: `/${ansiStyles.blue.close}`,
     },
     flags: ansiStyles.yellow,
   },
@@ -105,5 +104,10 @@ const colorTheme = {
 const plugins = []
 const theme = colorTheme
 
-module.exports.concordanceOptions = { maxDepth: 3, plugins, theme }
-module.exports.concordanceDiffOptions = { maxDepth: 1, plugins, theme }
+const concordanceOptions = { maxDepth: 3, plugins, theme }
+const concordanceDiffOptions = { maxDepth: 1, plugins, theme }
+
+module.exports = {
+  concordanceOptions,
+  concordanceDiffOptions,
+}

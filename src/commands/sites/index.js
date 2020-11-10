@@ -1,10 +1,11 @@
 const { Command } = require('@oclif/command')
-const showHelp = require('../../utils/show-help')
+
 const { isEmptyCommand } = require('../../utils/check-command-inputs')
+const showHelp = require('../../utils/show-help')
 
 class SitesCommand extends Command {
   async run() {
-    const { flags, args } = this.parse(SitesCommand) // { args: {}, argv: [], flags: {}, raw: [] }
+    const { flags, args } = this.parse(SitesCommand)
 
     // Show help on empty sub command
     if (isEmptyCommand(flags, args)) {

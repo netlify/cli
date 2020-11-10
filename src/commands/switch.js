@@ -1,6 +1,8 @@
-const Command = require('../utils/command')
 const chalk = require('chalk')
 const inquirer = require('inquirer')
+
+const Command = require('../utils/command')
+
 const LoginCommand = require('./login')
 
 class SwitchCommand extends Command {
@@ -9,7 +11,7 @@ class SwitchCommand extends Command {
     const availableUsersChoices = Object.values(this.netlify.globalConfig.get('users')).reduce(
       (prev, current) =>
         Object.assign(prev, { [current.id]: current.name ? `${current.name} (${current.email})` : current.email }),
-      {}
+      {},
     )
 
     await this.config.runHook('analytics', {
@@ -31,7 +33,9 @@ class SwitchCommand extends Command {
     if (accountSwitchChoice === LOGIN_NEW) {
       await LoginCommand.run(['--new'])
     } else {
-      const selectedAccount = Object.entries(availableUsersChoices).find(([, v]) => v === accountSwitchChoice)
+      const selectedAccount = Object.entries(availableUsersChoices).find(
+        ([, availableUsersChoice]) => availableUsersChoice === accountSwitchChoice,
+      )
       this.netlify.globalConfig.set('userId', selectedAccount[0])
       this.log('')
       this.log(`You're now using ${chalk.bold(selectedAccount[1])}.`)

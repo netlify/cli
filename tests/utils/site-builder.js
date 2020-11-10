@@ -1,13 +1,15 @@
-const { toToml } = require('tomlify-j0.4')
-const path = require('path')
-const { v4: uuidv4 } = require('uuid')
-const tempDirectory = require('temp-dir')
 const os = require('os')
+const path = require('path')
+const process = require('process')
+
+const tempDirectory = require('temp-dir')
+const { toToml } = require('tomlify-j0.4')
+const { v4: uuidv4 } = require('uuid')
 
 const fs = require('../../src/lib/fs')
 
-const ensureDir = path => {
-  return fs.mkdirRecursiveAsync(path)
+const ensureDir = (file) => {
+  return fs.mkdirRecursiveAsync(file)
 }
 
 const createSiteBuilder = ({ siteName }) => {
@@ -16,7 +18,7 @@ const createSiteBuilder = ({ siteName }) => {
     `netlify-cli-tests-${process.version}`,
     `${process.pid}`,
     uuidv4(),
-    siteName
+    siteName,
   )
   const tasks = [() => ensureDir(directory)]
 
@@ -65,7 +67,9 @@ const createSiteBuilder = ({ siteName }) => {
     withRedirectsFile: ({ redirects = [], pathPrefix = '' }) => {
       const dest = path.join(directory, pathPrefix, '_redirects')
       tasks.push(async () => {
-        const content = redirects.map(({ from, to, status }) => `${from}      ${to}       ${status}`).join(os.EOL)
+        const content = redirects
+          .map(({ from, to, status, condition = '' }) => `${from} ${to} ${status} ${condition}`)
+          .join(os.EOL)
         await ensureDir(path.dirname(dest))
         await fs.writeFileAsync(dest, content)
       })
@@ -76,7 +80,8 @@ const createSiteBuilder = ({ siteName }) => {
       tasks.push(async () => {
         const content = headers
           .map(
-            ({ path: headerPath, headers }) => `${headerPath}${os.EOL}${headers.map(h => `  ${h}`).join(`${os.EOL}`)}`
+            ({ path: headerPath, headers: headersValues }) =>
+              `${headerPath}${os.EOL}${headersValues.map((header) => `  ${header}`).join(`${os.EOL}`)}`,
           )
           .join(os.EOL)
         await ensureDir(path.dirname(dest))
@@ -92,7 +97,7 @@ const createSiteBuilder = ({ siteName }) => {
       })
       return builder
     },
-    withContentFiles: files => {
+    withContentFiles: (files) => {
       files.forEach(builder.withContentFile)
       return builder
     },
@@ -104,19 +109,20 @@ const createSiteBuilder = ({ siteName }) => {
           dest,
           Object.entries(env)
             .map(([key, value]) => `${key}=${value}`)
-            .join(os.EOL)
+            .join(os.EOL),
         )
       })
       return builder
     },
     buildAsync: async () => {
       for (const task of tasks) {
+        // eslint-disable-next-line no-await-in-loop
         await task()
       }
       return builder
     },
     cleanupAsync: async () => {
-      await fs.rmdirRecursiveAsync(directory).catch(error => {
+      await fs.rmdirRecursiveAsync(directory).catch((error) => {
         console.warn(error)
       })
       return builder

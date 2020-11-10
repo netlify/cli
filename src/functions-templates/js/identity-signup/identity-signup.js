@@ -5,7 +5,7 @@
 // https://www.netlify.com/blog/2019/02/21/the-role-of-roles-and-how-to-set-them-in-netlify-identity/
 // https://www.netlify.com/docs/functions/#identity-and-functions
 
-exports.handler = async function(event) {
+const handler = async function (event) {
   const data = JSON.parse(event.body)
   const { user } = data
 
@@ -15,7 +15,8 @@ exports.handler = async function(event) {
       my_user_info: 'this is some user info',
     },
     user_metadata: {
-      ...user.user_metadata, // append current user metadata
+      // append current user metadata
+      ...user.user_metadata,
       custom_data_from_function: 'hurray this is some extra metadata',
     },
   }
@@ -24,3 +25,5 @@ exports.handler = async function(event) {
     body: JSON.stringify(responseBody),
   }
 }
+
+module.exports = { handler }

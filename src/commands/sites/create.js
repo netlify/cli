@@ -1,14 +1,15 @@
-const { flags } = require('@oclif/command')
-const inquirer = require('inquirer')
-const prettyjson = require('prettyjson')
+const { flags: flagsLib } = require('@oclif/command')
 const chalk = require('chalk')
-const sample = require('lodash.sample')
+const inquirer = require('inquirer')
 const pick = require('lodash.pick')
-const Command = require('../../utils/command')
-const { track } = require('../../utils/telemetry')
-const configManual = require('../../utils/init/config-manual')
+const sample = require('lodash.sample')
 const parseGitRemote = require('parse-github-url')
+const prettyjson = require('prettyjson')
+
+const Command = require('../../utils/command')
 const configGithub = require('../../utils/init/config-github')
+const configManual = require('../../utils/init/config-manual')
+const { track } = require('../../utils/telemetry')
 
 class SitesCreateCommand extends Command {
   async run() {
@@ -28,26 +29,26 @@ class SitesCreateCommand extends Command {
 
     let accountSlug = flags['account-slug']
     if (!accountSlug) {
-      const results = await inquirer.prompt([
+      const { accountSlug: accountSlugInput } = await inquirer.prompt([
         {
           type: 'list',
           name: 'accountSlug',
           message: 'Team:',
-          choices: accounts.map(account => ({
+          choices: accounts.map((account) => ({
             value: account.slug,
             name: account.name,
           })),
         },
       ])
-      accountSlug = results.accountSlug
+      accountSlug = accountSlugInput
     }
 
-    const name = flags.name
+    const { name: nameFlag } = flags
     let userName
     let site
 
     // Allow the user to reenter site name if selected one isn't available
-    const inputSiteName = async name => {
+    const inputSiteName = async (name) => {
       if (!userName) userName = await api.getCurrentUser()
 
       if (!name) {
@@ -62,18 +63,18 @@ class SitesCreateCommand extends Command {
         const siteSuggestion = sample(suggestions)
 
         console.log(
-          `Choose a unique site name (e.g. ${siteSuggestion}.netlify.app) or leave it blank for a random name. You can update the site name later.`
+          `Choose a unique site name (e.g. ${siteSuggestion}.netlify.app) or leave it blank for a random name. You can update the site name later.`,
         )
-        const results = await inquirer.prompt([
+        const { name: nameInput } = await inquirer.prompt([
           {
             type: 'input',
             name: 'name',
             message: 'Site name (optional):',
-            filter: val => (val === '' ? undefined : val),
-            validate: input => /^[a-zA-Z\d-]+$/.test(input) || 'Only alphanumeric characters and hyphens are allowed',
+            filter: (val) => (val === '' ? undefined : val),
+            validate: (input) => /^[a-zA-Z\d-]+$/.test(input) || 'Only alphanumeric characters and hyphens are allowed',
           },
         ])
-        name = results.name
+        name = nameInput
       }
 
       const body = {}
@@ -94,25 +95,25 @@ class SitesCreateCommand extends Command {
         }
       }
     }
-    await inputSiteName(name)
+    await inputSiteName(nameFlag)
 
     this.log()
     this.log(chalk.greenBright.bold.underline(`Site Created`))
     this.log()
 
-    const url = site.ssl_url || site.url
+    const siteUrl = site.ssl_url || site.url
     this.log(
       prettyjson.render({
         'Admin URL': site.admin_url,
-        'URL': url,
+        URL: siteUrl,
         'Site ID': site.id,
-      })
+      }),
     )
 
     track('sites_created', {
       siteId: site.id,
       adminUrl: site.admin_url,
-      siteUrl: url,
+      siteUrl,
     })
 
     if (flags['with-ci']) {
@@ -122,7 +123,7 @@ class SitesCreateCommand extends Command {
           type: 'input',
           name: 'url',
           message: 'Git SSH remote URL to enable CI with:',
-          validate: input => (parseGitRemote(input) ? true : `Could not parse Git remote ${input}`),
+          validate: (input) => (parseGitRemote(input) ? true : `Could not parse Git remote ${input}`),
         },
       ])
       console.log(url)
@@ -144,7 +145,7 @@ class SitesCreateCommand extends Command {
             this.warn(`Github error: ${error.status}`)
             if (error.status === 404) {
               this.error(
-                `Does the repository ${repo.repo_path} exist and do you have the correct permissions to set up deploy keys?`
+                `Does the repository ${repo.repo_path} exist and do you have the correct permissions to set up deploy keys?`,
               )
             } else {
               throw error
@@ -186,7 +187,7 @@ class SitesCreateCommand extends Command {
           'deploy_hook',
           'capabilities',
           'id_domain',
-        ])
+        ]),
       )
     }
 
@@ -200,19 +201,19 @@ Create a blank site that isn't associated with any git remote.  Does not link to
 `
 
 SitesCreateCommand.flags = {
-  'name': flags.string({
+  name: flagsLib.string({
     char: 'n',
     description: 'name of site',
   }),
-  'account-slug': flags.string({
+  'account-slug': flagsLib.string({
     char: 'a',
     description: 'account slug to create the site under',
   }),
-  'with-ci': flags.boolean({
+  'with-ci': flagsLib.boolean({
     char: 'c',
     description: 'initialize CI hooks during site creation',
   }),
-  'manual': flags.boolean({
+  manual: flagsLib.boolean({
     char: 'm',
     description: 'Force manual CI setup.  Used --with-ci flag',
   }),

@@ -1,17 +1,17 @@
-const path = require('path')
 const fs = require('fs').promises
+const path = require('path')
 
 const config = require('./config')
 const { copyDirRecursiveAsync } = require('./fs')
 
-async function readDir(dir, allFiles = []) {
-  const files = (await fs.readdir(dir)).map(f => path.join(dir, f))
+const readDir = async function (dir, allFiles = []) {
+  const files = (await fs.readdir(dir)).map((file) => path.join(dir, file))
   allFiles.push(...files)
-  await Promise.all(files.map(async f => (await fs.stat(f)).isDirectory() && readDir(f, allFiles)))
+  await Promise.all(files.map(async (file) => (await fs.stat(file)).isDirectory() && readDir(file, allFiles)))
   return allFiles
 }
 
-async function syncLocalContent() {
+const syncLocalContent = async function () {
   const src = path.join(config.docs.srcPath)
   const destination = path.join(config.docs.outputPath)
 
@@ -20,17 +20,18 @@ async function syncLocalContent() {
 
   const files = await readDir(destination)
   const mdFiles = files
-    .filter(file => {
+    .filter((file) => {
       return file.endsWith('.md')
     })
-    .map(path => {
-      return removeMarkDownLinks(path)
+    .map((file) => {
+      return removeMarkDownLinks(file)
     })
 
   await Promise.all(mdFiles)
+  console.log('Synced!')
 }
 
-async function removeMarkDownLinks(filePath) {
+const removeMarkDownLinks = async function (filePath) {
   const content = await fs.readFile(filePath, 'utf-8')
   const newContent = content.replace(/(\w+)\.md/gm, '$1').replace(/\/docs\/commands\//gm, '/commands/')
   // Rename README.md to index.md
@@ -46,6 +47,4 @@ async function removeMarkDownLinks(filePath) {
   return filePath
 }
 
-syncLocalContent().then(() => {
-  console.log('Synced!')
-})
+syncLocalContent()

@@ -1,7 +1,10 @@
-const Command = require('../utils/command')
-const { flags } = require('@oclif/command')
 const path = require('path')
+const process = require('process')
+
+const { flags: flagsLib } = require('@oclif/command')
 const chalk = require('chalk')
+
+const Command = require('../utils/command')
 const { ensureNetlifyIgnore } = require('../utils/gitignore')
 const linkPrompt = require('../utils/link/link-by-prompt')
 const { track } = require('../utils/telemetry')
@@ -89,13 +92,13 @@ class LinkCommand extends Command {
       if (results.length === 0) {
         this.error(new Error(`No sites found named ${flags.name}`))
       }
-      siteData = results[0]
-      state.set('siteId', siteData.id)
+      const [firstSiteData] = results
+      state.set('siteId', firstSiteData.id)
 
-      this.log(`Linked to ${siteData.name} in ${path.relative(path.join(process.cwd(), '..'), state.path)}`)
+      this.log(`Linked to ${firstSiteData.name} in ${path.relative(path.join(process.cwd(), '..'), state.path)}`)
 
       await track('sites_linked', {
-        siteId: (siteData && siteData.id) || siteId,
+        siteId: (firstSiteData && firstSiteData.id) || siteId,
         linkType: 'manual',
         kind: 'byName',
       })
@@ -113,13 +116,13 @@ LinkCommand.description = `Link a local repo or project folder to an existing si
 LinkCommand.examples = ['netlify link', 'netlify link --id 123-123-123-123', 'netlify link --name my-site-name']
 
 LinkCommand.flags = {
-  id: flags.string({
+  id: flagsLib.string({
     description: 'ID of site to link to',
   }),
-  name: flags.string({
+  name: flagsLib.string({
     description: 'Name of site to link to',
   }),
-  gitRemoteName: flags.string({
+  gitRemoteName: flagsLib.string({
     description: 'Name of Git remote to use. e.g. "origin"',
   }),
   ...LinkCommand.flags,

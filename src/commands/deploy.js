@@ -1,23 +1,27 @@
-const Command = require('../utils/command')
-const openBrowser = require('../utils/open-browser')
 const path = require('path')
+const process = require('process')
+
+const { flags: flagsLib } = require('@oclif/command')
 const chalk = require('chalk')
-const { flags } = require('@oclif/command')
-const get = require('lodash.get')
-const prettyjson = require('prettyjson')
-const ora = require('ora')
-const logSymbols = require('log-symbols')
 const cliSpinnerNames = Object.keys(require('cli-spinners'))
-const randomItem = require('random-item')
 const inquirer = require('inquirer')
+const get = require('lodash.get')
 const isObject = require('lodash.isobject')
-const SitesCreateCommand = require('./sites/create')
-const { getBuildOptions, runBuild } = require('../lib/build')
-const LinkCommand = require('./link')
-const { NETLIFYDEV, NETLIFYDEVLOG, NETLIFYDEVERR } = require('../utils/logo')
-const { statAsync } = require('../lib/fs')
+const logSymbols = require('log-symbols')
+const ora = require('ora')
+const prettyjson = require('prettyjson')
+const randomItem = require('random-item')
+
 const { cancelDeploy } = require('../lib/api')
+const { getBuildOptions, runBuild } = require('../lib/build')
+const { statAsync } = require('../lib/fs')
+const Command = require('../utils/command')
 const { deployEdgeHandlers } = require('../utils/edge-handlers')
+const { NETLIFYDEV, NETLIFYDEVLOG, NETLIFYDEVERR } = require('../utils/logo')
+const openBrowser = require('../utils/open-browser')
+
+const LinkCommand = require('./link')
+const SitesCreateCommand = require('./sites/create')
 
 const DEFAULT_DEPLOY_TIMEOUT = 1.2e6
 
@@ -25,7 +29,7 @@ const triggerDeploy = async ({ api, siteId, siteData, log, error }) => {
   try {
     const siteBuild = await api.createSiteBuild({ siteId })
     log(
-      `${NETLIFYDEV} A new deployment was triggered successfully. Visit https://app.netlify.com/sites/${siteData.name}/deploys/${siteBuild.deploy_id} to see the logs.`
+      `${NETLIFYDEV} A new deployment was triggered successfully. Visit https://app.netlify.com/sites/${siteData.name}/deploys/${siteBuild.deploy_id} to see the logs.`,
     )
   } catch (error_) {
     if (error_.status === 404) {
@@ -55,7 +59,7 @@ const getDeployFolder = async ({ flags, config, site, siteData, log }) => {
         name: 'promptPath',
         message: 'Publish directory',
         default: '.',
-        filter: input => path.resolve(process.cwd(), input),
+        filter: (input) => path.resolve(process.cwd(), input),
       },
     ])
     deployFolder = promptPath
@@ -110,7 +114,7 @@ const validateFunctionsFolder = async ({ functionsFolder, log, error }) => {
     } catch (error_) {
       if (error_.code === 'ENOENT') {
         log(
-          `Functions folder "${functionsFolder}" specified but it doesn't exist! Will proceed without deploying functions`
+          `Functions folder "${functionsFolder}" specified but it doesn't exist! Will proceed without deploying functions`,
         )
       }
       // Improve the message of permission errors
@@ -139,7 +143,7 @@ const getDeployFilesFilter = ({ site, deployFolder }) => {
   // when site.root !== deployFolder the behaviour matches our buildbot
   const skipNodeModules = site.root === deployFolder
 
-  return filename => {
+  return (filename) => {
     if (filename == null) {
       return false
     }
@@ -157,6 +161,10 @@ const getDeployFilesFilter = ({ site, deployFolder }) => {
     return !skipFile
   }
 }
+
+const SEC_TO_MILLISEC = 1e3
+// 100 bytes
+const SYNC_FILE_LIMIT = 1e2
 
 const runDeploy = async ({
   flags,
@@ -215,8 +223,8 @@ const runDeploy = async ({
       configPath,
       fnDir: functionsFolder,
       statusCb: silent ? () => {} : deployProgressCb(),
-      deployTimeout: flags.timeout * 1000 || DEFAULT_DEPLOY_TIMEOUT,
-      syncFileLimit: 100,
+      deployTimeout: flags.timeout * SEC_TO_MILLISEC || DEFAULT_DEPLOY_TIMEOUT,
+      syncFileLimit: SYNC_FILE_LIMIT,
       // pass an existing deployId to update
       deployId,
       filter: getDeployFilesFilter({ site, deployFolder }),
@@ -267,7 +275,7 @@ const runDeploy = async ({
 
 const printResults = ({ flags, results, deployToProduction, log, logJson, exit }) => {
   const msgData = {
-    'Logs': `${results.logsUrl}`,
+    Logs: `${results.logsUrl}`,
     'Unique Deploy URL': results.deployUrl,
   }
 
@@ -336,7 +344,18 @@ class DeployCommand extends Command {
 
     let siteId = flags.site || site.id
     let siteData = {}
-    if (!siteId) {
+    if (siteId) {
+      try {
+        siteData = await api.getSite({ siteId })
+      } catch (error_) {
+        // TODO specifically handle known cases (e.g. no account access)
+        if (error_.status === 404) {
+          error('Site not found')
+        } else {
+          error(error_.message)
+        }
+      }
+    } else {
       this.log("This folder isn't linked to a site yet")
       const NEW_SITE = '+  Create & configure a new site'
       const EXISTING_SITE = 'Link this directory to an existing site'
@@ -363,26 +382,15 @@ class DeployCommand extends Command {
         site.id = siteData.id
         siteId = site.id
       }
-    } else {
-      try {
-        siteData = await api.getSite({ siteId })
-      } catch (error_) {
-        // TODO specifically handle known cases (e.g. no account access)
-        if (error_.status === 404) {
-          error('Site not found')
-        } else {
-          error(error_.message)
-        }
-      }
     }
 
     if (flags.trigger) {
-      return await triggerDeploy({ api, siteId, siteData, log, error })
+      return triggerDeploy({ api, siteId, siteData, log, error })
     }
 
     if (flags.build) {
-      const options = getBuildOptions({
-        netlify: this.netlify,
+      const options = await getBuildOptions({
+        context: this,
         token: this.getConfigToken()[0],
         flags,
       })
@@ -394,14 +402,14 @@ class DeployCommand extends Command {
 
     const deployFolder = await getDeployFolder({ flags, config, site, siteData, log })
     const functionsFolder = getFunctionsFolder({ flags, config, site, siteData })
-    const configPath = site.configPath
+    const { configPath } = site
 
     log(
       prettyjson.render({
         'Deploy path': deployFolder,
         'Functions path': functionsFolder,
         'Configuration path': configPath,
-      })
+      }),
     )
 
     const { functionsFolderStat } = await validateFolders({
@@ -520,71 +528,71 @@ DeployCommand.examples = [
 ]
 
 DeployCommand.flags = {
-  dir: flags.string({
+  dir: flagsLib.string({
     char: 'd',
     description: 'Specify a folder to deploy',
   }),
-  functions: flags.string({
+  functions: flagsLib.string({
     char: 'f',
     description: 'Specify a functions folder to deploy',
   }),
-  prod: flags.boolean({
+  prod: flagsLib.boolean({
     char: 'p',
     description: 'Deploy to production',
     default: false,
     exclusive: ['alias', 'branch'],
   }),
-  alias: flags.string({
+  alias: flagsLib.string({
     description: "Specifies the alias for deployment. Useful for creating predictable deployment URL's",
   }),
-  branch: flags.string({
+  branch: flagsLib.string({
     char: 'b',
     description: 'Serves the same functionality as --alias. Deprecated and will be removed in future versions',
   }),
-  open: flags.boolean({
+  open: flagsLib.boolean({
     char: 'o',
     description: 'Open site after deploy',
     default: false,
   }),
-  message: flags.string({
+  message: flagsLib.string({
     char: 'm',
     description: 'A short message to include in the deploy log',
   }),
-  auth: flags.string({
+  auth: flagsLib.string({
     char: 'a',
     description: 'Netlify auth token to deploy with',
     env: 'NETLIFY_AUTH_TOKEN',
   }),
-  site: flags.string({
+  site: flagsLib.string({
     char: 's',
     description: 'A site ID to deploy to',
     env: 'NETLIFY_SITE_ID',
   }),
-  json: flags.boolean({
+  json: flagsLib.boolean({
     description: 'Output deployment data as JSON',
   }),
-  timeout: flags.integer({
+  timeout: flagsLib.integer({
     description: 'Timeout to wait for deployment to finish',
   }),
-  trigger: flags.boolean({
+  trigger: flagsLib.boolean({
     description: 'Trigger a new build of your site on Netlify without uploading local files',
     exclusive: ['build'],
   }),
-  build: flags.boolean({
+  build: flagsLib.boolean({
     description: 'Run build command before deploying',
   }),
   ...DeployCommand.flags,
 }
 
-function deployProgressCb() {
+const deployProgressCb = function () {
   const events = {}
-  /* statusObj: {
-            type: name-of-step
-            msg: msg to print
-            phase: [start, progress, stop]
-    }
-  */
-  return ev => {
+  // statusObj: {
+  //         type: name-of-step
+  //         msg: msg to print
+  //         phase: [start, progress, stop]
+  // }
+  //
+  return (ev) => {
     switch (ev.phase) {
       case 'start': {
         const spinner = ev.spinner || randomItem(cliSpinnerNames)

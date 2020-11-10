@@ -8,8 +8,8 @@ module.exports = {
     if (!process.env.API_URL || !process.env.API_TOKEN) {
       console.log(
         `note this function requires ${chalk.yellow('API_URL')} and ${chalk.yellow(
-          'API_TOKEN'
-        )} build environment variables set in your Netlify Site.`
+          'API_TOKEN',
+        )} build environment variables set in your Netlify Site.`,
       )
 
       let siteData = { name: 'YOURSITENAMEHERE' }
@@ -21,7 +21,7 @@ module.exports = {
         // silent error, not important
       }
       console.log(
-        `Set them at: https://app.netlify.com/sites/${siteData.name}/settings/deploys#environment-variables (must have CD setup)`
+        `Set them at: https://app.netlify.com/sites/${siteData.name}/settings/deploys#environment-variables (must have CD setup)`,
       )
     }
   },

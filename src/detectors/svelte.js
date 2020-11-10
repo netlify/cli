@@ -1,6 +1,8 @@
 const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
 
-module.exports = function() {
+const FRAMEWORK_PORT = 5000
+
+module.exports = function detector() {
   // REQUIRED FILES
   if (!hasRequiredFiles(['package.json'])) return false
   // REQUIRED DEPS
@@ -18,7 +20,7 @@ module.exports = function() {
   return {
     framework: 'svelte',
     command: getYarnOrNPMCommand(),
-    frameworkPort: 5000,
+    frameworkPort: FRAMEWORK_PORT,
     possibleArgsArrs,
     dist: 'public',
   }

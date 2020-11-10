@@ -1,13 +1,14 @@
 const cookie = require('cookie')
 
-exports.handler = async () => {
-  var hour = 3600000
-  var twoWeeks = 14 * 24 * hour
+// 14 days
+const COOKIE_MAX_AGE = 12096e5
+
+const handler = async () => {
   const myCookie = cookie.serialize('my_cookie', 'lolHi', {
     secure: true,
     httpOnly: true,
     path: '/',
-    maxAge: twoWeeks,
+    maxAge: COOKIE_MAX_AGE,
   })
 
   const redirectUrl = 'https://google.com'
@@ -39,3 +40,5 @@ exports.handler = async () => {
     body: html,
   }
 }
+
+module.exports = { handler }

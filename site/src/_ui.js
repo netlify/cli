@@ -1,8 +1,8 @@
+import { LiveEditor as Editor, LivePreview } from '@compositor/x0/components.js'
 import React from 'react'
 import { Pre } from 'rebass'
-import { LiveEditor as Editor, LivePreview } from '@compositor/x0/components'
 
-export const LiveEditor = props => {
+export const LiveEditor = (props) => {
   const lang = (props.className || '').replace(/^language-/, '')
   const type = lang.charAt(0)
   const code = React.Children.toArray(props.children).join('\n')

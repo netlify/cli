@@ -1,5 +1,6 @@
 const fetch = require('node-fetch')
-exports.handler = async function() {
+
+const handler = async function () {
   try {
     const response = await fetch('https://icanhazdadjoke.com', {
       headers: { Accept: 'application/json' },
@@ -15,10 +16,14 @@ exports.handler = async function() {
       body: JSON.stringify({ msg: data.joke }),
     }
   } catch (error) {
-    console.log(error) // output to netlify function log
+    // output to netlify function log
+    console.log(error)
     return {
       statusCode: 500,
-      body: JSON.stringify({ msg: error.message }), // Could be a custom message or object i.e. JSON.stringify(err)
+      // Could be a custom message or object i.e. JSON.stringify(err)
+      body: JSON.stringify({ msg: error.message }),
     }
   }
 }
+
+module.exports = { handler }

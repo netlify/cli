@@ -1,9 +1,10 @@
 const test = require('ava')
+
 const isValidEventName = require('./validation')
 
 const getEventForProject = (projectName, eventName) => `${projectName}:${eventName}`
 
-test('validate failed with eventName without underscore', t => {
+test('validate failed with eventName without underscore', (t) => {
   const projectName = 'testProject'
   const event = 'test'
   const config = {
@@ -14,7 +15,7 @@ test('validate failed with eventName without underscore', t => {
   t.is(result, false)
 })
 
-test('validate failed with eventName without colon', t => {
+test('validate failed with eventName without colon', (t) => {
   const projectName = 'testProject'
   const event = 'test_eventName'
   const config = {
@@ -25,7 +26,7 @@ test('validate failed with eventName without colon', t => {
   t.is(result, false)
 })
 
-test('validate pass with eventName with only underscore', t => {
+test('validate pass with eventName with only underscore', (t) => {
   const projectName = 'testProject'
   const event = 'test_name'
   const config = {
@@ -36,7 +37,7 @@ test('validate pass with eventName with only underscore', t => {
   t.is(result, true)
 })
 
-test('validate pass with eventName with underscore and camelCase', t => {
+test('validate pass with eventName with underscore and camelCase', (t) => {
   const projectName = 'testProject'
   const event = 'test_eventName'
   const config = {
@@ -47,7 +48,7 @@ test('validate pass with eventName with underscore and camelCase', t => {
   t.is(result, true)
 })
 
-test('project in event should be pass in config', t => {
+test('project in event should be pass in config', (t) => {
   const projectName = 'anotherProjectName'
   const event = 'test_eventName'
   const config = {
@@ -58,7 +59,7 @@ test('project in event should be pass in config', t => {
   t.is(result, false)
 })
 
-test('object in event should be pass in config.objects', t => {
+test('object in event should be pass in config.objects', (t) => {
   const projectName = 'testProject'
   const event = 'event_eventName'
   const config = {

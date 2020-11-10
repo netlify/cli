@@ -1,6 +1,7 @@
-const { flags } = require('@oclif/command')
-const Command = require('../utils/command')
+const { flags: flagsLib } = require('@oclif/command')
 const chalk = require('chalk')
+
+const Command = require('../utils/command')
 
 class LoginCommand extends Command {
   async run() {
@@ -30,7 +31,7 @@ class LoginCommand extends Command {
   }
 }
 
-function msg(location) {
+const msg = function (location) {
   switch (location) {
     case 'env':
       return 'via process.env.NETLIFY_AUTH_TOKEN set in your terminal session'
@@ -44,7 +45,7 @@ function msg(location) {
 }
 
 LoginCommand.flags = {
-  new: flags.boolean({
+  new: flagsLib.boolean({
     description: 'Login to new Netlify account',
   }),
   ...LoginCommand.flags,

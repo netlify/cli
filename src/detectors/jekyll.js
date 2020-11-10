@@ -1,13 +1,15 @@
 const { existsSync } = require('fs')
 
-module.exports = function() {
+const FRAMEWORK_PORT = 4000
+
+module.exports = function detector() {
   if (!existsSync('_config.yml')) {
     return false
   }
 
   return {
     framework: 'jekyll',
-    frameworkPort: 4000,
+    frameworkPort: FRAMEWORK_PORT,
     command: 'bundle',
     possibleArgsArrs: [['exec', 'jekyll', 'serve', '-w']],
     dist: '_site',

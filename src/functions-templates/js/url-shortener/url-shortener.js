@@ -1,22 +1,30 @@
-exports.handler = (event, context, callback) => {
+const generateRoute = require('./generate-route')
+const getRoute = require('./get-route')
+
+const handler = async (event) => {
   const path = event.path.replace(/\.netlify\/functions\/[^/]+/, '')
-  const segments = path.split('/').filter(e => e)
+  const segments = path.split('/').filter(Boolean)
   console.log('segments', segments)
 
   switch (event.httpMethod) {
     case 'GET':
       // e.g. GET /.netlify/functions/url-shortener
-      return require('./get-route').handler(event, context, callback)
+      return getRoute(event)
     case 'POST':
       // e.g. POST /.netlify/functions/url-shortener
-      return require('./generate-route').handler(event, context, callback)
+      return generateRoute(event)
     case 'PUT':
       // your code here
       return
     case 'DELETE':
       // your code here
       return
+    default:
+      return {
+        statusCode: 500,
+        error: `unrecognized HTTP Method ${event.httpMethod}, must be one of GET/POST/PUT/DELETE`,
+      }
   }
-
-  return callback(new Error('unrecognized HTTP Method, must be one of GET/POST/PUT/DELETE'))
 }
+
+module.exports = { handler }

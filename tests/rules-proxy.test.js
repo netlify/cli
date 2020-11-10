@@ -1,13 +1,15 @@
-const path = require('path')
 const http = require('http')
+const path = require('path')
 
-const fetch = require('node-fetch')
 const test = require('ava')
 const getPort = require('get-port')
+const fetch = require('node-fetch')
+
 const { createRewriter } = require('../src/utils/rules-proxy')
+
 const { createSiteBuilder } = require('./utils/site-builder')
 
-test.before(async t => {
+test.before(async (t) => {
   const builder = createSiteBuilder({ siteName: 'site-with-redirects-file' })
   builder.withRedirectsFile({
     redirects: [{ from: '/something ', to: '/ping', status: 200 }],
@@ -18,11 +20,14 @@ test.before(async t => {
   const rewriter = await createRewriter({
     distDir: builder.directory,
     projectDir: builder.directory,
+    jwtSecret: '',
+    jwtRoleClaim: '',
     configPath: path.join(builder.directory, 'netlify.toml'),
   })
-  const port = await getPort({ port: 8888 })
-  const server = http.createServer(function(req, res) {
-    rewriter(req, res, match => res.end(JSON.stringify(match)))
+  const port = await getPort({ port: PORT })
+  const server = http.createServer(async function onRequest(req, res) {
+    const match = await rewriter(req)
+    res.end(JSON.stringify(match))
   })
 
   t.context.port = port
@@ -32,8 +37,10 @@ test.before(async t => {
   return server.listen(port)
 })
 
-test.after(async t => {
-  await new Promise(resolve => {
+const PORT = 8888
+
+test.after(async (t) => {
+  await new Promise((resolve) => {
     t.context.server.on('close', resolve)
     t.context.server.close()
   })
@@ -41,8 +48,8 @@ test.after(async t => {
   // await t.context.builder.cleanupAsync()
 })
 
-test('should apply re-write rule based on _redirects file', async t => {
-  const response = await fetch(`http://localhost:${t.context.port}/something`).then(r => r.json())
+test('should apply re-write rule based on _redirects file', async (t) => {
+  const response = await fetch(`http://localhost:${t.context.port}/something`).then((res) => res.json())
 
   t.is(response.from, '/something')
   t.is(response.to, '/ping')

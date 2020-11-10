@@ -1,4 +1,5 @@
 const chalk = require('chalk')
+
 const pkg = require('../../package.json')
 
 module.exports = function header(context) {

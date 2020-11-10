@@ -1,13 +1,14 @@
-const Command = require('../../utils/command')
-const { requiredConfigValues, missingConfigValues, updateConfigValues } = require('../../utils/addons/validation')
-const generatePrompts = require('../../utils/addons/prompts')
-const render = require('../../utils/addons/render')
-const diffValues = require('../../utils/addons/diffs')
-const compare = require('../../utils/addons/compare')
-const { parseRawFlags } = require('../../utils/parse-raw-flags')
 const chalk = require('chalk')
 const inquirer = require('inquirer')
+
+const compare = require('../../utils/addons/compare')
+const diffValues = require('../../utils/addons/diffs')
 const { prepareAddonCommand, ADDON_VALIDATION } = require('../../utils/addons/prepare')
+const generatePrompts = require('../../utils/addons/prompts')
+const render = require('../../utils/addons/render')
+const { requiredConfigValues, missingConfigValues, updateConfigValues } = require('../../utils/addons/validation')
+const Command = require('../../utils/command')
+const { parseRawFlags } = require('../../utils/parse-raw-flags')
 
 class AddonsConfigCommand extends Command {
   async run() {
@@ -37,7 +38,7 @@ class AddonsConfigCommand extends Command {
       }
     } else {
       // For addons without manifest. TODO remove once we enfore manifests
-      Object.keys(currentConfig).forEach(key => {
+      Object.keys(currentConfig).forEach((key) => {
         this.log(`${key} - ${currentConfig[key]}`)
       })
     }
@@ -106,7 +107,7 @@ class AddonsConfigCommand extends Command {
       this.log()
       this.log(`${chalk.yellowBright.bold.underline('Confirm your updates:')}`)
       this.log()
-      diffs.keys.forEach(key => {
+      diffs.keys.forEach((key) => {
         const { newValue, oldValue } = diffs.diffs[key]
         const oldVal = oldValue || 'NO VALUE'
         this.log(`${chalk.cyan(key)} changed from ${chalk.whiteBright(oldVal)} to ${chalk.green(newValue)}`)
@@ -118,7 +119,7 @@ class AddonsConfigCommand extends Command {
           type: 'confirm',
           name: 'confirmChange',
           message: `Do you want to publish the updated "${addonName} add-on" settings for ${chalk.cyan(
-            siteData.name
+            siteData.name,
           )}?`,
           default: false,
         },
@@ -143,7 +144,7 @@ class AddonsConfigCommand extends Command {
   }
 }
 
-async function update({ addonName, currentConfig, newConfig, siteId, instanceId, api, error, log }) {
+const update = async function ({ addonName, currentConfig, newConfig, siteId, instanceId, api, error, log }) {
   const codeDiff = diffValues(currentConfig, newConfig)
   if (!codeDiff) {
     log('No changes, exiting early')

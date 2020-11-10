@@ -1,15 +1,16 @@
 const path = require('path')
+
 const test = require('ava')
 const execa = require('execa')
-const { withSiteBuilder } = require('./utils/site-builder')
 
 const cliPath = require('./utils/cli-path')
+const { withSiteBuilder } = require('./utils/site-builder')
 
 // Runs `netlify build ...flags` then verify:
 //  - its exit code is `exitCode`
 //  - that its output contains `output`
 // The command is run in the fixture directory `fixtureSubDir`.
-const runBuildCommand = async function(t, cwd, { exitCode: expectedExitCode = 0, output, flags = [], env } = {}) {
+const runBuildCommand = async function (t, cwd, { exitCode: expectedExitCode = 0, output, flags = [], env } = {}) {
   const { all, exitCode } = await execa(cliPath, ['build', ...flags], {
     reject: false,
     cwd,
@@ -25,8 +26,8 @@ const runBuildCommand = async function(t, cwd, { exitCode: expectedExitCode = 0,
   t.is(exitCode, expectedExitCode)
 }
 
-test('should print output for a successful command', async t => {
-  await withSiteBuilder('success-site', async builder => {
+test('should print output for a successful command', async (t) => {
+  await withSiteBuilder('success-site', async (builder) => {
     builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } })
 
     await builder.buildAsync()
@@ -35,8 +36,8 @@ test('should print output for a successful command', async t => {
   })
 })
 
-test('should print output for a failed command', async t => {
-  await withSiteBuilder('failure-site', async builder => {
+test('should print output for a failed command', async (t) => {
+  await withSiteBuilder('failure-site', async (builder) => {
     builder.withNetlifyToml({ config: { build: { command: 'doesNotExist' } } })
 
     await builder.buildAsync()
@@ -45,8 +46,8 @@ test('should print output for a failed command', async t => {
   })
 })
 
-test('should set the build mode to cli', async t => {
-  await withSiteBuilder('success-site', async builder => {
+test('should set the build mode to cli', async (t) => {
+  await withSiteBuilder('success-site', async (builder) => {
     builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } })
 
     await builder.buildAsync()
@@ -55,8 +56,8 @@ test('should set the build mode to cli', async t => {
   })
 })
 
-test('should run in dry mode when the --dry flag is set', async t => {
-  await withSiteBuilder('success-site', async builder => {
+test('should run in dry mode when the --dry flag is set', async (t) => {
+  await withSiteBuilder('success-site', async (builder) => {
     builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } })
 
     await builder.buildAsync()
@@ -65,8 +66,8 @@ test('should run in dry mode when the --dry flag is set', async t => {
   })
 })
 
-test('should run the staging context command when the --context option is set to staging', async t => {
-  await withSiteBuilder('context-site', async builder => {
+test('should run the staging context command when the --context option is set to staging', async (t) => {
+  await withSiteBuilder('context-site', async (builder) => {
     builder.withNetlifyToml({
       config: {
         build: { command: 'echo testCommand' },
@@ -80,8 +81,8 @@ test('should run the staging context command when the --context option is set to
   })
 })
 
-test('should print debug information when the --debug flag is set', async t => {
-  await withSiteBuilder('success-site', async builder => {
+test('should print debug information when the --debug flag is set', async (t) => {
+  await withSiteBuilder('success-site', async (builder) => {
     builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } })
 
     await builder.buildAsync()
@@ -90,8 +91,8 @@ test('should print debug information when the --debug flag is set', async t => {
   })
 })
 
-test('should use root directory netlify.toml when runs in subdirectory', async t => {
-  await withSiteBuilder('subdir-site', async builder => {
+test('should use root directory netlify.toml when runs in subdirectory', async (t) => {
+  await withSiteBuilder('subdir-site', async (builder) => {
     builder
       .withNetlifyToml({ config: { build: { command: 'echo testCommand' } } })
       .withContentFile({ path: path.join('subdir', '.gitkeep'), content: '' })
@@ -102,8 +103,8 @@ test('should use root directory netlify.toml when runs in subdirectory', async t
   })
 })
 
-test('should error when using invalid netlify.toml', async t => {
-  await withSiteBuilder('wrong-config-site', async builder => {
+test('should error when using invalid netlify.toml', async (t) => {
+  await withSiteBuilder('wrong-config-site', async (builder) => {
     builder.withNetlifyToml({ config: { build: { command: false } } })
 
     await builder.buildAsync()
@@ -112,8 +113,8 @@ test('should error when using invalid netlify.toml', async t => {
   })
 })
 
-test('should error when a site id is missing', async t => {
-  await withSiteBuilder('success-site', async builder => {
+test('should error when a site id is missing', async (t) => {
+  await withSiteBuilder('success-site', async (builder) => {
     builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } })
 
     await builder.buildAsync()

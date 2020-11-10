@@ -31,7 +31,7 @@ const resolvers = {
     author: () => {},
     authorByName: (root, args) => {
       console.log('hihhihi', args.name)
-      return authors.find(x => x.name === args.name) || 'NOTFOUND'
+      return authors.find((author) => author.name === args.name) || 'NOTFOUND'
     },
   },
 }
@@ -41,4 +41,6 @@ const server = new ApolloServer({
   resolvers,
 })
 
-exports.handler = server.createHandler()
+const handler = server.createHandler()
+
+module.exports = { handler }

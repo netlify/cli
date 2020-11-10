@@ -17,9 +17,11 @@
 
 ## things to note
 
-- Dev block overrides will supercede anything you write in your detector: https://github.com/netlify/cli/blob/master/docs/netlify-dev.md#project-detection
+- Dev block overrides will supercede anything you write in your detector:
+  https://github.com/netlify/cli/blob/master/docs/netlify-dev.md#project-detection
 - detectors are language agnostic. don't assume npm or yarn.
-- if default args (like 'develop') are missing, that means the user has configured it, best to tell them to use the -c flag.
+- if default args (like 'develop') are missing, that means the user has configured it, best to tell them to use the -c
+  flag.
 
 ## detector notes
 
@@ -33,7 +35,10 @@ requires a global install: https://github.com/GitbookIO/gitbook/blob/master/docs
 
 ```js
 const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
-module.exports = function() {
+
+const FRAMEWORK_PORT = 4000
+
+module.exports = function detector() {
   // REQUIRED FILES
   if (!hasRequiredFiles(['README.md', 'SUMMARY.md'])) return false
   // // REQUIRED DEPS
@@ -50,7 +55,7 @@ module.exports = function() {
   return {
     framework: 'gitbook',
     command: getYarnOrNPMCommand(),
-    frameworkPort: 4000,
+    frameworkPort: FRAMEWORK_PORT,
     env: { NAME: 'value' },
     possibleArgsArrs,
     dist: 'public',

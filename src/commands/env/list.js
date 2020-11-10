@@ -1,6 +1,7 @@
 const AsciiTable = require('ascii-table')
-const Command = require('../../utils/command')
 const isEmpty = require('lodash.isempty')
+
+const Command = require('../../utils/command')
 
 class EnvListCommand extends Command {
   async run() {

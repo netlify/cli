@@ -1,19 +1,19 @@
+const process = require('process')
+
 const sanityClient = require('@sanity/client')
 
-/*
- * You will need to configure environment variables for Sanity.io project id,
- * dataset name, and a token with write access. The variables are named
- *
- * SANITY_PROJECTID
- * SANITY_DATASET
- * SANITY_TOKEN
- *
- * Create a Sanity.io token at https://manage.sanity.io by selecting your
- * project, going to Settings -> API and adding a new token with write access.
- *
- * Read more about configuring Netlify environment variables at
- * https://docs.netlify.com/configure-builds/environment-variables/#declare-variables
- */
+// You will need to configure environment variables for Sanity.io project id,
+// dataset name, and a token with write access. The variables are named
+//
+// SANITY_PROJECTID
+// SANITY_DATASET
+// SANITY_TOKEN
+//
+// Create a Sanity.io token at https://manage.sanity.io by selecting your
+// project, going to Settings -> API and adding a new token with write access.
+//
+// Read more about configuring Netlify environment variables at
+// https://docs.netlify.com/configure-builds/environment-variables/#declare-variables
 const client = sanityClient({
   projectId: process.env.SANITY_PROJECTID,
   dataset: process.env.SANITY_DATASET,
@@ -21,20 +21,18 @@ const client = sanityClient({
   useCdn: false,
 })
 
-/*
- * A function for writing to a Sanity.io dataset with a write access token.
- *
- * In this example we accept POST requests with the following JSON body
- *
- * {
- *    "author": "A name",
- *    "message": "What I want to say"
- * }
- *
- * Then we construct an object to save in Sanity.io and return the full saved
- * object back to our caller
- */
-exports.handler = async event => {
+// A function for writing to a Sanity.io dataset with a write access token.
+//
+// In this example we accept POST requests with the following JSON body
+//
+// {
+//    "author": "A name",
+//    "message": "What I want to say"
+// }
+//
+// Then we construct an object to save in Sanity.io and return the full saved
+// object back to our caller
+const handler = async (event) => {
   if (!event.httpMethod === 'POST') {
     return {
       statusCode: 400,
@@ -49,21 +47,22 @@ exports.handler = async event => {
 
   const document = {
     _type: 'comment',
-    status: 'waitingApproval', // Some workflow state
+    // Some workflow state
+    status: 'waitingApproval',
     author: payload.author || 'Anonymous',
     message: payload.message,
   }
 
   return client
     .create(document)
-    .then(result => {
+    .then((result) => {
       return {
         statusCode: 200,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(result),
       }
     })
-    .catch(error => {
+    .catch((error) => {
       return {
         headers: { 'Content-Type': 'application/json' },
         statusCode: 500,
@@ -71,3 +70,5 @@ exports.handler = async event => {
       }
     })
 }
+
+module.exports = { handler }

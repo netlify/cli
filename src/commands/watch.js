@@ -1,11 +1,15 @@
-const Command = require('../utils/command')
 const { CLIError } = require('@oclif/errors')
-const pWaitFor = require('p-wait-for')
-const cli = require('cli-ux').default
-const prettyjson = require('prettyjson')
 const chalk = require('chalk')
+const cli = require('cli-ux').default
+const pWaitFor = require('p-wait-for')
+const prettyjson = require('prettyjson')
+
+const Command = require('../utils/command')
 
 const InitCommand = require('./init')
+
+// 1 second
+const INIT_WAIT = 1e3
 
 class SitesWatchCommand extends Command {
   async run() {
@@ -20,7 +24,7 @@ class SitesWatchCommand extends Command {
 
     // wait for 1 sec for everything to kickoff
     console.time('Deploy time')
-    await cli.wait(1000)
+    await cli.wait(INIT_WAIT)
 
     await this.config.runHook('analytics', {
       eventName: 'command',
@@ -33,17 +37,17 @@ class SitesWatchCommand extends Command {
     // git rev-parse HEAD
 
     // if no sha, its a manual "triggered deploy"
-    /*
-    {
-        "id": "5b4e23db82d3f1780abd74f3",
-        "deploy_id": "5b4e23db82d3f1780abd74f2",
-        "sha": "pull/1/head",
-        "log": [],
-        "done": false,
-        "error": null,
-        "created_at": "2018-07-17T17:14:03.423Z"
-    }
-    */
+    //
+    // {
+    //     "id": "5b4e23db82d3f1780abd74f3",
+    //     "deploy_id": "5b4e23db82d3f1780abd74f2",
+    //     "sha": "pull/1/head",
+    //     "log": [],
+    //     "done": false,
+    //     "error": null,
+    //     "created_at": "2018-07-17T17:14:03.423Z"
+    // }
+    //
     cli.action.start('Waiting for active site deploys to complete')
     try {
       // Fetch all builds!
@@ -65,7 +69,7 @@ class SitesWatchCommand extends Command {
         prettyjson.render({
           URL: siteData.ssl_url || siteData.url,
           Admin: siteData.admin_url,
-        })
+        }),
       )
       console.timeEnd('Deploy time')
     } catch (error) {
@@ -80,21 +84,17 @@ SitesWatchCommand.description = `Watch for site deploy to finish`
 
 SitesWatchCommand.examples = [`netlify watch`, `git push && netlify watch`]
 
-async function waitForBuildFinish(api, siteId) {
+// 1 second
+const BUILD_FINISH_INTERVAL = 1e3
+// 20 minutes
+const BUILD_FINISH_TIMEOUT = 12e5
+
+const waitForBuildFinish = async function (api, siteId) {
   let firstPass = true
 
-  await pWaitFor(waitForBuildToFinish, {
-    interval: 1000,
-    timeout: 1.2e6, // 20 mins,
-    message: 'Timeout while waiting for deploy to finish',
-  })
-
-  // return only when build done or timeout happens
-  return firstPass
-
-  async function waitForBuildToFinish() {
+  const waitForBuildToFinish = async function () {
     const builds = await api.listSiteBuilds({ siteId })
-    const currentBuilds = builds.filter(build => {
+    const currentBuilds = builds.filter((build) => {
       // build.error
       return !build.done
     })
@@ -109,6 +109,15 @@ async function waitForBuildFinish(api, siteId) {
     firstPass = false
     return false
   }
+
+  await pWaitFor(waitForBuildToFinish, {
+    interval: BUILD_FINISH_INTERVAL,
+    timeout: BUILD_FINISH_TIMEOUT,
+    message: 'Timeout while waiting for deploy to finish',
+  })
+
+  // return only when build done or timeout happens
+  return firstPass
 }
 
 module.exports = SitesWatchCommand

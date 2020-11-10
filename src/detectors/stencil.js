@@ -1,9 +1,13 @@
 const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
 
-/**
- * detection logic - artificial intelligence!
- * */
-module.exports = function() {
+// the port that stencil normally outputs
+const FRAMEWORK_PORT = 3333
+const ENV_PORT = 3000
+
+//
+// detection logic - artificial intelligence!
+//
+module.exports = function detector() {
   // REQUIRED FILES
   if (!hasRequiredFiles(['package.json', 'stencil.config.ts'])) return false
   // REQUIRED DEPS
@@ -19,8 +23,8 @@ module.exports = function() {
   return {
     framework: 'stencil',
     command: getYarnOrNPMCommand(),
-    frameworkPort: 3333, // the port that stencil normally outputs
-    env: { BROWSER: 'none', PORT: 3000 },
+    frameworkPort: FRAMEWORK_PORT,
+    env: { BROWSER: 'none', PORT: ENV_PORT },
     possibleArgsArrs,
     dist: 'www',
   }

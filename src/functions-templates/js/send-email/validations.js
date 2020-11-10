@@ -1,24 +1,22 @@
-exports.validateEmail = (ctx, str) => {
+const validateEmail = (ctx, str) => {
   if (typeof str !== 'string' && !(str instanceof String)) {
     throw new TypeError(`${ctx} must be a string`)
   }
 
-  exports.validateLength(ctx, str, 5, 30)
+  validateLength(ctx, str, EMAIL_MIN_LENGTH, EMAIL_MAX_LENGTH)
 
   if (!/^[\w.-]+@[\w.-]+\.\w+$/.test(str)) {
     throw new TypeError(`${ctx} is not an email address`)
   }
 }
 
-exports.validateLength = (ctx, str, ...args) => {
-  let min, max
+const EMAIL_MIN_LENGTH = 5
+const EMAIL_MAX_LENGTH = 30
 
-  if (args.length === 1) {
+const validateLength = (ctx, str, min, max) => {
+  if (max === undefined) {
+    max = min
     min = 0
-    max = args[0]
-  } else {
-    min = args[0]
-    max = args[1]
   }
 
   if (typeof str !== 'string' && !(str instanceof String)) {
@@ -32,4 +30,9 @@ exports.validateLength = (ctx, str, ...args) => {
   if (str.length > max) {
     throw new TypeError(`${ctx} must contain ${max} chars at most`)
   }
+}
+
+module.exports = {
+  validateEmail,
+  validateLength,
 }

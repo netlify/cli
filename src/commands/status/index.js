@@ -1,9 +1,10 @@
-const Command = require('../../utils/command')
-const prettyjson = require('prettyjson')
-const get = require('lodash.get')
+const { flags: flagsLib } = require('@oclif/command')
 const chalk = require('chalk')
 const clean = require('clean-deep')
-const { flags } = require('@oclif/command')
+const get = require('lodash.get')
+const prettyjson = require('prettyjson')
+
+const Command = require('../../utils/command')
 
 class StatusCommand extends Command {
   async run() {
@@ -39,8 +40,8 @@ class StatusCommand extends Command {
     }
     const teamsData = {}
 
-    accounts.forEach(team => {
-      return (teamsData[team.name] = team.roles_allowed.join(' '))
+    accounts.forEach((team) => {
+      teamsData[team.name] = team.roles_allowed.join(' ')
     })
 
     accountData.Teams = teamsData
@@ -64,11 +65,13 @@ class StatusCommand extends Command {
     try {
       siteData = await api.getSite({ siteId })
     } catch (error) {
-      if (error.status === 401 /* unauthorized */) {
+      // unauthorized
+      if (error.status === 401) {
         this.warn(`Log in with a different account or re-link to a site you have permission for`)
         this.error(`Not authorized to view the currently linked site (${siteId})`)
       }
-      if (error.status === 404 /* missing */) {
+      // missing
+      if (error.status === 404) {
         this.error(`The site this folder is linked to can't be found`)
       }
       this.error(error)
@@ -98,7 +101,7 @@ class StatusCommand extends Command {
         'Admin URL': chalk.magentaBright(siteData.admin_url),
         'Site URL': chalk.cyanBright(siteData.ssl_url || siteData.url),
         'Site Id': chalk.yellowBright(siteData.id),
-      })
+      }),
     )
     this.log()
   }
@@ -107,7 +110,7 @@ class StatusCommand extends Command {
 StatusCommand.description = `Print status information`
 
 StatusCommand.flags = {
-  verbose: flags.boolean({
+  verbose: flagsLib.boolean({
     description: 'Output system info',
   }),
   ...StatusCommand.flags,

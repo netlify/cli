@@ -1,23 +1,29 @@
-const { Command, flags } = require('@oclif/command')
-const API = require('netlify')
-const merge = require('lodash.merge')
-const { format, inspect } = require('util')
+const process = require('process')
 const { URL } = require('url')
-const { track, identify } = require('./telemetry')
+const { format, inspect } = require('util')
+
+const resolveConfig = require('@netlify/config')
+const { Command, flags: flagsLib } = require('@oclif/command')
+const oclifParser = require('@oclif/parser')
+const merge = require('lodash.merge')
+const argv = require('minimist')(process.argv.slice(2))
+const API = require('netlify')
+
+const { getAgent } = require('../lib/http-agent')
+
+const chalkInstance = require('./chalk')
+const globalConfig = require('./global-config')
 const openBrowser = require('./open-browser')
 const StateConfig = require('./state-config')
-const globalConfig = require('./global-config')
-const chalkInstance = require('./chalk')
-const resolveConfig = require('@netlify/config')
-const { getAgent } = require('../lib/http-agent')
-const argv = require('minimist')(process.argv.slice(2))
+const { track, identify } = require('./telemetry')
+
 const { NETLIFY_AUTH_TOKEN, NETLIFY_API_URL } = process.env
 
 // Netlify CLI client id. Lives in bot@netlify.com
 // Todo setup client for multiple environments
 const CLIENT_ID = 'd6f37de6614df7ae58664cfca524744d73807a377f5ee71f1a254f78412e3750'
 
-const getToken = tokenFromFlag => {
+const getToken = (tokenFromFlag) => {
   // 1. First honor command flag --auth
   if (tokenFromFlag) {
     return [tokenFromFlag, 'flag']
@@ -47,7 +53,7 @@ class BaseCommand extends Command {
     // Get site id & build state
     const state = new StateConfig(cwd)
 
-    const cachedConfig = await this.getConfig(cwd, state, token, argv)
+    const cachedConfig = await this.getConfig(cwd, state, token)
     const { configPath, config, buildDir } = cachedConfig
 
     const { flags } = this.parse(BaseCommand)
@@ -91,7 +97,7 @@ class BaseCommand extends Command {
   }
 
   // Find and resolve the Netlify configuration
-  async getConfig(cwd, state, token, argv) {
+  async getConfig(cwd, state, token) {
     try {
       return await resolveConfig({
         config: argv.config,
@@ -132,11 +138,11 @@ class BaseCommand extends Command {
       return
     }
     message = typeof message === 'string' ? message : inspect(message)
-    process.stdout.write(format(message, ...args) + '\n')
+    process.stdout.write(`${format(message, ...args)}\n`)
   }
 
   /* Modified flag parser to support global --auth, --json, & --silent flags */
-  parse(opts, argv = this.argv) {
+  parse(opts, args = this.argv) {
     /* Set flags object for commands without flags */
     if (!opts.flags) {
       opts.flags = {}
@@ -145,7 +151,7 @@ class BaseCommand extends Command {
     const globalFlags = {}
     if (!opts.flags.silent) {
       globalFlags.silent = {
-        parse: b => b,
+        parse: (value) => value,
         description: 'Silence CLI output',
         allowNo: false,
         type: 'boolean',
@@ -153,7 +159,7 @@ class BaseCommand extends Command {
     }
     if (!opts.flags.json) {
       globalFlags.json = {
-        parse: b => b,
+        parse: (value) => value,
         description: 'Output return values as JSON',
         allowNo: false,
         type: 'boolean',
@@ -161,7 +167,7 @@ class BaseCommand extends Command {
     }
     if (!opts.flags.auth) {
       globalFlags.auth = {
-        parse: b => b,
+        parse: (value) => value,
         description: 'Netlify auth token',
         input: [],
         multiple: false,
@@ -170,18 +176,12 @@ class BaseCommand extends Command {
     }
 
     // enrich with flags here
-    opts.flags = Object.assign({}, opts.flags, globalFlags)
+    opts.flags = { ...opts.flags, ...globalFlags }
 
-    return require('@oclif/parser').parse(
-      argv,
-      Object.assign(
-        {},
-        {
-          context: this,
-        },
-        opts
-      )
-    )
+    return oclifParser.parse(args, {
+      context: this,
+      ...opts,
+    })
   }
 
   get chalk() {
@@ -200,11 +200,10 @@ class BaseCommand extends Command {
 
   authenticate(tokenFromFlag) {
     const [token] = this.getConfigToken(tokenFromFlag)
-    if (!token) {
-      return this.expensivelyAuthenticate()
-    } else {
+    if (token) {
       return token
     }
+    return this.expensivelyAuthenticate()
   }
 
   async expensivelyAuthenticate() {
@@ -248,7 +247,7 @@ class BaseCommand extends Command {
     // Set user data
     this.netlify.globalConfig.set(`users.${userID}`, userData)
 
-    const email = user.email
+    const { email } = user
     await identify({
       name: user.full_name,
       email,
@@ -270,7 +269,7 @@ class BaseCommand extends Command {
   }
 }
 
-function getAuthArg(cliArgs) {
+const getAuthArg = function (cliArgs) {
   // If deploy command. Support shorthand 'a' flag
   if (cliArgs && cliArgs._ && cliArgs._[0] === 'deploy') {
     return cliArgs.auth || cliArgs.a
@@ -280,14 +279,14 @@ function getAuthArg(cliArgs) {
 
 BaseCommand.strict = false
 BaseCommand.flags = {
-  debug: flags.boolean({
+  debug: flagsLib.boolean({
     description: 'Print debugging information',
   }),
-  httpProxy: flags.string({
+  httpProxy: flagsLib.string({
     description: 'Proxy server address to route requests through.',
     default: process.env.HTTP_PROXY || process.env.HTTPS_PROXY,
   }),
-  httpProxyCertificateFilename: flags.string({
+  httpProxyCertificateFilename: flagsLib.string({
     description: 'Certificate file to use when connecting using a proxy server',
     default: process.env.NETLIFY_PROXY_CERTIFICATE_FILENAME,
   }),

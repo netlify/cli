@@ -1,30 +1,31 @@
 /* Import faunaDB sdk */
-const faunadb = require('faunadb')
+const process = require('process')
 
-const q = faunadb.query
-const client = new faunadb.Client({
+const { query, Client } = require('faunadb')
+
+const client = new Client({
   secret: process.env.FAUNADB_SERVER_SECRET,
 })
 
-exports.handler = async () => {
+const handler = async () => {
   console.log('Function `read-all` invoked')
   return client
-    .query(q.Paginate(q.Match(q.Ref('indexes/all_items'))))
-    .then(response => {
+    .query(query.Paginate(query.Match(query.Ref('indexes/all_items'))))
+    .then((response) => {
       const itemRefs = response.data
       // create new query out of item refs. http://bit.ly/2LG3MLg
-      const getAllItemsDataQuery = itemRefs.map(ref => {
-        return q.Get(ref)
+      const getAllItemsDataQuery = itemRefs.map((ref) => {
+        return query.Get(ref)
       })
       // then query the refs
-      return client.query(getAllItemsDataQuery).then(ret => {
+      return client.query(getAllItemsDataQuery).then((ret) => {
         return {
           statusCode: 200,
           body: JSON.stringify(ret),
         }
       })
     })
-    .catch(error => {
+    .catch((error) => {
       console.log('error', error)
       return {
         statusCode: 400,
@@ -32,3 +33,5 @@ exports.handler = async () => {
       }
     })
 }
+
+module.exports = { handler }

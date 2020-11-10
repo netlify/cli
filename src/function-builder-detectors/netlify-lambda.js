@@ -1,7 +1,8 @@
 const { existsSync, readFileSync } = require('fs')
+
 const execa = require('execa')
 
-module.exports = function() {
+module.exports = function handler() {
   if (!existsSync('package.json')) {
     return false
   }
@@ -19,7 +20,8 @@ module.exports = function() {
     const script = scripts[key]
     const match = script.match(/netlify-lambda build (\S+)/)
     if (match) {
-      settings.src = match[1]
+      const [, src] = match
+      settings.src = src
       settings.npmScript = key
       break
     }

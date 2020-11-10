@@ -1,7 +1,10 @@
 const fs = require('fs')
-const { flags } = require('@oclif/command')
-const Command = require('../../utils/command')
+const process = require('process')
+
 const { zipFunctions } = require('@netlify/zip-it-and-ship-it')
+const { flags: flagsLib } = require('@oclif/command')
+
+const Command = require('../../utils/command')
 const {
   // NETLIFYDEV,
   NETLIFYDEVLOG,
@@ -31,11 +34,11 @@ class FunctionsBuildCommand extends Command {
     if (!src || !dst) {
       if (!src)
         this.log(
-          `${NETLIFYDEVERR} Error: You must specify a source folder with a --src flag or a functionsSource field in your config`
+          `${NETLIFYDEVERR} Error: You must specify a source folder with a --src flag or a functionsSource field in your config`,
         )
       if (!dst)
         this.log(
-          `${NETLIFYDEVERR} Error: You must specify a destination functions folder with a --functions flag or a functions field in your config`
+          `${NETLIFYDEVERR} Error: You must specify a destination functions folder with a --functions flag or a functions field in your config`,
         )
       process.exit(1)
     }
@@ -59,11 +62,11 @@ FunctionsBuildCommand.description = `Build functions locally
 `
 FunctionsBuildCommand.aliases = ['function:build']
 FunctionsBuildCommand.flags = {
-  functions: flags.string({
+  functions: flagsLib.string({
     char: 'f',
     description: 'Specify a functions folder to build to',
   }),
-  src: flags.string({
+  src: flagsLib.string({
     char: 's',
     description: 'Specify the source folder for the functions',
   }),

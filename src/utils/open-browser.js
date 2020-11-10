@@ -1,8 +1,10 @@
-const open = require('open')
+const process = require('process')
+
 const chalk = require('chalk')
 const isDockerContainer = require('is-docker')
+const open = require('open')
 
-function unableToOpenBrowserMessage({ url, log, message }) {
+const unableToOpenBrowserMessage = function ({ url, log, message }) {
   log('---------------------------')
   log(chalk.redBright(`Error: Unable to open browser automatically: ${message}`))
   log(chalk.cyan('Please open your browser and open the URL below:'))
@@ -10,7 +12,7 @@ function unableToOpenBrowserMessage({ url, log, message }) {
   log('---------------------------')
 }
 
-async function openBrowser({ url, log, silentBrowserNoneError }) {
+const openBrowser = async function ({ url, log, silentBrowserNoneError }) {
   if (isDockerContainer()) {
     unableToOpenBrowserMessage({ url, log, message: 'Running inside a docker container' })
     return

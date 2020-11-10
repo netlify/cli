@@ -1,6 +1,9 @@
 const path = require('path')
+const process = require('process')
+
 const markdownMagic = require('markdown-magic')
 const stripAnsi = require('strip-ansi')
+
 const generateCommandData = require('./generate-command-data')
 
 process.env.DOCS_GEN = 'TRUE'
@@ -27,7 +30,7 @@ const config = {
         md += commandExamples(info.examples)
         if (info.commands.length !== 0) {
           md += `---\n`
-          info.commands.forEach(subCmd => {
+          info.commands.forEach((subCmd) => {
             // Child Commands
             md += formatSubCommandTitle(subCmd.name)
             md += formatDescription(stripAnsi(subCmd.description))
@@ -45,7 +48,7 @@ const config = {
       const context = path.basename(instance.originalPath, '.md')
       /* Generate Command List */
       let md = ''
-      Object.keys(commandData).map(commandName => {
+      Object.keys(commandData).forEach((commandName) => {
         const info = commandData[commandName]
         md += commandListTitle(commandName, context)
         md += commandListDescription(stripAnsi(info.description))
@@ -60,19 +63,14 @@ const config = {
 const rootDir = path.join(__dirname, '..', '..')
 const markdownFiles = [path.join(rootDir, 'README.md'), path.join(rootDir, 'docs/**/**.md')]
 
-// Generate docs
-markdownMagic(markdownFiles, config, () => {
-  console.log('Docs updated!')
-})
-
 /* Start - Docs Templating logic */
-function commandExamples(examples) {
+const commandExamples = function (examples) {
   if (!examples || examples.length === 0) {
     return ''
   }
   let exampleRender = `**Examples**${newLine}`
   exampleRender += '```bash\n'
-  examples.forEach(ex => {
+  examples.forEach((ex) => {
     // console.log('ex', ex)
     exampleRender += `${ex}\n`
   })
@@ -81,25 +79,25 @@ function commandExamples(examples) {
 }
 
 /* Start - Docs Templating logic */
-function commandListTitle(command) {
+const commandListTitle = function (command) {
   const url = `/docs/commands/${command}.md`
   // const url  = (context === 'README') ? `/docs/${command}.md` : `/${command}`
   return `### [${command}](${url})${newLine}`
 }
 
-function commandListDescription(desc) {
-  const cleanDescription = desc.split('\n')[0]
+const commandListDescription = function (desc) {
+  const [cleanDescription] = desc.split('\n')
   return `${cleanDescription}${newLine}`
 }
 
-function commandListSubCommandDisplay(commands) {
+const commandListSubCommandDisplay = function (commands) {
   if (commands.length === 0) {
     return ''
   }
   let table = '| Subcommand | description  |\n'
   table += '|:--------------------------- |:-----|\n'
-  commands.forEach(cmd => {
-    const commandBase = cmd.name.split(':')[0]
+  commands.forEach((cmd) => {
+    const [commandBase] = cmd.name.split(':')
     const baseUrl = `/docs/commands/${commandBase}.md`
     // const baseUrl = (context === 'README') ? `/docs/${commandBase}.md` : `/${commandBase}`
     const slug = cmd.name.replace(/:/g, '')
@@ -107,7 +105,8 @@ function commandListSubCommandDisplay(commands) {
   })
   return `${table}${newLine}`
 }
-function formatUsage(commandName, info) {
+
+const formatUsage = function (commandName, info) {
   const defaultUsage = `netlify ${commandName}`
 
   if (commandName === 'sites:delete') {
@@ -122,15 +121,15 @@ ${usageString}
 \`\`\`\n\n`
 }
 
-function formatSubCommandTitle(cmdName) {
+const formatSubCommandTitle = function (cmdName) {
   return `## \`${cmdName}\`\n\n`
 }
 
-function formatDescription(desc) {
+const formatDescription = function (desc) {
   return `${desc}\n\n`
 }
 
-function formatFlags(cmdFlags, command) {
+const formatFlags = function (cmdFlags, command) {
   if (!cmdFlags) {
     return ''
   }
@@ -141,7 +140,7 @@ function formatFlags(cmdFlags, command) {
   let renderFlags = `**Flags**\n\n`
 
   renderFlags += flagArray
-    .map(flag => {
+    .map((flag) => {
       const flagData = cmdFlags[flag]
       if (!flagData.description) {
         throw new Error(`${command} missing flag description`)
@@ -156,14 +155,14 @@ function formatFlags(cmdFlags, command) {
   return renderFlags
 }
 
-function formatArgs(cmdArgs) {
+const formatArgs = function (cmdArgs) {
   if (!cmdArgs) {
     return ''
   }
   let renderArgs = `**Arguments**\n\n`
 
   renderArgs += cmdArgs
-    .map(arg => {
+    .map((arg) => {
       return `- ${arg.name} - ${arg.description}`
     })
     .join('\n')
@@ -171,3 +170,8 @@ function formatArgs(cmdArgs) {
   return renderArgs
 }
 /* End - Docs Templating logic */
+
+// Generate docs
+markdownMagic(markdownFiles, config, () => {
+  console.log('Docs updated!')
+})

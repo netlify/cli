@@ -5,7 +5,7 @@ const chalk = require('chalk')
  * @param  {boolean} noColors - disable chalk colors
  * @return {object} - chalk instance or proxy noOp
  */
-function safeChalk(noColors) {
+const safeChalk = function (noColors) {
   /* if no colors return proxy to chalk API */
   if (noColors) {
     return neverNull(chalk)
@@ -13,11 +13,11 @@ function safeChalk(noColors) {
   return chalk
 }
 
-function noop() {}
+const noop = function () {}
 
-function neverNull(obj) {
-  function match(some, none = noop) {
-    return obj != null ? some(obj) : none()
+const neverNull = function (obj) {
+  const match = function (some, none = noop) {
+    return obj == null ? none() : some(obj)
   }
   return new Proxy(
     (some, none) => {
@@ -30,21 +30,20 @@ function neverNull(obj) {
     },
     {
       get: (target, key) => {
-        const obj = target()
-        if (obj !== null && typeof obj === 'object') {
-          return neverNull(obj[key])
-        } else {
-          return neverNull()
+        const targetObj = target()
+        if (targetObj !== null && typeof targetObj === 'object') {
+          return neverNull(targetObj[key])
         }
+        return neverNull()
       },
       set: (target, key, val) => {
-        const obj = target()
-        if (obj !== null && typeof obj === 'object') {
-          obj[key] = val
+        const targetObj = target()
+        if (targetObj !== null && typeof targetObj === 'object') {
+          targetObj[key] = val
         }
         return true
       },
-    }
+    },
   )
 }
 

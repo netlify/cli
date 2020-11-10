@@ -1,8 +1,9 @@
 // with thanks https://github.com/LukeMwila/stripe-subscriptions-backend/blob/master/stripe-api/index.ts
+const process = require('process')
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 
-const respond = fulfillmentText => {
+const respond = (fulfillmentText) => {
   return {
     statusCode: 200,
     body: JSON.stringify(fulfillmentText),
@@ -14,7 +15,7 @@ const respond = fulfillmentText => {
   }
 }
 
-exports.handler = async function(event) {
+const handler = async function (event) {
   let incoming
   try {
     incoming = JSON.parse(event.body)
@@ -34,7 +35,7 @@ exports.handler = async function(event) {
   }
 }
 
-async function createCustomerAndSubscribeToPlan(stripeToken, email, productPlan) {
+const createCustomerAndSubscribeToPlan = async function (stripeToken, email, productPlan) {
   // create a customer
   const customer = await stripe.customers.create({
     email,
@@ -49,3 +50,5 @@ async function createCustomerAndSubscribeToPlan(stripeToken, email, productPlan)
   })
   return subscription
 }
+
+module.exports = { handler }

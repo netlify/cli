@@ -1,23 +1,24 @@
-const chalk = require('chalk')
-const { Command } = require('@oclif/command')
 const { execSync } = require('child_process')
 
-function showHelp(command) {
+const { Command } = require('@oclif/command')
+const chalk = require('chalk')
+
+const showHelp = function (command) {
   execSync(`netlify ${command} --help`, { stdio: [0, 1, 2] })
 }
 
-function isEmptyCommand(flags, args) {
+const isEmptyCommand = function (flags, args) {
   if (!hasFlags(flags) && !hasArgs(args)) {
     return true
   }
   return false
 }
 
-function hasFlags(flags) {
+const hasFlags = function (flags) {
   return Object.keys(flags).length
 }
 
-function hasArgs(args) {
+const hasArgs = function (args) {
   return Object.keys(args).length
 }
 

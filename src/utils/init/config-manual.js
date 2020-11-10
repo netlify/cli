@@ -1,8 +1,11 @@
+const fs = require('fs')
+const path = require('path')
+
 const inquirer = require('inquirer')
+
 const { makeNetlifyTOMLtemplate } = require('./netlify-toml-template')
 
-module.exports = configManual
-async function configManual(ctx, site, repo) {
+module.exports = async function configManual(ctx, site, repo) {
   const key = await ctx.netlify.api.createDeployKey()
 
   ctx.log('\nGive this Netlify SSH public key access to your repository:\n')
@@ -30,7 +33,7 @@ async function configManual(ctx, site, repo) {
       type: 'input',
       name: 'buildCmd',
       message: 'Your build command (hugo build/yarn run build/etc):',
-      filter: val => (val === '' ? undefined : val),
+      filter: (val) => (val === '' ? undefined : val),
     },
     {
       type: 'input',
@@ -40,8 +43,6 @@ async function configManual(ctx, site, repo) {
     },
   ])
 
-  const fs = require('fs')
-  const path = require('path')
   const tomlpath = path.join(ctx.netlify.site.root, 'netlify.toml')
   const tomlDoesNotExist = !fs.existsSync(tomlpath)
   if (tomlDoesNotExist && (!ctx.netlify.config || Object.keys(ctx.netlify.config).length === 0)) {
@@ -69,8 +70,7 @@ async function configManual(ctx, site, repo) {
         name: 'repoPath',
         message: 'The SSH URL of the remote git repo:',
         default: repo.repo_path,
-        validate: url =>
-          !!url.match(/(ssh:\/\/|[a-zA-Z]*@|[a-zA-Z.].*:(?!\/\/))/) || 'The URL provided does not use the SSH protocol',
+        validate: (url) => SSH_URL_REGEXP.test(url) || 'The URL provided does not use the SSH protocol',
       },
     ])
     repo.repo_path = repoPath
@@ -98,3 +98,5 @@ async function configManual(ctx, site, repo) {
     ctx.exit()
   }
 }
+
+const SSH_URL_REGEXP = /(ssh:\/\/|[a-zA-Z]*@|[a-zA-Z.].*:(?!\/\/))/

@@ -1,4 +1,5 @@
 const url = require('url')
+
 const fetch = require('node-fetch')
 const { safeJoin } = require('safe-join')
 
@@ -11,7 +12,7 @@ const GITHUB = Symbol('GITHUB')
  * Takes a url like https://github.com/netlify-labs/all-the-functions/tree/master/functions/9-using-middleware
  * and returns https://api.github.com/repos/netlify-labs/all-the-functions/contents/functions/9-using-middleware
  */
-async function readRepoURL(_url) {
+const readRepoURL = async function (_url) {
   // TODO: use `url.URL()` instead
   // eslint-disable-next-line node/no-deprecated-api
   const URL = url.parse(_url)
@@ -22,19 +23,19 @@ async function readRepoURL(_url) {
   return folderContents
 }
 
-function getRepoURLContents(repoHost, ownerAndRepo, contentsPath) {
+const getRepoURLContents = function (repoHost, ownerAndRepo, contentsPath) {
   // naive joining strategy for now
   if (repoHost === GITHUB) {
     // https://developer.github.com/v3/repos/contents/#get-contents
     const APIURL = safeJoin('https://api.github.com/repos', ownerAndRepo, 'contents', contentsPath)
     return fetch(APIURL)
-      .then(x => x.json())
-      .catch(error => console.error(`Error occurred while fetching ${APIURL}`, error))
+      .then((res) => res.json())
+      .catch((error) => console.error(`Error occurred while fetching ${APIURL}`, error))
   }
   throw new Error('unsupported host ', repoHost)
 }
 
-function validateRepoURL(_url) {
+const validateRepoURL = function (_url) {
   // TODO: use `url.URL()` instead
   // eslint-disable-next-line node/no-deprecated-api
   const URL = url.parse(_url)
@@ -42,11 +43,12 @@ function validateRepoURL(_url) {
   // other validation logic here
   return GITHUB
 }
-function parseRepoURL(repoHost, URL) {
+const parseRepoURL = function (repoHost, URL) {
   // naive splitting strategy for now
   if (repoHost === GITHUB) {
     // https://developer.github.com/v3/repos/contents/#get-contents
-    const [ownerAndRepo, contentsPath] = URL.path.split('/tree/master') // what if it's not master? note that our contents retrieval may assume it is master
+    // what if it's not master? note that our contents retrieval may assume it is master
+    const [ownerAndRepo, contentsPath] = URL.path.split('/tree/master')
     return [ownerAndRepo, contentsPath]
   }
   throw new Error('unsupported host ', repoHost)

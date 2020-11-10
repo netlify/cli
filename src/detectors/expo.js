@@ -1,5 +1,8 @@
 const { hasRequiredDeps, hasRequiredFiles, getYarnOrNPMCommand, scanScripts } = require('./utils/jsdetect')
-module.exports = function() {
+
+const FRAMEWORK_PORT = 19006
+
+module.exports = function detector() {
   // REQUIRED FILES
   if (!hasRequiredFiles(['package.json', 'app.json'])) return false
   // REQUIRED DEPS
@@ -19,7 +22,7 @@ module.exports = function() {
   return {
     framework: 'expo',
     command: getYarnOrNPMCommand(),
-    frameworkPort: 19006,
+    frameworkPort: FRAMEWORK_PORT,
     possibleArgsArrs,
     dist: 'web-build',
   }

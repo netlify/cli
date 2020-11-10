@@ -1,4 +1,5 @@
 const { ApolloServer, gql } = require('apollo-server-lambda')
+
 const RandomUser = require('./random-user.js')
 // example from: https://medium.com/yld-engineering-blog/easier-graphql-wrappers-for-your-rest-apis-1410b0b5446d
 
@@ -62,4 +63,6 @@ const server = new ApolloServer({
   }),
 })
 
-exports.handler = server.createHandler()
+const handler = server.createHandler()
+
+module.exports = { handler }

@@ -1,10 +1,14 @@
+const fs = require('fs')
 const path = require('path')
+const process = require('process')
+
+const dotProp = require('dot-prop')
 const findUp = require('find-up')
 const makeDir = require('make-dir')
-const fs = require('fs')
 const writeFileAtomic = require('write-file-atomic')
-const dotProp = require('dot-prop')
+
 const { getPathInProject } = require('../lib/settings')
+
 const STATE_PATH = getPathInProject(['state.json'])
 const permissionError = "You don't have access to this file."
 
@@ -75,12 +79,13 @@ class StateConfig {
     return dotProp.get(this.all, key)
   }
 
-  set(key, val) {
+  set(...args) {
+    const [key, val] = args
     const config = this.all
 
-    if (arguments.length === 1) {
-      for (const k of Object.keys(key)) {
-        dotProp.set(config, k, key[k])
+    if (args.length === 1) {
+      for (const keyPart of Object.keys(key)) {
+        dotProp.set(config, keyPart, key[keyPart])
       }
     } else {
       dotProp.set(config, key, val)

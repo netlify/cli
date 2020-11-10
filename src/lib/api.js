@@ -3,7 +3,7 @@ const fetch = require('node-fetch')
 const getHeaders = ({ token }) => {
   return {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,
+    Authorization: `Bearer ${token}`,
   }
 }
 
@@ -12,10 +12,9 @@ const getErrorMessage = async ({ response }) => {
   if (contentType && contentType.includes('application/json')) {
     const json = await response.json()
     return json.message
-  } else {
-    const text = await response.text()
-    return text
   }
+  const text = await response.text()
+  return text
 }
 
 const checkResponse = async ({ response }) => {

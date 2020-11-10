@@ -1,9 +1,9 @@
-const chalk = require('chalk')
 const AsciiTable = require('ascii-table')
+const chalk = require('chalk')
 
-function missingValues(values, manifest) {
+const missingValues = function (values, manifest) {
   const display = values
-    .map(item => {
+    .map((item) => {
       const itemDisplay = chalk.redBright.bold(`${item}`)
       const niceNameDisplay = manifest.config[item].displayName
       return ` - ${itemDisplay} ${niceNameDisplay}`
@@ -12,7 +12,7 @@ function missingValues(values, manifest) {
   console.log(display)
 }
 
-function configValues(addonName, configValues, currentValue) {
+const configValues = function (addonName, values, currentValue) {
   const table = new AsciiTable(`${addonName} add-on settings`)
 
   const tableHeader = currentValue
@@ -21,8 +21,8 @@ function configValues(addonName, configValues, currentValue) {
 
   table.setHeading(...tableHeader)
 
-  Object.keys(configValues).map(key => {
-    const { type, displayName, required } = configValues[key]
+  Object.keys(values).forEach((key) => {
+    const { type, displayName, required } = values[key]
     const requiredText = required ? `true` : `false`
     const typeInfo = type || ''
     const description = displayName || ''

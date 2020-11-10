@@ -1,24 +1,29 @@
+const cp = require('child_process')
 const fs = require('fs')
 const path = require('path')
-const copy = require('copy-template-dir')
-const { flags } = require('@oclif/command')
-const inquirer = require('inquirer')
-const fetch = require('node-fetch')
-const cp = require('child_process')
-const ora = require('ora')
+const process = require('process')
+
+const { flags: flagsLib } = require('@oclif/command')
 const chalk = require('chalk')
+const copy = require('copy-template-dir')
+const fuzzy = require('fuzzy')
+const inquirer = require('inquirer')
+const inquirerAutocompletePrompt = require('inquirer-autocomplete-prompt')
+const fetch = require('node-fetch')
+const ora = require('ora')
 
 const { mkdirRecursiveSync } = require('../../lib/fs')
+const { getSiteData, getAddons, getCurrentAddon } = require('../../utils/addons/prepare')
 const Command = require('../../utils/command')
-const { readRepoURL, validateRepoURL } = require('../../utils/read-repo-url')
-const { addEnvVariables } = require('../../utils/dev')
+const { getSiteInformation, addEnvVariables } = require('../../utils/dev')
 const {
   // NETLIFYDEV,
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
   NETLIFYDEVERR,
 } = require('../../utils/logo')
-const { getSiteData, getAddons, getCurrentAddon } = require('../../utils/addons/prepare')
+const { readRepoURL, validateRepoURL } = require('../../utils/read-repo-url')
+
 const templatesDir = path.resolve(__dirname, '../../functions-templates')
 
 /**
@@ -28,14 +33,11 @@ class FunctionsCreateCommand extends Command {
   async run() {
     const { flags, args } = this.parse(FunctionsCreateCommand)
     const { config } = this.netlify
-    const functionsDir = ensureFunctionDirExists.call(this, flags, config)
+    const functionsDir = ensureFunctionDirExists(this, flags, config)
 
     /* either download from URL or scaffold from template */
-    if (flags.url) {
-      await downloadFromURL.call(this, flags, args, functionsDir)
-    } else {
-      await scaffoldFromTemplate.call(this, flags, args, functionsDir)
-    }
+    const mainFunc = flags.url ? downloadFromURL : scaffoldFromTemplate
+    await mainFunc(this, flags, args, functionsDir)
     await this.config.runHook('analytics', {
       eventName: 'command',
       payload: {
@@ -61,8 +63,8 @@ FunctionsCreateCommand.examples = [
 ]
 FunctionsCreateCommand.aliases = ['function:create']
 FunctionsCreateCommand.flags = {
-  name: flags.string({ char: 'n', description: 'function name' }),
-  url: flags.string({ char: 'u', description: 'pull template from URL' }),
+  name: flagsLib.string({ char: 'n', description: 'function name' }),
+  url: flagsLib.string({ char: 'u', description: 'pull template from URL' }),
   ...FunctionsCreateCommand.flags,
 }
 module.exports = FunctionsCreateCommand
@@ -72,36 +74,74 @@ module.exports = FunctionsCreateCommand
  */
 
 // prompt for a name if name not supplied
-async function getNameFromArgs(args, flags, defaultName) {
-  if (flags.name && args.name) throw new Error('function name specified in both flag and arg format, pick one')
-  let name
-  if (flags.name && !args.name) name = flags.name
-  // use flag if exists
-  else if (!flags.name && args.name) name = args.name
-
-  // if neither are specified, prompt for it
-  if (!name) {
-    const responses = await inquirer.prompt([
-      {
-        name: 'name',
-        message: 'name your function: ',
-        default: defaultName,
-        type: 'input',
-        validate: val => Boolean(val) && /^[\w.-]+$/i.test(val),
-        // make sure it is not undefined and is a valid filename.
-        // this has some nuance i have ignored, eg crossenv and i18n concerns
-      },
-    ])
-    name = responses.name
+const getNameFromArgs = async function (args, flags, defaultName) {
+  if (flags.name) {
+    if (args.name) {
+      throw new Error('function name specified in both flag and arg format, pick one')
+    }
+    return flags.name
   }
+
+  if (args.name) {
+    return args.name
+  }
+
+  const { name } = await inquirer.prompt([
+    {
+      name: 'name',
+      message: 'name your function: ',
+      default: defaultName,
+      type: 'input',
+      validate: (val) => Boolean(val) && /^[\w.-]+$/i.test(val),
+      // make sure it is not undefined and is a valid filename.
+      // this has some nuance i have ignored, eg crossenv and i18n concerns
+    },
+  ])
   return name
 }
 
+const filterRegistry = function (registry, input) {
+  const temp = registry.map((value) => value.name + value.description)
+  const filteredTemplates = fuzzy.filter(input, temp)
+  const filteredTemplateNames = new Set(
+    filteredTemplates.map((filteredTemplate) => (input ? filteredTemplate.string : filteredTemplate)),
+  )
+  return registry
+    .filter((t) => filteredTemplateNames.has(t.name + t.description))
+    .map((t) => {
+      // add the score
+      const { score } = filteredTemplates.find((filteredTemplate) => filteredTemplate.string === t.name + t.description)
+      t.score = score
+      return t
+    })
+}
+
+const formatRegistryArrayForInquirer = function (lang) {
+  const folderNames = fs.readdirSync(path.join(templatesDir, lang))
+  const registry = folderNames
+    // filter out markdown files
+    .filter((folderName) => !folderName.endsWith('.md'))
+    // eslint-disable-next-line node/global-require, import/no-dynamic-require
+    .map((folderName) => require(path.join(templatesDir, lang, folderName, '.netlify-function-template.js')))
+    .sort(
+      (folderNameA, folderNameB) =>
+        (folderNameA.priority || DEFAULT_PRIORITY) - (folderNameB.priority || DEFAULT_PRIORITY),
+    )
+    .map((t) => {
+      t.lang = lang
+      return {
+        // confusing but this is the format inquirer wants
+        name: `[${t.name}] ${t.description}`,
+        value: t,
+        short: `${lang}-${t.name}`,
+      }
+    })
+  return registry
+}
+
 // pick template from our existing templates
-async function pickTemplate() {
-  // lazy loading on purpose
-  inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'))
-  const fuzzy = require('fuzzy')
+const pickTemplate = async function () {
+  inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
   // doesnt scale but will be ok for now
   const [
     jsreg,
@@ -142,76 +182,48 @@ async function pickTemplate() {
         ]
       }
       // only show filtered results sorted by score
-      const ans = [
+      const answers = [
         ...filterRegistry(jsreg, input),
         // ...filterRegistry(tsreg, input),
         // ...filterRegistry(goreg, input)
         ...specialCommands,
-      ].sort((a, b) => b.score - a.score)
-      return ans
+      ].sort((answerA, answerB) => answerB.score - answerA.score)
+      return answers
     },
   })
   return chosentemplate
-  function filterRegistry(registry, input) {
-    const temp = registry.map(x => x.name + x.description)
-    const filteredTemplates = fuzzy.filter(input, temp)
-    const filteredTemplateNames = new Set(filteredTemplates.map(x => (input ? x.string : x)))
-    return registry
-      .filter(t => filteredTemplateNames.has(t.name + t.description))
-      .map(t => {
-        // add the score
-        const { score } = filteredTemplates.find(f => f.string === t.name + t.description)
-        t.score = score
-        return t
-      })
-  }
-  function formatRegistryArrayForInquirer(lang) {
-    const folderNames = fs.readdirSync(path.join(templatesDir, lang))
-    const registry = folderNames
-      .filter(x => !x.endsWith('.md')) // filter out markdown files
-      .map(name => require(path.join(templatesDir, lang, name, '.netlify-function-template.js')))
-      .sort((a, b) => (a.priority || 999) - (b.priority || 999))
-      .map(t => {
-        t.lang = lang
-        return {
-          // confusing but this is the format inquirer wants
-          name: `[${t.name}] ` + t.description,
-          value: t,
-          short: lang + '-' + t.name,
-        }
-      })
-    return registry
-  }
 }
 
+const DEFAULT_PRIORITY = 999
+
 /* get functions dir (and make it if necessary) */
-function ensureFunctionDirExists(flags, config) {
+const ensureFunctionDirExists = function (context, flags, config) {
   const functionsDir = config.build && config.build.functions
   if (!functionsDir) {
-    this.log(`${NETLIFYDEVLOG} No functions folder specified in netlify.toml`)
+    context.log(`${NETLIFYDEVLOG} No functions folder specified in netlify.toml`)
     process.exit(1)
   }
   if (!fs.existsSync(functionsDir)) {
-    this.log(
+    context.log(
       `${NETLIFYDEVLOG} functions folder ${chalk.magenta.inverse(
-        functionsDir
-      )} specified in netlify.toml but folder not found, creating it...`
+        functionsDir,
+      )} specified in netlify.toml but folder not found, creating it...`,
     )
     fs.mkdirSync(functionsDir)
-    this.log(`${NETLIFYDEVLOG} functions folder ${chalk.magenta.inverse(functionsDir)} created`)
+    context.log(`${NETLIFYDEVLOG} functions folder ${chalk.magenta.inverse(functionsDir)} created`)
   }
   return functionsDir
 }
 
 // Download files from a given github URL
-async function downloadFromURL(flags, args, functionsDir) {
+const downloadFromURL = async function (context, flags, args, functionsDir) {
   const folderContents = await readRepoURL(flags.url)
-  const functionName = flags.url.split('/').slice(-1)[0]
+  const [functionName] = flags.url.split('/').slice(-1)
   const nameToUse = await getNameFromArgs(args, flags, functionName)
   const fnFolder = path.join(functionsDir, nameToUse)
-  if (fs.existsSync(fnFolder + '.js') && fs.lstatSync(fnFolder + '.js').isFile()) {
-    this.log(
-      `${NETLIFYDEVWARN}: A single file version of the function ${nameToUse} already exists at ${fnFolder}.js. Terminating without further action.`
+  if (fs.existsSync(`${fnFolder}.js`) && fs.lstatSync(`${fnFolder}.js`).isFile()) {
+    context.log(
+      `${NETLIFYDEVWARN}: A single file version of the function ${nameToUse} already exists at ${fnFolder}.js. Terminating without further action.`,
     )
     process.exit(1)
   }
@@ -222,40 +234,38 @@ async function downloadFromURL(flags, args, functionsDir) {
     // Ignore
   }
   await Promise.all(
-    folderContents.map(({ name, download_url: downloadUrl }) => {
-      return fetch(downloadUrl)
-        .then(res => {
-          const finalName = path.basename(name, '.js') === functionName ? nameToUse + '.js' : name
-          const dest = fs.createWriteStream(path.join(fnFolder, finalName))
-          res.body.pipe(dest)
-        })
-        .catch(error => {
-          throw new Error('Error while retrieving ' + downloadUrl + ` ${error}`)
-        })
-    })
+    folderContents.map(async ({ name, download_url: downloadUrl }) => {
+      try {
+        const res = await fetch(downloadUrl)
+        const finalName = path.basename(name, '.js') === functionName ? `${nameToUse}.js` : name
+        const dest = fs.createWriteStream(path.join(fnFolder, finalName))
+        res.body.pipe(dest)
+      } catch (error) {
+        throw new Error(`Error while retrieving ${downloadUrl} ${error}`)
+      }
+    }),
   )
 
-  this.log(`${NETLIFYDEVLOG} Installing dependencies for ${nameToUse}...`)
+  context.log(`${NETLIFYDEVLOG} Installing dependencies for ${nameToUse}...`)
   cp.exec('npm i', { cwd: path.join(functionsDir, nameToUse) }, () => {
-    this.log(`${NETLIFYDEVLOG} Installing dependencies for ${nameToUse} complete `)
+    context.log(`${NETLIFYDEVLOG} Installing dependencies for ${nameToUse} complete `)
   })
 
   // read, execute, and delete function template file if exists
   const fnTemplateFile = path.join(fnFolder, '.netlify-function-template.js')
   if (fs.existsSync(fnTemplateFile)) {
+    // eslint-disable-next-line node/global-require, import/no-dynamic-require
     const { onComplete, addons = [] } = require(fnTemplateFile)
 
-    await installAddons.call(this, addons, path.resolve(fnFolder))
-    if (onComplete) {
-      await addEnvVariables(this.netlify.api, this.netlify.site)
-      await onComplete.call(this)
-    }
-    fs.unlinkSync(fnTemplateFile) // delete
+    await installAddons(context, addons, path.resolve(fnFolder))
+    await handleOnComplete({ context, onComplete })
+    // delete
+    fs.unlinkSync(fnTemplateFile)
   }
 }
 
-function installDeps(functionPath) {
-  return new Promise(resolve => {
+const installDeps = function (functionPath) {
+  return new Promise((resolve) => {
     cp.exec('npm i', { cwd: path.join(functionPath) }, () => {
       resolve()
     })
@@ -263,60 +273,62 @@ function installDeps(functionPath) {
 }
 
 // no --url flag specified, pick from a provided template
-async function scaffoldFromTemplate(flags, args, functionsDir) {
-  const chosentemplate = await pickTemplate.call(this) // pull the rest of the metadata from the template
+const scaffoldFromTemplate = async function (context, flags, args, functionsDir) {
+  // pull the rest of the metadata from the template
+  const chosentemplate = await pickTemplate()
   if (chosentemplate === 'url') {
     const { chosenurl } = await inquirer.prompt([
       {
         name: 'chosenurl',
         message: 'URL to clone: ',
         type: 'input',
-        validate: val => Boolean(validateRepoURL(val)),
+        validate: (val) => Boolean(validateRepoURL(val)),
         // make sure it is not undefined and is a valid filename.
         // this has some nuance i have ignored, eg crossenv and i18n concerns
       },
     ])
     flags.url = chosenurl.trim()
     try {
-      await downloadFromURL.call(this, flags, args, functionsDir)
+      await downloadFromURL(context, flags, args, functionsDir)
     } catch (error) {
-      this.error(`$${NETLIFYDEVERR} Error downloading from URL: ` + flags.url)
-      this.error(error)
+      context.error(`$${NETLIFYDEVERR} Error downloading from URL: ${flags.url}`)
+      context.error(error)
       process.exit(1)
     }
   } else if (chosentemplate === 'report') {
-    this.log(`${NETLIFYDEVLOG} Open in browser: https://github.com/netlify/cli/issues/new`)
+    context.log(`${NETLIFYDEVLOG} Open in browser: https://github.com/netlify/cli/issues/new`)
   } else {
     const { onComplete, name: templateName, lang, addons = [] } = chosentemplate
 
     const pathToTemplate = path.join(templatesDir, lang, templateName)
     if (!fs.existsSync(pathToTemplate)) {
       throw new Error(
-        `there isnt a corresponding folder to the selected name, ${templateName} template is misconfigured`
+        `there isnt a corresponding folder to the selected name, ${templateName} template is misconfigured`,
       )
     }
 
     const name = await getNameFromArgs(args, flags, templateName)
-    this.log(`${NETLIFYDEVLOG} Creating function ${chalk.cyan.inverse(name)}`)
-    const functionPath = ensureFunctionPathIsOk.call(this, functionsDir, name)
+    context.log(`${NETLIFYDEVLOG} Creating function ${chalk.cyan.inverse(name)}`)
+    const functionPath = ensureFunctionPathIsOk(context, functionsDir, name)
 
-    // // SWYX: note to future devs - useful for debugging source to output issues
+    // SWYX: note to future devs - useful for debugging source to output issues
     // this.log('from ', pathToTemplate, ' to ', functionPath)
-    const vars = { NETLIFY_STUFF_TO_REPLACE: 'REPLACEMENT' } // SWYX: TODO
+    // SWYX: TODO
+    const vars = { NETLIFY_STUFF_TO_REPLACE: 'REPLACEMENT' }
     let hasPackageJSON = false
     copy(pathToTemplate, functionPath, vars, async (err, createdFiles) => {
       if (err) throw err
-      createdFiles.forEach(filePath => {
+      createdFiles.forEach((filePath) => {
         if (filePath.endsWith('.netlify-function-template.js')) return
-        this.log(`${NETLIFYDEVLOG} ${chalk.greenBright('Created')} ${filePath}`)
-        require('fs').chmodSync(path.resolve(filePath), 0o777)
+        context.log(`${NETLIFYDEVLOG} ${chalk.greenBright('Created')} ${filePath}`)
+        fs.chmodSync(path.resolve(filePath), TEMPLATE_PERMISSIONS)
         if (filePath.includes('package.json')) hasPackageJSON = true
       })
       // delete function template file that was copied over by copydir
       fs.unlinkSync(path.join(functionPath, '.netlify-function-template.js'))
       // rename the root function file if it has a different name from default
       if (name !== templateName) {
-        fs.renameSync(path.join(functionPath, templateName + '.js'), path.join(functionPath, name + '.js'))
+        fs.renameSync(path.join(functionPath, `${templateName}.js`), path.join(functionPath, `${name}.js`))
       }
       // npm install
       if (hasPackageJSON) {
@@ -328,16 +340,15 @@ async function scaffoldFromTemplate(flags, args, functionsDir) {
         spinner.succeed(`installed dependencies for ${name}`)
       }
 
-      await installAddons.call(this, addons, path.resolve(functionPath))
-      if (onComplete) {
-        await addEnvVariables(this.netlify.api, this.netlify.site)
-        await onComplete.call(this)
-      }
+      await installAddons(context, addons, path.resolve(functionPath))
+      await handleOnComplete({ context, onComplete })
     })
   }
 }
 
-async function createFunctionAddon({ api, addons, siteId, addonName, siteData, log, error }) {
+const TEMPLATE_PERMISSIONS = 0o777
+
+const createFunctionAddon = async function ({ api, addons, siteId, addonName, siteData, log, error }) {
   try {
     const addon = getCurrentAddon({ addons, addonName })
     if (addon && addon.id) {
@@ -356,13 +367,54 @@ async function createFunctionAddon({ api, addons, siteId, addonName, siteData, l
   }
 }
 
-async function installAddons(functionAddons = [], fnPath) {
+const injectEnvVariables = async ({ context }) => {
+  const { log, warn, error, netlify } = context
+  const { api, site } = netlify
+  const { teamEnv, addonsEnv, siteEnv, dotFilesEnv } = await getSiteInformation({
+    api,
+    site,
+    warn,
+    error,
+  })
+  await addEnvVariables({ log, teamEnv, addonsEnv, siteEnv, dotFilesEnv })
+}
+
+const handleOnComplete = async ({ context, onComplete }) => {
+  if (onComplete) {
+    await injectEnvVariables({ context })
+    await onComplete.call(context)
+  }
+}
+
+const handleAddonDidInstall = async ({ addonCreated, addonDidInstall, context, fnPath }) => {
+  if (!addonCreated || !addonDidInstall) {
+    return
+  }
+
+  const { confirmPostInstall } = await inquirer.prompt([
+    {
+      type: 'confirm',
+      name: 'confirmPostInstall',
+      message: `This template has an optional setup script that runs after addon install. This can be helpful for first time users to try out templates. Run the script?`,
+      default: false,
+    },
+  ])
+
+  if (!confirmPostInstall) {
+    return
+  }
+
+  await injectEnvVariables({ context })
+  addonDidInstall(fnPath)
+}
+
+const installAddons = async function (context, functionAddons, fnPath) {
   if (functionAddons.length === 0) {
     return
   }
 
-  const { log, error } = this
-  const { api, site } = this.netlify
+  const { log, error } = context
+  const { api, site } = context.netlify
   const siteId = site.id
   if (!siteId) {
     log('No site id found, please run inside a site folder or `netlify link`')
@@ -376,7 +428,7 @@ async function installAddons(functionAddons = [], fnPath) {
   ])
 
   const arr = functionAddons.map(async ({ addonName, addonDidInstall }) => {
-    log(`${NETLIFYDEVLOG} installing addon: ` + chalk.yellow.inverse(addonName))
+    log(`${NETLIFYDEVLOG} installing addon: ${chalk.yellow.inverse(addonName)}`)
     try {
       const addonCreated = await createFunctionAddon({
         api,
@@ -387,20 +439,8 @@ async function installAddons(functionAddons = [], fnPath) {
         log,
         error,
       })
-      if (addonCreated && addonDidInstall) {
-        await addEnvVariables(api, site)
-        const { confirmPostInstall } = await inquirer.prompt([
-          {
-            type: 'confirm',
-            name: 'confirmPostInstall',
-            message: `This template has an optional setup script that runs after addon install. This can be helpful for first time users to try out templates. Run the script?`,
-            default: false,
-          },
-        ])
-        if (confirmPostInstall) {
-          addonDidInstall(fnPath)
-        }
-      }
+
+      await handleAddonDidInstall({ addonCreated, addonDidInstall, context, fnPath })
     } catch (error_) {
       error(`${NETLIFYDEVERR} Error installing addon: `, error_)
     }
@@ -410,10 +450,10 @@ async function installAddons(functionAddons = [], fnPath) {
 
 // we used to allow for a --dir command,
 // but have retired that to force every scaffolded function to be a folder
-function ensureFunctionPathIsOk(functionsDir, name) {
+const ensureFunctionPathIsOk = function (context, functionsDir, name) {
   const functionPath = path.join(functionsDir, name)
   if (fs.existsSync(functionPath)) {
-    this.log(`${NETLIFYDEVLOG} Function ${functionPath} already exists, cancelling...`)
+    context.log(`${NETLIFYDEVLOG} Function ${functionPath} already exists, cancelling...`)
     process.exit(1)
   }
   return functionPath

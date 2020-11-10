@@ -1,13 +1,15 @@
-const chalk = require('chalk')
-const Command = require('../../utils/command')
-const { flags } = require('@oclif/command')
-const inquirer = require('inquirer')
-const fetch = require('node-fetch')
 const fs = require('fs')
 const path = require('path')
+const process = require('process')
 
-const { NETLIFYDEVWARN } = require('../../utils/logo')
+const { flags: flagsLib } = require('@oclif/command')
+const chalk = require('chalk')
+const inquirer = require('inquirer')
+const fetch = require('node-fetch')
+
+const Command = require('../../utils/command')
 const { getFunctions } = require('../../utils/get-functions')
+const { NETLIFYDEVWARN } = require('../../utils/logo')
 
 // https://www.netlify.com/docs/functions/#event-triggered-functions
 const eventTriggeredFunctions = new Set([
@@ -24,6 +26,9 @@ const eventTriggeredFunctions = new Set([
   'identity-signup',
   'identity-login',
 ])
+
+const DEFAULT_PORT = 8888
+
 class FunctionsInvokeCommand extends Command {
   async run() {
     const { flags, args } = this.parse(FunctionsInvokeCommand)
@@ -38,11 +43,11 @@ class FunctionsInvokeCommand extends Command {
 
     if (!flags.port)
       console.warn(
-        `${NETLIFYDEVWARN} "port" flag was not specified. Attempting to connect to localhost:8888 by default`
+        `${NETLIFYDEVWARN} "port" flag was not specified. Attempting to connect to localhost:8888 by default`,
       )
-    const port = flags.port || 8888
+    const port = flags.port || DEFAULT_PORT
 
-    const functions = getFunctions(functionsDir)
+    const functions = await getFunctions(functionsDir)
     const functionToTrigger = await getNameFromArgs(functions, args, flags)
 
     let headers = {}
@@ -58,10 +63,10 @@ class FunctionsInvokeCommand extends Command {
     if (eventTriggeredFunctions.has(functionToTrigger)) {
       /** handle event triggered fns  */
       // https://www.netlify.com/docs/functions/#event-triggered-functions
-      const parts = functionToTrigger.split('-')
-      if (parts[0] === 'identity') {
+      const [name, event] = functionToTrigger.split('-')
+      if (name === 'identity') {
         // https://www.netlify.com/docs/functions/#identity-event-functions
-        body.event = parts[1]
+        body.event = event
         body.user = {
           id: '1111a1a1-a11a-1111-aa11-aaa11111a11a',
           aud: '',
@@ -88,7 +93,7 @@ class FunctionsInvokeCommand extends Command {
       }
     } else {
       // NOT an event triggered function, but may still want to simulate authentication locally
-      let _isAuthed = false
+      let isAuthenticated = false
       if (typeof flags.identity === 'undefined') {
         const { isAuthed } = await inquirer.prompt([
           {
@@ -98,11 +103,11 @@ class FunctionsInvokeCommand extends Command {
             default: true,
           },
         ])
-        _isAuthed = isAuthed
+        isAuthenticated = isAuthed
       } else {
-        _isAuthed = flags.identity
+        isAuthenticated = flags.identity
       }
-      if (_isAuthed) {
+      if (isAuthenticated) {
         headers = {
           authorization:
             'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzb3VyY2UiOiJuZXRsaWZ5IGZ1bmN0aW9uczp0cmlnZ2VyIiwidGVzdERhdGEiOiJORVRMSUZZX0RFVl9MT0NBTExZX0VNVUxBVEVEX0pXVCJ9.Xb6vOFrfLUZmyUkXBbCvU4bM7q8tPilF0F03Wupap_c',
@@ -115,42 +120,40 @@ class FunctionsInvokeCommand extends Command {
       }
     }
     const payload = processPayloadFromFlag(flags.payload)
-    body = Object.assign({}, body, payload)
+    body = { ...body, ...payload }
 
     // fetch
-    fetch(`http://localhost:${port}/.netlify/functions/${functionToTrigger}` + formatQstring(flags.querystring), {
+    fetch(`http://localhost:${port}/.netlify/functions/${functionToTrigger}${formatQstring(flags.querystring)}`, {
       method: 'post',
       headers,
       body: JSON.stringify(body),
     })
-      .then(response => {
+      .then((response) => {
         let data
         data = response.text()
         try {
           // data = response.json();
           data = JSON.parse(data)
-          // eslint-disable-next-line no-empty
         } catch (error) {}
         return data
       })
       .then(console.log)
-      .catch(error => {
+      .catch((error) => {
         console.error('ran into an error invoking your function')
         console.error(error)
       })
   }
 }
 
-function formatQstring(querystring) {
+const formatQstring = function (querystring) {
   if (querystring) {
-    return '?' + querystring
-  } else {
-    return ''
+    return `?${querystring}`
   }
+  return ''
 }
 
 /** process payloads from flag */
-function processPayloadFromFlag(payloadString) {
+const processPayloadFromFlag = function (payloadString) {
   if (payloadString) {
     // case 1: jsonstring
     let payload = tryParseJSON(payloadString)
@@ -160,7 +163,9 @@ function processPayloadFromFlag(payloadString) {
     const pathexists = fs.existsSync(payloadpath)
     if (pathexists) {
       try {
-        payload = require(payloadpath) // there is code execution potential here
+        // there is code execution potential here
+        // eslint-disable-next-line node/global-require, import/no-dynamic-require
+        payload = require(payloadpath)
         return payload
       } catch (error) {
         console.error(error)
@@ -173,39 +178,48 @@ function processPayloadFromFlag(payloadString) {
 
 // prompt for a name if name not supplied
 // also used in functions:create
-async function getNameFromArgs(functions, args, flags) {
-  // let functionToTrigger = flags.name;
-  // const isValidFn = Object.keys(functions).includes(functionToTrigger);
-  if (flags.name && args.name) {
-    console.error('function name specified in both flag and arg format, pick one')
-    process.exit(1)
-  }
-  let functionToTrigger
-  if (flags.name && !args.name) functionToTrigger = flags.name
-  // use flag if exists
-  else if (!flags.name && args.name) functionToTrigger = args.name
+const getNameFromArgs = async function (functions, args, flags) {
+  const functionToTrigger = getFunctionToTrigger(args, flags)
+  const functionNames = functions.map(getFunctionName)
 
-  const isValidFn = Object.keys(functions).includes(functionToTrigger)
-  if (!functionToTrigger || !isValidFn) {
-    if (functionToTrigger && !isValidFn) {
-      console.warn(
-        `Function name ${chalk.yellow(
-          functionToTrigger
-        )} supplied but no matching function found in your functions folder, forcing you to pick a valid one...`
-      )
+  if (functionToTrigger) {
+    if (functionNames.includes(functionToTrigger)) {
+      return functionToTrigger
     }
-    const { trigger } = await inquirer.prompt([
-      {
-        type: 'list',
-        message: 'Pick a function to trigger',
-        name: 'trigger',
-        choices: Object.keys(functions),
-      },
-    ])
-    functionToTrigger = trigger
+
+    console.warn(
+      `Function name ${chalk.yellow(
+        functionToTrigger,
+      )} supplied but no matching function found in your functions folder, forcing you to pick a valid one...`,
+    )
   }
 
-  return functionToTrigger
+  const { trigger } = await inquirer.prompt([
+    {
+      type: 'list',
+      message: 'Pick a function to trigger',
+      name: 'trigger',
+      choices: functionNames,
+    },
+  ])
+  return trigger
+}
+
+const getFunctionToTrigger = function (args, flags) {
+  if (flags.name) {
+    if (args.name) {
+      console.error('function name specified in both flag and arg format, pick one')
+      process.exit(1)
+    }
+
+    return flags.name
+  }
+
+  return args.name
+}
+
+const getFunctionName = function ({ name }) {
+  return name
 }
 
 FunctionsInvokeCommand.description = `Trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions`
@@ -229,27 +243,27 @@ FunctionsInvokeCommand.args = [
 ]
 
 FunctionsInvokeCommand.flags = {
-  name: flags.string({
+  name: flagsLib.string({
     char: 'n',
     description: 'function name to invoke',
   }),
-  functions: flags.string({
+  functions: flagsLib.string({
     char: 'f',
     description: 'Specify a functions folder to parse, overriding netlify.toml',
   }),
-  querystring: flags.string({
+  querystring: flagsLib.string({
     char: 'q',
     description: 'Querystring to add to your function invocation',
   }),
-  payload: flags.string({
+  payload: flagsLib.string({
     char: 'p',
     description: 'Supply POST payload in stringified json, or a path to a json file',
   }),
-  identity: flags.boolean({
+  identity: flagsLib.boolean({
     description: 'simulate Netlify Identity authentication JWT. pass --no-identity to affirm unauthenticated request',
     allowNo: true,
   }),
-  port: flags.integer({
+  port: flagsLib.integer({
     description: 'Port where netlify dev is accessible. e.g. 8888',
   }),
   ...FunctionsInvokeCommand.flags,
@@ -258,18 +272,17 @@ FunctionsInvokeCommand.flags = {
 module.exports = FunctionsInvokeCommand
 
 // https://stackoverflow.com/questions/3710204/how-to-check-if-a-string-is-a-valid-json-string-in-javascript-without-using-try
-function tryParseJSON(jsonString) {
+const tryParseJSON = function (jsonString) {
   try {
-    var o = JSON.parse(jsonString)
+    const parsedValue = JSON.parse(jsonString)
 
     // Handle non-exception-throwing cases:
     // Neither JSON.parse(false) or JSON.parse(1234) throw errors, hence the type-checking,
     // but... JSON.parse(null) returns null, and typeof null === "object",
     // so we must check for that, too. Thankfully, null is falsey, so this suffices:
-    if (o && typeof o === 'object') {
-      return o
+    if (parsedValue && typeof parsedValue === 'object') {
+      return parsedValue
     }
-    // eslint-disable-next-line no-empty
   } catch (error) {}
 
   return false

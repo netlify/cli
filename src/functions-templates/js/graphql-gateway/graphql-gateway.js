@@ -4,15 +4,17 @@
  *
  * Of course, feel free to modify this gateway to suit your needs.
  */
+const process = require('process')
 
-const { introspectSchema, makeRemoteExecutableSchema, mergeSchemas } = require('graphql-tools')
 const { createHttpLink } = require('apollo-link-http')
-const fetch = require('node-fetch')
 const { ApolloServer } = require('apollo-server-lambda')
+const { introspectSchema, makeRemoteExecutableSchema, mergeSchemas } = require('graphql-tools')
+const fetch = require('node-fetch')
 
-exports.handler = async function(event, context) {
-  const schema1 = await getSchema('graphql-1') // other Netlify functions which are graphql lambdas
-  const schema2 = await getSchema('graphql-2') // other Netlify functions which are graphql lambdas
+const handler = async function (event, context) {
+  // other Netlify functions which are graphql lambdas
+  const schema1 = await getSchema('graphql-1')
+  const schema2 = await getSchema('graphql-2')
   const schemas = [schema1, schema2]
 
   /**
@@ -29,15 +31,16 @@ exports.handler = async function(event, context) {
     Book: {
       author: {
         fragment: `... on Book { authorName }`,
-        resolve(book, args, context, info) {
+        resolve(book, args, resolveContext, info) {
           return info.mergeInfo.delegateToSchema({
             schema: schema1,
             operation: 'query',
-            fieldName: 'authorByName', // reuse what's implemented in schema1
+            // reuse what's implemented in schema1
+            fieldName: 'authorByName',
             args: {
               name: book.authorName,
             },
-            context,
+            context: resolveContext,
             info,
           })
         },
@@ -57,14 +60,16 @@ exports.handler = async function(event, context) {
   })
 }
 
-async function getSchema(endpoint) {
+const getSchema = async function (endpoint) {
   // you can't use relative URLs within Netlify Functions so need a base URL
   // process.env.URL is one of many build env variables:
   // https://www.netlify.com/docs/continuous-deployment/#build-environment-variables
   // Netlify Dev only supports URL and DEPLOY URL for now
-  const uri = process.env.URL + '/.netlify/functions/' + endpoint
+  const uri = `${process.env.URL}/.netlify/functions/${endpoint}`
   const link = createHttpLink({ uri, fetch })
   const schema = await introspectSchema(link)
   const executableSchema = makeRemoteExecutableSchema({ schema, link })
   return executableSchema
 }
+
+module.exports = { handler }

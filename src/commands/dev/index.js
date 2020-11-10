@@ -1,25 +1,28 @@
-const path = require('path')
-const { flags } = require('@oclif/command')
 const childProcess = require('child_process')
-const waitPort = require('wait-port')
-const stripAnsiCc = require('strip-ansi-control-characters')
-const which = require('which')
-const { serverSettings } = require('../../utils/detect-server')
-const { startFunctionsServer } = require('../../utils/serve-functions')
-const Command = require('../../utils/command')
-const chalk = require('chalk')
-const openBrowser = require('../../utils/open-browser')
-const { NETLIFYDEV, NETLIFYDEVLOG, NETLIFYDEVWARN, NETLIFYDEVERR } = require('../../utils/logo')
+const path = require('path')
+const process = require('process')
+
+const { flags: flagsLib } = require('@oclif/command')
 const boxen = require('boxen')
+const chalk = require('chalk')
+const StaticServer = require('static-server')
+const stripAnsiCc = require('strip-ansi-control-characters')
+const waitPort = require('wait-port')
+const which = require('which')
+const wrapAnsi = require('wrap-ansi')
+
+const Command = require('../../utils/command')
+const { serverSettings } = require('../../utils/detect-server')
+const { getSiteInformation, addEnvVariables } = require('../../utils/dev')
 const { startLiveTunnel } = require('../../utils/live-tunnel')
-const { getEnvSettings } = require('../../utils/env')
+const { NETLIFYDEV, NETLIFYDEVLOG, NETLIFYDEVWARN, NETLIFYDEVERR } = require('../../utils/logo')
+const openBrowser = require('../../utils/open-browser')
 const { startProxy } = require('../../utils/proxy')
+const { startFunctionsServer } = require('../../utils/serve-functions')
 const { startForwardProxy } = require('../../utils/traffic-mesh')
 
-async function startFrameworkServer({ settings, log, exit }) {
+const startFrameworkServer = async function ({ settings, log, exit }) {
   if (settings.noCmd) {
-    const StaticServer = require('static-server')
-
     const server = new StaticServer({
       rootPath: settings.dist,
       name: 'netlify-dev',
@@ -29,8 +32,8 @@ async function startFrameworkServer({ settings, log, exit }) {
       },
     })
 
-    await new Promise(resolve => {
-      server.start(function() {
+    await new Promise((resolve) => {
+      server.start(function onListening() {
         log(`\n${NETLIFYDEVLOG} Server listening to`, settings.frameworkPort)
         resolve()
       })
@@ -39,10 +42,10 @@ async function startFrameworkServer({ settings, log, exit }) {
   }
 
   log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.framework || 'custom config'}`)
-  const commandBin = await which(settings.command).catch(error => {
+  const commandBin = await which(settings.command).catch((error) => {
     if (error.code === 'ENOENT') {
       throw new Error(
-        `"${settings.command}" could not be found in your PATH. Please make sure that "${settings.command}" is installed and available in your PATH`
+        `"${settings.command}" could not be found in your PATH. Please make sure that "${settings.command}" is installed and available in your PATH`,
       )
     }
     throw error
@@ -57,17 +60,17 @@ async function startFrameworkServer({ settings, log, exit }) {
 
   process.stdin.pipe(process.stdin)
 
-  function handleProcessExit(code) {
+  const handleProcessExit = function (code) {
     log(
       code > 0 ? NETLIFYDEVERR : NETLIFYDEVWARN,
-      `"${[settings.command, ...settings.args].join(' ')}" exited with code ${code}. Shutting down Netlify Dev server`
+      `"${[settings.command, ...settings.args].join(' ')}" exited with code ${code}. Shutting down Netlify Dev server`,
     )
     process.exit(code)
   }
   ps.on('close', handleProcessExit)
   ps.on('SIGINT', handleProcessExit)
   ps.on('SIGTERM', handleProcessExit)
-  ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach(signal =>
+  ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) => {
     process.on(signal, () => {
       try {
         process.kill(-ps.pid)
@@ -76,10 +79,10 @@ async function startFrameworkServer({ settings, log, exit }) {
       }
       process.exit()
     })
-  )
+  })
 
   try {
-    const open = await waitPort({ port: settings.frameworkPort, output: 'silent', timeout: 10 * 60 * 1000 })
+    const open = await waitPort({ port: settings.frameworkPort, output: 'silent', timeout: FRAMEWORK_PORT_TIMEOUT })
     if (!open) {
       throw new Error(`Timed out waiting for port '${settings.frameworkPort}' to be open`)
     }
@@ -92,29 +95,10 @@ async function startFrameworkServer({ settings, log, exit }) {
   return ps
 }
 
-const getAddonsUrlsAndAddEnvVariablesToProcessEnv = async ({ api, site, flags }) => {
-  if (site.id && !flags.offline) {
-    const { addEnvVariables } = require('../../utils/dev')
-    const addonUrls = await addEnvVariables(api, site)
-    return addonUrls
-  } else {
-    return {}
-  }
-}
+// 1 minute
+const FRAMEWORK_PORT_TIMEOUT = 6e5
 
-const addDotFileEnvs = async ({ site, log, warn }) => {
-  // add .env file environment variables
-  const envSettings = await getEnvSettings({ projectDir: site.root, warn })
-  if (envSettings.vars.length !== 0) {
-    log(
-      `${NETLIFYDEVLOG} Adding the following env variables from ${envSettings.files.map(f => chalk.blue(f))}:`,
-      chalk.yellow(envSettings.vars.map(([key]) => key))
-    )
-    envSettings.vars.forEach(([key, val]) => (process.env[key] = val))
-  }
-}
-
-const startProxyServer = async ({ flags, settings, site, log, exit, addonUrls }) => {
+const startProxyServer = async ({ flags, settings, site, log, exit, addonsUrls }) => {
   let url
   if (flags.trafficMesh) {
     url = await startForwardProxy({
@@ -124,13 +108,14 @@ const startProxyServer = async ({ flags, settings, site, log, exit, addonUrls })
       publishDir: settings.dist,
       log,
       debug: flags.debug,
+      locationDb: flags.locationDb,
     })
     if (!url) {
       log(NETLIFYDEVERR, `Unable to start forward proxy on port '${settings.port}'`)
       exit(1)
     }
   } else {
-    url = await startProxy(settings, addonUrls, site.configPath, site.root)
+    url = await startProxy(settings, addonsUrls, site.configPath, site.root)
     if (!url) {
       log(NETLIFYDEVERR, `Unable to start proxy server on port '${settings.port}'`)
       exit(1)
@@ -158,14 +143,16 @@ const reportAnalytics = async ({ config, settings }) => {
     payload: {
       command: 'dev',
       projectType: settings.framework || 'custom',
-      live: flags.live || false,
+      live: flagsLib.live || false,
     },
   })
 }
 
+const BANNER_LENGTH = 70
+
 const printBanner = ({ url, log }) => {
   // boxen doesnt support text wrapping yet https://github.com/sindresorhus/boxen/issues/16
-  const banner = require('wrap-ansi')(chalk.bold(`${NETLIFYDEVLOG} Server now ready on ${url}`), 70)
+  const banner = wrapAnsi(chalk.bold(`${NETLIFYDEVLOG} Server now ready on ${url}`), BANNER_LENGTH)
 
   log(
     boxen(banner, {
@@ -173,7 +160,7 @@ const printBanner = ({ url, log }) => {
       margin: 1,
       align: 'center',
       borderColor: '#00c7b7',
-    })
+    }),
   )
 }
 
@@ -193,9 +180,15 @@ class DevCommand extends Command {
       ...flags,
     }
 
-    const addonUrls = await getAddonsUrlsAndAddEnvVariablesToProcessEnv({ api, site, flags })
-    process.env.NETLIFY_DEV = 'true'
-    await addDotFileEnvs({ site, log, warn })
+    const { addonsUrls, teamEnv, addonsEnv, siteEnv, dotFilesEnv } = await getSiteInformation({
+      flags,
+      api,
+      site,
+      warn,
+      error: errorExit,
+    })
+
+    await addEnvVariables({ log, teamEnv, addonsEnv, siteEnv, dotFilesEnv })
 
     let settings = {}
     try {
@@ -208,7 +201,7 @@ class DevCommand extends Command {
     await startFunctionsServer({ settings, site, log, warn, errorExit, siteInfo: this.netlify.cachedConfig.siteInfo })
     await startFrameworkServer({ settings, log, exit })
 
-    let url = await startProxyServer({ flags, settings, site, log, exit, addonUrls })
+    let url = await startProxyServer({ flags, settings, site, log, exit, addonsUrls })
 
     const liveTunnelUrl = await handleLiveTunnel({ flags, site, api, settings, log })
     url = liveTunnelUrl || url
@@ -219,7 +212,8 @@ class DevCommand extends Command {
 
     await reportAnalytics({ config: this.config, settings })
 
-    process.env.DEPLOY_URL = process.env.URL = url
+    process.env.URL = url
+    process.env.DEPLOY_URL = url
 
     printBanner({ url, log })
   }
@@ -234,41 +228,46 @@ DevCommand.examples = ['$ netlify dev', '$ netlify dev -c "yarn start"', '$ netl
 DevCommand.strict = false
 
 DevCommand.flags = {
-  command: flags.string({
+  command: flagsLib.string({
     char: 'c',
     description: 'command to run',
   }),
-  port: flags.integer({
+  port: flagsLib.integer({
     char: 'p',
     description: 'port of netlify dev',
   }),
-  targetPort: flags.integer({
+  targetPort: flagsLib.integer({
     description: 'port of target app server',
   }),
-  staticServerPort: flags.integer({
+  staticServerPort: flagsLib.integer({
     description: 'port of the static app server used when no framework is detected',
     hidden: true,
   }),
-  dir: flags.string({
+  dir: flagsLib.string({
     char: 'd',
     description: 'dir with static files',
   }),
-  functions: flags.string({
+  functions: flagsLib.string({
     char: 'f',
-    description: 'Specify a functions folder to serve',
+    description: 'specify a functions folder to serve',
   }),
-  offline: flags.boolean({
+  offline: flagsLib.boolean({
     char: 'o',
     description: 'disables any features that require network access',
   }),
-  live: flags.boolean({
+  live: flagsLib.boolean({
     char: 'l',
-    description: 'Start a public live session',
+    description: 'start a public live session',
   }),
-  trafficMesh: flags.boolean({
+  trafficMesh: flagsLib.boolean({
     char: 't',
     hidden: true,
-    description: 'Uses Traffic Mesh for proxying requests',
+    description: 'uses Traffic Mesh for proxying requests',
+  }),
+  locationDb: flagsLib.string({
+    description: 'specify the path to a local GeoIP location database in MMDB format',
+    char: 'g',
+    hidden: true,
   }),
   ...DevCommand.flags,
 }

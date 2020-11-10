@@ -1,32 +1,36 @@
-const fetch = require('node-fetch')
-const execa = require('execa')
+const process = require('process')
+
 const chalk = require('chalk')
-const { NETLIFYDEVLOG, NETLIFYDEVERR } = require('./logo')
-const { getPathInHome } = require('../lib/settings')
+const execa = require('execa')
+const fetch = require('node-fetch')
+
 const { shouldFetchLatestVersion, fetchLatestVersion } = require('../lib/exec-fetcher')
+const { getPathInHome } = require('../lib/settings')
+
+const { NETLIFYDEVLOG, NETLIFYDEVERR } = require('./logo')
 
 const PACKAGE_NAME = 'live-tunnel-client'
 const EXEC_NAME = PACKAGE_NAME
 
-async function createTunnel({ siteId, netlifyApiToken, log }) {
+const createTunnel = async function ({ siteId, netlifyApiToken, log }) {
   await installTunnelClient(log)
 
   if (!siteId) {
     console.error(
       `${NETLIFYDEVERR} Error: no siteId defined, did you forget to run ${chalk.yellow(
-        'netlify init'
-      )} or ${chalk.yellow('netlify link')}?`
+        'netlify init',
+      )} or ${chalk.yellow('netlify link')}?`,
     )
     process.exit(1)
   }
-  log(`${NETLIFYDEVLOG} Creating Live Tunnel for ` + siteId)
+  log(`${NETLIFYDEVLOG} Creating Live Tunnel for ${siteId}`)
   const url = `https://api.netlify.com/api/v1/live_sessions?site_id=${siteId}`
 
   const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${netlifyApiToken}`,
+      Authorization: `Bearer ${netlifyApiToken}`,
     },
     body: JSON.stringify({}),
   })
@@ -40,7 +44,7 @@ async function createTunnel({ siteId, netlifyApiToken, log }) {
   return data
 }
 
-function connectTunnel({ session, netlifyApiToken, localPort, log }) {
+const connectTunnel = function ({ session, netlifyApiToken, localPort, log }) {
   const execPath = getPathInHome(['tunnel', 'bin', EXEC_NAME])
   const args = ['connect', '-s', session.id, '-t', netlifyApiToken, '-l', localPort]
   if (process.env.DEBUG) {
@@ -49,12 +53,12 @@ function connectTunnel({ session, netlifyApiToken, localPort, log }) {
   }
 
   const ps = execa(execPath, args, { stdio: 'inherit' })
-  ps.on('close', code => process.exit(code))
+  ps.on('close', (code) => process.exit(code))
   ps.on('SIGINT', process.exit)
   ps.on('SIGTERM', process.exit)
 }
 
-async function installTunnelClient(log) {
+const installTunnelClient = async function (log) {
   const binPath = getPathInHome(['tunnel', 'bin'])
   const shouldFetch = await shouldFetchLatestVersion({
     binPath,

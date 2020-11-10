@@ -1,7 +1,11 @@
-const Command = require('../../utils/command')
-const { flags } = require('@oclif/command')
+const process = require('process')
+
+const { flags: flagsLib } = require('@oclif/command')
 const AsciiTable = require('ascii-table')
+
+const Command = require('../../utils/command')
 const { getFunctions } = require('../../utils/get-functions')
+
 class FunctionsListCommand extends Command {
   async run() {
     const { flags } = this.parse(FunctionsListCommand)
@@ -18,11 +22,13 @@ class FunctionsListCommand extends Command {
     try {
       siteData = await api.getSite({ siteId })
     } catch (error) {
-      if (error.status === 401 /* unauthorized */) {
+      // unauthorized
+      if (error.status === 401) {
         this.warn(`Log in with a different account or re-link to a site you have permission for`)
         this.error(`Not authorized to view the currently linked site (${siteId})`)
       }
-      if (error.status === 404 /* missing */) {
+      // missing
+      if (error.status === 404) {
         this.error(`The site this folder is linked to can't be found`)
       }
       this.error(error)
@@ -52,38 +58,33 @@ class FunctionsListCommand extends Command {
       process.exit(1)
     }
 
-    const functions = getFunctions(functionsDir)
-    const functionData = Object.entries(functions)
+    const functions = await getFunctions(functionsDir)
+    const normalizedFunctions = functions.map(normalizeFunction.bind(null, deployedFunctions))
 
-    if (functionData.length === 0) {
+    if (normalizedFunctions.length === 0) {
       this.log(`No functions found in ${functionsDir}`)
       this.exit()
     }
 
     if (flags.json) {
-      const jsonData = functionData.map(([functionName, { moduleDir }]) => {
-        const isDeployed = deployedFunctions.map(({ n }) => n).includes(functionName)
-        return {
-          name: functionName,
-          url: `/.netlify/functions/${functionName}`,
-          moduleDir,
-          isDeployed,
-        }
-      })
-      this.logJson(jsonData)
+      this.logJson(normalizedFunctions)
       this.exit()
     }
 
     // Make table
     this.log(`Based on local functions folder ${functionsDir}, these are the functions detected`)
-    var table = new AsciiTable(`Netlify Functions (in local functions folder)`)
-    table.setHeading('Name', 'Url', 'moduleDir', 'deployed')
-    functionData.forEach(([functionName, { moduleDir }]) => {
-      const isDeployed = deployedFunctions.map(({ n }) => n).includes(functionName)
-      table.addRow(functionName, `/.netlify/functions/${functionName}`, moduleDir, isDeployed ? 'yes' : 'no')
+    const table = new AsciiTable(`Netlify Functions (in local functions folder)`)
+    table.setHeading('Name', 'URL', 'deployed')
+    normalizedFunctions.forEach(({ name, url, isDeployed }) => {
+      table.addRow(name, url, isDeployed ? 'yes' : 'no')
     })
     this.log(table.toString())
   }
+}
+
+const normalizeFunction = function (deployedFunctions, { name, urlPath: url }) {
+  const isDeployed = deployedFunctions.some((deployedFunction) => deployedFunction.n === name)
+  return { name, url, isDeployed }
 }
 
 FunctionsListCommand.description = `List functions that exist locally
@@ -94,15 +95,15 @@ NOT the same as listing the functions that have been deployed. For that info you
 `
 FunctionsListCommand.aliases = ['function:list']
 FunctionsListCommand.flags = {
-  name: flags.string({
+  name: flagsLib.string({
     char: 'n',
     description: 'name to print',
   }),
-  functions: flags.string({
+  functions: flagsLib.string({
     char: 'f',
     description: 'Specify a functions folder to serve',
   }),
-  json: flags.boolean({
+  json: flagsLib.boolean({
     description: 'Output function data as JSON',
   }),
   ...FunctionsListCommand.flags,

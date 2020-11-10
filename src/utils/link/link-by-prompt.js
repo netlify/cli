@@ -1,7 +1,9 @@
 const path = require('path')
-const inquirer = require('inquirer')
+
 const chalk = require('chalk')
+const inquirer = require('inquirer')
 const isEmpty = require('lodash.isempty')
+
 const getRepoData = require('../get-repo-data')
 const { track } = require('../telemetry')
 
@@ -59,12 +61,11 @@ module.exports = async function linkPrompts(context, flags = {}) {
 
       if (isEmpty(sites)) {
         context.error(
-          new Error(`You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
+          new Error(`You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`),
         )
       }
 
-      const matchingSites = sites.filter(s => {
-        const buildSettings = s.build_settings || {}
+      const matchingSites = sites.filter(({ build_settings: buildSettings = {} }) => {
         return repoUrl === buildSettings.repo_url
       })
 
@@ -83,7 +84,8 @@ Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
 
       // Matches a single site hooray!
       if (matchingSites.length === 1) {
-        site = matchingSites[0]
+        const [firstSite] = matchingSites
+        site = firstSite
       } else if (matchingSites.length > 1) {
         // Matches multiple sites. Users must choose which to link.
         console.log(`Found ${matchingSites.length} matching sites!`)
@@ -94,9 +96,9 @@ Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
             type: 'list',
             name: 'selectedSite',
             message: 'Which site do you want to link?',
-            choices: matchingSites.map(site => ({
-              name: `${site.name} - ${site.ssl_url}`,
-              value: site,
+            choices: matchingSites.map((matchingSite) => ({
+              name: `${matchingSite.name} - ${matchingSite.ssl_url}`,
+              value: matchingSite,
             })),
           },
         ])
@@ -148,7 +150,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
             name: 'selectedSite',
             message: 'Which site do you want to link?',
             paginated: true,
-            choices: matchingSites.map(site => ({ name: site.name, value: site })),
+            choices: matchingSites.map((matchingSite) => ({ name: matchingSite.name, value: matchingSite })),
           },
         ])
         if (!selectedSite) {
@@ -156,7 +158,8 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
         }
         site = selectedSite
       } else {
-        site = matchingSites[0]
+        const [firstSite] = matchingSites
+        site = firstSite
       }
       break
     }
@@ -182,7 +185,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
           name: 'selectedSite',
           message: 'Which site do you want to link?',
           paginated: true,
-          choices: sites.map(site => ({ name: site.name, value: site })),
+          choices: sites.map((matchingSite) => ({ name: matchingSite.name, value: matchingSite })),
         },
       ])
       if (!selectedSite) {
@@ -212,6 +215,8 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
       }
       break
     }
+    default:
+      return
   }
 
   if (!site) {

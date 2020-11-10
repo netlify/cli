@@ -1,11 +1,12 @@
-const Command = require('../../utils/command')
-const { parseRawFlags } = require('../../utils/parse-raw-flags')
-const { requiredConfigValues, missingConfigValues, updateConfigValues } = require('../../utils/addons/validation')
-const generatePrompts = require('../../utils/addons/prompts')
-const render = require('../../utils/addons/render')
 const chalk = require('chalk')
 const inquirer = require('inquirer')
+
 const { prepareAddonCommand, ADDON_VALIDATION } = require('../../utils/addons/prepare')
+const generatePrompts = require('../../utils/addons/prompts')
+const render = require('../../utils/addons/render')
+const { requiredConfigValues, missingConfigValues, updateConfigValues } = require('../../utils/addons/validation')
+const Command = require('../../utils/command')
+const { parseRawFlags } = require('../../utils/parse-raw-flags')
 
 const createAddon = async ({ api, siteId, addonName, config, siteData, log, error }) => {
   try {
@@ -63,7 +64,7 @@ class AddonsCreateCommand extends Command {
         if (missingValues.length !== 0) {
           /* Warn user of missing required values */
           this.log(
-            `${chalk.redBright.underline.bold(`Error: Missing required configuration for "${addonName} add-on"`)}`
+            `${chalk.redBright.underline.bold(`Error: Missing required configuration for "${addonName} add-on"`)}`,
           )
           this.log()
           render.missingValues(missingValues, manifest)
@@ -102,7 +103,7 @@ class AddonsCreateCommand extends Command {
       configValues = updateConfigValues(manifest.config, rawFlags, userInput)
       const missingRequiredValues = missingConfigValues(required, configValues)
       if (missingRequiredValues && missingRequiredValues.length !== 0) {
-        missingRequiredValues.forEach(val => {
+        missingRequiredValues.forEach((val) => {
           this.log(`Missing required value "${val}". Please run the command again`)
         })
         return false
