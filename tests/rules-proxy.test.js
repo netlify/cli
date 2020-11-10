@@ -20,6 +20,8 @@ test.before(async (t) => {
   const rewriter = await createRewriter({
     distDir: builder.directory,
     projectDir: builder.directory,
+    jwtSecret: '',
+    jwtRoleClaim: '',
     configPath: path.join(builder.directory, 'netlify.toml'),
   })
   const port = await getPort({ port: PORT })

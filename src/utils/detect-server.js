@@ -172,6 +172,7 @@ const serverSettings = async (devConfig, flags, projectDir, log) => {
     throw new Error(`Could not acquire required "port": ${triedPort}`)
   }
 
+  settings.jwtSecret = devConfig.jwtSecret || 'secret'
   settings.jwtRolePath = devConfig.jwtRolePath || 'app_metadata.authorization.roles'
   settings.functions = devConfig.functions || settings.functions
   if (settings.functions) {

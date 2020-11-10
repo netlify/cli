@@ -187,7 +187,8 @@ const serveRedirect = async function ({ req, res, proxy, match, options }) {
   if (staticFile) req.url = staticFile + reqUrl.search
   if (match.force404) {
     res.writeHead(404)
-    return render404(options.publicFolder)
+    res.end(await render404(options.publicFolder))
+    return
   }
 
   if (match.force || !staticFile || !options.framework || req.method === 'POST') {
@@ -327,7 +328,8 @@ const startProxy = async function (settings, addonsUrls, configPath, projectDir)
 
   const rewriter = await createRewriter({
     distDir: settings.dist,
-    jwtRole: settings.jwtRolePath,
+    jwtSecret: settings.jwtSecret,
+    jwtRoleClaim: settings.jwtRolePath,
     configPath,
     projectDir,
   })
