@@ -171,7 +171,6 @@ const serveRedirect = async function ({ req, res, proxy, match, options }) {
         // Restore the URL if everything is correct
         if (presentedRoles.some((pr) => expectedRoles.has(pr))) {
           req.url = originalURL
-          match.force404 = false
         }
       }
     }
@@ -329,7 +328,8 @@ const startProxy = async function (settings, addonsUrls, configPath, projectDir)
 
   const rewriter = await createRewriter({
     distDir: settings.dist,
-    jwtRole: settings.jwtRolePath,
+    jwtSecret: settings.jwtSecret,
+    jwtRoleClaim: settings.jwtRolePath,
     configPath,
     projectDir,
   })

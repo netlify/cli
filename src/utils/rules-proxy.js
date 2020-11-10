@@ -51,7 +51,7 @@ const getCountry = function () {
   return 'us'
 }
 
-const createRewriter = async function ({ distDir, projectDir, jwtSecret, jwtRole, configPath }) {
+const createRewriter = async function ({ distDir, projectDir, jwtSecret, jwtRoleClaim, configPath }) {
   let matcher = null
   const configFiles = [
     ...new Set(
@@ -76,8 +76,8 @@ const createRewriter = async function ({ distDir, projectDir, jwtSecret, jwtRole
 
     if (rules.length !== 0) {
       return (matcher = await redirector.parseJSON(JSON.stringify(rules), {
-        jwtSecret: jwtSecret || 'secret',
-        jwtRole: jwtRole || 'app_metadata.authorization.roles',
+        jwtSecret,
+        jwtRoleClaim,
       }))
     }
     return {
@@ -109,6 +109,9 @@ const createRewriter = async function ({ distDir, projectDir, jwtSecret, jwtRole
       path: reqUrl.pathname,
       query: reqUrl.search.slice(1),
       headers,
+      // passing an empty object for cookies is required due to a bug in netlify-redirector
+      // actual cookie values are retrieved via getCookie
+      cookies: {},
       cookieValues,
       getHeader: (name) => headers[name.toLowerCase()] || '',
       getCookie: (key) => cookieValues[key] || '',
