@@ -107,7 +107,7 @@ const forwardMessagesToLog = ({ log, subprocess }) => {
         case 'bundle:start':
           currentId = id
           if (!spinner) {
-            spinner = startSpinner({ text: 'Bundling edge handlers...' })
+            spinner = startSpinner({ text: 'Bundling Edge Handlers...' })
           }
           break
 
