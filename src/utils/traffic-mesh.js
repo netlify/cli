@@ -117,7 +117,7 @@ const forwardMessagesToLog = ({ log, subprocess }) => {
           }
 
           firstBundleResolve()
-          stopSpinner({ spinner, error: false, text: 'Done.' })
+          stopSpinner({ spinner, error: false, text: 'Done bundling Edge Handlers' })
           reset()
           break
 
