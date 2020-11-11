@@ -5,7 +5,7 @@ const { format, inspect } = require('util')
 const resolveConfig = require('@netlify/config')
 const { Command, flags: flagsLib } = require('@oclif/command')
 const oclifParser = require('@oclif/parser')
-const merge = require('lodash.merge')
+const merge = require('lodash/merge')
 const argv = require('minimist')(process.argv.slice(2))
 const API = require('netlify')
 

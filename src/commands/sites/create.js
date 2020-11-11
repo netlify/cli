@@ -1,8 +1,8 @@
 const { flags: flagsLib } = require('@oclif/command')
 const chalk = require('chalk')
 const inquirer = require('inquirer')
-const pick = require('lodash.pick')
-const sample = require('lodash.sample')
+const pick = require('lodash/pick')
+const sample = require('lodash/sample')
 const parseGitRemote = require('parse-github-url')
 const prettyjson = require('prettyjson')
 

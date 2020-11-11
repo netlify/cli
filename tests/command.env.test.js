@@ -1,8 +1,8 @@
 const process = require('process')
 
 const test = require('ava')
-const isEmpty = require('lodash.isempty')
-const isObject = require('lodash.isobject')
+const isEmpty = require('lodash/isEmpty')
+const isObject = require('lodash/isObject')
 
 const callCli = require('./utils/call-cli')
 const { generateSiteName, createLiveTestSite } = require('./utils/create-live-test-site')
