@@ -23,7 +23,8 @@ const createLiveTestSite = async function (siteName) {
   if (!Array.isArray(accounts) || accounts.length <= 0) {
     throw new Error(`Can't find suitable account to create a site`)
   }
-  const accountSlug = accounts[0].slug
+  const [account] = accounts
+  const accountSlug = account.slug
   console.log(`Using account ${accountSlug} to create site: ${siteName}`)
   const cliResponse = await callCli(['sites:create', '--name', siteName, '--account-slug', accountSlug])
 
@@ -36,7 +37,7 @@ const createLiveTestSite = async function (siteName) {
   if (matches && Object.prototype.hasOwnProperty.call(matches, 1) && matches[1]) {
     const [, siteId] = matches
     console.log(`Done creating site ${siteName} for account '${accountSlug}'. Site Id: ${siteId}`)
-    return siteId
+    return { siteId, account }
   }
 
   throw new Error(`Failed creating site: ${cliResponse}`)

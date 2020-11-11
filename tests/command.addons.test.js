@@ -10,7 +10,7 @@ const siteName = generateSiteName('netlify-test-addons-')
 
 if (process.env.IS_FORK !== 'true') {
   test.before(async (t) => {
-    const siteId = await createLiveTestSite(siteName)
+    const { siteId } = await createLiveTestSite(siteName)
     const builder = createSiteBuilder({ siteName: 'site-with-addons' })
     await builder.buildAsync()
 

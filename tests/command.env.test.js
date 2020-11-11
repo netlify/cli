@@ -67,7 +67,7 @@ const getArgsFromState = function (state) {
 
 if (process.env.IS_FORK !== 'true') {
   test.before(async (t) => {
-    const siteId = await createLiveTestSite(siteName)
+    const { siteId } = await createLiveTestSite(siteName)
     const builder = createSiteBuilder({ siteName: 'site-with-env-vars' })
       .withEnvFile({
         path: ENV_FILE_NAME,
