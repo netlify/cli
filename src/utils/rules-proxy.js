@@ -109,9 +109,6 @@ const createRewriter = async function ({ distDir, projectDir, jwtSecret, jwtRole
       path: reqUrl.pathname,
       query: reqUrl.search.slice(1),
       headers,
-      // passing an empty object for cookies is required due to a bug in netlify-redirector
-      // actual cookie values are retrieved via getCookie
-      cookies: {},
       cookieValues,
       getHeader: (name) => headers[name.toLowerCase()] || '',
       getCookie: (key) => cookieValues[key] || '',
