@@ -1,6 +1,7 @@
 const process = require('process')
 
 const test = require('ava')
+const dotProp = require('dot-prop')
 const fetch = require('node-fetch')
 const omit = require('omit.js').default
 
@@ -37,8 +38,9 @@ const validateDeploy = async ({ deploy, siteName, content, t }) => {
 
 if (process.env.IS_FORK !== 'true') {
   test.before(async (t) => {
-    const siteId = await createLiveTestSite(SITE_NAME)
+    const { siteId, account } = await createLiveTestSite(SITE_NAME)
     t.context.siteId = siteId
+    t.context.account = account
   })
 
   test.serial('should deploy site when dir flag is passed', async (t) => {
@@ -91,6 +93,14 @@ if (process.env.IS_FORK !== 'true') {
   const EDGE_HANDLER_MIN_LENGTH = 50
   if (version >= EDGE_HANDLER_MIN_VERSION) {
     test.serial('should deploy edge handlers when directory exists', async (t) => {
+      const {
+        context: { account },
+      } = t
+      const supportsEdgeHandlers = dotProp.get(account, 'capabilities.edge_handlers.included')
+      if (!supportsEdgeHandlers) {
+        console.warn(`Skipping edge handlers deploy test for account ${account.slug}`)
+        return
+      }
       await withSiteBuilder('site-with-public-folder', async (builder) => {
         const content = '<h1>⊂◉‿◉つ</h1>'
         builder
