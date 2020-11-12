@@ -94,8 +94,6 @@ class SitesDeleteCommand extends Command {
   }
 }
 
-SitesDeleteCommand.usage = `netlify sites:delete {site-id}`
-
 SitesDeleteCommand.description = `Delete a site
 
 This command will permanently delete the site on Netlify. Use with caution.
