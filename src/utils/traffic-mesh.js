@@ -131,7 +131,7 @@ const forwardMessagesToLog = ({ log, subprocess }) => {
             error: true,
             text: (error && error.msg) || 'Failed bundling Edge Handlers',
           })
-          log(`${NETLIFYDEVLOG} Change any project file to trigger a re-bundle`)
+          log(`${NETLIFYDEVLOG} Change any Edge Handlers file to trigger a re-bundle`)
           reset()
           break
 
