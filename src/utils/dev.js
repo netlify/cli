@@ -2,6 +2,9 @@ const process = require('process')
 
 const fromEntries = require('@ungap/from-entries')
 const chalk = require('chalk')
+const isEmpty = require('lodash/isEmpty')
+
+const { supportsBackgroundFunctions } = require('../lib/account')
 
 const { loadDotEnvFiles } = require('./dot-env')
 const { NETLIFYDEVLOG } = require('./logo')
@@ -9,21 +12,16 @@ const { NETLIFYDEVLOG } = require('./logo')
 const ERROR_CALL_TO_ACTION =
   "Double-check your login status with 'netlify status' or contact support with details of your error."
 
-const getSiteData = async ({ api, site, failAndExit }) => {
-  try {
-    const siteData = await api.getSite({ siteId: site.id })
-    return siteData
-  } catch (error) {
-    failAndExit(
-      `Failed retrieving site data for site ${chalk.yellow(site.id)}: ${error.message}. ${ERROR_CALL_TO_ACTION}`,
-    )
+const validateSiteInfo = ({ site, siteInfo, failAndExit }) => {
+  if (isEmpty(siteInfo)) {
+    failAndExit(`Failed retrieving site information for site ${chalk.yellow(site.id)}. ${ERROR_CALL_TO_ACTION}`)
   }
 }
 
 const getAccounts = async ({ api, failAndExit }) => {
   try {
-    const account = await api.listAccountsForUser()
-    return account
+    const accounts = await api.listAccountsForUser()
+    return accounts
   } catch (error) {
     failAndExit(`Failed retrieving user account: ${error.message}. ${ERROR_CALL_TO_ACTION}`)
   }
@@ -38,50 +36,64 @@ const getAddons = async ({ api, site, failAndExit }) => {
   }
 }
 
-const getAddonsInformation = ({ siteData, addons }) => {
-  const urls = fromEntries(addons.map((addon) => [addon.service_slug, `${siteData.ssl_url}${addon.service_path}`]))
+const getAddonsInformation = ({ siteInfo, addons }) => {
+  const urls = fromEntries(addons.map((addon) => [addon.service_slug, `${siteInfo.ssl_url}${addon.service_path}`]))
   const env = Object.assign({}, ...addons.map((addon) => addon.env))
   return { urls, env }
 }
 
-const getTeamEnv = ({ siteData, accounts }) => {
-  const siteAccount = accounts.find((account) => account.slug === siteData.account_slug)
-  if (siteAccount && siteAccount.site_env) {
-    return siteAccount.site_env
+const getSiteAccount = ({ siteInfo, accounts, warn }) => {
+  const siteAccount = accounts.find((account) => account.slug === siteInfo.account_slug)
+  if (!siteAccount) {
+    warn(`Could not find account for site '${siteInfo.name}' with account slug '${siteInfo.account_slug}'`)
+    return {}
+  }
+  return siteAccount
+}
+
+const getTeamEnv = ({ account }) => {
+  if (account.site_env) {
+    return account.site_env
   }
   return {}
 }
 
-const getSiteEnv = ({ siteData }) => {
-  if (siteData.build_settings && siteData.build_settings.env) {
-    return siteData.build_settings.env
+const getSiteEnv = ({ siteInfo }) => {
+  if (siteInfo.build_settings && siteInfo.build_settings.env) {
+    return siteInfo.build_settings.env
   }
   return {}
 }
 
-const getSiteInformation = async ({ flags = {}, api, site, warn, error: failAndExit }) => {
+const getSiteInformation = async ({ flags = {}, api, site, warn, error: failAndExit, siteInfo }) => {
   if (site.id && !flags.offline) {
-    const [siteData, accounts, addons, dotFilesEnv] = await Promise.all([
-      getSiteData({ api, site, failAndExit }),
+    validateSiteInfo({ site, siteInfo, failAndExit })
+    const [accounts, addons, dotFilesEnv] = await Promise.all([
       getAccounts({ api, failAndExit }),
       getAddons({ api, site, failAndExit }),
       loadDotEnvFiles({ projectDir: site.root, warn }),
     ])
 
-    const { urls: addonsUrls, env: addonsEnv } = getAddonsInformation({ siteData, addons })
-    const teamEnv = getTeamEnv({ siteData, accounts })
-    const siteEnv = getSiteEnv({ siteData })
+    const { urls: addonsUrls, env: addonsEnv } = getAddonsInformation({ siteInfo, addons })
+    const account = getSiteAccount({ siteInfo, accounts, warn })
+    const teamEnv = getTeamEnv({ account })
+    const siteEnv = getSiteEnv({ siteInfo })
+
     return {
       addonsUrls,
       teamEnv,
       addonsEnv,
       siteEnv,
       dotFilesEnv,
+      siteUrl: siteInfo.ssl_url,
+      capabilities: {
+        backgroundFunctions: supportsBackgroundFunctions(account),
+      },
     }
   }
 
   const dotFilesEnv = await loadDotEnvFiles({ projectDir: site.root, warn })
-  return { addonsUrls: {}, teamEnv: {}, addonsEnv: {}, siteEnv: {}, dotFilesEnv }
+  return { addonsUrls: {}, teamEnv: {}, addonsEnv: {}, siteEnv: {}, dotFilesEnv, siteUrl: '', capabilities: {} }
 }
 
 // if first arg is undefined, use default, but tell user about it in case it is unintentional

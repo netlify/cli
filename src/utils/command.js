@@ -5,7 +5,7 @@ const { format, inspect } = require('util')
 const resolveConfig = require('@netlify/config')
 const { Command, flags: flagsLib } = require('@oclif/command')
 const oclifParser = require('@oclif/parser')
-const merge = require('lodash.merge')
+const merge = require('lodash/merge')
 const argv = require('minimist')(process.argv.slice(2))
 const API = require('netlify')
 
@@ -54,7 +54,7 @@ class BaseCommand extends Command {
     const state = new StateConfig(cwd)
 
     const cachedConfig = await this.getConfig(cwd, state, token)
-    const { configPath, config, buildDir } = cachedConfig
+    const { configPath, config, buildDir, siteInfo } = cachedConfig
 
     const { flags } = this.parse(BaseCommand)
     const agent = await getAgent({
@@ -85,6 +85,8 @@ class BaseCommand extends Command {
           state.set('siteId', id)
         },
       },
+      // Site information retrieved using the API
+      siteInfo,
       // Configuration from netlify.[toml/yml]
       config,
       // Used to avoid calling @neltify/config again

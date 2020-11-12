@@ -3,7 +3,7 @@ const fs = require('fs')
 const { flags: flagsLib } = require('@oclif/command')
 const AsciiTable = require('ascii-table')
 const dotenv = require('dotenv')
-const isEmpty = require('lodash.isempty')
+const isEmpty = require('lodash/isEmpty')
 
 const Command = require('../../utils/command')
 

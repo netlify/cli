@@ -11,7 +11,7 @@ const express = require('express')
 const expressLogging = require('express-logging')
 const jwtDecode = require('jwt-decode')
 const lambdaLocal = require('lambda-local')
-const debounce = require('lodash.debounce')
+const debounce = require('lodash/debounce')
 const multiparty = require('multiparty')
 const getRawBody = require('raw-body')
 const winston = require('winston')
@@ -20,11 +20,12 @@ const { detectFunctionsBuilder } = require('./detect-functions-builder')
 const { getFunctions } = require('./get-functions')
 const { NETLIFYDEVLOG, NETLIFYDEVWARN, NETLIFYDEVERR } = require('./logo')
 
+const formatLambdaLocalError = (err) => `${err.errorType}: ${err.errorMessage}\n  ${err.stackTrace.join('\n  ')}`
+
 const handleErr = function (err, response) {
   response.statusCode = 500
-  response.write(`${NETLIFYDEVERR} Function invocation failed: ${err.toString()}`)
-  response.end()
-  console.log(`${NETLIFYDEVERR} Error during invocation:`, err)
+  const errorString = typeof err === 'string' ? err : formatLambdaLocalError(err)
+  response.end(errorString)
 }
 
 const formatLambdaError = (err) => chalk.red(`${err.errorType}: ${err.errorMessage}`)
@@ -35,24 +36,32 @@ const capitalize = function (t) {
   return t.replace(/(^\w|\s\w)/g, (string) => string.toUpperCase())
 }
 
+const validateLambdaResponse = (lambdaResponse) => {
+  if (lambdaResponse === undefined) {
+    return { error: 'lambda response was undefined. check your function code again' }
+  }
+  if (!Number(lambdaResponse.statusCode)) {
+    return {
+      error: `Your function response must have a numerical statusCode. You gave: $ ${lambdaResponse.statusCode}`,
+    }
+  }
+  if (lambdaResponse.body && typeof lambdaResponse.body !== 'string') {
+    return { error: `Your function response must have a string body. You gave: ${lambdaResponse.body}` }
+  }
+
+  return {}
+}
+
 const createSynchronousFunctionCallback = function (response) {
   return function callbackHandler(err, lambdaResponse) {
     if (err) {
       return handleErr(err, response)
     }
-    if (lambdaResponse === undefined) {
-      return handleErr('lambda response was undefined. check your function code again.', response)
-    }
-    if (!Number(lambdaResponse.statusCode)) {
-      console.log(
-        `${NETLIFYDEVERR} Your function response must have a numerical statusCode. You gave: $`,
-        lambdaResponse.statusCode,
-      )
-      return handleErr('Incorrect function response statusCode', response)
-    }
-    if (lambdaResponse.body && typeof lambdaResponse.body !== 'string') {
-      console.log(`${NETLIFYDEVERR} Your function response must have a string body. You gave:`, lambdaResponse.body)
-      return handleErr('Incorrect function response body', response)
+
+    const { error } = validateLambdaResponse(lambdaResponse)
+    if (error) {
+      console.log(`${NETLIFYDEVERR} ${error}`)
+      return handleErr(error, response)
     }
 
     response.statusCode = lambdaResponse.statusCode
@@ -159,9 +168,24 @@ const shouldBase64Encode = function (contentType) {
 
 const BASE_64_MIME_REGEXP = /image|audio|video|application\/pdf|application\/zip|applicaton\/octet-stream/i
 
-const createHandler = async function (dir) {
-  const functions = await getFunctions(dir)
+const RED_BACKGROUND = chalk.red('-background')
+const [PRO, BUSINESS, ENTERPRISE] = ['Pro', 'Business', 'Enterprise'].map((plan) => chalk.magenta(plan))
+const BACKGROUND_FUNCTIONS_WARNING = `A serverless function ending in \`${RED_BACKGROUND}\` was detected.
+Your team’s current plan doesn’t support Background Functions, which have names ending in \`${RED_BACKGROUND}\`.
+To be able to deploy this function successfully either:
+  - change the function name to remove \`${RED_BACKGROUND}\` and execute it synchronously
+  - upgrade your team plan to a level that supports Background Functions (${PRO}, ${BUSINESS}, or ${ENTERPRISE})
+`
 
+const validateFunctions = function ({ functions, capabilities, warn }) {
+  if (!capabilities.backgroundFunctions && functions.some(({ isBackground }) => isBackground)) {
+    warn(BACKGROUND_FUNCTIONS_WARNING)
+  }
+}
+
+const createHandler = async function ({ dir, capabilities, warn }) {
+  const functions = await getFunctions(dir)
+  validateFunctions({ functions, capabilities, warn })
   const watcher = chokidar.watch(dir, { ignored: /node_modules/ })
   watcher.on('change', clearCache('modified')).on('unlink', clearCache('deleted'))
 
@@ -235,7 +259,7 @@ const createHandler = async function (dir) {
   }
 }
 
-const createFormSubmissionHandler = function (siteInfo) {
+const createFormSubmissionHandler = function ({ siteUrl }) {
   return async function formSubmissionHandler(req, res, next) {
     if (req.url.startsWith('/.netlify/') || req.method !== 'POST') return next()
 
@@ -330,9 +354,8 @@ const createFormSubmissionHandler = function (siteInfo) {
           ...fields,
           ...Object.entries(files).reduce((prev, [name, { url }]) => ({ ...prev, [name]: url }), {}),
         }).map(([key, val]) => ({ title: capitalize(key), name: key, value: val })),
-        site_url: siteInfo.ssl_url,
+        site_url: siteUrl,
       },
-      site: siteInfo,
     })
     req.body = data
     req.headers = {
@@ -346,7 +369,7 @@ const createFormSubmissionHandler = function (siteInfo) {
   }
 }
 
-const serveFunctions = async function (dir, siteInfo = {}) {
+const getFunctionsServer = async function ({ dir, siteUrl, capabilities, warn }) {
   const app = express()
   app.set('query parser', 'simple')
 
@@ -357,7 +380,7 @@ const serveFunctions = async function (dir, siteInfo = {}) {
     }),
   )
   app.use(bodyParser.raw({ limit: '6mb', type: '*/*' }))
-  app.use(createFormSubmissionHandler(siteInfo))
+  app.use(createFormSubmissionHandler({ siteUrl }))
   app.use(
     expressLogging(console, {
       blacklist: ['/favicon.ico'],
@@ -368,7 +391,7 @@ const serveFunctions = async function (dir, siteInfo = {}) {
     res.status(204).end()
   })
 
-  app.all('*', await createHandler(dir))
+  app.all('*', await createHandler({ dir, capabilities, warn }))
 
   return app
 }
@@ -401,48 +424,54 @@ const getBuildFunction = ({ functionBuilder, log }) => {
   }
 }
 
-const startFunctionsServer = async ({ settings, site, log, warn, errorExit, siteInfo }) => {
+const setupFunctionsBuilder = async ({ site, log, warn }) => {
+  const functionBuilder = await detectFunctionsBuilder(site.root)
+  if (functionBuilder) {
+    log(
+      `${NETLIFYDEVLOG} Function builder ${chalk.yellow(
+        functionBuilder.builderName,
+      )} detected: Running npm script ${chalk.yellow(functionBuilder.npmScript)}`,
+    )
+    warn(
+      `${NETLIFYDEVWARN} This is a beta feature, please give us feedback on how to improve at https://github.com/netlify/cli/`,
+    )
+
+    const debouncedBuild = debounce(getBuildFunction({ functionBuilder, log }), 300, {
+      leading: true,
+      trailing: true,
+    })
+
+    await debouncedBuild()
+
+    const functionWatcher = chokidar.watch(functionBuilder.src)
+    functionWatcher.on('ready', () => {
+      functionWatcher.on('add', debouncedBuild)
+      functionWatcher.on('change', debouncedBuild)
+      functionWatcher.on('unlink', debouncedBuild)
+    })
+  }
+}
+
+const startServer = async ({ server, settings, log, errorExit }) => {
+  await new Promise((resolve) => {
+    server.listen(settings.functionsPort, (err) => {
+      if (err) {
+        errorExit(`${NETLIFYDEVERR} Unable to start functions server: ${err}`)
+      } else {
+        log(`${NETLIFYDEVLOG} Functions server is listening on ${settings.functionsPort}`)
+      }
+      resolve()
+    })
+  })
+}
+
+const startFunctionsServer = async ({ settings, site, log, warn, errorExit, siteUrl, capabilities }) => {
   // serve functions from zip-it-and-ship-it
   // env variables relies on `url`, careful moving this code
   if (settings.functions) {
-    const functionBuilder = await detectFunctionsBuilder(site.root)
-    if (functionBuilder) {
-      log(
-        `${NETLIFYDEVLOG} Function builder ${chalk.yellow(
-          functionBuilder.builderName,
-        )} detected: Running npm script ${chalk.yellow(functionBuilder.npmScript)}`,
-      )
-      warn(
-        `${NETLIFYDEVWARN} This is a beta feature, please give us feedback on how to improve at https://github.com/netlify/cli/`,
-      )
-
-      const debouncedBuild = debounce(getBuildFunction({ functionBuilder, log }), 300, {
-        leading: true,
-        trailing: true,
-      })
-
-      await debouncedBuild()
-
-      const functionWatcher = chokidar.watch(functionBuilder.src)
-      functionWatcher.on('ready', () => {
-        functionWatcher.on('add', debouncedBuild)
-        functionWatcher.on('change', debouncedBuild)
-        functionWatcher.on('unlink', debouncedBuild)
-      })
-    }
-
-    const functionsServer = await serveFunctions(settings.functions, siteInfo)
-
-    await new Promise((resolve) => {
-      functionsServer.listen(settings.functionsPort, (err) => {
-        if (err) {
-          errorExit(`${NETLIFYDEVERR} Unable to start lambda server: ${err}`)
-        } else {
-          log(`${NETLIFYDEVLOG} Functions server is listening on ${settings.functionsPort}`)
-        }
-        resolve()
-      })
-    })
+    await setupFunctionsBuilder({ site, log, warn })
+    const server = await getFunctionsServer({ dir: settings.functions, siteUrl, capabilities, warn })
+    await startServer({ server, settings, log, errorExit })
   }
 }
 

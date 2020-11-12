@@ -5,7 +5,7 @@ const util = require('util')
 const findUp = require('find-up')
 const gitRepoInfo = require('git-repo-info')
 const gitconfiglocal = require('gitconfiglocal')
-const isEmpty = require('lodash.isempty')
+const isEmpty = require('lodash/isEmpty')
 const parseGitRemote = require('parse-github-url')
 
 const getRepoData = async function (remote) {

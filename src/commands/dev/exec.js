@@ -6,12 +6,13 @@ const { getSiteInformation, addEnvVariables } = require('../../utils/dev')
 class ExecCommand extends Command {
   async run() {
     const { log, warn, error, netlify } = this
-    const { site, api } = netlify
+    const { site, api, siteInfo } = netlify
     const { teamEnv, addonsEnv, siteEnv, dotFilesEnv } = await getSiteInformation({
       api,
       site,
       warn,
       error,
+      siteInfo,
     })
     await addEnvVariables({ log, teamEnv, addonsEnv, siteEnv, dotFilesEnv })
 

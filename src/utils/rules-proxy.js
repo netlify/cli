@@ -51,7 +51,7 @@ const getCountry = function () {
   return 'us'
 }
 
-const createRewriter = async function ({ distDir, projectDir, jwtSecret, jwtRole, configPath }) {
+const createRewriter = async function ({ distDir, projectDir, jwtSecret, jwtRoleClaim, configPath }) {
   let matcher = null
   const configFiles = [
     ...new Set(
@@ -76,8 +76,8 @@ const createRewriter = async function ({ distDir, projectDir, jwtSecret, jwtRole
 
     if (rules.length !== 0) {
       return (matcher = await redirector.parseJSON(JSON.stringify(rules), {
-        jwtSecret: jwtSecret || 'secret',
-        jwtRole: jwtRole || 'app_metadata.authorization.roles',
+        jwtSecret,
+        jwtRoleClaim,
       }))
     }
     return {

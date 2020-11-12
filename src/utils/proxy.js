@@ -9,8 +9,8 @@ const httpProxy = require('http-proxy')
 const { createProxyMiddleware } = require('http-proxy-middleware')
 const jwtDecode = require('jwt-decode')
 const locatePath = require('locate-path')
-const get = require('lodash.get')
-const isEmpty = require('lodash.isempty')
+const get = require('lodash/get')
+const isEmpty = require('lodash/isEmpty')
 const pFilter = require('p-filter')
 const toReadableStream = require('to-readable-stream')
 
@@ -187,7 +187,8 @@ const serveRedirect = async function ({ req, res, proxy, match, options }) {
   if (staticFile) req.url = staticFile + reqUrl.search
   if (match.force404) {
     res.writeHead(404)
-    return render404(options.publicFolder)
+    res.end(await render404(options.publicFolder))
+    return
   }
 
   if (match.force || !staticFile || !options.framework || req.method === 'POST') {
@@ -327,7 +328,8 @@ const startProxy = async function (settings, addonsUrls, configPath, projectDir)
 
   const rewriter = await createRewriter({
     distDir: settings.dist,
-    jwtRole: settings.jwtRolePath,
+    jwtSecret: settings.jwtSecret,
+    jwtRoleClaim: settings.jwtRolePath,
     configPath,
     projectDir,
   })

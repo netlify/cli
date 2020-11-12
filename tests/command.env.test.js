@@ -1,8 +1,8 @@
 const process = require('process')
 
 const test = require('ava')
-const isEmpty = require('lodash.isempty')
-const isObject = require('lodash.isobject')
+const isEmpty = require('lodash/isEmpty')
+const isObject = require('lodash/isObject')
 
 const callCli = require('./utils/call-cli')
 const { generateSiteName, createLiveTestSite } = require('./utils/create-live-test-site')
@@ -67,7 +67,7 @@ const getArgsFromState = function (state) {
 
 if (process.env.IS_FORK !== 'true') {
   test.before(async (t) => {
-    const siteId = await createLiveTestSite(siteName)
+    const { siteId } = await createLiveTestSite(siteName)
     const builder = createSiteBuilder({ siteName: 'site-with-env-vars' })
       .withEnvFile({
         path: ENV_FILE_NAME,

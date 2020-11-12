@@ -169,7 +169,7 @@ class DevCommand extends Command {
     this.log(`${NETLIFYDEV}`)
     const { error: errorExit, log, warn, exit } = this
     const { flags } = this.parse(DevCommand)
-    const { api, site, config } = this.netlify
+    const { api, site, config, siteInfo } = this.netlify
     config.dev = { ...config.dev }
     config.build = { ...config.build }
     const devConfig = {
@@ -180,12 +180,13 @@ class DevCommand extends Command {
       ...flags,
     }
 
-    const { addonsUrls, teamEnv, addonsEnv, siteEnv, dotFilesEnv } = await getSiteInformation({
+    const { addonsUrls, teamEnv, addonsEnv, siteEnv, dotFilesEnv, siteUrl, capabilities } = await getSiteInformation({
       flags,
       api,
       site,
       warn,
       error: errorExit,
+      siteInfo,
     })
 
     await addEnvVariables({ log, teamEnv, addonsEnv, siteEnv, dotFilesEnv })
@@ -198,7 +199,15 @@ class DevCommand extends Command {
       exit(1)
     }
 
-    await startFunctionsServer({ settings, site, log, warn, errorExit, siteInfo: this.netlify.cachedConfig.siteInfo })
+    await startFunctionsServer({
+      settings,
+      site,
+      log,
+      warn,
+      errorExit,
+      siteUrl,
+      capabilities,
+    })
     await startFrameworkServer({ settings, log, exit })
 
     let url = await startProxyServer({ flags, settings, site, log, exit, addonsUrls })

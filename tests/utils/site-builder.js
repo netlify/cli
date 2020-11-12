@@ -79,7 +79,9 @@ const createSiteBuilder = ({ siteName }) => {
     withRedirectsFile: ({ redirects = [], pathPrefix = '' }) => {
       const dest = path.join(directory, pathPrefix, '_redirects')
       tasks.push(async () => {
-        const content = redirects.map(({ from, to, status }) => `${from}      ${to}       ${status}`).join(os.EOL)
+        const content = redirects
+          .map(({ from, to, status, condition = '' }) => `${from} ${to} ${status} ${condition}`)
+          .join(os.EOL)
         await ensureDir(path.dirname(dest))
         await fs.writeFileAsync(dest, content)
       })

@@ -1,5 +1,5 @@
 const AsciiTable = require('ascii-table')
-const isEmpty = require('lodash.isempty')
+const isEmpty = require('lodash/isEmpty')
 
 const Command = require('../../utils/command')
 

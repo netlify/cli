@@ -5,7 +5,9 @@ const path = require('path')
 const process = require('process')
 
 const test = require('ava')
+const dotProp = require('dot-prop')
 const FormData = require('form-data')
+const jwt = require('jsonwebtoken')
 const fetch = require('node-fetch')
 
 const { withDevServer } = require('./utils/dev-server')
@@ -20,6 +22,58 @@ const testMatrix = [
 ]
 
 const testName = (title, args) => (args.length <= 0 ? title : `${title} - ${args.join(' ')}`)
+
+const JWT_EXPIRY = 1893456000
+const getToken = ({ roles, jwtSecret = 'secret', jwtRolePath = 'app_metadata.authorization.roles' }) => {
+  const payload = {
+    exp: JWT_EXPIRY,
+    sub: '12345678',
+  }
+  return jwt.sign(dotProp.set(payload, jwtRolePath, roles), jwtSecret)
+}
+
+const setupRoleBasedRedirectsSite = (builder) => {
+  const publicDir = 'public'
+  builder
+    .withContentFiles([
+      {
+        path: path.join(publicDir, 'index.html'),
+        content: '<html>index</html>',
+      },
+      {
+        path: path.join(publicDir, 'admin/foo.html'),
+        content: '<html>foo</html>',
+      },
+    ])
+    .withRedirectsFile({
+      redirects: [{ from: `/admin/*`, to: ``, status: '200!', condition: 'Role=admin' }],
+    })
+  return builder
+}
+
+const validateRoleBasedRedirectsSite = async ({ builder, args, t, jwtSecret, jwtRolePath }) => {
+  await withDevServer({ cwd: builder.directory, args }, async (server) => {
+    const unauthenticatedResponse = await fetch(`${server.url}/admin`)
+    t.is(unauthenticatedResponse.status, 404)
+    t.is(await unauthenticatedResponse.text(), 'Not Found')
+
+    const authenticatedResponse = await fetch(`${server.url}/admin/foo`, {
+      headers: {
+        cookie: `nf_jwt=${getToken({ jwtSecret, jwtRolePath, roles: ['admin'] })}`,
+      },
+    })
+    t.is(authenticatedResponse.status, 200)
+    t.is(await authenticatedResponse.text(), 'Not Found')
+
+    const wrongRoleResponse = await fetch(`${server.url}/admin/foo`, {
+      headers: {
+        cookie: `nf_jwt=${getToken({ jwtSecret, jwtRolePath, roles: ['editor'] })}`,
+      },
+    })
+    t.is(wrongRoleResponse.status, 404)
+    t.is(await wrongRoleResponse.text(), 'Not Found')
+  })
+}
 
 testMatrix.forEach(({ args }) => {
   test(testName('should return index file when / is accessed', args), async (t) => {
@@ -453,7 +507,7 @@ testMatrix.forEach(({ args }) => {
           'client-ip': '127.0.0.1',
           connection: 'close',
           host: `${server.host}:${server.port}`,
-          'content-length': '285',
+          'content-length': '289',
           'content-type': 'application/json',
           'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
           'x-forwarded-for': '::ffff:127.0.0.1',
@@ -480,8 +534,8 @@ testMatrix.forEach(({ args }) => {
                 value: 'thing',
               },
             ],
+            site_url: '',
           },
-          site: {},
         })
       })
     })
@@ -985,6 +1039,31 @@ testMatrix.forEach(({ args }) => {
         t.is(response.status, expectedStatueCode)
         t.is(text, '')
       })
+    })
+  })
+
+  test(testName('should enforce role based redirects with default secret and role path', args), async (t) => {
+    await withSiteBuilder('site-with-default-role-based-redirects', async (builder) => {
+      setupRoleBasedRedirectsSite(builder)
+      await builder.buildAsync()
+      await validateRoleBasedRedirectsSite({ builder, args, t })
+    })
+  })
+
+  test(testName('should enforce role based redirects with custom secret and role path', args), async (t) => {
+    await withSiteBuilder('site-with-custom-role-based-redirects', async (builder) => {
+      const jwtSecret = 'custom'
+      const jwtRolePath = 'roles'
+      setupRoleBasedRedirectsSite(builder).withNetlifyToml({
+        config: {
+          dev: {
+            jwtSecret,
+            jwtRolePath,
+          },
+        },
+      })
+      await builder.buildAsync()
+      await validateRoleBasedRedirectsSite({ builder, args, t, jwtSecret, jwtRolePath })
     })
   })
 
