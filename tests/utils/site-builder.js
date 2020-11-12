@@ -144,15 +144,13 @@ const createSiteBuilder = ({ siteName }) => {
   return builder
 }
 
-const withSiteBuilder = async (siteName, testHandler, skipCleanup) => {
+const withSiteBuilder = async (siteName, testHandler) => {
   let builder
   try {
     builder = createSiteBuilder({ siteName })
     return await testHandler(builder)
   } finally {
-    if (!skipCleanup) {
-      await builder.cleanupAsync()
-    }
+    await builder.cleanupAsync()
   }
 }
 
