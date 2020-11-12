@@ -1,4 +1,4 @@
-const isEqual = require('lodash.isequal')
+const isEqual = require('lodash/isEqual')
 
 module.exports = function compare(oldValues, newValues) {
   const initialData = {

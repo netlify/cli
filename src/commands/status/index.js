@@ -1,7 +1,7 @@
 const { flags: flagsLib } = require('@oclif/command')
 const chalk = require('chalk')
 const clean = require('clean-deep')
-const get = require('lodash.get')
+const get = require('lodash/get')
 const prettyjson = require('prettyjson')
 
 const Command = require('../../utils/command')

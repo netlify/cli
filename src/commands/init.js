@@ -1,7 +1,7 @@
 const { flags: flagsLib } = require('@oclif/command')
 const chalk = require('chalk')
 const inquirer = require('inquirer')
-const get = require('lodash.get')
+const get = require('lodash/get')
 
 const Command = require('../utils/command')
 const getRepoData = require('../utils/get-repo-data')

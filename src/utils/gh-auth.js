@@ -6,7 +6,7 @@ const querystring = require('querystring')
 const { Octokit } = require('@octokit/rest')
 const getPort = require('get-port')
 const inquirer = require('inquirer')
-const get = require('lodash.get')
+const get = require('lodash/get')
 
 const openBrowser = require('./open-browser')
 
