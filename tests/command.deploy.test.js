@@ -1,10 +1,10 @@
 const process = require('process')
 
 const test = require('ava')
-const dotProp = require('dot-prop')
 const fetch = require('node-fetch')
 const omit = require('omit.js').default
 
+const { supportsEdgeHandlers } = require('../src/lib/account')
 const { getToken } = require('../src/utils/command')
 
 const callCli = require('./utils/call-cli')
@@ -93,12 +93,8 @@ if (process.env.IS_FORK !== 'true') {
   const EDGE_HANDLER_MIN_LENGTH = 50
   if (version >= EDGE_HANDLER_MIN_VERSION) {
     test.serial('should deploy edge handlers when directory exists', async (t) => {
-      const {
-        context: { account },
-      } = t
-      const supportsEdgeHandlers = dotProp.get(account, 'capabilities.edge_handlers.included')
-      if (!supportsEdgeHandlers) {
-        console.warn(`Skipping edge handlers deploy test for account ${account.slug}`)
+      if (!supportsEdgeHandlers(t.context.account)) {
+        console.warn(`Skipping edge handlers deploy test for account ${t.context.account.slug}`)
         return
       }
       await withSiteBuilder('site-with-public-folder', async (builder) => {

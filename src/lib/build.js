@@ -4,12 +4,13 @@ const { getSiteInformation } = require('../utils/dev')
 
 const getBuildEnv = async ({ context }) => {
   const { warn, error, netlify } = context
-  const { site, api } = netlify
+  const { site, api, siteInfo } = netlify
   const { teamEnv, addonsEnv, siteEnv } = await getSiteInformation({
     api,
     site,
     warn,
     error,
+    siteInfo,
   })
   const env = { ...teamEnv, ...addonsEnv, ...siteEnv }
   return env

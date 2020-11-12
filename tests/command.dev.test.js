@@ -507,7 +507,7 @@ testMatrix.forEach(({ args }) => {
           'client-ip': '127.0.0.1',
           connection: 'close',
           host: `${server.host}:${server.port}`,
-          'content-length': '285',
+          'content-length': '289',
           'content-type': 'application/json',
           'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
           'x-forwarded-for': '::ffff:127.0.0.1',
@@ -534,8 +534,8 @@ testMatrix.forEach(({ args }) => {
                 value: 'thing',
               },
             ],
+            site_url: '',
           },
-          site: {},
         })
       })
     })
