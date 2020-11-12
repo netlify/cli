@@ -369,12 +369,13 @@ const createFunctionAddon = async function ({ api, addons, siteId, addonName, si
 
 const injectEnvVariables = async ({ context }) => {
   const { log, warn, error, netlify } = context
-  const { api, site } = netlify
+  const { api, site, siteInfo } = netlify
   const { teamEnv, addonsEnv, siteEnv, dotFilesEnv } = await getSiteInformation({
     api,
     site,
     warn,
     error,
+    siteInfo,
   })
   await addEnvVariables({ log, teamEnv, addonsEnv, siteEnv, dotFilesEnv })
 }

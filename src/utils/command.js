@@ -54,7 +54,7 @@ class BaseCommand extends Command {
     const state = new StateConfig(cwd)
 
     const cachedConfig = await this.getConfig(cwd, state, token)
-    const { configPath, config, buildDir } = cachedConfig
+    const { configPath, config, buildDir, siteInfo } = cachedConfig
 
     const { flags } = this.parse(BaseCommand)
     const agent = await getAgent({
@@ -85,6 +85,8 @@ class BaseCommand extends Command {
           state.set('siteId', id)
         },
       },
+      // Site information retrieved using the API
+      siteInfo,
       // Configuration from netlify.[toml/yml]
       config,
       // Used to avoid calling @neltify/config again
