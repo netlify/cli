@@ -1096,7 +1096,7 @@ testMatrix.forEach(({ args }) => {
             },
           ])
           .withEdgeHandlers({
-            name: 'smoke.js',
+            fileName: 'smoke.js',
             handlers: {
               onRequest: (event) => {
                 event.replaceResponse(
