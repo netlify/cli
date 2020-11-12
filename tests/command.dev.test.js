@@ -1124,6 +1124,32 @@ testMatrix.forEach(({ args }) => {
         })
       })
     })
+
+    test(testName('mesh-forward builds projects w/o edge handlers', args), async (t) => {
+      await withSiteBuilder('site-with-fully-qualified-redirect-rule', async (builder) => {
+        const publicDir = 'public'
+        builder
+          .withNetlifyToml({
+            config: {
+              build: { publish: publicDir },
+            },
+          })
+          .withContentFiles([
+            {
+              path: path.join(publicDir, 'index.html'),
+              content: '<html>index</html>',
+            },
+          ])
+
+        await builder.buildAsync()
+
+        await withDevServer({ cwd: builder.directory, args: [...args, '--trafficMesh'] }, async (server) => {
+          const response = await fetch(`${server.url}/index.html`)
+
+          t.true(response.ok)
+        })
+      })
+    })
   }
 })
 /* eslint-enable require-await */
