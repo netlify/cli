@@ -2,7 +2,7 @@ const process = require('process')
 
 const fromEntries = require('@ungap/from-entries')
 const chalk = require('chalk')
-const isEmpty = require('lodash.isempty')
+const isEmpty = require('lodash/isEmpty')
 
 const { supportsBackgroundFunctions } = require('../lib/account')
 
