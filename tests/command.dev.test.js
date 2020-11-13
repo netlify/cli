@@ -1154,7 +1154,7 @@ testMatrix.forEach(({ args }) => {
         await withDevServer({ cwd: builder.directory, args: [...args, '--trafficMesh'] }, async (server) => {
           const response = await fetch(`${server.url}/index.html`)
 
-          t.true(response.status, 200)
+          t.is(response.status, 200)
         })
       })
     })
