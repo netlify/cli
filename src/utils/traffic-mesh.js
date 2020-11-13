@@ -17,7 +17,6 @@ const EDGE_HANDLERS_BUNDLER_CLI_PATH = path.resolve(require.resolve('@netlify/pl
 
 const startForwardProxy = async ({ port, frameworkPort, functionsPort, publishDir, log, debug, locationDb }) => {
   const args = [
-    '--debug',
     'start',
     'local',
     '--port',
