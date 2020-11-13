@@ -1,6 +1,6 @@
 // Handlers are meant to be async outside tests
 /* eslint-disable require-await */
-const fs = require('fs')
+const fs = require('fs/promises')
 const http = require('http')
 const path = require('path')
 const process = require('process')
@@ -1125,9 +1125,7 @@ testMatrix.forEach(({ args }) => {
         })
 
         const logsPath = path.join(builder.directory, '.netlify/logs/traffic-mesh.log')
-        const logs = await new Promise((resolve, reject) => {
-          fs.readFile(logsPath, { encoding: 'utf-8' }, (err, data) => (err ? reject(err) : resolve(data)))
-        })
+        const logs = await fs.readFile(logsPath, { encoding: 'utf-8' })
         console.log('Traffic Mesh Logs:')
         console.log(logs)
       })
