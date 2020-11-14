@@ -108,11 +108,6 @@ const commandListSubCommandDisplay = function (commands) {
 
 const formatUsage = function (commandName, info) {
   const defaultUsage = `netlify ${commandName}`
-
-  if (commandName === 'sites:delete') {
-    // console.log(info)
-  }
-
   const usageString = info.usage || defaultUsage
   return `**Usage**
 
