@@ -82,7 +82,7 @@
     "@netlify/zip-it-and-ship-it": "^1.3.9",
     "@oclif/command": "v1.6.1",
     "@oclif/config": "v1.15.1",
-    "@oclif/errors": "1.2.2",
+    "@oclif/errors": "1.3.4",
     "@oclif/parser": "^3.8.4",
     "@oclif/plugin-help": "^2.2.0",
     "@oclif/plugin-not-found": "^1.1.4",
