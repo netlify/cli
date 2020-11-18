@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "2.68.5",
+  "version": "2.68.6",
   "author": "Netlify Inc.",
   "contributors": [
     "Mathias Biilmann <matt@netlify.com> (https://twitter.com/biilmann)",
