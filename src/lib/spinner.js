@@ -18,4 +18,10 @@ const stopSpinner = ({ spinner, text, error }) => {
   })
 }
 
-module.exports = { startSpinner, stopSpinner }
+const clearSpinner = ({ spinner }) => {
+  if (spinner) {
+    spinner.stop()
+  }
+}
+
+module.exports = { clearSpinner, startSpinner, stopSpinner }

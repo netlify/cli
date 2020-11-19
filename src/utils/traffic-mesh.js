@@ -8,7 +8,7 @@ const execa = require('execa')
 const waitPort = require('wait-port')
 
 const { getPathInProject } = require('../lib/settings')
-const { startSpinner, stopSpinner } = require('../lib/spinner')
+const { clearSpinner, startSpinner, stopSpinner } = require('../lib/spinner')
 
 const { createDeferred } = require('./deferred')
 const { NETLIFYDEVLOG, NETLIFYDEVERR, NETLIFYDEVWARN } = require('./logo')
@@ -81,6 +81,8 @@ const forwardMessagesToLog = ({ log, subprocess }) => {
   const { promise: firstBundleReady, reject: firstBundleReject, resolve: firstBundleResolve } = createDeferred()
 
   let currentId = null
+  let lastError = null
+  let lastWasSuccess = false
   let spinner = null
 
   const reset = () => {
@@ -116,26 +118,45 @@ const forwardMessagesToLog = ({ log, subprocess }) => {
             return
           }
 
+          // Clear spinner if there already is a log line indicating success above,
+          // instead of appending another line of "Yay, your project was bundled!"
+          if (lastWasSuccess) {
+            clearSpinner({ spinner })
+          } else {
+            stopSpinner({ spinner, error: false, text: 'Done processing' })
+          }
+          lastWasSuccess = true
+          lastError = null
+
           firstBundleResolve()
-          stopSpinner({ spinner, error: false, text: 'Done processing' })
           reset()
           break
 
-        case 'bundle:fail':
+        case 'bundle:fail': {
           if (currentId !== id) {
             return
           }
 
-          stopSpinner({
-            spinner,
-            error: true,
-            text: (error && error.msg) || 'Failed processing request remaps, header rules or Edge Handlers',
-          })
-          log(
-            `${NETLIFYDEVLOG} Change any project configuration file (netlify.toml, _headers, _redirects) or any Edge Handlers file to trigger a re-bundle`,
-          )
+          // Only show the error if it's new
+          const errorMsg = (error && error.msg) || 'Failed processing request remaps, header rules or Edge Handlers'
+          if (errorMsg === lastError) {
+            clearSpinner({ spinner })
+          } else {
+            stopSpinner({
+              spinner,
+              error: true,
+              text: errorMsg,
+            })
+            log(
+              `${NETLIFYDEVLOG} Change any project configuration file (netlify.toml, _headers, _redirects) or any Edge Handlers file to trigger a re-bundle`,
+            )
+          }
+
+          lastWasSuccess = false
+          lastError = errorMsg
           reset()
           break
+        }
 
         default:
           log(`${NETLIFYDEVWARN} Unknown mesh-forward event '${type}'`)
