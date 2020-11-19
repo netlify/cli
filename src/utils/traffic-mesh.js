@@ -61,7 +61,7 @@ const startForwardProxy = async ({ port, frameworkPort, functionsPort, publishDi
     })
   })
 
-  // Wait until the first edge handlers bundle is ready
+  // Wait until the first traffic-mesh bundle is ready
   //
   // In case of errors, this delays the startup process until the errors are fixed
   await firstBundleReady
@@ -107,7 +107,7 @@ const forwardMessagesToLog = ({ log, subprocess }) => {
         case 'bundle:start':
           currentId = id
           if (!spinner) {
-            spinner = startSpinner({ text: 'Bundling Edge Handlers...' })
+            spinner = startSpinner({ text: 'Processing request remaps, header rules and Edge Handlers...' })
           }
           break
 
@@ -117,7 +117,7 @@ const forwardMessagesToLog = ({ log, subprocess }) => {
           }
 
           firstBundleResolve()
-          stopSpinner({ spinner, error: false, text: 'Done bundling Edge Handlers' })
+          stopSpinner({ spinner, error: false, text: 'Done processing' })
           reset()
           break
 
@@ -129,9 +129,9 @@ const forwardMessagesToLog = ({ log, subprocess }) => {
           stopSpinner({
             spinner,
             error: true,
-            text: (error && error.msg) || 'Failed bundling Edge Handlers',
+            text: (error && error.msg) || 'Failed processing request remaps, header rules or Edge Handlers',
           })
-          log(`${NETLIFYDEVLOG} Change any Edge Handlers file to trigger a re-bundle`)
+          log(`${NETLIFYDEVLOG} Change any project configuration file (netlify.toml, _headers, _redirects) or any Edge Handlers file to trigger a re-bundle`)
           reset()
           break
 
