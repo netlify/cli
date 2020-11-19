@@ -109,7 +109,7 @@ Netlify Dev is meant to work with zero config for the majority of users, by usin
   functions = "functions" # netlify dev uses this directory to scaffold and serve your functions
   publish = "dist"
 
-# note: each of these fields are OPTIONAL, with an exception that when you're specifying "command" and "port", you must specify framework = "#custom"
+# note: each of these fields are OPTIONAL, with an exception that when you're specifying "command" and "targetPort", you must specify framework = "#custom"
 [dev]
   command = "yarn start" # Command to start your dev server
   targetPort = 3000 # The port for your application server, framework or site generator
