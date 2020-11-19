@@ -4,6 +4,7 @@ const process = require('process')
 const { flags: flagsLib } = require('@oclif/command')
 const chalk = require('chalk')
 const cliSpinnerNames = Object.keys(require('cli-spinners'))
+const dotProp = require('dot-prop')
 const inquirer = require('inquirer')
 const get = require('lodash/get')
 const isObject = require('lodash/isObject')
@@ -15,6 +16,7 @@ const randomItem = require('random-item')
 const { cancelDeploy } = require('../lib/api')
 const { getBuildOptions, runBuild } = require('../lib/build')
 const { statAsync } = require('../lib/fs')
+const { getLogMessage } = require('../lib/log')
 const Command = require('../utils/command')
 const { deployEdgeHandlers } = require('../utils/edge-handlers')
 const { NETLIFYDEV, NETLIFYDEVLOG, NETLIFYDEVERR } = require('../utils/logo')
@@ -166,6 +168,65 @@ const SEC_TO_MILLISEC = 1e3
 // 100 bytes
 const SYNC_FILE_LIMIT = 1e2
 
+const prepareProductionDeploy = async ({ siteData, api, log, exit }) => {
+  if (isObject(siteData.published_deploy) && siteData.published_deploy.locked) {
+    log(`\n${NETLIFYDEVERR} Deployments are "locked" for production context of this site\n`)
+    const { unlockChoice } = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'unlockChoice',
+        message: 'Would you like to "unlock" deployments for production context to proceed?',
+        default: false,
+      },
+    ])
+    if (!unlockChoice) exit(0)
+    await api.unlockDeploy({ deploy_id: siteData.published_deploy.id })
+    log(`\n${NETLIFYDEVLOG} "Auto publishing" has been enabled for production context\n`)
+  }
+  log('Deploying to main site URL...')
+}
+
+const hasErrorMessage = (actual, expected) => {
+  if (typeof actual === 'string') {
+    return actual.includes(expected)
+  }
+  return false
+}
+
+const getJsonErrorMessage = (error) => {
+  return dotProp.get(error, 'json.message', '')
+}
+
+const reportDeployError = ({ error, warn, failAndExit }) => {
+  switch (true) {
+    case error.name === 'JSONHTTPError': {
+      const message = getJsonErrorMessage(error)
+      if (hasErrorMessage(message, 'Background Functions not allowed by team plan')) {
+        return failAndExit(`\n${getLogMessage('functions.backgroundNotSupported')}`)
+      }
+      warn(`JSONHTTPError: ${message} ${error.status}`)
+      warn(`\n${JSON.stringify(error, null, '  ')}\n`)
+      failAndExit(error)
+      return
+    }
+    case error.name === 'TextHTTPError': {
+      warn(`TextHTTPError: ${error.status}`)
+      warn(`\n${error}\n`)
+      failAndExit(error)
+      return
+    }
+    case hasErrorMessage(error.message, 'Invalid filename'): {
+      warn(error.message)
+      failAndExit(error)
+      return
+    }
+    default: {
+      warn(`\n${JSON.stringify(error, null, '  ')}\n`)
+      failAndExit(error)
+    }
+  }
+}
+
 const runDeploy = async ({
   flags,
   deployToProduction,
@@ -186,21 +247,7 @@ const runDeploy = async ({
   let deployId
   try {
     if (deployToProduction) {
-      if (isObject(siteData.published_deploy) && siteData.published_deploy.locked) {
-        log(`\n${NETLIFYDEVERR} Deployments are "locked" for production context of this site\n`)
-        const { unlockChoice } = await inquirer.prompt([
-          {
-            type: 'confirm',
-            name: 'unlockChoice',
-            message: 'Would you like to "unlock" deployments for production context to proceed?',
-            default: false,
-          },
-        ])
-        if (!unlockChoice) exit(0)
-        await api.unlockDeploy({ deploy_id: siteData.published_deploy.id })
-        log(`\n${NETLIFYDEVLOG} "Auto publishing" has been enabled for production context\n`)
-      }
-      log('Deploying to main site URL...')
+      await prepareProductionDeploy({ siteData, api, log, exit })
     } else {
       log('Deploying to draft URL...')
     }
@@ -233,30 +280,7 @@ const runDeploy = async ({
     if (deployId) {
       await cancelDeploy({ api, deployId, warn })
     }
-    switch (true) {
-      case error_.name === 'JSONHTTPError': {
-        warn(`JSONHTTPError: ${error_.json.message} ${error_.status}`)
-        warn(`\n${JSON.stringify(error_, null, '  ')}\n`)
-        error(error_)
-        return
-      }
-      case error_.name === 'TextHTTPError': {
-        warn(`TextHTTPError: ${error_.status}`)
-        warn(`\n${error_}\n`)
-        error(error_)
-        return
-      }
-      case error_.message && error_.message.includes('Invalid filename'): {
-        warn(error_.message)
-        error(error_)
-        return
-      }
-      default: {
-        warn(`\n${JSON.stringify(error_, null, '  ')}\n`)
-        error(error_)
-        return
-      }
-    }
+    reportDeployError({ error: error_, warn, failAndExit: error })
   }
 
   const siteUrl = results.deploy.ssl_url || results.deploy.url

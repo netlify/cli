@@ -65,7 +65,7 @@ This command will permanently delete the site on Netlify. Use with caution.
 **Usage**
 
 ```bash
-netlify sites:delete {site-id}
+netlify sites:delete
 ```
 
 **Arguments**
