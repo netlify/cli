@@ -131,7 +131,9 @@ const forwardMessagesToLog = ({ log, subprocess }) => {
             error: true,
             text: (error && error.msg) || 'Failed processing request remaps, header rules or Edge Handlers',
           })
-          log(`${NETLIFYDEVLOG} Change any project configuration file (netlify.toml, _headers, _redirects) or any Edge Handlers file to trigger a re-bundle`)
+          log(
+            `${NETLIFYDEVLOG} Change any project configuration file (netlify.toml, _headers, _redirects) or any Edge Handlers file to trigger a re-bundle`,
+          )
           reset()
           break
 
