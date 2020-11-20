@@ -95,7 +95,7 @@ const startFrameworkServer = async function ({ settings, log, exit }) {
   return ps
 }
 
-// 1 minute
+// 10 minutes
 const FRAMEWORK_PORT_TIMEOUT = 6e5
 
 const startProxyServer = async ({ flags, settings, site, log, exit, addonsUrls }) => {
