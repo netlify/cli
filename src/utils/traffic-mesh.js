@@ -123,7 +123,7 @@ const forwardMessagesToLog = ({ log, subprocess }) => {
           if (lastWasSuccess) {
             clearSpinner({ spinner })
           } else {
-            stopSpinner({ spinner, error: false, text: 'Done processing' })
+            stopSpinner({ spinner, error: false, text: 'Done processing request remaps, header rules and Edge Handlers' })
           }
           lastWasSuccess = true
           lastError = null
