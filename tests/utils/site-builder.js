@@ -27,7 +27,19 @@ const createSiteBuilder = ({ siteName }) => {
     siteName,
     withNetlifyToml: ({ config, pathPrefix = '' }) => {
       const dest = path.join(directory, pathPrefix, 'netlify.toml')
-      const content = toToml(config, { space: 2 })
+      const content = toToml(config, {
+        replace: (_, val) => {
+          // Strip off `.0` from integers that tomlify normally generates
+
+          if (!Number.isInteger(val)) {
+            // Output normal value
+            return false
+          }
+
+          return String(Math.round(val))
+        },
+        space: 2,
+      })
       tasks.push(async () => {
         await ensureDir(path.dirname(dest))
         await fs.writeFileAsync(dest, content)
@@ -51,14 +63,14 @@ const createSiteBuilder = ({ siteName }) => {
       })
       return builder
     },
-    withEdgeHandlers: ({ handlers }) => {
-      const dest = path.join(directory, 'edge-handlers', 'index.js')
+    withEdgeHandlers: ({ fileName = 'index.js', handlers }) => {
+      const dest = path.join(directory, 'edge-handlers', fileName)
       tasks.push(async () => {
         const content = Object.entries(handlers)
           .map(([event, handler]) => {
             return `export const ${event} = ${handler.toString()}`
           })
-          .join('\n')
+          .join(os.EOL)
         await ensureDir(path.dirname(dest))
         await fs.writeFileAsync(dest, content)
       })

@@ -1,13 +1,17 @@
+const { EOL } = require('os')
 const path = require('path')
 const process = require('process')
+const rl = require('readline')
 
 const { getTrafficMeshForLocalSystem } = require('@netlify/traffic-mesh-agent')
 const execa = require('execa')
 const waitPort = require('wait-port')
 
 const { getPathInProject } = require('../lib/settings')
+const { clearSpinner, startSpinner, stopSpinner } = require('../lib/spinner')
 
-const { NETLIFYDEVERR } = require('./logo')
+const { createDeferred } = require('./deferred')
+const { NETLIFYDEVLOG, NETLIFYDEVERR, NETLIFYDEVWARN } = require('./logo')
 
 const EDGE_HANDLERS_BUNDLER_CLI_PATH = path.resolve(require.resolve('@netlify/plugin-edge-handlers'), '..', 'cli.js')
 
@@ -25,6 +29,7 @@ const startForwardProxy = async ({ port, frameworkPort, functionsPort, publishDi
     EDGE_HANDLERS_BUNDLER_CLI_PATH,
     '--log-file',
     getPathInProject(['logs', 'traffic-mesh.log']),
+    '--progress',
   ]
 
   if (functionsPort) {
@@ -40,18 +45,26 @@ const startForwardProxy = async ({ port, frameworkPort, functionsPort, publishDi
   }
 
   const { subprocess } = runProcess({ log, args })
+  const { forwarder, firstBundleReady } = forwardMessagesToLog({ log, subprocess })
 
   subprocess.on('close', process.exit)
   subprocess.on('SIGINT', process.exit)
   subprocess.on('SIGTERM', process.exit)
   ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) => {
     process.on(signal, () => {
+      forwarder.close()
+
       const sig = signal === 'exit' ? 'SIGTERM' : signal
       subprocess.kill(sig, {
         forceKillAfterTimeout: PROXY_EXIT_TIMEOUT,
       })
     })
   })
+
+  // Wait until the first traffic-mesh bundle is ready
+  //
+  // In case of errors, this delays the startup process until the errors are fixed
+  await firstBundleReady
 
   try {
     const open = await waitPort({ port, output: 'silent', timeout: PROXY_READY_TIMEOUT })
@@ -64,13 +77,125 @@ const startForwardProxy = async ({ port, frameworkPort, functionsPort, publishDi
   }
 }
 
+const forwardMessagesToLog = ({ log, subprocess }) => {
+  const { promise: firstBundleReady, reject: firstBundleReject, resolve: firstBundleResolve } = createDeferred()
+
+  let currentId = null
+  let lastError = null
+  let lastWasSuccess = false
+  let spinner = null
+
+  const reset = () => {
+    currentId = null
+    spinner = null
+  }
+
+  const forwarder = rl.createInterface({
+    input: subprocess.stderr,
+  })
+
+  forwarder
+    .on('line', (line) => {
+      let data
+      try {
+        data = JSON.parse(line.trim())
+      } catch (error) {
+        log(`${NETLIFYDEVERR} Cannot parse log line as JSON: ${line.trim()}${EOL}${EOL}${error}`)
+        return
+      }
+
+      const { error, id, type } = data
+      switch (type) {
+        case 'bundle:start':
+          currentId = id
+          if (!spinner) {
+            spinner = startSpinner({ text: 'Processing request remaps, header rules and Edge Handlers...' })
+          }
+          break
+
+        case 'bundle:success':
+          if (currentId !== id) {
+            return
+          }
+
+          // Clear spinner if there already is a log line indicating success above,
+          // instead of appending another line of "Yay, your project was bundled!"
+          if (lastWasSuccess) {
+            clearSpinner({ spinner })
+          } else {
+            stopSpinner({
+              spinner,
+              error: false,
+              text: 'Done processing request remaps, header rules and Edge Handlers',
+            })
+          }
+          lastWasSuccess = true
+          lastError = null
+
+          firstBundleResolve()
+          reset()
+          break
+
+        case 'bundle:fail': {
+          if (currentId !== id) {
+            return
+          }
+
+          // Only show the error if it's new
+          const errorMsg = (error && error.msg) || 'Failed processing request remaps, header rules or Edge Handlers'
+          if (errorMsg === lastError) {
+            clearSpinner({ spinner })
+          } else {
+            stopSpinner({
+              spinner,
+              error: true,
+              text: errorMsg,
+            })
+            log(
+              `${NETLIFYDEVLOG} Change any project configuration file (netlify.toml, _headers, _redirects) or any Edge Handlers file to trigger a re-bundle`,
+            )
+          }
+
+          lastWasSuccess = false
+          lastError = errorMsg
+          reset()
+          break
+        }
+
+        default:
+          log(`${NETLIFYDEVWARN} Unknown mesh-forward event '${type}'`)
+          break
+      }
+    })
+    .on('close', () => {
+      if (spinner) {
+        // Hide the spinner
+        spinner.stop()
+      }
+
+      reset()
+    })
+    .on('error', (err) => {
+      stopSpinner({
+        spinner,
+        error: true,
+        text: `${NETLIFYDEVERR} An error occured while bundling processing the messages from mesh-forward: ${err}`,
+      })
+
+      firstBundleReject(err)
+      reset()
+    })
+
+  return { forwarder, firstBundleReady }
+}
+
 // 30 seconds
 const PROXY_READY_TIMEOUT = 3e4
 // 2 seconds
 const PROXY_EXIT_TIMEOUT = 2e3
 
 const runProcess = ({ args }) => {
-  const subprocess = execa(getTrafficMeshForLocalSystem(), args, { stdio: 'inherit' })
+  const subprocess = execa(getTrafficMeshForLocalSystem(), args, { stdio: ['inherit', 'inherit', 'pipe'] })
   return { subprocess }
 }
 

@@ -8,6 +8,7 @@ const getPort = require('get-port')
 const inquirer = require('inquirer')
 const get = require('lodash/get')
 
+const { createDeferred } = require('./deferred')
 const openBrowser = require('./open-browser')
 
 const SERVER_PORT = 3000
@@ -51,12 +52,7 @@ module.exports = async function getGitHubToken({ opts, log }) {
 
   if (initChoice === authChoiceNetlify) {
     const port = await getPort({ port: SERVER_PORT })
-    let deferredResolve
-    let deferredReject
-    const deferredPromise = new Promise(function deferred(resolve, reject) {
-      deferredResolve = resolve
-      deferredReject = reject
-    })
+    const { promise: deferredPromise, reject: deferredReject, resolve: deferredResolve } = createDeferred()
 
     const server = http.createServer(function onRequest(req, res) {
       const parameters = querystring.parse(req.url.slice(req.url.indexOf('?') + 1))
