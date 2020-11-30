@@ -9,12 +9,12 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 30
+    timeout-minutes: 60
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
         node-version: [8.x, 12.x, 14.x]
-      fail-fast: false
+      fail-fast: true
 
     steps:
       - name: Git checkout
