@@ -135,8 +135,7 @@ git remote add origin https://github.com/YourUserName/RepoName.git
       this.error(repo.error)
     }
 
-    // TODO: remove siteInfo.id === undefined once https://github.com/netlify/build/pull/2081 is published
-    if (isEmpty(siteInfo) || siteInfo.id === undefined) {
+    if (isEmpty(siteInfo)) {
       const NEW_SITE = '+  Create & configure a new site'
       const EXISTING_SITE = '⇄  Connect this directory to an existing Netlify site'
 
