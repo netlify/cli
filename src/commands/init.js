@@ -1,7 +1,7 @@
 const { flags: flagsLib } = require('@oclif/command')
 const chalk = require('chalk')
+const dotProp = require('dot-prop')
 const inquirer = require('inquirer')
-const get = require('lodash/get')
 const isEmpty = require('lodash/isEmpty')
 
 const Command = require('../utils/command')
@@ -14,93 +14,57 @@ const { track } = require('../utils/telemetry')
 const LinkCommand = require('./link')
 const SitesCreateCommand = require('./sites/create')
 
-class InitCommand extends Command {
-  async run() {
-    const { flags } = this.parse(InitCommand)
-    const { site, state } = this.netlify
-    let { siteInfo } = this.netlify
+const persistState = ({ state, siteInfo }) => {
+  // Save to .netlify/state.json file
+  state.set('siteId', siteInfo.id)
+}
 
-    // Check logged in status
-    await this.authenticate()
+const getRepoUrl = ({ siteInfo }) => {
+  return dotProp.get(siteInfo, 'build_settings.repo_url')
+}
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'init',
-        manual: flags.manual,
-        force: flags.force,
-      },
-    })
+const reportAnalytics = async ({ config, flags }) => {
+  await config.runHook('analytics', {
+    eventName: 'command',
+    payload: {
+      command: 'init',
+      manual: flags.manual,
+      force: flags.force,
+    },
+  })
+}
 
-    // Add .netlify to .gitignore file
-    await ensureNetlifyIgnore(site.root)
+const logExistingAndExit = ({ log, exit, siteInfo }) => {
+  log()
+  log(`This site has been initialized`)
+  log()
+  log(`Site Name:  ${chalk.cyan(siteInfo.name)}`)
+  log(`Site Url:   ${chalk.cyan(siteInfo.ssl_url || siteInfo.url)}`)
+  log(`Site Repo:  ${chalk.cyan(getRepoUrl({ siteInfo }))}`)
+  log(`Site Id:    ${chalk.cyan(siteInfo.id)}`)
+  log(`Admin URL:  ${chalk.cyan(siteInfo.admin_url)}`)
+  log()
+  log(`To disconnect this directory and create a new site (or link to another siteId)`)
+  log(`1. Run ${chalk.cyanBright.bold('netlify unlink')}`)
+  log(`2. Then run ${chalk.cyanBright.bold('netlify init')} again`)
+  exit()
+}
 
-    const repoUrl = get(siteInfo, 'build_settings.repo_url')
-    if (repoUrl && !flags.force) {
-      this.log()
-      this.log(`This site has been initialized`)
-      this.log()
-      this.log(`Site Name:  ${chalk.cyan(siteInfo.name)}`)
-      this.log(`Site Url:   ${chalk.cyan(siteInfo.ssl_url || siteInfo.url)}`)
-      this.log(`Site Repo:  ${chalk.cyan(repoUrl)}`)
-      this.log(`Site Id:    ${chalk.cyan(siteInfo.id)}`)
-      this.log(`Admin URL:  ${chalk.cyan(siteInfo.admin_url)}`)
-      this.log()
-      this.log(`To disconnect this directory and create a new site (or link to another siteId)`)
-      this.log(`1. Run ${chalk.cyanBright.bold('netlify unlink')}`)
-      this.log(`2. Then run ${chalk.cyanBright.bold('netlify init')} again`)
-      this.exit()
-    }
+const createNewSiteAndExit = async ({ log, exit, state }) => {
+  const siteInfo = await SitesCreateCommand.run([])
 
-    // Look for local repo
-    const repo = await getRepoData(flags.gitRemoteName)
+  log(`"${siteInfo.name}" site was created`)
+  log()
+  log(`To deploy to this site. Run your site build and then ${chalk.cyanBright.bold('netlify deploy')}`)
 
-    if (repo.error) {
-      this.log()
-      this.log(`${chalk.yellow('No git remote was found, would you like to set one up?')}`)
-      this.log(`
-It is recommended that you initialize a site that has a remote repository in GitHub.
+  persistState({ state, siteInfo })
 
-This will allow for Netlify Continuous deployment to build branch & PR previews.
+  exit()
+}
 
-For more details on Netlify CI checkout the docs: http://bit.ly/2N0Jhy5
-`)
-      if (repo.error === "Couldn't find origin url") {
-        this.log(`Unable to find a remote origin URL. Please add a git remote.
-
-git remote add origin https://github.com/YourUserName/RepoName.git
-`)
-      }
-
-      const NEW_SITE_NO_GIT = 'Yes, create and deploy site manually'
-      const NO_ABORT = 'No, I will connect this directory with GitHub first'
-
-      const { noGitRemoteChoice } = await inquirer.prompt([
-        {
-          type: 'list',
-          name: 'noGitRemoteChoice',
-          message: 'Do you want to create a Netlify site without a git repository?',
-          choices: [NEW_SITE_NO_GIT, NO_ABORT],
-        },
-      ])
-
-      // create site or search for one
-      if (noGitRemoteChoice === NEW_SITE_NO_GIT) {
-        // run site:create command
-        siteInfo = await SitesCreateCommand.run([])
-
-        this.log(`"${siteInfo.name}" site was created`)
-        this.log()
-        this.log(`To deploy to this site. Run your site build and then ${chalk.cyanBright.bold('netlify deploy')}`)
-
-        // Save to .netlify/state.json file
-        state.set('siteId', siteInfo.id)
-
-        // no github remote
-        this.exit()
-      } else if (noGitRemoteChoice === NO_ABORT) {
-        this.log()
-        this.log(`${chalk.bold('To initialize a new git repo follow the steps below.')}
+const logGitSetupInstructionsAndExit = ({ log, exit }) => {
+  log()
+  log(`${chalk.bold('To initialize a new git repo follow the steps below.')}
 
 1. Initialize a new repo:
 
@@ -128,92 +92,163 @@ git remote add origin https://github.com/YourUserName/RepoName.git
 
    ${chalk.cyanBright.bold('netlify init')}
 `)
-        this.exit()
-      }
+  exit()
+}
 
-      // Throw github remote error
-      this.error(repo.error)
-    }
+const handleNoGitRemoteAndExit = async ({ log, exit, error, state }) => {
+  log()
+  log(`${chalk.yellow('No git remote was found, would you like to set one up?')}`)
+  log(`
+It is recommended that you initialize a site that has a remote repository in GitHub.
 
-    if (isEmpty(siteInfo)) {
-      const NEW_SITE = '+  Create & configure a new site'
-      const EXISTING_SITE = '⇄  Connect this directory to an existing Netlify site'
+This will allow for Netlify Continuous deployment to build branch & PR previews.
 
-      const initializeOpts = [EXISTING_SITE, NEW_SITE]
+For more details on Netlify CI checkout the docs: http://bit.ly/2N0Jhy5
+`)
+  if (error === "Couldn't find origin url") {
+    log(`Unable to find a remote origin URL. Please add a git remote.
 
-      const { initChoice } = await inquirer.prompt([
-        {
-          type: 'list',
-          name: 'initChoice',
-          message: 'What would you like to do?',
-          choices: initializeOpts,
-        },
-      ])
+git remote add origin https://github.com/YourUserName/RepoName.git
+`)
+  }
 
-      // create site or search for one
-      if (initChoice === NEW_SITE) {
-        await track('sites_initStarted', {
-          type: 'new site',
-        })
-        // run site:create command
-        siteInfo = await SitesCreateCommand.run([])
-      } else if (initChoice === EXISTING_SITE) {
-        // run link command
-        siteInfo = await LinkCommand.run([], false)
-      }
-    }
+  const NEW_SITE_NO_GIT = 'Yes, create and deploy site manually'
+  const NO_ABORT = 'No, I will connect this directory with GitHub first'
 
-    // Check for existing CI setup
-    const remoteBuildRepo = get(siteInfo, 'build_settings.repo_url')
-    if (remoteBuildRepo && !flags.force) {
-      this.log()
-      this.log(chalk.underline.bold(`Success`))
-      const siteName = get(siteInfo, 'name')
-      this.log(`This site "${siteName}" is configured to automatically deploy via ${remoteBuildRepo}`)
-      // TODO add support for changing github repo in site:config command
-      this.exit()
-    }
+  const { noGitRemoteChoice } = await inquirer.prompt([
+    {
+      type: 'list',
+      name: 'noGitRemoteChoice',
+      message: 'Do you want to create a Netlify site without a git repository?',
+      choices: [NEW_SITE_NO_GIT, NO_ABORT],
+    },
+  ])
 
-    // Save to .netlify/state.json file
-    state.set('siteId', siteInfo.id)
+  if (noGitRemoteChoice === NEW_SITE_NO_GIT) {
+    await createNewSiteAndExit({ log, exit, state })
+  } else if (noGitRemoteChoice === NO_ABORT) {
+    logGitSetupInstructionsAndExit({ log, exit })
+  }
+}
 
-    if (flags.manual) {
-      await configManual(this, siteInfo, repo)
+const createOrLinkSiteToRepo = async () => {
+  const NEW_SITE = '+  Create & configure a new site'
+  const EXISTING_SITE = '⇄  Connect this directory to an existing Netlify site'
+
+  const initializeOpts = [EXISTING_SITE, NEW_SITE]
+
+  const { initChoice } = await inquirer.prompt([
+    {
+      type: 'list',
+      name: 'initChoice',
+      message: 'What would you like to do?',
+      choices: initializeOpts,
+    },
+  ])
+
+  // create site or search for one
+  if (initChoice === NEW_SITE) {
+    await track('sites_initStarted', {
+      type: 'new site',
+    })
+    // run site:create command
+    return await SitesCreateCommand.run([])
+  }
+  if (initChoice === EXISTING_SITE) {
+    // run link command
+    return await LinkCommand.run([], false)
+  }
+}
+
+const logExistingRepoSetupAndExit = ({ log, exit, siteName, repoUrl }) => {
+  log()
+  log(chalk.underline.bold(`Success`))
+  log(`This site "${siteName}" is configured to automatically deploy via ${repoUrl}`)
+  // TODO add support for changing github repo in site:config command
+  exit()
+}
+
+const configureGitHub = async ({ context, siteInfo, repo }) => {
+  try {
+    await configGithub(context, siteInfo, repo)
+  } catch (error) {
+    context.warn(`GitHub error: ${error.status}`)
+    if (error.status === 404) {
+      context.error(
+        `Does the repository ${repo.repo_path} exist and do you have the correct permissions to set up deploy keys?`,
+      )
     } else {
-      switch (repo.provider) {
-        case 'github': {
-          try {
-            await configGithub(this, siteInfo, repo)
-          } catch (error) {
-            this.warn(`GitHub error: ${error.status}`)
-            if (error.status === 404) {
-              this.error(
-                `Does the repository ${repo.repo_path} exist and do you have the correct permissions to set up deploy keys?`,
-              )
-            } else {
-              throw error
-            }
-          }
-          break
-        }
-        case 'gitlab':
-        default: {
-          this.error('No configurator found for the git hosting service')
-        }
-      }
+      throw error
     }
+  }
+}
 
-    // Success Message
-    this.log()
-    this.log(chalk.greenBright.bold.underline(`Success! Netlify CI/CD Configured!`))
-    this.log()
-    this.log(`This site is now configured to automatically deploy from ${repo.provider} branches & pull requests`)
-    this.log()
-    this.log(`Next steps:
+const configureProvider = async ({ context, siteInfo, repo }) => {
+  switch (repo.provider) {
+    case 'github': {
+      await configureGitHub({ context, siteInfo, repo })
+      break
+    }
+    default: {
+      context.error('No configurator found for the git hosting service')
+    }
+  }
+}
+
+const logSuccess = ({ log, repo }) => {
+  log()
+  log(chalk.greenBright.bold.underline(`Success! Netlify CI/CD Configured!`))
+  log()
+  log(`This site is now configured to automatically deploy from ${repo.provider} branches & pull requests`)
+  log()
+  log(`Next steps:
 
   ${chalk.cyanBright.bold('git push')}       Push to your git repository to trigger new site builds
   ${chalk.cyanBright.bold('netlify open')}   Open the Netlify admin URL of your site
   `)
+}
+
+class InitCommand extends Command {
+  async run() {
+    const { flags } = this.parse(InitCommand)
+    const { log, exit, config, netlify } = this
+    const { site, state } = netlify
+    let { siteInfo } = this.netlify
+
+    // Check logged in status
+    await this.authenticate()
+
+    await reportAnalytics({ config, flags })
+
+    // Add .netlify to .gitignore file
+    await ensureNetlifyIgnore(site.root)
+
+    const repoUrl = getRepoUrl({ siteInfo })
+    if (repoUrl && !flags.force) {
+      logExistingAndExit({ log, exit, siteInfo })
+    }
+
+    // Look for local repo
+    const repo = await getRepoData(flags.gitRemoteName)
+    if (repo.error) {
+      await handleNoGitRemoteAndExit({ log, exit, error: repo.error, state })
+    }
+
+    if (isEmpty(siteInfo)) {
+      siteInfo = await createOrLinkSiteToRepo()
+    }
+
+    // Check for existing CI setup
+    const remoteBuildRepo = getRepoUrl({ siteInfo })
+    if (remoteBuildRepo && !flags.force) {
+      logExistingRepoSetupAndExit({ log, exit, siteName: siteInfo.name, repoUrl: remoteBuildRepo })
+    }
+
+    persistState({ state, siteInfo })
+
+    await (flags.manual ? configManual(this, siteInfo, repo) : configureProvider({ context: this, siteInfo, repo }))
+
+    logSuccess({ log, repo })
 
     return siteInfo
   }
