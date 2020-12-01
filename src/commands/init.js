@@ -23,8 +23,8 @@ const getRepoUrl = ({ siteInfo }) => {
   return dotProp.get(siteInfo, 'build_settings.repo_url')
 }
 
-const reportAnalytics = async ({ context, flags }) => {
-  await context.config.runHook('analytics', {
+const reportAnalytics = async ({ config, flags }) => {
+  await config.runHook('analytics', {
     eventName: 'command',
     payload: {
       command: 'init',
@@ -34,37 +34,37 @@ const reportAnalytics = async ({ context, flags }) => {
   })
 }
 
-const logExistingAndExit = ({ context, siteInfo }) => {
-  context.log()
-  context.log(`This site has been initialized`)
-  context.log()
-  context.log(`Site Name:  ${chalk.cyan(siteInfo.name)}`)
-  context.log(`Site Url:   ${chalk.cyan(siteInfo.ssl_url || siteInfo.url)}`)
-  context.log(`Site Repo:  ${chalk.cyan(getRepoUrl({ siteInfo }))}`)
-  context.log(`Site Id:    ${chalk.cyan(siteInfo.id)}`)
-  context.log(`Admin URL:  ${chalk.cyan(siteInfo.admin_url)}`)
-  context.log()
-  context.log(`To disconnect this directory and create a new site (or link to another siteId)`)
-  context.log(`1. Run ${chalk.cyanBright.bold('netlify unlink')}`)
-  context.log(`2. Then run ${chalk.cyanBright.bold('netlify init')} again`)
-  context.exit()
+const logExistingAndExit = ({ log, exit, siteInfo }) => {
+  log()
+  log(`This site has been initialized`)
+  log()
+  log(`Site Name:  ${chalk.cyan(siteInfo.name)}`)
+  log(`Site Url:   ${chalk.cyan(siteInfo.ssl_url || siteInfo.url)}`)
+  log(`Site Repo:  ${chalk.cyan(getRepoUrl({ siteInfo }))}`)
+  log(`Site Id:    ${chalk.cyan(siteInfo.id)}`)
+  log(`Admin URL:  ${chalk.cyan(siteInfo.admin_url)}`)
+  log()
+  log(`To disconnect this directory and create a new site (or link to another siteId)`)
+  log(`1. Run ${chalk.cyanBright.bold('netlify unlink')}`)
+  log(`2. Then run ${chalk.cyanBright.bold('netlify init')} again`)
+  exit()
 }
 
-const createNewSiteAndExit = async ({ context, state }) => {
+const createNewSiteAndExit = async ({ log, exit, state }) => {
   const siteInfo = await SitesCreateCommand.run([])
 
-  context.log(`"${siteInfo.name}" site was created`)
-  context.log()
-  context.log(`To deploy to this site. Run your site build and then ${chalk.cyanBright.bold('netlify deploy')}`)
+  log(`"${siteInfo.name}" site was created`)
+  log()
+  log(`To deploy to this site. Run your site build and then ${chalk.cyanBright.bold('netlify deploy')}`)
 
   persistState({ state, siteInfo })
 
-  context.exit()
+  exit()
 }
 
-const logGitSetupInstructionsAndExit = ({ context }) => {
-  context.log()
-  context.log(`${chalk.bold('To initialize a new git repo follow the steps below.')}
+const logGitSetupInstructionsAndExit = ({ log, exit }) => {
+  log()
+  log(`${chalk.bold('To initialize a new git repo follow the steps below.')}
 
 1. Initialize a new repo:
 
@@ -92,13 +92,13 @@ ${chalk.cyanBright.bold('git push -u origin master')}
 
 ${chalk.cyanBright.bold('netlify init')}
 `)
-  context.exit()
+  exit()
 }
 
-const handleNoGitRemoteAndExit = async ({ context, error, state }) => {
-  context.log()
-  context.log(`${chalk.yellow('No git remote was found, would you like to set one up?')}`)
-  context.log(`
+const handleNoGitRemoteAndExit = async ({ log, exit, error, state }) => {
+  log()
+  log(`${chalk.yellow('No git remote was found, would you like to set one up?')}`)
+  log(`
 It is recommended that you initialize a site that has a remote repository in GitHub.
 
 This will allow for Netlify Continuous deployment to build branch & PR previews.
@@ -106,7 +106,7 @@ This will allow for Netlify Continuous deployment to build branch & PR previews.
 For more details on Netlify CI checkout the docs: http://bit.ly/2N0Jhy5
 `)
   if (error === "Couldn't find origin url") {
-    context.log(`Unable to find a remote origin URL. Please add a git remote.
+    log(`Unable to find a remote origin URL. Please add a git remote.
 
 git remote add origin https://github.com/YourUserName/RepoName.git
 `)
@@ -125,9 +125,9 @@ git remote add origin https://github.com/YourUserName/RepoName.git
   ])
 
   if (noGitRemoteChoice === NEW_SITE_NO_GIT) {
-    await createNewSiteAndExit({ context, state })
+    await createNewSiteAndExit({ log, exit, state })
   } else if (noGitRemoteChoice === NO_ABORT) {
-    logGitSetupInstructionsAndExit({ context })
+    logGitSetupInstructionsAndExit({ log, exit })
   }
 }
 
@@ -160,12 +160,12 @@ const createOrLinkSiteToRepo = async () => {
   }
 }
 
-const logExistingRepoSetupAndExit = ({ context, siteName, repoUrl }) => {
-  context.log()
-  context.log(chalk.underline.bold(`Success`))
-  context.log(`This site "${siteName}" is configured to automatically deploy via ${repoUrl}`)
+const logExistingRepoSetupAndExit = ({ log, exit, siteName, repoUrl }) => {
+  log()
+  log(chalk.underline.bold(`Success`))
+  log(`This site "${siteName}" is configured to automatically deploy via ${repoUrl}`)
   // TODO add support for changing github repo in site:config command
-  context.exit()
+  exit()
 }
 
 const configureGitHub = async ({ context, siteInfo, repo }) => {
@@ -195,14 +195,13 @@ const configureProvider = async ({ context, siteInfo, repo }) => {
   }
 }
 
-const logSuccess = ({ context, repo }) => {
-  // Success Message
-  context.log()
-  context.log(chalk.greenBright.bold.underline(`Success! Netlify CI/CD Configured!`))
-  context.log()
-  context.log(`This site is now configured to automatically deploy from ${repo.provider} branches & pull requests`)
-  context.log()
-  context.log(`Next steps:
+const logSuccess = ({ log, repo }) => {
+  log()
+  log(chalk.greenBright.bold.underline(`Success! Netlify CI/CD Configured!`))
+  log()
+  log(`This site is now configured to automatically deploy from ${repo.provider} branches & pull requests`)
+  log()
+  log(`Next steps:
 
   ${chalk.cyanBright.bold('git push')}       Push to your git repository to trigger new site builds
   ${chalk.cyanBright.bold('netlify open')}   Open the Netlify admin URL of your site
@@ -212,26 +211,27 @@ const logSuccess = ({ context, repo }) => {
 class InitCommand extends Command {
   async run() {
     const { flags } = this.parse(InitCommand)
-    const { site, state } = this.netlify
+    const { log, exit, config, netlify } = this
+    const { site, state } = netlify
     let { siteInfo } = this.netlify
 
     // Check logged in status
     await this.authenticate()
 
-    await reportAnalytics({ context: this, flags })
+    await reportAnalytics({ config, flags })
 
     // Add .netlify to .gitignore file
     await ensureNetlifyIgnore(site.root)
 
     const repoUrl = getRepoUrl({ siteInfo })
     if (repoUrl && !flags.force) {
-      logExistingAndExit({ context: this, siteInfo })
+      logExistingAndExit({ log, exit, siteInfo })
     }
 
     // Look for local repo
     const repo = await getRepoData(flags.gitRemoteName)
     if (repo.error) {
-      await handleNoGitRemoteAndExit({ context: this, error: repo.error, state })
+      await handleNoGitRemoteAndExit({ log, exit, error: repo.error, state })
     }
 
     if (isEmpty(siteInfo)) {
@@ -241,14 +241,14 @@ class InitCommand extends Command {
     // Check for existing CI setup
     const remoteBuildRepo = getRepoUrl({ siteInfo })
     if (remoteBuildRepo && !flags.force) {
-      logExistingRepoSetupAndExit({ context: this, siteName: siteInfo.name, repoUrl: remoteBuildRepo })
+      logExistingRepoSetupAndExit({ log, exit, siteName: siteInfo.name, repoUrl: remoteBuildRepo })
     }
 
     persistState({ state, siteInfo })
 
     await (flags.manual ? configManual(this, siteInfo, repo) : configureProvider({ context: this, siteInfo, repo }))
 
-    logSuccess({ context: this, repo })
+    logSuccess({ log, repo })
 
     return siteInfo
   }
