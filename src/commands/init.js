@@ -68,29 +68,29 @@ const logGitSetupInstructionsAndExit = ({ log, exit }) => {
 
 1. Initialize a new repo:
 
-${chalk.cyanBright.bold('git init')}
+   ${chalk.cyanBright.bold('git init')}
 
 2. Commit your files
 
-${chalk.cyanBright.bold('git add .')}
+   ${chalk.cyanBright.bold('git add .')}
 
 3. Commit your files
 
-${chalk.cyanBright.bold("git commit -m 'initial commit'")}
+   ${chalk.cyanBright.bold("git commit -m 'initial commit'")}
 
 4. Create a new repo in GitHub ${chalk.cyanBright.bold('https://github.com/new')}
 
 5. Link the remote repo with this local directory
 
-${chalk.cyanBright.bold('git remote add origin git@github.com:YourGithubName/your-repo-slug.git')}
+   ${chalk.cyanBright.bold('git remote add origin git@github.com:YourGithubName/your-repo-slug.git')}
 
 6. Push up your files
 
-${chalk.cyanBright.bold('git push -u origin master')}
+   ${chalk.cyanBright.bold('git push -u origin master')}
 
 7. Initialize your Netlify Site
 
-${chalk.cyanBright.bold('netlify init')}
+   ${chalk.cyanBright.bold('netlify init')}
 `)
   exit()
 }
