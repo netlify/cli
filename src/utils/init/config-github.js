@@ -1,13 +1,8 @@
-const os = require('os')
-
 const { Octokit } = require('@octokit/rest')
 
-const { version } = require('../../../package.json')
 const ghauth = require('../gh-auth')
 
 const { getBuildSettings, saveNetlifyToml } = require('./utils')
-
-const USER_AGENT = `Netlify CLI ${version}`
 
 const PAGE_SIZE = 100
 
@@ -24,11 +19,6 @@ const getGitHubToken = async ({ log, globalConfig }) => {
   }
 
   const newToken = await ghauth({
-    opts: {
-      scopes: ['admin:org', 'admin:public_key', 'repo', 'user'],
-      userAgent: USER_AGENT,
-      note: `Netlify CLI ${os.userInfo().username}@${os.hostname()}`,
-    },
     log,
   })
   globalConfig.set(`users.${userId}.auth.github`, newToken)
@@ -102,6 +92,7 @@ module.exports = async function configGithub({ context, siteId, repoOwner, repoN
   } = netlify
 
   const token = await getGitHubToken({ log, globalConfig })
+
   const { buildCmd, buildDir, functionsDir } = await getBuildSettings({ siteRoot, config })
   await saveNetlifyToml({ siteRoot, config, buildCmd, buildDir, functionsDir })
 
