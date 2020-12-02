@@ -4,7 +4,7 @@ const chalk = require('chalk')
 const inquirer = require('inquirer')
 const isEmpty = require('lodash/isEmpty')
 
-const getRepoData = require('../get-repo-data')
+const { getRepoData } = require('../get-repo-data')
 const { track } = require('../telemetry')
 
 module.exports = async function linkPrompts(context, flags = {}) {
@@ -17,18 +17,14 @@ module.exports = async function linkPrompts(context, flags = {}) {
   let GIT_REMOTE_PROMPT = 'Use the current git remote origin URL'
   let site
   // Get git remote data if exists
-  const repoInfo = await getRepoData(flags.gitRemoteName)
+  const repoData = await getRepoData({ log: context.log, remoteName: flags.gitRemoteName })
 
-  const LinkChoices = [SITE_NAME_PROMPT, SITE_LIST_PROMPT, SITE_ID_PROMPT]
+  let linkChoices = [SITE_NAME_PROMPT, SITE_LIST_PROMPT, SITE_ID_PROMPT]
 
-  let repoUrl = ''
-  if (!repoInfo.error) {
-    repoUrl = `https://${repoInfo.host}/${repoInfo.remoteData.repo}`
-
-    GIT_REMOTE_PROMPT = `Use current git remote origin (${repoUrl})`
-
-    // Add git GIT_REMOTE_PROMPT if in a repo. TODO refactor to non mutating
-    LinkChoices.splice(0, 0, GIT_REMOTE_PROMPT)
+  if (!repoData.error) {
+    // Add git GIT_REMOTE_PROMPT if in a repo
+    GIT_REMOTE_PROMPT = `Use current git remote origin (${repoData.httpsUrl})`
+    linkChoices = [GIT_REMOTE_PROMPT, ...linkChoices]
   }
 
   context.log()
@@ -39,7 +35,7 @@ module.exports = async function linkPrompts(context, flags = {}) {
       type: 'list',
       name: 'linkType',
       message: 'How do you want to link this folder to a site?',
-      choices: LinkChoices,
+      choices: linkChoices,
     },
   ])
 
@@ -47,15 +43,8 @@ module.exports = async function linkPrompts(context, flags = {}) {
   switch (linkType) {
     case GIT_REMOTE_PROMPT: {
       kind = 'gitRemote'
-      if (repoInfo.error) {
-        context.error(new Error(repoInfo.error))
-      }
-
-      if (isEmpty(repoInfo)) {
-        context.error(new Error(`No git remote found in this directory`))
-      }
       context.log()
-      context.log(`Looking for sites connected to '${repoUrl}'...`)
+      context.log(`Looking for sites connected to '${repoData.httpsUrl}'...`)
       context.log()
       const sites = await api.listSites({ filter: 'all' })
 
@@ -66,14 +55,14 @@ module.exports = async function linkPrompts(context, flags = {}) {
       }
 
       const matchingSites = sites.filter(({ build_settings: buildSettings = {} }) => {
-        return repoUrl === buildSettings.repo_url
+        return repoData.httpsUrl === buildSettings.repo_url
       })
 
       // If no remote matches. Throw error
       if (isEmpty(matchingSites)) {
         context.log(chalk.redBright.bold.underline(`No Matching Site Found`))
         context.log()
-        context.log(`No site found with the remote ${repoUrl}.
+        context.log(`No site found with the remote ${repoData.httpsUrl}.
 
 Double check you are in the correct working directory and a remote origin repo is configured.
 
