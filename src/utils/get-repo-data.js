@@ -13,7 +13,7 @@ const getRepoData = async function ({ log, remoteName }) {
     const cwd = process.cwd()
     const [gitConfig, gitDirectory] = await Promise.all([
       util.promisify(gitconfiglocal)(cwd),
-      findUp(['.git'], { cwd, type: 'directory' }),
+      findUp('.git', { cwd, type: 'directory' }),
     ])
     const baseGitPath = dirname(gitDirectory)
 
