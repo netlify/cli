@@ -1,5 +1,6 @@
 const path = require('path')
 
+const chalk = require('chalk')
 const cleanDeep = require('clean-deep')
 const dotProp = require('dot-prop')
 const inquirer = require('inquirer')
@@ -82,7 +83,7 @@ const getNetlifyToml = ({
   ## more info on configuring this file: https://www.netlify.com/docs/netlify-toml-reference/
 `
 
-const saveNetlifyToml = async ({ siteRoot, config, buildCmd, buildDir, functionsDir }) => {
+const saveNetlifyToml = async ({ siteRoot, config, buildCmd, buildDir, functionsDir, warn }) => {
   const tomlPath = path.join(siteRoot, 'netlify.toml')
   const exists = await fileExistsAsync(tomlPath)
   const cleanedConfig = cleanDeep(config)
@@ -96,9 +97,40 @@ const saveNetlifyToml = async ({ siteRoot, config, buildCmd, buildDir, functions
       },
     ])
     if (makeNetlifyTOML) {
-      await writeFileAsync(tomlPath, getNetlifyToml({ command: buildCmd, publish: buildDir, functions: functionsDir }))
+      try {
+        await writeFileAsync(
+          tomlPath,
+          getNetlifyToml({ command: buildCmd, publish: buildDir, functions: functionsDir }),
+        )
+      } catch (error) {
+        warn(`Failed saving Netlify toml file: ${error.message}`)
+      }
     }
   }
 }
 
-module.exports = { getBuildSettings, saveNetlifyToml }
+const formatErrorMessage = ({ message, error }) => {
+  return `${message} with error: ${chalk.red(error.message)}`
+}
+
+const createDeployKey = async ({ api, failAndExit }) => {
+  try {
+    const deployKey = await api.createDeployKey()
+    return deployKey
+  } catch (error) {
+    const message = formatErrorMessage({ message: 'Failed creating deploy key', error })
+    failAndExit(message)
+  }
+}
+
+const updateSite = async ({ siteId, api, failAndExit, repo }) => {
+  try {
+    const updatedSite = await api.updateSite({ siteId, body: { repo } })
+    return updatedSite
+  } catch (error) {
+    const message = formatErrorMessage({ message: 'Failed updating site with repo information', error })
+    failAndExit(message)
+  }
+}
+
+module.exports = { getBuildSettings, saveNetlifyToml, formatErrorMessage, createDeployKey, updateSite }

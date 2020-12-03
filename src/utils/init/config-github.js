@@ -1,8 +1,16 @@
 const { Octokit } = require('@octokit/rest')
+const chalk = require('chalk')
 
 const ghauth = require('../gh-auth')
 
-const { getBuildSettings, saveNetlifyToml } = require('./utils')
+const { getBuildSettings, saveNetlifyToml, formatErrorMessage, createDeployKey, updateSite } = require('./utils')
+
+const formatRepoAndOwner = ({ repoOwner, repoName }) => {
+  return {
+    name: chalk.magenta(repoName),
+    owner: chalk.magenta(repoOwner),
+  }
+}
 
 const PAGE_SIZE = 100
 
@@ -32,35 +40,64 @@ const getGitHubClient = ({ token }) => {
   return octokit
 }
 
-const createDeployKey = async ({ api, octokit, repoOwner, repoName }) => {
-  const key = await api.createDeployKey()
-  await octokit.repos.addDeployKey({
-    title: 'Netlify Deploy Key',
-    key: key.public_key,
-    owner: repoOwner,
-    repo: repoName,
-    read_only: true,
-  })
-  return key
+const addDeployKey = async ({ log, api, octokit, repoOwner, repoName, failAndExit }) => {
+  log('Adding deploy key to repository...')
+  const key = await createDeployKey({ api, failAndExit })
+  try {
+    await octokit.repos.addDeployKey({
+      title: 'Netlify Deploy Key',
+      key: key.public_key,
+      owner: repoOwner,
+      repo: repoName,
+      read_only: true,
+    })
+    log('Deploy key added!')
+    return key
+  } catch (error) {
+    let message = formatErrorMessage({ message: 'Failed adding GitHub deploy key', error })
+    if (error.status === 404) {
+      const { name, owner } = formatRepoAndOwner({ repoName, repoOwner })
+      message = `${message}. Does the repository ${name} exist and do ${owner} has the correct permissions to set up deploy keys?`
+    }
+    failAndExit(message)
+  }
 }
 
-const getGitHubRepo = async ({ octokit, repoOwner, repoName }) => {
-  const { data: githubRepo } = await octokit.repos.get({
-    owner: repoOwner,
-    repo: repoName,
-  })
-  return githubRepo
+const getGitHubRepo = async ({ octokit, repoOwner, repoName, failAndExit }) => {
+  try {
+    const { data } = await octokit.repos.get({
+      owner: repoOwner,
+      repo: repoName,
+    })
+    return data
+  } catch (error) {
+    let message = formatErrorMessage({ message: 'Failed retrieving GitHub repository information', error })
+    if (error.status === 404) {
+      const { name, owner } = formatRepoAndOwner({ repoName, repoOwner })
+      message = `${message}. Does the repository ${name} exist and accessible by ${owner}`
+    }
+    failAndExit(message)
+  }
+}
+
+const hookExists = async ({ deployHook, octokit, repoOwner, repoName }) => {
+  try {
+    const { data: hooks } = await octokit.repos.listHooks({
+      owner: repoOwner,
+      repo: repoName,
+      per_page: PAGE_SIZE,
+    })
+    const exists = hooks.some((hook) => hook.config.url === deployHook)
+    return exists
+  } catch (_) {
+    // we don't need to fail if listHooks errors out
+    return false
+  }
 }
 
 const addDeployHook = async ({ deployHook, octokit, repoOwner, repoName, failAndExit }) => {
-  const { data: hooks } = await octokit.repos.listHooks({
-    owner: repoOwner,
-    repo: repoName,
-    per_page: PAGE_SIZE,
-  })
-
-  const hookExists = hooks.some((hook) => hook.config.url === deployHook)
-  if (!hookExists) {
+  const exists = await hookExists({ deployHook, octokit, repoOwner, repoName })
+  if (!exists) {
     try {
       await octokit.repos.createHook({
         owner: repoOwner,
@@ -76,14 +113,72 @@ const addDeployHook = async ({ deployHook, octokit, repoOwner, repoName, failAnd
     } catch (error) {
       // Ignore exists error if the list doesn't return all installed hooks
       if (!error.message.includes('Hook already exists on this repository')) {
-        failAndExit(error)
+        let message = formatErrorMessage({ message: 'Failed creating repo hook', error })
+        if (error.status === 404) {
+          const { name, owner } = formatRepoAndOwner({ repoName, repoOwner })
+          message = `${message}. Does the repository ${name} and do ${owner} has the correct permissions to set up hooks`
+        }
+        failAndExit(message)
       }
     }
   }
 }
 
+const GITHUB_HOOK_EVENTS = ['deploy_created', 'deploy_failed', 'deploy_building']
+const GITHUB_HOOK_TYPE = 'github_commit_status'
+
+const upsertHook = async ({ ntlHooks, event, api, siteId, token }) => {
+  const ntlHook = ntlHooks.find((hook) => hook.type === GITHUB_HOOK_TYPE && hook.event === event)
+
+  if (!ntlHook || ntlHook.disabled) {
+    return await api.createHookBySiteId({
+      site_id: siteId,
+      body: {
+        type: GITHUB_HOOK_TYPE,
+        event,
+        data: {
+          access_token: token,
+        },
+      },
+    })
+  }
+
+  return await api.updateHook({
+    hook_id: ntlHook.id,
+    body: {
+      data: {
+        access_token: token,
+      },
+    },
+  })
+}
+
+const addNotificationHooks = async ({ log, failAndExit, siteId, api, token }) => {
+  log(`Creating Netlify Github Notification Hooks...`)
+
+  let ntlHooks
+  try {
+    ntlHooks = await api.listHooksBySiteId({ siteId })
+  } catch (error) {
+    const message = formatErrorMessage({ message: 'Failed retrieving Netlify hooks', error })
+    failAndExit(message)
+  }
+  await Promise.all(
+    GITHUB_HOOK_EVENTS.map(async (event) => {
+      try {
+        await upsertHook({ ntlHooks, event, api, siteId, token })
+      } catch (error) {
+        const message = formatErrorMessage({ message: `Failed settings Netlify hook ${chalk.magenta(event)}`, error })
+        failAndExit(message)
+      }
+    }),
+  )
+
+  log(`Netlify Notification Hooks configured!`)
+}
+
 module.exports = async function configGithub({ context, siteId, repoOwner, repoName }) {
-  const { log, error: failAndExit, netlify } = context
+  const { log, warn, error: failAndExit, netlify } = context
   const {
     api,
     globalConfig,
@@ -94,12 +189,12 @@ module.exports = async function configGithub({ context, siteId, repoOwner, repoN
   const token = await getGitHubToken({ log, globalConfig })
 
   const { buildCmd, buildDir, functionsDir } = await getBuildSettings({ siteRoot, config })
-  await saveNetlifyToml({ siteRoot, config, buildCmd, buildDir, functionsDir })
+  await saveNetlifyToml({ siteRoot, config, buildCmd, buildDir, functionsDir, warn })
 
   const octokit = getGitHubClient({ token })
   const [deployKey, githubRepo] = await Promise.all([
-    createDeployKey({ api, octokit, repoOwner, repoName }),
-    getGitHubRepo({ octokit, repoOwner, repoName }),
+    addDeployKey({ log, api, octokit, repoOwner, repoName, failAndExit }),
+    getGitHubRepo({ octokit, repoOwner, repoName, failAndExit }),
   ])
 
   const repo = {
@@ -113,46 +208,8 @@ module.exports = async function configGithub({ context, siteId, repoOwner, repoN
     ...(buildCmd && { cmd: buildCmd }),
   }
 
-  const updatedSite = await api.updateSite({ siteId, body: { repo } })
-
+  const updatedSite = await updateSite({ siteId, api, failAndExit, repo })
   await addDeployHook({ deployHook: updatedSite.deploy_hook, octokit, repoOwner, repoName, failAndExit })
-
   log()
-  log(`Creating Netlify Github Notification Hooks...`)
-
-  // TODO: Generalize this so users can reset these automatically.
-  // Quick and dirty implementation
-  const ntlHooks = await api.listHooksBySiteId({ siteId })
-  await Promise.all(GITHUB_HOOK_EVENTS.map((event) => upsertHook({ ntlHooks, event, api, siteId, token })))
-
-  log(`Netlify Notification Hooks configured!`)
+  await addNotificationHooks({ log, failAndExit, siteId, api, token })
 }
-
-const upsertHook = function ({ ntlHooks, event, api, siteId, token }) {
-  const ntlHook = ntlHooks.find((hook) => hook.type === GITHUB_HOOK_TYPE && hook.event === event)
-
-  if (!ntlHook || ntlHook.disabled) {
-    return api.createHookBySiteId({
-      site_id: siteId,
-      body: {
-        type: GITHUB_HOOK_TYPE,
-        event,
-        data: {
-          access_token: token,
-        },
-      },
-    })
-  }
-
-  return api.updateHook({
-    hook_id: ntlHook.id,
-    body: {
-      data: {
-        access_token: token,
-      },
-    },
-  })
-}
-
-const GITHUB_HOOK_EVENTS = ['deploy_created', 'deploy_failed', 'deploy_building']
-const GITHUB_HOOK_TYPE = 'github_commit_status'

@@ -3,21 +3,6 @@ const chalk = require('chalk')
 const configGithub = require('./config-github')
 const configManual = require('./config-manual')
 
-const configureGitHub = async ({ context, siteId, repoData }) => {
-  try {
-    await configGithub({ context, siteId, repoName: repoData.name, repoOwner: repoData.owner })
-  } catch (error) {
-    context.warn(`GitHub error: ${error.status}`)
-    if (error.status === 404) {
-      context.error(
-        `Does the repository ${repoData.repo} exist and do you have the correct permissions to set up deploy keys?`,
-      )
-    } else {
-      throw error
-    }
-  }
-}
-
 const logSuccess = ({ log, repoData }) => {
   log()
   log(chalk.greenBright.bold.underline(`Success! Netlify CI/CD Configured!`))
@@ -37,7 +22,7 @@ const configureRepo = async ({ context, siteId, repoData, manual }) => {
   } else {
     switch (repoData.provider) {
       case 'github': {
-        await configureGitHub({ context, siteId, repoData })
+        await configGithub({ context, siteId, repoName: repoData.name, repoOwner: repoData.owner })
         break
       }
       default: {

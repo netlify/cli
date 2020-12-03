@@ -1,10 +1,8 @@
 const inquirer = require('inquirer')
 
-const { getBuildSettings, saveNetlifyToml } = require('./utils')
+const { getBuildSettings, saveNetlifyToml, createDeployKey, updateSite } = require('./utils')
 
-const createDeployKey = async ({ log, exit, api }) => {
-  const deployKey = await api.createDeployKey()
-
+const addDeployKey = async ({ log, exit, deployKey }) => {
   log('\nGive this Netlify SSH public key access to your repository:\n')
   log(`\n${deployKey.public_key}\n\n`)
 
@@ -20,8 +18,6 @@ const createDeployKey = async ({ log, exit, api }) => {
   if (!sshKeyAdded) {
     exit()
   }
-
-  return deployKey
 }
 
 const getRepoPath = async ({ repoData }) => {
@@ -54,7 +50,7 @@ const addDeployHook = async ({ log, deployHook }) => {
 }
 
 module.exports = async function configManual({ context, siteId, repoData }) {
-  const { log, exit, netlify } = context
+  const { log, warn, error: failAndExit, exit, netlify } = context
   const {
     api,
     config,
@@ -62,9 +58,11 @@ module.exports = async function configManual({ context, siteId, repoData }) {
   } = netlify
 
   const { buildCmd, buildDir, functionsDir } = await getBuildSettings({ siteRoot, config })
-  await saveNetlifyToml({ siteRoot, config, buildCmd, buildDir, functionsDir })
+  await saveNetlifyToml({ siteRoot, config, buildCmd, buildDir, functionsDir, warn })
 
-  const deployKey = await createDeployKey({ log, exit, api })
+  const deployKey = await createDeployKey({ api, failAndExit })
+  await addDeployKey({ log, exit, deployKey })
+
   const repoPath = await getRepoPath({ repoData })
   const repo = {
     provider: 'manual',
@@ -76,8 +74,7 @@ module.exports = async function configManual({ context, siteId, repoData }) {
     ...(buildCmd && { cmd: buildCmd }),
   }
 
-  const updatedSite = await api.updateSite({ siteId, body: { repo } })
-
+  const updatedSite = await updateSite({ siteId, api, failAndExit, repo })
   const deployHookAdded = await addDeployHook({ log, deployHook: updatedSite.deploy_hook })
   if (!deployHookAdded) {
     exit()
