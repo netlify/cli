@@ -2,7 +2,6 @@ const path = require('path')
 
 const chalk = require('chalk')
 const cleanDeep = require('clean-deep')
-const dotProp = require('dot-prop')
 const inquirer = require('inquirer')
 const isEmpty = require('lodash/isEmpty')
 
@@ -18,9 +17,7 @@ const normalizeDir = ({ siteRoot, dir, defaultValue }) => {
 }
 
 const getDefaultSettings = ({ siteRoot, config }) => {
-  const defaultBuildCmd = dotProp.get(config, 'build.command')
-  const defaultBuildDir = dotProp.get(config, 'build.publish')
-  const defaultFunctionsDir = dotProp.get(config, 'build.functions')
+  const { command: defaultBuildCmd, publish: defaultBuildDir, functions: defaultFunctionsDir } = config.build
 
   return {
     defaultBuildCmd,
