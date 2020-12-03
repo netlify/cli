@@ -21,7 +21,7 @@ const validateContent = async ({ siteUrl, path, content, t }) => {
       actualContent = await response.text()
     }
   } catch (error) {
-    // no op
+    console.log(error)
   }
   t.is(actualContent, content)
 }
