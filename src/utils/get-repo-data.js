@@ -1,4 +1,4 @@
-const path = require('path')
+const { dirname } = require('path')
 const process = require('process')
 const util = require('util')
 
@@ -8,58 +8,51 @@ const gitconfiglocal = require('gitconfiglocal')
 const isEmpty = require('lodash/isEmpty')
 const parseGitRemote = require('parse-github-url')
 
-const getRepoData = async function (remote) {
-  const cwd = process.cwd()
-  let repo = {}
+const getRepoData = async function ({ log, remoteName }) {
   try {
-    const gitConfig = await util.promisify(gitconfiglocal)(cwd)
-    const gitDirectory = findUp.sync(['.git'], { cwd, type: 'directory' })
-    const baseGitPath = path.dirname(gitDirectory)
+    const cwd = process.cwd()
+    const [gitConfig, gitDirectory] = await Promise.all([
+      util.promisify(gitconfiglocal)(cwd),
+      findUp('.git', { cwd, type: 'directory' }),
+    ])
+    const baseGitPath = dirname(gitDirectory)
 
     if (cwd !== baseGitPath) {
-      console.log(`Git directory located in ${baseGitPath}`)
-      // TODO prompt for "is this the correct git remote"?
-      // If folder gitignored inside another git repo it could link to wrong repo.
+      log(`Git directory located in ${baseGitPath}`)
     }
 
     if (isEmpty(gitConfig) || isEmpty(gitConfig.remote)) {
       throw new Error('No Git remote found')
     }
 
-    if (!remote) {
-      remote = Object.prototype.hasOwnProperty.call(gitConfig, 'origin')
-        ? 'origin'
-        : Object.keys(gitConfig.remote).shift()
+    if (!remoteName) {
+      const remotes = Object.keys(gitConfig.remote)
+      remoteName = remotes.find((remote) => remote === 'origin') || remotes[0]
     }
 
-    if (!Object.prototype.hasOwnProperty.call(gitConfig.remote, remote) || isEmpty(gitConfig.remote[remote])) {
+    if (!Object.prototype.hasOwnProperty.call(gitConfig.remote, remoteName) || isEmpty(gitConfig.remote[remoteName])) {
       throw new Error(
-        `The specified remote "${remote}" is not defined in Git repo. Please use --gitRemoteName flag to specify a remote.`,
+        `The specified remote "${remoteName}" is not defined in Git repo. Please use --gitRemoteName flag to specify a remote.`,
       )
     }
 
-    const remoteData = parseGitRemote(gitConfig.remote[remote].url)
-    const repoData = gitRepoInfo()
-
-    // TODO refactor shape
-    repo = {
-      gitDirectoryPath: gitDirectory,
-      remoteData,
-      repoData,
-      repo_path: remoteData.path,
-      repo_branch: repoData.branch,
-      allowed_branches: [repoData.branch],
-      host: remoteData.host,
-      provider: PROVIDERS[remoteData.host],
+    const { url } = gitConfig.remote[remoteName]
+    const { name, owner, host, repo } = parseGitRemote(url)
+    const { branch } = gitRepoInfo()
+    return {
+      name,
+      owner,
+      repo,
+      url,
+      branch,
+      provider: PROVIDERS[host] || host,
+      httpsUrl: `https://${host}/${repo}`,
     }
   } catch (error) {
-    // console.log('error', error)
     return {
       error: error.message,
     }
   }
-
-  return repo
 }
 
 const PROVIDERS = {
@@ -67,4 +60,4 @@ const PROVIDERS = {
   'gitlab.com': 'gitlab',
 }
 
-module.exports = getRepoData
+module.exports = { getRepoData }

@@ -3,12 +3,11 @@ const chalk = require('chalk')
 const inquirer = require('inquirer')
 const pick = require('lodash/pick')
 const sample = require('lodash/sample')
-const parseGitRemote = require('parse-github-url')
 const prettyjson = require('prettyjson')
 
 const Command = require('../../utils/command')
-const configGithub = require('../../utils/init/config-github')
-const configManual = require('../../utils/init/config-manual')
+const { getRepoData } = require('../../utils/get-repo-data')
+const { configureRepo } = require('../../utils/init/config')
 const { track } = require('../../utils/telemetry')
 
 class SitesCreateCommand extends Command {
@@ -118,47 +117,8 @@ class SitesCreateCommand extends Command {
 
     if (flags['with-ci']) {
       this.log('Configuring CI')
-      const { url } = await inquirer.prompt([
-        {
-          type: 'input',
-          name: 'url',
-          message: 'Git SSH remote URL to enable CI with:',
-          validate: (input) => (parseGitRemote(input) ? true : `Could not parse Git remote ${input}`),
-        },
-      ])
-      console.log(url)
-      const repoData = parseGitRemote(url)
-      const repo = {
-        repoData,
-        repo_path: url,
-      }
-
-      switch (true) {
-        case flags.manual: {
-          await configManual(this, site, repo)
-          break
-        }
-        case repoData.host === 'github.com': {
-          try {
-            await configGithub(this, site, repo)
-          } catch (error) {
-            this.warn(`Github error: ${error.status}`)
-            if (error.status === 404) {
-              this.error(
-                `Does the repository ${repo.repo_path} exist and do you have the correct permissions to set up deploy keys?`,
-              )
-            } else {
-              throw error
-            }
-          }
-          break
-        }
-        default: {
-          this.log('No configurator found for the provided git remote. Configuring manually...')
-          await configManual(this, site, repo)
-          break
-        }
-      }
+      const repoData = await getRepoData({ log: this.log })
+      await configureRepo({ context: this, siteId: site.id, repoData, manual: flags.manual })
     }
 
     if (flags.json) {

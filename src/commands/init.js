@@ -5,10 +5,9 @@ const inquirer = require('inquirer')
 const isEmpty = require('lodash/isEmpty')
 
 const Command = require('../utils/command')
-const getRepoData = require('../utils/get-repo-data')
+const { getRepoData } = require('../utils/get-repo-data')
 const { ensureNetlifyIgnore } = require('../utils/gitignore')
-const configGithub = require('../utils/init/config-github')
-const configManual = require('../utils/init/config-manual')
+const { configureRepo } = require('../utils/init/config')
 const { track } = require('../utils/telemetry')
 
 const LinkCommand = require('./link')
@@ -168,46 +167,6 @@ const logExistingRepoSetupAndExit = ({ log, exit, siteName, repoUrl }) => {
   exit()
 }
 
-const configureGitHub = async ({ context, siteInfo, repo }) => {
-  try {
-    await configGithub(context, siteInfo, repo)
-  } catch (error) {
-    context.warn(`GitHub error: ${error.status}`)
-    if (error.status === 404) {
-      context.error(
-        `Does the repository ${repo.repo_path} exist and do you have the correct permissions to set up deploy keys?`,
-      )
-    } else {
-      throw error
-    }
-  }
-}
-
-const configureProvider = async ({ context, siteInfo, repo }) => {
-  switch (repo.provider) {
-    case 'github': {
-      await configureGitHub({ context, siteInfo, repo })
-      break
-    }
-    default: {
-      context.error('No configurator found for the git hosting service')
-    }
-  }
-}
-
-const logSuccess = ({ log, repo }) => {
-  log()
-  log(chalk.greenBright.bold.underline(`Success! Netlify CI/CD Configured!`))
-  log()
-  log(`This site is now configured to automatically deploy from ${repo.provider} branches & pull requests`)
-  log()
-  log(`Next steps:
-
-  ${chalk.cyanBright.bold('git push')}       Push to your git repository to trigger new site builds
-  ${chalk.cyanBright.bold('netlify open')}   Open the Netlify admin URL of your site
-  `)
-}
-
 class InitCommand extends Command {
   async run() {
     const { flags } = this.parse(InitCommand)
@@ -229,9 +188,9 @@ class InitCommand extends Command {
     }
 
     // Look for local repo
-    const repo = await getRepoData(flags.gitRemoteName)
-    if (repo.error) {
-      await handleNoGitRemoteAndExit({ log, exit, error: repo.error, state })
+    const repoData = await getRepoData({ log, remoteName: flags.gitRemoteName })
+    if (repoData.error) {
+      await handleNoGitRemoteAndExit({ log, exit, error: repoData.error, state })
     }
 
     if (isEmpty(siteInfo)) {
@@ -246,9 +205,7 @@ class InitCommand extends Command {
 
     persistState({ state, siteInfo })
 
-    await (flags.manual ? configManual(this, siteInfo, repo) : configureProvider({ context: this, siteInfo, repo }))
-
-    logSuccess({ log, repo })
+    await configureRepo({ context: this, siteId: siteInfo.id, repoData, manual: flags.manual })
 
     return siteInfo
   }
