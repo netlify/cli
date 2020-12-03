@@ -208,7 +208,14 @@ module.exports = async function configGithub({ context, siteId, repoOwner, repoN
     ...(buildCmd && { cmd: buildCmd }),
   }
 
-  const updatedSite = await updateSite({ siteId, api, failAndExit, repo })
+  await updateSite({ siteId, api, failAndExit, options: { repo } })
+  // calling updateSite with { repo } resets the functions dir so we need to sync it
+  const updatedSite = await updateSite({
+    siteId,
+    api,
+    failAndExit,
+    options: { build_settings: { functions_dir: functionsDir } },
+  })
   await addDeployHook({ deployHook: updatedSite.deploy_hook, octokit, repoOwner, repoName, failAndExit })
   log()
   await addNotificationHooks({ log, failAndExit, siteId, api, token })

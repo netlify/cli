@@ -74,7 +74,14 @@ module.exports = async function configManual({ context, siteId, repoData }) {
     ...(buildCmd && { cmd: buildCmd }),
   }
 
-  const updatedSite = await updateSite({ siteId, api, failAndExit, repo })
+  await updateSite({ siteId, api, failAndExit, options: { repo } })
+  // calling updateSite with { repo } resets the functions dir so we need to sync it
+  const updatedSite = await updateSite({
+    siteId,
+    api,
+    failAndExit,
+    options: { build_settings: { functions_dir: functionsDir } },
+  })
   const deployHookAdded = await addDeployHook({ log, deployHook: updatedSite.deploy_hook })
   if (!deployHookAdded) {
     exit()

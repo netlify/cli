@@ -119,9 +119,9 @@ const createDeployKey = async ({ api, failAndExit }) => {
   }
 }
 
-const updateSite = async ({ siteId, api, failAndExit, repo }) => {
+const updateSite = async ({ siteId, api, failAndExit, options }) => {
   try {
-    const updatedSite = await api.updateSite({ siteId, body: { repo } })
+    const updatedSite = await api.updateSite({ siteId, body: options })
     return updatedSite
   } catch (error) {
     const message = formatErrorMessage({ message: 'Failed updating site with repo information', error })
