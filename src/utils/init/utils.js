@@ -84,24 +84,23 @@ const saveNetlifyToml = async ({ siteRoot, config, buildCmd, buildDir, functions
   const tomlPath = path.join(siteRoot, 'netlify.toml')
   const exists = await fileExistsAsync(tomlPath)
   const cleanedConfig = cleanDeep(config)
-  if (!exists && isEmpty(cleanedConfig)) {
-    const { makeNetlifyTOML } = await inquirer.prompt([
-      {
-        type: 'confirm',
-        name: 'makeNetlifyTOML',
-        message: 'No netlify.toml detected. Would you like to create one with these build settings?',
-        default: true,
-      },
-    ])
-    if (makeNetlifyTOML) {
-      try {
-        await writeFileAsync(
-          tomlPath,
-          getNetlifyToml({ command: buildCmd, publish: buildDir, functions: functionsDir }),
-        )
-      } catch (error) {
-        warn(`Failed saving Netlify toml file: ${error.message}`)
-      }
+  if (exists || !isEmpty(cleanedConfig)) {
+    return
+  }
+
+  const { makeNetlifyTOML } = await inquirer.prompt([
+    {
+      type: 'confirm',
+      name: 'makeNetlifyTOML',
+      message: 'No netlify.toml detected. Would you like to create one with these build settings?',
+      default: true,
+    },
+  ])
+  if (makeNetlifyTOML) {
+    try {
+      await writeFileAsync(tomlPath, getNetlifyToml({ command: buildCmd, publish: buildDir, functions: functionsDir }))
+    } catch (error) {
+      warn(`Failed saving Netlify toml file: ${error.message}`)
     }
   }
 }
