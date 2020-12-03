@@ -19,17 +19,11 @@ const logSuccess = ({ log, repoData }) => {
 const configureRepo = async ({ context, siteId, repoData, manual }) => {
   if (manual) {
     await configManual({ context, siteId, repoData })
+  } else if (repoData.provider === 'github') {
+    await configGithub({ context, siteId, repoName: repoData.name, repoOwner: repoData.owner })
   } else {
-    switch (repoData.provider) {
-      case 'github': {
-        await configGithub({ context, siteId, repoName: repoData.name, repoOwner: repoData.owner })
-        break
-      }
-      default: {
-        context.log(`No configurator found for the provided git remote. Configuring manually...`)
-        await configManual({ context, siteId, repoData })
-      }
-    }
+    context.log(`No configurator found for the provided git remote. Configuring manually...`)
+    await configManual({ context, siteId, repoData })
   }
 
   logSuccess({ log: context.log, repoData })
