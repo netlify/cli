@@ -89,7 +89,7 @@
     "@oclif/plugin-plugins": "^1.9.3",
     "@octokit/rest": "^16.28.1",
     "@ungap/from-entries": "^0.2.1",
-    "ansi-styles": "^4.0.0",
+    "ansi-styles": "^5.0.0",
     "ascii-table": "0.0.9",
     "body-parser": "^1.19.0",
     "boxen": "^4.1.0",
