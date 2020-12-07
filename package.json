@@ -164,7 +164,7 @@
   "devDependencies": {
     "@commitlint/cli": "^11.0.0",
     "@commitlint/config-conventional": "^11.0.0",
-    "@netlify/eslint-config-node": "^1.0.0",
+    "@netlify/eslint-config-node": "^2.0.0",
     "@oclif/dev-cli": "^1.23.1",
     "@oclif/test": "^1.2.5",
     "auto-changelog": "^2.0.0",
