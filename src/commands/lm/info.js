@@ -9,8 +9,8 @@ const {
 
 class LmInfoCommand extends Command {
   async run() {
-    const steps = GitValidators
-    steps.push(
+    const steps = [
+      ...GitValidators,
       {
         title: 'Checking Git LFS filters',
         task: async () => {
@@ -27,7 +27,7 @@ class LmInfoCommand extends Command {
           task.title += chalk.dim(` [${version}]`)
         }
       }
-    )
+    ]
 
     const tasks = new Listr(steps, { concurrent: true, exitOnError: false })
     tasks.run().catch((err) => { })

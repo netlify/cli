@@ -22,7 +22,7 @@ module.exports.GitValidators = [
 module.exports.checkLFSFilters = async function checkLFSFilters() {
   try {
     const result = await execa('git', ['config', '--get-regexp', 'filter.lfs'])
-    return Promise.resolve(result.stdout.length > 0)
+    return result.stdout.length > 0
   } catch (error) {
     return Promise.resolve(false)
   }
@@ -40,7 +40,7 @@ module.exports.checkHelperVersion = async function checkHelperVersion() {
 async function checkGitVersion() {
   try {
     const result = await execa('git', ['--version'])
-    return Promise.resolve(result.stdout.split(' ').pop())
+    return result.stdout.split(' ').pop()
   } catch (error) {
     throw new Error('Check that Git is installed in your system')
   }
@@ -60,5 +60,5 @@ function matchVersion(out, regex, version, message) {
   if (!match || match.length != 2 || semver.lt(match[1], version)) {
     throw new Error(message)
   }
-  return Promise.resolve(match[1])
+  return match[1]
 }
