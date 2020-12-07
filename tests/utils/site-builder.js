@@ -8,9 +8,7 @@ const { v4: uuidv4 } = require('uuid')
 
 const fs = require('../../src/lib/fs')
 
-const ensureDir = (file) => {
-  return fs.mkdirRecursiveAsync(file)
-}
+const ensureDir = (file) => fs.mkdirRecursiveAsync(file)
 
 const createSiteBuilder = ({ siteName }) => {
   const directory = path.join(
@@ -67,9 +65,7 @@ const createSiteBuilder = ({ siteName }) => {
       const dest = path.join(directory, 'edge-handlers', fileName)
       tasks.push(async () => {
         const content = Object.entries(handlers)
-          .map(([event, handler]) => {
-            return `export const ${event} = ${handler.toString()}`
-          })
+          .map(([event, handler]) => `export const ${event} = ${handler.toString()}`)
           .join(os.EOL)
         await ensureDir(path.dirname(dest))
         await fs.writeFileAsync(dest, content)

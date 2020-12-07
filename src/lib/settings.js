@@ -3,9 +3,7 @@ const path = require('path')
 
 const NETLIFY_HOME = '.netlify'
 
-const getHomeDirectory = () => {
-  return path.join(os.homedir(), NETLIFY_HOME)
-}
+const getHomeDirectory = () => path.join(os.homedir(), NETLIFY_HOME)
 
 const getPathInHome = (paths) => {
   const pathInHome = path.join(getHomeDirectory(), ...paths)

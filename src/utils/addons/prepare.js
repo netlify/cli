@@ -26,9 +26,7 @@ const validateNotExists = ({ addon, addonName, siteData, log, exit }) => {
   }
 }
 
-const getCurrentAddon = ({ addons, addonName }) => {
-  return addons.find((addon) => addon.service_slug === addonName)
-}
+const getCurrentAddon = ({ addons, addonName }) => addons.find((addon) => addon.service_slug === addonName)
 
 const validateCurrentAddon = ({ addon, validation, addonName, siteData, log, warn, exit }) => {
   switch (validation) {

@@ -1,13 +1,9 @@
 const requiredConfigValues = function (config) {
-  return Object.keys(config).filter((key) => {
-    return config[key].required
-  })
+  return Object.keys(config).filter((key) => config[key].required)
 }
 
 const missingConfigValues = function (requiredConfig, providedConfig) {
-  return requiredConfig.filter((key) => {
-    return !providedConfig[key]
-  })
+  return requiredConfig.filter((key) => !providedConfig[key])
 }
 
 const updateConfigValues = function (allowedConfig, currentConfig, newConfig) {

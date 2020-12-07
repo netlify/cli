@@ -29,13 +29,11 @@ class AddonsListCommand extends Command {
       },
     })
 
-    const addonData = addons.map((addon) => {
-      return {
-        namespace: addon.service_path.replace('/.netlify/', ''),
-        name: addon.service_name,
-        id: addon.id,
-      }
-    })
+    const addonData = addons.map((addon) => ({
+      namespace: addon.service_path.replace('/.netlify/', ''),
+      name: addon.service_name,
+      id: addon.id,
+    }))
 
     // Build a table out of addons
     this.log(`site: ${siteData.name}`)

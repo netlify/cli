@@ -32,9 +32,7 @@ module.exports = function generateCommandData() {
     }
   })
 
-  const visibleCommands = allCommands.filter((cmd) => {
-    return !cmd.data.hidden
-  })
+  const visibleCommands = allCommands.filter((cmd) => !cmd.data.hidden)
 
   const groupedCommands = visibleCommands.reduce((acc, curr) => {
     if (curr.commandGroup === curr.command) {

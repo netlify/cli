@@ -105,9 +105,7 @@ const saveNetlifyToml = async ({ siteRoot, config, buildCmd, buildDir, functions
   }
 }
 
-const formatErrorMessage = ({ message, error }) => {
-  return `${message} with error: ${chalk.red(error.message)}`
-}
+const formatErrorMessage = ({ message, error }) => `${message} with error: ${chalk.red(error.message)}`
 
 const createDeployKey = async ({ api, failAndExit }) => {
   try {

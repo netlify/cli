@@ -253,11 +253,11 @@ class BaseCommand extends Command {
     await identify({
       name: user.full_name,
       email,
-    }).then(() => {
-      return track('user_login', {
+    }).then(() =>
+      track('user_login', {
         email,
-      })
-    })
+      }),
+    )
 
     // Log success
     this.log()

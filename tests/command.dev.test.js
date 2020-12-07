@@ -163,12 +163,10 @@ testMatrix.forEach(({ args }) => {
     await withSiteBuilder('site-with-from-subdirectory', async (builder) => {
       builder.withNetlifyToml({ config: { build: { functions: 'functions' } } }).withFunction({
         path: path.join('echo', 'echo.js'),
-        handler: async () => {
-          return {
-            statusCode: 200,
-            body: 'ping',
-          }
-        },
+        handler: async () => ({
+          statusCode: 200,
+          body: 'ping',
+        }),
       })
 
       await builder.buildAsync()
@@ -187,12 +185,10 @@ testMatrix.forEach(({ args }) => {
         .withEnvFile({ path: '.env.development', env: { TEST: 'FROM_DEV_FILE' } })
         .withFunction({
           path: 'env.js',
-          handler: async () => {
-            return {
-              statusCode: 200,
-              body: `${process.env.TEST}`,
-            }
-          },
+          handler: async () => ({
+            statusCode: 200,
+            body: `${process.env.TEST}`,
+          }),
         })
 
       await builder.buildAsync()
@@ -208,12 +204,10 @@ testMatrix.forEach(({ args }) => {
     await withSiteBuilder('site-with-process-env', async (builder) => {
       builder.withNetlifyToml({ config: { build: { functions: 'functions' } } }).withFunction({
         path: 'env.js',
-        handler: async () => {
-          return {
-            statusCode: 200,
-            body: `${process.env.TEST}`,
-          }
-        },
+        handler: async () => ({
+          statusCode: 200,
+          body: `${process.env.TEST}`,
+        }),
       })
 
       await builder.buildAsync()
@@ -232,12 +226,10 @@ testMatrix.forEach(({ args }) => {
         .withEnvFile({ path: '.env.development', env: { TEST: 'FROM_DEV_FILE' } })
         .withFunction({
           path: 'env.js',
-          handler: async () => {
-            return {
-              statusCode: 200,
-              body: `${process.env.TEST}`,
-            }
-          },
+          handler: async () => ({
+            statusCode: 200,
+            body: `${process.env.TEST}`,
+          }),
         })
 
       await builder.buildAsync()
@@ -260,12 +252,10 @@ testMatrix.forEach(({ args }) => {
         })
         .withFunction({
           path: 'ping.js',
-          handler: async () => {
-            return {
-              statusCode: 200,
-              body: 'ping',
-            }
-          },
+          handler: async () => ({
+            statusCode: 200,
+            body: 'ping',
+          }),
         })
 
       await builder.buildAsync()
@@ -288,12 +278,10 @@ testMatrix.forEach(({ args }) => {
         })
         .withFunction({
           path: 'echo.js',
-          handler: async (event) => {
-            return {
-              statusCode: 200,
-              body: JSON.stringify(event),
-            }
-          },
+          handler: async (event) => ({
+            statusCode: 200,
+            body: JSON.stringify(event),
+          }),
         })
 
       await builder.buildAsync()
@@ -329,12 +317,10 @@ testMatrix.forEach(({ args }) => {
         })
         .withFunction({
           path: 'echo.js',
-          handler: async (event) => {
-            return {
-              statusCode: 200,
-              body: JSON.stringify(event),
-            }
-          },
+          handler: async (event) => ({
+            statusCode: 200,
+            body: JSON.stringify(event),
+          }),
         })
 
       await builder.buildAsync()
@@ -376,11 +362,9 @@ testMatrix.forEach(({ args }) => {
         })
         .withFunction({
           path: 'echo.js',
-          handler: async () => {
-            return {
-              statusCode: 200,
-            }
-          },
+          handler: async () => ({
+            statusCode: 200,
+          }),
         })
 
       await builder.buildAsync()
@@ -408,12 +392,10 @@ testMatrix.forEach(({ args }) => {
         })
         .withFunction({
           path: 'echo.js',
-          handler: async (event) => {
-            return {
-              statusCode: 200,
-              body: JSON.stringify(event),
-            }
-          },
+          handler: async (event) => ({
+            statusCode: 200,
+            body: JSON.stringify(event),
+          }),
         })
 
       await builder.buildAsync()
@@ -482,12 +464,10 @@ testMatrix.forEach(({ args }) => {
         })
         .withFunction({
           path: 'echo.js',
-          handler: async (event) => {
-            return {
-              statusCode: 200,
-              body: JSON.stringify(event),
-            }
-          },
+          handler: async (event) => ({
+            statusCode: 200,
+            body: JSON.stringify(event),
+          }),
         })
 
       await builder.buildAsync()
@@ -520,12 +500,10 @@ testMatrix.forEach(({ args }) => {
         })
         .withFunction({
           path: 'submission-created.js',
-          handler: async (event) => {
-            return {
-              statusCode: 200,
-              body: JSON.stringify(event),
-            }
-          },
+          handler: async (event) => ({
+            statusCode: 200,
+            body: JSON.stringify(event),
+          }),
         })
 
       await builder.buildAsync()
@@ -595,12 +573,10 @@ testMatrix.forEach(({ args }) => {
         })
         .withFunction({
           path: 'submission-created.js',
-          handler: async (event) => {
-            return {
-              statusCode: 200,
-              body: JSON.stringify(event),
-            }
-          },
+          handler: async (event) => ({
+            statusCode: 200,
+            body: JSON.stringify(event),
+          }),
         })
 
       await builder.buildAsync()

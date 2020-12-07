@@ -156,11 +156,7 @@ const formatArgs = function (cmdArgs) {
   }
   let renderArgs = `**Arguments**\n\n`
 
-  renderArgs += cmdArgs
-    .map((arg) => {
-      return `- ${arg.name} - ${arg.description}`
-    })
-    .join('\n')
+  renderArgs += cmdArgs.map((arg) => `- ${arg.name} - ${arg.description}`).join('\n')
   renderArgs += `\n\n`
   return renderArgs
 }

@@ -193,9 +193,7 @@ const hasErrorMessage = (actual, expected) => {
   return false
 }
 
-const getJsonErrorMessage = (error) => {
-  return dotProp.get(error, 'json.message', '')
-}
+const getJsonErrorMessage = (error) => dotProp.get(error, 'json.message', '')
 
 const reportDeployError = ({ error, warn, failAndExit }) => {
   switch (true) {

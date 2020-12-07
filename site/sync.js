@@ -19,13 +19,7 @@ const syncLocalContent = async function () {
   console.log(`Docs synced to ${destination}`)
 
   const files = await readDir(destination)
-  const mdFiles = files
-    .filter((file) => {
-      return file.endsWith('.md')
-    })
-    .map((file) => {
-      return removeMarkDownLinks(file)
-    })
+  const mdFiles = files.filter((file) => file.endsWith('.md')).map((file) => removeMarkDownLinks(file))
 
   await Promise.all(mdFiles)
   console.log('Synced!')
