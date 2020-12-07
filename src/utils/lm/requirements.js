@@ -49,7 +49,7 @@ async function checkGitVersion() {
 async function checkLFSVersion() {
   try {
     const result = await execa('git-lfs', ['--version'])
-    return matchVersion(result.stdout, /git-lfs\/([\.\d]+).*/, '2.5.1', 'Invalid Git LFS version. Please update to version 2.5.1 or above')
+    return matchVersion(result.stdout, /git-lfs\/([.\d]+).*/, '2.5.1', 'Invalid Git LFS version. Please update to version 2.5.1 or above')
   } catch (error) {
     throw new Error('Check that Git LFS is installed in your system')
   }
@@ -57,7 +57,7 @@ async function checkLFSVersion() {
 
 function matchVersion(out, regex, version, message) {
   const match = out.match(regex)
-  if (!match || match.length != 2 || semver.lt(match[1], version)) {
+  if (!match || match.length !== 2 || semver.lt(match[1], version)) {
     throw new Error(message)
   }
   return match[1]

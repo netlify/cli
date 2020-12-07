@@ -1,6 +1,6 @@
 const { Command } = require('@oclif/command')
-const Listr = require('listr')
 const chalk = require('chalk')
+const Listr = require('listr')
 const {
   GitValidators,
   checkLFSFilters,
