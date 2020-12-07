@@ -7,15 +7,11 @@ const isExe = require('isexe')
 
 const { NETLIFYDEVWARN } = require('../utils/logo')
 
-const isWindows = () => {
-  return process.platform === 'win32'
-}
+const isWindows = () => process.platform === 'win32'
 
 const getRepository = ({ packageName }) => `netlify/${packageName}`
 
-const getExecName = ({ execName }) => {
-  return isWindows() ? `${execName}.exe` : execName
-}
+const getExecName = ({ execName }) => (isWindows() ? `${execName}.exe` : execName)
 
 const getOptions = () => {
   // this is used in out CI tests to avoid hitting GitHub API limit

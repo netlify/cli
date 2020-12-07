@@ -54,9 +54,9 @@ module.exports = async function linkPrompts(context, flags = {}) {
         )
       }
 
-      const matchingSites = sites.filter(({ build_settings: buildSettings = {} }) => {
-        return repoData.httpsUrl === buildSettings.repo_url
-      })
+      const matchingSites = sites.filter(
+        ({ build_settings: buildSettings = {} }) => repoData.httpsUrl === buildSettings.repo_url,
+      )
 
       // If no remote matches. Throw error
       if (isEmpty(matchingSites)) {

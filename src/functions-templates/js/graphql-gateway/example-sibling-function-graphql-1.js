@@ -27,16 +27,10 @@ const authors = [
 
 const resolvers = {
   Query: {
-    hello: () => {
-      return 'Hello, world!'
-    },
-    allAuthors: () => {
-      return authors
-    },
+    hello: () => 'Hello, world!',
+    allAuthors: () => authors,
     author: () => {},
-    authorByName: (root, args) => {
-      return authors.find((author) => author.name === args.name) || 'NOTFOUND'
-    },
+    authorByName: (root, args) => authors.find((author) => author.name === args.name) || 'NOTFOUND',
   },
 }
 

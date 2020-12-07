@@ -3,17 +3,15 @@ const process = require('process')
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 
-const respond = (fulfillmentText) => {
-  return {
-    statusCode: 200,
-    body: JSON.stringify(fulfillmentText),
-    headers: {
-      'Access-Control-Allow-Credentials': true,
-      'Access-Control-Allow-Origin': '*',
-      'Content-Type': 'application/json',
-    },
-  }
-}
+const respond = (fulfillmentText) => ({
+  statusCode: 200,
+  body: JSON.stringify(fulfillmentText),
+  headers: {
+    'Access-Control-Allow-Credentials': true,
+    'Access-Control-Allow-Origin': '*',
+    'Content-Type': 'application/json',
+  },
+})
 
 const handler = async function (event) {
   let incoming

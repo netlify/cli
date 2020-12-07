@@ -1,11 +1,9 @@
 const fetch = require('node-fetch')
 
-const getHeaders = ({ token }) => {
-  return {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${token}`,
-  }
-}
+const getHeaders = ({ token }) => ({
+  'Content-Type': 'application/json',
+  Authorization: `Bearer ${token}`,
+})
 
 const getErrorMessage = async ({ response }) => {
   const contentType = response.headers.get('content-type')
@@ -25,9 +23,7 @@ const checkResponse = async ({ response }) => {
   }
 }
 
-const getApiUrl = ({ api }) => {
-  return `${api.scheme}://${api.host}${api.pathPrefix}`
-}
+const getApiUrl = ({ api }) => `${api.scheme}://${api.host}${api.pathPrefix}`
 
 const apiPost = async ({ api, path, data }) => {
   const apiUrl = getApiUrl({ api })

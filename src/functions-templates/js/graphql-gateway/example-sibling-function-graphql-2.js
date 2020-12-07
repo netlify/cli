@@ -66,15 +66,9 @@ const books = [
 
 const resolvers = {
   Query: {
-    hello: () => {
-      return 'Hello, world!'
-    },
-    allBooks: () => {
-      return books
-    },
-    book: (root, args) => {
-      return books.find((book) => book.id === args.id)
-    },
+    hello: () => 'Hello, world!',
+    allBooks: () => books,
+    book: (root, args) => books.find((book) => book.id === args.id),
   },
 }
 

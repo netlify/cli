@@ -55,20 +55,16 @@ const handler = async (event) => {
 
   return client
     .create(document)
-    .then((result) => {
-      return {
-        statusCode: 200,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(result),
-      }
-    })
-    .catch((error) => {
-      return {
-        headers: { 'Content-Type': 'application/json' },
-        statusCode: 500,
-        body: error.responseBody || JSON.stringify({ error: 'An error occurred' }),
-      }
-    })
+    .then((result) => ({
+      statusCode: 200,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(result),
+    }))
+    .catch((error) => ({
+      headers: { 'Content-Type': 'application/json' },
+      statusCode: 500,
+      body: error.responseBody || JSON.stringify({ error: 'An error occurred' }),
+    }))
 }
 
 module.exports = { handler }

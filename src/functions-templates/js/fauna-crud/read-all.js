@@ -14,16 +14,12 @@ const handler = async () => {
     .then((response) => {
       const itemRefs = response.data
       // create new query out of item refs. http://bit.ly/2LG3MLg
-      const getAllItemsDataQuery = itemRefs.map((ref) => {
-        return query.Get(ref)
-      })
+      const getAllItemsDataQuery = itemRefs.map((ref) => query.Get(ref))
       // then query the refs
-      return client.query(getAllItemsDataQuery).then((ret) => {
-        return {
-          statusCode: 200,
-          body: JSON.stringify(ret),
-        }
-      })
+      return client.query(getAllItemsDataQuery).then((ret) => ({
+        statusCode: 200,
+        body: JSON.stringify(ret),
+      }))
     })
     .catch((error) => {
       console.log('error', error)

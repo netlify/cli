@@ -5,18 +5,14 @@ const ghauth = require('../gh-auth')
 
 const { getBuildSettings, saveNetlifyToml, formatErrorMessage, createDeployKey, updateSite } = require('./utils')
 
-const formatRepoAndOwner = ({ repoOwner, repoName }) => {
-  return {
-    name: chalk.magenta(repoName),
-    owner: chalk.magenta(repoOwner),
-  }
-}
+const formatRepoAndOwner = ({ repoOwner, repoName }) => ({
+  name: chalk.magenta(repoName),
+  owner: chalk.magenta(repoOwner),
+})
 
 const PAGE_SIZE = 100
 
-const isValidToken = (token) => {
-  return token && token.user && token.token
-}
+const isValidToken = (token) => token && token.user && token.token
 
 const getGitHubToken = async ({ log, globalConfig }) => {
   const userId = globalConfig.get('userId')

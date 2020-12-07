@@ -18,9 +18,7 @@ const persistState = ({ state, siteInfo }) => {
   state.set('siteId', siteInfo.id)
 }
 
-const getRepoUrl = ({ siteInfo }) => {
-  return dotProp.get(siteInfo, 'build_settings.repo_url')
-}
+const getRepoUrl = ({ siteInfo }) => dotProp.get(siteInfo, 'build_settings.repo_url')
 
 const reportAnalytics = async ({ config, flags }) => {
   await config.runHook('analytics', {

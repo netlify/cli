@@ -2,9 +2,7 @@ const { listFunctions } = require('@netlify/zip-it-and-ship-it')
 
 const { fileExistsAsync } = require('../lib/fs')
 
-const getUrlPath = (functionName) => {
-  return `/.netlify/functions/${functionName}`
-}
+const getUrlPath = (functionName) => `/.netlify/functions/${functionName}`
 
 const BACKGROUND = '-background'
 

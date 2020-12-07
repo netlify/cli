@@ -39,20 +39,16 @@ const handler = async (event) => {
 
   return client
     .fetch(query, params)
-    .then((result) => {
-      return {
-        statusCode: 200,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(result),
-      }
-    })
-    .catch((error) => {
-      return {
-        headers: { 'Content-Type': 'application/json' },
-        statusCode: error.statusCode || 500,
-        body: error.responseBody || JSON.stringify({ error: 'Unknown error occurred' }),
-      }
-    })
+    .then((result) => ({
+      statusCode: 200,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(result),
+    }))
+    .catch((error) => ({
+      headers: { 'Content-Type': 'application/json' },
+      statusCode: error.statusCode || 500,
+      body: error.responseBody || JSON.stringify({ error: 'Unknown error occurred' }),
+    }))
 }
 
 module.exports = { handler }

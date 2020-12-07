@@ -22,12 +22,8 @@ const authors = [
 
 const resolvers = {
   Query: {
-    hello: () => {
-      return 'Hello, world!'
-    },
-    allAuthors: () => {
-      return authors
-    },
+    hello: () => 'Hello, world!',
+    allAuthors: () => authors,
     author: () => {},
     authorByName: (root, args) => {
       console.log('hihhihi', args.name)
