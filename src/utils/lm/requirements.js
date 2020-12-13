@@ -2,7 +2,7 @@ const chalk = require('chalk')
 const execa = require('execa')
 const semver = require('semver')
 
-module.exports.GitValidators = [
+const GitValidators = [
   {
     title: 'Checking Git version',
     task: async (ctx, task) => {
@@ -19,7 +19,7 @@ module.exports.GitValidators = [
   }
 ]
 
-module.exports.checkLFSFilters = async function checkLFSFilters() {
+const checkLFSFilters = async function () {
   try {
     const result = await execa('git', ['config', '--get-regexp', 'filter.lfs'])
     return result.stdout.length > 0
@@ -28,16 +28,16 @@ module.exports.checkLFSFilters = async function checkLFSFilters() {
   }
 }
 
-module.exports.checkHelperVersion = async function checkHelperVersion() {
+const checkHelperVersion = async function () {
   try {
     const result = await execa('git-credential-netlify', ['--version'])
-    return matchVersion(result.stdout, /git-credential-netlify\/([\.\d]+).*/, '0.1.1', `Invalid Netlify's Git Credential version. Please update to version 2.5.1 or above`)
+    return matchVersion(result.stdout, /git-credential-netlify\/([.\d]+).*/, '0.1.1', `Invalid Netlify's Git Credential version. Please update to version 2.5.1 or above`)
   } catch (error) {
     throw new Error(`Check that Netlify's Git Credential helper is installed and updated to the latest version`)
   }
 }
 
-async function checkGitVersion() {
+const checkGitVersion = async function () {
   try {
     const result = await execa('git', ['--version'])
     return result.stdout.split(' ').pop()
@@ -46,7 +46,7 @@ async function checkGitVersion() {
   }
 }
 
-async function checkLFSVersion() {
+const checkLFSVersion = async function () {
   try {
     const result = await execa('git-lfs', ['--version'])
     return matchVersion(result.stdout, /git-lfs\/([.\d]+).*/, '2.5.1', 'Invalid Git LFS version. Please update to version 2.5.1 or above')
@@ -55,10 +55,16 @@ async function checkLFSVersion() {
   }
 }
 
-function matchVersion(out, regex, version, message) {
+const matchVersion = function (out, regex, version, message) {
   const match = out.match(regex)
   if (!match || match.length !== 2 || semver.lt(match[1], version)) {
     throw new Error(message)
   }
   return match[1]
+}
+
+module.exports = {
+  GitValidators,
+  checkLFSFilters,
+  checkHelperVersion
 }

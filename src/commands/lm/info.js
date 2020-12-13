@@ -1,6 +1,7 @@
 const { Command } = require('@oclif/command')
 const chalk = require('chalk')
 const Listr = require('listr')
+
 const {
   GitValidators,
   checkLFSFilters,
@@ -29,8 +30,15 @@ class LmInfoCommand extends Command {
       }
     ]
 
+    await this.config.runHook('analytics', {
+      eventName: 'command',
+      payload: {
+        command: 'lm:info',
+      },
+    })
+
     const tasks = new Listr(steps, { concurrent: true, exitOnError: false })
-    tasks.run().catch((err) => { })
+    tasks.run().catch(() => { })
   }
 }
 

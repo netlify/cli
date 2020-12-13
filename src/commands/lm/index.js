@@ -1,4 +1,5 @@
 const { Command } = require('@oclif/command')
+
 const { isEmptyCommand } = require('../../utils/check-command-inputs')
 const showHelp = require('../../utils/show-help')
 
@@ -11,6 +12,13 @@ class LmCommand extends Command {
       showHelp(this.id)
       this.exit()
     }
+
+    await this.config.runHook('analytics', {
+      eventName: 'command',
+      payload: {
+        command: 'lm',
+      },
+    })
   }
 }
 
