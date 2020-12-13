@@ -118,6 +118,7 @@
     "gh-release-fetch": "^1.1.0",
     "git-repo-info": "^2.1.0",
     "gitconfiglocal": "^2.1.0",
+    "hasbin": "^1.2.3",
     "http-proxy": "^1.18.0",
     "http-proxy-middleware": "^1.0.0",
     "https-proxy-agent": "^5.0.0",

@@ -27,7 +27,7 @@ The lm command will help you manage a large media for the site
 `
 LmCommand.examples = [
   'netlify lm:info',
-  // 'netlify lm:install',
+  'netlify lm:install',
   // 'netlify lm:setup'
 ]
 

@@ -24,7 +24,7 @@ const checkLFSFilters = async function () {
     const result = await execa('git', ['config', '--get-regexp', 'filter.lfs'])
     return result.stdout.length > 0
   } catch (error) {
-    return Promise.resolve(false)
+    return false
   }
 }
 
