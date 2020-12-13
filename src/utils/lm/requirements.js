@@ -8,15 +8,15 @@ const GitValidators = [
     task: async (ctx, task) => {
       const version = await checkGitVersion()
       task.title += chalk.dim(` [${version}]`)
-    }
+    },
   },
   {
     title: 'Checking Git LFS version',
     task: async (ctx, task) => {
       const version = await checkLFSVersion()
       task.title += chalk.dim(` [${version}]`)
-    }
-  }
+    },
+  },
 ]
 
 const checkLFSFilters = async function () {
@@ -31,7 +31,12 @@ const checkLFSFilters = async function () {
 const checkHelperVersion = async function () {
   try {
     const result = await execa('git-credential-netlify', ['--version'])
-    return matchVersion(result.stdout, /git-credential-netlify\/([.\d]+).*/, '0.1.1', `Invalid Netlify's Git Credential version. Please update to version 2.5.1 or above`)
+    return matchVersion(
+      result.stdout,
+      /git-credential-netlify\/([.\d]+).*/,
+      '0.1.1',
+      `Invalid Netlify's Git Credential version. Please update to version 2.5.1 or above`,
+    )
   } catch (error) {
     throw new Error(`Check that Netlify's Git Credential helper is installed and updated to the latest version`)
   }
@@ -49,7 +54,12 @@ const checkGitVersion = async function () {
 const checkLFSVersion = async function () {
   try {
     const result = await execa('git-lfs', ['--version'])
-    return matchVersion(result.stdout, /git-lfs\/([.\d]+).*/, '2.5.1', 'Invalid Git LFS version. Please update to version 2.5.1 or above')
+    return matchVersion(
+      result.stdout,
+      /git-lfs\/([.\d]+).*/,
+      '2.5.1',
+      'Invalid Git LFS version. Please update to version 2.5.1 or above',
+    )
   } catch (error) {
     throw new Error('Check that Git LFS is installed in your system')
   }
@@ -66,5 +76,5 @@ const matchVersion = function (out, regex, version, message) {
 module.exports = {
   GitValidators,
   checkLFSFilters,
-  checkHelperVersion
+  checkHelperVersion,
 }
