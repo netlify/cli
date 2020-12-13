@@ -1,6 +1,5 @@
-const { Command } = require('@oclif/command')
-
 const { isEmptyCommand } = require('../../utils/check-command-inputs')
+const Command = require('../../utils/command')
 const showHelp = require('../../utils/show-help')
 
 class LmCommand extends Command {
@@ -25,11 +24,7 @@ class LmCommand extends Command {
 LmCommand.description = `Handle Large Media operations
 The lm command will help you manage a large media for the site
 `
-LmCommand.examples = [
-  'netlify lm:info',
-  'netlify lm:install',
-  // 'netlify lm:setup'
-]
+LmCommand.examples = ['netlify lm:info', 'netlify lm:install', 'netlify lm:setup']
 
 LmCommand.hidden = true
 

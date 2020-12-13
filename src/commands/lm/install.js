@@ -1,6 +1,6 @@
-const { Command } = require('@oclif/command')
 const { flags: flagsLib } = require('@oclif/command')
 
+const Command = require('../../utils/command')
 const { installPlatform } = require('../../utils/lm/install')
 const { printBanner } = require('../../utils/lm/ui')
 

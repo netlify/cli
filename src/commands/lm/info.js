@@ -1,7 +1,7 @@
-const { Command } = require('@oclif/command')
 const chalk = require('chalk')
 const Listr = require('listr')
 
+const Command = require('../../utils/command')
 const { GitValidators, checkLFSFilters, checkHelperVersion } = require('../../utils/lm/requirements')
 
 class LmInfoCommand extends Command {
