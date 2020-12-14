@@ -14,15 +14,16 @@ const { withSiteBuilder } = require('./utils/site-builder')
 const SITE_NAME = generateSiteName('netlify-test-deploy-')
 
 const validateContent = async ({ siteUrl, path, content, t }) => {
-  let actualContent
-  try {
-    const response = await fetch(`${siteUrl}${path}`)
-    if (response.ok) {
-      actualContent = await response.text()
-    }
-  } catch (error) {
-    // no op
+  const response = await fetch(`${siteUrl}${path}`)
+  if (content === undefined) {
+    t.is(response.status, 404)
+    return
   }
+  const actualContent = await response.text()
+  if (!response.ok) {
+    throw new Error(`Failed getting content: ${response.status} - ${response.statusText} - ${actualContent}`)
+  }
+
   t.is(actualContent, content)
 }
 
