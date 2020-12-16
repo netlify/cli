@@ -11,7 +11,7 @@
     "Bret Comnes <bcomnes@gmail.com> (https://bret.io)"
   ],
   "engines": {
-    "node": ">=8.17.0"
+    "node": ">=10"
   },
   "files": [
     "/bin",
