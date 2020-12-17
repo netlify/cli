@@ -87,7 +87,7 @@ netlify deploy
 - `dir` (*string*) - Specify a folder to deploy
 - `functions` (*string*) - Specify a functions folder to deploy
 - `prod` (*boolean*) - Deploy to production
-- `alias` (*string*) - Specifies the alias for deployment. Useful for creating predictable deployment URL's
+- `alias` (*string*) - Specifies the alias for deployment. Useful for creating predictable deployment URLs
 - `branch` (*string*) - Serves the same functionality as --alias. Deprecated and will be removed in future versions
 - `open` (*boolean*) - Open site after deploy
 - `message` (*string*) - A short message to include in the deploy log
