@@ -25,6 +25,9 @@ const { NETLIFY_AUTH_TOKEN, NETLIFY_API_URL } = process.env
 // Todo setup client for multiple environments
 const CLIENT_ID = 'd6f37de6614df7ae58664cfca524744d73807a377f5ee71f1a254f78412e3750'
 
+// 'api' command uses JSON output by default
+const isDefaultJson = () => argv._[0] === 'api' && argv.list !== true
+
 const warnOnOldNodeVersion = ({ log, chalk }) => {
   if (semverLessThan(process.version, '10.0.0')) {
     log(
@@ -141,16 +144,14 @@ class BaseCommand extends Command {
   }
 
   logJson(message = '') {
-    /* Only run json logger when --json flag present */
-    if (!argv.json) {
-      return
+    if (argv.json || isDefaultJson()) {
+      process.stdout.write(JSON.stringify(message, null, 2))
     }
-    process.stdout.write(JSON.stringify(message, null, 2))
   }
 
   log(message = '', ...args) {
     /* If  --silent or --json flag passed disable logger */
-    if (argv.silent || argv.json) {
+    if (argv.silent || argv.json || isDefaultJson()) {
       return
     }
     message = typeof message === 'string' ? message : inspect(message)
