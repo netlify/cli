@@ -21,6 +21,11 @@ const FRAMEWORK_PORT_SHIFT = 1e3
 
 let currentPort = getRandomPortStart()
 
+const getTimeoutPromise = (timeout) =>
+  new Promise((resolve) => {
+    setTimeout(() => resolve({ timeout: true }), timeout)
+  })
+
 const startServer = async ({ cwd, env = {}, args = [] }) => {
   const tryPort = currentPort
   currentPort += 1
@@ -51,13 +56,7 @@ const startServer = async ({ cwd, env = {}, args = [] }) => {
               }
             })
             ps.kill()
-            await Promise.race([
-              ps.catch(() => {}),
-              // eslint-disable-next-line no-shadow
-              new Promise((resolve) => {
-                setTimeout(resolve, SERVER_EXIT_TIMEOUT)
-              }),
-            ])
+            await Promise.race([ps.catch(() => {}), getTimeoutPromise(SERVER_EXIT_TIMEOUT)])
           },
         })
       }
@@ -74,7 +73,10 @@ const startDevServer = async (options) => {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       // eslint-disable-next-line no-await-in-loop
-      const server = await startServer(options)
+      const { timeout, ...server } = await Promise.race([startServer(options), getTimeoutPromise(SERVER_START_TIMEOUT)])
+      if (timeout) {
+        throw new Error('Timed out starting dev server')
+      }
       return server
     } catch (error) {
       if (attempt === maxAttempts) {
@@ -84,6 +86,9 @@ const startDevServer = async (options) => {
     }
   }
 }
+
+// 240 seconds
+const SERVER_START_TIMEOUT = 24e4
 
 const withDevServer = async (options, testHandler) => {
   let server
