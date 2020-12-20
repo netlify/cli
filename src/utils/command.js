@@ -26,7 +26,8 @@ const { NETLIFY_AUTH_TOKEN, NETLIFY_API_URL } = process.env
 const CLIENT_ID = 'd6f37de6614df7ae58664cfca524744d73807a377f5ee71f1a254f78412e3750'
 
 // 'api' command uses JSON output by default
-const isDefaultJson = () => argv._[0] === 'api' && argv.list !== true
+// 'functions:invoke' need to return the data from the function as is
+const isDefaultJson = () => argv._[0] === 'functions:invoke' || (argv._[0] === 'api' && argv.list !== true)
 
 const warnOnOldNodeVersion = ({ log, chalk }) => {
   if (semverLessThan(process.version, '10.0.0')) {
