@@ -38,7 +38,6 @@ class FunctionsInvokeCommand extends Command {
       flags.functions || (config.dev && config.dev.functions) || (config.build && config.build.functions)
     if (typeof functionsDir === 'undefined') {
       this.error('functions directory is undefined, did you forget to set it in netlify.toml?')
-      process.exit(1)
     }
 
     if (!flags.port)
@@ -122,26 +121,20 @@ class FunctionsInvokeCommand extends Command {
     const payload = processPayloadFromFlag(flags.payload)
     body = { ...body, ...payload }
 
-    // fetch
-    fetch(`http://localhost:${port}/.netlify/functions/${functionToTrigger}${formatQstring(flags.querystring)}`, {
-      method: 'post',
-      headers,
-      body: JSON.stringify(body),
-    })
-      .then((response) => {
-        let data
-        data = response.text()
-        try {
-          // data = response.json();
-          data = JSON.parse(data)
-        } catch (error) {}
-        return data
-      })
-      .then(console.log)
-      .catch((error) => {
-        console.error('ran into an error invoking your function')
-        console.error(error)
-      })
+    try {
+      const response = await fetch(
+        `http://localhost:${port}/.netlify/functions/${functionToTrigger}${formatQstring(flags.querystring)}`,
+        {
+          method: 'post',
+          headers,
+          body: JSON.stringify(body),
+        },
+      )
+      const data = await response.text()
+      console.log(data)
+    } catch (error) {
+      this.error(`Ran into an error invoking your function: ${error.message}`)
+    }
   }
 }
 
