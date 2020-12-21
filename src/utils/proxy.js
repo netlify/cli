@@ -157,7 +157,7 @@ const serveRedirect = async function ({ req, res, proxy, match, options }) {
         return
       }
 
-      if ((jwtValue.exp || 0) < Math.round(new Date().getTime() / MILLISEC_TO_SEC)) {
+      if ((jwtValue.exp || 0) < Math.round(Date.now() / MILLISEC_TO_SEC)) {
         console.warn(NETLIFYDEVWARN, 'Expired JWT provided in request', req.url)
       } else {
         const presentedRoles = get(jwtValue, options.jwtRolePath) || []
