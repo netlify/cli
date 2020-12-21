@@ -68,7 +68,7 @@ const sortRoutes = (routes) =>
   [
     ...sortBy([...routes], ({ name }) => {
       const index = navOrder.indexOf(name)
-      return index < 0 ? Infinity : index
+      return index < 0 ? Number.POSITIVE_INFINITY : index
     }),
   ].map((route) => {
     if (!pageNames[route.name]) {

@@ -16,7 +16,7 @@ module.exports = async function handler(event) {
 
   // generate a unique short code (stupidly for now)
   const hash = new Hashids()
-  const number = Math.round(new Date().getTime() / NUMBER_TO_CODE)
+  const number = Math.round(Date.now() / NUMBER_TO_CODE)
   const code = hash.encode(number)
 
   // ensure that a protocol was provided

@@ -51,19 +51,16 @@ module.exports = function generateCommandData() {
   }, {})
 
   const groupedCommandsWithData = visibleCommands.reduce((acc, curr) => {
-    if (curr.commandGroup !== curr.command) {
-      // account for hidden parent commands
-      if (acc[curr.commandGroup] && acc[curr.commandGroup].commands) {
-        acc[curr.commandGroup].commands = acc[curr.commandGroup].commands.concat({
-          name: curr.command,
-          usage: curr.data.usage,
-          description: curr.data.description,
-          flags: curr.data.flags,
-          args: curr.data.args,
-          examples: curr.data.examples,
-          strict: curr.data.strict,
-        })
-      }
+    if (curr.commandGroup !== curr.command && acc[curr.commandGroup] && acc[curr.commandGroup].commands) {
+      acc[curr.commandGroup].commands = acc[curr.commandGroup].commands.concat({
+        name: curr.command,
+        usage: curr.data.usage,
+        description: curr.data.description,
+        flags: curr.data.flags,
+        args: curr.data.args,
+        examples: curr.data.examples,
+        strict: curr.data.strict,
+      })
     }
     return acc
   }, groupedCommands)

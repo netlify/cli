@@ -91,7 +91,7 @@ module.exports = async function handler(event, context) {
 
   const user = await fetchUser(context.clientContext.identity, claims.sub)
   const lastMessage = new Date(user.app_metadata.last_message_at || 0).getTime()
-  const cutOff = new Date().getTime() - MESSAGE_RATE_LIMIT
+  const cutOff = Date.now() - MESSAGE_RATE_LIMIT
   if (lastMessage > cutOff) {
     return {
       statusCode: 401,
@@ -110,7 +110,7 @@ module.exports = async function handler(event, context) {
       }),
     })
     await updateUser(context.clientContext.identity, user, {
-      last_message_at: new Date().getTime(),
+      last_message_at: Date.now(),
     })
     return { statusCode: 204 }
   } catch (error) {
