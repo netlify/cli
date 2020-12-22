@@ -38,7 +38,8 @@ const provisionService = async function (siteId, api) {
       body: {},
     })
   } catch (error) {
-    return Promise.reject(error)
+    // error is JSONHTTPError
+    return Promise.reject(new Error(error.json.error))
   }
 }
 
@@ -69,7 +70,6 @@ class LmSetupCommand extends Command {
         helperInstalled = await installHelperIfMissing(flags['force-install'])
       } catch (error_) {
         this.error(error_.message)
-        return
       }
     }
 
