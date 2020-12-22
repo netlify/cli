@@ -36,11 +36,10 @@ if (process.env.IS_FORK !== 'true') {
   })
 
   test.serial('netlify lm:setup', async (t) => {
+    // Skip the actual setup test as the site needs to be associated with the repo to provision a large media addon.
     const cliResponse = await callCli(['lm:setup'], t.context.execOptions)
     t.true(cliResponse.includes('Provisioning Netlify Large Media'))
-    t.true(cliResponse.includes('Configuring Git LFS for this site'))
-    const cliResponseForAddon = await callCli(['addons:list'], t.context.execOptions)
-    t.true(cliResponseForAddon.includes('large-media'))
+    t.true(cliResponse.includes("Large Media addon doesn't support manual deploy"))
   })
 
   test.after('cleanup', async (t) => {
