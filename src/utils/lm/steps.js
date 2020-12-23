@@ -18,15 +18,13 @@ const checkGitLFSVersionStep = {
   },
 }
 
-const checkLFSFiltersStep = (callback) => {
-  return {
-    title: 'Checking Git LFS filters',
-    task: async (ctx, task) => {
-      const installed = await checkLFSFilters()
-      return callback(ctx, task, installed)
-    },
-  }
-}
+const checkLFSFiltersStep = (callback) => ({
+  title: 'Checking Git LFS filters',
+  task: async (ctx, task) => {
+    const installed = await checkLFSFilters()
+    return callback(ctx, task, installed)
+  },
+})
 
 const checkHelperVersionStep = {
   title: `Checking Netlify's Git Credentials version`,
