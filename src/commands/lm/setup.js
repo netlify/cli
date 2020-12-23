@@ -104,6 +104,7 @@ LmSetupCommand.flags = {
     char: 'f',
     description: 'Force the credentials helper installation',
   }),
+  ...LmSetupCommand.flags,
 }
 
 LmSetupCommand.description = `Configures your site to use Netlify Large Media.
