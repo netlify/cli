@@ -5,7 +5,7 @@ const process = require('process')
 const boxen = require('boxen')
 const chalk = require('chalk')
 
-const { shellVariables, joinBinPath } = require('./install')
+const { shellVariables, getBinPath } = require('./install')
 
 const printBanner = function (command, force) {
   const print = force || !binInPath()
@@ -23,7 +23,7 @@ const printBanner = function (command, force) {
 
 const binInPath = function () {
   const envPath = process.env.PATH || ''
-  const binPath = joinBinPath()
+  const binPath = getBinPath()
   return envPath
     .replace(/"+/g, '')
     .split(path.delimiter)
