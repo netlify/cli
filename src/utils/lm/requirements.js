@@ -1,23 +1,5 @@
-const chalk = require('chalk')
 const execa = require('execa')
 const semver = require('semver')
-
-const GitValidators = [
-  {
-    title: 'Checking Git version',
-    task: async (ctx, task) => {
-      const version = await checkGitVersion()
-      task.title += chalk.dim(` [${version}]`)
-    },
-  },
-  {
-    title: 'Checking Git LFS version',
-    task: async (ctx, task) => {
-      const version = await checkLFSVersion()
-      task.title += chalk.dim(` [${version}]`)
-    },
-  },
-]
 
 const checkLFSFilters = async function () {
   try {
@@ -74,7 +56,8 @@ const matchVersion = function (out, regex, version, message) {
 }
 
 module.exports = {
-  GitValidators,
+  checkGitVersion,
+  checkLFSVersion,
   checkLFSFilters,
   checkHelperVersion,
 }

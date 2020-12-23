@@ -1,29 +1,24 @@
-const chalk = require('chalk')
 const Listr = require('listr')
 
 const Command = require('../../utils/command')
-const { GitValidators, checkLFSFilters, checkHelperVersion } = require('../../utils/lm/requirements')
+const {
+  checkGitVersionStep,
+  checkGitLFSVersionStep,
+  checkLFSFiltersStep,
+  checkHelperVersionStep,
+} = require('../../utils/lm/steps')
 
 class LmInfoCommand extends Command {
   async run() {
     const steps = [
-      ...GitValidators,
-      {
-        title: 'Checking Git LFS filters',
-        task: async () => {
-          const installed = await checkLFSFilters()
-          if (!installed) {
-            throw new Error('Git LFS filters are not installed, run `git lfs install` to install them')
-          }
-        },
-      },
-      {
-        title: `Checking Netlify's Git Credentials version`,
-        task: async (ctx, task) => {
-          const version = await checkHelperVersion()
-          task.title += chalk.dim(` [${version}]`)
-        },
-      },
+      checkGitVersionStep,
+      checkGitLFSVersionStep,
+      checkLFSFiltersStep((ctx, task, installed) => {
+        if (!installed) {
+          throw new Error('Git LFS filters are not installed, run `git lfs install` to install them')
+        }
+      }),
+      checkHelperVersionStep,
     ]
 
     await this.config.runHook('analytics', {

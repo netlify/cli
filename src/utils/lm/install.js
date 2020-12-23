@@ -9,24 +9,21 @@ const hasbin = require('hasbin')
 const Listr = require('listr')
 const fetch = require('node-fetch')
 
-const { GitValidators, checkLFSFilters } = require('./requirements')
+const { checkGitVersionStep, checkGitLFSVersionStep, checkLFSFiltersStep } = require('./steps')
 
 const installPlatform = async function (force) {
   const platform = os.platform()
   const skipInstall = !force && installedWithPackageManager()
 
   const steps = [
-    ...GitValidators,
-    {
-      title: 'Checking Git LFS filters',
-      task: async (ctx, task) => {
-        const installed = await checkLFSFilters()
-        if (!installed) {
-          await execa('git', ['lfs', 'install'])
-          task.title += chalk.dim(' [installed]')
-        }
-      },
-    },
+    checkGitVersionStep,
+    checkGitLFSVersionStep,
+    checkLFSFiltersStep(async (ctx, task, installed) => {
+      if (!installed) {
+        await execa('git', ['lfs', 'install'])
+        task.title += chalk.dim(' [installed]')
+      }
+    }),
   ]
 
   switch (platform) {
