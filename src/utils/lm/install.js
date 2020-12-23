@@ -11,10 +11,32 @@ const fetch = require('node-fetch')
 
 const { checkGitVersionStep, checkGitLFSVersionStep, checkLFSFiltersStep } = require('./steps')
 
-const installPlatform = async function (force) {
+const getSetupStep = (skipInstall) => {
   const platform = os.platform()
-  const skipInstall = !force && installedWithPackageManager()
+  switch (platform) {
+    case 'linux':
+      return setupUnix('linux', 'Linux', skipInstall)
+    case 'darwin':
+      return setupUnix('darwin', 'Mac OS X', skipInstall)
+    case 'win32':
+      return setupWindows(skipInstall)
+    default:
+      throw new Error(`Platform not supported: ${platform}.
+See manual setup instructions in https://github.com/netlify/netlify-credential-helper#install`)
+  }
+}
 
+const setupGitConfig = async function () {
+  return await configureGitConfig(joinHelperPath())
+}
+
+const setupGitConfigStep = {
+  title: `Configuring Git to use Netlify's Git Credential Helper`,
+  task: setupGitConfig,
+}
+
+const installPlatform = async function (force) {
+  const skipInstall = !force && installedWithPackageManager()
   const steps = [
     checkGitVersionStep,
     checkGitLFSVersionStep,
@@ -24,27 +46,9 @@ const installPlatform = async function (force) {
         task.title += chalk.dim(' [installed]')
       }
     }),
+    getSetupStep(skipInstall),
+    setupGitConfigStep,
   ]
-
-  switch (platform) {
-    case 'linux':
-      steps.push(setupUnix('linux', 'Linux', skipInstall))
-      break
-    case 'darwin':
-      steps.push(setupUnix('darwin', 'Mac OS X', skipInstall))
-      break
-    case 'win32':
-      steps.push(setupWindows(skipInstall))
-      break
-    default:
-      throw new Error(`Platform not supported: ${platform}.
-See manual setup instructions in https://github.com/netlify/netlify-credential-helper#install`)
-  }
-
-  steps.push({
-    title: `Configuring Git to use Netlify's Git Credential Helper`,
-    task: setupGitConfig,
-  })
 
   const tasks = new Listr(steps)
   await tasks.run()
@@ -97,10 +101,6 @@ iex (iwr -UseBasicParsing -Uri https://github.com/netlify/netlify-credential-hel
   fs.writeFileSync(scriptPath, script)
 
   return await execa('powershell', ['-ExecutionPolicy', 'unrestricted', '-File', scriptPath, '-windowstyle', 'hidden'])
-}
-
-const setupGitConfig = async function () {
-  return await configureGitConfig(joinHelperPath())
 }
 
 const resolveRelease = async function () {
