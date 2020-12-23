@@ -1,14 +1,12 @@
 const os = require('os')
-const path = require('path')
-const process = require('process')
 
 const boxen = require('boxen')
 const chalk = require('chalk')
 
-const { shellVariables, getBinPath } = require('./install')
+const { shellVariables, isBinInPath } = require('./install')
 
 const printBanner = function (command, force) {
-  const print = force || !binInPath()
+  const print = force || !isBinInPath()
   const platform = os.platform()
 
   if (print && platform !== 'win32') {
@@ -19,15 +17,6 @@ const printBanner = function (command, force) {
 
     command.log(boxen(banner, { padding: 1, margin: 1, align: 'center', borderColor: '#00c7b7' }))
   }
-}
-
-const binInPath = function () {
-  const envPath = process.env.PATH || ''
-  const binPath = getBinPath()
-  return envPath
-    .replace(/"+/g, '')
-    .split(path.delimiter)
-    .find((part) => part === binPath)
 }
 
 module.exports = { printBanner }

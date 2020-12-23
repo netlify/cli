@@ -125,10 +125,19 @@ iex (iwr -UseBasicParsing -Uri https://github.com/netlify/netlify-credential-hel
   return await execa('powershell', ['-ExecutionPolicy', 'unrestricted', '-File', scriptPath, '-windowstyle', 'hidden'])
 }
 
+const isBinInPath = function () {
+  const envPath = process.env.PATH || ''
+  const binPath = getBinPath()
+  return envPath
+    .replace(/"+/g, '')
+    .split(path.delimiter)
+    .some((part) => part === binPath)
+}
+
 const setupUnixPath = async function () {
   const shellInfo = shellVariables()
 
-  if (process.env.PATH && process.env.PATH.includes(getBinPath())) {
+  if (isBinInPath()) {
     return true
   }
 
@@ -250,4 +259,4 @@ const shellVariables = function () {
   }
 }
 
-module.exports = { installPlatform, getBinPath, shellVariables }
+module.exports = { installPlatform, isBinInPath, shellVariables }
