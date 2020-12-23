@@ -6,12 +6,12 @@ const callCli = require('./utils/call-cli')
 const { generateSiteName, createLiveTestSite } = require('./utils/create-live-test-site')
 const { createSiteBuilder } = require('./utils/site-builder')
 
-const siteName = generateSiteName('netlify-test-addons-')
+const siteName = generateSiteName('netlify-test-lm-')
 
 if (process.env.IS_FORK !== 'true') {
   test.before(async (t) => {
     const { siteId } = await createLiveTestSite(siteName)
-    const builder = createSiteBuilder({ siteName: 'site-with-addons' })
+    const builder = createSiteBuilder({ siteName: 'site-with-lm' })
     await builder.buildAsync()
 
     t.context.execOptions = { cwd: builder.directory, env: { NETLIFY_SITE_ID: siteId } }
