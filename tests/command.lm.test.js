@@ -14,7 +14,10 @@ if (process.env.IS_FORK !== 'true') {
     const builder = createSiteBuilder({ siteName: 'site-with-lm' })
     await builder.buildAsync()
 
-    t.context.execOptions = { cwd: builder.directory, env: { NETLIFY_SITE_ID: siteId } }
+    t.context.execOptions = {
+      cwd: builder.directory,
+      env: { NETLIFY_SITE_ID: siteId, SHELL: process.env.SHELL || 'bash' },
+    }
     t.context.builder = builder
   })
 
