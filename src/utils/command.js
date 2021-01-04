@@ -8,11 +8,13 @@ const oclifParser = require('@oclif/parser')
 const merge = require('lodash/merge')
 const argv = require('minimist')(process.argv.slice(2))
 const API = require('netlify')
+const semverLessThan = require('semver/functions/lt')
 
 const { getAgent } = require('../lib/http-agent')
 
 const chalkInstance = require('./chalk')
 const globalConfig = require('./global-config')
+const { NETLIFYDEVWARN } = require('./logo')
 const openBrowser = require('./open-browser')
 const StateConfig = require('./state-config')
 const { track, identify } = require('./telemetry')
@@ -22,6 +24,20 @@ const { NETLIFY_AUTH_TOKEN, NETLIFY_API_URL } = process.env
 // Netlify CLI client id. Lives in bot@netlify.com
 // Todo setup client for multiple environments
 const CLIENT_ID = 'd6f37de6614df7ae58664cfca524744d73807a377f5ee71f1a254f78412e3750'
+
+// 'api' command uses JSON output by default
+// 'functions:invoke' need to return the data from the function as is
+const isDefaultJson = () => argv._[0] === 'functions:invoke' || (argv._[0] === 'api' && argv.list !== true)
+
+const warnOnOldNodeVersion = ({ log, chalk }) => {
+  if (semverLessThan(process.version, '10.0.0')) {
+    log(
+      `${NETLIFYDEVWARN} ${chalk.bold('Netlify CLI')} will require ${chalk.magenta.bold(
+        'Node.js 10',
+      )} or greater soon. Please update your Node.js version.`,
+    )
+  }
+}
 
 const getToken = (tokenFromFlag) => {
   // 1. First honor command flag --auth
@@ -96,6 +112,8 @@ class BaseCommand extends Command {
       // state of current site dir
       state,
     }
+
+    warnOnOldNodeVersion({ log: this.log, chalk: this.chalk })
   }
 
   // Find and resolve the Netlify configuration
@@ -127,16 +145,14 @@ class BaseCommand extends Command {
   }
 
   logJson(message = '') {
-    /* Only run json logger when --json flag present */
-    if (!argv.json) {
-      return
+    if (argv.json || isDefaultJson()) {
+      process.stdout.write(JSON.stringify(message, null, 2))
     }
-    process.stdout.write(JSON.stringify(message, null, 2))
   }
 
   log(message = '', ...args) {
     /* If  --silent or --json flag passed disable logger */
-    if (argv.silent || argv.json) {
+    if (argv.silent || argv.json || isDefaultJson()) {
       return
     }
     message = typeof message === 'string' ? message : inspect(message)
