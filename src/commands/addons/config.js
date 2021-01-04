@@ -1,5 +1,6 @@
 const chalk = require('chalk')
 const inquirer = require('inquirer')
+const isEmpty = require('lodash/isEmpty')
 
 const compare = require('../../utils/addons/compare')
 const diffValues = require('../../utils/addons/diffs')
@@ -24,7 +25,7 @@ class AddonsConfigCommand extends Command {
     const { api, site } = netlify
     const siteId = site.id
 
-    const hasConfig = manifest.config && Object.keys(manifest.config).length
+    const hasConfig = !isEmpty(manifest.config)
     // Parse flags
     const rawFlags = parseRawFlags(raw)
     // Get Existing Config
