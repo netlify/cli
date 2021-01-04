@@ -1,5 +1,6 @@
 const chalk = require('chalk')
 const inquirer = require('inquirer')
+const isEmpty = require('lodash/isEmpty')
 
 const { prepareAddonCommand, ADDON_VALIDATION } = require('../../utils/addons/prepare')
 const generatePrompts = require('../../utils/addons/prompts')
@@ -41,7 +42,7 @@ class AddonsCreateCommand extends Command {
 
     // GET flags from `raw` data
     const rawFlags = parseRawFlags(raw)
-    const hasConfig = manifest.config && Object.keys(manifest.config).length
+    const hasConfig = !isEmpty(manifest.config)
 
     let configValues = rawFlags
 
