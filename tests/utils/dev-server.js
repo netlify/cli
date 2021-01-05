@@ -3,6 +3,7 @@ const process = require('process')
 
 const execa = require('execa')
 const getPort = require('get-port')
+const pTimeout = require('p-timeout')
 const pidtree = require('pidtree')
 const seedrandom = require('seedrandom')
 
@@ -20,11 +21,6 @@ const RANDOM_PORT_SHIFT = 1e4
 const FRAMEWORK_PORT_SHIFT = 1e3
 
 let currentPort = getRandomPortStart()
-
-const getTimeoutPromise = (timeout) =>
-  new Promise((resolve) => {
-    setTimeout(() => resolve({ timeout: true }), timeout)
-  })
 
 const startServer = async ({ cwd, env = {}, args = [] }) => {
   const tryPort = currentPort
@@ -59,7 +55,12 @@ const startServer = async ({ cwd, env = {}, args = [] }) => {
               }
             })
             ps.kill()
-            await Promise.race([ps.catch(() => {}), getTimeoutPromise(SERVER_EXIT_TIMEOUT)])
+            await pTimeout(
+              ps.catch(() => {}),
+              SERVER_EXIT_TIMEOUT,
+              // don't reject on timeout
+              () => {},
+            )
           },
         })
       }
@@ -67,8 +68,7 @@ const startServer = async ({ cwd, env = {}, args = [] }) => {
     ps.catch((error) => !selfKilled && reject(error))
   })
 
-  const { timeout, ...server } = await Promise.race([serverPromise, getTimeoutPromise(SERVER_START_TIMEOUT)])
-  return { timeout, output, ...server }
+  return await pTimeout(serverPromise, SERVER_START_TIMEOUT, () => ({ timeout: true, output }))
 }
 
 // One second
