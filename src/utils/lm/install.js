@@ -117,7 +117,7 @@ const installWithPowershell = async function () {
   const script = `[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 iex (iwr -UseBasicParsing -Uri https://github.com/netlify/netlify-credential-helper/raw/master/resources/install.ps1)`
 
-  const temp = await mkdtempAsync(path.join(tempDir(), 'netlify-'))
+  const temp = await mkdtempAsync(path.join(tempDir, 'netlify-'))
   const scriptPath = path.join(temp, 'install.ps1')
 
   await writeFileAsync(scriptPath, script)
