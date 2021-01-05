@@ -37,10 +37,13 @@ const startServer = async ({ cwd, env = {}, args = [] }) => {
     cwd,
     env: { BROWSER: 'none', ...env },
   })
-  return new Promise((resolve, reject) => {
+  let output = ''
+  const serverPromise = new Promise((resolve, reject) => {
     let selfKilled = false
-    ps.stdout.on('data', (data) => {
-      if (data.toString().includes('Server now ready on')) {
+    ps.stdout.on('data', (dataBuffer) => {
+      const data = dataBuffer.toString()
+      output += data
+      if (data.includes('Server now ready on')) {
         resolve({
           url,
           host,
@@ -63,6 +66,9 @@ const startServer = async ({ cwd, env = {}, args = [] }) => {
     })
     ps.catch((error) => !selfKilled && reject(error))
   })
+
+  const { timeout, ...server } = await Promise.race([serverPromise, getTimeoutPromise(SERVER_START_TIMEOUT)])
+  return { timeout, output, ...server }
 }
 
 // One second
@@ -73,9 +79,9 @@ const startDevServer = async (options) => {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       // eslint-disable-next-line no-await-in-loop
-      const { timeout, ...server } = await Promise.race([startServer(options), getTimeoutPromise(SERVER_START_TIMEOUT)])
+      const { timeout, output, ...server } = await startServer(options)
       if (timeout) {
-        throw new Error('Timed out starting dev server')
+        throw new Error(`Timed out starting dev server.\nServer Output:\n${output}`)
       }
       return server
     } catch (error) {
