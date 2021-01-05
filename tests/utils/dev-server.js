@@ -36,12 +36,12 @@ const startServer = async ({ cwd, env = {}, args = [] }) => {
   const ps = execa(cliPath, ['dev', '-p', port, '--staticServerPort', port + FRAMEWORK_PORT_SHIFT, ...args], {
     cwd,
     env: { BROWSER: 'none', ...env },
+    encoding: 'utf8',
   })
   let output = ''
   const serverPromise = new Promise((resolve, reject) => {
     let selfKilled = false
-    ps.stdout.on('data', (dataBuffer) => {
-      const data = dataBuffer.toString()
+    ps.stdout.on('data', (data) => {
       output += data
       if (data.includes('Server now ready on')) {
         resolve({
