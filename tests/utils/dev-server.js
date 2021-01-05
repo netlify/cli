@@ -3,6 +3,7 @@ const process = require('process')
 
 const execa = require('execa')
 const getPort = require('get-port')
+const pTimeout = require('p-timeout')
 const pidtree = require('pidtree')
 const seedrandom = require('seedrandom')
 
@@ -21,11 +22,6 @@ const FRAMEWORK_PORT_SHIFT = 1e3
 
 let currentPort = getRandomPortStart()
 
-const getTimeoutPromise = (timeout) =>
-  new Promise((resolve) => {
-    setTimeout(() => resolve({ timeout: true }), timeout)
-  })
-
 const startServer = async ({ cwd, env = {}, args = [] }) => {
   const tryPort = currentPort
   currentPort += 1
@@ -36,11 +32,14 @@ const startServer = async ({ cwd, env = {}, args = [] }) => {
   const ps = execa(cliPath, ['dev', '-p', port, '--staticServerPort', port + FRAMEWORK_PORT_SHIFT, ...args], {
     cwd,
     env: { BROWSER: 'none', ...env },
+    encoding: 'utf8',
   })
-  return new Promise((resolve, reject) => {
+  let output = ''
+  const serverPromise = new Promise((resolve, reject) => {
     let selfKilled = false
     ps.stdout.on('data', (data) => {
-      if (data.toString().includes('Server now ready on')) {
+      output += data
+      if (data.includes('Server now ready on')) {
         resolve({
           url,
           host,
@@ -56,13 +55,20 @@ const startServer = async ({ cwd, env = {}, args = [] }) => {
               }
             })
             ps.kill()
-            await Promise.race([ps.catch(() => {}), getTimeoutPromise(SERVER_EXIT_TIMEOUT)])
+            await pTimeout(
+              ps.catch(() => {}),
+              SERVER_EXIT_TIMEOUT,
+              // don't reject on timeout
+              () => {},
+            )
           },
         })
       }
     })
     ps.catch((error) => !selfKilled && reject(error))
   })
+
+  return await pTimeout(serverPromise, SERVER_START_TIMEOUT, () => ({ timeout: true, output }))
 }
 
 // One second
@@ -73,9 +79,9 @@ const startDevServer = async (options) => {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       // eslint-disable-next-line no-await-in-loop
-      const { timeout, ...server } = await Promise.race([startServer(options), getTimeoutPromise(SERVER_START_TIMEOUT)])
+      const { timeout, output, ...server } = await startServer(options)
       if (timeout) {
-        throw new Error('Timed out starting dev server')
+        throw new Error(`Timed out starting dev server.\nServer Output:\n${output}`)
       }
       return server
     } catch (error) {

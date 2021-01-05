@@ -29,6 +29,7 @@
         'ora',
         'wrap-ansi',
         'update-notifier',
+        'p-timeout',
       ],
       major: {
         enabled: false,
