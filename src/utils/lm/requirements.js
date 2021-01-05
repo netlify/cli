@@ -4,7 +4,7 @@ const semver = require('semver')
 const checkLFSFilters = async function () {
   try {
     const result = await execa('git', ['config', '--get-regexp', 'filter.lfs'])
-    return result.stdout.length > 0
+    return result.stdout.length !== 0
   } catch (error) {
     return false
   }
