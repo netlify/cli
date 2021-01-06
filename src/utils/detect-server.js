@@ -1,7 +1,7 @@
-const fs = require('fs')
 const path = require('path')
 const process = require('process')
 
+const { listFrameworks, hasFramework, getFramework } = require('@netlify/framework-info')
 const chalk = require('chalk')
 const fuzzy = require('fuzzy')
 const getPort = require('get-port')
@@ -39,14 +39,22 @@ const readHttpsSettings = async (options) => {
   return { key, cert }
 }
 
+const getSettingsFromFramework = (framework) => {
+  const { directory: dist } = framework.build
+  const {
+    commands: [command],
+    port: frameworkPort,
+  } = framework.watch
+
+  return { command, frameworkPort, dist, framework: framework.name, env: framework.env }
+}
+
 const serverSettings = async (devConfig, flags, projectDir, log) => {
   let settings = {}
-  const detectorsFiles = fs
-    .readdirSync(path.join(__dirname, '..', 'detectors'))
-    // only accept .js detector files
-    .filter((filename) => filename.endsWith('.js'))
 
-  if (typeof devConfig.framework !== 'string') throw new Error('Invalid "framework" option provided in config')
+  if (typeof devConfig.framework !== 'string') {
+    throw new TypeError('Invalid "framework" option provided in config')
+  }
 
   if (flags.dir) {
     settings = await getStaticServerSettings(settings, flags, projectDir, log)
@@ -58,32 +66,21 @@ const serverSettings = async (devConfig, flags, projectDir, log) => {
       }
     })
   } else if (devConfig.framework === '#auto' && !(devConfig.command && devConfig.targetPort)) {
-    const detectors = detectorsFiles.map((det) => {
-      try {
-        return loadDetector(det)
-      } catch (error) {
-        console.error(error)
-        return null
-      }
-    })
-
-    const settingsArr = detectors.map((detector) => detector(projectDir)).filter((el) => el)
-    if (settingsArr.length === 1) {
-      const [firstSettings] = settingsArr
-      settings = firstSettings
-      settings.args = chooseDefaultArgs(settings.possibleArgsArrs)
-    } else if (settingsArr.length > 1) {
+    const frameworks = await listFrameworks({ projectDir })
+    if (frameworks.length === 1) {
+      const [framework] = frameworks
+      settings = { ...settings, ...getSettingsFromFramework(framework) }
+    } else if (frameworks.length > 1) {
       // performance optimization, load inquirer on demand
       // eslint-disable-next-line node/global-require
       const inquirer = require('inquirer')
       // eslint-disable-next-line node/global-require
       const inquirerAutocompletePrompt = require('inquirer-autocomplete-prompt')
-
       /** multiple matching detectors, make the user choose */
       inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
-      const scriptInquirerOptions = formatSettingsArrForInquirer(settingsArr)
-      const { chosenSetting } = await inquirer.prompt({
-        name: 'chosenSetting',
+      const scriptInquirerOptions = formatSettingsArrForInquirer(frameworks)
+      const { chosenFramework } = await inquirer.prompt({
+        name: 'chosenFramework',
         message: `Multiple possible start commands found`,
         type: 'autocomplete',
         source(_, input) {
@@ -95,10 +92,9 @@ const serverSettings = async (devConfig, flags, projectDir, log) => {
         },
       })
       // finally! we have a selected option
-      settings = chosenSetting
-
+      settings = { ...settings, ...getSettingsFromFramework(chosenFramework) }
       log(
-        `Add \`framework = "${chosenSetting.framework}"\` to [dev] section of your netlify.toml to avoid this selection prompt next time`,
+        `Add \`framework = "${chosenFramework.name}"\` to [dev] section of your netlify.toml to avoid this selection prompt next time`,
       )
     }
   } else if (devConfig.framework === '#custom' || (devConfig.command && devConfig.targetPort)) {
@@ -117,29 +113,16 @@ const serverSettings = async (devConfig, flags, projectDir, log) => {
   } else if (devConfig.framework === '#static') {
     // Do nothing
   } else {
-    const detectorName = detectorsFiles.find((dt) => dt === `${devConfig.framework}.js`)
-    if (!detectorName)
-      throw new Error(
-        'Unsupported value provided for "framework" option in config. Please use "#custom"' +
-          ` if you're using a framework not intrinsically supported by Netlify Dev. E.g. with "command" and "targetPort" options.` +
-          ` Or use one of following values: ${detectorsFiles
-            .map((detectorFile) => `"${path.parse(detectorFile).name}"`)
-            .join(', ')}`,
-      )
+    const hasConfigFramework = await hasFramework(devConfig.framework, { projectDir })
 
-    const detector = loadDetector(detectorName)
-    const detectorResult = detector(projectDir)
-    if (!detectorResult)
+    if (!hasConfigFramework) {
       throw new Error(
         `Specified "framework" detector "${devConfig.framework}" did not pass requirements for your project`,
       )
+    }
 
-    settings = detectorResult
-    settings.args = chooseDefaultArgs(detectorResult.possibleArgsArrs)
-  }
-
-  if (settings.command === 'npm' && !['start', 'run'].includes(settings.args[0])) {
-    settings.args.unshift('run')
+    const framework = await getFramework(devConfig.framework, { projectDir })
+    settings = { ...settings, ...getSettingsFromFramework(framework) }
   }
 
   if (!settings.noCmd && devConfig.command) {
@@ -148,9 +131,7 @@ const serverSettings = async (devConfig, flags, projectDir, log) => {
         devConfig.command
       }`,
     )
-    const [devConfigCommand, ...devConfigArgs] = devConfig.command.split(/\s+/)
-    settings.command = devConfigCommand
-    settings.args = devConfigArgs
+    settings.command = devConfig.command
   }
 
   settings.dist = flags.dir || devConfig.publish || settings.dist
@@ -257,23 +238,6 @@ const loadDetector = function (detectorName) {
   }
 }
 
-const chooseDefaultArgs = function (possibleArgsArrs) {
-  // vast majority of projects will only have one matching detector
-  // just pick the first one
-  const [args] = possibleArgsArrs
-  if (!args) {
-    const { scripts } = JSON.parse(fs.readFileSync('package.json', { encoding: 'utf8' }))
-    const err = new Error(
-      'Missing or unsupported start script detected. This is an internal Netlify Dev bug, please report your settings and scripts so we can improve',
-    )
-    err.scripts = scripts
-    err.possibleArgsArrs = possibleArgsArrs
-    throw err
-  }
-
-  return args
-}
-
 /** utilities for the inquirer section above */
 const filterSettings = function (scriptInquirerOptions, input) {
   const filterOptions = scriptInquirerOptions.map((scriptInquirerOption) => scriptInquirerOption.name)
@@ -287,13 +251,13 @@ const filterSettings = function (scriptInquirerOptions, input) {
 }
 
 /** utilities for the inquirer section above */
-const formatSettingsArrForInquirer = function (settingsArr) {
+const formatSettingsArrForInquirer = function (frameworks) {
   return [].concat(
-    ...settingsArr.map((setting) =>
-      setting.possibleArgsArrs.map((args) => ({
-        name: `[${chalk.yellow(setting.framework)}] ${setting.command} ${args.join(' ')}`,
-        value: { ...setting, args },
-        short: `${setting.framework}-${args.join(' ')}`,
+    ...frameworks.map((framework) =>
+      framework.watch.commands.map((command) => ({
+        name: `[${chalk.yellow(framework.name)}] ${framework.command} ${command.join(' ')}`,
+        value: { ...framework, commands: [command] },
+        short: `${framework.name}-${command}`,
       })),
     ),
   )
@@ -302,5 +266,4 @@ const formatSettingsArrForInquirer = function (settingsArr) {
 module.exports = {
   serverSettings,
   loadDetector,
-  chooseDefaultArgs,
 }
