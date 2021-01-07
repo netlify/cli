@@ -44,7 +44,7 @@ const getSettingsFromFramework = (framework) => {
   const {
     commands: [command],
     port: frameworkPort,
-  } = framework.watch
+  } = framework.dev
 
   return { command, frameworkPort, dist, framework: framework.name, env: framework.env }
 }
