@@ -157,7 +157,7 @@ const addEnvVariables = ({ log, teamEnv, addonsEnv, siteEnv, dotFilesEnv }) => {
       return
     }
 
-    log(`${NETLIFYDEVLOG} Injected ${chalk.magenta.bold(source)} env var: ${chalk.yellow(key)}`)
+    log(`${NETLIFYDEVLOG} Injected ${chalk.bold(source)} env var: ${chalk.yellow(key)}`)
 
     process.env[key] = value
   })
