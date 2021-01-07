@@ -96,40 +96,71 @@ const getSiteInformation = async ({ flags = {}, api, site, warn, error: failAndE
   return { addonsUrls: {}, teamEnv: {}, addonsEnv: {}, siteEnv: {}, dotFilesEnv, siteUrl: '', capabilities: {} }
 }
 
-// if first arg is undefined, use default, but tell user about it in case it is unintentional
-const assignLoudly = function (optionalValue, defaultValue, tellUser) {
-  if (defaultValue === undefined) throw new Error('must have a defaultValue')
-  if (defaultValue !== optionalValue && optionalValue === undefined) {
-    tellUser(defaultValue)
-    return defaultValue
-  }
-  return optionalValue
-}
+// Convenience method for logging a message when an environment variable is overridden by another source (parent) with
+// a higher precedence.
+const logIgnoredEnvVar = ({ key, log, parentSource, source }) =>
+  log(
+    chalk.dim(
+      `${NETLIFYDEVLOG} Ignored ${chalk.bold(source)} env var: ${chalk.yellow(key)} (defined in ${parentSource})`,
+    ),
+  )
 
 const addEnvVariables = ({ log, teamEnv, addonsEnv, siteEnv, dotFilesEnv }) => {
+  const environment = new Map()
+
   for (const { file, env } of dotFilesEnv) {
     for (const key in env) {
-      const msg = () =>
-        log(`${NETLIFYDEVLOG} Injected ${chalk.green.bold(`${file} file`)} env var: ${chalk.yellow(key)}`)
-      process.env[key] = assignLoudly(process.env[key], env[key], msg)
+      const source = chalk.green.bold(`${file} file`)
+
+      if (environment.has(key)) {
+        logIgnoredEnvVar({ key, log, parentSource: environment.get(key).source, source })
+      } else {
+        environment.set(key, { source, value: env[key] })
+      }
     }
   }
 
   for (const key in siteEnv) {
-    const msg = () => log(`${NETLIFYDEVLOG} Injected ${chalk.blue.bold('build setting')} env var: ${chalk.yellow(key)}`)
-    process.env[key] = assignLoudly(process.env[key], siteEnv[key], msg)
+    const source = chalk.blue.bold('build setting')
+
+    if (environment.has(key)) {
+      logIgnoredEnvVar({ key, log, parentSource: environment.get(key).source, source })
+    } else {
+      environment.set(key, { source, value: siteEnv[key] })
+    }
   }
 
   for (const key in addonsEnv) {
-    const msg = () => log(`${NETLIFYDEVLOG} Injected ${chalk.yellow.bold('addon')} env var: ${chalk.yellow(key)}`)
-    process.env[key] = assignLoudly(process.env[key], addonsEnv[key], msg)
+    const source = chalk.yellow.bold('addon')
+
+    if (environment.has(key)) {
+      logIgnoredEnvVar({ key, log, parentSource: environment.get(key).source, source })
+    } else {
+      environment.set(key, { source, value: addonsEnv[key] })
+    }
   }
 
   for (const key in teamEnv) {
-    const msg = () =>
-      log(`${NETLIFYDEVLOG} Injected ${chalk.magenta.bold('shared build setting')} env var: ${chalk.yellow(key)}`)
-    process.env[key] = assignLoudly(process.env[key], teamEnv[key], msg)
+    const source = chalk.magenta.bold('shared build setting')
+
+    if (environment.has(key)) {
+      logIgnoredEnvVar({ key, log, parentSource: environment.get(key).source, source })
+    } else {
+      environment.set(key, { source, value: teamEnv[key] })
+    }
   }
+
+  environment.forEach(({ source, value }, key) => {
+    if (process.env[key] !== undefined) {
+      logIgnoredEnvVar({ key, log, parentSource: chalk.red('process'), source })
+
+      return
+    }
+
+    log(`${NETLIFYDEVLOG} Injected ${chalk.bold(source)} env var: ${chalk.yellow(key)}`)
+
+    process.env[key] = value
+  })
 
   process.env.NETLIFY_DEV = 'true'
 }
