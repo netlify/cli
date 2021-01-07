@@ -565,7 +565,7 @@ DeployCommand.flags = {
     exclusive: ['alias', 'branch'],
   }),
   alias: flagsLib.string({
-    description: 'Specifies the alias for deployment. Useful for creating predictable deployment URLs',
+    description: 'Specifies the alias for deployment. Useful for creating predictable deployment URLs. Maximum 37 characters.',
   }),
   branch: flagsLib.string({
     char: 'b',
