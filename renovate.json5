@@ -5,11 +5,6 @@
   masterIssue: true,
   packageRules: [
     {
-      packagePatterns: ['^@netlify', '^netlify'],
-      groupName: 'netlify packages',
-      schedule: null,
-    },
-    {
       // Those cannot be upgraded to a major version until we drop support for Node 8
       packageNames: [
         '@octokit/rest',
