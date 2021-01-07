@@ -225,19 +225,6 @@ const getStaticServerSettings = async function (settings, flags, projectDir, log
 
 const DEFAULT_STATIC_PORT = 3999
 
-const loadDetector = function (detectorName) {
-  try {
-    // eslint-disable-next-line node/global-require, import/no-dynamic-require
-    return require(path.join(__dirname, '..', 'detectors', detectorName))
-  } catch (error) {
-    throw new Error(
-      `Failed to load detector: ${chalk.yellow(
-        detectorName,
-      )}, this is likely a bug in the detector, please file an issue in netlify-cli\n ${error}`,
-    )
-  }
-}
-
 /** utilities for the inquirer section above */
 const filterSettings = function (scriptInquirerOptions, input) {
   const filterOptions = scriptInquirerOptions.map((scriptInquirerOption) => scriptInquirerOption.name)
@@ -265,5 +252,4 @@ const formatSettingsArrForInquirer = function (frameworks) {
 
 module.exports = {
   serverSettings,
-  loadDetector,
 }
