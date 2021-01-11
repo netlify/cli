@@ -168,6 +168,7 @@
     "@netlify/eslint-config-node": "^2.0.0",
     "@oclif/dev-cli": "^1.23.1",
     "@oclif/test": "^1.2.5",
+    "async-mutex": "^0.2.6",
     "auto-changelog": "^2.0.0",
     "ava": "^2.4.0",
     "form-data": "^3.0.0",

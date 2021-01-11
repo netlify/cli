@@ -4,6 +4,7 @@ const http = require('http')
 const path = require('path')
 const process = require('process')
 
+const { Semaphore } = require('async-mutex')
 const test = require('ava')
 const dotProp = require('dot-prop')
 const FormData = require('form-data')
@@ -13,6 +14,9 @@ const fetch = require('node-fetch')
 const { withDevServer } = require('./utils/dev-server')
 const { startExternalServer } = require('./utils/external-server')
 const { withSiteBuilder } = require('./utils/site-builder')
+
+const CONCURRENCY = 1
+const semaphore = process.env.CI === 'true' ? new Semaphore(CONCURRENCY) : null
 
 const testMatrix = [
   { args: [] },
@@ -76,6 +80,19 @@ const validateRoleBasedRedirectsSite = async ({ builder, args, t, jwtSecret, jwt
 }
 
 testMatrix.forEach(({ args }) => {
+  test.beforeEach(async (t) => {
+    if (semaphore) {
+      const [, release] = await semaphore.acquire()
+      t.context.semaphore = { release }
+    }
+  })
+
+  test.afterEach.always(async (t) => {
+    if (t.context.semaphore) {
+      await t.context.semaphore.release()
+    }
+  })
+
   test(testName('should return index file when / is accessed', args), async (t) => {
     await withSiteBuilder('site-with-index-file', async (builder) => {
       builder.withContentFile({
