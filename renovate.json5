@@ -3,32 +3,4 @@
   ignorePresets: [':prHourlyLimit2'],
   semanticCommits: true,
   masterIssue: true,
-  packageRules: [
-    {
-      // Those cannot be upgraded to a major version until we drop support for Node 8
-      packageNames: [
-        '@octokit/rest',
-        'ava',
-        'boxen',
-        'chalk',
-        'concordance',
-        'cosmiconfig',
-        'del',
-        'dot-prop',
-        'execa',
-        'find-up',
-        'globby',
-        'locate-path',
-        'log-symbols',
-        'npm-packlist',
-        'ora',
-        'wrap-ansi',
-        'update-notifier',
-        'p-timeout',
-      ],
-      major: {
-        enabled: false,
-      },
-    },
-  ],
 }
