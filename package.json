@@ -128,7 +128,7 @@
     "isexe": "^2.0.0",
     "jwt-decode": "^3.0.0",
     "lambda-local": "^1.7.1",
-    "locate-path": "^5.0.0",
+    "locate-path": "^6.0.0",
     "lodash": "^4.17.20",
     "log-symbols": "^3.0.0",
     "make-dir": "^3.0.0",
