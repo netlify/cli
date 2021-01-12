@@ -25,6 +25,8 @@ test.after.always('cleanup tmp directory and legacy config', async () => {
   } catch (_) {}
 })
 
+// Not running tests in parallel as we're messing with the same config files
+
 test.serial('should use legacy config values as default if exists and delete it', async (t) => {
   const legacyConfig = { someOldKey: 'someOldValue', overrideMe: 'oldValue' }
   const newConfig = { overrideMe: 'newValue' }
