@@ -6,7 +6,7 @@ const Command = require('../../utils/command')
 class EnvListCommand extends Command {
   async run() {
     const { flags } = this.parse(EnvListCommand)
-    const { api, site, config } = this.netlify
+    const { api, site, cachedConfig } = this.netlify
     const siteId = site.id
 
     if (!siteId) {
@@ -22,9 +22,17 @@ class EnvListCommand extends Command {
     })
 
     const siteData = await api.getSite({ siteId })
-    const {
-      build: { environment = {} },
-    } = config
+    const environment = Object.entries(cachedConfig.env).reduce((env, [key, variable]) => {
+      // Omitting general variables to reduce noise.
+      if (variable.sources[0] === 'general') {
+        return env
+      }
+
+      return {
+        ...env,
+        [key]: variable.value,
+      }
+    }, {})
 
     // Return json response for piping commands
     if (flags.json) {
