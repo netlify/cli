@@ -1,7 +1,7 @@
 const Configstore = require('configstore')
 const { v4: uuidv4 } = require('uuid')
 
-const { readFileAsync } = require('../lib/fs')
+const { rmFileAsync, readFileAsync } = require('../lib/fs')
 const { getPathInHome, getLegacyPathInHome } = require('../lib/settings')
 
 const globalConfigDefaults = {
@@ -11,22 +11,26 @@ const globalConfigDefaults = {
   cliId: uuidv4(),
 }
 
-const globalConfigOptions = {
-  configPath: getPathInHome(['config.json']),
-}
-
-const getGlobalConfig = async function ({ log }) {
+const getGlobalConfig = async function () {
+  const configPath = getPathInHome(['config.json'])
   // Legacy config file in home ~/.netlify/config.json
   const legacyPath = getLegacyPathInHome(['config.json'])
   let legacyConfig
+  // Read legacy config if exists
   try {
-    legacyConfig = await readFileAsync(legacyPath)
-    log(`Found existing legacy config in ${legacyPath}`)
-  } catch (_) {
-    // If file doesn't exist just move on
-  }
+    legacyConfig = JSON.parse(await readFileAsync(legacyPath))
+  } catch (_) {}
+  // Use legacy config as default values
   const defaults = { ...globalConfigDefaults, ...legacyConfig }
-  return new Configstore(null, defaults, globalConfigOptions)
+  const configStore = new Configstore(null, defaults, { configPath })
+
+  // If legacy config exsists we can now safely delete it
+  if (legacyConfig) {
+    try {
+      await rmFileAsync(legacyPath)
+    } catch (_) {}
+  }
+  return configStore
 }
 
 module.exports = getGlobalConfig

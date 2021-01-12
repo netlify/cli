@@ -13,7 +13,7 @@ const { warnOnNetlifyDir } = require('../lib/deprecations')
 const { getAgent } = require('../lib/http-agent')
 
 const chalkInstance = require('./chalk')
-const globalConfig = require('./global-config')
+const getGlobalConfig = require('./get-global-config')
 const openBrowser = require('./open-browser')
 const StateConfig = require('./state-config')
 const { track, identify } = require('./telemetry')
@@ -30,7 +30,7 @@ const isDefaultJson = () => argv._[0] === 'functions:invoke' || (argv._[0] === '
 
 const isBuildCommand = () => argv._[0] === 'build' || (argv._[0] === 'deploy' && argv.build === true)
 
-const getToken = (tokenFromFlag) => {
+const getToken = async (tokenFromFlag) => {
   // 1. First honor command flag --auth
   if (tokenFromFlag) {
     return [tokenFromFlag, 'flag']
@@ -40,6 +40,7 @@ const getToken = (tokenFromFlag) => {
     return [NETLIFY_AUTH_TOKEN, 'env']
   }
   // 3. If no env var use global user setting
+  const globalConfig = await getGlobalConfig()
   const userId = globalConfig.get('userId')
   const tokenFromConfig = globalConfig.get(`users.${userId}.auth.token`)
   if (tokenFromConfig) {
@@ -55,7 +56,7 @@ class BaseCommand extends Command {
     // Grab netlify API token
     const authViaFlag = getAuthArg(argv)
 
-    const [token] = this.getConfigToken(authViaFlag)
+    const [token] = await this.getConfigToken(authViaFlag)
 
     // Get site id & build state
     const state = new StateConfig(cwd)
@@ -77,6 +78,8 @@ class BaseCommand extends Command {
       apiOpts.host = apiUrl.host
       apiOpts.pathPrefix = NETLIFY_API_URL === `${apiUrl.protocol}//${apiUrl.host}` ? '/api/v1' : apiUrl.pathname
     }
+
+    const globalConfig = await getGlobalConfig()
 
     this.netlify = {
       // api methods
@@ -205,14 +208,14 @@ class BaseCommand extends Command {
   /**
    * Get user netlify API token
    * @param  {string} - [tokenFromFlag] - value passed in by CLI flag
-   * @return {[string, string]} - tokenValue & location of resolved Netlify API token
+   * @return {Promise<[string, string]>} - Promise containing tokenValue & location of resolved Netlify API token
    */
   getConfigToken(tokenFromFlag) {
     return getToken(tokenFromFlag)
   }
 
-  authenticate(tokenFromFlag) {
-    const [token] = this.getConfigToken(tokenFromFlag)
+  async authenticate(tokenFromFlag) {
+    const [token] = await this.getConfigToken(tokenFromFlag)
     if (token) {
       return token
     }

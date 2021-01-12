@@ -9,9 +9,10 @@ class BuildCommand extends Command {
   // Run Netlify Build
   async run() {
     // Retrieve Netlify Build options
+    const [token] = await this.getConfigToken()
     const options = await getBuildOptions({
       context: this,
-      token: this.getConfigToken()[0],
+      token,
       flags: this.parse(BuildCommand).flags,
     })
     this.checkOptions(options)
