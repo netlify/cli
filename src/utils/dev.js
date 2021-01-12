@@ -9,6 +9,34 @@ const { supportsBackgroundFunctions } = require('../lib/account')
 const { loadDotEnvFiles } = require('./dot-env')
 const { NETLIFYDEVLOG } = require('./logo')
 
+// Possible sources of environment variables. For the purpose of printing log messages only. Order does not matter.
+const ENV_VAR_SOURCES = {
+  account: {
+    name: 'shared build settings',
+    printFn: chalk.magenta,
+  },
+  addons: {
+    name: 'addon',
+    printFn: chalk.yellow,
+  },
+  configFile: {
+    name: 'netlify.toml file',
+    printFn: chalk.green,
+  },
+  general: {
+    name: 'general context',
+    printFn: chalk.italic,
+  },
+  process: {
+    name: 'process',
+    printFn: chalk.red,
+  },
+  ui: {
+    name: 'build settings',
+    printFn: chalk.blue,
+  },
+}
+
 const ERROR_CALL_TO_ACTION =
   "Double-check your login status with 'netlify status' or contact support with details of your error."
 
@@ -96,77 +124,61 @@ const getSiteInformation = async ({ flags = {}, api, site, warn, error: failAndE
   return { addonsUrls: {}, teamEnv: {}, addonsEnv: {}, siteEnv: {}, dotFilesEnv, siteUrl: '', capabilities: {} }
 }
 
-// Convenience method for logging a message when an environment variable is overridden by another source (parent) with
-// a higher precedence.
-const logIgnoredEnvVar = ({ key, log, parentSource, source }) =>
-  log(
-    chalk.dim(
-      `${NETLIFYDEVLOG} Ignored ${chalk.bold(source)} env var: ${chalk.yellow(key)} (defined in ${parentSource})`,
-    ),
-  )
+const getEnvSourceName = (source) => {
+  const { printFn = chalk.green, name = source } = ENV_VAR_SOURCES[source] || {}
 
-const addEnvVariables = ({ log, teamEnv, addonsEnv, siteEnv, dotFilesEnv }) => {
-  const environment = new Map()
+  return printFn(name)
+}
 
-  for (const { file, env } of dotFilesEnv) {
-    for (const key in env) {
-      const source = chalk.green.bold(`${file} file`)
+// Takes a set of environment variables in the format provided by @netlify/config, augments it with variables from both
+// dot-env files and the process itself, and injects into `process.env`.
+const injectEnvVariables = async ({ env, log, site, warn }) => {
+  const environment = new Map(Object.entries(env))
+  const dotEnvFiles = await loadDotEnvFiles({ projectDir: site.root, warn })
 
-      if (environment.has(key)) {
-        logIgnoredEnvVar({ key, log, parentSource: environment.get(key).source, source })
-      } else {
-        environment.set(key, { source, value: env[key] })
+  for (const { file, env: fileEnv } of dotEnvFiles.reverse()) {
+    for (const key in fileEnv) {
+      const newSourceName = `${file} file`
+      const sources = environment.has(key) ? [newSourceName, ...environment.get(key).sources] : [newSourceName]
+
+      environment.set(key, {
+        sources,
+        value: fileEnv[key],
+      })
+    }
+  }
+
+  for (const [key, variable] of environment) {
+    const existsInProcess = process.env[key] !== undefined
+    const [usedSource, ...overriddenSources] = existsInProcess ? ['process', ...variable.sources] : variable.sources
+    const usedSourceName = getEnvSourceName(usedSource)
+
+    for (const source of overriddenSources) {
+      const sourceName = getEnvSourceName(source)
+
+      log(
+        chalk.dim(
+          `${NETLIFYDEVLOG} Ignored ${chalk.bold(sourceName)} env var: ${chalk.yellow(
+            key,
+          )} (defined in ${usedSourceName})`,
+        ),
+      )
+    }
+
+    if (!existsInProcess) {
+      // Omitting `general` env vars to reduce noise in the logs.
+      if (usedSource !== 'general') {
+        log(`${NETLIFYDEVLOG} Injected ${usedSourceName} env var: ${chalk.yellow(key)}`)
       }
+
+      process.env[key] = variable.value
     }
   }
-
-  for (const key in siteEnv) {
-    const source = chalk.blue.bold('build setting')
-
-    if (environment.has(key)) {
-      logIgnoredEnvVar({ key, log, parentSource: environment.get(key).source, source })
-    } else {
-      environment.set(key, { source, value: siteEnv[key] })
-    }
-  }
-
-  for (const key in addonsEnv) {
-    const source = chalk.yellow.bold('addon')
-
-    if (environment.has(key)) {
-      logIgnoredEnvVar({ key, log, parentSource: environment.get(key).source, source })
-    } else {
-      environment.set(key, { source, value: addonsEnv[key] })
-    }
-  }
-
-  for (const key in teamEnv) {
-    const source = chalk.magenta.bold('shared build setting')
-
-    if (environment.has(key)) {
-      logIgnoredEnvVar({ key, log, parentSource: environment.get(key).source, source })
-    } else {
-      environment.set(key, { source, value: teamEnv[key] })
-    }
-  }
-
-  environment.forEach(({ source, value }, key) => {
-    if (process.env[key] !== undefined) {
-      logIgnoredEnvVar({ key, log, parentSource: chalk.red('process'), source })
-
-      return
-    }
-
-    log(`${NETLIFYDEVLOG} Injected ${chalk.bold(source)} env var: ${chalk.yellow(key)}`)
-
-    process.env[key] = value
-  })
 
   process.env.NETLIFY_DEV = 'true'
-  process.env.CONTEXT = 'dev'
 }
 
 module.exports = {
   getSiteInformation,
-  addEnvVariables,
+  injectEnvVariables,
 }
