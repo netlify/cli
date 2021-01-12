@@ -105,7 +105,7 @@ class BaseCommand extends Command {
       siteInfo,
       // Configuration from netlify.[toml/yml]
       config,
-      // Used to avoid calling @neltify/config again
+      // Used to avoid calling @netlify/config again
       cachedConfig,
       // global cli config
       globalConfig,
