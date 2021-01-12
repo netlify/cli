@@ -1,35 +1,23 @@
 const build = require('@netlify/build')
 
-const { getSiteInformation } = require('../utils/dev')
-
-const getBuildEnv = async ({ context }) => {
-  const { warn, error, netlify } = context
-  const { site, api, siteInfo } = netlify
-  const { teamEnv, addonsEnv, siteEnv } = await getSiteInformation({
-    api,
-    site,
-    warn,
-    error,
-    siteInfo,
-  })
-  const env = { ...teamEnv, ...addonsEnv, ...siteEnv }
-  return env
-}
-
 // We have already resolved the configuration using `@netlify/config`
 // This is stored as `netlify.cachedConfig` and can be passed to
 // `@netlify/build --cachedConfig`.
-const getBuildOptions = async ({ context, token, flags }) => {
-  const cachedConfig = JSON.stringify(context.netlify.cachedConfig)
+const getBuildOptions = ({ context, token, flags }) => {
+  const { cachedConfig } = context.netlify
+  const serializedConfig = JSON.stringify(cachedConfig)
   const { dry, debug } = flags
   // buffer = true will not stream output
   const buffer = flags.json || flags.silent
+  const env = Object.entries(cachedConfig.env).reduce(
+    (obj, [key, variable]) => ({
+      ...obj,
+      [key]: variable.value,
+    }),
+    {},
+  )
 
-  const env = await getBuildEnv({
-    context,
-  })
-
-  return { cachedConfig, token, dry, debug, mode: 'cli', telemetry: false, buffer, env }
+  return { cachedConfig: serializedConfig, token, dry, debug, mode: 'cli', telemetry: false, buffer, env }
 }
 
 const runBuild = async (options) => {
