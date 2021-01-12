@@ -163,6 +163,7 @@ const addEnvVariables = ({ log, teamEnv, addonsEnv, siteEnv, dotFilesEnv }) => {
   })
 
   process.env.NETLIFY_DEV = 'true'
+  process.env.CONTEXT = 'dev'
 }
 
 module.exports = {
