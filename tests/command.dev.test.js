@@ -234,7 +234,7 @@ testMatrix.forEach(({ args }) => {
   })
 
   test(testName('should pass [build.environment] env vars to function', args), async (t) => {
-    await withSiteBuilder('site-with-process-env', async (builder) => {
+    await withSiteBuilder('site-with-build-environment', async (builder) => {
       builder
         .withNetlifyToml({ config: { build: { environment: { TEST: 'FROM_CONFIG_FILE' }, functions: 'functions' } } })
         .withFunction({
@@ -277,7 +277,7 @@ testMatrix.forEach(({ args }) => {
   })
 
   test(testName('should override [build.environment] with process env', args), async (t) => {
-    await withSiteBuilder('site-with-override', async (builder) => {
+    await withSiteBuilder('site-with-build-environment-override', async (builder) => {
       builder
         .withNetlifyToml({ config: { build: { environment: { TEST: 'FROM_CONFIG_FILE' }, functions: 'functions' } } })
         .withFunction({

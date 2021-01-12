@@ -6,8 +6,8 @@ const { injectEnvVariables } = require('../../utils/dev')
 class ExecCommand extends Command {
   async run() {
     const { log, warn, netlify } = this
-    const { site } = netlify
-    await injectEnvVariables({ env: this.netlify.cachedConfig.env, log, site, warn })
+    const { cachedConfig, site } = netlify
+    await injectEnvVariables({ env: cachedConfig.env, log, site, warn })
 
     execa(this.argv[0], this.argv.slice(1), {
       stdio: 'inherit',
