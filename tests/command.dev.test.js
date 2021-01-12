@@ -4,7 +4,8 @@ const http = require('http')
 const path = require('path')
 const process = require('process')
 
-const test = require('ava')
+// eslint-disable-next-line ava/use-test
+const avaTest = require('ava')
 const dotProp = require('dot-prop')
 const FormData = require('form-data')
 const jwt = require('jsonwebtoken')
@@ -13,6 +14,8 @@ const fetch = require('node-fetch')
 const { withDevServer } = require('./utils/dev-server')
 const { startExternalServer } = require('./utils/external-server')
 const { withSiteBuilder } = require('./utils/site-builder')
+
+const test = process.env.CI === 'true' ? avaTest.serial.bind(avaTest) : avaTest
 
 const testMatrix = [
   { args: [] },
