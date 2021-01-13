@@ -3,7 +3,14 @@ const path = require('path')
 
 const test = require('ava')
 
-const { statAsync, writeFileAsync, copyFileAsync, rmFileAsync } = require('../lib/fs')
+const {
+  rmdirRecursiveAsync,
+  mkdirRecursiveAsync,
+  statAsync,
+  writeFileAsync,
+  copyFileAsync,
+  rmFileAsync,
+} = require('../lib/fs')
 const { getPathInHome, getLegacyPathInHome } = require('../lib/settings')
 
 const getGlobalConfig = require('./get-global-config.js')
@@ -19,12 +26,24 @@ test.before('backup current user config if exists', async () => {
 })
 
 test.after.always('cleanup tmp directory and legacy config', async () => {
-  // Restore user config and remove legacy config if exists
   try {
+    // Restore user config if exists
+    await mkdirRecursiveAsync(getPathInHome([]))
     await copyFileAsync(tmpConfigBackupPath, configPath)
+    // Remove tmp backup if exists
     await rmFileAsync(tmpConfigBackupPath)
-    await rmFileAsync(legacyConfigPath)
   } catch (_) {}
+  // Remove legacy config path
+  await rmdirRecursiveAsync(getLegacyPathInHome([]))
+})
+
+test.beforeEach('recreate clean config directories', async () => {
+  // Remove config dirs
+  await rmdirRecursiveAsync(getPathInHome([]))
+  await rmdirRecursiveAsync(getLegacyPathInHome([]))
+  // Make config dirs
+  await mkdirRecursiveAsync(getPathInHome([]))
+  await mkdirRecursiveAsync(getLegacyPathInHome([]))
 })
 
 // Not running tests in parallel as we're messing with the same config files
@@ -47,8 +66,10 @@ test.serial('should not throw if legacy config is invalid JSON', async (t) => {
 })
 
 test.serial("should create config in netlify's config dir if none exist", async (t) => {
-  await rmFileAsync(configPath)
-  await rmFileAsync(legacyConfigPath)
+  // Remove config dirs
+  await rmdirRecursiveAsync(getPathInHome([]))
+  await rmdirRecursiveAsync(getLegacyPathInHome([]))
+
   await getGlobalConfig()
   await t.notThrowsAsync(statAsync(configPath))
 })
