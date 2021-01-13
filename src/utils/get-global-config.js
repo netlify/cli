@@ -1,6 +1,5 @@
 const Configstore = require('configstore')
 const { memoizeOne } = require('memoize-one')
-const { once } = require('lodash')
 const { v4: uuidv4 } = require('uuid')
 
 const { readFileAsync } = require('../lib/fs')
@@ -30,4 +29,4 @@ const getGlobalConfig = async function () {
 }
 
 // Memoise config result so that we only load it once
-module.exports = once(getGlobalConfig)
+module.exports = memoizeOne(getGlobalConfig)
