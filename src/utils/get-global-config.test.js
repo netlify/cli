@@ -12,15 +12,17 @@ const configPath = getPathInHome(['config.json'])
 const legacyConfigPath = getLegacyPathInHome(['config.json'])
 const tmpConfigBackupPath = path.join(os.tmpdir(), `netlify-config-backup-${Date.now()}`)
 
-test.before('backup current user config', async () => {
-  await copyFileAsync(configPath, tmpConfigBackupPath)
+test.before('backup current user config if exists', async () => {
+  try {
+    await copyFileAsync(configPath, tmpConfigBackupPath)
+  } catch (_) {}
 })
 
 test.after.always('cleanup tmp directory and legacy config', async () => {
-  await copyFileAsync(tmpConfigBackupPath, configPath)
-  await rmFileAsync(tmpConfigBackupPath)
-  // Remove legacy config if exists
+  // Restore user config and remove legacy config if exists
   try {
+    await copyFileAsync(tmpConfigBackupPath, configPath)
+    await rmFileAsync(tmpConfigBackupPath)
     await rmFileAsync(legacyConfigPath)
   } catch (_) {}
 })
