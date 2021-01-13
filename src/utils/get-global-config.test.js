@@ -6,7 +6,7 @@ const test = require('ava')
 const {
   rmdirRecursiveAsync,
   mkdirRecursiveAsync,
-  statAsync,
+  readFileAsync,
   writeFileAsync,
   copyFileAsync,
   rmFileAsync,
@@ -48,7 +48,7 @@ test.beforeEach('recreate clean config directories', async () => {
 
 // Not running tests in parallel as we're messing with the same config files
 
-test.serial('should use legacy config values as default if exists and delete it', async (t) => {
+test.serial('should use legacy config values as default if exists', async (t) => {
   const legacyConfig = { someOldKey: 'someOldValue', overrideMe: 'oldValue' }
   const newConfig = { overrideMe: 'newValue' }
   await writeFileAsync(legacyConfigPath, JSON.stringify(legacyConfig))
@@ -57,7 +57,6 @@ test.serial('should use legacy config values as default if exists and delete it'
   const globalConfig = await getGlobalConfig()
   t.is(globalConfig.get('someOldKey'), legacyConfig.someOldKey)
   t.is(globalConfig.get('overrideMe'), newConfig.overrideMe)
-  await t.throwsAsync(statAsync(legacyConfigPath))
 })
 
 test.serial('should not throw if legacy config is invalid JSON', async (t) => {
@@ -65,11 +64,13 @@ test.serial('should not throw if legacy config is invalid JSON', async (t) => {
   await t.notThrowsAsync(getGlobalConfig)
 })
 
-test.serial("should create config in netlify's config dir if none exist", async (t) => {
+test.serial("should create config in netlify's config dir if none exists and store new values", async (t) => {
   // Remove config dirs
   await rmdirRecursiveAsync(getPathInHome([]))
   await rmdirRecursiveAsync(getLegacyPathInHome([]))
 
-  await getGlobalConfig()
-  await t.notThrowsAsync(statAsync(configPath))
+  const globalConfig = await getGlobalConfig()
+  globalConfig.set('newProp', 'newValue')
+  const configFile = JSON.parse(await readFileAsync(configPath))
+  t.deepEqual(globalConfig.all, configFile)
 })

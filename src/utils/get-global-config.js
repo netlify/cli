@@ -1,7 +1,8 @@
 const Configstore = require('configstore')
+const { once } = require('lodash')
 const { v4: uuidv4 } = require('uuid')
 
-const { rmFileAsync, readFileAsync } = require('../lib/fs')
+const { readFileAsync } = require('../lib/fs')
 const { getPathInHome, getLegacyPathInHome } = require('../lib/settings')
 
 const globalConfigDefaults = {
@@ -24,13 +25,8 @@ const getGlobalConfig = async function () {
   const defaults = { ...globalConfigDefaults, ...legacyConfig }
   const configStore = new Configstore(null, defaults, { configPath })
 
-  // If legacy config exists we can now safely delete it
-  if (legacyConfig) {
-    try {
-      await rmFileAsync(legacyPath)
-    } catch (_) {}
-  }
   return configStore
 }
 
-module.exports = getGlobalConfig
+// Memoise config result so that we only load it once
+module.exports = once(getGlobalConfig)
