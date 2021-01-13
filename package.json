@@ -130,6 +130,7 @@
     "lodash": "^4.17.20",
     "log-symbols": "^3.0.0",
     "make-dir": "^3.0.0",
+    "memoize-one": "^5.1.1",
     "minimist": "^1.2.5",
     "multiparty": "^4.2.1",
     "netlify": "^6.0.0",

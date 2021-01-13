@@ -1,4 +1,5 @@
 const Configstore = require('configstore')
+const { memoizeOne } = require('memoize-one')
 const { once } = require('lodash')
 const { v4: uuidv4 } = require('uuid')
 
