@@ -1,13 +1,11 @@
 const path = require('path')
-const process = require('process')
 
 const dotenv = require('dotenv')
-const filterObject = require('filter-obj')
 
 const { isFileAsync, readFileAsync } = require('../lib/fs')
 
 const loadDotEnvFiles = async function ({ projectDir, warn }) {
-  const dotenvFiles = ['.env.development', '.env']
+  const dotenvFiles = ['.env', '.env.development']
   const results = await Promise.all(
     dotenvFiles.map(async (file) => {
       const filepath = path.resolve(projectDir, file)
@@ -21,9 +19,7 @@ const loadDotEnvFiles = async function ({ projectDir, warn }) {
         return
       }
       const content = await readFileAsync(filepath)
-      const parsed = dotenv.parse(content)
-      // only keep envs not configured in process.env
-      const env = filterObject(parsed, (key) => !Object.prototype.hasOwnProperty.call(process.env, key))
+      const env = dotenv.parse(content)
       return { file, env }
     }),
   )

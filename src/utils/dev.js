@@ -79,40 +79,19 @@ const getSiteAccount = ({ siteInfo, accounts, warn }) => {
   return siteAccount
 }
 
-const getTeamEnv = ({ account }) => {
-  if (account.site_env) {
-    return account.site_env
-  }
-  return {}
-}
-
-const getSiteEnv = ({ siteInfo }) => {
-  if (siteInfo.build_settings && siteInfo.build_settings.env) {
-    return siteInfo.build_settings.env
-  }
-  return {}
-}
-
 const getSiteInformation = async ({ flags = {}, api, site, warn, error: failAndExit, siteInfo }) => {
   if (site.id && !flags.offline) {
     validateSiteInfo({ site, siteInfo, failAndExit })
-    const [accounts, addons, dotFilesEnv] = await Promise.all([
+    const [accounts, addons] = await Promise.all([
       getAccounts({ api, failAndExit }),
       getAddons({ api, site, failAndExit }),
-      loadDotEnvFiles({ projectDir: site.root, warn }),
     ])
 
-    const { urls: addonsUrls, env: addonsEnv } = getAddonsInformation({ siteInfo, addons })
+    const { urls: addonsUrls } = getAddonsInformation({ siteInfo, addons })
     const account = getSiteAccount({ siteInfo, accounts, warn })
-    const teamEnv = getTeamEnv({ account })
-    const siteEnv = getSiteEnv({ siteInfo })
 
     return {
       addonsUrls,
-      teamEnv,
-      addonsEnv,
-      siteEnv,
-      dotFilesEnv,
       siteUrl: siteInfo.ssl_url,
       capabilities: {
         backgroundFunctions: supportsBackgroundFunctions(account),
@@ -120,8 +99,7 @@ const getSiteInformation = async ({ flags = {}, api, site, warn, error: failAndE
     }
   }
 
-  const dotFilesEnv = await loadDotEnvFiles({ projectDir: site.root, warn })
-  return { addonsUrls: {}, teamEnv: {}, addonsEnv: {}, siteEnv: {}, dotFilesEnv, siteUrl: '', capabilities: {} }
+  return { addonsUrls: {}, siteUrl: '', capabilities: {} }
 }
 
 const getEnvSourceName = (source) => {
@@ -136,7 +114,7 @@ const injectEnvVariables = async ({ env, log, site, warn }) => {
   const environment = new Map(Object.entries(env))
   const dotEnvFiles = await loadDotEnvFiles({ projectDir: site.root, warn })
 
-  for (const { file, env: fileEnv } of dotEnvFiles.reverse()) {
+  for (const { file, env: fileEnv } of dotEnvFiles) {
     for (const key in fileEnv) {
       const newSourceName = `${file} file`
       const sources = environment.has(key) ? [newSourceName, ...environment.get(key).sources] : [newSourceName]
