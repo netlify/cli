@@ -24,7 +24,7 @@ const getGlobalConfig = async function () {
   const defaults = { ...globalConfigDefaults, ...legacyConfig }
   const configStore = new Configstore(null, defaults, { configPath })
 
-  // If legacy config exsists we can now safely delete it
+  // If legacy config exists we can now safely delete it
   if (legacyConfig) {
     try {
       await rmFileAsync(legacyPath)
