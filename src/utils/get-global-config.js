@@ -1,5 +1,5 @@
 const Configstore = require('configstore')
-const { memoizeOne } = require('memoize-one')
+const memoizeOne = require('memoize-one')
 const { v4: uuidv4 } = require('uuid')
 
 const { readFileAsync } = require('../lib/fs')
