@@ -6,8 +6,6 @@ const CLI_TIMEOUT = 3e5
 
 const callCli = async function (args, execOptions) {
   const { stdout } = await execa(cliPath, args, {
-    windowsHide: true,
-    windowsVerbatimArguments: true,
     timeout: CLI_TIMEOUT,
     ...execOptions,
   })
