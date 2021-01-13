@@ -11,7 +11,7 @@ const writeFileAsync = promisify(fs.writeFile)
 const rmFileAsync = promisify(fs.unlink)
 const copyFileAsync = promisify(fs.copyFile)
 const accessAsync = promisify(fs.access)
-const mkdtempAsync = promisify(fs.mkdtempSync)
+const mkdtempAsync = promisify(fs.mkdtemp)
 const appendFileAsync = promisify(fs.appendFile)
 
 const readFileAsyncCatchError = async (filepath) => {
