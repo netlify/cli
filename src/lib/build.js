@@ -9,15 +9,8 @@ const getBuildOptions = ({ context, token, flags }) => {
   const { dry, debug } = flags
   // buffer = true will not stream output
   const buffer = flags.json || flags.silent
-  const env = Object.entries(cachedConfig.env).reduce(
-    (obj, [key, variable]) => ({
-      ...obj,
-      [key]: variable.value,
-    }),
-    {},
-  )
 
-  return { cachedConfig: serializedConfig, token, dry, debug, mode: 'cli', telemetry: false, buffer, env }
+  return { cachedConfig: serializedConfig, token, dry, debug, mode: 'cli', telemetry: false, buffer }
 }
 
 const runBuild = async (options) => {
