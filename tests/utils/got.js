@@ -1,6 +1,6 @@
 const got = require('got')
 
-const TIMEOUT = 1e4
+const TIMEOUT = 3e5
 
 // Default got retry status code with the addition of 403
 // eslint-disable-next-line no-magic-numbers
