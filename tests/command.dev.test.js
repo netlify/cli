@@ -9,11 +9,22 @@ const avaTest = require('ava')
 const dotProp = require('dot-prop')
 const FormData = require('form-data')
 const jwt = require('jsonwebtoken')
-const fetch = require('node-fetch')
 
 const { withDevServer } = require('./utils/dev-server')
 const { startExternalServer } = require('./utils/external-server')
+const got = require('./utils/got')
 const { withSiteBuilder } = require('./utils/site-builder')
+
+const gotCatch404 = async (url, options) => {
+  try {
+    return await got(url, options)
+  } catch (error) {
+    if (error.response && error.response.statusCode === 404) {
+      return error.response
+    }
+    throw error
+  }
+}
 
 const test = process.env.CI === 'true' ? avaTest.serial.bind(avaTest) : avaTest
 
@@ -56,25 +67,25 @@ const setupRoleBasedRedirectsSite = (builder) => {
 
 const validateRoleBasedRedirectsSite = async ({ builder, args, t, jwtSecret, jwtRolePath }) => {
   await withDevServer({ cwd: builder.directory, args }, async (server) => {
-    const unauthenticatedResponse = await fetch(`${server.url}/admin`)
-    t.is(unauthenticatedResponse.status, 404)
-    t.is(await unauthenticatedResponse.text(), 'Not Found')
+    const unauthenticatedResponse = await gotCatch404(`${server.url}/admin`)
+    t.is(unauthenticatedResponse.statusCode, 404)
+    t.is(unauthenticatedResponse.body, 'Not Found')
 
-    const authenticatedResponse = await fetch(`${server.url}/admin/foo`, {
+    const authenticatedResponse = await got(`${server.url}/admin/foo`, {
       headers: {
         cookie: `nf_jwt=${getToken({ jwtSecret, jwtRolePath, roles: ['admin'] })}`,
       },
     })
-    t.is(authenticatedResponse.status, 200)
-    t.is(await authenticatedResponse.text(), 'Not Found')
+    t.is(authenticatedResponse.statusCode, 200)
+    t.is(authenticatedResponse.body, 'Not Found')
 
-    const wrongRoleResponse = await fetch(`${server.url}/admin/foo`, {
+    const wrongRoleResponse = await gotCatch404(`${server.url}/admin/foo`, {
       headers: {
         cookie: `nf_jwt=${getToken({ jwtSecret, jwtRolePath, roles: ['editor'] })}`,
       },
     })
-    t.is(wrongRoleResponse.status, 404)
-    t.is(await wrongRoleResponse.text(), 'Not Found')
+    t.is(wrongRoleResponse.statusCode, 404)
+    t.is(wrongRoleResponse.body, 'Not Found')
   })
 }
 
@@ -89,7 +100,7 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const response = await fetch(server.url).then((res) => res.text())
+        const response = await got(server.url).text()
         t.is(response, '<h1>⊂◉‿◉つ</h1>')
       })
     })
@@ -109,8 +120,8 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const responseHeaders = await fetch(server.url).then((res) => res.headers)
-        t.is(responseHeaders.get(headerName), headerValue)
+        const { headers } = await got(server.url)
+        t.is(headers[headerName.toLowerCase()], headerValue)
       })
     })
   })
@@ -129,8 +140,8 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const responseHeaders = await fetch(`${server.url}/foo`).then((res) => res.headers)
-        t.is(responseHeaders.get(headerName), headerValue)
+        const { headers } = await got(`${server.url}/foo`)
+        t.is(headers[headerName.toLowerCase()], headerValue)
       })
     })
   })
@@ -156,7 +167,7 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const response = await fetch(`${server.url}/.netlify/functions/timeout`).then((res) => res.text())
+        const response = await got(`${server.url}/.netlify/functions/timeout`).text()
         t.is(response, 'ping')
       })
     })
@@ -175,7 +186,7 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const response = await fetch(`${server.url}/.netlify/functions/echo`).then((res) => res.text())
+        const response = await got(`${server.url}/.netlify/functions/echo`).text()
         t.is(response, 'ping')
       })
     })
@@ -197,7 +208,7 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const response = await fetch(`${server.url}/.netlify/functions/env`).then((res) => res.text())
+        const response = await got(`${server.url}/.netlify/functions/env`).text()
         t.is(response, 'FROM_DEV_FILE')
       })
     })
@@ -216,7 +227,7 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, env: { TEST: 'FROM_PROCESS_ENV' }, args }, async (server) => {
-        const response = await fetch(`${server.url}/.netlify/functions/env`).then((res) => res.text())
+        const response = await got(`${server.url}/.netlify/functions/env`).text()
         t.is(response, 'FROM_PROCESS_ENV')
       })
     })
@@ -238,7 +249,7 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, env: { TEST: 'FROM_PROCESS_ENV' }, args }, async (server) => {
-        const response = await fetch(`${server.url}/.netlify/functions/env`).then((res) => res.text())
+        const response = await got(`${server.url}/.netlify/functions/env`).text()
         t.is(response, 'FROM_PROCESS_ENV')
       })
     })
@@ -264,7 +275,7 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const response = await fetch(`${server.url}/api/ping`).then((res) => res.text())
+        const response = await got(`${server.url}/api/ping`).text()
         t.is(response, 'ping')
       })
     })
@@ -290,15 +301,15 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const response = await fetch(`${server.url}/api/echo?ding=dong`).then((res) => res.json())
+        const response = await got(`${server.url}/api/echo?ding=dong`).json()
         t.is(response.body, undefined)
         t.deepEqual(response.headers, {
-          accept: '*/*',
-          'accept-encoding': 'gzip,deflate',
+          accept: 'application/json',
+          'accept-encoding': 'gzip, deflate, br',
           'client-ip': '127.0.0.1',
           connection: 'close',
           host: `${server.host}:${server.port}`,
-          'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
+          'user-agent': 'got (https://github.com/sindresorhus/got)',
           'x-forwarded-for': '::ffff:127.0.0.1',
         })
         t.is(response.httpMethod, 'GET')
@@ -329,21 +340,25 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const response = await fetch(`${server.url}/api/echo?ding=dong`, {
-          method: 'POST',
-          body: 'some=thing',
-        }).then((res) => res.json())
+        const response = await got
+          .post(`${server.url}/api/echo?ding=dong`, {
+            headers: {
+              'content-type': 'application/x-www-form-urlencoded',
+            },
+            body: 'some=thing',
+          })
+          .json()
 
         t.is(response.body, 'some=thing')
         t.deepEqual(response.headers, {
-          accept: '*/*',
-          'accept-encoding': 'gzip,deflate',
+          accept: 'application/json',
+          'accept-encoding': 'gzip, deflate, br',
           'client-ip': '127.0.0.1',
           connection: 'close',
           host: `${server.host}:${server.port}`,
-          'content-type': 'text/plain;charset=UTF-8',
+          'content-type': 'application/x-www-form-urlencoded',
           'content-length': '10',
-          'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
+          'user-agent': 'got (https://github.com/sindresorhus/got)',
           'x-forwarded-for': '::ffff:127.0.0.1',
         })
         t.is(response.httpMethod, 'POST')
@@ -373,13 +388,15 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const response = await fetch(`${server.url}/api/echo?ding=dong`, {
-          method: 'POST',
+        const response = await got.post(`${server.url}/api/echo?ding=dong`, {
+          headers: {
+            'content-type': 'application/x-www-form-urlencoded',
+          },
           body: 'some=thing',
         })
 
-        t.is(await response.text(), '')
-        t.is(response.status, 200)
+        t.is(response.body, '')
+        t.is(response.statusCode, 200)
       })
     })
   })
@@ -407,30 +424,31 @@ testMatrix.forEach(({ args }) => {
         const form = new FormData()
         form.append('some', 'thing')
 
-        const response = await fetch(`${server.url}/api/echo?ding=dong`, {
-          method: 'POST',
-          body: form.getBuffer(),
-          headers: form.getHeaders(),
-        }).then((res) => res.json())
+        const expectedBoundary = form.getBoundary()
+        const expectedResponseBody = form.getBuffer().toString()
 
-        const formBoundary = form.getBoundary()
+        const response = await got
+          .post(`${server.url}/api/echo?ding=dong`, {
+            body: form,
+          })
+          .json()
 
         t.deepEqual(response.headers, {
-          accept: '*/*',
-          'accept-encoding': 'gzip,deflate',
+          accept: 'application/json',
+          'accept-encoding': 'gzip, deflate, br',
           'client-ip': '127.0.0.1',
           connection: 'close',
           host: `${server.host}:${server.port}`,
-          'content-length': form.getLengthSync().toString(),
-          'content-type': `multipart/form-data; boundary=${formBoundary}`,
-          'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
+          'content-length': '164',
+          'content-type': `multipart/form-data; boundary=${expectedBoundary}`,
+          'user-agent': 'got (https://github.com/sindresorhus/got)',
           'x-forwarded-for': '::ffff:127.0.0.1',
         })
         t.is(response.httpMethod, 'POST')
         t.is(response.isBase64Encoded, false)
         t.is(response.path, '/api/echo')
         t.deepEqual(response.queryStringParameters, { ding: 'dong' })
-        t.is(response.body, form.getBuffer().toString())
+        t.is(response.body, expectedResponseBody)
       })
     })
   })
@@ -447,12 +465,13 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const response = await fetch(`${server.url}/api/none`, {
-          method: 'POST',
-          body: 'nothing',
-        })
+        const response = await got
+          .post(`${server.url}/api/none`, {
+            body: 'nothing',
+          })
+          .catch((error) => error.response)
 
-        t.is(response.status, 404)
+        t.is(response.statusCode, 404)
       })
     })
   })
@@ -476,12 +495,8 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const response1 = await fetch(
-          `${server.url}/.netlify/functions/echo?category[SOMETHING][]=something`,
-        ).then((res) => res.json())
-        const response2 = await fetch(`${server.url}/.netlify/functions/echo?category=one&category=two`).then((res) =>
-          res.json(),
-        )
+        const response1 = await got(`${server.url}/.netlify/functions/echo?category[SOMETHING][]=something`).json()
+        const response2 = await got(`${server.url}/.netlify/functions/echo?category=one&category=two`).json()
 
         t.deepEqual(response1.queryStringParameters, { 'category[SOMETHING][]': 'something' })
         t.deepEqual(response2.queryStringParameters, { category: 'one, two' })
@@ -514,23 +529,23 @@ testMatrix.forEach(({ args }) => {
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const form = new FormData()
         form.append('some', 'thing')
-        const response = await fetch(`${server.url}/?ding=dong`, {
-          method: 'POST',
-          body: form.getBuffer(),
-          headers: form.getHeaders(),
-        }).then((res) => res.json())
+        const response = await got
+          .post(`${server.url}/?ding=dong`, {
+            body: form,
+          })
+          .json()
 
         const body = JSON.parse(response.body)
 
         t.deepEqual(response.headers, {
-          accept: '*/*',
-          'accept-encoding': 'gzip,deflate',
+          accept: 'application/json',
+          'accept-encoding': 'gzip, deflate, br',
           'client-ip': '127.0.0.1',
           connection: 'close',
           host: `${server.host}:${server.port}`,
-          'content-length': '289',
+          'content-length': '276',
           'content-type': 'application/json',
-          'user-agent': 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
+          'user-agent': 'got (https://github.com/sindresorhus/got)',
           'x-forwarded-for': '::ffff:127.0.0.1',
         })
         t.is(response.httpMethod, 'POST')
@@ -543,7 +558,7 @@ testMatrix.forEach(({ args }) => {
             data: {
               ip: '::ffff:127.0.0.1',
               some: 'thing',
-              user_agent: 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
+              user_agent: 'got (https://github.com/sindresorhus/got)',
             },
             human_fields: {
               Some: 'thing',
@@ -585,14 +600,15 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const response = await fetch(`${server.url}/?ding=dong`, {
-          method: 'POST',
-          body: 'Something',
-          headers: {
-            'content-type': 'text/plain',
-          },
-        }).then((res) => res.text())
-        t.is(response, 'Method Not Allowed')
+        const response = await got
+          .post(`${server.url}/?ding=dong`, {
+            body: 'Something',
+            headers: {
+              'content-type': 'text/plain',
+            },
+          })
+          .catch((error) => error.response)
+        t.is(response.body, 'Method Not Allowed')
       })
     })
   })
@@ -617,7 +633,7 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const response = await fetch(`${server.url}/foo?ping=pong`).then((res) => res.text())
+        const response = await got(`${server.url}/foo?ping=pong`).text()
         t.is(response, '<html><h1>foo')
       })
     })
@@ -643,7 +659,7 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const response = await fetch(`${server.url}/foo`).then((res) => res.text())
+        const response = await got(`${server.url}/foo`).text()
         t.is(response, '<html><h1>not-foo')
       })
     })
@@ -669,7 +685,7 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const response = await fetch(`${server.url}/foo.html`).then((res) => res.text())
+        const response = await got(`${server.url}/foo.html`).text()
         t.is(response, '<html><h1>foo')
       })
     })
@@ -695,7 +711,7 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const response = await fetch(`${server.url}/foo.html`).then((res) => res.text())
+        const response = await got(`${server.url}/foo.html`).text()
         t.is(response, '<html><h1>not-foo')
       })
     })
@@ -721,11 +737,11 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const response1 = await fetch(`${server.url}/not-foo`).then((res) => res.text())
-        const response2 = await fetch(`${server.url}/not-foo/`).then((res) => res.text())
+        const response1 = await got(`${server.url}/not-foo`).text()
+        const response2 = await got(`${server.url}/not-foo/`).text()
 
         // TODO: check why this doesn't redirect
-        const response3 = await fetch(`${server.url}/not-foo/index.html`).then((res) => res.text())
+        const response3 = await got(`${server.url}/not-foo/index.html`).text()
 
         t.is(response1, '<html><h1>foo')
         t.is(response2, '<html><h1>foo')
@@ -744,8 +760,8 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const response = await fetch(`${server.url}/non-existent`).then((res) => res.text())
-        t.is(response, '<h1>404 - Page not found</h1>')
+        const response = await gotCatch404(`${server.url}/non-existent`)
+        t.is(response.body, '<h1>404 - Page not found</h1>')
       })
     })
   })
@@ -768,9 +784,9 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const response = await fetch(`${server.url}/non-existent`)
-        t.is(response.status, 404)
-        t.is(await response.text(), '<h1>404 - My Custom 404 Page</h1>')
+        const response = await gotCatch404(`${server.url}/non-existent`)
+        t.is(response.statusCode, 404)
+        t.is(response.body, '<h1>404 - My Custom 404 Page</h1>')
       })
     })
   })
@@ -791,9 +807,9 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const response = await fetch(`${server.url}/test-404`)
-        t.is(response.status, 404)
-        t.is(await response.text(), '<html><h1>foo')
+        const response = await gotCatch404(`${server.url}/test-404`)
+        t.is(response.statusCode, 404)
+        t.is(response.body, '<html><h1>foo')
       })
     })
   })
@@ -818,10 +834,10 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const response = await fetch(`${server.url}/test-404`)
+        const response = await got(`${server.url}/test-404`)
 
-        t.is(response.status, 200)
-        t.is(await response.text(), '<html><h1>This page actually exists')
+        t.is(response.statusCode, 200)
+        t.is(response.body, '<html><h1>This page actually exists')
       })
     })
   })
@@ -846,10 +862,10 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const response = await fetch(`${server.url}/test-404`)
+        const response = await gotCatch404(`${server.url}/test-404`)
 
-        t.is(response.status, 404)
-        t.is(await response.text(), '<html><h1>foo')
+        t.is(response.statusCode, 404)
+        t.is(response.body, '<html><h1>foo')
       })
     })
   })
@@ -874,10 +890,10 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const response = await fetch(`${server.url}/test`)
+        const response = await got(`${server.url}/test`)
 
-        t.is(response.status, 200)
-        t.is(await response.text(), 'index')
+        t.is(response.statusCode, 200)
+        t.is(response.body, 'index')
       })
     })
   })
@@ -893,16 +909,17 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const getResponse = await fetch(`${server.url}/api/ping`).then((res) => res.json())
+        const getResponse = await got(`${server.url}/api/ping`).json()
         t.deepEqual(getResponse, { body: {}, method: 'GET', url: '/ping' })
 
-        const postResponse = await fetch(`${server.url}/api/ping`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          body: 'param=value',
-        }).then((res) => res.json())
+        const postResponse = await got
+          .post(`${server.url}/api/ping`, {
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'param=value',
+          })
+          .json()
         t.deepEqual(postResponse, { body: { param: 'value' }, method: 'POST', url: '/ping' })
       })
 
@@ -962,10 +979,10 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const response = await fetch(`${server.url}/foo`)
+        const response = await got(`${server.url}/foo`)
 
-        t.is(response.status, 200)
-        t.is(await response.text(), '<html><h1>foo')
+        t.is(response.statusCode, 200)
+        t.is(response.body, '<html><h1>foo')
       })
     })
   })
@@ -996,8 +1013,8 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const [spaces, brackets] = await Promise.all([
-          fetch(`${server.url}/files/file with spaces`).then((res) => res.text()),
-          fetch(`${server.url}/files/[file_with_brackets]`).then((res) => res.text()),
+          got(`${server.url}/files/file with spaces`).text(),
+          got(`${server.url}/files/[file_with_brackets]`).text(),
         ])
 
         t.is(spaces, '<html>file with spaces</html>')
@@ -1032,10 +1049,10 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const response = await fetch(`${server.url}/hello-world`)
+        const response = await got(`${server.url}/hello-world`)
 
-        t.is(response.status, 200)
-        t.is(await response.text(), '<html>hello</html>')
+        t.is(response.statusCode, 200)
+        t.is(response.body, '<html>hello</html>')
       })
     })
   })
@@ -1052,11 +1069,9 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const response = await fetch(`${server.url}/.netlify/functions/hello-background`)
-        const text = await response.text()
-        const expectedStatueCode = 202
-        t.is(response.status, expectedStatueCode)
-        t.is(text, '')
+        const response = await got(`${server.url}/.netlify/functions/hello-background`)
+        t.is(response.statusCode, 202)
+        t.is(response.body, '')
       })
     })
   })
@@ -1134,12 +1149,12 @@ testMatrix.forEach(({ args }) => {
         await builder.buildAsync()
 
         await withDevServer({ cwd: builder.directory, args: [...args, '--trafficMesh'] }, async (server) => {
-          const response = await fetch(`${server.url}/edge-handler`, {
-            redirect: 'manual',
+          const response = await got(`${server.url}/edge-handler`, {
+            followRedirect: false,
           })
 
-          t.is(response.status, 301)
-          t.is(response.headers.get('location'), 'https://google.com/')
+          t.is(response.statusCode, 301)
+          t.is(response.headers.location, 'https://google.com/')
         })
       })
     })
@@ -1163,9 +1178,9 @@ testMatrix.forEach(({ args }) => {
         await builder.buildAsync()
 
         await withDevServer({ cwd: builder.directory, args: [...args, '--trafficMesh'] }, async (server) => {
-          const response = await fetch(`${server.url}/index.html`)
+          const response = await got(`${server.url}/index.html`)
 
-          t.is(response.status, 200)
+          t.is(response.statusCode, 200)
         })
       })
     })

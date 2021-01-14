@@ -3,10 +3,10 @@ const path = require('path')
 
 const test = require('ava')
 const getPort = require('get-port')
-const fetch = require('node-fetch')
 
 const { createRewriter } = require('../src/utils/rules-proxy')
 
+const got = require('./utils/got')
 const { createSiteBuilder } = require('./utils/site-builder')
 
 test.before(async (t) => {
@@ -49,7 +49,7 @@ test.after(async (t) => {
 })
 
 test('should apply re-write rule based on _redirects file', async (t) => {
-  const response = await fetch(`http://localhost:${t.context.port}/something`).then((res) => res.json())
+  const response = await got(`http://localhost:${t.context.port}/something`).json()
 
   t.is(response.from, '/something')
   t.is(response.to, '/ping')

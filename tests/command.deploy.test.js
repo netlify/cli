@@ -1,7 +1,6 @@
 const process = require('process')
 
 const test = require('ava')
-const fetch = require('node-fetch')
 const omit = require('omit.js').default
 
 const { supportsEdgeHandlers } = require('../src/lib/account')
@@ -9,22 +8,25 @@ const { getToken } = require('../src/utils/command')
 
 const callCli = require('./utils/call-cli')
 const { generateSiteName, createLiveTestSite } = require('./utils/create-live-test-site')
+const got = require('./utils/got')
 const { withSiteBuilder } = require('./utils/site-builder')
 
 const SITE_NAME = generateSiteName('netlify-test-deploy-')
 
 const validateContent = async ({ siteUrl, path, content, t }) => {
-  const response = await fetch(`${siteUrl}${path}`)
-  if (content === undefined) {
-    t.is(response.status, 404)
-    return
+  try {
+    const { body } = await got(`${siteUrl}${path}`)
+    t.is(body, content)
+  } catch (error) {
+    const {
+      response: { statusCode, statusMessage, body },
+    } = error
+    if (content === undefined) {
+      t.is(statusCode, 404)
+      return
+    }
+    throw new Error(`Failed getting content: ${statusCode} - ${statusMessage} - ${body}`)
   }
-  const actualContent = await response.text()
-  if (!response.ok) {
-    throw new Error(`Failed getting content: ${response.status} - ${response.statusText} - ${actualContent}`)
-  }
-
-  t.is(actualContent, content)
 }
 
 const validateDeploy = async ({ deploy, siteName, content, t }) => {
@@ -133,15 +135,16 @@ if (process.env.IS_FORK !== 'true') {
         // validate edge handlers
         // use this until we can use `netlify api`
         const [apiToken] = getToken()
-        const resp = await fetch(`https://api.netlify.com/api/v1/deploys/${deploy.deploy_id}/edge_handlers`, {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${apiToken}`,
+        const { content_length: contentLength, ...rest } = await got(
+          `https://api.netlify.com/api/v1/deploys/${deploy.deploy_id}/edge_handlers`,
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${apiToken}`,
+            },
           },
-        })
+        ).json()
 
-        t.is(resp.status, 200)
-        const { content_length: contentLength, ...rest } = await resp.json()
         t.deepEqual(omit(rest, ['created_at', 'sha']), {
           content_type: 'application/javascript',
           handlers: ['index'],
@@ -330,12 +333,7 @@ if (process.env.IS_FORK !== 'true') {
     })
   })
 
-  test.after('cleanup', async (t) => {
-    const { siteId } = t.context
-    console.log(`deleting test site "${SITE_NAME}". ${siteId}`)
-    await callCli(['sites:delete', siteId, '--force'])
-  })
-  test('should exit with error when deploying an empty directory', async (t) => {
+  test.serial('should exit with error when deploying an empty directory', async (t) => {
     await withSiteBuilder('site-with-an-empty-directory', async (builder) => {
       await builder.buildAsync()
 
@@ -348,5 +346,11 @@ if (process.env.IS_FORK !== 'true') {
         t.is(error.stderr.includes('Error: No files or functions to deploy'), true)
       }
     })
+  })
+
+  test.after('cleanup', async (t) => {
+    const { siteId } = t.context
+    console.log(`deleting test site "${SITE_NAME}". ${siteId}`)
+    await callCli(['sites:delete', siteId, '--force'])
   })
 }
