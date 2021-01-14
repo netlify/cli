@@ -233,11 +233,53 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
+  test(testName('should pass [build.environment] env vars to function', args), async (t) => {
+    await withSiteBuilder('site-with-build-environment', async (builder) => {
+      builder
+        .withNetlifyToml({ config: { build: { environment: { TEST: 'FROM_CONFIG_FILE' }, functions: 'functions' } } })
+        .withFunction({
+          path: 'env.js',
+          handler: async () => ({
+            statusCode: 200,
+            body: `${process.env.TEST}`,
+          }),
+        })
+
+      await builder.buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async (server) => {
+        const response = await got(`${server.url}/.netlify/functions/env`).text()
+        t.is(response, 'FROM_CONFIG_FILE')
+      })
+    })
+  })
+
   test(testName('should override .env.development with process env', args), async (t) => {
     await withSiteBuilder('site-with-override', async (builder) => {
       builder
         .withNetlifyToml({ config: { build: { functions: 'functions' } } })
         .withEnvFile({ path: '.env.development', env: { TEST: 'FROM_DEV_FILE' } })
+        .withFunction({
+          path: 'env.js',
+          handler: async () => ({
+            statusCode: 200,
+            body: `${process.env.TEST}`,
+          }),
+        })
+
+      await builder.buildAsync()
+
+      await withDevServer({ cwd: builder.directory, env: { TEST: 'FROM_PROCESS_ENV' }, args }, async (server) => {
+        const response = await got(`${server.url}/.netlify/functions/env`).text()
+        t.is(response, 'FROM_PROCESS_ENV')
+      })
+    })
+  })
+
+  test(testName('should override [build.environment] with process env', args), async (t) => {
+    await withSiteBuilder('site-with-build-environment-override', async (builder) => {
+      builder
+        .withNetlifyToml({ config: { build: { environment: { TEST: 'FROM_CONFIG_FILE' }, functions: 'functions' } } })
         .withFunction({
           path: 'env.js',
           handler: async () => ({

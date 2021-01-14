@@ -14,7 +14,7 @@ const runBuildCommand = async function (t, cwd, { exitCode: expectedExitCode = 0
   const { all, exitCode } = await execa(cliPath, ['build', ...flags], {
     reject: false,
     cwd,
-    env: { FORCE_COLOR: '1', NETLIFY_AUTH_TOKEN: 'test', ...env },
+    env: { FORCE_COLOR: '1', ...env },
     all: true,
   })
 

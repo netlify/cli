@@ -3,7 +3,7 @@ const Command = require('../../utils/command')
 class EnvGetCommand extends Command {
   async run() {
     const { args, flags } = this.parse(EnvGetCommand)
-    const { api, site, config } = this.netlify
+    const { api, cachedConfig, site } = this.netlify
     const siteId = site.id
 
     if (!siteId) {
@@ -19,12 +19,9 @@ class EnvGetCommand extends Command {
     })
 
     const siteData = await api.getSite({ siteId })
-    const {
-      build: { environment = {} },
-    } = config
 
     const { name } = args
-    const value = environment[name]
+    const { value } = cachedConfig.env[name] || {}
 
     // Return json response for piping commands
     if (flags.json) {

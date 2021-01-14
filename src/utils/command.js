@@ -105,7 +105,7 @@ class BaseCommand extends Command {
       siteInfo,
       // Configuration from netlify.[toml/yml]
       config,
-      // Used to avoid calling @neltify/config again
+      // Used to avoid calling @netlify/config again
       cachedConfig,
       // global cli config
       globalConfig,
@@ -127,6 +127,7 @@ class BaseCommand extends Command {
         siteId: argv.siteId || (typeof argv.site === 'string' && argv.site) || state.get('siteId'),
         token,
         mode: 'cli',
+        offline: argv.offline,
       })
     } catch (error) {
       const message = error.type === 'userError' ? error.message : error.stack

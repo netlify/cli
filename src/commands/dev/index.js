@@ -13,7 +13,7 @@ const wrapAnsi = require('wrap-ansi')
 
 const Command = require('../../utils/command')
 const { serverSettings } = require('../../utils/detect-server')
-const { getSiteInformation, addEnvVariables } = require('../../utils/dev')
+const { getSiteInformation, injectEnvVariables } = require('../../utils/dev')
 const { startLiveTunnel } = require('../../utils/live-tunnel')
 const { NETLIFYDEV, NETLIFYDEVLOG, NETLIFYDEVWARN, NETLIFYDEVERR } = require('../../utils/logo')
 const openBrowser = require('../../utils/open-browser')
@@ -180,7 +180,9 @@ class DevCommand extends Command {
       ...flags,
     }
 
-    const { addonsUrls, teamEnv, addonsEnv, siteEnv, dotFilesEnv, siteUrl, capabilities } = await getSiteInformation({
+    await injectEnvVariables({ env: this.netlify.cachedConfig.env, log, site, warn })
+
+    const { addonsUrls, siteUrl, capabilities } = await getSiteInformation({
       flags,
       api,
       site,
@@ -188,8 +190,6 @@ class DevCommand extends Command {
       error: errorExit,
       siteInfo,
     })
-
-    await addEnvVariables({ log, teamEnv, addonsEnv, siteEnv, dotFilesEnv })
 
     let settings = {}
     try {

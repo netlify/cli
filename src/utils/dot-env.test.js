@@ -62,8 +62,8 @@ test('should read from both .env.development and .env', async (t) => {
 
     const results = await loadDotEnvFiles({ projectDir: builder.directory, warn })
     t.deepEqual(results, [
-      { file: '.env.development', env: { ONE: 'FROM_DEVELOPMENT_ENV', THREE: 'FROM_DEVELOPMENT_ENV' } },
       { file: '.env', env: { ONE: 'FROM_ENV', TWO: 'FROM_ENV' } },
+      { file: '.env.development', env: { ONE: 'FROM_DEVELOPMENT_ENV', THREE: 'FROM_DEVELOPMENT_ENV' } },
     ])
   })
 })
@@ -78,20 +78,5 @@ test('should handle empty .env file', async (t) => {
 
     const results = await loadDotEnvFiles({ projectDir: builder.directory, warn })
     t.deepEqual(results, [{ file: '.env', env: {} }])
-  })
-})
-
-test('should filter process.env vars', async (t) => {
-  await withSiteBuilder('site-with-empty-env-file', async (builder) => {
-    builder.withEnvFile({
-      path: '.env',
-      env: { SHOULD_FILTER: 'FROM_ENV', OTHER: 'FROM_ENV' },
-    })
-
-    await builder.buildAsync()
-
-    process.env.SHOULD_FILTER = 'FROM_PROCESS_ENV'
-    const results = await loadDotEnvFiles({ projectDir: builder.directory, warn })
-    t.deepEqual(results, [{ file: '.env', env: { OTHER: 'FROM_ENV' } }])
   })
 })

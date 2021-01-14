@@ -1,3 +1,4 @@
+const fromEntries = require('@ungap/from-entries')
 const AsciiTable = require('ascii-table')
 const isEmpty = require('lodash/isEmpty')
 
@@ -6,7 +7,7 @@ const Command = require('../../utils/command')
 class EnvListCommand extends Command {
   async run() {
     const { flags } = this.parse(EnvListCommand)
-    const { api, site, config } = this.netlify
+    const { api, site, cachedConfig } = this.netlify
     const siteId = site.id
 
     if (!siteId) {
@@ -22,9 +23,12 @@ class EnvListCommand extends Command {
     })
 
     const siteData = await api.getSite({ siteId })
-    const {
-      build: { environment = {} },
-    } = config
+    const environment = fromEntries(
+      Object.entries(cachedConfig.env)
+        // Omitting general variables to reduce noise.
+        .filter(([, variable]) => variable.sources[0] !== 'general')
+        .map(([key, variable]) => [key, variable.value]),
+    )
 
     // Return json response for piping commands
     if (flags.json) {

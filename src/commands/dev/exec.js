@@ -1,20 +1,13 @@
 const execa = require('execa')
 
 const Command = require('../../utils/command')
-const { getSiteInformation, addEnvVariables } = require('../../utils/dev')
+const { injectEnvVariables } = require('../../utils/dev')
 
 class ExecCommand extends Command {
   async run() {
-    const { log, warn, error, netlify } = this
-    const { site, api, siteInfo } = netlify
-    const { teamEnv, addonsEnv, siteEnv, dotFilesEnv } = await getSiteInformation({
-      api,
-      site,
-      warn,
-      error,
-      siteInfo,
-    })
-    await addEnvVariables({ log, teamEnv, addonsEnv, siteEnv, dotFilesEnv })
+    const { log, warn, netlify } = this
+    const { cachedConfig, site } = netlify
+    await injectEnvVariables({ env: cachedConfig.env, log, site, warn })
 
     execa(this.argv[0], this.argv.slice(1), {
       stdio: 'inherit',

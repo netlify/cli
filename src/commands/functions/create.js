@@ -15,7 +15,7 @@ const ora = require('ora')
 const { mkdirRecursiveSync } = require('../../lib/fs')
 const { getSiteData, getAddons, getCurrentAddon } = require('../../utils/addons/prepare')
 const Command = require('../../utils/command')
-const { getSiteInformation, addEnvVariables } = require('../../utils/dev')
+const { injectEnvVariables } = require('../../utils/dev')
 const {
   // NETLIFYDEV,
   NETLIFYDEVLOG,
@@ -367,22 +367,15 @@ const createFunctionAddon = async function ({ api, addons, siteId, addonName, si
   }
 }
 
-const injectEnvVariables = async ({ context }) => {
-  const { log, warn, error, netlify } = context
-  const { api, site, siteInfo } = netlify
-  const { teamEnv, addonsEnv, siteEnv, dotFilesEnv } = await getSiteInformation({
-    api,
-    site,
-    warn,
-    error,
-    siteInfo,
-  })
-  await addEnvVariables({ log, teamEnv, addonsEnv, siteEnv, dotFilesEnv })
+const injectEnvVariablesFromContext = async ({ context }) => {
+  const { log, warn, netlify } = context
+  const { cachedConfig, site } = netlify
+  await injectEnvVariables({ env: cachedConfig.env, log, site, warn })
 }
 
 const handleOnComplete = async ({ context, onComplete }) => {
   if (onComplete) {
-    await injectEnvVariables({ context })
+    await injectEnvVariablesFromContext({ context })
     await onComplete.call(context)
   }
 }
@@ -405,7 +398,7 @@ const handleAddonDidInstall = async ({ addonCreated, addonDidInstall, context, f
     return
   }
 
-  await injectEnvVariables({ context })
+  await injectEnvVariablesFromContext({ context })
   addonDidInstall(fnPath)
 }
 
