@@ -463,7 +463,7 @@ testMatrix.forEach(({ args }) => {
           .json()
 
         t.is(response.headers.host, `${server.host}:${server.port}`)
-        t.is(response.headers['content-type'], `multipart/form-data; boundary=${formBoundary}`)
+        t.is(response.headers['content-type'], `multipart/form-data; boundary=${expectedBoundary}`)
         t.is(response.headers['content-length'], 164)
         t.is(response.httpMethod, 'POST')
         t.is(response.isBase64Encoded, false)
