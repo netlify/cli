@@ -15,7 +15,17 @@ const { NETLIFYDEVLOG, NETLIFYDEVERR, NETLIFYDEVWARN } = require('./logo')
 
 const EDGE_HANDLERS_BUNDLER_CLI_PATH = path.resolve(require.resolve('@netlify/plugin-edge-handlers'), '..', 'cli.js')
 
-const startForwardProxy = async ({ port, frameworkPort, functionsPort, publishDir, log, debug, locationDb }) => {
+const startForwardProxy = async ({
+  port,
+  frameworkPort,
+  functionsPort,
+  publishDir,
+  log,
+  debug,
+  locationDb,
+  jwtRolesPath,
+  jwtSecret,
+}) => {
   const args = [
     'start',
     'local',
@@ -42,6 +52,14 @@ const startForwardProxy = async ({ port, frameworkPort, functionsPort, publishDi
 
   if (locationDb) {
     args.push('--geo', locationDb)
+  }
+
+  if (jwtRolesPath) {
+    args.push('--jwt-roles-path', jwtRolesPath)
+  }
+
+  if (jwtSecret) {
+    args.push('--signature-secret', jwtSecret)
   }
 
   const { subprocess } = runProcess({ log, args })

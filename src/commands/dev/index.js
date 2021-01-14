@@ -109,6 +109,8 @@ const startProxyServer = async ({ flags, settings, site, log, exit, addonsUrls }
       log,
       debug: flags.debug,
       locationDb: flags.locationDb,
+      jwtRolesPath: settings.jwtRolePath,
+      jwtSecret: settings.jwtSecret,
     })
     if (!url) {
       log(NETLIFYDEVERR, `Unable to start forward proxy on port '${settings.port}'`)
