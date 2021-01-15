@@ -23,7 +23,7 @@ const formatDirectory = (chalk, directory) => chalk.redBright(directory)
 
 const getCommunityLink = (chalk) =>
   chalk.magenta(
-    'community.netlify.com/t/upcoming-change-netlify-functions-as-zero-config-default-folder-for-deploying-netlify-functions/28789',
+    'https://community.netlify.com/t/upcoming-change-netlify-functions-as-zero-config-default-folder-for-deploying-netlify-functions/28789',
   )
 
 const logDefaultFunctionsSrcWarning = (log, chalk, netlifyDir, defaultFunctionsSrc) => {
