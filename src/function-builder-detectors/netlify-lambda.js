@@ -1,4 +1,5 @@
 const execa = require('execa')
+const minimist = require('minimist')
 
 const { fileExistsAsync, readFileAsync } = require('../lib/fs')
 
@@ -13,12 +14,16 @@ const detectNetlifyLambda = async function ({ dependencies, devDependencies, scr
   for (const key in scripts) {
     const script = scripts[key]
 
-    const match = script.match(/netlify-lambda build.* (\S+)\s*$/)
-    if (match) {
-      const [, src] = match
-      settings.src = src
-      settings.npmScript = key
-      break
+    if (script.includes("netlify-lambda build")) {
+      const match = minimist(script.split(" "))
+      // _ should be ['netlify-lambda', 'build', 'functions_folder']
+      if (match._.length === 3) {
+        settings.src = match._[2]
+        settings.npmScript = key
+        break
+      } else {
+        console.warn("'netlify-lambda build' command found but no functions folder was found")
+      }
     }
   }
 
