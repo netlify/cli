@@ -300,6 +300,47 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
+  test(testName('should override value of the NETLIFY_DEV env variable', args), async (t) => {
+    await withSiteBuilder('site-with-netlify-dev-override', async (builder) => {
+      builder.withNetlifyToml({ config: { build: { functions: 'functions' } } }).withFunction({
+        path: 'env.js',
+        handler: async () => ({
+          statusCode: 200,
+          body: `${process.env.NETLIFY_DEV}`,
+        }),
+      })
+
+      await builder.buildAsync()
+
+      await withDevServer(
+        { cwd: builder.directory, env: { NETLIFY_DEV: 'FROM_PROCESS_ENV' }, args },
+        async (server) => {
+          const response = await got(`${server.url}/.netlify/functions/env`).text()
+          t.is(response, 'true')
+        },
+      )
+    })
+  })
+
+  test(testName('should override value of the CONTEXT env variable', args), async (t) => {
+    await withSiteBuilder('site-with-context-override', async (builder) => {
+      builder.withNetlifyToml({ config: { build: { functions: 'functions' } } }).withFunction({
+        path: 'env.js',
+        handler: async () => ({
+          statusCode: 200,
+          body: `${process.env.CONTEXT}`,
+        }),
+      })
+
+      await builder.buildAsync()
+
+      await withDevServer({ cwd: builder.directory, env: { CONTEXT: 'production' }, args }, async (server) => {
+        const response = await got(`${server.url}/.netlify/functions/env`).text()
+        t.is(response, 'dev')
+      })
+    })
+  })
+
   test(testName('should redirect using a wildcard when set in netlify.toml', args), async (t) => {
     await withSiteBuilder('site-with-redirect-function', async (builder) => {
       builder
