@@ -1,0 +1,36 @@
+name: Verify Docs
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        node-version: [14.x]
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install core dependencies
+        run: npm ci
+      - name: Install site dependencies
+        run: npm run site:build:install
+      - name: Generate docs
+        run: npm run docs
+      - name: Check for changes
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "No changes to docs files detected"
+          else
+            echo "Changes to docs files detected, please run 'npm run docs' to sync docs"
+            exit 1
+          fi
