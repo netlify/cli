@@ -56,7 +56,7 @@
     "test:init:cli-help": "npm run start -- --help",
     "test:init:install-deps": "npm ci --prefix tests/site-cra",
     "test:dev:ava": "ava --verbose",
-    "test:ci:ava": "nyc -r lcovonly -r text -r json ava --verbose",
+    "test:ci:ava": "nyc -r json ava",
     "docs": "node ./site/scripts/docs.js",
     "watch": "nyc --reporter=lcov ava --watch",
     "prepack": "oclif-dev manifest && npm prune --prod",
