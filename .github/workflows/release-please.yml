@@ -1,0 +1,14 @@
+name: release-please
+on:
+  push:
+    branches:
+      - master
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: GoogleCloudPlatform/release-please-action@v2
+        with:
+          token: ${{ secrets.NODE_PKG_RELEASE_TOKEN }}
+          release-type: node
+          package-name: 'netlify-cli'
