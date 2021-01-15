@@ -1,5 +1,4 @@
 const http = require('http')
-const process = require('process')
 
 const test = require('ava')
 const { createProxyServer } = require('http-proxy')
@@ -42,11 +41,9 @@ test(`should exit with error when proxy is no available`, async (t) => {
 
   await t.throwsAsync(getAgent({ httpProxy, log, exit }))
 
-  if (process.platform === 'win32') {
-    t.is(log.getCall(0).args[1], "Could not connect to 'https://unknown:7979'")
-  } else {
-    t.is(log.getCall(0).args[1], 'https://unknown:7979 is not available.')
-  }
+  const [, actual] = log.getCall(0).args
+
+  t.true(["Could not connect to 'https://unknown:7979'", 'https://unknown:7979 is not available.'].includes(actual))
 })
 
 test(`should return agent for a valid proxy`, async (t) => {
