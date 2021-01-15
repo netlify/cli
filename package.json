@@ -39,6 +39,7 @@
     "url": "https://github.com/netlify/cli/issues"
   },
   "scripts": {
+    "prepublishOnly": "npm ci && run-s test",
     "start": "node ./bin/run",
     "test": "run-s format test:dev",
     "format": "run-s format:check-fix:*",
@@ -60,11 +61,6 @@
     "watch": "nyc --reporter=lcov ava --watch",
     "prepack": "oclif-dev manifest && npm prune --prod",
     "postpack": "rm -f oclif.manifest.json && npm i",
-    "release": "run-s release:*",
-    "release:docs": "npm run docs && git add docs",
-    "release:standard-version": "standard-version --no-verify --skip.changelog --commit-all",
-    "release:version": "git push && git push --tags && gh-release",
-    "release:publish": "npm publish",
     "site:build": "run-s site:build:*",
     "site:build:install": "cd site && npm ci",
     "site:build:assets": "cd site && npm run build",
@@ -72,7 +68,7 @@
   },
   "scriptsArgs": {
     "eslint": "--ignore-path .gitignore --cache --format=codeframe --max-warnings=0 \"{src,scripts,site,tests,.github}/**/*.{js,md,html}\" \"*.{js,md,html}\" \".*.{js,md,html}\"",
-    "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,scripts,site,tests,.github}/**/*.{js,md,yml,json,html}\" \"*.{js,yml,json,html}\" \".*.{js,yml,json,html}\" \"!package-lock.json\""
+    "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,scripts,site,tests,.github}/**/*.{js,md,yml,json,html}\" \"*.{js,yml,json,html}\" \".*.{js,yml,json,html}\" \"!CHANGELOG.md\" \"!package-lock.json\""
   },
   "dependencies": {
     "@netlify/build": "^8.0.5",
@@ -168,11 +164,9 @@
     "@netlify/eslint-config-node": "^2.0.0",
     "@oclif/dev-cli": "^1.23.1",
     "@oclif/test": "^1.2.5",
-    "auto-changelog": "^2.0.0",
     "ava": "^2.4.0",
     "form-data": "^3.0.0",
     "from2-string": "^1.1.0",
-    "gh-release": "^4.0.0",
     "globby": "^10.0.1",
     "got": "^11.8.1",
     "jsonwebtoken": "^8.5.1",

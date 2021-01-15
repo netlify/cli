@@ -91,8 +91,10 @@ We actively welcome your pull requests.
 
 ## Releasing
 
-1. Install dependencies. `npm ci`.
-2. `npm run release`.
+1. Merge the release PR
+2. Switch to the default branch `git checkout master`
+3. Pull latest changes `git pull`
+4. Publish the package `npm publish`
 
 ## License
 
