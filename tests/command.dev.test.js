@@ -66,6 +66,9 @@ const setupRoleBasedRedirectsSite = (builder) => {
 }
 
 const validateRoleBasedRedirectsSite = async ({ builder, args, t, jwtSecret, jwtRolePath }) => {
+  const adminToken = getToken({ jwtSecret, jwtRolePath, roles: ['admin'] })
+  const editorToken = getToken({ jwtSecret, jwtRolePath, roles: ['editor'] })
+
   await withDevServer({ cwd: builder.directory, args }, async (server) => {
     const unauthenticatedResponse = await gotCatch404(`${server.url}/admin`)
     t.is(unauthenticatedResponse.statusCode, 404)
@@ -73,7 +76,7 @@ const validateRoleBasedRedirectsSite = async ({ builder, args, t, jwtSecret, jwt
 
     const authenticatedResponse = await got(`${server.url}/admin/foo`, {
       headers: {
-        cookie: `nf_jwt=${getToken({ jwtSecret, jwtRolePath, roles: ['admin'] })}`,
+        cookie: `nf_jwt=${adminToken}`,
       },
     })
     t.is(authenticatedResponse.statusCode, 200)
@@ -81,7 +84,7 @@ const validateRoleBasedRedirectsSite = async ({ builder, args, t, jwtSecret, jwt
 
     const wrongRoleResponse = await gotCatch404(`${server.url}/admin/foo`, {
       headers: {
-        cookie: `nf_jwt=${getToken({ jwtSecret, jwtRolePath, roles: ['editor'] })}`,
+        cookie: `nf_jwt=${editorToken}`,
       },
     })
     t.is(wrongRoleResponse.statusCode, 404)
@@ -107,7 +110,7 @@ testMatrix.forEach(({ args }) => {
   })
 
   test(testName('should return user defined headers when / is accessed', args), async (t) => {
-    await withSiteBuilder('site-with-index-file', async (builder) => {
+    await withSiteBuilder('site-with-headers-on-root', async (builder) => {
       builder.withContentFile({
         path: 'index.html',
         content: '<h1>⊂◉‿◉つ</h1>',
@@ -127,7 +130,7 @@ testMatrix.forEach(({ args }) => {
   })
 
   test(testName('should return user defined headers when non-root path is accessed', args), async (t) => {
-    await withSiteBuilder('site-with-index-file', async (builder) => {
+    await withSiteBuilder('site-with-headers-on-non-root', async (builder) => {
       builder.withContentFile({
         path: 'foo/index.html',
         content: '<h1>⊂◉‿◉つ</h1>',
@@ -345,15 +348,7 @@ testMatrix.forEach(({ args }) => {
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/api/echo?ding=dong`).json()
         t.is(response.body, undefined)
-        t.deepEqual(response.headers, {
-          accept: 'application/json',
-          'accept-encoding': 'gzip, deflate, br',
-          'client-ip': '127.0.0.1',
-          connection: 'close',
-          host: `${server.host}:${server.port}`,
-          'user-agent': 'got (https://github.com/sindresorhus/got)',
-          'x-forwarded-for': '::ffff:127.0.0.1',
-        })
+        t.is(response.headers.host, `${server.host}:${server.port}`)
         t.is(response.httpMethod, 'GET')
         t.is(response.isBase64Encoded, false)
         t.is(response.path, '/api/echo')
@@ -392,17 +387,9 @@ testMatrix.forEach(({ args }) => {
           .json()
 
         t.is(response.body, 'some=thing')
-        t.deepEqual(response.headers, {
-          accept: 'application/json',
-          'accept-encoding': 'gzip, deflate, br',
-          'client-ip': '127.0.0.1',
-          connection: 'close',
-          host: `${server.host}:${server.port}`,
-          'content-type': 'application/x-www-form-urlencoded',
-          'content-length': '10',
-          'user-agent': 'got (https://github.com/sindresorhus/got)',
-          'x-forwarded-for': '::ffff:127.0.0.1',
-        })
+        t.is(response.headers.host, `${server.host}:${server.port}`)
+        t.is(response.headers['content-type'], 'application/x-www-form-urlencoded')
+        t.is(response.headers['content-length'], '10')
         t.is(response.httpMethod, 'POST')
         t.is(response.isBase64Encoded, false)
         t.is(response.path, '/api/echo')
@@ -475,17 +462,9 @@ testMatrix.forEach(({ args }) => {
           })
           .json()
 
-        t.deepEqual(response.headers, {
-          accept: 'application/json',
-          'accept-encoding': 'gzip, deflate, br',
-          'client-ip': '127.0.0.1',
-          connection: 'close',
-          host: `${server.host}:${server.port}`,
-          'content-length': '164',
-          'content-type': `multipart/form-data; boundary=${expectedBoundary}`,
-          'user-agent': 'got (https://github.com/sindresorhus/got)',
-          'x-forwarded-for': '::ffff:127.0.0.1',
-        })
+        t.is(response.headers.host, `${server.host}:${server.port}`)
+        t.is(response.headers['content-type'], `multipart/form-data; boundary=${expectedBoundary}`)
+        t.is(response.headers['content-length'], '164')
         t.is(response.httpMethod, 'POST')
         t.is(response.isBase64Encoded, false)
         t.is(response.path, '/api/echo')
@@ -496,7 +475,7 @@ testMatrix.forEach(({ args }) => {
   })
 
   test(testName('should return 404 when redirecting to a non existing function', args), async (t) => {
-    await withSiteBuilder('site-with-multi-part-function', async (builder) => {
+    await withSiteBuilder('site-with-missing-function', async (builder) => {
       builder.withNetlifyToml({
         config: {
           build: { functions: 'functions' },
@@ -579,17 +558,9 @@ testMatrix.forEach(({ args }) => {
 
         const body = JSON.parse(response.body)
 
-        t.deepEqual(response.headers, {
-          accept: 'application/json',
-          'accept-encoding': 'gzip, deflate, br',
-          'client-ip': '127.0.0.1',
-          connection: 'close',
-          host: `${server.host}:${server.port}`,
-          'content-length': '276',
-          'content-type': 'application/json',
-          'user-agent': 'got (https://github.com/sindresorhus/got)',
-          'x-forwarded-for': '::ffff:127.0.0.1',
-        })
+        t.is(response.headers.host, `${server.host}:${server.port}`)
+        t.is(response.headers['content-length'], '276')
+        t.is(response.headers['content-type'], 'application/json')
         t.is(response.httpMethod, 'POST')
         t.is(response.isBase64Encoded, false)
         t.is(response.path, '/')
@@ -1030,7 +1001,7 @@ testMatrix.forEach(({ args }) => {
   })
 
   test(testName('should not shadow an existing file that has unsafe URL characters', args), async (t) => {
-    await withSiteBuilder('site-with-same-name-for-file-and-folder', async (builder) => {
+    await withSiteBuilder('site-with-unsafe-url-file-names', async (builder) => {
       builder
         .withContentFile({
           path: 'public/index.html',
