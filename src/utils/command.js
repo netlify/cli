@@ -8,13 +8,12 @@ const oclifParser = require('@oclif/parser')
 const merge = require('lodash/merge')
 const argv = require('minimist')(process.argv.slice(2))
 const API = require('netlify')
-const semverLessThan = require('semver/functions/lt')
 
+const { warnOnOldNodeVersion, warnOnNetlifyDir } = require('../lib/deprecations')
 const { getAgent } = require('../lib/http-agent')
 
 const chalkInstance = require('./chalk')
 const globalConfig = require('./global-config')
-const { NETLIFYDEVWARN } = require('./logo')
 const openBrowser = require('./open-browser')
 const StateConfig = require('./state-config')
 const { track, identify } = require('./telemetry')
@@ -29,15 +28,7 @@ const CLIENT_ID = 'd6f37de6614df7ae58664cfca524744d73807a377f5ee71f1a254f78412e3
 // 'functions:invoke' need to return the data from the function as is
 const isDefaultJson = () => argv._[0] === 'functions:invoke' || (argv._[0] === 'api' && argv.list !== true)
 
-const warnOnOldNodeVersion = ({ log, chalk }) => {
-  if (semverLessThan(process.version, '10.0.0')) {
-    log(
-      `${NETLIFYDEVWARN} ${chalk.bold('Netlify CLI')} will require ${chalk.magenta.bold(
-        'Node.js 10',
-      )} or greater soon. Please update your Node.js version.`,
-    )
-  }
-}
+const isBuildCommand = () => argv._[0] === 'build' || (argv._[0] === 'deploy' && argv.build === true)
 
 const getToken = (tokenFromFlag) => {
   // 1. First honor command flag --auth
@@ -114,6 +105,10 @@ class BaseCommand extends Command {
     }
 
     warnOnOldNodeVersion({ log: this.log, chalk: this.chalk })
+    // @netlify/build already warns about this issue
+    if (!isBuildCommand()) {
+      await warnOnNetlifyDir({ log: this.log, chalk: this.chalk, buildDir })
+    }
   }
 
   // Find and resolve the Netlify configuration
