@@ -31,6 +31,10 @@ Tests are run with:
 npm test
 ```
 
+**NOTE:** we run some integration tests against an active Netlify account. For these tests to pass you'll need to
+provide a Netlify auth token (using the `NETLIFY_AUTH_TOKEN` environment variable) or login via `./bin/run login` before
+running the tests.
+
 In watch mode:
 
 ```bash
