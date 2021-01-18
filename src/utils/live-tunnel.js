@@ -3,6 +3,7 @@ const process = require('process')
 const chalk = require('chalk')
 const execa = require('execa')
 const fetch = require('node-fetch')
+const pWaitFor = require('p-wait-for')
 
 const { shouldFetchLatestVersion, fetchLatestVersion } = require('../lib/exec-fetcher')
 const { getPathInHome } = require('../lib/settings')
@@ -11,6 +12,11 @@ const { NETLIFYDEVLOG, NETLIFYDEVERR } = require('./logo')
 
 const PACKAGE_NAME = 'live-tunnel-client'
 const EXEC_NAME = PACKAGE_NAME
+
+// 1 second
+const TUNNEL_POLL_INTERVAL = 1e3
+// 5 minutes
+const TUNNEL_POLL_TIMEOUT = 3e5
 
 const createTunnel = async function ({ siteId, netlifyApiToken, log }) {
   await installTunnelClient(log)
@@ -88,7 +94,31 @@ const startLiveTunnel = async ({ siteId, netlifyApiToken, localPort, log }) => {
     log,
   })
 
+  const isLiveTunnelReady = async function () {
+    const url = `https://api.netlify.com/api/v1/live_sessions/${session.id}`
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${netlifyApiToken}`,
+      },
+    })
+    const data = await response.json()
+
+    if (response.status !== 200) {
+      throw new Error(data.message)
+    }
+
+    return data.state === 'online'
+  }
+
   await connectTunnel({ session, netlifyApiToken, localPort, log })
+
+  // Waiting for the live session to have a state of `online`.
+  await pWaitFor(isLiveTunnelReady, {
+    interval: TUNNEL_POLL_INTERVAL,
+    timeout: TUNNEL_POLL_TIMEOUT,
+  })
 
   return session.session_url
 }
