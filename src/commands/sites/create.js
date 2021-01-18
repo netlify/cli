@@ -1,14 +1,18 @@
 const { flags: flagsLib } = require('@oclif/command')
+const slugify = require('@sindresorhus/slugify')
 const chalk = require('chalk')
 const inquirer = require('inquirer')
 const pick = require('lodash/pick')
 const sample = require('lodash/sample')
 const prettyjson = require('prettyjson')
+const { v4: uuidv4 } = require('uuid')
 
 const Command = require('../../utils/command')
 const { getRepoData } = require('../../utils/get-repo-data')
 const { configureRepo } = require('../../utils/init/config')
 const { track } = require('../../utils/telemetry')
+
+const SITE_NAME_SUGGESTION_SUFFIX_LENGTH = 5
 
 class SitesCreateCommand extends Command {
   async run() {
@@ -43,21 +47,31 @@ class SitesCreateCommand extends Command {
     }
 
     const { name: nameFlag } = flags
-    let userName
+    let user
     let site
 
     // Allow the user to reenter site name if selected one isn't available
     const inputSiteName = async (name) => {
-      if (!userName) userName = await api.getCurrentUser()
+      if (!user) user = await api.getCurrentUser()
 
       if (!name) {
+        let { slug } = user
+        let suffix = ''
+
+        // If the user doesn't have a slug, we'll compute one. Because `full_name` is not guaranteed to be unique, we
+        // append a short randomly-generated ID to reduce the likelihood of a conflict.
+        if (!slug) {
+          slug = slugify(user.full_name || user.email)
+          suffix = `-${uuidv4().slice(0, SITE_NAME_SUGGESTION_SUFFIX_LENGTH)}`
+        }
+
         const suggestions = [
-          `super-cool-site-by-${userName.slug}`,
-          `the-awesome-${userName.slug}-site`,
-          `${userName.slug}-makes-great-sites`,
-          `netlify-thinks-${userName.slug}-is-great`,
-          `the-great-${userName.slug}-site`,
-          `isnt-${userName.slug}-awesome`,
+          `super-cool-site-by-${slug}${suffix}`,
+          `the-awesome-${slug}-site${suffix}`,
+          `${slug}-makes-great-sites${suffix}`,
+          `netlify-thinks-${slug}-is-great${suffix}`,
+          `the-great-${slug}-site${suffix}`,
+          `isnt-${slug}-awesome${suffix}`,
         ]
         const siteSuggestion = sample(suggestions)
 
