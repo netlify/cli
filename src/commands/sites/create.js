@@ -61,7 +61,7 @@ class SitesCreateCommand extends Command {
         // If the user doesn't have a slug, we'll compute one. Because `full_name` is not guaranteed to be unique, we
         // append a short randomly-generated ID to reduce the likelihood of a conflict.
         if (!slug) {
-          slug = slugify(user.full_name)
+          slug = slugify(user.full_name || user.email)
           suffix = `-${uuidv4().slice(0, SITE_NAME_SUGGESTION_SUFFIX_LENGTH)}`
         }
 
