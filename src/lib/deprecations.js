@@ -1,20 +1,8 @@
 const path = require('path')
-const process = require('process')
 
 const pathExists = require('path-exists')
-const semverLessThan = require('semver/functions/lt')
 
 const { NETLIFYDEVWARN } = require('../utils/logo')
-
-const warnOnOldNodeVersion = ({ log, chalk }) => {
-  if (semverLessThan(process.version, '10.0.0')) {
-    log(
-      `${NETLIFYDEVWARN} ${chalk.bold('Netlify CLI')} will require ${chalk.magenta.bold(
-        'Node.js 10',
-      )} or greater soon. Please update your Node.js version.`,
-    )
-  }
-}
 
 const NETLIFY_DIR = 'netlify'
 const DEFAULT_FUNCTIONS_SRC = path.join(NETLIFY_DIR, 'functions')
@@ -63,4 +51,4 @@ const warnOnNetlifyDir = async ({ log, chalk, buildDir }) => {
   }
 }
 
-module.exports = { warnOnOldNodeVersion, warnOnNetlifyDir }
+module.exports = { warnOnNetlifyDir }

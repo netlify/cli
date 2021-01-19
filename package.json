@@ -148,7 +148,6 @@
     "raw-body": "^2.4.1",
     "resolve": "^1.12.0",
     "safe-join": "^0.1.3",
-    "semver": "^7.3.4",
     "static-server": "^2.2.1",
     "strip-ansi-control-characters": "^2.0.0",
     "to-readable-stream": "^2.1.0",
