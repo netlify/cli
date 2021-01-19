@@ -14,16 +14,14 @@ const detectNetlifyLambda = async function ({ dependencies, devDependencies, scr
   for (const key in scripts) {
     const script = scripts[key]
 
-    if (script.includes("netlify-lambda build")) {
+    if (script.match(/netlify-lambda\s+build/)) {
+      // E.g. ["netlify-lambda", "build", "functions/folder"]
       const match = minimist(script.split(" "))
-      // _ should be ['netlify-lambda', 'build', 'functions_folder']
-      if (match._.length === 3) {
-        settings.src = match._[2]
-        settings.npmScript = key
-        break
-      } else {
-        console.warn("'netlify-lambda build' command found but no functions folder was found")
-      }
+        if (match._.length > 2) {
+          settings.src = match._[2]
+          settings.npmScript = key
+          break
+        }
     }
   }
 

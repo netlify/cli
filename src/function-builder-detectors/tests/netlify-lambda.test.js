@@ -104,3 +104,22 @@ test(`should match if netlify-lambda is configured with multiple additional opti
   t.is(match.builderName, 'netlify-lambda')
   t.is(match.npmScript, 'some-build-step')
 })
+
+test("should match if netlify-lambda has options that are passed after the functions directory", async (t) => {
+  const packageJson = {
+    scripts: {
+      'some-build-step': 'netlify-lambda build some/directory --config config/webpack.config.js'
+    },
+    dependencies: {},
+    devDependencies: {
+      'netlify-lambda': 'ignored'
+    },
+  }
+
+  const match = await detectNetlifyLambda(packageJson)
+  t.not(match, false)
+
+  t.is(match.src, 'some/directory')
+  t.is(match.builderName, 'netlify-lambda')
+  t.is(match.npmScript, 'some-build-step')
+})
