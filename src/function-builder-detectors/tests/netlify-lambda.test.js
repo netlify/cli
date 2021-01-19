@@ -1,4 +1,5 @@
 const test = require('ava')
+const sinon = require("sinon")
 
 const { detectNetlifyLambda } = require('../netlify-lambda')
 
@@ -12,6 +13,29 @@ test(`should not match if netlify-lambda is missing from dependencies`, async (t
     devDependencies: {},
   }
   t.is(await detectNetlifyLambda(packageJson), false)
+})
+
+test("should not match if netlify-lambda is missing functions directory", async (t) => {
+  const sandbox = sinon.createSandbox()
+
+  const packageJson = {
+    scripts: {
+      'some-build-step': 'netlify-lambda build --config config/webpack.config.js'
+    },
+    dependencies: {},
+    devDependencies: {
+      'netlify-lambda': 'ignored'
+    }
+  }
+
+  const spyConsoleWarn = sinon.spy(console, 'warn')
+
+  t.is(await detectNetlifyLambda(packageJson), false)
+
+  // Not checking for exact warning string as it would make this test too specific/brittle
+  t.is(spyConsoleWarn.calledOnce, true)
+
+  sandbox.restore()
 })
 
 test(`should match if netlify-lambda is listed in dependencies and is mentioned in scripts`, async (t) => {
@@ -143,4 +167,3 @@ test("should match even if multiple netlify-lambda commands are specified", asyn
   t.is(match.builderName, 'netlify-lambda')
   t.is(match.npmScript, 'some-build-step')
 })
-
