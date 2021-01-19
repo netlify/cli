@@ -123,3 +123,24 @@ test("should match if netlify-lambda has options that are passed after the funct
   t.is(match.builderName, 'netlify-lambda')
   t.is(match.npmScript, 'some-build-step')
 })
+
+test("should match even if multiple netlify-lambda commands are specified", async (t) =>  {
+  const packageJson = {
+    scripts: {
+      'some-serve-step': 'netlify-lambda serve serve/directory',
+      'some-build-step': 'netlify-lambda build build/directory'
+    },
+    dependencies: {},
+    devDependencies: {
+      'netlify-lambda': 'ignored'
+    }
+  }
+
+  const match = await detectNetlifyLambda(packageJson)
+  t.not(match, false)
+
+  t.is(match.src, 'build/directory')
+  t.is(match.builderName, 'netlify-lambda')
+  t.is(match.npmScript, 'some-build-step')
+})
+
