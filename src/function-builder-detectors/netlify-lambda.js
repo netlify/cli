@@ -16,11 +16,11 @@ const detectNetlifyLambda = async function ({ dependencies, devDependencies, scr
 
     if (script.match(/netlify-lambda\s+build/)) {
       // E.g. ["netlify-lambda", "build", "functions/folder"]
-      const match = minimist(script.split(" "))
+      const match = minimist(script.split(' '))
       // We are not interested in 'netlify-lambda' and 'build' commands
-      const functionDirectories = match._.slice(2);
+      const functionDirectories = match._.slice(2)
       if (functionDirectories.length === 1) {
-        settings.src = functionDirectories[0]
+        ;[settings.src] = functionDirectories
         settings.npmScript = key
         break
       } else if (functionDirectories.length === 0) {
