@@ -15,7 +15,7 @@ test(`should not match if netlify-lambda is missing from dependencies`, async (t
   t.is(await detectNetlifyLambda(packageJson), false)
 })
 
-test("should not match if netlify-lambda is missing functions directory", async (t) => {
+test.serial ("should not match if netlify-lambda is missing functions directory", async (t) => {
   const sandbox = sinon.createSandbox()
 
   const packageJson = {
@@ -28,12 +28,35 @@ test("should not match if netlify-lambda is missing functions directory", async 
     }
   }
 
-  const spyConsoleWarn = sinon.spy(console, 'warn')
+  const spyConsoleWarn = sandbox.spy(console, 'warn')
 
   t.is(await detectNetlifyLambda(packageJson), false)
 
   // Not checking for exact warning string as it would make this test too specific/brittle
-  t.is(spyConsoleWarn.calledOnce, true)
+  t.is(spyConsoleWarn.calledWithMatch("contained no functions folder"), true)
+
+  sandbox.restore()
+})
+
+test.serial("should not match if netlify-lambda contains multiple function directories", async (t) => {
+  const sandbox = sinon.createSandbox()
+
+  const packageJson = {
+    scripts: {
+      'some-build-step': 'netlify-lambda build -config config/webpack.config.js build/dir another/build/dir'
+    },
+    dependencies: {},
+    devDependencies: {
+      'netlify-lambda': 'ignored'
+    }
+  }
+
+  const spyConsoleWarn = sandbox.spy(console, 'warn')
+
+  t.is(await detectNetlifyLambda(packageJson), false)
+
+  // Not checking for exact warning string as it would make this test too specific/brittle
+  t.is(spyConsoleWarn.calledWithMatch("contained 2 or more function folders"), true)
 
   sandbox.restore()
 })

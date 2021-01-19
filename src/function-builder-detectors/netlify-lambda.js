@@ -17,12 +17,16 @@ const detectNetlifyLambda = async function ({ dependencies, devDependencies, scr
     if (script.match(/netlify-lambda\s+build/)) {
       // E.g. ["netlify-lambda", "build", "functions/folder"]
       const match = minimist(script.split(" "))
-      if (match._.length > 2) {
-        settings.src = match._[2]
+      // We are not interested in 'netlify-lambda' and 'build' commands
+      const functionDirectories = match._.slice(2);
+      if (functionDirectories.length === 1) {
+        settings.src = functionDirectories[0]
         settings.npmScript = key
         break
-      } else {
+      } else if (functionDirectories.length === 0) {
         console.warn("Command 'netlify-lambda build' was detected, but contained no functions folder")
+      } else {
+        console.warn("Command 'netlify-lambda build' was detected, but contained 2 or more function folders")
       }
     }
   }
