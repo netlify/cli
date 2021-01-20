@@ -47,15 +47,14 @@ const getToken = ({ roles, jwtSecret = 'secret', jwtRolePath = 'app_metadata.aut
 }
 
 const setupRoleBasedRedirectsSite = (builder) => {
-  const publicDir = 'public'
   builder
     .withContentFiles([
       {
-        path: path.join(publicDir, 'index.html'),
+        path: 'index.html',
         content: '<html>index</html>',
       },
       {
-        path: path.join(publicDir, 'admin/foo.html'),
+        path: 'admin/foo.html',
         content: '<html>foo</html>',
       },
     ])
@@ -80,7 +79,7 @@ const validateRoleBasedRedirectsSite = async ({ builder, args, t, jwtSecret, jwt
       },
     })
     t.is(authenticatedResponse.statusCode, 200)
-    t.is(authenticatedResponse.body, 'Not Found')
+    t.is(authenticatedResponse.body, '<html>foo</html>')
 
     const wrongRoleResponse = await gotCatch404(`${server.url}/admin/foo`, {
       headers: {
