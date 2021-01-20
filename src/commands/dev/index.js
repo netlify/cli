@@ -5,6 +5,8 @@ const process = require('process')
 const { flags: flagsLib } = require('@oclif/command')
 const boxen = require('boxen')
 const chalk = require('chalk')
+const fetch = require('node-fetch')
+const waitFor = require('p-wait-for')
 const StaticServer = require('static-server')
 const stripAnsiCc = require('strip-ansi-control-characters')
 const waitPort = require('wait-port')
@@ -20,6 +22,13 @@ const openBrowser = require('../../utils/open-browser')
 const { startProxy } = require('../../utils/proxy')
 const { startFunctionsServer } = require('../../utils/serve-functions')
 const { startForwardProxy } = require('../../utils/traffic-mesh')
+
+// 1 second
+const SERVER_POLL_INTERVAL = 1e3
+// 150 milliseconds
+const SERVER_POLL_REQUEST_TIMEOUT = 150
+// 30 seconds
+const SERVER_POLL_TIMEOUT = 3e4
 
 const startFrameworkServer = async function ({ settings, log, exit }) {
   if (settings.noCmd) {
@@ -82,7 +91,30 @@ const startFrameworkServer = async function ({ settings, log, exit }) {
   })
 
   try {
-    const open = await waitPort({ port: settings.frameworkPort, output: 'silent', timeout: FRAMEWORK_PORT_TIMEOUT })
+    const open = await waitPort({
+      port: settings.frameworkPort,
+      output: 'silent',
+      timeout: FRAMEWORK_PORT_TIMEOUT,
+    })
+
+    const waitForServerToRespond = async () => {
+      try {
+        await fetch(`http://localhost:${settings.frameworkPort}`, {
+          method: 'HEAD',
+          timeout: SERVER_POLL_REQUEST_TIMEOUT,
+        })
+      } catch (_) {
+        return false
+      }
+
+      return true
+    }
+
+    await waitFor(waitForServerToRespond, {
+      interval: SERVER_POLL_INTERVAL,
+      timeout: SERVER_POLL_TIMEOUT,
+    })
+
     if (!open) {
       throw new Error(`Timed out waiting for port '${settings.frameworkPort}' to be open`)
     }
