@@ -34,9 +34,12 @@ test('loadDetector: valid', (t) => {
 })
 
 test('loadDetector: invalid', (t) => {
-  t.throws(() => {
-    loadDetector('cry.js')
-  }, /Failed to load detector/)
+  t.throws(
+    () => {
+      loadDetector('cry.js')
+    },
+    { message: /Failed to load detector/ },
+  )
 })
 
 test('serverSettings: minimal config', async (t) => {
@@ -51,9 +54,10 @@ test('serverSettings: "#static" as "framework"', async (t) => {
 
 test('serverSettings: throw if "port" not available', async (t) => {
   const port = await getPort({ port: 1 })
-  await t.throwsAsync(async () => {
-    await serverSettings({ framework: '#auto', port }, {}, t.context.sitePath, () => {})
-  }, /Could not acquire required "port"/)
+  await t.throwsAsync(
+    serverSettings({ framework: '#auto', port }, {}, t.context.sitePath, () => {}),
+    { message: /Could not acquire required "port"/ },
+  )
 })
 
 test('serverSettings: "command" override npm', async (t) => {
@@ -84,23 +88,26 @@ test('serverSettings: custom framework parameters', async (t) => {
 
 test('serverSettings: set "framework" to "#custom" but no "command"', async (t) => {
   const devConfig = { framework: '#custom', targetPort: CUSTOM_PORT, publish: t.context.sitePath }
-  await t.throwsAsync(async () => {
-    await serverSettings(devConfig, {}, t.context.sitePath, () => {})
-  }, /"command" and "targetPort" properties are required when "framework" is set to "#custom"/)
+  await t.throwsAsync(
+    serverSettings(devConfig, {}, t.context.sitePath, () => {}),
+    { message: /"command" and "targetPort" properties are required when "framework" is set to "#custom"/ },
+  )
 })
 
 test('serverSettings: set "framework" to "#custom" but no "targetPort"', async (t) => {
   const devConfig = { framework: '#custom', command: 'npm run dev', publish: t.context.sitePath }
-  await t.throwsAsync(async () => {
-    await serverSettings(devConfig, {}, t.context.sitePath, () => {})
-  }, /"command" and "targetPort" properties are required when "framework" is set to "#custom"/)
+  await t.throwsAsync(
+    serverSettings(devConfig, {}, t.context.sitePath, () => {}),
+    { message: /"command" and "targetPort" properties are required when "framework" is set to "#custom"/ },
+  )
 })
 
 test('serverSettings: set "framework" to "#custom" but no "targetPort" or "command"', async (t) => {
   const devConfig = { framework: '#custom', publish: t.context.sitePath }
-  await t.throwsAsync(async () => {
-    await serverSettings(devConfig, {}, t.context.sitePath, () => {})
-  }, /"command" and "targetPort" properties are required when "framework" is set to "#custom"/)
+  await t.throwsAsync(
+    serverSettings(devConfig, {}, t.context.sitePath, () => {}),
+    { message: /"command" and "targetPort" properties are required when "framework" is set to "#custom"/ },
+  )
 })
 
 test('serverSettings: "functions" config', async (t) => {
@@ -141,17 +148,19 @@ test('serverSettings: "dir" flag and "command" as config param', async (t) => {
 test('serverSettings: "dir" and "targetPort" flags', async (t) => {
   const devConfig = { framework: '#auto', functions: path.join(t.context.sitePath, 'functions') }
   const flags = { dir: t.context.sitePath, targetPort: TARGET_PORT }
-  await t.throwsAsync(async () => {
-    await serverSettings(devConfig, flags, t.context.sitePath, () => {})
-  }, /"targetPort" option cannot be used in conjunction with "dir" flag/)
+  await t.throwsAsync(
+    serverSettings(devConfig, flags, t.context.sitePath, () => {}),
+    { message: /"targetPort" option cannot be used in conjunction with "dir" flag/ },
+  )
 })
 
 test('serverSettings: "dir" and "command" flags', async (t) => {
   const devConfig = { framework: '#auto', functions: path.join(t.context.sitePath, 'functions') }
   const flags = { dir: t.context.sitePath, command: 'ding' }
-  await t.throwsAsync(async () => {
-    await serverSettings(devConfig, flags, t.context.sitePath, () => {})
-  }, /"command" option cannot be used in conjunction with "dir" flag/)
+  await t.throwsAsync(
+    serverSettings(devConfig, flags, t.context.sitePath, () => {}),
+    { message: /"command" option cannot be used in conjunction with "dir" flag/ },
+  )
 })
 
 test('serverSettings: when no framework is detected', async (t) => {

@@ -167,7 +167,7 @@
     "@netlify/eslint-config-node": "^2.0.0",
     "@oclif/dev-cli": "^1.23.1",
     "@oclif/test": "^1.2.5",
-    "ava": "^2.4.0",
+    "ava": "^3.15.0",
     "form-data": "^3.0.0",
     "from2-string": "^1.1.0",
     "globby": "^10.0.1",
@@ -195,8 +195,7 @@
     "failFast": false,
     "failWithoutAssertions": false,
     "tap": false,
-    "compileEnhancements": false,
-    "babel": false
+    "timeout": "2m"
   },
   "oclif": {
     "bin": "netlify",
