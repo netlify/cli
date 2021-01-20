@@ -3,45 +3,116 @@ const fs = require('fs')
 const TOKEN_COMMENT = '#'
 const TOKEN_PATH = '/'
 
-const matchPaths = function (rulePath, targetPath) {
-  const rulePathParts = rulePath.split('/').filter(Boolean)
-  const targetPathParts = targetPath.split('/').filter(Boolean)
-
-  if (
-    targetPathParts.length === 0 &&
-    (rulePathParts.length === 0 || (rulePathParts.length === 1 && rulePathParts[0] === '*'))
-  ) {
-    return true
-  }
-
-  for (let index = 0; index < rulePathParts.length; index++) {
-    if (index >= targetPathParts.length) return false
-
-    const rulePart = rulePathParts[index]
-    const target = targetPathParts[index]
-
-    if (rulePart === '*') return true
-
-    if (rulePart.startsWith(':')) {
-      if (index === rulePathParts.length - 1) {
-        return index === targetPathParts.length - 1
-      }
-      if (index === targetPathParts.length - 1) {
-        return false
-      }
-    } else {
-      return rulePart === target
+/**
+ * @param {Object!} rule
+ * The pattern to test.
+ *
+ * @param {string!} path
+ * The target path to match against.
+ *
+ * @returns {boolean}
+ * Whether or not the `rulePath` matches the `path`.
+ */
+const matchPaths = function (rule, path) {
+  /**
+   * Break the rule and target paths into pieces.
+   *
+   * /a/b/c -> ['a', 'b', 'c']
+   */
+  const ruleParts = rule.split('/').filter(Boolean)
+  const pathParts = path.split('/').filter(Boolean)
+  /**
+   * Fast path for /*.
+   */
+  const matchAll = ruleParts.length === 1 && ruleParts[0] === '*'
+  if (matchAll && path) return true
+  /**
+   * If either set of path parts is empty (indicating root dir /), they must
+   * both be empty (/ and /), otherwise there is no match.
+   */
+  const noRuleParts = ruleParts.length === 0
+  const noPathParts = pathParts.length === 0
+  if (noRuleParts || noPathParts) return noRuleParts && noPathParts
+  /**
+   * Otherwise, iterate over ruleParts and pathParts.
+   */
+  for (let index = 0; index < ruleParts.length; index++) {
+    /**
+     * Select the corresponding pathPart and rulePart.
+     */
+    const rulePart = ruleParts[index]
+    const pathPart = pathParts[index]
+    /**
+     * Whether or not all ruleParts and pathParts have been iterated over.
+     */
+    const noMoreRuleParts = index >= ruleParts.length - 1
+    const noMorePathParts = index >= pathParts.length - 1
+    /**
+     * What kind of placeholder, if any, the current rulePart is.
+     */
+    const ruleIsAsterisk = rulePart === '*'
+    const ruleIsPlaceholder = rulePart.startsWith(':')
+    const ruleIsWildcard = ruleIsAsterisk || ruleIsPlaceholder
+    /**
+     * For either either wildcard - (*) or (:placeholder) - the entire path is a
+     * definite match on this wildcard token if:
+     */
+    if (ruleIsWildcard) {
+      /**
+       * 1. all ruleParts and pathParts have been iterated over, e.g.
+       *    `/path/to/:placeholder` & `/path/to/*` matched against
+       *    `/path/to/something` (and `/static/*` matched against `/static`)
+       */
+      if (noMorePathParts && noMoreRuleParts) return true
+      /**
+       * 2. the rulePart is a (*) wildcard AND it is the final rulePart, e.g.
+       *    `/path/to/*` matched against `/path/to/multiple/subdirs`.
+       */
+      if (noMoreRuleParts && ruleIsAsterisk) return true
+    } else if (rulePart !== pathPart) {
+      /**
+       * If a mismatch is found, the rule does not match.
+       */
+      return false
+    } else if (noMoreRuleParts) {
+      /**
+       * If we have made it through all of the rules without finding a mismatch,
+       * the rule matches the path.
+       */
+      return true
     }
   }
-
+  /**
+   * If no mismatch was found, the rule matches the target path.
+   */
   return false
 }
 
-const objectForPath = function (rules, pathname) {
-  return Object.entries(rules).reduce(
-    (prev, [rulePath, pathHeaders]) => ({ ...prev, ...(matchPaths(rulePath, pathname) && pathHeaders) }),
-    {},
-  )
+/**
+ * Get the matching headers for `path` given a set of `rules`.
+ *
+ * @param {Object<string,string[]>!} rules
+ * The rules to use for matching.
+ *
+ * @param {string!} path
+ * The path to match against.
+ *
+ * @returns {Object<string,string[]>}
+ */
+const objectForPath = function (rules, path) {
+  /**
+   * Iterate over the rules and assign the matching headers.
+   */
+  const pathObject = {}
+  for (const [rule, headers] of Object.entries(rules)) {
+    /**
+     * If the rule matches the math, assign the respective headers.
+     */
+    const isMatch = matchPaths(rule, path)
+    if (isMatch) Object.assign(pathObject, headers)
+  }
+  /** Return matched headers. */
+  return pathObject
 }
 
 const parseHeadersFile = function (filePath) {
@@ -63,11 +134,6 @@ const parseHeadersFile = function (filePath) {
 
     if (line.startsWith(TOKEN_COMMENT) || line.length === 0) continue
     if (line.startsWith(TOKEN_PATH)) {
-      if (line.includes('*') && line.indexOf('*') !== line.length - 1) {
-        throw new Error(
-          `invalid rule (A path rule cannot contain anything after * token) at line: ${index}\n${lines[index]}\n`,
-        )
-      }
       path = line
       continue
     }
@@ -97,6 +163,7 @@ const parseHeadersFile = function (filePath) {
 }
 
 module.exports = {
+  matchPaths,
   objectForPath,
   parseHeadersFile,
 }

@@ -4,7 +4,7 @@ const test = require('ava')
 
 const { createSiteBuilder } = require('../../tests/utils/site-builder')
 
-const { parseHeadersFile, objectForPath } = require('./headers.js')
+const { parseHeadersFile, objectForPath, matchPaths } = require('./headers.js')
 
 const headers = [
   { path: '/', headers: ['X-Frame-Options: SAMEORIGIN'] },
@@ -21,6 +21,20 @@ const headers = [
     ],
   },
   { path: '/:placeholder/index.html', headers: ['X-Frame-Options: SAMEORIGIN'] },
+  /**
+   * Do not force * to appear at end of path.
+   *
+   * @see https://github.com/netlify/next-on-netlify/issues/151
+   * @see https://github.com/netlify/cli/issues/1148
+   */
+  {
+    path: '/*/_next/static/chunks/*',
+    headers: ['cache-control: public', 'cache-control: max-age=31536000', 'cache-control: immutable'],
+  },
+  {
+    path: '/directory/*/test.html',
+    headers: ['X-Frame-Options: test'],
+  },
 ]
 
 test.before(async (t) => {
@@ -38,7 +52,14 @@ test.after(async (t) => {
   await t.context.builder.cleanupAsync()
 })
 
-test('_headers: validate correct parsing', (t) => {
+/**
+ * Pass if we can load the test headers without throwing an error.
+ */
+test('_headers: syntax validates as expected', (t) => {
+  parseHeadersFile(path.resolve(t.context.builder.directory, '_headers'))
+})
+
+test('_headers: validate rules', (t) => {
   const rules = parseHeadersFile(path.resolve(t.context.builder.directory, '_headers'))
   t.deepEqual(rules, {
     '/': {
@@ -54,6 +75,12 @@ test('_headers: validate correct parsing', (t) => {
     },
     '/:placeholder/index.html': {
       'X-Frame-Options': ['SAMEORIGIN'],
+    },
+    '/*/_next/static/chunks/*': {
+      'cache-control': ['public', 'max-age=31536000', 'immutable'],
+    },
+    '/directory/*/test.html': {
+      'X-Frame-Options': ['test'],
     },
   })
 })
@@ -83,4 +110,54 @@ test('_headers: rulesForPath testing', (t) => {
     'X-Frame-Options': ['SAMEORIGIN'],
     'X-Frame-Thing': ['SAMEORIGIN'],
   })
+  t.deepEqual(objectForPath(rules, '/placeholder/_next/static/chunks/placeholder'), {
+    'X-Frame-Thing': ['SAMEORIGIN'],
+    'cache-control': ['public', 'max-age=31536000', 'immutable'],
+  })
+  t.deepEqual(objectForPath(rules, '/directory/placeholder/test.html'), {
+    'X-Frame-Thing': ['SAMEORIGIN'],
+    'X-Frame-Options': ['test'],
+  })
+})
+
+/**
+ * The bulk of the _headers logic concerns testing whether or not a path matches
+ * a rule - focus on testing `matchPaths` over `objectForPath` (the latter just
+ * straightforwardly combines a bunch of objects).
+ */
+test('_headers: matchPaths matches rules as expected', (t) => {
+  /**
+   * Make sure (:placeholder) will NOT match root dir.
+   */
+  t.assert(!matchPaths('/:placeholder', '/'))
+  /**
+   * (:placeholder) wildcard tests.
+   */
+  t.assert(matchPaths('/directory/:placeholder', '/directory/test'))
+  t.assert(matchPaths('/directory/:placeholder/test', '/directory/placeholder/test'))
+  t.assert(!matchPaths('/directory/:placeholder', '/directory/test/test'))
+  /**
+   * (*) wildcard tests.
+   */
+  t.assert(matchPaths('/path/*/dir', '/path/to/dir'))
+  t.assert(matchPaths('/path/to/*/*/*', '/path/to/one/two/three'))
+  t.assert(matchPaths('/path/*/to/*/dir', '/path/placeholder/to/placeholder/dir'))
+  t.assert(!matchPaths('/path/*/to/*/dir', '/path/placeholder/to/placeholder'))
+  /**
+   * Trailing (*) wildcard matches recursive subdirs.
+   */
+  t.assert(matchPaths('/path/*', '/path/placeholder/to/placeholder/dir'))
+  t.assert(matchPaths('/path/to/*', '/path/to/oneDir'))
+  t.assert(matchPaths('/path/to/*', '/path/to/oneDir/twoDir/threeDir'))
+  /**
+   * Trailing (*) wildcard matches parent dir. This is caught automagically by
+   * index >= pathParts.length && index >= ruleParts.length check.
+   */
+  t.assert(matchPaths('/path/to/dir/*', '/path/to/dir'))
+  /**
+   * Mixed (*) and (:placeholder) wildcards.
+   */
+  t.assert(matchPaths('/path/*/to/:placeholder/:placeholder/*', '/path/placeholder/to/placeholder/dir/test'))
+  t.assert(matchPaths('/path/*/:placeholder', '/path/to/dir'))
+  t.assert(matchPaths('/path/:placeholder/:placeholder/*', '/path/to/dir/one/two/three'))
 })
