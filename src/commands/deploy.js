@@ -411,9 +411,10 @@ class DeployCommand extends Command {
     }
 
     if (flags.build) {
+      const [token] = await this.getConfigToken()
       const options = await getBuildOptions({
         context: this,
-        token: this.getConfigToken()[0],
+        token,
         flags,
       })
       const exitCode = await runBuild(options)

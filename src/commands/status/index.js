@@ -12,7 +12,7 @@ class StatusCommand extends Command {
     const { flags } = this.parse(StatusCommand)
 
     const current = globalConfig.get('userId')
-    const [accessToken] = this.getConfigToken()
+    const [accessToken] = await this.getConfigToken()
 
     if (!accessToken) {
       this.log(`Not logged in. Please log in to see site status.`)

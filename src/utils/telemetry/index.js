@@ -4,7 +4,7 @@ const process = require('process')
 
 const ci = require('ci-info')
 
-const globalConfig = require('../global-config')
+const getGlobalConfig = require('../get-global-config')
 
 const isValidEventName = require('./validation')
 
@@ -45,7 +45,7 @@ const eventConfig = {
   ],
 }
 
-const track = function (eventName, payload) {
+const track = async function (eventName, payload) {
   const properties = payload || {}
 
   if (IS_INSIDE_CI) {
@@ -55,6 +55,7 @@ const track = function (eventName, payload) {
     return Promise.resolve()
   }
 
+  const globalConfig = await getGlobalConfig()
   // exit early if tracking disabled
   const TELEMETRY_DISABLED = globalConfig.get('telemetryDisabled')
   if (TELEMETRY_DISABLED && !properties.force) {
@@ -103,7 +104,7 @@ const track = function (eventName, payload) {
   return send('track', defaultData)
 }
 
-const identify = function (payload) {
+const identify = async function (payload) {
   const data = payload || {}
 
   if (IS_INSIDE_CI) {
@@ -113,6 +114,7 @@ const identify = function (payload) {
     return Promise.resolve()
   }
 
+  const globalConfig = await getGlobalConfig()
   // exit early if tracking disabled
   const TELEMETRY_DISABLED = globalConfig.get('telemetryDisabled')
   if (TELEMETRY_DISABLED && !data.force) {

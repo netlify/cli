@@ -1,12 +1,19 @@
 const os = require('os')
 const path = require('path')
 
+const envPaths = require('env-paths')
+
+const OSBasedPaths = envPaths('netlify', { suffix: '' })
 const NETLIFY_HOME = '.netlify'
 
-const getHomeDirectory = () => path.join(os.homedir(), NETLIFY_HOME)
+// Deprecated method to get netlify's home config - ~/.netlify/...
+const getLegacyPathInHome = (paths) => {
+  const pathInHome = path.join(os.homedir(), NETLIFY_HOME, ...paths)
+  return pathInHome
+}
 
 const getPathInHome = (paths) => {
-  const pathInHome = path.join(getHomeDirectory(), ...paths)
+  const pathInHome = path.join(OSBasedPaths.config, ...paths)
   return pathInHome
 }
 
@@ -15,4 +22,4 @@ const getPathInProject = (paths) => {
   return pathInProject
 }
 
-module.exports = { getPathInHome, getPathInProject }
+module.exports = { getLegacyPathInHome, getPathInHome, getPathInProject }

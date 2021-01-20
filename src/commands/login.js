@@ -6,7 +6,7 @@ const Command = require('../utils/command')
 class LoginCommand extends Command {
   async run() {
     const { flags } = this.parse(LoginCommand)
-    const [accessToken, location] = this.getConfigToken()
+    const [accessToken, location] = await this.getConfigToken()
     if (accessToken && !flags.new) {
       this.log(`Already logged in ${msg(location)}`)
       this.log()
