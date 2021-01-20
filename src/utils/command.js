@@ -9,7 +9,7 @@ const merge = require('lodash/merge')
 const argv = require('minimist')(process.argv.slice(2))
 const API = require('netlify')
 
-const { warnOnOldNodeVersion, warnOnNetlifyDir } = require('../lib/deprecations')
+const { warnOnNetlifyDir } = require('../lib/deprecations')
 const { getAgent } = require('../lib/http-agent')
 
 const chalkInstance = require('./chalk')
@@ -104,7 +104,6 @@ class BaseCommand extends Command {
       state,
     }
 
-    warnOnOldNodeVersion({ log: this.log, chalk: this.chalk })
     // @netlify/build already warns about this issue
     if (!isBuildCommand()) {
       await warnOnNetlifyDir({ log: this.log, chalk: this.chalk, buildDir })
