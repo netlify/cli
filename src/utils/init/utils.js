@@ -1,5 +1,6 @@
 const path = require('path')
 
+const { listFrameworks } = require('@netlify/framework-info')
 const chalk = require('chalk')
 const cleanDeep = require('clean-deep')
 const inquirer = require('inquirer')
@@ -16,8 +17,26 @@ const normalizeDir = ({ siteRoot, dir, defaultValue }) => {
   return relativeDir || defaultValue
 }
 
-const getDefaultSettings = ({ siteRoot, config }) => {
-  const { command: defaultBuildCmd, publish: defaultBuildDir, functions: defaultFunctionsDir } = config.build
+const getFrameworkDefaults = async ({ siteRoot }) => {
+  const frameworks = await listFrameworks({ projectDir: siteRoot })
+  if (frameworks.length !== 0) {
+    const [
+      {
+        build: { directory, commands },
+      },
+    ] = frameworks
+    return { frameworkBuildCommand: commands[0], frameworkBuildDir: directory }
+  }
+  return {}
+}
+
+const getDefaultSettings = async ({ siteRoot, config }) => {
+  const { frameworkBuildCommand, frameworkBuildDir } = await getFrameworkDefaults({ siteRoot })
+  const {
+    command: defaultBuildCmd = frameworkBuildCommand,
+    publish: defaultBuildDir = frameworkBuildDir,
+    functions: defaultFunctionsDir,
+  } = config.build
 
   return {
     defaultBuildCmd,
@@ -27,7 +46,7 @@ const getDefaultSettings = ({ siteRoot, config }) => {
 }
 
 const getBuildSettings = async ({ siteRoot, config }) => {
-  const { defaultBuildCmd, defaultBuildDir, defaultFunctionsDir } = getDefaultSettings({ siteRoot, config })
+  const { defaultBuildCmd, defaultBuildDir, defaultFunctionsDir } = await getDefaultSettings({ siteRoot, config })
   const { buildCmd, buildDir, functionsDir } = await inquirer.prompt([
     {
       type: 'input',
