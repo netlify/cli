@@ -59,16 +59,17 @@ const matchPaths = function (rule, path) {
      */
     if (ruleIsWildcard) {
       /**
-       * 1. all ruleParts and pathParts have been iterated over, e.g.
-       *    `/path/to/:placeholder` & `/path/to/*` matched against
-       *    `/path/to/something` (and `/static/*` matched against `/static`)
-       */
-      if (noMorePathParts && noMoreRuleParts) return true
-      /**
-       * 2. the rulePart is a (*) wildcard AND it is the final rulePart, e.g.
+       * 1. the rulePart is a (*) wildcard AND it is the final rulePart, e.g.
        *    `/path/to/*` matched against `/path/to/multiple/subdirs`.
        */
       if (noMoreRuleParts && ruleIsAsterisk) return true
+      /**
+       * 2. all ruleParts and pathParts have been iterated over, e.g.
+       *    `/path/to/:placeholder` and `/path/to/*` matched against
+       *    `/path/to/something`, as well as `/static/*` and
+       *    `/static/:placeholder` matched against `/static`)
+       */
+      if (noMorePathParts && noMoreRuleParts) return true
     } else if (rulePart !== pathPart) {
       /**
        * If a mismatch is found, the rule does not match.

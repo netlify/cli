@@ -131,6 +131,10 @@ test('_headers: matchPaths matches rules as expected', (t) => {
    */
   t.assert(!matchPaths('/:placeholder', '/'))
   /**
+   * Make sure (:placeholder) will NOT recursively match subdirs.
+   */
+  t.assert(!matchPaths('/path/to/:placeholder', '/path/two/dir/one/two/three'))
+  /**
    * (:placeholder) wildcard tests.
    */
   t.assert(matchPaths('/directory/:placeholder', '/directory/test'))
@@ -150,14 +154,19 @@ test('_headers: matchPaths matches rules as expected', (t) => {
   t.assert(matchPaths('/path/to/*', '/path/to/oneDir'))
   t.assert(matchPaths('/path/to/*', '/path/to/oneDir/twoDir/threeDir'))
   /**
-   * Trailing (*) wildcard matches parent dir. This is caught automagically by
-   * index >= pathParts.length && index >= ruleParts.length check.
+   * Trailing wildcards match parent dir.
+   *
+   * This is caught automagically by the `index >= pathParts.length - 1 && index
+   * >= ruleParts.length - 1` checks.
    */
   t.assert(matchPaths('/path/to/dir/*', '/path/to/dir'))
+  t.assert(matchPaths('/path/to/dir/:placeholder', '/path/to/dir'))
+  t.assert(matchPaths('/path/to/dir/*/:placeholder', '/path/to/dir/test'))
   /**
    * Mixed (*) and (:placeholder) wildcards.
    */
   t.assert(matchPaths('/path/*/to/:placeholder/:placeholder/*', '/path/placeholder/to/placeholder/dir/test'))
   t.assert(matchPaths('/path/*/:placeholder', '/path/to/dir'))
   t.assert(matchPaths('/path/:placeholder/:placeholder/*', '/path/to/dir/one/two/three'))
+  t.assert(matchPaths('/path/to/dir/*/:placeholder/test', '/path/to/dir/asterisk/placeholder/test'))
 })
