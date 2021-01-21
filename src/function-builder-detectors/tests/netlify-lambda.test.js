@@ -1,4 +1,5 @@
 const test = require('ava')
+const sinon = require('sinon')
 
 const { detectNetlifyLambda } = require('../netlify-lambda')
 
@@ -12,6 +13,52 @@ test(`should not match if netlify-lambda is missing from dependencies`, async (t
     devDependencies: {},
   }
   t.is(await detectNetlifyLambda(packageJson), false)
+})
+
+test.serial('should not match if netlify-lambda is missing functions directory', async (t) => {
+  const sandbox = sinon.createSandbox()
+
+  const packageJson = {
+    scripts: {
+      'some-build-step': 'netlify-lambda build --config config/webpack.config.js',
+    },
+    dependencies: {},
+    devDependencies: {
+      'netlify-lambda': 'ignored',
+    },
+  }
+
+  const spyConsoleWarn = sandbox.spy(console, 'warn')
+
+  t.is(await detectNetlifyLambda(packageJson), false)
+
+  // Not checking for exact warning string as it would make this test too specific/brittle
+  t.is(spyConsoleWarn.calledWithMatch('contained no functions folder'), true)
+
+  sandbox.restore()
+})
+
+test.serial('should not match if netlify-lambda contains multiple function directories', async (t) => {
+  const sandbox = sinon.createSandbox()
+
+  const packageJson = {
+    scripts: {
+      'some-build-step': 'netlify-lambda build -config config/webpack.config.js build/dir another/build/dir',
+    },
+    dependencies: {},
+    devDependencies: {
+      'netlify-lambda': 'ignored',
+    },
+  }
+
+  const spyConsoleWarn = sandbox.spy(console, 'warn')
+
+  t.is(await detectNetlifyLambda(packageJson), false)
+
+  // Not checking for exact warning string as it would make this test too specific/brittle
+  t.is(spyConsoleWarn.calledWithMatch('contained 2 or more function folders'), true)
+
+  sandbox.restore()
 })
 
 test(`should match if netlify-lambda is listed in dependencies and is mentioned in scripts`, async (t) => {
@@ -105,11 +152,10 @@ test(`should match if netlify-lambda is configured with multiple additional opti
   t.is(match.npmScript, 'some-build-step')
 })
 
-// Note that this is less than ideal, but I preferred to keep it simple and not actually parse the arguments with a library
-test(`should use the value of the parameter if no directory was provided`, async (t) => {
+test('should match if netlify-lambda has options that are passed after the functions directory', async (t) => {
   const packageJson = {
     scripts: {
-      'some-build-step': 'netlify-lambda build -s --another-option --config config/webpack.config.js',
+      'some-build-step': 'netlify-lambda build some/directory --config config/webpack.config.js',
     },
     dependencies: {},
     devDependencies: {
@@ -120,17 +166,16 @@ test(`should use the value of the parameter if no directory was provided`, async
   const match = await detectNetlifyLambda(packageJson)
   t.not(match, false)
 
-  t.is(match.src, 'config/webpack.config.js')
+  t.is(match.src, 'some/directory')
   t.is(match.builderName, 'netlify-lambda')
   t.is(match.npmScript, 'some-build-step')
 })
 
-// Again, less than ideal, but it seems impossible to have @oclif/parser to parse a complete string instead of argv[]
-test(`should ignore spaces in the directory name`, async (t) => {
+test('should match even if multiple netlify-lambda commands are specified', async (t) => {
   const packageJson = {
     scripts: {
-      'some-build-step':
-        'netlify-lambda build -s --another-option --config config/webpack.config.js some directory/name',
+      'some-serve-step': 'netlify-lambda serve serve/directory',
+      'some-build-step': 'netlify-lambda build build/directory',
     },
     dependencies: {},
     devDependencies: {
@@ -141,7 +186,7 @@ test(`should ignore spaces in the directory name`, async (t) => {
   const match = await detectNetlifyLambda(packageJson)
   t.not(match, false)
 
-  t.is(match.src, 'directory/name')
+  t.is(match.src, 'build/directory')
   t.is(match.builderName, 'netlify-lambda')
   t.is(match.npmScript, 'some-build-step')
 })
