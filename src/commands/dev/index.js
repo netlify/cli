@@ -27,8 +27,8 @@ const { startForwardProxy } = require('../../utils/traffic-mesh')
 const SERVER_POLL_INTERVAL = 1e3
 // 150 milliseconds
 const SERVER_POLL_REQUEST_TIMEOUT = 150
-// 30 seconds
-const SERVER_POLL_TIMEOUT = 3e4
+// 20 seconds
+const SERVER_POLL_TIMEOUT = 2e4
 
 const startFrameworkServer = async function ({ settings, log, exit }) {
   if (settings.noCmd) {
@@ -97,6 +97,10 @@ const startFrameworkServer = async function ({ settings, log, exit }) {
       timeout: FRAMEWORK_PORT_TIMEOUT,
     })
 
+    if (!open) {
+      throw new Error(`Timed out waiting for port '${settings.frameworkPort}' to be open`)
+    }
+
     const waitForServerToRespond = async () => {
       try {
         await fetch(`http://localhost:${settings.frameworkPort}`, {
@@ -110,13 +114,13 @@ const startFrameworkServer = async function ({ settings, log, exit }) {
       return true
     }
 
-    await waitFor(waitForServerToRespond, {
-      interval: SERVER_POLL_INTERVAL,
-      timeout: SERVER_POLL_TIMEOUT,
-    })
-
-    if (!open) {
-      throw new Error(`Timed out waiting for port '${settings.frameworkPort}' to be open`)
+    try {
+      await waitFor(waitForServerToRespond, {
+        interval: SERVER_POLL_INTERVAL,
+        timeout: SERVER_POLL_TIMEOUT,
+      })
+    } catch (_) {
+      log(NETLIFYDEVWARN, 'Netlify Dev could not verify that your framework server is responding to requests.')
     }
   } catch (error) {
     log(NETLIFYDEVERR, `Netlify Dev could not connect to localhost:${settings.frameworkPort}.`)
