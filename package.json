@@ -74,7 +74,7 @@
     "@netlify/build": "^8.0.5",
     "@netlify/config": "^3.0.1",
     "@netlify/plugin-edge-handlers": "^1.10.0",
-    "@netlify/traffic-mesh-agent": "^0.27.8",
+    "@netlify/traffic-mesh-agent": "^0.27.10",
     "@netlify/zip-it-and-ship-it": "^2.0.0",
     "@oclif/command": "^1.6.1",
     "@oclif/config": "^1.15.1",
