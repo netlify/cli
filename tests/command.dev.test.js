@@ -1237,6 +1237,37 @@ testMatrix.forEach(({ args }) => {
         })
       })
     })
+
+    test(testName('redirect with country cookie', args), async (t) => {
+      await withSiteBuilder('site-with-country-cookie', async (builder) => {
+        builder
+          .withContentFiles([
+            {
+              path: 'index.html',
+              content: '<html>index</html>',
+            },
+            {
+              path: 'index-es.html',
+              content: '<html>index in spanish</html>',
+            },
+          ])
+          .withRedirectsFile({
+            redirects: [{ from: `/`, to: `/index-es.html`, status: '200!', condition: 'Country=ES' }],
+          })
+
+        await builder.buildAsync()
+
+        await withDevServer({ cwd: builder.directory, args }, async (server) => {
+          const response = await got(`${server.url}/`, {
+            headers: {
+              cookie: `nf_country=ES`,
+            },
+          })
+          t.is(response.statusCode, 200)
+          t.is(response.body, '<html>index in spanish</html>')
+        })
+      })
+    })
   }
 })
 /* eslint-enable require-await */
