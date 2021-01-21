@@ -56,12 +56,23 @@ class BaseCommand extends Command {
     // Grab netlify API token
     const authViaFlag = getAuthArg(argv)
 
-    const [token] = await this.getConfigToken(authViaFlag)
+    // Don't attempt to make API requests if the user is logging out, otherwise they might be stuck with an invalid
+    // token with no ability to clear it.
+    const [token] = this.id === 'logout' ? [] : await this.getConfigToken(authViaFlag)
 
     // Get site id & build state
     const state = new StateConfig(cwd)
 
-    const cachedConfig = await this.getConfig(cwd, state, token)
+    const apiUrlOpts = {}
+
+    if (NETLIFY_API_URL) {
+      const apiUrl = new URL(NETLIFY_API_URL)
+      apiUrlOpts.scheme = apiUrl.protocol.slice(0, -1)
+      apiUrlOpts.host = apiUrl.host
+      apiUrlOpts.pathPrefix = NETLIFY_API_URL === `${apiUrl.protocol}//${apiUrl.host}` ? '/api/v1' : apiUrl.pathname
+    }
+
+    const cachedConfig = await this.getConfig({ cwd, state, token, ...apiUrlOpts })
     const { configPath, config, buildDir, siteInfo } = cachedConfig
 
     const { flags } = this.parse(BaseCommand)
@@ -71,14 +82,7 @@ class BaseCommand extends Command {
       httpProxy: flags.httpProxy,
       certificateFile: flags.httpProxyCertificateFilename,
     })
-    const apiOpts = { agent }
-    if (NETLIFY_API_URL) {
-      const apiUrl = new URL(NETLIFY_API_URL)
-      apiOpts.scheme = apiUrl.protocol.slice(0, -1)
-      apiOpts.host = apiUrl.host
-      apiOpts.pathPrefix = NETLIFY_API_URL === `${apiUrl.protocol}//${apiUrl.host}` ? '/api/v1' : apiUrl.pathname
-    }
-
+    const apiOpts = { ...apiUrlOpts, agent }
     const globalConfig = await getGlobalConfig()
 
     this.netlify = {
@@ -114,7 +118,7 @@ class BaseCommand extends Command {
   }
 
   // Find and resolve the Netlify configuration
-  async getConfig(cwd, state, token) {
+  async getConfig({ cwd, host, pathPrefix, scheme, state, token }) {
     try {
       return await resolveConfig({
         config: argv.config,
@@ -125,6 +129,9 @@ class BaseCommand extends Command {
         token,
         mode: 'cli',
         offline: argv.offline,
+        host,
+        pathPrefix,
+        scheme,
       })
     } catch (error) {
       const message = error.type === 'userError' ? error.message : error.stack
