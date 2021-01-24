@@ -85,7 +85,12 @@ const scanScripts = function ({ preferredScriptsArr, preferredCommand }) {
      * to recursively call itself.
      */
     if (/netlify dev(?!:)/.test(scriptCommand)) {
-      throw new InternalCliError('Cannot call `netlify dev` inside `netlify dev`.', { packageJsonScripts })
+      throw new InternalCliError(
+        '`netlify dev` is attempting to call a package.json script that also ' +
+          'calls `netlify dev`. Please run the script manually with `npm run ' +
+          '[script]` instead of trying to call `netlify dev`.',
+        { packageJsonScripts },
+      )
     }
     /**
      * Otherwise, push the match.
