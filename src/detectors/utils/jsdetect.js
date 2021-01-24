@@ -5,10 +5,12 @@
  */
 const { existsSync, readFileSync } = require('fs')
 
+const { InternalCliError } = require('../../utils/error')
+const { NETLIFYDEVWARN } = require('../../utils/logo')
+
 let pkgJSON = null
 let yarnExists = false
 let warnedAboutEmptyScript = false
-const { NETLIFYDEVWARN } = require('../../utils/logo')
 
 /** hold package.json in a singleton so we dont do expensive parsing repeatedly */
 const getPkgJSON = function () {
@@ -28,9 +30,7 @@ const getYarnOrNPMCommand = function () {
 
 /**
  * real utiltiies are down here
- *
  */
-
 const hasRequiredDeps = function (requiredDepArray) {
   const { dependencies, devDependencies } = getPkgJSON()
   for (const depName of requiredDepArray) {
@@ -53,9 +53,9 @@ const hasRequiredFiles = function (filenameArr) {
 
 // preferredScriptsArr is in decreasing order of preference
 const scanScripts = function ({ preferredScriptsArr, preferredCommand }) {
-  const { scripts } = getPkgJSON()
+  const packageJsonScripts = getPkgJSON().scripts
 
-  if (!scripts && !warnedAboutEmptyScript) {
+  if (!packageJsonScripts && !warnedAboutEmptyScript) {
     console.log(`${NETLIFYDEVWARN} You have a package.json without any npm scripts.`)
     console.log(
       `${NETLIFYDEVWARN} Netlify Dev's detector system works best with a script, or you can specify a command to run in the netlify.toml [dev]  block `,
@@ -65,26 +65,33 @@ const scanScripts = function ({ preferredScriptsArr, preferredCommand }) {
     // not going to match any scripts anyway
     return []
   }
-  //
-  //
-  // NOTE: we return an array of arrays (args)
-  // because we may want to supply extra args in some setups
-  //
-  // e.g. ['eleventy', '--serve', '--watch']
-  //
-  // array will in future be sorted by likelihood of what we want
-  //
-  //
-  // this is very simplistic logic, we can offer far more intelligent logic later
-  // eg make a dependency tree of npm scripts and offer the parentest node first
-  return Object.entries(scripts)
-    .filter(
-      ([scriptName, scriptCommand]) =>
-        (preferredScriptsArr.includes(scriptName) || scriptCommand.includes(preferredCommand)) &&
-        // prevent netlify dev calling netlify dev
-        !scriptCommand.includes('netlify dev'),
-    )
-    .map(([scriptName]) => [scriptName])
+  /**
+   * NOTE: we return an array of arrays (args) because we may want to supply
+   * extra args in some setups, e.g.
+   *
+   * ['eleventy', '--serve', '--watch']
+   *
+   * array will be sorted by likelihood of what we want in the future. this is
+   * very simplistic logic, we can offer far more intelligent logic later, e.g.
+   * make a dependency tree of npm scripts and offer the parentest node first
+   */
+  const matchedScripts = []
+  for (const [scriptName, scriptCommand] of Object.entries(packageJsonScripts)) {
+    /**
+     * Throw if trying to call Netlify dev from within Netlify dev. Include
+     * detailed information about the CLI setup in the error text.
+     */
+    if (scriptCommand.includes('netlify dev')) {
+      throw new InternalCliError('Cannot call `netlify dev` inside `netlify dev`.', { packageJsonScripts })
+    }
+    /**
+     * Otherwise, push the match.
+     */
+    if (preferredScriptsArr.includes(scriptName) || scriptCommand.includes(preferredCommand)) {
+      matchedScripts.push([scriptName])
+    }
+  }
+  return matchedScripts
 }
 
 module.exports = {

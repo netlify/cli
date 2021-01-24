@@ -188,7 +188,7 @@ test('serverSettings: no config', async (t) => {
   t.is(settings.noCmd, true)
 })
 
-test('chooseDefaultArgs', (t) => {
+test('chooseDefaultArgs: select first from possibleArgsArrs', (t) => {
   const possibleArgsArrs = [['run', 'dev'], ['run develop']]
   const args = chooseDefaultArgs(possibleArgsArrs)
   t.deepEqual(args, possibleArgsArrs[0])

@@ -8,6 +8,7 @@ const getPort = require('get-port')
 const inquirer = require('inquirer')
 const inquirerAutocompletePrompt = require('inquirer-autocomplete-prompt')
 
+const { InternalCliError } = require('./error')
 const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./logo')
 
 const serverSettings = async (devConfig, flags, projectDir, log) => {
@@ -222,20 +223,29 @@ const loadDetector = function (detectorName) {
   }
 }
 
+/**
+ * Get the default args from an array of possible args.
+ *
+ * @param {Array<Array>?} possibleArgsArrs
+ * @returns {Array}
+ */
 const chooseDefaultArgs = function (possibleArgsArrs) {
-  // vast majority of projects will only have one matching detector
-  // just pick the first one
+  /**
+   * Select first set of possible args.
+   */
   const [args] = possibleArgsArrs
   if (!args) {
-    const { scripts } = JSON.parse(fs.readFileSync('package.json', { encoding: 'utf8' }))
-    const err = new Error(
-      'Empty args assigned, this is an internal Netlify Dev bug, please report your settings and scripts so we can improve',
-    )
-    err.scripts = scripts
-    err.possibleArgsArrs = possibleArgsArrs
-    throw err
+    /**
+     * Load scripts from package.json (if it exists) to display them in the
+     * error. Initialize `scripts` to `null` so it is not omitted by
+     * JSON.stringify() in the case it isn't reassigned.
+     */
+    let packageJsonScripts = null
+    if (fs.existsSync('package.json')) {
+      packageJsonScripts = JSON.parse(fs.readFileSync('package.json')).scripts
+    }
+    throw new InternalCliError('No possible args found.', { packageJsonScripts, possibleArgsArrs })
   }
-
   return args
 }
 
