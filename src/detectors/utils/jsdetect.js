@@ -80,8 +80,11 @@ const scanScripts = function ({ preferredScriptsArr, preferredCommand }) {
     /**
      * Throw if trying to call Netlify dev from within Netlify dev. Include
      * detailed information about the CLI setup in the error text.
+     *
+     * Do not include `netlify dev:exec`, etc., as they will not cause the CLI
+     * to recursively call itself.
      */
-    if (scriptCommand.includes('netlify dev')) {
+    if (/netlify dev(?!:)/.test(scriptCommand)) {
       throw new InternalCliError('Cannot call `netlify dev` inside `netlify dev`.', { packageJsonScripts })
     }
     /**
