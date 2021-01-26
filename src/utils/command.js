@@ -127,7 +127,19 @@ class BaseCommand extends Command {
         offline: argv.offline,
       })
     } catch (error) {
-      const message = error.type === 'userError' ? error.message : error.stack
+      const isUserError = error.type === 'userError'
+
+      // If we're failing due to an error thrown by us, it might be because the token we're using is invalid.
+      // To account for that, we try to retrieve the config again, this time without a token, to avoid making
+      // any API calls.
+      //
+      // @todo Replace this with a mechanism for calling `resolveConfig` with more granularity (i.e. having
+      // the option to say that we don't need API data.)
+      if (isUserError && token) {
+        return this.getConfig(cwd, state)
+      }
+
+      const message = isUserError ? error.message : error.stack
       console.error(message)
       this.exit(1)
     }
