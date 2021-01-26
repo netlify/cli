@@ -61,7 +61,7 @@ class BaseCommand extends Command {
     // Get site id & build state
     const state = new StateConfig(cwd)
 
-    const cachedConfig = await this.getConfig(cwd, state, token)
+    const cachedConfig = await this.getConfig({ cwd, state, token })
     const { configPath, config, buildDir, siteInfo } = cachedConfig
 
     const { flags } = this.parse(BaseCommand)
@@ -114,7 +114,7 @@ class BaseCommand extends Command {
   }
 
   // Find and resolve the Netlify configuration
-  async getConfig(cwd, state, token) {
+  async getConfig({ cwd, offline = argv.offline, state, token }) {
     try {
       return await resolveConfig({
         config: argv.config,
@@ -124,10 +124,22 @@ class BaseCommand extends Command {
         siteId: argv.siteId || (typeof argv.site === 'string' && argv.site) || state.get('siteId'),
         token,
         mode: 'cli',
-        offline: argv.offline,
+        offline,
       })
     } catch (error) {
-      const message = error.type === 'userError' ? error.message : error.stack
+      const isUserError = error.type === 'userError'
+
+      // If we're failing due to an error thrown by us, it might be because the token we're using is invalid.
+      // To account for that, we try to retrieve the config again, this time without a token, to avoid making
+      // any API calls.
+      //
+      // @todo Replace this with a mechanism for calling `resolveConfig` with more granularity (i.e. having
+      // the option to say that we don't need API data.)
+      if (isUserError && !offline && token) {
+        return this.getConfig({ cwd, offline: true, state, token })
+      }
+
+      const message = isUserError ? error.message : error.stack
       console.error(message)
       this.exit(1)
     }

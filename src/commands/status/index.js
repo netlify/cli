@@ -26,8 +26,20 @@ class StatusCommand extends Command {
     this.log(`──────────────────────┐
  Current Netlify User │
 ──────────────────────┘`)
-    const accounts = await api.listAccountsForUser()
-    const user = await this.netlify.api.getCurrentUser()
+
+    let accounts
+    let user
+
+    try {
+      accounts = await api.listAccountsForUser()
+      user = await this.netlify.api.getCurrentUser()
+    } catch (error) {
+      if (error.status === 401) {
+        this.error(
+          'Your session has expired. Please try to re-authenticate by running `netlify logout` and `netlify login`.',
+        )
+      }
+    }
 
     const ghuser = this.netlify.globalConfig.get(`users.${current}.auth.github.user`)
     const accountData = {
