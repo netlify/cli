@@ -94,7 +94,7 @@ const matchPaths = function (rule, path) {
 /**
  * Get the matching headers for `path` given a set of `rules`.
  *
- * @param {Object<string,string[]>!} rules
+ * @param {Object<string,Object<string,string[]>>!} rules
  * The rules to use for matching.
  *
  * @param {string!} path
@@ -103,18 +103,11 @@ const matchPaths = function (rule, path) {
  * @returns {Object<string,string[]>}
  */
 const objectForPath = function (rules, path) {
-  /**
-   * Iterate over the rules and assign the matching headers.
-   */
-  const pathObject = {}
-  for (const [rule, headers] of Object.entries(rules)) {
-    /**
-     * If the rule matches the math, assign the respective headers.
-     */
-    const isMatch = matchPaths(rule, path)
-    if (isMatch) Object.assign(pathObject, headers)
-  }
-  /** Return matched headers. */
+  const matchingHeaders = Object.entries(rules)
+    .filter(([rule]) => matchPaths(rule, path))
+    .map(([, headers]) => headers)
+
+  const pathObject = Object.assign({}, ...matchingHeaders)
   return pathObject
 }
 
