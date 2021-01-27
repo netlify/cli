@@ -25,8 +25,6 @@ const { startForwardProxy } = require('../../utils/traffic-mesh')
 
 // 1 second
 const SERVER_POLL_INTERVAL = 1e3
-// 150 milliseconds
-const SERVER_POLL_REQUEST_TIMEOUT = 150
 // 20 seconds
 const SERVER_POLL_TIMEOUT = 2e4
 
@@ -101,26 +99,28 @@ const startFrameworkServer = async function ({ settings, log, exit }) {
       throw new Error(`Timed out waiting for port '${settings.frameworkPort}' to be open`)
     }
 
-    const waitForServerToRespond = async () => {
-      try {
-        await fetch(`http://localhost:${settings.frameworkPort}`, {
-          method: 'HEAD',
-          timeout: SERVER_POLL_REQUEST_TIMEOUT,
-        })
-      } catch (_) {
-        return false
+    if (!settings.disableLocalServerPolling) {
+      const waitForServerToRespond = async () => {
+        try {
+          await fetch(`http://localhost:${settings.frameworkPort}`, {
+            method: 'HEAD',
+            timeout: SERVER_POLL_INTERVAL,
+          })
+        } catch (_) {
+          return false
+        }
+
+        return true
       }
 
-      return true
-    }
-
-    try {
-      await waitFor(waitForServerToRespond, {
-        interval: SERVER_POLL_INTERVAL,
-        timeout: SERVER_POLL_TIMEOUT,
-      })
-    } catch (_) {
-      log(NETLIFYDEVWARN, 'Netlify Dev could not verify that your framework server is responding to requests.')
+      try {
+        await waitFor(waitForServerToRespond, {
+          interval: SERVER_POLL_INTERVAL,
+          timeout: SERVER_POLL_TIMEOUT,
+        })
+      } catch (_) {
+        log(NETLIFYDEVWARN, 'Netlify Dev could not verify that your framework server is responding to requests.')
+      }
     }
   } catch (error) {
     log(NETLIFYDEVERR, `Netlify Dev could not connect to localhost:${settings.frameworkPort}.`)
