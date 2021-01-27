@@ -1,5 +1,7 @@
 const fs = require('fs')
 
+const { get } = require('dot-prop')
+
 const TOKEN_COMMENT = '#'
 const TOKEN_PATH = '/'
 
@@ -117,45 +119,47 @@ const objectForPath = function (rules, path) {
 }
 
 const parseHeadersFile = function (filePath) {
-  const rules = {}
-  if (!fs.existsSync(filePath)) return rules
+  if (!fs.existsSync(filePath)) {
+    return {}
+  }
   if (fs.statSync(filePath).isDirectory()) {
     console.warn('expected _headers file but found a directory at:', filePath)
-    return rules
+    return {}
   }
 
-  const lines = fs.readFileSync(filePath, { encoding: 'utf8' }).split('\n')
-  if (lines.length === 0) return rules
+  const lines = fs
+    .readFileSync(filePath, { encoding: 'utf8' })
+    .split('\n')
+    .map((line, index) => ({ line: line.trim(), index }))
+    .filter(({ line }) => Boolean(line) && !line.startsWith(TOKEN_COMMENT))
 
   let path
-  for (let index = 0; index <= lines.length; index++) {
-    if (!lines[index]) continue
-
-    const line = lines[index].trim()
-
-    if (line.startsWith(TOKEN_COMMENT) || line.length === 0) continue
+  let rules = {}
+  for (const { line, index } of lines) {
     if (line.startsWith(TOKEN_PATH)) {
       path = line
       continue
     }
 
-    if (!path) throw new Error('path should come before headers')
+    if (!path) {
+      throw new Error('path should come before headers')
+    }
 
     if (line.includes(':')) {
-      const sepIndex = line.indexOf(':')
-      if (sepIndex < 1) throw new Error(`invalid header at line: ${index}\n${lines[index]}\n`)
+      const [key = '', value = ''] = line.split(':', 2)
+      const trimmedKey = key.trim()
+      const trimmedValue = value.trim()
+      if (trimmedKey.length === 0 || trimmedValue.length === 0) {
+        throw new Error(`invalid header at line: ${index}\n${line}\n`)
+      }
 
-      const key = line.slice(0, sepIndex).trim()
-      const value = line.slice(sepIndex + 1).trim()
-
-      if (Object.prototype.hasOwnProperty.call(rules, path)) {
-        if (Object.prototype.hasOwnProperty.call(rules[path], key)) {
-          rules[path][key].push(value)
-        } else {
-          rules[path][key] = [value]
-        }
-      } else {
-        rules[path] = { [key]: [value] }
+      const currentHeaders = get(rules, `${path}.${trimmedKey}`) || []
+      rules = {
+        ...rules,
+        [path]: {
+          ...rules[path],
+          [trimmedKey]: [...currentHeaders, trimmedValue],
+        },
       }
     }
   }

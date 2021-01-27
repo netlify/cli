@@ -39,9 +39,20 @@ const headers = [
 
 test.before(async (t) => {
   const builder = createSiteBuilder({ siteName: 'site-for-detecting-server' })
-  builder.withHeadersFile({
-    headers,
-  })
+  builder
+    .withHeadersFile({
+      headers,
+    })
+    .withContentFile({
+      path: '_invalid_headers',
+      content: `
+/
+  # This is valid
+  X-Frame-Options: SAMEORIGIN
+  # This is not valid
+  X-Frame-Thing:
+`,
+    })
 
   await builder.buildAsync()
 
@@ -57,6 +68,12 @@ test.after(async (t) => {
  */
 test('_headers: syntax validates as expected', (t) => {
   parseHeadersFile(path.resolve(t.context.builder.directory, '_headers'))
+})
+
+test('_headers: throws on invalid syntax', (t) => {
+  t.throws(() => parseHeadersFile(path.resolve(t.context.builder.directory, '_invalid_headers')), {
+    message: /invalid header at line: 5/,
+  })
 })
 
 test('_headers: validate rules', (t) => {
@@ -83,6 +100,10 @@ test('_headers: validate rules', (t) => {
       'X-Frame-Options': ['test'],
     },
   })
+})
+
+test('_headers: throws ', (t) => {
+  parseHeadersFile(path.resolve(t.context.builder.directory, '_headers'))
 })
 
 test('_headers: rulesForPath testing', (t) => {
