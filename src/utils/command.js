@@ -61,7 +61,16 @@ class BaseCommand extends Command {
     // Get site id & build state
     const state = new StateConfig(cwd)
 
-    const cachedConfig = await this.getConfig({ cwd, state, token })
+    const apiUrlOpts = {}
+
+    if (NETLIFY_API_URL) {
+      const apiUrl = new URL(NETLIFY_API_URL)
+      apiUrlOpts.scheme = apiUrl.protocol.slice(0, -1)
+      apiUrlOpts.host = apiUrl.host
+      apiUrlOpts.pathPrefix = NETLIFY_API_URL === `${apiUrl.protocol}//${apiUrl.host}` ? '/api/v1' : apiUrl.pathname
+    }
+
+    const cachedConfig = await this.getConfig({ cwd, state, token, ...apiUrlOpts })
     const { configPath, config, buildDir, siteInfo } = cachedConfig
 
     const { flags } = this.parse(BaseCommand)
@@ -71,14 +80,7 @@ class BaseCommand extends Command {
       httpProxy: flags.httpProxy,
       certificateFile: flags.httpProxyCertificateFilename,
     })
-    const apiOpts = { agent }
-    if (NETLIFY_API_URL) {
-      const apiUrl = new URL(NETLIFY_API_URL)
-      apiOpts.scheme = apiUrl.protocol.slice(0, -1)
-      apiOpts.host = apiUrl.host
-      apiOpts.pathPrefix = NETLIFY_API_URL === `${apiUrl.protocol}//${apiUrl.host}` ? '/api/v1' : apiUrl.pathname
-    }
-
+    const apiOpts = { ...apiUrlOpts, agent }
     const globalConfig = await getGlobalConfig()
 
     this.netlify = {
@@ -114,7 +116,7 @@ class BaseCommand extends Command {
   }
 
   // Find and resolve the Netlify configuration
-  async getConfig({ cwd, offline = argv.offline, state, token }) {
+  async getConfig({ cwd, host, offline = argv.offline, pathPrefix, scheme, state, token }) {
     try {
       return await resolveConfig({
         config: argv.config,
@@ -124,6 +126,9 @@ class BaseCommand extends Command {
         siteId: argv.siteId || (typeof argv.site === 'string' && argv.site) || state.get('siteId'),
         token,
         mode: 'cli',
+        host,
+        pathPrefix,
+        scheme,
         offline,
       })
     } catch (error) {
