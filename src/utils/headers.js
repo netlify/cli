@@ -140,8 +140,7 @@ const parseHeadersFile = function (filePath) {
 
     if (line.includes(':')) {
       const [key = '', value = ''] = line.split(':', 2)
-      const trimmedKey = key.trim()
-      const trimmedValue = value.trim()
+      const [trimmedKey, trimmedValue] = [key.trim(), value.trim()]
       if (trimmedKey.length === 0 || trimmedValue.length === 0) {
         throw new Error(`invalid header at line: ${index}\n${line}\n`)
       }
