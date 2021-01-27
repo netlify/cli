@@ -56,9 +56,7 @@ class BaseCommand extends Command {
     // Grab netlify API token
     const authViaFlag = getAuthArg(argv)
 
-    // Don't attempt to make API requests if the user is logging out, otherwise they might be stuck with an invalid
-    // token with no ability to clear it.
-    const [token] = this.id === 'logout' ? [] : await this.getConfigToken(authViaFlag)
+    const [token] = await this.getConfigToken(authViaFlag)
 
     // Get site id & build state
     const state = new StateConfig(cwd)
@@ -118,7 +116,7 @@ class BaseCommand extends Command {
   }
 
   // Find and resolve the Netlify configuration
-  async getConfig({ cwd, host, pathPrefix, scheme, state, token }) {
+  async getConfig({ cwd, host, offline = argv.offline, pathPrefix, scheme, state, token }) {
     try {
       return await resolveConfig({
         config: argv.config,
@@ -128,13 +126,25 @@ class BaseCommand extends Command {
         siteId: argv.siteId || (typeof argv.site === 'string' && argv.site) || state.get('siteId'),
         token,
         mode: 'cli',
-        offline: argv.offline,
         host,
         pathPrefix,
         scheme,
+        offline,
       })
     } catch (error) {
-      const message = error.type === 'userError' ? error.message : error.stack
+      const isUserError = error.type === 'userError'
+
+      // If we're failing due to an error thrown by us, it might be because the token we're using is invalid.
+      // To account for that, we try to retrieve the config again, this time without a token, to avoid making
+      // any API calls.
+      //
+      // @todo Replace this with a mechanism for calling `resolveConfig` with more granularity (i.e. having
+      // the option to say that we don't need API data.)
+      if (isUserError && !offline && token) {
+        return this.getConfig({ cwd, offline: true, state, token })
+      }
+
+      const message = isUserError ? error.message : error.stack
       console.error(message)
       this.exit(1)
     }
