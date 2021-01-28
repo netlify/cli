@@ -12,7 +12,7 @@ const checkLFSFilters = async function () {
 
 const checkHelperVersion = async function () {
   try {
-    const result = await execa('git-credential-netlify', ['--version'])
+    const result = await execa('git-credential-netlify', ['version'])
     return matchVersion(
       result.stdout,
       /git-credential-netlify\/([.\d]+).*/,
