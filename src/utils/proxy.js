@@ -17,7 +17,7 @@ const toReadableStream = require('to-readable-stream')
 const { readFileAsync, fileExistsAsync, isFileAsync } = require('../lib/fs.js')
 
 const { createStreamPromise } = require('./create-stream-promise')
-const { parseHeadersFile, objectForPath } = require('./headers')
+const { parseHeadersFile, headersForPath } = require('./headers')
 const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./logo')
 const { createRewriter } = require('./rules-proxy')
 const { onChanges } = require('./rules-proxy')
@@ -291,7 +291,7 @@ const initializeProxy = function (port, distDir, projectDir) {
       }
     }
     const requestURL = new URL(req.url, `http://${req.headers.host || 'localhost'}`)
-    const pathHeaderRules = objectForPath(headerRules, requestURL.pathname)
+    const pathHeaderRules = headersForPath(headerRules, requestURL.pathname)
     if (!isEmpty(pathHeaderRules)) {
       Object.entries(pathHeaderRules).forEach(([key, val]) => {
         res.setHeader(key, val)
