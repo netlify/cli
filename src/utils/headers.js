@@ -7,6 +7,7 @@ const trimEnd = require('lodash/trimEnd')
 const TOKEN_COMMENT = '#'
 const TOKEN_PATH = '/'
 
+// Our production logic uses regex too
 const getRulePattern = (rule) => {
   const ruleParts = rule.split('/').filter(Boolean)
   if (ruleParts.length === 0) {
@@ -17,8 +18,10 @@ const getRulePattern = (rule) => {
 
   ruleParts.forEach((part) => {
     if (part.startsWith(':')) {
+      // :placeholder wildcard (e.g. /segment/:placeholder/test) - match everything up to a /
       pattern += '/([^/]+)/?'
     } else if (part === '*') {
+      // standalone asterisk wildcard (e.g. /segment/*) - match everything
       if (pattern === '^') {
         pattern += '/?(.*)/?'
       } else {
@@ -26,8 +29,10 @@ const getRulePattern = (rule) => {
         pattern += '(?:|/|/(.*)/?)'
       }
     } else if (part.includes('*')) {
+      // non standalone asterisk wildcard (e.g. /segment/hello*world/test)
       pattern += `/${part.replace(/\*/g, '(.*)')}`
     } else if (part.trim() !== '') {
+      // not a wildcard
       pattern += `/${escapeRegExp(part)}/?`
     }
   })
