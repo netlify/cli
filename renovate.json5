@@ -3,4 +3,13 @@
   ignorePresets: [':prHourlyLimit2'],
   semanticCommits: true,
   masterIssue: true,
+  packageRules: [
+    {
+      // Those cannot be upgraded to a major version until we drop support for Node 10
+      packageNames: ['path-type'],
+      major: {
+        enabled: false,
+      },
+    },
+  ],
 }
