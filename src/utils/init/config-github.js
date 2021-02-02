@@ -184,8 +184,8 @@ module.exports = async function configGithub({ context, siteId, repoOwner, repoN
 
   const token = await getGitHubToken({ log, globalConfig })
 
-  const { buildCmd, buildDir, functionsDir } = await getBuildSettings({ siteRoot, config })
-  await saveNetlifyToml({ siteRoot, config, buildCmd, buildDir, functionsDir, warn })
+  const { buildCmd, buildDir, functionsDir, plugins } = await getBuildSettings({ siteRoot, config })
+  await saveNetlifyToml({ siteRoot, config, buildCmd, buildDir, functionsDir, plugins, warn })
 
   const octokit = getGitHubClient({ token })
   const [deployKey, githubRepo] = await Promise.all([
@@ -204,7 +204,12 @@ module.exports = async function configGithub({ context, siteId, repoOwner, repoN
     ...(buildCmd && { cmd: buildCmd }),
   }
 
-  await updateSite({ siteId, api, failAndExit, options: { repo } })
+  await updateSite({
+    siteId,
+    api,
+    failAndExit,
+    options: { repo, plugins: plugins.map((plugin) => ({ package: plugin })) },
+  })
   // calling updateSite with { repo } resets the functions dir so we need to sync it
   const updatedSite = await updateSite({
     siteId,

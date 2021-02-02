@@ -1,3 +1,4 @@
+const { EOL } = require('os')
 const path = require('path')
 
 const { listFrameworks } = require('@netlify/framework-info')
@@ -23,15 +24,20 @@ const getFrameworkDefaults = async ({ siteRoot }) => {
     const [
       {
         build: { directory, commands },
+        plugins,
       },
     ] = frameworks
-    return { frameworkBuildCommand: commands[0], frameworkBuildDir: directory }
+    return { frameworkBuildCommand: commands[0], frameworkBuildDir: directory, frameworkPlugins: plugins }
   }
   return {}
 }
 
+const isPluginInstalled = (configPlugins, plugin) =>
+  configPlugins.some(({ package: configPlugin }) => configPlugin === plugin)
+
 const getDefaultSettings = async ({ siteRoot, config }) => {
-  const { frameworkBuildCommand, frameworkBuildDir } = await getFrameworkDefaults({ siteRoot })
+  const { frameworkBuildCommand, frameworkBuildDir, frameworkPlugins } = await getFrameworkDefaults({ siteRoot })
+  const recommendedPlugins = frameworkPlugins.filter((plugin) => !isPluginInstalled(config.plugins, plugin))
   const {
     command: defaultBuildCmd = frameworkBuildCommand,
     publish: defaultBuildDir = frameworkBuildDir,
@@ -42,12 +48,12 @@ const getDefaultSettings = async ({ siteRoot, config }) => {
     defaultBuildCmd,
     defaultBuildDir: normalizeDir({ siteRoot, dir: defaultBuildDir, defaultValue: '.' }),
     defaultFunctionsDir: normalizeDir({ siteRoot, dir: defaultFunctionsDir, defaultValue: 'netlify/functions' }),
+    recommendedPlugins,
   }
 }
 
-const getBuildSettings = async ({ siteRoot, config }) => {
-  const { defaultBuildCmd, defaultBuildDir, defaultFunctionsDir } = await getDefaultSettings({ siteRoot, config })
-  const { buildCmd, buildDir, functionsDir } = await inquirer.prompt([
+const getPromptInputs = ({ defaultBuildCmd, defaultBuildDir, defaultFunctionsDir, recommendedPlugins }) => {
+  const inputs = [
     {
       type: 'input',
       name: 'buildCmd',
@@ -67,16 +73,58 @@ const getBuildSettings = async ({ siteRoot, config }) => {
       message: 'Netlify functions folder:',
       default: defaultFunctionsDir,
     },
-  ])
+  ]
 
-  return { buildCmd, buildDir, functionsDir }
+  if (recommendedPlugins.length === 0) {
+    return inputs
+  }
+
+  if (recommendedPlugins.length === 1) {
+    return [
+      ...inputs,
+      {
+        type: 'confirm',
+        name: 'installSinglePlugin',
+        message: `Install ${recommendedPlugins[0]}?`,
+        default: true,
+      },
+    ]
+  }
+
+  return [
+    ...inputs,
+    {
+      type: 'checkbox',
+      name: 'plugins',
+      message: 'Which build plugins to install:',
+      choices: recommendedPlugins,
+    },
+  ]
 }
 
-const getNetlifyToml = ({
-  command = '# no build command',
-  publish = '.',
-  functions = 'functions',
-}) => `# example netlify.toml
+const getPluginsToInstall = ({ plugins, installSinglePlugin, recommendedPlugins }) => {
+  if (Array.isArray(plugins)) {
+    return plugins
+  }
+
+  return installSinglePlugin === true ? [recommendedPlugins[0]] : []
+}
+
+const getBuildSettings = async ({ siteRoot, config }) => {
+  const { defaultBuildCmd, defaultBuildDir, defaultFunctionsDir, recommendedPlugins } = await getDefaultSettings({
+    siteRoot,
+    config,
+  })
+  const { buildCmd, buildDir, functionsDir, plugins, installSinglePlugin } = await inquirer.prompt(
+    getPromptInputs({ defaultBuildCmd, defaultBuildDir, defaultFunctionsDir, recommendedPlugins }),
+  )
+
+  const pluginsToInstall = getPluginsToInstall({ plugins, installSinglePlugin, recommendedPlugins })
+  return { buildCmd, buildDir, functionsDir, plugins: pluginsToInstall }
+}
+
+const getNetlifyToml = ({ command = '# no build command', publish = '.', functions = 'functions', plugins = [] }) => {
+  const content = `# example netlify.toml
 [build]
   command = "${command}"
   functions = "${functions}"
@@ -98,8 +146,14 @@ const getNetlifyToml = ({
 
   ## more info on configuring this file: https://www.netlify.com/docs/netlify-toml-reference/
 `
+  if (plugins.length === 0) {
+    return content
+  }
 
-const saveNetlifyToml = async ({ siteRoot, config, buildCmd, buildDir, functionsDir, warn }) => {
+  return `${content}${EOL}${plugins.map((plugin) => `[[plugins]]${EOL}  package = "${plugin}"`).join(EOL)}`
+}
+
+const saveNetlifyToml = async ({ siteRoot, config, buildCmd, buildDir, functionsDir, plugins, warn }) => {
   const tomlPath = path.join(siteRoot, 'netlify.toml')
   const exists = await fileExistsAsync(tomlPath)
   const cleanedConfig = cleanDeep(config)
@@ -117,7 +171,10 @@ const saveNetlifyToml = async ({ siteRoot, config, buildCmd, buildDir, functions
   ])
   if (makeNetlifyTOML) {
     try {
-      await writeFileAsync(tomlPath, getNetlifyToml({ command: buildCmd, publish: buildDir, functions: functionsDir }))
+      await writeFileAsync(
+        tomlPath,
+        getNetlifyToml({ command: buildCmd, publish: buildDir, functions: functionsDir, plugins }),
+      )
     } catch (error) {
       warn(`Failed saving Netlify toml file: ${error.message}`)
     }
