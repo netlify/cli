@@ -11,6 +11,7 @@ const API = require('netlify')
 
 const { warnOnNetlifyDir } = require('../lib/deprecations')
 const { getAgent } = require('../lib/http-agent')
+const { startSpinner, clearSpinner } = require('../lib/spinner')
 
 const chalkInstance = require('./chalk')
 const getGlobalConfig = require('./get-global-config')
@@ -47,6 +48,34 @@ const getToken = async (tokenFromFlag) => {
     return [tokenFromConfig, 'config']
   }
   return [null, 'not found']
+}
+
+// 5 Minutes
+const TOKEN_TIMEOUT = 3e5
+
+const pollForToken = async ({ api, ticket, exitWithError, chalk }) => {
+  const spinner = startSpinner({ text: 'Waiting for authorization...' })
+  try {
+    const accessToken = await api.getAccessToken(ticket, { timeout: TOKEN_TIMEOUT })
+    if (!accessToken) {
+      exitWithError('Could not retrieve access token')
+    }
+    return accessToken
+  } catch (error) {
+    if (error.name === 'TimeoutError') {
+      exitWithError(
+        `Timed out waiting for authorization. If you do not have a ${chalk.bold.greenBright(
+          'Netlify',
+        )} account, please create one at ${chalk.magenta(
+          'https://app.netlify.com/signup',
+        )}, then run ${chalk.cyanBright('netlify login')} again.`,
+      )
+    } else {
+      exitWithError(error)
+    }
+  } finally {
+    clearSpinner({ spinner })
+  }
 }
 
 class BaseCommand extends Command {
@@ -254,11 +283,12 @@ class BaseCommand extends Command {
     this.log(`Opening ${authLink}`)
     await openBrowser({ url: authLink, log: this.log })
 
-    const accessToken = await this.netlify.api.getAccessToken(ticket)
-
-    if (!accessToken) {
-      this.error('Could not retrieve access token')
-    }
+    const accessToken = await pollForToken({
+      api: this.netlify.api,
+      ticket,
+      exitWithError: this.error,
+      chalk: this.chalk,
+    })
 
     const user = await this.netlify.api.getCurrentUser()
     const userID = user.id
