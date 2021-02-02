@@ -50,7 +50,7 @@ const getToken = async (tokenFromFlag) => {
   return [null, 'not found']
 }
 
-// 5 Minuets
+// 5 Minutes
 const TOKEN_TIMEOUT = 3e5
 
 const pollForToken = async ({ api, ticket, exitWithError, chalk }) => {
