@@ -10,7 +10,7 @@ const tempDir = require('temp-dir')
 
 const { shouldFetchLatestVersion, fetchLatestVersion } = require('../../lib/exec-fetcher')
 const { fileExistsAsync, writeFileAsync, mkdtempAsync, readFileAsync, appendFileAsync } = require('../../lib/fs')
-const { getPathInHome } = require('../../lib/settings')
+const { getLegacyPathInHome } = require('../../lib/settings')
 
 const PACKAGE_NAME = 'netlify-credential-helper'
 const EXEC_NAME = 'git-credential-netlify'
@@ -115,7 +115,7 @@ const setupUnix = function (platformName, skipInstall) {
 
 const installWithPowershell = async function () {
   const script = `[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-iex (iwr -UseBasicParsing -Uri https://github.com/netlify/netlify-credential-helper/raw/master/resources/install.ps1)`
+iex (iwr -UseBasicParsing -Uri https://github.com/netlify/netlify-credential-helper/blob/53fbf6e2b82d1ae366d096a24022fa259d19329a/resources/install.ps1)`
 
   const temp = await mkdtempAsync(path.join(tempDir, 'netlify-'))
   const scriptPath = path.join(temp, 'install.ps1')
@@ -239,7 +239,7 @@ const configureGitConfig = async function (helperPath) {
 }
 
 const getHelperPath = function () {
-  return getPathInHome(['helper'])
+  return getLegacyPathInHome(['helper'])
 }
 
 const getBinPath = function () {
