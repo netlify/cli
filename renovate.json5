@@ -2,7 +2,7 @@
   extends: ['github>netlify/renovate-config:default'],
   ignorePresets: [':prHourlyLimit2'],
   semanticCommits: true,
-  masterIssue: true,
+  dependencyDashboard: true,
   packageRules: [
     {
       // Those cannot be upgraded to a major version until we drop support for Node 10
