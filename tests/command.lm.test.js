@@ -35,7 +35,8 @@ if (process.env.IS_FORK !== 'true') {
     t.true(cliResponse.includes('Checking Git LFS version'))
     t.true(cliResponse.includes('Checking Git LFS filters'))
     t.true(cliResponse.includes("Installing Netlify's Git Credential Helper"))
-    t.true(cliResponse.includes("Configuring Git to use Netlify's Git Credential Helper"))
+    t.true(cliResponse.includes("Configuring Git to use Netlify's Git Credential Helper [started]"))
+    t.true(cliResponse.includes("Configuring Git to use Netlify's Git Credential Helper [completed]"))
   })
 
   test.serial('netlify lm:setup', async (t) => {
