@@ -115,7 +115,7 @@ const setupUnix = function (platformName, skipInstall) {
 
 const installWithPowershell = async function () {
   const script = `[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-iex (iwr -UseBasicParsing -Uri https://github.com/netlify/netlify-credential-helper/blob/53fbf6e2b82d1ae366d096a24022fa259d19329a/resources/install.ps1)`
+iex (iwr -UseBasicParsing -Uri https://raw.githubusercontent.com/netlify/netlify-credential-helper/53fbf6e2b82d1ae366d096a24022fa259d19329a/resources/install.ps1)`
 
   const temp = await mkdtempAsync(path.join(tempDir, 'netlify-'))
   const scriptPath = path.join(temp, 'install.ps1')
