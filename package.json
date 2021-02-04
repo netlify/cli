@@ -71,8 +71,8 @@
     "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,scripts,site,tests,.github}/**/*.{js,md,yml,json,html}\" \"*.{js,yml,json,html}\" \".*.{js,yml,json,html}\" \"!CHANGELOG.md\" \"!package-lock.json\""
   },
   "dependencies": {
-    "@netlify/build": "^8.0.5",
-    "@netlify/config": "^3.1.0",
+    "@netlify/build": "^9.0.0",
+    "@netlify/config": "^4.0.0",
     "@netlify/framework-info": "^2.0.0",
     "@netlify/plugin-edge-handlers": "^1.10.0",
     "@netlify/traffic-mesh-agent": "^0.27.10",
