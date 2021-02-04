@@ -55,7 +55,7 @@ if (process.env.IS_FORK !== 'true') {
   test.serial('netlify lm:setup', async (t) => {
     const cliResponse = await callCli(['lm:setup'], {
       ...t.context.execOptions,
-      env: { NETLIFY_SITE_ID: 'site_id', NETLIFY_API_URL: t.context.apiUrl },
+      env: { ...t.context.execOptions.env, NETLIFY_SITE_ID: 'site_id', NETLIFY_API_URL: t.context.apiUrl },
     })
     t.true(cliResponse.includes('Provisioning Netlify Large Media [started]'))
     t.true(cliResponse.includes('Provisioning Netlify Large Media [completed]'))
