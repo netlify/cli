@@ -35,7 +35,7 @@ const checkGitVersion = async function () {
 
 const checkLFSVersion = async function () {
   try {
-    const { stdout } = await execa('git-lfs', ['--version'])
+    const { stdout } = await execa('git-lfs', ['version'])
     return matchVersion(
       stdout,
       /git-lfs\/([.\d]+).*/,
