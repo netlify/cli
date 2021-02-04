@@ -9,7 +9,6 @@ const merge = require('lodash/merge')
 const argv = require('minimist')(process.argv.slice(2))
 const API = require('netlify')
 
-const { warnOnNetlifyDir } = require('../lib/deprecations')
 const { getAgent } = require('../lib/http-agent')
 const { startSpinner, clearSpinner } = require('../lib/spinner')
 
@@ -28,8 +27,6 @@ const CLIENT_ID = 'd6f37de6614df7ae58664cfca524744d73807a377f5ee71f1a254f78412e3
 // 'api' command uses JSON output by default
 // 'functions:invoke' need to return the data from the function as is
 const isDefaultJson = () => argv._[0] === 'functions:invoke' || (argv._[0] === 'api' && argv.list !== true)
-
-const isBuildCommand = () => argv._[0] === 'build' || (argv._[0] === 'deploy' && argv.build === true)
 
 const getToken = async (tokenFromFlag) => {
   // 1. First honor command flag --auth
@@ -136,11 +133,6 @@ class BaseCommand extends Command {
       globalConfig,
       // state of current site dir
       state,
-    }
-
-    // @netlify/build already warns about this issue
-    if (!isBuildCommand()) {
-      await warnOnNetlifyDir({ log: this.log, chalk: this.chalk, buildDir })
     }
   }
 
