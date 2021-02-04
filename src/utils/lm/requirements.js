@@ -3,8 +3,8 @@ const semver = require('semver')
 
 const checkLFSFilters = async function () {
   try {
-    const result = await execa('git', ['config', '--get-regexp', 'filter.lfs'])
-    return result.stdout.length !== 0
+    const { stdout } = await execa('git', ['config', '--get-regexp', 'filter.lfs'])
+    return stdout.length !== 0
   } catch (error) {
     return false
   }
@@ -12,12 +12,12 @@ const checkLFSFilters = async function () {
 
 const checkHelperVersion = async function () {
   try {
-    const result = await execa('git-credential-netlify', ['version'])
+    const { stdout } = await execa('git-credential-netlify', ['version'])
     return matchVersion(
-      result.stdout,
+      stdout,
       /git-credential-netlify\/([.\d]+).*/,
       '0.1.1',
-      `Invalid Netlify's Git Credential version. Please update to version 2.5.1 or above`,
+      `Invalid Netlify's Git Credential version. Please update to version 0.1.1 or above`,
     )
   } catch (error) {
     throw new Error(`Check that Netlify's Git Credential helper is installed and updated to the latest version`)
@@ -26,8 +26,8 @@ const checkHelperVersion = async function () {
 
 const checkGitVersion = async function () {
   try {
-    const result = await execa('git', ['--version'])
-    return result.stdout.split(' ').pop()
+    const { stdout } = await execa('git', ['--version'])
+    return stdout.split(' ').pop()
   } catch (error) {
     throw new Error('Check that Git is installed in your system')
   }
@@ -35,9 +35,9 @@ const checkGitVersion = async function () {
 
 const checkLFSVersion = async function () {
   try {
-    const result = await execa('git-lfs', ['--version'])
+    const { stdout } = await execa('git-lfs', ['--version'])
     return matchVersion(
-      result.stdout,
+      stdout,
       /git-lfs\/([.\d]+).*/,
       '2.5.1',
       'Invalid Git LFS version. Please update to version 2.5.1 or above',
