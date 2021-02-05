@@ -21,7 +21,7 @@ class LmInstallCommand extends Command {
         printBanner(this, flags.force)
       }
     } catch (error) {
-      this.log(error)
+      this.error(error)
     }
   }
 }
