@@ -109,7 +109,6 @@ LmSetupCommand.flags = {
 
 LmSetupCommand.description = `Configures your site to use Netlify Large Media.
 It runs the install command if you have not installed the dependencies yet.`
-LmSetupCommand.hidden = true
 
 LmSetupCommand.examples = ['netlify lm:setup']
 

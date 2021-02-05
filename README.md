@@ -26,6 +26,7 @@ See the [CLI command line reference](https://cli.netlify.com/commands/) to get s
   * [functions](#functions)
   * [init](#init)
   * [link](#link)
+  * [lm](#lm)
   * [login](#login)
   * [open](#open)
   * [sites](#sites)
@@ -137,6 +138,17 @@ Configure continuous deployment for a new or existing site
 ### [link](/docs/commands/link.md)
 
 Link a local repo or project folder to an existing site on Netlify
+
+### [lm](/docs/commands/lm.md)
+
+Handle Large Media operations
+
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`lm:info`](/docs/commands/lm.md#lminfo) | Show large media requirements info.  |
+| [`lm:install`](/docs/commands/lm.md#lminstall) | Configures your computer to use Netlify Large Media.  |
+| [`lm:setup`](/docs/commands/lm.md#lmsetup) | Configures your site to use Netlify Large Media.  |
+
 
 ### [login](/docs/commands/login.md)
 

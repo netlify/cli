@@ -88,6 +88,17 @@ Configure continuous deployment for a new or existing site
 
 Link a local repo or project folder to an existing site on Netlify
 
+### [lm](/docs/commands/lm.md)
+
+Handle Large Media operations
+
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`lm:info`](/docs/commands/lm.md#lminfo) | Show large media requirements info.  |
+| [`lm:install`](/docs/commands/lm.md#lminstall) | Configures your computer to use Netlify Large Media.  |
+| [`lm:setup`](/docs/commands/lm.md#lmsetup) | Configures your site to use Netlify Large Media.  |
+
+
 ### [login](/docs/commands/login.md)
 
 Login to your Netlify account

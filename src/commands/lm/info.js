@@ -34,7 +34,6 @@ class LmInfoCommand extends Command {
 }
 
 LmInfoCommand.description = `Show large media requirements info.`
-LmInfoCommand.hidden = true
 
 LmInfoCommand.examples = ['netlify lm:info']
 
