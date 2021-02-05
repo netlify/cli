@@ -39,7 +39,7 @@ const provisionService = async function (siteId, api) {
     })
   } catch (error) {
     // error is JSONHTTPError
-    return Promise.reject(new Error(error.json.error))
+    throw new Error(error.json.error)
   }
 }
 
