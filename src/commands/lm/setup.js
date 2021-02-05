@@ -69,7 +69,7 @@ class LmSetupCommand extends Command {
       try {
         helperInstalled = await installHelperIfMissing(flags['force-install'])
       } catch (error_) {
-        this.error(error_.message)
+        this.error(error_)
       }
     }
 
