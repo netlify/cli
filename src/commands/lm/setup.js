@@ -29,7 +29,7 @@ const provisionService = async function (siteId, api) {
   const addonName = 'large-media'
 
   if (!siteId) {
-    return Promise.reject(new Error('No site id found, please run inside a site folder or `netlify link`'))
+    throw new Error('No site id found, please run inside a site folder or `netlify link`')
   }
   try {
     await api.createServiceInstance({
