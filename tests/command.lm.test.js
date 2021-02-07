@@ -1,6 +1,8 @@
+const os = require('os')
 const process = require('process')
 
 const test = require('ava')
+const execa = require('execa')
 const ini = require('ini')
 
 const { readFileAsync } = require('../src/lib/fs')
@@ -50,6 +52,20 @@ if (process.env.IS_FORK !== 'true') {
     t.true(cliResponse.includes("Installing Netlify's Git Credential Helper"))
     t.true(cliResponse.includes("Configuring Git to use Netlify's Git Credential Helper [started]"))
     t.true(cliResponse.includes("Configuring Git to use Netlify's Git Credential Helper [completed]"))
+
+    // verify git-credential-netlify was added to the PATH
+    if (os.platform === 'win32') {
+      t.true(cliResponse.includes('Netlify Credential Helper for Git was installed successfully.'))
+      const { stdout } = await execa('git-credential-netlify', ['version'])
+      t.true(stdout.startsWith('git-credential-netlify'))
+    } else {
+      t.true(cliResponse.includes('Run this command to use Netlify Large Media in your current shell'))
+      const [source] = cliResponse.match(/source.+inc/)
+      const { stdout } = await execa.command(`${source} && git-credential-netlify version`, {
+        shell: t.context.execOptions.env.SHELL,
+      })
+      t.true(stdout.startsWith('git-credential-netlify'))
+    }
   })
 
   test.serial('netlify lm:setup', async (t) => {

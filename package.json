@@ -19,6 +19,7 @@
     "/oclif.manifest.json",
     "/scripts/postinstall.js",
     "/src/**/*.js",
+    "/src/utils/lm/scripts/*.*",
     "!/src/**/*.test.js"
   ],
   "homepage": "https://github.com/netlify/cli",
@@ -147,6 +148,7 @@
     "parse-github-url": "^1.0.2",
     "parse-gitignore": "^1.0.1",
     "path-exists": "^4.0.0",
+    "path-key": "^3.1.1",
     "path-type": "^4.0.0",
     "prettyjson": "^1.2.1",
     "random-item": "^3.0.0",
@@ -156,7 +158,6 @@
     "semver": "^7.3.4",
     "static-server": "^2.2.1",
     "strip-ansi-control-characters": "^2.0.0",
-    "temp-dir": "^2.0.0",
     "to-readable-stream": "^2.1.0",
     "update-notifier": "^4.0.0",
     "uuid": "^8.0.0",
@@ -188,6 +189,7 @@
     "sinon": "^8.1.1",
     "standard-version": "^9.0.0",
     "strip-ansi": "^6.0.0",
+    "temp-dir": "^2.0.0",
     "tomlify-j0.4": "^3.0.0"
   },
   "ava": {
