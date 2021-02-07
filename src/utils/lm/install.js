@@ -125,7 +125,7 @@ iex (iwr -UseBasicParsing -Uri https://raw.githubusercontent.com/netlify/netlify
   return await execa('powershell', ['-ExecutionPolicy', 'unrestricted', '-File', scriptPath, '-windowstyle', 'hidden'])
 }
 
-const isBinInPath = function () {
+const isUnixBinPath = function () {
   const envPath = process.env.PATH || ''
   const binPath = getBinPath()
   return envPath
@@ -137,7 +137,7 @@ const isBinInPath = function () {
 const setupUnixPath = async function () {
   const shellInfo = shellVariables()
 
-  if (isBinInPath()) {
+  if (isUnixBinPath()) {
     return true
   }
 
@@ -259,4 +259,4 @@ const shellVariables = function () {
   }
 }
 
-module.exports = { installPlatform, isBinInPath, shellVariables }
+module.exports = { installPlatform, isUnixBinPath, shellVariables }

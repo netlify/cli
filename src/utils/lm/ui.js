@@ -3,10 +3,10 @@ const os = require('os')
 const boxen = require('boxen')
 const chalk = require('chalk')
 
-const { shellVariables, isBinInPath } = require('./install')
+const { shellVariables, isUnixBinPath } = require('./install')
 
 const printBanner = function (command, force) {
-  const print = force || !isBinInPath()
+  const print = force || !isUnixBinPath()
   const platform = os.platform()
 
   if (print && platform !== 'win32') {
