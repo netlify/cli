@@ -17,7 +17,7 @@ const handler = async (event) => {
   }
   /* construct the fauna query */
   return client
-    .query(query.Create(query.Ref('classes/items'), item))
+    .query(query.Create(query.Collection('items'), item))
     .then((response) => {
       console.log('success', response)
       /* Success! return the response with statusCode 200 */

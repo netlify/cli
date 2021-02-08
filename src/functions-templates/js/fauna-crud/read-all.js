@@ -10,7 +10,7 @@ const client = new Client({
 const handler = async () => {
   console.log('Function `read-all` invoked')
   return client
-    .query(query.Paginate(query.Match(query.Ref('indexes/all_items'))))
+    .query(query.Paginate(query.Match(query.Index('all_items'))))
     .then((response) => {
       const itemRefs = response.data
       // create new query out of item refs. http://bit.ly/2LG3MLg

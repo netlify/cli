@@ -1,6 +1,6 @@
 {
   "name": "fauna-crud",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "netlify functions:create - CRUD functionality with Fauna DB",
   "main": "fauna-crud.js",
   "scripts": {
@@ -15,6 +15,6 @@
   "author": "Netlify",
   "license": "MIT",
   "dependencies": {
-    "faunadb": "^2.14.2"
+    "faunadb": "^4.0.3"
   }
 }
