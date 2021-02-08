@@ -32,6 +32,7 @@ module.exports = {
     'promise/no-return-wrap': 0,
     'promise/prefer-await-to-callbacks': 0,
     'promise/prefer-await-to-then': 0,
+    'you-dont-need-lodash-underscore/get': 0,
 
     // TODO: harmonize with filename snake_case in other Netlify Dev projects
     'unicorn/filename-case': [2, { case: 'kebabCase', ignore: ['.*.md'] }],
