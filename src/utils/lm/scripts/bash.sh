@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 script_link="$( command readlink "$BASH_SOURCE" )" || script_link="$BASH_SOURCE"
 apparent_sdk_dir="${script_link%/*}"
 if [ "$apparent_sdk_dir" == "$script_link" ]; then

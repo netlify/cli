@@ -1,3 +1,5 @@
+#!/usr/bin/env pwsh
+
 $ErrorActionPreference = "Stop"
 
 # Helper functions for pretty terminal output.
