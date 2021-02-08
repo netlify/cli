@@ -18,10 +18,10 @@ netlify functions
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`functions:list`](/docs/commands/functions.md#functionslist) | List locally created functions  |
 | [`functions:build`](/docs/commands/functions.md#functionsbuild) | Build functions locally  |
 | [`functions:create`](/docs/commands/functions.md#functionscreate) | Create a new function locally  |
 | [`functions:invoke`](/docs/commands/functions.md#functionsinvoke) | Trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions  |
+| [`functions:list`](/docs/commands/functions.md#functionslist) | List functions that exist locally  |
 
 
 **Examples**
@@ -30,27 +30,6 @@ netlify functions
 netlify functions:create --name function-xyz
 netlify functions:build --name function-abc --timeout 30s
 ```
-
----
-## `functions:list`
-
-List locally created functions
-
-
-**Usage**
-
-```bash
-netlify functions:list
-```
-
-**Flags**
-
-- `functions` (*string*) - Specify a functions folder to serve
-- `name` (*string*) - name to print
-- `debug` (*boolean*) - Print debugging information
-- `httpProxy` (*string*) - Proxy server address to route requests through.
-- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
-- `json` (*boolean*) - Output function data as JSON
 
 ---
 ## `functions:build`
@@ -142,6 +121,31 @@ $ netlify functions:invoke myfunction --payload '{"foo": 1}'
 $ netlify functions:invoke myfunction --querystring "foo=1
 $ netlify functions:invoke myfunction --payload "./pathTo.json"
 ```
+
+---
+## `functions:list`
+
+List functions that exist locally
+
+Helpful for making sure that you have formatted your functions correctly
+
+NOT the same as listing the functions that have been deployed. For that info you need to go to your Netlify deploy log.
+
+
+**Usage**
+
+```bash
+netlify functions:list
+```
+
+**Flags**
+
+- `name` (*string*) - name to print
+- `functions` (*string*) - Specify a functions folder to serve
+- `json` (*boolean*) - Output function data as JSON
+- `debug` (*boolean*) - Print debugging information
+- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
 
