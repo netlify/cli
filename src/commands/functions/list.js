@@ -109,7 +109,4 @@ FunctionsListCommand.flags = {
   ...FunctionsListCommand.flags,
 }
 
-// TODO make visible once implementation complete
-FunctionsListCommand.hidden = true
-
 module.exports = FunctionsListCommand
