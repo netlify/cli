@@ -67,6 +67,8 @@ const headersForPath = function (rules, path) {
   return pathObject
 }
 
+const HEADER_SEPARATOR = ':'
+
 const parseHeadersFile = function (filePath) {
   if (!fs.existsSync(filePath)) {
     return {}
@@ -94,9 +96,9 @@ const parseHeadersFile = function (filePath) {
       throw new Error('path should come before headers')
     }
 
-    if (line.includes(':')) {
-      const [key = '', value = ''] = line.split(':', 2)
-      const [trimmedKey, trimmedValue] = [key.trim(), value.trim()]
+    if (line.includes(HEADER_SEPARATOR)) {
+      const [key = '', ...value] = line.split(HEADER_SEPARATOR)
+      const [trimmedKey, trimmedValue] = [key.trim(), value.join(HEADER_SEPARATOR).trim()]
       if (trimmedKey.length === 0 || trimmedValue.length === 0) {
         throw new Error(`invalid header at line: ${index}\n${line}\n`)
       }
