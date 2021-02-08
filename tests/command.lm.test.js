@@ -54,7 +54,7 @@ if (process.env.IS_FORK !== 'true') {
     t.true(cliResponse.includes("Configuring Git to use Netlify's Git Credential Helper [completed]"))
 
     // verify git-credential-netlify was added to the PATH
-    if (os.platform === 'win32') {
+    if (os.platform() === 'win32') {
       t.true(cliResponse.includes('Netlify Credential Helper for Git was installed successfully.'))
       const { stdout } = await execa('git-credential-netlify', ['version'])
       t.true(stdout.startsWith('git-credential-netlify'))
