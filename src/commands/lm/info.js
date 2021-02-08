@@ -29,7 +29,7 @@ class LmInfoCommand extends Command {
     })
 
     const tasks = new Listr(steps, { concurrent: true, exitOnError: false })
-    tasks.run().catch(() => {})
+    await tasks.run().catch(() => {})
   }
 }
 
