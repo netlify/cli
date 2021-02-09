@@ -23,7 +23,7 @@ const createFaunaDB = function () {
           name: 'all_items',
           source: query.Collection('items'),
           active: true,
-        })
+        }),
       )
     })
 
