@@ -1,3 +1,7 @@
+const {
+  env: { NETLIFY_TEST_ACCOUNT_SLUG },
+} = require('process')
+
 const stripAnsi = require('strip-ansi')
 
 const callCli = require('./call-cli')
@@ -23,7 +27,9 @@ const createLiveTestSite = async function (siteName) {
   if (!Array.isArray(accounts) || accounts.length <= 0) {
     throw new Error(`Can't find suitable account to create a site`)
   }
-  const [account] = accounts
+  const account = NETLIFY_TEST_ACCOUNT_SLUG
+    ? accounts.find(({ slug }) => slug === NETLIFY_TEST_ACCOUNT_SLUG)
+    : accounts[0]
   const accountSlug = account.slug
   console.log(`Using account ${accountSlug} to create site: ${siteName}`)
   const cliResponse = await callCli(['sites:create', '--name', siteName, '--account-slug', accountSlug])
