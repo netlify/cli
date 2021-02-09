@@ -18,16 +18,22 @@ const normalizeDir = ({ siteRoot, dir, defaultValue }) => {
   return relativeDir || defaultValue
 }
 
-const getFrameworkDefaults = async ({ siteRoot }) => {
+const getFrameworkInfo = async ({ siteRoot }) => {
   const frameworks = await listFrameworks({ projectDir: siteRoot })
   if (frameworks.length !== 0) {
     const [
       {
+        name,
         build: { directory, commands },
         plugins,
       },
     ] = frameworks
-    return { frameworkBuildCommand: commands[0], frameworkBuildDir: directory, frameworkPlugins: plugins }
+    return {
+      frameworkTitle: name,
+      frameworkBuildCommand: commands[0],
+      frameworkBuildDir: directory,
+      frameworkPlugins: plugins,
+    }
   }
   return {}
 }
@@ -35,8 +41,7 @@ const getFrameworkDefaults = async ({ siteRoot }) => {
 const isPluginInstalled = (configPlugins, plugin) =>
   configPlugins.some(({ package: configPlugin }) => configPlugin === plugin)
 
-const getDefaultSettings = async ({ siteRoot, config }) => {
-  const { frameworkBuildCommand, frameworkBuildDir, frameworkPlugins } = await getFrameworkDefaults({ siteRoot })
+const getDefaultSettings = ({ siteRoot, config, frameworkPlugins, frameworkBuildCommand, frameworkBuildDir }) => {
   const recommendedPlugins = frameworkPlugins.filter((plugin) => !isPluginInstalled(config.plugins, plugin))
   const {
     command: defaultBuildCmd = frameworkBuildCommand,
@@ -52,7 +57,13 @@ const getDefaultSettings = async ({ siteRoot, config }) => {
   }
 }
 
-const getPromptInputs = ({ defaultBuildCmd, defaultBuildDir, defaultFunctionsDir, recommendedPlugins }) => {
+const getPromptInputs = ({
+  defaultBuildCmd,
+  defaultBuildDir,
+  defaultFunctionsDir,
+  recommendedPlugins,
+  frameworkTitle,
+}) => {
   const inputs = [
     {
       type: 'input',
@@ -79,13 +90,16 @@ const getPromptInputs = ({ defaultBuildCmd, defaultBuildDir, defaultFunctionsDir
     return inputs
   }
 
+  const prefix = `Seems like this is a ${formatTitle(frameworkTitle)} site.${EOL}  `
   if (recommendedPlugins.length === 1) {
     return [
       ...inputs,
       {
         type: 'confirm',
         name: 'installSinglePlugin',
-        message: `Install ${recommendedPlugins[0]}?`,
+        message: `${prefix}Recommended Build Plugin: ${formatTitle(recommendedPlugins[0])}${EOL}  Install ${
+          recommendedPlugins[0]
+        }?`,
         default: true,
       },
     ]
@@ -96,7 +110,9 @@ const getPromptInputs = ({ defaultBuildCmd, defaultBuildDir, defaultFunctionsDir
     {
       type: 'checkbox',
       name: 'plugins',
-      message: 'Which build plugins to install:',
+      message: `${prefix}Recommended Build Plugins: ${recommendedPlugins
+        .map(formatTitle)
+        .join(', ')}${EOL}  Which plugins to install?`,
       choices: recommendedPlugins,
     },
   ]
@@ -111,14 +127,25 @@ const getPluginsToInstall = ({ plugins, installSinglePlugin, recommendedPlugins 
 }
 
 const getBuildSettings = async ({ siteRoot, config }) => {
+  const { frameworkTitle, frameworkBuildCommand, frameworkBuildDir, frameworkPlugins } = await getFrameworkInfo({
+    siteRoot,
+  })
   const { defaultBuildCmd, defaultBuildDir, defaultFunctionsDir, recommendedPlugins } = await getDefaultSettings({
     siteRoot,
     config,
+    frameworkBuildCommand,
+    frameworkBuildDir,
+    frameworkPlugins,
   })
   const { buildCmd, buildDir, functionsDir, plugins, installSinglePlugin } = await inquirer.prompt(
-    getPromptInputs({ defaultBuildCmd, defaultBuildDir, defaultFunctionsDir, recommendedPlugins }),
+    getPromptInputs({
+      defaultBuildCmd,
+      defaultBuildDir,
+      defaultFunctionsDir,
+      recommendedPlugins,
+      frameworkTitle,
+    }),
   )
-
   const pluginsToInstall = getPluginsToInstall({ plugins, installSinglePlugin, recommendedPlugins })
   return { buildCmd, buildDir, functionsDir, plugins: pluginsToInstall }
 }
@@ -182,6 +209,8 @@ const saveNetlifyToml = async ({ siteRoot, config, buildCmd, buildDir, functions
 }
 
 const formatErrorMessage = ({ message, error }) => `${message} with error: ${chalk.red(error.message)}`
+
+const formatTitle = (title) => chalk.cyan(title)
 
 const createDeployKey = async ({ api, failAndExit }) => {
   try {
