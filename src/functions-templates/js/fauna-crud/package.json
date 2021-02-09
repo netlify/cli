@@ -15,6 +15,6 @@
   "author": "Netlify",
   "license": "MIT",
   "dependencies": {
-    "faunadb": "^2.14.2"
+    "faunadb": "^4.0.3"
   }
 }
