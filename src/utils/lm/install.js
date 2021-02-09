@@ -118,15 +118,11 @@ const setupWindowsPath = async function () {
   }
 
   const scriptPath = path.join(__dirname, 'scripts', 'path.ps1')
-  return await execa('powershell', [
-    '-ExecutionPolicy',
-    'unrestricted',
-    '-File',
-    scriptPath,
-    '-windowstyle',
-    'hidden',
-    getBinPath(),
-  ])
+  return await execa(
+    'powershell',
+    ['-ExecutionPolicy', 'unrestricted', '-windowstyle', 'hidden', '-File', scriptPath, getBinPath()],
+    { stdio: 'inherit' },
+  )
 }
 
 const setupUnixPath = async () => {

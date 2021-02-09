@@ -6,6 +6,7 @@ const execa = require('execa')
 const ini = require('ini')
 
 const { readFileAsync } = require('../src/lib/fs')
+const { getPathInHome } = require('../src/lib/settings')
 
 const callCli = require('./utils/call-cli')
 const { generateSiteName, createLiveTestSite } = require('./utils/create-live-test-site')
@@ -55,6 +56,7 @@ if (process.env.IS_FORK !== 'true') {
 
     // verify git-credential-netlify was added to the PATH
     if (os.platform() === 'win32') {
+      t.true(cliResponse.includes(`Adding ${getPathInHome(['helper', 'bin'])} to the`))
       t.true(cliResponse.includes('Netlify Credential Helper for Git was installed successfully.'))
       const { stdout } = await execa('git-credential-netlify', ['version'])
       t.true(stdout.startsWith('git-credential-netlify'))
