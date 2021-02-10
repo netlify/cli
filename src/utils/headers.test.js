@@ -35,6 +35,10 @@ const headers = [
     path: '/directory/*/test.html',
     headers: ['X-Frame-Options: test'],
   },
+  {
+    path: '/with-colon',
+    headers: ['Custom-header: http://www.example.com'],
+  },
 ]
 
 test.before(async (t) => {
@@ -98,6 +102,9 @@ test('_headers: validate rules', (t) => {
     },
     '/directory/*/test.html': {
       'X-Frame-Options': ['test'],
+    },
+    '/with-colon': {
+      'Custom-header': ['http://www.example.com'],
     },
   })
 })
