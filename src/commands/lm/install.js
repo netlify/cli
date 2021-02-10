@@ -15,13 +15,9 @@ class LmInstallCommand extends Command {
       },
     })
 
-    try {
-      const installed = await installPlatform(flags.force)
-      if (installed) {
-        printBanner(this, flags.force)
-      }
-    } catch (error) {
-      this.error(error)
+    const installed = await installPlatform(flags.force)
+    if (installed) {
+      printBanner(this, flags.force)
     }
   }
 }

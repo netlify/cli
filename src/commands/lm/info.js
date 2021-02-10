@@ -29,7 +29,11 @@ class LmInfoCommand extends Command {
     })
 
     const tasks = new Listr(steps, { concurrent: true, exitOnError: false })
-    await tasks.run().catch(() => {})
+    try {
+      await tasks.run()
+    } catch (_) {
+      // an error is already reported when a task fails
+    }
   }
 }
 
