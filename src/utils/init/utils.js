@@ -23,13 +23,13 @@ const getFrameworkInfo = async ({ siteRoot }) => {
   if (frameworks.length !== 0) {
     const [
       {
-        name,
+        title,
         build: { directory, commands },
         plugins,
       },
     ] = frameworks
     return {
-      frameworkTitle: name,
+      frameworkTitle: title,
       frameworkBuildCommand: commands[0],
       frameworkBuildDir: directory,
       frameworkPlugins: plugins,
