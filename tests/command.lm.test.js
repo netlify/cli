@@ -58,7 +58,11 @@ if (process.env.IS_FORK !== 'true') {
     if (os.platform() === 'win32') {
       t.true(cliResponse.includes(`Adding ${getPathInHome(['helper', 'bin'])} to the`))
       t.true(cliResponse.includes('Netlify Credential Helper for Git was installed successfully.'))
-      const { stdout } = await execa('git-credential-netlify', ['version'])
+      // no good way to test that it was added to the PATH on windows so we test it was installed
+      // in the expected location
+      const { stdout } = await execa('git-credential-netlify', ['version'], {
+        cwd: `${os.homedir()}\\AppData\\Roaming\\netlify\\config\\helper\\bin`,
+      })
       t.true(stdout.startsWith('git-credential-netlify'))
     } else {
       t.true(cliResponse.includes('Run this command to use Netlify Large Media in your current shell'))
