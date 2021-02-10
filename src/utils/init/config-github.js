@@ -180,11 +180,12 @@ module.exports = async function configGithub({ context, siteId, repoOwner, repoN
     globalConfig,
     config,
     site: { root: siteRoot },
+    cachedConfig: { env },
   } = netlify
 
   const token = await getGitHubToken({ log, globalConfig })
 
-  const { buildCmd, buildDir, functionsDir, plugins } = await getBuildSettings({ siteRoot, config })
+  const { buildCmd, buildDir, functionsDir, plugins } = await getBuildSettings({ siteRoot, config, env, warn })
   await saveNetlifyToml({ siteRoot, config, buildCmd, buildDir, functionsDir, plugins, warn })
 
   const octokit = getGitHubClient({ token })

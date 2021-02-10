@@ -55,9 +55,10 @@ module.exports = async function configManual({ context, siteId, repoData }) {
     api,
     config,
     site: { root: siteRoot },
+    cachedConfig: { env },
   } = netlify
 
-  const { buildCmd, buildDir, functionsDir, plugins } = await getBuildSettings({ siteRoot, config })
+  const { buildCmd, buildDir, functionsDir, plugins } = await getBuildSettings({ siteRoot, config, env, warn })
   await saveNetlifyToml({ siteRoot, config, buildCmd, buildDir, functionsDir, plugins, warn })
 
   const deployKey = await createDeployKey({ api, failAndExit })

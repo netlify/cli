@@ -4,9 +4,13 @@ const path = require('path')
 const { listFrameworks } = require('@netlify/framework-info')
 const chalk = require('chalk')
 const cleanDeep = require('clean-deep')
+const { get } = require('dot-prop')
 const inquirer = require('inquirer')
+const locatePath = require('locate-path')
 const isEmpty = require('lodash/isEmpty')
+const nodeVersionAlias = require('node-version-alias')
 
+const { readFileAsync } = require('../../lib/fs')
 const { fileExistsAsync, writeFileAsync } = require('../../lib/fs')
 
 const normalizeDir = ({ siteRoot, dir, defaultValue }) => {
@@ -18,8 +22,33 @@ const normalizeDir = ({ siteRoot, dir, defaultValue }) => {
   return relativeDir || defaultValue
 }
 
-const getFrameworkInfo = async ({ siteRoot }) => {
-  const frameworks = await listFrameworks({ projectDir: siteRoot })
+const DEFAULT_NODE_VERSION = '12.18.0'
+const NVM_FLAG_PREFIX = '--'
+
+// to support NODE_VERSION=--lts, etc.
+const normalizeConfiguredVersion = (version) =>
+  version.startsWith(NVM_FLAG_PREFIX) ? version.slice(NVM_FLAG_PREFIX.length) : version
+
+const detectNodeVersion = async ({ siteRoot, env, warn }) => {
+  try {
+    const nodeVersionFile = await locatePath(['.nvmrc', '.node-version'], { cwd: siteRoot })
+    const configuredVersion =
+      nodeVersionFile === undefined ? get(env, 'NODE_VERSION.value') : await readFileAsync(nodeVersionFile, 'utf8')
+
+    const version =
+      configuredVersion === undefined
+        ? DEFAULT_NODE_VERSION
+        : await nodeVersionAlias(normalizeConfiguredVersion(configuredVersion))
+
+    return version
+  } catch (error) {
+    warn(`Failed detecting Node.js version: ${error.message}`)
+    return DEFAULT_NODE_VERSION
+  }
+}
+
+const getFrameworkInfo = async ({ siteRoot, nodeVersion }) => {
+  const frameworks = await listFrameworks({ projectDir: siteRoot, nodeVersion })
   if (frameworks.length !== 0) {
     const [
       {
@@ -126,9 +155,11 @@ const getPluginsToInstall = ({ plugins, installSinglePlugin, recommendedPlugins 
   return installSinglePlugin === true ? [recommendedPlugins[0]] : []
 }
 
-const getBuildSettings = async ({ siteRoot, config }) => {
+const getBuildSettings = async ({ siteRoot, config, env, warn }) => {
+  const nodeVersion = await detectNodeVersion({ siteRoot, env, warn })
   const { frameworkTitle, frameworkBuildCommand, frameworkBuildDir, frameworkPlugins } = await getFrameworkInfo({
     siteRoot,
+    nodeVersion,
   })
   const { defaultBuildCmd, defaultBuildDir, defaultFunctionsDir, recommendedPlugins } = await getDefaultSettings({
     siteRoot,
