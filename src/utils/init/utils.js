@@ -1,17 +1,16 @@
 const { EOL } = require('os')
 const path = require('path')
 
-const { listFrameworks } = require('@netlify/framework-info')
 const chalk = require('chalk')
 const cleanDeep = require('clean-deep')
-const { get } = require('dot-prop')
 const inquirer = require('inquirer')
-const locatePath = require('locate-path')
 const isEmpty = require('lodash/isEmpty')
-const nodeVersionAlias = require('node-version-alias')
 
-const { readFileAsync } = require('../../lib/fs')
 const { fileExistsAsync, writeFileAsync } = require('../../lib/fs')
+
+const { getFrameworkInfo } = require('./frameworks')
+const { detectNodeVersion } = require('./node-version')
+const { getPluginsList, getPluginInfo, getRecommendPlugins } = require('./plugins')
 
 const normalizeDir = ({ siteRoot, dir, defaultValue }) => {
   if (dir === undefined) {
@@ -22,56 +21,8 @@ const normalizeDir = ({ siteRoot, dir, defaultValue }) => {
   return relativeDir || defaultValue
 }
 
-const DEFAULT_NODE_VERSION = '12.18.0'
-const NVM_FLAG_PREFIX = '--'
-
-// to support NODE_VERSION=--lts, etc.
-const normalizeConfiguredVersion = (version) =>
-  version.startsWith(NVM_FLAG_PREFIX) ? version.slice(NVM_FLAG_PREFIX.length) : version
-
-const detectNodeVersion = async ({ siteRoot, env, warn }) => {
-  try {
-    const nodeVersionFile = await locatePath(['.nvmrc', '.node-version'], { cwd: siteRoot })
-    const configuredVersion =
-      nodeVersionFile === undefined ? get(env, 'NODE_VERSION.value') : await readFileAsync(nodeVersionFile, 'utf8')
-
-    const version =
-      configuredVersion === undefined
-        ? DEFAULT_NODE_VERSION
-        : await nodeVersionAlias(normalizeConfiguredVersion(configuredVersion))
-
-    return version
-  } catch (error) {
-    warn(`Failed detecting Node.js version: ${error.message}`)
-    return DEFAULT_NODE_VERSION
-  }
-}
-
-const getFrameworkInfo = async ({ siteRoot, nodeVersion }) => {
-  const frameworks = await listFrameworks({ projectDir: siteRoot, nodeVersion })
-  if (frameworks.length !== 0) {
-    const [
-      {
-        title,
-        build: { directory, commands },
-        plugins,
-      },
-    ] = frameworks
-    return {
-      frameworkTitle: title,
-      frameworkBuildCommand: commands[0],
-      frameworkBuildDir: directory,
-      frameworkPlugins: plugins,
-    }
-  }
-  return {}
-}
-
-const isPluginInstalled = (configPlugins, plugin) =>
-  configPlugins.some(({ package: configPlugin }) => configPlugin === plugin)
-
 const getDefaultSettings = ({ siteRoot, config, frameworkPlugins, frameworkBuildCommand, frameworkBuildDir }) => {
-  const recommendedPlugins = frameworkPlugins.filter((plugin) => !isPluginInstalled(config.plugins, plugin))
+  const recommendedPlugins = getRecommendPlugins(frameworkPlugins, config)
   const {
     command: defaultBuildCmd = frameworkBuildCommand,
     publish: defaultBuildDir = frameworkBuildDir,
@@ -86,12 +37,12 @@ const getDefaultSettings = ({ siteRoot, config, frameworkPlugins, frameworkBuild
   }
 }
 
-const getPromptInputs = ({
+const getPromptInputs = async ({
   defaultBuildCmd,
   defaultBuildDir,
   defaultFunctionsDir,
   recommendedPlugins,
-  frameworkTitle,
+  frameworkName,
 }) => {
   const inputs = [
     {
@@ -119,30 +70,33 @@ const getPromptInputs = ({
     return inputs
   }
 
-  const prefix = `Seems like this is a ${formatTitle(frameworkTitle)} site.${EOL}  `
+  const pluginsList = await getPluginsList()
+
+  const prefix = `Seems like this is a ${formatTitle(frameworkName)} site.${EOL}  `
   if (recommendedPlugins.length === 1) {
+    const { name } = getPluginInfo(pluginsList, recommendedPlugins[0])
     return [
       ...inputs,
       {
         type: 'confirm',
         name: 'installSinglePlugin',
-        message: `${prefix}Recommended Build Plugin: ${formatTitle(recommendedPlugins[0])}${EOL}  Install ${
-          recommendedPlugins[0]
-        }?`,
+        message: `${prefix}Recommended Build Plugin: ${formatTitle(`${name} plugin`)}${EOL}  Install ${name} plugin?`,
         default: true,
       },
     ]
   }
 
+  const infos = recommendedPlugins.map((packageName) => getPluginInfo(pluginsList, packageName))
   return [
     ...inputs,
     {
       type: 'checkbox',
       name: 'plugins',
-      message: `${prefix}Recommended Build Plugins: ${recommendedPlugins
+      message: `${prefix}Recommended Build Plugins: ${infos
+        .map(({ name }) => `${name} plugin`)
         .map(formatTitle)
         .join(', ')}${EOL}  Which plugins to install?`,
-      choices: recommendedPlugins,
+      choices: infos.map(({ name, package }) => ({ name: `${name} plugin`, value: package })),
     },
   ]
 }
@@ -157,7 +111,7 @@ const getPluginsToInstall = ({ plugins, installSinglePlugin, recommendedPlugins 
 
 const getBuildSettings = async ({ siteRoot, config, env, warn }) => {
   const nodeVersion = await detectNodeVersion({ siteRoot, env, warn })
-  const { frameworkTitle, frameworkBuildCommand, frameworkBuildDir, frameworkPlugins } = await getFrameworkInfo({
+  const { frameworkName, frameworkBuildCommand, frameworkBuildDir, frameworkPlugins } = await getFrameworkInfo({
     siteRoot,
     nodeVersion,
   })
@@ -169,12 +123,12 @@ const getBuildSettings = async ({ siteRoot, config, env, warn }) => {
     frameworkPlugins,
   })
   const { buildCmd, buildDir, functionsDir, plugins, installSinglePlugin } = await inquirer.prompt(
-    getPromptInputs({
+    await getPromptInputs({
       defaultBuildCmd,
       defaultBuildDir,
       defaultFunctionsDir,
       recommendedPlugins,
-      frameworkTitle,
+      frameworkName,
     }),
   )
   const pluginsToInstall = getPluginsToInstall({ plugins, installSinglePlugin, recommendedPlugins })
