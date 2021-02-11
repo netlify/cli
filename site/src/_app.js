@@ -48,6 +48,7 @@ const navOrder = [
   'link',
   'login',
   'logout',
+  'lm',
   'open',
   'sites',
   'status',

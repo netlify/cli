@@ -21,8 +21,8 @@ class LmCommand extends Command {
   }
 }
 
-LmCommand.description = `Handle Large Media operations
-The lm command will help you manage a large media for the site
+LmCommand.description = `Handle Netlify Large Media operations
+The lm command will help you manage large media for a site
 `
 LmCommand.examples = ['netlify lm:info', 'netlify lm:install', 'netlify lm:setup']
 
