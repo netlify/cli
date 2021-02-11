@@ -21,7 +21,7 @@ const getHelperVersion = async function () {
 
 const checkHelperVersion = async function () {
   const version = await getHelperVersion()
-  const expectedVersion = '0.1.1'
+  const expectedVersion = '0.1.10'
   return matchVersion(
     version,
     /git-credential-netlify\/([.\d]+).*/,
