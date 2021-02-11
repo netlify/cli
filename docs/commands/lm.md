@@ -55,12 +55,6 @@ netlify lm:info
 - `httpProxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
-**Examples**
-
-```bash
-netlify lm:info
-```
-
 ---
 ## `lm:install`
 
@@ -77,12 +71,6 @@ netlify lm:install
 **Flags**
 
 - `force` (*boolean*) - Force the credentials helper installation
-
-**Examples**
-
-```bash
-netlify lm:install
-```
 
 ---
 ## `lm:setup`
@@ -103,12 +91,6 @@ netlify lm:setup
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
-
-**Examples**
-
-```bash
-netlify lm:setup
-```
 
 ---
 

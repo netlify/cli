@@ -34,6 +34,4 @@ LmInstallCommand.description = `Configures your computer to use Netlify Large Me
 It installs the required credentials helper for Git,
 and configures your Git environment with the right credentials.`
 
-LmInstallCommand.examples = ['netlify lm:install']
-
 module.exports = LmInstallCommand
