@@ -15,7 +15,7 @@ class LmInstallCommand extends Command {
       },
     })
 
-    const installed = await installPlatform(flags.force)
+    const installed = await installPlatform({ force: flags.force, log: this.log })
     if (installed) {
       printBanner(this, flags.force)
     }

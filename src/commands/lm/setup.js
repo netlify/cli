@@ -7,7 +7,7 @@ const { installPlatform } = require('../../utils/lm/install')
 const { checkHelperVersion } = require('../../utils/lm/requirements')
 const { printBanner } = require('../../utils/lm/ui')
 
-const installHelperIfMissing = async function (force) {
+const installHelperIfMissing = async function ({ force, log }) {
   let installHelper = false
   try {
     const version = await checkHelperVersion()
@@ -19,7 +19,7 @@ const installHelperIfMissing = async function (force) {
   }
 
   if (installHelper) {
-    return installPlatform(force)
+    return installPlatform({ force, log })
   }
 
   return false
@@ -67,7 +67,7 @@ class LmSetupCommand extends Command {
     let helperInstalled = false
     if (!flags['skip-install']) {
       try {
-        helperInstalled = await installHelperIfMissing(flags['force-install'])
+        helperInstalled = await installHelperIfMissing({ force: flags['force-install'], log: this.log })
       } catch (error_) {
         this.error(error_)
       }
