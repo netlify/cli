@@ -270,10 +270,7 @@ const shellVariables = function () {
   }
 }
 
-const uninstall = async function () {
-  await rmdirRecursiveAsync(getHelperPath())
-  await removeConfig(GIT_CONFIG, getGitConfigContent(getGitConfigPath()))
-
+const cleanupShell = async function () {
   try {
     const { configFile, incFilePath } = shellVariables()
     if (configFile === undefined) {
@@ -282,6 +279,14 @@ const uninstall = async function () {
 
     await removeConfig(configFile, getInitContent(incFilePath))
   } catch (_) {}
+}
+
+const uninstall = async function () {
+  await Promise.all([
+    rmdirRecursiveAsync(getHelperPath()),
+    removeConfig(GIT_CONFIG, getGitConfigContent(getGitConfigPath())),
+    cleanupShell(),
+  ])
 }
 
 const removeConfig = async function (name, toRemove) {
