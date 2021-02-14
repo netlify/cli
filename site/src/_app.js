@@ -46,6 +46,7 @@ const navOrder = [
   'functions',
   'init',
   'link',
+  'lm',
   'login',
   'logout',
   'open',
