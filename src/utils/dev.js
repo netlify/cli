@@ -153,7 +153,6 @@ const injectEnvVariables = async ({ env, log, site, warn }) => {
     }
   }
 
-  process.env.CONTEXT = 'dev'
   process.env.NETLIFY_DEV = 'true'
 }
 

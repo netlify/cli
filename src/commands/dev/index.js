@@ -203,6 +203,11 @@ const printBanner = ({ url, log }) => {
 }
 
 class DevCommand extends Command {
+  async init() {
+    this.commandContext = 'dev'
+    await super.init()
+  }
+
   async run() {
     this.log(`${NETLIFYDEV}`)
     const { error: errorExit, log, warn, exit } = this

@@ -256,6 +256,58 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
+  test(testName('[context.dev.environment] should override [build.environment]', args), async (t) => {
+    await withSiteBuilder('site-with-build-environment', async (builder) => {
+      builder
+        .withNetlifyToml({
+          config: {
+            build: { environment: { TEST: 'DEFAULT_CONTEXT' }, functions: 'functions' },
+            context: { dev: { environment: { TEST: 'DEV_CONTEXT' } } },
+          },
+        })
+        .withFunction({
+          path: 'env.js',
+          handler: async () => ({
+            statusCode: 200,
+            body: `${process.env.TEST}`,
+          }),
+        })
+
+      await builder.buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async (server) => {
+        const response = await got(`${server.url}/.netlify/functions/env`).text()
+        t.is(response, 'DEV_CONTEXT')
+      })
+    })
+  })
+
+  test(testName('should use [build.environment] and not [context.production.environment]', args), async (t) => {
+    await withSiteBuilder('site-with-build-environment', async (builder) => {
+      builder
+        .withNetlifyToml({
+          config: {
+            build: { environment: { TEST: 'DEFAULT_CONTEXT' }, functions: 'functions' },
+            context: { production: { environment: { TEST: 'PRODUCTION_CONTEXT' } } },
+          },
+        })
+        .withFunction({
+          path: 'env.js',
+          handler: async () => ({
+            statusCode: 200,
+            body: `${process.env.TEST}`,
+          }),
+        })
+
+      await builder.buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async (server) => {
+        const response = await got(`${server.url}/.netlify/functions/env`).text()
+        t.is(response, 'DEFAULT_CONTEXT')
+      })
+    })
+  })
+
   test(testName('should override .env.development with process env', args), async (t) => {
     await withSiteBuilder('site-with-override', async (builder) => {
       builder
@@ -321,7 +373,7 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
-  test(testName('should override value of the CONTEXT env variable', args), async (t) => {
+  test(testName('should set value of the CONTEXT env variable', args), async (t) => {
     await withSiteBuilder('site-with-context-override', async (builder) => {
       builder.withNetlifyToml({ config: { build: { functions: 'functions' } } }).withFunction({
         path: 'env.js',
@@ -333,7 +385,7 @@ testMatrix.forEach(({ args }) => {
 
       await builder.buildAsync()
 
-      await withDevServer({ cwd: builder.directory, env: { CONTEXT: 'production' }, args }, async (server) => {
+      await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/.netlify/functions/env`).text()
         t.is(response, 'dev')
       })

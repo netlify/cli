@@ -4,6 +4,11 @@ const Command = require('../../utils/command')
 const { runProcess } = require('../../utils/traffic-mesh')
 
 class TraceCommand extends Command {
+  async init() {
+    this.commandContext = 'dev'
+    await super.init()
+  }
+
   async run() {
     this.parse(TraceCommand)
 

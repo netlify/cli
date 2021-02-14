@@ -4,6 +4,11 @@ const Command = require('../../utils/command')
 const { injectEnvVariables } = require('../../utils/dev')
 
 class ExecCommand extends Command {
+  async init() {
+    this.commandContext = 'dev'
+    await super.init()
+  }
+
   async run() {
     const { log, warn, netlify } = this
     const { cachedConfig, site } = netlify

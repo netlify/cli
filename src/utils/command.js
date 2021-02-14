@@ -142,7 +142,7 @@ class BaseCommand extends Command {
       return await resolveConfig({
         config: argv.config,
         cwd,
-        context: argv.context,
+        context: argv.context || this.commandContext,
         debug: argv.debug,
         siteId: argv.siteId || (typeof argv.site === 'string' && argv.site) || state.get('siteId'),
         token,
