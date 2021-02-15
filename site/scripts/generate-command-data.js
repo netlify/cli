@@ -52,15 +52,18 @@ module.exports = function generateCommandData() {
 
   const groupedCommandsWithData = visibleCommands.reduce((acc, curr) => {
     if (curr.commandGroup !== curr.command && acc[curr.commandGroup] && acc[curr.commandGroup].commands) {
-      acc[curr.commandGroup].commands = acc[curr.commandGroup].commands.concat({
-        name: curr.command,
-        usage: curr.data.usage,
-        description: curr.data.description,
-        flags: curr.data.flags,
-        args: curr.data.args,
-        examples: curr.data.examples,
-        strict: curr.data.strict,
-      })
+      acc[curr.commandGroup].commands = [
+        ...acc[curr.commandGroup].commands,
+        {
+          name: curr.command,
+          usage: curr.data.usage,
+          description: curr.data.description,
+          flags: curr.data.flags,
+          args: curr.data.args,
+          examples: curr.data.examples,
+          strict: curr.data.strict,
+        },
+      ]
     }
     return acc
   }, groupedCommands)
@@ -75,7 +78,7 @@ const commandFromPath = function (filePath) {
   // console.log('process.cwd()', process.cwd())
   const rootDir = path.join(__dirname, '..', '..')
   // Replace node_modules path for CLI plugins
-  if (normalized.match(/node_modules/)) {
+  if (/node_modules/.test(normalized)) {
     // in: /node_modules/netlify-dev-plugin/src/commands/dev/exec.js
     // out: /src/commands/dev/exec.js
     normalized = normalized.replace(/\/node_modules\/((?:[^/]+)*)?\//, '/')

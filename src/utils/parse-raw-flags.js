@@ -12,12 +12,12 @@
 
 const parseRawFlags = function (raw) {
   const rawFlags = raw.reduce((acc, curr, index, array) => {
-    if (curr.input.match(/^-{1,2}/)) {
+    if (/^-{1,2}/.test(curr.input)) {
       const key = curr.input.replace(/^-{1,2}/, '')
       const next = array[index + 1]
       if (!next) {
         acc[key] = true
-      } else if (next && next.input && next.input.match(/^-{1,2}/)) {
+      } else if (next && next.input && /^-{1,2}/.test(next.input)) {
         acc[key] = true
       } else {
         acc[key] = next ? aggressiveJSONParse(next.input) : true
