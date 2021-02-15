@@ -180,7 +180,7 @@ Link.defaultProps = {
 }
 
 const format = (str, data) => {
-  if (data && data.path && data.path.match(/commands/) && str !== 'commands') {
+  if (data && data.path && /commands/.test(data.path) && str !== 'commands') {
     return <span>{str}</span>
   }
   return str

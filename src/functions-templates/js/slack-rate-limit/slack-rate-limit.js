@@ -35,7 +35,7 @@ class IdentityAPI {
     const headers = this.headers(options.headers || {})
     return fetch(this.apiURL + path, { ...options, headers }).then((response) => {
       const contentType = response.headers.get('Content-Type')
-      if (contentType && contentType.match(/json/)) {
+      if (contentType && /json/.test(contentType)) {
         return this.parseJsonResponse(response)
       }
 

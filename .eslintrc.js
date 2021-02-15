@@ -33,9 +33,12 @@ module.exports = {
     'promise/prefer-await-to-callbacks': 0,
     'promise/prefer-await-to-then': 0,
     'you-dont-need-lodash-underscore/get': 0,
+    'unicorn/prefer-spread': 0,
+    'unicorn/consistent-destructuring': 0,
+    'unicorn/no-array-push-push': 0,
 
     // TODO: harmonize with filename snake_case in other Netlify Dev projects
-    'unicorn/filename-case': [2, { case: 'kebabCase', ignore: ['.*.md'] }],
+    'unicorn/filename-case': [2, { case: 'kebabCase' }],
   },
   overrides: [
     ...overrides,
@@ -56,6 +59,13 @@ module.exports = {
         'require-await': 0,
         'import/no-unresolved': 0,
         'node/no-missing-require': 0,
+      },
+    },
+    {
+      files: ['**/*.md/*.js'],
+      rules: {
+        'unicorn/filename-case': 0,
+        'node/no-unpublished-require': 0,
       },
     },
   ],

@@ -116,10 +116,7 @@ const installHelper = async function ({ log }) {
 const isBinInPath = () => {
   const envPath = process.env[pathKey()]
   const binPath = getBinPath()
-  return envPath
-    .replace(/"+/g, '')
-    .split(path.delimiter)
-    .some((part) => part === binPath)
+  return envPath.replace(/"+/g, '').split(path.delimiter).includes(binPath)
 }
 
 const setupWindowsPath = async function () {

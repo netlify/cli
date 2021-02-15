@@ -46,7 +46,7 @@ module.exports = function generatePrompts(settings) {
       const defaultValidation = noValidate
       const validateFunction = setting.pattern ? validate(setting.pattern) : defaultValidation
       const isRequiredText = setting.required ? ` (${chalk.yellow('required')})` : ''
-      if (setting.type === 'string' || setting.type.match(/string/)) {
+      if (setting.type === 'string' || /string/.test(setting.type)) {
         prompt = {
           type: 'input',
           name: key,
@@ -84,7 +84,7 @@ const noValidate = function () {
 const validate = function (pattern) {
   return function validateValue(value) {
     const regex = new RegExp(pattern)
-    if (value.match(regex)) {
+    if (regex.test(value)) {
       return true
     }
     return `Please enter a value matching regex pattern: /${chalk.yellowBright(pattern)}/`

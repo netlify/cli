@@ -9,8 +9,7 @@ const GA_ENDPOINT = `https://www.google-analytics.com/collect`
 const whitelistDomain = function (domain, addWww = true) {
   const prefixes = ['https://', 'http://']
   if (addWww) {
-    prefixes.push('https://www.')
-    prefixes.push('http://www.')
+    prefixes.push('https://www.', 'http://www.')
   }
   prefixes.forEach((prefix) => {
     originWhitelist.push(prefix + domain)
