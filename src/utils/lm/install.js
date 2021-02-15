@@ -9,11 +9,20 @@ const Listr = require('listr')
 const pathKey = require('path-key')
 
 const { shouldFetchLatestVersion, fetchLatestVersion } = require('../../lib/exec-fetcher')
-const { fileExistsAsync, writeFileAsync, readFileAsync, appendFileAsync, copyFileAsync } = require('../../lib/fs')
+const {
+  fileExistsAsync,
+  writeFileAsync,
+  readFileAsync,
+  appendFileAsync,
+  copyFileAsync,
+  rmdirRecursiveAsync,
+} = require('../../lib/fs')
 const { getPathInHome, getLegacyPathInHome } = require('../../lib/settings')
 
 const PACKAGE_NAME = 'netlify-credential-helper'
 const EXEC_NAME = 'git-credential-netlify'
+
+const GIT_CONFIG = '.gitconfig'
 
 const { checkGitVersionStep, checkGitLFSVersionStep, checkLFSFiltersStep } = require('./steps')
 
@@ -126,16 +135,18 @@ const setupWindowsPath = async function () {
   )
 }
 
+const getInitContent = (incFilePath) => `
+# The next line updates PATH for Netlify's Git Credential Helper.
+if [ -f '${incFilePath}' ]; then source '${incFilePath}'; fi
+`
+
 const setupUnixPath = async () => {
   if (isBinInPath()) {
     return true
   }
 
   const { shell, incFilePath, configFile } = shellVariables()
-  const initContent = `
-# The next line updates PATH for Netlify's Git Credential Helper.
-if [ -f '${incFilePath}' ]; then source '${incFilePath}'; fi
-`
+  const initContent = getInitContent(incFilePath)
 
   switch (shell) {
     case 'bash':
@@ -181,6 +192,13 @@ const getCurrentCredentials = async () => {
   }
 }
 
+// Git expects the config path to always use / even on Windows
+const getGitConfigContent = (gitConfigPath) => `
+# This next lines include Netlify's Git Credential Helper configuration in your Git configuration.
+[include]
+  path = ${path.posix.normalize(gitConfigPath)}
+`
+
 const configureGitConfig = async function () {
   const currentCredentials = await getCurrentCredentials()
 
@@ -211,17 +229,10 @@ const configureGitConfig = async function () {
     })
   }
 
-  const helperPath = getHelperPath()
-  await writeFileAsync(path.join(helperPath, 'git-config'), helperConfig)
+  const gitConfigPath = getGitConfigPath()
+  await writeFileAsync(gitConfigPath, helperConfig)
 
-  // Git expects the config path to always use / even on Windows
-  const gitConfigPath = path.posix.normalize(`${helperPath}/git-config`)
-  const gitConfigContent = `
-# This next lines include Netlify's Git Credential Helper configuration in your Git configuration.
-[include]
-  path = ${gitConfigPath}
-`
-  return writeConfig('.gitconfig', gitConfigContent)
+  return writeConfig(GIT_CONFIG, getGitConfigContent(gitConfigPath))
 }
 
 const getHelperPath = function () {
@@ -230,6 +241,10 @@ const getHelperPath = function () {
 
 const getBinPath = function () {
   return path.join(getHelperPath(), 'bin')
+}
+
+const getGitConfigPath = function () {
+  return path.join(getHelperPath(), 'git-config')
 }
 
 const getLegacyBinPath = function () {
@@ -255,4 +270,34 @@ const shellVariables = function () {
   }
 }
 
-module.exports = { installPlatform, isBinInPath, shellVariables }
+const cleanupShell = async function () {
+  try {
+    const { configFile, incFilePath } = shellVariables()
+    if (configFile === undefined) {
+      return
+    }
+
+    await removeConfig(configFile, getInitContent(incFilePath))
+  } catch (_) {}
+}
+
+const uninstall = async function () {
+  await Promise.all([
+    rmdirRecursiveAsync(getHelperPath()),
+    removeConfig(GIT_CONFIG, getGitConfigContent(getGitConfigPath())),
+    cleanupShell(),
+  ])
+}
+
+const removeConfig = async function (name, toRemove) {
+  const configPath = path.join(os.homedir(), name)
+
+  if (!(await fileExistsAsync(configPath))) {
+    return
+  }
+
+  const content = await readFileAsync(configPath, 'utf8')
+  return await writeFileAsync(configPath, content.replace(toRemove, ''))
+}
+
+module.exports = { installPlatform, isBinInPath, shellVariables, uninstall }

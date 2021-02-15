@@ -35,6 +35,8 @@ if (process.env.IS_FORK !== 'true') {
     t.context.builder = builder
     t.context.mockApi = mockApi
     t.context.apiUrl = `http://localhost:${mockApi.address().port}/api/v1`
+
+    await callCli(['lm:uninstall'], t.context.execOptions)
   })
 
   test.serial('netlify lm:info', async (t) => {
@@ -91,6 +93,7 @@ if (process.env.IS_FORK !== 'true') {
   test.after('cleanup', async (t) => {
     const { execOptions, builder, mockApi } = t.context
     console.log('Performing cleanup')
+    await callCli(['lm:uninstall'], t.context.execOptions)
     console.log(`deleting test site "${siteName}". ${execOptions.env.NETLIFY_SITE_ID}`)
     await callCli(['sites:delete', execOptions.env.NETLIFY_SITE_ID, '--force'], execOptions)
 
