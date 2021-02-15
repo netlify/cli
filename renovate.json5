@@ -3,6 +3,7 @@
   ignorePresets: [':prHourlyLimit2'],
   semanticCommits: true,
   dependencyDashboard: true,
+  rangeStrategy: 'bump',
   packageRules: [
     {
       // Those cannot be upgraded to a major version until we drop support for Node 10
