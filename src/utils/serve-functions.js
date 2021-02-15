@@ -255,7 +255,8 @@ const createFormSubmissionHandler = function ({ siteUrl }) {
 
     const fakeRequest = new Readable({
       read() {
-        this.push(req.body, null)
+        this.push(req.body)
+        this.push(null)
       },
     })
     fakeRequest.headers = req.headers
