@@ -196,7 +196,7 @@ const getCurrentCredentials = async () => {
 const getGitConfigContent = (gitConfigPath) => `
 # This next lines include Netlify's Git Credential Helper configuration in your Git configuration.
 [include]
-  path = ${path.posix.normalize(gitConfigPath)}
+  path = ${gitConfigPath.replace(/\\/g, '/')}
 `
 
 const configureGitConfig = async function () {
