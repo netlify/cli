@@ -78,7 +78,7 @@ const commandFromPath = function (filePath) {
   // console.log('process.cwd()', process.cwd())
   const rootDir = path.join(__dirname, '..', '..')
   // Replace node_modules path for CLI plugins
-  if (/node_modules/.test(normalized)) {
+  if (normalized.includes('node_modules')) {
     // in: /node_modules/netlify-dev-plugin/src/commands/dev/exec.js
     // out: /src/commands/dev/exec.js
     normalized = normalized.replace(/\/node_modules\/((?:[^/]+)*)?\//, '/')
