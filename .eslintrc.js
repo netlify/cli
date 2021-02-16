@@ -61,12 +61,5 @@ module.exports = {
         'node/no-missing-require': 0,
       },
     },
-    {
-      files: ['**/*.md/*.js'],
-      rules: {
-        'unicorn/filename-case': 0,
-        'node/no-unpublished-require': 0,
-      },
-    },
   ],
 }
