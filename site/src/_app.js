@@ -18,7 +18,7 @@ const scope = {
   // eslint-disable-next-line react/display-name, id-length
   a: ({ children, href }) => {
     // handle external links
-    if (!/^\//.test(href)) {
+    if (!href.startsWith('/')) {
       return (
         <Rebass.Link color="#00ad9f" href={href}>
           {children}
