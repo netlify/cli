@@ -4,6 +4,7 @@ const process = require('process')
 const { flags: flagsLib } = require('@oclif/command')
 const chalk = require('chalk')
 
+const { listSites } = require('../lib/api')
 const Command = require('../utils/command')
 const { ensureNetlifyIgnore } = require('../utils/gitignore')
 const linkPrompt = require('../utils/link/link-by-prompt')
@@ -77,9 +78,12 @@ class LinkCommand extends Command {
     if (flags.name) {
       let results
       try {
-        results = await api.listSites({
-          name: flags.name,
-          filter: 'all',
+        results = await listSites({
+          api,
+          options: {
+            name: flags.name,
+            filter: 'all',
+          },
         })
       } catch (error) {
         if (error.status === 404) {

@@ -2,6 +2,7 @@ const { flags: flagsLib } = require('@oclif/command')
 const chalk = require('chalk')
 const { cli } = require('cli-ux')
 
+const { listSites } = require('../../lib/api')
 const Command = require('../../utils/command')
 
 class SitesListCommand extends Command {
@@ -20,7 +21,7 @@ class SitesListCommand extends Command {
       },
     })
 
-    const sites = await api.listSites({ filter: 'all' })
+    const sites = await listSites({ api, options: { filter: 'all' } })
     if (!flags.json) {
       cli.action.stop()
     }
