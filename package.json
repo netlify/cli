@@ -19,7 +19,9 @@
     "/oclif.manifest.json",
     "/scripts/postinstall.js",
     "/src/**/*.js",
-    "/src/utils/lm/scripts",
+    "/src/**/*.sh",
+    "/src/**/*.ps1",
+    "!/src/**/node_modules/**",
     "!/src/**/*.test.js"
   ],
   "homepage": "https://github.com/netlify/cli",
