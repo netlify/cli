@@ -92,6 +92,8 @@ const installedWithPackageManager = async function () {
 }
 
 const installHelper = async function ({ log }) {
+  // remove any old versions that might still exist in `~/.netlify/helper/bin`
+  await rmdirRecursiveAsync(getLegacyBinPath())
   const binPath = getBinPath()
   const shouldFetch = await shouldFetchLatestVersion({
     binPath,
