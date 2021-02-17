@@ -4,6 +4,7 @@ const chalk = require('chalk')
 const inquirer = require('inquirer')
 const isEmpty = require('lodash/isEmpty')
 
+const { listSites } = require('../../lib/api')
 const { getRepoData } = require('../get-repo-data')
 const { track } = require('../telemetry')
 
@@ -46,7 +47,7 @@ module.exports = async function linkPrompts(context, flags = {}) {
       context.log()
       context.log(`Looking for sites connected to '${repoData.httpsUrl}'...`)
       context.log()
-      const sites = await api.listSites({ filter: 'all' })
+      const sites = await listSites({ api, options: { filter: 'all' } })
 
       if (isEmpty(sites)) {
         context.error(
@@ -112,9 +113,9 @@ Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
 
       let matchingSites
       try {
-        matchingSites = await api.listSites({
-          name: searchTerm,
-          filter: 'all',
+        matchingSites = await listSites({
+          api,
+          options: { name: searchTerm, filter: 'all' },
         })
       } catch (error) {
         if (error.status === 404) {
@@ -159,7 +160,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
 
       let sites
       try {
-        sites = await api.listSites({ filter: 'all' })
+        sites = await listSites({ api, options: { maxPages: 1, filter: 'all' } })
       } catch (error) {
         context.error(error)
       }
