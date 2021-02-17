@@ -21,7 +21,7 @@ if (process.env.IS_FORK !== 'true') {
     const builder = createSiteBuilder({ siteName: 'site-with-lm' })
     await builder.buildAsync()
 
-    const mockApi = startMockApi({
+    const { server } = startMockApi({
       routes: [
         { method: 'post', path: 'sites/site_id/services/large-media/instances', status: 201 },
         { path: 'sites/site_id', response: { id_domain: 'localhost' } },
@@ -33,8 +33,8 @@ if (process.env.IS_FORK !== 'true') {
       env: { NETLIFY_SITE_ID: siteId, SHELL: process.env.SHELL || 'bash' },
     }
     t.context.builder = builder
-    t.context.mockApi = mockApi
-    t.context.apiUrl = `http://localhost:${mockApi.address().port}/api/v1`
+    t.context.mockApi = server
+    t.context.apiUrl = `http://localhost:${server.address().port}/api/v1`
 
     await callCli(['lm:uninstall'], t.context.execOptions)
   })
