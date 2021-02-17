@@ -161,7 +161,6 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
       let sites
       try {
         sites = await listSites({ api, options: { maxPages: 1, filter: 'all' } })
-        console.log(sites.length)
       } catch (error) {
         context.error(error)
       }
