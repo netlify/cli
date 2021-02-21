@@ -1,6 +1,6 @@
 const inquirer = require('inquirer')
 
-const { getBuildSettings, saveNetlifyToml, createDeployKey, updateSite } = require('./utils')
+const { getBuildSettings, saveNetlifyToml, createDeployKey, setupSite } = require('./utils')
 
 const addDeployKey = async ({ log, exit, deployKey }) => {
   log('\nGive this Netlify SSH public key access to your repository:\n')
@@ -58,8 +58,8 @@ module.exports = async function configManual({ context, siteId, repoData }) {
     cachedConfig: { env },
   } = netlify
 
-  const { buildCmd, buildDir, functionsDir, plugins } = await getBuildSettings({ siteRoot, config, env, warn })
-  await saveNetlifyToml({ siteRoot, config, buildCmd, buildDir, functionsDir, plugins, warn })
+  const { buildCmd, buildDir, functionsDir, pluginsToInstall } = await getBuildSettings({ siteRoot, config, env, warn })
+  await saveNetlifyToml({ siteRoot, config, buildCmd, buildDir, functionsDir, pluginsToInstall, warn })
 
   const deployKey = await createDeployKey({ api, failAndExit })
   await addDeployKey({ log, exit, deployKey })
@@ -75,18 +75,14 @@ module.exports = async function configManual({ context, siteId, repoData }) {
     ...(buildCmd && { cmd: buildCmd }),
   }
 
-  await updateSite({
-    siteId,
+  const updatedSite = await setupSite({
     api,
     failAndExit,
-    options: { repo, plugins: plugins.map((plugin) => ({ package: plugin })) },
-  })
-  // calling updateSite with { repo } resets the functions dir so we need to sync it
-  const updatedSite = await updateSite({
     siteId,
-    api,
-    failAndExit,
-    options: { build_settings: { functions_dir: functionsDir } },
+    repo,
+    functionsDir,
+    configPlugins: config.plugins,
+    pluginsToInstall,
   })
   const deployHookAdded = await addDeployHook({ log, deployHook: updatedSite.deploy_hook })
   if (!deployHookAdded) {

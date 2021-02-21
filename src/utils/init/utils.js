@@ -10,7 +10,7 @@ const { fileExistsAsync, writeFileAsync } = require('../../lib/fs')
 
 const { getFrameworkInfo } = require('./frameworks')
 const { detectNodeVersion } = require('./node-version')
-const { getPluginsList, getPluginInfo, getRecommendPlugins } = require('./plugins')
+const { getPluginsList, getPluginInfo, getRecommendPlugins, getPluginsToInstall, getUIPlugins } = require('./plugins')
 
 const normalizeDir = ({ siteRoot, dir, defaultValue }) => {
   if (dir === undefined) {
@@ -101,14 +101,6 @@ const getPromptInputs = async ({
   ]
 }
 
-const getPluginsToInstall = ({ plugins, installSinglePlugin, recommendedPlugins }) => {
-  if (Array.isArray(plugins)) {
-    return plugins
-  }
-
-  return installSinglePlugin === true ? [recommendedPlugins[0]] : []
-}
-
 const getBuildSettings = async ({ siteRoot, config, env, warn }) => {
   const nodeVersion = await detectNodeVersion({ siteRoot, env, warn })
   const { frameworkName, frameworkBuildCommand, frameworkBuildDir, frameworkPlugins = [] } = await getFrameworkInfo({
@@ -131,11 +123,20 @@ const getBuildSettings = async ({ siteRoot, config, env, warn }) => {
       frameworkName,
     }),
   )
-  const pluginsToInstall = getPluginsToInstall({ plugins, installSinglePlugin, recommendedPlugins })
-  return { buildCmd, buildDir, functionsDir, plugins: pluginsToInstall }
+  const pluginsToInstall = getPluginsToInstall({
+    plugins,
+    installSinglePlugin,
+    recommendedPlugins,
+  })
+  return { buildCmd, buildDir, functionsDir, pluginsToInstall }
 }
 
-const getNetlifyToml = ({ command = '# no build command', publish = '.', functions = 'functions', plugins = [] }) => {
+const getNetlifyToml = ({
+  command = '# no build command',
+  publish = '.',
+  functions = 'functions',
+  pluginsToInstall = [],
+}) => {
   const content = `# example netlify.toml
 [build]
   command = "${command}"
@@ -158,14 +159,16 @@ const getNetlifyToml = ({ command = '# no build command', publish = '.', functio
 
   ## more info on configuring this file: https://www.netlify.com/docs/netlify-toml-reference/
 `
-  if (plugins.length === 0) {
+  if (pluginsToInstall.length === 0) {
     return content
   }
 
-  return `${content}${EOL}${plugins.map((plugin) => `[[plugins]]${EOL}  package = "${plugin}"`).join(EOL)}`
+  return `${content}${EOL}${pluginsToInstall
+    .map(({ package }) => `[[plugins]]${EOL}  package = "${package}"`)
+    .join(EOL)}`
 }
 
-const saveNetlifyToml = async ({ siteRoot, config, buildCmd, buildDir, functionsDir, plugins, warn }) => {
+const saveNetlifyToml = async ({ siteRoot, config, buildCmd, buildDir, functionsDir, pluginsToInstall, warn }) => {
   const tomlPath = path.join(siteRoot, 'netlify.toml')
   const exists = await fileExistsAsync(tomlPath)
   const cleanedConfig = cleanDeep(config)
@@ -185,7 +188,7 @@ const saveNetlifyToml = async ({ siteRoot, config, buildCmd, buildDir, functions
     try {
       await writeFileAsync(
         tomlPath,
-        getNetlifyToml({ command: buildCmd, publish: buildDir, functions: functionsDir, plugins }),
+        getNetlifyToml({ command: buildCmd, publish: buildDir, functions: functionsDir, pluginsToInstall }),
       )
     } catch (error) {
       warn(`Failed saving Netlify toml file: ${error.message}`)
@@ -217,4 +220,23 @@ const updateSite = async ({ siteId, api, failAndExit, options }) => {
   }
 }
 
-module.exports = { getBuildSettings, saveNetlifyToml, formatErrorMessage, createDeployKey, updateSite }
+const setupSite = async ({ api, failAndExit, siteId, repo, functionsDir, configPlugins, pluginsToInstall }) => {
+  await updateSite({
+    siteId,
+    api,
+    failAndExit,
+    // merge existing plugins with new ones
+    options: { repo, plugins: [...getUIPlugins(configPlugins), ...pluginsToInstall] },
+  })
+  // calling updateSite with { repo } resets the functions dir so we need to sync it
+  const updatedSite = await updateSite({
+    siteId,
+    api,
+    failAndExit,
+    options: { build_settings: { functions_dir: functionsDir } },
+  })
+
+  return updatedSite
+}
+
+module.exports = { getBuildSettings, saveNetlifyToml, formatErrorMessage, createDeployKey, updateSite, setupSite }

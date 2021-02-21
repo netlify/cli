@@ -22,4 +22,15 @@ const isPluginInstalled = (configPlugins, plugin) =>
 const getRecommendPlugins = (frameworkPlugins, config) =>
   frameworkPlugins.filter((plugin) => !isPluginInstalled(config.plugins, plugin))
 
-module.exports = { getPluginsList, getPluginInfo, getRecommendPlugins }
+const getPluginsToInstall = ({ plugins, installSinglePlugin, recommendedPlugins }) => {
+  if (Array.isArray(plugins)) {
+    return plugins.map((plugin) => ({ package: plugin }))
+  }
+
+  return installSinglePlugin === true ? [{ package: recommendedPlugins[0] }] : []
+}
+
+const getUIPlugins = (configPlugins) =>
+  configPlugins.filter(({ origin }) => origin === 'ui').map(({ package }) => ({ package }))
+
+module.exports = { getPluginsList, getPluginInfo, getRecommendPlugins, getPluginsToInstall, getUIPlugins }
