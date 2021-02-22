@@ -72,7 +72,7 @@ const getPromptInputs = async ({
 
   const pluginsList = await getPluginsList()
 
-  const prefix = `Seems like this is a ${formatTitle(frameworkName)} site.${EOL}  `
+  const prefix = `Seems like this is a ${formatTitle(frameworkName)} site.${EOL}❇️  `
   if (recommendedPlugins.length === 1) {
     const { name } = getPluginInfo(pluginsList, recommendedPlugins[0])
     return [
@@ -80,7 +80,7 @@ const getPromptInputs = async ({
       {
         type: 'confirm',
         name: 'installSinglePlugin',
-        message: `${prefix}Recommended Build Plugin: ${formatTitle(`${name} plugin`)}${EOL}  Install ${name} plugin?`,
+        message: `${prefix}Recommended Build Plugin: ${formatTitle(`${name} plugin`)}${EOL}➡️  Install ${name} plugin?`,
         default: true,
       },
     ]
@@ -95,7 +95,7 @@ const getPromptInputs = async ({
       message: `${prefix}Recommended Build Plugins: ${infos
         .map(({ name }) => `${name} plugin`)
         .map(formatTitle)
-        .join(', ')}${EOL}  Which plugins to install?`,
+        .join(', ')}${EOL}➡️  Which plugins to install?`,
       choices: infos.map(({ name, package }) => ({ name: `${name} plugin`, value: package })),
     },
   ]
