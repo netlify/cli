@@ -135,9 +135,7 @@ const getNetlifyToml = ({
   command = '# no build command',
   publish = '.',
   functions = 'functions',
-  pluginsToInstall = [],
-}) => {
-  const content = `# example netlify.toml
+}) => `# example netlify.toml
 [build]
   command = "${command}"
   functions = "${functions}"
@@ -159,16 +157,8 @@ const getNetlifyToml = ({
 
   ## more info on configuring this file: https://www.netlify.com/docs/netlify-toml-reference/
 `
-  if (pluginsToInstall.length === 0) {
-    return content
-  }
 
-  return `${content}${EOL}${pluginsToInstall
-    .map(({ package }) => `[[plugins]]${EOL}  package = "${package}"`)
-    .join(EOL)}`
-}
-
-const saveNetlifyToml = async ({ siteRoot, config, buildCmd, buildDir, functionsDir, pluginsToInstall, warn }) => {
+const saveNetlifyToml = async ({ siteRoot, config, buildCmd, buildDir, functionsDir, warn }) => {
   const tomlPath = path.join(siteRoot, 'netlify.toml')
   const exists = await fileExistsAsync(tomlPath)
   const cleanedConfig = cleanDeep(config)
@@ -186,10 +176,7 @@ const saveNetlifyToml = async ({ siteRoot, config, buildCmd, buildDir, functions
   ])
   if (makeNetlifyTOML) {
     try {
-      await writeFileAsync(
-        tomlPath,
-        getNetlifyToml({ command: buildCmd, publish: buildDir, functions: functionsDir, pluginsToInstall }),
-      )
+      await writeFileAsync(tomlPath, getNetlifyToml({ command: buildCmd, publish: buildDir, functions: functionsDir }))
     } catch (error) {
       warn(`Failed saving Netlify toml file: ${error.message}`)
     }

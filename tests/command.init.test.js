@@ -67,7 +67,6 @@ const assertSiteInit = async (
   const netlifyToml = toml.parse(await readFileAsync(`${builder.directory}/netlify.toml`, 'utf8'))
   t.deepEqual(netlifyToml, {
     build: { command, functions, publish },
-    ...(plugins.length === 0 ? {} : { plugins }),
   })
 
   assetSiteRequests(t, requests, { command, functions, publish, plugins })

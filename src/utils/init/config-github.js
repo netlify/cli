@@ -186,7 +186,7 @@ module.exports = async function configGithub({ context, siteId, repoOwner, repoN
   const token = await getGitHubToken({ log, globalConfig })
 
   const { buildCmd, buildDir, functionsDir, pluginsToInstall } = await getBuildSettings({ siteRoot, config, env, warn })
-  await saveNetlifyToml({ siteRoot, config, buildCmd, buildDir, functionsDir, pluginsToInstall, warn })
+  await saveNetlifyToml({ siteRoot, config, buildCmd, buildDir, functionsDir, warn })
 
   const octokit = getGitHubClient({ token })
   const [deployKey, githubRepo] = await Promise.all([
