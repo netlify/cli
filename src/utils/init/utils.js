@@ -41,7 +41,7 @@ const getDefaultSettings = async ({ siteRoot, config }) => {
   return {
     defaultBuildCmd,
     defaultBuildDir: normalizeDir({ siteRoot, dir: defaultBuildDir, defaultValue: '.' }),
-    defaultFunctionsDir: normalizeDir({ siteRoot, dir: defaultFunctionsDir, defaultValue: 'functions' }),
+    defaultFunctionsDir: normalizeDir({ siteRoot, dir: defaultFunctionsDir, defaultValue: 'netlify/functions' }),
   }
 }
 
