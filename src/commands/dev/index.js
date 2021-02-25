@@ -136,7 +136,7 @@ const FRAMEWORK_PORT_TIMEOUT = 6e5
 
 const startProxyServer = async ({ flags, settings, site, log, exit, addonsUrls }) => {
   let url
-  if (flags.trafficMesh) {
+  if (flags.edgeHandlers || flags.trafficMesh) {
     url = await startForwardProxy({
       port: settings.port,
       frameworkPort: settings.frameworkPort,
@@ -221,6 +221,12 @@ class DevCommand extends Command {
       ...(config.build.publish && { publish: config.build.publish }),
       ...config.dev,
       ...flags,
+    }
+
+    if (flags.trafficMesh) {
+      warn(
+        '--trafficMesh and -t are deprecated and will be removed in the near future. Please use --edgeHandlers or -e instead.',
+      )
     }
 
     await injectEnvVariables({ env: this.netlify.cachedConfig.env, log, site, warn })
@@ -311,10 +317,15 @@ DevCommand.flags = {
     char: 'l',
     description: 'start a public live session',
   }),
+  edgeHandlers: flagsLib.boolean({
+    char: 'e',
+    hidden: true,
+    description: 'activates the Edge Handlers runtime',
+  }),
   trafficMesh: flagsLib.boolean({
     char: 't',
     hidden: true,
-    description: 'uses Traffic Mesh for proxying requests',
+    description: '(DEPRECATED: use --edgeHandlers or -e instead) uses Traffic Mesh for proxying requests',
   }),
   locationDb: flagsLib.string({
     description: 'specify the path to a local GeoIP location database in MMDB format',
