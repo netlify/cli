@@ -97,6 +97,7 @@ const getPromptInputs = async ({
         .map(formatTitle)
         .join(', ')}${EOL}➡️  Which plugins to install?`,
       choices: infos.map(({ name, package }) => ({ name: `${name} plugin`, value: package })),
+      default: infos.map(({ package }) => package),
     },
   ]
 }
