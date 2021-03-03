@@ -1374,6 +1374,27 @@ testMatrix.forEach(({ args }) => {
         })
       })
     })
+
+    test(testName(`doesn't hang when sending a application/json POST request to function server`, args), async (t) => {
+      await withSiteBuilder('site-with-functions', async (builder) => {
+        const functionsPort = 6666
+        await builder
+          .withNetlifyToml({ config: { build: { functions: 'functions' }, dev: { functionsPort } } })
+          .buildAsync()
+
+        await withDevServer({ cwd: builder.directory, args }, async ({ url, port }) => {
+          const response = await gotCatch404(`${url.replace(port, functionsPort)}/test`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: '{}',
+          })
+          t.is(response.statusCode, 404)
+          t.is(response.body, 'Function not found...')
+        })
+      })
+    })
   }
 })
 /* eslint-enable require-await */
