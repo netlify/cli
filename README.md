@@ -1,4 +1,4 @@
-![Netlify CLI](cli.png)
+# ![Netlify CLI](cli.png)
 
 [![Coverage Status](https://codecov.io/gh/netlify/cli/branch/master/graph/badge.svg)](https://codecov.io/gh/netlify/cli)
 [![npm version][npm-img]][npm] [![downloads][dl-img]][dl] [![netlify-status][netlify-img]][netlify] [![dependencies][david-img]][david] [![security][snyk-img]][snyk][![FOSSA Status](https://app.fossa.com/api/projects/custom%2B17679%2Fgit%40github.com%3Anetlify%2Fcli.git.svg?type=shield)](https://app.fossa.com/projects/custom%2B17679%2Fgit%40github.com%3Anetlify%2Fcli.git?ref=badge_shield)
