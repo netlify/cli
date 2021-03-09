@@ -6,7 +6,7 @@
   packageRules: [
     {
       // Those cannot be upgraded to a major version until we drop support for Node 10
-      packageNames: ['path-type'],
+      packageNames: ['path-type', 'open', 'inquirer'],
       major: {
         enabled: false,
       },
