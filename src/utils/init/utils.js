@@ -80,7 +80,9 @@ const getPromptInputs = async ({
       {
         type: 'confirm',
         name: 'installSinglePlugin',
-        message: `${prefix}Recommended Build Plugin: ${formatTitle(`${name} plugin`)}${EOL}➡️  Install ${name} plugin?`,
+        message: `${prefix}We're going to install this Build Plugin: ${formatTitle(
+          `${name} plugin`,
+        )}${EOL}➡️  OK to install?`,
         default: true,
       },
     ]
@@ -92,10 +94,10 @@ const getPromptInputs = async ({
     {
       type: 'checkbox',
       name: 'plugins',
-      message: `${prefix}Recommended Build Plugins: ${infos
+      message: `${prefix}We're going to install these plugins: ${infos
         .map(({ name }) => `${name} plugin`)
         .map(formatTitle)
-        .join(', ')}${EOL}➡️  Which plugins to install?`,
+        .join(', ')}${EOL}➡️  OK to install??`,
       choices: infos.map(({ name, package }) => ({ name: `${name} plugin`, value: package })),
       default: infos.map(({ package }) => package),
     },

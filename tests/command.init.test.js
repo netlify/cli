@@ -130,7 +130,7 @@ test('netlify init existing site', async (t) => {
 
     await builder.buildAsync()
     await withMockApi(routes, async ({ apiUrl, requests }) => {
-      // --force is required since we we return an existing site in the `sites` route
+      // --force is required since we return an existing site in the `sites` route
       // --manual is used to avoid the config-github flow that uses GitHub API
       const childProcess = execa(cliPath, ['init', '--force', '--manual'], {
         cwd: builder.directory,
@@ -240,7 +240,7 @@ test('netlify init new Next.js site', async (t) => {
       answer: answerWithValue('custom-functions'),
     },
     {
-      question: 'Install Next on Netlify plugin',
+      question: 'OK to install',
       answer: CONFIRM,
     },
     {
@@ -320,7 +320,7 @@ test('netlify init existing Next.js site with existing plugins', async (t) => {
       answer: answerWithValue('custom-functions'),
     },
     {
-      question: 'Install Next on Netlify plugin',
+      question: 'OK to install',
       answer: CONFIRM,
     },
     { question: 'Give this Netlify SSH public key access to your repository', answer: CONFIRM },
@@ -358,7 +358,7 @@ test('netlify init existing Next.js site with existing plugins', async (t) => {
 
     await builder.buildAsync()
     await withMockApi(routes, async ({ apiUrl, requests }) => {
-      // --force is required since we we return an existing site in the `sites` route
+      // --force is required since we return an existing site in the `sites` route
       // --manual is used to avoid the config-github flow that uses GitHub API
       const childProcess = execa(cliPath, ['init', '--force', '--manual'], {
         cwd: builder.directory,

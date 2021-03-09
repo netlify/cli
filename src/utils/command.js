@@ -147,7 +147,7 @@ class BaseCommand extends Command {
         siteId: argv.siteId || (typeof argv.site === 'string' && argv.site) || state.get('siteId'),
         token,
         mode: 'cli',
-        host,
+        apiHost: host,
         pathPrefix,
         scheme,
         offline,
