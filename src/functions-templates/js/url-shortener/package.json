@@ -16,7 +16,7 @@
   "author": "Netlify",
   "license": "MIT",
   "dependencies": {
-    "form-data": "^3.0.0",
+    "form-data": "^4.0.0",
     "hashids": "^1.2.2"
   }
 }
