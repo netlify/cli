@@ -1,6 +1,7 @@
 const path = require('path')
 
 const test = require('ava')
+const sortOn = require('sort-on')
 
 const { withSiteBuilder } = require('../../tests/utils/site-builder')
 
@@ -57,7 +58,7 @@ test('should mark background functions based on filenames', async (t) => {
 
     const functions = path.join(builder.directory, 'functions')
     const funcs = await getFunctions(functions)
-    t.deepEqual(funcs, [
+    t.deepEqual(sortOn(funcs, ['mainFile', 'extension']), [
       {
         name: 'bar-background',
         mainFile: path.join(builder.directory, 'functions', 'bar-background', 'bar-background.js'),
