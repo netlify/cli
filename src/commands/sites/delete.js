@@ -42,7 +42,7 @@ class SitesDeleteCommand extends Command {
     /* Verify the user wants to delete the site */
     if (noForce) {
       this.log(`${chalk.redBright('Warning')}: You are about to permanently delete "${chalk.bold(siteData.name)}"`)
-      this.log(`         Verify this siteID "${cwdSiteId}" supplied is correct and proceed.`)
+      this.log(`         Verify this siteID "${siteId}" supplied is correct and proceed.`)
       this.log('         To skip this prompt, pass a --force flag to the delete command')
       this.log()
       this.log(`${chalk.bold('Be careful here. There is no undo!')}`)
@@ -66,7 +66,7 @@ class SitesDeleteCommand extends Command {
       this.log(`Supplied:       "${siteId}"`)
       this.log(`Current Site:   "${cwdSiteId}"`)
       this.log()
-      this.log(`Verify this siteID "${cwdSiteId}" supplied is correct and proceed.`)
+      this.log(`Verify this siteID "${siteId}" supplied is correct and proceed.`)
       this.log('To skip this prompt, pass a --force flag to the delete command')
       const { wantsToDelete } = await inquirer.prompt({
         type: 'confirm',
