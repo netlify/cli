@@ -350,7 +350,6 @@ class DeployCommand extends Command {
       warn('--branch flag has been renamed to --alias and will be removed in future versions')
     }
 
-    const deployToProduction = flags.prod
     await this.authenticate(flags.auth)
 
     await this.config.runHook('analytics', {
@@ -405,6 +404,8 @@ class DeployCommand extends Command {
         siteId = site.id
       }
     }
+
+    const deployToProduction = flags.prod || (flags['prod-if-unlocked'] && !siteData.published_deploy.locked)
 
     if (flags.trigger) {
       return triggerDeploy({ api, siteId, siteData, log, error })
@@ -545,6 +546,7 @@ DeployCommand.examples = [
   'netlify deploy',
   'netlify deploy --prod',
   'netlify deploy --prod --open',
+  'netlify deploy --prod-if-unlocked',
   'netlify deploy --message "A message with an $ENV_VAR"',
   'netlify deploy --auth $NETLIFY_AUTH_TOKEN',
   'netlify deploy --trigger',
@@ -563,7 +565,12 @@ DeployCommand.flags = {
     char: 'p',
     description: 'Deploy to production',
     default: false,
-    exclusive: ['alias', 'branch'],
+    exclusive: ['alias', 'branch', 'prod-if-unlocked'],
+  }),
+  'prod-if-unlocked': flagsLib.boolean({
+    description: 'Deploy to production if unlocked, create a draft otherwise',
+    default: false,
+    exclusive: ['alias', 'branch', 'prod'],
   }),
   alias: flagsLib.string({
     description:
