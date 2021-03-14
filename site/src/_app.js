@@ -53,6 +53,7 @@ const navOrder = [
   'sites',
   'status',
   'unlink',
+  'watch',
   'netlify-dev',
   'contributing',
 ]
