@@ -34,7 +34,7 @@ class FunctionsCreateCommand extends Command {
   async run() {
     const { flags, args } = this.parse(FunctionsCreateCommand)
     const { config } = this.netlify
-    const functionsDir = ensureFunctionDirExists(this, flags, config)
+    const functionsDir = await ensureFunctionDirExists(this, flags, config)
 
     /* either download from URL or scaffold from template */
     const mainFunc = flags.url ? downloadFromURL : scaffoldFromTemplate
@@ -198,22 +198,32 @@ const pickTemplate = async function () {
 const DEFAULT_PRIORITY = 999
 
 /* get functions dir (and make it if necessary) */
-const ensureFunctionDirExists = function (context, flags, config) {
-  const functionsDir = config.functionsDirectory
-  if (!functionsDir) {
-    context.log(`${NETLIFYDEVLOG} No functions folder specified in netlify.toml`)
-    process.exit(1)
+const ensureFunctionDirExists = async function (context, flags, config) {
+  let functionsDirHolder = config.functionsDirectory
+  if (!functionsDirHolder) {
+    context.log(`${NETLIFYDEVLOG} functions folder not specified in netlify.toml or UI settings`)
+    const { functionsDir } = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'functionsDir',
+        message: 'Enter the path where your functions should live: netlify/functions:',
+        default: 'netlify/functions',
+      },
+    ])
+
+    functionsDirHolder = functionsDir
   }
-  if (!fs.existsSync(functionsDir)) {
+
+  if (!fs.existsSync(functionsDirHolder)) {
     context.log(
       `${NETLIFYDEVLOG} functions folder ${chalk.magenta.inverse(
-        functionsDir,
+        functionsDirHolder,
       )} specified in netlify.toml but folder not found, creating it...`,
     )
-    fs.mkdirSync(functionsDir)
-    context.log(`${NETLIFYDEVLOG} functions folder ${chalk.magenta.inverse(functionsDir)} created`)
+    fs.mkdirSync(functionsDirHolder, { recursive: true })
+    context.log(`${NETLIFYDEVLOG} functions folder ${chalk.magenta.inverse(functionsDirHolder)} created`)
   }
-  return functionsDir
+  return functionsDirHolder
 }
 
 // Download files from a given github URL
