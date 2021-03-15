@@ -20,15 +20,13 @@ class IdentityAPI {
     }
   }
 
-  parseJsonResponse(response) {
-    return response.json().then((json) => {
-      if (!response.ok) {
-        const error = `JSON: ${JSON.stringify(json)}. Status: ${response.status}`
-        return Promise.reject(new Error(error))
-      }
-
-      return json
-    })
+  async parseJsonResponse(response) {
+    const json = await response.json()
+    if (!response.ok) {
+      const error = `JSON: ${JSON.stringify(json)}. Status: ${response.status}`
+      throw new Error(error)
+    }
+    return json
   }
 
   async request(path, options = {}) {
@@ -42,7 +40,7 @@ class IdentityAPI {
     if (!response.ok) {
       const data = await response.text()
       const error = `Data: ${data}. Status: ${response.status}`
-      return Promise.reject(new Error(error))
+      throw new Error(error)
     }
     return await response.text()
   }

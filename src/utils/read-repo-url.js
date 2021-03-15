@@ -23,14 +23,17 @@ const readRepoURL = async function (_url) {
   return folderContents
 }
 
-const getRepoURLContents = function (repoHost, ownerAndRepo, contentsPath) {
+const getRepoURLContents = async function (repoHost, ownerAndRepo, contentsPath) {
   // naive joining strategy for now
   if (repoHost === GITHUB) {
     // https://developer.github.com/v3/repos/contents/#get-contents
     const APIURL = safeJoin('https://api.github.com/repos', ownerAndRepo, 'contents', contentsPath)
-    return fetch(APIURL)
-      .then((res) => res.json())
-      .catch((error) => console.error(`Error occurred while fetching ${APIURL}`, error))
+    try {
+      const res = await fetch(APIURL)
+      return await res.json()
+    } catch (error) {
+      console.error(`Error occurred while fetching ${APIURL}`, error)
+    }
   }
   throw new Error('unsupported host ', repoHost)
 }
