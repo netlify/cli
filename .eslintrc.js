@@ -28,7 +28,6 @@ module.exports = {
     'node/no-sync': 0,
     'promise/catch-or-return': 0,
     'promise/no-callback-in-promise': 0,
-    'promise/no-nesting': 0,
     'promise/no-return-wrap': 0,
     'promise/prefer-await-to-callbacks': 0,
     'promise/prefer-await-to-then': 0,
