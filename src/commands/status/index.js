@@ -57,13 +57,6 @@ class StatusCommand extends Command {
 
     this.log(prettyjson.render(cleanAccountData))
 
-    if (!site.configPath) {
-      this.logJson({
-        account: cleanAccountData,
-      })
-      this.exit()
-    }
-
     if (!siteId) {
       this.warn('Did you run `netlify link` yet?')
       this.error(`You don't appear to be in a folder that is linked to a site`)
