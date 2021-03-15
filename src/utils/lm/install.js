@@ -138,15 +138,7 @@ const CONTENT_COMMENT = `
 # The next line updates PATH for Netlify's Git Credential Helper.
 `
 
-const getInitContent = (shell, incFilePath) => {
-  if (shell === 'fish') {
-    return `${CONTENT_COMMENT}test -f '${incFilePath}' && source '${incFilePath}'
-`
-  }
-
-  return `${CONTENT_COMMENT}if [ -f '${incFilePath}' ]; then source '${incFilePath}'; fi
-`
-}
+const getInitContent = (incFilePath) => `${CONTENT_COMMENT}test -f '${incFilePath}' && source '${incFilePath}'`
 
 const setupUnixPath = async () => {
   if (isBinInPath()) {
@@ -163,7 +155,7 @@ Set the helper path in your environment PATH: ${getBinPath()}`
 
   return await Promise.all([
     await copyFileAsync(`${__dirname}/scripts/${shell}.sh`, incFilePath),
-    await writeConfig(configFile, getInitContent(shell, incFilePath)),
+    await writeConfig(configFile, getInitContent(incFilePath)),
   ])
 }
 
@@ -276,12 +268,12 @@ const getShellInfo = function () {
 
 const cleanupShell = async function () {
   try {
-    const { configFile, shell, incFilePath } = getShellInfo()
+    const { configFile, incFilePath } = getShellInfo()
     if (configFile === undefined) {
       return
     }
 
-    await removeConfig(configFile, getInitContent(shell, incFilePath))
+    await removeConfig(configFile, getInitContent(incFilePath))
   } catch (_) {}
 }
 
