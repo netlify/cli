@@ -4,9 +4,8 @@ const process = require('process')
 const { flags: flagsLib } = require('@oclif/command')
 const chalk = require('chalk')
 const cliSpinnerNames = Object.keys(require('cli-spinners'))
-const dotProp = require('dot-prop')
+const { get } = require('dot-prop')
 const inquirer = require('inquirer')
-const get = require('lodash/get')
 const isObject = require('lodash/isObject')
 const logSymbols = require('log-symbols')
 const ora = require('ora')
@@ -193,7 +192,7 @@ const hasErrorMessage = (actual, expected) => {
   return false
 }
 
-const getJsonErrorMessage = (error) => dotProp.get(error, 'json.message', '')
+const getJsonErrorMessage = (error) => get(error, 'json.message', '')
 
 const reportDeployError = ({ error, warn, failAndExit }) => {
   switch (true) {
