@@ -206,7 +206,7 @@ const ensureFunctionDirExists = async function (context, flags, config) {
       {
         type: 'input',
         name: 'functionsDir',
-        message: 'Enter the path where your functions should live: netlify/functions:',
+        message: 'Enter the path where your functions should live:',
         default: 'netlify/functions',
       },
     ])
