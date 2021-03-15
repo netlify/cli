@@ -87,6 +87,7 @@ netlify deploy
 - `dir` (*string*) - Specify a folder to deploy
 - `functions` (*string*) - Specify a functions folder to deploy
 - `prod` (*boolean*) - Deploy to production
+- `prodIfUnlocked` (*boolean*) - Deploy to production if unlocked, create a draft otherwise
 - `alias` (*string*) - Specifies the alias for deployment. Useful for creating predictable deployment URLs. Maximum 37 characters.
 - `branch` (*string*) - Serves the same functionality as --alias. Deprecated and will be removed in future versions
 - `open` (*boolean*) - Open site after deploy
@@ -107,6 +108,7 @@ netlify deploy
 netlify deploy
 netlify deploy --prod
 netlify deploy --prod --open
+netlify deploy --prodIfUnlocked
 netlify deploy --message "A message with an $ENV_VAR"
 netlify deploy --auth $NETLIFY_AUTH_TOKEN
 netlify deploy --trigger
