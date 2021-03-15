@@ -32,7 +32,6 @@ module.exports = {
     'promise/no-return-wrap': 0,
     'promise/prefer-await-to-callbacks': 0,
     'promise/prefer-await-to-then': 0,
-    'you-dont-need-lodash-underscore/get': 0,
     'unicorn/prefer-spread': 0,
     'unicorn/consistent-destructuring': 0,
     'unicorn/no-array-push-push': 0,
