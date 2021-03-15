@@ -405,7 +405,7 @@ class DeployCommand extends Command {
       }
     }
 
-    const deployToProduction = flags.prod || (flags['prod-if-unlocked'] && !siteData.published_deploy.locked)
+    const deployToProduction = flags.prod || (flags.prodIfUnlocked && !siteData.published_deploy.locked)
 
     if (flags.trigger) {
       return triggerDeploy({ api, siteId, siteData, log, error })
@@ -546,7 +546,7 @@ DeployCommand.examples = [
   'netlify deploy',
   'netlify deploy --prod',
   'netlify deploy --prod --open',
-  'netlify deploy --prod-if-unlocked',
+  'netlify deploy --prodIfUnlocked',
   'netlify deploy --message "A message with an $ENV_VAR"',
   'netlify deploy --auth $NETLIFY_AUTH_TOKEN',
   'netlify deploy --trigger',
@@ -565,9 +565,9 @@ DeployCommand.flags = {
     char: 'p',
     description: 'Deploy to production',
     default: false,
-    exclusive: ['alias', 'branch', 'prod-if-unlocked'],
+    exclusive: ['alias', 'branch', 'prodIfUnlocked'],
   }),
-  'prod-if-unlocked': flagsLib.boolean({
+  prodIfUnlocked: flagsLib.boolean({
     description: 'Deploy to production if unlocked, create a draft otherwise',
     default: false,
     exclusive: ['alias', 'branch', 'prod'],
