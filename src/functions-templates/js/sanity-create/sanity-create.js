@@ -53,18 +53,20 @@ const handler = async (event) => {
     message: payload.message,
   }
 
-  return client
-    .create(document)
-    .then((result) => ({
+  try {
+    const result = await client.create(document)
+    return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(result),
-    }))
-    .catch((error) => ({
+    }
+  } catch (error) {
+    return {
       headers: { 'Content-Type': 'application/json' },
       statusCode: 500,
       body: error.responseBody || JSON.stringify({ error: 'An error occurred' }),
-    }))
+    }
+  }
 }
 
 module.exports = { handler }

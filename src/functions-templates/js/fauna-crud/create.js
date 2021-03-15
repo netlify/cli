@@ -16,24 +16,22 @@ const handler = async (event) => {
     data,
   }
   /* construct the fauna query */
-  return client
-    .query(query.Create(query.Collection('items'), item))
-    .then((response) => {
-      console.log('success', response)
-      /* Success! return the response with statusCode 200 */
-      return {
-        statusCode: 200,
-        body: JSON.stringify(response),
-      }
-    })
-    .catch((error) => {
-      console.log('error', error)
-      /* Error! return the error with statusCode 400 */
-      return {
-        statusCode: 400,
-        body: JSON.stringify(error),
-      }
-    })
+  try {
+    const response = await client.query(query.Create(query.Collection('items'), item))
+    console.log('success', response)
+    /* Success! return the response with statusCode 200 */
+    return {
+      statusCode: 200,
+      body: JSON.stringify(response),
+    }
+  } catch (error) {
+    console.log('error', error)
+    /* Error! return the error with statusCode 400 */
+    return {
+      statusCode: 400,
+      body: JSON.stringify(error),
+    }
+  }
 }
 
 module.exports = { handler }

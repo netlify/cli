@@ -4,7 +4,7 @@ const process = require('process')
 /* bootstrap database in your FaunaDB account - use with `netlify dev:exec <path-to-this-file>` */
 const { query, Client } = require('faunadb')
 
-const createFaunaDB = function () {
+const createFaunaDB = async function () {
   if (!process.env.FAUNADB_SERVER_SECRET) {
     console.log('No FAUNADB_SERVER_SECRET in environment, skipping DB setup')
   }
@@ -14,25 +14,23 @@ const createFaunaDB = function () {
   })
 
   /* Based on your requirements, change the schema here */
-  return client
-    .query(query.CreateCollection({ name: 'items' }))
-    .then(() => {
-      console.log('Created items class')
-      return client.query(
-        query.CreateIndex({
-          name: 'all_items',
-          source: query.Collection('items'),
-          active: true,
-        }),
-      )
-    })
+  try {
+    await client.query(query.CreateCollection({ name: 'items' }))
 
-    .catch((error) => {
-      if (error.requestResult.statusCode === 400 && error.message === 'instance not unique') {
-        console.log('DB already exists')
-      }
-      throw error
-    })
+    console.log('Created items class')
+    return client.query(
+      query.CreateIndex({
+        name: 'all_items',
+        source: query.Collection('items'),
+        active: true,
+      }),
+    )
+  } catch (error) {
+    if (error.requestResult.statusCode === 400 && error.message === 'instance not unique') {
+      console.log('DB already exists')
+    }
+    throw error
+  }
 }
 
 createFaunaDB()
