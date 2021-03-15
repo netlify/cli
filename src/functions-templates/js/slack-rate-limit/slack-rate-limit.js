@@ -31,22 +31,20 @@ class IdentityAPI {
     })
   }
 
-  request(path, options = {}) {
+  async request(path, options = {}) {
     const headers = this.headers(options.headers || {})
-    return fetch(this.apiURL + path, { ...options, headers }).then((response) => {
-      const contentType = response.headers.get('Content-Type')
-      if (contentType && /json/.test(contentType)) {
-        return this.parseJsonResponse(response)
-      }
+    const response = await fetch(this.apiURL + path, { ...options, headers })
+    const contentType = response.headers.get('Content-Type')
+    if (contentType && /json/.test(contentType)) {
+      return this.parseJsonResponse(response)
+    }
 
-      if (!response.ok) {
-        return response.text().then((data) => {
-          const error = `Data: ${data}. Status: ${response.status}`
-          return Promise.reject(new Error(error))
-        })
-      }
-      return response.text()
-    })
+    if (!response.ok) {
+      const data = await response.text()
+      const error = `Data: ${data}. Status: ${response.status}`
+      return Promise.reject(new Error(error))
+    }
+    return await response.text()
   }
 }
 
