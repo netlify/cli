@@ -33,7 +33,6 @@ module.exports = {
     'promise/prefer-await-to-then': 0,
     'unicorn/prefer-spread': 0,
     'unicorn/consistent-destructuring': 0,
-    'unicorn/no-array-push-push': 0,
 
     // TODO: harmonize with filename snake_case in other Netlify Dev projects
     'unicorn/filename-case': [2, { case: 'kebabCase' }],

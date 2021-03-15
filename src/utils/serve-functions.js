@@ -256,6 +256,8 @@ const createFormSubmissionHandler = function ({ siteUrl, warn }) {
     const fakeRequest = new Readable({
       read() {
         this.push(req.body)
+        // TODO: remove when https://github.com/sindresorhus/eslint-plugin-unicorn/issues/1057 is fixed
+        // eslint-disable-next-line unicorn/no-array-push-push
         this.push(null)
       },
     })

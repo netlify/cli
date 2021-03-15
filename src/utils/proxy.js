@@ -98,8 +98,7 @@ const alternativePathsFor = function (url) {
   if (url[url.length - 1] === '/') {
     const end = url.length - 1
     if (url !== '/') {
-      paths.push(`${url.slice(0, end)}.html`)
-      paths.push(`${url.slice(0, end)}.htm`)
+      paths.push(`${url.slice(0, end)}.html`, `${url.slice(0, end)}.htm`)
     }
     paths.push(`${url}index.html`, `${url}index.htm`)
   } else if (!assetExtensionRegExp.test(url)) {
