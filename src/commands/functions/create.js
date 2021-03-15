@@ -33,8 +33,7 @@ const templatesDir = path.resolve(__dirname, '../../functions-templates')
 class FunctionsCreateCommand extends Command {
   async run() {
     const { flags, args } = this.parse(FunctionsCreateCommand)
-    const { config } = this.netlify
-    const functionsDir = await ensureFunctionDirExists(this, flags, config)
+    const functionsDir = await ensureFunctionDirExists()
 
     /* either download from URL or scaffold from template */
     const mainFunc = flags.url ? downloadFromURL : scaffoldFromTemplate
@@ -197,11 +196,36 @@ const pickTemplate = async function () {
 
 const DEFAULT_PRIORITY = 999
 
-/* get functions dir (and make it if necessary) */
-const ensureFunctionDirExists = async function (context, flags, config) {
+/**
+ * Get functions dir (and make it if necessary)
+ * @this FunctionsCreateCommand
+ * @returns {string | never} - functions directory or throws an error
+ */
+const ensureFunctionDirExists = async function () {
+  const { api, config, site } = this.netlify
+  const { log } = this
   let functionsDirHolder = config.functionsDirectory
+  let siteData = null
+  const siteId = site.id
+
+  // try to find functions_dir in site settings if not in user's netlify config
   if (!functionsDirHolder) {
-    context.log(`${NETLIFYDEVLOG} functions folder not specified in netlify.toml or UI settings`)
+    try {
+      siteData = await api.getSite({ siteId })
+    } catch (error) {
+      if (error.status === 404) {
+        error('Site not found')
+      } else {
+        error(error.message)
+      }
+    }
+
+    // https://open-api.netlify.com/#operation/getSite
+    functionsDirHolder = siteData?.build_settings?.functions_dir
+  }
+
+  if (!functionsDirHolder) {
+    log(`${NETLIFYDEVLOG} functions folder not specified in netlify.toml or app settings`)
     const { functionsDir } = await inquirer.prompt([
       {
         type: 'input',
@@ -211,18 +235,36 @@ const ensureFunctionDirExists = async function (context, flags, config) {
       },
     ])
 
+    try {
+      log(`${NETLIFYDEVLOG} updating app build settings with ${chalk.magenta.inverse(functionsDirHolder)}`)
+      await api.updateSite({
+        siteId,
+        body: {
+          build_settings: {
+            functions_dir: functionsDirHolder,
+          },
+        },
+      })
+      log(
+        `${NETLIFYDEVLOG} functions folder ${chalk.magenta.inverse(functionsDirHolder)} updated in app build settings`,
+      )
+    } catch (error) {
+      error('Error updating site settings')
+    }
+
     functionsDirHolder = functionsDir
   }
 
   if (!fs.existsSync(functionsDirHolder)) {
-    context.log(
+    log(
       `${NETLIFYDEVLOG} functions folder ${chalk.magenta.inverse(
         functionsDirHolder,
-      )} specified in netlify.toml but folder not found, creating it...`,
+      )} does not exist yet, creating it...`,
     )
     fs.mkdirSync(functionsDirHolder, { recursive: true })
-    context.log(`${NETLIFYDEVLOG} functions folder ${chalk.magenta.inverse(functionsDirHolder)} created`)
+    log(`${NETLIFYDEVLOG} functions folder ${chalk.magenta.inverse(functionsDirHolder)} created`)
   }
+
   return functionsDirHolder
 }
 
