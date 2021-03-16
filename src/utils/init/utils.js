@@ -1,12 +1,16 @@
+const { EOL } = require('os')
 const path = require('path')
 
-const { listFrameworks } = require('@netlify/framework-info')
 const chalk = require('chalk')
 const cleanDeep = require('clean-deep')
 const inquirer = require('inquirer')
 const isEmpty = require('lodash/isEmpty')
 
 const { fileExistsAsync, writeFileAsync } = require('../../lib/fs')
+
+const { getFrameworkInfo } = require('./frameworks')
+const { detectNodeVersion } = require('./node-version')
+const { getPluginsList, getPluginInfo, getRecommendPlugins, getPluginsToInstall, getUIPlugins } = require('./plugins')
 
 const normalizeDir = ({ siteRoot, dir, defaultValue }) => {
   if (dir === undefined) {
@@ -17,21 +21,8 @@ const normalizeDir = ({ siteRoot, dir, defaultValue }) => {
   return relativeDir || defaultValue
 }
 
-const getFrameworkDefaults = async ({ siteRoot }) => {
-  const frameworks = await listFrameworks({ projectDir: siteRoot })
-  if (frameworks.length !== 0) {
-    const [
-      {
-        build: { directory, commands },
-      },
-    ] = frameworks
-    return { frameworkBuildCommand: commands[0], frameworkBuildDir: directory }
-  }
-  return {}
-}
-
-const getDefaultSettings = async ({ siteRoot, config }) => {
-  const { frameworkBuildCommand, frameworkBuildDir } = await getFrameworkDefaults({ siteRoot })
+const getDefaultSettings = ({ siteRoot, config, frameworkPlugins, frameworkBuildCommand, frameworkBuildDir }) => {
+  const recommendedPlugins = getRecommendPlugins(frameworkPlugins, config)
   const {
     command: defaultBuildCmd = frameworkBuildCommand,
     publish: defaultBuildDir = frameworkBuildDir,
@@ -42,12 +33,18 @@ const getDefaultSettings = async ({ siteRoot, config }) => {
     defaultBuildCmd,
     defaultBuildDir: normalizeDir({ siteRoot, dir: defaultBuildDir, defaultValue: '.' }),
     defaultFunctionsDir: normalizeDir({ siteRoot, dir: defaultFunctionsDir, defaultValue: 'netlify/functions' }),
+    recommendedPlugins,
   }
 }
 
-const getBuildSettings = async ({ siteRoot, config }) => {
-  const { defaultBuildCmd, defaultBuildDir, defaultFunctionsDir } = await getDefaultSettings({ siteRoot, config })
-  const { buildCmd, buildDir, functionsDir } = await inquirer.prompt([
+const getPromptInputs = async ({
+  defaultBuildCmd,
+  defaultBuildDir,
+  defaultFunctionsDir,
+  recommendedPlugins,
+  frameworkName,
+}) => {
+  const inputs = [
     {
       type: 'input',
       name: 'buildCmd',
@@ -67,9 +64,74 @@ const getBuildSettings = async ({ siteRoot, config }) => {
       message: 'Netlify functions folder:',
       default: defaultFunctionsDir,
     },
-  ])
+  ]
 
-  return { buildCmd, buildDir, functionsDir }
+  if (recommendedPlugins.length === 0) {
+    return inputs
+  }
+
+  const pluginsList = await getPluginsList()
+
+  const prefix = `Seems like this is a ${formatTitle(frameworkName)} site.${EOL}❇️  `
+  if (recommendedPlugins.length === 1) {
+    const { name } = getPluginInfo(pluginsList, recommendedPlugins[0])
+    return [
+      ...inputs,
+      {
+        type: 'confirm',
+        name: 'installSinglePlugin',
+        message: `${prefix}We're going to install this Build Plugin: ${formatTitle(
+          `${name} plugin`,
+        )}${EOL}➡️  OK to install?`,
+        default: true,
+      },
+    ]
+  }
+
+  const infos = recommendedPlugins.map((packageName) => getPluginInfo(pluginsList, packageName))
+  return [
+    ...inputs,
+    {
+      type: 'checkbox',
+      name: 'plugins',
+      message: `${prefix}We're going to install these plugins: ${infos
+        .map(({ name }) => `${name} plugin`)
+        .map(formatTitle)
+        .join(', ')}${EOL}➡️  OK to install??`,
+      choices: infos.map(({ name, package }) => ({ name: `${name} plugin`, value: package })),
+      default: infos.map(({ package }) => package),
+    },
+  ]
+}
+
+const getBuildSettings = async ({ siteRoot, config, env, warn }) => {
+  const nodeVersion = await detectNodeVersion({ siteRoot, env, warn })
+  const { frameworkName, frameworkBuildCommand, frameworkBuildDir, frameworkPlugins = [] } = await getFrameworkInfo({
+    siteRoot,
+    nodeVersion,
+  })
+  const { defaultBuildCmd, defaultBuildDir, defaultFunctionsDir, recommendedPlugins } = await getDefaultSettings({
+    siteRoot,
+    config,
+    frameworkBuildCommand,
+    frameworkBuildDir,
+    frameworkPlugins,
+  })
+  const { buildCmd, buildDir, functionsDir, plugins, installSinglePlugin } = await inquirer.prompt(
+    await getPromptInputs({
+      defaultBuildCmd,
+      defaultBuildDir,
+      defaultFunctionsDir,
+      recommendedPlugins,
+      frameworkName,
+    }),
+  )
+  const pluginsToInstall = getPluginsToInstall({
+    plugins,
+    installSinglePlugin,
+    recommendedPlugins,
+  })
+  return { buildCmd, buildDir, functionsDir, pluginsToInstall }
 }
 
 const getNetlifyToml = ({
@@ -126,6 +188,8 @@ const saveNetlifyToml = async ({ siteRoot, config, buildCmd, buildDir, functions
 
 const formatErrorMessage = ({ message, error }) => `${message} with error: ${chalk.red(error.message)}`
 
+const formatTitle = (title) => chalk.cyan(title)
+
 const createDeployKey = async ({ api, failAndExit }) => {
   try {
     const deployKey = await api.createDeployKey()
@@ -146,4 +210,23 @@ const updateSite = async ({ siteId, api, failAndExit, options }) => {
   }
 }
 
-module.exports = { getBuildSettings, saveNetlifyToml, formatErrorMessage, createDeployKey, updateSite }
+const setupSite = async ({ api, failAndExit, siteId, repo, functionsDir, configPlugins, pluginsToInstall }) => {
+  await updateSite({
+    siteId,
+    api,
+    failAndExit,
+    // merge existing plugins with new ones
+    options: { repo, plugins: [...getUIPlugins(configPlugins), ...pluginsToInstall] },
+  })
+  // calling updateSite with { repo } resets the functions dir so we need to sync it
+  const updatedSite = await updateSite({
+    siteId,
+    api,
+    failAndExit,
+    options: { build_settings: { functions_dir: functionsDir } },
+  })
+
+  return updatedSite
+}
+
+module.exports = { getBuildSettings, saveNetlifyToml, formatErrorMessage, createDeployKey, updateSite, setupSite }

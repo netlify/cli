@@ -3,7 +3,7 @@ const chalk = require('chalk')
 
 const ghauth = require('../gh-auth')
 
-const { getBuildSettings, saveNetlifyToml, formatErrorMessage, createDeployKey, updateSite } = require('./utils')
+const { getBuildSettings, saveNetlifyToml, formatErrorMessage, createDeployKey, setupSite } = require('./utils')
 
 const formatRepoAndOwner = ({ repoOwner, repoName }) => ({
   name: chalk.magenta(repoName),
@@ -180,11 +180,12 @@ module.exports = async function configGithub({ context, siteId, repoOwner, repoN
     globalConfig,
     config,
     site: { root: siteRoot },
+    cachedConfig: { env },
   } = netlify
 
   const token = await getGitHubToken({ log, globalConfig })
 
-  const { buildCmd, buildDir, functionsDir } = await getBuildSettings({ siteRoot, config })
+  const { buildCmd, buildDir, functionsDir, pluginsToInstall } = await getBuildSettings({ siteRoot, config, env, warn })
   await saveNetlifyToml({ siteRoot, config, buildCmd, buildDir, functionsDir, warn })
 
   const octokit = getGitHubClient({ token })
@@ -204,13 +205,15 @@ module.exports = async function configGithub({ context, siteId, repoOwner, repoN
     ...(buildCmd && { cmd: buildCmd }),
   }
 
-  await updateSite({ siteId, api, failAndExit, options: { repo } })
   // calling updateSite with { repo } resets the functions dir so we need to sync it
-  const updatedSite = await updateSite({
-    siteId,
+  const updatedSite = await setupSite({
     api,
     failAndExit,
-    options: { build_settings: { functions_dir: functionsDir } },
+    siteId,
+    repo,
+    functionsDir,
+    configPlugins: config.plugins,
+    pluginsToInstall,
   })
   await addDeployHook({ deployHook: updatedSite.deploy_hook, octokit, repoOwner, repoName, failAndExit })
   log()
