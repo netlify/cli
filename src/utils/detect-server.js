@@ -63,13 +63,6 @@ const serverSettings = async (devConfig, flags, projectDir, log) => {
 
   if (flags.dir) {
     settings = await getStaticServerSettings(settings, flags, projectDir, log)
-    ;['command', 'targetPort'].forEach((property) => {
-      if (flags[property]) {
-        throw new Error(
-          `"${property}" option cannot be used in conjunction with "dir" flag which is used to run a static server`,
-        )
-      }
-    })
   } else if (devConfig.framework === '#auto' && !(devConfig.command && devConfig.targetPort)) {
     const frameworks = await listFrameworks({ projectDir })
     if (frameworks.length === 1) {
