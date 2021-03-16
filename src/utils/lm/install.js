@@ -134,33 +134,29 @@ const setupWindowsPath = async function () {
   )
 }
 
-const getInitContent = (incFilePath) => `
+const CONTENT_COMMENT = `
 # The next line updates PATH for Netlify's Git Credential Helper.
-if [ -f '${incFilePath}' ]; then source '${incFilePath}'; fi
 `
+
+const getInitContent = (incFilePath) => `${CONTENT_COMMENT}test -f '${incFilePath}' && source '${incFilePath}'`
 
 const setupUnixPath = async () => {
   if (isBinInPath()) {
     return true
   }
 
-  const { shell, incFilePath, configFile } = shellVariables()
-  const initContent = getInitContent(incFilePath)
+  const { shell, incFilePath, configFile } = getShellInfo()
 
-  switch (shell) {
-    case 'bash':
-    case 'zsh': {
-      return await Promise.all([
-        await copyFileAsync(`${__dirname}/scripts/${shell}.sh`, incFilePath),
-        await writeConfig(configFile, initContent),
-      ])
-    }
-    default: {
-      const error = `Unable to set credential helper in PATH. We don't how to set the path for ${shell} shell.
+  if (configFile === undefined) {
+    const error = `Unable to set credential helper in PATH. We don't how to set the path for ${shell} shell.
 Set the helper path in your environment PATH: ${getBinPath()}`
-      throw new Error(error)
-    }
+    throw new Error(error)
   }
+
+  return await Promise.all([
+    await copyFileAsync(`${__dirname}/scripts/${shell}.sh`, incFilePath),
+    await writeConfig(configFile, getInitContent(incFilePath)),
+  ])
 }
 
 const writeConfig = async function (name, initContent) {
@@ -253,9 +249,10 @@ const getLegacyBinPath = function () {
 const CONFIG_FILES = {
   bash: '.bashrc',
   zsh: '.zshrc',
+  fish: '.config/fish/config.fish',
 }
 
-const shellVariables = function () {
+const getShellInfo = function () {
   const shellEnv = process.env.SHELL
   if (!shellEnv) {
     throw new Error('Unable to detect SHELL type, make sure the variable is defined in your environment')
@@ -271,7 +268,7 @@ const shellVariables = function () {
 
 const cleanupShell = async function () {
   try {
-    const { configFile, incFilePath } = shellVariables()
+    const { configFile, incFilePath } = getShellInfo()
     if (configFile === undefined) {
       return
     }
@@ -299,4 +296,4 @@ const removeConfig = async function (name, toRemove) {
   return await writeFileAsync(configPath, content.replace(toRemove, ''))
 }
 
-module.exports = { installPlatform, isBinInPath, shellVariables, uninstall }
+module.exports = { installPlatform, isBinInPath, getShellInfo, uninstall }
