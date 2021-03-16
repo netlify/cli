@@ -41,11 +41,11 @@ const assetSiteRequests = (
     {
       plugins,
       repo: {
-        allowed_branches: ['master'],
+        allowed_branches: ['main'],
         cmd: command,
         dir: publish,
         provider: 'manual',
-        repo_branch: 'master',
+        repo_branch: 'main',
         repo_path: 'git@github.com:owner/repo.git',
       },
     },

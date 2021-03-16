@@ -125,7 +125,7 @@ const createSiteBuilder = ({ siteName }) => {
     },
     withGit: ({ repoUrl }) => {
       tasks.push(async () => {
-        await execa('git', ['init'], { cwd: directory })
+        await execa('git', ['init', '--initial-branch', 'main'], { cwd: directory })
         await execa('git', ['remote', 'add', 'origin', repoUrl], { cwd: directory })
       })
       return builder
