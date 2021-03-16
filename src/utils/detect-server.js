@@ -47,18 +47,19 @@ const getSettingsFromFramework = (framework) => {
       port: frameworkPort,
     },
     name: frameworkName,
+    staticAssetsDirectory: staticDir,
     env,
   } = framework
 
-  return { command, frameworkPort, dist, framework: frameworkName, env }
+  return { command, frameworkPort, dist: staticDir || dist, framework: frameworkName, env }
 }
 
 const serverSettings = async (devConfig, flags, projectDir, log) => {
-  let settings = {}
-
   if (typeof devConfig.framework !== 'string') {
     throw new TypeError('Invalid "framework" option provided in config')
   }
+
+  let settings = {}
 
   if (flags.dir) {
     settings = await getStaticServerSettings(settings, flags, projectDir, log)
@@ -229,7 +230,6 @@ const getStaticServerSettings = async function (settings, flags, projectDir, log
 
 const DEFAULT_STATIC_PORT = 3999
 
-/** utilities for the inquirer section above */
 const filterSettings = function (scriptInquirerOptions, input) {
   const filterOptions = scriptInquirerOptions.map((scriptInquirerOption) => scriptInquirerOption.name)
   // TODO: remove once https://github.com/sindresorhus/eslint-plugin-unicorn/issues/1394 is fixed
@@ -241,7 +241,6 @@ const filterSettings = function (scriptInquirerOptions, input) {
   return scriptInquirerOptions.filter((t) => filteredSettingNames.has(t.name))
 }
 
-/** utilities for the inquirer section above */
 const formatSettingsArrForInquirer = function (frameworks) {
   return [].concat(
     ...frameworks.map((framework) =>
