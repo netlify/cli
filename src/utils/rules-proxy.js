@@ -20,8 +20,8 @@ const parseFile = async function (filePath) {
   const { success, errors } = await parser(filePath)
   if (errors.length !== 0) {
     console.error(`${NETLIFYDEVWARN} Warnings while parsing ${path.basename(filePath)} file:`)
-    errors.forEach((err) => {
-      console.error(`  ${err.lineNum}: ${err.line} -- ${err.reason}`)
+    errors.forEach(({ lineNum, line, reason }) => {
+      console.error(`  ${lineNum}: ${line} -- ${reason}`)
     })
   }
   return success
@@ -32,11 +32,11 @@ const parseRules = async function (configFiles) {
   return [].concat(...results)
 }
 
-const onChanges = function (files, cb) {
+const onChanges = function (files, listener) {
   files.forEach((file) => {
     const watcher = chokidar.watch(file)
-    watcher.on('change', cb)
-    watcher.on('unlink', cb)
+    watcher.on('change', listener)
+    watcher.on('unlink', listener)
   })
 }
 

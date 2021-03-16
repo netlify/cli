@@ -2,16 +2,16 @@ const middy = require('middy')
 const { jsonBodyParser, validator, httpErrorHandler, httpHeaderNormalizer } = require('middy/middlewares')
 
 /* Normal lambda code */
-const businessLogic = (event, context, callback) => {
+const businessLogic = async (event) => {
   // event.body has already been turned into an object by `jsonBodyParser` middleware
   const { name } = event.body
-  return callback(null, {
+  return {
     statusCode: 200,
     body: JSON.stringify({
       result: 'success',
       message: `Hi ${name} ⊂◉‿◉つ`,
     }),
-  })
+  }
 }
 
 /* Export inputSchema & outputSchema for automatic documentation */
