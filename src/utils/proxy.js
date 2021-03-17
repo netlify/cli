@@ -187,22 +187,17 @@ const serveRedirect = async function ({ req, res, proxy, match, options }) {
   }
 
   if (match.force || !staticFile || !options.framework || req.method === 'POST') {
+    // construct destination URL from redirect rule match
     const dest = new URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
 
-    if (isFunction(options.functionsPort, stripOrigin(dest))) {
-      // for functions query params on the redirect rule should be ignored
-      // https://github.com/netlify/cli/issues/1605
+    // We pass through request params in one of the following cases:
+    // 1. The redirect rule doesn't have any query params
+    // 2. This is a function redirect https://github.com/netlify/cli/issues/1605
+    if (Array.from(dest.searchParams).length === 0 || isFunction(options.functionsPort, stripOrigin(dest))) {
       dest.searchParams.forEach((_, key) => {
         dest.searchParams.delete(key)
       })
 
-      const requestParams = new URLSearchParams(reqUrl.searchParams)
-      requestParams.forEach((val, key) => {
-        dest.searchParams.append(key, val)
-      })
-    } else if (Array.from(dest.searchParams).length === 0) {
-      // if the redirect rule has query params they supersede the request params
-      // otherwise we should passthrough the request params
       const requestParams = new URLSearchParams(reqUrl.searchParams)
       requestParams.forEach((val, key) => {
         dest.searchParams.append(key, val)
