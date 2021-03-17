@@ -150,7 +150,7 @@ const upsertHook = async ({ ntlHooks, event, api, siteId, token }) => {
 }
 
 const addNotificationHooks = async ({ log, failAndExit, siteId, api, token }) => {
-  log(`Creating Netlify Github Notification Hooks...`)
+  log(`Creating Netlify GitHub Notification Hooks...`)
 
   let ntlHooks
   try {
