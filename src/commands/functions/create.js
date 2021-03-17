@@ -33,7 +33,7 @@ const templatesDir = path.resolve(__dirname, '../../functions-templates')
 class FunctionsCreateCommand extends Command {
   async run() {
     const { flags, args } = this.parse(FunctionsCreateCommand)
-    const functionsDir = await ensureFunctionDirExists()
+    const functionsDir = await ensureFunctionDirExists(this)
 
     /* either download from URL or scaffold from template */
     const mainFunc = flags.url ? downloadFromURL : scaffoldFromTemplate
@@ -197,62 +197,46 @@ const pickTemplate = async function () {
 const DEFAULT_PRIORITY = 999
 
 /**
- * Get functions dir (and make it if necessary)
- * @this FunctionsCreateCommand
+ * Get functions directory (and make it if necessary)
+ * @param {FunctionsCreateCommand} context
  * @returns {string | never} - functions directory or throws an error
  */
-const ensureFunctionDirExists = async function () {
-  const { api, config, site } = this.netlify
-  const { log } = this
+const ensureFunctionDirExists = async function (context) {
+  const { api, config, site } = context.netlify
+  const { log } = context
   let functionsDirHolder = config.functionsDirectory
-  let siteData = null
-  const siteId = site.id
-
-  // try to find functions_dir in site settings if not in user's netlify config
-  if (!functionsDirHolder) {
-    try {
-      siteData = await api.getSite({ siteId })
-    } catch (error) {
-      if (error.status === 404) {
-        error('Site not found')
-      } else {
-        error(error.message)
-      }
-    }
-
-    // https://open-api.netlify.com/#operation/getSite
-    functionsDirHolder = siteData?.build_settings?.functions_dir
-  }
 
   if (!functionsDirHolder) {
     log(`${NETLIFYDEVLOG} functions directory not specified in netlify.toml or UI settings`)
+
     const { functionsDir } = await inquirer.prompt([
       {
         type: 'input',
         name: 'functionsDir',
-        message: 'Enter the path, relative to your site’s base directory in your repository, where your functions should live:',
+        message:
+          'Enter the path, relative to your site’s base directory in your repository, where your functions should live:',
         default: 'netlify/functions',
       },
     ])
 
+    functionsDirHolder = functionsDir
+
     try {
       log(`${NETLIFYDEVLOG} updating site settings with ${chalk.magenta.inverse(functionsDirHolder)}`)
+
       await api.updateSite({
-        siteId,
+        siteId: site.id,
         body: {
           build_settings: {
             functions_dir: functionsDirHolder,
           },
         },
       })
-      log(
-        `${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(functionsDirHolder)} updated in site settings`,
-      )
-    } catch (error) {
-      error('Error updating site settings')
-    }
 
-    functionsDirHolder = functionsDir
+      log(`${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(functionsDirHolder)} updated in site settings`)
+    } catch (error) {
+      throw error('Error updating site settings')
+    }
   }
 
   if (!fs.existsSync(functionsDirHolder)) {
@@ -261,7 +245,9 @@ const ensureFunctionDirExists = async function () {
         functionsDirHolder,
       )} does not exist yet, creating it...`,
     )
+
     fs.mkdirSync(functionsDirHolder, { recursive: true })
+
     log(`${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(functionsDirHolder)} created`)
   }
 
