@@ -189,23 +189,34 @@ const serveRedirect = async function ({ req, res, proxy, match, options }) {
   if (match.force || !staticFile || !options.framework || req.method === 'POST') {
     const dest = new URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
 
-    // Use query params of request URL as base, so that, destination query params can supersede
-    const urlParams = new URLSearchParams(reqUrl.searchParams)
-    dest.searchParams.forEach((val, key) => {
-      urlParams.set(key, val)
-    })
-    urlParams.forEach((val, key) => {
-      dest.searchParams.set(key, val)
-    })
+    if (isFunction(options.functionsPort, stripOrigin(dest))) {
+      // for functions query params on the redirect rule should be ignored
+      // https://github.com/netlify/cli/issues/1605
+      dest.searchParams.forEach((_, key) => {
+        dest.searchParams.delete(key)
+      })
+
+      const requestParams = new URLSearchParams(reqUrl.searchParams)
+      requestParams.forEach((val, key) => {
+        dest.searchParams.append(key, val)
+      })
+    } else if (Array.from(dest.searchParams).length === 0) {
+      // if the redirect rule has query params they supersede the request params
+      // otherwise we should passthrough the request params
+      const requestParams = new URLSearchParams(reqUrl.searchParams)
+      requestParams.forEach((val, key) => {
+        dest.searchParams.append(key, val)
+      })
+    }
 
     const destURL = stripOrigin(dest)
 
     if (isRedirect(match)) {
       res.writeHead(match.status, {
-        Location: match.to,
+        Location: destURL,
         'Cache-Control': 'no-cache',
       })
-      res.end(`Redirecting to ${match.to}`)
+      res.end(`Redirecting to ${destURL}`)
       return
     }
 
