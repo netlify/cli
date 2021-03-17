@@ -225,18 +225,18 @@ const ensureFunctionDirExists = async function () {
   }
 
   if (!functionsDirHolder) {
-    log(`${NETLIFYDEVLOG} functions folder not specified in netlify.toml or app settings`)
+    log(`${NETLIFYDEVLOG} functions directory not specified in netlify.toml or UI settings`)
     const { functionsDir } = await inquirer.prompt([
       {
         type: 'input',
         name: 'functionsDir',
-        message: 'Enter the path where your functions should live:',
+        message: 'Enter the path, relative to your site’s base directory in your repository, where your functions should live:',
         default: 'netlify/functions',
       },
     ])
 
     try {
-      log(`${NETLIFYDEVLOG} updating app build settings with ${chalk.magenta.inverse(functionsDirHolder)}`)
+      log(`${NETLIFYDEVLOG} updating site settings with ${chalk.magenta.inverse(functionsDirHolder)}`)
       await api.updateSite({
         siteId,
         body: {
@@ -246,7 +246,7 @@ const ensureFunctionDirExists = async function () {
         },
       })
       log(
-        `${NETLIFYDEVLOG} functions folder ${chalk.magenta.inverse(functionsDirHolder)} updated in app build settings`,
+        `${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(functionsDirHolder)} updated in site settings`,
       )
     } catch (error) {
       error('Error updating site settings')
@@ -257,12 +257,12 @@ const ensureFunctionDirExists = async function () {
 
   if (!fs.existsSync(functionsDirHolder)) {
     log(
-      `${NETLIFYDEVLOG} functions folder ${chalk.magenta.inverse(
+      `${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(
         functionsDirHolder,
       )} does not exist yet, creating it...`,
     )
     fs.mkdirSync(functionsDirHolder, { recursive: true })
-    log(`${NETLIFYDEVLOG} functions folder ${chalk.magenta.inverse(functionsDirHolder)} created`)
+    log(`${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(functionsDirHolder)} created`)
   }
 
   return functionsDirHolder
