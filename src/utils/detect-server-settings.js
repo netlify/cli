@@ -40,27 +40,93 @@ const readHttpsSettings = async (options) => {
   return { key, cert }
 }
 
+const validateStringProperty = ({ devConfig, property }) => {
+  if (devConfig[property] && typeof devConfig[property] !== 'string') {
+    throw new TypeError(
+      `Invalid "${property}" option provided in config. The value of "${property}" option must be a string`,
+    )
+  }
+}
+
+const validateNumberProperty = ({ devConfig, property }) => {
+  if (devConfig[property] && typeof devConfig[property] !== 'number') {
+    throw new TypeError(
+      `Invalid "${property}" option provided in config. The value of "${property}" option must be an integer`,
+    )
+  }
+}
+
+const validateFrameworkConfig = ({ devConfig }) => {
+  validateStringProperty({ devConfig, property: 'command' })
+  validateNumberProperty({ devConfig, property: 'port' })
+  validateNumberProperty({ devConfig, property: 'targetPort' })
+
+  if (devConfig.targetPort && devConfig.targetPort === devConfig.port) {
+    throw new Error(
+      '"port" and "targetPort" options cannot have same values. Please consult the documentation for more details: https://cli.netlify.com/netlify-dev#netlifytoml-dev-block',
+    )
+  }
+}
+
+const validateConfiguredPort = ({ devConfig, detectedPort }) => {
+  if (devConfig.port && devConfig.port === detectedPort) {
+    throw new Error(
+      'The "port" option you specified conflicts with the port of your application. Please use a different value for "port"',
+    )
+  }
+}
+
+const DEFAULT_PORT = 8888
+const DEFAULT_STATIC_PORT = 3999
+
+const getDefaultDist = ({ log }) => {
+  log(`${NETLIFYDEVLOG} Using current working directory`)
+  log(`${NETLIFYDEVWARN} Unable to determine public folder to serve files from`)
+  log(`${NETLIFYDEVWARN} Setup a netlify.toml file with a [dev] section to specify your dev server settings.`)
+  log(`${NETLIFYDEVWARN} See docs at: https://cli.netlify.com/netlify-dev#project-detection`)
+  return process.cwd()
+}
+
+const acquirePort = async ({ configuredPort, defaultPort, errorMessage }) => {
+  const acquiredPort = await getPort({ port: configuredPort || defaultPort })
+  if (configuredPort && acquiredPort !== configuredPort) {
+    throw new Error(`${errorMessage}: '${configuredPort}'`)
+  }
+  return acquiredPort
+}
+
 const handleStaticServer = async ({ flags, log, devConfig, projectDir }) => {
+  validateNumberProperty({ devConfig, property: 'staticServerPort' })
+
   if (flags.dir) {
     log(`${NETLIFYDEVWARN} Using simple static server because --dir flag was specified`)
-  } else {
+  } else if (devConfig.framework === '#static') {
     log(`${NETLIFYDEVWARN} Using simple static server because [dev.framework] was set to #static`)
   }
+
+  if (devConfig.command) {
+    log(`${NETLIFYDEVWARN} Ignoring command setting since using a simple static server`)
+  }
+
   if (devConfig.targetPort) {
     log(
       `${NETLIFYDEVWARN} Ignoring targetPort setting since using a simple static server.${EOL}Use --staticServerPort or [dev.staticServerPort] to configure the static server port`,
     )
   }
-  if (devConfig.command) {
-    log(`${NETLIFYDEVWARN} Ignoring command setting since using a simple static server`)
-  }
-  const { noCmd, frameworkPort, dist } = await getStaticServerSettings({
-    dist: flags.dir || devConfig.publish,
-    port: flags.staticServerPort || devConfig.staticServerPort,
-    projectDir,
-    log,
+
+  const dist = flags.dir || devConfig.publish || getDefaultDist({ log })
+  log(`${NETLIFYDEVWARN} Running static server from "${path.relative(path.dirname(projectDir), dist)}"`)
+
+  const frameworkPort = await acquirePort({
+    configuredPort: devConfig.staticServerPort,
+    defaultPort: DEFAULT_STATIC_PORT,
+    errorMessage: 'Could not acquire configured static server port',
   })
-  return { noCmd, frameworkPort, dist }
+  return {
+    useStaticServer: true,
+    frameworkPort,
+    dist,
+  }
 }
 
 const getSettingsFromFramework = (framework) => {
@@ -112,18 +178,18 @@ const detectFrameworkSettings = async ({ projectDir, log }) => {
 
     return getSettingsFromFramework(chosenFramework)
   }
-
-  return {}
 }
 
-const handleCustomFramework = ({ devConfig }) => {
-  if (!devConfig.command || !devConfig.targetPort) {
+const hasCommandAndTargetPort = ({ devConfig }) => devConfig.command && devConfig.targetPort
+
+const handleCustomFramework = ({ devConfig, log }) => {
+  if (!hasCommandAndTargetPort({ devConfig })) {
     throw new Error('"command" and "targetPort" properties are required when "framework" is set to "#custom"')
   }
   return {
     command: devConfig.command,
     frameworkPort: devConfig.targetPort,
-    dist: devConfig.publish,
+    dist: devConfig.publish || getDefaultDist({ log }),
     framework: '#custom',
   }
 }
@@ -137,7 +203,7 @@ const handleForcedFramework = async ({ devConfig, projectDir }) => {
   } catch (error) {
     // this can happen when the framework info library doesn't support detecting devConfig.framework
     throw new Error(
-      `Unsupported "framework" "${devConfig.framework}". Please set [dev.framework] to #custom and configure 'command' and 'targetPort'`,
+      `Unsupported "framework" "${devConfig.framework}". Please consult the documentation for more details: https://cli.netlify.com/netlify-dev/#project-detection`,
     )
   }
   const { command, frameworkPort, dist, framework, env } = getSettingsFromFramework(
@@ -152,18 +218,8 @@ const handleForcedFramework = async ({ devConfig, projectDir }) => {
   }
 }
 
-const serverSettings = async (devConfig, flags, projectDir, log) => {
-  if (typeof devConfig.framework !== 'string') {
-    throw new TypeError('Invalid "framework" option provided in config')
-  }
-
-  if (devConfig.targetPort && typeof devConfig.targetPort !== 'number') {
-    throw new TypeError('Invalid "targetPort" option specified. The value of "targetPort" option must be an integer')
-  }
-
-  if (devConfig.targetPort && typeof devConfig.targetPort !== 'number') {
-    throw new TypeError('Invalid "targetPort" option specified. The value of "targetPort" option must be an integer')
-  }
+const detectServerSettings = async (devConfig, flags, projectDir, log) => {
+  validateStringProperty({ devConfig, property: 'framework' })
 
   let settings = {}
 
@@ -172,97 +228,52 @@ const serverSettings = async (devConfig, flags, projectDir, log) => {
     settings = await handleStaticServer({ flags, log, devConfig, projectDir })
   } else if (devConfig.framework === '#auto') {
     // this is the default CLI behavior
-    const { command, frameworkPort, dist, framework, env } = await detectFrameworkSettings({ projectDir, log })
-    settings = {
-      command: devConfig.command || command,
-      frameworkPort: devConfig.targetPort || frameworkPort,
-      dist: devConfig.publish || dist,
-      framework,
-      env,
+    const frameworkSettings = await detectFrameworkSettings({ projectDir, log })
+    if (frameworkSettings === undefined && !hasCommandAndTargetPort({ devConfig })) {
+      log(
+        `${NETLIFYDEVWARN} No app server detected and no "command" and "targetPort" specified. Using simple static server. Please consult the documentation for more details: https://cli.netlify.com/netlify-dev/#project-detection`,
+      )
+      settings = await handleStaticServer({ flags, log, devConfig, projectDir })
+    } else {
+      validateFrameworkConfig({ devConfig })
+      const { command, frameworkPort, dist, framework, env } = frameworkSettings || {}
+      settings = {
+        command: devConfig.command || command,
+        frameworkPort: devConfig.targetPort || frameworkPort,
+        dist: devConfig.publish || dist || getDefaultDist({ log }),
+        framework,
+        env,
+      }
     }
   } else if (devConfig.framework === '#custom') {
+    validateFrameworkConfig({ devConfig })
     // when the users wants to configure `command` and `targetPort`
-    settings = handleCustomFramework({ devConfig })
+    settings = handleCustomFramework({ devConfig, log })
   } else if (devConfig.framework) {
+    validateFrameworkConfig({ devConfig })
     // this is when the user explicitly configures a framework, e.g. `framework = "gatsby"`
     settings = await handleForcedFramework({ devConfig, projectDir })
   }
 
-  if (devConfig.targetPort) {
-    if (devConfig.targetPort === devConfig.port) {
-      throw new Error(
-        '"port" and "targetPort" options cannot have same values. Please consult the documentation for more details: https://cli.netlify.com/netlify-dev#netlifytoml-dev-block',
-      )
-    }
+  validateConfiguredPort({ devConfig, detectedPort: settings.frameworkPort })
 
-    if (!settings.command) {
-      throw new Error(
-        'No "command" specified or detected. The "command" option is required to use "targetPort" option.',
-      )
-    }
-  }
+  const acquiredPort = await acquirePort({
+    configuredPort: devConfig.port,
+    defaultPort: DEFAULT_PORT,
+    errorMessage: 'Could not acquire required "port"',
+  })
+  const functionsDir = devConfig.functions || settings.functions
 
-  if (devConfig.port && devConfig.port === settings.frameworkPort) {
-    throw new Error(
-      'The "port" option you specified conflicts with the port of your application. Please use a different value for "port"',
-    )
-  }
-
-  if (!settings.command && !settings.framework && !settings.noCmd) {
-    log(`${NETLIFYDEVWARN} No app server detected and no "command" specified`)
-    settings = await getStaticServerSettings({ dist: settings.dist, port: flags.staticServerPort, projectDir, log })
-  }
-
-  if (!settings.frameworkPort) throw new Error('No "targetPort" option specified or detected.')
-
-  if (devConfig.port && typeof devConfig.port !== 'number') {
-    throw new Error('Invalid "port" option specified. The value of "port" option must be an integer')
-  }
-
-  if (devConfig.port && devConfig.port === settings.frameworkPort) {
-    throw new Error(
-      'The "port" option you specified conflicts with the port of your application. Please use a different value for "port"',
-    )
-  }
-  const triedPort = devConfig.port || DEFAULT_PORT
-  settings.port = await getPort({ port: triedPort })
-  if (triedPort !== settings.port && devConfig.port) {
-    throw new Error(`Could not acquire required "port": ${triedPort}`)
-  }
-
-  settings.jwtSecret = devConfig.jwtSecret || 'secret'
-  settings.jwtRolePath = devConfig.jwtRolePath || 'app_metadata.authorization.roles'
-  settings.functions = devConfig.functions || settings.functions
-  if (settings.functions) {
-    settings.functionsPort = await getPort({ port: devConfig.functionsPort || 0 })
-  }
-  if (devConfig.https) {
-    settings.https = await readHttpsSettings(devConfig.https)
-  }
-
-  return settings
-}
-
-const DEFAULT_PORT = 8888
-
-const getStaticServerSettings = async function ({ dist, port, projectDir, log }) {
-  if (!dist) {
-    log(`${NETLIFYDEVLOG} Using current working directory`)
-    log(`${NETLIFYDEVWARN} Unable to determine public folder to serve files from`)
-    log(`${NETLIFYDEVWARN} Setup a netlify.toml file with a [dev] section to specify your dev server settings.`)
-    log(`${NETLIFYDEVWARN} See docs at: https://cli.netlify.com/netlify-dev#project-detection`)
-    dist = process.cwd()
-  }
-
-  log(`${NETLIFYDEVWARN} Running static server from "${path.relative(path.dirname(projectDir), dist)}"`)
   return {
-    noCmd: true,
-    frameworkPort: await getPort({ port: port || DEFAULT_STATIC_PORT }),
-    dist,
+    ...settings,
+    port: acquiredPort,
+    jwtSecret: devConfig.jwtSecret || 'secret',
+    jwtRolePath: devConfig.jwtRolePath || 'app_metadata.authorization.roles',
+    functions: functionsDir,
+    ...(functionsDir && { functionsPort: await getPort({ port: devConfig.functionsPort || 0 }) }),
+    ...(devConfig.https && { https: await readHttpsSettings(devConfig.https) }),
   }
 }
-
-const DEFAULT_STATIC_PORT = 3999
 
 const filterSettings = function (scriptInquirerOptions, input) {
   const filterOptions = scriptInquirerOptions.map((scriptInquirerOption) => scriptInquirerOption.name)
@@ -288,5 +299,5 @@ const formatSettingsArrForInquirer = function (frameworks) {
 }
 
 module.exports = {
-  serverSettings,
+  detectServerSettings,
 }
