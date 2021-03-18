@@ -1,3 +1,4 @@
+const { EOL } = require('os')
 const path = require('path')
 const process = require('process')
 
@@ -37,6 +38,29 @@ const readHttpsSettings = async (options) => {
   }
 
   return { key, cert }
+}
+
+const handleStaticServer = async ({ flags, log, devConfig, projectDir }) => {
+  if (flags.dir) {
+    log(`${NETLIFYDEVWARN} Using simple static server because --dir flag was specified`)
+  } else {
+    log(`${NETLIFYDEVWARN} Using simple static server because [dev.framework] was set to #static`)
+  }
+  if (devConfig.targetPort) {
+    log(
+      `${NETLIFYDEVWARN} Ignoring targetPort setting since using a simple static server.${EOL}Use --staticServerPort or [dev.staticServerPort] to configure the static server port`,
+    )
+  }
+  if (devConfig.command) {
+    log(`${NETLIFYDEVWARN} Ignoring command setting since using a simple static server`)
+  }
+  const { noCmd, frameworkPort, dist } = await getStaticServerSettings({
+    dist: flags.dir || devConfig.publish,
+    port: flags.staticServerPort || devConfig.staticServerPort,
+    projectDir,
+    log,
+  })
+  return { noCmd, frameworkPort, dist }
 }
 
 const getSettingsFromFramework = (framework) => {
@@ -92,15 +116,39 @@ const detectFrameworkSettings = async ({ projectDir, log }) => {
   return {}
 }
 
-const validateCustomSettings = ({ devConfig }) => {
-  const hasCommandAndTargetPort = devConfig.command && devConfig.targetPort
-  if (devConfig.framework === '#custom' && !hasCommandAndTargetPort) {
+const handleCustomFramework = ({ devConfig }) => {
+  if (!devConfig.command || !devConfig.targetPort) {
     throw new Error('"command" and "targetPort" properties are required when "framework" is set to "#custom"')
   }
-  if (devConfig.framework !== '#custom' && devConfig.command && devConfig.targetPort) {
+  return {
+    command: devConfig.command,
+    frameworkPort: devConfig.targetPort,
+    dist: devConfig.publish,
+    framework: '#custom',
+  }
+}
+
+const handleForcedFramework = async ({ devConfig, projectDir }) => {
+  try {
+    const hasConfigFramework = await hasFramework(devConfig.framework, { projectDir })
+    if (!hasConfigFramework) {
+      throw new Error(`Specified "framework" "${devConfig.framework}" did not pass requirements for your project`)
+    }
+  } catch (error) {
+    // this can happen when the framework info library doesn't support detecting devConfig.framework
     throw new Error(
-      '"framework" option must be set to "#custom" when specifying both "command" and "targetPort" options',
+      `Unsupported "framework" "${devConfig.framework}". Please set [dev.framework] to #custom and configure 'command' and 'targetPort'`,
     )
+  }
+  const { command, frameworkPort, dist, framework, env } = getSettingsFromFramework(
+    await getFramework(devConfig.framework, { projectDir }),
+  )
+  return {
+    command: devConfig.command || command,
+    frameworkPort: devConfig.targetPort || frameworkPort,
+    dist: devConfig.publish || dist,
+    framework,
+    env,
   }
 }
 
@@ -109,64 +157,51 @@ const serverSettings = async (devConfig, flags, projectDir, log) => {
     throw new TypeError('Invalid "framework" option provided in config')
   }
 
+  if (devConfig.targetPort && typeof devConfig.targetPort !== 'number') {
+    throw new TypeError('Invalid "targetPort" option specified. The value of "targetPort" option must be an integer')
+  }
+
+  if (devConfig.targetPort && typeof devConfig.targetPort !== 'number') {
+    throw new TypeError('Invalid "targetPort" option specified. The value of "targetPort" option must be an integer')
+  }
+
   let settings = {}
 
-  if (flags.dir) {
-    // this is when the user wants to statically serve a directory
-    log(`${NETLIFYDEVWARN} Using simple static server because --dir flag was specified`)
-    settings = await getStaticServerSettings({ dist: flags.dir, port: flags.staticServerPort, projectDir, log })
-  } else if (devConfig.framework === '#auto' && !(devConfig.command && devConfig.targetPort)) {
+  if (flags.dir || devConfig.framework === '#static') {
+    // serving files statically without a framework server
+    settings = await handleStaticServer({ flags, log, devConfig, projectDir })
+  } else if (devConfig.framework === '#auto') {
     // this is the default CLI behavior
-    settings = await detectFrameworkSettings({ projectDir, log })
-  } else if (devConfig.framework === '#custom' || (devConfig.command && devConfig.targetPort)) {
-    // this is when the user want to customize `command` and `targetPort`
-    validateCustomSettings({ devConfig })
-    settings = { framework: '#custom' }
-  } else if (devConfig.framework !== '#static') {
-    // this is when the user explicitly configure a framework, e.g. `framework = "gatsby"`
-    const hasConfigFramework = await hasFramework(devConfig.framework, { projectDir })
-    if (!hasConfigFramework) {
-      throw new Error(
-        `Specified "framework" detector "${devConfig.framework}" did not pass requirements for your project`,
-      )
+    const { command, frameworkPort, dist, framework, env } = await detectFrameworkSettings({ projectDir, log })
+    settings = {
+      command: devConfig.command || command,
+      frameworkPort: devConfig.targetPort || frameworkPort,
+      dist: devConfig.publish || dist,
+      framework,
+      env,
     }
-    const framework = await getFramework(devConfig.framework, { projectDir })
-    settings = getSettingsFromFramework(framework)
+  } else if (devConfig.framework === '#custom') {
+    // when the users wants to configure `command` and `targetPort`
+    settings = handleCustomFramework({ devConfig })
+  } else if (devConfig.framework) {
+    // this is when the user explicitly configures a framework, e.g. `framework = "gatsby"`
+    settings = await handleForcedFramework({ devConfig, projectDir })
   }
-
-  if (!settings.noCmd && devConfig.command) {
-    log(
-      `${NETLIFYDEVLOG} Overriding ${chalk.yellow('command')} with setting derived from netlify.toml [dev] block: ${
-        devConfig.command
-      }`,
-    )
-    settings.command = devConfig.command
-  }
-
-  settings.dist = flags.dir || devConfig.publish || settings.dist
 
   if (devConfig.targetPort) {
-    if (devConfig.targetPort && typeof devConfig.targetPort !== 'number') {
-      throw new Error('Invalid "targetPort" option specified. The value of "targetPort" option must be an integer')
-    }
-
     if (devConfig.targetPort === devConfig.port) {
       throw new Error(
         '"port" and "targetPort" options cannot have same values. Please consult the documentation for more details: https://cli.netlify.com/netlify-dev#netlifytoml-dev-block',
       )
     }
 
-    if (!settings.command)
+    if (!settings.command) {
       throw new Error(
         'No "command" specified or detected. The "command" option is required to use "targetPort" option.',
       )
-    if (flags.dir)
-      throw new Error(
-        '"targetPort" option cannot be used in conjunction with "dir" flag which is used to run a static server.',
-      )
-
-    settings.frameworkPort = devConfig.targetPort
+    }
   }
+
   if (devConfig.port && devConfig.port === settings.frameworkPort) {
     throw new Error(
       'The "port" option you specified conflicts with the port of your application. Please use a different value for "port"',
