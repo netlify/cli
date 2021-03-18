@@ -1395,6 +1395,58 @@ testMatrix.forEach(({ args }) => {
         })
       })
     })
+
+    test(testName('should handle query params in redirects', args), async (t) => {
+      await withSiteBuilder('site-with-query-redirects', async (builder) => {
+        await builder
+          .withContentFile({
+            path: 'public/index.html',
+            content: 'home',
+          })
+          .withNetlifyToml({
+            config: {
+              build: { functions: 'functions', publish: 'public' },
+            },
+          })
+          .withRedirectsFile({
+            redirects: [
+              { from: `/api/*`, to: `/.netlify/functions/echo?a=1&a=2`, status: '200' },
+              { from: `/foo`, to: `/`, status: '302' },
+              { from: `/bar`, to: `/?a=1&a=2`, status: '302' },
+              { from: `/test id=:id`, to: `/?param=:id` },
+            ],
+          })
+          .withFunction({
+            path: 'echo.js',
+            handler: async (event) => ({
+              statusCode: 200,
+              body: JSON.stringify(event),
+            }),
+          })
+          .buildAsync()
+
+        await withDevServer({ cwd: builder.directory, args }, async (server) => {
+          const [fromFunction, queryPassthrough, queryInRedirect, withParamMatching] = await Promise.all([
+            got(`${server.url}/api/test?foo=1&foo=2&bar=1&bar=2`).json(),
+            got(`${server.url}/foo?foo=1&foo=2&bar=1&bar=2`, { followRedirect: false }),
+            got(`${server.url}/bar?foo=1&foo=2&bar=1&bar=2`, { followRedirect: false }),
+            got(`${server.url}/test?id=1`, { followRedirect: false }),
+          ])
+
+          // query params should be taken from the request
+          t.deepEqual(fromFunction.multiValueQueryStringParameters, { foo: ['1', '2'], bar: ['1', '2'] })
+
+          // query params should be passed through from the request
+          t.is(queryPassthrough.headers.location, '/?foo=1&foo=2&bar=1&bar=2')
+
+          // query params should be taken from the redirect rule
+          t.is(queryInRedirect.headers.location, '/?a=1&a=2')
+
+          // query params should be taken from the redirect rule
+          t.is(withParamMatching.headers.location, '/?param=1')
+        })
+      })
+    })
   }
 })
 /* eslint-enable require-await */
