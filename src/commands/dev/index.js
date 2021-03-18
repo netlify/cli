@@ -31,7 +31,7 @@ const startStaticServer = async ({ settings, log }) => {
   })
 
   await promisify(server.start.bind(server))()
-  log(`\n${NETLIFYDEVLOG} Server listening to`, settings.frameworkPort)
+  log(`\n${NETLIFYDEVLOG} Static server listening to`, settings.frameworkPort)
 }
 
 const isNonExistingCommandError = ({ command, error }) => {
