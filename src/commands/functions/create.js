@@ -211,7 +211,9 @@ const ensureFunctionDirExists = async function (context) {
     log(`${NETLIFYDEVLOG} functions directory not specified in netlify.toml or UI settings`)
 
     if (!siteId) {
-      context.log(`${NETLIFYDEVERR} Unable to find a site id. Please make sure you are in a directory that is linked to a site with Netlify.`)
+      context.log(
+        `${NETLIFYDEVERR} Unable to find a site id. Please make sure you are in a directory that is linked to a site with Netlify.`,
+      )
       process.exit(1)
     }
 
