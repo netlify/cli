@@ -4,14 +4,26 @@ const filterObj = require('filter-obj')
 const mapObj = require('map-obj')
 const { globby } = require('markdown-magic')
 
+const getFlagType = (flagData) => {
+  if (flagData.type === 'option') {
+    return flagData.options ? flagData.options.join(' | ') : 'string'
+  }
+
+  return flagData.type
+}
+
 module.exports = function generateCommandData() {
   const commandsPath = path.join(__dirname, '..', '..', 'src/commands')
+  const completionPluginPath = path.join(__dirname, '..', '..', 'node_modules/oclif-plugin-completion/lib/commands')
   // console.log('commandsPath', commandsPath)
-  const commands = globby.sync([`${commandsPath}/**/**.js`])
+  const commands = globby.sync([`${commandsPath}/**/**.js`, `${completionPluginPath}/**/**.js`])
 
   const allCommands = commands.map((file) => {
     // eslint-disable-next-line node/global-require, import/no-dynamic-require
-    const data = require(file)
+    let data = require(file)
+    if (!data.description && data.default && data.default.description) {
+      data = data.default
+    }
     const command = commandFromPath(file)
     const [parentCommand] = command.split(':')
     const parent = command === parentCommand
@@ -20,7 +32,7 @@ module.exports = function generateCommandData() {
       data.flags &&
       mapObj(
         filterObj(data.flags, (_, value) => value.hidden !== true),
-        (flag, flagData) => [flag, { ...flagData, type: flagData.type === 'option' ? 'string' : flagData.type }],
+        (flag, flagData) => [flag, { ...flagData, type: getFlagType(flagData) }],
       )
     return {
       command,
@@ -86,7 +98,7 @@ const commandFromPath = function (filePath) {
     .replace(rootDir, '')
     .replace(/\\/g, '/')
     .replace('.js', '')
-    .replace('/src/commands/', '')
+    .replace(/\/(src|lib)\/commands\//, '')
     .replace('/index', '')
-    .replace('/', ':')
+    .replace(/\//g, ':')
 }
