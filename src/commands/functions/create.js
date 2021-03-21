@@ -203,11 +203,17 @@ const DEFAULT_PRIORITY = 999
  */
 const ensureFunctionDirExists = async function (context) {
   const { api, config, site } = context.netlify
+  const siteId = site.id
   const { log } = context
   let functionsDirHolder = config.functionsDirectory
 
   if (!functionsDirHolder) {
     log(`${NETLIFYDEVLOG} functions directory not specified in netlify.toml or UI settings`)
+
+    if (!siteId) {
+      context.log(`${NETLIFYDEVERR} Unable to find a site id. Please make sure you are in a directory that is linked to a site with Netlify.`)
+      process.exit(1)
+    }
 
     const { functionsDir } = await inquirer.prompt([
       {
