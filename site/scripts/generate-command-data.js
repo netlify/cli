@@ -6,9 +6,8 @@ const { globby } = require('markdown-magic')
 
 module.exports = function generateCommandData() {
   const commandsPath = path.join(__dirname, '..', '..', 'src/commands')
-  const netlifyDevPath = path.join(__dirname, '..', '..', 'node_modules/netlify-dev-plugin/src/commands')
   // console.log('commandsPath', commandsPath)
-  const commands = globby.sync([`${commandsPath}/**/**.js`, `${netlifyDevPath}/**/**.js`])
+  const commands = globby.sync([`${commandsPath}/**/**.js`])
 
   const allCommands = commands.map((file) => {
     // eslint-disable-next-line node/global-require, import/no-dynamic-require
@@ -79,7 +78,7 @@ const commandFromPath = function (filePath) {
   const rootDir = path.join(__dirname, '..', '..')
   // Replace node_modules path for CLI plugins
   if (normalized.includes('node_modules')) {
-    // in: /node_modules/netlify-dev-plugin/src/commands/dev/exec.js
+    // in: /node_modules/<package-name>/src/commands/dev/exec.js
     // out: /src/commands/dev/exec.js
     normalized = normalized.replace(/\/node_modules\/((?:[^/]+)*)?\//, '/')
   }
