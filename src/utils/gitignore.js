@@ -92,7 +92,7 @@ const ensureNetlifyIgnore = async function (dir) {
     // ignore
   }
   /* Not ignoring .netlify folder. Add to .gitignore */
-  if (!ignorePatterns || !ignorePatterns.patterns.includes('.netlify')) {
+  if (!ignorePatterns || !ignorePatterns.patterns.some((pattern) => pattern.includes('.netlify'))) {
     const newContents = `${gitIgnoreContents}\n${ignoreContent}`
     await writeFileAsync(gitIgnorePath, newContents, 'utf8')
   }
