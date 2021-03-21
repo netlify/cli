@@ -11,8 +11,8 @@ const fs = require('../src/lib/fs')
 
 const cliPath = require('./utils/cli-path')
 const { withDevServer } = require('./utils/dev-server')
-const { handleQuestions, answerWithValue, CONFIRM } = require('./utils/handle-questions');
-const { withMockApi } = require('./utils/mock-api');
+const { handleQuestions, answerWithValue, CONFIRM } = require('./utils/handle-questions')
+const { withMockApi } = require('./utils/mock-api')
 const { withSiteBuilder } = require('./utils/site-builder')
 
 test.beforeEach((t) => {
@@ -47,7 +47,7 @@ test('should return function response when invoked', async (t) => {
 })
 
 test('should create a new function directory when none is found', async (t) => {
-  const { binPath } = t.context;
+  const { binPath } = t.context
 
   const initQuestions = [
     {
@@ -56,12 +56,12 @@ test('should create a new function directory when none is found', async (t) => {
     },
     {
       question: 'Pick a template',
-      answer: answerWithValue(CONFIRM)
+      answer: answerWithValue(CONFIRM),
     },
     {
       question: 'name your function',
-      answer: answerWithValue(CONFIRM)
-    }
+      answer: answerWithValue(CONFIRM),
+    },
   ]
 
   const siteInfo = {
@@ -87,17 +87,16 @@ test('should create a new function directory when none is found', async (t) => {
   ]
 
   await withSiteBuilder('site-with-no-functions-dir', async (builder) => {
-    builder.withNetlifyToml({config: { build: { functions: 'functions' } }})
+    builder.withNetlifyToml({ config: { build: { functions: 'functions' } } })
 
-    await builder.buildAsync();
-
+    await builder.buildAsync()
 
     await withMockApi(routes, async ({ apiUrl }) => {
       // --manual is used to avoid the config-github flow that uses GitHub API
       const childProcess = execa(cliPath, ['functions:create'], {
-        env: { 
-          NETLIFY_API_URL: apiUrl, 
-          NETLIFY_SITE_ID: 'site_id', 
+        env: {
+          NETLIFY_API_URL: apiUrl,
+          NETLIFY_SITE_ID: 'site_id',
           NETLIFY_AUTH_TOKEN: 'fake-token',
           cwd: builder.directory,
         },

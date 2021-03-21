@@ -21,7 +21,7 @@ const handleQuestions = (process, questions) => {
   })
 }
 
-const answerWithValue = (value) => `${value}${CONFIRM}`;
+const answerWithValue = (value) => `${value}${CONFIRM}`
 
 const CONFIRM = '\n'
 const DOWN = '\u001B[B'
@@ -30,5 +30,5 @@ module.exports = {
   handleQuestions,
   answerWithValue,
   CONFIRM,
-  DOWN
+  DOWN,
 }
