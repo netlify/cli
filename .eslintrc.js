@@ -26,9 +26,6 @@ module.exports = {
     'fp/no-this': 0,
     'import/max-dependencies': 0,
     'node/no-sync': 0,
-    'promise/no-callback-in-promise': 0,
-    'promise/no-return-wrap': 0,
-    'promise/prefer-await-to-callbacks': 0,
     'unicorn/prefer-spread': 0,
     'unicorn/consistent-destructuring': 0,
 

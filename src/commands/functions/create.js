@@ -2,10 +2,11 @@ const cp = require('child_process')
 const fs = require('fs')
 const path = require('path')
 const process = require('process')
+const { promisify } = require('util')
 
 const { flags: flagsLib } = require('@oclif/command')
 const chalk = require('chalk')
-const copy = require('copy-template-dir')
+const copy = promisify(require('copy-template-dir'))
 const fuzzy = require('fuzzy')
 const inquirer = require('inquirer')
 const inquirerAutocompletePrompt = require('inquirer-autocomplete-prompt')
@@ -316,33 +317,32 @@ const scaffoldFromTemplate = async function (context, flags, args, functionsDir)
     // SWYX: TODO
     const vars = { NETLIFY_STUFF_TO_REPLACE: 'REPLACEMENT' }
     let hasPackageJSON = false
-    copy(pathToTemplate, functionPath, vars, async (err, createdFiles) => {
-      if (err) throw err
-      createdFiles.forEach((filePath) => {
-        if (filePath.endsWith('.netlify-function-template.js')) return
-        context.log(`${NETLIFYDEVLOG} ${chalk.greenBright('Created')} ${filePath}`)
-        fs.chmodSync(path.resolve(filePath), TEMPLATE_PERMISSIONS)
-        if (filePath.includes('package.json')) hasPackageJSON = true
-      })
-      // delete function template file that was copied over by copydir
-      fs.unlinkSync(path.join(functionPath, '.netlify-function-template.js'))
-      // rename the root function file if it has a different name from default
-      if (name !== templateName) {
-        fs.renameSync(path.join(functionPath, `${templateName}.js`), path.join(functionPath, `${name}.js`))
-      }
-      // npm install
-      if (hasPackageJSON) {
-        const spinner = ora({
-          text: `installing dependencies for ${name}`,
-          spinner: 'moon',
-        }).start()
-        await installDeps(functionPath)
-        spinner.succeed(`installed dependencies for ${name}`)
-      }
 
-      await installAddons(context, addons, path.resolve(functionPath))
-      await handleOnComplete({ context, onComplete })
+    const createdFiles = await copy(pathToTemplate, functionPath, vars)
+    createdFiles.forEach((filePath) => {
+      if (filePath.endsWith('.netlify-function-template.js')) return
+      context.log(`${NETLIFYDEVLOG} ${chalk.greenBright('Created')} ${filePath}`)
+      fs.chmodSync(path.resolve(filePath), TEMPLATE_PERMISSIONS)
+      if (filePath.includes('package.json')) hasPackageJSON = true
     })
+    // delete function template file that was copied over by copydir
+    fs.unlinkSync(path.join(functionPath, '.netlify-function-template.js'))
+    // rename the root function file if it has a different name from default
+    if (name !== templateName) {
+      fs.renameSync(path.join(functionPath, `${templateName}.js`), path.join(functionPath, `${name}.js`))
+    }
+    // npm install
+    if (hasPackageJSON) {
+      const spinner = ora({
+        text: `installing dependencies for ${name}`,
+        spinner: 'moon',
+      }).start()
+      await installDeps(functionPath)
+      spinner.succeed(`installed dependencies for ${name}`)
+    }
+
+    await installAddons(context, addons, path.resolve(functionPath))
+    await handleOnComplete({ context, onComplete })
   }
 }
 

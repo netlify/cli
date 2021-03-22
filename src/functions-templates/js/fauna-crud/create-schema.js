@@ -18,7 +18,7 @@ const createFaunaDB = async function () {
     await client.query(query.CreateCollection({ name: 'items' }))
 
     console.log('Created items class')
-    return client.query(
+    return await client.query(
       query.CreateIndex({
         name: 'all_items',
         source: query.Collection('items'),
