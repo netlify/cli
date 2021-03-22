@@ -206,7 +206,7 @@ test('netlify init new site', async (t) => {
       // --manual is used to avoid the config-github flow that uses GitHub API
       const childProcess = execa(cliPath, ['init', '--manual'], {
         cwd: builder.directory,
-        env: { NETLIFY_API_URL: apiUrl },
+        env: { NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
         encoding: 'utf8',
       })
 
@@ -285,7 +285,7 @@ test('netlify init new Next.js site', async (t) => {
       // --manual is used to avoid the config-github flow that uses GitHub API
       const childProcess = execa(cliPath, ['init', '--manual'], {
         cwd: builder.directory,
-        env: { NETLIFY_API_URL: apiUrl },
+        env: { NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
       })
 
       handleQuestions(childProcess, initQuestions)
