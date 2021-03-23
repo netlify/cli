@@ -1,5 +1,3 @@
-const { env } = require('process')
-
 const build = require('@netlify/build')
 
 // We have already resolved the configuration using `@netlify/config`
@@ -12,9 +10,6 @@ const getBuildOptions = ({ context, token, flags }) => {
   // buffer = true will not stream output
   const buffer = flags.json || flags.silent
 
-  // @todo Remove once esbuild has been fully rolled out.
-  const featureFlags = env.NETLIFY_EXPERIMENTAL_ESBUILD ? 'buildbot_esbuild' : undefined
-
   return {
     cachedConfig: serializedConfig,
     token,
@@ -23,7 +18,6 @@ const getBuildOptions = ({ context, token, flags }) => {
     mode: 'cli',
     telemetry: false,
     buffer,
-    featureFlags,
   }
 }
 
