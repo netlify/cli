@@ -50,7 +50,7 @@ class FunctionsCreateCommand extends Command {
 FunctionsCreateCommand.args = [
   {
     name: 'name',
-    description: 'name of your new function file inside your functions folder',
+    description: 'name of your new function file inside your functions directory',
   },
 ]
 
@@ -211,10 +211,9 @@ const ensureFunctionDirExists = async function (context) {
     log(`${NETLIFYDEVLOG} functions directory not specified in netlify.toml or UI settings`)
 
     if (!siteId) {
-      context.log(
-        `${NETLIFYDEVERR} Unable to find a site id. Please make sure you are in a directory that is linked to a site with Netlify.`,
+      context.error(
+        `${NETLIFYDEVERR} No site id found, please run inside a site directory or \`netlify link\``,
       )
-      process.exit(1)
     }
 
     const { functionsDir } = await inquirer.prompt([
@@ -351,7 +350,7 @@ const scaffoldFromTemplate = async function (context, flags, args, functionsDir)
     const pathToTemplate = path.join(templatesDir, lang, templateName)
     if (!fs.existsSync(pathToTemplate)) {
       throw new Error(
-        `there isnt a corresponding folder to the selected name, ${templateName} template is misconfigured`,
+        `there isnt a corresponding directory to the selected name, ${templateName} template is misconfigured`,
       )
     }
 
@@ -459,7 +458,7 @@ const installAddons = async function (context, functionAddons, fnPath) {
   const { api, site } = context.netlify
   const siteId = site.id
   if (!siteId) {
-    log('No site id found, please run inside a site folder or `netlify link`')
+    log('No site id found, please run inside a site directory or `netlify link`')
     return false
   }
   log(`${NETLIFYDEVLOG} checking Netlify APIs...`)
@@ -491,7 +490,7 @@ const installAddons = async function (context, functionAddons, fnPath) {
 }
 
 // we used to allow for a --dir command,
-// but have retired that to force every scaffolded function to be a folder
+// but have retired that to force every scaffolded function to be a directory
 const ensureFunctionPathIsOk = function (context, functionsDir, name) {
   const functionPath = path.join(functionsDir, name)
   if (fs.existsSync(functionPath)) {
