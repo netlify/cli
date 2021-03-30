@@ -64,7 +64,7 @@ netlify functions:create
 
 **Arguments**
 
-- name - name of your new function file inside your functions folder
+- name - name of your new function file inside your functions directory
 
 **Flags**
 
