@@ -93,4 +93,62 @@ test('should create a new function directory when none is found', async (t) => {
   })
 })
 
+test('should not create a new function directory when one is found', async (t) => {
+  const siteInfo = {
+    admin_url: 'https://app.netlify.com/sites/site-name/overview',
+    ssl_url: 'https://site-name.netlify.app/',
+    id: 'site_id',
+    name: 'site-name',
+    build_settings: { repo_url: 'https://github.com/owner/repo' },
+  }
+
+  const routes = [
+    {
+      path: 'accounts',
+      response: [{ slug: 'test-account' }],
+    },
+    { path: 'sites/site_id/service-instances', response: [] },
+    { path: 'sites/site_id', response: siteInfo },
+    {
+      path: 'sites',
+      response: [siteInfo],
+    },
+    { path: 'sites/site_id', method: 'patch', response: {} },
+  ]
+
+  await withSiteBuilder('site-with-functions-dir', async (builder) => {
+    builder.withNetlifyToml({ config: { build: { functions: 'functions' } } })
+
+    await builder.buildAsync()
+
+    const createFunctionQuestions = [
+      {
+        question: 'Pick a template',
+        answer: answerWithValue(CONFIRM),
+      },
+      {
+        question: 'name your function',
+        answer: answerWithValue(CONFIRM),
+      },
+    ]
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      const childProcess = execa(cliPath, ['functions:create'], {
+        env: {
+          NETLIFY_API_URL: apiUrl,
+          NETLIFY_SITE_ID: 'site_id',
+          NETLIFY_AUTH_TOKEN: 'fake-token',
+        },
+        cwd: builder.directory,
+      })
+
+      handleQuestions(childProcess, createFunctionQuestions)
+
+      await childProcess
+
+      t.is(await fs.fileExistsAsync(`${builder.directory}/functions/hello-world/hello-world.js`), true)
+    })
+  })
+})
+
 /* eslint-enable require-await */
