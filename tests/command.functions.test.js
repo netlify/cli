@@ -62,7 +62,7 @@ test('should create a new function directory when none is found', async (t) => {
     const createFunctionQuestions = [
       {
         question: 'Enter the path, relative to your site',
-        answer: answerWithValue(`${builder.directory}/test/functions`),
+        answer: answerWithValue('test/functions'),
       },
       {
         question: 'Pick a template',
@@ -80,8 +80,8 @@ test('should create a new function directory when none is found', async (t) => {
           NETLIFY_API_URL: apiUrl,
           NETLIFY_SITE_ID: 'site_id',
           NETLIFY_AUTH_TOKEN: 'fake-token',
-          cwd: builder.directory,
         },
+        cwd: builder.directory,
       })
 
       handleQuestions(childProcess, createFunctionQuestions)
