@@ -33,7 +33,7 @@ netlify completion
 **Examples**
 
 ```bash
-$ <%= config.bin %> completion --shell zsh
+$ netlify completion --shell zsh
 ```
 
 ---
@@ -83,7 +83,7 @@ netlify completion:generate
 **Examples**
 
 ```bash
-$ <%= config.bin %> completion:generate --shell zsh
+$ netlify completion:generate --shell zsh
 ```
 
 ---
