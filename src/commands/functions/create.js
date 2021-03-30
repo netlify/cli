@@ -211,9 +211,7 @@ const ensureFunctionDirExists = async function (context) {
     log(`${NETLIFYDEVLOG} functions directory not specified in netlify.toml or UI settings`)
 
     if (!siteId) {
-      context.error(
-        `${NETLIFYDEVERR} No site id found, please run inside a site directory or \`netlify link\``,
-      )
+      context.error(`${NETLIFYDEVERR} No site id found, please run inside a site directory or \`netlify link\``)
     }
 
     const { functionsDir } = await inquirer.prompt([
