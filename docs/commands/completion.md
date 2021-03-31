@@ -6,7 +6,7 @@ description: Shell completion script for netlify CLI
 # `completion`
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
-Generate shell completion script
+(Beta) Generate shell completion script
 
 Run this command to see instructions for your shell.
 

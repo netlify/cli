@@ -15,6 +15,10 @@ const getFlagType = (flagData) => {
 const formatExamples = (examples) =>
   Array.isArray(examples) ? examples.map((example) => example.replace('<%= config.bin %>', 'netlify')) : examples
 
+const isBetaPlugin = (description) => description.includes('Generate shell completion script')
+
+const formatDescription = (description) => (isBetaPlugin(description) ? `(Beta) ${description}` : description)
+
 module.exports = function generateCommandData() {
   const commandsPath = path.join(__dirname, '..', '..', 'src/commands')
   const completionPluginPath = path.join(__dirname, '..', '..', 'node_modules/oclif-plugin-completion/lib/commands')
@@ -53,7 +57,7 @@ module.exports = function generateCommandData() {
       acc[curr.commandGroup] = {
         name: curr.command,
         usage: curr.data.usage,
-        description: curr.data.description,
+        description: formatDescription(curr.data.description),
         flags: curr.data.flags,
         args: curr.data.args,
         examples: formatExamples(curr.data.examples),
@@ -71,7 +75,7 @@ module.exports = function generateCommandData() {
         {
           name: curr.command,
           usage: curr.data.usage,
-          description: curr.data.description,
+          description: formatDescription(curr.data.description),
           flags: curr.data.flags,
           args: curr.data.args,
           examples: formatExamples(curr.data.examples),

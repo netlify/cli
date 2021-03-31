@@ -161,7 +161,7 @@ Watch for site deploy to finish
 
 ### [completion](/docs/commands/completion.md)
 
-Generate shell completion script
+(Beta) Generate shell completion script
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
