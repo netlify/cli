@@ -21,10 +21,9 @@ class FunctionsBuildCommand extends Command {
     const dst =
       flags.functions ||
       (config.dev && config.dev.functions) ||
-      (config.build && config.build.functions) ||
+      config.functionsDirectory ||
       flags.Functions ||
-      (config.dev && config.dev.Functions) ||
-      (config.build && config.build.Functions)
+      (config.dev && config.dev.Functions)
 
     if (src === dst) {
       this.log(`${NETLIFYDEVERR} Source and destination for function build can't be the same`)
