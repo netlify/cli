@@ -216,6 +216,7 @@
   "oclif": {
     "bin": "netlify",
     "commands": "./src/commands",
+    "helpClass": "./src/lib/help",
     "plugins": [
       "@oclif/plugin-not-found",
       "@oclif/plugin-plugins",
