@@ -199,7 +199,7 @@ const DEFAULT_PRIORITY = 999
 
 /* get functions dir (and make it if necessary) */
 const ensureFunctionDirExists = function (context, flags, config) {
-  const functionsDir = config.build && config.build.functions
+  const functionsDir = config.functionsDirectory
   if (!functionsDir) {
     context.log(`${NETLIFYDEVLOG} No functions folder specified in netlify.toml`)
     process.exit(1)

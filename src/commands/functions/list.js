@@ -46,10 +46,9 @@ class FunctionsListCommand extends Command {
     const functionsDir =
       flags.functions ||
       (config.dev && config.dev.functions) ||
-      (config.build && config.build.functions) ||
+      config.functionsDirectory ||
       flags.Functions ||
-      (config.dev && config.dev.Functions) ||
-      (config.build && config.build.Functions)
+      (config.dev && config.dev.Functions)
 
     if (typeof functionsDir === 'undefined') {
       this.log('Functions directory is undefined')
