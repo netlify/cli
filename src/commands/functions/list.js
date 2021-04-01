@@ -46,14 +46,13 @@ class FunctionsListCommand extends Command {
     const functionsDir =
       flags.functions ||
       (config.dev && config.dev.functions) ||
-      (config.build && config.build.functions) ||
+      config.functionsDirectory ||
       flags.Functions ||
-      (config.dev && config.dev.Functions) ||
-      (config.build && config.build.Functions)
+      (config.dev && config.dev.Functions)
 
     if (typeof functionsDir === 'undefined') {
       this.log('Functions directory is undefined')
-      this.log('Please verify build.functions is set in your Netlify configuration file (netlify.toml/yml/json)')
+      this.log('Please verify functions.directory is set in your Netlify configuration file (netlify.toml/yml/json)')
       this.log('See https://docs.netlify.com/configure-builds/file-based-configuration/ for more information')
       process.exit(1)
     }

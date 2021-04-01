@@ -34,8 +34,7 @@ class FunctionsInvokeCommand extends Command {
     const { flags, args } = this.parse(FunctionsInvokeCommand)
     const { config } = this.netlify
 
-    const functionsDir =
-      flags.functions || (config.dev && config.dev.functions) || (config.build && config.build.functions)
+    const functionsDir = flags.functions || (config.dev && config.dev.functions) || config.functionsDirectory
     if (typeof functionsDir === 'undefined') {
       this.error('functions directory is undefined, did you forget to set it in netlify.toml?')
     }

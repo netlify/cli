@@ -217,7 +217,7 @@ class DevCommand extends Command {
     config.build = { ...config.build }
     const devConfig = {
       framework: '#auto',
-      ...(config.build.functions && { functions: config.build.functions }),
+      ...(config.functionsDirectory && { functions: config.functionsDirectory }),
       ...(config.build.publish && { publish: config.build.publish }),
       ...config.dev,
       ...flags,

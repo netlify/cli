@@ -94,7 +94,7 @@ const validateDeployFolder = async ({ deployFolder, error }) => {
 const getFunctionsFolder = ({ flags, config, site, siteData }) => {
   let functionsFolder
   // Support "functions" and "Functions"
-  const funcConfig = get(config, 'build.functions') || get(config, 'build.Functions')
+  const funcConfig = config.functionsDirectory
   if (flags.functions) {
     functionsFolder = path.resolve(process.cwd(), flags.functions)
   } else if (funcConfig) {
