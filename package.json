@@ -74,11 +74,11 @@
     "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,scripts,site,tests,.github}/**/*.{js,md,yml,json,html}\" \"*.{js,yml,json,html}\" \".*.{js,yml,json,html}\" \"!CHANGELOG.md\" \"!package-lock.json\""
   },
   "dependencies": {
-    "@netlify/build": "^10.2.0",
+    "@netlify/build": "^10.2.2",
     "@netlify/config": "^5.1.0",
     "@netlify/framework-info": "^3.2.1",
     "@netlify/plugin-edge-handlers": "^1.11.6",
-    "@netlify/plugins-list": "^2.5.1",
+    "@netlify/plugins-list": "^2.6.0",
     "@netlify/traffic-mesh-agent": "^0.27.10",
     "@netlify/zip-it-and-ship-it": "^3.0.1",
     "@oclif/command": "^1.6.1",
