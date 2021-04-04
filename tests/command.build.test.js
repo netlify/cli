@@ -48,16 +48,6 @@ if (process.env.IS_FORK !== 'true') {
     })
   })
 
-  test('should set the build mode to cli', async (t) => {
-    await withSiteBuilder('success-site', async (builder) => {
-      builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } })
-
-      await builder.buildAsync()
-
-      await runBuildCommand(t, builder.directory, { output: 'mode: cli' })
-    })
-  })
-
   test('should run in dry mode when the --dry flag is set', async (t) => {
     await withSiteBuilder('success-site', async (builder) => {
       builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } })
