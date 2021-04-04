@@ -145,6 +145,7 @@
     "netlify-redirector": "^0.2.1",
     "node-fetch": "^2.6.0",
     "node-version-alias": "^1.0.1",
+    "oclif-plugin-completion": "^0.6.0",
     "open": "^7.0.0",
     "ora": "^4.1.1",
     "p-filter": "^2.1.0",
@@ -215,10 +216,12 @@
   "oclif": {
     "bin": "netlify",
     "commands": "./src/commands",
+    "helpClass": "./src/lib/help",
     "plugins": [
       "@oclif/plugin-not-found",
       "@oclif/plugin-plugins",
-      "@oclif/plugin-help"
+      "@oclif/plugin-help",
+      "oclif-plugin-completion"
     ],
     "hooks": {
       "init": [

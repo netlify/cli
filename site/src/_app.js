@@ -40,6 +40,7 @@ const navOrder = [
   'addons',
   'api',
   'build',
+  'completion',
   'deploy',
   'dev',
   'env',
