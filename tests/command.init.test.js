@@ -1,5 +1,3 @@
-const { Buffer } = require('buffer')
-
 const test = require('ava')
 const execa = require('execa')
 const toml = require('toml')
@@ -7,26 +5,9 @@ const toml = require('toml')
 const { readFileAsync } = require('../src/lib/fs')
 
 const cliPath = require('./utils/cli-path')
+const { handleQuestions, answerWithValue, CONFIRM, DOWN } = require('./utils/handle-questions')
 const { withMockApi } = require('./utils/mock-api')
 const { withSiteBuilder } = require('./utils/site-builder')
-
-const handleQuestions = (process, questions) => {
-  const remainingQuestions = [...questions]
-  let buffer = ''
-  process.stdout.on('data', (data) => {
-    buffer += data
-    const index = remainingQuestions.findIndex(({ question }) => buffer.includes(question))
-    if (index >= 0) {
-      buffer = ''
-      process.stdin.write(Buffer.from(remainingQuestions[index].answer))
-      remainingQuestions.splice(index, 1)
-    }
-  })
-}
-
-const CONFIRM = '\n'
-const DOWN = '\u001B[B'
-const answerWithValue = (value) => `${value}${CONFIRM}`
 
 const assetSiteRequests = (
   t,
