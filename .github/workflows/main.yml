@@ -14,6 +14,11 @@ jobs:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
         node-version: [10.x, 15.x]
+        exclude:
+          - os: macOS-latest
+            node-version: 10.x
+          - os: windows-latest
+            node-version: 10.x
       fail-fast: false
 
     steps:
