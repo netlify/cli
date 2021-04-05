@@ -83,7 +83,7 @@ We also test for a few other things:
 
 We actively welcome your pull requests.
 
-1. Fork the repo and create your branch from `master`.
+1. Fork the repo and create your branch from `main`.
 2. If you've added code that should be tested, add tests.
 3. If you've changed APIs, update the documentation.
 4. Run `npm test` to run linting, formatting and tests.
@@ -92,7 +92,7 @@ We actively welcome your pull requests.
 ## Releasing
 
 1. Merge the release PR
-2. Switch to the default branch `git checkout master`
+2. Switch to the default branch `git checkout main`
 3. Pull latest changes `git pull`
 4. Publish the package `npm publish`
 

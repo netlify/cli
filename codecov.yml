@@ -1,5 +1,5 @@
 codecov:
-  strict_yaml_branch: master
+  strict_yaml_branch: main
 coverage:
   range: [80, 100]
   parsers:

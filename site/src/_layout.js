@@ -411,18 +411,6 @@ export default class Layout extends React.Component {
               <HitBoxWrapper>
                 <MyHits />
               </HitBoxWrapper>
-              {/* <EditLink>
-                <a
-                  style={{
-                    color: '#333',
-                    textDecoration: 'none',
-                    fontSize: '12px'
-                  }}
-                  href={`${repoUrl}/edit/master/docs/${this.props.route.key}`}
-                >
-                  Edit this doc <GithubIcon/>
-                </a>
-              </EditLink> */}
               <Wrapper>
                 <Content>
                   <div className="doc-content">{children}</div>
