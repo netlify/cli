@@ -18,7 +18,7 @@
 ## things to note
 
 - Dev block overrides will supercede anything you write in your detector:
-  https://github.com/netlify/cli/blob/master/docs/netlify-dev.md#project-detection
+  https://github.com/netlify/cli/blob/main/docs/netlify-dev.md#project-detection
 - detectors are language agnostic. don't assume npm or yarn.
 - if default args (like 'develop') are missing, that means the user has configured it, best to tell them to use the -c
   flag.
