@@ -18,6 +18,7 @@ const winston = require('winston')
 
 const { getLogMessage } = require('../lib/log')
 
+const { startFunctionBundler } = require('./bundle-functions')
 const { detectFunctionsBuilder } = require('./detect-functions-builder')
 const { getFunctions } = require('./get-functions')
 const { NETLIFYDEVLOG, NETLIFYDEVWARN, NETLIFYDEVERR } = require('./logo')
@@ -153,12 +154,10 @@ const buildClientContext = function (headers) {
   }
 }
 
-const clearCache = (action) => (path) => {
-  console.log(`${NETLIFYDEVLOG} ${path} ${action}, reloading...`)
+const clearCache = () => {
   Object.keys(require.cache).forEach((key) => {
     delete require.cache[key]
   })
-  console.log(`${NETLIFYDEVLOG} ${path} ${action}, successfully reloaded!`)
 }
 
 const shouldBase64Encode = function (contentType) {
@@ -177,7 +176,7 @@ const createHandler = async function ({ dir, capabilities, warn }) {
   const functions = await getFunctions(dir)
   validateFunctions({ functions, capabilities, warn })
   const watcher = chokidar.watch(dir, { ignored: /node_modules/ })
-  watcher.on('change', clearCache('modified')).on('unlink', clearCache('deleted'))
+  watcher.on('change', clearCache).on('unlink', clearCache)
 
   const logger = winston.createLogger({
     levels: winston.config.npm.levels,
@@ -419,30 +418,35 @@ const getBuildFunction = ({ functionBuilder, log }) =>
 
 const setupFunctionsBuilder = async ({ site, log, warn }) => {
   const functionBuilder = await detectFunctionsBuilder(site.root)
-  if (functionBuilder) {
-    log(
-      `${NETLIFYDEVLOG} Function builder ${chalk.yellow(
-        functionBuilder.builderName,
-      )} detected: Running npm script ${chalk.yellow(functionBuilder.npmScript)}`,
-    )
-    warn(
-      `${NETLIFYDEVWARN} This is a beta feature, please give us feedback on how to improve at https://github.com/netlify/cli/`,
-    )
 
-    const debouncedBuild = debounce(getBuildFunction({ functionBuilder, log }), 300, {
-      leading: true,
-      trailing: true,
-    })
-
-    await debouncedBuild()
-
-    const functionWatcher = chokidar.watch(functionBuilder.src)
-    functionWatcher.on('ready', () => {
-      functionWatcher.on('add', debouncedBuild)
-      functionWatcher.on('change', debouncedBuild)
-      functionWatcher.on('unlink', debouncedBuild)
-    })
+  if (!functionBuilder) {
+    return
   }
+
+  log(
+    `${NETLIFYDEVLOG} Function builder ${chalk.yellow(
+      functionBuilder.builderName,
+    )} detected: Running npm script ${chalk.yellow(functionBuilder.npmScript)}`,
+  )
+  warn(
+    `${NETLIFYDEVWARN} This is a beta feature, please give us feedback on how to improve at https://github.com/netlify/cli/`,
+  )
+
+  const debouncedBuild = debounce(getBuildFunction({ functionBuilder, log }), 300, {
+    leading: true,
+    trailing: true,
+  })
+
+  await debouncedBuild()
+
+  const functionWatcher = chokidar.watch(functionBuilder.src)
+  functionWatcher.on('ready', () => {
+    functionWatcher.on('add', debouncedBuild)
+    functionWatcher.on('change', debouncedBuild)
+    functionWatcher.on('unlink', debouncedBuild)
+  })
+
+  return functionBuilder
 }
 
 const startServer = async ({ server, settings, log, errorExit }) => {
@@ -458,12 +462,28 @@ const startServer = async ({ server, settings, log, errorExit }) => {
   })
 }
 
-const startFunctionsServer = async ({ settings, site, log, warn, errorExit, siteUrl, capabilities }) => {
+const startFunctionsServer = async ({
+  settings,
+  site,
+  log,
+  warn,
+  errorExit,
+  siteUrl,
+  capabilities,
+  functionsConfig,
+}) => {
   // serve functions from zip-it-and-ship-it
   // env variables relies on `url`, careful moving this code
   if (settings.functions) {
     await setupFunctionsBuilder({ site, log, warn })
-    const server = await getFunctionsServer({ dir: settings.functions, siteUrl, capabilities, warn })
+
+    const { functionsDirectory } = await startFunctionBundler({
+      functionsConfig,
+      functionsDirectory: settings.functions,
+      log,
+    })
+    const server = await getFunctionsServer({ dir: functionsDirectory, siteUrl, capabilities, warn })
+
     await startServer({ server, settings, log, errorExit })
   }
 }

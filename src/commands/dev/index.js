@@ -256,6 +256,7 @@ class DevCommand extends Command {
       errorExit,
       siteUrl,
       capabilities,
+      functionsConfig: config.functions,
     })
     await startFrameworkServer({ settings, log, exit })
 
