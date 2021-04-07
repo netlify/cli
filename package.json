@@ -75,8 +75,8 @@
   },
   "dependencies": {
     "@netlify/build": "^10.2.4",
-    "@netlify/config": "^5.1.0",
-    "@netlify/framework-info": "^3.2.1",
+    "@netlify/config": "^5.1.1",
+    "@netlify/framework-info": "^3.3.0",
     "@netlify/plugin-edge-handlers": "^1.11.6",
     "@netlify/plugins-list": "^2.6.0",
     "@netlify/traffic-mesh-agent": "^0.27.10",
