@@ -75,7 +75,7 @@
   },
   "dependencies": {
     "@netlify/build": "^10.2.5",
-    "@netlify/config": "^5.6.0",
+    "@netlify/config": "^5.9.0",
     "@netlify/framework-info": "^3.3.0",
     "@netlify/plugin-edge-handlers": "^1.11.6",
     "@netlify/plugins-list": "^2.6.0",
@@ -141,7 +141,7 @@
     "minimist": "^1.2.5",
     "multiparty": "^4.2.1",
     "netlify": "^6.1.16",
-    "netlify-redirect-parser": "^3.0.11",
+    "netlify-redirect-parser": "^3.0.12",
     "netlify-redirector": "^0.2.1",
     "node-fetch": "^2.6.0",
     "node-version-alias": "^1.0.1",
