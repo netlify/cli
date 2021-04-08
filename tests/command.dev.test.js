@@ -1454,6 +1454,88 @@ testMatrix.forEach(({ args }) => {
         })
       })
     })
+
+    test(testName('Should not use the ZISI function bundler if not using esbuild', args), async (t) => {
+      await withSiteBuilder('site-with-esm-function', async (builder) => {
+        builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withContentFile({
+          path: path.join('functions', 'esm-function', 'esm-function.js'),
+          content: `
+export async function handler(event, context) {
+  return {
+    statusCode: 200,
+    body: 'esm',
+  };
+}
+    `,
+        })
+
+        await builder.buildAsync()
+
+        await t.throwsAsync(() =>
+          withDevServer({ cwd: builder.directory, args }, async (server) =>
+            got(`${server.url}/.netlify/functions/esm-function`).text(),
+          ),
+        )
+      })
+    })
+
+    test(testName('Should use the ZISI function bundler and serve ESM functions if using esbuild', args), async (t) => {
+      await withSiteBuilder('site-with-esm-function', async (builder) => {
+        builder
+          .withNetlifyToml({ config: { functions: { directory: 'functions', node_bundler: 'esbuild' } } })
+          .withContentFile({
+            path: path.join('functions', 'esm-function', 'esm-function.js'),
+            content: `
+export async function handler(event, context) {
+  return {
+    statusCode: 200,
+    body: 'esm',
+  };
+}
+    `,
+          })
+
+        await builder.buildAsync()
+
+        await withDevServer({ cwd: builder.directory, args }, async (server) => {
+          const response = await got(`${server.url}/.netlify/functions/esm-function`).text()
+          t.is(response, 'esm')
+        })
+      })
+    })
+
+    test(
+      testName('Should use the ZISI function bundler and serve TypeScript functions if using esbuild', args),
+      async (t) => {
+        await withSiteBuilder('site-with-ts-function', async (builder) => {
+          builder
+            .withNetlifyToml({ config: { functions: { directory: 'functions', node_bundler: 'esbuild' } } })
+            .withContentFile({
+              path: path.join('functions', 'ts-function', 'ts-function.ts'),
+              content: `
+type CustomResponse = string;
+
+export const handler = async function () {
+  const response: CustomResponse = "ts";
+
+  return {
+    statusCode: 200,
+    body: response,
+  };
+};
+            
+    `,
+            })
+
+          await builder.buildAsync()
+
+          await withDevServer({ cwd: builder.directory, args }, async (server) => {
+            const response = await got(`${server.url}/.netlify/functions/ts-function`).text()
+            t.is(response, 'ts')
+          })
+        })
+      },
+    )
   }
 })
 /* eslint-enable require-await */
