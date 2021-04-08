@@ -1,7 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 
-const detectFunctionsBuilder = async function (projectDir) {
+const detectFunctionsBuilder = async function (parameters) {
   const detectors = fs
     .readdirSync(path.join(__dirname, '..', 'function-builder-detectors'))
     // only accept .js detector files
@@ -11,7 +11,7 @@ const detectFunctionsBuilder = async function (projectDir) {
 
   for (const detector of detectors) {
     // eslint-disable-next-line no-await-in-loop
-    const settings = await detector(projectDir)
+    const settings = await detector(parameters)
     if (settings) {
       return settings
     }

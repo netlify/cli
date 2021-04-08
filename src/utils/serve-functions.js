@@ -18,7 +18,6 @@ const winston = require('winston')
 
 const { getLogMessage } = require('../lib/log')
 
-const { startFunctionBundler } = require('./bundle-functions')
 const { detectFunctionsBuilder } = require('./detect-functions-builder')
 const { getFunctions } = require('./get-functions')
 const { NETLIFYDEVLOG, NETLIFYDEVWARN, NETLIFYDEVERR } = require('./logo')
@@ -390,7 +389,7 @@ const getFunctionsServer = async function ({ dir, siteUrl, capabilities, warn })
 }
 
 const getBuildFunction = ({ functionBuilder, log }) =>
-  async function build() {
+  async function build(updatedPath) {
     log(
       `${NETLIFYDEVLOG} Function builder ${chalk.yellow(functionBuilder.builderName)} ${chalk.magenta(
         'building',
@@ -398,7 +397,7 @@ const getBuildFunction = ({ functionBuilder, log }) =>
     )
 
     try {
-      await functionBuilder.build()
+      await functionBuilder.build(updatedPath)
       log(
         `${NETLIFYDEVLOG} Function builder ${chalk.yellow(functionBuilder.builderName)} ${chalk.green(
           'finished',
@@ -416,18 +415,18 @@ const getBuildFunction = ({ functionBuilder, log }) =>
     }
   }
 
-const setupFunctionsBuilder = async ({ site, log, warn }) => {
-  const functionBuilder = await detectFunctionsBuilder(site.root)
+const setupFunctionsBuilder = async ({ config, functionsDirectory, log, site, warn }) => {
+  const functionBuilder = await detectFunctionsBuilder({ config, functionsDirectory, log, projectRoot: site.root })
 
   if (!functionBuilder) {
-    return
+    return {}
   }
 
-  log(
-    `${NETLIFYDEVLOG} Function builder ${chalk.yellow(
-      functionBuilder.builderName,
-    )} detected: Running npm script ${chalk.yellow(functionBuilder.npmScript)}`,
-  )
+  const npmScriptString = functionBuilder.npmScript
+    ? `: Running npm script ${chalk.yellow(functionBuilder.npmScript)}`
+    : ''
+
+  log(`${NETLIFYDEVLOG} Function builder ${chalk.yellow(functionBuilder.builderName)} detected${npmScriptString}.`)
   warn(
     `${NETLIFYDEVWARN} This is a beta feature, please give us feedback on how to improve at https://github.com/netlify/cli/`,
   )
@@ -462,27 +461,23 @@ const startServer = async ({ server, settings, log, errorExit }) => {
   })
 }
 
-const startFunctionsServer = async ({
-  settings,
-  site,
-  log,
-  warn,
-  errorExit,
-  siteUrl,
-  capabilities,
-  functionsConfig,
-}) => {
+const startFunctionsServer = async ({ config, settings, site, log, warn, errorExit, siteUrl, capabilities }) => {
   // serve functions from zip-it-and-ship-it
   // env variables relies on `url`, careful moving this code
   if (settings.functions) {
-    await setupFunctionsBuilder({ site, log, warn })
-
-    const { functionsDirectory } = await startFunctionBundler({
-      functionsConfig,
+    const { target: functionsDirectory } = await setupFunctionsBuilder({
+      config,
       functionsDirectory: settings.functions,
       log,
+      site,
+      warn,
     })
-    const server = await getFunctionsServer({ dir: functionsDirectory, siteUrl, capabilities, warn })
+    const server = await getFunctionsServer({
+      dir: functionsDirectory || settings.functions,
+      siteUrl,
+      capabilities,
+      warn,
+    })
 
     await startServer({ server, settings, log, errorExit })
   }
