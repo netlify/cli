@@ -20,7 +20,7 @@ const { getLogMessage } = require('../lib/log')
 
 const { detectFunctionsBuilder } = require('./detect-functions-builder')
 const { getFunctions } = require('./get-functions')
-const { NETLIFYDEVLOG, NETLIFYDEVWARN, NETLIFYDEVERR } = require('./logo')
+const { NETLIFYDEVLOG, NETLIFYDEVERR } = require('./logo')
 
 const formatLambdaLocalError = (err) => `${err.errorType}: ${err.errorMessage}\n  ${err.stackTrace.join('\n  ')}`
 
@@ -425,7 +425,7 @@ const getBuildFunction = ({ functionBuilder, log }) =>
     }
   }
 
-const setupFunctionsBuilder = async ({ config, errorExit, functionsDirectory, log, site, warn }) => {
+const setupFunctionsBuilder = async ({ config, errorExit, functionsDirectory, log, site }) => {
   const functionBuilder = await detectFunctionsBuilder({
     config,
     errorExit,
@@ -443,9 +443,6 @@ const setupFunctionsBuilder = async ({ config, errorExit, functionsDirectory, lo
     : ''
 
   log(`${NETLIFYDEVLOG} Function builder ${chalk.yellow(functionBuilder.builderName)} detected${npmScriptString}.`)
-  warn(
-    `${NETLIFYDEVWARN} This is a beta feature, please give us feedback on how to improve at https://github.com/netlify/cli/`,
-  )
 
   const debouncedBuild = debounce(getBuildFunction({ functionBuilder, log }), 300, {
     leading: true,
@@ -487,7 +484,6 @@ const startFunctionsServer = async ({ config, settings, site, log, warn, errorEx
       functionsDirectory: settings.functions,
       log,
       site,
-      warn,
     })
     const server = await getFunctionsServer({
       dir: functionsDirectory || settings.functions,
