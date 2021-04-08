@@ -153,10 +153,18 @@ const buildClientContext = function (headers) {
   }
 }
 
-const clearCache = () => {
+const clearCache = ({ action, omitLog }) => (path) => {
+  if (!omitLog) {
+    console.log(`${NETLIFYDEVLOG} ${path} ${action}, reloading...`)
+  }
+
   Object.keys(require.cache).forEach((key) => {
     delete require.cache[key]
   })
+
+  if (!omitLog) {
+    console.log(`${NETLIFYDEVLOG} ${path} ${action}, successfully reloaded!`)
+  }
 }
 
 const shouldBase64Encode = function (contentType) {
@@ -171,11 +179,13 @@ const validateFunctions = function ({ functions, capabilities, warn }) {
   }
 }
 
-const createHandler = async function ({ dir, capabilities, warn }) {
+const createHandler = async function ({ dir, capabilities, omitFileChangesLog, warn }) {
   const functions = await getFunctions(dir)
   validateFunctions({ functions, capabilities, warn })
   const watcher = chokidar.watch(dir, { ignored: /node_modules/ })
-  watcher.on('change', clearCache).on('unlink', clearCache)
+  watcher
+    .on('change', clearCache({ action: 'modified', omitLog: omitFileChangesLog }))
+    .on('unlink', clearCache({ action: 'deleted', omitLog: omitFileChangesLog }))
 
   const logger = winston.createLogger({
     levels: winston.config.npm.levels,
@@ -361,7 +371,7 @@ const createFormSubmissionHandler = function ({ siteUrl, warn }) {
   }
 }
 
-const getFunctionsServer = async function ({ dir, siteUrl, capabilities, warn }) {
+const getFunctionsServer = async function ({ dir, omitFileChangesLog, siteUrl, capabilities, warn }) {
   const app = express()
   app.set('query parser', 'simple')
 
@@ -383,7 +393,7 @@ const getFunctionsServer = async function ({ dir, siteUrl, capabilities, warn })
     res.status(204).end()
   })
 
-  app.all('*', await createHandler({ dir, capabilities, warn }))
+  app.all('*', await createHandler({ dir, capabilities, omitFileChangesLog, warn }))
 
   return app
 }
@@ -465,7 +475,7 @@ const startFunctionsServer = async ({ config, settings, site, log, warn, errorEx
   // serve functions from zip-it-and-ship-it
   // env variables relies on `url`, careful moving this code
   if (settings.functions) {
-    const { target: functionsDirectory } = await setupFunctionsBuilder({
+    const { omitFileChangesLog, target: functionsDirectory } = await setupFunctionsBuilder({
       config,
       functionsDirectory: settings.functions,
       log,
@@ -474,6 +484,7 @@ const startFunctionsServer = async ({ config, settings, site, log, warn, errorEx
     })
     const server = await getFunctionsServer({
       dir: functionsDirectory || settings.functions,
+      omitFileChangesLog,
       siteUrl,
       capabilities,
       warn,

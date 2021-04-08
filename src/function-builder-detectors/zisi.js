@@ -61,6 +61,7 @@ module.exports = async function handler({ config, functionsDirectory: sourceDire
   return {
     build: (updatedPath) => bundleFunctions({ config: functionsConfig, sourceDirectory, targetDirectory, updatedPath }),
     builderName: 'zip-it-and-ship-it',
+    omitFileChangesLog: true,
     src: sourceDirectory,
     target: targetDirectory,
   }
