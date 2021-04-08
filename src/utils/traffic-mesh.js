@@ -27,8 +27,9 @@ const startForwardProxy = async ({
   jwtSecret,
 }) => {
   const args = [
+    '--log-file',
+    getPathInProject(['logs', 'traffic-mesh.log']),
     'start',
-    'local',
     '--port',
     port,
     '--forward-proxy',
@@ -37,8 +38,6 @@ const startForwardProxy = async ({
     publishDir,
     '--bundler',
     EDGE_HANDLERS_BUNDLER_CLI_PATH,
-    '--log-file',
-    getPathInProject(['logs', 'traffic-mesh.log']),
     '--progress',
   ]
 
