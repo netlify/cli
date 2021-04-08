@@ -52,8 +52,14 @@ const getTargetDirectory = async ({ errorExit }) => {
 }
 
 module.exports = async function handler({ config, errorExit, functionsDirectory: sourceDirectory }) {
-  const targetDirectory = await getTargetDirectory({ errorExit })
   const functionsConfig = normalizeFunctionsConfig(config.functions)
+  const isUsingEsbuild = functionsConfig['*'] && functionsConfig['*'].nodeBundler === 'esbuild_zisi'
+
+  if (!isUsingEsbuild) {
+    return false
+  }
+
+  const targetDirectory = await getTargetDirectory({ errorExit })
 
   return {
     build: (updatedPath) => bundleFunctions({ config: functionsConfig, sourceDirectory, targetDirectory, updatedPath }),
