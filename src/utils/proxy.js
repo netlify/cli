@@ -179,7 +179,13 @@ const serveRedirect = async function ({ req, res, proxy, match, options }) {
   )
 
   const staticFile = await getStatic(decodeURIComponent(reqUrl.pathname), options.publicFolder)
-  if (staticFile) req.url = staticFile + reqUrl.search
+  if (staticFile) {
+    req.url = staticFile + reqUrl.search
+    // if there is an existing static file and it is not a forced redirect, return the file
+    if (!match.force) {
+      return proxy.web(req, res, options)
+    }
+  }
   if (match.force404) {
     res.writeHead(404)
     res.end(await render404(options.publicFolder))
