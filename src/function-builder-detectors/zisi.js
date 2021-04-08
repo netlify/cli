@@ -1,5 +1,4 @@
 const path = require('path')
-const process = require('process')
 
 const { zipFunction, zipFunctions } = require('@netlify/zip-it-and-ship-it')
 const makeDir = require('make-dir')
@@ -40,22 +39,20 @@ const normalizeFunctionsConfig = (functionsConfig = {}) =>
     {},
   )
 
-const getTargetDirectory = async ({ log }) => {
+const getTargetDirectory = async ({ errorExit }) => {
   const targetDirectory = path.resolve(getPathInProject(['functions-serve']))
 
   try {
     await makeDir(targetDirectory)
   } catch (error) {
-    log(`${NETLIFYDEVERR} Could not create directory: ${targetDirectory}`)
-
-    process.exit(1)
+    errorExit(`${NETLIFYDEVERR} Could not create directory: ${targetDirectory}`)
   }
 
   return targetDirectory
 }
 
-module.exports = async function handler({ config, functionsDirectory: sourceDirectory, log }) {
-  const targetDirectory = await getTargetDirectory({ log })
+module.exports = async function handler({ config, errorExit, functionsDirectory: sourceDirectory }) {
+  const targetDirectory = await getTargetDirectory({ errorExit })
   const functionsConfig = normalizeFunctionsConfig(config.functions)
 
   return {

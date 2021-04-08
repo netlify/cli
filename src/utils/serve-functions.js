@@ -425,8 +425,14 @@ const getBuildFunction = ({ functionBuilder, log }) =>
     }
   }
 
-const setupFunctionsBuilder = async ({ config, functionsDirectory, log, site, warn }) => {
-  const functionBuilder = await detectFunctionsBuilder({ config, functionsDirectory, log, projectRoot: site.root })
+const setupFunctionsBuilder = async ({ config, errorExit, functionsDirectory, log, site, warn }) => {
+  const functionBuilder = await detectFunctionsBuilder({
+    config,
+    errorExit,
+    functionsDirectory,
+    log,
+    projectRoot: site.root,
+  })
 
   if (!functionBuilder) {
     return {}
@@ -477,6 +483,7 @@ const startFunctionsServer = async ({ config, settings, site, log, warn, errorEx
   if (settings.functions) {
     const { omitFileChangesLog, target: functionsDirectory } = await setupFunctionsBuilder({
       config,
+      errorExit,
       functionsDirectory: settings.functions,
       log,
       site,
