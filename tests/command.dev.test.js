@@ -724,7 +724,7 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
-  test(testName('should return existing local file even when redirect matches when force=false', args), async (t) => {
+  test(testName('should return existing local file even when rewrite matches when force=false', args), async (t) => {
     await withSiteBuilder('site-with-shadowing-force-false', async (builder) => {
       builder
         .withContentFile({
@@ -738,6 +738,32 @@ testMatrix.forEach(({ args }) => {
         .withNetlifyToml({
           config: {
             redirects: [{ from: '/foo', to: '/not-foo', status: 200, force: false }],
+          },
+        })
+
+      await builder.buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async (server) => {
+        const response = await got(`${server.url}/foo?ping=pong`).text()
+        t.is(response, '<html><h1>foo')
+      })
+    })
+  })
+
+  test(testName('should return existing local file even when redirect matches when force=false', args), async (t) => {
+    await withSiteBuilder('site-with-shadowing-force-false', async (builder) => {
+      builder
+        .withContentFile({
+          path: 'foo.html',
+          content: '<html><h1>foo',
+        })
+        .withContentFile({
+          path: path.join('not-foo', 'index.html'),
+          content: '<html><h1>not-foo',
+        })
+        .withNetlifyToml({
+          config: {
+            redirects: [{ from: '/foo', to: '/not-foo', status: 301, force: false }],
           },
         })
 
