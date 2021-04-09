@@ -20,7 +20,7 @@ const { getLogMessage } = require('../lib/log')
 
 const { detectFunctionsBuilder } = require('./detect-functions-builder')
 const { getFunctions } = require('./get-functions')
-const { NETLIFYDEVLOG, NETLIFYDEVWARN, NETLIFYDEVERR } = require('./logo')
+const { NETLIFYDEVLOG, NETLIFYDEVERR } = require('./logo')
 
 const formatLambdaLocalError = (err) => `${err.errorType}: ${err.errorMessage}\n  ${err.stackTrace.join('\n  ')}`
 
@@ -153,12 +153,18 @@ const buildClientContext = function (headers) {
   }
 }
 
-const clearCache = (action) => (path) => {
-  console.log(`${NETLIFYDEVLOG} ${path} ${action}, reloading...`)
+const clearCache = ({ action, omitLog }) => (path) => {
+  if (!omitLog) {
+    console.log(`${NETLIFYDEVLOG} ${path} ${action}, reloading...`)
+  }
+
   Object.keys(require.cache).forEach((key) => {
     delete require.cache[key]
   })
-  console.log(`${NETLIFYDEVLOG} ${path} ${action}, successfully reloaded!`)
+
+  if (!omitLog) {
+    console.log(`${NETLIFYDEVLOG} ${path} ${action}, successfully reloaded!`)
+  }
 }
 
 const shouldBase64Encode = function (contentType) {
@@ -173,11 +179,13 @@ const validateFunctions = function ({ functions, capabilities, warn }) {
   }
 }
 
-const createHandler = async function ({ dir, capabilities, warn }) {
+const createHandler = async function ({ dir, capabilities, omitFileChangesLog, warn }) {
   const functions = await getFunctions(dir)
   validateFunctions({ functions, capabilities, warn })
   const watcher = chokidar.watch(dir, { ignored: /node_modules/ })
-  watcher.on('change', clearCache('modified')).on('unlink', clearCache('deleted'))
+  watcher
+    .on('change', clearCache({ action: 'modified', omitLog: omitFileChangesLog }))
+    .on('unlink', clearCache({ action: 'deleted', omitLog: omitFileChangesLog }))
 
   const logger = winston.createLogger({
     levels: winston.config.npm.levels,
@@ -363,7 +371,7 @@ const createFormSubmissionHandler = function ({ siteUrl, warn }) {
   }
 }
 
-const getFunctionsServer = async function ({ dir, siteUrl, capabilities, warn }) {
+const getFunctionsServer = async function ({ dir, omitFileChangesLog, siteUrl, capabilities, warn }) {
   const app = express()
   app.set('query parser', 'simple')
 
@@ -385,13 +393,13 @@ const getFunctionsServer = async function ({ dir, siteUrl, capabilities, warn })
     res.status(204).end()
   })
 
-  app.all('*', await createHandler({ dir, capabilities, warn }))
+  app.all('*', await createHandler({ dir, capabilities, omitFileChangesLog, warn }))
 
   return app
 }
 
 const getBuildFunction = ({ functionBuilder, log }) =>
-  async function build() {
+  async function build(updatedPath) {
     log(
       `${NETLIFYDEVLOG} Function builder ${chalk.yellow(functionBuilder.builderName)} ${chalk.magenta(
         'building',
@@ -399,7 +407,7 @@ const getBuildFunction = ({ functionBuilder, log }) =>
     )
 
     try {
-      await functionBuilder.build()
+      await functionBuilder.build(updatedPath)
       log(
         `${NETLIFYDEVLOG} Function builder ${chalk.yellow(functionBuilder.builderName)} ${chalk.green(
           'finished',
@@ -417,32 +425,40 @@ const getBuildFunction = ({ functionBuilder, log }) =>
     }
   }
 
-const setupFunctionsBuilder = async ({ site, log, warn }) => {
-  const functionBuilder = await detectFunctionsBuilder(site.root)
-  if (functionBuilder) {
-    log(
-      `${NETLIFYDEVLOG} Function builder ${chalk.yellow(
-        functionBuilder.builderName,
-      )} detected: Running npm script ${chalk.yellow(functionBuilder.npmScript)}`,
-    )
-    warn(
-      `${NETLIFYDEVWARN} This is a beta feature, please give us feedback on how to improve at https://github.com/netlify/cli/`,
-    )
+const setupFunctionsBuilder = async ({ config, errorExit, functionsDirectory, log, site }) => {
+  const functionBuilder = await detectFunctionsBuilder({
+    config,
+    errorExit,
+    functionsDirectory,
+    log,
+    projectRoot: site.root,
+  })
 
-    const debouncedBuild = debounce(getBuildFunction({ functionBuilder, log }), 300, {
-      leading: true,
-      trailing: true,
-    })
-
-    await debouncedBuild()
-
-    const functionWatcher = chokidar.watch(functionBuilder.src)
-    functionWatcher.on('ready', () => {
-      functionWatcher.on('add', debouncedBuild)
-      functionWatcher.on('change', debouncedBuild)
-      functionWatcher.on('unlink', debouncedBuild)
-    })
+  if (!functionBuilder) {
+    return {}
   }
+
+  const npmScriptString = functionBuilder.npmScript
+    ? `: Running npm script ${chalk.yellow(functionBuilder.npmScript)}`
+    : ''
+
+  log(`${NETLIFYDEVLOG} Function builder ${chalk.yellow(functionBuilder.builderName)} detected${npmScriptString}.`)
+
+  const debouncedBuild = debounce(getBuildFunction({ functionBuilder, log }), 300, {
+    leading: true,
+    trailing: true,
+  })
+
+  await debouncedBuild()
+
+  const functionWatcher = chokidar.watch(functionBuilder.src)
+  functionWatcher.on('ready', () => {
+    functionWatcher.on('add', debouncedBuild)
+    functionWatcher.on('change', debouncedBuild)
+    functionWatcher.on('unlink', debouncedBuild)
+  })
+
+  return functionBuilder
 }
 
 const startServer = async ({ server, settings, log, errorExit }) => {
@@ -458,12 +474,25 @@ const startServer = async ({ server, settings, log, errorExit }) => {
   })
 }
 
-const startFunctionsServer = async ({ settings, site, log, warn, errorExit, siteUrl, capabilities }) => {
+const startFunctionsServer = async ({ config, settings, site, log, warn, errorExit, siteUrl, capabilities }) => {
   // serve functions from zip-it-and-ship-it
   // env variables relies on `url`, careful moving this code
   if (settings.functions) {
-    await setupFunctionsBuilder({ site, log, warn })
-    const server = await getFunctionsServer({ dir: settings.functions, siteUrl, capabilities, warn })
+    const { omitFileChangesLog, target: functionsDirectory } = await setupFunctionsBuilder({
+      config,
+      errorExit,
+      functionsDirectory: settings.functions,
+      log,
+      site,
+    })
+    const server = await getFunctionsServer({
+      dir: functionsDirectory || settings.functions,
+      omitFileChangesLog,
+      siteUrl,
+      capabilities,
+      warn,
+    })
+
     await startServer({ server, settings, log, errorExit })
   }
 }

@@ -249,6 +249,7 @@ class DevCommand extends Command {
     }
 
     await startFunctionsServer({
+      config,
       settings,
       site,
       log,
