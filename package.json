@@ -102,7 +102,7 @@
     "cli-spinners": "^2.0.0",
     "cli-ux": "^5.5.1",
     "concordance": "^4.0.0",
-    "configstore": "^5.0.0",
+    "configstore": "^6.0.0",
     "content-type": "^1.0.4",
     "cookie": "^0.4.0",
     "copy-template-dir": "^1.4.0",
