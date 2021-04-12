@@ -6,7 +6,7 @@
   packageRules: [
     {
       // Those cannot be upgraded to a major version until we drop support for Node 10
-      packageNames: ['path-type', 'open', 'inquirer'],
+      packageNames: ['path-type', 'open', 'inquirer', 'p-timeout', 'configstore', 'p-wait-for', 'path-key'],
       major: {
         enabled: false,
       },
