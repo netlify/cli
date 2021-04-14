@@ -26,8 +26,7 @@ class BuildCommand extends Command {
     this.exit(exitCode)
   }
 
-  checkOptions({ cachedConfig, token }) {
-    const { siteInfo = {} } = JSON.parse(cachedConfig)
+  checkOptions({ cachedConfig: { siteInfo = {} }, token }) {
     if (!siteInfo.id && process.env.NODE_ENV !== 'test') {
       this.error('Could not find the site ID. Please run netlify link.', { exit: 1 })
     }
