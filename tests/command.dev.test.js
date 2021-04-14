@@ -10,6 +10,8 @@ const dotProp = require('dot-prop')
 const FormData = require('form-data')
 const jwt = require('jsonwebtoken')
 
+const { copyFileAsync } = require('../src/lib/fs')
+
 const { withDevServer } = require('./utils/dev-server')
 const { startExternalServer } = require('./utils/external-server')
 const got = require('./utils/got')
@@ -1549,7 +1551,7 @@ export const handler = async function () {
     body: response,
   };
 };
-            
+
     `,
             })
 
@@ -1562,6 +1564,44 @@ export const handler = async function () {
         })
       },
     )
+
+    test(testName(`should start https server when https dev block is configured`, args), async (t) => {
+      await withSiteBuilder('sites-with-https-certificate', async (builder) => {
+        await builder
+          .withNetlifyToml({
+            config: {
+              build: { publish: 'public' },
+              functions: { directory: 'functions' },
+              dev: { https: { certFile: 'cert.pem', keyFile: 'key.pem' } },
+            },
+          })
+          .withContentFile({
+            path: 'public/index.html',
+            content: 'index',
+          })
+          .withRedirectsFile({
+            redirects: [{ from: `/api/*`, to: `/.netlify/functions/:splat`, status: '200' }],
+          })
+          .withFunction({
+            path: 'hello.js',
+            handler: async () => ({
+              statusCode: 200,
+              body: 'Hello World',
+            }),
+          })
+          .buildAsync()
+
+        await Promise.all([
+          copyFileAsync(`${__dirname}/assets/cert.pem`, `${builder.directory}/cert.pem`),
+          copyFileAsync(`${__dirname}/assets/key.pem`, `${builder.directory}/key.pem`),
+        ])
+        await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
+          const options = { https: { rejectUnauthorized: false } }
+          t.is(await got(`https://localhost:${port}`, options).text(), 'index')
+          t.is(await got(`https://localhost:${port}/api/hello`, options).text(), 'Hello World')
+        })
+      })
+    })
   }
 })
 /* eslint-enable require-await */

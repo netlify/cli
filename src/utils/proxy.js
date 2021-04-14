@@ -1,5 +1,6 @@
 const { Buffer } = require('buffer')
 const http = require('http')
+const https = require('https')
 const path = require('path')
 const { URL, URLSearchParams } = require('url')
 
@@ -11,6 +12,7 @@ const { createProxyMiddleware } = require('http-proxy-middleware')
 const jwtDecode = require('jwt-decode')
 const locatePath = require('locate-path')
 const isEmpty = require('lodash/isEmpty')
+const pEvent = require('p-event')
 const pFilter = require('p-filter')
 const toReadableStream = require('to-readable-stream')
 
@@ -328,6 +330,45 @@ const initializeProxy = function (port, distDir, projectDir) {
   return handlers
 }
 
+const onRequest = async ({ proxy, rewriter, settings, addonsUrls, functionsServer }, req, res) => {
+  req.originalBody = ['GET', 'OPTIONS', 'HEAD'].includes(req.method)
+    ? null
+    : await createStreamPromise(req, BYTES_LIMIT)
+
+  if (isFunction(settings.functionsPort, req.url)) {
+    return proxy.web(req, res, { target: functionsServer })
+  }
+  const addonUrl = getAddonUrl(addonsUrls, req)
+  if (addonUrl) {
+    return handleAddonUrl({ req, res, addonUrl })
+  }
+
+  const match = await rewriter(req)
+  const options = {
+    match,
+    addonsUrls,
+    target: `http://localhost:${settings.frameworkPort}`,
+    publicFolder: settings.dist,
+    functionsServer,
+    functionsPort: settings.functionsPort,
+    jwtRolePath: settings.jwtRolePath,
+    framework: settings.framework,
+  }
+
+  if (match) return serveRedirect({ req, res, proxy, match, options })
+
+  const ct = req.headers['content-type'] ? contentType.parse(req).type : ''
+  if (
+    req.method === 'POST' &&
+    !isInternal(req.url) &&
+    (ct.endsWith('/x-www-form-urlencoded') || ct === 'multipart/form-data')
+  ) {
+    return proxy.web(req, res, { target: functionsServer })
+  }
+
+  proxy.web(req, res, options)
+}
+
 const startProxy = async function (settings, addonsUrls, configPath, projectDir) {
   const functionsServer = settings.functionsPort ? `http://localhost:${settings.functionsPort}` : null
 
@@ -341,54 +382,21 @@ const startProxy = async function (settings, addonsUrls, configPath, projectDir)
     projectDir,
   })
 
-  const server = http.createServer(async function onRequest(req, res) {
-    req.originalBody = ['GET', 'OPTIONS', 'HEAD'].includes(req.method)
-      ? null
-      : await createStreamPromise(req, BYTES_LIMIT)
-
-    if (isFunction(settings.functionsPort, req.url)) {
-      return proxy.web(req, res, { target: functionsServer })
-    }
-    const addonUrl = getAddonUrl(addonsUrls, req)
-    if (addonUrl) {
-      return handleAddonUrl({ req, res, addonUrl })
-    }
-
-    const match = await rewriter(req)
-    const options = {
-      match,
-      addonsUrls,
-      target: `http://localhost:${settings.frameworkPort}`,
-      publicFolder: settings.dist,
-      functionsServer,
-      functionsPort: settings.functionsPort,
-      jwtRolePath: settings.jwtRolePath,
-      framework: settings.framework,
-    }
-
-    if (match) return serveRedirect({ req, res, proxy, match, options })
-
-    const ct = req.headers['content-type'] ? contentType.parse(req).type : ''
-    if (
-      req.method === 'POST' &&
-      !isInternal(req.url) &&
-      (ct.endsWith('/x-www-form-urlencoded') || ct === 'multipart/form-data')
-    ) {
-      return proxy.web(req, res, { target: functionsServer })
-    }
-
-    proxy.web(req, res, options)
-  })
+  const onRequestWithOptions = onRequest.bind(undefined, { proxy, rewriter, settings, addonsUrls, functionsServer })
+  const server = settings.https
+    ? https.createServer({ cert: settings.https.cert, key: settings.https.key }, onRequestWithOptions)
+    : http.createServer(onRequestWithOptions)
 
   server.on('upgrade', function onUpgrade(req, socket, head) {
     proxy.ws(req, socket, head)
   })
 
-  return new Promise((resolve) => {
-    server.listen({ port: settings.port }, () => {
-      resolve(`http://localhost:${settings.port}`)
-    })
-  })
+  server.listen({ port: settings.port })
+  // TODO: use events.once when we drop support for Node.js < 12
+  await pEvent(server, 'listening')
+
+  const scheme = settings.https ? 'https' : 'http'
+  return `${scheme}://localhost:${settings.port}`
 }
 
 const BYTES_LIMIT = 30

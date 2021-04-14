@@ -7,8 +7,39 @@ const fuzzy = require('fuzzy')
 const getPort = require('get-port')
 const inquirer = require('inquirer')
 const inquirerAutocompletePrompt = require('inquirer-autocomplete-prompt')
+const isPlainObject = require('is-plain-obj')
+
+const { readFileAsyncCatchError } = require('../lib/fs')
 
 const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./logo')
+
+const readHttpsSettings = async (options) => {
+  if (!isPlainObject(options)) {
+    throw new TypeError(`https options should be an object with 'keyFile' and 'certFile' string properties`)
+  }
+
+  const { keyFile, certFile } = options
+  if (typeof keyFile !== 'string') {
+    throw new TypeError(`Private key file configuration should be a string`)
+  }
+  if (typeof certFile !== 'string') {
+    throw new TypeError(`Certificate file configuration should be a string`)
+  }
+
+  const [{ content: key, error: keyError }, { content: cert, error: certError }] = await Promise.all([
+    readFileAsyncCatchError(keyFile),
+    readFileAsyncCatchError(certFile),
+  ])
+
+  if (keyError) {
+    throw new Error(`Error reading private key file: ${keyError.message}`)
+  }
+  if (certError) {
+    throw new Error(`Error reading certificate file: ${certError.message}`)
+  }
+
+  return { key, cert }
+}
 
 const serverSettings = async (devConfig, flags, projectDir, log) => {
   let settings = {}
@@ -177,6 +208,9 @@ const serverSettings = async (devConfig, flags, projectDir, log) => {
   settings.functions = devConfig.functions || settings.functions
   if (settings.functions) {
     settings.functionsPort = await getPort({ port: devConfig.functionsPort || 0 })
+  }
+  if (devConfig.https) {
+    settings.https = await readHttpsSettings(devConfig.https)
   }
 
   return settings
