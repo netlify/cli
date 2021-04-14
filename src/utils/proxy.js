@@ -390,6 +390,7 @@ const startProxy = async function (settings, addonsUrls, configPath, projectDir)
     proxy.ws(req, socket, head)
   })
 
+  // TODO: use events.once when we drop support for Node.js < 12
   return new Promise((resolve) => {
     server.listen({ port: settings.port }, () => {
       const scheme = settings.https ? 'https' : 'http'
