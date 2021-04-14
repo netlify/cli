@@ -353,8 +353,8 @@ certFile = "cert.pem"
 keyFile = "key.pem"
 ```
 
-**Important -** if you're using a self signed certificate you might need to configure your browser to accept it when running on `localhost`.
-For Chrome you can do it by visiting the following URL in your browser `chrome://flags/#allow-insecure-localhost`.
+**Important -** If you're using a self-signed certificate, you might need to configure your browser to accept it when running on `localhost`.
+To enable this setting for Chrome, visit `chrome://flags/#allow-insecure-localhost` in your browser.
 
 ## Contributing/Local Development
 
