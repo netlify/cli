@@ -12,6 +12,7 @@ const { createProxyMiddleware } = require('http-proxy-middleware')
 const jwtDecode = require('jwt-decode')
 const locatePath = require('locate-path')
 const isEmpty = require('lodash/isEmpty')
+const pEvent = require('p-event')
 const pFilter = require('p-filter')
 const toReadableStream = require('to-readable-stream')
 
@@ -390,13 +391,12 @@ const startProxy = async function (settings, addonsUrls, configPath, projectDir)
     proxy.ws(req, socket, head)
   })
 
+  server.listen({ port: settings.port })
   // TODO: use events.once when we drop support for Node.js < 12
-  return new Promise((resolve) => {
-    server.listen({ port: settings.port }, () => {
-      const scheme = settings.https ? 'https' : 'http'
-      resolve(`${scheme}://localhost:${settings.port}`)
-    })
-  })
+  await pEvent(server, 'listening')
+
+  const scheme = settings.https ? 'https' : 'http'
+  return `${scheme}://localhost:${settings.port}`
 }
 
 const BYTES_LIMIT = 30
