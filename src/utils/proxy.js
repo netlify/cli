@@ -1,5 +1,6 @@
 const { Buffer } = require('buffer')
 const http = require('http')
+const https = require('https')
 const path = require('path')
 const { URL, URLSearchParams } = require('url')
 
@@ -328,20 +329,8 @@ const initializeProxy = function (port, distDir, projectDir) {
   return handlers
 }
 
-const startProxy = async function (settings, addonsUrls, configPath, projectDir) {
-  const functionsServer = settings.functionsPort ? `http://localhost:${settings.functionsPort}` : null
-
-  const proxy = initializeProxy(settings.frameworkPort, settings.dist, projectDir)
-
-  const rewriter = await createRewriter({
-    distDir: settings.dist,
-    jwtSecret: settings.jwtSecret,
-    jwtRoleClaim: settings.jwtRolePath,
-    configPath,
-    projectDir,
-  })
-
-  const server = http.createServer(async function onRequest(req, res) {
+const getRequestListener = ({ proxy, rewriter, settings, addonsUrls, functionsServer }) => {
+  const onRequest = async (req, res) => {
     req.originalBody = ['GET', 'OPTIONS', 'HEAD'].includes(req.method)
       ? null
       : await createStreamPromise(req, BYTES_LIMIT)
@@ -378,15 +367,36 @@ const startProxy = async function (settings, addonsUrls, configPath, projectDir)
     }
 
     proxy.web(req, res, options)
+  }
+
+  return onRequest
+}
+
+const createSecureServer = ({ onRequest, cert, key }) => https.createServer({ cert, key }, onRequest)
+
+const startProxy = async function (settings, addonsUrls, configPath, projectDir) {
+  const functionsServer = settings.functionsPort ? `http://localhost:${settings.functionsPort}` : null
+
+  const proxy = initializeProxy(settings.frameworkPort, settings.dist, projectDir)
+
+  const rewriter = await createRewriter({
+    distDir: settings.dist,
+    jwtSecret: settings.jwtSecret,
+    jwtRoleClaim: settings.jwtRolePath,
+    configPath,
+    projectDir,
   })
 
+  const onRequest = getRequestListener({ proxy, rewriter, settings, addonsUrls, functionsServer })
+  const server = settings.https ? createSecureServer({ ...settings.https, onRequest }) : http.createServer(onRequest)
   server.on('upgrade', function onUpgrade(req, socket, head) {
     proxy.ws(req, socket, head)
   })
 
   return new Promise((resolve) => {
     server.listen({ port: settings.port }, () => {
-      resolve(`http://localhost:${settings.port}`)
+      const scheme = settings.https ? 'https' : 'http'
+      resolve(`${scheme}://localhost:${settings.port}`)
     })
   })
 }

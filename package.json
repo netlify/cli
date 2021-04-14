@@ -129,6 +129,7 @@
     "inquirer": "^6.5.1",
     "inquirer-autocomplete-prompt": "^1.0.1",
     "is-docker": "^2.0.0",
+    "is-plain-obj": "^2.1.0",
     "isexe": "^2.0.0",
     "jwt-decode": "^3.0.0",
     "lambda-local": "^1.7.1",

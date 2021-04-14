@@ -118,6 +118,10 @@ Netlify Dev is meant to work with zero config for the majority of users, by usin
   jwtSecret = "secret" # The secret used to verify tokens for JWT based redirects
   jwtRolePath = "app_metadata.authorization.roles" # Object path we should look for role values for JWT based redirects
   autoLaunch = true # a Boolean value that determines if Netlify Dev launches the local server address in your browser
+  # to start an https server instead of an http one, configure a certificate and key files
+  [dev.https]
+    certFile = "cert.pem" # path to the certificate file
+    keyFile = "key.pem" # path to the private key file
 ```
 
 ## Project detection
@@ -336,6 +340,21 @@ Or install this [one click example](https://github.com/netlify/fauna-one-click).
 After you have installed an add-on, it will be visible with the `netlify addons:list` command inside your site's current working directory. You can use `netlify addons:delete $ADDONNAME` to delete your addon instance.
 
 For now, it is important to include instructions to create addons for each member of your team, as there is no way to specify addons inside of `netlify.toml`. We are working on this.
+
+### Running an https server for local development
+
+By default, `netlify dev` starts an http server. If you require an https one, you can configure a certificate and key file to be used by `netlify dev`.
+Example `netlify.toml`:
+
+```toml
+[dev]
+[dev.https]
+certFile = "cert.pem"
+keyFile = "key.pem"
+```
+
+**Important -** if you're using a self signed certificate you might need to configure your browser to accept it when running on `localhost`.
+For Chrome you can do it by visiting the following URL in your browser `chrome://flags/#allow-insecure-localhost`.
 
 ## Contributing/Local Development
 
