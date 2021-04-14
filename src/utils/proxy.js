@@ -329,47 +329,43 @@ const initializeProxy = function (port, distDir, projectDir) {
   return handlers
 }
 
-const getRequestListener = ({ proxy, rewriter, settings, addonsUrls, functionsServer }) => {
-  const onRequest = async (req, res) => {
-    req.originalBody = ['GET', 'OPTIONS', 'HEAD'].includes(req.method)
-      ? null
-      : await createStreamPromise(req, BYTES_LIMIT)
+const onRequest = async ({ proxy, rewriter, settings, addonsUrls, functionsServer }, req, res) => {
+  req.originalBody = ['GET', 'OPTIONS', 'HEAD'].includes(req.method)
+    ? null
+    : await createStreamPromise(req, BYTES_LIMIT)
 
-    if (isFunction(settings.functionsPort, req.url)) {
-      return proxy.web(req, res, { target: functionsServer })
-    }
-    const addonUrl = getAddonUrl(addonsUrls, req)
-    if (addonUrl) {
-      return handleAddonUrl({ req, res, addonUrl })
-    }
-
-    const match = await rewriter(req)
-    const options = {
-      match,
-      addonsUrls,
-      target: `http://localhost:${settings.frameworkPort}`,
-      publicFolder: settings.dist,
-      functionsServer,
-      functionsPort: settings.functionsPort,
-      jwtRolePath: settings.jwtRolePath,
-      framework: settings.framework,
-    }
-
-    if (match) return serveRedirect({ req, res, proxy, match, options })
-
-    const ct = req.headers['content-type'] ? contentType.parse(req).type : ''
-    if (
-      req.method === 'POST' &&
-      !isInternal(req.url) &&
-      (ct.endsWith('/x-www-form-urlencoded') || ct === 'multipart/form-data')
-    ) {
-      return proxy.web(req, res, { target: functionsServer })
-    }
-
-    proxy.web(req, res, options)
+  if (isFunction(settings.functionsPort, req.url)) {
+    return proxy.web(req, res, { target: functionsServer })
+  }
+  const addonUrl = getAddonUrl(addonsUrls, req)
+  if (addonUrl) {
+    return handleAddonUrl({ req, res, addonUrl })
   }
 
-  return onRequest
+  const match = await rewriter(req)
+  const options = {
+    match,
+    addonsUrls,
+    target: `http://localhost:${settings.frameworkPort}`,
+    publicFolder: settings.dist,
+    functionsServer,
+    functionsPort: settings.functionsPort,
+    jwtRolePath: settings.jwtRolePath,
+    framework: settings.framework,
+  }
+
+  if (match) return serveRedirect({ req, res, proxy, match, options })
+
+  const ct = req.headers['content-type'] ? contentType.parse(req).type : ''
+  if (
+    req.method === 'POST' &&
+    !isInternal(req.url) &&
+    (ct.endsWith('/x-www-form-urlencoded') || ct === 'multipart/form-data')
+  ) {
+    return proxy.web(req, res, { target: functionsServer })
+  }
+
+  proxy.web(req, res, options)
 }
 
 const startProxy = async function (settings, addonsUrls, configPath, projectDir) {
@@ -385,10 +381,10 @@ const startProxy = async function (settings, addonsUrls, configPath, projectDir)
     projectDir,
   })
 
-  const onRequest = getRequestListener({ proxy, rewriter, settings, addonsUrls, functionsServer })
+  const onRequestWithOptions = onRequest.bind(undefined, { proxy, rewriter, settings, addonsUrls, functionsServer })
   const server = settings.https
-    ? https.createServer({ cert: settings.https.cert, key: settings.https.key }, onRequest)
-    : http.createServer(onRequest)
+    ? https.createServer({ cert: settings.https.cert, key: settings.https.key }, onRequestWithOptions)
+    : http.createServer(onRequestWithOptions)
 
   server.on('upgrade', function onUpgrade(req, socket, head) {
     proxy.ws(req, socket, head)
