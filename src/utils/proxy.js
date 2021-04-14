@@ -372,8 +372,6 @@ const getRequestListener = ({ proxy, rewriter, settings, addonsUrls, functionsSe
   return onRequest
 }
 
-const createSecureServer = ({ onRequest, cert, key }) => https.createServer({ cert, key }, onRequest)
-
 const startProxy = async function (settings, addonsUrls, configPath, projectDir) {
   const functionsServer = settings.functionsPort ? `http://localhost:${settings.functionsPort}` : null
 
@@ -388,7 +386,10 @@ const startProxy = async function (settings, addonsUrls, configPath, projectDir)
   })
 
   const onRequest = getRequestListener({ proxy, rewriter, settings, addonsUrls, functionsServer })
-  const server = settings.https ? createSecureServer({ ...settings.https, onRequest }) : http.createServer(onRequest)
+  const server = settings.https
+    ? https.createServer({ cert: settings.https.cert, key: settings.https.key }, onRequest)
+    : http.createServer(onRequest)
+
   server.on('upgrade', function onUpgrade(req, socket, head) {
     proxy.ws(req, socket, head)
   })
