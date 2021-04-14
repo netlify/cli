@@ -343,7 +343,7 @@ For now, it is important to include instructions to create addons for each membe
 
 ### Running an https server for local development
 
-By default, `netlify dev` starts an http server. If you require an https one, you can configure a certificate and key file to be used by `netlify dev`.
+By default, `netlify dev` starts an HTTP server. If you require HTTPS, you can configure a certificate and key file for use by `netlify dev`.
 Example `netlify.toml`:
 
 ```toml
