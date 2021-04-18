@@ -1,0 +1,27 @@
+name: Package size
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v2
+      - name: Use Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14.x
+      - name: Install dependencies
+        run: npm install --production
+      - name: Get size
+        run: du -sk node_modules > .delta.packageSize && echo "b (Package size)" >> .delta.packageSize
+      - name: Run Delta
+        uses: netlify/delta-action@v1
+        with:
+          title: '📊 Benchmark results'
+          token: ${{ secrets.GITHUB_TOKEN }}
