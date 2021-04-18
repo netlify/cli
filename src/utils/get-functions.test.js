@@ -106,6 +106,6 @@ test('should return additional watch dirs when functions requires a file outside
         urlPath: '/.netlify/functions/index',
       },
     ])
-    t.deepEqual(watchDirs, [`${builder.directory}/functions`, `${builder.directory}/utils`])
+    t.deepEqual(watchDirs, [path.join(builder.directory, 'functions'), path.join(builder.directory, 'utils')])
   })
 })
