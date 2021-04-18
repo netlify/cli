@@ -19,7 +19,7 @@ jobs:
       - name: Install dependencies
         run: npm install --production
       - name: Get size
-        run: du -sk node_modules > .delta.packageSize && echo "b (Package size)" >> .delta.packageSize
+        run: du -sk node_modules | cut -f1 > .delta.packageSize && echo "b (Package size)" >> .delta.packageSize
       - name: Run Delta
         uses: netlify/delta-action@v1
         with:
