@@ -5,7 +5,7 @@ const sortOn = require('sort-on')
 
 const { withSiteBuilder } = require('../../tests/utils/site-builder')
 
-const { getFunctions } = require('./get-functions.js')
+const { getFunctions, getFunctionsAndWatchDirs } = require('./get-functions.js')
 
 test('should return empty object when an empty string is provided', async (t) => {
   const funcs = await getFunctions('')
@@ -74,5 +74,38 @@ test('should mark background functions based on filenames', async (t) => {
         urlPath: '/.netlify/functions/foo-background',
       },
     ])
+  })
+})
+
+test('should return additional watch dirs when functions requires a file outside function dir', async (t) => {
+  await withSiteBuilder('site-without-functions', async (builder) => {
+    await builder
+      .withFunction({
+        path: 'index.js',
+        // eslint-disable-next-line require-await
+        handler: async () => {
+          // eslint-disable-next-line node/global-require, import/no-unresolved, node/no-missing-require
+          const { logHello } = require('../utils')
+          logHello()
+          return { statusCode: 200, body: 'Logged Hello!' }
+        },
+      })
+      .withContentFile({
+        path: 'utils/index.js',
+        content: `const logHello = () => console.log('hello'); module.exports = { logHello }`,
+      })
+      .buildAsync()
+
+    const { functions, watchDirs } = await getFunctionsAndWatchDirs(path.join(builder.directory, 'functions'))
+    t.deepEqual(functions, [
+      {
+        name: 'index',
+        mainFile: path.join(builder.directory, 'functions', 'index.js'),
+        isBackground: false,
+        runtime: 'js',
+        urlPath: '/.netlify/functions/index',
+      },
+    ])
+    t.deepEqual(watchDirs, [`${builder.directory}/functions`, `${builder.directory}/utils`])
   })
 })

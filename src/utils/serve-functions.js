@@ -19,7 +19,7 @@ const winston = require('winston')
 const { getLogMessage } = require('../lib/log')
 
 const { detectFunctionsBuilder } = require('./detect-functions-builder')
-const { getFunctions } = require('./get-functions')
+const { getFunctionsAndWatchDirs } = require('./get-functions')
 const { NETLIFYDEVLOG, NETLIFYDEVERR } = require('./logo')
 
 const formatLambdaLocalError = (err) => `${err.errorType}: ${err.errorMessage}\n  ${err.stackTrace.join('\n  ')}`
@@ -180,9 +180,9 @@ const validateFunctions = function ({ functions, capabilities, warn }) {
 }
 
 const createHandler = async function ({ dir, capabilities, omitFileChangesLog, warn }) {
-  const functions = await getFunctions(dir)
+  const { functions, watchDirs } = await getFunctionsAndWatchDirs(dir)
   validateFunctions({ functions, capabilities, warn })
-  const watcher = chokidar.watch(dir, { ignored: /node_modules/ })
+  const watcher = chokidar.watch(watchDirs, { ignored: /node_modules/ })
   watcher
     .on('change', clearCache({ action: 'modified', omitLog: omitFileChangesLog }))
     .on('unlink', clearCache({ action: 'deleted', omitLog: omitFileChangesLog }))
