@@ -4,6 +4,7 @@ const { zipFunction, zipFunctions } = require('@netlify/zip-it-and-ship-it')
 const makeDir = require('make-dir')
 
 const { getPathInProject } = require('../lib/settings')
+const { getFunctions } = require('../utils/get-functions')
 const { NETLIFYDEVERR } = require('../utils/logo')
 
 const bundleFunctions = ({ config, sourceDirectory, targetDirectory, updatedPath }) => {
@@ -52,10 +53,12 @@ const getTargetDirectory = async ({ errorExit }) => {
 }
 
 module.exports = async function handler({ config, errorExit, functionsDirectory: sourceDirectory }) {
+  const functions = await getFunctions(sourceDirectory)
+  const hasTSFunction = functions.some(({ mainFile }) => path.extname(mainFile) === '.ts')
   const functionsConfig = normalizeFunctionsConfig(config.functions)
   const isUsingEsbuild = functionsConfig['*'] && functionsConfig['*'].nodeBundler === 'esbuild_zisi'
 
-  if (!isUsingEsbuild) {
+  if (!hasTSFunction && !isUsingEsbuild) {
     return false
   }
 

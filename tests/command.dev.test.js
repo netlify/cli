@@ -1565,6 +1565,37 @@ export const handler = async function () {
       },
     )
 
+    test(
+      testName('Should use the ZISI function bundler and serve TypeScript functions if not using esbuild', args),
+      async (t) => {
+        await withSiteBuilder('site-with-ts-function', async (builder) => {
+          builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withContentFile({
+            path: path.join('functions', 'ts-function', 'ts-function.ts'),
+            content: `
+type CustomResponse = string;
+
+export const handler = async function () {
+  const response: CustomResponse = "ts";
+
+  return {
+    statusCode: 200,
+    body: response,
+  };
+};
+
+    `,
+          })
+
+          await builder.buildAsync()
+
+          await withDevServer({ cwd: builder.directory, args }, async (server) => {
+            const response = await got(`${server.url}/.netlify/functions/ts-function`).text()
+            t.is(response, 'ts')
+          })
+        })
+      },
+    )
+
     test(testName(`should start https server when https dev block is configured`, args), async (t) => {
       await withSiteBuilder('sites-with-https-certificate', async (builder) => {
         await builder
