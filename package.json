@@ -158,7 +158,7 @@
     "path-key": "^3.1.1",
     "path-type": "^4.0.0",
     "prettyjson": "^1.2.1",
-    "random-item": "^3.0.0",
+    "random-item": "^4.0.0",
     "raw-body": "^2.4.1",
     "resolve": "^1.12.0",
     "safe-join": "^0.1.3",
