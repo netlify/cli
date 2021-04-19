@@ -106,6 +106,7 @@
     "content-type": "^1.0.4",
     "cookie": "^0.4.0",
     "copy-template-dir": "^1.4.0",
+    "cross-spawn": "^7.0.3",
     "debug": "^4.1.1",
     "del": "^5.1.0",
     "dot-prop": "^5.1.0",

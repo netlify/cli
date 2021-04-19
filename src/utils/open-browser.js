@@ -2,7 +2,8 @@ const process = require('process')
 
 const chalk = require('chalk')
 const isDockerContainer = require('is-docker')
-const open = require('open')
+
+const open = require('./open-browser-cra')
 
 const unableToOpenBrowserMessage = function ({ url, log, message }) {
   log('---------------------------')
