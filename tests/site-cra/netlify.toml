@@ -1,4 +1,0 @@
-[dev]
-    framework = "create-react-app"
-[build]
-    functions = "functions"
