@@ -1,29 +1,15 @@
 const path = require('path')
 
 const test = require('ava')
-const fetch = require('node-fetch')
-const waitPort = require('wait-port')
 
 const { startDevServer } = require('./utils/dev-server')
 const got = require('./utils/got')
 
-const sitePath = path.join(__dirname, 'site-cra')
-
 test.before(async (t) => {
-  const server = await startDevServer({
-    cwd: sitePath,
-    env: { SKIP_PREFLIGHT_CHECK: 'true' },
-  })
+  const server = await startDevServer({ cwd: path.join(__dirname, 'eleventy-site') })
 
-  // wait for react app dev server to start
-  await waitPort({ port: SERVER_PORT, timeout: REACT_APP_START_TIMEOUT, output: 'silent' })
   t.context.server = server
 })
-
-const SERVER_PORT = 3000
-
-// 15 seconds
-const REACT_APP_START_TIMEOUT = 15e3
 
 test.after(async (t) => {
   const { server } = t.context
@@ -34,28 +20,7 @@ test('homepage', async (t) => {
   const { url } = t.context.server
   const response = await got(`${url}/`).text()
 
-  t.true(response.includes('Web site created using create-react-app'))
-})
-
-test('static/js/bundle.js', async (t) => {
-  const { url } = t.context.server
-  const { body, statusCode, headers } = await got(`${url}/static/js/bundle.js`)
-
-  t.is(statusCode, 200)
-  t.true(body.length > BUNDLE_MIN_LENGTH)
-  t.true(headers['content-type'].startsWith('application/javascript'))
-  t.true(body.includes('webpackBootstrap'))
-})
-
-const BUNDLE_MIN_LENGTH = 1e2
-
-test('static file under public/', async (t) => {
-  const { url } = t.context.server
-  const { body, statusCode, headers } = await got(`${url}/test.html`)
-
-  t.is(statusCode, 200)
-  t.true(headers['content-type'].startsWith('text/html'))
-  t.true(body.includes('<h1>Test content</h1>'))
+  t.true(response.includes('Eleventy Site'))
 })
 
 test('redirect test', async (t) => {
@@ -63,38 +28,27 @@ test('redirect test', async (t) => {
   const { body, statusCode, headers } = await got(`${url}/something`, { followRedirect: false })
 
   t.is(statusCode, 301)
-  t.is(headers.location, `/otherthing.html`)
-  t.is(body, 'Redirecting to /otherthing.html')
+  t.is(headers.location, `/otherthing`)
+  t.is(body, 'Redirecting to /otherthing')
 })
 
-test('normal rewrite', async (t) => {
+// TODO: un-skip this once https://github.com/netlify/cli/issues/1242 is fixed
+test.skip('normal rewrite', async (t) => {
   const { url } = t.context.server
-  // TODO: replace with got like the rest of the tests
-  // This test passes with fetch and curl, but not with got (returns 404 with got)
-  const response = await fetch(`${url}/doesnt-exist`)
-  const body = await response.text()
+  const { body, statusCode, headers } = await got(`${url}/doesnt-exist`)
 
-  t.is(response.status, 200)
-  t.true(response.headers.get('content-type').startsWith('text/html'))
-  t.true(body.includes('Web site created using create-react-app'))
+  t.is(statusCode, 200)
+  t.true(headers['content-type'].startsWith('text/html'))
+  t.true(body.includes('Eleventy Site'))
 })
 
 test('force rewrite', async (t) => {
   const { url } = t.context.server
-  const { body, statusCode, headers } = await got(`${url}/force.html`)
+  const { body, statusCode, headers } = await got(`${url}/force`)
 
   t.is(statusCode, 200)
   t.true(headers['content-type'].startsWith('text/html'))
   t.true(body.includes('<h1>Test content</h1>'))
-})
-
-test('robots.txt', async (t) => {
-  const { url } = t.context.server
-  const { body, statusCode, headers } = await got(`${url}/robots.txt`)
-
-  t.is(statusCode, 200)
-  t.true(headers['content-type'].startsWith('text/plain'))
-  t.true(body.startsWith('# https://www.robotstxt.org/robotstxt.html'))
 })
 
 test('functions rewrite echo without body', async (t) => {
