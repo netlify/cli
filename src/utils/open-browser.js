@@ -1,8 +1,8 @@
 const process = require('process')
 
+const open = require('better-opn')
 const chalk = require('chalk')
 const isDockerContainer = require('is-docker')
-const open = require('open')
 
 const unableToOpenBrowserMessage = function ({ url, log, message }) {
   log('---------------------------')

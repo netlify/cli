@@ -21,6 +21,7 @@
         'log-symbols',
         'random-item',
         'wrap-ansi',
+        'better-opn',
       ],
       major: {
         enabled: false,
