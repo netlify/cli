@@ -19,7 +19,7 @@ const winston = require('winston')
 const { getLogMessage } = require('../lib/log')
 
 const { detectFunctionsBuilder } = require('./detect-functions-builder')
-const { getFunctions } = require('./get-functions')
+const { getFunctionsAndWatchDirs } = require('./get-functions')
 const { NETLIFYDEVLOG, NETLIFYDEVERR } = require('./logo')
 
 const formatLambdaLocalError = (err) => `${err.errorType}: ${err.errorMessage}\n  ${err.stackTrace.join('\n  ')}`
@@ -179,13 +179,22 @@ const validateFunctions = function ({ functions, capabilities, warn }) {
   }
 }
 
+const DEBOUNCE_WAIT = 300
+
 const createHandler = async function ({ dir, capabilities, omitFileChangesLog, warn }) {
-  const functions = await getFunctions(dir)
+  const { functions, watchDirs } = await getFunctionsAndWatchDirs(dir)
   validateFunctions({ functions, capabilities, warn })
-  const watcher = chokidar.watch(dir, { ignored: /node_modules/ })
-  watcher
-    .on('change', clearCache({ action: 'modified', omitLog: omitFileChangesLog }))
-    .on('unlink', clearCache({ action: 'deleted', omitLog: omitFileChangesLog }))
+  const watcher = chokidar.watch(watchDirs, { ignored: /node_modules/ })
+
+  const debouncedOnChange = debounce(clearCache({ action: 'modified', omitLog: omitFileChangesLog }), DEBOUNCE_WAIT, {
+    leading: false,
+    trailing: true,
+  })
+  const debouncedOnUnlink = debounce(clearCache({ action: 'deleted', omitLog: omitFileChangesLog }), DEBOUNCE_WAIT, {
+    leading: false,
+    trailing: true,
+  })
+  watcher.on('change', debouncedOnChange).on('unlink', debouncedOnUnlink)
 
   const logger = winston.createLogger({
     levels: winston.config.npm.levels,
@@ -444,7 +453,7 @@ const setupFunctionsBuilder = async ({ config, errorExit, functionsDirectory, lo
 
   log(`${NETLIFYDEVLOG} Function builder ${chalk.yellow(functionBuilder.builderName)} detected${npmScriptString}.`)
 
-  const debouncedBuild = debounce(getBuildFunction({ functionBuilder, log }), 300, {
+  const debouncedBuild = debounce(getBuildFunction({ functionBuilder, log }), DEBOUNCE_WAIT, {
     leading: true,
     trailing: true,
   })
