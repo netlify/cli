@@ -78,7 +78,7 @@ test('should mark background functions based on filenames', async (t) => {
 })
 
 test('should return additional watch dirs when functions requires a file outside function dir', async (t) => {
-  await withSiteBuilder('site-without-functions', async (builder) => {
+  await withSiteBuilder('site-with-functions-require-outside-functions-dir', async (builder) => {
     await builder
       .withFunction({
         path: 'index.js',
