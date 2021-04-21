@@ -2,22 +2,28 @@ name: Testing for CLI
 
 on:
   push:
-    branches: [main]
+    branches: [main, chore/use_cmd_windows_ci]
   pull_request:
     branches: [main]
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.config.os }}
     timeout-minutes: 30
+    defaults:
+      run:
+        shell: ${{ matrix.config.shell }}
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        config:
+          - { os: macOS-latest, shell: bash }
+          - { os: ubuntu-latest, shell: bash }
+          - { os: windows-latest, shell: cmd }
         node-version: [10.x, 15.x]
         exclude:
-          - os: macOS-latest
+          - config: { os: macOS-latest, shell: bash }
             node-version: 10.x
-          - os: windows-latest
+          - config: { os: windows-latest, shell: cmd }
             node-version: 10.x
       fail-fast: false
 
@@ -47,7 +53,7 @@ jobs:
       - name: Get test coverage flags
         id: test-coverage-flags
         run: |-
-          os=${{ matrix.os }}
+          os=${{ matrix.config.os }}
           node=${{ matrix.node-version }}
           echo "::set-output name=os::${os/-latest/}"
           echo "::set-output name=node::node_${node//./}"
