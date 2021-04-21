@@ -2,7 +2,7 @@ name: Testing for CLI
 
 on:
   push:
-    branches: [main, chore/use_cmd_windows_ci]
+    branches: [main]
   pull_request:
     branches: [main]
 
