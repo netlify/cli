@@ -153,18 +153,28 @@ const buildClientContext = function (headers) {
   }
 }
 
-const clearCache = ({ action, omitLog }) => (path) => {
+const logBeforeAction = ({ omitLog, path, action }) => {
   if (!omitLog) {
     console.log(`${NETLIFYDEVLOG} ${path} ${action}, reloading...`)
   }
+}
 
-  Object.keys(require.cache).forEach((key) => {
-    delete require.cache[key]
-  })
-
+const logAfterAction = ({ omitLog, path, action }) => {
   if (!omitLog) {
     console.log(`${NETLIFYDEVLOG} ${path} ${action}, successfully reloaded!`)
   }
+}
+
+const clearRequireCache = () => {
+  Object.keys(require.cache).forEach((key) => {
+    delete require.cache[key]
+  })
+}
+
+const clearCache = ({ action, omitLog }) => (path) => {
+  logBeforeAction({ omitLog, path, action })
+  clearRequireCache()
+  logAfterAction({ omitLog, path, action })
 }
 
 const shouldBase64Encode = function (contentType) {
@@ -182,9 +192,9 @@ const validateFunctions = function ({ functions, capabilities, warn }) {
 const DEBOUNCE_WAIT = 300
 
 const createHandler = async function ({ dir, capabilities, omitFileChangesLog, warn }) {
-  const { functions, watchDirs } = await getFunctionsAndWatchDirs(dir)
+  let { functions, watchDirs } = await getFunctionsAndWatchDirs(dir)
   validateFunctions({ functions, capabilities, warn })
-  const watcher = chokidar.watch(watchDirs, { ignored: /node_modules/ })
+  const watcher = chokidar.watch(watchDirs, { ignored: /node_modules/, ignoreInitial: true })
 
   const debouncedOnChange = debounce(clearCache({ action: 'modified', omitLog: omitFileChangesLog }), DEBOUNCE_WAIT, {
     leading: false,
@@ -194,7 +204,19 @@ const createHandler = async function ({ dir, capabilities, omitFileChangesLog, w
     leading: false,
     trailing: true,
   })
-  watcher.on('change', debouncedOnChange).on('unlink', debouncedOnUnlink)
+  watcher
+    .on('change', debouncedOnChange)
+    .on('unlink', debouncedOnUnlink)
+    .on('add', async (path) => {
+      logBeforeAction({ omitLog: omitFileChangesLog, path, action: 'added' })
+
+      await watcher.unwatch(watchDirs)
+      ;({ functions, watchDirs } = await getFunctionsAndWatchDirs(dir))
+      clearRequireCache()
+      await watcher.add(watchDirs)
+
+      logAfterAction({ omitLog: omitFileChangesLog, path, action: 'added' })
+    })
 
   const logger = winston.createLogger({
     levels: winston.config.npm.levels,
