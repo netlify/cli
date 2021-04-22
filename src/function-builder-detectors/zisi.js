@@ -59,7 +59,7 @@ module.exports = async function handler({ config, errorExit, functionsDirectory:
   // Emptying the directory from which functions will be served, to clear any
   // deleted functions from a previous run.
   try {
-    await del(targetDirectory)
+    await del(targetDirectory, { force: true })
   } catch (_) {
     // no-op
   }
