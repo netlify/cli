@@ -9,6 +9,10 @@ const execa = require('execa')
 const StaticServer = require('static-server')
 const stripAnsiCc = require('strip-ansi-control-characters')
 const waitPort = require('wait-port')
+<<<<<<< HEAD
+=======
+const wrapAnsi = require('wrap-ansi')
+>>>>>>> 06c3b48c (refactor: cleanup code and fix eleventy tests)
 
 const { startFunctionsServer } = require('../../lib/functions/server')
 const Command = require('../../utils/command')
@@ -98,7 +102,11 @@ const startFrameworkServer = async function ({ settings, log, exit }) {
       port: settings.frameworkPort,
       output: 'silent',
       timeout: FRAMEWORK_PORT_TIMEOUT,
+<<<<<<< HEAD
       ...(settings.disableLocalServerPolling ? {} : { protocol: 'http' }),
+=======
+      ...(settings.pollingStrategies.includes('HTTP') && { protocol: 'http' }),
+>>>>>>> 06c3b48c (refactor: cleanup code and fix eleventy tests)
     })
 
     if (!open) {

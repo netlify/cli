@@ -135,13 +135,21 @@ const getSettingsFromFramework = (framework) => {
     dev: {
       commands: [command],
       port: frameworkPort,
+      pollingStrategies,
     },
     name: frameworkName,
     staticAssetsDirectory: staticDir,
     env,
   } = framework
 
-  return { command, frameworkPort, dist: staticDir || dist, framework: frameworkName, env }
+  return {
+    command,
+    frameworkPort,
+    dist: staticDir || dist,
+    framework: frameworkName,
+    env,
+    pollingStrategies: pollingStrategies.map(({ name }) => name),
+  }
 }
 
 const detectFrameworkSettings = async ({ projectDir, log }) => {
@@ -206,7 +214,7 @@ const handleForcedFramework = async ({ devConfig, projectDir }) => {
       `Unsupported "framework" "${devConfig.framework}". Please consult the documentation for more details: https://cli.netlify.com/netlify-dev/#project-detection`,
     )
   }
-  const { command, frameworkPort, dist, framework, env } = getSettingsFromFramework(
+  const { command, frameworkPort, dist, framework, env, pollingStrategies } = getSettingsFromFramework(
     await getFramework(devConfig.framework, { projectDir }),
   )
   return {
@@ -215,6 +223,7 @@ const handleForcedFramework = async ({ devConfig, projectDir }) => {
     dist: devConfig.publish || dist,
     framework,
     env,
+    pollingStrategies,
   }
 }
 
@@ -236,13 +245,14 @@ const detectServerSettings = async (devConfig, flags, projectDir, log) => {
       settings = await handleStaticServer({ flags, log, devConfig, projectDir })
     } else {
       validateFrameworkConfig({ devConfig })
-      const { command, frameworkPort, dist, framework, env } = frameworkSettings || {}
+      const { command, frameworkPort, dist, framework, env, pollingStrategies } = frameworkSettings || {}
       settings = {
         command: devConfig.command || command,
         frameworkPort: devConfig.targetPort || frameworkPort,
         dist: devConfig.publish || dist || getDefaultDist({ log }),
         framework,
         env,
+        pollingStrategies,
       }
     }
   } else if (devConfig.framework === '#custom') {
@@ -264,6 +274,7 @@ const detectServerSettings = async (devConfig, flags, projectDir, log) => {
   })
   const functionsDir = devConfig.functions || settings.functions
 
+  console.log(settings)
   return {
     ...settings,
     port: acquiredPort,
