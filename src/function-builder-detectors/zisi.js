@@ -1,24 +1,16 @@
 const path = require('path')
 
-const { zipFunction, zipFunctions } = require('@netlify/zip-it-and-ship-it')
+const { zipFunctions } = require('@netlify/zip-it-and-ship-it')
+const del = require('del')
 const makeDir = require('make-dir')
 
 const { getPathInProject } = require('../lib/settings')
 const { getFunctions } = require('../utils/get-functions')
 const { NETLIFYDEVERR } = require('../utils/logo')
 
-const bundleFunctions = ({ config, sourceDirectory, targetDirectory, updatedPath }) => {
-  // If `updatedPath` is truthy, it means we're running the build command due
-  // to an update to a file. If that's the case, we run `zipFunction` to bundle
-  // that specific function only.
-  if (updatedPath) {
-    return zipFunction(updatedPath, targetDirectory, {
-      archiveFormat: 'none',
-      config,
-    })
-  }
-
-  return zipFunctions(sourceDirectory, targetDirectory, {
+const bundleFunctions = async ({ config, sourceDirectory, targetDirectory }) => {
+  // @todo Build only the functions affected by the path that has changed.
+  await zipFunctions(sourceDirectory, targetDirectory, {
     archiveFormat: 'none',
     config,
   })
@@ -63,6 +55,14 @@ module.exports = async function handler({ config, errorExit, functionsDirectory:
   }
 
   const targetDirectory = await getTargetDirectory({ errorExit })
+
+  // Emptying the directory from which functions will be served, to clear any
+  // deleted functions from a previous run.
+  try {
+    await del(targetDirectory)
+  } catch (_) {
+    // no-op
+  }
 
   return {
     build: (updatedPath) => bundleFunctions({ config: functionsConfig, sourceDirectory, targetDirectory, updatedPath }),
