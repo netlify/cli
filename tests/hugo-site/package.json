@@ -2,7 +2,7 @@
   "name": "hugo-site",
   "version": "1.0.0",
   "scripts": {
-    "serve": "$(npm bin)/hugo server -d out"
+    "serve": "hugo server -d out"
   },
   "license": "MIT",
   "devDependencies": {
