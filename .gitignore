@@ -29,3 +29,6 @@ oclif.manifest.json
 .netlify
 
 .eslintcache
+
+tests/hugo-site/resources
+tests/hugo-site/out
