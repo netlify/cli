@@ -32,3 +32,5 @@ oclif.manifest.json
 
 tests/hugo-site/resources
 tests/hugo-site/out
+
+.github/styles

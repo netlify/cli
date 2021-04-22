@@ -1,0 +1,22 @@
+name: Lint Docs
+
+on:
+  push:
+    branches: [main, chore/add_vale]
+  pull_request:
+    branches: [main]
+
+jobs:
+  list-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v2
+
+      - name: Vale
+        uses: errata-ai/vale-action@master
+        with:
+          styles: https://vale-library.netlify.app/styles.zip
+          files: '["docs", "src", "README.md", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md"]'
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
