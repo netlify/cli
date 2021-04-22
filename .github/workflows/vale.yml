@@ -2,7 +2,7 @@ name: Lint Docs
 
 on:
   push:
-    branches: [main, chore/add_vale]
+    branches: [main]
   pull_request:
     branches: [main]
 
