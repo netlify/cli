@@ -185,7 +185,7 @@ const serveRedirect = async function ({ req, res, proxy, match, options }) {
     req.url = staticFile + reqUrl.search
     // if there is an existing static file and it is not a forced redirect, return the file
     if (!match.force) {
-      return proxy.web(req, res, options)
+      return proxy.web(req, res, { ...options, staticFile })
     }
   }
   if (match.force404) {
@@ -299,6 +299,12 @@ const initializeProxy = function (port, distDir, projectDir) {
         return serveRedirect({ req, res, proxy: handlers, match: req.proxyOptions.match, options: req.proxyOptions })
       }
     }
+
+    if (req.proxyOptions.staticFile && isRedirect({ status: proxyRes.statusCode })) {
+      req.url = proxyRes.headers.location
+      return serveRedirect({ req, res, proxy: handlers, match: null, options: req.proxyOptions })
+    }
+
     const requestURL = new URL(req.url, `http://${req.headers.host || 'localhost'}`)
     const pathHeaderRules = headersForPath(headerRules, requestURL.pathname)
     if (!isEmpty(pathHeaderRules)) {

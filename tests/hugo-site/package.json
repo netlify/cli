@@ -1,0 +1,15 @@
+{
+  "name": "hugo-site",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "serve": "$(npm bin)/hugo server -d out"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "hugo-bin": "^0.70.2"
+  }
+}
