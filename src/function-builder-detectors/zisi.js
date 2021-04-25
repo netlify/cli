@@ -70,5 +70,6 @@ module.exports = async function handler({ config, errorExit, functionsDirectory:
     omitFileChangesLog: true,
     src: sourceDirectory,
     target: targetDirectory,
+    functionsConfig: isUsingEsbuild ? functionsConfig : normalizeFunctionsConfig({ '*': { node_bundler: 'esbuild' } }),
   }
 }

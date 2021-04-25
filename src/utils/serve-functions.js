@@ -191,8 +191,8 @@ const validateFunctions = function ({ functions, capabilities, warn }) {
 
 const DEBOUNCE_WAIT = 300
 
-const createHandler = async function ({ dir, capabilities, omitFileChangesLog, warn }) {
-  let { functions, watchDirs } = await getFunctionsAndWatchDirs(dir)
+const createHandler = async function ({ dir, capabilities, omitFileChangesLog, warn, functionsConfig }) {
+  let { functions, watchDirs } = await getFunctionsAndWatchDirs(dir, functionsConfig)
   validateFunctions({ functions, capabilities, warn })
   const watcher = chokidar.watch(watchDirs, { ignored: /node_modules/, ignoreInitial: true })
 
@@ -211,7 +211,7 @@ const createHandler = async function ({ dir, capabilities, omitFileChangesLog, w
       logBeforeAction({ omitLog: omitFileChangesLog, path, action: 'added' })
 
       await watcher.unwatch(watchDirs)
-      ;({ functions, watchDirs } = await getFunctionsAndWatchDirs(dir))
+      ;({ functions, watchDirs } = await getFunctionsAndWatchDirs(dir, functionsConfig))
       clearRequireCache()
       await watcher.add(watchDirs)
 
@@ -402,7 +402,7 @@ const createFormSubmissionHandler = function ({ siteUrl, warn }) {
   }
 }
 
-const getFunctionsServer = async function ({ dir, omitFileChangesLog, siteUrl, capabilities, warn }) {
+const getFunctionsServer = async function ({ dir, omitFileChangesLog, siteUrl, capabilities, warn, functionsConfig }) {
   const app = express()
   app.set('query parser', 'simple')
 
@@ -424,7 +424,7 @@ const getFunctionsServer = async function ({ dir, omitFileChangesLog, siteUrl, c
     res.status(204).end()
   })
 
-  app.all('*', await createHandler({ dir, capabilities, omitFileChangesLog, warn }))
+  app.all('*', await createHandler({ dir, capabilities, omitFileChangesLog, warn, functionsConfig }))
 
   return app
 }
@@ -509,7 +509,7 @@ const startFunctionsServer = async ({ config, settings, site, log, warn, errorEx
   // serve functions from zip-it-and-ship-it
   // env variables relies on `url`, careful moving this code
   if (settings.functions) {
-    const { omitFileChangesLog, target: functionsDirectory } = await setupFunctionsBuilder({
+    const { omitFileChangesLog, target: functionsDirectory, functionsConfig } = await setupFunctionsBuilder({
       config,
       errorExit,
       functionsDirectory: settings.functions,
@@ -522,6 +522,7 @@ const startFunctionsServer = async ({ config, settings, site, log, warn, errorEx
       siteUrl,
       capabilities,
       warn,
+      functionsConfig,
     })
 
     await startServer({ server, settings, log, errorExit })

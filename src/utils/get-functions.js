@@ -34,13 +34,13 @@ const getWatchDirs = (functionsSrcDir, functions) => {
   return [functionsSrcDir, ...new Set(localFilesDirs)]
 }
 
-const getFunctionsAndWatchDirs = async (functionsSrcDir) => {
+const getFunctionsAndWatchDirs = async (functionsSrcDir, functionsConfig) => {
   if (!(await fileExistsAsync(functionsSrcDir))) {
     return { functions: [], watchDirs: [functionsSrcDir] }
   }
 
   // get all functions files so we know which directories to watch
-  const functions = await listFunctionsFiles(functionsSrcDir)
+  const functions = await listFunctionsFiles(functionsSrcDir, { config: functionsConfig })
   const watchDirs = getWatchDirs(functionsSrcDir, functions)
 
   // filter for only main files to serve
