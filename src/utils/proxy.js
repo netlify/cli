@@ -300,7 +300,7 @@ const initializeProxy = function (port, distDir, projectDir) {
       }
     }
 
-    if (req.proxyOptions.staticFile && isRedirect({ status: proxyRes.statusCode })) {
+    if (req.proxyOptions.staticFile && isRedirect({ status: proxyRes.statusCode }) && proxyRes.headers.location) {
       req.url = proxyRes.headers.location
       return serveRedirect({ req, res, proxy: handlers, match: null, options: req.proxyOptions })
     }
