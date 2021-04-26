@@ -1,4 +1,6 @@
 const { Buffer } = require('buffer')
+const { relative } = require('path')
+const { cwd } = require('process')
 const querystring = require('querystring')
 const { Readable } = require('stream')
 const { URL } = require('url')
@@ -204,10 +206,8 @@ const createHandler = async function ({ dir, capabilities, omitFileChangesLog, w
     leading: false,
     trailing: true,
   })
-  watcher
-    .on('change', debouncedOnChange)
-    .on('unlink', debouncedOnUnlink)
-    .on('add', async (path) => {
+  const debouncedOnAdd = debounce(
+    async (path) => {
       logBeforeAction({ omitLog: omitFileChangesLog, path, action: 'added' })
 
       await watcher.unwatch(watchDirs)
@@ -216,7 +216,12 @@ const createHandler = async function ({ dir, capabilities, omitFileChangesLog, w
       await watcher.add(watchDirs)
 
       logAfterAction({ omitLog: omitFileChangesLog, path, action: 'added' })
-    })
+    },
+    DEBOUNCE_WAIT,
+    { leading: false, trailing: true },
+  )
+
+  watcher.on('change', debouncedOnChange).on('unlink', debouncedOnUnlink).on('add', debouncedOnAdd)
 
   const logger = winston.createLogger({
     levels: winston.config.npm.levels,
@@ -430,28 +435,37 @@ const getFunctionsServer = async function ({ dir, omitFileChangesLog, siteUrl, c
 }
 
 const getBuildFunction = ({ functionBuilder, log }) =>
-  async function build(updatedPath) {
-    log(
-      `${NETLIFYDEVLOG} Function builder ${chalk.yellow(functionBuilder.builderName)} ${chalk.magenta(
-        'building',
-      )} functions from directory ${chalk.yellow(functionBuilder.src)}`,
-    )
+  async function build(updatedPath, eventType) {
+    const relativeFunctionsDir = relative(cwd(), functionBuilder.src)
+
+    log(`${NETLIFYDEVLOG} ${chalk.magenta('Building')} functions from directory ${chalk.yellow(relativeFunctionsDir)}`)
 
     try {
-      await functionBuilder.build(updatedPath)
-      log(
-        `${NETLIFYDEVLOG} Function builder ${chalk.yellow(functionBuilder.builderName)} ${chalk.green(
-          'finished',
-        )} building functions from directory ${chalk.yellow(functionBuilder.src)}`,
-      )
+      const functions = await functionBuilder.build(updatedPath, eventType)
+      const functionNames = (functions || []).map((path) => relative(functionBuilder.src, path))
+
+      // If the build command has returned a set of functions that have been
+      // updated, the list them in the log message. If not, we show a generic
+      // message with the functions directory.
+      if (functionNames.length === 0) {
+        log(
+          `${NETLIFYDEVLOG} ${chalk.green('Finished')} building functions from directory ${chalk.yellow(
+            relativeFunctionsDir,
+          )}`,
+        )
+      } else {
+        log(
+          `${NETLIFYDEVLOG} ${chalk.green('Finished')} building functions: ${functionNames
+            .map((name) => chalk.yellow(name))
+            .join(', ')}`,
+        )
+      }
     } catch (error) {
       const errorMessage = (error.stderr && error.stderr.toString()) || error.message
       log(
-        `${NETLIFYDEVLOG} Function builder ${chalk.yellow(functionBuilder.builderName)} ${chalk.red(
-          'failed',
-        )} building functions from directory ${chalk.yellow(functionBuilder.src)}${
-          errorMessage ? ` with error:\n${errorMessage}` : ''
-        }`,
+        `${NETLIFYDEVLOG} ${chalk.red('Failed')} building functions from directory ${chalk.yellow(
+          relativeFunctionsDir,
+        )}${errorMessage ? ` with error:\n${errorMessage}` : ''}`,
       )
     }
   }
@@ -484,9 +498,9 @@ const setupFunctionsBuilder = async ({ config, errorExit, functionsDirectory, lo
 
   const functionWatcher = chokidar.watch(functionBuilder.src)
   functionWatcher.on('ready', () => {
-    functionWatcher.on('add', debouncedBuild)
-    functionWatcher.on('change', debouncedBuild)
-    functionWatcher.on('unlink', debouncedBuild)
+    functionWatcher.on('add', (path) => debouncedBuild(path, 'add'))
+    functionWatcher.on('change', (path) => debouncedBuild(path, 'change'))
+    functionWatcher.on('unlink', (path) => debouncedBuild(path, 'unlink'))
   })
 
   return functionBuilder
