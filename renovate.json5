@@ -22,6 +22,7 @@
         'random-item',
         'wrap-ansi',
         'better-opn',
+        'to-readable-stream',
       ],
       major: {
         enabled: false,
