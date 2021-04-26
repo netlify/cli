@@ -231,7 +231,7 @@ class DevCommand extends Command {
 
     await injectEnvVariables({ env: this.netlify.cachedConfig.env, log, site, warn })
 
-    const { addonsUrls, siteUrl, capabilities } = await getSiteInformation({
+    const { addonsUrls, siteUrl, capabilities, timeouts } = await getSiteInformation({
       flags,
       api,
       site,
@@ -257,6 +257,7 @@ class DevCommand extends Command {
       errorExit,
       siteUrl,
       capabilities,
+      timeouts,
     })
     await startFrameworkServer({ settings, log, exit })
 
