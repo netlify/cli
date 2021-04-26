@@ -1,6 +1,4 @@
-const path = require('path')
-
-const { listFunctions, listFunctionsFiles } = require('@netlify/zip-it-and-ship-it')
+const { listFunctions } = require('@netlify/zip-it-and-ship-it')
 
 const { fileExistsAsync } = require('../lib/fs')
 
@@ -26,27 +24,17 @@ const getFunctions = async (functionsSrcDir) => {
   return functionsWithProps
 }
 
-const getWatchDirs = (functionsSrcDir, functions) => {
-  const localFilesDirs = functions
-    .filter(({ srcFile }) => !srcFile.startsWith(functionsSrcDir) && !srcFile.includes('node_modules'))
-    .map(({ srcFile }) => path.dirname(srcFile))
-
-  return [functionsSrcDir, ...new Set(localFilesDirs)]
-}
-
 const getFunctionsAndWatchDirs = async (functionsSrcDir) => {
   if (!(await fileExistsAsync(functionsSrcDir))) {
     return { functions: [], watchDirs: [functionsSrcDir] }
   }
 
   // get all functions files so we know which directories to watch
-  const functions = await listFunctionsFiles(functionsSrcDir)
-  const watchDirs = getWatchDirs(functionsSrcDir, functions)
+  const functions = await listFunctions(functionsSrcDir)
+  const watchDirs = [functionsSrcDir]
 
   // filter for only main files to serve
-  const functionsWithProps = functions
-    .filter(({ runtime, srcFile, mainFile }) => runtime === JS && srcFile === mainFile)
-    .map((func) => addFunctionProps(func))
+  const functionsWithProps = functions.filter(({ runtime }) => runtime === JS).map((func) => addFunctionProps(func))
 
   return { functions: functionsWithProps, watchDirs }
 }
