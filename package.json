@@ -167,7 +167,7 @@
     "semver": "^7.3.4",
     "static-server": "^2.2.1",
     "strip-ansi-control-characters": "^2.0.0",
-    "to-readable-stream": "^2.1.0",
+    "to-readable-stream": "^3.0.0",
     "update-notifier": "^4.0.0",
     "uuid": "^8.0.0",
     "wait-port": "^0.2.2",
