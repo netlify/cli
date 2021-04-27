@@ -207,7 +207,8 @@ const createHandler = function ({ getFunctionByName }) {
       response.end('Function not found...')
       return
     }
-    const { mainFile: lambdaPath, isBackground } = func
+    const { bundleFile, mainFile, isBackground } = func
+    const lambdaPath = bundleFile || mainFile
 
     const isBase64Encoded = shouldBase64Encode(request.headers['content-type'])
     const body = request.get('content-length') ? request.body.toString(isBase64Encoded ? 'base64' : 'utf8') : undefined
@@ -526,9 +527,9 @@ const setupFunctionsBuilder = async ({ config, errorExit, functionsDirectory, lo
   const functionWatcher = chokidar.watch(functionBuilder.src)
   functionWatcher.on('ready', () => {
     functionWatcher.on('add', (path) => debouncedBuild(path, 'add'))
-    functionWatcher.on('change', (path) => {
+    functionWatcher.on('change', async (path) => {
+      await debouncedBuild(path, 'change')
       clearRequireCache()
-      debouncedBuild(path, 'change')
     })
     functionWatcher.on('unlink', (path) => debouncedBuild(path, 'unlink'))
   })
