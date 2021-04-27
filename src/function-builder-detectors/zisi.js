@@ -11,6 +11,18 @@ const { NETLIFYDEVERR } = require('../utils/logo')
 
 const ZIP_CONCURRENCY = 5
 
+const addFunctionToCache = (func, cache) => {
+  // Transforming the inputs into a Set so that we can have a O(1) lookup.
+  const inputs = new Set(func.inputs)
+
+  // The `mainFile` property returned from ZISI will point to the original main
+  // function file, but we want to serve the bundled version, so we adjust the
+  // path before adding it to the cache.
+  const mainFile = path.join(func.path, `${func.name}.js`)
+
+  cache.set(func.mainFile, { ...func, inputs, mainFile })
+}
+
 const zipFunctionsAndUpdateCache = async ({ cache, functions, sourceDirectory, targetDirectory, zipOptions }) => {
   if (functions !== undefined) {
     await pFilter(
@@ -18,7 +30,7 @@ const zipFunctionsAndUpdateCache = async ({ cache, functions, sourceDirectory, t
       async (mainFile) => {
         const func = await zipFunction(mainFile, targetDirectory, zipOptions)
 
-        cache.set(func.mainFile, { ...func, inputs: new Set(func.inputs) })
+        addFunctionToCache(func, cache)
       },
       { concurrency: ZIP_CONCURRENCY },
     )
@@ -29,7 +41,7 @@ const zipFunctionsAndUpdateCache = async ({ cache, functions, sourceDirectory, t
   const result = await zipFunctions(sourceDirectory, targetDirectory, zipOptions)
 
   result.forEach((func) => {
-    cache.set(func.mainFile, { ...func, inputs: new Set(func.inputs) })
+    addFunctionToCache(func, cache)
   })
 }
 
