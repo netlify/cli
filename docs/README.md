@@ -17,6 +17,8 @@ To install the CLI, pop open your terminal and install with `npm`.
 npm install netlify-cli -g
 ```
 
+**Important:** When using the CLI in a CI environment we recommend installing it locally. See more [here](https://github.com/netlify/cli#installation).
+
 **Listing commands**
 
 To get a list of commands, run:
