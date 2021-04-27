@@ -155,16 +155,12 @@ const buildClientContext = function (headers) {
   }
 }
 
-const logBeforeAction = ({ omitLog, path, action }) => {
-  if (!omitLog) {
-    console.log(`${NETLIFYDEVLOG} ${path} ${action}, reloading...`)
-  }
+const logBeforeAction = ({ path, action }) => {
+  console.log(`${NETLIFYDEVLOG} ${path} ${action}, reloading...`)
 }
 
-const logAfterAction = ({ omitLog, path, action }) => {
-  if (!omitLog) {
-    console.log(`${NETLIFYDEVLOG} ${path} ${action}, successfully reloaded!`)
-  }
+const logAfterAction = ({ path, action }) => {
+  console.log(`${NETLIFYDEVLOG} ${path} ${action}, successfully reloaded!`)
 }
 
 const clearRequireCache = () => {
@@ -173,10 +169,10 @@ const clearRequireCache = () => {
   })
 }
 
-const clearCache = ({ action, omitLog }) => (path) => {
-  logBeforeAction({ omitLog, path, action })
+const clearCache = ({ action }) => (path) => {
+  logBeforeAction({ path, action })
   clearRequireCache()
-  logAfterAction({ omitLog, path, action })
+  logAfterAction({ path, action })
 }
 
 const shouldBase64Encode = function (contentType) {
@@ -193,36 +189,7 @@ const validateFunctions = function ({ functions, capabilities, warn }) {
 
 const DEBOUNCE_WAIT = 300
 
-const createHandler = async function ({ dir, capabilities, omitFileChangesLog, warn }) {
-  let { functions, watchDirs } = await getFunctionsAndWatchDirs(dir)
-  validateFunctions({ functions, capabilities, warn })
-  const watcher = chokidar.watch(watchDirs, { ignored: /node_modules/, ignoreInitial: true })
-
-  const debouncedOnChange = debounce(clearCache({ action: 'modified', omitLog: omitFileChangesLog }), DEBOUNCE_WAIT, {
-    leading: false,
-    trailing: true,
-  })
-  const debouncedOnUnlink = debounce(clearCache({ action: 'deleted', omitLog: omitFileChangesLog }), DEBOUNCE_WAIT, {
-    leading: false,
-    trailing: true,
-  })
-  const debouncedOnAdd = debounce(
-    async (path) => {
-      logBeforeAction({ omitLog: omitFileChangesLog, path, action: 'added' })
-
-      await watcher.unwatch(watchDirs)
-      ;({ functions, watchDirs } = await getFunctionsAndWatchDirs(dir))
-      clearRequireCache()
-      await watcher.add(watchDirs)
-
-      logAfterAction({ omitLog: omitFileChangesLog, path, action: 'added' })
-    },
-    DEBOUNCE_WAIT,
-    { leading: false, trailing: true },
-  )
-
-  watcher.on('change', debouncedOnChange).on('unlink', debouncedOnUnlink).on('add', debouncedOnAdd)
-
+const createHandler = function ({ getFunctionByName }) {
   const logger = winston.createLogger({
     levels: winston.config.npm.levels,
     transports: [new winston.transports.Console({ level: 'warn' })],
@@ -234,7 +201,7 @@ const createHandler = async function ({ dir, capabilities, omitFileChangesLog, w
     const cleanPath = request.path.replace(/^\/.netlify\/functions/, '')
 
     const functionName = cleanPath.split('/').find(Boolean)
-    const func = functions.find(({ name }) => name === functionName)
+    const func = getFunctionByName(functionName)
     if (func === undefined) {
       response.statusCode = 404
       response.end('Function not found...')
@@ -291,6 +258,66 @@ const createHandler = async function ({ dir, capabilities, omitFileChangesLog, w
     }
     return executeSynchronousFunction({ event, lambdaPath, clientContext, response })
   }
+}
+
+const setupDefaultFunctionHandler = async ({ capabilities, directory, warn }) => {
+  const context = {
+    functions: [],
+    watchDirs: [],
+  }
+  const { functions, watchDirs } = await getFunctionsAndWatchDirs(directory)
+  const watcher = chokidar.watch(watchDirs, { ignored: /node_modules/, ignoreInitial: true })
+  const debouncedOnChange = debounce(clearCache({ action: 'modified' }), DEBOUNCE_WAIT, {
+    leading: false,
+    trailing: true,
+  })
+  const debouncedOnUnlink = debounce(
+    (path) => {
+      context.functions = context.functions.filter((func) => func.mainFile !== path)
+
+      clearCache({ action: 'deleted' })
+    },
+    DEBOUNCE_WAIT,
+    {
+      leading: false,
+      trailing: true,
+    },
+  )
+  const debouncedOnAdd = debounce(
+    async (path) => {
+      logBeforeAction({ path, action: 'added' })
+
+      if (context.watchDirs.length !== 0) {
+        await watcher.unwatch(watchDirs)
+      }
+
+      const { functions: newFunctions, watchDirs: newWatchDirs } = await getFunctionsAndWatchDirs(directory)
+
+      validateFunctions({ functions, capabilities, warn })
+
+      clearRequireCache()
+
+      await watcher.add(newWatchDirs)
+
+      context.functions = newFunctions
+      context.watchDirs = newWatchDirs
+
+      logAfterAction({ path, action: 'added' })
+    },
+    DEBOUNCE_WAIT,
+    { leading: false, trailing: true },
+  )
+
+  validateFunctions({ functions, capabilities, warn })
+
+  context.functions = functions
+  context.watchDirs = watchDirs
+
+  watcher.on('change', debouncedOnChange).on('unlink', debouncedOnUnlink).on('add', debouncedOnAdd)
+
+  const getFunctionByName = (functionName) => context.functions.find(({ name }) => name === functionName)
+
+  return { getFunctionByName }
 }
 
 const createFormSubmissionHandler = function ({ siteUrl, warn }) {
@@ -407,7 +434,7 @@ const createFormSubmissionHandler = function ({ siteUrl, warn }) {
   }
 }
 
-const getFunctionsServer = async function ({ dir, omitFileChangesLog, siteUrl, capabilities, warn }) {
+const getFunctionsServer = async function ({ getFunctionByName, siteUrl, warn }) {
   const app = express()
   app.set('query parser', 'simple')
 
@@ -429,7 +456,7 @@ const getFunctionsServer = async function ({ dir, omitFileChangesLog, siteUrl, c
     res.status(204).end()
   })
 
-  app.all('*', await createHandler({ dir, capabilities, omitFileChangesLog, warn }))
+  app.all('*', await createHandler({ getFunctionByName }))
 
   return app
 }
@@ -499,7 +526,10 @@ const setupFunctionsBuilder = async ({ config, errorExit, functionsDirectory, lo
   const functionWatcher = chokidar.watch(functionBuilder.src)
   functionWatcher.on('ready', () => {
     functionWatcher.on('add', (path) => debouncedBuild(path, 'add'))
-    functionWatcher.on('change', (path) => debouncedBuild(path, 'change'))
+    functionWatcher.on('change', (path) => {
+      clearRequireCache()
+      debouncedBuild(path, 'change')
+    })
     functionWatcher.on('unlink', (path) => debouncedBuild(path, 'unlink'))
   })
 
@@ -523,18 +553,25 @@ const startFunctionsServer = async ({ config, settings, site, log, warn, errorEx
   // serve functions from zip-it-and-ship-it
   // env variables relies on `url`, careful moving this code
   if (settings.functions) {
-    const { omitFileChangesLog, target: functionsDirectory } = await setupFunctionsBuilder({
+    const builder = await setupFunctionsBuilder({
       config,
       errorExit,
       functionsDirectory: settings.functions,
       log,
       site,
     })
+    const directory = builder.target || settings.functions
+
+    // If the functions builder implements a `getFunctionByName` function, it
+    // will be called on every functions request with the function name and it
+    // should return the corresponding function object if one exists.
+    const { getFunctionByName } =
+      typeof builder.getFunctionByName === 'function'
+        ? builder
+        : await setupDefaultFunctionHandler({ capabilities, directory, warn })
     const server = await getFunctionsServer({
-      dir: functionsDirectory || settings.functions,
-      omitFileChangesLog,
+      getFunctionByName,
       siteUrl,
-      capabilities,
       warn,
     })
 

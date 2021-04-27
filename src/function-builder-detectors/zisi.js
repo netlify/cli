@@ -18,7 +18,7 @@ const zipFunctionsAndUpdateCache = async ({ cache, functions, sourceDirectory, t
       async (mainFile) => {
         const func = await zipFunction(mainFile, targetDirectory, zipOptions)
 
-        cache.set(func.mainFile, { inputs: new Set(func.inputs), path: func.path })
+        cache.set(func.mainFile, { ...func, inputs: new Set(func.inputs) })
       },
       { concurrency: ZIP_CONCURRENCY },
     )
@@ -29,7 +29,7 @@ const zipFunctionsAndUpdateCache = async ({ cache, functions, sourceDirectory, t
   const result = await zipFunctions(sourceDirectory, targetDirectory, zipOptions)
 
   result.forEach((func) => {
-    cache.set(func.mainFile, { inputs: new Set(func.inputs), path: func.path })
+    cache.set(func.mainFile, { ...func, inputs: new Set(func.inputs) })
   })
 }
 
@@ -101,6 +101,8 @@ const bundleFunctions = async ({ cache, config, eventType, sourceDirectory, targ
       } else {
         const { path: functionPath } = cache.get(updatedPath)
 
+        cache.delete(updatedPath)
+
         await del(functionPath, { force: true })
       }
 
@@ -139,6 +141,8 @@ const bundleFunctions = async ({ cache, config, eventType, sourceDirectory, targ
     zipOptions,
   })
 }
+
+const getFunctionByName = ({ cache, name }) => [...cache.values()].find((func) => func.name === name)
 
 // The function configuration keys returned by @netlify/config are not an exact
 // match to the properties that @netlify/zip-it-and-ship-it expects. We do that
@@ -187,7 +191,7 @@ module.exports = async function handler({ config, errorExit, functionsDirectory:
     build: (updatedPath, eventType) =>
       bundleFunctions({ cache, config: functionsConfig, eventType, sourceDirectory, targetDirectory, updatedPath }),
     builderName: 'zip-it-and-ship-it',
-    omitFileChangesLog: true,
+    getFunctionByName: (name) => getFunctionByName({ cache, name }),
     src: sourceDirectory,
     target: targetDirectory,
   }
