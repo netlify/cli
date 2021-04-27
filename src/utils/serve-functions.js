@@ -328,6 +328,8 @@ const createFormSubmissionHandler = function ({ siteUrl, warn }) {
     const fakeRequest = new Readable({
       read() {
         this.push(req.body)
+        // TODO: remove when https://github.com/sindresorhus/eslint-plugin-unicorn/issues/1057 is fixed
+        // eslint-disable-next-line unicorn/no-array-push-push
         this.push(null)
       },
     })
@@ -515,21 +517,35 @@ const setupFunctionsBuilder = async ({ config, errorExit, functionsDirectory, lo
 
   log(`${NETLIFYDEVLOG} Function builder ${chalk.yellow(functionBuilder.builderName)} detected${npmScriptString}.`)
 
-  const debouncedBuild = debounce(getBuildFunction({ functionBuilder, log }), DEBOUNCE_WAIT, {
-    leading: true,
-    trailing: true,
-  })
+  const cache = new Map()
 
-  await debouncedBuild()
+  const buildFunction = getBuildFunction({ functionBuilder, log })
+
+  // `memoizedBuild` will avoid consecutive calls to the build function with
+  // the same arguments until the previous invokation has finished running.
+  const memoizedBuild = (path, eventType) => {
+    const key = `${eventType}@${path}`
+
+    if (!cache.has(key)) {
+      cache.set(
+        key,
+        buildFunction(path, eventType).finally(() => cache.delete(key)),
+      )
+    }
+
+    return cache.get(key)
+  }
+
+  await memoizedBuild()
 
   const functionWatcher = chokidar.watch(functionBuilder.src)
   functionWatcher.on('ready', () => {
-    functionWatcher.on('add', (path) => debouncedBuild(path, 'add'))
+    functionWatcher.on('add', (path) => memoizedBuild(path, 'add'))
     functionWatcher.on('change', async (path) => {
-      await debouncedBuild(path, 'change')
+      await memoizedBuild(path, 'change')
       clearRequireCache()
     })
-    functionWatcher.on('unlink', (path) => debouncedBuild(path, 'unlink'))
+    functionWatcher.on('unlink', (path) => memoizedBuild(path, 'unlink'))
   })
 
   return functionBuilder
