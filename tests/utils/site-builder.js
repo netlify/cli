@@ -19,7 +19,7 @@ const createSiteBuilder = ({ siteName }) => {
     uuidv4(),
     siteName,
   )
-  const tasks = [() => ensureDir(directory)]
+  let tasks = [() => ensureDir(directory)]
 
   const builder = {
     directory,
@@ -130,11 +130,21 @@ const createSiteBuilder = ({ siteName }) => {
       })
       return builder
     },
+    withoutFile: ({ path: filePath }) => {
+      const dest = path.join(directory, filePath)
+      tasks.push(async () => {
+        await fs.rmFileAsync(dest)
+      })
+      return builder
+    },
     buildAsync: async () => {
       for (const task of tasks) {
         // eslint-disable-next-line no-await-in-loop
         await task()
       }
+
+      tasks = []
+
       return builder
     },
     cleanupAsync: async () => {
