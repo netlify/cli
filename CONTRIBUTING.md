@@ -79,6 +79,12 @@ We also test for a few other things:
 - Test coverage
 - Must work with Windows + Unix environments.
 
+### Lint docs per Netlify style guide
+
+1. [Install vale](https://docs.errata.ai/vale/install)
+2. Download the latest styles to the styles directory. For example: `wget -q -O styles.zip https://vale-library.netlify.app/styles.zip && unzip styles.zip -d .github/styles && rm styles.zip`
+3. Run vale: `vale docs src README.md CODE_OF_CONDUCT.md CONTRIBUTING.md`
+
 ## Pull Requests
 
 We actively welcome your pull requests.
