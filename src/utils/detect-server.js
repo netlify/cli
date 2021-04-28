@@ -263,7 +263,7 @@ const chooseDefaultArgs = function (possibleArgsArrs) {
   if (!args) {
     const { scripts } = JSON.parse(fs.readFileSync('package.json', { encoding: 'utf8' }))
     const err = new Error(
-      'Empty args assigned, this is an internal Netlify Dev bug, please report your settings and scripts so we can improve',
+      'Missing or unsupported start script detected. This is an internal Netlify Dev bug, please report your settings and scripts so we can improve',
     )
     err.scripts = scripts
     err.possibleArgsArrs = possibleArgsArrs
