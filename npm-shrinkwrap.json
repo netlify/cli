@@ -1,12 +1,12 @@
 {
   "name": "netlify-cli",
-  "version": "3.22.1",
+  "version": "3.23.0",
   "lockfileVersion": 2,
   "requires": true,
   "packages": {
     "": {
       "name": "netlify-cli",
-      "version": "3.22.0",
+      "version": "3.23.0",
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
@@ -79,7 +79,7 @@
         "minimist": "^1.2.5",
         "multiparty": "^4.2.1",
         "netlify": "^6.1.22",
-        "netlify-redirect-parser": "^3.0.18",
+        "netlify-redirect-parser": "^3.0.19",
         "netlify-redirector": "^0.2.1",
         "node-fetch": "^2.6.0",
         "node-version-alias": "^1.0.1",
@@ -16252,11 +16252,11 @@
       }
     },
     "node_modules/netlify-redirect-parser": {
-      "version": "3.0.18",
-      "resolved": "https://registry.npmjs.org/netlify-redirect-parser/-/netlify-redirect-parser-3.0.18.tgz",
-      "integrity": "sha512-OBILCWM1TZryBa/6ZRSkZJppY/6Q7vAQ5HLGBOWSLV4rkCIGHzjhiGlZTbrxPCEne7qzJowGT/COqNhbohhYKA==",
+      "version": "3.0.19",
+      "resolved": "https://registry.npmjs.org/netlify-redirect-parser/-/netlify-redirect-parser-3.0.19.tgz",
+      "integrity": "sha512-K6bzNpYWDsB2BEFjwiRZKIhOludlHO6SyHLnGVxrtvS87cV3R+kFnN0G1HLpf6yeeSG2JJw7PlOdT2CjtcSFmQ==",
       "dependencies": {
-        "@netlify/config": "^6.2.1",
+        "@netlify/config": "^6.3.0",
         "lodash.isplainobject": "^4.0.6"
       },
       "engines": {
@@ -35350,11 +35350,11 @@
       }
     },
     "netlify-redirect-parser": {
-      "version": "3.0.18",
-      "resolved": "https://registry.npmjs.org/netlify-redirect-parser/-/netlify-redirect-parser-3.0.18.tgz",
-      "integrity": "sha512-OBILCWM1TZryBa/6ZRSkZJppY/6Q7vAQ5HLGBOWSLV4rkCIGHzjhiGlZTbrxPCEne7qzJowGT/COqNhbohhYKA==",
+      "version": "3.0.19",
+      "resolved": "https://registry.npmjs.org/netlify-redirect-parser/-/netlify-redirect-parser-3.0.19.tgz",
+      "integrity": "sha512-K6bzNpYWDsB2BEFjwiRZKIhOludlHO6SyHLnGVxrtvS87cV3R+kFnN0G1HLpf6yeeSG2JJw7PlOdT2CjtcSFmQ==",
       "requires": {
-        "@netlify/config": "^6.2.1",
+        "@netlify/config": "^6.3.0",
         "lodash.isplainobject": "^4.0.6"
       }
     },
