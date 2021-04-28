@@ -1,38 +1,21 @@
 // A simple ghauth inspired library for getting a personal access token
 const http = require('http')
-const os = require('os')
 const process = require('process')
 const querystring = require('querystring')
 
 const { Octokit } = require('@octokit/rest')
-const dotProp = require('dot-prop')
 const getPort = require('get-port')
 const inquirer = require('inquirer')
-
-const { version } = require('../../package.json')
 
 const { createDeferred } = require('./deferred')
 const openBrowser = require('./open-browser')
 
 const SERVER_PORT = 3000
-const USER_AGENT = `Netlify CLI ${version}`
-
-const promptForOTP = async function () {
-  const { otp } = await inquirer.prompt([
-    {
-      type: 'input',
-      name: 'otp',
-      message: 'Your GitHub OTP/2FA Code:',
-      filter: (input) => input.trim(),
-    },
-  ])
-  return otp
-}
 
 const promptForAuthMethod = async () => {
   const authChoiceNetlify = 'Authorize with GitHub through app.netlify.com'
-  const authChoiceManual = 'Enter your GitHub credentials manually'
-  const authChoices = [authChoiceNetlify, authChoiceManual]
+  const authChoiceToken = 'Authorize with a GitHub personal access token'
+  const authChoices = [authChoiceNetlify, authChoiceToken]
 
   const { authMethod } = await inquirer.prompt([
     {
@@ -86,62 +69,29 @@ const authWithNetlify = async ({ log }) => {
   return deferredPromise
 }
 
-const getUsernameAndPassword = async () => {
-  const { username, password } = await inquirer.prompt([
+const getPersonalAccessToken = async () => {
+  const { token } = await inquirer.prompt([
     {
       type: 'input',
-      name: 'username',
-      message: 'Your GitHub username:',
-      filter: (input) => input.trim(),
-    },
-    {
-      type: 'password',
-      name: 'password',
-      message: 'Your GitHub password:',
-      mask: '*',
+      name: 'token',
+      message: 'Your GitHub personal access token:',
       filter: (input) => input.trim(),
     },
   ])
 
-  return { username, password }
+  return { token }
 }
 
-const getGitHubClient = ({ username, password }) => {
-  // configure basic auth
-  const octokit = new Octokit({
-    auth: {
-      username,
-      password,
-      on2fa() {
-        return promptForOTP()
-      },
-    },
-  })
-  return octokit
-}
-
-const createAuthorization = async ({ octokit }) => {
-  const response = await octokit.oauthAuthorizations.createAuthorization({
-    note: `Netlify CLI ${os.userInfo().username}@${os.hostname()} (${new Date().toJSON()})`,
-    note_url: 'https://cli.netlify.com/',
-    scopes: ['admin:org', 'admin:public_key', 'repo', 'user'],
-    headers: {
-      'User-Agent': USER_AGENT,
-    },
-  })
-  return response
-}
-
-const authManually = async () => {
-  const { username, password } = await getUsernameAndPassword()
-  const octokit = getGitHubClient({ username, password })
-  const response = await createAuthorization(octokit)
-  const token = dotProp.get(response, 'data.token')
+const authWithToken = async () => {
+  const { token } = await getPersonalAccessToken()
   if (token) {
-    return { user: username, token }
+    const octokit = new Octokit({
+      auth: `token ${token}`,
+    })
+    const { login: user } = await octokit.users.getAuthenticated()
+    return { token, user, provider: 'github' }
   }
   const error = new Error('Github authentication failed')
-  error.response = response
   throw error
 }
 
@@ -153,5 +103,5 @@ module.exports = async function getGitHubToken({ log }) {
     return await authWithNetlify({ log })
   }
 
-  await authManually()
+  return await authWithToken()
 }

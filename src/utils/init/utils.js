@@ -186,7 +186,10 @@ const saveNetlifyToml = async ({ siteRoot, config, buildCmd, buildDir, functions
   }
 }
 
-const formatErrorMessage = ({ message, error }) => `${message} with error: ${chalk.red(error.message)}`
+const formatErrorMessage = ({ message, error }) => {
+  const errorMessage = error.json ? `${error.message} - ${JSON.stringify(error.json)}` : error.message
+  return `${message} with error: ${chalk.red(errorMessage)}`
+}
 
 const formatTitle = (title) => chalk.cyan(title)
 
