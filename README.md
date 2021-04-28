@@ -51,7 +51,7 @@ npm install netlify-cli -g
 ```
 
 When using the CLI in a CI environment we recommend installing it locally as a development dependency, instead of globally.
-To install locally, run the following command from the root directory directory of your project:
+To install locally, run the following command from the root directory of your project:
 
 ```bash
 npm install --save-dev netlify-cli
