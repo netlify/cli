@@ -18,5 +18,6 @@ jobs:
         with:
           styles: https://vale-library.netlify.app/styles.zip
           files: '["docs", "src", "README.md", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md"]'
+          onlyAnnotateModifiedLines: true
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
