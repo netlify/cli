@@ -35,7 +35,6 @@ const startServer = async ({ cwd, env = {}, args = [] }) => {
   const { NETLIFY_AUTH_TOKEN, ...processEnv } = process.env
   const ps = execa(cliPath, ['dev', '-p', port, '--staticServerPort', port + FRAMEWORK_PORT_SHIFT, ...args], {
     cwd,
-
     extendEnv: false,
     env: { ...processEnv, BROWSER: 'none', ...env },
     encoding: 'utf8',

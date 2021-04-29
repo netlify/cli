@@ -15,6 +15,7 @@ const { copyFileAsync } = require('../src/lib/fs')
 const { withDevServer } = require('./utils/dev-server')
 const { startExternalServer } = require('./utils/external-server')
 const got = require('./utils/got')
+const { withMockApi } = require('./utils/mock-api')
 const { withSiteBuilder } = require('./utils/site-builder')
 
 const gotCatch404 = async (url, options) => {
@@ -1630,6 +1631,67 @@ export const handler = async function () {
           const options = { https: { rejectUnauthorized: false } }
           t.is(await got(`https://localhost:${port}`, options).text(), 'index')
           t.is(await got(`https://localhost:${port}/api/hello`, options).text(), 'Hello World')
+        })
+      })
+    })
+
+    test(testName(`should use custom functions timeouts`, args), async (t) => {
+      await withSiteBuilder('site-with-custom-functions-timeout', async (builder) => {
+        await builder
+          .withNetlifyToml({
+            config: {
+              build: { publish: 'public' },
+              functions: { directory: 'functions' },
+            },
+          })
+          .withFunction({
+            path: 'hello.js',
+            handler: async () => {
+              await new Promise((resolve) => {
+                const SLEEP_TIME = 2000
+                setTimeout(resolve, SLEEP_TIME)
+              })
+              return {
+                statusCode: 200,
+                body: 'Hello World',
+              }
+            },
+          })
+          .buildAsync()
+
+        const siteInfo = {
+          account_slug: 'test-account',
+          id: 'site_id',
+          name: 'site-name',
+          functions_config: { timeout: 1 },
+        }
+
+        const routes = [
+          { path: 'sites/site_id', response: siteInfo },
+
+          { path: 'sites/site_id/service-instances', response: [] },
+          {
+            path: 'accounts',
+            response: [{ slug: siteInfo.account_slug }],
+          },
+        ]
+
+        await withMockApi(routes, async ({ apiUrl }) => {
+          await withDevServer(
+            {
+              cwd: builder.directory,
+              // we need to pass a token so the CLI tries to retrieve site information from the mock API
+              args: [...args, '--auth', 'fake-token'],
+              env: {
+                NETLIFY_API_URL: apiUrl,
+                NETLIFY_SITE_ID: 'site_id',
+              },
+            },
+            async ({ url }) => {
+              const error = await t.throwsAsync(() => got(`${url}/.netlify/functions/hello`))
+              t.true(error.response.body.includes('TimeoutError: Task timed out after 1.00 seconds'))
+            },
+          )
         })
       })
     })
