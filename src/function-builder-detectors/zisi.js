@@ -10,8 +10,9 @@ const { getFunctions } = require('../utils/get-functions')
 const { NETLIFYDEVERR } = require('../utils/logo')
 
 const ZIP_CONCURRENCY = 5
+const ZIP_DEBOUNCE_INTERVAL = 300
 
-const addFunctionToCache = (func, cache) => {
+const addFunctionToTree = (func, fileTree) => {
   // Transforming the inputs into a Set so that we can have a O(1) lookup.
   const inputs = new Set(func.inputs)
 
@@ -20,10 +21,46 @@ const addFunctionToCache = (func, cache) => {
   // the `bundleFile` property.
   const bundleFile = path.join(func.path, `${func.name}.js`)
 
-  cache.set(func.mainFile, { ...func, bundleFile, inputs })
+  fileTree.set(func.mainFile, { ...func, bundleFile, inputs })
 }
 
-const zipFunctionsAndUpdateCache = async ({ cache, functions, sourceDirectory, targetDirectory, zipOptions }) => {
+// `memoizedZip` will avoid zipping the same function multiple times until the
+// previous operation has been completed. If another call is made within that
+// period, it will be:
+// - discarded if it happens before `DEBOUNCE_WAIT` has elapsed;
+// - enqueued if it happens after `DEBOUNCE_WAIT` has elapsed.
+// This allows us to discard any duplicate filesystem events, while ensuring
+// that actual updates happening during the zip operation will be executed
+// after it finishes (only the last update will run).
+const memoizedZip = ({ cacheKey, command, zipCache }) => {
+  if (zipCache[cacheKey] === undefined) {
+    zipCache[cacheKey] = {
+      task: command().finally(() => {
+        const entry = zipCache[cacheKey]
+
+        zipCache[cacheKey] = undefined
+
+        if (entry.enqueued !== undefined) {
+          memoizedZip({ cacheKey, command, zipCache })
+        }
+      }),
+      timestamp: Date.now(),
+    }
+  } else if (Date.now() > zipCache[cacheKey].timestamp + ZIP_DEBOUNCE_INTERVAL) {
+    zipCache[cacheKey].enqueued = true
+  }
+
+  return zipCache[cacheKey].task
+}
+
+const zipFunctionsAndUpdateTree = async ({
+  fileTree,
+  functions,
+  sourceDirectory,
+  targetDirectory,
+  zipCache,
+  zipOptions,
+}) => {
   if (functions !== undefined) {
     await pFilter(
       functions,
@@ -38,9 +75,13 @@ const zipFunctionsAndUpdateCache = async ({ cache, functions, sourceDirectory, t
         // root of the functions directory (e.g. `functions/my-func.js`). In
         // this case, we use `mainFile` as the function path of `zipFunction`.
         const entryPath = functionDirectory === sourceDirectory ? mainFile : functionDirectory
-        const func = await zipFunction(entryPath, targetDirectory, zipOptions)
+        const func = await memoizedZip({
+          cacheKey: entryPath,
+          command: () => zipFunction(entryPath, targetDirectory, zipOptions),
+          zipCache,
+        })
 
-        addFunctionToCache(func, cache)
+        addFunctionToTree(func, fileTree)
       },
       { concurrency: ZIP_CONCURRENCY },
     )
@@ -48,17 +89,28 @@ const zipFunctionsAndUpdateCache = async ({ cache, functions, sourceDirectory, t
     return
   }
 
-  const result = await zipFunctions(sourceDirectory, targetDirectory, zipOptions)
+  const result = await memoizedZip({
+    command: () => zipFunctions(sourceDirectory, targetDirectory, zipOptions),
+    zipCache,
+  })
 
   result.forEach((func) => {
-    addFunctionToCache(func, cache)
+    addFunctionToTree(func, fileTree)
   })
 }
 
 // Bundles a set of functions based on the event type and the updated path. It
 // returns an array with the paths of the functions that were rebundled as a
 // result of the update event.
-const bundleFunctions = async ({ cache, config, eventType, sourceDirectory, targetDirectory, updatedPath }) => {
+const bundleFunctions = async ({
+  config,
+  eventType,
+  fileTree,
+  sourceDirectory,
+  targetDirectory,
+  updatedPath,
+  zipCache,
+}) => {
   const zipOptions = {
     archiveFormat: 'none',
     config,
@@ -68,14 +120,15 @@ const bundleFunctions = async ({ cache, config, eventType, sourceDirectory, targ
     // We first check to see if the file being added is associated with any
     // functions (e.g. restoring a file that has been previously deleted).
     // If that's the case, we bundle just those functions.
-    const functionsWithPath = [...cache.entries()].filter(([, { inputs }]) => inputs.has(updatedPath))
+    const functionsWithPath = [...fileTree.entries()].filter(([, { inputs }]) => inputs.has(updatedPath))
 
     if (functionsWithPath.length !== 0) {
-      await zipFunctionsAndUpdateCache({
-        cache,
+      await zipFunctionsAndUpdateTree({
+        fileTree,
         functions: functionsWithPath.map(([, func]) => func),
         sourceDirectory,
         targetDirectory,
+        zipCache,
         zipOptions,
       })
 
@@ -88,11 +141,12 @@ const bundleFunctions = async ({ cache, config, eventType, sourceDirectory, targ
     const matchingFunction = functions.find(({ mainFile }) => mainFile === updatedPath)
 
     if (matchingFunction !== undefined) {
-      await zipFunctionsAndUpdateCache({
-        cache,
+      await zipFunctionsAndUpdateTree({
+        fileTree,
         functions: [matchingFunction],
         sourceDirectory,
         targetDirectory,
+        zipCache,
         zipOptions,
       })
 
@@ -107,23 +161,24 @@ const bundleFunctions = async ({ cache, config, eventType, sourceDirectory, targ
   if (eventType === 'change' || eventType === 'unlink') {
     // If the file matches a function's main file, we just need to operate on
     // that one function.
-    if (cache.has(updatedPath)) {
-      const matchingFunction = cache.get(updatedPath)
+    if (fileTree.has(updatedPath)) {
+      const matchingFunction = fileTree.get(updatedPath)
 
       // We bundle the function if this is a `change` event, or delete it if
       // the event is `unlink`.
       if (eventType === 'change') {
-        await zipFunctionsAndUpdateCache({
-          cache,
+        await zipFunctionsAndUpdateTree({
+          fileTree,
           functions: [matchingFunction],
           sourceDirectory,
           targetDirectory,
+          zipCache,
           zipOptions,
         })
       } else {
         const { path: functionPath } = matchingFunction
 
-        cache.delete(updatedPath)
+        fileTree.delete(updatedPath)
 
         await del(functionPath, { force: true })
       }
@@ -133,13 +188,14 @@ const bundleFunctions = async ({ cache, config, eventType, sourceDirectory, targ
 
     // The update is in one of the supporting files. We bundle every function
     // that uses it.
-    const functions = [...cache.entries()].filter(([, { inputs }]) => inputs.has(updatedPath))
+    const functions = [...fileTree.entries()].filter(([, { inputs }]) => inputs.has(updatedPath))
 
-    await zipFunctionsAndUpdateCache({
-      cache,
+    await zipFunctionsAndUpdateTree({
+      fileTree,
       functions: functions.map(([, func]) => func),
       sourceDirectory,
       targetDirectory,
+      zipCache,
       zipOptions,
     })
 
@@ -154,10 +210,11 @@ const bundleFunctions = async ({ cache, config, eventType, sourceDirectory, targ
   }
 
   // Bundling all functions.
-  await zipFunctionsAndUpdateCache({
-    cache,
+  await zipFunctionsAndUpdateTree({
+    fileTree,
     sourceDirectory,
     targetDirectory,
+    zipCache,
     zipOptions,
   })
 }
@@ -202,16 +259,27 @@ module.exports = async function handler({ config, errorExit, functionsDirectory:
     return false
   }
 
-  // This map will be used to keep track of which files are associated with
-  // each function.
-  const cache = new Map()
+  // Keeps track of which files are associated with each function.
+  const fileTree = new Map()
+
+  // Used for memoizing calls to ZISI, such that we don't bundle the same
+  // function multiple times at the same time.
+  const zipCache = {}
   const targetDirectory = await getTargetDirectory({ errorExit })
 
   return {
     build: (updatedPath, eventType) =>
-      bundleFunctions({ cache, config: functionsConfig, eventType, sourceDirectory, targetDirectory, updatedPath }),
+      bundleFunctions({
+        config: functionsConfig,
+        eventType,
+        fileTree,
+        sourceDirectory,
+        targetDirectory,
+        updatedPath,
+        zipCache,
+      }),
     builderName: 'zip-it-and-ship-it',
-    getFunctionByName: (name) => getFunctionByName({ cache, name }),
+    getFunctionByName: (name) => getFunctionByName({ cache: fileTree, name }),
     src: sourceDirectory,
     target: targetDirectory,
   }

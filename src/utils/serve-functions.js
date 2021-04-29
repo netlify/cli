@@ -519,21 +519,18 @@ const setupFunctionsBuilder = async ({ config, errorExit, functionsDirectory, lo
 
   log(`${NETLIFYDEVLOG} Function builder ${chalk.yellow(functionBuilder.builderName)} detected${npmScriptString}.`)
 
-  const debouncedBuild = debounce(getBuildFunction({ functionBuilder, log }), DEBOUNCE_WAIT, {
-    leading: true,
-    trailing: true,
-  })
+  const buildFunction = getBuildFunction({ functionBuilder, log })
 
-  await debouncedBuild()
+  await buildFunction()
 
   const functionWatcher = chokidar.watch(functionBuilder.src)
   functionWatcher.on('ready', () => {
-    functionWatcher.on('add', (path) => debouncedBuild(path, 'add'))
+    functionWatcher.on('add', (path) => buildFunction(path, 'add'))
     functionWatcher.on('change', async (path) => {
-      await debouncedBuild(path, 'change')
+      await buildFunction(path, 'change')
       clearRequireCache()
     })
-    functionWatcher.on('unlink', (path) => debouncedBuild(path, 'unlink'))
+    functionWatcher.on('unlink', (path) => buildFunction(path, 'unlink'))
   })
 
   return functionBuilder
