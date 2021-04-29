@@ -28,7 +28,7 @@ class FunctionsServeCommand extends Command {
       (config.dev && config.dev.Functions) ||
       join('netlify', 'functions')
 
-    const { siteUrl, capabilities } = await getSiteInformation({
+    const { siteUrl, capabilities, timeouts } = await getSiteInformation({
       flags,
       api,
       site,
@@ -38,7 +38,7 @@ class FunctionsServeCommand extends Command {
     })
 
     const functionsPort = await acquirePort({
-      configuredPort: config.dev && config.dev.functionsPort,
+      configuredPort: flags.port || (config.dev && config.dev.functionsPort),
       defaultPort: DEFAULT_PORT,
       errorMessage: 'Could not acquire configured functions port',
     })
@@ -52,12 +52,13 @@ class FunctionsServeCommand extends Command {
       errorExit,
       siteUrl,
       capabilities,
+      timeouts,
       prefix: '/.netlify/functions/',
     })
   }
 }
 
-FunctionsServeCommand.description = `Serve functions that exist locally
+FunctionsServeCommand.description = `(Beta) Serve functions that exist locally
 
 Helpful for debugging functions.
 `

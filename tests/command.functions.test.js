@@ -2,11 +2,15 @@
 /* eslint-disable require-await */
 const test = require('ava')
 const execa = require('execa')
+const getPort = require('get-port')
+const waitPort = require('wait-port')
 
 const fs = require('../src/lib/fs')
 
+const callCli = require('./utils/call-cli')
 const cliPath = require('./utils/cli-path')
 const { withDevServer } = require('./utils/dev-server')
+const got = require('./utils/got')
 const { handleQuestions, answerWithValue, CONFIRM } = require('./utils/handle-questions')
 const { withMockApi } = require('./utils/mock-api')
 const { withSiteBuilder } = require('./utils/site-builder')
@@ -24,10 +28,9 @@ test('should return function response when invoked', async (t) => {
     await builder.buildAsync()
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
-      const { stdout } = await execa(cliPath, ['functions:invoke', 'ping', '--identity', `--port=${server.port}`], {
+      const stdout = await callCli(['functions:invoke', 'ping', '--identity', `--port=${server.port}`], {
         cwd: builder.directory,
       })
-
       t.is(stdout, 'ping')
     })
   })
@@ -147,6 +150,74 @@ test('should not create a new function directory when one is found', async (t) =
       await childProcess
 
       t.is(await fs.fileExistsAsync(`${builder.directory}/functions/hello-world/hello-world.js`), true)
+    })
+  })
+})
+
+const DEFAULT_PORT = 9999
+const SERVE_TIMEOUT = 30000
+
+const withFunctionsServer = async ({ builder, port = DEFAULT_PORT }, testHandler) => {
+  let ps
+  try {
+    const args = port === DEFAULT_PORT ? [] : ['--port', port]
+    ps = execa(cliPath, ['functions:serve', ...args], {
+      cwd: builder.directory,
+    })
+
+    const open = await waitPort({
+      port,
+      output: 'silent',
+      timeout: SERVE_TIMEOUT,
+    })
+    if (!open) {
+      throw new Error('Timed out waiting for functions server')
+    }
+    return await testHandler()
+  } finally {
+    ps.kill('SIGTERM', {
+      forceKillAfterTimeout: 200,
+    })
+  }
+}
+
+test('should serve functions on default port', async (t) => {
+  await withSiteBuilder('site-with-ping-function', async (builder) => {
+    await builder
+      .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
+      .withFunction({
+        path: 'ping.js',
+        handler: async () => ({
+          statusCode: 200,
+          body: 'ping',
+        }),
+      })
+      .buildAsync()
+
+    await withFunctionsServer({ builder }, async () => {
+      const response = await got(`http://localhost:9999/.netlify/functions/ping`, { retry: 1 }).text()
+      t.is(response, 'ping')
+    })
+  })
+})
+
+test('should serve functions on custom port', async (t) => {
+  await withSiteBuilder('site-with-ping-function', async (builder) => {
+    await builder
+      .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
+      .withFunction({
+        path: 'ping.js',
+        handler: async () => ({
+          statusCode: 200,
+          body: 'ping',
+        }),
+      })
+      .buildAsync()
+
+    const port = await getPort()
+    await withFunctionsServer({ builder, port }, async () => {
+      const response = await got(`http://localhost:${port}/.netlify/functions/ping`).text()
+      t.is(response, 'ping')
     })
   })
 })
