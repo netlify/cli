@@ -22,6 +22,7 @@ netlify functions
 | [`functions:create`](/docs/commands/functions.md#functionscreate) | Create a new function locally  |
 | [`functions:invoke`](/docs/commands/functions.md#functionsinvoke) | Trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions  |
 | [`functions:list`](/docs/commands/functions.md#functionslist) | List functions that exist locally  |
+| [`functions:serve`](/docs/commands/functions.md#functionsserve) | (Beta) Serve functions locally  |
 
 
 **Examples**
@@ -142,6 +143,30 @@ netlify functions:list
 
 - `name` (*string*) - name to print
 - `functions` (*string*) - Specify a functions folder to serve
+- `json` (*boolean*) - Output function data as JSON
+- `debug` (*boolean*) - Print debugging information
+- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
+
+---
+## `functions:serve`
+
+(Beta) Serve functions locally
+
+Helpful for debugging functions.
+
+
+**Usage**
+
+```bash
+netlify functions:serve
+```
+
+**Flags**
+
+- `dir` (*string*) - Specify a functions directory to serve
+- `port` (*string*) - Specify a port for the functions server
+- `offline` (*boolean*) - disables any features that require network access
 - `json` (*boolean*) - Output function data as JSON
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.

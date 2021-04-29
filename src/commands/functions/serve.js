@@ -22,7 +22,7 @@ class FunctionsServeCommand extends Command {
     const { api, site, config, siteInfo } = netlify
 
     const functionsDir =
-      flags.functions ||
+      flags.dir ||
       (config.dev && config.dev.functions) ||
       config.functionsDirectory ||
       (config.dev && config.dev.Functions) ||
@@ -58,7 +58,7 @@ class FunctionsServeCommand extends Command {
   }
 }
 
-FunctionsServeCommand.description = `(Beta) Serve functions that exist locally
+FunctionsServeCommand.description = `(Beta) Serve functions locally
 
 Helpful for debugging functions.
 `

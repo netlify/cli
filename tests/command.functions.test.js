@@ -222,4 +222,28 @@ test('should serve functions on custom port', async (t) => {
   })
 })
 
+test('should use settings from netlify.toml dev', async (t) => {
+  await withSiteBuilder('site-with-ping-function', async (builder) => {
+    const port = await getPort()
+    await builder
+      .withNetlifyToml({
+        config: { functions: { directory: 'functions' }, dev: { functions: 'other', functionsPort: port } },
+      })
+      .withFunction({
+        pathPrefix: 'other',
+        path: 'ping.js',
+        handler: async () => ({
+          statusCode: 200,
+          body: 'ping',
+        }),
+      })
+      .buildAsync()
+
+    await withFunctionsServer({ builder }, async () => {
+      const response = await got(`http://localhost:${port}/.netlify/functions/ping`).text()
+      t.is(response, 'ping')
+    })
+  })
+})
+
 /* eslint-enable require-await */
