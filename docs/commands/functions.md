@@ -153,7 +153,7 @@ netlify functions:list
 
 (Beta) Serve functions locally
 
-Serves functions only, without building or running the whole site. Helpful for debugging functions. To serve functions in tandem with the rest of your site, use `netlify dev`.
+Helpful for debugging functions.
 
 
 **Usage**
