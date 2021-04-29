@@ -11,7 +11,7 @@
       "license": "MIT",
       "dependencies": {
         "@netlify/build": "^11.3.2",
-        "@netlify/config": "^6.3.0",
+        "@netlify/config": "^6.3.2",
         "@netlify/framework-info": "^4.0.0",
         "@netlify/plugin-edge-handlers": "^1.11.6",
         "@netlify/plugins-list": "^2.8.0",
@@ -78,7 +78,7 @@
         "memoize-one": "^5.2.1",
         "minimist": "^1.2.5",
         "multiparty": "^4.2.1",
-        "netlify": "^6.1.23",
+        "netlify": "^6.1.24",
         "netlify-redirect-parser": "^3.0.19",
         "netlify-redirector": "^0.2.1",
         "node-fetch": "^2.6.0",
@@ -2458,9 +2458,9 @@
       }
     },
     "node_modules/@netlify/config": {
-      "version": "6.3.0",
-      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-6.3.0.tgz",
-      "integrity": "sha512-1OWwSw7Tl8JhV7g5mM3M/7W7ly+IpjOzZLy+17+D8iuN1iY/bcmx4l5xmUyNh8PvkAY70bJ3Dsjvq+lU0ubyHQ==",
+      "version": "6.3.2",
+      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-6.3.2.tgz",
+      "integrity": "sha512-w0upxhBR0J62wQ7OR5hAkKaXDegIuV1S3gYiQMq+behBqhVzkYK4R+X5z8c0+BHc0c60jD6cww0PJlCqT7bVIw==",
       "dependencies": {
         "@ungap/from-entries": "^0.2.1",
         "array-flat-polyfill": "^1.0.1",
@@ -2475,7 +2475,7 @@
         "is-plain-obj": "^2.1.0",
         "js-yaml": "^4.0.0",
         "map-obj": "^3.1.0",
-        "netlify": "^6.1.22",
+        "netlify": "^6.1.24",
         "omit.js": "^2.0.2",
         "p-locate": "^4.1.0",
         "path-exists": "^4.0.0",
@@ -24645,9 +24645,9 @@
       }
     },
     "@netlify/config": {
-      "version": "6.3.0",
-      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-6.3.0.tgz",
-      "integrity": "sha512-1OWwSw7Tl8JhV7g5mM3M/7W7ly+IpjOzZLy+17+D8iuN1iY/bcmx4l5xmUyNh8PvkAY70bJ3Dsjvq+lU0ubyHQ==",
+      "version": "6.3.2",
+      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-6.3.2.tgz",
+      "integrity": "sha512-w0upxhBR0J62wQ7OR5hAkKaXDegIuV1S3gYiQMq+behBqhVzkYK4R+X5z8c0+BHc0c60jD6cww0PJlCqT7bVIw==",
       "requires": {
         "@ungap/from-entries": "^0.2.1",
         "array-flat-polyfill": "^1.0.1",
@@ -24662,7 +24662,7 @@
         "is-plain-obj": "^2.1.0",
         "js-yaml": "^4.0.0",
         "map-obj": "^3.1.0",
-        "netlify": "^6.1.22",
+        "netlify": "^6.1.24",
         "omit.js": "^2.0.2",
         "p-locate": "^4.1.0",
         "path-exists": "^4.0.0",
