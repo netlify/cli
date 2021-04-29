@@ -155,7 +155,7 @@ test('should not create a new function directory when one is found', async (t) =
 })
 
 const DEFAULT_PORT = 9999
-const SERVE_TIMEOUT = 30000
+const SERVE_TIMEOUT = 300000
 
 const withFunctionsServer = async ({ builder, port = DEFAULT_PORT }, testHandler) => {
   let ps
@@ -164,6 +164,9 @@ const withFunctionsServer = async ({ builder, port = DEFAULT_PORT }, testHandler
     ps = execa(cliPath, ['functions:serve', ...args], {
       cwd: builder.directory,
     })
+
+    ps.stdout.on('data', (data) => console.log(data.toString()))
+    ps.stderr.on('data', (data) => console.log(data.toString()))
 
     const open = await waitPort({
       port,
