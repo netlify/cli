@@ -144,7 +144,7 @@
     "minimist": "^1.2.5",
     "multiparty": "^4.2.1",
     "netlify": "^6.1.24",
-    "netlify-redirect-parser": "^3.0.19",
+    "netlify-redirect-parser": "^3.0.20",
     "netlify-redirector": "^0.2.1",
     "node-fetch": "^2.6.0",
     "node-version-alias": "^1.0.1",
