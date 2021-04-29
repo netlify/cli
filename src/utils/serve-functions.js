@@ -515,51 +515,18 @@ const setupFunctionsBuilder = async ({ config, errorExit, functionsDirectory, lo
 
   log(`${NETLIFYDEVLOG} Function builder ${chalk.yellow(functionBuilder.builderName)} detected${npmScriptString}.`)
 
-  const cache = {}
-
   const buildFunction = getBuildFunction({ functionBuilder, log })
 
-  // `memoizedBuild` will avoid consecutive calls to the build function with
-  // the same arguments until the previous invocation has finished running.
-  // If a call is made within that period, it will be:
-  // - discarded if it happens before `DEBOUNCE_WAIT` has elapsed;
-  // - enqueued if it happens after `DEBOUNCE_WAIT` has elapsed.
-  // This allows us to discard any duplicate filesystem events, while ensuring
-  // that actual updates happening during the build invocation will be executed
-  // after it finishes (only the last update will run).
-  const memoizedBuild = (path, eventType) => {
-    const key = `${eventType}@${path}`
-
-    if (cache[key] === undefined) {
-      cache[key] = {
-        task: buildFunction(path, eventType).finally(() => {
-          const entry = cache[key]
-
-          cache[key] = undefined
-
-          if (entry.enqueued !== undefined) {
-            memoizedBuild(...entry.enqueued)
-          }
-        }),
-        timestamp: Date.now(),
-      }
-    } else if (Date.now() > cache[key].timestamp + DEBOUNCE_WAIT) {
-      cache[key].enqueued = [path, eventType]
-    }
-
-    return cache[key].task
-  }
-
-  await memoizedBuild()
+  await buildFunction()
 
   const functionWatcher = chokidar.watch(functionBuilder.src)
   functionWatcher.on('ready', () => {
-    functionWatcher.on('add', (path) => memoizedBuild(path, 'add'))
+    functionWatcher.on('add', (path) => buildFunction(path, 'add'))
     functionWatcher.on('change', async (path) => {
-      await memoizedBuild(path, 'change')
+      await buildFunction(path, 'change')
       clearRequireCache()
     })
-    functionWatcher.on('unlink', (path) => memoizedBuild(path, 'unlink'))
+    functionWatcher.on('unlink', (path) => buildFunction(path, 'unlink'))
   })
 
   return functionBuilder
