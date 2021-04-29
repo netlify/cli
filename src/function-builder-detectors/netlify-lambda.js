@@ -1,7 +1,10 @@
 const execa = require('execa')
+const debounce = require('lodash/debounce')
 const minimist = require('minimist')
 
 const { fileExistsAsync, readFileAsync } = require('../lib/fs')
+
+const DEBOUNCE_WAIT = 300
 
 const detectNetlifyLambda = async function ({ dependencies, devDependencies, scripts } = {}) {
   if (!((dependencies && dependencies['netlify-lambda']) || (devDependencies && devDependencies['netlify-lambda']))) {
@@ -18,10 +21,17 @@ const detectNetlifyLambda = async function ({ dependencies, devDependencies, scr
     if (functionDirectories.length === 1) {
       // eslint-disable-next-line no-await-in-loop
       const yarnExists = await fileExistsAsync('yarn.lock')
+      const debouncedBuild = debounce(execa, DEBOUNCE_WAIT, {
+        leading: false,
+        trailing: true,
+      })
+
       return {
         src: functionDirectories[0],
         npmScript: key,
-        build: () => execa(yarnExists ? 'yarn' : 'npm', ['run', key]),
+        build: async () => {
+          await debouncedBuild(yarnExists ? 'yarn' : 'npm', ['run', key])
+        },
         builderName: 'netlify-lambda',
       }
     }
