@@ -93,6 +93,7 @@ const createBackgroundFunctionCallback = (functionName) => (err) => {
     console.log(`${NETLIFYDEVLOG} Done executing background function ${styleFunctionName(functionName)}`)
   }
 }
+const SECONDS_TO_MILLISECONDS = 1000
 
 const DEFAULT_LAMBDA_OPTIONS = {
   verboseLevel: 3,
@@ -105,7 +106,7 @@ const executeSynchronousFunction = ({ event, lambdaPath, timeout, clientContext,
     lambdaPath,
     clientContext,
     callback: createSynchronousFunctionCallback(response),
-    timeoutMs: timeout,
+    timeoutMs: timeout * SECONDS_TO_MILLISECONDS,
   })
 
 const BACKGROUND_FUNCTION_STATUS_CODE = 202
@@ -120,7 +121,7 @@ const executeBackgroundFunction = ({ event, lambdaPath, timeout, clientContext, 
     lambdaPath,
     clientContext,
     callback: createBackgroundFunctionCallback(functionName),
-    timeoutMs: timeout,
+    timeoutMs: timeout * SECONDS_TO_MILLISECONDS,
   })
 }
 
