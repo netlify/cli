@@ -2,6 +2,7 @@ const process = require('process')
 
 const fromEntries = require('@ungap/from-entries')
 const chalk = require('chalk')
+const { get } = require('dot-prop')
 const isEmpty = require('lodash/isEmpty')
 
 const { supportsBackgroundFunctions } = require('../lib/account')
@@ -79,6 +80,12 @@ const getSiteAccount = ({ siteInfo, accounts, warn }) => {
   return siteAccount
 }
 
+// default 10 seconds for synchronous functions
+const SYNCHRONOUS_FUNCTION_TIMEOUT = 10
+
+// default 15 minutes for background functions
+const BACKGROUND_FUNCTION_TIMEOUT = 900
+
 const getSiteInformation = async ({ flags = {}, api, site, warn, error: failAndExit, siteInfo }) => {
   if (site.id && !flags.offline) {
     validateSiteInfo({ site, siteInfo, failAndExit })
@@ -96,10 +103,23 @@ const getSiteInformation = async ({ flags = {}, api, site, warn, error: failAndE
       capabilities: {
         backgroundFunctions: supportsBackgroundFunctions(account),
       },
+      timeouts: {
+        syncFunctions: get(siteInfo, 'functions_config.timeout', SYNCHRONOUS_FUNCTION_TIMEOUT),
+        backgroundFunctions: BACKGROUND_FUNCTION_TIMEOUT,
+      },
     }
   }
 
-  return { addonsUrls: {}, siteUrl: '', capabilities: {} }
+  // best defaults we can have without retrieving site information
+  return {
+    addonsUrls: {},
+    siteUrl: '',
+    capabilities: {},
+    timeouts: {
+      syncFunctions: SYNCHRONOUS_FUNCTION_TIMEOUT,
+      backgroundFunctions: BACKGROUND_FUNCTION_TIMEOUT,
+    },
+  }
 }
 
 const getEnvSourceName = (source) => {

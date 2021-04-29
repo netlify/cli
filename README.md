@@ -50,6 +50,15 @@ Netlify CLI requires [Node.js](https://nodejs.org) version 10 or above. To insta
 npm install netlify-cli -g
 ```
 
+When using the CLI in a CI environment we recommend installing it locally as a development dependency, instead of globally.
+To install locally, run the following command from the root directory of your project:
+
+```bash
+npm install --save-dev netlify-cli
+```
+
+**Important:** Running `npm install netlify-cli -g` in CI means you're always installing the latest version of the CLI, including **breaking changes**. When you install locally and use a [lock file](https://docs.npmjs.com/cli/v7/commands/npm-ci) you guarantee reproducible builds. To manage CLI updates we recommend using an automated tool like [renovate](https://github.com/renovatebot/renovate) or [dependabot](https://dependabot.com/).
+
 Alternatively you may also use Homebrew: `brew install netlify-cli` (thanks [@cglong](https://github.com/netlify/cli/issues/291)).
 
 ## Usage
