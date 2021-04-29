@@ -80,12 +80,10 @@ const getSiteAccount = ({ siteInfo, accounts, warn }) => {
   return siteAccount
 }
 
-const SECONDS_TO_MILLISECONDS = 1000
-
 // default 10 seconds for synchronous functions
 const SYNCHRONOUS_FUNCTION_TIMEOUT = 10
 
-// default 15 minuets for background functions
+// default 15 minutes for background functions
 const BACKGROUND_FUNCTION_TIMEOUT = 900
 
 const getSiteInformation = async ({ flags = {}, api, site, warn, error: failAndExit, siteInfo }) => {
@@ -106,9 +104,8 @@ const getSiteInformation = async ({ flags = {}, api, site, warn, error: failAndE
         backgroundFunctions: supportsBackgroundFunctions(account),
       },
       timeouts: {
-        syncFunctions:
-          get(siteInfo, 'functions_config.timeout', SYNCHRONOUS_FUNCTION_TIMEOUT) * SECONDS_TO_MILLISECONDS,
-        backgroundFunctions: BACKGROUND_FUNCTION_TIMEOUT * SECONDS_TO_MILLISECONDS,
+        syncFunctions: get(siteInfo, 'functions_config.timeout', SYNCHRONOUS_FUNCTION_TIMEOUT),
+        backgroundFunctions: BACKGROUND_FUNCTION_TIMEOUT,
       },
     }
   }
@@ -119,8 +116,8 @@ const getSiteInformation = async ({ flags = {}, api, site, warn, error: failAndE
     siteUrl: '',
     capabilities: {},
     timeouts: {
-      syncFunctions: SYNCHRONOUS_FUNCTION_TIMEOUT * SECONDS_TO_MILLISECONDS,
-      backgroundFunctions: BACKGROUND_FUNCTION_TIMEOUT * SECONDS_TO_MILLISECONDS,
+      syncFunctions: SYNCHRONOUS_FUNCTION_TIMEOUT,
+      backgroundFunctions: BACKGROUND_FUNCTION_TIMEOUT,
     },
   }
 }
