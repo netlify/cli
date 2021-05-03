@@ -432,4 +432,46 @@ export { handler }
     })
   })
 })
+
+test('Serves functions that dynamically load files included in the `functions.included_files` config property', async (t) => {
+  await withSiteBuilder('ts-function-create-function-file', async (builder) => {
+    await builder
+      .withContentFiles([
+        {
+          path: 'files/one.json',
+          content: `{"data": "one"}`,
+        },
+        {
+          path: 'files/two.json',
+          content: `{"data": "two"}`,
+        },
+      ])
+      .withFunction({
+        path: 'hello.js',
+        handler: async (event) => {
+          const { name } = event.queryStringParameters
+
+          // eslint-disable-next-line import/no-dynamic-require, node/global-require
+          const { data } = require(`../files/${name}.json`)
+
+          return {
+            statusCode: 200,
+            body: data,
+          }
+        },
+      })
+      .withNetlifyToml({
+        config: {
+          build: { publish: 'public' },
+          functions: { directory: 'functions', included_files: ['files/*'], node_bundler: 'esbuild' },
+        },
+      })
+      .buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async ({ port }) => {
+      t.is(await got(`http://localhost:${port}/.netlify/functions/hello?name=one`).text(), 'one')
+      t.is(await got(`http://localhost:${port}/.netlify/functions/hello?name=two`).text(), 'two')
+    })
+  })
+})
 /* eslint-enable require-await */

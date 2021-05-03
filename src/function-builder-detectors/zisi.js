@@ -224,12 +224,14 @@ const getFunctionByName = ({ cache, name }) => [...cache.values()].find((func) =
 // The function configuration keys returned by @netlify/config are not an exact
 // match to the properties that @netlify/zip-it-and-ship-it expects. We do that
 // translation here.
-const normalizeFunctionsConfig = (functionsConfig = {}) =>
+const normalizeFunctionsConfig = ({ functionsConfig = {}, projectRoot }) =>
   Object.entries(functionsConfig).reduce(
     (result, [pattern, config]) => ({
       ...result,
       [pattern]: {
         externalNodeModules: config.external_node_modules,
+        includedFiles: config.included_files,
+        includedFilesBasePath: projectRoot,
         ignoredNodeModules: config.ignored_node_modules,
         nodeBundler: config.node_bundler === 'esbuild' ? 'esbuild_zisi' : config.node_bundler,
       },
@@ -249,10 +251,10 @@ const getTargetDirectory = async ({ errorExit }) => {
   return targetDirectory
 }
 
-module.exports = async function handler({ config, errorExit, functionsDirectory: sourceDirectory }) {
+module.exports = async function handler({ config, errorExit, functionsDirectory: sourceDirectory, projectRoot }) {
   const functions = await getFunctions(sourceDirectory)
   const hasTSFunction = functions.some(({ mainFile }) => path.extname(mainFile) === '.ts')
-  const functionsConfig = normalizeFunctionsConfig(config.functions)
+  const functionsConfig = normalizeFunctionsConfig({ functionsConfig: config.functions, projectRoot })
   const isUsingEsbuild = functionsConfig['*'] && functionsConfig['*'].nodeBundler === 'esbuild_zisi'
 
   if (!hasTSFunction && !isUsingEsbuild) {
