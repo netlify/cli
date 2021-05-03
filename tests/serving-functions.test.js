@@ -6,6 +6,8 @@ const process = require('process')
 const avaTest = require('ava')
 const pWaitFor = require('p-wait-for')
 
+const { statAsync } = require('../src/lib/fs')
+
 const { withDevServer } = require('./utils/dev-server')
 const got = require('./utils/got')
 const { withSiteBuilder } = require('./utils/site-builder')
@@ -494,6 +496,12 @@ test('Uses sourcemaps to show correct paths and locations in stack trace', async
       .buildAsync()
 
     await withDevServer({ cwd: builder.directory }, async ({ port }) => {
+      const stat = await statAsync(
+        join(builder.directory, '.netlify', 'functions-serve', 'hello', 'src', 'hello.js.map'),
+      )
+
+      t.true(stat.isFile())
+
       try {
         await got(`http://localhost:${port}/.netlify/functions/hello`)
 
