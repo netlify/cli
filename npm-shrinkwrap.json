@@ -61,7 +61,7 @@
         "gitconfiglocal": "^2.1.0",
         "hasbin": "^1.2.3",
         "http-proxy": "^1.18.0",
-        "http-proxy-middleware": "^1.0.0",
+        "http-proxy-middleware": "^1.3.1",
         "https-proxy-agent": "^5.0.0",
         "inquirer": "^6.5.1",
         "inquirer-autocomplete-prompt": "^1.0.1",
@@ -13024,9 +13024,9 @@
       }
     },
     "node_modules/http-proxy-middleware": {
-      "version": "1.3.0",
-      "resolved": "https://registry.npmjs.org/http-proxy-middleware/-/http-proxy-middleware-1.3.0.tgz",
-      "integrity": "sha512-nHn8lcFNmxCalzHGXMn0ojKunXC9twBvJ+y7QNhvK/ep7ZDOXvO7Gph01rSwsMOrG4m6N72gAAWXMYhPZvK6OA==",
+      "version": "1.3.1",
+      "resolved": "https://registry.npmjs.org/http-proxy-middleware/-/http-proxy-middleware-1.3.1.tgz",
+      "integrity": "sha512-13eVVDYS4z79w7f1+NPllJtOQFx/FdUW4btIvVRMaRlUY9VGstAbo5MOhLEuUgZFRHn3x50ufn25zkj/boZnEg==",
       "dependencies": {
         "@types/http-proxy": "^1.17.5",
         "http-proxy": "^1.18.1",
@@ -32857,9 +32857,9 @@
       }
     },
     "http-proxy-middleware": {
-      "version": "1.3.0",
-      "resolved": "https://registry.npmjs.org/http-proxy-middleware/-/http-proxy-middleware-1.3.0.tgz",
-      "integrity": "sha512-nHn8lcFNmxCalzHGXMn0ojKunXC9twBvJ+y7QNhvK/ep7ZDOXvO7Gph01rSwsMOrG4m6N72gAAWXMYhPZvK6OA==",
+      "version": "1.3.1",
+      "resolved": "https://registry.npmjs.org/http-proxy-middleware/-/http-proxy-middleware-1.3.1.tgz",
+      "integrity": "sha512-13eVVDYS4z79w7f1+NPllJtOQFx/FdUW4btIvVRMaRlUY9VGstAbo5MOhLEuUgZFRHn3x50ufn25zkj/boZnEg==",
       "requires": {
         "@types/http-proxy": "^1.17.5",
         "http-proxy": "^1.18.1",
