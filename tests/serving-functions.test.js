@@ -498,6 +498,7 @@ test('Uses sourcemaps to show correct paths and locations in stack trace', async
     await withDevServer({ cwd: builder.directory }, async ({ port }) => {
       const sourcemap = await readFileAsync(
         join(builder.directory, '.netlify', 'functions-serve', 'hello', 'src', 'hello.js.map'),
+        'utf8',
       )
 
       console.log('-> Sourcemap', sourcemap)
