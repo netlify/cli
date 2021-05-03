@@ -40,7 +40,7 @@ const addDeployKey = async ({ log, api, octokit, repoOwner, repoName, failAndExi
   log('Adding deploy key to repository...')
   const key = await createDeployKey({ api, failAndExit })
   try {
-    await octokit.repos.addDeployKey({
+    await octokit.repos.createDeployKey({
       title: 'Netlify Deploy Key',
       key: key.public_key,
       owner: repoOwner,
@@ -78,7 +78,7 @@ const getGitHubRepo = async ({ octokit, repoOwner, repoName, failAndExit }) => {
 
 const hookExists = async ({ deployHook, octokit, repoOwner, repoName }) => {
   try {
-    const { data: hooks } = await octokit.repos.listHooks({
+    const { data: hooks } = await octokit.repos.listWebhooks({
       owner: repoOwner,
       repo: repoName,
       per_page: PAGE_SIZE,
@@ -95,7 +95,7 @@ const addDeployHook = async ({ deployHook, octokit, repoOwner, repoName, failAnd
   const exists = await hookExists({ deployHook, octokit, repoOwner, repoName })
   if (!exists) {
     try {
-      await octokit.repos.createHook({
+      await octokit.repos.createWebhook({
         owner: repoOwner,
         repo: repoName,
         name: 'web',
