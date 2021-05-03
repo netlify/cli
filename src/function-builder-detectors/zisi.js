@@ -12,6 +12,14 @@ const { NETLIFYDEVERR } = require('../utils/logo')
 const ZIP_CONCURRENCY = 5
 const ZIP_DEBOUNCE_INTERVAL = 300
 
+const addFunctionsConfigDefaults = (config) => ({
+  ...config,
+  '*': {
+    nodeSourcemap: true,
+    ...config['*'],
+  },
+})
+
 const addFunctionToTree = (func, fileTree) => {
   // Transforming the inputs into a Set so that we can have a O(1) lookup.
   const inputs = new Set(func.inputs)
@@ -254,8 +262,10 @@ const getTargetDirectory = async ({ errorExit }) => {
 module.exports = async function handler({ config, errorExit, functionsDirectory: sourceDirectory, projectRoot }) {
   const functions = await getFunctions(sourceDirectory)
   const hasTSFunction = functions.some(({ mainFile }) => path.extname(mainFile) === '.ts')
-  const functionsConfig = normalizeFunctionsConfig({ functionsConfig: config.functions, projectRoot })
-  const isUsingEsbuild = functionsConfig['*'] && functionsConfig['*'].nodeBundler === 'esbuild_zisi'
+  const functionsConfig = addFunctionsConfigDefaults(
+    normalizeFunctionsConfig({ functionsConfig: config.functions, projectRoot }),
+  )
+  const isUsingEsbuild = functionsConfig['*'].nodeBundler === 'esbuild_zisi'
 
   if (!hasTSFunction && !isUsingEsbuild) {
     return false
