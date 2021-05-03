@@ -499,6 +499,7 @@ test('Uses sourcemaps to show correct paths and locations in stack trace', async
 
         t.fail()
       } catch (error) {
+        console.log('-> Response', error.response.body)
         t.true(error.response.body.includes(join(builder.directory, 'functions', 'hello.js')))
         t.false(error.response.body.includes(join('.netlify', 'functions-serve')))
       }
