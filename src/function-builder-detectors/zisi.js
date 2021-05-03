@@ -1,3 +1,5 @@
+require('source-map-support').install()
+
 const path = require('path')
 
 const { zipFunction, zipFunctions } = require('@netlify/zip-it-and-ship-it')
