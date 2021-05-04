@@ -1,5 +1,3 @@
-const process = require('process')
-
 const { flags } = require('@oclif/command')
 
 const { getBuildOptions, runBuild } = require('../../lib/build')
@@ -27,7 +25,7 @@ class BuildCommand extends Command {
   }
 
   checkOptions({ cachedConfig: { siteInfo = {} }, token }) {
-    if (!siteInfo.id && process.env.NODE_ENV !== 'test') {
+    if (!siteInfo.id) {
       this.error('Could not find the site ID. Please run netlify link.', { exit: 1 })
     }
 
