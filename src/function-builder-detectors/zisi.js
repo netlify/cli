@@ -4,6 +4,7 @@ const { zipFunction, zipFunctions } = require('@netlify/zip-it-and-ship-it')
 const del = require('del')
 const makeDir = require('make-dir')
 const pFilter = require('p-filter')
+const sourceMapSupport = require('source-map-support')
 
 const { getPathInProject } = require('../lib/settings')
 const { getFunctions } = require('../utils/get-functions')
@@ -11,6 +12,14 @@ const { NETLIFYDEVERR } = require('../utils/logo')
 
 const ZIP_CONCURRENCY = 5
 const ZIP_DEBOUNCE_INTERVAL = 300
+
+const addFunctionsConfigDefaults = (config) => ({
+  ...config,
+  '*': {
+    nodeSourcemap: true,
+    ...config['*'],
+  },
+})
 
 const addFunctionToTree = (func, fileTree) => {
   // Transforming the inputs into a Set so that we can have a O(1) lookup.
@@ -254,12 +263,17 @@ const getTargetDirectory = async ({ errorExit }) => {
 module.exports = async function handler({ config, errorExit, functionsDirectory: sourceDirectory, projectRoot }) {
   const functions = await getFunctions(sourceDirectory)
   const hasTSFunction = functions.some(({ mainFile }) => path.extname(mainFile) === '.ts')
-  const functionsConfig = normalizeFunctionsConfig({ functionsConfig: config.functions, projectRoot })
-  const isUsingEsbuild = functionsConfig['*'] && functionsConfig['*'].nodeBundler === 'esbuild_zisi'
+  const functionsConfig = addFunctionsConfigDefaults(
+    normalizeFunctionsConfig({ functionsConfig: config.functions, projectRoot }),
+  )
+  const isUsingEsbuild = functionsConfig['*'].nodeBundler === 'esbuild_zisi'
 
   if (!hasTSFunction && !isUsingEsbuild) {
     return false
   }
+
+  // Enable source map support.
+  sourceMapSupport.install()
 
   // Keeps track of which files are associated with each function.
   const fileTree = new Map()

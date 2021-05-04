@@ -1,4 +1,5 @@
 /* eslint-disable require-await */
+const { join } = require('path')
 const process = require('process')
 
 // eslint-disable-next-line ava/use-test
@@ -434,7 +435,7 @@ export { handler }
 })
 
 test('Serves functions that dynamically load files included in the `functions.included_files` config property', async (t) => {
-  await withSiteBuilder('ts-function-create-function-file', async (builder) => {
+  await withSiteBuilder('function-with-included-files', async (builder) => {
     await builder
       .withContentFiles([
         {
@@ -471,6 +472,36 @@ test('Serves functions that dynamically load files included in the `functions.in
     await withDevServer({ cwd: builder.directory }, async ({ port }) => {
       t.is(await got(`http://localhost:${port}/.netlify/functions/hello?name=one`).text(), 'one')
       t.is(await got(`http://localhost:${port}/.netlify/functions/hello?name=two`).text(), 'two')
+    })
+  })
+})
+
+test('Uses sourcemaps to show correct paths and locations in stack trace', async (t) => {
+  await withSiteBuilder('function-with-sourcemaps', async (builder) => {
+    await builder
+      .withFunction({
+        path: 'hello.js',
+        handler: async () => {
+          throw new Error('Something went wrong')
+        },
+      })
+      .withNetlifyToml({
+        config: {
+          build: { publish: 'public' },
+          functions: { directory: 'functions', node_bundler: 'esbuild' },
+        },
+      })
+      .buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async ({ port }) => {
+      try {
+        await got(`http://localhost:${port}/.netlify/functions/hello`)
+
+        t.fail()
+      } catch (error) {
+        t.true(error.response.body.includes(join(builder.directory, 'functions', 'hello.js')))
+        t.false(error.response.body.includes(join('.netlify', 'functions-serve')))
+      }
     })
   })
 })
