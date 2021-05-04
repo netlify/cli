@@ -16,8 +16,14 @@ const startMockApi = ({ routes }) => {
   app.use(bodyParser.json())
   app.use(bodyParser.raw())
 
-  routes.forEach(({ method = 'get', path, response = {}, status = 200 }) => {
+  routes.forEach(({ method = 'get', path, response = {}, status = 200, requestBody }) => {
     app[method.toLowerCase()](`/api/v1/${path}`, function onRequest(req, res) {
+      // validate request body
+      if (requestBody !== undefined && requestBody !== JSON.stringify(req.body)) {
+        res.status(500)
+        res.json({ message: `Request body doesn't match` })
+        return
+      }
       addRequest(requests, req)
       res.status(status)
       res.json(response)
@@ -26,7 +32,7 @@ const startMockApi = ({ routes }) => {
 
   app.all('*', function onRequest(req, res) {
     addRequest(requests, req)
-    console.warn(`Route not found: ${req.url}`)
+    console.warn(`Route not found: (${req.method.toUpperCase()}) ${req.url}`)
     res.status(404)
     res.json({ message: 'Not found' })
   })
