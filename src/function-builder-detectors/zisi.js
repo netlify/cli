@@ -1,11 +1,10 @@
-require('source-map-support').install()
-
 const path = require('path')
 
 const { zipFunction, zipFunctions } = require('@netlify/zip-it-and-ship-it')
 const del = require('del')
 const makeDir = require('make-dir')
 const pFilter = require('p-filter')
+const sourceMapSupport = require('source-map-support')
 
 const { getPathInProject } = require('../lib/settings')
 const { getFunctions } = require('../utils/get-functions')
@@ -272,6 +271,9 @@ module.exports = async function handler({ config, errorExit, functionsDirectory:
   if (!hasTSFunction && !isUsingEsbuild) {
     return false
   }
+
+  // Enable source map support.
+  sourceMapSupport.install()
 
   // Keeps track of which files are associated with each function.
   const fileTree = new Map()
