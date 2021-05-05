@@ -51,4 +51,9 @@ const withMockApi = async (routes, testHandler) => {
   }
 }
 
-module.exports = { withMockApi, startMockApi }
+const getCLIOptions = ({ builder: { directory: cwd }, apiUrl }) => ({
+  cwd,
+  env: { NETLIFY_AUTH_TOKEN: 'fake-token', NETLIFY_SITE_ID: 'site_id', NETLIFY_API_URL: apiUrl },
+})
+
+module.exports = { withMockApi, startMockApi, getCLIOptions }
