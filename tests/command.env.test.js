@@ -1,221 +1,352 @@
-const process = require('process')
-
 const test = require('ava')
-const isEmpty = require('lodash/isEmpty')
-const isObject = require('lodash/isObject')
 
 const callCli = require('./utils/call-cli')
-const { generateSiteName, createLiveTestSite } = require('./utils/create-live-test-site')
-const { createSiteBuilder } = require('./utils/site-builder')
+const { withMockApi, getCLIOptions } = require('./utils/mock-api')
+const { withSiteBuilder } = require('./utils/site-builder')
 
-const siteName = generateSiteName('netlify-test-env-')
-
-// Input and return values for each test scenario:
-const ENV_VAR_STATES = {
-  set: {
-    SOME_VAR1: 'FOO',
-  },
-  update: {
-    SOME_VAR1: 'FOOBAR',
-  },
-  get: {
-    SOME_VAR1: 'FOOBAR',
-  },
-  import: {
-    // update existing SOME_VAR1
-    SOME_VAR1: 'FOOBARBUZZ',
-    // import new var
-    SOME_VAR2: 'FOO',
-  },
-  // should take priority over existing SOME_VAR2
-  netlifyToml: { SOME_VAR2: 'FOO_NETLIFY_TOML' },
-  setEmpty: { SOME_VAR1: '' },
-  unset: { SOME_VAR1: null },
-  importReplace: {
-    SOME_VAR1: 'BAR1',
-    SOME_VAR2: 'BAR2',
-    SOME_VAR3: 'BAR3',
-  },
+const siteInfo = {
+  account_slug: 'test-account',
+  id: 'site_id',
+  name: 'site-name',
 }
-const ENV_FILE_NAME = '.env'
-const REPLACE_ENV_FILE_NAME = '.env.replace'
-// file which should result in error
-const FAIL_ENV_FILE_NAME = '.env.unknown'
+const routes = [
+  { path: 'sites/site_id', response: siteInfo },
+  { path: 'sites/site_id/service-instances', response: [] },
+  {
+    path: 'accounts',
+    response: [{ slug: siteInfo.account_slug }],
+  },
+]
 
-const injectNetlifyToml = async function (builder) {
-  const builderWithToml = builder.withNetlifyToml({
-    config: {
-      build: {
-        environment: ENV_VAR_STATES.netlifyToml,
-      },
-    },
-  })
-  await builderWithToml.buildAsync()
-  return builderWithToml
-}
-
-const checkResultState = function ({ t, state, result }) {
-  const expectedPairs = Object.entries(state)
-  expectedPairs.forEach(([key, value]) => {
-    t.is(result[key], value)
-  })
-}
-
-const getArgsFromState = function (state) {
-  return Object.entries(state)[0]
-}
-
-if (process.env.IS_FORK !== 'true') {
-  test.before(async (t) => {
-    const { siteId } = await createLiveTestSite(siteName)
-    const builder = createSiteBuilder({ siteName: 'site-with-env-vars' })
-      .withEnvFile({
-        path: ENV_FILE_NAME,
-        env: ENV_VAR_STATES.import,
-      })
-      .withEnvFile({
-        path: REPLACE_ENV_FILE_NAME,
-        env: ENV_VAR_STATES.importReplace,
-      })
+test('env:list --json should return empty object if no vars set', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
     await builder.buildAsync()
 
-    t.context.execOptions = { cwd: builder.directory, env: { NETLIFY_SITE_ID: siteId } }
-    t.context.builder = builder
-  })
+    await withMockApi(routes, async ({ apiUrl }) => {
+      const cliResponse = await callCli(['env:list', '--json'], getCLIOptions({ builder, apiUrl }), true)
 
-  test.serial('env:list --json should return empty object if no vars set', async (t) => {
-    const cliResponse = await callCli(['env:list', '--json'], t.context.execOptions)
-    const json = JSON.parse(cliResponse)
-
-    t.true(isObject(json))
-    t.true(isEmpty(json))
-  })
-
-  test.serial('env:get --json should return empty object if var not set', async (t) => {
-    const [key] = getArgsFromState(ENV_VAR_STATES.get)
-
-    const cliResponse = await callCli(['env:get', '--json', key], t.context.execOptions)
-    const json = JSON.parse(cliResponse)
-
-    t.true(isObject(json))
-    t.true(isEmpty(json))
-  })
-
-  test.serial('env:set --json should create and return new var', async (t) => {
-    const state = ENV_VAR_STATES.set
-
-    const cliResponse = await callCli(['env:set', '--json', ...getArgsFromState(state)], t.context.execOptions)
-    const json = JSON.parse(cliResponse)
-
-    t.true(isObject(json))
-    checkResultState({ t, result: json, state })
-  })
-
-  test.serial('env:set --json should update existing var', async (t) => {
-    const state = ENV_VAR_STATES.update
-
-    const cliResponse = await callCli(['env:set', '--json', ...getArgsFromState(state)], t.context.execOptions)
-    const json = JSON.parse(cliResponse)
-
-    t.true(isObject(json))
-    checkResultState({ t, result: json, state })
-  })
-
-  test.serial('env:get --json should return value of existing var', async (t) => {
-    const [key, value] = getArgsFromState(ENV_VAR_STATES.get)
-
-    const cliResponse = await callCli(['env:get', '--json', key], t.context.execOptions)
-    const json = JSON.parse(cliResponse)
-
-    t.true(isObject(json))
-    t.is(Object.keys(json).length, 1)
-    t.is(json[key], value)
-  })
-
-  test.serial('env:import should throw error if file not exists', async (t) => {
-    await t.throwsAsync(async () => {
-      await callCli(['env:import', FAIL_ENV_FILE_NAME], t.context.execOptions)
+      t.deepEqual(cliResponse, {})
     })
   })
+})
 
-  test.serial('env:import --json should import new vars and override existing vars', async (t) => {
-    const cliResponse = await callCli(['env:import', '--json', ENV_FILE_NAME], t.context.execOptions)
-    const json = JSON.parse(cliResponse)
+test('env:get --json should return empty object if var not set', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
 
-    t.true(isObject(json))
-    checkResultState({ t, result: json, state: ENV_VAR_STATES.import })
+    await withMockApi(routes, async ({ apiUrl }) => {
+      const cliResponse = await callCli(['env:get', '--json', 'SOME_VAR'], getCLIOptions({ builder, apiUrl }), true)
+
+      t.deepEqual(cliResponse, {})
+    })
   })
+})
 
-  test.serial('env:get --json should return value of var from netlify.toml', async (t) => {
-    // Add netlify.toml before running all following tests as they check
-    // right behavior with netlify.toml.
-    t.context.builder = await injectNetlifyToml(t.context.builder)
+test('env:set --json should create and return new var', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
 
-    const [key, value] = getArgsFromState(ENV_VAR_STATES.netlifyToml)
+    const newBuildSettings = { env: { SOME_VAR1: 'FOO' } }
+    const createRoutes = [
+      { path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: {} } } },
+      { path: 'sites/site_id/service-instances', response: [] },
+      {
+        path: 'accounts',
+        response: [{ slug: siteInfo.account_slug }],
+      },
+      {
+        path: 'sites/site_id',
+        method: 'PATCH',
+        requestBody: JSON.stringify({
+          build_settings: newBuildSettings,
+        }),
+        response: {
+          ...siteInfo,
+          build_settings: newBuildSettings,
+        },
+      },
+    ]
 
-    const cliResponse = await callCli(['env:get', '--json', key], t.context.execOptions)
-    const json = JSON.parse(cliResponse)
+    await withMockApi(createRoutes, async ({ apiUrl }) => {
+      const cliResponse = await callCli(
+        ['env:set', '--json', 'SOME_VAR1', 'FOO'],
+        getCLIOptions({ builder, apiUrl }),
+        true,
+      )
 
-    t.true(isObject(json))
-    t.is(Object.keys(json).length, 1)
-    t.is(json[key], value)
+      t.deepEqual(cliResponse, newBuildSettings.env)
+    })
   })
+})
 
-  test.serial('env:list --json should return list of vars with netlify.toml taking priority', async (t) => {
-    const cliResponse = await callCli(['env:list', '--json'], t.context.execOptions)
-    const json = JSON.parse(cliResponse)
+test('env:set --json should update existing var', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
 
-    t.true(isObject(json))
+    const newBuildSettings = { env: { existing_env: 'new_value' } }
+    const updateRoutes = [
+      { path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: { existing_env: 'old_value' } } } },
+      { path: 'sites/site_id/service-instances', response: [] },
+      {
+        path: 'accounts',
+        response: [{ slug: siteInfo.account_slug }],
+      },
+      {
+        path: 'sites/site_id',
+        method: 'PATCH',
+        requestBody: JSON.stringify({
+          build_settings: newBuildSettings,
+        }),
+        response: {
+          ...siteInfo,
+          build_settings: newBuildSettings,
+        },
+      },
+    ]
 
-    // netlifyToml last, so that it overrides duplicates from import
-    const merged = { ...ENV_VAR_STATES.import, ...ENV_VAR_STATES.netlifyToml }
-    checkResultState({ t, result: json, state: merged })
+    await withMockApi(updateRoutes, async ({ apiUrl }) => {
+      const cliResponse = await callCli(
+        ['env:set', '--json', 'existing_env', 'new_value'],
+        getCLIOptions({ builder, apiUrl }),
+        true,
+      )
+
+      t.deepEqual(cliResponse, newBuildSettings.env)
+    })
   })
+})
 
-  test.serial('env:set --json should be able to set var with empty value', async (t) => {
-    const args = getArgsFromState(ENV_VAR_STATES.setEmpty)
-    const [key] = args
+test('env:get --json should return value of existing var', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
 
-    const cliResponse = await callCli(['env:set', '--json', ...args], t.context.execOptions)
-    const json = JSON.parse(cliResponse)
+    const getRoutes = [
+      { path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: { existing_env: 'existing_value' } } } },
+      { path: 'sites/site_id/service-instances', response: [] },
+      {
+        path: 'accounts',
+        response: [{ slug: siteInfo.account_slug }],
+      },
+    ]
 
-    t.true(isObject(json))
-    t.truthy(key in json)
-    checkResultState({ t, result: json, state: ENV_VAR_STATES.setEmpty })
+    await withMockApi(getRoutes, async ({ apiUrl }) => {
+      const cliResponse = await callCli(['env:get', '--json', 'existing_env'], getCLIOptions({ builder, apiUrl }), true)
+
+      t.deepEqual(cliResponse, { existing_env: 'existing_value' })
+    })
   })
+})
 
-  test.serial('env:unset --json should remove existing variable', async (t) => {
-    const [key] = getArgsFromState(ENV_VAR_STATES.unset)
+test('env:import should throw error if file not exists', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
 
-    const cliResponse = await callCli(['env:unset', '--json', key], t.context.execOptions)
-    const json = JSON.parse(cliResponse)
-
-    t.true(isObject(json))
-    t.falsy(key in json)
+    await withMockApi(routes, async ({ apiUrl }) => {
+      await t.throwsAsync(() => callCli(['env:import', '.env'], getCLIOptions({ builder, apiUrl })))
+    })
   })
+})
 
-  test.serial(
-    'env:import --json --replace-existing should replace all existing vars and return imported',
-    async (t) => {
-      const state = ENV_VAR_STATES.importReplace
+test('env:import --json should import new vars and override existing vars', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder
+      .withEnvFile({
+        path: '.env',
+        env: {
+          existing_env: 'new_value',
+          new_env: 'new_value',
+        },
+      })
+      .buildAsync()
 
-      const cliResponse = await callCli(['env:import', '--json', REPLACE_ENV_FILE_NAME], t.context.execOptions)
-      const json = JSON.parse(cliResponse)
+    const newBuildSettings = { env: { existing_env: 'new_value', new_env: 'new_value' } }
+    const importRoutes = [
+      { path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: { existing_env: 'existing_value' } } } },
+      { path: 'sites/site_id/service-instances', response: [] },
+      {
+        path: 'accounts',
+        response: [{ slug: siteInfo.account_slug }],
+      },
+      {
+        path: 'sites/site_id',
+        method: 'PATCH',
+        requestBody: JSON.stringify({
+          build_settings: newBuildSettings,
+        }),
+        response: {
+          ...siteInfo,
+          build_settings: newBuildSettings,
+        },
+      },
+    ]
 
-      t.true(isObject(json))
-      t.is(Object.keys(json).length, Object.keys(state).length)
-      checkResultState({ t, result: json, state })
-    },
-  )
+    await withMockApi(importRoutes, async ({ apiUrl }) => {
+      const cliResponse = await callCli(['env:import', '--json', '.env'], getCLIOptions({ builder, apiUrl }), true)
 
-  test.after('cleanup', async (t) => {
-    const { execOptions, builder } = t.context
-
-    console.log('Performing cleanup')
-
-    console.log(`deleting test site "${siteName}". ${execOptions.env.NETLIFY_SITE_ID}`)
-    await callCli(['sites:delete', execOptions.env.NETLIFY_SITE_ID, '--force'], execOptions)
-
-    await builder.cleanupAsync()
+      t.deepEqual(cliResponse, newBuildSettings.env)
+    })
   })
-}
+})
+
+test('env:get --json should return value of var from netlify.toml', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder
+      .withNetlifyToml({
+        config: {
+          build: {
+            environment: { from_toml_file: 'from_toml_file_value' },
+          },
+        },
+      })
+      .buildAsync()
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      const cliResponse = await callCli(
+        ['env:get', '--json', 'from_toml_file'],
+        getCLIOptions({ builder, apiUrl }),
+        true,
+      )
+
+      t.deepEqual(cliResponse, { from_toml_file: 'from_toml_file_value' })
+    })
+  })
+})
+
+test('env:list --json should return list of vars with netlify.toml taking priority', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder
+      .withNetlifyToml({
+        config: {
+          build: {
+            environment: { existing_env: 'from_toml_file' },
+          },
+        },
+      })
+      .buildAsync()
+
+    const getRoutes = [
+      { path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: { existing_env: 'from_ui' } } } },
+      { path: 'sites/site_id/service-instances', response: [] },
+      {
+        path: 'accounts',
+        response: [{ slug: siteInfo.account_slug }],
+      },
+    ]
+
+    await withMockApi(getRoutes, async ({ apiUrl }) => {
+      const cliResponse = await callCli(['env:list', '--json'], getCLIOptions({ builder, apiUrl }), true)
+
+      t.deepEqual(cliResponse, { existing_env: 'from_toml_file' })
+    })
+  })
+})
+
+test('env:set --json should be able to set var with empty value', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    const newBuildSettings = { env: { empty: '' } }
+    const updateRoutes = [
+      { path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: {} } } },
+      { path: 'sites/site_id/service-instances', response: [] },
+      {
+        path: 'accounts',
+        response: [{ slug: siteInfo.account_slug }],
+      },
+      {
+        path: 'sites/site_id',
+        method: 'PATCH',
+        requestBody: JSON.stringify({
+          build_settings: newBuildSettings,
+        }),
+        response: {
+          ...siteInfo,
+          build_settings: newBuildSettings,
+        },
+      },
+    ]
+
+    await withMockApi(updateRoutes, async ({ apiUrl }) => {
+      const cliResponse = await callCli(['env:set', '--json', 'empty'], getCLIOptions({ builder, apiUrl }), true)
+
+      t.deepEqual(cliResponse, newBuildSettings.env)
+    })
+  })
+})
+
+test('env:unset --json should remove existing variable', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    const newBuildSettings = { env: {} }
+    const updateRoutes = [
+      { path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: { to_delete: 'to_delete_value' } } } },
+      { path: 'sites/site_id/service-instances', response: [] },
+      {
+        path: 'accounts',
+        response: [{ slug: siteInfo.account_slug }],
+      },
+      {
+        path: 'sites/site_id',
+        method: 'PATCH',
+        requestBody: JSON.stringify({
+          build_settings: newBuildSettings,
+        }),
+        response: {
+          ...siteInfo,
+          build_settings: newBuildSettings,
+        },
+      },
+    ]
+
+    await withMockApi(updateRoutes, async ({ apiUrl }) => {
+      const cliResponse = await callCli(['env:unset', '--json', 'to_delete'], getCLIOptions({ builder, apiUrl }), true)
+
+      t.deepEqual(cliResponse, newBuildSettings.env)
+    })
+  })
+})
+
+test('env:import --json --replace-existing should replace all existing vars and return imported', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder
+      .withEnvFile({
+        path: '.env',
+        env: {
+          new_env: 'new_value',
+        },
+      })
+      .buildAsync()
+
+    const newBuildSettings = { env: { new_env: 'new_value' } }
+    const importRoutes = [
+      { path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: { existing_env: 'existing_value' } } } },
+      { path: 'sites/site_id/service-instances', response: [] },
+      {
+        path: 'accounts',
+        response: [{ slug: siteInfo.account_slug }],
+      },
+      {
+        path: 'sites/site_id',
+        method: 'PATCH',
+        requestBody: JSON.stringify({
+          build_settings: newBuildSettings,
+        }),
+        response: {
+          ...siteInfo,
+          build_settings: newBuildSettings,
+        },
+      },
+    ]
+
+    await withMockApi(importRoutes, async ({ apiUrl }) => {
+      const cliResponse = await callCli(
+        ['env:import', '--replaceExisting', '--json', '.env'],
+        getCLIOptions({ builder, apiUrl }),
+        true,
+      )
+
+      t.deepEqual(cliResponse, newBuildSettings.env)
+    })
+  })
+})

@@ -1,13 +1,8 @@
 const test = require('ava')
 
 const callCli = require('./utils/call-cli')
-const { withMockApi } = require('./utils/mock-api')
+const { withMockApi, getCLIOptions } = require('./utils/mock-api')
 const { withSiteBuilder } = require('./utils/site-builder')
-
-const getCLIOptions = ({ builder: { directory: cwd }, apiUrl }) => ({
-  cwd,
-  env: { NETLIFY_AUTH_TOKEN: 'fake-token', NETLIFY_SITE_ID: 'site_id', NETLIFY_API_URL: apiUrl },
-})
 
 const siteInfo = {
   account_slug: 'test-account',
