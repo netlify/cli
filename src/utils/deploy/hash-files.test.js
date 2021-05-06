@@ -2,35 +2,59 @@ const path = require('path')
 
 const test = require('ava')
 
+const { withSiteBuilder } = require('../../../tests/utils/site-builder')
+
 const { DEFAULT_CONCURRENT_HASH } = require('./constants')
 const { hashFiles } = require('./hash-files')
 
 test('Hashes files in a folder', async (t) => {
-  const dirname = path.resolve(__dirname, '../../../tests/site-with-functions')
-  const expectedFiles = [
-    'netlify.toml',
-    'netlify/functions/function-1.js',
-    'netlify/functions/function-2.js',
-    'lib/util.js',
-  ]
-  const { files, filesShaMap } = await hashFiles(dirname, path.join(dirname, 'netlify.toml'), {
-    filter: () => true,
-    concurrentHash: DEFAULT_CONCURRENT_HASH,
-    statusCb() {},
-  })
+  await withSiteBuilder('site-with-override', async (builder) => {
+    builder
+      .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
+      .withEnvFile({ path: '.env.development', env: { TEST: 'FROM_DEV_FILE' } })
+      .withContentFile({
+        path: 'lib/util.js',
+        content: `module.exports = { one: 1 }`,
+      })
+      .withContentFile({
+        path: 'functions/function-1.js',
+        content: `
+const { one } = require('../../lib/util')
 
-  expectedFiles.forEach((filePath) => {
-    t.truthy(files[filePath], `includes the ${filePath} file`)
-  })
+module.exports.handler = async () => ({ statusCode: 200, body: one })
+`,
+      })
+      .withContentFile({
+        path: 'functions/function-2.js',
+        content: `
+const { one } = require('../../lib/util')
 
-  t.truthy(files['netlify.toml'], 'includes the netlify.toml file')
-  Object.keys(files).forEach((filePath) => {
-    t.truthy(filePath, 'each file has a path')
-  })
-  t.truthy(filesShaMap, 'filesShaMap is returned')
-  Object.values(filesShaMap).forEach((fileObjArray) => {
-    fileObjArray.forEach((fileObj) => {
-      t.truthy(fileObj.normalizedPath, 'fileObj have a normalizedPath field')
+module.exports.handler = async () => ({ statusCode: 200, body: one })
+`,
+      })
+
+    await builder.buildAsync()
+
+    const expectedFiles = ['netlify.toml', 'functions/function-1.js', 'functions/function-2.js', 'lib/util.js']
+    const { files, filesShaMap } = await hashFiles(builder.directory, path.join(builder.directory, 'netlify.toml'), {
+      filter: () => true,
+      concurrentHash: DEFAULT_CONCURRENT_HASH,
+      statusCb() {},
+    })
+
+    expectedFiles.forEach((filePath) => {
+      t.truthy(files[filePath], `includes the ${filePath} file`)
+    })
+
+    t.truthy(files['netlify.toml'], 'includes the netlify.toml file')
+    Object.keys(files).forEach((filePath) => {
+      t.truthy(filePath, 'each file has a path')
+    })
+    t.truthy(filesShaMap, 'filesShaMap is returned')
+    Object.values(filesShaMap).forEach((fileObjArray) => {
+      fileObjArray.forEach((fileObj) => {
+        t.truthy(fileObj.normalizedPath, 'fileObj have a normalizedPath field')
+      })
     })
   })
 })
