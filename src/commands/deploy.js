@@ -17,6 +17,7 @@ const { getBuildOptions, runBuild } = require('../lib/build')
 const { statAsync } = require('../lib/fs')
 const { getLogMessage } = require('../lib/log')
 const Command = require('../utils/command')
+const { deploySite } = require('../utils/deploy/deploy-site')
 const { deployEdgeHandlers } = require('../utils/edge-handlers')
 const { NETLIFYDEV, NETLIFYDEVLOG, NETLIFYDEVERR } = require('../utils/logo')
 const openBrowser = require('../utils/open-browser')
@@ -263,7 +264,7 @@ const runDeploy = async ({
       error,
       warn,
     })
-    results = await api.deploy(siteId, deployFolder, {
+    results = await deploySite(api, siteId, deployFolder, {
       configPath,
       fnDir: functionsFolder,
       statusCb: silent ? () => {} : deployProgressCb(),
