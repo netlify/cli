@@ -234,8 +234,8 @@ const runDeploy = async ({
   api,
   siteId,
   deployFolder,
-  config,
   configPath,
+  functionsConfig,
   functionsFolder,
   alias,
   log,
@@ -257,7 +257,6 @@ const runDeploy = async ({
     results = await api.createSiteDeploy({ siteId, title, body: { draft, branch: alias } })
     deployId = results.id
 
-    const functionsConfig = normalizeFunctionsConfig({ functionsConfig: config.functions, projectRoot: site.root })
     const silent = flags.json || flags.silent
     await deployEdgeHandlers({
       site,
@@ -446,7 +445,7 @@ class DeployCommand extends Command {
       error,
       log,
     })
-
+    const functionsConfig = normalizeFunctionsConfig({ functionsConfig: config.functions, projectRoot: site.root })
     const results = await runDeploy({
       flags,
       deployToProduction,
@@ -455,7 +454,7 @@ class DeployCommand extends Command {
       api,
       siteId,
       deployFolder,
-      config,
+      functionsConfig,
       configPath,
       // pass undefined functionsFolder if doesn't exist
       functionsFolder: functionsFolderStat && functionsFolder,
