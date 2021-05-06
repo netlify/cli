@@ -2,7 +2,7 @@ const test = require('ava')
 const tempy = require('tempy')
 
 const { DEFAULT_CONCURRENT_HASH } = require('./constants')
-const hashFns = require('./hash-fns')
+const { hashFns } = require('./hash-fns')
 
 test('Hashes files in a folder', async (t) => {
   const { functions, fnShaMap } = await hashFns(__dirname, {
