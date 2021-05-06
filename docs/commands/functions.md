@@ -46,8 +46,8 @@ netlify functions:build
 
 **Flags**
 
-- `functions` (*string*) - Specify a functions folder to build to
-- `src` (*string*) - Specify the source folder for the functions
+- `functions` (*string*) - Specify a functions directory to build to
+- `src` (*string*) - Specify the source directory for the functions
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
@@ -142,7 +142,7 @@ netlify functions:list
 **Flags**
 
 - `name` (*string*) - name to print
-- `functions` (*string*) - Specify a functions folder to serve
+- `functions` (*string*) - Specify a functions directory to list
 - `json` (*boolean*) - Output function data as JSON
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.
@@ -164,7 +164,7 @@ netlify functions:serve
 
 **Flags**
 
-- `dir` (*string*) - Specify a functions directory to serve
+- `functions` (*string*) - Specify a functions directory to serve
 - `port` (*string*) - Specify a port for the functions server
 - `offline` (*boolean*) - disables any features that require network access
 - `json` (*boolean*) - Output function data as JSON

@@ -4,6 +4,7 @@ const { flags: flagsLib } = require('@oclif/command')
 
 const Command = require('../../utils/command')
 const { getSiteInformation, acquirePort } = require('../../utils/dev')
+const { getFunctionsDir } = require('../../utils/functions')
 const { startFunctionsServer } = require('../../utils/serve-functions')
 
 const DEFAULT_PORT = 9999
@@ -21,12 +22,7 @@ class FunctionsServeCommand extends Command {
     const { error: errorExit, log, warn, netlify } = this
     const { api, site, config, siteInfo } = netlify
 
-    const functionsDir =
-      flags.dir ||
-      (config.dev && config.dev.functions) ||
-      config.functionsDirectory ||
-      (config.dev && config.dev.Functions) ||
-      join('netlify', 'functions')
+    const functionsDir = getFunctionsDir({ flags, config }, join('netlify', 'functions'))
 
     const { siteUrl, capabilities, timeouts } = await getSiteInformation({
       flags,
@@ -64,8 +60,8 @@ Helpful for debugging functions.
 `
 FunctionsServeCommand.aliases = ['function:serve']
 FunctionsServeCommand.flags = {
-  dir: flagsLib.string({
-    char: 'd',
+  functions: flagsLib.string({
+    char: 'f',
     description: 'Specify a functions directory to serve',
   }),
   port: flagsLib.integer({

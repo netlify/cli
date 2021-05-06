@@ -4,6 +4,7 @@ const { flags: flagsLib } = require('@oclif/command')
 const AsciiTable = require('ascii-table')
 
 const Command = require('../../utils/command')
+const { getFunctionsDir } = require('../../utils/functions')
 const { getFunctions } = require('../../utils/get-functions')
 
 class FunctionsListCommand extends Command {
@@ -43,12 +44,7 @@ class FunctionsListCommand extends Command {
       },
     })
 
-    const functionsDir =
-      flags.functions ||
-      (config.dev && config.dev.functions) ||
-      config.functionsDirectory ||
-      flags.Functions ||
-      (config.dev && config.dev.Functions)
+    const functionsDir = getFunctionsDir({ flags, config })
 
     if (typeof functionsDir === 'undefined') {
       this.log('Functions directory is undefined')
@@ -100,7 +96,7 @@ FunctionsListCommand.flags = {
   }),
   functions: flagsLib.string({
     char: 'f',
-    description: 'Specify a functions folder to serve',
+    description: 'Specify a functions directory to list',
   }),
   json: flagsLib.boolean({
     description: 'Output function data as JSON',
