@@ -11,27 +11,28 @@ test('Hashes files in a folder', async (t) => {
   await withSiteBuilder('site-with-override', async (builder) => {
     builder
       .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
-      .withEnvFile({ path: '.env.development', env: { TEST: 'FROM_DEV_FILE' } })
       .withContentFile({
         path: 'lib/util.js',
         content: `module.exports = { one: 1 }`,
       })
-      .withContentFile({
-        path: 'functions/function-1.js',
-        content: `
+      .withContentFiles([
+        {
+          path: 'functions/function-1.js',
+          content: `
 const { one } = require('../../lib/util')
 
 module.exports.handler = async () => ({ statusCode: 200, body: one })
 `,
-      })
-      .withContentFile({
-        path: 'functions/function-2.js',
-        content: `
+        },
+        {
+          path: 'functions/function-2.js',
+          content: `
 const { one } = require('../../lib/util')
 
 module.exports.handler = async () => ({ statusCode: 200, body: one })
 `,
-      })
+        },
+      ])
 
     await builder.buildAsync()
 
