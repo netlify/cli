@@ -216,7 +216,7 @@
     "failFast": false,
     "failWithoutAssertions": false,
     "tap": false,
-    "timeout": "2m"
+    "timeout": "5m"
   },
   "oclif": {
     "bin": "netlify",
