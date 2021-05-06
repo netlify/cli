@@ -300,3 +300,5 @@ module.exports = async function handler({ config, errorExit, functionsDirectory:
     target: targetDirectory,
   }
 }
+
+module.exports.normalizeFunctionsConfig = normalizeFunctionsConfig

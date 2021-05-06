@@ -12,6 +12,7 @@ const ora = require('ora')
 const prettyjson = require('prettyjson')
 const randomItem = require('random-item')
 
+const { normalizeFunctionsConfig } = require('../function-builder-detectors/zisi')
 const { cancelDeploy } = require('../lib/api')
 const { getBuildOptions, runBuild } = require('../lib/build')
 const { statAsync } = require('../lib/fs')
@@ -233,6 +234,7 @@ const runDeploy = async ({
   api,
   siteId,
   deployFolder,
+  config,
   configPath,
   functionsFolder,
   alias,
@@ -255,6 +257,7 @@ const runDeploy = async ({
     results = await api.createSiteDeploy({ siteId, title, body: { draft, branch: alias } })
     deployId = results.id
 
+    const functionsConfig = normalizeFunctionsConfig({ functionsConfig: config.functions, projectRoot: site.root })
     const silent = flags.json || flags.silent
     await deployEdgeHandlers({
       site,
@@ -267,6 +270,7 @@ const runDeploy = async ({
     results = await deploySite(api, siteId, deployFolder, {
       configPath,
       fnDir: functionsFolder,
+      functionsConfig,
       statusCb: silent ? () => {} : deployProgressCb(),
       deployTimeout: flags.timeout * SEC_TO_MILLISEC || DEFAULT_DEPLOY_TIMEOUT,
       syncFileLimit: SYNC_FILE_LIMIT,
@@ -451,6 +455,7 @@ class DeployCommand extends Command {
       api,
       siteId,
       deployFolder,
+      config,
       configPath,
       // pass undefined functionsFolder if doesn't exist
       functionsFolder: functionsFolderStat && functionsFolder,

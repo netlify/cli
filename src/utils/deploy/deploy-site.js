@@ -30,6 +30,7 @@ const deploySite = async (
     draft = false,
     filter,
     fnDir = null,
+    functionsConfig,
     hashAlgorithm,
     maxRetry = DEFAULT_MAX_RETRY,
     // API calls this the 'title'
@@ -49,7 +50,7 @@ const deploySite = async (
 
   const [{ files, filesShaMap }, { functions, fnShaMap }] = await Promise.all([
     hashFiles(dir, configPath, { concurrentHash, hashAlgorithm, assetType, statusCb, filter }),
-    hashFns(fnDir, { tmpDir, concurrentHash, hashAlgorithm, statusCb, assetType }),
+    hashFns(fnDir, { functionsConfig, tmpDir, concurrentHash, hashAlgorithm, statusCb, assetType }),
   ])
 
   const filesCount = Object.keys(files).length
