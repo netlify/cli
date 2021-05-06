@@ -17,11 +17,11 @@ That allows easier debugging and doesn't have the overhead of starting a framewo
 
 Your function will be available at `http://localhost:9999/.netlify/functions/<function-name>`
 
-By default the server serves functions from the configured functions directory, or `netlify/functions` and the default port is `9999`.
-To override these settings you can use the `--dir` and `--port` flags:
+By default the server serves functions from the configured functions directory, or `netlify/functions` if a functions directory is not configured. The default port for the functions server is `9999`.
+To override these settings you can use the `--functions` and `--port` flags:
 
 ```sh
-netlify functions:serve --dir <path-to-dir> --port <port>
+netlify functions:serve --functions <path-to-dir> --port <port>
 ```
 
 or by configuring them via the `netlify.toml` dev block:
@@ -41,4 +41,4 @@ To do so set the `--inspect` Node.js option when starting the functions server:
 - On Windows run `cmd /V /C "set NODE_OPTIONS=--inspect && netlify functions:serve"`
 - On Mac/Linux run `NODE_OPTIONS=--inspect netlify functions:serve`
 
-Then attach any Node.js debugger to the CLI process to debug you functions.
+Then attach any Node.js debugger to the CLI process to debug your functions.
