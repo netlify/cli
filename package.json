@@ -60,7 +60,7 @@
     "test:init:eleventy-deps": "npm ci --prefix tests/eleventy-site",
     "test:init:hugo-deps": "npm ci --prefix tests/hugo-site",
     "test:dev:ava": "ava --verbose",
-    "test:ci:ava": "nyc -r json ava",
+    "test:ci:ava": "nyc -r json ava -- --concurrency 2 --node-arguments \"--max-old-space-size=4096\"",
     "docs": "node ./site/scripts/docs.js",
     "watch": "nyc --reporter=lcov ava --watch",
     "prepack": "oclif-dev manifest && npm prune --prod",
