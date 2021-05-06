@@ -3,7 +3,7 @@ const { existsSync } = require('fs')
 const FRAMEWORK_PORT = 4000
 
 module.exports = function detector() {
-  if (!existsSync('_config.yml')) {
+  if (!existsSync('_config.yml') && !existsSync('_config.yaml') && !existsSync('_config.toml')) {
     return false
   }
 
