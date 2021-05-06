@@ -167,7 +167,6 @@ netlify functions:serve
 - `functions` (*string*) - Specify a functions directory to serve
 - `port` (*string*) - Specify a port for the functions server
 - `offline` (*boolean*) - disables any features that require network access
-- `json` (*boolean*) - Output function data as JSON
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server

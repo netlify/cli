@@ -72,9 +72,6 @@ FunctionsServeCommand.flags = {
     char: 'o',
     description: 'disables any features that require network access',
   }),
-  json: flagsLib.boolean({
-    description: 'Output function data as JSON',
-  }),
   ...FunctionsServeCommand.flags,
 }
 
