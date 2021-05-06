@@ -437,7 +437,7 @@ const createFormSubmissionHandler = function ({ siteUrl, warn }) {
   }
 }
 
-const getFunctionsServer = async function ({ getFunctionByName, siteUrl, warn, timeouts }) {
+const getFunctionsServer = async function ({ getFunctionByName, siteUrl, warn, timeouts, prefix }) {
   const app = express()
   app.set('query parser', 'simple')
 
@@ -459,7 +459,7 @@ const getFunctionsServer = async function ({ getFunctionByName, siteUrl, warn, t
     res.status(204).end()
   })
 
-  app.all('*', await createHandler({ getFunctionByName, timeouts }))
+  app.all(`${prefix}*`, await createHandler({ getFunctionByName, timeouts }))
 
   return app
 }
@@ -559,6 +559,7 @@ const startFunctionsServer = async ({
   siteUrl,
   capabilities,
   timeouts,
+  prefix = '',
 }) => {
   // serve functions from zip-it-and-ship-it
   // env variables relies on `url`, careful moving this code
@@ -584,6 +585,7 @@ const startFunctionsServer = async ({
       siteUrl,
       warn,
       timeouts,
+      prefix,
     })
 
     await startServer({ server, settings, log, errorExit })

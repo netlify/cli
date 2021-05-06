@@ -56,6 +56,7 @@ const navOrder = [
   'unlink',
   'watch',
   'netlify-dev',
+  'functions-dev',
   'contributing',
 ]
 
@@ -65,6 +66,7 @@ const pageNames = {
   commands: 'CLI Commands',
   contributing: 'Contributing',
   'netlify-dev': 'Netlify Dev',
+  'functions-dev': 'Functions Development',
 }
 
 const sortRoutes = (routes) =>

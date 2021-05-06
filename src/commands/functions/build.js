@@ -5,12 +5,8 @@ const { zipFunctions } = require('@netlify/zip-it-and-ship-it')
 const { flags: flagsLib } = require('@oclif/command')
 
 const Command = require('../../utils/command')
-const {
-  // NETLIFYDEV,
-  NETLIFYDEVLOG,
-  // NETLIFYDEVWARN,
-  NETLIFYDEVERR,
-} = require('../../utils/logo')
+const { getFunctionsDir } = require('../../utils/functions')
+const { NETLIFYDEVLOG, NETLIFYDEVERR } = require('../../utils/logo')
 
 class FunctionsBuildCommand extends Command {
   async run() {
@@ -18,12 +14,7 @@ class FunctionsBuildCommand extends Command {
     const { config } = this.netlify
 
     const src = flags.src || config.build.functionsSource
-    const dst =
-      flags.functions ||
-      (config.dev && config.dev.functions) ||
-      config.functionsDirectory ||
-      flags.Functions ||
-      (config.dev && config.dev.Functions)
+    const dst = getFunctionsDir({ flags, config })
 
     if (src === dst) {
       this.log(`${NETLIFYDEVERR} Source and destination for function build can't be the same`)
@@ -63,11 +54,11 @@ FunctionsBuildCommand.aliases = ['function:build']
 FunctionsBuildCommand.flags = {
   functions: flagsLib.string({
     char: 'f',
-    description: 'Specify a functions folder to build to',
+    description: 'Specify a functions directory to build to',
   }),
   src: flagsLib.string({
     char: 's',
-    description: 'Specify the source folder for the functions',
+    description: 'Specify the source directory for the functions',
   }),
   ...FunctionsBuildCommand.flags,
 }

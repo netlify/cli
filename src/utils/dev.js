@@ -3,6 +3,7 @@ const process = require('process')
 const fromEntries = require('@ungap/from-entries')
 const chalk = require('chalk')
 const { get } = require('dot-prop')
+const getPort = require('get-port')
 const isEmpty = require('lodash/isEmpty')
 
 const { supportsBackgroundFunctions } = require('../lib/account')
@@ -176,7 +177,16 @@ const injectEnvVariables = async ({ env, log, site, warn }) => {
   process.env.NETLIFY_DEV = 'true'
 }
 
+const acquirePort = async ({ configuredPort, defaultPort, errorMessage }) => {
+  const acquiredPort = await getPort({ port: configuredPort || defaultPort })
+  if (configuredPort && acquiredPort !== configuredPort) {
+    throw new Error(`${errorMessage}: '${configuredPort}'`)
+  }
+  return acquiredPort
+}
+
 module.exports = {
   getSiteInformation,
   injectEnvVariables,
+  acquirePort,
 }
