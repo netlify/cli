@@ -28,6 +28,12 @@ jobs:
       fail-fast: false
 
     steps:
+      # This improves Windows network performance, we need this since we open many ports in our tests
+      - name: Increase Windows port limit and reduce time wait delay
+        run: |
+          REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\TCPIP\Parameters /v MaxUserPort /t REG_DWORD /d 32768 /f
+          REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\TCPIP\Parameters /v TcpTimedWaitDelay /t REG_DWORD /d 30 /f
+        if: "${{ matrix.config.os == 'windows-latest' }}"
       - name: Git checkout
         uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
