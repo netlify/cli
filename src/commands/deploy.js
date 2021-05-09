@@ -12,11 +12,13 @@ const ora = require('ora')
 const prettyjson = require('prettyjson')
 const randomItem = require('random-item')
 
+const { normalizeFunctionsConfig } = require('../function-builder-detectors/zisi')
 const { cancelDeploy } = require('../lib/api')
 const { getBuildOptions, runBuild } = require('../lib/build')
 const { statAsync } = require('../lib/fs')
 const { getLogMessage } = require('../lib/log')
 const Command = require('../utils/command')
+const { deploySite } = require('../utils/deploy/deploy-site')
 const { deployEdgeHandlers } = require('../utils/edge-handlers')
 const { NETLIFYDEV, NETLIFYDEVLOG, NETLIFYDEVERR } = require('../utils/logo')
 const openBrowser = require('../utils/open-browser')
@@ -233,6 +235,7 @@ const runDeploy = async ({
   siteId,
   deployFolder,
   configPath,
+  functionsConfig,
   functionsFolder,
   alias,
   log,
@@ -263,9 +266,10 @@ const runDeploy = async ({
       error,
       warn,
     })
-    results = await api.deploy(siteId, deployFolder, {
+    results = await deploySite(api, siteId, deployFolder, {
       configPath,
       fnDir: functionsFolder,
+      functionsConfig,
       statusCb: silent ? () => {} : deployProgressCb(),
       deployTimeout: flags.timeout * SEC_TO_MILLISEC || DEFAULT_DEPLOY_TIMEOUT,
       syncFileLimit: SYNC_FILE_LIMIT,
@@ -441,7 +445,7 @@ class DeployCommand extends Command {
       error,
       log,
     })
-
+    const functionsConfig = normalizeFunctionsConfig({ functionsConfig: config.functions, projectRoot: site.root })
     const results = await runDeploy({
       flags,
       deployToProduction,
@@ -450,6 +454,7 @@ class DeployCommand extends Command {
       api,
       siteId,
       deployFolder,
+      functionsConfig,
       configPath,
       // pass undefined functionsFolder if doesn't exist
       functionsFolder: functionsFolderStat && functionsFolder,
