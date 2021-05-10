@@ -22,8 +22,7 @@ const handler = async (event, context) => {
       }
       return {
         statusCode: 500,
-        body:
-          'too many segments in GET request, must be either /.netlify/functions/fauna-crud or /.netlify/functions/fauna-crud/123456',
+        body: 'too many segments in GET request, must be either /.netlify/functions/fauna-crud or /.netlify/functions/fauna-crud/123456',
       }
 
     case 'POST':

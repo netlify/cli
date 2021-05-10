@@ -106,7 +106,12 @@ const getPromptInputs = async ({
 
 const getBuildSettings = async ({ siteRoot, config, env, warn }) => {
   const nodeVersion = await detectNodeVersion({ siteRoot, env, warn })
-  const { frameworkName, frameworkBuildCommand, frameworkBuildDir, frameworkPlugins = [] } = await getFrameworkInfo({
+  const {
+    frameworkName,
+    frameworkBuildCommand,
+    frameworkBuildDir,
+    frameworkPlugins = [],
+  } = await getFrameworkInfo({
     siteRoot,
     nodeVersion,
   })
