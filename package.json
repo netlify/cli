@@ -86,7 +86,7 @@
     "@oclif/config": "^1.15.1",
     "@oclif/errors": "^1.3.4",
     "@oclif/parser": "^3.8.4",
-    "@oclif/plugin-help": "^2.2.0",
+    "@oclif/plugin-help": "^3.0.0",
     "@oclif/plugin-not-found": "^1.1.4",
     "@oclif/plugin-plugins": "^1.9.3",
     "@octokit/rest": "^18.0.0",
