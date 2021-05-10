@@ -75,7 +75,7 @@
     "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,scripts,site,tests,.github}/**/*.{js,md,yml,json,html}\" \"*.{js,yml,json,html}\" \".*.{js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\""
   },
   "dependencies": {
-    "@netlify/build": "^11.10.0",
+    "@netlify/build": "^11.12.0",
     "@netlify/config": "^6.4.4",
     "@netlify/framework-info": "^4.0.1",
     "@netlify/plugin-edge-handlers": "^1.11.7",
@@ -193,7 +193,7 @@
     "@babel/preset-react": "^7.12.13",
     "@commitlint/cli": "^12.0.0",
     "@commitlint/config-conventional": "^12.0.0",
-    "@netlify/eslint-config-node": "^2.6.5",
+    "@netlify/eslint-config-node": "^2.6.7",
     "@oclif/dev-cli": "^1.23.1",
     "@oclif/test": "^1.2.5",
     "ava": "^3.15.0",
