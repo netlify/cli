@@ -166,11 +166,13 @@ const clearRequireCache = () => {
   })
 }
 
-const clearCache = ({ action }) => (path) => {
-  logBeforeAction({ path, action })
-  clearRequireCache()
-  logAfterAction({ path, action })
-}
+const clearCache =
+  ({ action }) =>
+  (path) => {
+    logBeforeAction({ path, action })
+    clearRequireCache()
+    logAfterAction({ path, action })
+  }
 
 const shouldBase64Encode = function (contentType) {
   return Boolean(contentType) && BASE_64_MIME_REGEXP.test(contentType)
