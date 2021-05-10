@@ -274,6 +274,7 @@ class DevCommand extends Command {
 
     process.env.URL = url
     process.env.DEPLOY_URL = url
+    process.env.DEPLOY_PRIME_URL = url
 
     printBanner({ url, log })
   }
