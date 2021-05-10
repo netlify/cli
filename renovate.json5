@@ -23,6 +23,8 @@
         'wrap-ansi',
         'better-opn',
         'to-readable-stream',
+        'http-proxy-middleware',
+        'p-map',
       ],
       major: {
         enabled: false,
