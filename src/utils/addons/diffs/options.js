@@ -1,9 +1,7 @@
 const ansiStyles = require('ansi-styles')
 const chalk = require('chalk')
 
-const forceColor = new chalk.constructor({
-  enabled: true,
-})
+const forceColor = new chalk.Instance({ level: 1 })
 
 const colorTheme = {
   boolean: ansiStyles.yellow,
