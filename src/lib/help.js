@@ -17,14 +17,10 @@ const formatDescription = (description, id) => {
 }
 
 module.exports = class CustomHelp extends Help {
-  showCommandHelp(command, topics) {
-    command.description = formatDescription(command.description, command.id)
-    return super.showCommandHelp(command, topics)
-  }
-
-  topics(topics) {
-    return super.topics(
-      topics.map((topic) => ({ ...topic, description: formatDescription(topic.description, topic.name) })),
-    )
+  constructor(config, opts = {}) {
+    config.commands.forEach((command) => {
+      command.description = formatDescription(command.description, command.id)
+    })
+    super(config, opts)
   }
 }
