@@ -11,7 +11,7 @@
       "license": "MIT",
       "dependencies": {
         "@netlify/build": "^11.13.0",
-        "@netlify/config": "^6.4.4",
+        "@netlify/config": "^6.5.0",
         "@netlify/framework-info": "^4.1.0",
         "@netlify/plugin-edge-handlers": "^1.11.7",
         "@netlify/plugins-list": "^2.11.2",
@@ -2443,9 +2443,9 @@
       }
     },
     "node_modules/@netlify/config": {
-      "version": "6.4.4",
-      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-6.4.4.tgz",
-      "integrity": "sha512-WsaBBpLm3GRmDAs78N1IgKQe5r5kHSjrpMIkq6NlbyGV9omodVIu1bkq6fQ+v3NSdbQYS86x4eQVIK5qUOrRDQ==",
+      "version": "6.5.0",
+      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-6.5.0.tgz",
+      "integrity": "sha512-LgsLOwaSlO8L3lE86VyqkA3L5/slnmyMzXHYf527t6daZ57azPyuzKica8D+U5ZQydTtR1B000xVZuqfOcCsfw==",
       "dependencies": {
         "@ungap/from-entries": "^0.2.1",
         "array-flat-polyfill": "^1.0.1",
@@ -2460,7 +2460,7 @@
         "is-plain-obj": "^2.1.0",
         "js-yaml": "^4.0.0",
         "map-obj": "^4.0.0",
-        "netlify": "^6.1.27",
+        "netlify": "^6.1.29",
         "omit.js": "^2.0.2",
         "p-locate": "^4.1.0",
         "path-exists": "^4.0.0",
@@ -23101,9 +23101,9 @@
       }
     },
     "@netlify/config": {
-      "version": "6.4.4",
-      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-6.4.4.tgz",
-      "integrity": "sha512-WsaBBpLm3GRmDAs78N1IgKQe5r5kHSjrpMIkq6NlbyGV9omodVIu1bkq6fQ+v3NSdbQYS86x4eQVIK5qUOrRDQ==",
+      "version": "6.5.0",
+      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-6.5.0.tgz",
+      "integrity": "sha512-LgsLOwaSlO8L3lE86VyqkA3L5/slnmyMzXHYf527t6daZ57azPyuzKica8D+U5ZQydTtR1B000xVZuqfOcCsfw==",
       "requires": {
         "@ungap/from-entries": "^0.2.1",
         "array-flat-polyfill": "^1.0.1",
@@ -23118,7 +23118,7 @@
         "is-plain-obj": "^2.1.0",
         "js-yaml": "^4.0.0",
         "map-obj": "^4.0.0",
-        "netlify": "^6.1.27",
+        "netlify": "^6.1.29",
         "omit.js": "^2.0.2",
         "p-locate": "^4.1.0",
         "path-exists": "^4.0.0",
