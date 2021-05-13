@@ -97,7 +97,7 @@ class BaseCommand extends Command {
     }
 
     const cachedConfig = await this.getConfig({ cwd, state, token, ...apiUrlOpts })
-    const { configPath, config, buildDir, siteInfo } = cachedConfig
+    const { configPath, config, buildDir, repositoryRoot, siteInfo } = cachedConfig
 
     const { flags } = this.parse(BaseCommand)
     const agent = await getAgent({
@@ -112,6 +112,7 @@ class BaseCommand extends Command {
     this.netlify = {
       // api methods
       api: new API(token || '', apiOpts),
+      repositoryRoot,
       // current site context
       site: {
         root: buildDir,

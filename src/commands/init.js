@@ -169,7 +169,7 @@ class InitCommand extends Command {
   async run() {
     const { flags } = this.parse(InitCommand)
     const { log, exit, config, netlify } = this
-    const { site, state } = netlify
+    const { repositoryRoot, state } = netlify
     let { siteInfo } = this.netlify
 
     // Check logged in status
@@ -178,7 +178,7 @@ class InitCommand extends Command {
     await reportAnalytics({ config, flags })
 
     // Add .netlify to .gitignore file
-    await ensureNetlifyIgnore(site.root)
+    await ensureNetlifyIgnore(repositoryRoot)
 
     const repoUrl = getRepoUrl({ siteInfo })
     if (repoUrl && !flags.force) {
