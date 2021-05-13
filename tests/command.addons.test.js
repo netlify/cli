@@ -53,7 +53,7 @@ test('netlify addons:create demo', async (t) => {
         path: 'sites/site_id/services/demo/instances',
         response: {},
         method: 'POST',
-        requestBody: JSON.stringify({ config: { TWILIO_ACCOUNT_SID: 'foo' } }),
+        requestBody: { config: { TWILIO_ACCOUNT_SID: 'foo' } },
       },
     ]
 
@@ -112,7 +112,7 @@ test('netlify addons:config demo', async (t) => {
         path: 'sites/site_id/services/demo/instances/demo',
         response: {},
         method: 'PUT',
-        requestBody: JSON.stringify({ config: { TWILIO_ACCOUNT_SID: 'bar' } }),
+        requestBody: { config: { TWILIO_ACCOUNT_SID: 'bar' } },
       },
     ]
 

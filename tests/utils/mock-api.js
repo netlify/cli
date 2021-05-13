@@ -1,3 +1,5 @@
+const { isDeepStrictEqual } = require('util')
+
 const bodyParser = require('body-parser')
 const express = require('express')
 
@@ -19,7 +21,7 @@ const startMockApi = ({ routes }) => {
   routes.forEach(({ method = 'get', path, response = {}, status = 200, requestBody }) => {
     app[method.toLowerCase()](`/api/v1/${path}`, function onRequest(req, res) {
       // validate request body
-      if (requestBody !== undefined && requestBody !== JSON.stringify(req.body)) {
+      if (requestBody !== undefined && !isDeepStrictEqual(requestBody, req.body)) {
         res.status(500)
         res.json({ message: `Request body doesn't match` })
         return
