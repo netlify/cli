@@ -155,7 +155,7 @@
     "node-version-alias": "^1.0.1",
     "oclif-plugin-completion": "^0.6.0",
     "open": "^7.0.0",
-    "ora": "^4.1.1",
+    "ora": "^5.0.0",
     "p-event": "^4.2.0",
     "p-filter": "^2.1.0",
     "p-map": "^4.0.0",
