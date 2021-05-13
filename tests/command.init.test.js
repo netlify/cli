@@ -9,51 +9,16 @@ const { handleQuestions, answerWithValue, CONFIRM, DOWN } = require('./utils/han
 const { withMockApi } = require('./utils/mock-api')
 const { withSiteBuilder } = require('./utils/site-builder')
 
-const assetSiteRequests = (
-  t,
-  requests,
-  { command = 'custom-build-command', functions = 'custom-functions', publish = 'custom-publish', plugins = [] } = {},
-) => {
-  // assert updateSite was called with user inputs
-  const siteUpdateRequests = requests
-    .filter(({ path, method }) => path === '/api/v1/sites/site_id' && method === 'PATCH')
-    .map(({ body }) => body)
-  t.deepEqual(siteUpdateRequests, [
-    {
-      plugins,
-      repo: {
-        allowed_branches: ['main'],
-        cmd: command,
-        dir: publish,
-        provider: 'manual',
-        repo_branch: 'main',
-        repo_path: 'git@github.com:owner/repo.git',
-      },
-    },
-    {
-      build_settings: {
-        functions_dir: functions,
-      },
-    },
-  ])
-}
-
-const assertSiteInit = async (
-  t,
-  builder,
-  requests,
-  { command = 'custom-build-command', functions = 'custom-functions', publish = 'custom-publish', plugins = [] } = {},
-) => {
+const assertNetlifyToml = async (t, builder, { command, functions, publish }) => {
   // assert netlify.toml was created with user inputs
   const netlifyToml = toml.parse(await readFileAsync(`${builder.directory}/netlify.toml`, 'utf8'))
   t.deepEqual(netlifyToml, {
     build: { command, functions, publish },
   })
-
-  assetSiteRequests(t, requests, { command, functions, publish, plugins })
 }
 
 test('netlify init existing site', async (t) => {
+  const [command, publish, functions] = ['custom-build-command', 'custom-publish', 'custom-functions']
   const initQuestions = [
     {
       question: 'Create & configure a new site',
@@ -65,15 +30,15 @@ test('netlify init existing site', async (t) => {
     },
     {
       question: 'Your build command (hugo build/yarn run build/etc)',
-      answer: answerWithValue('custom-build-command'),
+      answer: answerWithValue(command),
     },
     {
       question: 'Directory to deploy (blank for current dir)',
-      answer: answerWithValue('custom-publish'),
+      answer: answerWithValue(publish),
     },
     {
       question: 'Netlify functions folder',
-      answer: answerWithValue('custom-functions'),
+      answer: answerWithValue(functions),
     },
     {
       question: 'No netlify.toml detected',
@@ -103,14 +68,30 @@ test('netlify init existing site', async (t) => {
       response: [siteInfo],
     },
     { path: 'deploy_keys', method: 'post', response: { public_key: 'public_key' } },
-    { path: 'sites/site_id', method: 'patch', response: { deploy_hook: 'deploy_hook' } },
+    {
+      path: 'sites/site_id',
+      method: 'patch',
+      response: { deploy_hook: 'deploy_hook' },
+      requestBody: {
+        plugins: [],
+        repo: {
+          allowed_branches: ['main'],
+          cmd: command,
+          dir: publish,
+          provider: 'manual',
+          repo_branch: 'main',
+          repo_path: 'git@github.com:owner/repo.git',
+          functions_dir: functions,
+        },
+      },
+    },
   ]
 
   await withSiteBuilder('new-site', async (builder) => {
     builder.withGit({ repoUrl: 'git@github.com:owner/repo.git' })
 
     await builder.buildAsync()
-    await withMockApi(routes, async ({ apiUrl, requests }) => {
+    await withMockApi(routes, async ({ apiUrl }) => {
       // --force is required since we return an existing site in the `sites` route
       // --manual is used to avoid the config-github flow that uses GitHub API
       const childProcess = execa(cliPath, ['init', '--force', '--manual'], {
@@ -123,12 +104,13 @@ test('netlify init existing site', async (t) => {
 
       await childProcess
 
-      await assertSiteInit(t, builder, requests)
+      await assertNetlifyToml(t, builder, { command, functions, publish })
     })
   })
 })
 
 test('netlify init new site', async (t) => {
+  const [command, publish, functions] = ['custom-build-command', 'custom-publish', 'custom-functions']
   const initQuestions = [
     {
       question: 'Create & configure a new site',
@@ -138,15 +120,15 @@ test('netlify init new site', async (t) => {
     { question: 'Site name (optional)', answer: answerWithValue('test-site-name') },
     {
       question: 'Your build command (hugo build/yarn run build/etc)',
-      answer: answerWithValue('custom-build-command'),
+      answer: answerWithValue(command),
     },
     {
       question: 'Directory to deploy (blank for current dir)',
-      answer: answerWithValue('custom-publish'),
+      answer: answerWithValue(publish),
     },
     {
       question: 'Netlify functions folder',
-      answer: answerWithValue('custom-functions'),
+      answer: answerWithValue(functions),
     },
     {
       question: 'No netlify.toml detected',
@@ -176,14 +158,30 @@ test('netlify init new site', async (t) => {
       response: { id: 'site_id', name: 'test-site-name' },
     },
     { path: 'deploy_keys', method: 'post', response: { public_key: 'public_key' } },
-    { path: 'sites/site_id', method: 'patch', response: { deploy_hook: 'deploy_hook' } },
+    {
+      path: 'sites/site_id',
+      method: 'patch',
+      response: { deploy_hook: 'deploy_hook' },
+      requestBody: {
+        plugins: [],
+        repo: {
+          allowed_branches: ['main'],
+          cmd: command,
+          dir: publish,
+          provider: 'manual',
+          repo_branch: 'main',
+          repo_path: 'git@github.com:owner/repo.git',
+          functions_dir: functions,
+        },
+      },
+    },
   ]
 
   await withSiteBuilder('new-site', async (builder) => {
     builder.withGit({ repoUrl: 'git@github.com:owner/repo.git' })
 
     await builder.buildAsync()
-    await withMockApi(routes, async ({ apiUrl, requests }) => {
+    await withMockApi(routes, async ({ apiUrl }) => {
       // --manual is used to avoid the config-github flow that uses GitHub API
       const childProcess = execa(cliPath, ['init', '--manual'], {
         cwd: builder.directory,
@@ -195,12 +193,13 @@ test('netlify init new site', async (t) => {
 
       await childProcess
 
-      await assertSiteInit(t, builder, requests)
+      await assertNetlifyToml(t, builder, { command, functions, publish })
     })
   })
 })
 
 test('netlify init new Next.js site', async (t) => {
+  const [command, publish, functions] = ['custom-build-command', 'custom-publish', 'custom-functions']
   const initQuestions = [
     {
       question: 'Create & configure a new site',
@@ -210,15 +209,15 @@ test('netlify init new Next.js site', async (t) => {
     { question: 'Site name (optional)', answer: answerWithValue('test-site-name') },
     {
       question: 'Your build command (hugo build/yarn run build/etc)',
-      answer: answerWithValue('custom-build-command'),
+      answer: answerWithValue(command),
     },
     {
       question: 'Directory to deploy (blank for current dir)',
-      answer: answerWithValue('custom-publish'),
+      answer: answerWithValue(publish),
     },
     {
       question: 'Netlify functions folder',
-      answer: answerWithValue('custom-functions'),
+      answer: answerWithValue(functions),
     },
     {
       question: 'OK to install',
@@ -253,7 +252,23 @@ test('netlify init new Next.js site', async (t) => {
       response: { id: 'site_id', name: 'test-site-name' },
     },
     { path: 'deploy_keys', method: 'post', response: { public_key: 'public_key' } },
-    { path: 'sites/site_id', method: 'patch', response: { deploy_hook: 'deploy_hook' } },
+    {
+      path: 'sites/site_id',
+      method: 'patch',
+      response: { deploy_hook: 'deploy_hook' },
+      requestBody: {
+        plugins: [{ package: '@netlify/plugin-nextjs' }],
+        repo: {
+          allowed_branches: ['main'],
+          cmd: command,
+          dir: publish,
+          provider: 'manual',
+          repo_branch: 'main',
+          repo_path: 'git@github.com:owner/repo.git',
+          functions_dir: functions,
+        },
+      },
+    },
   ]
 
   await withSiteBuilder('new-site', async (builder) => {
@@ -262,7 +277,7 @@ test('netlify init new Next.js site', async (t) => {
       .withPackageJson({ packageJson: { dependencies: { next: '^10.0.0' } } })
 
     await builder.buildAsync()
-    await withMockApi(routes, async ({ apiUrl, requests }) => {
+    await withMockApi(routes, async ({ apiUrl }) => {
       // --manual is used to avoid the config-github flow that uses GitHub API
       const childProcess = execa(cliPath, ['init', '--manual'], {
         cwd: builder.directory,
@@ -273,12 +288,13 @@ test('netlify init new Next.js site', async (t) => {
 
       await childProcess
 
-      await assertSiteInit(t, builder, requests, { plugins: [{ package: '@netlify/plugin-nextjs' }] })
+      await assertNetlifyToml(t, builder, { command, functions, publish })
     })
   })
 })
 
-test('netlify init existing Next.js site with existing plugins', async (t) => {
+test('netlify init existing Next.js site with existing plugins', async () => {
+  const [command, publish, functions] = ['custom-build-command', 'custom-publish', 'custom-functions']
   const initQuestions = [
     {
       question: 'Create & configure a new site',
@@ -290,15 +306,15 @@ test('netlify init existing Next.js site with existing plugins', async (t) => {
     },
     {
       question: 'Your build command (hugo build/yarn run build/etc)',
-      answer: answerWithValue('custom-build-command'),
+      answer: answerWithValue(command),
     },
     {
       question: 'Directory to deploy (blank for current dir)',
-      answer: answerWithValue('custom-publish'),
+      answer: answerWithValue(publish),
     },
     {
       question: 'Netlify functions folder',
-      answer: answerWithValue('custom-functions'),
+      answer: answerWithValue(functions),
     },
     {
       question: 'OK to install',
@@ -329,7 +345,23 @@ test('netlify init existing Next.js site with existing plugins', async (t) => {
       response: [siteInfo],
     },
     { path: 'deploy_keys', method: 'post', response: { public_key: 'public_key' } },
-    { path: 'sites/site_id', method: 'patch', response: { deploy_hook: 'deploy_hook' } },
+    {
+      path: 'sites/site_id',
+      method: 'patch',
+      response: { deploy_hook: 'deploy_hook' },
+      requestBody: {
+        plugins: [{ package: '@netlify/plugin-lighthouse' }, { package: '@netlify/plugin-nextjs' }],
+        repo: {
+          allowed_branches: ['main'],
+          cmd: command,
+          dir: publish,
+          provider: 'manual',
+          repo_branch: 'main',
+          repo_path: 'git@github.com:owner/repo.git',
+          functions_dir: functions,
+        },
+      },
+    },
   ]
 
   await withSiteBuilder('new-site', async (builder) => {
@@ -338,7 +370,7 @@ test('netlify init existing Next.js site with existing plugins', async (t) => {
       .withPackageJson({ packageJson: { dependencies: { next: '^10.0.0' } } })
 
     await builder.buildAsync()
-    await withMockApi(routes, async ({ apiUrl, requests }) => {
+    await withMockApi(routes, async ({ apiUrl }) => {
       // --force is required since we return an existing site in the `sites` route
       // --manual is used to avoid the config-github flow that uses GitHub API
       const childProcess = execa(cliPath, ['init', '--force', '--manual'], {
@@ -350,10 +382,6 @@ test('netlify init existing Next.js site with existing plugins', async (t) => {
       handleQuestions(childProcess, initQuestions)
 
       await childProcess
-
-      assetSiteRequests(t, requests, {
-        plugins: [{ package: '@netlify/plugin-lighthouse' }, { package: '@netlify/plugin-nextjs' }],
-      })
     })
   })
 })
