@@ -57,9 +57,9 @@ test('env:set --json should create and return new var', async (t) => {
       {
         path: 'sites/site_id',
         method: 'PATCH',
-        requestBody: JSON.stringify({
+        requestBody: {
           build_settings: newBuildSettings,
-        }),
+        },
         response: {
           ...siteInfo,
           build_settings: newBuildSettings,
@@ -94,9 +94,9 @@ test('env:set --json should update existing var', async (t) => {
       {
         path: 'sites/site_id',
         method: 'PATCH',
-        requestBody: JSON.stringify({
+        requestBody: {
           build_settings: newBuildSettings,
-        }),
+        },
         response: {
           ...siteInfo,
           build_settings: newBuildSettings,
@@ -170,9 +170,9 @@ test('env:import --json should import new vars and override existing vars', asyn
       {
         path: 'sites/site_id',
         method: 'PATCH',
-        requestBody: JSON.stringify({
+        requestBody: {
           build_settings: newBuildSettings,
-        }),
+        },
         response: {
           ...siteInfo,
           build_settings: newBuildSettings,
@@ -256,9 +256,9 @@ test('env:set --json should be able to set var with empty value', async (t) => {
       {
         path: 'sites/site_id',
         method: 'PATCH',
-        requestBody: JSON.stringify({
+        requestBody: {
           build_settings: newBuildSettings,
-        }),
+        },
         response: {
           ...siteInfo,
           build_settings: newBuildSettings,
@@ -289,9 +289,9 @@ test('env:unset --json should remove existing variable', async (t) => {
       {
         path: 'sites/site_id',
         method: 'PATCH',
-        requestBody: JSON.stringify({
+        requestBody: {
           build_settings: newBuildSettings,
-        }),
+        },
         response: {
           ...siteInfo,
           build_settings: newBuildSettings,
@@ -329,9 +329,9 @@ test('env:import --json --replace-existing should replace all existing vars and 
       {
         path: 'sites/site_id',
         method: 'PATCH',
-        requestBody: JSON.stringify({
+        requestBody: {
           build_settings: newBuildSettings,
-        }),
+        },
         response: {
           ...siteInfo,
           build_settings: newBuildSettings,
