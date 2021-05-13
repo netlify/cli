@@ -83,7 +83,7 @@ const logGitSetupInstructionsAndExit = ({ log, exit }) => {
 
 6. Push up your files
 
-   ${chalk.cyanBright.bold('git push -u origin master')}
+   ${chalk.cyanBright.bold('git push -u origin main')}
 
 7. Initialize your Netlify Site
 
