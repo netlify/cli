@@ -72,6 +72,7 @@ module.exports = async function configManual({ context, siteId, repoData }) {
     allowed_branches: [repoData.branch],
     deploy_key_id: deployKey.id,
     dir: buildDir,
+    functions_dir: functionsDir,
     ...(buildCmd && { cmd: buildCmd }),
   }
 
@@ -80,7 +81,6 @@ module.exports = async function configManual({ context, siteId, repoData }) {
     failAndExit,
     siteId,
     repo,
-    functionsDir,
     configPlugins: config.plugins,
     pluginsToInstall,
   })

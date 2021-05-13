@@ -202,6 +202,7 @@ module.exports = async function configGithub({ context, siteId, repoOwner, repoN
     allowed_branches: [githubRepo.default_branch],
     deploy_key_id: deployKey.id,
     dir: buildDir,
+    functions_dir: functionsDir,
     ...(buildCmd && { cmd: buildCmd }),
   }
 
@@ -211,7 +212,6 @@ module.exports = async function configGithub({ context, siteId, repoOwner, repoN
     failAndExit,
     siteId,
     repo,
-    functionsDir,
     configPlugins: config.plugins,
     pluginsToInstall,
   })

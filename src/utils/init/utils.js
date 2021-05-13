@@ -218,20 +218,13 @@ const updateSite = async ({ siteId, api, failAndExit, options }) => {
   }
 }
 
-const setupSite = async ({ api, failAndExit, siteId, repo, functionsDir, configPlugins, pluginsToInstall }) => {
-  await updateSite({
+const setupSite = async ({ api, failAndExit, siteId, repo, configPlugins, pluginsToInstall }) => {
+  const updatedSite = await updateSite({
     siteId,
     api,
     failAndExit,
     // merge existing plugins with new ones
     options: { repo, plugins: [...getUIPlugins(configPlugins), ...pluginsToInstall] },
-  })
-  // calling updateSite with { repo } resets the functions dir so we need to sync it
-  const updatedSite = await updateSite({
-    siteId,
-    api,
-    failAndExit,
-    options: { build_settings: { functions_dir: functionsDir } },
   })
 
   return updatedSite
