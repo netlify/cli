@@ -180,7 +180,7 @@
     "through2-filter": "^3.0.0",
     "through2-map": "^3.0.0",
     "to-readable-stream": "^2.1.0",
-    "update-notifier": "^4.0.0",
+    "update-notifier": "^5.0.0",
     "uuid": "^8.0.0",
     "wait-port": "^0.2.2",
     "which": "^2.0.2",
