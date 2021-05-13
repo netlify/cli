@@ -15,8 +15,12 @@ class LinkCommand extends Command {
     await this.authenticate()
 
     const { flags } = this.parse(LinkCommand)
-    const { api, site, state } = this.netlify
-    const siteId = site.id
+    const {
+      api,
+      repositoryRoot,
+      site: { id: siteId },
+      state,
+    } = this.netlify
 
     await this.config.runHook('analytics', {
       eventName: 'command',
@@ -33,7 +37,7 @@ class LinkCommand extends Command {
     }
 
     // Add .netlify to .gitignore file
-    await ensureNetlifyIgnore(site.root)
+    await ensureNetlifyIgnore(repositoryRoot)
 
     // Site id is incorrect
     if (siteId && !siteData) {
