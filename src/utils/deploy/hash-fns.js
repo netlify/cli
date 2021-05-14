@@ -28,6 +28,10 @@ const hashFns = async (
     runtime,
   }))
 
+  const functionsWithNativeModules = functionZips.filter(
+    ({ nativeNodeModules }) => nativeNodeModules !== undefined && Object.keys(nativeNodeModules).length !== 0,
+  )
+
   const functionStream = fromArray.obj(fileObjs)
 
   const hasher = hasherCtor({ concurrentHash, hashAlgorithm })
@@ -41,7 +45,7 @@ const hashFns = async (
 
   await pump(functionStream, hasher, manifestCollector)
 
-  return { functions, fnShaMap }
+  return { functions, functionsWithNativeModules, fnShaMap }
 }
 
 module.exports = { hashFns }
