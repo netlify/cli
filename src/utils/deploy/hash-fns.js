@@ -12,7 +12,7 @@ const hashFns = async (
   { tmpDir, concurrentHash, functionsConfig, hashAlgorithm = 'sha256', assetType = 'function', statusCb },
 ) => {
   // early out if the functions dir is omitted
-  if (!dir) return { functions: {}, shaMap: {} }
+  if (!dir) return { functions: {}, functionsWithNativeModules: [], shaMap: {} }
   if (!tmpDir) throw new Error('Missing tmpDir directory for zipping files')
 
   const functionZips = await zipIt.zipFunctions(dir, tmpDir, { config: functionsConfig })
