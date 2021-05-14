@@ -23,7 +23,7 @@ jobs:
           - { os: macOS-latest, shell: bash }
           - { os: ubuntu-latest, shell: bash }
           - { os: windows-latest, shell: cmd }
-        node-version: [10.x, 15.x]
+        node-version: [10.x, 16.x]
         exclude:
           - config: { os: macOS-latest, shell: bash }
             node-version: 10.x
@@ -50,7 +50,7 @@ jobs:
         run: npm run site:build:install
       - name: Linting
         run: npm run format:ci
-        if: "${{ matrix.node-version == '15.x' }}"
+        if: "${{ matrix.node-version == '16.x' }}"
       - name: Tests
         run: npm run test:ci
         env:
