@@ -10,7 +10,6 @@ const isObject = require('lodash/isObject')
 const logSymbols = require('log-symbols')
 const ora = require('ora')
 const prettyjson = require('prettyjson')
-const randomItem = require('random-item')
 
 const { normalizeFunctionsConfig } = require('../function-builder-detectors/zisi')
 const { cancelDeploy } = require('../lib/api')
@@ -630,6 +629,7 @@ const deployProgressCb = function () {
   return (ev) => {
     switch (ev.phase) {
       case 'start': {
+        const randomItem = (arr) => arr[Math.floor(Math.random() * arr.length)]
         const spinner = ev.spinner || randomItem(cliSpinnerNames)
         events[ev.type] = ora({
           text: ev.msg,

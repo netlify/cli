@@ -19,7 +19,6 @@
         'ansi-styles',
         'is-plain-obj',
         'log-symbols',
-        'random-item',
         'wrap-ansi',
         'better-opn',
         'to-readable-stream',
