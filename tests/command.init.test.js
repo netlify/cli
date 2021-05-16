@@ -88,9 +88,8 @@ test('netlify init existing site', async (t) => {
   ]
 
   await withSiteBuilder('new-site', async (builder) => {
-    builder.withGit({ repoUrl: 'git@github.com:owner/repo.git' })
+    await builder.withGit().buildAsync()
 
-    await builder.buildAsync()
     await withMockApi(routes, async ({ apiUrl }) => {
       // --force is required since we return an existing site in the `sites` route
       // --manual is used to avoid the config-github flow that uses GitHub API
@@ -178,9 +177,8 @@ test('netlify init new site', async (t) => {
   ]
 
   await withSiteBuilder('new-site', async (builder) => {
-    builder.withGit({ repoUrl: 'git@github.com:owner/repo.git' })
+    await builder.withGit().buildAsync()
 
-    await builder.buildAsync()
     await withMockApi(routes, async ({ apiUrl }) => {
       // --manual is used to avoid the config-github flow that uses GitHub API
       const childProcess = execa(cliPath, ['init', '--manual'], {
@@ -272,11 +270,11 @@ test('netlify init new Next.js site', async (t) => {
   ]
 
   await withSiteBuilder('new-site', async (builder) => {
-    builder
-      .withGit({ repoUrl: 'git@github.com:owner/repo.git' })
+    await builder
+      .withGit()
       .withPackageJson({ packageJson: { dependencies: { next: '^10.0.0' } } })
+      .buildAsync()
 
-    await builder.buildAsync()
     await withMockApi(routes, async ({ apiUrl }) => {
       // --manual is used to avoid the config-github flow that uses GitHub API
       const childProcess = execa(cliPath, ['init', '--manual'], {
@@ -365,11 +363,11 @@ test('netlify init existing Next.js site with existing plugins', async () => {
   ]
 
   await withSiteBuilder('new-site', async (builder) => {
-    builder
-      .withGit({ repoUrl: 'git@github.com:owner/repo.git' })
+    await builder
+      .withGit()
       .withPackageJson({ packageJson: { dependencies: { next: '^10.0.0' } } })
+      .buildAsync()
 
-    await builder.buildAsync()
     await withMockApi(routes, async ({ apiUrl }) => {
       // --force is required since we return an existing site in the `sites` route
       // --manual is used to avoid the config-github flow that uses GitHub API

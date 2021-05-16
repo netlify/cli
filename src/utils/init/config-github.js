@@ -179,14 +179,19 @@ module.exports = async function configGithub({ context, siteId, repoOwner, repoN
     api,
     globalConfig,
     config,
-    site: { root: siteRoot },
-    cachedConfig: { env },
+    repositoryRoot,
+    cachedConfig: { env, configPath },
   } = netlify
 
   const token = await getGitHubToken({ log, globalConfig })
 
-  const { buildCmd, buildDir, functionsDir, pluginsToInstall } = await getBuildSettings({ siteRoot, config, env, warn })
-  await saveNetlifyToml({ siteRoot, config, buildCmd, buildDir, functionsDir, warn })
+  const { baseDir, buildCmd, buildDir, functionsDir, pluginsToInstall } = await getBuildSettings({
+    repositoryRoot,
+    config,
+    env,
+    warn,
+  })
+  await saveNetlifyToml({ repositoryRoot, config, configPath, baseDir, buildCmd, buildDir, functionsDir, warn })
 
   const octokit = getGitHubClient({ token })
   const [deployKey, githubRepo] = await Promise.all([
@@ -201,12 +206,12 @@ module.exports = async function configGithub({ context, siteId, repoOwner, repoN
     repo_branch: githubRepo.default_branch,
     allowed_branches: [githubRepo.default_branch],
     deploy_key_id: deployKey.id,
+    base: baseDir,
     dir: buildDir,
     functions_dir: functionsDir,
     ...(buildCmd && { cmd: buildCmd }),
   }
 
-  // calling updateSite with { repo } resets the functions dir so we need to sync it
   const updatedSite = await setupSite({
     api,
     failAndExit,

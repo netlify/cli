@@ -1,7 +1,7 @@
 const { listFrameworks } = require('@netlify/framework-info')
 
-const getFrameworkInfo = async ({ siteRoot, nodeVersion }) => {
-  const frameworks = await listFrameworks({ projectDir: siteRoot, nodeVersion })
+const getFrameworkInfo = async ({ baseDirectory, nodeVersion }) => {
+  const frameworks = await listFrameworks({ projectDir: baseDirectory, nodeVersion })
   // several frameworks can be detected - first one has highest priority
   if (frameworks.length !== 0) {
     const [

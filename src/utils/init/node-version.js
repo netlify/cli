@@ -11,9 +11,9 @@ const NVM_FLAG_PREFIX = '--'
 const normalizeConfiguredVersion = (version) =>
   version.startsWith(NVM_FLAG_PREFIX) ? version.slice(NVM_FLAG_PREFIX.length) : version
 
-const detectNodeVersion = async ({ siteRoot, env, warn }) => {
+const detectNodeVersion = async ({ baseDirectory, env, warn }) => {
   try {
-    const nodeVersionFile = await locatePath(['.nvmrc', '.node-version'], { cwd: siteRoot })
+    const nodeVersionFile = await locatePath(['.nvmrc', '.node-version'], { cwd: baseDirectory })
     const configuredVersion =
       nodeVersionFile === undefined ? get(env, 'NODE_VERSION.value') : await readFileAsync(nodeVersionFile, 'utf8')
 
