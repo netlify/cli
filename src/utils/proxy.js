@@ -16,7 +16,7 @@ const pEvent = require('p-event')
 const pFilter = require('p-filter')
 const toReadableStream = require('to-readable-stream')
 
-const { readFileAsync, fileExistsAsync, isFileAsync } = require('../lib/fs.js')
+const { readFileAsync, fileExistsAsync, isFileAsync } = require('../lib/fs')
 
 const { createStreamPromise } = require('./create-stream-promise')
 const { parseHeadersFile, headersForPath } = require('./headers')

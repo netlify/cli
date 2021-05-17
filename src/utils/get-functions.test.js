@@ -5,7 +5,7 @@ const sortOn = require('sort-on')
 
 const { withSiteBuilder } = require('../../tests/utils/site-builder')
 
-const { getFunctions, getFunctionsAndWatchDirs } = require('./get-functions.js')
+const { getFunctions, getFunctionsAndWatchDirs } = require('./get-functions')
 
 test('should return empty object when an empty string is provided', async (t) => {
   const funcs = await getFunctions('')
