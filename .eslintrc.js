@@ -51,6 +51,7 @@ module.exports = {
         'fp/no-let': 0,
         'fp/no-this': 0,
         'fp/no-mutation': 0,
+        'import/extensions': [2, 'always'],
         'node/no-unsupported-features/es-syntax': 0,
         'unicorn/consistent-destructuring': 0,
         'max-lines': 0,
