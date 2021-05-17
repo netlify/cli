@@ -13,7 +13,7 @@ const {
 } = require('../lib/fs')
 const { getPathInHome, getLegacyPathInHome } = require('../lib/settings')
 
-const getGlobalConfig = require('./get-global-config.js')
+const getGlobalConfig = require('./get-global-config')
 
 const configPath = getPathInHome(['config.json'])
 const legacyConfigPath = getLegacyPathInHome(['config.json'])

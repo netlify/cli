@@ -1,6 +1,6 @@
 const { ApolloServer, gql } = require('apollo-server-lambda')
 
-const RandomUser = require('./random-user.js')
+const RandomUser = require('./random-user')
 // example from: https://medium.com/yld-engineering-blog/easier-graphql-wrappers-for-your-rest-apis-1410b0b5446d
 
 const typeDefs = gql`

@@ -4,7 +4,7 @@ const test = require('ava')
 
 const { createSiteBuilder } = require('../../tests/utils/site-builder')
 
-const { parseHeadersFile, headersForPath, matchesPath } = require('./headers.js')
+const { parseHeadersFile, headersForPath, matchesPath } = require('./headers')
 
 const headers = [
   { path: '/', headers: ['X-Frame-Options: SAMEORIGIN'] },
