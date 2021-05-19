@@ -14,7 +14,7 @@
         "@netlify/config": "^6.5.0",
         "@netlify/framework-info": "^4.1.0",
         "@netlify/plugin-edge-handlers": "^1.11.9",
-        "@netlify/plugins-list": "^2.13.0",
+        "@netlify/plugins-list": "^2.14.0",
         "@netlify/traffic-mesh-agent": "^0.27.10",
         "@netlify/zip-it-and-ship-it": "^4.0.1",
         "@oclif/command": "^1.6.1",
@@ -2911,9 +2911,9 @@
       }
     },
     "node_modules/@netlify/plugins-list": {
-      "version": "2.13.0",
-      "resolved": "https://registry.npmjs.org/@netlify/plugins-list/-/plugins-list-2.13.0.tgz",
-      "integrity": "sha512-2msQGI+kLOMfoOqY0tQ/zdFljhUI2Qsulr0O2zyLo/J4KNdTaC8FIMerP4iXYpUjKXjx55N8Uin7Jl6OZNTZ9w==",
+      "version": "2.14.0",
+      "resolved": "https://registry.npmjs.org/@netlify/plugins-list/-/plugins-list-2.14.0.tgz",
+      "integrity": "sha512-drh0CarHMhJCBcVJL8smpoFcAb7nRRsXwUmVW3dcXRC+0xF0/ocvrJ3F/fNhPet6WcGx0QTn3w5xmSffGyxJ5A==",
       "engines": {
         "node": ">=8.3.0"
       }
@@ -23453,9 +23453,9 @@
       }
     },
     "@netlify/plugins-list": {
-      "version": "2.13.0",
-      "resolved": "https://registry.npmjs.org/@netlify/plugins-list/-/plugins-list-2.13.0.tgz",
-      "integrity": "sha512-2msQGI+kLOMfoOqY0tQ/zdFljhUI2Qsulr0O2zyLo/J4KNdTaC8FIMerP4iXYpUjKXjx55N8Uin7Jl6OZNTZ9w=="
+      "version": "2.14.0",
+      "resolved": "https://registry.npmjs.org/@netlify/plugins-list/-/plugins-list-2.14.0.tgz",
+      "integrity": "sha512-drh0CarHMhJCBcVJL8smpoFcAb7nRRsXwUmVW3dcXRC+0xF0/ocvrJ3F/fNhPet6WcGx0QTn3w5xmSffGyxJ5A=="
     },
     "@netlify/run-utils": {
       "version": "1.0.7",
