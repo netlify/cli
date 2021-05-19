@@ -22,7 +22,8 @@ jobs:
         if: ${{ steps.release.outputs.release_created }}
       - uses: actions/setup-node@v2
         with:
-          node-version: '16'
+          node-version: '*'
+          check-latest: true
           registry-url: 'https://registry.npmjs.org'
         if: ${{ steps.release.outputs.release_created }}
       # required for linting to pass
