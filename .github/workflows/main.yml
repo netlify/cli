@@ -67,7 +67,7 @@ jobs:
           os=${{ matrix.config.os }}
           node=${{ matrix.node-version }}
           echo "::set-output name=os::${os/-latest/}"
-          echo "::set-output name=node::node_${node//./}"
+          echo "::set-output name=node::node_${node//[.*]/}"
         shell: bash
       - uses: codecov/codecov-action@v1
         with:
