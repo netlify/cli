@@ -40,6 +40,7 @@ const deploySite = async (
     },
     syncFileLimit = DEFAULT_SYNC_LIMIT,
     tmpDir = tempy.directory(),
+    warn,
   } = {},
 ) => {
   statusCb({
@@ -48,7 +49,7 @@ const deploySite = async (
     phase: 'start',
   })
 
-  const [{ files, filesShaMap }, { functions, fnShaMap }] = await Promise.all([
+  const [{ files, filesShaMap }, { functions, functionsWithNativeModules, fnShaMap }] = await Promise.all([
     hashFiles(dir, configPath, { concurrentHash, hashAlgorithm, assetType, statusCb, filter }),
     hashFns(fnDir, { functionsConfig, tmpDir, concurrentHash, hashAlgorithm, statusCb, assetType }),
   ])
@@ -64,6 +65,19 @@ const deploySite = async (
 
   if (filesCount === 0 && functionsCount === 0) {
     throw new Error('No files or functions to deploy')
+  }
+
+  if (functionsWithNativeModules.length !== 0) {
+    warn(`Modules with native dependencies\n
+${functionsWithNativeModules.map(({ name }) => `- ${name}`).join('\n')}    
+
+The serverless functions above use Node.js modules with native dependencies, which
+must be installed on a system with the same architecture as the function runtime. A
+mismatch in the system and runtime may lead to errors when invoking your functions.
+To ensure your functions work as expected, we recommend using continuous deployment
+instead of manual deployment.
+
+For more information, visit https://ntl.fyi/cli-native-modules.`)
   }
 
   statusCb({

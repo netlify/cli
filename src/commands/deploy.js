@@ -276,6 +276,7 @@ const runDeploy = async ({
       // pass an existing deployId to update
       deployId,
       filter: getDeployFilesFilter({ site, deployFolder }),
+      warn,
     })
   } catch (error_) {
     if (deployId) {

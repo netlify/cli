@@ -12,7 +12,7 @@ const hashFns = async (
   { tmpDir, concurrentHash, functionsConfig, hashAlgorithm = 'sha256', assetType = 'function', statusCb },
 ) => {
   // early out if the functions dir is omitted
-  if (!dir) return { functions: {}, shaMap: {} }
+  if (!dir) return { functions: {}, functionsWithNativeModules: [], shaMap: {} }
   if (!tmpDir) throw new Error('Missing tmpDir directory for zipping files')
 
   const functionZips = await zipIt.zipFunctions(dir, tmpDir, { config: functionsConfig })
@@ -28,6 +28,10 @@ const hashFns = async (
     runtime,
   }))
 
+  const functionsWithNativeModules = functionZips.filter(
+    ({ nativeNodeModules }) => nativeNodeModules !== undefined && Object.keys(nativeNodeModules).length !== 0,
+  )
+
   const functionStream = fromArray.obj(fileObjs)
 
   const hasher = hasherCtor({ concurrentHash, hashAlgorithm })
@@ -41,7 +45,7 @@ const hashFns = async (
 
   await pump(functionStream, hasher, manifestCollector)
 
-  return { functions, fnShaMap }
+  return { functions, functionsWithNativeModules, fnShaMap }
 }
 
 module.exports = { hashFns }
