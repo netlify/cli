@@ -3,7 +3,7 @@ const process = require('process')
 
 const fetch = require('fetch')
 const FormData = require('form-data')
-const Hashids = require('hashids')
+const Hashids = require('hashids/cjs')
 
 const NUMBER_TO_CODE = 100
 
