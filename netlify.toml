@@ -13,13 +13,13 @@
 [[redirects]]
   # Telemetry link
   from = "/telemetry/track"
-  to = "https://api.netlify-services.com/telemetry/track"
+  to = "https://cli-telemetry.netlify.engineering/track"
   status = 200
   force = false
 [[redirects]]
    # Telemetry link
   from = "/telemetry/identify"
-  to = "https://api.netlify-services.com/telemetry/identify"
+  to = "https://cli-telemetry.netlify.engineering/identify"
   status = 200
   force = false
 [[redirects]]
