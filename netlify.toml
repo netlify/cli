@@ -14,13 +14,13 @@
   # Telemetry link
   from = "/telemetry/track"
   to = "https://cli-telemetry.netlify.engineering/.netlify/functions/track"
-  status = 200
+  status = 302
   force = false
 [[redirects]]
    # Telemetry link
   from = "/telemetry/identify"
   to = "https://cli-telemetry.netlify.engineering/.netlify/functions/identify"
-  status = 200
+  status = 302
   force = false
 [[redirects]]
   # Old CLI download links.
