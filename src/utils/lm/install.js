@@ -17,6 +17,7 @@ const {
   copyFileAsync,
   rmdirRecursiveAsync,
 } = require('../../lib/fs')
+const { normalizeBackslash } = require('../../lib/path')
 const { getPathInHome, getLegacyPathInHome } = require('../../lib/settings')
 
 const PACKAGE_NAME = 'netlify-credential-helper'
@@ -191,7 +192,7 @@ const getCurrentCredentials = async () => {
 const getGitConfigContent = (gitConfigPath) => `
 # This next lines include Netlify's Git Credential Helper configuration in your Git configuration.
 [include]
-  path = ${gitConfigPath.replace(/\\/g, '/')}
+  path = ${normalizeBackslash(gitConfigPath)}
 `
 
 const configureGitConfig = async function () {

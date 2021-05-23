@@ -8,6 +8,7 @@ const inquirer = require('inquirer')
 const isEmpty = require('lodash/isEmpty')
 
 const { fileExistsAsync, writeFileAsync } = require('../../lib/fs')
+const { normalizeBackslash } = require('../../lib/path')
 
 const { getFrameworkInfo } = require('./frameworks')
 const { detectNodeVersion } = require('./node-version')
@@ -164,7 +165,10 @@ const getBuildSettings = async ({ repositoryRoot, config, env, warn }) => {
     installSinglePlugin,
     recommendedPlugins,
   })
-  return { baseDir, buildCmd, buildDir, functionsDir, pluginsToInstall }
+
+  const normalizedBaseDir = baseDir ? normalizeBackslash(baseDir) : undefined
+
+  return { baseDir: normalizedBaseDir, buildCmd, buildDir, functionsDir, pluginsToInstall }
 }
 
 const getNetlifyToml = ({
