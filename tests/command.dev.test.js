@@ -6,6 +6,7 @@ const process = require('process')
 
 // eslint-disable-next-line ava/use-test
 const avaTest = require('ava')
+const { isCI } = require('ci-info')
 const dotProp = require('dot-prop')
 const FormData = require('form-data')
 const jwt = require('jsonwebtoken')
@@ -29,7 +30,7 @@ const gotCatch404 = async (url, options) => {
   }
 }
 
-const test = process.env.CI === 'true' ? avaTest.serial.bind(avaTest) : avaTest
+const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
 
 const testMatrix = [
   { args: [] },

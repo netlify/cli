@@ -13,6 +13,7 @@ const { withDevServer } = require('./utils/dev-server')
 const got = require('./utils/got')
 const { handleQuestions, answerWithValue, CONFIRM } = require('./utils/handle-questions')
 const { withMockApi } = require('./utils/mock-api')
+const { killProcess } = require('./utils/process')
 const { withSiteBuilder } = require('./utils/site-builder')
 
 test('should return function response when invoked', async (t) => {
@@ -155,12 +156,11 @@ test('should not create a new function directory when one is found', async (t) =
 })
 
 const DEFAULT_PORT = 9999
-const SERVE_TIMEOUT = 300000
+const SERVE_TIMEOUT = 60000
 
-const withFunctionsServer = async ({ builder, port = DEFAULT_PORT }, testHandler) => {
+const withFunctionsServer = async ({ builder, args = [], port = DEFAULT_PORT }, testHandler) => {
   let ps
   try {
-    const args = port === DEFAULT_PORT ? [] : ['--port', port]
     ps = execa(cliPath, ['functions:serve', ...args], {
       cwd: builder.directory,
     })
@@ -178,9 +178,7 @@ const withFunctionsServer = async ({ builder, port = DEFAULT_PORT }, testHandler
     }
     return await testHandler()
   } finally {
-    ps.kill('SIGTERM', {
-      forceKillAfterTimeout: 200,
-    })
+    await killProcess(ps)
   }
 }
 
@@ -218,7 +216,7 @@ test('should serve functions on custom port', async (t) => {
       .buildAsync()
 
     const port = await getPort()
-    await withFunctionsServer({ builder, port }, async () => {
+    await withFunctionsServer({ builder, args: ['--port', port], port }, async () => {
       const response = await got(`http://localhost:${port}/.netlify/functions/ping`).text()
       t.is(response, 'ping')
     })
@@ -242,7 +240,7 @@ test('should use settings from netlify.toml dev', async (t) => {
       })
       .buildAsync()
 
-    await withFunctionsServer({ builder }, async () => {
+    await withFunctionsServer({ builder, port }, async () => {
       const response = await got(`http://localhost:${port}/.netlify/functions/ping`).text()
       t.is(response, 'ping')
     })
