@@ -55,11 +55,13 @@ module.exports = async function configManual({ context, siteId, repoData }) {
     api,
     config,
     repositoryRoot,
+    site: { root: siteRoot },
     cachedConfig: { env, configPath },
   } = netlify
 
   const { baseDir, buildCmd, buildDir, functionsDir, pluginsToInstall } = await getBuildSettings({
     repositoryRoot,
+    siteRoot,
     config,
     env,
     warn,

@@ -127,10 +127,11 @@ const getPromptInputs = async ({
   ]
 }
 
-const getBaseDirectory = ({ config }) => config.build.base || process.cwd()
+// `repositoryRoot === siteRoot` means the base directory wasn't detected by @netlify/config, so we use cwd()
+const getBaseDirectory = ({ repositoryRoot, siteRoot }) => (repositoryRoot === siteRoot ? process.cwd() : siteRoot)
 
-const getBuildSettings = async ({ repositoryRoot, config, env, warn }) => {
-  const baseDirectory = getBaseDirectory({ config })
+const getBuildSettings = async ({ repositoryRoot, siteRoot, config, env, warn }) => {
+  const baseDirectory = getBaseDirectory({ repositoryRoot, siteRoot })
   const nodeVersion = await detectNodeVersion({ baseDirectory, env, warn })
   const {
     frameworkName,

@@ -180,6 +180,7 @@ module.exports = async function configGithub({ context, siteId, repoOwner, repoN
     globalConfig,
     config,
     repositoryRoot,
+    site: { root: siteRoot },
     cachedConfig: { env, configPath },
   } = netlify
 
@@ -187,6 +188,7 @@ module.exports = async function configGithub({ context, siteId, repoOwner, repoN
 
   const { baseDir, buildCmd, buildDir, functionsDir, pluginsToInstall } = await getBuildSettings({
     repositoryRoot,
+    siteRoot,
     config,
     env,
     warn,
