@@ -4,10 +4,10 @@ const process = require('process')
 const execa = require('execa')
 const getPort = require('get-port')
 const pTimeout = require('p-timeout')
-const pidtree = require('pidtree')
 const seedrandom = require('seedrandom')
 
 const cliPath = require('./cli-path')
+const { killProcess } = require('./process')
 
 // each process gets a starting port based on the pid
 const rng = seedrandom(`${process.pid}`)
@@ -51,21 +51,7 @@ const startServer = async ({ cwd, env = {}, args = [] }) => {
           port,
           close: async () => {
             selfKilled = true
-            const pids = await pidtree(ps.pid).catch(() => [])
-            pids.forEach((pid) => {
-              try {
-                process.kill(pid)
-              } catch (error) {
-                // no-op
-              }
-            })
-            ps.kill()
-            await pTimeout(
-              ps.catch(() => {}),
-              SERVER_EXIT_TIMEOUT,
-              // don't reject on timeout
-              () => {},
-            )
+            await killProcess(ps)
           },
         })
       }
@@ -76,9 +62,6 @@ const startServer = async ({ cwd, env = {}, args = [] }) => {
 
   return await pTimeout(serverPromise, SERVER_START_TIMEOUT, () => ({ timeout: true, output }))
 }
-
-// One second
-const SERVER_EXIT_TIMEOUT = 1e3
 
 const startDevServer = async (options) => {
   const maxAttempts = 5
