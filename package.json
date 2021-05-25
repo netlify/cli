@@ -42,7 +42,7 @@
     "url": "https://github.com/netlify/cli/issues"
   },
   "scripts": {
-    "prepublishOnly": "npm ci && run-s test",
+    "prepublishOnly": "npm ci --no-audit && run-s test",
     "start": "node ./bin/run",
     "test": "run-s format test:dev",
     "format": "run-s format:check-fix:*",
@@ -57,8 +57,8 @@
     "test:ci": "run-s test:init:* test:ci:*",
     "test:init:cli-version": "npm run start -- --version",
     "test:init:cli-help": "npm run start -- --help",
-    "test:init:eleventy-deps": "npm ci --prefix tests/eleventy-site",
-    "test:init:hugo-deps": "npm ci --prefix tests/hugo-site",
+    "test:init:eleventy-deps": "npm ci --prefix tests/eleventy-site --no-audit",
+    "test:init:hugo-deps": "npm ci --prefix tests/hugo-site --no-audit",
     "test:dev:ava": "ava --verbose",
     "test:ci:ava": "nyc -r json ava",
     "docs": "node ./site/scripts/docs.js",
@@ -66,7 +66,7 @@
     "prepack": "oclif-dev manifest && npm prune --prod",
     "postpack": "rm -f oclif.manifest.json && npm i",
     "site:build": "run-s site:build:*",
-    "site:build:install": "cd site && npm ci",
+    "site:build:install": "cd site && npm ci --no-audit",
     "site:build:assets": "cd site && npm run build",
     "postinstall": "node ./scripts/postinstall.js"
   },
