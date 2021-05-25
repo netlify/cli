@@ -54,12 +54,19 @@ module.exports = async function configManual({ context, siteId, repoData }) {
   const {
     api,
     config,
+    repositoryRoot,
     site: { root: siteRoot },
-    cachedConfig: { env },
+    cachedConfig: { env, configPath },
   } = netlify
 
-  const { buildCmd, buildDir, functionsDir, pluginsToInstall } = await getBuildSettings({ siteRoot, config, env, warn })
-  await saveNetlifyToml({ siteRoot, config, buildCmd, buildDir, functionsDir, warn })
+  const { baseDir, buildCmd, buildDir, functionsDir, pluginsToInstall } = await getBuildSettings({
+    repositoryRoot,
+    siteRoot,
+    config,
+    env,
+    warn,
+  })
+  await saveNetlifyToml({ repositoryRoot, config, configPath, baseDir, buildCmd, buildDir, functionsDir, warn })
 
   const deployKey = await createDeployKey({ api, failAndExit })
   await addDeployKey({ log, exit, deployKey })
@@ -71,6 +78,7 @@ module.exports = async function configManual({ context, siteId, repoData }) {
     repo_branch: repoData.branch,
     allowed_branches: [repoData.branch],
     deploy_key_id: deployKey.id,
+    base: baseDir,
     dir: buildDir,
     functions_dir: functionsDir,
     ...(buildCmd && { cmd: buildCmd }),

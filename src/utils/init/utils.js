@@ -1,5 +1,6 @@
 const { EOL } = require('os')
 const path = require('path')
+const process = require('process')
 
 const chalk = require('chalk')
 const cleanDeep = require('clean-deep')
@@ -7,21 +8,35 @@ const inquirer = require('inquirer')
 const isEmpty = require('lodash/isEmpty')
 
 const { fileExistsAsync, writeFileAsync } = require('../../lib/fs')
+const { normalizeBackslash } = require('../../lib/path')
 
 const { getFrameworkInfo } = require('./frameworks')
 const { detectNodeVersion } = require('./node-version')
 const { getPluginsList, getPluginInfo, getRecommendPlugins, getPluginsToInstall, getUIPlugins } = require('./plugins')
 
-const normalizeDir = ({ siteRoot, dir, defaultValue }) => {
+const normalizeDir = ({ baseDirectory, dir, defaultValue }) => {
   if (dir === undefined) {
     return defaultValue
   }
 
-  const relativeDir = path.relative(siteRoot, dir)
+  const relativeDir = path.relative(baseDirectory, dir)
   return relativeDir || defaultValue
 }
 
-const getDefaultSettings = ({ siteRoot, config, frameworkPlugins, frameworkBuildCommand, frameworkBuildDir }) => {
+const getDefaultBase = ({ repositoryRoot, baseDirectory }) => {
+  if (baseDirectory !== repositoryRoot && baseDirectory.startsWith(repositoryRoot)) {
+    return path.relative(repositoryRoot, baseDirectory)
+  }
+}
+
+const getDefaultSettings = ({
+  repositoryRoot,
+  config,
+  baseDirectory,
+  frameworkPlugins,
+  frameworkBuildCommand,
+  frameworkBuildDir,
+}) => {
   const recommendedPlugins = getRecommendPlugins(frameworkPlugins, config)
   const {
     command: defaultBuildCmd = frameworkBuildCommand,
@@ -30,9 +45,10 @@ const getDefaultSettings = ({ siteRoot, config, frameworkPlugins, frameworkBuild
   } = config.build
 
   return {
+    defaultBaseDir: getDefaultBase({ repositoryRoot, baseDirectory }),
     defaultBuildCmd,
-    defaultBuildDir: normalizeDir({ siteRoot, dir: defaultBuildDir, defaultValue: '.' }),
-    defaultFunctionsDir: normalizeDir({ siteRoot, dir: defaultFunctionsDir, defaultValue: 'netlify/functions' }),
+    defaultBuildDir: normalizeDir({ baseDirectory, dir: defaultBuildDir, defaultValue: '.' }),
+    defaultFunctionsDir: normalizeDir({ baseDirectory, dir: defaultFunctionsDir, defaultValue: 'netlify/functions' }),
     recommendedPlugins,
   }
 }
@@ -41,10 +57,17 @@ const getPromptInputs = async ({
   defaultBuildCmd,
   defaultBuildDir,
   defaultFunctionsDir,
+  defaultBaseDir,
   recommendedPlugins,
   frameworkName,
 }) => {
   const inputs = [
+    defaultBaseDir !== undefined && {
+      type: 'input',
+      name: 'baseDir',
+      message: 'Base directory (e.g. projects/frontend):',
+      default: defaultBaseDir,
+    },
     {
       type: 'input',
       name: 'buildCmd',
@@ -64,7 +87,7 @@ const getPromptInputs = async ({
       message: 'Netlify functions folder:',
       default: defaultFunctionsDir,
     },
-  ]
+  ].filter(Boolean)
 
   if (recommendedPlugins.length === 0) {
     return inputs
@@ -104,29 +127,37 @@ const getPromptInputs = async ({
   ]
 }
 
-const getBuildSettings = async ({ siteRoot, config, env, warn }) => {
-  const nodeVersion = await detectNodeVersion({ siteRoot, env, warn })
+// `repositoryRoot === siteRoot` means the base directory wasn't detected by @netlify/config, so we use cwd()
+const getBaseDirectory = ({ repositoryRoot, siteRoot }) =>
+  path.normalize(repositoryRoot) === path.normalize(siteRoot) ? process.cwd() : siteRoot
+
+const getBuildSettings = async ({ repositoryRoot, siteRoot, config, env, warn }) => {
+  const baseDirectory = getBaseDirectory({ repositoryRoot, siteRoot })
+  const nodeVersion = await detectNodeVersion({ baseDirectory, env, warn })
   const {
     frameworkName,
     frameworkBuildCommand,
     frameworkBuildDir,
     frameworkPlugins = [],
   } = await getFrameworkInfo({
-    siteRoot,
+    baseDirectory,
     nodeVersion,
   })
-  const { defaultBuildCmd, defaultBuildDir, defaultFunctionsDir, recommendedPlugins } = await getDefaultSettings({
-    siteRoot,
-    config,
-    frameworkBuildCommand,
-    frameworkBuildDir,
-    frameworkPlugins,
-  })
-  const { buildCmd, buildDir, functionsDir, plugins, installSinglePlugin } = await inquirer.prompt(
+  const { defaultBaseDir, defaultBuildCmd, defaultBuildDir, defaultFunctionsDir, recommendedPlugins } =
+    await getDefaultSettings({
+      repositoryRoot,
+      config,
+      baseDirectory,
+      frameworkBuildCommand,
+      frameworkBuildDir,
+      frameworkPlugins,
+    })
+  const { baseDir, buildCmd, buildDir, functionsDir, plugins, installSinglePlugin } = await inquirer.prompt(
     await getPromptInputs({
       defaultBuildCmd,
       defaultBuildDir,
       defaultFunctionsDir,
+      defaultBaseDir,
       recommendedPlugins,
       frameworkName,
     }),
@@ -136,7 +167,10 @@ const getBuildSettings = async ({ siteRoot, config, env, warn }) => {
     installSinglePlugin,
     recommendedPlugins,
   })
-  return { buildCmd, buildDir, functionsDir, pluginsToInstall }
+
+  const normalizedBaseDir = baseDir ? normalizeBackslash(baseDir) : undefined
+
+  return { baseDir: normalizedBaseDir, buildCmd, buildDir, functionsDir, pluginsToInstall }
 }
 
 const getNetlifyToml = ({
@@ -166,11 +200,27 @@ const getNetlifyToml = ({
   ## more info on configuring this file: https://www.netlify.com/docs/netlify-toml-reference/
 `
 
-const saveNetlifyToml = async ({ siteRoot, config, buildCmd, buildDir, functionsDir, warn }) => {
-  const tomlPath = path.join(siteRoot, 'netlify.toml')
+const saveNetlifyToml = async ({
+  repositoryRoot,
+  config,
+  configPath,
+  baseDir,
+  buildCmd,
+  buildDir,
+  functionsDir,
+  warn,
+}) => {
+  const tomlPathParts = [repositoryRoot, baseDir, 'netlify.toml'].filter(Boolean)
+  const tomlPath = path.join(...tomlPathParts)
   const exists = await fileExistsAsync(tomlPath)
-  const cleanedConfig = cleanDeep(config)
-  if (exists || !isEmpty(cleanedConfig)) {
+  if (exists) {
+    return
+  }
+
+  // We don't want to create a `netlify.toml` file that overrides existing configuration
+  // In a monorepo the configuration can come from a repo level netlify.toml
+  // so we make sure it doesn't by checking `configPath === undefined`
+  if (configPath === undefined && !isEmpty(cleanDeep(config))) {
     return
   }
 
