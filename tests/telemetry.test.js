@@ -1,3 +1,5 @@
+const process = require('process')
+
 const test = require('ava')
 const { version: uuidVersion } = require('uuid')
 
@@ -9,8 +11,9 @@ const getCLIOptions = (apiUrl) => ({
     NETLIFY_TEST_TRACK_URL: `${apiUrl}/track`,
     NETLIFY_TEST_IDENTIFY_URL: `${apiUrl}/identify`,
     NETLIFY_TEST_TELEMETRY_WAIT: true,
-    CI: undefined,
+    PATH: process.env.PATH,
   },
+  extendEnv: false,
 })
 
 const routes = [{ path: 'track', method: 'POST', response: {} }]
@@ -31,7 +34,6 @@ test.serial('should track --telemetry-enable', async (t) => {
     t.is(requests[0].method, 'POST')
     t.is(requests[0].path, '/api/v1/track')
     t.is(requests[0].body.event, 'cli:user_telemetryEnabled')
-    t.regex(requests[0].body.userId, /[a-zA-Z\d]{24}/)
     t.is(uuidVersion(requests[0].body.anonymousId), UUID_VERSION)
     t.deepEqual(requests[0].body.properties, {})
   })
