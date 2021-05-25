@@ -6,22 +6,24 @@
 
   [build.environment]
     NODE_VERSION = "12"
+    AWS_LAMBDA_JS_RUNTIME = "nodejs14.x"
+
+[functions]
+  # Sets a custom directory for Netlify Functions
+  directory = "functions"
+
+  # Specifies `esbuild` for functions bundling
+  node_bundler = "esbuild"
 
 #####################
 #  Redirect Rules   #
 #####################
 [[redirects]]
   # Telemetry link
-  from = "/telemetry/track"
-  to = "https://api.netlify-services.com/telemetry/track"
+  from = "/telemetry/*"
+  to = "/.netlify/functions/telemetry"
   status = 200
-  force = false
-[[redirects]]
-   # Telemetry link
-  from = "/telemetry/identify"
-  to = "https://api.netlify-services.com/telemetry/identify"
-  status = 200
-  force = false
+  force = true
 [[redirects]]
   # Old CLI download links.
   from = "/download/latest/mac"
