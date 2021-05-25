@@ -156,7 +156,7 @@ test('should not create a new function directory when one is found', async (t) =
 })
 
 const DEFAULT_PORT = 9999
-const SERVE_TIMEOUT = 60000
+const SERVE_TIMEOUT = 180000
 
 const withFunctionsServer = async ({ builder, args = [], port = DEFAULT_PORT }, testHandler) => {
   let ps
