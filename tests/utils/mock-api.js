@@ -15,7 +15,11 @@ const startMockApi = ({ routes }) => {
   const requests = []
   const app = express()
   app.use(bodyParser.urlencoded({ extended: true }))
-  app.use(bodyParser.json())
+  app.use(
+    bodyParser.json({
+      type: () => true,
+    }),
+  )
   app.use(bodyParser.raw())
 
   routes.forEach(({ method = 'get', path, response = {}, status = 200, requestBody }) => {

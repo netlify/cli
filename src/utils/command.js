@@ -283,13 +283,12 @@ class BaseCommand extends Command {
       chalk: this.chalk,
     })
 
-    const user = await this.netlify.api.getCurrentUser()
-    const userID = user.id
+    const { id: userId, full_name: name, email } = await this.netlify.api.getCurrentUser()
 
-    const userData = merge(this.netlify.globalConfig.get(`users.${userID}`), {
-      id: userID,
-      name: user.full_name,
-      email: user.email,
+    const userData = merge(this.netlify.globalConfig.get(`users.${userId}`), {
+      id: userId,
+      name,
+      email,
       auth: {
         token: accessToken,
         github: {
@@ -299,19 +298,18 @@ class BaseCommand extends Command {
       },
     })
     // Set current userId
-    this.netlify.globalConfig.set('userId', userID)
+    this.netlify.globalConfig.set('userId', userId)
     // Set user data
-    this.netlify.globalConfig.set(`users.${userID}`, userData)
+    this.netlify.globalConfig.set(`users.${userId}`, userData)
 
-    const { email } = user
     await identify({
-      name: user.full_name,
+      name,
       email,
-    }).then(() =>
-      track('user_login', {
-        email,
-      }),
-    )
+      userId,
+    })
+    await track('user_login', {
+      email,
+    })
 
     // Log success
     this.log()

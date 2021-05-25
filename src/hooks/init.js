@@ -19,9 +19,7 @@ module.exports = async function initHooks(context) {
     globalConfig.set('telemetryDisabled', false)
     console.log('Netlify telemetry has been enabled')
     console.log('You can disable it anytime with the --telemetry-disable flag')
-    track('user_telemetryEnabled', {
-      force: true,
-    })
+    await track('user_telemetryEnabled')
     process.exit()
   }
 
