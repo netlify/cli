@@ -7,15 +7,14 @@ class LmCommand extends Command {
   async run() {
     const { flags, args } = this.parse(LmCommand)
 
-    // Show help on empty sub command
-    if (isEmptyCommand(flags, args)) {
-      showHelp(this.id)
-      this.exit()
-    }
-
     await track('command', {
       command: 'lm',
     })
+
+    // Show help on empty sub command
+    if (isEmptyCommand(flags, args)) {
+      showHelp(this.id)
+    }
   }
 }
 
