@@ -165,14 +165,14 @@ const logExistingRepoSetupAndExit = ({ log, exit, siteName, repoUrl }) => {
 class InitCommand extends Command {
   async run() {
     const { flags } = this.parse(InitCommand)
+    await reportAnalytics({ flags })
+
     const { log, exit, netlify } = this
     const { repositoryRoot, state } = netlify
     let { siteInfo } = this.netlify
 
     // Check logged in status
     await this.authenticate()
-
-    await reportAnalytics({ flags })
 
     // Add .netlify to .gitignore file
     await ensureNetlifyIgnore(repositoryRoot)

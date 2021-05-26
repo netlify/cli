@@ -3,6 +3,10 @@ const { track } = require('../utils/telemetry')
 
 class UnlinkCommand extends Command {
   async run() {
+    await track('command', {
+      command: 'unlink',
+    })
+
     const { site, state } = this.netlify
     const siteId = site.id
 
@@ -10,10 +14,6 @@ class UnlinkCommand extends Command {
       this.log(`Folder is not linked to a Netlify site. Run 'netlify link' to link it`)
       return this.exit()
     }
-
-    await track('command', {
-      command: 'unlink',
-    })
 
     let siteData = {}
     try {

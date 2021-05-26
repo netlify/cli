@@ -7,6 +7,11 @@ const { track } = require('../utils/telemetry')
 class LoginCommand extends Command {
   async run() {
     const { flags } = this.parse(LoginCommand)
+    await track('command', {
+      command: 'login',
+      new: flags.new,
+    })
+
     const [accessToken, location] = await this.getConfigToken()
     if (accessToken && !flags.new) {
       this.log(`Already logged in ${msg(location)}`)
@@ -17,11 +22,6 @@ class LoginCommand extends Command {
       this.log()
       return this.exit()
     }
-
-    await track('command', {
-      command: 'login',
-      new: flags.new,
-    })
 
     await this.expensivelyAuthenticate()
 

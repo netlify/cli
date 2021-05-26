@@ -8,16 +8,16 @@ const LoginCommand = require('./login')
 
 class SwitchCommand extends Command {
   async run() {
+    await track('command', {
+      command: 'switch',
+    })
+
     const LOGIN_NEW = 'I would like to login to a new account'
     const availableUsersChoices = Object.values(this.netlify.globalConfig.get('users')).reduce(
       (prev, current) =>
         Object.assign(prev, { [current.id]: current.name ? `${current.name} (${current.email})` : current.email }),
       {},
     )
-
-    await track('command', {
-      command: 'switch',
-    })
 
     const { accountSwitchChoice } = await inquirer.prompt([
       {
