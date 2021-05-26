@@ -11,10 +11,9 @@ class AddonsCommand extends Command {
     // Show help on empty sub command
     if (isEmptyCommand(flags, args)) {
       showHelp(this.id)
-      this.exit()
     }
 
-    await track('analytics', {
+    await track('command', {
       command: 'addons',
     })
   }
