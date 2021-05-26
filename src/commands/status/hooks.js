@@ -2,6 +2,7 @@ const { get } = require('dot-prop')
 const prettyjson = require('prettyjson')
 
 const Command = require('../../utils/command')
+const { track } = require('../../utils/telemetry')
 
 class StatusHooksCommand extends Command {
   async run() {
@@ -14,11 +15,8 @@ class StatusHooksCommand extends Command {
       this.error(`You don't appear to be in a folder that is linked to a site`)
     }
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'status:hooks',
-      },
+    await track('command', {
+      command: 'status:hooks',
     })
 
     let siteData

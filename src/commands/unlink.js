@@ -11,11 +11,8 @@ class UnlinkCommand extends Command {
       return this.exit()
     }
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'unlink',
-      },
+    await track('command', {
+      command: 'unlink',
     })
 
     let siteData = {}

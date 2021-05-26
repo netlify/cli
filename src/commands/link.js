@@ -22,11 +22,8 @@ class LinkCommand extends Command {
       state,
     } = this.netlify
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'link',
-      },
+    await track('command', {
+      command: 'link',
     })
 
     let siteData

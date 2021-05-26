@@ -1,4 +1,5 @@
 const Command = require('../../utils/command')
+const { track } = require('../../utils/telemetry')
 
 class EnvUnsetCommand extends Command {
   async run() {
@@ -12,11 +13,8 @@ class EnvUnsetCommand extends Command {
       return false
     }
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'env:unset',
-      },
+    await track('command', {
+      command: 'env:unset',
     })
 
     const siteData = await api.getSite({ siteId })

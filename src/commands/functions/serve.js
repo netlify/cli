@@ -6,16 +6,14 @@ const Command = require('../../utils/command')
 const { getSiteInformation, acquirePort } = require('../../utils/dev')
 const { getFunctionsDir } = require('../../utils/functions')
 const { startFunctionsServer } = require('../../utils/serve-functions')
+const { track } = require('../../utils/telemetry')
 
 const DEFAULT_PORT = 9999
 
 class FunctionsServeCommand extends Command {
   async run() {
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'functions:serve',
-      },
+    await track('command', {
+      command: 'functions:serve',
     })
 
     const { flags } = this.parse(FunctionsServeCommand)

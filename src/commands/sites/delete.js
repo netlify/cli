@@ -4,6 +4,7 @@ const inquirer = require('inquirer')
 
 const Command = require('../../utils/command')
 const { parseRawFlags } = require('../../utils/parse-raw-flags')
+const { track } = require('../../utils/telemetry')
 
 class SitesDeleteCommand extends Command {
   async run() {
@@ -28,12 +29,9 @@ class SitesDeleteCommand extends Command {
       this.error(`Unable to process site`)
     }
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'sites:delete',
-        force: flags.force,
-      },
+    await track('command', {
+      command: 'sites:delete',
+      force: flags.force,
     })
 
     const rawFlags = parseRawFlags(raw)

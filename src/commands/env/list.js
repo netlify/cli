@@ -3,6 +3,7 @@ const AsciiTable = require('ascii-table')
 const isEmpty = require('lodash/isEmpty')
 
 const Command = require('../../utils/command')
+const { track } = require('../../utils/telemetry')
 
 class EnvListCommand extends Command {
   async run() {
@@ -15,11 +16,8 @@ class EnvListCommand extends Command {
       return false
     }
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'env:list',
-      },
+    await track('command', {
+      command: 'env:list',
     })
 
     const siteData = await api.getSite({ siteId })

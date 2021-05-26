@@ -2,6 +2,7 @@ const { flags: flagsLib } = require('@oclif/command')
 const chalk = require('chalk')
 
 const Command = require('../utils/command')
+const { track } = require('../utils/telemetry')
 
 class LoginCommand extends Command {
   async run() {
@@ -17,12 +18,9 @@ class LoginCommand extends Command {
       return this.exit()
     }
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'login',
-        new: flags.new,
-      },
+    await track('command', {
+      command: 'login',
+      new: flags.new,
     })
 
     await this.expensivelyAuthenticate()

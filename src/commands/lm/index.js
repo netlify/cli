@@ -1,6 +1,7 @@
 const { isEmptyCommand } = require('../../utils/check-command-inputs')
 const Command = require('../../utils/command')
 const showHelp = require('../../utils/show-help')
+const { track } = require('../../utils/telemetry')
 
 class LmCommand extends Command {
   async run() {
@@ -12,11 +13,8 @@ class LmCommand extends Command {
       this.exit()
     }
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'lm',
-      },
+    await track('command', {
+      command: 'lm',
     })
   }
 }

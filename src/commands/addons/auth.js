@@ -1,6 +1,7 @@
 const { prepareAddonCommand, ADDON_VALIDATION } = require('../../utils/addons/prepare')
 const Command = require('../../utils/command')
 const openBrowser = require('../../utils/open-browser')
+const { track } = require('../../utils/telemetry')
 
 class AddonsAuthCommand extends Command {
   async run() {
@@ -17,11 +18,8 @@ class AddonsAuthCommand extends Command {
       return false
     }
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'addons:auth',
-      },
+    await track('command', {
+      command: 'addons:auth',
     })
 
     this.log()

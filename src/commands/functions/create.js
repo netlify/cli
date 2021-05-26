@@ -17,13 +17,9 @@ const { mkdirRecursiveSync } = require('../../lib/fs')
 const { getSiteData, getAddons, getCurrentAddon } = require('../../utils/addons/prepare')
 const Command = require('../../utils/command')
 const { injectEnvVariables } = require('../../utils/dev')
-const {
-  // NETLIFYDEV,
-  NETLIFYDEVLOG,
-  NETLIFYDEVWARN,
-  NETLIFYDEVERR,
-} = require('../../utils/logo')
+const { NETLIFYDEVLOG, NETLIFYDEVWARN, NETLIFYDEVERR } = require('../../utils/logo')
 const { readRepoURL, validateRepoURL } = require('../../utils/read-repo-url')
+const { track } = require('../../utils/telemetry')
 
 const templatesDir = path.resolve(__dirname, '../../functions-templates')
 
@@ -38,11 +34,8 @@ class FunctionsCreateCommand extends Command {
     /* either download from URL or scaffold from template */
     const mainFunc = flags.url ? downloadFromURL : scaffoldFromTemplate
     await mainFunc(this, flags, args, functionsDir)
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'functions:create',
-      },
+    await track('command', {
+      command: 'functions:create',
     })
   }
 }

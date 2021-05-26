@@ -2,6 +2,7 @@ const chalk = require('chalk')
 const inquirer = require('inquirer')
 
 const Command = require('../utils/command')
+const { track } = require('../utils/telemetry')
 
 const LoginCommand = require('./login')
 
@@ -14,11 +15,8 @@ class SwitchCommand extends Command {
       {},
     )
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'switch',
-      },
+    await track('command', {
+      command: 'switch',
     })
 
     const { accountSwitchChoice } = await inquirer.prompt([

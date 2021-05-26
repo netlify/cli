@@ -4,6 +4,7 @@ const { cli } = require('cli-ux')
 
 const { listSites } = require('../../lib/api')
 const Command = require('../../utils/command')
+const { track } = require('../../utils/telemetry')
 
 class SitesListCommand extends Command {
   async run() {
@@ -14,11 +15,8 @@ class SitesListCommand extends Command {
     }
     await this.authenticate()
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'sites:list',
-      },
+    await track('command', {
+      command: 'sites:list',
     })
 
     const sites = await listSites({ api, options: { filter: 'all' } })

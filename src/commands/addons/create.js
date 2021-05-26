@@ -8,6 +8,7 @@ const render = require('../../utils/addons/render')
 const { requiredConfigValues, missingConfigValues, updateConfigValues } = require('../../utils/addons/validation')
 const Command = require('../../utils/command')
 const { parseRawFlags } = require('../../utils/parse-raw-flags')
+const { track } = require('../../utils/telemetry')
 
 const createAddon = async ({ api, siteId, addonName, config, siteData, log, error }) => {
   try {
@@ -46,11 +47,8 @@ class AddonsCreateCommand extends Command {
 
     let configValues = rawFlags
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'addons:create',
-      },
+    await track('command', {
+      command: 'addons:create',
     })
 
     if (hasConfig) {

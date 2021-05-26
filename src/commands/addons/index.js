@@ -2,6 +2,7 @@ const { Command } = require('@oclif/command')
 
 const { isEmptyCommand } = require('../../utils/check-command-inputs')
 const showHelp = require('../../utils/show-help')
+const { track } = require('../../utils/telemetry')
 
 class AddonsCommand extends Command {
   async run() {
@@ -13,11 +14,8 @@ class AddonsCommand extends Command {
       this.exit()
     }
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'addons',
-      },
+    await track('analytics', {
+      command: 'addons',
     })
   }
 }

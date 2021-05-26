@@ -6,6 +6,7 @@ const AsciiTable = require('ascii-table')
 const Command = require('../../utils/command')
 const { getFunctionsDir } = require('../../utils/functions')
 const { getFunctions } = require('../../utils/get-functions')
+const { track } = require('../../utils/telemetry')
 
 class FunctionsListCommand extends Command {
   async run() {
@@ -37,11 +38,8 @@ class FunctionsListCommand extends Command {
     const deploy = siteData.published_deploy || {}
     const deployedFunctions = deploy.available_functions || []
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'functions:list',
-      },
+    await track('command', {
+      command: 'functions:list',
     })
 
     const functionsDir = getFunctionsDir({ flags, config })

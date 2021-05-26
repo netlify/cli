@@ -4,6 +4,7 @@ const inquirer = require('inquirer')
 const { prepareAddonCommand, ADDON_VALIDATION } = require('../../utils/addons/prepare')
 const Command = require('../../utils/command')
 const { parseRawFlags } = require('../../utils/parse-raw-flags')
+const { track } = require('../../utils/telemetry')
 
 class AddonsDeleteCommand extends Command {
   async run() {
@@ -28,11 +29,8 @@ class AddonsDeleteCommand extends Command {
       }
     }
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'addons:delete',
-      },
+    await track('command', {
+      command: 'addons:delete',
     })
 
     try {

@@ -3,6 +3,7 @@ const AsciiTable = require('ascii-table')
 
 const { prepareAddonCommand } = require('../../utils/addons/prepare')
 const Command = require('../../utils/command')
+const { track } = require('../../utils/telemetry')
 
 class AddonsListCommand extends Command {
   async run() {
@@ -22,11 +23,8 @@ class AddonsListCommand extends Command {
       return false
     }
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'addons:list',
-      },
+    await track('command', {
+      command: 'addons:list',
     })
 
     const addonData = addons.map((addon) => ({

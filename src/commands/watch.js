@@ -5,6 +5,7 @@ const pWaitFor = require('p-wait-for')
 const prettyjson = require('prettyjson')
 
 const Command = require('../utils/command')
+const { track } = require('../utils/telemetry')
 
 const InitCommand = require('./init')
 
@@ -26,11 +27,8 @@ class SitesWatchCommand extends Command {
     console.time('Deploy time')
     await cli.wait(INIT_WAIT)
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'watch',
-      },
+    await track('command', {
+      command: 'watch',
     })
 
     // Get latest commit and look for that

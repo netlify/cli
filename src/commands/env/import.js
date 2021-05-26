@@ -6,6 +6,7 @@ const dotenv = require('dotenv')
 const isEmpty = require('lodash/isEmpty')
 
 const Command = require('../../utils/command')
+const { track } = require('../../utils/telemetry')
 
 class EnvImportCommand extends Command {
   async run() {
@@ -18,11 +19,8 @@ class EnvImportCommand extends Command {
       return false
     }
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'env:import',
-      },
+    await track('command', {
+      command: 'env:import',
     })
 
     const siteData = await api.getSite({ siteId })

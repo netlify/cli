@@ -1,5 +1,6 @@
 const Command = require('../../utils/command')
 const openBrowser = require('../../utils/open-browser')
+const { track } = require('../../utils/telemetry')
 
 class OpenAdminCommand extends Command {
   async run() {
@@ -14,11 +15,8 @@ Run \`netlify link\` to connect to this folder to a site`)
       return false
     }
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'open:site',
-      },
+    await track('command', {
+      command: 'open:site',
     })
 
     let siteData

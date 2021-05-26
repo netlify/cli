@@ -2,6 +2,7 @@ const execa = require('execa')
 
 const Command = require('../../utils/command')
 const { injectEnvVariables } = require('../../utils/dev')
+const { track } = require('../../utils/telemetry')
 
 class ExecCommand extends Command {
   async init() {
@@ -17,11 +18,8 @@ class ExecCommand extends Command {
     execa(this.argv[0], this.argv.slice(1), {
       stdio: 'inherit',
     })
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'dev:exec',
-      },
+    await track('command', {
+      command: 'dev:exec',
     })
   }
 }

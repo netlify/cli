@@ -3,6 +3,8 @@ const { execSync } = require('child_process')
 const { Command } = require('@oclif/command')
 const chalk = require('chalk')
 
+const { track } = require('../../utils/telemetry')
+
 const showHelp = function (command) {
   execSync(`netlify ${command} --help`, { stdio: [0, 1, 2] })
 }
@@ -31,11 +33,8 @@ class FunctionsCommand extends Command {
       this.exit()
     }
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'functions',
-      },
+    await track('command', {
+      command: 'functions',
     })
   }
 }

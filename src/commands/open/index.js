@@ -3,6 +3,7 @@ const { flags: flagsLib } = require('@oclif/command')
 const { isEmptyCommand } = require('../../utils/check-command-inputs')
 const Command = require('../../utils/command')
 const showHelp = require('../../utils/show-help')
+const { track } = require('../../utils/telemetry')
 
 const OpenAdminCommand = require('./admin')
 const OpenSiteCommand = require('./site')
@@ -15,11 +16,8 @@ class OpenCommand extends Command {
       showHelp(this.id)
     }
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'open',
-      },
+    await track('command', {
+      command: 'open',
     })
 
     if (flags.site) {

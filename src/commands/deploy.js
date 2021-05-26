@@ -22,6 +22,7 @@ const { deploySite } = require('../utils/deploy/deploy-site')
 const { deployEdgeHandlers } = require('../utils/edge-handlers')
 const { NETLIFYDEV, NETLIFYDEVLOG, NETLIFYDEVERR } = require('../utils/logo')
 const openBrowser = require('../utils/open-browser')
+const { track } = require('../utils/telemetry')
 
 const LinkCommand = require('./link')
 const SitesCreateCommand = require('./sites/create')
@@ -356,15 +357,12 @@ class DeployCommand extends Command {
 
     await this.authenticate(flags.auth)
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'deploy',
-        open: flags.open,
-        prod: flags.prod,
-        json: flags.json,
-        alias: Boolean(alias),
-      },
+    await track('command', {
+      command: 'deploy',
+      open: flags.open,
+      prod: flags.prod,
+      json: flags.json,
+      alias: Boolean(alias),
     })
 
     let siteId = flags.site || site.id

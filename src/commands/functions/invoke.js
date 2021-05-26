@@ -10,6 +10,7 @@ const fetch = require('node-fetch')
 const Command = require('../../utils/command')
 const { getFunctions } = require('../../utils/get-functions')
 const { NETLIFYDEVWARN } = require('../../utils/logo')
+const { track } = require('../../utils/telemetry')
 
 // https://www.netlify.com/docs/functions/#event-triggered-functions
 const eventTriggeredFunctions = new Set([
@@ -51,11 +52,8 @@ class FunctionsInvokeCommand extends Command {
     let headers = {}
     let body = {}
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'functions:invoke',
-      },
+    await track('command', {
+      command: 'functions:invoke',
     })
 
     if (eventTriggeredFunctions.has(functionToTrigger)) {
