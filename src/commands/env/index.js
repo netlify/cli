@@ -7,15 +7,14 @@ class EnvCommand extends Command {
   async run() {
     const { flags, args } = this.parse(EnvCommand)
 
-    // Show help on empty sub command
-    if (isEmptyCommand(flags, args)) {
-      showHelp(this.id)
-      this.exit()
-    }
-
     await track('command', {
       command: 'env',
     })
+
+    // Show help on empty sub command
+    if (isEmptyCommand(flags, args)) {
+      showHelp(this.id)
+    }
   }
 }
 

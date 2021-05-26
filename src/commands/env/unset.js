@@ -8,14 +8,14 @@ class EnvUnsetCommand extends Command {
     const siteId = site.id
     const { name } = args
 
+    await track('command', {
+      command: 'env:unset',
+    })
+
     if (!siteId) {
       this.log('No site id found, please run inside a site folder or `netlify link`')
       return false
     }
-
-    await track('command', {
-      command: 'env:unset',
-    })
 
     const siteData = await api.getSite({ siteId })
 

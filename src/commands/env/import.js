@@ -14,14 +14,14 @@ class EnvImportCommand extends Command {
     const { api, site } = this.netlify
     const siteId = site.id
 
+    await track('command', {
+      command: 'env:import',
+    })
+
     if (!siteId) {
       this.log('No site id found, please run inside a site folder or `netlify link`')
       return false
     }
-
-    await track('command', {
-      command: 'env:import',
-    })
 
     const siteData = await api.getSite({ siteId })
 

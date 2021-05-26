@@ -7,14 +7,14 @@ class EnvGetCommand extends Command {
     const { api, cachedConfig, site } = this.netlify
     const siteId = site.id
 
+    await track('command', {
+      command: 'env:get',
+    })
+
     if (!siteId) {
       this.log('No site id found, please run inside a site folder or `netlify link`')
       return false
     }
-
-    await track('command', {
-      command: 'env:get',
-    })
 
     const siteData = await api.getSite({ siteId })
 
