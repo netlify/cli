@@ -9,6 +9,11 @@ const { track } = require('../../utils/telemetry')
 class AddonsDeleteCommand extends Command {
   async run() {
     const { args, raw } = this.parse(AddonsDeleteCommand)
+
+    await track('command', {
+      command: 'addons:delete',
+    })
+
     const addonName = args.name
     const { addon } = await prepareAddonCommand({
       context: this,
@@ -28,10 +33,6 @@ class AddonsDeleteCommand extends Command {
         this.exit()
       }
     }
-
-    await track('command', {
-      command: 'addons:delete',
-    })
 
     try {
       await this.netlify.api.deleteServiceInstance({

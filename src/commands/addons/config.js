@@ -15,6 +15,11 @@ const { track } = require('../../utils/telemetry')
 class AddonsConfigCommand extends Command {
   async run() {
     const { args, raw } = this.parse(AddonsConfigCommand)
+
+    await track('command', {
+      command: 'addons:config',
+    })
+
     const addonName = args.name
     const { manifest, addon, siteData } = await prepareAddonCommand({
       context: this,
@@ -44,10 +49,6 @@ class AddonsConfigCommand extends Command {
         this.log(`${key} - ${currentConfig[key]}`)
       })
     }
-
-    await track('command', {
-      command: 'addons:config',
-    })
 
     if (hasConfig) {
       const required = requiredConfigValues(manifest.config)

@@ -9,6 +9,10 @@ class AddonsListCommand extends Command {
   async run() {
     const { flags } = this.parse(AddonsListCommand)
 
+    await track('command', {
+      command: 'addons:list',
+    })
+
     const { addons, siteData } = await prepareAddonCommand({ context: this })
 
     // Return json response for piping commands
@@ -22,10 +26,6 @@ class AddonsListCommand extends Command {
       this.log(`> Run \`netlify addons:create addon-namespace\` to install an addon`)
       return false
     }
-
-    await track('command', {
-      command: 'addons:list',
-    })
 
     const addonData = addons.map((addon) => ({
       namespace: addon.service_path.replace('/.netlify/', ''),

@@ -8,14 +8,14 @@ class AddonsCommand extends Command {
   async run() {
     const { flags, args } = this.parse(AddonsCommand)
 
+    await track('command', {
+      command: 'addons',
+    })
+
     // Show help on empty sub command
     if (isEmptyCommand(flags, args)) {
       showHelp(this.id)
     }
-
-    await track('command', {
-      command: 'addons',
-    })
   }
 }
 

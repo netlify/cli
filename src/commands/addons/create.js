@@ -30,6 +30,11 @@ const createAddon = async ({ api, siteId, addonName, config, siteData, log, erro
 class AddonsCreateCommand extends Command {
   async run() {
     const { args, raw } = this.parse(AddonsCreateCommand)
+
+    await track('command', {
+      command: 'addons:create',
+    })
+
     const addonName = args.name
     const { manifest, siteData } = await prepareAddonCommand({
       context: this,
@@ -46,10 +51,6 @@ class AddonsCreateCommand extends Command {
     const hasConfig = !isEmpty(manifest.config)
 
     let configValues = rawFlags
-
-    await track('command', {
-      command: 'addons:create',
-    })
 
     if (hasConfig) {
       const required = requiredConfigValues(manifest.config)
