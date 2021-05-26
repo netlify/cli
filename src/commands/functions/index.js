@@ -27,15 +27,15 @@ const hasArgs = function (args) {
 class FunctionsCommand extends Command {
   async run() {
     const { flags, args } = this.parse(FunctionsCommand)
-    // run help command if no args passed
-    if (isEmptyCommand(flags, args)) {
-      showHelp(this.id)
-      this.exit()
-    }
 
     await track('command', {
       command: 'functions',
     })
+
+    // run help command if no args passed
+    if (isEmptyCommand(flags, args)) {
+      showHelp(this.id)
+    }
   }
 }
 

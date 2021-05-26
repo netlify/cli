@@ -29,14 +29,16 @@ const templatesDir = path.resolve(__dirname, '../../functions-templates')
 class FunctionsCreateCommand extends Command {
   async run() {
     const { flags, args } = this.parse(FunctionsCreateCommand)
+
+    await track('command', {
+      command: 'functions:create',
+    })
+
     const functionsDir = await ensureFunctionDirExists(this)
 
     /* either download from URL or scaffold from template */
     const mainFunc = flags.url ? downloadFromURL : scaffoldFromTemplate
     await mainFunc(this, flags, args, functionsDir)
-    await track('command', {
-      command: 'functions:create',
-    })
   }
 }
 

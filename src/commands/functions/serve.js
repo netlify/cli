@@ -12,11 +12,12 @@ const DEFAULT_PORT = 9999
 
 class FunctionsServeCommand extends Command {
   async run() {
+    const { flags } = this.parse(FunctionsServeCommand)
+
     await track('command', {
       command: 'functions:serve',
     })
 
-    const { flags } = this.parse(FunctionsServeCommand)
     const { error: errorExit, log, warn, netlify } = this
     const { api, site, config, siteInfo } = netlify
 

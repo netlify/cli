@@ -33,6 +33,11 @@ const DEFAULT_PORT = 8888
 class FunctionsInvokeCommand extends Command {
   async run() {
     const { flags, args } = this.parse(FunctionsInvokeCommand)
+
+    await track('command', {
+      command: 'functions:invoke',
+    })
+
     const { config } = this.netlify
 
     const functionsDir = flags.functions || (config.dev && config.dev.functions) || config.functionsDirectory
@@ -51,10 +56,6 @@ class FunctionsInvokeCommand extends Command {
 
     let headers = {}
     let body = {}
-
-    await track('command', {
-      command: 'functions:invoke',
-    })
 
     if (eventTriggeredFunctions.has(functionToTrigger)) {
       /** handle event triggered fns  */

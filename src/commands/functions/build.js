@@ -12,6 +12,11 @@ const { track } = require('../../utils/telemetry')
 class FunctionsBuildCommand extends Command {
   async run() {
     const { flags } = this.parse(FunctionsBuildCommand)
+
+    await track('command', {
+      command: 'functions:build',
+    })
+
     const { config } = this.netlify
 
     const src = flags.src || config.build.functionsSource
@@ -33,10 +38,6 @@ class FunctionsBuildCommand extends Command {
         )
       process.exit(1)
     }
-
-    await track('command', {
-      command: 'functions:build',
-    })
 
     fs.mkdirSync(dst, { recursive: true })
 
