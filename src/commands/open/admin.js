@@ -4,7 +4,12 @@ const { track } = require('../../utils/telemetry')
 
 class OpenAdminCommand extends Command {
   async run() {
+    await track('command', {
+      command: 'open:admin',
+    })
+
     const { api, site } = this.netlify
+
     await this.authenticate()
 
     const siteId = site.id
@@ -14,10 +19,6 @@ class OpenAdminCommand extends Command {
 Run \`netlify link\` to connect to this folder to a site`)
       return false
     }
-
-    await track('command', {
-      command: 'open:admin',
-    })
 
     let siteData
     try {

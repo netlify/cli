@@ -11,14 +11,15 @@ const OpenSiteCommand = require('./site')
 class OpenCommand extends Command {
   async run() {
     const { flags, args } = this.parse(OpenCommand)
-    // Show help on empty sub command
-    if (isEmptyCommand(flags, args)) {
-      showHelp(this.id)
-    }
 
     await track('command', {
       command: 'open',
     })
+
+    // Show help on empty sub command
+    if (isEmptyCommand(flags, args)) {
+      showHelp(this.id)
+    }
 
     if (flags.site) {
       await OpenSiteCommand.run()
