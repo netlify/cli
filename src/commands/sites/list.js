@@ -9,15 +9,16 @@ const { track } = require('../../utils/telemetry')
 class SitesListCommand extends Command {
   async run() {
     const { flags } = this.parse(SitesListCommand)
+
+    await track('command', {
+      command: 'sites:list',
+    })
+
     const { api } = this.netlify
     if (!flags.json) {
       cli.action.start('Loading your sites')
     }
     await this.authenticate()
-
-    await track('command', {
-      command: 'sites:list',
-    })
 
     const sites = await listSites({ api, options: { filter: 'all' } })
     if (!flags.json) {

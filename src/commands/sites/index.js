@@ -8,14 +8,14 @@ class SitesCommand extends Command {
   async run() {
     const { flags, args } = this.parse(SitesCommand)
 
+    await track('command', {
+      command: 'sites',
+    })
+
     // Show help on empty sub command
     if (isEmptyCommand(flags, args)) {
       showHelp(this.id)
     }
-
-    await track('command', {
-      command: 'sites',
-    })
   }
 }
 

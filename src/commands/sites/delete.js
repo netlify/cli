@@ -9,6 +9,12 @@ const { track } = require('../../utils/telemetry')
 class SitesDeleteCommand extends Command {
   async run() {
     const { args, flags, raw } = this.parse(SitesDeleteCommand)
+
+    await track('command', {
+      command: 'sites:delete',
+      force: flags.force,
+    })
+
     const { api, site } = this.netlify
     const { siteId } = args
     const cwdSiteId = site.id
@@ -28,11 +34,6 @@ class SitesDeleteCommand extends Command {
     if (!siteData) {
       this.error(`Unable to process site`)
     }
-
-    await track('command', {
-      command: 'sites:delete',
-      force: flags.force,
-    })
 
     const rawFlags = parseRawFlags(raw)
     const noForce = !rawFlags.force && !rawFlags.f
