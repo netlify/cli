@@ -5,7 +5,6 @@ const { methods } = require('netlify')
 
 const { isEmptyCommand } = require('../utils/check-command-inputs')
 const Command = require('../utils/command')
-const { track } = require('../utils/telemetry')
 
 class APICommand extends Command {
   async run() {
@@ -13,10 +12,6 @@ class APICommand extends Command {
     const { args, flags } = this.parse(APICommand)
 
     const { apiMethod } = args
-
-    await track('command', {
-      command: 'api',
-    })
 
     if (isEmptyCommand(flags, args) || flags.list) {
       const table = new AsciiTable(`Netlify API Methods`)

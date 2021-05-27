@@ -1,13 +1,8 @@
 const Command = require('../../utils/command')
 const { uninstall } = require('../../utils/lm/install')
-const { track } = require('../../utils/telemetry')
 
 class LmUninstallCommand extends Command {
   async run() {
-    await track('command', {
-      command: 'lm:uninstall',
-    })
-
     await uninstall()
   }
 }

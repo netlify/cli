@@ -22,7 +22,6 @@ const { deploySite } = require('../utils/deploy/deploy-site')
 const { deployEdgeHandlers } = require('../utils/edge-handlers')
 const { NETLIFYDEV, NETLIFYDEVLOG, NETLIFYDEVERR } = require('../utils/logo')
 const openBrowser = require('../utils/open-browser')
-const { track } = require('../utils/telemetry')
 
 const LinkCommand = require('./link')
 const SitesCreateCommand = require('./sites/create')
@@ -351,19 +350,13 @@ class DeployCommand extends Command {
     const { api, site, config } = this.netlify
     const alias = flags.alias || flags.branch
 
+    this.setAnalyticsPayload({ open: flags.open, prod: flags.prod, json: flags.json, alias: Boolean(alias) })
+
     if (flags.branch) {
       warn('--branch flag has been renamed to --alias and will be removed in future versions')
     }
 
     await this.authenticate(flags.auth)
-
-    await track('command', {
-      command: 'deploy',
-      open: flags.open,
-      prod: flags.prod,
-      json: flags.json,
-      alias: Boolean(alias),
-    })
 
     let siteId = flags.site || site.id
     let siteData = {}

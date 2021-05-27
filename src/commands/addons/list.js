@@ -3,15 +3,10 @@ const AsciiTable = require('ascii-table')
 
 const { prepareAddonCommand } = require('../../utils/addons/prepare')
 const Command = require('../../utils/command')
-const { track } = require('../../utils/telemetry')
 
 class AddonsListCommand extends Command {
   async run() {
     const { flags } = this.parse(AddonsListCommand)
-
-    await track('command', {
-      command: 'addons:list',
-    })
 
     const { addons, siteData } = await prepareAddonCommand({ context: this })
 

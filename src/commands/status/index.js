@@ -4,16 +4,11 @@ const clean = require('clean-deep')
 const prettyjson = require('prettyjson')
 
 const Command = require('../../utils/command')
-const { track } = require('../../utils/telemetry')
 
 class StatusCommand extends Command {
   async run() {
     const { globalConfig, api, site } = this.netlify
     const { flags } = this.parse(StatusCommand)
-
-    await track('command', {
-      command: 'status',
-    })
 
     const current = globalConfig.get('userId')
     const [accessToken] = await this.getConfigToken()
@@ -109,6 +104,8 @@ class StatusCommand extends Command {
       }),
     )
     this.log()
+
+    this.exit(1)
   }
 }
 

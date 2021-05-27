@@ -2,16 +2,11 @@ const chalk = require('chalk')
 const inquirer = require('inquirer')
 
 const Command = require('../utils/command')
-const { track } = require('../utils/telemetry')
 
 const LoginCommand = require('./login')
 
 class SwitchCommand extends Command {
   async run() {
-    await track('command', {
-      command: 'switch',
-    })
-
     const LOGIN_NEW = 'I would like to login to a new account'
     const availableUsersChoices = Object.values(this.netlify.globalConfig.get('users')).reduce(
       (prev, current) =>

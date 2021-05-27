@@ -2,14 +2,9 @@ const { get } = require('dot-prop')
 const prettyjson = require('prettyjson')
 
 const Command = require('../../utils/command')
-const { track } = require('../../utils/telemetry')
 
 class StatusHooksCommand extends Command {
   async run() {
-    await track('command', {
-      command: 'status:hooks',
-    })
-
     const { site, api } = this.netlify
     await this.authenticate()
 

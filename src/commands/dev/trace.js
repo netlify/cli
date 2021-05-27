@@ -1,7 +1,6 @@
 const { flags } = require('@oclif/command')
 
 const Command = require('../../utils/command')
-const { track } = require('../../utils/telemetry')
 const { runProcess } = require('../../utils/traffic-mesh')
 
 class TraceCommand extends Command {
@@ -16,10 +15,6 @@ class TraceCommand extends Command {
     const args = ['trace'].concat(this.argv)
     const { subprocess } = runProcess({ log: this.log, args })
     await subprocess
-
-    await track('command', {
-      command: 'dev:trace',
-    })
   }
 }
 

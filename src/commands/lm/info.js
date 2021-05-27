@@ -7,14 +7,9 @@ const {
   checkLFSFiltersStep,
   checkHelperVersionStep,
 } = require('../../utils/lm/steps')
-const { track } = require('../../utils/telemetry')
 
 class LmInfoCommand extends Command {
   async run() {
-    await track('command', {
-      command: 'lm:info',
-    })
-
     const steps = [
       checkGitVersionStep,
       checkGitLFSVersionStep,

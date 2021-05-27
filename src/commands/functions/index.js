@@ -1,9 +1,8 @@
 const { execSync } = require('child_process')
 
-const { Command } = require('@oclif/command')
 const chalk = require('chalk')
 
-const { track } = require('../../utils/telemetry')
+const { TrackedCommand } = require('../../utils/telemetry/tracked-command')
 
 const showHelp = function (command) {
   execSync(`netlify ${command} --help`, { stdio: [0, 1, 2] })
@@ -24,13 +23,9 @@ const hasArgs = function (args) {
   return Object.keys(args).length
 }
 
-class FunctionsCommand extends Command {
-  async run() {
+class FunctionsCommand extends TrackedCommand {
+  run() {
     const { flags, args } = this.parse(FunctionsCommand)
-
-    await track('command', {
-      command: 'functions',
-    })
 
     // run help command if no args passed
     if (isEmptyCommand(flags, args)) {

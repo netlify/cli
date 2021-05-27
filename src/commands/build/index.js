@@ -1,22 +1,24 @@
-const { flags } = require('@oclif/command')
+const { flags: flagsLib } = require('@oclif/command')
 
 const { getBuildOptions, runBuild } = require('../../lib/build')
 const Command = require('../../utils/command')
-const { track } = require('../../utils/telemetry')
 
 class BuildCommand extends Command {
   // Run Netlify Build
   async run() {
+    const { flags } = this.parse(BuildCommand)
+
+    this.setAnalyticsPayload({ dry: flags.dry })
+
     // Retrieve Netlify Build options
     const [token] = await this.getConfigToken()
+
     const options = await getBuildOptions({
       context: this,
       token,
-      flags: this.parse(BuildCommand).flags,
+      flags,
     })
     this.checkOptions(options)
-
-    await track('command', { command: 'build', dry: Boolean(options.dry) })
 
     const exitCode = await runBuild(options)
     this.exit(exitCode)
@@ -35,10 +37,11 @@ class BuildCommand extends Command {
 
 // Netlify Build programmatic options
 BuildCommand.flags = {
-  dry: flags.boolean({
+  dry: flagsLib.boolean({
     description: 'Dry run: show instructions without running them',
+    default: false,
   }),
-  context: flags.string({
+  context: flagsLib.string({
     description: 'Build context',
   }),
   ...BuildCommand.flags,

@@ -4,16 +4,12 @@ const inquirer = require('inquirer')
 
 const Command = require('../../utils/command')
 const { parseRawFlags } = require('../../utils/parse-raw-flags')
-const { track } = require('../../utils/telemetry')
 
 class SitesDeleteCommand extends Command {
   async run() {
     const { args, flags, raw } = this.parse(SitesDeleteCommand)
 
-    await track('command', {
-      command: 'sites:delete',
-      force: flags.force,
-    })
+    this.setAnalyticsPayload({ force: flags.force })
 
     const { api, site } = this.netlify
     const { siteId } = args

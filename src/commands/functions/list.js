@@ -6,15 +6,10 @@ const AsciiTable = require('ascii-table')
 const Command = require('../../utils/command')
 const { getFunctionsDir } = require('../../utils/functions')
 const { getFunctions } = require('../../utils/get-functions')
-const { track } = require('../../utils/telemetry')
 
 class FunctionsListCommand extends Command {
   async run() {
     const { flags } = this.parse(FunctionsListCommand)
-
-    await track('command', {
-      command: 'functions:list',
-    })
 
     const { api, site, config } = this.netlify
 

@@ -10,7 +10,6 @@ const fetch = require('node-fetch')
 const Command = require('../../utils/command')
 const { getFunctions } = require('../../utils/get-functions')
 const { NETLIFYDEVWARN } = require('../../utils/logo')
-const { track } = require('../../utils/telemetry')
 
 // https://www.netlify.com/docs/functions/#event-triggered-functions
 const eventTriggeredFunctions = new Set([
@@ -33,10 +32,6 @@ const DEFAULT_PORT = 8888
 class FunctionsInvokeCommand extends Command {
   async run() {
     const { flags, args } = this.parse(FunctionsInvokeCommand)
-
-    await track('command', {
-      command: 'functions:invoke',
-    })
 
     const { config } = this.netlify
 

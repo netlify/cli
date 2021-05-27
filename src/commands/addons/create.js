@@ -8,7 +8,6 @@ const render = require('../../utils/addons/render')
 const { requiredConfigValues, missingConfigValues, updateConfigValues } = require('../../utils/addons/validation')
 const Command = require('../../utils/command')
 const { parseRawFlags } = require('../../utils/parse-raw-flags')
-const { track } = require('../../utils/telemetry')
 
 const createAddon = async ({ api, siteId, addonName, config, siteData, log, error }) => {
   try {
@@ -30,10 +29,6 @@ const createAddon = async ({ api, siteId, addonName, config, siteData, log, erro
 class AddonsCreateCommand extends Command {
   async run() {
     const { args, raw } = this.parse(AddonsCreateCommand)
-
-    await track('command', {
-      command: 'addons:create',
-    })
 
     const addonName = args.name
     const { manifest, siteData } = await prepareAddonCommand({

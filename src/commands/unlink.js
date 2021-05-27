@@ -3,10 +3,6 @@ const { track } = require('../utils/telemetry')
 
 class UnlinkCommand extends Command {
   async run() {
-    await track('command', {
-      command: 'unlink',
-    })
-
     const { site, state } = this.netlify
     const siteId = site.id
 

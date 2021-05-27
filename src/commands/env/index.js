@@ -1,15 +1,10 @@
 const { isEmptyCommand } = require('../../utils/check-command-inputs')
 const Command = require('../../utils/command')
 const showHelp = require('../../utils/show-help')
-const { track } = require('../../utils/telemetry')
 
 class EnvCommand extends Command {
-  async run() {
+  run() {
     const { flags, args } = this.parse(EnvCommand)
-
-    await track('command', {
-      command: 'env',
-    })
 
     // Show help on empty sub command
     if (isEmptyCommand(flags, args)) {

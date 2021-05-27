@@ -3,7 +3,7 @@ const { URL } = require('url')
 const { format, inspect } = require('util')
 
 const resolveConfig = require('@netlify/config')
-const { Command, flags: flagsLib } = require('@oclif/command')
+const { flags: flagsLib } = require('@oclif/command')
 const oclifParser = require('@oclif/parser')
 const merge = require('lodash/merge')
 const argv = require('minimist')(process.argv.slice(2))
@@ -17,6 +17,7 @@ const getGlobalConfig = require('./get-global-config')
 const openBrowser = require('./open-browser')
 const StateConfig = require('./state-config')
 const { track, identify } = require('./telemetry')
+const { TrackedCommand } = require('./telemetry/tracked-command')
 
 const { NETLIFY_AUTH_TOKEN, NETLIFY_API_URL } = process.env
 
@@ -75,9 +76,11 @@ const pollForToken = async ({ api, ticket, exitWithError, chalk }) => {
   }
 }
 
-class BaseCommand extends Command {
+class BaseCommand extends TrackedCommand {
   // Initialize context
   async init() {
+    await super.init()
+
     const cwd = argv.cwd || process.cwd()
     // Grab netlify API token
     const authViaFlag = getAuthArg(argv)

@@ -3,17 +3,12 @@ const AsciiTable = require('ascii-table')
 const isEmpty = require('lodash/isEmpty')
 
 const Command = require('../../utils/command')
-const { track } = require('../../utils/telemetry')
 
 class EnvListCommand extends Command {
   async run() {
     const { flags } = this.parse(EnvListCommand)
     const { api, site, cachedConfig } = this.netlify
     const siteId = site.id
-
-    await track('command', {
-      command: 'env:list',
-    })
 
     if (!siteId) {
       this.log('No site id found, please run inside a site folder or `netlify link`')
