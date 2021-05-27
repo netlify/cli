@@ -104,8 +104,6 @@ class StatusCommand extends Command {
       }),
     )
     this.log()
-
-    this.exit(1)
   }
 }
 

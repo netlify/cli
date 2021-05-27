@@ -27,8 +27,8 @@ const getStatus = function (error) {
 
 class TrackedCommand extends Command {
   async init() {
-    await super.init()
     this.analytics = { startTime: hrtime.bigint() }
+    await super.init()
   }
 
   setAnalyticsPayload(payload) {
