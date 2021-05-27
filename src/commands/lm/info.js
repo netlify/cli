@@ -7,9 +7,14 @@ const {
   checkLFSFiltersStep,
   checkHelperVersionStep,
 } = require('../../utils/lm/steps')
+const { track } = require('../../utils/telemetry')
 
 class LmInfoCommand extends Command {
   async run() {
+    await track('command', {
+      command: 'lm:info',
+    })
+
     const steps = [
       checkGitVersionStep,
       checkGitLFSVersionStep,
@@ -20,13 +25,6 @@ class LmInfoCommand extends Command {
       }),
       checkHelperVersionStep,
     ]
-
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'lm:info',
-      },
-    })
 
     const tasks = new Listr(steps, { concurrent: true, exitOnError: false })
     try {

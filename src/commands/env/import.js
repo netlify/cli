@@ -6,6 +6,7 @@ const dotenv = require('dotenv')
 const isEmpty = require('lodash/isEmpty')
 
 const Command = require('../../utils/command')
+const { track } = require('../../utils/telemetry')
 
 class EnvImportCommand extends Command {
   async run() {
@@ -13,17 +14,14 @@ class EnvImportCommand extends Command {
     const { api, site } = this.netlify
     const siteId = site.id
 
+    await track('command', {
+      command: 'env:import',
+    })
+
     if (!siteId) {
       this.log('No site id found, please run inside a site folder or `netlify link`')
       return false
     }
-
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'env:import',
-      },
-    })
 
     const siteData = await api.getSite({ siteId })
 

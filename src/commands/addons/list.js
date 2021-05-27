@@ -3,10 +3,15 @@ const AsciiTable = require('ascii-table')
 
 const { prepareAddonCommand } = require('../../utils/addons/prepare')
 const Command = require('../../utils/command')
+const { track } = require('../../utils/telemetry')
 
 class AddonsListCommand extends Command {
   async run() {
     const { flags } = this.parse(AddonsListCommand)
+
+    await track('command', {
+      command: 'addons:list',
+    })
 
     const { addons, siteData } = await prepareAddonCommand({ context: this })
 
@@ -21,13 +26,6 @@ class AddonsListCommand extends Command {
       this.log(`> Run \`netlify addons:create addon-namespace\` to install an addon`)
       return false
     }
-
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'addons:list',
-      },
-    })
 
     const addonData = addons.map((addon) => ({
       namespace: addon.service_path.replace('/.netlify/', ''),

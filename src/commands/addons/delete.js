@@ -4,10 +4,16 @@ const inquirer = require('inquirer')
 const { prepareAddonCommand, ADDON_VALIDATION } = require('../../utils/addons/prepare')
 const Command = require('../../utils/command')
 const { parseRawFlags } = require('../../utils/parse-raw-flags')
+const { track } = require('../../utils/telemetry')
 
 class AddonsDeleteCommand extends Command {
   async run() {
     const { args, raw } = this.parse(AddonsDeleteCommand)
+
+    await track('command', {
+      command: 'addons:delete',
+    })
+
     const addonName = args.name
     const { addon } = await prepareAddonCommand({
       context: this,
@@ -27,13 +33,6 @@ class AddonsDeleteCommand extends Command {
         this.exit()
       }
     }
-
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'addons:delete',
-      },
-    })
 
     try {
       await this.netlify.api.deleteServiceInstance({

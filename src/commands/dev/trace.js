@@ -1,6 +1,7 @@
 const { flags } = require('@oclif/command')
 
 const Command = require('../../utils/command')
+const { track } = require('../../utils/telemetry')
 const { runProcess } = require('../../utils/traffic-mesh')
 
 class TraceCommand extends Command {
@@ -16,11 +17,8 @@ class TraceCommand extends Command {
     const { subprocess } = runProcess({ log: this.log, args })
     await subprocess
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'dev:trace',
-      },
+    await track('command', {
+      command: 'dev:trace',
     })
   }
 }

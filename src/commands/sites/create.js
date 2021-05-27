@@ -17,16 +17,14 @@ const SITE_NAME_SUGGESTION_SUFFIX_LENGTH = 5
 class SitesCreateCommand extends Command {
   async run() {
     const { flags } = this.parse(SitesCreateCommand)
+
+    await track('command', {
+      command: 'sites:create',
+    })
+
     const { api } = this.netlify
 
     await this.authenticate()
-
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'sites:create',
-      },
-    })
 
     const accounts = await api.listAccountsForUser()
 

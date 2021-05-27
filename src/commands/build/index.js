@@ -2,6 +2,7 @@ const { flags } = require('@oclif/command')
 
 const { getBuildOptions, runBuild } = require('../../lib/build')
 const Command = require('../../utils/command')
+const { track } = require('../../utils/telemetry')
 
 class BuildCommand extends Command {
   // Run Netlify Build
@@ -15,10 +16,7 @@ class BuildCommand extends Command {
     })
     this.checkOptions(options)
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: { command: 'build', dry: Boolean(options.dry) },
-    })
+    await track('command', { command: 'build', dry: Boolean(options.dry) })
 
     const exitCode = await runBuild(options)
     this.exit(exitCode)

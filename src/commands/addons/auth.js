@@ -1,10 +1,16 @@
 const { prepareAddonCommand, ADDON_VALIDATION } = require('../../utils/addons/prepare')
 const Command = require('../../utils/command')
 const openBrowser = require('../../utils/open-browser')
+const { track } = require('../../utils/telemetry')
 
 class AddonsAuthCommand extends Command {
   async run() {
     const { args } = this.parse(AddonsAuthCommand)
+
+    await track('command', {
+      command: 'addons:auth',
+    })
+
     const addonName = args.name
     const { addon } = await prepareAddonCommand({
       context: this,
@@ -16,13 +22,6 @@ class AddonsAuthCommand extends Command {
       console.log(`No Admin URL found for the "${addonName} add-on"`)
       return false
     }
-
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'addons:auth',
-      },
-    })
 
     this.log()
     this.log(`Opening ${addonName} add-on admin URL:`)

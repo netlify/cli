@@ -6,6 +6,7 @@ const Command = require('../../utils/command')
 const { installPlatform } = require('../../utils/lm/install')
 const { checkHelperVersion } = require('../../utils/lm/requirements')
 const { printBanner } = require('../../utils/lm/ui')
+const { track } = require('../../utils/telemetry')
 
 const installHelperIfMissing = async function ({ force, log }) {
   let installHelper = false
@@ -57,11 +58,8 @@ class LmSetupCommand extends Command {
     const { flags } = this.parse(LmSetupCommand)
     const { api, site } = this.netlify
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'lm:setup',
-      },
+    await track('command', {
+      command: 'lm:setup',
     })
 
     let helperInstalled = false

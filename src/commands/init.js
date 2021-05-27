@@ -20,14 +20,11 @@ const persistState = ({ state, siteInfo }) => {
 
 const getRepoUrl = ({ siteInfo }) => dotProp.get(siteInfo, 'build_settings.repo_url')
 
-const reportAnalytics = async ({ config, flags }) => {
-  await config.runHook('analytics', {
-    eventName: 'command',
-    payload: {
-      command: 'init',
-      manual: flags.manual,
-      force: flags.force,
-    },
+const reportAnalytics = async ({ flags }) => {
+  await track('command', {
+    command: 'init',
+    manual: flags.manual,
+    force: flags.force,
   })
 }
 
@@ -168,14 +165,14 @@ const logExistingRepoSetupAndExit = ({ log, exit, siteName, repoUrl }) => {
 class InitCommand extends Command {
   async run() {
     const { flags } = this.parse(InitCommand)
-    const { log, exit, config, netlify } = this
+    await reportAnalytics({ flags })
+
+    const { log, exit, netlify } = this
     const { repositoryRoot, state } = netlify
     let { siteInfo } = this.netlify
 
     // Check logged in status
     await this.authenticate()
-
-    await reportAnalytics({ config, flags })
 
     // Add .netlify to .gitignore file
     await ensureNetlifyIgnore(repositoryRoot)

@@ -5,6 +5,7 @@ const pWaitFor = require('p-wait-for')
 const prettyjson = require('prettyjson')
 
 const Command = require('../utils/command')
+const { track } = require('../utils/telemetry')
 
 const InitCommand = require('./init')
 
@@ -13,6 +14,10 @@ const INIT_WAIT = 1e3
 
 class SitesWatchCommand extends Command {
   async run() {
+    await track('command', {
+      command: 'watch',
+    })
+
     await this.authenticate()
     const client = this.netlify.api
     let siteId = this.netlify.site.id
@@ -25,13 +30,6 @@ class SitesWatchCommand extends Command {
     // wait for 1 sec for everything to kickoff
     console.time('Deploy time')
     await cli.wait(INIT_WAIT)
-
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'watch',
-      },
-    })
 
     // Get latest commit and look for that
     // git rev-parse HEAD

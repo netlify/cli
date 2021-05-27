@@ -12,6 +12,10 @@ const { track } = require('../utils/telemetry')
 
 class LinkCommand extends Command {
   async run() {
+    await track('command', {
+      command: 'link',
+    })
+
     await this.authenticate()
 
     const { flags } = this.parse(LinkCommand)
@@ -21,13 +25,6 @@ class LinkCommand extends Command {
       site: { id: siteId },
       state,
     } = this.netlify
-
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'link',
-      },
-    })
 
     let siteData
     try {

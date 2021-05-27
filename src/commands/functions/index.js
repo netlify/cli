@@ -3,6 +3,8 @@ const { execSync } = require('child_process')
 const { Command } = require('@oclif/command')
 const chalk = require('chalk')
 
+const { track } = require('../../utils/telemetry')
+
 const showHelp = function (command) {
   execSync(`netlify ${command} --help`, { stdio: [0, 1, 2] })
 }
@@ -25,18 +27,15 @@ const hasArgs = function (args) {
 class FunctionsCommand extends Command {
   async run() {
     const { flags, args } = this.parse(FunctionsCommand)
+
+    await track('command', {
+      command: 'functions',
+    })
+
     // run help command if no args passed
     if (isEmptyCommand(flags, args)) {
       showHelp(this.id)
-      this.exit()
     }
-
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'functions',
-      },
-    })
   }
 }
 

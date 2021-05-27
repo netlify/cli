@@ -5,6 +5,7 @@ const { methods } = require('netlify')
 
 const { isEmptyCommand } = require('../utils/check-command-inputs')
 const Command = require('../utils/command')
+const { track } = require('../utils/telemetry')
 
 class APICommand extends Command {
   async run() {
@@ -13,11 +14,8 @@ class APICommand extends Command {
 
     const { apiMethod } = args
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'api',
-      },
+    await track('command', {
+      command: 'api',
     })
 
     if (isEmptyCommand(flags, args) || flags.list) {

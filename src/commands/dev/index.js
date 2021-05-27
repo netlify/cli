@@ -21,6 +21,7 @@ const { NETLIFYDEV, NETLIFYDEVLOG, NETLIFYDEVWARN, NETLIFYDEVERR } = require('..
 const openBrowser = require('../../utils/open-browser')
 const { startProxy } = require('../../utils/proxy')
 const { startFunctionsServer } = require('../../utils/serve-functions')
+const { track } = require('../../utils/telemetry')
 const { startForwardProxy } = require('../../utils/traffic-mesh')
 
 // 1 second
@@ -175,14 +176,11 @@ const handleLiveTunnel = async ({ flags, site, api, settings, log }) => {
   }
 }
 
-const reportAnalytics = async ({ config, settings }) => {
-  await config.runHook('analytics', {
-    eventName: 'command',
-    payload: {
-      command: 'dev',
-      projectType: settings.framework || 'custom',
-      live: flagsLib.live || false,
-    },
+const reportAnalytics = async ({ settings, flags }) => {
+  await track('command', {
+    command: 'dev',
+    projectType: settings.framework || 'custom',
+    live: flags.live || false,
   })
 }
 
@@ -270,7 +268,7 @@ class DevCommand extends Command {
       await openBrowser({ url, log, silentBrowserNoneError: true })
     }
 
-    await reportAnalytics({ config: this.config, settings })
+    await reportAnalytics({ settings, flags })
 
     process.env.URL = url
     process.env.DEPLOY_URL = url

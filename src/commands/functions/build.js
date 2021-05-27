@@ -7,10 +7,16 @@ const { flags: flagsLib } = require('@oclif/command')
 const Command = require('../../utils/command')
 const { getFunctionsDir } = require('../../utils/functions')
 const { NETLIFYDEVLOG, NETLIFYDEVERR } = require('../../utils/logo')
+const { track } = require('../../utils/telemetry')
 
 class FunctionsBuildCommand extends Command {
   async run() {
     const { flags } = this.parse(FunctionsBuildCommand)
+
+    await track('command', {
+      command: 'functions:build',
+    })
+
     const { config } = this.netlify
 
     const src = flags.src || config.build.functionsSource
@@ -32,13 +38,6 @@ class FunctionsBuildCommand extends Command {
         )
       process.exit(1)
     }
-
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'functions:build',
-      },
-    })
 
     fs.mkdirSync(dst, { recursive: true })
 

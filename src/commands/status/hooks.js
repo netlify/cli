@@ -2,9 +2,14 @@ const { get } = require('dot-prop')
 const prettyjson = require('prettyjson')
 
 const Command = require('../../utils/command')
+const { track } = require('../../utils/telemetry')
 
 class StatusHooksCommand extends Command {
   async run() {
+    await track('command', {
+      command: 'status:hooks',
+    })
+
     const { site, api } = this.netlify
     await this.authenticate()
 
@@ -13,13 +18,6 @@ class StatusHooksCommand extends Command {
       this.warn('Did you run `netlify link` yet?')
       this.error(`You don't appear to be in a folder that is linked to a site`)
     }
-
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'status:hooks',
-      },
-    })
 
     let siteData
     try {
