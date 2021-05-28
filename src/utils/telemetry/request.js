@@ -17,6 +17,7 @@ const makeRequest = async function () {
     await fetch(API_URL, {
       method: 'POST',
       headers: {
+        'Content-Type': 'application/json',
         'X-Netlify-Client': CLIENT_ID,
       },
       body: JSON.stringify(options.data),
