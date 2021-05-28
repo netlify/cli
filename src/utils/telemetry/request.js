@@ -3,6 +3,8 @@ const process = require('process')
 
 const fetch = require('node-fetch')
 
+const { name, version } = require('../../../package.json')
+
 const options = JSON.parse(process.argv[2])
 
 const CLIENT_ID = 'NETLIFY_CLI'
@@ -19,6 +21,7 @@ const makeRequest = async function () {
       headers: {
         'Content-Type': 'application/json',
         'X-Netlify-Client': CLIENT_ID,
+        'User-Agent': `${name}/${version}`,
       },
       body: JSON.stringify(options.data),
     })
