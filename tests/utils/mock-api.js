@@ -8,6 +8,7 @@ const addRequest = (requests, request) => {
     path: request.path,
     body: request.body,
     method: request.method,
+    headers: request.headers,
   })
 }
 

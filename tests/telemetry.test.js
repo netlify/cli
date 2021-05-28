@@ -3,6 +3,8 @@ const process = require('process')
 const test = require('ava')
 const { version: uuidVersion } = require('uuid')
 
+const { name, version } = require('../package.json')
+
 const callCli = require('./utils/call-cli')
 const { withMockApi } = require('./utils/mock-api')
 
@@ -33,6 +35,7 @@ test.serial('should track --telemetry-enable', async (t) => {
     t.is(requests.length, 1)
     t.is(requests[0].method, 'POST')
     t.is(requests[0].path, '/api/v1/track')
+    t.is(requests[0].headers['user-agent'], `${name}/${version}`)
     t.is(requests[0].body.event, 'cli:user_telemetryEnabled')
     t.is(uuidVersion(requests[0].body.anonymousId), UUID_VERSION)
     t.deepEqual(requests[0].body.properties, {})
