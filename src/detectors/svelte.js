@@ -7,7 +7,8 @@ module.exports = function detector() {
   if (!hasRequiredFiles(['package.json'])) return false
   // REQUIRED DEPS
   if (!hasRequiredDeps(['svelte'])) return false
-  // HAS DETECTOR, IT WILL BE PICKED UP BY SAPPER DETECTOR, avoid duplication https://github.com/netlify/cli/issues/347
+  // AVOID FALSE-POSITIVES (having their own detectors and to avoid duplication https://github.com/netlify/cli/issues/347)
+  if (hasRequiredDeps(['@sveltejs/kit'])) return false
   if (hasRequiredDeps(['sapper'])) return false
 
   /** everything below now assumes that we are within svelte */
