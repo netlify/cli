@@ -20,14 +20,6 @@ const persistState = ({ state, siteInfo }) => {
 
 const getRepoUrl = ({ siteInfo }) => dotProp.get(siteInfo, 'build_settings.repo_url')
 
-const reportAnalytics = async ({ flags }) => {
-  await track('command', {
-    command: 'init',
-    manual: flags.manual,
-    force: flags.force,
-  })
-}
-
 const logExistingAndExit = ({ log, exit, siteInfo }) => {
   log()
   log(`This site has been initialized`)
@@ -165,7 +157,8 @@ const logExistingRepoSetupAndExit = ({ log, exit, siteName, repoUrl }) => {
 class InitCommand extends Command {
   async run() {
     const { flags } = this.parse(InitCommand)
-    await reportAnalytics({ flags })
+
+    this.setAnalyticsPayload({ manual: flags.manual, force: flags.force })
 
     const { log, exit, netlify } = this
     const { repositoryRoot, state } = netlify

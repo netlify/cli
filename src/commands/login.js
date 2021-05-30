@@ -2,15 +2,12 @@ const { flags: flagsLib } = require('@oclif/command')
 const chalk = require('chalk')
 
 const Command = require('../utils/command')
-const { track } = require('../utils/telemetry')
 
 class LoginCommand extends Command {
   async run() {
     const { flags } = this.parse(LoginCommand)
-    await track('command', {
-      command: 'login',
-      new: flags.new,
-    })
+
+    this.setAnalyticsPayload({ new: flags.new })
 
     const [accessToken, location] = await this.getConfigToken()
     if (accessToken && !flags.new) {

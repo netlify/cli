@@ -3,7 +3,6 @@ const { flags: flagsLib } = require('@oclif/command')
 const { isEmptyCommand } = require('../../utils/check-command-inputs')
 const Command = require('../../utils/command')
 const showHelp = require('../../utils/show-help')
-const { track } = require('../../utils/telemetry')
 
 const OpenAdminCommand = require('./admin')
 const OpenSiteCommand = require('./site')
@@ -11,10 +10,6 @@ const OpenSiteCommand = require('./site')
 class OpenCommand extends Command {
   async run() {
     const { flags, args } = this.parse(OpenCommand)
-
-    await track('command', {
-      command: 'open',
-    })
 
     // Show help on empty sub command
     if (isEmptyCommand(flags, args)) {

@@ -19,7 +19,6 @@ const Command = require('../../utils/command')
 const { injectEnvVariables } = require('../../utils/dev')
 const { NETLIFYDEVLOG, NETLIFYDEVWARN, NETLIFYDEVERR } = require('../../utils/logo')
 const { readRepoURL, validateRepoURL } = require('../../utils/read-repo-url')
-const { track } = require('../../utils/telemetry')
 
 const templatesDir = path.resolve(__dirname, '../../functions-templates')
 
@@ -29,10 +28,6 @@ const templatesDir = path.resolve(__dirname, '../../functions-templates')
 class FunctionsCreateCommand extends Command {
   async run() {
     const { flags, args } = this.parse(FunctionsCreateCommand)
-
-    await track('command', {
-      command: 'functions:create',
-    })
 
     const functionsDir = await ensureFunctionDirExists(this)
 

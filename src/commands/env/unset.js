@@ -1,5 +1,4 @@
 const Command = require('../../utils/command')
-const { track } = require('../../utils/telemetry')
 
 class EnvUnsetCommand extends Command {
   async run() {
@@ -7,10 +6,6 @@ class EnvUnsetCommand extends Command {
     const { api, site } = this.netlify
     const siteId = site.id
     const { name } = args
-
-    await track('command', {
-      command: 'env:unset',
-    })
 
     if (!siteId) {
       this.log('No site id found, please run inside a site folder or `netlify link`')

@@ -4,15 +4,10 @@ const { cli } = require('cli-ux')
 
 const { listSites } = require('../../lib/api')
 const Command = require('../../utils/command')
-const { track } = require('../../utils/telemetry')
 
 class SitesListCommand extends Command {
   async run() {
     const { flags } = this.parse(SitesListCommand)
-
-    await track('command', {
-      command: 'sites:list',
-    })
 
     const { api } = this.netlify
     if (!flags.json) {

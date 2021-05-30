@@ -3,15 +3,10 @@ const { flags: flagsLib } = require('@oclif/command')
 const Command = require('../../utils/command')
 const { installPlatform } = require('../../utils/lm/install')
 const { printBanner } = require('../../utils/lm/ui')
-const { track } = require('../../utils/telemetry')
 
 class LmInstallCommand extends Command {
   async run() {
     const { flags } = this.parse(LmInstallCommand)
-
-    await track('command', {
-      command: 'lm:install',
-    })
 
     const installed = await installPlatform({ force: flags.force, log: this.log })
     if (installed) {

@@ -1,16 +1,10 @@
-const { Command } = require('@oclif/command')
-
 const { isEmptyCommand } = require('../../utils/check-command-inputs')
 const showHelp = require('../../utils/show-help')
-const { track } = require('../../utils/telemetry')
+const { TrackedCommand } = require('../../utils/telemetry/tracked-command')
 
-class SitesCommand extends Command {
-  async run() {
+class SitesCommand extends TrackedCommand {
+  run() {
     const { flags, args } = this.parse(SitesCommand)
-
-    await track('command', {
-      command: 'sites',
-    })
 
     // Show help on empty sub command
     if (isEmptyCommand(flags, args)) {

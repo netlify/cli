@@ -69,11 +69,14 @@ const track = async function (eventName, payload = {}) {
     return false
   }
 
+  const { duration, status, ...properties } = payload
   const defaultData = {
     event: eventName,
     userId,
     anonymousId: cliId,
-    properties: payload,
+    duration,
+    status,
+    properties,
   }
 
   return send('track', defaultData)

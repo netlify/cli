@@ -1,15 +1,10 @@
 const Command = require('../../utils/command')
-const { track } = require('../../utils/telemetry')
 
 class EnvSetCommand extends Command {
   async run() {
     const { args, flags } = this.parse(EnvSetCommand)
     const { api, site } = this.netlify
     const siteId = site.id
-
-    await track('command', {
-      command: 'env:set',
-    })
 
     if (!siteId) {
       this.log('No site id found, please run inside a site folder or `netlify link`')

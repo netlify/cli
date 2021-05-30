@@ -12,10 +12,6 @@ const { track } = require('../utils/telemetry')
 
 class LinkCommand extends Command {
   async run() {
-    await track('command', {
-      command: 'link',
-    })
-
     await this.authenticate()
 
     const { flags } = this.parse(LinkCommand)

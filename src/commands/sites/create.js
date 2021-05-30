@@ -18,10 +18,6 @@ class SitesCreateCommand extends Command {
   async run() {
     const { flags } = this.parse(SitesCreateCommand)
 
-    await track('command', {
-      command: 'sites:create',
-    })
-
     const { api } = this.netlify
 
     await this.authenticate()
