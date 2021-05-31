@@ -44,6 +44,7 @@ const addFunctionToTree = (func, fileTree) => {
 const memoizedZip = ({ cacheKey, command, zipCache }) => {
   if (zipCache[cacheKey] === undefined) {
     zipCache[cacheKey] = {
+      // eslint-disable-next-line promise/prefer-await-to-then
       task: command().finally(() => {
         const entry = zipCache[cacheKey]
 
