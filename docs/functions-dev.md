@@ -46,12 +46,18 @@ Then attach any Node.js debugger to the CLI process to debug your functions.
 
 ## VS Code Debugging
 
-Put the below configuration in your repo's `.vscode/launch.json`.
+### 1. Setup
+Install netlify dev as a local dev dependency:
+```bash
+npm install --save-dev netlify-cli
+```
+or
+```bash
+yarn add -D netlify-cli
+```
 
-Then in `VS Code`:
-1. Open `Run and Debug` Sidebar. Make sure "Caught Exceptions" is deactivated.
-2. In the dropdown, select `Fullstack Debugging`
-3. Run the debugger. A chrome window should open. Wait until content is loaded (may take a few seconds for server to be ready).
+### 2. Config
+Put the below configuration in your repo's `.vscode/launch.json`.
 
 ```jsonc
 {
@@ -98,6 +104,13 @@ Then in `VS Code`:
   ]
 }
 ```
+
+### 3. Running Debug
+
+Then in `VS Code`:
+1. Open `Run and Debug` Sidebar. Make sure "Caught Exceptions" is deactivated.
+2. In the dropdown, select `Fullstack Debugging`
+3. Run the debugger. A chrome window should open. Wait until content is loaded (may take a few seconds for server to be ready).
 
 **IMPORTANT**
 
