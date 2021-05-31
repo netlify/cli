@@ -94,6 +94,7 @@ Put the below configuration in your repo's `.vscode/launch.json`.
       "skipFiles": ["<node_internals>/**"],
       "program": "${workspaceFolder}/node_modules/.bin/netlify",
       "args": ["dev", "--inspect"],
+      "console": "integratedTerminal", // important to show all errors`
       "resolveSourceMapLocations": [
         // NOTE: your linter may think this property shouldn't be here
         // yet it works for finding the source maps
