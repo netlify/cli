@@ -24,7 +24,7 @@
         "@oclif/plugin-help": "^3.0.0",
         "@oclif/plugin-not-found": "^1.1.4",
         "@oclif/plugin-plugins": "^1.9.3",
-        "@octokit/rest": "^18.5.5",
+        "@octokit/rest": "^18.0.0",
         "@sindresorhus/slugify": "^1.1.0",
         "@ungap/from-entries": "^0.2.1",
         "ansi-styles": "^5.0.0",
@@ -50,7 +50,7 @@
         "dotenv": "^10.0.0",
         "env-paths": "^2.2.0",
         "envinfo": "^7.3.1",
-        "execa": "^5.0.0",
+        "execa": "^5.0.1",
         "express": "^4.17.1",
         "express-logging": "^1.1.1",
         "filter-obj": "^2.0.1",
@@ -9683,9 +9683,9 @@
       }
     },
     "node_modules/execa": {
-      "version": "5.0.0",
-      "resolved": "https://registry.npmjs.org/execa/-/execa-5.0.0.tgz",
-      "integrity": "sha512-ov6w/2LCiuyO4RLYGdpFGjkcs0wMTgGE8PrkTHikeUy5iJekXyPIKUjifk5CsE0pt7sMCrMZ3YNqoCj6idQOnQ==",
+      "version": "5.0.1",
+      "resolved": "https://registry.npmjs.org/execa/-/execa-5.0.1.tgz",
+      "integrity": "sha512-4hFTjFbFzQa3aCLobpbPJR/U+VoL1wdV5ozOWjeet0AWDeYr9UFGM1eUFWHX+VtOWFq4p0xXUXfW1YxUaP4fpw==",
       "dependencies": {
         "cross-spawn": "^7.0.3",
         "get-stream": "^6.0.0",
@@ -28666,9 +28666,9 @@
       "integrity": "sha1-nr23Y1rQmccNzEwqH1AEKI6L2SQ="
     },
     "execa": {
-      "version": "5.0.0",
-      "resolved": "https://registry.npmjs.org/execa/-/execa-5.0.0.tgz",
-      "integrity": "sha512-ov6w/2LCiuyO4RLYGdpFGjkcs0wMTgGE8PrkTHikeUy5iJekXyPIKUjifk5CsE0pt7sMCrMZ3YNqoCj6idQOnQ==",
+      "version": "5.0.1",
+      "resolved": "https://registry.npmjs.org/execa/-/execa-5.0.1.tgz",
+      "integrity": "sha512-4hFTjFbFzQa3aCLobpbPJR/U+VoL1wdV5ozOWjeet0AWDeYr9UFGM1eUFWHX+VtOWFq4p0xXUXfW1YxUaP4fpw==",
       "requires": {
         "cross-spawn": "^7.0.3",
         "get-stream": "^6.0.0",
