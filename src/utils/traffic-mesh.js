@@ -3,7 +3,7 @@ const path = require('path')
 const process = require('process')
 const rl = require('readline')
 
-const { getTrafficMeshForLocalSystem } = require('@netlify/traffic-mesh-agent')
+const { getBinaryPath } = require('@netlify/routing-local-proxy')
 const execa = require('execa')
 const waitPort = require('wait-port')
 
@@ -27,8 +27,7 @@ const startForwardProxy = async ({
   jwtSecret,
 }) => {
   const args = [
-    'start',
-    'local',
+    'run',
     '--port',
     port,
     '--forward-proxy',
@@ -213,7 +212,7 @@ const PROXY_READY_TIMEOUT = 3e4
 const PROXY_EXIT_TIMEOUT = 2e3
 
 const runProcess = ({ args }) => {
-  const subprocess = execa(getTrafficMeshForLocalSystem(), args, { stdio: ['inherit', 'inherit', 'pipe'] })
+  const subprocess = execa(getBinaryPath(), args, { stdio: ['inherit', 'inherit', 'pipe'] })
   return { subprocess }
 }
 

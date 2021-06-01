@@ -5,7 +5,6 @@
   "requires": true,
   "packages": {
     "": {
-      "name": "netlify-cli",
       "version": "3.31.1",
       "hasInstallScript": true,
       "license": "MIT",
@@ -15,7 +14,7 @@
         "@netlify/framework-info": "^4.1.0",
         "@netlify/plugin-edge-handlers": "^1.11.12",
         "@netlify/plugins-list": "^2.14.2",
-        "@netlify/traffic-mesh-agent": "^0.27.10",
+        "@netlify/routing-local-proxy": "^0.30.0-pre.10",
         "@netlify/zip-it-and-ship-it": "^4.0.1",
         "@oclif/command": "^1.6.1",
         "@oclif/config": "^1.15.1",
@@ -2945,6 +2944,65 @@
         "node": ">=8.3.0"
       }
     },
+    "node_modules/@netlify/routing-local-proxy": {
+      "version": "0.30.0-pre.10",
+      "resolved": "https://registry.npmjs.org/@netlify/routing-local-proxy/-/routing-local-proxy-0.30.0-pre.10.tgz",
+      "integrity": "sha512-5zn9QOA16BXp2D6x3/QzF/OM25l/nmgCWdoAgHoOUnUjM1seBVx0hRoGwT6f0goTMqiURJ0HLjClSdFoHWcePQ==",
+      "optionalDependencies": {
+        "@netlify/routing-local-proxy-darwin-arm64": "^0.30.0-pre.10",
+        "@netlify/routing-local-proxy-darwin-x64": "^0.30.0-pre.10",
+        "@netlify/routing-local-proxy-linux-x64": "^0.30.0-pre.10",
+        "@netlify/routing-local-proxy-win32-x64": "^0.30.0-pre.10"
+      }
+    },
+    "node_modules/@netlify/routing-local-proxy-darwin-arm64": {
+      "version": "0.30.0-pre.10",
+      "resolved": "https://registry.npmjs.org/@netlify/routing-local-proxy-darwin-arm64/-/routing-local-proxy-darwin-arm64-0.30.0-pre.10.tgz",
+      "integrity": "sha512-KDIGjTKvAdrML8O1ttNWLehwtkdOXmVsFqgjOlEqAuFdosjfVriKmzL0Cv+0EuejSSm6gjYLoCrqqj0zK+NRug==",
+      "cpu": [
+        "arm64"
+      ],
+      "optional": true,
+      "os": [
+        "darwin"
+      ]
+    },
+    "node_modules/@netlify/routing-local-proxy-darwin-x64": {
+      "version": "0.30.0-pre.10",
+      "resolved": "https://registry.npmjs.org/@netlify/routing-local-proxy-darwin-x64/-/routing-local-proxy-darwin-x64-0.30.0-pre.10.tgz",
+      "integrity": "sha512-a+EbJdfIesggQuXWUQODb0ZifiwDot5slvbBexdd/D61quq4rtPit4hxIRGPQu1bY784O4ssf0O+61aRrgTrhA==",
+      "cpu": [
+        "x64"
+      ],
+      "optional": true,
+      "os": [
+        "darwin"
+      ]
+    },
+    "node_modules/@netlify/routing-local-proxy-linux-x64": {
+      "version": "0.30.0-pre.10",
+      "resolved": "https://registry.npmjs.org/@netlify/routing-local-proxy-linux-x64/-/routing-local-proxy-linux-x64-0.30.0-pre.10.tgz",
+      "integrity": "sha512-9LPs/YtxLVy7FRf8S97m3EZOD6yXThVZ0GOOkBp1dJByNDKafQ03vxWrdRkexyBE4JDKb2mAGh68DtQYzm+c8Q==",
+      "cpu": [
+        "x64"
+      ],
+      "optional": true,
+      "os": [
+        "linux"
+      ]
+    },
+    "node_modules/@netlify/routing-local-proxy-win32-x64": {
+      "version": "0.30.0-pre.10",
+      "resolved": "https://registry.npmjs.org/@netlify/routing-local-proxy-win32-x64/-/routing-local-proxy-win32-x64-0.30.0-pre.10.tgz",
+      "integrity": "sha512-lZwZJoxYyf9n/rpgRVuBTFuJ0FdSTiixS+Z5qqZdJTTZ8F6m1xvd/y6uYWkAzzBfVYybJN2ZHySlG3IRUDlLtw==",
+      "cpu": [
+        "x64"
+      ],
+      "optional": true,
+      "os": [
+        "win32"
+      ]
+    },
     "node_modules/@netlify/run-utils": {
       "version": "1.0.7",
       "resolved": "https://registry.npmjs.org/@netlify/run-utils/-/run-utils-1.0.7.tgz",
@@ -2983,52 +3041,6 @@
       "engines": {
         "node": ">=8.12.0"
       }
-    },
-    "node_modules/@netlify/traffic-mesh-agent": {
-      "version": "0.27.10",
-      "resolved": "https://registry.npmjs.org/@netlify/traffic-mesh-agent/-/traffic-mesh-agent-0.27.10.tgz",
-      "integrity": "sha512-HZXEdIXzg8CpysYRDVXkBpmjOj/C8Zb8Q/qkkt9x+npJ56HeX6sXAE4vK4SMCRLkkbQ2VyYTaDKg++GefeB2Gg==",
-      "optionalDependencies": {
-        "@netlify/traffic-mesh-agent-darwin-x64": "^0.27.10",
-        "@netlify/traffic-mesh-agent-linux-x64": "^0.27.10",
-        "@netlify/traffic-mesh-agent-win32-x64": "^0.27.10"
-      }
-    },
-    "node_modules/@netlify/traffic-mesh-agent-darwin-x64": {
-      "version": "0.27.10",
-      "resolved": "https://registry.npmjs.org/@netlify/traffic-mesh-agent-darwin-x64/-/traffic-mesh-agent-darwin-x64-0.27.10.tgz",
-      "integrity": "sha512-j2blCh3TKNV35VPF9Zf/LM3v6pH/gz/Y7uu/78RLbgNvCW0vGN7b1GgFnXQKwrvbL6tRGumJS2P5PWUfEsKOBA==",
-      "cpu": [
-        "x64"
-      ],
-      "optional": true,
-      "os": [
-        "darwin"
-      ]
-    },
-    "node_modules/@netlify/traffic-mesh-agent-linux-x64": {
-      "version": "0.27.10",
-      "resolved": "https://registry.npmjs.org/@netlify/traffic-mesh-agent-linux-x64/-/traffic-mesh-agent-linux-x64-0.27.10.tgz",
-      "integrity": "sha512-JdeGT356TtqbxY6IjsS+wik68V0iNGdRsGV4cYOx/aAfclAyZ9DL29A4nzobyq5J+s5binrbKpix26/WKi+sqA==",
-      "cpu": [
-        "x64"
-      ],
-      "optional": true,
-      "os": [
-        "linux"
-      ]
-    },
-    "node_modules/@netlify/traffic-mesh-agent-win32-x64": {
-      "version": "0.27.10",
-      "resolved": "https://registry.npmjs.org/@netlify/traffic-mesh-agent-win32-x64/-/traffic-mesh-agent-win32-x64-0.27.10.tgz",
-      "integrity": "sha512-ea6S9ik5X0TlA2e+jXk5D7lfvArPZjyQoIBEo7G1Tjw/vUU5Fx6KLfXv1iy7eJy+ENTLoyidscAjJ2wXlHI47g==",
-      "cpu": [
-        "x64"
-      ],
-      "optional": true,
-      "os": [
-        "win32"
-      ]
     },
     "node_modules/@netlify/zip-it-and-ship-it": {
       "version": "4.0.1",
@@ -23761,6 +23773,41 @@
       "resolved": "https://registry.npmjs.org/@netlify/plugins-list/-/plugins-list-2.14.2.tgz",
       "integrity": "sha512-WbLQ0X1cnryXzWeV03dA3BHw0CEPDTrj3IvjbeOB45A5/dxvTgQVjAeFbmqgRj6A8GPHgSLoNN0kteoXBojHhw=="
     },
+    "@netlify/routing-local-proxy": {
+      "version": "0.30.0-pre.10",
+      "resolved": "https://registry.npmjs.org/@netlify/routing-local-proxy/-/routing-local-proxy-0.30.0-pre.10.tgz",
+      "integrity": "sha512-5zn9QOA16BXp2D6x3/QzF/OM25l/nmgCWdoAgHoOUnUjM1seBVx0hRoGwT6f0goTMqiURJ0HLjClSdFoHWcePQ==",
+      "requires": {
+        "@netlify/routing-local-proxy-darwin-arm64": "^0.30.0-pre.10",
+        "@netlify/routing-local-proxy-darwin-x64": "^0.30.0-pre.10",
+        "@netlify/routing-local-proxy-linux-x64": "^0.30.0-pre.10",
+        "@netlify/routing-local-proxy-win32-x64": "^0.30.0-pre.10"
+      }
+    },
+    "@netlify/routing-local-proxy-darwin-arm64": {
+      "version": "0.30.0-pre.10",
+      "resolved": "https://registry.npmjs.org/@netlify/routing-local-proxy-darwin-arm64/-/routing-local-proxy-darwin-arm64-0.30.0-pre.10.tgz",
+      "integrity": "sha512-KDIGjTKvAdrML8O1ttNWLehwtkdOXmVsFqgjOlEqAuFdosjfVriKmzL0Cv+0EuejSSm6gjYLoCrqqj0zK+NRug==",
+      "optional": true
+    },
+    "@netlify/routing-local-proxy-darwin-x64": {
+      "version": "0.30.0-pre.10",
+      "resolved": "https://registry.npmjs.org/@netlify/routing-local-proxy-darwin-x64/-/routing-local-proxy-darwin-x64-0.30.0-pre.10.tgz",
+      "integrity": "sha512-a+EbJdfIesggQuXWUQODb0ZifiwDot5slvbBexdd/D61quq4rtPit4hxIRGPQu1bY784O4ssf0O+61aRrgTrhA==",
+      "optional": true
+    },
+    "@netlify/routing-local-proxy-linux-x64": {
+      "version": "0.30.0-pre.10",
+      "resolved": "https://registry.npmjs.org/@netlify/routing-local-proxy-linux-x64/-/routing-local-proxy-linux-x64-0.30.0-pre.10.tgz",
+      "integrity": "sha512-9LPs/YtxLVy7FRf8S97m3EZOD6yXThVZ0GOOkBp1dJByNDKafQ03vxWrdRkexyBE4JDKb2mAGh68DtQYzm+c8Q==",
+      "optional": true
+    },
+    "@netlify/routing-local-proxy-win32-x64": {
+      "version": "0.30.0-pre.10",
+      "resolved": "https://registry.npmjs.org/@netlify/routing-local-proxy-win32-x64/-/routing-local-proxy-win32-x64-0.30.0-pre.10.tgz",
+      "integrity": "sha512-lZwZJoxYyf9n/rpgRVuBTFuJ0FdSTiixS+Z5qqZdJTTZ8F6m1xvd/y6uYWkAzzBfVYybJN2ZHySlG3IRUDlLtw==",
+      "optional": true
+    },
     "@netlify/run-utils": {
       "version": "1.0.7",
       "resolved": "https://registry.npmjs.org/@netlify/run-utils/-/run-utils-1.0.7.tgz",
@@ -23792,34 +23839,6 @@
           "integrity": "sha512-SEQu7vl8KjNL2eoGBLF3+wAjpsNfA9XMlXAYj/3EdaNfAlxKthD1xjEQfGOUhllCGGJVNY34bRr6lPINhNjyZw=="
         }
       }
-    },
-    "@netlify/traffic-mesh-agent": {
-      "version": "0.27.10",
-      "resolved": "https://registry.npmjs.org/@netlify/traffic-mesh-agent/-/traffic-mesh-agent-0.27.10.tgz",
-      "integrity": "sha512-HZXEdIXzg8CpysYRDVXkBpmjOj/C8Zb8Q/qkkt9x+npJ56HeX6sXAE4vK4SMCRLkkbQ2VyYTaDKg++GefeB2Gg==",
-      "requires": {
-        "@netlify/traffic-mesh-agent-darwin-x64": "^0.27.10",
-        "@netlify/traffic-mesh-agent-linux-x64": "^0.27.10",
-        "@netlify/traffic-mesh-agent-win32-x64": "^0.27.10"
-      }
-    },
-    "@netlify/traffic-mesh-agent-darwin-x64": {
-      "version": "0.27.10",
-      "resolved": "https://registry.npmjs.org/@netlify/traffic-mesh-agent-darwin-x64/-/traffic-mesh-agent-darwin-x64-0.27.10.tgz",
-      "integrity": "sha512-j2blCh3TKNV35VPF9Zf/LM3v6pH/gz/Y7uu/78RLbgNvCW0vGN7b1GgFnXQKwrvbL6tRGumJS2P5PWUfEsKOBA==",
-      "optional": true
-    },
-    "@netlify/traffic-mesh-agent-linux-x64": {
-      "version": "0.27.10",
-      "resolved": "https://registry.npmjs.org/@netlify/traffic-mesh-agent-linux-x64/-/traffic-mesh-agent-linux-x64-0.27.10.tgz",
-      "integrity": "sha512-JdeGT356TtqbxY6IjsS+wik68V0iNGdRsGV4cYOx/aAfclAyZ9DL29A4nzobyq5J+s5binrbKpix26/WKi+sqA==",
-      "optional": true
-    },
-    "@netlify/traffic-mesh-agent-win32-x64": {
-      "version": "0.27.10",
-      "resolved": "https://registry.npmjs.org/@netlify/traffic-mesh-agent-win32-x64/-/traffic-mesh-agent-win32-x64-0.27.10.tgz",
-      "integrity": "sha512-ea6S9ik5X0TlA2e+jXk5D7lfvArPZjyQoIBEo7G1Tjw/vUU5Fx6KLfXv1iy7eJy+ENTLoyidscAjJ2wXlHI47g==",
-      "optional": true
     },
     "@netlify/zip-it-and-ship-it": {
       "version": "4.0.1",

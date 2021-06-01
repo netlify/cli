@@ -80,7 +80,7 @@
     "@netlify/framework-info": "^4.1.0",
     "@netlify/plugin-edge-handlers": "^1.11.12",
     "@netlify/plugins-list": "^2.14.2",
-    "@netlify/traffic-mesh-agent": "^0.27.10",
+    "@netlify/routing-local-proxy": "^0.30.0-pre.10",
     "@netlify/zip-it-and-ship-it": "^4.0.1",
     "@oclif/command": "^1.6.1",
     "@oclif/config": "^1.15.1",
