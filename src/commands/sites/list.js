@@ -8,18 +8,12 @@ const Command = require('../../utils/command')
 class SitesListCommand extends Command {
   async run() {
     const { flags } = this.parse(SitesListCommand)
+
     const { api } = this.netlify
     if (!flags.json) {
       cli.action.start('Loading your sites')
     }
     await this.authenticate()
-
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'sites:list',
-      },
-    })
 
     const sites = await listSites({ api, options: { filter: 'all' } })
     if (!flags.json) {

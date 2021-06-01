@@ -3,21 +3,13 @@ const Command = require('../../utils/command')
 const showHelp = require('../../utils/show-help')
 
 class EnvCommand extends Command {
-  async run() {
+  run() {
     const { flags, args } = this.parse(EnvCommand)
 
     // Show help on empty sub command
     if (isEmptyCommand(flags, args)) {
       showHelp(this.id)
-      this.exit()
     }
-
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'env',
-      },
-    })
   }
 }
 

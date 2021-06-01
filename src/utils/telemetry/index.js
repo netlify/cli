@@ -1,16 +1,16 @@
-const { spawn } = require('child_process')
 const path = require('path')
 const process = require('process')
 
-const ci = require('ci-info')
+const { isCI } = require('ci-info')
+const execa = require('execa')
 
 const getGlobalConfig = require('../get-global-config')
 
 const isValidEventName = require('./validation')
 
-const IS_INSIDE_CI = ci.isCI
-
-const DEBUG = false
+const isTelemetryDisabled = function (config) {
+  return config.get('telemetryDisabled')
+}
 
 const send = function (type, payload) {
   const requestFile = path.join(__dirname, 'request.js')
@@ -19,18 +19,18 @@ const send = function (type, payload) {
     type,
   })
 
-  if (DEBUG) {
-    console.log(`${type} call`, payload)
-    return Promise.resolve()
+  const args = [process.execPath, [requestFile, options]]
+  if (process.env.NETLIFY_TEST_TELEMETRY_WAIT === 'true') {
+    return execa(...args, {
+      stdio: 'inherit',
+    })
   }
 
   // spawn detached child process to handle send
-  spawn(process.execPath, [requestFile, options], {
+  execa(...args, {
     detached: true,
     stdio: 'ignore',
   }).unref()
-
-  return Promise.resolve()
 }
 
 const eventConfig = {
@@ -45,36 +45,17 @@ const eventConfig = {
   ],
 }
 
-const track = async function (eventName, payload) {
-  const properties = payload || {}
-
-  if (IS_INSIDE_CI) {
-    if (DEBUG) {
-      console.log('Abort .identify call inside CI')
-    }
-    return Promise.resolve()
+const track = async function (eventName, payload = {}) {
+  if (isCI) {
+    return
   }
 
   const globalConfig = await getGlobalConfig()
-  // exit early if tracking disabled
-  const TELEMETRY_DISABLED = globalConfig.get('telemetryDisabled')
-  if (TELEMETRY_DISABLED && !properties.force) {
-    if (DEBUG) {
-      console.log('Abort .track call TELEMETRY_DISABLED')
-    }
-    return Promise.resolve()
+  if (isTelemetryDisabled(globalConfig)) {
+    return
   }
 
-  let userId = properties.userID
-  let { cliId } = properties
-
-  if (!userId) {
-    userId = globalConfig.get('userId')
-  }
-
-  if (!cliId) {
-    cliId = globalConfig.get('cliId')
-  }
+  const [userId, cliId] = [globalConfig.get('userId'), globalConfig.get('cliId')]
 
   // automatically add `cli:` prefix if missing
   if (!eventName.includes('cli:')) {
@@ -88,70 +69,42 @@ const track = async function (eventName, payload) {
     return false
   }
 
-  const defaultProperties = {
-    // cliId: cliId
-  }
-
-  delete properties.force
-
+  const { duration, status, ...properties } = payload
   const defaultData = {
     event: eventName,
     userId,
     anonymousId: cliId,
-    properties: { ...defaultProperties, ...properties },
+    duration,
+    status,
+    properties,
   }
 
   return send('track', defaultData)
 }
 
 const identify = async function (payload) {
-  const data = payload || {}
-
-  if (IS_INSIDE_CI) {
-    if (DEBUG) {
-      console.log('Abort .identify call inside CI')
-    }
-    return Promise.resolve()
+  if (isCI) {
+    return
   }
 
   const globalConfig = await getGlobalConfig()
-  // exit early if tracking disabled
-  const TELEMETRY_DISABLED = globalConfig.get('telemetryDisabled')
-  if (TELEMETRY_DISABLED && !data.force) {
-    if (DEBUG) {
-      console.log('Abort .identify call TELEMETRY_DISABLED')
-    }
-    return Promise.resolve()
+  if (isTelemetryDisabled(globalConfig, payload)) {
+    return
   }
 
-  let userId = data.userID
-  let { cliId } = data
-
-  if (!userId) {
-    userId = globalConfig.get('userId')
-  }
-
-  if (!cliId) {
-    cliId = globalConfig.get('cliId')
-  }
-
-  const userProfile = globalConfig.get(`users.${userId}`)
+  const cliId = globalConfig.get('cliId')
+  const { userId, name, email } = payload
 
   const defaultTraits = {
-    name: userProfile.name,
-    email: userProfile.email,
+    name,
+    email,
     cliId,
-    telemetryDisabled: TELEMETRY_DISABLED,
   }
 
-  // remove force key
-  delete data.force
-
-  // Payload to send to segment
   const identifyData = {
     anonymousId: cliId,
     userId,
-    traits: { ...defaultTraits, ...data },
+    traits: { ...defaultTraits, ...payload },
   }
 
   return send('identify', identifyData)

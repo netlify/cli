@@ -11,13 +11,6 @@ class EnvSetCommand extends Command {
       return false
     }
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'env:set',
-      },
-    })
-
     const siteData = await api.getSite({ siteId })
 
     // Get current environment variables set in the UI

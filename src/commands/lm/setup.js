@@ -57,13 +57,6 @@ class LmSetupCommand extends Command {
     const { flags } = this.parse(LmSetupCommand)
     const { api, site } = this.netlify
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'lm:setup',
-      },
-    })
-
     let helperInstalled = false
     if (!flags['skip-install']) {
       try {

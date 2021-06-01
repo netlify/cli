@@ -8,13 +8,6 @@ class LmInstallCommand extends Command {
   async run() {
     const { flags } = this.parse(LmInstallCommand)
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'lm:install',
-      },
-    })
-
     const installed = await installPlatform({ force: flags.force, log: this.log })
     if (installed) {
       printBanner(this, flags.force)

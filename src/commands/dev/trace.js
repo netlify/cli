@@ -15,13 +15,6 @@ class TraceCommand extends Command {
     const args = ['trace'].concat(this.argv)
     const { subprocess } = runProcess({ log: this.log, args })
     await subprocess
-
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'dev:trace',
-      },
-    })
   }
 }
 

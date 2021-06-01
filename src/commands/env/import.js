@@ -18,13 +18,6 @@ class EnvImportCommand extends Command {
       return false
     }
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'env:import',
-      },
-    })
-
     const siteData = await api.getSite({ siteId })
 
     // Get current environment variables set in the UI

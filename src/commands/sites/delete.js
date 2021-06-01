@@ -8,6 +8,9 @@ const { parseRawFlags } = require('../../utils/parse-raw-flags')
 class SitesDeleteCommand extends Command {
   async run() {
     const { args, flags, raw } = this.parse(SitesDeleteCommand)
+
+    this.setAnalyticsPayload({ force: flags.force })
+
     const { api, site } = this.netlify
     const { siteId } = args
     const cwdSiteId = site.id
@@ -27,14 +30,6 @@ class SitesDeleteCommand extends Command {
     if (!siteData) {
       this.error(`Unable to process site`)
     }
-
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'sites:delete',
-        force: flags.force,
-      },
-    })
 
     const rawFlags = parseRawFlags(raw)
     const noForce = !rawFlags.force && !rawFlags.f

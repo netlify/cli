@@ -22,13 +22,6 @@ class AddonsListCommand extends Command {
       return false
     }
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'addons:list',
-      },
-    })
-
     const addonData = addons.map((addon) => ({
       namespace: addon.service_path.replace('/.netlify/', ''),
       name: addon.service_name,

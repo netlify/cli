@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "3.31.1",
+  "version": "3.32.6",
   "author": "Netlify Inc.",
   "contributors": [
     "Mathias Biilmann <matt@netlify.com> (https://twitter.com/biilmann)",
@@ -42,7 +42,7 @@
     "url": "https://github.com/netlify/cli/issues"
   },
   "scripts": {
-    "prepublishOnly": "npm ci && run-s test",
+    "prepublishOnly": "npm ci --no-audit && run-s test",
     "start": "node ./bin/run",
     "test": "run-s format test:dev",
     "format": "run-s format:check-fix:*",
@@ -57,8 +57,8 @@
     "test:ci": "run-s test:init:* test:ci:*",
     "test:init:cli-version": "npm run start -- --version",
     "test:init:cli-help": "npm run start -- --help",
-    "test:init:eleventy-deps": "npm ci --prefix tests/eleventy-site",
-    "test:init:hugo-deps": "npm ci --prefix tests/hugo-site",
+    "test:init:eleventy-deps": "npm ci --prefix tests/eleventy-site --no-audit",
+    "test:init:hugo-deps": "npm ci --prefix tests/hugo-site --no-audit",
     "test:dev:ava": "ava --verbose",
     "test:ci:ava": "nyc -r json ava",
     "docs": "node ./site/scripts/docs.js",
@@ -66,7 +66,7 @@
     "prepack": "oclif-dev manifest && npm prune --prod",
     "postpack": "rm -f oclif.manifest.json && npm i",
     "site:build": "run-s site:build:*",
-    "site:build:install": "cd site && npm ci",
+    "site:build:install": "cd site && npm ci --no-audit",
     "site:build:assets": "cd site && npm run build",
     "postinstall": "node ./scripts/postinstall.js"
   },
@@ -75,13 +75,13 @@
     "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,scripts,site,tests,.github}/**/*.{js,md,yml,json,html}\" \"*.{js,yml,json,html}\" \".*.{js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\""
   },
   "dependencies": {
-    "@netlify/build": "^11.18.1",
-    "@netlify/config": "^6.7.0",
-    "@netlify/framework-info": "^4.1.0",
-    "@netlify/plugin-edge-handlers": "^1.11.12",
+    "@netlify/build": "^11.29.2",
+    "@netlify/config": "^6.7.1",
+    "@netlify/framework-info": "^5.1.2",
+    "@netlify/plugin-edge-handlers": "^1.11.13",
     "@netlify/plugins-list": "^2.14.2",
     "@netlify/routing-local-proxy": "^0.30.0-pre.10",
-    "@netlify/zip-it-and-ship-it": "^4.0.1",
+    "@netlify/zip-it-and-ship-it": "^4.2.5",
     "@oclif/command": "^1.6.1",
     "@oclif/config": "^1.15.1",
     "@oclif/errors": "^1.3.4",
@@ -148,8 +148,8 @@
     "memoize-one": "^5.2.1",
     "minimist": "^1.2.5",
     "multiparty": "^4.2.1",
-    "netlify": "^6.1.29",
-    "netlify-redirect-parser": "^3.0.28",
+    "netlify": "^7.0.0",
+    "netlify-redirect-parser": "^3.0.29",
     "netlify-redirector": "^0.2.1",
     "node-fetch": "^2.6.0",
     "node-version-alias": "^1.0.1",
@@ -193,7 +193,7 @@
     "@babel/preset-react": "^7.12.13",
     "@commitlint/cli": "^12.0.0",
     "@commitlint/config-conventional": "^12.0.0",
-    "@netlify/eslint-config-node": "^3.0.1",
+    "@netlify/eslint-config-node": "^3.0.4",
     "@oclif/dev-cli": "^1.23.1",
     "@oclif/test": "^1.2.5",
     "ava": "^3.15.0",
@@ -208,7 +208,7 @@
     "p-timeout": "^4.0.0",
     "pidtree": "^0.5.0",
     "seedrandom": "^3.0.5",
-    "sinon": "^10.0.0",
+    "sinon": "^11.0.0",
     "sort-on": "^4.1.0",
     "strip-ansi": "^6.0.0",
     "temp-dir": "^2.0.0",
@@ -241,9 +241,6 @@
     "hooks": {
       "init": [
         "./src/hooks/init"
-      ],
-      "analytics": [
-        "./src/hooks/analytics"
       ]
     }
   },

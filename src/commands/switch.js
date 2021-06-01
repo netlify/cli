@@ -14,13 +14,6 @@ class SwitchCommand extends Command {
       {},
     )
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'switch',
-      },
-    })
-
     const { accountSwitchChoice } = await inquirer.prompt([
       {
         type: 'list',

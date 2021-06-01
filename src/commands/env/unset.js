@@ -12,13 +12,6 @@ class EnvUnsetCommand extends Command {
       return false
     }
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'env:unset',
-      },
-    })
-
     const siteData = await api.getSite({ siteId })
 
     // Get current environment variables set in the UI

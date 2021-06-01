@@ -11,13 +11,6 @@ class EnvGetCommand extends Command {
       return false
     }
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'env:get',
-      },
-    })
-
     const siteData = await api.getSite({ siteId })
 
     const { name } = args

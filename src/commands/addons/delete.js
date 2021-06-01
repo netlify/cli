@@ -8,6 +8,7 @@ const { parseRawFlags } = require('../../utils/parse-raw-flags')
 class AddonsDeleteCommand extends Command {
   async run() {
     const { args, raw } = this.parse(AddonsDeleteCommand)
+
     const addonName = args.name
     const { addon } = await prepareAddonCommand({
       context: this,
@@ -27,13 +28,6 @@ class AddonsDeleteCommand extends Command {
         this.exit()
       }
     }
-
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'addons:delete',
-      },
-    })
 
     try {
       await this.netlify.api.deleteServiceInstance({

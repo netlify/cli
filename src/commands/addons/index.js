@@ -1,24 +1,15 @@
-const { Command } = require('@oclif/command')
-
 const { isEmptyCommand } = require('../../utils/check-command-inputs')
 const showHelp = require('../../utils/show-help')
+const { TrackedCommand } = require('../../utils/telemetry/tracked-command')
 
-class AddonsCommand extends Command {
-  async run() {
+class AddonsCommand extends TrackedCommand {
+  run() {
     const { flags, args } = this.parse(AddonsCommand)
 
     // Show help on empty sub command
     if (isEmptyCommand(flags, args)) {
       showHelp(this.id)
-      this.exit()
     }
-
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'addons',
-      },
-    })
   }
 }
 

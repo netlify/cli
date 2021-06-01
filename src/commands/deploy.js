@@ -350,22 +350,13 @@ class DeployCommand extends Command {
     const { api, site, config } = this.netlify
     const alias = flags.alias || flags.branch
 
+    this.setAnalyticsPayload({ open: flags.open, prod: flags.prod, json: flags.json, alias: Boolean(alias) })
+
     if (flags.branch) {
       warn('--branch flag has been renamed to --alias and will be removed in future versions')
     }
 
     await this.authenticate(flags.auth)
-
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'deploy',
-        open: flags.open,
-        prod: flags.prod,
-        json: flags.json,
-        alias: Boolean(alias),
-      },
-    })
 
     let siteId = flags.site || site.id
     let siteData = {}

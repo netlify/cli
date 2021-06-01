@@ -175,17 +175,6 @@ const handleLiveTunnel = async ({ flags, site, api, settings, log }) => {
   }
 }
 
-const reportAnalytics = async ({ config, settings }) => {
-  await config.runHook('analytics', {
-    eventName: 'command',
-    payload: {
-      command: 'dev',
-      projectType: settings.framework || 'custom',
-      live: flagsLib.live || false,
-    },
-  })
-}
-
 const BANNER_LENGTH = 70
 
 const printBanner = ({ url, log }) => {
@@ -248,6 +237,8 @@ class DevCommand extends Command {
       exit(1)
     }
 
+    this.setAnalyticsPayload({ projectType: settings.framework || 'custom', live: flags.live })
+
     await startFunctionsServer({
       config,
       settings,
@@ -269,8 +260,6 @@ class DevCommand extends Command {
     if (devConfig.autoLaunch !== false) {
       await openBrowser({ url, log, silentBrowserNoneError: true })
     }
-
-    await reportAnalytics({ config: this.config, settings })
 
     process.env.URL = url
     process.env.DEPLOY_URL = url
@@ -318,6 +307,7 @@ DevCommand.flags = {
   live: flagsLib.boolean({
     char: 'l',
     description: 'start a public live session',
+    default: false,
   }),
   edgeHandlers: flagsLib.boolean({
     char: 'e',

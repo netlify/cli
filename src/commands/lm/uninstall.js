@@ -3,13 +3,6 @@ const { uninstall } = require('../../utils/lm/install')
 
 class LmUninstallCommand extends Command {
   async run() {
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'lm:uninstall',
-      },
-    })
-
     await uninstall()
   }
 }

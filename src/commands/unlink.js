@@ -11,13 +11,6 @@ class UnlinkCommand extends Command {
       return this.exit()
     }
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'unlink',
-      },
-    })
-
     let siteData = {}
     try {
       siteData = await this.netlify.api.getSite({ siteId })

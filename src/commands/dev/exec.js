@@ -17,12 +17,6 @@ class ExecCommand extends Command {
     execa(this.argv[0], this.argv.slice(1), {
       stdio: 'inherit',
     })
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'dev:exec',
-      },
-    })
   }
 }
 

@@ -21,13 +21,6 @@ class LmInfoCommand extends Command {
       checkHelperVersionStep,
     ]
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'lm:info',
-      },
-    })
-
     const tasks = new Listr(steps, { concurrent: true, exitOnError: false })
     try {
       await tasks.run()

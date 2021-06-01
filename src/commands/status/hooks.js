@@ -14,13 +14,6 @@ class StatusHooksCommand extends Command {
       this.error(`You don't appear to be in a folder that is linked to a site`)
     }
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'status:hooks',
-      },
-    })
-
     let siteData
     try {
       siteData = await api.getSite({ siteId })

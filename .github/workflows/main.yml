@@ -46,7 +46,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
           check-latest: true
       - name: Install core dependencies
-        run: npm ci
+        run: npm ci --no-audit
       - name: Install site dependencies
         run: npm run site:build:install
       - name: Linting

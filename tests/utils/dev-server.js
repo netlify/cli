@@ -56,7 +56,7 @@ const startServer = async ({ cwd, env = {}, args = [] }) => {
         })
       }
     })
-    // eslint-disable-next-line promise/prefer-await-to-callbacks
+    // eslint-disable-next-line promise/prefer-await-to-callbacks,promise/prefer-await-to-then
     ps.catch((error) => !selfKilled && reject(error))
   })
 

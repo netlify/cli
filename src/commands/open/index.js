@@ -10,17 +10,11 @@ const OpenSiteCommand = require('./site')
 class OpenCommand extends Command {
   async run() {
     const { flags, args } = this.parse(OpenCommand)
+
     // Show help on empty sub command
     if (isEmptyCommand(flags, args)) {
       showHelp(this.id)
     }
-
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'open',
-      },
-    })
 
     if (flags.site) {
       await OpenSiteCommand.run()

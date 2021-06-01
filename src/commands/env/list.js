@@ -15,13 +15,6 @@ class EnvListCommand extends Command {
       return false
     }
 
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'env:list',
-      },
-    })
-
     const siteData = await api.getSite({ siteId })
     const environment = fromEntries(
       Object.entries(cachedConfig.env)

@@ -6,6 +6,9 @@ const Command = require('../utils/command')
 class LoginCommand extends Command {
   async run() {
     const { flags } = this.parse(LoginCommand)
+
+    this.setAnalyticsPayload({ new: flags.new })
+
     const [accessToken, location] = await this.getConfigToken()
     if (accessToken && !flags.new) {
       this.log(`Already logged in ${msg(location)}`)
@@ -16,14 +19,6 @@ class LoginCommand extends Command {
       this.log()
       return this.exit()
     }
-
-    await this.config.runHook('analytics', {
-      eventName: 'command',
-      payload: {
-        command: 'login',
-        new: flags.new,
-      },
-    })
 
     await this.expensivelyAuthenticate()
 
