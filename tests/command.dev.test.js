@@ -1253,13 +1253,10 @@ testMatrix.forEach(({ args }) => {
           .withNetlifyToml({
             config: {
               build: { publish: publicDir },
-              redirects: [
+              'edge-handlers': [
                 {
-                  from: '/edge-handler',
-                  to: 'index.html',
-                  status: 200,
-                  edge_handler: 'smoke',
-                  force: true,
+                  handler: 'smoke',
+                  path: '/edge-handler',
                 },
               ],
             },
@@ -1307,13 +1304,10 @@ testMatrix.forEach(({ args }) => {
           .withNetlifyToml({
             config: {
               build: { publish: publicDir },
-              redirects: [
+              'edge-handlers': [
                 {
-                  from: '/edge-handler',
-                  to: 'index.html',
-                  status: 200,
-                  edge_handler: 'smoke',
-                  force: true,
+                  handler: 'smoke',
+                  path: '/edge-handler',
                 },
               ],
             },
