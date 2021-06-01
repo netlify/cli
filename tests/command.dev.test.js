@@ -1246,7 +1246,7 @@ testMatrix.forEach(({ args }) => {
   const version = Number.parseInt(process.version.slice(1).split('.')[0])
   const EDGE_HANDLER_MIN_VERSION = 10
   if (version >= EDGE_HANDLER_MIN_VERSION) {
-    test(testName('should serve edge handlers with --edgeHandlers flag', args), async (t) => {
+    test(testName('routing-local-proxy serves edge handlers with --edgeHandlers flag', args), async (t) => {
       await withSiteBuilder('site-with-fully-qualified-redirect-rule', async (builder) => {
         const publicDir = 'public'
         builder
@@ -1300,7 +1300,7 @@ testMatrix.forEach(({ args }) => {
       })
     })
 
-    test(testName('should serve edge handlers with deprecated --trafficMesh flag', args), async (t) => {
+    test(testName('routing-local-proxy serves edge handlers with deprecated --trafficMesh flag', args), async (t) => {
       await withSiteBuilder('site-with-fully-qualified-redirect-rule', async (builder) => {
         const publicDir = 'public'
         builder
@@ -1354,7 +1354,7 @@ testMatrix.forEach(({ args }) => {
       })
     })
 
-    test(testName('mesh-forward builds projects w/o edge handlers', args), async (t) => {
+    test(testName('routing-local-proxy builds projects w/o edge handlers', args), async (t) => {
       await withSiteBuilder('site-with-fully-qualified-redirect-rule', async (builder) => {
         const publicDir = 'public'
         builder

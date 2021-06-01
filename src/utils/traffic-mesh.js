@@ -180,7 +180,7 @@ const forwardMessagesToLog = ({ log, subprocess }) => {
         }
 
         default:
-          log(`${NETLIFYDEVWARN} Unknown mesh-forward event '${type}'`)
+          log(`${NETLIFYDEVWARN} Unknown routing-local-proxy event '${type}'`)
           break
       }
     })
@@ -196,7 +196,7 @@ const forwardMessagesToLog = ({ log, subprocess }) => {
       stopSpinner({
         spinner,
         error: true,
-        text: `${NETLIFYDEVERR} An error occured while bundling processing the messages from mesh-forward: ${err}`,
+        text: `${NETLIFYDEVERR} An error occured while bundling processing the messages from routing-local-proxy: ${err}`,
       })
 
       firstBundleReject(err)
