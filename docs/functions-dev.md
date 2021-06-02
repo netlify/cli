@@ -47,7 +47,7 @@ Then attach any Node.js debugger to the CLI process to debug your functions.
 ## VS Code Debugging
 
 ### 1. Setup
-Install netlify dev as a local dev dependency:
+Install Netlify CLI as a local dev dependency:
 ```bash
 npm install --save-dev netlify-cli
 ```
