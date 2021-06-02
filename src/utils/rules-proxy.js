@@ -18,7 +18,8 @@ const parseFile = async function (filePath) {
 
   const parser = path.basename(filePath) === '_redirects' ? parseRedirectsFormat : parseNetlifyConfig
   try {
-    return await parser(filePath)
+    const rules = await parser(filePath)
+    return rules.map(normalizeRule)
   } catch (error) {
     console.error(`${NETLIFYDEVWARN} Warnings while parsing ${path.basename(filePath)} file:
 ${error.message}`)
@@ -28,7 +29,7 @@ ${error.message}`)
 
 const parseRules = async function (configFiles) {
   const rules = await Promise.all(configFiles.map(parseFile))
-  return rules.flat().map(normalizeRule)
+  return rules.flat()
 }
 
 // Backward compatibility fix.

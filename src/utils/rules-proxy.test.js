@@ -57,49 +57,65 @@ const config = {
 
 const redirects = [{ from: '/something ', to: '/ping', status: 200 }]
 
+const BASE_RULE = {
+  conditions: {},
+  force: false,
+  headers: {},
+  proxy: false,
+  params: {},
+  query: {},
+}
+
 test('should parse redirect rules from netlify.toml', async (t) => {
   await withSiteBuilder('site-with-redirects-in-netlify-toml', async (builder) => {
-    builder.withNetlifyToml({
-      config,
-    })
-
-    await builder.buildAsync()
+    await builder
+      .withNetlifyToml({
+        config,
+      })
+      .buildAsync()
 
     const rules = await parseFile(path.join(builder.directory, 'netlify.toml'))
     const expected = [
       {
+        ...BASE_RULE,
         path: '/api/*',
         to: '/.netlify/functions/:splat',
         status: 200,
       },
       {
+        ...BASE_RULE,
         path: '/foo',
         to: '/not-foo',
         status: 200,
         force: false,
       },
       {
+        ...BASE_RULE,
         path: '/foo.html',
         to: '/not-foo',
         status: 200,
       },
       {
+        ...BASE_RULE,
         path: '/not-foo',
         to: '/foo',
         status: 200,
         force: true,
       },
       {
+        ...BASE_RULE,
         path: '/test-404a',
         to: '/foo',
         status: 404,
       },
       {
+        ...BASE_RULE,
         path: '/test-404b',
         to: '/foo',
         status: 404,
       },
       {
+        ...BASE_RULE,
         path: '/test-404c',
         to: '/foo',
         status: 404,
@@ -113,15 +129,16 @@ test('should parse redirect rules from netlify.toml', async (t) => {
 
 test('should parse redirect rules from _redirects file', async (t) => {
   await withSiteBuilder('site-with-redirects-file', async (builder) => {
-    builder.withRedirectsFile({
-      redirects,
-    })
-
-    await builder.buildAsync()
+    await builder
+      .withRedirectsFile({
+        redirects,
+      })
+      .buildAsync()
 
     const rules = await parseFile(path.join(builder.directory, '_redirects'))
     const expected = [
       {
+        ...BASE_RULE,
         path: '/something',
         to: '/ping',
         status: 200,
@@ -134,57 +151,64 @@ test('should parse redirect rules from _redirects file', async (t) => {
 
 test('should parse redirect rules from _redirects file and netlify.toml', async (t) => {
   await withSiteBuilder('site-with-redirects-file-and-netlify-toml', async (builder) => {
-    builder
+    await builder
       .withRedirectsFile({
         redirects,
       })
       .withNetlifyToml({
         config,
       })
-
-    await builder.buildAsync()
+      .buildAsync()
 
     const files = [path.join(builder.directory, '_redirects'), path.join(builder.directory, 'netlify.toml')]
     const rules = await parseRules(files)
     const expected = [
       {
+        ...BASE_RULE,
         path: '/something',
         to: '/ping',
         status: 200,
       },
       {
+        ...BASE_RULE,
         path: '/api/*',
         to: '/.netlify/functions/:splat',
         status: 200,
       },
       {
+        ...BASE_RULE,
         path: '/foo',
         to: '/not-foo',
         status: 200,
         force: false,
       },
       {
+        ...BASE_RULE,
         path: '/foo.html',
         to: '/not-foo',
         status: 200,
       },
       {
+        ...BASE_RULE,
         path: '/not-foo',
         to: '/foo',
         status: 200,
         force: true,
       },
       {
+        ...BASE_RULE,
         path: '/test-404a',
         to: '/foo',
         status: 404,
       },
       {
+        ...BASE_RULE,
         path: '/test-404b',
         to: '/foo',
         status: 404,
       },
       {
+        ...BASE_RULE,
         path: '/test-404c',
         to: '/foo',
         status: 404,
