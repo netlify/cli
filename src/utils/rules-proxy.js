@@ -60,7 +60,7 @@ const createRewriter = async function ({ distDir, projectDir, jwtSecret, jwtRole
   let matcher = null
   const configFiles = [
     ...new Set(
-      [path.resolve(distDir, '_redirects'), path.resolve(projectDir, '_redirects'), path.resolve(configPath)].filter(
+      [path.resolve(distDir, '_redirects'), path.resolve(projectDir, '_redirects'), configPath].filter(
         (configFile) => configFile && configFile !== projectDir,
       ),
     ),
