@@ -16,7 +16,7 @@
         "@netlify/plugin-edge-handlers": "^1.11.13",
         "@netlify/plugins-list": "^2.14.2",
         "@netlify/routing-local-proxy": "^0.30.0-pre.11",
-        "@netlify/zip-it-and-ship-it": "^4.2.5",
+        "@netlify/zip-it-and-ship-it": "^4.2.6",
         "@oclif/command": "^1.6.1",
         "@oclif/config": "^1.15.1",
         "@oclif/errors": "^1.3.4",
@@ -3055,13 +3055,13 @@
       }
     },
     "node_modules/@netlify/zip-it-and-ship-it": {
-      "version": "4.2.5",
-      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-4.2.5.tgz",
-      "integrity": "sha512-2ncCQEs49I8Ir30w2T3E1yogJp9cw+X8vfvL9a8i1AA0VE51F2rfhNsLbceWrEWn2T3TgogOMQP/0Qsxw2v0Tg==",
+      "version": "4.2.6",
+      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-4.2.6.tgz",
+      "integrity": "sha512-aBUK0x0H9jkfNKRT+Rl3p49hzXOQm9rl34mxiKWycrddnhXlytTaHWURw/0960KgZ09y/uNEf6GiJyC2v80sVg==",
       "dependencies": {
         "archiver": "^5.3.0",
         "array-flat-polyfill": "^1.0.1",
-        "common-path-prefix": "^2.0.0",
+        "common-path-prefix": "^3.0.0",
         "cp-file": "^9.0.0",
         "del": "^6.0.0",
         "elf-cam": "^0.1.1",
@@ -5294,12 +5294,6 @@
       "integrity": "sha512-5tK7EtrZ0N+OLFMthtqOj4fI2Jeb88C4CAZPu25LDVUgXJ0A3Js4PMGqrn0JU1W0Mh1/Z8wZzYPxqUrXeBboCQ==",
       "dev": true
     },
-    "node_modules/ava/node_modules/common-path-prefix": {
-      "version": "3.0.0",
-      "resolved": "https://registry.npmjs.org/common-path-prefix/-/common-path-prefix-3.0.0.tgz",
-      "integrity": "sha512-QE33hToZseCH3jS0qN96O/bSh3kaw/h+Tq7ngyY9eWDUnTlTNUyqfqvCXioLe5Na5jFsL78ra/wuBU4iuEgd4w==",
-      "dev": true
-    },
     "node_modules/ava/node_modules/del": {
       "version": "6.0.0",
       "resolved": "https://registry.npmjs.org/del/-/del-6.0.0.tgz",
@@ -6590,9 +6584,9 @@
       }
     },
     "node_modules/common-path-prefix": {
-      "version": "2.0.0",
-      "resolved": "https://registry.npmjs.org/common-path-prefix/-/common-path-prefix-2.0.0.tgz",
-      "integrity": "sha512-Lb9qbwwyQdRDmyib0qur7BC9/GHIbviTaQebayFsGC/n77AwFhZINCcJkQx2qVv9LJsA8F5ex65F2qrOfWGUyw=="
+      "version": "3.0.0",
+      "resolved": "https://registry.npmjs.org/common-path-prefix/-/common-path-prefix-3.0.0.tgz",
+      "integrity": "sha512-QE33hToZseCH3jS0qN96O/bSh3kaw/h+Tq7ngyY9eWDUnTlTNUyqfqvCXioLe5Na5jFsL78ra/wuBU4iuEgd4w=="
     },
     "node_modules/commondir": {
       "version": "1.0.1",
@@ -23280,13 +23274,13 @@
       }
     },
     "@netlify/zip-it-and-ship-it": {
-      "version": "4.2.5",
-      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-4.2.5.tgz",
-      "integrity": "sha512-2ncCQEs49I8Ir30w2T3E1yogJp9cw+X8vfvL9a8i1AA0VE51F2rfhNsLbceWrEWn2T3TgogOMQP/0Qsxw2v0Tg==",
+      "version": "4.2.6",
+      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-4.2.6.tgz",
+      "integrity": "sha512-aBUK0x0H9jkfNKRT+Rl3p49hzXOQm9rl34mxiKWycrddnhXlytTaHWURw/0960KgZ09y/uNEf6GiJyC2v80sVg==",
       "requires": {
         "archiver": "^5.3.0",
         "array-flat-polyfill": "^1.0.1",
-        "common-path-prefix": "^2.0.0",
+        "common-path-prefix": "^3.0.0",
         "cp-file": "^9.0.0",
         "del": "^6.0.0",
         "elf-cam": "^0.1.1",
@@ -25049,12 +25043,6 @@
           "integrity": "sha512-5tK7EtrZ0N+OLFMthtqOj4fI2Jeb88C4CAZPu25LDVUgXJ0A3Js4PMGqrn0JU1W0Mh1/Z8wZzYPxqUrXeBboCQ==",
           "dev": true
         },
-        "common-path-prefix": {
-          "version": "3.0.0",
-          "resolved": "https://registry.npmjs.org/common-path-prefix/-/common-path-prefix-3.0.0.tgz",
-          "integrity": "sha512-QE33hToZseCH3jS0qN96O/bSh3kaw/h+Tq7ngyY9eWDUnTlTNUyqfqvCXioLe5Na5jFsL78ra/wuBU4iuEgd4w==",
-          "dev": true
-        },
         "del": {
           "version": "6.0.0",
           "resolved": "https://registry.npmjs.org/del/-/del-6.0.0.tgz",
@@ -26044,9 +26032,9 @@
       "integrity": "sha512-U7VdrJFnJgo4xjrHpTzu0yrHPGImdsmD95ZlgYSEajAn2JKzDhDTPG9kBTefmObL2w/ngeZnilk+OV9CG3d7UA=="
     },
     "common-path-prefix": {
-      "version": "2.0.0",
-      "resolved": "https://registry.npmjs.org/common-path-prefix/-/common-path-prefix-2.0.0.tgz",
-      "integrity": "sha512-Lb9qbwwyQdRDmyib0qur7BC9/GHIbviTaQebayFsGC/n77AwFhZINCcJkQx2qVv9LJsA8F5ex65F2qrOfWGUyw=="
+      "version": "3.0.0",
+      "resolved": "https://registry.npmjs.org/common-path-prefix/-/common-path-prefix-3.0.0.tgz",
+      "integrity": "sha512-QE33hToZseCH3jS0qN96O/bSh3kaw/h+Tq7ngyY9eWDUnTlTNUyqfqvCXioLe5Na5jFsL78ra/wuBU4iuEgd4w=="
     },
     "commondir": {
       "version": "1.0.1",
