@@ -29,7 +29,7 @@ ${error.message}`)
 
 const parseRules = async function (configFiles) {
   const rules = await Promise.all(configFiles.map(parseFile))
-  return rules.flat()
+  return [].concat(...rules)
 }
 
 // Backward compatibility fix.
