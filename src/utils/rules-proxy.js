@@ -17,19 +17,24 @@ const parseFile = async function (filePath) {
   }
 
   const parser = path.basename(filePath) === '_redirects' ? parseRedirectsFormat : parseNetlifyConfig
-  const { success, errors } = await parser(filePath)
-  if (errors.length !== 0) {
-    console.error(`${NETLIFYDEVWARN} Warnings while parsing ${path.basename(filePath)} file:`)
-    errors.forEach(({ lineNum, line, reason }) => {
-      console.error(`  ${lineNum}: ${line} -- ${reason}`)
-    })
+  try {
+    return await parser(filePath)
+  } catch (error) {
+    console.error(`${NETLIFYDEVWARN} Warnings while parsing ${path.basename(filePath)} file:
+${error.message}`)
+    return []
   }
-  return success
 }
 
 const parseRules = async function (configFiles) {
-  const results = await Promise.all(configFiles.map(parseFile))
-  return [].concat(...results)
+  const rules = await Promise.all(configFiles.map(parseFile))
+  return rules.flat().map(normalizeRule)
+}
+
+// Backward compatibility fix.
+// `netlify-redirector` does not handle the new `query` name yet.
+const normalizeRule = function ({ query, params = query, ...rule }) {
+  return { ...rule, query, params }
 }
 
 const onChanges = function (files, listener) {
@@ -55,11 +60,11 @@ const createRewriter = async function ({ distDir, projectDir, jwtSecret, jwtRole
   let matcher = null
   const configFiles = [
     ...new Set(
-      [path.resolve(distDir, '_redirects'), path.resolve(projectDir, '_redirects')].concat(
-        configPath ? path.resolve(configPath) : [],
+      [path.resolve(distDir, '_redirects'), path.resolve(projectDir, '_redirects'), path.resolve(configPath)].filter(
+        (configFile) => configFile && configFile !== projectDir,
       ),
     ),
-  ].filter((configFile) => configFile !== projectDir)
+  ]
   let rules = await parseRules(configFiles)
 
   onChanges(configFiles, async () => {
