@@ -12,9 +12,11 @@ module.exports = function detector() {
 
   return {
     framework: 'redwoodjs',
-    command: 'yarn rw',
+    // yarn is a requirement for RedwoodJS:
+    // https://learn.redwoodjs.com/docs/tutorial/installation-starting-development
+    command: 'yarn',
     frameworkPort: FRAMEWORK_PORT,
-    possibleArgsArrs: ['dev'],
+    possibleArgsArrs: [['rw', 'dev']],
     dist: 'web/dist',
     disableLocalServerPolling: true,
   }
