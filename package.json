@@ -148,7 +148,7 @@
     "memoize-one": "^5.2.1",
     "minimist": "^1.2.5",
     "multiparty": "^4.2.1",
-    "netlify": "^7.0.0",
+    "netlify": "^7.0.1",
     "netlify-redirect-parser": "^4.0.0",
     "netlify-redirector": "^0.2.1",
     "node-fetch": "^2.6.0",
