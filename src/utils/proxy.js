@@ -283,6 +283,18 @@ const initializeProxy = function (port, distDir, projectDir) {
     headerRules = headersFiles.reduce((prev, curr) => Object.assign(prev, parseHeadersFile(curr)), {})
   })
 
+  proxy.before('web', 'stream', (req) => {
+    const requestURL = new URL(req.url, `http://${req.headers.host || 'localhost'}`)
+    const pathHeaderRules = headersForPath(headerRules, requestURL.pathname)
+    if (!isEmpty(pathHeaderRules)) {
+      Object.entries(pathHeaderRules).forEach(([key, val]) => {
+        if (val && val[0] === 'removeHeader' && req.headers[key]) {
+          delete req.headers[key]
+        }
+      })
+    }
+  })
+
   proxy.on('error', (err) => console.error('error while proxying request:', err.message))
   proxy.on('proxyReq', (proxyReq, req) => {
     if (req.originalBody) {
