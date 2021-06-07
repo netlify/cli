@@ -3,20 +3,17 @@ const process = require('process')
 
 const { flags: flagsLib } = require('@oclif/command')
 const chalk = require('chalk')
-const cliSpinnerNames = Object.keys(require('cli-spinners'))
 const { get } = require('dot-prop')
 const inquirer = require('inquirer')
 const isObject = require('lodash/isObject')
-const logSymbols = require('log-symbols')
-const ora = require('ora')
 const prettyjson = require('prettyjson')
-const randomItem = require('random-item')
 
 const { normalizeFunctionsConfig } = require('../function-builder-detectors/zisi')
 const { cancelDeploy } = require('../lib/api')
 const { getBuildOptions, runBuild } = require('../lib/build')
 const { statAsync } = require('../lib/fs')
 const { getLogMessage } = require('../lib/log')
+const { startSpinner, stopSpinner } = require('../lib/spinner')
 const Command = require('../utils/command')
 const { deploySite } = require('../utils/deploy/deploy-site')
 const { deployEdgeHandlers } = require('../utils/edge-handlers')
@@ -613,34 +610,31 @@ DeployCommand.flags = {
 
 const deployProgressCb = function () {
   const events = {}
-  // statusObj: {
+  // event: {
   //         type: name-of-step
   //         msg: msg to print
   //         phase: [start, progress, stop]
   // }
   //
-  return (ev) => {
-    switch (ev.phase) {
+  return (event) => {
+    switch (event.phase) {
       case 'start': {
-        const spinner = ev.spinner || randomItem(cliSpinnerNames)
-        events[ev.type] = ora({
-          text: ev.msg,
-          spinner,
-        }).start()
+        events[event.type] = startSpinner({
+          text: event.msg,
+        })
         return
       }
       case 'progress': {
-        const spinner = events[ev.type]
-        if (spinner) spinner.text = ev.msg
+        const spinner = events[event.type]
+        if (spinner) {
+          spinner.text = event.msg
+        }
         return
       }
       case 'stop':
       default: {
-        const spinner = events[ev.type]
-        if (spinner) {
-          spinner.stopAndPersist({ text: ev.msg, symbol: logSymbols.success })
-          delete events[ev.type]
-        }
+        stopSpinner({ spinner: events[event.type], text: event.msg })
+        delete events[event.type]
       }
     }
   }

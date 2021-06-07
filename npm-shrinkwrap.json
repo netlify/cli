@@ -37,7 +37,6 @@
         "chokidar": "^3.0.2",
         "ci-info": "^3.0.0",
         "clean-deep": "^3.0.2",
-        "cli-spinners": "^2.0.0",
         "cli-ux": "^5.5.1",
         "concordance": "^5.0.0",
         "configstore": "^5.0.0",
@@ -103,7 +102,6 @@
         "path-type": "^4.0.0",
         "prettyjson": "^1.2.1",
         "pump": "^3.0.0",
-        "random-item": "^3.0.0",
         "raw-body": "^2.4.1",
         "resolve": "^1.12.0",
         "safe-join": "^0.1.3",
@@ -17376,17 +17374,6 @@
         "node": ">= 0.8"
       }
     },
-    "node_modules/random-item": {
-      "version": "3.1.0",
-      "resolved": "https://registry.npmjs.org/random-item/-/random-item-3.1.0.tgz",
-      "integrity": "sha512-0DyAT8LYBNQKSkqcPjia/HNoWCZ5JWBdAQWjBQVh5DMVv3Fv7V90I8/AuUf8NW4zdFn27i9qj8Kp6wI5JsiiOA==",
-      "engines": {
-        "node": ">=8"
-      },
-      "funding": {
-        "url": "https://github.com/sponsors/sindresorhus"
-      }
-    },
     "node_modules/randombytes": {
       "version": "2.1.0",
       "resolved": "https://registry.npmjs.org/randombytes/-/randombytes-2.1.0.tgz",
@@ -34297,11 +34284,6 @@
       "version": "1.0.0",
       "resolved": "https://registry.npmjs.org/random-bytes/-/random-bytes-1.0.0.tgz",
       "integrity": "sha1-T2ih3Arli9P7lYSMMDJNt11kNgs="
-    },
-    "random-item": {
-      "version": "3.1.0",
-      "resolved": "https://registry.npmjs.org/random-item/-/random-item-3.1.0.tgz",
-      "integrity": "sha512-0DyAT8LYBNQKSkqcPjia/HNoWCZ5JWBdAQWjBQVh5DMVv3Fv7V90I8/AuUf8NW4zdFn27i9qj8Kp6wI5JsiiOA=="
     },
     "randombytes": {
       "version": "2.1.0",
