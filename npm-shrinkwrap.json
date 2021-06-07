@@ -24,7 +24,7 @@
         "@oclif/plugin-help": "^3.0.0",
         "@oclif/plugin-not-found": "^1.1.4",
         "@oclif/plugin-plugins": "^1.9.3",
-        "@octokit/rest": "^18.0.0",
+        "@octokit/rest": "^18.5.6",
         "@sindresorhus/slugify": "^1.1.0",
         "@ungap/from-entries": "^0.2.1",
         "ansi-styles": "^5.0.0",
@@ -4025,9 +4025,9 @@
       }
     },
     "node_modules/@octokit/rest": {
-      "version": "18.5.5",
-      "resolved": "https://registry.npmjs.org/@octokit/rest/-/rest-18.5.5.tgz",
-      "integrity": "sha512-Py9sWvxBGeAwNY8UnhxP6jnq7aflvQ0uQ6gmZObyJLR9hmd5NEz9piu/A77cxV6+0l9UNACJVXX6FOnl5LIcPw==",
+      "version": "18.5.6",
+      "resolved": "https://registry.npmjs.org/@octokit/rest/-/rest-18.5.6.tgz",
+      "integrity": "sha512-8HdG6ZjQdZytU6tCt8BQ2XLC7EJ5m4RrbyU/EARSkAM1/HP3ceOzMG/9atEfe17EDMer3IVdHWLedz2wDi73YQ==",
       "dependencies": {
         "@octokit/core": "^3.2.3",
         "@octokit/plugin-paginate-rest": "^2.6.2",
@@ -24049,9 +24049,9 @@
       }
     },
     "@octokit/rest": {
-      "version": "18.5.5",
-      "resolved": "https://registry.npmjs.org/@octokit/rest/-/rest-18.5.5.tgz",
-      "integrity": "sha512-Py9sWvxBGeAwNY8UnhxP6jnq7aflvQ0uQ6gmZObyJLR9hmd5NEz9piu/A77cxV6+0l9UNACJVXX6FOnl5LIcPw==",
+      "version": "18.5.6",
+      "resolved": "https://registry.npmjs.org/@octokit/rest/-/rest-18.5.6.tgz",
+      "integrity": "sha512-8HdG6ZjQdZytU6tCt8BQ2XLC7EJ5m4RrbyU/EARSkAM1/HP3ceOzMG/9atEfe17EDMer3IVdHWLedz2wDi73YQ==",
       "requires": {
         "@octokit/core": "^3.2.3",
         "@octokit/plugin-paginate-rest": "^2.6.2",
