@@ -10,7 +10,7 @@
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
-        "@netlify/build": "^11.32.3",
+        "@netlify/build": "^11.32.5",
         "@netlify/config": "^6.7.2",
         "@netlify/framework-info": "^5.1.4",
         "@netlify/plugin-edge-handlers": "^1.11.15",
@@ -2019,17 +2019,17 @@
       }
     },
     "node_modules/@netlify/build": {
-      "version": "11.32.3",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-11.32.3.tgz",
-      "integrity": "sha512-If0EhjaEEOmFOMEPRk8YF1RrZwblJhwfqSRe4/lFNLTTZOrPob+2gedkzaPqZtkoOoOsM1cnpDdd+8eegGofDg==",
+      "version": "11.32.5",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-11.32.5.tgz",
+      "integrity": "sha512-msK69DP3Ns/k7SEq6pPFapM8YtHmJLUOkSQVTShjwBhGQqdy55iWtuJP1RZ8bHlX26Azo3oH86201qflIziOXg==",
       "dependencies": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^1.0.7",
         "@netlify/config": "^6.0.0",
         "@netlify/functions-utils": "^1.3.13",
         "@netlify/git-utils": "^1.0.8",
-        "@netlify/plugin-edge-handlers": "^1.11.14",
-        "@netlify/plugins-list": "^2.14.2",
+        "@netlify/plugin-edge-handlers": "^1.11.15",
+        "@netlify/plugins-list": "^2.15.0",
         "@netlify/run-utils": "^1.0.6",
         "@netlify/zip-it-and-ship-it": "^4.2.7",
         "@sindresorhus/slugify": "^1.1.0",
@@ -2066,7 +2066,7 @@
         "resolve": "^2.0.0-next.1",
         "safe-json-stringify": "^1.2.0",
         "semver": "^6.3.0",
-        "statsd-client": "0.4.6",
+        "statsd-client": "0.4.7",
         "string-width": "^4.2.0",
         "strip-ansi": "^6.0.0",
         "supports-color": "^7.1.0",
@@ -19037,9 +19037,9 @@
       }
     },
     "node_modules/statsd-client": {
-      "version": "0.4.6",
-      "resolved": "https://registry.npmjs.org/statsd-client/-/statsd-client-0.4.6.tgz",
-      "integrity": "sha512-OL3PAf0LhlFP8ZpxFm3Ue7dL3cV5o7PAsWDsQnx/iKXGVr8huYF/ui+OZEORerEDVRps7BCPAq5bWppMj1oMoA=="
+      "version": "0.4.7",
+      "resolved": "https://registry.npmjs.org/statsd-client/-/statsd-client-0.4.7.tgz",
+      "integrity": "sha512-+sGCE6FednJ/vI7vywErOg/mhVqmf6Zlktz7cdGRnF/cQWXD9ifMgtqU1CIIXmhSwm11SCk4zDN+bwNCvIR/Kg=="
     },
     "node_modules/statuses": {
       "version": "2.0.1",
@@ -22508,17 +22508,17 @@
       }
     },
     "@netlify/build": {
-      "version": "11.32.3",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-11.32.3.tgz",
-      "integrity": "sha512-If0EhjaEEOmFOMEPRk8YF1RrZwblJhwfqSRe4/lFNLTTZOrPob+2gedkzaPqZtkoOoOsM1cnpDdd+8eegGofDg==",
+      "version": "11.32.5",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-11.32.5.tgz",
+      "integrity": "sha512-msK69DP3Ns/k7SEq6pPFapM8YtHmJLUOkSQVTShjwBhGQqdy55iWtuJP1RZ8bHlX26Azo3oH86201qflIziOXg==",
       "requires": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^1.0.7",
         "@netlify/config": "^6.0.0",
         "@netlify/functions-utils": "^1.3.13",
         "@netlify/git-utils": "^1.0.8",
-        "@netlify/plugin-edge-handlers": "^1.11.14",
-        "@netlify/plugins-list": "^2.14.2",
+        "@netlify/plugin-edge-handlers": "^1.11.15",
+        "@netlify/plugins-list": "^2.15.0",
         "@netlify/run-utils": "^1.0.6",
         "@netlify/zip-it-and-ship-it": "^4.2.7",
         "@sindresorhus/slugify": "^1.1.0",
@@ -22555,7 +22555,7 @@
         "resolve": "^2.0.0-next.1",
         "safe-json-stringify": "^1.2.0",
         "semver": "^6.3.0",
-        "statsd-client": "0.4.6",
+        "statsd-client": "0.4.7",
         "string-width": "^4.2.0",
         "strip-ansi": "^6.0.0",
         "supports-color": "^7.1.0",
@@ -35623,9 +35623,9 @@
       }
     },
     "statsd-client": {
-      "version": "0.4.6",
-      "resolved": "https://registry.npmjs.org/statsd-client/-/statsd-client-0.4.6.tgz",
-      "integrity": "sha512-OL3PAf0LhlFP8ZpxFm3Ue7dL3cV5o7PAsWDsQnx/iKXGVr8huYF/ui+OZEORerEDVRps7BCPAq5bWppMj1oMoA=="
+      "version": "0.4.7",
+      "resolved": "https://registry.npmjs.org/statsd-client/-/statsd-client-0.4.7.tgz",
+      "integrity": "sha512-+sGCE6FednJ/vI7vywErOg/mhVqmf6Zlktz7cdGRnF/cQWXD9ifMgtqU1CIIXmhSwm11SCk4zDN+bwNCvIR/Kg=="
     },
     "statuses": {
       "version": "2.0.1",
