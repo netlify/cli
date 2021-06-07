@@ -132,7 +132,7 @@
         "@babel/preset-react": "^7.12.13",
         "@commitlint/cli": "^12.0.0",
         "@commitlint/config-conventional": "^12.0.0",
-        "@netlify/eslint-config-node": "^3.1.1",
+        "@netlify/eslint-config-node": "^3.1.3",
         "@oclif/dev-cli": "^1.23.1",
         "@oclif/test": "^1.2.5",
         "ava": "^3.15.0",
@@ -2715,9 +2715,9 @@
       }
     },
     "node_modules/@netlify/eslint-config-node": {
-      "version": "3.1.1",
-      "resolved": "https://registry.npmjs.org/@netlify/eslint-config-node/-/eslint-config-node-3.1.1.tgz",
-      "integrity": "sha512-gfDEoyYrTE/I2mjKAHLp6u0TTRmgzHNBVqzm0aMbPMcjRDxliLs0G82AvyVjcIk6DVuMzllchsDkG/vj1UG1jw==",
+      "version": "3.1.3",
+      "resolved": "https://registry.npmjs.org/@netlify/eslint-config-node/-/eslint-config-node-3.1.3.tgz",
+      "integrity": "sha512-w3yMg6oWo2p0FSzLE3ynQ4VfI2YOKtkYh7vrUbfXAclGoQIZRjybZmT4ry7u815V9+sVG6euS0ZN0Z+hRahaPA==",
       "dev": true,
       "dependencies": {
         "@babel/core": "^7.13.8",
@@ -2738,7 +2738,7 @@
         "eslint-plugin-node": "^11.1.0",
         "eslint-plugin-promise": "^5.0.0",
         "eslint-plugin-react": "^7.21.5",
-        "eslint-plugin-unicorn": "^32.0.0",
+        "eslint-plugin-unicorn": "^33.0.0",
         "eslint-plugin-you-dont-need-lodash-underscore": "^6.10.0",
         "execa": "^5.0.0",
         "husky": "^4.3.0",
@@ -9347,15 +9347,15 @@
       }
     },
     "node_modules/eslint-plugin-unicorn": {
-      "version": "32.0.1",
-      "resolved": "https://registry.npmjs.org/eslint-plugin-unicorn/-/eslint-plugin-unicorn-32.0.1.tgz",
-      "integrity": "sha512-LaZ9utnXtOJjnoDkpm+nQsONUUmyRR0WD6PGROSdQRRW3LRmgK/ZP8wxjW+Ai+2uolKTtuJzLx2mvbIeIoLqpg==",
+      "version": "33.0.1",
+      "resolved": "https://registry.npmjs.org/eslint-plugin-unicorn/-/eslint-plugin-unicorn-33.0.1.tgz",
+      "integrity": "sha512-VxX/L/9DUEyB3D0v00185LrgsB5/fBwkgA4IC7ehHRu5hFSgA6VecmdpFybhsr4GQ/Y1iyXMHf6q+JKvcR2MwA==",
       "dev": true,
       "dependencies": {
         "ci-info": "^3.1.1",
         "clean-regexp": "^1.0.0",
         "eslint-template-visitor": "^2.3.2",
-        "eslint-utils": "^2.1.0",
+        "eslint-utils": "^3.0.0",
         "import-modules": "^2.1.0",
         "is-builtin-module": "^3.1.0",
         "lodash": "^4.17.21",
@@ -9374,6 +9374,24 @@
       },
       "peerDependencies": {
         "eslint": ">=7.23.0"
+      }
+    },
+    "node_modules/eslint-plugin-unicorn/node_modules/eslint-utils": {
+      "version": "3.0.0",
+      "resolved": "https://registry.npmjs.org/eslint-utils/-/eslint-utils-3.0.0.tgz",
+      "integrity": "sha512-uuQC43IGctw68pJA1RgbQS8/NP7rch6Cwd4j3ZBtgo4/8Flj4eGE7ZYSZRN3iq5pVUv6GPdW5Z1RFleo84uLDA==",
+      "dev": true,
+      "dependencies": {
+        "eslint-visitor-keys": "^2.0.0"
+      },
+      "engines": {
+        "node": "^10.0.0 || ^12.0.0 || >= 14.0.0"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/mysticatea"
+      },
+      "peerDependencies": {
+        "eslint": ">=5"
       }
     },
     "node_modules/eslint-plugin-you-dont-need-lodash-underscore": {
@@ -23046,9 +23064,9 @@
       }
     },
     "@netlify/eslint-config-node": {
-      "version": "3.1.1",
-      "resolved": "https://registry.npmjs.org/@netlify/eslint-config-node/-/eslint-config-node-3.1.1.tgz",
-      "integrity": "sha512-gfDEoyYrTE/I2mjKAHLp6u0TTRmgzHNBVqzm0aMbPMcjRDxliLs0G82AvyVjcIk6DVuMzllchsDkG/vj1UG1jw==",
+      "version": "3.1.3",
+      "resolved": "https://registry.npmjs.org/@netlify/eslint-config-node/-/eslint-config-node-3.1.3.tgz",
+      "integrity": "sha512-w3yMg6oWo2p0FSzLE3ynQ4VfI2YOKtkYh7vrUbfXAclGoQIZRjybZmT4ry7u815V9+sVG6euS0ZN0Z+hRahaPA==",
       "dev": true,
       "requires": {
         "@babel/core": "^7.13.8",
@@ -23069,7 +23087,7 @@
         "eslint-plugin-node": "^11.1.0",
         "eslint-plugin-promise": "^5.0.0",
         "eslint-plugin-react": "^7.21.5",
-        "eslint-plugin-unicorn": "^32.0.0",
+        "eslint-plugin-unicorn": "^33.0.0",
         "eslint-plugin-you-dont-need-lodash-underscore": "^6.10.0",
         "execa": "^5.0.0",
         "husky": "^4.3.0",
@@ -28267,15 +28285,15 @@
       }
     },
     "eslint-plugin-unicorn": {
-      "version": "32.0.1",
-      "resolved": "https://registry.npmjs.org/eslint-plugin-unicorn/-/eslint-plugin-unicorn-32.0.1.tgz",
-      "integrity": "sha512-LaZ9utnXtOJjnoDkpm+nQsONUUmyRR0WD6PGROSdQRRW3LRmgK/ZP8wxjW+Ai+2uolKTtuJzLx2mvbIeIoLqpg==",
+      "version": "33.0.1",
+      "resolved": "https://registry.npmjs.org/eslint-plugin-unicorn/-/eslint-plugin-unicorn-33.0.1.tgz",
+      "integrity": "sha512-VxX/L/9DUEyB3D0v00185LrgsB5/fBwkgA4IC7ehHRu5hFSgA6VecmdpFybhsr4GQ/Y1iyXMHf6q+JKvcR2MwA==",
       "dev": true,
       "requires": {
         "ci-info": "^3.1.1",
         "clean-regexp": "^1.0.0",
         "eslint-template-visitor": "^2.3.2",
-        "eslint-utils": "^2.1.0",
+        "eslint-utils": "^3.0.0",
         "import-modules": "^2.1.0",
         "is-builtin-module": "^3.1.0",
         "lodash": "^4.17.21",
@@ -28285,6 +28303,17 @@
         "reserved-words": "^0.1.2",
         "safe-regex": "^2.1.1",
         "semver": "^7.3.5"
+      },
+      "dependencies": {
+        "eslint-utils": {
+          "version": "3.0.0",
+          "resolved": "https://registry.npmjs.org/eslint-utils/-/eslint-utils-3.0.0.tgz",
+          "integrity": "sha512-uuQC43IGctw68pJA1RgbQS8/NP7rch6Cwd4j3ZBtgo4/8Flj4eGE7ZYSZRN3iq5pVUv6GPdW5Z1RFleo84uLDA==",
+          "dev": true,
+          "requires": {
+            "eslint-visitor-keys": "^2.0.0"
+          }
+        }
       }
     },
     "eslint-plugin-you-dont-need-lodash-underscore": {
