@@ -59,13 +59,8 @@ const getCountry = function () {
 
 const createRewriter = async function ({ distDir, projectDir, jwtSecret, jwtRoleClaim, configPath }) {
   let matcher = null
-  const configFiles = [
-    ...new Set(
-      [path.resolve(distDir, '_redirects'), path.resolve(projectDir, '_redirects'), configPath].filter(
-        (configFile) => configFile && configFile !== projectDir,
-      ),
-    ),
-  ]
+  const redirectsFiles = [...new Set([path.resolve(distDir, '_redirects'), path.resolve(projectDir, '_redirects')])]
+  const configFiles = configPath === undefined ? redirectsFiles : [...redirectsFiles, configPath]
   let rules = await parseRules(configFiles)
 
   onChanges(configFiles, async () => {
