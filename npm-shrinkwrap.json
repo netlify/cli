@@ -11,7 +11,7 @@
       "license": "MIT",
       "dependencies": {
         "@netlify/build": "^11.34.0",
-        "@netlify/config": "^6.7.2",
+        "@netlify/config": "^6.7.3",
         "@netlify/framework-info": "^5.1.4",
         "@netlify/plugin-edge-handlers": "^1.11.16",
         "@netlify/plugins-list": "^2.15.0",
