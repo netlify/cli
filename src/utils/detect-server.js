@@ -5,8 +5,6 @@ const process = require('process')
 const chalk = require('chalk')
 const fuzzy = require('fuzzy')
 const getPort = require('get-port')
-const inquirer = require('inquirer')
-const inquirerAutocompletePrompt = require('inquirer-autocomplete-prompt')
 const isPlainObject = require('is-plain-obj')
 
 const { readFileAsyncCatchError } = require('../lib/fs')
@@ -78,6 +76,12 @@ const serverSettings = async (devConfig, flags, projectDir, log) => {
       settings = firstSettings
       settings.args = chooseDefaultArgs(settings.possibleArgsArrs)
     } else if (settingsArr.length > 1) {
+      // performance optimization, load inquirer on demand
+      // eslint-disable-next-line node/global-require
+      const inquirer = require('inquirer')
+      // eslint-disable-next-line node/global-require
+      const inquirerAutocompletePrompt = require('inquirer-autocomplete-prompt')
+
       /** multiple matching detectors, make the user choose */
       inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
       const scriptInquirerOptions = formatSettingsArrForInquirer(settingsArr)
