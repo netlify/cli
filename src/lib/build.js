@@ -21,8 +21,8 @@ const getBuildOptions = ({
 })
 
 const runBuild = async (options) => {
-  const { severityCode: exitCode } = await build(options)
-  return exitCode
+  const { severityCode: exitCode, netlifyConfig: newConfig } = await build(options)
+  return { exitCode, newConfig }
 }
 
 module.exports = { getBuildOptions, runBuild }
