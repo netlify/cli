@@ -348,7 +348,7 @@ if (process.env.IS_FORK !== 'true') {
     })
   })
 
-  test.only('should refresh configuration when --build is passed', async (t) => {
+  test('should refresh configuration when --build is passed', async (t) => {
     await withSiteBuilder('site-with-public-folder', async (builder) => {
       await builder
         .withContentFile({
