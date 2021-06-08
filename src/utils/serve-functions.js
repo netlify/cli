@@ -9,8 +9,6 @@ const bodyParser = require('body-parser')
 const chalk = require('chalk')
 const chokidar = require('chokidar')
 const { parse: parseContentType } = require('content-type')
-const express = require('express')
-const expressLogging = require('express-logging')
 const jwtDecode = require('jwt-decode')
 const lambdaLocal = require('lambda-local')
 const debounce = require('lodash/debounce')
@@ -440,6 +438,11 @@ const createFormSubmissionHandler = function ({ siteUrl, warn }) {
 }
 
 const getFunctionsServer = async function ({ getFunctionByName, siteUrl, warn, timeouts, prefix }) {
+  // performance optimization, load express on demand
+  // eslint-disable-next-line node/global-require
+  const express = require('express')
+  // eslint-disable-next-line node/global-require
+  const expressLogging = require('express-logging')
   const app = express()
   app.set('query parser', 'simple')
 
