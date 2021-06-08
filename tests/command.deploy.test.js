@@ -348,6 +348,11 @@ if (process.env.IS_FORK !== 'true') {
     })
   })
 
+  test.after('cleanup', async (t) => {
+    const { siteId } = t.context
+    console.log(`deleting test site "${SITE_NAME}". ${siteId}`)
+    await callCli(['sites:delete', siteId, '--force'])
+  })
   test('should refresh configuration when --build is passed', async (t) => {
     await withSiteBuilder('site-with-public-folder', async (builder) => {
       await builder
@@ -396,11 +401,5 @@ if (process.env.IS_FORK !== 'true') {
       t.is(body, 'Hello')
       t.is(statusCode, 200)
     })
-  })
-
-  test.after('cleanup', async (t) => {
-    const { siteId } = t.context
-    console.log(`deleting test site "${SITE_NAME}". ${siteId}`)
-    await callCli(['sites:delete', siteId, '--force'])
   })
 }

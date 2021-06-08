@@ -297,19 +297,20 @@ const runDeploy = async ({
 }
 
 const handleBuild = async ({ context, flags }) => {
-  if (flags.build) {
-    const [token] = await context.getConfigToken()
-    const options = await getBuildOptions({
-      context,
-      token,
-      flags,
-    })
-    const { exitCode, newConfig } = await runBuild(options)
-    if (exitCode !== 0) {
-      context.exit(exitCode)
-    }
-    return newConfig
+  if (!flags.build) {
+    return
   }
+  const [token] = await context.getConfigToken()
+  const options = await getBuildOptions({
+    context,
+    token,
+    flags,
+  })
+  const { exitCode, newConfig } = await runBuild(options)
+  if (exitCode !== 0) {
+    context.exit(exitCode)
+  }
+  return newConfig
 }
 
 const printResults = ({ flags, results, deployToProduction, log, logJson, exit }) => {
