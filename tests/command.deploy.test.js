@@ -348,6 +348,56 @@ if (process.env.IS_FORK !== 'true') {
     })
   })
 
+  test.only('should refresh configuration when --build is passed', async (t) => {
+    await withSiteBuilder('site-with-public-folder', async (builder) => {
+      await builder
+        .withContentFile({
+          path: 'public/index.html',
+          content: '<h1>⊂◉‿◉つ</h1>',
+        })
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'public' },
+            functions: { directory: 'functions' },
+            plugins: [{ package: './plugins/mutator' }],
+          },
+        })
+        .withBuildPlugin({
+          name: 'mutator',
+          plugin: {
+            onPreBuild: async ({ netlifyConfig }) => {
+              // eslint-disable-next-line node/global-require
+              const [fs, util] = [require('fs'), require('util')]
+              const [writeFile, mkdir] = [fs.writeFile, fs.mkdir].map(util.promisify)
+
+              const generatedFunctionsDir = 'new_functions'
+              netlifyConfig.functionsDirectory = generatedFunctionsDir
+
+              await mkdir(generatedFunctionsDir)
+              await writeFile(
+                `${generatedFunctionsDir}/hello.js`,
+                `exports.handler = async () => ({ statusCode: 200, body: 'Hello' })`,
+              )
+            },
+          },
+        })
+        .buildAsync()
+
+      const { deploy_url: deployUrl } = await callCli(
+        ['deploy', '--build', '--json'],
+        {
+          cwd: builder.directory,
+          env: { NETLIFY_SITE_ID: t.context.siteId },
+        },
+        true,
+      )
+
+      const { body, statusCode } = await got(`${deployUrl}/.netlify/functions/hello`)
+      t.is(body, 'Hello')
+      t.is(statusCode, 200)
+    })
+  })
+
   test.after('cleanup', async (t) => {
     const { siteId } = t.context
     console.log(`deleting test site "${SITE_NAME}". ${siteId}`)

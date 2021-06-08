@@ -3,6 +3,7 @@ const path = require('path')
 const process = require('process')
 
 const execa = require('execa')
+const serializeJS = require('serialize-javascript')
 const tempDirectory = require('temp-dir')
 const { toToml } = require('tomlify-j0.4')
 const { v4: uuidv4 } = require('uuid')
@@ -134,6 +135,17 @@ const createSiteBuilder = ({ siteName }) => {
       const dest = path.join(directory, filePath)
       tasks.push(async () => {
         await fs.rmFileAsync(dest)
+      })
+      return builder
+    },
+    withBuildPlugin: ({ name, plugin, pathPrefix = 'plugins' }) => {
+      const dest = path.join(directory, pathPrefix, name)
+      tasks.push(async () => {
+        await ensureDir(path.dirname(dest))
+        await Promise.all([
+          fs.writeFileAsync(path.join(directory, pathPrefix, 'manifest.yml'), `name: ${name}`),
+          fs.writeFileAsync(dest, `module.exports = ${serializeJS(plugin)}`),
+        ])
       })
       return builder
     },
