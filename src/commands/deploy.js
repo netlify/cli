@@ -297,6 +297,23 @@ const runDeploy = async ({
   }
 }
 
+const handleBuild = async ({ context, flags }) => {
+  if (!flags.build) {
+    return
+  }
+  const [token] = await context.getConfigToken()
+  const options = await getBuildOptions({
+    context,
+    token,
+    flags,
+  })
+  const { exitCode, newConfig } = await runBuild(options)
+  if (exitCode !== 0) {
+    context.exit(exitCode)
+  }
+  return newConfig
+}
+
 const printResults = ({ flags, results, deployToProduction, log, logJson, exit }) => {
   const msgData = {
     Logs: `${results.logsUrl}`,
@@ -345,7 +362,7 @@ class DeployCommand extends Command {
   async run() {
     const { flags } = this.parse(DeployCommand)
     const { log, logJson, warn, error, exit } = this
-    const { api, site, config } = this.netlify
+    const { api, site } = this.netlify
     const alias = flags.alias || flags.branch
 
     this.setAnalyticsPayload({ open: flags.open, prod: flags.prod, json: flags.json, alias: Boolean(alias) })
@@ -404,18 +421,8 @@ class DeployCommand extends Command {
       return triggerDeploy({ api, siteId, siteData, log, error })
     }
 
-    if (flags.build) {
-      const [token] = await this.getConfigToken()
-      const options = await getBuildOptions({
-        context: this,
-        token,
-        flags,
-      })
-      const exitCode = await runBuild(options)
-      if (exitCode !== 0) {
-        this.exit(exitCode)
-      }
-    }
+    const newConfig = await handleBuild({ context: this, flags })
+    const config = newConfig || this.netlify.config
 
     const deployFolder = await getDeployFolder({ flags, config, site, siteData, log })
     const functionsFolder = getFunctionsFolder({ flags, config, site, siteData })

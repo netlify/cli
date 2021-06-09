@@ -20,7 +20,7 @@ class BuildCommand extends Command {
     })
     this.checkOptions(options)
 
-    const exitCode = await runBuild(options)
+    const { exitCode } = await runBuild(options)
     this.exit(exitCode)
   }
 
