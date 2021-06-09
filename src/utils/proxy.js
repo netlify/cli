@@ -283,8 +283,21 @@ const initializeProxy = function (port, distDir, projectDir) {
     headerRules = headersFiles.reduce((prev, curr) => Object.assign(prev, parseHeadersFile(curr)), {})
   })
 
+  proxy.before('web', 'stream', (req) => {
+    if (req.headers.expect) {
+      // eslint-disable-next-line no-underscore-dangle
+      req.__expectHeader = req.headers.expect
+      delete req.headers.expect
+    }
+  })
+
   proxy.on('error', (err) => console.error('error while proxying request:', err.message))
   proxy.on('proxyReq', (proxyReq, req) => {
+    // eslint-disable-next-line no-underscore-dangle
+    if (req.__expectHeader) {
+      // eslint-disable-next-line no-underscore-dangle
+      proxyReq.setHeader('Expect', req.__expectHeader)
+    }
     if (req.originalBody) {
       proxyReq.write(req.originalBody)
     }
