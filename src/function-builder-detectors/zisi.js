@@ -116,6 +116,7 @@ const bundleFunctions = async ({
   config,
   eventType,
   fileTree,
+  projectRoot,
   sourceDirectory,
   targetDirectory,
   updatedPath,
@@ -123,6 +124,7 @@ const bundleFunctions = async ({
 }) => {
   const zipOptions = {
     archiveFormat: 'none',
+    basePath: projectRoot,
     config,
   }
 
@@ -240,6 +242,7 @@ const normalizeFunctionsConfig = ({ functionsConfig = {}, projectRoot }) =>
       ...result,
       [pattern]: {
         externalNodeModules: config.external_node_modules,
+        experimentalHandlerV2: true,
         includedFiles: config.included_files,
         includedFilesBasePath: projectRoot,
         ignoredNodeModules: config.ignored_node_modules,
@@ -290,6 +293,7 @@ module.exports = async function handler({ config, errorExit, functionsDirectory:
         config: functionsConfig,
         eventType,
         fileTree,
+        projectRoot,
         sourceDirectory,
         targetDirectory,
         updatedPath,

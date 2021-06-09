@@ -9,13 +9,13 @@ const { hasherCtor, manifestCollectorCtor } = require('./hasher-segments')
 
 const hashFns = async (
   dir,
-  { tmpDir, concurrentHash, functionsConfig, hashAlgorithm = 'sha256', assetType = 'function', statusCb },
+  { tmpDir, concurrentHash, functionsConfig, hashAlgorithm = 'sha256', assetType = 'function', statusCb, rootDir },
 ) => {
   // early out if the functions dir is omitted
   if (!dir) return { functions: {}, functionsWithNativeModules: [], shaMap: {} }
   if (!tmpDir) throw new Error('Missing tmpDir directory for zipping files')
 
-  const functionZips = await zipIt.zipFunctions(dir, tmpDir, { config: functionsConfig })
+  const functionZips = await zipIt.zipFunctions(dir, tmpDir, { basePath: rootDir, config: functionsConfig })
   const fileObjs = functionZips.map(({ path: functionPath, runtime }) => ({
     filepath: functionPath,
     root: tmpDir,

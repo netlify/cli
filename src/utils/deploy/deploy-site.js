@@ -41,6 +41,7 @@ const deploySite = async (
     syncFileLimit = DEFAULT_SYNC_LIMIT,
     tmpDir = tempy.directory(),
     warn,
+    rootDir,
   } = {},
 ) => {
   statusCb({
@@ -51,7 +52,7 @@ const deploySite = async (
 
   const [{ files, filesShaMap }, { functions, functionsWithNativeModules, fnShaMap }] = await Promise.all([
     hashFiles(dir, configPath, { concurrentHash, hashAlgorithm, assetType, statusCb, filter }),
-    hashFns(fnDir, { functionsConfig, tmpDir, concurrentHash, hashAlgorithm, statusCb, assetType }),
+    hashFns(fnDir, { functionsConfig, tmpDir, concurrentHash, hashAlgorithm, statusCb, assetType, rootDir }),
   ])
 
   const filesCount = Object.keys(files).length
