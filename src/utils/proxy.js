@@ -284,6 +284,7 @@ const initializeProxy = function (port, distDir, projectDir) {
   })
 
   proxy.before('web', 'stream', (req) => {
+    // See https://github.com/http-party/node-http-proxy/issues/1219#issuecomment-511110375
     if (req.headers.expect) {
       // eslint-disable-next-line no-underscore-dangle
       req.__expectHeader = req.headers.expect
