@@ -274,6 +274,7 @@ const runDeploy = async ({
       deployId,
       filter: getDeployFilesFilter({ site, deployFolder }),
       warn,
+      rootDir: site.root,
     })
   } catch (error_) {
     if (deployId) {
