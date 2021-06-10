@@ -204,6 +204,7 @@ const SearchBoxWrapper = styled.div`
   margin-bottom: 15px;
   .ais-SearchBox-form {
     input {
+      font-size: 14px;
       padding: 7px 8px;
       width: 80%;
       border: 1px solid black;
