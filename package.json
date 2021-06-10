@@ -75,13 +75,13 @@
     "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,scripts,site,tests,.github}/**/*.{js,md,yml,json,html}\" \"*.{js,yml,json,html}\" \".*.{js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\""
   },
   "dependencies": {
-    "@netlify/build": "^11.37.0",
+    "@netlify/build": "^11.37.1",
     "@netlify/config": "^6.9.2",
     "@netlify/framework-info": "^5.1.4",
     "@netlify/plugin-edge-handlers": "^1.11.16",
     "@netlify/plugins-list": "^2.15.0",
     "@netlify/routing-local-proxy": "^0.30.0",
-    "@netlify/zip-it-and-ship-it": "^4.3.0",
+    "@netlify/zip-it-and-ship-it": "4.2.7",
     "@oclif/command": "^1.6.1",
     "@oclif/config": "^1.15.1",
     "@oclif/errors": "^1.3.4",
