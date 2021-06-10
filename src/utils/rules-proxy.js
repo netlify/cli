@@ -4,22 +4,16 @@ const url = require('url')
 
 const chokidar = require('chokidar')
 const cookie = require('cookie')
-const { parseRedirectsFormat, parseNetlifyConfig } = require('netlify-redirect-parser')
+const { parseConfigRedirects, parseFileRedirects, normalizeRedirects } = require('netlify-redirect-parser')
 const redirector = require('netlify-redirector')
-
-const { fileExistsAsync } = require('../lib/fs')
 
 const { NETLIFYDEVWARN, NETLIFYDEVLOG } = require('./logo')
 
 const parseFile = async function (filePath) {
-  if (!(await fileExistsAsync(filePath))) {
-    return []
-  }
-
-  const parser = path.basename(filePath) === '_redirects' ? parseRedirectsFormat : parseNetlifyConfig
+  const parser = path.basename(filePath) === '_redirects' ? parseFileRedirects : parseConfigRedirects
   try {
     const rules = await parser(filePath)
-    return rules.map(normalizeRule)
+    return normalizeRedirects(rules).map(normalizeRule)
   } catch (error) {
     console.error(`${NETLIFYDEVWARN} Warnings while parsing ${path.basename(filePath)} file:
 ${error.message}`)
