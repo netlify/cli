@@ -13,6 +13,7 @@ const jwtDecode = require('jwt-decode')
 const lambdaLocal = require('lambda-local')
 const debounce = require('lodash/debounce')
 const multiparty = require('multiparty')
+const pEvent = require('p-event')
 const getRawBody = require('raw-body')
 const winston = require('winston')
 
@@ -272,6 +273,7 @@ const setupDefaultFunctionHandler = async ({ capabilities, directory, warn }) =>
   }
   const { functions, watchDirs } = await getFunctionsAndWatchDirs(directory)
   const watcher = chokidar.watch(watchDirs, { ignored: /node_modules/, ignoreInitial: true })
+  await pEvent(watcher, 'ready')
   const debouncedOnChange = debounce(clearCache({ action: 'modified' }), DEBOUNCE_WAIT, {
     leading: false,
     trailing: true,
@@ -529,14 +531,13 @@ const setupFunctionsBuilder = async ({ config, errorExit, functionsDirectory, lo
   await buildFunction()
 
   const functionWatcher = chokidar.watch(functionBuilder.src)
-  functionWatcher.on('ready', () => {
-    functionWatcher.on('add', (path) => buildFunction(path, 'add'))
-    functionWatcher.on('change', async (path) => {
-      await buildFunction(path, 'change')
-      clearRequireCache()
-    })
-    functionWatcher.on('unlink', (path) => buildFunction(path, 'unlink'))
+  await pEvent(functionWatcher, 'ready')
+  functionWatcher.on('add', (path) => buildFunction(path, 'add'))
+  functionWatcher.on('change', async (path) => {
+    await buildFunction(path, 'change')
+    clearRequireCache()
   })
+  functionWatcher.on('unlink', (path) => buildFunction(path, 'unlink'))
 
   return functionBuilder
 }
