@@ -9,12 +9,6 @@ import { borderColor } from 'styled-system'
 
 const breakpoint = `@media screen and (min-width: 48em)`
 
-const decodeHTML = function (html) {
-  const txt = document.createElement('textarea')
-  txt.innerHTML = html
-  return txt.value
-}
-
 export const Root = styled.div`
   min-height: 100vh;
   display: flex;
@@ -262,9 +256,6 @@ const Hits = ({ searchResults }) => {
       _highlightResult: {
         name: {
           value: name,
-        },
-        description: {
-          value: hit.content && decodeHTML(hit.content),
         },
       },
     }
