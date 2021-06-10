@@ -1,6 +1,7 @@
 // Handlers are meant to be async outside tests
 /* eslint-disable require-await */
 const http = require('http')
+const os = require('os')
 const path = require('path')
 const process = require('process')
 
@@ -13,6 +14,7 @@ const jwt = require('jsonwebtoken')
 
 const { copyFileAsync } = require('../src/lib/fs')
 
+const { curl } = require('./utils/curl')
 const { withDevServer } = require('./utils/dev-server')
 const { startExternalServer } = require('./utils/external-server')
 const got = require('./utils/got')
@@ -1687,6 +1689,38 @@ export const handler = async function () {
               t.true(error.response.body.includes('TimeoutError: Task timed out after 1.00 seconds'))
             },
           )
+        })
+      })
+    })
+  }
+
+  // we need curl to reproduce this issue
+  if (os.platform() !== 'win32') {
+    test(testName(`don't hang on 'Expect: 100-continue' header`, args), async () => {
+      await withSiteBuilder('site-with-expect-header', async (builder) => {
+        await builder
+          .withNetlifyToml({
+            config: {
+              functions: { directory: 'functions' },
+            },
+          })
+          .withFunction({
+            path: 'hello.js',
+            handler: async () => ({ statusCode: 200, body: 'Hello' }),
+          })
+          .buildAsync()
+
+        await withDevServer({ cwd: builder.directory, args }, async (server) => {
+          await curl(`${server.url}/.netlify/functions/hello`, [
+            '-i',
+            '-v',
+            '-d',
+            '{"somefield":"somevalue"}',
+            '-H',
+            'Content-Type: application/json',
+            '-H',
+            `Expect: 100-continue' header`,
+          ])
         })
       })
     })
