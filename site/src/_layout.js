@@ -1,13 +1,19 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import { Helmet } from 'react-helmet'
-import { InstantSearch, SearchBox, createConnector, Configure, Highlight } from 'react-instantsearch-dom'
+import { InstantSearch, SearchBox, connectStateResults, Configure, Highlight } from 'react-instantsearch-dom'
 import { Link as RouterLink, NavLink as RouterNavLink } from 'react-router-dom'
 import { Flex, Box, Container, Text, Toolbar, Divider, Heading, NavLink, BlockLink, ButtonTransparent } from 'rebass'
 import styled from 'styled-components'
 import { borderColor } from 'styled-system'
 
 const breakpoint = `@media screen and (min-width: 48em)`
+
+const decodeHTML = function (html) {
+  const txt = document.createElement('textarea')
+  txt.innerHTML = html
+  return txt.value
+}
 
 export const Root = styled.div`
   min-height: 100vh;
@@ -237,40 +243,53 @@ const HitBoxWrapper = styled.div`
 `
 
 const HitsOverlay = styled.div`
-  padding: 20px;
+  padding: 10px;
   background-color: #fff;
 `
 
-const MIN_WIDTH = 110
-const MyHits = createConnector({
-  displayName: 'ConditionalQuery',
-  getProvidedProps(props, searchState, searchResults) {
-    const { query, hits } = searchResults.results ? searchResults.results : {}
-    return { query, hits }
-  },
-})(({ query, hits }) => {
-  if (hits && query) {
-    return hits.map((hit, index) => {
-      const slug = hit.name.replace(/:/g, '')
-      return (
-        <HitsOverlay key={index}>
-          <a href={`/commands/${slug}`}>
-            <span style={{ minWidth: MIN_WIDTH, display: 'inline-block', fontWeight: 'bold' }}>
-              <Highlight attribute="name" hit={hit} />
-            </span>
-            <Highlight attribute="description" hit={hit} />
-          </a>
-        </HitsOverlay>
-      )
-    })
-  }
+const SEARCH_RESULT_WIDTH = 450
 
-  return null
-})
+const Hits = ({ searchResults }) => {
+  const { hits, query } = searchResults || {}
+  if (!hits || !query) {
+    return null
+  }
+  return hits.map((hit, index) => {
+    // Build the name based on the hierarchy. Skip lvl0 which is 'In the CLI docs'
+    const name = Object.values(hit.hierarchy).filter(Boolean).slice(1).join(' > ')
+    const highlightedHit = {
+      ...hit,
+      _highlightResult: {
+        name: {
+          value: name,
+        },
+        description: {
+          value: hit.content && decodeHTML(hit.content),
+        },
+      },
+    }
+    const slug = highlightedHit.url.replace(/https:\/\/cli.netlify.com/, '')
+    return (
+      <HitsOverlay key={index}>
+        <a href={slug}>
+          <span style={{ width: SEARCH_RESULT_WIDTH, display: 'inline-block', fontWeight: 'bold' }}>
+            <Highlight attribute="name" hit={highlightedHit} />
+          </span>
+        </a>
+      </HitsOverlay>
+    )
+  })
+}
+
+const MyHits = connectStateResults(Hits)
 
 export const Nav = ({ routes = [], ...props }) => (
   <React.Fragment>
     <NavBar {...props} />
+
+    <Divider my={0} />
+
+    {props.searchRender}
 
     <Divider my={0} />
 
@@ -374,11 +393,10 @@ export default class Layout extends React.Component {
     }
 
     // Set page title
-    let pageTitle = '404 not found'
-    // console.log('route.module', route.module)
+    let pageTitle = title
     if (route.module) {
       const { frontMatter } = route.module
-      pageTitle = frontMatter.title ? frontMatter.title : this.props.route.name
+      pageTitle = frontMatter.title ? frontMatter.title : route.name
     }
 
     return (
@@ -392,7 +410,7 @@ export default class Layout extends React.Component {
 
         <Root>
           {menu && <Overlay onClick={() => update(close)} />}
-          <InstantSearch appId={'LBLPR1R7ZZ'} apiKey={'b9f2cb3217cdb169590b6736454cbed2'} indexName={'cli-docs'}>
+          <InstantSearch appId={'4RTNPM1QF9'} apiKey={'0ab695b5d73241c475f6b0bfed125bcf'} indexName={'cli-docs'}>
             <Configure />
             <Sidebar open={menu} onClick={() => update(close)}>
               <Nav
