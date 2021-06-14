@@ -22,10 +22,27 @@ ${error.message}`)
   }
 }
 
-// Backward compatibility fix.
-// `netlify-redirector` does not handle the new `query` name yet.
-const normalizeRule = function ({ query, params = query, ...rule }) {
-  return { ...rule, query, params }
+// `netlify-redirector` does not handle the same shape as the backend:
+//  - `parameters` is called `params`
+//  - `destination` is called `to`
+//  - `conditions.role|country|language` are capitalized
+const normalizeRule = function ({
+  parameters,
+  destination,
+  conditions: { role, country, language, ...conditions },
+  ...rule
+}) {
+  return {
+    ...rule,
+    params: parameters,
+    to: destination,
+    conditions: {
+      ...conditions,
+      ...(role && { Role: role }),
+      ...(country && { Country: country }),
+      ...(language && { Language: language }),
+    },
+  }
 }
 
 const onChanges = function (files, listener) {

@@ -61,7 +61,6 @@ const BASE_RULE = {
   headers: {},
   proxy: false,
   params: {},
-  query: {},
 }
 
 test('should parse redirect rules from netlify.toml', async (t) => {
