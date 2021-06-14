@@ -145,7 +145,7 @@
         "p-timeout": "^4.0.0",
         "pidtree": "^0.5.0",
         "seedrandom": "^3.0.5",
-        "serialize-javascript": "^4.0.0",
+        "serialize-javascript": "^5.0.0",
         "sinon": "^11.0.0",
         "sort-on": "^4.1.0",
         "strip-ansi": "^6.0.0",
@@ -18329,6 +18329,14 @@
         "rollup": "^2.0.0"
       }
     },
+    "node_modules/rollup-plugin-terser/node_modules/serialize-javascript": {
+      "version": "4.0.0",
+      "resolved": "https://registry.npmjs.org/serialize-javascript/-/serialize-javascript-4.0.0.tgz",
+      "integrity": "sha512-GaNA54380uFefWghODBWEGisLZFj00nS5ACs6yHa9nLqlLpVLO8ChDGeKRjZnV4Nh4n0Qi7nhYZD/9fCPzEqkw==",
+      "dependencies": {
+        "randombytes": "^2.1.0"
+      }
+    },
     "node_modules/rollup-pluginutils": {
       "version": "2.8.2",
       "resolved": "https://registry.npmjs.org/rollup-pluginutils/-/rollup-pluginutils-2.8.2.tgz",
@@ -18573,9 +18581,10 @@
       }
     },
     "node_modules/serialize-javascript": {
-      "version": "4.0.0",
-      "resolved": "https://registry.npmjs.org/serialize-javascript/-/serialize-javascript-4.0.0.tgz",
-      "integrity": "sha512-GaNA54380uFefWghODBWEGisLZFj00nS5ACs6yHa9nLqlLpVLO8ChDGeKRjZnV4Nh4n0Qi7nhYZD/9fCPzEqkw==",
+      "version": "5.0.1",
+      "resolved": "https://registry.npmjs.org/serialize-javascript/-/serialize-javascript-5.0.1.tgz",
+      "integrity": "sha512-SaaNal9imEO737H2c05Og0/8LUXG7EnsZyMa8MzkmuHoELfT6txuj0cMqRj6zfPKnmQ1yasR4PCJc8x+M4JSPA==",
+      "dev": true,
       "dependencies": {
         "randombytes": "^2.1.0"
       }
@@ -35117,6 +35126,16 @@
         "jest-worker": "^26.2.1",
         "serialize-javascript": "^4.0.0",
         "terser": "^5.0.0"
+      },
+      "dependencies": {
+        "serialize-javascript": {
+          "version": "4.0.0",
+          "resolved": "https://registry.npmjs.org/serialize-javascript/-/serialize-javascript-4.0.0.tgz",
+          "integrity": "sha512-GaNA54380uFefWghODBWEGisLZFj00nS5ACs6yHa9nLqlLpVLO8ChDGeKRjZnV4Nh4n0Qi7nhYZD/9fCPzEqkw==",
+          "requires": {
+            "randombytes": "^2.1.0"
+          }
+        }
       }
     },
     "rollup-pluginutils": {
@@ -35317,9 +35336,10 @@
       }
     },
     "serialize-javascript": {
-      "version": "4.0.0",
-      "resolved": "https://registry.npmjs.org/serialize-javascript/-/serialize-javascript-4.0.0.tgz",
-      "integrity": "sha512-GaNA54380uFefWghODBWEGisLZFj00nS5ACs6yHa9nLqlLpVLO8ChDGeKRjZnV4Nh4n0Qi7nhYZD/9fCPzEqkw==",
+      "version": "5.0.1",
+      "resolved": "https://registry.npmjs.org/serialize-javascript/-/serialize-javascript-5.0.1.tgz",
+      "integrity": "sha512-SaaNal9imEO737H2c05Og0/8LUXG7EnsZyMa8MzkmuHoELfT6txuj0cMqRj6zfPKnmQ1yasR4PCJc8x+M4JSPA==",
+      "dev": true,
       "requires": {
         "randombytes": "^2.1.0"
       }
