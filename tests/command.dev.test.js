@@ -1725,5 +1725,27 @@ export const handler = async function () {
       })
     })
   }
+
+  test(testName(`serves non ascii static files correctly`, args), async (t) => {
+    await withSiteBuilder('site-with-non-ascii-files', async (builder) => {
+      await builder
+        .withContentFile({
+          path: 'public/范.txt',
+          content: 'success',
+        })
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'public' },
+            redirects: [{ from: '/*', to: '/index.html', status: 200 }],
+          },
+        })
+        .buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async (server) => {
+        const response = await got(`${server.url}/${encodeURIComponent('范.txt')}`)
+        t.is(response.body, 'success')
+      })
+    })
+  })
 })
 /* eslint-enable require-await */
