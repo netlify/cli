@@ -110,7 +110,7 @@
     "copy-template-dir": "^1.4.0",
     "debug": "^4.1.1",
     "del": "^6.0.0",
-    "dot-prop": "^5.1.0",
+    "dot-prop": "^6.0.0",
     "dotenv": "^10.0.0",
     "env-paths": "^2.2.0",
     "envinfo": "^7.3.1",
