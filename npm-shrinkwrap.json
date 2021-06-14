@@ -11,7 +11,7 @@
       "license": "MIT",
       "dependencies": {
         "@netlify/build": "^12.1.2",
-        "@netlify/config": "^7.2.2",
+        "@netlify/config": "^7.2.3",
         "@netlify/framework-info": "^5.2.0",
         "@netlify/plugin-edge-handlers": "^1.11.17",
         "@netlify/plugins-list": "^2.15.1",
@@ -2818,9 +2818,9 @@
       }
     },
     "node_modules/@netlify/config": {
-      "version": "7.2.2",
-      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-7.2.2.tgz",
-      "integrity": "sha512-KUnuWRVzlw1CiYTMaZ9k6WBSxX371UEI8wN99+04a/luRiuNdnxrE40IYTU9lhR5dooNj5CVW4M5SBRVSHoQ1g==",
+      "version": "7.2.3",
+      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-7.2.3.tgz",
+      "integrity": "sha512-ingKElzWTj3Lt3xuYOqiwp+B5qwTf3Xo4X0yKAmKXupygC2ZDFXBU3JKDQ/SkV7PJw8ofaDUYugeG9gfdyTonA==",
       "dependencies": {
         "@ungap/from-entries": "^0.2.1",
         "array-flat-polyfill": "^1.0.1",
@@ -2837,7 +2837,7 @@
         "js-yaml": "^4.0.0",
         "map-obj": "^4.0.0",
         "netlify": "^7.0.1",
-        "netlify-redirect-parser": "^5.2.0",
+        "netlify-redirect-parser": "^5.2.1",
         "omit.js": "^2.0.2",
         "p-locate": "^4.1.0",
         "path-exists": "^4.0.0",
@@ -23149,9 +23149,9 @@
       }
     },
     "@netlify/config": {
-      "version": "7.2.2",
-      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-7.2.2.tgz",
-      "integrity": "sha512-KUnuWRVzlw1CiYTMaZ9k6WBSxX371UEI8wN99+04a/luRiuNdnxrE40IYTU9lhR5dooNj5CVW4M5SBRVSHoQ1g==",
+      "version": "7.2.3",
+      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-7.2.3.tgz",
+      "integrity": "sha512-ingKElzWTj3Lt3xuYOqiwp+B5qwTf3Xo4X0yKAmKXupygC2ZDFXBU3JKDQ/SkV7PJw8ofaDUYugeG9gfdyTonA==",
       "requires": {
         "@ungap/from-entries": "^0.2.1",
         "array-flat-polyfill": "^1.0.1",
@@ -23168,7 +23168,7 @@
         "js-yaml": "^4.0.0",
         "map-obj": "^4.0.0",
         "netlify": "^7.0.1",
-        "netlify-redirect-parser": "^5.2.0",
+        "netlify-redirect-parser": "^5.2.1",
         "omit.js": "^2.0.2",
         "p-locate": "^4.1.0",
         "path-exists": "^4.0.0",
