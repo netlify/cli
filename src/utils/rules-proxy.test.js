@@ -76,12 +76,14 @@ test('should parse redirect rules from netlify.toml', async (t) => {
     const expected = [
       {
         ...BASE_RULE,
+        origin: '/api/*',
         path: '/api/*',
         to: '/.netlify/functions/:splat',
         status: 200,
       },
       {
         ...BASE_RULE,
+        origin: '/foo',
         path: '/foo',
         to: '/not-foo',
         status: 200,
@@ -89,12 +91,14 @@ test('should parse redirect rules from netlify.toml', async (t) => {
       },
       {
         ...BASE_RULE,
+        origin: '/foo.html',
         path: '/foo.html',
         to: '/not-foo',
         status: 200,
       },
       {
         ...BASE_RULE,
+        origin: '/not-foo',
         path: '/not-foo',
         to: '/foo',
         status: 200,
@@ -102,18 +106,21 @@ test('should parse redirect rules from netlify.toml', async (t) => {
       },
       {
         ...BASE_RULE,
+        origin: '/test-404a',
         path: '/test-404a',
         to: '/foo',
         status: 404,
       },
       {
         ...BASE_RULE,
+        origin: '/test-404b',
         path: '/test-404b',
         to: '/foo',
         status: 404,
       },
       {
         ...BASE_RULE,
+        origin: '/test-404c',
         path: '/test-404c',
         to: '/foo',
         status: 404,
@@ -137,6 +144,7 @@ test('should parse redirect rules from _redirects file', async (t) => {
     const expected = [
       {
         ...BASE_RULE,
+        origin: '/something',
         path: '/something',
         to: '/ping',
         status: 200,
@@ -165,18 +173,21 @@ test('should parse redirect rules from _redirects file and netlify.toml', async 
     const expected = [
       {
         ...BASE_RULE,
+        origin: '/something',
         path: '/something',
         to: '/ping',
         status: 200,
       },
       {
         ...BASE_RULE,
+        origin: '/api/*',
         path: '/api/*',
         to: '/.netlify/functions/:splat',
         status: 200,
       },
       {
         ...BASE_RULE,
+        origin: '/foo',
         path: '/foo',
         to: '/not-foo',
         status: 200,
@@ -184,12 +195,14 @@ test('should parse redirect rules from _redirects file and netlify.toml', async 
       },
       {
         ...BASE_RULE,
+        origin: '/foo.html',
         path: '/foo.html',
         to: '/not-foo',
         status: 200,
       },
       {
         ...BASE_RULE,
+        origin: '/not-foo',
         path: '/not-foo',
         to: '/foo',
         status: 200,
@@ -197,18 +210,21 @@ test('should parse redirect rules from _redirects file and netlify.toml', async 
       },
       {
         ...BASE_RULE,
+        origin: '/test-404a',
         path: '/test-404a',
         to: '/foo',
         status: 404,
       },
       {
         ...BASE_RULE,
+        origin: '/test-404b',
         path: '/test-404b',
         to: '/foo',
         status: 404,
       },
       {
         ...BASE_RULE,
+        origin: '/test-404c',
         path: '/test-404c',
         to: '/foo',
         status: 404,
