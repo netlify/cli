@@ -300,8 +300,8 @@ const filterSettings = function (scriptInquirerOptions, input) {
 const formatSettingsArrForInquirer = function (frameworks) {
   return [].concat(
     ...frameworks.map((framework) =>
-      framework.watch.commands.map((command) => ({
-        name: `[${chalk.yellow(framework.name)}] ${framework.command} ${command.join(' ')}`,
+      framework.dev.commands.map((command) => ({
+        name: `[${chalk.yellow(framework.name)}] '${command}'`,
         value: { ...framework, commands: [command] },
         short: `${framework.name}-${command}`,
       })),
