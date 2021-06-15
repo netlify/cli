@@ -52,10 +52,8 @@ jobs:
       - name: Linting
         run: npm run format:ci
         if: "${{ matrix.node-version == '*' }}"
-      - name: Debug
-        run: echo "ref - ${{github.head_ref}}"
       - name: Tests
-        if: "${{ !startsWith(github.ref, 'refs/heads/testing-') }}"
+        if: "${{ !startsWith(github.ref, 'testing-') }}"
         run: npm run test:ci
         env:
           # GitHub secrets are not available when running on PR from forks
@@ -65,7 +63,7 @@ jobs:
           # NETLIFY_TEST_GITHUB_TOKEN is used to avoid reaching GitHub API limits in exec-fetcher.js
           NETLIFY_TEST_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Get test coverage flags
-        if: "${{ !startsWith(github.ref, 'refs/heads/testing-') }}"
+        if: "${{ !startsWith(github.ref, 'testing-') }}"
         id: test-coverage-flags
         run: |-
           os=${{ matrix.config.os }}
