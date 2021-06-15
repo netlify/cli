@@ -9,6 +9,7 @@ const bodyParser = require('body-parser')
 const chalk = require('chalk')
 const chokidar = require('chokidar')
 const { parse: parseContentType } = require('content-type')
+const decache = require('decache')
 const jwtDecode = require('jwt-decode')
 const lambdaLocal = require('lambda-local')
 const debounce = require('lodash/debounce')
@@ -159,17 +160,11 @@ const logAfterAction = ({ path, action }) => {
   console.log(`${NETLIFYDEVLOG} ${path} ${action}, successfully reloaded!`)
 }
 
-const clearRequireCache = () => {
-  Object.keys(require.cache).forEach((key) => {
-    delete require.cache[key]
-  })
-}
-
 const clearCache =
   ({ action }) =>
   (path) => {
     logBeforeAction({ path, action })
-    clearRequireCache()
+    decache(path)
     logAfterAction({ path, action })
   }
 
@@ -302,7 +297,7 @@ const setupDefaultFunctionHandler = async ({ capabilities, directory, warn }) =>
 
       validateFunctions({ functions, capabilities, warn })
 
-      clearRequireCache()
+      decache(path)
 
       await watcher.add(newWatchDirs)
 
@@ -535,7 +530,7 @@ const setupFunctionsBuilder = async ({ config, errorExit, functionsDirectory, lo
   functionWatcher.on('add', (path) => buildFunction(path, 'add'))
   functionWatcher.on('change', async (path) => {
     await buildFunction(path, 'change')
-    clearRequireCache()
+    decache(path)
   })
   functionWatcher.on('unlink', (path) => buildFunction(path, 'unlink'))
 

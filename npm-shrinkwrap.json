@@ -44,6 +44,7 @@
         "cookie": "^0.4.0",
         "copy-template-dir": "^1.4.0",
         "debug": "^4.1.1",
+        "decache": "^4.6.0",
         "del": "^6.0.0",
         "dot-prop": "^6.0.0",
         "dotenv": "^10.0.0",
@@ -6063,6 +6064,14 @@
       "resolved": "https://registry.npmjs.org/call-me-maybe/-/call-me-maybe-1.0.1.tgz",
       "integrity": "sha1-JtII6onje1y95gJQoV8DHBak1ms="
     },
+    "node_modules/callsite": {
+      "version": "1.0.0",
+      "resolved": "https://registry.npmjs.org/callsite/-/callsite-1.0.0.tgz",
+      "integrity": "sha1-KAOY5dZkvXQDi28JBRU+borxvCA=",
+      "engines": {
+        "node": "*"
+      }
+    },
     "node_modules/callsites": {
       "version": "3.1.0",
       "resolved": "https://registry.npmjs.org/callsites/-/callsites-3.1.0.tgz",
@@ -7658,6 +7667,14 @@
       "version": "2.1.2",
       "resolved": "https://registry.npmjs.org/ms/-/ms-2.1.2.tgz",
       "integrity": "sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w=="
+    },
+    "node_modules/decache": {
+      "version": "4.6.0",
+      "resolved": "https://registry.npmjs.org/decache/-/decache-4.6.0.tgz",
+      "integrity": "sha512-PppOuLiz+DFeaUvFXEYZjLxAkKiMYH/do/b/MxpDe/8AgKBi5GhZxridoVIbBq72GDbL36e4p0Ce2jTGUwwU+w==",
+      "dependencies": {
+        "callsite": "^1.0.0"
+      }
     },
     "node_modules/decamelize": {
       "version": "1.2.0",
@@ -25695,6 +25712,11 @@
       "resolved": "https://registry.npmjs.org/call-me-maybe/-/call-me-maybe-1.0.1.tgz",
       "integrity": "sha1-JtII6onje1y95gJQoV8DHBak1ms="
     },
+    "callsite": {
+      "version": "1.0.0",
+      "resolved": "https://registry.npmjs.org/callsite/-/callsite-1.0.0.tgz",
+      "integrity": "sha1-KAOY5dZkvXQDi28JBRU+borxvCA="
+    },
     "callsites": {
       "version": "3.1.0",
       "resolved": "https://registry.npmjs.org/callsites/-/callsites-3.1.0.tgz",
@@ -26957,6 +26979,14 @@
           "resolved": "https://registry.npmjs.org/ms/-/ms-2.1.2.tgz",
           "integrity": "sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w=="
         }
+      }
+    },
+    "decache": {
+      "version": "4.6.0",
+      "resolved": "https://registry.npmjs.org/decache/-/decache-4.6.0.tgz",
+      "integrity": "sha512-PppOuLiz+DFeaUvFXEYZjLxAkKiMYH/do/b/MxpDe/8AgKBi5GhZxridoVIbBq72GDbL36e4p0Ce2jTGUwwU+w==",
+      "requires": {
+        "callsite": "^1.0.0"
       }
     },
     "decamelize": {
