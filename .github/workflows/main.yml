@@ -53,7 +53,7 @@ jobs:
         run: npm run format:ci
         if: "${{ matrix.node-version == '*' }}"
       - name: Debug
-        run: echo "ref - ${{github.ref}}"
+        run: echo "ref - ${{github.head_ref}}"
       - name: Tests
         if: "${{ !startsWith(github.ref, 'refs/heads/testing-') }}"
         run: npm run test:ci
