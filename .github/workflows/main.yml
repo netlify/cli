@@ -53,7 +53,7 @@ jobs:
         run: npm run format:ci
         if: "${{ matrix.node-version == '*' }}"
       - name: Tests
-        if: startsWith(github.ref, 'refs/heads/testing-') != true
+        if: ${{ startsWith(github.ref, 'refs/heads/testing-') != true )}}
         run: npm run test:ci
         env:
           # GitHub secrets are not available when running on PR from forks
@@ -66,7 +66,7 @@ jobs:
           CHOKIDAR_INTERVAL: 20
           CHOKIDAR_USEPOLLING: 1
       - name: Get test coverage flags
-        if: startsWith(github.ref, 'refs/heads/testing-') != true
+        if: ${{ startsWith(github.ref, 'refs/heads/testing-') != true )}}
         id: test-coverage-flags
         run: |-
           os=${{ matrix.config.os }}
