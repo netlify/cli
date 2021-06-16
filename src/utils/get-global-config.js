@@ -12,7 +12,7 @@ const globalConfigDefaults = {
   cliId: uuidv4(),
 }
 
-const getGlobalConfig = async function () {
+const getGlobalConfigOnce = async function () {
   const configPath = getPathInHome(['config.json'])
   // Legacy config file in home ~/.netlify/config.json
   const legacyPath = getLegacyPathInHome(['config.json'])
@@ -26,6 +26,20 @@ const getGlobalConfig = async function () {
   const configStore = new Configstore(null, defaults, { configPath })
 
   return configStore
+}
+
+const getGlobalConfig = async function () {
+  const retries = 3
+  for (let retry = 1; retry <= retries; retry++) {
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      return await getGlobalConfigOnce()
+    } catch (error) {
+      if (retry === retries) {
+        throw error
+      }
+    }
+  }
 }
 
 // Memoise config result so that we only load it once
