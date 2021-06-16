@@ -694,6 +694,39 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
+  test(testName('should handle form submission with a background function', args), async (t) => {
+    await withSiteBuilder('site-with-form-background-function', async (builder) => {
+      await builder
+        .withContentFile({
+          path: 'index.html',
+          content: '<h1>⊂◉‿◉つ</h1>',
+        })
+        .withNetlifyToml({
+          config: {
+            functions: { directory: 'functions' },
+          },
+        })
+        .withFunction({
+          path: 'submission-created-background.js',
+          handler: async (event) => ({
+            statusCode: 200,
+            body: JSON.stringify(event),
+          }),
+        })
+        .buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async (server) => {
+        const form = new FormData()
+        form.append('some', 'thing')
+        const response = await got.post(`${server.url}/?ding=dong`, {
+          body: form,
+        })
+        t.is(response.statusCode, 202)
+        t.is(response.body, '')
+      })
+    })
+  })
+
   test(testName('should not handle form submission when content type is `text/plain`', args), async (t) => {
     await withSiteBuilder('site-with-form-text-plain', async (builder) => {
       builder

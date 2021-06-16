@@ -247,4 +247,30 @@ test('should use settings from netlify.toml dev', async (t) => {
   })
 })
 
+test('should trigger background function from event', async (t) => {
+  await withSiteBuilder('site-with-ping-function', async (builder) => {
+    await builder
+      .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
+      .withFunction({
+        path: 'identity-validate-background.js',
+        handler: async (event) => ({
+          statusCode: 200,
+          body: JSON.stringify(event.body),
+        }),
+      })
+      .buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async (server) => {
+      const stdout = await callCli(
+        ['functions:invoke', 'identity-validate-background', '--identity', `--port=${server.port}`],
+        {
+          cwd: builder.directory,
+        },
+      )
+      // background functions always return an empty response
+      t.is(stdout, '')
+    })
+  })
+})
+
 /* eslint-enable require-await */
