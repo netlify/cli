@@ -329,12 +329,12 @@ const getFormHandler = function ({ getFunctionByName, warn }) {
     .map(({ name }) => name)
 
   if (handlers.length === 0) {
-    warn('Missing submission-created function handler')
+    warn(`Missing form submission function handler`)
     return
   }
 
   if (handlers.length === 2) {
-    warn(`Detected both '${handlers[0]}' and '${handlers[1]}' form handlers, using ${handlers[0]}`)
+    warn(`Detected both '${handlers[0]}' and '${handlers[1]}' form submission functions handlers, using ${handlers[0]}`)
   }
 
   return handlers[0]
