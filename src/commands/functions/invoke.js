@@ -8,11 +8,11 @@ const inquirer = require('inquirer')
 const fetch = require('node-fetch')
 
 const Command = require('../../utils/command')
-const { getFunctions } = require('../../utils/get-functions')
+const { getFunctions, BACKGROUND } = require('../../utils/get-functions')
 const { NETLIFYDEVWARN } = require('../../utils/logo')
 
 // https://www.netlify.com/docs/functions/#event-triggered-functions
-const eventTriggeredFunctions = new Set([
+const events = [
   'deploy-building',
   'deploy-succeeded',
   'deploy-failed',
@@ -25,7 +25,8 @@ const eventTriggeredFunctions = new Set([
   'identity-validate',
   'identity-signup',
   'identity-login',
-])
+]
+const eventTriggeredFunctions = new Set([...events, ...events.map((name) => `${name}${BACKGROUND}`)])
 
 const DEFAULT_PORT = 8888
 

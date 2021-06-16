@@ -44,4 +44,4 @@ const getFunctionsAndWatchDirs = async (functionsSrcDir) => {
   return { functions: functionsWithProps, watchDirs }
 }
 
-module.exports = { getFunctions, getFunctionsAndWatchDirs }
+module.exports = { getFunctions, getFunctionsAndWatchDirs, BACKGROUND }
