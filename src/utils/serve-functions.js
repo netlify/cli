@@ -21,7 +21,7 @@ const winston = require('winston')
 const { getLogMessage } = require('../lib/log')
 
 const { detectFunctionsBuilder } = require('./detect-functions-builder')
-const { getFunctionsAndWatchDirs } = require('./get-functions')
+const { getFunctionsAndWatchDirs, BACKGROUND } = require('./get-functions')
 const { NETLIFYDEVLOG, NETLIFYDEVERR } = require('./logo')
 
 const formatLambdaLocalError = (err) => `${err.errorType}: ${err.errorMessage}\n  ${err.stackTrace.join('\n  ')}`
@@ -322,7 +322,25 @@ const setupDefaultFunctionHandler = async ({ capabilities, directory, warn }) =>
   return { getFunctionByName }
 }
 
-const createFormSubmissionHandler = function ({ siteUrl, warn }) {
+const getFormHandler = function ({ getFunctionByName, warn }) {
+  const handlers = ['submission-created', `submission-created${BACKGROUND}`]
+    .map((name) => getFunctionByName(name))
+    .filter(Boolean)
+    .map(({ name }) => name)
+
+  if (handlers.length === 0) {
+    warn(`Missing form submission function handler`)
+    return
+  }
+
+  if (handlers.length === 2) {
+    warn(`Detected both '${handlers[0]}' and '${handlers[1]}' form submission functions handlers, using ${handlers[0]}`)
+  }
+
+  return handlers[0]
+}
+
+const createFormSubmissionHandler = function ({ getFunctionByName, siteUrl, warn }) {
   return async function formSubmissionHandler(req, res, next) {
     if (req.url.startsWith('/.netlify/') || req.method !== 'POST') return next()
 
@@ -334,8 +352,13 @@ const createFormSubmissionHandler = function ({ siteUrl, warn }) {
     })
     fakeRequest.headers = req.headers
 
+    const handlerName = getFormHandler({ getFunctionByName, warn })
+    if (!handlerName) {
+      return next()
+    }
+
     const originalUrl = new URL(req.url, 'http://localhost')
-    req.url = `/.netlify/functions/submission-created${originalUrl.search}`
+    req.url = `/.netlify/functions/${handlerName}${originalUrl.search}`
 
     const ct = parseContentType(req)
     let fields = {}
@@ -450,7 +473,7 @@ const getFunctionsServer = async function ({ getFunctionByName, siteUrl, warn, t
     }),
   )
   app.use(bodyParser.raw({ limit: '6mb', type: '*/*' }))
-  app.use(createFormSubmissionHandler({ siteUrl, warn }))
+  app.use(createFormSubmissionHandler({ getFunctionByName, siteUrl, warn }))
   app.use(
     expressLogging(console, {
       blacklist: ['/favicon.ico'],
