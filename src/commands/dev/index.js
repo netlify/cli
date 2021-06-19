@@ -13,6 +13,7 @@ const waitPort = require('wait-port')
 const which = require('which')
 const wrapAnsi = require('wrap-ansi')
 
+const { startFunctionsServer } = require('../../lib/functions/server')
 const Command = require('../../utils/command')
 const { serverSettings } = require('../../utils/detect-server')
 const { getSiteInformation, injectEnvVariables } = require('../../utils/dev')
@@ -20,7 +21,6 @@ const { startLiveTunnel } = require('../../utils/live-tunnel')
 const { NETLIFYDEV, NETLIFYDEVLOG, NETLIFYDEVWARN, NETLIFYDEVERR } = require('../../utils/logo')
 const openBrowser = require('../../utils/open-browser')
 const { startProxy } = require('../../utils/proxy')
-const { startFunctionsServer } = require('../../utils/serve-functions')
 const { startForwardProxy } = require('../../utils/traffic-mesh')
 
 // 1 second
