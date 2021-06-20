@@ -1,47 +1,31 @@
 const { Buffer } = require('buffer')
 
-const lambdaLocal = require('lambda-local')
-
 const { NETLIFYDEVERR } = require('../../utils/logo')
 
-const { DEFAULT_LAMBDA_OPTIONS, SECONDS_TO_MILLISECONDS } = require('./utils')
-
-const createSynchronousFunctionCallback = function (response) {
-  return function callbackHandler(err, lambdaResponse) {
-    if (err) {
-      return handleErr(err, response)
-    }
-
-    const { error } = validateLambdaResponse(lambdaResponse)
-    if (error) {
-      console.log(`${NETLIFYDEVERR} ${error}`)
-      return handleErr(error, response)
-    }
-
-    response.statusCode = lambdaResponse.statusCode
-    for (const key in lambdaResponse.headers) {
-      response.setHeader(key, lambdaResponse.headers[key])
-    }
-    for (const key in lambdaResponse.multiValueHeaders) {
-      const items = lambdaResponse.multiValueHeaders[key]
-      response.setHeader(key, items)
-    }
-    if (lambdaResponse.body) {
-      response.write(lambdaResponse.isBase64Encoded ? Buffer.from(lambdaResponse.body, 'base64') : lambdaResponse.body)
-    }
-    response.end()
+const handleSynchronousFunction = function (err, result, response) {
+  if (err) {
+    return handleErr(err, response)
   }
-}
 
-const executeSynchronousFunction = ({ event, lambdaPath, timeout, clientContext, response }) =>
-  lambdaLocal.execute({
-    ...DEFAULT_LAMBDA_OPTIONS,
-    event,
-    lambdaPath,
-    clientContext,
-    callback: createSynchronousFunctionCallback(response),
-    timeoutMs: timeout * SECONDS_TO_MILLISECONDS,
-  })
+  const { error } = validateLambdaResponse(result)
+  if (error) {
+    console.log(`${NETLIFYDEVERR} ${error}`)
+    return handleErr(error, response)
+  }
+
+  response.statusCode = result.statusCode
+  for (const key in result.headers) {
+    response.setHeader(key, result.headers[key])
+  }
+  for (const key in result.multiValueHeaders) {
+    const items = result.multiValueHeaders[key]
+    response.setHeader(key, items)
+  }
+  if (result.body) {
+    response.write(result.isBase64Encoded ? Buffer.from(result.body, 'base64') : result.body)
+  }
+  response.end()
+}
 
 const formatLambdaLocalError = (err) => `${err.errorType}: ${err.errorMessage}\n  ${err.stackTrace.join('\n  ')}`
 
@@ -67,4 +51,4 @@ const validateLambdaResponse = (lambdaResponse) => {
   return {}
 }
 
-module.exports = { executeSynchronousFunction }
+module.exports = { handleSynchronousFunction }

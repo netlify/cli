@@ -5,10 +5,11 @@ const winston = require('winston')
 
 const { NETLIFYDEVERR, NETLIFYDEVLOG } = require('../../utils/logo')
 
-const { executeBackgroundFunction } = require('./background')
-const { setupDefaultFunctionHandler, setupFunctionsBuilder } = require('./builder')
+const { handleBackgroundFunction, handleBackgroundFunctionResult } = require('./background')
+const { setupFunctionsBuilder } = require('./builder')
 const { createFormSubmissionHandler } = require('./form-submissions-handler')
-const { executeSynchronousFunction } = require('./synchronous')
+const { FunctionsRegistry } = require('./registry')
+const { handleSynchronousFunction } = require('./synchronous')
 const { shouldBase64Encode } = require('./utils')
 
 const buildClientContext = function (headers) {
@@ -38,26 +39,24 @@ const buildClientContext = function (headers) {
   }
 }
 
-const createHandler = function ({ getFunctionByName, timeouts }) {
+const createHandler = function ({ functionsRegistry }) {
   const logger = winston.createLogger({
     levels: winston.config.npm.levels,
     transports: [new winston.transports.Console({ level: 'warn' })],
   })
   lambdaLocal.setLogger(logger)
 
-  return function handler(request, response) {
+  return async function handler(request, response) {
     // handle proxies without path re-writes (http-servr)
     const cleanPath = request.path.replace(/^\/.netlify\/functions/, '')
 
     const functionName = cleanPath.split('/').find(Boolean)
-    const func = getFunctionByName(functionName)
+    const func = functionsRegistry.get(functionName)
     if (func === undefined) {
       response.statusCode = 404
       response.end('Function not found...')
       return
     }
-    const { bundleFile, mainFile, isBackground } = func
-    const lambdaPath = bundleFile || mainFile
 
     const isBase64Encoded = shouldBase64Encode(request.headers['content-type'])
     const body = request.get('content-length') ? request.body.toString(isBase64Encoded ? 'base64' : 'utf8') : undefined
@@ -98,28 +97,21 @@ const createHandler = function ({ getFunctionByName, timeouts }) {
 
     const clientContext = JSON.stringify(buildClientContext(request.headers) || {})
 
-    if (isBackground) {
-      return executeBackgroundFunction({
-        event,
-        lambdaPath,
-        timeout: timeouts.backgroundFunctions,
-        clientContext,
-        response,
-        functionName,
-      })
-    }
+    if (func.isBackground) {
+      handleBackgroundFunction(functionName, response)
 
-    return executeSynchronousFunction({
-      event,
-      lambdaPath,
-      timeout: timeouts.syncFunctions,
-      clientContext,
-      response,
-    })
+      const { error } = await func.invoke(event, clientContext)
+
+      handleBackgroundFunctionResult(functionName, error)
+    } else {
+      const { error, result } = await func.invoke(event, clientContext)
+
+      handleSynchronousFunction(error, result, response)
+    }
   }
 }
 
-const getFunctionsServer = async function ({ getFunctionByName, siteUrl, warn, timeouts, prefix }) {
+const getFunctionsServer = async function ({ getFunctionByName, siteUrl, warn, prefix, functionsRegistry }) {
   // performance optimization, load express on demand
   // eslint-disable-next-line node/global-require
   const express = require('express')
@@ -146,7 +138,7 @@ const getFunctionsServer = async function ({ getFunctionByName, siteUrl, warn, t
     res.status(204).end()
   })
 
-  app.all(`${prefix}*`, await createHandler({ getFunctionByName, timeouts }))
+  app.all(`${prefix}*`, await createHandler({ functionsRegistry }))
 
   return app
 }
@@ -174,20 +166,15 @@ const startFunctionsServer = async ({
       site,
     })
     const directory = builder.target || settings.functions
+    const functionsRegistry = new FunctionsRegistry({ capabilities, timeouts, warn })
 
-    // If the functions builder implements a `getFunctionByName` function, it
-    // will be called on every functions request with the function name and it
-    // should return the corresponding function object if one exists.
-    const { getFunctionByName } =
-      typeof builder.getFunctionByName === 'function'
-        ? builder
-        : await setupDefaultFunctionHandler({ capabilities, directory, warn })
+    await functionsRegistry.scan(directory)
+
     const server = await getFunctionsServer({
-      getFunctionByName,
+      functionsRegistry,
       siteUrl,
-      warn,
-      timeouts,
       prefix,
+      warn,
     })
 
     await startWebServer({ server, settings, log, errorExit })
