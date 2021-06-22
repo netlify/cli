@@ -23,19 +23,14 @@ ${error.message}`)
 }
 
 // `netlify-redirector` does not handle the same shape as the backend:
-//  - `parameters` is called `params`
-//  - `destination` is called `to`
+//  - `from` is called `origin`
+//  - `query` is called `params`
 //  - `conditions.role|country|language` are capitalized
-const normalizeRule = function ({
-  parameters,
-  destination,
-  conditions: { role, country, language, ...conditions },
-  ...rule
-}) {
+const normalizeRule = function ({ from, query, conditions: { role, country, language, ...conditions }, ...rule }) {
   return {
     ...rule,
-    params: parameters,
-    to: destination,
+    origin: from,
+    params: query,
     conditions: {
       ...conditions,
       ...(role && { Role: role }),
