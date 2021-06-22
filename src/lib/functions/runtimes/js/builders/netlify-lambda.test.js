@@ -1,7 +1,7 @@
 const test = require('ava')
 const sinon = require('sinon')
 
-const { detectNetlifyLambda } = require('../netlify-lambda')
+const { detectNetlifyLambda } = require('./netlify-lambda')
 
 test(`should not find netlify-lambda from netlify-cli package.json`, async (t) => {
   t.is(await detectNetlifyLambda(), false)
