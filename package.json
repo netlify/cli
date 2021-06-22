@@ -75,8 +75,8 @@
     "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,scripts,site,tests,.github}/**/*.{js,md,yml,json,html}\" \"*.{js,yml,json,html}\" \".*.{js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\""
   },
   "dependencies": {
-    "@netlify/build": "^12.2.0",
-    "@netlify/config": "^7.4.0",
+    "@netlify/build": "^12.6.0",
+    "@netlify/config": "^7.6.0",
     "@netlify/framework-info": "^5.3.0",
     "@netlify/plugin-edge-handlers": "^1.11.19",
     "@netlify/plugins-list": "^2.16.0",
@@ -154,6 +154,7 @@
     "node-fetch": "^2.6.0",
     "node-version-alias": "^1.0.1",
     "oclif-plugin-completion": "^0.6.0",
+    "omit.js": "^2.0.2",
     "open": "^7.0.0",
     "ora": "^5.0.0",
     "p-event": "^4.2.0",
@@ -203,7 +204,6 @@
     "jsonwebtoken": "^8.5.1",
     "mkdirp": "^1.0.4",
     "nyc": "^15.0.0",
-    "omit.js": "^2.0.2",
     "p-timeout": "^4.0.0",
     "pidtree": "^0.5.0",
     "seedrandom": "^3.0.5",
