@@ -1,12 +1,9 @@
 const bodyParser = require('body-parser')
 const jwtDecode = require('jwt-decode')
-const lambdaLocal = require('lambda-local')
-const winston = require('winston')
 
 const { NETLIFYDEVERR, NETLIFYDEVLOG } = require('../../utils/logo')
 
 const { handleBackgroundFunction, handleBackgroundFunctionResult } = require('./background')
-const { setupFunctionsBuilder } = require('./builder')
 const { createFormSubmissionHandler } = require('./form-submissions-handler')
 const { FunctionsRegistry } = require('./registry')
 const { handleSynchronousFunction } = require('./synchronous')
@@ -40,18 +37,12 @@ const buildClientContext = function (headers) {
 }
 
 const createHandler = function ({ functionsRegistry }) {
-  const logger = winston.createLogger({
-    levels: winston.config.npm.levels,
-    transports: [new winston.transports.Console({ level: 'warn' })],
-  })
-  lambdaLocal.setLogger(logger)
-
   return async function handler(request, response) {
     // handle proxies without path re-writes (http-servr)
     const cleanPath = request.path.replace(/^\/.netlify\/functions/, '')
-
     const functionName = cleanPath.split('/').find(Boolean)
     const func = functionsRegistry.get(functionName)
+
     if (func === undefined) {
       response.statusCode = 404
       response.end('Function not found...')
@@ -158,17 +149,18 @@ const startFunctionsServer = async ({
   // serve functions from zip-it-and-ship-it
   // env variables relies on `url`, careful moving this code
   if (settings.functions) {
-    const builder = await setupFunctionsBuilder({
+    const functionsRegistry = new FunctionsRegistry({
+      capabilities,
       config,
       errorExit,
       functionsDirectory: settings.functions,
       log,
-      site,
+      projectRoot: site.root,
+      timeouts,
+      warn,
     })
-    const directory = builder.target || settings.functions
-    const functionsRegistry = new FunctionsRegistry({ capabilities, timeouts, warn })
 
-    await functionsRegistry.scan(directory)
+    await functionsRegistry.scan(settings.functions)
 
     const server = await getFunctionsServer({
       functionsRegistry,
