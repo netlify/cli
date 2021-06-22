@@ -2,10 +2,10 @@ const { join } = require('path')
 
 const { flags: flagsLib } = require('@oclif/command')
 
+const { startFunctionsServer } = require('../../lib/functions/server')
 const Command = require('../../utils/command')
 const { getSiteInformation, acquirePort } = require('../../utils/dev')
 const { getFunctionsDir } = require('../../utils/functions')
-const { startFunctionsServer } = require('../../utils/serve-functions')
 
 const DEFAULT_PORT = 9999
 
