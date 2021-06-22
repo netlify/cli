@@ -8,6 +8,7 @@ const oclifParser = require('@oclif/parser')
 const merge = require('lodash/merge')
 const argv = require('minimist')(process.argv.slice(2))
 const API = require('netlify')
+const omit = require('omit.js').default
 
 const { getAgent } = require('../lib/http-agent')
 const { startSpinner, clearSpinner } = require('../lib/spinner')
@@ -143,7 +144,7 @@ class BaseCommand extends TrackedCommand {
   // Find and resolve the Netlify configuration
   async getConfig({ cwd, host, offline = argv.offline, pathPrefix, scheme, state, token }) {
     try {
-      return await resolveConfig({
+      const cachedConfig = await resolveConfig({
         config: argv.config,
         cwd,
         context: argv.context || this.commandContext,
@@ -156,6 +157,7 @@ class BaseCommand extends TrackedCommand {
         scheme,
         offline,
       })
+      return this.normalizeCachedConfig(cachedConfig)
     } catch (error) {
       const isUserError = error.type === 'userError'
 
@@ -173,6 +175,23 @@ class BaseCommand extends TrackedCommand {
       console.error(message)
       this.exit(1)
     }
+  }
+
+  // When `build.publish` is not set by the user, the CLI behavior differs in
+  // several ways. It detects it by checking if `build.publish` is `undefined`.
+  // However, `@netlify/config` adds a default value to `build.publish`.
+  // This removes it.
+  normalizeCachedConfig(cachedConfig) {
+    const {
+      config,
+      config: {
+        build,
+        build: { publishOrigin },
+      },
+    } = cachedConfig
+    return publishOrigin === 'default'
+      ? { ...cachedConfig, config: { ...config, build: omit(build, ['publish', 'publishOrigin']) } }
+      : cachedConfig
   }
 
   async isLoggedIn() {
