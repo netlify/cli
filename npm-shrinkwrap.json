@@ -10,13 +10,13 @@
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
-        "@netlify/build": "^12.7.1",
+        "@netlify/build": "^12.7.2",
         "@netlify/config": "^8.0.0",
         "@netlify/framework-info": "^5.3.0",
         "@netlify/plugin-edge-handlers": "^1.11.19",
         "@netlify/plugins-list": "^2.18.0",
         "@netlify/routing-local-proxy": "^0.30.1",
-        "@netlify/zip-it-and-ship-it": "^4.5.1",
+        "@netlify/zip-it-and-ship-it": "4.4.2",
         "@oclif/command": "^1.6.1",
         "@oclif/config": "^1.15.1",
         "@oclif/errors": "^1.3.4",
@@ -2283,9 +2283,9 @@
       }
     },
     "node_modules/@netlify/build": {
-      "version": "12.7.1",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-12.7.1.tgz",
-      "integrity": "sha512-jSE8/ZsxPcY06rxnuXeM0ytEHqka2h1AadQoe/i3bkgTSw/erh7Eko07szy+41x2TEa0qnHZVggNVASF3PpJLw==",
+      "version": "12.7.2",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-12.7.2.tgz",
+      "integrity": "sha512-AQCtlVBQFEpcQzglzAiXqfaXAss/+ufBhfuc6BuWM24ze+dD+ywyUb9IHfe6ceHdHZIKhfST6AYWT7my39NGmg==",
       "dependencies": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^1.0.7",
@@ -2295,7 +2295,7 @@
         "@netlify/plugin-edge-handlers": "^1.11.19",
         "@netlify/plugins-list": "^2.17.0",
         "@netlify/run-utils": "^1.0.6",
-        "@netlify/zip-it-and-ship-it": "^4.5.1",
+        "@netlify/zip-it-and-ship-it": "4.4.2",
         "@sindresorhus/slugify": "^1.1.0",
         "@ungap/from-entries": "^0.2.1",
         "ansi-escapes": "^4.3.2",
@@ -3190,11 +3190,11 @@
       }
     },
     "node_modules/@netlify/functions-utils": {
-      "version": "1.3.45",
-      "resolved": "https://registry.npmjs.org/@netlify/functions-utils/-/functions-utils-1.3.45.tgz",
-      "integrity": "sha512-toZdy9Ri85ysOVv7KuC4Z4v8J1X/SjxVnFdQzrOaqwyBGs+f853cM5rzV00iTkD0B24fvlr3MjW18p8RqmoB2A==",
+      "version": "1.3.46",
+      "resolved": "https://registry.npmjs.org/@netlify/functions-utils/-/functions-utils-1.3.46.tgz",
+      "integrity": "sha512-BXJxaj4fQ//zYUdRO9Mib35hOinRVBIjAWgD2YiW4fJv98Adcr33LMbPxxTnc/zP3Oh6c56YAUIBh5FA3VIe5g==",
       "dependencies": {
-        "@netlify/zip-it-and-ship-it": "^4.5.1",
+        "@netlify/zip-it-and-ship-it": "4.4.2",
         "cpy": "^8.1.0",
         "path-exists": "^4.0.0"
       },
@@ -3388,12 +3388,11 @@
       }
     },
     "node_modules/@netlify/zip-it-and-ship-it": {
-      "version": "4.5.1",
-      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-4.5.1.tgz",
-      "integrity": "sha512-zU2ztAEwLxIL7oy1nl0NXZC9Mbzb2QVkdjztZcpY76Ne5q0hBYpBv85SJFgrz75QMSC5C/eeQxs8iUYpmdZH4Q==",
+      "version": "4.4.2",
+      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-4.4.2.tgz",
+      "integrity": "sha512-627ZNqfc4mdhU5mYDpcKUbmx8RoAUu8ZQiW/RIt5s7uDhruba3bK776Ygzog5b14hYWthT41/bf+9wQ+O9NFWw==",
       "dependencies": {
         "@netlify/esbuild": "^0.13.6",
-        "acorn": "^8.4.0",
         "archiver": "^5.3.0",
         "array-flat-polyfill": "^1.0.1",
         "common-path-prefix": "^3.0.0",
@@ -4845,6 +4844,7 @@
       "version": "8.4.0",
       "resolved": "https://registry.npmjs.org/acorn/-/acorn-8.4.0.tgz",
       "integrity": "sha512-ULr0LDaEqQrMFGyQ3bhJkLsbtrQ8QibAseGZeaSUiT/6zb9IvIkomWHJIvgvwad+hinRAgsI51JcWk2yvwyL+w==",
+      "dev": true,
       "bin": {
         "acorn": "bin/acorn"
       },
@@ -22754,9 +22754,9 @@
       }
     },
     "@netlify/build": {
-      "version": "12.7.1",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-12.7.1.tgz",
-      "integrity": "sha512-jSE8/ZsxPcY06rxnuXeM0ytEHqka2h1AadQoe/i3bkgTSw/erh7Eko07szy+41x2TEa0qnHZVggNVASF3PpJLw==",
+      "version": "12.7.2",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-12.7.2.tgz",
+      "integrity": "sha512-AQCtlVBQFEpcQzglzAiXqfaXAss/+ufBhfuc6BuWM24ze+dD+ywyUb9IHfe6ceHdHZIKhfST6AYWT7my39NGmg==",
       "requires": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^1.0.7",
@@ -22766,7 +22766,7 @@
         "@netlify/plugin-edge-handlers": "^1.11.19",
         "@netlify/plugins-list": "^2.17.0",
         "@netlify/run-utils": "^1.0.6",
-        "@netlify/zip-it-and-ship-it": "^4.5.1",
+        "@netlify/zip-it-and-ship-it": "4.4.2",
         "@sindresorhus/slugify": "^1.1.0",
         "@ungap/from-entries": "^0.2.1",
         "ansi-escapes": "^4.3.2",
@@ -23472,11 +23472,11 @@
       }
     },
     "@netlify/functions-utils": {
-      "version": "1.3.45",
-      "resolved": "https://registry.npmjs.org/@netlify/functions-utils/-/functions-utils-1.3.45.tgz",
-      "integrity": "sha512-toZdy9Ri85ysOVv7KuC4Z4v8J1X/SjxVnFdQzrOaqwyBGs+f853cM5rzV00iTkD0B24fvlr3MjW18p8RqmoB2A==",
+      "version": "1.3.46",
+      "resolved": "https://registry.npmjs.org/@netlify/functions-utils/-/functions-utils-1.3.46.tgz",
+      "integrity": "sha512-BXJxaj4fQ//zYUdRO9Mib35hOinRVBIjAWgD2YiW4fJv98Adcr33LMbPxxTnc/zP3Oh6c56YAUIBh5FA3VIe5g==",
       "requires": {
-        "@netlify/zip-it-and-ship-it": "^4.5.1",
+        "@netlify/zip-it-and-ship-it": "4.4.2",
         "cpy": "^8.1.0",
         "path-exists": "^4.0.0"
       }
@@ -23620,12 +23620,11 @@
       }
     },
     "@netlify/zip-it-and-ship-it": {
-      "version": "4.5.1",
-      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-4.5.1.tgz",
-      "integrity": "sha512-zU2ztAEwLxIL7oy1nl0NXZC9Mbzb2QVkdjztZcpY76Ne5q0hBYpBv85SJFgrz75QMSC5C/eeQxs8iUYpmdZH4Q==",
+      "version": "4.4.2",
+      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-4.4.2.tgz",
+      "integrity": "sha512-627ZNqfc4mdhU5mYDpcKUbmx8RoAUu8ZQiW/RIt5s7uDhruba3bK776Ygzog5b14hYWthT41/bf+9wQ+O9NFWw==",
       "requires": {
         "@netlify/esbuild": "^0.13.6",
-        "acorn": "^8.4.0",
         "archiver": "^5.3.0",
         "array-flat-polyfill": "^1.0.1",
         "common-path-prefix": "^3.0.0",
@@ -24794,7 +24793,8 @@
     "acorn": {
       "version": "8.4.0",
       "resolved": "https://registry.npmjs.org/acorn/-/acorn-8.4.0.tgz",
-      "integrity": "sha512-ULr0LDaEqQrMFGyQ3bhJkLsbtrQ8QibAseGZeaSUiT/6zb9IvIkomWHJIvgvwad+hinRAgsI51JcWk2yvwyL+w=="
+      "integrity": "sha512-ULr0LDaEqQrMFGyQ3bhJkLsbtrQ8QibAseGZeaSUiT/6zb9IvIkomWHJIvgvwad+hinRAgsI51JcWk2yvwyL+w==",
+      "dev": true
     },
     "acorn-jsx": {
       "version": "5.3.1",
