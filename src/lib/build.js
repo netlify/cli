@@ -8,7 +8,7 @@ const getBuildOptions = ({
     netlify: { cachedConfig },
   },
   token,
-  flags: { dry, debug, json, silent },
+  flags: { dry, debug, json, silent, offline },
 }) => ({
   cachedConfig,
   token,
@@ -18,6 +18,7 @@ const getBuildOptions = ({
   telemetry: false,
   // buffer = true will not stream output
   buffer: json || silent,
+  offline,
 })
 
 const runBuild = async (options) => {

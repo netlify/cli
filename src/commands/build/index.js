@@ -18,7 +18,10 @@ class BuildCommand extends Command {
       token,
       flags,
     })
-    this.checkOptions(options)
+
+    if (!flags.offline) {
+      this.checkOptions(options)
+    }
 
     const { exitCode } = await runBuild(options)
     this.exit(exitCode)
@@ -43,6 +46,11 @@ BuildCommand.flags = {
   }),
   context: flagsLib.string({
     description: 'Build context',
+  }),
+  offline: flagsLib.boolean({
+    char: 'o',
+    description: 'disables any features that require network access',
+    default: false,
   }),
   ...BuildCommand.flags,
 }
