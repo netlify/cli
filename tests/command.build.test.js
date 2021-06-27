@@ -7,22 +7,25 @@ const cliPath = require('./utils/cli-path')
 const { withMockApi } = require('./utils/mock-api')
 const { withSiteBuilder } = require('./utils/site-builder')
 
+const defaultEnvs = {
+  NETLIFY_AUTH_TOKEN: 'fake-token',
+  NETLIFY_SITE_ID: 'site_id',
+  FORCE_COLOR: '1',
+}
+
 // Runs `netlify build ...flags` then verify:
 //  - its exit code is `exitCode`
 //  - that its output contains `output`
 const runBuildCommand = async function (
   t,
   cwd,
-  { apiUrl, exitCode: expectedExitCode = 0, output, flags = [], env } = {},
+  { apiUrl, exitCode: expectedExitCode = 0, output, flags = [], env = defaultEnvs } = {},
 ) {
   const { all, exitCode } = await execa(cliPath, ['build', ...flags], {
     reject: false,
     cwd,
     env: {
       NETLIFY_API_URL: apiUrl,
-      NETLIFY_AUTH_TOKEN: 'fake-token',
-      NETLIFY_SITE_ID: 'site_id',
-      FORCE_COLOR: '1',
       ...env,
     },
     all: true,
@@ -152,8 +155,36 @@ test('should error when a site id is missing', async (t) => {
         apiUrl,
         exitCode: 1,
         output: 'Could not find the site ID',
-        env: { NETLIFY_SITE_ID: '' },
+        env: { ...defaultEnvs, NETLIFY_SITE_ID: '' },
       })
+    })
+  })
+})
+
+test('should not require a linked site when offline flag is set', async (t) => {
+  await withSiteBuilder('success-site', async (builder) => {
+    await builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } }).buildAsync()
+
+    await runBuildCommand(t, builder.directory, {
+      output: 'testCommand',
+      flags: ['--offline'],
+      env: {},
+    })
+  })
+})
+
+test('should not send network requests when offline flag is set', async (t) => {
+  await withSiteBuilder('success-site', async (builder) => {
+    await builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } }).buildAsync()
+
+    await withMockApi(routes, async ({ apiUrl, requests }) => {
+      await runBuildCommand(t, builder.directory, {
+        apiUrl,
+        output: 'testCommand',
+        flags: ['--offline'],
+      })
+
+      t.is(requests.length, 0)
     })
   })
 })
