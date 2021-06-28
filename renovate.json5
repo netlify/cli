@@ -25,6 +25,7 @@
         'to-readable-stream',
         'http-proxy-middleware',
         'p-map',
+        'node-version-alias',
       ],
       major: {
         enabled: false,
