@@ -36,6 +36,38 @@ netlify [command] help
 ## Commands
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_LIST) -->
+### [api](/docs/commands/api.md)
+
+Run any Netlify API method
+
+### [deploy](/docs/commands/deploy.md)
+
+Create a new deploy from the contents of a folder
+
+### [init](/docs/commands/init.md)
+
+Configure continuous deployment for a new or existing site
+
+### [link](/docs/commands/link.md)
+
+Link a local repo or project folder to an existing site on Netlify
+
+### [login](/docs/commands/login.md)
+
+Login to your Netlify account
+
+### [switch](/docs/commands/switch.md)
+
+Switch your active Netlify account
+
+### [unlink](/docs/commands/unlink.md)
+
+Unlink a local folder from a Netlify site
+
+### [watch](/docs/commands/watch.md)
+
+Watch for site deploy to finish
+
 ### [addons](/docs/commands/addons.md)
 
 (Beta) Manage Netlify Add-ons
@@ -49,17 +81,9 @@ netlify [command] help
 | [`addons:list`](/docs/commands/addons.md#addonslist) | List currently installed add-ons for site  |
 
 
-### [api](/docs/commands/api.md)
-
-Run any Netlify API method
-
 ### [build](/docs/commands/build.md)
 
 (Beta) Build on your local machine
-
-### [deploy](/docs/commands/deploy.md)
-
-Create a new deploy from the contents of a folder
 
 ### [dev](/docs/commands/dev.md)
 
@@ -97,14 +121,6 @@ Manage netlify functions
 | [`functions:serve`](/docs/commands/functions.md#functionsserve) | (Beta) Serve functions locally  |
 
 
-### [init](/docs/commands/init.md)
-
-Configure continuous deployment for a new or existing site
-
-### [link](/docs/commands/link.md)
-
-Link a local repo or project folder to an existing site on Netlify
-
 ### [lm](/docs/commands/lm.md)
 
 Handle Netlify Large Media operations
@@ -115,10 +131,6 @@ Handle Netlify Large Media operations
 | [`lm:install`](/docs/commands/lm.md#lminstall) | Configures your computer to use Netlify Large Media.  |
 | [`lm:setup`](/docs/commands/lm.md#lmsetup) | Configures your site to use Netlify Large Media.  |
 
-
-### [login](/docs/commands/login.md)
-
-Login to your Netlify account
 
 ### [open](/docs/commands/open.md)
 
@@ -149,18 +161,6 @@ Print status information
 |:--------------------------- |:-----|
 | [`status:hooks`](/docs/commands/status.md#statushooks) | Print hook information of the linked site  |
 
-
-### [switch](/docs/commands/switch.md)
-
-Switch your active Netlify account
-
-### [unlink](/docs/commands/unlink.md)
-
-Unlink a local folder from a Netlify site
-
-### [watch](/docs/commands/watch.md)
-
-Watch for site deploy to finish
 
 ### [completion](/docs/commands/completion.md)
 
