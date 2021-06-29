@@ -4,9 +4,8 @@ const { zipFunction } = require('@netlify/zip-it-and-ship-it')
 const makeDir = require('make-dir')
 const sourceMapSupport = require('source-map-support')
 
-const { getPathInProject } = require('../../../../settings')
 const { NETLIFYDEVERR } = require('../../../../../utils/logo')
-
+const { getPathInProject } = require('../../../../settings')
 const { memoizedBuild } = require('../../../memoized-builder')
 
 const addFunctionsConfigDefaults = (config) => ({
@@ -47,9 +46,9 @@ const buildFunction = async ({ config, func, functionsDirectory, projectRoot, ta
 
 const clearCacheForFunction = (functionPath) => {
   Object.keys(require.cache)
-    .filter((path) => path.startsWith(functionPath))
-    .forEach((path) => {
-      delete require.cache[path]
+    .filter((requirePath) => requirePath.startsWith(functionPath))
+    .forEach((requirePath) => {
+      delete require.cache[requirePath]
     })
 }
 
@@ -104,7 +103,7 @@ module.exports = async ({ config, errorExit, func, functionsDirectory, projectRo
   const targetDirectory = await getTargetDirectory({ errorExit })
 
   return {
-    build: (func) => buildFunction({ config: functionsConfig, func, functionsDirectory, projectRoot, targetDirectory }),
+    build: () => buildFunction({ config: functionsConfig, func, functionsDirectory, projectRoot, targetDirectory }),
     builderName: 'zip-it-and-ship-it',
     target: targetDirectory,
   }
