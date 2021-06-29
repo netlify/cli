@@ -22,8 +22,10 @@ const formatDescription = (description) => (isBetaPlugin(description) ? `(Beta) 
 module.exports = function generateCommandData() {
   const commandsPath = path.join(__dirname, '..', '..', 'src/commands')
   const completionPluginPath = path.join(__dirname, '..', '..', 'node_modules/oclif-plugin-completion/lib/commands')
-  // console.log('commandsPath', commandsPath)
-  const commands = globby.sync([`${commandsPath}/**/**.js`, `${completionPluginPath}/**/**.js`])
+  const commands = [
+    ...globby.sync([`${commandsPath}/**/**.js`]).sort(),
+    ...globby.sync([`${completionPluginPath}/**/**.js`]).sort(),
+  ]
 
   const allCommands = commands.map((file) => {
     // eslint-disable-next-line node/global-require, import/no-dynamic-require
