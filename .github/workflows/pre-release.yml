@@ -1,0 +1,42 @@
+name: prerelease
+on:
+  push:
+    branches:
+      # releases/<tag>/<version>
+      - releases/*/*
+jobs:
+  prerelease:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '*'
+          check-latest: true
+          registry-url: 'https://registry.npmjs.org'
+      - name: Extract tag and version
+        id: extract
+        run: |-
+          ref=${{ github.ref }}
+          branch=${ref:11}
+          tag_version=${branch:9}
+          tag=${tag_version%/*}
+          version=${tag_version##*/}
+          echo "::set-output name=tag::${tag}"
+          echo "::set-output name=version::${version}"
+      - name: Log versions
+        run: |-
+          echo tag=${{ steps.extract.outputs.tag }}
+          echo version=${{ steps.extract.outputs.version }}
+      - name: Setup git user
+        run: git config --global user.name github-actions
+      - name: Setup git email
+        run: git config --global user.email github-actions@github.com
+      - name: Run npm version
+        run: npm version ${{ steps.extract.outputs.version }}-${{ steps.extract.outputs.tag }}
+      - name: Push changes
+        run: git push --follow-tags
+      - name: Run npm publish
+        run: npm publish --tag=${{ steps.extract.outputs.tag }}
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
