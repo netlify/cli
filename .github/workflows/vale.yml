@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  list-docs:
+  lint-docs:
     runs-on: ubuntu-latest
     steps:
       - name: Git checkout
