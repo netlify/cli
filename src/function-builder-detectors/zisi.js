@@ -6,12 +6,12 @@ const makeDir = require('make-dir')
 const pFilter = require('p-filter')
 const sourceMapSupport = require('source-map-support')
 
+const { memoizedBuild } = require('../lib/functions/memoized-build')
 const { getPathInProject } = require('../lib/settings')
 const { getFunctions } = require('../utils/get-functions')
 const { NETLIFYDEVERR } = require('../utils/logo')
 
 const ZIP_CONCURRENCY = 5
-const ZIP_DEBOUNCE_INTERVAL = 300
 
 const addFunctionsConfigDefaults = (config) => ({
   ...config,
@@ -33,44 +33,7 @@ const addFunctionToTree = (func, fileTree) => {
   fileTree.set(func.mainFile, { ...func, bundleFile, inputs })
 }
 
-// `memoizedZip` will avoid zipping the same function multiple times until the
-// previous operation has been completed. If another call is made within that
-// period, it will be:
-// - discarded if it happens before `DEBOUNCE_WAIT` has elapsed;
-// - enqueued if it happens after `DEBOUNCE_WAIT` has elapsed.
-// This allows us to discard any duplicate filesystem events, while ensuring
-// that actual updates happening during the zip operation will be executed
-// after it finishes (only the last update will run).
-const memoizedZip = ({ cacheKey, command, zipCache }) => {
-  if (zipCache[cacheKey] === undefined) {
-    zipCache[cacheKey] = {
-      // eslint-disable-next-line promise/prefer-await-to-then
-      task: command().finally(() => {
-        const entry = zipCache[cacheKey]
-
-        zipCache[cacheKey] = undefined
-
-        if (entry.enqueued !== undefined) {
-          memoizedZip({ cacheKey, command, zipCache })
-        }
-      }),
-      timestamp: Date.now(),
-    }
-  } else if (Date.now() > zipCache[cacheKey].timestamp + ZIP_DEBOUNCE_INTERVAL) {
-    zipCache[cacheKey].enqueued = true
-  }
-
-  return zipCache[cacheKey].task
-}
-
-const zipFunctionsAndUpdateTree = async ({
-  fileTree,
-  functions,
-  sourceDirectory,
-  targetDirectory,
-  zipCache,
-  zipOptions,
-}) => {
+const zipFunctionsAndUpdateTree = async ({ fileTree, functions, sourceDirectory, targetDirectory, zipOptions }) => {
   if (functions !== undefined) {
     await pFilter(
       functions,
@@ -85,10 +48,9 @@ const zipFunctionsAndUpdateTree = async ({
         // root of the functions directory (e.g. `functions/my-func.js`). In
         // this case, we use `mainFile` as the function path of `zipFunction`.
         const entryPath = functionDirectory === sourceDirectory ? mainFile : functionDirectory
-        const func = await memoizedZip({
-          cacheKey: entryPath,
+        const func = await memoizedBuild({
+          cacheKey: `zisi-${entryPath}`,
           command: () => zipFunction(entryPath, targetDirectory, zipOptions),
-          zipCache,
         })
 
         addFunctionToTree(func, fileTree)
@@ -99,9 +61,9 @@ const zipFunctionsAndUpdateTree = async ({
     return
   }
 
-  const result = await memoizedZip({
+  const result = await memoizedBuild({
+    cacheKey: 'zisi@all',
     command: () => zipFunctions(sourceDirectory, targetDirectory, zipOptions),
-    zipCache,
   })
 
   result.forEach((func) => {
