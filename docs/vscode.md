@@ -1,5 +1,5 @@
 ---
-title: Usage with Visual Studio Code
+title: Debugging with Visual Studio Code
 ---
 
 # Usage with Visual Studio Code
