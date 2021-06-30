@@ -6,11 +6,7 @@ const { startDevServer } = require('./utils/dev-server')
 const got = require('./utils/got')
 
 test.before(async (t) => {
-  const server = await startDevServer({
-    cwd: path.join(__dirname, 'eleventy-site'),
-    // required so configuration won't be resolved from the current CLI repo linked site
-    args: ['--offline'],
-  })
+  const server = await startDevServer({ cwd: path.join(__dirname, 'eleventy-site') })
 
   t.context.server = server
 })

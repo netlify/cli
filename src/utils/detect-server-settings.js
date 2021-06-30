@@ -10,6 +10,7 @@ const isPlainObject = require('is-plain-obj')
 
 const { readFileAsyncCatchError } = require('../lib/fs')
 
+const { acquirePort } = require('./dev')
 const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./logo')
 
 const readHttpsSettings = async (options) => {
@@ -85,14 +86,6 @@ const getDefaultDist = ({ log }) => {
   log(`${NETLIFYDEVWARN} Setup a netlify.toml file with a [dev] section to specify your dev server settings.`)
   log(`${NETLIFYDEVWARN} See docs at: https://cli.netlify.com/netlify-dev#project-detection`)
   return process.cwd()
-}
-
-const acquirePort = async ({ configuredPort, defaultPort, errorMessage }) => {
-  const acquiredPort = await getPort({ port: configuredPort || defaultPort })
-  if (configuredPort && acquiredPort !== configuredPort) {
-    throw new Error(`${errorMessage}: '${configuredPort}'`)
-  }
-  return acquiredPort
 }
 
 const handleStaticServer = async ({ flags, log, devConfig, projectDir }) => {
