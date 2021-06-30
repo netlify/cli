@@ -68,7 +68,7 @@ const pageNames = {
   contributing: 'Contributing',
   'netlify-dev': 'Netlify Dev',
   'functions-dev': 'Functions Development',
-  vscode: 'Usage with VSCode',
+  vscode: 'Run and debug with VSCode',
 }
 
 const sortRoutes = (routes) =>
