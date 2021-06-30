@@ -4,18 +4,18 @@ const lambdaLocal = require('lambda-local')
 
 const { NETLIFYDEVERR } = require('../../utils/logo')
 
-const { DEFAULT_LAMBDA_OPTIONS, SECONDS_TO_MILLISECONDS } = require('./utils')
+const { detectAwsSdkError, DEFAULT_LAMBDA_OPTIONS, SECONDS_TO_MILLISECONDS } = require('./utils')
 
-const createSynchronousFunctionCallback = function (response) {
+const createSynchronousFunctionCallback = function ({ response, warn }) {
   return function callbackHandler(err, lambdaResponse) {
     if (err) {
-      return handleErr(err, response)
+      return handleErr({ error: err, response, warn })
     }
 
     const { error } = validateLambdaResponse(lambdaResponse)
     if (error) {
       console.log(`${NETLIFYDEVERR} ${error}`)
-      return handleErr(error, response)
+      return handleErr({ error, response, warn })
     }
 
     response.statusCode = lambdaResponse.statusCode
@@ -33,21 +33,23 @@ const createSynchronousFunctionCallback = function (response) {
   }
 }
 
-const executeSynchronousFunction = ({ event, lambdaPath, timeout, clientContext, response }) =>
+const executeSynchronousFunction = ({ event, lambdaPath, timeout, clientContext, response, warn }) =>
   lambdaLocal.execute({
     ...DEFAULT_LAMBDA_OPTIONS,
     event,
     lambdaPath,
     clientContext,
-    callback: createSynchronousFunctionCallback(response),
+    callback: createSynchronousFunctionCallback({ response, warn }),
     timeoutMs: timeout * SECONDS_TO_MILLISECONDS,
   })
 
 const formatLambdaLocalError = (err) => `${err.errorType}: ${err.errorMessage}\n  ${err.stackTrace.join('\n  ')}`
 
-const handleErr = function (err, response) {
+const handleErr = function ({ error, response, warn }) {
+  detectAwsSdkError({ error, warn })
+
   response.statusCode = 500
-  const errorString = typeof err === 'string' ? err : formatLambdaLocalError(err)
+  const errorString = typeof error === 'string' ? error : formatLambdaLocalError(error)
   response.end(errorString)
 }
 
