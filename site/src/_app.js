@@ -57,6 +57,7 @@ const navOrder = [
   'watch',
   'netlify-dev',
   'functions-dev',
+  'vscode',
   'contributing',
 ]
 
@@ -67,6 +68,7 @@ const pageNames = {
   contributing: 'Contributing',
   'netlify-dev': 'Netlify Dev',
   'functions-dev': 'Functions Development',
+  vscode: 'Run and debug with VSCode',
 }
 
 const sortRoutes = (routes) =>
