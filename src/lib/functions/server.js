@@ -38,7 +38,7 @@ const buildClientContext = function (headers) {
   }
 }
 
-const createHandler = function ({ getFunctionByName, timeouts }) {
+const createHandler = function ({ getFunctionByName, timeouts, warn }) {
   const logger = winston.createLogger({
     levels: winston.config.npm.levels,
     transports: [new winston.transports.Console({ level: 'warn' })],
@@ -106,6 +106,7 @@ const createHandler = function ({ getFunctionByName, timeouts }) {
         clientContext,
         response,
         functionName,
+        warn,
       })
     }
 
@@ -115,6 +116,7 @@ const createHandler = function ({ getFunctionByName, timeouts }) {
       timeout: timeouts.syncFunctions,
       clientContext,
       response,
+      warn,
     })
   }
 }
@@ -146,7 +148,7 @@ const getFunctionsServer = async function ({ getFunctionByName, siteUrl, warn, t
     res.status(204).end()
   })
 
-  app.all(`${prefix}*`, await createHandler({ getFunctionByName, timeouts }))
+  app.all(`${prefix}*`, await createHandler({ getFunctionByName, timeouts, warn }))
 
   return app
 }

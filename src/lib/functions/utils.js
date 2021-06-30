@@ -11,6 +11,14 @@ const DEFAULT_LAMBDA_OPTIONS = {
 
 const SECONDS_TO_MILLISECONDS = 1000
 
+const detectAwsSdkError = ({ error, warn }) => {
+  const isAwsSdkError = error.errorMessage && error.errorMessage.includes("Cannot find module 'aws-sdk'")
+
+  if (isAwsSdkError) {
+    warn(getLogMessage('functions.missingAwsSdk'))
+  }
+}
+
 const formatLambdaError = (err) => chalk.red(`${err.errorType}: ${err.errorMessage}`)
 
 const logAfterAction = ({ path, action }) => {
@@ -34,6 +42,7 @@ const validateFunctions = function ({ functions, capabilities, warn }) {
 }
 
 module.exports = {
+  detectAwsSdkError,
   DEFAULT_LAMBDA_OPTIONS,
   formatLambdaError,
   logAfterAction,
