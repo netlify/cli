@@ -6,11 +6,11 @@ const makeDir = require('make-dir')
 const pFilter = require('p-filter')
 const sourceMapSupport = require('source-map-support')
 
-const { normalizeFunctionsConfig } = require('../lib/functions/config')
-const { memoizedBuild } = require('../lib/functions/memoized-build')
-const { getPathInProject } = require('../lib/settings')
-const { getFunctions } = require('../utils/get-functions')
-const { NETLIFYDEVERR } = require('../utils/logo')
+const { getFunctions } = require('../../../../../utils/get-functions')
+const { NETLIFYDEVERR } = require('../../../../../utils/logo')
+const { getPathInProject } = require('../../../../settings')
+const { normalizeFunctionsConfig } = require('../../../config')
+const { memoizedBuild } = require('../../../memoized-build')
 
 const ZIP_CONCURRENCY = 5
 

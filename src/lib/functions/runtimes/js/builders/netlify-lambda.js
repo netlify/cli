@@ -2,7 +2,7 @@ const execa = require('execa')
 const debounce = require('lodash/debounce')
 const minimist = require('minimist')
 
-const { fileExistsAsync, readFileAsync } = require('../lib/fs')
+const { fileExistsAsync, readFileAsync } = require('../../../../fs')
 
 const DEBOUNCE_WAIT = 300
 
