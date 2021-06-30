@@ -41,4 +41,4 @@ To do so set the `--inspect` Node.js option when starting the functions server:
 - On Windows run `cmd /V /C "set NODE_OPTIONS=--inspect && netlify functions:serve"`
 - On Mac/Linux run `NODE_OPTIONS=--inspect netlify functions:serve`
 
-Then attach any Node.js debugger to the CLI process to debug your functions.
+Then attach any Node.js debugger to the CLI process to debug your functions. For usage with Visual Studio Code see [here](/vscode).
