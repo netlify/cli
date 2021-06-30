@@ -11,7 +11,7 @@ const isPlainObject = require('is-plain-obj')
 const { readFileAsyncCatchError } = require('../lib/fs')
 
 const { acquirePort } = require('./dev')
-const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./logo')
+const { NETLIFYDEVWARN } = require('./logo')
 
 const formatProperty = (str) => chalk.magenta(`'${str}'`)
 const formatValue = (str) => chalk.green(`'${str}'`)
@@ -93,8 +93,7 @@ const DEFAULT_PORT = 8888
 const DEFAULT_STATIC_PORT = 3999
 
 const getDefaultDist = ({ log }) => {
-  log(`${NETLIFYDEVLOG} Using current working directory`)
-  log(`${NETLIFYDEVWARN} Unable to determine public folder to serve files from`)
+  log(`${NETLIFYDEVWARN} Unable to determine public folder to serve files from. Using current working directory`)
   log(`${NETLIFYDEVWARN} Setup a netlify.toml file with a [dev] section to specify your dev server settings.`)
   log(`${NETLIFYDEVWARN} See docs at: https://cli.netlify.com/netlify-dev#project-detection`)
   return process.cwd()
@@ -125,7 +124,7 @@ const handleStaticServer = async ({ flags, log, devConfig, projectDir }) => {
     log(
       `${NETLIFYDEVWARN} Ignoring ${formatProperty(
         'targetPort',
-      )} setting since using a simple static server.${EOL}Use --staticServerPort or [dev.staticServerPort] to configure the static server port`,
+      )} setting since using a simple static server.${EOL}${NETLIFYDEVWARN} Use --staticServerPort or [dev.staticServerPort] to configure the static server port`,
     )
   }
 
@@ -197,8 +196,8 @@ const detectFrameworkSettings = async ({ projectDir, log }) => {
     })
     log(
       `Add ${formatProperty(
-        `framework = "${chosenFramework.name}"`,
-      )} to [dev] section of your netlify.toml to avoid this selection prompt next time`,
+        `framework = "${chosenFramework.id}"`,
+      )} to the [dev] section of your netlify.toml to avoid this selection prompt next time`,
     )
 
     return getSettingsFromFramework(chosenFramework)

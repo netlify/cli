@@ -69,7 +69,7 @@ const startServer = async ({ cwd, offline = true, env = {}, args = [] }) => {
   return await pTimeout(serverPromise, SERVER_START_TIMEOUT, () => ({ timeout: true, output }))
 }
 
-const startDevServer = async (options, expectFailure) => {
+const startDevServer = async (options, expectFailure = false) => {
   const maxAttempts = 5
   // eslint-disable-next-line fp/no-loops
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {

@@ -1,5 +1,6 @@
 const normalizers = [
   { pattern: /netlify-cli\/.+node-.+/g, value: 'netlify-cli/test-version test-os test-node-version' },
+<<<<<<< HEAD
   // normalize random ports
   { pattern: /\d{5}/g, value: '88888' },
   // windows specific
@@ -10,6 +11,9 @@ const normalizers = [
   { pattern: /code \d+/, value: 'code *' },
   // this is specific to npm v6
   { pattern: /@ start.+\/.+netlify-cli-tests-v10.+/, value: 'start' },
+=======
+  { pattern: /\d{5}/g, value: '88888' },
+>>>>>>> 168bc68a (test(frameworks): replace unit tests with integration tests)
 ]
 
 const normalize = (inputString) =>
