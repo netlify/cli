@@ -5,7 +5,7 @@ title: Debugging with Visual Studio Code
 # Run and debug with Visual Studio Code
 
 This guide will walk you through configuring VScode to run and debug `netlify dev`.
-That allows debugging your site and functions all in the same IDE.
+This allows debugging your site and serverless functions all in the same IDE.
 
 ## Install Netlify CLI locally
 
