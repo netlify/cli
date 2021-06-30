@@ -4,7 +4,7 @@ title: Getting Started with the Netlify CLI
 
 # Getting Started
 
-This guide will walk you though installing and creating your first site with the CLI.
+This guide will walk you through installing and creating your first site with the CLI.
 
 ## Installation
 
