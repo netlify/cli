@@ -2,7 +2,7 @@ const { EOL } = require('os')
 const path = require('path')
 const process = require('process')
 
-const { listFrameworks, hasFramework, getFramework } = require('@netlify/framework-info')
+const { listFrameworks, getFramework } = require('@netlify/framework-info')
 const chalk = require('chalk')
 const fuzzy = require('fuzzy')
 const getPort = require('get-port')
@@ -13,9 +13,16 @@ const { readFileAsyncCatchError } = require('../lib/fs')
 const { acquirePort } = require('./dev')
 const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./logo')
 
+const formatProperty = (str) => chalk.magenta(`'${str}'`)
+const formatValue = (str) => chalk.green(`'${str}'`)
+
 const readHttpsSettings = async (options) => {
   if (!isPlainObject(options)) {
-    throw new TypeError(`https options should be an object with 'keyFile' and 'certFile' string properties`)
+    throw new TypeError(
+      `https options should be an object with ${formatProperty('keyFile')} and ${formatProperty(
+        'certFile',
+      )} string properties`,
+    )
   }
 
   const { keyFile, certFile } = options
@@ -43,16 +50,18 @@ const readHttpsSettings = async (options) => {
 
 const validateStringProperty = ({ devConfig, property }) => {
   if (devConfig[property] && typeof devConfig[property] !== 'string') {
+    const formattedProperty = formatProperty(property)
     throw new TypeError(
-      `Invalid "${property}" option provided in config. The value of "${property}" option must be a string`,
+      `Invalid ${formattedProperty} option provided in config. The value of ${formattedProperty} option must be a string`,
     )
   }
 }
 
 const validateNumberProperty = ({ devConfig, property }) => {
   if (devConfig[property] && typeof devConfig[property] !== 'number') {
+    const formattedProperty = formatProperty(property)
     throw new TypeError(
-      `Invalid "${property}" option provided in config. The value of "${property}" option must be an integer`,
+      `Invalid ${formattedProperty} option provided in config. The value of ${formattedProperty} option must be an integer`,
     )
   }
 }
@@ -64,15 +73,18 @@ const validateFrameworkConfig = ({ devConfig }) => {
 
   if (devConfig.targetPort && devConfig.targetPort === devConfig.port) {
     throw new Error(
-      '"port" and "targetPort" options cannot have same values. Please consult the documentation for more details: https://cli.netlify.com/netlify-dev#netlifytoml-dev-block',
+      `${formatProperty('port')} and ${formatProperty(
+        'targetPort',
+      )} options cannot have same values. Please consult the documentation for more details: https://cli.netlify.com/netlify-dev#netlifytoml-dev-block`,
     )
   }
 }
 
 const validateConfiguredPort = ({ devConfig, detectedPort }) => {
   if (devConfig.port && devConfig.port === detectedPort) {
+    const formattedPort = formatProperty('port')
     throw new Error(
-      'The "port" option you specified conflicts with the port of your application. Please use a different value for "port"',
+      `The ${formattedPort} option you specified conflicts with the port of your application. Please use a different value for ${formattedPort}`,
     )
   }
 }
@@ -92,18 +104,28 @@ const handleStaticServer = async ({ flags, log, devConfig, projectDir }) => {
   validateNumberProperty({ devConfig, property: 'staticServerPort' })
 
   if (flags.dir) {
-    log(`${NETLIFYDEVWARN} Using simple static server because --dir flag was specified`)
+    log(`${NETLIFYDEVWARN} Using simple static server because ${formatProperty('--dir')} flag was specified`)
   } else if (devConfig.framework === '#static') {
-    log(`${NETLIFYDEVWARN} Using simple static server because [dev.framework] was set to #static`)
+    log(
+      `${NETLIFYDEVWARN} Using simple static server because ${formatProperty(
+        '[dev.framework]',
+      )} was set to ${formatValue('#static')}`,
+    )
   }
 
   if (devConfig.command) {
-    log(`${NETLIFYDEVWARN} Ignoring command setting since using a simple static server`)
+    log(
+      `${NETLIFYDEVWARN} Ignoring command setting since using a simple static server. Configure ${formatProperty(
+        'command',
+      )} ${chalk.bold('and')} ${formatProperty('targetPort')} for a custom setup`,
+    )
   }
 
   if (devConfig.targetPort) {
     log(
-      `${NETLIFYDEVWARN} Ignoring targetPort setting since using a simple static server.${EOL}Use --staticServerPort or [dev.staticServerPort] to configure the static server port`,
+      `${NETLIFYDEVWARN} Ignoring ${formatProperty(
+        'targetPort',
+      )} setting since using a simple static server.${EOL}Use --staticServerPort or [dev.staticServerPort] to configure the static server port`,
     )
   }
 
@@ -174,7 +196,9 @@ const detectFrameworkSettings = async ({ projectDir, log }) => {
       },
     })
     log(
-      `Add \`framework = "${chosenFramework.name}"\` to [dev] section of your netlify.toml to avoid this selection prompt next time`,
+      `Add ${formatProperty(
+        `framework = "${chosenFramework.name}"`,
+      )} to [dev] section of your netlify.toml to avoid this selection prompt next time`,
     )
 
     return getSettingsFromFramework(chosenFramework)
@@ -185,7 +209,11 @@ const hasCommandAndTargetPort = ({ devConfig }) => devConfig.command && devConfi
 
 const handleCustomFramework = ({ devConfig, log }) => {
   if (!hasCommandAndTargetPort({ devConfig })) {
-    throw new Error('"command" and "targetPort" properties are required when "framework" is set to "#custom"')
+    throw new Error(
+      `${formatProperty('command')} and ${formatProperty('targetPort')} properties are required when ${formatProperty(
+        'framework',
+      )} is set to ${formatValue('#custom')}`,
+    )
   }
   return {
     command: devConfig.command,
@@ -197,17 +225,7 @@ const handleCustomFramework = ({ devConfig, log }) => {
 }
 
 const handleForcedFramework = async ({ devConfig, projectDir }) => {
-  try {
-    const hasConfigFramework = await hasFramework(devConfig.framework, { projectDir })
-    if (!hasConfigFramework) {
-      throw new Error(`Specified "framework" "${devConfig.framework}" did not pass requirements for your project`)
-    }
-  } catch (error) {
-    // this can happen when the framework info library doesn't support detecting devConfig.framework
-    throw new Error(
-      `Unsupported "framework" "${devConfig.framework}". Please consult the documentation for more details: https://cli.netlify.com/netlify-dev/#project-detection`,
-    )
-  }
+  // this throws if `devConfig.framework` is not a supported framework
   const { command, frameworkPort, dist, framework, env, pollingStrategies } = getSettingsFromFramework(
     await getFramework(devConfig.framework, { projectDir }),
   )
@@ -233,9 +251,7 @@ const detectServerSettings = async (devConfig, flags, projectDir, log) => {
     // this is the default CLI behavior
     const frameworkSettings = await detectFrameworkSettings({ projectDir, log })
     if (frameworkSettings === undefined && !hasCommandAndTargetPort({ devConfig })) {
-      log(
-        `${NETLIFYDEVWARN} No app server detected and no "command" and "targetPort" specified. Using simple static server. Please consult the documentation for more details: https://cli.netlify.com/netlify-dev/#project-detection`,
-      )
+      log(`${NETLIFYDEVWARN} No app server detected. Using simple static server`)
       settings = await handleStaticServer({ flags, log, devConfig, projectDir })
     } else {
       validateFrameworkConfig({ devConfig })
@@ -264,7 +280,7 @@ const detectServerSettings = async (devConfig, flags, projectDir, log) => {
   const acquiredPort = await acquirePort({
     configuredPort: devConfig.port,
     defaultPort: DEFAULT_PORT,
-    errorMessage: 'Could not acquire required "port"',
+    errorMessage: `Could not acquire required ${formatProperty('port')}`,
   })
   const functionsDir = devConfig.functions || settings.functions
 
