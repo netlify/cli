@@ -31,3 +31,14 @@ or by configuring them via the `netlify.toml` dev block:
 functions = "netlify-functions"
 functionsPort = 7000
 ```
+
+## Debugging functions
+
+Netlify CLI uses [Lambda-local](https://github.com/ashiina/lambda-local) to simulate serverless functions.
+Since the CLI invokes functions in the same process as the functions server, you can debug functions by inspecting the functions server process.
+To do so set the `--inspect` Node.js option when starting the functions server:
+
+- On Windows run `cmd /V /C "set NODE_OPTIONS=--inspect && netlify functions:serve"`
+- On Mac/Linux run `NODE_OPTIONS=--inspect netlify functions:serve`
+
+Then attach any Node.js debugger to the CLI process to debug your functions. For usage with Visual Studio Code see [here](/vscode).
