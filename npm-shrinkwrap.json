@@ -10,8 +10,8 @@
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
-        "@netlify/build": "^12.17.0",
-        "@netlify/config": "^9.3.0",
+        "@netlify/build": "^12.19.1",
+        "@netlify/config": "^9.4.0",
         "@netlify/framework-info": "^5.5.0",
         "@netlify/plugin-edge-handlers": "^1.11.19",
         "@netlify/plugins-list": "^2.18.1",
@@ -2283,9 +2283,9 @@
       }
     },
     "node_modules/@netlify/build": {
-      "version": "12.17.0",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-12.17.0.tgz",
-      "integrity": "sha512-niU8MjH6LiO1dcJSm9CKkWut3sR7QGyIimdIltgry2iC1SHNAj75HCbnQvddTHEz7+mg3FcC1T28LlsF7r3W0Q==",
+      "version": "12.19.1",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-12.19.1.tgz",
+      "integrity": "sha512-QXMMDq5gdU9qgjQ4d9qm2+qG6dC7JNMbj5LoRC58WbVTXft/HymljO5hNFUR8f2DQTjUOwD6UJU+LOKavEbULQ==",
       "dependencies": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^1.0.7",
@@ -2302,7 +2302,6 @@
         "array-flat-polyfill": "^1.0.1",
         "chalk": "^3.0.0",
         "clean-stack": "^2.2.0",
-        "deepmerge": "^4.2.2",
         "dot-prop": "^5.3.0",
         "execa": "^3.3.0",
         "figures": "^3.2.0",
@@ -2832,9 +2831,9 @@
       }
     },
     "node_modules/@netlify/config": {
-      "version": "9.3.0",
-      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-9.3.0.tgz",
-      "integrity": "sha512-3h2ovTcbRFhLdiQuwsbsBfyyS80Vt1P5PEVcuhXxWFoKUjvvgykEp4Lt53pus1l8/jKVDssRdWulpSMS0yQMAw==",
+      "version": "9.4.0",
+      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-9.4.0.tgz",
+      "integrity": "sha512-LG5oCVrLvxXMmT08Xqh2JOntGhYfvWA6HVFW/HMBuGw+OwSGTIUTLq/FcNCBVYeU8jOz9Kw9pQ3trkGk7pzdUA==",
       "dependencies": {
         "@ungap/from-entries": "^0.2.1",
         "array-flat-polyfill": "^1.0.1",
@@ -22658,9 +22657,9 @@
       }
     },
     "@netlify/build": {
-      "version": "12.17.0",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-12.17.0.tgz",
-      "integrity": "sha512-niU8MjH6LiO1dcJSm9CKkWut3sR7QGyIimdIltgry2iC1SHNAj75HCbnQvddTHEz7+mg3FcC1T28LlsF7r3W0Q==",
+      "version": "12.19.1",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-12.19.1.tgz",
+      "integrity": "sha512-QXMMDq5gdU9qgjQ4d9qm2+qG6dC7JNMbj5LoRC58WbVTXft/HymljO5hNFUR8f2DQTjUOwD6UJU+LOKavEbULQ==",
       "requires": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^1.0.7",
@@ -22677,7 +22676,6 @@
         "array-flat-polyfill": "^1.0.1",
         "chalk": "^3.0.0",
         "clean-stack": "^2.2.0",
-        "deepmerge": "^4.2.2",
         "dot-prop": "^5.3.0",
         "execa": "^3.3.0",
         "figures": "^3.2.0",
@@ -23095,9 +23093,9 @@
       }
     },
     "@netlify/config": {
-      "version": "9.3.0",
-      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-9.3.0.tgz",
-      "integrity": "sha512-3h2ovTcbRFhLdiQuwsbsBfyyS80Vt1P5PEVcuhXxWFoKUjvvgykEp4Lt53pus1l8/jKVDssRdWulpSMS0yQMAw==",
+      "version": "9.4.0",
+      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-9.4.0.tgz",
+      "integrity": "sha512-LG5oCVrLvxXMmT08Xqh2JOntGhYfvWA6HVFW/HMBuGw+OwSGTIUTLq/FcNCBVYeU8jOz9Kw9pQ3trkGk7pzdUA==",
       "requires": {
         "@ungap/from-entries": "^0.2.1",
         "array-flat-polyfill": "^1.0.1",
