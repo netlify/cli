@@ -6,6 +6,7 @@ const makeDir = require('make-dir')
 const pFilter = require('p-filter')
 const sourceMapSupport = require('source-map-support')
 
+const { normalizeFunctionsConfig } = require('../lib/functions/config')
 const { memoizedBuild } = require('../lib/functions/memoized-build')
 const { getPathInProject } = require('../lib/settings')
 const { getFunctions } = require('../utils/get-functions')
@@ -195,25 +196,6 @@ const bundleFunctions = async ({
 
 const getFunctionByName = ({ cache, name }) => [...cache.values()].find((func) => func.name === name)
 
-// The function configuration keys returned by @netlify/config are not an exact
-// match to the properties that @netlify/zip-it-and-ship-it expects. We do that
-// translation here.
-const normalizeFunctionsConfig = ({ functionsConfig = {}, projectRoot }) =>
-  Object.entries(functionsConfig).reduce(
-    (result, [pattern, config]) => ({
-      ...result,
-      [pattern]: {
-        externalNodeModules: config.external_node_modules,
-        experimentalHandlerV2: true,
-        includedFiles: config.included_files,
-        includedFilesBasePath: projectRoot,
-        ignoredNodeModules: config.ignored_node_modules,
-        nodeBundler: config.node_bundler === 'esbuild' ? 'esbuild_zisi' : config.node_bundler,
-      },
-    }),
-    {},
-  )
-
 const getTargetDirectory = async ({ errorExit }) => {
   const targetDirectory = path.resolve(getPathInProject(['functions-serve']))
 
@@ -267,5 +249,3 @@ module.exports = async function handler({ config, errorExit, functionsDirectory:
     target: targetDirectory,
   }
 }
-
-module.exports.normalizeFunctionsConfig = normalizeFunctionsConfig
