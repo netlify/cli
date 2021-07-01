@@ -1710,11 +1710,11 @@ export const handler = async function () {
           await withDevServer(
             {
               cwd: builder.directory,
-              // we need to pass a token so the CLI tries to retrieve site information from the mock API
-              args: [...args, '--auth', 'fake-token'],
+              offline: false,
               env: {
                 NETLIFY_API_URL: apiUrl,
                 NETLIFY_SITE_ID: 'site_id',
+                NETLIFY_AUTH_TOKEN: 'fake-token',
               },
             },
             async ({ url }) => {
