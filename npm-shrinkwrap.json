@@ -1,16 +1,16 @@
 {
   "name": "netlify-cli",
-  "version": "4.0.4",
+  "version": "4.0.5",
   "lockfileVersion": 2,
   "requires": true,
   "packages": {
     "": {
       "name": "netlify-cli",
-      "version": "4.0.4",
+      "version": "4.0.5",
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
-        "@netlify/build": "^12.22.0",
+        "@netlify/build": "^12.25.0",
         "@netlify/config": "^9.5.0",
         "@netlify/framework-info": "^5.5.0",
         "@netlify/plugin-edge-handlers": "^1.11.19",
@@ -2283,9 +2283,9 @@
       }
     },
     "node_modules/@netlify/build": {
-      "version": "12.22.0",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-12.22.0.tgz",
-      "integrity": "sha512-4jEwigz5ShB7DUOBMtDUiboLes6l6Ab066oL6Ng/doJjxzTn6Tjfot66a/F7PpxJ3HNnykXDpyliziog3VukOQ==",
+      "version": "12.25.0",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-12.25.0.tgz",
+      "integrity": "sha512-C/LXC+I4mB94brxZn/sHo4yVHvVAYe9Y1Le+WqiqNJQZIwOJXpkIg1yh9BJ2qvRHlJF9XCckUlIC8qnQ698AUw==",
       "dependencies": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^1.0.7",
@@ -2318,6 +2318,7 @@
         "os-name": "^3.1.0",
         "p-event": "^4.1.0",
         "p-every": "^2.0.0",
+        "p-filter": "^2.1.0",
         "p-locate": "^4.1.0",
         "p-reduce": "^2.1.0",
         "path-exists": "^4.0.0",
@@ -22645,9 +22646,9 @@
       }
     },
     "@netlify/build": {
-      "version": "12.22.0",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-12.22.0.tgz",
-      "integrity": "sha512-4jEwigz5ShB7DUOBMtDUiboLes6l6Ab066oL6Ng/doJjxzTn6Tjfot66a/F7PpxJ3HNnykXDpyliziog3VukOQ==",
+      "version": "12.25.0",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-12.25.0.tgz",
+      "integrity": "sha512-C/LXC+I4mB94brxZn/sHo4yVHvVAYe9Y1Le+WqiqNJQZIwOJXpkIg1yh9BJ2qvRHlJF9XCckUlIC8qnQ698AUw==",
       "requires": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^1.0.7",
@@ -22680,6 +22681,7 @@
         "os-name": "^3.1.0",
         "p-event": "^4.1.0",
         "p-every": "^2.0.0",
+        "p-filter": "^2.1.0",
         "p-locate": "^4.1.0",
         "p-reduce": "^2.1.0",
         "path-exists": "^4.0.0",

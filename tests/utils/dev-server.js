@@ -3,6 +3,7 @@ const process = require('process')
 
 const execa = require('execa')
 const getPort = require('get-port')
+const omit = require('omit.js').default
 const pTimeout = require('p-timeout')
 const seedrandom = require('seedrandom')
 
@@ -22,6 +23,15 @@ const FRAMEWORK_PORT_SHIFT = 1e3
 
 let currentPort = getRandomPortStart()
 
+const ENVS_TO_OMIT = ['LANG', 'LC_ALL']
+
+const getExecaOptions = ({ cwd, env }) => ({
+  cwd,
+  extendEnv: false,
+  env: { ...omit(process.env, ENVS_TO_OMIT), BROWSER: 'none', ...env },
+  encoding: 'utf8',
+})
+
 const startServer = async ({ cwd, offline = true, env = {}, args = [] }) => {
   const tryPort = currentPort
   currentPort += 1
@@ -32,11 +42,7 @@ const startServer = async ({ cwd, offline = true, env = {}, args = [] }) => {
   const ps = execa(
     cliPath,
     ['dev', offline ? '--offline' : '', '-p', port, '--staticServerPort', port + FRAMEWORK_PORT_SHIFT, ...args],
-    {
-      cwd,
-      env: { BROWSER: 'none', ...env },
-      encoding: 'utf8',
-    },
+    getExecaOptions({ cwd, env }),
   )
   let output = ''
   const serverPromise = new Promise((resolve, reject) => {
@@ -48,6 +54,7 @@ const startServer = async ({ cwd, offline = true, env = {}, args = [] }) => {
           url,
           host,
           port,
+          output,
           close: async () => {
             selfKilled = true
             await killProcess(ps)
@@ -62,18 +69,18 @@ const startServer = async ({ cwd, offline = true, env = {}, args = [] }) => {
   return await pTimeout(serverPromise, SERVER_START_TIMEOUT, () => ({ timeout: true, output }))
 }
 
-const startDevServer = async (options) => {
+const startDevServer = async (options, expectFailure) => {
   const maxAttempts = 5
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       // eslint-disable-next-line no-await-in-loop
-      const { timeout, output, ...server } = await startServer(options)
+      const { timeout, ...server } = await startServer(options)
       if (timeout) {
-        throw new Error(`Timed out starting dev server.\nServer Output:\n${output}`)
+        throw new Error(`Timed out starting dev server.\nServer Output:\n${server.output}`)
       }
       return server
     } catch (error) {
-      if (attempt === maxAttempts) {
+      if (attempt === maxAttempts || expectFailure) {
         throw error
       }
       console.warn('Retrying startDevServer', error)
@@ -84,10 +91,10 @@ const startDevServer = async (options) => {
 // 240 seconds
 const SERVER_START_TIMEOUT = 24e4
 
-const withDevServer = async (options, testHandler) => {
+const withDevServer = async (options, testHandler, expectFailure = false) => {
   let server
   try {
-    server = await startDevServer(options)
+    server = await startDevServer(options, expectFailure)
     return await testHandler(server)
   } finally {
     if (server) {
@@ -99,4 +106,5 @@ const withDevServer = async (options, testHandler) => {
 module.exports = {
   withDevServer,
   startDevServer,
+  getExecaOptions,
 }
