@@ -22,23 +22,22 @@ const FRAMEWORK_PORT_SHIFT = 1e3
 
 let currentPort = getRandomPortStart()
 
-const startServer = async ({ cwd, env = {}, args = [] }) => {
+const startServer = async ({ cwd, offline = true, env = {}, args = [] }) => {
   const tryPort = currentPort
   currentPort += 1
   const port = await getPort({ port: tryPort })
   const host = 'localhost'
   const url = `http://${host}:${port}`
   console.log(`Starting dev server on port: ${port} in directory ${path.basename(cwd)}`)
-  // In CI we set a NETLIFY_AUTH_TOKEN which means the CLI will hit the live API in some cases
-  // as we don't need it for dev tests we can omit it
-  // eslint-disable-next-line no-unused-vars
-  const { NETLIFY_AUTH_TOKEN, ...processEnv } = process.env
-  const ps = execa(cliPath, ['dev', '-p', port, '--staticServerPort', port + FRAMEWORK_PORT_SHIFT, ...args], {
-    cwd,
-    extendEnv: false,
-    env: { ...processEnv, BROWSER: 'none', ...env },
-    encoding: 'utf8',
-  })
+  const ps = execa(
+    cliPath,
+    ['dev', offline ? '--offline' : '', '-p', port, '--staticServerPort', port + FRAMEWORK_PORT_SHIFT, ...args],
+    {
+      cwd,
+      env: { BROWSER: 'none', ...env },
+      encoding: 'utf8',
+    },
+  )
   let output = ''
   const serverPromise = new Promise((resolve, reject) => {
     let selfKilled = false
