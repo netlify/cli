@@ -1,6 +1,7 @@
 const childProcess = require('child_process')
 const path = require('path')
 const process = require('process')
+const { promisify } = require('util')
 
 const { flags: flagsLib } = require('@oclif/command')
 const boxen = require('boxen')
@@ -38,12 +39,8 @@ const startStaticServer = async ({ settings, log }) => {
     },
   })
 
-  await new Promise((resolve) => {
-    server.start(function onListening() {
-      log(`\n${NETLIFYDEVLOG} Server listening to`, settings.frameworkPort)
-      resolve()
-    })
-  })
+  await promisify(server.start.bind(server))()
+  log(`\n${NETLIFYDEVLOG} Server listening to`, settings.frameworkPort)
 }
 
 const startFrameworkServer = async function ({ settings, log, exit }) {
