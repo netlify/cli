@@ -1,10 +1,10 @@
+const { resolve } = require('path')
+
 const execa = require('execa')
-const debounce = require('lodash/debounce')
 const minimist = require('minimist')
 
 const { fileExistsAsync, readFileAsync } = require('../../../../fs')
-
-const DEBOUNCE_WAIT = 300
+const { memoizedBuild } = require('../../../memoized-build')
 
 const detectNetlifyLambda = async function ({ dependencies, devDependencies, scripts } = {}) {
   if (!((dependencies && dependencies['netlify-lambda']) || (devDependencies && devDependencies['netlify-lambda']))) {
@@ -19,20 +19,24 @@ const detectNetlifyLambda = async function ({ dependencies, devDependencies, scr
     // We are not interested in 'netlify-lambda' and 'build' commands
     const functionDirectories = match._.slice(2)
     if (functionDirectories.length === 1) {
+      const srcFiles = [resolve(functionDirectories[0])]
+
       // eslint-disable-next-line no-await-in-loop
       const yarnExists = await fileExistsAsync('yarn.lock')
-      const debouncedBuild = debounce(execa, DEBOUNCE_WAIT, {
-        leading: false,
-        trailing: true,
-      })
+      const buildCommand = () => execa(yarnExists ? 'yarn' : 'npm', ['run', key])
 
       return {
-        src: functionDirectories[0],
-        npmScript: key,
         build: async () => {
-          await debouncedBuild(yarnExists ? 'yarn' : 'npm', ['run', key])
+          await memoizedBuild({ cacheKey: `netlify-lambda-${key}`, command: buildCommand })
+
+          return {
+            srcFiles,
+          }
         },
         builderName: 'netlify-lambda',
+
+        // Currently used for tests only.
+        npmScript: key,
       }
     }
     if (functionDirectories.length === 0) {

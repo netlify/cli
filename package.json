@@ -42,6 +42,7 @@
     "url": "https://github.com/netlify/cli/issues"
   },
   "scripts": {
+    "noop": "",
     "prepublishOnly": "npm ci --no-audit && run-s test",
     "start": "node ./bin/run",
     "test": "run-s format test:dev",
