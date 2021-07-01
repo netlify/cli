@@ -3,6 +3,7 @@ const normalizers = [
   { pattern: /\d{5}/g, value: '88888' },
   { pattern: /\\/gu, value: '/' },
   { pattern: /\r\n/gu, value: '\n' },
+  { pattern: /❯/gu, value: '>' },
   { pattern: /exited with code \d+/, value: 'exited with code *' },
 ]
 
