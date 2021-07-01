@@ -4,7 +4,6 @@ const { cwd } = require('process')
 const chalk = require('chalk')
 const chokidar = require('chokidar')
 const decache = require('decache')
-const debounce = require('lodash/debounce')
 const pEvent = require('p-event')
 
 const { detectFunctionsBuilder } = require('../../utils/detect-functions-builder')
@@ -12,16 +11,7 @@ const { getFunctionsAndWatchDirs } = require('../../utils/get-functions')
 const { NETLIFYDEVLOG } = require('../../utils/logo')
 
 const { logBeforeAction, logAfterAction, validateFunctions } = require('./utils')
-
-const DEBOUNCE_WAIT = 300
-
-const clearCache =
-  ({ action }) =>
-  (path) => {
-    logBeforeAction({ path, action })
-    decache(path)
-    logAfterAction({ path, action })
-  }
+const { watchDebounced } = require('./watcher')
 
 const getBuildFunction = ({ functionBuilder, log }) =>
   async function build(updatedPath, eventType) {
@@ -65,55 +55,44 @@ const setupDefaultFunctionHandler = async ({ capabilities, directory, warn }) =>
     watchDirs: [],
   }
   const { functions, watchDirs } = await getFunctionsAndWatchDirs(directory)
-  const watcher = chokidar.watch(watchDirs, { ignored: /node_modules/, ignoreInitial: true })
-  await pEvent(watcher, 'ready')
-  const debouncedOnChange = debounce(clearCache({ action: 'modified' }), DEBOUNCE_WAIT, {
-    leading: false,
-    trailing: true,
-  })
-  const debouncedOnUnlink = debounce(
-    (path) => {
-      context.functions = context.functions.filter((func) => func.mainFile !== path)
+  const onAdd = async (path) => {
+    logBeforeAction({ path, action: 'added' })
 
-      clearCache({ action: 'deleted' })
-    },
-    DEBOUNCE_WAIT,
-    {
-      leading: false,
-      trailing: true,
-    },
-  )
-  const debouncedOnAdd = debounce(
-    async (path) => {
-      logBeforeAction({ path, action: 'added' })
+    if (context.watchDirs.length !== 0) {
+      await watcher.unwatch(watchDirs)
+    }
 
-      if (context.watchDirs.length !== 0) {
-        await watcher.unwatch(watchDirs)
-      }
+    const { functions: newFunctions, watchDirs: newWatchDirs } = await getFunctionsAndWatchDirs(directory)
 
-      const { functions: newFunctions, watchDirs: newWatchDirs } = await getFunctionsAndWatchDirs(directory)
+    validateFunctions({ functions, capabilities, warn })
 
-      validateFunctions({ functions, capabilities, warn })
+    await watcher.add(newWatchDirs)
 
-      decache(path)
+    context.functions = newFunctions
+    context.watchDirs = newWatchDirs
 
-      await watcher.add(newWatchDirs)
+    logAfterAction({ path, action: 'added' })
+  }
+  // Keeping the function here for clarity. This part of the code will be
+  // refactored soon anyway.
+  // eslint-disable-next-line unicorn/consistent-function-scoping
+  const onChange = (path) => {
+    logBeforeAction({ path, action: 'modified' })
+    logAfterAction({ path, action: 'modified' })
+  }
+  const onUnlink = (path) => {
+    logBeforeAction({ path, action: 'deleted' })
 
-      context.functions = newFunctions
-      context.watchDirs = newWatchDirs
+    context.functions = context.functions.filter((func) => func.mainFile !== path)
 
-      logAfterAction({ path, action: 'added' })
-    },
-    DEBOUNCE_WAIT,
-    { leading: false, trailing: true },
-  )
+    logAfterAction({ path, action: 'deleted' })
+  }
+  const watcher = await watchDebounced(watchDirs, { onAdd, onChange, onUnlink })
 
   validateFunctions({ functions, capabilities, warn })
 
   context.functions = functions
   context.watchDirs = watchDirs
-
-  watcher.on('change', debouncedOnChange).on('unlink', debouncedOnUnlink).on('add', debouncedOnAdd)
 
   const getFunctionByName = (functionName) => context.functions.find(({ name }) => name === functionName)
 

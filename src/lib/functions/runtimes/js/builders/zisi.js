@@ -34,6 +34,14 @@ const addFunctionToTree = (func, fileTree) => {
   fileTree.set(func.mainFile, { ...func, bundleFile, inputs })
 }
 
+const clearFunctionsCache = (functionsPath) => {
+  Object.keys(require.cache)
+    .filter((key) => key.startsWith(functionsPath) && !functionsPath.includes(`${path.sep}node_modules${path.sep}`))
+    .forEach((requirePath) => {
+      delete require.cache[requirePath]
+    })
+}
+
 const zipFunctionsAndUpdateTree = async ({ fileTree, functions, sourceDirectory, targetDirectory, zipOptions }) => {
   if (functions !== undefined) {
     await pFilter(
@@ -90,6 +98,8 @@ const bundleFunctions = async ({
     basePath: projectRoot,
     config,
   }
+
+  clearFunctionsCache(targetDirectory)
 
   if (eventType === 'add') {
     // We first check to see if the file being added is associated with any
