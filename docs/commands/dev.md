@@ -21,6 +21,7 @@ netlify dev
 - `command` (*string*) - command to run
 - `port` (*string*) - port of netlify dev
 - `targetPort` (*string*) - port of target app server
+- `framework` (*string*) - framework to use. Defaults to #auto which automatically detects a framework
 - `dir` (*string*) - dir with static files
 - `functions` (*string*) - specify a functions folder to serve
 - `offline` (*boolean*) - disables any features that require network access
