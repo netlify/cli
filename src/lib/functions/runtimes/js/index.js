@@ -6,6 +6,8 @@ const winston = require('winston')
 const detectNetlifyLambdaBuilder = require('./builders/netlify-lambda')
 const detectZisiBuilder = require('./builders/zisi')
 
+const SECONDS_TO_MILLISECONDS = 1e3
+
 let cachedNetlifyLambdaDetector
 
 const logger = winston.createLogger({
@@ -52,7 +54,7 @@ const invokeFunction = async ({ context, event, func, timeout }) => {
     clientContext: context,
     event,
     lambdaPath,
-    timeoutMs: timeout,
+    timeoutMs: timeout * SECONDS_TO_MILLISECONDS,
     verboseLevel: 3,
   })
 
