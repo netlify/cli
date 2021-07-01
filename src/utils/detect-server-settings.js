@@ -254,7 +254,7 @@ const detectServerSettings = async (devConfig, flags, projectDir, log) => {
       settings = await handleStaticServer({ flags, log, devConfig, projectDir })
     } else {
       validateFrameworkConfig({ devConfig })
-      const { command, frameworkPort, dist, framework, env, pollingStrategies } = frameworkSettings || {}
+      const { command, frameworkPort, dist, framework, env, pollingStrategies = [] } = frameworkSettings || {}
       settings = {
         command: devConfig.command || command,
         frameworkPort: devConfig.targetPort || frameworkPort,
