@@ -134,6 +134,7 @@ Netlify Dev will attempt to detect the site generator or build command that you 
 # sample dev block in the toml
 # note: each of these fields are OPTIONAL and should only be used if you need an override
 [dev]
+  framework = "#custom"
   command = "yarn start" # Command to start your dev server
   targetPort = 3000 # # The port for your application server, framework or site generator
   port = 8888 # The port that the netlify dev will be accessible on
