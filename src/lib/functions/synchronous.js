@@ -1,55 +1,37 @@
 const { Buffer } = require('buffer')
 
-const lambdaLocal = require('lambda-local')
-
 const { NETLIFYDEVERR } = require('../../utils/logo')
 
-const { detectAwsSdkError, DEFAULT_LAMBDA_OPTIONS, SECONDS_TO_MILLISECONDS } = require('./utils')
-
-const createSynchronousFunctionCallback = function ({ response, warn }) {
-  return function callbackHandler(err, lambdaResponse) {
-    if (err) {
-      return handleErr({ error: err, response, warn })
-    }
-
-    const { error } = validateLambdaResponse(lambdaResponse)
-    if (error) {
-      console.log(`${NETLIFYDEVERR} ${error}`)
-      return handleErr({ error, response, warn })
-    }
-
-    response.statusCode = lambdaResponse.statusCode
-    for (const key in lambdaResponse.headers) {
-      response.setHeader(key, lambdaResponse.headers[key])
-    }
-    for (const key in lambdaResponse.multiValueHeaders) {
-      const items = lambdaResponse.multiValueHeaders[key]
-      response.setHeader(key, items)
-    }
-    if (lambdaResponse.body) {
-      response.write(lambdaResponse.isBase64Encoded ? Buffer.from(lambdaResponse.body, 'base64') : lambdaResponse.body)
-    }
-    response.end()
+const handleSynchronousFunction = function (err, result, response) {
+  if (err) {
+    return handleErr(err, response)
   }
-}
 
-const executeSynchronousFunction = ({ event, lambdaPath, timeout, clientContext, response, warn }) =>
-  lambdaLocal.execute({
-    ...DEFAULT_LAMBDA_OPTIONS,
-    event,
-    lambdaPath,
-    clientContext,
-    callback: createSynchronousFunctionCallback({ response, warn }),
-    timeoutMs: timeout * SECONDS_TO_MILLISECONDS,
-  })
+  const { error } = validateLambdaResponse(result)
+  if (error) {
+    console.log(`${NETLIFYDEVERR} ${error}`)
+    return handleErr(error, response)
+  }
+
+  response.statusCode = result.statusCode
+  for (const key in result.headers) {
+    response.setHeader(key, result.headers[key])
+  }
+  for (const key in result.multiValueHeaders) {
+    const items = result.multiValueHeaders[key]
+    response.setHeader(key, items)
+  }
+  if (result.body) {
+    response.write(result.isBase64Encoded ? Buffer.from(result.body, 'base64') : result.body)
+  }
+  response.end()
+}
 
 const formatLambdaLocalError = (err) => `${err.errorType}: ${err.errorMessage}\n  ${err.stackTrace.join('\n  ')}`
 
-const handleErr = function ({ error, response, warn }) {
-  detectAwsSdkError({ error, warn })
-
+const handleErr = function (err, response) {
   response.statusCode = 500
-  const errorString = typeof error === 'string' ? error : formatLambdaLocalError(error)
+  const errorString = typeof err === 'string' ? err : formatLambdaLocalError(err)
   response.end(errorString)
 }
 
@@ -69,4 +51,4 @@ const validateLambdaResponse = (lambdaResponse) => {
   return {}
 }
 
-module.exports = { executeSynchronousFunction }
+module.exports = { handleSynchronousFunction }
