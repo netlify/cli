@@ -31,6 +31,11 @@ class NetlifyFunction {
     this.srcFiles = new Set()
   }
 
+  // The `build` method transforms source files into invocable functions. Its
+  // return value is an object with:
+  //
+  // - `srcFilesDiff`: Files that were added and removed since the last time
+  //    the function was built.
   async build() {
     const buildFunction = await this.runtime.getBuildFunction({
       config: this.config,
@@ -56,6 +61,8 @@ class NetlifyFunction {
     }
   }
 
+  // Compares a new set of source files against a previous one, returning an
+  // object with two Sets, one with added and the other with deleted files.
   getSrcFilesDiff(srcFiles) {
     const added = new Set()
     const deleted = new Set()
@@ -78,6 +85,7 @@ class NetlifyFunction {
     }
   }
 
+  // Invokes the function and returns its response object.
   async invoke(event, context) {
     await this.buildQueue
 
