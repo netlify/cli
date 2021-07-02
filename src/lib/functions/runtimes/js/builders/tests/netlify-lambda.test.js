@@ -14,7 +14,7 @@ test(`should not match if netlify-lambda is missing from dependencies`, async (t
     dependencies: {},
     devDependencies: {},
   }
-  t.is(await detectNetlifyLambda(packageJson), false)
+  t.is(await detectNetlifyLambda({ packageJson }), false)
 })
 
 test.serial('should not match if netlify-lambda is missing functions directory', async (t) => {
@@ -32,7 +32,7 @@ test.serial('should not match if netlify-lambda is missing functions directory',
 
   const spyConsoleWarn = sandbox.spy(console, 'warn')
 
-  t.is(await detectNetlifyLambda(packageJson), false)
+  t.is(await detectNetlifyLambda({ packageJson }), false)
 
   // Not checking for exact warning string as it would make this test too specific/brittle
   t.is(spyConsoleWarn.calledWithMatch('contained no functions folder'), true)
@@ -55,7 +55,7 @@ test.serial('should not match if netlify-lambda contains multiple function direc
 
   const spyConsoleWarn = sandbox.spy(console, 'warn')
 
-  t.is(await detectNetlifyLambda(packageJson), false)
+  t.is(await detectNetlifyLambda({ packageJson }), false)
 
   // Not checking for exact warning string as it would make this test too specific/brittle
   t.is(spyConsoleWarn.calledWithMatch('contained 2 or more function folders'), true)
@@ -74,7 +74,7 @@ test(`should match if netlify-lambda is listed in dependencies and is mentioned 
     devDependencies: {},
   }
 
-  const match = await detectNetlifyLambda(packageJson)
+  const match = await detectNetlifyLambda({ packageJson })
 
   t.is(match.builderName, 'netlify-lambda')
   t.is(match.npmScript, 'noop')
@@ -95,7 +95,7 @@ test(`should match if netlify-lambda is listed in devDependencies and is mention
     },
   }
 
-  const match = await detectNetlifyLambda(packageJson)
+  const match = await detectNetlifyLambda({ packageJson })
 
   t.is(match.builderName, 'netlify-lambda')
   t.is(match.npmScript, 'noop')
@@ -116,7 +116,7 @@ test(`should not match if netlify-lambda misses function directory`, async (t) =
     },
   }
 
-  const match = await detectNetlifyLambda(packageJson)
+  const match = await detectNetlifyLambda({ packageJson })
   t.is(match, false)
 })
 
@@ -131,7 +131,7 @@ test(`should match if netlify-lambda is configured with an additional option`, a
     },
   }
 
-  const match = await detectNetlifyLambda(packageJson)
+  const match = await detectNetlifyLambda({ packageJson })
   t.is(match.builderName, 'netlify-lambda')
   t.is(match.npmScript, 'noop')
 
@@ -151,7 +151,7 @@ test(`should match if netlify-lambda is configured with multiple additional opti
     },
   }
 
-  const match = await detectNetlifyLambda(packageJson)
+  const match = await detectNetlifyLambda({ packageJson })
   t.is(match.builderName, 'netlify-lambda')
   t.is(match.npmScript, 'noop')
 
@@ -171,7 +171,7 @@ test('should match if netlify-lambda has options that are passed after the funct
     },
   }
 
-  const match = await detectNetlifyLambda(packageJson)
+  const match = await detectNetlifyLambda({ packageJson })
   t.is(match.builderName, 'netlify-lambda')
   t.is(match.npmScript, 'noop')
 
@@ -192,7 +192,7 @@ test('should match even if multiple netlify-lambda commands are specified', asyn
     },
   }
 
-  const match = await detectNetlifyLambda(packageJson)
+  const match = await detectNetlifyLambda({ packageJson })
   t.is(match.builderName, 'netlify-lambda')
   t.is(match.npmScript, 'noop')
 

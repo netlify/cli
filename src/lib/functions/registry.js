@@ -21,8 +21,22 @@ class FunctionsRegistry {
     this.projectRoot = projectRoot
     this.timeouts = timeouts
 
+    // An object to be shared among all functions in the registry. It can be
+    // used to cache the results of the build function — e.g. it's used in
+    // the `memoizedBuild` method in the JavaScript runtime.
+    this.buildCache = {}
+
+    // File watchers for parent directories where functions live — i.e. the
+    // ones supplied to `scan()`. This is a Map because in the future we
+    // might have several function directories.
     this.directoryWatchers = new Map()
+
+    // The functions held by the registry. Maps function names to instances of
+    // `NetlifyFunction`.
     this.functions = new Map()
+
+    // File watchers for function files. Maps function names to objects built
+    // by the `watchDebounced` utility.
     this.functionWatchers = new Map()
 
     // Performance optimization: load '@netlify/zip-it-and-ship-it' on demand.
@@ -37,7 +51,7 @@ class FunctionsRegistry {
       this.logger.log(`${NETLIFYDEVLOG} ${chalk.magenta('Reloading')} function ${chalk.yellow(func.name)}...`)
     }
 
-    const { error, srcFilesDiff } = await func.build()
+    const { error, srcFilesDiff } = await func.build({ cache: this.buildCache })
 
     if (error) {
       this.logger.log(

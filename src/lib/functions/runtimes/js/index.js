@@ -17,12 +17,12 @@ const logger = winston.createLogger({
 
 lambdaLocal.setLogger(logger)
 
-const getBuildFunction = async ({ config, errorExit, func, functionsDirectory, projectRoot }) => {
+const getBuildFunction = async ({ cache, config, errorExit, func, functionsDirectory, projectRoot }) => {
   // The netlify-lambda builder can't be enabled or disabled on a per-function
   // basis and its detection mechanism is also quite expensive, so we detect
   // it once and cache the result.
   if (cachedNetlifyLambdaDetector === undefined) {
-    cachedNetlifyLambdaDetector = detectNetlifyLambdaBuilder()
+    cachedNetlifyLambdaDetector = detectNetlifyLambdaBuilder({ cache })
   }
 
   const netlifyLambdaBuilder = await cachedNetlifyLambdaDetector
@@ -31,7 +31,7 @@ const getBuildFunction = async ({ config, errorExit, func, functionsDirectory, p
     return netlifyLambdaBuilder.build
   }
 
-  const zisiBuilder = await detectZisiBuilder({ config, errorExit, func, functionsDirectory, projectRoot })
+  const zisiBuilder = await detectZisiBuilder({ cache, config, errorExit, func, functionsDirectory, projectRoot })
 
   if (zisiBuilder) {
     return zisiBuilder.build

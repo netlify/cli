@@ -17,7 +17,7 @@ const addFunctionsConfigDefaults = (config) => ({
   },
 })
 
-const buildFunction = async ({ config, func, functionsDirectory, projectRoot, targetDirectory }) => {
+const buildFunction = async ({ cache, config, func, functionsDirectory, projectRoot, targetDirectory }) => {
   const zipOptions = {
     archiveFormat: 'none',
     basePath: projectRoot,
@@ -34,6 +34,7 @@ const buildFunction = async ({ config, func, functionsDirectory, projectRoot, ta
   // this case, we use `mainFile` as the function path of `zipFunction`.
   const entryPath = functionDirectory === functionsDirectory ? func.mainFile : functionDirectory
   const { inputs, path: functionPath } = await memoizedBuild({
+    cache,
     cacheKey: `zisi-${entryPath}`,
     command: () => zipFunction(entryPath, targetDirectory, zipOptions),
   })
@@ -67,7 +68,7 @@ const getTargetDirectory = async ({ errorExit }) => {
   return targetDirectory
 }
 
-module.exports = async ({ config, errorExit, func, functionsDirectory, projectRoot }) => {
+module.exports = async ({ cache, config, errorExit, func, functionsDirectory, projectRoot }) => {
   const isTSFunction = path.extname(func.mainFile) === '.ts'
   const functionsConfig = addFunctionsConfigDefaults(
     normalizeFunctionsConfig({ functionsConfig: config.functions, projectRoot }),
@@ -87,7 +88,8 @@ module.exports = async ({ config, errorExit, func, functionsDirectory, projectRo
   const targetDirectory = await getTargetDirectory({ errorExit })
 
   return {
-    build: () => buildFunction({ config: functionsConfig, func, functionsDirectory, projectRoot, targetDirectory }),
+    build: () =>
+      buildFunction({ cache, config: functionsConfig, func, functionsDirectory, projectRoot, targetDirectory }),
     builderName: 'zip-it-and-ship-it',
     target: targetDirectory,
   }

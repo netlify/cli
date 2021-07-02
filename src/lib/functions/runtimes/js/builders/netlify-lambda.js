@@ -6,7 +6,8 @@ const minimist = require('minimist')
 const { fileExistsAsync, readFileAsync } = require('../../../../fs')
 const { memoizedBuild } = require('../../../memoized-build')
 
-const detectNetlifyLambda = async function ({ dependencies, devDependencies, scripts } = {}) {
+const detectNetlifyLambda = async function ({ cache = {}, packageJson } = {}) {
+  const { dependencies, devDependencies, scripts } = packageJson || {}
   if (!((dependencies && dependencies['netlify-lambda']) || (devDependencies && devDependencies['netlify-lambda']))) {
     return false
   }
@@ -27,7 +28,7 @@ const detectNetlifyLambda = async function ({ dependencies, devDependencies, scr
 
       return {
         build: async () => {
-          await memoizedBuild({ cacheKey: `netlify-lambda-${key}`, command: buildCommand })
+          await memoizedBuild({ cache, cacheKey: `netlify-lambda-${key}`, command: buildCommand })
 
           return {
             srcFiles,
@@ -51,14 +52,14 @@ const detectNetlifyLambda = async function ({ dependencies, devDependencies, scr
   return false
 }
 
-module.exports = async function handler() {
+module.exports = async function handler({ cache }) {
   const exists = await fileExistsAsync('package.json')
   if (!exists) {
     return false
   }
 
   const content = await readFileAsync('package.json')
-  const packageSettings = JSON.parse(content, { encoding: 'utf8' })
-  return detectNetlifyLambda(packageSettings)
+  const packageJson = JSON.parse(content, { encoding: 'utf8' })
+  return detectNetlifyLambda({ cache, packageJson })
 }
 module.exports.detectNetlifyLambda = detectNetlifyLambda

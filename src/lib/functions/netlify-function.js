@@ -36,8 +36,9 @@ class NetlifyFunction {
   //
   // - `srcFilesDiff`: Files that were added and removed since the last time
   //    the function was built.
-  async build() {
+  async build({ cache }) {
     const buildFunction = await this.runtime.getBuildFunction({
+      cache,
       config: this.config,
       errorExit: this.errorExit,
       func: this,
