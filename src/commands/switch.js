@@ -13,6 +13,7 @@ class SwitchCommand extends Command {
         Object.assign(prev, { [current.id]: current.name ? `${current.name} (${current.email})` : current.email }),
       {},
     )
+    const { log } = Command
 
     const { accountSwitchChoice } = await inquirer.prompt([
       {
@@ -30,8 +31,8 @@ class SwitchCommand extends Command {
         ([, availableUsersChoice]) => availableUsersChoice === accountSwitchChoice,
       )
       this.netlify.globalConfig.set('userId', selectedAccount[0])
-      this.log('')
-      this.log(`You're now using ${chalk.bold(selectedAccount[1])}.`)
+      log('')
+      log(`You're now using ${chalk.bold(selectedAccount[1])}.`)
     }
 
     return this.exit()

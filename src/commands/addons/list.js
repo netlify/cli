@@ -9,16 +9,16 @@ class AddonsListCommand extends Command {
     const { flags } = this.parse(AddonsListCommand)
 
     const { addons, siteData } = await prepareAddonCommand({ context: this })
-
+    const { logJson, log } = Command
     // Return json response for piping commands
     if (flags.json) {
-      this.logJson(addons)
+      logJson(addons)
       return false
     }
 
     if (!addons || addons.length === 0) {
-      this.log(`No addons currently installed for ${siteData.name}`)
-      this.log(`> Run \`netlify addons:create addon-namespace\` to install an addon`)
+      log(`No addons currently installed for ${siteData.name}`)
+      log(`> Run \`netlify addons:create addon-namespace\` to install an addon`)
       return false
     }
 
@@ -29,7 +29,7 @@ class AddonsListCommand extends Command {
     }))
 
     // Build a table out of addons
-    this.log(`site: ${siteData.name}`)
+    log(`site: ${siteData.name}`)
     const table = new AsciiTable(`Currently Installed addons`)
 
     table.setHeading('NameSpace', 'Name', 'Instance Id')
@@ -38,7 +38,7 @@ class AddonsListCommand extends Command {
       table.addRow(namespace, name, id)
     })
     // Log da addons
-    this.log(table.toString())
+    log(table.toString())
   }
 }
 

@@ -4,11 +4,12 @@ class EnvUnsetCommand extends Command {
   async run() {
     const { args, flags } = this.parse(EnvUnsetCommand)
     const { api, site } = this.netlify
+    const { log, logJson } = Command
     const siteId = site.id
     const { name } = args
 
     if (!siteId) {
-      this.log('No site id found, please run inside a site folder or `netlify link`')
+      log('No site id found, please run inside a site folder or `netlify link`')
       return false
     }
 
@@ -36,11 +37,11 @@ class EnvUnsetCommand extends Command {
 
     // Return new environment variables of site if using json flag
     if (flags.json) {
-      this.logJson(siteResult.build_settings.env)
+      logJson(siteResult.build_settings.env)
       return false
     }
 
-    this.log(`Unset environment variable ${name} for site ${siteData.name}`)
+    log(`Unset environment variable ${name} for site ${siteData.name}`)
   }
 }
 

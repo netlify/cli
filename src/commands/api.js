@@ -10,6 +10,7 @@ class APICommand extends Command {
   async run() {
     const { api } = this.netlify
     const { args, flags } = this.parse(APICommand)
+    const { log, logJson } = Command
 
     const { apiMethod } = args
 
@@ -20,10 +21,10 @@ class APICommand extends Command {
         const { operationId } = method
         table.addRow(operationId, `https://open-api.netlify.com/#operation/${operationId}`)
       })
-      this.log(table.toString())
-      this.log()
-      this.log('Above is a list of available API methods')
-      this.log(`To run a method use "${chalk.cyanBright('netlify api methodName')}"`)
+      log(table.toString())
+      log()
+      log('Above is a list of available API methods')
+      log(`To run a method use "${chalk.cyanBright('netlify api methodName')}"`)
       this.exit()
     }
 
@@ -43,7 +44,7 @@ class APICommand extends Command {
     }
     try {
       const apiResponse = await api[apiMethod](payload)
-      this.logJson(apiResponse)
+      logJson(apiResponse)
     } catch (error) {
       this.error(error)
     }

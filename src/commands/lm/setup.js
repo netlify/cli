@@ -56,11 +56,12 @@ class LmSetupCommand extends Command {
 
     const { flags } = this.parse(LmSetupCommand)
     const { api, site } = this.netlify
+    const { log } = Command
 
     let helperInstalled = false
     if (!flags['skip-install']) {
       try {
-        helperInstalled = await installHelperIfMissing({ force: flags['force-install'], log: this.log })
+        helperInstalled = await installHelperIfMissing({ force: flags['force-install'], log })
       } catch (error_) {
         this.error(error_)
       }

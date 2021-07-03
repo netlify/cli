@@ -11,7 +11,7 @@ class BuildCommand extends Command {
     this.setAnalyticsPayload({ dry: flags.dry })
 
     // Retrieve Netlify Build options
-    const [token] = await this.getConfigToken()
+    const [token] = await Command.getConfigToken()
 
     const options = await getBuildOptions({
       context: this,

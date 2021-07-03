@@ -160,7 +160,8 @@ class InitCommand extends Command {
 
     this.setAnalyticsPayload({ manual: flags.manual, force: flags.force })
 
-    const { log, exit, netlify } = this
+    const { exit, netlify } = this
+    const { log } = Command
     const { repositoryRoot, state } = netlify
     let { siteInfo } = this.netlify
 

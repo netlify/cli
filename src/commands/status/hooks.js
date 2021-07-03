@@ -6,6 +6,7 @@ const Command = require('../../utils/command')
 class StatusHooksCommand extends Command {
   async run() {
     const { site, api } = this.netlify
+    const { log } = Command
     await this.authenticate()
 
     const siteId = site.id
@@ -46,10 +47,10 @@ class StatusHooksCommand extends Command {
         data.hooks[hook.id].repo_url = get(siteData, 'build_settings.repo_url')
       }
     })
-    this.log(`─────────────────┐
+    log(`─────────────────┐
 Site Hook Status │
 ─────────────────┘`)
-    this.log(prettyjson.render(data))
+    log(prettyjson.render(data))
   }
 }
 

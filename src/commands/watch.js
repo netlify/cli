@@ -17,6 +17,8 @@ class SitesWatchCommand extends Command {
     const client = this.netlify.api
     let siteId = this.netlify.site.id
 
+    const { log } = Command
+
     if (!siteId) {
       const siteData = await InitCommand.run([])
       siteId = siteData.id
@@ -56,9 +58,9 @@ class SitesWatchCommand extends Command {
       const siteData = await client.getSite({ siteId })
 
       const message = chalk.cyanBright.bold.underline(noActiveBuilds ? 'Last build' : 'Deploy complete')
-      this.log()
-      this.log(message)
-      this.log(
+      log()
+      log(message)
+      log(
         prettyjson.render({
           URL: siteData.ssl_url || siteData.url,
           Admin: siteData.admin_url,

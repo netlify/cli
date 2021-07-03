@@ -8,6 +8,7 @@ const Command = require('../../utils/command')
 class SitesListCommand extends Command {
   async run() {
     const { flags } = this.parse(SitesListCommand)
+    const { log, logJson } = Command
 
     const { api } = this.netlify
     if (!flags.json) {
@@ -44,11 +45,11 @@ class SitesListCommand extends Command {
           }
           return site
         })
-        this.logJson(redactedSites)
+        logJson(redactedSites)
         return false
       }
 
-      this.log(`
+      log(`
 ────────────────────────────┐
    Current Netlify Sites    │
 ────────────────────────────┘
@@ -57,15 +58,15 @@ Count: ${logSites.length}
 `)
 
       logSites.forEach((logSite) => {
-        this.log(`${chalk.greenBright(logSite.name)} - ${logSite.id}`)
-        this.log(`  ${chalk.whiteBright.bold('url:')}  ${chalk.yellowBright(logSite.ssl_url)}`)
+        log(`${chalk.greenBright(logSite.name)} - ${logSite.id}`)
+        log(`  ${chalk.whiteBright.bold('url:')}  ${chalk.yellowBright(logSite.ssl_url)}`)
         if (logSite.repo_url) {
-          this.log(`  ${chalk.whiteBright.bold('repo:')} ${chalk.white(logSite.repo_url)}`)
+          log(`  ${chalk.whiteBright.bold('repo:')} ${chalk.white(logSite.repo_url)}`)
         }
         if (logSite.account_name) {
-          this.log(`  ${chalk.whiteBright.bold('account:')} ${chalk.white(logSite.account_name)}`)
+          log(`  ${chalk.whiteBright.bold('account:')} ${chalk.white(logSite.account_name)}`)
         }
-        this.log(`─────────────────────────────────────────────────`)
+        log(`─────────────────────────────────────────────────`)
       })
     }
   }

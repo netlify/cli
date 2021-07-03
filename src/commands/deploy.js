@@ -361,9 +361,11 @@ const printResults = ({ flags, results, deployToProduction, log, logJson, exit }
 class DeployCommand extends Command {
   async run() {
     const { flags } = this.parse(DeployCommand)
-    const { log, logJson, warn, error, exit } = this
+    const { warn, error, exit } = this
     const { api, site } = this.netlify
     const alias = flags.alias || flags.branch
+
+    const { log, logJson } = Command
 
     this.setAnalyticsPayload({ open: flags.open, prod: flags.prod, json: flags.json, alias: Boolean(alias) })
 
@@ -387,7 +389,7 @@ class DeployCommand extends Command {
         }
       }
     } else {
-      this.log("This folder isn't linked to a site yet")
+      log("This folder isn't linked to a site yet")
       const NEW_SITE = '+  Create & configure a new site'
       const EXISTING_SITE = 'Link this directory to an existing site'
 

@@ -85,7 +85,7 @@ class BaseCommand extends TrackedCommand {
     const cwd = argv.cwd || process.cwd()
     // Grab netlify API token
     const authViaFlag = getAuthArg(argv)
-
+    this.getConfigToken = (token) => BaseCommand.getConfigToken(token)
     const [token] = await this.getConfigToken(authViaFlag)
 
     // Get site id & build state
@@ -105,7 +105,7 @@ class BaseCommand extends TrackedCommand {
 
     const { flags } = this.parse(BaseCommand)
     const agent = await getAgent({
-      log: this.log,
+      log: BaseCommand.log,
       exit: this.exit,
       httpProxy: flags.httpProxy,
       certificateFile: flags.httpProxyCertificateFilename,
@@ -157,7 +157,7 @@ class BaseCommand extends TrackedCommand {
         scheme,
         offline,
       })
-      return this.normalizeCachedConfig(cachedConfig)
+      return BaseCommand.normalizeCachedConfig(cachedConfig)
     } catch (error) {
       const isUserError = error.type === 'userError'
 
@@ -181,7 +181,7 @@ class BaseCommand extends TrackedCommand {
   // several ways. It detects it by checking if `build.publish` is `undefined`.
   // However, `@netlify/config` adds a default value to `build.publish`.
   // This removes it.
-  normalizeCachedConfig(cachedConfig) {
+  static normalizeCachedConfig(cachedConfig) {
     const {
       config,
       config: {
@@ -203,13 +203,13 @@ class BaseCommand extends TrackedCommand {
     }
   }
 
-  logJson(message = '') {
+  static logJson(message = '') {
     if (argv.json || isDefaultJson()) {
       process.stdout.write(JSON.stringify(message, null, 2))
     }
   }
 
-  log(message = '', ...args) {
+  static log(message = '', ...args) {
     /* If  --silent or --json flag passed disable logger */
     if (argv.silent || argv.json || isDefaultJson()) {
       return
@@ -261,7 +261,7 @@ class BaseCommand extends TrackedCommand {
     })
   }
 
-  get chalk() {
+  static get chalk() {
     // If --json flag disable chalk colors
     return chalkInstance(argv.json)
   }
@@ -271,12 +271,12 @@ class BaseCommand extends TrackedCommand {
    * @param  {string} - [tokenFromFlag] - value passed in by CLI flag
    * @return {Promise<[string, string]>} - Promise containing tokenValue & location of resolved Netlify API token
    */
-  getConfigToken(tokenFromFlag) {
+  static getConfigToken(tokenFromFlag) {
     return getToken(tokenFromFlag)
   }
 
   async authenticate(tokenFromFlag) {
-    const [token] = await this.getConfigToken(tokenFromFlag)
+    const [token] = await BaseCommand.getConfigToken(tokenFromFlag)
     if (token) {
       return token
     }
@@ -285,7 +285,7 @@ class BaseCommand extends TrackedCommand {
 
   async expensivelyAuthenticate() {
     const webUI = process.env.NETLIFY_WEB_UI || 'https://app.netlify.com'
-    this.log(`Logging into your Netlify account...`)
+    BaseCommand.log(`Logging into your Netlify account...`)
 
     // Create ticket for auth
     const ticket = await this.netlify.api.createTicket({
@@ -295,8 +295,8 @@ class BaseCommand extends TrackedCommand {
     // Open browser for authentication
     const authLink = `${webUI}/authorize?response_type=ticket&ticket=${ticket.id}`
 
-    this.log(`Opening ${authLink}`)
-    await openBrowser({ url: authLink, log: this.log })
+    BaseCommand.log(`Opening ${authLink}`)
+    await openBrowser({ url: authLink, log: BaseCommand.log })
 
     const accessToken = await pollForToken({
       api: this.netlify.api,
@@ -334,13 +334,13 @@ class BaseCommand extends TrackedCommand {
     })
 
     // Log success
-    this.log()
-    this.log(`${this.chalk.greenBright('You are now logged into your Netlify account!')}`)
-    this.log()
-    this.log(`Run ${this.chalk.cyanBright('netlify status')} for account details`)
-    this.log()
-    this.log(`To see all available commands run: ${this.chalk.cyanBright('netlify help')}`)
-    this.log()
+    BaseCommand.log()
+    BaseCommand.log(`${this.chalk.greenBright('You are now logged into your Netlify account!')}`)
+    BaseCommand.log()
+    BaseCommand.log(`Run ${this.chalk.cyanBright('netlify status')} for account details`)
+    BaseCommand.log()
+    BaseCommand.log(`To see all available commands run: ${this.chalk.cyanBright('netlify help')}`)
+    BaseCommand.log()
     return accessToken
   }
 }

@@ -11,10 +11,11 @@ class EnvImportCommand extends Command {
   async run() {
     const { args, flags } = this.parse(EnvImportCommand)
     const { api, site } = this.netlify
+    const { log, logJson } = Command
     const siteId = site.id
 
     if (!siteId) {
-      this.log('No site id found, please run inside a site folder or `netlify link`')
+      log('No site id found, please run inside a site folder or `netlify link`')
       return false
     }
 
@@ -32,12 +33,12 @@ class EnvImportCommand extends Command {
       const envFileContents = fs.readFileSync(fileName)
       importedEnv = dotenv.parse(envFileContents)
     } catch (error) {
-      this.log(error.message)
+      log(error.message)
       this.exit(1)
     }
 
     if (isEmpty(importedEnv)) {
-      this.log(`No environment variables found in file ${fileName} to import`)
+      log(`No environment variables found in file ${fileName} to import`)
       return false
     }
 
@@ -55,19 +56,19 @@ class EnvImportCommand extends Command {
 
     // Return new environment variables of site if using json flag
     if (flags.json) {
-      this.logJson(siteResult.build_settings.env)
+      logJson(siteResult.build_settings.env)
       return false
     }
 
     // List newly imported environment variables in a table
-    this.log(`site: ${siteData.name}`)
+    log(`site: ${siteData.name}`)
     const table = new AsciiTable(`Imported environment variables`)
 
     table.setHeading('Key', 'Value')
     for (const [key, value] of Object.entries(importedEnv)) {
       table.addRow(key, value)
     }
-    this.log(table.toString())
+    log(table.toString())
   }
 }
 

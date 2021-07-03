@@ -8,6 +8,7 @@ const { parseRawFlags } = require('../../utils/parse-raw-flags')
 class AddonsDeleteCommand extends Command {
   async run() {
     const { args, raw } = this.parse(AddonsDeleteCommand)
+    const { log } = Command
 
     const addonName = args.name
     const { addon } = await prepareAddonCommand({
@@ -35,7 +36,7 @@ class AddonsDeleteCommand extends Command {
         addon: addonName,
         instanceId: addon.id,
       })
-      this.log(`Addon "${addonName}" deleted`)
+      log(`Addon "${addonName}" deleted`)
     } catch (error) {
       this.error(error.message)
     }

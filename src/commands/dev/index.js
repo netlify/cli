@@ -198,8 +198,9 @@ class DevCommand extends Command {
   }
 
   async run() {
-    this.log(`${NETLIFYDEV}`)
-    const { error: errorExit, log, warn, exit } = this
+    const { log } = Command
+    log(`${NETLIFYDEV}`)
+    const { error: errorExit, warn, exit } = this
     const { flags } = this.parse(DevCommand)
     const { api, site, config, siteInfo } = this.netlify
     config.dev = { ...config.dev }

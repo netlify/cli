@@ -6,17 +6,18 @@ const Command = require('../utils/command')
 class LoginCommand extends Command {
   async run() {
     const { flags } = this.parse(LoginCommand)
+    const { log } = Command
 
     this.setAnalyticsPayload({ new: flags.new })
 
-    const [accessToken, location] = await this.getConfigToken()
+    const [accessToken, location] = await Command.getConfigToken()
     if (accessToken && !flags.new) {
-      this.log(`Already logged in ${msg(location)}`)
-      this.log()
-      this.log(`Run ${chalk.cyanBright('netlify status')} for account details`)
-      this.log()
-      this.log(`To see all available commands run: ${chalk.cyanBright('netlify help')}`)
-      this.log()
+      log(`Already logged in ${msg(location)}`)
+      log()
+      log(`Run ${chalk.cyanBright('netlify status')} for account details`)
+      log()
+      log(`To see all available commands run: ${chalk.cyanBright('netlify help')}`)
+      log()
       return this.exit()
     }
 

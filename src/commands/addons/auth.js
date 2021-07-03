@@ -5,6 +5,7 @@ const openBrowser = require('../../utils/open-browser')
 class AddonsAuthCommand extends Command {
   async run() {
     const { args } = this.parse(AddonsAuthCommand)
+    const { log } = Command
 
     const addonName = args.name
     const { addon } = await prepareAddonCommand({
@@ -18,12 +19,12 @@ class AddonsAuthCommand extends Command {
       return false
     }
 
-    this.log()
-    this.log(`Opening ${addonName} add-on admin URL:`)
-    this.log()
-    this.log(addon.auth_url)
-    this.log()
-    await openBrowser({ url: addon.auth_url, log: this.log })
+    log()
+    log(`Opening ${addonName} add-on admin URL:`)
+    log()
+    log(addon.auth_url)
+    log()
+    await openBrowser({ url: addon.auth_url, log })
     this.exit()
   }
 }

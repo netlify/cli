@@ -37,7 +37,8 @@ class AddonsCreateCommand extends Command {
       validation: ADDON_VALIDATION.NOT_EXISTS,
     })
 
-    const { log, error, netlify } = this
+    const { error, netlify } = this
+    const { log } = Command
     const { api, site } = netlify
     const siteId = site.id
 
@@ -50,25 +51,23 @@ class AddonsCreateCommand extends Command {
     if (hasConfig) {
       const required = requiredConfigValues(manifest.config)
       const missingValues = missingConfigValues(required, rawFlags)
-      this.log(`Starting the setup for "${addonName} add-on"`)
-      this.log()
+      log(`Starting the setup for "${addonName} add-on"`)
+      log()
 
       if (Object.keys(rawFlags).length !== 0) {
         const newConfig = updateConfigValues(manifest.config, {}, rawFlags)
 
         if (missingValues.length !== 0) {
           /* Warn user of missing required values */
-          this.log(
-            `${chalk.redBright.underline.bold(`Error: Missing required configuration for "${addonName} add-on"`)}`,
-          )
-          this.log()
+          log(`${chalk.redBright.underline.bold(`Error: Missing required configuration for "${addonName} add-on"`)}`)
+          log()
           render.missingValues(missingValues, manifest)
-          this.log()
+          log()
           const msg = `netlify addons:create ${addonName}`
-          this.log(`Please supply the configuration values as CLI flags`)
-          this.log()
-          this.log(`Alternatively, you can run ${chalk.cyan(msg)} with no flags to walk through the setup steps`)
-          this.log()
+          log(`Please supply the configuration values as CLI flags`)
+          log()
+          log(`Alternatively, you can run ${chalk.cyan(msg)} with no flags to walk through the setup steps`)
+          log()
           return false
         }
 
@@ -78,15 +77,15 @@ class AddonsCreateCommand extends Command {
       }
 
       const words = `The ${addonName} add-on has the following configurable options:`
-      this.log(` ${chalk.yellowBright.bold(words)}`)
+      log(` ${chalk.yellowBright.bold(words)}`)
       render.configValues(addonName, manifest.config)
-      this.log()
-      this.log(` ${chalk.greenBright.bold('Lets configure those!')}`)
+      log()
+      log(` ${chalk.greenBright.bold('Lets configure those!')}`)
 
-      this.log()
-      this.log(` - Hit ${chalk.white.bold('enter')} to confirm value or set empty value`)
-      this.log(` - Hit ${chalk.white.bold('ctrl + C')} to cancel & exit configuration`)
-      this.log()
+      log()
+      log(` - Hit ${chalk.white.bold('enter')} to confirm value or set empty value`)
+      log(` - Hit ${chalk.white.bold('ctrl + C')} to cancel & exit configuration`)
+      log()
 
       const prompts = generatePrompts({
         config: manifest.config,
@@ -99,7 +98,7 @@ class AddonsCreateCommand extends Command {
       const missingRequiredValues = missingConfigValues(required, configValues)
       if (missingRequiredValues && missingRequiredValues.length !== 0) {
         missingRequiredValues.forEach((val) => {
-          this.log(`Missing required value "${val}". Please run the command again`)
+          log(`Missing required value "${val}". Please run the command again`)
         })
         return false
       }
