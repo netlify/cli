@@ -10,8 +10,8 @@
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
-        "@netlify/build": "^12.25.0",
-        "@netlify/config": "^9.5.0",
+        "@netlify/build": "^12.28.0",
+        "@netlify/config": "^9.8.0",
         "@netlify/framework-info": "^5.5.0",
         "@netlify/plugin-edge-handlers": "^1.11.20",
         "@netlify/plugins-list": "^2.18.1",
@@ -2283,19 +2283,19 @@
       }
     },
     "node_modules/@netlify/build": {
-      "version": "12.25.0",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-12.25.0.tgz",
-      "integrity": "sha512-C/LXC+I4mB94brxZn/sHo4yVHvVAYe9Y1Le+WqiqNJQZIwOJXpkIg1yh9BJ2qvRHlJF9XCckUlIC8qnQ698AUw==",
+      "version": "12.28.0",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-12.28.0.tgz",
+      "integrity": "sha512-eQ+t9IZBFjWqEkdN17tOGip8M20mqukXCM0Rnu7YDkcH489u9oXpCLSeNxsvRbLPIQPLlLwdcAWoBXqT6WVpfA==",
       "dependencies": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^1.0.7",
         "@netlify/config": "^9.0.0",
         "@netlify/functions-utils": "^1.3.13",
         "@netlify/git-utils": "^1.0.8",
-        "@netlify/plugin-edge-handlers": "^1.11.19",
+        "@netlify/plugin-edge-handlers": "^1.11.20",
         "@netlify/plugins-list": "^2.18.1",
         "@netlify/run-utils": "^1.0.6",
-        "@netlify/zip-it-and-ship-it": "^4.8.0",
+        "@netlify/zip-it-and-ship-it": "^4.9.0",
         "@sindresorhus/slugify": "^1.1.0",
         "@ungap/from-entries": "^0.2.1",
         "ansi-escapes": "^4.3.2",
@@ -2820,9 +2820,9 @@
       }
     },
     "node_modules/@netlify/config": {
-      "version": "9.5.0",
-      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-9.5.0.tgz",
-      "integrity": "sha512-Kt5xukNclUtraXVX1xnrseMwvIA1WnFjR6i4GuwgvM2MreS6zb5LIV5XGJ/vDCEpH9uxI609gj2iu9FNy543rA==",
+      "version": "9.8.0",
+      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-9.8.0.tgz",
+      "integrity": "sha512-4iGtytl4iZvqCIitSfKDMHM9I3pY5/fes9QL7w2Evl0JoLs9DKTjlv6MmehO0kqBEfldPOkZdp5UOXhm/mR5Uw==",
       "dependencies": {
         "@ungap/from-entries": "^0.2.1",
         "array-flat-polyfill": "^1.0.1",
@@ -22646,19 +22646,19 @@
       }
     },
     "@netlify/build": {
-      "version": "12.25.0",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-12.25.0.tgz",
-      "integrity": "sha512-C/LXC+I4mB94brxZn/sHo4yVHvVAYe9Y1Le+WqiqNJQZIwOJXpkIg1yh9BJ2qvRHlJF9XCckUlIC8qnQ698AUw==",
+      "version": "12.28.0",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-12.28.0.tgz",
+      "integrity": "sha512-eQ+t9IZBFjWqEkdN17tOGip8M20mqukXCM0Rnu7YDkcH489u9oXpCLSeNxsvRbLPIQPLlLwdcAWoBXqT6WVpfA==",
       "requires": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^1.0.7",
         "@netlify/config": "^9.0.0",
         "@netlify/functions-utils": "^1.3.13",
         "@netlify/git-utils": "^1.0.8",
-        "@netlify/plugin-edge-handlers": "^1.11.19",
+        "@netlify/plugin-edge-handlers": "^1.11.20",
         "@netlify/plugins-list": "^2.18.1",
         "@netlify/run-utils": "^1.0.6",
-        "@netlify/zip-it-and-ship-it": "^4.8.0",
+        "@netlify/zip-it-and-ship-it": "^4.9.0",
         "@sindresorhus/slugify": "^1.1.0",
         "@ungap/from-entries": "^0.2.1",
         "ansi-escapes": "^4.3.2",
@@ -23074,9 +23074,9 @@
       }
     },
     "@netlify/config": {
-      "version": "9.5.0",
-      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-9.5.0.tgz",
-      "integrity": "sha512-Kt5xukNclUtraXVX1xnrseMwvIA1WnFjR6i4GuwgvM2MreS6zb5LIV5XGJ/vDCEpH9uxI609gj2iu9FNy543rA==",
+      "version": "9.8.0",
+      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-9.8.0.tgz",
+      "integrity": "sha512-4iGtytl4iZvqCIitSfKDMHM9I3pY5/fes9QL7w2Evl0JoLs9DKTjlv6MmehO0kqBEfldPOkZdp5UOXhm/mR5Uw==",
       "requires": {
         "@ungap/from-entries": "^0.2.1",
         "array-flat-polyfill": "^1.0.1",
