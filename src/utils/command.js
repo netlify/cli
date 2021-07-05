@@ -102,6 +102,7 @@ class BaseCommand extends TrackedCommand {
 
     const cachedConfig = await this.getConfig({ cwd, state, token, ...apiUrlOpts })
     const { configPath, config, buildDir, repositoryRoot, siteInfo } = cachedConfig
+    const normalizedConfig = this.normalizeConfig(config)
 
     const { flags } = this.parse(BaseCommand)
     const agent = await getAgent({
@@ -131,7 +132,7 @@ class BaseCommand extends TrackedCommand {
       // Site information retrieved using the API
       siteInfo,
       // Configuration from netlify.[toml/yml]
-      config,
+      config: normalizedConfig,
       // Used to avoid calling @netlify/config again
       cachedConfig,
       // global cli config
@@ -144,7 +145,7 @@ class BaseCommand extends TrackedCommand {
   // Find and resolve the Netlify configuration
   async getConfig({ cwd, host, offline = argv.offline, pathPrefix, scheme, state, token }) {
     try {
-      const cachedConfig = await resolveConfig({
+      return await resolveConfig({
         config: argv.config,
         cwd,
         context: argv.context || this.commandContext,
@@ -157,7 +158,6 @@ class BaseCommand extends TrackedCommand {
         scheme,
         offline,
       })
-      return this.normalizeCachedConfig(cachedConfig)
     } catch (error) {
       const isUserError = error.type === 'userError'
 
@@ -181,17 +181,10 @@ class BaseCommand extends TrackedCommand {
   // several ways. It detects it by checking if `build.publish` is `undefined`.
   // However, `@netlify/config` adds a default value to `build.publish`.
   // This removes it.
-  normalizeCachedConfig(cachedConfig) {
-    const {
-      config,
-      config: {
-        build,
-        build: { publishOrigin },
-      },
-    } = cachedConfig
-    return publishOrigin === 'default'
-      ? { ...cachedConfig, config: { ...config, build: omit(build, ['publish', 'publishOrigin']) } }
-      : cachedConfig
+  normalizeConfig(config) {
+    return config.build.publishOrigin === 'default'
+      ? { ...config, build: omit(config.build, ['publish', 'publishOrigin']) }
+      : config
   }
 
   async isLoggedIn() {
