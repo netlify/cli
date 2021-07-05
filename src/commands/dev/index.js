@@ -288,6 +288,9 @@ DevCommand.flags = {
   targetPort: flagsLib.integer({
     description: 'port of target app server',
   }),
+  framework: flagsLib.string({
+    description: 'framework to use. Defaults to #auto which automatically detects a framework',
+  }),
   staticServerPort: flagsLib.integer({
     description: 'port of the static app server used when no framework is detected',
     hidden: true,
