@@ -85,7 +85,9 @@ class BaseCommand extends TrackedCommand {
     const cwd = argv.cwd || process.cwd()
     // Grab netlify API token
     const authViaFlag = getAuthArg(argv)
-    this.getConfigToken = (token) => BaseCommand.getConfigToken(token)
+    const { log, normalizeConfig, getConfigToken } = BaseCommand
+    
+    this.getConfigToken = (token) => getConfigToken(token)
     const [token] = await this.getConfigToken(authViaFlag)
 
     // Get site id & build state
@@ -102,10 +104,11 @@ class BaseCommand extends TrackedCommand {
 
     const cachedConfig = await this.getConfig({ cwd, state, token, ...apiUrlOpts })
     const { configPath, config, buildDir, repositoryRoot, siteInfo } = cachedConfig
+    const normalizedConfig = normalizeConfig(config)
 
     const { flags } = this.parse(BaseCommand)
     const agent = await getAgent({
-      log: BaseCommand.log,
+      log,
       exit: this.exit,
       httpProxy: flags.httpProxy,
       certificateFile: flags.httpProxyCertificateFilename,
@@ -131,7 +134,7 @@ class BaseCommand extends TrackedCommand {
       // Site information retrieved using the API
       siteInfo,
       // Configuration from netlify.[toml/yml]
-      config,
+      config: normalizedConfig,
       // Used to avoid calling @netlify/config again
       cachedConfig,
       // global cli config
@@ -144,7 +147,7 @@ class BaseCommand extends TrackedCommand {
   // Find and resolve the Netlify configuration
   async getConfig({ cwd, host, offline = argv.offline, pathPrefix, scheme, state, token }) {
     try {
-      const cachedConfig = await resolveConfig({
+      return await resolveConfig({
         config: argv.config,
         cwd,
         context: argv.context || this.commandContext,
@@ -157,7 +160,6 @@ class BaseCommand extends TrackedCommand {
         scheme,
         offline,
       })
-      return BaseCommand.normalizeCachedConfig(cachedConfig)
     } catch (error) {
       const isUserError = error.type === 'userError'
 
@@ -181,17 +183,10 @@ class BaseCommand extends TrackedCommand {
   // several ways. It detects it by checking if `build.publish` is `undefined`.
   // However, `@netlify/config` adds a default value to `build.publish`.
   // This removes it.
-  static normalizeCachedConfig(cachedConfig) {
-    const {
-      config,
-      config: {
-        build,
-        build: { publishOrigin },
-      },
-    } = cachedConfig
-    return publishOrigin === 'default'
-      ? { ...cachedConfig, config: { ...config, build: omit(build, ['publish', 'publishOrigin']) } }
-      : cachedConfig
+  static normalizeConfig(config) {
+    return config.build.publishOrigin === 'default'
+      ? { ...config, build: omit(config.build, ['publish', 'publishOrigin']) }
+      : config
   }
 
   async isLoggedIn() {
@@ -285,7 +280,8 @@ class BaseCommand extends TrackedCommand {
 
   async expensivelyAuthenticate() {
     const webUI = process.env.NETLIFY_WEB_UI || 'https://app.netlify.com'
-    BaseCommand.log(`Logging into your Netlify account...`)
+    const { log } = BaseCommand
+    log(`Logging into your Netlify account...`)
 
     // Create ticket for auth
     const ticket = await this.netlify.api.createTicket({
@@ -295,8 +291,8 @@ class BaseCommand extends TrackedCommand {
     // Open browser for authentication
     const authLink = `${webUI}/authorize?response_type=ticket&ticket=${ticket.id}`
 
-    BaseCommand.log(`Opening ${authLink}`)
-    await openBrowser({ url: authLink, log: BaseCommand.log })
+    log(`Opening ${authLink}`)
+    await openBrowser({ url: authLink, log })
 
     const accessToken = await pollForToken({
       api: this.netlify.api,
@@ -334,13 +330,13 @@ class BaseCommand extends TrackedCommand {
     })
 
     // Log success
-    BaseCommand.log()
-    BaseCommand.log(`${this.chalk.greenBright('You are now logged into your Netlify account!')}`)
-    BaseCommand.log()
-    BaseCommand.log(`Run ${this.chalk.cyanBright('netlify status')} for account details`)
-    BaseCommand.log()
-    BaseCommand.log(`To see all available commands run: ${this.chalk.cyanBright('netlify help')}`)
-    BaseCommand.log()
+    log()
+    log(`${this.chalk.greenBright('You are now logged into your Netlify account!')}`)
+    log()
+    log(`Run ${this.chalk.cyanBright('netlify status')} for account details`)
+    log()
+    log(`To see all available commands run: ${this.chalk.cyanBright('netlify help')}`)
+    log()
     return accessToken
   }
 }
