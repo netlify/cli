@@ -1,6 +1,7 @@
 const childProcess = require('child_process')
 const path = require('path')
 const process = require('process')
+const { promisify } = require('util')
 
 const { flags: flagsLib } = require('@oclif/command')
 const boxen = require('boxen')
@@ -28,24 +29,23 @@ const SERVER_POLL_INTERVAL = 1e3
 // 20 seconds
 const SERVER_POLL_TIMEOUT = 2e4
 
+const startStaticServer = async ({ settings, log }) => {
+  const server = new StaticServer({
+    rootPath: settings.dist,
+    name: 'netlify-dev',
+    port: settings.frameworkPort,
+    templates: {
+      notFound: path.join(settings.dist, '404.html'),
+    },
+  })
+
+  await promisify(server.start.bind(server))()
+  log(`\n${NETLIFYDEVLOG} Server listening to`, settings.frameworkPort)
+}
+
 const startFrameworkServer = async function ({ settings, log, exit }) {
   if (settings.noCmd) {
-    const server = new StaticServer({
-      rootPath: settings.dist,
-      name: 'netlify-dev',
-      port: settings.frameworkPort,
-      templates: {
-        notFound: path.join(settings.dist, '404.html'),
-      },
-    })
-
-    await new Promise((resolve) => {
-      server.start(function onListening() {
-        log(`\n${NETLIFYDEVLOG} Server listening to`, settings.frameworkPort)
-        resolve()
-      })
-    })
-    return
+    return await startStaticServer({ settings, log })
   }
 
   log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.framework || 'custom config'}`)
@@ -72,7 +72,7 @@ const startFrameworkServer = async function ({ settings, log, exit }) {
       code > 0 ? NETLIFYDEVERR : NETLIFYDEVWARN,
       `"${[settings.command, ...settings.args].join(' ')}" exited with code ${code}. Shutting down Netlify Dev server`,
     )
-    process.exit(code)
+    process.exit(1)
   }
   ps.on('close', handleProcessExit)
   ps.on('SIGINT', handleProcessExit)
