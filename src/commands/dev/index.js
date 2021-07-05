@@ -72,7 +72,7 @@ const startFrameworkServer = async function ({ settings, log, exit }) {
       code > 0 ? NETLIFYDEVERR : NETLIFYDEVWARN,
       `"${[settings.command, ...settings.args].join(' ')}" exited with code ${code}. Shutting down Netlify Dev server`,
     )
-    process.exit(code)
+    process.exit(1)
   }
   ps.on('close', handleProcessExit)
   ps.on('SIGINT', handleProcessExit)
