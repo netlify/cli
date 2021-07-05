@@ -39,7 +39,7 @@ This is how we pull down your build environment variables and manage your addons
 
 ## Usage
 
-- `netlify dev` start a local dev server for the build tool you're using
+- `netlify dev` start a local dev server for the build tool you’re using
 - `netlify dev:exec <command>` runs a shell command within the netlify dev environment
 - `netlify functions:create` bootstrap a new function
 
@@ -109,7 +109,7 @@ Netlify Dev is meant to work with zero config for the majority of users, by usin
   functions = "functions" # netlify dev uses this directory to scaffold and serve your functions
   publish = "dist"
 
-# note: each of these fields are OPTIONAL, with an exception that when you're specifying "command" and "targetPort", you must specify framework = "#custom"
+# note: each of these fields are OPTIONAL, with an exception that when you’re specifying "command" and "targetPort", you must specify framework = "#custom"
 [dev]
   command = "yarn start" # Command to start your dev server
   targetPort = 3000 # The port for your application server, framework or site generator
@@ -136,6 +136,7 @@ Netlify Dev will attempt to detect the site generator or build command that you 
 [dev]
   framework = "#custom"
   command = "yarn start" # Command to start your dev server
+  targetPort = 3000 # # The port for your application server, framework or site generator
   port = 8888 # The port that the netlify dev will be accessible on
   publish = "dist" # If you use a _redirect file, provide the path to your static content folder
 ```
@@ -149,21 +150,22 @@ against your project.
   framework = "create-react-app" # or "#static" to force a static server
 ```
 
-The `framework` option should be one of the available
-[project types which Netlify Dev can detect](https://github.com/netlify/cli/tree/main/src/detectors)
-or `#auto` (default) to test all available detectors, `#static` for a static
-file server or `#custom` to use `command` option to run an app server and
-`targetPort` option to connect to it.
+Possible values of `framework`:
+
+- `#auto` (default) to check of all [available frameworks](https://github.com/netlify/cli/tree/main/src/detectors).
+- One of the frameworks as specified [here](https://github.com/netlify/cli/tree/main/src/detectors).
+- `#static` for a static file server
+- `#custom` to use the `command` option to run an app server and `targetPort` option to connect to it
 
 ## Explanation of ports in Netlify Dev
 
 There will be a number of ports that you will encounter when using Netlify Dev, especially when running a static site generator like Gatsby which has its own dev server. All the port numbers can be a bit confusing, so here is a brief explainer.
 
 - If your site generator runs on port 8000 for example, Netlify Dev needs to be told to connect to that port, so, it can route the requests successfully to the site generator along with the rest of the local Netlify environment
-- If you're running a project we have a detector for, we hardcode those conventional ports so you don't have to supply it yourself. If we have multiple detectors that match, we'll ask you to choose.
-- However, sometimes you're using some unrecogized site generator or just have a server you want Netlify Dev to connect to. This is when you go to the `netlify.toml` `[dev]` block to specify exactly what port we should listen to.
+- If you’re running a project we have a detector for, we hardcode those conventional ports so you don't have to supply it yourself. If we have multiple detectors that match, we'll ask you to choose.
+- However, sometimes you’re using some unrecognized site generator or just have a server you want Netlify Dev to connect to. This is when you go to the `netlify.toml` `[dev]` block to specify exactly what port we should listen to.
 
-As for which port to use while doing local development in Netlify Dev, always look for this box in your console output and use that:
+As for which port to use while doing local development in Netlify Dev, always search for this box in your console output and use that:
 
 ```bash
    ┌──────────────────────────────────────────────────────────────┐
@@ -198,7 +200,7 @@ See the [Redirects Documentation](https://www.netlify.com/docs/redirects/) for m
 
 ## Environment Variables
 
-If the current project is linked to a Netlify site (`netlify link`), environment variables are pulled down from production and populated in `netlify dev` server. This functionality requires that you're logged in (`netlify login`) and connected to the internet when running `netlify dev`.
+If the current project is linked to a Netlify site (`netlify link`), environment variables are pulled down from production and populated in `netlify dev` server. This functionality requires that you’re logged in (`netlify login`) and connected to the internet when running `netlify dev`.
 
 Netlify Dev also supports local environment variables through `.env` files.
 Netlify Dev will look in project root directory for `.env` file and will provide those variables to the spawned site generator/server and Netlify Functions.
@@ -353,7 +355,7 @@ certFile = "cert.pem"
 keyFile = "key.pem"
 ```
 
-**Important -** If you're using a self-signed certificate, you might need to configure your browser to accept it when running on `localhost`.
+**Important -** If you’re using a self-signed certificate, you might need to configure your browser to accept it when running on `localhost`.
 To enable this setting for Chrome, visit `chrome://flags/#allow-insecure-localhost` in your browser.
 
 ## Contributing/Local Development
@@ -364,7 +366,7 @@ Thanks for contributing! You'll need to follow these steps to run Netlify CLI an
 2. clone and install deps for https://github.com/netlify/cli
 3. `npm link` from inside the `cli` folder
 
-Now you're both ready to start testing `netlify dev` and to contribute to the project! Note these are untested instructions, please get in touch if you're unable to follow them clearly and we'll work with you. Or ping [@swyx](https://twitter.com/swyx).
+Now you’re both ready to start testing `netlify dev` and to contribute to the project! Note these are untested instructions, please get in touch if you’re unable to follow them clearly and we'll work with you. Or ping [@swyx](https://twitter.com/swyx).
 
 Note that code that you may be debugging or investigating may be in some transitive dependencies we have published as separate libraries:
 
