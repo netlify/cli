@@ -86,7 +86,7 @@ class BaseCommand extends TrackedCommand {
     // Grab netlify API token
     const authViaFlag = getAuthArg(argv)
     const { log, normalizeConfig, getConfigToken } = BaseCommand
-    
+
     this.getConfigToken = (token) => getConfigToken(token)
     const [token] = await this.getConfigToken(authViaFlag)
 
