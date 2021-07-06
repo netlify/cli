@@ -76,7 +76,7 @@
   },
   "dependencies": {
     "@netlify/build": "^15.1.0",
-    "@netlify/config": "^12.0.0",
+    "@netlify/config": "^12.0.1",
     "@netlify/framework-info": "^5.6.0",
     "@netlify/plugin-edge-handlers": "^1.11.20",
     "@netlify/plugins-list": "^2.18.1",
