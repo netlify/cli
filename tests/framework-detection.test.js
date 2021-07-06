@@ -177,7 +177,7 @@ test('should start custom command if framework=#custom, command and targetPort a
 
     const error = await t.throwsAsync(() =>
       withDevServer(
-        { cwd: builder.directory, args: ['--command', 'cat non-existing', '--targetPort', '3000'] },
+        { cwd: builder.directory, args: ['--command', 'echo hello', '--targetPort', '3000'] },
         () => {},
         true,
       ),
