@@ -186,6 +186,31 @@ test('should start custom command if framework=#custom, command and targetPort a
   })
 })
 
+test(`should print specific error when command doesn't exist`, async (t) => {
+  await withSiteBuilder('site-with-custom-framework', async (builder) => {
+    await builder.buildAsync()
+
+    const error = await t.throwsAsync(() =>
+      withDevServer(
+        {
+          cwd: builder.directory,
+          args: [
+            '--command',
+            'oops-i-did-it-again forgot-to-use-a-valid-command',
+            '--targetPort',
+            '3000',
+            '--framework',
+            '#custom',
+          ],
+        },
+        () => {},
+        true,
+      ),
+    )
+    t.snapshot(normalize(error.stdout))
+  })
+})
+
 test('should prompt when multiple frameworks are detected', async (t) => {
   await withSiteBuilder('site-with-multiple-frameworks', async (builder) => {
     await builder
