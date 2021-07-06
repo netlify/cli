@@ -371,7 +371,7 @@ if (process.env.IS_FORK !== 'true') {
               const [writeFile, mkdir] = [fs.writeFile, fs.mkdir].map(util.promisify)
 
               const generatedFunctionsDir = 'new_functions'
-              netlifyConfig.functionsDirectory = generatedFunctionsDir
+              netlifyConfig.functions.directory = generatedFunctionsDir
 
               await mkdir(generatedFunctionsDir)
               await writeFile(
