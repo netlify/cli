@@ -10,8 +10,8 @@
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
-        "@netlify/build": "^14.0.0",
-        "@netlify/config": "^11.0.0",
+        "@netlify/build": "^15.0.0",
+        "@netlify/config": "^12.0.0",
         "@netlify/framework-info": "^5.6.0",
         "@netlify/plugin-edge-handlers": "^1.11.20",
         "@netlify/plugins-list": "^2.18.1",
@@ -2302,13 +2302,13 @@
       }
     },
     "node_modules/@netlify/build": {
-      "version": "14.0.0",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-14.0.0.tgz",
-      "integrity": "sha512-XCb4MVXuJ89rRPBFMvXlMA0cwqj6s8RVDNBoIh7VVYtlniDbS44bMnFrEhR/Y1OZr5ufo7dYrJQpFweDXD6DDg==",
+      "version": "15.0.0",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-15.0.0.tgz",
+      "integrity": "sha512-lkTZtXXnrxm4do5XpiAa9gar/X2fsD28kD5cAa3MTxw7xChLaO3b0XQhld9xTY/ybEY4HqgkIo6oYBCzKxsIzQ==",
       "dependencies": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^1.0.7",
-        "@netlify/config": "^11.0.0",
+        "@netlify/config": "^12.0.0",
         "@netlify/functions-utils": "^1.3.13",
         "@netlify/git-utils": "^1.0.8",
         "@netlify/plugin-edge-handlers": "^1.11.20",
@@ -2337,6 +2337,7 @@
         "os-name": "^3.1.0",
         "p-event": "^4.1.0",
         "p-every": "^2.0.0",
+        "p-filter": "^2.1.0",
         "p-locate": "^4.1.0",
         "p-reduce": "^2.1.0",
         "path-exists": "^4.0.0",
@@ -3049,9 +3050,9 @@
       }
     },
     "node_modules/@netlify/config": {
-      "version": "11.0.0",
-      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-11.0.0.tgz",
-      "integrity": "sha512-PTNfq71wXiVBgZkRGh8VGyQ2BOG8gmzKFvB+9+XTLGZn0QbxlDL27hZaHEs06AZ6BsntOqp016AFInFmXbCIDw==",
+      "version": "12.0.0",
+      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-12.0.0.tgz",
+      "integrity": "sha512-QjAc93OUek9Ucu+1AWbsOrobuc2sakaLmUQBwznJe03Azj+ZuFev/Ta9vhr0ZTAfLUptbP/lqZB50GqjaBOxAw==",
       "dependencies": {
         "@ungap/from-entries": "^0.2.1",
         "array-flat-polyfill": "^1.0.1",
@@ -3071,7 +3072,6 @@
         "netlify": "^7.0.1",
         "netlify-redirect-parser": "^8.0.0",
         "omit.js": "^2.0.2",
-        "p-filter": "^2.1.0",
         "p-locate": "^4.1.0",
         "path-exists": "^4.0.0",
         "path-type": "^4.0.0",
@@ -22751,13 +22751,13 @@
       }
     },
     "@netlify/build": {
-      "version": "14.0.0",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-14.0.0.tgz",
-      "integrity": "sha512-XCb4MVXuJ89rRPBFMvXlMA0cwqj6s8RVDNBoIh7VVYtlniDbS44bMnFrEhR/Y1OZr5ufo7dYrJQpFweDXD6DDg==",
+      "version": "15.0.0",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-15.0.0.tgz",
+      "integrity": "sha512-lkTZtXXnrxm4do5XpiAa9gar/X2fsD28kD5cAa3MTxw7xChLaO3b0XQhld9xTY/ybEY4HqgkIo6oYBCzKxsIzQ==",
       "requires": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^1.0.7",
-        "@netlify/config": "^11.0.0",
+        "@netlify/config": "^12.0.0",
         "@netlify/functions-utils": "^1.3.13",
         "@netlify/git-utils": "^1.0.8",
         "@netlify/plugin-edge-handlers": "^1.11.20",
@@ -22786,6 +22786,7 @@
         "os-name": "^3.1.0",
         "p-event": "^4.1.0",
         "p-every": "^2.0.0",
+        "p-filter": "^2.1.0",
         "p-locate": "^4.1.0",
         "p-reduce": "^2.1.0",
         "path-exists": "^4.0.0",
@@ -23328,9 +23329,9 @@
       }
     },
     "@netlify/config": {
-      "version": "11.0.0",
-      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-11.0.0.tgz",
-      "integrity": "sha512-PTNfq71wXiVBgZkRGh8VGyQ2BOG8gmzKFvB+9+XTLGZn0QbxlDL27hZaHEs06AZ6BsntOqp016AFInFmXbCIDw==",
+      "version": "12.0.0",
+      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-12.0.0.tgz",
+      "integrity": "sha512-QjAc93OUek9Ucu+1AWbsOrobuc2sakaLmUQBwznJe03Azj+ZuFev/Ta9vhr0ZTAfLUptbP/lqZB50GqjaBOxAw==",
       "requires": {
         "@ungap/from-entries": "^0.2.1",
         "array-flat-polyfill": "^1.0.1",
@@ -23350,7 +23351,6 @@
         "netlify": "^7.0.1",
         "netlify-redirect-parser": "^8.0.0",
         "omit.js": "^2.0.2",
-        "p-filter": "^2.1.0",
         "p-locate": "^4.1.0",
         "path-exists": "^4.0.0",
         "path-type": "^4.0.0",
