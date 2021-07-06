@@ -12,7 +12,6 @@ const StaticServer = require('static-server')
 const stripAnsiCc = require('strip-ansi-control-characters')
 const waitPort = require('wait-port')
 const which = require('which')
-const wrapAnsi = require('wrap-ansi')
 
 const { startFunctionsServer } = require('../../lib/functions/server')
 const Command = require('../../utils/command')
@@ -175,11 +174,8 @@ const handleLiveTunnel = async ({ flags, site, api, settings, log }) => {
   }
 }
 
-const BANNER_LENGTH = 70
-
 const printBanner = ({ url, log }) => {
-  // boxen doesnt support text wrapping yet https://github.com/sindresorhus/boxen/issues/16
-  const banner = wrapAnsi(chalk.bold(`${NETLIFYDEVLOG} Server now ready on ${url}`), BANNER_LENGTH)
+  const banner = chalk.bold(`${NETLIFYDEVLOG} Server now ready on ${url}`)
 
   log(
     boxen(banner, {

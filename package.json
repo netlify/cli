@@ -185,7 +185,6 @@
     "wait-port": "^0.2.2",
     "which": "^2.0.2",
     "winston": "^3.2.1",
-    "wrap-ansi": "^7.0.0",
     "write-file-atomic": "^3.0.0"
   },
   "devDependencies": {
