@@ -135,8 +135,8 @@ const injectEnvVariables = async ({ env, log, site, warn }) => {
   const environment = new Map(Object.entries(env))
   const dotEnvFiles = await loadDotEnvFiles({ projectDir: site.root, warn })
 
-  for (const { file, env: fileEnv } of dotEnvFiles) {
-    for (const key in fileEnv) {
+  dotEnvFiles.forEach(({ file, env: fileEnv }) => {
+    Object.keys(fileEnv).forEach((key) => {
       const newSourceName = `${file} file`
       const sources = environment.has(key) ? [newSourceName, ...environment.get(key).sources] : [newSourceName]
 
@@ -144,15 +144,16 @@ const injectEnvVariables = async ({ env, log, site, warn }) => {
         sources,
         value: fileEnv[key],
       })
-    }
-  }
+    })
+  })
 
+  // eslint-disable-next-line fp/no-loops
   for (const [key, variable] of environment) {
     const existsInProcess = process.env[key] !== undefined
     const [usedSource, ...overriddenSources] = existsInProcess ? ['process', ...variable.sources] : variable.sources
     const usedSourceName = getEnvSourceName(usedSource)
 
-    for (const source of overriddenSources) {
+    overriddenSources.forEach((source) => {
       const sourceName = getEnvSourceName(source)
 
       log(
@@ -162,7 +163,7 @@ const injectEnvVariables = async ({ env, log, site, warn }) => {
           )} (defined in ${usedSourceName})`,
         ),
       )
-    }
+    })
 
     if (!existsInProcess) {
       // Omitting `general` env vars to reduce noise in the logs.

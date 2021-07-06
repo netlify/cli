@@ -2,6 +2,16 @@ const { Buffer } = require('buffer')
 
 const { NETLIFYDEVERR } = require('../../utils/logo')
 
+const addHeaders = (headers, response) => {
+  if (!headers) {
+    return
+  }
+
+  Object.entries(headers).forEach(([key, value]) => {
+    response.setHeader(key, value)
+  })
+}
+
 const handleSynchronousFunction = function (err, result, response) {
   if (err) {
     return handleErr(err, response)
@@ -14,13 +24,9 @@ const handleSynchronousFunction = function (err, result, response) {
   }
 
   response.statusCode = result.statusCode
-  for (const key in result.headers) {
-    response.setHeader(key, result.headers[key])
-  }
-  for (const key in result.multiValueHeaders) {
-    const items = result.multiValueHeaders[key]
-    response.setHeader(key, items)
-  }
+  addHeaders(result.headers, response)
+  addHeaders(result.multiValueHeaders, response)
+
   if (result.body) {
     response.write(result.isBase64Encoded ? Buffer.from(result.body, 'base64') : result.body)
   }

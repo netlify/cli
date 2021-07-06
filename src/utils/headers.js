@@ -86,10 +86,10 @@ const parseHeadersFile = function (filePath) {
 
   let path
   let rules = {}
-  for (const { line, index } of lines) {
+  lines.forEach(({ line, index }) => {
     if (line.startsWith(TOKEN_PATH)) {
       path = line
-      continue
+      return
     }
 
     if (!path) {
@@ -112,7 +112,7 @@ const parseHeadersFile = function (filePath) {
         },
       }
     }
-  }
+  })
 
   return rules
 }

@@ -33,22 +33,15 @@ const getYarnOrNPMCommand = function () {
 
 const hasRequiredDeps = function (requiredDepArray) {
   const { dependencies, devDependencies } = getPkgJSON()
-  for (const depName of requiredDepArray) {
-    const hasItInDeps = dependencies && dependencies[depName]
-    const hasItInDevDeps = devDependencies && devDependencies[depName]
-    if (!hasItInDeps && !hasItInDevDeps) {
-      return false
-    }
-  }
-  return true
+  return requiredDepArray.every((depName) => {
+    const hasItInDeps = dependencies?.[depName]
+    const hasItInDevDeps = devDependencies?.[depName]
+    return !(!hasItInDeps && !hasItInDevDeps)
+  })
 }
+
 const hasRequiredFiles = function (filenameArr) {
-  for (const filename of filenameArr) {
-    if (!existsSync(filename)) {
-      return false
-    }
-  }
-  return true
+  return filenameArr.every((filename) => existsSync(filename))
 }
 
 // preferredScriptsArr is in decreasing order of preference

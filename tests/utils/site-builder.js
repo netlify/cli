@@ -150,6 +150,8 @@ const createSiteBuilder = ({ siteName }) => {
       return builder
     },
     buildAsync: async () => {
+      // Replace by Promise.allSettled() [Supported for >=12.9.0]
+      // eslint-disable-next-line fp/no-loops
       for (const task of tasks) {
         // eslint-disable-next-line no-await-in-loop
         await task()

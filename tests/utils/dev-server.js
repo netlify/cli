@@ -71,21 +71,24 @@ const startServer = async ({ cwd, offline = true, env = {}, args = [] }) => {
 
 const startDevServer = async (options, expectFailure) => {
   const maxAttempts = 5
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+
+  const retry = async (retriesLeft) => {
     try {
-      // eslint-disable-next-line no-await-in-loop
       const { timeout, ...server } = await startServer(options)
       if (timeout) {
         throw new Error(`Timed out starting dev server.\nServer Output:\n${server.output}`)
       }
       return server
     } catch (error) {
-      if (attempt === maxAttempts || expectFailure) {
+      if (retriesLeft === 0 || expectFailure) {
         throw error
       }
       console.warn('Retrying startDevServer', error)
+      return retry(retriesLeft - 1)
     }
   }
+
+  return await retry(maxAttempts)
 }
 
 // 240 seconds

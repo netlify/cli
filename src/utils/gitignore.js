@@ -15,11 +15,11 @@ const parser = function (input, fn = (line) => line) {
   let section = { name: 'default', patterns: [] }
   const state = { patterns: [], sections: [section] }
 
-  for (const line of lines) {
+  lines.forEach((line) => {
     if (line.charAt(0) === '#') {
       section = { name: line.slice(1).trim(), patterns: [] }
       state.sections.push(section)
-      continue
+      return
     }
 
     if (line.trim() !== '') {
@@ -27,7 +27,7 @@ const parser = function (input, fn = (line) => line) {
       section.patterns.push(pattern)
       state.patterns.push(pattern)
     }
-  }
+  })
   return state
 }
 
@@ -46,12 +46,12 @@ const parse = function (input, fn) {
 
   state.concat = (stateInput) => {
     const newState = parser(stateInput, fn)
-
-    for (const s2 in newState.sections) {
+    Object.keys(newState.sections).forEach((s2) => {
       const sec2 = newState.sections[s2]
 
       let sectionExists = false
-      for (const s1 in state.sections) {
+
+      state.sections.forEach((s1) => {
         const sec1 = state.sections[s1]
 
         // Join sections under common name
@@ -59,13 +59,13 @@ const parse = function (input, fn) {
           sectionExists = true
           sec1.patterns = [...new Set(sec1.patterns.concat(sec2.patterns))]
         }
-      }
+      })
 
       // Add new section
       if (!sectionExists) {
         state.sections.push(sec2)
       }
-    }
+    })
 
     return state
   }
