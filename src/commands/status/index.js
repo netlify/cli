@@ -7,12 +7,12 @@ const Command = require('../../utils/command')
 
 class StatusCommand extends Command {
   async run() {
+    const { log, logJson, getToken } = Command
     const { globalConfig, api, site } = this.netlify
     const { flags } = this.parse(StatusCommand)
-    const { log, logJson } = Command
 
     const current = globalConfig.get('userId')
-    const [accessToken] = await this.getConfigToken()
+    const [accessToken] = await getToken
 
     if (!accessToken) {
       log(`Not logged in. Please log in to see site status.`)

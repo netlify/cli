@@ -85,10 +85,9 @@ class BaseCommand extends TrackedCommand {
     const cwd = argv.cwd || process.cwd()
     // Grab netlify API token
     const authViaFlag = getAuthArg(argv)
-    const { log, normalizeConfig, getConfigToken } = BaseCommand
+    const { log, normalizeConfig } = BaseCommand
 
-    this.getConfigToken = (token) => getConfigToken(token)
-    const [token] = await this.getConfigToken(authViaFlag)
+    const [token] = await getToken(authViaFlag)
 
     // Get site id & build state
     const state = new StateConfig(cwd)
@@ -261,17 +260,8 @@ class BaseCommand extends TrackedCommand {
     return chalkInstance(argv.json)
   }
 
-  /**
-   * Get user netlify API token
-   * @param  {string} - [tokenFromFlag] - value passed in by CLI flag
-   * @return {Promise<[string, string]>} - Promise containing tokenValue & location of resolved Netlify API token
-   */
-  static getConfigToken(tokenFromFlag) {
-    return getToken(tokenFromFlag)
-  }
-
   async authenticate(tokenFromFlag) {
-    const [token] = await BaseCommand.getConfigToken(tokenFromFlag)
+    const [token] = await getToken(tokenFromFlag)
     if (token) {
       return token
     }

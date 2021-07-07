@@ -5,12 +5,12 @@ const Command = require('../utils/command')
 
 class LoginCommand extends Command {
   async run() {
+    const { log, getToken } = Command
+    const [accessToken, location] = await getToken()
     const { flags } = this.parse(LoginCommand)
-    const { log } = Command
 
     this.setAnalyticsPayload({ new: flags.new })
 
-    const [accessToken, location] = await Command.getConfigToken()
     if (accessToken && !flags.new) {
       log(`Already logged in ${msg(location)}`)
       log()
