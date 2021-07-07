@@ -29,18 +29,18 @@ const getGlobalConfigOnce = async function () {
 }
 
 const getGlobalConfig = async function () {
-  const maxAttempts = 3
-  const retry = async (retriesLeft) => {
+  const retries = 3
+  // eslint-disable-next-line fp/no-loops
+  for (let retry = 1; retry <= retries; retry++) {
     try {
+      // eslint-disable-next-line no-await-in-loop
       return await getGlobalConfigOnce()
     } catch (error) {
-      if (retriesLeft === 0) {
+      if (retry === retries) {
         throw error
       }
-      return retry(retriesLeft - 1)
     }
   }
-  return await retry(maxAttempts)
 }
 
 // Memoise config result so that we only load it once
