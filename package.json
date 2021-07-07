@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "4.1.7",
+  "version": "4.1.8",
   "author": "Netlify Inc.",
   "contributors": [
     "Mathias Biilmann <matt@netlify.com> (https://twitter.com/biilmann)",
@@ -81,7 +81,7 @@
     "@netlify/plugin-edge-handlers": "^1.11.20",
     "@netlify/plugins-list": "^2.18.1",
     "@netlify/routing-local-proxy": "^0.30.2",
-    "@netlify/zip-it-and-ship-it": "4.9.0",
+    "@netlify/zip-it-and-ship-it": "4.11.0",
     "@oclif/command": "^1.6.1",
     "@oclif/config": "^1.15.1",
     "@oclif/errors": "^1.3.4",
