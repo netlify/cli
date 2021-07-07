@@ -6,7 +6,7 @@ const chalk = require('chalk')
 
 const { listSites } = require('../lib/api')
 const Command = require('../utils/command')
-const { ensureNetlifyIgnore } = require('../utils/gitignore')
+const ensureNetlifyIgnore = require('../utils/gitignore')
 const linkPrompt = require('../utils/link/link-by-prompt')
 const { track } = require('../utils/telemetry')
 
