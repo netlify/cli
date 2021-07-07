@@ -33,11 +33,8 @@ const getYarnOrNPMCommand = function () {
 
 const hasRequiredDeps = function (requiredDepArray) {
   const { dependencies, devDependencies } = getPkgJSON()
-  return requiredDepArray.every((depName) => {
-    const hasItInDeps = dependencies?.[depName]
-    const hasItInDevDeps = devDependencies?.[depName]
-    return !(!hasItInDeps && !hasItInDevDeps)
-  })
+  const allDependencies = { ...dependencies, ...devDependencies }
+  return requiredDepArray.every((depName) => allDependencies[depName])
 }
 
 const hasRequiredFiles = function (filenameArr) {
