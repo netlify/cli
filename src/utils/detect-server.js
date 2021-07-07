@@ -67,10 +67,11 @@ const serverSettings = async (devConfig, flags, projectDir, log) => {
         return null
       }
     })
-    detectors.forEach((detector) => {
-      const detectorResult = detector(projectDir)
-      if (detectorResult) settingsArr.push(detectorResult)
-    })
+    detectors &&
+      detectors.forEach((detector) => {
+        const detectorResult = detector(projectDir)
+        if (detectorResult) settingsArr.push(detectorResult)
+      })
     if (settingsArr.length === 1) {
       const [firstSettings] = settingsArr
       settings = firstSettings
