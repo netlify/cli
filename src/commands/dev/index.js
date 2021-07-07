@@ -6,13 +6,10 @@ const { promisify } = require('util')
 const { flags: flagsLib } = require('@oclif/command')
 const boxen = require('boxen')
 const chalk = require('chalk')
-const fetch = require('node-fetch')
-const waitFor = require('p-wait-for')
 const StaticServer = require('static-server')
 const stripAnsiCc = require('strip-ansi-control-characters')
 const waitPort = require('wait-port')
 const which = require('which')
-const wrapAnsi = require('wrap-ansi')
 
 const { startFunctionsServer } = require('../../lib/functions/server')
 const Command = require('../../utils/command')
@@ -23,11 +20,6 @@ const { NETLIFYDEV, NETLIFYDEVLOG, NETLIFYDEVWARN, NETLIFYDEVERR } = require('..
 const openBrowser = require('../../utils/open-browser')
 const { startProxy } = require('../../utils/proxy')
 const { startForwardProxy } = require('../../utils/traffic-mesh')
-
-// 1 second
-const SERVER_POLL_INTERVAL = 1e3
-// 20 seconds
-const SERVER_POLL_TIMEOUT = 2e4
 
 const startStaticServer = async ({ settings, log }) => {
   const server = new StaticServer({
@@ -93,34 +85,11 @@ const startFrameworkServer = async function ({ settings, log, exit }) {
       port: settings.frameworkPort,
       output: 'silent',
       timeout: FRAMEWORK_PORT_TIMEOUT,
+      ...(settings.disableLocalServerPolling ? {} : { protocol: 'http' }),
     })
 
     if (!open) {
       throw new Error(`Timed out waiting for port '${settings.frameworkPort}' to be open`)
-    }
-
-    if (!settings.disableLocalServerPolling) {
-      const waitForServerToRespond = async () => {
-        try {
-          await fetch(`http://localhost:${settings.frameworkPort}`, {
-            method: 'HEAD',
-            timeout: SERVER_POLL_INTERVAL,
-          })
-        } catch (_) {
-          return false
-        }
-
-        return true
-      }
-
-      try {
-        await waitFor(waitForServerToRespond, {
-          interval: SERVER_POLL_INTERVAL,
-          timeout: SERVER_POLL_TIMEOUT,
-        })
-      } catch (_) {
-        log(NETLIFYDEVWARN, 'Netlify Dev could not verify that your framework server is responding to requests.')
-      }
     }
   } catch (error) {
     log(NETLIFYDEVERR, `Netlify Dev could not connect to localhost:${settings.frameworkPort}.`)
@@ -175,11 +144,8 @@ const handleLiveTunnel = async ({ flags, site, api, settings, log }) => {
   }
 }
 
-const BANNER_LENGTH = 70
-
 const printBanner = ({ url, log }) => {
-  // boxen doesnt support text wrapping yet https://github.com/sindresorhus/boxen/issues/16
-  const banner = wrapAnsi(chalk.bold(`${NETLIFYDEVLOG} Server now ready on ${url}`), BANNER_LENGTH)
+  const banner = chalk.bold(`${NETLIFYDEVLOG} Server now ready on ${url}`)
 
   log(
     boxen(banner, {
