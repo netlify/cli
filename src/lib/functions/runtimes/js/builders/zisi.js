@@ -1,6 +1,7 @@
 const path = require('path')
 
 const { zipFunction } = require('@netlify/zip-it-and-ship-it')
+const decache = require('decache')
 const makeDir = require('make-dir')
 const sourceMapSupport = require('source-map-support')
 
@@ -50,10 +51,8 @@ const buildFunction = async ({ cache, config, func, functionsDirectory, projectR
 // served, except for any node_modules directories that live there.
 const clearFunctionsCache = (functionsPath) => {
   Object.keys(require.cache)
-    .filter((key) => key.startsWith(functionsPath) && !functionsPath.includes(`${path.sep}node_modules${path.sep}`))
-    .forEach((requirePath) => {
-      delete require.cache[requirePath]
-    })
+    .filter((key) => key.startsWith(functionsPath))
+    .forEach(decache)
 }
 
 const getTargetDirectory = async ({ errorExit }) => {
