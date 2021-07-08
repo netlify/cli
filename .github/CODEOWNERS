@@ -1,4 +1,3 @@
-*                 @netlify/netlify-dev
 docs/             @netlify/netlify-dev @netlify/docs
 site/             @netlify/netlify-dev @netlify/docs
 /scripts/docs.js  @netlify/netlify-dev @netlify/docs
