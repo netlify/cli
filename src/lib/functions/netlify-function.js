@@ -92,21 +92,17 @@ class NetlifyFunction {
 
     const timeout = this.isBackground ? this.timeoutBackground : this.timeoutSynchronous
 
-    let error = null
-    let result = null
-
     try {
-      result = await this.runtime.invokeFunction({
+      const result = await this.runtime.invokeFunction({
         context,
         event,
         func: this,
         timeout,
       })
-    } catch (functionError) {
-      error = functionError
+      return { result, error: null }
+    } catch (error) {
+      return { result: null, error }
     }
-
-    return { error, result }
   }
 }
 
