@@ -46,10 +46,10 @@ class NetlifyFunction {
       projectRoot: this.projectRoot,
     })
 
-    this.buildQueue = typeof buildFunction === 'function' ? buildFunction(this) : undefined
+    this.buildQueue = buildFunction(this)
 
     try {
-      const { srcFiles, ...buildData } = (await this.buildQueue) || {}
+      const { srcFiles, ...buildData } = await this.buildQueue
       const srcFilesSet = new Set(srcFiles)
       const srcFilesDiff = this.getSrcFilesDiff(srcFilesSet)
 
