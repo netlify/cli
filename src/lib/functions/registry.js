@@ -108,6 +108,7 @@ class FunctionsRegistry {
     }
 
     this.functions.set(name, func)
+    this.buildFunctionAndWatchFiles(func)
 
     this.logger.log(`${NETLIFYDEVLOG} ${chalk.green('Loaded')} function ${chalk.yellow(name)}.`)
   }
@@ -156,7 +157,6 @@ class FunctionsRegistry {
       })
 
       this.registerFunction(name, func)
-      this.buildFunctionAndWatchFiles(func)
     })
 
     await this.setupDirectoryWatcher(directory)
