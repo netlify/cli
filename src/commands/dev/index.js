@@ -68,7 +68,6 @@ const startFrameworkServer = async function ({ settings, log, exit }) {
   // eslint-disable-next-line promise/catch-or-return,promise/prefer-await-to-then
   frameworkProcess.then(async () => {
     const result = await frameworkProcess
-    const { exitCode = 0 } = result
     // eslint-disable-next-line promise/always-return
     if (result.failed && isNonExistingCommandError(result)) {
       log(
@@ -77,10 +76,11 @@ const startFrameworkServer = async function ({ settings, log, exit }) {
       )
     } else {
       const commandWithArgs = `${settings.command} ${settings.args.join(' ')}`
-      log(
-        exitCode > 0 ? NETLIFYDEVERR : NETLIFYDEVWARN,
-        `"${commandWithArgs}" exited with code ${exitCode}. Shutting down Netlify Dev server`,
-      )
+      const errorMessage = result.failed
+        ? `${NETLIFYDEVERR} ${result.shortMessage}`
+        : `${NETLIFYDEVWARN} "${commandWithArgs}" exited with code ${result.exitCode}`
+
+      log(`${errorMessage}. Shutting down Netlify Dev server`)
     }
     process.exit(1)
   })
