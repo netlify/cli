@@ -8,7 +8,7 @@ const detectZisiBuilder = require('./builders/zisi')
 
 const SECONDS_TO_MILLISECONDS = 1e3
 
-let cachedNetlifyLambdaDetector
+let netlifyLambdaDetectorCache
 
 const logger = winston.createLogger({
   levels: winston.config.npm.levels,
@@ -17,21 +17,25 @@ const logger = winston.createLogger({
 
 lambdaLocal.setLogger(logger)
 
-const getBuildFunction = async ({ cache, config, errorExit, func, functionsDirectory, projectRoot }) => {
-  // The netlify-lambda builder can't be enabled or disabled on a per-function
-  // basis and its detection mechanism is also quite expensive, so we detect
-  // it once and cache the result.
-  if (cachedNetlifyLambdaDetector === undefined) {
-    cachedNetlifyLambdaDetector = detectNetlifyLambdaBuilder({ cache })
+// The netlify-lambda builder can't be enabled or disabled on a per-function
+// basis and its detection mechanism is also quite expensive, so we detect
+// it once and cache the result.
+const detectNetlifyLambdaWithCache = () => {
+  if (netlifyLambdaDetectorCache === undefined) {
+    netlifyLambdaDetectorCache = detectNetlifyLambdaBuilder()
   }
 
-  const netlifyLambdaBuilder = await cachedNetlifyLambdaDetector
+  return netlifyLambdaDetectorCache
+}
+
+const getBuildFunction = async ({ config, errorExit, func, functionsDirectory, projectRoot }) => {
+  const netlifyLambdaBuilder = await detectNetlifyLambdaWithCache()
 
   if (netlifyLambdaBuilder) {
     return netlifyLambdaBuilder.build
   }
 
-  const zisiBuilder = await detectZisiBuilder({ cache, config, errorExit, func, functionsDirectory, projectRoot })
+  const zisiBuilder = await detectZisiBuilder({ config, errorExit, func, functionsDirectory, projectRoot })
 
   if (zisiBuilder) {
     return zisiBuilder.build
@@ -61,4 +65,15 @@ const invokeFunction = async ({ context, event, func, timeout }) => {
   return { body, statusCode }
 }
 
-module.exports = { getBuildFunction, invokeFunction, name: 'js' }
+const onDirectoryScan = async () => {
+  const netlifyLambdaBuilder = await detectNetlifyLambdaWithCache()
+
+  // Before we start a directory scan, we check whether netlify-lambda is being
+  // used. If it is, we run it, so that the functions directory is populated
+  // with the compiled files before the scan begins.
+  if (netlifyLambdaBuilder) {
+    await netlifyLambdaBuilder.build()
+  }
+}
+
+module.exports = { getBuildFunction, invokeFunction, name: 'js', onDirectoryScan }

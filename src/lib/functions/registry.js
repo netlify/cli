@@ -116,6 +116,19 @@ class FunctionsRegistry {
   async scan(directory) {
     await mkdirRecursiveAsync(directory)
 
+    // We give runtimes the opportunity to react to a directory scan and run
+    // additional logic before the directory is read. So if they implement a
+    // `onDirectoryScan` hook, we run it.
+    await Promise.all(
+      Object.values(runtimes).map((runtime) => {
+        if (typeof runtime.onDirectoryScan !== 'function') {
+          return null
+        }
+
+        return runtime.onDirectoryScan({ directory })
+      }),
+    )
+
     const functions = await this.listFunctions(directory)
 
     // Before registering any functions, we look for any functions that were on

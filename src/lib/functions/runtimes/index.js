@@ -19,9 +19,16 @@ const js = require('./js')
  */
 
 /**
+ * @callback OnDirectoryScanFunction
+ * @param  {{ directory: string }} params
+ * @returns {Promise<undefined>}
+ */
+
+/**
  * @typedef {object} Runtime
  * @property {GetBuildFunction} getBuildFunction
  * @property {InvokeFunction} invokeFunction
+ * @property {OnDirectoryScanFunction} [onDirectoryScan]
  * @property {string} name
  */
 
