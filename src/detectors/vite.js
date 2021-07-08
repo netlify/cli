@@ -21,5 +21,6 @@ module.exports = function detector() {
     frameworkPort: FRAMEWORK_PORT,
     possibleArgsArrs,
     dist: 'dist',
+    disableLocalServerPolling: true,
   }
 }
