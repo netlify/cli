@@ -280,8 +280,6 @@ const chooseDefaultArgs = function (possibleArgsArrs) {
 /** utilities for the inquirer section above */
 const filterSettings = function (scriptInquirerOptions, input) {
   const filterOptions = scriptInquirerOptions.map((scriptInquirerOption) => scriptInquirerOption.name)
-  // TODO: remove once https://github.com/sindresorhus/eslint-plugin-unicorn/issues/1394 is fixed
-  // eslint-disable-next-line unicorn/no-array-method-this-argument
   const filteredSettings = fuzzy.filter(input, filterOptions)
   const filteredSettingNames = new Set(
     filteredSettings.map((filteredSetting) => (input ? filteredSetting.string : filteredSetting)),
