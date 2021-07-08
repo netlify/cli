@@ -10,8 +10,8 @@
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
-        "@netlify/build": "^15.7.0",
-        "@netlify/config": "^12.3.0",
+        "@netlify/build": "^15.9.0",
+        "@netlify/config": "^12.4.0",
         "@netlify/framework-info": "^5.6.0",
         "@netlify/plugin-edge-handlers": "^1.11.20",
         "@netlify/plugins-list": "^2.19.1",
@@ -2302,9 +2302,9 @@
       }
     },
     "node_modules/@netlify/build": {
-      "version": "15.7.0",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-15.7.0.tgz",
-      "integrity": "sha512-A8RAS9mYSDPOGEpavj/Egk1OwGKRp6CfLkIYb7QHV0z8/mc7ShKcg0yHt5/MwHKCG7IZ7ztF3zTt/ofgNDdBbA==",
+      "version": "15.9.0",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-15.9.0.tgz",
+      "integrity": "sha512-K2FSUsOo5F+Q4VZ7bxGIEL+czGw979ELukH5pPf011312uGq+14B/PJXvHXLXccdrU83lH/OSBgCwkpLXvEmhQ==",
       "dependencies": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^1.0.7",
@@ -2870,13 +2870,14 @@
       }
     },
     "node_modules/@netlify/config": {
-      "version": "12.3.0",
-      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-12.3.0.tgz",
-      "integrity": "sha512-Z8t3TQUVFIEy1oACfyPRYj5QixyomgwvRNkGUk8BMukenEXWQNwddJAvPTycKwkTNFz3B39EeX6i86JQHYwnLg==",
+      "version": "12.4.0",
+      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-12.4.0.tgz",
+      "integrity": "sha512-yjOh0tc3qRZ3X/PrJKjKHrUbkx58UfLpB8kc95A14+ub97fN6OXDz/pOa88SoECl1bP5OeJSEIlnzSDONB/IGQ==",
       "dependencies": {
         "@ungap/from-entries": "^0.2.1",
         "array-flat-polyfill": "^1.0.1",
         "chalk": "^3.0.0",
+        "cp-file": "^7.0.0",
         "deepmerge": "^4.2.2",
         "dot-prop": "^5.3.0",
         "execa": "^3.4.0",
@@ -2959,6 +2960,20 @@
       "version": "1.1.4",
       "resolved": "https://registry.npmjs.org/color-name/-/color-name-1.1.4.tgz",
       "integrity": "sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA=="
+    },
+    "node_modules/@netlify/config/node_modules/cp-file": {
+      "version": "7.0.0",
+      "resolved": "https://registry.npmjs.org/cp-file/-/cp-file-7.0.0.tgz",
+      "integrity": "sha512-0Cbj7gyvFVApzpK/uhCtQ/9kE9UnYpxMzaq5nQQC/Dh4iaj5fxp7iEFIullrYwzj8nf0qnsI1Qsx34hAeAebvw==",
+      "dependencies": {
+        "graceful-fs": "^4.1.2",
+        "make-dir": "^3.0.0",
+        "nested-error-stacks": "^2.0.0",
+        "p-event": "^4.1.0"
+      },
+      "engines": {
+        "node": ">=8"
+      }
     },
     "node_modules/@netlify/config/node_modules/dot-prop": {
       "version": "5.3.0",
@@ -22577,9 +22592,9 @@
       }
     },
     "@netlify/build": {
-      "version": "15.7.0",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-15.7.0.tgz",
-      "integrity": "sha512-A8RAS9mYSDPOGEpavj/Egk1OwGKRp6CfLkIYb7QHV0z8/mc7ShKcg0yHt5/MwHKCG7IZ7ztF3zTt/ofgNDdBbA==",
+      "version": "15.9.0",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-15.9.0.tgz",
+      "integrity": "sha512-K2FSUsOo5F+Q4VZ7bxGIEL+czGw979ELukH5pPf011312uGq+14B/PJXvHXLXccdrU83lH/OSBgCwkpLXvEmhQ==",
       "requires": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^1.0.7",
@@ -23027,13 +23042,14 @@
       }
     },
     "@netlify/config": {
-      "version": "12.3.0",
-      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-12.3.0.tgz",
-      "integrity": "sha512-Z8t3TQUVFIEy1oACfyPRYj5QixyomgwvRNkGUk8BMukenEXWQNwddJAvPTycKwkTNFz3B39EeX6i86JQHYwnLg==",
+      "version": "12.4.0",
+      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-12.4.0.tgz",
+      "integrity": "sha512-yjOh0tc3qRZ3X/PrJKjKHrUbkx58UfLpB8kc95A14+ub97fN6OXDz/pOa88SoECl1bP5OeJSEIlnzSDONB/IGQ==",
       "requires": {
         "@ungap/from-entries": "^0.2.1",
         "array-flat-polyfill": "^1.0.1",
         "chalk": "^3.0.0",
+        "cp-file": "^7.0.0",
         "deepmerge": "^4.2.2",
         "dot-prop": "^5.3.0",
         "execa": "^3.4.0",
@@ -23098,6 +23114,17 @@
           "version": "1.1.4",
           "resolved": "https://registry.npmjs.org/color-name/-/color-name-1.1.4.tgz",
           "integrity": "sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA=="
+        },
+        "cp-file": {
+          "version": "7.0.0",
+          "resolved": "https://registry.npmjs.org/cp-file/-/cp-file-7.0.0.tgz",
+          "integrity": "sha512-0Cbj7gyvFVApzpK/uhCtQ/9kE9UnYpxMzaq5nQQC/Dh4iaj5fxp7iEFIullrYwzj8nf0qnsI1Qsx34hAeAebvw==",
+          "requires": {
+            "graceful-fs": "^4.1.2",
+            "make-dir": "^3.0.0",
+            "nested-error-stacks": "^2.0.0",
+            "p-event": "^4.1.0"
+          }
         },
         "dot-prop": {
           "version": "5.3.0",
