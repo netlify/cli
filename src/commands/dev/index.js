@@ -58,13 +58,13 @@ const startFrameworkServer = async function ({ settings, log, exit }) {
   log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.framework || 'custom config'}`)
 
   // we use reject=false to avoid rejecting synchronously when the command doesn't exist
-  // we can't try->await->catch since we don't want to block on the framework server which
-  // is a long running process
   const frameworkProcess = execa(settings.command, settings.args, { preferLocal: true, reject: false })
   frameworkProcess.stdout.pipe(stripAnsiCc.stream()).pipe(process.stdout)
   frameworkProcess.stderr.pipe(stripAnsiCc.stream()).pipe(process.stderr)
   process.stdin.pipe(frameworkProcess.stdin)
 
+  // we can't try->await->catch since we don't want to block on the framework server which
+  // is a long running process
   // eslint-disable-next-line promise/catch-or-return,promise/prefer-await-to-then
   frameworkProcess.then(async () => {
     const result = await frameworkProcess
