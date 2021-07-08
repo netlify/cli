@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "4.1.13",
+  "version": "4.1.15",
   "author": "Netlify Inc.",
   "contributors": [
     "Mathias Biilmann <matt@netlify.com> (https://twitter.com/biilmann)",
@@ -75,8 +75,8 @@
     "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,scripts,site,tests,.github}/**/*.{js,md,yml,json,html}\" \"*.{js,yml,json,html}\" \".*.{js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\""
   },
   "dependencies": {
-    "@netlify/build": "^15.2.2",
-    "@netlify/config": "^12.1.1",
+    "@netlify/build": "^15.6.0",
+    "@netlify/config": "^12.2.1",
     "@netlify/framework-info": "^5.6.0",
     "@netlify/plugin-edge-handlers": "^1.11.20",
     "@netlify/plugins-list": "^2.19.0",
@@ -149,7 +149,7 @@
     "minimist": "^1.2.5",
     "multiparty": "^4.2.1",
     "netlify": "^7.0.1",
-    "netlify-redirect-parser": "^8.0.0",
+    "netlify-redirect-parser": "^8.1.0",
     "netlify-redirector": "^0.2.1",
     "node-fetch": "^2.6.0",
     "node-version-alias": "^1.0.1",
