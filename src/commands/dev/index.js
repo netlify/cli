@@ -39,6 +39,7 @@ const NOT_FOUND_EXIT_CODE = 127
 const isNonExistingCommandError = (error) => {
   // `ENOENT` is only returned for non Windows systems
   // See https://github.com/sindresorhus/execa/pull/447
+  // exitCode === 127 is returned from npm/yarn
   if (error.code === 'ENOENT' || error.exitCode === NOT_FOUND_EXIT_CODE) {
     return true
   }
