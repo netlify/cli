@@ -35,12 +35,20 @@ const startStaticServer = async ({ settings, log }) => {
 }
 
 const NOT_FOUND_EXIT_CODE = 127
+const isPackageManagerNotFound = (error) => {
+  const { exitCode } = error
+  return (
+    // exitCode === 127 is returned from npm/yarn
+    exitCode === NOT_FOUND_EXIT_CODE ||
+    // older npm versions return exitCode === 1 and print 'errno ENOENT' to stderr
+    (exitCode === 1 && typeof error.stderr === 'string' && error.stderr.includes('errno ENOENT'))
+  )
+}
 
 const isNonExistingCommandError = (error) => {
   // `ENOENT` is only returned for non Windows systems
   // See https://github.com/sindresorhus/execa/pull/447
-  // exitCode === 127 is returned from npm/yarn
-  if (error.code === 'ENOENT' || error.exitCode === NOT_FOUND_EXIT_CODE) {
+  if (error.code === 'ENOENT' || isPackageManagerNotFound(error)) {
     return true
   }
 
