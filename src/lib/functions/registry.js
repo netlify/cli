@@ -60,7 +60,7 @@ class FunctionsRegistry {
         }`,
       )
     } else if (verbose) {
-      this.logger.log(`${NETLIFYDEVLOG} ${chalk.green('Reloaded')} function ${chalk.yellow(func.name)}.`)
+      this.logger.log(`${NETLIFYDEVLOG} ${chalk.green('Reloaded')} function ${chalk.yellow(func.name)}`)
     }
 
     // If the build hasn't resulted in any files being added or removed, there
