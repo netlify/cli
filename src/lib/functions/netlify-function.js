@@ -1,3 +1,5 @@
+const { difference } = require('../../utils/difference')
+
 const BACKGROUND_SUFFIX = '-background'
 
 class NetlifyFunction {
@@ -63,21 +65,9 @@ class NetlifyFunction {
 
   // Compares a new set of source files against a previous one, returning an
   // object with two Sets, one with added and the other with deleted files.
-  getSrcFilesDiff(srcFiles) {
-    const added = new Set()
-    const deleted = new Set()
-
-    srcFiles.forEach((path) => {
-      if (!this.srcFiles.has(path)) {
-        added.add(path)
-      }
-    })
-
-    this.srcFiles.forEach((path) => {
-      if (!srcFiles.has(path)) {
-        deleted.add(path)
-      }
-    })
+  getSrcFilesDiff(newSrcFiles) {
+    const added = difference(newSrcFiles, this.srcFiles)
+    const deleted = difference(this.srcFiles, newSrcFiles)
 
     return {
       added,
