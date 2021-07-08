@@ -34,10 +34,12 @@ const startStaticServer = async ({ settings, log }) => {
   log(`\n${NETLIFYDEVLOG} Server listening to`, settings.frameworkPort)
 }
 
+const NOT_FOUND_EXIT_CODE = 127
+
 const isNonExistingCommandError = (error) => {
   // `ENOENT` is only returned for non Windows systems
   // See https://github.com/sindresorhus/execa/pull/447
-  if (error.code === 'ENOENT') {
+  if (error.code === 'ENOENT' || error.exitCode === NOT_FOUND_EXIT_CODE) {
     return true
   }
 
