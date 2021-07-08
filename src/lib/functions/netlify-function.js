@@ -38,7 +38,6 @@ class NetlifyFunction {
   //    the function was built.
   async build({ cache }) {
     const buildFunction = await this.runtime.getBuildFunction({
-      cache,
       config: this.config,
       errorExit: this.errorExit,
       func: this,
@@ -46,7 +45,7 @@ class NetlifyFunction {
       projectRoot: this.projectRoot,
     })
 
-    this.buildQueue = buildFunction(this)
+    this.buildQueue = buildFunction({ cache })
 
     try {
       const { srcFiles, ...buildData } = await this.buildQueue

@@ -68,7 +68,7 @@ const getTargetDirectory = async ({ errorExit }) => {
   return targetDirectory
 }
 
-module.exports = async ({ cache, config, errorExit, func, functionsDirectory, projectRoot }) => {
+module.exports = async ({ config, errorExit, func, functionsDirectory, projectRoot }) => {
   const isTSFunction = path.extname(func.mainFile) === '.ts'
   const functionsConfig = addFunctionsConfigDefaults(
     normalizeFunctionsConfig({ functionsConfig: config.functions, projectRoot }),
@@ -88,7 +88,7 @@ module.exports = async ({ cache, config, errorExit, func, functionsDirectory, pr
   const targetDirectory = await getTargetDirectory({ errorExit })
 
   return {
-    build: () =>
+    build: ({ cache = {} }) =>
       buildFunction({ cache, config: functionsConfig, func, functionsDirectory, projectRoot, targetDirectory }),
     builderName: 'zip-it-and-ship-it',
     target: targetDirectory,
