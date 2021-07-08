@@ -92,6 +92,8 @@ const getNameFromArgs = async function (args, flags, defaultName) {
 
 const filterRegistry = function (registry, input) {
   const temp = registry.map((value) => value.name + value.description)
+  // TODO: remove once https://github.com/sindresorhus/eslint-plugin-unicorn/issues/1394 is fixed
+  // eslint-disable-next-line unicorn/no-array-method-this-argument
   const filteredTemplates = fuzzy.filter(input, temp)
   const filteredTemplateNames = new Set(
     filteredTemplates.map((filteredTemplate) => (input ? filteredTemplate.string : filteredTemplate)),
