@@ -48,7 +48,7 @@ const buildFunction = async ({ cache, config, func, functionsDirectory, projectR
 }
 
 // Clears the cache for any files inside the directory from which functions are
-// served, except for any node_modules directories that live there.
+// served.
 const clearFunctionsCache = (functionsPath) => {
   Object.keys(require.cache)
     .filter((key) => key.startsWith(functionsPath))
