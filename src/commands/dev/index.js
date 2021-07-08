@@ -71,7 +71,7 @@ const startFrameworkServer = async function ({ settings, log, exit }) {
     const result = await frameworkProcess
     const { exitCode = 0 } = result
     // eslint-disable-next-line promise/always-return
-    if (result instanceof Error && isNonExistingCommandError(result)) {
+    if (result.failed && isNonExistingCommandError(result)) {
       log(
         NETLIFYDEVERR,
         `Failed launching framework server. Please verify ${chalk.magenta(`'${settings.command}' exists`)}`,
