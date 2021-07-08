@@ -57,11 +57,10 @@ const startFrameworkServer = async function ({ settings, log, exit }) {
 
   log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.framework || 'custom config'}`)
 
-  const commandWithArgs = `${settings.command} ${settings.args.join(' ')}`
   // we use reject=false to avoid rejecting synchronously when the command doesn't exist
   // we can't try->await->catch since we don't want to block on the framework server which
   // is a long running process
-  const frameworkProcess = execa.command(commandWithArgs, { preferLocal: true, reject: false })
+  const frameworkProcess = execa(settings.command, settings.args, { preferLocal: true, reject: false })
   frameworkProcess.stdout.pipe(stripAnsiCc.stream()).pipe(process.stdout)
   frameworkProcess.stderr.pipe(stripAnsiCc.stream()).pipe(process.stderr)
   process.stdin.pipe(frameworkProcess.stdin)
@@ -77,6 +76,7 @@ const startFrameworkServer = async function ({ settings, log, exit }) {
         `Failed launching framework server. Please verify ${chalk.magenta(`'${settings.command}' exists`)}`,
       )
     } else {
+      const commandWithArgs = `${settings.command} ${settings.args.join(' ')}`
       log(
         exitCode > 0 ? NETLIFYDEVERR : NETLIFYDEVWARN,
         `"${commandWithArgs}" exited with code ${exitCode}. Shutting down Netlify Dev server`,
