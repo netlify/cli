@@ -34,22 +34,16 @@ const startStaticServer = async ({ settings, log }) => {
   log(`\n${NETLIFYDEVLOG} Server listening to`, settings.frameworkPort)
 }
 
-const NOT_FOUND_EXIT_CODE = 127
-const isPackageManagerNotFound = (error) => {
-  const { exitCode } = error
-  return (
-    // exitCode === 127 is returned from npm/yarn
-    exitCode === NOT_FOUND_EXIT_CODE ||
-    // older npm versions return exitCode === 1 and print 'errno ENOENT' to stderr
-    (exitCode === 1 && typeof error.stderr === 'string' && error.stderr.includes('errno ENOENT'))
-  )
-}
-
-const isNonExistingCommandError = (error) => {
+const isNonExistingCommandError = ({ command, error }) => {
   // `ENOENT` is only returned for non Windows systems
   // See https://github.com/sindresorhus/execa/pull/447
-  if (error.code === 'ENOENT' || isPackageManagerNotFound(error)) {
+  if (error.code === 'ENOENT') {
     return true
+  }
+
+  // if the command is a package manager we let it report the error
+  if (['yarn', 'npm'].includes(command)) {
+    return false
   }
 
   // this only works on English versions of Windows
@@ -77,10 +71,10 @@ const startFrameworkServer = async function ({ settings, log, exit }) {
   frameworkProcess.then(async () => {
     const result = await frameworkProcess
     // eslint-disable-next-line promise/always-return
-    if (result.failed && isNonExistingCommandError(result)) {
+    if (result.failed && isNonExistingCommandError({ command: settings.command, error: result })) {
       log(
         NETLIFYDEVERR,
-        `Failed launching framework server. Please verify ${chalk.magenta(`'${settings.command}' exists`)}`,
+        `Failed launching framework server. Please verify ${chalk.magenta(`'${settings.command}'`)} exists`,
       )
     } else {
       const commandWithArgs = `${settings.command} ${settings.args.join(' ')}`
