@@ -1,5 +1,3 @@
-const { resolve } = require('path')
-
 const test = require('ava')
 const sinon = require('sinon')
 
@@ -66,7 +64,7 @@ test.serial('should not match if netlify-lambda contains multiple function direc
 test(`should match if netlify-lambda is listed in dependencies and is mentioned in scripts`, async (t) => {
   const packageJson = {
     scripts: {
-      noop: 'netlify-lambda build some/directory',
+      build: 'netlify-lambda build some/directory',
     },
     dependencies: {
       'netlify-lambda': 'ignored',
@@ -77,17 +75,13 @@ test(`should match if netlify-lambda is listed in dependencies and is mentioned 
   const match = await detectNetlifyLambda({ packageJson })
 
   t.is(match.builderName, 'netlify-lambda')
-  t.is(match.npmScript, 'noop')
-
-  const { srcFiles } = await match.build()
-
-  t.is(srcFiles[0], resolve('some/directory'))
+  t.is(match.npmScript, 'build')
 })
 
 test(`should match if netlify-lambda is listed in devDependencies and is mentioned in scripts`, async (t) => {
   const packageJson = {
     scripts: {
-      noop: 'netlify-lambda build some/directory',
+      build: 'netlify-lambda build some/directory',
     },
     dependencies: {},
     devDependencies: {
@@ -98,11 +92,7 @@ test(`should match if netlify-lambda is listed in devDependencies and is mention
   const match = await detectNetlifyLambda({ packageJson })
 
   t.is(match.builderName, 'netlify-lambda')
-  t.is(match.npmScript, 'noop')
-
-  const { srcFiles } = await match.build()
-
-  t.is(srcFiles[0], resolve('some/directory'))
+  t.is(match.npmScript, 'build')
 })
 
 test(`should not match if netlify-lambda misses function directory`, async (t) => {
@@ -123,7 +113,7 @@ test(`should not match if netlify-lambda misses function directory`, async (t) =
 test(`should match if netlify-lambda is configured with an additional option`, async (t) => {
   const packageJson = {
     scripts: {
-      noop: 'netlify-lambda build --config config/webpack.config.js some/directory',
+      build: 'netlify-lambda build --config config/webpack.config.js some/directory',
     },
     dependencies: {},
     devDependencies: {
@@ -133,17 +123,13 @@ test(`should match if netlify-lambda is configured with an additional option`, a
 
   const match = await detectNetlifyLambda({ packageJson })
   t.is(match.builderName, 'netlify-lambda')
-  t.is(match.npmScript, 'noop')
-
-  const { srcFiles } = await match.build()
-
-  t.is(srcFiles[0], resolve('some/directory'))
+  t.is(match.npmScript, 'build')
 })
 
 test(`should match if netlify-lambda is configured with multiple additional options`, async (t) => {
   const packageJson = {
     scripts: {
-      noop: 'netlify-lambda build -s --another-option --config config/webpack.config.js some/directory',
+      build: 'netlify-lambda build -s --another-option --config config/webpack.config.js some/directory',
     },
     dependencies: {},
     devDependencies: {
@@ -153,17 +139,13 @@ test(`should match if netlify-lambda is configured with multiple additional opti
 
   const match = await detectNetlifyLambda({ packageJson })
   t.is(match.builderName, 'netlify-lambda')
-  t.is(match.npmScript, 'noop')
-
-  const { srcFiles } = await match.build()
-
-  t.is(srcFiles[0], resolve('some/directory'))
+  t.is(match.npmScript, 'build')
 })
 
 test('should match if netlify-lambda has options that are passed after the functions directory', async (t) => {
   const packageJson = {
     scripts: {
-      noop: 'netlify-lambda build some/directory --config config/webpack.config.js',
+      build: 'netlify-lambda build some/directory --config config/webpack.config.js',
     },
     dependencies: {},
     devDependencies: {
@@ -173,18 +155,14 @@ test('should match if netlify-lambda has options that are passed after the funct
 
   const match = await detectNetlifyLambda({ packageJson })
   t.is(match.builderName, 'netlify-lambda')
-  t.is(match.npmScript, 'noop')
-
-  const { srcFiles } = await match.build()
-
-  t.is(srcFiles[0], resolve('some/directory'))
+  t.is(match.npmScript, 'build')
 })
 
 test('should match even if multiple netlify-lambda commands are specified', async (t) => {
   const packageJson = {
     scripts: {
       'some-serve-step': 'netlify-lambda serve serve/directory',
-      noop: 'netlify-lambda build build/directory',
+      build: 'netlify-lambda build build/directory',
     },
     dependencies: {},
     devDependencies: {
@@ -194,9 +172,5 @@ test('should match even if multiple netlify-lambda commands are specified', asyn
 
   const match = await detectNetlifyLambda({ packageJson })
   t.is(match.builderName, 'netlify-lambda')
-  t.is(match.npmScript, 'noop')
-
-  const { srcFiles } = await match.build()
-
-  t.is(srcFiles[0], resolve('build/directory'))
+  t.is(match.npmScript, 'build')
 })
