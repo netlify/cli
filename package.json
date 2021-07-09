@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "4.1.14",
+  "version": "4.1.18",
   "author": "Netlify Inc.",
   "contributors": [
     "Mathias Biilmann <matt@netlify.com> (https://twitter.com/biilmann)",
@@ -75,11 +75,11 @@
     "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,scripts,site,tests,.github}/**/*.{js,md,yml,json,html}\" \"*.{js,yml,json,html}\" \".*.{js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\""
   },
   "dependencies": {
-    "@netlify/build": "^15.5.0",
-    "@netlify/config": "^12.2.1",
+    "@netlify/build": "^15.11.0",
+    "@netlify/config": "^12.6.0",
     "@netlify/framework-info": "^5.6.0",
     "@netlify/plugin-edge-handlers": "^1.11.20",
-    "@netlify/plugins-list": "^2.19.0",
+    "@netlify/plugins-list": "^2.19.1",
     "@netlify/routing-local-proxy": "^0.30.2",
     "@netlify/zip-it-and-ship-it": "4.12.0",
     "@oclif/command": "^1.6.1",
