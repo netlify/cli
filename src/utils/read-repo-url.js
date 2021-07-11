@@ -3,9 +3,7 @@ const url = require('url')
 const fetch = require('node-fetch')
 
 // supported repo host types
-const GITHUB = Symbol('GITHUB')
-// const BITBUCKET = Symbol('BITBUCKET')
-// const GITLAB = Symbol('GITLAB')
+const GITHUB = 'GitHub'
 
 /**
  * Takes a url like https://github.com/netlify-labs/all-the-functions/tree/master/functions/9-using-middleware
@@ -53,10 +51,11 @@ const parseRepoURL = function (repoHost, URL) {
     const [ownerAndRepo, contentsPath] = URL.path.slice(1).split('/tree/master/')
     return [ownerAndRepo, contentsPath]
   }
-  throw new Error('unsupported host ', repoHost)
+  throw new Error(`Unsupported host ${repoHost}`)
 }
 
 module.exports = {
+  parseRepoURL,
   readRepoURL,
   validateRepoURL,
 }
