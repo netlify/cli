@@ -54,7 +54,7 @@ const invokeFunction = async ({ context, event, func, timeout }) => {
   // If a function builder has defined a `buildPath` property, we use it.
   // Otherwise, we'll invoke the function's main file.
   const lambdaPath = (func.buildData && func.buildData.buildPath) || func.mainFile
-  const { body, statusCode } = await lambdaLocal.execute({
+  const result = await lambdaLocal.execute({
     clientContext: context,
     event,
     lambdaPath,
@@ -62,7 +62,7 @@ const invokeFunction = async ({ context, event, func, timeout }) => {
     verboseLevel: 3,
   })
 
-  return { body, statusCode }
+  return result
 }
 
 const onDirectoryScan = async () => {
