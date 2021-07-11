@@ -1,7 +1,6 @@
 const url = require('url')
 
 const fetch = require('node-fetch')
-const { safeJoin } = require('safe-join')
 
 // supported repo host types
 const GITHUB = Symbol('GITHUB')
@@ -27,7 +26,7 @@ const getRepoURLContents = async function (repoHost, ownerAndRepo, contentsPath)
   // naive joining strategy for now
   if (repoHost === GITHUB) {
     // https://developer.github.com/v3/repos/contents/#get-contents
-    const APIURL = safeJoin('https://api.github.com/repos', ownerAndRepo, 'contents', contentsPath)
+    const APIURL = `https://api.github.com/repos/${ownerAndRepo}/contents/${contentsPath}`
     try {
       const res = await fetch(APIURL)
       return await res.json()
@@ -51,7 +50,7 @@ const parseRepoURL = function (repoHost, URL) {
   if (repoHost === GITHUB) {
     // https://developer.github.com/v3/repos/contents/#get-contents
     // what if it's not master? note that our contents retrieval may assume it is master
-    const [ownerAndRepo, contentsPath] = URL.path.split('/tree/master')
+    const [ownerAndRepo, contentsPath] = URL.path.slice(1).split('/tree/master/')
     return [ownerAndRepo, contentsPath]
   }
   throw new Error('unsupported host ', repoHost)
