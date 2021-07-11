@@ -72,15 +72,15 @@ const startFrameworkServer = async function ({ settings, log, exit }) {
     const result = await frameworkProcess
     // eslint-disable-next-line promise/always-return
     if (result.failed && isNonExistingCommandError({ command: settings.command, error: result })) {
+      const [commandWithoutArgs] = settings.command.split(' ')
       log(
         NETLIFYDEVERR,
-        `Failed launching framework server. Please verify ${chalk.magenta(`'${settings.command}'`)} exists`,
+        `Failed launching framework server. Please verify ${chalk.magenta(`'${commandWithoutArgs}'`)} exists`,
       )
     } else {
-      const commandWithArgs = `${settings.command} ${settings.args.join(' ')}`
       const errorMessage = result.failed
         ? `${NETLIFYDEVERR} ${result.shortMessage}`
-        : `${NETLIFYDEVWARN} "${commandWithArgs}" exited with code ${result.exitCode}`
+        : `${NETLIFYDEVWARN} "${settings.command}" exited with code ${result.exitCode}`
 
       log(`${errorMessage}. Shutting down Netlify Dev server`)
     }
