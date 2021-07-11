@@ -1,7 +1,5 @@
 const DEBOUNCE_INTERVAL = 300
 
-const cache = {}
-
 // `memoizedBuild` will avoid running the same build command multiple times
 // until the previous operation has been completed. If another call is made
 // within that period, it will be:
@@ -10,7 +8,7 @@ const cache = {}
 // This allows us to discard any duplicate filesystem events, while ensuring
 // that actual updates happening during the zip operation will be executed
 // after it finishes (only the last update will run).
-const memoizedBuild = ({ cacheKey, command }) => {
+const memoizedBuild = ({ cache, cacheKey, command }) => {
   if (cache[cacheKey] === undefined) {
     cache[cacheKey] = {
       // eslint-disable-next-line promise/prefer-await-to-then

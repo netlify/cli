@@ -8,7 +8,7 @@ const getRawBody = require('raw-body')
 const { BACKGROUND } = require('../../utils/get-functions')
 const { capitalize } = require('../string')
 
-const createFormSubmissionHandler = function ({ getFunctionByName, siteUrl, warn }) {
+const createFormSubmissionHandler = function ({ functionsRegistry, siteUrl, warn }) {
   return async function formSubmissionHandler(req, res, next) {
     if (req.url.startsWith('/.netlify/') || req.method !== 'POST') return next()
 
@@ -20,7 +20,7 @@ const createFormSubmissionHandler = function ({ getFunctionByName, siteUrl, warn
     })
     fakeRequest.headers = req.headers
 
-    const handlerName = getFormHandler({ getFunctionByName, warn })
+    const handlerName = getFormHandler({ functionsRegistry, warn })
     if (!handlerName) {
       return next()
     }
@@ -125,9 +125,9 @@ const createFormSubmissionHandler = function ({ getFunctionByName, siteUrl, warn
   }
 }
 
-const getFormHandler = function ({ getFunctionByName, warn }) {
+const getFormHandler = function ({ functionsRegistry, warn }) {
   const handlers = ['submission-created', `submission-created${BACKGROUND}`]
-    .map((name) => getFunctionByName(name))
+    .map((name) => functionsRegistry.get(name))
     .filter(Boolean)
     .map(({ name }) => name)
 
