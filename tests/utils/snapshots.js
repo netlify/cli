@@ -7,8 +7,7 @@ const normalizers = [
   { pattern: /\r\n/gu, value: '\n' },
   { pattern: /❯/gu, value: '>' },
   // normalize exit code from different OSes
-  { pattern: /exited with code \d+/, value: 'exited with code *' },
-  { pattern: /failed with exit code \d+/, value: 'failed with exit code *' },
+  { pattern: /code \d+/, value: 'code *' },
   // this is specific to npm v6
   { pattern: /@ start.+\/.+netlify-cli-tests-v10.+/, value: 'start' },
 ]
