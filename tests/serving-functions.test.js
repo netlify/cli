@@ -28,6 +28,10 @@ const gotCatch404 = async (url, options) => {
   }
 }
 
+const devServerEnv = {
+  NETLIFY_TEST_DISABLE_DEBOUNCE: true,
+}
+
 testMatrix.forEach(({ args }) => {
   test(testName('Updates a JavaScript function when its main file is modified', args), async (t) => {
     await withSiteBuilder('js-function-update-main-file', async (builder) => {
@@ -50,7 +54,7 @@ testMatrix.forEach(({ args }) => {
         })
         .buildAsync()
 
-      await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
+      await withDevServer({ cwd: builder.directory, env: devServerEnv, args }, async ({ port }) => {
         t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'Hello')
 
         await builder
@@ -112,7 +116,7 @@ testMatrix.forEach(({ args }) => {
         })
         .buildAsync()
 
-      await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
+      await withDevServer({ cwd: builder.directory, env: devServerEnv, args }, async ({ port }) => {
         t.is(
           await got(`http://localhost:${port}/.netlify/functions/hello`).text(),
           'Modern Web Development on the JAMStack',
@@ -176,7 +180,7 @@ testMatrix.forEach(({ args }) => {
         ])
         .buildAsync()
 
-      await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
+      await withDevServer({ cwd: builder.directory, env: devServerEnv, args }, async ({ port }) => {
         t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'WOOF!')
 
         await builder
@@ -243,7 +247,7 @@ testMatrix.forEach(({ args }) => {
         ])
         .buildAsync()
 
-      await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
+      await withDevServer({ cwd: builder.directory, env: devServerEnv, args }, async ({ port }) => {
         t.is(
           await got(`http://localhost:${port}/.netlify/functions/hello`).text(),
           'Modern Web Development on the JAMStack',
@@ -286,7 +290,7 @@ testMatrix.forEach(({ args }) => {
         })
         .buildAsync()
 
-      await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
+      await withDevServer({ cwd: builder.directory, env: devServerEnv, args }, async ({ port }) => {
         const unauthenticatedResponse = await gotCatch404(`http://localhost:${port}/.netlify/functions/hello`)
 
         t.is(unauthenticatedResponse.statusCode, 404)
@@ -344,7 +348,7 @@ export { handler }
         })
         .buildAsync()
 
-      await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
+      await withDevServer({ cwd: builder.directory, env: devServerEnv, args }, async ({ port }) => {
         const unauthenticatedResponse = await gotCatch404(`http://localhost:${port}/.netlify/functions/hello`)
 
         t.is(unauthenticatedResponse.statusCode, 404)
@@ -412,7 +416,7 @@ export { handler }
         })
         .buildAsync()
 
-      await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
+      await withDevServer({ cwd: builder.directory, env: devServerEnv, args }, async ({ port }) => {
         t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'Hello')
 
         await builder
@@ -469,7 +473,7 @@ test('Serves functions that dynamically load files included in the `functions.in
       })
       .buildAsync()
 
-    await withDevServer({ cwd: builder.directory }, async ({ port }) => {
+    await withDevServer({ cwd: builder.directory, env: devServerEnv }, async ({ port }) => {
       t.is(await got(`http://localhost:${port}/.netlify/functions/hello?name=one`).text(), 'one')
       t.is(await got(`http://localhost:${port}/.netlify/functions/hello?name=two`).text(), 'two')
     })
@@ -493,7 +497,7 @@ test('Uses sourcemaps to show correct paths and locations in stack trace', async
       })
       .buildAsync()
 
-    await withDevServer({ cwd: builder.directory }, async ({ port }) => {
+    await withDevServer({ cwd: builder.directory, env: devServerEnv }, async ({ port }) => {
       try {
         await got(`http://localhost:${port}/.netlify/functions/hello`)
 
