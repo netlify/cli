@@ -9,12 +9,12 @@ const generatePrompts = require('../../utils/addons/prompts')
 const render = require('../../utils/addons/render')
 const { requiredConfigValues, missingConfigValues, updateConfigValues } = require('../../utils/addons/validation')
 const Command = require('../../utils/command')
+const { log } = require('../../utils/command-helpers')
 const { parseRawFlags } = require('../../utils/parse-raw-flags')
 
 class AddonsConfigCommand extends Command {
   async run() {
     const { args, raw } = this.parse(AddonsConfigCommand)
-    const { log } = Command
 
     const addonName = args.name
     const { manifest, addon, siteData } = await prepareAddonCommand({
@@ -62,7 +62,6 @@ class AddonsConfigCommand extends Command {
           instanceId: addon.id,
           api,
           error: this.error,
-          log,
         })
         return false
       }
@@ -134,13 +133,12 @@ class AddonsConfigCommand extends Command {
         instanceId: addon.id,
         api,
         error: this.error,
-        log,
       })
     }
   }
 }
 
-const update = async function ({ addonName, currentConfig, newConfig, siteId, instanceId, api, error, log }) {
+const update = async function ({ addonName, currentConfig, newConfig, siteId, instanceId, api, error }) {
   const codeDiff = diffValues(currentConfig, newConfig)
   if (!codeDiff) {
     log('No changes, exiting early')

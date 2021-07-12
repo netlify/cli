@@ -6,6 +6,7 @@ const chokidar = require('chokidar')
 const decache = require('decache')
 const pEvent = require('p-event')
 
+const { log } = require('../../utils/command-helpers')
 const { detectFunctionsBuilder } = require('../../utils/detect-functions-builder')
 const { getFunctionsAndWatchDirs } = require('../../utils/get-functions')
 const { NETLIFYDEVLOG } = require('../../utils/logo')
@@ -13,7 +14,7 @@ const { NETLIFYDEVLOG } = require('../../utils/logo')
 const { logBeforeAction, logAfterAction, validateFunctions } = require('./utils')
 const { watchDebounced } = require('./watcher')
 
-const getBuildFunction = ({ functionBuilder, log }) =>
+const getBuildFunction = ({ functionBuilder }) =>
   async function build(updatedPath, eventType) {
     const relativeFunctionsDir = relative(cwd(), functionBuilder.src)
 
@@ -99,12 +100,11 @@ const setupDefaultFunctionHandler = async ({ capabilities, directory, warn }) =>
   return { getFunctionByName }
 }
 
-const setupFunctionsBuilder = async ({ config, errorExit, functionsDirectory, log, site }) => {
+const setupFunctionsBuilder = async ({ config, errorExit, functionsDirectory, site }) => {
   const functionBuilder = await detectFunctionsBuilder({
     config,
     errorExit,
     functionsDirectory,
-    log,
     projectRoot: site.root,
   })
 
@@ -118,7 +118,7 @@ const setupFunctionsBuilder = async ({ config, errorExit, functionsDirectory, lo
 
   log(`${NETLIFYDEVLOG} Function builder ${chalk.yellow(functionBuilder.builderName)} detected${npmScriptString}.`)
 
-  const buildFunction = getBuildFunction({ functionBuilder, log })
+  const buildFunction = getBuildFunction({ functionBuilder })
 
   await buildFunction()
 

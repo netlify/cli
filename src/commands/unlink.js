@@ -1,10 +1,10 @@
 const Command = require('../utils/command')
+const { log } = require('../utils/command-helpers')
 const { track } = require('../utils/telemetry')
 
 class UnlinkCommand extends Command {
   async run() {
     const { site, state } = this.netlify
-    const { log } = Command
     const siteId = site.id
 
     if (!siteId) {

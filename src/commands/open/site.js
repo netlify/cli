@@ -1,10 +1,10 @@
 const Command = require('../../utils/command')
+const { log } = require('../../utils/command-helpers')
 const openBrowser = require('../../utils/open-browser')
 
 class OpenAdminCommand extends Command {
   async run() {
     const { api, site } = this.netlify
-    const { log } = Command
     await this.authenticate()
 
     const siteId = site.id
@@ -31,7 +31,7 @@ Run \`netlify link\` to connect to this folder to a site`)
       this.error(error)
     }
 
-    await openBrowser({ url, log })
+    await openBrowser({ url })
     this.exit()
   }
 }

@@ -1,10 +1,10 @@
 const Command = require('../../utils/command')
+const { log, logJson } = require('../../utils/command-helpers')
 
 class EnvSetCommand extends Command {
   async run() {
     const { args, flags } = this.parse(EnvSetCommand)
     const { api, site } = this.netlify
-    const { log, logJson } = Command
     const siteId = site.id
 
     if (!siteId) {

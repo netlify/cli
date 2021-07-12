@@ -3,12 +3,12 @@ const inquirer = require('inquirer')
 
 const { prepareAddonCommand, ADDON_VALIDATION } = require('../../utils/addons/prepare')
 const Command = require('../../utils/command')
+const { log } = require('../../utils/command-helpers')
 const { parseRawFlags } = require('../../utils/parse-raw-flags')
 
 class AddonsDeleteCommand extends Command {
   async run() {
     const { args, raw } = this.parse(AddonsDeleteCommand)
-    const { log } = Command
 
     const addonName = args.name
     const { addon } = await prepareAddonCommand({

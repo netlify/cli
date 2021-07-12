@@ -6,12 +6,12 @@ const dotenv = require('dotenv')
 const isEmpty = require('lodash/isEmpty')
 
 const Command = require('../../utils/command')
+const { log, logJson } = require('../../utils/command-helpers')
 
 class EnvImportCommand extends Command {
   async run() {
     const { args, flags } = this.parse(EnvImportCommand)
     const { api, site } = this.netlify
-    const { log, logJson } = Command
     const siteId = site.id
 
     if (!siteId) {

@@ -9,6 +9,7 @@ const isPlainObject = require('is-plain-obj')
 
 const { readFileAsyncCatchError } = require('../lib/fs')
 
+const { log } = require('./command-helpers')
 const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./logo')
 
 const readHttpsSettings = async (options) => {
@@ -39,7 +40,7 @@ const readHttpsSettings = async (options) => {
   return { key, cert }
 }
 
-const serverSettings = async (devConfig, flags, projectDir, log) => {
+const serverSettings = async (devConfig, flags, projectDir) => {
   let settings = {}
   const detectorsFiles = fs
     .readdirSync(path.join(__dirname, '..', 'detectors'))
@@ -49,7 +50,7 @@ const serverSettings = async (devConfig, flags, projectDir, log) => {
   if (typeof devConfig.framework !== 'string') throw new Error('Invalid "framework" option provided in config')
 
   if (flags.dir) {
-    settings = await getStaticServerSettings(settings, flags, projectDir, log)
+    settings = await getStaticServerSettings(settings, flags, projectDir)
     ;['command', 'targetPort'].forEach((property) => {
       if (flags[property]) {
         throw new Error(
@@ -187,7 +188,7 @@ const serverSettings = async (devConfig, flags, projectDir, log) => {
   }
 
   if (!settings.command && !settings.framework && !settings.noCmd) {
-    settings = await getStaticServerSettings(settings, flags, projectDir, log)
+    settings = await getStaticServerSettings(settings, flags, projectDir)
   }
 
   if (!settings.frameworkPort) throw new Error('No "targetPort" option specified or detected.')
@@ -222,7 +223,7 @@ const serverSettings = async (devConfig, flags, projectDir, log) => {
 
 const DEFAULT_PORT = 8888
 
-const getStaticServerSettings = async function (settings, flags, projectDir, log) {
+const getStaticServerSettings = async function (settings, flags, projectDir) {
   let { dist } = settings
   if (flags.dir) {
     log(`${NETLIFYDEVWARN} Using simple static server because --dir flag was specified`)

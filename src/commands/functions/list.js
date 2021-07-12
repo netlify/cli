@@ -4,13 +4,13 @@ const { flags: flagsLib } = require('@oclif/command')
 const AsciiTable = require('ascii-table')
 
 const Command = require('../../utils/command')
+const { log, logJson } = require('../../utils/command-helpers')
 const { getFunctionsDir } = require('../../utils/functions')
 const { getFunctions } = require('../../utils/get-functions')
 
 class FunctionsListCommand extends Command {
   async run() {
     const { flags } = this.parse(FunctionsListCommand)
-    const { log, logJson } = Command
 
     const { api, site, config } = this.netlify
 

@@ -2,11 +2,12 @@ const { get } = require('dot-prop')
 const prettyjson = require('prettyjson')
 
 const Command = require('../../utils/command')
+const { log } = require('../../utils/command-helpers')
 
 class StatusHooksCommand extends Command {
   async run() {
     const { site, api } = this.netlify
-    const { log } = Command
+
     await this.authenticate()
 
     const siteId = site.id

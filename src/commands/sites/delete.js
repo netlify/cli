@@ -3,12 +3,12 @@ const chalk = require('chalk')
 const inquirer = require('inquirer')
 
 const Command = require('../../utils/command')
+const { log } = require('../../utils/command-helpers')
 const { parseRawFlags } = require('../../utils/parse-raw-flags')
 
 class SitesDeleteCommand extends Command {
   async run() {
     const { args, flags, raw } = this.parse(SitesDeleteCommand)
-    const { log } = Command
 
     this.setAnalyticsPayload({ force: flags.force })
 

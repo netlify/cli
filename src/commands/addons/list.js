@@ -3,13 +3,13 @@ const AsciiTable = require('ascii-table')
 
 const { prepareAddonCommand } = require('../../utils/addons/prepare')
 const Command = require('../../utils/command')
+const { log, logJson } = require('../../utils/command-helpers')
 
 class AddonsListCommand extends Command {
   async run() {
     const { flags } = this.parse(AddonsListCommand)
 
     const { addons, siteData } = await prepareAddonCommand({ context: this })
-    const { logJson, log } = Command
     // Return json response for piping commands
     if (flags.json) {
       logJson(addons)

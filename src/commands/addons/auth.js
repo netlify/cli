@@ -1,11 +1,11 @@
 const { prepareAddonCommand, ADDON_VALIDATION } = require('../../utils/addons/prepare')
 const Command = require('../../utils/command')
+const { log } = require('../../utils/command-helpers')
 const openBrowser = require('../../utils/open-browser')
 
 class AddonsAuthCommand extends Command {
   async run() {
     const { args } = this.parse(AddonsAuthCommand)
-    const { log } = Command
 
     const addonName = args.name
     const { addon } = await prepareAddonCommand({

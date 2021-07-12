@@ -13,7 +13,7 @@ class FunctionsServeCommand extends Command {
   async run() {
     const { flags } = this.parse(FunctionsServeCommand)
 
-    const { error: errorExit, log, warn, netlify } = this
+    const { error: errorExit, warn, netlify } = this
     const { api, site, config, siteInfo } = netlify
 
     const functionsDir = getFunctionsDir({ flags, config }, join('netlify', 'functions'))
@@ -37,7 +37,6 @@ class FunctionsServeCommand extends Command {
       config,
       settings: { functions: functionsDir, functionsPort },
       site,
-      log,
       warn,
       errorExit,
       siteUrl,

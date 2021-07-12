@@ -6,6 +6,7 @@ const chalk = require('chalk')
 
 const { listSites } = require('../lib/api')
 const Command = require('../utils/command')
+const { log } = require('../utils/command-helpers')
 const { ensureNetlifyIgnore } = require('../utils/gitignore')
 const linkPrompt = require('../utils/link/link-by-prompt')
 const { track } = require('../utils/telemetry')
@@ -21,7 +22,6 @@ class LinkCommand extends Command {
       site: { id: siteId },
       state,
     } = this.netlify
-    const { log } = Command
 
     let siteData
     try {

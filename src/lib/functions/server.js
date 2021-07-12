@@ -3,6 +3,7 @@ const jwtDecode = require('jwt-decode')
 const lambdaLocal = require('lambda-local')
 const winston = require('winston')
 
+const { log } = require('../../utils/command-helpers')
 const { NETLIFYDEVERR, NETLIFYDEVLOG } = require('../../utils/logo')
 
 const { executeBackgroundFunction } = require('./background')
@@ -157,7 +158,6 @@ const startFunctionsServer = async ({
   config,
   settings,
   site,
-  log,
   warn,
   errorExit,
   siteUrl,
@@ -172,7 +172,6 @@ const startFunctionsServer = async ({
       config,
       errorExit,
       functionsDirectory: settings.functions,
-      log,
       site,
     })
     const directory = builder.target || settings.functions
@@ -192,11 +191,11 @@ const startFunctionsServer = async ({
       prefix,
     })
 
-    await startWebServer({ server, settings, log, errorExit })
+    await startWebServer({ server, settings, errorExit })
   }
 }
 
-const startWebServer = async ({ server, settings, log, errorExit }) => {
+const startWebServer = async ({ server, settings, errorExit }) => {
   await new Promise((resolve) => {
     server.listen(settings.functionsPort, (err) => {
       if (err) {

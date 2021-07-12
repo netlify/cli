@@ -5,6 +5,7 @@ const pWaitFor = require('p-wait-for')
 const prettyjson = require('prettyjson')
 
 const Command = require('../utils/command')
+const { log } = require('../utils/command-helpers')
 
 const InitCommand = require('./init')
 
@@ -16,8 +17,6 @@ class SitesWatchCommand extends Command {
     await this.authenticate()
     const client = this.netlify.api
     let siteId = this.netlify.site.id
-
-    const { log } = Command
 
     if (!siteId) {
       const siteData = await InitCommand.run([])

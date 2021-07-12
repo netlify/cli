@@ -5,12 +5,12 @@ const { methods } = require('netlify')
 
 const { isEmptyCommand } = require('../utils/check-command-inputs')
 const Command = require('../utils/command')
+const { log, logJson } = require('../utils/command-helpers')
 
 class APICommand extends Command {
   async run() {
     const { api } = this.netlify
     const { args, flags } = this.parse(APICommand)
-    const { log, logJson } = Command
 
     const { apiMethod } = args
 

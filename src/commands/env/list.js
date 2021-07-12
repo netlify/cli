@@ -3,12 +3,12 @@ const AsciiTable = require('ascii-table')
 const isEmpty = require('lodash/isEmpty')
 
 const Command = require('../../utils/command')
+const { log, logJson } = require('../../utils/command-helpers')
 
 class EnvListCommand extends Command {
   async run() {
     const { flags } = this.parse(EnvListCommand)
     const { api, site, cachedConfig } = this.netlify
-    const { log, logJson } = Command
     const siteId = site.id
 
     if (!siteId) {

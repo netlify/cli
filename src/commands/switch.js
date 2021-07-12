@@ -2,6 +2,7 @@ const chalk = require('chalk')
 const inquirer = require('inquirer')
 
 const Command = require('../utils/command')
+const { log } = require('../utils/command-helpers')
 
 const LoginCommand = require('./login')
 
@@ -13,7 +14,6 @@ class SwitchCommand extends Command {
         Object.assign(prev, { [current.id]: current.name ? `${current.name} (${current.email})` : current.email }),
       {},
     )
-    const { log } = Command
 
     const { accountSwitchChoice } = await inquirer.prompt([
       {

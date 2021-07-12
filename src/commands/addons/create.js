@@ -7,9 +7,10 @@ const generatePrompts = require('../../utils/addons/prompts')
 const render = require('../../utils/addons/render')
 const { requiredConfigValues, missingConfigValues, updateConfigValues } = require('../../utils/addons/validation')
 const Command = require('../../utils/command')
+const { log } = require('../../utils/command-helpers')
 const { parseRawFlags } = require('../../utils/parse-raw-flags')
 
-const createAddon = async ({ api, siteId, addonName, config, siteData, log, error }) => {
+const createAddon = async ({ api, siteId, addonName, config, siteData, error }) => {
   try {
     const response = await api.createServiceInstance({
       siteId,
@@ -38,7 +39,6 @@ class AddonsCreateCommand extends Command {
     })
 
     const { error, netlify } = this
-    const { log } = Command
     const { api, site } = netlify
     const siteId = site.id
 
@@ -71,7 +71,7 @@ class AddonsCreateCommand extends Command {
           return false
         }
 
-        await createAddon({ api, siteId, addonName, config: newConfig, siteData, log, error })
+        await createAddon({ api, siteId, addonName, config: newConfig, siteData, error })
 
         return false
       }
@@ -104,7 +104,7 @@ class AddonsCreateCommand extends Command {
       }
     }
 
-    await createAddon({ api, siteId, addonName, config: configValues, siteData, log, error })
+    await createAddon({ api, siteId, addonName, config: configValues, siteData, error })
   }
 }
 

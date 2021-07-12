@@ -1,9 +1,9 @@
 const Command = require('../utils/command')
+const { log, getToken } = require('../utils/command-helpers')
 const { track } = require('../utils/telemetry')
 
 class LogoutCommand extends Command {
   async run() {
-    const { log, getToken } = Command
     const [accessToken, location] = await getToken()
 
     if (!accessToken) {
