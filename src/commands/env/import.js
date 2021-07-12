@@ -64,9 +64,7 @@ class EnvImportCommand extends Command {
     const table = new AsciiTable(`Imported environment variables`)
 
     table.setHeading('Key', 'Value')
-    for (const [key, value] of Object.entries(importedEnv)) {
-      table.addRow(key, value)
-    }
+    table.addRowMatrix(Object.entries(importedEnv))
     this.log(table.toString())
   }
 }

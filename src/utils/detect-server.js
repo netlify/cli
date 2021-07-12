@@ -58,7 +58,6 @@ const serverSettings = async (devConfig, flags, projectDir, log) => {
       }
     })
   } else if (devConfig.framework === '#auto' && !(devConfig.command && devConfig.targetPort)) {
-    const settingsArr = []
     const detectors = detectorsFiles.map((det) => {
       try {
         return loadDetector(det)
@@ -67,10 +66,8 @@ const serverSettings = async (devConfig, flags, projectDir, log) => {
         return null
       }
     })
-    for (const detector of detectors) {
-      const detectorResult = detector(projectDir)
-      if (detectorResult) settingsArr.push(detectorResult)
-    }
+
+    const settingsArr = detectors.map((detector) => detector(projectDir)).filter((el) => el)
     if (settingsArr.length === 1) {
       const [firstSettings] = settingsArr
       settings = firstSettings

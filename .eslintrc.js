@@ -18,7 +18,7 @@ module.exports = {
     'fp/no-delete': 0,
     'fp/no-get-set': 0,
     'fp/no-let': 0,
-    'fp/no-loops': 0,
+    'fp/no-loops': 'error',
     'fp/no-mutating-assign': 0,
     'fp/no-mutating-methods': 0,
     'fp/no-mutation': 0,
@@ -28,7 +28,6 @@ module.exports = {
     'node/no-sync': 0,
     'unicorn/prefer-spread': 0,
     'unicorn/consistent-destructuring': 0,
-
     // TODO: harmonize with filename snake_case in other Netlify Dev projects
     'unicorn/filename-case': [2, { case: 'kebabCase' }],
   },
@@ -55,6 +54,7 @@ module.exports = {
         'node/no-unsupported-features/es-syntax': 0,
         'unicorn/consistent-destructuring': 0,
         'max-lines': 0,
+        'array-callback-return': ['error', { checkForEach: true }],
       },
     },
     // Example functions

@@ -39,9 +39,7 @@ class EnvListCommand extends Command {
     const table = new AsciiTable(`Environment variables`)
 
     table.setHeading('Key', 'Value')
-    for (const [key, value] of Object.entries(environment)) {
-      table.addRow(key, value)
-    }
+    table.addRowMatrix(Object.entries(environment))
     this.log(table.toString())
   }
 }
