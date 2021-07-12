@@ -37,7 +37,7 @@
         "chokidar": "^3.0.2",
         "ci-info": "^3.0.0",
         "clean-deep": "^3.0.2",
-        "cli-ux": "^5.5.1",
+        "cli-ux": "^5.6.3",
         "concordance": "^5.0.0",
         "configstore": "^5.0.0",
         "content-type": "^1.0.4",
@@ -6463,9 +6463,9 @@
       }
     },
     "node_modules/cli-ux": {
-      "version": "5.6.2",
-      "resolved": "https://registry.npmjs.org/cli-ux/-/cli-ux-5.6.2.tgz",
-      "integrity": "sha512-CuiamOCfPaOTjbuAQXdFsfZLQmO6XSmCDxulq4y8pIets1hZ3eaysHppPKGdrcdgLugUGUap5+bXd3IukJASBA==",
+      "version": "5.6.3",
+      "resolved": "https://registry.npmjs.org/cli-ux/-/cli-ux-5.6.3.tgz",
+      "integrity": "sha512-/oDU4v8BiDjX2OKcSunGH0iGDiEtj2rZaGyqNuv9IT4CgcSMyVWAMfn0+rEHaOc4n9ka78B0wo1+N1QX89f7mw==",
       "dependencies": {
         "@oclif/command": "^1.6.0",
         "@oclif/errors": "^1.2.1",
@@ -25823,9 +25823,9 @@
       }
     },
     "cli-ux": {
-      "version": "5.6.2",
-      "resolved": "https://registry.npmjs.org/cli-ux/-/cli-ux-5.6.2.tgz",
-      "integrity": "sha512-CuiamOCfPaOTjbuAQXdFsfZLQmO6XSmCDxulq4y8pIets1hZ3eaysHppPKGdrcdgLugUGUap5+bXd3IukJASBA==",
+      "version": "5.6.3",
+      "resolved": "https://registry.npmjs.org/cli-ux/-/cli-ux-5.6.3.tgz",
+      "integrity": "sha512-/oDU4v8BiDjX2OKcSunGH0iGDiEtj2rZaGyqNuv9IT4CgcSMyVWAMfn0+rEHaOc4n9ka78B0wo1+N1QX89f7mw==",
       "requires": {
         "@oclif/command": "^1.6.0",
         "@oclif/errors": "^1.2.1",
