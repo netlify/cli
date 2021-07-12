@@ -29,7 +29,7 @@ const gotCatch404 = async (url, options) => {
 }
 
 testMatrix.forEach(({ args }) => {
-  test(testName('Updates a JavaScript function when its main file is modified', args), async (t) => {
+  test.serial(testName('Updates a JavaScript function when its main file is modified', args), async (t) => {
     await withSiteBuilder('js-function-update-main-file', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -75,7 +75,7 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
-  test(testName('Updates a TypeScript function when its main file is modified', args), async (t) => {
+  test.serial(testName('Updates a TypeScript function when its main file is modified', args), async (t) => {
     await withSiteBuilder('ts-function-update-main-file', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -156,7 +156,7 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
-  test(testName('Updates a JavaScript function when a supporting file is modified', args), async (t) => {
+  test.serial(testName('Updates a JavaScript function when a supporting file is modified', args), async (t) => {
     await withSiteBuilder('js-function-update-supporting-file', async (builder) => {
       const functionsConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -195,7 +195,7 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
-  test(testName('Updates a TypeScript function when a supporting file is modified', args), async (t) => {
+  test.serial(testName('Updates a TypeScript function when a supporting file is modified', args), async (t) => {
     await withSiteBuilder('ts-function-update-supporting-file', async (builder) => {
       const functionsConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -272,7 +272,7 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
-  test(testName('Adds a new JavaScript function when a function file is created', args), async (t) => {
+  test.serial(testName('Adds a new JavaScript function when a function file is created', args), async (t) => {
     await withSiteBuilder('js-function-create-function-file', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -317,7 +317,7 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
-  test(testName('Adds a new TypeScript function when a function file is created', args), async (t) => {
+  test.serial(testName('Adds a new TypeScript function when a function file is created', args), async (t) => {
     await withSiteBuilder('ts-function-create-function-file', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -391,7 +391,7 @@ export { handler }
     })
   })
 
-  test(testName('Removes a function when a function file is deleted', args), async (t) => {
+  test.serial(testName('Removes a function when a function file is deleted', args), async (t) => {
     await withSiteBuilder('function-remove-function-file', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
