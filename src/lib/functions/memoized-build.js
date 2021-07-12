@@ -1,4 +1,6 @@
-const DEBOUNCE_INTERVAL = 300
+const { getMemoizationInterval } = require('../../utils/debounce')
+
+const memoizationInterval = getMemoizationInterval()
 
 // `memoizedBuild` will avoid running the same build command multiple times
 // until the previous operation has been completed. If another call is made
@@ -23,7 +25,7 @@ const memoizedBuild = ({ cache, cacheKey, command }) => {
       }),
       timestamp: Date.now(),
     }
-  } else if (Date.now() > cache[cacheKey].timestamp + DEBOUNCE_INTERVAL) {
+  } else if (Date.now() > cache[cacheKey].timestamp + memoizationInterval) {
     cache[cacheKey].enqueued = true
   }
 
