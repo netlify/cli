@@ -12,6 +12,7 @@ const detectFunctionsBuilder = async function (parameters) {
     // eslint-disable-next-line node/global-require, import/no-dynamic-require
     .map((det) => require(path.join(buildersPath, det)))
 
+  // eslint-disable-next-line fp/no-loops
   for (const detector of detectors) {
     // eslint-disable-next-line no-await-in-loop
     const settings = await detector(parameters)

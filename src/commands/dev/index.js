@@ -1,4 +1,3 @@
-const childProcess = require('child_process')
 const path = require('path')
 const process = require('process')
 const { promisify } = require('util')
@@ -6,10 +5,10 @@ const { promisify } = require('util')
 const { flags: flagsLib } = require('@oclif/command')
 const boxen = require('boxen')
 const chalk = require('chalk')
+const execa = require('execa')
 const StaticServer = require('static-server')
 const stripAnsiCc = require('strip-ansi-control-characters')
 const waitPort = require('wait-port')
-const which = require('which')
 
 const { startFunctionsServer } = require('../../lib/functions/server')
 const Command = require('../../utils/command')
@@ -36,47 +35,61 @@ const startStaticServer = async ({ settings }) => {
   log(`\n${NETLIFYDEVLOG} Server listening to`, settings.frameworkPort)
 }
 
+const isNonExistingCommandError = ({ command, error }) => {
+  // `ENOENT` is only returned for non Windows systems
+  // See https://github.com/sindresorhus/execa/pull/447
+  if (error.code === 'ENOENT') {
+    return true
+  }
+
+  // if the command is a package manager we let it report the error
+  if (['yarn', 'npm'].includes(command)) {
+    return false
+  }
+
+  // this only works on English versions of Windows
+  return (
+    typeof error.message === 'string' && error.message.includes('is not recognized as an internal or external command')
+  )
+}
+
 const startFrameworkServer = async function ({ settings, exit }) {
   if (settings.noCmd) {
     return await startStaticServer({ settings })
   }
 
   log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.framework || 'custom config'}`)
-  const commandBin = await which(settings.command).catch((error) => {
-    if (error.code === 'ENOENT') {
-      throw new Error(
-        `"${settings.command}" could not be found in your PATH. Please make sure that "${settings.command}" is installed and available in your PATH`,
+
+  // we use reject=false to avoid rejecting synchronously when the command doesn't exist
+  const frameworkProcess = execa(settings.command, settings.args, { preferLocal: true, reject: false })
+  frameworkProcess.stdout.pipe(stripAnsiCc.stream()).pipe(process.stdout)
+  frameworkProcess.stderr.pipe(stripAnsiCc.stream()).pipe(process.stderr)
+  process.stdin.pipe(frameworkProcess.stdin)
+
+  // we can't try->await->catch since we don't want to block on the framework server which
+  // is a long running process
+  // eslint-disable-next-line promise/catch-or-return,promise/prefer-await-to-then
+  frameworkProcess.then(async () => {
+    const result = await frameworkProcess
+    // eslint-disable-next-line promise/always-return
+    if (result.failed && isNonExistingCommandError({ command: settings.command, error: result })) {
+      log(
+        NETLIFYDEVERR,
+        `Failed launching framework server. Please verify ${chalk.magenta(`'${settings.command}'`)} exists`,
       )
+    } else {
+      const commandWithArgs = `${settings.command} ${settings.args.join(' ')}`
+      const errorMessage = result.failed
+        ? `${NETLIFYDEVERR} ${result.shortMessage}`
+        : `${NETLIFYDEVWARN} "${commandWithArgs}" exited with code ${result.exitCode}`
+
+      log(`${errorMessage}. Shutting down Netlify Dev server`)
     }
-    throw error
-  })
-  const ps = childProcess.spawn(commandBin, settings.args, {
-    env: { ...process.env, ...settings.env, FORCE_COLOR: 'true' },
-    stdio: 'pipe',
-  })
-
-  ps.stdout.pipe(stripAnsiCc.stream()).pipe(process.stdout)
-  ps.stderr.pipe(stripAnsiCc.stream()).pipe(process.stderr)
-
-  process.stdin.pipe(process.stdin)
-
-  const handleProcessExit = function (code) {
-    log(
-      code > 0 ? NETLIFYDEVERR : NETLIFYDEVWARN,
-      `"${[settings.command, ...settings.args].join(' ')}" exited with code ${code}. Shutting down Netlify Dev server`,
-    )
     process.exit(1)
-  }
-  ps.on('close', handleProcessExit)
-  ps.on('SIGINT', handleProcessExit)
-  ps.on('SIGTERM', handleProcessExit)
+  })
   ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) => {
     process.on(signal, () => {
-      try {
-        process.kill(-ps.pid)
-      } catch (error) {
-        // Ignore
-      }
+      frameworkProcess.kill('SIGTERM', { forceKillAfterTimeout: 500 })
       process.exit()
     })
   })
@@ -97,8 +110,6 @@ const startFrameworkServer = async function ({ settings, exit }) {
     log(NETLIFYDEVERR, `Please make sure your framework server is running on port ${settings.frameworkPort}`)
     exit(1)
   }
-
-  return ps
 }
 
 // 10 minutes

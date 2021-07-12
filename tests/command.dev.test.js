@@ -1780,5 +1780,28 @@ export const handler = async function () {
       })
     })
   })
+
+  test(testName(`returns headers set by function`, args), async (t) => {
+    await withSiteBuilder('site-with-function-with-custom-headers', async (builder) => {
+      await builder
+        .withFunction({
+          pathPrefix: 'netlify/functions',
+          path: 'custom-headers.js',
+          handler: async () => ({
+            statusCode: 200,
+            body: '',
+            headers: { 'single-value-header': 'custom-value' },
+            multiValueHeaders: { 'multi-value-header': ['custom-value1', 'custom-value2'] },
+          }),
+        })
+        .buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async (server) => {
+        const response = await got(`${server.url}/.netlify/functions/custom-headers`)
+        t.is(response.headers['single-value-header'], 'custom-value')
+        t.is(response.headers['multi-value-header'], 'custom-value1, custom-value2')
+      })
+    })
+  })
 })
 /* eslint-enable require-await */

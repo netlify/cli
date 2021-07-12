@@ -30,6 +30,7 @@ const getGlobalConfigOnce = async function () {
 
 const getGlobalConfig = async function () {
   const retries = 3
+  // eslint-disable-next-line fp/no-loops
   for (let retry = 1; retry <= retries; retry++) {
     try {
       // eslint-disable-next-line no-await-in-loop

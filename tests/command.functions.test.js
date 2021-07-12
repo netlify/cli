@@ -202,7 +202,7 @@ test('should serve functions on default port', async (t) => {
   })
 })
 
-test('should serve functions on custom port', async (t) => {
+test.skip('should serve functions on custom port', async (t) => {
   await withSiteBuilder('site-with-ping-function', async (builder) => {
     await builder
       .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
@@ -223,7 +223,7 @@ test('should serve functions on custom port', async (t) => {
   })
 })
 
-test('should use settings from netlify.toml dev', async (t) => {
+test.skip('should use settings from netlify.toml dev', async (t) => {
   await withSiteBuilder('site-with-ping-function', async (builder) => {
     const port = await getPort()
     await builder

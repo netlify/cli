@@ -576,7 +576,7 @@ DeployCommand.flags = {
   }),
   alias: flagsLib.string({
     description:
-      'Specifies the alias for deployment. Useful for creating predictable deployment URLs. Maximum 37 characters.',
+      'Specifies the alias for deployment, the string at the beginning of the deploy subdomain. Useful for creating predictable deployment URLs. Avoid setting an alias string to the same value as a deployed branch. `alias` doesn’t create a branch deploy and can’t be used in conjunction with the branch subdomain feature. Maximum 37 characters.',
   }),
   branch: flagsLib.string({
     char: 'b',

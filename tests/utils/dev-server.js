@@ -71,6 +71,7 @@ const startServer = async ({ cwd, offline = true, env = {}, args = [] }) => {
 
 const startDevServer = async (options, expectFailure) => {
   const maxAttempts = 5
+  // eslint-disable-next-line fp/no-loops
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       // eslint-disable-next-line no-await-in-loop

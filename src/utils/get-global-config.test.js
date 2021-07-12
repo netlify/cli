@@ -68,7 +68,6 @@ test.serial("should create config in netlify's config dir if none exists and sto
   // Remove config dirs
   await rmdirRecursiveAsync(getPathInHome([]))
   await rmdirRecursiveAsync(getLegacyPathInHome([]))
-
   const globalConfig = await getGlobalConfig()
   globalConfig.set('newProp', 'newValue')
   const configFile = JSON.parse(await readFileAsync(configPath))

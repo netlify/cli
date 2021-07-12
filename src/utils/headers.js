@@ -86,6 +86,7 @@ const parseHeadersFile = function (filePath) {
 
   let path
   let rules = {}
+  // eslint-disable-next-line fp/no-loops
   for (const { line, index } of lines) {
     if (line.startsWith(TOKEN_PATH)) {
       path = line

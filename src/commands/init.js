@@ -7,7 +7,7 @@ const isEmpty = require('lodash/isEmpty')
 const Command = require('../utils/command')
 const { log } = require('../utils/command-helpers')
 const { getRepoData } = require('../utils/get-repo-data')
-const { ensureNetlifyIgnore } = require('../utils/gitignore')
+const ensureNetlifyIgnore = require('../utils/gitignore')
 const { configureRepo } = require('../utils/init/config')
 const { track } = require('../utils/telemetry')
 
