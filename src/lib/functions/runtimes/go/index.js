@@ -5,7 +5,7 @@ const tempy = require('tempy')
 
 const { runFunctionsProxy } = require('../../local-proxy')
 
-const getBuildFunction = async ({ func }) => {
+const getBuildFunction = ({ func }) => {
   const functionDirectory = dirname(func.mainFile)
   const binaryPath = tempy.file()
 

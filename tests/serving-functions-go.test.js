@@ -1,4 +1,3 @@
-/* eslint-disable require-await */
 const test = require('ava')
 const pWaitFor = require('p-wait-for')
 
@@ -103,4 +102,3 @@ require github.com/aws/aws-lambda-go v1.20.0`,
     )
   })
 })
-/* eslint-enable require-await */
