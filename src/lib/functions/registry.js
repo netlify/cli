@@ -108,7 +108,7 @@ class FunctionsRegistry {
     }
 
     this.functions.set(name, func)
-    this.buildFunctionAndWatchFiles(func)
+    this.buildFunctionAndWatchFiles(func, { verbose: true })
 
     this.logger.log(`${NETLIFYDEVLOG} ${chalk.green('Loaded')} function ${chalk.yellow(name)}.`)
   }
