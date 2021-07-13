@@ -94,6 +94,7 @@
     "@ungap/from-entries": "^0.2.1",
     "ansi-styles": "^5.0.0",
     "ascii-table": "0.0.9",
+    "async-mutex": "^0.3.1",
     "backoff": "^2.5.0",
     "better-opn": "^2.1.1",
     "body-parser": "^1.19.0",
