@@ -195,7 +195,7 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
-  test.only(testName('Updates a TypeScript function when a supporting file is modified', args), async (t) => {
+  avaTest.only(testName('Updates a TypeScript function when a supporting file is modified', args), async (t) => {
     await withSiteBuilder('ts-function-update-supporting-file', async (builder) => {
       const functionsConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
