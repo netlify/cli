@@ -273,4 +273,28 @@ test('should trigger background function from event', async (t) => {
   })
 })
 
+test('should inject env variables', async (t) => {
+  await withSiteBuilder('site-with-env-function', async (builder) => {
+    await builder
+      .withNetlifyToml({
+        config: { build: { environment: { TEST: 'FROM_CONFIG_FILE' } }, functions: { directory: 'functions' } },
+      })
+      .withFunction({
+        path: 'echo-env.js',
+        handler: async () => ({
+          statusCode: 200,
+          // eslint-disable-next-line node/prefer-global/process
+          body: `${process.env.TEST}`,
+        }),
+      })
+      .buildAsync()
+
+    const port = await getPort()
+    await withFunctionsServer({ builder, args: ['--port', port], port }, async () => {
+      const response = await got(`http://localhost:${port}/.netlify/functions/echo-env`).text()
+      t.is(response, 'FROM_CONFIG_FILE')
+    })
+  })
+})
+
 /* eslint-enable require-await */
