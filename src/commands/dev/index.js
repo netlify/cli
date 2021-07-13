@@ -206,7 +206,7 @@ class DevCommand extends Command {
 
     let settings = {}
     try {
-      settings = await detectServerSettings(devConfig, flags, site.root, log)
+      settings = await detectServerSettings(devConfig, flags, site.root)
     } catch (error) {
       log(NETLIFYDEVERR, error.message)
       exit(1)
