@@ -51,7 +51,11 @@ class FunctionsRegistry {
       this.logger.log(`${NETLIFYDEVLOG} ${chalk.magenta('Reloading')} function ${chalk.yellow(func.name)}...`)
     }
 
+    console.log('---> building', func.name, this.buildCache)
+
     const { error, srcFilesDiff } = await func.build({ cache: this.buildCache })
+
+    console.log('---> finished building', func.name, error, srcFilesDiff)
 
     if (error) {
       this.logger.log(
@@ -108,7 +112,7 @@ class FunctionsRegistry {
     }
 
     this.functions.set(name, func)
-    this.buildFunctionAndWatchFiles(func, { verbose: true })
+    this.buildFunctionAndWatchFiles(func)
 
     this.logger.log(`${NETLIFYDEVLOG} ${chalk.green('Loaded')} function ${chalk.yellow(name)}.`)
   }
