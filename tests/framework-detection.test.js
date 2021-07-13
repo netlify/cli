@@ -246,3 +246,19 @@ test('should prompt when multiple frameworks are detected', async (t) => {
     t.snapshot(normalize(error.stdout))
   })
 })
+
+test('should not run framework detection if command and targetPort are configured', async (t) => {
+  await withSiteBuilder('site-with-hugo-config', async (builder) => {
+    await builder.withContentFile({ path: 'config.toml', content: '' }).buildAsync()
+
+    // a failure is expected since the command exits early
+    const error = await t.throwsAsync(() =>
+      withDevServer(
+        { cwd: builder.directory, args: ['--command', 'echo hello', '--targetPort', '3000'] },
+        () => {},
+        true,
+      ),
+    )
+    t.snapshot(normalize(error.stdout))
+  })
+})

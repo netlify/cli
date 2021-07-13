@@ -248,8 +248,12 @@ const detectServerSettings = async (devConfig, flags, projectDir, log) => {
     settings = await handleStaticServer({ flags, log, devConfig, projectDir })
   } else if (devConfig.framework === '#auto') {
     // this is the default CLI behavior
-    const frameworkSettings = await detectFrameworkSettings({ projectDir, log })
-    if (frameworkSettings === undefined && !hasCommandAndTargetPort({ devConfig })) {
+
+    // we don't need to run the detection if both command and targetPort are configured
+    const runDetection = !hasCommandAndTargetPort({ devConfig })
+    const frameworkSettings = runDetection ? await detectFrameworkSettings({ projectDir, log }) : undefined
+
+    if (frameworkSettings === undefined && runDetection) {
       log(`${NETLIFYDEVWARN} No app server detected. Using simple static server`)
       settings = await handleStaticServer({ flags, log, devConfig, projectDir })
     } else {
