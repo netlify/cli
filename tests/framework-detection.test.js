@@ -65,7 +65,7 @@ test('should use static server when framework is set to #static', async (t) => {
   })
 })
 
-test('should report error if using static server and `command` is configured', async (t) => {
+test('should warn if using static server and `command` is configured', async (t) => {
   await withSiteBuilder('site-with-index-file', async (builder) => {
     await builder
       .withContentFile({
@@ -74,18 +74,19 @@ test('should report error if using static server and `command` is configured', a
       })
       .buildAsync()
 
-    const error = await t.throwsAsync(() =>
-      withDevServer(
-        { cwd: builder.directory, args: ['--dir', 'public', '--command', 'npm run start'] },
-        () => {},
-        true,
-      ),
+    await withDevServer(
+      { cwd: builder.directory, args: ['--dir', 'public', '--command', 'npm run start'] },
+      async ({ url, output }) => {
+        const response = await got(url).text()
+        t.is(response, content)
+
+        t.snapshot(normalize(output))
+      },
     )
-    t.snapshot(normalize(error.stdout))
   })
 })
 
-test('should error if using static server and `targetPort` is configured', async (t) => {
+test('should warn if using static server and `targetPort` is configured', async (t) => {
   await withSiteBuilder('site-with-index-file', async (builder) => {
     await builder
       .withContentFile({
@@ -94,14 +95,19 @@ test('should error if using static server and `targetPort` is configured', async
       })
       .buildAsync()
 
-    const error = await t.throwsAsync(() =>
-      withDevServer({ cwd: builder.directory, args: ['--dir', 'public', '--targetPort', '3000'] }, () => {}, true),
+    await withDevServer(
+      { cwd: builder.directory, args: ['--dir', 'public', '--targetPort', '3000'] },
+      async ({ url, output }) => {
+        const response = await got(url).text()
+        t.is(response, content)
+
+        t.snapshot(normalize(output))
+      },
     )
-    t.snapshot(normalize(error.stdout))
   })
 })
 
-test('should error when `command` and `targetPort` when configured, but framework is not', async (t) => {
+test('should run `command` when both `command` and `targetPort` are configured', async (t) => {
   await withSiteBuilder('empty-site', async (builder) => {
     await builder.withNetlifyToml({ config: { build: { publish: 'public' } } }).buildAsync()
 
@@ -117,10 +123,11 @@ test('should error when `command` and `targetPort` when configured, but framewor
   })
 })
 
-test('should error when a specific framework is configured but not detected', async (t) => {
+test('should force a specific framework when configured', async (t) => {
   await withSiteBuilder('site-with-mocked-cra', async (builder) => {
     await builder.withNetlifyToml({ config: { dev: { framework: 'create-react-app' } } }).buildAsync()
 
+    // a failure is expected since this is not a true create-react-app project
     const error = await t.throwsAsync(() => withDevServer({ cwd: builder.directory }, () => {}, true))
     t.snapshot(normalize(error.stdout))
   })
@@ -236,6 +243,22 @@ test('should prompt when multiple frameworks are detected', async (t) => {
 
       await childProcess
     })
+    t.snapshot(normalize(error.stdout))
+  })
+})
+
+test('should not run framework detection if command and targetPort are configured', async (t) => {
+  await withSiteBuilder('site-with-hugo-config', async (builder) => {
+    await builder.withContentFile({ path: 'config.toml', content: '' }).buildAsync()
+
+    // a failure is expected since the command exits early
+    const error = await t.throwsAsync(() =>
+      withDevServer(
+        { cwd: builder.directory, args: ['--command', 'echo hello', '--targetPort', '3000'] },
+        () => {},
+        true,
+      ),
+    )
     t.snapshot(normalize(error.stdout))
   })
 })

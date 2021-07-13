@@ -40,8 +40,8 @@ netlify dev
 
 ```bash
 $ netlify dev
-$ netlify dev -c "yarn start"
-$ netlify dev -c hugo
+$ netlify dev -d public
+$ netlify dev -c "hugo server -w" --targetPort 1313
 ```
 
 ---

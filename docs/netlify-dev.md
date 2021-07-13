@@ -56,7 +56,7 @@ alias ndeploy="netlify deploy --prod"
 alias nd="netlify dev"
 alias ndl="netlify dev --live"
 alias nfc="netlify functions:create"
-alias ndx="netlify dev:exec "
+alias ndx="netlify dev:exec"
 ```
 
 </details>
@@ -68,22 +68,21 @@ USAGE
   $ netlify dev
 
 OPTIONS
-  -c, --command=command      command to run
-  -f, --functions=functions  Specify a functions folder to serve
-  -o, --offline              disables any features that require network access
-  -p, --port=port            Specify port of netlify dev
-  -l, --live                 Start a public live session
+  -c, --command=command                                        command to run
+  -d, --dir=dir                                                dir with static files
+  -f, --functions=functions                                    specify a functions folder to serve
+  -l, --live                                                   start a public live session
+  -o, --offline                                                disables any features that require network access
+  -p, --port=port                                              port of netlify dev
+  --targetPort=targetPort                                      port of target app server
 
 DESCRIPTION
-  The dev command will run a local dev server with Netlify's Edge Logic proxies and redirects, serverless functions, and addons
+  The dev command will run a local dev server with Netlify's proxy and redirect rules
 
 EXAMPLES
   $ netlify dev
-  $ netlify dev -c "yarn start"
-  $ netlify dev -c hugo
-
-COMMANDS
-  dev:exec  Exec command
+  $ netlify dev -d public
+  $ netlify dev -c "hugo server -w" --targetPort 1313
 ```
 
 ## Live Share
@@ -96,8 +95,6 @@ netlify dev --live
 
 You will get a URL that looks like `https://clever-cray-2aa156-6639f3.netlify.live/`. This can be accessed by anyone as long as you keep your session open.
 
-> Note: there are currently known issues with ending the live session alongside your webdevserver, as well as with live reloading. We are working on fixing it, and would appreciate repro cases, or you may check [existing issues with the `--live` tag](https://github.com/netlify/netlify-dev-plugin/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc+label%3A--live). In the mean time you can run `ps aux | grep live-tunnel` and kill these sessions manually.
-
 ## netlify.toml [dev] block
 
 Netlify Dev is meant to work with zero config for the majority of users, by using its detector system. However you may wish to assert more control over its behavior, and should make use of the new `[dev]` block in `netlify.toml` to do so:
@@ -109,7 +106,7 @@ Netlify Dev is meant to work with zero config for the majority of users, by usin
   functions = "functions" # netlify dev uses this directory to scaffold and serve your functions
   publish = "dist"
 
-# note: each of these fields are OPTIONAL, with an exception that when you’re specifying "command" and "targetPort", you must specify framework = "#custom"
+# note: each of these fields are OPTIONAL
 [dev]
   command = "yarn start" # Command to start your dev server
   targetPort = 3000 # The port for your application server, framework or site generator
@@ -126,15 +123,14 @@ Netlify Dev is meant to work with zero config for the majority of users, by usin
 
 ## Project detection
 
-Netlify Dev will attempt to detect the site generator or build command that you are using, and run these on your behalf, while adding other development utilities. If you have a JavaScript project, it looks for the best `package.json` script to run for you, using simple heuristics, so you can use the full flexibility of npm scripts. We may add more intelligence to this in the future.
+Netlify Dev will attempt to detect the site generator or build command that you are using, and run these on your behalf, while adding other development utilities. If you have a JavaScript project, it looks for the best `package.json` script to run for you, using simple heuristics, so you can use the full flexibility of npm scripts.
 
-**Overriding the detectors**: The number of [project types which Netlify Dev can detect](https://github.com/netlify/cli/tree/main/src/detectors) is growing, but if yours is not yet supported (contributions welcome!), you can instruct Netlify Dev to run the project on your behalf by declaring it in a `[dev]` block of your `netlify.toml` file.
+**Overriding framework detection**: The number of [frameworks which Netlify Dev can detect](https://github.com/netlify/framework-info/tree/main/src/frameworks) is growing, but if yours is not yet supported (contributions welcome!), you can instruct Netlify Dev to run the project on your behalf by declaring it in a `[dev]` block of your `netlify.toml` file.
 
 ```toml
 # sample dev block in the toml
 # note: each of these fields are OPTIONAL and should only be used if you need an override
 [dev]
-  framework = "#custom"
   command = "yarn start" # Command to start your dev server
   targetPort = 3000 # # The port for your application server, framework or site generator
   port = 8888 # The port that the netlify dev will be accessible on
@@ -152,8 +148,8 @@ against your project.
 
 Possible values of `framework`:
 
-- `#auto` (default) to check of all [available frameworks](https://github.com/netlify/cli/tree/main/src/detectors).
-- One of the frameworks as specified [here](https://github.com/netlify/cli/tree/main/src/detectors).
+- `#auto` (default) to check of all [available frameworks](https://github.com/netlify/framework-info/tree/main/src/frameworks).
+- One of the framework ids as specified [here](https://github.com/netlify/framework-info/tree/main/src/frameworks).
 - `#static` for a static file server
 - `#custom` to use the `command` option to run an app server and `targetPort` option to connect to it
 
@@ -170,7 +166,7 @@ As for which port to use while doing local development in Netlify Dev, always se
 ```bash
    ┌──────────────────────────────────────────────────────────────┐
    │                                                              │
-   │   [Netlify Dev] Server now ready on http://localhost:64939   │
+   │   [Netlify Dev] Server now ready on http://localhost:8888    │
    │                                                              │
    └──────────────────────────────────────────────────────────────┘
 ```
