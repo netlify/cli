@@ -1,11 +1,6 @@
-const { Mutex, withTimeout } = require('async-mutex')
-
 const { difference } = require('../../utils/difference')
 
 const BACKGROUND_SUFFIX = '-background'
-
-// 3 minutes
-const MUTEX_TIMEOUT = 18e4
 
 class NetlifyFunction {
   constructor({
@@ -36,7 +31,6 @@ class NetlifyFunction {
     // List of the function's source files. This starts out as an empty set
     // and will get populated on every build.
     this.srcFiles = new Set()
-    this.mutex = withTimeout(new Mutex(), MUTEX_TIMEOUT)
   }
 
   // The `build` method transforms source files into invocable functions. Its
@@ -45,29 +39,25 @@ class NetlifyFunction {
   // - `srcFilesDiff`: Files that were added and removed since the last time
   //    the function was built.
   async build({ cache }) {
+    const buildFunction = await this.runtime.getBuildFunction({
+      config: this.config,
+      errorExit: this.errorExit,
+      func: this,
+      functionsDirectory: this.functionsDirectory,
+      projectRoot: this.projectRoot,
+    })
+
+    this.buildQueue = buildFunction({ cache })
+
     try {
-      return await this.mutex.runExclusive(async () => {
-        const buildFunction = await this.runtime.getBuildFunction({
-          config: this.config,
-          errorExit: this.errorExit,
-          func: this,
-          functionsDirectory: this.functionsDirectory,
-          projectRoot: this.projectRoot,
-        })
+      const { srcFiles, ...buildData } = await this.buildQueue
+      const srcFilesSet = new Set(srcFiles)
+      const srcFilesDiff = this.getSrcFilesDiff(srcFilesSet)
 
-        try {
-          const { srcFiles, ...buildData } = await buildFunction({ cache })
-          const srcFilesSet = new Set(srcFiles)
-          const srcFilesDiff = this.getSrcFilesDiff(srcFilesSet)
+      this.buildData = buildData
+      this.srcFiles = srcFilesSet
 
-          this.buildData = buildData
-          this.srcFiles = srcFilesSet
-
-          return { srcFilesDiff }
-        } catch (error) {
-          return { error }
-        }
-      })
+      return { srcFilesDiff }
     } catch (error) {
       return { error }
     }
@@ -87,22 +77,18 @@ class NetlifyFunction {
 
   // Invokes the function and returns its response object.
   async invoke(event, context) {
-    try {
-      return await this.mutex.runExclusive(async () => {
-        const timeout = this.isBackground ? this.timeoutBackground : this.timeoutSynchronous
+    await this.buildQueue
 
-        try {
-          const result = await this.runtime.invokeFunction({
-            context,
-            event,
-            func: this,
-            timeout,
-          })
-          return { result, error: null }
-        } catch (error) {
-          return { result: null, error }
-        }
+    const timeout = this.isBackground ? this.timeoutBackground : this.timeoutSynchronous
+
+    try {
+      const result = await this.runtime.invokeFunction({
+        context,
+        event,
+        func: this,
+        timeout,
       })
+      return { result, error: null }
     } catch (error) {
       return { result: null, error }
     }
