@@ -75,86 +75,86 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
-  // test(testName('Updates a TypeScript function when its main file is modified', args), async (t) => {
-  //   await withSiteBuilder('ts-function-update-main-file', async (builder) => {
-  //     const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
+  test(testName('Updates a TypeScript function when its main file is modified', args), async (t) => {
+    await withSiteBuilder('ts-function-update-main-file', async (builder) => {
+      const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
-  //     await builder
-  //       .withNetlifyToml({
-  //         config: {
-  //           build: { publish: 'public' },
-  //           functions: { directory: 'functions' },
-  //           ...bundlerConfig,
-  //         },
-  //       })
-  //       .withContentFile({
-  //         path: 'functions/hello.ts',
-  //         content: `
-  // interface Book {
-  //   title: string
-  //   author: string
-  // }
+      await builder
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'public' },
+            functions: { directory: 'functions' },
+            ...bundlerConfig,
+          },
+        })
+        .withContentFile({
+          path: 'functions/hello.ts',
+          content: `
+  interface Book {
+    title: string
+    author: string
+  }
 
-  // const handler = async () => {
-  //   const book1: Book = {
-  //     title: 'Modern Web Development on the JAMStack',
-  //     author: 'Mathias Biilmann & Phil Hawksworth'
-  //   }
+  const handler = async () => {
+    const book1: Book = {
+      title: 'Modern Web Development on the JAMStack',
+      author: 'Mathias Biilmann & Phil Hawksworth'
+    }
 
-  //   return {
-  //     statusCode: 200,
-  //     body: book1.title
-  //   }
-  // }
+    return {
+      statusCode: 200,
+      body: book1.title
+    }
+  }
 
-  // export { handler }
-  //           `,
-  //       })
-  //       .buildAsync()
+  export { handler }
+            `,
+        })
+        .buildAsync()
 
-  //     await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
-  //       t.is(
-  //         await got(`http://localhost:${port}/.netlify/functions/hello`).text(),
-  //         'Modern Web Development on the JAMStack',
-  //       )
+      await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
+        t.is(
+          await got(`http://localhost:${port}/.netlify/functions/hello`).text(),
+          'Modern Web Development on the JAMStack',
+        )
 
-  //       await builder
-  //         .withContentFile({
-  //           path: 'functions/hello.ts',
-  //           content: `
-  // interface Book {
-  //   title: string
-  //   author: string
-  // }
+        await builder
+          .withContentFile({
+            path: 'functions/hello.ts',
+            content: `
+  interface Book {
+    title: string
+    author: string
+  }
 
-  // const handler = async () => {
-  //   const book1: Book = {
-  //     title: 'Modern Web Development on the Jamstack',
-  //     author: 'Mathias Biilmann & Phil Hawksworth'
-  //   }
+  const handler = async () => {
+    const book1: Book = {
+      title: 'Modern Web Development on the Jamstack',
+      author: 'Mathias Biilmann & Phil Hawksworth'
+    }
 
-  //   return {
-  //     statusCode: 200,
-  //     body: book1.title
-  //   }
-  // }
+    return {
+      statusCode: 200,
+      body: book1.title
+    }
+  }
 
-  // export { handler }
-  //           `,
-  //         })
-  //         .buildAsync()
+  export { handler }
+            `,
+          })
+          .buildAsync()
 
-  //       await pWaitFor(
-  //         async () => {
-  //           const response = await got(`http://localhost:${port}/.netlify/functions/hello`).text()
+        await pWaitFor(
+          async () => {
+            const response = await got(`http://localhost:${port}/.netlify/functions/hello`).text()
 
-  //           return response === 'Modern Web Development on the Jamstack'
-  //         },
-  //         { interval: WAIT_INTERVAL, timeout: WAIT_TIMEOUT },
-  //       )
-  //     })
-  //   })
-  // })
+            return response === 'Modern Web Development on the Jamstack'
+          },
+          { interval: WAIT_INTERVAL, timeout: WAIT_TIMEOUT },
+        )
+      })
+    })
+  })
 
   test(testName('Updates a JavaScript function when a supporting file is modified', args), async (t) => {
     await withSiteBuilder('js-function-update-supporting-file', async (builder) => {
@@ -195,82 +195,82 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
-  // test(testName('Updates a TypeScript function when a supporting file is modified', args), async (t) => {
-  //   await withSiteBuilder('ts-function-update-supporting-file', async (builder) => {
-  //     const functionsConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
+  test(testName('Updates a TypeScript function when a supporting file is modified', args), async (t) => {
+    await withSiteBuilder('ts-function-update-supporting-file', async (builder) => {
+      const functionsConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
-  //     await builder
-  //       .withNetlifyToml({
-  //         config: {
-  //           build: { publish: 'public' },
-  //           functions: { directory: 'functions', ...functionsConfig },
-  //         },
-  //       })
-  //       .withContentFiles([
-  //         {
-  //           path: 'functions/lib/util.ts',
-  //           content: `
-  // const title: string = 'Modern Web Development on the JAMStack'
+      await builder
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'public' },
+            functions: { directory: 'functions', ...functionsConfig },
+          },
+        })
+        .withContentFiles([
+          {
+            path: 'functions/lib/util.ts',
+            content: `
+  const title: string = 'Modern Web Development on the JAMStack'
 
-  // export { title }
-  // `,
-  //         },
-  //         {
-  //           path: 'functions/hello.ts',
-  //           content: `
-  // import { title } from './lib/util'
+  export { title }
+  `,
+          },
+          {
+            path: 'functions/hello.ts',
+            content: `
+  import { title } from './lib/util'
 
-  // interface Book {
-  //   title: string
-  //   author: string
-  // }
+  interface Book {
+    title: string
+    author: string
+  }
 
-  // const handler = async () => {
-  //   const book1: Book = {
-  //     title,
-  //     author: 'Mathias Biilmann & Phil Hawksworth'
-  //   }
+  const handler = async () => {
+    const book1: Book = {
+      title,
+      author: 'Mathias Biilmann & Phil Hawksworth'
+    }
 
-  //   return {
-  //     statusCode: 200,
-  //     body: book1.title
-  //   }
-  // }
+    return {
+      statusCode: 200,
+      body: book1.title
+    }
+  }
 
-  // export { handler }
-  //           `,
-  //         },
-  //       ])
-  //       .buildAsync()
+  export { handler }
+            `,
+          },
+        ])
+        .buildAsync()
 
-  //     await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
-  //       t.is(
-  //         await got(`http://localhost:${port}/.netlify/functions/hello`).text(),
-  //         'Modern Web Development on the JAMStack',
-  //       )
+      await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
+        t.is(
+          await got(`http://localhost:${port}/.netlify/functions/hello`).text(),
+          'Modern Web Development on the JAMStack',
+        )
 
-  //       await builder
-  //         .withContentFile({
-  //           path: 'functions/lib/util.ts',
-  //           content: `
-  // const title: string = 'Modern Web Development on the Jamstack'
+        await builder
+          .withContentFile({
+            path: 'functions/lib/util.ts',
+            content: `
+  const title: string = 'Modern Web Development on the Jamstack'
 
-  // export { title }
-  // `,
-  //         })
-  //         .buildAsync()
+  export { title }
+  `,
+          })
+          .buildAsync()
 
-  //       await pWaitFor(
-  //         async () => {
-  //           const response = await got(`http://localhost:${port}/.netlify/functions/hello`).text()
+        await pWaitFor(
+          async () => {
+            const response = await got(`http://localhost:${port}/.netlify/functions/hello`).text()
 
-  //           return response === 'Modern Web Development on the Jamstack'
-  //         },
-  //         { interval: WAIT_INTERVAL, timeout: WAIT_TIMEOUT },
-  //       )
-  //     })
-  //   })
-  // })
+            return response === 'Modern Web Development on the Jamstack'
+          },
+          { interval: WAIT_INTERVAL, timeout: WAIT_TIMEOUT },
+        )
+      })
+    })
+  })
 
   test(testName('Adds a new JavaScript function when a function file is created', args), async (t) => {
     await withSiteBuilder('js-function-create-function-file', async (builder) => {
