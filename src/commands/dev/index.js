@@ -249,7 +249,11 @@ DevCommand.description = `Local dev server
 The dev command will run a local dev server with Netlify's proxy and redirect rules
 `
 
-DevCommand.examples = ['$ netlify dev', '$ netlify dev -c "yarn start"', '$ netlify dev -c hugo']
+DevCommand.examples = [
+  '$ netlify dev',
+  '$ netlify dev -d public',
+  '$ netlify dev -c "hugo server -w" --targetPort 1313',
+]
 
 DevCommand.strict = false
 
