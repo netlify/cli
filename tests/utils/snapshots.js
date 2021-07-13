@@ -10,6 +10,7 @@ const normalizers = [
   { pattern: /code \d+/, value: 'code *' },
   // this is specific to npm v6
   { pattern: /@ start.+\/.+netlify-cli-tests-v10.+/, value: 'start' },
+  { pattern: /It should be one of.+/gm, value: 'It should be one of: *' },
 ]
 
 const normalize = (inputString) =>
