@@ -12,7 +12,7 @@ const waitPort = require('wait-port')
 
 const { startFunctionsServer } = require('../../lib/functions/server')
 const Command = require('../../utils/command')
-const { serverSettings } = require('../../utils/detect-server')
+const { detectServerSettings } = require('../../utils/detect-server-settings')
 const { getSiteInformation, injectEnvVariables } = require('../../utils/dev')
 const { startLiveTunnel } = require('../../utils/live-tunnel')
 const { NETLIFYDEV, NETLIFYDEVLOG, NETLIFYDEVWARN, NETLIFYDEVERR } = require('../../utils/logo')
@@ -31,7 +31,7 @@ const startStaticServer = async ({ settings, log }) => {
   })
 
   await promisify(server.start.bind(server))()
-  log(`\n${NETLIFYDEVLOG} Server listening to`, settings.frameworkPort)
+  log(`\n${NETLIFYDEVLOG} Static server listening to`, settings.frameworkPort)
 }
 
 const isNonExistingCommandError = ({ command, error }) => {
@@ -53,14 +53,14 @@ const isNonExistingCommandError = ({ command, error }) => {
 }
 
 const startFrameworkServer = async function ({ settings, log, exit }) {
-  if (settings.noCmd) {
+  if (settings.useStaticServer) {
     return await startStaticServer({ settings, log })
   }
 
   log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.framework || 'custom config'}`)
 
   // we use reject=false to avoid rejecting synchronously when the command doesn't exist
-  const frameworkProcess = execa(settings.command, settings.args, { preferLocal: true, reject: false })
+  const frameworkProcess = execa.command(settings.command, { preferLocal: true, reject: false })
   frameworkProcess.stdout.pipe(stripAnsiCc.stream()).pipe(process.stdout)
   frameworkProcess.stderr.pipe(stripAnsiCc.stream()).pipe(process.stderr)
   process.stdin.pipe(frameworkProcess.stdin)
@@ -70,17 +70,17 @@ const startFrameworkServer = async function ({ settings, log, exit }) {
   // eslint-disable-next-line promise/catch-or-return,promise/prefer-await-to-then
   frameworkProcess.then(async () => {
     const result = await frameworkProcess
+    const [commandWithoutArgs] = settings.command.split(' ')
     // eslint-disable-next-line promise/always-return
-    if (result.failed && isNonExistingCommandError({ command: settings.command, error: result })) {
+    if (result.failed && isNonExistingCommandError({ command: commandWithoutArgs, error: result })) {
       log(
         NETLIFYDEVERR,
-        `Failed launching framework server. Please verify ${chalk.magenta(`'${settings.command}'`)} exists`,
+        `Failed launching framework server. Please verify ${chalk.magenta(`'${commandWithoutArgs}'`)} exists`,
       )
     } else {
-      const commandWithArgs = `${settings.command} ${settings.args.join(' ')}`
       const errorMessage = result.failed
         ? `${NETLIFYDEVERR} ${result.shortMessage}`
-        : `${NETLIFYDEVWARN} "${commandWithArgs}" exited with code ${result.exitCode}`
+        : `${NETLIFYDEVWARN} "${settings.command}" exited with code ${result.exitCode}`
 
       log(`${errorMessage}. Shutting down Netlify Dev server`)
     }
@@ -98,7 +98,7 @@ const startFrameworkServer = async function ({ settings, log, exit }) {
       port: settings.frameworkPort,
       output: 'silent',
       timeout: FRAMEWORK_PORT_TIMEOUT,
-      ...(settings.disableLocalServerPolling ? {} : { protocol: 'http' }),
+      ...(settings.pollingStrategies.includes('HTTP') && { protocol: 'http' }),
     })
 
     if (!open) {
@@ -208,7 +208,7 @@ class DevCommand extends Command {
 
     let settings = {}
     try {
-      settings = await serverSettings(devConfig, flags, site.root, log)
+      settings = await detectServerSettings(devConfig, flags, site.root, log)
     } catch (error) {
       log(NETLIFYDEVERR, error.message)
       exit(1)
@@ -249,7 +249,11 @@ DevCommand.description = `Local dev server
 The dev command will run a local dev server with Netlify's proxy and redirect rules
 `
 
-DevCommand.examples = ['$ netlify dev', '$ netlify dev -c "yarn start"', '$ netlify dev -c hugo']
+DevCommand.examples = [
+  '$ netlify dev',
+  '$ netlify dev -d public',
+  '$ netlify dev -c "hugo server -w" --targetPort 1313',
+]
 
 DevCommand.strict = false
 
