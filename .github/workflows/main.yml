@@ -6,11 +6,13 @@ on:
     paths-ignore:
       - 'docs/**'
       - 'CHANGELOG.md'
+      - '.github/**'
   pull_request:
     branches: [main]
     paths-ignore:
       - 'docs/**'
-      - 'CHANGELOG.md'      
+      - 'CHANGELOG.md'
+      - '.github/**'
 
 jobs:
   build:
