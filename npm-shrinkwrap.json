@@ -14,7 +14,7 @@
         "@netlify/config": "^12.6.0",
         "@netlify/framework-info": "^5.7.2",
         "@netlify/plugin-edge-handlers": "^1.11.21",
-        "@netlify/plugins-list": "^2.19.1",
+        "@netlify/plugins-list": "^2.19.2",
         "@netlify/routing-local-proxy": "^0.30.2",
         "@netlify/zip-it-and-ship-it": "4.13.0",
         "@oclif/command": "^1.6.1",
