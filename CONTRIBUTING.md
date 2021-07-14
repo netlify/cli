@@ -33,13 +33,13 @@ npm test
 
 **NOTE:**
 
-Running some integration tests will require an active Netlify account to create a live site.
+Running some integration tests requires an active Netlify account to create a live site.
 
 You can either provide a [Netlify Auth Token](https://docs.netlify.com/cli/get-started/#obtain-a-token-in-the-netlify-ui) (through the `NETLIFY_AUTH_TOKEN` environment variable) or login via `./bin/run login` before running the tests.
 
-Running these tests won't result in any charges towards your Netlify account because they build a site locally and then deploy it.
+The tests those count towards Netlify build minutes since they build a site locally and deploy it using the API.
 
-> We don't recommend doing this, but you can disable these tests by setting the `NETLIFY_TEST_DISABLE_LIVE` environment variable to `true`.
+> You can disable these tests by setting the `NETLIFY_TEST_DISABLE_LIVE` environment variable to `true`.
 
 In watch mode:
 
