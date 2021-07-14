@@ -41,7 +41,7 @@ testMatrix.forEach(({ args }) => {
           },
         })
         .withFunction({
-          path: 'func-1.js',
+          path: 'hello.js',
           handler: async () => ({
             statusCode: 200,
             body: 'Hello',
@@ -50,13 +50,13 @@ testMatrix.forEach(({ args }) => {
         .buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
-        t.is(await got(`http://localhost:${port}/.netlify/functions/func-1`).text(), 'Hello')
+        t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'Hello')
 
         await pause(WAIT_WRITE)
 
         await builder
           .withFunction({
-            path: 'func-1.js',
+            path: 'hello.js',
             handler: async () => ({
               statusCode: 200,
               body: 'Goodbye',
@@ -66,7 +66,7 @@ testMatrix.forEach(({ args }) => {
 
         await pWaitFor(
           async () => {
-            const response = await got(`http://localhost:${port}/.netlify/functions/func-1`).text()
+            const response = await got(`http://localhost:${port}/.netlify/functions/hello`).text()
 
             return response === 'Goodbye'
           },
@@ -89,7 +89,7 @@ testMatrix.forEach(({ args }) => {
           },
         })
         .withContentFile({
-          path: 'functions/func-2.ts',
+          path: 'functions/hello.ts',
           content: `
   interface Book {
     title: string
@@ -115,7 +115,7 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
         t.is(
-          await got(`http://localhost:${port}/.netlify/functions/func-2`).text(),
+          await got(`http://localhost:${port}/.netlify/functions/hello`).text(),
           'Modern Web Development on the JAMStack',
         )
 
@@ -123,7 +123,7 @@ testMatrix.forEach(({ args }) => {
 
         await builder
           .withContentFile({
-            path: 'functions/func-2.ts',
+            path: 'functions/hello.ts',
             content: `
   interface Book {
     title: string
@@ -149,7 +149,7 @@ testMatrix.forEach(({ args }) => {
 
         await pWaitFor(
           async () => {
-            const response = await got(`http://localhost:${port}/.netlify/functions/func-2`).text()
+            const response = await got(`http://localhost:${port}/.netlify/functions/hello`).text()
 
             return response === 'Modern Web Development on the Jamstack'
           },
@@ -171,26 +171,26 @@ testMatrix.forEach(({ args }) => {
           },
         })
         .withContentFiles([
-          { path: 'functions/lib/func-3-util.js', content: `exports.bark = () => 'WOOF!'` },
+          { path: 'functions/lib/util.js', content: `exports.bark = () => 'WOOF!'` },
           {
-            path: 'functions/func-3.js',
-            content: `const { bark } = require('./lib/func-3-util'); exports.handler = async () => ({ statusCode: 200, body: bark() })`,
+            path: 'functions/hello.js',
+            content: `const { bark } = require('./lib/util'); exports.handler = async () => ({ statusCode: 200, body: bark() })`,
           },
         ])
         .buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
-        t.is(await got(`http://localhost:${port}/.netlify/functions/func-3`).text(), 'WOOF!')
+        t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'WOOF!')
 
         await pause(WAIT_WRITE)
 
         await builder
-          .withContentFile({ path: 'functions/lib/func-3-util.js', content: `exports.bark = () => 'WOOF WOOF!'` })
+          .withContentFile({ path: 'functions/lib/util.js', content: `exports.bark = () => 'WOOF WOOF!'` })
           .buildAsync()
 
         await pWaitFor(
           async () => {
-            const response = await got(`http://localhost:${port}/.netlify/functions/func-3`).text()
+            const response = await got(`http://localhost:${port}/.netlify/functions/hello`).text()
 
             return response === 'WOOF WOOF!'
           },
@@ -213,7 +213,7 @@ testMatrix.forEach(({ args }) => {
         })
         .withContentFiles([
           {
-            path: 'functions/lib/func-4-util.ts',
+            path: 'functions/lib/util.ts',
             content: `
   const title: string = 'Modern Web Development on the JAMStack'
 
@@ -221,9 +221,9 @@ testMatrix.forEach(({ args }) => {
   `,
           },
           {
-            path: 'functions/func-4.ts',
+            path: 'functions/hello.ts',
             content: `
-  import { title } from './lib/func-4-util'
+  import { title } from './lib/util'
 
   interface Book {
     title: string
@@ -250,7 +250,7 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
         t.is(
-          await got(`http://localhost:${port}/.netlify/functions/func-4`).text(),
+          await got(`http://localhost:${port}/.netlify/functions/hello`).text(),
           'Modern Web Development on the JAMStack',
         )
 
@@ -258,7 +258,7 @@ testMatrix.forEach(({ args }) => {
 
         await builder
           .withContentFile({
-            path: 'functions/lib/func-4-util.ts',
+            path: 'functions/lib/util.ts',
             content: `
   const title: string = 'Modern Web Development on the Jamstack'
 
@@ -269,7 +269,7 @@ testMatrix.forEach(({ args }) => {
 
         await pWaitFor(
           async () => {
-            const response = await got(`http://localhost:${port}/.netlify/functions/func-4`).text()
+            const response = await got(`http://localhost:${port}/.netlify/functions/hello`).text()
 
             return response === 'Modern Web Development on the Jamstack'
           },
@@ -294,7 +294,7 @@ testMatrix.forEach(({ args }) => {
         .buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
-        const unauthenticatedResponse = await gotCatch404(`http://localhost:${port}/.netlify/functions/func-5`)
+        const unauthenticatedResponse = await gotCatch404(`http://localhost:${port}/.netlify/functions/hello`)
 
         t.is(unauthenticatedResponse.statusCode, 404)
 
@@ -302,7 +302,7 @@ testMatrix.forEach(({ args }) => {
 
         await builder
           .withFunction({
-            path: 'func-5.js',
+            path: 'hello.js',
             handler: async () => ({
               statusCode: 200,
               body: 'Hello',
@@ -313,7 +313,7 @@ testMatrix.forEach(({ args }) => {
         await pWaitFor(
           async () => {
             try {
-              const response = await got(`http://localhost:${port}/.netlify/functions/func-5`).text()
+              const response = await got(`http://localhost:${port}/.netlify/functions/hello`).text()
 
               return response === 'Hello'
             } catch (_) {
@@ -354,7 +354,7 @@ export { handler }
         .buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
-        const unauthenticatedResponse = await gotCatch404(`http://localhost:${port}/.netlify/functions/func-6`)
+        const unauthenticatedResponse = await gotCatch404(`http://localhost:${port}/.netlify/functions/hello`)
 
         t.is(unauthenticatedResponse.statusCode, 404)
 
@@ -362,7 +362,7 @@ export { handler }
 
         await builder
           .withContentFile({
-            path: 'functions/func-6.ts',
+            path: 'functions/hello.ts',
             content: `
   interface Book {
     title: string
@@ -389,7 +389,7 @@ export { handler }
         await pWaitFor(
           async () => {
             try {
-              const response = await got(`http://localhost:${port}/.netlify/functions/func-6`).text()
+              const response = await got(`http://localhost:${port}/.netlify/functions/hello`).text()
 
               return response === 'Modern Web Development on the Jamstack'
             } catch (_) {
@@ -415,7 +415,7 @@ export { handler }
           },
         })
         .withFunction({
-          path: 'func-7.js',
+          path: 'hello.js',
           handler: async () => ({
             statusCode: 200,
             body: 'Hello',
@@ -424,19 +424,19 @@ export { handler }
         .buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
-        t.is(await got(`http://localhost:${port}/.netlify/functions/func-7`).text(), 'Hello')
+        t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'Hello')
 
         await pause(WAIT_WRITE)
 
         await builder
           .withoutFile({
-            path: 'functions/func-7.js',
+            path: 'functions/hello.js',
           })
           .buildAsync()
 
         await pWaitFor(
           async () => {
-            const { statusCode } = await gotCatch404(`http://localhost:${port}/.netlify/functions/func-7`)
+            const { statusCode } = await gotCatch404(`http://localhost:${port}/.netlify/functions/hello`)
 
             return statusCode === 404
           },
