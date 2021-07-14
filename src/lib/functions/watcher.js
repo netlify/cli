@@ -6,9 +6,12 @@ const pEvent = require('p-event')
 const DEBOUNCE_WAIT = 100
 
 const watchDebounced = async (target, { depth, onAdd, onChange, onUnlink }) => {
+  console.log('---> watching', target)
   const watcher = chokidar.watch(target, { depth, ignored: /node_modules/, ignoreInitial: true })
 
   await pEvent(watcher, 'ready')
+
+  console.log('---> watcher ready')
 
   const debouncedOnChange = debounce((path) => {
     decache(path)
