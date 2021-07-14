@@ -19,6 +19,9 @@ const getBuildOptions = ({
   // buffer = true will not stream output
   buffer: json || silent,
   offline,
+  featureFlags: {
+    zisiEsbuildDynamicImports: true,
+  },
 })
 
 const runBuild = async (options) => {
