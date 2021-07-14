@@ -1,8 +1,7 @@
 /* eslint-disable require-await */
 const { join } = require('path')
 
-// eslint-disable-next-line ava/use-test
-const avaTest = require('ava')
+const test = require('ava')
 const pWaitFor = require('p-wait-for')
 
 const { withDevServer } = require('./utils/dev-server')
@@ -10,7 +9,6 @@ const got = require('./utils/got')
 const { pause } = require('./utils/pause')
 const { withSiteBuilder } = require('./utils/site-builder')
 
-const test = avaTest
 const testMatrix = [{ args: [] }, { args: ['esbuild'] }]
 const testName = (title, args) => (args.length <= 0 ? title : `${title} - ${args.join(' ')}`)
 
