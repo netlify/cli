@@ -32,6 +32,10 @@ jobs:
       fail-fast: false
 
     steps:
+      # Sets an environment variable if this is a release PR
+      - name: Check for release
+        run: echo "IS_RELEASE=1" >> $GITHUB_ENV
+        if: "${{ startsWith(github.head_ref, 'release-') }}"
       # This improves Windows network performance, we need this since we open many ports in our tests
       - name: Increase Windows port limit and reduce time wait delay
         run: |
@@ -51,8 +55,9 @@ jobs:
         run: npm run site:build:install
       - name: Linting
         run: npm run format:ci
-        if: "${{ matrix.node-version == '*' }}"
+        if: "${{ matrix.node-version == '*' && !env.IS_RELEASE}}"
       - name: Tests
+        if: '${{ !env.IS_RELEASE }}'
         run: npm run test:ci
         env:
           # GitHub secrets are not available when running on PR from forks
@@ -65,6 +70,7 @@ jobs:
           CHOKIDAR_INTERVAL: 20
           CHOKIDAR_USEPOLLING: 1
       - name: Get test coverage flags
+        if: '${{ !env.IS_RELEASE }}'
         id: test-coverage-flags
         run: |-
           os=${{ matrix.config.os }}
@@ -73,6 +79,7 @@ jobs:
           echo "::set-output name=node::node_${node//[.*]/}"
         shell: bash
       - uses: codecov/codecov-action@v1
+        if: '${{ !env.IS_RELEASE }}'
         with:
           file: coverage/coverage-final.json
           flags: ${{ steps.test-coverage-flags.outputs.os }},${{ steps.test-coverage-flags.outputs.node }}
