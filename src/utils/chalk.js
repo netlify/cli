@@ -1,5 +1,4 @@
 const chalk = require('chalk')
-const { Chalk } = require('chalk')
 
 /**
  * Chalk instance for CLI
@@ -8,7 +7,7 @@ const { Chalk } = require('chalk')
  */
 const safeChalk = function (noColors) {
   if (noColors) {
-    const colorlessChalk = new Chalk({ level: 0 })
+    const colorlessChalk = new chalk.Instance({ level: 0 })
     return colorlessChalk
   }
   return chalk
