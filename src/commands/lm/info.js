@@ -10,6 +10,7 @@ const {
 
 class LmInfoCommand extends Command {
   async run() {
+    this.parse(LmInfoCommand)
     const steps = [
       checkGitVersionStep,
       checkGitLFSVersionStep,
