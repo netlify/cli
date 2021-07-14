@@ -461,7 +461,7 @@ test('Serves functions that dynamically load files included in the `functions.in
         },
       ])
       .withFunction({
-        path: 'func-8.js',
+        path: 'hello.js',
         handler: async (event) => {
           const { name } = event.queryStringParameters
 
@@ -483,8 +483,8 @@ test('Serves functions that dynamically load files included in the `functions.in
       .buildAsync()
 
     await withDevServer({ cwd: builder.directory }, async ({ port }) => {
-      t.is(await got(`http://localhost:${port}/.netlify/functions/func-8?name=one`).text(), 'one')
-      t.is(await got(`http://localhost:${port}/.netlify/functions/func-8?name=two`).text(), 'two')
+      t.is(await got(`http://localhost:${port}/.netlify/functions/hello?name=one`).text(), 'one')
+      t.is(await got(`http://localhost:${port}/.netlify/functions/hello?name=two`).text(), 'two')
     })
   })
 })
@@ -493,7 +493,7 @@ test('Uses sourcemaps to show correct paths and locations in stack trace', async
   await withSiteBuilder('function-with-sourcemaps', async (builder) => {
     await builder
       .withFunction({
-        path: 'func-9.js',
+        path: 'hello.js',
         handler: async () => {
           throw new Error('Something went wrong')
         },
@@ -508,11 +508,11 @@ test('Uses sourcemaps to show correct paths and locations in stack trace', async
 
     await withDevServer({ cwd: builder.directory }, async ({ port }) => {
       try {
-        await got(`http://localhost:${port}/.netlify/functions/func-9`)
+        await got(`http://localhost:${port}/.netlify/functions/hello`)
 
         t.fail()
       } catch (error) {
-        t.true(error.response.body.includes(join(builder.directory, 'functions', 'func-9.js')))
+        t.true(error.response.body.includes(join(builder.directory, 'functions', 'hello.js')))
         t.false(error.response.body.includes(join('.netlify', 'functions-serve')))
       }
     })
