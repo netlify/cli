@@ -12,20 +12,20 @@ const { getPathInProject } = require('../lib/settings')
 const STATE_PATH = getPathInProject(['state.json'])
 const permissionError = "You don't have access to this file."
 
-class StateConfig {
-  constructor(cwd) {
-    this.path = StateConfig.findStatePath(cwd)
+// Finds location of `.netlify/state.json`
+const findStatePath = (cwd) => {
+  const statePath = findUp.sync([STATE_PATH], { cwd })
+
+  if (!statePath) {
+    return path.join(cwd, STATE_PATH)
   }
 
-  // Finds location of `.netlify/state.json`
-  static findStatePath(cwd) {
-    const statePath = findUp.sync([STATE_PATH], { cwd })
+  return statePath
+}
 
-    if (!statePath) {
-      return path.join(cwd, STATE_PATH)
-    }
-
-    return statePath
+class StateConfig {
+  constructor(cwd) {
+    this.path = findStatePath(cwd)
   }
 
   get all() {

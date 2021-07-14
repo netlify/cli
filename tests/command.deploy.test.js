@@ -4,7 +4,7 @@ const test = require('ava')
 const omit = require('omit.js').default
 
 const { supportsEdgeHandlers } = require('../src/lib/account')
-const { getToken } = require('../src/utils/command')
+const { getToken } = require('../src/utils/command-helpers')
 
 const callCli = require('./utils/call-cli')
 const { generateSiteName, createLiveTestSite } = require('./utils/create-live-test-site')

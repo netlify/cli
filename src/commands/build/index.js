@@ -2,11 +2,11 @@ const { flags: flagsLib } = require('@oclif/command')
 
 const { getBuildOptions, runBuild } = require('../../lib/build')
 const Command = require('../../utils/command')
+const { getToken } = require('../../utils/command-helpers')
 
 class BuildCommand extends Command {
   // Run Netlify Build
   async run() {
-    const { getToken } = Command
     const { flags } = this.parse(BuildCommand)
 
     this.setAnalyticsPayload({ dry: flags.dry })

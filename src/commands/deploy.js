@@ -301,7 +301,7 @@ const handleBuild = async ({ context, flags }) => {
   if (!flags.build) {
     return
   }
-  const [token] = await context.getToken()
+  const [token] = await getToken()
   const options = await getBuildOptions({
     context,
     token,
@@ -364,9 +364,6 @@ class DeployCommand extends Command {
     const { warn, error, exit } = this
     const { api, site } = this.netlify
     const alias = flags.alias || flags.branch
-
-    // for build context
-    this.getToken = getToken
 
     this.setAnalyticsPayload({ open: flags.open, prod: flags.prod, json: flags.json, alias: Boolean(alias) })
 

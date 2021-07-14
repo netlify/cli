@@ -2,9 +2,11 @@ const process = require('process')
 const { format, inspect } = require('util')
 
 const argv = require('minimist')(process.argv.slice(2))
+const omit = require('omit.js').default
 
 const { startSpinner, clearSpinner } = require('../lib/spinner')
 
+const chalkInstance = require('./chalk')
 const getGlobalConfig = require('./get-global-config')
 
 const { NETLIFY_AUTH_TOKEN } = process.env
@@ -12,7 +14,9 @@ const { NETLIFY_AUTH_TOKEN } = process.env
 // 5 Minutes
 const TOKEN_TIMEOUT = 3e5
 
-const pollForToken = async ({ api, ticket, exitWithError, chalk }) => {
+const chalk = chalkInstance(argv.json)
+
+const pollForToken = async ({ api, ticket, exitWithError }) => {
   const spinner = startSpinner({ text: 'Waiting for authorization...' })
   try {
     const accessToken = await api.getAccessToken(ticket, { timeout: TOKEN_TIMEOUT })
@@ -37,7 +41,19 @@ const pollForToken = async ({ api, ticket, exitWithError, chalk }) => {
   }
 }
 
-const getToken = async (tokenFromFlag) => {
+const getCwd = () => argv.cwd || process.cwd()
+
+const getAuthArg = () => {
+  // If deploy command. Support shorthand 'a' flag
+  if (argv && argv._ && argv._[0] === 'deploy') {
+    return argv.auth || argv.a
+  }
+  return argv.auth
+}
+
+const getToken = async (authFromFlag) => {
+  const tokenFromFlag = authFromFlag || getAuthArg(argv)
+
   // 1. First honor command flag --auth
   if (tokenFromFlag) {
     return [tokenFromFlag, 'flag']
@@ -75,9 +91,22 @@ const log = (message = '', ...args) => {
   process.stdout.write(`${format(message, ...args)}\n`)
 }
 
+// When `build.publish` is not set by the user, the CLI behavior differs in
+// several ways. It detects it by checking if `build.publish` is `undefined`.
+// However, `@netlify/config` adds a default value to `build.publish`.
+// This removes it.
+const normalizeConfig = (config) =>
+  config.build.publishOrigin === 'default'
+    ? { ...config, build: omit(config.build, ['publish', 'publishOrigin']) }
+    : config
+
 module.exports = {
+  argv,
+  getCwd,
   pollForToken,
   log,
   logJson,
   getToken,
+  normalizeConfig,
+  chalk,
 }

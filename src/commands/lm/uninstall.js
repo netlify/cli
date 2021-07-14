@@ -2,7 +2,8 @@ const Command = require('../../utils/command')
 const { uninstall } = require('../../utils/lm/install')
 
 class LmUninstallCommand extends Command {
-  static async run() {
+  async run() {
+    this.parse(LmUninstallCommand)
     await uninstall()
   }
 }

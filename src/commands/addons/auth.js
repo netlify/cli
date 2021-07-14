@@ -24,7 +24,7 @@ class AddonsAuthCommand extends Command {
     log()
     log(addon.auth_url)
     log()
-    await openBrowser({ url: addon.auth_url, log })
+    await openBrowser({ url: addon.auth_url })
     this.exit()
   }
 }

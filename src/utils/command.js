@@ -5,14 +5,11 @@ const resolveConfig = require('@netlify/config')
 const { flags: flagsLib } = require('@oclif/command')
 const oclifParser = require('@oclif/parser')
 const merge = require('lodash/merge')
-const argv = require('minimist')(process.argv.slice(2))
 const API = require('netlify')
-const omit = require('omit.js').default
 
 const { getAgent } = require('../lib/http-agent')
 
-const chalkInstance = require('./chalk')
-const { pollForToken, log, getToken } = require('./command-helpers')
+const { pollForToken, log, getToken, getCwd, argv, normalizeConfig, chalk } = require('./command-helpers')
 const getGlobalConfig = require('./get-global-config')
 const openBrowser = require('./open-browser')
 const StateConfig = require('./state-config')
@@ -30,12 +27,9 @@ class BaseCommand extends TrackedCommand {
   async init() {
     await super.init()
 
-    const cwd = argv.cwd || process.cwd()
-    // Grab netlify API token
-    const authViaFlag = getAuthArg(argv)
-    const { normalizeConfig } = BaseCommand
+    const cwd = getCwd()
 
-    const [token] = await getToken(authViaFlag)
+    const [token] = await getToken()
 
     // Get site id & build state
     const state = new StateConfig(cwd)
@@ -55,7 +49,6 @@ class BaseCommand extends TrackedCommand {
 
     const { flags } = this.parse(BaseCommand)
     const agent = await getAgent({
-      log,
       exit: this.exit,
       httpProxy: flags.httpProxy,
       certificateFile: flags.httpProxyCertificateFilename,
@@ -126,16 +119,6 @@ class BaseCommand extends TrackedCommand {
     }
   }
 
-  // When `build.publish` is not set by the user, the CLI behavior differs in
-  // several ways. It detects it by checking if `build.publish` is `undefined`.
-  // However, `@netlify/config` adds a default value to `build.publish`.
-  // This removes it.
-  static normalizeConfig(config) {
-    return config.build.publishOrigin === 'default'
-      ? { ...config, build: omit(config.build, ['publish', 'publishOrigin']) }
-      : config
-  }
-
   async isLoggedIn() {
     try {
       await this.netlify.api.getCurrentUser()
@@ -188,11 +171,6 @@ class BaseCommand extends TrackedCommand {
     })
   }
 
-  static get chalk() {
-    // If --json flag disable chalk colors
-    return chalkInstance(argv.json)
-  }
-
   async authenticate(tokenFromFlag) {
     const [token] = await getToken(tokenFromFlag)
     if (token) {
@@ -214,13 +192,12 @@ class BaseCommand extends TrackedCommand {
     const authLink = `${webUI}/authorize?response_type=ticket&ticket=${ticket.id}`
 
     log(`Opening ${authLink}`)
-    await openBrowser({ url: authLink, log })
+    await openBrowser({ url: authLink })
 
     const accessToken = await pollForToken({
       api: this.netlify.api,
       ticket,
       exitWithError: this.error,
-      chalk: this.chalk,
     })
 
     const { id: userId, full_name: name, email } = await this.netlify.api.getCurrentUser()
@@ -253,22 +230,14 @@ class BaseCommand extends TrackedCommand {
 
     // Log success
     log()
-    log(`${this.chalk.greenBright('You are now logged into your Netlify account!')}`)
+    log(`${chalk.greenBright('You are now logged into your Netlify account!')}`)
     log()
-    log(`Run ${this.chalk.cyanBright('netlify status')} for account details`)
+    log(`Run ${chalk.cyanBright('netlify status')} for account details`)
     log()
-    log(`To see all available commands run: ${this.chalk.cyanBright('netlify help')}`)
+    log(`To see all available commands run: ${chalk.cyanBright('netlify help')}`)
     log()
     return accessToken
   }
-}
-
-const getAuthArg = function (cliArgs) {
-  // If deploy command. Support shorthand 'a' flag
-  if (cliArgs && cliArgs._ && cliArgs._[0] === 'deploy') {
-    return cliArgs.auth || cliArgs.a
-  }
-  return cliArgs.auth
 }
 
 BaseCommand.strict = false
@@ -286,5 +255,4 @@ BaseCommand.flags = {
   }),
 }
 
-BaseCommand.getToken = getToken
 module.exports = BaseCommand
