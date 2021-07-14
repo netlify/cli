@@ -1,21 +1,20 @@
 /* eslint-disable require-await */
 const { join } = require('path')
-const process = require('process')
 
-// eslint-disable-next-line ava/use-test
-const avaTest = require('ava')
+const test = require('ava')
 const pWaitFor = require('p-wait-for')
 
 const { withDevServer } = require('./utils/dev-server')
 const got = require('./utils/got')
+const { pause } = require('./utils/pause')
 const { withSiteBuilder } = require('./utils/site-builder')
 
-const test = process.env.CI === 'true' ? avaTest.serial.bind(avaTest) : avaTest
 const testMatrix = [{ args: [] }, { args: ['esbuild'] }]
 const testName = (title, args) => (args.length <= 0 ? title : `${title} - ${args.join(' ')}`)
 
 const WAIT_INTERVAL = 1800
 const WAIT_TIMEOUT = 30000
+const WAIT_WRITE = 1000
 
 const gotCatch404 = async (url, options) => {
   try {
@@ -52,6 +51,8 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
         t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'Hello')
+
+        await pause(WAIT_WRITE)
 
         await builder
           .withFunction({
@@ -118,6 +119,8 @@ testMatrix.forEach(({ args }) => {
           'Modern Web Development on the JAMStack',
         )
 
+        await pause(WAIT_WRITE)
+
         await builder
           .withContentFile({
             path: 'functions/hello.ts',
@@ -178,6 +181,8 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
         t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'WOOF!')
+
+        await pause(WAIT_WRITE)
 
         await builder
           .withContentFile({ path: 'functions/lib/util.js', content: `exports.bark = () => 'WOOF WOOF!'` })
@@ -249,6 +254,8 @@ testMatrix.forEach(({ args }) => {
           'Modern Web Development on the JAMStack',
         )
 
+        await pause(WAIT_WRITE)
+
         await builder
           .withContentFile({
             path: 'functions/lib/util.ts',
@@ -290,6 +297,8 @@ testMatrix.forEach(({ args }) => {
         const unauthenticatedResponse = await gotCatch404(`http://localhost:${port}/.netlify/functions/hello`)
 
         t.is(unauthenticatedResponse.statusCode, 404)
+
+        await pause(WAIT_WRITE)
 
         await builder
           .withFunction({
@@ -348,6 +357,8 @@ export { handler }
         const unauthenticatedResponse = await gotCatch404(`http://localhost:${port}/.netlify/functions/hello`)
 
         t.is(unauthenticatedResponse.statusCode, 404)
+
+        await pause(WAIT_WRITE)
 
         await builder
           .withContentFile({
@@ -414,6 +425,8 @@ export { handler }
 
       await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
         t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'Hello')
+
+        await pause(WAIT_WRITE)
 
         await builder
           .withoutFile({
