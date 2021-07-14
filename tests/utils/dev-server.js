@@ -48,7 +48,6 @@ const startServer = async ({ cwd, offline = true, env = {}, args = [] }) => {
   const serverPromise = new Promise((resolve, reject) => {
     let selfKilled = false
     ps.stdout.on('data', (data) => {
-      console.log(data.toString())
       output += data
       if (data.includes('Server now ready on')) {
         resolve({

@@ -103,7 +103,6 @@ const createSiteBuilder = ({ siteName }) => {
       const dest = path.join(directory, filePath)
       tasks.push(async () => {
         await ensureDir(path.dirname(dest))
-        console.log('--> writing', dest)
         await fs.writeFileAsync(dest, content)
       })
       return builder
