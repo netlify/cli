@@ -1287,7 +1287,10 @@ testMatrix.forEach(({ args }) => {
         builder
           .withNetlifyToml({
             config: {
-              build: { publish: publicDir, edge_handlers: "netlify/edge-handlers" },
+              build: {
+                publish: publicDir,
+                edge_handlers: 'netlify/edge-handlers',
+              },
               'edge-handlers': [
                 {
                   handler: 'smoke',
@@ -1338,7 +1341,10 @@ testMatrix.forEach(({ args }) => {
         builder
           .withNetlifyToml({
             config: {
-              build: { publish: publicDir, edge_handlers: "netlify/edge-handlers" },
+              build: {
+                publish: publicDir,
+                edge_handlers: 'netlify/edge-handlers',
+              },
               'edge-handlers': [
                 {
                   handler: 'smoke',
