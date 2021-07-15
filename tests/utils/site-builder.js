@@ -64,7 +64,7 @@ const createSiteBuilder = ({ siteName }) => {
       return builder
     },
     withEdgeHandlers: ({ fileName = 'index.js', handlers }) => {
-      const dest = path.join(directory, 'edge-handlers', fileName)
+      const dest = path.join(directory, 'netlify/edge-handlers', fileName)
       tasks.push(async () => {
         const content = Object.entries(handlers)
           .map(([event, handler]) => `export const ${event} = ${handler.toString()}`)
