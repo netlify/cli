@@ -35,7 +35,7 @@ jobs:
       # Sets an output parameter if this is a release PR
       - name: Check for release
         id: release-check
-        run: echo '::set-output name=IS_RELEASE::true'
+        run: echo "::set-output name=IS_RELEASE::true"
         if: "${{ startsWith(github.head_ref, 'release-') }}"
       # This improves Windows network performance, we need this since we open many ports in our tests
       - name: Increase Windows port limit and reduce time wait delay
