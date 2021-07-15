@@ -12,7 +12,6 @@ class TraceCommand extends Command {
   async run() {
     this.parse(TraceCommand)
 
-
     const args = ['trace', ...this.argv]
     const { subprocess } = runProcess({ args })
     await subprocess
