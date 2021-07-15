@@ -109,7 +109,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
           })
           .withNetlifyToml({
             config: {
-              build: { publish: 'public', command: 'echo "no op"' },
+              build: { publish: 'public', command: 'echo "no op"', edge_handlers: 'netlify/edge-handlers' },
             },
           })
           .withEdgeHandlers({
