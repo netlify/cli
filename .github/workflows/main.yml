@@ -12,23 +12,17 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.config.os }}
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 30
-    defaults:
-      run:
-        shell: ${{ matrix.config.shell }}
     strategy:
       matrix:
-        config:
-          - { os: macOS-latest, shell: bash }
-          - { os: ubuntu-latest, shell: bash }
-          - { os: windows-latest, shell: cmd }
+        os: [ubuntu-latest, macOS-latest, windows-latest]
         node-version: [10.x, '*']
         exclude:
-          - config: { os: macOS-latest, shell: bash }
-            node-version: 10.x
-          - config: { os: windows-latest, shell: cmd }
-            node-version: 10.x
+          - os: macOS-latest
+            node-version: '10.x'
+          - os: windows-latest
+            node-version: '10.x'
       fail-fast: false
 
     steps:
@@ -42,7 +36,7 @@ jobs:
         run: |
           REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\TCPIP\Parameters /v MaxUserPort /t REG_DWORD /d 32768 /f
           REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\TCPIP\Parameters /v TcpTimedWaitDelay /t REG_DWORD /d 30 /f
-        if: "${{ matrix.config.os == 'windows-latest' }}"
+        if: "${{ matrix.os == 'windows-latest' }}"
       - name: Git checkout
         uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
@@ -75,7 +69,7 @@ jobs:
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
         id: test-coverage-flags
         run: |-
-          os=${{ matrix.config.os }}
+          os=${{ matrix.os }}
           node=${{ matrix.node-version }}
           echo "::set-output name=os::${os/-latest/}"
           echo "::set-output name=node::node_${node//[.*]/}"
