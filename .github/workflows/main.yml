@@ -1,10 +1,6 @@
 name: Testing for CLI
 
 on:
-  push:
-    branches: [main]
-    paths-ignore:
-      - 'docs/**'
   pull_request:
     branches: [main]
     paths-ignore:
