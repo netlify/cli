@@ -10,7 +10,7 @@
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
-        "@netlify/build": "^15.11.4",
+        "@netlify/build": "^15.11.5",
         "@netlify/config": "^12.6.0",
         "@netlify/framework-info": "^5.7.2",
         "@netlify/plugin-edge-handlers": "^1.11.21",
@@ -2309,9 +2309,9 @@
       }
     },
     "node_modules/@netlify/build": {
-      "version": "15.11.4",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-15.11.4.tgz",
-      "integrity": "sha512-iSTIJgj7l/lnudqTmTj3cNPQLFVxKoZZNR09vUxRe8yDd1eFcgaYZBt15UZf4DBcwxsyS0tuz4vSLbpC/gR/VQ==",
+      "version": "15.11.5",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-15.11.5.tgz",
+      "integrity": "sha512-qsL1bvVAa5ZPIkYxo1Z4vdOcq8sDxQhyKjDqPAEasLqfX3ZTABctze3WdD6WmpyR9wzQEJLpCy1s3ncTDeiU0w==",
       "dependencies": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^1.0.7",
@@ -2321,7 +2321,7 @@
         "@netlify/plugin-edge-handlers": "^1.11.21",
         "@netlify/plugins-list": "^2.19.2",
         "@netlify/run-utils": "^1.0.6",
-        "@netlify/zip-it-and-ship-it": "^4.13.1",
+        "@netlify/zip-it-and-ship-it": "^4.14.0",
         "@sindresorhus/slugify": "^1.1.0",
         "@ungap/from-entries": "^0.2.1",
         "ansi-escapes": "^4.3.2",
@@ -22634,9 +22634,9 @@
       }
     },
     "@netlify/build": {
-      "version": "15.11.4",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-15.11.4.tgz",
-      "integrity": "sha512-iSTIJgj7l/lnudqTmTj3cNPQLFVxKoZZNR09vUxRe8yDd1eFcgaYZBt15UZf4DBcwxsyS0tuz4vSLbpC/gR/VQ==",
+      "version": "15.11.5",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-15.11.5.tgz",
+      "integrity": "sha512-qsL1bvVAa5ZPIkYxo1Z4vdOcq8sDxQhyKjDqPAEasLqfX3ZTABctze3WdD6WmpyR9wzQEJLpCy1s3ncTDeiU0w==",
       "requires": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^1.0.7",
@@ -22646,7 +22646,7 @@
         "@netlify/plugin-edge-handlers": "^1.11.21",
         "@netlify/plugins-list": "^2.19.2",
         "@netlify/run-utils": "^1.0.6",
-        "@netlify/zip-it-and-ship-it": "^4.13.1",
+        "@netlify/zip-it-and-ship-it": "^4.14.0",
         "@sindresorhus/slugify": "^1.1.0",
         "@ungap/from-entries": "^0.2.1",
         "ansi-escapes": "^4.3.2",
