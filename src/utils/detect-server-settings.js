@@ -310,15 +310,16 @@ const filterSettings = function (scriptInquirerOptions, input) {
 }
 
 const formatSettingsArrForInquirer = function (frameworks) {
-  return [].concat(
-    ...frameworks.map((framework) =>
-      framework.dev.commands.map((command) => ({
-        name: `[${chalk.yellow(framework.name)}] '${command}'`,
-        value: { ...framework, commands: [command] },
-        short: `${framework.name}-${command}`,
-      })),
-    ),
+  const formattedArr = frameworks.map((framework) =>
+    framework.dev.commands.map((command) => ({
+      name: `[${chalk.yellow(framework.name)}] '${command}'`,
+      value: { ...framework, commands: [command] },
+      short: `${framework.name}-${command}`,
+    })),
   )
+  // Replace by .flatMap() when Node.js support >= 11.0.0
+  // eslint-disable-next-line unicorn/prefer-spread
+  return [].concat(...formattedArr)
 }
 
 module.exports = {
