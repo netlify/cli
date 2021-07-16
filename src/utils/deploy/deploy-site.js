@@ -60,7 +60,7 @@ const deploySite = async (
 
   statusCb({
     type: 'hashing',
-    msg: `Finished hashing ${filesCount} files${fnDir ? ` and ${functionsCount} functions` : ''}`,
+    msg: `Finished hashing ${filesCount} files and ${functionsCount} functions`,
     phase: 'stop',
   })
 

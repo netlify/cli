@@ -102,18 +102,7 @@ class FunctionsRegistry {
     return this.functions.get(name)
   }
 
-  registerFunction(name, func) {
-    if (func.isBackground && !this.capabilities.backgroundFunctions) {
-      this.logger.warn(getLogMessage('functions.backgroundNotSupported'))
-    }
-
-    this.functions.set(name, func)
-    this.buildFunctionAndWatchFiles(func)
-
-    this.logger.log(`${NETLIFYDEVLOG} ${chalk.green('Loaded')} function ${chalk.yellow(name)}.`)
-  }
-
-  async scan(directory) {
+  async prepareDirectoryScan(directory) {
     await mkdirRecursiveAsync(directory)
 
     // We give runtimes the opportunity to react to a directory scan and run
@@ -128,8 +117,25 @@ class FunctionsRegistry {
         return runtime.onDirectoryScan({ directory })
       }),
     )
+  }
 
-    const functions = await this.listFunctions(directory)
+  registerFunction(name, func) {
+    if (func.isBackground && !this.capabilities.backgroundFunctions) {
+      this.logger.warn(getLogMessage('functions.backgroundNotSupported'))
+    }
+
+    this.functions.set(name, func)
+    this.buildFunctionAndWatchFiles(func)
+
+    this.logger.log(`${NETLIFYDEVLOG} ${chalk.green('Loaded')} function ${chalk.yellow(name)}.`)
+  }
+
+  async scan(directory) {
+    const directories = Array.isArray(directory) ? directory : [directory]
+
+    await Promise.all(directories.map((path) => this.prepareDirectoryScan(path)))
+
+    const functions = await this.listFunctions(directories)
 
     // Before registering any functions, we look for any functions that were on
     // the previous list but are missing from the new one. We unregister them.
@@ -143,7 +149,12 @@ class FunctionsRegistry {
 
     await Promise.all(deletedFunctions.map((func) => this.unregisterFunction(func.name)))
 
-    functions.forEach(({ mainFile, name, runtime: runtimeName }) => {
+    // zip-it-and-ship-it returns a full list of functions for all directories,
+    // even if one function overrides another function with the same name from
+    // other directory. In these cases, the function that takes precedence has
+    // a higher index in the array. To make sure we process it first, `reverse`
+    // is being used on the functions array.
+    functions.reverse().forEach(({ mainFile, name, runtime: runtimeName }) => {
       const runtime = runtimes[runtimeName]
 
       // If there is no matching runtime, it means this function is not yet
@@ -172,7 +183,7 @@ class FunctionsRegistry {
       this.registerFunction(name, func)
     })
 
-    await this.setupDirectoryWatcher(directory)
+    await Promise.all(directories.map((path) => this.setupDirectoryWatcher(path)))
   }
 
   // This watcher looks at files being added or removed from a functions
