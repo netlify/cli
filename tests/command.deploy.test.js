@@ -39,7 +39,7 @@ const validateDeploy = async ({ deploy, siteName, content, t }) => {
   await validateContent({ siteUrl: deploy.deploy_url, path: '', content, t })
 }
 
-if (process.env.IS_FORK !== 'true') {
+if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
   test.before(async (t) => {
     const { siteId, account } = await createLiveTestSite(SITE_NAME)
     t.context.siteId = siteId
@@ -109,7 +109,7 @@ if (process.env.IS_FORK !== 'true') {
           })
           .withNetlifyToml({
             config: {
-              build: { publish: 'public', command: 'echo "no op"' },
+              build: { publish: 'public', command: 'echo "no op"', edge_handlers: 'netlify/edge-handlers' },
             },
           })
           .withEdgeHandlers({

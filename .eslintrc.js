@@ -22,11 +22,9 @@ module.exports = {
     'fp/no-mutating-assign': 0,
     'fp/no-mutating-methods': 0,
     'fp/no-mutation': 0,
-    'fp/no-proxy': 0,
     'fp/no-this': 0,
     'import/max-dependencies': 0,
     'node/no-sync': 0,
-    'unicorn/prefer-spread': 0,
     'unicorn/consistent-destructuring': 0,
     // TODO: harmonize with filename snake_case in other Netlify Dev projects
     'unicorn/filename-case': [2, { case: 'kebabCase' }],

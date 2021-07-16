@@ -12,36 +12,31 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.config.os }}
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 30
-    defaults:
-      run:
-        shell: ${{ matrix.config.shell }}
     strategy:
       matrix:
-        config:
-          - { os: macOS-latest, shell: bash }
-          - { os: ubuntu-latest, shell: bash }
-          - { os: windows-latest, shell: cmd }
+        os: [ubuntu-latest, macOS-latest, windows-latest]
         node-version: [10.x, '*']
         exclude:
-          - config: { os: macOS-latest, shell: bash }
-            node-version: 10.x
-          - config: { os: windows-latest, shell: cmd }
-            node-version: 10.x
+          - os: macOS-latest
+            node-version: '10.x'
+          - os: windows-latest
+            node-version: '10.x'
       fail-fast: false
 
     steps:
-      # Sets an environment variable if this is a release PR
+      # Sets an output parameter if this is a release PR
       - name: Check for release
-        run: echo "IS_RELEASE=1" >> $GITHUB_ENV
+        id: release-check
+        run: echo "::set-output name=IS_RELEASE::true"
         if: "${{ startsWith(github.head_ref, 'release-') }}"
       # This improves Windows network performance, we need this since we open many ports in our tests
       - name: Increase Windows port limit and reduce time wait delay
         run: |
           REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\TCPIP\Parameters /v MaxUserPort /t REG_DWORD /d 32768 /f
           REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\TCPIP\Parameters /v TcpTimedWaitDelay /t REG_DWORD /d 30 /f
-        if: "${{ matrix.config.os == 'windows-latest' }}"
+        if: "${{ matrix.os == 'windows-latest' }}"
       - name: Git checkout
         uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
@@ -55,14 +50,15 @@ jobs:
         run: npm run site:build:install
       - name: Linting
         run: npm run format:ci
-        if: "${{ matrix.node-version == '*' && !env.IS_RELEASE}}"
+        if: "${{ matrix.node-version == '*' && !steps.release-check.outputs.IS_RELEASE}}"
       - name: Tests
-        if: '${{ !env.IS_RELEASE }}'
+        if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
         run: npm run test:ci
         env:
           # GitHub secrets are not available when running on PR from forks
           # We set a flag so we can skip tests that access Netlify API
-          IS_FORK: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true }}
+          NETLIFY_TEST_DISABLE_LIVE:
+            ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true }}
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           # NETLIFY_TEST_GITHUB_TOKEN is used to avoid reaching GitHub API limits in exec-fetcher.js
           NETLIFY_TEST_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -70,16 +66,16 @@ jobs:
           CHOKIDAR_INTERVAL: 20
           CHOKIDAR_USEPOLLING: 1
       - name: Get test coverage flags
-        if: '${{ !env.IS_RELEASE }}'
+        if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
         id: test-coverage-flags
         run: |-
-          os=${{ matrix.config.os }}
+          os=${{ matrix.os }}
           node=${{ matrix.node-version }}
           echo "::set-output name=os::${os/-latest/}"
           echo "::set-output name=node::node_${node//[.*]/}"
         shell: bash
       - uses: codecov/codecov-action@v1
-        if: '${{ !env.IS_RELEASE }}'
+        if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
         with:
           file: coverage/coverage-final.json
           flags: ${{ steps.test-coverage-flags.outputs.os }},${{ steps.test-coverage-flags.outputs.node }}
