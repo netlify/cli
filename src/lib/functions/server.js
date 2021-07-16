@@ -1,6 +1,7 @@
 const bodyParser = require('body-parser')
 const jwtDecode = require('jwt-decode')
 
+const { getInternalFunctionsDir } = require('../../utils/functions')
 const { NETLIFYDEVERR, NETLIFYDEVLOG } = require('../../utils/logo')
 
 const { handleBackgroundFunction, handleBackgroundFunctionResult } = require('./background')
@@ -159,8 +160,9 @@ const startFunctionsServer = async ({
       timeouts,
       warn,
     })
+    const internalFunctionsDir = getInternalFunctionsDir()
 
-    await functionsRegistry.scan(settings.functions)
+    await functionsRegistry.scan([settings.functions, internalFunctionsDir])
 
     const server = await getFunctionsServer({
       functionsRegistry,

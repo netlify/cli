@@ -17,6 +17,7 @@ const { startSpinner, stopSpinner } = require('../lib/spinner')
 const Command = require('../utils/command')
 const { deploySite } = require('../utils/deploy/deploy-site')
 const { deployEdgeHandlers } = require('../utils/edge-handlers')
+const { getInternalFunctionsDir } = require('../utils/functions')
 const { NETLIFYDEV, NETLIFYDEVLOG, NETLIFYDEVERR } = require('../utils/logo')
 const openBrowser = require('../utils/open-browser')
 
@@ -263,9 +264,10 @@ const runDeploy = async ({
       error,
       warn,
     })
+    const fnDir = [functionsFolder, getInternalFunctionsDir()].filter(Boolean)
     results = await deploySite(api, siteId, deployFolder, {
       configPath,
-      fnDir: functionsFolder,
+      fnDir,
       functionsConfig,
       statusCb: silent ? () => {} : deployProgressCb(),
       deployTimeout: flags.timeout * SEC_TO_MILLISEC || DEFAULT_DEPLOY_TIMEOUT,

@@ -1,3 +1,5 @@
+const { getPathInProject } = require('../../lib/settings')
+
 const getFunctionsDir = ({ flags, config }, defaultValue) =>
   flags.functions ||
   (config.dev && config.dev.functions) ||
@@ -5,4 +7,6 @@ const getFunctionsDir = ({ flags, config }, defaultValue) =>
   (config.dev && config.dev.Functions) ||
   defaultValue
 
-module.exports = { getFunctionsDir }
+const getInternalFunctionsDir = () => getPathInProject(['functions-internal'])
+
+module.exports = { getFunctionsDir, getInternalFunctionsDir }
