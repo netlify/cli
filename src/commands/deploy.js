@@ -264,10 +264,11 @@ const runDeploy = async ({
       error,
       warn,
     })
-    const fnDir = [functionsFolder, getInternalFunctionsDir()].filter(Boolean)
+    const internalFunctionsFolder = await getInternalFunctionsDir()
+    const functionDirectories = [functionsFolder, internalFunctionsFolder].filter(Boolean)
     results = await deploySite(api, siteId, deployFolder, {
       configPath,
-      fnDir,
+      fnDir: functionDirectories,
       functionsConfig,
       statusCb: silent ? () => {} : deployProgressCb(),
       deployTimeout: flags.timeout * SEC_TO_MILLISEC || DEFAULT_DEPLOY_TIMEOUT,

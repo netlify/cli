@@ -29,7 +29,7 @@ const deploySite = async (
     deployTimeout = DEFAULT_DEPLOY_TIMEOUT,
     draft = false,
     filter,
-    fnDir = null,
+    fnDir = [],
     functionsConfig,
     hashAlgorithm,
     maxRetry = DEFAULT_MAX_RETRY,
@@ -57,10 +57,11 @@ const deploySite = async (
 
   const filesCount = Object.keys(files).length
   const functionsCount = Object.keys(functions).length
+  const hasFunctionDirectories = fnDir.length !== 0
 
   statusCb({
     type: 'hashing',
-    msg: `Finished hashing ${filesCount} files and ${functionsCount} functions`,
+    msg: `Finished hashing ${filesCount} files${hasFunctionDirectories ? ` and ${functionsCount} functions` : ''}`,
     phase: 'stop',
   })
 
