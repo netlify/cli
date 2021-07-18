@@ -131,7 +131,11 @@ class FunctionsRegistry {
   }
 
   async scan(directory) {
-    const directories = Array.isArray(directory) ? directory : [directory]
+    const directories = (Array.isArray(directory) ? directory : [directory]).filter(Boolean)
+
+    if (directories.length === 0) {
+      return
+    }
 
     await Promise.all(directories.map((path) => this.prepareDirectoryScan(path)))
 
