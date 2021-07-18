@@ -8,17 +8,9 @@ const getFunctionsDir = ({ flags, config }, defaultValue) =>
   (config.dev && config.dev.Functions) ||
   defaultValue
 
-const getInternalFunctionsDir = ({ verifyExistence = true } = {}) => {
+const getInternalFunctionsDir = async () => {
   const path = getPathInProject(['functions-internal'])
 
-  if (verifyExistence) {
-    return getPathIfExists(path)
-  }
-
-  return path
-}
-
-const getPathIfExists = async (path) => {
   try {
     const stat = await statAsync(path)
 
