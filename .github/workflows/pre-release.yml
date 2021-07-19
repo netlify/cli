@@ -18,6 +18,8 @@ jobs:
       # See https://github.com/npm/cli/issues/2755.
       - name: Upgrade npm
         run: npm install -g npm@latest
+      - name: Install core dependencies
+        run: npm ci --no-audit
       - name: Extract tag and version
         id: extract
         run: |-
