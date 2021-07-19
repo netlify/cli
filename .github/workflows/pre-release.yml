@@ -14,6 +14,10 @@ jobs:
           node-version: '*'
           check-latest: true
           registry-url: 'https://registry.npmjs.org'
+      # This can be removed once npm >=7.20.0 is installed by default.
+      # See https://github.com/npm/cli/issues/2755.
+      - name: Upgrade npm
+        run: npm install -g npm@latest
       - name: Extract tag and version
         id: extract
         run: |-
