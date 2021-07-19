@@ -37,6 +37,6 @@ jobs:
       - name: Push changes
         run: git push --follow-tags
       - name: Run npm publish
-        run: npm publish --tag=${{ steps.extract.outputs.tag }}
+        run: npm publish --tag=${{ steps.extract.outputs.tag }} --ignore-scripts
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
