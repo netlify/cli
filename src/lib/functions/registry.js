@@ -153,12 +153,7 @@ class FunctionsRegistry {
 
     await Promise.all(deletedFunctions.map((func) => this.unregisterFunction(func.name)))
 
-    // zip-it-and-ship-it returns a full list of functions for all directories,
-    // even if one function overrides another function with the same name from
-    // other directory. In these cases, the function that takes precedence has
-    // a higher index in the array. To make sure we process it first, `reverse`
-    // is being used on the functions array.
-    functions.reverse().forEach(({ mainFile, name, runtime: runtimeName }) => {
+    functions.forEach(({ mainFile, name, runtime: runtimeName }) => {
       const runtime = runtimes[runtimeName]
 
       // If there is no matching runtime, it means this function is not yet
