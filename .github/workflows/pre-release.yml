@@ -18,6 +18,8 @@ jobs:
       # See https://github.com/npm/cli/issues/2755.
       - name: Upgrade npm
         run: npm install -g npm@latest
+      - name: Install core dependencies
+        run: npm ci --no-audit
       - name: Extract tag and version
         id: extract
         run: |-
@@ -37,7 +39,7 @@ jobs:
       - name: Setup git email
         run: git config --global user.email github-actions@github.com
       - name: Run npm version
-        run: npm version ${{ steps.extract.outputs.version }}-${{ steps.extract.outputs.tag }}
+        run: npm version ${{ steps.extract.outputs.version }}-${{ steps.extract.outputs.tag }} --allow-same-version
       - name: Push changes
         run: git push --follow-tags
       - name: Run npm publish
