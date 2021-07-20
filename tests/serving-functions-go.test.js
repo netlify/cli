@@ -3,10 +3,12 @@ const pWaitFor = require('p-wait-for')
 
 const { withDevServer } = require('./utils/dev-server')
 const got = require('./utils/got')
+const { pause } = require('./utils/pause')
 const { withSiteBuilder } = require('./utils/site-builder')
 
 const WAIT_INTERVAL = 1800
 const WAIT_TIMEOUT = 30000
+const WAIT_WRITE = 1000
 
 test('Updates a Go function when a file is modified', async (t) => {
   const goSource = `
@@ -85,6 +87,8 @@ require github.com/aws/aws-lambda-go v1.20.0`,
       { cwd: builder.directory, env: { NETLIFY_EXPERIMENTAL_BUILD_GO_SOURCE: 'true' } },
       async ({ port }) => {
         t.is(await got(`http://localhost:${port}/.netlify/functions/go-func`).text(), 'Hello, world!')
+
+        await pause(WAIT_WRITE)
 
         await builder
           .withContentFile({ path: 'functions/go-func/main.go', content: goSource.replace('world', 'Netlify') })
