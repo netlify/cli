@@ -265,7 +265,12 @@ const runDeploy = async ({
       warn,
     })
     const internalFunctionsFolder = await getInternalFunctionsDir()
-    const functionDirectories = [functionsFolder, internalFunctionsFolder].filter(Boolean)
+
+    // The order of the directories matter: zip-it-and-ship-it will prioritize
+    // functions from the rightmost directories. In this case, we want user
+    // functions to take precedence over internal functions.
+    const functionDirectories = [internalFunctionsFolder, functionsFolder].filter(Boolean)
+
     results = await deploySite(api, siteId, deployFolder, {
       configPath,
       fnDir: functionDirectories,
