@@ -143,7 +143,7 @@ class BaseCommand extends TrackedCommand {
   }
 
   // Find and resolve the Netlify configuration
-  async getConfig({ cwd, host, offline = argv.offline, pathPrefix, scheme, state, token }) {
+  async getConfig({ cwd, host, offline = argv.offline || argv.o, pathPrefix, scheme, state, token }) {
     try {
       return await resolveConfig({
         config: argv.config,
