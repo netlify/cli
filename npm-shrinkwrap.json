@@ -1,12 +1,12 @@
 {
   "name": "netlify-cli",
-  "version": "4.4.4",
+  "version": "4.4.3",
   "lockfileVersion": 2,
   "requires": true,
   "packages": {
     "": {
       "name": "netlify-cli",
-      "version": "4.4.4",
+      "version": "4.4.3",
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
@@ -14,7 +14,7 @@
         "@netlify/config": "^12.6.0",
         "@netlify/framework-info": "^5.7.2",
         "@netlify/local-functions-proxy": "^0.1.0",
-        "@netlify/plugin-edge-handlers": "^1.11.22",
+        "@netlify/plugin-edge-handlers": "^1.11.21",
         "@netlify/plugins-list": "^2.19.3",
         "@netlify/routing-local-proxy": "^0.30.2",
         "@netlify/zip-it-and-ship-it": "4.14.0",
@@ -3464,9 +3464,9 @@
       "integrity": "sha512-KiXfYPO/X24p7EYQjcjBTizoyfY3U8zPv68Rte0EtayW2ZSqIslLLpNNd2gteqdh0Q83mzSiESdhlQHd0Ckjjg=="
     },
     "node_modules/@netlify/plugin-edge-handlers": {
-      "version": "1.11.22",
-      "resolved": "https://registry.npmjs.org/@netlify/plugin-edge-handlers/-/plugin-edge-handlers-1.11.22.tgz",
-      "integrity": "sha512-tFb7J6+YEtZP0OYpS/b9Rjp1lm02XfhAQR6KRHAaeRlHp98/zgd0hhubfwXUCppP2BLfn+imkeVS0FnANh5B3g==",
+      "version": "1.11.21",
+      "resolved": "https://registry.npmjs.org/@netlify/plugin-edge-handlers/-/plugin-edge-handlers-1.11.21.tgz",
+      "integrity": "sha512-shUFM+l1ALeGCgy4Lag2wQzOD3zcHW0+HFdWXCRsvtjHdNwTMBnbYg7ztnWurwgMthwiQ1jiTmWr8hFrui7Vng==",
       "dependencies": {
         "@babel/core": "^7.11.4",
         "@babel/preset-env": "^7.11.5",
@@ -23678,9 +23678,9 @@
       "integrity": "sha512-KiXfYPO/X24p7EYQjcjBTizoyfY3U8zPv68Rte0EtayW2ZSqIslLLpNNd2gteqdh0Q83mzSiESdhlQHd0Ckjjg=="
     },
     "@netlify/plugin-edge-handlers": {
-      "version": "1.11.22",
-      "resolved": "https://registry.npmjs.org/@netlify/plugin-edge-handlers/-/plugin-edge-handlers-1.11.22.tgz",
-      "integrity": "sha512-tFb7J6+YEtZP0OYpS/b9Rjp1lm02XfhAQR6KRHAaeRlHp98/zgd0hhubfwXUCppP2BLfn+imkeVS0FnANh5B3g==",
+      "version": "1.11.21",
+      "resolved": "https://registry.npmjs.org/@netlify/plugin-edge-handlers/-/plugin-edge-handlers-1.11.21.tgz",
+      "integrity": "sha512-shUFM+l1ALeGCgy4Lag2wQzOD3zcHW0+HFdWXCRsvtjHdNwTMBnbYg7ztnWurwgMthwiQ1jiTmWr8hFrui7Vng==",
       "requires": {
         "@babel/core": "^7.11.4",
         "@babel/preset-env": "^7.11.5",
