@@ -3,7 +3,7 @@ name: Dependency License Scanning
 on:
   push:
     branches:
-      - master
+      - main
       - chore/fossa-workflow
 
 defaults:
