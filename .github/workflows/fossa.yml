@@ -31,6 +31,12 @@ jobs:
         run: |-
           sed -i "${line_number}s|.*|  project: git@github.com:${GITHUB_REPOSITORY}.git|" .fossa.yml
           cat .fossa.yml
+      - name: Set env for unused_go/hello-world
+        run: |-
+          echo "unused_go_line_number=$(grep -m 1 -n "unused_go/hello-world" .fossa.yml | cut -f1 -d:)" >> $GITHUB_ENV
+          echo "unused_go_last_line_number=$(grep -n "unused_go/hello-world" .fossa.yml | tail -1 | cut -f1 -d:)" >> $GITHUB_ENV
+      - name: Remove unused_go/hello-world module
+        run: sed -i "${unused_go_line_number},${unused_go_last_line_number}d" .fossa.yml
       - name: Upload dependencies
         run: fossa analyze --debug
         env:
