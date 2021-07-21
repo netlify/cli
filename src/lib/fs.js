@@ -31,6 +31,7 @@ const fileExistsAsync = async (filePath) => {
   }
 }
 
+const isDirectoryAsync = (filePath) => pathType.isDirectory(filePath)
 const isFileAsync = (filePath) => pathType.isFile(filePath)
 
 const mkdirRecursiveSync = (path) => makeDir.sync(path)
@@ -46,6 +47,7 @@ module.exports = {
   rmFileAsync,
   copyFileAsync,
   fileExistsAsync,
+  isDirectoryAsync,
   isFileAsync,
   mkdirRecursiveSync,
   mkdirRecursiveAsync,

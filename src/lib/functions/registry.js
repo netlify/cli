@@ -104,18 +104,7 @@ class FunctionsRegistry {
     return this.functions.get(name)
   }
 
-  registerFunction(name, func) {
-    if (func.isBackground && !this.capabilities.backgroundFunctions) {
-      this.logger.warn(getLogMessage('functions.backgroundNotSupported'))
-    }
-
-    this.functions.set(name, func)
-    this.buildFunctionAndWatchFiles(func)
-
-    this.logger.log(`${NETLIFYDEVLOG} ${chalk.green('Loaded')} function ${chalk.yellow(name)}.`)
-  }
-
-  async scan(directory) {
+  async prepareDirectoryScan(directory) {
     await mkdirRecursiveAsync(directory)
 
     // We give runtimes the opportunity to react to a directory scan and run
@@ -130,8 +119,27 @@ class FunctionsRegistry {
         return runtime.onDirectoryScan({ directory })
       }),
     )
+  }
 
-    const functions = await this.listFunctions(directory, {
+  registerFunction(name, func) {
+    if (func.isBackground && !this.capabilities.backgroundFunctions) {
+      this.logger.warn(getLogMessage('functions.backgroundNotSupported'))
+    }
+
+    this.functions.set(name, func)
+    this.buildFunctionAndWatchFiles(func)
+
+    this.logger.log(`${NETLIFYDEVLOG} ${chalk.green('Loaded')} function ${chalk.yellow(name)}.`)
+  }
+
+  async scan(directories) {
+    if (directories.length === 0) {
+      return
+    }
+
+    await Promise.all(directories.map((path) => this.prepareDirectoryScan(path)))
+
+    const functions = await this.listFunctions(directories, {
       featureFlags: { buildGoSource: env.NETLIFY_EXPERIMENTAL_BUILD_GO_SOURCE === 'true' },
     })
 
@@ -176,7 +184,7 @@ class FunctionsRegistry {
       this.registerFunction(name, func)
     })
 
-    await this.setupDirectoryWatcher(directory)
+    await Promise.all(directories.map((path) => this.setupDirectoryWatcher(path)))
   }
 
   // This watcher looks at files being added or removed from a functions
@@ -190,10 +198,10 @@ class FunctionsRegistry {
     const watcher = await watchDebounced(directory, {
       depth: 1,
       onAdd: () => {
-        this.scan(directory)
+        this.scan([directory])
       },
       onUnlink: () => {
-        this.scan(directory)
+        this.scan([directory])
       },
     })
 

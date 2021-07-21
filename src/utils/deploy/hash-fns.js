@@ -8,14 +8,19 @@ const pump = promisify(require('pump'))
 const { hasherCtor, manifestCollectorCtor } = require('./hasher-segments')
 
 const hashFns = async (
-  dir,
+  directories,
   { tmpDir, concurrentHash, functionsConfig, hashAlgorithm = 'sha256', assetType = 'function', statusCb, rootDir },
 ) => {
-  // early out if the functions dir is omitted
-  if (!dir) return { functions: {}, functionsWithNativeModules: [], shaMap: {} }
-  if (!tmpDir) throw new Error('Missing tmpDir directory for zipping files')
+  // Early out if no functions directories are configured.
+  if (directories.length === 0) {
+    return { functions: {}, functionsWithNativeModules: [], shaMap: {} }
+  }
 
-  const functionZips = await zipIt.zipFunctions(dir, tmpDir, { basePath: rootDir, config: functionsConfig })
+  if (!tmpDir) {
+    throw new Error('Missing tmpDir directory for zipping files')
+  }
+
+  const functionZips = await zipIt.zipFunctions(directories, tmpDir, { basePath: rootDir, config: functionsConfig })
   const fileObjs = functionZips.map(({ path: functionPath, runtime }) => ({
     filepath: functionPath,
     root: tmpDir,

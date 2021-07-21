@@ -262,3 +262,24 @@ test('should not run framework detection if command and targetPort are configure
     t.snapshot(normalize(error.stdout))
   })
 })
+
+test('should filter frameworks with no dev command', async (t) => {
+  await withSiteBuilder('site-with-gulp', async (builder) => {
+    await builder
+      .withContentFile({
+        path: 'index.html',
+        content,
+      })
+      .withPackageJson({
+        packageJson: { dependencies: { gulp: '1.0.0' } },
+      })
+      .buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async ({ url, output }) => {
+      const response = await got(url).text()
+      t.is(response, content)
+
+      t.snapshot(normalize(output))
+    })
+  })
+})

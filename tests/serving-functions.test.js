@@ -445,6 +445,128 @@ export { handler }
       })
     })
   })
+
+  test(testName('Serves functions from the internal functions directory', args), async (t) => {
+    await withSiteBuilder('function-internal', async (builder) => {
+      const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
+
+      await builder
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'public' },
+            functions: { directory: 'functions' },
+            ...bundlerConfig,
+          },
+        })
+        .withFunction({
+          path: 'hello.js',
+          pathPrefix: '.netlify/functions-internal',
+          handler: async () => ({
+            statusCode: 200,
+            body: 'Internal',
+          }),
+        })
+        .buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
+        t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'Internal')
+
+        await pause(WAIT_WRITE)
+
+        await builder
+          .withFunction({
+            path: 'hello.js',
+            pathPrefix: '.netlify/functions-internal',
+            handler: async () => ({
+              statusCode: 200,
+              body: 'Internal updated',
+            }),
+          })
+          .buildAsync()
+
+        await pWaitFor(
+          async () => {
+            try {
+              const response = await got(`http://localhost:${port}/.netlify/functions/hello`).text()
+
+              return response === 'Internal updated'
+            } catch (_) {
+              return false
+            }
+          },
+          { interval: WAIT_INTERVAL, timeout: WAIT_TIMEOUT },
+        )
+      })
+    })
+  })
+
+  test(testName('User functions take precedence over internal functions', args), async (t) => {
+    await withSiteBuilder('function-internal-priority', async (builder) => {
+      const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
+
+      await builder
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'public' },
+            functions: { directory: 'functions' },
+            ...bundlerConfig,
+          },
+        })
+        .withFunction({
+          path: 'hello.js',
+          handler: async () => ({
+            statusCode: 200,
+            body: 'User',
+          }),
+        })
+        .withFunction({
+          path: 'hello.js',
+          pathPrefix: '.netlify/functions-internal',
+          handler: async () => ({
+            statusCode: 200,
+            body: 'Internal',
+          }),
+        })
+        .buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
+        t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'User')
+
+        await pause(WAIT_WRITE)
+
+        await builder
+          .withFunction({
+            path: 'hello.js',
+            handler: async () => ({
+              statusCode: 200,
+              body: 'User updated',
+            }),
+          })
+          .withFunction({
+            path: 'hello.js',
+            pathPrefix: '.netlify/functions-internal',
+            handler: async () => ({
+              statusCode: 200,
+              body: 'Internal updated',
+            }),
+          })
+          .buildAsync()
+
+        await pWaitFor(
+          async () => {
+            try {
+              const response = await got(`http://localhost:${port}/.netlify/functions/hello`).text()
+
+              return response === 'User updated'
+            } catch (_) {
+              return false
+            }
+          },
+          { interval: WAIT_INTERVAL, timeout: WAIT_TIMEOUT },
+        )
+      })
+    })
+  })
 })
 
 test('Serves functions that dynamically load files included in the `functions.included_files` config property', async (t) => {
