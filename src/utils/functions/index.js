@@ -1,4 +1,4 @@
-const { statAsync } = require('../../lib/fs')
+const { isDirectoryAsync } = require('../../lib/fs')
 const { getPathInProject } = require('../../lib/settings')
 
 const getFunctionsDir = ({ flags, config }, defaultValue) =>
@@ -10,14 +10,9 @@ const getFunctionsDir = ({ flags, config }, defaultValue) =>
 
 const getInternalFunctionsDir = async () => {
   const path = getPathInProject(['functions-internal'])
+  const isDirectory = await isDirectoryAsync(path)
 
-  try {
-    const stat = await statAsync(path)
-
-    return stat.isDirectory() ? path : null
-  } catch (_) {
-    return null
-  }
+  return isDirectory ? path : null
 }
 
 module.exports = { getFunctionsDir, getInternalFunctionsDir }
