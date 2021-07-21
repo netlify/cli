@@ -130,9 +130,7 @@ class FunctionsRegistry {
     this.logger.log(`${NETLIFYDEVLOG} ${chalk.green('Loaded')} function ${chalk.yellow(name)}.`)
   }
 
-  async scan(directory) {
-    const directories = (Array.isArray(directory) ? directory : [directory]).filter(Boolean)
-
+  async scan(directories) {
     if (directories.length === 0) {
       return
     }
@@ -196,10 +194,10 @@ class FunctionsRegistry {
     const watcher = await watchDebounced(directory, {
       depth: 1,
       onAdd: () => {
-        this.scan(directory)
+        this.scan([directory])
       },
       onUnlink: () => {
-        this.scan(directory)
+        this.scan([directory])
       },
     })
 
