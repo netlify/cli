@@ -162,7 +162,7 @@ const startFunctionsServer = async ({
     })
     const internalFunctionsDir = await getInternalFunctionsDir()
 
-    await functionsRegistry.scan([settings.functions, internalFunctionsDir])
+    await functionsRegistry.scan([settings.functions, internalFunctionsDir].filter(Boolean))
 
     const server = await getFunctionsServer({
       functionsRegistry,
