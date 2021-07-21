@@ -1,3 +1,5 @@
+const { env } = require('process')
+
 const chalk = require('chalk')
 
 const { NETLIFYDEVLOG, NETLIFYDEVERR } = require('../../utils/logo')
@@ -137,7 +139,9 @@ class FunctionsRegistry {
 
     await Promise.all(directories.map((path) => this.prepareDirectoryScan(path)))
 
-    const functions = await this.listFunctions(directories)
+    const functions = await this.listFunctions(directories, {
+      featureFlags: { buildGoSource: env.NETLIFY_EXPERIMENTAL_BUILD_GO_SOURCE === 'true' },
+    })
 
     // Before registering any functions, we look for any functions that were on
     // the previous list but are missing from the new one. We unregister them.

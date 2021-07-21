@@ -87,7 +87,7 @@ const createHandler = function ({ functionsRegistry }) {
       isBase64Encoded,
     }
 
-    const clientContext = JSON.stringify(buildClientContext(request.headers) || {})
+    const clientContext = buildClientContext(request.headers) || {}
 
     if (func.isBackground) {
       handleBackgroundFunction(functionName, response)
