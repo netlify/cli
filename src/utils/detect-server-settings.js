@@ -167,8 +167,10 @@ const getSettingsFromFramework = (framework) => {
   }
 }
 
+const hasDevCommand = (framework) => Array.isArray(framework.dev.commands) && framework.dev.commands.length !== 0
+
 const detectFrameworkSettings = async ({ projectDir }) => {
-  const frameworks = await listFrameworks({ projectDir })
+  const frameworks = (await listFrameworks({ projectDir })).filter((framework) => hasDevCommand(framework))
 
   if (frameworks.length === 1) {
     return getSettingsFromFramework(frameworks[0])
