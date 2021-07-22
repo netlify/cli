@@ -8,7 +8,20 @@ const runFunctionsProxy = ({ binaryPath, directory, name, requestData, timeout }
     throw new Error('Host machine does not support local functions proxy server')
   }
 
-  return execa(functionsProxyPath, [JSON.stringify(requestData), binaryPath, directory, name, `${timeout}s`])
+  const parameters = [
+    '--event',
+    JSON.stringify(requestData),
+    '--command',
+    binaryPath,
+    '--working-dir',
+    directory,
+    '--name',
+    name,
+    '--timeout',
+    `${timeout}s`,
+  ]
+
+  return execa(functionsProxyPath, parameters)
 }
 
 module.exports = { runFunctionsProxy }
