@@ -8,7 +8,7 @@ const { withSiteBuilder } = require('./utils/site-builder')
 
 const WAIT_INTERVAL = 1800
 const WAIT_TIMEOUT = 30000
-const WAIT_WRITE = 1000
+const WAIT_WRITE = 3000
 
 test('Updates a Go function when a file is modified', async (t) => {
   const goSource = `
