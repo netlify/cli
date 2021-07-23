@@ -1,4 +1,4 @@
-const { dirname } = require('path')
+const { dirname, extname } = require('path')
 const { platform } = require('process')
 
 const execa = require('execa')
@@ -71,4 +71,10 @@ const invokeFunction = async ({ context, event, func, timeout }) => {
   }
 }
 
-module.exports = { getBuildFunction, invokeFunction, name: 'go' }
+const onRegister = (func) => {
+  const isSource = extname(func.mainFile) === '.go'
+
+  return isSource ? func : null
+}
+
+module.exports = { getBuildFunction, invokeFunction, name: 'go', onRegister }
