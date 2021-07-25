@@ -11,6 +11,23 @@ const { NetlifyFunction } = require('./netlify-function')
 const runtimes = require('./runtimes')
 const { watchDebounced } = require('./watcher')
 
+const prepareDirectoryScan = async (directory) => {
+  await mkdirRecursiveAsync(directory)
+
+  // We give runtimes the opportunity to react to a directory scan and run
+  // additional logic before the directory is read. So if they implement a
+  // `onDirectoryScan` hook, we run it.
+  await Promise.all(
+    Object.values(runtimes).map((runtime) => {
+      if (typeof runtime.onDirectoryScan !== 'function') {
+        return null
+      }
+
+      return runtime.onDirectoryScan({ directory })
+    }),
+  )
+}
+
 class FunctionsRegistry {
   constructor({ capabilities, config, errorExit, functionsDirectory, projectRoot, timeouts, warn }) {
     this.capabilities = capabilities
@@ -105,23 +122,6 @@ class FunctionsRegistry {
     return this.functions.get(name)
   }
 
-  async prepareDirectoryScan(directory) {
-    await mkdirRecursiveAsync(directory)
-
-    // We give runtimes the opportunity to react to a directory scan and run
-    // additional logic before the directory is read. So if they implement a
-    // `onDirectoryScan` hook, we run it.
-    await Promise.all(
-      Object.values(runtimes).map((runtime) => {
-        if (typeof runtime.onDirectoryScan !== 'function') {
-          return null
-        }
-
-        return runtime.onDirectoryScan({ directory })
-      }),
-    )
-  }
-
   registerFunction(name, func) {
     if (func.isBackground && !this.capabilities.backgroundFunctions) {
       this.logger.warn(getLogMessage('functions.backgroundNotSupported'))
@@ -138,7 +138,7 @@ class FunctionsRegistry {
       return
     }
 
-    await Promise.all(directories.map((path) => this.prepareDirectoryScan(path)))
+    await Promise.all(directories.map((path) => prepareDirectoryScan(path)))
 
     const functions = await this.listFunctions(directories, {
       featureFlags: { buildGoSource: env.NETLIFY_EXPERIMENTAL_BUILD_GO_SOURCE === 'true' },
