@@ -18,6 +18,7 @@ const Command = require('../utils/command')
 const { log, logJson, getToken } = require('../utils/command-helpers')
 const { deploySite } = require('../utils/deploy/deploy-site')
 const { deployEdgeHandlers } = require('../utils/edge-handlers')
+const { getInternalFunctionsDir } = require('../utils/functions')
 const { NETLIFYDEV, NETLIFYDEVLOG, NETLIFYDEVERR } = require('../utils/logo')
 const openBrowser = require('../utils/open-browser')
 
@@ -263,9 +264,16 @@ const runDeploy = async ({
       error,
       warn,
     })
+    const internalFunctionsFolder = await getInternalFunctionsDir()
+
+    // The order of the directories matter: zip-it-and-ship-it will prioritize
+    // functions from the rightmost directories. In this case, we want user
+    // functions to take precedence over internal functions.
+    const functionDirectories = [internalFunctionsFolder, functionsFolder].filter(Boolean)
+
     results = await deploySite(api, siteId, deployFolder, {
       configPath,
-      fnDir: functionsFolder,
+      fnDir: functionDirectories,
       functionsConfig,
       statusCb: silent ? () => {} : deployProgressCb(),
       deployTimeout: flags.timeout * SEC_TO_MILLISEC || DEFAULT_DEPLOY_TIMEOUT,

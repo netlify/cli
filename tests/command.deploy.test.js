@@ -398,6 +398,63 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
     })
   })
 
+  test.serial('should deploy functions from internal functions directory', async (t) => {
+    /* eslint-disable require-await */
+    await withSiteBuilder('site-with-internal-functions', async (builder) => {
+      await builder
+        .withNetlifyToml({
+          config: {
+            functions: { directory: 'functions' },
+          },
+        })
+        .withFunction({
+          path: 'func-1.js',
+          handler: async () => ({
+            statusCode: 200,
+            body: 'User 1',
+          }),
+        })
+        .withFunction({
+          path: 'func-2.js',
+          handler: async () => ({
+            statusCode: 200,
+            body: 'User 2',
+          }),
+        })
+        .withFunction({
+          path: 'func-2.js',
+          pathPrefix: '.netlify/functions-internal',
+          handler: async () => ({
+            statusCode: 200,
+            body: 'Internal 2',
+          }),
+        })
+        .withFunction({
+          path: 'func-3.js',
+          pathPrefix: '.netlify/functions-internal',
+          handler: async () => ({
+            statusCode: 200,
+            body: 'Internal 3',
+          }),
+        })
+        .buildAsync()
+
+      const { deploy_url: deployUrl } = await callCli(
+        ['deploy', '--build', '--json'],
+        {
+          cwd: builder.directory,
+          env: { NETLIFY_SITE_ID: t.context.siteId },
+        },
+        true,
+      )
+
+      t.is(await got(`${deployUrl}/.netlify/functions/func-1`).text(), 'User 1')
+      t.is(await got(`${deployUrl}/.netlify/functions/func-2`).text(), 'User 2')
+      t.is(await got(`${deployUrl}/.netlify/functions/func-3`).text(), 'Internal 3')
+      /* eslint-enable require-await */
+    })
+  })
+
   test.after('cleanup', async (t) => {
     const { siteId } = t.context
     console.log(`deleting test site "${SITE_NAME}". ${siteId}`)

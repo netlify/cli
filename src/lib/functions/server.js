@@ -2,6 +2,7 @@ const bodyParser = require('body-parser')
 const jwtDecode = require('jwt-decode')
 
 const { log } = require('../../utils/command-helpers')
+const { getInternalFunctionsDir } = require('../../utils/functions')
 const { NETLIFYDEVERR, NETLIFYDEVLOG } = require('../../utils/logo')
 
 const { handleBackgroundFunction, handleBackgroundFunctionResult } = require('./background')
@@ -87,7 +88,7 @@ const createHandler = function ({ functionsRegistry }) {
       isBase64Encoded,
     }
 
-    const clientContext = JSON.stringify(buildClientContext(request.headers) || {})
+    const clientContext = buildClientContext(request.headers) || {}
 
     if (func.isBackground) {
       handleBackgroundFunction(functionName, response)
@@ -158,8 +159,9 @@ const startFunctionsServer = async ({
       timeouts,
       warn,
     })
+    const internalFunctionsDir = await getInternalFunctionsDir()
 
-    await functionsRegistry.scan(settings.functions)
+    await functionsRegistry.scan([settings.functions, internalFunctionsDir].filter(Boolean))
 
     const server = await getFunctionsServer({
       functionsRegistry,
