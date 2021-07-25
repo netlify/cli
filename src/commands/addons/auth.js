@@ -15,7 +15,7 @@ class AddonsAuthCommand extends Command {
     })
 
     if (!addon.auth_url) {
-      console.log(`No Admin URL found for the "${addonName} add-on"`)
+      log(`No Admin URL found for the "${addonName} add-on"`)
       return false
     }
 
