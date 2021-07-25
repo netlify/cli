@@ -350,7 +350,7 @@ const scaffoldFromTemplate = async function (context, flags, args, functionsDir)
     const functionPath = ensureFunctionPathIsOk(functionsDir, name)
 
     // SWYX: note to future devs - useful for debugging source to output issues
-    // this.log('from ', pathToTemplate, ' to ', functionPath)
+    // log('from ', pathToTemplate, ' to ', functionPath)
     // SWYX: TODO
     const vars = { NETLIFY_STUFF_TO_REPLACE: 'REPLACEMENT' }
     let hasPackageJSON = false
