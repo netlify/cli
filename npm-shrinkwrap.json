@@ -17,7 +17,7 @@
         "@netlify/plugin-edge-handlers": "^1.11.22",
         "@netlify/plugins-list": "^2.19.3",
         "@netlify/routing-local-proxy": "^0.31.0",
-        "@netlify/zip-it-and-ship-it": "4.14.0",
+        "@netlify/zip-it-and-ship-it": "4.15.0",
         "@oclif/command": "^1.6.1",
         "@oclif/config": "^1.15.1",
         "@oclif/errors": "^1.3.4",
@@ -3601,9 +3601,9 @@
       }
     },
     "node_modules/@netlify/zip-it-and-ship-it": {
-      "version": "4.14.0",
-      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-4.14.0.tgz",
-      "integrity": "sha512-EFUYbcB7g/7Sa4KYZaqNrqe+mJJCeoosUNl8mFyeF3qIqn0po7txSZn0/y1sgjejuv9mRKv8sm7dH8kMM/HJcg==",
+      "version": "4.15.0",
+      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-4.15.0.tgz",
+      "integrity": "sha512-zEwtpomvakEogJMEnYpUxSBb+TAonxgKSo2c9B6rDd6DVUad3RtXBdnx8qizwUGRvFj7Le7QGAmnYC5yWja82A==",
       "dependencies": {
         "@netlify/esbuild": "^0.13.6",
         "acorn": "^8.4.0",
@@ -3632,6 +3632,7 @@
         "resolve": "^2.0.0-next.1",
         "semver": "^7.0.0",
         "tmp-promise": "^3.0.2",
+        "toml": "^3.0.0",
         "unixify": "^1.0.0",
         "yargs": "^16.0.0"
       },
@@ -23815,9 +23816,9 @@
       }
     },
     "@netlify/zip-it-and-ship-it": {
-      "version": "4.14.0",
-      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-4.14.0.tgz",
-      "integrity": "sha512-EFUYbcB7g/7Sa4KYZaqNrqe+mJJCeoosUNl8mFyeF3qIqn0po7txSZn0/y1sgjejuv9mRKv8sm7dH8kMM/HJcg==",
+      "version": "4.15.0",
+      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-4.15.0.tgz",
+      "integrity": "sha512-zEwtpomvakEogJMEnYpUxSBb+TAonxgKSo2c9B6rDd6DVUad3RtXBdnx8qizwUGRvFj7Le7QGAmnYC5yWja82A==",
       "requires": {
         "@netlify/esbuild": "^0.13.6",
         "acorn": "^8.4.0",
@@ -23846,6 +23847,7 @@
         "resolve": "^2.0.0-next.1",
         "semver": "^7.0.0",
         "tmp-promise": "^3.0.2",
+        "toml": "^3.0.0",
         "unixify": "^1.0.0",
         "yargs": "^16.0.0"
       },
