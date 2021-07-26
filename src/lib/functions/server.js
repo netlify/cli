@@ -1,6 +1,7 @@
 const bodyParser = require('body-parser')
 const jwtDecode = require('jwt-decode')
 
+const { log } = require('../../utils/command-helpers')
 const { getInternalFunctionsDir } = require('../../utils/functions')
 const { NETLIFYDEVERR, NETLIFYDEVLOG } = require('../../utils/logo')
 
@@ -139,7 +140,6 @@ const startFunctionsServer = async ({
   config,
   settings,
   site,
-  log,
   warn,
   errorExit,
   siteUrl,
@@ -155,7 +155,6 @@ const startFunctionsServer = async ({
       config,
       errorExit,
       functionsDirectory: settings.functions,
-      log,
       projectRoot: site.root,
       timeouts,
       warn,
@@ -171,11 +170,11 @@ const startFunctionsServer = async ({
       warn,
     })
 
-    await startWebServer({ server, settings, log, errorExit })
+    await startWebServer({ server, settings, errorExit })
   }
 }
 
-const startWebServer = async ({ server, settings, log, errorExit }) => {
+const startWebServer = async ({ server, settings, errorExit }) => {
   await new Promise((resolve) => {
     server.listen(settings.functionsPort, (err) => {
       if (err) {

@@ -6,6 +6,15 @@ const process = require('process')
 const slackURL = process.env.SLACK_WEBHOOK_URL
 const fetch = require('node-fetch')
 
+const parseJsonResponse = async (response) => {
+  const json = await response.json()
+  if (!response.ok) {
+    const error = `JSON: ${JSON.stringify(json)}. Status: ${response.status}`
+    throw new Error(error)
+  }
+  return json
+}
+
 class IdentityAPI {
   constructor(apiURL, token) {
     this.apiURL = apiURL
@@ -20,21 +29,12 @@ class IdentityAPI {
     }
   }
 
-  async parseJsonResponse(response) {
-    const json = await response.json()
-    if (!response.ok) {
-      const error = `JSON: ${JSON.stringify(json)}. Status: ${response.status}`
-      throw new Error(error)
-    }
-    return json
-  }
-
   async request(path, options = {}) {
     const headers = this.headers(options.headers || {})
     const response = await fetch(this.apiURL + path, { ...options, headers })
     const contentType = response.headers.get('Content-Type')
     if (contentType && /json/.test(contentType)) {
-      return this.parseJsonResponse(response)
+      return parseJsonResponse(response)
     }
 
     if (!response.ok) {

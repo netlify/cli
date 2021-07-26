@@ -8,7 +8,7 @@ class LmInstallCommand extends Command {
   async run() {
     const { flags } = this.parse(LmInstallCommand)
 
-    const installed = await installPlatform({ force: flags.force, log: this.log })
+    const installed = await installPlatform({ force: flags.force })
     if (installed) {
       printBanner(this, flags.force)
     }

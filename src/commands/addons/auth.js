@@ -1,5 +1,6 @@
 const { prepareAddonCommand, ADDON_VALIDATION } = require('../../utils/addons/prepare')
 const Command = require('../../utils/command')
+const { log } = require('../../utils/command-helpers')
 const openBrowser = require('../../utils/open-browser')
 
 class AddonsAuthCommand extends Command {
@@ -14,16 +15,16 @@ class AddonsAuthCommand extends Command {
     })
 
     if (!addon.auth_url) {
-      console.log(`No Admin URL found for the "${addonName} add-on"`)
+      log(`No Admin URL found for the "${addonName} add-on"`)
       return false
     }
 
-    this.log()
-    this.log(`Opening ${addonName} add-on admin URL:`)
-    this.log()
-    this.log(addon.auth_url)
-    this.log()
-    await openBrowser({ url: addon.auth_url, log: this.log })
+    log()
+    log(`Opening ${addonName} add-on admin URL:`)
+    log()
+    log(addon.auth_url)
+    log()
+    await openBrowser({ url: addon.auth_url })
     this.exit()
   }
 }
