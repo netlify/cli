@@ -11,23 +11,6 @@ const { NetlifyFunction } = require('./netlify-function')
 const runtimes = require('./runtimes')
 const { watchDebounced } = require('./watcher')
 
-const prepareDirectoryScan = async (directory) => {
-  await mkdirRecursiveAsync(directory)
-
-  // We give runtimes the opportunity to react to a directory scan and run
-  // additional logic before the directory is read. So if they implement a
-  // `onDirectoryScan` hook, we run it.
-  await Promise.all(
-    Object.values(runtimes).map((runtime) => {
-      if (typeof runtime.onDirectoryScan !== 'function') {
-        return null
-      }
-
-      return runtime.onDirectoryScan({ directory })
-    }),
-  )
-}
-
 class FunctionsRegistry {
   constructor({ capabilities, config, errorExit, functionsDirectory, projectRoot, timeouts, warn }) {
     this.capabilities = capabilities
@@ -64,6 +47,23 @@ class FunctionsRegistry {
     const { listFunctions } = require('@netlify/zip-it-and-ship-it')
 
     this.listFunctions = listFunctions
+  }
+
+  static async prepareDirectoryScan(directory) {
+    await mkdirRecursiveAsync(directory)
+
+    // We give runtimes the opportunity to react to a directory scan and run
+    // additional logic before the directory is read. So if they implement a
+    // `onDirectoryScan` hook, we run it.
+    await Promise.all(
+      Object.values(runtimes).map((runtime) => {
+        if (typeof runtime.onDirectoryScan !== 'function') {
+          return null
+        }
+
+        return runtime.onDirectoryScan({ directory })
+      }),
+    )
   }
 
   async buildFunctionAndWatchFiles(func, { verbose } = {}) {
@@ -122,7 +122,18 @@ class FunctionsRegistry {
     return this.functions.get(name)
   }
 
-  registerFunction(name, func) {
+  registerFunction(name, funcBeforeHook) {
+    const { runtime } = funcBeforeHook
+
+    // The `onRegister` hook allows runtimes to modify the function before it's
+    // registered, or to prevent it from being registered altogether if the
+    // hook returns `null`.
+    const func = typeof runtime.onRegister === 'function' ? runtime.onRegister(funcBeforeHook) : funcBeforeHook
+
+    if (func === null) {
+      return
+    }
+
     if (func.isBackground && !this.capabilities.backgroundFunctions) {
       this.logger.warn(getLogMessage('functions.backgroundNotSupported'))
     }
@@ -138,7 +149,7 @@ class FunctionsRegistry {
       return
     }
 
-    await Promise.all(directories.map((path) => prepareDirectoryScan(path)))
+    await Promise.all(directories.map((path) => FunctionsRegistry.prepareDirectoryScan(path)))
 
     const functions = await this.listFunctions(directories, {
       featureFlags: { buildGoSource: env.NETLIFY_EXPERIMENTAL_BUILD_GO_SOURCE === 'true' },

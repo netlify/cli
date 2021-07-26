@@ -26,10 +26,17 @@ const js = require('./js')
  */
 
 /**
+ * @callback OnRegisterFunction
+ * @param  {object} func
+ * @returns {object|null}
+ */
+
+/**
  * @typedef {object} Runtime
  * @property {GetBuildFunction} getBuildFunction
  * @property {InvokeFunction} invokeFunction
  * @property {OnDirectoryScanFunction} [onDirectoryScan]
+ * @property {OnRegisterFunction} [onRegister]
  * @property {string} name
  */
 
