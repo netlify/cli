@@ -264,7 +264,7 @@ const runDeploy = async ({
       error,
       warn,
     })
-    const internalFunctionsFolder = await getInternalFunctionsDir()
+    const internalFunctionsFolder = await getInternalFunctionsDir({ base: site.root })
 
     // The order of the directories matter: zip-it-and-ship-it will prioritize
     // functions from the rightmost directories. In this case, we want user

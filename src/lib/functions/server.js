@@ -159,7 +159,7 @@ const startFunctionsServer = async ({
       timeouts,
       warn,
     })
-    const internalFunctionsDir = await getInternalFunctionsDir()
+    const internalFunctionsDir = await getInternalFunctionsDir({ base: site.root })
 
     await functionsRegistry.scan([settings.functions, internalFunctionsDir].filter(Boolean))
 
