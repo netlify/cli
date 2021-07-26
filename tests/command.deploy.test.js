@@ -455,6 +455,43 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
     })
   })
 
+  test.serial(
+    'should deploy functions from internal functions directory when setting `base` to a sub-directory',
+    async (t) => {
+      /* eslint-disable require-await */
+      await withSiteBuilder('site-with-internal-functions-sub-directory', async (builder) => {
+        await builder
+          .withNetlifyToml({
+            config: {
+              build: { base: 'sub-directory' },
+              functions: { directory: 'functions' },
+            },
+          })
+          .withFunction({
+            path: 'func-1.js',
+            pathPrefix: 'sub-directory/.netlify/functions-internal',
+            handler: async () => ({
+              statusCode: 200,
+              body: 'Internal',
+            }),
+          })
+          .buildAsync()
+
+        const { deploy_url: deployUrl } = await callCli(
+          ['deploy', '--build', '--json'],
+          {
+            cwd: builder.directory,
+            env: { NETLIFY_SITE_ID: t.context.siteId },
+          },
+          true,
+        )
+
+        t.is(await got(`${deployUrl}/.netlify/functions/func-1`).text(), 'Internal')
+        /* eslint-enable require-await */
+      })
+    },
+  )
+
   test.after('cleanup', async (t) => {
     const { siteId } = t.context
     console.log(`deleting test site "${SITE_NAME}". ${siteId}`)
