@@ -1,7 +1,7 @@
 const test = require('ava')
 const pWaitFor = require('p-wait-for')
 
-const { withDevServer } = require('./utils/dev-server')
+const { withDevServer, tryAndLogOutput } = require('./utils/dev-server')
 const got = require('./utils/got')
 const { pause } = require('./utils/pause')
 const { withSiteBuilder } = require('./utils/site-builder')
@@ -85,7 +85,7 @@ require github.com/aws/aws-lambda-go v1.20.0`,
 
     await withDevServer(
       { cwd: builder.directory, env: { NETLIFY_EXPERIMENTAL_BUILD_GO_SOURCE: 'true' } },
-      async ({ port }) => {
+      async ({ port, outputBuffer }) => {
         t.is(await got(`http://localhost:${port}/.netlify/functions/go-func`).text(), 'Hello, world!')
 
         await pause(WAIT_WRITE)
@@ -94,13 +94,17 @@ require github.com/aws/aws-lambda-go v1.20.0`,
           .withContentFile({ path: 'functions/go-func/main.go', content: goSource.replace('world', 'Netlify') })
           .buildAsync()
 
-        await pWaitFor(
-          async () => {
-            const response = await got(`http://localhost:${port}/.netlify/functions/go-func`).text()
+        await tryAndLogOutput(
+          () =>
+            pWaitFor(
+              async () => {
+                const response = await got(`http://localhost:${port}/.netlify/functions/go-func`).text()
 
-            return response === 'Hello, Netlify!'
-          },
-          { interval: WAIT_INTERVAL, timeout: WAIT_TIMEOUT },
+                return response === 'Hello, Netlify!'
+              },
+              { interval: WAIT_INTERVAL, timeout: WAIT_TIMEOUT },
+            ),
+          outputBuffer,
         )
       },
     )
