@@ -44,17 +44,18 @@ const startServer = async ({ cwd, offline = true, env = {}, args = [] }) => {
     ['dev', offline ? '--offline' : '', '-p', port, '--staticServerPort', port + FRAMEWORK_PORT_SHIFT, ...args],
     getExecaOptions({ cwd, env }),
   )
-  let output = ''
+  const outputBuffer = []
   const serverPromise = new Promise((resolve, reject) => {
     let selfKilled = false
     ps.stdout.on('data', (data) => {
-      output += data
+      outputBuffer.push(data)
       if (data.includes('Server now ready on')) {
         resolve({
           url,
           host,
           port,
-          output,
+          output: outputBuffer.join(''),
+          outputBuffer,
           close: async () => {
             selfKilled = true
             await killProcess(ps)
@@ -66,7 +67,7 @@ const startServer = async ({ cwd, offline = true, env = {}, args = [] }) => {
     ps.catch((error) => !selfKilled && reject(error))
   })
 
-  return await pTimeout(serverPromise, SERVER_START_TIMEOUT, () => ({ timeout: true, output }))
+  return await pTimeout(serverPromise, SERVER_START_TIMEOUT, () => ({ timeout: true, output: outputBuffer.join('') }))
 }
 
 const startDevServer = async (options, expectFailure) => {
@@ -104,8 +105,18 @@ const withDevServer = async (options, testHandler, expectFailure = false) => {
   }
 }
 
+const tryAndLogOutput = async (func, outputBuffer) => {
+  try {
+    await func()
+  } catch (error) {
+    console.log(outputBuffer.join(''))
+    throw error
+  }
+}
+
 module.exports = {
   withDevServer,
   startDevServer,
   getExecaOptions,
+  tryAndLogOutput,
 }
