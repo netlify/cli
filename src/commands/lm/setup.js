@@ -3,6 +3,7 @@ const execa = require('execa')
 const Listr = require('listr')
 
 const Command = require('../../utils/command')
+const { error } = require('../../utils/command-helpers')
 const { installPlatform } = require('../../utils/lm/install')
 const { checkHelperVersion } = require('../../utils/lm/requirements')
 const { printBanner } = require('../../utils/lm/ui')
@@ -14,7 +15,7 @@ const installHelperIfMissing = async function ({ force }) {
     if (!version) {
       installHelper = true
     }
-  } catch (error) {
+  } catch (_) {
     installHelper = true
   }
 
@@ -37,9 +38,9 @@ const provisionService = async function (siteId, api) {
       addon: addonName,
       body: {},
     })
-  } catch (error) {
+  } catch (error_) {
     // error is JSONHTTPError
-    throw new Error(error.json.error)
+    throw new Error(error_.json.error)
   }
 }
 
@@ -62,7 +63,7 @@ class LmSetupCommand extends Command {
       try {
         helperInstalled = await installHelperIfMissing({ force: flags['force-install'] })
       } catch (error_) {
-        this.error(error_)
+        error(error_)
       }
     }
 

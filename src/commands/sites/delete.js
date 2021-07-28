@@ -3,7 +3,7 @@ const chalk = require('chalk')
 const inquirer = require('inquirer')
 
 const Command = require('../../utils/command')
-const { log } = require('../../utils/command-helpers')
+const { log, error } = require('../../utils/command-helpers')
 const { parseRawFlags } = require('../../utils/parse-raw-flags')
 
 class SitesDeleteCommand extends Command {
@@ -22,14 +22,14 @@ class SitesDeleteCommand extends Command {
     let siteData
     try {
       siteData = await api.getSite({ siteId })
-    } catch (error) {
-      if (error.status === 404) {
-        this.error(`No site with id ${siteId} found. Please verify the siteId & try again.`)
+    } catch (error_) {
+      if (error_.status === 404) {
+        error(`No site with id ${siteId} found. Please verify the siteId & try again.`)
       }
     }
 
     if (!siteData) {
-      this.error(`Unable to process site`)
+      error(`Unable to process site`)
     }
 
     const rawFlags = parseRawFlags(raw)
@@ -79,11 +79,11 @@ class SitesDeleteCommand extends Command {
 
     try {
       await api.deleteSite({ site_id: siteId })
-    } catch (error) {
-      if (error.status === 404) {
-        this.error(`No site with id ${siteId} found. Please verify the siteId & try again.`)
+    } catch (error_) {
+      if (error_.status === 404) {
+        error(`No site with id ${siteId} found. Please verify the siteId & try again.`)
       } else {
-        this.error(`Delete Site error: ${error.status}: ${error.message}`)
+        error(`Delete Site error: ${error_.status}: ${error_.message}`)
       }
     }
     log(`Site "${siteId}" successfully deleted!`)

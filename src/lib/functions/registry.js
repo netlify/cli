@@ -2,7 +2,7 @@ const { env } = require('process')
 
 const chalk = require('chalk')
 
-const { log } = require('../../utils/command-helpers')
+const { log, warn } = require('../../utils/command-helpers')
 const { NETLIFYDEVLOG, NETLIFYDEVERR } = require('../../utils/logo')
 const { mkdirRecursiveAsync } = require('../fs')
 const { getLogMessage } = require('../log')
@@ -12,15 +12,11 @@ const runtimes = require('./runtimes')
 const { watchDebounced } = require('./watcher')
 
 class FunctionsRegistry {
-  constructor({ capabilities, config, errorExit, functionsDirectory, projectRoot, timeouts, warn }) {
+  constructor({ capabilities, config, errorExit, functionsDirectory, projectRoot, timeouts }) {
     this.capabilities = capabilities
     this.config = config
     this.errorExit = errorExit
     this.functionsDirectory = functionsDirectory
-    this.logger = {
-      log,
-      warn,
-    }
     this.projectRoot = projectRoot
     this.timeouts = timeouts
 
@@ -68,19 +64,19 @@ class FunctionsRegistry {
 
   async buildFunctionAndWatchFiles(func, { verbose } = {}) {
     if (verbose) {
-      this.logger.log(`${NETLIFYDEVLOG} ${chalk.magenta('Reloading')} function ${chalk.yellow(func.name)}...`)
+      log(`${NETLIFYDEVLOG} ${chalk.magenta('Reloading')} function ${chalk.yellow(func.name)}...`)
     }
 
     const { error, srcFilesDiff } = await func.build({ cache: this.buildCache })
 
     if (error) {
-      this.logger.log(
+      log(
         `${NETLIFYDEVERR} ${chalk.red('Failed')} reloading function ${chalk.yellow(func.name)} with error:\n${
           error.message
         }`,
       )
     } else if (verbose) {
-      this.logger.log(`${NETLIFYDEVLOG} ${chalk.green('Reloaded')} function ${chalk.yellow(func.name)}`)
+      log(`${NETLIFYDEVLOG} ${chalk.green('Reloaded')} function ${chalk.yellow(func.name)}`)
     }
 
     // If the build hasn't resulted in any files being added or removed, there
@@ -135,13 +131,13 @@ class FunctionsRegistry {
     }
 
     if (func.isBackground && !this.capabilities.backgroundFunctions) {
-      this.logger.warn(getLogMessage('functions.backgroundNotSupported'))
+      warn(getLogMessage('functions.backgroundNotSupported'))
     }
 
     this.functions.set(name, func)
     this.buildFunctionAndWatchFiles(func)
 
-    this.logger.log(`${NETLIFYDEVLOG} ${chalk.green('Loaded')} function ${chalk.yellow(name)}.`)
+    log(`${NETLIFYDEVLOG} ${chalk.green('Loaded')} function ${chalk.yellow(name)}.`)
   }
 
   async scan(directories) {
@@ -223,7 +219,7 @@ class FunctionsRegistry {
   async unregisterFunction(name) {
     this.functions.delete(name)
 
-    this.logger.log(`${NETLIFYDEVLOG} ${chalk.magenta('Removed')} function ${chalk.yellow(name)}.`)
+    log(`${NETLIFYDEVLOG} ${chalk.magenta('Removed')} function ${chalk.yellow(name)}.`)
 
     const watcher = this.functionWatchers.get(name)
 

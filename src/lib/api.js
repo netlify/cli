@@ -1,5 +1,7 @@
 const fetch = require('node-fetch')
 
+const { warn } = require('../utils/command-helpers')
+
 const getHeaders = ({ token }) => ({
   'Content-Type': 'application/json',
   Authorization: `Bearer ${token}`,
@@ -69,7 +71,7 @@ const uploadEdgeHandlers = async ({ api, deployId, bundleBuffer, manifest }) => 
   return true
 }
 
-const cancelDeploy = async ({ api, deployId, warn }) => {
+const cancelDeploy = async ({ api, deployId }) => {
   try {
     await api.cancelSiteDeploy({ deploy_id: deployId })
   } catch (error) {

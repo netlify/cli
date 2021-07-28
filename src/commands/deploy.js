@@ -15,7 +15,7 @@ const { normalizeFunctionsConfig } = require('../lib/functions/config')
 const { getLogMessage } = require('../lib/log')
 const { startSpinner, stopSpinner } = require('../lib/spinner')
 const Command = require('../utils/command')
-const { log, logJson, getToken } = require('../utils/command-helpers')
+const { log, logJson, warn, exit, error, getToken } = require('../utils/command-helpers')
 const { deploySite } = require('../utils/deploy/deploy-site')
 const { deployEdgeHandlers } = require('../utils/edge-handlers')
 const { getInternalFunctionsDir } = require('../utils/functions')
@@ -27,7 +27,7 @@ const SitesCreateCommand = require('./sites/create')
 
 const DEFAULT_DEPLOY_TIMEOUT = 1.2e6
 
-const triggerDeploy = async ({ api, siteId, siteData, error }) => {
+const triggerDeploy = async ({ api, siteId, siteData }) => {
   try {
     const siteBuild = await api.createSiteBuild({ siteId })
     log(
@@ -70,7 +70,7 @@ const getDeployFolder = async ({ flags, config, site, siteData }) => {
   return deployFolder
 }
 
-const validateDeployFolder = async ({ deployFolder, error }) => {
+const validateDeployFolder = async ({ deployFolder }) => {
   let stat
   try {
     stat = await statAsync(deployFolder)
@@ -106,7 +106,7 @@ const getFunctionsFolder = ({ flags, config, site, siteData }) => {
   return functionsFolder
 }
 
-const validateFunctionsFolder = async ({ functionsFolder, error }) => {
+const validateFunctionsFolder = async ({ functionsFolder }) => {
   let stat
   if (functionsFolder) {
     // we used to hard error if functions folder is specified but doesn't exist
@@ -133,9 +133,9 @@ const validateFunctionsFolder = async ({ functionsFolder, error }) => {
   return stat
 }
 
-const validateFolders = async ({ deployFolder, functionsFolder, error }) => {
-  const deployFolderStat = await validateDeployFolder({ deployFolder, error })
-  const functionsFolderStat = await validateFunctionsFolder({ functionsFolder, error })
+const validateFolders = async ({ deployFolder, functionsFolder }) => {
+  const deployFolderStat = await validateDeployFolder({ deployFolder })
+  const functionsFolderStat = await validateFunctionsFolder({ functionsFolder })
   return { deployFolderStat, functionsFolderStat }
 }
 
@@ -168,7 +168,7 @@ const SEC_TO_MILLISEC = 1e3
 // 100 bytes
 const SYNC_FILE_LIMIT = 1e2
 
-const prepareProductionDeploy = async ({ siteData, api, exit }) => {
+const prepareProductionDeploy = async ({ siteData, api }) => {
   if (isObject(siteData.published_deploy) && siteData.published_deploy.locked) {
     log(`\n${NETLIFYDEVERR} Deployments are "locked" for production context of this site\n`)
     const { unlockChoice } = await inquirer.prompt([
@@ -193,34 +193,34 @@ const hasErrorMessage = (actual, expected) => {
   return false
 }
 
-const getJsonErrorMessage = (error) => get(error, 'json.message', '')
+const getJsonErrorMessage = (error_) => get(error_, 'json.message', '')
 
-const reportDeployError = ({ error, warn, failAndExit }) => {
+const reportDeployError = ({ error_, failAndExit }) => {
   switch (true) {
-    case error.name === 'JSONHTTPError': {
-      const message = getJsonErrorMessage(error)
+    case error_.name === 'JSONHTTPError': {
+      const message = getJsonErrorMessage(error_)
       if (hasErrorMessage(message, 'Background Functions not allowed by team plan')) {
         return failAndExit(`\n${getLogMessage('functions.backgroundNotSupported')}`)
       }
-      warn(`JSONHTTPError: ${message} ${error.status}`)
-      warn(`\n${JSON.stringify(error, null, '  ')}\n`)
-      failAndExit(error)
+      warn(`JSONHTTPError: ${message} ${error_.status}`)
+      warn(`\n${JSON.stringify(error_, null, '  ')}\n`)
+      failAndExit(error_)
       return
     }
-    case error.name === 'TextHTTPError': {
-      warn(`TextHTTPError: ${error.status}`)
-      warn(`\n${error}\n`)
-      failAndExit(error)
+    case error_.name === 'TextHTTPError': {
+      warn(`TextHTTPError: ${error_.status}`)
+      warn(`\n${error_}\n`)
+      failAndExit(error_)
       return
     }
-    case hasErrorMessage(error.message, 'Invalid filename'): {
-      warn(error.message)
-      failAndExit(error)
+    case hasErrorMessage(error_.message, 'Invalid filename'): {
+      warn(error_.message)
+      failAndExit(error_)
       return
     }
     default: {
-      warn(`\n${JSON.stringify(error, null, '  ')}\n`)
-      failAndExit(error)
+      warn(`\n${JSON.stringify(error_, null, '  ')}\n`)
+      failAndExit(error_)
     }
   }
 }
@@ -237,15 +237,12 @@ const runDeploy = async ({
   functionsConfig,
   functionsFolder,
   alias,
-  warn,
-  error,
-  exit,
 }) => {
   let results
   let deployId
   try {
     if (deployToProduction) {
-      await prepareProductionDeploy({ siteData, api, exit })
+      await prepareProductionDeploy({ siteData, api })
     } else {
       log('Deploying to draft URL...')
     }
@@ -261,8 +258,6 @@ const runDeploy = async ({
       deployId,
       api,
       silent,
-      error,
-      warn,
     })
     const internalFunctionsFolder = await getInternalFunctionsDir({ base: site.root })
 
@@ -281,14 +276,13 @@ const runDeploy = async ({
       // pass an existing deployId to update
       deployId,
       filter: getDeployFilesFilter({ site, deployFolder }),
-      warn,
       rootDir: site.root,
     })
   } catch (error_) {
     if (deployId) {
-      await cancelDeploy({ api, deployId, warn })
+      await cancelDeploy({ api, deployId })
     }
-    reportDeployError({ error: error_, warn, failAndExit: error })
+    reportDeployError({ error_, failAndExit: error })
   }
 
   const siteUrl = results.deploy.ssl_url || results.deploy.url
@@ -317,12 +311,12 @@ const handleBuild = async ({ context, flags }) => {
   })
   const { exitCode, newConfig } = await runBuild(options)
   if (exitCode !== 0) {
-    context.exit(exitCode)
+    exit(exitCode)
   }
   return newConfig
 }
 
-const printResults = ({ flags, results, deployToProduction, exit }) => {
+const printResults = ({ flags, results, deployToProduction }) => {
   const msgData = {
     Logs: `${results.logsUrl}`,
     'Unique Deploy URL': results.deployUrl,
@@ -369,7 +363,6 @@ const printResults = ({ flags, results, deployToProduction, exit }) => {
 class DeployCommand extends Command {
   async run() {
     const { flags } = this.parse(DeployCommand)
-    const { warn, error, exit } = this
     const { api, site } = this.netlify
     const alias = flags.alias || flags.branch
 
@@ -426,7 +419,7 @@ class DeployCommand extends Command {
     const deployToProduction = flags.prod || (flags.prodIfUnlocked && !siteData.published_deploy.locked)
 
     if (flags.trigger) {
-      return triggerDeploy({ api, siteId, siteData, error })
+      return triggerDeploy({ api, siteId, siteData })
     }
 
     const newConfig = await handleBuild({ context: this, flags })
@@ -447,7 +440,6 @@ class DeployCommand extends Command {
     const { functionsFolderStat } = await validateFolders({
       deployFolder,
       functionsFolder,
-      error,
     })
     const functionsConfig = normalizeFunctionsConfig({ functionsConfig: config.functions, projectRoot: site.root })
     const results = await runDeploy({
@@ -463,12 +455,9 @@ class DeployCommand extends Command {
       // pass undefined functionsFolder if doesn't exist
       functionsFolder: functionsFolderStat && functionsFolder,
       alias,
-      warn,
-      error,
-      exit,
     })
 
-    printResults({ flags, results, deployToProduction, exit })
+    printResults({ flags, results, deployToProduction })
 
     if (flags.open) {
       const urlToOpen = deployToProduction ? results.siteUrl : results.deployUrl

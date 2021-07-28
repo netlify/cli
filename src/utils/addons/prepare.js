@@ -1,13 +1,13 @@
 const chalk = require('chalk')
 
-const { log } = require('../command-helpers')
+const { log, warn, error, exit } = require('../command-helpers')
 
 const ADDON_VALIDATION = {
   EXISTS: 'EXISTS',
   NOT_EXISTS: 'NOT_EXISTS',
 }
 
-const validateExists = ({ addon, addonName, siteData, exit }) => {
+const validateExists = ({ addon, addonName, siteData }) => {
   if (!addon || !addon.id) {
     log(`Add-on ${addonName} doesn't exist for ${siteData.name}`)
     log(`> Run \`netlify addons:create ${addonName}\` to create an instance for this site`)
@@ -15,7 +15,7 @@ const validateExists = ({ addon, addonName, siteData, exit }) => {
   }
 }
 
-const validateNotExists = ({ addon, addonName, siteData, exit }) => {
+const validateNotExists = ({ addon, addonName, siteData }) => {
   if (addon && addon.id) {
     log(`The "${addonName} add-on" already exists for ${siteData.name}`)
     log()
@@ -30,14 +30,14 @@ const validateNotExists = ({ addon, addonName, siteData, exit }) => {
 
 const getCurrentAddon = ({ addons, addonName }) => addons.find((addon) => addon.service_slug === addonName)
 
-const validateCurrentAddon = ({ addon, validation, addonName, siteData, warn, exit }) => {
+const validateCurrentAddon = ({ addon, validation, addonName, siteData }) => {
   switch (validation) {
     case ADDON_VALIDATION.EXISTS: {
-      validateExists({ addon, addonName, siteData, exit })
+      validateExists({ addon, addonName, siteData })
       break
     }
     case ADDON_VALIDATION.NOT_EXISTS: {
-      validateNotExists({ addon, addonName, siteData, exit })
+      validateNotExists({ addon, addonName, siteData })
       break
     }
     default: {
@@ -47,7 +47,7 @@ const validateCurrentAddon = ({ addon, validation, addonName, siteData, warn, ex
   }
 }
 
-const getAddonManifest = async ({ api, addonName, error }) => {
+const getAddonManifest = async ({ api, addonName }) => {
   let manifest
   try {
     manifest = await api.showServiceManifest({ addonName })
@@ -61,7 +61,7 @@ const getAddonManifest = async ({ api, addonName, error }) => {
   return manifest
 }
 
-const getSiteData = async ({ api, siteId, error }) => {
+const getSiteData = async ({ api, siteId }) => {
   let siteData
   try {
     siteData = await api.getSite({ siteId })
@@ -71,7 +71,7 @@ const getSiteData = async ({ api, siteId, error }) => {
   return siteData
 }
 
-const getAddons = async ({ api, siteId, error }) => {
+const getAddons = async ({ api, siteId }) => {
   let addons
   try {
     addons = await api.listServiceInstancesForSite({ siteId })
@@ -82,7 +82,7 @@ const getAddons = async ({ api, siteId, error }) => {
 }
 
 const prepareAddonCommand = async ({ context, addonName, validation }) => {
-  const { netlify, warn, error, exit } = context
+  const { netlify } = context
   const { api, site } = netlify
   const siteId = site.id
   if (!siteId) {
@@ -93,14 +93,14 @@ const prepareAddonCommand = async ({ context, addonName, validation }) => {
 
   const [manifest, siteData, addons] = await Promise.all([
     addonName ? getAddonManifest({ api, addonName, error }) : Promise.resolve(),
-    getSiteData({ api, siteId, error }),
-    getAddons({ api, siteId, error }),
+    getSiteData({ api, siteId }),
+    getAddons({ api, siteId }),
   ])
 
   let addon
   if (addonName) {
     addon = getCurrentAddon({ addons, addonName })
-    validateCurrentAddon({ addon, validation, addonName, siteData, warn, exit })
+    validateCurrentAddon({ addon, validation, addonName, siteData })
   }
 
   return { manifest, addons, addon, siteData }

@@ -8,7 +8,7 @@ const prettyjson = require('prettyjson')
 const { v4: uuidv4 } = require('uuid')
 
 const Command = require('../../utils/command')
-const { log, logJson } = require('../../utils/command-helpers')
+const { log, logJson, warn, error } = require('../../utils/command-helpers')
 const { getRepoData } = require('../../utils/get-repo-data')
 const { configureRepo } = require('../../utils/init/config')
 const { track } = require('../../utils/telemetry')
@@ -93,12 +93,12 @@ class SitesCreateCommand extends Command {
           accountSlug,
           body,
         })
-      } catch (error) {
+      } catch (error_) {
         if (error.status === 422) {
-          this.warn(`${name}.netlify.app already exists. Please try a different slug.`)
+          warn(`${name}.netlify.app already exists. Please try a different slug.`)
           await inputSiteName()
         } else {
-          this.error(`createSiteInTeam error: ${error.status}: ${error.message}`)
+          error(`createSiteInTeam error: ${error_.status}: ${error_.message}`)
         }
       }
     }

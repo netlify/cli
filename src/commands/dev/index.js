@@ -12,7 +12,7 @@ const waitPort = require('wait-port')
 
 const { startFunctionsServer } = require('../../lib/functions/server')
 const Command = require('../../utils/command')
-const { log } = require('../../utils/command-helpers')
+const { log, warn, exit } = require('../../utils/command-helpers')
 const { detectServerSettings } = require('../../utils/detect-server-settings')
 const { getSiteInformation, injectEnvVariables } = require('../../utils/dev')
 const { startLiveTunnel } = require('../../utils/live-tunnel')
@@ -53,7 +53,7 @@ const isNonExistingCommandError = ({ command, error }) => {
   )
 }
 
-const startFrameworkServer = async function ({ settings, exit }) {
+const startFrameworkServer = async function ({ settings }) {
   if (settings.useStaticServer) {
     return await startStaticServer({ settings })
   }
@@ -105,7 +105,7 @@ const startFrameworkServer = async function ({ settings, exit }) {
     if (!open) {
       throw new Error(`Timed out waiting for port '${settings.frameworkPort}' to be open`)
     }
-  } catch (error) {
+  } catch (_) {
     log(NETLIFYDEVERR, `Netlify Dev could not connect to localhost:${settings.frameworkPort}.`)
     log(NETLIFYDEVERR, `Please make sure your framework server is running on port ${settings.frameworkPort}`)
     exit(1)
@@ -115,7 +115,7 @@ const startFrameworkServer = async function ({ settings, exit }) {
 // 10 minutes
 const FRAMEWORK_PORT_TIMEOUT = 6e5
 
-const startProxyServer = async ({ flags, settings, site, exit, addonsUrls }) => {
+const startProxyServer = async ({ flags, settings, site, addonsUrls }) => {
   let url
   if (flags.edgeHandlers || flags.trafficMesh) {
     url = await startForwardProxy({
@@ -175,7 +175,7 @@ class DevCommand extends Command {
 
   async run() {
     log(`${NETLIFYDEV}`)
-    const { error: errorExit, warn, exit } = this
+    const { error: errorExit } = this
     const { flags } = this.parse(DevCommand)
     const { api, site, config, siteInfo } = this.netlify
     config.dev = { ...config.dev }
@@ -194,12 +194,11 @@ class DevCommand extends Command {
       )
     }
 
-    await injectEnvVariables({ env: this.netlify.cachedConfig.env, site, warn })
+    await injectEnvVariables({ env: this.netlify.cachedConfig.env, site })
     const { addonsUrls, siteUrl, capabilities, timeouts } = await getSiteInformation({
       flags,
       api,
       site,
-      warn,
       error: errorExit,
       siteInfo,
     })
@@ -218,15 +217,14 @@ class DevCommand extends Command {
       config,
       settings,
       site,
-      warn,
       errorExit,
       siteUrl,
       capabilities,
       timeouts,
     })
-    await startFrameworkServer({ settings, exit })
+    await startFrameworkServer({ settings })
 
-    let url = await startProxyServer({ flags, settings, site, exit, addonsUrls })
+    let url = await startProxyServer({ flags, settings, site, addonsUrls })
 
     const liveTunnelUrl = await handleLiveTunnel({ flags, site, api, settings })
     url = liveTunnelUrl || url

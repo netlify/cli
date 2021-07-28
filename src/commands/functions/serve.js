@@ -13,18 +13,17 @@ class FunctionsServeCommand extends Command {
   async run() {
     const { flags } = this.parse(FunctionsServeCommand)
 
-    const { error: errorExit, warn, netlify } = this
+    const { error: errorExit, netlify } = this
     const { api, site, config, siteInfo } = netlify
 
     const functionsDir = getFunctionsDir({ flags, config }, join('netlify', 'functions'))
 
-    await injectEnvVariables({ env: this.netlify.cachedConfig.env, site, warn })
+    await injectEnvVariables({ env: this.netlify.cachedConfig.env, site })
 
     const { siteUrl, capabilities, timeouts } = await getSiteInformation({
       flags,
       api,
       site,
-      warn,
       error: errorExit,
       siteInfo,
     })
@@ -39,7 +38,6 @@ class FunctionsServeCommand extends Command {
       config,
       settings: { functions: functionsDir, functionsPort },
       site,
-      warn,
       errorExit,
       siteUrl,
       capabilities,

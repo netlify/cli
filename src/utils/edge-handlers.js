@@ -4,10 +4,12 @@ const { uploadEdgeHandlers, cancelDeploy } = require('../lib/api')
 const { statAsync, readFileAsyncCatchError } = require('../lib/fs')
 const { startSpinner, stopSpinner } = require('../lib/spinner')
 
+const { error } = require('./command-helpers')
+
 const MANIFEST_FILENAME = 'manifest.json'
 const EDGE_HANDLERS_FOLDER = '.netlify/edge-handlers'
 
-const validateEdgeHandlerFolder = async ({ site, error }) => {
+const validateEdgeHandlerFolder = async ({ site }) => {
   try {
     const resolvedFolder = path.resolve(site.root, EDGE_HANDLERS_FOLDER)
     const stat = await statAsync(resolvedFolder)
@@ -22,7 +24,7 @@ const validateEdgeHandlerFolder = async ({ site, error }) => {
   }
 }
 
-const readBundleAndManifest = async ({ edgeHandlersResolvedFolder, error }) => {
+const readBundleAndManifest = async ({ edgeHandlersResolvedFolder }) => {
   const manifestPath = path.resolve(edgeHandlersResolvedFolder, MANIFEST_FILENAME)
   const { content: manifest, error: manifestError } = await readFileAsyncCatchError(manifestPath)
   if (manifestError) {
@@ -50,8 +52,8 @@ const readBundleAndManifest = async ({ edgeHandlersResolvedFolder, error }) => {
   return { bundleBuffer, manifest: manifestJson }
 }
 
-const deployEdgeHandlers = async ({ site, deployId, api, silent, error, warn }) => {
-  const edgeHandlersResolvedFolder = await validateEdgeHandlerFolder({ site, error })
+const deployEdgeHandlers = async ({ site, deployId, api, silent }) => {
+  const edgeHandlersResolvedFolder = await validateEdgeHandlerFolder({ site })
   if (edgeHandlersResolvedFolder) {
     let spinner
     try {
@@ -59,7 +61,7 @@ const deployEdgeHandlers = async ({ site, deployId, api, silent, error, warn }) 
         ? null
         : startSpinner({ text: `Deploying Edge Handlers from directory ${edgeHandlersResolvedFolder}` })
 
-      const { bundleBuffer, manifest } = await readBundleAndManifest({ edgeHandlersResolvedFolder, error })
+      const { bundleBuffer, manifest } = await readBundleAndManifest({ edgeHandlersResolvedFolder })
       // returns false if the bundle exists, true on success, throws on error
       const success = await uploadEdgeHandlers({
         api,
@@ -75,7 +77,7 @@ const deployEdgeHandlers = async ({ site, deployId, api, silent, error, warn }) 
     } catch (error_) {
       const text = `Failed deploying Edge Handlers: ${error_.message}`
       stopSpinner({ spinner, text, error: true })
-      await cancelDeploy({ api, deployId, warn })
+      await cancelDeploy({ api, deployId })
       // no need to report the error again
       error('')
     }

@@ -2,6 +2,7 @@ const cleanDeep = require('clean-deep')
 const tempy = require('tempy')
 
 const { rmdirRecursiveAsync } = require('../../lib/fs')
+const { warn } = require('../command-helpers')
 
 const {
   DEFAULT_DEPLOY_TIMEOUT,
@@ -40,7 +41,6 @@ const deploySite = async (
     },
     syncFileLimit = DEFAULT_SYNC_LIMIT,
     tmpDir = tempy.directory(),
-    warn,
     rootDir,
   } = {},
 ) => {

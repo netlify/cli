@@ -1,6 +1,7 @@
 const process = require('process')
 const { format, inspect } = require('util')
 
+const Errors = require('@oclif/errors')
 const argv = require('minimist')(process.argv.slice(2))
 const omit = require('omit.js').default
 
@@ -91,6 +92,18 @@ const log = (message = '', ...args) => {
   process.stdout.write(`${format(message, ...args)}\n`)
 }
 
+const warn = (message = '') => {
+  Errors.warn(message)
+}
+
+const error = (message = '', options = {}) => {
+  Errors.error(message, options)
+}
+
+const exit = (code = 0) => {
+  Errors.exit(code)
+}
+
 // When `build.publish` is not set by the user, the CLI behavior differs in
 // several ways. It detects it by checking if `build.publish` is `undefined`.
 // However, `@netlify/config` adds a default value to `build.publish`.
@@ -106,6 +119,9 @@ module.exports = {
   pollForToken,
   log,
   logJson,
+  warn,
+  error,
+  exit,
   getToken,
   normalizeConfig,
   chalk,

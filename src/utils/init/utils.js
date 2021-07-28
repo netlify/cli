@@ -9,6 +9,7 @@ const isEmpty = require('lodash/isEmpty')
 
 const { fileExistsAsync, writeFileAsync } = require('../../lib/fs')
 const { normalizeBackslash } = require('../../lib/path')
+const { warn } = require('../command-helpers')
 
 const { getFrameworkInfo } = require('./frameworks')
 const { detectNodeVersion } = require('./node-version')
@@ -131,9 +132,9 @@ const getPromptInputs = async ({
 const getBaseDirectory = ({ repositoryRoot, siteRoot }) =>
   path.normalize(repositoryRoot) === path.normalize(siteRoot) ? process.cwd() : siteRoot
 
-const getBuildSettings = async ({ repositoryRoot, siteRoot, config, env, warn }) => {
+const getBuildSettings = async ({ repositoryRoot, siteRoot, config, env }) => {
   const baseDirectory = getBaseDirectory({ repositoryRoot, siteRoot })
-  const nodeVersion = await detectNodeVersion({ baseDirectory, env, warn })
+  const nodeVersion = await detectNodeVersion({ baseDirectory, env })
   const {
     frameworkName,
     frameworkBuildCommand,
@@ -200,16 +201,7 @@ const getNetlifyToml = ({
   ## more info on configuring this file: https://www.netlify.com/docs/netlify-toml-reference/
 `
 
-const saveNetlifyToml = async ({
-  repositoryRoot,
-  config,
-  configPath,
-  baseDir,
-  buildCmd,
-  buildDir,
-  functionsDir,
-  warn,
-}) => {
+const saveNetlifyToml = async ({ repositoryRoot, config, configPath, baseDir, buildCmd, buildDir, functionsDir }) => {
   const tomlPathParts = [repositoryRoot, baseDir, 'netlify.toml'].filter(Boolean)
   const tomlPath = path.join(...tomlPathParts)
   const exists = await fileExistsAsync(tomlPath)

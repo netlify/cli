@@ -104,7 +104,7 @@ const createHandler = function ({ functionsRegistry }) {
   }
 }
 
-const getFunctionsServer = async function ({ functionsRegistry, siteUrl, warn, prefix }) {
+const getFunctionsServer = async function ({ functionsRegistry, siteUrl, prefix }) {
   // performance optimization, load express on demand
   // eslint-disable-next-line node/global-require
   const express = require('express')
@@ -120,7 +120,7 @@ const getFunctionsServer = async function ({ functionsRegistry, siteUrl, warn, p
     }),
   )
   app.use(bodyParser.raw({ limit: '6mb', type: '*/*' }))
-  app.use(createFormSubmissionHandler({ functionsRegistry, siteUrl, warn }))
+  app.use(createFormSubmissionHandler({ functionsRegistry, siteUrl }))
   app.use(
     expressLogging(console, {
       blacklist: ['/favicon.ico'],
@@ -140,7 +140,6 @@ const startFunctionsServer = async ({
   config,
   settings,
   site,
-  warn,
   errorExit,
   siteUrl,
   capabilities,
@@ -157,7 +156,6 @@ const startFunctionsServer = async ({
       functionsDirectory: settings.functions,
       projectRoot: site.root,
       timeouts,
-      warn,
     })
     const internalFunctionsDir = await getInternalFunctionsDir({ base: site.root })
 
@@ -167,7 +165,6 @@ const startFunctionsServer = async ({
       functionsRegistry,
       siteUrl,
       prefix,
-      warn,
     })
 
     await startWebServer({ server, settings, errorExit })

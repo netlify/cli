@@ -5,7 +5,7 @@ const inquirer = require('inquirer')
 const isEmpty = require('lodash/isEmpty')
 
 const { listSites } = require('../../lib/api')
-const { log } = require('../command-helpers')
+const { log, error } = require('../command-helpers')
 const { getRepoData } = require('../get-repo-data')
 const { track } = require('../telemetry')
 
@@ -51,7 +51,7 @@ module.exports = async function linkPrompts(context, flags = {}) {
       const sites = await listSites({ api, options: { filter: 'all' } })
 
       if (isEmpty(sites)) {
-        context.error(
+        error(
           new Error(`You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`),
         )
       }
@@ -94,7 +94,7 @@ Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
           },
         ])
         if (!selectedSite) {
-          context.error('No site selected')
+          error('No site selected')
         }
         site = selectedSite
       }
@@ -118,16 +118,16 @@ Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
           api,
           options: { name: searchTerm, filter: 'all' },
         })
-      } catch (error) {
-        if (error.status === 404) {
-          context.error(`'${searchTerm}' not found`)
+      } catch (error_) {
+        if (error_.status === 404) {
+          error(`'${searchTerm}' not found`)
         } else {
-          context.error(error)
+          error(error_)
         }
       }
 
       if (isEmpty(matchingSites)) {
-        context.error(`No site names found containing '${searchTerm}'.
+        error(`No site names found containing '${searchTerm}'.
 
 Run ${chalk.cyanBright('netlify link')} again to try a new search,
 or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
@@ -145,7 +145,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
           },
         ])
         if (!selectedSite) {
-          context.error('No site selected')
+          error('No site selected')
         }
         site = selectedSite
       } else {
@@ -162,12 +162,12 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
       let sites
       try {
         sites = await listSites({ api, options: { maxPages: 1, filter: 'all' } })
-      } catch (error) {
-        context.error(error)
+      } catch (error_) {
+        error(error_)
       }
 
       if (isEmpty(sites)) {
-        context.error(`You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
+        error(`You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
       }
 
       const { selectedSite } = await inquirer.prompt([
@@ -180,7 +180,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
         },
       ])
       if (!selectedSite) {
-        context.error('No site selected')
+        error('No site selected')
       }
       site = selectedSite
       break
@@ -197,11 +197,11 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
 
       try {
         site = await api.getSite({ siteId })
-      } catch (error) {
-        if (error.status === 404) {
-          context.error(new Error(`Site ID '${siteId}' not found`))
+      } catch (error_) {
+        if (error_.status === 404) {
+          error(new Error(`Site ID '${siteId}' not found`))
         } else {
-          context.error(error)
+          error(error_)
         }
       }
       break
@@ -211,7 +211,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
   }
 
   if (!site) {
-    context.error(new Error(`No site found`))
+    error(new Error(`No site found`))
   }
 
   // Save site ID to config

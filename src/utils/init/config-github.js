@@ -173,7 +173,7 @@ const addNotificationHooks = async ({ failAndExit, siteId, api, token }) => {
 }
 
 module.exports = async function configGithub({ context, siteId, repoOwner, repoName }) {
-  const { warn, error: failAndExit, netlify } = context
+  const { error: failAndExit, netlify } = context
   const {
     api,
     globalConfig,
@@ -190,9 +190,8 @@ module.exports = async function configGithub({ context, siteId, repoOwner, repoN
     siteRoot,
     config,
     env,
-    warn,
   })
-  await saveNetlifyToml({ repositoryRoot, config, configPath, baseDir, buildCmd, buildDir, functionsDir, warn })
+  await saveNetlifyToml({ repositoryRoot, config, configPath, baseDir, buildCmd, buildDir, functionsDir })
 
   const octokit = getGitHubClient({ token })
   const [deployKey, githubRepo] = await Promise.all([

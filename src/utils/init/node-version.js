@@ -3,6 +3,7 @@ const locatePath = require('locate-path')
 const nodeVersionAlias = require('node-version-alias')
 
 const { readFileAsync } = require('../../lib/fs')
+const { warn } = require('../command-helpers')
 
 const DEFAULT_NODE_VERSION = '12.18.0'
 const NVM_FLAG_PREFIX = '--'
@@ -11,7 +12,7 @@ const NVM_FLAG_PREFIX = '--'
 const normalizeConfiguredVersion = (version) =>
   version.startsWith(NVM_FLAG_PREFIX) ? version.slice(NVM_FLAG_PREFIX.length) : version
 
-const detectNodeVersion = async ({ baseDirectory, env, warn }) => {
+const detectNodeVersion = async ({ baseDirectory, env }) => {
   try {
     const nodeVersionFile = await locatePath(['.nvmrc', '.node-version'], { cwd: baseDirectory })
     const configuredVersion =
