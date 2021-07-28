@@ -3,7 +3,7 @@ const chalk = require('chalk')
 const inquirer = require('inquirer')
 
 const Command = require('../../utils/command')
-const { log, error } = require('../../utils/command-helpers')
+const { log, error, exit } = require('../../utils/command-helpers')
 const { parseRawFlags } = require('../../utils/parse-raw-flags')
 
 class SitesDeleteCommand extends Command {
@@ -51,7 +51,7 @@ class SitesDeleteCommand extends Command {
       })
       log()
       if (!wantsToDelete) {
-        this.exit()
+        exit()
       }
     }
 
@@ -71,7 +71,7 @@ class SitesDeleteCommand extends Command {
         default: false,
       })
       if (!wantsToDelete) {
-        this.exit()
+        exit()
       }
     }
 

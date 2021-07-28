@@ -5,7 +5,7 @@ const inquirer = require('inquirer')
 const isEmpty = require('lodash/isEmpty')
 
 const { listSites } = require('../../lib/api')
-const { log, error } = require('../command-helpers')
+const { log, error, exit } = require('../command-helpers')
 const { getRepoData } = require('../get-repo-data')
 const { track } = require('../telemetry')
 
@@ -70,7 +70,7 @@ Double check you are in the correct working directory and a remote origin repo i
 
 Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
 
-        context.exit()
+        exit()
       }
 
       // Matches a single site hooray!

@@ -10,6 +10,7 @@ const API = require('netlify')
 const { getAgent } = require('../lib/http-agent')
 
 const { pollForToken, log, getToken, getCwd, argv, normalizeConfig, chalk } = require('./command-helpers')
+const { exit } = require('./command-helpers')
 const getGlobalConfig = require('./get-global-config')
 const openBrowser = require('./open-browser')
 const StateConfig = require('./state-config')
@@ -115,7 +116,7 @@ class BaseCommand extends TrackedCommand {
 
       const message = isUserError ? error.message : error.stack
       console.error(message)
-      this.exit(1)
+      exit(1)
     }
   }
 

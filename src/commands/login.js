@@ -2,7 +2,7 @@ const { flags: flagsLib } = require('@oclif/command')
 const chalk = require('chalk')
 
 const Command = require('../utils/command')
-const { log, getToken } = require('../utils/command-helpers')
+const { log, exit, getToken } = require('../utils/command-helpers')
 
 class LoginCommand extends Command {
   async run() {
@@ -18,12 +18,12 @@ class LoginCommand extends Command {
       log()
       log(`To see all available commands run: ${chalk.cyanBright('netlify help')}`)
       log()
-      return this.exit()
+      return exit()
     }
 
     await this.expensivelyAuthenticate()
 
-    return this.exit()
+    return exit()
   }
 }
 

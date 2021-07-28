@@ -4,7 +4,7 @@ const { zipFunctions } = require('@netlify/zip-it-and-ship-it')
 const { flags: flagsLib } = require('@oclif/command')
 
 const Command = require('../../utils/command')
-const { log } = require('../../utils/command-helpers')
+const { log, exit } = require('../../utils/command-helpers')
 const { getFunctionsDir } = require('../../utils/functions')
 const { NETLIFYDEVLOG, NETLIFYDEVERR } = require('../../utils/logo')
 
@@ -19,7 +19,7 @@ class FunctionsBuildCommand extends Command {
 
     if (src === dst) {
       log(`${NETLIFYDEVERR} Source and destination for function build can't be the same`)
-      this.exit(1)
+      exit(1)
     }
 
     if (!src || !dst) {
@@ -31,7 +31,7 @@ class FunctionsBuildCommand extends Command {
         log(
           `${NETLIFYDEVERR} Error: You must specify a destination functions folder with a --functions flag or a functions field in your config`,
         )
-      this.exit(1)
+      exit(1)
     }
 
     fs.mkdirSync(dst, { recursive: true })
