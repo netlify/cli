@@ -86,7 +86,9 @@ require github.com/aws/aws-lambda-go v1.20.0`,
     await withDevServer(
       { cwd: builder.directory, env: { NETLIFY_EXPERIMENTAL_BUILD_GO_SOURCE: 'true' } },
       async ({ port, outputBuffer }) => {
-        t.is(await got(`http://localhost:${port}/.netlify/functions/go-func`).text(), 'Hello, world!')
+        await tryAndLogOutput(async () => {
+          t.is(await got(`http://localhost:${port}/.netlify/functions/go-func`).text(), 'Hello, world!')
+        }, outputBuffer)
 
         await pause(WAIT_WRITE)
 
