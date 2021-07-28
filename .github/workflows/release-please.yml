@@ -30,6 +30,8 @@ jobs:
       - name: Install site dependencies
         run: npm run site:build:install
         if: ${{ steps.release.outputs.release_created }}
+      - name: Install core dependencies
+        run: npm ci --no-audit
       - run: npm publish
         if: ${{ steps.release.outputs.release_created }}
         env:
