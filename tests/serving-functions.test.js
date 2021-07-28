@@ -50,7 +50,10 @@ testMatrix.forEach(({ args }) => {
         .buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async ({ port, outputBuffer }) => {
-        t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'Hello')
+        await tryAndLogOutput(
+          async () => t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'Hello'),
+          outputBuffer,
+        )
 
         await pause(WAIT_WRITE)
 
@@ -118,9 +121,13 @@ testMatrix.forEach(({ args }) => {
         .buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async ({ port, outputBuffer }) => {
-        t.is(
-          await got(`http://localhost:${port}/.netlify/functions/hello`).text(),
-          'Modern Web Development on the JAMStack',
+        await tryAndLogOutput(
+          async () =>
+            t.is(
+              await got(`http://localhost:${port}/.netlify/functions/hello`).text(),
+              'Modern Web Development on the JAMStack',
+            ),
+          outputBuffer,
         )
 
         await pause(WAIT_WRITE)
@@ -188,7 +195,9 @@ testMatrix.forEach(({ args }) => {
         .buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async ({ port, outputBuffer }) => {
-        t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'WOOF!')
+        await tryAndLogOutput(async () => {
+          t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'WOOF!')
+        }, outputBuffer)
 
         await pause(WAIT_WRITE)
 
@@ -261,10 +270,12 @@ testMatrix.forEach(({ args }) => {
         .buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async ({ port, outputBuffer }) => {
-        t.is(
-          await got(`http://localhost:${port}/.netlify/functions/hello`).text(),
-          'Modern Web Development on the JAMStack',
-        )
+        await tryAndLogOutput(async () => {
+          t.is(
+            await got(`http://localhost:${port}/.netlify/functions/hello`).text(),
+            'Modern Web Development on the JAMStack',
+          )
+        }, outputBuffer)
 
         await pause(WAIT_WRITE)
 
@@ -310,9 +321,11 @@ testMatrix.forEach(({ args }) => {
         .buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async ({ port, outputBuffer }) => {
-        const unauthenticatedResponse = await gotCatch404(`http://localhost:${port}/.netlify/functions/hello`)
+        await tryAndLogOutput(async () => {
+          const unauthenticatedResponse = await gotCatch404(`http://localhost:${port}/.netlify/functions/hello`)
 
-        t.is(unauthenticatedResponse.statusCode, 404)
+          t.is(unauthenticatedResponse.statusCode, 404)
+        }, outputBuffer)
 
         await pause(WAIT_WRITE)
 
@@ -374,9 +387,11 @@ export { handler }
         .buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async ({ port, outputBuffer }) => {
-        const unauthenticatedResponse = await gotCatch404(`http://localhost:${port}/.netlify/functions/hello`)
+        await tryAndLogOutput(async () => {
+          const unauthenticatedResponse = await gotCatch404(`http://localhost:${port}/.netlify/functions/hello`)
 
-        t.is(unauthenticatedResponse.statusCode, 404)
+          t.is(unauthenticatedResponse.statusCode, 404)
+        }, outputBuffer)
 
         await pause(WAIT_WRITE)
 
@@ -448,7 +463,9 @@ export { handler }
         .buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async ({ port, outputBuffer }) => {
-        t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'Hello')
+        await tryAndLogOutput(async () => {
+          t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'Hello')
+        }, outputBuffer)
 
         await pause(WAIT_WRITE)
 
@@ -497,7 +514,9 @@ export { handler }
         .buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async ({ port, outputBuffer }) => {
-        t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'Internal')
+        await tryAndLogOutput(async () => {
+          t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'Internal')
+        }, outputBuffer)
 
         await pause(WAIT_WRITE)
 
@@ -562,7 +581,9 @@ export { handler }
         .buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async ({ port, outputBuffer }) => {
-        t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'User')
+        await tryAndLogOutput(async () => {
+          t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'User')
+        }, outputBuffer)
 
         await pause(WAIT_WRITE)
 
@@ -640,9 +661,11 @@ test('Serves functions that dynamically load files included in the `functions.in
       })
       .buildAsync()
 
-    await withDevServer({ cwd: builder.directory }, async ({ port }) => {
-      t.is(await got(`http://localhost:${port}/.netlify/functions/hello?name=one`).text(), 'one')
-      t.is(await got(`http://localhost:${port}/.netlify/functions/hello?name=two`).text(), 'two')
+    await withDevServer({ cwd: builder.directory }, async ({ port, outputBuffer }) => {
+      await tryAndLogOutput(async () => {
+        t.is(await got(`http://localhost:${port}/.netlify/functions/hello?name=one`).text(), 'one')
+        t.is(await got(`http://localhost:${port}/.netlify/functions/hello?name=two`).text(), 'two')
+      }, outputBuffer)
     })
   })
 })
