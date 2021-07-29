@@ -1,5 +1,6 @@
 const go = require('./go')
 const js = require('./js')
+const rust = require('./rust')
 
 /**
  * @callback BuildFunction
@@ -40,6 +41,6 @@ const js = require('./js')
  * @property {string} name
  */
 
-const runtimes = [js, go].reduce((res, runtime) => ({ ...res, [runtime.name]: runtime }), {})
+const runtimes = [js, go, rust].reduce((res, runtime) => ({ ...res, [runtime.name]: runtime }), {})
 
 module.exports = runtimes
