@@ -32,6 +32,7 @@ jobs:
         if: ${{ steps.release.outputs.release_created }}
       - name: Install core dependencies
         run: npm ci --no-audit
+        if: ${{ steps.release.outputs.release_created }}
       - run: npm publish
         if: ${{ steps.release.outputs.release_created }}
         env:
