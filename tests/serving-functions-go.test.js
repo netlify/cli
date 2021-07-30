@@ -101,7 +101,7 @@ require github.com/aws/aws-lambda-go v1.20.0`,
           }
         }
         
-        if (args[0].endsWith('local-functions-proxy')) {
+        if (args[0].includes('local-functions-proxy')) {
           proxyCallCount++
 
           const response = {
