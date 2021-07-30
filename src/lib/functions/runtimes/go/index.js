@@ -44,15 +44,12 @@ const getBuildFunction = ({ func }) => {
 }
 
 const invokeFunction = async ({ context, event, func, timeout }) => {
-  const requestData = {
-    ...event,
-    requestContext: context,
-  }
   const { stdout } = await runFunctionsProxy({
     binaryPath: func.buildData.binaryPath,
+    context,
     directory: dirname(func.mainFile),
+    event,
     name: func.name,
-    requestData,
     timeout,
   })
 
