@@ -200,7 +200,7 @@ class InitCommand extends Command {
   }
 }
 
-InitCommand.description = `Configure continuous deployment for a new or existing site`
+InitCommand.description = `Configure continuous deployment for an existing site or create a new site without continuous deployment`
 
 InitCommand.flags = {
   manual: flagsLib.boolean({
