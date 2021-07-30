@@ -1,5 +1,6 @@
 const { getBinaryPath: getFunctionsProxyPath } = require('@netlify/local-functions-proxy')
-const execa = require('execa')
+
+const execa = require('../../utils/execa')
 
 const runFunctionsProxy = ({ binaryPath, context, directory, event, name, timeout }) => {
   const functionsProxyPath = getFunctionsProxyPath()

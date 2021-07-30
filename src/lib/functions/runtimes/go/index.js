@@ -1,11 +1,11 @@
 const { dirname, extname } = require('path')
 const { platform } = require('process')
 
-const execa = require('execa')
 const tempy = require('tempy')
 
 const isWindows = platform === 'win32'
 
+const execa = require('../../../../utils/execa')
 const { runFunctionsProxy } = require('../../local-proxy')
 
 const build = async ({ binaryPath, functionDirectory }) => {
