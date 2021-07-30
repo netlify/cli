@@ -3,12 +3,13 @@ const pWaitFor = require('p-wait-for')
 
 const { withDevServer, tryAndLogOutput } = require('./utils/dev-server')
 const got = require('./utils/got')
+const { createMock: createExecaMock } = require('./utils/mock-execa')
 const { pause } = require('./utils/pause')
 const { withSiteBuilder } = require('./utils/site-builder')
 
-const WAIT_INTERVAL = 1800
-const WAIT_TIMEOUT = 30000
-const WAIT_WRITE = 3000
+const WAIT_INTERVAL = 600
+const WAIT_TIMEOUT = 3000
+const WAIT_WRITE = 1000
 
 test('Updates a Go function when a file is modified', async (t) => {
   const goSource = `
@@ -83,8 +84,44 @@ require github.com/aws/aws-lambda-go v1.20.0`,
       ])
       .buildAsync()
 
+    const [execaMock, removeExecaMock] = await createExecaMock(`
+      const { writeFileSync } = require('fs')
+
+      let proxyCallCount = 0
+
+      module.exports = async (...args) => {
+        if (args[0] === 'go') {
+          const binaryPath = args[1][2]
+
+          writeFileSync(binaryPath, '')
+
+          return {
+            stderr: '',
+            stdout: ''
+          }
+        }
+        
+        if (args[0].endsWith('local-functions-proxy')) {
+          proxyCallCount++
+
+          const response = {
+            body: proxyCallCount === 1 ? 'Hello, world!' : 'Hello, Netlify!',
+            statusCode: 200
+          }
+
+          return {
+            stderr: '',
+            stdout: JSON.stringify(response)
+          }
+        }
+      }
+    `)
+
     await withDevServer(
-      { cwd: builder.directory, env: { NETLIFY_EXPERIMENTAL_BUILD_GO_SOURCE: 'true' } },
+      {
+        cwd: builder.directory,
+        env: { ...execaMock, NETLIFY_EXPERIMENTAL_BUILD_GO_SOURCE: 'true' },
+      },
       async ({ port, outputBuffer }) => {
         await tryAndLogOutput(async () => {
           t.is(await got(`http://localhost:${port}/.netlify/functions/go-func`).text(), 'Hello, world!')
@@ -108,6 +145,8 @@ require github.com/aws/aws-lambda-go v1.20.0`,
             ),
           outputBuffer,
         )
+
+        await removeExecaMock()
       },
     )
   })
