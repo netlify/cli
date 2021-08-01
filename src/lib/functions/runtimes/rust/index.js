@@ -1,12 +1,12 @@
 const { dirname, extname, join, resolve } = require('path')
 const { platform } = require('process')
 
-const execa = require('execa')
 const findUp = require('find-up')
 const toml = require('toml')
 
 const isWindows = platform === 'win32'
 
+const execa = require('../../../../utils/execa')
 const { readFileAsync } = require('../../../fs')
 const { getPathInProject } = require('../../../settings')
 const { runFunctionsProxy } = require('../../local-proxy')
