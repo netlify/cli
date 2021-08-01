@@ -152,16 +152,19 @@ const getBuildSettings = async ({ repositoryRoot, siteRoot, config, env, warn })
       frameworkBuildDir,
       frameworkPlugins,
     })
-  const { baseDir, buildCmd, buildDir, functionsDir, plugins, installSinglePlugin } = await inquirer.prompt(
-    await getPromptInputs({
-      defaultBuildCmd,
-      defaultBuildDir,
-      defaultFunctionsDir,
-      defaultBaseDir,
-      recommendedPlugins,
-      frameworkName,
-    }),
-  )
+    // Prabin: do not need to wait for prompts
+  // const { baseDir, buildCmd, buildDir, functionsDir, plugins, installSinglePlugin } = await inquirer.prompt(
+  //   await getPromptInputs({
+  //     defaultBuildCmd,
+  //     defaultBuildDir,
+  //     defaultFunctionsDir,
+  //     defaultBaseDir,
+  //     recommendedPlugins,
+  //     frameworkName,
+  //   }),
+  // )
+  const { baseDir, buildCmd, buildDir, functionsDir, plugins, installSinglePlugin } = { defaultBuildCmd, defaultBuildDir, defaultFunctionsDir, defaultBaseDir, recommendedPlugins, frameworkName };
+
   const pluginsToInstall = getPluginsToInstall({
     plugins,
     installSinglePlugin,
