@@ -6,7 +6,7 @@ description: Initialize a new site locally
 # `init`
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
-Configure continuous deployment for a new or existing site
+Configure continuous deployment for an existing site or create a new site without continuous deployment
 
 **Usage**
 
