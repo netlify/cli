@@ -148,7 +148,10 @@ const startFunctionsServer = async ({
   prefix = '',
 }) => {
   const internalFunctionsDir = await getInternalFunctionsDir({ base: site.root })
-  const functionsDirectories = [internalFunctionsDir, settings.functions].filter(Boolean)
+
+  // The order of the function directories matters. Leftmost directories take
+  // precedence.
+  const functionsDirectories = [settings.functions, internalFunctionsDir].filter(Boolean)
 
   if (functionsDirectories.length !== 0) {
     const functionsRegistry = new FunctionsRegistry({
