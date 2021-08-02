@@ -37,12 +37,6 @@ test('Updates a Rust function when a file is modified', async (t) => {
     const updatedBody = 'Netlify *loves* Rust'
 
     const [execaMock, removeExecaMock] = await createExecaMock(`
-      const { writeFileSync } = require('fs')
-      const { join } = require('path')
-      const { platform } = require('process')
-
-      const isWindows = platform === 'win32'
-
       let proxyCallCount = 0
 
       module.exports = async (...args) => {
