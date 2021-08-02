@@ -78,7 +78,7 @@
   "dependencies": {
     "@netlify/build": "^17.4.2",
     "@netlify/config": "^14.1.1",
-    "@netlify/framework-info": "^5.7.2",
+    "@netlify/framework-info": "^5.7.3",
     "@netlify/local-functions-proxy": "^1.1.0",
     "@netlify/plugin-edge-handlers": "^1.11.22",
     "@netlify/plugins-list": "^3.0.1",
