@@ -1,14 +1,12 @@
-const pluginsList = require('@netlify/plugins-list')
+const { pluginsList, pluginsUrl } = require('@netlify/plugins-list')
 const fetch = require('node-fetch')
 
-const PLUGINS_LIST_VERSION = 'list-v1'
-const PLUGINS_LIST_URL = `https://${PLUGINS_LIST_VERSION}--netlify-plugins.netlify.app/plugins.json`
 // 1 minute
 const PLUGINS_LIST_TIMEOUT = 6e4
 
 const getPluginsList = async () => {
   try {
-    const response = await fetch(PLUGINS_LIST_URL, { timeout: PLUGINS_LIST_TIMEOUT })
+    const response = await fetch(pluginsUrl, { timeout: PLUGINS_LIST_TIMEOUT })
     return await response.json()
   } catch {
     return pluginsList
