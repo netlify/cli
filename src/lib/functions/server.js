@@ -147,21 +147,20 @@ const startFunctionsServer = async ({
   timeouts,
   prefix = '',
 }) => {
-  // serve functions from zip-it-and-ship-it
-  // env variables relies on `url`, careful moving this code
-  if (settings.functions) {
+  const internalFunctionsDir = await getInternalFunctionsDir({ base: site.root })
+  const functionsDirectories = [internalFunctionsDir, settings.functions].filter(Boolean)
+
+  if (functionsDirectories.length !== 0) {
     const functionsRegistry = new FunctionsRegistry({
       capabilities,
       config,
       errorExit,
-      functionsDirectory: settings.functions,
       projectRoot: site.root,
       timeouts,
       warn,
     })
-    const internalFunctionsDir = await getInternalFunctionsDir({ base: site.root })
 
-    await functionsRegistry.scan([settings.functions, internalFunctionsDir].filter(Boolean))
+    await functionsRegistry.scan(functionsDirectories)
 
     const server = await getFunctionsServer({
       functionsRegistry,
