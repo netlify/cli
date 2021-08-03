@@ -18,7 +18,7 @@ const addFunctionsConfigDefaults = (config) => ({
   },
 })
 
-const buildFunction = async ({ cache, config, func, functionsDirectory, projectRoot, targetDirectory }) => {
+const buildFunction = async ({ cache, config, directory, func, projectRoot, targetDirectory }) => {
   const zipOptions = {
     archiveFormat: 'none',
     basePath: projectRoot,
@@ -33,7 +33,7 @@ const buildFunction = async ({ cache, config, func, functionsDirectory, projectR
   // the function. The exception is when the function is a file at the
   // root of the functions directory (e.g. `functions/my-func.js`). In
   // this case, we use `mainFile` as the function path of `zipFunction`.
-  const entryPath = functionDirectory === functionsDirectory ? func.mainFile : functionDirectory
+  const entryPath = functionDirectory === directory ? func.mainFile : functionDirectory
   const { inputs, path: functionPath } = await memoizedBuild({
     cache,
     cacheKey: `zisi-${entryPath}`,
@@ -67,7 +67,7 @@ const getTargetDirectory = async ({ errorExit }) => {
   return targetDirectory
 }
 
-module.exports = async ({ config, errorExit, func, functionsDirectory, projectRoot }) => {
+module.exports = async ({ config, directory, errorExit, func, projectRoot }) => {
   const isTSFunction = path.extname(func.mainFile) === '.ts'
   const functionsConfig = addFunctionsConfigDefaults(
     normalizeFunctionsConfig({ functionsConfig: config.functions, projectRoot }),
@@ -88,7 +88,7 @@ module.exports = async ({ config, errorExit, func, functionsDirectory, projectRo
 
   return {
     build: ({ cache = {} }) =>
-      buildFunction({ cache, config: functionsConfig, func, functionsDirectory, projectRoot, targetDirectory }),
+      buildFunction({ cache, config: functionsConfig, directory, func, projectRoot, targetDirectory }),
     builderName: 'zip-it-and-ship-it',
     target: targetDirectory,
   }
