@@ -98,6 +98,7 @@ netlify deploy
 - `timeout` (*string*) - Timeout to wait for deployment to finish
 - `trigger` (*boolean*) - Trigger a new build of your site on Netlify without uploading local files
 - `build` (*boolean*) - Run build command before deploying
+- `bundle` (*boolean*) - Ignore functions manifest file, forcing functions to always be bundled as part of the deployment
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
