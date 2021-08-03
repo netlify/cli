@@ -1,4 +1,5 @@
 /* eslint-disable require-await */
+const { join } = require('path')
 const process = require('process')
 
 const test = require('ava')
@@ -562,6 +563,124 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
       t.is(await got(`${deploy.deploy_url}/api/hello`).text(), 'hello')
       // netlify.toml redirect
       t.is(await got(`${deploy.deploy_url}/not-existing`).text(), content)
+    })
+  })
+
+  test.serial('should deploy pre-bundled functions when a valid manifest file is found', async (t) => {
+    const bundledFunctionPath = join(__dirname, 'assets', 'bundled-function-1.zip')
+    const bundledFunctionData = {
+      mainFile: '/some/path/func-1.js',
+      name: 'func-1',
+      runtime: 'js',
+    }
+
+    await withSiteBuilder('site-with-functions-manifest', async (builder) => {
+      await builder
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'out' },
+            functions: { directory: 'functions' },
+          },
+        })
+        .withCopiedFile({
+          src: bundledFunctionPath,
+          path: '.netlify/functions/bundled-function-1.zip',
+        })
+        .withContentFile({
+          path: '.netlify/functions/manifest.json',
+          content: JSON.stringify({
+            functions: [
+              {
+                ...bundledFunctionData,
+                path: join(builder.directory, '.netlify', 'functions', 'bundled-function-1.zip'),
+              },
+            ],
+            timestamp: Date.now(),
+            version: 1,
+          }),
+        })
+        .withContentFile({
+          path: 'out/index.html',
+          content: 'Hello world',
+        })
+        .withFunction({
+          path: 'bundled-function-1.js',
+          handler: async () => ({
+            statusCode: 200,
+            body: 'Bundled at deployment',
+          }),
+        })
+        .buildAsync()
+
+      const { deploy_url: deployUrl } = await callCli(
+        ['deploy', '--json'],
+        {
+          cwd: builder.directory,
+          env: { NETLIFY_SITE_ID: t.context.siteId },
+        },
+        true,
+      )
+
+      t.is(await got(`${deployUrl}/.netlify/functions/bundled-function-1`).text(), 'Pre-bundled')
+    })
+  })
+
+  test.serial('should not deploy pre-bundled functions when the --bundle flag is used', async (t) => {
+    const bundledFunctionPath = join(__dirname, 'assets', 'bundled-function-1.zip')
+    const bundledFunctionData = {
+      mainFile: '/some/path/func-1.js',
+      name: 'func-1',
+      runtime: 'js',
+    }
+
+    await withSiteBuilder('site-with-functions-manifest', async (builder) => {
+      await builder
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'out' },
+            functions: { directory: 'functions' },
+          },
+        })
+        .withCopiedFile({
+          src: bundledFunctionPath,
+          path: '.netlify/functions/bundled-function-1.zip',
+        })
+        .withContentFile({
+          path: '.netlify/functions/manifest.json',
+          content: JSON.stringify({
+            functions: [
+              {
+                ...bundledFunctionData,
+                path: join(builder.directory, '.netlify', 'functions', 'bundled-function-1.zip'),
+              },
+            ],
+            timestamp: Date.now(),
+            version: 1,
+          }),
+        })
+        .withContentFile({
+          path: 'out/index.html',
+          content: 'Hello world',
+        })
+        .withFunction({
+          path: 'bundled-function-1.js',
+          handler: async () => ({
+            statusCode: 200,
+            body: 'Bundled at deployment',
+          }),
+        })
+        .buildAsync()
+
+      const { deploy_url: deployUrl } = await callCli(
+        ['deploy', '--json', '--bundle'],
+        {
+          cwd: builder.directory,
+          env: { NETLIFY_SITE_ID: t.context.siteId },
+        },
+        true,
+      )
+
+      t.is(await got(`${deployUrl}/.netlify/functions/bundled-function-1`).text(), 'Bundled at deployment')
     })
   })
 
