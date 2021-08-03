@@ -12,6 +12,7 @@ const { readFileAsyncCatchError } = require('../lib/fs')
 
 const { log } = require('./command-helpers')
 const { acquirePort } = require('./dev')
+const { getInternalFunctionsDir } = require('./functions')
 const { NETLIFYDEVWARN } = require('./logo')
 
 const formatProperty = (str) => chalk.magenta(`'${str}'`)
@@ -289,6 +290,8 @@ const detectServerSettings = async (devConfig, flags, projectDir) => {
     errorMessage: `Could not acquire required ${formatProperty('port')}`,
   })
   const functionsDir = devConfig.functions || settings.functions
+  const internalFunctionsDir = await getInternalFunctionsDir({ base: projectDir })
+  const shouldStartFunctionsServer = Boolean(functionsDir || internalFunctionsDir)
 
   return {
     ...settings,
@@ -296,7 +299,7 @@ const detectServerSettings = async (devConfig, flags, projectDir) => {
     jwtSecret: devConfig.jwtSecret || 'secret',
     jwtRolePath: devConfig.jwtRolePath || 'app_metadata.authorization.roles',
     functions: functionsDir,
-    ...(functionsDir && { functionsPort: await getPort({ port: devConfig.functionsPort || 0 }) }),
+    ...(shouldStartFunctionsServer && { functionsPort: await getPort({ port: devConfig.functionsPort || 0 }) }),
     ...(devConfig.https && { https: await readHttpsSettings(devConfig.https) }),
   }
 }
