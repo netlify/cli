@@ -1,11 +1,11 @@
 const { dirname, extname } = require('path')
 const { platform } = require('process')
 
-const execa = require('execa')
 const tempy = require('tempy')
 
 const isWindows = platform === 'win32'
 
+const execa = require('../../../../utils/execa')
 const { runFunctionsProxy } = require('../../local-proxy')
 
 const build = async ({ binaryPath, functionDirectory }) => {
@@ -44,15 +44,12 @@ const getBuildFunction = ({ func }) => {
 }
 
 const invokeFunction = async ({ context, event, func, timeout }) => {
-  const requestData = {
-    ...event,
-    requestContext: context,
-  }
   const { stdout } = await runFunctionsProxy({
     binaryPath: func.buildData.binaryPath,
+    context,
     directory: dirname(func.mainFile),
+    event,
     name: func.name,
-    requestData,
     timeout,
   })
 

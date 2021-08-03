@@ -5,8 +5,8 @@ const BACKGROUND_SUFFIX = '-background'
 class NetlifyFunction {
   constructor({
     config,
+    directory,
     errorExit,
-    functionsDirectory,
     mainFile,
     name,
     projectRoot,
@@ -15,8 +15,8 @@ class NetlifyFunction {
     timeoutSynchronous,
   }) {
     this.config = config
+    this.directory = directory
     this.errorExit = errorExit
-    this.functionsDirectory = functionsDirectory
     this.mainFile = mainFile
     this.name = name
     this.projectRoot = projectRoot
@@ -41,9 +41,9 @@ class NetlifyFunction {
   async build({ cache }) {
     const buildFunction = await this.runtime.getBuildFunction({
       config: this.config,
+      directory: this.directory,
       errorExit: this.errorExit,
       func: this,
-      functionsDirectory: this.functionsDirectory,
       projectRoot: this.projectRoot,
     })
 

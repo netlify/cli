@@ -28,14 +28,14 @@ const detectNetlifyLambdaWithCache = () => {
   return netlifyLambdaDetectorCache
 }
 
-const getBuildFunction = async ({ config, errorExit, func, functionsDirectory, projectRoot }) => {
+const getBuildFunction = async ({ config, directory, errorExit, func, projectRoot }) => {
   const netlifyLambdaBuilder = await detectNetlifyLambdaWithCache()
 
   if (netlifyLambdaBuilder) {
     return netlifyLambdaBuilder.build
   }
 
-  const zisiBuilder = await detectZisiBuilder({ config, errorExit, func, functionsDirectory, projectRoot })
+  const zisiBuilder = await detectZisiBuilder({ config, directory, errorExit, func, projectRoot })
 
   if (zisiBuilder) {
     return zisiBuilder.build
@@ -45,7 +45,7 @@ const getBuildFunction = async ({ config, errorExit, func, functionsDirectory, p
   // returns as `srcFiles` the function directory, if there is one, or its
   // main file otherwise.
   const functionDirectory = dirname(func.mainFile)
-  const srcFiles = functionDirectory === functionsDirectory ? [func.mainFile] : [functionDirectory]
+  const srcFiles = functionDirectory === directory ? [func.mainFile] : [functionDirectory]
 
   return () => ({ srcFiles })
 }

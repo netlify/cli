@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "5.2.10",
+  "version": "5.4.9",
   "author": "Netlify Inc.",
   "contributors": [
     "Mathias Biilmann <matt@netlify.com> (https://twitter.com/biilmann)",
@@ -42,7 +42,8 @@
     "url": "https://github.com/netlify/cli/issues"
   },
   "scripts": {
-    "prepublishOnly": "npm ci --no-audit && run-s test",
+    "prepublishOnly": "run-s prepublishOnly:*",
+    "prepublishOnly:test": "run-local \"npm test\"",
     "start": "node ./bin/run",
     "test": "run-s format test:dev",
     "format": "run-s format:check-fix:*",
@@ -75,14 +76,14 @@
     "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,scripts,site,tests,.github}/**/*.{js,md,yml,json,html}\" \"*.{js,yml,json,html}\" \".*.{js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\""
   },
   "dependencies": {
-    "@netlify/build": "^17.1.1",
-    "@netlify/config": "^14.0.0",
-    "@netlify/framework-info": "^5.7.2",
-    "@netlify/local-functions-proxy": "^1.0.0",
+    "@netlify/build": "^17.5.0",
+    "@netlify/config": "^14.1.1",
+    "@netlify/framework-info": "^5.7.3",
+    "@netlify/local-functions-proxy": "^1.1.0",
     "@netlify/plugin-edge-handlers": "^1.11.22",
-    "@netlify/plugins-list": "^2.19.3",
+    "@netlify/plugins-list": "^3.0.1",
     "@netlify/routing-local-proxy": "^0.31.0",
-    "@netlify/zip-it-and-ship-it": "4.15.1",
+    "@netlify/zip-it-and-ship-it": "4.16.0",
     "@oclif/command": "^1.6.1",
     "@oclif/config": "^1.15.1",
     "@oclif/errors": "^1.3.4",
@@ -180,6 +181,7 @@
     "through2-filter": "^3.0.0",
     "through2-map": "^3.0.0",
     "to-readable-stream": "^2.1.0",
+    "toml": "^3.0.0",
     "update-notifier": "^5.0.0",
     "uuid": "^8.0.0",
     "wait-port": "^0.2.2",
@@ -191,7 +193,7 @@
     "@babel/preset-react": "^7.12.13",
     "@commitlint/cli": "^13.0.0",
     "@commitlint/config-conventional": "^13.0.0",
-    "@netlify/eslint-config-node": "^3.1.9",
+    "@netlify/eslint-config-node": "^3.1.10",
     "@oclif/dev-cli": "^1.23.1",
     "@oclif/test": "^1.2.5",
     "ava": "^3.15.0",
@@ -210,7 +212,6 @@
     "sort-on": "^4.1.0",
     "strip-ansi": "^6.0.0",
     "temp-dir": "^2.0.0",
-    "toml": "^3.0.0",
     "tomlify-j0.4": "^3.0.0",
     "tree-kill": "^1.2.2"
   },

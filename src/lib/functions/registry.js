@@ -12,11 +12,10 @@ const runtimes = require('./runtimes')
 const { watchDebounced } = require('./watcher')
 
 class FunctionsRegistry {
-  constructor({ capabilities, config, errorExit, functionsDirectory, projectRoot, timeouts }) {
+  constructor({ capabilities, config, errorExit, projectRoot, timeouts }) {
     this.capabilities = capabilities
     this.config = config
     this.errorExit = errorExit
-    this.functionsDirectory = functionsDirectory
     this.projectRoot = projectRoot
     this.timeouts = timeouts
 
@@ -148,7 +147,10 @@ class FunctionsRegistry {
     await Promise.all(directories.map((path) => FunctionsRegistry.prepareDirectoryScan(path)))
 
     const functions = await this.listFunctions(directories, {
-      featureFlags: { buildGoSource: env.NETLIFY_EXPERIMENTAL_BUILD_GO_SOURCE === 'true' },
+      featureFlags: {
+        buildGoSource: env.NETLIFY_EXPERIMENTAL_BUILD_GO_SOURCE === 'true',
+        buildRustSource: env.NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE === 'true',
+      },
     })
 
     // Before registering any functions, we look for any functions that were on
@@ -179,8 +181,8 @@ class FunctionsRegistry {
 
       const func = new NetlifyFunction({
         config: this.config,
+        directory: directories.find((directory) => mainFile.startsWith(directory)),
         errorExit: this.errorExit,
-        functionsDirectory: this.functionsDirectory,
         mainFile,
         name,
         projectRoot: this.projectRoot,

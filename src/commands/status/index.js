@@ -44,7 +44,7 @@ class StatusCommand extends Command {
     const accountData = {
       Name: user.full_name,
       Email: user.email,
-      Github: ghuser,
+      GitHub: ghuser,
     }
     const teamsData = {}
 

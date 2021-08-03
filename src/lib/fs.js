@@ -38,6 +38,13 @@ const mkdirRecursiveSync = (path) => makeDir.sync(path)
 const mkdirRecursiveAsync = (path) => makeDir(path)
 
 const rmdirRecursiveAsync = (path) => del(path, { force: true })
+const safelyRmdirRecursiveAsync = async (path) => {
+  try {
+    await rmdirRecursiveAsync(path)
+  } catch (error) {
+    // no-op
+  }
+}
 
 module.exports = {
   statAsync,
@@ -52,6 +59,7 @@ module.exports = {
   mkdirRecursiveSync,
   mkdirRecursiveAsync,
   rmdirRecursiveAsync,
+  safelyRmdirRecursiveAsync,
   mkdtempAsync,
   appendFileAsync,
 }
