@@ -1,18 +1,17 @@
 const path = require('path')
 const process = require('process')
 
+const { updateConfig, restoreConfig } = require('@netlify/config')
 const { flags: flagsLib } = require('@oclif/command')
 const chalk = require('chalk')
 const { get } = require('dot-prop')
 const inquirer = require('inquirer')
 const isObject = require('lodash/isObject')
 const prettyjson = require('prettyjson')
-const { parse: loadToml } = require('toml')
-const tomlify = require('tomlify-j0.4')
 
 const { cancelDeploy } = require('../lib/api')
 const { getBuildOptions, runBuild } = require('../lib/build')
-const { statAsync, renameAsyncNoError, writeFileAsync, readFileAsync, rmFileAsync } = require('../lib/fs')
+const { statAsync } = require('../lib/fs')
 const { normalizeFunctionsConfig } = require('../lib/functions/config')
 const { getLogMessage } = require('../lib/log')
 const { startSpinner, stopSpinner } = require('../lib/spinner')
@@ -309,7 +308,7 @@ const runDeploy = async ({
 
 const handleBuild = async ({ context, flags }) => {
   if (!flags.build) {
-    return
+    return {}
   }
   const [token] = await getToken()
   const options = await getBuildOptions({
@@ -317,11 +316,11 @@ const handleBuild = async ({ context, flags }) => {
     token,
     flags,
   })
-  const { exitCode, newConfig } = await runBuild(options)
+  const { exitCode, newConfig, configMutations } = await runBuild(options)
   if (exitCode !== 0) {
     context.exit(exitCode)
   }
-  return newConfig
+  return { newConfig, configMutations }
 }
 
 const printResults = ({ flags, results, deployToProduction, exit }) => {
@@ -366,26 +365,6 @@ const printResults = ({ flags, results, deployToProduction, exit }) => {
       log()
     }
   }
-}
-
-const hideRedirects = async (deployFolder) => {
-  await renameAsyncNoError(`${deployFolder}/_redirects`, `${deployFolder}/.redirects`)
-}
-
-const unhideRedirects = async (deployFolder) => {
-  await renameAsyncNoError(`${deployFolder}/.redirects`, `${deployFolder}/_redirects`)
-}
-
-const syncRedirects = async ({ oldConfig, newConfig, deployFolder, configPath }) => {
-  if (oldConfig.redirects === newConfig.redirects) {
-    return { synced: false }
-  }
-
-  const currentConfig = configPath ? loadToml(await readFileAsync(configPath)) : {}
-  const withRedirects = { ...currentConfig, redirects: newConfig.redirects }
-  const newConfigPath = `${deployFolder}/netlify.toml`
-  await writeFileAsync(newConfigPath, tomlify.toToml(withRedirects, { space: 2 }))
-  return { synced: true, newConfigPath }
 }
 
 class DeployCommand extends Command {
@@ -451,7 +430,7 @@ class DeployCommand extends Command {
       return triggerDeploy({ api, siteId, siteData, error })
     }
 
-    const newConfig = await handleBuild({ context: this, flags })
+    const { newConfig, configMutations = [] } = await handleBuild({ context: this, flags })
     const config = newConfig || this.netlify.config
 
     const deployFolder = await getDeployFolder({ flags, config, site, siteData })
@@ -473,16 +452,14 @@ class DeployCommand extends Command {
     })
     const functionsConfig = normalizeFunctionsConfig({ functionsConfig: config.functions, projectRoot: site.root })
 
-    const { synced: redirectsSynced, newConfigPath } = await syncRedirects({
-      oldConfig: this.netlify.config,
-      newConfig: config,
-      deployFolder,
+    const redirectsPath = `${deployFolder}/_redirects`
+    await updateConfig(configMutations, {
+      buildDir: deployFolder,
       configPath,
+      redirectsPath,
+      context: this.netlify.cachedConfig.context,
+      branch: this.netlify.cachedConfig.branch,
     })
-    if (redirectsSynced) {
-      await hideRedirects(deployFolder)
-    }
-
     const results = await runDeploy({
       flags,
       deployToProduction,
@@ -492,9 +469,7 @@ class DeployCommand extends Command {
       siteId,
       deployFolder,
       functionsConfig,
-      // We persist a new netlify.toml file under deployFolder so we don't need to set a configPath
-      // as it will be picked up from the deployFolder
-      configPath: redirectsSynced ? null : configPath,
+      configPath,
       // pass undefined functionsFolder if doesn't exist
       functionsFolder: functionsFolderStat && functionsFolder,
       alias,
@@ -503,8 +478,8 @@ class DeployCommand extends Command {
       exit,
     })
 
-    if (redirectsSynced) {
-      await Promise.all([unhideRedirects(deployFolder), rmFileAsync(newConfigPath)])
+    if (configMutations.length !== 0) {
+      await restoreConfig({ buildDir: deployFolder, configPath, redirectsPath })
     }
 
     printResults({ flags, results, deployToProduction, exit })
