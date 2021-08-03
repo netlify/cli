@@ -1,6 +1,7 @@
 const path = require('path')
 const process = require('process')
 
+const { updateConfig, restoreConfig } = require('@netlify/config')
 const { flags: flagsLib } = require('@oclif/command')
 const chalk = require('chalk')
 const { get } = require('dot-prop')
@@ -307,7 +308,7 @@ const runDeploy = async ({
 
 const handleBuild = async ({ context, flags }) => {
   if (!flags.build) {
-    return
+    return {}
   }
   const [token] = await getToken()
   const options = await getBuildOptions({
@@ -315,11 +316,11 @@ const handleBuild = async ({ context, flags }) => {
     token,
     flags,
   })
-  const { exitCode, newConfig } = await runBuild(options)
+  const { exitCode, newConfig, configMutations } = await runBuild(options)
   if (exitCode !== 0) {
     context.exit(exitCode)
   }
-  return newConfig
+  return { newConfig, configMutations }
 }
 
 const printResults = ({ flags, results, deployToProduction, exit }) => {
@@ -429,7 +430,7 @@ class DeployCommand extends Command {
       return triggerDeploy({ api, siteId, siteData, error })
     }
 
-    const newConfig = await handleBuild({ context: this, flags })
+    const { newConfig, configMutations = [] } = await handleBuild({ context: this, flags })
     const config = newConfig || this.netlify.config
 
     const deployFolder = await getDeployFolder({ flags, config, site, siteData })
@@ -450,6 +451,15 @@ class DeployCommand extends Command {
       error,
     })
     const functionsConfig = normalizeFunctionsConfig({ functionsConfig: config.functions, projectRoot: site.root })
+
+    const redirectsPath = `${deployFolder}/_redirects`
+    await updateConfig(configMutations, {
+      buildDir: deployFolder,
+      configPath,
+      redirectsPath,
+      context: this.netlify.cachedConfig.context,
+      branch: this.netlify.cachedConfig.branch,
+    })
     const results = await runDeploy({
       flags,
       deployToProduction,
@@ -467,6 +477,10 @@ class DeployCommand extends Command {
       error,
       exit,
     })
+
+    if (configMutations.length !== 0) {
+      await restoreConfig({ buildDir: deployFolder, configPath, redirectsPath })
+    }
 
     printResults({ flags, results, deployToProduction, exit })
 
