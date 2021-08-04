@@ -271,7 +271,8 @@ const runDeploy = async ({
     // functions from the rightmost directories. In this case, we want user
     // functions to take precedence over internal functions.
     const functionDirectories = [internalFunctionsFolder, functionsFolder].filter(Boolean)
-    const manifestPath = flags.bundle ? null : await getFunctionsManifestPath({ base: site.root })
+    const skipFunctionsCache = flags['skip-functions-cache'] === true
+    const manifestPath = skipFunctionsCache ? null : await getFunctionsManifestPath({ base: site.root })
 
     results = await deploySite(api, siteId, deployFolder, {
       configPath,
@@ -286,6 +287,7 @@ const runDeploy = async ({
       warn,
       rootDir: site.root,
       manifestPath,
+      skipFunctionsCache,
     })
   } catch (error_) {
     if (deployId) {
@@ -635,8 +637,9 @@ DeployCommand.flags = {
   build: flagsLib.boolean({
     description: 'Run build command before deploying',
   }),
-  bundle: flagsLib.boolean({
-    description: 'Ignore functions manifest file, forcing functions to always be bundled as part of the deployment',
+  'skip-functions-cache': flagsLib.boolean({
+    description:
+      'Ignore any functions created as part of a previous `build` or `deploy` commands, forcing them to be bundled again as part of the deployment',
     default: false,
   }),
   ...DeployCommand.flags,

@@ -36,6 +36,7 @@ const deploySite = async (
     maxRetry = DEFAULT_MAX_RETRY,
     // API calls this the 'title'
     message: title,
+    skipFunctionsCache,
     statusCb = () => {
       /* default to noop */
     },
@@ -62,6 +63,7 @@ const deploySite = async (
       assetType,
       rootDir,
       manifestPath,
+      skipFunctionsCache,
     }),
   ])
 

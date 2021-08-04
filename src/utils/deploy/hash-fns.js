@@ -10,10 +10,18 @@ const { hasherCtor, manifestCollectorCtor } = require('./hasher-segments')
 // Maximum age of functions manifest (2 minutes).
 const MANIFEST_FILE_TTL = 12e4
 
-const getFunctionZips = async ({ directories, functionsConfig, manifestPath, rootDir, statusCb, tmpDir }) => {
+const getFunctionZips = async ({
+  directories,
+  functionsConfig,
+  manifestPath,
+  rootDir,
+  skipFunctionsCache,
+  statusCb,
+  tmpDir,
+}) => {
   statusCb({
     type: 'functions-manifest',
-    msg: 'Looking for a functions manifest file...',
+    msg: 'Looking for a functions cache...',
     phase: 'start',
   })
 
@@ -29,7 +37,7 @@ const getFunctionZips = async ({ directories, functionsConfig, manifestPath, roo
 
       statusCb({
         type: 'functions-manifest',
-        msg: 'Using bundled functions from manifest file (use --bundle to override)',
+        msg: 'Deploying functions from cache (use --skip-functions-cache to override)',
         phase: 'stop',
       })
 
@@ -37,14 +45,18 @@ const getFunctionZips = async ({ directories, functionsConfig, manifestPath, roo
     } catch (error) {
       statusCb({
         type: 'functions-manifest',
-        msg: 'Ignored invalid or expired functions manifest file',
+        msg: 'Ignored invalid or expired functions cache',
         phase: 'stop',
       })
     }
   } else {
+    const msg = skipFunctionsCache
+      ? 'Ignoring functions cache (use without --skip-functions-cache to change)'
+      : 'No cached functions were found'
+
     statusCb({
       type: 'functions-manifest',
-      msg: 'No functions manifest file was found',
+      msg,
       phase: 'stop',
     })
   }
@@ -60,6 +72,7 @@ const hashFns = async (
     functionsConfig,
     hashAlgorithm = 'sha256',
     assetType = 'function',
+    skipFunctionsCache,
     statusCb,
     rootDir,
     manifestPath,
@@ -74,7 +87,15 @@ const hashFns = async (
     throw new Error('Missing tmpDir directory for zipping files')
   }
 
-  const functionZips = await getFunctionZips({ directories, functionsConfig, manifestPath, rootDir, statusCb, tmpDir })
+  const functionZips = await getFunctionZips({
+    directories,
+    functionsConfig,
+    manifestPath,
+    rootDir,
+    skipFunctionsCache,
+    statusCb,
+    tmpDir,
+  })
   const fileObjs = functionZips.map(({ path: functionPath, runtime }) => ({
     filepath: functionPath,
     root: tmpDir,
