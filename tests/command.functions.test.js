@@ -182,7 +182,7 @@ const withFunctionsServer = async ({ builder, args = [], port = DEFAULT_PORT }, 
   }
 }
 
-test('should serve functions on default port', async (t) => {
+test.skip('should serve functions on default port', async (t) => {
   await withSiteBuilder('site-with-ping-function', async (builder) => {
     await builder
       .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
