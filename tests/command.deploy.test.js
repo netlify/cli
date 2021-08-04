@@ -569,8 +569,8 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
   test.serial('should deploy pre-bundled functions when a valid manifest file is found', async (t) => {
     const bundledFunctionPath = join(__dirname, 'assets', 'bundled-function-1.zip')
     const bundledFunctionData = {
-      mainFile: '/some/path/func-1.js',
-      name: 'func-1',
+      mainFile: '/some/path/bundled-function-1.js',
+      name: 'bundled-function-1',
       runtime: 'js',
     }
 
@@ -628,8 +628,8 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
   test.serial('should not deploy pre-bundled functions when the --skip-functions-cache flag is used', async (t) => {
     const bundledFunctionPath = join(__dirname, 'assets', 'bundled-function-1.zip')
     const bundledFunctionData = {
-      mainFile: '/some/path/func-1.js',
-      name: 'func-1',
+      mainFile: '/some/path/bundled-function-1.js',
+      name: 'bundled-function-1',
       runtime: 'js',
     }
 
@@ -683,6 +683,69 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
       t.is(await got(`${deployUrl}/.netlify/functions/bundled-function-1`).text(), 'Bundled at deployment')
     })
   })
+
+  test.serial(
+    'should not deploy pre-bundled functions when the manifest file is older than the configured TTL',
+    async (t) => {
+      const age = 18e4
+      const bundledFunctionPath = join(__dirname, 'assets', 'bundled-function-1.zip')
+      const bundledFunctionData = {
+        mainFile: '/some/path/bundled-function-1.js',
+        name: 'bundled-function-1',
+        runtime: 'js',
+      }
+
+      await withSiteBuilder('site-with-functions-manifest', async (builder) => {
+        await builder
+          .withNetlifyToml({
+            config: {
+              build: { publish: 'out' },
+              functions: { directory: 'functions' },
+            },
+          })
+          .withCopiedFile({
+            src: bundledFunctionPath,
+            path: '.netlify/functions/bundled-function-1.zip',
+          })
+          .withContentFile({
+            path: '.netlify/functions/manifest.json',
+            content: JSON.stringify({
+              functions: [
+                {
+                  ...bundledFunctionData,
+                  path: join(builder.directory, '.netlify', 'functions', 'bundled-function-1.zip'),
+                },
+              ],
+              timestamp: Date.now() - age,
+              version: 1,
+            }),
+          })
+          .withContentFile({
+            path: 'out/index.html',
+            content: 'Hello world',
+          })
+          .withFunction({
+            path: 'bundled-function-1.js',
+            handler: async () => ({
+              statusCode: 200,
+              body: 'Bundled at deployment',
+            }),
+          })
+          .buildAsync()
+
+        const { deploy_url: deployUrl } = await callCli(
+          ['deploy', '--json'],
+          {
+            cwd: builder.directory,
+            env: { NETLIFY_SITE_ID: t.context.siteId },
+          },
+          true,
+        )
+
+        t.is(await got(`${deployUrl}/.netlify/functions/bundled-function-1`).text(), 'Bundled at deployment')
+      })
+    },
+  )
 
   test.after('cleanup', async (t) => {
     const { siteId } = t.context
