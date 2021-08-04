@@ -574,7 +574,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
       runtime: 'js',
     }
 
-    await withSiteBuilder('site-with-functions-manifest', async (builder) => {
+    await withSiteBuilder('site-with-functions-manifest-1', async (builder) => {
       await builder
         .withNetlifyToml({
           config: {
@@ -633,7 +633,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
       runtime: 'js',
     }
 
-    await withSiteBuilder('site-with-functions-manifest', async (builder) => {
+    await withSiteBuilder('site-with-functions-manifest-2', async (builder) => {
       await builder
         .withNetlifyToml({
           config: {
@@ -695,7 +695,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
         runtime: 'js',
       }
 
-      await withSiteBuilder('site-with-functions-manifest', async (builder) => {
+      await withSiteBuilder('site-with-functions-manifest-3', async (builder) => {
         await builder
           .withNetlifyToml({
             config: {
