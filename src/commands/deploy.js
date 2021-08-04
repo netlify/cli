@@ -19,7 +19,7 @@ const Command = require('../utils/command')
 const { log, logJson, getToken } = require('../utils/command-helpers')
 const { deploySite } = require('../utils/deploy/deploy-site')
 const { deployEdgeHandlers } = require('../utils/edge-handlers')
-const { getInternalFunctionsDir } = require('../utils/functions')
+const { getFunctionsManifestPath, getInternalFunctionsDir } = require('../utils/functions')
 const { NETLIFYDEV, NETLIFYDEVLOG, NETLIFYDEVERR } = require('../utils/logo')
 const openBrowser = require('../utils/open-browser')
 
@@ -271,6 +271,8 @@ const runDeploy = async ({
     // functions from the rightmost directories. In this case, we want user
     // functions to take precedence over internal functions.
     const functionDirectories = [internalFunctionsFolder, functionsFolder].filter(Boolean)
+    const skipFunctionsCache = flags['skip-functions-cache'] === true
+    const manifestPath = skipFunctionsCache ? null : await getFunctionsManifestPath({ base: site.root })
 
     results = await deploySite(api, siteId, deployFolder, {
       configPath,
@@ -284,6 +286,8 @@ const runDeploy = async ({
       filter: getDeployFilesFilter({ site, deployFolder }),
       warn,
       rootDir: site.root,
+      manifestPath,
+      skipFunctionsCache,
     })
   } catch (error_) {
     if (deployId) {
@@ -632,6 +636,11 @@ DeployCommand.flags = {
   }),
   build: flagsLib.boolean({
     description: 'Run build command before deploying',
+  }),
+  'skip-functions-cache': flagsLib.boolean({
+    description:
+      'Ignore any functions created as part of a previous `build` or `deploy` commands, forcing them to be bundled again as part of the deployment',
+    default: false,
   }),
   ...DeployCommand.flags,
 }

@@ -7,9 +7,76 @@ const pump = promisify(require('pump'))
 
 const { hasherCtor, manifestCollectorCtor } = require('./hasher-segments')
 
+// Maximum age of functions manifest (2 minutes).
+const MANIFEST_FILE_TTL = 12e4
+
+const getFunctionZips = async ({
+  directories,
+  functionsConfig,
+  manifestPath,
+  rootDir,
+  skipFunctionsCache,
+  statusCb,
+  tmpDir,
+}) => {
+  statusCb({
+    type: 'functions-manifest',
+    msg: 'Looking for a functions cache...',
+    phase: 'start',
+  })
+
+  if (manifestPath) {
+    try {
+      // eslint-disable-next-line import/no-dynamic-require, node/global-require
+      const { functions, timestamp } = require(manifestPath)
+      const manifestAge = Date.now() - timestamp
+
+      if (manifestAge > MANIFEST_FILE_TTL) {
+        throw new Error('Manifest expired')
+      }
+
+      statusCb({
+        type: 'functions-manifest',
+        msg: 'Deploying functions from cache (use --skip-functions-cache to override)',
+        phase: 'stop',
+      })
+
+      return functions
+    } catch (error) {
+      statusCb({
+        type: 'functions-manifest',
+        msg: 'Ignored invalid or expired functions cache',
+        phase: 'stop',
+      })
+    }
+  } else {
+    const msg = skipFunctionsCache
+      ? 'Ignoring functions cache (use without --skip-functions-cache to change)'
+      : 'No cached functions were found'
+
+    statusCb({
+      type: 'functions-manifest',
+      msg,
+      phase: 'stop',
+    })
+  }
+
+  return await zipIt.zipFunctions(directories, tmpDir, { basePath: rootDir, config: functionsConfig })
+}
+
 const hashFns = async (
   directories,
-  { tmpDir, concurrentHash, functionsConfig, hashAlgorithm = 'sha256', assetType = 'function', statusCb, rootDir },
+  {
+    tmpDir,
+    concurrentHash,
+    functionsConfig,
+    hashAlgorithm = 'sha256',
+    assetType = 'function',
+    skipFunctionsCache,
+    statusCb,
+    rootDir,
+    manifestPath,
+  },
 ) => {
   // Early out if no functions directories are configured.
   if (directories.length === 0) {
@@ -20,7 +87,15 @@ const hashFns = async (
     throw new Error('Missing tmpDir directory for zipping files')
   }
 
-  const functionZips = await zipIt.zipFunctions(directories, tmpDir, { basePath: rootDir, config: functionsConfig })
+  const functionZips = await getFunctionZips({
+    directories,
+    functionsConfig,
+    manifestPath,
+    rootDir,
+    skipFunctionsCache,
+    statusCb,
+    tmpDir,
+  })
   const fileObjs = functionZips.map(({ path: functionPath, runtime }) => ({
     filepath: functionPath,
     root: tmpDir,

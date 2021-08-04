@@ -20,6 +20,7 @@ const getBuildOptions = ({
   buffer: json || silent,
   offline,
   featureFlags: {
+    functionsBundlingManifest: true,
     zisiEsbuildDynamicImports: true,
   },
 })
