@@ -625,7 +625,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
     })
   })
 
-  test.serial('should not deploy pre-bundled functions when the --bundle flag is used', async (t) => {
+  test.serial('should not deploy pre-bundled functions when the --skip-functions-cache flag is used', async (t) => {
     const bundledFunctionPath = join(__dirname, 'assets', 'bundled-function-1.zip')
     const bundledFunctionData = {
       mainFile: '/some/path/func-1.js',
@@ -672,7 +672,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
         .buildAsync()
 
       const { deploy_url: deployUrl } = await callCli(
-        ['deploy', '--json', '--bundle'],
+        ['deploy', '--json', '--skip-functions-cache'],
         {
           cwd: builder.directory,
           env: { NETLIFY_SITE_ID: t.context.siteId },
