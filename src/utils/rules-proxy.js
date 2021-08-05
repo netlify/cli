@@ -13,7 +13,7 @@ const { NETLIFYDEVWARN, NETLIFYDEVLOG } = require('./logo')
 // and `netlify.toml`
 const parseRedirectRules = async function ({ redirectsFiles, configPath }) {
   try {
-    const rules = await parseAllRedirects({ redirectsFiles, netlifyConfigPath: configPath })
+    const rules = await parseAllRedirects({ redirectsFiles, netlifyConfigPath: configPath, minimal: false })
     return rules.map(normalizeRule)
   } catch (error) {
     console.error(`${NETLIFYDEVWARN} Warnings while parsing redirects:
