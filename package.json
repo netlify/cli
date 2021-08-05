@@ -76,8 +76,8 @@
     "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,scripts,site,tests,.github}/**/*.{js,md,yml,json,html}\" \"*.{js,yml,json,html}\" \".*.{js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\""
   },
   "dependencies": {
-    "@netlify/build": "^17.9.0",
-    "@netlify/config": "^14.4.1",
+    "@netlify/build": "^17.9.1",
+    "@netlify/config": "^14.4.2",
     "@netlify/framework-info": "^5.8.0",
     "@netlify/local-functions-proxy": "^1.1.0",
     "@netlify/plugin-edge-handlers": "^1.11.22",
