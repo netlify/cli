@@ -110,7 +110,7 @@ const createRewriter = async function ({ distDir, projectDir, jwtSecret, jwtRole
     const matchReq = {
       scheme: reqUrl.protocol.replace(/:.*$/, ''),
       host: reqUrl.hostname,
-      path: reqUrl.pathname,
+      path: decodeURIComponent(reqUrl.pathname),
       query: reqUrl.search.slice(1),
       headers,
       cookieValues,

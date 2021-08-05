@@ -1809,5 +1809,23 @@ export const handler = async function () {
       })
     })
   })
+
+  test(testName('should match redirect when path is URL encoded', args), async (t) => {
+    await withSiteBuilder('site-with-encoded-redirect', async (builder) => {
+      await builder
+        .withContentFile({ path: 'static/special[test].txt', content: `special` })
+        .withRedirectsFile({ redirects: [{ from: '/_next/static/*', to: '/static/:splat', status: 200 }] })
+        .buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async (server) => {
+        const [response1, response2] = await Promise.all([
+          got(`${server.url}/_next/static/special[test].txt`).text(),
+          got(`${server.url}/_next/static/special%5Btest%5D.txt`).text(),
+        ])
+        t.is(response1, 'special')
+        t.is(response2, 'special')
+      })
+    })
+  })
 })
 /* eslint-enable require-await */
