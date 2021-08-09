@@ -337,11 +337,11 @@ const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) 
   const npmInstallPath = path.dirname(sitePackageJson)
 
   if (dependencies.length !== 0) {
-    await execa('npm', ['i', dependencies.join(' '), '--save'], { cwd: npmInstallPath })
+    await execa('npm', ['i', ...dependencies, '--save'], { cwd: npmInstallPath })
   }
 
   if (devDependencies.length !== 0) {
-    await execa('npm', ['i', devDependencies.join(' '), '--save-dev'], { cwd: npmInstallPath })
+    await execa('npm', ['i', ...devDependencies, '--save-dev'], { cwd: npmInstallPath })
   }
 
   // We installed the function's dependencies in the site-level `package.json`,
