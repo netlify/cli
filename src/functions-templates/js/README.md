@@ -19,7 +19,7 @@ https://github.com/netlify/netlify-dev-plugin/issues/42 for how we may solve in 
 
 specify an array of objects of this shape:
 
-```ts
+```
 {
   addonName: String,
   addonDidInstall?: Function // for executing arbitrary postinstall code for a SINGLE addon
