@@ -14,9 +14,8 @@
   "author": "Netlify",
   "license": "MIT",
   "dependencies": {
-    "node-fetch": "^2.6.1",
+    "@netlify/functions": "^0.7.2",
     "@types/node": "^14.0.0",
-    "typescript": "^4.0.0",
-    "@types/aws-lambda": "^8.10.64"
+    "typescript": "^4.0.0"
   }
 }
