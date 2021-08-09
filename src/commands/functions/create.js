@@ -319,7 +319,7 @@ const getNpmInstallPackages = (existingPackages = {}, neededPackages = {}) =>
 const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) => {
   // eslint-disable-next-line import/no-dynamic-require, node/global-require
   const { dependencies: functionDependencies, devDependencies: functionDevDependencies } = require(functionPackageJson)
-  const sitePackageJson = await findUp('package.json', { cwd: functionsDir, type: 'file' })
+  const sitePackageJson = await findUp('package.json', { cwd: functionsDir })
 
   // If there is no site-level `package.json`, we fall back to the old behavior
   // of keeping that file in the function directory and running `npm install`
@@ -335,13 +335,14 @@ const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) 
   const dependencies = getNpmInstallPackages(siteDependencies, functionDependencies)
   const devDependencies = getNpmInstallPackages(siteDevDependencies, functionDevDependencies)
   const npmInstallPath = path.dirname(sitePackageJson)
+  const npmInstallFlags = ['--no-audit', '--no-fund']
 
   if (dependencies.length !== 0) {
-    await execa('npm', ['i', ...dependencies, '--save'], { cwd: npmInstallPath })
+    await execa('npm', ['i', ...dependencies, '--save', ...npmInstallFlags], { cwd: npmInstallPath })
   }
 
   if (devDependencies.length !== 0) {
-    await execa('npm', ['i', ...devDependencies, '--save-dev'], { cwd: npmInstallPath })
+    await execa('npm', ['i', ...devDependencies, '--save-dev', ...npmInstallFlags], { cwd: npmInstallPath })
   }
 
   // We installed the function's dependencies in the site-level `package.json`,
