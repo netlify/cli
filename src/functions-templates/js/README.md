@@ -1,4 +1,5 @@
 <!-- eslint-disable -->
+
 # Note to developers
 
 place new templates here and our CLI will pick it up. each template must be in its own folder.
@@ -22,9 +23,9 @@ specify an array of objects of this shape:
 
 ```ts
 {
-  addonName: String;
+  addonName: String
   // for executing arbitrary postinstall code for a SINGLE addon
-  addonDidInstall: Function | undefined;
+  addonDidInstall: Function | undefined
 }
 ```
 
