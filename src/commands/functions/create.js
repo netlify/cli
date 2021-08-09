@@ -326,6 +326,8 @@ const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) 
   // from there.
   if (!sitePackageJson) {
     await execa('npm', ['i'], { cwd: functionPath })
+
+    return
   }
 
   // eslint-disable-next-line import/no-dynamic-require, node/global-require
@@ -399,7 +401,7 @@ const scaffoldFromTemplate = async function (context, flags, args, functionsDir)
       context.log(`${NETLIFYDEVLOG} ${chalk.greenBright('Created')} ${filePath}`)
       fs.chmodSync(path.resolve(filePath), TEMPLATE_PERMISSIONS)
       if (filePath.includes('package.json')) {
-        functionPackageJson = filePath
+        functionPackageJson = path.resolve(filePath)
       }
     })
     // delete function template file that was copied over by copydir
