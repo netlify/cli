@@ -65,5 +65,15 @@ module.exports = {
         'node/no-unsupported-features/es-syntax': 0,
       },
     },
+    {
+      files: ['src/functions-templates/js/README.md', 'src/functions-templates/js/README.md/**/*'],
+      rules: {
+        'no-lone-blocks': 0,
+        'unicorn/filename-case': 0,
+        'no-bitwise': 0,
+        'no-labels': 0,
+        'no-unused-labels': 0,
+      },
+    },
   ],
 }
