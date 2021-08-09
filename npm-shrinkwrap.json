@@ -25,7 +25,7 @@
         "@oclif/plugin-help": "^3.0.0",
         "@oclif/plugin-not-found": "^1.1.4",
         "@oclif/plugin-plugins": "^1.9.3",
-        "@octokit/rest": "^18.0.0",
+        "@octokit/rest": "^18.9.0",
         "@sindresorhus/slugify": "^1.1.0",
         "@ungap/from-entries": "^0.2.1",
         "ansi-styles": "^5.0.0",
@@ -4473,9 +4473,9 @@
       }
     },
     "node_modules/@octokit/openapi-types": {
-      "version": "9.2.0",
-      "resolved": "https://registry.npmjs.org/@octokit/openapi-types/-/openapi-types-9.2.0.tgz",
-      "integrity": "sha512-c4A1Xm0At+ypvBfEETREu519wLncJYQXvY+dBGg/V5YA51eg5EwdDsPPfcOMG0cuXscqRvsIgIySTmTJUdcTNA=="
+      "version": "9.4.0",
+      "resolved": "https://registry.npmjs.org/@octokit/openapi-types/-/openapi-types-9.4.0.tgz",
+      "integrity": "sha512-rKRkXikOJgDNImPl49IJuECLVXjj+t4qOXHhl8SBjMQCGGp1w4m5Ud/0kfdUx+zCpTvBN8vaOUDF4nnboZoOtQ=="
     },
     "node_modules/@octokit/plugin-paginate-rest": {
       "version": "2.14.0",
@@ -4497,11 +4497,11 @@
       }
     },
     "node_modules/@octokit/plugin-rest-endpoint-methods": {
-      "version": "5.5.2",
-      "resolved": "https://registry.npmjs.org/@octokit/plugin-rest-endpoint-methods/-/plugin-rest-endpoint-methods-5.5.2.tgz",
-      "integrity": "sha512-1ArooY7AYQdUd2zyqWLFHQ6gver9PvZSiuM+EPAsDplv1Y6u8zHl6yZ7yGIgaf7xvWupwUkJS2WttGYyb1P0DQ==",
+      "version": "5.7.0",
+      "resolved": "https://registry.npmjs.org/@octokit/plugin-rest-endpoint-methods/-/plugin-rest-endpoint-methods-5.7.0.tgz",
+      "integrity": "sha512-G7sgccWRYQMwcHJXkDY/sDxbXeKiZkFQqUtzBCwmrzCNj2GQf3VygQ4T/BFL2crLVpIbenkE/c0ErhYOte2MPw==",
       "dependencies": {
-        "@octokit/types": "^6.22.0",
+        "@octokit/types": "^6.24.0",
         "deprecation": "^2.3.1"
       },
       "peerDependencies": {
@@ -4532,22 +4532,22 @@
       }
     },
     "node_modules/@octokit/rest": {
-      "version": "18.7.2",
-      "resolved": "https://registry.npmjs.org/@octokit/rest/-/rest-18.7.2.tgz",
-      "integrity": "sha512-TAedgLqNRS+rdGqS9v00sqBeS6IgyLSoqqCDu6pmoadAB7xSjFHShxzaXUAbxxJjyHtb7mencRGzgH4W/V6Myg==",
+      "version": "18.9.0",
+      "resolved": "https://registry.npmjs.org/@octokit/rest/-/rest-18.9.0.tgz",
+      "integrity": "sha512-VrmrE8gjpuOoDAGjrQq2j9ZhOE6LxaqxaQg0yMrrEnnQZy2ZcAnr5qbVfKsMF0up/48PRV/VFS/2GSMhA7nTdA==",
       "dependencies": {
         "@octokit/core": "^3.5.0",
         "@octokit/plugin-paginate-rest": "^2.6.2",
         "@octokit/plugin-request-log": "^1.0.2",
-        "@octokit/plugin-rest-endpoint-methods": "5.5.2"
+        "@octokit/plugin-rest-endpoint-methods": "5.7.0"
       }
     },
     "node_modules/@octokit/types": {
-      "version": "6.22.0",
-      "resolved": "https://registry.npmjs.org/@octokit/types/-/types-6.22.0.tgz",
-      "integrity": "sha512-Y8GR0BJHQDpO09qw/ZQpN+DXrFzCWaE0pvK4frDm3zJ+h99AktsFfBoDazbCtHxiL8d0jD8xRH4BeynlKLeChg==",
+      "version": "6.24.0",
+      "resolved": "https://registry.npmjs.org/@octokit/types/-/types-6.24.0.tgz",
+      "integrity": "sha512-MfEimJeQ8AV1T2nI5kOfHqsqPHaAnG0Dw3MVoHSEsEq6iLKx2N91o+k2uAgXhPYeSE76LVBqjgTShnFFgNwe0A==",
       "dependencies": {
-        "@octokit/openapi-types": "^9.2.0"
+        "@octokit/openapi-types": "^9.4.0"
       }
     },
     "node_modules/@rollup/plugin-babel": {
@@ -24499,9 +24499,9 @@
       }
     },
     "@octokit/openapi-types": {
-      "version": "9.2.0",
-      "resolved": "https://registry.npmjs.org/@octokit/openapi-types/-/openapi-types-9.2.0.tgz",
-      "integrity": "sha512-c4A1Xm0At+ypvBfEETREu519wLncJYQXvY+dBGg/V5YA51eg5EwdDsPPfcOMG0cuXscqRvsIgIySTmTJUdcTNA=="
+      "version": "9.4.0",
+      "resolved": "https://registry.npmjs.org/@octokit/openapi-types/-/openapi-types-9.4.0.tgz",
+      "integrity": "sha512-rKRkXikOJgDNImPl49IJuECLVXjj+t4qOXHhl8SBjMQCGGp1w4m5Ud/0kfdUx+zCpTvBN8vaOUDF4nnboZoOtQ=="
     },
     "@octokit/plugin-paginate-rest": {
       "version": "2.14.0",
@@ -24518,11 +24518,11 @@
       "requires": {}
     },
     "@octokit/plugin-rest-endpoint-methods": {
-      "version": "5.5.2",
-      "resolved": "https://registry.npmjs.org/@octokit/plugin-rest-endpoint-methods/-/plugin-rest-endpoint-methods-5.5.2.tgz",
-      "integrity": "sha512-1ArooY7AYQdUd2zyqWLFHQ6gver9PvZSiuM+EPAsDplv1Y6u8zHl6yZ7yGIgaf7xvWupwUkJS2WttGYyb1P0DQ==",
+      "version": "5.7.0",
+      "resolved": "https://registry.npmjs.org/@octokit/plugin-rest-endpoint-methods/-/plugin-rest-endpoint-methods-5.7.0.tgz",
+      "integrity": "sha512-G7sgccWRYQMwcHJXkDY/sDxbXeKiZkFQqUtzBCwmrzCNj2GQf3VygQ4T/BFL2crLVpIbenkE/c0ErhYOte2MPw==",
       "requires": {
-        "@octokit/types": "^6.22.0",
+        "@octokit/types": "^6.24.0",
         "deprecation": "^2.3.1"
       }
     },
@@ -24550,22 +24550,22 @@
       }
     },
     "@octokit/rest": {
-      "version": "18.7.2",
-      "resolved": "https://registry.npmjs.org/@octokit/rest/-/rest-18.7.2.tgz",
-      "integrity": "sha512-TAedgLqNRS+rdGqS9v00sqBeS6IgyLSoqqCDu6pmoadAB7xSjFHShxzaXUAbxxJjyHtb7mencRGzgH4W/V6Myg==",
+      "version": "18.9.0",
+      "resolved": "https://registry.npmjs.org/@octokit/rest/-/rest-18.9.0.tgz",
+      "integrity": "sha512-VrmrE8gjpuOoDAGjrQq2j9ZhOE6LxaqxaQg0yMrrEnnQZy2ZcAnr5qbVfKsMF0up/48PRV/VFS/2GSMhA7nTdA==",
       "requires": {
         "@octokit/core": "^3.5.0",
         "@octokit/plugin-paginate-rest": "^2.6.2",
         "@octokit/plugin-request-log": "^1.0.2",
-        "@octokit/plugin-rest-endpoint-methods": "5.5.2"
+        "@octokit/plugin-rest-endpoint-methods": "5.7.0"
       }
     },
     "@octokit/types": {
-      "version": "6.22.0",
-      "resolved": "https://registry.npmjs.org/@octokit/types/-/types-6.22.0.tgz",
-      "integrity": "sha512-Y8GR0BJHQDpO09qw/ZQpN+DXrFzCWaE0pvK4frDm3zJ+h99AktsFfBoDazbCtHxiL8d0jD8xRH4BeynlKLeChg==",
+      "version": "6.24.0",
+      "resolved": "https://registry.npmjs.org/@octokit/types/-/types-6.24.0.tgz",
+      "integrity": "sha512-MfEimJeQ8AV1T2nI5kOfHqsqPHaAnG0Dw3MVoHSEsEq6iLKx2N91o+k2uAgXhPYeSE76LVBqjgTShnFFgNwe0A==",
       "requires": {
-        "@octokit/openapi-types": "^9.2.0"
+        "@octokit/openapi-types": "^9.4.0"
       }
     },
     "@rollup/plugin-babel": {
