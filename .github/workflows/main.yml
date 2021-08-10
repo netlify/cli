@@ -76,6 +76,7 @@ jobs:
         shell: bash
       - uses: codecov/codecov-action@v2
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
+        continue-on-error: true
         with:
           file: coverage/coverage-final.json
           flags: ${{ steps.test-coverage-flags.outputs.os }},${{ steps.test-coverage-flags.outputs.node }}
