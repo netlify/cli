@@ -7,6 +7,8 @@ const { promisify } = require('util')
 const { flags: flagsLib } = require('@oclif/command')
 const chalk = require('chalk')
 const copy = promisify(require('copy-template-dir'))
+const execa = require('execa')
+const findUp = require('find-up')
 const fuzzy = require('fuzzy')
 const inquirer = require('inquirer')
 const inquirerAutocompletePrompt = require('inquirer-autocomplete-prompt')
@@ -116,10 +118,19 @@ const formatRegistryArrayForInquirer = function (lang) {
     .filter((folderName) => !folderName.endsWith('.md'))
     // eslint-disable-next-line node/global-require, import/no-dynamic-require
     .map((folderName) => require(path.join(templatesDir, lang, folderName, '.netlify-function-template.js')))
-    .sort(
-      (folderNameA, folderNameB) =>
-        (folderNameA.priority || DEFAULT_PRIORITY) - (folderNameB.priority || DEFAULT_PRIORITY),
-    )
+    .sort((folderNameA, folderNameB) => {
+      const priorityDiff = (folderNameA.priority || DEFAULT_PRIORITY) - (folderNameB.priority || DEFAULT_PRIORITY)
+
+      if (priorityDiff !== 0) {
+        return priorityDiff
+      }
+
+      // This branch is needed because `Array.prototype.sort` was not stable
+      // until Node 11, so the original sorting order from `fs.readdirSync`
+      // was not respected. We can simplify this once we drop support for
+      // Node 10.
+      return folderNameA - folderNameB
+    })
     .map((t) => {
       t.lang = lang
       return {
@@ -301,12 +312,52 @@ const downloadFromURL = async function (context, flags, args, functionsDir) {
   }
 }
 
-const installDeps = function (functionPath) {
-  return new Promise((resolve) => {
-    cp.exec('npm i', { cwd: path.join(functionPath) }, () => {
-      resolve()
-    })
-  })
+// Takes a list of existing packages and a list of packages required by a
+// function, and returns the packages from the latter that aren't present
+// in the former. The packages are returned as an array of strings with the
+// name and version range (e.g. '@netlify/functions@0.1.0').
+const getNpmInstallPackages = (existingPackages = {}, neededPackages = {}) =>
+  Object.entries(neededPackages)
+    .filter(([name]) => existingPackages[name] === undefined)
+    .map(([name, version]) => `${name}@${version}`)
+
+// When installing a function's dependencies, we first try to find a site-level
+// `package.json` file. If we do, we look for any dependencies of the function
+// that aren't already listed as dependencies of the site and install them. If
+// we don't do this check, we may be upgrading the version of a module used in
+// another part of the project, which we don't want to do.
+const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) => {
+  // eslint-disable-next-line import/no-dynamic-require, node/global-require
+  const { dependencies: functionDependencies, devDependencies: functionDevDependencies } = require(functionPackageJson)
+  const sitePackageJson = await findUp('package.json', { cwd: functionsDir })
+  const npmInstallFlags = ['--no-audit', '--no-fund']
+
+  // If there is no site-level `package.json`, we fall back to the old behavior
+  // of keeping that file in the function directory and running `npm install`
+  // from there.
+  if (!sitePackageJson) {
+    await execa('npm', ['i', ...npmInstallFlags], { cwd: functionPath })
+
+    return
+  }
+
+  // eslint-disable-next-line import/no-dynamic-require, node/global-require
+  const { dependencies: siteDependencies, devDependencies: siteDevDependencies } = require(sitePackageJson)
+  const dependencies = getNpmInstallPackages(siteDependencies, functionDependencies)
+  const devDependencies = getNpmInstallPackages(siteDevDependencies, functionDevDependencies)
+  const npmInstallPath = path.dirname(sitePackageJson)
+
+  if (dependencies.length !== 0) {
+    await execa('npm', ['i', ...dependencies, '--save', ...npmInstallFlags], { cwd: npmInstallPath })
+  }
+
+  if (devDependencies.length !== 0) {
+    await execa('npm', ['i', ...devDependencies, '--save-dev', ...npmInstallFlags], { cwd: npmInstallPath })
+  }
+
+  // We installed the function's dependencies in the site-level `package.json`,
+  // so there's no reason to keep the one copied over from the template.
+  fs.unlinkSync(functionPackageJson)
 }
 
 // no --url flag specified, pick from a provided template
@@ -353,14 +404,16 @@ const scaffoldFromTemplate = async function (context, flags, args, functionsDir)
     // log('from ', pathToTemplate, ' to ', functionPath)
     // SWYX: TODO
     const vars = { NETLIFY_STUFF_TO_REPLACE: 'REPLACEMENT' }
-    let hasPackageJSON = false
+    let functionPackageJson
 
     const createdFiles = await copy(pathToTemplate, functionPath, vars)
     createdFiles.forEach((filePath) => {
       if (filePath.endsWith('.netlify-function-template.js')) return
       context.log(`${NETLIFYDEVLOG} ${chalk.greenBright('Created')} ${filePath}`)
       fs.chmodSync(path.resolve(filePath), TEMPLATE_PERMISSIONS)
-      if (filePath.includes('package.json')) hasPackageJSON = true
+      if (filePath.includes('package.json')) {
+        functionPackageJson = path.resolve(filePath)
+      }
     })
     // delete function template file that was copied over by copydir
     fs.unlinkSync(path.join(functionPath, '.netlify-function-template.js'))
@@ -369,12 +422,12 @@ const scaffoldFromTemplate = async function (context, flags, args, functionsDir)
       fs.renameSync(path.join(functionPath, `${templateName}.js`), path.join(functionPath, `${name}.js`))
     }
     // npm install
-    if (hasPackageJSON) {
+    if (functionPackageJson !== undefined) {
       const spinner = ora({
         text: `installing dependencies for ${name}`,
         spinner: 'moon',
       }).start()
-      await installDeps(functionPath)
+      await installDeps({ functionPackageJson, functionPath, functionsDir })
       spinner.succeed(`installed dependencies for ${name}`)
     }
 
