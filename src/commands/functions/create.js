@@ -388,7 +388,7 @@ const scaffoldFromTemplate = async function (context, flags, args, functionsDir)
     const pathToTemplate = path.join(templatesDir, lang, templateName)
     if (!fs.existsSync(pathToTemplate)) {
       throw new Error(
-        `There isnt a corresponding directory to the selected name, ${templateName} template is misconfigured`,
+        `There isn't a corresponding directory to the selected name. Template '${templateName}' is misconfigured`,
       )
     }
 
