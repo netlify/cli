@@ -303,9 +303,10 @@ const downloadFromURL = async function (context, flags, args, functionsDir) {
   }
 }
 
-// Takes an existing list of packages and a list of packages needed by a
-// function, and computes the list of npm modules with version range that
-// must be installed.
+// Takes a list of existing packages and a list of packages required by a
+// function, and returns the packages from the latter that aren't present
+// in the former. The packages are returned as an array of strings with the
+// name and version range (e.g. '@netlify/functions@0.1.0').
 const getNpmInstallPackages = (existingPackages = {}, neededPackages = {}) =>
   Object.entries(neededPackages)
     .filter(([name]) => existingPackages[name] === undefined)
@@ -320,12 +321,13 @@ const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) 
   // eslint-disable-next-line import/no-dynamic-require, node/global-require
   const { dependencies: functionDependencies, devDependencies: functionDevDependencies } = require(functionPackageJson)
   const sitePackageJson = await findUp('package.json', { cwd: functionsDir })
+  const npmInstallFlags = ['--no-audit', '--no-fund']
 
   // If there is no site-level `package.json`, we fall back to the old behavior
   // of keeping that file in the function directory and running `npm install`
   // from there.
   if (!sitePackageJson) {
-    await execa('npm', ['i'], { cwd: functionPath })
+    await execa('npm', ['i', ...npmInstallFlags], { cwd: functionPath })
 
     return
   }
@@ -335,7 +337,6 @@ const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) 
   const dependencies = getNpmInstallPackages(siteDependencies, functionDependencies)
   const devDependencies = getNpmInstallPackages(siteDevDependencies, functionDevDependencies)
   const npmInstallPath = path.dirname(sitePackageJson)
-  const npmInstallFlags = ['--no-audit', '--no-fund']
 
   if (dependencies.length !== 0) {
     await execa('npm', ['i', ...dependencies, '--save', ...npmInstallFlags], { cwd: npmInstallPath })
@@ -346,7 +347,7 @@ const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) 
   }
 
   // We installed the function's dependencies in the site-level `package.json`,
-  // so there's no reason to keep the function's `package.json`. We delete it.
+  // so there's no reason to keep the one copied over from the template.
   fs.unlinkSync(functionPackageJson)
 }
 
