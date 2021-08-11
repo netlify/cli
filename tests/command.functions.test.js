@@ -69,11 +69,15 @@ test('should create a new function directory when none is found', async (t) => {
         answer: answerWithValue('test/functions'),
       },
       {
+        question: 'Select the language of your function',
+        answer: answerWithValue('ts'),
+      },
+      {
         question: 'Pick a template',
         answer: answerWithValue(CONFIRM),
       },
       {
-        question: 'name your function',
+        question: 'Name your function',
         answer: answerWithValue(CONFIRM),
       },
     ]
@@ -137,11 +141,15 @@ test('should install function template dependencies on a site-level `package.jso
         answer: answerWithValue('test/functions'),
       },
       {
+        question: 'Select the language of your function',
+        answer: answerWithValue('ts'),
+      },
+      {
         question: 'Pick a template',
         answer: answerWithValue(`${DOWN}${CONFIRM}`),
       },
       {
-        question: 'name your function',
+        question: 'Name your function',
         answer: answerWithValue(CONFIRM),
       },
     ]
@@ -209,11 +217,15 @@ test('should install function template dependencies in the function sub-director
         answer: answerWithValue('test/functions'),
       },
       {
+        question: 'Select the language of your function',
+        answer: answerWithValue('ts'),
+      },
+      {
         question: 'Pick a template',
         answer: answerWithValue(`${DOWN}${CONFIRM}`),
       },
       {
-        question: 'name your function',
+        question: 'Name your function',
         answer: answerWithValue(CONFIRM),
       },
     ]
@@ -273,11 +285,15 @@ test('should not create a new function directory when one is found', async (t) =
 
     const createFunctionQuestions = [
       {
+        question: 'Select the language of your function',
+        answer: answerWithValue('ts'),
+      },
+      {
         question: 'Pick a template',
         answer: answerWithValue(CONFIRM),
       },
       {
-        question: 'name your function',
+        question: 'Name your function',
         answer: answerWithValue(CONFIRM),
       },
     ]

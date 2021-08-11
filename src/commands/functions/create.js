@@ -25,6 +25,14 @@ const { readRepoURL, validateRepoURL } = require('../../utils/read-repo-url')
 
 const templatesDir = path.resolve(__dirname, '../../functions-templates')
 
+// Ensure that there's a sub-directory in `src/functions-templates` named after
+// each `value` property in this list, and that it matches the extension of the
+// files used by that language.
+const languages = [
+  { name: 'JavaScript', value: 'js' },
+  { name: 'TypeScript', value: 'ts' },
+]
+
 /**
  * Be very clear what is the SOURCE (templates dir) vs the DEST (functions dir)
  */
@@ -82,7 +90,7 @@ const getNameFromArgs = async function (args, flags, defaultName) {
   const { name } = await inquirer.prompt([
     {
       name: 'name',
-      message: 'name your function: ',
+      message: 'Name your function:',
       default: defaultName,
       type: 'input',
       validate: (val) => Boolean(val) && /^[\w.-]+$/i.test(val),
@@ -145,57 +153,47 @@ const formatRegistryArrayForInquirer = function (lang) {
 
 // pick template from our existing templates
 const pickTemplate = async function () {
-  inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
-  // doesnt scale but will be ok for now
-  const [
-    jsreg,
-    // tsreg, goreg
-  ] = [
-    'js',
-    // 'ts', 'go'
-  ].map(formatRegistryArrayForInquirer)
   const specialCommands = [
-    new inquirer.Separator(`----[Special Commands]----`),
+    new inquirer.Separator(),
     {
-      name: `*** Clone template from Github URL ***`,
+      name: `Clone template from GitHub URL`,
       value: 'url',
       short: 'gh-url',
     },
     {
-      name: `*** Report issue with, or suggest a new template ***`,
+      name: `Report issue with, or suggest a new template`,
       value: 'report',
       short: 'gh-report',
     },
+    new inquirer.Separator(),
   ]
-  const { chosentemplate } = await inquirer.prompt({
-    name: 'chosentemplate',
+  const { language } = await inquirer.prompt({
+    choices: languages,
+    message: 'Select the language of your function',
+    name: 'language',
+    type: 'list',
+  })
+
+  inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
+
+  const templatesForLanguage = formatRegistryArrayForInquirer(language)
+  const { chosenTemplate } = await inquirer.prompt({
+    name: 'chosenTemplate',
     message: 'Pick a template',
     type: 'autocomplete',
-    // suggestOnly: true, // we can explore this for entering URL in future
     source(answersSoFar, input) {
       if (!input || input === '') {
         // show separators
-        return [
-          new inquirer.Separator(`----[JS]----`),
-          ...jsreg,
-          // new inquirer.Separator(`----[TS]----`),
-          // ...tsreg,
-          // new inquirer.Separator(`----[GO]----`),
-          // ...goreg
-          ...specialCommands,
-        ]
+        return [...templatesForLanguage, ...specialCommands]
       }
       // only show filtered results sorted by score
-      const answers = [
-        ...filterRegistry(jsreg, input),
-        // ...filterRegistry(tsreg, input),
-        // ...filterRegistry(goreg, input)
-        ...specialCommands,
-      ].sort((answerA, answerB) => answerB.score - answerA.score)
+      const answers = [...filterRegistry(templatesForLanguage, input), ...specialCommands].sort(
+        (answerA, answerB) => answerB.score - answerA.score,
+      )
       return answers
     },
   })
-  return chosentemplate
+  return chosenTemplate
 }
 
 const DEFAULT_PRIORITY = 999
@@ -358,16 +356,25 @@ const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) 
   // We installed the function's dependencies in the site-level `package.json`,
   // so there's no reason to keep the one copied over from the template.
   fs.unlinkSync(functionPackageJson)
+
+  // Similarly, if the template has a `package-lock.json` file, we delete it.
+  try {
+    const functionPackageLock = path.join(functionPath, 'package-lock.json')
+
+    fs.unlinkSync(functionPackageLock)
+  } catch (error) {
+    // no-op
+  }
 }
 
 // no --url flag specified, pick from a provided template
 const scaffoldFromTemplate = async function (context, flags, args, functionsDir) {
   // pull the rest of the metadata from the template
-  const chosentemplate = await pickTemplate()
-  if (chosentemplate === 'url') {
-    const { chosenurl } = await inquirer.prompt([
+  const chosenTemplate = await pickTemplate()
+  if (chosenTemplate === 'url') {
+    const { chosenUrl } = await inquirer.prompt([
       {
-        name: 'chosenurl',
+        name: 'chosenUrl',
         message: 'URL to clone: ',
         type: 'input',
         validate: (val) => Boolean(validateRepoURL(val)),
@@ -375,7 +382,7 @@ const scaffoldFromTemplate = async function (context, flags, args, functionsDir)
         // this has some nuance i have ignored, eg crossenv and i18n concerns
       },
     ])
-    flags.url = chosenurl.trim()
+    flags.url = chosenUrl.trim()
     try {
       await downloadFromURL(context, flags, args, functionsDir)
     } catch (error) {
@@ -383,15 +390,15 @@ const scaffoldFromTemplate = async function (context, flags, args, functionsDir)
       context.error(error)
       process.exit(1)
     }
-  } else if (chosentemplate === 'report') {
+  } else if (chosenTemplate === 'report') {
     log(`${NETLIFYDEVLOG} Open in browser: https://github.com/netlify/cli/issues/new`)
   } else {
-    const { onComplete, name: templateName, lang, addons = [] } = chosentemplate
+    const { onComplete, name: templateName, lang, addons = [] } = chosenTemplate
 
     const pathToTemplate = path.join(templatesDir, lang, templateName)
     if (!fs.existsSync(pathToTemplate)) {
       throw new Error(
-        `there isnt a corresponding directory to the selected name, ${templateName} template is misconfigured`,
+        `There isn't a corresponding directory to the selected name. Template '${templateName}' is misconfigured`,
       )
     }
 
@@ -419,16 +426,19 @@ const scaffoldFromTemplate = async function (context, flags, args, functionsDir)
     fs.unlinkSync(path.join(functionPath, '.netlify-function-template.js'))
     // rename the root function file if it has a different name from default
     if (name !== templateName) {
-      fs.renameSync(path.join(functionPath, `${templateName}.js`), path.join(functionPath, `${name}.js`))
+      const oldPath = path.join(functionPath, `${templateName}.${lang}`)
+      const newPath = path.join(functionPath, `${name}.${lang}`)
+
+      fs.renameSync(oldPath, newPath)
     }
     // npm install
     if (functionPackageJson !== undefined) {
       const spinner = ora({
-        text: `installing dependencies for ${name}`,
+        text: `Installing dependencies for ${name}`,
         spinner: 'moon',
       }).start()
       await installDeps({ functionPackageJson, functionPath, functionsDir })
-      spinner.succeed(`installed dependencies for ${name}`)
+      spinner.succeed(`Installed dependencies for ${name}`)
     }
 
     await installAddons(context, addons, path.resolve(functionPath))
