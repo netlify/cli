@@ -407,10 +407,7 @@ const scaffoldFromTemplate = async function (context, flags, args, functionsDir)
     log(`${NETLIFYDEVLOG} Creating function ${chalk.cyan.inverse(name)}`)
     const functionPath = ensureFunctionPathIsOk(functionsDir, name)
 
-    // SWYX: note to future devs - useful for debugging source to output issues
-    // log('from ', pathToTemplate, ' to ', functionPath)
-    // SWYX: TODO
-    const vars = { NETLIFY_STUFF_TO_REPLACE: 'REPLACEMENT' }
+    const vars = { name }
     let functionPackageJson
 
     const createdFiles = await copy(pathToTemplate, functionPath, vars)
@@ -422,15 +419,10 @@ const scaffoldFromTemplate = async function (context, flags, args, functionsDir)
         functionPackageJson = path.resolve(filePath)
       }
     })
+
     // delete function template file that was copied over by copydir
     fs.unlinkSync(path.join(functionPath, '.netlify-function-template.js'))
-    // rename the root function file if it has a different name from default
-    if (name !== templateName) {
-      const oldPath = path.join(functionPath, `${templateName}.${lang}`)
-      const newPath = path.join(functionPath, `${name}.${lang}`)
 
-      fs.renameSync(oldPath, newPath)
-    }
     // npm install
     if (functionPackageJson !== undefined) {
       const spinner = ora({
