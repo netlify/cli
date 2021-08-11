@@ -11,7 +11,7 @@
       "license": "MIT",
       "dependencies": {
         "@netlify/build": "^18.0.2",
-        "@netlify/config": "^15.0.1",
+        "@netlify/config": "^15.0.2",
         "@netlify/framework-info": "^5.8.0",
         "@netlify/local-functions-proxy": "^1.1.0",
         "@netlify/plugin-edge-handlers": "^1.11.22",
@@ -2898,18 +2898,17 @@
       }
     },
     "node_modules/@netlify/config": {
-      "version": "15.0.1",
-      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-15.0.1.tgz",
-      "integrity": "sha512-SKtiXN+ObBqf8Y0nReE6d/iynSTjKaIDJMhbrFxJZe6F5fYb1h2CpWpMb9LNcqkquiYhWGhwLfs3DsN+IGd7xw==",
+      "version": "15.0.2",
+      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-15.0.2.tgz",
+      "integrity": "sha512-PRhkbEcxQct3arTuunxoe9NOSSkajIFEv4HGhVLQ2O7MA5acJbfSuQ12lWLxzq57HTmHHeCMR4j2I32gtpdBSw==",
       "dependencies": {
         "@ungap/from-entries": "^0.2.1",
         "array-flat-polyfill": "^1.0.1",
-        "chalk": "^4.1.1",
+        "chalk": "^4.1.2",
         "cp-file": "^7.0.0",
         "deepmerge": "^4.2.2",
         "dot-prop": "^5.3.0",
         "execa": "^3.4.0",
-        "fast-deep-equal": "^3.1.3",
         "fast-safe-stringify": "^2.0.7",
         "figures": "^3.2.0",
         "filter-obj": "^2.0.1",
@@ -2920,7 +2919,7 @@
         "make-dir": "^3.1.0",
         "map-obj": "^4.0.0",
         "netlify": "^8.0.0",
-        "netlify-headers-parser": "^1.0.0",
+        "netlify-headers-parser": "^1.0.1",
         "netlify-redirect-parser": "^8.2.0",
         "omit.js": "^2.0.2",
         "p-locate": "^4.1.0",
@@ -15099,9 +15098,9 @@
       }
     },
     "node_modules/netlify-headers-parser": {
-      "version": "1.0.0",
-      "resolved": "https://registry.npmjs.org/netlify-headers-parser/-/netlify-headers-parser-1.0.0.tgz",
-      "integrity": "sha512-QaSmTxM7HU1EPdcM32Ej0ZYn2Cg/XVJ+ZBhw3ItMoPE2YdORPJg4UGDFRz88vzI/3tAgrDCYCaZGoFBxg5yZ4g==",
+      "version": "1.0.1",
+      "resolved": "https://registry.npmjs.org/netlify-headers-parser/-/netlify-headers-parser-1.0.1.tgz",
+      "integrity": "sha512-OOvS/GXauhLB5YuOJ4hABffNhjXSqPdZ5e9x2pVV2coAR7cX54Qb6cVSC4utEO/YeM+3WVBIbuCZjMoHGMrRMA==",
       "dependencies": {
         "is-plain-obj": "^3.0.0",
         "map-obj": "^4.2.1",
@@ -23372,18 +23371,17 @@
       }
     },
     "@netlify/config": {
-      "version": "15.0.1",
-      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-15.0.1.tgz",
-      "integrity": "sha512-SKtiXN+ObBqf8Y0nReE6d/iynSTjKaIDJMhbrFxJZe6F5fYb1h2CpWpMb9LNcqkquiYhWGhwLfs3DsN+IGd7xw==",
+      "version": "15.0.2",
+      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-15.0.2.tgz",
+      "integrity": "sha512-PRhkbEcxQct3arTuunxoe9NOSSkajIFEv4HGhVLQ2O7MA5acJbfSuQ12lWLxzq57HTmHHeCMR4j2I32gtpdBSw==",
       "requires": {
         "@ungap/from-entries": "^0.2.1",
         "array-flat-polyfill": "^1.0.1",
-        "chalk": "^4.1.1",
+        "chalk": "^4.1.2",
         "cp-file": "^7.0.0",
         "deepmerge": "^4.2.2",
         "dot-prop": "^5.3.0",
         "execa": "^3.4.0",
-        "fast-deep-equal": "^3.1.3",
         "fast-safe-stringify": "^2.0.7",
         "figures": "^3.2.0",
         "filter-obj": "^2.0.1",
@@ -23394,7 +23392,7 @@
         "make-dir": "^3.1.0",
         "map-obj": "^4.0.0",
         "netlify": "^8.0.0",
-        "netlify-headers-parser": "^1.0.0",
+        "netlify-headers-parser": "^1.0.1",
         "netlify-redirect-parser": "^8.2.0",
         "omit.js": "^2.0.2",
         "p-locate": "^4.1.0",
@@ -32682,9 +32680,9 @@
       }
     },
     "netlify-headers-parser": {
-      "version": "1.0.0",
-      "resolved": "https://registry.npmjs.org/netlify-headers-parser/-/netlify-headers-parser-1.0.0.tgz",
-      "integrity": "sha512-QaSmTxM7HU1EPdcM32Ej0ZYn2Cg/XVJ+ZBhw3ItMoPE2YdORPJg4UGDFRz88vzI/3tAgrDCYCaZGoFBxg5yZ4g==",
+      "version": "1.0.1",
+      "resolved": "https://registry.npmjs.org/netlify-headers-parser/-/netlify-headers-parser-1.0.1.tgz",
+      "integrity": "sha512-OOvS/GXauhLB5YuOJ4hABffNhjXSqPdZ5e9x2pVV2coAR7cX54Qb6cVSC4utEO/YeM+3WVBIbuCZjMoHGMrRMA==",
       "requires": {
         "is-plain-obj": "^3.0.0",
         "map-obj": "^4.2.1",
