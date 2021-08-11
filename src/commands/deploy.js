@@ -482,9 +482,7 @@ class DeployCommand extends Command {
       exit,
     })
 
-    if (configMutations.length !== 0) {
-      await restoreConfig({ buildDir: deployFolder, configPath, redirectsPath })
-    }
+    await restoreConfig(configMutations, { buildDir: deployFolder, configPath, redirectsPath })
 
     printResults({ flags, results, deployToProduction, exit })
 
