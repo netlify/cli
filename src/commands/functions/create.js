@@ -26,7 +26,8 @@ const { readRepoURL, validateRepoURL } = require('../../utils/read-repo-url')
 const templatesDir = path.resolve(__dirname, '../../functions-templates')
 
 // Ensure that there's a sub-directory in `src/functions-templates` named after
-// each `value` property in this list.
+// each `value` property in this list, and that it matches the extension of the
+// files used by that language.
 const languages = [
   { name: 'JavaScript', value: 'js' },
   { name: 'TypeScript', value: 'ts' },
@@ -355,6 +356,15 @@ const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) 
   // We installed the function's dependencies in the site-level `package.json`,
   // so there's no reason to keep the one copied over from the template.
   fs.unlinkSync(functionPackageJson)
+
+  // Similarly, if the template has a `package-lock.json` file, we delete it.
+  try {
+    const functionPackageLock = path.join(functionPath, 'package-lock.json')
+
+    fs.unlinkSync(functionPackageLock)
+  } catch (error) {
+    // no-op
+  }
 }
 
 // no --url flag specified, pick from a provided template
@@ -415,8 +425,11 @@ const scaffoldFromTemplate = async function (context, flags, args, functionsDir)
     // delete function template file that was copied over by copydir
     fs.unlinkSync(path.join(functionPath, '.netlify-function-template.js'))
     // rename the root function file if it has a different name from default
-    if (name !== templateName && lang === '.js') {
-      fs.renameSync(path.join(functionPath, `${templateName}.js`), path.join(functionPath, `${name}.js`))
+    if (name !== templateName) {
+      const oldPath = path.join(functionPath, `${templateName}.${lang}`)
+      const newPath = path.join(functionPath, `${name}.${lang}`)
+
+      fs.renameSync(oldPath, newPath)
     }
     // npm install
     if (functionPackageJson !== undefined) {
