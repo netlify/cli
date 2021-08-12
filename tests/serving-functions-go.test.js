@@ -19,7 +19,7 @@ test('Updates a Go function when a file is modified', async (t) => {
 
     let proxyCallCount = 0
 
-    module.exports = async (...args) => {
+    const handler = (...args) => {
       if (args[0] === 'go') {
         const binaryPath = args[1][2]
 
@@ -45,6 +45,11 @@ test('Updates a Go function when a file is modified', async (t) => {
         }
       }
     }
+
+    module.exports = (...args) => ({
+      ...handler(...args) || {},
+      stderr: { pipe: () => {} }
+    })
   `)
 
   await withSiteBuilder('go-function-update', async (builder) => {
