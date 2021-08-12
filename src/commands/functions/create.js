@@ -410,10 +410,17 @@ const scaffoldFromTemplate = async function (context, flags, args, functionsDir)
     const vars = { name }
     let functionPackageJson
 
+    // These files will not be part of the log message because they'll likely
+    // be removed before the command finishes.
+    const omittedFromOutput = new Set(['.netlify-function-template.js', 'package.json', 'package-lock.json'])
     const createdFiles = await copy(pathToTemplate, functionPath, vars)
     createdFiles.forEach((filePath) => {
-      if (filePath.endsWith('.netlify-function-template.js')) return
-      context.log(`${NETLIFYDEVLOG} ${chalk.greenBright('Created')} ${filePath}`)
+      const filename = path.basename(filePath)
+
+      if (!omittedFromOutput.has(filename)) {
+        context.log(`${NETLIFYDEVLOG} ${chalk.greenBright('Created')} ${filePath}`)
+      }
+
       fs.chmodSync(path.resolve(filePath), TEMPLATE_PERMISSIONS)
       if (filePath.includes('package.json')) {
         functionPackageJson = path.resolve(filePath)
