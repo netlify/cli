@@ -13,7 +13,7 @@
         "@netlify/build": "^18.2.0",
         "@netlify/config": "^15.0.3",
         "@netlify/framework-info": "^5.8.0",
-        "@netlify/local-functions-proxy": "^1.1.0",
+        "@netlify/local-functions-proxy": "^1.1.1",
         "@netlify/plugin-edge-handlers": "^1.11.22",
         "@netlify/plugins-list": "^3.3.0",
         "@netlify/routing-local-proxy": "^0.31.0",
@@ -3287,28 +3287,28 @@
       }
     },
     "node_modules/@netlify/local-functions-proxy": {
-      "version": "1.1.0",
-      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy/-/local-functions-proxy-1.1.0.tgz",
-      "integrity": "sha512-HoxJuJpBqmzflIcdFsnUSuf/KwYsgzrsF/jh+bXPO+aOB9pzZEH0P/e/qCAr2JbJVzOyxo/36Ti3sXbahSDAYQ==",
+      "version": "1.1.1",
+      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy/-/local-functions-proxy-1.1.1.tgz",
+      "integrity": "sha512-eXSsayLT6PMvjzFQpjC9nkg2Otc3lZ5GoYele9M6f8PmsvWpaXRhwjNQ0NYhQQ2UZbLMIiO2dH8dbRsT3bMkFw==",
       "optionalDependencies": {
-        "@netlify/local-functions-proxy-darwin-arm64": "1.1.0",
-        "@netlify/local-functions-proxy-darwin-x64": "1.1.0",
-        "@netlify/local-functions-proxy-freebsd-arm64": "1.1.0",
-        "@netlify/local-functions-proxy-freebsd-x64": "1.1.0",
-        "@netlify/local-functions-proxy-linux-arm": "1.1.0",
-        "@netlify/local-functions-proxy-linux-arm64": "1.1.0",
-        "@netlify/local-functions-proxy-linux-ia32": "1.1.0",
-        "@netlify/local-functions-proxy-linux-ppc64": "1.1.0",
-        "@netlify/local-functions-proxy-linux-x64": "1.1.0",
-        "@netlify/local-functions-proxy-openbsd-x64": "1.1.0",
-        "@netlify/local-functions-proxy-win32-ia32": "1.1.0",
-        "@netlify/local-functions-proxy-win32-x64": "1.1.0"
+        "@netlify/local-functions-proxy-darwin-arm64": "1.1.1",
+        "@netlify/local-functions-proxy-darwin-x64": "1.1.1",
+        "@netlify/local-functions-proxy-freebsd-arm64": "1.1.1",
+        "@netlify/local-functions-proxy-freebsd-x64": "1.1.1",
+        "@netlify/local-functions-proxy-linux-arm": "1.1.1",
+        "@netlify/local-functions-proxy-linux-arm64": "1.1.1",
+        "@netlify/local-functions-proxy-linux-ia32": "1.1.1",
+        "@netlify/local-functions-proxy-linux-ppc64": "1.1.1",
+        "@netlify/local-functions-proxy-linux-x64": "1.1.1",
+        "@netlify/local-functions-proxy-openbsd-x64": "1.1.1",
+        "@netlify/local-functions-proxy-win32-ia32": "1.1.1",
+        "@netlify/local-functions-proxy-win32-x64": "1.1.1"
       }
     },
     "node_modules/@netlify/local-functions-proxy-darwin-arm64": {
-      "version": "1.1.0",
-      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-darwin-arm64/-/local-functions-proxy-darwin-arm64-1.1.0.tgz",
-      "integrity": "sha512-EOSEA/mt6IyXqou//vOo17vnQwwBKPu8wO+bZZQNb+NNgyjzYl/8wpZE0CvoYHPsEU2h0hk1xeqwaYBMihunKg==",
+      "version": "1.1.1",
+      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-darwin-arm64/-/local-functions-proxy-darwin-arm64-1.1.1.tgz",
+      "integrity": "sha512-lphJ9qqZ3glnKWEqlemU1LMqXxtJ/tKf7VzakqqyjigwLscXSZSb6fupSjQfd4tR1xqxA76ylws/2HDhc/gs+Q==",
       "cpu": [
         "arm64"
       ],
@@ -3321,9 +3321,9 @@
       }
     },
     "node_modules/@netlify/local-functions-proxy-darwin-x64": {
-      "version": "1.1.0",
-      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-darwin-x64/-/local-functions-proxy-darwin-x64-1.1.0.tgz",
-      "integrity": "sha512-P+khKO6YwjeEv+zppE7asbInliopo1mJSkQeGT27ebs4UVkZPpYefhtLs8Gs5dau7zFfPBF8PFgE1kCEMKw4+g==",
+      "version": "1.1.1",
+      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-darwin-x64/-/local-functions-proxy-darwin-x64-1.1.1.tgz",
+      "integrity": "sha512-4CRB0H+dXZzoEklq5Jpmg+chizXlVwCko94d8+UHWCgy/bA3M/rU/BJ8OLZisnJaAktHoeLABKtcLOhtRHpxZQ==",
       "cpu": [
         "x64"
       ],
@@ -3336,9 +3336,9 @@
       }
     },
     "node_modules/@netlify/local-functions-proxy-freebsd-arm64": {
-      "version": "1.1.0",
-      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-freebsd-arm64/-/local-functions-proxy-freebsd-arm64-1.1.0.tgz",
-      "integrity": "sha512-bqjyD4o7KVWrUPO/cr4HfUfUFUfTJFmjw0KFDFet//itJMSg+RocQGmjkJ8YTqWQZxwDJF7Dp44n/WGhpnWUUg==",
+      "version": "1.1.1",
+      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-freebsd-arm64/-/local-functions-proxy-freebsd-arm64-1.1.1.tgz",
+      "integrity": "sha512-u13lWTVMJDF0A6jX7V4N3HYGTIHLe5d1Z2wT43fSIHwXkTs6UXi72cGSraisajG+5JFIwHfPr7asw5vxFC0P9w==",
       "cpu": [
         "arm64"
       ],
@@ -3351,9 +3351,9 @@
       }
     },
     "node_modules/@netlify/local-functions-proxy-freebsd-x64": {
-      "version": "1.1.0",
-      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-freebsd-x64/-/local-functions-proxy-freebsd-x64-1.1.0.tgz",
-      "integrity": "sha512-R8a0sW5bcTbX7eKiVzFw1+2F0tO8Sw/+fQL9f9Z+2F4pT5+SKml8CLvfRU5xYl1KcxdHGq5ETcSwu/wyqfMTpA==",
+      "version": "1.1.1",
+      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-freebsd-x64/-/local-functions-proxy-freebsd-x64-1.1.1.tgz",
+      "integrity": "sha512-g5xw4xATK5YDzvXtzJ8S1qSkWBiyF8VVRehXPMOAMzpGjCX86twYhWp8rbAk7yA1zBWmmWrWNA2Odq/MgpKJJg==",
       "cpu": [
         "x64"
       ],
@@ -3366,9 +3366,9 @@
       }
     },
     "node_modules/@netlify/local-functions-proxy-linux-arm": {
-      "version": "1.1.0",
-      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-linux-arm/-/local-functions-proxy-linux-arm-1.1.0.tgz",
-      "integrity": "sha512-iGricZd2RqBiF/LjD0EPnH0qSKjfn6RDEIp90I0BKQ2XRkQu7dPFr7m3QhOuoPIHxGERNNGK2FL4OGZ9jXEXtw==",
+      "version": "1.1.1",
+      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-linux-arm/-/local-functions-proxy-linux-arm-1.1.1.tgz",
+      "integrity": "sha512-YsTpL+AbHwQrfHWXmKnwUrJBjoUON363nr6jUG1ueYnpbbv6wTUA7gI5snMi/gkGpqFusBthAA7C30e6bixfiA==",
       "cpu": [
         "arm"
       ],
@@ -3381,9 +3381,9 @@
       }
     },
     "node_modules/@netlify/local-functions-proxy-linux-arm64": {
-      "version": "1.1.0",
-      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-linux-arm64/-/local-functions-proxy-linux-arm64-1.1.0.tgz",
-      "integrity": "sha512-G7KGstzhNoQwiiuVjyl64fDnNJ2Z/QsjaLDnElSUEwaqJe+0drog0wUxym/RDuVmBY//XDQfxLtG2Zl5ce4tUA==",
+      "version": "1.1.1",
+      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-linux-arm64/-/local-functions-proxy-linux-arm64-1.1.1.tgz",
+      "integrity": "sha512-dPGu1H5n8na7mBKxiXQ+FNmthDAiA57wqgpm5JMAHtcdcmRvcXwJkwWVGvwfj8ShhYJHQaSaS9oPgO+mpKkgmA==",
       "cpu": [
         "arm64"
       ],
@@ -3396,9 +3396,9 @@
       }
     },
     "node_modules/@netlify/local-functions-proxy-linux-ia32": {
-      "version": "1.1.0",
-      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-linux-ia32/-/local-functions-proxy-linux-ia32-1.1.0.tgz",
-      "integrity": "sha512-okXWyslbX/mMm3CncfUy+CxnBW0vFoDxFaK2+tIeLz5nVizVVyPaoInTe0bs+sSrAvc3jbtt8AfV9ISmhtPx0A==",
+      "version": "1.1.1",
+      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-linux-ia32/-/local-functions-proxy-linux-ia32-1.1.1.tgz",
+      "integrity": "sha512-Ra0FlXDrmPRaq+rYH3/ttkXSrwk1D5Zx/Na7UPfJZxMY7Qo5iY4bgi/FuzjzWzlp0uuKZOhYOYzYzsIIyrSvmw==",
       "cpu": [
         "ia32"
       ],
@@ -3411,9 +3411,9 @@
       }
     },
     "node_modules/@netlify/local-functions-proxy-linux-ppc64": {
-      "version": "1.1.0",
-      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-linux-ppc64/-/local-functions-proxy-linux-ppc64-1.1.0.tgz",
-      "integrity": "sha512-E3sPIN9y2QMU0bvPdNF3dmMi8pMUkGd9WYJHthpY9+fcP7j7L2d5h0uuSfG9TPEZS6/SW0c1XhK8wCDGGZIRaQ==",
+      "version": "1.1.1",
+      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-linux-ppc64/-/local-functions-proxy-linux-ppc64-1.1.1.tgz",
+      "integrity": "sha512-oXf1satwqwUUxz7LHS1BxbRqc4FFEKIDFTls04eXiLReFR3sqv9H/QuYNTCCDMuRcCOd92qKyDfATdnxT4HR8w==",
       "cpu": [
         "ppc64"
       ],
@@ -3426,9 +3426,9 @@
       }
     },
     "node_modules/@netlify/local-functions-proxy-linux-x64": {
-      "version": "1.1.0",
-      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-linux-x64/-/local-functions-proxy-linux-x64-1.1.0.tgz",
-      "integrity": "sha512-NFuOmMm5/tCOpQpuG32cFGp4n15++rsy26rWG1u7IVezOTr9SMKOmnsFxQVJGgOT7r3zBBjBJwYJN0CCNj9J3A==",
+      "version": "1.1.1",
+      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-linux-x64/-/local-functions-proxy-linux-x64-1.1.1.tgz",
+      "integrity": "sha512-bS3u4JuDg/eC0y4Na3i/29JBOxrdUvsK5JSjHfzUeZEbOcuXYf4KavTpHS5uikdvTgyczoSrvbmQJ5m0FLXfLA==",
       "cpu": [
         "x64"
       ],
@@ -3441,9 +3441,9 @@
       }
     },
     "node_modules/@netlify/local-functions-proxy-openbsd-x64": {
-      "version": "1.1.0",
-      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-openbsd-x64/-/local-functions-proxy-openbsd-x64-1.1.0.tgz",
-      "integrity": "sha512-9G1lrpSAxT+Bd83IYYxlkMU1xNCZeLstL7gZvXymygRpLoE2oFHfSERaIOvOdbbDQ3ZkEWuX12OJ6d7TS7ievg==",
+      "version": "1.1.1",
+      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-openbsd-x64/-/local-functions-proxy-openbsd-x64-1.1.1.tgz",
+      "integrity": "sha512-1xLef/kLRNkBTXJ+ZGoRFcwsFxd/B2H3oeJZyXaZ3CN5umd9Mv9wZuAD74NuMt/535yRva8jtAJqvEgl9xMSdA==",
       "cpu": [
         "x64"
       ],
@@ -3456,9 +3456,9 @@
       }
     },
     "node_modules/@netlify/local-functions-proxy-win32-ia32": {
-      "version": "1.1.0",
-      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-win32-ia32/-/local-functions-proxy-win32-ia32-1.1.0.tgz",
-      "integrity": "sha512-F6ET6+XyAcGVIFjX66nAmj6CkgKICPtA9ZpPDLU2b3qYzvdJxW1hgp/UIRyRSRN1IqkIPJtGQZAteHhzBqnFRQ==",
+      "version": "1.1.1",
+      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-win32-ia32/-/local-functions-proxy-win32-ia32-1.1.1.tgz",
+      "integrity": "sha512-4IOMDBxp2f8VbIkhZ85zGNDrZR4ey8d68fCMSOIwitjsnKav35YrCf8UmAh3UR6CNIRJdJL4MW1GYePJ7iJ8uA==",
       "cpu": [
         "ia32"
       ],
@@ -3471,9 +3471,9 @@
       }
     },
     "node_modules/@netlify/local-functions-proxy-win32-x64": {
-      "version": "1.1.0",
-      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-win32-x64/-/local-functions-proxy-win32-x64-1.1.0.tgz",
-      "integrity": "sha512-8a5rRjDNovZYBEaAPfN1VSwGNG/ExZanrjo7HnuTgphO6i64StqrKNtNW9/h75IgH+WP+8ZmC6Y0lI0BKq/U5A==",
+      "version": "1.1.1",
+      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-win32-x64/-/local-functions-proxy-win32-x64-1.1.1.tgz",
+      "integrity": "sha512-VCBXBJWBujVxyo5f+3r8ovLc9I7wJqpmgDn3ixs1fvdrER5Ac+SzYwYH4mUug9HI08mzTSAKZErzKeuadSez3w==",
       "cpu": [
         "x64"
       ],
@@ -23700,94 +23700,94 @@
       }
     },
     "@netlify/local-functions-proxy": {
-      "version": "1.1.0",
-      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy/-/local-functions-proxy-1.1.0.tgz",
-      "integrity": "sha512-HoxJuJpBqmzflIcdFsnUSuf/KwYsgzrsF/jh+bXPO+aOB9pzZEH0P/e/qCAr2JbJVzOyxo/36Ti3sXbahSDAYQ==",
+      "version": "1.1.1",
+      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy/-/local-functions-proxy-1.1.1.tgz",
+      "integrity": "sha512-eXSsayLT6PMvjzFQpjC9nkg2Otc3lZ5GoYele9M6f8PmsvWpaXRhwjNQ0NYhQQ2UZbLMIiO2dH8dbRsT3bMkFw==",
       "requires": {
-        "@netlify/local-functions-proxy-darwin-arm64": "1.1.0",
-        "@netlify/local-functions-proxy-darwin-x64": "1.1.0",
-        "@netlify/local-functions-proxy-freebsd-arm64": "1.1.0",
-        "@netlify/local-functions-proxy-freebsd-x64": "1.1.0",
-        "@netlify/local-functions-proxy-linux-arm": "1.1.0",
-        "@netlify/local-functions-proxy-linux-arm64": "1.1.0",
-        "@netlify/local-functions-proxy-linux-ia32": "1.1.0",
-        "@netlify/local-functions-proxy-linux-ppc64": "1.1.0",
-        "@netlify/local-functions-proxy-linux-x64": "1.1.0",
-        "@netlify/local-functions-proxy-openbsd-x64": "1.1.0",
-        "@netlify/local-functions-proxy-win32-ia32": "1.1.0",
-        "@netlify/local-functions-proxy-win32-x64": "1.1.0"
+        "@netlify/local-functions-proxy-darwin-arm64": "1.1.1",
+        "@netlify/local-functions-proxy-darwin-x64": "1.1.1",
+        "@netlify/local-functions-proxy-freebsd-arm64": "1.1.1",
+        "@netlify/local-functions-proxy-freebsd-x64": "1.1.1",
+        "@netlify/local-functions-proxy-linux-arm": "1.1.1",
+        "@netlify/local-functions-proxy-linux-arm64": "1.1.1",
+        "@netlify/local-functions-proxy-linux-ia32": "1.1.1",
+        "@netlify/local-functions-proxy-linux-ppc64": "1.1.1",
+        "@netlify/local-functions-proxy-linux-x64": "1.1.1",
+        "@netlify/local-functions-proxy-openbsd-x64": "1.1.1",
+        "@netlify/local-functions-proxy-win32-ia32": "1.1.1",
+        "@netlify/local-functions-proxy-win32-x64": "1.1.1"
       }
     },
     "@netlify/local-functions-proxy-darwin-arm64": {
-      "version": "1.1.0",
-      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-darwin-arm64/-/local-functions-proxy-darwin-arm64-1.1.0.tgz",
-      "integrity": "sha512-EOSEA/mt6IyXqou//vOo17vnQwwBKPu8wO+bZZQNb+NNgyjzYl/8wpZE0CvoYHPsEU2h0hk1xeqwaYBMihunKg==",
+      "version": "1.1.1",
+      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-darwin-arm64/-/local-functions-proxy-darwin-arm64-1.1.1.tgz",
+      "integrity": "sha512-lphJ9qqZ3glnKWEqlemU1LMqXxtJ/tKf7VzakqqyjigwLscXSZSb6fupSjQfd4tR1xqxA76ylws/2HDhc/gs+Q==",
       "optional": true
     },
     "@netlify/local-functions-proxy-darwin-x64": {
-      "version": "1.1.0",
-      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-darwin-x64/-/local-functions-proxy-darwin-x64-1.1.0.tgz",
-      "integrity": "sha512-P+khKO6YwjeEv+zppE7asbInliopo1mJSkQeGT27ebs4UVkZPpYefhtLs8Gs5dau7zFfPBF8PFgE1kCEMKw4+g==",
+      "version": "1.1.1",
+      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-darwin-x64/-/local-functions-proxy-darwin-x64-1.1.1.tgz",
+      "integrity": "sha512-4CRB0H+dXZzoEklq5Jpmg+chizXlVwCko94d8+UHWCgy/bA3M/rU/BJ8OLZisnJaAktHoeLABKtcLOhtRHpxZQ==",
       "optional": true
     },
     "@netlify/local-functions-proxy-freebsd-arm64": {
-      "version": "1.1.0",
-      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-freebsd-arm64/-/local-functions-proxy-freebsd-arm64-1.1.0.tgz",
-      "integrity": "sha512-bqjyD4o7KVWrUPO/cr4HfUfUFUfTJFmjw0KFDFet//itJMSg+RocQGmjkJ8YTqWQZxwDJF7Dp44n/WGhpnWUUg==",
+      "version": "1.1.1",
+      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-freebsd-arm64/-/local-functions-proxy-freebsd-arm64-1.1.1.tgz",
+      "integrity": "sha512-u13lWTVMJDF0A6jX7V4N3HYGTIHLe5d1Z2wT43fSIHwXkTs6UXi72cGSraisajG+5JFIwHfPr7asw5vxFC0P9w==",
       "optional": true
     },
     "@netlify/local-functions-proxy-freebsd-x64": {
-      "version": "1.1.0",
-      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-freebsd-x64/-/local-functions-proxy-freebsd-x64-1.1.0.tgz",
-      "integrity": "sha512-R8a0sW5bcTbX7eKiVzFw1+2F0tO8Sw/+fQL9f9Z+2F4pT5+SKml8CLvfRU5xYl1KcxdHGq5ETcSwu/wyqfMTpA==",
+      "version": "1.1.1",
+      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-freebsd-x64/-/local-functions-proxy-freebsd-x64-1.1.1.tgz",
+      "integrity": "sha512-g5xw4xATK5YDzvXtzJ8S1qSkWBiyF8VVRehXPMOAMzpGjCX86twYhWp8rbAk7yA1zBWmmWrWNA2Odq/MgpKJJg==",
       "optional": true
     },
     "@netlify/local-functions-proxy-linux-arm": {
-      "version": "1.1.0",
-      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-linux-arm/-/local-functions-proxy-linux-arm-1.1.0.tgz",
-      "integrity": "sha512-iGricZd2RqBiF/LjD0EPnH0qSKjfn6RDEIp90I0BKQ2XRkQu7dPFr7m3QhOuoPIHxGERNNGK2FL4OGZ9jXEXtw==",
+      "version": "1.1.1",
+      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-linux-arm/-/local-functions-proxy-linux-arm-1.1.1.tgz",
+      "integrity": "sha512-YsTpL+AbHwQrfHWXmKnwUrJBjoUON363nr6jUG1ueYnpbbv6wTUA7gI5snMi/gkGpqFusBthAA7C30e6bixfiA==",
       "optional": true
     },
     "@netlify/local-functions-proxy-linux-arm64": {
-      "version": "1.1.0",
-      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-linux-arm64/-/local-functions-proxy-linux-arm64-1.1.0.tgz",
-      "integrity": "sha512-G7KGstzhNoQwiiuVjyl64fDnNJ2Z/QsjaLDnElSUEwaqJe+0drog0wUxym/RDuVmBY//XDQfxLtG2Zl5ce4tUA==",
+      "version": "1.1.1",
+      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-linux-arm64/-/local-functions-proxy-linux-arm64-1.1.1.tgz",
+      "integrity": "sha512-dPGu1H5n8na7mBKxiXQ+FNmthDAiA57wqgpm5JMAHtcdcmRvcXwJkwWVGvwfj8ShhYJHQaSaS9oPgO+mpKkgmA==",
       "optional": true
     },
     "@netlify/local-functions-proxy-linux-ia32": {
-      "version": "1.1.0",
-      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-linux-ia32/-/local-functions-proxy-linux-ia32-1.1.0.tgz",
-      "integrity": "sha512-okXWyslbX/mMm3CncfUy+CxnBW0vFoDxFaK2+tIeLz5nVizVVyPaoInTe0bs+sSrAvc3jbtt8AfV9ISmhtPx0A==",
+      "version": "1.1.1",
+      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-linux-ia32/-/local-functions-proxy-linux-ia32-1.1.1.tgz",
+      "integrity": "sha512-Ra0FlXDrmPRaq+rYH3/ttkXSrwk1D5Zx/Na7UPfJZxMY7Qo5iY4bgi/FuzjzWzlp0uuKZOhYOYzYzsIIyrSvmw==",
       "optional": true
     },
     "@netlify/local-functions-proxy-linux-ppc64": {
-      "version": "1.1.0",
-      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-linux-ppc64/-/local-functions-proxy-linux-ppc64-1.1.0.tgz",
-      "integrity": "sha512-E3sPIN9y2QMU0bvPdNF3dmMi8pMUkGd9WYJHthpY9+fcP7j7L2d5h0uuSfG9TPEZS6/SW0c1XhK8wCDGGZIRaQ==",
+      "version": "1.1.1",
+      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-linux-ppc64/-/local-functions-proxy-linux-ppc64-1.1.1.tgz",
+      "integrity": "sha512-oXf1satwqwUUxz7LHS1BxbRqc4FFEKIDFTls04eXiLReFR3sqv9H/QuYNTCCDMuRcCOd92qKyDfATdnxT4HR8w==",
       "optional": true
     },
     "@netlify/local-functions-proxy-linux-x64": {
-      "version": "1.1.0",
-      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-linux-x64/-/local-functions-proxy-linux-x64-1.1.0.tgz",
-      "integrity": "sha512-NFuOmMm5/tCOpQpuG32cFGp4n15++rsy26rWG1u7IVezOTr9SMKOmnsFxQVJGgOT7r3zBBjBJwYJN0CCNj9J3A==",
+      "version": "1.1.1",
+      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-linux-x64/-/local-functions-proxy-linux-x64-1.1.1.tgz",
+      "integrity": "sha512-bS3u4JuDg/eC0y4Na3i/29JBOxrdUvsK5JSjHfzUeZEbOcuXYf4KavTpHS5uikdvTgyczoSrvbmQJ5m0FLXfLA==",
       "optional": true
     },
     "@netlify/local-functions-proxy-openbsd-x64": {
-      "version": "1.1.0",
-      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-openbsd-x64/-/local-functions-proxy-openbsd-x64-1.1.0.tgz",
-      "integrity": "sha512-9G1lrpSAxT+Bd83IYYxlkMU1xNCZeLstL7gZvXymygRpLoE2oFHfSERaIOvOdbbDQ3ZkEWuX12OJ6d7TS7ievg==",
+      "version": "1.1.1",
+      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-openbsd-x64/-/local-functions-proxy-openbsd-x64-1.1.1.tgz",
+      "integrity": "sha512-1xLef/kLRNkBTXJ+ZGoRFcwsFxd/B2H3oeJZyXaZ3CN5umd9Mv9wZuAD74NuMt/535yRva8jtAJqvEgl9xMSdA==",
       "optional": true
     },
     "@netlify/local-functions-proxy-win32-ia32": {
-      "version": "1.1.0",
-      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-win32-ia32/-/local-functions-proxy-win32-ia32-1.1.0.tgz",
-      "integrity": "sha512-F6ET6+XyAcGVIFjX66nAmj6CkgKICPtA9ZpPDLU2b3qYzvdJxW1hgp/UIRyRSRN1IqkIPJtGQZAteHhzBqnFRQ==",
+      "version": "1.1.1",
+      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-win32-ia32/-/local-functions-proxy-win32-ia32-1.1.1.tgz",
+      "integrity": "sha512-4IOMDBxp2f8VbIkhZ85zGNDrZR4ey8d68fCMSOIwitjsnKav35YrCf8UmAh3UR6CNIRJdJL4MW1GYePJ7iJ8uA==",
       "optional": true
     },
     "@netlify/local-functions-proxy-win32-x64": {
-      "version": "1.1.0",
-      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-win32-x64/-/local-functions-proxy-win32-x64-1.1.0.tgz",
-      "integrity": "sha512-8a5rRjDNovZYBEaAPfN1VSwGNG/ExZanrjo7HnuTgphO6i64StqrKNtNW9/h75IgH+WP+8ZmC6Y0lI0BKq/U5A==",
+      "version": "1.1.1",
+      "resolved": "https://registry.npmjs.org/@netlify/local-functions-proxy-win32-x64/-/local-functions-proxy-win32-x64-1.1.1.tgz",
+      "integrity": "sha512-VCBXBJWBujVxyo5f+3r8ovLc9I7wJqpmgDn3ixs1fvdrER5Ac+SzYwYH4mUug9HI08mzTSAKZErzKeuadSez3w==",
       "optional": true
     },
     "@netlify/open-api": {
