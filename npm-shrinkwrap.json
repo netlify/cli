@@ -11,7 +11,7 @@
       "license": "MIT",
       "dependencies": {
         "@netlify/build": "^18.2.5",
-        "@netlify/config": "^15.1.6",
+        "@netlify/config": "^15.1.7",
         "@netlify/framework-info": "^5.8.0",
         "@netlify/local-functions-proxy": "^1.1.1",
         "@netlify/plugin-edge-handlers": "^1.11.22",
@@ -2875,9 +2875,9 @@
       }
     },
     "node_modules/@netlify/config": {
-      "version": "15.1.6",
-      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-15.1.6.tgz",
-      "integrity": "sha512-mpChNOGl+1EXe+abHgw/pN6FHC1oMTbvq7CL4OMuuWEvjszlPT5e9Ac4a7lFWsUBcNLRf/lozgImb77PPj1fOw==",
+      "version": "15.1.7",
+      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-15.1.7.tgz",
+      "integrity": "sha512-MKf3G/3HuItOgLUibZjxJeheK+hDin1ALMH3jxt0ob1BWSmza1SlCX+SmbPrYciXfcYfZhu070g0BedBW93XBA==",
       "dependencies": {
         "@ungap/from-entries": "^0.2.1",
         "array-flat-polyfill": "^1.0.1",
@@ -2896,7 +2896,7 @@
         "make-dir": "^3.1.0",
         "map-obj": "^4.0.0",
         "netlify": "^8.0.0",
-        "netlify-headers-parser": "^2.1.0",
+        "netlify-headers-parser": "^2.1.1",
         "netlify-redirect-parser": "^10.0.0",
         "omit.js": "^2.0.2",
         "p-locate": "^4.1.0",
@@ -23300,9 +23300,9 @@
       }
     },
     "@netlify/config": {
-      "version": "15.1.6",
-      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-15.1.6.tgz",
-      "integrity": "sha512-mpChNOGl+1EXe+abHgw/pN6FHC1oMTbvq7CL4OMuuWEvjszlPT5e9Ac4a7lFWsUBcNLRf/lozgImb77PPj1fOw==",
+      "version": "15.1.7",
+      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-15.1.7.tgz",
+      "integrity": "sha512-MKf3G/3HuItOgLUibZjxJeheK+hDin1ALMH3jxt0ob1BWSmza1SlCX+SmbPrYciXfcYfZhu070g0BedBW93XBA==",
       "requires": {
         "@ungap/from-entries": "^0.2.1",
         "array-flat-polyfill": "^1.0.1",
@@ -23321,7 +23321,7 @@
         "make-dir": "^3.1.0",
         "map-obj": "^4.0.0",
         "netlify": "^8.0.0",
-        "netlify-headers-parser": "^2.1.0",
+        "netlify-headers-parser": "^2.1.1",
         "netlify-redirect-parser": "^10.0.0",
         "omit.js": "^2.0.2",
         "p-locate": "^4.1.0",
