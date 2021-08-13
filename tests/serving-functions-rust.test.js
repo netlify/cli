@@ -39,7 +39,7 @@ test('Updates a Rust function when a file is modified', async (t) => {
     const [execaMock, removeExecaMock] = await createExecaMock(`
       let proxyCallCount = 0
 
-      module.exports = async (...args) => {
+      const handler = (...args) => {
         if (args[0] === 'cargo') {
           return {
             stderr: '',
@@ -61,6 +61,11 @@ test('Updates a Rust function when a file is modified', async (t) => {
           }
         }
       }
+
+      module.exports = (...args) => ({
+        ...handler(...args) || {},
+        stderr: { pipe: () => {} }
+      })
     `)
 
     await withDevServer(

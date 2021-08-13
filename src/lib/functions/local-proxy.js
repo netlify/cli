@@ -1,3 +1,5 @@
+const { stdout } = require('process')
+
 const { getBinaryPath: getFunctionsProxyPath } = require('@netlify/local-functions-proxy')
 
 const execa = require('../../utils/execa')
@@ -34,8 +36,11 @@ const runFunctionsProxy = ({ binaryPath, context, directory, event, name, timeou
     '--timeout',
     `${timeout}s`,
   ]
+  const proxyProcess = execa(functionsProxyPath, parameters)
 
-  return execa(functionsProxyPath, parameters)
+  proxyProcess.stderr.pipe(stdout)
+
+  return proxyProcess
 }
 
 module.exports = { runFunctionsProxy }
