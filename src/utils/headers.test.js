@@ -4,7 +4,7 @@ const test = require('ava')
 
 const { createSiteBuilder } = require('../../tests/utils/site-builder')
 
-const { parseHeadersFile, headersForPath, matchesPath } = require('./headers')
+const { parseHeaders, headersForPath, matchesPath } = require('./headers')
 
 const headers = [
   { path: '/', headers: ['X-Frame-Options: SAMEORIGIN'] },
@@ -70,77 +70,98 @@ test.after(async (t) => {
 /**
  * Pass if we can load the test headers without throwing an error.
  */
-test('_headers: syntax validates as expected', (t) => {
-  parseHeadersFile(path.resolve(t.context.builder.directory, '_headers'))
+test('_headers: syntax validates as expected', async (t) => {
+  await parseHeaders({ headersFiles: [path.resolve(t.context.builder.directory, '_headers')] })
 })
 
-test('_headers: throws on invalid syntax', (t) => {
-  t.throws(() => parseHeadersFile(path.resolve(t.context.builder.directory, '_invalid_headers')), {
-    message: /invalid header at line: 5/,
+test('_headers: throws on invalid syntax', async (t) => {
+  await t.throwsAsync(parseHeaders({ headersFiles: [path.resolve(t.context.builder.directory, '_invalid_headers')] }), {
+    message: /Missing header value/,
   })
 })
 
-test('_headers: validate rules', (t) => {
-  const rules = parseHeadersFile(path.resolve(t.context.builder.directory, '_headers'))
-  t.deepEqual(rules, {
-    '/': {
-      'X-Frame-Options': ['SAMEORIGIN'],
+test('_headers: validate rules', async (t) => {
+  const rules = await parseHeaders({ headersFiles: [path.resolve(t.context.builder.directory, '_headers')] })
+  t.deepEqual(rules, [
+    {
+      for: '/',
+      values: {
+        'X-Frame-Options': 'SAMEORIGIN',
+      },
     },
-    '/*': {
-      'X-Frame-Thing': ['SAMEORIGIN'],
+    {
+      for: '/*',
+      values: {
+        'X-Frame-Thing': 'SAMEORIGIN',
+      },
     },
-    '/static-path/*': {
-      'X-Frame-Options': ['DENY'],
-      'X-XSS-Protection': ['1; mode=block'],
-      'cache-control': ['max-age=0', 'no-cache', 'no-store', 'must-revalidate'],
+    {
+      for: '/static-path/*',
+      values: {
+        'X-Frame-Options': 'DENY',
+        'X-XSS-Protection': '1; mode=block',
+        'cache-control': 'max-age=0,no-cache,no-store,must-revalidate',
+      },
     },
-    '/:placeholder/index.html': {
-      'X-Frame-Options': ['SAMEORIGIN'],
+    {
+      for: '/:placeholder/index.html',
+      values: {
+        'X-Frame-Options': 'SAMEORIGIN',
+      },
     },
-    '/*/_next/static/chunks/*': {
-      'cache-control': ['public', 'max-age=31536000', 'immutable'],
+    {
+      for: '/*/_next/static/chunks/*',
+      values: {
+        'cache-control': 'public,max-age=31536000,immutable',
+      },
     },
-    '/directory/*/test.html': {
-      'X-Frame-Options': ['test'],
+    {
+      for: '/directory/*/test.html',
+      values: {
+        'X-Frame-Options': 'test',
+      },
     },
-    '/with-colon': {
-      'Custom-header': ['http://www.example.com'],
+    {
+      for: '/with-colon',
+      values: {
+        'Custom-header': 'http://www.example.com',
+      },
     },
-  })
+  ])
 })
 
-test('_headers: headersForPath testing', (t) => {
-  const rules = parseHeadersFile(path.resolve(t.context.builder.directory, '_headers'))
+test('_headers: headersForPath testing', async (t) => {
+  const rules = await parseHeaders({ headersFiles: [path.resolve(t.context.builder.directory, '_headers')] })
   t.deepEqual(headersForPath(rules, '/'), {
-    'X-Frame-Options': ['SAMEORIGIN'],
-    'X-Frame-Thing': ['SAMEORIGIN'],
+    'X-Frame-Options': 'SAMEORIGIN',
+    'X-Frame-Thing': 'SAMEORIGIN',
   })
   t.deepEqual(headersForPath(rules, '/placeholder'), {
-    'X-Frame-Thing': ['SAMEORIGIN'],
+    'X-Frame-Thing': 'SAMEORIGIN',
   })
   t.deepEqual(headersForPath(rules, '/static-path/placeholder'), {
-    'X-Frame-Thing': ['SAMEORIGIN'],
-    'X-Frame-Options': ['DENY'],
-    'X-XSS-Protection': ['1; mode=block'],
-    'cache-control': ['max-age=0', 'no-cache', 'no-store', 'must-revalidate'],
+    'X-Frame-Thing': 'SAMEORIGIN',
+    'X-Frame-Options': 'DENY',
+    'X-XSS-Protection': '1; mode=block',
+    'cache-control': 'max-age=0,no-cache,no-store,must-revalidate',
   })
   t.deepEqual(headersForPath(rules, '/static-path'), {
-    'X-Frame-Thing': ['SAMEORIGIN'],
-    'X-Frame-Options': ['DENY'],
-    'X-XSS-Protection': ['1; mode=block'],
-    'cache-control': ['max-age=0', 'no-cache', 'no-store', 'must-revalidate'],
+    'X-Frame-Thing': 'SAMEORIGIN',
+    'X-Frame-Options': 'DENY',
+    'X-XSS-Protection': '1; mode=block',
+    'cache-control': 'max-age=0,no-cache,no-store,must-revalidate',
   })
   t.deepEqual(headersForPath(rules, '/placeholder/index.html'), {
-    'X-Frame-Options': ['SAMEORIGIN'],
-    'X-Frame-Thing': ['SAMEORIGIN'],
+    'X-Frame-Options': 'SAMEORIGIN',
+    'X-Frame-Thing': 'SAMEORIGIN',
   })
   t.deepEqual(headersForPath(rules, '/placeholder/_next/static/chunks/placeholder'), {
-    'X-Frame-Thing': ['SAMEORIGIN'],
-    'cache-control': ['public', 'max-age=31536000', 'immutable'],
+    'X-Frame-Thing': 'SAMEORIGIN',
+    'cache-control': 'public,max-age=31536000,immutable',
   })
   t.deepEqual(headersForPath(rules, '/directory/placeholder/test.html'), {
-    'X-Frame-Thing': ['SAMEORIGIN'],
-    'X-Frame-Options': ['test'],
+    'X-Frame-Thing': 'SAMEORIGIN',
+    'X-Frame-Options': 'test',
   })
 })
 
