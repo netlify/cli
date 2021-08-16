@@ -86,7 +86,7 @@
         "multiparty": "^4.2.1",
         "netlify": "^8.0.0",
         "netlify-headers-parser": "^3.0.1",
-        "netlify-redirect-parser": "^11.0.1",
+        "netlify-redirect-parser": "^11.0.2",
         "netlify-redirector": "^0.2.1",
         "node-fetch": "^2.6.0",
         "node-version-alias": "^1.0.1",
