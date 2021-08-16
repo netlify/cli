@@ -25,12 +25,15 @@ const { readRepoURL, validateRepoURL } = require('../../utils/read-repo-url')
 
 const templatesDir = path.resolve(__dirname, '../../functions-templates')
 
+const showGoTemplates = process.env.NETLIFY_EXPERIMENTAL_BUILD_GO_SOURCE === 'true'
+
 // Ensure that there's a sub-directory in `src/functions-templates` named after
 // each `value` property in this list, and that it matches the extension of the
 // files used by that language.
 const languages = [
   { name: 'JavaScript', value: 'js' },
   { name: 'TypeScript', value: 'ts' },
+  showGoTemplates && { name: 'Go', value: 'go' },
 ]
 
 /**
@@ -168,7 +171,7 @@ const pickTemplate = async function () {
     new inquirer.Separator(),
   ]
   const { language } = await inquirer.prompt({
-    choices: languages,
+    choices: languages.filter(Boolean),
     message: 'Select the language of your function',
     name: 'language',
     type: 'list',
