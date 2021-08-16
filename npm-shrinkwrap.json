@@ -85,6 +85,7 @@
         "minimist": "^1.2.5",
         "multiparty": "^4.2.1",
         "netlify": "^8.0.0",
+        "netlify-headers-parser": "^3.0.1",
         "netlify-redirect-parser": "^11.0.1",
         "netlify-redirector": "^0.2.1",
         "node-fetch": "^2.6.0",
@@ -14986,9 +14987,9 @@
       }
     },
     "node_modules/netlify-headers-parser": {
-      "version": "3.0.0",
-      "resolved": "https://registry.npmjs.org/netlify-headers-parser/-/netlify-headers-parser-3.0.0.tgz",
-      "integrity": "sha512-E2vSfC5lBM7GlStPPQAb7zDN+AX40Yz4fYz9t78p3iwV70BrWBsb29ZZLlYEfARGVCi7TW2qS40y0Az3TOasUA==",
+      "version": "3.0.1",
+      "resolved": "https://registry.npmjs.org/netlify-headers-parser/-/netlify-headers-parser-3.0.1.tgz",
+      "integrity": "sha512-32oDkPa7+JdTFOp0M4H31AZDQ8YVJWgNlPkPuilb1C1dgvmAFXa8k4x+ADpgCbQfTMP3exO3vobvlfj8SUHxnA==",
       "dependencies": {
         "is-plain-obj": "^3.0.0",
         "map-obj": "^4.2.1",
@@ -32462,9 +32463,9 @@
       }
     },
     "netlify-headers-parser": {
-      "version": "3.0.0",
-      "resolved": "https://registry.npmjs.org/netlify-headers-parser/-/netlify-headers-parser-3.0.0.tgz",
-      "integrity": "sha512-E2vSfC5lBM7GlStPPQAb7zDN+AX40Yz4fYz9t78p3iwV70BrWBsb29ZZLlYEfARGVCi7TW2qS40y0Az3TOasUA==",
+      "version": "3.0.1",
+      "resolved": "https://registry.npmjs.org/netlify-headers-parser/-/netlify-headers-parser-3.0.1.tgz",
+      "integrity": "sha512-32oDkPa7+JdTFOp0M4H31AZDQ8YVJWgNlPkPuilb1C1dgvmAFXa8k4x+ADpgCbQfTMP3exO3vobvlfj8SUHxnA==",
       "requires": {
         "is-plain-obj": "^3.0.0",
         "map-obj": "^4.2.1",
