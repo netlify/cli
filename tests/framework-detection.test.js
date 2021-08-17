@@ -1,5 +1,3 @@
-const { platform } = require('process')
-
 const test = require('ava')
 const execa = require('execa')
 
@@ -292,7 +290,7 @@ test('should pass framework-info env to framework sub process', async (t) => {
       .withPackageJson({
         packageJson: {
           dependencies: { gatsby: '^3.0.0' },
-          scripts: { develop: platform === 'win32' ? 'echo %GATSBY_LOGGER%' : 'echo $GATSBY_LOGGER' },
+          scripts: { develop: 'node -p process.env.GATSBY_LOGGER' },
         },
       })
       .withContentFile({ path: 'gatsby-config.js', content: '' })

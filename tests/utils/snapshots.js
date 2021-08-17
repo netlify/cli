@@ -6,7 +6,6 @@ const normalizers = [
   { pattern: /\\/gu, value: '/' },
   { pattern: /\r\n/gu, value: '\n' },
   { pattern: /❯/gu, value: '>' },
-  { pattern: /%(.+?)%/gu, value: '$$$1' },
   // normalize exit code from different OSes
   { pattern: /code \d+/, value: 'code *' },
   // this is specific to npm v6
