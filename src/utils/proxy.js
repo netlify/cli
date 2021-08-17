@@ -19,7 +19,7 @@ const toReadableStream = require('to-readable-stream')
 const { readFileAsync, fileExistsAsync, isFileAsync } = require('../lib/fs')
 
 const { createStreamPromise } = require('./create-stream-promise')
-const { parseHeadersFile, headersForPath } = require('./headers')
+const { parseHeaders, headersForPath } = require('./headers')
 const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./logo')
 const { createRewriter } = require('./rules-proxy')
 const { onChanges } = require('./rules-proxy')
@@ -263,7 +263,7 @@ const serveRedirect = async function ({ req, res, proxy, match, options }) {
 
 const MILLISEC_TO_SEC = 1e3
 
-const initializeProxy = function (port, distDir, projectDir) {
+const initializeProxy = async function (port, distDir, projectDir) {
   const proxy = httpProxy.createProxyServer({
     selfHandleResponse: true,
     target: {
@@ -274,13 +274,13 @@ const initializeProxy = function (port, distDir, projectDir) {
 
   const headersFiles = [...new Set([path.resolve(projectDir, '_headers'), path.resolve(distDir, '_headers')])]
 
-  let headerRules = headersFiles.reduce((prev, curr) => Object.assign(prev, parseHeadersFile(curr)), {})
+  let headerRules = await parseHeaders({ headersFiles })
   onChanges(headersFiles, async () => {
     console.log(
       `${NETLIFYDEVLOG} Reloading headers files`,
       (await pFilter(headersFiles, fileExistsAsync)).map((headerFile) => path.relative(projectDir, headerFile)),
     )
-    headerRules = headersFiles.reduce((prev, curr) => Object.assign(prev, parseHeadersFile(curr)), {})
+    headerRules = await parseHeaders({ headersFiles })
   })
 
   proxy.before('web', 'stream', (req) => {
@@ -392,7 +392,7 @@ const onRequest = async ({ proxy, rewriter, settings, addonsUrls, functionsServe
 const startProxy = async function (settings, addonsUrls, configPath, projectDir) {
   const functionsServer = settings.functionsPort ? `http://localhost:${settings.functionsPort}` : null
 
-  const proxy = initializeProxy(settings.frameworkPort, settings.dist, projectDir)
+  const proxy = await initializeProxy(settings.frameworkPort, settings.dist, projectDir)
 
   const rewriter = await createRewriter({
     distDir: settings.dist,

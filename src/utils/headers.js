@@ -1,15 +1,12 @@
-const fs = require('fs')
-
-const { get } = require('dot-prop')
 const escapeRegExp = require('lodash/escapeRegExp')
 const trimEnd = require('lodash/trimEnd')
+const { parseAllHeaders } = require('netlify-headers-parser')
 
-const TOKEN_COMMENT = '#'
-const TOKEN_PATH = '/'
+const { NETLIFYDEVWARN } = require('./logo')
 
 // Our production logic uses regex too
-const getRulePattern = (rule) => {
-  const ruleParts = rule.split('/').filter(Boolean)
+const getRulePattern = (forPath) => {
+  const ruleParts = forPath.split('/').filter(Boolean)
   if (ruleParts.length === 0) {
     return `^/$`
   }
@@ -59,67 +56,38 @@ const matchesPath = (rule, path) => {
  * @returns {Object<string,string[]>}
  */
 const headersForPath = function (rules, path) {
-  const matchingHeaders = Object.entries(rules)
-    .filter(([rule]) => matchesPath(rule, path))
-    .map(([, headers]) => headers)
-
+  const matchingHeaders = rules.filter(({ for: forPath }) => matchesPath(forPath, path)).map(getHeaderValues)
   const pathObject = Object.assign({}, ...matchingHeaders)
   return pathObject
 }
 
-const HEADER_SEPARATOR = ':'
+const getHeaderValues = function ({ values }) {
+  return values
+}
 
-const parseHeadersFile = function (filePath) {
-  if (!fs.existsSync(filePath)) {
-    return {}
-  }
-  if (fs.statSync(filePath).isDirectory()) {
-    console.warn('expected _headers file but found a directory at:', filePath)
-    return {}
-  }
+const parseHeaders = async function ({ headersFiles }) {
+  const { headers, errors } = await parseAllHeaders({ headersFiles })
+  handleHeadersErrors(errors)
+  return headers
+}
 
-  const lines = fs
-    .readFileSync(filePath, { encoding: 'utf8' })
-    .split('\n')
-    .map((line, index) => ({ line: line.trim(), index }))
-    .filter(({ line }) => Boolean(line) && !line.startsWith(TOKEN_COMMENT))
-
-  let path
-  let rules = {}
-  // eslint-disable-next-line fp/no-loops
-  for (const { line, index } of lines) {
-    if (line.startsWith(TOKEN_PATH)) {
-      path = line
-      continue
-    }
-
-    if (!path) {
-      throw new Error('path should come before headers')
-    }
-
-    if (line.includes(HEADER_SEPARATOR)) {
-      const [key = '', ...value] = line.split(HEADER_SEPARATOR)
-      const [trimmedKey, trimmedValue] = [key.trim(), value.join(HEADER_SEPARATOR).trim()]
-      if (trimmedKey.length === 0 || trimmedValue.length === 0) {
-        throw new Error(`invalid header at line: ${index}\n${line}\n`)
-      }
-
-      const currentHeaders = get(rules, `${path}.${trimmedKey}`) || []
-      rules = {
-        ...rules,
-        [path]: {
-          ...rules[path],
-          [trimmedKey]: [...currentHeaders, trimmedValue],
-        },
-      }
-    }
+const handleHeadersErrors = function (errors) {
+  if (errors.length === 0) {
+    return
   }
 
-  return rules
+  const errorMessage = errors.map(getErrorMessage).join('\n\n')
+  throw new Error(`${NETLIFYDEVWARN} Warnings while parsing headers:
+
+${errorMessage}`)
+}
+
+const getErrorMessage = function ({ message }) {
+  return message
 }
 
 module.exports = {
   matchesPath,
   headersForPath,
-  parseHeadersFile,
+  parseHeaders,
 }

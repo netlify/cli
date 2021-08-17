@@ -155,7 +155,7 @@ const getSettingsFromFramework = (framework) => {
     },
     name: frameworkName,
     staticAssetsDirectory: staticDir,
-    env,
+    env = {},
   } = framework
 
   return {
