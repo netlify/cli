@@ -1,17 +1,17 @@
 {
   "name": "netlify-cli",
-  "version": "6.5.7",
+  "version": "6.5.8",
   "lockfileVersion": 2,
   "requires": true,
   "packages": {
     "": {
       "name": "netlify-cli",
-      "version": "6.5.7",
+      "version": "6.5.8",
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
         "@netlify/build": "^18.2.12",
-        "@netlify/config": "^15.3.6",
+        "@netlify/config": "^15.3.7",
         "@netlify/framework-info": "^5.9.0",
         "@netlify/local-functions-proxy": "^1.1.1",
         "@netlify/plugin-edge-handlers": "^1.11.22",
@@ -2858,9 +2858,9 @@
       }
     },
     "node_modules/@netlify/config": {
-      "version": "15.3.6",
-      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-15.3.6.tgz",
-      "integrity": "sha512-sSAz0ljkUnNfCgnH9PVF+lJG2WxectB8AZ4X3XpnbM7tCoPxYCUdQE1SYEtC1i6/dZfpFVbJWoxmROoBOPkswA==",
+      "version": "15.3.7",
+      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-15.3.7.tgz",
+      "integrity": "sha512-jMMlj+ObFvmmUbiVxo80gWhilMXIIODfoQiJpht9lgtxOm6eOOA6asFNOKQ64VvvNEYa7SKA7A1gK+7ciB1v5g==",
       "dependencies": {
         "@ungap/from-entries": "^0.2.1",
         "array-flat-polyfill": "^1.0.1",
@@ -2878,7 +2878,7 @@
         "make-dir": "^3.1.0",
         "map-obj": "^4.0.0",
         "netlify": "^8.0.0",
-        "netlify-headers-parser": "^4.0.0",
+        "netlify-headers-parser": "^4.0.1",
         "netlify-redirect-parser": "^11.0.2",
         "omit.js": "^2.0.2",
         "p-locate": "^5.0.0",
@@ -23162,9 +23162,9 @@
       }
     },
     "@netlify/config": {
-      "version": "15.3.6",
-      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-15.3.6.tgz",
-      "integrity": "sha512-sSAz0ljkUnNfCgnH9PVF+lJG2WxectB8AZ4X3XpnbM7tCoPxYCUdQE1SYEtC1i6/dZfpFVbJWoxmROoBOPkswA==",
+      "version": "15.3.7",
+      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-15.3.7.tgz",
+      "integrity": "sha512-jMMlj+ObFvmmUbiVxo80gWhilMXIIODfoQiJpht9lgtxOm6eOOA6asFNOKQ64VvvNEYa7SKA7A1gK+7ciB1v5g==",
       "requires": {
         "@ungap/from-entries": "^0.2.1",
         "array-flat-polyfill": "^1.0.1",
@@ -23182,7 +23182,7 @@
         "make-dir": "^3.1.0",
         "map-obj": "^4.0.0",
         "netlify": "^8.0.0",
-        "netlify-headers-parser": "^4.0.0",
+        "netlify-headers-parser": "^4.0.1",
         "netlify-redirect-parser": "^11.0.2",
         "omit.js": "^2.0.2",
         "p-locate": "^5.0.0",
