@@ -67,22 +67,31 @@ test.after(async (t) => {
   await t.context.builder.cleanupAsync()
 })
 
+const parseHeadersFile = async function (t, fixtureName) {
+  const normalizedHeadersFile = path.resolve(t.context.builder.directory, fixtureName)
+  return await parseHeaders({ headersFiles: [normalizedHeadersFile] })
+}
+
+// Ignore added properties like `forRegExp`
+const normalizeHeader = function ({ for: forPath, values }) {
+  return { for: forPath, values }
+}
+
 /**
  * Pass if we can load the test headers without throwing an error.
  */
 test('_headers: syntax validates as expected', async (t) => {
-  await parseHeaders({ headersFiles: [path.resolve(t.context.builder.directory, '_headers')] })
+  await parseHeadersFile(t, '_headers')
 })
 
 test('_headers: throws on invalid syntax', async (t) => {
-  await t.throwsAsync(parseHeaders({ headersFiles: [path.resolve(t.context.builder.directory, '_invalid_headers')] }), {
-    message: /Missing header value/,
-  })
+  await t.throwsAsync(parseHeadersFile(t, '_invalid_headers'), { message: /Missing header value/ })
 })
 
 test('_headers: validate rules', async (t) => {
-  const rules = await parseHeaders({ headersFiles: [path.resolve(t.context.builder.directory, '_headers')] })
-  t.deepEqual(rules, [
+  const rules = await parseHeadersFile(t, '_headers')
+  const normalizedHeaders = rules.map(normalizeHeader)
+  t.deepEqual(normalizedHeaders, [
     {
       for: '/',
       values: {
@@ -100,7 +109,7 @@ test('_headers: validate rules', async (t) => {
       values: {
         'X-Frame-Options': 'DENY',
         'X-XSS-Protection': '1; mode=block',
-        'cache-control': 'max-age=0,no-cache,no-store,must-revalidate',
+        'cache-control': 'max-age=0, no-cache, no-store, must-revalidate',
       },
     },
     {
@@ -112,7 +121,7 @@ test('_headers: validate rules', async (t) => {
     {
       for: '/*/_next/static/chunks/*',
       values: {
-        'cache-control': 'public,max-age=31536000,immutable',
+        'cache-control': 'public, max-age=31536000, immutable',
       },
     },
     {
@@ -131,35 +140,36 @@ test('_headers: validate rules', async (t) => {
 })
 
 test('_headers: headersForPath testing', async (t) => {
-  const rules = await parseHeaders({ headersFiles: [path.resolve(t.context.builder.directory, '_headers')] })
-  t.deepEqual(headersForPath(rules, '/'), {
+  const rules = await parseHeadersFile(t, '_headers')
+  const normalizedHeaders = rules.map(normalizeHeader)
+  t.deepEqual(headersForPath(normalizedHeaders, '/'), {
     'X-Frame-Options': 'SAMEORIGIN',
     'X-Frame-Thing': 'SAMEORIGIN',
   })
-  t.deepEqual(headersForPath(rules, '/placeholder'), {
+  t.deepEqual(headersForPath(normalizedHeaders, '/placeholder'), {
     'X-Frame-Thing': 'SAMEORIGIN',
   })
-  t.deepEqual(headersForPath(rules, '/static-path/placeholder'), {
-    'X-Frame-Thing': 'SAMEORIGIN',
-    'X-Frame-Options': 'DENY',
-    'X-XSS-Protection': '1; mode=block',
-    'cache-control': 'max-age=0,no-cache,no-store,must-revalidate',
-  })
-  t.deepEqual(headersForPath(rules, '/static-path'), {
+  t.deepEqual(headersForPath(normalizedHeaders, '/static-path/placeholder'), {
     'X-Frame-Thing': 'SAMEORIGIN',
     'X-Frame-Options': 'DENY',
     'X-XSS-Protection': '1; mode=block',
-    'cache-control': 'max-age=0,no-cache,no-store,must-revalidate',
+    'cache-control': 'max-age=0, no-cache, no-store, must-revalidate',
   })
-  t.deepEqual(headersForPath(rules, '/placeholder/index.html'), {
+  t.deepEqual(headersForPath(normalizedHeaders, '/static-path'), {
+    'X-Frame-Thing': 'SAMEORIGIN',
+    'X-Frame-Options': 'DENY',
+    'X-XSS-Protection': '1; mode=block',
+    'cache-control': 'max-age=0, no-cache, no-store, must-revalidate',
+  })
+  t.deepEqual(headersForPath(normalizedHeaders, '/placeholder/index.html'), {
     'X-Frame-Options': 'SAMEORIGIN',
     'X-Frame-Thing': 'SAMEORIGIN',
   })
-  t.deepEqual(headersForPath(rules, '/placeholder/_next/static/chunks/placeholder'), {
+  t.deepEqual(headersForPath(normalizedHeaders, '/placeholder/_next/static/chunks/placeholder'), {
     'X-Frame-Thing': 'SAMEORIGIN',
-    'cache-control': 'public,max-age=31536000,immutable',
+    'cache-control': 'public, max-age=31536000, immutable',
   })
-  t.deepEqual(headersForPath(rules, '/directory/placeholder/test.html'), {
+  t.deepEqual(headersForPath(normalizedHeaders, '/directory/placeholder/test.html'), {
     'X-Frame-Thing': 'SAMEORIGIN',
     'X-Frame-Options': 'test',
   })

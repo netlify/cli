@@ -85,7 +85,7 @@
         "minimist": "^1.2.5",
         "multiparty": "^4.2.1",
         "netlify": "^8.0.0",
-        "netlify-headers-parser": "^3.0.1",
+        "netlify-headers-parser": "^4.0.0",
         "netlify-redirect-parser": "^11.0.2",
         "netlify-redirector": "^0.2.1",
         "node-fetch": "^2.6.0",
@@ -2975,6 +2975,20 @@
       },
       "engines": {
         "node": ">=8"
+      }
+    },
+    "node_modules/@netlify/config/node_modules/netlify-headers-parser": {
+      "version": "3.0.1",
+      "resolved": "https://registry.npmjs.org/netlify-headers-parser/-/netlify-headers-parser-3.0.1.tgz",
+      "integrity": "sha512-32oDkPa7+JdTFOp0M4H31AZDQ8YVJWgNlPkPuilb1C1dgvmAFXa8k4x+ADpgCbQfTMP3exO3vobvlfj8SUHxnA==",
+      "dependencies": {
+        "is-plain-obj": "^3.0.0",
+        "map-obj": "^4.2.1",
+        "path-exists": "^4.0.0",
+        "toml": "^3.0.0"
+      },
+      "engines": {
+        "node": ">=10.18.0"
       }
     },
     "node_modules/@netlify/config/node_modules/p-limit": {
@@ -14838,10 +14852,11 @@
       }
     },
     "node_modules/netlify-headers-parser": {
-      "version": "3.0.1",
-      "resolved": "https://registry.npmjs.org/netlify-headers-parser/-/netlify-headers-parser-3.0.1.tgz",
-      "integrity": "sha512-32oDkPa7+JdTFOp0M4H31AZDQ8YVJWgNlPkPuilb1C1dgvmAFXa8k4x+ADpgCbQfTMP3exO3vobvlfj8SUHxnA==",
+      "version": "4.0.1",
+      "resolved": "https://registry.npmjs.org/netlify-headers-parser/-/netlify-headers-parser-4.0.1.tgz",
+      "integrity": "sha512-Wq1ZKXLv8xnTmzWhjbkFnzIAAmas7GhtrFJXCeMfEoeGthuSekcEz+IMfpSDjhL/X3Ls5YIk9SuNUf/5/+TlEQ==",
       "dependencies": {
+        "escape-string-regexp": "^4.0.0",
         "is-plain-obj": "^3.0.0",
         "map-obj": "^4.2.1",
         "path-exists": "^4.0.0",
@@ -23313,6 +23328,17 @@
                 "p-limit": "^2.2.0"
               }
             }
+          }
+        },
+        "netlify-headers-parser": {
+          "version": "3.0.1",
+          "resolved": "https://registry.npmjs.org/netlify-headers-parser/-/netlify-headers-parser-3.0.1.tgz",
+          "integrity": "sha512-32oDkPa7+JdTFOp0M4H31AZDQ8YVJWgNlPkPuilb1C1dgvmAFXa8k4x+ADpgCbQfTMP3exO3vobvlfj8SUHxnA==",
+          "requires": {
+            "is-plain-obj": "^3.0.0",
+            "map-obj": "^4.2.1",
+            "path-exists": "^4.0.0",
+            "toml": "^3.0.0"
           }
         },
         "p-limit": {
@@ -32364,10 +32390,11 @@
       }
     },
     "netlify-headers-parser": {
-      "version": "3.0.1",
-      "resolved": "https://registry.npmjs.org/netlify-headers-parser/-/netlify-headers-parser-3.0.1.tgz",
-      "integrity": "sha512-32oDkPa7+JdTFOp0M4H31AZDQ8YVJWgNlPkPuilb1C1dgvmAFXa8k4x+ADpgCbQfTMP3exO3vobvlfj8SUHxnA==",
+      "version": "4.0.1",
+      "resolved": "https://registry.npmjs.org/netlify-headers-parser/-/netlify-headers-parser-4.0.1.tgz",
+      "integrity": "sha512-Wq1ZKXLv8xnTmzWhjbkFnzIAAmas7GhtrFJXCeMfEoeGthuSekcEz+IMfpSDjhL/X3Ls5YIk9SuNUf/5/+TlEQ==",
       "requires": {
+        "escape-string-regexp": "^4.0.0",
         "is-plain-obj": "^3.0.0",
         "map-obj": "^4.2.1",
         "path-exists": "^4.0.0",
