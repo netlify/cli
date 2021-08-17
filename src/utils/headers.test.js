@@ -109,7 +109,7 @@ test('_headers: validate rules', async (t) => {
       values: {
         'X-Frame-Options': 'DENY',
         'X-XSS-Protection': '1; mode=block',
-        'cache-control': 'max-age=0,no-cache,no-store,must-revalidate',
+        'cache-control': 'max-age=0, no-cache, no-store, must-revalidate',
       },
     },
     {
@@ -121,7 +121,7 @@ test('_headers: validate rules', async (t) => {
     {
       for: '/*/_next/static/chunks/*',
       values: {
-        'cache-control': 'public,max-age=31536000,immutable',
+        'cache-control': 'public, max-age=31536000, immutable',
       },
     },
     {
@@ -153,13 +153,13 @@ test('_headers: headersForPath testing', async (t) => {
     'X-Frame-Thing': 'SAMEORIGIN',
     'X-Frame-Options': 'DENY',
     'X-XSS-Protection': '1; mode=block',
-    'cache-control': 'max-age=0,no-cache,no-store,must-revalidate',
+    'cache-control': 'max-age=0, no-cache, no-store, must-revalidate',
   })
   t.deepEqual(headersForPath(normalizedHeaders, '/static-path'), {
     'X-Frame-Thing': 'SAMEORIGIN',
     'X-Frame-Options': 'DENY',
     'X-XSS-Protection': '1; mode=block',
-    'cache-control': 'max-age=0,no-cache,no-store,must-revalidate',
+    'cache-control': 'max-age=0, no-cache, no-store, must-revalidate',
   })
   t.deepEqual(headersForPath(normalizedHeaders, '/placeholder/index.html'), {
     'X-Frame-Options': 'SAMEORIGIN',
@@ -167,7 +167,7 @@ test('_headers: headersForPath testing', async (t) => {
   })
   t.deepEqual(headersForPath(normalizedHeaders, '/placeholder/_next/static/chunks/placeholder'), {
     'X-Frame-Thing': 'SAMEORIGIN',
-    'cache-control': 'public,max-age=31536000,immutable',
+    'cache-control': 'public, max-age=31536000, immutable',
   })
   t.deepEqual(headersForPath(normalizedHeaders, '/directory/placeholder/test.html'), {
     'X-Frame-Thing': 'SAMEORIGIN',
