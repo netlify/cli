@@ -61,7 +61,7 @@ const startFrameworkServer = async function ({ settings, exit }) {
   log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.framework || 'custom config'}`)
 
   // we use reject=false to avoid rejecting synchronously when the command doesn't exist
-  const frameworkProcess = execa.command(settings.command, { preferLocal: true, reject: false })
+  const frameworkProcess = execa.command(settings.command, { preferLocal: true, reject: false, env: settings.env })
   frameworkProcess.stdout.pipe(stripAnsiCc.stream()).pipe(process.stdout)
   frameworkProcess.stderr.pipe(stripAnsiCc.stream()).pipe(process.stderr)
   process.stdin.pipe(frameworkProcess.stdin)
