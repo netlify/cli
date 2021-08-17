@@ -66,7 +66,7 @@ const getHeaderValues = function ({ values }) {
 }
 
 const parseHeaders = async function ({ headersFiles }) {
-  const { headers, errors } = await parseAllHeaders({ headersFiles })
+  const { headers, errors } = await parseAllHeaders({ headersFiles, minimal: false })
   handleHeadersErrors(errors)
   return headers
 }
