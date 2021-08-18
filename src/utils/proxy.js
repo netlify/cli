@@ -263,7 +263,7 @@ const serveRedirect = async function ({ req, res, proxy, match, options }) {
 
 const MILLISEC_TO_SEC = 1e3
 
-const initializeProxy = async function (port, distDir, projectDir) {
+const initializeProxy = async function ({ port, distDir, projectDir, configPath }) {
   const proxy = httpProxy.createProxyServer({
     selfHandleResponse: true,
     target: {
@@ -274,13 +274,15 @@ const initializeProxy = async function (port, distDir, projectDir) {
 
   const headersFiles = [...new Set([path.resolve(projectDir, '_headers'), path.resolve(distDir, '_headers')])]
 
-  let headers = await parseHeaders({ headersFiles })
-  onChanges(headersFiles, async () => {
+  let headers = await parseHeaders({ headersFiles, configPath })
+
+  const watchedHeadersFiles = configPath === undefined ? headersFiles : [...headersFiles, configPath]
+  onChanges(watchedHeadersFiles, async () => {
     console.log(
-      `${NETLIFYDEVLOG} Reloading headers files`,
-      (await pFilter(headersFiles, fileExistsAsync)).map((headerFile) => path.relative(projectDir, headerFile)),
+      `${NETLIFYDEVLOG} Reloading headers files from`,
+      (await pFilter(watchedHeadersFiles, fileExistsAsync)).map((headerFile) => path.relative(projectDir, headerFile)),
     )
-    headers = await parseHeaders({ headersFiles })
+    headers = await parseHeaders({ headersFiles, configPath })
   })
 
   proxy.before('web', 'stream', (req) => {
@@ -390,14 +392,19 @@ const onRequest = async ({ proxy, rewriter, settings, addonsUrls, functionsServe
 const startProxy = async function (settings, addonsUrls, configPath, projectDir) {
   const functionsServer = settings.functionsPort ? `http://localhost:${settings.functionsPort}` : null
 
-  const proxy = await initializeProxy(settings.frameworkPort, settings.dist, projectDir)
+  const proxy = await initializeProxy({
+    port: settings.frameworkPort,
+    distDir: settings.dist,
+    projectDir,
+    configPath,
+  })
 
   const rewriter = await createRewriter({
     distDir: settings.dist,
+    projectDir,
     jwtSecret: settings.jwtSecret,
     jwtRoleClaim: settings.jwtRolePath,
     configPath,
-    projectDir,
   })
 
   const onRequestWithOptions = onRequest.bind(undefined, { proxy, rewriter, settings, addonsUrls, functionsServer })
