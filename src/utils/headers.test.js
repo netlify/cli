@@ -4,7 +4,7 @@ const test = require('ava')
 
 const { createSiteBuilder } = require('../../tests/utils/site-builder')
 
-const { parseHeaders, headersForPath, matchesPath } = require('./headers')
+const { parseHeaders, headersForPath } = require('./headers')
 
 const headers = [
   { path: '/', headers: ['X-Frame-Options: SAMEORIGIN'] },
@@ -141,99 +141,35 @@ test('_headers: validate rules', async (t) => {
 
 test('_headers: headersForPath testing', async (t) => {
   const rules = await parseHeadersFile(t, '_headers')
-  const normalizedHeaders = rules.map(normalizeHeader)
-  t.deepEqual(headersForPath(normalizedHeaders, '/'), {
+  t.deepEqual(headersForPath(rules, '/'), {
     'X-Frame-Options': 'SAMEORIGIN',
     'X-Frame-Thing': 'SAMEORIGIN',
   })
-  t.deepEqual(headersForPath(normalizedHeaders, '/placeholder'), {
+  t.deepEqual(headersForPath(rules, '/placeholder'), {
     'X-Frame-Thing': 'SAMEORIGIN',
   })
-  t.deepEqual(headersForPath(normalizedHeaders, '/static-path/placeholder'), {
+  t.deepEqual(headersForPath(rules, '/static-path/placeholder'), {
     'X-Frame-Thing': 'SAMEORIGIN',
     'X-Frame-Options': 'DENY',
     'X-XSS-Protection': '1; mode=block',
     'cache-control': 'max-age=0, no-cache, no-store, must-revalidate',
   })
-  t.deepEqual(headersForPath(normalizedHeaders, '/static-path'), {
+  t.deepEqual(headersForPath(rules, '/static-path'), {
     'X-Frame-Thing': 'SAMEORIGIN',
     'X-Frame-Options': 'DENY',
     'X-XSS-Protection': '1; mode=block',
     'cache-control': 'max-age=0, no-cache, no-store, must-revalidate',
   })
-  t.deepEqual(headersForPath(normalizedHeaders, '/placeholder/index.html'), {
+  t.deepEqual(headersForPath(rules, '/placeholder/index.html'), {
     'X-Frame-Options': 'SAMEORIGIN',
     'X-Frame-Thing': 'SAMEORIGIN',
   })
-  t.deepEqual(headersForPath(normalizedHeaders, '/placeholder/_next/static/chunks/placeholder'), {
+  t.deepEqual(headersForPath(rules, '/placeholder/_next/static/chunks/placeholder'), {
     'X-Frame-Thing': 'SAMEORIGIN',
     'cache-control': 'public, max-age=31536000, immutable',
   })
-  t.deepEqual(headersForPath(normalizedHeaders, '/directory/placeholder/test.html'), {
+  t.deepEqual(headersForPath(rules, '/directory/placeholder/test.html'), {
     'X-Frame-Thing': 'SAMEORIGIN',
     'X-Frame-Options': 'test',
   })
-})
-
-/**
- * The bulk of the _headers logic concerns testing whether or not a path matches
- * a rule - focus on testing `matchesPath` over `headersForPath` (the latter just
- * straightforwardly combines a bunch of objects).
- */
-test('_headers: matchesPath matches rules as expected', (t) => {
-  t.assert(matchesPath('/', '/'))
-  t.assert(matchesPath('/*', '/'))
-
-  /**
-   * Make sure (:placeholder) will NOT match root dir.
-   */
-  t.assert(!matchesPath('/:placeholder', '/'))
-
-  /**
-   * Make sure (:placeholder) will NOT recursively match subdirs.
-   */
-  t.assert(!matchesPath('/path/to/:placeholder', '/path/two/dir/one/two/three'))
-
-  /**
-   * (:placeholder) wildcard tests.
-   */
-  t.assert(matchesPath('/directory/:placeholder', '/directory/test'))
-  t.assert(matchesPath('/directory/:placeholder/test', '/directory/placeholder/test'))
-  t.assert(!matchesPath('/directory/:placeholder', '/directory/test/test'))
-  t.assert(!matchesPath('/path/to/dir/:placeholder', '/path/to/dir'))
-  t.assert(matchesPath('/path/to/dir/:placeholder', '/path/to/dir/placeholder'))
-
-  /**
-   * (*) wildcard tests.
-   */
-  t.assert(matchesPath('/path/*/dir', '/path/to/dir'))
-  t.assert(matchesPath('/path/to/*/*/*', '/path/to/one/two/three'))
-  t.assert(matchesPath('/path/*/to/*/dir', '/path/placeholder/to/placeholder/dir'))
-  t.assert(!matchesPath('/path/*/to/*/dir', '/path/placeholder/to/placeholder'))
-  t.assert(matchesPath('/path/to/dir/*', '/path/to/dir'))
-  t.assert(!matchesPath('/*test', '/'))
-  t.assert(matchesPath('/*test', '/test'))
-  t.assert(matchesPath('/*test', '/otherTest'))
-
-  /**
-   * Trailing (*) wildcard matches recursive subdirs.
-   */
-  t.assert(matchesPath('/path/*', '/path/placeholder/to/placeholder/dir'))
-  t.assert(matchesPath('/path/to/*', '/path/to/oneDir'))
-  t.assert(matchesPath('/path/to/*', '/path/to/oneDir/twoDir/threeDir'))
-
-  /**
-   * Trailing wildcards match parent dir.
-   *
-   */
-  t.assert(matchesPath('/path/to/dir/*', '/path/to/dir'))
-  t.assert(matchesPath('/path/to/dir/*/:placeholder', '/path/to/dir/test'))
-
-  /**
-   * Mixed (*) and (:placeholder) wildcards.
-   */
-  t.assert(matchesPath('/path/*/to/:placeholder/:placeholder/*', '/path/placeholder/to/placeholder/dir/test'))
-  t.assert(matchesPath('/path/*/:placeholder', '/path/to/dir'))
-  t.assert(matchesPath('/path/:placeholder/:placeholder/*', '/path/to/dir/one/two/three'))
-  t.assert(matchesPath('/path/to/dir/*/:placeholder/test', '/path/to/dir/asterisk/placeholder/test'))
 })

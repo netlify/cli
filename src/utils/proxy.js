@@ -274,13 +274,13 @@ const initializeProxy = async function (port, distDir, projectDir) {
 
   const headersFiles = [...new Set([path.resolve(projectDir, '_headers'), path.resolve(distDir, '_headers')])]
 
-  let headerRules = await parseHeaders({ headersFiles })
+  let headers = await parseHeaders({ headersFiles })
   onChanges(headersFiles, async () => {
     console.log(
       `${NETLIFYDEVLOG} Reloading headers files`,
       (await pFilter(headersFiles, fileExistsAsync)).map((headerFile) => path.relative(projectDir, headerFile)),
     )
-    headerRules = await parseHeaders({ headersFiles })
+    headers = await parseHeaders({ headersFiles })
   })
 
   proxy.before('web', 'stream', (req) => {
@@ -320,12 +320,10 @@ const initializeProxy = async function (port, distDir, projectDir) {
     }
 
     const requestURL = new URL(req.url, `http://${req.headers.host || 'localhost'}`)
-    const pathHeaderRules = headersForPath(headerRules, requestURL.pathname)
-    if (!isEmpty(pathHeaderRules)) {
-      Object.entries(pathHeaderRules).forEach(([key, val]) => {
-        res.setHeader(key, val)
-      })
-    }
+    const headersRules = headersForPath(headers, requestURL.pathname)
+    Object.entries(headersRules).forEach(([key, val]) => {
+      res.setHeader(key, val)
+    })
     res.writeHead(req.proxyOptions.status || proxyRes.statusCode, proxyRes.headers)
     proxyRes.on('data', function onData(data) {
       res.write(data)
