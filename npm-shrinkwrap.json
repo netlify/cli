@@ -12,7 +12,7 @@
       "dependencies": {
         "@netlify/build": "^18.2.12",
         "@netlify/config": "^15.3.7",
-        "@netlify/framework-info": "^5.9.0",
+        "@netlify/framework-info": "^5.9.1",
         "@netlify/local-functions-proxy": "^1.1.1",
         "@netlify/plugin-edge-handlers": "^1.11.22",
         "@netlify/plugins-list": "^3.3.0",
@@ -3106,9 +3106,9 @@
       }
     },
     "node_modules/@netlify/framework-info": {
-      "version": "5.9.0",
-      "resolved": "https://registry.npmjs.org/@netlify/framework-info/-/framework-info-5.9.0.tgz",
-      "integrity": "sha512-rrinZyy3pj5rNe2LPPCwsKT7d4jltDe5cK1JACbvxMXAh7hLMo2nDXsLCsejci2fqfFo2k64UtRsC6XDYbrxPw==",
+      "version": "5.9.1",
+      "resolved": "https://registry.npmjs.org/@netlify/framework-info/-/framework-info-5.9.1.tgz",
+      "integrity": "sha512-EBbR4grr0innWmKk43q5iLokcuJ1bZn/56KBz8WyKsarCvLkt6SqHaxXJp3Uab1D6Fhn0BTQBhIttb3KdyPGdQ==",
       "dependencies": {
         "ajv": "^8.0.0",
         "filter-obj": "^2.0.1",
@@ -23359,9 +23359,9 @@
       }
     },
     "@netlify/framework-info": {
-      "version": "5.9.0",
-      "resolved": "https://registry.npmjs.org/@netlify/framework-info/-/framework-info-5.9.0.tgz",
-      "integrity": "sha512-rrinZyy3pj5rNe2LPPCwsKT7d4jltDe5cK1JACbvxMXAh7hLMo2nDXsLCsejci2fqfFo2k64UtRsC6XDYbrxPw==",
+      "version": "5.9.1",
+      "resolved": "https://registry.npmjs.org/@netlify/framework-info/-/framework-info-5.9.1.tgz",
+      "integrity": "sha512-EBbR4grr0innWmKk43q5iLokcuJ1bZn/56KBz8WyKsarCvLkt6SqHaxXJp3Uab1D6Fhn0BTQBhIttb3KdyPGdQ==",
       "requires": {
         "ajv": "^8.0.0",
         "filter-obj": "^2.0.1",
