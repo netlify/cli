@@ -1,10 +1,12 @@
-const fs = require('fs')
 const path = require('path')
 const url = require('url')
 
 const chokidar = require('chokidar')
 const cookie = require('cookie')
 const redirector = require('netlify-redirector')
+const pFilter = require('p-filter')
+
+const { fileExistsAsync } = require('../lib/fs')
 
 const { NETLIFYDEVLOG } = require('./logo')
 const { parseRedirects } = require('./redirects')
@@ -37,7 +39,9 @@ const createRewriter = async function ({ distDir, projectDir, jwtSecret, jwtRole
   onChanges(watchedRedirectFiles, async () => {
     console.log(
       `${NETLIFYDEVLOG} Reloading redirect rules from`,
-      watchedRedirectFiles.filter(fs.existsSync).map((configFile) => path.relative(projectDir, configFile)),
+      (await pFilter(watchedRedirectFiles, fileExistsAsync)).map((redirectFile) =>
+        path.relative(projectDir, redirectFile),
+      ),
     )
     redirects = await parseRedirects({ redirectsFiles, configPath })
     matcher = null
