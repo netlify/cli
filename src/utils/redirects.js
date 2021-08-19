@@ -1,6 +1,7 @@
 const { parseAllRedirects } = require('netlify-redirect-parser')
 
-const { NETLIFYDEVWARN } = require('./logo')
+const { log } = require('./command-helpers')
+const { NETLIFYDEVERR } = require('./logo')
 
 // Parse, normalize and validate all redirects from `_redirects` files
 // and `netlify.toml`
@@ -20,9 +21,7 @@ const handleRedirectParsingErrors = function (errors) {
   }
 
   const errorMessage = errors.map(getErrorMessage).join('\n\n')
-  console.error(`${NETLIFYDEVWARN} Warnings while parsing redirects:
-
-${errorMessage}`)
+  log(NETLIFYDEVERR, `Redirects syntax errors:\n${errorMessage}`)
 }
 
 const getErrorMessage = function ({ message }) {

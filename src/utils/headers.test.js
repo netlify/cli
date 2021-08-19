@@ -84,8 +84,8 @@ test('_headers: syntax validates as expected', async (t) => {
   await parseHeadersFile(t, '_headers')
 })
 
-test('_headers: throws on invalid syntax', async (t) => {
-  await t.throwsAsync(parseHeadersFile(t, '_invalid_headers'), { message: /Missing header value/ })
+test('_headers: does not throw on invalid syntax', async (t) => {
+  await t.notThrowsAsync(parseHeadersFile(t, '_invalid_headers'))
 })
 
 test('_headers: validate rules', async (t) => {

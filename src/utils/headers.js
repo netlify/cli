@@ -1,6 +1,7 @@
 const { parseAllHeaders } = require('netlify-headers-parser')
 
-const { NETLIFYDEVWARN } = require('./logo')
+const { log } = require('./command-helpers')
+const { NETLIFYDEVERR } = require('./logo')
 
 /**
  * Get the matching headers for `path` given a set of `rules`.
@@ -39,9 +40,7 @@ const handleHeadersErrors = function (errors) {
   }
 
   const errorMessage = errors.map(getErrorMessage).join('\n\n')
-  throw new Error(`${NETLIFYDEVWARN} Warnings while parsing headers:
-
-${errorMessage}`)
+  log(NETLIFYDEVERR, `Headers syntax errors:\n${errorMessage}`)
 }
 
 const getErrorMessage = function ({ message }) {
