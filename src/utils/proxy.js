@@ -379,6 +379,7 @@ const onRequest = async ({ proxy, rewriter, settings, addonsUrls, functionsServe
 
   const ct = req.headers['content-type'] ? contentType.parse(req).type : ''
   if (
+    functionsServer &&
     req.method === 'POST' &&
     !isInternal(req.url) &&
     (ct.endsWith('/x-www-form-urlencoded') || ct === 'multipart/form-data')
