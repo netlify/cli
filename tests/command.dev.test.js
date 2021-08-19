@@ -1827,5 +1827,26 @@ export const handler = async function () {
       })
     })
   })
+
+  test(testName(`should not redirect POST request to functions server when it doesn't exists`, args), async (t) => {
+    await withSiteBuilder('site-with-post-request', async (builder) => {
+      await builder.buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async (server) => {
+        // an error is expected since we're sending a POST request to a static server
+        // the important thing is that it's not proxied to the functions server
+        const error = await t.throwsAsync(() =>
+          got.post(`${server.url}/api/test`, {
+            headers: {
+              'content-type': 'application/x-www-form-urlencoded',
+            },
+            body: 'some=thing',
+          }),
+        )
+
+        t.is(error.message, 'Response code 405 (Method Not Allowed)')
+      })
+    })
+  })
 })
 /* eslint-enable require-await */
