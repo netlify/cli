@@ -3,7 +3,7 @@ name: Dependency License Scanning
 on:
   push:
     branches:
-      - main
+      - master
       - chore/fossa-workflow
 
 defaults:
@@ -18,11 +18,10 @@ jobs:
         uses: actions/checkout@v2
       - name: Download fossa cli
         run: |-
-          curl -L https://github.com/fossas/fossa-cli/releases/download/v1.1.2/fossa-cli_1.1.2_linux_amd64.tar.gz > fossa-cli.tar.gz
-          tar -xvzf fossa-cli.tar.gz
           mkdir -p $HOME/.local/bin
+          curl https://raw.githubusercontent.com/fossas/fossa-cli/master/install.sh | bash -s -- -b $HOME/.local/bin
           echo "$HOME/.local/bin" >> $GITHUB_PATH
-          mv fossa $HOME/.local/bin/fossa
+
       - name: Fossa init
         run: fossa init
       - name: Set env
@@ -31,17 +30,7 @@ jobs:
         run: |-
           sed -i "${line_number}s|.*|  project: git@github.com:${GITHUB_REPOSITORY}.git|" .fossa.yml
           cat .fossa.yml
-      - name: Set env for unused_go/hello-world
-        run: |-
-          echo "unused_go_line_number=$(grep -m 1 -n "unused_go/hello-world" .fossa.yml | cut -f1 -d:)" >> $GITHUB_ENV
-          echo "unused_go_last_line_number=$(grep -n "unused_go/hello-world" .fossa.yml | tail -1 | cut -f1 -d:)" >> $GITHUB_ENV
-      - name: Remove unused_go/hello-world module
-        run: sed -i "${unused_go_line_number},${unused_go_last_line_number}d" .fossa.yml
       - name: Upload dependencies
         run: fossa analyze --debug
-        env:
-          FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
-      - name: Check scan success
-        run: fossa test --debug
         env:
           FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
