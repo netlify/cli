@@ -65,3 +65,8 @@ Create a `launch.json` file under a `.vscode` directory in your project with the
 
 - `netlify dev` will start an entire local development environment and open a browser with the site URL
 - `netlify functions:serve` will start a [standalone Netlify Functions server](./functions-dev)
+
+Note: When we use esbuild, the files that we serve are actually different from the files people write (we transpile them and serve them from a different directory). We need to tell VS Code to transform the locations of breakpoints accordingly. We need this line in the VS Code launch file configuration: 
+```json
+"outFiles": ["${workspaceFolder}/.netlify/functions-serve/**/*.js"]
+```
