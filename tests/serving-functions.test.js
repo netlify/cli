@@ -624,6 +624,41 @@ export { handler }
       })
     })
   })
+
+  test(testName('Serves functions with a `.mjs` extension', args), async (t) => {
+    await withSiteBuilder('function-mjs', async (builder) => {
+      const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
+
+      await builder
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'public' },
+            functions: { directory: 'functions' },
+            ...bundlerConfig,
+          },
+        })
+        .withContentFile({
+          path: 'functions/hello.mjs',
+          content: `
+  const handler = async () => {
+    return {
+      statusCode: 200,
+      body: 'Hello, world!'
+    }
+  }
+
+  export { handler }
+            `,
+        })
+        .buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async ({ port, outputBuffer }) => {
+        await tryAndLogOutput(async () => {
+          t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'Hello, world!')
+        }, outputBuffer)
+      })
+    })
+  })
 })
 
 test('Serves functions that dynamically load files included in the `functions.included_files` config property', async (t) => {
