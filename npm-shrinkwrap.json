@@ -95,7 +95,7 @@
         "open": "^7.0.0",
         "ora": "^5.0.0",
         "p-event": "^4.2.0",
-        "p-filter": "^2.1.0",
+        "p-filter": "^3.0.0",
         "p-map": "^4.0.0",
         "p-wait-for": "^3.0.0",
         "parallel-transform": "^1.2.0",
@@ -2623,6 +2623,17 @@
         "node": ">=6"
       }
     },
+    "node_modules/@netlify/build/node_modules/p-filter": {
+      "version": "2.1.0",
+      "resolved": "https://registry.npmjs.org/p-filter/-/p-filter-2.1.0.tgz",
+      "integrity": "sha512-ZBxxZ5sL2HghephhpGAQdoskxplTwr7ICaehZwLIlfL6acuVgZPm8yBNuRAFBGEqtD/hmUeq9eqLg2ys9Xr/yw==",
+      "dependencies": {
+        "p-map": "^2.0.0"
+      },
+      "engines": {
+        "node": ">=8"
+      }
+    },
     "node_modules/@netlify/build/node_modules/p-limit": {
       "version": "2.3.0",
       "resolved": "https://registry.npmjs.org/p-limit/-/p-limit-2.3.0.tgz",
@@ -2635,6 +2646,14 @@
       },
       "funding": {
         "url": "https://github.com/sponsors/sindresorhus"
+      }
+    },
+    "node_modules/@netlify/build/node_modules/p-map": {
+      "version": "2.1.0",
+      "resolved": "https://registry.npmjs.org/p-map/-/p-map-2.1.0.tgz",
+      "integrity": "sha512-y3b8Kpd8OAN444hxfBbFfj1FY/RjtTd8tzYwhUqNYXx0fXx2iX4maP4Qr6qhIKbQXI02wTLAda4fYUbDagTUFw==",
+      "engines": {
+        "node": ">=6"
       }
     },
     "node_modules/@netlify/build/node_modules/resolve": {
@@ -3038,6 +3057,25 @@
       },
       "engines": {
         "node": ">=10.18.0"
+      }
+    },
+    "node_modules/@netlify/framework-info/node_modules/p-filter": {
+      "version": "2.1.0",
+      "resolved": "https://registry.npmjs.org/p-filter/-/p-filter-2.1.0.tgz",
+      "integrity": "sha512-ZBxxZ5sL2HghephhpGAQdoskxplTwr7ICaehZwLIlfL6acuVgZPm8yBNuRAFBGEqtD/hmUeq9eqLg2ys9Xr/yw==",
+      "dependencies": {
+        "p-map": "^2.0.0"
+      },
+      "engines": {
+        "node": ">=8"
+      }
+    },
+    "node_modules/@netlify/framework-info/node_modules/p-map": {
+      "version": "2.1.0",
+      "resolved": "https://registry.npmjs.org/p-map/-/p-map-2.1.0.tgz",
+      "integrity": "sha512-y3b8Kpd8OAN444hxfBbFfj1FY/RjtTd8tzYwhUqNYXx0fXx2iX4maP4Qr6qhIKbQXI02wTLAda4fYUbDagTUFw==",
+      "engines": {
+        "node": ">=6"
       }
     },
     "node_modules/@netlify/functions-utils": {
@@ -7502,6 +7540,25 @@
       },
       "engines": {
         "node": ">=0.10.0"
+      }
+    },
+    "node_modules/cpy/node_modules/p-filter": {
+      "version": "2.1.0",
+      "resolved": "https://registry.npmjs.org/p-filter/-/p-filter-2.1.0.tgz",
+      "integrity": "sha512-ZBxxZ5sL2HghephhpGAQdoskxplTwr7ICaehZwLIlfL6acuVgZPm8yBNuRAFBGEqtD/hmUeq9eqLg2ys9Xr/yw==",
+      "dependencies": {
+        "p-map": "^2.0.0"
+      },
+      "engines": {
+        "node": ">=8"
+      }
+    },
+    "node_modules/cpy/node_modules/p-filter/node_modules/p-map": {
+      "version": "2.1.0",
+      "resolved": "https://registry.npmjs.org/p-map/-/p-map-2.1.0.tgz",
+      "integrity": "sha512-y3b8Kpd8OAN444hxfBbFfj1FY/RjtTd8tzYwhUqNYXx0fXx2iX4maP4Qr6qhIKbQXI02wTLAda4fYUbDagTUFw==",
+      "engines": {
+        "node": ">=6"
       }
     },
     "node_modules/cpy/node_modules/p-map": {
@@ -16243,22 +16300,82 @@
       }
     },
     "node_modules/p-filter": {
-      "version": "2.1.0",
-      "resolved": "https://registry.npmjs.org/p-filter/-/p-filter-2.1.0.tgz",
-      "integrity": "sha512-ZBxxZ5sL2HghephhpGAQdoskxplTwr7ICaehZwLIlfL6acuVgZPm8yBNuRAFBGEqtD/hmUeq9eqLg2ys9Xr/yw==",
+      "version": "3.0.0",
+      "resolved": "https://registry.npmjs.org/p-filter/-/p-filter-3.0.0.tgz",
+      "integrity": "sha512-QtoWLjXAW++uTX67HZQz1dbTpqBfiidsB6VtQUC9iR85S120+s0T5sO6s+B5MLzFcZkrEd/DGMmCjR+f2Qpxwg==",
       "dependencies": {
-        "p-map": "^2.0.0"
+        "p-map": "^5.1.0"
       },
       "engines": {
-        "node": ">=8"
+        "node": "^12.20.0 || ^14.13.1 || >=16.0.0"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/sindresorhus"
+      }
+    },
+    "node_modules/p-filter/node_modules/aggregate-error": {
+      "version": "4.0.0",
+      "resolved": "https://registry.npmjs.org/aggregate-error/-/aggregate-error-4.0.0.tgz",
+      "integrity": "sha512-8DGp7zUt1E9k0NE2q4jlXHk+V3ORErmwolEdRz9iV+LKJ40WhMHh92cxAvhqV2I+zEn/gotIoqoMs0NjF3xofg==",
+      "dependencies": {
+        "clean-stack": "^4.0.0",
+        "indent-string": "^5.0.0"
+      },
+      "engines": {
+        "node": ">=12"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/sindresorhus"
+      }
+    },
+    "node_modules/p-filter/node_modules/clean-stack": {
+      "version": "4.1.0",
+      "resolved": "https://registry.npmjs.org/clean-stack/-/clean-stack-4.1.0.tgz",
+      "integrity": "sha512-dxXQYI7mfQVcaF12s6sjNFoZ6ZPDQuBBLp3QJ5156k9EvUFClUoZ11fo8HnLQO241DDVntHEug8MOuFO5PSfRg==",
+      "dependencies": {
+        "escape-string-regexp": "5.0.0"
+      },
+      "engines": {
+        "node": ">=12"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/sindresorhus"
+      }
+    },
+    "node_modules/p-filter/node_modules/escape-string-regexp": {
+      "version": "5.0.0",
+      "resolved": "https://registry.npmjs.org/escape-string-regexp/-/escape-string-regexp-5.0.0.tgz",
+      "integrity": "sha512-/veY75JbMK4j1yjvuUxuVsiS/hr/4iHs9FTT6cgTexxdE0Ly/glccBAkloH/DofkjRbZU3bnoj38mOmhkZ0lHw==",
+      "engines": {
+        "node": ">=12"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/sindresorhus"
+      }
+    },
+    "node_modules/p-filter/node_modules/indent-string": {
+      "version": "5.0.0",
+      "resolved": "https://registry.npmjs.org/indent-string/-/indent-string-5.0.0.tgz",
+      "integrity": "sha512-m6FAo/spmsW2Ab2fU35JTYwtOKa2yAwXSwgjSv1TJzh4Mh7mC3lzAOVLBprb72XsTrgkEIsl7YrFNAiDiRhIGg==",
+      "engines": {
+        "node": ">=12"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/sindresorhus"
       }
     },
     "node_modules/p-filter/node_modules/p-map": {
-      "version": "2.1.0",
-      "resolved": "https://registry.npmjs.org/p-map/-/p-map-2.1.0.tgz",
-      "integrity": "sha512-y3b8Kpd8OAN444hxfBbFfj1FY/RjtTd8tzYwhUqNYXx0fXx2iX4maP4Qr6qhIKbQXI02wTLAda4fYUbDagTUFw==",
+      "version": "5.1.0",
+      "resolved": "https://registry.npmjs.org/p-map/-/p-map-5.1.0.tgz",
+      "integrity": "sha512-hDTnBRGPXM4hUkmV4Nbe9ZyFnqUAHFYq5S/3+P38TRf0KbmkQuRSzfGM+JngEJsvB0m6nHvhsSv5E6VsGSB2zA==",
+      "dependencies": {
+        "aggregate-error": "^4.0.0"
+      },
       "engines": {
-        "node": ">=6"
+        "node": ">=12"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/sindresorhus"
       }
     },
     "node_modules/p-finally": {
@@ -22996,6 +23113,14 @@
           "resolved": "https://registry.npmjs.org/p-cancelable/-/p-cancelable-1.1.0.tgz",
           "integrity": "sha512-s73XxOZ4zpt1edZYZzvhqFa6uvQc1vwUa0K0BdtIZgQMAJj9IbebH+JkgKZc9h+B05PKHLOTl4ajG1BmNrVZlw=="
         },
+        "p-filter": {
+          "version": "2.1.0",
+          "resolved": "https://registry.npmjs.org/p-filter/-/p-filter-2.1.0.tgz",
+          "integrity": "sha512-ZBxxZ5sL2HghephhpGAQdoskxplTwr7ICaehZwLIlfL6acuVgZPm8yBNuRAFBGEqtD/hmUeq9eqLg2ys9Xr/yw==",
+          "requires": {
+            "p-map": "^2.0.0"
+          }
+        },
         "p-limit": {
           "version": "2.3.0",
           "resolved": "https://registry.npmjs.org/p-limit/-/p-limit-2.3.0.tgz",
@@ -23003,6 +23128,11 @@
           "requires": {
             "p-try": "^2.0.0"
           }
+        },
+        "p-map": {
+          "version": "2.1.0",
+          "resolved": "https://registry.npmjs.org/p-map/-/p-map-2.1.0.tgz",
+          "integrity": "sha512-y3b8Kpd8OAN444hxfBbFfj1FY/RjtTd8tzYwhUqNYXx0fXx2iX4maP4Qr6qhIKbQXI02wTLAda4fYUbDagTUFw=="
         },
         "resolve": {
           "version": "2.0.0-next.3",
@@ -23330,6 +23460,21 @@
         "p-locate": "^5.0.0",
         "read-pkg-up": "^7.0.1",
         "semver": "^7.3.4"
+      },
+      "dependencies": {
+        "p-filter": {
+          "version": "2.1.0",
+          "resolved": "https://registry.npmjs.org/p-filter/-/p-filter-2.1.0.tgz",
+          "integrity": "sha512-ZBxxZ5sL2HghephhpGAQdoskxplTwr7ICaehZwLIlfL6acuVgZPm8yBNuRAFBGEqtD/hmUeq9eqLg2ys9Xr/yw==",
+          "requires": {
+            "p-map": "^2.0.0"
+          }
+        },
+        "p-map": {
+          "version": "2.1.0",
+          "resolved": "https://registry.npmjs.org/p-map/-/p-map-2.1.0.tgz",
+          "integrity": "sha512-y3b8Kpd8OAN444hxfBbFfj1FY/RjtTd8tzYwhUqNYXx0fXx2iX4maP4Qr6qhIKbQXI02wTLAda4fYUbDagTUFw=="
+        }
       }
     },
     "@netlify/functions-utils": {
@@ -26774,6 +26919,21 @@
             "regex-not": "^1.0.0",
             "snapdragon": "^0.8.1",
             "to-regex": "^3.0.2"
+          }
+        },
+        "p-filter": {
+          "version": "2.1.0",
+          "resolved": "https://registry.npmjs.org/p-filter/-/p-filter-2.1.0.tgz",
+          "integrity": "sha512-ZBxxZ5sL2HghephhpGAQdoskxplTwr7ICaehZwLIlfL6acuVgZPm8yBNuRAFBGEqtD/hmUeq9eqLg2ys9Xr/yw==",
+          "requires": {
+            "p-map": "^2.0.0"
+          },
+          "dependencies": {
+            "p-map": {
+              "version": "2.1.0",
+              "resolved": "https://registry.npmjs.org/p-map/-/p-map-2.1.0.tgz",
+              "integrity": "sha512-y3b8Kpd8OAN444hxfBbFfj1FY/RjtTd8tzYwhUqNYXx0fXx2iX4maP4Qr6qhIKbQXI02wTLAda4fYUbDagTUFw=="
+            }
           }
         },
         "p-map": {
@@ -33386,17 +33546,47 @@
       }
     },
     "p-filter": {
-      "version": "2.1.0",
-      "resolved": "https://registry.npmjs.org/p-filter/-/p-filter-2.1.0.tgz",
-      "integrity": "sha512-ZBxxZ5sL2HghephhpGAQdoskxplTwr7ICaehZwLIlfL6acuVgZPm8yBNuRAFBGEqtD/hmUeq9eqLg2ys9Xr/yw==",
+      "version": "3.0.0",
+      "resolved": "https://registry.npmjs.org/p-filter/-/p-filter-3.0.0.tgz",
+      "integrity": "sha512-QtoWLjXAW++uTX67HZQz1dbTpqBfiidsB6VtQUC9iR85S120+s0T5sO6s+B5MLzFcZkrEd/DGMmCjR+f2Qpxwg==",
       "requires": {
-        "p-map": "^2.0.0"
+        "p-map": "^5.1.0"
       },
       "dependencies": {
+        "aggregate-error": {
+          "version": "4.0.0",
+          "resolved": "https://registry.npmjs.org/aggregate-error/-/aggregate-error-4.0.0.tgz",
+          "integrity": "sha512-8DGp7zUt1E9k0NE2q4jlXHk+V3ORErmwolEdRz9iV+LKJ40WhMHh92cxAvhqV2I+zEn/gotIoqoMs0NjF3xofg==",
+          "requires": {
+            "clean-stack": "^4.0.0",
+            "indent-string": "^5.0.0"
+          }
+        },
+        "clean-stack": {
+          "version": "4.1.0",
+          "resolved": "https://registry.npmjs.org/clean-stack/-/clean-stack-4.1.0.tgz",
+          "integrity": "sha512-dxXQYI7mfQVcaF12s6sjNFoZ6ZPDQuBBLp3QJ5156k9EvUFClUoZ11fo8HnLQO241DDVntHEug8MOuFO5PSfRg==",
+          "requires": {
+            "escape-string-regexp": "5.0.0"
+          }
+        },
+        "escape-string-regexp": {
+          "version": "5.0.0",
+          "resolved": "https://registry.npmjs.org/escape-string-regexp/-/escape-string-regexp-5.0.0.tgz",
+          "integrity": "sha512-/veY75JbMK4j1yjvuUxuVsiS/hr/4iHs9FTT6cgTexxdE0Ly/glccBAkloH/DofkjRbZU3bnoj38mOmhkZ0lHw=="
+        },
+        "indent-string": {
+          "version": "5.0.0",
+          "resolved": "https://registry.npmjs.org/indent-string/-/indent-string-5.0.0.tgz",
+          "integrity": "sha512-m6FAo/spmsW2Ab2fU35JTYwtOKa2yAwXSwgjSv1TJzh4Mh7mC3lzAOVLBprb72XsTrgkEIsl7YrFNAiDiRhIGg=="
+        },
         "p-map": {
-          "version": "2.1.0",
-          "resolved": "https://registry.npmjs.org/p-map/-/p-map-2.1.0.tgz",
-          "integrity": "sha512-y3b8Kpd8OAN444hxfBbFfj1FY/RjtTd8tzYwhUqNYXx0fXx2iX4maP4Qr6qhIKbQXI02wTLAda4fYUbDagTUFw=="
+          "version": "5.1.0",
+          "resolved": "https://registry.npmjs.org/p-map/-/p-map-5.1.0.tgz",
+          "integrity": "sha512-hDTnBRGPXM4hUkmV4Nbe9ZyFnqUAHFYq5S/3+P38TRf0KbmkQuRSzfGM+JngEJsvB0m6nHvhsSv5E6VsGSB2zA==",
+          "requires": {
+            "aggregate-error": "^4.0.0"
+          }
         }
       }
     },
