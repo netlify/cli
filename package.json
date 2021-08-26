@@ -179,7 +179,7 @@
     "source-map-support": "^0.5.19",
     "static-server": "^2.2.1",
     "strip-ansi-control-characters": "^2.0.0",
-    "tempy": "^1.0.0",
+    "tempy": "^2.0.0",
     "through2-filter": "^3.0.0",
     "through2-map": "^3.0.0",
     "to-readable-stream": "^2.1.0",
