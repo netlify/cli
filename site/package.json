@@ -43,7 +43,7 @@
     "styled-system": "^3.2.1"
   },
   "devDependencies": {
-    "filter-obj": "^2.0.1",
+    "filter-obj": "^3.0.0",
     "map-obj": "^4.1.0",
     "markdown-magic": "2.3.2",
     "nan": "^2.14.2",
