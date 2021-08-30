@@ -160,7 +160,7 @@
     "oclif-plugin-completion": "^0.6.0",
     "omit.js": "^2.0.2",
     "open": "^7.0.0",
-    "ora": "^5.0.0",
+    "ora": "^6.0.0",
     "p-event": "^4.2.0",
     "p-filter": "^2.1.0",
     "p-map": "^4.0.0",
