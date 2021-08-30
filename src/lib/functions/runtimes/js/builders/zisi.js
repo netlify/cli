@@ -68,16 +68,18 @@ const getTargetDirectory = async ({ errorExit }) => {
 }
 
 module.exports = async ({ config, directory, errorExit, func, projectRoot }) => {
-  const isTSFunction = path.extname(func.mainFile) === '.ts'
   const functionsConfig = addFunctionsConfigDefaults(
     normalizeFunctionsConfig({ functionsConfig: config.functions, projectRoot }),
   )
+
+  // We must use esbuild for certain file extensions.
+  const mustUseEsbuild = ['.mjs', '.ts'].includes(path.extname(func.mainFile))
 
   // TODO: Resolve functions config globs so that we can check for the bundler
   // on a per-function basis.
   const isUsingEsbuild = functionsConfig['*'].nodeBundler === 'esbuild_zisi'
 
-  if (!isTSFunction && !isUsingEsbuild) {
+  if (!mustUseEsbuild && !isUsingEsbuild) {
     return false
   }
 
