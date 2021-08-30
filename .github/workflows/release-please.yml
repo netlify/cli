@@ -23,6 +23,7 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: '*'
+          cache: 'npm'
           check-latest: true
           registry-url: 'https://registry.npmjs.org'
         if: ${{ steps.release.outputs.release_created }}
