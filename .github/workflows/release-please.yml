@@ -24,6 +24,7 @@ jobs:
         with:
           node-version: '*'
           cache: 'npm'
+          cache-dependency-path: 'npm-shrinkwrap.json'
           check-latest: true
           registry-url: 'https://registry.npmjs.org'
         if: ${{ steps.release.outputs.release_created }}
