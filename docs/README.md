@@ -99,7 +99,7 @@ Manage netlify functions
 
 ### [init](/docs/commands/init.md)
 
-Configure continuous deployment for a new or existing site. To create a new site without continuous deployment, see https://cli.netlify.com/commands/init.
+Configure continuous deployment for an existing site or create a new site without continuous deployment
 
 ### [link](/docs/commands/link.md)
 
