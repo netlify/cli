@@ -15,7 +15,7 @@ const scope = {
   ...Rebass,
   code: LiveEditor,
   pre: ({ children }) => children,
-  // eslint-disable-next-line react/display-name, id-length
+  // eslint-disable-next-line id-length
   a: ({ children, href }) => {
     // handle external links
     if (!href.startsWith('/')) {
