@@ -20,13 +20,14 @@ const getBuildOptions = ({
   buffer: json || silent,
   offline,
   featureFlags: {
+    functionsBundlingManifest: true,
     zisiEsbuildDynamicImports: true,
   },
 })
 
 const runBuild = async (options) => {
-  const { severityCode: exitCode, netlifyConfig: newConfig } = await build(options)
-  return { exitCode, newConfig }
+  const { severityCode: exitCode, netlifyConfig: newConfig, configMutations } = await build(options)
+  return { exitCode, newConfig, configMutations }
 }
 
 module.exports = { getBuildOptions, runBuild }

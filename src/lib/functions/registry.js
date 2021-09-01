@@ -12,11 +12,10 @@ const runtimes = require('./runtimes')
 const { watchDebounced } = require('./watcher')
 
 class FunctionsRegistry {
-  constructor({ capabilities, config, errorExit, functionsDirectory, projectRoot, timeouts, warn }) {
+  constructor({ capabilities, config, errorExit, projectRoot, timeouts, warn }) {
     this.capabilities = capabilities
     this.config = config
     this.errorExit = errorExit
-    this.functionsDirectory = functionsDirectory
     this.logger = {
       log,
       warn,
@@ -186,8 +185,8 @@ class FunctionsRegistry {
 
       const func = new NetlifyFunction({
         config: this.config,
+        directory: directories.find((directory) => mainFile.startsWith(directory)),
         errorExit: this.errorExit,
-        functionsDirectory: this.functionsDirectory,
         mainFile,
         name,
         projectRoot: this.projectRoot,

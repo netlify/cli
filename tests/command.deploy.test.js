@@ -1,3 +1,5 @@
+/* eslint-disable require-await */
+const { join } = require('path')
 const process = require('process')
 
 const test = require('ava')
@@ -399,7 +401,6 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
   })
 
   test.serial('should deploy functions from internal functions directory', async (t) => {
-    /* eslint-disable require-await */
     await withSiteBuilder('site-with-internal-functions', async (builder) => {
       await builder
         .withNetlifyToml({
@@ -451,14 +452,12 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
       t.is(await got(`${deployUrl}/.netlify/functions/func-1`).text(), 'User 1')
       t.is(await got(`${deployUrl}/.netlify/functions/func-2`).text(), 'User 2')
       t.is(await got(`${deployUrl}/.netlify/functions/func-3`).text(), 'Internal 3')
-      /* eslint-enable require-await */
     })
   })
 
   test.serial(
     'should deploy functions from internal functions directory when setting `base` to a sub-directory',
     async (t) => {
-      /* eslint-disable require-await */
       await withSiteBuilder('site-with-internal-functions-sub-directory', async (builder) => {
         await builder
           .withNetlifyToml({
@@ -487,7 +486,263 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
         )
 
         t.is(await got(`${deployUrl}/.netlify/functions/func-1`).text(), 'Internal')
-        /* eslint-enable require-await */
+      })
+    },
+  )
+
+  test.serial('should handle redirects mutated by plugins', async (t) => {
+    await withSiteBuilder('site-with-public-folder', async (builder) => {
+      const content = '<h1>⊂◉‿◉つ</h1>'
+      await builder
+        .withContentFile({
+          path: 'public/index.html',
+          content,
+        })
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'public' },
+            functions: { directory: 'functions' },
+            redirects: [{ from: '/*', to: '/index.html', status: 200 }],
+            plugins: [{ package: './plugins/mutator' }],
+          },
+        })
+        .withFunction({
+          path: 'hello.js',
+          handler: async () => ({
+            statusCode: 200,
+            body: 'hello',
+          }),
+        })
+        .withRedirectsFile({
+          pathPrefix: 'public',
+          redirects: [{ from: `/api/*`, to: `/.netlify/functions/:splat`, status: '200' }],
+        })
+        .withBuildPlugin({
+          name: 'mutator',
+          plugin: {
+            onPostBuild: ({ netlifyConfig }) => {
+              netlifyConfig.redirects = [
+                {
+                  from: '/other-api/*',
+                  to: '/.netlify/functions/:splat',
+                  status: 200,
+                },
+                ...netlifyConfig.redirects,
+              ]
+            },
+          },
+        })
+        .buildAsync()
+
+      const deploy = await callCli(
+        ['deploy', '--json', '--build'],
+        {
+          cwd: builder.directory,
+          env: { NETLIFY_SITE_ID: t.context.siteId },
+        },
+        true,
+      )
+
+      const fullDeploy = await callCli(
+        ['api', 'getDeploy', '--data', JSON.stringify({ deploy_id: deploy.deploy_id })],
+        {
+          cwd: builder.directory,
+          env: { NETLIFY_SITE_ID: t.context.siteId },
+        },
+        true,
+      )
+
+      const redirectsMessage = fullDeploy.summary.messages.find(({ title }) => title === '3 redirect rules processed')
+      t.is(redirectsMessage.description, 'All redirect rules deployed without errors.')
+
+      await validateDeploy({ deploy, siteName: SITE_NAME, content, t })
+
+      // plugin redirect
+      t.is(await got(`${deploy.deploy_url}/other-api/hello`).text(), 'hello')
+      // _redirects redirect
+      t.is(await got(`${deploy.deploy_url}/api/hello`).text(), 'hello')
+      // netlify.toml redirect
+      t.is(await got(`${deploy.deploy_url}/not-existing`).text(), content)
+    })
+  })
+
+  test.serial('should deploy pre-bundled functions when a valid manifest file is found', async (t) => {
+    const bundledFunctionPath = join(__dirname, 'assets', 'bundled-function-1.zip')
+    const bundledFunctionData = {
+      mainFile: '/some/path/bundled-function-1.js',
+      name: 'bundled-function-1',
+      runtime: 'js',
+    }
+
+    await withSiteBuilder('site-with-functions-manifest-1', async (builder) => {
+      await builder
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'out' },
+            functions: { directory: 'functions' },
+          },
+        })
+        .withCopiedFile({
+          src: bundledFunctionPath,
+          path: '.netlify/functions/bundled-function-1.zip',
+        })
+        .withContentFile({
+          path: '.netlify/functions/manifest.json',
+          content: JSON.stringify({
+            functions: [
+              {
+                ...bundledFunctionData,
+                path: join(builder.directory, '.netlify', 'functions', 'bundled-function-1.zip'),
+              },
+            ],
+            timestamp: Date.now(),
+            version: 1,
+          }),
+        })
+        .withContentFile({
+          path: 'out/index.html',
+          content: 'Hello world',
+        })
+        .withFunction({
+          path: 'bundled-function-1.js',
+          handler: async () => ({
+            statusCode: 200,
+            body: 'Bundled at deployment',
+          }),
+        })
+        .buildAsync()
+
+      const { deploy_url: deployUrl } = await callCli(
+        ['deploy', '--json'],
+        {
+          cwd: builder.directory,
+          env: { NETLIFY_SITE_ID: t.context.siteId },
+        },
+        true,
+      )
+
+      t.is(await got(`${deployUrl}/.netlify/functions/bundled-function-1`).text(), 'Pre-bundled')
+    })
+  })
+
+  test.serial('should not deploy pre-bundled functions when the --skip-functions-cache flag is used', async (t) => {
+    const bundledFunctionPath = join(__dirname, 'assets', 'bundled-function-1.zip')
+    const bundledFunctionData = {
+      mainFile: '/some/path/bundled-function-1.js',
+      name: 'bundled-function-1',
+      runtime: 'js',
+    }
+
+    await withSiteBuilder('site-with-functions-manifest-2', async (builder) => {
+      await builder
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'out' },
+            functions: { directory: 'functions' },
+          },
+        })
+        .withCopiedFile({
+          src: bundledFunctionPath,
+          path: '.netlify/functions/bundled-function-1.zip',
+        })
+        .withContentFile({
+          path: '.netlify/functions/manifest.json',
+          content: JSON.stringify({
+            functions: [
+              {
+                ...bundledFunctionData,
+                path: join(builder.directory, '.netlify', 'functions', 'bundled-function-1.zip'),
+              },
+            ],
+            timestamp: Date.now(),
+            version: 1,
+          }),
+        })
+        .withContentFile({
+          path: 'out/index.html',
+          content: 'Hello world',
+        })
+        .withFunction({
+          path: 'bundled-function-1.js',
+          handler: async () => ({
+            statusCode: 200,
+            body: 'Bundled at deployment',
+          }),
+        })
+        .buildAsync()
+
+      const { deploy_url: deployUrl } = await callCli(
+        ['deploy', '--json', '--skip-functions-cache'],
+        {
+          cwd: builder.directory,
+          env: { NETLIFY_SITE_ID: t.context.siteId },
+        },
+        true,
+      )
+
+      t.is(await got(`${deployUrl}/.netlify/functions/bundled-function-1`).text(), 'Bundled at deployment')
+    })
+  })
+
+  test.serial(
+    'should not deploy pre-bundled functions when the manifest file is older than the configured TTL',
+    async (t) => {
+      const age = 18e4
+      const bundledFunctionPath = join(__dirname, 'assets', 'bundled-function-1.zip')
+      const bundledFunctionData = {
+        mainFile: '/some/path/bundled-function-1.js',
+        name: 'bundled-function-1',
+        runtime: 'js',
+      }
+
+      await withSiteBuilder('site-with-functions-manifest-3', async (builder) => {
+        await builder
+          .withNetlifyToml({
+            config: {
+              build: { publish: 'out' },
+              functions: { directory: 'functions' },
+            },
+          })
+          .withCopiedFile({
+            src: bundledFunctionPath,
+            path: '.netlify/functions/bundled-function-1.zip',
+          })
+          .withContentFile({
+            path: '.netlify/functions/manifest.json',
+            content: JSON.stringify({
+              functions: [
+                {
+                  ...bundledFunctionData,
+                  path: join(builder.directory, '.netlify', 'functions', 'bundled-function-1.zip'),
+                },
+              ],
+              timestamp: Date.now() - age,
+              version: 1,
+            }),
+          })
+          .withContentFile({
+            path: 'out/index.html',
+            content: 'Hello world',
+          })
+          .withFunction({
+            path: 'bundled-function-1.js',
+            handler: async () => ({
+              statusCode: 200,
+              body: 'Bundled at deployment',
+            }),
+          })
+          .buildAsync()
+
+        const { deploy_url: deployUrl } = await callCli(
+          ['deploy', '--json'],
+          {
+            cwd: builder.directory,
+            env: { NETLIFY_SITE_ID: t.context.siteId },
+          },
+          true,
+        )
+
+        t.is(await got(`${deployUrl}/.netlify/functions/bundled-function-1`).text(), 'Bundled at deployment')
       })
     },
   )
@@ -498,3 +753,4 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
     await callCli(['sites:delete', siteId, '--force'])
   })
 }
+/* eslint-enable require-await */

@@ -7,6 +7,8 @@ const { promisify } = require('util')
 const { flags: flagsLib } = require('@oclif/command')
 const chalk = require('chalk')
 const copy = promisify(require('copy-template-dir'))
+const execa = require('execa')
+const findUp = require('find-up')
 const fuzzy = require('fuzzy')
 const inquirer = require('inquirer')
 const inquirerAutocompletePrompt = require('inquirer-autocomplete-prompt')
@@ -22,6 +24,17 @@ const { NETLIFYDEVLOG, NETLIFYDEVWARN, NETLIFYDEVERR } = require('../../utils/lo
 const { readRepoURL, validateRepoURL } = require('../../utils/read-repo-url')
 
 const templatesDir = path.resolve(__dirname, '../../functions-templates')
+
+const showGoTemplates = process.env.NETLIFY_EXPERIMENTAL_BUILD_GO_SOURCE === 'true'
+
+// Ensure that there's a sub-directory in `src/functions-templates` named after
+// each `value` property in this list, and that it matches the extension of the
+// files used by that language.
+const languages = [
+  { name: 'JavaScript', value: 'js' },
+  { name: 'TypeScript', value: 'ts' },
+  showGoTemplates && { name: 'Go', value: 'go' },
+]
 
 /**
  * Be very clear what is the SOURCE (templates dir) vs the DEST (functions dir)
@@ -80,7 +93,7 @@ const getNameFromArgs = async function (args, flags, defaultName) {
   const { name } = await inquirer.prompt([
     {
       name: 'name',
-      message: 'name your function: ',
+      message: 'Name your function:',
       default: defaultName,
       type: 'input',
       validate: (val) => Boolean(val) && /^[\w.-]+$/i.test(val),
@@ -116,10 +129,19 @@ const formatRegistryArrayForInquirer = function (lang) {
     .filter((folderName) => !folderName.endsWith('.md'))
     // eslint-disable-next-line node/global-require, import/no-dynamic-require
     .map((folderName) => require(path.join(templatesDir, lang, folderName, '.netlify-function-template.js')))
-    .sort(
-      (folderNameA, folderNameB) =>
-        (folderNameA.priority || DEFAULT_PRIORITY) - (folderNameB.priority || DEFAULT_PRIORITY),
-    )
+    .sort((folderNameA, folderNameB) => {
+      const priorityDiff = (folderNameA.priority || DEFAULT_PRIORITY) - (folderNameB.priority || DEFAULT_PRIORITY)
+
+      if (priorityDiff !== 0) {
+        return priorityDiff
+      }
+
+      // This branch is needed because `Array.prototype.sort` was not stable
+      // until Node 11, so the original sorting order from `fs.readdirSync`
+      // was not respected. We can simplify this once we drop support for
+      // Node 10.
+      return folderNameA - folderNameB
+    })
     .map((t) => {
       t.lang = lang
       return {
@@ -134,57 +156,47 @@ const formatRegistryArrayForInquirer = function (lang) {
 
 // pick template from our existing templates
 const pickTemplate = async function () {
-  inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
-  // doesnt scale but will be ok for now
-  const [
-    jsreg,
-    // tsreg, goreg
-  ] = [
-    'js',
-    // 'ts', 'go'
-  ].map(formatRegistryArrayForInquirer)
   const specialCommands = [
-    new inquirer.Separator(`----[Special Commands]----`),
+    new inquirer.Separator(),
     {
-      name: `*** Clone template from Github URL ***`,
+      name: `Clone template from GitHub URL`,
       value: 'url',
       short: 'gh-url',
     },
     {
-      name: `*** Report issue with, or suggest a new template ***`,
+      name: `Report issue with, or suggest a new template`,
       value: 'report',
       short: 'gh-report',
     },
+    new inquirer.Separator(),
   ]
-  const { chosentemplate } = await inquirer.prompt({
-    name: 'chosentemplate',
+  const { language } = await inquirer.prompt({
+    choices: languages.filter(Boolean),
+    message: 'Select the language of your function',
+    name: 'language',
+    type: 'list',
+  })
+
+  inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
+
+  const templatesForLanguage = formatRegistryArrayForInquirer(language)
+  const { chosenTemplate } = await inquirer.prompt({
+    name: 'chosenTemplate',
     message: 'Pick a template',
     type: 'autocomplete',
-    // suggestOnly: true, // we can explore this for entering URL in future
     source(answersSoFar, input) {
       if (!input || input === '') {
         // show separators
-        return [
-          new inquirer.Separator(`----[JS]----`),
-          ...jsreg,
-          // new inquirer.Separator(`----[TS]----`),
-          // ...tsreg,
-          // new inquirer.Separator(`----[GO]----`),
-          // ...goreg
-          ...specialCommands,
-        ]
+        return [...templatesForLanguage, ...specialCommands]
       }
       // only show filtered results sorted by score
-      const answers = [
-        ...filterRegistry(jsreg, input),
-        // ...filterRegistry(tsreg, input),
-        // ...filterRegistry(goreg, input)
-        ...specialCommands,
-      ].sort((answerA, answerB) => answerB.score - answerA.score)
+      const answers = [...filterRegistry(templatesForLanguage, input), ...specialCommands].sort(
+        (answerA, answerB) => answerB.score - answerA.score,
+      )
       return answers
     },
   })
-  return chosentemplate
+  return chosenTemplate
 }
 
 const DEFAULT_PRIORITY = 999
@@ -301,22 +313,71 @@ const downloadFromURL = async function (context, flags, args, functionsDir) {
   }
 }
 
-const installDeps = function (functionPath) {
-  return new Promise((resolve) => {
-    cp.exec('npm i', { cwd: path.join(functionPath) }, () => {
-      resolve()
-    })
-  })
+// Takes a list of existing packages and a list of packages required by a
+// function, and returns the packages from the latter that aren't present
+// in the former. The packages are returned as an array of strings with the
+// name and version range (e.g. '@netlify/functions@0.1.0').
+const getNpmInstallPackages = (existingPackages = {}, neededPackages = {}) =>
+  Object.entries(neededPackages)
+    .filter(([name]) => existingPackages[name] === undefined)
+    .map(([name, version]) => `${name}@${version}`)
+
+// When installing a function's dependencies, we first try to find a site-level
+// `package.json` file. If we do, we look for any dependencies of the function
+// that aren't already listed as dependencies of the site and install them. If
+// we don't do this check, we may be upgrading the version of a module used in
+// another part of the project, which we don't want to do.
+const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) => {
+  // eslint-disable-next-line import/no-dynamic-require, node/global-require
+  const { dependencies: functionDependencies, devDependencies: functionDevDependencies } = require(functionPackageJson)
+  const sitePackageJson = await findUp('package.json', { cwd: functionsDir })
+  const npmInstallFlags = ['--no-audit', '--no-fund']
+
+  // If there is no site-level `package.json`, we fall back to the old behavior
+  // of keeping that file in the function directory and running `npm install`
+  // from there.
+  if (!sitePackageJson) {
+    await execa('npm', ['i', ...npmInstallFlags], { cwd: functionPath })
+
+    return
+  }
+
+  // eslint-disable-next-line import/no-dynamic-require, node/global-require
+  const { dependencies: siteDependencies, devDependencies: siteDevDependencies } = require(sitePackageJson)
+  const dependencies = getNpmInstallPackages(siteDependencies, functionDependencies)
+  const devDependencies = getNpmInstallPackages(siteDevDependencies, functionDevDependencies)
+  const npmInstallPath = path.dirname(sitePackageJson)
+
+  if (dependencies.length !== 0) {
+    await execa('npm', ['i', ...dependencies, '--save', ...npmInstallFlags], { cwd: npmInstallPath })
+  }
+
+  if (devDependencies.length !== 0) {
+    await execa('npm', ['i', ...devDependencies, '--save-dev', ...npmInstallFlags], { cwd: npmInstallPath })
+  }
+
+  // We installed the function's dependencies in the site-level `package.json`,
+  // so there's no reason to keep the one copied over from the template.
+  fs.unlinkSync(functionPackageJson)
+
+  // Similarly, if the template has a `package-lock.json` file, we delete it.
+  try {
+    const functionPackageLock = path.join(functionPath, 'package-lock.json')
+
+    fs.unlinkSync(functionPackageLock)
+  } catch (error) {
+    // no-op
+  }
 }
 
 // no --url flag specified, pick from a provided template
 const scaffoldFromTemplate = async function (context, flags, args, functionsDir) {
   // pull the rest of the metadata from the template
-  const chosentemplate = await pickTemplate()
-  if (chosentemplate === 'url') {
-    const { chosenurl } = await inquirer.prompt([
+  const chosenTemplate = await pickTemplate()
+  if (chosenTemplate === 'url') {
+    const { chosenUrl } = await inquirer.prompt([
       {
-        name: 'chosenurl',
+        name: 'chosenUrl',
         message: 'URL to clone: ',
         type: 'input',
         validate: (val) => Boolean(validateRepoURL(val)),
@@ -324,7 +385,7 @@ const scaffoldFromTemplate = async function (context, flags, args, functionsDir)
         // this has some nuance i have ignored, eg crossenv and i18n concerns
       },
     ])
-    flags.url = chosenurl.trim()
+    flags.url = chosenUrl.trim()
     try {
       await downloadFromURL(context, flags, args, functionsDir)
     } catch (error) {
@@ -332,15 +393,15 @@ const scaffoldFromTemplate = async function (context, flags, args, functionsDir)
       context.error(error)
       process.exit(1)
     }
-  } else if (chosentemplate === 'report') {
+  } else if (chosenTemplate === 'report') {
     log(`${NETLIFYDEVLOG} Open in browser: https://github.com/netlify/cli/issues/new`)
   } else {
-    const { onComplete, name: templateName, lang, addons = [] } = chosentemplate
+    const { onComplete, name: templateName, lang, addons = [] } = chosenTemplate
 
     const pathToTemplate = path.join(templatesDir, lang, templateName)
     if (!fs.existsSync(pathToTemplate)) {
       throw new Error(
-        `there isnt a corresponding directory to the selected name, ${templateName} template is misconfigured`,
+        `There isn't a corresponding directory to the selected name. Template '${templateName}' is misconfigured`,
       )
     }
 
@@ -349,33 +410,37 @@ const scaffoldFromTemplate = async function (context, flags, args, functionsDir)
     log(`${NETLIFYDEVLOG} Creating function ${chalk.cyan.inverse(name)}`)
     const functionPath = ensureFunctionPathIsOk(functionsDir, name)
 
-    // SWYX: note to future devs - useful for debugging source to output issues
-    // log('from ', pathToTemplate, ' to ', functionPath)
-    // SWYX: TODO
-    const vars = { NETLIFY_STUFF_TO_REPLACE: 'REPLACEMENT' }
-    let hasPackageJSON = false
+    const vars = { name }
+    let functionPackageJson
 
+    // These files will not be part of the log message because they'll likely
+    // be removed before the command finishes.
+    const omittedFromOutput = new Set(['.netlify-function-template.js', 'package.json', 'package-lock.json'])
     const createdFiles = await copy(pathToTemplate, functionPath, vars)
     createdFiles.forEach((filePath) => {
-      if (filePath.endsWith('.netlify-function-template.js')) return
-      context.log(`${NETLIFYDEVLOG} ${chalk.greenBright('Created')} ${filePath}`)
+      const filename = path.basename(filePath)
+
+      if (!omittedFromOutput.has(filename)) {
+        context.log(`${NETLIFYDEVLOG} ${chalk.greenBright('Created')} ${filePath}`)
+      }
+
       fs.chmodSync(path.resolve(filePath), TEMPLATE_PERMISSIONS)
-      if (filePath.includes('package.json')) hasPackageJSON = true
+      if (filePath.includes('package.json')) {
+        functionPackageJson = path.resolve(filePath)
+      }
     })
+
     // delete function template file that was copied over by copydir
     fs.unlinkSync(path.join(functionPath, '.netlify-function-template.js'))
-    // rename the root function file if it has a different name from default
-    if (name !== templateName) {
-      fs.renameSync(path.join(functionPath, `${templateName}.js`), path.join(functionPath, `${name}.js`))
-    }
+
     // npm install
-    if (hasPackageJSON) {
+    if (functionPackageJson !== undefined) {
       const spinner = ora({
-        text: `installing dependencies for ${name}`,
+        text: `Installing dependencies for ${name}`,
         spinner: 'moon',
       }).start()
-      await installDeps(functionPath)
-      spinner.succeed(`installed dependencies for ${name}`)
+      await installDeps({ functionPackageJson, functionPath, functionsDir })
+      spinner.succeed(`Installed dependencies for ${name}`)
     }
 
     await installAddons(context, addons, path.resolve(functionPath))

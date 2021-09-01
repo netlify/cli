@@ -107,6 +107,14 @@ const createSiteBuilder = ({ siteName }) => {
       })
       return builder
     },
+    withCopiedFile: ({ path: filePath, src }) => {
+      const dest = path.join(directory, filePath)
+      tasks.push(async () => {
+        await ensureDir(path.dirname(dest))
+        await fs.copyFileAsync(src, dest)
+      })
+      return builder
+    },
     withContentFiles: (files) => {
       files.forEach(builder.withContentFile)
       return builder

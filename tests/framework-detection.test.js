@@ -283,3 +283,21 @@ test('should filter frameworks with no dev command', async (t) => {
     })
   })
 })
+
+test('should pass framework-info env to framework sub process', async (t) => {
+  await withSiteBuilder('site-with-gatsby', async (builder) => {
+    await builder
+      .withPackageJson({
+        packageJson: {
+          dependencies: { gatsby: '^3.0.0' },
+          scripts: { develop: 'node -p process.env.GATSBY_LOGGER' },
+        },
+      })
+      .withContentFile({ path: 'gatsby-config.js', content: '' })
+      .buildAsync()
+
+    // a failure is expected since this is not a true Gatsby project
+    const error = await t.throwsAsync(() => withDevServer({ cwd: builder.directory }, () => {}, true))
+    t.snapshot(normalize(error.stdout))
+  })
+})

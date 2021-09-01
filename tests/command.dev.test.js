@@ -1809,5 +1809,44 @@ export const handler = async function () {
       })
     })
   })
+
+  test(testName('should match redirect when path is URL encoded', args), async (t) => {
+    await withSiteBuilder('site-with-encoded-redirect', async (builder) => {
+      await builder
+        .withContentFile({ path: 'static/special[test].txt', content: `special` })
+        .withRedirectsFile({ redirects: [{ from: '/_next/static/*', to: '/static/:splat', status: 200 }] })
+        .buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async (server) => {
+        const [response1, response2] = await Promise.all([
+          got(`${server.url}/_next/static/special[test].txt`).text(),
+          got(`${server.url}/_next/static/special%5Btest%5D.txt`).text(),
+        ])
+        t.is(response1, 'special')
+        t.is(response2, 'special')
+      })
+    })
+  })
+
+  test(testName(`should not redirect POST request to functions server when it doesn't exists`, args), async (t) => {
+    await withSiteBuilder('site-with-post-request', async (builder) => {
+      await builder.buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async (server) => {
+        // an error is expected since we're sending a POST request to a static server
+        // the important thing is that it's not proxied to the functions server
+        const error = await t.throwsAsync(() =>
+          got.post(`${server.url}/api/test`, {
+            headers: {
+              'content-type': 'application/x-www-form-urlencoded',
+            },
+            body: 'some=thing',
+          }),
+        )
+
+        t.is(error.message, 'Response code 405 (Method Not Allowed)')
+      })
+    })
+  })
 })
 /* eslint-enable require-await */

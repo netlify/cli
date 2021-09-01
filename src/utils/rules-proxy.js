@@ -1,44 +1,15 @@
-const fs = require('fs')
 const path = require('path')
 const url = require('url')
 
 const chokidar = require('chokidar')
 const cookie = require('cookie')
-const { parseAllRedirects } = require('netlify-redirect-parser')
 const redirector = require('netlify-redirector')
+const pFilter = require('p-filter')
 
-const { NETLIFYDEVWARN, NETLIFYDEVLOG } = require('./logo')
+const { fileExistsAsync } = require('../lib/fs')
 
-// Parse, normalize and validate all redirects from `_redirects` files
-// and `netlify.toml`
-const parseRedirectRules = async function ({ redirectsFiles, configPath }) {
-  try {
-    const rules = await parseAllRedirects({ redirectsFiles, netlifyConfigPath: configPath })
-    return rules.map(normalizeRule)
-  } catch (error) {
-    console.error(`${NETLIFYDEVWARN} Warnings while parsing redirects:
-${error.message}`)
-    return []
-  }
-}
-
-// `netlify-redirector` does not handle the same shape as the backend:
-//  - `from` is called `origin`
-//  - `query` is called `params`
-//  - `conditions.role|country|language` are capitalized
-const normalizeRule = function ({ from, query, conditions: { role, country, language, ...conditions }, ...rule }) {
-  return {
-    ...rule,
-    origin: from,
-    params: query,
-    conditions: {
-      ...conditions,
-      ...(role && { Role: role }),
-      ...(country && { Country: country }),
-      ...(language && { Language: language }),
-    },
-  }
-}
+const { NETLIFYDEVLOG } = require('./logo')
+const { parseRedirects } = require('./redirects')
 
 const onChanges = function (files, listener) {
   files.forEach((file) => {
@@ -62,24 +33,25 @@ const getCountry = function () {
 const createRewriter = async function ({ distDir, projectDir, jwtSecret, jwtRoleClaim, configPath }) {
   let matcher = null
   const redirectsFiles = [...new Set([path.resolve(distDir, '_redirects'), path.resolve(projectDir, '_redirects')])]
-  const getRedirectRules = parseRedirectRules.bind(undefined, { redirectsFiles, configPath })
-  let rules = await getRedirectRules()
+  let redirects = await parseRedirects({ redirectsFiles, configPath })
 
   const watchedRedirectFiles = configPath === undefined ? redirectsFiles : [...redirectsFiles, configPath]
   onChanges(watchedRedirectFiles, async () => {
     console.log(
       `${NETLIFYDEVLOG} Reloading redirect rules from`,
-      watchedRedirectFiles.filter(fs.existsSync).map((configFile) => path.relative(projectDir, configFile)),
+      (await pFilter(watchedRedirectFiles, fileExistsAsync)).map((redirectFile) =>
+        path.relative(projectDir, redirectFile),
+      ),
     )
-    rules = await getRedirectRules()
+    redirects = await parseRedirects({ redirectsFiles, configPath })
     matcher = null
   })
 
   const getMatcher = async () => {
     if (matcher) return matcher
 
-    if (rules.length !== 0) {
-      return (matcher = await redirector.parseJSON(JSON.stringify(rules), {
+    if (redirects.length !== 0) {
+      return (matcher = await redirector.parseJSON(JSON.stringify(redirects), {
         jwtSecret,
         jwtRoleClaim,
       }))
@@ -110,7 +82,7 @@ const createRewriter = async function ({ distDir, projectDir, jwtSecret, jwtRole
     const matchReq = {
       scheme: reqUrl.protocol.replace(/:.*$/, ''),
       host: reqUrl.hostname,
-      path: reqUrl.pathname,
+      path: decodeURIComponent(reqUrl.pathname),
       query: reqUrl.search.slice(1),
       headers,
       cookieValues,
@@ -123,7 +95,6 @@ const createRewriter = async function ({ distDir, projectDir, jwtSecret, jwtRole
 }
 
 module.exports = {
-  parseRedirectRules,
   onChanges,
   getLanguage,
   createRewriter,

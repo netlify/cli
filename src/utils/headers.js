@@ -1,56 +1,12 @@
-const fs = require('fs')
+const { parseAllHeaders } = require('netlify-headers-parser')
 
-const { get } = require('dot-prop')
-const escapeRegExp = require('lodash/escapeRegExp')
-const trimEnd = require('lodash/trimEnd')
-
-const TOKEN_COMMENT = '#'
-const TOKEN_PATH = '/'
-
-// Our production logic uses regex too
-const getRulePattern = (rule) => {
-  const ruleParts = rule.split('/').filter(Boolean)
-  if (ruleParts.length === 0) {
-    return `^/$`
-  }
-
-  let pattern = '^'
-
-  ruleParts.forEach((part) => {
-    if (part.startsWith(':')) {
-      // :placeholder wildcard (e.g. /segment/:placeholder/test) - match everything up to a /
-      pattern += '/([^/]+)/?'
-    } else if (part === '*') {
-      // standalone asterisk wildcard (e.g. /segment/*) - match everything
-      if (pattern === '^') {
-        pattern += '/?(.*)/?'
-      } else {
-        pattern = trimEnd(pattern, '/?')
-        pattern += '(?:|/|/(.*)/?)'
-      }
-    } else if (part.includes('*')) {
-      // non standalone asterisk wildcard (e.g. /segment/hello*world/test)
-      pattern += `/${part.replace(/\*/g, '(.*)')}`
-    } else if (part.trim() !== '') {
-      // not a wildcard
-      pattern += `/${escapeRegExp(part)}/?`
-    }
-  })
-
-  pattern += '$'
-
-  return pattern
-}
-
-const matchesPath = (rule, path) => {
-  const pattern = getRulePattern(rule)
-  return new RegExp(pattern, 'i').test(path)
-}
+const { log } = require('./command-helpers')
+const { NETLIFYDEVERR } = require('./logo')
 
 /**
  * Get the matching headers for `path` given a set of `rules`.
  *
- * @param {Object<string,Object<string,string[]>>!} rules
+ * @param {Object<string,Object<string,string[]>>!} headers
  * The rules to use for matching.
  *
  * @param {string!} path
@@ -58,68 +14,40 @@ const matchesPath = (rule, path) => {
  *
  * @returns {Object<string,string[]>}
  */
-const headersForPath = function (rules, path) {
-  const matchingHeaders = Object.entries(rules)
-    .filter(([rule]) => matchesPath(rule, path))
-    .map(([, headers]) => headers)
-
-  const pathObject = Object.assign({}, ...matchingHeaders)
-  return pathObject
+const headersForPath = function (headers, path) {
+  const matchingHeaders = headers.filter(({ forRegExp }) => forRegExp.test(path)).map(getHeaderValues)
+  const headersRules = Object.assign({}, ...matchingHeaders)
+  return headersRules
 }
 
-const HEADER_SEPARATOR = ':'
+const getHeaderValues = function ({ values }) {
+  return values
+}
 
-const parseHeadersFile = function (filePath) {
-  if (!fs.existsSync(filePath)) {
-    return {}
-  }
-  if (fs.statSync(filePath).isDirectory()) {
-    console.warn('expected _headers file but found a directory at:', filePath)
-    return {}
-  }
+const parseHeaders = async function ({ headersFiles, configPath }) {
+  const { headers, errors } = await parseAllHeaders({
+    headersFiles,
+    netlifyConfigPath: configPath,
+    minimal: false,
+  })
+  handleHeadersErrors(errors)
+  return headers
+}
 
-  const lines = fs
-    .readFileSync(filePath, { encoding: 'utf8' })
-    .split('\n')
-    .map((line, index) => ({ line: line.trim(), index }))
-    .filter(({ line }) => Boolean(line) && !line.startsWith(TOKEN_COMMENT))
-
-  let path
-  let rules = {}
-  // eslint-disable-next-line fp/no-loops
-  for (const { line, index } of lines) {
-    if (line.startsWith(TOKEN_PATH)) {
-      path = line
-      continue
-    }
-
-    if (!path) {
-      throw new Error('path should come before headers')
-    }
-
-    if (line.includes(HEADER_SEPARATOR)) {
-      const [key = '', ...value] = line.split(HEADER_SEPARATOR)
-      const [trimmedKey, trimmedValue] = [key.trim(), value.join(HEADER_SEPARATOR).trim()]
-      if (trimmedKey.length === 0 || trimmedValue.length === 0) {
-        throw new Error(`invalid header at line: ${index}\n${line}\n`)
-      }
-
-      const currentHeaders = get(rules, `${path}.${trimmedKey}`) || []
-      rules = {
-        ...rules,
-        [path]: {
-          ...rules[path],
-          [trimmedKey]: [...currentHeaders, trimmedValue],
-        },
-      }
-    }
+const handleHeadersErrors = function (errors) {
+  if (errors.length === 0) {
+    return
   }
 
-  return rules
+  const errorMessage = errors.map(getErrorMessage).join('\n\n')
+  log(NETLIFYDEVERR, `Headers syntax errors:\n${errorMessage}`)
+}
+
+const getErrorMessage = function ({ message }) {
+  return message
 }
 
 module.exports = {
-  matchesPath,
   headersForPath,
-  parseHeadersFile,
+  parseHeaders,
 }

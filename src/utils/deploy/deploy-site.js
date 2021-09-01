@@ -32,9 +32,11 @@ const deploySite = async (
     fnDir = [],
     functionsConfig,
     hashAlgorithm,
+    manifestPath,
     maxRetry = DEFAULT_MAX_RETRY,
     // API calls this the 'title'
     message: title,
+    skipFunctionsCache,
     statusCb = () => {
       /* default to noop */
     },
@@ -52,7 +54,17 @@ const deploySite = async (
 
   const [{ files, filesShaMap }, { functions, functionsWithNativeModules, fnShaMap }] = await Promise.all([
     hashFiles(dir, configPath, { concurrentHash, hashAlgorithm, assetType, statusCb, filter }),
-    hashFns(fnDir, { functionsConfig, tmpDir, concurrentHash, hashAlgorithm, statusCb, assetType, rootDir }),
+    hashFns(fnDir, {
+      functionsConfig,
+      tmpDir,
+      concurrentHash,
+      hashAlgorithm,
+      statusCb,
+      assetType,
+      rootDir,
+      manifestPath,
+      skipFunctionsCache,
+    }),
   ])
 
   const filesCount = Object.keys(files).length

@@ -19,7 +19,7 @@ const toReadableStream = require('to-readable-stream')
 const { readFileAsync, fileExistsAsync, isFileAsync } = require('../lib/fs')
 
 const { createStreamPromise } = require('./create-stream-promise')
-const { parseHeadersFile, headersForPath } = require('./headers')
+const { parseHeaders, headersForPath } = require('./headers')
 const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./logo')
 const { createRewriter } = require('./rules-proxy')
 const { onChanges } = require('./rules-proxy')
@@ -263,7 +263,7 @@ const serveRedirect = async function ({ req, res, proxy, match, options }) {
 
 const MILLISEC_TO_SEC = 1e3
 
-const initializeProxy = function (port, distDir, projectDir) {
+const initializeProxy = async function ({ port, distDir, projectDir, configPath }) {
   const proxy = httpProxy.createProxyServer({
     selfHandleResponse: true,
     target: {
@@ -274,13 +274,15 @@ const initializeProxy = function (port, distDir, projectDir) {
 
   const headersFiles = [...new Set([path.resolve(projectDir, '_headers'), path.resolve(distDir, '_headers')])]
 
-  let headerRules = headersFiles.reduce((prev, curr) => Object.assign(prev, parseHeadersFile(curr)), {})
-  onChanges(headersFiles, async () => {
+  let headers = await parseHeaders({ headersFiles, configPath })
+
+  const watchedHeadersFiles = configPath === undefined ? headersFiles : [...headersFiles, configPath]
+  onChanges(watchedHeadersFiles, async () => {
     console.log(
-      `${NETLIFYDEVLOG} Reloading headers files`,
-      (await pFilter(headersFiles, fileExistsAsync)).map((headerFile) => path.relative(projectDir, headerFile)),
+      `${NETLIFYDEVLOG} Reloading headers files from`,
+      (await pFilter(watchedHeadersFiles, fileExistsAsync)).map((headerFile) => path.relative(projectDir, headerFile)),
     )
-    headerRules = headersFiles.reduce((prev, curr) => Object.assign(prev, parseHeadersFile(curr)), {})
+    headers = await parseHeaders({ headersFiles, configPath })
   })
 
   proxy.before('web', 'stream', (req) => {
@@ -320,12 +322,10 @@ const initializeProxy = function (port, distDir, projectDir) {
     }
 
     const requestURL = new URL(req.url, `http://${req.headers.host || 'localhost'}`)
-    const pathHeaderRules = headersForPath(headerRules, requestURL.pathname)
-    if (!isEmpty(pathHeaderRules)) {
-      Object.entries(pathHeaderRules).forEach(([key, val]) => {
-        res.setHeader(key, val)
-      })
-    }
+    const headersRules = headersForPath(headers, requestURL.pathname)
+    Object.entries(headersRules).forEach(([key, val]) => {
+      res.setHeader(key, val)
+    })
     res.writeHead(req.proxyOptions.status || proxyRes.statusCode, proxyRes.headers)
     proxyRes.on('data', function onData(data) {
       res.write(data)
@@ -379,6 +379,7 @@ const onRequest = async ({ proxy, rewriter, settings, addonsUrls, functionsServe
 
   const ct = req.headers['content-type'] ? contentType.parse(req).type : ''
   if (
+    functionsServer &&
     req.method === 'POST' &&
     !isInternal(req.url) &&
     (ct.endsWith('/x-www-form-urlencoded') || ct === 'multipart/form-data')
@@ -392,14 +393,19 @@ const onRequest = async ({ proxy, rewriter, settings, addonsUrls, functionsServe
 const startProxy = async function (settings, addonsUrls, configPath, projectDir) {
   const functionsServer = settings.functionsPort ? `http://localhost:${settings.functionsPort}` : null
 
-  const proxy = initializeProxy(settings.frameworkPort, settings.dist, projectDir)
+  const proxy = await initializeProxy({
+    port: settings.frameworkPort,
+    distDir: settings.dist,
+    projectDir,
+    configPath,
+  })
 
   const rewriter = await createRewriter({
     distDir: settings.dist,
+    projectDir,
     jwtSecret: settings.jwtSecret,
     jwtRoleClaim: settings.jwtRolePath,
     configPath,
-    projectDir,
   })
 
   const onRequestWithOptions = onRequest.bind(undefined, { proxy, rewriter, settings, addonsUrls, functionsServer })
