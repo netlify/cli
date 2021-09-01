@@ -6,7 +6,7 @@ description: Initialize a new site locally
 # `init`
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
-Configure continuous deployment for a new or existing site. To create a new site without continuous deployment, see https://cli.netlify.com/commands/init.
+Configure continuous deployment for a new or existing site. To create a new site without continuous deployment, use `netlify sites:create`
 
 **Usage**
 

@@ -200,7 +200,7 @@ class InitCommand extends Command {
   }
 }
 
-InitCommand.description = `Configure continuous deployment for a new or existing site. To create a new site without continuous deployment, see https://cli.netlify.com/commands/init.`
+InitCommand.description = `Configure continuous deployment for a new or existing site. To create a new site without continuous deployment, use \`netlify sites:create\``
 
 InitCommand.flags = {
   manual: flagsLib.boolean({
