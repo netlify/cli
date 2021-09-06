@@ -155,7 +155,7 @@
     "netlify-headers-parser": "^4.0.1",
     "netlify-redirect-parser": "^11.0.2",
     "netlify-redirector": "^0.2.1",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^3.0.0",
     "node-version-alias": "^1.0.1",
     "oclif-plugin-completion": "^0.6.0",
     "omit.js": "^2.0.2",
