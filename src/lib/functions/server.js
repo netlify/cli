@@ -1,5 +1,6 @@
 const bodyParser = require('body-parser')
 const jwtDecode = require('jwt-decode')
+const qs = require('qs')
 
 const { log } = require('../../utils/command-helpers')
 const { getInternalFunctionsDir } = require('../../utils/functions')
@@ -73,6 +74,8 @@ const createHandler = function ({ functionsRegistry }) {
       (prev, [key, value]) => ({ ...prev, [key]: Array.isArray(value) ? value : [value] }),
       {},
     )
+    const rawUrl = `${request.protocol}://${request.get('host') || 'localhost'}${request.originalUrl}`
+    const rawQuery = qs(request.query)
 
     const event = {
       path: requestPath,
@@ -86,6 +89,8 @@ const createHandler = function ({ functionsRegistry }) {
       multiValueHeaders: headers,
       body,
       isBase64Encoded,
+      rawUrl,
+      rawQuery,
     }
 
     const clientContext = buildClientContext(request.headers) || {}
