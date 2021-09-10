@@ -12,7 +12,7 @@ jobs:
         with:
           private-key: ${{ secrets.TOKENS_PRIVATE_KEY }}
           app-id: ${{ secrets.TOKENS_APP_ID }}
-      - uses: GoogleCloudPlatform/release-please-action@866463e11016b11e30062bc70a148ef5dc861a0a
+      - uses: GoogleCloudPlatform/release-please-action@v2
         id: release
         with:
           token: ${{ steps.get-token.outputs.token }}
@@ -23,6 +23,8 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: '*'
+          cache: 'npm'
+          cache-dependency-path: 'npm-shrinkwrap.json'
           check-latest: true
           registry-url: 'https://registry.npmjs.org'
         if: ${{ steps.release.outputs.release_created }}
