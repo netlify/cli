@@ -16,6 +16,8 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '*'
+          cache: 'npm'
+          cache-dependency-path: 'npm-shrinkwrap.json'
           check-latest: true
       - name: Install dependencies
         run: npm install --production --no-audit

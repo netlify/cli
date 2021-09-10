@@ -130,6 +130,7 @@ const serveRedirect = async function ({ req, res, proxy, match, options }) {
     return handleAddonUrl({ req, res, addonUrl: urlForAddons })
   }
 
+  const originalURL = req.url
   if (match.exceptions && match.exceptions.JWT) {
     // Some values of JWT can start with :, so, make sure to normalize them
     const expectedRoles = new Set(
@@ -140,7 +141,6 @@ const serveRedirect = async function ({ req, res, proxy, match, options }) {
     const token = cookieValues.nf_jwt
 
     // Serve not found by default
-    const originalURL = req.url
     req.url = '/.netlify/non-existent-path'
 
     if (token) {
@@ -173,12 +173,7 @@ const serveRedirect = async function ({ req, res, proxy, match, options }) {
     }
   }
 
-  const reqUrl = new URL(
-    req.url,
-    `${req.protocol || (req.headers.scheme && `${req.headers.scheme}:`) || 'http:'}//${
-      req.headers.host || req.hostname
-    }`,
-  )
+  const reqUrl = reqToURL(req, req.url)
 
   const staticFile = await getStatic(decodeURIComponent(reqUrl.pathname), options.publicFolder)
   if (staticFile) {
@@ -247,7 +242,7 @@ const serveRedirect = async function ({ req, res, proxy, match, options }) {
     }
 
     if (isFunction(options.functionsPort, req.url)) {
-      req.headers['x-netlify-original-pathname'] = reqUrl.pathname
+      req.headers['x-netlify-original-pathname'] = reqToURL(req, originalURL).pathname
       return proxy.web(req, res, { target: options.functionsServer })
     }
     const addonUrl = getAddonUrl(options.addonsUrls, req)
@@ -259,6 +254,15 @@ const serveRedirect = async function ({ req, res, proxy, match, options }) {
   }
 
   return proxy.web(req, res, options)
+}
+
+const reqToURL = function (req, pathname) {
+  return new URL(
+    pathname,
+    `${req.protocol || (req.headers.scheme && `${req.headers.scheme}:`) || 'http:'}//${
+      req.headers.host || req.hostname
+    }`,
+  )
 }
 
 const MILLISEC_TO_SEC = 1e3

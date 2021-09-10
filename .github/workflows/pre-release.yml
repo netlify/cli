@@ -12,6 +12,7 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: '*'
+          cache: 'npm'
           check-latest: true
           registry-url: 'https://registry.npmjs.org'
       # This can be removed once npm >=7.20.0 is installed by default.
