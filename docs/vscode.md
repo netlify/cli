@@ -34,6 +34,7 @@ Create a `launch.json` file under a `.vscode` directory in your project with the
       "type": "node",
       "request": "launch",
       "skipFiles": ["<node_internals>/**"],
+      "outFiles": ["${workspaceFolder}/.netlify/functions-serve/**/*.js"],
       "program": "${workspaceFolder}/node_modules/.bin/netlify",
       "args": ["dev"],
       "console": "integratedTerminal",
@@ -49,6 +50,7 @@ Create a `launch.json` file under a `.vscode` directory in your project with the
       "type": "node",
       "request": "launch",
       "skipFiles": ["<node_internals>/**"],
+      "outFiles": ["${workspaceFolder}/.netlify/functions-serve/**/*.js"],
       "program": "${workspaceFolder}/node_modules/.bin/netlify",
       "args": ["functions:serve"],
       "console": "integratedTerminal"
