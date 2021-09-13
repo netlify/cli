@@ -12,7 +12,7 @@ const hasGitIgnore = async function (dir) {
 
 const ensureNetlifyIgnore = async function (dir) {
   const gitIgnorePath = path.join(dir, '.gitignore')
-  const ignoreContent = '# Local Netlify folder\n.netlify'
+  const ignoreContent = '# Local Netlify folder\n.netlify\n'
 
   /* No .gitignore file. Create one and ignore .netlify folder */
   if (!(await hasGitIgnore(dir))) {
