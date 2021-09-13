@@ -734,4 +734,37 @@ test('Uses sourcemaps to show correct paths and locations in stack trace', async
     })
   })
 })
+
+test('Populates the `event` argument', async (t) => {
+  await withSiteBuilder('function-event', async (builder) => {
+    await builder
+      .withFunction({
+        path: 'hello.js',
+        handler: async (event) => ({
+          statusCode: 200,
+          body: JSON.stringify(event),
+        }),
+      })
+      .withNetlifyToml({
+        config: {
+          build: { publish: 'public' },
+          functions: { directory: 'functions' },
+        },
+      })
+      .buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async ({ port, outputBuffer }) => {
+      await tryAndLogOutput(async () => {
+        const { httpMethod, path, rawQuery, rawUrl } = await got(
+          `http://localhost:${port}/.netlify/functions/hello?net=lify&jam=stack`,
+        ).json()
+
+        t.is(httpMethod, 'GET')
+        t.is(path, '/.netlify/functions/hello')
+        t.is(rawQuery, 'net=lify&jam=stack')
+        t.is(rawUrl, `http://localhost:${port}/.netlify/functions/hello?net=lify&jam=stack`)
+      }, outputBuffer)
+    })
+  })
+})
 /* eslint-enable require-await */
