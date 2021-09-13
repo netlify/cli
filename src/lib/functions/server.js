@@ -73,7 +73,9 @@ const createHandler = function ({ functionsRegistry }) {
       (prev, [key, value]) => ({ ...prev, [key]: Array.isArray(value) ? value : [value] }),
       {},
     )
-
+    const host = request.get('host') || 'localhost'
+    const rawUrl = `${request.protocol}://${host}${request.originalUrl}`
+    const rawQuery = new URLSearchParams(request.query).toString()
     const event = {
       path: requestPath,
       httpMethod: request.method,
@@ -86,6 +88,8 @@ const createHandler = function ({ functionsRegistry }) {
       multiValueHeaders: headers,
       body,
       isBase64Encoded,
+      rawUrl,
+      rawQuery,
     }
 
     const clientContext = buildClientContext(request.headers) || {}
