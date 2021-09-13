@@ -88,7 +88,7 @@
         "netlify-headers-parser": "^4.0.1",
         "netlify-redirect-parser": "^11.0.2",
         "netlify-redirector": "^0.2.1",
-        "node-fetch": "^2.6.0",
+        "node-fetch": "^2.6.2",
         "node-version-alias": "^1.0.1",
         "oclif-plugin-completion": "^0.6.0",
         "omit.js": "^2.0.2",
@@ -14869,9 +14869,9 @@
       }
     },
     "node_modules/node-fetch": {
-      "version": "2.6.1",
-      "resolved": "https://registry.npmjs.org/node-fetch/-/node-fetch-2.6.1.tgz",
-      "integrity": "sha512-V4aYg89jEoVRxRb2fJdAg8FHvI7cEyYdVAh94HH0UIK8oJxUfkjlDQN9RbMx+bEjP7+ggMiFRprSti032Oipxw==",
+      "version": "2.6.2",
+      "resolved": "https://registry.npmjs.org/node-fetch/-/node-fetch-2.6.2.tgz",
+      "integrity": "sha512-aLoxToI6RfZ+0NOjmWAgn9+LEd30YCkJKFSyWacNZdEKTit/ZMcKjGkTRo8uWEsnIb/hfKecNPEbln02PdWbcA==",
       "engines": {
         "node": "4.x || >=6.0.0"
       }
@@ -32264,9 +32264,9 @@
       }
     },
     "node-fetch": {
-      "version": "2.6.1",
-      "resolved": "https://registry.npmjs.org/node-fetch/-/node-fetch-2.6.1.tgz",
-      "integrity": "sha512-V4aYg89jEoVRxRb2fJdAg8FHvI7cEyYdVAh94HH0UIK8oJxUfkjlDQN9RbMx+bEjP7+ggMiFRprSti032Oipxw=="
+      "version": "2.6.2",
+      "resolved": "https://registry.npmjs.org/node-fetch/-/node-fetch-2.6.2.tgz",
+      "integrity": "sha512-aLoxToI6RfZ+0NOjmWAgn9+LEd30YCkJKFSyWacNZdEKTit/ZMcKjGkTRo8uWEsnIb/hfKecNPEbln02PdWbcA=="
     },
     "node-preload": {
       "version": "0.2.1",
