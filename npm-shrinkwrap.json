@@ -16,7 +16,7 @@
         "@netlify/local-functions-proxy": "^1.1.1",
         "@netlify/plugin-edge-handlers": "^1.11.22",
         "@netlify/plugins-list": "^3.6.0",
-        "@netlify/routing-local-proxy": "^0.31.0",
+        "@netlify/routing-local-proxy": "^0.33.1",
         "@netlify/zip-it-and-ship-it": "4.20.0",
         "@oclif/command": "^1.6.1",
         "@oclif/config": "^1.15.1",
@@ -3251,20 +3251,20 @@
       }
     },
     "node_modules/@netlify/routing-local-proxy": {
-      "version": "0.31.0",
-      "resolved": "https://registry.npmjs.org/@netlify/routing-local-proxy/-/routing-local-proxy-0.31.0.tgz",
-      "integrity": "sha512-SSlWic9za/0QtfCP7GllJcOV98BWlx2goOF9bLLhmsHGiPfrhlhZfemqdMtKM4BIs+G70wzUqaIYeyjtxVh37A==",
+      "version": "0.33.1",
+      "resolved": "https://registry.npmjs.org/@netlify/routing-local-proxy/-/routing-local-proxy-0.33.1.tgz",
+      "integrity": "sha512-dx0lUZIkK9JOcqrO7QvtYAsL11qZjPEcY4IHS8vUp/QZg7VK/jKnQ9wvk3ITr+IYDqEx+qvKb3fEs8fQ5jBxQw==",
       "optionalDependencies": {
-        "@netlify/routing-local-proxy-darwin-arm64": "^0.31.0",
-        "@netlify/routing-local-proxy-darwin-x64": "^0.31.0",
-        "@netlify/routing-local-proxy-linux-x64": "^0.31.0",
-        "@netlify/routing-local-proxy-win32-x64": "^0.31.0"
+        "@netlify/routing-local-proxy-darwin-arm64": "^0.33.1",
+        "@netlify/routing-local-proxy-darwin-x64": "^0.33.1",
+        "@netlify/routing-local-proxy-linux-x64": "^0.33.1",
+        "@netlify/routing-local-proxy-win32-x64": "^0.33.1"
       }
     },
     "node_modules/@netlify/routing-local-proxy-darwin-arm64": {
-      "version": "0.31.0",
-      "resolved": "https://registry.npmjs.org/@netlify/routing-local-proxy-darwin-arm64/-/routing-local-proxy-darwin-arm64-0.31.0.tgz",
-      "integrity": "sha512-nKBxaLuWRJQO+Tcrv4T2BNq4xi4DDb3VpdSY/X8Ke/rm4YTBagbjQj64eJ/yzFj3QMw/PJzEbiZ7A3gbzq3xQw==",
+      "version": "0.33.1",
+      "resolved": "https://registry.npmjs.org/@netlify/routing-local-proxy-darwin-arm64/-/routing-local-proxy-darwin-arm64-0.33.1.tgz",
+      "integrity": "sha512-vkWo0newQCHGJvsq9mZQnRNMdb3tNOOWELctOf/3zQE/QxSSnmm687Thj5zvAR1TExW4jhT47z6+GquRHKiZpg==",
       "cpu": [
         "arm64"
       ],
@@ -3274,9 +3274,9 @@
       ]
     },
     "node_modules/@netlify/routing-local-proxy-darwin-x64": {
-      "version": "0.31.0",
-      "resolved": "https://registry.npmjs.org/@netlify/routing-local-proxy-darwin-x64/-/routing-local-proxy-darwin-x64-0.31.0.tgz",
-      "integrity": "sha512-wkI8PcsFWQoZZIe6Xb+mHSMFpH4cawX0+Z9bNQ7OX9azlQrmUXmQ395ax39rR2f+c0sg/Hqnoh/OJBeuaqbiew==",
+      "version": "0.33.1",
+      "resolved": "https://registry.npmjs.org/@netlify/routing-local-proxy-darwin-x64/-/routing-local-proxy-darwin-x64-0.33.1.tgz",
+      "integrity": "sha512-67yJPgGcsC7y18B9hcefWnX46xIL4C6lxIeX14CuX8Atzsrv7FDgbkiEI4ulNXa4Ilup+RxI1dNHNZgCt3JYiA==",
       "cpu": [
         "x64"
       ],
@@ -3286,9 +3286,9 @@
       ]
     },
     "node_modules/@netlify/routing-local-proxy-linux-x64": {
-      "version": "0.31.0",
-      "resolved": "https://registry.npmjs.org/@netlify/routing-local-proxy-linux-x64/-/routing-local-proxy-linux-x64-0.31.0.tgz",
-      "integrity": "sha512-Jr9Tpz+bOEksokGM//ORO7D3T0vmkpnutRbHL/cDoXD13y8lJaEIscnzcSDYsaKtEruxwrxTS8PTmZ1U2LzCbg==",
+      "version": "0.33.1",
+      "resolved": "https://registry.npmjs.org/@netlify/routing-local-proxy-linux-x64/-/routing-local-proxy-linux-x64-0.33.1.tgz",
+      "integrity": "sha512-NYUuTXMqqek+oJheRGoMdpSg6/93BDNvV0wCzI546nugWJWNsnSazUoqvvIcWpZoGxYpAuInnJgz3jehbDvJRg==",
       "cpu": [
         "x64"
       ],
@@ -3298,9 +3298,9 @@
       ]
     },
     "node_modules/@netlify/routing-local-proxy-win32-x64": {
-      "version": "0.31.0",
-      "resolved": "https://registry.npmjs.org/@netlify/routing-local-proxy-win32-x64/-/routing-local-proxy-win32-x64-0.31.0.tgz",
-      "integrity": "sha512-BF66RNC1C5bKjsYifOqi/LptkPtKZar/SrCoFRaIZrGaMkSs53g2CLFZN5f7t8926SF+rYWU8szQ1T7EAr+DUA==",
+      "version": "0.33.1",
+      "resolved": "https://registry.npmjs.org/@netlify/routing-local-proxy-win32-x64/-/routing-local-proxy-win32-x64-0.33.1.tgz",
+      "integrity": "sha512-lKHH9neE+pCqHuaZ56HDNBlulaOvOdQ1Tb6cAMa3cm0+8KLx3nTiSzDDN+FwRo5VqvWd8B+gT6NPj2hD4dfd+w==",
       "cpu": [
         "x64"
       ],
@@ -23365,38 +23365,38 @@
       "integrity": "sha512-yRgsmBw8Wzk6/I/afcerhC+3XtVxXUF0xrSMOYgxV0bmaKJmB/0StJG4FY9TOAmb/IzCp82mR/63ZpzwIvpVzw=="
     },
     "@netlify/routing-local-proxy": {
-      "version": "0.31.0",
-      "resolved": "https://registry.npmjs.org/@netlify/routing-local-proxy/-/routing-local-proxy-0.31.0.tgz",
-      "integrity": "sha512-SSlWic9za/0QtfCP7GllJcOV98BWlx2goOF9bLLhmsHGiPfrhlhZfemqdMtKM4BIs+G70wzUqaIYeyjtxVh37A==",
+      "version": "0.33.1",
+      "resolved": "https://registry.npmjs.org/@netlify/routing-local-proxy/-/routing-local-proxy-0.33.1.tgz",
+      "integrity": "sha512-dx0lUZIkK9JOcqrO7QvtYAsL11qZjPEcY4IHS8vUp/QZg7VK/jKnQ9wvk3ITr+IYDqEx+qvKb3fEs8fQ5jBxQw==",
       "requires": {
-        "@netlify/routing-local-proxy-darwin-arm64": "^0.31.0",
-        "@netlify/routing-local-proxy-darwin-x64": "^0.31.0",
-        "@netlify/routing-local-proxy-linux-x64": "^0.31.0",
-        "@netlify/routing-local-proxy-win32-x64": "^0.31.0"
+        "@netlify/routing-local-proxy-darwin-arm64": "^0.33.1",
+        "@netlify/routing-local-proxy-darwin-x64": "^0.33.1",
+        "@netlify/routing-local-proxy-linux-x64": "^0.33.1",
+        "@netlify/routing-local-proxy-win32-x64": "^0.33.1"
       }
     },
     "@netlify/routing-local-proxy-darwin-arm64": {
-      "version": "0.31.0",
-      "resolved": "https://registry.npmjs.org/@netlify/routing-local-proxy-darwin-arm64/-/routing-local-proxy-darwin-arm64-0.31.0.tgz",
-      "integrity": "sha512-nKBxaLuWRJQO+Tcrv4T2BNq4xi4DDb3VpdSY/X8Ke/rm4YTBagbjQj64eJ/yzFj3QMw/PJzEbiZ7A3gbzq3xQw==",
+      "version": "0.33.1",
+      "resolved": "https://registry.npmjs.org/@netlify/routing-local-proxy-darwin-arm64/-/routing-local-proxy-darwin-arm64-0.33.1.tgz",
+      "integrity": "sha512-vkWo0newQCHGJvsq9mZQnRNMdb3tNOOWELctOf/3zQE/QxSSnmm687Thj5zvAR1TExW4jhT47z6+GquRHKiZpg==",
       "optional": true
     },
     "@netlify/routing-local-proxy-darwin-x64": {
-      "version": "0.31.0",
-      "resolved": "https://registry.npmjs.org/@netlify/routing-local-proxy-darwin-x64/-/routing-local-proxy-darwin-x64-0.31.0.tgz",
-      "integrity": "sha512-wkI8PcsFWQoZZIe6Xb+mHSMFpH4cawX0+Z9bNQ7OX9azlQrmUXmQ395ax39rR2f+c0sg/Hqnoh/OJBeuaqbiew==",
+      "version": "0.33.1",
+      "resolved": "https://registry.npmjs.org/@netlify/routing-local-proxy-darwin-x64/-/routing-local-proxy-darwin-x64-0.33.1.tgz",
+      "integrity": "sha512-67yJPgGcsC7y18B9hcefWnX46xIL4C6lxIeX14CuX8Atzsrv7FDgbkiEI4ulNXa4Ilup+RxI1dNHNZgCt3JYiA==",
       "optional": true
     },
     "@netlify/routing-local-proxy-linux-x64": {
-      "version": "0.31.0",
-      "resolved": "https://registry.npmjs.org/@netlify/routing-local-proxy-linux-x64/-/routing-local-proxy-linux-x64-0.31.0.tgz",
-      "integrity": "sha512-Jr9Tpz+bOEksokGM//ORO7D3T0vmkpnutRbHL/cDoXD13y8lJaEIscnzcSDYsaKtEruxwrxTS8PTmZ1U2LzCbg==",
+      "version": "0.33.1",
+      "resolved": "https://registry.npmjs.org/@netlify/routing-local-proxy-linux-x64/-/routing-local-proxy-linux-x64-0.33.1.tgz",
+      "integrity": "sha512-NYUuTXMqqek+oJheRGoMdpSg6/93BDNvV0wCzI546nugWJWNsnSazUoqvvIcWpZoGxYpAuInnJgz3jehbDvJRg==",
       "optional": true
     },
     "@netlify/routing-local-proxy-win32-x64": {
-      "version": "0.31.0",
-      "resolved": "https://registry.npmjs.org/@netlify/routing-local-proxy-win32-x64/-/routing-local-proxy-win32-x64-0.31.0.tgz",
-      "integrity": "sha512-BF66RNC1C5bKjsYifOqi/LptkPtKZar/SrCoFRaIZrGaMkSs53g2CLFZN5f7t8926SF+rYWU8szQ1T7EAr+DUA==",
+      "version": "0.33.1",
+      "resolved": "https://registry.npmjs.org/@netlify/routing-local-proxy-win32-x64/-/routing-local-proxy-win32-x64-0.33.1.tgz",
+      "integrity": "sha512-lKHH9neE+pCqHuaZ56HDNBlulaOvOdQ1Tb6cAMa3cm0+8KLx3nTiSzDDN+FwRo5VqvWd8B+gT6NPj2hD4dfd+w==",
       "optional": true
     },
     "@netlify/run-utils": {
