@@ -1,7 +1,7 @@
 const bodyParser = require('body-parser')
 const jwtDecode = require('jwt-decode')
 
-const { log } = require('../../utils/command-helpers')
+const { log, warn } = require('../../utils/command-helpers')
 const { getInternalFunctionsDir } = require('../../utils/functions')
 const { NETLIFYDEVERR, NETLIFYDEVLOG } = require('../../utils/logo')
 
@@ -108,7 +108,7 @@ const createHandler = function ({ functionsRegistry }) {
   }
 }
 
-const getFunctionsServer = async function ({ functionsRegistry, siteUrl, warn, prefix }) {
+const getFunctionsServer = async function ({ functionsRegistry, siteUrl, prefix }) {
   // performance optimization, load express on demand
   // eslint-disable-next-line node/global-require
   const express = require('express')
@@ -144,7 +144,6 @@ const startFunctionsServer = async ({
   config,
   settings,
   site,
-  warn,
   errorExit,
   siteUrl,
   capabilities,

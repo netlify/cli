@@ -18,7 +18,7 @@ const ora = require('ora')
 const { mkdirRecursiveSync } = require('../../lib/fs')
 const { getSiteData, getAddons, getCurrentAddon } = require('../../utils/addons/prepare')
 const Command = require('../../utils/command')
-const { log } = require('../../utils/command-helpers')
+const { log, error } = require('../../utils/command-helpers')
 const { injectEnvVariables } = require('../../utils/dev')
 const { NETLIFYDEVLOG, NETLIFYDEVWARN, NETLIFYDEVERR } = require('../../utils/logo')
 const { readRepoURL, validateRepoURL } = require('../../utils/read-repo-url')
@@ -215,7 +215,7 @@ const ensureFunctionDirExists = async function (context) {
     log(`${NETLIFYDEVLOG} functions directory not specified in netlify.toml or UI settings`)
 
     if (!siteId) {
-      context.error(`${NETLIFYDEVERR} No site id found, please run inside a site directory or \`netlify link\``)
+      error(`${NETLIFYDEVERR} No site id found, please run inside a site directory or \`netlify link\``)
     }
 
     const { functionsDir } = await inquirer.prompt([
@@ -243,7 +243,7 @@ const ensureFunctionDirExists = async function (context) {
       })
 
       log(`${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(functionsDirHolder)} updated in site settings`)
-    } catch (error) {
+    } catch (_) {
       throw error('Error updating site settings')
     }
   }
@@ -279,7 +279,7 @@ const downloadFromURL = async function (context, flags, args, functionsDir) {
 
   try {
     mkdirRecursiveSync(fnFolder)
-  } catch (error) {
+  } catch (_) {
     // Ignore
   }
   await Promise.all(
@@ -289,8 +289,8 @@ const downloadFromURL = async function (context, flags, args, functionsDir) {
         const finalName = path.basename(name, '.js') === functionName ? `${nameToUse}.js` : name
         const dest = fs.createWriteStream(path.join(fnFolder, finalName))
         res.body.pipe(dest)
-      } catch (error) {
-        throw new Error(`Error while retrieving ${downloadUrl} ${error}`)
+      } catch (error_) {
+        throw new Error(`Error while retrieving ${downloadUrl} ${error_}`)
       }
     }),
   )
@@ -365,7 +365,7 @@ const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) 
     const functionPackageLock = path.join(functionPath, 'package-lock.json')
 
     fs.unlinkSync(functionPackageLock)
-  } catch (error) {
+  } catch (_) {
     // no-op
   }
 }
@@ -388,9 +388,9 @@ const scaffoldFromTemplate = async function (context, flags, args, functionsDir)
     flags.url = chosenUrl.trim()
     try {
       await downloadFromURL(context, flags, args, functionsDir)
-    } catch (error) {
-      context.error(`$${NETLIFYDEVERR} Error downloading from URL: ${flags.url}`)
-      context.error(error)
+    } catch (error_) {
+      error(`$${NETLIFYDEVERR} Error downloading from URL: ${flags.url}`)
+      error(error_)
       process.exit(1)
     }
   } else if (chosenTemplate === 'report') {
@@ -450,7 +450,7 @@ const scaffoldFromTemplate = async function (context, flags, args, functionsDir)
 
 const TEMPLATE_PERMISSIONS = 0o777
 
-const createFunctionAddon = async function ({ api, addons, siteId, addonName, siteData, error }) {
+const createFunctionAddon = async function ({ api, addons, siteId, addonName, siteData }) {
   try {
     const addon = getCurrentAddon({ addons, addonName })
     if (addon && addon.id) {
@@ -509,7 +509,6 @@ const installAddons = async function (context, functionAddons, fnPath) {
     return
   }
 
-  const { error } = context
   const { api, site } = context.netlify
   const siteId = site.id
   if (!siteId) {
@@ -518,10 +517,7 @@ const installAddons = async function (context, functionAddons, fnPath) {
   }
   log(`${NETLIFYDEVLOG} checking Netlify APIs...`)
 
-  const [siteData, siteAddons] = await Promise.all([
-    getSiteData({ api, siteId, error }),
-    getAddons({ api, siteId, error }),
-  ])
+  const [siteData, siteAddons] = await Promise.all([getSiteData({ api, siteId }), getAddons({ api, siteId })])
 
   const arr = functionAddons.map(async ({ addonName, addonDidInstall }) => {
     log(`${NETLIFYDEVLOG} installing addon: ${chalk.yellow.inverse(addonName)}`)
@@ -532,7 +528,6 @@ const installAddons = async function (context, functionAddons, fnPath) {
         siteId,
         addonName,
         siteData,
-        error,
       })
 
       await handleAddonDidInstall({ addonCreated, addonDidInstall, context, fnPath })

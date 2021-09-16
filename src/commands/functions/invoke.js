@@ -8,6 +8,7 @@ const inquirer = require('inquirer')
 const fetch = require('node-fetch')
 
 const Command = require('../../utils/command')
+const { error } = require('../../utils/command-helpers')
 const { getFunctions, BACKGROUND } = require('../../utils/get-functions')
 const { NETLIFYDEVWARN } = require('../../utils/logo')
 
@@ -38,7 +39,7 @@ class FunctionsInvokeCommand extends Command {
 
     const functionsDir = flags.functions || (config.dev && config.dev.functions) || config.functionsDirectory
     if (typeof functionsDir === 'undefined') {
-      this.error('functions directory is undefined, did you forget to set it in netlify.toml?')
+      error('functions directory is undefined, did you forget to set it in netlify.toml?')
     }
 
     if (!flags.port)
@@ -126,8 +127,8 @@ class FunctionsInvokeCommand extends Command {
       )
       const data = await response.text()
       console.log(data)
-    } catch (error) {
-      this.error(`Ran into an error invoking your function: ${error.message}`)
+    } catch (error_) {
+      error(`Ran into an error invoking your function: ${error_.message}`)
     }
   }
 }
@@ -154,8 +155,8 @@ const processPayloadFromFlag = function (payloadString) {
         // eslint-disable-next-line node/global-require, import/no-dynamic-require
         payload = require(payloadpath)
         return payload
-      } catch (error) {
-        console.error(error)
+      } catch (error_) {
+        console.error(error_)
       }
     }
     // case 3: invalid string, invalid path
@@ -270,7 +271,7 @@ const tryParseJSON = function (jsonString) {
     if (parsedValue && typeof parsedValue === 'object') {
       return parsedValue
     }
-  } catch (error) {}
+  } catch (_) {}
 
   return false
 }

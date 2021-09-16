@@ -8,7 +8,7 @@ const isEmpty = require('lodash/isEmpty')
 
 const { supportsBackgroundFunctions } = require('../lib/account')
 
-const { log } = require('./command-helpers')
+const { log, warn } = require('./command-helpers')
 const { loadDotEnvFiles } = require('./dot-env')
 const { NETLIFYDEVLOG } = require('./logo')
 
@@ -73,7 +73,7 @@ const getAddonsInformation = ({ siteInfo, addons }) => {
   return { urls, env }
 }
 
-const getSiteAccount = ({ siteInfo, accounts, warn }) => {
+const getSiteAccount = ({ siteInfo, accounts }) => {
   const siteAccount = accounts.find((account) => account.slug === siteInfo.account_slug)
   if (!siteAccount) {
     warn(`Could not find account for site '${siteInfo.name}' with account slug '${siteInfo.account_slug}'`)
@@ -88,7 +88,7 @@ const SYNCHRONOUS_FUNCTION_TIMEOUT = 10
 // default 15 minutes for background functions
 const BACKGROUND_FUNCTION_TIMEOUT = 900
 
-const getSiteInformation = async ({ flags = {}, api, site, warn, error: failAndExit, siteInfo }) => {
+const getSiteInformation = async ({ flags = {}, api, site, error: failAndExit, siteInfo }) => {
   if (site.id && !flags.offline) {
     validateSiteInfo({ site, siteInfo, failAndExit })
     const [accounts, addons] = await Promise.all([
@@ -97,7 +97,7 @@ const getSiteInformation = async ({ flags = {}, api, site, warn, error: failAndE
     ])
 
     const { urls: addonsUrls } = getAddonsInformation({ siteInfo, addons })
-    const account = getSiteAccount({ siteInfo, accounts, warn })
+    const account = getSiteAccount({ siteInfo, accounts })
 
     return {
       addonsUrls,
@@ -132,9 +132,9 @@ const getEnvSourceName = (source) => {
 
 // Takes a set of environment variables in the format provided by @netlify/config, augments it with variables from both
 // dot-env files and the process itself, and injects into `process.env`.
-const injectEnvVariables = async ({ env, site, warn }) => {
+const injectEnvVariables = async ({ env, site }) => {
   const environment = new Map(Object.entries(env))
-  const dotEnvFiles = await loadDotEnvFiles({ projectDir: site.root, warn })
+  const dotEnvFiles = await loadDotEnvFiles({ projectDir: site.root })
 
   dotEnvFiles.forEach(({ file, env: fileEnv }) => {
     Object.keys(fileEnv).forEach((key) => {
