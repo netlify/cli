@@ -1,6 +1,6 @@
 const { prepareAddonCommand, ADDON_VALIDATION } = require('../../utils/addons/prepare')
 const Command = require('../../utils/command')
-const { log } = require('../../utils/command-helpers')
+const { log, exit } = require('../../utils/command-helpers')
 const openBrowser = require('../../utils/open-browser')
 
 class AddonsAuthCommand extends Command {
@@ -25,7 +25,7 @@ class AddonsAuthCommand extends Command {
     log(addon.auth_url)
     log()
     await openBrowser({ url: addon.auth_url })
-    this.exit()
+    exit()
   }
 }
 AddonsAuthCommand.aliases = ['addon:auth']
