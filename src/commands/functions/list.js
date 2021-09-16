@@ -4,7 +4,7 @@ const { flags: flagsLib } = require('@oclif/command')
 const AsciiTable = require('ascii-table')
 
 const Command = require('../../utils/command')
-const { log, logJson } = require('../../utils/command-helpers')
+const { log, logJson, warn, error, exit } = require('../../utils/command-helpers')
 const { getFunctionsDir } = require('../../utils/functions')
 const { getFunctions } = require('../../utils/get-functions')
 
@@ -18,23 +18,23 @@ class FunctionsListCommand extends Command {
     // copied from `netlify status`
     const siteId = site.id
     if (!siteId) {
-      this.warn('Did you run `netlify link` yet?')
-      this.error(`You don't appear to be in a folder that is linked to a site`)
+      warn('Did you run `netlify link` yet?')
+      error(`You don't appear to be in a folder that is linked to a site`)
     }
     let siteData
     try {
       siteData = await api.getSite({ siteId })
-    } catch (error) {
+    } catch (error_) {
       // unauthorized
-      if (error.status === 401) {
-        this.warn(`Log in with a different account or re-link to a site you have permission for`)
-        this.error(`Not authorized to view the currently linked site (${siteId})`)
+      if (error_.status === 401) {
+        warn(`Log in with a different account or re-link to a site you have permission for`)
+        error(`Not authorized to view the currently linked site (${siteId})`)
       }
       // missing
-      if (error.status === 404) {
-        this.error(`The site this folder is linked to can't be found`)
+      if (error_.status === 404) {
+        error(`The site this folder is linked to can't be found`)
       }
-      this.error(error)
+      error(error_)
     }
     const deploy = siteData.published_deploy || {}
     const deployedFunctions = deploy.available_functions || []
@@ -53,12 +53,12 @@ class FunctionsListCommand extends Command {
 
     if (normalizedFunctions.length === 0) {
       log(`No functions found in ${functionsDir}`)
-      this.exit()
+      exit()
     }
 
     if (flags.json) {
       logJson(normalizedFunctions)
-      this.exit()
+      exit()
     }
 
     // Make table

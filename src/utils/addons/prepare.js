@@ -1,6 +1,6 @@
 const chalk = require('chalk')
 
-const { log } = require('../command-helpers')
+const { log, error } = require('../command-helpers')
 
 const ADDON_VALIDATION = {
   EXISTS: 'EXISTS',
@@ -47,7 +47,7 @@ const validateCurrentAddon = ({ addon, validation, addonName, siteData, warn, ex
   }
 }
 
-const getAddonManifest = async ({ api, addonName, error }) => {
+const getAddonManifest = async ({ api, addonName }) => {
   let manifest
   try {
     manifest = await api.showServiceManifest({ addonName })
@@ -61,7 +61,7 @@ const getAddonManifest = async ({ api, addonName, error }) => {
   return manifest
 }
 
-const getSiteData = async ({ api, siteId, error }) => {
+const getSiteData = async ({ api, siteId }) => {
   let siteData
   try {
     siteData = await api.getSite({ siteId })
@@ -71,7 +71,7 @@ const getSiteData = async ({ api, siteId, error }) => {
   return siteData
 }
 
-const getAddons = async ({ api, siteId, error }) => {
+const getAddons = async ({ api, siteId }) => {
   let addons
   try {
     addons = await api.listServiceInstancesForSite({ siteId })
@@ -82,7 +82,7 @@ const getAddons = async ({ api, siteId, error }) => {
 }
 
 const prepareAddonCommand = async ({ context, addonName, validation }) => {
-  const { netlify, warn, error, exit } = context
+  const { netlify, warn, exit } = context
   const { api, site } = netlify
   const siteId = site.id
   if (!siteId) {
@@ -93,8 +93,8 @@ const prepareAddonCommand = async ({ context, addonName, validation }) => {
 
   const [manifest, siteData, addons] = await Promise.all([
     addonName ? getAddonManifest({ api, addonName, error }) : Promise.resolve(),
-    getSiteData({ api, siteId, error }),
-    getAddons({ api, siteId, error }),
+    getSiteData({ api, siteId }),
+    getAddons({ api, siteId }),
   ])
 
   let addon
