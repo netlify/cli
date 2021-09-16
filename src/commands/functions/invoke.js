@@ -271,7 +271,7 @@ const tryParseJSON = function (jsonString) {
     if (parsedValue && typeof parsedValue === 'object') {
       return parsedValue
     }
-  } catch (_) {}
+  } catch {}
 
   return false
 }

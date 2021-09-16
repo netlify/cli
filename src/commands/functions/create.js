@@ -243,7 +243,7 @@ const ensureFunctionDirExists = async function (context) {
       })
 
       log(`${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(functionsDirHolder)} updated in site settings`)
-    } catch (_) {
+    } catch {
       throw error('Error updating site settings')
     }
   }
@@ -279,7 +279,7 @@ const downloadFromURL = async function (context, flags, args, functionsDir) {
 
   try {
     mkdirRecursiveSync(fnFolder)
-  } catch (_) {
+  } catch {
     // Ignore
   }
   await Promise.all(
@@ -365,7 +365,7 @@ const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) 
     const functionPackageLock = path.join(functionPath, 'package-lock.json')
 
     fs.unlinkSync(functionPackageLock)
-  } catch (_) {
+  } catch {
     // no-op
   }
 }
