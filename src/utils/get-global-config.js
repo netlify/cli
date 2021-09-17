@@ -20,7 +20,7 @@ const getGlobalConfigOnce = async function () {
   // Read legacy config if exists
   try {
     legacyConfig = JSON.parse(await readFileAsync(legacyPath))
-  } catch (_) {}
+  } catch {}
   // Use legacy config as default values
   const defaults = { ...globalConfigDefaults, ...legacyConfig }
   const configStore = new Configstore(null, defaults, { configPath })

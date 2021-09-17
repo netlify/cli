@@ -9,7 +9,7 @@ const rimrafAsync = util.promisify(rimraf)
 const copyDirRecursiveAsync = async (src, dest) => {
   try {
     fs.mkdir(dest, { recursive: true })
-  } catch (_) {
+  } catch {
     // ignore erros for mkdir
   }
 
@@ -34,7 +34,7 @@ const copyDirRecursiveAsync = async (src, dest) => {
 const ensureFilePathAsync = async (filePath) => {
   try {
     await fs.mkdir(path.dirname(filePath), { recursive: true })
-  } catch (_) {
+  } catch {
     // ignore any errors with mkdir - it will throw if the path already exists.
   }
 }

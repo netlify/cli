@@ -26,7 +26,7 @@ const fileExistsAsync = async (filePath) => {
   try {
     await accessAsync(filePath, fs.F_OK)
     return true
-  } catch (_) {
+  } catch {
     return false
   }
 }

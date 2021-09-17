@@ -84,7 +84,7 @@ const hookExists = async ({ deployHook, octokit, repoOwner, repoName }) => {
     })
     const exists = hooks.some((hook) => hook.config.url === deployHook)
     return exists
-  } catch (_) {
+  } catch {
     // we don't need to fail if listHooks errors out
     return false
   }

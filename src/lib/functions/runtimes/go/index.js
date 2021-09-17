@@ -31,7 +31,7 @@ const checkGoInstallation = async ({ cwd }) => {
     await execa('go', ['version'], { cwd })
 
     return true
-  } catch (_) {
+  } catch {
     return false
   }
 }
