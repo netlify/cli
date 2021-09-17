@@ -33,7 +33,7 @@ const buildClientContext = function (headers) {
       },
       user: jwtDecode(parts[1]),
     }
-  } catch (_) {
+  } catch {
     // Ignore errors - bearer token is not a JWT, probably not intended for us
   }
 }

@@ -274,7 +274,7 @@ const cleanupShell = async function () {
     }
 
     await removeConfig(configFile, getInitContent(incFilePath))
-  } catch (_) {}
+  } catch {}
 }
 
 const uninstall = async function () {

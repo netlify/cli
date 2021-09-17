@@ -9,7 +9,7 @@ const format = (message, styles) => {
     styles.forEach((style) => {
       func = func[style]
     })
-  } catch (_) {}
+  } catch {}
   return func(message)
 }
 

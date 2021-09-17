@@ -347,7 +347,7 @@ testMatrix.forEach(({ args }) => {
                   const response = await got(`http://localhost:${port}/.netlify/functions/hello`).text()
 
                   return response === 'Hello'
-                } catch (_) {
+                } catch {
                   return false
                 }
               },
@@ -429,7 +429,7 @@ export { handler }
                   const response = await got(`http://localhost:${port}/.netlify/functions/hello`).text()
 
                   return response === 'Modern Web Development on the Jamstack'
-                } catch (_) {
+                } catch {
                   return false
                 }
               },
@@ -539,7 +539,7 @@ export { handler }
                   const response = await got(`http://localhost:${port}/.netlify/functions/hello`).text()
 
                   return response === 'Internal updated'
-                } catch (_) {
+                } catch {
                   return false
                 }
               },
@@ -613,7 +613,7 @@ export { handler }
                   const response = await got(`http://localhost:${port}/.netlify/functions/hello`).text()
 
                   return response === 'User updated'
-                } catch (_) {
+                } catch {
                   return false
                 }
               },

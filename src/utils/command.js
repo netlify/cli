@@ -123,7 +123,7 @@ class BaseCommand extends TrackedCommand {
     try {
       await this.netlify.api.getCurrentUser()
       return true
-    } catch (_) {
+    } catch {
       return false
     }
   }

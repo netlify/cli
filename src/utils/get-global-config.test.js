@@ -22,7 +22,7 @@ const tmpConfigBackupPath = path.join(os.tmpdir(), `netlify-config-backup-${Date
 test.before('backup current user config if exists', async () => {
   try {
     await copyFileAsync(configPath, tmpConfigBackupPath)
-  } catch (_) {}
+  } catch {}
 })
 
 test.after.always('cleanup tmp directory and legacy config', async () => {
@@ -32,7 +32,7 @@ test.after.always('cleanup tmp directory and legacy config', async () => {
     await copyFileAsync(tmpConfigBackupPath, configPath)
     // Remove tmp backup if exists
     await rmFileAsync(tmpConfigBackupPath)
-  } catch (_) {}
+  } catch {}
   // Remove legacy config path
   await rmdirRecursiveAsync(getLegacyPathInHome([]))
 })
