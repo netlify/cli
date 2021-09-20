@@ -17,7 +17,7 @@
         "@netlify/plugin-edge-handlers": "^1.11.22",
         "@netlify/plugins-list": "^3.6.0",
         "@netlify/routing-local-proxy": "^0.33.2",
-        "@netlify/zip-it-and-ship-it": "4.21.0",
+        "@netlify/zip-it-and-ship-it": "4.22.0",
         "@oclif/command": "^1.6.1",
         "@oclif/config": "^1.15.1",
         "@oclif/errors": "^1.3.4",
@@ -61,7 +61,7 @@
         "from2-array": "^0.0.4",
         "fuzzy": "^0.1.3",
         "get-port": "^5.1.0",
-        "gh-release-fetch": "^2.0.3",
+        "gh-release-fetch": "^2.0.0",
         "git-repo-info": "^2.1.0",
         "gitconfiglocal": "^2.1.0",
         "hasbin": "^1.2.3",
@@ -3321,9 +3321,9 @@
       }
     },
     "node_modules/@netlify/zip-it-and-ship-it": {
-      "version": "4.21.0",
-      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-4.21.0.tgz",
-      "integrity": "sha512-5h/Mdahda2h2yJaDvf3J7GSjCiU3FD/RwCPBjWYgY7l5LVmkR7Xk2tNqTrdC28XfZOfQwm6URtbh01r+4UcEmA==",
+      "version": "4.22.0",
+      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-4.22.0.tgz",
+      "integrity": "sha512-etOGaq248ws55tYiJ16qnkpD9UKisiVH4g/RnO1oVP45+BSdRmNynUZkFbAZqpkEe8F61r4lxGBHsStuxXfXMQ==",
       "dependencies": {
         "@netlify/esbuild": "^0.13.6",
         "acorn": "^8.4.0",
@@ -3334,7 +3334,7 @@
         "del": "^6.0.0",
         "elf-cam": "^0.1.1",
         "end-of-stream": "^1.4.4",
-        "es-module-lexer": "^0.7.1",
+        "es-module-lexer": "^0.9.0",
         "execa": "^5.0.0",
         "filter-obj": "^2.0.1",
         "find-up": "^5.0.0",
@@ -8771,9 +8771,9 @@
       }
     },
     "node_modules/es-module-lexer": {
-      "version": "0.7.1",
-      "resolved": "https://registry.npmjs.org/es-module-lexer/-/es-module-lexer-0.7.1.tgz",
-      "integrity": "sha512-MgtWFl5No+4S3TmhDmCz2ObFGm6lEpTnzbQi+Dd+pw4mlTIZTmM2iAs5gRlmx5zS9luzobCSBSI90JM/1/JgOw=="
+      "version": "0.9.0",
+      "resolved": "https://registry.npmjs.org/es-module-lexer/-/es-module-lexer-0.9.0.tgz",
+      "integrity": "sha512-qU2eN/XHsrl3E4y7mK1wdWnyy5c8gXtCbfP6Xcsemm7fPUR1PIV1JhZfP7ojcN0Fzp69CfrS3u76h2tusvfKiQ=="
     },
     "node_modules/es-to-primitive": {
       "version": "1.2.1",
@@ -23414,9 +23414,9 @@
       }
     },
     "@netlify/zip-it-and-ship-it": {
-      "version": "4.21.0",
-      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-4.21.0.tgz",
-      "integrity": "sha512-5h/Mdahda2h2yJaDvf3J7GSjCiU3FD/RwCPBjWYgY7l5LVmkR7Xk2tNqTrdC28XfZOfQwm6URtbh01r+4UcEmA==",
+      "version": "4.22.0",
+      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-4.22.0.tgz",
+      "integrity": "sha512-etOGaq248ws55tYiJ16qnkpD9UKisiVH4g/RnO1oVP45+BSdRmNynUZkFbAZqpkEe8F61r4lxGBHsStuxXfXMQ==",
       "requires": {
         "@netlify/esbuild": "^0.13.6",
         "acorn": "^8.4.0",
@@ -23427,7 +23427,7 @@
         "del": "^6.0.0",
         "elf-cam": "^0.1.1",
         "end-of-stream": "^1.4.4",
-        "es-module-lexer": "^0.7.1",
+        "es-module-lexer": "^0.9.0",
         "execa": "^5.0.0",
         "filter-obj": "^2.0.1",
         "find-up": "^5.0.0",
@@ -27680,9 +27680,9 @@
       }
     },
     "es-module-lexer": {
-      "version": "0.7.1",
-      "resolved": "https://registry.npmjs.org/es-module-lexer/-/es-module-lexer-0.7.1.tgz",
-      "integrity": "sha512-MgtWFl5No+4S3TmhDmCz2ObFGm6lEpTnzbQi+Dd+pw4mlTIZTmM2iAs5gRlmx5zS9luzobCSBSI90JM/1/JgOw=="
+      "version": "0.9.0",
+      "resolved": "https://registry.npmjs.org/es-module-lexer/-/es-module-lexer-0.9.0.tgz",
+      "integrity": "sha512-qU2eN/XHsrl3E4y7mK1wdWnyy5c8gXtCbfP6Xcsemm7fPUR1PIV1JhZfP7ojcN0Fzp69CfrS3u76h2tusvfKiQ=="
     },
     "es-to-primitive": {
       "version": "1.2.1",
