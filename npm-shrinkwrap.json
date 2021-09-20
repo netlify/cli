@@ -33,7 +33,7 @@
         "backoff": "^2.5.0",
         "better-opn": "^2.1.1",
         "body-parser": "^1.19.0",
-        "boxen": "^5.1.2",
+        "boxen": "^5.0.0",
         "chalk": "^4.0.0",
         "chokidar": "^3.0.2",
         "ci-info": "^3.0.0",
@@ -61,7 +61,7 @@
         "from2-array": "^0.0.4",
         "fuzzy": "^0.1.3",
         "get-port": "^5.1.0",
-        "gh-release-fetch": "^2.0.0",
+        "gh-release-fetch": "^2.0.3",
         "git-repo-info": "^2.1.0",
         "gitconfiglocal": "^2.1.0",
         "hasbin": "^1.2.3",
@@ -11176,9 +11176,9 @@
       }
     },
     "node_modules/gh-release-fetch": {
-      "version": "2.0.2",
-      "resolved": "https://registry.npmjs.org/gh-release-fetch/-/gh-release-fetch-2.0.2.tgz",
-      "integrity": "sha512-VIlw5FzT8b31rwwH3A4zg05wd9R1/7vPYY+Dow14U1mXEkGF348+x8HUk5fY9py6icVVU3z/v4L7m5BV/7xxjA==",
+      "version": "2.0.3",
+      "resolved": "https://registry.npmjs.org/gh-release-fetch/-/gh-release-fetch-2.0.3.tgz",
+      "integrity": "sha512-g8q2GMzZASFm1TgU1JnVdbvGAmkrrsBWXDOdCcVuxShhfTPi26jY0tiUbPlEFYGa8dmMCxBOv7iWBX5hciTMkA==",
       "dependencies": {
         "@types/download": "^8.0.0",
         "@types/node-fetch": "^2.1.6",
@@ -29493,9 +29493,9 @@
       "integrity": "sha1-3BXKHGcjh8p2vTesCjlbogQqLCg="
     },
     "gh-release-fetch": {
-      "version": "2.0.2",
-      "resolved": "https://registry.npmjs.org/gh-release-fetch/-/gh-release-fetch-2.0.2.tgz",
-      "integrity": "sha512-VIlw5FzT8b31rwwH3A4zg05wd9R1/7vPYY+Dow14U1mXEkGF348+x8HUk5fY9py6icVVU3z/v4L7m5BV/7xxjA==",
+      "version": "2.0.3",
+      "resolved": "https://registry.npmjs.org/gh-release-fetch/-/gh-release-fetch-2.0.3.tgz",
+      "integrity": "sha512-g8q2GMzZASFm1TgU1JnVdbvGAmkrrsBWXDOdCcVuxShhfTPi26jY0tiUbPlEFYGa8dmMCxBOv7iWBX5hciTMkA==",
       "requires": {
         "@types/download": "^8.0.0",
         "@types/node-fetch": "^2.1.6",
