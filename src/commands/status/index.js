@@ -4,7 +4,7 @@ const clean = require('clean-deep')
 const prettyjson = require('prettyjson')
 
 const Command = require('../../utils/command')
-const { log, logJson, getToken } = require('../../utils/command-helpers')
+const { log, logJson, warn, error, exit, getToken } = require('../../utils/command-helpers')
 
 class StatusCommand extends Command {
   async run() {
@@ -18,7 +18,7 @@ class StatusCommand extends Command {
       log(`Not logged in. Please log in to see site status.`)
       log()
       log('Login with "netlify login" command')
-      this.exit()
+      exit()
     }
 
     const siteId = site.id
@@ -32,9 +32,9 @@ class StatusCommand extends Command {
 
     try {
       ;[accounts, user] = await Promise.all([api.listAccountsForUser(), api.getCurrentUser()])
-    } catch (error) {
-      if (error.status === 401) {
-        this.error(
+    } catch (error_) {
+      if (error_.status === 401) {
+        error(
           'Your session has expired. Please try to re-authenticate by running `netlify logout` and `netlify login`.',
         )
       }
@@ -59,23 +59,23 @@ class StatusCommand extends Command {
     log(prettyjson.render(cleanAccountData))
 
     if (!siteId) {
-      this.warn('Did you run `netlify link` yet?')
-      this.error(`You don't appear to be in a folder that is linked to a site`)
+      warn('Did you run `netlify link` yet?')
+      error(`You don't appear to be in a folder that is linked to a site`)
     }
     let siteData
     try {
       siteData = await api.getSite({ siteId })
-    } catch (error) {
+    } catch (error_) {
       // unauthorized
-      if (error.status === 401) {
-        this.warn(`Log in with a different account or re-link to a site you have permission for`)
-        this.error(`Not authorized to view the currently linked site (${siteId})`)
+      if (error_.status === 401) {
+        warn(`Log in with a different account or re-link to a site you have permission for`)
+        error(`Not authorized to view the currently linked site (${siteId})`)
       }
       // missing
-      if (error.status === 404) {
-        this.error(`The site this folder is linked to can't be found`)
+      if (error_.status === 404) {
+        error(`The site this folder is linked to can't be found`)
       }
-      this.error(error)
+      error(error_)
     }
 
     // Json only logs out if --json flag is passed

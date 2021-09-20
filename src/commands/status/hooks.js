@@ -2,7 +2,7 @@ const { get } = require('dot-prop')
 const prettyjson = require('prettyjson')
 
 const Command = require('../../utils/command')
-const { log } = require('../../utils/command-helpers')
+const { log, warn, error } = require('../../utils/command-helpers')
 
 class StatusHooksCommand extends Command {
   async run() {
@@ -12,24 +12,24 @@ class StatusHooksCommand extends Command {
 
     const siteId = site.id
     if (!siteId) {
-      this.warn('Did you run `netlify link` yet?')
-      this.error(`You don't appear to be in a folder that is linked to a site`)
+      warn('Did you run `netlify link` yet?')
+      error(`You don't appear to be in a folder that is linked to a site`)
     }
 
     let siteData
     try {
       siteData = await api.getSite({ siteId })
-    } catch (error) {
+    } catch (error_) {
       // unauthorized
-      if (error.status === 401) {
-        this.warn(`Log in with a different account or re-link to a site you have permission for`)
-        this.error(`Not authorized to view the currently linked site (${siteId})`)
+      if (error_.status === 401) {
+        warn(`Log in with a different account or re-link to a site you have permission for`)
+        error(`Not authorized to view the currently linked site (${siteId})`)
       }
       // missing
-      if (error.status === 404) {
-        this.error(`The site this folder is linked to can't be found`)
+      if (error_.status === 404) {
+        error(`The site this folder is linked to can't be found`)
       }
-      this.error(error)
+      error(error_)
     }
 
     const ntlHooks = await api.listHooksBySiteId({ siteId: siteData.id })
