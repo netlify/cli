@@ -5,7 +5,7 @@ const { methods } = require('netlify')
 
 const { isEmptyCommand } = require('../utils/check-command-inputs')
 const Command = require('../utils/command')
-const { log, logJson } = require('../utils/command-helpers')
+const { log, logJson, error, exit } = require('../utils/command-helpers')
 
 class APICommand extends Command {
   async run() {
@@ -25,15 +25,15 @@ class APICommand extends Command {
       log()
       log('Above is a list of available API methods')
       log(`To run a method use "${chalk.cyanBright('netlify api methodName')}"`)
-      this.exit()
+      exit()
     }
 
     if (!apiMethod) {
-      this.error(`You must provide an API method. Run "netlify api --list" to see available methods`)
+      error(`You must provide an API method. Run "netlify api --list" to see available methods`)
     }
 
     if (!api[apiMethod] || typeof api[apiMethod] !== 'function') {
-      this.error(`"${apiMethod}"" is not a valid api method. Run "netlify api --list" to see available methods`)
+      error(`"${apiMethod}"" is not a valid api method. Run "netlify api --list" to see available methods`)
     }
 
     let payload
@@ -45,8 +45,8 @@ class APICommand extends Command {
     try {
       const apiResponse = await api[apiMethod](payload)
       logJson(apiResponse)
-    } catch (error) {
-      this.error(error)
+    } catch (error_) {
+      error(error_)
     }
   }
 }
