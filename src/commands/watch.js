@@ -5,7 +5,7 @@ const pWaitFor = require('p-wait-for')
 const prettyjson = require('prettyjson')
 
 const Command = require('../utils/command')
-const { log } = require('../utils/command-helpers')
+const { log, exit } = require('../utils/command-helpers')
 
 const InitCommand = require('./init')
 
@@ -70,7 +70,7 @@ class SitesWatchCommand extends Command {
       throw new CLIError(error)
     }
 
-    this.exit()
+    exit()
   }
 }
 
