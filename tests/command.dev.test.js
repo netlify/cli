@@ -21,17 +21,6 @@ const got = require('./utils/got')
 const { withMockApi } = require('./utils/mock-api')
 const { withSiteBuilder } = require('./utils/site-builder')
 
-const gotCatch404 = async (url, options) => {
-  try {
-    return await got(url, options)
-  } catch (error) {
-    if (error.response && error.response.statusCode === 404) {
-      return error.response
-    }
-    throw error
-  }
-}
-
 const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
 
 const testMatrix = [
@@ -75,7 +64,7 @@ const validateRoleBasedRedirectsSite = async ({ builder, args, t, jwtSecret, jwt
   const editorToken = getToken({ jwtSecret, jwtRolePath, roles: ['editor'] })
 
   await withDevServer({ cwd: builder.directory, args }, async (server) => {
-    const unauthenticatedResponse = await gotCatch404(`${server.url}/admin`)
+    const unauthenticatedResponse = await got(`${server.url}/admin`, { throwHttpErrors: false })
     t.is(unauthenticatedResponse.statusCode, 404)
     t.is(unauthenticatedResponse.body, 'Not Found')
 
@@ -87,10 +76,11 @@ const validateRoleBasedRedirectsSite = async ({ builder, args, t, jwtSecret, jwt
     t.is(authenticatedResponse.statusCode, 200)
     t.is(authenticatedResponse.body, '<html>foo</html>')
 
-    const wrongRoleResponse = await gotCatch404(`${server.url}/admin/foo`, {
+    const wrongRoleResponse = await got(`${server.url}/admin/foo`, {
       headers: {
         cookie: `nf_jwt=${editorToken}`,
       },
+      throwHttpErrors: false,
     })
     t.is(wrongRoleResponse.statusCode, 404)
     t.is(wrongRoleResponse.body, 'Not Found')
@@ -936,7 +926,7 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const response = await gotCatch404(`${server.url}/non-existent`)
+        const response = await got(`${server.url}/non-existent`, { throwHttpErrors: false })
         t.is(response.body, '<h1>404 - Page not found</h1>')
       })
     })
@@ -960,7 +950,7 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const response = await gotCatch404(`${server.url}/non-existent`)
+        const response = await got(`${server.url}/non-existent`, { throwHttpErrors: false })
         t.is(response.statusCode, 404)
         t.is(response.body, '<h1>404 - My Custom 404 Page</h1>')
       })
@@ -983,7 +973,7 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const response = await gotCatch404(`${server.url}/test-404`)
+        const response = await got(`${server.url}/test-404`, { throwHttpErrors: false })
         t.is(response.statusCode, 404)
         t.is(response.body, '<html><h1>foo')
       })
@@ -1038,7 +1028,7 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const response = await gotCatch404(`${server.url}/test-404`)
+        const response = await got(`${server.url}/test-404`, { throwHttpErrors: false })
 
         t.is(response.statusCode, 404)
         t.is(response.body, '<html><h1>foo')
@@ -1454,12 +1444,13 @@ testMatrix.forEach(({ args }) => {
           .buildAsync()
 
         await withDevServer({ cwd: builder.directory, args }, async ({ url, port }) => {
-          const response = await gotCatch404(`${url.replace(port, functionsPort)}/test`, {
+          const response = await got(`${url.replace(port, functionsPort)}/test`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
             body: '{}',
+            throwHttpErrors: false,
           })
           t.is(response.statusCode, 404)
           t.is(response.body, 'Function not found...')
