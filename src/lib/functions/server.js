@@ -1,7 +1,7 @@
 const bodyParser = require('body-parser')
 const jwtDecode = require('jwt-decode')
 
-const { log, warn } = require('../../utils/command-helpers')
+const { log, error: errorExit } = require('../../utils/command-helpers')
 const { getInternalFunctionsDir } = require('../../utils/functions')
 const { NETLIFYDEVERR, NETLIFYDEVLOG } = require('../../utils/logo')
 
@@ -124,14 +124,14 @@ const getFunctionsServer = async function ({ functionsRegistry, siteUrl, prefix 
     }),
   )
   app.use(bodyParser.raw({ limit: '6mb', type: '*/*' }))
-  app.use(createFormSubmissionHandler({ functionsRegistry, siteUrl, warn }))
+  app.use(createFormSubmissionHandler({ functionsRegistry, siteUrl }))
   app.use(
     expressLogging(console, {
       blacklist: ['/favicon.ico'],
     }),
   )
 
-  app.get('/favicon.ico', function onRequest(req, res) {
+  app.get('/favicon.ico', function onRequest(_req, res) {
     res.status(204).end()
   })
 
@@ -140,16 +140,7 @@ const getFunctionsServer = async function ({ functionsRegistry, siteUrl, prefix 
   return app
 }
 
-const startFunctionsServer = async ({
-  config,
-  settings,
-  site,
-  errorExit,
-  siteUrl,
-  capabilities,
-  timeouts,
-  prefix = '',
-}) => {
+const startFunctionsServer = async ({ config, settings, site, siteUrl, capabilities, timeouts, prefix = '' }) => {
   const internalFunctionsDir = await getInternalFunctionsDir({ base: site.root })
 
   // The order of the function directories matters. Leftmost directories take
@@ -160,10 +151,8 @@ const startFunctionsServer = async ({
     const functionsRegistry = new FunctionsRegistry({
       capabilities,
       config,
-      errorExit,
       projectRoot: site.root,
       timeouts,
-      warn,
     })
 
     await functionsRegistry.scan(functionsDirectories)
@@ -172,14 +161,13 @@ const startFunctionsServer = async ({
       functionsRegistry,
       siteUrl,
       prefix,
-      warn,
     })
 
-    await startWebServer({ server, settings, errorExit })
+    await startWebServer({ server, settings })
   }
 }
 
-const startWebServer = async ({ server, settings, errorExit }) => {
+const startWebServer = async ({ server, settings }) => {
   await new Promise((resolve) => {
     server.listen(settings.functionsPort, (err) => {
       if (err) {

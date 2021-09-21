@@ -1,19 +1,10 @@
+const { error: errorExit } = require('../../utils/command-helpers')
 const { difference } = require('../../utils/difference')
 
 const BACKGROUND_SUFFIX = '-background'
 
 class NetlifyFunction {
-  constructor({
-    config,
-    directory,
-    errorExit,
-    mainFile,
-    name,
-    projectRoot,
-    runtime,
-    timeoutBackground,
-    timeoutSynchronous,
-  }) {
+  constructor({ config, directory, mainFile, name, projectRoot, runtime, timeoutBackground, timeoutSynchronous }) {
     this.config = config
     this.directory = directory
     this.errorExit = errorExit

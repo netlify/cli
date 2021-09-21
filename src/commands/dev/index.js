@@ -181,7 +181,6 @@ class DevCommand extends Command {
 
   async run() {
     log(`${NETLIFYDEV}`)
-    const { error: errorExit } = this
     const { flags } = this.parse(DevCommand)
     const { api, site, config, siteInfo } = this.netlify
     config.dev = { ...config.dev }
@@ -200,13 +199,11 @@ class DevCommand extends Command {
       )
     }
 
-    await injectEnvVariables({ env: this.netlify.cachedConfig.env, site, warn })
+    await injectEnvVariables({ env: this.netlify.cachedConfig.env, site })
     const { addonsUrls, siteUrl, capabilities, timeouts } = await getSiteInformation({
       flags,
       api,
       site,
-      warn,
-      error: errorExit,
       siteInfo,
     })
 
@@ -224,8 +221,6 @@ class DevCommand extends Command {
       config,
       settings,
       site,
-      warn,
-      errorExit,
       siteUrl,
       capabilities,
       timeouts,
