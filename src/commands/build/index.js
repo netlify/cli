@@ -37,8 +37,6 @@ class BuildCommand extends Command {
     const { exitCode } = await runBuild(options)
     exit(exitCode)
   }
-
-  static;
 }
 
 // Netlify Build programmatic options
