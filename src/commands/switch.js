@@ -2,7 +2,7 @@ const chalk = require('chalk')
 const inquirer = require('inquirer')
 
 const Command = require('../utils/command')
-const { log } = require('../utils/command-helpers')
+const { log, exit } = require('../utils/command-helpers')
 
 const LoginCommand = require('./login')
 
@@ -35,7 +35,7 @@ class SwitchCommand extends Command {
       log(`You're now using ${chalk.bold(selectedAccount[1])}.`)
     }
 
-    return this.exit()
+    return exit()
   }
 }
 
