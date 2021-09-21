@@ -1481,7 +1481,7 @@ testMatrix.forEach(({ args }) => {
               'Content-Type': 'application/json',
             },
             body: '{}',
-            throwHttpErrors: false
+            throwHttpErrors: false,
           })
           t.is(response.statusCode, 400)
           t.is(response.body, 'Function name should consist only of alphanumeric characters, hyphen & underscores.')
