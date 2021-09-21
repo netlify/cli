@@ -6,7 +6,7 @@ const chalk = require('chalk')
 
 const { listSites } = require('../lib/api')
 const Command = require('../utils/command')
-const { log } = require('../utils/command-helpers')
+const { log, error, exit } = require('../utils/command-helpers')
 const ensureNetlifyIgnore = require('../utils/gitignore')
 const linkPrompt = require('../utils/link/link-by-prompt')
 const { track } = require('../utils/telemetry')
@@ -26,7 +26,7 @@ class LinkCommand extends Command {
     let siteData
     try {
       siteData = await api.getSite({ siteId })
-    } catch (error) {
+    } catch {
       // silent api error
     }
 
@@ -37,7 +37,7 @@ class LinkCommand extends Command {
     if (siteId && !siteData) {
       console.log(`"${siteId}" was not found in your Netlify account.`)
       console.log(`Please double check your siteID and which account you are logged into via \`netlify status\`.`)
-      return this.exit()
+      return exit()
     }
 
     // If already linked to site. exit and prompt for unlink
@@ -46,17 +46,17 @@ class LinkCommand extends Command {
       log(`Admin url: ${siteData.admin_url}`)
       log()
       log(`To unlink this site, run: ${chalk.cyanBright('netlify unlink')}`)
-      return this.exit()
+      return exit()
     }
 
     if (flags.id) {
       try {
         siteData = await api.getSite({ site_id: flags.id })
-      } catch (error) {
-        if (error.status === 404) {
-          this.error(new Error(`Site id ${flags.id} not found`))
+      } catch (error_) {
+        if (error_.status === 404) {
+          error(new Error(`Site id ${flags.id} not found`))
         } else {
-          this.error(error)
+          error(error_)
         }
       }
 
@@ -70,7 +70,7 @@ class LinkCommand extends Command {
         kind: 'byId',
       })
 
-      return this.exit()
+      return exit()
     }
 
     if (flags.name) {
@@ -83,16 +83,16 @@ class LinkCommand extends Command {
             filter: 'all',
           },
         })
-      } catch (error) {
-        if (error.status === 404) {
-          this.error(new Error(`${flags.name} not found`))
+      } catch (error_) {
+        if (error_.status === 404) {
+          error(new Error(`${flags.name} not found`))
         } else {
-          this.error(error)
+          error(error_)
         }
       }
 
       if (results.length === 0) {
-        this.error(new Error(`No sites found named ${flags.name}`))
+        error(new Error(`No sites found named ${flags.name}`))
       }
       const [firstSiteData] = results
       state.set('siteId', firstSiteData.id)
@@ -105,7 +105,7 @@ class LinkCommand extends Command {
         kind: 'byName',
       })
 
-      return this.exit()
+      return exit()
     }
 
     siteData = await linkPrompt(this, flags)
