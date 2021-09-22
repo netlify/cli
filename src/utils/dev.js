@@ -8,7 +8,7 @@ const isEmpty = require('lodash/isEmpty')
 
 const { supportsBackgroundFunctions } = require('../lib/account')
 
-const { log, warn } = require('./command-helpers')
+const { log, warn, exit: failAndExit } = require('./command-helpers')
 const { loadDotEnvFiles } = require('./dot-env')
 const { NETLIFYDEVLOG } = require('./logo')
 
@@ -43,13 +43,13 @@ const ENV_VAR_SOURCES = {
 const ERROR_CALL_TO_ACTION =
   "Double-check your login status with 'netlify status' or contact support with details of your error."
 
-const validateSiteInfo = ({ site, siteInfo, failAndExit }) => {
+const validateSiteInfo = ({ site, siteInfo }) => {
   if (isEmpty(siteInfo)) {
     failAndExit(`Failed retrieving site information for site ${chalk.yellow(site.id)}. ${ERROR_CALL_TO_ACTION}`)
   }
 }
 
-const getAccounts = async ({ api, failAndExit }) => {
+const getAccounts = async ({ api }) => {
   try {
     const accounts = await api.listAccountsForUser()
     return accounts
@@ -58,7 +58,7 @@ const getAccounts = async ({ api, failAndExit }) => {
   }
 }
 
-const getAddons = async ({ api, site, failAndExit }) => {
+const getAddons = async ({ api, site }) => {
   try {
     const addons = await api.listServiceInstancesForSite({ siteId: site.id })
     return addons
@@ -88,13 +88,10 @@ const SYNCHRONOUS_FUNCTION_TIMEOUT = 10
 // default 15 minutes for background functions
 const BACKGROUND_FUNCTION_TIMEOUT = 900
 
-const getSiteInformation = async ({ flags = {}, api, site, error: failAndExit, siteInfo }) => {
+const getSiteInformation = async ({ flags = {}, api, site, siteInfo }) => {
   if (site.id && !flags.offline) {
-    validateSiteInfo({ site, siteInfo, failAndExit })
-    const [accounts, addons] = await Promise.all([
-      getAccounts({ api, failAndExit }),
-      getAddons({ api, site, failAndExit }),
-    ])
+    validateSiteInfo({ site, siteInfo })
+    const [accounts, addons] = await Promise.all([getAccounts({ api }), getAddons({ api, site })])
 
     const { urls: addonsUrls } = getAddonsInformation({ siteInfo, addons })
     const account = getSiteAccount({ siteInfo, accounts })
