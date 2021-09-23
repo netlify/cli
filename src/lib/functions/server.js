@@ -1,4 +1,3 @@
-const bodyParser = require('body-parser')
 const jwtDecode = require('jwt-decode')
 
 const { log, error: errorExit } = require('../../utils/command-helpers')
@@ -118,12 +117,12 @@ const getFunctionsServer = async function ({ functionsRegistry, siteUrl, prefix 
   app.set('query parser', 'simple')
 
   app.use(
-    bodyParser.text({
+    express.text({
       limit: '6mb',
       type: ['text/*', 'application/json'],
     }),
   )
-  app.use(bodyParser.raw({ limit: '6mb', type: '*/*' }))
+  app.use(express.raw({ limit: '6mb', type: '*/*' }))
   app.use(createFormSubmissionHandler({ functionsRegistry, siteUrl }))
   app.use(
     expressLogging(console, {
