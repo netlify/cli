@@ -4,11 +4,7 @@ const dotenv = require('dotenv')
 
 const { isFileAsync, readFileAsync } = require('../lib/fs')
 
-const { warn: warn_ } = require('./command-helpers')
-
-const loadDotEnvFiles = async function ({ projectDir, warnLog }) {
-  // a stub utility is used in tests
-  const warn = warnLog || warn_
+const loadDotEnvFiles = async function ({ projectDir, warn }) {
   const dotenvFiles = ['.env', '.env.development']
   const results = await Promise.all(
     dotenvFiles.map(async (file) => {
