@@ -12,7 +12,7 @@ const DEFAULT_LAMBDA_OPTIONS = {
 const SECONDS_TO_MILLISECONDS = 1000
 
 const detectAwsSdkError = ({ error }) => {
-  const isAwsSdkError = error.errorMessage && error.errorMessage.includes("Cannot find module 'aws-sdk'")
+  const isAwsSdkError = error && error.errorMessage && error.errorMessage.includes("Cannot find module 'aws-sdk'")
 
   if (isAwsSdkError) {
     warn(getLogMessage('functions.missingAwsSdk'))
