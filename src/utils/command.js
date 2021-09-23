@@ -9,7 +9,18 @@ const API = require('netlify')
 
 const { getAgent } = require('../lib/http-agent')
 
-const { pollForToken, log, exit, error, getToken, getCwd, argv, normalizeConfig, chalk } = require('./command-helpers')
+const {
+  pollForToken,
+  log,
+  exit,
+  warn,
+  error,
+  getToken,
+  getCwd,
+  argv,
+  normalizeConfig,
+  chalk,
+} = require('./command-helpers')
 const getGlobalConfig = require('./get-global-config')
 const openBrowser = require('./open-browser')
 const StateConfig = require('./state-config')
@@ -51,6 +62,7 @@ class BaseCommand extends TrackedCommand {
     const agent = await getAgent({
       httpProxy: flags.httpProxy,
       certificateFile: flags.httpProxyCertificateFilename,
+      warn,
     })
     const apiOpts = { ...apiUrlOpts, agent }
     const globalConfig = await getGlobalConfig()
