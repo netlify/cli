@@ -30,7 +30,7 @@ const AGENT_PORT_TIMEOUT = 50
 
 const tryGetAgent = async ({ httpProxy, certificateFile }) => {
   if (!httpProxy) {
-    return
+    return {}
   }
 
   let proxyUrl
@@ -88,20 +88,15 @@ const tryGetAgent = async ({ httpProxy, certificateFile }) => {
 }
 
 const getAgent = async ({ httpProxy, certificateFile }) => {
-  const result = await tryGetAgent({ httpProxy, certificateFile })
-  if (!result) {
-    return
-  }
-  if (result.error) {
-    log(NETLIFYDEVERR, result.error, result.message || '')
+  const { error, warning, agent, message } = await tryGetAgent({ httpProxy, certificateFile })
+  if (error) {
+    log(NETLIFYDEVERR, error, message || '')
     exit(1)
   }
-  if (result.warning) {
-    log(NETLIFYDEVWARN, result.warning, result.message || '')
+  if (warning) {
+    log(NETLIFYDEVWARN, warning, message || '')
   }
-  if (result.agent) {
-    return result.agent
-  }
+  return agent
 }
 
 module.exports = { getAgent, tryGetAgent }

@@ -6,8 +6,8 @@ const { HttpsProxyAgent } = require('https-proxy-agent')
 
 const { tryGetAgent } = require('./http-agent')
 
-test(`should return undefined when there is no httpProxy`, async (t) => {
-  t.is(undefined, await tryGetAgent({}))
+test(`should return an empty object when there is no httpProxy`, async (t) => {
+  t.deepEqual(await tryGetAgent({}), {})
 })
 
 test(`should return error on invalid url`, async (t) => {
