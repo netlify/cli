@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "6.9.15",
+  "version": "6.9.16",
   "author": "Netlify Inc.",
   "contributors": [
     "Mathias Biilmann <matt@netlify.com> (https://twitter.com/biilmann)",
@@ -82,7 +82,7 @@
     "@netlify/framework-info": "^5.9.2",
     "@netlify/local-functions-proxy": "^1.1.1",
     "@netlify/plugin-edge-handlers": "^1.11.22",
-    "@netlify/plugins-list": "^3.6.0",
+    "@netlify/plugins-list": "^3.6.1",
     "@netlify/routing-local-proxy": "^0.33.2",
     "@netlify/zip-it-and-ship-it": "4.23.0",
     "@oclif/command": "^1.6.1",
