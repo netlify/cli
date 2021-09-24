@@ -1,19 +1,16 @@
 const process = require('process')
 
 const test = require('ava')
-const sinon = require('sinon')
 
 const { withSiteBuilder } = require('../../tests/utils/site-builder')
 
-const { loadDotEnvFiles } = require('./dot-env')
+const { tryLoadDotEnvFiles } = require('./dot-env')
 
-const warn = sinon.stub()
-
-test('should return an object with empty array for a site with no .env file', async (t) => {
+test('should return an empty array for a site with no .env file', async (t) => {
   await withSiteBuilder('site-without-env-file', async (builder) => {
     await builder.buildAsync()
 
-    const results = await loadDotEnvFiles({ projectDir: builder.directory, warn })
+    const results = await tryLoadDotEnvFiles({ projectDir: builder.directory })
     t.deepEqual(results, [])
   })
 })
@@ -27,7 +24,7 @@ test('should read env vars from .env file', async (t) => {
     })
     await builder.buildAsync()
 
-    const results = await loadDotEnvFiles({ projectDir: builder.directory, warn })
+    const results = await tryLoadDotEnvFiles({ projectDir: builder.directory })
     t.deepEqual(results, [{ file: '.env', env: { TEST: 'FROM_ENV' } }])
   })
 })
@@ -41,7 +38,7 @@ test('should read env vars from .env.development file', async (t) => {
     })
     await builder.buildAsync()
 
-    const results = await loadDotEnvFiles({ projectDir: builder.directory, warn })
+    const results = await tryLoadDotEnvFiles({ projectDir: builder.directory })
     t.deepEqual(results, [{ file: '.env.development', env: { TEST: 'FROM_DEVELOPMENT_ENV' } }])
   })
 })
@@ -60,7 +57,7 @@ test('should read from both .env.development and .env', async (t) => {
       })
     await builder.buildAsync()
 
-    const results = await loadDotEnvFiles({ projectDir: builder.directory, warn })
+    const results = await tryLoadDotEnvFiles({ projectDir: builder.directory })
     t.deepEqual(results, [
       { file: '.env', env: { ONE: 'FROM_ENV', TWO: 'FROM_ENV' } },
       { file: '.env.development', env: { ONE: 'FROM_DEVELOPMENT_ENV', THREE: 'FROM_DEVELOPMENT_ENV' } },
@@ -76,7 +73,7 @@ test('should handle empty .env file', async (t) => {
 
     await builder.buildAsync()
 
-    const results = await loadDotEnvFiles({ projectDir: builder.directory, warn })
+    const results = await tryLoadDotEnvFiles({ projectDir: builder.directory })
     t.deepEqual(results, [{ file: '.env', env: {} }])
   })
 })

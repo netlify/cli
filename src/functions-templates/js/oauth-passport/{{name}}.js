@@ -1,6 +1,5 @@
 // details: https://markus.oberlehner.net/blog/implementing-an-authentication-flow-with-passport-and-netlify-functions/
 
-const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
 const express = require('express')
 const passport = require('passport')
@@ -13,8 +12,8 @@ applyPassportStrategies()
 
 const app = express()
 
-app.use(bodyParser.urlencoded({ extended: true }))
-app.use(bodyParser.json())
+app.use(express.urlencoded({ extended: true }))
+app.use(express.json())
 app.use(cookieParser())
 app.use(passport.initialize())
 
