@@ -3,7 +3,7 @@ const { URL } = require('url')
 const { HttpsProxyAgent } = require('https-proxy-agent')
 const waitPort = require('wait-port')
 
-const { log } = require('../utils/command-helpers')
+const { log, exit } = require('../utils/command-helpers')
 const { NETLIFYDEVERR, NETLIFYDEVWARN } = require('../utils/logo')
 
 const fs = require('./fs')
@@ -28,23 +28,21 @@ const DEFAULT_HTTPS_PORT = 443
 // 50 seconds
 const AGENT_PORT_TIMEOUT = 50
 
-const getAgent = async ({ httpProxy, certificateFile, exit }) => {
+const tryGetAgent = async ({ httpProxy, certificateFile }) => {
   if (!httpProxy) {
-    return
+    return {}
   }
 
   let proxyUrl
   try {
     proxyUrl = new URL(httpProxy)
-  } catch (error) {
-    log(NETLIFYDEVERR, `${httpProxy} is not a valid URL`)
-    exit(1)
+  } catch {
+    return { error: `${httpProxy} is not a valid URL` }
   }
 
   const scheme = proxyUrl.protocol.slice(0, -1)
   if (!['http', 'https'].includes(scheme)) {
-    log(NETLIFYDEVERR, `${httpProxy} must have a scheme of http or https`)
-    exit(1)
+    return { error: `${httpProxy} must have a scheme of http or https` }
   }
 
   let open
@@ -57,22 +55,22 @@ const getAgent = async ({ httpProxy, certificateFile, exit }) => {
     })
   } catch (error) {
     // unknown error
-    log(NETLIFYDEVERR, `${httpProxy} is not available.`, error.message)
-    exit(1)
+    return { error: `${httpProxy} is not available.`, message: error.message }
   }
 
   if (!open) {
     // timeout error
-    log(NETLIFYDEVERR, `Could not connect to '${httpProxy}'`)
-    exit(1)
+    return { error: `Could not connect to '${httpProxy}'` }
   }
+
+  let response = {}
 
   let certificate
   if (certificateFile) {
     try {
       certificate = await fs.readFileAsync(certificateFile)
     } catch (error) {
-      log(NETLIFYDEVWARN, `Could not read certificate file '${certificateFile}'.`, error.message)
+      response = { warning: `Could not read certificate file '${certificateFile}'.`, message: error.message }
     }
   }
 
@@ -85,7 +83,20 @@ const getAgent = async ({ httpProxy, certificateFile, exit }) => {
   }
 
   const agent = new HttpsProxyAgentWithCA(opts)
+  response = { ...response, agent }
+  return response
+}
+
+const getAgent = async ({ httpProxy, certificateFile }) => {
+  const { error, warning, agent, message } = await tryGetAgent({ httpProxy, certificateFile })
+  if (error) {
+    log(NETLIFYDEVERR, error, message || '')
+    exit(1)
+  }
+  if (warning) {
+    log(NETLIFYDEVWARN, warning, message || '')
+  }
   return agent
 }
 
-module.exports = { getAgent }
+module.exports = { getAgent, tryGetAgent }
