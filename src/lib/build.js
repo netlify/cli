@@ -21,7 +21,6 @@ const getBuildOptions = ({
   offline,
   featureFlags: {
     functionsBundlingManifest: true,
-    zisiEsbuildDynamicImports: true,
   },
 })
 
