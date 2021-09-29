@@ -2,6 +2,8 @@ const { Buffer } = require('buffer')
 
 const { NETLIFYDEVERR } = require('../../utils/logo')
 
+const { detectAwsSdkError } = require('./utils')
+
 const addHeaders = (headers, response) => {
   if (!headers) {
     return
@@ -36,6 +38,8 @@ const handleSynchronousFunction = function (err, result, response) {
 const formatLambdaLocalError = (err) => `${err.errorType}: ${err.errorMessage}\n  ${err.stackTrace.join('\n  ')}`
 
 const handleErr = function (err, response) {
+  detectAwsSdkError({ err })
+
   response.statusCode = 500
   const errorString = typeof err === 'string' ? err : formatLambdaLocalError(err)
   response.end(errorString)
