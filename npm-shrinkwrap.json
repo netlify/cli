@@ -60,7 +60,7 @@
         "from2-array": "^0.0.4",
         "fuzzy": "^0.1.3",
         "get-port": "^5.1.0",
-        "gh-release-fetch": "^2.0.4",
+        "gh-release-fetch": "^2.0.0",
         "git-repo-info": "^2.1.0",
         "gitconfiglocal": "^2.1.0",
         "hasbin": "^1.2.3",
@@ -129,9 +129,9 @@
       "devDependencies": {
         "@babel/plugin-proposal-class-properties": "^7.13.0",
         "@babel/preset-react": "^7.12.13",
-        "@commitlint/cli": "^13.2.0",
-        "@commitlint/config-conventional": "^13.2.0",
-        "@netlify/eslint-config-node": "^3.2.10",
+        "@commitlint/cli": "^13.0.0",
+        "@commitlint/config-conventional": "^13.0.0",
+        "@netlify/eslint-config-node": "^3.2.11",
         "@oclif/dev-cli": "^1.23.1",
         "@oclif/test": "^1.2.5",
         "ava": "^3.15.0",
@@ -2938,9 +2938,9 @@
       }
     },
     "node_modules/@netlify/eslint-config-node": {
-      "version": "3.2.10",
-      "resolved": "https://registry.npmjs.org/@netlify/eslint-config-node/-/eslint-config-node-3.2.10.tgz",
-      "integrity": "sha512-eUqDZ6k806BIzT62bJ3RJVw3lh6WNaye3tFVXqXtMQDDkwAmqDOJfqiiXC2/bcSZZZeDE/gGz1AcaBv9jMThiA==",
+      "version": "3.2.11",
+      "resolved": "https://registry.npmjs.org/@netlify/eslint-config-node/-/eslint-config-node-3.2.11.tgz",
+      "integrity": "sha512-o/uOloDs9Tyog66TGvrDDveYleUWcXqqSco9eQCwhE/82Fee5EQ9jTQAiJxElcxx0xRyw+fzJQWAPueSGgHdyw==",
       "dev": true,
       "dependencies": {
         "@babel/core": "^7.13.8",
@@ -23352,9 +23352,9 @@
       "integrity": "sha512-tiKmDcHM2riSVN79c0mJY/67EBDafXQAMitHuLiCDAMdtz3kfv+NqdVG5krgf5lWR8Uf8AeZrUW5Q9RP25REvw=="
     },
     "@netlify/eslint-config-node": {
-      "version": "3.2.10",
-      "resolved": "https://registry.npmjs.org/@netlify/eslint-config-node/-/eslint-config-node-3.2.10.tgz",
-      "integrity": "sha512-eUqDZ6k806BIzT62bJ3RJVw3lh6WNaye3tFVXqXtMQDDkwAmqDOJfqiiXC2/bcSZZZeDE/gGz1AcaBv9jMThiA==",
+      "version": "3.2.11",
+      "resolved": "https://registry.npmjs.org/@netlify/eslint-config-node/-/eslint-config-node-3.2.11.tgz",
+      "integrity": "sha512-o/uOloDs9Tyog66TGvrDDveYleUWcXqqSco9eQCwhE/82Fee5EQ9jTQAiJxElcxx0xRyw+fzJQWAPueSGgHdyw==",
       "dev": true,
       "requires": {
         "@babel/core": "^7.13.8",
