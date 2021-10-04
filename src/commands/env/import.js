@@ -6,7 +6,7 @@ const dotenv = require('dotenv')
 const isEmpty = require('lodash/isEmpty')
 
 const Command = require('../../utils/command')
-const { log, logJson } = require('../../utils/command-helpers')
+const { log, logJson, exit } = require('../../utils/command-helpers')
 
 class EnvImportCommand extends Command {
   async run() {
@@ -34,7 +34,7 @@ class EnvImportCommand extends Command {
       importedEnv = dotenv.parse(envFileContents)
     } catch (error) {
       log(error.message)
-      this.exit(1)
+      exit(1)
     }
 
     if (isEmpty(importedEnv)) {

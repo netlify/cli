@@ -5,7 +5,7 @@ const inquirer = require('inquirer')
 const isEmpty = require('lodash/isEmpty')
 
 const Command = require('../utils/command')
-const { log } = require('../utils/command-helpers')
+const { log, exit } = require('../utils/command-helpers')
 const { getRepoData } = require('../utils/get-repo-data')
 const ensureNetlifyIgnore = require('../utils/gitignore')
 const { configureRepo } = require('../utils/init/config')
@@ -21,7 +21,7 @@ const persistState = ({ state, siteInfo }) => {
 
 const getRepoUrl = ({ siteInfo }) => dotProp.get(siteInfo, 'build_settings.repo_url')
 
-const logExistingAndExit = ({ exit, siteInfo }) => {
+const logExistingAndExit = ({ siteInfo }) => {
   log()
   log(`This site has been initialized`)
   log()
@@ -37,7 +37,7 @@ const logExistingAndExit = ({ exit, siteInfo }) => {
   exit()
 }
 
-const createNewSiteAndExit = async ({ exit, state }) => {
+const createNewSiteAndExit = async ({ state }) => {
   const siteInfo = await SitesCreateCommand.run([])
 
   log(`"${siteInfo.name}" site was created`)
@@ -49,7 +49,7 @@ const createNewSiteAndExit = async ({ exit, state }) => {
   exit()
 }
 
-const logGitSetupInstructionsAndExit = ({ exit }) => {
+const logGitSetupInstructionsAndExit = () => {
   log()
   log(`${chalk.bold('To initialize a new git repo follow the steps below.')}
 
@@ -82,7 +82,7 @@ const logGitSetupInstructionsAndExit = ({ exit }) => {
   exit()
 }
 
-const handleNoGitRemoteAndExit = async ({ exit, error, state }) => {
+const handleNoGitRemoteAndExit = async ({ error, state }) => {
   log()
   log(`${chalk.yellow('No git remote was found, would you like to set one up?')}`)
   log(`
@@ -112,9 +112,9 @@ git remote add origin https://github.com/YourUserName/RepoName.git
   ])
 
   if (noGitRemoteChoice === NEW_SITE_NO_GIT) {
-    await createNewSiteAndExit({ exit, state })
+    await createNewSiteAndExit({ state })
   } else if (noGitRemoteChoice === NO_ABORT) {
-    logGitSetupInstructionsAndExit({ exit })
+    logGitSetupInstructionsAndExit()
   }
 }
 
@@ -147,7 +147,7 @@ const createOrLinkSiteToRepo = async () => {
   }
 }
 
-const logExistingRepoSetupAndExit = ({ exit, siteName, repoUrl }) => {
+const logExistingRepoSetupAndExit = ({ siteName, repoUrl }) => {
   log()
   log(chalk.underline.bold(`Success`))
   log(`This site "${siteName}" is configured to automatically deploy via ${repoUrl}`)
@@ -161,7 +161,7 @@ class InitCommand extends Command {
 
     this.setAnalyticsPayload({ manual: flags.manual, force: flags.force })
 
-    const { exit, netlify } = this
+    const { netlify } = this
     const { repositoryRoot, state } = netlify
     let { siteInfo } = this.netlify
 
@@ -173,13 +173,13 @@ class InitCommand extends Command {
 
     const repoUrl = getRepoUrl({ siteInfo })
     if (repoUrl && !flags.force) {
-      logExistingAndExit({ exit, siteInfo })
+      logExistingAndExit({ siteInfo })
     }
 
     // Look for local repo
     const repoData = await getRepoData({ remoteName: flags.gitRemoteName })
     if (repoData.error) {
-      await handleNoGitRemoteAndExit({ exit, error: repoData.error, state })
+      await handleNoGitRemoteAndExit({ error: repoData.error, state })
     }
 
     if (isEmpty(siteInfo)) {
@@ -189,7 +189,7 @@ class InitCommand extends Command {
     // Check for existing CI setup
     const remoteBuildRepo = getRepoUrl({ siteInfo })
     if (remoteBuildRepo && !flags.force) {
-      logExistingRepoSetupAndExit({ exit, siteName: siteInfo.name, repoUrl: remoteBuildRepo })
+      logExistingRepoSetupAndExit({ siteName: siteInfo.name, repoUrl: remoteBuildRepo })
     }
 
     persistState({ state, siteInfo })

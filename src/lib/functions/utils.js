@@ -1,5 +1,6 @@
 const chalk = require('chalk')
 
+const { warn } = require('../../utils/command-helpers')
 const { getLogMessage } = require('../log')
 
 const BASE_64_MIME_REGEXP = /image|audio|video|application\/pdf|application\/zip|applicaton\/octet-stream/i
@@ -10,8 +11,8 @@ const DEFAULT_LAMBDA_OPTIONS = {
 
 const SECONDS_TO_MILLISECONDS = 1000
 
-const detectAwsSdkError = ({ error, warn }) => {
-  const isAwsSdkError = error.errorMessage && error.errorMessage.includes("Cannot find module 'aws-sdk'")
+const detectAwsSdkError = ({ error }) => {
+  const isAwsSdkError = error && error.errorMessage && error.errorMessage.includes("Cannot find module 'aws-sdk'")
 
   if (isAwsSdkError) {
     warn(getLogMessage('functions.missingAwsSdk'))

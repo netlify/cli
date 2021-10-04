@@ -5,10 +5,11 @@ const { parse: parseContentType } = require('content-type')
 const multiparty = require('multiparty')
 const getRawBody = require('raw-body')
 
+const { warn } = require('../../utils/command-helpers')
 const { BACKGROUND } = require('../../utils/get-functions')
 const { capitalize } = require('../string')
 
-const createFormSubmissionHandler = function ({ functionsRegistry, siteUrl, warn }) {
+const createFormSubmissionHandler = function ({ functionsRegistry, siteUrl }) {
   return async function formSubmissionHandler(req, res, next) {
     if (req.url.startsWith('/.netlify/') || req.method !== 'POST') return next()
 
@@ -20,7 +21,7 @@ const createFormSubmissionHandler = function ({ functionsRegistry, siteUrl, warn
     })
     fakeRequest.headers = req.headers
 
-    const handlerName = getFormHandler({ functionsRegistry, warn })
+    const handlerName = getFormHandler({ functionsRegistry })
     if (!handlerName) {
       return next()
     }
@@ -125,7 +126,7 @@ const createFormSubmissionHandler = function ({ functionsRegistry, siteUrl, warn
   }
 }
 
-const getFormHandler = function ({ functionsRegistry, warn }) {
+const getFormHandler = function ({ functionsRegistry }) {
   const handlers = ['submission-created', `submission-created${BACKGROUND}`]
     .map((name) => functionsRegistry.get(name))
     .filter(Boolean)

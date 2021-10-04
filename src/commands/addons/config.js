@@ -61,7 +61,6 @@ class AddonsConfigCommand extends Command {
           siteId,
           instanceId: addon.id,
           api,
-          error: this.error,
         })
         return false
       }

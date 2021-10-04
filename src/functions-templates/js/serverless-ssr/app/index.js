@@ -1,7 +1,6 @@
 /* Express App */
 const process = require('process')
 
-const bodyParser = require('body-parser')
 const compression = require('compression')
 const cors = require('cors')
 const express = require('express')
@@ -92,8 +91,8 @@ module.exports = function expressApp(functionName) {
 
   // Apply express middlewares
   router.use(cors())
-  router.use(bodyParser.json())
-  router.use(bodyParser.urlencoded({ extended: true }))
+  router.use(express.json())
+  router.use(express.urlencoded({ extended: true }))
 
   return app
 }

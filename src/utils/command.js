@@ -9,7 +9,7 @@ const API = require('netlify')
 
 const { getAgent } = require('../lib/http-agent')
 
-const { pollForToken, log, getToken, getCwd, argv, normalizeConfig, chalk } = require('./command-helpers')
+const { pollForToken, log, exit, error, getToken, getCwd, argv, normalizeConfig, chalk } = require('./command-helpers')
 const getGlobalConfig = require('./get-global-config')
 const openBrowser = require('./open-browser')
 const StateConfig = require('./state-config')
@@ -49,7 +49,6 @@ class BaseCommand extends TrackedCommand {
 
     const { flags } = this.parse(BaseCommand)
     const agent = await getAgent({
-      exit: this.exit,
       httpProxy: flags.httpProxy,
       certificateFile: flags.httpProxyCertificateFilename,
     })
@@ -100,8 +99,8 @@ class BaseCommand extends TrackedCommand {
         scheme,
         offline,
       })
-    } catch (error) {
-      const isUserError = error.type === 'userError'
+    } catch (error_) {
+      const isUserError = error_.type === 'userError'
 
       // If we're failing due to an error thrown by us, it might be because the token we're using is invalid.
       // To account for that, we try to retrieve the config again, this time without a token, to avoid making
@@ -113,9 +112,9 @@ class BaseCommand extends TrackedCommand {
         return this.getConfig({ cwd, offline: true, state, token })
       }
 
-      const message = isUserError ? error.message : error.stack
+      const message = isUserError ? error_.message : error_.stack
       console.error(message)
-      this.exit(1)
+      exit(1)
     }
   }
 
@@ -197,7 +196,7 @@ class BaseCommand extends TrackedCommand {
     const accessToken = await pollForToken({
       api: this.netlify.api,
       ticket,
-      exitWithError: this.error,
+      exitWithError: error,
     })
 
     const { id: userId, full_name: name, email } = await this.netlify.api.getCurrentUser()

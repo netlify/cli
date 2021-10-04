@@ -1,5 +1,5 @@
 const Command = require('../utils/command')
-const { log, getToken } = require('../utils/command-helpers')
+const { log, exit, getToken } = require('../utils/command-helpers')
 const { track } = require('../utils/telemetry')
 
 class LogoutCommand extends Command {
@@ -10,7 +10,7 @@ class LogoutCommand extends Command {
       log(`Already logged out`)
       log()
       log('To login run "netlify login"')
-      this.exit()
+      exit()
     }
 
     await track('user_logout')
@@ -23,7 +23,7 @@ class LogoutCommand extends Command {
       log()
       log('To logout completely, unset the environment variable')
       log()
-      this.exit()
+      exit()
     }
 
     log(`Logging you out of Netlify. Come back soon!`)

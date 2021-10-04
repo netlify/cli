@@ -1,6 +1,5 @@
 const { isDeepStrictEqual } = require('util')
 
-const bodyParser = require('body-parser')
 const express = require('express')
 
 const addRequest = (requests, request) => {
@@ -15,9 +14,9 @@ const addRequest = (requests, request) => {
 const startMockApi = ({ routes }) => {
   const requests = []
   const app = express()
-  app.use(bodyParser.urlencoded({ extended: true }))
-  app.use(bodyParser.json())
-  app.use(bodyParser.raw())
+  app.use(express.urlencoded({ extended: true }))
+  app.use(express.json())
+  app.use(express.raw())
 
   routes.forEach(({ method = 'get', path, response = {}, status = 200, requestBody }) => {
     app[method.toLowerCase()](`/api/v1/${path}`, function onRequest(req, res) {

@@ -4,11 +4,20 @@ const dotenv = require('dotenv')
 
 const { isFileAsync, readFileAsync } = require('../lib/fs')
 
-const { warn: warn_ } = require('./command-helpers')
+const { warn } = require('./command-helpers')
 
-const loadDotEnvFiles = async function ({ projectDir, warnLog }) {
-  // a stub utility is used in tests
-  const warn = warnLog || warn_
+const loadDotEnvFiles = async function ({ projectDir }) {
+  const response = await tryLoadDotEnvFiles({ projectDir })
+
+  const filesWithWarning = response.filter((el) => el.warning)
+  filesWithWarning.forEach((el) => {
+    warn(el.warning)
+  })
+
+  return response.filter((el) => el.file && el.env)
+}
+
+const tryLoadDotEnvFiles = async ({ projectDir }) => {
   const dotenvFiles = ['.env', '.env.development']
   const results = await Promise.all(
     dotenvFiles.map(async (file) => {
@@ -19,8 +28,9 @@ const loadDotEnvFiles = async function ({ projectDir, warnLog }) {
           return
         }
       } catch (error) {
-        warn(`Failed reading env variables from file: ${filepath}: ${error.message}`)
-        return
+        return {
+          warning: `Failed reading env variables from file: ${filepath}: ${error.message}`,
+        }
       }
       const content = await readFileAsync(filepath)
       const env = dotenv.parse(content)
@@ -31,4 +41,4 @@ const loadDotEnvFiles = async function ({ projectDir, warnLog }) {
   return results.filter(Boolean)
 }
 
-module.exports = { loadDotEnvFiles }
+module.exports = { loadDotEnvFiles, tryLoadDotEnvFiles }
