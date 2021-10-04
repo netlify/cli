@@ -1463,6 +1463,13 @@ testMatrix.forEach(({ args }) => {
         const functionsPort = 6667
         await builder
           .withNetlifyToml({ config: { functions: { directory: 'functions' }, dev: { functionsPort } } })
+          .withFunction({
+            path: 'exclamat!on.js',
+            handler: async (event) => ({
+              statusCode: 200,
+              body: JSON.stringify(event),
+            }),
+          })
           .buildAsync()
 
         await withDevServer({ cwd: builder.directory, args }, async ({ url, port }) => {
