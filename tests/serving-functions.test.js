@@ -660,7 +660,7 @@ export { handler }
     })
   })
 
-  test.only(testName('Serves functions inside a "type=module" package', args), async (t) => {
+  test(testName('Serves functions inside a "type=module" package', args), async (t) => {
     await withSiteBuilder('function-type-module', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
