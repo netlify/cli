@@ -37,10 +37,6 @@ const buildClientContext = function (headers) {
   }
 }
 
-// same as https://github.com/netlify/bitballoon/blob/fbd7881e6c8e8c48e7a0145da4ee26090c794108/app/models/deploy.rb#L482
-// eslint-disable-next-line unicorn/better-regex
-const isValidNetlifyFunctionName = (name) => /^[A-Za-z0-9_-]+$/.test(name)
-
 const createHandler = function ({ functionsRegistry }) {
   return async function handler(request, response) {
     // handle proxies without path re-writes (http-servr)
@@ -48,15 +44,15 @@ const createHandler = function ({ functionsRegistry }) {
     const functionName = cleanPath.split('/').find(Boolean)
     const func = functionsRegistry.get(functionName)
 
-    if (!isValidNetlifyFunctionName(functionName)) {
-      response.statusCode = 400
-      response.end('Function name should consist only of alphanumeric characters, hyphen & underscores.')
-      return
-    }
-
     if (func === undefined) {
       response.statusCode = 404
       response.end('Function not found...')
+      return
+    }
+
+    if (!func.hasValidName()) {
+      response.statusCode = 400
+      response.end('Function name should consist only of alphanumeric characters, hyphen & underscores.')
       return
     }
 
