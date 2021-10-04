@@ -38,6 +38,7 @@ const buildClientContext = function (headers) {
 }
 
 // same as https://github.com/netlify/bitballoon/blob/fbd7881e6c8e8c48e7a0145da4ee26090c794108/app/models/deploy.rb#L482
+// eslint-disable-next-line unicorn/better-regex
 const isValidNetlifyFunctionName = (name) => /^[A-Za-z0-9_-]+$/.test(name)
 
 const createHandler = function ({ functionsRegistry }) {
