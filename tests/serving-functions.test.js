@@ -659,6 +659,40 @@ export { handler }
       })
     })
   })
+
+  test.only(testName('Serves functions inside a "type=module" package', args), async (t) => {
+    await withSiteBuilder('function-type-module', async (builder) => {
+      const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
+
+      await builder
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'public' },
+            functions: { directory: 'functions' },
+            ...bundlerConfig,
+          },
+        })
+        .withPackageJson({
+          packageJson: {
+            type: 'module',
+          },
+        })
+        .withFunction({
+          path: 'hello.js',
+          handler: async () => ({
+            statusCode: 200,
+            body: 'hello from es module!',
+          }),
+        })
+        .buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async ({ port, outputBuffer }) => {
+        await tryAndLogOutput(async () => {
+          t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'hello from es module!')
+        }, outputBuffer)
+      })
+    })
+  })
 })
 
 test('Serves functions that dynamically load files included in the `functions.included_files` config property', async (t) => {
