@@ -96,6 +96,10 @@ const render404 = async function (publicFolder) {
 const assetExtensionRegExp = /\.(html?|png|jpg|js|css|svg|gif|ico|woff|woff2)$/
 
 const alternativePathsFor = function (url) {
+  if (isFunction(true, url)) {
+    return []
+  }
+
   const paths = []
   if (url[url.length - 1] === '/') {
     const end = url.length - 1
