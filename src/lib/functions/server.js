@@ -117,7 +117,7 @@ const createHandler = function ({ functionsRegistry }) {
   }
 }
 
-const getFunctionsServer = async function ({ functionsRegistry, siteUrl, prefix }) {
+const getFunctionsServer = function ({ functionsRegistry, siteUrl, prefix }) {
   // performance optimization, load express on demand
   // eslint-disable-next-line node/global-require
   const express = require('express')
@@ -144,7 +144,7 @@ const getFunctionsServer = async function ({ functionsRegistry, siteUrl, prefix 
     res.status(204).end()
   })
 
-  app.all(`${prefix}*`, await createHandler({ functionsRegistry }))
+  app.all(`${prefix}*`, createHandler({ functionsRegistry }))
 
   return app
 }
@@ -166,7 +166,7 @@ const startFunctionsServer = async ({ config, settings, site, siteUrl, capabilit
 
     await functionsRegistry.scan(functionsDirectories)
 
-    const server = await getFunctionsServer({
+    const server = getFunctionsServer({
       functionsRegistry,
       siteUrl,
       prefix,
