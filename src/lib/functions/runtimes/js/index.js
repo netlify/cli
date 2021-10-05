@@ -1,6 +1,8 @@
 const { dirname } = require('path')
+const { version } = require('process')
 
 const lambdaLocal = require('lambda-local')
+const semver = require('semver')
 const winston = require('winston')
 
 const detectNetlifyLambdaBuilder = require('./builders/netlify-lambda')
@@ -50,11 +52,23 @@ const getBuildFunction = async ({ config, directory, errorExit, func, projectRoo
   return () => ({ srcFiles })
 }
 
+/**
+ * @param {string} path
+ * @returns {Promise<any>}
+ */
+const requireOrImport = async (path) =>
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import#browser_compatibility
+  semver.satisfies(version, '>=12.3.0')
+    ? // eslint-disable-next-line node/no-unsupported-features/es-syntax
+      await import(path)
+    : // eslint-disable-next-line import/no-dynamic-require, node/global-require
+      require(path)
+
 const invokeFunction = async ({ context, event, func, timeout }) => {
   // If a function builder has defined a `buildPath` property, we use it.
   // Otherwise, we'll invoke the function's main file.
   const lambdaPath = (func.buildData && func.buildData.buildPath) || func.mainFile
-  const lambdaFunc = await import(lambdaPath)
+  const lambdaFunc = await requireOrImport(lambdaPath)
   const result = await lambdaLocal.execute({
     clientContext: JSON.stringify(context),
     event,
