@@ -132,6 +132,12 @@ class FunctionsRegistry {
       warn(getLogMessage('functions.backgroundNotSupported'))
     }
 
+    if (!func.hasValidName()) {
+      warn(
+        `Function name '${func.name}' is invalid. It should consist only of alphanumeric characters, hyphen & underscores.`,
+      )
+    }
+
     this.functions.set(name, func)
     this.buildFunctionAndWatchFiles(func)
 
