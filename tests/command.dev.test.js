@@ -1458,6 +1458,35 @@ testMatrix.forEach(({ args }) => {
       })
     })
 
+    test(testName(`catches invalid function names`, args), async (t) => {
+      await withSiteBuilder('site-with-functions', async (builder) => {
+        const functionsPort = 6667
+        await builder
+          .withNetlifyToml({ config: { functions: { directory: 'functions' }, dev: { functionsPort } } })
+          .withFunction({
+            path: 'exclamat!on.js',
+            handler: async (event) => ({
+              statusCode: 200,
+              body: JSON.stringify(event),
+            }),
+          })
+          .buildAsync()
+
+        await withDevServer({ cwd: builder.directory, args }, async ({ url, port }) => {
+          const response = await got(`${url.replace(port, functionsPort)}/exclamat!on`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: '{}',
+            throwHttpErrors: false,
+          })
+          t.is(response.statusCode, 400)
+          t.is(response.body, 'Function name should consist only of alphanumeric characters, hyphen & underscores.')
+        })
+      })
+    })
+
     test(testName('should handle query params in redirects', args), async (t) => {
       await withSiteBuilder('site-with-query-redirects', async (builder) => {
         await builder

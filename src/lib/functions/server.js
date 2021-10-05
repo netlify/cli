@@ -50,6 +50,12 @@ const createHandler = function ({ functionsRegistry }) {
       return
     }
 
+    if (!func.hasValidName()) {
+      response.statusCode = 400
+      response.end('Function name should consist only of alphanumeric characters, hyphen & underscores.')
+      return
+    }
+
     const isBase64Encoded = shouldBase64Encode(request.headers['content-type'])
     const body = request.get('content-length') ? request.body.toString(isBase64Encoded ? 'base64' : 'utf8') : undefined
 
@@ -107,7 +113,7 @@ const createHandler = function ({ functionsRegistry }) {
   }
 }
 
-const getFunctionsServer = async function ({ functionsRegistry, siteUrl, prefix }) {
+const getFunctionsServer = function ({ functionsRegistry, siteUrl, prefix }) {
   // performance optimization, load express on demand
   // eslint-disable-next-line node/global-require
   const express = require('express')
@@ -134,7 +140,7 @@ const getFunctionsServer = async function ({ functionsRegistry, siteUrl, prefix 
     res.status(204).end()
   })
 
-  app.all(`${prefix}*`, await createHandler({ functionsRegistry }))
+  app.all(`${prefix}*`, createHandler({ functionsRegistry }))
 
   return app
 }
@@ -156,7 +162,7 @@ const startFunctionsServer = async ({ config, settings, site, siteUrl, capabilit
 
     await functionsRegistry.scan(functionsDirectories)
 
-    const server = await getFunctionsServer({
+    const server = getFunctionsServer({
       functionsRegistry,
       siteUrl,
       prefix,
