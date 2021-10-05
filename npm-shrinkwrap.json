@@ -1,12 +1,12 @@
 {
   "name": "netlify-cli",
-  "version": "6.10.0",
+  "version": "6.10.1",
   "lockfileVersion": 2,
   "requires": true,
   "packages": {
     "": {
       "name": "netlify-cli",
-      "version": "6.10.0",
+      "version": "6.10.1",
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
