@@ -55,11 +55,12 @@ const createSiteBuilder = ({ siteName }) => {
       })
       return builder
     },
-    withFunction: ({ pathPrefix = 'functions', path: filePath, handler }) => {
+    withFunction: ({ pathPrefix = 'functions', path: filePath, handler, esm = false }) => {
       const dest = path.join(directory, pathPrefix, filePath)
       tasks.push(async () => {
         await ensureDir(path.dirname(dest))
-        await fs.writeFileAsync(dest, `exports.handler = ${handler.toString()}`)
+        const file = esm ? `export const handler = ${handler.toString()}` : `exports.handler = ${handler.toString()}`
+        await fs.writeFileAsync(dest, file)
       })
       return builder
     },

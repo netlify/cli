@@ -683,6 +683,7 @@ export { handler }
             statusCode: 200,
             body: 'hello from es module!',
           }),
+          esm: true,
         })
         .buildAsync()
 

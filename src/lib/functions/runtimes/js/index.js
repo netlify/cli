@@ -54,10 +54,11 @@ const invokeFunction = async ({ context, event, func, timeout }) => {
   // If a function builder has defined a `buildPath` property, we use it.
   // Otherwise, we'll invoke the function's main file.
   const lambdaPath = (func.buildData && func.buildData.buildPath) || func.mainFile
+  const lambdaFunc = await import(lambdaPath)
   const result = await lambdaLocal.execute({
     clientContext: JSON.stringify(context),
     event,
-    lambdaPath,
+    lambdaFunc,
     timeoutMs: timeout * SECONDS_TO_MILLISECONDS,
     verboseLevel: 3,
   })
