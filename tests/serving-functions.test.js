@@ -364,18 +364,13 @@ testMatrix.forEach(({ args }) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
       await builder
-        .withContentFile({
+        .withFunction({
           path: 'functions/help.ts',
-          content: `
-const handler = async () => {
-  return {
-    statusCode: 200,
-    body: 'I need somebody. Not just anybody.'
-  }
-}
-
-export { handler }
-      `,
+          handler: async () => ({
+            statusCode: 200,
+            body: 'I need somebody. Not just anybody.',
+          }),
+          esm: true,
         })
         .withNetlifyToml({
           config: {
