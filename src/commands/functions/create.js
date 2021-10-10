@@ -156,7 +156,7 @@ const formatRegistryArrayForInquirer = function (lang) {
 }
 
 // pick template from our existing templates
-const pickTemplate = async function ({ language: languageArg }) {
+const pickTemplate = async function ({ language: languageFromFlag }) {
   const specialCommands = [
     new inquirer.Separator(),
     {
@@ -172,7 +172,7 @@ const pickTemplate = async function ({ language: languageArg }) {
     new inquirer.Separator(),
   ]
 
-  let language = languageArg
+  let language = languageFromFlag
 
   if (language === undefined) {
     const { language: languageFromPrompt } = await inquirer.prompt({
