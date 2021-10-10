@@ -70,7 +70,7 @@ test('should create a new function directory when none is found', async (t) => {
       },
       {
         question: 'Select the language of your function',
-        answer: answerWithValue('javascript'),
+        answer: answerWithValue(CONFIRM),
       },
       {
         question: 'Pick a template',
@@ -142,7 +142,7 @@ test('should install function template dependencies on a site-level `package.jso
       },
       {
         question: 'Select the language of your function',
-        answer: answerWithValue('javascript'),
+        answer: answerWithValue(CONFIRM),
       },
       {
         question: 'Pick a template',
@@ -218,7 +218,7 @@ test('should install function template dependencies in the function sub-director
       },
       {
         question: 'Select the language of your function',
-        answer: answerWithValue('javascript'),
+        answer: answerWithValue(CONFIRM),
       },
       {
         question: 'Pick a template',
@@ -286,7 +286,7 @@ test('should not create a new function directory when one is found', async (t) =
     const createFunctionQuestions = [
       {
         question: 'Select the language of your function',
-        answer: answerWithValue('javascript'),
+        answer: answerWithValue(CONFIRM),
       },
       {
         question: 'Pick a template',
