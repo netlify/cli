@@ -35,7 +35,7 @@ const languages = [
   { name: 'JavaScript', value: 'js' },
   { name: 'TypeScript', value: 'ts' },
   showGoTemplates && { name: 'Go', value: 'go' },
-  showRustTemplates && { name: 'Rust', value: 'rs' },
+  showRustTemplates && { name: 'Rust', value: 'rust' },
 ]
 
 /**
