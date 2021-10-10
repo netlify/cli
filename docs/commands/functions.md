@@ -71,6 +71,7 @@ netlify functions:create
 
 - `name` (*string*) - function name
 - `url` (*string*) - pull template from URL
+- `language` (*string*) - function language
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
