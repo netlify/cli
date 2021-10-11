@@ -5,34 +5,28 @@ const pEvent = require('p-event')
 
 const DEBOUNCE_WAIT = 100
 
-const watchDebounced = async (target, { depth, onAdd, onChange, onUnlink }) => {
+const watchDebounced = async (target, { depth, onAdd = () => {}, onChange = () => {}, onUnlink = () => {} }) => {
   const watcher = chokidar.watch(target, { depth, ignored: /node_modules/, ignoreInitial: true })
 
   await pEvent(watcher, 'ready')
 
-  const debouncedOnChange = debounce((path) => {
-    decache(path)
+  const debouncedOnChange = debounce(onChange, DEBOUNCE_WAIT)
+  const debouncedOnUnlink = debounce(onUnlink, DEBOUNCE_WAIT)
+  const debouncedOnAdd = debounce(onAdd, DEBOUNCE_WAIT)
 
-    if (typeof onChange === 'function') {
-      onChange(path)
-    }
-  }, DEBOUNCE_WAIT)
-  const debouncedOnUnlink = debounce((path) => {
-    decache(path)
-
-    if (typeof onUnlink === 'function') {
-      onUnlink(path)
-    }
-  }, DEBOUNCE_WAIT)
-  const debouncedOnAdd = debounce((path) => {
-    decache(path)
-
-    if (typeof onAdd === 'function') {
-      onAdd(path)
-    }
-  }, DEBOUNCE_WAIT)
-
-  watcher.on('change', debouncedOnChange).on('unlink', debouncedOnUnlink).on('add', debouncedOnAdd)
+  watcher
+    .on('change', (path) => {
+      decache(path)
+      debouncedOnChange(path)
+    })
+    .on('unlink', (path) => {
+      decache(path)
+      debouncedOnUnlink(path)
+    })
+    .on('add', (path) => {
+      decache(path)
+      debouncedOnAdd(path)
+    })
 
   return watcher
 }
