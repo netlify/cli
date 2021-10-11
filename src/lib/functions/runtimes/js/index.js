@@ -60,7 +60,7 @@ const requireOrImport = async (path) =>
   // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import#browser_compatibility
   semver.satisfies(version, '>=12.3.0')
     ? // eslint-disable-next-line node/no-unsupported-features/es-syntax
-      await import(path)
+      await import(`${path}?cache_bust=${Date.now()}`)
     : // eslint-disable-next-line import/no-dynamic-require, node/global-require
       require(path)
 
