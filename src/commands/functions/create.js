@@ -29,8 +29,7 @@ const showGoTemplates = process.env.NETLIFY_EXPERIMENTAL_BUILD_GO_SOURCE === 'tr
 const showRustTemplates = process.env.NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE === 'true'
 
 // Ensure that there's a sub-directory in `src/functions-templates` named after
-// each `value` property in this list, and that it matches the extension of the
-// files used by that language.
+// each `value` property in this list.
 const languages = [
   { name: 'JavaScript', value: 'javascript' },
   { name: 'TypeScript', value: 'typescript' },
