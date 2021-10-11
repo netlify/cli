@@ -491,7 +491,7 @@ export { handler }
     })
   })
 
-  test(testName(`should pick up new function files even through debounce`, args), async (t) => {
+  test.skip(testName(`should pick up new function files even through debounce`, args), async (t) => {
     await withSiteBuilder('function-file-updates', async (builder) => {
       await builder
         .withNetlifyToml({
