@@ -17,7 +17,7 @@
         "@netlify/plugin-edge-handlers": "^1.11.22",
         "@netlify/plugins-list": "^4.0.0",
         "@netlify/routing-local-proxy": "^0.33.2",
-        "@netlify/zip-it-and-ship-it": "4.23.6",
+        "@netlify/zip-it-and-ship-it": "4.24.0",
         "@oclif/command": "^1.6.1",
         "@oclif/config": "^1.15.1",
         "@oclif/errors": "^1.3.4",
@@ -25,7 +25,7 @@
         "@oclif/plugin-help": "^3.0.0",
         "@oclif/plugin-not-found": "^1.1.4",
         "@oclif/plugin-plugins": "^1.9.3",
-        "@octokit/rest": "^18.12.0",
+        "@octokit/rest": "^18.0.0",
         "@sindresorhus/slugify": "^1.1.0",
         "@ungap/from-entries": "^0.2.1",
         "ansi-styles": "^5.0.0",
@@ -3369,9 +3369,9 @@
       }
     },
     "node_modules/@netlify/zip-it-and-ship-it": {
-      "version": "4.23.6",
-      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-4.23.6.tgz",
-      "integrity": "sha512-b4LqjSKrCxWZPVdUVuOXj6Y92fh6X6XXuGw5cr11EzNbqEl7ZPzxsRABkekDD93FOa0Pxi0gI1+ployXK0PQdQ==",
+      "version": "4.24.0",
+      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-4.24.0.tgz",
+      "integrity": "sha512-I+tdK6aldEPeUFW/XJswFBXvEyQyru+WS/GAJpNiWoDdhO0qG9uYejadPnt9m8AEyXdy+9l4gUftK46TfX7whQ==",
       "dependencies": {
         "@babel/parser": "^7.15.7",
         "@netlify/esbuild": "^0.13.6",
@@ -23681,9 +23681,9 @@
       }
     },
     "@netlify/zip-it-and-ship-it": {
-      "version": "4.23.6",
-      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-4.23.6.tgz",
-      "integrity": "sha512-b4LqjSKrCxWZPVdUVuOXj6Y92fh6X6XXuGw5cr11EzNbqEl7ZPzxsRABkekDD93FOa0Pxi0gI1+ployXK0PQdQ==",
+      "version": "4.24.0",
+      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-4.24.0.tgz",
+      "integrity": "sha512-I+tdK6aldEPeUFW/XJswFBXvEyQyru+WS/GAJpNiWoDdhO0qG9uYejadPnt9m8AEyXdy+9l4gUftK46TfX7whQ==",
       "requires": {
         "@babel/parser": "^7.15.7",
         "@netlify/esbuild": "^0.13.6",
