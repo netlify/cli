@@ -25,7 +25,7 @@
         "@oclif/plugin-help": "^3.0.0",
         "@oclif/plugin-not-found": "^1.1.4",
         "@oclif/plugin-plugins": "^1.9.3",
-        "@octokit/rest": "^18.0.0",
+        "@octokit/rest": "^18.12.0",
         "@sindresorhus/slugify": "^1.1.0",
         "@ungap/from-entries": "^0.2.1",
         "ansi-styles": "^5.0.0",
@@ -129,7 +129,7 @@
       "devDependencies": {
         "@babel/plugin-proposal-class-properties": "^7.13.0",
         "@babel/preset-react": "^7.12.13",
-        "@commitlint/cli": "^13.2.1",
+        "@commitlint/cli": "^13.0.0",
         "@commitlint/config-conventional": "^13.0.0",
         "@netlify/eslint-config-node": "^3.3.0",
         "@oclif/dev-cli": "^1.23.1",
@@ -4211,16 +4211,16 @@
       }
     },
     "node_modules/@octokit/openapi-types": {
-      "version": "10.6.4",
-      "resolved": "https://registry.npmjs.org/@octokit/openapi-types/-/openapi-types-10.6.4.tgz",
-      "integrity": "sha512-JVmwWzYTIs6jACYOwD6zu5rdrqGIYsiAsLzTCxdrWIPNKNVjEF6vPTL20shmgJ4qZsq7WPBcLXLsaQD+NLChfg=="
+      "version": "11.2.0",
+      "resolved": "https://registry.npmjs.org/@octokit/openapi-types/-/openapi-types-11.2.0.tgz",
+      "integrity": "sha512-PBsVO+15KSlGmiI8QAzaqvsNlZlrDlyAJYcrXBCvVUxCp7VnXjkwPoFHgjEJXx3WF9BAwkA6nfCUA7i9sODzKA=="
     },
     "node_modules/@octokit/plugin-paginate-rest": {
-      "version": "2.16.7",
-      "resolved": "https://registry.npmjs.org/@octokit/plugin-paginate-rest/-/plugin-paginate-rest-2.16.7.tgz",
-      "integrity": "sha512-TMlyVhMPx6La1Ud4PSY4YxqAvb9YPEMs/7R1nBSbsw4wNqG73aBqls0r0dRRCWe5Pm0ZUGS9a94N46iAxlOR8A==",
+      "version": "2.17.0",
+      "resolved": "https://registry.npmjs.org/@octokit/plugin-paginate-rest/-/plugin-paginate-rest-2.17.0.tgz",
+      "integrity": "sha512-tzMbrbnam2Mt4AhuyCHvpRkS0oZ5MvwwcQPYGtMv4tUa5kkzG58SVB0fcsLulOZQeRnOgdkZWkRUiyBlh0Bkyw==",
       "dependencies": {
-        "@octokit/types": "^6.31.3"
+        "@octokit/types": "^6.34.0"
       },
       "peerDependencies": {
         "@octokit/core": ">=2"
@@ -4235,11 +4235,11 @@
       }
     },
     "node_modules/@octokit/plugin-rest-endpoint-methods": {
-      "version": "5.11.4",
-      "resolved": "https://registry.npmjs.org/@octokit/plugin-rest-endpoint-methods/-/plugin-rest-endpoint-methods-5.11.4.tgz",
-      "integrity": "sha512-iS+GYTijrPUiEiLoDsGJhrbXIvOPfm2+schvr+FxNMs7PeE9Nl4bAMhE8ftfNX3Z1xLxSKwEZh0O7GbWurX5HQ==",
+      "version": "5.13.0",
+      "resolved": "https://registry.npmjs.org/@octokit/plugin-rest-endpoint-methods/-/plugin-rest-endpoint-methods-5.13.0.tgz",
+      "integrity": "sha512-uJjMTkN1KaOIgNtUPMtIXDOjx6dGYysdIFhgA52x4xSadQCz3b/zJexvITDVpANnfKPW/+E0xkOvLntqMYpviA==",
       "dependencies": {
-        "@octokit/types": "^6.31.2",
+        "@octokit/types": "^6.34.0",
         "deprecation": "^2.3.1"
       },
       "peerDependencies": {
@@ -4270,22 +4270,22 @@
       }
     },
     "node_modules/@octokit/rest": {
-      "version": "18.11.4",
-      "resolved": "https://registry.npmjs.org/@octokit/rest/-/rest-18.11.4.tgz",
-      "integrity": "sha512-QplypCyYxqMK05JdMSm/bDWZO8VWWaBdzQ9tbF9rEV9rIEiICh+v6q+Vu/Y5hdze8JJaxfUC+PBC7vrnEkZvZg==",
+      "version": "18.12.0",
+      "resolved": "https://registry.npmjs.org/@octokit/rest/-/rest-18.12.0.tgz",
+      "integrity": "sha512-gDPiOHlyGavxr72y0guQEhLsemgVjwRePayJ+FcKc2SJqKUbxbkvf5kAZEWA/MKvsfYlQAMVzNJE3ezQcxMJ2Q==",
       "dependencies": {
         "@octokit/core": "^3.5.1",
-        "@octokit/plugin-paginate-rest": "^2.16.4",
+        "@octokit/plugin-paginate-rest": "^2.16.8",
         "@octokit/plugin-request-log": "^1.0.4",
-        "@octokit/plugin-rest-endpoint-methods": "5.11.4"
+        "@octokit/plugin-rest-endpoint-methods": "^5.12.0"
       }
     },
     "node_modules/@octokit/types": {
-      "version": "6.31.3",
-      "resolved": "https://registry.npmjs.org/@octokit/types/-/types-6.31.3.tgz",
-      "integrity": "sha512-IUG3uMpsLHrtEL6sCVXbxCgnbKcgpkS4K7gVEytLDvYYalkK3XcuMCHK1YPD8xJglSJAOAbL4MgXp47rS9G49w==",
+      "version": "6.34.0",
+      "resolved": "https://registry.npmjs.org/@octokit/types/-/types-6.34.0.tgz",
+      "integrity": "sha512-s1zLBjWhdEI2zwaoSgyOFoKSl109CUcVBCc7biPJ3aAf6LGLU6szDvi31JPU7bxfla2lqfhjbbg/5DdFNxOwHw==",
       "dependencies": {
-        "@octokit/openapi-types": "^10.6.4"
+        "@octokit/openapi-types": "^11.2.0"
       }
     },
     "node_modules/@rollup/plugin-babel": {
@@ -24355,16 +24355,16 @@
       }
     },
     "@octokit/openapi-types": {
-      "version": "10.6.4",
-      "resolved": "https://registry.npmjs.org/@octokit/openapi-types/-/openapi-types-10.6.4.tgz",
-      "integrity": "sha512-JVmwWzYTIs6jACYOwD6zu5rdrqGIYsiAsLzTCxdrWIPNKNVjEF6vPTL20shmgJ4qZsq7WPBcLXLsaQD+NLChfg=="
+      "version": "11.2.0",
+      "resolved": "https://registry.npmjs.org/@octokit/openapi-types/-/openapi-types-11.2.0.tgz",
+      "integrity": "sha512-PBsVO+15KSlGmiI8QAzaqvsNlZlrDlyAJYcrXBCvVUxCp7VnXjkwPoFHgjEJXx3WF9BAwkA6nfCUA7i9sODzKA=="
     },
     "@octokit/plugin-paginate-rest": {
-      "version": "2.16.7",
-      "resolved": "https://registry.npmjs.org/@octokit/plugin-paginate-rest/-/plugin-paginate-rest-2.16.7.tgz",
-      "integrity": "sha512-TMlyVhMPx6La1Ud4PSY4YxqAvb9YPEMs/7R1nBSbsw4wNqG73aBqls0r0dRRCWe5Pm0ZUGS9a94N46iAxlOR8A==",
+      "version": "2.17.0",
+      "resolved": "https://registry.npmjs.org/@octokit/plugin-paginate-rest/-/plugin-paginate-rest-2.17.0.tgz",
+      "integrity": "sha512-tzMbrbnam2Mt4AhuyCHvpRkS0oZ5MvwwcQPYGtMv4tUa5kkzG58SVB0fcsLulOZQeRnOgdkZWkRUiyBlh0Bkyw==",
       "requires": {
-        "@octokit/types": "^6.31.3"
+        "@octokit/types": "^6.34.0"
       }
     },
     "@octokit/plugin-request-log": {
@@ -24374,11 +24374,11 @@
       "requires": {}
     },
     "@octokit/plugin-rest-endpoint-methods": {
-      "version": "5.11.4",
-      "resolved": "https://registry.npmjs.org/@octokit/plugin-rest-endpoint-methods/-/plugin-rest-endpoint-methods-5.11.4.tgz",
-      "integrity": "sha512-iS+GYTijrPUiEiLoDsGJhrbXIvOPfm2+schvr+FxNMs7PeE9Nl4bAMhE8ftfNX3Z1xLxSKwEZh0O7GbWurX5HQ==",
+      "version": "5.13.0",
+      "resolved": "https://registry.npmjs.org/@octokit/plugin-rest-endpoint-methods/-/plugin-rest-endpoint-methods-5.13.0.tgz",
+      "integrity": "sha512-uJjMTkN1KaOIgNtUPMtIXDOjx6dGYysdIFhgA52x4xSadQCz3b/zJexvITDVpANnfKPW/+E0xkOvLntqMYpviA==",
       "requires": {
-        "@octokit/types": "^6.31.2",
+        "@octokit/types": "^6.34.0",
         "deprecation": "^2.3.1"
       }
     },
@@ -24406,22 +24406,22 @@
       }
     },
     "@octokit/rest": {
-      "version": "18.11.4",
-      "resolved": "https://registry.npmjs.org/@octokit/rest/-/rest-18.11.4.tgz",
-      "integrity": "sha512-QplypCyYxqMK05JdMSm/bDWZO8VWWaBdzQ9tbF9rEV9rIEiICh+v6q+Vu/Y5hdze8JJaxfUC+PBC7vrnEkZvZg==",
+      "version": "18.12.0",
+      "resolved": "https://registry.npmjs.org/@octokit/rest/-/rest-18.12.0.tgz",
+      "integrity": "sha512-gDPiOHlyGavxr72y0guQEhLsemgVjwRePayJ+FcKc2SJqKUbxbkvf5kAZEWA/MKvsfYlQAMVzNJE3ezQcxMJ2Q==",
       "requires": {
         "@octokit/core": "^3.5.1",
-        "@octokit/plugin-paginate-rest": "^2.16.4",
+        "@octokit/plugin-paginate-rest": "^2.16.8",
         "@octokit/plugin-request-log": "^1.0.4",
-        "@octokit/plugin-rest-endpoint-methods": "5.11.4"
+        "@octokit/plugin-rest-endpoint-methods": "^5.12.0"
       }
     },
     "@octokit/types": {
-      "version": "6.31.3",
-      "resolved": "https://registry.npmjs.org/@octokit/types/-/types-6.31.3.tgz",
-      "integrity": "sha512-IUG3uMpsLHrtEL6sCVXbxCgnbKcgpkS4K7gVEytLDvYYalkK3XcuMCHK1YPD8xJglSJAOAbL4MgXp47rS9G49w==",
+      "version": "6.34.0",
+      "resolved": "https://registry.npmjs.org/@octokit/types/-/types-6.34.0.tgz",
+      "integrity": "sha512-s1zLBjWhdEI2zwaoSgyOFoKSl109CUcVBCc7biPJ3aAf6LGLU6szDvi31JPU7bxfla2lqfhjbbg/5DdFNxOwHw==",
       "requires": {
-        "@octokit/openapi-types": "^10.6.4"
+        "@octokit/openapi-types": "^11.2.0"
       }
     },
     "@rollup/plugin-babel": {
