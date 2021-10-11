@@ -31,8 +31,8 @@ const showGoTemplates = process.env.NETLIFY_EXPERIMENTAL_BUILD_GO_SOURCE === 'tr
 // each `value` property in this list, and that it matches the extension of the
 // files used by that language.
 const languages = [
-  { name: 'JavaScript', value: 'js' },
-  { name: 'TypeScript', value: 'ts' },
+  { name: 'JavaScript', value: 'javascript' },
+  { name: 'TypeScript', value: 'typescript' },
   showGoTemplates && { name: 'Go', value: 'go' },
 ]
 
@@ -69,6 +69,7 @@ FunctionsCreateCommand.aliases = ['function:create']
 FunctionsCreateCommand.flags = {
   name: flagsLib.string({ char: 'n', description: 'function name' }),
   url: flagsLib.string({ char: 'u', description: 'pull template from URL' }),
+  language: flagsLib.string({ char: 'l', description: 'function language' }),
   ...FunctionsCreateCommand.flags,
 }
 module.exports = FunctionsCreateCommand
@@ -155,7 +156,7 @@ const formatRegistryArrayForInquirer = function (lang) {
 }
 
 // pick template from our existing templates
-const pickTemplate = async function () {
+const pickTemplate = async function ({ language: languageFromFlag }) {
   const specialCommands = [
     new inquirer.Separator(),
     {
@@ -170,16 +171,30 @@ const pickTemplate = async function () {
     },
     new inquirer.Separator(),
   ]
-  const { language } = await inquirer.prompt({
-    choices: languages.filter(Boolean),
-    message: 'Select the language of your function',
-    name: 'language',
-    type: 'list',
-  })
+
+  let language = languageFromFlag
+
+  if (language === undefined) {
+    const { language: languageFromPrompt } = await inquirer.prompt({
+      choices: languages.filter(Boolean),
+      message: 'Select the language of your function',
+      name: 'language',
+      type: 'list',
+    })
+
+    language = languageFromPrompt
+  }
 
   inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
 
-  const templatesForLanguage = formatRegistryArrayForInquirer(language)
+  let templatesForLanguage
+
+  try {
+    templatesForLanguage = formatRegistryArrayForInquirer(language)
+  } catch (_) {
+    throw error(`Invalid language: ${language}`)
+  }
+
   const { chosenTemplate } = await inquirer.prompt({
     name: 'chosenTemplate',
     message: 'Pick a template',
@@ -373,7 +388,7 @@ const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) 
 // no --url flag specified, pick from a provided template
 const scaffoldFromTemplate = async function (context, flags, args, functionsDir) {
   // pull the rest of the metadata from the template
-  const chosenTemplate = await pickTemplate()
+  const chosenTemplate = await pickTemplate(flags)
   if (chosenTemplate === 'url') {
     const { chosenUrl } = await inquirer.prompt([
       {
