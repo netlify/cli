@@ -3,3 +3,6 @@ version = 1
 [merge.automerge_dependencies]
 versions = ["minor", "patch"]
 usernames = ["renovate"]
+
+[approve]
+auto_approve_usernames = ["renovate"]

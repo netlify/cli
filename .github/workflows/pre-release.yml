@@ -14,6 +14,7 @@ jobs:
           node-version: '*'
           cache: 'npm'
           check-latest: true
+          cache-dependency-path: 'npm-shrinkwrap.json'
           registry-url: 'https://registry.npmjs.org'
       # This can be removed once npm >=7.20.0 is installed by default.
       # See https://github.com/npm/cli/issues/2755.

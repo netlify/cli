@@ -486,6 +486,60 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
+  test(testName(`should pick up new function files even through debounce`, args), async (t) => {
+    await withSiteBuilder('function-file-updates', async (builder) => {
+      await builder
+        .withNetlifyToml({
+          config: {
+            functions: { directory: 'functions' },
+          },
+        })
+        .withContentFile({
+          path: 'functions/hello/dist/index.js',
+          content: `module.exports = "foo"`,
+        })
+        .withContentFile({
+          path: 'functions/hello/dist/index.d.ts',
+          content: `export default "foo"`,
+        })
+        .withContentFile({
+          path: 'functions/hello/index.js',
+          content: `
+const response = require("./dist")
+exports.handler = () => ({
+  statusCode: 200,
+  body: response
+})`,
+        })
+        .buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async (server) => {
+        const resp = await got.get(`${server.url}/.netlify/functions/hello`)
+        t.is(resp.body, 'foo')
+
+        await builder
+          .withContentFile({
+            path: 'functions/hello/dist/index.d.ts',
+            content: `export default "bar"`,
+          })
+          .buildAsync()
+
+        await builder
+          .withContentFile({
+            path: 'functions/hello/dist/index.js',
+            content: `module.exports = "bar"`,
+          })
+          .buildAsync()
+
+        const DEBOUNCE_WAIT = 150
+        await pause(DEBOUNCE_WAIT)
+
+        const resp2 = await got.get(`${server.url}/.netlify/functions/hello`)
+        t.is(resp2.body, 'bar')
+      })
+    })
+  })
+
   test(testName('Serves functions from the internal functions directory', args), async (t) => {
     await withSiteBuilder('function-internal', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
