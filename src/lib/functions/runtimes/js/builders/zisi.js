@@ -1,6 +1,4 @@
-const fs = require('fs')
 const path = require('path')
-const { promisify } = require('util')
 
 const { zipFunction } = require('@netlify/zip-it-and-ship-it')
 const decache = require('decache')
@@ -9,11 +7,10 @@ const readPkgUp = require('read-pkg-up')
 const sourceMapSupport = require('source-map-support')
 
 const { NETLIFYDEVERR } = require('../../../../../utils/logo')
+const { writeFileAsync } = require('../../../../fs')
 const { getPathInProject } = require('../../../../settings')
 const { normalizeFunctionsConfig } = require('../../../config')
 const { memoizedBuild } = require('../../../memoized-build')
-
-const pWriteFile = promisify(fs.writeFile)
 
 const addFunctionsConfigDefaults = (config) => ({
   ...config,
@@ -48,7 +45,7 @@ const buildFunction = async ({ cache, config, directory, func, projectRoot, targ
   const buildPath = path.join(functionPath, `${func.name}.js`)
 
   if (hasTypeModule) {
-    await pWriteFile(
+    await writeFileAsync(
       path.join(functionPath, `package.json`),
       JSON.stringify({
         type: 'commonjs',
