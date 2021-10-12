@@ -44,6 +44,8 @@ const buildFunction = async ({ cache, config, directory, func, projectRoot, targ
   const srcFiles = inputs.filter((inputPath) => !inputPath.includes(`${path.sep}node_modules${path.sep}`))
   const buildPath = path.join(functionPath, `${func.name}.js`)
 
+  // some projects include a package.json with "type=module", forcing Node to interpret every descending file
+  // as ESM. ZISI outputs CJS, so we emit an overriding directive into the output directory.
   if (hasTypeModule) {
     await writeFileAsync(
       path.join(functionPath, `package.json`),
