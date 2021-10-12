@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "6.10.5",
+  "version": "6.12.1",
   "author": "Netlify Inc.",
   "contributors": [
     "Mathias Biilmann <matt@netlify.com> (https://twitter.com/biilmann)",
@@ -79,7 +79,7 @@
   "dependencies": {
     "@netlify/build": "^18.13.10",
     "@netlify/config": "^15.6.4",
-    "@netlify/framework-info": "^5.9.2",
+    "@netlify/framework-info": "^5.11.0",
     "@netlify/local-functions-proxy": "^1.1.1",
     "@netlify/plugin-edge-handlers": "^1.11.22",
     "@netlify/plugins-list": "^4.0.0",
