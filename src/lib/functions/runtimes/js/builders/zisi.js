@@ -89,8 +89,8 @@ module.exports = async ({ config, directory, errorExit, func, projectRoot }) => 
   const hasTypeModule = packageJson && packageJson.packageJson.type === 'module'
 
   // We must use esbuild for certain file extensions.
-  const hasTranspilationWorthyExtension = ['.mjs', '.ts'].includes(path.extname(func.mainFile))
-  const mustUseEsbuild = hasTypeModule || hasTranspilationWorthyExtension
+  const mustTranspile = ['.mjs', '.ts'].includes(path.extname(func.mainFile))
+  const mustUseEsbuild = hasTypeModule || mustTranspile
 
   if (mustUseEsbuild && !functionsConfig['*'].nodeBundler) {
     functionsConfig['*'].nodeBundler = 'esbuild'
