@@ -1,14 +1,19 @@
+const fs = require('fs')
 const path = require('path')
+const { promisify } = require('util')
 
 const { zipFunction } = require('@netlify/zip-it-and-ship-it')
 const decache = require('decache')
 const makeDir = require('make-dir')
+const readPkgUp = require('read-pkg-up')
 const sourceMapSupport = require('source-map-support')
 
 const { NETLIFYDEVERR } = require('../../../../../utils/logo')
 const { getPathInProject } = require('../../../../settings')
 const { normalizeFunctionsConfig } = require('../../../config')
 const { memoizedBuild } = require('../../../memoized-build')
+
+const pWriteFile = promisify(fs.writeFile)
 
 const addFunctionsConfigDefaults = (config) => ({
   ...config,
@@ -18,7 +23,7 @@ const addFunctionsConfigDefaults = (config) => ({
   },
 })
 
-const buildFunction = async ({ cache, config, directory, func, projectRoot, targetDirectory }) => {
+const buildFunction = async ({ cache, config, directory, func, projectRoot, targetDirectory, hasTypeModule }) => {
   const zipOptions = {
     archiveFormat: 'none',
     basePath: projectRoot,
@@ -41,6 +46,15 @@ const buildFunction = async ({ cache, config, directory, func, projectRoot, targ
   })
   const srcFiles = inputs.filter((inputPath) => !inputPath.includes(`${path.sep}node_modules${path.sep}`))
   const buildPath = path.join(functionPath, `${func.name}.js`)
+
+  if (hasTypeModule) {
+    await pWriteFile(
+      path.join(functionPath, `package.json`),
+      JSON.stringify({
+        type: 'commonjs',
+      }),
+    )
+  }
 
   clearFunctionsCache(targetDirectory)
 
@@ -72,14 +86,22 @@ module.exports = async ({ config, directory, errorExit, func, projectRoot }) => 
     normalizeFunctionsConfig({ functionsConfig: config.functions, projectRoot }),
   )
 
+  const packageJson = await readPkgUp(func.mainFile)
+  const hasTypeModule = packageJson?.packageJson.type === 'module'
+
   // We must use esbuild for certain file extensions.
-  const mustUseEsbuild = ['.mjs', '.ts'].includes(path.extname(func.mainFile))
+  const hasTranspilationWorthyExtension = ['.mjs', '.ts'].includes(path.extname(func.mainFile))
+  const mustUseEsbuild = hasTypeModule || hasTranspilationWorthyExtension
+
+  if (mustUseEsbuild && !functionsConfig['*'].nodeBundler) {
+    functionsConfig['*'].nodeBundler = 'esbuild'
+  }
 
   // TODO: Resolve functions config globs so that we can check for the bundler
   // on a per-function basis.
-  const isUsingEsbuild = functionsConfig['*'].nodeBundler === 'esbuild_zisi'
+  const isUsingEsbuild = ['esbuild_zisi', 'esbuild'].includes(functionsConfig['*'].nodeBundler)
 
-  if (!mustUseEsbuild && !isUsingEsbuild) {
+  if (!isUsingEsbuild) {
     return false
   }
 
@@ -90,7 +112,7 @@ module.exports = async ({ config, directory, errorExit, func, projectRoot }) => 
 
   return {
     build: ({ cache = {} }) =>
-      buildFunction({ cache, config: functionsConfig, directory, func, projectRoot, targetDirectory }),
+      buildFunction({ cache, config: functionsConfig, directory, func, projectRoot, targetDirectory, hasTypeModule }),
     builderName: 'zip-it-and-ship-it',
     target: targetDirectory,
   }
