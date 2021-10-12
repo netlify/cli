@@ -22,7 +22,7 @@ const configValues = function (addonName, values, currentValue) {
   table.setHeading(...tableHeader)
 
   Object.keys(values).forEach((key) => {
-    const { type, displayName, required } = values[key]
+    const { displayName, required, type } = values[key]
     const requiredText = required ? `true` : `false`
     const typeInfo = type || ''
     const description = displayName || ''

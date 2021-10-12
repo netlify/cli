@@ -2,15 +2,15 @@ const chalk = require('chalk')
 const inquirer = require('inquirer')
 const isEmpty = require('lodash/isEmpty')
 
-const { prepareAddonCommand, ADDON_VALIDATION } = require('../../utils/addons/prepare')
+const { ADDON_VALIDATION, prepareAddonCommand } = require('../../utils/addons/prepare')
 const generatePrompts = require('../../utils/addons/prompts')
 const render = require('../../utils/addons/render')
-const { requiredConfigValues, missingConfigValues, updateConfigValues } = require('../../utils/addons/validation')
+const { missingConfigValues, requiredConfigValues, updateConfigValues } = require('../../utils/addons/validation')
 const Command = require('../../utils/command')
-const { log, error } = require('../../utils/command-helpers')
+const { error, log } = require('../../utils/command-helpers')
 const { parseRawFlags } = require('../../utils/parse-raw-flags')
 
-const createAddon = async ({ api, siteId, addonName, config, siteData }) => {
+const createAddon = async ({ addonName, api, config, siteData, siteId }) => {
   try {
     const response = await api.createServiceInstance({
       siteId,

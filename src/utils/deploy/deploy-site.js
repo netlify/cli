@@ -5,16 +5,16 @@ const { rmdirRecursiveAsync } = require('../../lib/fs')
 const { warn } = require('../command-helpers')
 
 const {
-  DEFAULT_DEPLOY_TIMEOUT,
   DEFAULT_CONCURRENT_HASH,
   DEFAULT_CONCURRENT_UPLOAD,
-  DEFAULT_SYNC_LIMIT,
+  DEFAULT_DEPLOY_TIMEOUT,
   DEFAULT_MAX_RETRY,
+  DEFAULT_SYNC_LIMIT,
 } = require('./constants')
 const { hashFiles } = require('./hash-files')
 const { hashFns } = require('./hash-fns')
 const { uploadFiles } = require('./upload-files')
-const { waitForDiff, waitForDeploy, getUploadList } = require('./util')
+const { getUploadList, waitForDeploy, waitForDiff } = require('./util')
 
 const deploySite = async (
   api,
@@ -52,7 +52,7 @@ const deploySite = async (
     phase: 'start',
   })
 
-  const [{ files, filesShaMap }, { functions, functionsWithNativeModules, fnShaMap }] = await Promise.all([
+  const [{ files, filesShaMap }, { fnShaMap, functions, functionsWithNativeModules }] = await Promise.all([
     hashFiles(dir, configPath, { concurrentHash, hashAlgorithm, assetType, statusCb, filter }),
     hashFns(fnDir, {
       functionsConfig,

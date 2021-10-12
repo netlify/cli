@@ -1,6 +1,6 @@
 const jwtDecode = require('jwt-decode')
 
-const { log, error: errorExit } = require('../../utils/command-helpers')
+const { error: errorExit, log } = require('../../utils/command-helpers')
 const { getInternalFunctionsDir } = require('../../utils/functions')
 const { NETLIFYDEVERR, NETLIFYDEVLOG } = require('../../utils/logo')
 
@@ -113,7 +113,7 @@ const createHandler = function ({ functionsRegistry }) {
   }
 }
 
-const getFunctionsServer = function ({ functionsRegistry, siteUrl, prefix }) {
+const getFunctionsServer = function ({ functionsRegistry, prefix, siteUrl }) {
   // performance optimization, load express on demand
   // eslint-disable-next-line node/global-require
   const express = require('express')
@@ -145,7 +145,7 @@ const getFunctionsServer = function ({ functionsRegistry, siteUrl, prefix }) {
   return app
 }
 
-const startFunctionsServer = async ({ config, settings, site, siteUrl, capabilities, timeouts, prefix = '' }) => {
+const startFunctionsServer = async ({ capabilities, config, prefix = '', settings, site, siteUrl, timeouts }) => {
   const internalFunctionsDir = await getInternalFunctionsDir({ base: site.root })
 
   // The order of the function directories matters. Leftmost directories take

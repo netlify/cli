@@ -18,7 +18,7 @@ const logSuccess = (repoData) => {
   `)
 }
 
-const configureRepo = async ({ context, siteId, repoData, manual }) => {
+const configureRepo = async ({ context, manual, repoData, siteId }) => {
   if (manual) {
     await configManual({ context, siteId, repoData })
   } else if (repoData.provider === 'github') {

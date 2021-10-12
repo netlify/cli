@@ -4,14 +4,14 @@ const path = require('path')
 const test = require('ava')
 
 const {
-  rmdirRecursiveAsync,
+  copyFileAsync,
   mkdirRecursiveAsync,
   readFileAsync,
-  writeFileAsync,
-  copyFileAsync,
   rmFileAsync,
+  rmdirRecursiveAsync,
+  writeFileAsync,
 } = require('../lib/fs')
-const { getPathInHome, getLegacyPathInHome } = require('../lib/settings')
+const { getLegacyPathInHome, getPathInHome } = require('../lib/settings')
 
 const getGlobalConfig = require('./get-global-config')
 

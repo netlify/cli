@@ -39,7 +39,7 @@ const getFullPath = function (filePath) {
 }
 
 const syncFile = async function (filePath) {
-  const { src, destination } = getFullPath(filePath)
+  const { destination, src } = getFullPath(filePath)
   await ensureFilePathAsync(destination)
   await fs.copyFile(src, destination)
   console.log(`${filePath} synced to ${destination}`)

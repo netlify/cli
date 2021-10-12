@@ -1,9 +1,9 @@
 const { flags: flagsLib } = require('@oclif/command')
 const inquirer = require('inquirer')
 
-const { prepareAddonCommand, ADDON_VALIDATION } = require('../../utils/addons/prepare')
+const { ADDON_VALIDATION, prepareAddonCommand } = require('../../utils/addons/prepare')
 const Command = require('../../utils/command')
-const { log, exit, error } = require('../../utils/command-helpers')
+const { error, exit, log } = require('../../utils/command-helpers')
 const { parseRawFlags } = require('../../utils/parse-raw-flags')
 
 class AddonsDeleteCommand extends Command {

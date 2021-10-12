@@ -1,7 +1,7 @@
 const test = require('ava')
 const pWaitFor = require('p-wait-for')
 
-const { withDevServer, tryAndLogOutput } = require('./utils/dev-server')
+const { tryAndLogOutput, withDevServer } = require('./utils/dev-server')
 const got = require('./utils/got')
 const { createMock: createExecaMock } = require('./utils/mock-execa')
 const { pause } = require('./utils/pause')
@@ -73,7 +73,7 @@ test('Updates a Rust function when a file is modified', async (t) => {
         cwd: builder.directory,
         env: { ...execaMock, NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE: 'true' },
       },
-      async ({ port, outputBuffer }) => {
+      async ({ outputBuffer, port }) => {
         try {
           await tryAndLogOutput(async () => {
             t.is(await got(`http://localhost:${port}/.netlify/functions/rust-func`).text(), originalBody)

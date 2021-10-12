@@ -1,6 +1,6 @@
 const chalk = require('chalk')
 
-const { checkGitVersion, checkLFSVersion, checkLFSFilters, checkHelperVersion } = require('./requirements')
+const { checkGitVersion, checkHelperVersion, checkLFSFilters, checkLFSVersion } = require('./requirements')
 
 const checkGitVersionStep = {
   title: 'Checking Git version',

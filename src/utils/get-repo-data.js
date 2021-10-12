@@ -39,7 +39,7 @@ const getRepoData = async function ({ remoteName }) {
     }
 
     const { url } = gitConfig.remote[remoteName]
-    const { name, owner, host, repo } = parseGitRemote(url)
+    const { host, name, owner, repo } = parseGitRemote(url)
     const { branch } = gitRepoInfo()
     return {
       name,

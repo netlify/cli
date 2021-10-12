@@ -3,7 +3,7 @@ const test = require('ava')
 const { isFileAsync } = require('../src/lib/fs')
 
 const callCli = require('./utils/call-cli')
-const { withMockApi, getCLIOptions } = require('./utils/mock-api')
+const { getCLIOptions, withMockApi } = require('./utils/mock-api')
 const { withSiteBuilder } = require('./utils/site-builder')
 
 test('should create gitignore in repository root when is root', async (t) => {

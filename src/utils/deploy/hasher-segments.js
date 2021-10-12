@@ -28,7 +28,7 @@ const fileNormalizerCtor = ({ assetType }) =>
   map((fileObj) => ({ ...fileObj, assetType, normalizedPath: normalizePath(fileObj.relname) }))
 
 // A writable stream segment ctor that normalizes file paths, and writes shaMap's
-const manifestCollectorCtor = (filesObj, shaMap, { statusCb, assetType }) => {
+const manifestCollectorCtor = (filesObj, shaMap, { assetType, statusCb }) => {
   if (!statusCb || !assetType) throw new Error('Missing required options')
   return flushWriteStream.obj((fileObj, _, cb) => {
     filesObj[fileObj.normalizedPath] = fileObj.hash

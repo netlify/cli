@@ -8,24 +8,24 @@ const hasbin = require('hasbin')
 const Listr = require('listr')
 const pathKey = require('path-key')
 
-const { shouldFetchLatestVersion, fetchLatestVersion } = require('../../lib/exec-fetcher')
+const { fetchLatestVersion, shouldFetchLatestVersion } = require('../../lib/exec-fetcher')
 const {
-  fileExistsAsync,
-  writeFileAsync,
-  readFileAsync,
   appendFileAsync,
   copyFileAsync,
+  fileExistsAsync,
+  readFileAsync,
   rmdirRecursiveAsync,
+  writeFileAsync,
 } = require('../../lib/fs')
 const { normalizeBackslash } = require('../../lib/path')
-const { getPathInHome, getLegacyPathInHome } = require('../../lib/settings')
+const { getLegacyPathInHome, getPathInHome } = require('../../lib/settings')
 
 const PACKAGE_NAME = 'netlify-credential-helper'
 const EXEC_NAME = 'git-credential-netlify'
 
 const GIT_CONFIG = '.gitconfig'
 
-const { checkGitVersionStep, checkGitLFSVersionStep, checkLFSFiltersStep } = require('./steps')
+const { checkGitLFSVersionStep, checkGitVersionStep, checkLFSFiltersStep } = require('./steps')
 
 const SUPPORTED_PLATFORMS = {
   linux: 'Linux',
@@ -145,7 +145,7 @@ const setupUnixPath = async () => {
     return true
   }
 
-  const { shell, incFilePath, configFile } = getShellInfo()
+  const { configFile, incFilePath, shell } = getShellInfo()
 
   if (configFile === undefined) {
     const error = `Unable to set credential helper in PATH. We don't how to set the path for ${shell} shell.

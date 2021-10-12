@@ -4,11 +4,11 @@ const clean = require('clean-deep')
 const prettyjson = require('prettyjson')
 
 const Command = require('../../utils/command')
-const { log, logJson, warn, error, exit, getToken } = require('../../utils/command-helpers')
+const { error, exit, getToken, log, logJson, warn } = require('../../utils/command-helpers')
 
 class StatusCommand extends Command {
   async run() {
-    const { globalConfig, api, site } = this.netlify
+    const { api, globalConfig, site } = this.netlify
     const { flags } = this.parse(StatusCommand)
 
     const current = globalConfig.get('userId')

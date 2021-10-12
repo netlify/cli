@@ -12,11 +12,11 @@ const waitPort = require('wait-port')
 
 const { startFunctionsServer } = require('../../lib/functions/server')
 const Command = require('../../utils/command')
-const { log, warn, exit } = require('../../utils/command-helpers')
+const { exit, log, warn } = require('../../utils/command-helpers')
 const { detectServerSettings } = require('../../utils/detect-server-settings')
 const { getSiteInformation, injectEnvVariables } = require('../../utils/dev')
 const { startLiveTunnel } = require('../../utils/live-tunnel')
-const { NETLIFYDEV, NETLIFYDEVLOG, NETLIFYDEVWARN, NETLIFYDEVERR } = require('../../utils/logo')
+const { NETLIFYDEV, NETLIFYDEVERR, NETLIFYDEVLOG, NETLIFYDEVWARN } = require('../../utils/logo')
 const openBrowser = require('../../utils/open-browser')
 const { startProxy } = require('../../utils/proxy')
 const { startForwardProxy } = require('../../utils/traffic-mesh')
@@ -121,7 +121,7 @@ const startFrameworkServer = async function ({ settings }) {
 // 10 minutes
 const FRAMEWORK_PORT_TIMEOUT = 6e5
 
-const startProxyServer = async ({ flags, settings, site, addonsUrls }) => {
+const startProxyServer = async ({ addonsUrls, flags, settings, site }) => {
   let url
   if (flags.edgeHandlers || flags.trafficMesh) {
     url = await startForwardProxy({
@@ -148,7 +148,7 @@ const startProxyServer = async ({ flags, settings, site, addonsUrls }) => {
   return url
 }
 
-const handleLiveTunnel = async ({ flags, site, api, settings }) => {
+const handleLiveTunnel = async ({ api, flags, settings, site }) => {
   if (flags.live) {
     const sessionUrl = await startLiveTunnel({
       siteId: site.id,
@@ -182,7 +182,7 @@ class DevCommand extends Command {
   async run() {
     log(`${NETLIFYDEV}`)
     const { flags } = this.parse(DevCommand)
-    const { api, site, config, siteInfo } = this.netlify
+    const { api, config, site, siteInfo } = this.netlify
     config.dev = { ...config.dev }
     config.build = { ...config.build }
     const devConfig = {
@@ -200,7 +200,7 @@ class DevCommand extends Command {
     }
 
     await injectEnvVariables({ env: this.netlify.cachedConfig.env, site })
-    const { addonsUrls, siteUrl, capabilities, timeouts } = await getSiteInformation({
+    const { addonsUrls, capabilities, siteUrl, timeouts } = await getSiteInformation({
       flags,
       api,
       site,

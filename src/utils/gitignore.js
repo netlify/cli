@@ -2,7 +2,7 @@ const path = require('path')
 
 const parseIgnore = require('parse-gitignore')
 
-const { readFileAsync, writeFileAsync, fileExistsAsync } = require('../lib/fs')
+const { fileExistsAsync, readFileAsync, writeFileAsync } = require('../lib/fs')
 
 const hasGitIgnore = async function (dir) {
   const gitIgnorePath = path.join(dir, '.gitignore')

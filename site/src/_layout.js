@@ -309,7 +309,7 @@ export const Nav = ({ routes = [], ...props }) => (
   </React.Fragment>
 )
 
-export const Pagination = ({ previous, next }) => (
+export const Pagination = ({ next, previous }) => (
   <Flex py={4} flexWrap="wrap">
     {previous && (
       <BlockLink py={2} is={RouterLink} to={previous.path}>
@@ -331,7 +331,7 @@ export const Pagination = ({ previous, next }) => (
   </Flex>
 )
 
-const MobileNav = ({ title, logo, update }) => (
+const MobileNav = ({ logo, title, update }) => (
   <MobileOnly>
     <Toolbar px={0} color="inherit" bg="transparent">
       <ButtonTransparent

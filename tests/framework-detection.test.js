@@ -2,9 +2,9 @@ const test = require('ava')
 const execa = require('execa')
 
 const cliPath = require('./utils/cli-path')
-const { withDevServer, getExecaOptions } = require('./utils/dev-server')
+const { getExecaOptions, withDevServer } = require('./utils/dev-server')
 const got = require('./utils/got')
-const { handleQuestions, CONFIRM, DOWN } = require('./utils/handle-questions')
+const { CONFIRM, DOWN, handleQuestions } = require('./utils/handle-questions')
 const { withSiteBuilder } = require('./utils/site-builder')
 const { normalize } = require('./utils/snapshots')
 
@@ -19,7 +19,7 @@ test('should default to process.cwd() and static server', async (t) => {
       })
       .buildAsync()
 
-    await withDevServer({ cwd: builder.directory }, async ({ url, output }) => {
+    await withDevServer({ cwd: builder.directory }, async ({ output, url }) => {
       const response = await got(url).text()
       t.is(response, content)
 
@@ -37,7 +37,7 @@ test('should use static server when --dir flag is passed', async (t) => {
       })
       .buildAsync()
 
-    await withDevServer({ cwd: builder.directory, args: ['--dir', 'public'] }, async ({ url, output }) => {
+    await withDevServer({ cwd: builder.directory, args: ['--dir', 'public'] }, async ({ output, url }) => {
       const response = await got(url).text()
       t.is(response, content)
 
@@ -56,7 +56,7 @@ test('should use static server when framework is set to #static', async (t) => {
       .withNetlifyToml({ config: { dev: { framework: '#static' } } })
       .buildAsync()
 
-    await withDevServer({ cwd: builder.directory }, async ({ url, output }) => {
+    await withDevServer({ cwd: builder.directory }, async ({ output, url }) => {
       const response = await got(url).text()
       t.is(response, content)
 
@@ -76,7 +76,7 @@ test('should warn if using static server and `command` is configured', async (t)
 
     await withDevServer(
       { cwd: builder.directory, args: ['--dir', 'public', '--command', 'npm run start'] },
-      async ({ url, output }) => {
+      async ({ output, url }) => {
         const response = await got(url).text()
         t.is(response, content)
 
@@ -97,7 +97,7 @@ test('should warn if using static server and `targetPort` is configured', async 
 
     await withDevServer(
       { cwd: builder.directory, args: ['--dir', 'public', '--targetPort', '3000'] },
-      async ({ url, output }) => {
+      async ({ output, url }) => {
         const response = await got(url).text()
         t.is(response, content)
 
@@ -275,7 +275,7 @@ test('should filter frameworks with no dev command', async (t) => {
       })
       .buildAsync()
 
-    await withDevServer({ cwd: builder.directory }, async ({ url, output }) => {
+    await withDevServer({ cwd: builder.directory }, async ({ output, url }) => {
       const response = await got(url).text()
       t.is(response, content)
 

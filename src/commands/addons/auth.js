@@ -1,6 +1,6 @@
-const { prepareAddonCommand, ADDON_VALIDATION } = require('../../utils/addons/prepare')
+const { ADDON_VALIDATION, prepareAddonCommand } = require('../../utils/addons/prepare')
 const Command = require('../../utils/command')
-const { log, exit } = require('../../utils/command-helpers')
+const { exit, log } = require('../../utils/command-helpers')
 const openBrowser = require('../../utils/open-browser')
 
 class AddonsAuthCommand extends Command {

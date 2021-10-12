@@ -1,12 +1,12 @@
 const { Octokit } = require('@octokit/rest')
 const chalk = require('chalk')
 
-const { log, error: failAndExit } = require('../command-helpers')
+const { error: failAndExit, log } = require('../command-helpers')
 const ghauth = require('../gh-auth')
 
-const { getBuildSettings, saveNetlifyToml, formatErrorMessage, createDeployKey, setupSite } = require('./utils')
+const { createDeployKey, formatErrorMessage, getBuildSettings, saveNetlifyToml, setupSite } = require('./utils')
 
-const formatRepoAndOwner = ({ repoOwner, repoName }) => ({
+const formatRepoAndOwner = ({ repoName, repoOwner }) => ({
   name: chalk.magenta(repoName),
   owner: chalk.magenta(repoOwner),
 })
@@ -35,7 +35,7 @@ const getGitHubClient = ({ token }) => {
   return octokit
 }
 
-const addDeployKey = async ({ api, octokit, repoOwner, repoName }) => {
+const addDeployKey = async ({ api, octokit, repoName, repoOwner }) => {
   log('Adding deploy key to repository...')
   const key = await createDeployKey({ api })
   try {
@@ -58,7 +58,7 @@ const addDeployKey = async ({ api, octokit, repoOwner, repoName }) => {
   }
 }
 
-const getGitHubRepo = async ({ octokit, repoOwner, repoName }) => {
+const getGitHubRepo = async ({ octokit, repoName, repoOwner }) => {
   try {
     const { data } = await octokit.repos.get({
       owner: repoOwner,
@@ -75,7 +75,7 @@ const getGitHubRepo = async ({ octokit, repoOwner, repoName }) => {
   }
 }
 
-const hookExists = async ({ deployHook, octokit, repoOwner, repoName }) => {
+const hookExists = async ({ deployHook, octokit, repoName, repoOwner }) => {
   try {
     const { data: hooks } = await octokit.repos.listWebhooks({
       owner: repoOwner,
@@ -90,7 +90,7 @@ const hookExists = async ({ deployHook, octokit, repoOwner, repoName }) => {
   }
 }
 
-const addDeployHook = async ({ deployHook, octokit, repoOwner, repoName }) => {
+const addDeployHook = async ({ deployHook, octokit, repoName, repoOwner }) => {
   const exists = await hookExists({ deployHook, octokit, repoOwner, repoName })
   if (!exists) {
     try {
@@ -122,7 +122,7 @@ const addDeployHook = async ({ deployHook, octokit, repoOwner, repoName }) => {
 const GITHUB_HOOK_EVENTS = ['deploy_created', 'deploy_failed', 'deploy_building']
 const GITHUB_HOOK_TYPE = 'github_commit_status'
 
-const upsertHook = async ({ ntlHooks, event, api, siteId, token }) => {
+const upsertHook = async ({ api, event, ntlHooks, siteId, token }) => {
   const ntlHook = ntlHooks.find((hook) => hook.type === GITHUB_HOOK_TYPE && hook.event === event)
 
   if (!ntlHook || ntlHook.disabled) {
@@ -148,7 +148,7 @@ const upsertHook = async ({ ntlHooks, event, api, siteId, token }) => {
   })
 }
 
-const addNotificationHooks = async ({ siteId, api, token }) => {
+const addNotificationHooks = async ({ api, siteId, token }) => {
   log(`Creating Netlify GitHub Notification Hooks...`)
 
   let ntlHooks
@@ -172,15 +172,15 @@ const addNotificationHooks = async ({ siteId, api, token }) => {
   log(`Netlify Notification Hooks configured!`)
 }
 
-module.exports = async function configGithub({ context, siteId, repoOwner, repoName }) {
+module.exports = async function configGithub({ context, repoName, repoOwner, siteId }) {
   const { netlify } = context
   const {
     api,
-    globalConfig,
+    cachedConfig: { configPath, env },
     config,
+    globalConfig,
     repositoryRoot,
     site: { root: siteRoot },
-    cachedConfig: { env, configPath },
   } = netlify
 
   const token = await getGitHubToken({ globalConfig })

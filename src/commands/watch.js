@@ -5,7 +5,7 @@ const pWaitFor = require('p-wait-for')
 const prettyjson = require('prettyjson')
 
 const Command = require('../utils/command')
-const { log, exit } = require('../utils/command-helpers')
+const { exit, log } = require('../utils/command-helpers')
 
 const InitCommand = require('./init')
 

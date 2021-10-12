@@ -5,7 +5,7 @@ const test = require('ava')
 const tempDirectory = require('temp-dir')
 const { v4: uuid } = require('uuid')
 
-const { getExecName, shouldFetchLatestVersion, fetchLatestVersion } = require('./exec-fetcher')
+const { fetchLatestVersion, getExecName, shouldFetchLatestVersion } = require('./exec-fetcher')
 const fs = require('./fs')
 
 test.beforeEach((t) => {
@@ -38,7 +38,7 @@ const packages = [
   // },
 ]
 
-packages.forEach(({ packageName, execName, execArgs, pattern, extension }) => {
+packages.forEach(({ execArgs, execName, extension, packageName, pattern }) => {
   test(`${packageName} - should return true on empty directory`, async (t) => {
     const { binPath } = t.context
     const actual = await shouldFetchLatestVersion({ binPath, packageName, execName, execArgs, pattern })

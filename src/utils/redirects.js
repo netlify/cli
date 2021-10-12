@@ -5,8 +5,8 @@ const { NETLIFYDEVERR } = require('./logo')
 
 // Parse, normalize and validate all redirects from `_redirects` files
 // and `netlify.toml`
-const parseRedirects = async function ({ redirectsFiles, configPath }) {
-  const { redirects, errors } = await parseAllRedirects({
+const parseRedirects = async function ({ configPath, redirectsFiles }) {
+  const { errors, redirects } = await parseAllRedirects({
     redirectsFiles,
     netlifyConfigPath: configPath,
     minimal: false,
@@ -33,9 +33,9 @@ const getErrorMessage = function ({ message }) {
 //  - `query` is called `params`
 //  - `conditions.role|country|language` are capitalized
 const normalizeRedirect = function ({
+  conditions: { country, language, role, ...conditions },
   from,
   query,
-  conditions: { role, country, language, ...conditions },
   ...redirect
 }) {
   return {

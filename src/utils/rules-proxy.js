@@ -30,7 +30,7 @@ const getCountry = function () {
   return 'us'
 }
 
-const createRewriter = async function ({ distDir, projectDir, jwtSecret, jwtRoleClaim, configPath }) {
+const createRewriter = async function ({ configPath, distDir, jwtRoleClaim, jwtSecret, projectDir }) {
   let matcher = null
   const redirectsFiles = [...new Set([path.resolve(distDir, '_redirects'), path.resolve(projectDir, '_redirects')])]
   let redirects = await parseRedirects({ redirectsFiles, configPath })

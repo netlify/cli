@@ -5,7 +5,7 @@ const Errors = require('@oclif/errors')
 const argv = require('minimist')(process.argv.slice(2))
 const omit = require('omit.js').default
 
-const { startSpinner, clearSpinner } = require('../lib/spinner')
+const { clearSpinner, startSpinner } = require('../lib/spinner')
 
 const chalkInstance = require('./chalk')
 const getGlobalConfig = require('./get-global-config')
@@ -17,7 +17,7 @@ const TOKEN_TIMEOUT = 3e5
 
 const chalk = chalkInstance(argv.json)
 
-const pollForToken = async ({ api, ticket, exitWithError }) => {
+const pollForToken = async ({ api, exitWithError, ticket }) => {
   const spinner = startSpinner({ text: 'Waiting for authorization...' })
   try {
     const accessToken = await api.getAccessToken(ticket, { timeout: TOKEN_TIMEOUT })

@@ -3,9 +3,9 @@ const fs = require('fs')
 const backoff = require('backoff')
 const pMap = require('p-map')
 
-const { UPLOAD_RANDOM_FACTOR, UPLOAD_INITIAL_DELAY, UPLOAD_MAX_DELAY } = require('./constants')
+const { UPLOAD_INITIAL_DELAY, UPLOAD_MAX_DELAY, UPLOAD_RANDOM_FACTOR } = require('./constants')
 
-const uploadFiles = async (api, deployId, uploadList, { concurrentUpload, statusCb, maxRetry }) => {
+const uploadFiles = async (api, deployId, uploadList, { concurrentUpload, maxRetry, statusCb }) => {
   if (!concurrentUpload || !statusCb || !maxRetry) throw new Error('Missing required option concurrentUpload')
   statusCb({
     type: 'upload',
@@ -14,7 +14,7 @@ const uploadFiles = async (api, deployId, uploadList, { concurrentUpload, status
   })
 
   const uploadFile = async (fileObj, index) => {
-    const { normalizedPath, assetType, runtime, filepath } = fileObj
+    const { assetType, filepath, normalizedPath, runtime } = fileObj
     const readStreamCtor = () => fs.createReadStream(filepath)
 
     statusCb({

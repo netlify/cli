@@ -1,10 +1,10 @@
 const path = require('path')
 
-const { uploadEdgeHandlers, cancelDeploy } = require('../lib/api')
-const { statAsync, readFileAsyncCatchError } = require('../lib/fs')
+const { cancelDeploy, uploadEdgeHandlers } = require('../lib/api')
+const { readFileAsyncCatchError, statAsync } = require('../lib/fs')
 const { startSpinner, stopSpinner } = require('../lib/spinner')
 
-const { warn, error } = require('./command-helpers')
+const { error, warn } = require('./command-helpers')
 
 const MANIFEST_FILENAME = 'manifest.json'
 const EDGE_HANDLERS_FOLDER = '.netlify/edge-handlers'
@@ -52,7 +52,7 @@ const readBundleAndManifest = async ({ edgeHandlersResolvedFolder }) => {
   return { bundleBuffer, manifest: manifestJson }
 }
 
-const deployEdgeHandlers = async ({ site, deployId, api, silent }) => {
+const deployEdgeHandlers = async ({ api, deployId, silent, site }) => {
   const edgeHandlersResolvedFolder = await validateEdgeHandlerFolder({ site })
   if (edgeHandlersResolvedFolder) {
     let spinner

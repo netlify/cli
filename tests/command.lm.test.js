@@ -9,7 +9,7 @@ const { readFileAsync } = require('../src/lib/fs')
 const { getPathInHome } = require('../src/lib/settings')
 
 const callCli = require('./utils/call-cli')
-const { startMockApi, getCLIOptions } = require('./utils/mock-api')
+const { getCLIOptions, startMockApi } = require('./utils/mock-api')
 const { createSiteBuilder } = require('./utils/site-builder')
 
 test.before(async (t) => {

@@ -6,7 +6,7 @@ const isDockerContainer = require('is-docker')
 
 const { log } = require('./command-helpers')
 
-const unableToOpenBrowserMessage = function ({ url, message }) {
+const unableToOpenBrowserMessage = function ({ message, url }) {
   log('---------------------------')
   log(chalk.redBright(`Error: Unable to open browser automatically: ${message}`))
   log(chalk.cyan('Please open your browser and open the URL below:'))
@@ -14,7 +14,7 @@ const unableToOpenBrowserMessage = function ({ url, message }) {
   log('---------------------------')
 }
 
-const openBrowser = async function ({ url, silentBrowserNoneError }) {
+const openBrowser = async function ({ silentBrowserNoneError, url }) {
   if (isDockerContainer()) {
     unableToOpenBrowserMessage({ url, message: 'Running inside a docker container' })
     return
