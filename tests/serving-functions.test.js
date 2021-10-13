@@ -6,7 +6,6 @@ const pWaitFor = require('p-wait-for')
 
 const { withDevServer, tryAndLogOutput } = require('./utils/dev-server')
 const got = require('./utils/got')
-const { pause } = require('./utils/pause')
 const { withSiteBuilder } = require('./utils/site-builder')
 
 const testMatrix = [{ args: [] }, { args: ['esbuild'] }]
@@ -14,7 +13,6 @@ const testName = (title, args) => (args.length <= 0 ? title : `${title} - ${args
 
 const WAIT_INTERVAL = 1800
 const WAIT_TIMEOUT = 30000
-const WAIT_WRITE = 3000
 
 const gotCatch404 = async (url, options) => {
   try {
@@ -54,8 +52,6 @@ testMatrix.forEach(({ args }) => {
           async () => t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'Hello'),
           outputBuffer,
         )
-
-        await pause(WAIT_WRITE)
 
         await builder
           .withFunction({
@@ -130,8 +126,6 @@ testMatrix.forEach(({ args }) => {
           outputBuffer,
         )
 
-        await pause(WAIT_WRITE)
-
         await builder
           .withContentFile({
             path: 'functions/hello.ts',
@@ -198,8 +192,6 @@ testMatrix.forEach(({ args }) => {
         await tryAndLogOutput(async () => {
           t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'WOOF!')
         }, outputBuffer)
-
-        await pause(WAIT_WRITE)
 
         await builder
           .withContentFile({ path: 'functions/lib/util.js', content: `exports.bark = () => 'WOOF WOOF!'` })
@@ -277,8 +269,6 @@ testMatrix.forEach(({ args }) => {
           )
         }, outputBuffer)
 
-        await pause(WAIT_WRITE)
-
         await builder
           .withContentFile({
             path: 'functions/lib/util.ts',
@@ -326,8 +316,6 @@ testMatrix.forEach(({ args }) => {
 
           t.is(unauthenticatedResponse.statusCode, 404)
         }, outputBuffer)
-
-        await pause(WAIT_WRITE)
 
         await builder
           .withFunction({
@@ -392,8 +380,6 @@ export { handler }
 
           t.is(unauthenticatedResponse.statusCode, 404)
         }, outputBuffer)
-
-        await pause(WAIT_WRITE)
 
         await builder
           .withContentFile({
@@ -467,8 +453,6 @@ export { handler }
           t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'Hello')
         }, outputBuffer)
 
-        await pause(WAIT_WRITE)
-
         await builder
           .withoutFile({
             path: 'functions/hello.js',
@@ -536,11 +520,17 @@ exports.handler = () => ({
           })
           .buildAsync()
 
-        const DEBOUNCE_WAIT = 150
-        await pause(DEBOUNCE_WAIT)
-
-        const resp2 = await got.get(`${server.url}/.netlify/functions/hello`)
-        t.is(resp2.body, 'bar')
+        await tryAndLogOutput(
+          () =>
+            pWaitFor(
+              async () => {                        
+                const resp2 = await got.get(`${server.url}/.netlify/functions/hello`)
+                return resp2.body === 'bar'
+              },
+              { interval: WAIT_INTERVAL, timeout: WAIT_TIMEOUT },
+            ),
+            server.outputBuffer,
+        )
       })
     })
   })
@@ -571,8 +561,6 @@ exports.handler = () => ({
         await tryAndLogOutput(async () => {
           t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'Internal')
         }, outputBuffer)
-
-        await pause(WAIT_WRITE)
 
         await builder
           .withFunction({
@@ -638,8 +626,6 @@ exports.handler = () => ({
         await tryAndLogOutput(async () => {
           t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'User')
         }, outputBuffer)
-
-        await pause(WAIT_WRITE)
 
         await builder
           .withFunction({
