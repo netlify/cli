@@ -523,13 +523,13 @@ exports.handler = () => ({
         await tryAndLogOutput(
           () =>
             pWaitFor(
-              async () => {                        
+              async () => {
                 const resp2 = await got.get(`${server.url}/.netlify/functions/hello`)
                 return resp2.body === 'bar'
               },
               { interval: WAIT_INTERVAL, timeout: WAIT_TIMEOUT },
             ),
-            server.outputBuffer,
+          server.outputBuffer,
         )
       })
     })
