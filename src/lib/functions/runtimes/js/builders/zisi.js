@@ -2,15 +2,34 @@ const path = require('path')
 
 const { zipFunction } = require('@netlify/zip-it-and-ship-it')
 const decache = require('decache')
+const findUp = require('find-up')
 const makeDir = require('make-dir')
-const readPkgUp = require('read-pkg-up')
 const sourceMapSupport = require('source-map-support')
 
 const { NETLIFYDEVERR } = require('../../../../../utils/logo')
-const { writeFileAsync } = require('../../../../fs')
+const { writeFileAsync, readFileAsync } = require('../../../../fs')
 const { getPathInProject } = require('../../../../settings')
 const { normalizeFunctionsConfig } = require('../../../config')
 const { memoizedBuild } = require('../../../memoized-build')
+
+/**
+ * @param {string} filename
+ * @returns {Promise<{ type: string } | null>}
+ */
+const readPkgUp = async (filename) => {
+  const pkgPath = await findUp('package.json', { cwd: filename, type: 'file' })
+  if (!pkgPath) {
+    return null
+  }
+
+  try {
+    const pkgString = await readFileAsync(pkgPath, { encoding: 'utf-8' })
+    const pkg = JSON.parse(pkgString)
+    return pkg
+  } catch (error) {
+    return null
+  }
+}
 
 const addFunctionsConfigDefaults = (config) => ({
   ...config,
@@ -86,7 +105,7 @@ module.exports = async ({ config, directory, errorExit, func, projectRoot }) => 
   )
 
   const packageJson = await readPkgUp(func.mainFile)
-  const hasTypeModule = packageJson && packageJson.packageJson.type === 'module'
+  const hasTypeModule = packageJson && packageJson.type === 'module'
 
   // We must use esbuild for certain file extensions.
   const mustTranspile = ['.mjs', '.ts'].includes(path.extname(func.mainFile))
