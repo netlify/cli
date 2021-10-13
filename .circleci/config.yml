@@ -5,17 +5,77 @@ version: 2.1
 # See: https://circleci.com/docs/2.0/orb-intro/
 orbs:
   node: circleci/node@4.7
+  windows: circleci/windows@2.4.1
 
-# Invoke jobs via workflows
-# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
+executors:
+  linux:
+    machine:
+      image: "ubuntu-1604:202004-01"
+  macos:
+    macos:
+      xcode: 13.0.0
+
+jobs:
+  build:
+    parameters:
+      executor:
+        type: executor
+      node-version:
+        type: string
+    executor: << parameters.executor >>
+    steps:
+      - when:
+          condition:
+            equal: [ windows, << parameters.executor >> ]
+          steps:
+            - run:
+                name: Increase Windows port limit and reduce time wait delay
+                command: |
+                  REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\TCPIP\Parameters /v MaxUserPort /t REG_DWORD /d 32768 /f
+                  REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\TCPIP\Parameters /v TcpTimedWaitDelay /t REG_DWORD /d 30 /f
+      - checkout
+      - node/install:
+          node-version: << parameters.node-version >>
+      - run:
+           name: Install core dependencies
+           command: npm ci --no-audit
+      - run: 
+          name: Install site dependencies
+          command: npm run site:build:install
+      - unless:
+          condition:
+            equal: [ "10.x", << parameters.node-version >> ]
+          steps:
+            - run:
+                name: Linting
+                command: npm run format:ci
+      - run:
+          name: Test
+          command: npm run test:ci
+          environment:
+            # GitHub secrets are not available when running on PR from forks
+            # We set a flag so we can skip tests that access Netlify API
+            NETLIFY_TEST_DISABLE_LIVE: "false" # missing: disable for PR from forks
+            # NETLIFY_AUTH_TOKEN: missing
+            # NETLIFY_TEST_GITHUB_TOKEN is used to avoid reaching GitHub API limits in exec-fetcher.js
+            # NETLIFY_TEST_GITHUB_TOKEN: missing
+            # Changes the polling interval used by the file watcher
+            CHOKIDAR_INTERVAL: 20
+            CHOKIDAR_USEPOLLING: 1
+      # missing: codecov
+        
 workflows:
-  sample: # This is the name of the workflow, feel free to change it to better match your workflow.
-    # Inside the workflow, you define the jobs you want to run.
+  all-tests:
     jobs:
-      - node/test:
-          # This is the node version to use for the `cimg/node` tag
-          # Relevant tags can be found on the CircleCI Developer Hub
-          # https://circleci.com/developer/images/image/cimg/node
-          version: '16.10'
-          # If you are using yarn, change the line below from "npm" to "yarn"
-          pkg-manager: npm
+      - build:
+          matrix:
+            parameters:
+              executor: [linux, macos, windows/default]
+              node-version: ["10.x", "*"]
+            exclude:
+              - macos: "10.x"
+              - windows: "10.x"
+              
+# missing: fail-fast
+# missing: ignore docs/** changes
+# missing: 30 minutes timeout
