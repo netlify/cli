@@ -1,6 +1,5 @@
 const process = require('process')
 
-const fromEntries = require('@ungap/from-entries')
 const chalk = require('chalk')
 const { get } = require('dot-prop')
 const getPort = require('get-port')
@@ -10,6 +9,7 @@ const { supportsBackgroundFunctions } = require('../lib/account')
 
 const { log, warn, exit: failAndExit } = require('./command-helpers')
 const { loadDotEnvFiles } = require('./dot-env')
+const { fromEntries } = require('./from-entries')
 const { NETLIFYDEVLOG } = require('./logo')
 
 // Possible sources of environment variables. For the purpose of printing log messages only. Order does not matter.

@@ -1,9 +1,9 @@
-const fromEntries = require('@ungap/from-entries')
 const AsciiTable = require('ascii-table')
 const isEmpty = require('lodash/isEmpty')
 
 const Command = require('../../utils/command')
 const { log, logJson } = require('../../utils/command-helpers')
+const { fromEntries } = require('../../utils/from-entries')
 
 class EnvListCommand extends Command {
   async run() {
