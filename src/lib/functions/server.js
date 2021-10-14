@@ -115,6 +115,7 @@ const createHandler = function ({ functionsRegistry }) {
             'This builder function is not configured properly. The site owner should refer to https://docs.netlify.com/ to correct the issue.',
         })
         response.end()
+        return
       }
 
       handleSynchronousFunction(error, result, response)

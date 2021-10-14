@@ -174,10 +174,10 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
-  test(testName('should fail when no metadata is set for builder function', args), async (t) => {
+  test.only(testName('should fail when no metadata is set for builder function', args), async (t) => {
     await withSiteBuilder('site-with-misconfigured-builder-function', async (builder) => {
       builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
-        path: 'misconfigured-builder.js',
+        path: 'builder.js',
         handler: async () => ({
           statusCode: 200,
           body: 'ping',
@@ -187,15 +187,17 @@ testMatrix.forEach(({ args }) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const response = await got(`${server.url}/.netlify/functions/misconfigured-builder`)
-        t.is(response.text(), 'ping')
-        t.is(response.statusCode(), 200)
-        const builderResponse = await got(`${server.url}/.netlify/builders/misconfigured-builder`)
+        const response = await got(`${server.url}/.netlify/functions/builder`)
+        t.is(response.body, 'ping')
+        t.is(response.statusCode, 200)
+        const builderResponse = await got(`${server.url}/.netlify/builders/builder`, {
+          throwHttpErrors: false,
+        })
         t.is(
-          builderResponse.text(),
+          builderResponse.body,
           `{"message":"This builder function is not configured properly. The site owner should refer to https://docs.netlify.com/ to correct the issue."}`,
         )
-        t.is(builderResponse.statusCode(), 400)
+        t.is(builderResponse.statusCode, 400)
       })
     })
   })
