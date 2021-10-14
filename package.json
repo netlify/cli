@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "6.12.3",
+  "version": "6.13.1",
   "author": "Netlify Inc.",
   "contributors": [
     "Mathias Biilmann <matt@netlify.com> (https://twitter.com/biilmann)",
@@ -77,15 +77,15 @@
     "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,scripts,site,tests,.github}/**/*.{js,md,yml,json,html}\" \"*.{js,yml,json,html}\" \".*.{js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\""
   },
   "dependencies": {
-    "@netlify/build": "^18.15.2",
-    "@netlify/config": "^15.6.7",
+    "@netlify/build": "^18.17.0",
+    "@netlify/config": "^15.7.1",
     "@netlify/framework-info": "^5.11.0",
     "@netlify/functions": "^0.7.2",
     "@netlify/local-functions-proxy": "^1.1.1",
     "@netlify/plugin-edge-handlers": "^1.11.22",
     "@netlify/plugins-list": "^4.0.1",
-    "@netlify/routing-local-proxy": "^0.34.0",
-    "@netlify/zip-it-and-ship-it": "4.24.0",
+    "@netlify/routing-local-proxy": "^0.34.1",
+    "@netlify/zip-it-and-ship-it": "4.25.0",
     "@oclif/command": "^1.6.1",
     "@oclif/config": "^1.15.1",
     "@oclif/errors": "^1.3.4",
@@ -174,6 +174,7 @@
     "prettyjson": "^1.2.1",
     "pump": "^3.0.0",
     "raw-body": "^2.4.1",
+    "read-pkg-up": "^7.0.1",
     "resolve": "^1.12.0",
     "semver": "^7.3.4",
     "source-map-support": "^0.5.19",
