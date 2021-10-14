@@ -53,6 +53,9 @@ jobs:
       - name: Linting
         run: npm run format:ci
         if: "${{ matrix.node-version == '*' && !steps.release-check.outputs.IS_RELEASE}}"
+      - name: Create manifest file
+        # This caches the commands, so oclif doesn't need to re-load them on each run of the CLI
+        run: npx oclif-dev manifest
       - name: Tests
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
         run: npm run test:ci
