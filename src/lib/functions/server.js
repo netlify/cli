@@ -112,7 +112,7 @@ const createHandler = function ({ functionsRegistry }) {
       if (/^\/.netlify\/(builders)/.test(request.path) && (!result.metadata || !result.metadata.builder_function)) {
         response.status(400).send({
           message:
-            'This builder function is not configured properly. The site owner should refer to https://docs.netlify.com/ to correct the issue.',
+            'Function is not an on-demand builder. See https://docs.netlify.com/configure-builds/on-demand-builders/#create-on-demand-builders for how to convert a function to a builder.',
         })
         response.end()
         return
