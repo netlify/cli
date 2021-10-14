@@ -108,12 +108,21 @@ const createHandler = function ({ functionsRegistry }) {
     } else {
       const { error, result } = await func.invoke(event, clientContext)
 
+      // check metadata if this is a builder function
+      if (/^\/.netlify\/(builders)/.test(request.path) && !result?.metadata?.builder_function) {
+        response.status(400).send({
+          message:
+            'This builder function is not configured properly. The site owner should refer to https://docs.netlify.com/ to correct the issue.',
+        })
+        response.end()
+      }
+
       handleSynchronousFunction(error, result, response)
     }
   }
 }
 
-const getFunctionsServer = async function ({ functionsRegistry, siteUrl, functionsPrefix, buildersPrefix }) {
+const getFunctionsServer = function ({ functionsRegistry, siteUrl, functionsPrefix, buildersPrefix }) {
   // performance optimization, load express on demand
   // eslint-disable-next-line node/global-require
   const express = require('express')
@@ -143,16 +152,7 @@ const getFunctionsServer = async function ({ functionsRegistry, siteUrl, functio
   })
 
   app.all(`${functionsPrefix}*`, functionHandler)
-
-  app.all(`${buildersPrefix}*`, function validateBuilderResponse(req, res) {
-    functionHandler(req, res)
-    if (!res.getHeader(BUILDER_FUNCTION_HEADER)) {
-      res.status(400).send({
-        message:
-          'This builder function is not configured properly. The site owner should refer to https://docs.netlify.com/ to correct the issue.',
-      })
-    }
-  })
+  app.all(`${buildersPrefix}*`, functionHandler)
 
   return app
 }

@@ -28,7 +28,7 @@ const isInternal = function (url) {
   return url.startsWith('/.netlify/')
 }
 const isFunction = function (functionsPort, url) {
-  return functionsPort && url.match(/^\/.netlify\/functions\/.+/)
+  return functionsPort && url.match(/^\/.netlify\/(functions|builders)\/.+/)
 }
 
 const getAddonUrl = function (addonsUrls, req) {

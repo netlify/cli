@@ -13,6 +13,7 @@
         "@netlify/build": "^18.15.2",
         "@netlify/config": "^15.6.7",
         "@netlify/framework-info": "^5.11.0",
+        "@netlify/functions": "^0.7.2",
         "@netlify/local-functions-proxy": "^1.1.1",
         "@netlify/plugin-edge-handlers": "^1.11.22",
         "@netlify/plugins-list": "^4.0.1",
@@ -3026,6 +3027,17 @@
       },
       "engines": {
         "node": ">=10.18.0"
+      }
+    },
+    "node_modules/@netlify/functions": {
+      "version": "0.7.2",
+      "resolved": "https://registry.npmjs.org/@netlify/functions/-/functions-0.7.2.tgz",
+      "integrity": "sha512-xf45ZqQukMxmlkqNMC5BXdFMaVZ8VqF42MV5zA5nKVOh2V0mhYlcbTYlVbS/K2/rtvQ3W8lxxixYl4NT7kq6Bg==",
+      "dependencies": {
+        "is-promise": "^4.0.0"
+      },
+      "engines": {
+        "node": ">=8.3.0"
       }
     },
     "node_modules/@netlify/functions-utils": {
@@ -12781,8 +12793,7 @@
     "node_modules/is-promise": {
       "version": "4.0.0",
       "resolved": "https://registry.npmjs.org/is-promise/-/is-promise-4.0.0.tgz",
-      "integrity": "sha512-hvpoI6korhJMnej285dSg6nu1+e6uxs7zG3BYAm5byqDsgJNWwxzM6z6iZiAgQR4TJ30JmBTOwqZUw3WlyH3AQ==",
-      "dev": true
+      "integrity": "sha512-hvpoI6korhJMnej285dSg6nu1+e6uxs7zG3BYAm5byqDsgJNWwxzM6z6iZiAgQR4TJ30JmBTOwqZUw3WlyH3AQ=="
     },
     "node_modules/is-reference": {
       "version": "1.2.1",
@@ -23400,6 +23411,14 @@
         "semver": "^7.3.4"
       }
     },
+    "@netlify/functions": {
+      "version": "0.7.2",
+      "resolved": "https://registry.npmjs.org/@netlify/functions/-/functions-0.7.2.tgz",
+      "integrity": "sha512-xf45ZqQukMxmlkqNMC5BXdFMaVZ8VqF42MV5zA5nKVOh2V0mhYlcbTYlVbS/K2/rtvQ3W8lxxixYl4NT7kq6Bg==",
+      "requires": {
+        "is-promise": "^4.0.0"
+      }
+    },
     "@netlify/functions-utils": {
       "version": "2.0.2",
       "resolved": "https://registry.npmjs.org/@netlify/functions-utils/-/functions-utils-2.0.2.tgz",
@@ -30736,8 +30755,7 @@
     "is-promise": {
       "version": "4.0.0",
       "resolved": "https://registry.npmjs.org/is-promise/-/is-promise-4.0.0.tgz",
-      "integrity": "sha512-hvpoI6korhJMnej285dSg6nu1+e6uxs7zG3BYAm5byqDsgJNWwxzM6z6iZiAgQR4TJ30JmBTOwqZUw3WlyH3AQ==",
-      "dev": true
+      "integrity": "sha512-hvpoI6korhJMnej285dSg6nu1+e6uxs7zG3BYAm5byqDsgJNWwxzM6z6iZiAgQR4TJ30JmBTOwqZUw3WlyH3AQ=="
     },
     "is-reference": {
       "version": "1.2.1",

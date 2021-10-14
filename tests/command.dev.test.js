@@ -167,6 +167,8 @@ testMatrix.forEach(({ args }) => {
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/.netlify/functions/timeout`).text()
         t.is(response, 'ping')
+        const builderResponse = await got(`${server.url}/.netlify/builders/timeout`).text()
+        t.is(builderResponse, 'ping')
       })
     })
   })
@@ -186,6 +188,8 @@ testMatrix.forEach(({ args }) => {
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/.netlify/functions/echo`).text()
         t.is(response, 'ping')
+        const builderResponse = await got(`${server.url}/.netlify/builders/echo`).text()
+        t.is(builderResponse, 'ping')
       })
     })
   })
@@ -208,6 +212,8 @@ testMatrix.forEach(({ args }) => {
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/.netlify/functions/env`).text()
         t.is(response, 'FROM_DEV_FILE')
+        const builderResponse = await got(`${server.url}/.netlify/builders/env`).text()
+        t.is(builderResponse, 'FROM_DEV_FILE')
       })
     })
   })
@@ -227,6 +233,8 @@ testMatrix.forEach(({ args }) => {
       await withDevServer({ cwd: builder.directory, env: { TEST: 'FROM_PROCESS_ENV' }, args }, async (server) => {
         const response = await got(`${server.url}/.netlify/functions/env`).text()
         t.is(response, 'FROM_PROCESS_ENV')
+        const builderResponse = await got(`${server.url}/.netlify/builders/env`).text()
+        t.is(builderResponse, 'FROM_PROCESS_ENV')
       })
     })
   })
@@ -250,6 +258,8 @@ testMatrix.forEach(({ args }) => {
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/.netlify/functions/env`).text()
         t.is(response, 'FROM_CONFIG_FILE')
+        const builderResponse = await got(`${server.url}/.netlify/builders/env`).text()
+        t.is(builderResponse, 'FROM_CONFIG_FILE')
       })
     })
   })
@@ -1826,6 +1836,9 @@ export const handler = async function () {
         const response = await got(`${server.url}/.netlify/functions/custom-headers`)
         t.is(response.headers['single-value-header'], 'custom-value')
         t.is(response.headers['multi-value-header'], 'custom-value1, custom-value2')
+        const builderResponse = await got(`${server.url}/.netlify/builders/custom-headers`)
+        t.is(builderResponse.headers['single-value-header'], 'custom-value')
+        t.is(builderResponse.headers['multi-value-header'], 'custom-value1, custom-value2')
       })
     })
   })
