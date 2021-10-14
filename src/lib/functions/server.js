@@ -109,7 +109,7 @@ const createHandler = function ({ functionsRegistry }) {
       const { error, result } = await func.invoke(event, clientContext)
 
       // check for existence of metadata if this is a builder function
-      if (/^\/.netlify\/(builders)/.test(request.path) && !result?.metadata?.builder_function) {
+      if (/^\/.netlify\/(builders)/.test(request.path) && (!result.metadata || !result.metadata.buildersPrefix)) {
         response.status(400).send({
           message:
             'This builder function is not configured properly. The site owner should refer to https://docs.netlify.com/ to correct the issue.',

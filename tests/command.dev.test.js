@@ -174,7 +174,7 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
-  test.only(testName('should fail when no metadata is set for builder function', args), async (t) => {
+  test(testName('should fail when no metadata is set for builder function', args), async (t) => {
     await withSiteBuilder('site-with-misconfigured-builder-function', async (builder) => {
       builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
         path: 'builder.js',
