@@ -195,7 +195,7 @@ testMatrix.forEach(({ args }) => {
         })
         t.is(
           builderResponse.body,
-          `{"message":"This builder function is not configured properly. The site owner should refer to https://docs.netlify.com/ to correct the issue."}`,
+          `{"message":"Function is not an on-demand builder. See https://docs.netlify.com/configure-builds/on-demand-builders/#create-on-demand-builders for how to convert a function to a builder."}`,
         )
         t.is(builderResponse.statusCode, 400)
       })
