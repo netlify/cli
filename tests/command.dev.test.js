@@ -158,6 +158,7 @@ testMatrix.forEach(({ args }) => {
           return {
             statusCode: 200,
             body: 'ping',
+            metadata: { builder_function: true },
           }
         },
       })
@@ -173,6 +174,32 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
+  test(testName('should fail when no metadata is set for builder function', args), async (t) => {
+    await withSiteBuilder('site-with-misconfigured-builder-function', async (builder) => {
+      builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
+        path: 'misconfigured-builder.js',
+        handler: async () => ({
+          statusCode: 200,
+          body: 'ping',
+        }),
+      })
+
+      await builder.buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async (server) => {
+        const response = await got(`${server.url}/.netlify/functions/misconfigured-builder`)
+        t.is(response.text(), 'ping')
+        t.is(response.statusCode(), 200)
+        const builderResponse = await got(`${server.url}/.netlify/builders/misconfigured-builder`)
+        t.is(
+          builderResponse.text(),
+          `{"message":"This builder function is not configured properly. The site owner should refer to https://docs.netlify.com/ to correct the issue."}`,
+        )
+        t.is(builderResponse.statusCode(), 400)
+      })
+    })
+  })
+
   test(testName('should serve function from a subdirectory', args), async (t) => {
     await withSiteBuilder('site-with-from-subdirectory', async (builder) => {
       builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
@@ -180,6 +207,7 @@ testMatrix.forEach(({ args }) => {
         handler: async () => ({
           statusCode: 200,
           body: 'ping',
+          metadata: { builder_function: true },
         }),
       })
 
@@ -204,6 +232,7 @@ testMatrix.forEach(({ args }) => {
           handler: async () => ({
             statusCode: 200,
             body: `${process.env.TEST}`,
+            metadata: { builder_function: true },
           }),
         })
 
@@ -225,6 +254,7 @@ testMatrix.forEach(({ args }) => {
         handler: async () => ({
           statusCode: 200,
           body: `${process.env.TEST}`,
+          metadata: { builder_function: true },
         }),
       })
 
@@ -250,6 +280,7 @@ testMatrix.forEach(({ args }) => {
           handler: async () => ({
             statusCode: 200,
             body: `${process.env.TEST}`,
+            metadata: { builder_function: true },
           }),
         })
 
@@ -1828,6 +1859,7 @@ export const handler = async function () {
             body: '',
             headers: { 'single-value-header': 'custom-value' },
             multiValueHeaders: { 'multi-value-header': ['custom-value1', 'custom-value2'] },
+            metadata: { builder_function: true },
           }),
         })
         .buildAsync()

@@ -108,7 +108,7 @@ const createHandler = function ({ functionsRegistry }) {
     } else {
       const { error, result } = await func.invoke(event, clientContext)
 
-      // check metadata if this is a builder function
+      // check for existence of metadata if this is a builder function
       if (/^\/.netlify\/(builders)/.test(request.path) && !result?.metadata?.builder_function) {
         response.status(400).send({
           message:
