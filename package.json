@@ -80,7 +80,6 @@
     "@netlify/build": "^18.17.0",
     "@netlify/config": "^15.7.1",
     "@netlify/framework-info": "^5.11.0",
-    "@netlify/functions": "^0.7.2",
     "@netlify/local-functions-proxy": "^1.1.1",
     "@netlify/plugin-edge-handlers": "^1.11.22",
     "@netlify/plugins-list": "^4.0.1",
