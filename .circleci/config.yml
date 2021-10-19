@@ -52,10 +52,10 @@ jobs:
           # We set a flag so we can skip tests that access Netlify API
           name: Setup NETLIFY_TEST_DISABLE_LIVE environment variable
           command: |
-            if [[ ! -v CIRCLE_PR_NUMBER ]]; then
-                echo 'export NETLIFY_TEST_DISABLE_LIVE=true' >> $BASH_ENV
+            if [ -z "${CIRCLE_PR_NUMBER}" ]; then
+              echo 'export NETLIFY_TEST_DISABLE_LIVE=false' >> $BASH_ENV
             else
-                echo 'export NETLIFY_TEST_DISABLE_LIVE=false' >> $BASH_ENV
+              echo 'export NETLIFY_TEST_DISABLE_LIVE=true' >> $BASH_ENV
             fi
       - run:
           name: Test
