@@ -3,6 +3,7 @@ version: 2.1
 orbs:
   node: circleci/node@4.7
   windows: circleci/windows@2.4.1
+  codecov: codecov/codecov@1.0.2
 
 executors:
   linux:
@@ -64,7 +65,8 @@ jobs:
             # Changes the polling interval used by the file watcher
             CHOKIDAR_INTERVAL: 20
             CHOKIDAR_USEPOLLING: 1
-      # missing: codecov
+      - codecov/upload:
+          file: coverage/coverage-final.json
 
 workflows:
   all-tests:
