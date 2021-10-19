@@ -3,7 +3,7 @@ const { env } = require('process')
 const chalk = require('chalk')
 
 const { log, warn } = require('../../utils/command-helpers')
-const { NETLIFYDEVLOG, NETLIFYDEVERR } = require('../../utils/logo')
+const { NETLIFYDEVERR, NETLIFYDEVLOG } = require('../../utils/logo')
 const { mkdirRecursiveAsync } = require('../fs')
 const { getLogMessage } = require('../log')
 

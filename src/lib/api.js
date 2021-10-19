@@ -27,7 +27,7 @@ const checkResponse = async ({ response }) => {
 
 const getApiUrl = ({ api }) => `${api.scheme}://${api.host}${api.pathPrefix}`
 
-const apiPost = async ({ api, path, data }) => {
+const apiPost = async ({ api, data, path }) => {
   const apiUrl = getApiUrl({ api })
   const response = await fetch(`${apiUrl}/${path}`, {
     method: 'POST',
@@ -41,7 +41,7 @@ const apiPost = async ({ api, path, data }) => {
   return response
 }
 
-const uploadEdgeHandlers = async ({ api, deployId, bundleBuffer, manifest }) => {
+const uploadEdgeHandlers = async ({ api, bundleBuffer, deployId, manifest }) => {
   // TODO: use open-api spec via api when it is exposed
   const response = await apiPost({ api, path: `deploys/${deployId}/edge_handlers`, data: manifest })
   const { error, exists, upload_url: uploadUrl } = await response.json()

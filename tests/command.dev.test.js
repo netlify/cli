@@ -33,7 +33,7 @@ const testMatrix = [
 const testName = (title, args) => (args.length <= 0 ? title : `${title} - ${args.join(' ')}`)
 
 const JWT_EXPIRY = 1893456000
-const getToken = ({ roles, jwtSecret = 'secret', jwtRolePath = 'app_metadata.authorization.roles' }) => {
+const getToken = ({ jwtRolePath = 'app_metadata.authorization.roles', jwtSecret = 'secret', roles }) => {
   const payload = {
     exp: JWT_EXPIRY,
     sub: '12345678',
@@ -59,7 +59,7 @@ const setupRoleBasedRedirectsSite = (builder) => {
   return builder
 }
 
-const validateRoleBasedRedirectsSite = async ({ builder, args, t, jwtSecret, jwtRolePath }) => {
+const validateRoleBasedRedirectsSite = async ({ args, builder, jwtRolePath, jwtSecret, t }) => {
   const adminToken = getToken({ jwtSecret, jwtRolePath, roles: ['admin'] })
   const editorToken = getToken({ jwtSecret, jwtRolePath, roles: ['editor'] })
 
@@ -1486,7 +1486,7 @@ testMatrix.forEach(({ args }) => {
           .withNetlifyToml({ config: { functions: { directory: 'functions' }, dev: { functionsPort } } })
           .buildAsync()
 
-        await withDevServer({ cwd: builder.directory, args }, async ({ url, port }) => {
+        await withDevServer({ cwd: builder.directory, args }, async ({ port, url }) => {
           const response = await got(`${url.replace(port, functionsPort)}/test`, {
             method: 'POST',
             headers: {
@@ -1515,7 +1515,7 @@ testMatrix.forEach(({ args }) => {
           })
           .buildAsync()
 
-        await withDevServer({ cwd: builder.directory, args }, async ({ url, port }) => {
+        await withDevServer({ cwd: builder.directory, args }, async ({ port, url }) => {
           const response = await got(`${url.replace(port, functionsPort)}/exclamat!on`, {
             method: 'POST',
             headers: {

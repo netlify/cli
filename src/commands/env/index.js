@@ -4,7 +4,7 @@ const showHelp = require('../../utils/show-help')
 
 class EnvCommand extends Command {
   run() {
-    const { flags, args } = this.parse(EnvCommand)
+    const { args, flags } = this.parse(EnvCommand)
 
     // Show help on empty sub command
     if (isEmptyCommand(flags, args)) {

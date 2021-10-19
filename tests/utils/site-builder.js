@@ -55,7 +55,7 @@ const createSiteBuilder = ({ siteName }) => {
       })
       return builder
     },
-    withFunction: ({ pathPrefix = 'functions', path: filePath, handler, esm = false }) => {
+    withFunction: ({ esm = false, handler, path: filePath, pathPrefix = 'functions' }) => {
       const dest = path.join(directory, pathPrefix, filePath)
       tasks.push(async () => {
         await ensureDir(path.dirname(dest))
@@ -79,7 +79,7 @@ const createSiteBuilder = ({ siteName }) => {
       const dest = path.join(directory, pathPrefix, '_redirects')
       tasks.push(async () => {
         const content = redirects
-          .map(({ from, to, status, condition = '' }) => [from, to, status, condition].filter(Boolean).join(' '))
+          .map(({ condition = '', from, status, to }) => [from, to, status, condition].filter(Boolean).join(' '))
           .join(os.EOL)
         await ensureDir(path.dirname(dest))
         await fs.writeFileAsync(dest, content)
@@ -91,7 +91,7 @@ const createSiteBuilder = ({ siteName }) => {
       tasks.push(async () => {
         const content = headers
           .map(
-            ({ path: headerPath, headers: headersValues }) =>
+            ({ headers: headersValues, path: headerPath }) =>
               `${headerPath}${os.EOL}${headersValues.map((header) => `  ${header}`).join(`${os.EOL}`)}`,
           )
           .join(os.EOL)
@@ -100,7 +100,7 @@ const createSiteBuilder = ({ siteName }) => {
       })
       return builder
     },
-    withContentFile: ({ path: filePath, content }) => {
+    withContentFile: ({ content, path: filePath }) => {
       const dest = path.join(directory, filePath)
       tasks.push(async () => {
         await ensureDir(path.dirname(dest))
@@ -147,7 +147,7 @@ const createSiteBuilder = ({ siteName }) => {
       })
       return builder
     },
-    withBuildPlugin: ({ name, plugin, pathPrefix = 'plugins' }) => {
+    withBuildPlugin: ({ name, pathPrefix = 'plugins', plugin }) => {
       const dest = path.join(directory, pathPrefix, name)
       tasks.push(async () => {
         await ensureDir(path.dirname(dest))

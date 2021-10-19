@@ -9,19 +9,19 @@ const { supportsEdgeHandlers } = require('../src/lib/account')
 const { getToken } = require('../src/utils/command-helpers')
 
 const callCli = require('./utils/call-cli')
-const { generateSiteName, createLiveTestSite } = require('./utils/create-live-test-site')
+const { createLiveTestSite, generateSiteName } = require('./utils/create-live-test-site')
 const got = require('./utils/got')
 const { withSiteBuilder } = require('./utils/site-builder')
 
 const SITE_NAME = generateSiteName('netlify-test-deploy-')
 
-const validateContent = async ({ siteUrl, path, content, t }) => {
+const validateContent = async ({ content, path, siteUrl, t }) => {
   try {
     const { body } = await got(`${siteUrl}${path}`)
     t.is(body, content)
   } catch (error) {
     const {
-      response: { statusCode, statusMessage, body },
+      response: { body, statusCode, statusMessage },
     } = error
     if (content === undefined) {
       t.is(statusCode, 404)
@@ -31,7 +31,7 @@ const validateContent = async ({ siteUrl, path, content, t }) => {
   }
 }
 
-const validateDeploy = async ({ deploy, siteName, content, t }) => {
+const validateDeploy = async ({ content, deploy, siteName, t }) => {
   t.truthy(deploy.site_name)
   t.truthy(deploy.deploy_url)
   t.truthy(deploy.deploy_id)
@@ -43,7 +43,7 @@ const validateDeploy = async ({ deploy, siteName, content, t }) => {
 
 if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
   test.before(async (t) => {
-    const { siteId, account } = await createLiveTestSite(SITE_NAME)
+    const { account, siteId } = await createLiveTestSite(SITE_NAME)
     t.context.siteId = siteId
     t.context.account = account
   })

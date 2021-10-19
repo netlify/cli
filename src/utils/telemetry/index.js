@@ -93,7 +93,7 @@ const identify = async function (payload) {
   }
 
   const cliId = globalConfig.get('cliId')
-  const { userId, name, email } = payload
+  const { email, name, userId } = payload
 
   const defaultTraits = {
     name,

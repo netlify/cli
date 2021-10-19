@@ -5,7 +5,7 @@ const inquirer = require('inquirer')
 const isEmpty = require('lodash/isEmpty')
 
 const { listSites } = require('../../lib/api')
-const { log, error, exit } = require('../command-helpers')
+const { error, exit, log } = require('../command-helpers')
 const { getRepoData } = require('../get-repo-data')
 const { track } = require('../telemetry')
 

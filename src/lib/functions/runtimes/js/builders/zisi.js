@@ -20,7 +20,7 @@ const addFunctionsConfigDefaults = (config) => ({
   },
 })
 
-const buildFunction = async ({ cache, config, directory, func, projectRoot, targetDirectory, hasTypeModule }) => {
+const buildFunction = async ({ cache, config, directory, func, hasTypeModule, projectRoot, targetDirectory }) => {
   const zipOptions = {
     archiveFormat: 'none',
     basePath: projectRoot,

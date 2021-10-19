@@ -16,11 +16,11 @@ const fetch = require('node-fetch')
 const ora = require('ora')
 
 const { mkdirRecursiveSync } = require('../../lib/fs')
-const { getSiteData, getAddons, getCurrentAddon } = require('../../utils/addons/prepare')
+const { getAddons, getCurrentAddon, getSiteData } = require('../../utils/addons/prepare')
 const Command = require('../../utils/command')
-const { log, error } = require('../../utils/command-helpers')
+const { error, log } = require('../../utils/command-helpers')
 const { injectEnvVariables } = require('../../utils/dev')
-const { NETLIFYDEVLOG, NETLIFYDEVWARN, NETLIFYDEVERR } = require('../../utils/logo')
+const { NETLIFYDEVERR, NETLIFYDEVLOG, NETLIFYDEVWARN } = require('../../utils/logo')
 const { readRepoURL, validateRepoURL } = require('../../utils/read-repo-url')
 
 const templatesDir = path.resolve(__dirname, '../../functions-templates')
@@ -41,7 +41,7 @@ const languages = [
  */
 class FunctionsCreateCommand extends Command {
   async run() {
-    const { flags, args } = this.parse(FunctionsCreateCommand)
+    const { args, flags } = this.parse(FunctionsCreateCommand)
 
     const functionsDir = await ensureFunctionDirExists(this)
 
@@ -298,7 +298,7 @@ const downloadFromURL = async function (context, flags, args, functionsDir) {
     // Ignore
   }
   await Promise.all(
-    folderContents.map(async ({ name, download_url: downloadUrl }) => {
+    folderContents.map(async ({ download_url: downloadUrl, name }) => {
       try {
         const res = await fetch(downloadUrl)
         const finalName = path.basename(name, '.js') === functionName ? `${nameToUse}.js` : name
@@ -465,7 +465,7 @@ const scaffoldFromTemplate = async function (context, flags, args, functionsDir)
 
 const TEMPLATE_PERMISSIONS = 0o777
 
-const createFunctionAddon = async function ({ api, addons, siteId, addonName, siteData }) {
+const createFunctionAddon = async function ({ addonName, addons, api, siteData, siteId }) {
   try {
     const addon = getCurrentAddon({ addons, addonName })
     if (addon && addon.id) {
@@ -485,7 +485,7 @@ const createFunctionAddon = async function ({ api, addons, siteId, addonName, si
 }
 
 const injectEnvVariablesFromContext = async ({ context }) => {
-  const { warn, netlify } = context
+  const { netlify, warn } = context
   const { cachedConfig, site } = netlify
   await injectEnvVariables({ env: cachedConfig.env, site, warn })
 }
@@ -534,7 +534,7 @@ const installAddons = async function (context, functionAddons, fnPath) {
 
   const [siteData, siteAddons] = await Promise.all([getSiteData({ api, siteId }), getAddons({ api, siteId })])
 
-  const arr = functionAddons.map(async ({ addonName, addonDidInstall }) => {
+  const arr = functionAddons.map(async ({ addonDidInstall, addonName }) => {
     log(`${NETLIFYDEVLOG} installing addon: ${chalk.yellow.inverse(addonName)}`)
     try {
       const addonCreated = await createFunctionAddon({

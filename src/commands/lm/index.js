@@ -4,7 +4,7 @@ const showHelp = require('../../utils/show-help')
 
 class LmCommand extends Command {
   run() {
-    const { flags, args } = this.parse(LmCommand)
+    const { args, flags } = this.parse(LmCommand)
 
     // Show help on empty sub command
     if (isEmptyCommand(flags, args)) {

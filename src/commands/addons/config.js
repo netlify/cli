@@ -4,12 +4,12 @@ const isEmpty = require('lodash/isEmpty')
 
 const compare = require('../../utils/addons/compare')
 const diffValues = require('../../utils/addons/diffs')
-const { prepareAddonCommand, ADDON_VALIDATION } = require('../../utils/addons/prepare')
+const { ADDON_VALIDATION, prepareAddonCommand } = require('../../utils/addons/prepare')
 const generatePrompts = require('../../utils/addons/prompts')
 const render = require('../../utils/addons/render')
-const { requiredConfigValues, missingConfigValues, updateConfigValues } = require('../../utils/addons/validation')
+const { missingConfigValues, requiredConfigValues, updateConfigValues } = require('../../utils/addons/validation')
 const Command = require('../../utils/command')
-const { log, error } = require('../../utils/command-helpers')
+const { error, log } = require('../../utils/command-helpers')
 const { parseRawFlags } = require('../../utils/parse-raw-flags')
 
 class AddonsConfigCommand extends Command {
@@ -17,7 +17,7 @@ class AddonsConfigCommand extends Command {
     const { args, raw } = this.parse(AddonsConfigCommand)
 
     const addonName = args.name
-    const { manifest, addon, siteData } = await prepareAddonCommand({
+    const { addon, manifest, siteData } = await prepareAddonCommand({
       context: this,
       addonName,
       validation: ADDON_VALIDATION.EXISTS,
@@ -136,7 +136,7 @@ class AddonsConfigCommand extends Command {
   }
 }
 
-const update = async function ({ addonName, currentConfig, newConfig, siteId, instanceId, api }) {
+const update = async function ({ addonName, api, currentConfig, instanceId, newConfig, siteId }) {
   const codeDiff = diffValues(currentConfig, newConfig)
   if (!codeDiff) {
     log('No changes, exiting early')

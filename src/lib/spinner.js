@@ -6,7 +6,7 @@ const startSpinner = ({ text }) =>
     text,
   }).start()
 
-const stopSpinner = ({ spinner, text, error }) => {
+const stopSpinner = ({ error, spinner, text }) => {
   if (!spinner) {
     return
   }

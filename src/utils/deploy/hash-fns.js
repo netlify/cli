@@ -67,15 +67,15 @@ const getFunctionZips = async ({
 const hashFns = async (
   directories,
   {
-    tmpDir,
+    assetType = 'function',
     concurrentHash,
     functionsConfig,
     hashAlgorithm = 'sha256',
-    assetType = 'function',
+    manifestPath,
+    rootDir,
     skipFunctionsCache,
     statusCb,
-    rootDir,
-    manifestPath,
+    tmpDir,
   },
 ) => {
   // Early out if no functions directories are configured.

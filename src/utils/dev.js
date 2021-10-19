@@ -8,7 +8,7 @@ const isEmpty = require('lodash/isEmpty')
 
 const { supportsBackgroundFunctions } = require('../lib/account')
 
-const { log, warn, exit: failAndExit } = require('./command-helpers')
+const { exit: failAndExit, log, warn } = require('./command-helpers')
 const { loadDotEnvFiles } = require('./dot-env')
 const { NETLIFYDEVLOG } = require('./logo')
 
@@ -67,13 +67,13 @@ const getAddons = async ({ api, site }) => {
   }
 }
 
-const getAddonsInformation = ({ siteInfo, addons }) => {
+const getAddonsInformation = ({ addons, siteInfo }) => {
   const urls = fromEntries(addons.map((addon) => [addon.service_slug, `${siteInfo.ssl_url}${addon.service_path}`]))
   const env = Object.assign({}, ...addons.map((addon) => addon.env))
   return { urls, env }
 }
 
-const getSiteAccount = ({ siteInfo, accounts }) => {
+const getSiteAccount = ({ accounts, siteInfo }) => {
   const siteAccount = accounts.find((account) => account.slug === siteInfo.account_slug)
   if (!siteAccount) {
     warn(`Could not find account for site '${siteInfo.name}' with account slug '${siteInfo.account_slug}'`)
@@ -133,7 +133,7 @@ const injectEnvVariables = async ({ env, site }) => {
   const environment = new Map(Object.entries(env))
   const dotEnvFiles = await loadDotEnvFiles({ projectDir: site.root })
 
-  dotEnvFiles.forEach(({ file, env: fileEnv }) => {
+  dotEnvFiles.forEach(({ env: fileEnv, file }) => {
     Object.keys(fileEnv).forEach((key) => {
       const newSourceName = `${file} file`
       const sources = environment.has(key) ? [newSourceName, ...environment.get(key).sources] : [newSourceName]

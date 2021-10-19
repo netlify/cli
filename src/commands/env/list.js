@@ -8,7 +8,7 @@ const { log, logJson } = require('../../utils/command-helpers')
 class EnvListCommand extends Command {
   async run() {
     const { flags } = this.parse(EnvListCommand)
-    const { api, site, cachedConfig } = this.netlify
+    const { api, cachedConfig, site } = this.netlify
     const siteId = site.id
 
     if (!siteId) {

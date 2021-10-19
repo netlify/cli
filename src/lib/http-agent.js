@@ -3,7 +3,7 @@ const { URL } = require('url')
 const { HttpsProxyAgent } = require('https-proxy-agent')
 const waitPort = require('wait-port')
 
-const { log, exit } = require('../utils/command-helpers')
+const { exit, log } = require('../utils/command-helpers')
 const { NETLIFYDEVERR, NETLIFYDEVWARN } = require('../utils/logo')
 
 const fs = require('./fs')
@@ -28,7 +28,7 @@ const DEFAULT_HTTPS_PORT = 443
 // 50 seconds
 const AGENT_PORT_TIMEOUT = 50
 
-const tryGetAgent = async ({ httpProxy, certificateFile }) => {
+const tryGetAgent = async ({ certificateFile, httpProxy }) => {
   if (!httpProxy) {
     return {}
   }
@@ -87,8 +87,8 @@ const tryGetAgent = async ({ httpProxy, certificateFile }) => {
   return response
 }
 
-const getAgent = async ({ httpProxy, certificateFile }) => {
-  const { error, warning, agent, message } = await tryGetAgent({ httpProxy, certificateFile })
+const getAgent = async ({ certificateFile, httpProxy }) => {
+  const { agent, error, message, warning } = await tryGetAgent({ httpProxy, certificateFile })
   if (error) {
     log(NETLIFYDEVERR, error, message || '')
     exit(1)

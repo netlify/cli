@@ -36,7 +36,7 @@ class TrackedCommand extends Command {
   }
 
   async finally(error) {
-    const { startTime, payload } = this.analytics
+    const { payload, startTime } = this.analytics
     const duration = getDuration(startTime)
     const status = getStatus(error)
     await track('command', {

@@ -1,5 +1,5 @@
 const Command = require('../utils/command')
-const { log, exit, getToken } = require('../utils/command-helpers')
+const { exit, getToken, log } = require('../utils/command-helpers')
 const { track } = require('../utils/telemetry')
 
 class LogoutCommand extends Command {

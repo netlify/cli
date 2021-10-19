@@ -2,7 +2,7 @@ const chalk = require('chalk')
 const inquirer = require('inquirer')
 
 const Command = require('../utils/command')
-const { log, exit } = require('../utils/command-helpers')
+const { exit, log } = require('../utils/command-helpers')
 
 const LoginCommand = require('./login')
 

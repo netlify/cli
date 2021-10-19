@@ -1,5 +1,5 @@
 const Command = require('../../utils/command')
-const { log, warn, error, exit } = require('../../utils/command-helpers')
+const { error, exit, log, warn } = require('../../utils/command-helpers')
 const openBrowser = require('../../utils/open-browser')
 
 class OpenAdminCommand extends Command {

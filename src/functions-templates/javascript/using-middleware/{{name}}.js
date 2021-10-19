@@ -1,5 +1,5 @@
 const middy = require('middy')
-const { jsonBodyParser, validator, httpErrorHandler, httpHeaderNormalizer } = require('middy/middlewares')
+const { httpErrorHandler, httpHeaderNormalizer, jsonBodyParser, validator } = require('middy/middlewares')
 
 /* Normal lambda code */
 const businessLogic = async (event) => {

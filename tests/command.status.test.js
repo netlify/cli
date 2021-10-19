@@ -1,7 +1,7 @@
 const test = require('ava')
 
 const callCli = require('./utils/call-cli')
-const { withMockApi, getCLIOptions } = require('./utils/mock-api')
+const { getCLIOptions, withMockApi } = require('./utils/mock-api')
 const { withSiteBuilder } = require('./utils/site-builder')
 
 const siteInfo = {

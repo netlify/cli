@@ -3,7 +3,7 @@ const memoizeOne = require('memoize-one')
 const { v4: uuidv4 } = require('uuid')
 
 const { readFileAsync } = require('../lib/fs')
-const { getPathInHome, getLegacyPathInHome } = require('../lib/settings')
+const { getLegacyPathInHome, getPathInHome } = require('../lib/settings')
 
 const globalConfigDefaults = {
   /* disable stats from being sent to Netlify */

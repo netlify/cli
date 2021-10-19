@@ -53,7 +53,7 @@ const withMockApi = async (routes, testHandler) => {
   }
 }
 
-const getCLIOptions = ({ builder: { directory: cwd }, apiUrl }) => ({
+const getCLIOptions = ({ apiUrl, builder: { directory: cwd } }) => ({
   cwd,
   env: { NETLIFY_AUTH_TOKEN: 'fake-token', NETLIFY_SITE_ID: 'site_id', NETLIFY_API_URL: apiUrl },
 })

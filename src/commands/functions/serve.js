@@ -4,7 +4,7 @@ const { flags: flagsLib } = require('@oclif/command')
 
 const { startFunctionsServer } = require('../../lib/functions/server')
 const Command = require('../../utils/command')
-const { getSiteInformation, acquirePort, injectEnvVariables } = require('../../utils/dev')
+const { acquirePort, getSiteInformation, injectEnvVariables } = require('../../utils/dev')
 const { getFunctionsDir } = require('../../utils/functions')
 
 const DEFAULT_PORT = 9999
@@ -14,13 +14,13 @@ class FunctionsServeCommand extends Command {
     const { flags } = this.parse(FunctionsServeCommand)
 
     const { netlify } = this
-    const { api, site, config, siteInfo } = netlify
+    const { api, config, site, siteInfo } = netlify
 
     const functionsDir = getFunctionsDir({ flags, config }, join('netlify', 'functions'))
 
     await injectEnvVariables({ env: this.netlify.cachedConfig.env, site })
 
-    const { siteUrl, capabilities, timeouts } = await getSiteInformation({
+    const { capabilities, siteUrl, timeouts } = await getSiteInformation({
       flags,
       api,
       site,

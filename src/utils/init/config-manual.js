@@ -1,8 +1,8 @@
 const inquirer = require('inquirer')
 
-const { log, exit } = require('../command-helpers')
+const { exit, log } = require('../command-helpers')
 
-const { getBuildSettings, saveNetlifyToml, createDeployKey, setupSite } = require('./utils')
+const { createDeployKey, getBuildSettings, saveNetlifyToml, setupSite } = require('./utils')
 
 const addDeployKey = async ({ deployKey }) => {
   log('\nGive this Netlify SSH public key access to your repository:\n')
@@ -51,14 +51,14 @@ const addDeployHook = async ({ deployHook }) => {
   return deployHookAdded
 }
 
-module.exports = async function configManual({ context, siteId, repoData }) {
+module.exports = async function configManual({ context, repoData, siteId }) {
   const { netlify } = context
   const {
     api,
+    cachedConfig: { configPath, env },
     config,
     repositoryRoot,
     site: { root: siteRoot },
-    cachedConfig: { env, configPath },
   } = netlify
 
   const { baseDir, buildCmd, buildDir, functionsDir, pluginsToInstall } = await getBuildSettings({

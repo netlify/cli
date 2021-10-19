@@ -5,11 +5,11 @@ const execa = require('execa')
 const fetch = require('node-fetch')
 const pWaitFor = require('p-wait-for')
 
-const { shouldFetchLatestVersion, fetchLatestVersion } = require('../lib/exec-fetcher')
+const { fetchLatestVersion, shouldFetchLatestVersion } = require('../lib/exec-fetcher')
 const { getPathInHome } = require('../lib/settings')
 
 const { log } = require('./command-helpers')
-const { NETLIFYDEVLOG, NETLIFYDEVERR } = require('./logo')
+const { NETLIFYDEVERR, NETLIFYDEVLOG } = require('./logo')
 
 const PACKAGE_NAME = 'live-tunnel-client'
 const EXEC_NAME = PACKAGE_NAME
@@ -19,7 +19,7 @@ const TUNNEL_POLL_INTERVAL = 1e3
 // 5 minutes
 const TUNNEL_POLL_TIMEOUT = 3e5
 
-const createTunnel = async function ({ siteId, netlifyApiToken }) {
+const createTunnel = async function ({ netlifyApiToken, siteId }) {
   await installTunnelClient()
 
   if (!siteId) {
@@ -51,7 +51,7 @@ const createTunnel = async function ({ siteId, netlifyApiToken }) {
   return data
 }
 
-const connectTunnel = function ({ session, netlifyApiToken, localPort }) {
+const connectTunnel = function ({ localPort, netlifyApiToken, session }) {
   const execPath = getPathInHome(['tunnel', 'bin', EXEC_NAME])
   const args = ['connect', '-s', session.id, '-t', netlifyApiToken, '-l', localPort]
   if (process.env.DEBUG) {
@@ -88,7 +88,7 @@ const installTunnelClient = async function () {
   })
 }
 
-const startLiveTunnel = async ({ siteId, netlifyApiToken, localPort }) => {
+const startLiveTunnel = async ({ localPort, netlifyApiToken, siteId }) => {
   const session = await createTunnel({
     siteId,
     netlifyApiToken,
