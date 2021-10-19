@@ -153,7 +153,7 @@ class FunctionsRegistry {
 
     const functions = await this.listFunctions(directories, {
       featureFlags: {
-        buildGoSource: env.NETLIFY_EXPERIMENTAL_BUILD_GO_SOURCE === 'true',
+        buildGoSource: true,
         buildRustSource: env.NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE === 'true',
       },
     })

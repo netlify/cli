@@ -25,6 +25,7 @@
         'http-proxy-middleware',
         'p-map',
         'node-version-alias',
+        'read-pkg-up',
       ],
       major: {
         enabled: false,

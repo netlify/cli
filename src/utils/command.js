@@ -100,7 +100,7 @@ class BaseCommand extends TrackedCommand {
         offline,
       })
     } catch (error_) {
-      const isUserError = error_.type === 'userError'
+      const isUserError = error_.customErrorInfo !== undefined && error_.customErrorInfo.type === 'resolveConfig'
 
       // If we're failing due to an error thrown by us, it might be because the token we're using is invalid.
       // To account for that, we try to retrieve the config again, this time without a token, to avoid making

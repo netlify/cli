@@ -80,7 +80,7 @@ test('Updates a Go function when a file is modified', async (t) => {
       await withDevServer(
         {
           cwd: builder.directory,
-          env: { ...execaMock, NETLIFY_EXPERIMENTAL_BUILD_GO_SOURCE: 'true' },
+          env: execaMock,
         },
         async ({ outputBuffer, port }) => {
           await tryAndLogOutput(async () => {

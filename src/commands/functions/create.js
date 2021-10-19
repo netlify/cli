@@ -25,7 +25,6 @@ const { readRepoURL, validateRepoURL } = require('../../utils/read-repo-url')
 
 const templatesDir = path.resolve(__dirname, '../../functions-templates')
 
-const showGoTemplates = process.env.NETLIFY_EXPERIMENTAL_BUILD_GO_SOURCE === 'true'
 const showRustTemplates = process.env.NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE === 'true'
 
 // Ensure that there's a sub-directory in `src/functions-templates` named after
@@ -33,7 +32,7 @@ const showRustTemplates = process.env.NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE ===
 const languages = [
   { name: 'JavaScript', value: 'javascript' },
   { name: 'TypeScript', value: 'typescript' },
-  showGoTemplates && { name: 'Go', value: 'go' },
+  { name: 'Go', value: 'go' },
   showRustTemplates && { name: 'Rust', value: 'rust' },
 ]
 

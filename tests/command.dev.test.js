@@ -158,6 +158,7 @@ testMatrix.forEach(({ args }) => {
           return {
             statusCode: 200,
             body: 'ping',
+            metadata: { builder_function: true },
           }
         },
       })
@@ -167,6 +168,36 @@ testMatrix.forEach(({ args }) => {
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/.netlify/functions/timeout`).text()
         t.is(response, 'ping')
+        const builderResponse = await got(`${server.url}/.netlify/builders/timeout`).text()
+        t.is(builderResponse, 'ping')
+      })
+    })
+  })
+
+  test(testName('should fail when no metadata is set for builder function', args), async (t) => {
+    await withSiteBuilder('site-with-misconfigured-builder-function', async (builder) => {
+      builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
+        path: 'builder.js',
+        handler: async () => ({
+          statusCode: 200,
+          body: 'ping',
+        }),
+      })
+
+      await builder.buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async (server) => {
+        const response = await got(`${server.url}/.netlify/functions/builder`)
+        t.is(response.body, 'ping')
+        t.is(response.statusCode, 200)
+        const builderResponse = await got(`${server.url}/.netlify/builders/builder`, {
+          throwHttpErrors: false,
+        })
+        t.is(
+          builderResponse.body,
+          `{"message":"Function is not an on-demand builder. See https://ntl.fyi/create-builder for how to convert a function to a builder."}`,
+        )
+        t.is(builderResponse.statusCode, 400)
       })
     })
   })
@@ -178,6 +209,7 @@ testMatrix.forEach(({ args }) => {
         handler: async () => ({
           statusCode: 200,
           body: 'ping',
+          metadata: { builder_function: true },
         }),
       })
 
@@ -186,6 +218,8 @@ testMatrix.forEach(({ args }) => {
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/.netlify/functions/echo`).text()
         t.is(response, 'ping')
+        const builderResponse = await got(`${server.url}/.netlify/builders/echo`).text()
+        t.is(builderResponse, 'ping')
       })
     })
   })
@@ -200,6 +234,7 @@ testMatrix.forEach(({ args }) => {
           handler: async () => ({
             statusCode: 200,
             body: `${process.env.TEST}`,
+            metadata: { builder_function: true },
           }),
         })
 
@@ -208,6 +243,8 @@ testMatrix.forEach(({ args }) => {
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/.netlify/functions/env`).text()
         t.is(response, 'FROM_DEV_FILE')
+        const builderResponse = await got(`${server.url}/.netlify/builders/env`).text()
+        t.is(builderResponse, 'FROM_DEV_FILE')
       })
     })
   })
@@ -219,6 +256,7 @@ testMatrix.forEach(({ args }) => {
         handler: async () => ({
           statusCode: 200,
           body: `${process.env.TEST}`,
+          metadata: { builder_function: true },
         }),
       })
 
@@ -227,6 +265,8 @@ testMatrix.forEach(({ args }) => {
       await withDevServer({ cwd: builder.directory, env: { TEST: 'FROM_PROCESS_ENV' }, args }, async (server) => {
         const response = await got(`${server.url}/.netlify/functions/env`).text()
         t.is(response, 'FROM_PROCESS_ENV')
+        const builderResponse = await got(`${server.url}/.netlify/builders/env`).text()
+        t.is(builderResponse, 'FROM_PROCESS_ENV')
       })
     })
   })
@@ -242,6 +282,7 @@ testMatrix.forEach(({ args }) => {
           handler: async () => ({
             statusCode: 200,
             body: `${process.env.TEST}`,
+            metadata: { builder_function: true },
           }),
         })
 
@@ -250,6 +291,8 @@ testMatrix.forEach(({ args }) => {
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/.netlify/functions/env`).text()
         t.is(response, 'FROM_CONFIG_FILE')
+        const builderResponse = await got(`${server.url}/.netlify/builders/env`).text()
+        t.is(builderResponse, 'FROM_CONFIG_FILE')
       })
     })
   })
@@ -1818,6 +1861,7 @@ export const handler = async function () {
             body: '',
             headers: { 'single-value-header': 'custom-value' },
             multiValueHeaders: { 'multi-value-header': ['custom-value1', 'custom-value2'] },
+            metadata: { builder_function: true },
           }),
         })
         .buildAsync()
@@ -1826,6 +1870,9 @@ export const handler = async function () {
         const response = await got(`${server.url}/.netlify/functions/custom-headers`)
         t.is(response.headers['single-value-header'], 'custom-value')
         t.is(response.headers['multi-value-header'], 'custom-value1, custom-value2')
+        const builderResponse = await got(`${server.url}/.netlify/builders/custom-headers`)
+        t.is(builderResponse.headers['single-value-header'], 'custom-value')
+        t.is(builderResponse.headers['multi-value-header'], 'custom-value1, custom-value2')
       })
     })
   })

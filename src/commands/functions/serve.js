@@ -40,7 +40,8 @@ class FunctionsServeCommand extends Command {
       siteUrl,
       capabilities,
       timeouts,
-      prefix: '/.netlify/functions/',
+      functionsPrefix: '/.netlify/functions/',
+      buildersPrefix: '/.netlify/builders/',
     })
   }
 }

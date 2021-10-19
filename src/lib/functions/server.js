@@ -40,7 +40,7 @@ const buildClientContext = function (headers) {
 const createHandler = function ({ functionsRegistry }) {
   return async function handler(request, response) {
     // handle proxies without path re-writes (http-servr)
-    const cleanPath = request.path.replace(/^\/.netlify\/functions/, '')
+    const cleanPath = request.path.replace(/^\/.netlify\/(functions|builders)/, '')
     const functionName = cleanPath.split('/').find(Boolean)
     const func = functionsRegistry.get(functionName)
 
@@ -108,18 +108,30 @@ const createHandler = function ({ functionsRegistry }) {
     } else {
       const { error, result } = await func.invoke(event, clientContext)
 
+      // check for existence of metadata if this is a builder function
+      if (/^\/.netlify\/(builders)/.test(request.path) && (!result.metadata || !result.metadata.builder_function)) {
+        response.status(400).send({
+          message:
+            'Function is not an on-demand builder. See https://ntl.fyi/create-builder for how to convert a function to a builder.',
+        })
+        response.end()
+        return
+      }
+
       handleSynchronousFunction(error, result, response)
     }
   }
 }
 
-const getFunctionsServer = function ({ functionsRegistry, prefix, siteUrl }) {
+const getFunctionsServer = function ({ buildersPrefix, functionsPrefix, functionsRegistry, siteUrl }) {
   // performance optimization, load express on demand
   // eslint-disable-next-line node/global-require
   const express = require('express')
   // eslint-disable-next-line node/global-require
   const expressLogging = require('express-logging')
   const app = express()
+  const functionHandler = createHandler({ functionsRegistry })
+
   app.set('query parser', 'simple')
 
   app.use(
@@ -140,12 +152,22 @@ const getFunctionsServer = function ({ functionsRegistry, prefix, siteUrl }) {
     res.status(204).end()
   })
 
-  app.all(`${prefix}*`, createHandler({ functionsRegistry }))
+  app.all(`${functionsPrefix}*`, functionHandler)
+  app.all(`${buildersPrefix}*`, functionHandler)
 
   return app
 }
 
-const startFunctionsServer = async ({ capabilities, config, prefix = '', settings, site, siteUrl, timeouts }) => {
+const startFunctionsServer = async ({
+  buildersPrefix = '',
+  capabilities,
+  config,
+  functionsPrefix = '',
+  settings,
+  site,
+  siteUrl,
+  timeouts,
+}) => {
   const internalFunctionsDir = await getInternalFunctionsDir({ base: site.root })
 
   // The order of the function directories matters. Leftmost directories take
@@ -165,7 +187,8 @@ const startFunctionsServer = async ({ capabilities, config, prefix = '', setting
     const server = getFunctionsServer({
       functionsRegistry,
       siteUrl,
-      prefix,
+      functionsPrefix,
+      buildersPrefix,
     })
 
     await startWebServer({ server, settings })

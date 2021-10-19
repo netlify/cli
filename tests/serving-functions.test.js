@@ -364,18 +364,13 @@ testMatrix.forEach(({ args }) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
       await builder
-        .withContentFile({
+        .withFunction({
           path: 'functions/help.ts',
-          content: `
-const handler = async () => {
-  return {
-    statusCode: 200,
-    body: 'I need somebody. Not just anybody.'
-  }
-}
-
-export { handler }
-      `,
+          handler: async () => ({
+            statusCode: 200,
+            body: 'I need somebody. Not just anybody.',
+          }),
+          esm: true,
         })
         .withNetlifyToml({
           config: {
@@ -709,6 +704,41 @@ exports.handler = () => ({
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port }) => {
         await tryAndLogOutput(async () => {
           t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'Hello, world!')
+        }, outputBuffer)
+      })
+    })
+  })
+
+  test(testName('Serves functions inside a "type=module" package', args), async (t) => {
+    await withSiteBuilder('function-type-module', async (builder) => {
+      const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
+
+      await builder
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'public' },
+            functions: { directory: 'functions' },
+            ...bundlerConfig,
+          },
+        })
+        .withPackageJson({
+          packageJson: {
+            type: 'module',
+          },
+        })
+        .withFunction({
+          path: 'hello.js',
+          handler: async () => ({
+            statusCode: 200,
+            body: 'hello from es module!',
+          }),
+          esm: true,
+        })
+        .buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port }) => {
+        await tryAndLogOutput(async () => {
+          t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'hello from es module!')
         }, outputBuffer)
       })
     })
