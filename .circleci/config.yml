@@ -42,7 +42,7 @@ jobs:
           command: npm run site:build:install
       - unless:
           condition:
-            equal: ['10.x', << parameters.node-version >>]
+            equal: ['10', << parameters.node-version >>]
           steps:
             - run:
                 name: Linting
@@ -75,10 +75,10 @@ workflows:
           matrix:
             parameters:
               executor: [linux, macos, windows/default]
-              node-version: ['10.x', '*']
+              node-version: ['10', 'node']
             exclude:
-              - macos: '10.x'
-              - windows: '10.x'
+              - macos: '10'
+              - windows: '10'
 # missing: fail-fast
 # missing: ignore docs/** changes
 # missing: 30 minutes timeout
