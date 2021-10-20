@@ -17,7 +17,7 @@ jobs:
   build:
     parameters:
       executor:
-        type: executor
+        type: string
       node-version:
         type: string
     executor: << parameters.executor >>
