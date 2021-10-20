@@ -36,11 +36,11 @@ jobs:
                 # We set a flag so we can skip tests that access Netlify API
                 name: Setup NETLIFY_TEST_DISABLE_LIVE environment variable
                 command: |
-                  if defined "%CIRCLE_PR_NUMBER%" (
-                      set NETLIFY_TEST_DISABLE_LIVE=false
-                  ) else (
-                      set NETLIFY_TEST_DISABLE_LIVE=true
-                  )
+                  if ($null -eq $env:CIRCLE_PR_NUMBER) {
+                      [Environment]::SetEnvironmentVariable('NETLIFY_TEST_DISABLE_LIVE', 'false', 'User')
+                  } else {
+                      [Environment]::SetEnvironmentVariable('NETLIFY_TEST_DISABLE_LIVE', 'true', 'User')
+                  }
       - when:
           # The linux machine doesn't come with Git LFS
           condition:
