@@ -24,7 +24,7 @@ jobs:
     steps:
       - when:
           condition:
-            equal: [windows, << parameters.executor >>]
+            equal: [windows/default, << parameters.executor >>]
           steps:
             - run:
                 name: Increase Windows port limit and reduce time wait delay
@@ -32,6 +32,7 @@ jobs:
                   REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\TCPIP\Parameters /v MaxUserPort /t REG_DWORD /d 32768 /f
                   REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\TCPIP\Parameters /v TcpTimedWaitDelay /t REG_DWORD /d 30 /f
       - when:
+          # The linux machine doesn't come with Git LFS
           condition:
             equal: [linux, << parameters.executor >>]
           steps:
@@ -41,8 +42,15 @@ jobs:
                   curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
                   sudo apt-get install git-lfs
       - checkout
-      - node/install:
-          node-version: << parameters.node-version >>
+      - when:
+          condition:
+            or:
+              - equal: [linux, << parameters.executor >>]
+              - equal: [macos, << parameters.executor >>]
+          steps:
+            # This orb doesn't support Windows
+            - node/install:
+                node-version: << parameters.node-version >>
       - run:
           name: Install core dependencies
           command: npm ci --no-audit
