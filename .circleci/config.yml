@@ -31,6 +31,15 @@ jobs:
                 command: |
                   REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\TCPIP\Parameters /v MaxUserPort /t REG_DWORD /d 32768 /f
                   REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\TCPIP\Parameters /v TcpTimedWaitDelay /t REG_DWORD /d 30 /f
+      - when:
+          condition:
+            equal: [linux, << parameters.executor >>]
+          steps:
+            - run:
+                name: Install Git LFS
+                command: |
+                  curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
+                  sudo apt-get install git-lfs
       - checkout
       - node/install:
           node-version: << parameters.node-version >>
