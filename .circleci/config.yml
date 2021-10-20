@@ -61,7 +61,6 @@ jobs:
           name: Test
           command: npm run test:ci
           environment:
-            NETLIFY_AUTH_TOKEN: $NETLIFY_AUTH_TOKEN
             # Changes the polling interval used by the file watcher
             CHOKIDAR_INTERVAL: 20
             CHOKIDAR_USEPOLLING: 1
