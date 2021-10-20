@@ -105,8 +105,10 @@ workflows:
               executor: [linux, macos, windows/default]
               node-version: ['10', 'node']
             exclude:
-              - macos: '10'
-              - windows/default: '10'
+              - executor: 'macos'
+                node-version: '10'
+              - executor: 'windows/default'
+                node-version: '10'
 # missing: fail-fast
 # missing: ignore docs/** changes
 # missing: 30 minutes timeout
