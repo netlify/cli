@@ -46,7 +46,7 @@ jobs:
                 command: |
                   Install-Module -Name nvm -Force
                   Install-NodeVersion '>=17.0.0 <200.0.0'
-                  Get-NodeVersions '>=17.0.0 <200.0.0' | Set-NodeVersion -Persist User
+                  Get-NodeVersions '>=17.0.0 <200.0.0' | Set-NodeVersion -Persist Machine
       - when:
           # The linux machine doesn't come with Git LFS
           condition:
