@@ -45,8 +45,8 @@ jobs:
                 name: Install Node.js
                 command: |
                   Install-Module -Name nvm -Force
-                  Install-NodeVersion << parameters.node-version >>
-                  Set-NodeVersion -Persist User << parameters.node-version >>
+                  Install-NodeVersion '>=17.0.0 <200.0.0'
+                  Set-NodeVersion -Persist User '>=17.0.0 <200.0.0'
       - when:
           # The linux machine doesn't come with Git LFS
           condition:
