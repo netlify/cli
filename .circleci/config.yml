@@ -31,6 +31,16 @@ jobs:
                 command: |
                   REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\TCPIP\Parameters /v MaxUserPort /t REG_DWORD /d 32768 /f
                   REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\TCPIP\Parameters /v TcpTimedWaitDelay /t REG_DWORD /d 30 /f
+            - run:
+                # GitHub secrets are not available when running on PR from forks
+                # We set a flag so we can skip tests that access Netlify API
+                name: Setup NETLIFY_TEST_DISABLE_LIVE environment variable
+                command: |
+                  if defined "%CIRCLE_PR_NUMBER%" (
+                      set NETLIFY_TEST_DISABLE_LIVE=false
+                  ) else (
+                      set NETLIFY_TEST_DISABLE_LIVE=true
+                  )
       - when:
           # The linux machine doesn't come with Git LFS
           condition:
@@ -53,6 +63,16 @@ jobs:
                 node-version: << parameters.node-version >>
                 # We use the npm version that comes with Node.js
                 install-npm: false
+            - run:
+                # GitHub secrets are not available when running on PR from forks
+                # We set a flag so we can skip tests that access Netlify API
+                name: Setup NETLIFY_TEST_DISABLE_LIVE environment variable
+                command: |
+                  if [ -z "${CIRCLE_PR_NUMBER}" ]; then
+                    echo 'export NETLIFY_TEST_DISABLE_LIVE=false' >> $BASH_ENV
+                  else
+                    echo 'export NETLIFY_TEST_DISABLE_LIVE=true' >> $BASH_ENV
+                  fi
       - run:
           name: Install core dependencies
           command: npm ci --no-audit
@@ -66,16 +86,6 @@ jobs:
             - run:
                 name: Linting
                 command: npm run format:ci
-      - run:
-          # GitHub secrets are not available when running on PR from forks
-          # We set a flag so we can skip tests that access Netlify API
-          name: Setup NETLIFY_TEST_DISABLE_LIVE environment variable
-          command: |
-            if [ -z "${CIRCLE_PR_NUMBER}" ]; then
-              echo 'export NETLIFY_TEST_DISABLE_LIVE=false' >> $BASH_ENV
-            else
-              echo 'export NETLIFY_TEST_DISABLE_LIVE=true' >> $BASH_ENV
-            fi
       - run:
           name: Test
           command: npm run test:ci
@@ -96,7 +106,7 @@ workflows:
               node-version: ['10', 'node']
             exclude:
               - macos: '10'
-              - windows: '10'
+              - windows/default: '10'
 # missing: fail-fast
 # missing: ignore docs/** changes
 # missing: 30 minutes timeout
