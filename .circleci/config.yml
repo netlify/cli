@@ -41,6 +41,12 @@ jobs:
                   } else {
                       [Environment]::SetEnvironmentVariable('NETLIFY_TEST_DISABLE_LIVE', 'true', 'User')
                   }
+            - run:
+                name: Install Node.js
+                command: |
+                  Install-Module -Name nvm -Force
+                  Install-NodeVersion << parameters.node-version >>
+                  Set-NodeVersion -Persist User << parameters.node-version >>
       - when:
           # The linux machine doesn't come with Git LFS
           condition:
