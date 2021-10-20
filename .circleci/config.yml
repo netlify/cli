@@ -95,6 +95,7 @@ jobs:
             CHOKIDAR_USEPOLLING: 1
       - codecov/upload:
           file: coverage/coverage-final.json
+          flags: << parameters.executor >>,<< parameters.node-version >>
 
 workflows:
   all-tests:
@@ -109,6 +110,4 @@ workflows:
                 node-version: '10'
               - executor: 'windows/default'
                 node-version: '10'
-# missing: fail-fast
 # missing: ignore docs/** changes
-# missing: 30 minutes timeout
