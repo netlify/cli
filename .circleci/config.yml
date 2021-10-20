@@ -99,6 +99,10 @@ jobs:
             # Changes the polling interval used by the file watcher
             CHOKIDAR_INTERVAL: 20
             CHOKIDAR_USEPOLLING: 1
+      - store_test_results:
+          path: coverage
+      - store_artifacts:
+          path: coverage
       - codecov/upload:
           file: coverage/coverage-final.json
           flags: << parameters.executor >>,<< parameters.node-version >>

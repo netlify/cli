@@ -63,7 +63,7 @@
     "test:init:eleventy-deps": "npm ci --prefix tests/eleventy-site --no-audit",
     "test:init:hugo-deps": "npm ci --prefix tests/hugo-site --no-audit",
     "test:dev:ava": "ava --verbose",
-    "test:ci:ava": "nyc -r json ava",
+    "test:ci:ava": "nyc -r json -r clover ava",
     "docs": "node ./site/scripts/docs.js",
     "watch": "nyc --reporter=lcov ava --watch",
     "build:manifest": "oclif-dev manifest",
