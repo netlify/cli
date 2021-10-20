@@ -51,6 +51,8 @@ jobs:
             # This orb doesn't support Windows
             - node/install:
                 node-version: << parameters.node-version >>
+                # We use the npm version that comes with Node.js
+                install-npm: false
       - run:
           name: Install core dependencies
           command: npm ci --no-audit
