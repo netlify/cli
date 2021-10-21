@@ -4,11 +4,15 @@ const { error: errorExit, log } = require('../../utils/command-helpers')
 const { getInternalFunctionsDir } = require('../../utils/functions')
 const { NETLIFYDEVERR, NETLIFYDEVLOG } = require('../../utils/logo')
 
+const { v4: uuidv4 } = require('uuid');
+
 const { handleBackgroundFunction, handleBackgroundFunctionResult } = require('./background')
 const { createFormSubmissionHandler } = require('./form-submissions-handler')
 const { FunctionsRegistry } = require('./registry')
 const { handleSynchronousFunction } = require('./synchronous')
 const { shouldBase64Encode } = require('./utils')
+
+const streamerCallbackHost = 'streamingresponses.netlify.app'
 
 const buildClientContext = function (headers) {
   // inject a client context based on auth header, ported over from netlify-lambda (https://github.com/netlify/netlify-lambda/pull/57)
@@ -37,10 +41,12 @@ const buildClientContext = function (headers) {
   }
 }
 
-const createHandler = function ({ functionsRegistry }) {
+const streams = {}
+
+const createHandler = function ({ functionsRegistry, functionsPort }) {
   return async function handler(request, response) {
     // handle proxies without path re-writes (http-servr)
-    const cleanPath = request.path.replace(/^\/.netlify\/(functions|builders)/, '')
+    const cleanPath = request.path.replace(/^\/.netlify\/(functions|builders|streamers)/, '')
     const functionName = cleanPath.split('/').find(Boolean)
     const func = functionsRegistry.get(functionName)
 
@@ -99,8 +105,19 @@ const createHandler = function ({ functionsRegistry }) {
 
     const clientContext = buildClientContext(request.headers) || {}
 
-    if (func.isBackground) {
-      handleBackgroundFunction(functionName, response)
+    const isStreamer = /^\/.netlify\/streamers\/?/.test(request.path)
+
+    if (func.isBackground || isStreamer) {
+      if (isStreamer) {
+        const id = uuidv4()
+        streams[id] = {response}
+        event.streaming_response = {
+          callback_url: `http://streamingresponses.netlify.app:${functionsPort}/callbacks/${id}`,
+          target_ipv4: '127.0.0.1'
+        }
+      } else {
+        handleBackgroundFunction(functionName, response)
+      }
 
       const { error } = await func.invoke(event, clientContext)
 
@@ -123,14 +140,44 @@ const createHandler = function ({ functionsRegistry }) {
   }
 }
 
-const getFunctionsServer = function ({ buildersPrefix, functionsPrefix, functionsRegistry, siteUrl }) {
+const streamerMiddleware = async (req, res, next) => {
+  if (req.hostname === streamerCallbackHost) {
+    const match = req.path.match(/^\/callbacks\/([a-z0-9-]+)\/?/)
+    const id = match && match[1]
+    const stream = streams[id]
+
+    const headers = {}
+    for (const key in req.headers) {
+      if (/^s-/.test(key)) {
+        headers[key.replace(/^s-/,'')] = req.headers[key]
+      }
+    }
+    stream.response.headers = headers
+
+    let l = 0
+    for await (const chunk of req) {
+      l += chunk.length
+      stream.response.write(chunk)
+    }
+
+    stream.response.end()
+    delete streams[id]
+
+    res.send(`Wrote ${l} bytes to UA\n`)
+    return
+  }
+
+  next()
+}
+
+const getFunctionsServer = function ({ buildersPrefix, functionsPrefix, functionsRegistry, siteUrl, functionsPort }) {
   // performance optimization, load express on demand
   // eslint-disable-next-line node/global-require
   const express = require('express')
   // eslint-disable-next-line node/global-require
   const expressLogging = require('express-logging')
   const app = express()
-  const functionHandler = createHandler({ functionsRegistry })
+  const functionHandler = createHandler({ functionsRegistry, functionsPort })
 
   app.set('query parser', 'simple')
 
@@ -141,6 +188,7 @@ const getFunctionsServer = function ({ buildersPrefix, functionsPrefix, function
     }),
   )
   app.use(express.raw({ limit: '6mb', type: '*/*' }))
+  app.use(streamerMiddleware)
   app.use(createFormSubmissionHandler({ functionsRegistry, siteUrl }))
   app.use(
     expressLogging(console, {
@@ -189,6 +237,7 @@ const startFunctionsServer = async ({
       siteUrl,
       functionsPrefix,
       buildersPrefix,
+      functionsPort: settings.functionsPort
     })
 
     await startWebServer({ server, settings })
