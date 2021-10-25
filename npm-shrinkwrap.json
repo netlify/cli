@@ -10,8 +10,8 @@
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
-        "@netlify/build": "^18.17.1",
-        "@netlify/config": "^15.7.1",
+        "@netlify/build": "^18.17.6",
+        "@netlify/config": "^15.7.5",
         "@netlify/framework-info": "^5.11.0",
         "@netlify/local-functions-proxy": "^1.1.1",
         "@netlify/plugin-edge-handlers": "^1.11.22",
