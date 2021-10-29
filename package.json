@@ -84,7 +84,7 @@
     "@netlify/framework-info": "^5.11.0",
     "@netlify/local-functions-proxy": "^1.1.1",
     "@netlify/plugin-edge-handlers": "^1.11.22",
-    "@netlify/plugins-list": "^4.0.1",
+    "@netlify/plugins-list": "^4.1.0",
     "@netlify/routing-local-proxy": "^0.34.1",
     "@netlify/zip-it-and-ship-it": "4.26.1",
     "@oclif/command": "^1.6.1",
