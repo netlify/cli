@@ -1,4 +1,3 @@
-const querystring = require('querystring')
 const { Readable } = require('stream')
 
 const { parse: parseContentType } = require('content-type')
@@ -38,7 +37,8 @@ const createFormSubmissionHandler = function ({ functionsRegistry, siteUrl }) {
         limit: '10mb',
         encoding: ct.parameters.charset,
       })
-      fields = querystring.parse(bodyData.toString())
+
+      fields = getObjectFromParams(new URLSearchParams(bodyData.toString()))
     } else if (ct.type === 'multipart/form-data') {
       try {
         ;[fields, files] = await new Promise((resolve, reject) => {
@@ -124,6 +124,12 @@ const createFormSubmissionHandler = function ({ functionsRegistry, siteUrl }) {
 
     next()
   }
+}
+
+// note: use Object.fromEntries post Nodejs 12.0.0
+const getObjectFromParams = (urlParams) => {
+  const entries = [...urlParams]
+  return entries.reduce((prev, [key, value]) => ({ ...prev, [key]: value }), {})
 }
 
 const getFormHandler = function ({ functionsRegistry }) {
