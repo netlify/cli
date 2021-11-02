@@ -37,7 +37,7 @@ Running some integration tests requires an active Netlify account to create a li
 
 You can either provide a [Netlify Auth Token](https://docs.netlify.com/cli/get-started/#obtain-a-token-in-the-netlify-ui) (through the `NETLIFY_AUTH_TOKEN` environment variable) or login via `./bin/run login` before running the tests.
 
-The tests those count towards Netlify build minutes since they build a site locally and deploy it using the API.
+The tests don't count towards Netlify build minutes since they build a site locally and deploy it using the API.
 
 > You can disable these tests by setting the `NETLIFY_TEST_DISABLE_LIVE` environment variable to `true`.
 
