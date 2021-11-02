@@ -83,7 +83,7 @@
         "memoize-one": "^5.2.1",
         "minimist": "^1.2.5",
         "multiparty": "^4.2.1",
-        "netlify": "^8.0.3",
+        "netlify": "^8.0.4",
         "netlify-headers-parser": "^4.0.1",
         "netlify-redirect-parser": "^11.0.2",
         "netlify-redirector": "^0.2.1",
@@ -15224,9 +15224,9 @@
       "integrity": "sha512-AO81vsIO1k1sM4Zrd6Hu7regmJN1NSiAja10gc4bX3F0wd+9rQmcuHQaHVQCYIEC8iFXnE+mavh23GOt7wBgug=="
     },
     "node_modules/netlify": {
-      "version": "8.0.3",
-      "resolved": "https://registry.npmjs.org/netlify/-/netlify-8.0.3.tgz",
-      "integrity": "sha512-X20SPnE1N/nRiXa6j7BRrn/TtL4i8sgawFLHOBC5e1HzUUwPyNQAiK7nWFv4igUHUZZbIWFSqTzB/ZoHsOrJEA==",
+      "version": "8.0.4",
+      "resolved": "https://registry.npmjs.org/netlify/-/netlify-8.0.4.tgz",
+      "integrity": "sha512-v0iG/u5y3GDP+H50SEbQHUdYHTNMNKtoxUP9cBbt2H0i4rpCcebQAQ1AKEwbpxF8sCO0+ywXIqpGiOd5Wwzjew==",
       "dependencies": {
         "@netlify/open-api": "^2.5.2",
         "lodash.camelcase": "^4.3.0",
@@ -33326,9 +33326,9 @@
       "integrity": "sha512-AO81vsIO1k1sM4Zrd6Hu7regmJN1NSiAja10gc4bX3F0wd+9rQmcuHQaHVQCYIEC8iFXnE+mavh23GOt7wBgug=="
     },
     "netlify": {
-      "version": "8.0.3",
-      "resolved": "https://registry.npmjs.org/netlify/-/netlify-8.0.3.tgz",
-      "integrity": "sha512-X20SPnE1N/nRiXa6j7BRrn/TtL4i8sgawFLHOBC5e1HzUUwPyNQAiK7nWFv4igUHUZZbIWFSqTzB/ZoHsOrJEA==",
+      "version": "8.0.4",
+      "resolved": "https://registry.npmjs.org/netlify/-/netlify-8.0.4.tgz",
+      "integrity": "sha512-v0iG/u5y3GDP+H50SEbQHUdYHTNMNKtoxUP9cBbt2H0i4rpCcebQAQ1AKEwbpxF8sCO0+ywXIqpGiOd5Wwzjew==",
       "requires": {
         "@netlify/open-api": "^2.5.2",
         "lodash.camelcase": "^4.3.0",
