@@ -3,7 +3,8 @@ const chalk = require('chalk')
 const { warn } = require('../../utils/command-helpers')
 const { getLogMessage } = require('../log')
 
-const BASE_64_MIME_REGEXP = /image|audio|video|application\/pdf|application\/zip|applicaton\/octet-stream/i
+const BASE_64_MIME_REGEXP =
+  /image|audio|video|application\/(?!json|xml|javascript|csp-report|graphql|x-www-form-urlencoded|x-ndjson)/i
 
 const DEFAULT_LAMBDA_OPTIONS = {
   verboseLevel: 3,
