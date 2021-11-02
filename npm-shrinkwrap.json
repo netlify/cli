@@ -1,12 +1,12 @@
 {
   "name": "netlify-cli",
-  "version": "6.14.9",
+  "version": "6.14.10",
   "lockfileVersion": 2,
   "requires": true,
   "packages": {
     "": {
       "name": "netlify-cli",
-      "version": "6.14.9",
+      "version": "6.14.10",
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
@@ -17,7 +17,7 @@
         "@netlify/plugin-edge-handlers": "^1.11.22",
         "@netlify/plugins-list": "^4.1.0",
         "@netlify/routing-local-proxy": "^0.34.1",
-        "@netlify/zip-it-and-ship-it": "4.26.1",
+        "@netlify/zip-it-and-ship-it": "4.28.3",
         "@oclif/command": "^1.6.1",
         "@oclif/config": "^1.15.1",
         "@oclif/errors": "^1.3.4",
@@ -2490,70 +2490,6 @@
         "node": ">=10.18.0"
       }
     },
-    "node_modules/@netlify/build/node_modules/@netlify/zip-it-and-ship-it": {
-      "version": "4.28.3",
-      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-4.28.3.tgz",
-      "integrity": "sha512-JLuIDreAp+Ke9mQtIfUxagqUmNJjgrl5m1PTSmOhBUwAYSqJZGTCRhewPLQEny9avzg+x3Zfg8XppLzCQ9fCAg==",
-      "dependencies": {
-        "@babel/parser": "^7.15.7",
-        "@netlify/esbuild": "^0.13.6",
-        "@vercel/nft": "^0.17.0",
-        "archiver": "^5.3.0",
-        "array-flat-polyfill": "^1.0.1",
-        "common-path-prefix": "^3.0.0",
-        "cp-file": "^9.0.0",
-        "del": "^6.0.0",
-        "elf-cam": "^0.1.1",
-        "end-of-stream": "^1.4.4",
-        "es-module-lexer": "^0.9.0",
-        "execa": "^5.0.0",
-        "filter-obj": "^2.0.1",
-        "find-up": "^5.0.0",
-        "glob": "^7.1.6",
-        "is-builtin-module": "^3.1.0",
-        "junk": "^3.1.0",
-        "locate-path": "^6.0.0",
-        "make-dir": "^3.1.0",
-        "merge-options": "^3.0.4",
-        "minimatch": "^3.0.4",
-        "p-map": "^4.0.0",
-        "path-exists": "^4.0.0",
-        "pkg-dir": "^5.0.0",
-        "precinct": "^8.0.0",
-        "read-package-json-fast": "^2.0.2",
-        "require-package-name": "^2.0.1",
-        "resolve": "^2.0.0-next.1",
-        "semver": "^7.0.0",
-        "tmp-promise": "^3.0.2",
-        "toml": "^3.0.0",
-        "typescript": "^4.4.3",
-        "unixify": "^1.0.0",
-        "yargs": "^16.0.0"
-      },
-      "bin": {
-        "zip-it-and-ship-it": "dist/bin.js"
-      },
-      "engines": {
-        "node": ">=10.18.0"
-      }
-    },
-    "node_modules/@netlify/build/node_modules/@netlify/zip-it-and-ship-it/node_modules/yargs": {
-      "version": "16.2.0",
-      "resolved": "https://registry.npmjs.org/yargs/-/yargs-16.2.0.tgz",
-      "integrity": "sha512-D1mvvtDG0L5ft/jGWkLpG1+m0eQxOfaBvTNELraWj22wSVUMWxZUvYgJYcKh6jGGIkJFhH4IZPQhR4TKpc8mBw==",
-      "dependencies": {
-        "cliui": "^7.0.2",
-        "escalade": "^3.1.1",
-        "get-caller-file": "^2.0.5",
-        "require-directory": "^2.1.1",
-        "string-width": "^4.2.0",
-        "y18n": "^5.0.5",
-        "yargs-parser": "^20.2.2"
-      },
-      "engines": {
-        "node": ">=10"
-      }
-    },
     "node_modules/@netlify/build/node_modules/@sindresorhus/is": {
       "version": "2.1.1",
       "resolved": "https://registry.npmjs.org/@sindresorhus/is/-/is-2.1.1.tgz",
@@ -2563,31 +2499,6 @@
       },
       "funding": {
         "url": "https://github.com/sindresorhus/is?sponsor=1"
-      }
-    },
-    "node_modules/@netlify/build/node_modules/@vercel/nft": {
-      "version": "0.17.0",
-      "resolved": "https://registry.npmjs.org/@vercel/nft/-/nft-0.17.0.tgz",
-      "integrity": "sha512-dXz4RAODHpEPl1Yfzk1UfVpZfqhY9O80FdI9sF/Hw2bXWj5022U9Z46VpdNYe8pDluSuQv/JUo/ZP4/OcsfDRw==",
-      "dependencies": {
-        "@mapbox/node-pre-gyp": "^1.0.5",
-        "acorn": "^8.3.0",
-        "acorn-class-fields": "^1.0.0",
-        "acorn-private-class-elements": "^1.0.0",
-        "acorn-static-class-features": "^1.0.0",
-        "bindings": "^1.4.0",
-        "estree-walker": "2.0.2",
-        "glob": "^7.1.3",
-        "graceful-fs": "^4.1.15",
-        "micromatch": "^4.0.2",
-        "mkdirp": "^0.5.1",
-        "node-gyp-build": "^4.2.2",
-        "node-pre-gyp": "^0.13.0",
-        "resolve-from": "^5.0.0",
-        "rollup-pluginutils": "^2.8.2"
-      },
-      "bin": {
-        "nft": "out/cli.js"
       }
     },
     "node_modules/@netlify/build/node_modules/ansi-styles": {
@@ -2710,17 +2621,6 @@
       },
       "funding": {
         "url": "https://github.com/sponsors/sindresorhus"
-      }
-    },
-    "node_modules/@netlify/build/node_modules/mkdirp": {
-      "version": "0.5.5",
-      "resolved": "https://registry.npmjs.org/mkdirp/-/mkdirp-0.5.5.tgz",
-      "integrity": "sha512-NKmAlESf6jMGym1++R0Ra7wvhV+wFW63FaSOFPwRahvea0gMUcGUhVeAg/0BC0wiv9ih5NYPB1Wn1UEI1/L+xQ==",
-      "dependencies": {
-        "minimist": "^1.2.5"
-      },
-      "bin": {
-        "mkdirp": "bin/cmd.js"
       }
     },
     "node_modules/@netlify/build/node_modules/p-limit": {
@@ -3575,13 +3475,13 @@
       }
     },
     "node_modules/@netlify/zip-it-and-ship-it": {
-      "version": "4.26.1",
-      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-4.26.1.tgz",
-      "integrity": "sha512-/MfR3Gew9ZKymyDApO5d1/XcDnP0QDx7Ju9obPkTwUmR2TeyEkUDBkVDNBDSCP+HFjscsdqZAKUVYTKoXPk4nA==",
+      "version": "4.28.3",
+      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-4.28.3.tgz",
+      "integrity": "sha512-JLuIDreAp+Ke9mQtIfUxagqUmNJjgrl5m1PTSmOhBUwAYSqJZGTCRhewPLQEny9avzg+x3Zfg8XppLzCQ9fCAg==",
       "dependencies": {
         "@babel/parser": "^7.15.7",
         "@netlify/esbuild": "^0.13.6",
-        "@vercel/nft": "^0.15.1",
+        "@vercel/nft": "^0.17.0",
         "archiver": "^5.3.0",
         "array-flat-polyfill": "^1.0.1",
         "common-path-prefix": "^3.0.0",
@@ -5132,9 +5032,9 @@
       "integrity": "sha512-CAqefTFAfnUPwYqsWHXpOxHaq1Zo5UQ3m9Zm2p09LggGe57rqHoBn3c++xcoomzXKynAUuiBMDUCQvKMnXjUpA=="
     },
     "node_modules/@vercel/nft": {
-      "version": "0.15.1",
-      "resolved": "https://registry.npmjs.org/@vercel/nft/-/nft-0.15.1.tgz",
-      "integrity": "sha512-ehD1bgCG9sZliAHku2fc1L+jKLad4wS+9HHWiIs4HT4SysA/JFSXRrfWuA+INumzuaFqrOKs3vQeLVhZ4o8lTw==",
+      "version": "0.17.0",
+      "resolved": "https://registry.npmjs.org/@vercel/nft/-/nft-0.17.0.tgz",
+      "integrity": "sha512-dXz4RAODHpEPl1Yfzk1UfVpZfqhY9O80FdI9sF/Hw2bXWj5022U9Z46VpdNYe8pDluSuQv/JUo/ZP4/OcsfDRw==",
       "dependencies": {
         "@mapbox/node-pre-gyp": "^1.0.5",
         "acorn": "^8.3.0",
@@ -23740,89 +23640,10 @@
         "yargs": "^15.3.1"
       },
       "dependencies": {
-        "@netlify/zip-it-and-ship-it": {
-          "version": "4.28.3",
-          "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-4.28.3.tgz",
-          "integrity": "sha512-JLuIDreAp+Ke9mQtIfUxagqUmNJjgrl5m1PTSmOhBUwAYSqJZGTCRhewPLQEny9avzg+x3Zfg8XppLzCQ9fCAg==",
-          "requires": {
-            "@babel/parser": "^7.15.7",
-            "@netlify/esbuild": "^0.13.6",
-            "@vercel/nft": "^0.17.0",
-            "archiver": "^5.3.0",
-            "array-flat-polyfill": "^1.0.1",
-            "common-path-prefix": "^3.0.0",
-            "cp-file": "^9.0.0",
-            "del": "^6.0.0",
-            "elf-cam": "^0.1.1",
-            "end-of-stream": "^1.4.4",
-            "es-module-lexer": "^0.9.0",
-            "execa": "^5.0.0",
-            "filter-obj": "^2.0.1",
-            "find-up": "^5.0.0",
-            "glob": "^7.1.6",
-            "is-builtin-module": "^3.1.0",
-            "junk": "^3.1.0",
-            "locate-path": "^6.0.0",
-            "make-dir": "^3.1.0",
-            "merge-options": "^3.0.4",
-            "minimatch": "^3.0.4",
-            "p-map": "^4.0.0",
-            "path-exists": "^4.0.0",
-            "pkg-dir": "^5.0.0",
-            "precinct": "^8.0.0",
-            "read-package-json-fast": "^2.0.2",
-            "require-package-name": "^2.0.1",
-            "resolve": "^2.0.0-next.1",
-            "semver": "^7.0.0",
-            "tmp-promise": "^3.0.2",
-            "toml": "^3.0.0",
-            "typescript": "^4.4.3",
-            "unixify": "^1.0.0",
-            "yargs": "^16.0.0"
-          },
-          "dependencies": {
-            "yargs": {
-              "version": "16.2.0",
-              "resolved": "https://registry.npmjs.org/yargs/-/yargs-16.2.0.tgz",
-              "integrity": "sha512-D1mvvtDG0L5ft/jGWkLpG1+m0eQxOfaBvTNELraWj22wSVUMWxZUvYgJYcKh6jGGIkJFhH4IZPQhR4TKpc8mBw==",
-              "requires": {
-                "cliui": "^7.0.2",
-                "escalade": "^3.1.1",
-                "get-caller-file": "^2.0.5",
-                "require-directory": "^2.1.1",
-                "string-width": "^4.2.0",
-                "y18n": "^5.0.5",
-                "yargs-parser": "^20.2.2"
-              }
-            }
-          }
-        },
         "@sindresorhus/is": {
           "version": "2.1.1",
           "resolved": "https://registry.npmjs.org/@sindresorhus/is/-/is-2.1.1.tgz",
           "integrity": "sha512-/aPsuoj/1Dw/kzhkgz+ES6TxG0zfTMGLwuK2ZG00k/iJzYHTLCE8mVU8EPqEOp/lmxPoq1C1C9RYToRKb2KEfg=="
-        },
-        "@vercel/nft": {
-          "version": "0.17.0",
-          "resolved": "https://registry.npmjs.org/@vercel/nft/-/nft-0.17.0.tgz",
-          "integrity": "sha512-dXz4RAODHpEPl1Yfzk1UfVpZfqhY9O80FdI9sF/Hw2bXWj5022U9Z46VpdNYe8pDluSuQv/JUo/ZP4/OcsfDRw==",
-          "requires": {
-            "@mapbox/node-pre-gyp": "^1.0.5",
-            "acorn": "^8.3.0",
-            "acorn-class-fields": "^1.0.0",
-            "acorn-private-class-elements": "^1.0.0",
-            "acorn-static-class-features": "^1.0.0",
-            "bindings": "^1.4.0",
-            "estree-walker": "2.0.2",
-            "glob": "^7.1.3",
-            "graceful-fs": "^4.1.15",
-            "micromatch": "^4.0.2",
-            "mkdirp": "^0.5.1",
-            "node-gyp-build": "^4.2.2",
-            "node-pre-gyp": "^0.13.0",
-            "resolve-from": "^5.0.0",
-            "rollup-pluginutils": "^2.8.2"
-          }
         },
         "ansi-styles": {
           "version": "4.3.0",
@@ -23906,14 +23727,6 @@
           "version": "2.1.0",
           "resolved": "https://registry.npmjs.org/mimic-response/-/mimic-response-2.1.0.tgz",
           "integrity": "sha512-wXqjST+SLt7R009ySCglWBCFpjUygmCIfD790/kVbiGmUgfYGuB14PiTd5DwVxSV4NcYHjzMkoj5LjQZwTQLEA=="
-        },
-        "mkdirp": {
-          "version": "0.5.5",
-          "resolved": "https://registry.npmjs.org/mkdirp/-/mkdirp-0.5.5.tgz",
-          "integrity": "sha512-NKmAlESf6jMGym1++R0Ra7wvhV+wFW63FaSOFPwRahvea0gMUcGUhVeAg/0BC0wiv9ih5NYPB1Wn1UEI1/L+xQ==",
-          "requires": {
-            "minimist": "^1.2.5"
-          }
         },
         "p-limit": {
           "version": "2.3.0",
@@ -24505,13 +24318,13 @@
       }
     },
     "@netlify/zip-it-and-ship-it": {
-      "version": "4.26.1",
-      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-4.26.1.tgz",
-      "integrity": "sha512-/MfR3Gew9ZKymyDApO5d1/XcDnP0QDx7Ju9obPkTwUmR2TeyEkUDBkVDNBDSCP+HFjscsdqZAKUVYTKoXPk4nA==",
+      "version": "4.28.3",
+      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-4.28.3.tgz",
+      "integrity": "sha512-JLuIDreAp+Ke9mQtIfUxagqUmNJjgrl5m1PTSmOhBUwAYSqJZGTCRhewPLQEny9avzg+x3Zfg8XppLzCQ9fCAg==",
       "requires": {
         "@babel/parser": "^7.15.7",
         "@netlify/esbuild": "^0.13.6",
-        "@vercel/nft": "^0.15.1",
+        "@vercel/nft": "^0.17.0",
         "archiver": "^5.3.0",
         "array-flat-polyfill": "^1.0.1",
         "common-path-prefix": "^3.0.0",
@@ -25742,9 +25555,9 @@
       "integrity": "sha512-CAqefTFAfnUPwYqsWHXpOxHaq1Zo5UQ3m9Zm2p09LggGe57rqHoBn3c++xcoomzXKynAUuiBMDUCQvKMnXjUpA=="
     },
     "@vercel/nft": {
-      "version": "0.15.1",
-      "resolved": "https://registry.npmjs.org/@vercel/nft/-/nft-0.15.1.tgz",
-      "integrity": "sha512-ehD1bgCG9sZliAHku2fc1L+jKLad4wS+9HHWiIs4HT4SysA/JFSXRrfWuA+INumzuaFqrOKs3vQeLVhZ4o8lTw==",
+      "version": "0.17.0",
+      "resolved": "https://registry.npmjs.org/@vercel/nft/-/nft-0.17.0.tgz",
+      "integrity": "sha512-dXz4RAODHpEPl1Yfzk1UfVpZfqhY9O80FdI9sF/Hw2bXWj5022U9Z46VpdNYe8pDluSuQv/JUo/ZP4/OcsfDRw==",
       "requires": {
         "@mapbox/node-pre-gyp": "^1.0.5",
         "acorn": "^8.3.0",
