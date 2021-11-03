@@ -1,5 +1,4 @@
 // with thanks to https://github.com/codeniko/simple-tracker/blob/master/examples/server-examples/aws-lambda/google-analytics.js
-const querystring = require('querystring')
 
 const fetch = require('node-fetch')
 const { v4: uuidv4 } = require('uuid')
@@ -36,7 +35,7 @@ const proxyToGoogleAnalytics = async function (event) {
   params.cid = params.cid || uuidv4()
 
   console.info('proxying params:', params)
-  const qs = querystring.stringify(params)
+  const qs = new URLSearchParams(params).toString()
 
   try {
     const { ok, status, statusText } = await fetch(GA_ENDPOINT, {

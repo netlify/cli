@@ -1,4 +1,3 @@
-const querystring = require('querystring')
 const { Readable } = require('stream')
 
 const { parse: parseContentType } = require('content-type')
@@ -38,7 +37,8 @@ const createFormSubmissionHandler = function ({ functionsRegistry, siteUrl }) {
         limit: '10mb',
         encoding: ct.parameters.charset,
       })
-      fields = querystring.parse(bodyData.toString())
+
+      fields = getObjectFromParams(new URLSearchParams(bodyData.toString()))
     } else if (ct.type === 'multipart/form-data') {
       try {
         ;[fields, files] = await new Promise((resolve, reject) => {
@@ -124,6 +124,17 @@ const createFormSubmissionHandler = function ({ functionsRegistry, siteUrl }) {
 
     next()
   }
+}
+
+/**
+ * Converts URLSearchParams to an object
+ * @deprecated can be replaced with `Object.fromEntries` once the support for older Node.js Versions than `12.0.0` is dropped.
+ * @param {URLSearchParams} urlParams
+ * @returns {Record<string, any>}
+ */
+const getObjectFromParams = (urlParams) => {
+  const entries = [...urlParams]
+  return entries.reduce((prev, [key, value]) => ({ ...prev, [key]: value }), {})
 }
 
 const getFormHandler = function ({ functionsRegistry }) {

@@ -1,7 +1,6 @@
 // A simple ghauth inspired library for getting a personal access token
 const http = require('http')
 const process = require('process')
-const querystring = require('querystring')
 
 const { Octokit } = require('@octokit/rest')
 const getPort = require('get-port')
@@ -37,14 +36,14 @@ const authWithNetlify = async () => {
   const { promise: deferredPromise, reject: deferredReject, resolve: deferredResolve } = createDeferred()
 
   const server = http.createServer(function onRequest(req, res) {
-    const parameters = querystring.parse(req.url.slice(req.url.indexOf('?') + 1))
-    if (parameters.token) {
+    const parameters = new URLSearchParams(req.url.slice(req.url.indexOf('?') + 1))
+    if (parameters.get('token')) {
       deferredResolve(parameters)
       res.end(
         `${
           "<html><head><script>if(history.replaceState){history.replaceState({},'','/')}</script><style>html{font-family:sans-serif;background:#0e1e25}body{overflow:hidden;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;width:100vw;}h3{margin:0}.card{position:relative;display:flex;flex-direction:column;width:75%;max-width:364px;padding:24px;background:white;color:rgb(14,30,37);border-radius:8px;box-shadow:0 2px 4px 0 rgba(14,30,37,.16);}</style></head>" +
           "<body><div class=card><h3>Logged In</h3><p>You're now logged into Netlify CLI with your "
-        }${parameters.provider} credentials. Please close this window.</p></div>`,
+        }${parameters.get('provider')} credentials. Please close this window.</p></div>`,
       )
       server.close()
       return
@@ -60,10 +59,11 @@ const authWithNetlify = async () => {
   })
 
   const webUI = process.env.NETLIFY_WEB_UI || 'https://app.netlify.com'
-  const url = `${webUI}/cli?${querystring.encode({
+  const urlParams = new URLSearchParams({
     host: `http://localhost:${port}`,
     provider: 'github',
-  })}`
+  })
+  const url = `${webUI}/cli?${urlParams.toString()}`
 
   await openBrowser({ url })
 
