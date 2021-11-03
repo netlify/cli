@@ -20,6 +20,7 @@ EnvCommand.examples = [
   'netlify env:set VAR_NAME value',
   'netlify env:unset VAR_NAME',
   'netlify env:import fileName',
+  'netlify env:transfer <from-site-(id|name)> <to-site-(id|name)>',
 ]
 
 module.exports = EnvCommand
