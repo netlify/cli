@@ -350,3 +350,87 @@ test('env:import --json --replace-existing should replace all existing vars and 
     })
   })
 })
+
+test("env:transfer should return without transfer if there's no env in site from", async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+    const createRoutes = [
+      { path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: {} } } },
+      { path: 'sites/site_id_a', response: { ...siteInfo, build_settings: { env: {} } } },
+    ]
+    await withMockApi(createRoutes, async ({ apiUrl }) => {
+      const cliResponse = await callCli(['env:transfer', 'site_id_a'], getCLIOptions({ builder, apiUrl }))
+      t.is(cliResponse, `${createRoutes[0].response.name} has no env variable, nothing to transfer`)
+    })
+  })
+})
+
+test('env:transfer should throw an error if the current dir is not a site, and provide only one arg', async (t) => {
+  await t.throwsAsync(() => callCli(['env:transfer', 'site_id_a']))
+})
+
+const envFrom = {
+  transfer_me: 'transfer_me',
+}
+
+const envTo = {
+  existing_env: 'existing_env',
+}
+
+const siteInfoTo = {
+  ...siteInfo,
+  id: 'site_id_a',
+  name: 'site-name-a',
+}
+
+const newBuildSettings = {
+  env: {
+    ...envFrom,
+    ...envTo,
+  },
+}
+
+const createRoutes = [
+  { path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: envFrom } } },
+  { path: 'sites/site_id_a', response: { ...siteInfoTo, build_settings: { env: envTo } } },
+  { path: 'sites/site_id/service-instances', response: [] },
+  {
+    path: 'accounts',
+    response: [{ slug: siteInfo.account_slug }],
+  },
+  {
+    path: 'sites/site_id_a',
+    method: 'PATCH',
+    requestBody: {
+      build_settings: newBuildSettings,
+    },
+    response: {
+      ...siteInfoTo,
+      build_settings: newBuildSettings,
+    },
+  },
+]
+
+test('env:transfer should return success message', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+    await withMockApi(createRoutes, async ({ apiUrl }) => {
+      const cliResponse = await callCli(['env:transfer', 'site_id_a'], getCLIOptions({ apiUrl, builder }))
+      t.is(cliResponse, `Success transfer env variable from "${siteInfo.name}" => "${siteInfoTo.name}"`)
+    })
+  })
+})
+
+test('env:transfer --json should return merged json', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+    await withMockApi(createRoutes, async ({ apiUrl }) => {
+      const cliResponse = await callCli(
+        ['env:transfer', 'site_id_a', '--json'],
+        getCLIOptions({ apiUrl, builder }),
+        true,
+      )
+      t.deepEqual(cliResponse, newBuildSettings.env)
+    })
+  })
+})
