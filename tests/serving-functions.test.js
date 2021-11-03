@@ -83,7 +83,7 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
-  test(testName('Updates a TypeScript function when its main file is modified', args), async (t) => {
+  test.skip(testName('Updates a TypeScript function when its main file is modified', args), async (t) => {
     await withSiteBuilder('ts-function-update-main-file', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -359,7 +359,7 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
-  test(testName('Adds a new TypeScript function when a function file is created', args), async (t) => {
+  test.skip(testName('Adds a new TypeScript function when a function file is created', args), async (t) => {
     await withSiteBuilder('ts-function-create-function-file', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
