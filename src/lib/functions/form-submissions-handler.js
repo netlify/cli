@@ -126,7 +126,12 @@ const createFormSubmissionHandler = function ({ functionsRegistry, siteUrl }) {
   }
 }
 
-// note: use Object.fromEntries post Nodejs 12.0.0
+/**
+ * Converts URLSearchParams to an object
+ * @deprecated can be replaced with `Object.fromEntries` once the support for older Node.js Versions than `12.0.0` is dropped.
+ * @param {URLSearchParams} urlParams
+ * @returns {Record<string, any>}
+ */
 const getObjectFromParams = (urlParams) => {
   const entries = [...urlParams]
   return entries.reduce((prev, [key, value]) => ({ ...prev, [key]: value }), {})
