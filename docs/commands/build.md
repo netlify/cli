@@ -27,6 +27,4 @@ netlify build
 ```bash
 netlify build
 ```
-
-
 <!-- AUTO-GENERATED-CONTENT:END -->

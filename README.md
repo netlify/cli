@@ -215,9 +215,6 @@ Watch for site deploy to finish
 |:--------------------------- |:-----|
 | [`completion:generate:alias`](/docs/commands/completion.md#completiongeneratealias) | Generates completion script for alias  |
 | [`completion:generate`](/docs/commands/completion.md#completiongenerate) | Generates completion script  |
-
-
-
 <!-- AUTO-GENERATED-CONTENT:END -->
 
 ## Contributing

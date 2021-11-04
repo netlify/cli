@@ -106,5 +106,4 @@ $ netlify dev:trace --cookie nf_jwt=token http://localhost/routing-path
 ```
 
 ---
-
 <!-- AUTO-GENERATED-CONTENT:END -->
