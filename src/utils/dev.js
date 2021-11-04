@@ -8,7 +8,7 @@ const isEmpty = require('lodash/isEmpty')
 
 const { supportsBackgroundFunctions } = require('../lib/account')
 
-const { exit: failAndExit, log, warn } = require('./command-helpers')
+const { error: failAndExit, log, warn } = require('./command-helpers')
 const { loadDotEnvFiles } = require('./dot-env')
 const { NETLIFYDEVLOG } = require('./logo')
 
