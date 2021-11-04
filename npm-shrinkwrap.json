@@ -1,12 +1,12 @@
 {
   "name": "netlify-cli",
-  "version": "6.14.12",
+  "version": "6.14.13",
   "lockfileVersion": 2,
   "requires": true,
   "packages": {
     "": {
       "name": "netlify-cli",
-      "version": "6.14.12",
+      "version": "6.14.13",
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
@@ -83,7 +83,7 @@
         "memoize-one": "^5.2.1",
         "minimist": "^1.2.5",
         "multiparty": "^4.2.1",
-        "netlify": "^8.0.3",
+        "netlify": "^8.0.4",
         "netlify-headers-parser": "^4.0.1",
         "netlify-redirect-parser": "^11.0.3",
         "netlify-redirector": "^0.2.1",
