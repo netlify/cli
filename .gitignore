@@ -7,7 +7,7 @@ node_modules
 misc
 coverage
 /.netlify
-.idea
+.idea\
 
 # node sdk
 vendor

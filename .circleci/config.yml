@@ -1,123 +1,229 @@
 version: 2.1
 
+executors:
+  node:
+    working_directory: ~/cli
+    docker:
+      - image: cimg/node:current
+  linux:
+    machine:
+      image: 'ubuntu-2004:202107-02'
+    resource_class: large
+  macos:
+    # currently not available in our plan
+    # resource_class: large
+    macos:
+      xcode: 13.0.0
+
 orbs:
   node: circleci/node@4.7
   windows: circleci/windows@2.4.1
   codecov: codecov/codecov@1.0.2
 
-executors:
-  linux:
-    machine:
-      image: 'ubuntu-2004:202107-02'
-  macos:
-    macos:
-      xcode: 13.0.0
+npm_cache: &npm_cache
+  keys:
+    - npm-packages-v1-{{ arch }}-{{ checksum ".node_version" }}-{{ checksum "npm-shrinkwrap.json" }}
+    - npm-packages-v1-{{ arch }}-{{ checksum ".node_version" }}-
+    - npm-packages-v1-{{ arch }}-
+
+# Variable that is used on every job to set the appropriate parameters for the matrix exection and the environment variables
+job_params: &job_params
+  parameters:
+    node-version: { type: string, default: '17' }
+    parallelism: { type: integer, default: 1 }
+  environment: { NODE_VERSION: '<< parameters.node-version >>' }
+  parallelism: << parameters.parallelism >>
 
 jobs:
-  build:
-    parameters:
-      executor:
-        type: string
-      node-version:
-        type: string
-    executor: << parameters.executor >>
+  tryout:
+    executor:
+      name: windows/default
+      size: 'large'
     steps:
-      - when:
-          condition:
-            equal: [windows/default, << parameters.executor >>]
-          steps:
-            - run:
-                name: Increase Windows port limit and reduce time wait delay
-                command: |
-                  REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\TCPIP\Parameters /v MaxUserPort /t REG_DWORD /d 32768 /f
-                  REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\TCPIP\Parameters /v TcpTimedWaitDelay /t REG_DWORD /d 30 /f
-            - run:
-                # GitHub secrets are not available when running on PR from forks
-                # We set a flag so we can skip tests that access Netlify API
-                name: Setup NETLIFY_TEST_DISABLE_LIVE environment variable
-                command: |
-                  if ($null -eq $env:CIRCLE_PR_NUMBER) {
-                      [Environment]::SetEnvironmentVariable('NETLIFY_TEST_DISABLE_LIVE', 'false', 'User')
-                  } else {
-                      [Environment]::SetEnvironmentVariable('NETLIFY_TEST_DISABLE_LIVE', 'true', 'User')
-                  }
-            - run:
-                name: Install Node.js
-                command: |
-                  Install-Module -Name nvm -Force
-                  Install-NodeVersion '>=17.0.0 <200.0.0'
-                  Get-NodeVersions '>=17.0.0 <200.0.0' | Set-NodeVersion -Persist Machine
-      - when:
-          # The linux machine doesn't come with Git LFS
-          condition:
-            equal: [linux, << parameters.executor >>]
-          steps:
-            - run:
-                name: Install Git LFS
-                command: |
-                  curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
-                  sudo apt-get install git-lfs
       - checkout
-      - when:
-          condition:
-            or:
-              - equal: [linux, << parameters.executor >>]
-              - equal: [macos, << parameters.executor >>]
-          steps:
-            # This orb doesn't support Windows
-            - node/install:
-                node-version: << parameters.node-version >>
-                # We use the npm version that comes with Node.js
-                install-npm: false
-            - run:
-                # GitHub secrets are not available when running on PR from forks
-                # We set a flag so we can skip tests that access Netlify API
-                name: Setup NETLIFY_TEST_DISABLE_LIVE environment variable
-                command: |
-                  if [ -z "${CIRCLE_PR_NUMBER}" ]; then
-                    echo 'export NETLIFY_TEST_DISABLE_LIVE=false' >> $BASH_ENV
-                  else
-                    echo 'export NETLIFY_TEST_DISABLE_LIVE=true' >> $BASH_ENV
-                  fi
+      - setup
       - run:
-          name: Install core dependencies
+          name: test
+          command: |
+            npx run-s test:init:*
+            npx ava tests/command.lm.test.js
+            npx ava tests/framework-detection.test.js
+
+  lint:
+    executor: node
+    steps:
+      - checkout
+      - setup
+      - run:
+          name: Check Code Formatting
+          command: npm run format:check:prettier
+      - run:
+          name: Check Linting
+          command: |
+            mkdir ~/reports
+            npm run format:check:lint -- \
+              --format junit \
+              --output-file ~/reports/eslint.xml
+      - store_test_results:
+          path: ~/reports
+      - store_artifacts:
+          path: ~/reports
+
+  windows_matrix:
+    executor:
+      name: windows/default
+      size: 'large'
+    <<: *job_params
+    steps:
+      - run:
+          name: Increase Windows port limit and reduce time wait delay
+          command: |
+            REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\TCPIP\Parameters /v MaxUserPort /t REG_DWORD /d 32768 /f
+            REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\TCPIP\Parameters /v TcpTimedWaitDelay /t REG_DWORD /d 30 /f
+      - setup_environment
+      - checkout
+      - run:
+          name: Install Node.js version
+          command: nvm install << parameters.node-version >>
+      - setup
+      - test
+
+  linux_test:
+    executor: linux
+    <<: *job_params
+    steps:
+      # The linux machine doesn't come with Git LFS
+      - run:
+          name: Install Git LFS
+          command: |
+            curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
+            sudo apt-get install git-lfs
+      - node/install:
+          node-version: '<< parameters.node-version >>'
+          install-yarn: false
+          install-npm: false
+      - setup_environment
+      - checkout
+      - setup
+      - test
+      - codecov/upload:
+          file: coverage/coverage-final.json
+          flags: linux,<< parameters.node-version >>
+
+  macos_test:
+    executor: macos
+    <<: *job_params
+    steps:
+      - node/install:
+          node-version: '<< parameters.node-version >>'
+          install-yarn: false
+          install-npm: false
+      - setup_environment
+      - checkout
+      - setup
+      - test
+
+# A list of reuseable commands that can be used in the steps of a job
+commands:
+  setup_environment:
+    description: |
+      GitHub secrets are not available when running on PR from forks.
+      We set a flag so we can skip tests that access Netlify API
+    # when the environment variables are used it is important
+    # first to source the bash environment with:
+    # $ source $BASH_ENV
+    steps:
+      - run:
+          name: Setup NETLIFY_TEST_DISABLE_LIVE environment variable
+          shell: bash
+          command: |
+            if [ -z "${CIRCLE_PR_NUMBER}" ]; then
+              echo 'export NETLIFY_TEST_DISABLE_LIVE=false' >> $BASH_ENV
+            else
+              echo 'export NETLIFY_TEST_DISABLE_LIVE=true' >> $BASH_ENV
+            fi
+  # the setup command is used to install the node dependencies and restoring the npm cache
+  setup:
+    description: >-
+      installs all the neccessary dependencies prerequesites
+    steps:
+      - run:
+          name: Save Node.js version to file for npm cache restoring
+          command: node -e "var f=require('fs');f.writeFileSync('.node_version', process.env.NODE_VERSION||'');"
+      - restore_cache:
+          <<: *npm_cache
+      - run:
+          name: Install node dependencies
           command: npm ci --no-audit
       - run:
           name: Install site dependencies
           command: npm run site:build:install
-      - unless:
-          condition:
-            equal: ['10', << parameters.node-version >>]
-          steps:
-            - run:
-                name: Linting
-                command: npm run format:ci
+      - save_cache:
+          key: npm-packages-v1-{{ arch }}-{{ checksum ".node_version" }}-{{ checksum "npm-shrinkwrap.json" }}
+          paths:
+            - node_modules
+
+  # the test command to run the tests
+  test:
+    steps:
       - run:
-          name: Test
-          command: npm run test:ci
+          name: Prepare Test Scenario
+          command: npx run-s test:init:*
+      - run:
+          name: Prepare Test Scenario
+          shell: bash
+          command: |
+            source $BASH_ENV
+            mkdir ~/reports
+            TEST_FILES=$(circleci tests glob "tests/**/*.test.js" "src/**/*.test.js" | circleci tests split --split-by=timings)
+
+            echo "TEST TO RUN:"
+            echo "$TEST_FILES"
+
+            npx nyc \
+              --reporter json \
+              --reporter clover \
+              --reporter lcov \
+              ava
+          # --tap | npx tap-xunit >| ~/reports/ava.xml
           environment:
-            # Changes the polling interval used by the file watcher
-            CHOKIDAR_INTERVAL: 20
-            CHOKIDAR_USEPOLLING: 1
+            # NETLIFY_TEST_GITHUB_TOKEN is used to avoid reaching GitHub API limits in exec-fetcher.js
+            NETLIFY_TEST_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - store_test_results:
-          path: coverage
+          path: ~/reports
+      - store_artifacts:
+          path: ~/reports
       - store_artifacts:
           path: coverage
-      - codecov/upload:
-          file: coverage/coverage-final.json
-          flags: << parameters.executor >>,<< parameters.node-version >>
+
+# Pattern for filer out release branches
+filter_release_branches: &filter_release_branches
+  filters:
+    branches:
+      ignore: /release-/
 
 workflows:
-  all-tests:
+  version: 2
+  'Test & Check 🕵️‍♀️':
     jobs:
-      - build:
-          matrix:
-            parameters:
-              executor: [linux, macos, windows/default]
-              node-version: ['10', 'node']
-            exclude:
-              - executor: 'macos'
-                node-version: '10'
-              - executor: 'windows/default'
-                node-version: '10'
+      - tryout
+      # - lint:
+      #     <<: *filter_release_branches
+      # # Windows jobs
+      # - windows_matrix:
+      #     # parallelism: 5
+      #     <<: *filter_release_branches
+      #     matrix: { parameters: { node-version: ['17'] } }
+      # # Linux jobs
+      # - linux_test:
+      #     # parallelism: 5
+      #     <<: *filter_release_branches
+      #     matrix: { parameters: { node-version: ['10.24.1', '17'] } }
+      # # Mac jobs
+      # - macos_test:
+      #     # parallelism: 5
+      #     <<: *filter_release_branches
+      #     matrix: { parameters: { node-version: ['17'] } }
 # missing: ignore docs/** changes
+# currently no feature from circle ci that would allow that
+# we need to build this on our own
