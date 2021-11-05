@@ -26,6 +26,7 @@ netlify env
 | [`env:import`](/docs/commands/env.md#envimport) | Import and set environment variables from .env file  |
 | [`env:list`](/docs/commands/env.md#envlist) | Lists resolved environment variables for site (includes netlify.toml)  |
 | [`env:set`](/docs/commands/env.md#envset) | Set value of environment variable  |
+| [`env:transfer`](/docs/commands/env.md#envtransfer) | Transfer env from one site to another  |
 | [`env:unset`](/docs/commands/env.md#envunset) | Unset an environment variable which removes it from the UI  |
 
 
@@ -37,6 +38,7 @@ netlify env:get VAR_NAME
 netlify env:set VAR_NAME value
 netlify env:unset VAR_NAME
 netlify env:import fileName
+netlify env:transfer <from-site-(id|name)> <to-site-(id|name)>
 ```
 
 ---
@@ -122,6 +124,28 @@ netlify env:set
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
+## `env:transfer`
+
+Transfer env from one site to another
+
+**Usage**
+
+```bash
+netlify env:transfer
+```
+
+**Arguments**
+
+- siteA - (From) site Id or Name, if second argument is ommited, this argument will be the destination (To)
+- siteB - (To) site Id or Name
+
+**Flags**
+
+- `debug` (*boolean*) - Print debugging information
+- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
+
+---
 ## `env:unset`
 
 Unset an environment variable which removes it from the UI
@@ -143,4 +167,5 @@ netlify env:unset
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
+
 <!-- AUTO-GENERATED-CONTENT:END -->

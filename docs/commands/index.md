@@ -65,6 +65,7 @@ Local dev server
 | [`env:import`](/docs/commands/env.md#envimport) | Import and set environment variables from .env file  |
 | [`env:list`](/docs/commands/env.md#envlist) | Lists resolved environment variables for site (includes netlify.toml)  |
 | [`env:set`](/docs/commands/env.md#envset) | Set value of environment variable  |
+| [`env:transfer`](/docs/commands/env.md#envtransfer) | Transfer env from one site to another  |
 | [`env:unset`](/docs/commands/env.md#envunset) | Unset an environment variable which removes it from the UI  |
 
 
@@ -154,4 +155,7 @@ Watch for site deploy to finish
 |:--------------------------- |:-----|
 | [`completion:generate:alias`](/docs/commands/completion.md#completiongeneratealias) | Generates completion script for alias  |
 | [`completion:generate`](/docs/commands/completion.md#completiongenerate) | Generates completion script  |
+
+
+
 <!-- AUTO-GENERATED-CONTENT:END -->
