@@ -11,7 +11,7 @@ const { getAgent } = require('../lib/http-agent')
 
 const { argv, chalk, error, exit, getCwd, getToken, log, normalizeConfig, pollForToken } = require('./command-helpers')
 const getGlobalConfig = require('./get-global-config')
-const openBrowser = require('./open-browser')
+const { openBrowser } = require('./open-browser')
 const StateConfig = require('./state-config')
 const { identify, track } = require('./telemetry')
 const { TrackedCommand } = require('./telemetry/tracked-command')
