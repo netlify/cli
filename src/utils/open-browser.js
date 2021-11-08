@@ -33,4 +33,4 @@ const openBrowser = async function ({ silentBrowserNoneError, url }) {
   }
 }
 
-module.exports = openBrowser
+module.exports = { openBrowser }

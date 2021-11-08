@@ -21,7 +21,7 @@ const { deploySite } = require('../utils/deploy/deploy-site')
 const { deployEdgeHandlers } = require('../utils/edge-handlers')
 const { getFunctionsManifestPath, getInternalFunctionsDir } = require('../utils/functions')
 const { NETLIFYDEV, NETLIFYDEVERR, NETLIFYDEVLOG } = require('../utils/logo')
-const openBrowser = require('../utils/open-browser')
+const { openBrowser } = require('../utils/open-browser')
 
 const LinkCommand = require('./link')
 const SitesCreateCommand = require('./sites/create')
