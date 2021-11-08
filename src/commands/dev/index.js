@@ -17,7 +17,7 @@ const { detectServerSettings } = require('../../utils/detect-server-settings')
 const { getSiteInformation, injectEnvVariables } = require('../../utils/dev')
 const { startLiveTunnel } = require('../../utils/live-tunnel')
 const { NETLIFYDEV, NETLIFYDEVERR, NETLIFYDEVLOG, NETLIFYDEVWARN } = require('../../utils/logo')
-const openBrowser = require('../../utils/open-browser')
+const { openBrowser } = require('../../utils/open-browser')
 const { startProxy } = require('../../utils/proxy')
 const { startForwardProxy } = require('../../utils/traffic-mesh')
 
