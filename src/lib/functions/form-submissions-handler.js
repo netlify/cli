@@ -39,7 +39,7 @@ const createFormSubmissionHandler = function ({ functionsRegistry, siteUrl }) {
         encoding: ct.parameters.charset,
       })
 
-      fields = fromEntries([...new URLSearchParams(bodyData.toString())])
+      fields = fromEntries(new URLSearchParams(bodyData.toString()))
     } else if (ct.type === 'multipart/form-data') {
       try {
         ;[fields, files] = await new Promise((resolve, reject) => {
