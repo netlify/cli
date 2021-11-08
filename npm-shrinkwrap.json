@@ -17,7 +17,7 @@
         "@netlify/plugin-edge-handlers": "^1.11.22",
         "@netlify/plugins-list": "^4.1.0",
         "@netlify/routing-local-proxy": "^0.34.1",
-        "@netlify/zip-it-and-ship-it": "4.29.0",
+        "@netlify/zip-it-and-ship-it": "4.29.1",
         "@oclif/command": "^1.6.1",
         "@oclif/config": "^1.15.1",
         "@oclif/errors": "^1.3.4",
@@ -3764,9 +3764,9 @@
       }
     },
     "node_modules/@netlify/zip-it-and-ship-it": {
-      "version": "4.29.0",
-      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-4.29.0.tgz",
-      "integrity": "sha512-i0CF1Cd2J2FSLuSWCw17CpOzcMMFgYJLIgwQMQ0C34nqrb54eC40g1KBdOnF+YTLwHylvEo0kUJiU1J4fESVLw==",
+      "version": "4.29.1",
+      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-4.29.1.tgz",
+      "integrity": "sha512-tTJ+EGONXfi5OntmgJlvrCI2dmVlxhJLKRtZsDbcoDr/PbFg3LurVMbdYJS34XqCOMZQNhWG8zRFfqoW1N9T5w==",
       "dependencies": {
         "@babel/parser": "^7.15.7",
         "@netlify/esbuild": "^0.13.6",
@@ -3792,7 +3792,7 @@
         "p-map": "^4.0.0",
         "path-exists": "^4.0.0",
         "pkg-dir": "^5.0.0",
-        "precinct": "^8.0.0",
+        "precinct": "^8.2.0",
         "read-package-json-fast": "^2.0.2",
         "require-package-name": "^2.0.1",
         "resolve": "^2.0.0-next.1",
@@ -24844,9 +24844,9 @@
       }
     },
     "@netlify/zip-it-and-ship-it": {
-      "version": "4.29.0",
-      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-4.29.0.tgz",
-      "integrity": "sha512-i0CF1Cd2J2FSLuSWCw17CpOzcMMFgYJLIgwQMQ0C34nqrb54eC40g1KBdOnF+YTLwHylvEo0kUJiU1J4fESVLw==",
+      "version": "4.29.1",
+      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-4.29.1.tgz",
+      "integrity": "sha512-tTJ+EGONXfi5OntmgJlvrCI2dmVlxhJLKRtZsDbcoDr/PbFg3LurVMbdYJS34XqCOMZQNhWG8zRFfqoW1N9T5w==",
       "requires": {
         "@babel/parser": "^7.15.7",
         "@netlify/esbuild": "^0.13.6",
@@ -24872,7 +24872,7 @@
         "p-map": "^4.0.0",
         "path-exists": "^4.0.0",
         "pkg-dir": "^5.0.0",
-        "precinct": "^8.0.0",
+        "precinct": "^8.2.0",
         "read-package-json-fast": "^2.0.2",
         "require-package-name": "^2.0.1",
         "resolve": "^2.0.0-next.1",
