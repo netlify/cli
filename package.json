@@ -195,8 +195,8 @@
   "devDependencies": {
     "@babel/plugin-proposal-class-properties": "^7.13.0",
     "@babel/preset-react": "^7.12.13",
-    "@commitlint/cli": "^13.0.0",
-    "@commitlint/config-conventional": "^13.0.0",
+    "@commitlint/cli": "^14.0.0",
+    "@commitlint/config-conventional": "^14.0.0",
     "@netlify/eslint-config-node": "^3.3.5",
     "@oclif/dev-cli": "^1.23.1",
     "@oclif/test": "^1.2.5",
