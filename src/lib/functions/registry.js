@@ -12,9 +12,10 @@ const runtimes = require('./runtimes')
 const { watchDebounced } = require('./watcher')
 
 class FunctionsRegistry {
-  constructor({ capabilities, config, projectRoot, timeouts }) {
+  constructor({ capabilities, config, isConnected = false, projectRoot, timeouts }) {
     this.capabilities = capabilities
     this.config = config
+    this.isConnected = isConnected
     this.projectRoot = projectRoot
     this.timeouts = timeouts
 
@@ -128,7 +129,7 @@ class FunctionsRegistry {
       return
     }
 
-    if (func.isBackground && !this.capabilities.backgroundFunctions) {
+    if (func.isBackground && this.isConnected && !this.capabilities.backgroundFunctions) {
       warn(getLogMessage('functions.backgroundNotSupported'))
     }
 
