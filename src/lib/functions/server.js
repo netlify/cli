@@ -178,6 +178,7 @@ const startFunctionsServer = async ({
     const functionsRegistry = new FunctionsRegistry({
       capabilities,
       config,
+      isConnected: Boolean(siteUrl),
       projectRoot: site.root,
       timeouts,
     })
