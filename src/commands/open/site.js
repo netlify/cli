@@ -1,6 +1,6 @@
 const Command = require('../../utils/command')
 const { error, exit, log, warn } = require('../../utils/command-helpers')
-const openBrowser = require('../../utils/open-browser')
+const { openBrowser } = require('../../utils/open-browser')
 
 class OpenAdminCommand extends Command {
   async run() {
