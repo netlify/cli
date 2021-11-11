@@ -209,4 +209,4 @@ const startWebServer = async ({ server, settings }) => {
   })
 }
 
-module.exports = { startFunctionsServer }
+module.exports = { startFunctionsServer, createHandler }
