@@ -8407,9 +8407,9 @@
       }
     },
     "node_modules/detective-es6": {
-      "version": "2.2.0",
-      "resolved": "https://registry.npmjs.org/detective-es6/-/detective-es6-2.2.0.tgz",
-      "integrity": "sha512-fSpNY0SLER7/sVgQZ1NxJPwmc9uCTzNgdkQDhAaj8NPYwr7Qji9QBcmbNvtMCnuuOGMuKn3O7jv0An+/WRWJZQ==",
+      "version": "2.2.1",
+      "resolved": "https://registry.npmjs.org/detective-es6/-/detective-es6-2.2.1.tgz",
+      "integrity": "sha512-22z7MblxkhsIQGuALeGwCKEfqNy4WmgDGmfJCwdXbfDkVYIiIDmY513hiIWBvX3kCmzvvWE7RR7kAYxs01wwKQ==",
       "dependencies": {
         "node-source-walk": "^4.0.0"
       },
@@ -28155,9 +28155,9 @@
       }
     },
     "detective-es6": {
-      "version": "2.2.0",
-      "resolved": "https://registry.npmjs.org/detective-es6/-/detective-es6-2.2.0.tgz",
-      "integrity": "sha512-fSpNY0SLER7/sVgQZ1NxJPwmc9uCTzNgdkQDhAaj8NPYwr7Qji9QBcmbNvtMCnuuOGMuKn3O7jv0An+/WRWJZQ==",
+      "version": "2.2.1",
+      "resolved": "https://registry.npmjs.org/detective-es6/-/detective-es6-2.2.1.tgz",
+      "integrity": "sha512-22z7MblxkhsIQGuALeGwCKEfqNy4WmgDGmfJCwdXbfDkVYIiIDmY513hiIWBvX3kCmzvvWE7RR7kAYxs01wwKQ==",
       "requires": {
         "node-source-walk": "^4.0.0"
       }
