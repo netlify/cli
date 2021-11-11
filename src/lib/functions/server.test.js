@@ -52,7 +52,7 @@ test('should get the url as the `rawUrl` inside the function', async (t) => {
     // .set('x-netlify-original-pathname', 'orig')
     .expect((res) => {
       t.is(res.status, 200)
-      t.regex(res.text, /^http:\/\/127.0.0.1:\d+?\/hello/)
+      t.regex(res.text, /^http:\/\/127.0.0.1:\d+?\/hello$/)
     })
 })
 
@@ -63,6 +63,17 @@ test('should get the original url as the `rawUrl` when the header was provided b
     .expect((res) => {
       t.is(res.status, 200)
       console.log(res.text)
-      t.regex(res.text, /^http:\/\/127.0.0.1:\d+?\/orig/)
+      t.regex(res.text, /^http:\/\/127.0.0.1:\d+?\/orig$/)
+    })
+})
+
+test('should check if query params are passed to the `rawUrl` when redirected', async (t) => {
+  await request(app)
+    .get('/hello?jam=stack')
+    .set('x-netlify-original-pathname', '/orig')
+    .expect((res) => {
+      t.is(res.status, 200)
+      console.log(res.text)
+      t.regex(res.text, /^http:\/\/127.0.0.1:\d+?\/orig\?jam=stack$/)
     })
 })
