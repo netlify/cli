@@ -149,7 +149,7 @@
     "lodash": "^4.17.20",
     "log-symbols": "^4.0.0",
     "make-dir": "^3.0.0",
-    "memoize-one": "^5.2.1",
+    "memoize-one": "^6.0.0",
     "minimist": "^1.2.5",
     "multiparty": "^4.2.1",
     "netlify": "^8.0.4",
