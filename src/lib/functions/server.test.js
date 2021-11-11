@@ -50,7 +50,6 @@ test.after((t) => {
 test('should get the url as the `rawUrl` inside the function', async (t) => {
   await request(app)
     .get('/hello')
-    // .set('x-netlify-original-pathname', 'orig')
     .expect((res) => {
       t.is(res.status, 200)
       t.regex(res.text, /^http:\/\/127.0.0.1:\d+?\/hello$/)
