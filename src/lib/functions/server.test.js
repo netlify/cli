@@ -1,3 +1,4 @@
+const { platform } = require('os')
 const { join } = require('path')
 
 const zisi = require('@netlify/zip-it-and-ship-it')
@@ -10,7 +11,7 @@ const request = require('supertest')
 const { FunctionsRegistry } = require('./registry')
 const { createHandler } = require('./server')
 
-const projectRoot = `/my-functions`
+const projectRoot = platform() === 'win32' ? 'C:\\my-functions' : `/my-functions`
 const functionsPath = `functions`
 
 /** @type { express.Express} */
