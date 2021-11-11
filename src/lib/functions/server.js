@@ -79,7 +79,7 @@ const createHandler = function ({ functionsRegistry }) {
       {},
     )
     const host = request.get('host') || 'localhost'
-    const rawUrl = `${request.protocol}://${host}${request.originalUrl}`
+    const rawUrl = `${request.protocol}://${host}${requestPath}`
     const rawQuery = new URLSearchParams(request.query).toString()
     const event = {
       path: requestPath,
