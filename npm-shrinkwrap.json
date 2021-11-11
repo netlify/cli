@@ -80,7 +80,7 @@
         "lodash": "^4.17.20",
         "log-symbols": "^4.0.0",
         "make-dir": "^3.0.0",
-        "memoize-one": "^5.2.1",
+        "memoize-one": "^6.0.0",
         "minimist": "^1.2.5",
         "multiparty": "^4.2.1",
         "netlify": "^8.0.4",
@@ -2675,11 +2675,6 @@
       "funding": {
         "url": "https://github.com/sindresorhus/got?sponsor=1"
       }
-    },
-    "node_modules/@netlify/build/node_modules/memoize-one": {
-      "version": "6.0.0",
-      "resolved": "https://registry.npmjs.org/memoize-one/-/memoize-one-6.0.0.tgz",
-      "integrity": "sha512-rkpe71W0N0c0Xz6QD0eJETuWAJGnJ9afsl1srmwPrI+yBCkge5EycXXbYRyvL29zZVUWQCY7InPRCv3GDXuZNw=="
     },
     "node_modules/@netlify/build/node_modules/mimic-response": {
       "version": "2.1.0",
@@ -14768,9 +14763,9 @@
       }
     },
     "node_modules/memoize-one": {
-      "version": "5.2.1",
-      "resolved": "https://registry.npmjs.org/memoize-one/-/memoize-one-5.2.1.tgz",
-      "integrity": "sha512-zYiwtZUcYyXKo/np96AGZAckk+FWWsUdJ3cHGGmld7+AhvcWmQyGCYUh1hc4Q/pkOhb65dQR/pqCyK0cOaHz4Q=="
+      "version": "6.0.0",
+      "resolved": "https://registry.npmjs.org/memoize-one/-/memoize-one-6.0.0.tgz",
+      "integrity": "sha512-rkpe71W0N0c0Xz6QD0eJETuWAJGnJ9afsl1srmwPrI+yBCkge5EycXXbYRyvL29zZVUWQCY7InPRCv3GDXuZNw=="
     },
     "node_modules/memorystream": {
       "version": "0.3.1",
@@ -23855,11 +23850,6 @@
             "to-readable-stream": "^2.0.0",
             "type-fest": "^0.10.0"
           }
-        },
-        "memoize-one": {
-          "version": "6.0.0",
-          "resolved": "https://registry.npmjs.org/memoize-one/-/memoize-one-6.0.0.tgz",
-          "integrity": "sha512-rkpe71W0N0c0Xz6QD0eJETuWAJGnJ9afsl1srmwPrI+yBCkge5EycXXbYRyvL29zZVUWQCY7InPRCv3GDXuZNw=="
         },
         "mimic-response": {
           "version": "2.1.0",
@@ -33041,9 +33031,9 @@
       }
     },
     "memoize-one": {
-      "version": "5.2.1",
-      "resolved": "https://registry.npmjs.org/memoize-one/-/memoize-one-5.2.1.tgz",
-      "integrity": "sha512-zYiwtZUcYyXKo/np96AGZAckk+FWWsUdJ3cHGGmld7+AhvcWmQyGCYUh1hc4Q/pkOhb65dQR/pqCyK0cOaHz4Q=="
+      "version": "6.0.0",
+      "resolved": "https://registry.npmjs.org/memoize-one/-/memoize-one-6.0.0.tgz",
+      "integrity": "sha512-rkpe71W0N0c0Xz6QD0eJETuWAJGnJ9afsl1srmwPrI+yBCkge5EycXXbYRyvL29zZVUWQCY7InPRCv3GDXuZNw=="
     },
     "memorystream": {
       "version": "0.3.1",
