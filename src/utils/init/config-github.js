@@ -2,7 +2,7 @@ const { Octokit } = require('@octokit/rest')
 const chalk = require('chalk')
 
 const { error: failAndExit, log } = require('../command-helpers')
-const ghauth = require('../gh-auth')
+const { getGitHubToken: ghauth } = require('../gh-auth')
 
 const { createDeployKey, formatErrorMessage, getBuildSettings, saveNetlifyToml, setupSite } = require('./utils')
 
