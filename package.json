@@ -151,6 +151,7 @@
     "make-dir": "^3.0.0",
     "memoize-one": "^6.0.0",
     "minimist": "^1.2.5",
+    "mock-require": "^3.0.3",
     "multiparty": "^4.2.1",
     "netlify": "^8.0.4",
     "netlify-headers-parser": "^4.0.1",
@@ -216,6 +217,7 @@
     "sinon": "^12.0.0",
     "sort-on": "^4.1.0",
     "strip-ansi": "^6.0.0",
+    "supertest": "^6.1.6",
     "temp-dir": "^2.0.0",
     "tomlify-j0.4": "^3.0.0",
     "tree-kill": "^1.2.2"

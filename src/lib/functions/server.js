@@ -78,9 +78,10 @@ const createHandler = function ({ functionsRegistry }) {
       (prev, [key, value]) => ({ ...prev, [key]: Array.isArray(value) ? value : [value] }),
       {},
     )
-    const host = request.get('host') || 'localhost'
-    const rawUrl = `${request.protocol}://${host}${request.originalUrl}`
     const rawQuery = new URLSearchParams(request.query).toString()
+    const url = new URL(requestPath, `${request.protocol}://${request.get('host') || 'localhost'}`)
+    url.search = rawQuery
+    const rawUrl = url.toString()
     const event = {
       path: requestPath,
       httpMethod: request.method,
@@ -209,4 +210,4 @@ const startWebServer = async ({ server, settings }) => {
   })
 }
 
-module.exports = { startFunctionsServer }
+module.exports = { startFunctionsServer, createHandler }
