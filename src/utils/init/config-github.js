@@ -6,6 +6,14 @@ const { getGitHubToken: ghauth } = require('../gh-auth')
 
 const { createDeployKey, formatErrorMessage, getBuildSettings, saveNetlifyToml, setupSite } = require('./utils')
 
+/**
+ * @typedef Token
+ * @type {object}
+ * @property {string} user - The username that is associated with the token
+ * @property {string} token - The actual token value.
+ * @property {string} provider - The Provider where the token is associated with ('github').
+ */
+
 const formatRepoAndOwner = ({ repoName, repoOwner }) => ({
   name: chalk.magenta(repoName),
   owner: chalk.magenta(repoOwner),
@@ -13,14 +21,27 @@ const formatRepoAndOwner = ({ repoName, repoOwner }) => ({
 
 const PAGE_SIZE = 100
 
-const isValidToken = (token) => token && token.user && token.token
-
+/**
+ * Get a valid github token
+ * @returns {string}
+ */
 const getGitHubToken = async ({ globalConfig }) => {
   const userId = globalConfig.get('userId')
+
+  /** @type {Token} */
   const githubToken = globalConfig.get(`users.${userId}.auth.github`)
 
-  if (isValidToken(githubToken)) {
-    return githubToken.token
+  if (githubToken && githubToken.user && githubToken.token) {
+    try {
+      const octokit = getGitHubClient(githubToken.token)
+      const { status } = await octokit.rest.users.getAuthenticated()
+      if (status < 400) {
+        return githubToken.token
+      }
+    } catch {
+      log(chalk.yellow('Token is expired or invalid!'))
+      log('Generating a new Github token...')
+    }
   }
 
   const newToken = await ghauth()
@@ -28,12 +49,15 @@ const getGitHubToken = async ({ globalConfig }) => {
   return newToken.token
 }
 
-const getGitHubClient = ({ token }) => {
-  const octokit = new Octokit({
+/**
+ * Retrieves the Github octokit client
+ * @param {string} token
+ * @returns {Octokit}
+ */
+const getGitHubClient = (token) =>
+  new Octokit({
     auth: `token ${token}`,
   })
-  return octokit
-}
 
 const addDeployKey = async ({ api, octokit, repoName, repoOwner }) => {
   log('Adding deploy key to repository...')
@@ -172,7 +196,7 @@ const addNotificationHooks = async ({ api, siteId, token }) => {
   log(`Netlify Notification Hooks configured!`)
 }
 
-module.exports = async function configGithub({ context, repoName, repoOwner, siteId }) {
+const configGithub = async ({ context, repoName, repoOwner, siteId }) => {
   const { netlify } = context
   const {
     api,
@@ -193,7 +217,7 @@ module.exports = async function configGithub({ context, repoName, repoOwner, sit
   })
   await saveNetlifyToml({ repositoryRoot, config, configPath, baseDir, buildCmd, buildDir, functionsDir })
 
-  const octokit = getGitHubClient({ token })
+  const octokit = getGitHubClient(token)
   const [deployKey, githubRepo] = await Promise.all([
     addDeployKey({ api, octokit, repoOwner, repoName }),
     getGitHubRepo({ octokit, repoOwner, repoName }),
@@ -223,3 +247,5 @@ module.exports = async function configGithub({ context, repoName, repoOwner, sit
   log()
   await addNotificationHooks({ siteId, api, token })
 }
+
+module.exports = { configGithub, getGitHubToken }
