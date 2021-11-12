@@ -87,5 +87,4 @@ $ netlify completion:generate --shell zsh
 ```
 
 ---
-
 <!-- AUTO-GENERATED-CONTENT:END -->

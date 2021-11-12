@@ -38,7 +38,7 @@ netlify env:get VAR_NAME
 netlify env:set VAR_NAME value
 netlify env:unset VAR_NAME
 netlify env:import fileName
-netlify env:transfer <from-site-(id|name)> <to-site-(id|name)>
+netlify env:transfer <from-site-id> <to-site-id>
 ```
 
 ---
@@ -136,8 +136,8 @@ netlify env:transfer
 
 **Arguments**
 
-- siteA - (From) site Id or Name, if second argument is ommited, this argument will be the destination (To)
-- siteB - (To) site Id or Name
+- siteA - (From) site Id, if second argument is ommited, this argument will be the destination (To)
+- siteB - (To) site Id
 
 **Flags**
 
@@ -167,5 +167,4 @@ netlify env:unset
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
-
 <!-- AUTO-GENERATED-CONTENT:END -->

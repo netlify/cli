@@ -26,6 +26,4 @@ netlify watch
 netlify watch
 git push && netlify watch
 ```
-
-
 <!-- AUTO-GENERATED-CONTENT:END -->
