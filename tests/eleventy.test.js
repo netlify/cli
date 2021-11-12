@@ -66,7 +66,7 @@ test('functions rewrite echo without body', async (t) => {
     'x-forwarded-for': '::ffff:127.0.0.1',
   })
   t.is(response.httpMethod, 'GET')
-  t.is(response.isBase64Encoded, false)
+  t.is(response.isBase64Encoded, true)
   t.is(response.path, '/api/echo')
   t.deepEqual(response.queryStringParameters, { ding: 'dong' })
 })
@@ -114,7 +114,7 @@ test('functions echo with multiple query params', async (t) => {
     'x-forwarded-for': '::ffff:127.0.0.1',
   })
   t.is(response.httpMethod, 'GET')
-  t.is(response.isBase64Encoded, false)
+  t.is(response.isBase64Encoded, true)
   t.is(response.path, '/.netlify/functions/echo')
   t.deepEqual(response.queryStringParameters, { category: 'a, b' })
   t.deepEqual(response.multiValueQueryStringParameters, { category: ['a', 'b'] })
