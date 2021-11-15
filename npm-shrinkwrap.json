@@ -133,7 +133,7 @@
         "@babel/preset-react": "^7.12.13",
         "@commitlint/cli": "^14.0.0",
         "@commitlint/config-conventional": "^14.0.0",
-        "@netlify/eslint-config-node": "^3.3.6",
+        "@netlify/eslint-config-node": "^3.3.7",
         "@oclif/dev-cli": "^1.23.1",
         "@oclif/test": "^1.2.5",
         "ava": "^3.15.0",
@@ -3153,9 +3153,9 @@
       }
     },
     "node_modules/@netlify/eslint-config-node": {
-      "version": "3.3.6",
-      "resolved": "https://registry.npmjs.org/@netlify/eslint-config-node/-/eslint-config-node-3.3.6.tgz",
-      "integrity": "sha512-vtX3dFAzsITPFhhjhZS/5r6cuA5CKkxml6GcS7GJGal/8eBGN9EMBM6NEiMqAitzlhpwFmEIpogFQIx70NmTpg==",
+      "version": "3.3.7",
+      "resolved": "https://registry.npmjs.org/@netlify/eslint-config-node/-/eslint-config-node-3.3.7.tgz",
+      "integrity": "sha512-k1DdIrIDlzI9DjWeD4MA0Huq3NuvwewqgWL/U74Q2ejqtJ5dd9KIVdozyJSkzfqLnwesYzuNDPvkD3X6/kxMSA==",
       "dev": true,
       "dependencies": {
         "@babel/core": "^7.13.8",
@@ -24364,9 +24364,9 @@
       "integrity": "sha512-tiKmDcHM2riSVN79c0mJY/67EBDafXQAMitHuLiCDAMdtz3kfv+NqdVG5krgf5lWR8Uf8AeZrUW5Q9RP25REvw=="
     },
     "@netlify/eslint-config-node": {
-      "version": "3.3.6",
-      "resolved": "https://registry.npmjs.org/@netlify/eslint-config-node/-/eslint-config-node-3.3.6.tgz",
-      "integrity": "sha512-vtX3dFAzsITPFhhjhZS/5r6cuA5CKkxml6GcS7GJGal/8eBGN9EMBM6NEiMqAitzlhpwFmEIpogFQIx70NmTpg==",
+      "version": "3.3.7",
+      "resolved": "https://registry.npmjs.org/@netlify/eslint-config-node/-/eslint-config-node-3.3.7.tgz",
+      "integrity": "sha512-k1DdIrIDlzI9DjWeD4MA0Huq3NuvwewqgWL/U74Q2ejqtJ5dd9KIVdozyJSkzfqLnwesYzuNDPvkD3X6/kxMSA==",
       "dev": true,
       "requires": {
         "@babel/core": "^7.13.8",
