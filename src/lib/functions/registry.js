@@ -10,12 +10,13 @@ const runtimes = require('./runtimes')
 const { watchDebounced } = require('./watcher')
 
 class FunctionsRegistry {
-  constructor({ capabilities, config, isConnected = false, projectRoot, timeouts }) {
+  constructor({ capabilities, config, isConnected = false, projectRoot, settings, timeouts }) {
     this.capabilities = capabilities
     this.config = config
     this.isConnected = isConnected
     this.projectRoot = projectRoot
     this.timeouts = timeouts
+    this.settings = settings
 
     // An object to be shared among all functions in the registry. It can be
     // used to cache the results of the build function — e.g. it's used in
@@ -140,7 +141,11 @@ class FunctionsRegistry {
     this.functions.set(name, func)
     this.buildFunctionAndWatchFiles(func)
 
-    log(`${NETLIFYDEVLOG} ${chalk.green('Loaded')} function ${chalk.yellow(name)}.`)
+    log(
+      `${NETLIFYDEVLOG} ${chalk.green('Loaded')} function ${chalk.yellow(name)} available under: ${chalk.blue(
+        func.url,
+      )}.`,
+    )
   }
 
   async scan(directories) {
@@ -192,6 +197,7 @@ class FunctionsRegistry {
         runtime,
         timeoutBackground: this.timeouts.backgroundFunctions,
         timeoutSynchronous: this.timeouts.syncFunctions,
+        settings: this.settings,
       })
 
       this.registerFunction(name, func)
