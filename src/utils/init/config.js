@@ -2,7 +2,7 @@ const chalk = require('chalk')
 
 const { log } = require('../command-helpers')
 
-const configGithub = require('./config-github')
+const { configGithub } = require('./config-github')
 const configManual = require('./config-manual')
 
 const logSuccess = (repoData) => {
