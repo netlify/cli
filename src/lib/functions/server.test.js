@@ -37,6 +37,8 @@ test.before(async (t) => {
     projectRoot,
     config: {},
     timeouts: { syncFunctions: 1, backgroundFunctions: 1 },
+    // eslint-disable-next-line no-magic-numbers
+    settings: { port: 8888 },
   })
   await functionsRegistry.scan([functionsPath])
   app = express()
