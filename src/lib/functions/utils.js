@@ -19,6 +19,7 @@ const detectAwsSdkError = ({ error }) => {
 
 const formatLambdaError = (err) => chalk.red(`${err.errorType}: ${err.errorMessage}`)
 
+// should be equivalent to https://github.com/netlify/proxy/blob/main/pkg/functions/request.go#L105
 const exceptionsList = new Set([
   'application/csp-report',
   'application/graphql',
