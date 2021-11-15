@@ -13,6 +13,14 @@ const { openBrowser } = require('./open-browser')
 
 const SERVER_PORT = 3000
 
+/**
+ * @typedef Token
+ * @type {object}
+ * @property {string} user - The username that is associated with the token
+ * @property {string} token - The actual token value starting with `gho_`
+ * @property {string} provider - The Provider where the token is associated with ('github').
+ */
+
 const promptForAuthMethod = async () => {
   const authChoiceNetlify = 'Authorize with GitHub through app.netlify.com'
   const authChoiceToken = 'Authorize with a GitHub personal access token'
@@ -34,14 +42,7 @@ const promptForAuthMethod = async () => {
 
 /**
  * Authenticate with the netlify app
- * @returns {Promise<Record<string,string>} Returns a Promise with an object of the following shape
- * ```
- * {
- *   user: 'spongebob,
- *   token: 'gho_some-token',
- *   provider: 'github'
- * }
- * ```
+ * @returns {Promise<Token>} Returns a Promise with a token object
  */
 const authWithNetlify = async () => {
   const port = await getPort({ port: SERVER_PORT })
@@ -95,6 +96,10 @@ const getPersonalAccessToken = async () => {
   return { token }
 }
 
+/**
+ * Authenticate with the netlify app
+ * @returns {Promise<Token>} Returns a Promise with a token object
+ */
 const authWithToken = async () => {
   const { token } = await getPersonalAccessToken()
   if (token) {
@@ -108,6 +113,10 @@ const authWithToken = async () => {
   throw error
 }
 
+/**
+ * Get a github token
+ * @returns {Promise<Token>} Returns a Promise with a token object
+ */
 const getGitHubToken = async () => {
   log('')
 
