@@ -591,7 +591,7 @@ testMatrix.forEach(({ args }) => {
         form.append('some', 'thing')
 
         const expectedBoundary = form.getBoundary()
-        const expectedResponseBody = form.getBuffer().toString()
+        const expectedResponseBody = form.getBuffer().toString('base64')
 
         const response = await got
           .post(`${server.url}/api/echo?ding=dong`, {
