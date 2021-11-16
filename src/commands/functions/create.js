@@ -130,19 +130,6 @@ const formatRegistryArrayForInquirer = function (lang) {
     .filter((folderName) => !folderName.endsWith('.md'))
     // eslint-disable-next-line node/global-require, import/no-dynamic-require
     .map((folderName) => require(path.join(templatesDir, lang, folderName, '.netlify-function-template.js')))
-    .sort((folderNameA, folderNameB) => {
-      const priorityDiff = (folderNameA.priority || DEFAULT_PRIORITY) - (folderNameB.priority || DEFAULT_PRIORITY)
-
-      if (priorityDiff !== 0) {
-        return priorityDiff
-      }
-
-      // This branch is needed because `Array.prototype.sort` was not stable
-      // until Node 11, so the original sorting order from `fs.readdirSync`
-      // was not respected. We can simplify this once we drop support for
-      // Node 10.
-      return folderNameA - folderNameB
-    })
     .map((t) => {
       t.lang = lang
       return {
@@ -213,8 +200,6 @@ const pickTemplate = async function ({ language: languageFromFlag }) {
   })
   return chosenTemplate
 }
-
-const DEFAULT_PRIORITY = 999
 
 /**
  * Get functions directory (and make it if necessary)

@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "engines": {
-    "node": ">=10.18.0"
+    "node": ">=12.20.0"
   },
   "keywords": [
     "netlify",
@@ -19,6 +19,7 @@
   "author": "Netlify",
   "license": "MIT",
   "dependencies": {
+    "netlify-cli": "latest",
     "node-fetch": "^2.6.1",
     "uuid": "^8.0.0"
   }

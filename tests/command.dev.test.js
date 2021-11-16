@@ -1310,6 +1310,7 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
+  // TODO: check with erez if we should update edge handler min version to 12 so they can drop compatibility
   // the edge handlers plugin only works on node >= 10
   const version = Number.parseInt(process.version.slice(1).split('.')[0])
   const EDGE_HANDLER_MIN_VERSION = 10
