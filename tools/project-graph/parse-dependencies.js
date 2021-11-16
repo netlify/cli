@@ -1,8 +1,26 @@
 // @ts-check
-const { existsSync, readFileSync } = require('fs')
+const { existsSync, readFileSync, statSync } = require('fs')
 const { dirname, join, parse } = require('path')
 
 const ts = require('typescript')
+
+/**
+ * Get a list of imported identifiers, can be the default or a more from the destruction
+ * @param {ts.Node} node
+ * @returns {string[]} Returns the list of identifiers
+ */
+const getVariableDeclarationIdentifiers = (node) => {
+  if (ts.isVariableDeclaration(node)) {
+    if (ts.isIdentifier(node.name)) {
+      return [node.name.text]
+    }
+
+    // variable destruction
+    if (ts.isObjectBindingPattern(node.name)) {
+      return node.name.elements.map((element) => ts.isIdentifier(element.name) && element.name.text).filter(Boolean)
+    }
+  }
+}
 
 /**
  * tries to resolve a relative javascript module based on its specifier
@@ -10,7 +28,7 @@ const ts = require('typescript')
  * @returns {(string|null)}
  */
 const resolveRelativeModule = (moduleSpecifier) => {
-  if (existsSync(moduleSpecifier)) {
+  if (existsSync(moduleSpecifier) && statSync(moduleSpecifier).isFile()) {
     return moduleSpecifier
   }
   if (existsSync(`${moduleSpecifier}.js`)) {
@@ -44,11 +62,10 @@ const parseDependencies = function (fileName, visitorPlugins = []) {
     if (parsed.root) {
       return importLocation
     }
-    // the importLocation is a string and therefore a node_module
-    if (parsed.base === parsed.name && parsed.dir === '' && parsed.root === '') {
-      return require.resolve(importLocation)
+    if (importLocation.startsWith('.')) {
+      return resolveRelativeModule(join(folder, importLocation))
     }
-    return resolveRelativeModule(join(folder, importLocation))
+    // TODO: Ignored node_modules for now maybe add them later as they might be usefule
   }
 
   /**
@@ -57,14 +74,15 @@ const parseDependencies = function (fileName, visitorPlugins = []) {
    */
   const visitor = function (node) {
     // TODO: once we need import specifiers (esm or typescript add them here)
-    if (ts.isCallExpression(node) && node.expression.getText() === 'require') {
+    if (ts.isCallExpression(node) && node.expression.getText() === 'require' && ts.isStringLiteral(node.arguments[0])) {
       /** @type {string} */
       const importLocation = node.arguments[0].text
       if (importLocation.startsWith('.')) {
         const resolvedImportLocation = resolveImportLocation(importLocation)
         dependencies.push({
-          filename: resolvedImportLocation,
-          dependencies: parseDependencies(resolvedImportLocation),
+          fileName: resolvedImportLocation,
+          identifiers: getVariableDeclarationIdentifiers(node.parent),
+          dependencies: parseDependencies(resolvedImportLocation, visitorPlugins),
         })
       }
     }
@@ -75,7 +93,7 @@ const parseDependencies = function (fileName, visitorPlugins = []) {
 
     // getting always called after the leaf was inspected from bottom to top
     visitorPlugins.forEach((plugin) => {
-      plugin(node, { fileName, dependencies})
+      plugin(node, { fileName, dependencies })
     })
   }
   // start visiting the sourceFile

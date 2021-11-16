@@ -1,21 +1,43 @@
 // @ts-check
-const { existsSync, readFileSync } = require('fs')
-const { dirname, join, parse, resolve } = require('path')
-const { inspect } = require('util')
+const { writeFileSync } = require('fs')
+const { join } = require('path')
 
 const ts = require('typescript')
 
-const { parseDependencies } = require('./parse-dependencies')
+const {
+  oclif: { commands },
+} = require('../../package.json')
+
+const { parseDependencies, resolveRelativeModule } = require('./parse-dependencies')
+const visualizeGraph = require('./visualize-graph')
 
 /** @type {import('./types').visitorPlugin[]} */
 const visitorPlugins = [
-  function (node, state) {
-    if (ts.isSourceFile(node)) {
-
-      console.log(state)
+  (node, state) => {
+    // check if `await execa(cliPath, ['build', ...flags], {` is used for the command
+    if (
+      ts.isCallExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      node.expression.text === 'execa' &&
+      ts.isIdentifier(node.arguments[0]) &&
+      node.arguments[0].text === 'cliPath' &&
+      ts.isArrayLiteralExpression(node.arguments[1]) &&
+      ts.isStringLiteral(node.arguments[1].elements[0])
+    ) {
+      const fileName = resolveRelativeModule(join(commands, node.arguments[1].elements[0].text))
+      state.dependencies.push({
+        fileName,
+        type: 'indirect',
+        identifiers: [],
+        dependencies: parseDependencies(fileName),
+      })
     }
-  }
+  },
 ]
 
-const dependencies = parseDependencies('tests/command.dev.test.js', visitorPlugins)
-console.log(inspect(dependencies, false, 10, true))
+const entryFile = 'tests/serving-functions.test.js'
+const dependencies = parseDependencies(entryFile, visitorPlugins)
+
+const dotGraph = visualizeGraph(entryFile, dependencies)
+// can be simply converted to png by running: `$ cat dep-graph.dot | dot -Tpng >| output.png`
+writeFileSync('dep-graph.dot', dotGraph)
