@@ -138,6 +138,7 @@
         "@oclif/test": "^1.2.5",
         "ava": "^3.15.0",
         "eslint-plugin-sort-destructure-keys": "^1.3.5",
+        "fast-glob": "^3.2.7",
         "form-data": "^4.0.0",
         "from2-string": "^1.1.0",
         "got": "^11.8.1",
@@ -155,7 +156,8 @@
         "supertest": "^6.1.6",
         "temp-dir": "^2.0.0",
         "tomlify-j0.4": "^3.0.0",
-        "tree-kill": "^1.2.2"
+        "tree-kill": "^1.2.2",
+        "typescript": "^4.4.4"
       },
       "engines": {
         "node": ">=12.20.0"
