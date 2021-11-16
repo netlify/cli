@@ -41,3 +41,11 @@ test.serial('should track --telemetry-enable', async (t) => {
     t.deepEqual(requests[0].body.properties, {})
   })
 })
+
+test.serial('should send netlify-cli/<version> user-agent', async (t) => {
+  await withMockApi(routes, async ({ apiUrl, requests }) => {
+    await callCli(['api', "listSites"], getCLIOptions(apiUrl))
+    t.is(requests.length, 1)
+    t.is(requests[0].headers['user-agent'], `${name}/${version}`)
+  })
+})
