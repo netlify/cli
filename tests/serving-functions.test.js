@@ -743,6 +743,42 @@ exports.handler = () => ({
       })
     })
   })
+
+  test(testName('Resembles base64 encoding of production', args), async (t) => {
+    await withSiteBuilder('function-base64-encoding', async (builder) => {
+      const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
+
+      await builder
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'public' },
+            functions: { directory: 'functions' },
+            ...bundlerConfig,
+          },
+        })
+        .withFunction({
+          path: 'echoEncoding.js',
+          handler: async (event) => ({
+            statusCode: 200,
+            body: event.isBase64Encoded ? 'base64' : 'plain',
+          }),
+        })
+        .buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port }) => {
+        await tryAndLogOutput(async () => {
+          t.is(
+            await got(`http://localhost:${port}/.netlify/functions/echoEncoding`, {
+              headers: {
+                'Content-Type': 'multipart/form-data',
+              },
+            }).text(),
+            'base64',
+          )
+        }, outputBuffer)
+      })
+    })
+  })
 })
 
 test('Serves functions that dynamically load files included in the `functions.included_files` config property', async (t) => {
