@@ -37,10 +37,18 @@ test.serial('should merge the graph with files from a different entry point', (t
   t.snapshot(graph.visualize().to_dot())
 })
 
-test.only('should build a list of affected files', () => {
+test.serial('should build a list of affected files based on a file', (t) => {
   const graph = new DependencyGraph()
   fileVisitor('tests/a.js', { graph, visitorPlugins: [] })
   fileVisitor('tests/c.js', { graph, visitorPlugins: [] })
 
-  console.log(graph.affected(['src/d.js']))
+  t.deepEqual(
+    [...graph.affected(['src/d.js'])],
+    ['src/d.js', 'src/c/index.js', 'src/nested/a.js', 'tests/a.js', 'tests/c.js'],
+  )
+
+  t.deepEqual(
+    [...graph.affected(['tests/utils.js'])],
+    ['tests/utils.js', 'tests/c.js'],
+  )
 })

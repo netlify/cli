@@ -64,6 +64,7 @@
     "test:init:hugo-deps": "npm ci --prefix tests/hugo-site --no-audit",
     "test:dev:ava": "ava --verbose",
     "test:ci:ava": "nyc -r json ava",
+    "test:affected": "node ./tools/affected-test.js",
     "docs": "node ./site/scripts/docs.js",
     "watch": "nyc --reporter=lcov ava --watch",
     "build:manifest": "oclif-dev manifest",

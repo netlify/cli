@@ -7,24 +7,6 @@ const ts = require('typescript')
 const { DependencyGraph } = require('./dependency-graph')
 
 /**
- * Get a list of imported identifiers, can be the default or a more from the destruction
- * @param {ts.Node} node
- * @returns {string[]} Returns the list of identifiers
- */
-const getVariableDeclarationIdentifiers = (node) => {
-  if (ts.isVariableDeclaration(node)) {
-    if (ts.isIdentifier(node.name)) {
-      return [node.name.text]
-    }
-
-    // variable destruction
-    if (ts.isObjectBindingPattern(node.name)) {
-      return node.name.elements.map((element) => ts.isIdentifier(element.name) && element.name.text).filter(Boolean)
-    }
-  }
-}
-
-/**
  * tries to resolve a relative javascript module based on its specifier
  * @param {string} moduleSpecifier
  * @returns {(string|null)}
@@ -94,20 +76,10 @@ const fileVisitor = function (fileName, state, parent) {
       const importLocation = node.arguments[0].text
       if (importLocation.startsWith('.')) {
         const resolvedImportLocation = resolveLocation(importLocation)
-        // console.log(resolvedImportLocation)
+
         if (resolvedImportLocation) {
           fileVisitor(resolvedImportLocation, state, fileName)
-        } else {
-          console.error(`Could not resolve '${node.getFullText().trim()};' from: ${fileName}`)
         }
-        // console.log()
-        // console.log(resolvedImportLocation, state.graph.graph.get(resolvedImportLocation))
-        // console.log(getVariableDeclarationIdentifiers(node.parent))
-        // dependencies.push({
-        //   fileName: resolvedImportLocation,
-        //   identifiers: getVariableDeclarationIdentifiers(node.parent),
-        //   // dependencies: parseDependencies(resolvedImportLocation, state),
-        // })
       }
     }
 
