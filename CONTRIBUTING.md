@@ -41,6 +41,8 @@ The tests don't count towards Netlify build minutes since they build a site loca
 
 > You can disable these tests by setting the `NETLIFY_TEST_DISABLE_LIVE` environment variable to `true`.
 
+**For Netlify employees**, our CI uses a Netlify Auth Token from a [`netlify services` account](https://app.netlify.com/teams/netlify-services/sites). Credentials for the account are in 1Password.
+
 In watch mode:
 
 ```bash
