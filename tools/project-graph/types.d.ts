@@ -1,17 +1,17 @@
 import type { Node } from 'typescript';
+import type { DependencyGraph } from './dependency-graph';
 
 export type Dependency = {
-  fileName: string;
+  fileName: string
   /** A list of imported identifiers from this dependency */
-  identifiers: string[];
-  type: 'direct' | 'indirect';
+  identifiers: string[]
+  type: 'direct' | 'indirect'
   dependencies: Dependency[]
 }
 
-export type VisitorState = {
-  fileName: string,
-  dependencies: Dependency[],
-  // program: Program
-}
+export type visitorPlugin = (node: Node) => string | undefined
 
-export type visitorPlugin = (node: Node, state: VisitorState) => void
+export type VisitorState = {
+  graph: DependencyGraph
+  visitorPlugins: visitorPlugin[]
+}

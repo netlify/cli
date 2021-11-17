@@ -146,6 +146,7 @@
         "ini": "^2.0.0",
         "jsonwebtoken": "^8.5.1",
         "mkdirp": "^1.0.4",
+        "mock-fs": "^5.1.2",
         "nyc": "^15.0.0",
         "p-timeout": "^4.0.0",
         "pidtree": "^0.5.0",
@@ -15162,6 +15163,15 @@
       "resolved": "https://registry.npmjs.org/mkdirp-classic/-/mkdirp-classic-0.5.3.tgz",
       "integrity": "sha512-gKLcREMhtuZRwRAfqP3RFW+TK4JqApVBtOIftVgjuABpAtpxhPGaDcfvbhNvD0B8iD1oUr/txX35NjcaY6Ns/A==",
       "dev": true
+    },
+    "node_modules/mock-fs": {
+      "version": "5.1.2",
+      "resolved": "https://registry.npmjs.org/mock-fs/-/mock-fs-5.1.2.tgz",
+      "integrity": "sha512-YkjQkdLulFrz0vD4BfNQdQRVmgycXTV7ykuHMlyv+C8WCHazpkiQRDthwa02kSyo8wKnY9wRptHfQLgmf0eR+A==",
+      "dev": true,
+      "engines": {
+        "node": ">=12.0.0"
+      }
     },
     "node_modules/mock-require": {
       "version": "3.0.3",
@@ -33575,6 +33585,12 @@
       "version": "0.5.3",
       "resolved": "https://registry.npmjs.org/mkdirp-classic/-/mkdirp-classic-0.5.3.tgz",
       "integrity": "sha512-gKLcREMhtuZRwRAfqP3RFW+TK4JqApVBtOIftVgjuABpAtpxhPGaDcfvbhNvD0B8iD1oUr/txX35NjcaY6Ns/A==",
+      "dev": true
+    },
+    "mock-fs": {
+      "version": "5.1.2",
+      "resolved": "https://registry.npmjs.org/mock-fs/-/mock-fs-5.1.2.tgz",
+      "integrity": "sha512-YkjQkdLulFrz0vD4BfNQdQRVmgycXTV7ykuHMlyv+C8WCHazpkiQRDthwa02kSyo8wKnY9wRptHfQLgmf0eR+A==",
       "dev": true
     },
     "mock-require": {

@@ -4,6 +4,8 @@ const { dirname, join, parse } = require('path')
 
 const ts = require('typescript')
 
+const { DependencyGraph } = require('./dependency-graph')
+
 /**
  * Get a list of imported identifiers, can be the default or a more from the destruction
  * @param {ts.Node} node
@@ -43,20 +45,33 @@ const resolveRelativeModule = (moduleSpecifier) => {
 /**
  * Parses the dependencies out of a file
  * @param {string} fileName
- * @param {import('./types').visitorPlugin[]} visitorPlugins
+ * @param {import('./types').VisitorState} state
+ * @param {any} parent
  */
-const parseDependencies = function (fileName, visitorPlugins = []) {
+const fileVisitor = function (fileName, state, parent) {
+  if (!state) {
+    state = { graph: new DependencyGraph(), visitorPlugins: [] }
+  }
+
+  if (state.graph.hasFile(fileName)) {
+    // if the visitor was called with a parent we only need to add the dependency
+    if (parent) {
+      state.graph.addDependency(parent, fileName)
+    }
+    // no need to traverse the file again
+    return
+  }
+
   const folder = dirname(fileName)
   const fileContent = readFileSync(fileName, 'utf-8')
   const sourceFile = ts.createSourceFile(fileName, fileContent, ts.ScriptTarget.ES2020, true, ts.ScriptKind.JS)
-  const dependencies = []
 
   /**
    * Resolves a javascript import location
    * @param {string} importLocation
    * @returns {(string|null)}
    */
-  const resolveImportLocation = function (importLocation) {
+  const resolveLocation = function (importLocation) {
     const parsed = parse(importLocation)
     // absolute paths don't need to be resolved
     if (parsed.root) {
@@ -65,7 +80,7 @@ const parseDependencies = function (fileName, visitorPlugins = []) {
     if (importLocation.startsWith('.')) {
       return resolveRelativeModule(join(folder, importLocation))
     }
-    // TODO: Ignored node_modules for now maybe add them later as they might be usefule
+    // TODO: Ignored node_modules for now maybe add them later as they might be useful
   }
 
   /**
@@ -78,28 +93,45 @@ const parseDependencies = function (fileName, visitorPlugins = []) {
       /** @type {string} */
       const importLocation = node.arguments[0].text
       if (importLocation.startsWith('.')) {
-        const resolvedImportLocation = resolveImportLocation(importLocation)
-        dependencies.push({
-          fileName: resolvedImportLocation,
-          identifiers: getVariableDeclarationIdentifiers(node.parent),
-          dependencies: parseDependencies(resolvedImportLocation, visitorPlugins),
-        })
+        const resolvedImportLocation = resolveLocation(importLocation)
+        // console.log(resolvedImportLocation)
+        if (resolvedImportLocation) {
+          fileVisitor(resolvedImportLocation, state, fileName)
+        } else {
+          console.error(`Could not resolve '${node.getFullText().trim()};' from: ${fileName}`)
+        }
+        // console.log()
+        // console.log(resolvedImportLocation, state.graph.graph.get(resolvedImportLocation))
+        // console.log(getVariableDeclarationIdentifiers(node.parent))
+        // dependencies.push({
+        //   fileName: resolvedImportLocation,
+        //   identifiers: getVariableDeclarationIdentifiers(node.parent),
+        //   // dependencies: parseDependencies(resolvedImportLocation, state),
+        // })
       }
     }
 
-    node.getChildren().forEach((childNode) => {
-      ts.visitNode(childNode, visitor)
+    // go to the plugins
+    state.visitorPlugins.forEach((plugin) => {
+      const file = plugin(node)
+      if (file) {
+        fileVisitor(file, state, fileName)
+      }
     })
 
-    // getting always called after the leaf was inspected from bottom to top
-    visitorPlugins.forEach((plugin) => {
-      plugin(node, { fileName, dependencies })
+    node.getChildren().forEach((childNode) => {
+      ts.visitNode(childNode, visitor)
     })
   }
   // start visiting the sourceFile
   ts.visitNode(sourceFile, visitor)
 
-  return dependencies
+  // add node to graph
+  state.graph.addFile(fileName)
+
+  if (parent) {
+    state.graph.addDependency(parent, fileName)
+  }
 }
 
-module.exports = { parseDependencies, resolveRelativeModule }
+module.exports = { fileVisitor, resolveRelativeModule }
