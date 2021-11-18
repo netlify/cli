@@ -49,7 +49,7 @@ test.serial('should track --telemetry-enable', async (t) => {
 test.serial('should send netlify-cli/<version> user-agent', async (t) => {
   await withMockApi(routes, async ({ apiUrl, requests }) => {
     await callCli(['api', 'listSites'], getCLIOptions(apiUrl))
-    t.is(requests.length, 2)
+    t.true(requests.length >= 2)
     // example: netlify-cli/6.14.25 darwin-x64 node-v16.13.0
     const userAgent = requests[1].headers['user-agent']
     t.assert(userAgent.startsWith(`${name}/${version}`))
