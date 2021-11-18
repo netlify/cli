@@ -51,6 +51,10 @@ const main = async (args) => {
 
   const affectedFiles = getAffectedFiles(changedFiles)
 
+  if (affectedFiles.length === 0) {
+    console.log('No files where affected by the changeset!')
+    return
+  }
   console.log(`Running affected Tests: \n${grey([...affectedFiles].join(', '))}`)
 
   const testRun = execa('npx', ['ava', ...affectedFiles], {
@@ -61,9 +65,8 @@ const main = async (args) => {
     testRun.cancel()
   })
 
-  await testRun;
+  await testRun
 }
-
 
 // Can be invoked with two different arguments:
 // Either a list of files where all affected tests should be calculated based on:
@@ -79,4 +82,4 @@ if (require.main === module) {
   main(args).catch(console.error)
 }
 
-module.exports = { getChangedFiles }
+module.exports = { getChangedFiles, getAffectedFiles }

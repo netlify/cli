@@ -42,9 +42,10 @@ class DependencyGraph {
     const affectedFiles = new Set()
 
     const findParents = (leaf) => {
-      if ((filterFunction && filterFunction(leaf)) || !filterFunction) {
+      if (((filterFunction && filterFunction(leaf)) || !filterFunction) && this.graph.has(leaf)) {
         affectedFiles.add(leaf)
       }
+
       this.graph.forEach((value, key) => {
         if (value.has(leaf)) {
           if ((filterFunction && filterFunction(leaf)) || !filterFunction) {

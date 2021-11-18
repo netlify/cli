@@ -1,0 +1,28 @@
+const test = require('ava')
+
+const { DependencyGraph } = require('../project-graph')
+
+/** @type {DependencyGraph} */
+let graph
+
+test.beforeEach(() => {
+  graph = new DependencyGraph()
+  graph.addDependency('tests/a.js', 'src/nested/a.js')
+  graph.addDependency('tests/c.js', 'src/c/index.js')
+  graph.addDependency('tests/c.js', 'tests/utils.js')
+  graph.addDependency('src/nested/a.js', 'src/nested/b.js')
+  graph.addDependency('src/nested/a.js', 'src/c/index.js')
+  graph.addDependency('src/c/index.js', 'src/d.js')
+})
+
+test('should test if all parents are affected by changing a src file on the bottom', (t) => {
+  t.snapshot(graph.affected(['src/d.js']))
+})
+
+test('should test only the root leaf is affected if the root one is passed', (t) => {
+  t.deepEqual([...graph.affected(['tests/a.js'])], ['tests/a.js'])
+})
+
+test('should test that nothing is affected if the passed file is not in the dependency graph', (t) => {
+  t.is(graph.affected(['some-markdown.md']).size, 0)
+})
