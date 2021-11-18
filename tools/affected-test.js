@@ -78,8 +78,11 @@ const main = async (args) => {
 // The default is when running without arguments a git diff target off 'origin/master'
 if (require.main === module) {
   const args = process.argv.slice(2)
-  // eslint-disable-next-line promise/prefer-await-to-then
-  main(args).catch(console.error)
+  // eslint-disable-next-line promise/prefer-await-to-callbacks,promise/prefer-await-to-then
+  main(args).catch((error) => {
+    console.error(error)
+    process.exit(1)
+  })
 }
 
 module.exports = { getChangedFiles, getAffectedFiles }
