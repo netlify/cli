@@ -34,7 +34,9 @@ class BaseCommand extends TrackedCommand {
     // Get site id & build state
     const state = new StateConfig(cwd)
 
-    const apiUrlOpts = {}
+    const apiUrlOpts = {
+      userAgent: this.config.userAgent,
+    }
 
     if (NETLIFY_API_URL) {
       const apiUrl = new URL(NETLIFY_API_URL)
