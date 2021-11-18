@@ -39,6 +39,8 @@ jobs:
         if: "${{ matrix.os == 'windows-latest' }}"
       - name: Git checkout
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
         with:
@@ -60,6 +62,8 @@ jobs:
           cond: ${{ github.event_name == 'pull_request' }}
           if_true: 'npm run test:affected ${{ github.event.pull_request.base.sha }}' # on pull requests test with the project graph only the affected tests
           if_false: 'npm run test:ci' # on the base branch run all the tests as security measure
+      - name: Prepare tests
+        run: npm run test:init
       - name: Tests
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
         run: ${{ steps.testCommand.outputs.value }}
