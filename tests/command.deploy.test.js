@@ -13,6 +13,7 @@ const { createLiveTestSite, generateSiteName } = require('./utils/create-live-te
 const got = require('./utils/got')
 const { withSiteBuilder } = require('./utils/site-builder')
 
+const EDGE_HANDLER_MIN_LENGTH = 50
 const SITE_NAME = generateSiteName('netlify-test-deploy-')
 
 const validateContent = async ({ content, path, siteUrl, t }) => {
@@ -92,70 +93,64 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
     })
   })
 
-  // the edge handlers plugin only works on node >= 10
-  const version = Number.parseInt(process.version.slice(1).split('.')[0])
-  const EDGE_HANDLER_MIN_VERSION = 10
-  const EDGE_HANDLER_MIN_LENGTH = 50
-  if (version >= EDGE_HANDLER_MIN_VERSION) {
-    test.serial('should deploy edge handlers when directory exists', async (t) => {
-      if (!supportsEdgeHandlers(t.context.account)) {
-        console.warn(`Skipping edge handlers deploy test for account ${t.context.account.slug}`)
-        return
-      }
-      await withSiteBuilder('site-with-public-folder', async (builder) => {
-        const content = '<h1>⊂◉‿◉つ</h1>'
-        builder
-          .withContentFile({
-            path: 'public/index.html',
-            content,
-          })
-          .withNetlifyToml({
-            config: {
-              build: { publish: 'public', command: 'echo "no op"', edge_handlers: 'netlify/edge-handlers' },
-            },
-          })
-          .withEdgeHandlers({
-            handlers: {
-              onRequest: (event) => {
-                console.log(`Incoming request for ${event.request.url}`)
-              },
-            },
-          })
-
-        await builder.buildAsync()
-
-        const options = {
-          cwd: builder.directory,
-          env: { NETLIFY_SITE_ID: t.context.siteId },
-        }
-        // build the edge handlers first
-        await callCli(['build'], options)
-        const deploy = await callCli(['deploy', '--json'], options).then((output) => JSON.parse(output))
-
-        await validateDeploy({ deploy, siteName: SITE_NAME, content, t })
-
-        // validate edge handlers
-        // use this until we can use `netlify api`
-        const [apiToken] = await getToken()
-        const { content_length: contentLength, ...rest } = await got(
-          `https://api.netlify.com/api/v1/deploys/${deploy.deploy_id}/edge_handlers`,
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${apiToken}`,
+  test.serial('should deploy edge handlers when directory exists', async (t) => {
+    if (!supportsEdgeHandlers(t.context.account)) {
+      console.warn(`Skipping edge handlers deploy test for account ${t.context.account.slug}`)
+      return
+    }
+    await withSiteBuilder('site-with-public-folder', async (builder) => {
+      const content = '<h1>⊂◉‿◉つ</h1>'
+      builder
+        .withContentFile({
+          path: 'public/index.html',
+          content,
+        })
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'public', command: 'echo "no op"', edge_handlers: 'netlify/edge-handlers' },
+          },
+        })
+        .withEdgeHandlers({
+          handlers: {
+            onRequest: (event) => {
+              console.log(`Incoming request for ${event.request.url}`)
             },
           },
-        ).json()
-
-        t.deepEqual(omit(rest, ['created_at', 'sha']), {
-          content_type: 'application/javascript',
-          handlers: ['index'],
-          valid: true,
         })
-        t.is(contentLength > EDGE_HANDLER_MIN_LENGTH, true)
+
+      await builder.buildAsync()
+
+      const options = {
+        cwd: builder.directory,
+        env: { NETLIFY_SITE_ID: t.context.siteId },
+      }
+      // build the edge handlers first
+      await callCli(['build'], options)
+      const deploy = await callCli(['deploy', '--json'], options).then((output) => JSON.parse(output))
+
+      await validateDeploy({ deploy, siteName: SITE_NAME, content, t })
+
+      // validate edge handlers
+      // use this until we can use `netlify api`
+      const [apiToken] = await getToken()
+      const { content_length: contentLength, ...rest } = await got(
+        `https://api.netlify.com/api/v1/deploys/${deploy.deploy_id}/edge_handlers`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${apiToken}`,
+          },
+        },
+      ).json()
+
+      t.deepEqual(omit(rest, ['created_at', 'sha']), {
+        content_type: 'application/javascript',
+        handlers: ['index'],
+        valid: true,
       })
+      t.is(contentLength > EDGE_HANDLER_MIN_LENGTH, true)
     })
-  }
+  })
 
   test.serial('should run build command before deploy when build flag is passed', async (t) => {
     await withSiteBuilder('site-with-public-folder', async (builder) => {
