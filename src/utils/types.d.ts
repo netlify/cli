@@ -1,4 +1,4 @@
-export type FrameworkNames = '#static' | '#auto' | '#custom'
+export type FrameworkNames = '#static' | '#auto' | '#custom' | string
 
 export type FrameworkInfo = {
   build: {

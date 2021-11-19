@@ -215,7 +215,6 @@ const detectFrameworkSettings = async ({ projectDir }) => {
   }
 }
 
-/** @deprecated  remove it  */
 const hasCommandAndTargetPort = ({ devConfig }) => devConfig.command && devConfig.targetPort
 
 /**
@@ -279,11 +278,10 @@ const detectServerSettings = async (devConfig, flags, projectDir) => {
   } else if (devConfig.framework === '#auto') {
     // this is the default CLI behavior
 
-    // detect the framework settings
-    const frameworkSettings = await detectFrameworkSettings({ projectDir })
+    const runDetection = !hasCommandAndTargetPort({ devConfig })
+    const frameworkSettings = runDetection ? await detectFrameworkSettings({ projectDir }) : undefined
 
-    console.log(devConfig.targetPort)
-    if (frameworkSettings === undefined) {
+    if (frameworkSettings === undefined && runDetection) {
       log(`${NETLIFYDEVWARN} No app server detected. Using simple static server`)
       settings = await handleStaticServer({ flags, devConfig, projectDir })
     } else {
