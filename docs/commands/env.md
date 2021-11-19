@@ -136,8 +136,8 @@ netlify env:transfer
 
 **Arguments**
 
-- siteA - (From) site Id, if second argument is ommited, this argument will be the destination (To)
-- siteB - (To) site Id
+- siteA - (From) site Id or Name, if second argument is ommited, this argument will be the destination (To)
+- siteB - (To) site Id or Name
 
 **Flags**
 
@@ -167,4 +167,5 @@ netlify env:unset
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
+
 <!-- AUTO-GENERATED-CONTENT:END -->
