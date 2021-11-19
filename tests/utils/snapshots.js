@@ -9,7 +9,7 @@ const normalizers = [
   // normalize exit code from different OSes
   { pattern: /code \d+/, value: 'code *' },
   // this is specific to npm v6
-  { pattern: /@ (\w+).+\/.+netlify-cli-tests-v10.+/, value: '$1' },
+  { pattern: /@ (\w+).+\/.+netlify-cli-tests-v[\d{2}].+/, value: '$1' },
   { pattern: /It should be one of.+/gm, value: 'It should be one of: *' },
 ]
 
