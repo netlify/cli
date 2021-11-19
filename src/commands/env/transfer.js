@@ -68,13 +68,13 @@ EnvTransferCommand.args = [
   {
     name: 'siteA',
     required: true,
-    description: '(From) site Id or Name, if second argument is ommited, this argument will be the destination (To)',
+    description: '(From) site Id, if second argument is omitted, this argument will be the destination (To)',
   },
   {
     name: 'siteB',
     required: false,
     default: '',
-    description: '(To) site Id or Name',
+    description: '(To) site Id',
   },
 ]
 
