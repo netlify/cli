@@ -21,6 +21,17 @@ const simpleMockedFileSystem = {
   ...baseFiles,
 }
 
+const esModuleMockedFileSystem = {
+  [join('src/nested/a.js')]: `import b from './b';import asdf from 'asdf'; import {c} from '../c';`,
+  [join('src/nested/b.js')]: '',
+  [join('src/c/index.js')]: `import * as d from '../d';`,
+  [join('src/d.js')]: '',
+  [join('tests/a.test.js')]: `import a from '../src/nested/a';`,
+  [join('tests/c.test.js')]: `import a from '../src/c';import u from './utils';`,
+  [join('tests/utils.js')]: '',
+  ...baseFiles,
+}
+
 const callCliMockedFileSystem = {
   [join('src/commands/dev.js')]: `const {c} = require('../utils/c');`,
   [join('src/commands/build/index.js')]: `const {c} = require('../../utils/c');`,
@@ -30,4 +41,4 @@ const callCliMockedFileSystem = {
   ...baseFiles,
 }
 
-module.exports = { simpleMockedFileSystem, callCliMockedFileSystem }
+module.exports = { simpleMockedFileSystem, callCliMockedFileSystem, esModuleMockedFileSystem }

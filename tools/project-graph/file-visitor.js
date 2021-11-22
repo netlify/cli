@@ -66,21 +66,31 @@ const fileVisitor = function (fileName, state, parent) {
   }
 
   /**
+   * Visits a import or require statement location
+   * @param {string} moduleSpecifier
+   */
+  const visitDependency = (moduleSpecifier) => {
+    if (moduleSpecifier.startsWith('.')) {
+      const resolvedImportLocation = resolveLocation(moduleSpecifier)
+
+      if (resolvedImportLocation) {
+        fileVisitor(resolvedImportLocation, state, fileName)
+      }
+    }
+  }
+
+  /**
    * Visits a typescript node
    * @type {ts.Visitor}
    */
   const visitor = function (node) {
     // TODO: once we need import specifiers (esm or typescript add them here)
     if (ts.isCallExpression(node) && node.expression.getText() === 'require' && ts.isStringLiteral(node.arguments[0])) {
-      /** @type {string} */
-      const importLocation = node.arguments[0].text
-      if (importLocation.startsWith('.')) {
-        const resolvedImportLocation = resolveLocation(importLocation)
+      visitDependency(node.arguments[0].text)
+    }
 
-        if (resolvedImportLocation) {
-          fileVisitor(resolvedImportLocation, state, fileName)
-        }
-      }
+    if (ts.isImportDeclaration(node) && ts.isStringLiteral(node.moduleSpecifier)) {
+      visitDependency(node.moduleSpecifier.text)
     }
 
     // go to the plugins

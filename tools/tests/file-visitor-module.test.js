@@ -7,10 +7,10 @@ const mock = require('mock-fs')
 const { normalize } = require('../../tests/utils/snapshots')
 const { DependencyGraph, fileVisitor } = require('../project-graph')
 
-const { simpleMockedFileSystem } = require('./utils/file-systems')
+const { esModuleMockedFileSystem } = require('./utils/file-systems')
 
 test.before(() => {
-  mock(simpleMockedFileSystem)
+  mock(esModuleMockedFileSystem)
 })
 
 test.after(() => {

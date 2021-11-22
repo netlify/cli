@@ -25,4 +25,20 @@ module.exports = [
       return resolveRelativeModule(join(commands, node.arguments[1].elements[0].text))
     }
   },
+  (node) => {
+    // check if `await callCli(['api', 'listSites'], getCLIOptions(apiUrl))`
+    if (
+      ts.isCallExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      node.expression.text === 'callCli' &&
+      ts.isArrayLiteralExpression(node.arguments[0]) &&
+      ts.isStringLiteral(node.arguments[0].elements[0])
+    ) {
+      const [argument] = node.arguments[0].elements[0].text.split(':')
+
+      if (!argument.startsWith('-')) {
+        return resolveRelativeModule(join(commands, node.arguments[0].elements[0].text))
+      }
+    }
+  },
 ]
