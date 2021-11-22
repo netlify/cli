@@ -37,11 +37,10 @@ const createRewriter = async function ({ configPath, distDir, jwtRoleClaim, jwtS
 
   const watchedRedirectFiles = configPath === undefined ? redirectsFiles : [...redirectsFiles, configPath]
   onChanges(watchedRedirectFiles, async () => {
+    const existingRedirectsFiles = await pFilter(watchedRedirectFiles, fileExistsAsync)
     console.log(
       `${NETLIFYDEVLOG} Reloading redirect rules from`,
-      (await pFilter(watchedRedirectFiles, fileExistsAsync)).map((redirectFile) =>
-        path.relative(projectDir, redirectFile),
-      ),
+      existingRedirectsFiles.map((redirectFile) => path.relative(projectDir, redirectFile)),
     )
     redirects = await parseRedirects({ redirectsFiles, configPath })
     matcher = null

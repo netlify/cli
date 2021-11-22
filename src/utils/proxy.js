@@ -286,9 +286,10 @@ const initializeProxy = async function ({ configPath, distDir, port, projectDir 
 
   const watchedHeadersFiles = configPath === undefined ? headersFiles : [...headersFiles, configPath]
   onChanges(watchedHeadersFiles, async () => {
+    const existingHeadersFiles = await pFilter(watchedHeadersFiles, fileExistsAsync)
     console.log(
       `${NETLIFYDEVLOG} Reloading headers files from`,
-      (await pFilter(watchedHeadersFiles, fileExistsAsync)).map((headerFile) => path.relative(projectDir, headerFile)),
+      existingHeadersFiles.map((headerFile) => path.relative(projectDir, headerFile)),
     )
     headers = await parseHeaders({ headersFiles, configPath })
   })
