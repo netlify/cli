@@ -5,9 +5,15 @@ const config = require('./config')
 const { copyDirRecursiveAsync } = require('./fs')
 
 const readDir = async function (dir, allFiles = []) {
-  const files = (await fs.readdir(dir)).map((file) => path.join(dir, file))
+  const filenames = await fs.readdir(dir)
+  const files = filenames.map((file) => path.join(dir, file))
   allFiles.push(...files)
-  await Promise.all(files.map(async (file) => (await fs.stat(file)).isDirectory() && readDir(file, allFiles)))
+  await Promise.all(
+    files.map(async (file) => {
+      const fileStat = await fs.stat(file)
+      return fileStat.isDirectory() && readDir(file, allFiles)
+    }),
+  )
   return allFiles
 }
 
