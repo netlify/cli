@@ -50,7 +50,7 @@
         "dotenv": "^10.0.0",
         "env-paths": "^2.2.0",
         "envinfo": "^7.3.1",
-        "execa": "^5.0.0",
+        "execa": "^6.0.0",
         "express": "^4.17.1",
         "express-logging": "^1.1.1",
         "filter-obj": "^2.0.1",
@@ -2050,6 +2050,29 @@
         "node": ">=v12"
       }
     },
+    "node_modules/@commitlint/rules/node_modules/execa": {
+      "version": "5.1.1",
+      "resolved": "https://registry.npmjs.org/execa/-/execa-5.1.1.tgz",
+      "integrity": "sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==",
+      "dev": true,
+      "dependencies": {
+        "cross-spawn": "^7.0.3",
+        "get-stream": "^6.0.0",
+        "human-signals": "^2.1.0",
+        "is-stream": "^2.0.0",
+        "merge-stream": "^2.0.0",
+        "npm-run-path": "^4.0.1",
+        "onetime": "^5.1.2",
+        "signal-exit": "^3.0.3",
+        "strip-final-newline": "^2.0.0"
+      },
+      "engines": {
+        "node": ">=10"
+      },
+      "funding": {
+        "url": "https://github.com/sindresorhus/execa?sponsor=1"
+      }
+    },
     "node_modules/@commitlint/to-lines": {
       "version": "14.0.0",
       "resolved": "https://registry.npmjs.org/@commitlint/to-lines/-/to-lines-14.0.0.tgz",
@@ -2582,6 +2605,39 @@
         "node": ">=0.3.1"
       }
     },
+    "node_modules/@netlify/build/node_modules/execa": {
+      "version": "5.1.1",
+      "resolved": "https://registry.npmjs.org/execa/-/execa-5.1.1.tgz",
+      "integrity": "sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==",
+      "dependencies": {
+        "cross-spawn": "^7.0.3",
+        "get-stream": "^6.0.0",
+        "human-signals": "^2.1.0",
+        "is-stream": "^2.0.0",
+        "merge-stream": "^2.0.0",
+        "npm-run-path": "^4.0.1",
+        "onetime": "^5.1.2",
+        "signal-exit": "^3.0.3",
+        "strip-final-newline": "^2.0.0"
+      },
+      "engines": {
+        "node": ">=10"
+      },
+      "funding": {
+        "url": "https://github.com/sindresorhus/execa?sponsor=1"
+      }
+    },
+    "node_modules/@netlify/build/node_modules/execa/node_modules/get-stream": {
+      "version": "6.0.1",
+      "resolved": "https://registry.npmjs.org/get-stream/-/get-stream-6.0.1.tgz",
+      "integrity": "sha512-ts6Wi+2j3jQjqi70w5AlN8DFnkSwC+MqmxEzdEALB2qXZYV3X/b1CTfgPLGJNMeAWxdPfU8FO1ms3NUfaHCPYg==",
+      "engines": {
+        "node": ">=10"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/sindresorhus"
+      }
+    },
     "node_modules/@netlify/build/node_modules/find-up": {
       "version": "4.1.0",
       "resolved": "https://registry.npmjs.org/find-up/-/find-up-4.1.0.tgz",
@@ -2972,6 +3028,28 @@
         "node": ">=8"
       }
     },
+    "node_modules/@netlify/config/node_modules/execa": {
+      "version": "5.1.1",
+      "resolved": "https://registry.npmjs.org/execa/-/execa-5.1.1.tgz",
+      "integrity": "sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==",
+      "dependencies": {
+        "cross-spawn": "^7.0.3",
+        "get-stream": "^6.0.0",
+        "human-signals": "^2.1.0",
+        "is-stream": "^2.0.0",
+        "merge-stream": "^2.0.0",
+        "npm-run-path": "^4.0.1",
+        "onetime": "^5.1.2",
+        "signal-exit": "^3.0.3",
+        "strip-final-newline": "^2.0.0"
+      },
+      "engines": {
+        "node": ">=10"
+      },
+      "funding": {
+        "url": "https://github.com/sindresorhus/execa?sponsor=1"
+      }
+    },
     "node_modules/@netlify/config/node_modules/get-caller-file": {
       "version": "2.0.5",
       "resolved": "https://registry.npmjs.org/get-caller-file/-/get-caller-file-2.0.5.tgz",
@@ -3133,6 +3211,29 @@
         "node": ">=16.0.0"
       }
     },
+    "node_modules/@netlify/eslint-config-node/node_modules/execa": {
+      "version": "5.1.1",
+      "resolved": "https://registry.npmjs.org/execa/-/execa-5.1.1.tgz",
+      "integrity": "sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==",
+      "dev": true,
+      "dependencies": {
+        "cross-spawn": "^7.0.3",
+        "get-stream": "^6.0.0",
+        "human-signals": "^2.1.0",
+        "is-stream": "^2.0.0",
+        "merge-stream": "^2.0.0",
+        "npm-run-path": "^4.0.1",
+        "onetime": "^5.1.2",
+        "signal-exit": "^3.0.3",
+        "strip-final-newline": "^2.0.0"
+      },
+      "engines": {
+        "node": ">=10"
+      },
+      "funding": {
+        "url": "https://github.com/sindresorhus/execa?sponsor=1"
+      }
+    },
     "node_modules/@netlify/framework-info": {
       "version": "5.11.0",
       "resolved": "https://registry.npmjs.org/@netlify/framework-info/-/framework-info-5.11.0.tgz",
@@ -3177,6 +3278,28 @@
       },
       "engines": {
         "node": ">=10.18.0"
+      }
+    },
+    "node_modules/@netlify/git-utils/node_modules/execa": {
+      "version": "5.1.1",
+      "resolved": "https://registry.npmjs.org/execa/-/execa-5.1.1.tgz",
+      "integrity": "sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==",
+      "dependencies": {
+        "cross-spawn": "^7.0.3",
+        "get-stream": "^6.0.0",
+        "human-signals": "^2.1.0",
+        "is-stream": "^2.0.0",
+        "merge-stream": "^2.0.0",
+        "npm-run-path": "^4.0.1",
+        "onetime": "^5.1.2",
+        "signal-exit": "^3.0.3",
+        "strip-final-newline": "^2.0.0"
+      },
+      "engines": {
+        "node": ">=10"
+      },
+      "funding": {
+        "url": "https://github.com/sindresorhus/execa?sponsor=1"
       }
     },
     "node_modules/@netlify/local-functions-proxy": {
@@ -3497,6 +3620,28 @@
         "node": ">=10.18.0"
       }
     },
+    "node_modules/@netlify/run-utils/node_modules/execa": {
+      "version": "5.1.1",
+      "resolved": "https://registry.npmjs.org/execa/-/execa-5.1.1.tgz",
+      "integrity": "sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==",
+      "dependencies": {
+        "cross-spawn": "^7.0.3",
+        "get-stream": "^6.0.0",
+        "human-signals": "^2.1.0",
+        "is-stream": "^2.0.0",
+        "merge-stream": "^2.0.0",
+        "npm-run-path": "^4.0.1",
+        "onetime": "^5.1.2",
+        "signal-exit": "^3.0.3",
+        "strip-final-newline": "^2.0.0"
+      },
+      "engines": {
+        "node": ">=10"
+      },
+      "funding": {
+        "url": "https://github.com/sindresorhus/execa?sponsor=1"
+      }
+    },
     "node_modules/@netlify/zip-it-and-ship-it": {
       "version": "4.30.0",
       "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-4.30.0.tgz",
@@ -3542,6 +3687,28 @@
       },
       "engines": {
         "node": ">=10.18.0"
+      }
+    },
+    "node_modules/@netlify/zip-it-and-ship-it/node_modules/execa": {
+      "version": "5.1.1",
+      "resolved": "https://registry.npmjs.org/execa/-/execa-5.1.1.tgz",
+      "integrity": "sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==",
+      "dependencies": {
+        "cross-spawn": "^7.0.3",
+        "get-stream": "^6.0.0",
+        "human-signals": "^2.1.0",
+        "is-stream": "^2.0.0",
+        "merge-stream": "^2.0.0",
+        "npm-run-path": "^4.0.1",
+        "onetime": "^5.1.2",
+        "signal-exit": "^3.0.3",
+        "strip-final-newline": "^2.0.0"
+      },
+      "engines": {
+        "node": ">=10"
+      },
+      "funding": {
+        "url": "https://github.com/sindresorhus/execa?sponsor=1"
       }
     },
     "node_modules/@netlify/zip-it-and-ship-it/node_modules/get-caller-file": {
@@ -10216,25 +10383,105 @@
       "integrity": "sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw=="
     },
     "node_modules/execa": {
-      "version": "5.1.1",
-      "resolved": "https://registry.npmjs.org/execa/-/execa-5.1.1.tgz",
-      "integrity": "sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==",
+      "version": "6.0.0",
+      "resolved": "https://registry.npmjs.org/execa/-/execa-6.0.0.tgz",
+      "integrity": "sha512-m4wU9j4Z9nXXoqT8RSfl28JSwmMNLFF69OON8H/lL3NeU0tNpGz313bcOfYoBBHokB0dC2tMl3VUcKgHELhL2Q==",
       "dependencies": {
         "cross-spawn": "^7.0.3",
-        "get-stream": "^6.0.0",
-        "human-signals": "^2.1.0",
-        "is-stream": "^2.0.0",
+        "get-stream": "^6.0.1",
+        "human-signals": "^3.0.1",
+        "is-stream": "^3.0.0",
         "merge-stream": "^2.0.0",
-        "npm-run-path": "^4.0.1",
-        "onetime": "^5.1.2",
-        "signal-exit": "^3.0.3",
-        "strip-final-newline": "^2.0.0"
+        "npm-run-path": "^5.0.1",
+        "onetime": "^6.0.0",
+        "signal-exit": "^3.0.5",
+        "strip-final-newline": "^3.0.0"
       },
       "engines": {
-        "node": ">=10"
+        "node": "^12.20.0 || ^14.13.1 || >=16.0.0"
       },
       "funding": {
         "url": "https://github.com/sindresorhus/execa?sponsor=1"
+      }
+    },
+    "node_modules/execa/node_modules/human-signals": {
+      "version": "3.0.1",
+      "resolved": "https://registry.npmjs.org/human-signals/-/human-signals-3.0.1.tgz",
+      "integrity": "sha512-rQLskxnM/5OCldHo+wNXbpVgDn5A17CUoKX+7Sokwaknlq7CdSnphy0W39GU8dw59XiCXmFXDg4fRuckQRKewQ==",
+      "engines": {
+        "node": ">=12.20.0"
+      }
+    },
+    "node_modules/execa/node_modules/is-stream": {
+      "version": "3.0.0",
+      "resolved": "https://registry.npmjs.org/is-stream/-/is-stream-3.0.0.tgz",
+      "integrity": "sha512-LnQR4bZ9IADDRSkvpqMGvt/tEJWclzklNgSw48V5EAaAeDd6qGvN8ei6k5p0tvxSR171VmGyHuTiAOfxAbr8kA==",
+      "engines": {
+        "node": "^12.20.0 || ^14.13.1 || >=16.0.0"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/sindresorhus"
+      }
+    },
+    "node_modules/execa/node_modules/mimic-fn": {
+      "version": "4.0.0",
+      "resolved": "https://registry.npmjs.org/mimic-fn/-/mimic-fn-4.0.0.tgz",
+      "integrity": "sha512-vqiC06CuhBTUdZH+RYl8sFrL096vA45Ok5ISO6sE/Mr1jRbGH4Csnhi8f3wKVl7x8mO4Au7Ir9D3Oyv1VYMFJw==",
+      "engines": {
+        "node": ">=12"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/sindresorhus"
+      }
+    },
+    "node_modules/execa/node_modules/npm-run-path": {
+      "version": "5.0.1",
+      "resolved": "https://registry.npmjs.org/npm-run-path/-/npm-run-path-5.0.1.tgz",
+      "integrity": "sha512-ybBJQUSyFwEEhqO2lXmyKOl9ucHtyZBWVM0h0FiMfT/+WKxCUZFa95qAR2X3w/w6oigN3B0b2UNHZbD+kdfD5w==",
+      "dependencies": {
+        "path-key": "^4.0.0"
+      },
+      "engines": {
+        "node": "^12.20.0 || ^14.13.1 || >=16.0.0"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/sindresorhus"
+      }
+    },
+    "node_modules/execa/node_modules/onetime": {
+      "version": "6.0.0",
+      "resolved": "https://registry.npmjs.org/onetime/-/onetime-6.0.0.tgz",
+      "integrity": "sha512-1FlR+gjXK7X+AsAHso35MnyN5KqGwJRi/31ft6x0M194ht7S+rWAvd7PHss9xSKMzE0asv1pyIHaJYq+BbacAQ==",
+      "dependencies": {
+        "mimic-fn": "^4.0.0"
+      },
+      "engines": {
+        "node": ">=12"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/sindresorhus"
+      }
+    },
+    "node_modules/execa/node_modules/path-key": {
+      "version": "4.0.0",
+      "resolved": "https://registry.npmjs.org/path-key/-/path-key-4.0.0.tgz",
+      "integrity": "sha512-haREypq7xkM7ErfgIyA0z+Bj4AGKlMSdlQE2jvJo6huWD1EdkKYV+G/T4nq0YEF2vgTT8kqMFKo1uHn950r4SQ==",
+      "engines": {
+        "node": ">=12"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/sindresorhus"
+      }
+    },
+    "node_modules/execa/node_modules/strip-final-newline": {
+      "version": "3.0.0",
+      "resolved": "https://registry.npmjs.org/strip-final-newline/-/strip-final-newline-3.0.0.tgz",
+      "integrity": "sha512-dOESqjYr96iWYylGObzd39EuNTa5VJxyvVAEm5Jnh7KGo75V43Hk1odPQkNDyXNmUR6k+gEiDVXnjB8HJ3crXw==",
+      "engines": {
+        "node": ">=12"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/sindresorhus"
       }
     },
     "node_modules/exit-on-epipe": {
@@ -23445,6 +23692,25 @@
         "@commitlint/to-lines": "^14.0.0",
         "@commitlint/types": "^14.0.0",
         "execa": "^5.0.0"
+      },
+      "dependencies": {
+        "execa": {
+          "version": "5.1.1",
+          "resolved": "https://registry.npmjs.org/execa/-/execa-5.1.1.tgz",
+          "integrity": "sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==",
+          "dev": true,
+          "requires": {
+            "cross-spawn": "^7.0.3",
+            "get-stream": "^6.0.0",
+            "human-signals": "^2.1.0",
+            "is-stream": "^2.0.0",
+            "merge-stream": "^2.0.0",
+            "npm-run-path": "^4.0.1",
+            "onetime": "^5.1.2",
+            "signal-exit": "^3.0.3",
+            "strip-final-newline": "^2.0.0"
+          }
+        }
       }
     },
     "@commitlint/to-lines": {
@@ -23861,6 +24127,29 @@
           "resolved": "https://registry.npmjs.org/diff/-/diff-4.0.2.tgz",
           "integrity": "sha512-58lmxKSA4BNyLz+HHMUzlOEpg09FV+ev6ZMe3vJihgdxzgcwZ8VoEEPmALCZG9LmqfVoNMMKpttIYTVG6uDY7A=="
         },
+        "execa": {
+          "version": "5.1.1",
+          "resolved": "https://registry.npmjs.org/execa/-/execa-5.1.1.tgz",
+          "integrity": "sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==",
+          "requires": {
+            "cross-spawn": "^7.0.3",
+            "get-stream": "^6.0.0",
+            "human-signals": "^2.1.0",
+            "is-stream": "^2.0.0",
+            "merge-stream": "^2.0.0",
+            "npm-run-path": "^4.0.1",
+            "onetime": "^5.1.2",
+            "signal-exit": "^3.0.3",
+            "strip-final-newline": "^2.0.0"
+          },
+          "dependencies": {
+            "get-stream": {
+              "version": "6.0.1",
+              "resolved": "https://registry.npmjs.org/get-stream/-/get-stream-6.0.1.tgz",
+              "integrity": "sha512-ts6Wi+2j3jQjqi70w5AlN8DFnkSwC+MqmxEzdEALB2qXZYV3X/b1CTfgPLGJNMeAWxdPfU8FO1ms3NUfaHCPYg=="
+            }
+          }
+        },
         "find-up": {
           "version": "4.1.0",
           "resolved": "https://registry.npmjs.org/find-up/-/find-up-4.1.0.tgz",
@@ -24151,6 +24440,22 @@
             "is-obj": "^2.0.0"
           }
         },
+        "execa": {
+          "version": "5.1.1",
+          "resolved": "https://registry.npmjs.org/execa/-/execa-5.1.1.tgz",
+          "integrity": "sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==",
+          "requires": {
+            "cross-spawn": "^7.0.3",
+            "get-stream": "^6.0.0",
+            "human-signals": "^2.1.0",
+            "is-stream": "^2.0.0",
+            "merge-stream": "^2.0.0",
+            "npm-run-path": "^4.0.1",
+            "onetime": "^5.1.2",
+            "signal-exit": "^3.0.3",
+            "strip-final-newline": "^2.0.0"
+          }
+        },
         "get-caller-file": {
           "version": "2.0.5",
           "resolved": "https://registry.npmjs.org/get-caller-file/-/get-caller-file-2.0.5.tgz",
@@ -24277,6 +24582,25 @@
         "npm-run-all": "^4.1.5",
         "prettier": "^2.1.2",
         "statuses": "^2.0.1"
+      },
+      "dependencies": {
+        "execa": {
+          "version": "5.1.1",
+          "resolved": "https://registry.npmjs.org/execa/-/execa-5.1.1.tgz",
+          "integrity": "sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==",
+          "dev": true,
+          "requires": {
+            "cross-spawn": "^7.0.3",
+            "get-stream": "^6.0.0",
+            "human-signals": "^2.1.0",
+            "is-stream": "^2.0.0",
+            "merge-stream": "^2.0.0",
+            "npm-run-path": "^4.0.1",
+            "onetime": "^5.1.2",
+            "signal-exit": "^3.0.3",
+            "strip-final-newline": "^2.0.0"
+          }
+        }
       }
     },
     "@netlify/framework-info": {
@@ -24314,6 +24638,24 @@
         "micromatch": "^4.0.2",
         "moize": "^6.0.0",
         "path-exists": "^4.0.0"
+      },
+      "dependencies": {
+        "execa": {
+          "version": "5.1.1",
+          "resolved": "https://registry.npmjs.org/execa/-/execa-5.1.1.tgz",
+          "integrity": "sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==",
+          "requires": {
+            "cross-spawn": "^7.0.3",
+            "get-stream": "^6.0.0",
+            "human-signals": "^2.1.0",
+            "is-stream": "^2.0.0",
+            "merge-stream": "^2.0.0",
+            "npm-run-path": "^4.0.1",
+            "onetime": "^5.1.2",
+            "signal-exit": "^3.0.3",
+            "strip-final-newline": "^2.0.0"
+          }
+        }
       }
     },
     "@netlify/local-functions-proxy": {
@@ -24490,6 +24832,24 @@
       "integrity": "sha512-F1YcF2kje0Ttj+t5Cn5d6ojGQcKj4i/GMWgQuoZGVjQ31ToNcDXIbBm5SBKIkMMpNejtR1wF+1a0Q+aBPWiZVQ==",
       "requires": {
         "execa": "^5.1.1"
+      },
+      "dependencies": {
+        "execa": {
+          "version": "5.1.1",
+          "resolved": "https://registry.npmjs.org/execa/-/execa-5.1.1.tgz",
+          "integrity": "sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==",
+          "requires": {
+            "cross-spawn": "^7.0.3",
+            "get-stream": "^6.0.0",
+            "human-signals": "^2.1.0",
+            "is-stream": "^2.0.0",
+            "merge-stream": "^2.0.0",
+            "npm-run-path": "^4.0.1",
+            "onetime": "^5.1.2",
+            "signal-exit": "^3.0.3",
+            "strip-final-newline": "^2.0.0"
+          }
+        }
       }
     },
     "@netlify/zip-it-and-ship-it": {
@@ -24533,6 +24893,22 @@
         "yargs": "^16.0.0"
       },
       "dependencies": {
+        "execa": {
+          "version": "5.1.1",
+          "resolved": "https://registry.npmjs.org/execa/-/execa-5.1.1.tgz",
+          "integrity": "sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==",
+          "requires": {
+            "cross-spawn": "^7.0.3",
+            "get-stream": "^6.0.0",
+            "human-signals": "^2.1.0",
+            "is-stream": "^2.0.0",
+            "merge-stream": "^2.0.0",
+            "npm-run-path": "^4.0.1",
+            "onetime": "^5.1.2",
+            "signal-exit": "^3.0.3",
+            "strip-final-newline": "^2.0.0"
+          }
+        },
         "get-caller-file": {
           "version": "2.0.5",
           "resolved": "https://registry.npmjs.org/get-caller-file/-/get-caller-file-2.0.5.tgz",
@@ -29659,19 +30035,62 @@
       "integrity": "sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw=="
     },
     "execa": {
-      "version": "5.1.1",
-      "resolved": "https://registry.npmjs.org/execa/-/execa-5.1.1.tgz",
-      "integrity": "sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==",
+      "version": "6.0.0",
+      "resolved": "https://registry.npmjs.org/execa/-/execa-6.0.0.tgz",
+      "integrity": "sha512-m4wU9j4Z9nXXoqT8RSfl28JSwmMNLFF69OON8H/lL3NeU0tNpGz313bcOfYoBBHokB0dC2tMl3VUcKgHELhL2Q==",
       "requires": {
         "cross-spawn": "^7.0.3",
-        "get-stream": "^6.0.0",
-        "human-signals": "^2.1.0",
-        "is-stream": "^2.0.0",
+        "get-stream": "^6.0.1",
+        "human-signals": "^3.0.1",
+        "is-stream": "^3.0.0",
         "merge-stream": "^2.0.0",
-        "npm-run-path": "^4.0.1",
-        "onetime": "^5.1.2",
-        "signal-exit": "^3.0.3",
-        "strip-final-newline": "^2.0.0"
+        "npm-run-path": "^5.0.1",
+        "onetime": "^6.0.0",
+        "signal-exit": "^3.0.5",
+        "strip-final-newline": "^3.0.0"
+      },
+      "dependencies": {
+        "human-signals": {
+          "version": "3.0.1",
+          "resolved": "https://registry.npmjs.org/human-signals/-/human-signals-3.0.1.tgz",
+          "integrity": "sha512-rQLskxnM/5OCldHo+wNXbpVgDn5A17CUoKX+7Sokwaknlq7CdSnphy0W39GU8dw59XiCXmFXDg4fRuckQRKewQ=="
+        },
+        "is-stream": {
+          "version": "3.0.0",
+          "resolved": "https://registry.npmjs.org/is-stream/-/is-stream-3.0.0.tgz",
+          "integrity": "sha512-LnQR4bZ9IADDRSkvpqMGvt/tEJWclzklNgSw48V5EAaAeDd6qGvN8ei6k5p0tvxSR171VmGyHuTiAOfxAbr8kA=="
+        },
+        "mimic-fn": {
+          "version": "4.0.0",
+          "resolved": "https://registry.npmjs.org/mimic-fn/-/mimic-fn-4.0.0.tgz",
+          "integrity": "sha512-vqiC06CuhBTUdZH+RYl8sFrL096vA45Ok5ISO6sE/Mr1jRbGH4Csnhi8f3wKVl7x8mO4Au7Ir9D3Oyv1VYMFJw=="
+        },
+        "npm-run-path": {
+          "version": "5.0.1",
+          "resolved": "https://registry.npmjs.org/npm-run-path/-/npm-run-path-5.0.1.tgz",
+          "integrity": "sha512-ybBJQUSyFwEEhqO2lXmyKOl9ucHtyZBWVM0h0FiMfT/+WKxCUZFa95qAR2X3w/w6oigN3B0b2UNHZbD+kdfD5w==",
+          "requires": {
+            "path-key": "^4.0.0"
+          }
+        },
+        "onetime": {
+          "version": "6.0.0",
+          "resolved": "https://registry.npmjs.org/onetime/-/onetime-6.0.0.tgz",
+          "integrity": "sha512-1FlR+gjXK7X+AsAHso35MnyN5KqGwJRi/31ft6x0M194ht7S+rWAvd7PHss9xSKMzE0asv1pyIHaJYq+BbacAQ==",
+          "requires": {
+            "mimic-fn": "^4.0.0"
+          }
+        },
+        "path-key": {
+          "version": "4.0.0",
+          "resolved": "https://registry.npmjs.org/path-key/-/path-key-4.0.0.tgz",
+          "integrity": "sha512-haREypq7xkM7ErfgIyA0z+Bj4AGKlMSdlQE2jvJo6huWD1EdkKYV+G/T4nq0YEF2vgTT8kqMFKo1uHn950r4SQ=="
+        },
+        "strip-final-newline": {
+          "version": "3.0.0",
+          "resolved": "https://registry.npmjs.org/strip-final-newline/-/strip-final-newline-3.0.0.tgz",
+          "integrity": "sha512-dOESqjYr96iWYylGObzd39EuNTa5VJxyvVAEm5Jnh7KGo75V43Hk1odPQkNDyXNmUR6k+gEiDVXnjB8HJ3crXw=="
+        }
       }
     },
     "exit-on-epipe": {
