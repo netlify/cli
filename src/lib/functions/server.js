@@ -6,7 +6,7 @@ const { NETLIFYDEVERR, NETLIFYDEVLOG, error: errorExit, getInternalFunctionsDir,
 const { handleBackgroundFunction, handleBackgroundFunctionResult } = require('./background')
 const { createFormSubmissionHandler } = require('./form-submissions-handler')
 const { FunctionsRegistry } = require('./registry')
-const { handleScheduledFunction, handleScheduledFunctionResult } = require('./schedule')
+const { handleScheduledFunction, handleScheduledFunctionResult } = require('./scheduled')
 const { handleSynchronousFunction } = require('./synchronous')
 const { shouldBase64Encode } = require('./utils')
 
