@@ -46,8 +46,9 @@ const getBuildFunction = async ({ config, directory, errorExit, func, projectRoo
   // main file otherwise.
   const functionDirectory = dirname(func.mainFile)
   const srcFiles = functionDirectory === directory ? [func.mainFile] : [functionDirectory]
+  const schedule = config[func.name]?.schedule
 
-  return () => ({ srcFiles })
+  return () => ({ schedule, srcFiles })
 }
 
 const invokeFunction = async ({ context, event, func, timeout }) => {

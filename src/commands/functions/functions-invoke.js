@@ -150,7 +150,9 @@ const functionsInvoke = async (nameArgument, options, command) => {
   const functions = await getFunctions(functionsDir)
   const functionToTrigger = await getNameFromArgs(functions, options, nameArgument)
 
-  let headers = {}
+  const headers = {
+    'user-agent': 'netlify-cli',
+  }
   let body = {}
 
   if (eventTriggeredFunctions.has(functionToTrigger)) {
@@ -201,10 +203,8 @@ const functionsInvoke = async (nameArgument, options, command) => {
       isAuthenticated = options.identity
     }
     if (isAuthenticated) {
-      headers = {
-        authorization:
-          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzb3VyY2UiOiJuZXRsaWZ5IGZ1bmN0aW9uczp0cmlnZ2VyIiwidGVzdERhdGEiOiJORVRMSUZZX0RFVl9MT0NBTExZX0VNVUxBVEVEX0pXVCJ9.Xb6vOFrfLUZmyUkXBbCvU4bM7q8tPilF0F03Wupap_c',
-      }
+      headers.authorization =
+        'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzb3VyY2UiOiJuZXRsaWZ5IGZ1bmN0aW9uczp0cmlnZ2VyIiwidGVzdERhdGEiOiJORVRMSUZZX0RFVl9MT0NBTExZX0VNVUxBVEVEX0pXVCJ9.Xb6vOFrfLUZmyUkXBbCvU4bM7q8tPilF0F03Wupap_c'
       // you can decode this https://jwt.io/
       // {
       //   "source": "netlify functions:trigger",

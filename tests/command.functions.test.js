@@ -560,6 +560,39 @@ test('should trigger background function from event', async (t) => {
     })
   })
 })
+;['esbuild', undefined].forEach((nodeBundler) => {
+  test(`should only allow scheduled functions to be called via invoke (${nodeBundler})`, async (t) => {
+    await withSiteBuilder('site-with-ping-function', async (builder) => {
+      await builder
+        .withNetlifyToml({
+          config: {
+            functions: { directory: 'functions', node_bundler: nodeBundler, 'hello-world': { schedule: '* * * * *' } },
+          },
+        })
+        .withFunction({
+          path: 'hello-world.js',
+          handler: async () => {
+            console.log('hello world')
+          },
+        })
+        .buildAsync()
+
+      await withDevServer({ cwd: builder.directory }, async (server) => {
+        const response = await got(`http://localhost:${server.port}/.netlify/functions/hello-world`, {
+          throwHttpErrors: false,
+          retry: null,
+        })
+        t.is(response.statusCode, 500)
+
+        const stdout = await callCli(['functions:invoke', 'hello-world', '--identity', `--port=${server.port}`], {
+          cwd: builder.directory,
+          stdio: 'inherit',
+        })
+        t.is(stdout, undefined)
+      })
+    })
+  })
+})
 
 test('should inject env variables', async (t) => {
   await withSiteBuilder('site-with-env-function', async (builder) => {

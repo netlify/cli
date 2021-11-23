@@ -6,6 +6,7 @@ const { NETLIFYDEVERR, NETLIFYDEVLOG, error: errorExit, getInternalFunctionsDir,
 const { handleBackgroundFunction, handleBackgroundFunctionResult } = require('./background')
 const { createFormSubmissionHandler } = require('./form-submissions-handler')
 const { FunctionsRegistry } = require('./registry')
+const { handleScheduledFunction, handleScheduledFunctionResult } = require('./schedule')
 const { handleSynchronousFunction } = require('./synchronous')
 const { shouldBase64Encode } = require('./utils')
 
@@ -105,6 +106,16 @@ const createHandler = function ({ functionsRegistry }) {
       const { error } = await func.invoke(event, clientContext)
 
       handleBackgroundFunctionResult(functionName, error)
+    } else if (await func.isScheduled()) {
+      if (event.headers['user-agent'] !== 'netlify-cli') {
+        return response.status(500).send('Scheduled functions can only be invoked using `netlify functions:invoke`.')
+      }
+
+      handleScheduledFunction(functionName, response)
+
+      const { error } = await func.invoke(event, clientContext)
+
+      handleScheduledFunctionResult(functionName, error)
     } else {
       const { error, result } = await func.invoke(event, clientContext)
 

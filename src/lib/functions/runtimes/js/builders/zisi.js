@@ -36,7 +36,11 @@ const buildFunction = async ({ cache, config, directory, func, hasTypeModule, pr
   // root of the functions directory (e.g. `functions/my-func.js`). In
   // this case, we use `mainFile` as the function path of `zipFunction`.
   const entryPath = functionDirectory === directory ? func.mainFile : functionDirectory
-  const { inputs, path: functionPath } = await memoizedBuild({
+  const {
+    inputs,
+    path: functionPath,
+    schedule,
+  } = await memoizedBuild({
     cache,
     cacheKey: `zisi-${entryPath}`,
     command: () => zipFunction(entryPath, targetDirectory, zipOptions),
@@ -57,7 +61,7 @@ const buildFunction = async ({ cache, config, directory, func, hasTypeModule, pr
 
   clearFunctionsCache(targetDirectory)
 
-  return { buildPath, srcFiles }
+  return { buildPath, srcFiles, schedule }
 }
 
 // Clears the cache for any files inside the directory from which functions are
