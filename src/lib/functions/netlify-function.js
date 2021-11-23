@@ -87,7 +87,7 @@ class NetlifyFunction {
   async invoke(event, context) {
     await this.buildQueue
 
-    const timeout = this.isBackground || (await this.isScheduled()) ? this.timeoutBackground : this.timeoutSynchronous
+    const timeout = this.isBackground ? this.timeoutBackground : this.timeoutSynchronous
 
     try {
       const result = await this.runtime.invokeFunction({
