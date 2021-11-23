@@ -560,13 +560,17 @@ test('should trigger background function from event', async (t) => {
     })
   })
 })
-;['esbuild', undefined].forEach((nodeBundler) => {
-  test(`should only allow scheduled functions to be called via invoke (${nodeBundler})`, async (t) => {
+
+const testMatrix = [{ node_bundler: undefined }, { node_bundler: 'esbuild' }]
+testMatrix.forEach((args) => {
+  const testName = (title) => `${title} - ${JSON.stringify(args)}`
+
+  test(testName('should only allow scheduled functions to be called via invoke'), async (t) => {
     await withSiteBuilder('site-with-ping-function', async (builder) => {
       await builder
         .withNetlifyToml({
           config: {
-            functions: { directory: 'functions', node_bundler: nodeBundler, 'hello-world': { schedule: '* * * * *' } },
+            functions: { ...args, directory: 'functions', 'hello-world': { schedule: '* * * * *' } },
           },
         })
         .withFunction({
