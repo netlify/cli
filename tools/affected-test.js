@@ -65,7 +65,15 @@ const main = async (args) => {
     testRun.cancel()
   })
 
-  await testRun
+  try {
+    await testRun
+  } catch(error) {
+    if (error instanceof Error) {
+      console.log(error.message);
+      process.exit(1);
+    }
+    throw error;
+  }
 }
 
 // Can be invoked with two different arguments:
