@@ -5,7 +5,7 @@ const inquirer = require('inquirer')
 const isEmpty = require('lodash/isEmpty')
 
 const Command = require('../utils/command')
-const { log, exit } = require('../utils/command-helpers')
+const { exit, log } = require('../utils/command-helpers')
 const { getRepoData } = require('../utils/get-repo-data')
 const ensureNetlifyIgnore = require('../utils/gitignore')
 const { configureRepo } = require('../utils/init/config')
@@ -14,7 +14,7 @@ const { track } = require('../utils/telemetry')
 const LinkCommand = require('./link')
 const SitesCreateCommand = require('./sites/create')
 
-const persistState = ({ state, siteInfo }) => {
+const persistState = ({ siteInfo, state }) => {
   // Save to .netlify/state.json file
   state.set('siteId', siteInfo.id)
 }
@@ -147,7 +147,7 @@ const createOrLinkSiteToRepo = async () => {
   }
 }
 
-const logExistingRepoSetupAndExit = ({ siteName, repoUrl }) => {
+const logExistingRepoSetupAndExit = ({ repoUrl, siteName }) => {
   log()
   log(chalk.underline.bold(`Success`))
   log(`This site "${siteName}" is configured to automatically deploy via ${repoUrl}`)

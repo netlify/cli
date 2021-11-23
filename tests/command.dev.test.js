@@ -33,7 +33,7 @@ const testMatrix = [
 const testName = (title, args) => (args.length <= 0 ? title : `${title} - ${args.join(' ')}`)
 
 const JWT_EXPIRY = 1893456000
-const getToken = ({ roles, jwtSecret = 'secret', jwtRolePath = 'app_metadata.authorization.roles' }) => {
+const getToken = ({ jwtRolePath = 'app_metadata.authorization.roles', jwtSecret = 'secret', roles }) => {
   const payload = {
     exp: JWT_EXPIRY,
     sub: '12345678',
@@ -59,7 +59,7 @@ const setupRoleBasedRedirectsSite = (builder) => {
   return builder
 }
 
-const validateRoleBasedRedirectsSite = async ({ builder, args, t, jwtSecret, jwtRolePath }) => {
+const validateRoleBasedRedirectsSite = async ({ args, builder, jwtRolePath, jwtSecret, t }) => {
   const adminToken = getToken({ jwtSecret, jwtRolePath, roles: ['admin'] })
   const editorToken = getToken({ jwtSecret, jwtRolePath, roles: ['editor'] })
 
@@ -158,6 +158,7 @@ testMatrix.forEach(({ args }) => {
           return {
             statusCode: 200,
             body: 'ping',
+            metadata: { builder_function: true },
           }
         },
       })
@@ -167,6 +168,36 @@ testMatrix.forEach(({ args }) => {
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/.netlify/functions/timeout`).text()
         t.is(response, 'ping')
+        const builderResponse = await got(`${server.url}/.netlify/builders/timeout`).text()
+        t.is(builderResponse, 'ping')
+      })
+    })
+  })
+
+  test(testName('should fail when no metadata is set for builder function', args), async (t) => {
+    await withSiteBuilder('site-with-misconfigured-builder-function', async (builder) => {
+      builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
+        path: 'builder.js',
+        handler: async () => ({
+          statusCode: 200,
+          body: 'ping',
+        }),
+      })
+
+      await builder.buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async (server) => {
+        const response = await got(`${server.url}/.netlify/functions/builder`)
+        t.is(response.body, 'ping')
+        t.is(response.statusCode, 200)
+        const builderResponse = await got(`${server.url}/.netlify/builders/builder`, {
+          throwHttpErrors: false,
+        })
+        t.is(
+          builderResponse.body,
+          `{"message":"Function is not an on-demand builder. See https://ntl.fyi/create-builder for how to convert a function to a builder."}`,
+        )
+        t.is(builderResponse.statusCode, 400)
       })
     })
   })
@@ -178,6 +209,7 @@ testMatrix.forEach(({ args }) => {
         handler: async () => ({
           statusCode: 200,
           body: 'ping',
+          metadata: { builder_function: true },
         }),
       })
 
@@ -186,6 +218,8 @@ testMatrix.forEach(({ args }) => {
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/.netlify/functions/echo`).text()
         t.is(response, 'ping')
+        const builderResponse = await got(`${server.url}/.netlify/builders/echo`).text()
+        t.is(builderResponse, 'ping')
       })
     })
   })
@@ -200,6 +234,7 @@ testMatrix.forEach(({ args }) => {
           handler: async () => ({
             statusCode: 200,
             body: `${process.env.TEST}`,
+            metadata: { builder_function: true },
           }),
         })
 
@@ -208,6 +243,8 @@ testMatrix.forEach(({ args }) => {
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/.netlify/functions/env`).text()
         t.is(response, 'FROM_DEV_FILE')
+        const builderResponse = await got(`${server.url}/.netlify/builders/env`).text()
+        t.is(builderResponse, 'FROM_DEV_FILE')
       })
     })
   })
@@ -219,6 +256,7 @@ testMatrix.forEach(({ args }) => {
         handler: async () => ({
           statusCode: 200,
           body: `${process.env.TEST}`,
+          metadata: { builder_function: true },
         }),
       })
 
@@ -227,6 +265,8 @@ testMatrix.forEach(({ args }) => {
       await withDevServer({ cwd: builder.directory, env: { TEST: 'FROM_PROCESS_ENV' }, args }, async (server) => {
         const response = await got(`${server.url}/.netlify/functions/env`).text()
         t.is(response, 'FROM_PROCESS_ENV')
+        const builderResponse = await got(`${server.url}/.netlify/builders/env`).text()
+        t.is(builderResponse, 'FROM_PROCESS_ENV')
       })
     })
   })
@@ -242,6 +282,7 @@ testMatrix.forEach(({ args }) => {
           handler: async () => ({
             statusCode: 200,
             body: `${process.env.TEST}`,
+            metadata: { builder_function: true },
           }),
         })
 
@@ -250,6 +291,8 @@ testMatrix.forEach(({ args }) => {
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/.netlify/functions/env`).text()
         t.is(response, 'FROM_CONFIG_FILE')
+        const builderResponse = await got(`${server.url}/.netlify/builders/env`).text()
+        t.is(builderResponse, 'FROM_CONFIG_FILE')
       })
     })
   })
@@ -444,7 +487,7 @@ testMatrix.forEach(({ args }) => {
         t.is(response.body, undefined)
         t.is(response.headers.host, `${server.host}:${server.port}`)
         t.is(response.httpMethod, 'GET')
-        t.is(response.isBase64Encoded, false)
+        t.is(response.isBase64Encoded, true)
         t.is(response.path, '/api/echo')
         t.deepEqual(response.queryStringParameters, { ding: 'dong' })
       })
@@ -548,7 +591,7 @@ testMatrix.forEach(({ args }) => {
         form.append('some', 'thing')
 
         const expectedBoundary = form.getBoundary()
-        const expectedResponseBody = form.getBuffer().toString()
+        const expectedResponseBody = form.getBuffer().toString('base64')
 
         const response = await got
           .post(`${server.url}/api/echo?ding=dong`, {
@@ -560,7 +603,7 @@ testMatrix.forEach(({ args }) => {
         t.is(response.headers['content-type'], `multipart/form-data; boundary=${expectedBoundary}`)
         t.is(response.headers['content-length'], '164')
         t.is(response.httpMethod, 'POST')
-        t.is(response.isBase64Encoded, false)
+        t.is(response.isBase64Encoded, true)
         t.is(response.path, '/api/echo')
         t.deepEqual(response.queryStringParameters, { ding: 'dong' })
         t.is(response.body, expectedResponseBody)
@@ -1267,282 +1310,304 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
-  // the edge handlers plugin only works on node >= 10
-  const version = Number.parseInt(process.version.slice(1).split('.')[0])
-  const EDGE_HANDLER_MIN_VERSION = 10
-  if (version >= EDGE_HANDLER_MIN_VERSION) {
-    test(testName('routing-local-proxy serves edge handlers with --edgeHandlers flag', args), async (t) => {
-      await withSiteBuilder('site-with-fully-qualified-redirect-rule', async (builder) => {
-        const publicDir = 'public'
-        builder
-          .withNetlifyToml({
-            config: {
-              build: {
-                publish: publicDir,
-                edge_handlers: 'netlify/edge-handlers',
+  test(testName('routing-local-proxy serves edge handlers with --edgeHandlers flag', args), async (t) => {
+    await withSiteBuilder('site-with-fully-qualified-redirect-rule', async (builder) => {
+      const publicDir = 'public'
+      builder
+        .withNetlifyToml({
+          config: {
+            build: {
+              publish: publicDir,
+              edge_handlers: 'netlify/edge-handlers',
+            },
+            'edge-handlers': [
+              {
+                handler: 'smoke',
+                path: '/edge-handler',
               },
-              'edge-handlers': [
-                {
-                  handler: 'smoke',
-                  path: '/edge-handler',
-                },
-              ],
-            },
-          })
-          .withContentFiles([
-            {
-              path: path.join(publicDir, 'index.html'),
-              content: '<html>index</html>',
-            },
-          ])
-          .withEdgeHandlers({
-            fileName: 'smoke.js',
-            handlers: {
-              onRequest: (event) => {
-                event.replaceResponse(
-                  // eslint-disable-next-line no-undef
-                  new Response(null, {
-                    headers: {
-                      Location: 'https://google.com/',
-                    },
-                    status: 301,
-                  }),
-                )
-              },
-            },
-          })
-
-        await builder.buildAsync()
-
-        await withDevServer({ cwd: builder.directory, args: [...args, '--edgeHandlers'] }, async (server) => {
-          const response = await got(`${server.url}/edge-handler`, {
-            followRedirect: false,
-          })
-
-          t.is(response.statusCode, 301)
-          t.is(response.headers.location, 'https://google.com/')
-        })
-      })
-    })
-
-    test(testName('routing-local-proxy serves edge handlers with deprecated --trafficMesh flag', args), async (t) => {
-      await withSiteBuilder('site-with-fully-qualified-redirect-rule', async (builder) => {
-        const publicDir = 'public'
-        builder
-          .withNetlifyToml({
-            config: {
-              build: {
-                publish: publicDir,
-                edge_handlers: 'netlify/edge-handlers',
-              },
-              'edge-handlers': [
-                {
-                  handler: 'smoke',
-                  path: '/edge-handler',
-                },
-              ],
-            },
-          })
-          .withContentFiles([
-            {
-              path: path.join(publicDir, 'index.html'),
-              content: '<html>index</html>',
-            },
-          ])
-          .withEdgeHandlers({
-            fileName: 'smoke.js',
-            handlers: {
-              onRequest: (event) => {
-                event.replaceResponse(
-                  // eslint-disable-next-line no-undef
-                  new Response(null, {
-                    headers: {
-                      Location: 'https://google.com/',
-                    },
-                    status: 301,
-                  }),
-                )
-              },
-            },
-          })
-
-        await builder.buildAsync()
-
-        await withDevServer({ cwd: builder.directory, args: [...args, '--trafficMesh'] }, async (server) => {
-          const response = await got(`${server.url}/edge-handler`, {
-            followRedirect: false,
-          })
-
-          t.is(response.statusCode, 301)
-          t.is(response.headers.location, 'https://google.com/')
-        })
-      })
-    })
-
-    test(testName('routing-local-proxy builds projects w/o edge handlers', args), async (t) => {
-      await withSiteBuilder('site-with-fully-qualified-redirect-rule', async (builder) => {
-        const publicDir = 'public'
-        builder
-          .withNetlifyToml({
-            config: {
-              build: { publish: publicDir },
-            },
-          })
-          .withContentFiles([
-            {
-              path: path.join(publicDir, 'index.html'),
-              content: '<html>index</html>',
-            },
-          ])
-
-        await builder.buildAsync()
-
-        await withDevServer({ cwd: builder.directory, args: [...args, '--edgeHandlers'] }, async (server) => {
-          const response = await got(`${server.url}/index.html`)
-
-          t.is(response.statusCode, 200)
-        })
-      })
-    })
-
-    test(testName('redirect with country cookie', args), async (t) => {
-      await withSiteBuilder('site-with-country-cookie', async (builder) => {
-        builder
-          .withContentFiles([
-            {
-              path: 'index.html',
-              content: '<html>index</html>',
-            },
-            {
-              path: 'index-es.html',
-              content: '<html>index in spanish</html>',
-            },
-          ])
-          .withRedirectsFile({
-            redirects: [{ from: `/`, to: `/index-es.html`, status: '200!', condition: 'Country=ES' }],
-          })
-
-        await builder.buildAsync()
-
-        await withDevServer({ cwd: builder.directory, args }, async (server) => {
-          const response = await got(`${server.url}/`, {
-            headers: {
-              cookie: `nf_country=ES`,
-            },
-          })
-          t.is(response.statusCode, 200)
-          t.is(response.body, '<html>index in spanish</html>')
-        })
-      })
-    })
-
-    test(testName(`doesn't hang when sending a application/json POST request to function server`, args), async (t) => {
-      await withSiteBuilder('site-with-functions', async (builder) => {
-        const functionsPort = 6666
-        await builder
-          .withNetlifyToml({ config: { functions: { directory: 'functions' }, dev: { functionsPort } } })
-          .buildAsync()
-
-        await withDevServer({ cwd: builder.directory, args }, async ({ url, port }) => {
-          const response = await got(`${url.replace(port, functionsPort)}/test`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: '{}',
-            throwHttpErrors: false,
-          })
-          t.is(response.statusCode, 404)
-          t.is(response.body, 'Function not found...')
-        })
-      })
-    })
-
-    test(testName(`catches invalid function names`, args), async (t) => {
-      await withSiteBuilder('site-with-functions', async (builder) => {
-        const functionsPort = 6667
-        await builder
-          .withNetlifyToml({ config: { functions: { directory: 'functions' }, dev: { functionsPort } } })
-          .withFunction({
-            path: 'exclamat!on.js',
-            handler: async (event) => ({
-              statusCode: 200,
-              body: JSON.stringify(event),
-            }),
-          })
-          .buildAsync()
-
-        await withDevServer({ cwd: builder.directory, args }, async ({ url, port }) => {
-          const response = await got(`${url.replace(port, functionsPort)}/exclamat!on`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: '{}',
-            throwHttpErrors: false,
-          })
-          t.is(response.statusCode, 400)
-          t.is(response.body, 'Function name should consist only of alphanumeric characters, hyphen & underscores.')
-        })
-      })
-    })
-
-    test(testName('should handle query params in redirects', args), async (t) => {
-      await withSiteBuilder('site-with-query-redirects', async (builder) => {
-        await builder
-          .withContentFile({
-            path: 'public/index.html',
-            content: 'home',
-          })
-          .withNetlifyToml({
-            config: {
-              build: { publish: 'public' },
-              functions: { directory: 'functions' },
-            },
-          })
-          .withRedirectsFile({
-            redirects: [
-              { from: `/api/*`, to: `/.netlify/functions/echo?a=1&a=2`, status: '200' },
-              { from: `/foo`, to: `/`, status: '302' },
-              { from: `/bar`, to: `/?a=1&a=2`, status: '302' },
-              { from: `/test id=:id`, to: `/?param=:id` },
             ],
-          })
-          .withFunction({
-            path: 'echo.js',
-            handler: async (event) => ({
-              statusCode: 200,
-              body: JSON.stringify(event),
-            }),
-          })
-          .buildAsync()
-
-        await withDevServer({ cwd: builder.directory, args }, async (server) => {
-          const [fromFunction, queryPassthrough, queryInRedirect, withParamMatching] = await Promise.all([
-            got(`${server.url}/api/test?foo=1&foo=2&bar=1&bar=2`).json(),
-            got(`${server.url}/foo?foo=1&foo=2&bar=1&bar=2`, { followRedirect: false }),
-            got(`${server.url}/bar?foo=1&foo=2&bar=1&bar=2`, { followRedirect: false }),
-            got(`${server.url}/test?id=1`, { followRedirect: false }),
-          ])
-
-          // query params should be taken from the request
-          t.deepEqual(fromFunction.multiValueQueryStringParameters, { foo: ['1', '2'], bar: ['1', '2'] })
-
-          // query params should be passed through from the request
-          t.is(queryPassthrough.headers.location, '/?foo=1&foo=2&bar=1&bar=2')
-
-          // query params should be taken from the redirect rule
-          t.is(queryInRedirect.headers.location, '/?a=1&a=2')
-
-          // query params should be taken from the redirect rule
-          t.is(withParamMatching.headers.location, '/?param=1')
+          },
         })
+        .withContentFiles([
+          {
+            path: path.join(publicDir, 'index.html'),
+            content: '<html>index</html>',
+          },
+        ])
+        .withEdgeHandlers({
+          fileName: 'smoke.js',
+          handlers: {
+            onRequest: (event) => {
+              event.replaceResponse(
+                // eslint-disable-next-line no-undef
+                new Response(null, {
+                  headers: {
+                    Location: 'https://google.com/',
+                  },
+                  status: 301,
+                }),
+              )
+            },
+          },
+        })
+
+      await builder.buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args: [...args, '--edgeHandlers'] }, async (server) => {
+        const response = await got(`${server.url}/edge-handler`, {
+          followRedirect: false,
+        })
+
+        t.is(response.statusCode, 301)
+        t.is(response.headers.location, 'https://google.com/')
       })
     })
+  })
 
-    test(testName('Should not use the ZISI function bundler if not using esbuild', args), async (t) => {
-      await withSiteBuilder('site-with-esm-function', async (builder) => {
-        builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withContentFile({
+  test(testName('routing-local-proxy serves edge handlers with deprecated --trafficMesh flag', args), async (t) => {
+    await withSiteBuilder('site-with-fully-qualified-redirect-rule', async (builder) => {
+      const publicDir = 'public'
+      builder
+        .withNetlifyToml({
+          config: {
+            build: {
+              publish: publicDir,
+              edge_handlers: 'netlify/edge-handlers',
+            },
+            'edge-handlers': [
+              {
+                handler: 'smoke',
+                path: '/edge-handler',
+              },
+            ],
+          },
+        })
+        .withContentFiles([
+          {
+            path: path.join(publicDir, 'index.html'),
+            content: '<html>index</html>',
+          },
+        ])
+        .withEdgeHandlers({
+          fileName: 'smoke.js',
+          handlers: {
+            onRequest: (event) => {
+              event.replaceResponse(
+                // eslint-disable-next-line no-undef
+                new Response(null, {
+                  headers: {
+                    Location: 'https://google.com/',
+                  },
+                  status: 301,
+                }),
+              )
+            },
+          },
+        })
+
+      await builder.buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args: [...args, '--trafficMesh'] }, async (server) => {
+        const response = await got(`${server.url}/edge-handler`, {
+          followRedirect: false,
+        })
+
+        t.is(response.statusCode, 301)
+        t.is(response.headers.location, 'https://google.com/')
+      })
+    })
+  })
+
+  test(testName('routing-local-proxy builds projects w/o edge handlers', args), async (t) => {
+    await withSiteBuilder('site-with-fully-qualified-redirect-rule', async (builder) => {
+      const publicDir = 'public'
+      builder
+        .withNetlifyToml({
+          config: {
+            build: { publish: publicDir },
+          },
+        })
+        .withContentFiles([
+          {
+            path: path.join(publicDir, 'index.html'),
+            content: '<html>index</html>',
+          },
+        ])
+
+      await builder.buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args: [...args, '--edgeHandlers'] }, async (server) => {
+        const response = await got(`${server.url}/index.html`)
+
+        t.is(response.statusCode, 200)
+      })
+    })
+  })
+
+  test(testName('redirect with country cookie', args), async (t) => {
+    await withSiteBuilder('site-with-country-cookie', async (builder) => {
+      builder
+        .withContentFiles([
+          {
+            path: 'index.html',
+            content: '<html>index</html>',
+          },
+          {
+            path: 'index-es.html',
+            content: '<html>index in spanish</html>',
+          },
+        ])
+        .withRedirectsFile({
+          redirects: [{ from: `/`, to: `/index-es.html`, status: '200!', condition: 'Country=ES' }],
+        })
+
+      await builder.buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async (server) => {
+        const response = await got(`${server.url}/`, {
+          headers: {
+            cookie: `nf_country=ES`,
+          },
+        })
+        t.is(response.statusCode, 200)
+        t.is(response.body, '<html>index in spanish</html>')
+      })
+    })
+  })
+
+  test(testName(`doesn't hang when sending a application/json POST request to function server`, args), async (t) => {
+    await withSiteBuilder('site-with-functions', async (builder) => {
+      const functionsPort = 6666
+      await builder
+        .withNetlifyToml({ config: { functions: { directory: 'functions' }, dev: { functionsPort } } })
+        .buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async ({ port, url }) => {
+        const response = await got(`${url.replace(port, functionsPort)}/test`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: '{}',
+          throwHttpErrors: false,
+        })
+        t.is(response.statusCode, 404)
+        t.is(response.body, 'Function not found...')
+      })
+    })
+  })
+
+  test(testName(`catches invalid function names`, args), async (t) => {
+    await withSiteBuilder('site-with-functions', async (builder) => {
+      const functionsPort = 6667
+      await builder
+        .withNetlifyToml({ config: { functions: { directory: 'functions' }, dev: { functionsPort } } })
+        .withFunction({
+          path: 'exclamat!on.js',
+          handler: async (event) => ({
+            statusCode: 200,
+            body: JSON.stringify(event),
+          }),
+        })
+        .buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async ({ port, url }) => {
+        const response = await got(`${url.replace(port, functionsPort)}/exclamat!on`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: '{}',
+          throwHttpErrors: false,
+        })
+        t.is(response.statusCode, 400)
+        t.is(response.body, 'Function name should consist only of alphanumeric characters, hyphen & underscores.')
+      })
+    })
+  })
+
+  test(testName('should handle query params in redirects', args), async (t) => {
+    await withSiteBuilder('site-with-query-redirects', async (builder) => {
+      await builder
+        .withContentFile({
+          path: 'public/index.html',
+          content: 'home',
+        })
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'public' },
+            functions: { directory: 'functions' },
+          },
+        })
+        .withRedirectsFile({
+          redirects: [
+            { from: `/api/*`, to: `/.netlify/functions/echo?a=1&a=2`, status: '200' },
+            { from: `/foo`, to: `/`, status: '302' },
+            { from: `/bar`, to: `/?a=1&a=2`, status: '302' },
+            { from: `/test id=:id`, to: `/?param=:id` },
+          ],
+        })
+        .withFunction({
+          path: 'echo.js',
+          handler: async (event) => ({
+            statusCode: 200,
+            body: JSON.stringify(event),
+          }),
+        })
+        .buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async (server) => {
+        const [fromFunction, queryPassthrough, queryInRedirect, withParamMatching] = await Promise.all([
+          got(`${server.url}/api/test?foo=1&foo=2&bar=1&bar=2`).json(),
+          got(`${server.url}/foo?foo=1&foo=2&bar=1&bar=2`, { followRedirect: false }),
+          got(`${server.url}/bar?foo=1&foo=2&bar=1&bar=2`, { followRedirect: false }),
+          got(`${server.url}/test?id=1`, { followRedirect: false }),
+        ])
+
+        // query params should be taken from the request
+        t.deepEqual(fromFunction.multiValueQueryStringParameters, { foo: ['1', '2'], bar: ['1', '2'] })
+
+        // query params should be passed through from the request
+        t.is(queryPassthrough.headers.location, '/?foo=1&foo=2&bar=1&bar=2')
+
+        // query params should be taken from the redirect rule
+        t.is(queryInRedirect.headers.location, '/?a=1&a=2')
+
+        // query params should be taken from the redirect rule
+        t.is(withParamMatching.headers.location, '/?param=1')
+      })
+    })
+  })
+
+  test(testName('Should not use the ZISI function bundler if not using esbuild', args), async (t) => {
+    await withSiteBuilder('site-with-esm-function', async (builder) => {
+      builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withContentFile({
+        path: path.join('functions', 'esm-function', 'esm-function.js'),
+        content: `
+export async function handler(event, context) {
+  return {
+    statusCode: 200,
+    body: 'esm',
+  };
+}
+    `,
+      })
+
+      await builder.buildAsync()
+
+      await t.throwsAsync(() =>
+        withDevServer({ cwd: builder.directory, args }, async (server) =>
+          got(`${server.url}/.netlify/functions/esm-function`).text(),
+        ),
+      )
+    })
+  })
+
+  test(testName('Should use the ZISI function bundler and serve ESM functions if using esbuild', args), async (t) => {
+    await withSiteBuilder('site-with-esm-function', async (builder) => {
+      builder
+        .withNetlifyToml({ config: { functions: { directory: 'functions', node_bundler: 'esbuild' } } })
+        .withContentFile({
           path: path.join('functions', 'esm-function', 'esm-function.js'),
           content: `
 export async function handler(event, context) {
@@ -1554,79 +1619,22 @@ export async function handler(event, context) {
     `,
         })
 
-        await builder.buildAsync()
+      await builder.buildAsync()
 
-        await t.throwsAsync(() =>
-          withDevServer({ cwd: builder.directory, args }, async (server) =>
-            got(`${server.url}/.netlify/functions/esm-function`).text(),
-          ),
-        )
+      await withDevServer({ cwd: builder.directory, args }, async (server) => {
+        const response = await got(`${server.url}/.netlify/functions/esm-function`).text()
+        t.is(response, 'esm')
       })
     })
+  })
 
-    test(testName('Should use the ZISI function bundler and serve ESM functions if using esbuild', args), async (t) => {
-      await withSiteBuilder('site-with-esm-function', async (builder) => {
+  test(
+    testName('Should use the ZISI function bundler and serve TypeScript functions if using esbuild', args),
+    async (t) => {
+      await withSiteBuilder('site-with-ts-function', async (builder) => {
         builder
           .withNetlifyToml({ config: { functions: { directory: 'functions', node_bundler: 'esbuild' } } })
           .withContentFile({
-            path: path.join('functions', 'esm-function', 'esm-function.js'),
-            content: `
-export async function handler(event, context) {
-  return {
-    statusCode: 200,
-    body: 'esm',
-  };
-}
-    `,
-          })
-
-        await builder.buildAsync()
-
-        await withDevServer({ cwd: builder.directory, args }, async (server) => {
-          const response = await got(`${server.url}/.netlify/functions/esm-function`).text()
-          t.is(response, 'esm')
-        })
-      })
-    })
-
-    test(
-      testName('Should use the ZISI function bundler and serve TypeScript functions if using esbuild', args),
-      async (t) => {
-        await withSiteBuilder('site-with-ts-function', async (builder) => {
-          builder
-            .withNetlifyToml({ config: { functions: { directory: 'functions', node_bundler: 'esbuild' } } })
-            .withContentFile({
-              path: path.join('functions', 'ts-function', 'ts-function.ts'),
-              content: `
-type CustomResponse = string;
-
-export const handler = async function () {
-  const response: CustomResponse = "ts";
-
-  return {
-    statusCode: 200,
-    body: response,
-  };
-};
-
-    `,
-            })
-
-          await builder.buildAsync()
-
-          await withDevServer({ cwd: builder.directory, args }, async (server) => {
-            const response = await got(`${server.url}/.netlify/functions/ts-function`).text()
-            t.is(response, 'ts')
-          })
-        })
-      },
-    )
-
-    test(
-      testName('Should use the ZISI function bundler and serve TypeScript functions if not using esbuild', args),
-      async (t) => {
-        await withSiteBuilder('site-with-ts-function', async (builder) => {
-          builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withContentFile({
             path: path.join('functions', 'ts-function', 'ts-function.ts'),
             content: `
 type CustomResponse = string;
@@ -1643,115 +1651,145 @@ export const handler = async function () {
     `,
           })
 
-          await builder.buildAsync()
+        await builder.buildAsync()
 
-          await withDevServer({ cwd: builder.directory, args }, async (server) => {
-            const response = await got(`${server.url}/.netlify/functions/ts-function`).text()
-            t.is(response, 'ts')
-          })
+        await withDevServer({ cwd: builder.directory, args }, async (server) => {
+          const response = await got(`${server.url}/.netlify/functions/ts-function`).text()
+          t.is(response, 'ts')
         })
-      },
-    )
+      })
+    },
+  )
 
-    test(testName(`should start https server when https dev block is configured`, args), async (t) => {
-      await withSiteBuilder('sites-with-https-certificate', async (builder) => {
-        await builder
-          .withNetlifyToml({
-            config: {
-              build: { publish: 'public' },
-              functions: { directory: 'functions' },
-              dev: { https: { certFile: 'cert.pem', keyFile: 'key.pem' } },
-            },
-          })
-          .withContentFile({
-            path: 'public/index.html',
-            content: 'index',
-          })
-          .withRedirectsFile({
-            redirects: [{ from: `/api/*`, to: `/.netlify/functions/:splat`, status: '200' }],
-          })
-          .withFunction({
-            path: 'hello.js',
-            handler: async () => ({
+  test(
+    testName('Should use the ZISI function bundler and serve TypeScript functions if not using esbuild', args),
+    async (t) => {
+      await withSiteBuilder('site-with-ts-function', async (builder) => {
+        builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withContentFile({
+          path: path.join('functions', 'ts-function', 'ts-function.ts'),
+          content: `
+type CustomResponse = string;
+
+export const handler = async function () {
+  const response: CustomResponse = "ts";
+
+  return {
+    statusCode: 200,
+    body: response,
+  };
+};
+
+    `,
+        })
+
+        await builder.buildAsync()
+
+        await withDevServer({ cwd: builder.directory, args }, async (server) => {
+          const response = await got(`${server.url}/.netlify/functions/ts-function`).text()
+          t.is(response, 'ts')
+        })
+      })
+    },
+  )
+
+  test(testName(`should start https server when https dev block is configured`, args), async (t) => {
+    await withSiteBuilder('sites-with-https-certificate', async (builder) => {
+      await builder
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'public' },
+            functions: { directory: 'functions' },
+            dev: { https: { certFile: 'cert.pem', keyFile: 'key.pem' } },
+          },
+        })
+        .withContentFile({
+          path: 'public/index.html',
+          content: 'index',
+        })
+        .withRedirectsFile({
+          redirects: [{ from: `/api/*`, to: `/.netlify/functions/:splat`, status: '200' }],
+        })
+        .withFunction({
+          path: 'hello.js',
+          handler: async () => ({
+            statusCode: 200,
+            body: 'Hello World',
+          }),
+        })
+        .buildAsync()
+
+      await Promise.all([
+        copyFileAsync(`${__dirname}/assets/cert.pem`, `${builder.directory}/cert.pem`),
+        copyFileAsync(`${__dirname}/assets/key.pem`, `${builder.directory}/key.pem`),
+      ])
+      await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
+        const options = { https: { rejectUnauthorized: false } }
+        t.is(await got(`https://localhost:${port}`, options).text(), 'index')
+        t.is(await got(`https://localhost:${port}/api/hello`, options).text(), 'Hello World')
+      })
+    })
+  })
+
+  test(testName(`should use custom functions timeouts`, args), async (t) => {
+    await withSiteBuilder('site-with-custom-functions-timeout', async (builder) => {
+      await builder
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'public' },
+            functions: { directory: 'functions' },
+          },
+        })
+        .withFunction({
+          path: 'hello.js',
+          handler: async () => {
+            await new Promise((resolve) => {
+              const SLEEP_TIME = 2000
+              setTimeout(resolve, SLEEP_TIME)
+            })
+            return {
               statusCode: 200,
               body: 'Hello World',
-            }),
-          })
-          .buildAsync()
-
-        await Promise.all([
-          copyFileAsync(`${__dirname}/assets/cert.pem`, `${builder.directory}/cert.pem`),
-          copyFileAsync(`${__dirname}/assets/key.pem`, `${builder.directory}/key.pem`),
-        ])
-        await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
-          const options = { https: { rejectUnauthorized: false } }
-          t.is(await got(`https://localhost:${port}`, options).text(), 'index')
-          t.is(await got(`https://localhost:${port}/api/hello`, options).text(), 'Hello World')
-        })
-      })
-    })
-
-    test(testName(`should use custom functions timeouts`, args), async (t) => {
-      await withSiteBuilder('site-with-custom-functions-timeout', async (builder) => {
-        await builder
-          .withNetlifyToml({
-            config: {
-              build: { publish: 'public' },
-              functions: { directory: 'functions' },
-            },
-          })
-          .withFunction({
-            path: 'hello.js',
-            handler: async () => {
-              await new Promise((resolve) => {
-                const SLEEP_TIME = 2000
-                setTimeout(resolve, SLEEP_TIME)
-              })
-              return {
-                statusCode: 200,
-                body: 'Hello World',
-              }
-            },
-          })
-          .buildAsync()
-
-        const siteInfo = {
-          account_slug: 'test-account',
-          id: 'site_id',
-          name: 'site-name',
-          functions_config: { timeout: 1 },
-        }
-
-        const routes = [
-          { path: 'sites/site_id', response: siteInfo },
-
-          { path: 'sites/site_id/service-instances', response: [] },
-          {
-            path: 'accounts',
-            response: [{ slug: siteInfo.account_slug }],
+            }
           },
-        ]
-
-        await withMockApi(routes, async ({ apiUrl }) => {
-          await withDevServer(
-            {
-              cwd: builder.directory,
-              offline: false,
-              env: {
-                NETLIFY_API_URL: apiUrl,
-                NETLIFY_SITE_ID: 'site_id',
-                NETLIFY_AUTH_TOKEN: 'fake-token',
-              },
-            },
-            async ({ url }) => {
-              const error = await t.throwsAsync(() => got(`${url}/.netlify/functions/hello`))
-              t.true(error.response.body.includes('TimeoutError: Task timed out after 1.00 seconds'))
-            },
-          )
         })
+        .buildAsync()
+
+      const siteInfo = {
+        account_slug: 'test-account',
+        id: 'site_id',
+        name: 'site-name',
+        functions_config: { timeout: 1 },
+      }
+
+      const routes = [
+        { path: 'sites/site_id', response: siteInfo },
+
+        { path: 'sites/site_id/service-instances', response: [] },
+        {
+          path: 'accounts',
+          response: [{ slug: siteInfo.account_slug }],
+        },
+      ]
+
+      await withMockApi(routes, async ({ apiUrl }) => {
+        await withDevServer(
+          {
+            cwd: builder.directory,
+            offline: false,
+            env: {
+              NETLIFY_API_URL: apiUrl,
+              NETLIFY_SITE_ID: 'site_id',
+              NETLIFY_AUTH_TOKEN: 'fake-token',
+            },
+          },
+          async ({ url }) => {
+            const error = await t.throwsAsync(() => got(`${url}/.netlify/functions/hello`))
+            t.true(error.response.body.includes('TimeoutError: Task timed out after 1.00 seconds'))
+          },
+        )
       })
     })
-  }
+  })
 
   // we need curl to reproduce this issue
   if (os.platform() !== 'win32') {
@@ -1818,6 +1856,7 @@ export const handler = async function () {
             body: '',
             headers: { 'single-value-header': 'custom-value' },
             multiValueHeaders: { 'multi-value-header': ['custom-value1', 'custom-value2'] },
+            metadata: { builder_function: true },
           }),
         })
         .buildAsync()
@@ -1826,6 +1865,9 @@ export const handler = async function () {
         const response = await got(`${server.url}/.netlify/functions/custom-headers`)
         t.is(response.headers['single-value-header'], 'custom-value')
         t.is(response.headers['multi-value-header'], 'custom-value1, custom-value2')
+        const builderResponse = await got(`${server.url}/.netlify/builders/custom-headers`)
+        t.is(builderResponse.headers['single-value-header'], 'custom-value')
+        t.is(builderResponse.headers['multi-value-header'], 'custom-value1, custom-value2')
       })
     })
   })

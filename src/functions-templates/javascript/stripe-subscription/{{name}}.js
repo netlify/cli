@@ -25,7 +25,7 @@ const handler = async function (event) {
     }
   }
   try {
-    const { stripeToken, email, productPlan } = incoming
+    const { email, productPlan, stripeToken } = incoming
     const data = await createCustomerAndSubscribeToPlan(stripeToken, email, productPlan)
     return respond(data)
   } catch (error) {

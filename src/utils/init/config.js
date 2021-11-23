@@ -2,7 +2,7 @@ const chalk = require('chalk')
 
 const { log } = require('../command-helpers')
 
-const configGithub = require('./config-github')
+const { configGithub } = require('./config-github')
 const configManual = require('./config-manual')
 
 const logSuccess = (repoData) => {
@@ -18,7 +18,7 @@ const logSuccess = (repoData) => {
   `)
 }
 
-const configureRepo = async ({ context, siteId, repoData, manual }) => {
+const configureRepo = async ({ context, manual, repoData, siteId }) => {
   if (manual) {
     await configManual({ context, siteId, repoData })
   } else if (repoData.provider === 'github') {

@@ -4,7 +4,7 @@ const { flags: flagsLib } = require('@oclif/command')
 const AsciiTable = require('ascii-table')
 
 const Command = require('../../utils/command')
-const { log, logJson, warn, error, exit } = require('../../utils/command-helpers')
+const { error, exit, log, logJson, warn } = require('../../utils/command-helpers')
 const { getFunctionsDir } = require('../../utils/functions')
 const { getFunctions } = require('../../utils/get-functions')
 
@@ -12,7 +12,7 @@ class FunctionsListCommand extends Command {
   async run() {
     const { flags } = this.parse(FunctionsListCommand)
 
-    const { api, site, config } = this.netlify
+    const { api, config, site } = this.netlify
 
     // get deployed site details
     // copied from `netlify status`
@@ -65,7 +65,7 @@ class FunctionsListCommand extends Command {
     log(`Based on local functions folder ${functionsDir}, these are the functions detected`)
     const table = new AsciiTable(`Netlify Functions (in local functions folder)`)
     table.setHeading('Name', 'URL', 'deployed')
-    normalizedFunctions.forEach(({ name, url, isDeployed }) => {
+    normalizedFunctions.forEach(({ isDeployed, name, url }) => {
       table.addRow(name, url, isDeployed ? 'yes' : 'no')
     })
     log(table.toString())

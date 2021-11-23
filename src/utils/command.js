@@ -9,11 +9,11 @@ const API = require('netlify')
 
 const { getAgent } = require('../lib/http-agent')
 
-const { pollForToken, log, exit, error, getToken, getCwd, argv, normalizeConfig, chalk } = require('./command-helpers')
+const { argv, chalk, error, exit, getCwd, getToken, log, normalizeConfig, pollForToken } = require('./command-helpers')
 const getGlobalConfig = require('./get-global-config')
-const openBrowser = require('./open-browser')
+const { openBrowser } = require('./open-browser')
 const StateConfig = require('./state-config')
-const { track, identify } = require('./telemetry')
+const { identify, track } = require('./telemetry')
 const { TrackedCommand } = require('./telemetry/tracked-command')
 
 const { NETLIFY_API_URL } = process.env
@@ -34,7 +34,9 @@ class BaseCommand extends TrackedCommand {
     // Get site id & build state
     const state = new StateConfig(cwd)
 
-    const apiUrlOpts = {}
+    const apiUrlOpts = {
+      userAgent: this.config.userAgent,
+    }
 
     if (NETLIFY_API_URL) {
       const apiUrl = new URL(NETLIFY_API_URL)
@@ -44,7 +46,7 @@ class BaseCommand extends TrackedCommand {
     }
 
     const cachedConfig = await this.getConfig({ cwd, state, token, ...apiUrlOpts })
-    const { configPath, config, buildDir, repositoryRoot, siteInfo } = cachedConfig
+    const { buildDir, config, configPath, repositoryRoot, siteInfo } = cachedConfig
     const normalizedConfig = normalizeConfig(config)
 
     const { flags } = this.parse(BaseCommand)
@@ -199,7 +201,7 @@ class BaseCommand extends TrackedCommand {
       exitWithError: error,
     })
 
-    const { id: userId, full_name: name, email } = await this.netlify.api.getCurrentUser()
+    const { email, full_name: name, id: userId } = await this.netlify.api.getCurrentUser()
 
     const userData = merge(this.netlify.globalConfig.get(`users.${userId}`), {
       id: userId,

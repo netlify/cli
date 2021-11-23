@@ -6,8 +6,8 @@ const getFrameworkInfo = async ({ baseDirectory, nodeVersion }) => {
   if (frameworks.length !== 0) {
     const [
       {
+        build: { commands, directory },
         name,
-        build: { directory, commands },
         plugins,
       },
     ] = frameworks

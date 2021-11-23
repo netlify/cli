@@ -6,7 +6,7 @@ const toml = require('toml')
 const { readFileAsync } = require('../src/lib/fs')
 
 const cliPath = require('./utils/cli-path')
-const { handleQuestions, answerWithValue, CONFIRM, DOWN } = require('./utils/handle-questions')
+const { CONFIRM, DOWN, answerWithValue, handleQuestions } = require('./utils/handle-questions')
 const { withMockApi } = require('./utils/mock-api')
 const { withSiteBuilder } = require('./utils/site-builder')
 

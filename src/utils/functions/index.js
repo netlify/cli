@@ -3,7 +3,7 @@ const { resolve } = require('path')
 const { isDirectoryAsync, isFileAsync } = require('../../lib/fs')
 const { getPathInProject } = require('../../lib/settings')
 
-const getFunctionsDir = ({ flags, config }, defaultValue) =>
+const getFunctionsDir = ({ config, flags }, defaultValue) =>
   flags.functions ||
   (config.dev && config.dev.functions) ||
   config.functionsDirectory ||

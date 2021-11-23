@@ -1,28 +1,22 @@
-<!--
-Thanks for submitting a pull request!
+🎉 Thanks for submitting a pull request! 🎉
 
-Please make sure you've read and understood our contributing guidelines;
-https://github.com/netlify/netlify-cli/blob/main/CONTRIBUTING.md
+#### Summary
 
-If this is a bug fix, make sure your description includes "fixes #xxxx", or
-"closes #xxxx", where #xxxx is the issue number.
-
-Please provide enough information so that others can review your pull request.
-The first three fields are mandatory:
--->
-
-**- Summary**
+Fixes #<replace_with_issue_number>
 
 <!--
-Explain the **motivation** for making this change.
-What existing problem does the pull request solve?
+Explain the **motivation** for making this change. What existing problem does the pull request solve and how?
 -->
 
-**- Test plan**
+---
 
-<!--
-Demonstrate the code is solid.
-Example: The exact commands you ran and their output, screenshots / videos if the pull request changes UI.
--->
+For us to review and ship your PR efficiently, please perform the following steps:
 
-**- A picture of a cute animal (not mandatory but encouraged)**
+- [ ] Open a [bug/issue](https://github.com/netlify/cli/issues/new/choose) before writing your code 🧑‍💻. This ensures we can discuss the changes and get feedback from everyone that should be involved. If you\`re fixing a typo or something that\`s on fire 🔥 (e.g. incident related), you can skip this step.
+- [ ] Read the [contribution guidelines](../CONTRIBUTING.md) 📖. This ensures your code follows our style guide and
+      passes our tests.
+- [ ] Update or add tests (if any source code was changed or added) 🧪
+- [ ] Update or add documentation (if features were changed or added) 📝
+- [ ] Make sure the status checks below are successful ✅
+
+**A picture of a cute animal (not mandatory, but encouraged)**

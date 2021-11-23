@@ -8,7 +8,7 @@ const prettyjson = require('prettyjson')
 const { v4: uuidv4 } = require('uuid')
 
 const Command = require('../../utils/command')
-const { log, logJson, warn, error } = require('../../utils/command-helpers')
+const { error, log, logJson, warn } = require('../../utils/command-helpers')
 const { getRepoData } = require('../../utils/get-repo-data')
 const { configureRepo } = require('../../utils/init/config')
 const { track } = require('../../utils/telemetry')

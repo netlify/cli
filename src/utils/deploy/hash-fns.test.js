@@ -22,7 +22,7 @@ test('Hashes files in a folder', async (t) => {
       .buildAsync()
 
     const expectedFunctions = ['hello', 'goodbye']
-    const { functions, fnShaMap } = await hashFns(`${builder.directory}/functions`, {
+    const { fnShaMap, functions } = await hashFns(`${builder.directory}/functions`, {
       tmpDir: tempy.directory(),
       concurrentHash: DEFAULT_CONCURRENT_HASH,
       statusCb() {},

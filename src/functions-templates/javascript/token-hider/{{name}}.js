@@ -26,7 +26,7 @@ const handler = async function (event) {
       body: JSON.stringify(data),
     }
   } catch (error) {
-    const { status, statusText, headers, data } = error.response
+    const { data, headers, status, statusText } = error.response
     return {
       statusCode: error.response.status,
       body: JSON.stringify({ status, statusText, headers, data }),

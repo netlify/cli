@@ -9,7 +9,7 @@ const { readFileAsync } = require('../src/lib/fs')
 const { getPathInHome } = require('../src/lib/settings')
 
 const callCli = require('./utils/call-cli')
-const { startMockApi, getCLIOptions } = require('./utils/mock-api')
+const { getCLIOptions, startMockApi } = require('./utils/mock-api')
 const { createSiteBuilder } = require('./utils/site-builder')
 
 test.before(async (t) => {
@@ -71,8 +71,16 @@ test.serial('netlify lm:install', async (t) => {
     t.true(stdout.startsWith('git-credential-netlify'))
   } else {
     t.true(cliResponse.includes('Run this command to use Netlify Large Media in your current shell'))
-    const [source] = cliResponse.match(/source.+inc/)
-    const { stdout } = await execa.command(`${source} && git-credential-netlify version`, {
+    // The source path is always an absolute path so we can match for starting with `/`.
+    // The reasoning behind this regular expression is, that on different shells the border of the box inside the command output
+    // can infer with line breaks and split the source with the path.
+    // https://regex101.com/r/2d5BUn/1
+    //                                       /source[\s\S]+?(\/.+inc)/
+    //                                       /      [\s\S]           / \s matches any whitespace character and \S any non whitespace character
+    //                                       /            +?         / matches at least one character but until the next group
+    //                                       /              (\/.+inc)/ matches any character until `inc` (the path starting with a `\`)
+    const [, sourcePath] = cliResponse.match(/source[\s\S]+?(\/.+inc)/)
+    const { stdout } = await execa.command(`source ${sourcePath} && git-credential-netlify version`, {
       shell: t.context.execOptions.env.SHELL,
     })
     t.true(stdout.startsWith('git-credential-netlify'))

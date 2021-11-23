@@ -4,7 +4,7 @@ const { TrackedCommand } = require('../../utils/telemetry/tracked-command')
 
 class SitesCommand extends TrackedCommand {
   run() {
-    const { flags, args } = this.parse(SitesCommand)
+    const { args, flags } = this.parse(SitesCommand)
 
     // Show help on empty sub command
     if (isEmptyCommand(flags, args)) {

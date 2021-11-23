@@ -5,7 +5,7 @@ const { methods } = require('netlify')
 
 const { isEmptyCommand } = require('../utils/check-command-inputs')
 const Command = require('../utils/command')
-const { log, logJson, error, exit } = require('../utils/command-helpers')
+const { error, exit, log, logJson } = require('../utils/command-helpers')
 
 class APICommand extends Command {
   async run() {

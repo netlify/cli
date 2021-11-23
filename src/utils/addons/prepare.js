@@ -1,6 +1,6 @@
 const chalk = require('chalk')
 
-const { log, warn, error, exit } = require('../command-helpers')
+const { error, exit, log, warn } = require('../command-helpers')
 
 const ADDON_VALIDATION = {
   EXISTS: 'EXISTS',
@@ -28,9 +28,9 @@ const validateNotExists = ({ addon, addonName, siteData }) => {
   }
 }
 
-const getCurrentAddon = ({ addons, addonName }) => addons.find((addon) => addon.service_slug === addonName)
+const getCurrentAddon = ({ addonName, addons }) => addons.find((addon) => addon.service_slug === addonName)
 
-const validateCurrentAddon = ({ addon, validation, addonName, siteData }) => {
+const validateCurrentAddon = ({ addon, addonName, siteData, validation }) => {
   switch (validation) {
     case ADDON_VALIDATION.EXISTS: {
       validateExists({ addon, addonName, siteData })
@@ -47,7 +47,7 @@ const validateCurrentAddon = ({ addon, validation, addonName, siteData }) => {
   }
 }
 
-const getAddonManifest = async ({ api, addonName }) => {
+const getAddonManifest = async ({ addonName, api }) => {
   let manifest
   try {
     manifest = await api.showServiceManifest({ addonName })
@@ -81,7 +81,7 @@ const getAddons = async ({ api, siteId }) => {
   return addons
 }
 
-const prepareAddonCommand = async ({ context, addonName, validation }) => {
+const prepareAddonCommand = async ({ addonName, context, validation }) => {
   const { netlify } = context
   const { api, site } = netlify
   const siteId = site.id

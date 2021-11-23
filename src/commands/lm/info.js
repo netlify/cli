@@ -2,10 +2,10 @@ const Listr = require('listr')
 
 const Command = require('../../utils/command')
 const {
-  checkGitVersionStep,
   checkGitLFSVersionStep,
-  checkLFSFiltersStep,
+  checkGitVersionStep,
   checkHelperVersionStep,
+  checkLFSFiltersStep,
 } = require('../../utils/lm/steps')
 
 class LmInfoCommand extends Command {

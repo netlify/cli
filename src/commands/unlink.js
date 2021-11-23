@@ -1,5 +1,5 @@
 const Command = require('../utils/command')
-const { log, exit } = require('../utils/command-helpers')
+const { exit, log } = require('../utils/command-helpers')
 const { track } = require('../utils/telemetry')
 
 class UnlinkCommand extends Command {

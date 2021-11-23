@@ -34,7 +34,7 @@ class AddonsListCommand extends Command {
 
     table.setHeading('NameSpace', 'Name', 'Instance Id')
 
-    addonData.forEach(({ namespace, name, id }) => {
+    addonData.forEach(({ id, name, namespace }) => {
       table.addRow(namespace, name, id)
     })
     // Log da addons

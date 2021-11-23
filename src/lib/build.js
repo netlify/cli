@@ -7,8 +7,8 @@ const getBuildOptions = ({
   context: {
     netlify: { cachedConfig },
   },
+  flags: { debug, dry, json, offline, silent },
   token,
-  flags: { dry, debug, json, silent, offline },
 }) => ({
   cachedConfig,
   token,
@@ -25,7 +25,7 @@ const getBuildOptions = ({
 })
 
 const runBuild = async (options) => {
-  const { severityCode: exitCode, netlifyConfig: newConfig, configMutations } = await build(options)
+  const { configMutations, netlifyConfig: newConfig, severityCode: exitCode } = await build(options)
   return { exitCode, newConfig, configMutations }
 }
 

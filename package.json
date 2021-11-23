@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "6.12.3",
+  "version": "7.0.4",
   "author": "Netlify Inc.",
   "contributors": [
     "Mathias Biilmann <matt@netlify.com> (https://twitter.com/biilmann)",
@@ -11,7 +11,7 @@
     "Bret Comnes <bcomnes@gmail.com> (https://bret.io)"
   ],
   "engines": {
-    "node": ">=10.18.0"
+    "node": ">=12.20.0"
   },
   "files": [
     "/bin",
@@ -57,6 +57,7 @@
     "format:fix:prettier": "cross-env-shell prettier --write $npm_package_config_prettier",
     "test:dev": "run-s test:init:* test:dev:*",
     "test:ci": "run-s test:init:* test:ci:*",
+    "test:init:build": "run-s build:*",
     "test:init:cli-version": "npm run start -- --version",
     "test:init:cli-help": "npm run start -- --help",
     "test:init:eleventy-deps": "npm ci --prefix tests/eleventy-site --no-audit",
@@ -65,7 +66,8 @@
     "test:ci:ava": "nyc -r json ava",
     "docs": "node ./site/scripts/docs.js",
     "watch": "nyc --reporter=lcov ava --watch",
-    "prepack": "oclif-dev manifest && npm prune --prod",
+    "build:manifest": "oclif-dev manifest",
+    "prepack": "npm run build:manifest && npm prune --prod",
     "postpack": "rm -f oclif.manifest.json && npm i",
     "site:build": "run-s site:build:*",
     "site:build:install": "cd site && npm ci --no-audit",
@@ -74,17 +76,17 @@
   },
   "config": {
     "eslint": "--ignore-path .gitignore --cache --format=codeframe --max-warnings=0 \"{src,scripts,site,tests,.github}/**/*.{js,md,html}\" \"*.{js,md,html}\" \".*.{js,md,html}\"",
-    "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,scripts,site,tests,.github}/**/*.{js,md,yml,json,html}\" \"*.{js,yml,json,html}\" \".*.{js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\""
+    "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,scripts,site,tests,.github}/**/*.{js,md,yml,json,html}\" \"*.{js,yml,json,html}\" \".*.{js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\" \"!.github/**/*.md\""
   },
   "dependencies": {
-    "@netlify/build": "^18.15.2",
-    "@netlify/config": "^15.6.7",
+    "@netlify/build": "^18.25.2",
+    "@netlify/config": "^15.8.2",
     "@netlify/framework-info": "^5.11.0",
     "@netlify/local-functions-proxy": "^1.1.1",
     "@netlify/plugin-edge-handlers": "^1.11.22",
-    "@netlify/plugins-list": "^4.0.1",
-    "@netlify/routing-local-proxy": "^0.34.0",
-    "@netlify/zip-it-and-ship-it": "4.24.0",
+    "@netlify/plugins-list": "^4.2.0",
+    "@netlify/routing-local-proxy": "^0.34.1",
+    "@netlify/zip-it-and-ship-it": "4.30.0",
     "@oclif/command": "^1.6.1",
     "@oclif/config": "^1.15.1",
     "@oclif/errors": "^1.3.4",
@@ -147,12 +149,13 @@
     "lodash": "^4.17.20",
     "log-symbols": "^4.0.0",
     "make-dir": "^3.0.0",
-    "memoize-one": "^5.2.1",
+    "memoize-one": "^6.0.0",
     "minimist": "^1.2.5",
+    "mock-require": "^3.0.3",
     "multiparty": "^4.2.1",
-    "netlify": "^8.0.1",
+    "netlify": "^8.0.4",
     "netlify-headers-parser": "^4.0.1",
-    "netlify-redirect-parser": "^11.0.2",
+    "netlify-redirect-parser": "^11.0.3",
     "netlify-redirector": "^0.2.1",
     "node-fetch": "^2.6.0",
     "node-version-alias": "^1.0.1",
@@ -173,6 +176,7 @@
     "prettyjson": "^1.2.1",
     "pump": "^3.0.0",
     "raw-body": "^2.4.1",
+    "read-pkg-up": "^7.0.1",
     "resolve": "^1.12.0",
     "semver": "^7.3.4",
     "source-map-support": "^0.5.19",
@@ -192,12 +196,13 @@
   "devDependencies": {
     "@babel/plugin-proposal-class-properties": "^7.13.0",
     "@babel/preset-react": "^7.12.13",
-    "@commitlint/cli": "^13.0.0",
-    "@commitlint/config-conventional": "^13.0.0",
-    "@netlify/eslint-config-node": "^3.3.3",
+    "@commitlint/cli": "^14.0.0",
+    "@commitlint/config-conventional": "^14.0.0",
+    "@netlify/eslint-config-node": "^3.3.8",
     "@oclif/dev-cli": "^1.23.1",
     "@oclif/test": "^1.2.5",
     "ava": "^3.15.0",
+    "eslint-plugin-sort-destructure-keys": "^1.3.5",
     "form-data": "^4.0.0",
     "from2-string": "^1.1.0",
     "got": "^11.8.1",
@@ -209,9 +214,10 @@
     "pidtree": "^0.5.0",
     "seedrandom": "^3.0.5",
     "serialize-javascript": "^6.0.0",
-    "sinon": "^11.0.0",
+    "sinon": "^12.0.0",
     "sort-on": "^4.1.0",
     "strip-ansi": "^6.0.0",
+    "supertest": "^6.1.6",
     "temp-dir": "^2.0.0",
     "tomlify-j0.4": "^3.0.0",
     "tree-kill": "^1.2.2"

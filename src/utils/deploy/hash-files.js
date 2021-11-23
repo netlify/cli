@@ -3,12 +3,12 @@ const { promisify } = require('util')
 const walker = require('folder-walker')
 const pump = promisify(require('pump'))
 
-const { hasherCtor, manifestCollectorCtor, fileFilterCtor, fileNormalizerCtor } = require('./hasher-segments')
+const { fileFilterCtor, fileNormalizerCtor, hasherCtor, manifestCollectorCtor } = require('./hasher-segments')
 
 const hashFiles = async (
   dir,
   configPath,
-  { concurrentHash, hashAlgorithm = 'sha1', assetType = 'file', statusCb, filter },
+  { assetType = 'file', concurrentHash, filter, hashAlgorithm = 'sha1', statusCb },
 ) => {
   if (!filter) throw new Error('Missing filter function option')
   const fileStream = walker([configPath, dir], { filter })

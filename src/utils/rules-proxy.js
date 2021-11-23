@@ -30,18 +30,17 @@ const getCountry = function () {
   return 'us'
 }
 
-const createRewriter = async function ({ distDir, projectDir, jwtSecret, jwtRoleClaim, configPath }) {
+const createRewriter = async function ({ configPath, distDir, jwtRoleClaim, jwtSecret, projectDir }) {
   let matcher = null
   const redirectsFiles = [...new Set([path.resolve(distDir, '_redirects'), path.resolve(projectDir, '_redirects')])]
   let redirects = await parseRedirects({ redirectsFiles, configPath })
 
   const watchedRedirectFiles = configPath === undefined ? redirectsFiles : [...redirectsFiles, configPath]
   onChanges(watchedRedirectFiles, async () => {
+    const existingRedirectsFiles = await pFilter(watchedRedirectFiles, fileExistsAsync)
     console.log(
       `${NETLIFYDEVLOG} Reloading redirect rules from`,
-      (await pFilter(watchedRedirectFiles, fileExistsAsync)).map((redirectFile) =>
-        path.relative(projectDir, redirectFile),
-      ),
+      existingRedirectsFiles.map((redirectFile) => path.relative(projectDir, redirectFile)),
     )
     redirects = await parseRedirects({ redirectsFiles, configPath })
     matcher = null

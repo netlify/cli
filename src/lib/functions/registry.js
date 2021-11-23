@@ -3,7 +3,7 @@ const { env } = require('process')
 const chalk = require('chalk')
 
 const { log, warn } = require('../../utils/command-helpers')
-const { NETLIFYDEVLOG, NETLIFYDEVERR } = require('../../utils/logo')
+const { NETLIFYDEVERR, NETLIFYDEVLOG } = require('../../utils/logo')
 const { mkdirRecursiveAsync } = require('../fs')
 const { getLogMessage } = require('../log')
 
@@ -12,9 +12,10 @@ const runtimes = require('./runtimes')
 const { watchDebounced } = require('./watcher')
 
 class FunctionsRegistry {
-  constructor({ capabilities, config, projectRoot, timeouts }) {
+  constructor({ capabilities, config, isConnected = false, projectRoot, timeouts }) {
     this.capabilities = capabilities
     this.config = config
+    this.isConnected = isConnected
     this.projectRoot = projectRoot
     this.timeouts = timeouts
 
@@ -128,7 +129,7 @@ class FunctionsRegistry {
       return
     }
 
-    if (func.isBackground && !this.capabilities.backgroundFunctions) {
+    if (func.isBackground && this.isConnected && !this.capabilities.backgroundFunctions) {
       warn(getLogMessage('functions.backgroundNotSupported'))
     }
 
@@ -153,7 +154,7 @@ class FunctionsRegistry {
 
     const functions = await this.listFunctions(directories, {
       featureFlags: {
-        buildGoSource: env.NETLIFY_EXPERIMENTAL_BUILD_GO_SOURCE === 'true',
+        buildGoSource: true,
         buildRustSource: env.NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE === 'true',
       },
     })

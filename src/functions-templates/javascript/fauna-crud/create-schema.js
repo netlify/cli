@@ -2,7 +2,7 @@
 const process = require('process')
 
 /* bootstrap database in your FaunaDB account - use with `netlify dev:exec <path-to-this-file>` */
-const { query, Client } = require('faunadb')
+const { Client, query } = require('faunadb')
 
 const createFaunaDB = async function () {
   if (!process.env.FAUNADB_SERVER_SECRET) {

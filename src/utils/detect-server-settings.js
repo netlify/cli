@@ -2,7 +2,7 @@ const { EOL } = require('os')
 const path = require('path')
 const process = require('process')
 
-const { listFrameworks, getFramework } = require('@netlify/framework-info')
+const { getFramework, listFrameworks } = require('@netlify/framework-info')
 const chalk = require('chalk')
 const fuzzy = require('fuzzy')
 const getPort = require('get-port')
@@ -27,7 +27,7 @@ const readHttpsSettings = async (options) => {
     )
   }
 
-  const { keyFile, certFile } = options
+  const { certFile, keyFile } = options
   if (typeof keyFile !== 'string') {
     throw new TypeError(`Private key file configuration should be a string`)
   }
@@ -82,7 +82,7 @@ const validateFrameworkConfig = ({ devConfig }) => {
   }
 }
 
-const validateConfiguredPort = ({ devConfig, detectedPort }) => {
+const validateConfiguredPort = ({ detectedPort, devConfig }) => {
   if (devConfig.port && devConfig.port === detectedPort) {
     const formattedPort = formatProperty('port')
     throw new Error(
@@ -101,7 +101,7 @@ const getDefaultDist = () => {
   return process.cwd()
 }
 
-const handleStaticServer = async ({ flags, devConfig, projectDir }) => {
+const handleStaticServer = async ({ devConfig, flags, projectDir }) => {
   validateNumberProperty({ devConfig, property: 'staticServerPort' })
 
   if (flags.dir) {
@@ -171,7 +171,8 @@ const getSettingsFromFramework = (framework) => {
 const hasDevCommand = (framework) => Array.isArray(framework.dev.commands) && framework.dev.commands.length !== 0
 
 const detectFrameworkSettings = async ({ projectDir }) => {
-  const frameworks = (await listFrameworks({ projectDir })).filter((framework) => hasDevCommand(framework))
+  const projectFrameworks = await listFrameworks({ projectDir })
+  const frameworks = projectFrameworks.filter((framework) => hasDevCommand(framework))
 
   if (frameworks.length === 1) {
     return getSettingsFromFramework(frameworks[0])
@@ -229,7 +230,7 @@ const handleCustomFramework = ({ devConfig }) => {
 
 const handleForcedFramework = async ({ devConfig, projectDir }) => {
   // this throws if `devConfig.framework` is not a supported framework
-  const { command, frameworkPort, dist, framework, env, pollingStrategies } = getSettingsFromFramework(
+  const { command, dist, env, framework, frameworkPort, pollingStrategies } = getSettingsFromFramework(
     await getFramework(devConfig.framework, { projectDir }),
   )
   return {

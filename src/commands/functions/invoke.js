@@ -9,7 +9,7 @@ const fetch = require('node-fetch')
 
 const Command = require('../../utils/command')
 const { error } = require('../../utils/command-helpers')
-const { getFunctions, BACKGROUND } = require('../../utils/get-functions')
+const { BACKGROUND, getFunctions } = require('../../utils/get-functions')
 const { NETLIFYDEVWARN } = require('../../utils/logo')
 
 // https://www.netlify.com/docs/functions/#event-triggered-functions
@@ -33,7 +33,7 @@ const DEFAULT_PORT = 8888
 
 class FunctionsInvokeCommand extends Command {
   async run() {
-    const { flags, args } = this.parse(FunctionsInvokeCommand)
+    const { args, flags } = this.parse(FunctionsInvokeCommand)
 
     const { config } = this.netlify
 

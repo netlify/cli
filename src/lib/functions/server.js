@@ -1,6 +1,6 @@
 const jwtDecode = require('jwt-decode')
 
-const { log, error: errorExit } = require('../../utils/command-helpers')
+const { error: errorExit, log } = require('../../utils/command-helpers')
 const { getInternalFunctionsDir } = require('../../utils/functions')
 const { NETLIFYDEVERR, NETLIFYDEVLOG } = require('../../utils/logo')
 
@@ -40,7 +40,7 @@ const buildClientContext = function (headers) {
 const createHandler = function ({ functionsRegistry }) {
   return async function handler(request, response) {
     // handle proxies without path re-writes (http-servr)
-    const cleanPath = request.path.replace(/^\/.netlify\/functions/, '')
+    const cleanPath = request.path.replace(/^\/.netlify\/(functions|builders)/, '')
     const functionName = cleanPath.split('/').find(Boolean)
     const func = functionsRegistry.get(functionName)
 
@@ -78,9 +78,10 @@ const createHandler = function ({ functionsRegistry }) {
       (prev, [key, value]) => ({ ...prev, [key]: Array.isArray(value) ? value : [value] }),
       {},
     )
-    const host = request.get('host') || 'localhost'
-    const rawUrl = `${request.protocol}://${host}${request.originalUrl}`
     const rawQuery = new URLSearchParams(request.query).toString()
+    const url = new URL(requestPath, `${request.protocol}://${request.get('host') || 'localhost'}`)
+    url.search = rawQuery
+    const rawUrl = url.toString()
     const event = {
       path: requestPath,
       httpMethod: request.method,
@@ -108,18 +109,30 @@ const createHandler = function ({ functionsRegistry }) {
     } else {
       const { error, result } = await func.invoke(event, clientContext)
 
+      // check for existence of metadata if this is a builder function
+      if (/^\/.netlify\/(builders)/.test(request.path) && (!result.metadata || !result.metadata.builder_function)) {
+        response.status(400).send({
+          message:
+            'Function is not an on-demand builder. See https://ntl.fyi/create-builder for how to convert a function to a builder.',
+        })
+        response.end()
+        return
+      }
+
       handleSynchronousFunction(error, result, response)
     }
   }
 }
 
-const getFunctionsServer = function ({ functionsRegistry, siteUrl, prefix }) {
+const getFunctionsServer = function ({ buildersPrefix, functionsPrefix, functionsRegistry, siteUrl }) {
   // performance optimization, load express on demand
   // eslint-disable-next-line node/global-require
   const express = require('express')
   // eslint-disable-next-line node/global-require
   const expressLogging = require('express-logging')
   const app = express()
+  const functionHandler = createHandler({ functionsRegistry })
+
   app.set('query parser', 'simple')
 
   app.use(
@@ -140,12 +153,22 @@ const getFunctionsServer = function ({ functionsRegistry, siteUrl, prefix }) {
     res.status(204).end()
   })
 
-  app.all(`${prefix}*`, createHandler({ functionsRegistry }))
+  app.all(`${functionsPrefix}*`, functionHandler)
+  app.all(`${buildersPrefix}*`, functionHandler)
 
   return app
 }
 
-const startFunctionsServer = async ({ config, settings, site, siteUrl, capabilities, timeouts, prefix = '' }) => {
+const startFunctionsServer = async ({
+  buildersPrefix = '',
+  capabilities,
+  config,
+  functionsPrefix = '',
+  settings,
+  site,
+  siteUrl,
+  timeouts,
+}) => {
   const internalFunctionsDir = await getInternalFunctionsDir({ base: site.root })
 
   // The order of the function directories matters. Leftmost directories take
@@ -156,6 +179,7 @@ const startFunctionsServer = async ({ config, settings, site, siteUrl, capabilit
     const functionsRegistry = new FunctionsRegistry({
       capabilities,
       config,
+      isConnected: Boolean(siteUrl),
       projectRoot: site.root,
       timeouts,
     })
@@ -165,7 +189,8 @@ const startFunctionsServer = async ({ config, settings, site, siteUrl, capabilit
     const server = getFunctionsServer({
       functionsRegistry,
       siteUrl,
-      prefix,
+      functionsPrefix,
+      buildersPrefix,
     })
 
     await startWebServer({ server, settings })
@@ -185,4 +210,4 @@ const startWebServer = async ({ server, settings }) => {
   })
 }
 
-module.exports = { startFunctionsServer }
+module.exports = { startFunctionsServer, createHandler }

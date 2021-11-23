@@ -2,7 +2,7 @@ const path = require('path')
 const process = require('process')
 
 const execa = require('execa')
-const { fetchVersion, fetchLatest, updateAvailable, newerVersion } = require('gh-release-fetch')
+const { fetchLatest, fetchVersion, newerVersion, updateAvailable } = require('gh-release-fetch')
 const isExe = require('isexe')
 
 const { log } = require('../utils/command-helpers')
@@ -24,7 +24,7 @@ const getOptions = () => {
   }
 }
 
-const isVersionOutdated = async ({ packageName, currentVersion, latestVersion }) => {
+const isVersionOutdated = async ({ currentVersion, latestVersion, packageName }) => {
   if (latestVersion) {
     return newerVersion(latestVersion, currentVersion)
   }
@@ -33,7 +33,7 @@ const isVersionOutdated = async ({ packageName, currentVersion, latestVersion })
   return outdated
 }
 
-const shouldFetchLatestVersion = async ({ binPath, packageName, execName, execArgs, pattern, latestVersion }) => {
+const shouldFetchLatestVersion = async ({ binPath, execArgs, execName, latestVersion, packageName, pattern }) => {
   const execPath = path.join(binPath, getExecName({ execName }))
 
   const exists = await isExe(execPath, { ignoreErrors: true })
@@ -69,7 +69,7 @@ const shouldFetchLatestVersion = async ({ binPath, packageName, execName, execAr
   }
 }
 
-const fetchLatestVersion = async ({ packageName, execName, destination, extension, latestVersion }) => {
+const fetchLatestVersion = async ({ destination, execName, extension, latestVersion, packageName }) => {
   const win = isWindows()
   const platform = win ? 'windows' : process.platform
   const release = {

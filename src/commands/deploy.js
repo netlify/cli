@@ -1,7 +1,7 @@
 const path = require('path')
 const process = require('process')
 
-const { updateConfig, restoreConfig } = require('@netlify/config')
+const { restoreConfig, updateConfig } = require('@netlify/config')
 const { flags: flagsLib } = require('@oclif/command')
 const chalk = require('chalk')
 const { get } = require('dot-prop')
@@ -16,19 +16,19 @@ const { normalizeFunctionsConfig } = require('../lib/functions/config')
 const { getLogMessage } = require('../lib/log')
 const { startSpinner, stopSpinner } = require('../lib/spinner')
 const Command = require('../utils/command')
-const { log, logJson, getToken, error, exit, warn } = require('../utils/command-helpers')
+const { error, exit, getToken, log, logJson, warn } = require('../utils/command-helpers')
 const { deploySite } = require('../utils/deploy/deploy-site')
 const { deployEdgeHandlers } = require('../utils/edge-handlers')
 const { getFunctionsManifestPath, getInternalFunctionsDir } = require('../utils/functions')
-const { NETLIFYDEV, NETLIFYDEVLOG, NETLIFYDEVERR } = require('../utils/logo')
-const openBrowser = require('../utils/open-browser')
+const { NETLIFYDEV, NETLIFYDEVERR, NETLIFYDEVLOG } = require('../utils/logo')
+const { openBrowser } = require('../utils/open-browser')
 
 const LinkCommand = require('./link')
 const SitesCreateCommand = require('./sites/create')
 
 const DEFAULT_DEPLOY_TIMEOUT = 1.2e6
 
-const triggerDeploy = async ({ api, siteId, siteData }) => {
+const triggerDeploy = async ({ api, siteData, siteId }) => {
   try {
     const siteBuild = await api.createSiteBuild({ siteId })
     log(
@@ -43,7 +43,7 @@ const triggerDeploy = async ({ api, siteId, siteData }) => {
   }
 }
 
-const getDeployFolder = async ({ flags, config, site, siteData }) => {
+const getDeployFolder = async ({ config, flags, site, siteData }) => {
   let deployFolder
   if (flags.dir) {
     deployFolder = path.resolve(process.cwd(), flags.dir)
@@ -93,7 +93,7 @@ const validateDeployFolder = async ({ deployFolder }) => {
   return stat
 }
 
-const getFunctionsFolder = ({ flags, config, site, siteData }) => {
+const getFunctionsFolder = ({ config, flags, site, siteData }) => {
   let functionsFolder
   // Support "functions" and "Functions"
   const funcConfig = config.functionsDirectory
@@ -140,7 +140,7 @@ const validateFolders = async ({ deployFolder, functionsFolder }) => {
   return { deployFolderStat, functionsFolderStat }
 }
 
-const getDeployFilesFilter = ({ site, deployFolder }) => {
+const getDeployFilesFilter = ({ deployFolder, site }) => {
   // site.root === deployFolder can happen when users run `netlify deploy --dir .`
   // in that specific case we don't want to publish the repo node_modules
   // when site.root !== deployFolder the behaviour matches our buildbot
@@ -169,7 +169,7 @@ const SEC_TO_MILLISEC = 1e3
 // 100 bytes
 const SYNC_FILE_LIMIT = 1e2
 
-const prepareProductionDeploy = async ({ siteData, api }) => {
+const prepareProductionDeploy = async ({ api, siteData }) => {
   if (isObject(siteData.published_deploy) && siteData.published_deploy.locked) {
     log(`\n${NETLIFYDEVERR} Deployments are "locked" for production context of this site\n`)
     const { unlockChoice } = await inquirer.prompt([
@@ -227,17 +227,17 @@ const reportDeployError = ({ error_, failAndExit }) => {
 }
 
 const runDeploy = async ({
-  flags,
-  deployToProduction,
-  site,
-  siteData,
+  alias,
   api,
-  siteId,
-  deployFolder,
   configPath,
+  deployFolder,
+  deployToProduction,
+  flags,
   functionsConfig,
   functionsFolder,
-  alias,
+  site,
+  siteData,
+  siteId,
 }) => {
   let results
   let deployId
@@ -314,14 +314,14 @@ const handleBuild = async ({ context, flags }) => {
     token,
     flags,
   })
-  const { exitCode, newConfig, configMutations } = await runBuild(options)
+  const { configMutations, exitCode, newConfig } = await runBuild(options)
   if (exitCode !== 0) {
     exit(exitCode)
   }
   return { newConfig, configMutations }
 }
 
-const printResults = ({ flags, results, deployToProduction }) => {
+const printResults = ({ deployToProduction, flags, results }) => {
   const msgData = {
     Logs: `${results.logsUrl}`,
     'Unique Deploy URL': results.deployUrl,

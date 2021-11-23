@@ -4,9 +4,9 @@ const { zipFunctions } = require('@netlify/zip-it-and-ship-it')
 const { flags: flagsLib } = require('@oclif/command')
 
 const Command = require('../../utils/command')
-const { log, exit } = require('../../utils/command-helpers')
+const { exit, log } = require('../../utils/command-helpers')
 const { getFunctionsDir } = require('../../utils/functions')
-const { NETLIFYDEVLOG, NETLIFYDEVERR } = require('../../utils/logo')
+const { NETLIFYDEVERR, NETLIFYDEVLOG } = require('../../utils/logo')
 
 class FunctionsBuildCommand extends Command {
   run() {

@@ -16,10 +16,10 @@ const pEvent = require('p-event')
 const pFilter = require('p-filter')
 const toReadableStream = require('to-readable-stream')
 
-const { readFileAsync, fileExistsAsync, isFileAsync } = require('../lib/fs')
+const { fileExistsAsync, isFileAsync, readFileAsync } = require('../lib/fs')
 
 const { createStreamPromise } = require('./create-stream-promise')
-const { parseHeaders, headersForPath } = require('./headers')
+const { headersForPath, parseHeaders } = require('./headers')
 const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./logo')
 const { createRewriter } = require('./rules-proxy')
 const { onChanges } = require('./rules-proxy')
@@ -28,7 +28,7 @@ const isInternal = function (url) {
   return url.startsWith('/.netlify/')
 }
 const isFunction = function (functionsPort, url) {
-  return functionsPort && url.match(/^\/.netlify\/functions\/.+/)
+  return functionsPort && url.match(/^\/.netlify\/(functions|builders)\/.+/)
 }
 
 const getAddonUrl = function (addonsUrls, req) {
@@ -54,11 +54,11 @@ const isExternal = function (match) {
   return match.to && match.to.match(/^https?:\/\//)
 }
 
-const stripOrigin = function ({ pathname, search, hash }) {
+const stripOrigin = function ({ hash, pathname, search }) {
   return `${pathname}${search}${hash}`
 }
 
-const proxyToExternalUrl = function ({ req, res, dest, destURL }) {
+const proxyToExternalUrl = function ({ dest, destURL, req, res }) {
   console.log(`${NETLIFYDEVLOG} Proxying to ${dest}`)
   const handler = createProxyMiddleware({
     target: dest.origin,
@@ -69,7 +69,7 @@ const proxyToExternalUrl = function ({ req, res, dest, destURL }) {
   return handler(req, res, {})
 }
 
-const handleAddonUrl = function ({ req, res, addonUrl }) {
+const handleAddonUrl = function ({ addonUrl, req, res }) {
   const dest = new URL(addonUrl)
   const destURL = stripOrigin(dest)
 
@@ -114,7 +114,7 @@ const alternativePathsFor = function (url) {
   return paths
 }
 
-const serveRedirect = async function ({ req, res, proxy, match, options }) {
+const serveRedirect = async function ({ match, options, proxy, req, res }) {
   if (!match) return proxy.web(req, res, options)
 
   options = options || req.proxyOptions || {}
@@ -271,7 +271,7 @@ const reqToURL = function (req, pathname) {
 
 const MILLISEC_TO_SEC = 1e3
 
-const initializeProxy = async function ({ port, distDir, projectDir, configPath }) {
+const initializeProxy = async function ({ configPath, distDir, port, projectDir }) {
   const proxy = httpProxy.createProxyServer({
     selfHandleResponse: true,
     target: {
@@ -286,9 +286,10 @@ const initializeProxy = async function ({ port, distDir, projectDir, configPath 
 
   const watchedHeadersFiles = configPath === undefined ? headersFiles : [...headersFiles, configPath]
   onChanges(watchedHeadersFiles, async () => {
+    const existingHeadersFiles = await pFilter(watchedHeadersFiles, fileExistsAsync)
     console.log(
       `${NETLIFYDEVLOG} Reloading headers files from`,
-      (await pFilter(watchedHeadersFiles, fileExistsAsync)).map((headerFile) => path.relative(projectDir, headerFile)),
+      existingHeadersFiles.map((headerFile) => path.relative(projectDir, headerFile)),
     )
     headers = await parseHeaders({ headersFiles, configPath })
   })
@@ -358,7 +359,7 @@ const initializeProxy = async function ({ port, distDir, projectDir, configPath 
   return handlers
 }
 
-const onRequest = async ({ proxy, rewriter, settings, addonsUrls, functionsServer }, req, res) => {
+const onRequest = async ({ addonsUrls, functionsServer, proxy, rewriter, settings }, req, res) => {
   req.originalBody = ['GET', 'OPTIONS', 'HEAD'].includes(req.method)
     ? null
     : await createStreamPromise(req, BYTES_LIMIT)

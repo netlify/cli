@@ -9,7 +9,7 @@ const OpenSiteCommand = require('./site')
 
 class OpenCommand extends Command {
   async run() {
-    const { flags, args } = this.parse(OpenCommand)
+    const { args, flags } = this.parse(OpenCommand)
 
     // Show help on empty sub command
     if (isEmptyCommand(flags, args)) {

@@ -21,7 +21,7 @@ const isPluginInstalled = (configPlugins, plugin) =>
 const getRecommendPlugins = (frameworkPlugins, config) =>
   frameworkPlugins.filter((plugin) => !isPluginInstalled(config.plugins, plugin))
 
-const getPluginsToInstall = ({ plugins, installSinglePlugin, recommendedPlugins }) => {
+const getPluginsToInstall = ({ installSinglePlugin, plugins, recommendedPlugins }) => {
   if (Array.isArray(plugins)) {
     return plugins.map((plugin) => ({ package: plugin }))
   }

@@ -13,9 +13,9 @@ const { error: failAndExit, warn } = require('../command-helpers')
 
 const { getFrameworkInfo } = require('./frameworks')
 const { detectNodeVersion } = require('./node-version')
-const { getPluginsList, getPluginInfo, getRecommendPlugins, getPluginsToInstall, getUIPlugins } = require('./plugins')
+const { getPluginInfo, getPluginsList, getPluginsToInstall, getRecommendPlugins, getUIPlugins } = require('./plugins')
 
-const normalizeDir = ({ baseDirectory, dir, defaultValue }) => {
+const normalizeDir = ({ baseDirectory, defaultValue, dir }) => {
   if (dir === undefined) {
     return defaultValue
   }
@@ -24,19 +24,19 @@ const normalizeDir = ({ baseDirectory, dir, defaultValue }) => {
   return relativeDir || defaultValue
 }
 
-const getDefaultBase = ({ repositoryRoot, baseDirectory }) => {
+const getDefaultBase = ({ baseDirectory, repositoryRoot }) => {
   if (baseDirectory !== repositoryRoot && baseDirectory.startsWith(repositoryRoot)) {
     return path.relative(repositoryRoot, baseDirectory)
   }
 }
 
 const getDefaultSettings = ({
-  repositoryRoot,
-  config,
   baseDirectory,
-  frameworkPlugins,
+  config,
   frameworkBuildCommand,
   frameworkBuildDir,
+  frameworkPlugins,
+  repositoryRoot,
 }) => {
   const recommendedPlugins = getRecommendPlugins(frameworkPlugins, config)
   const {
@@ -55,12 +55,12 @@ const getDefaultSettings = ({
 }
 
 const getPromptInputs = async ({
+  defaultBaseDir,
   defaultBuildCmd,
   defaultBuildDir,
   defaultFunctionsDir,
-  defaultBaseDir,
-  recommendedPlugins,
   frameworkName,
+  recommendedPlugins,
 }) => {
   const inputs = [
     defaultBaseDir !== undefined && {
@@ -132,7 +132,7 @@ const getPromptInputs = async ({
 const getBaseDirectory = ({ repositoryRoot, siteRoot }) =>
   path.normalize(repositoryRoot) === path.normalize(siteRoot) ? process.cwd() : siteRoot
 
-const getBuildSettings = async ({ repositoryRoot, siteRoot, config, env }) => {
+const getBuildSettings = async ({ config, env, repositoryRoot, siteRoot }) => {
   const baseDirectory = getBaseDirectory({ repositoryRoot, siteRoot })
   const nodeVersion = await detectNodeVersion({ baseDirectory, env })
   const {
@@ -153,7 +153,7 @@ const getBuildSettings = async ({ repositoryRoot, siteRoot, config, env }) => {
       frameworkBuildDir,
       frameworkPlugins,
     })
-  const { baseDir, buildCmd, buildDir, functionsDir, plugins, installSinglePlugin } = await inquirer.prompt(
+  const { baseDir, buildCmd, buildDir, functionsDir, installSinglePlugin, plugins } = await inquirer.prompt(
     await getPromptInputs({
       defaultBuildCmd,
       defaultBuildDir,
@@ -176,8 +176,8 @@ const getBuildSettings = async ({ repositoryRoot, siteRoot, config, env }) => {
 
 const getNetlifyToml = ({
   command = '# no build command',
-  publish = '.',
   functions = 'functions',
+  publish = '.',
 }) => `# example netlify.toml
 [build]
   command = "${command}"
@@ -201,7 +201,7 @@ const getNetlifyToml = ({
   ## more info on configuring this file: https://www.netlify.com/docs/netlify-toml-reference/
 `
 
-const saveNetlifyToml = async ({ repositoryRoot, config, configPath, baseDir, buildCmd, buildDir, functionsDir }) => {
+const saveNetlifyToml = async ({ baseDir, buildCmd, buildDir, config, configPath, functionsDir, repositoryRoot }) => {
   const tomlPathParts = [repositoryRoot, baseDir, 'netlify.toml'].filter(Boolean)
   const tomlPath = path.join(...tomlPathParts)
   const exists = await fileExistsAsync(tomlPath)
@@ -233,7 +233,7 @@ const saveNetlifyToml = async ({ repositoryRoot, config, configPath, baseDir, bu
   }
 }
 
-const formatErrorMessage = ({ message, error }) => {
+const formatErrorMessage = ({ error, message }) => {
   const errorMessage = error.json ? `${error.message} - ${JSON.stringify(error.json)}` : error.message
   return `${message} with error: ${chalk.red(errorMessage)}`
 }
@@ -250,7 +250,7 @@ const createDeployKey = async ({ api }) => {
   }
 }
 
-const updateSite = async ({ siteId, api, options }) => {
+const updateSite = async ({ api, options, siteId }) => {
   try {
     const updatedSite = await api.updateSite({ siteId, body: options })
     return updatedSite
@@ -260,7 +260,7 @@ const updateSite = async ({ siteId, api, options }) => {
   }
 }
 
-const setupSite = async ({ api, siteId, repo, configPlugins, pluginsToInstall }) => {
+const setupSite = async ({ api, configPlugins, pluginsToInstall, repo, siteId }) => {
   const updatedSite = await updateSite({
     siteId,
     api,

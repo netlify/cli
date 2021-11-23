@@ -4,7 +4,7 @@ const handler = async (event, context) => {
   if (event.httpMethod !== 'POST') return { statusCode: 400, body: 'Must POST to this function' }
 
   // send account information along with the POST
-  const { email, password, full_name: fullName } = JSON.parse(event.body)
+  const { email, full_name: fullName, password } = JSON.parse(event.body)
   if (!email) return { statusCode: 400, body: 'email missing' }
   if (!password) return { statusCode: 400, body: 'password missing' }
   if (!fullName) return { statusCode: 400, body: 'full_name missing' }

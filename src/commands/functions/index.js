@@ -25,7 +25,7 @@ const hasArgs = function (args) {
 
 class FunctionsCommand extends TrackedCommand {
   run() {
-    const { flags, args } = this.parse(FunctionsCommand)
+    const { args, flags } = this.parse(FunctionsCommand)
 
     // run help command if no args passed
     if (isEmptyCommand(flags, args)) {

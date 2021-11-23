@@ -12,19 +12,19 @@ const { clearSpinner, startSpinner, stopSpinner } = require('../lib/spinner')
 
 const { log } = require('./command-helpers')
 const { createDeferred } = require('./deferred')
-const { NETLIFYDEVLOG, NETLIFYDEVERR, NETLIFYDEVWARN } = require('./logo')
+const { NETLIFYDEVERR, NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./logo')
 
 const EDGE_HANDLERS_BUNDLER_CLI_PATH = path.resolve(require.resolve('@netlify/plugin-edge-handlers'), '..', 'cli.js')
 
 const startForwardProxy = async ({
-  port,
+  debug,
   frameworkPort,
   functionsPort,
-  publishDir,
-  debug,
-  locationDb,
   jwtRolesPath,
   jwtSecret,
+  locationDb,
+  port,
+  publishDir,
 }) => {
   const args = [
     'run',
@@ -62,7 +62,7 @@ const startForwardProxy = async ({
   }
 
   const { subprocess } = runProcess({ args })
-  const { forwarder, firstBundleReady } = forwardMessagesToLog({ subprocess })
+  const { firstBundleReady, forwarder } = forwardMessagesToLog({ subprocess })
 
   subprocess.on('close', process.exit)
   subprocess.on('SIGINT', process.exit)
