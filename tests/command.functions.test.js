@@ -582,7 +582,7 @@ test('should trigger background function from event', async (t) => {
           throwHttpErrors: false,
           retry: null,
         })
-        t.is(response.statusCode, 500)
+        t.is(response.statusCode, 400)
 
         const stdout = await callCli(['functions:invoke', 'hello-world', '--identity', `--port=${server.port}`], {
           cwd: builder.directory,
