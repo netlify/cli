@@ -153,7 +153,7 @@
     "minimist": "^1.2.5",
     "mock-require": "^3.0.3",
     "multiparty": "^4.2.1",
-    "netlify": "^8.0.4",
+    "netlify": "^9.0.0",
     "netlify-headers-parser": "^4.0.1",
     "netlify-redirect-parser": "^11.0.3",
     "netlify-redirector": "^0.2.1",
