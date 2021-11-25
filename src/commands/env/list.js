@@ -1,4 +1,3 @@
-const fromEntries = require('@ungap/from-entries')
 const AsciiTable = require('ascii-table')
 const isEmpty = require('lodash/isEmpty')
 
@@ -17,7 +16,7 @@ class EnvListCommand extends Command {
     }
 
     const siteData = await api.getSite({ siteId })
-    const environment = fromEntries(
+    const environment = Object.fromEntries(
       Object.entries(cachedConfig.env)
         // Omitting general variables to reduce noise.
         .filter(([, variable]) => variable.sources[0] !== 'general')

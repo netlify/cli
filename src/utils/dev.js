@@ -1,6 +1,5 @@
 const process = require('process')
 
-const fromEntries = require('@ungap/from-entries')
 const chalk = require('chalk')
 const { get } = require('dot-prop')
 const getPort = require('get-port')
@@ -68,7 +67,9 @@ const getAddons = async ({ api, site }) => {
 }
 
 const getAddonsInformation = ({ addons, siteInfo }) => {
-  const urls = fromEntries(addons.map((addon) => [addon.service_slug, `${siteInfo.ssl_url}${addon.service_path}`]))
+  const urls = Object.fromEntries(
+    addons.map((addon) => [addon.service_slug, `${siteInfo.ssl_url}${addon.service_path}`]),
+  )
   const env = Object.assign({}, ...addons.map((addon) => addon.env))
   return { urls, env }
 }
