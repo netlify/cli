@@ -10,7 +10,7 @@
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
-        "@netlify/build": "^19.0.4",
+        "@netlify/build": "^19.0.6",
         "@netlify/config": "^16.0.3",
         "@netlify/framework-info": "^6.0.0",
         "@netlify/local-functions-proxy": "^1.1.1",
@@ -2426,9 +2426,9 @@
       }
     },
     "node_modules/@netlify/build": {
-      "version": "19.0.4",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-19.0.4.tgz",
-      "integrity": "sha512-e02aeq+vfbkuvsjh/BR/6rn6qbSRB5qMX+MuqFW7/oVwveoGyBHPcQ+tlbPDTkb3iEHBkq2JCwLqrY1mNYOAwA==",
+      "version": "19.0.6",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-19.0.6.tgz",
+      "integrity": "sha512-5F4A+RGDisTgkJr706NNjWPDM0l9ddOKlBRDwYLcic37k4aeeSswPUxHmS7BbLl0tuPfM4n3lLzlJDZr76H2Tg==",
       "dependencies": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^3.0.0",
@@ -2440,9 +2440,7 @@
         "@netlify/run-utils": "^3.0.0",
         "@netlify/zip-it-and-ship-it": "^5.0.0",
         "@sindresorhus/slugify": "^1.1.0",
-        "@ungap/from-entries": "^0.2.1",
         "ansi-escapes": "^4.3.2",
-        "array-flat-polyfill": "^1.0.1",
         "chalk": "^4.1.2",
         "clean-stack": "^3.0.1",
         "execa": "^5.1.1",
@@ -23753,9 +23751,9 @@
       }
     },
     "@netlify/build": {
-      "version": "19.0.4",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-19.0.4.tgz",
-      "integrity": "sha512-e02aeq+vfbkuvsjh/BR/6rn6qbSRB5qMX+MuqFW7/oVwveoGyBHPcQ+tlbPDTkb3iEHBkq2JCwLqrY1mNYOAwA==",
+      "version": "19.0.6",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-19.0.6.tgz",
+      "integrity": "sha512-5F4A+RGDisTgkJr706NNjWPDM0l9ddOKlBRDwYLcic37k4aeeSswPUxHmS7BbLl0tuPfM4n3lLzlJDZr76H2Tg==",
       "requires": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^3.0.0",
@@ -23767,9 +23765,7 @@
         "@netlify/run-utils": "^3.0.0",
         "@netlify/zip-it-and-ship-it": "^5.0.0",
         "@sindresorhus/slugify": "^1.1.0",
-        "@ungap/from-entries": "^0.2.1",
         "ansi-escapes": "^4.3.2",
-        "array-flat-polyfill": "^1.0.1",
         "chalk": "^4.1.2",
         "clean-stack": "^3.0.1",
         "execa": "^5.1.1",
