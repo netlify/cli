@@ -1,25 +1,5 @@
-const { isEmptyCommand } = require('../../utils/check-command-inputs')
-const Command = require('../../utils/command')
-const showHelp = require('../../utils/show-help')
+const { createEnvCommand } = require('./env');
 
-class EnvCommand extends Command {
-  run() {
-    const { args, flags } = this.parse(EnvCommand)
-
-    // Show help on empty sub command
-    if (isEmptyCommand(flags, args)) {
-      showHelp(this.id)
-    }
-  }
+module.exports = {
+  createEnvCommand
 }
-
-EnvCommand.description = `(Beta) Control environment variables for the current site`
-EnvCommand.examples = [
-  'netlify env:list',
-  'netlify env:get VAR_NAME',
-  'netlify env:set VAR_NAME value',
-  'netlify env:unset VAR_NAME',
-  'netlify env:import fileName',
-]
-
-module.exports = EnvCommand

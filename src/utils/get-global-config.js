@@ -1,8 +1,9 @@
+const { readFile } = require('fs/promises')
+
 const Configstore = require('configstore')
 const memoizeOne = require('memoize-one')
 const { v4: uuidv4 } = require('uuid')
 
-const { readFileAsync } = require('../lib/fs')
 const { getLegacyPathInHome, getPathInHome } = require('../lib/settings')
 
 const globalConfigDefaults = {
@@ -19,7 +20,7 @@ const getGlobalConfigOnce = async function () {
   let legacyConfig
   // Read legacy config if exists
   try {
-    legacyConfig = JSON.parse(await readFileAsync(legacyPath))
+    legacyConfig = JSON.parse(await readFile(legacyPath))
   } catch {}
   // Use legacy config as default values
   const defaults = { ...globalConfigDefaults, ...legacyConfig }

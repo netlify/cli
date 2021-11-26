@@ -1,4 +1,82 @@
-#!/usr/bin/env node
+#!/usr/bin/env node --trace-warnings
+const { argv } = require('process')
 
-require('..').run()
-.catch(require('@oclif/errors/handle'))
+const updateNotifier = require('update-notifier')
+const { USER_AGENT } = require('../src/utils')
+
+const { BaseCommand } = require('../src/commands/base-command')
+const { createAddonsCommand } = require('../src/commands/addons')
+const { createApiCommand } = require('../src/commands/api')
+const { createBuildCommand } = require('../src/commands/build')
+const { createCompletionCommand } = require('../src/commands/completion')
+const { createDeployCommand } = require('../src/commands/deploy')
+const { createDevCommand } = require('../src/commands/dev')
+const { createEnvCommand } = require('../src/commands/env')
+const { createFunctionsCommand } = require('../src/commands/functions')
+const { createInitCommand } = require('../src/commands/init')
+const { createLinkCommand } = require('../src/commands/link')
+const { createLmCommand } = require('../src/commands/lm')
+const { createLoginCommand } = require('../src/commands/login')
+const { createOpenCommand } = require('../src/commands/open')
+const { createPluginsCommand } = require('../src/commands/plugins')
+const { createSitesCommand } = require('../src/commands/sites')
+const { createStatusCommand } = require('../src/commands/status')
+const { createSwitchCommand } = require('../src/commands/switch')
+const { createUnlinkCommand } = require('../src/commands/unlink')
+const { createWatchCommand } = require('../src/commands/watch')
+
+// 12 hours
+const UPDATE_CHECK_INTERVAL = 432e5
+
+if (require.main === module) {
+  const pkg = require('../package.json')
+
+  try {
+    updateNotifier({
+      pkg,
+      updateCheckInterval: UPDATE_CHECK_INTERVAL,
+    }).notify()
+  } catch (error) {
+    console.log('Error checking for updates:')
+    console.log(error)
+  }
+
+  const program = new BaseCommand('netlify-cli')
+  program.version(USER_AGENT)
+
+  program.configureHelp({
+    // TODO: Add custom formater to have same visual styling
+    //   formatHelp: (cmd, helper) => {
+    //     console.log(cmd, helper);
+    //     const longestFlag = Math.max(...cmd.options.map((option) => option.flags.length)) + 1;
+    //     const table = cmd.options.map(({flags, description}) => `  ${flags}${new Array(longestFlag-flags.length).fill().join(' ')}   {grey ${description}} `).join('\n')
+    //     return chalk`{bold OPTIONS}
+    // ${table}
+    // `
+    //   }
+  })
+
+  createAddonsCommand(program)
+  createApiCommand(program)
+  createBuildCommand(program)
+  createCompletionCommand(program)
+  createDeployCommand(program)
+  createDevCommand(program)
+  createEnvCommand(program)
+  createFunctionsCommand(program)
+  createInitCommand(program)
+  createLinkCommand(program)
+  createLmCommand(program)
+  createLoginCommand(program)
+  createOpenCommand(program)
+  createPluginsCommand(program)
+  createSitesCommand(program)
+  createStatusCommand(program)
+  createSwitchCommand(program)
+  createUnlinkCommand(program)
+  createWatchCommand(program)
+
+  program.parse(argv)
+
+  global.program = program
+}
