@@ -48,7 +48,7 @@ const NETLIFYDEVERR = `${chalk.redBright('◈')}`
 
 // eslint-disable-next-line id-length
 const $ = NETLIFY_CYAN('$')
-const BANG = chalk.red(process.platform === 'win32' ? '»' : '›')
+const BANG = process.platform === 'win32' ? '»' : '›'
 
 /**
  * Generates a CommandHelp section for the command
@@ -158,6 +158,10 @@ const getToken = async (tokenFromOptions) => {
 // 'functions:invoke' need to return the data from the function as is
 const isDefaultJson = () => argv[0] === 'functions:invoke' || (argv[0] === 'api' && !argv.includes('--list'))
 
+/**
+ * logs a json message
+ * @param {string|object} message
+ */
 const logJson = (message = '') => {
   if (argv.includes('--json') || isDefaultJson()) {
     process.stdout.write(JSON.stringify(message, null, 2))
@@ -173,26 +177,29 @@ const log = (message = '', ...args) => {
   process.stdout.write(`${format(message, ...args)}\n`)
 }
 
+/**
+ * logs a warning message
+ * @param {string} message
+ */
 const warn = (message = '') => {
-  // TODO check for better solution
-  // Errors.warn(message)
-  throw new Error('warn() method needs to be implemented without oclif')
+  const bang = chalk.yellow(BANG)
+  log(` ${bang}   ${message}`);
 }
 
 /**
- * throws an error
+ * throws an error or log it
  * @param {string|Error} message
  * @param {object} [options]
  * @param {boolean} [options.exit]
  */
 const error = (message = '', options = {}) => {
-  // TODO check for better solution
   const err = message instanceof Error ? message : new Error(message)
   if (options.exit === false) {
+    const bang = chalk.red(BANG)
     if (process.env.DEBUG) {
-      console.error(` ${BANG}   ${err.stack.split('\n').join(`\n ${BANG}   `)}`)
+      process.stderr.write(` ${bang}   Warning: ${err.stack.split('\n').join(`\n ${bang}   `)}`)
     } else {
-      console.error(` ${BANG}   ${err.name}: ${err.message}`)
+      process.stderr.write(` ${bang}   ${err.name}: ${err.message}`)
     }
   } else {
     throw err

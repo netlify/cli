@@ -1,0 +1,38 @@
+// @ts-check
+const { existsSync } = require('fs')
+const { readFile, writeFile } = require('fs/promises')
+const path = require('path')
+
+const parseIgnore = require('parse-gitignore')
+
+const hasGitIgnore = function (dir) {
+  const gitIgnorePath = path.join(dir, '.gitignore')
+  return existsSync(gitIgnorePath)
+}
+
+const ensureNetlifyIgnore = async function (dir) {
+  const gitIgnorePath = path.join(dir, '.gitignore')
+  const ignoreContent = '# Local Netlify folder\n.netlify\n'
+
+  /* No .gitignore file. Create one and ignore .netlify folder */
+  if (!hasGitIgnore(dir)) {
+    await writeFile(gitIgnorePath, ignoreContent, 'utf8')
+    return false
+  }
+
+  let gitIgnoreContents
+  let ignorePatterns
+  try {
+    gitIgnoreContents = await readFile(gitIgnorePath, 'utf8')
+    ignorePatterns = parseIgnore.parse(gitIgnoreContents)
+  } catch (error) {
+    // ignore
+  }
+  /* Not ignoring .netlify folder. Add to .gitignore */
+  if (!ignorePatterns || !ignorePatterns.patterns.some((pattern) => /(^|\/|\\)\.netlify($|\/|\\)/.test(pattern))) {
+    const newContents = `${gitIgnoreContents}\n${ignoreContent}`
+    await writeFile(gitIgnorePath, newContents, 'utf8')
+  }
+}
+
+module.exports = { ensureNetlifyIgnore }

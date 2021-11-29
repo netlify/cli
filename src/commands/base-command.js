@@ -60,7 +60,6 @@ const getDuration = function (startTime) {
 
 /** Base command class that provides tracking and config initialization */
 class BaseCommand extends Command {
-
   /** @type {NetlifyOptions} */
   netlify
 
@@ -95,14 +94,13 @@ class BaseCommand extends Command {
           'Certificate file to use when connecting using a proxy server',
           process.env.NETLIFY_PROXY_CERTIFICATE_FILENAME,
         )
-        .hook(
-          'preAction',async (_parentCommand, actionCommand) => {
-            debug(`${name}:preAction`)('start')
-            this.#analytics = { startTime: process.hrtime.bigint() }
-            await this.#init(actionCommand)
-            debug(`${name}:preAction`)('end')
-          },
-        )
+        .hook('preAction', async (_parentCommand, actionCommand) => {
+          debug(`${name}:preAction`)('start')
+          this.#analytics = { startTime: process.hrtime.bigint() }
+          // @ts-ignore cannot type actionCommand as BaseCommand
+          await this.#init(actionCommand)
+          debug(`${name}:preAction`)('end')
+        })
         .hook('postAction', async () => {
           debug(`${name}:postAction`)('start')
           await this.onEnd()
@@ -251,6 +249,7 @@ class BaseCommand extends Command {
     log(`Logging into your Netlify account...`)
 
     // Create ticket for auth
+    // @ts-ignore Types from api are wrong and they don't recognize `createTicket`
     const ticket = await this.netlify.api.createTicket({
       clientId: CLIENT_ID,
     })
@@ -266,6 +265,7 @@ class BaseCommand extends Command {
       ticket,
     })
 
+    // @ts-ignore Types from api are wrong and they don't recognize `getCurrentUser`
     const { email, full_name: name, id: userId } = await this.netlify.api.getCurrentUser()
 
     const userData = merge(this.netlify.globalConfig.get(`users.${userId}`), {

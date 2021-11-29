@@ -1,5 +1,5 @@
+// @ts-check
 const build = require('@netlify/build')
-
 
 /**
  * The buildConfig + a missing cachedConfig
@@ -13,16 +13,12 @@ const build = require('@netlify/build')
 /**
  *
  * @param {object} config
- * @param {*} cachedConfig
+ * @param {*} config.cachedConfig
  * @param {string} config.token
  * @param {import('commander').OptionValues} config.options
  * @returns {BuildConfig}
  */
-const getBuildOptions = ({
-  cachedConfig,
-  options: { debug, dry, json, offline, silent },
-  token,
-}) => ({
+const getBuildOptions = ({ cachedConfig, options: { debug, dry, json, offline, silent }, token }) => ({
   cachedConfig,
   token,
   dry,

@@ -1,10 +1,40 @@
+// @ts-check
+
+const { exit, log, track } = require('../../utils')
+
 /**
  * The unlink command
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
 const unlink = async (options, command) => {
-  console.log('unlink command with options', options)
+  const { site, state } = command.netlify
+  const siteId = site.id
+
+  if (!siteId) {
+    log(`Folder is not linked to a Netlify site. Run 'netlify link' to link it`)
+    return exit()
+  }
+
+  let siteData = {}
+  try {
+    // @ts-ignore types from API are wrong they cannot recognize `getSite` of API
+    siteData = await command.netlify.api.getSite({ siteId })
+  } catch (error) {
+    // ignore errors if we can't get the site
+  }
+
+  state.delete('siteId')
+
+  await track('sites_unlinked', {
+    siteId: siteData.id || siteId,
+  })
+
+  if (site) {
+    log(`Unlinked ${site.configPath} from ${siteData ? siteData.name : siteId}`)
+  } else {
+    log('Unlinked site')
+  }
 }
 
 /**
@@ -13,9 +43,6 @@ const unlink = async (options, command) => {
  * @returns
  */
 const createUnlinkCommand = (program) =>
-  program
-    .command('unlink')
-    .description('Unlink a local folder from a Netlify site')
-    .action(unlink)
+  program.command('unlink').description('Unlink a local folder from a Netlify site').action(unlink)
 
 module.exports = { createUnlinkCommand }
