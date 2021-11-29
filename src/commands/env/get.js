@@ -5,7 +5,7 @@
  * @param {import('../base-command').BaseCommand} command
  */
 const envGet = async (name, options, command) => {
-  await command.init()
+
   console.log('env:import command with options', options, name)
 
   console.log(command.netlify)

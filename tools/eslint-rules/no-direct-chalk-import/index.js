@@ -17,7 +17,8 @@ module.exports = {
         node.arguments[0] &&
         node.arguments[0].value === 'chalk'
       ) {
-        const updatedPath = relative(dirname(context.getFilename()), join(context.getCwd(), 'src/utils'))
+        // if the path is empty it is on the same level and then use the direct file to import from
+        const updatedPath = relative(dirname(context.getFilename()), join(context.getCwd(), 'src/utils')) || './command-helpers'
         context.report({
           node,
           message:

@@ -1,8 +1,10 @@
 // @ts-check
 const process = require('process')
+const { format } = require('util')
 
 const resolveConfig = require('@netlify/config')
 const { Command } = require('commander')
+const debug = require('debug')
 const merge = require('lodash/merge')
 const API = require('netlify')
 
@@ -11,6 +13,7 @@ const {
   StateConfig,
   USER_AGENT,
   chalk,
+  error,
   exit,
   getGlobalConfig,
   getToken,
@@ -26,7 +29,44 @@ const {
 // TODO: setup client for multiple environments
 const CLIENT_ID = 'd6f37de6614df7ae58664cfca524744d73807a377f5ee71f1a254f78412e3750'
 
+const NANO_SECS_TO_MSECS = 1e6
+
+/**
+ * Get the duration between a start time and the current time
+ * @param {bigint} startTime
+ * @returns
+ */
+const getDuration = function (startTime) {
+  const durationNs = process.hrtime.bigint() - startTime
+  return Math.round(Number(durationNs / BigInt(NANO_SECS_TO_MSECS)))
+}
+
+/**
+ * The netlify object inside each command with the state
+ * @typedef NetlifyOptions
+ * @type {object}
+ * @property {import('netlify')} api
+ * @property {*} repositoryRoot
+ * @property {object} site
+ * @property {*} site.root
+ * @property {*} site.configPath
+ * @property {*} site.id
+ * @property {*} siteInfo
+ * @property {*} config
+ * @property {*} cachedConfig
+ * @property {*} globalConfig
+ * @property {StateConfig} state,
+ */
+
+/** Base command class that provides tracking and config initialization */
 class BaseCommand extends Command {
+
+  /** @type {NetlifyOptions} */
+  netlify
+
+  /** @type {{ startTime: bigint, payload?: any}} */
+  #analytics
+
   /**
    * IMPORTANT this function will be called for each command!
    * Don't do anything expensive in there.
@@ -35,14 +75,13 @@ class BaseCommand extends Command {
    */
   // eslint-disable-next-line class-methods-use-this
   createCommand(name) {
-    this.analytics = { startTime: process.hrtime.bigint() }
-
     return (
       new BaseCommand(name)
         // If  --silent or --json flag passed disable logger
         .option('--json')
         .option('--cwd <cwd>', 'Pass a current working directory.')
 
+        // TODO: check if we need it here
         .option('-o, --offline')
 
         .option('--debug', 'Print debugging information')
@@ -56,19 +95,34 @@ class BaseCommand extends Command {
           'Certificate file to use when connecting using a proxy server',
           process.env.NETLIFY_PROXY_CERTIFICATE_FILENAME,
         )
-        .exitOverride((err) => {
-          console.log('exit override')
+        .hook(
+          'preAction',async (_parentCommand, actionCommand) => {
+            debug(`${name}:preAction`)('start')
+            this.#analytics = { startTime: process.hrtime.bigint() }
+            await this.#init(actionCommand)
+            debug(`${name}:preAction`)('end')
+          },
+        )
+        .hook('postAction', async () => {
+          debug(`${name}:postAction`)('start')
+          await this.onEnd()
+          debug(`${name}:postAction`)('end')
         })
     )
   }
 
-  async init() {
-    const options = this.opts()
+  /**
+   * Initializes the options and parses the configuration needs to be called on start of a command function
+   * @param {BaseCommand} actionCommand The command of the action that is run (`this.` gets the parent command)
+   */
+  async #init(actionCommand) {
+    debug(`${actionCommand.name()}:init`)('start')
+    const options = actionCommand.opts()
     const cwd = options.cwd || process.cwd()
     // Get site id & build state
     const state = new StateConfig(cwd)
 
-    const [token] = await getToken(this.opts().auth)
+    const [token] = await getToken(options.auth)
 
     const apiUrlOpts = {
       userAgent: USER_AGENT,
@@ -82,7 +136,7 @@ class BaseCommand extends Command {
         process.env.NETLIFY_API_URL === `${apiUrl.protocol}//${apiUrl.host}` ? '/api/v1' : apiUrl.pathname
     }
 
-    const cachedConfig = await this.getConfig({ cwd, state, token, ...apiUrlOpts })
+    const cachedConfig = await actionCommand.#getConfig({ cwd, state, token, ...apiUrlOpts })
     const { buildDir, config, configPath, repositoryRoot, siteInfo } = cachedConfig
     const normalizedConfig = normalizeConfig(config)
 
@@ -93,7 +147,7 @@ class BaseCommand extends Command {
     const apiOpts = { ...apiUrlOpts, agent }
     const globalConfig = await getGlobalConfig()
 
-    this.netlify = {
+    actionCommand.netlify = {
       // api methods
       api: new API(token || '', apiOpts),
       repositoryRoot,
@@ -119,10 +173,35 @@ class BaseCommand extends Command {
       // state of current site dir
       state,
     }
+    debug(`${this.name()}:init`)('end')
   }
 
-  // Find and resolve the Netlify configuration
-  async getConfig(config) {
+  /**
+   * Will be called on the end of an action to track the metrics
+   * @param {*} [error_]
+   */
+  async onEnd(error_) {
+    const { payload, startTime } = this.#analytics
+    await track('command', {
+      ...payload,
+      command: this.name(),
+      duration: getDuration(startTime),
+      status: error_ === undefined ? 'success' : 'error',
+    })
+
+    if (error_ !== undefined) {
+      error(error_ instanceof Error ? error_ : format(error_), { exit: false })
+      exit(1)
+    }
+    exit()
+  }
+
+  /**
+   * Find and resolve the Netlify configuration
+   * @param {*} config
+   * @returns {ReturnType<import('@netlify/config/src/main')>}
+   */
+  async #getConfig(config) {
     const options = this.opts()
     const { cwd, host, offline = options.offline, pathPrefix, scheme, state, token } = config
 
@@ -150,7 +229,7 @@ class BaseCommand extends Command {
       // @todo Replace this with a mechanism for calling `resolveConfig` with more granularity (i.e. having
       // the option to say that we don't need API data.)
       if (isUserError && !offline && token) {
-        return this.getConfig({ cwd, offline: true, state, token })
+        return this.#getConfig({ cwd, offline: true, state, token })
       }
 
       const message = isUserError ? error_.message : error_.stack
@@ -227,7 +306,7 @@ class BaseCommand extends Command {
   }
 
   setAnalyticsPayload(payload) {
-    this.analytics = { ...this.analytics, payload }
+    this.#analytics = { ...this.#analytics, payload }
   }
 }
 

@@ -1,12 +1,12 @@
 #!/usr/bin/env node --trace-warnings
+/* eslint-disable promise/prefer-await-to-then,promise/prefer-await-to-callbacks,eslint-comments/disable-enable-pair */
 const { argv } = require('process')
 
 const updateNotifier = require('update-notifier')
-const { USER_AGENT } = require('../src/utils')
 
-const { BaseCommand } = require('../src/commands/base-command')
 const { createAddonsCommand } = require('../src/commands/addons')
 const { createApiCommand } = require('../src/commands/api')
+const { BaseCommand } = require('../src/commands/base-command')
 const { createBuildCommand } = require('../src/commands/build')
 const { createCompletionCommand } = require('../src/commands/completion')
 const { createDeployCommand } = require('../src/commands/deploy')
@@ -24,11 +24,13 @@ const { createStatusCommand } = require('../src/commands/status')
 const { createSwitchCommand } = require('../src/commands/switch')
 const { createUnlinkCommand } = require('../src/commands/unlink')
 const { createWatchCommand } = require('../src/commands/watch')
+const { USER_AGENT, exit } = require('../src/utils')
 
 // 12 hours
 const UPDATE_CHECK_INTERVAL = 432e5
 
 if (require.main === module) {
+  // eslint-disable-next-line node/global-require
   const pkg = require('../package.json')
 
   try {
@@ -76,7 +78,11 @@ if (require.main === module) {
   createUnlinkCommand(program)
   createWatchCommand(program)
 
-  program.parse(argv)
-
-  global.program = program
+  program
+    .parseAsync(argv)
+    .catch((error) => program.onEnd(error))
+    .catch((error) => {
+      console.error(error)
+      exit(1)
+    })
 }

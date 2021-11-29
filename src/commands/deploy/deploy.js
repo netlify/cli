@@ -7,7 +7,7 @@ const { chalk } = require('../../utils')
  * @param {import('../base-command').BaseCommand} command
  */
 const deploy = async (options, command) => {
-  await command.init()
+
   console.log('deploy command with options', options)
 }
 

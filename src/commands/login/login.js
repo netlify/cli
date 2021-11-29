@@ -20,7 +20,6 @@ const msg = function (location) {
  * @param {import('../base-command').BaseCommand} command
  */
 const login = async (options, command) => {
-  await command.init()
   const [accessToken, location] = await getToken()
 
   command.setAnalyticsPayload({ new: options.new })

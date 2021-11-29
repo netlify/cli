@@ -13,6 +13,7 @@ const { clearSpinner, startSpinner } = require('../lib/spinner')
 
 const getGlobalConfig = require('./get-global-config')
 
+/** The parsed process argv without the binary only arguments and flags */
 const argv = process.argv.slice(2)
 /**
  * Chalk instance for CLI that can be initialized with no colors mode
@@ -47,6 +48,7 @@ const NETLIFYDEVERR = `${chalk.redBright('◈')}`
 
 // eslint-disable-next-line id-length
 const $ = NETLIFY_CYAN('$')
+const BANG = chalk.red(process.platform === 'win32' ? '»' : '›')
 
 /**
  * Generates a CommandHelp section for the command
@@ -70,6 +72,15 @@ ${chalk.bold('COMMANDS')}
 ${table.join('\n')}`
   }
 }
+
+/**
+ * Generates the help output for the description
+ * @param {string} description
+ * @returns {string}
+ */
+const generateDescriptionHelp = (description) => `
+${chalk.bold('DESCRIPTION')}
+  ${description.split('\n').join('\n  ')}`
 
 /**
  * Generates the help output for the examples
@@ -102,8 +113,8 @@ const pollForToken = async ({ api, ticket }) => {
       error('Could not retrieve access token')
     }
     return accessToken
-  } catch (caughtError) {
-    if (caughtError.name === 'TimeoutError') {
+  } catch (error_) {
+    if (error_.name === 'TimeoutError') {
       error(
         `Timed out waiting for authorization. If you do not have a ${chalk.bold.greenBright(
           'Netlify',
@@ -112,7 +123,7 @@ const pollForToken = async ({ api, ticket }) => {
         )}, then run ${chalk.cyanBright('netlify login')} again.`,
       )
     } else {
-      error(caughtError)
+      error(error_)
     }
   } finally {
     clearSpinner({ spinner })
@@ -122,7 +133,7 @@ const pollForToken = async ({ api, ticket }) => {
 /**
  * Get a netlify token
  * @param {string} [tokenFromOptions] optional token from the provided --auth options
- * @returns
+ * @returns {Promise<[null|string, 'flag' | 'env' |'config' |'not found']>}
  */
 const getToken = async (tokenFromOptions) => {
   // 1. First honor command flag --auth
@@ -165,11 +176,27 @@ const log = (message = '', ...args) => {
 const warn = (message = '') => {
   // TODO check for better solution
   // Errors.warn(message)
+  throw new Error('warn() method needs to be implemented without oclif')
 }
 
+/**
+ * throws an error
+ * @param {string|Error} message
+ * @param {object} [options]
+ * @param {boolean} [options.exit]
+ */
 const error = (message = '', options = {}) => {
   // TODO check for better solution
-  // Errors.error(message, options)
+  const err = message instanceof Error ? message : new Error(message)
+  if (options.exit === false) {
+    if (process.env.DEBUG) {
+      console.error(` ${BANG}   ${err.stack.split('\n').join(`\n ${BANG}   `)}`)
+    } else {
+      console.error(` ${BANG}   ${err.name}: ${err.message}`)
+    }
+  } else {
+    throw err
+  }
 }
 
 const exit = (code = 0) => {
@@ -194,6 +221,7 @@ module.exports = {
   error,
   chalk,
   generateCommandsHelp,
+  generateDescriptionHelp,
   generateExamplesHelp,
   pollForToken,
   normalizeConfig,

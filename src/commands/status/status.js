@@ -19,4 +19,5 @@ const createStatusCommand = (program) =>
     .option('--verbose', 'Output system info', false)
     .action(status)
 
+
 module.exports = { createStatusCommand }
