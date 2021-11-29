@@ -18,7 +18,7 @@
         "@netlify/plugins-list": "^5.0.0",
         "@netlify/routing-local-proxy": "^0.34.1",
         "@netlify/zip-it-and-ship-it": "5.1.0",
-        "@oclif/command": "^1.8.5",
+        "@oclif/command": "^1.6.1",
         "@oclif/config": "^1.15.1",
         "@oclif/errors": "^1.3.4",
         "@oclif/parser": "^3.8.4",
@@ -132,7 +132,7 @@
         "@babel/preset-react": "^7.12.13",
         "@commitlint/cli": "^15.0.0",
         "@commitlint/config-conventional": "^15.0.0",
-        "@netlify/eslint-config-node": "^3.3.8",
+        "@netlify/eslint-config-node": "^3.3.9",
         "@oclif/dev-cli": "^1.23.1",
         "@oclif/test": "^1.2.5",
         "ava": "^3.15.0",
@@ -3146,9 +3146,9 @@
       }
     },
     "node_modules/@netlify/eslint-config-node": {
-      "version": "3.3.8",
-      "resolved": "https://registry.npmjs.org/@netlify/eslint-config-node/-/eslint-config-node-3.3.8.tgz",
-      "integrity": "sha512-lcBc1xxccwNxnfekygwtW2R5LLAv5xs2UZmP4vFjPYP7dwfjr+wdqG41L9mnxEcpGCbftQPLhqWKVsHv40gBZw==",
+      "version": "3.3.9",
+      "resolved": "https://registry.npmjs.org/@netlify/eslint-config-node/-/eslint-config-node-3.3.9.tgz",
+      "integrity": "sha512-U2To/hGPPZY677t8xXXt/wPxuHwQVizpZ0zlbBFx0NjEPuEJKk1Hh6kKzNrWAdFJDYecGsNZAfGV/DZ++MVNQA==",
       "dev": true,
       "dependencies": {
         "@babel/core": "^7.13.8",
@@ -24269,9 +24269,9 @@
       "integrity": "sha512-tiKmDcHM2riSVN79c0mJY/67EBDafXQAMitHuLiCDAMdtz3kfv+NqdVG5krgf5lWR8Uf8AeZrUW5Q9RP25REvw=="
     },
     "@netlify/eslint-config-node": {
-      "version": "3.3.8",
-      "resolved": "https://registry.npmjs.org/@netlify/eslint-config-node/-/eslint-config-node-3.3.8.tgz",
-      "integrity": "sha512-lcBc1xxccwNxnfekygwtW2R5LLAv5xs2UZmP4vFjPYP7dwfjr+wdqG41L9mnxEcpGCbftQPLhqWKVsHv40gBZw==",
+      "version": "3.3.9",
+      "resolved": "https://registry.npmjs.org/@netlify/eslint-config-node/-/eslint-config-node-3.3.9.tgz",
+      "integrity": "sha512-U2To/hGPPZY677t8xXXt/wPxuHwQVizpZ0zlbBFx0NjEPuEJKk1Hh6kKzNrWAdFJDYecGsNZAfGV/DZ++MVNQA==",
       "dev": true,
       "requires": {
         "@babel/core": "^7.13.8",
