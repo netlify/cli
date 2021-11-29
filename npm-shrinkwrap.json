@@ -24,7 +24,7 @@
         "@oclif/parser": "^3.8.4",
         "@oclif/plugin-help": "^3.0.0",
         "@oclif/plugin-not-found": "^1.1.4",
-        "@oclif/plugin-plugins": "^1.9.3",
+        "@oclif/plugin-plugins": "^1.10.3",
         "@octokit/rest": "^18.0.0",
         "@sindresorhus/slugify": "^1.1.0",
         "ansi-styles": "^5.0.0",
