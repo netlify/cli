@@ -1,0 +1,20 @@
+{
+  "name": "sanity-create",
+  "version": "1.0.0",
+  "description": "netlify functions:create - Create documents in Sanity.io",
+  "main": "sanity-create.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "netlify",
+    "serverless",
+    "js",
+    "sanity"
+  ],
+  "author": "Sanity.io",
+  "license": "MIT",
+  "dependencies": {
+    "@sanity/client": "^0.147.3"
+  }
+}

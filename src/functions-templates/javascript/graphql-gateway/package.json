@@ -1,0 +1,24 @@
+{
+  "name": "graphql-gateway",
+  "version": "1.0.0",
+  "description": "netlify functions:create - Apollo Server Lambda Gateway stitching schemas from other GraphQL Functions!",
+  "main": "graphql-gateway.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "netlify",
+    "serverless",
+    "js",
+    "apollo"
+  ],
+  "author": "Netlify",
+  "license": "MIT",
+  "dependencies": {
+    "apollo-link-http": "^1.5.17",
+    "apollo-server-lambda": "^2.18.2",
+    "graphql": "^14.2.1",
+    "graphql-tools": "^4.0.8",
+    "node-fetch": "^2.6.1"
+  }
+}

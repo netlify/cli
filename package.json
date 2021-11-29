@@ -66,9 +66,8 @@
     "test:ci:ava": "nyc -r json ava",
     "docs": "node ./site/scripts/docs.js",
     "watch": "nyc --reporter=lcov ava --watch",
-    "build:manifest": "oclif-dev manifest",
-    "prepack": "npm run build:manifest && npm prune --prod",
-    "postpack": "rm -f oclif.manifest.json && npm i",
+    "prepack": "npm prune --prod",
+    "postpack": "npm i",
     "site:build": "run-s site:build:*",
     "site:build:install": "cd site && npm ci --no-audit",
     "site:build:assets": "cd site && npm run build",
@@ -87,13 +86,6 @@
     "@netlify/plugins-list": "^5.0.0",
     "@netlify/routing-local-proxy": "^0.34.1",
     "@netlify/zip-it-and-ship-it": "5.0.0",
-    "@oclif/command": "^1.6.1",
-    "@oclif/config": "^1.15.1",
-    "@oclif/errors": "^1.3.4",
-    "@oclif/parser": "^3.8.4",
-    "@oclif/plugin-help": "^3.0.0",
-    "@oclif/plugin-not-found": "^1.1.4",
-    "@oclif/plugin-plugins": "^1.9.3",
     "@octokit/rest": "^18.0.0",
     "@sindresorhus/slugify": "^1.1.0",
     "@ungap/from-entries": "^0.2.1",
@@ -161,7 +153,6 @@
     "netlify-redirector": "^0.2.1",
     "node-fetch": "^2.6.0",
     "node-version-alias": "^1.0.1",
-    "oclif-plugin-completion": "^0.6.0",
     "omit.js": "^2.0.2",
     "open": "^7.0.0",
     "ora": "^5.0.0",
@@ -201,8 +192,6 @@
     "@commitlint/cli": "^15.0.0",
     "@commitlint/config-conventional": "^15.0.0",
     "@netlify/eslint-config-node": "^3.3.8",
-    "@oclif/dev-cli": "^1.23.1",
-    "@oclif/test": "^1.2.5",
     "ava": "^3.15.0",
     "eslint-plugin-local-rules": "file:tools/eslint-rules",
     "eslint-plugin-sort-destructure-keys": "^1.3.5",
@@ -237,22 +226,6 @@
     "failWithoutAssertions": false,
     "tap": false,
     "timeout": "5m"
-  },
-  "oclif": {
-    "bin": "netlify",
-    "commands": "./src/commands",
-    "helpClass": "./src/lib/help",
-    "plugins": [
-      "@oclif/plugin-not-found",
-      "@oclif/plugin-plugins",
-      "@oclif/plugin-help",
-      "oclif-plugin-completion"
-    ],
-    "hooks": {
-      "init": [
-        "./src/hooks/init"
-      ]
-    }
   },
   "husky": {
     "hooks": {

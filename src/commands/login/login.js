@@ -35,8 +35,6 @@ const login = async (options, command) => {
   }
 
   await command.expensivelyAuthenticate()
-
-  return exit()
 }
 
 /**
@@ -51,4 +49,4 @@ const createLoginCommand = (program) =>
     .option('--new', 'Login to new Netlify account')
     .action(login)
 
-module.exports = { createLoginCommand }
+module.exports = { createLoginCommand, login }
