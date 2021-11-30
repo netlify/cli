@@ -1,5 +1,5 @@
 // @ts-check
-const { generateCommandsHelp, generateDescriptionHelp, generateExamplesHelp, showHelp } = require('../../utils')
+const { generateCommandsHelp, generateDescriptionHelp, generateExamplesHelp } = require('../../utils')
 
 const { createSitesCreateCommand } = require('./sites-create')
 const { createSitesDeleteCommand } = require('./sites-delete')
@@ -11,7 +11,7 @@ const { createSitesListCommand } = require('./sites-list')
  * @param {import('../base-command').BaseCommand} command
  */
 const sites = (options, command) => {
-  showHelp(command.name())
+  command.help()
 }
 
 /**

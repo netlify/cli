@@ -1,5 +1,5 @@
-const { F_OK } = require('fs')
-const { access } = require('fs/promises')
+// @ts-check
+const { fileExistsAsync } = require('../../lib/fs')
 
 const getUrlPath = (functionName) => `/.netlify/functions/${functionName}`
 
@@ -14,7 +14,7 @@ const addFunctionProps = ({ mainFile, name, runtime }) => {
 const JS = 'js'
 
 const getFunctions = async (functionsSrcDir) => {
-  if (!(await access(functionsSrcDir, F_OK))) {
+  if (!(await fileExistsAsync(functionsSrcDir))) {
     return []
   }
 
@@ -27,7 +27,7 @@ const getFunctions = async (functionsSrcDir) => {
 }
 
 const getFunctionsAndWatchDirs = async (functionsSrcDir) => {
-  if (!(await access(functionsSrcDir, F_OK))) {
+  if (!(await fileExistsAsync(functionsSrcDir))) {
     return { functions: [], watchDirs: [functionsSrcDir] }
   }
 

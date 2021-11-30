@@ -17,8 +17,8 @@ const unableToOpenBrowserMessage = function ({ message, url }) {
  * Opens a browser and logs a message if it is not possible
  * @param {object} config
  * @param {string} config.url The url to open
- * @param {boolean|undefined} silentBrowserNoneError
- * @returns
+ * @param {boolean} [config.silentBrowserNoneError]
+ * @returns {Promise<void>}
  */
 const openBrowser = async function ({ silentBrowserNoneError, url }) {
   if (isDockerContainer()) {

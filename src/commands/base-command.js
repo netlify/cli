@@ -79,9 +79,14 @@ class BaseCommand extends Command {
         // If  --silent or --json flag passed disable logger
         .option('--json')
         .option('--cwd <cwd>', 'Pass a current working directory.')
-
-        // TODO: check if we need it here
         .option('-o, --offline')
+
+        // Allow hidden flags like
+        // --json,
+        // --silent,
+        // --offline, -o
+        // --cwd <cwd> Pass a current working directory.
+        .allowUnknownOption(true)
 
         .option('--debug', 'Print debugging information')
         .option(

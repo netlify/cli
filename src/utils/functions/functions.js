@@ -1,11 +1,19 @@
 // @ts-check
-const { stat } = require('fs/promises')
 const { resolve } = require('path')
 
+const { isDirectoryAsync, isFileAsync } = require('../../lib/fs')
 const { getPathInProject } = require('../../lib/settings')
 
-const getFunctionsDir = ({ config, flags }, defaultValue) =>
-  flags.functions ||
+/**
+ * retrieves the function directory out of the flags or config
+ * @param {object} param
+ * @param {object} param.config
+ * @param {import('commander').OptionValues} param.options The options from the commander
+ * @param {string} defaultValue
+ * @returns {string}
+ */
+const getFunctionsDir = ({ config, options }, defaultValue) =>
+  options.functions ||
   (config.dev && config.dev.functions) ||
   config.functionsDirectory ||
   (config.dev && config.dev.Functions) ||
@@ -13,23 +21,16 @@ const getFunctionsDir = ({ config, flags }, defaultValue) =>
 
 const getFunctionsManifestPath = async ({ base }) => {
   const path = resolve(base, getPathInProject(['functions', 'manifest.json']))
-  try {
-    const stats = await stat(path)
-    return stats.isFile() ? path : null
-  } catch {
-    return null;
-  }
+  const isFile = await isFileAsync(path)
+
+  return isFile ? path : null
 }
 
 const getInternalFunctionsDir = async ({ base }) => {
   const path = resolve(base, getPathInProject(['functions-internal']))
-  try {
-    const stats = await stat(path)
-    return stats.isDirectory() ? path : null
-  } catch {
-    return null;
-  }
+  const isDirectory = await isDirectoryAsync(path)
 
+  return isDirectory ? path : null
 }
 
 module.exports = { getFunctionsDir, getInternalFunctionsDir, getFunctionsManifestPath }

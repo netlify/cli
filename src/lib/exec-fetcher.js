@@ -1,3 +1,4 @@
+// @ts-check
 const path = require('path')
 const process = require('process')
 
@@ -5,8 +6,7 @@ const execa = require('execa')
 const { fetchLatest, fetchVersion, newerVersion, updateAvailable } = require('gh-release-fetch')
 const isExe = require('isexe')
 
-const { NETLIFYDEVWARN } = require('../utils')
-const { log } = require('../utils/command-helpers')
+const { NETLIFYDEVWARN, log } = require('../utils/command-helpers')
 
 const isWindows = () => process.platform === 'win32'
 

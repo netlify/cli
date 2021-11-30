@@ -1,3 +1,6 @@
+// @ts-check
+const { log, logJson } = require('../../utils')
+
 /**
  * The env:get command
  * @param {string} name Environment variable name
@@ -5,10 +8,30 @@
  * @param {import('../base-command').BaseCommand} command
  */
 const envGet = async (name, options, command) => {
+  const { api, cachedConfig, site } = command.netlify
+  const siteId = site.id
 
-  console.log('env:import command with options', options, name)
+  if (!siteId) {
+    log('No site id found, please run inside a site folder or `netlify link`')
+    return false
+  }
 
-  console.log(command.netlify)
+  const siteData = await api.getSite({ siteId })
+
+  const { value } = cachedConfig.env[name] || {}
+
+  // Return json response for piping commands
+  if (options.json) {
+    logJson(value ? { [name]: value } : {})
+    return false
+  }
+
+  if (!value) {
+    log(`Environment variable ${name} not set for site ${siteData.name}`)
+    return false
+  }
+
+  log(value)
 }
 
 /**
@@ -19,9 +42,10 @@ const envGet = async (name, options, command) => {
 const createEnvGetCommand = (program) =>
   program
     .command('env:get <name>')
-    .description('Get resolved value of specified environment variable (includes netlify.toml)', {
-      name: 'Environment variable name',
+    .argument('<name>', 'Environment variable name')
+    .description('Get resolved value of specified environment variable (includes netlify.toml)')
+    .action(async (name, options, command) => {
+      await envGet(name, options, command)
     })
-    .action(envGet)
 
 module.exports = { createEnvGetCommand }

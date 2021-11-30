@@ -81,6 +81,7 @@ if (require.main === module) {
   createWatchCommand(program)
 
   program
+    .showSuggestionAfterError()
     .parseAsync(argv)
     .then(() => exit(0))
     .catch((error) => program.onEnd(error))

@@ -1,4 +1,4 @@
-const { generateCommandsHelp, generateExamplesHelp, showHelp } = require('../../utils')
+const { generateCommandsHelp, generateExamplesHelp } = require('../../utils')
 
 const { createOpenAdminCommand, openAdmin } = require('./open-admin')
 const { createOpenSiteCommand, openSite } = require('./open-site')
@@ -10,7 +10,7 @@ const { createOpenSiteCommand, openSite } = require('./open-site')
  */
 const open = async (options, command) => {
   if (!options.site || !options.admin) {
-    showHelp(command.name())
+    command.help()
   }
 
   if (options.site) {

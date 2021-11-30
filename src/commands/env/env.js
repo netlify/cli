@@ -1,6 +1,10 @@
-const { chalk, showHelp } = require('../../utils')
+const { generateCommandsHelp, generateExamplesHelp } = require('../../utils')
 
 const { createEnvGetCommand } = require('./get')
+const { createEnvImportCommand } = require('./import')
+const { createEnvListCommand } = require('./list')
+const { createEnvSetCommand } = require('./set')
+const { createEnvUnsetCommand } = require('./unset')
 
 /**
  * The env command
@@ -8,17 +12,7 @@ const { createEnvGetCommand } = require('./get')
  * @param {import('../base-command').BaseCommand} command
  */
 const env = (options, command) => {
-  showHelp(command.name())
-}
-
-/**
- * The env:import command
- * @param {string} fileName The .env file to import
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
- */
-const envImport = async (fileName, options, command) => {
-  console.log('env:import command with options', options, fileName)
+  command.help()
 }
 
 /**
@@ -27,38 +21,27 @@ const envImport = async (fileName, options, command) => {
  * @returns
  */
 const createEnvCommand = (program) => {
-  program
+  createEnvGetCommand(program)
+  createEnvImportCommand(program)
+  createEnvListCommand(program)
+  createEnvSetCommand(program)
+  createEnvUnsetCommand(program)
+
+  return program
     .command('env')
     .description('(Beta) Control environment variables for the current site')
     .addHelpText(
       'after',
-      `
-${chalk.bold('EXAMPLES')}
-  $ netlify env:list
-  $ netlify env:get VAR_NAME
-  $ netlify env:set VAR_NAME value
-  $ netlify env:unset VAR_NAME
-  $ netlify env:import fileName
-`,
+      generateExamplesHelp([
+        'netlify env:list',
+        'netlify env:get VAR_NAME',
+        'netlify env:set VAR_NAME value',
+        'netlify env:unset VAR_NAME',
+        'netlify env:import fileName',
+      ]),
     )
+    .addHelpText('after', generateCommandsHelp('env', program))
     .action(env)
-
-  createEnvGetCommand(program)
-
-  program.command('env:list').description('Lists resolved environment variables for site (includes netlify.toml)')
-
-  program
-    .command('env:import <fileName>')
-    .description('Import and set environment variables from .env file', {
-      fileName: '.env file to import',
-    })
-    .option(
-      '-r, --replaceExisting',
-      'Replace all existing variables instead of merging them with the current ones',
-      false,
-    )
-    .action(envImport)
-  return program
 }
 
 module.exports = { createEnvCommand }
