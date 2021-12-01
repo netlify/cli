@@ -2,7 +2,6 @@ const { Buffer } = require('buffer')
 const http = require('http')
 const https = require('https')
 const path = require('path')
-const { URL, URLSearchParams } = require('url')
 
 const contentType = require('content-type')
 const cookie = require('cookie')
