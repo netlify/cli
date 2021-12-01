@@ -2,8 +2,8 @@
 const inquirer = require('inquirer')
 const isEmpty = require('lodash/isEmpty')
 
-const { chalk, error, generateDescriptionHelp, log } = require('../../utils')
-const { prepareAddonCommand } = require('../../utils/addons/prepare')
+const { chalk, error, generateDescriptionHelp, log, parseRawFlags } = require('../../utils')
+const { ADDON_VALIDATION, prepareAddonCommand } = require('../../utils/addons/prepare')
 const generatePrompts = require('../../utils/addons/prompts')
 const render = require('../../utils/addons/render')
 const { missingConfigValues, requiredConfigValues, updateConfigValues } = require('../../utils/addons/validation')
@@ -36,6 +36,7 @@ const addonsCreate = async (addonName, options, command) => {
   const { manifest, siteData } = await prepareAddonCommand({
     command,
     addonName,
+    // @ts-ignore
     validation: ADDON_VALIDATION.NOT_EXISTS,
   })
 
@@ -43,8 +44,7 @@ const addonsCreate = async (addonName, options, command) => {
   const siteId = site.id
 
   // GET flags from `raw` data
-  // TODO: Check the parseRawFlags
-  const rawFlags = parseRawFlags(raw)
+  const rawFlags = parseRawFlags(command.args)
   const hasConfig = !isEmpty(manifest.config)
 
   let configValues = rawFlags
@@ -119,6 +119,8 @@ const createAddonsCreateCommand = (program) =>
     .alias('addon:create')
     .argument('<name>', 'Add-on namespace')
     .description('Add an add-on extension to your site')
+    // allow for any flags. Handy for variadic configuration options
+    .allowUnknownOption(true)
     .addHelpText('after', generateDescriptionHelp('Add-ons are a way to extend the functionality of your Netlify site'))
     .action(async (addonName, options, command) => {
       await addonsCreate(addonName, options, command)

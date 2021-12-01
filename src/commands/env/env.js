@@ -1,10 +1,10 @@
 const { generateCommandsHelp, generateExamplesHelp } = require('../../utils')
 
-const { createEnvGetCommand } = require('./get')
-const { createEnvImportCommand } = require('./import')
-const { createEnvListCommand } = require('./list')
-const { createEnvSetCommand } = require('./set')
-const { createEnvUnsetCommand } = require('./unset')
+const { createEnvGetCommand } = require('./env-get')
+const { createEnvImportCommand } = require('./env-import')
+const { createEnvListCommand } = require('./env-list')
+const { createEnvSetCommand } = require('./env-set')
+const { createEnvUnsetCommand } = require('./env-unset')
 
 /**
  * The env command

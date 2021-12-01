@@ -183,7 +183,7 @@ const log = (message = '', ...args) => {
  */
 const warn = (message = '') => {
   const bang = chalk.yellow(BANG)
-  log(` ${bang}   ${message}`);
+  log(` ${bang}   Warning: ${message}`);
 }
 
 /**
@@ -233,6 +233,7 @@ module.exports = {
   pollForToken,
   normalizeConfig,
   USER_AGENT,
+  NETLIFY_CYAN,
   NETLIFYDEV,
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,

@@ -2,11 +2,11 @@
 
 const { generateCommandsHelp, generateExamplesHelp } = require('../../utils')
 
-const { createAddonsAuthCommand } = require('./auth')
-const { createAddonsConfigCommand } = require('./config')
-const { createAddonsCreateCommand } = require('./create')
-const { createAddonsDeleteCommand } = require('./delete')
-const { createAddonsListCommand } = require('./list')
+const { createAddonsAuthCommand } = require('./addons-auth')
+const { createAddonsConfigCommand } = require('./addons-config')
+const { createAddonsCreateCommand } = require('./addons-create')
+const { createAddonsDeleteCommand } = require('./addons-delete')
+const { createAddonsListCommand } = require('./addons-list')
 
 /**
  * The addons command

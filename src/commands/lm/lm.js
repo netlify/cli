@@ -2,10 +2,10 @@
 
 const { generateCommandsHelp, generateDescriptionHelp, generateExamplesHelp } = require('../../utils')
 
-const { createLmInfoCommand } = require('./info')
-const { createLmInstallCommand } = require('./install')
-const { createLmSetupCommand } = require('./setup')
-const { createLmUninstallCommand } = require('./uninstall')
+const { createLmInfoCommand } = require('./lm-info')
+const { createLmInstallCommand } = require('./lm-install')
+const { createLmSetupCommand } = require('./lm-setup')
+const { createLmUninstallCommand } = require('./lm-uninstall')
 
 /**
  * The lm command

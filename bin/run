@@ -18,13 +18,13 @@ const { createLinkCommand } = require('../src/commands/link')
 const { createLmCommand } = require('../src/commands/lm')
 const { createLoginCommand } = require('../src/commands/login')
 const { createLogoutCommand } = require('../src/commands/logout')
+const { createMainCommand } = require('../src/commands/main')
 const { createOpenCommand } = require('../src/commands/open')
 const { createSitesCommand } = require('../src/commands/sites')
 const { createStatusCommand } = require('../src/commands/status')
 const { createSwitchCommand } = require('../src/commands/switch')
 const { createUnlinkCommand } = require('../src/commands/unlink')
 const { createWatchCommand } = require('../src/commands/watch')
-const { USER_AGENT } = require('../src/utils')
 
 // 12 hours
 const UPDATE_CHECK_INTERVAL = 432e5
@@ -43,20 +43,7 @@ if (require.main === module) {
     console.log(error)
   }
 
-  const program = new BaseCommand('netlify-cli')
-  program.version(USER_AGENT)
-
-  program.configureHelp({
-    // TODO: Add custom formater to have same visual styling
-    //   formatHelp: (cmd, helper) => {
-    //     console.log(cmd, helper);
-    //     const longestFlag = Math.max(...cmd.options.map((option) => option.flags.length)) + 1;
-    //     const table = cmd.options.map(({flags, description}) => `  ${flags}${new Array(longestFlag-flags.length).fill().join(' ')}   {grey ${description}} `).join('\n')
-    //     return chalk`{bold OPTIONS}
-    // ${table}
-    // `
-    //   }
-  })
+  const program = new BaseCommand('netlify')
 
   createAddonsCommand(program)
   createApiCommand(program)
@@ -79,14 +66,13 @@ if (require.main === module) {
   createWatchCommand(program)
 
   /** @type {Error} */
-  let caughtError;
+  let caughtError
 
-  program
-    .showSuggestionAfterError()
-    .parseAsync(process.argv)
+  createMainCommand(program)
+    .then(() => program.parseAsync(process.argv))
     .catch((error) => {
       caughtError = error
-    });
+    })
 
   // long running commands like dev server cannot be caught by a post action hook
   // they are running on the main command
@@ -94,4 +80,3 @@ if (require.main === module) {
     program.onEnd(caughtError)
   })
 }
-

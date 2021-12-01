@@ -66,7 +66,7 @@ class BaseCommand extends Command {
   netlify
 
   /** @type {{ startTime: bigint, payload?: any}} */
-  analytics
+  analytics = { startTime: process.hrtime.bigint() }
 
   /**
    * IMPORTANT this function will be called for each command!
@@ -87,7 +87,9 @@ class BaseCommand extends Command {
         // --silent,
         // --offline, -o
         // --cwd <cwd> Pass a current working directory.
-        .allowUnknownOption(true)
+
+        // this disables the suggestions
+        // .allowUnknownOption(true)
 
         .option('--debug', 'Print debugging information')
         .option(

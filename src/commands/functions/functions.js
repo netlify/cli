@@ -2,11 +2,11 @@
 
 const { chalk, generateCommandsHelp, generateDescriptionHelp, generateExamplesHelp } = require('../../utils')
 
-const { createFunctionsBuildCommand } = require('./build')
-const { createFunctionsCreateCommand } = require('./create')
-const { createFunctionsInvokeCommand } = require('./invoke')
-const { createFunctionsListCommand } = require('./list')
-const { createFunctionsServeCommand } = require('./serve')
+const { createFunctionsBuildCommand } = require('./functions-build')
+const { createFunctionsCreateCommand } = require('./functions-create')
+const { createFunctionsInvokeCommand } = require('./functions-invoke')
+const { createFunctionsListCommand } = require('./functions-list')
+const { createFunctionsServeCommand } = require('./functions-serve')
 
 /**
  * The functions command

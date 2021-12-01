@@ -30,8 +30,8 @@ const {
   warn,
 } = require('../../utils')
 
-const { createDevExecCommand } = require('./exec')
-const { createDevTraceCommand } = require('./trace')
+const { createDevExecCommand } = require('./dev-exec')
+const { createDevTraceCommand } = require('./dev-trace')
 
 const startStaticServer = async ({ settings }) => {
   const server = new StaticServer({

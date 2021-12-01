@@ -12,6 +12,7 @@ const ghAuth = require('./gh-auth')
 const gitignore = require('./gitignore')
 const liveTunnel = require('./live-tunnel')
 const openBrowser = require('./open-browser')
+const parseRawFlags = require('./parse-raw-flags')
 const proxy = require('./proxy')
 const readRepoURL = require('./read-repo-url')
 const StateConfig = require('./state-config')
@@ -30,6 +31,7 @@ module.exports = {
   ...gitignore,
   ...liveTunnel,
   ...openBrowser,
+  ...parseRawFlags,
   ...proxy,
   ...readRepoURL,
   ...StateConfig,
