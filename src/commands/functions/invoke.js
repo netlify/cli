@@ -248,8 +248,13 @@ const createFunctionsInvokeCommand = (program) =>
     .option('-f, --functions <dir>', 'Specify a functions folder to parse, overriding netlify.toml')
     .option('-q, --querystring <query>', 'Querystring to add to your function invocation')
     .option('-p, --payload <data>', 'Supply POST payload in stringified json, or a path to a json file')
+    // TODO: refactor to not need the `undefined` state by removing the --identity flag (value `identity` will be then always defined to true or false)
     .option(
       '--identity',
+      'simulate Netlify Identity authentication JWT. pass --identity to affirm unauthenticated request',
+    )
+    .option(
+      '--no-identity',
       'simulate Netlify Identity authentication JWT. pass --no-identity to affirm unauthenticated request',
     )
     .option('--port <port>', 'Port where netlify dev is accessible. e.g. 8888', (value) => Number.parseInt(value))
