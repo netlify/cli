@@ -1,7 +1,7 @@
 // @ts-check
 const cp = require('child_process')
 const fs = require('fs')
-const { mkdir } = require('fs/promises')
+const { mkdir } = require('fs').promises
 const path = require('path')
 const process = require('process')
 const { promisify } = require('util')

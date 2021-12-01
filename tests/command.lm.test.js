@@ -1,3 +1,4 @@
+const { readFile } = require('fs').promises
 const os = require('os')
 const process = require('process')
 
@@ -5,7 +6,6 @@ const test = require('ava')
 const execa = require('execa')
 const ini = require('ini')
 
-const { readFileAsync } = require('../src/lib/fs')
 const { getPathInHome } = require('../src/lib/settings')
 
 const callCli = require('./utils/call-cli')
@@ -94,7 +94,7 @@ test.serial('netlify lm:setup', async (t) => {
   t.true(cliResponse.includes('Configuring Git LFS for this site [started]'))
   t.true(cliResponse.includes('Configuring Git LFS for this site [completed]'))
 
-  const lfsConfig = ini.parse(await readFileAsync(`${t.context.builder.directory}/.lfsconfig`, 'utf8'))
+  const lfsConfig = ini.parse(await readFile(`${t.context.builder.directory}/.lfsconfig`, 'utf8'))
   t.is(lfsConfig.lfs.url, 'https://localhost/.netlify/large-media')
 })
 

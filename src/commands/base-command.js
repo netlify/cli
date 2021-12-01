@@ -64,7 +64,7 @@ class BaseCommand extends Command {
   netlify
 
   /** @type {{ startTime: bigint, payload?: any}} */
-  #analytics
+  analytics
 
   /**
    * IMPORTANT this function will be called for each command!
@@ -101,9 +101,9 @@ class BaseCommand extends Command {
         )
         .hook('preAction', async (_parentCommand, actionCommand) => {
           debug(`${name}:preAction`)('start')
-          this.#analytics = { startTime: process.hrtime.bigint() }
+          this.analytics = { startTime: process.hrtime.bigint() }
           // @ts-ignore cannot type actionCommand as BaseCommand
-          await this.#init(actionCommand)
+          await this.init(actionCommand)
           debug(`${name}:preAction`)('end')
         })
     )
@@ -114,7 +114,7 @@ class BaseCommand extends Command {
    * @param {*} [error_]
    */
   async onEnd(error_) {
-    const { payload, startTime } = this.#analytics
+    const { payload, startTime } = this.analytics
     const duration = getDuration(startTime)
     const status = error_ === undefined ? 'success' : 'error'
 
@@ -204,14 +204,14 @@ class BaseCommand extends Command {
   }
 
   setAnalyticsPayload(payload) {
-    this.#analytics = { ...this.#analytics, payload }
+    this.analytics = { ...this.analytics, payload }
   }
 
   /**
    * Initializes the options and parses the configuration needs to be called on start of a command function
    * @param {BaseCommand} actionCommand The command of the action that is run (`this.` gets the parent command)
    */
-  async #init(actionCommand) {
+  async init(actionCommand) {
     debug(`${actionCommand.name()}:init`)('start')
     const options = actionCommand.opts()
     const cwd = options.cwd || process.cwd()
@@ -232,7 +232,7 @@ class BaseCommand extends Command {
         process.env.NETLIFY_API_URL === `${apiUrl.protocol}//${apiUrl.host}` ? '/api/v1' : apiUrl.pathname
     }
 
-    const cachedConfig = await actionCommand.#getConfig({ cwd, state, token, ...apiUrlOpts })
+    const cachedConfig = await actionCommand.getConfig({ cwd, state, token, ...apiUrlOpts })
     const { buildDir, config, configPath, repositoryRoot, siteInfo } = cachedConfig
     const normalizedConfig = normalizeConfig(config)
 
@@ -277,7 +277,7 @@ class BaseCommand extends Command {
    * @param {*} config
    * @returns {ReturnType<import('@netlify/config/src/main')>}
    */
-  async #getConfig(config) {
+  async getConfig(config) {
     const options = this.opts()
     const { cwd, host, offline = options.offline, pathPrefix, scheme, state, token } = config
 
@@ -305,7 +305,7 @@ class BaseCommand extends Command {
       // @todo Replace this with a mechanism for calling `resolveConfig` with more granularity (i.e. having
       // the option to say that we don't need API data.)
       if (isUserError && !offline && token) {
-        return this.#getConfig({ cwd, offline: true, state, token })
+        return this.getConfig({ cwd, offline: true, state, token })
       }
 
       const message = isUserError ? error_.message : error_.stack

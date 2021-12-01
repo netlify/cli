@@ -1,5 +1,5 @@
 // @ts-check
-const { readFile } = require('fs/promises')
+const { readFile } = require('fs').promises
 const { dirname, extname, join, resolve } = require('path')
 const { platform } = require('process')
 

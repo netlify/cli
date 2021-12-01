@@ -1,4 +1,4 @@
-const { copyFile, mkdir, readFile, rm, writeFile } = require('fs/promises')
+const { copyFile, mkdir, readFile, rmdir, writeFile } = require('fs').promises
 const os = require('os')
 const path = require('path')
 
@@ -24,16 +24,16 @@ test.after.always('cleanup tmp directory and legacy config', async () => {
     await mkdir(getPathInHome([]), { recursive: true })
     await copyFile(tmpConfigBackupPath, configPath)
     // Remove tmp backup if exists
-    await rm(tmpConfigBackupPath, { recursive: true, force: true })
+    await rmdir(tmpConfigBackupPath, { recursive: true })
   } catch {}
   // Remove legacy config path
-  await rm(getLegacyPathInHome([]), { recursive: true, force: true })
+  await rmdir(getLegacyPathInHome([]), { recursive: true })
 })
 
 test.beforeEach('recreate clean config directories', async () => {
   // Remove config dirs
-  await rm(getPathInHome([]), { recursive: true, force: true })
-  await rm(getLegacyPathInHome([]), { recursive: true, force: true })
+  await rmdir(getPathInHome([]), { recursive: true })
+  await rmdir(getLegacyPathInHome([]), { recursive: true })
   // Make config dirs
   await mkdir(getPathInHome([]), { recursive: true })
   await mkdir(getLegacyPathInHome([]), { recursive: true })
@@ -59,8 +59,8 @@ test.serial('should not throw if legacy config is invalid JSON', async (t) => {
 
 test.serial("should create config in netlify's config dir if none exists and store new values", async (t) => {
   // Remove config dirs
-  await rm(getPathInHome([]), { recursive: true, force: true })
-  await rm(getLegacyPathInHome([]), { recursive: true, force: true })
+  await rmdir(getPathInHome([]), { recursive: true })
+  await rmdir(getLegacyPathInHome([]), { recursive: true })
   const globalConfig = await getGlobalConfig()
   globalConfig.set('newProp', 'newValue')
   const configFile = JSON.parse(await readFile(configPath, 'utf-8'))

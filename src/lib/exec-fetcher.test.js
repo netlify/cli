@@ -1,4 +1,5 @@
-const { rm, stat } = require('fs/promises')
+// @ts-check
+const { rmdir, stat } = require('fs').promises
 const path = require('path')
 const process = require('process')
 
@@ -14,7 +15,7 @@ test.beforeEach((t) => {
 })
 
 test.afterEach(async (t) => {
-  await rm(t.context.binPath, { recursive: true, force: true })
+  await rmdir(t.context.binPath, { recursive: true })
 })
 
 test(`should postix exec with .exe on windows`, (t) => {

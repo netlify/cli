@@ -1,5 +1,5 @@
 // @ts-check
-const { readFile } = require('fs/promises')
+const { readFile } = require('fs').promises
 
 const { get } = require('dot-prop')
 const locatePath = require('locate-path')

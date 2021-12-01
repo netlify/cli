@@ -1,5 +1,5 @@
 // @ts-check
-const { stat } = require('fs/promises')
+const { stat } = require('fs').promises
 const { basename, resolve } = require('path')
 const { cwd, env } = require('process')
 

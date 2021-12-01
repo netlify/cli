@@ -1,6 +1,6 @@
 // @ts-check
 
-const { mkdir } = require('fs/promises')
+const { mkdir } = require('fs').promises
 
 const { zipFunctions } = require('@netlify/zip-it-and-ship-it')
 

@@ -1,4 +1,4 @@
-const { writeFile } = require('fs/promises')
+const { writeFile } = require('fs').promises
 const path = require('path')
 
 const { zipFunction } = require('@netlify/zip-it-and-ship-it')

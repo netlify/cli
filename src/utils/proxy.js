@@ -1,6 +1,6 @@
 // @ts-check
 const { Buffer } = require('buffer')
-const { readFile } = require('fs/promises')
+const { readFile } = require('fs').promises
 const http = require('http')
 const https = require('https')
 const path = require('path')

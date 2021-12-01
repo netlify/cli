@@ -1,4 +1,5 @@
-const { copyFile, mkdir, rm, writeFile } = require('fs/promises')
+// @ts-check
+const { copyFile, mkdir, rmdir, writeFile } = require('fs').promises
 const os = require('os')
 const path = require('path')
 const process = require('process')
@@ -142,7 +143,7 @@ const createSiteBuilder = ({ siteName }) => {
     withoutFile: ({ path: filePath }) => {
       const dest = path.join(directory, filePath)
       tasks.push(async () => {
-        await rm(dest, { force: true, recursive: true })
+        await rmdir(dest, { recursive: true  })
       })
       return builder
     },
@@ -169,7 +170,7 @@ const createSiteBuilder = ({ siteName }) => {
       return builder
     },
     cleanupAsync: async () => {
-      await rm(directory, { force: true, recursive: true }).catch((error) => {
+      await rmdir(directory, { recursive: true }).catch((error) => {
         console.warn(error)
       })
       return builder

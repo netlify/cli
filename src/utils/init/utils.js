@@ -1,6 +1,6 @@
 // @ts-check
 const { existsSync } = require('fs')
-const { writeFile } = require('fs/promises')
+const { writeFile } = require('fs').promises
 const { EOL } = require('os')
 const path = require('path')
 const process = require('process')

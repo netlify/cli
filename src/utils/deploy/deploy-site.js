@@ -1,4 +1,4 @@
-const { rm } = require('fs/promises')
+const { rmdir } = require('fs').promises
 
 const cleanDeep = require('clean-deep')
 const tempy = require('tempy')
@@ -153,7 +153,7 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
     phase: 'stop',
   })
 
-  await rm(tmpDir, { recursive: true })
+  await rmdir(tmpDir, { recursive: true })
 
   const deployManifest = {
     deployId,

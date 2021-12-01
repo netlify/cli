@@ -1,5 +1,5 @@
 // @ts-check
-const { mkdir } = require('fs/promises')
+const { mkdir } = require('fs').promises
 const { env } = require('process')
 
 const { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn } = require('../../utils')

@@ -1,5 +1,6 @@
-const { F_OK } = require('fs')
-const { access, readFile, stat } = require('fs/promises')
+// @ts-check
+const { constants } = require('fs')
+const { access, readFile, stat } = require('fs').promises
 
 /**
  * reads a file async and catches potential errors
@@ -15,7 +16,7 @@ const readFileAsyncCatchError = async (filePath) => {
 
 const fileExistsAsync = async (filePath) => {
   try {
-    await access(filePath, F_OK)
+    await access(filePath, constants.F_OK)
     return true
   } catch {
     return false
@@ -30,7 +31,8 @@ const fileExistsAsync = async (filePath) => {
 const isType = async (filePath, type) => {
   try {
     const stats = await stat(filePath)
-    return stats[type]()
+    // @ts-ignore
+    return typeof stats[type] === 'function' ? stats[type]() : stats[type]
   } catch (error_) {
     if (error_.code === 'ENOENT') {
       return false

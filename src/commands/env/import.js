@@ -1,5 +1,5 @@
 // @ts-check
-const { readFile } = require('fs/promises')
+const { readFile } = require('fs').promises
 
 const AsciiTable = require('ascii-table')
 const dotenv = require('dotenv')

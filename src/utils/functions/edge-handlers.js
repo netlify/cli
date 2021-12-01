@@ -1,5 +1,5 @@
 // @ts-check
-const fs = require('fs/promises')
+const fs = require('fs').promises
 const path = require('path')
 
 const { cancelDeploy, uploadEdgeHandlers } = require('../../lib/api')

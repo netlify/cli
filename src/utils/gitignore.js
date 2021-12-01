@@ -1,5 +1,5 @@
 // @ts-check
-const { readFile, writeFile } = require('fs/promises')
+const { readFile, writeFile } = require('fs').promises
 const path = require('path')
 
 const parseIgnore = require('parse-gitignore')

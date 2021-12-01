@@ -1,6 +1,6 @@
 // Handlers are meant to be async outside tests
 /* eslint-disable require-await */
-const { copyFile } = require('fs/promises')
+const { copyFile } = require('fs').promises
 const http = require('http')
 const os = require('os')
 const path = require('path')
