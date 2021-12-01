@@ -1,6 +1,8 @@
 // @ts-check
 const AsciiTable = require('ascii-table')
-const { methods } = require('netlify')
+
+// TODO: use static `import` after migrating this repository to pure ES modules
+const jsClient = import('netlify')
 
 const { chalk, error, exit, generateDescriptionHelp, generateExamplesHelp, log, logJson } = require('../../utils')
 
@@ -16,6 +18,7 @@ const apiCommand = async (apiMethod, options, command) => {
   if (options.list) {
     const table = new AsciiTable(`Netlify API Methods`)
     table.setHeading('API Method', 'Docs Link')
+    const { methods } = await jsClient
     methods.forEach((method) => {
       const { operationId } = method
       table.addRow(operationId, `https://open-api.netlify.com/#operation/${operationId}`)

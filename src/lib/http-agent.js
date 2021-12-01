@@ -1,11 +1,10 @@
+const { readFile } = require('fs').promises
 const { URL } = require('url')
 
 const { HttpsProxyAgent } = require('https-proxy-agent')
 const waitPort = require('wait-port')
 
 const { NETLIFYDEVERR, NETLIFYDEVWARN, exit, log } = require('../utils')
-
-const { readFile } = require('fs').promises
 
 // https://github.com/TooTallNate/node-https-proxy-agent/issues/89
 class HttpsProxyAgentWithCA extends HttpsProxyAgent {

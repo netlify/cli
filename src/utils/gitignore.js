@@ -37,4 +37,4 @@ const ensureNetlifyIgnore = async function (dir) {
   }
 }
 
-module.exports = ensureNetlifyIgnore
+module.exports = { ensureNetlifyIgnore }

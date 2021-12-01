@@ -101,7 +101,7 @@ const TOKEN_TIMEOUT = 3e5
 /**
  *
  * @param {object} config
- * @param {import('netlify')} config.api
+ * @param {import('netlify').NetlifyAPI} config.api
  * @param {object} config.ticket
  * @returns
  */

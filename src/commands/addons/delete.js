@@ -4,8 +4,8 @@
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
- const addonsDelete = async (options, command) => {
-  console.log('addons:delete command with options', options)
+ const addonsDelete =  (options, command) => {
+  console.log('addons:delete command with options', options, command.name())
 }
 
 /**
@@ -15,7 +15,7 @@
  */
 const createAddonsDeleteCommand = (program) =>
   program
-    .command('addons:delete')
+  .command('addons:delete')
     .description('(Beta) Manage Netlify Add-ons')
     .action(addonsDelete)
 

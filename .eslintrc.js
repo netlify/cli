@@ -25,11 +25,13 @@ module.exports = {
     'fp/no-this': 0,
     'import/max-dependencies': 0,
     'node/no-sync': 0,
+    // TODO: remove once bug in eslint-plugin-node is fixed:
+    // https://github.com/mysticatea/eslint-plugin-node/issues/250
+    'node/no-unsupported-features/es-syntax': [2, { ignores: ['modules', 'dynamicImport'] }],
     'sort-destructure-keys/sort-destructure-keys': 2,
     'unicorn/consistent-destructuring': 0,
     // TODO: harmonize with filename snake_case in other Netlify Dev projects
     'unicorn/filename-case': [2, { case: 'kebabCase' }],
-    'local-rules/no-direct-chalk-import': 2
   },
   overrides: [
     ...overrides,
@@ -65,6 +67,12 @@ module.exports = {
         'import/no-unresolved': 0,
         'node/no-missing-require': 0,
         'node/no-unsupported-features/es-syntax': 0,
+      },
+    },
+    {
+      files: ['src/**/*.js'],
+      rules: {
+        'local-rules/no-direct-chalk-import': 2,
       },
     },
   ],

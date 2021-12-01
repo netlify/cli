@@ -13,7 +13,7 @@ const { createFunctionsServeCommand } = require('./serve')
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-const functions = async (options, command) => {
+const functions = (options, command) => {
   command.help()
 }
 

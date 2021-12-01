@@ -462,7 +462,6 @@ const deploy = async (options, command) => {
   let siteData = {}
   if (siteId) {
     try {
-      // @ts-ignore types from API are wrong they cannot recognize `getSite` of API
       siteData = await api.getSite({ siteId })
     } catch (error_) {
       // TODO specifically handle known cases (e.g. no account access)

@@ -6,7 +6,9 @@ const resolveConfig = require('@netlify/config')
 const { Command } = require('commander')
 const debug = require('debug')
 const merge = require('lodash/merge')
-const API = require('netlify')
+
+// TODO: use static `import` after migrating this repository to pure ES modules
+const jsClient = import('netlify')
 
 const { getAgent } = require('../lib/http-agent')
 const {
@@ -45,7 +47,7 @@ const getDuration = function (startTime) {
  * The netlify object inside each command with the state
  * @typedef NetlifyOptions
  * @type {object}
- * @property {import('netlify')} api
+ * @property {import('netlify').NetlifyAPI} api
  * @property {*} repositoryRoot
  * @property {object} site
  * @property {*} site.root
@@ -72,7 +74,6 @@ class BaseCommand extends Command {
    * @param {string} name The command name
    * @returns
    */
-  // eslint-disable-next-line class-methods-use-this
   createCommand(name) {
     return (
       new BaseCommand(name)
@@ -242,10 +243,11 @@ class BaseCommand extends Command {
     })
     const apiOpts = { ...apiUrlOpts, agent }
     const globalConfig = await getGlobalConfig()
+    const { NetlifyAPI } = await jsClient
 
     actionCommand.netlify = {
       // api methods
-      api: new API(token || '', apiOpts),
+      api: new NetlifyAPI(token || '', apiOpts),
       repositoryRoot,
       // current site context
       site: {

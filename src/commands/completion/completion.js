@@ -3,8 +3,8 @@
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-const completion = async (options, command) => {
-  console.log('completion command with options', options)
+const completion = (options, command) => {
+  console.log('completion command with options',options, command.name())
 }
 
 /**
