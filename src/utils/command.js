@@ -1,5 +1,4 @@
 const process = require('process')
-const { URL } = require('url')
 
 const resolveConfig = require('@netlify/config')
 const { flags: flagsLib } = require('@oclif/command')
