@@ -58,7 +58,7 @@ const createApiCommand = (program) =>
   program
     .command('api')
     .argument('[method]', 'Open API method to run')
-    .option('-d, --data', 'Data to use')
+    .option('-d, --data <data>', 'Data to use')
     .option('--list', 'List out available API methods', false)
     .addHelpText(
       'after',

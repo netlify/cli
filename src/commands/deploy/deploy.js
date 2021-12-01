@@ -582,7 +582,7 @@ const createDeployCommand = (program) =>
   program
     .command('deploy')
     .description('Create a new deploy from the contents of a folder')
-    .option('-d, --dir', 'Specify a folder to deploy')
+    .option('-d, --dir <path>', 'Specify a folder to deploy')
     .option('-f, --functions', 'Specify a functions folder to deploy')
     .option('-p, --prod', 'Deploy to production', false)
     .option('--prodIfUnlocked', 'Deploy to production if unlocked, create a draft otherwise', false)

@@ -1,3 +1,4 @@
+// @ts-check
 const { dirname, extname } = require('path')
 const { platform } = require('process')
 
@@ -5,7 +6,7 @@ const tempy = require('tempy')
 
 const isWindows = platform === 'win32'
 
-const execa = require('../../../../utils')
+const { execa } = require('../../../../utils')
 const { runFunctionsProxy } = require('../../local-proxy')
 
 const build = async ({ binaryPath, functionDirectory }) => {

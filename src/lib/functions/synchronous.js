@@ -1,3 +1,4 @@
+// @ts-check
 const { Buffer } = require('buffer')
 
 const { NETLIFYDEVERR } = require('../../utils')

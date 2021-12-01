@@ -106,77 +106,7 @@ class BaseCommand extends Command {
           await this.#init(actionCommand)
           debug(`${name}:preAction`)('end')
         })
-        .hook('postAction', async () => {
-          debug(`${name}:postAction`)('start')
-          await this.onEnd()
-          debug(`${name}:postAction`)('end')
-        })
     )
-  }
-
-  /**
-   * Initializes the options and parses the configuration needs to be called on start of a command function
-   * @param {BaseCommand} actionCommand The command of the action that is run (`this.` gets the parent command)
-   */
-  async #init(actionCommand) {
-    debug(`${actionCommand.name()}:init`)('start')
-    const options = actionCommand.opts()
-    const cwd = options.cwd || process.cwd()
-    // Get site id & build state
-    const state = new StateConfig(cwd)
-
-    const [token] = await getToken(options.auth)
-
-    const apiUrlOpts = {
-      userAgent: USER_AGENT,
-    }
-
-    if (process.env.NETLIFY_API_URL) {
-      const apiUrl = new URL(process.env.NETLIFY_API_URL)
-      apiUrlOpts.scheme = apiUrl.protocol.slice(0, -1)
-      apiUrlOpts.host = apiUrl.host
-      apiUrlOpts.pathPrefix =
-        process.env.NETLIFY_API_URL === `${apiUrl.protocol}//${apiUrl.host}` ? '/api/v1' : apiUrl.pathname
-    }
-
-    const cachedConfig = await actionCommand.#getConfig({ cwd, state, token, ...apiUrlOpts })
-    const { buildDir, config, configPath, repositoryRoot, siteInfo } = cachedConfig
-    const normalizedConfig = normalizeConfig(config)
-
-    const agent = await getAgent({
-      httpProxy: options.httpProxy,
-      certificateFile: options.httpProxyCertificateFilename,
-    })
-    const apiOpts = { ...apiUrlOpts, agent }
-    const globalConfig = await getGlobalConfig()
-
-    actionCommand.netlify = {
-      // api methods
-      api: new API(token || '', apiOpts),
-      repositoryRoot,
-      // current site context
-      site: {
-        root: buildDir,
-        configPath,
-        get id() {
-          return state.get('siteId')
-        },
-        set id(id) {
-          state.set('siteId', id)
-        },
-      },
-      // Site information retrieved using the API
-      siteInfo,
-      // Configuration from netlify.[toml/yml]
-      config: normalizedConfig,
-      // Used to avoid calling @netlify/config again
-      cachedConfig,
-      // global cli config
-      globalConfig,
-      // state of current site dir
-      state,
-    }
-    debug(`${this.name()}:init`)('end')
   }
 
   /**
@@ -185,58 +115,21 @@ class BaseCommand extends Command {
    */
   async onEnd(error_) {
     const { payload, startTime } = this.#analytics
+    const duration = getDuration(startTime)
+    const status = error_ === undefined ? 'success' : 'error'
+
+    debug(`${this.name()}:onEnd`)(`Status: ${status}`)
+    debug(`${this.name()}:onEnd`)(`Duration: ${duration}ms`)
+
     await track('command', {
       ...payload,
       command: this.name(),
-      duration: getDuration(startTime),
-      status: error_ === undefined ? 'success' : 'error',
+      duration,
+      status,
     })
 
     if (error_ !== undefined) {
       error(error_ instanceof Error ? error_ : format(error_), { exit: false })
-      exit(1)
-    }
-    exit()
-  }
-
-  /**
-   * Find and resolve the Netlify configuration
-   * @param {*} config
-   * @returns {ReturnType<import('@netlify/config/src/main')>}
-   */
-  async #getConfig(config) {
-    const options = this.opts()
-    const { cwd, host, offline = options.offline, pathPrefix, scheme, state, token } = config
-
-    try {
-      return await resolveConfig({
-        config: options.config,
-        cwd,
-        context: options.context || this.name(),
-        debug: this.opts().debug,
-        siteId: options.siteId || (typeof options.site === 'string' && options.site) || state.get('siteId'),
-        token,
-        mode: 'cli',
-        host,
-        pathPrefix,
-        scheme,
-        offline,
-      })
-    } catch (error_) {
-      const isUserError = error_.customErrorInfo !== undefined && error_.customErrorInfo.type === 'resolveConfig'
-
-      // If we're failing due to an error thrown by us, it might be because the token we're using is invalid.
-      // To account for that, we try to retrieve the config again, this time without a token, to avoid making
-      // any API calls.
-      //
-      // @todo Replace this with a mechanism for calling `resolveConfig` with more granularity (i.e. having
-      // the option to say that we don't need API data.)
-      if (isUserError && !offline && token) {
-        return this.#getConfig({ cwd, offline: true, state, token })
-      }
-
-      const message = isUserError ? error_.message : error_.stack
-      console.error(message)
       exit(1)
     }
   }
@@ -312,6 +205,113 @@ class BaseCommand extends Command {
 
   setAnalyticsPayload(payload) {
     this.#analytics = { ...this.#analytics, payload }
+  }
+
+  /**
+   * Initializes the options and parses the configuration needs to be called on start of a command function
+   * @param {BaseCommand} actionCommand The command of the action that is run (`this.` gets the parent command)
+   */
+  async #init(actionCommand) {
+    debug(`${actionCommand.name()}:init`)('start')
+    const options = actionCommand.opts()
+    const cwd = options.cwd || process.cwd()
+    // Get site id & build state
+    const state = new StateConfig(cwd)
+
+    const [token] = await getToken(options.auth)
+
+    const apiUrlOpts = {
+      userAgent: USER_AGENT,
+    }
+
+    if (process.env.NETLIFY_API_URL) {
+      const apiUrl = new URL(process.env.NETLIFY_API_URL)
+      apiUrlOpts.scheme = apiUrl.protocol.slice(0, -1)
+      apiUrlOpts.host = apiUrl.host
+      apiUrlOpts.pathPrefix =
+        process.env.NETLIFY_API_URL === `${apiUrl.protocol}//${apiUrl.host}` ? '/api/v1' : apiUrl.pathname
+    }
+
+    const cachedConfig = await actionCommand.#getConfig({ cwd, state, token, ...apiUrlOpts })
+    const { buildDir, config, configPath, repositoryRoot, siteInfo } = cachedConfig
+    const normalizedConfig = normalizeConfig(config)
+
+    const agent = await getAgent({
+      httpProxy: options.httpProxy,
+      certificateFile: options.httpProxyCertificateFilename,
+    })
+    const apiOpts = { ...apiUrlOpts, agent }
+    const globalConfig = await getGlobalConfig()
+
+    actionCommand.netlify = {
+      // api methods
+      api: new API(token || '', apiOpts),
+      repositoryRoot,
+      // current site context
+      site: {
+        root: buildDir,
+        configPath,
+        get id() {
+          return state.get('siteId')
+        },
+        set id(id) {
+          state.set('siteId', id)
+        },
+      },
+      // Site information retrieved using the API
+      siteInfo,
+      // Configuration from netlify.[toml/yml]
+      config: normalizedConfig,
+      // Used to avoid calling @netlify/config again
+      cachedConfig,
+      // global cli config
+      globalConfig,
+      // state of current site dir
+      state,
+    }
+    debug(`${this.name()}:init`)('end')
+  }
+
+  /**
+   * Find and resolve the Netlify configuration
+   * @param {*} config
+   * @returns {ReturnType<import('@netlify/config/src/main')>}
+   */
+  async #getConfig(config) {
+    const options = this.opts()
+    const { cwd, host, offline = options.offline, pathPrefix, scheme, state, token } = config
+
+    try {
+      return await resolveConfig({
+        config: options.config,
+        cwd,
+        context: options.context || this.name(),
+        debug: this.opts().debug,
+        siteId: options.siteId || (typeof options.site === 'string' && options.site) || state.get('siteId'),
+        token,
+        mode: 'cli',
+        host,
+        pathPrefix,
+        scheme,
+        offline,
+      })
+    } catch (error_) {
+      const isUserError = error_.customErrorInfo !== undefined && error_.customErrorInfo.type === 'resolveConfig'
+
+      // If we're failing due to an error thrown by us, it might be because the token we're using is invalid.
+      // To account for that, we try to retrieve the config again, this time without a token, to avoid making
+      // any API calls.
+      //
+      // @todo Replace this with a mechanism for calling `resolveConfig` with more granularity (i.e. having
+      // the option to say that we don't need API data.)
+      if (isUserError && !offline && token) {
+        return this.#getConfig({ cwd, offline: true, state, token })
+      }
+
+      const message = isUserError ? error_.message : error_.stack
+      console.error(message)
+      exit(1)
+    }
   }
 }
 

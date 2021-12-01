@@ -199,7 +199,7 @@ const error = (message = '', options = {}) => {
     if (process.env.DEBUG) {
       process.stderr.write(` ${bang}   Warning: ${err.stack.split('\n').join(`\n ${bang}   `)}`)
     } else {
-      process.stderr.write(` ${bang}   ${err.name}: ${err.message}`)
+      process.stderr.write(` ${bang}   ${err.name}: ${err.message}\n`)
     }
   } else {
     throw err

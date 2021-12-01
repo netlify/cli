@@ -1,3 +1,4 @@
+// @ts-check
 const chokidar = require('chokidar')
 const decache = require('decache')
 const debounce = require('lodash/debounce')

@@ -3,8 +3,8 @@ const path = require('path')
 const process = require('process')
 
 const { isCI } = require('ci-info')
-const execa = require('execa')
 
+const execa = require('../execa')
 const getGlobalConfig = require('../get-global-config')
 
 const isValidEventName = require('./validation')

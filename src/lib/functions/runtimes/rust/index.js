@@ -1,3 +1,4 @@
+// @ts-check
 const { readFile } = require('fs/promises')
 const { dirname, extname, join, resolve } = require('path')
 const { platform } = require('process')
@@ -7,10 +8,9 @@ const toml = require('toml')
 
 const isWindows = platform === 'win32'
 
-const execa = require('../../../../utils')
+const { execa } = require('../../../../utils')
 const { getPathInProject } = require('../../../settings')
 const { runFunctionsProxy } = require('../../local-proxy')
-
 
 const build = async ({ func }) => {
   const functionDirectory = dirname(func.mainFile)

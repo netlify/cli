@@ -1,3 +1,4 @@
+// @ts-check
 const { mkdir } = require('fs/promises')
 const { env } = require('process')
 

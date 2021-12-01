@@ -13,6 +13,7 @@ const gitignore = require('./gitignore')
 const liveTunnel = require('./live-tunnel')
 const openBrowser = require('./open-browser')
 const proxy = require('./proxy')
+const readRepoURL = require('./read-repo-url')
 const StateConfig = require('./state-config')
 const telemetry = require('./telemetry')
 const trafficMesh = require('./traffic-mesh')
@@ -30,6 +31,7 @@ module.exports = {
   ...liveTunnel,
   ...openBrowser,
   ...proxy,
+  ...readRepoURL,
   ...StateConfig,
   ...telemetry,
   ...trafficMesh,

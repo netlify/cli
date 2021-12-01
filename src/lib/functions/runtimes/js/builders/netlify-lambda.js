@@ -4,7 +4,7 @@ const { resolve } = require('path')
 
 const minimist = require('minimist')
 
-const execa = require('../../../../../utils')
+const { execa } = require('../../../../../utils')
 const { fileExistsAsync } = require('../../../../fs')
 const { memoizedBuild } = require('../../../memoized-build')
 

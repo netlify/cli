@@ -1,8 +1,9 @@
+// @ts-check
 const { stdout } = require('process')
 
 const { getBinaryPath: getFunctionsProxyPath } = require('@netlify/local-functions-proxy')
 
-const execa = require('../../utils')
+const { execa } = require('../../utils')
 
 const runFunctionsProxy = ({ binaryPath, context, directory, event, name, timeout }) => {
   const functionsProxyPath = getFunctionsProxyPath()

@@ -41,7 +41,7 @@ const envGet = async (name, options, command) => {
  */
 const createEnvGetCommand = (program) =>
   program
-    .command('env:get <name>')
+    .command('env:get')
     .argument('<name>', 'Environment variable name')
     .description('Get resolved value of specified environment variable (includes netlify.toml)')
     .action(async (name, options, command) => {

@@ -1,3 +1,4 @@
+// @ts-check
 const jwtDecode = require('jwt-decode')
 
 const { NETLIFYDEVERR, NETLIFYDEVLOG, error: errorExit, getInternalFunctionsDir, log } = require('../../utils')

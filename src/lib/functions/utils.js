@@ -1,3 +1,4 @@
+// @ts-check
 const { chalk, warn } = require('../../utils')
 const { getLogMessage } = require('../log')
 

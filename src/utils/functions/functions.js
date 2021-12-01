@@ -9,7 +9,7 @@ const { getPathInProject } = require('../../lib/settings')
  * @param {object} param
  * @param {object} param.config
  * @param {import('commander').OptionValues} param.options The options from the commander
- * @param {string} defaultValue
+ * @param {string} [defaultValue]
  * @returns {string}
  */
 const getFunctionsDir = ({ config, options }, defaultValue) =>

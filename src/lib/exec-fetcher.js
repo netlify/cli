@@ -2,11 +2,10 @@
 const path = require('path')
 const process = require('process')
 
-const execa = require('execa')
 const { fetchLatest, fetchVersion, newerVersion, updateAvailable } = require('gh-release-fetch')
 const isExe = require('isexe')
 
-const { NETLIFYDEVWARN, log } = require('../utils/command-helpers')
+const { NETLIFYDEVWARN, execa, log } = require('../utils')
 
 const isWindows = () => process.platform === 'win32'
 
