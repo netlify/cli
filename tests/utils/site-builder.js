@@ -150,7 +150,7 @@ const createSiteBuilder = ({ siteName }) => {
       return builder
     },
     withBuildPlugin: ({ name, pathPrefix = 'plugins', plugin }) => {
-      const dest = path.join(directory, pathPrefix, name)
+      const dest = path.join(directory, pathPrefix, `${name}.js`)
       tasks.push(async () => {
         await ensureDir(path.dirname(dest))
         await Promise.all([

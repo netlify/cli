@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "8.0.6",
+  "version": "8.0.11",
   "author": "Netlify Inc.",
   "contributors": [
     "Mathias Biilmann <matt@netlify.com> (https://twitter.com/biilmann)",
@@ -77,14 +77,14 @@
     "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,scripts,site,tests,.github}/**/*.{js,md,yml,json,html}\" \"*.{js,yml,json,html}\" \".*.{js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\" \"!.github/**/*.md\""
   },
   "dependencies": {
-    "@netlify/build": "^19.0.7",
-    "@netlify/config": "^16.0.4",
+    "@netlify/build": "^20.0.2",
+    "@netlify/config": "^16.0.5",
     "@netlify/framework-info": "^6.0.0",
     "@netlify/local-functions-proxy": "^1.1.1",
     "@netlify/plugin-edge-handlers": "^2.0.0",
     "@netlify/plugins-list": "^5.0.0",
     "@netlify/routing-local-proxy": "^0.34.1",
-    "@netlify/zip-it-and-ship-it": "5.1.0",
+    "@netlify/zip-it-and-ship-it": "5.2.0",
     "@octokit/rest": "^18.0.0",
     "@sindresorhus/slugify": "^1.1.0",
     "ansi-styles": "^5.0.0",
@@ -190,7 +190,7 @@
     "@babel/preset-react": "^7.12.13",
     "@commitlint/cli": "^15.0.0",
     "@commitlint/config-conventional": "^15.0.0",
-    "@netlify/eslint-config-node": "^3.3.9",
+    "@netlify/eslint-config-node": "^3.3.11",
     "ava": "^3.15.0",
     "eslint-plugin-local-rules": "file:tools/eslint-rules",
     "eslint-plugin-sort-destructure-keys": "^1.3.5",

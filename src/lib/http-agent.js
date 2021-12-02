@@ -1,5 +1,5 @@
+// @ts-check
 const { readFile } = require('fs').promises
-const { URL } = require('url')
 
 const { HttpsProxyAgent } = require('https-proxy-agent')
 const waitPort = require('wait-port')
