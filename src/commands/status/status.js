@@ -2,7 +2,7 @@
 const clean = require('clean-deep')
 const prettyjson = require('prettyjson')
 
-const { chalk, error, exit, generateCommandsHelp, getToken, log, logJson, warn } = require('../../utils')
+const { chalk, error, exit, getToken, log, logJson, warn } = require('../../utils')
 
 const { createStatusHooksCommand } = require('./status-hooks')
 
@@ -119,7 +119,6 @@ const createStatusCommand = (program) => {
     .command('status')
     .description('Print status information')
     .option('--verbose', 'Output system info')
-    .addHelpText('after', generateCommandsHelp('status', program))
     .action(status)
 }
 module.exports = { createStatusCommand }

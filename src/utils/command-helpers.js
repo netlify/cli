@@ -31,6 +31,24 @@ const safeChalk = function (noColors) {
 
 const chalk = safeChalk(argv.includes('--json'))
 
+/**
+ * Adds the filler to the start of the string
+ * @param {string} str
+ * @param {number} count
+ * @param {string} [filler]
+ * @returns {string}
+ */
+const padLeft = (str, count, filler = ' ') => str.padStart(str.length + count, filler)
+
+/**
+ * Adds the filler to the end of the string
+ * @param {string} str
+ * @param {number} count
+ * @param {string} [filler]
+ * @returns {string}
+ */
+const padRight = (str, count, filler = ' ') => str.padEnd(str.length + count, filler)
+
 const platform = WSL ? 'wsl' : os.platform()
 const arch = os.arch() === 'ia32' ? 'x86' : os.arch()
 
@@ -46,41 +64,31 @@ const NETLIFYDEVLOG = `${chalk.greenBright('◈')}`
 const NETLIFYDEVWARN = `${chalk.yellowBright('◈')}`
 const NETLIFYDEVERR = `${chalk.redBright('◈')}`
 
-// eslint-disable-next-line id-length
-const $ = NETLIFY_CYAN('$')
+const HELP_$ = NETLIFY_CYAN('$')
+// indent on commands or description on the help page
+const HELP_INDENT_WIDTH = 2
+// seperator width between term and description
+const HELP_SEPERATOR_WIDTH = 5
 const BANG = process.platform === 'win32' ? '»' : '›'
 
 /**
- * Generates a CommandHelp section for the command
- * @param {string} commandName
- * @param {import('commander').Command} program
+ * Formats a help list correctly with the correct indent
+ * @param {string[]} textArray
+ * @returns
  */
-const generateCommandsHelp = (commandName, program) => {
-  const cmds = program.commands.filter((cmd) => cmd.name().startsWith(`${commandName}:`))
-
-  if (cmds.length !== 0) {
-    const longestName = Math.max(...cmds.map((cmd) => cmd.name().length)) + 1
-    const table = cmds.map((cmd) => {
-      const spacer = Array.from({ length: longestName - cmd.name().length })
-        .fill()
-        .join(' ')
-
-      return `  ${$} ${cmd.name()}${spacer}  ${chalk.grey(cmd.description())}`
-    })
-    return `
-${chalk.bold('COMMANDS')}
-${table.join('\n')}`
-  }
-}
+const formatHelpList = (textArray) => textArray.join('\n').replace(/^/gm, ' '.repeat(HELP_INDENT_WIDTH))
 
 /**
  * Generates the help output for the description
  * @param {string} description
  * @returns {string}
  */
-const generateDescriptionHelp = (description) => `
-${chalk.bold('DESCRIPTION')}
-  ${description.split('\n').join('\n  ')}`
+const generateDescriptionHelp = (description) =>
+  [
+    chalk.bold('DESCRIPTION'),
+    padLeft(description.split('\n').join(padRight('\n', HELP_INDENT_WIDTH)), HELP_INDENT_WIDTH),
+    '',
+  ].join('\n')
 
 /**
  * Generates the help output for the examples
@@ -89,9 +97,7 @@ ${chalk.bold('DESCRIPTION')}
  */
 const generateExamplesHelp = (examples) => {
   if (examples.length !== 0) {
-    return `
-${chalk.bold('EXAMPLES')}
-${examples.map((example) => `  ${$} ${example}`).join('\n')}`
+    return [chalk.bold('EXAMPLE'), formatHelpList(examples.map((example) => `${HELP_$} ${example}`)), ''].join('\n')
   }
 }
 
@@ -220,14 +226,18 @@ const normalizeConfig = (config) =>
     : config
 
 module.exports = {
+  HELP_$,
+  HELP_INDENT_WIDTH,
+  HELP_SEPERATOR_WIDTH,
   getToken,
+  formatHelpList,
   exit,
+  padLeft,
   logJson,
   log,
   warn,
   error,
   chalk,
-  generateCommandsHelp,
   generateDescriptionHelp,
   generateExamplesHelp,
   pollForToken,

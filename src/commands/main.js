@@ -57,7 +57,14 @@ const mainCommand = async function (options, command) {
   }
 
   if (command.args[0] === 'help') {
-    command.help();
+    if (command.args[1]) {
+      const subCommand = command.commands.find((cmd) => cmd.name() === command.args[1])
+      if (!subCommand) {
+        error(`command ${command.args[1]} not found`)
+      }
+      subCommand.help()
+    }
+    command.help()
   }
 
   warn(`${chalk.yellow(command.args[0])} is not a ${command.name()} command.`)
@@ -105,17 +112,7 @@ const createMainCommand = async (program) =>
     .showSuggestionAfterError(true)
     .option('--telemetry-disable', 'Disable telemetry')
     .option('--telemetry-enable', 'Enables telemetry')
-    .configureHelp({
-      // TODO: Add custom formater to have same visual styling
-      //   formatHelp: (cmd, helper) => {
-      //     console.log(cmd, helper);
-      //     const longestFlag = Math.max(...cmd.options.map((option) => option.flags.length)) + 1;
-      //     const table = cmd.options.map(({flags, description}) => `  ${flags}${new Array(longestFlag-flags.length).fill().join(' ')}   {grey ${description}} `).join('\n')
-      //     return chalk`{bold OPTIONS}
-      // ${table}
-      // `
-      //   }
-    })
+    .noHelpOptions()
     .action(mainCommand)
 
 module.exports = { createMainCommand }

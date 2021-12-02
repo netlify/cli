@@ -1,6 +1,6 @@
 // @ts-check
 
-const { generateCommandsHelp, generateDescriptionHelp, generateExamplesHelp } = require('../../utils')
+const { generateDescriptionHelp, generateExamplesHelp } = require('../../utils')
 
 const { createLmInfoCommand } = require('./lm-info')
 const { createLmInstallCommand } = require('./lm-install')
@@ -30,9 +30,8 @@ const createLmCommand = (program) => {
   program
     .command('lm')
     .description('Handle Netlify Large Media operations')
-    .addHelpCommand('after', generateDescriptionHelp('The lm command will help you manage large media for a site'))
-    .addHelpCommand('after', generateExamplesHelp(['netlify lm:info', 'netlify lm:install', 'netlify lm:setup']))
-    .addHelpCommand('after', generateCommandsHelp('lm', program))
+    .addHelpText('after', generateDescriptionHelp('The lm command will help you manage large media for a site'))
+    .addHelpText('after', generateExamplesHelp(['netlify lm:info', 'netlify lm:install', 'netlify lm:setup']))
     .action(lm)
 }
 

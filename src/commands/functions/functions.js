@@ -1,6 +1,6 @@
 // @ts-check
 
-const { chalk, generateCommandsHelp, generateDescriptionHelp, generateExamplesHelp } = require('../../utils')
+const { chalk, generateDescriptionHelp, generateExamplesHelp } = require('../../utils')
 
 const { createFunctionsBuildCommand } = require('./functions-build')
 const { createFunctionsCreateCommand } = require('./functions-create')
@@ -46,7 +46,6 @@ const createFunctionsCommand = (program) => {
         'netlify functions:build --name function-abc --timeout 30s',
       ]),
     )
-    .addHelpText('after', generateCommandsHelp('functions', program))
     .action(functions)
 }
 

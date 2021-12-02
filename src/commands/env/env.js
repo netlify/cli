@@ -1,4 +1,4 @@
-const { generateCommandsHelp, generateExamplesHelp } = require('../../utils')
+const { generateExamplesHelp } = require('../../utils')
 
 const { createEnvGetCommand } = require('./env-get')
 const { createEnvImportCommand } = require('./env-import')
@@ -40,7 +40,6 @@ const createEnvCommand = (program) => {
         'netlify env:import fileName',
       ]),
     )
-    .addHelpText('after', generateCommandsHelp('env', program))
     .action(env)
 }
 

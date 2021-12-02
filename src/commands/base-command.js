@@ -12,17 +12,22 @@ const jsClient = import('netlify')
 
 const { getAgent } = require('../lib/http-agent')
 const {
+  HELP_$,
+  HELP_INDENT_WIDTH,
+  HELP_SEPERATOR_WIDTH,
   StateConfig,
   USER_AGENT,
   chalk,
   error,
   exit,
+  formatHelpList,
   getGlobalConfig,
   getToken,
   identify,
   log,
   normalizeConfig,
   openBrowser,
+  padLeft,
   pollForToken,
   track,
 } = require('../utils')
@@ -32,6 +37,10 @@ const {
 const CLIENT_ID = 'd6f37de6614df7ae58664cfca524744d73807a377f5ee71f1a254f78412e3750'
 
 const NANO_SECS_TO_MSECS = 1e6
+// The fallback width for the help terminal
+const FALLBACK_HELP_CMD_WIDTH = 80
+// AN option description that should be hidden in the help page
+const OPTION_HIDDEN_DESCRIPTION = 'hidden:true'
 
 /**
  * Get the duration between a start time and the current time
@@ -78,9 +87,9 @@ class BaseCommand extends Command {
     return (
       new BaseCommand(name)
         // If  --silent or --json flag passed disable logger
-        .option('--json')
-        .option('--cwd <cwd>', 'Pass a current working directory.')
-        .option('-o, --offline')
+        .option('--json', OPTION_HIDDEN_DESCRIPTION)
+        .option('--cwd <cwd>', OPTION_HIDDEN_DESCRIPTION)
+        .option('-o, --offline', OPTION_HIDDEN_DESCRIPTION)
 
         // Allow hidden flags like
         // --json,
@@ -91,15 +100,14 @@ class BaseCommand extends Command {
         // this disables the suggestions
         // .allowUnknownOption(true)
 
-        .option('--debug', 'Print debugging information')
-        .option(
-          '--httpProxy',
-          'Proxy server address to route requests through',
-          process.env.HTTP_PROXY || process.env.HTTPS_PROXY,
-        )
+        // 'Print debugging information'
+        .option('--debug', OPTION_HIDDEN_DESCRIPTION)
+        // 'Proxy server address to route requests through'
+        .option('--httpProxy', OPTION_HIDDEN_DESCRIPTION, process.env.HTTP_PROXY || process.env.HTTPS_PROXY)
+        // 'Certificate file to use when connecting using a proxy server',
         .option(
           '--httpProxyCertificateFilename',
-          'Certificate file to use when connecting using a proxy server',
+          OPTION_HIDDEN_DESCRIPTION,
           process.env.NETLIFY_PROXY_CERTIFICATE_FILENAME,
         )
         .hook('preAction', async (_parentCommand, actionCommand) => {
@@ -110,6 +118,149 @@ class BaseCommand extends Command {
           debug(`${name}:preAction`)('end')
         })
     )
+  }
+
+  /** @private */
+  noBaseOptions = false
+
+  /** don't show help options on command overview (mostly used on top commands like `addons` where options only apply on children) */
+  noHelpOptions() {
+    this.noBaseOptions = true
+    return this
+  }
+
+  /**
+   * Overrides the help output of commander with custom styling
+   * @returns {import('commander').Help}
+   */
+  createHelp() {
+    const help = super.createHelp()
+
+    help.commandUsage = (command) => {
+      const term =
+        this.name() === 'netlify'
+          ? `${HELP_$} ${command.name()} [COMMAND]`
+          : `${HELP_$} ${command.parent.name()} ${command.name()} ${command.usage()}`
+
+      return padLeft(term, HELP_INDENT_WIDTH)
+    }
+
+    const getCommands = (command) => {
+      const parentCommand = this.name() === 'netlify' ? command : command.parent
+      return parentCommand.commands.filter((cmd) => {
+        // eslint-disable-next-line no-underscore-dangle
+        if (cmd._hidden) return false
+        // the root command
+        if (this.name() === 'netlify') {
+          // don't include subcommands on the main page
+          return !cmd.name().includes(':')
+        }
+        return cmd.name().startsWith(`${command.name()}:`)
+      })
+    }
+
+    /**
+     * override the longestSubcommandTermLength
+     * @param {BaseCommand} command
+     * @returns {number}
+     */
+    help.longestSubcommandTermLength = (command) =>
+      getCommands(command).reduce((max, cmd) => Math.max(max, cmd.name().length), 0)
+
+    /**
+     * override the longestOptionTermLength to react on hide options flag
+     * @param {BaseCommand} command
+     * @param {import('commander').Help} helper
+     * @returns {number}
+     */
+    help.longestOptionTermLength = (command, helper) =>
+      (command.noBaseOptions === false &&
+        helper.visibleOptions(command).reduce((max, option) => Math.max(max, helper.optionTerm(option).length), 0)) ||
+      0
+
+    /**
+     * override the format help function to style it correctly
+     * @param {BaseCommand} command
+     * @param {import('commander').Help} helper
+     * @returns {string}
+     */
+    help.formatHelp = (command, helper) => {
+      const parentCommand = this.name() === 'netlify' ? command : command.parent
+      const termWidth = helper.padWidth(command, helper)
+      const helpWidth = helper.helpWidth || FALLBACK_HELP_CMD_WIDTH
+      /**
+       * formats a term correctly
+       * @param {string} term
+       * @param {string} [description]
+       * @param {boolean} [isCommand]
+       * @returns {string}
+       */
+      const formatItem = (term, description, isCommand = false) => {
+        const bang = isCommand ? `${HELP_$} ` : ''
+
+        if (description) {
+          const pad = termWidth + HELP_SEPERATOR_WIDTH - (isCommand ? 2 : 0)
+          const fullText = `${bang}${term.padEnd(pad)}${chalk.grey(description)}`
+          return helper.wrap(fullText, helpWidth - HELP_INDENT_WIDTH, pad)
+        }
+
+        return `${bang}${term}`
+      }
+
+      /** @type {string[]} */
+      let output = []
+
+      // Description
+      const commandDescription = helper.commandDescription(command)
+      if (commandDescription.length !== 0) {
+        output = [...output, commandDescription, '']
+      }
+
+      // on the parent help command the version should be displayed
+      if (this.name() === 'netlify') {
+        output = [...output, chalk.bold('VERSION'), formatHelpList([formatItem(USER_AGENT)]), '']
+      }
+
+      // Usage
+      output = [...output, chalk.bold('USAGE'), helper.commandUsage(command), '']
+
+      // Aliases
+      // eslint-disable-next-line no-underscore-dangle
+      if (command._aliases.length !== 0) {
+        // eslint-disable-next-line no-underscore-dangle
+        const aliases = command._aliases.map((alias) => formatItem(`${parentCommand.name()} ${alias}`, null, true))
+        output = [...output, chalk.bold('ALIASES'), formatHelpList(aliases), '']
+      }
+
+      // Arguments
+      const argumentList = helper
+        .visibleArguments(command)
+        .map((argument) => formatItem(helper.argumentTerm(argument), helper.argumentDescription(argument)))
+      if (argumentList.length !== 0) {
+        output = [...output, chalk.bold('ARGUMENTS'), formatHelpList(argumentList), '']
+      }
+
+      if (command.noBaseOptions === false) {
+        // Options
+        const optionList = helper
+          .visibleOptions(command)
+          .filter((option) => option.description !== OPTION_HIDDEN_DESCRIPTION)
+          .map((option) => formatItem(helper.optionTerm(option), helper.optionDescription(option)))
+        if (optionList.length !== 0) {
+          output = [...output, chalk.bold('OPTIONS'), formatHelpList(optionList), '']
+        }
+      }
+
+      const commandList = getCommands(command).map((cmd) =>
+        formatItem(cmd.name(), helper.subcommandDescription(cmd), true),
+      )
+      if (commandList.length !== 0) {
+        output = [...output, chalk.bold('COMMANDS'), formatHelpList(commandList), '']
+      }
+
+      return [...output, ''].join('\n')
+    }
+    return help
   }
 
   /**
@@ -213,6 +364,7 @@ class BaseCommand extends Command {
   /**
    * Initializes the options and parses the configuration needs to be called on start of a command function
    * @param {BaseCommand} actionCommand The command of the action that is run (`this.` gets the parent command)
+   * @private
    */
   async init(actionCommand) {
     debug(`${actionCommand.name()}:init`)('start')

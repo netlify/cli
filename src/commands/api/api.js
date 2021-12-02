@@ -61,6 +61,7 @@ const createApiCommand = (program) =>
   program
     .command('api')
     .argument('[method]', 'Open API method to run')
+    .description('Run any Netlify API method')
     .option('-d, --data <data>', 'Data to use')
     .option('--list', 'List out available API methods', false)
     .addHelpText(

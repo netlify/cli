@@ -1,4 +1,4 @@
-const { generateCommandsHelp, generateExamplesHelp } = require('../../utils')
+const { generateExamplesHelp } = require('../../utils')
 
 const { createOpenAdminCommand, openAdmin } = require('./open-admin')
 const { createOpenSiteCommand, openSite } = require('./open-site')
@@ -36,7 +36,6 @@ const createOpenCommand = (program) => {
       'after',
       generateExamplesHelp(['netlify open --site', 'netlify open --admin', 'netlify open:admin', 'netlify open:site']),
     )
-    .addHelpText('after', generateCommandsHelp('open', program))
     .action(open)
 }
 module.exports = { createOpenCommand }
