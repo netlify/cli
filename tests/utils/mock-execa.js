@@ -16,7 +16,11 @@ const createMock = async (contents) => {
   const env = {
     NETLIFY_CLI_EXECA_PATH: path,
   }
-  const cleanup = () => rmdirRecursiveAsync(path)
+  const cleanup = () =>
+    // eslint-disable-next-line promise/prefer-await-to-then
+    rmdirRecursiveAsync(path).catch(() => {
+      // no-op
+    })
 
   return [env, cleanup]
 }

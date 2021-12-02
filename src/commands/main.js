@@ -56,6 +56,10 @@ const mainCommand = async function (options, command) {
     exit()
   }
 
+  if (command.args[0] === 'help') {
+    command.help();
+  }
+
   warn(`${chalk.yellow(command.args[0])} is not a ${command.name()} command.`)
 
   const allCommands = command.commands.map((cmd) => cmd.name())

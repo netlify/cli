@@ -1,4 +1,4 @@
-#!/usr/bin/env node --trace-warnings
+#!/usr/bin/env node
 /* eslint-disable promise/prefer-await-to-then,promise/prefer-await-to-callbacks,eslint-comments/disable-enable-pair */
 const process = require('process')
 
