@@ -1,6 +1,6 @@
-const { createLinkCommand, link } = require('./link');
+const { createLinkCommand, link } = require('./link')
 
 module.exports = {
   createLinkCommand,
-  link
+  link,
 }

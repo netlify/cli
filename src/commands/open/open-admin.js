@@ -6,7 +6,6 @@ const { error, exit, log, openBrowser, warn } = require('../../utils')
  * @param {import('../base-command').BaseCommand} command
  */
 const openAdmin = async (options, command) => {
-
   const { api, site } = command.netlify
 
   await command.authenticate()

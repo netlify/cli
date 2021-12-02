@@ -1,5 +1,5 @@
 // @ts-check
-const { rmdir, stat } = require('fs').promises
+const { stat } = require('fs').promises
 const path = require('path')
 const process = require('process')
 
@@ -8,6 +8,7 @@ const tempDirectory = require('temp-dir')
 const { v4: uuid } = require('uuid')
 
 const { fetchLatestVersion, getExecName, shouldFetchLatestVersion } = require('./exec-fetcher')
+const { rmdirRecursiveAsync } = require('./fs')
 
 test.beforeEach((t) => {
   const directory = path.join(tempDirectory, `netlify-cli-exec-fetcher`, uuid())
@@ -15,7 +16,7 @@ test.beforeEach((t) => {
 })
 
 test.afterEach(async (t) => {
-  await rmdir(t.context.binPath, { recursive: true })
+  await rmdirRecursiveAsync(t.context.binPath)
 })
 
 test(`should postix exec with .exe on windows`, (t) => {

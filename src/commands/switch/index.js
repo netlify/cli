@@ -1,5 +1,5 @@
-const { createSwitchCommand } = require('./switch');
+const { createSwitchCommand } = require('./switch')
 
 module.exports = {
-  createSwitchCommand
+  createSwitchCommand,
 }

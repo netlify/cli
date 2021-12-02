@@ -206,7 +206,7 @@ const init = async (options, command) => {
 
   persistState({ state, siteInfo })
 
-  await configureRepo({ context: this, siteId: siteInfo.id, repoData, manual: options.manual })
+  await configureRepo({ command, siteId: siteInfo.id, repoData, manual: options.manual })
 
   return siteInfo
 }
@@ -224,7 +224,7 @@ const createInitCommand = (program) =>
     )
     .option('-m, --manual', 'Manually configure a git remote for CI')
     .option('--force', 'Manually configure a git remote for CI')
-    .option('--gitRemoteName', 'Name of Git remote to use. e.g. "origin"')
+    .option('--gitRemoteName <name>', 'Name of Git remote to use. e.g. "origin"')
     .action(init)
 
 module.exports = { createInitCommand, init }

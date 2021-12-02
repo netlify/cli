@@ -1,5 +1,5 @@
-const { createStatusCommand } = require('./status');
+const { createStatusCommand } = require('./status')
 
 module.exports = {
-  createStatusCommand
+  createStatusCommand,
 }

@@ -1,8 +1,7 @@
-const { rmdir } = require('fs').promises
-
 const cleanDeep = require('clean-deep')
 const tempy = require('tempy')
 
+const { rmdirRecursiveAsync } = require('../../lib/fs')
 const { warn } = require('../command-helpers')
 
 const {
@@ -153,7 +152,7 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
     phase: 'stop',
   })
 
-  await rmdir(tmpDir, { recursive: true })
+  await rmdirRecursiveAsync(tmpDir)
 
   const deployManifest = {
     deployId,

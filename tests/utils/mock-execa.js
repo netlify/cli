@@ -1,6 +1,8 @@
-const { rmdir, writeFile } = require('fs').promises
+const { writeFile } = require('fs').promises
 
 const tempy = require('tempy')
+
+const { rmdirRecursiveAsync } = require('../../src/lib/fs')
 
 // Saves to disk a JavaScript file with the contents provided and returns
 // an environment variable that replaces the `execa` module implementation.
@@ -14,7 +16,7 @@ const createMock = async (contents) => {
   const env = {
     NETLIFY_CLI_EXECA_PATH: path,
   }
-  const cleanup = () => rmdir(path, { recursive: true })
+  const cleanup = () => rmdirRecursiveAsync(path)
 
   return [env, cleanup]
 }

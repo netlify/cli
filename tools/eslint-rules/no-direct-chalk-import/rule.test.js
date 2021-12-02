@@ -17,6 +17,8 @@ test('should run the specified testRunner', (t) => {
       invalid: [
         {
           code: `let chalk = require('chalk')`,
+          // test the auto fix of the rule
+          output: `let {chalk} = require('src/utils')`,
           errors: [
             {
               message:

@@ -4,7 +4,7 @@
  * @param {import('../base-command').BaseCommand} command
  */
 const completion = (options, command) => {
-  console.log('completion command with options',options, command.name())
+  console.log('completion command with options', options, command.name())
 }
 
 /**
@@ -13,9 +13,6 @@ const completion = (options, command) => {
  * @returns
  */
 const createCompletionCommand = (program) =>
-  program
-    .command('completion')
-    .description('(Beta) Generate shell completion script')
-    .action(completion)
+  program.command('completion').description('(Beta) Generate shell completion script').action(completion)
 
 module.exports = { createCompletionCommand }

@@ -1,5 +1,5 @@
-const { createDeployCommand } = require('./deploy');
+const { createDeployCommand } = require('./deploy')
 
 module.exports = {
-  createDeployCommand
+  createDeployCommand,
 }

@@ -1,5 +1,5 @@
-const { createAddonsCommand } = require('./addons');
+const { createAddonsCommand } = require('./addons')
 
 module.exports = {
-  createAddonsCommand
+  createAddonsCommand,
 }

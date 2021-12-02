@@ -1,5 +1,5 @@
-const { createDevCommand } = require('./dev');
+const { createDevCommand } = require('./dev')
 
 module.exports = {
-  createDevCommand
+  createDevCommand,
 }

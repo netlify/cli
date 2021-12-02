@@ -1,5 +1,5 @@
-const { createLmCommand } = require('./lm');
+const { createLmCommand } = require('./lm')
 
 module.exports = {
-  createLmCommand
+  createLmCommand,
 }

@@ -1,8 +1,7 @@
 // @ts-check
-
 const inquirer = require('inquirer')
 
-const { error, exit, generateDescriptionHelp, log, parseRawFlags } = require('../../utils')
+const { error, exit, generateDescriptionHelp, log } = require('../../utils')
 const { ADDON_VALIDATION, prepareAddonCommand } = require('../../utils/addons/prepare')
 
 /**
@@ -15,12 +14,10 @@ const addonsDelete = async (addonName, options, command) => {
   const { addon } = await prepareAddonCommand({
     command,
     addonName,
-    // @ts-ignore
+    // @ts-ignore.
     validation: ADDON_VALIDATION.EXISTS,
   })
-
-  const rawFlags = parseRawFlags(command.args)
-  if (!rawFlags.force && !rawFlags.f) {
+  if (!options.force && !options.f) {
     const { wantsToDelete } = await inquirer.prompt({
       type: 'confirm',
       name: 'wantsToDelete',
@@ -56,8 +53,6 @@ const createAddonsDeleteCommand = (program) =>
     .argument('<name>', 'Add-on namespace')
     .description('Remove an add-on extension to your site')
     .option('-f, --force', 'delete without prompting (useful for CI)')
-    // allow for any flags. Handy for variadic configuration options\
-    .allowUnknownOption(true)
     .addHelpText('after', generateDescriptionHelp('Add-ons are a way to extend the functionality of your Netlify site'))
     .action(addonsDelete)
 

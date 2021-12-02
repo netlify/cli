@@ -52,8 +52,14 @@ const addDeployHook = async ({ deployHook }) => {
   return deployHookAdded
 }
 
-module.exports = async function configManual({ context, repoData, siteId }) {
-  const { netlify } = context
+/**
+ * @param {object} config
+ * @param {import('../../commands/base-command').BaseCommand} config.command
+ * @param {*} config.repoData
+ * @param {string} config.siteId
+ */
+module.exports = async function configManual({ command, repoData, siteId }) {
+  const { netlify } = command
   const {
     api,
     cachedConfig: { configPath, env },

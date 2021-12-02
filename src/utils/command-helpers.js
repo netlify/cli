@@ -183,7 +183,7 @@ const log = (message = '', ...args) => {
  */
 const warn = (message = '') => {
   const bang = chalk.yellow(BANG)
-  log(` ${bang}   Warning: ${message}`);
+  log(` ${bang}   Warning: ${message}`)
 }
 
 /**

@@ -196,8 +196,15 @@ const addNotificationHooks = async ({ api, siteId, token }) => {
   log(`Netlify Notification Hooks configured!`)
 }
 
-const configGithub = async ({ context, repoName, repoOwner, siteId }) => {
-  const { netlify } = context
+/**
+ * @param {object} config
+ * @param {import('../../commands/base-command').BaseCommand} config.command
+ * @param {string} config.repoName
+ * @param {string} config.repoOwner
+ * @param {string} config.siteId
+ */
+const configGithub = async ({ command, repoName, repoOwner, siteId }) => {
+  const { netlify } = command
   const {
     api,
     cachedConfig: { configPath, env },

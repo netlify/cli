@@ -1,5 +1,5 @@
-const { createOpenCommand } = require('./open');
+const { createOpenCommand } = require('./open')
 
 module.exports = {
-  createOpenCommand
+  createOpenCommand,
 }

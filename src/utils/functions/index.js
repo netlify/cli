@@ -5,5 +5,5 @@ const getFunctions = require('./get-functions')
 module.exports = {
   ...functions,
   ...edgeHandlers,
-  ...getFunctions
+  ...getFunctions,
 }
