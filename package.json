@@ -153,7 +153,7 @@
     "mock-require": "^3.0.3",
     "multiparty": "^4.2.1",
     "netlify": "^10.0.0",
-    "netlify-headers-parser": "^5.0.0",
+    "netlify-headers-parser": "^6.0.0",
     "netlify-redirect-parser": "^13.0.0",
     "netlify-redirector": "^0.2.1",
     "node-fetch": "^2.6.0",
