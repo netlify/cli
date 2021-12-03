@@ -1,4 +1,5 @@
-const { parseAllHeaders } = require('netlify-headers-parser')
+// TODO: use static `import` after migrating this repository to pure ES modules
+const netlifyHeadersParser = import('netlify-headers-parser')
 
 const { NETLIFYDEVERR, log } = require('./command-helpers')
 
@@ -24,6 +25,7 @@ const getHeaderValues = function ({ values }) {
 }
 
 const parseHeaders = async function ({ configPath, headersFiles }) {
+  const { parseAllHeaders } = await netlifyHeadersParser
   const { errors, headers } = await parseAllHeaders({
     headersFiles,
     netlifyConfigPath: configPath,
