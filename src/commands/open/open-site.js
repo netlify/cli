@@ -44,6 +44,10 @@ Run \`netlify link\` to connect to this folder to a site`)
  * @returns
  */
 const createOpenSiteCommand = (program) =>
-  program.command('open:site').description('Opens current site url in browser').action(openSite)
+  program
+    .command('open:site')
+    .description('Opens current site url in browser')
+    .addExamples(['netlify open:site'])
+    .action(openSite)
 
 module.exports = { createOpenSiteCommand, openSite }

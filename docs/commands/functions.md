@@ -9,12 +9,17 @@ description: Run netlify dev locally
 Manage netlify functions
 The `functions` command will help you manage the functions in this site
 
-
 **Usage**
 
 ```bash
 netlify functions
 ```
+
+**Flags**
+
+- `debug` (*boolean*) - Print debugging information
+- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -36,7 +41,6 @@ netlify functions:build --name function-abc --timeout 30s
 ## `functions:build`
 
 Build functions locally
-
 
 **Usage**
 
@@ -69,9 +73,9 @@ netlify functions:create
 
 **Flags**
 
+- `language` (*string*) - function language
 - `name` (*string*) - function name
 - `url` (*string*) - pull template from URL
-- `language` (*string*) - function language
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
@@ -101,12 +105,13 @@ netlify functions:invoke
 
 **Flags**
 
-- `name` (*string*) - function name to invoke
 - `functions` (*string*) - Specify a functions folder to parse, overriding netlify.toml
-- `querystring` (*string*) - Querystring to add to your function invocation
+- `identity` (*boolean*) - simulate Netlify Identity authentication JWT. pass --identity to affirm unauthenticated request
+- `name` (*string*) - function name to invoke
+- `no-identity` (*boolean*) - simulate Netlify Identity authentication JWT. pass --no-identity to affirm unauthenticated request
 - `payload` (*string*) - Supply POST payload in stringified json, or a path to a json file
-- `identity` (*boolean*) - simulate Netlify Identity authentication JWT. pass --no-identity to affirm unauthenticated request
 - `port` (*string*) - Port where netlify dev is accessible. e.g. 8888
+- `querystring` (*string*) - Querystring to add to your function invocation
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
@@ -114,25 +119,23 @@ netlify functions:invoke
 **Examples**
 
 ```bash
-$ netlify functions:invoke
-$ netlify functions:invoke myfunction
-$ netlify functions:invoke --name myfunction
-$ netlify functions:invoke --name myfunction --identity
-$ netlify functions:invoke --name myfunction --no-identity
-$ netlify functions:invoke myfunction --payload '{"foo": 1}'
-$ netlify functions:invoke myfunction --querystring "foo=1
-$ netlify functions:invoke myfunction --payload "./pathTo.json"
+netlify functions:invoke
+netlify functions:invoke myfunction
+netlify functions:invoke --name myfunction
+netlify functions:invoke --name myfunction --identity
+netlify functions:invoke --name myfunction --no-identity
+netlify functions:invoke myfunction --payload '{"foo": 1}'
+netlify functions:invoke myfunction --querystring "foo=1
+netlify functions:invoke myfunction --payload "./pathTo.json"
 ```
 
 ---
 ## `functions:list`
 
 List functions that exist locally
-
 Helpful for making sure that you have formatted your functions correctly
 
 NOT the same as listing the functions that have been deployed. For that info you need to go to your Netlify deploy log.
-
 
 **Usage**
 
@@ -142,9 +145,9 @@ netlify functions:list
 
 **Flags**
 
-- `name` (*string*) - name to print
 - `functions` (*string*) - Specify a functions directory to list
 - `json` (*boolean*) - Output function data as JSON
+- `name` (*string*) - name to print
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
@@ -153,9 +156,6 @@ netlify functions:list
 ## `functions:serve`
 
 (Beta) Serve functions locally
-
-Helpful for debugging functions.
-
 
 **Usage**
 
@@ -166,8 +166,8 @@ netlify functions:serve
 **Flags**
 
 - `functions` (*string*) - Specify a functions directory to serve
-- `port` (*string*) - Specify a port for the functions server
 - `offline` (*boolean*) - disables any features that require network access
+- `port` (*string*) - Specify a port for the functions server
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server

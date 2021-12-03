@@ -4,6 +4,7 @@ const process = require('process')
 const { promisify } = require('util')
 
 const boxen = require('boxen')
+const { Option } = require('commander')
 const execa = require('execa')
 const StaticServer = require('static-server')
 const stripAnsiCc = require('strip-ansi-control-characters')
@@ -302,37 +303,38 @@ const createDevCommand = (program) => {
   createDevExecCommand(program)
   createDevTraceCommand(program)
 
-  return (
-    program
-      .command('dev')
-      .description(
-        `Local dev server\nThe dev command will run a local dev server with Netlify's proxy and redirect rules`,
-      )
-      .option('-c ,--command <command>', 'command to run')
-      .option('-p ,--port <port>', 'port of netlify dev', (value) => Number.parseInt(value))
-      .option('--targetPort <port>', 'port of target app server', (value) => Number.parseInt(value))
-      .option('--framework <name>', 'framework to use. Defaults to #auto which automatically detects a framework')
-      // TODO: hidden
-      .option(
-        '--staticServerPort <port>',
-        'port of the static app server used when no framework is detected',
-        (value) => Number.parseInt(value),
-      )
-      .option('-d ,--dir <path>', 'dir with static files')
-      .option('-f ,--functions <folder>', 'specify a functions folder to serve')
-      .option('-o ,--offline', 'disables any features that require network access')
-      .option('-l, --live', 'start a public live session', false)
-      // TODO: hidden
-      .option('-e ,--edgeHandlers', 'activates the Edge Handlers runtime')
-      // TODO: hidden
-      .option(
+  return program
+    .command('dev')
+    .description(
+      `Local dev server\nThe dev command will run a local dev server with Netlify's proxy and redirect rules`,
+    )
+    .option('-c ,--command <command>', 'command to run')
+    .option('-p ,--port <port>', 'port of netlify dev', (value) => Number.parseInt(value))
+    .option('--targetPort <port>', 'port of target app server', (value) => Number.parseInt(value))
+    .option('--framework <name>', 'framework to use. Defaults to #auto which automatically detects a framework')
+    .option('-d ,--dir <path>', 'dir with static files')
+    .option('-f ,--functions <folder>', 'specify a functions folder to serve')
+    .option('-o ,--offline', 'disables any features that require network access')
+    .option('-l, --live', 'start a public live session', false)
+    .addOption(
+      new Option('--staticServerPort <port>', 'port of the static app server used when no framework is detected')
+        .argParser((value) => Number.parseInt(value))
+        .hideHelp(),
+    )
+    .addOption(new Option('-e ,--edgeHandlers', 'activates the Edge Handlers runtime').hideHelp())
+    .addOption(
+      new Option(
         '-t ,--trafficMesh',
         '(DEPRECATED: use --edgeHandlers or -e instead) uses Traffic Mesh for proxying requests',
-      )
-      // TODO: hidden
-      .option('-g ,--locationDb <path>', 'specify the path to a local GeoIP location database in MMDB format')
-      .addExamples(['netlify dev', 'netlify dev -d public', 'netlify dev -c "hugo server -w" --targetPort 1313'])
-      .action(dev)
-  )
+      ).hideHelp(),
+    )
+    .addOption(
+      new Option(
+        '-g ,--locationDb <path>',
+        'specify the path to a local GeoIP location database in MMDB format',
+      ).hideHelp(),
+    )
+    .addExamples(['netlify dev', 'netlify dev -d public', 'netlify dev -c "hugo server -w" --targetPort 1313'])
+    .action(dev)
 }
 module.exports = { createDevCommand }

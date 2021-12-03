@@ -24,7 +24,7 @@ const devExec = async (cmd, options, command) => {
 const createDevExecCommand = (program) =>
   program
     .command('dev:exec')
-    .argument('<...cmd>')
+    .argument('<...cmd>', `the command that should be executed`)
     .description(
       'Exec command\nRuns a command within the netlify dev environment, e.g. with env variables from any installed addons',
     )

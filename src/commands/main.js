@@ -1,6 +1,7 @@
 // @ts-check
 const process = require('process')
 
+const { Option } = require('commander')
 const inquirer = require('inquirer')
 const { findBestMatch } = require('string-similarity')
 
@@ -9,7 +10,7 @@ const { NETLIFY_CYAN, USER_AGENT, chalk, error, execa, exit, getGlobalConfig, lo
 
 const { createAddonsCommand } = require('./addons')
 const { createApiCommand } = require('./api')
-const { BaseCommand, OPTION_HIDDEN_DESCRIPTION } = require('./base-command')
+const { BaseCommand } = require('./base-command')
 const { createBuildCommand } = require('./build')
 const { createCompletionCommand } = require('./completion')
 const { createDeployCommand } = require('./deploy')
@@ -176,8 +177,8 @@ const createMainCommand = () => {
     .option('--telemetry-enable', 'Enables telemetry')
     // needed for custom version output as we display further environment information
     // commanders version output is set to uppercase -V
-    .option('-v, --version', OPTION_HIDDEN_DESCRIPTION)
-    .option('--verbose', OPTION_HIDDEN_DESCRIPTION)
+    .addOption(new Option('-v, --version').hideHelp())
+    .addOption(new Option('--verbose').hideHelp())
     .noHelpOptions()
     .action(mainCommand)
 

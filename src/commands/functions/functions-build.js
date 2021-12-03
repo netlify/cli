@@ -52,7 +52,7 @@ const createFunctionsBuildCommand = (program) =>
     .command('functions:build')
     .alias('function:build')
     .description('Build functions locally')
-    .option('-f, --function <directory>', 'Specify a functions directory to build to')
+    .option('-f, --functions <directory>', 'Specify a functions directory to build to')
     .option('-s, --src <directory>', 'Specify the source directory for the functions')
     .action(functionsBuild)
 

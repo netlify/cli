@@ -15,8 +15,8 @@ netlify build
 
 **Flags**
 
-- `dry` (*boolean*) - Dry run: show instructions without running them
 - `context` (*string*) - Build context
+- `dry` (*boolean*) - Dry run: show instructions without running them
 - `offline` (*boolean*) - disables any features that require network access
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.

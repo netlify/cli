@@ -3,7 +3,7 @@ const process = require('process')
 const { format } = require('util')
 
 const resolveConfig = require('@netlify/config')
-const { Command } = require('commander')
+const { Command, Option } = require('commander')
 const debug = require('debug')
 const merge = require('lodash/merge')
 
@@ -36,8 +36,6 @@ const CLIENT_ID = 'd6f37de6614df7ae58664cfca524744d73807a377f5ee71f1a254f78412e3
 const NANO_SECS_TO_MSECS = 1e6
 // The fallback width for the help terminal
 const FALLBACK_HELP_CMD_WIDTH = 80
-// AN option description that should be hidden in the help page
-const OPTION_HIDDEN_DESCRIPTION = 'hidden:true'
 
 const HELP_$ = NETLIFY_CYAN('$')
 // indent on commands or description on the help page
@@ -51,6 +49,9 @@ const HELP_SEPERATOR_WIDTH = 5
  * @returns
  */
 const formatHelpList = (textArray) => textArray.join('\n').replace(/^/gm, ' '.repeat(HELP_INDENT_WIDTH))
+
+/** A list of base command flags that needs to be sorted down on documentation and on help pages */
+const BASE_FLAGS = new Set(['--debug', '--httpProxy', '--httpProxyCertificateFilename'])
 
 /**
  * Get the duration between a start time and the current time
@@ -97,29 +98,21 @@ class BaseCommand extends Command {
     return (
       new BaseCommand(name)
         // If  --silent or --json flag passed disable logger
-        .option('--json', OPTION_HIDDEN_DESCRIPTION)
-        .option('--cwd <cwd>', OPTION_HIDDEN_DESCRIPTION)
-        .option('-o, --offline', OPTION_HIDDEN_DESCRIPTION)
-
-        // Allow hidden flags like
-        // --json,
-        // --silent,
-        // --offline, -o
-        // --cwd <cwd> Pass a current working directory.
-
-        // this disables the suggestions
-        // .allowUnknownOption(true)
-
-        // 'Print debugging information'
-        .option('--debug', OPTION_HIDDEN_DESCRIPTION)
-        // 'Proxy server address to route requests through'
-        .option('--httpProxy', OPTION_HIDDEN_DESCRIPTION, process.env.HTTP_PROXY || process.env.HTTPS_PROXY)
-        // 'Certificate file to use when connecting using a proxy server',
+        .addOption(new Option('--json', 'Output return values as JSON').hideHelp(true))
+        .addOption(new Option('--silent', 'Silence CLI output').hideHelp(true))
+        .addOption(new Option('--cwd <cwd>').hideHelp(true))
+        .addOption(new Option('-o, --offline').hideHelp(true))
         .option(
-          '--httpProxyCertificateFilename',
-          OPTION_HIDDEN_DESCRIPTION,
+          '--httpProxyCertificateFilename [file]',
+          'Certificate file to use when connecting using a proxy server',
           process.env.NETLIFY_PROXY_CERTIFICATE_FILENAME,
         )
+        .option(
+          '--httpProxy [address]',
+          'Proxy server address to route requests through.',
+          process.env.HTTP_PROXY || process.env.HTTPS_PROXY,
+        )
+        .option('--debug', 'Print debugging information')
         .hook('preAction', async (_parentCommand, actionCommand) => {
           debug(`${name}:preAction`)('start')
           this.analytics = { startTime: process.hrtime.bigint() }
@@ -139,7 +132,7 @@ class BaseCommand extends Command {
     return this
   }
 
-  /** @private */
+  /** The examples list for the command (used inside doc generation and help page) */
   examples = []
 
   /**
@@ -258,7 +251,13 @@ class BaseCommand extends Command {
         // Options
         const optionList = helper
           .visibleOptions(command)
-          .filter((option) => option.description !== OPTION_HIDDEN_DESCRIPTION)
+          .sort((optionA, optionB) => {
+            // base flags should be always at the bottom
+            if (BASE_FLAGS.has(optionA.long) || BASE_FLAGS.has(optionB.long)) {
+              return -1
+            }
+            return optionA.long.localeCompare(optionB.long)
+          })
           .map((option) => formatItem(helper.optionTerm(option), helper.optionDescription(option)))
         if (optionList.length !== 0) {
           output = [...output, chalk.bold('OPTIONS'), formatHelpList(optionList), '']
@@ -507,4 +506,4 @@ class BaseCommand extends Command {
   }
 }
 
-module.exports = { BaseCommand, OPTION_HIDDEN_DESCRIPTION }
+module.exports = { BaseCommand, BASE_FLAGS }

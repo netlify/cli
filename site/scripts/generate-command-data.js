@@ -1,10 +1,12 @@
 // @ts-check
-const { createMainCommand } = require('../../src/commands')
-const { OPTION_HIDDEN_DESCRIPTION } = require('../../src/commands/base-command')
+const { BASE_FLAGS, createMainCommand } = require('../../src/commands')
 
 const program = createMainCommand()
 
-const { commands } = program
+/** @type {Array<import('../../src/commands/base-command').BaseCommand>} */
+// @ts-ignore typecast needed
+const commands = program.commands.sort((cmdA, cmdB) => cmdA.name().localeCompare(cmdB.name()))
+
 /**
  *
  * @param {import('../../src/commands/base-command').BaseCommand} command
@@ -17,15 +19,29 @@ const parseCommand = function (command) {
   }))
 
   const flags = command.options
-    .filter((option) => !option.description.includes(OPTION_HIDDEN_DESCRIPTION))
+    .filter((option) => !option.hidden)
+    .sort((optionA, optionB) => {
+      // base flags should be always at the bottom
+      if (BASE_FLAGS.has(optionA.long) || BASE_FLAGS.has(optionB.long)) {
+        return -1
+      }
+      return optionA.long.localeCompare(optionB.long)
+    })
     .reduce((prev, cur) => {
-      // console.log(option)
       const name = cur.long.replace('--', '')
+      const type =
+        // eslint-disable-next-line no-nested-ternary
+        cur.flags.includes('<') || cur.flags.includes('[')
+          ? cur.argChoices
+            ? cur.argChoices.join(' | ')
+            : 'string'
+          : 'boolean'
       return {
         ...prev,
         [name]: {
           description: cur.description,
           char: cur.short,
+          type,
         },
       }
     }, {})
@@ -35,11 +51,11 @@ const parseCommand = function (command) {
     description: command.description(),
     commands: commands
       // eslint-disable-next-line no-underscore-dangle
-      .filter((cmd) => cmd.name().startsWith(`${command.name()}:` && !command._hidden))
+      .filter((cmd) => cmd.name().startsWith(`${command.name()}:`) && !cmd._hidden)
       .map((cmd) => parseCommand(cmd)),
-    examples: command.examples,
+    examples: command.examples.length !== 0 && command.examples,
     args: args.length !== 0 && args,
-    flags,
+    flags: Object.keys(flags).length !== 0 && flags,
   }
 }
 

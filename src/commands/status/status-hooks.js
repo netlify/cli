@@ -64,10 +64,6 @@ Site Hook Status │
  * @returns
  */
 const createStatusHooksCommand = (program) =>
-  program
-    .command('status:hooks')
-    .description('Print hook information of the linked site')
-    .option('--verbose', 'Output system info', false)
-    .action(statusHooks)
+  program.command('status:hooks').description('Print hook information of the linked site').action(statusHooks)
 
 module.exports = { createStatusHooksCommand }

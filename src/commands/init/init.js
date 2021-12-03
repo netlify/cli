@@ -223,7 +223,7 @@ const createInitCommand = (program) =>
       'Configure continuous deployment for a new or existing site. To create a new site without continuous deployment, use `netlify sites:create`',
     )
     .option('-m, --manual', 'Manually configure a git remote for CI')
-    .option('--force', 'Manually configure a git remote for CI')
+    .option('--force', 'Reinitialize CI hooks if the linked site is already configured to use CI')
     .option('--gitRemoteName <name>', 'Name of Git remote to use. e.g. "origin"')
     .action(init)
 

@@ -24,7 +24,7 @@ const createSitesCommand = (program) => {
 
   return program
     .command('sites')
-    .description('Handle various site operations\nThe sites command will help you manage all your sites')
+    .description(`Handle various site operations\nThe sites command will help you manage all your sites`)
     .addExamples(['netlify sites:create --name my-new-site', 'netlify sites:list'])
     .action(sites)
 }

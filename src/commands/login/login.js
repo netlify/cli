@@ -45,7 +45,10 @@ const login = async (options, command) => {
 const createLoginCommand = (program) =>
   program
     .command('login')
-    .description('Login to your Netlify account')
+    .description(
+      `Login to your Netlify account
+Opens a web browser to acquire an OAuth token.`,
+    )
     .option('--new', 'Login to new Netlify account')
     .action(login)
 

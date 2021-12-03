@@ -9,12 +9,17 @@ description: Manage Netlify sites via the command line
 Handle various site operations
 The sites command will help you manage all your sites
 
-
 **Usage**
 
 ```bash
 netlify sites
 ```
+
+**Flags**
+
+- `debug` (*boolean*) - Print debugging information
+- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -34,9 +39,7 @@ netlify sites:list
 ## `sites:create`
 
 Create an empty site (advanced)
-
-Create a blank site that isn't associated with any git remote.  Does not link to the current working directory.
-
+Create a blank site that isn't associated with any git remote. Does not link to the current working directory.
 
 **Usage**
 
@@ -46,10 +49,10 @@ netlify sites:create
 
 **Flags**
 
-- `name` (*string*) - name of site
 - `account-slug` (*string*) - account slug to create the site under
+- `manual` (*boolean*) - force manual CI setup.  Used --with-ci flag
+- `name` (*string*) - name of site
 - `with-ci` (*boolean*) - initialize CI hooks during site creation
-- `manual` (*boolean*) - Force manual CI setup.  Used --with-ci flag
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
@@ -58,9 +61,7 @@ netlify sites:create
 ## `sites:delete`
 
 Delete a site
-
 This command will permanently delete the site on Netlify. Use with caution.
-
 
 **Usage**
 

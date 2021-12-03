@@ -170,7 +170,10 @@ const sitesCreate = async (options, command) => {
 const createSitesCreateCommand = (program) =>
   program
     .command('sites:create')
-    .description('Create an empty site (advanced)')
+    .description(
+      `Create an empty site (advanced)
+Create a blank site that isn't associated with any git remote. Does not link to the current working directory.`,
+    )
     .option('-n, --name [name]', 'name of site')
     .option('-a, --account-slug [slug]', 'account slug to create the site under')
     .option('-c, --with-ci', 'initialize CI hooks during site creation')

@@ -29,7 +29,9 @@ const createOpenCommand = (program) => {
 
   return program
     .command('open')
-    .description('Open settings for the site linked to the current folder')
+    .description(`Open settings for the site linked to the current folder`)
+    .option('--site', 'Open site')
+    .option('--admin', 'Open Netlify site')
     .addExamples(['netlify open --site', 'netlify open --admin', 'netlify open:admin', 'netlify open:site'])
     .action(open)
 }

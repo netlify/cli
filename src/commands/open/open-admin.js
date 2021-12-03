@@ -51,6 +51,10 @@ Run \`netlify link\` to connect to this folder to a site`)
  * @returns
  */
 const createOpenAdminCommand = (program) =>
-  program.command('open:admin').description('Opens current site admin UI in Netlify').action(openAdmin)
+  program
+    .command('open:admin')
+    .description('Opens current site admin UI in Netlify')
+    .addExamples(['netlify open:admin'])
+    .action(openAdmin)
 
 module.exports = { createOpenAdminCommand, openAdmin }
