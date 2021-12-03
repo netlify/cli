@@ -32,9 +32,9 @@ const parseCommand = function (command) {
       const type =
         // eslint-disable-next-line no-nested-ternary
         cur.flags.includes('<') || cur.flags.includes('[')
-          ? cur.argChoices
+          ? (cur.argChoices
             ? cur.argChoices.join(' | ')
-            : 'string'
+            : 'string')
           : 'boolean'
       return {
         ...prev,
