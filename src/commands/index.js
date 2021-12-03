@@ -1,5 +1,5 @@
-const { BaseCommand } = require('./base-command')
+const { createMainCommand } = require('./main')
 
 module.exports = {
-  BaseCommand,
+  createMainCommand,
 }

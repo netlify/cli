@@ -1,6 +1,6 @@
 // @ts-check
 const { getBuildOptions, runBuild } = require('../../lib/build')
-const { error, exit, generateExamplesHelp, getToken } = require('../../utils')
+const { error, exit, getToken } = require('../../utils')
 
 /**
  * @param {import('../../lib/build').BuildConfig} options
@@ -52,7 +52,7 @@ const createBuildCommand = (program) =>
     .option('--dry', 'Dry run: show instructions without running them', false)
     .option('--context [context]', 'Build context')
     .option('-o, --offline', 'disables any features that require network access', false)
-    .addHelpText('after', generateExamplesHelp(['netlify build']))
+    .addExamples(['netlify build'])
     .action(build)
 
 module.exports = { createBuildCommand }

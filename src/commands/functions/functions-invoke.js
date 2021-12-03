@@ -6,7 +6,7 @@ const process = require('process')
 const inquirer = require('inquirer')
 const fetch = require('node-fetch')
 
-const { BACKGROUND, NETLIFYDEVWARN, chalk, error, exit, generateExamplesHelp, getFunctions } = require('../../utils')
+const { BACKGROUND, NETLIFYDEVWARN, chalk, error, exit, getFunctions } = require('../../utils')
 
 // https://www.netlify.com/docs/functions/#event-triggered-functions
 const events = [
@@ -258,19 +258,16 @@ const createFunctionsInvokeCommand = (program) =>
       'simulate Netlify Identity authentication JWT. pass --no-identity to affirm unauthenticated request',
     )
     .option('--port <port>', 'Port where netlify dev is accessible. e.g. 8888', (value) => Number.parseInt(value))
-    .addHelpText(
-      'after',
-      generateExamplesHelp([
-        'netlify functions:invoke',
-        'netlify functions:invoke myfunction',
-        'netlify functions:invoke --name myfunction',
-        'netlify functions:invoke --name myfunction --identity',
-        'netlify functions:invoke --name myfunction --no-identity',
-        `netlify functions:invoke myfunction --payload '{"foo": 1}'`,
-        'netlify functions:invoke myfunction --querystring "foo=1',
-        'netlify functions:invoke myfunction --payload "./pathTo.json"',
-      ]),
-    )
+    .addExamples([
+      'netlify functions:invoke',
+      'netlify functions:invoke myfunction',
+      'netlify functions:invoke --name myfunction',
+      'netlify functions:invoke --name myfunction --identity',
+      'netlify functions:invoke --name myfunction --no-identity',
+      `netlify functions:invoke myfunction --payload '{"foo": 1}'`,
+      'netlify functions:invoke myfunction --querystring "foo=1',
+      'netlify functions:invoke myfunction --payload "./pathTo.json"',
+    ])
     .action(functionsInvoke)
 
 module.exports = { createFunctionsInvokeCommand }

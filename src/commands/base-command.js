@@ -129,6 +129,19 @@ class BaseCommand extends Command {
     return this
   }
 
+  /** @private */
+  examples = []
+
+  /**
+   * Set examples for the command
+   * @param {string[]} examples
+   */
+  addExamples(examples) {
+    this.examples = examples
+    return this
+  }
+
+
   /**
    * Overrides the help output of commander with custom styling
    * @returns {import('commander').Help}
@@ -249,6 +262,15 @@ class BaseCommand extends Command {
         if (optionList.length !== 0) {
           output = [...output, chalk.bold('OPTIONS'), formatHelpList(optionList), '']
         }
+      }
+
+      if (command.examples.length !== 0) {
+        output = [
+          ...output,
+          chalk.bold('EXAMPLES'),
+          formatHelpList(command.examples.map((example) => `${HELP_$} ${example}`)),
+          '',
+        ]
       }
 
       const commandList = getCommands(command).map((cmd) =>
@@ -471,4 +493,4 @@ class BaseCommand extends Command {
   }
 }
 
-module.exports = { BaseCommand }
+module.exports = { BaseCommand, OPTION_HIDDEN_DESCRIPTION }

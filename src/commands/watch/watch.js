@@ -2,7 +2,7 @@ const cli = require('cli-ux').default
 const pWaitFor = require('p-wait-for')
 const prettyjson = require('prettyjson')
 
-const { chalk, error, generateExamplesHelp, log } = require('../../utils')
+const { chalk, error,  log } = require('../../utils')
 const { init } = require('../init')
 
 // 1 second
@@ -115,7 +115,7 @@ const createWatchCommand = (program) =>
   program
     .command('watch')
     .description('Watch for site deploy to finish')
-    .addHelpText('after', generateExamplesHelp([`netlify watch`, `git push && netlify watch`]))
+    .addExamples([`netlify watch`, `git push && netlify watch`])
     .action(watch)
 
 module.exports = { createWatchCommand }

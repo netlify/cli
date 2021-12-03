@@ -4,27 +4,7 @@ const process = require('process')
 
 const updateNotifier = require('update-notifier')
 
-const { createAddonsCommand } = require('../src/commands/addons')
-const { createApiCommand } = require('../src/commands/api')
-const { BaseCommand } = require('../src/commands/base-command')
-const { createBuildCommand } = require('../src/commands/build')
-const { createCompletionCommand } = require('../src/commands/completion')
-const { createDeployCommand } = require('../src/commands/deploy')
-const { createDevCommand } = require('../src/commands/dev')
-const { createEnvCommand } = require('../src/commands/env')
-const { createFunctionsCommand } = require('../src/commands/functions')
-const { createInitCommand } = require('../src/commands/init')
-const { createLinkCommand } = require('../src/commands/link')
-const { createLmCommand } = require('../src/commands/lm')
-const { createLoginCommand } = require('../src/commands/login')
-const { createLogoutCommand } = require('../src/commands/logout')
-const { createMainCommand } = require('../src/commands/main')
-const { createOpenCommand } = require('../src/commands/open')
-const { createSitesCommand } = require('../src/commands/sites')
-const { createStatusCommand } = require('../src/commands/status')
-const { createSwitchCommand } = require('../src/commands/switch')
-const { createUnlinkCommand } = require('../src/commands/unlink')
-const { createWatchCommand } = require('../src/commands/watch')
+const { createMainCommand } = require('../src/commands')
 
 // 12 hours
 const UPDATE_CHECK_INTERVAL = 432e5
@@ -43,36 +23,14 @@ if (require.main === module) {
     console.log(error)
   }
 
-  const program = new BaseCommand('netlify')
-
-  createAddonsCommand(program)
-  createApiCommand(program)
-  createBuildCommand(program)
-  createCompletionCommand(program)
-  createDeployCommand(program)
-  createDevCommand(program)
-  createEnvCommand(program)
-  createFunctionsCommand(program)
-  createInitCommand(program)
-  createLinkCommand(program)
-  createLmCommand(program)
-  createLoginCommand(program)
-  createLogoutCommand(program)
-  createOpenCommand(program)
-  createSitesCommand(program)
-  createStatusCommand(program)
-  createSwitchCommand(program)
-  createUnlinkCommand(program)
-  createWatchCommand(program)
-
   /** @type {Error} */
   let caughtError
 
-  createMainCommand(program)
-    .then(() => program.parseAsync(process.argv))
-    .catch((error) => {
-      caughtError = error
-    })
+  const program = createMainCommand()
+
+  program.parseAsync(process.argv).catch((error) => {
+    caughtError = error
+  })
 
   // long running commands like dev server cannot be caught by a post action hook
   // they are running on the main command

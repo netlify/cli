@@ -4,7 +4,29 @@ const process = require('process')
 const inquirer = require('inquirer')
 const { findBestMatch } = require('string-similarity')
 
+const pkg = require('../../package.json')
 const { NETLIFY_CYAN, USER_AGENT, chalk, error, execa, exit, getGlobalConfig, log, track, warn } = require('../utils')
+
+const { createAddonsCommand } = require('./addons')
+const { createApiCommand } = require('./api')
+const { BaseCommand, OPTION_HIDDEN_DESCRIPTION } = require('./base-command')
+const { createBuildCommand } = require('./build')
+const { createCompletionCommand } = require('./completion')
+const { createDeployCommand } = require('./deploy')
+const { createDevCommand } = require('./dev')
+const { createEnvCommand } = require('./env')
+const { createFunctionsCommand } = require('./functions')
+const { createInitCommand } = require('./init')
+const { createLinkCommand } = require('./link')
+const { createLmCommand } = require('./lm')
+const { createLoginCommand } = require('./login')
+const { createLogoutCommand } = require('./logout')
+const { createOpenCommand } = require('./open')
+const { createSitesCommand } = require('./sites')
+const { createStatusCommand } = require('./status')
+const { createSwitchCommand } = require('./switch')
+const { createUnlinkCommand } = require('./unlink')
+const { createWatchCommand } = require('./watch')
 
 const SUGGESTION_TIMEOUT = 1e4
 
@@ -50,10 +72,28 @@ const mainCommand = async function (options, command) {
     exit()
   }
 
-  if (command.args[0] === 'version') {
-    const versionPage = await getVersionPage()
-    log(versionPage)
+  if (command.args[0] === 'version' || options.version) {
+    if (options.verbose) {
+      const versionPage = await getVersionPage()
+      log(versionPage)
+    }
+    log(USER_AGENT)
     exit()
+  }
+
+  // if no command show the header and the help
+  if (command.args.length === 0) {
+    const title = `${chalk.bgBlack.cyan('⬥ Netlify CLI')}`
+    const docsMsg = `${chalk.greenBright('Read the docs:')} https://www.netlify.com/docs/cli`
+    const supportMsg = `${chalk.magentaBright('Support and bugs:')} ${pkg.bugs.url}`
+
+    console.log()
+    console.log(title)
+    console.log(docsMsg)
+    console.log(supportMsg)
+    console.log()
+
+    command.help()
   }
 
   if (command.args[0] === 'help') {
@@ -102,17 +142,46 @@ const mainCommand = async function (options, command) {
 }
 
 /**
- * Creates the `netlify functions:create` command
- * @param {import('./base-command').BaseCommand} program
- * @returns
+ * Creates the `netlify-cli` command
+ * Promise is needed as the envinfo is a promise
+ * @returns {import('./base-command').BaseCommand}
  */
-const createMainCommand = async (program) =>
+const createMainCommand = () => {
+  const program = new BaseCommand('netlify')
+  // register all the commands
+  createAddonsCommand(program)
+  createApiCommand(program)
+  createBuildCommand(program)
+  createCompletionCommand(program)
+  createDeployCommand(program)
+  createDevCommand(program)
+  createEnvCommand(program)
+  createFunctionsCommand(program)
+  createInitCommand(program)
+  createLinkCommand(program)
+  createLmCommand(program)
+  createLoginCommand(program)
+  createLogoutCommand(program)
+  createOpenCommand(program)
+  createSitesCommand(program)
+  createStatusCommand(program)
+  createSwitchCommand(program)
+  createUnlinkCommand(program)
+  createWatchCommand(program)
+
   program
-    .version(await getVersionPage(), '-v, --version')
+    .version(USER_AGENT, '-V')
     .showSuggestionAfterError(true)
     .option('--telemetry-disable', 'Disable telemetry')
     .option('--telemetry-enable', 'Enables telemetry')
+    // needed for custom version output as we display further environment information
+    // commanders version output is set to uppercase -V
+    .option('-v, --version', OPTION_HIDDEN_DESCRIPTION)
+    .option('--verbose', OPTION_HIDDEN_DESCRIPTION)
     .noHelpOptions()
     .action(mainCommand)
+
+  return program
+}
 
 module.exports = { createMainCommand }

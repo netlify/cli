@@ -1,7 +1,5 @@
 // @ts-check
 
-const { generateExamplesHelp } = require('../../utils')
-
 const { createAddonsAuthCommand } = require('./addons-auth')
 const { createAddonsConfigCommand } = require('./addons-config')
 const { createAddonsCreateCommand } = require('./addons-create')
@@ -34,16 +32,13 @@ const createAddonsCommand = (program) => {
     .alias('addon')
     .description('(Beta) Manage Netlify Add-ons')
     .noHelpOptions()
-    .addHelpText(
-      'after',
-      generateExamplesHelp([
-        'netlify addons:create addon-xyz',
-        'netlify addons:list',
-        'netlify addons:config addon-xyz',
-        'netlify addons:delete addon-xyz',
-        'netlify addons:auth addon-xyz',
-      ]),
-    )
+    .addExamples([
+      'netlify addons:create addon-xyz',
+      'netlify addons:list',
+      'netlify addons:config addon-xyz',
+      'netlify addons:delete addon-xyz',
+      'netlify addons:auth addon-xyz',
+    ])
     .action(addons)
 }
 module.exports = { createAddonsCommand }

@@ -1,6 +1,6 @@
 const execa = require('execa')
 
-const { generateDescriptionHelp, generateExamplesHelp, injectEnvVariables } = require('../../utils')
+const { generateDescriptionHelp,  injectEnvVariables } = require('../../utils')
 
 /**
  * The dev:exec command
@@ -33,7 +33,7 @@ const createDevExecCommand = (program) =>
         'Runs a command within the netlify dev environment, e.g. with env variables from any installed addons',
       ),
     )
-    .addHelpText('after', generateExamplesHelp(['netlify dev:exec npm run bootstrap']))
+    .addExamples(['netlify dev:exec npm run bootstrap'])
     .action(devExec)
 
 module.exports = { createDevExecCommand }

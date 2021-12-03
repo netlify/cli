@@ -12,7 +12,7 @@ const {
   ensureNetlifyIgnore,
   error,
   exit,
-  generateExamplesHelp,
+
   getRepoData,
   log,
   track,
@@ -370,10 +370,7 @@ const createLinkCommand = (program) =>
     .option('--id <id>', 'ID of site to link to')
     .option('--name <name>', 'Name of site to link to')
     .option('--gitRemoteName <name>', 'Name of Git remote to use. e.g. "origin"')
-    .addHelpText(
-      'after',
-      generateExamplesHelp(['netlify link', 'netlify link --id 123-123-123-123', 'netlify link --name my-site-name']),
-    )
+    .addExamples(['netlify link', 'netlify link --id 123-123-123-123', 'netlify link --name my-site-name'])
     .action(link)
 
 module.exports = { createLinkCommand, link }

@@ -21,7 +21,7 @@ const {
   chalk,
   error,
   execa,
-  generateExamplesHelp,
+
   injectEnvVariables,
   log,
   readRepoURL,
@@ -591,14 +591,11 @@ const createFunctionsCreateCommand = (program) =>
     .option('-n, --name <name>', 'function name')
     .option('-u, --url <url>', 'pull template from URL')
     .option('-l, --language <lang>', 'function language')
-    .addHelpText(
-      'after',
-      generateExamplesHelp([
-        'netlify functions:create',
-        'netlify functions:create hello-world',
-        'netlify functions:create --name hello-world',
-      ]),
-    )
+    .addExamples([
+      'netlify functions:create',
+      'netlify functions:create hello-world',
+      'netlify functions:create --name hello-world',
+    ])
     .action(functionsCreate)
 
 module.exports = { createFunctionsCreateCommand }

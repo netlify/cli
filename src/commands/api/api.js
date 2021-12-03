@@ -4,7 +4,7 @@ const AsciiTable = require('ascii-table')
 // TODO: use static `import` after migrating this repository to pure ES modules
 const jsClient = import('netlify')
 
-const { chalk, error, exit, generateDescriptionHelp, generateExamplesHelp, log, logJson } = require('../../utils')
+const { chalk, error, exit, generateDescriptionHelp, log, logJson } = require('../../utils')
 
 /**
  * The api command
@@ -72,13 +72,10 @@ const createApiCommand = (program) =>
         )}'`,
       ),
     )
-    .addHelpText(
-      'after',
-      generateExamplesHelp([
+    .addExamples([
         'netlify api --list',
         `netlify api getSite --data '${chalk.grey('{ "site_id": "123456"}')}'`,
-      ]),
-    )
+      ])
     .action(apiCommand)
 
 module.exports = { createApiCommand }

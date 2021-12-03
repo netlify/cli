@@ -32,10 +32,7 @@ const createOpenCommand = (program) => {
   return program
     .command('open')
     .description('Open settings for the site linked to the current folder')
-    .addHelpText(
-      'after',
-      generateExamplesHelp(['netlify open --site', 'netlify open --admin', 'netlify open:admin', 'netlify open:site']),
-    )
+    .addExamples(['netlify open --site', 'netlify open --admin', 'netlify open:admin', 'netlify open:site'])
     .action(open)
 }
 module.exports = { createOpenCommand }

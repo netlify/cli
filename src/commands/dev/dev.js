@@ -19,7 +19,7 @@ const {
   detectServerSettings,
   exit,
   generateDescriptionHelp,
-  generateExamplesHelp,
+
   getSiteInformation,
   injectEnvVariables,
   log,
@@ -335,14 +335,7 @@ const createDevCommand = (program) => {
         'after',
         generateDescriptionHelp(`The dev command will run a local dev server with Netlify's proxy and redirect rules`),
       )
-      .addHelpText(
-        'after',
-        generateExamplesHelp([
-          'netlify dev',
-          'netlify dev -d public',
-          'netlify dev -c "hugo server -w" --targetPort 1313',
-        ]),
-      )
+      .addExamples(['netlify dev', 'netlify dev -d public', 'netlify dev -c "hugo server -w" --targetPort 1313'])
       .action(dev)
   )
 }

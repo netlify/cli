@@ -1,7 +1,7 @@
 // @ts-check
 const process = require('process')
 
-const { generateExamplesHelp, runProcess } = require('../../utils')
+const { runProcess } = require('../../utils')
 
 /**
  * The dev:trace command
@@ -35,16 +35,13 @@ const createDevTraceCommand = (program) =>
       `Simulates Netlify's Edge routing logic to match specific requests.
 This command is designed to mimic cURL's command line, so the flags are more familiar.`,
     )
-    .addHelpText(
-      'after',
-      generateExamplesHelp([
-        'netlify dev:trace http://localhost/routing-path',
-        'netlify dev:trace -w dist-directory http://localhost/routing-path',
-        'netlify dev:trace -X POST http://localhost/routing-path',
-        'netlify dev:trace -H "Accept-Language es" http://localhost/routing-path',
-        'netlify dev:trace --cookie nf_jwt=token http://localhost/routing-path',
-      ]),
-    )
+    .addExamples([
+      'netlify dev:trace http://localhost/routing-path',
+      'netlify dev:trace -w dist-directory http://localhost/routing-path',
+      'netlify dev:trace -X POST http://localhost/routing-path',
+      'netlify dev:trace -H "Accept-Language es" http://localhost/routing-path',
+      'netlify dev:trace --cookie nf_jwt=token http://localhost/routing-path',
+    ])
     .action(devTrace)
 
 module.exports = { createDevTraceCommand }

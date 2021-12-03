@@ -24,7 +24,7 @@ const {
   error,
   exit,
   generateDescriptionHelp,
-  generateExamplesHelp,
+
   getFunctionsManifestPath,
   getInternalFunctionsDir,
   getToken,
@@ -582,7 +582,7 @@ const createDeployCommand = (program) =>
     .command('deploy')
     .description('Create a new deploy from the contents of a folder')
     .option('-d, --dir <path>', 'Specify a folder to deploy')
-    .option('-f, --functions', 'Specify a functions folder to deploy')
+    .option('-f, --functions <folder>', 'Specify a functions folder to deploy')
     .option('-p, --prod', 'Deploy to production', false)
     .option('--prodIfUnlocked', 'Deploy to production if unlocked, create a draft otherwise', false)
     .option(
@@ -678,18 +678,15 @@ functions/
 Support for package.json's main field, and intrinsic index.js entrypoints are coming soon.`,
       ),
     )
-    .addHelpText(
-      'after',
-      generateExamplesHelp([
-        'netlify deploy',
-        'netlify deploy --prod',
-        'netlify deploy --prod --open',
-        'netlify deploy --prodIfUnlocked',
-        'netlify deploy --message "A message with an $ENV_VAR"',
-        'netlify deploy --auth $NETLIFY_AUTH_TOKEN',
-        'netlify deploy --trigger',
-      ]),
-    )
+    .addExamples([
+      'netlify deploy',
+      'netlify deploy --prod',
+      'netlify deploy --prod --open',
+      'netlify deploy --prodIfUnlocked',
+      'netlify deploy --message "A message with an $ENV_VAR"',
+      'netlify deploy --auth $NETLIFY_AUTH_TOKEN',
+      'netlify deploy --trigger',
+    ])
     .action(deploy)
 
 module.exports = { createDeployCommand }

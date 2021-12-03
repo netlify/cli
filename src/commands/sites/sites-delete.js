@@ -1,7 +1,7 @@
 // @ts-check
 const inquirer = require('inquirer')
 
-const { chalk, error, exit, generateDescriptionHelp, generateExamplesHelp, log } = require('../../utils')
+const { chalk, error, exit, generateDescriptionHelp,  log } = require('../../utils')
 
 /**
  * The sites:delete command
@@ -102,7 +102,7 @@ const createSitesDeleteCommand = (program) =>
       'after',
       generateDescriptionHelp('This command will permanently delete the site on Netlify. Use with caution.'),
     )
-    .addHelpText('after', generateExamplesHelp(['netlify sites:delete 1234-3262-1211']))
+    .addExamples(['netlify sites:delete 1234-3262-1211'])
     .action(sitesDelete)
 
 module.exports = { createSitesDeleteCommand }

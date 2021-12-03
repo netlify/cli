@@ -31,7 +31,7 @@ const createLmCommand = (program) => {
     .command('lm')
     .description('Handle Netlify Large Media operations')
     .addHelpText('after', generateDescriptionHelp('The lm command will help you manage large media for a site'))
-    .addHelpText('after', generateExamplesHelp(['netlify lm:info', 'netlify lm:install', 'netlify lm:setup']))
+    .addExamples(['netlify lm:info', 'netlify lm:install', 'netlify lm:setup'])
     .action(lm)
 }
 

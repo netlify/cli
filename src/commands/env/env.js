@@ -30,16 +30,13 @@ const createEnvCommand = (program) => {
   return program
     .command('env')
     .description('(Beta) Control environment variables for the current site')
-    .addHelpText(
-      'after',
-      generateExamplesHelp([
-        'netlify env:list',
-        'netlify env:get VAR_NAME',
-        'netlify env:set VAR_NAME value',
-        'netlify env:unset VAR_NAME',
-        'netlify env:import fileName',
-      ]),
-    )
+    .addExamples([
+      'netlify env:list',
+      'netlify env:get VAR_NAME',
+      'netlify env:set VAR_NAME value',
+      'netlify env:unset VAR_NAME',
+      'netlify env:import fileName',
+    ])
     .action(env)
 }
 

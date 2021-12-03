@@ -39,13 +39,10 @@ const createFunctionsCommand = (program) => {
       'after',
       generateDescriptionHelp(`The ${name} command will help you manage the functions in this site`),
     )
-    .addHelpText(
-      'after',
-      generateExamplesHelp([
+    .addExamples([
         'netlify functions:create --name function-xyz',
         'netlify functions:build --name function-abc --timeout 30s',
-      ]),
-    )
+      ])
     .action(functions)
 }
 

@@ -90,17 +90,6 @@ const generateDescriptionHelp = (description) =>
     '',
   ].join('\n')
 
-/**
- * Generates the help output for the examples
- * @param {string[]} examples
- * @returns {string}
- */
-const generateExamplesHelp = (examples) => {
-  if (examples.length !== 0) {
-    return [chalk.bold('EXAMPLE'), formatHelpList(examples.map((example) => `${HELP_$} ${example}`)), ''].join('\n')
-  }
-}
-
 // Poll Token timeout 5 Minutes
 const TOKEN_TIMEOUT = 3e5
 
@@ -239,7 +228,6 @@ module.exports = {
   error,
   chalk,
   generateDescriptionHelp,
-  generateExamplesHelp,
   pollForToken,
   normalizeConfig,
   USER_AGENT,
