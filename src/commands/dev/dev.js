@@ -18,8 +18,6 @@ const {
   chalk,
   detectServerSettings,
   exit,
-  generateDescriptionHelp,
-
   getSiteInformation,
   injectEnvVariables,
   log,
@@ -307,7 +305,9 @@ const createDevCommand = (program) => {
   return (
     program
       .command('dev')
-      .description('Local dev server')
+      .description(
+        `Local dev server\nThe dev command will run a local dev server with Netlify's proxy and redirect rules`,
+      )
       .option('-c ,--command <command>', 'command to run')
       .option('-p ,--port <port>', 'port of netlify dev', (value) => Number.parseInt(value))
       .option('--targetPort <port>', 'port of target app server', (value) => Number.parseInt(value))
@@ -331,10 +331,6 @@ const createDevCommand = (program) => {
       )
       // TODO: hidden
       .option('-g ,--locationDb <path>', 'specify the path to a local GeoIP location database in MMDB format')
-      .addHelpText(
-        'after',
-        generateDescriptionHelp(`The dev command will run a local dev server with Netlify's proxy and redirect rules`),
-      )
       .addExamples(['netlify dev', 'netlify dev -d public', 'netlify dev -c "hugo server -w" --targetPort 1313'])
       .action(dev)
   )

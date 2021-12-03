@@ -7,16 +7,7 @@ const inquirer = require('inquirer')
 const isEmpty = require('lodash/isEmpty')
 
 const { listSites } = require('../../lib/api')
-const {
-  chalk,
-  ensureNetlifyIgnore,
-  error,
-  exit,
-
-  getRepoData,
-  log,
-  track,
-} = require('../../utils')
+const { chalk, ensureNetlifyIgnore, error, exit, getRepoData, log, track } = require('../../utils')
 
 /**
  *

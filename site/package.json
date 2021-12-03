@@ -28,6 +28,10 @@
     "node": ">=v12.19.0"
   },
   "license": "MIT",
+  "peerDependencies": {
+    "ava": "^3.15.0",
+    "commander": "^8.3.0"
+  },
   "dependencies": {
     "@compositor/x0": "^6.0.7",
     "@rebass/markdown": "^1.0.0",

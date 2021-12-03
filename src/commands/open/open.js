@@ -1,5 +1,3 @@
-const { generateExamplesHelp } = require('../../utils')
-
 const { createOpenAdminCommand, openAdmin } = require('./open-admin')
 const { createOpenSiteCommand, openSite } = require('./open-site')
 

@@ -23,8 +23,6 @@ const {
   deploySite,
   error,
   exit,
-  generateDescriptionHelp,
-
   getFunctionsManifestPath,
   getInternalFunctionsDir,
   getToken,
@@ -580,36 +578,9 @@ const deploy = async (options, command) => {
 const createDeployCommand = (program) =>
   program
     .command('deploy')
-    .description('Create a new deploy from the contents of a folder')
-    .option('-d, --dir <path>', 'Specify a folder to deploy')
-    .option('-f, --functions <folder>', 'Specify a functions folder to deploy')
-    .option('-p, --prod', 'Deploy to production', false)
-    .option('--prodIfUnlocked', 'Deploy to production if unlocked, create a draft otherwise', false)
-    .option(
-      '--alias <name>',
-      'Specifies the alias for deployment, the string at the beginning of the deploy subdomain. Useful for creating predictable deployment URLs. Avoid setting an alias string to the same value as a deployed branch. `alias` doesn’t create a branch deploy and can’t be used in conjunction with the branch subdomain feature. Maximum 37 characters.',
-    )
-    .option(
-      '-b, --branch <name>',
-      'Serves the same functionality as --alias. Deprecated and will be removed in future versions',
-    )
-    .option('-o, --open', 'Open site after deploy', false)
-    .option('-m, --message <message>', 'A short message to include in the deploy log')
-    .option('-a, --auth <token>', 'Netlify auth token to deploy with', env.NETLIFY_AUTH_TOKEN)
-    .option('-s, --site <id>', 'A site ID to deploy to', env.NETLIFY_SITE_ID)
-    .option('--json', 'Output deployment data as JSON')
-    .option('--timeout <number>', 'Timeout to wait for deployment to finish', (value) => Number.parseInt(value))
-    .option('--trigger', 'Trigger a new build of your site on Netlify without uploading local files')
-    .option('--build', 'Run build command before deploying')
-    .option(
-      '--skip-functions-cache',
-      'Ignore any functions created as part of a previous `build` or `deploy` commands, forcing them to be bundled again as part of the deployment',
-      false,
-    )
-    .addHelpText(
-      'after',
-      generateDescriptionHelp(
-        `Deploys from the build settings found in the netlify.toml file, or settings from the API.
+    .description(
+      `Create a new deploy from the contents of a folder
+Deploys from the build settings found in the netlify.toml file, or settings from the API.
 
 The following environment variables can be used to override configuration file lookups and prompts:
 
@@ -676,7 +647,31 @@ functions/
 \`\`\`
 
 Support for package.json's main field, and intrinsic index.js entrypoints are coming soon.`,
-      ),
+    )
+    .option('-d, --dir <path>', 'Specify a folder to deploy')
+    .option('-f, --functions <folder>', 'Specify a functions folder to deploy')
+    .option('-p, --prod', 'Deploy to production', false)
+    .option('--prodIfUnlocked', 'Deploy to production if unlocked, create a draft otherwise', false)
+    .option(
+      '--alias <name>',
+      'Specifies the alias for deployment, the string at the beginning of the deploy subdomain. Useful for creating predictable deployment URLs. Avoid setting an alias string to the same value as a deployed branch. `alias` doesn’t create a branch deploy and can’t be used in conjunction with the branch subdomain feature. Maximum 37 characters.',
+    )
+    .option(
+      '-b, --branch <name>',
+      'Serves the same functionality as --alias. Deprecated and will be removed in future versions',
+    )
+    .option('-o, --open', 'Open site after deploy', false)
+    .option('-m, --message <message>', 'A short message to include in the deploy log')
+    .option('-a, --auth <token>', 'Netlify auth token to deploy with', env.NETLIFY_AUTH_TOKEN)
+    .option('-s, --site <id>', 'A site ID to deploy to', env.NETLIFY_SITE_ID)
+    .option('--json', 'Output deployment data as JSON')
+    .option('--timeout <number>', 'Timeout to wait for deployment to finish', (value) => Number.parseInt(value))
+    .option('--trigger', 'Trigger a new build of your site on Netlify without uploading local files')
+    .option('--build', 'Run build command before deploying')
+    .option(
+      '--skip-functions-cache',
+      'Ignore any functions created as part of a previous `build` or `deploy` commands, forcing them to be bundled again as part of the deployment',
+      false,
     )
     .addExamples([
       'netlify deploy',

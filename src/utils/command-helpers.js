@@ -40,15 +40,6 @@ const chalk = safeChalk(argv.includes('--json'))
  */
 const padLeft = (str, count, filler = ' ') => str.padStart(str.length + count, filler)
 
-/**
- * Adds the filler to the end of the string
- * @param {string} str
- * @param {number} count
- * @param {string} [filler]
- * @returns {string}
- */
-const padRight = (str, count, filler = ' ') => str.padEnd(str.length + count, filler)
-
 const platform = WSL ? 'wsl' : os.platform()
 const arch = os.arch() === 'ia32' ? 'x86' : os.arch()
 
@@ -64,31 +55,7 @@ const NETLIFYDEVLOG = `${chalk.greenBright('◈')}`
 const NETLIFYDEVWARN = `${chalk.yellowBright('◈')}`
 const NETLIFYDEVERR = `${chalk.redBright('◈')}`
 
-const HELP_$ = NETLIFY_CYAN('$')
-// indent on commands or description on the help page
-const HELP_INDENT_WIDTH = 2
-// seperator width between term and description
-const HELP_SEPERATOR_WIDTH = 5
 const BANG = process.platform === 'win32' ? '»' : '›'
-
-/**
- * Formats a help list correctly with the correct indent
- * @param {string[]} textArray
- * @returns
- */
-const formatHelpList = (textArray) => textArray.join('\n').replace(/^/gm, ' '.repeat(HELP_INDENT_WIDTH))
-
-/**
- * Generates the help output for the description
- * @param {string} description
- * @returns {string}
- */
-const generateDescriptionHelp = (description) =>
-  [
-    chalk.bold('DESCRIPTION'),
-    padLeft(description.split('\n').join(padRight('\n', HELP_INDENT_WIDTH)), HELP_INDENT_WIDTH),
-    '',
-  ].join('\n')
 
 // Poll Token timeout 5 Minutes
 const TOKEN_TIMEOUT = 3e5
@@ -215,11 +182,7 @@ const normalizeConfig = (config) =>
     : config
 
 module.exports = {
-  HELP_$,
-  HELP_INDENT_WIDTH,
-  HELP_SEPERATOR_WIDTH,
   getToken,
-  formatHelpList,
   exit,
   padLeft,
   logJson,
@@ -227,7 +190,6 @@ module.exports = {
   warn,
   error,
   chalk,
-  generateDescriptionHelp,
   pollForToken,
   normalizeConfig,
   USER_AGENT,

@@ -1,6 +1,4 @@
 // @ts-check
-const { generateDescriptionHelp, generateExamplesHelp } = require('../../utils')
-
 const { createSitesCreateCommand } = require('./sites-create')
 const { createSitesDeleteCommand } = require('./sites-delete')
 const { createSitesListCommand } = require('./sites-list')
@@ -26,8 +24,7 @@ const createSitesCommand = (program) => {
 
   return program
     .command('sites')
-    .description('Handle various site operations')
-    .addHelpText('after', generateDescriptionHelp('The sites command will help you manage all your sites'))
+    .description('Handle various site operations\nThe sites command will help you manage all your sites')
     .addExamples(['netlify sites:create --name my-new-site', 'netlify sites:list'])
     .action(sites)
 }

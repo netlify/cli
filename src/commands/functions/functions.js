@@ -1,6 +1,5 @@
 // @ts-check
-
-const { chalk, generateDescriptionHelp, generateExamplesHelp } = require('../../utils')
+const { chalk } = require('../../utils')
 
 const { createFunctionsBuildCommand } = require('./functions-build')
 const { createFunctionsCreateCommand } = require('./functions-create')
@@ -34,15 +33,14 @@ const createFunctionsCommand = (program) => {
   return program
     .command('functions')
     .alias('function')
-    .description('Manage netlify functions')
-    .addHelpText(
-      'after',
-      generateDescriptionHelp(`The ${name} command will help you manage the functions in this site`),
+    .description(
+      `Manage netlify functions
+The ${name} command will help you manage the functions in this site`,
     )
     .addExamples([
-        'netlify functions:create --name function-xyz',
-        'netlify functions:build --name function-abc --timeout 30s',
-      ])
+      'netlify functions:create --name function-xyz',
+      'netlify functions:build --name function-abc --timeout 30s',
+    ])
     .action(functions)
 }
 

@@ -1,5 +1,4 @@
-const { generateExamplesHelp } = require('../../utils')
-
+// @ts-check
 const { createEnvGetCommand } = require('./env-get')
 const { createEnvImportCommand } = require('./env-import')
 const { createEnvListCommand } = require('./env-list')

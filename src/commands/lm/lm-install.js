@@ -1,6 +1,4 @@
 // @ts-check
-
-const { generateDescriptionHelp } = require('../../utils')
 const { installPlatform } = require('../../utils/lm/install')
 const { printBanner } = require('../../utils/lm/ui')
 
@@ -24,13 +22,12 @@ const createLmInstallCommand = (program) =>
   program
     .command('lm:install')
     .alias('lm:init')
-    .description('Configures your computer to use Netlify Large Media')
-    .option('-f, --force', 'Force the credentials helper installation')
-    .addHelpText(
-      'after',
-      generateDescriptionHelp(`It installs the required credentials helper for Git,
-and configures your Git environment with the right credentials.`),
+    .description(
+      `Configures your computer to use Netlify Large Media
+It installs the required credentials helper for Git,
+and configures your Git environment with the right credentials.`,
     )
+    .option('-f, --force', 'Force the credentials helper installation')
     .action(lmInstall)
 
 module.exports = { createLmInstallCommand }

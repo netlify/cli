@@ -1,7 +1,7 @@
 // @ts-check
 const inquirer = require('inquirer')
 
-const { error, exit, generateDescriptionHelp, log } = require('../../utils')
+const { error, exit, log } = require('../../utils')
 const { ADDON_VALIDATION, prepareAddonCommand } = require('../../utils/addons/prepare')
 
 /**
@@ -51,9 +51,10 @@ const createAddonsDeleteCommand = (program) =>
     .command('addons:delete')
     .alias('addon:delete')
     .argument('<name>', 'Add-on namespace')
-    .description('Remove an add-on extension to your site')
+    .description(
+      `Remove an add-on extension to your site\nAdd-ons are a way to extend the functionality of your Netlify site`,
+    )
     .option('-f, --force', 'delete without prompting (useful for CI)')
-    .addHelpText('after', generateDescriptionHelp('Add-ons are a way to extend the functionality of your Netlify site'))
     .action(addonsDelete)
 
 module.exports = { createAddonsDeleteCommand }

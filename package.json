@@ -215,6 +215,7 @@
   },
   "ava": {
     "files": [
+      "site/**/*.test.js",
       "src/**/*.test.js",
       "tools/**/*.test.js",
       "tests/*.test.js"

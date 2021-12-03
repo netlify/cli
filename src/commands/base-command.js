@@ -12,15 +12,12 @@ const jsClient = import('netlify')
 
 const { getAgent } = require('../lib/http-agent')
 const {
-  HELP_$,
-  HELP_INDENT_WIDTH,
-  HELP_SEPERATOR_WIDTH,
+  NETLIFY_CYAN,
   StateConfig,
   USER_AGENT,
   chalk,
   error,
   exit,
-  formatHelpList,
   getGlobalConfig,
   getToken,
   identify,
@@ -41,6 +38,19 @@ const NANO_SECS_TO_MSECS = 1e6
 const FALLBACK_HELP_CMD_WIDTH = 80
 // AN option description that should be hidden in the help page
 const OPTION_HIDDEN_DESCRIPTION = 'hidden:true'
+
+const HELP_$ = NETLIFY_CYAN('$')
+// indent on commands or description on the help page
+const HELP_INDENT_WIDTH = 2
+// seperator width between term and description
+const HELP_SEPERATOR_WIDTH = 5
+
+/**
+ * Formats a help list correctly with the correct indent
+ * @param {string[]} textArray
+ * @returns
+ */
+const formatHelpList = (textArray) => textArray.join('\n').replace(/^/gm, ' '.repeat(HELP_INDENT_WIDTH))
 
 /**
  * Get the duration between a start time and the current time
@@ -141,7 +151,6 @@ class BaseCommand extends Command {
     return this
   }
 
-
   /**
    * Overrides the help output of commander with custom styling
    * @returns {import('commander').Help}
@@ -212,8 +221,8 @@ class BaseCommand extends Command {
         const bang = isCommand ? `${HELP_$} ` : ''
 
         if (description) {
-          const pad = termWidth + HELP_SEPERATOR_WIDTH - (isCommand ? 2 : 0)
-          const fullText = `${bang}${term.padEnd(pad)}${chalk.grey(description)}`
+          const pad = termWidth + HELP_SEPERATOR_WIDTH
+          const fullText = `${bang}${term.padEnd(pad - (isCommand ? 2 : 0))}${chalk.grey(description)}`
           return helper.wrap(fullText, helpWidth - HELP_INDENT_WIDTH, pad)
         }
 
@@ -224,9 +233,9 @@ class BaseCommand extends Command {
       let output = []
 
       // Description
-      const commandDescription = helper.commandDescription(command)
-      if (commandDescription.length !== 0) {
-        output = [...output, commandDescription, '']
+      const [topDescription, ...commandDescription] = (helper.commandDescription(command) || '').split('\n')
+      if (topDescription.length !== 0) {
+        output = [...output, topDescription, '']
       }
 
       // on the parent help command the version should be displayed
@@ -236,14 +245,6 @@ class BaseCommand extends Command {
 
       // Usage
       output = [...output, chalk.bold('USAGE'), helper.commandUsage(command), '']
-
-      // Aliases
-      // eslint-disable-next-line no-underscore-dangle
-      if (command._aliases.length !== 0) {
-        // eslint-disable-next-line no-underscore-dangle
-        const aliases = command._aliases.map((alias) => formatItem(`${parentCommand.name()} ${alias}`, null, true))
-        output = [...output, chalk.bold('ALIASES'), formatHelpList(aliases), '']
-      }
 
       // Arguments
       const argumentList = helper
@@ -262,6 +263,19 @@ class BaseCommand extends Command {
         if (optionList.length !== 0) {
           output = [...output, chalk.bold('OPTIONS'), formatHelpList(optionList), '']
         }
+      }
+
+      // Description
+      if (commandDescription.length !== 0) {
+        output = [...output, chalk.bold('DESCRIPTION'), formatHelpList(commandDescription), '']
+      }
+
+      // Aliases
+      // eslint-disable-next-line no-underscore-dangle
+      if (command._aliases.length !== 0) {
+        // eslint-disable-next-line no-underscore-dangle
+        const aliases = command._aliases.map((alias) => formatItem(`${parentCommand.name()} ${alias}`, null, true))
+        output = [...output, chalk.bold('ALIASES'), formatHelpList(aliases), '']
       }
 
       if (command.examples.length !== 0) {

@@ -4,7 +4,7 @@ const AsciiTable = require('ascii-table')
 // TODO: use static `import` after migrating this repository to pure ES modules
 const jsClient = import('netlify')
 
-const { chalk, error, exit, generateDescriptionHelp, log, logJson } = require('../../utils')
+const { chalk, error, exit, log, logJson } = require('../../utils')
 
 /**
  * The api command
@@ -60,22 +60,16 @@ const apiCommand = async (apiMethod, options, command) => {
 const createApiCommand = (program) =>
   program
     .command('api')
-    .argument('[method]', 'Open API method to run')
-    .description('Run any Netlify API method')
+    .argument('[apiMethod]', 'Open API method to run')
+    .description(
+      `Run any Netlify API method
+For more information on available methods checkout https://open-api.netlify.com/ or run '${chalk.grey(
+        'netlify api --list',
+      )}'`,
+    )
     .option('-d, --data <data>', 'Data to use')
     .option('--list', 'List out available API methods', false)
-    .addHelpText(
-      'after',
-      generateDescriptionHelp(
-        `For more information on available methods checkout https://open-api.netlify.com/ or run '${chalk.grey(
-          'netlify api --list',
-        )}'`,
-      ),
-    )
-    .addExamples([
-        'netlify api --list',
-        `netlify api getSite --data '${chalk.grey('{ "site_id": "123456"}')}'`,
-      ])
+    .addExamples(['netlify api --list', `netlify api getSite --data '${chalk.grey('{ "site_id": "123456"}')}'`])
     .action(apiCommand)
 
 module.exports = { createApiCommand }

@@ -5,7 +5,7 @@ const AsciiTable = require('ascii-table')
 const {
   error,
   exit,
-  generateDescriptionHelp,
+
   getFunctions,
   getFunctionsDir,
   log,
@@ -92,16 +92,15 @@ const createFunctionsListCommand = (program) =>
   program
     .command('functions:list')
     .alias('function:list')
-    .description('List functions that exist locally')
+    .description(
+      `List functions that exist locally
+Helpful for making sure that you have formatted your functions correctly
+
+NOT the same as listing the functions that have been deployed. For that info you need to go to your Netlify deploy log.`,
+    )
     .option('-n, --name <name>', 'name to print')
     .option('-f, --functions <dir>', 'Specify a functions directory to list')
     .option('--json', 'Output function data as JSON')
-    .addHelpText(
-      'after',
-      generateDescriptionHelp(`Helpful for making sure that you have formatted your functions correctly
-
-NOT the same as listing the functions that have been deployed. For that info you need to go to your Netlify deploy log.`),
-    )
     .action(functionsList)
 
 module.exports = { createFunctionsListCommand }

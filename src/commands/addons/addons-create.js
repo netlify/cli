@@ -2,7 +2,7 @@
 const inquirer = require('inquirer')
 const isEmpty = require('lodash/isEmpty')
 
-const { chalk, error, generateDescriptionHelp, log, parseRawFlags } = require('../../utils')
+const { chalk, error, log, parseRawFlags } = require('../../utils')
 const { ADDON_VALIDATION, prepareAddonCommand } = require('../../utils/addons/prepare')
 const generatePrompts = require('../../utils/addons/prompts')
 const render = require('../../utils/addons/render')
@@ -118,10 +118,12 @@ const createAddonsCreateCommand = (program) =>
     .command('addons:create')
     .alias('addon:create')
     .argument('<name>', 'Add-on namespace')
-    .description('Add an add-on extension to your site')
+    .description(
+      `Add an add-on extension to your site
+Add-ons are a way to extend the functionality of your Netlify site`,
+    )
     // allow for any flags. Handy for variadic configuration options
     .allowUnknownOption(true)
-    .addHelpText('after', generateDescriptionHelp('Add-ons are a way to extend the functionality of your Netlify site'))
     .action(async (addonName, options, command) => {
       await addonsCreate(addonName, options, command)
     })

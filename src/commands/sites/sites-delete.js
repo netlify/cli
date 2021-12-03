@@ -1,7 +1,7 @@
 // @ts-check
 const inquirer = require('inquirer')
 
-const { chalk, error, exit, generateDescriptionHelp,  log } = require('../../utils')
+const { chalk, error, exit, log } = require('../../utils')
 
 /**
  * The sites:delete command
@@ -95,13 +95,9 @@ const sitesDelete = async (siteId, options, command) => {
 const createSitesDeleteCommand = (program) =>
   program
     .command('sites:delete')
-    .description('Delete a site')
+    .description('Delete a site\nThis command will permanently delete the site on Netlify. Use with caution.')
     .argument('<siteId>', 'Site ID to delete.')
     .option('-f, --force', 'delete without prompting (useful for CI)')
-    .addHelpText(
-      'after',
-      generateDescriptionHelp('This command will permanently delete the site on Netlify. Use with caution.'),
-    )
     .addExamples(['netlify sites:delete 1234-3262-1211'])
     .action(sitesDelete)
 

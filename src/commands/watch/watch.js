@@ -2,7 +2,7 @@ const cli = require('cli-ux').default
 const pWaitFor = require('p-wait-for')
 const prettyjson = require('prettyjson')
 
-const { chalk, error,  log } = require('../../utils')
+const { chalk, error, log } = require('../../utils')
 const { init } = require('../init')
 
 // 1 second
