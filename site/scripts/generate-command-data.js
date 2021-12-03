@@ -29,19 +29,14 @@ const parseCommand = function (command) {
     })
     .reduce((prev, cur) => {
       const name = cur.long.replace('--', '')
-      const type =
-        // eslint-disable-next-line no-nested-ternary
-        cur.flags.includes('<') || cur.flags.includes('[')
-          ? (cur.argChoices
-            ? cur.argChoices.join(' | ')
-            : 'string')
-          : 'boolean'
+      const contentType = cur.argChoices ? cur.argChoices.join(' | ') : 'string'
+
       return {
         ...prev,
         [name]: {
           description: cur.description,
           char: cur.short,
-          type,
+          type: cur.flags.includes('<') || cur.flags.includes('[') ? contentType : 'boolean',
         },
       }
     }, {})
