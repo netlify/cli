@@ -3,6 +3,8 @@ const { mkdir } = require('fs').promises
 const { env } = require('process')
 
 const { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn } = require('../../utils')
+const terminalLink = require('terminal-link')
+
 const { getLogMessage } = require('../log')
 
 const { NetlifyFunction } = require('./netlify-function')
@@ -142,9 +144,9 @@ class FunctionsRegistry {
     this.buildFunctionAndWatchFiles(func)
 
     log(
-      `${NETLIFYDEVLOG} ${chalk.green('Loaded')} function ${chalk.yellow(name)} available under: ${chalk.blue(
-        func.url,
-      )}.`,
+      `${NETLIFYDEVLOG} ${chalk.green('Loaded')} function ${terminalLink(chalk.yellow(name), func.url, {
+        fallback: (text, url) => `${text} available under: (${chalk.blue(url)})`,
+      })}.`,
     )
   }
 
