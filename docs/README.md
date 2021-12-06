@@ -9,6 +9,9 @@ Welcome to the Netlify CLI! This site provides online access to all help strings
 
 If you have questions, ideas, or would like to contribute, check out the [repository on Github](https://github.com/netlify/cli/).
 
+**Before you begin**
+Make sure you have [Node.js](https://nodejs.org/en/download/) version 12.20.0, 14.14.0, 16.0.0, or later.
+
 **Install the CLI**
 
 To install the CLI, pop open your terminal and install with `npm`.
