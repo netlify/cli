@@ -144,9 +144,7 @@ class FunctionsRegistry {
     this.buildFunctionAndWatchFiles(func)
 
     log(
-      `${NETLIFYDEVLOG} ${chalk.green('Loaded')} function ${terminalLink(chalk.yellow(name), func.url, {
-        fallback: (text, url) => `${text} available under: ${chalk.blue(url)}`,
-      })}.`,
+      `${NETLIFYDEVLOG} ${chalk.green('Loaded')} function ${terminalLink(chalk.yellow(name), func.url)}.`,
     )
   }
 
