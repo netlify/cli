@@ -1,11 +1,12 @@
 const process = require('process')
-const { URL } = require('url')
 
 const resolveConfig = require('@netlify/config')
 const { flags: flagsLib } = require('@oclif/command')
 const oclifParser = require('@oclif/parser')
 const merge = require('lodash/merge')
-const API = require('netlify')
+
+// TODO: use static `import` after migrating this repository to pure ES modules
+const jsClient = import('netlify')
 
 const { getAgent } = require('../lib/http-agent')
 
@@ -34,7 +35,9 @@ class BaseCommand extends TrackedCommand {
     // Get site id & build state
     const state = new StateConfig(cwd)
 
-    const apiUrlOpts = {}
+    const apiUrlOpts = {
+      userAgent: this.config.userAgent,
+    }
 
     if (NETLIFY_API_URL) {
       const apiUrl = new URL(NETLIFY_API_URL)
@@ -55,9 +58,10 @@ class BaseCommand extends TrackedCommand {
     const apiOpts = { ...apiUrlOpts, agent }
     const globalConfig = await getGlobalConfig()
 
+    const { NetlifyAPI } = await jsClient
     this.netlify = {
       // api methods
-      api: new API(token || '', apiOpts),
+      api: new NetlifyAPI(token || '', apiOpts),
       repositoryRoot,
       // current site context
       site: {

@@ -1,5 +1,4 @@
 const path = require('path')
-const url = require('url')
 
 const chokidar = require('chokidar')
 const cookie = require('cookie')
@@ -37,11 +36,10 @@ const createRewriter = async function ({ configPath, distDir, jwtRoleClaim, jwtS
 
   const watchedRedirectFiles = configPath === undefined ? redirectsFiles : [...redirectsFiles, configPath]
   onChanges(watchedRedirectFiles, async () => {
+    const existingRedirectsFiles = await pFilter(watchedRedirectFiles, fileExistsAsync)
     console.log(
       `${NETLIFYDEVLOG} Reloading redirect rules from`,
-      (await pFilter(watchedRedirectFiles, fileExistsAsync)).map((redirectFile) =>
-        path.relative(projectDir, redirectFile),
-      ),
+      existingRedirectsFiles.map((redirectFile) => path.relative(projectDir, redirectFile)),
     )
     redirects = await parseRedirects({ redirectsFiles, configPath })
     matcher = null
@@ -65,7 +63,7 @@ const createRewriter = async function ({ configPath, distDir, jwtRoleClaim, jwtS
 
   return async function rewriter(req) {
     const matcherFunc = await getMatcher()
-    const reqUrl = new url.URL(
+    const reqUrl = new URL(
       req.url,
       `${req.protocol || (req.headers.scheme && `${req.headers.scheme}:`) || 'http:'}//${
         req.hostname || req.headers.host

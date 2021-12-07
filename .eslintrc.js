@@ -14,15 +14,7 @@ module.exports = {
     'max-statements': 0,
     'no-param-reassign': 0,
     'no-process-exit': 0,
-    'fp/no-class': 0,
-    'fp/no-delete': 0,
-    'fp/no-get-set': 0,
-    'fp/no-let': 0,
     'fp/no-loops': 'error',
-    'fp/no-mutating-assign': 0,
-    'fp/no-mutating-methods': 0,
-    'fp/no-mutation': 0,
-    'fp/no-this': 0,
     'import/max-dependencies': 0,
     'node/no-sync': 0,
     'sort-destructure-keys/sort-destructure-keys': 2,
@@ -34,7 +26,6 @@ module.exports = {
     ...overrides,
     // Documentation site's browser JavaScript
     {
-      extends: '@netlify/eslint-config-node/react_config',
       files: ['site/src/**/*.js'],
       parserOptions: {
         sourceType: 'module',
@@ -45,15 +36,10 @@ module.exports = {
       },
       rules: {
         complexity: 0,
-        'fp/no-class': 0,
-        'fp/no-let': 0,
         'fp/no-this': 0,
-        'fp/no-mutation': 0,
         'import/extensions': [2, 'always'],
-        'node/no-unsupported-features/es-syntax': 0,
         'unicorn/consistent-destructuring': 0,
         'max-lines': 0,
-        'array-callback-return': ['error', { checkForEach: true }],
       },
     },
     // Example functions

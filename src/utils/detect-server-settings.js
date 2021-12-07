@@ -1,3 +1,4 @@
+// @ts-check
 const { EOL } = require('os')
 const path = require('path')
 const process = require('process')
@@ -101,6 +102,14 @@ const getDefaultDist = () => {
   return process.cwd()
 }
 
+/**
+ *
+ * @param {object} param0
+ * @param {import('../commands/dev/types').DevConfig} param0.devConfig
+ * @param {Record<string, string>} param0.flags
+ * @param {string} param0.projectDir
+ * @returns {Promise<import('./types').BaseServerSettings>}
+ */
 const handleStaticServer = async ({ devConfig, flags, projectDir }) => {
   validateNumberProperty({ devConfig, property: 'staticServerPort' })
 
@@ -111,14 +120,6 @@ const handleStaticServer = async ({ devConfig, flags, projectDir }) => {
       `${NETLIFYDEVWARN} Using simple static server because ${formatProperty(
         '[dev.framework]',
       )} was set to ${formatValue('#static')}`,
-    )
-  }
-
-  if (devConfig.command) {
-    log(
-      `${NETLIFYDEVWARN} Ignoring command setting since using a simple static server. Configure ${formatProperty(
-        'command',
-      )} ${chalk.bold('and')} ${formatProperty('targetPort')} for a custom setup`,
     )
   }
 
@@ -139,12 +140,18 @@ const handleStaticServer = async ({ devConfig, flags, projectDir }) => {
     errorMessage: 'Could not acquire configured static server port',
   })
   return {
+    ...(devConfig.command && { command: devConfig.command }),
     useStaticServer: true,
     frameworkPort,
     dist,
   }
 }
 
+/**
+ * Retrieves the settings from a framework
+ * @param {import('./types').FrameworkInfo} framework
+ * @returns {import('./types').BaseServerSettings}
+ */
 const getSettingsFromFramework = (framework) => {
   const {
     build: { directory: dist },
@@ -171,7 +178,8 @@ const getSettingsFromFramework = (framework) => {
 const hasDevCommand = (framework) => Array.isArray(framework.dev.commands) && framework.dev.commands.length !== 0
 
 const detectFrameworkSettings = async ({ projectDir }) => {
-  const frameworks = (await listFrameworks({ projectDir })).filter((framework) => hasDevCommand(framework))
+  const projectFrameworks = await listFrameworks({ projectDir })
+  const frameworks = projectFrameworks.filter((framework) => hasDevCommand(framework))
 
   if (frameworks.length === 1) {
     return getSettingsFromFramework(frameworks[0])
@@ -210,6 +218,11 @@ const detectFrameworkSettings = async ({ projectDir }) => {
 
 const hasCommandAndTargetPort = ({ devConfig }) => devConfig.command && devConfig.targetPort
 
+/**
+ * Creates settings for the custom framework
+ * @param {*} param0
+ * @returns {import('./types').BaseServerSettings}
+ */
 const handleCustomFramework = ({ devConfig }) => {
   if (!hasCommandAndTargetPort({ devConfig })) {
     throw new Error(
@@ -227,6 +240,11 @@ const handleCustomFramework = ({ devConfig }) => {
   }
 }
 
+/**
+ * Handles a forced framework and retrieves the settings for it
+ * @param {*} param0
+ * @returns {Promise<import('./types').BaseServerSettings>}
+ */
 const handleForcedFramework = async ({ devConfig, projectDir }) => {
   // this throws if `devConfig.framework` is not a supported framework
   const { command, dist, env, framework, frameworkPort, pollingStrategies } = getSettingsFromFramework(
@@ -242,9 +260,17 @@ const handleForcedFramework = async ({ devConfig, projectDir }) => {
   }
 }
 
+/**
+ * Get the server settings based on the flags and the devConfig
+ * @param {import('../commands/dev/types').DevConfig} devConfig
+ * @param {Record<string, string>} flags
+ * @param {string} projectDir
+ * @returns {Promise<import('./types').ServerSettings>}
+ */
 const detectServerSettings = async (devConfig, flags, projectDir) => {
   validateStringProperty({ devConfig, property: 'framework' })
 
+  /** @type {Partial<import('./types').BaseServerSettings>} */
   let settings = {}
 
   if (flags.dir || devConfig.framework === '#static') {
@@ -253,7 +279,6 @@ const detectServerSettings = async (devConfig, flags, projectDir) => {
   } else if (devConfig.framework === '#auto') {
     // this is the default CLI behavior
 
-    // we don't need to run the detection if both command and targetPort are configured
     const runDetection = !hasCommandAndTargetPort({ devConfig })
     const frameworkSettings = runDetection ? await detectFrameworkSettings({ projectDir }) : undefined
 

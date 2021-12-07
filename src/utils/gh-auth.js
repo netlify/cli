@@ -3,7 +3,6 @@ const http = require('http')
 const process = require('process')
 
 const { Octokit } = require('@octokit/rest')
-const fromEntries = require('@ungap/from-entries')
 const getPort = require('get-port')
 const inquirer = require('inquirer')
 
@@ -12,6 +11,14 @@ const { createDeferred } = require('./deferred')
 const { openBrowser } = require('./open-browser')
 
 const SERVER_PORT = 3000
+
+/**
+ * @typedef Token
+ * @type {object}
+ * @property {string} user - The username that is associated with the token
+ * @property {string} token - The actual token value starting with `gho_`
+ * @property {string} provider - The Provider where the token is associated with ('github').
+ */
 
 const promptForAuthMethod = async () => {
   const authChoiceNetlify = 'Authorize with GitHub through app.netlify.com'
@@ -34,14 +41,7 @@ const promptForAuthMethod = async () => {
 
 /**
  * Authenticate with the netlify app
- * @returns {Promise<Record<string,string>} Returns a Promise with an object of the following shape
- * ```
- * {
- *   user: 'spongebob,
- *   token: 'gho_some-token',
- *   provider: 'github'
- * }
- * ```
+ * @returns {Promise<Token>} Returns a Promise with a token object
  */
 const authWithNetlify = async () => {
   const port = await getPort({ port: SERVER_PORT })
@@ -50,7 +50,7 @@ const authWithNetlify = async () => {
   const server = http.createServer(function onRequest(req, res) {
     const parameters = new URLSearchParams(req.url.slice(req.url.indexOf('?') + 1))
     if (parameters.get('token')) {
-      deferredResolve(fromEntries(parameters))
+      deferredResolve(Object.fromEntries(parameters))
       res.end(
         `${
           "<html><head><script>if(history.replaceState){history.replaceState({},'','/')}</script><style>html{font-family:sans-serif;background:#0e1e25}body{overflow:hidden;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;width:100vw;}h3{margin:0}.card{position:relative;display:flex;flex-direction:column;width:75%;max-width:364px;padding:24px;background:white;color:rgb(14,30,37);border-radius:8px;box-shadow:0 2px 4px 0 rgba(14,30,37,.16);}</style></head>" +
@@ -95,6 +95,10 @@ const getPersonalAccessToken = async () => {
   return { token }
 }
 
+/**
+ * Authenticate with the netlify app
+ * @returns {Promise<Token>} Returns a Promise with a token object
+ */
 const authWithToken = async () => {
   const { token } = await getPersonalAccessToken()
   if (token) {
@@ -108,6 +112,10 @@ const authWithToken = async () => {
   throw error
 }
 
+/**
+ * Get a github token
+ * @returns {Promise<Token>} Returns a Promise with a token object
+ */
 const getGitHubToken = async () => {
   log('')
 

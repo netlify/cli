@@ -1,3 +1,4 @@
+// @ts-check
 const path = require('path')
 const process = require('process')
 const { promisify } = require('util')
@@ -53,41 +54,42 @@ const isNonExistingCommandError = ({ command, error }) => {
   )
 }
 
-const startFrameworkServer = async function ({ settings }) {
-  if (settings.useStaticServer) {
-    return await startStaticServer({ settings })
-  }
-
-  log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.framework || 'custom config'}`)
-
-  // we use reject=false to avoid rejecting synchronously when the command doesn't exist
-  const frameworkProcess = execa.command(settings.command, {
+/**
+ * Run a command and pipe stdout, stderr and stdin
+ * @param {string} command
+ * @param {NodeJS.ProcessEnv} env
+ * @returns {execa.ExecaChildProcess<string>}
+ */
+const runCommand = (command, env = {}) => {
+  const commandProcess = execa.command(command, {
     preferLocal: true,
+    // we use reject=false to avoid rejecting synchronously when the command doesn't exist
     reject: false,
-    env: settings.env,
+    env,
     // windowsHide needs to be false for child process to terminate properly on Windows
     windowsHide: false,
   })
-  frameworkProcess.stdout.pipe(stripAnsiCc.stream()).pipe(process.stdout)
-  frameworkProcess.stderr.pipe(stripAnsiCc.stream()).pipe(process.stderr)
-  process.stdin.pipe(frameworkProcess.stdin)
+
+  commandProcess.stdout.pipe(stripAnsiCc.stream()).pipe(process.stdout)
+  commandProcess.stderr.pipe(stripAnsiCc.stream()).pipe(process.stderr)
+  process.stdin.pipe(commandProcess.stdin)
 
   // we can't try->await->catch since we don't want to block on the framework server which
   // is a long running process
   // eslint-disable-next-line promise/catch-or-return,promise/prefer-await-to-then
-  frameworkProcess.then(async () => {
-    const result = await frameworkProcess
-    const [commandWithoutArgs] = settings.command.split(' ')
+  commandProcess.then(async () => {
+    const result = await commandProcess
+    const [commandWithoutArgs] = command.split(' ')
     // eslint-disable-next-line promise/always-return
     if (result.failed && isNonExistingCommandError({ command: commandWithoutArgs, error: result })) {
       log(
         NETLIFYDEVERR,
-        `Failed launching framework server. Please verify ${chalk.magenta(`'${commandWithoutArgs}'`)} exists`,
+        `Failed running command: ${command}. Please verify ${chalk.magenta(`'${commandWithoutArgs}'`)} exists`,
       )
     } else {
       const errorMessage = result.failed
         ? `${NETLIFYDEVERR} ${result.shortMessage}`
-        : `${NETLIFYDEVWARN} "${settings.command}" exited with code ${result.exitCode}`
+        : `${NETLIFYDEVWARN} "${command}" exited with code ${result.exitCode}`
 
       log(`${errorMessage}. Shutting down Netlify Dev server`)
     }
@@ -95,10 +97,31 @@ const startFrameworkServer = async function ({ settings }) {
   })
   ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) => {
     process.on(signal, () => {
-      frameworkProcess.kill('SIGTERM', { forceKillAfterTimeout: 500 })
+      commandProcess.kill('SIGTERM', { forceKillAfterTimeout: 500 })
       process.exit()
     })
   })
+
+  return commandProcess
+}
+
+/**
+ * Start a static server if the `useStaticServer` is provided or a framework specific server
+ * @param {object} config
+ * @param {import('../../utils/types').ServerSettings} config.settings
+ * @returns {Promise<void>}
+ */
+const startFrameworkServer = async function ({ settings }) {
+  if (settings.useStaticServer) {
+    if (settings.command) {
+      runCommand(settings.command, settings.env)
+    }
+    return await startStaticServer({ settings })
+  }
+
+  log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.framework || 'custom config'}`)
+
+  runCommand(settings.command, settings.env)
 
   try {
     const open = await waitPort({
@@ -185,6 +208,7 @@ class DevCommand extends Command {
     const { api, config, site, siteInfo } = this.netlify
     config.dev = { ...config.dev }
     config.build = { ...config.build }
+    /** @type {import('./types').DevConfig} */
     const devConfig = {
       framework: '#auto',
       ...(config.functionsDirectory && { functions: config.functionsDirectory }),
@@ -207,6 +231,7 @@ class DevCommand extends Command {
       siteInfo,
     })
 
+    /** @type {Partial<import('../../utils/types').ServerSettings>} */
     let settings = {}
     try {
       settings = await detectServerSettings(devConfig, flags, site.root)

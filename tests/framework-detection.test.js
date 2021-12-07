@@ -65,7 +65,7 @@ test('should use static server when framework is set to #static', async (t) => {
   })
 })
 
-test('should warn if using static server and `command` is configured', async (t) => {
+test('should log the command if using static server and `command` is configured', async (t) => {
   await withSiteBuilder('site-with-index-file', async (builder) => {
     await builder
       .withContentFile({

@@ -1,7 +1,9 @@
 const oclif = require('@oclif/command')
 const AsciiTable = require('ascii-table')
 const chalk = require('chalk')
-const { methods } = require('netlify')
+
+// TODO: use static `import` after migrating this repository to pure ES modules
+const jsClient = import('netlify')
 
 const { isEmptyCommand } = require('../utils/check-command-inputs')
 const Command = require('../utils/command')
@@ -17,6 +19,7 @@ class APICommand extends Command {
     if (isEmptyCommand(flags, args) || flags.list) {
       const table = new AsciiTable(`Netlify API Methods`)
       table.setHeading('API Method', 'Docs Link')
+      const { methods } = await jsClient
       methods.forEach((method) => {
         const { operationId } = method
         table.addRow(operationId, `https://open-api.netlify.com/#operation/${operationId}`)
