@@ -26,6 +26,7 @@ const {
   openBrowser,
   padLeft,
   pollForToken,
+  sortOptions,
   track,
 } = require('../utils')
 
@@ -49,9 +50,6 @@ const HELP_SEPERATOR_WIDTH = 5
  * @returns
  */
 const formatHelpList = (textArray) => textArray.join('\n').replace(/^/gm, ' '.repeat(HELP_INDENT_WIDTH))
-
-/** A list of base command flags that needs to be sorted down on documentation and on help pages */
-const BASE_FLAGS = new Set(['--debug', '--httpProxy', '--httpProxyCertificateFilename'])
 
 /**
  * Get the duration between a start time and the current time
@@ -251,13 +249,7 @@ class BaseCommand extends Command {
         // Options
         const optionList = helper
           .visibleOptions(command)
-          .sort((optionA, optionB) => {
-            // base flags should be always at the bottom
-            if (BASE_FLAGS.has(optionA.long) || BASE_FLAGS.has(optionB.long)) {
-              return -1
-            }
-            return optionA.long.localeCompare(optionB.long)
-          })
+          .sort(sortOptions)
           .map((option) => formatItem(helper.optionTerm(option), helper.optionDescription(option)))
         if (optionList.length !== 0) {
           output = [...output, chalk.bold('OPTIONS'), formatHelpList(optionList), '']
@@ -287,7 +279,7 @@ class BaseCommand extends Command {
       }
 
       const commandList = getCommands(command).map((cmd) =>
-        formatItem(cmd.name(), helper.subcommandDescription(cmd), true),
+        formatItem(cmd.name(), helper.subcommandDescription(cmd).split('\n')[0], true),
       )
       if (commandList.length !== 0) {
         output = [...output, chalk.bold('COMMANDS'), formatHelpList(commandList), '']
@@ -506,4 +498,4 @@ class BaseCommand extends Command {
   }
 }
 
-module.exports = { BaseCommand, BASE_FLAGS }
+module.exports = { BaseCommand }

@@ -6,7 +6,19 @@ const inquirer = require('inquirer')
 const { findBestMatch } = require('string-similarity')
 
 const pkg = require('../../package.json')
-const { NETLIFY_CYAN, USER_AGENT, chalk, error, execa, exit, getGlobalConfig, log, track, warn } = require('../utils')
+const {
+  BANG,
+  NETLIFY_CYAN,
+  USER_AGENT,
+  chalk,
+  error,
+  execa,
+  exit,
+  getGlobalConfig,
+  log,
+  track,
+  warn,
+} = require('../utils')
 
 const { createAddonsCommand } = require('./addons')
 const { createApiCommand } = require('./api')
@@ -180,6 +192,12 @@ const createMainCommand = () => {
     .addOption(new Option('-v, --version').hideHelp())
     .addOption(new Option('--verbose').hideHelp())
     .noHelpOptions()
+    .configureOutput({
+      outputError: (message, write) => {
+        write(` ${chalk.red(BANG)}   Error: ${message.replace(/^error:\s/g, '')}`)
+        write(` ${chalk.red(BANG)}   See more help with --help\n`)
+      },
+    })
     .action(mainCommand)
 
   return program

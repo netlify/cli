@@ -45,6 +45,9 @@ const arch = os.arch() === 'ia32' ? 'x86' : os.arch()
 
 const USER_AGENT = `${name}/${version} ${platform}-${arch} node-${process.version}`
 
+/** A list of base command flags that needs to be sorted down on documentation and on help pages */
+const BASE_FLAGS = new Set(['--debug', '--httpProxy', '--httpProxyCertificateFilename'])
+
 const { NETLIFY_AUTH_TOKEN } = process.env
 
 // eslint-disable-next-line no-magic-numbers
@@ -56,6 +59,22 @@ const NETLIFYDEVWARN = `${chalk.yellowBright('◈')}`
 const NETLIFYDEVERR = `${chalk.redBright('◈')}`
 
 const BANG = process.platform === 'win32' ? '»' : '›'
+
+/**
+ * Sorts two options so that the base flags are at the bottom of the list
+ * @param {import('commander').Option} optionA
+ * @param {import('commander').Option} optionB
+ * @returns {number}
+ * @example
+ * options.sort(sortOptions)
+ */
+const sortOptions = (optionA, optionB) => {
+  // base flags should be always at the bottom
+  if (BASE_FLAGS.has(optionA.long) || BASE_FLAGS.has(optionB.long)) {
+    return -1
+  }
+  return optionA.long.localeCompare(optionB.long)
+}
 
 // Poll Token timeout 5 Minutes
 const TOKEN_TIMEOUT = 3e5
@@ -182,20 +201,22 @@ const normalizeConfig = (config) =>
     : config
 
 module.exports = {
-  getToken,
-  exit,
-  padLeft,
-  logJson,
-  log,
-  warn,
-  error,
+  BANG,
   chalk,
-  pollForToken,
-  normalizeConfig,
-  USER_AGENT,
+  error,
+  exit,
+  getToken,
+  log,
+  logJson,
   NETLIFY_CYAN,
   NETLIFYDEV,
+  NETLIFYDEVERR,
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
-  NETLIFYDEVERR,
+  normalizeConfig,
+  padLeft,
+  pollForToken,
+  sortOptions,
+  USER_AGENT,
+  warn,
 }

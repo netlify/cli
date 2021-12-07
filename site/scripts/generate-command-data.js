@@ -1,5 +1,6 @@
 // @ts-check
-const { BASE_FLAGS, createMainCommand } = require('../../src/commands')
+const { createMainCommand } = require('../../src/commands')
+const { sortOptions } = require('../../src/utils')
 
 const program = createMainCommand()
 
@@ -20,13 +21,7 @@ const parseCommand = function (command) {
 
   const flags = command.options
     .filter((option) => !option.hidden)
-    .sort((optionA, optionB) => {
-      // base flags should be always at the bottom
-      if (BASE_FLAGS.has(optionA.long) || BASE_FLAGS.has(optionB.long)) {
-        return -1
-      }
-      return optionA.long.localeCompare(optionB.long)
-    })
+    .sort(sortOptions)
     .reduce((prev, cur) => {
       const name = cur.long.replace('--', '')
       const contentType = cur.argChoices ? cur.argChoices.join(' | ') : 'string'

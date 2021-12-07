@@ -1,5 +1,14 @@
+const { createMainCommand } = require('../src/commands')
+const { createAutocompletion } = require('../src/lib/completion')
+
 const id = (message) => message
 
+/**
+ *
+ * @param {string} message
+ * @param {Array<chalk['Color'] | chalk['Modifiers']>} styles
+ * @returns
+ */
 const format = (message, styles) => {
   let func = id
   try {
@@ -14,6 +23,10 @@ const format = (message, styles) => {
 }
 
 const postInstall = () => {
+  // create or update the autocompletion definition
+  const program = createMainCommand()
+  createAutocompletion(program)
+
   console.log('')
   console.log(format('Success! Netlify CLI has been installed!', ['greenBright', 'bold', 'underline']))
   console.log('')

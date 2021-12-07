@@ -108,7 +108,7 @@ Run any Netlify API method
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`completion:generate`](/docs/commands/completion.md#completiongenerate) | Generates completion script  |
+| [`completion:install`](/docs/commands/completion.md#completioninstall) | Generates completion script for your preferred shell  |
 
 
 ### [deploy](/docs/commands/deploy.md)

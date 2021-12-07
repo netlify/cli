@@ -6334,6 +6334,11 @@
       "integrity": "sha512-Um/+FxMr9CISWh0bi5Zv0iOD+4cFh5qLeks1qhAopKVAJw3drgKbKySikp7wGhDL0HPeaja0P5ULZrxLkniUVg==",
       "dev": true
     },
+    "es6-promisify": {
+      "version": "6.1.1",
+      "resolved": "https://registry.npmjs.org/es6-promisify/-/es6-promisify-6.1.1.tgz",
+      "integrity": "sha512-HBL8I3mIki5C1Cc9QjKUenHtnG0A5/xA8Q/AllRcfiwl2CZFXGK7ddBiCoRwAix4i2KxcQfjtIVcrVbB3vbmwg=="
+    },
     "escalade": {
       "version": "3.1.1",
       "resolved": "https://registry.npmjs.org/escalade/-/escalade-3.1.1.tgz",
@@ -14647,6 +14652,29 @@
         }
       }
     },
+    "tabtab": {
+      "version": "3.0.2",
+      "resolved": "https://registry.npmjs.org/tabtab/-/tabtab-3.0.2.tgz",
+      "integrity": "sha512-jANKmUe0sIQc/zTALTBy186PoM/k6aPrh3A7p6AaAfF6WPSbTx1JYeGIGH162btpH+mmVEXln+UxwViZHO2Jhg==",
+      "requires": {
+        "debug": "^4.0.1",
+        "es6-promisify": "^6.0.0",
+        "inquirer": "^6.0.0",
+        "minimist": "^1.2.0",
+        "mkdirp": "^0.5.1",
+        "untildify": "^3.0.3"
+      },
+      "dependencies": {
+        "mkdirp": {
+          "version": "0.5.5",
+          "resolved": "https://registry.npmjs.org/mkdirp/-/mkdirp-0.5.5.tgz",
+          "integrity": "sha512-NKmAlESf6jMGym1++R0Ra7wvhV+wFW63FaSOFPwRahvea0gMUcGUhVeAg/0BC0wiv9ih5NYPB1Wn1UEI1/L+xQ==",
+          "requires": {
+            "minimist": "^1.2.5"
+          }
+        }
+      }
+    },
     "tar": {
       "version": "6.1.11",
       "resolved": "https://registry.npmjs.org/tar/-/tar-6.1.11.tgz",
@@ -15269,6 +15297,11 @@
           "integrity": "sha1-bWHeldkd/Km5oCCJrThL/49it3E="
         }
       }
+    },
+    "untildify": {
+      "version": "3.0.3",
+      "resolved": "https://registry.npmjs.org/untildify/-/untildify-3.0.3.tgz",
+      "integrity": "sha512-iSk/J8efr8uPT/Z4eSUywnqyrQU7DSdMfdqK4iWEaUVVmcP5JcnpRqmVMwcwcnmI1ATFNgC5V90u09tBynNFKA=="
     },
     "update-notifier": {
       "version": "5.1.0",
