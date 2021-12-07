@@ -1,6 +1,5 @@
 const { Readable } = require('stream')
 
-const fromEntries = require('@ungap/from-entries')
 const { parse: parseContentType } = require('content-type')
 const multiparty = require('multiparty')
 const getRawBody = require('raw-body')
@@ -39,7 +38,7 @@ const createFormSubmissionHandler = function ({ functionsRegistry, siteUrl }) {
         encoding: ct.parameters.charset,
       })
 
-      fields = fromEntries(new URLSearchParams(bodyData.toString()))
+      fields = Object.fromEntries(new URLSearchParams(bodyData.toString()))
     } else if (ct.type === 'multipart/form-data') {
       try {
         ;[fields, files] = await new Promise((resolve, reject) => {

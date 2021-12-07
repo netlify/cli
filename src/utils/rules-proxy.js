@@ -1,5 +1,4 @@
 const path = require('path')
-const url = require('url')
 
 const chokidar = require('chokidar')
 const cookie = require('cookie')
@@ -64,7 +63,7 @@ const createRewriter = async function ({ configPath, distDir, jwtRoleClaim, jwtS
 
   return async function rewriter(req) {
     const matcherFunc = await getMatcher()
-    const reqUrl = new url.URL(
+    const reqUrl = new URL(
       req.url,
       `${req.protocol || (req.headers.scheme && `${req.headers.scheme}:`) || 'http:'}//${
         req.hostname || req.headers.host
