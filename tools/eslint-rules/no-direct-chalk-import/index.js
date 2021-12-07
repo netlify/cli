@@ -1,4 +1,5 @@
-const { dirname, join, relative } = require('path')
+// @ts-check
+const { dirname, sep, join, relative } = require('path')
 
 /** @type {import('eslint').Rule.RuleModule} */
 module.exports = {
@@ -18,10 +19,17 @@ module.exports = {
         node.arguments[0].value === 'chalk'
       ) {
         // if the path is empty it is on the same level and then use the direct file to import from
-        let updatedPath = relative(dirname(context.getFilename()), join(context.getCwd(), 'src/utils')) || './'
+        let updatedPath = relative(dirname(context.getFilename()), join(context.getCwd(), 'src/utils')) || `.${sep}`
         if (!updatedPath.endsWith('utils')) {
           updatedPath = join(updatedPath, 'command-helpers')
         }
+
+        // always use unix style seperators
+        updatedPath = updatedPath.replace(/\\/gm, '/');
+        if (!updatedPath.startsWith('.')) {
+          updatedPath = `./${updatedPath}`
+        }
+
         context.report({
           node,
           message:
