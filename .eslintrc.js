@@ -26,7 +26,6 @@ module.exports = {
     ...overrides,
     // Documentation site's browser JavaScript
     {
-      extends: '@netlify/eslint-config-node/react_config',
       files: ['site/src/**/*.js'],
       parserOptions: {
         sourceType: 'module',
