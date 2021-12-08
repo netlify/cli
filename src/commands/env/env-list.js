@@ -1,8 +1,9 @@
 // @ts-check
 const AsciiTable = require('ascii-table')
+const inquirer = require('inquirer')
 const isEmpty = require('lodash/isEmpty')
 
-const { log, logJson } = require('../../utils')
+const { chalk, log, logJson } = require('../../utils')
 
 /**
  * The env:list command
@@ -38,12 +39,35 @@ const envList = async (options, command) => {
     return false
   }
 
-  // List environment variables using a table
-  log(`site: ${siteData.name}`)
+  // Prompt which environment values to list
+  const listOptions = ['Key Names Only', 'Key Names and Values']
+
+  const { listEnv } = await inquirer.prompt([
+    {
+      type: 'list',
+      name: 'listEnv',
+      message: 'List Environment Variable:',
+      choices: listOptions,
+      default: listOptions[0],
+      filter(val) {
+        return val.toLowerCase()
+      },
+    },
+  ])
+
+  // List environment in a table
+  log(`Listing ${listEnv} for site: ${chalk.greenBright(siteData.name)}`)
+
   const table = new AsciiTable(`Environment variables`)
 
-  table.setHeading('Key', 'Value')
-  table.addRowMatrix(Object.entries(environment))
+  if (listEnv === 'key names and values') {
+    table.setHeading('Key', 'Value')
+    table.addRowMatrix(Object.entries(environment))
+  } else {
+    table.setHeading('Key')
+    table.addRowMatrix(Object.keys(environment))
+  }
+
   log(table.toString())
 }
 
