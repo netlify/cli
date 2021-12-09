@@ -68,17 +68,17 @@ test('should build a list of affected files based on a file', (t) => {
   fileVisitor(join('tests/c.test.js'), { graph, visitorPlugins: [] })
 
   t.is(
-    format(graph.affected([join('src/d.js')])).replace(/\\+/gm, '/'),
-    `Set {
+    format([...graph.affected([join('src/d.js')])]).replace(/\\+/gm, '/'),
+    `[
   'src/d.js',
   'src/c/index.js',
   'src/nested/a.js',
   'tests/a.test.js',
   'tests/c.test.js'
-}`,
+]`,
   )
   t.is(
-    format(graph.affected([join('tests/utils.js')])).replace(/\\+/gm, '/'),
-    "Set { 'tests/utils.js', 'tests/c.test.js' }",
+    format([...graph.affected([join('tests/utils.js')])]).replace(/\\+/gm, '/'),
+    "[ 'tests/utils.js', 'tests/c.test.js' ]",
   )
 })
