@@ -16,7 +16,10 @@ test.beforeEach(() => {
 })
 
 test('should test if all parents are affected by changing a src file on the bottom', (t) => {
-  t.snapshot(graph.affected(['src/d.js']))
+  t.deepEqual(
+    graph.affected(['src/d.js']),
+    new Set(['src/d.js', 'src/c/index.js', 'src/nested/a.js', 'tests/a.js', 'tests/c.js']),
+  )
 })
 
 test('should test only the root leaf is affected if the root one is passed', (t) => {

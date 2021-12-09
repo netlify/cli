@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// @ts-check
 const { existsSync, statSync } = require('fs')
 const process = require('process')
 
@@ -40,8 +41,8 @@ const getAffectedFiles = (changedFiles) => {
 }
 
 /**
- * The main functions
- * @param {yargs.Arguments} args
+ * The main function
+ * @param {string[]} args
  */
 const main = async (args) => {
   const changedFiles =
@@ -56,13 +57,13 @@ const main = async (args) => {
     return
   }
   console.log(`Running affected Tests: \n${grey([...affectedFiles].join(', '))}`)
-
-  const testRun = execa('npx', ['ava', ...affectedFiles], {
+  const testRun = execa('nyc', ['-r', 'json', 'ava', ...affectedFiles], {
     stdio: 'inherit',
+    preferLocal: true,
   })
 
   process.on('exit', () => {
-    testRun.cancel()
+    testRun.kill()
   })
 
   try {
