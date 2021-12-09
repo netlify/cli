@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "8.0.16",
+  "version": "8.0.17",
   "author": "Netlify Inc.",
   "contributors": [
     "Mathias Biilmann <matt@netlify.com> (https://twitter.com/biilmann)",
@@ -81,7 +81,7 @@
     "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,scripts,site,tests,.github}/**/*.{js,md,yml,json,html}\" \"*.{js,yml,json,html}\" \".*.{js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\" \"!.github/**/*.md\""
   },
   "dependencies": {
-    "@netlify/build": "^20.0.4",
+    "@netlify/build": "^20.1.0",
     "@netlify/config": "^16.0.7",
     "@netlify/framework-info": "^6.1.0",
     "@netlify/local-functions-proxy": "^1.1.1",
