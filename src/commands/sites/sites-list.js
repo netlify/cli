@@ -1,8 +1,7 @@
 // @ts-check
 
-const { cli } = require('cli-ux')
-
-const { listSites } = require('../../lib/api')
+const { listSites } = require('../../lib/api');
+const { startSpinner, stopSpinner } = require('../../lib/spinner');
 const { chalk, log, logJson } = require('../../utils')
 
 /**
@@ -13,14 +12,16 @@ const { chalk, log, logJson } = require('../../utils')
  */
 const sitesList = async (options, command) => {
   const { api } = command.netlify
+  /** @type {import('ora').Ora} */
+  let spinner;
   if (!options.json) {
-    cli.action.start('Loading your sites')
+    spinner = startSpinner({text: 'Loading your sites'})
   }
   await command.authenticate()
 
   const sites = await listSites({ api, options: { filter: 'all' } })
   if (!options.json) {
-    cli.action.stop()
+    stopSpinner({spinner})
   }
 
   if (sites && sites.length !== 0) {

@@ -16,9 +16,9 @@ const startSpinner = ({ text }) =>
 /**
  * Stops the spinner with the following text
  * @param {object} config
- * @param {object} [config.error]
  * @param {ora.Ora} config.spinner
- * @param {string} config.text
+ * @param {object} [config.error]
+ * @param {string} [config.text]
  * @returns {void}
  */
 const stopSpinner = ({ error, spinner, text }) => {

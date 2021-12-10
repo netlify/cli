@@ -1,7 +1,8 @@
-const cli = require('cli-ux').default
+// @ts-check
 const pWaitFor = require('p-wait-for')
 const prettyjson = require('prettyjson')
 
+const { startSpinner, stopSpinner } = require('../../lib/spinner')
 const { chalk, error, log } = require('../../utils')
 const { init } = require('../init')
 
@@ -13,7 +14,14 @@ const BUILD_FINISH_INTERVAL = 1e3
 // 20 minutes
 const BUILD_FINISH_TIMEOUT = 12e5
 
-const waitForBuildFinish = async function (api, siteId) {
+/**
+ *
+ * @param {import('netlify').NetlifyAPI} api
+ * @param {string} siteId
+ * @param {import('ora').Ora} spinner
+ * @returns {Promise<boolean>}
+ */
+const waitForBuildFinish = async function (api, siteId, spinner) {
   let firstPass = true
 
   const waitForBuildToFinish = async function () {
@@ -25,7 +33,7 @@ const waitForBuildFinish = async function (api, siteId) {
     // @TODO implement build error messages into this
 
     if (!currentBuilds || currentBuilds.length === 0) {
-      cli.action.stop()
+      stopSpinner({ spinner })
       return true
     }
     firstPass = false
@@ -60,7 +68,9 @@ const watch = async (options, command) => {
 
   // wait for 1 sec for everything to kickoff
   console.time('Deploy time')
-  await cli.wait(INIT_WAIT)
+  await new Promise((resolve) => {
+    setTimeout(() => resolve(), INIT_WAIT)
+  })
 
   // Get latest commit and look for that
   // git rev-parse HEAD
@@ -77,7 +87,7 @@ const watch = async (options, command) => {
   //     "created_at": "2018-07-17T17:14:03.423Z"
   // }
   //
-  cli.action.start('Waiting for active site deploys to complete')
+  const spinner = startSpinner({ text: 'Waiting for active site deploys to complete' })
   try {
     // Fetch all builds!
     // const builds = await client.listSiteBuilds({siteId})
@@ -87,7 +97,7 @@ const watch = async (options, command) => {
     //   return !build.done
     // })
 
-    const noActiveBuilds = await waitForBuildFinish(client, siteId)
+    const noActiveBuilds = await waitForBuildFinish(client, siteId, spinner)
 
     const siteData = await client.getSite({ siteId })
 
