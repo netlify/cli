@@ -16,7 +16,6 @@
   "files": [
     "/bin",
     "/npm-shrinkwrap.json",
-    "/oclif.manifest.json",
     "/scripts/postinstall.js",
     "/src/**/*.js",
     "/src/**/*.sh",
