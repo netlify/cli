@@ -137,12 +137,15 @@
         "@oclif/test": "^1.2.5",
         "ava": "^3.15.0",
         "eslint-plugin-sort-destructure-keys": "^1.3.5",
+        "fast-glob": "^3.2.7",
         "form-data": "^4.0.0",
         "from2-string": "^1.1.0",
         "got": "^11.8.1",
+        "graphviz": "^0.0.9",
         "ini": "^2.0.0",
         "jsonwebtoken": "^8.5.1",
         "mkdirp": "^1.0.4",
+        "mock-fs": "^5.1.2",
         "nyc": "^15.0.0",
         "p-timeout": "^4.0.0",
         "pidtree": "^0.5.0",
@@ -154,7 +157,8 @@
         "supertest": "^6.1.6",
         "temp-dir": "^2.0.0",
         "tomlify-j0.4": "^3.0.0",
-        "tree-kill": "^1.2.2"
+        "tree-kill": "^1.2.2",
+        "typescript": "^4.4.4"
       },
       "engines": {
         "node": "^12.20.0 || ^14.14.0 || >=16.0.0"
@@ -11835,6 +11839,18 @@
       "resolved": "https://registry.npmjs.org/graceful-fs/-/graceful-fs-4.2.8.tgz",
       "integrity": "sha512-qkIilPUYcNhJpd33n0GBXTB1MMPp14TxEsEs0pTrsSVucApsYzW5V+Q8Qxhik6KU3evy+qkAAowTByymK0avdg=="
     },
+    "node_modules/graphviz": {
+      "version": "0.0.9",
+      "resolved": "https://registry.npmjs.org/graphviz/-/graphviz-0.0.9.tgz",
+      "integrity": "sha512-SmoY2pOtcikmMCqCSy2NO1YsRfu9OO0wpTlOYW++giGjfX1a6gax/m1Fo8IdUd0/3H15cTOfR1SMKwohj4LKsg==",
+      "dev": true,
+      "dependencies": {
+        "temp": "~0.4.0"
+      },
+      "engines": {
+        "node": ">=0.6.8"
+      }
+    },
     "node_modules/hard-rejection": {
       "version": "2.1.0",
       "resolved": "https://registry.npmjs.org/hard-rejection/-/hard-rejection-2.1.0.tgz",
@@ -15091,6 +15107,15 @@
       "resolved": "https://registry.npmjs.org/mkdirp-classic/-/mkdirp-classic-0.5.3.tgz",
       "integrity": "sha512-gKLcREMhtuZRwRAfqP3RFW+TK4JqApVBtOIftVgjuABpAtpxhPGaDcfvbhNvD0B8iD1oUr/txX35NjcaY6Ns/A==",
       "dev": true
+    },
+    "node_modules/mock-fs": {
+      "version": "5.1.2",
+      "resolved": "https://registry.npmjs.org/mock-fs/-/mock-fs-5.1.2.tgz",
+      "integrity": "sha512-YkjQkdLulFrz0vD4BfNQdQRVmgycXTV7ykuHMlyv+C8WCHazpkiQRDthwa02kSyo8wKnY9wRptHfQLgmf0eR+A==",
+      "dev": true,
+      "engines": {
+        "node": ">=12.0.0"
+      }
     },
     "node_modules/mock-require": {
       "version": "3.0.3",
@@ -20808,6 +20833,15 @@
       "engines": {
         "node": ">=6"
       }
+    },
+    "node_modules/temp": {
+      "version": "0.4.0",
+      "resolved": "https://registry.npmjs.org/temp/-/temp-0.4.0.tgz",
+      "integrity": "sha1-ZxrWPVe+D+nXKUZks/xABjZnimA=",
+      "dev": true,
+      "engines": [
+        "node >=0.4.0"
+      ]
     },
     "node_modules/temp-dir": {
       "version": "2.0.0",
@@ -31009,6 +31043,15 @@
       "resolved": "https://registry.npmjs.org/graceful-fs/-/graceful-fs-4.2.8.tgz",
       "integrity": "sha512-qkIilPUYcNhJpd33n0GBXTB1MMPp14TxEsEs0pTrsSVucApsYzW5V+Q8Qxhik6KU3evy+qkAAowTByymK0avdg=="
     },
+    "graphviz": {
+      "version": "0.0.9",
+      "resolved": "https://registry.npmjs.org/graphviz/-/graphviz-0.0.9.tgz",
+      "integrity": "sha512-SmoY2pOtcikmMCqCSy2NO1YsRfu9OO0wpTlOYW++giGjfX1a6gax/m1Fo8IdUd0/3H15cTOfR1SMKwohj4LKsg==",
+      "dev": true,
+      "requires": {
+        "temp": "~0.4.0"
+      }
+    },
     "hard-rejection": {
       "version": "2.1.0",
       "resolved": "https://registry.npmjs.org/hard-rejection/-/hard-rejection-2.1.0.tgz",
@@ -33447,6 +33490,12 @@
       "version": "0.5.3",
       "resolved": "https://registry.npmjs.org/mkdirp-classic/-/mkdirp-classic-0.5.3.tgz",
       "integrity": "sha512-gKLcREMhtuZRwRAfqP3RFW+TK4JqApVBtOIftVgjuABpAtpxhPGaDcfvbhNvD0B8iD1oUr/txX35NjcaY6Ns/A==",
+      "dev": true
+    },
+    "mock-fs": {
+      "version": "5.1.2",
+      "resolved": "https://registry.npmjs.org/mock-fs/-/mock-fs-5.1.2.tgz",
+      "integrity": "sha512-YkjQkdLulFrz0vD4BfNQdQRVmgycXTV7ykuHMlyv+C8WCHazpkiQRDthwa02kSyo8wKnY9wRptHfQLgmf0eR+A==",
       "dev": true
     },
     "mock-require": {
@@ -37847,6 +37896,12 @@
         "inherits": "^2.0.3",
         "readable-stream": "^3.1.1"
       }
+    },
+    "temp": {
+      "version": "0.4.0",
+      "resolved": "https://registry.npmjs.org/temp/-/temp-0.4.0.tgz",
+      "integrity": "sha1-ZxrWPVe+D+nXKUZks/xABjZnimA=",
+      "dev": true
     },
     "temp-dir": {
       "version": "2.0.0",
