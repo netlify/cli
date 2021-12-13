@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "8.0.20",
+  "version": "8.1.0",
   "author": "Netlify Inc.",
   "contributors": [
     "Mathias Biilmann <matt@netlify.com> (https://twitter.com/biilmann)",
@@ -56,7 +56,8 @@
     "format:check:prettier": "cross-env-shell prettier --check $npm_package_config_prettier",
     "format:fix:prettier": "cross-env-shell prettier --write $npm_package_config_prettier",
     "test:dev": "run-s test:init:* test:dev:*",
-    "test:ci": "run-s test:init:* test:ci:*",
+    "test:ci": "run-s test:ci:*",
+    "test:init": "run-s test:init:*",
     "test:init:build": "run-s build:*",
     "test:init:cli-version": "npm run start -- --version",
     "test:init:cli-help": "npm run start -- --help",
@@ -64,6 +65,7 @@
     "test:init:hugo-deps": "npm ci --prefix tests/hugo-site --no-audit",
     "test:dev:ava": "ava --verbose",
     "test:ci:ava": "nyc -r json ava",
+    "test:affected": "node ./tools/affected-test.js",
     "docs": "node ./site/scripts/docs.js",
     "watch": "nyc --reporter=lcov ava --watch",
     "build:manifest": "oclif-dev manifest",
@@ -202,12 +204,15 @@
     "@oclif/test": "^1.2.5",
     "ava": "^3.15.0",
     "eslint-plugin-sort-destructure-keys": "^1.3.5",
+    "fast-glob": "^3.2.7",
     "form-data": "^4.0.0",
     "from2-string": "^1.1.0",
     "got": "^11.8.1",
+    "graphviz": "^0.0.9",
     "ini": "^2.0.0",
     "jsonwebtoken": "^8.5.1",
     "mkdirp": "^1.0.4",
+    "mock-fs": "^5.1.2",
     "nyc": "^15.0.0",
     "p-timeout": "^4.0.0",
     "pidtree": "^0.5.0",
@@ -219,11 +224,13 @@
     "supertest": "^6.1.6",
     "temp-dir": "^2.0.0",
     "tomlify-j0.4": "^3.0.0",
-    "tree-kill": "^1.2.2"
+    "tree-kill": "^1.2.2",
+    "typescript": "^4.4.4"
   },
   "ava": {
     "files": [
       "src/**/*.test.js",
+      "tools/**/*.test.js",
       "tests/*.test.js"
     ],
     "cache": true,
