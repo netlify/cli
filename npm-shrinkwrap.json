@@ -134,7 +134,7 @@
         "@commitlint/config-conventional": "^15.0.0",
         "@netlify/eslint-config-node": "^4.0.0",
         "@oclif/dev-cli": "^1.23.1",
-        "@oclif/test": "^1.2.5",
+        "@oclif/test": "^2.0.0",
         "ava": "^3.15.0",
         "eslint-plugin-sort-destructure-keys": "^1.3.5",
         "fast-glob": "^3.2.7",
@@ -4395,15 +4395,15 @@
       }
     },
     "node_modules/@oclif/test": {
-      "version": "1.2.9",
-      "resolved": "https://registry.npmjs.org/@oclif/test/-/test-1.2.9.tgz",
-      "integrity": "sha512-op+ak0NTyeBKqjLVH1jfPCRGWK5befIoQpCL/xwekjucUEmMfCbUpV1Sa60f9rU8X58HEqrclwWbAH+DtQR6FQ==",
+      "version": "2.0.3",
+      "resolved": "https://registry.npmjs.org/@oclif/test/-/test-2.0.3.tgz",
+      "integrity": "sha512-8mN/cmfrPQKc9+3I6Dj6HNgmPqRVKe4P7gU61pLUz220oFUxhuP0EHLzY3ARFx8ecUZAJZdWJwh+dne/1GfTcA==",
       "dev": true,
       "dependencies": {
-        "fancy-test": "^1.4.10"
+        "fancy-test": "^2.0.0"
       },
       "engines": {
-        "node": ">=8.0.0"
+        "node": ">=12.0.0"
       }
     },
     "node_modules/@octokit/auth-token": {
@@ -10659,9 +10659,9 @@
       }
     },
     "node_modules/fancy-test": {
-      "version": "1.4.10",
-      "resolved": "https://registry.npmjs.org/fancy-test/-/fancy-test-1.4.10.tgz",
-      "integrity": "sha512-AaUX6wKS7D5OP2YK2q5G7c8PGx2lgoyLUD7Bbg8z323sb9aebBqzb9UN6phzI73UgO/ViihmNfOxF3kdfZLhew==",
+      "version": "2.0.0",
+      "resolved": "https://registry.npmjs.org/fancy-test/-/fancy-test-2.0.0.tgz",
+      "integrity": "sha512-SFb2D/VX9SV+wNYXO1IIh1wyxUC1GS0mYCFJOWD1ia7MPj9yE2G8jaPkw4t/pg0Sj7/YJP56OzMY4nAuJSOugQ==",
       "dev": true,
       "dependencies": {
         "@types/chai": "*",
@@ -10674,7 +10674,7 @@
         "stdout-stderr": "^0.1.9"
       },
       "engines": {
-        "node": ">=8.0.0"
+        "node": ">=12.0.0"
       }
     },
     "node_modules/fast-deep-equal": {
@@ -25340,12 +25340,12 @@
       "integrity": "sha512-60CHpq+eqnTxLZQ4PGHYNwUX572hgpMHGPtTWMjdTMsAvlm69lZV/4ly6O3sAYkomo4NggGcomrDpBe34rxUqw=="
     },
     "@oclif/test": {
-      "version": "1.2.9",
-      "resolved": "https://registry.npmjs.org/@oclif/test/-/test-1.2.9.tgz",
-      "integrity": "sha512-op+ak0NTyeBKqjLVH1jfPCRGWK5befIoQpCL/xwekjucUEmMfCbUpV1Sa60f9rU8X58HEqrclwWbAH+DtQR6FQ==",
+      "version": "2.0.3",
+      "resolved": "https://registry.npmjs.org/@oclif/test/-/test-2.0.3.tgz",
+      "integrity": "sha512-8mN/cmfrPQKc9+3I6Dj6HNgmPqRVKe4P7gU61pLUz220oFUxhuP0EHLzY3ARFx8ecUZAJZdWJwh+dne/1GfTcA==",
       "dev": true,
       "requires": {
-        "fancy-test": "^1.4.10"
+        "fancy-test": "^2.0.0"
       }
     },
     "@octokit/auth-token": {
@@ -30152,9 +30152,9 @@
       "integrity": "sha512-AEo4zm+TenK7zQorGK1f9mJ8L14hnTDi2ZQPR+Mub1NX8zimka1mXpV5LpH8x9HoUmFSHZCfLHqWvp0Y4FxxzQ=="
     },
     "fancy-test": {
-      "version": "1.4.10",
-      "resolved": "https://registry.npmjs.org/fancy-test/-/fancy-test-1.4.10.tgz",
-      "integrity": "sha512-AaUX6wKS7D5OP2YK2q5G7c8PGx2lgoyLUD7Bbg8z323sb9aebBqzb9UN6phzI73UgO/ViihmNfOxF3kdfZLhew==",
+      "version": "2.0.0",
+      "resolved": "https://registry.npmjs.org/fancy-test/-/fancy-test-2.0.0.tgz",
+      "integrity": "sha512-SFb2D/VX9SV+wNYXO1IIh1wyxUC1GS0mYCFJOWD1ia7MPj9yE2G8jaPkw4t/pg0Sj7/YJP56OzMY4nAuJSOugQ==",
       "dev": true,
       "requires": {
         "@types/chai": "*",
