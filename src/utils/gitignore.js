@@ -6,6 +6,8 @@ const parseIgnore = require('parse-gitignore')
 
 const { fileExistsAsync } = require('../lib/fs')
 
+const { log } = require('./command-helpers')
+
 const hasGitIgnore = async function (dir) {
   const gitIgnorePath = path.join(dir, '.gitignore')
   const hasIgnore = await fileExistsAsync(gitIgnorePath)
@@ -32,6 +34,8 @@ const ensureNetlifyIgnore = async function (dir) {
   }
   /* Not ignoring .netlify folder. Add to .gitignore */
   if (!ignorePatterns || !ignorePatterns.patterns.some((pattern) => /(^|\/|\\)\.netlify($|\/|\\)/.test(pattern))) {
+    log()
+    log('Adding local .netlify folder to .gitignore file...')
     const newContents = `${gitIgnoreContents}\n${ignoreContent}`
     await writeFile(gitIgnorePath, newContents, 'utf8')
   }
