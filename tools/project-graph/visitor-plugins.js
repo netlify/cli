@@ -3,10 +3,7 @@ const { join } = require('path')
 
 const ts = require('typescript')
 
-const {
-  oclif: { commands },
-} = require('../../package.json')
-
+const COMMANDS = 'src/commands'
 const { resolveRelativeModule } = require('./file-visitor')
 
 /** @type {import('./types').visitorPlugin[]} */
@@ -22,7 +19,7 @@ module.exports = [
       ts.isArrayLiteralExpression(node.arguments[1]) &&
       ts.isStringLiteral(node.arguments[1].elements[0])
     ) {
-      return resolveRelativeModule(join(commands, node.arguments[1].elements[0].text))
+      return resolveRelativeModule(join(COMMANDS, node.arguments[1].elements[0].text))
     }
   },
   (node) => {
@@ -37,7 +34,7 @@ module.exports = [
       const [argument] = node.arguments[0].elements[0].text.split(':')
 
       if (!argument.startsWith('-')) {
-        return resolveRelativeModule(join(commands, node.arguments[0].elements[0].text))
+        return resolveRelativeModule(join(COMMANDS, node.arguments[0].elements[0].text))
       }
     }
   },
