@@ -16,7 +16,7 @@
   "license": "MIT",
   "dependencies": {
     "apollo-link-http": "^1.5.17",
-    "apollo-server-lambda": "^2.18.2",
+    "apollo-server-lambda": "^3.0.0",
     "graphql": "^14.2.1",
     "graphql-tools": "^4.0.8",
     "node-fetch": "^2.6.1"
