@@ -6254,9 +6254,9 @@
       }
     },
     "node_modules/browserslist": {
-      "version": "4.19.0",
-      "resolved": "https://registry.npmjs.org/browserslist/-/browserslist-4.19.0.tgz",
-      "integrity": "sha512-JGHzm73ei2OnAcobcQ61GXNnN6vDCg5Oz5MayudL+FyzjoLnCzUWnuLtDLMIYw8aXgQzzdCZMVky+fftD5jbtA==",
+      "version": "4.19.1",
+      "resolved": "https://registry.npmjs.org/browserslist/-/browserslist-4.19.1.tgz",
+      "integrity": "sha512-u2tbbG5PdKRTUoctO3NBD8FQ5HdPh1ZXPHzp1rwaa5jTc+RV9/+RlWiAIKmjRPQF+xbGM9Kklj5bZQFa2s/38A==",
       "dependencies": {
         "caniuse-lite": "^1.0.30001286",
         "electron-to-chromium": "^1.4.17",
@@ -26811,9 +26811,9 @@
       }
     },
     "browserslist": {
-      "version": "4.19.0",
-      "resolved": "https://registry.npmjs.org/browserslist/-/browserslist-4.19.0.tgz",
-      "integrity": "sha512-JGHzm73ei2OnAcobcQ61GXNnN6vDCg5Oz5MayudL+FyzjoLnCzUWnuLtDLMIYw8aXgQzzdCZMVky+fftD5jbtA==",
+      "version": "4.19.1",
+      "resolved": "https://registry.npmjs.org/browserslist/-/browserslist-4.19.1.tgz",
+      "integrity": "sha512-u2tbbG5PdKRTUoctO3NBD8FQ5HdPh1ZXPHzp1rwaa5jTc+RV9/+RlWiAIKmjRPQF+xbGM9Kklj5bZQFa2s/38A==",
       "requires": {
         "caniuse-lite": "^1.0.30001286",
         "electron-to-chromium": "^1.4.17",
