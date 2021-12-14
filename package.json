@@ -83,7 +83,7 @@
   "dependencies": {
     "@netlify/build": "^20.3.0",
     "@netlify/config": "^16.0.7",
-    "@netlify/framework-info": "^6.1.0",
+    "@netlify/framework-info": "^7.0.0",
     "@netlify/local-functions-proxy": "^1.1.1",
     "@netlify/plugin-edge-handlers": "^2.0.0",
     "@netlify/plugins-list": "^6.1.0",
