@@ -1,5 +1,5 @@
 // @ts-check
-const { dirname, sep, join, relative } = require('path')
+const { dirname, join, relative, sep } = require('path')
 
 /** @type {import('eslint').Rule.RuleModule} */
 module.exports = {
@@ -25,7 +25,7 @@ module.exports = {
         }
 
         // always use unix style seperators
-        updatedPath = updatedPath.replace(/\\/gm, '/');
+        updatedPath = updatedPath.replace(/\\/gm, '/')
         if (!updatedPath.startsWith('.')) {
           updatedPath = `./${updatedPath}`
         }
