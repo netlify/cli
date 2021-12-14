@@ -11,7 +11,13 @@ const parseGitRemote = require('parse-github-url')
 
 const { log } = require('./command-helpers')
 
-const getRepoData = async function ({ remoteName }) {
+/**
+ *
+ * @param {object} config
+ * @param {string} [config.remoteName]
+ * @returns
+ */
+const getRepoData = async function ({ remoteName } = {}) {
   try {
     const cwd = process.cwd()
     const [gitConfig, gitDirectory] = await Promise.all([

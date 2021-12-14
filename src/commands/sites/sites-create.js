@@ -126,7 +126,7 @@ const sitesCreate = async (options, command) => {
   if (options.withCi) {
     log('Configuring CI')
     const repoData = await getRepoData()
-    await configureRepo({ context: this, siteId: site.id, repoData, manual: options.manual })
+    await configureRepo({ command, siteId: site.id, repoData, manual: options.manual })
   }
 
   if (options.json) {

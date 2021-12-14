@@ -100,6 +100,7 @@ class BaseCommand extends Command {
         .addOption(new Option('--silent', 'Silence CLI output').hideHelp(true))
         .addOption(new Option('--cwd <cwd>').hideHelp(true))
         .addOption(new Option('-o, --offline').hideHelp(true))
+        .addOption(new Option('--auth <token>', 'Netlify auth token').hideHelp(true))
         .option(
           '--httpProxyCertificateFilename [file]',
           'Certificate file to use when connecting using a proxy server',
