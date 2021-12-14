@@ -1,11 +1,6 @@
 const { join } = require('path')
 
 const baseFiles = {
-  'package.json': JSON.stringify({
-    oclif: {
-      commands: './src/commands',
-    },
-  }),
   'npm-shrinkwrap.json': '',
   'README.md': '',
 }
