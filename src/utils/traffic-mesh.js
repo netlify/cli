@@ -1,22 +1,25 @@
 // @ts-check
-const { EOL } = require('os')
-const path = require('path')
-const process = require('process')
-const rl = require('readline')
+import { createRequire } from 'module'
+import { EOL } from 'os'
+import { join } from 'path'
+import process from 'process'
+import rl from 'readline'
 
-const { getBinaryPath } = require('@netlify/routing-local-proxy')
-const waitPort = require('wait-port')
+import { getBinaryPath } from '@netlify/routing-local-proxy'
+import waitPort from 'wait-port'
 
-const { getPathInProject } = require('../lib/settings')
-const { clearSpinner, startSpinner, stopSpinner } = require('../lib/spinner')
+import { getPathInProject } from '../lib/settings.js'
+import { clearSpinner, startSpinner, stopSpinner } from '../lib/spinner.js'
 
-const { NETLIFYDEVERR, NETLIFYDEVLOG, NETLIFYDEVWARN, log } = require('./command-helpers')
-const { createDeferred } = require('./deferred')
-const execa = require('./execa')
+import { NETLIFYDEVERR, NETLIFYDEVLOG, NETLIFYDEVWARN, log } from './command-helpers.js'
+import { createDeferred } from './deferred.js'
+import execa from './execa.js'
 
-const EDGE_HANDLERS_BUNDLER_CLI_PATH = path.resolve(require.resolve('@netlify/plugin-edge-handlers'), '..', 'cli.js')
+const { resolve } = createRequire(import.meta.url)
 
-const startForwardProxy = async ({
+const EDGE_HANDLERS_BUNDLER_CLI_PATH = join(resolve('@netlify/plugin-edge-handlers'), '..', 'cli.js')
+
+export const startForwardProxy = async ({
   debug,
   frameworkPort,
   functionsPort,
@@ -211,9 +214,7 @@ const PROXY_READY_TIMEOUT = 3e4
 // 2 seconds
 const PROXY_EXIT_TIMEOUT = 2e3
 
-const runProcess = ({ args }) => {
+export const runProcess = ({ args }) => {
   const subprocess = execa(getBinaryPath(), args, { stdio: ['inherit', 'inherit', 'pipe'] })
   return { subprocess }
 }
-
-module.exports = { runProcess, startForwardProxy }

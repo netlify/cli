@@ -1,10 +1,10 @@
 // @ts-check
-const { Octokit } = require('@octokit/rest')
+import { Octokit } from '@octokit/rest'
 
-const { chalk, error: failAndExit, log } = require('../command-helpers')
-const { getGitHubToken: ghauth } = require('../gh-auth')
+import { chalk, error as failAndExit, log } from '../command-helpers.js'
+import { getGitHubToken as ghauth } from '../gh-auth.js'
 
-const { createDeployKey, formatErrorMessage, getBuildSettings, saveNetlifyToml, setupSite } = require('./utils')
+import { createDeployKey, formatErrorMessage, getBuildSettings, saveNetlifyToml, setupSite } from './utils.js'
 
 /**
  * @typedef Token
@@ -25,7 +25,7 @@ const PAGE_SIZE = 100
  * Get a valid github token
  * @returns {Promise<string>}
  */
-const getGitHubToken = async ({ globalConfig }) => {
+export const getGitHubToken = async ({ globalConfig }) => {
   const userId = globalConfig.get('userId')
 
   /** @type {Token} */
@@ -203,7 +203,7 @@ const addNotificationHooks = async ({ api, siteId, token }) => {
  * @param {string} config.repoOwner
  * @param {string} config.siteId
  */
-const configGithub = async ({ command, repoName, repoOwner, siteId }) => {
+export const configGithub = async ({ command, repoName, repoOwner, siteId }) => {
   const { netlify } = command
   const {
     api,
@@ -254,5 +254,3 @@ const configGithub = async ({ command, repoName, repoOwner, siteId }) => {
   log()
   await addNotificationHooks({ siteId, api, token })
 }
-
-module.exports = { configGithub, getGitHubToken }

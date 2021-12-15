@@ -1,5 +1,5 @@
 // @ts-check
-const { log, logJson } = require('../../utils')
+import { log, logJson } from '../../utils/index.js'
 
 /**
  * The env:get command
@@ -39,7 +39,7 @@ const envGet = async (name, options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createEnvGetCommand = (program) =>
+export const createEnvGetCommand = (program) =>
   program
     .command('env:get')
     .argument('<name>', 'Environment variable name')
@@ -47,5 +47,3 @@ const createEnvGetCommand = (program) =>
     .action(async (name, options, command) => {
       await envGet(name, options, command)
     })
-
-module.exports = { createEnvGetCommand }

@@ -1,11 +1,11 @@
 /* eslint-disable require-await */
-const test = require('ava')
-const tempy = require('tempy')
+import test from 'ava'
+import tempy from 'tempy'
 
-const { withSiteBuilder } = require('../../../tests/utils/site-builder')
+import { withSiteBuilder } from '../../../tests/utils/site-builder.js'
 
-const { DEFAULT_CONCURRENT_HASH } = require('./constants')
-const { hashFns } = require('./hash-fns')
+import { DEFAULT_CONCURRENT_HASH } from './constants.js'
+import { hashFns } from './hash-fns.js'
 
 test('Hashes files in a folder', async (t) => {
   await withSiteBuilder('site-with-functions', async (builder) => {

@@ -1,5 +1,1 @@
-const { createAddonsCommand } = require('./addons')
-
-module.exports = {
-  createAddonsCommand,
-}
+export { createAddonsCommand } from './addons.js'

@@ -1,12 +1,12 @@
 // @ts-check
-const chokidar = require('chokidar')
-const decache = require('decache')
-const debounce = require('lodash/debounce')
-const pEvent = require('p-event')
+import chokidar from 'chokidar'
+import decache from 'decache'
+import debounce from 'lodash/debounce.js'
+import pEvent from 'p-event'
 
 const DEBOUNCE_WAIT = 100
 
-const watchDebounced = async (target, { depth, onAdd = () => {}, onChange = () => {}, onUnlink = () => {} }) => {
+export const watchDebounced = async (target, { depth, onAdd = () => {}, onChange = () => {}, onUnlink = () => {} }) => {
   const watcher = chokidar.watch(target, { depth, ignored: /node_modules/, ignoreInitial: true })
 
   await pEvent(watcher, 'ready')
@@ -31,5 +31,3 @@ const watchDebounced = async (target, { depth, onAdd = () => {}, onChange = () =
 
   return watcher
 }
-
-module.exports = { watchDebounced }

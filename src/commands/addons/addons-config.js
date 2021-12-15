@@ -1,14 +1,14 @@
 // @ts-check
-const inquirer = require('inquirer')
-const isEmpty = require('lodash/isEmpty')
+import inquirer from 'inquirer'
+import isEmpty from 'lodash/isEmpty.js'
 
-const { chalk, error, log, parseRawFlags } = require('../../utils')
-const compare = require('../../utils/addons/compare')
-const diffValues = require('../../utils/addons/diffs')
-const { ADDON_VALIDATION, prepareAddonCommand } = require('../../utils/addons/prepare')
-const generatePrompts = require('../../utils/addons/prompts')
-const render = require('../../utils/addons/render')
-const { missingConfigValues, requiredConfigValues, updateConfigValues } = require('../../utils/addons/validation')
+import compare from '../../utils/addons/compare.js'
+import diffValues from '../../utils/addons/diffs/index.js'
+import { ADDON_VALIDATION, prepareAddonCommand } from '../../utils/addons/prepare.js'
+import generatePrompts from '../../utils/addons/prompts.js'
+import { configValues } from '../../utils/addons/render.js'
+import { missingConfigValues, requiredConfigValues, updateConfigValues } from '../../utils/addons/validation.js'
+import { chalk, error, log, parseRawFlags } from '../../utils/index.js'
 
 const update = async function ({ addonName, api, currentConfig, instanceId, newConfig, siteId }) {
   const codeDiff = diffValues(currentConfig, newConfig)
@@ -64,7 +64,7 @@ const addonsConfig = async (addonName, options, command) => {
   log(` ${chalk.yellowBright.bold(words)}`)
   if (hasConfig) {
     if (!rawFlags.silent) {
-      render.configValues(addonName, manifest.config, currentConfig)
+      configValues(addonName, manifest.config, currentConfig)
     }
   } else {
     // For addons without manifest. TODO remove once we enforce manifests
@@ -165,7 +165,7 @@ const addonsConfig = async (addonName, options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createAddonsConfigCommand = (program) =>
+export const createAddonsConfigCommand = (program) =>
   program
     .command('addons:config')
     .alias('addon:config')
@@ -176,5 +176,3 @@ const createAddonsConfigCommand = (program) =>
     .action(async (addonName, options, command) => {
       await addonsConfig(addonName, options, command)
     })
-
-module.exports = { createAddonsConfigCommand }

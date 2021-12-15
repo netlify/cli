@@ -2,7 +2,7 @@
   "name": "eslint-plugin-local-rules",
   "description": "Custom eslint rules for the workspace",
   "version": "0.0.1",
-  "main": "index.js",
+  "main": "index.cjs",
   "peerDependencies": {
     "eslint": "^7.21.0",
     "ava": "^3.15.0"

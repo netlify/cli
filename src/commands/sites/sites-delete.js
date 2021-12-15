@@ -1,7 +1,7 @@
 // @ts-check
-const inquirer = require('inquirer')
+import inquirer from 'inquirer'
 
-const { chalk, error, exit, log } = require('../../utils')
+import { chalk, error, exit, log } from '../../utils/index.js'
 
 /**
  * The sites:delete command
@@ -92,7 +92,7 @@ const sitesDelete = async (siteId, options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createSitesDeleteCommand = (program) =>
+export const createSitesDeleteCommand = (program) =>
   program
     .command('sites:delete')
     .description('Delete a site\nThis command will permanently delete the site on Netlify. Use with caution.')
@@ -100,5 +100,3 @@ const createSitesDeleteCommand = (program) =>
     .option('-f, --force', 'delete without prompting (useful for CI)')
     .addExamples(['netlify sites:delete 1234-3262-1211'])
     .action(sitesDelete)
-
-module.exports = { createSitesDeleteCommand }

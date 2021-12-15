@@ -1,7 +1,7 @@
 // @ts-check
-const execa = require('execa')
+import { execa } from 'execa'
 
-const cliPath = require('./cli-path')
+import { cliPath } from './cli-path.js'
 
 const CLI_TIMEOUT = 3e5
 
@@ -24,4 +24,4 @@ const callCli = async function (args, execOptions, parseJson = false) {
   return stdout
 }
 
-module.exports = callCli
+export default callCli

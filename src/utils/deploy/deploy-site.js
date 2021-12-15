@@ -1,22 +1,22 @@
-const cleanDeep = require('clean-deep')
-const tempy = require('tempy')
+import cleanDeep from 'clean-deep'
+import tempy from 'tempy'
 
-const { rmdirRecursiveAsync } = require('../../lib/fs')
-const { warn } = require('../command-helpers')
+import { rmdirRecursiveAsync } from '../../lib/fs.js'
+import { warn } from '../command-helpers.js'
 
-const {
+import {
   DEFAULT_CONCURRENT_HASH,
   DEFAULT_CONCURRENT_UPLOAD,
   DEFAULT_DEPLOY_TIMEOUT,
   DEFAULT_MAX_RETRY,
   DEFAULT_SYNC_LIMIT,
-} = require('./constants')
-const { hashFiles } = require('./hash-files')
-const { hashFns } = require('./hash-fns')
-const { uploadFiles } = require('./upload-files')
-const { getUploadList, waitForDeploy, waitForDiff } = require('./util')
+} from './constants.js'
+import { hashFiles } from './hash-files.js'
+import { hashFns } from './hash-fns.js'
+import { uploadFiles } from './upload-files.js'
+import { getUploadList, waitForDeploy, waitForDiff } from './util.js'
 
-const deploySite = async (
+export const deploySite = async (
   api,
   siteId,
   dir,
@@ -161,5 +161,3 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
   }
   return deployManifest
 }
-
-module.exports = { deploySite }

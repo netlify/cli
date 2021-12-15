@@ -1,5 +1,1 @@
-const telemetry = require('./telemetry')
-
-module.exports = {
-  ...telemetry,
-}
+export * from './telemetry.js'

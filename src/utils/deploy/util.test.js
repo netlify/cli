@@ -1,8 +1,8 @@
-const { join } = require('path')
+import { join } from 'path'
 
-const test = require('ava')
+import test from 'ava'
 
-const { normalizePath } = require('./util')
+import { normalizePath } from './util.js'
 
 test('normalizes relative file paths', (t) => {
   const input = join('foo', 'bar', 'baz.js')

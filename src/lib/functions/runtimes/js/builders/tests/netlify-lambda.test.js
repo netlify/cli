@@ -1,7 +1,7 @@
-const test = require('ava')
-const sinon = require('sinon')
+import test from 'ava'
+import sinon from 'sinon'
 
-const { detectNetlifyLambda } = require('../netlify-lambda')
+import { detectNetlifyLambda } from '../netlify-lambda.js'
 
 test(`should not find netlify-lambda from netlify-cli package.json`, async (t) => {
   t.is(await detectNetlifyLambda(), false)

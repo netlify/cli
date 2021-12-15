@@ -1,17 +1,18 @@
 #!/usr/bin/env node
 // @ts-check
-const { existsSync, statSync } = require('fs')
-const process = require('process')
+import { existsSync, statSync } from 'fs'
+import process, { on, exit, argv } from 'process'
+import { fileURLToPath } from 'url'
 
-const { grey } = require('chalk')
-const execa = require('execa')
-const { sync } = require('fast-glob')
+import chalk from 'chalk'
+import { execa } from 'execa'
+import { sync } from 'fast-glob'
 
-const { ava } = require('../package.json')
+import { ava } from '../package.json'
 
-const { DependencyGraph, fileVisitor, visitorPlugins } = require('./project-graph')
+import { DependencyGraph, fileVisitor, visitorPlugins } from './project-graph/index.js'
 
-const getChangedFiles = async (compareTarget = 'origin/main') => {
+export const getChangedFiles = async (compareTarget = 'origin/main') => {
   const { stdout } = await execa('git', ['diff', '--name-only', 'HEAD', compareTarget])
   return stdout.split('\n')
 }
@@ -22,7 +23,7 @@ const getChangedFiles = async (compareTarget = 'origin/main') => {
  * @param {string[]} changedFiles
  * @returns {string[]}
  */
-const getAffectedFiles = (changedFiles) => {
+export const getAffectedFiles = (changedFiles) => {
   const testFiles = sync(ava.files)
 
   // in this case all files are affected
@@ -56,13 +57,13 @@ const main = async (args) => {
     console.log('No files where affected by the changeset!')
     return
   }
-  console.log(`Running affected Tests: \n${grey([...affectedFiles].join(', '))}`)
+  console.log(`Running affected Tests: \n${chalk.grey([...affectedFiles].join(', '))}`)
   const testRun = execa('nyc', ['-r', 'json', 'ava', ...affectedFiles], {
     stdio: 'inherit',
     preferLocal: true,
   })
 
-  process.on('exit', () => {
+  on('exit', () => {
     testRun.kill()
   })
 
@@ -71,7 +72,7 @@ const main = async (args) => {
   } catch (error) {
     if (error instanceof Error) {
       console.log(error.message)
-      process.exit(1)
+      exit(1)
     }
     throw error
   }
@@ -85,13 +86,11 @@ const main = async (args) => {
 // $ npm run test:affected -- HEAD~1
 //
 // The default is when running without arguments a git diff target off 'origin/master'
-if (require.main === module) {
-  const args = process.argv.slice(2)
+if (fileURLToPath(import.meta.url) === process.argv[1]) {
+  const args = argv.slice(2)
   // eslint-disable-next-line promise/prefer-await-to-callbacks,promise/prefer-await-to-then
   main(args).catch((error) => {
     console.error(error)
-    process.exit(1)
+    exit(1)
   })
 }
-
-module.exports = { getChangedFiles, getAffectedFiles }

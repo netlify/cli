@@ -1,15 +1,19 @@
 // @ts-check
-const { mkdir } = require('fs').promises
-const { env } = require('process')
+import { promises } from 'fs'
+import { env } from 'process'
 
-const { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn } = require('../../utils')
-const { getLogMessage } = require('../log')
+import { listFunctions } from '@netlify/zip-it-and-ship-it'
 
-const { NetlifyFunction } = require('./netlify-function')
-const runtimes = require('./runtimes')
-const { watchDebounced } = require('./watcher')
+import { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn } from '../../utils/index.js'
+import { getLogMessage } from '../log.js'
 
-class FunctionsRegistry {
+import { NetlifyFunction } from './netlify-function.js'
+import runtimes from './runtimes/index.js'
+import { watchDebounced } from './watcher.js'
+
+const { mkdir } = promises
+
+export class FunctionsRegistry {
   constructor({ capabilities, config, isConnected = false, projectRoot, timeouts }) {
     this.capabilities = capabilities
     this.config = config
@@ -35,10 +39,7 @@ class FunctionsRegistry {
     // by the `watchDebounced` utility.
     this.functionWatchers = new Map()
 
-    // Performance optimization: load '@netlify/zip-it-and-ship-it' on demand.
-    // eslint-disable-next-line node/global-require
-    const { listFunctions } = require('@netlify/zip-it-and-ship-it')
-
+    // TODO: @mikael or @erez maybe you have a better idea but a constructor cannot be async
     this.listFunctions = listFunctions
   }
 
@@ -233,5 +234,3 @@ class FunctionsRegistry {
     }
   }
 }
-
-module.exports = { FunctionsRegistry }

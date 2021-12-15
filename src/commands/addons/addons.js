@@ -1,10 +1,10 @@
 // @ts-check
 
-const { createAddonsAuthCommand } = require('./addons-auth')
-const { createAddonsConfigCommand } = require('./addons-config')
-const { createAddonsCreateCommand } = require('./addons-create')
-const { createAddonsDeleteCommand } = require('./addons-delete')
-const { createAddonsListCommand } = require('./addons-list')
+import { createAddonsAuthCommand } from './addons-auth.js'
+import { createAddonsConfigCommand } from './addons-config.js'
+import { createAddonsCreateCommand } from './addons-create.js'
+import { createAddonsDeleteCommand } from './addons-delete.js'
+import { createAddonsListCommand } from './addons-list.js'
 
 /**
  * The addons command
@@ -20,7 +20,7 @@ const addons = (options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createAddonsCommand = (program) => {
+export const createAddonsCommand = (program) => {
   createAddonsAuthCommand(program)
   createAddonsConfigCommand(program)
   createAddonsCreateCommand(program)
@@ -41,4 +41,3 @@ const createAddonsCommand = (program) => {
     ])
     .action(addons)
 }
-module.exports = { createAddonsCommand }

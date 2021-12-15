@@ -1,20 +1,20 @@
 // @ts-check
-const path = require('path')
-const process = require('process')
+import path from 'path'
+import process from 'process'
 
-const { fetchLatest, fetchVersion, newerVersion, updateAvailable } = require('gh-release-fetch')
-const isExe = require('isexe')
+import { fetchLatest, fetchVersion, newerVersion, updateAvailable } from 'gh-release-fetch'
+import isExe from 'isexe'
 
 // cannot directly import from ../utils as it would create a circular dependency.
 // the file `src/utils/live-tunnel.js` depends on this file
-const { NETLIFYDEVWARN, log } = require('../utils/command-helpers')
-const execa = require('../utils/execa')
+import { NETLIFYDEVWARN, log } from '../utils/command-helpers.js'
+import execa from '../utils/execa.js'
 
 const isWindows = () => process.platform === 'win32'
 
 const getRepository = ({ packageName }) => `netlify/${packageName}`
 
-const getExecName = ({ execName }) => (isWindows() ? `${execName}.exe` : execName)
+export const getExecName = ({ execName }) => (isWindows() ? `${execName}.exe` : execName)
 
 const getOptions = () => {
   // this is used in out CI tests to avoid hitting GitHub API limit
@@ -35,7 +35,14 @@ const isVersionOutdated = async ({ currentVersion, latestVersion, packageName })
   return outdated
 }
 
-const shouldFetchLatestVersion = async ({ binPath, execArgs, execName, latestVersion, packageName, pattern }) => {
+export const shouldFetchLatestVersion = async ({
+  binPath,
+  execArgs,
+  execName,
+  latestVersion,
+  packageName,
+  pattern,
+}) => {
   const execPath = path.join(binPath, getExecName({ execName }))
 
   const exists = await isExe(execPath, { ignoreErrors: true })
@@ -71,7 +78,7 @@ const shouldFetchLatestVersion = async ({ binPath, execArgs, execName, latestVer
   }
 }
 
-const fetchLatestVersion = async ({ destination, execName, extension, latestVersion, packageName }) => {
+export const fetchLatestVersion = async ({ destination, execName, extension, latestVersion, packageName }) => {
   const win = isWindows()
   const platform = win ? 'windows' : process.platform
   const release = {
@@ -84,5 +91,3 @@ const fetchLatestVersion = async ({ destination, execName, extension, latestVers
   const options = getOptions()
   await (latestVersion ? fetchVersion({ ...release, version: latestVersion }, options) : fetchLatest(release, options))
 }
-
-module.exports = { getExecName, shouldFetchLatestVersion, fetchLatestVersion }

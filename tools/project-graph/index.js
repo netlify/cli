@@ -1,9 +1,3 @@
-const { DependencyGraph } = require('./dependency-graph')
-const { fileVisitor } = require('./file-visitor')
-const visitorPlugins = require('./visitor-plugins')
-
-module.exports = {
-  DependencyGraph,
-  fileVisitor,
-  visitorPlugins,
-}
+export { DependencyGraph } from './dependency-graph'
+export { fileVisitor } from './file-visitor'
+export { visitorPlugins } from './visitor-plugins'

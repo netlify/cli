@@ -1,4 +1,2 @@
 // @ts-check
-const { deploySite } = require('./deploy-site')
-
-module.exports = { deploySite }
+export { deploySite } from './deploy-site.js'

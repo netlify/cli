@@ -1,14 +1,16 @@
 // @ts-check
-const { stat } = require('fs').promises
-const path = require('path')
-const process = require('process')
+import { promises } from 'fs'
+import path from 'path'
+import process from 'process'
 
-const test = require('ava')
-const tempDirectory = require('temp-dir')
-const { v4: uuid } = require('uuid')
+import test from 'ava'
+import tempDirectory from 'temp-dir'
+import { v4 as uuid } from 'uuid'
 
-const { fetchLatestVersion, getExecName, shouldFetchLatestVersion } = require('./exec-fetcher')
-const { rmdirRecursiveAsync } = require('./fs')
+import { fetchLatestVersion, getExecName, shouldFetchLatestVersion } from './exec-fetcher.js'
+import { rmdirRecursiveAsync } from './fs.js'
+
+const { stat } = promises
 
 test.beforeEach((t) => {
   const directory = path.join(tempDirectory, `netlify-cli-exec-fetcher`, uuid())

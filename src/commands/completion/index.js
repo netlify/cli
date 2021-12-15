@@ -1,5 +1,1 @@
-const { createCompletionCommand } = require('./completion')
-
-module.exports = {
-  createCompletionCommand,
-}
+export { createCompletionCommand } from './completion.js'

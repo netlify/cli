@@ -1,11 +1,13 @@
 // @ts-check
-const { readFile } = require('fs').promises
+import { promises } from 'fs'
 
-const { get } = require('dot-prop')
-const locatePath = require('locate-path')
-const nodeVersionAlias = require('node-version-alias')
+import { get } from 'dot-prop'
+import locatePath from 'locate-path'
+import nodeVersionAlias from 'node-version-alias'
 
-const { warn } = require('../command-helpers')
+import { warn } from '../command-helpers.js'
+
+const { readFile } = promises
 
 const DEFAULT_NODE_VERSION = '12.18.0'
 const NVM_FLAG_PREFIX = '--'
@@ -14,7 +16,7 @@ const NVM_FLAG_PREFIX = '--'
 const normalizeConfiguredVersion = (version) =>
   version.startsWith(NVM_FLAG_PREFIX) ? version.slice(NVM_FLAG_PREFIX.length) : version
 
-const detectNodeVersion = async ({ baseDirectory, env }) => {
+export const detectNodeVersion = async ({ baseDirectory, env }) => {
   try {
     const nodeVersionFile = await locatePath(['.nvmrc', '.node-version'], { cwd: baseDirectory })
     const configuredVersion =
@@ -31,5 +33,3 @@ const detectNodeVersion = async ({ baseDirectory, env }) => {
     return DEFAULT_NODE_VERSION
   }
 }
-
-module.exports = { detectNodeVersion }

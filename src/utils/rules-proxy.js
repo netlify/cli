@@ -1,17 +1,17 @@
 // @ts-check
-const path = require('path')
+import path from 'path'
 
-const chokidar = require('chokidar')
-const cookie = require('cookie')
-const redirector = require('netlify-redirector')
-const pFilter = require('p-filter')
+import chokidar from 'chokidar'
+import cookie from 'cookie'
+import redirector from 'netlify-redirector'
+import pFilter from 'p-filter'
 
-const { fileExistsAsync } = require('../lib/fs')
+import { fileExistsAsync } from '../lib/fs.js'
 
-const { NETLIFYDEVLOG } = require('./command-helpers')
-const { parseRedirects } = require('./redirects')
+import { NETLIFYDEVLOG } from './command-helpers.js'
+import { parseRedirects } from './redirects.js'
 
-const onChanges = function (files, listener) {
+export const onChanges = function (files, listener) {
   files.forEach((file) => {
     const watcher = chokidar.watch(file)
     watcher.on('change', listener)
@@ -19,7 +19,7 @@ const onChanges = function (files, listener) {
   })
 }
 
-const getLanguage = function (headers) {
+export const getLanguage = function (headers) {
   if (headers['accept-language']) {
     return headers['accept-language'].split(',')[0].slice(0, 2)
   }
@@ -30,7 +30,7 @@ const getCountry = function () {
   return 'us'
 }
 
-const createRewriter = async function ({ configPath, distDir, jwtRoleClaim, jwtSecret, projectDir }) {
+export const createRewriter = async function ({ configPath, distDir, jwtRoleClaim, jwtSecret, projectDir }) {
   let matcher = null
   const redirectsFiles = [...new Set([path.resolve(distDir, '_redirects'), path.resolve(projectDir, '_redirects')])]
   let redirects = await parseRedirects({ redirectsFiles, configPath })
@@ -93,8 +93,4 @@ const createRewriter = async function ({ configPath, distDir, jwtRoleClaim, jwtS
   }
 }
 
-module.exports = {
-  onChanges,
-  getLanguage,
-  createRewriter,
-}
+

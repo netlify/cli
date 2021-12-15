@@ -1,20 +1,20 @@
 // Handlers are meant to be async outside tests
 /* eslint-disable require-await */
-const test = require('ava')
-const execa = require('execa')
-const getPort = require('get-port')
-const waitPort = require('wait-port')
+import test from 'ava'
+import { execa } from 'execa'
+import getPort from 'get-port'
+import waitPort from 'wait-port'
 
-const fs = require('../src/lib/fs')
+import { fileExistsAsync } from '../src/lib/fs.js'
 
-const callCli = require('./utils/call-cli')
-const cliPath = require('./utils/cli-path')
-const { withDevServer } = require('./utils/dev-server')
-const got = require('./utils/got')
-const { CONFIRM, DOWN, answerWithValue, handleQuestions } = require('./utils/handle-questions')
-const { withMockApi } = require('./utils/mock-api')
-const { killProcess } = require('./utils/process')
-const { withSiteBuilder } = require('./utils/site-builder')
+import callCli from './utils/call-cli.js'
+import { cliPath } from './utils/cli-path.js'
+import { withDevServer } from './utils/dev-server.js'
+import got from './utils/got.js'
+import { CONFIRM, DOWN, answerWithValue, handleQuestions } from './utils/handle-questions.js'
+import { withMockApi } from './utils/mock-api.js'
+import { killProcess } from './utils/process.js'
+import { withSiteBuilder } from './utils/site-builder.js'
 
 test('should return function response when invoked', async (t) => {
   await withSiteBuilder('site-with-ping-function', async (builder) => {
@@ -96,7 +96,7 @@ test('should create a new function directory when none is found', async (t) => {
 
       await childProcess
 
-      t.is(await fs.fileExistsAsync(`${builder.directory}/test/functions/hello-world/hello-world.js`), true)
+      t.is(await fileExistsAsync(`${builder.directory}/test/functions/hello-world/hello-world.js`), true)
     })
   })
 })
@@ -176,8 +176,8 @@ test('should install function template dependencies on a site-level `package.jso
       // we're mocking prompt responses with `handleQuestions`. Instead, we're
       // choosing the second template in the list, assuming it's the first one
       // that contains a `package.json` (currently that's `apollo-graphql`).
-      t.is(await fs.fileExistsAsync(`${builder.directory}/test/functions/apollo-graphql/apollo-graphql.js`), true)
-      t.is(await fs.fileExistsAsync(`${builder.directory}/test/functions/apollo-graphql/package.json`), false)
+      t.is(await fileExistsAsync(`${builder.directory}/test/functions/apollo-graphql/apollo-graphql.js`), true)
+      t.is(await fileExistsAsync(`${builder.directory}/test/functions/apollo-graphql/package.json`), false)
       t.is(typeof dependencies['apollo-server-lambda'], 'string')
 
       t.is(dependencies['@netlify/functions'], '^0.1.0')
@@ -249,8 +249,8 @@ test('should install function template dependencies in the function sub-director
       // we're mocking prompt responses with `handleQuestions`. Instead, we're
       // choosing the second template in the list, assuming it's the first one
       // that contains a `package.json` (currently that's `apollo-graphql`).
-      t.is(await fs.fileExistsAsync(`${builder.directory}/test/functions/apollo-graphql/apollo-graphql.js`), true)
-      t.is(await fs.fileExistsAsync(`${builder.directory}/test/functions/apollo-graphql/package.json`), true)
+      t.is(await fileExistsAsync(`${builder.directory}/test/functions/apollo-graphql/apollo-graphql.js`), true)
+      t.is(await fileExistsAsync(`${builder.directory}/test/functions/apollo-graphql/package.json`), true)
     })
   })
 })
@@ -312,7 +312,7 @@ test('should not create a new function directory when one is found', async (t) =
 
       await childProcess
 
-      t.is(await fs.fileExistsAsync(`${builder.directory}/functions/hello-world/hello-world.js`), true)
+      t.is(await fileExistsAsync(`${builder.directory}/functions/hello-world/hello-world.js`), true)
     })
   })
 })
@@ -372,7 +372,7 @@ test('should only show function templates for the language specified via the --l
 
       await childProcess
 
-      t.is(await fs.fileExistsAsync(`${builder.directory}/test/functions/hello-world/hello-world.js`), true)
+      t.is(await fileExistsAsync(`${builder.directory}/test/functions/hello-world/hello-world.js`), true)
     })
   })
 })
@@ -438,7 +438,7 @@ test('throws an error when the --language flag contains an unsupported value', a
         t.true(error.message.includes('Invalid language: coffeescript'))
       }
 
-      t.is(await fs.fileExistsAsync(`${builder.directory}/test/functions/hello-world/hello-world.js`), false)
+      t.is(await fileExistsAsync(`${builder.directory}/test/functions/hello-world/hello-world.js`), false)
     })
   })
 })

@@ -1,20 +1,18 @@
 // @ts-check
-const ansiStyles = require('ansi-styles')
+import ansiStyles from 'ansi-styles'
 
-const { chalk } = require('../../command-helpers')
-
-const forceColor = new chalk.Instance({ level: 1 })
+import { chalk } from '../../command-helpers.js'
 
 const colorTheme = {
   boolean: ansiStyles.yellow,
-  circular: forceColor.grey('[Circular]'),
+  circular: chalk.grey('[Circular]'),
   date: {
-    invalid: forceColor.red('invalid'),
+    invalid: chalk.red('invalid'),
     value: ansiStyles.blue,
   },
   diffGutters: {
-    actual: `${forceColor.red('-')} `,
-    expected: `${forceColor.green('+')} `,
+    actual: `${chalk.red('-')} `,
+    expected: `${chalk.green('+')} `,
     padding: '  ',
   },
   error: {
@@ -30,21 +28,21 @@ const colorTheme = {
   },
   global: ansiStyles.magenta,
   item: {
-    after: forceColor.grey(','),
+    after: chalk.grey(','),
   },
   list: {
-    openBracket: forceColor.grey('['),
-    closeBracket: forceColor.grey(']'),
+    openBracket: chalk.grey('['),
+    closeBracket: chalk.grey(']'),
   },
   mapEntry: {
-    after: forceColor.grey(','),
+    after: chalk.grey(','),
   },
-  maxDepth: forceColor.grey('…'),
+  maxDepth: chalk.grey('…'),
   null: ansiStyles.yellow,
   number: ansiStyles.yellow,
   object: {
-    openBracket: forceColor.grey('{'),
-    closeBracket: forceColor.grey('}'),
+    openBracket: chalk.grey('{'),
+    closeBracket: chalk.grey('}'),
     ctor: ansiStyles.magenta,
     stringTag: {
       open: `${ansiStyles.magenta.open}@`,
@@ -56,9 +54,9 @@ const colorTheme = {
     },
   },
   property: {
-    after: forceColor.grey(','),
-    keyBracket: { open: forceColor.grey('['), close: forceColor.grey(']') },
-    valueFallback: forceColor.grey('…'),
+    after: chalk.grey(','),
+    keyBracket: { open: chalk.grey('['), close: chalk.grey(']') },
+    valueFallback: chalk.grey('…'),
   },
   regexp: {
     source: {
@@ -67,12 +65,12 @@ const colorTheme = {
     },
     flags: ansiStyles.yellow,
   },
-  stats: { separator: forceColor.grey('---') },
+  stats: { separator: chalk.grey('---') },
   string: {
     open: ansiStyles.white.open,
     close: ansiStyles.white.close,
-    line: { open: forceColor.white("'"), close: forceColor.white("'") },
-    multiline: { start: forceColor.white('`'), end: forceColor.white('`') },
+    line: { open: chalk.white("'"), close: chalk.white("'") },
+    multiline: { start: chalk.white('`'), end: chalk.white('`') },
     controlPicture: ansiStyles.grey,
     diff: {
       insert: {
@@ -104,10 +102,5 @@ const colorTheme = {
 const plugins = []
 const theme = colorTheme
 
-const concordanceOptions = { maxDepth: 3, plugins, theme }
-const concordanceDiffOptions = { maxDepth: 1, plugins, theme }
-
-module.exports = {
-  concordanceOptions,
-  concordanceDiffOptions,
-}
+export const concordanceOptions = { maxDepth: 3, plugins, theme }
+export const concordanceDiffOptions = { maxDepth: 1, plugins, theme }

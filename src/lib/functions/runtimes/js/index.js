@@ -1,10 +1,10 @@
-const { dirname } = require('path')
+import { dirname } from 'path'
 
-const lambdaLocal = require('lambda-local')
-const winston = require('winston')
+import lambdaLocal from 'lambda-local'
+import winston from 'winston'
 
-const detectNetlifyLambdaBuilder = require('./builders/netlify-lambda')
-const detectZisiBuilder = require('./builders/zisi')
+import detectNetlifyLambdaBuilder from './builders/netlify-lambda.js'
+import detectZisiBuilder from './builders/zisi.js'
 
 const SECONDS_TO_MILLISECONDS = 1e3
 
@@ -28,7 +28,7 @@ const detectNetlifyLambdaWithCache = () => {
   return netlifyLambdaDetectorCache
 }
 
-const getBuildFunction = async ({ config, directory, errorExit, func, projectRoot }) => {
+export const getBuildFunction = async ({ config, directory, errorExit, func, projectRoot }) => {
   const netlifyLambdaBuilder = await detectNetlifyLambdaWithCache()
 
   if (netlifyLambdaBuilder) {
@@ -50,7 +50,7 @@ const getBuildFunction = async ({ config, directory, errorExit, func, projectRoo
   return () => ({ srcFiles })
 }
 
-const invokeFunction = async ({ context, event, func, timeout }) => {
+export const invokeFunction = async ({ context, event, func, timeout }) => {
   // If a function builder has defined a `buildPath` property, we use it.
   // Otherwise, we'll invoke the function's main file.
   const lambdaPath = (func.buildData && func.buildData.buildPath) || func.mainFile
@@ -65,7 +65,7 @@ const invokeFunction = async ({ context, event, func, timeout }) => {
   return result
 }
 
-const onDirectoryScan = async () => {
+export const onDirectoryScan = async () => {
   const netlifyLambdaBuilder = await detectNetlifyLambdaWithCache()
 
   // Before we start a directory scan, we check whether netlify-lambda is being
@@ -76,4 +76,4 @@ const onDirectoryScan = async () => {
   }
 }
 
-module.exports = { getBuildFunction, invokeFunction, name: 'js', onDirectoryScan }
+export const name = 'js'

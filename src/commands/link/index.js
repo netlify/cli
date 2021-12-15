@@ -1,6 +1,1 @@
-const { createLinkCommand, link } = require('./link')
-
-module.exports = {
-  createLinkCommand,
-  link,
-}
+export { createLinkCommand, link } from './link.js'

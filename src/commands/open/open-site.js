@@ -1,11 +1,11 @@
-const { error, exit, log, openBrowser, warn } = require('../../utils')
+import { error, exit, log, openBrowser, warn } from '../../utils/index.js'
 
 /**
  * The open:site command
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-const openSite = async (options, command) => {
+export const openSite = async (options, command) => {
   const { api, site } = command.netlify
 
   await command.authenticate()
@@ -43,11 +43,9 @@ Run \`netlify link\` to connect to this folder to a site`)
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createOpenSiteCommand = (program) =>
+export const createOpenSiteCommand = (program) =>
   program
     .command('open:site')
     .description('Opens current site url in browser')
     .addExamples(['netlify open:site'])
     .action(openSite)
-
-module.exports = { createOpenSiteCommand, openSite }

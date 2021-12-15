@@ -1,11 +1,11 @@
-const test = require('ava')
-const pWaitFor = require('p-wait-for')
+import test from 'ava'
+import pWaitFor from 'p-wait-for'
 
-const { tryAndLogOutput, withDevServer } = require('./utils/dev-server')
-const got = require('./utils/got')
-const { createMock: createExecaMock } = require('./utils/mock-execa')
-const { pause } = require('./utils/pause')
-const { withSiteBuilder } = require('./utils/site-builder')
+import { tryAndLogOutput, withDevServer } from './utils/dev-server.js'
+import got from './utils/got.js'
+import { createMock as createExecaMock } from './utils/mock-execa.js'
+import { pause } from './utils/pause.js'
+import { withSiteBuilder } from './utils/site-builder.js'
 
 const WAIT_INTERVAL = 600
 const WAIT_TIMEOUT = 3000
@@ -46,7 +46,7 @@ test('Updates a Rust function when a file is modified', async (t) => {
             stdout: ''
           }
         }
-        
+
         if (args[0].includes('local-functions-proxy')) {
           proxyCallCount++
 

@@ -1,5 +1,1 @@
-const { createBuildCommand } = require('./build')
-
-module.exports = {
-  createBuildCommand,
-}
+export { createBuildCommand } from './build.js'

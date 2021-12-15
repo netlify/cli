@@ -1,13 +1,13 @@
 /* eslint-disable require-await */
-const { join } = require('path')
+import { join } from 'path'
 
-const test = require('ava')
-const pWaitFor = require('p-wait-for')
+import test from 'ava'
+import pWaitFor from 'p-wait-for'
 
-const { tryAndLogOutput, withDevServer } = require('./utils/dev-server')
-const got = require('./utils/got')
-const { pause } = require('./utils/pause')
-const { withSiteBuilder } = require('./utils/site-builder')
+import { tryAndLogOutput, withDevServer } from './utils/dev-server.js'
+import got from './utils/got.js'
+import { pause } from './utils/pause.js'
+import { withSiteBuilder } from './utils/site-builder.js'
 
 const testMatrix = [{ args: [] }, { args: ['esbuild'] }]
 const testName = (title, args) => (args.length <= 0 ? title : `${title} - ${args.join(' ')}`)

@@ -1,9 +1,9 @@
-const test = require('ava')
+import test from 'ava'
 
-const { withSiteBuilder } = require('../../../tests/utils/site-builder')
+import { withSiteBuilder } from '../../../tests/utils/site-builder.js'
 
-const { DEFAULT_CONCURRENT_HASH } = require('./constants')
-const { hashFiles } = require('./hash-files')
+import { DEFAULT_CONCURRENT_HASH } from './constants.js'
+import { hashFiles } from './hash-files.js'
 
 test('Hashes files in a folder', async (t) => {
   await withSiteBuilder('site-with-content', async (builder) => {

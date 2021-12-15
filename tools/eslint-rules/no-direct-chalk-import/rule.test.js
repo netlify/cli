@@ -1,7 +1,7 @@
-const test = require('ava')
-const { RuleTester } = require('eslint')
+import test from 'ava'
+import { RuleTester } from 'eslint'
 
-const rule = require('./index')
+import rule from './index.cjs'
 
 // eslint-disable-next-line no-magic-numbers
 const ruleTester = new RuleTester({ parserOptions: { ecmaVersion: 2020 } })
@@ -11,14 +11,14 @@ test('should run the specified testRunner', (t) => {
     ruleTester.run('no-direct-chalk-import', rule, {
       valid: [
         {
-          code: `let chalk = require('../utils')`,
+          code: `import chalk from '../utils'`,
         },
       ],
       invalid: [
         {
-          code: `let chalk = require('chalk')`,
+          code: `import chalk from 'chalk'`,
           // test the auto fix of the rule
-          output: `let {chalk} = require('./src/utils')`,
+          output: `import {chalk} from './src/utils'`,
           errors: [
             {
               message:

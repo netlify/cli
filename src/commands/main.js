@@ -1,12 +1,12 @@
 // @ts-check
-const process = require('process')
+import { readFileSync } from 'fs'
+import process from 'process'
 
-const { Option } = require('commander')
-const inquirer = require('inquirer')
-const { findBestMatch } = require('string-similarity')
+import { Option } from 'commander'
+import inquirer from 'inquirer'
+import { findBestMatch } from 'string-similarity'
 
-const pkg = require('../../package.json')
-const {
+import {
   BANG,
   NETLIFY_CYAN,
   USER_AGENT,
@@ -18,36 +18,37 @@ const {
   log,
   track,
   warn,
-} = require('../utils')
+} from '../utils/index.js'
 
-const { createAddonsCommand } = require('./addons')
-const { createApiCommand } = require('./api')
-const { BaseCommand } = require('./base-command')
-const { createBuildCommand } = require('./build')
-const { createCompletionCommand } = require('./completion')
-const { createDeployCommand } = require('./deploy')
-const { createDevCommand } = require('./dev')
-const { createEnvCommand } = require('./env')
-const { createFunctionsCommand } = require('./functions')
-const { createInitCommand } = require('./init')
-const { createLinkCommand } = require('./link')
-const { createLmCommand } = require('./lm')
-const { createLoginCommand } = require('./login')
-const { createLogoutCommand } = require('./logout')
-const { createOpenCommand } = require('./open')
-const { createSitesCommand } = require('./sites')
-const { createStatusCommand } = require('./status')
-const { createSwitchCommand } = require('./switch')
-const { createUnlinkCommand } = require('./unlink')
-const { createWatchCommand } = require('./watch')
+import { createAddonsCommand } from './addons/index.js'
+import { createApiCommand } from './api/index.js'
+import { BaseCommand } from './base-command.js'
+import { createBuildCommand } from './build/index.js'
+import { createCompletionCommand } from './completion/index.js'
+import { createDeployCommand } from './deploy/index.js'
+import { createDevCommand } from './dev/index.js'
+import { createEnvCommand } from './env/index.js'
+import { createFunctionsCommand } from './functions/index.js'
+import { createInitCommand } from './init/index.js'
+import { createLinkCommand } from './link/index.js'
+import { createLmCommand } from './lm/index.js'
+import { createLoginCommand } from './login/index.js'
+import { createLogoutCommand } from './logout/index.js'
+import { createOpenCommand } from './open/index.js'
+import { createSitesCommand } from './sites/index.js'
+import { createStatusCommand } from './status/index.js'
+import { createSwitchCommand } from './switch/index.js'
+import { createUnlinkCommand } from './unlink/index.js'
+import { createWatchCommand } from './watch/index.js'
 
 const SUGGESTION_TIMEOUT = 1e4
 
+const pkg = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url).pathname, 'utf-8'))
+
 const getVersionPage = async () => {
   // performance optimization - load envinfo on demand
-  // eslint-disable-next-line node/global-require
-  const envinfo = require('envinfo')
-  const data = await envinfo.run({
+  const { run } = await import('envinfo')
+  const data = await run({
     System: ['OS', 'CPU'],
     Binaries: ['Node', 'Yarn', 'npm'],
     Browsers: ['Chrome', 'Edge', 'Firefox', 'Safari'],
@@ -159,7 +160,7 @@ const mainCommand = async function (options, command) {
  * Promise is needed as the envinfo is a promise
  * @returns {import('./base-command').BaseCommand}
  */
-const createMainCommand = () => {
+export const createMainCommand = () => {
   const program = new BaseCommand('netlify')
   // register all the commands
   createAddonsCommand(program)
@@ -202,5 +203,3 @@ const createMainCommand = () => {
 
   return program
 }
-
-module.exports = { createMainCommand }

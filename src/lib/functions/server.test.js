@@ -1,15 +1,15 @@
-const { platform } = require('os')
-const { join } = require('path')
+import { platform } from 'os'
+import { join } from 'path'
 
-const zisi = require('@netlify/zip-it-and-ship-it')
-const test = require('ava')
-const express = require('express')
-const mockRequire = require('mock-require')
-const sinon = require('sinon')
-const request = require('supertest')
+import zisi from '@netlify/zip-it-and-ship-it'
+import test from 'ava'
+import express from 'express'
+import mockRequire from 'mock-require'
+import sinon from 'sinon'
+import request from 'supertest'
 
-const { FunctionsRegistry } = require('./registry')
-const { createHandler } = require('./server')
+import { FunctionsRegistry } from './registry.js'
+import { createHandler } from './server.js'
 
 const projectRoot = platform() === 'win32' ? 'C:\\my-functions' : `/my-functions`
 const functionsPath = `functions`

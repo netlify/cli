@@ -1,20 +1,21 @@
 // @ts-check
-const { existsSync } = require('fs')
-const { writeFile } = require('fs').promises
-const { EOL } = require('os')
-const path = require('path')
-const process = require('process')
+import { existsSync, promises } from 'fs'
+import { EOL } from 'os'
+import path from 'path'
+import process from 'process'
 
-const cleanDeep = require('clean-deep')
-const inquirer = require('inquirer')
-const isEmpty = require('lodash/isEmpty')
+import cleanDeep from 'clean-deep'
+import inquirer from 'inquirer'
+import isEmpty from 'lodash/isEmpty.js'
 
-const { normalizeBackslash } = require('../../lib/path')
-const { chalk, error: failAndExit, warn } = require('../command-helpers')
+import { normalizeBackslash } from '../../lib/path.js'
+import { chalk, error as failAndExit, warn } from '../command-helpers.js'
 
-const { getFrameworkInfo } = require('./frameworks')
-const { detectNodeVersion } = require('./node-version')
-const { getPluginInfo, getPluginsList, getPluginsToInstall, getRecommendPlugins, getUIPlugins } = require('./plugins')
+import { getFrameworkInfo } from './frameworks.js'
+import { detectNodeVersion } from './node-version.js'
+import { getPluginInfo, getPluginsList, getPluginsToInstall, getRecommendPlugins, getUIPlugins } from './plugins.js'
+
+const { writeFile } = promises
 
 const normalizeDir = ({ baseDirectory, defaultValue, dir }) => {
   if (dir === undefined) {
@@ -123,8 +124,8 @@ const getPromptInputs = async ({
         .map(({ name }) => `${name} plugin`)
         .map(formatTitle)
         .join(', ')}${EOL}➡️  OK to install??`,
-      choices: infos.map(({ name, package }) => ({ name: `${name} plugin`, value: package })),
-      default: infos.map(({ package }) => package),
+      choices: infos.map((choice) => ({ name: `${choice.name} plugin`, value: choice.package })),
+      default: infos.map((info) => info.package),
     },
   ]
 }
@@ -133,7 +134,7 @@ const getPromptInputs = async ({
 const getBaseDirectory = ({ repositoryRoot, siteRoot }) =>
   path.normalize(repositoryRoot) === path.normalize(siteRoot) ? process.cwd() : siteRoot
 
-const getBuildSettings = async ({ config, env, repositoryRoot, siteRoot }) => {
+export const getBuildSettings = async ({ config, env, repositoryRoot, siteRoot }) => {
   const baseDirectory = getBaseDirectory({ repositoryRoot, siteRoot })
   const nodeVersion = await detectNodeVersion({ baseDirectory, env })
   const {
@@ -202,7 +203,15 @@ const getNetlifyToml = ({
   ## more info on configuring this file: https://www.netlify.com/docs/netlify-toml-reference/
 `
 
-const saveNetlifyToml = async ({ baseDir, buildCmd, buildDir, config, configPath, functionsDir, repositoryRoot }) => {
+export const saveNetlifyToml = async ({
+  baseDir,
+  buildCmd,
+  buildDir,
+  config,
+  configPath,
+  functionsDir,
+  repositoryRoot,
+}) => {
   const tomlPathParts = [repositoryRoot, baseDir, 'netlify.toml'].filter(Boolean)
   const tomlPath = path.join(...tomlPathParts)
   if (existsSync(tomlPath)) {
@@ -237,14 +246,14 @@ const saveNetlifyToml = async ({ baseDir, buildCmd, buildDir, config, configPath
   }
 }
 
-const formatErrorMessage = ({ error, message }) => {
+export const formatErrorMessage = ({ error, message }) => {
   const errorMessage = error.json ? `${error.message} - ${JSON.stringify(error.json)}` : error.message
   return `${message} with error: ${chalk.red(errorMessage)}`
 }
 
 const formatTitle = (title) => chalk.cyan(title)
 
-const createDeployKey = async ({ api }) => {
+export const createDeployKey = async ({ api }) => {
   try {
     const deployKey = await api.createDeployKey()
     return deployKey
@@ -254,7 +263,7 @@ const createDeployKey = async ({ api }) => {
   }
 }
 
-const updateSite = async ({ api, options, siteId }) => {
+export const updateSite = async ({ api, options, siteId }) => {
   try {
     const updatedSite = await api.updateSite({ siteId, body: options })
     return updatedSite
@@ -264,7 +273,7 @@ const updateSite = async ({ api, options, siteId }) => {
   }
 }
 
-const setupSite = async ({ api, configPlugins, pluginsToInstall, repo, siteId }) => {
+export const setupSite = async ({ api, configPlugins, pluginsToInstall, repo, siteId }) => {
   const updatedSite = await updateSite({
     siteId,
     api,
@@ -274,5 +283,3 @@ const setupSite = async ({ api, configPlugins, pluginsToInstall, repo, siteId })
 
   return updatedSite
 }
-
-module.exports = { getBuildSettings, saveNetlifyToml, formatErrorMessage, createDeployKey, updateSite, setupSite }

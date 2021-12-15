@@ -1,12 +1,13 @@
-const process = require('process')
+import { readFileSync } from 'fs'
+import process from 'process'
 
-const test = require('ava')
-const { version: uuidVersion } = require('uuid')
+import test from 'ava'
+import { version as uuidVersion } from 'uuid'
 
-const { name, version } = require('../package.json')
+import callCli from './utils/call-cli.js'
+import { withMockApi } from './utils/mock-api.js'
 
-const callCli = require('./utils/call-cli')
-const { withMockApi } = require('./utils/mock-api')
+const { name, version } = JSON.parse(readFileSync('../package.json.js'))
 
 const getCLIOptions = (apiUrl) => ({
   env: {

@@ -1,17 +1,17 @@
 // @ts-check
-const path = require('path')
-const process = require('process')
-const { promisify } = require('util')
+import path from 'path'
+import process from 'process'
+import { promisify } from 'util'
 
-const boxen = require('boxen')
-const { Option } = require('commander')
-const execa = require('execa')
-const StaticServer = require('static-server')
-const stripAnsiCc = require('strip-ansi-control-characters')
-const waitPort = require('wait-port')
+import boxen from 'boxen'
+import { Option } from 'commander'
+import { execa } from 'execa'
+import StaticServer from 'static-server'
+import stripAnsiCc from 'strip-ansi-control-characters'
+import waitPort from 'wait-port'
 
-const { startFunctionsServer } = require('../../lib/functions/server')
-const {
+import { startFunctionsServer } from '../../lib/functions/server.js'
+import {
   NETLIFYDEV,
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
@@ -27,10 +27,10 @@ const {
   startLiveTunnel,
   startProxy,
   warn,
-} = require('../../utils')
+} from '../../utils/index.js'
 
-const { createDevExecCommand } = require('./dev-exec')
-const { createDevTraceCommand } = require('./dev-trace')
+import { createDevExecCommand } from './dev-exec.js'
+import { createDevTraceCommand } from './dev-trace.js'
 
 const startStaticServer = async ({ settings }) => {
   const server = new StaticServer({
@@ -299,7 +299,7 @@ const dev = async (options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createDevCommand = (program) => {
+export const createDevCommand = (program) => {
   createDevExecCommand(program)
   createDevTraceCommand(program)
 
@@ -337,4 +337,3 @@ const createDevCommand = (program) => {
     .addExamples(['netlify dev', 'netlify dev -d public', 'netlify dev -c "hugo server -w" --targetPort 1313'])
     .action(dev)
 }
-module.exports = { createDevCommand }

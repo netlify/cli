@@ -1,5 +1,1 @@
-const { createEnvCommand } = require('./env')
-
-module.exports = {
-  createEnvCommand,
-}
+export { createEnvCommand } from './env.js'

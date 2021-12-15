@@ -1,20 +1,20 @@
-const { join } = require('path')
-const { format } = require('util')
+import { join } from 'path'
+import { format } from 'util'
 
-const test = require('ava')
-const mock = require('mock-fs')
+import test, { before, after } from 'ava'
+import mock, { restore } from 'mock-fs'
 
-const { normalize } = require('../../tests/utils/snapshots')
-const { DependencyGraph, fileVisitor } = require('../project-graph')
+import { normalize } from '../../tests/utils/snapshots.js'
+import { DependencyGraph, fileVisitor } from '../project-graph/index.js'
 
-const { simpleMockedFileSystem } = require('./utils/file-systems')
+import { simpleMockedFileSystem } from './utils/file-systems.js'
 
-test.before(() => {
+before(() => {
   mock(simpleMockedFileSystem)
 })
 
-test.after(() => {
-  mock.restore()
+after(() => {
+  restore()
 })
 
 test('should visit the files that are dependents from the provided main file', (t) => {

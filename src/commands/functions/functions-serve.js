@@ -1,9 +1,9 @@
 // @ts-check
 
-const { join } = require('path')
+import { join } from 'path'
 
-const { startFunctionsServer } = require('../../lib/functions/server')
-const { acquirePort, getFunctionsDir, getSiteInformation, injectEnvVariables } = require('../../utils')
+import { startFunctionsServer } from '../../lib/functions/server.js'
+import { acquirePort, getFunctionsDir, getSiteInformation, injectEnvVariables } from '../../utils/index.js'
 
 const DEFAULT_PORT = 9999
 
@@ -49,7 +49,7 @@ const functionsServe = async (options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createFunctionsServeCommand = (program) =>
+export const createFunctionsServeCommand = (program) =>
   program
     .command('functions:serve')
     .alias('function:serve')
@@ -60,4 +60,4 @@ const createFunctionsServeCommand = (program) =>
     .addHelpText('after', 'Helpful for debugging functions.')
     .action(functionsServe)
 
-module.exports = { createFunctionsServeCommand }
+

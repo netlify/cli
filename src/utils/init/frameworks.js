@@ -1,7 +1,7 @@
 // @ts-check
-const { listFrameworks } = require('@netlify/framework-info')
+import { listFrameworks } from '@netlify/framework-info'
 
-const getFrameworkInfo = async ({ baseDirectory, nodeVersion }) => {
+export const getFrameworkInfo = async ({ baseDirectory, nodeVersion }) => {
   const frameworks = await listFrameworks({ projectDir: baseDirectory, nodeVersion })
   // several frameworks can be detected - first one has highest priority
   if (frameworks.length !== 0) {
@@ -21,5 +21,3 @@ const getFrameworkInfo = async ({ baseDirectory, nodeVersion }) => {
   }
   return {}
 }
-
-module.exports = { getFrameworkInfo }

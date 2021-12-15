@@ -1,13 +1,13 @@
-const fs = require('fs')
-const path = require('path')
-const process = require('process')
+import fs from 'fs'
+import path from 'path'
+import process from 'process'
 
-const dotProp = require('dot-prop')
-const findUp = require('find-up')
-const makeDir = require('make-dir')
-const writeFileAtomic = require('write-file-atomic')
+import dotProp from 'dot-prop'
+import findUp from 'find-up'
+import makeDir from 'make-dir'
+import writeFileAtomic from 'write-file-atomic'
 
-const { getPathInProject } = require('../lib/settings')
+import { getPathInProject } from '../lib/settings.js'
 
 const STATE_PATH = getPathInProject(['state.json'])
 const permissionError = "You don't have access to this file."
@@ -23,7 +23,7 @@ const findStatePath = (cwd) => {
   return statePath
 }
 
-class StateConfig {
+export class StateConfig {
   constructor(cwd) {
     this.path = findStatePath(cwd)
   }
@@ -108,5 +108,3 @@ class StateConfig {
     this.all = {}
   }
 }
-
-module.exports = { StateConfig }

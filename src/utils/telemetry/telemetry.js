@@ -1,20 +1,20 @@
 // @ts-check
-const path = require('path')
-const process = require('process')
+import path from 'path'
+import process from 'process'
 
-const { isCI } = require('ci-info')
+import { isCI } from 'ci-info'
 
-const execa = require('../execa')
-const getGlobalConfig = require('../get-global-config')
+import execa from '../execa.js'
+import getGlobalConfig from '../get-global-config.js'
 
-const isValidEventName = require('./validation')
+import isValidEventName from './validation.js'
 
 const isTelemetryDisabled = function (config) {
   return config.get('telemetryDisabled')
 }
 
 const send = function (type, payload) {
-  const requestFile = path.join(__dirname, 'request.js')
+  const requestFile = new URL('request.js', import.meta.url).pathname
   const options = JSON.stringify({
     data: payload,
     type,
@@ -46,7 +46,7 @@ const eventConfig = {
   ],
 }
 
-const track = async function (eventName, payload = {}) {
+export const track = async function (eventName, payload = {}) {
   if (isCI) {
     return
   }
@@ -83,7 +83,7 @@ const track = async function (eventName, payload = {}) {
   return send('track', defaultData)
 }
 
-const identify = async function (payload) {
+export const identify = async function (payload) {
   if (isCI) {
     return
   }
@@ -109,9 +109,4 @@ const identify = async function (payload) {
   }
 
   return send('identify', identifyData)
-}
-
-module.exports = {
-  track,
-  identify,
 }

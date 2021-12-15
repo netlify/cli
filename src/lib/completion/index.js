@@ -1,5 +1,1 @@
-const generateAutocompletion = require('./generate-autocompletion')
-
-module.exports = {
-  ...generateAutocompletion,
-}
+export * from './generate-autocompletion.js'

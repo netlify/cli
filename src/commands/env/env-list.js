@@ -1,8 +1,8 @@
 // @ts-check
-const AsciiTable = require('ascii-table')
-const isEmpty = require('lodash/isEmpty')
+import AsciiTable from 'ascii-table'
+import isEmpty from 'lodash/isEmpty.js'
 
-const { log, logJson } = require('../../utils')
+import { log, logJson } from '../../utils/index.js'
 
 /**
  * The env:list command
@@ -52,12 +52,10 @@ const envList = async (options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createEnvListCommand = (program) =>
+export const createEnvListCommand = (program) =>
   program
     .command('env:list')
     .description('Lists resolved environment variables for site (includes netlify.toml)')
     .action(async (options, command) => {
       await envList(options, command)
     })
-
-module.exports = { createEnvListCommand }

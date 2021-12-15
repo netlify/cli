@@ -1,9 +1,9 @@
 // @ts-check
-const { fileExistsAsync } = require('../../lib/fs')
+import { fileExistsAsync } from '../../lib/fs.js'
 
-const getUrlPath = (functionName) => `/.netlify/functions/${functionName}`
+export const getUrlPath = (functionName) => `/.netlify/functions/${functionName}`
 
-const BACKGROUND = '-background'
+export const BACKGROUND = '-background'
 
 const addFunctionProps = ({ mainFile, name, runtime }) => {
   const urlPath = getUrlPath(name)
@@ -13,27 +13,25 @@ const addFunctionProps = ({ mainFile, name, runtime }) => {
 
 const JS = 'js'
 
-const getFunctions = async (functionsSrcDir) => {
+export const getFunctions = async (functionsSrcDir) => {
   if (!(await fileExistsAsync(functionsSrcDir))) {
     return []
   }
 
   // performance optimization, load '@netlify/zip-it-and-ship-it' on demand
-  // eslint-disable-next-line node/global-require
-  const { listFunctions } = require('@netlify/zip-it-and-ship-it')
+  const { listFunctions } = await import('@netlify/zip-it-and-ship-it')
   const functions = await listFunctions(functionsSrcDir)
   const functionsWithProps = functions.filter(({ runtime }) => runtime === JS).map((func) => addFunctionProps(func))
   return functionsWithProps
 }
 
-const getFunctionsAndWatchDirs = async (functionsSrcDir) => {
+export const getFunctionsAndWatchDirs = async (functionsSrcDir) => {
   if (!(await fileExistsAsync(functionsSrcDir))) {
     return { functions: [], watchDirs: [functionsSrcDir] }
   }
 
   // performance optimization, load '@netlify/zip-it-and-ship-it' on demand
-  // eslint-disable-next-line node/global-require
-  const { listFunctions } = require('@netlify/zip-it-and-ship-it')
+  const { listFunctions } = await import('@netlify/zip-it-and-ship-it')
 
   // get all functions files so we know which directories to watch
   const functions = await listFunctions(functionsSrcDir)
@@ -44,5 +42,3 @@ const getFunctionsAndWatchDirs = async (functionsSrcDir) => {
 
   return { functions: functionsWithProps, watchDirs }
 }
-
-module.exports = { getFunctions, getFunctionsAndWatchDirs, BACKGROUND }

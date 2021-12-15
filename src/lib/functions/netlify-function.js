@@ -1,12 +1,12 @@
 // @ts-check
-const { error: errorExit } = require('../../utils/command-helpers')
+import { error as errorExit } from '../../utils/command-helpers.js'
 
 const BACKGROUND_SUFFIX = '-background'
 
 // Returns a new set with all elements of `setA` that don't exist in `setB`.
 const difference = (setA, setB) => new Set([...setA].filter((item) => !setB.has(item)))
 
-class NetlifyFunction {
+export class NetlifyFunction {
   constructor({ config, directory, mainFile, name, projectRoot, runtime, timeoutBackground, timeoutSynchronous }) {
     this.config = config
     this.directory = directory
@@ -94,5 +94,3 @@ class NetlifyFunction {
     }
   }
 }
-
-module.exports = { NetlifyFunction }

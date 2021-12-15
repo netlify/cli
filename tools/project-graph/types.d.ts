@@ -1,4 +1,5 @@
 import type { Node } from 'typescript';
+
 import type { DependencyGraph } from './dependency-graph';
 
 export type Dependency = {

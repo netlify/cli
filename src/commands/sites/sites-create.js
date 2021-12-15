@@ -1,14 +1,14 @@
 // @ts-check
 
-const slugify = require('@sindresorhus/slugify')
-const inquirer = require('inquirer')
-const pick = require('lodash/pick')
-const sample = require('lodash/sample')
-const prettyjson = require('prettyjson')
-const { v4: uuidv4 } = require('uuid')
+import slugify from '@sindresorhus/slugify'
+import inquirer from 'inquirer'
+import pick from 'lodash/pick.js'
+import sample from 'lodash/sample.js'
+import prettyjson from 'prettyjson'
+import { v4 as uuidv4 } from 'uuid'
 
-const { chalk, error, getRepoData, log, logJson, track, warn } = require('../../utils')
-const { configureRepo } = require('../../utils/init/config')
+import { chalk, error, getRepoData, log, logJson, track, warn } from '../../utils/index.js'
+import { configureRepo } from '../../utils/init/config.js'
 
 const SITE_NAME_SUGGESTION_SUFFIX_LENGTH = 5
 
@@ -17,7 +17,7 @@ const SITE_NAME_SUGGESTION_SUFFIX_LENGTH = 5
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-const sitesCreate = async (options, command) => {
+export const sitesCreate = async (options, command) => {
   const { api } = command.netlify
 
   await command.authenticate()
@@ -167,7 +167,7 @@ const sitesCreate = async (options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createSitesCreateCommand = (program) =>
+export const createSitesCreateCommand = (program) =>
   program
     .command('sites:create')
     .description(
@@ -183,5 +183,3 @@ Create a blank site that isn't associated with any git remote. Does not link to 
       `Create a blank site that isn't associated with any git remote. Does not link to the current working directory.`,
     )
     .action(sitesCreate)
-
-module.exports = { createSitesCreateCommand, sitesCreate }

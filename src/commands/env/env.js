@@ -1,9 +1,9 @@
 // @ts-check
-const { createEnvGetCommand } = require('./env-get')
-const { createEnvImportCommand } = require('./env-import')
-const { createEnvListCommand } = require('./env-list')
-const { createEnvSetCommand } = require('./env-set')
-const { createEnvUnsetCommand } = require('./env-unset')
+import { createEnvGetCommand } from './env-get.js'
+import { createEnvImportCommand } from './env-import.js'
+import { createEnvListCommand } from './env-list.js'
+import { createEnvSetCommand } from './env-set.js'
+import { createEnvUnsetCommand } from './env-unset.js'
 
 /**
  * The env command
@@ -19,7 +19,7 @@ const env = (options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createEnvCommand = (program) => {
+export const createEnvCommand = (program) => {
   createEnvGetCommand(program)
   createEnvImportCommand(program)
   createEnvListCommand(program)
@@ -38,5 +38,3 @@ const createEnvCommand = (program) => {
     ])
     .action(env)
 }
-
-module.exports = { createEnvCommand }

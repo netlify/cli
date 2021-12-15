@@ -1,13 +1,13 @@
-const path = require('path')
+import path from 'path'
 
-const test = require('ava')
+import test from 'ava'
 
-const { startDevServer } = require('./utils/dev-server')
-const got = require('./utils/got')
+import { startDevServer } from './utils/dev-server.js'
+import got from './utils/got.js'
 
 test.before(async (t) => {
   const server = await startDevServer({
-    cwd: path.join(__dirname, 'hugo-site'),
+    cwd: new URL('hugo-site', import.meta.url).pathname,
     // required so configuration won't be resolved from the current CLI repo linked site
     args: ['--offline'],
   })

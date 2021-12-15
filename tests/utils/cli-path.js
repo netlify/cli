@@ -1,6 +1,3 @@
-const path = require('path')
-const process = require('process')
+import process from 'process'
 
-const cliPath = path.resolve(__dirname, '..', '..', 'bin', process.platform === 'win32' ? 'run.cmd' : 'run')
-
-module.exports = cliPath
+export const cliPath = new URL(`../../bin/${process.platform === 'win32' ? 'run.cmd' : 'run.js'}`, import.meta.url).pathname

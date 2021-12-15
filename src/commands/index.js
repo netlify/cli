@@ -1,7 +1,2 @@
-const baseCommand = require('./base-command')
-const { createMainCommand } = require('./main')
-
-module.exports = {
-  ...baseCommand,
-  createMainCommand,
-}
+export * from './base-command.js'
+export { createMainCommand } from './main.js'

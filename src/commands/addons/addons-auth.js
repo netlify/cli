@@ -1,7 +1,7 @@
 // @ts-check
 
-const { exit, log, openBrowser } = require('../../utils')
-const { ADDON_VALIDATION, prepareAddonCommand } = require('../../utils/addons/prepare')
+import { ADDON_VALIDATION, prepareAddonCommand } from '../../utils/addons/prepare.js'
+import { exit, log, openBrowser } from '../../utils/index.js'
 
 /**
  * The addons:auth command
@@ -37,7 +37,7 @@ const addonsAuth = async (addonName, options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createAddonsAuthCommand = (program) =>
+export const createAddonsAuthCommand = (program) =>
   program
     .command('addons:auth')
     .alias('addon:auth')
@@ -46,5 +46,3 @@ const createAddonsAuthCommand = (program) =>
     .action(async (addonName, options, command) => {
       await addonsAuth(addonName, options, command)
     })
-
-module.exports = { createAddonsAuthCommand }

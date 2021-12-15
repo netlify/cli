@@ -1,12 +1,12 @@
-const path = require('path')
+import path from 'path'
 
-const test = require('ava')
+import test from 'ava'
 
-const { startDevServer } = require('./utils/dev-server')
-const got = require('./utils/got')
+import { startDevServer } from './utils/dev-server.js'
+import got from './utils/got.js'
 
 test.before(async (t) => {
-  const server = await startDevServer({ cwd: path.join(__dirname, 'eleventy-site') })
+  const server = await startDevServer({ cwd: new URL('eleventy-site', import.meta.url).pathname })
 
   t.context.server = server
 })

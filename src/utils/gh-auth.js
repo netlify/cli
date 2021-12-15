@@ -1,15 +1,15 @@
 // @ts-check
 // A simple ghauth inspired library for getting a personal access token
-const http = require('http')
-const process = require('process')
+import http from 'http'
+import process from 'process'
 
-const { Octokit } = require('@octokit/rest')
-const getPort = require('get-port')
-const inquirer = require('inquirer')
+import { Octokit } from '@octokit/rest'
+import getPort from 'get-port'
+import inquirer from 'inquirer'
 
-const { log } = require('./command-helpers')
-const { createDeferred } = require('./deferred')
-const { openBrowser } = require('./open-browser')
+import { log } from './command-helpers.js'
+import { createDeferred } from './deferred.js'
+import { openBrowser } from './open-browser.js'
 
 const SERVER_PORT = 3000
 
@@ -44,7 +44,7 @@ const promptForAuthMethod = async () => {
  * Authenticate with the netlify app
  * @returns {Promise<Token>} Returns a Promise with a token object
  */
-const authWithNetlify = async () => {
+export const authWithNetlify = async () => {
   const port = await getPort({ port: SERVER_PORT })
   const { promise: deferredPromise, reject: deferredReject, resolve: deferredResolve } = createDeferred()
 
@@ -117,7 +117,7 @@ const authWithToken = async () => {
  * Get a github token
  * @returns {Promise<Token>} Returns a Promise with a token object
  */
-const getGitHubToken = async () => {
+export const getGitHubToken = async () => {
   log('')
 
   const withNetlify = await promptForAuthMethod()
@@ -127,5 +127,3 @@ const getGitHubToken = async () => {
 
   return await authWithToken()
 }
-
-module.exports = { getGitHubToken, authWithNetlify }

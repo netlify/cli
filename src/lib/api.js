@@ -1,6 +1,6 @@
-const fetch = require('node-fetch')
+import fetch from 'node-fetch'
 
-const { warn } = require('../utils/command-helpers')
+import { warn } from '../utils/command-helpers.js'
 
 const getHeaders = ({ token }) => ({
   'Content-Type': 'application/json',
@@ -41,7 +41,7 @@ const apiPost = async ({ api, data, path }) => {
   return response
 }
 
-const uploadEdgeHandlers = async ({ api, bundleBuffer, deployId, manifest }) => {
+export const uploadEdgeHandlers = async ({ api, bundleBuffer, deployId, manifest }) => {
   // TODO: use open-api spec via api when it is exposed
   const response = await apiPost({ api, path: `deploys/${deployId}/edge_handlers`, data: manifest })
   const { error, exists, upload_url: uploadUrl } = await response.json()
@@ -71,7 +71,7 @@ const uploadEdgeHandlers = async ({ api, bundleBuffer, deployId, manifest }) => 
   return true
 }
 
-const cancelDeploy = async ({ api, deployId }) => {
+export const cancelDeploy = async ({ api, deployId }) => {
   try {
     await api.cancelSiteDeploy({ deploy_id: deployId })
   } catch (error) {
@@ -82,7 +82,7 @@ const cancelDeploy = async ({ api, deployId }) => {
 const FIRST_PAGE = 1
 const MAX_PAGES = 10
 const MAX_PER_PAGE = 100
-const listSites = async ({ api, options }) => {
+export const listSites = async ({ api, options }) => {
   const { page = FIRST_PAGE, maxPages = MAX_PAGES, ...rest } = options
   const sites = await api.listSites({ page, per_page: MAX_PER_PAGE, ...rest })
   // TODO: use pagination headers when js-client returns them
@@ -91,5 +91,3 @@ const listSites = async ({ api, options }) => {
   }
   return sites
 }
-
-module.exports = { uploadEdgeHandlers, cancelDeploy, listSites }

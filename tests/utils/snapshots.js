@@ -13,7 +13,5 @@ const normalizers = [
   { pattern: /It should be one of.+/gm, value: 'It should be one of: *' },
 ]
 
-const normalize = (inputString) =>
+export const normalize = (inputString) =>
   normalizers.reduce((acc, { pattern, value }) => acc.replace(pattern, value), inputString)
-
-module.exports = { normalize }

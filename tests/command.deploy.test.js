@@ -1,17 +1,17 @@
 /* eslint-disable require-await */
-const { join } = require('path')
-const process = require('process')
+import { join } from 'path'
+import process from 'process'
 
-const test = require('ava')
-const omit = require('omit.js').default
+import test from 'ava'
+import omit from 'omit.js'
 
-const { supportsEdgeHandlers } = require('../src/lib/account')
-const { getToken } = require('../src/utils/command-helpers')
+import { supportsEdgeHandlers } from '../src/lib/account.js'
+import { getToken } from '../src/utils/command-helpers.js'
 
-const callCli = require('./utils/call-cli')
-const { createLiveTestSite, generateSiteName } = require('./utils/create-live-test-site')
-const got = require('./utils/got')
-const { withSiteBuilder } = require('./utils/site-builder')
+import callCli from './utils/call-cli.js'
+import { createLiveTestSite, generateSiteName } from './utils/create-live-test-site.js'
+import got from './utils/got.js'
+import { withSiteBuilder } from './utils/site-builder.js'
 
 const EDGE_HANDLER_MIN_LENGTH = 50
 const SITE_NAME = generateSiteName('netlify-test-deploy-')
@@ -562,7 +562,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
   })
 
   test.serial('should deploy pre-bundled functions when a valid manifest file is found', async (t) => {
-    const bundledFunctionPath = join(__dirname, 'assets', 'bundled-function-1.zip')
+    const bundledFunctionPath = new URL('assets/bundled-function-1.zip', import.meta.url).pathname
     const bundledFunctionData = {
       mainFile: '/some/path/bundled-function-1.js',
       name: 'bundled-function-1',
@@ -621,7 +621,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
   })
 
   test.serial('should not deploy pre-bundled functions when the --skip-functions-cache flag is used', async (t) => {
-    const bundledFunctionPath = join(__dirname, 'assets', 'bundled-function-1.zip')
+    const bundledFunctionPath = new URL('assets/bundled-function-1.zip', import.meta.url).pathname
     const bundledFunctionData = {
       mainFile: '/some/path/bundled-function-1.js',
       name: 'bundled-function-1',
@@ -683,7 +683,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
     'should not deploy pre-bundled functions when the manifest file is older than the configured TTL',
     async (t) => {
       const age = 18e4
-      const bundledFunctionPath = join(__dirname, 'assets', 'bundled-function-1.zip')
+      const bundledFunctionPath = new URL('assets/bundled-function-1.zip', import.meta.url).pathname
       const bundledFunctionData = {
         mainFile: '/some/path/bundled-function-1.js',
         name: 'bundled-function-1',

@@ -1,10 +1,10 @@
-const process = require('process')
+import process from 'process'
 
-const test = require('ava')
+import test from 'ava'
 
-const { withSiteBuilder } = require('../../tests/utils/site-builder')
+import { withSiteBuilder } from '../../tests/utils/site-builder.js'
 
-const { tryLoadDotEnvFiles } = require('./dot-env')
+import { tryLoadDotEnvFiles } from './dot-env.js'
 
 test('should return an empty array for a site with no .env file', async (t) => {
   await withSiteBuilder('site-without-env-file', async (builder) => {

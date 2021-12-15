@@ -1,16 +1,18 @@
-const { readFile } = require('fs').promises
-const os = require('os')
-const process = require('process')
+import { promises } from 'fs'
+import os from 'os'
+import process from 'process'
 
-const test = require('ava')
-const execa = require('execa')
-const ini = require('ini')
+import test from 'ava'
+import { execa } from 'execa'
+import ini from 'ini'
 
-const { getPathInHome } = require('../src/lib/settings')
+import { getPathInHome } from '../src/lib/settings.js'
 
-const callCli = require('./utils/call-cli')
-const { getCLIOptions, startMockApi } = require('./utils/mock-api')
-const { createSiteBuilder } = require('./utils/site-builder')
+import callCli from './utils/call-cli.js'
+import { getCLIOptions, startMockApi } from './utils/mock-api.js'
+import { createSiteBuilder } from './utils/site-builder.js'
+
+const { readFile } = promises
 
 test.before(async (t) => {
   const builder = createSiteBuilder({ siteName: 'site-with-lm' })

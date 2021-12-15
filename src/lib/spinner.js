@@ -1,6 +1,6 @@
 // @ts-check
-const logSymbols = require('log-symbols')
-const ora = require('ora')
+import logSymbols from 'log-symbols'
+import ora from 'ora'
 
 /**
  * Creates a spinner with the following text
@@ -8,7 +8,7 @@ const ora = require('ora')
  * @param {string} config.text
  * @returns {ora.Ora}
  */
-const startSpinner = ({ text }) =>
+export const startSpinner = ({ text }) =>
   ora({
     text,
   }).start()
@@ -21,7 +21,7 @@ const startSpinner = ({ text }) =>
  * @param {string} [config.text]
  * @returns {void}
  */
-const stopSpinner = ({ error, spinner, text }) => {
+export const stopSpinner = ({ error, spinner, text }) => {
   if (!spinner) {
     return
   }
@@ -39,10 +39,8 @@ const stopSpinner = ({ error, spinner, text }) => {
  * @param {ora.Ora} config.spinner
  * @returns {void}
  */
-const clearSpinner = ({ spinner }) => {
+export const clearSpinner = ({ spinner }) => {
   if (spinner) {
     spinner.stop()
   }
 }
-
-module.exports = { clearSpinner, startSpinner, stopSpinner }

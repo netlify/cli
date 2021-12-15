@@ -1,6 +1,6 @@
-const test = require('ava')
+import test from 'ava'
 
-const { parseRepoURL } = require('./read-repo-url')
+import { parseRepoURL } from './read-repo-url.js'
 
 test('parseRepoURL: should parse GitHub URL', (t) => {
   const url = new URL('https://github.com/netlify-labs/all-the-functions/tree/master/functions/9-using-middleware')

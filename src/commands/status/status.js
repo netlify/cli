@@ -1,10 +1,10 @@
 // @ts-check
-const clean = require('clean-deep')
-const prettyjson = require('prettyjson')
+import clean from 'clean-deep'
+import prettyjson from 'prettyjson'
 
-const { chalk, error, exit, getToken, log, logJson, warn } = require('../../utils')
+import { chalk, error, exit, getToken, log, logJson, warn } from '../../utils/index.js'
 
-const { createStatusHooksCommand } = require('./status-hooks')
+import { createStatusHooksCommand } from './status-hooks.js'
 
 /**
  * The status command
@@ -112,7 +112,7 @@ const status = async (options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createStatusCommand = (program) => {
+export const createStatusCommand = (program) => {
   createStatusHooksCommand(program)
 
   return program
@@ -121,4 +121,3 @@ const createStatusCommand = (program) => {
     .option('--verbose', 'Output system info')
     .action(status)
 }
-module.exports = { createStatusCommand }

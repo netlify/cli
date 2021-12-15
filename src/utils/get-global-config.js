@@ -1,12 +1,14 @@
-const { readFile } = require('fs').promises
+import { promises } from 'fs'
 
-const Configstore = require('configstore')
-const memoizeOne = require('memoize-one')
-const { v4: uuidv4 } = require('uuid')
+import Configstore from 'configstore'
+import memoizeOne from 'memoize-one'
+import { v4 as uuidv4 } from 'uuid'
 
-const { getLegacyPathInHome, getPathInHome } = require('../lib/settings')
+import { getLegacyPathInHome, getPathInHome } from '../lib/settings.js'
 
-const globalConfigDefaults = {
+const { readFile } = promises
+
+export const globalConfigDefaults = {
   /* disable stats from being sent to Netlify */
   telemetryDisabled: false,
   /* cliId */
@@ -45,4 +47,4 @@ const getGlobalConfig = async function () {
 }
 
 // Memoise config result so that we only load it once
-module.exports = memoizeOne(getGlobalConfig)
+export default memoizeOne(getGlobalConfig)

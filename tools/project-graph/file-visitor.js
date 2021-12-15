@@ -1,17 +1,25 @@
 // @ts-check
-const { existsSync, readFileSync, statSync } = require('fs')
-const { dirname, join, parse } = require('path')
+import { existsSync, readFileSync, statSync } from 'fs'
+import { dirname, join, parse } from 'path'
 
-const ts = require('typescript')
+import {
+  createSourceFile,
+  ScriptTarget,
+  ScriptKind,
+  isCallExpression,
+  isStringLiteral,
+  isImportDeclaration,
+  visitNode,
+} from 'typescript'
 
-const { DependencyGraph } = require('./dependency-graph')
+import { DependencyGraph } from './dependency-graph.js'
 
 /**
  * tries to resolve a relative javascript module based on its specifier
  * @param {string} moduleSpecifier
  * @returns {(string|null)}
  */
-const resolveRelativeModule = (moduleSpecifier) => {
+export const resolveRelativeModule = (moduleSpecifier) => {
   if (existsSync(moduleSpecifier) && statSync(moduleSpecifier).isFile()) {
     return moduleSpecifier
   }
@@ -30,7 +38,7 @@ const resolveRelativeModule = (moduleSpecifier) => {
  * @param {import('./types').VisitorState} state
  * @param {any} parent
  */
-const fileVisitor = function (fileName, state, parent) {
+export const fileVisitor = function (fileName, state, parent) {
   if (!state) {
     state = { graph: new DependencyGraph(), visitorPlugins: [] }
   }
@@ -46,7 +54,7 @@ const fileVisitor = function (fileName, state, parent) {
 
   const folder = dirname(fileName)
   const fileContent = readFileSync(fileName, 'utf-8')
-  const sourceFile = ts.createSourceFile(fileName, fileContent, ts.ScriptTarget.ES2020, true, ts.ScriptKind.JS)
+  const sourceFile = createSourceFile(fileName, fileContent, ScriptTarget.ES2020, true, ScriptKind.JS)
 
   /**
    * Resolves a javascript import location
@@ -85,11 +93,11 @@ const fileVisitor = function (fileName, state, parent) {
    */
   const visitor = function (node) {
     // TODO: once we need import specifiers (esm or typescript add them here)
-    if (ts.isCallExpression(node) && node.expression.getText() === 'require' && ts.isStringLiteral(node.arguments[0])) {
+    if (isCallExpression(node) && node.expression.getText() === 'require' && isStringLiteral(node.arguments[0])) {
       visitDependency(node.arguments[0].text)
     }
 
-    if (ts.isImportDeclaration(node) && ts.isStringLiteral(node.moduleSpecifier)) {
+    if (isImportDeclaration(node) && isStringLiteral(node.moduleSpecifier)) {
       visitDependency(node.moduleSpecifier.text)
     }
 
@@ -102,11 +110,11 @@ const fileVisitor = function (fileName, state, parent) {
     })
 
     node.getChildren().forEach((childNode) => {
-      ts.visitNode(childNode, visitor)
+      visitNode(childNode, visitor)
     })
   }
   // start visiting the sourceFile
-  ts.visitNode(sourceFile, visitor)
+  visitNode(sourceFile, visitor)
 
   // add node to graph
   state.graph.addFile(fileName)
@@ -115,5 +123,3 @@ const fileVisitor = function (fileName, state, parent) {
     state.graph.addDependency(parent, fileName)
   }
 }
-
-module.exports = { fileVisitor, resolveRelativeModule }

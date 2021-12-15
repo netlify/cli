@@ -1,8 +1,8 @@
 // @ts-check
-const inquirer = require('inquirer')
+import inquirer from 'inquirer'
 
-const { error, exit, log } = require('../../utils')
-const { ADDON_VALIDATION, prepareAddonCommand } = require('../../utils/addons/prepare')
+import { ADDON_VALIDATION, prepareAddonCommand } from '../../utils/addons/prepare.js'
+import { error, exit, log } from '../../utils/index.js'
 
 /**
  * The addons:delete command
@@ -46,7 +46,7 @@ const addonsDelete = async (addonName, options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createAddonsDeleteCommand = (program) =>
+export const createAddonsDeleteCommand = (program) =>
   program
     .command('addons:delete')
     .alias('addon:delete')
@@ -56,5 +56,3 @@ const createAddonsDeleteCommand = (program) =>
     )
     .option('-f, --force', 'delete without prompting (useful for CI)')
     .action(addonsDelete)
-
-module.exports = { createAddonsDeleteCommand }

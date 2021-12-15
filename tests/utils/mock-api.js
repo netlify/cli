@@ -1,6 +1,6 @@
-const { isDeepStrictEqual } = require('util')
+import { isDeepStrictEqual } from 'util'
 
-const express = require('express')
+import express from 'express'
 
 const addRequest = (requests, request) => {
   requests.push({
@@ -11,7 +11,7 @@ const addRequest = (requests, request) => {
   })
 }
 
-const startMockApi = ({ routes }) => {
+export const startMockApi = ({ routes }) => {
   const requests = []
   const app = express()
   app.use(express.urlencoded({ extended: true }))
@@ -42,7 +42,7 @@ const startMockApi = ({ routes }) => {
   return { server: app.listen(), requests }
 }
 
-const withMockApi = async (routes, testHandler) => {
+export const withMockApi = async (routes, testHandler) => {
   let mockApi
   try {
     mockApi = startMockApi({ routes })
@@ -53,9 +53,7 @@ const withMockApi = async (routes, testHandler) => {
   }
 }
 
-const getCLIOptions = ({ apiUrl, builder: { directory: cwd } }) => ({
+export const getCLIOptions = ({ apiUrl, builder: { directory: cwd } }) => ({
   cwd,
   env: { NETLIFY_AUTH_TOKEN: 'fake-token', NETLIFY_SITE_ID: 'site_id', NETLIFY_API_URL: apiUrl },
 })
-
-module.exports = { withMockApi, startMockApi, getCLIOptions }

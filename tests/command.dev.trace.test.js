@@ -1,7 +1,7 @@
-const test = require('ava')
+import test from 'ava'
 
-const callCli = require('./utils/call-cli')
-const { withSiteBuilder } = require('./utils/site-builder')
+import callCli from './utils/call-cli.js'
+import { withSiteBuilder } from './utils/site-builder.js'
 
 test('routing-local-proxy does not match redirect for empty site', async (t) => {
   await withSiteBuilder('empty-site', async (builder) => {

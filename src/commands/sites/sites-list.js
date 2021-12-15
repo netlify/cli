@@ -1,8 +1,8 @@
 // @ts-check
 
-const { listSites } = require('../../lib/api')
-const { startSpinner, stopSpinner } = require('../../lib/spinner')
-const { chalk, log, logJson } = require('../../utils')
+import { listSites } from '../../lib/api.js'
+import { startSpinner, stopSpinner } from '../../lib/spinner.js'
+import { chalk, log, logJson } from '../../utils/index.js'
 
 /**
  * The sites:list command
@@ -78,7 +78,7 @@ Count: ${logSites.length}
  * Creates the `netlify sites:list` command
  * @param {import('../base-command').BaseCommand} program
  */
-const createSitesListCommand = (program) =>
+export const createSitesListCommand = (program) =>
   program
     .command('sites:list')
     .description('List all sites you have access to')
@@ -86,5 +86,3 @@ const createSitesListCommand = (program) =>
     .action(async (options, command) => {
       await sitesList(options, command)
     })
-
-module.exports = { createSitesListCommand }

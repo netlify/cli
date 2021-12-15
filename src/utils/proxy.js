@@ -1,28 +1,30 @@
 // @ts-check
-const { Buffer } = require('buffer')
-const { readFile } = require('fs').promises
-const http = require('http')
-const https = require('https')
-const path = require('path')
+import { Buffer } from 'buffer'
+import { promises } from 'fs'
+import http from 'http'
+import https from 'https'
+import path from 'path'
 
-const contentType = require('content-type')
-const cookie = require('cookie')
-const { get } = require('dot-prop')
-const httpProxy = require('http-proxy')
-const { createProxyMiddleware } = require('http-proxy-middleware')
-const jwtDecode = require('jwt-decode')
-const locatePath = require('locate-path')
-const isEmpty = require('lodash/isEmpty')
-const pEvent = require('p-event')
-const pFilter = require('p-filter')
-const toReadableStream = require('to-readable-stream')
+import contentType from 'content-type'
+import cookie from 'cookie'
+import { get } from 'dot-prop'
+import httpProxy from 'http-proxy'
+import { createProxyMiddleware } from 'http-proxy-middleware'
+import jwtDecode from 'jwt-decode'
+import locatePath from 'locate-path'
+import isEmpty from 'lodash/isEmpty.js'
+import pEvent from 'p-event'
+import pFilter from 'p-filter'
+import toReadableStream from 'to-readable-stream'
 
-const { fileExistsAsync, isFileAsync } = require('../lib/fs')
+import { fileExistsAsync, isFileAsync } from '../lib/fs.js'
 
-const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./command-helpers')
-const { createStreamPromise } = require('./create-stream-promise')
-const { headersForPath, parseHeaders } = require('./headers')
-const { createRewriter, onChanges } = require('./rules-proxy')
+import { NETLIFYDEVLOG, NETLIFYDEVWARN } from './command-helpers.js'
+import { createStreamPromise } from './create-stream-promise.js'
+import { headersForPath, parseHeaders } from './headers.js'
+import { createRewriter, onChanges } from './rules-proxy.js'
+
+const { readFile } = promises
 
 const isInternal = function (url) {
   return url.startsWith('/.netlify/')
@@ -399,7 +401,7 @@ const onRequest = async ({ addonsUrls, functionsServer, proxy, rewriter, setting
   proxy.web(req, res, options)
 }
 
-const startProxy = async function (settings, addonsUrls, configPath, projectDir) {
+export const startProxy = async function (settings, addonsUrls, configPath, projectDir) {
   const functionsServer = settings.functionsPort ? `http://localhost:${settings.functionsPort}` : null
 
   const proxy = await initializeProxy({
@@ -435,5 +437,3 @@ const startProxy = async function (settings, addonsUrls, configPath, projectDir)
 }
 
 const BYTES_LIMIT = 30
-
-module.exports = { startProxy }

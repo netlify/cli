@@ -1,6 +1,6 @@
-const test = require('ava')
+import test from 'ava'
 
-const { aggressiveJSONParse, parseRawFlags } = require('./parse-raw-flags')
+import { aggressiveJSONParse, parseRawFlags } from './parse-raw-flags.js'
 
 test.serial('JSONTruthy works with various inputs', (t) => {
   const testPairs = [

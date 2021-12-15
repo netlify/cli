@@ -1,9 +1,9 @@
 // @ts-check
-const { Buffer } = require('buffer')
+import { Buffer } from 'buffer'
 
-const { NETLIFYDEVERR } = require('../../utils')
+import { NETLIFYDEVERR } from '../../utils/index.js'
 
-const { detectAwsSdkError } = require('./utils')
+import { detectAwsSdkError } from './utils.js'
 
 const addHeaders = (headers, response) => {
   if (!headers) {
@@ -15,7 +15,7 @@ const addHeaders = (headers, response) => {
   })
 }
 
-const handleSynchronousFunction = function (err, result, response) {
+export const handleSynchronousFunction = function (err, result, response) {
   if (err) {
     return handleErr(err, response)
   }
@@ -61,5 +61,3 @@ const validateLambdaResponse = (lambdaResponse) => {
 
   return {}
 }
-
-module.exports = { handleSynchronousFunction }

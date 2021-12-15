@@ -1,9 +1,9 @@
-const process = require('process')
+import process from 'process'
 
-const test = require('ava')
+import test from 'ava'
 
-const callCli = require('./utils/call-cli')
-const { withSiteBuilder } = require('./utils/site-builder')
+import callCli from './utils/call-cli.js'
+import { withSiteBuilder } from './utils/site-builder.js'
 
 test('should pass .env variables to exec command', async (t) => {
   await withSiteBuilder('site-env-file', async (builder) => {

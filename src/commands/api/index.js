@@ -1,5 +1,1 @@
-const { createApiCommand } = require('./api')
-
-module.exports = {
-  createApiCommand,
-}
+export { createApiCommand } from './api.js'

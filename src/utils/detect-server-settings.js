@@ -1,18 +1,18 @@
 // @ts-check
-const { EOL } = require('os')
-const path = require('path')
-const process = require('process')
+import { EOL } from 'os'
+import path from 'path'
+import process from 'process'
 
-const { getFramework, listFrameworks } = require('@netlify/framework-info')
-const fuzzy = require('fuzzy')
-const getPort = require('get-port')
-const isPlainObject = require('is-plain-obj')
+import { getFramework, listFrameworks } from '@netlify/framework-info'
+import fuzzy from 'fuzzy'
+import getPort from 'get-port'
+import isPlainObject from 'is-plain-obj'
 
-const { readFileAsyncCatchError } = require('../lib/fs')
+import { readFileAsyncCatchError } from '../lib/fs.js'
 
-const { NETLIFYDEVWARN, chalk, log } = require('./command-helpers')
-const { acquirePort } = require('./dev')
-const { getInternalFunctionsDir } = require('./functions')
+import { NETLIFYDEVWARN, chalk, log } from './command-helpers.js'
+import { acquirePort } from './dev.js'
+import { getInternalFunctionsDir } from './functions/index.js'
 
 const formatProperty = (str) => chalk.magenta(`'${str}'`)
 const formatValue = (str) => chalk.green(`'${str}'`)
@@ -185,10 +185,8 @@ const detectFrameworkSettings = async ({ projectDir }) => {
 
   if (frameworks.length > 1) {
     // performance optimization, load inquirer on demand
-    // eslint-disable-next-line node/global-require
-    const inquirer = require('inquirer')
-    // eslint-disable-next-line node/global-require
-    const inquirerAutocompletePrompt = require('inquirer-autocomplete-prompt')
+    const { default: inquirer } = await import('inquirer')
+    const { default: inquirerAutocompletePrompt } = await import('inquirer-autocomplete-prompt')
     /** multiple matching detectors, make the user choose */
     inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
     const scriptInquirerOptions = formatSettingsArrForInquirer(frameworks)
@@ -265,7 +263,7 @@ const handleForcedFramework = async ({ devConfig, projectDir }) => {
  * @param {string} projectDir
  * @returns {Promise<import('./types').ServerSettings>}
  */
-const detectServerSettings = async (devConfig, options, projectDir) => {
+export const detectServerSettings = async (devConfig, options, projectDir) => {
   validateStringProperty({ devConfig, property: 'framework' })
 
   /** @type {Partial<import('./types').BaseServerSettings>} */
@@ -349,8 +347,4 @@ const formatSettingsArrForInquirer = function (frameworks) {
   // Replace by .flatMap() when Node.js support >= 11.0.0
   // eslint-disable-next-line unicorn/prefer-spread
   return [].concat(...formattedArr)
-}
-
-module.exports = {
-  detectServerSettings,
 }

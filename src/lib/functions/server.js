@@ -1,16 +1,16 @@
 // @ts-check
-const jwtDecode = require('jwt-decode')
+import jwtDecode from 'jwt-decode'
 
-const { NETLIFYDEVERR, NETLIFYDEVLOG, error: errorExit, getInternalFunctionsDir, log } = require('../../utils')
+import { NETLIFYDEVERR, NETLIFYDEVLOG, error as errorExit, getInternalFunctionsDir, log } from '../../utils/index.js'
 
-const { handleBackgroundFunction, handleBackgroundFunctionResult } = require('./background')
-const { createFormSubmissionHandler } = require('./form-submissions-handler')
-const { FunctionsRegistry } = require('./registry')
-const { handleSynchronousFunction } = require('./synchronous')
-const { shouldBase64Encode } = require('./utils')
+import { handleBackgroundFunction, handleBackgroundFunctionResult } from './background.js'
+import { createFormSubmissionHandler } from './form-submissions-handler.js'
+import { FunctionsRegistry } from './registry.js'
+import { handleSynchronousFunction } from './synchronous.js'
+import { shouldBase64Encode } from './utils.js'
 
 const buildClientContext = function (headers) {
-  // inject a client context based on auth header, ported over from netlify-lambda (https://github.com/netlify/netlify-lambda/pull/57)
+  // inject a client context based on auth header, ported over from netlify-lambda (https as//github.com/netlify/netlify-lambda/pull/57)
   if (!headers.authorization) return
 
   const parts = headers.authorization.split(' ')
@@ -36,7 +36,7 @@ const buildClientContext = function (headers) {
   }
 }
 
-const createHandler = function ({ functionsRegistry }) {
+export const createHandler = function ({ functionsRegistry }) {
   return async function handler(request, response) {
     // handle proxies without path re-writes (http-servr)
     const cleanPath = request.path.replace(/^\/.netlify\/(functions|builders)/, '')
@@ -123,12 +123,15 @@ const createHandler = function ({ functionsRegistry }) {
   }
 }
 
-const getFunctionsServer = function ({ buildersPrefix, functionsPrefix, functionsRegistry, siteUrl }) {
+/**
+ *
+ * @param {*} param0
+ * @returns {Promise<any>}
+ */
+const getFunctionsServer = async function ({ buildersPrefix, functionsPrefix, functionsRegistry, siteUrl }) {
   // performance optimization, load express on demand
-  // eslint-disable-next-line node/global-require
-  const express = require('express')
-  // eslint-disable-next-line node/global-require
-  const expressLogging = require('express-logging')
+  const { default: express } = await import('express')
+  const { default: expressLogging } = await import('express-logging')
   const app = express()
   const functionHandler = createHandler({ functionsRegistry })
 
@@ -158,7 +161,7 @@ const getFunctionsServer = function ({ buildersPrefix, functionsPrefix, function
   return app
 }
 
-const startFunctionsServer = async ({
+export const startFunctionsServer = async ({
   buildersPrefix = '',
   capabilities,
   config,
@@ -185,7 +188,7 @@ const startFunctionsServer = async ({
 
     await functionsRegistry.scan(functionsDirectories)
 
-    const server = getFunctionsServer({
+    const server = await getFunctionsServer({
       functionsRegistry,
       siteUrl,
       functionsPrefix,
@@ -208,5 +211,3 @@ const startWebServer = async ({ server, settings }) => {
     })
   })
 }
-
-module.exports = { startFunctionsServer, createHandler }

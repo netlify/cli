@@ -1,11 +1,11 @@
-const { sep } = require('path')
+import { sep } from 'path'
 
-const pWaitFor = require('p-wait-for')
+import pWaitFor from 'p-wait-for'
 
-const { DEPLOY_POLL } = require('./constants')
+import { DEPLOY_POLL } from './constants.js'
 
 // normalize windows paths to unix paths
-const normalizePath = (relname) => {
+export const normalizePath = (relname) => {
   if (relname.includes('#') || relname.includes('?')) {
     throw new Error(`Invalid filename ${relname}. Deployed filenames cannot contain # or ? characters`)
   }
@@ -18,7 +18,7 @@ const normalizePath = (relname) => {
 }
 
 // poll an async deployId until its done diffing
-const waitForDiff = async (api, deployId, siteId, timeout) => {
+export const waitForDiff = async (api, deployId, siteId, timeout) => {
   // capture ready deploy during poll
   let deploy
 
@@ -56,7 +56,7 @@ const waitForDiff = async (api, deployId, siteId, timeout) => {
 }
 
 // Poll a deployId until its ready
-const waitForDeploy = async (api, deployId, siteId, timeout) => {
+export const waitForDeploy = async (api, deployId, siteId, timeout) => {
   // capture ready deploy during poll
   let deploy
 
@@ -93,16 +93,9 @@ const waitForDeploy = async (api, deployId, siteId, timeout) => {
 }
 
 // Transform the fileShaMap and fnShaMap into a generic shaMap that file-uploader.js can use
-const getUploadList = (required, shaMap) => {
+export const getUploadList = (required, shaMap) => {
   if (!required || !shaMap) return []
   // TODO: use `Array.flatMap()` instead once we remove support for Node <11.0.0
   // eslint-disable-next-line unicorn/prefer-spread
   return [].concat(...required.map((sha) => shaMap[sha]))
-}
-
-module.exports = {
-  normalizePath,
-  waitForDiff,
-  waitForDeploy,
-  getUploadList,
 }

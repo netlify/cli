@@ -1,6 +1,1 @@
-const { createInitCommand, init } = require('./init')
-
-module.exports = {
-  createInitCommand,
-  init,
-}
+export { createInitCommand, init } from './init.js'

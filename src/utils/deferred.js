@@ -1,5 +1,5 @@
 // @ts-check
-const createDeferred = () => {
+export const createDeferred = () => {
   let resolveDeferred
   let rejectDeferred
   const promise = new Promise((resolve, reject) => {
@@ -9,5 +9,3 @@ const createDeferred = () => {
 
   return { promise, reject: rejectDeferred, resolve: resolveDeferred }
 }
-
-module.exports = { createDeferred }

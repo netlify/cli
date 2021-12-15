@@ -1,16 +1,18 @@
-const { writeFile } = require('fs').promises
-const path = require('path')
+import { promises } from 'fs'
+import path from 'path'
 
-const { zipFunction } = require('@netlify/zip-it-and-ship-it')
-const decache = require('decache')
-const makeDir = require('make-dir')
-const readPkgUp = require('read-pkg-up')
-const sourceMapSupport = require('source-map-support')
+import { zipFunction } from '@netlify/zip-it-and-ship-it'
+import decache from 'decache'
+import makeDir from 'make-dir'
+import readPkgUp from 'read-pkg-up'
+import sourceMapSupport from 'source-map-support'
 
-const { NETLIFYDEVERR } = require('../../../../../utils')
-const { getPathInProject } = require('../../../../settings')
-const { normalizeFunctionsConfig } = require('../../../config')
-const { memoizedBuild } = require('../../../memoized-build')
+import { NETLIFYDEVERR } from '../../../../../utils/index.js'
+import { getPathInProject } from '../../../../settings.js'
+import { normalizeFunctionsConfig } from '../../../config.js'
+import { memoizedBuild } from '../../../memoized-build.js'
+
+const { writeFile } = promises
 
 const addFunctionsConfigDefaults = (config) => ({
   ...config,
@@ -80,7 +82,7 @@ const getTargetDirectory = async ({ errorExit }) => {
   return targetDirectory
 }
 
-module.exports = async ({ config, directory, errorExit, func, projectRoot }) => {
+const zisi = async ({ config, directory, errorExit, func, projectRoot }) => {
   const functionsConfig = addFunctionsConfigDefaults(
     normalizeFunctionsConfig({ functionsConfig: config.functions, projectRoot }),
   )
@@ -116,3 +118,5 @@ module.exports = async ({ config, directory, errorExit, func, projectRoot }) => 
     target: targetDirectory,
   }
 }
+
+export default zisi

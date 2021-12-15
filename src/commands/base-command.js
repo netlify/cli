@@ -1,17 +1,15 @@
 // @ts-check
-const process = require('process')
-const { format } = require('util')
+import process from 'process'
+import { format } from 'util'
 
-const resolveConfig = require('@netlify/config')
-const { Command, Option } = require('commander')
-const debug = require('debug')
-const merge = require('lodash/merge')
+import resolveConfig from '@netlify/config'
+import { Command, Option } from 'commander'
+import debug from 'debug'
+import merge from 'lodash/merge.js'
+import { NetlifyAPI } from 'netlify'
 
-// TODO: use static `import` after migrating this repository to pure ES modules
-const jsClient = import('netlify')
-
-const { getAgent } = require('../lib/http-agent')
-const {
+import { getAgent } from '../lib/http-agent.js'
+import {
   NETLIFY_CYAN,
   StateConfig,
   USER_AGENT,
@@ -28,7 +26,7 @@ const {
   pollForToken,
   sortOptions,
   track,
-} = require('../utils')
+} from '../utils/index.js'
 
 // Netlify CLI client id. Lives in bot@netlify.com
 // TODO: setup client for multiple environments
@@ -79,7 +77,7 @@ const getDuration = function (startTime) {
  */
 
 /** Base command class that provides tracking and config initialization */
-class BaseCommand extends Command {
+export class BaseCommand extends Command {
   /** @type {NetlifyOptions} */
   netlify
 
@@ -425,7 +423,6 @@ class BaseCommand extends Command {
     })
     const apiOpts = { ...apiUrlOpts, agent }
     const globalConfig = await getGlobalConfig()
-    const { NetlifyAPI } = await jsClient
 
     actionCommand.netlify = {
       // api methods
@@ -498,5 +495,3 @@ class BaseCommand extends Command {
     }
   }
 }
-
-module.exports = { BaseCommand }

@@ -1,13 +1,13 @@
-const http = require('http')
-const path = require('path')
+import http from 'http'
+import path from 'path'
 
-const test = require('ava')
-const getPort = require('get-port')
+import test from 'ava'
+import getPort from 'get-port'
 
-const { createRewriter } = require('../src/utils/rules-proxy')
+import { createRewriter } from '../src/utils/rules-proxy.js'
 
-const got = require('./utils/got')
-const { createSiteBuilder } = require('./utils/site-builder')
+import got from './utils/got.js'
+import { createSiteBuilder } from './utils/site-builder.js'
 
 test.before(async (t) => {
   const builder = createSiteBuilder({ siteName: 'site-with-redirects-file' })

@@ -1,5 +1,5 @@
 // @ts-check
-const { chalk, exit, getToken, log } = require('../../utils')
+import { chalk, exit, getToken, log } from '../../utils/index.js'
 
 const msg = function (location) {
   switch (location) {
@@ -19,7 +19,7 @@ const msg = function (location) {
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-const login = async (options, command) => {
+export const login = async (options, command) => {
   const [accessToken, location] = await getToken()
 
   command.setAnalyticsPayload({ new: options.new })
@@ -42,7 +42,7 @@ const login = async (options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createLoginCommand = (program) =>
+export const createLoginCommand = (program) =>
   program
     .command('login')
     .description(
@@ -51,5 +51,3 @@ Opens a web browser to acquire an OAuth token.`,
     )
     .option('--new', 'Login to new Netlify account')
     .action(login)
-
-module.exports = { createLoginCommand, login }

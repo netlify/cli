@@ -1,5 +1,1 @@
-const { createWatchCommand } = require('./watch')
-
-module.exports = {
-  createWatchCommand,
-}
+export { createWatchCommand } from './watch.js'

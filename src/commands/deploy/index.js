@@ -1,5 +1,1 @@
-const { createDeployCommand } = require('./deploy')
-
-module.exports = {
-  createDeployCommand,
-}
+export { createDeployCommand } from './deploy.js'

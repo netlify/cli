@@ -1,6 +1,1 @@
-const { createLoginCommand, login } = require('./login')
-
-module.exports = {
-  createLoginCommand,
-  login,
-}
+export { createLoginCommand, login } from './login.js'

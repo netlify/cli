@@ -1,13 +1,13 @@
-const test = require('ava')
-const pWaitFor = require('p-wait-for')
+import test from 'ava'
+import pWaitFor from 'p-wait-for'
 
-const { tryAndLogOutput, withDevServer } = require('./utils/dev-server')
-const got = require('./utils/got')
-const { createMock: createExecaMock } = require('./utils/mock-execa')
-const { pause } = require('./utils/pause')
-const { withSiteBuilder } = require('./utils/site-builder')
+import { tryAndLogOutput, withDevServer } from './utils/dev-server.js'
+import got from './utils/got.js'
+import { createMock as createExecaMock } from './utils/mock-execa.js'
+import { pause } from './utils/pause.js'
+import { withSiteBuilder } from './utils/site-builder.js'
 
-const WAIT_INTERVAL = 600
+import WAIT_INTERVAL = 600
 const WAIT_TIMEOUT = 3000
 const WAIT_WRITE = 1000
 
@@ -15,7 +15,7 @@ test('Updates a Go function when a file is modified', async (t) => {
   const originalBody = 'Hello, world!'
   const updatedBody = 'Hello, Netlify!'
   const [execaMock, removeExecaMock] = await createExecaMock(`
-    const { writeFileSync } = require('fs')
+    const { writeFileSync } from 'fs'
 
     let proxyCallCount = 0
 
@@ -46,7 +46,7 @@ test('Updates a Go function when a file is modified', async (t) => {
       }
     }
 
-    module.exports = (...args) => ({
+    export default (...args) => ({
       ...handler(...args) || {},
       stderr: { pipe: () => {} }
     })

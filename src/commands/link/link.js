@@ -1,13 +1,12 @@
 // @ts-check
-const { join, relative } = require('path')
-const path = require('path')
-const { cwd } = require('process')
+import { join, relative } from 'path'
+import { cwd } from 'process'
 
-const inquirer = require('inquirer')
-const isEmpty = require('lodash/isEmpty')
+import inquirer from 'inquirer'
+import isEmpty from 'lodash/isEmpty.js'
 
-const { listSites } = require('../../lib/api')
-const { chalk, ensureNetlifyIgnore, error, exit, getRepoData, log, track } = require('../../utils')
+import { listSites } from '../../lib/api.js'
+import { chalk, ensureNetlifyIgnore, error, exit, getRepoData, log, track } from '../../utils/index.js'
 
 /**
  *
@@ -235,7 +234,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
   log(`Site url:  ${chalk.cyanBright(site.ssl_url || site.url)}`)
   log()
 
-  log(`Site id saved to ${path.join(netlify.site.root, '/.netlify/state.json')}`)
+  log(`Site id saved to ${join(netlify.site.root, '/.netlify/state.json')}`)
   // log(`Local Config: .netlify/config.json`)
   log()
   log(`You can now run other \`netlify\` cli commands in this directory`)
@@ -248,7 +247,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-const link = async (options, command) => {
+export const link = async (options, command) => {
   await command.authenticate()
 
   const {
@@ -354,7 +353,7 @@ const link = async (options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createLinkCommand = (program) =>
+export const createLinkCommand = (program) =>
   program
     .command('link')
     .description('Link a local repo or project folder to an existing site on Netlify')
@@ -363,5 +362,3 @@ const createLinkCommand = (program) =>
     .option('--gitRemoteName <name>', 'Name of Git remote to use. e.g. "origin"')
     .addExamples(['netlify link', 'netlify link --id 123-123-123-123', 'netlify link --name my-site-name'])
     .action(link)
-
-module.exports = { createLinkCommand, link }

@@ -1,12 +1,12 @@
-const requiredConfigValues = function (config) {
+export const requiredConfigValues = function (config) {
   return Object.keys(config).filter((key) => config[key].required)
 }
 
-const missingConfigValues = function (requiredConfig, providedConfig) {
+export const missingConfigValues = function (requiredConfig, providedConfig) {
   return requiredConfig.filter((key) => !providedConfig[key])
 }
 
-const updateConfigValues = function (allowedConfig, currentConfig, newConfig) {
+export const updateConfigValues = function (allowedConfig, currentConfig, newConfig) {
   return Object.keys(allowedConfig).reduce((acc, key) => {
     if (newConfig[key]) {
       acc[key] = newConfig[key]
@@ -15,10 +15,4 @@ const updateConfigValues = function (allowedConfig, currentConfig, newConfig) {
     acc[key] = currentConfig[key]
     return acc
   }, {})
-}
-
-module.exports = {
-  requiredConfigValues,
-  missingConfigValues,
-  updateConfigValues,
 }

@@ -1,20 +1,19 @@
 // @ts-check
-const {
-  constants,
-  promises: { access, readFile, rm, stat },
-} = require('fs')
-const { version } = require('process')
+import { constants, promises } from 'fs'
+import { version } from 'process'
 
-const del = require('del')
-const { gte, parse } = require('semver')
+import del from 'del'
+import semver from 'semver'
 
-const NODE_VERSION = parse(version)
+const { access, readFile, rm, stat } = promises
+
+const NODE_VERSION = semver.parse(version)
 
 /**
  * reads a file async and catches potential errors
  * @param {string} filePath
  */
-const readFileAsyncCatchError = async (filePath) => {
+export const readFileAsyncCatchError = async (filePath) => {
   try {
     return { content: await readFile(filePath, 'utf-8') }
   } catch (error) {
@@ -22,7 +21,7 @@ const readFileAsyncCatchError = async (filePath) => {
   }
 }
 
-const fileExistsAsync = async (filePath) => {
+export const fileExistsAsync = async (filePath) => {
   try {
     await access(filePath, constants.F_OK)
     return true
@@ -36,8 +35,8 @@ const fileExistsAsync = async (filePath) => {
  * @param {string} path
  * @returns {Promise<void>}
  */
-const rmdirRecursiveAsync = async (path) => {
-  if (gte(NODE_VERSION, '14.14.0')) {
+export const rmdirRecursiveAsync = async (path) => {
+  if (semver.gte(NODE_VERSION, '14.14.0')) {
     return await rm(path, { force: true, recursive: true })
   }
   await del(path, { force: true })
@@ -66,18 +65,10 @@ const isType = async (filePath, type) => {
  * Checks if the provided filePath is a file
  * @param {string} filePath
  */
-const isFileAsync = (filePath) => isType(filePath, 'isFile')
+export const isFileAsync = (filePath) => isType(filePath, 'isFile')
 
 /**
  * Checks if the provided filePath is a directory
  * @param {string} filePath
  */
-const isDirectoryAsync = (filePath) => isType(filePath, 'isDirectory')
-
-module.exports = {
-  fileExistsAsync,
-  isDirectoryAsync,
-  isFileAsync,
-  readFileAsyncCatchError,
-  rmdirRecursiveAsync,
-}
+export const isDirectoryAsync = (filePath) => isType(filePath, 'isDirectory')

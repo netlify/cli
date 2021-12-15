@@ -1,15 +1,15 @@
 // @ts-check
-const { dirname } = require('path')
-const process = require('process')
-const util = require('util')
+import { dirname } from 'path'
+import process from 'process'
+import util from 'util'
 
-const findUp = require('find-up')
-const gitRepoInfo = require('git-repo-info')
-const gitconfiglocal = require('gitconfiglocal')
-const isEmpty = require('lodash/isEmpty')
-const parseGitRemote = require('parse-github-url')
+import findUp from 'find-up'
+import gitRepoInfo from 'git-repo-info'
+import gitconfiglocal from 'gitconfiglocal'
+import isEmpty from 'lodash/isEmpty.js'
+import parseGitRemote from 'parse-github-url'
 
-const { log } = require('./command-helpers')
+import { log } from './command-helpers.js'
 
 /**
  *
@@ -17,7 +17,7 @@ const { log } = require('./command-helpers')
  * @param {string} [config.remoteName]
  * @returns
  */
-const getRepoData = async function ({ remoteName } = {}) {
+export const getRepoData = async function ({ remoteName } = {}) {
   try {
     const cwd = process.cwd()
     const [gitConfig, gitDirectory] = await Promise.all([
@@ -68,5 +68,3 @@ const PROVIDERS = {
   'github.com': 'github',
   'gitlab.com': 'gitlab',
 }
-
-module.exports = { getRepoData }

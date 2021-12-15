@@ -1,14 +1,14 @@
 // @ts-check
-const process = require('process')
+import process from 'process'
 
-const { get } = require('dot-prop')
-const getPort = require('get-port')
-const isEmpty = require('lodash/isEmpty')
+import { get } from 'dot-prop'
+import getPort from 'get-port'
+import isEmpty from 'lodash/isEmpty.js'
 
-const { supportsBackgroundFunctions } = require('../lib/account')
+import { supportsBackgroundFunctions } from '../lib/account.js'
 
-const { NETLIFYDEVLOG, chalk, error, log, warn } = require('./command-helpers')
-const { loadDotEnvFiles } = require('./dot-env')
+import { NETLIFYDEVLOG, chalk, error, log, warn } from './command-helpers.js'
+import { loadDotEnvFiles } from './dot-env.js'
 
 // Possible sources of environment variables. For the purpose of printing log messages only. Order does not matter.
 const ENV_VAR_SOURCES = {
@@ -97,7 +97,7 @@ const BACKGROUND_FUNCTION_TIMEOUT = 900
  * @param {*} config.siteInfo
  * @returns
  */
-const getSiteInformation = async ({ api, offline, site, siteInfo }) => {
+export const getSiteInformation = async ({ api, offline, site, siteInfo }) => {
   if (site.id && !offline) {
     validateSiteInfo({ site, siteInfo })
     const [accounts, addons] = await Promise.all([getAccounts({ api }), getAddons({ api, site })])
@@ -138,7 +138,7 @@ const getEnvSourceName = (source) => {
 
 // Takes a set of environment variables in the format provided by @netlify/config, augments it with variables from both
 // dot-env files and the process itself, and injects into `process.env`.
-const injectEnvVariables = async ({ env, site }) => {
+export const injectEnvVariables = async ({ env, site }) => {
   const environment = new Map(Object.entries(env))
   const dotEnvFiles = await loadDotEnvFiles({ projectDir: site.root })
 
@@ -185,16 +185,10 @@ const injectEnvVariables = async ({ env, site }) => {
   process.env.NETLIFY_DEV = 'true'
 }
 
-const acquirePort = async ({ configuredPort, defaultPort, errorMessage }) => {
+export const acquirePort = async ({ configuredPort, defaultPort, errorMessage }) => {
   const acquiredPort = await getPort({ port: configuredPort || defaultPort })
   if (configuredPort && acquiredPort !== configuredPort) {
     throw new Error(`${errorMessage}: '${configuredPort}'`)
   }
   return acquiredPort
-}
-
-module.exports = {
-  getSiteInformation,
-  injectEnvVariables,
-  acquirePort,
 }

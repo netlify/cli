@@ -1,10 +1,10 @@
-const http = require('http')
+import http from 'http'
 
-const test = require('ava')
-const { createProxyServer } = require('http-proxy')
-const { HttpsProxyAgent } = require('https-proxy-agent')
+import test from 'ava'
+import { createProxyServer } from 'http-proxy'
+import { HttpsProxyAgent } from 'https-proxy-agent'
 
-const { tryGetAgent } = require('./http-agent')
+import { tryGetAgent } from './http-agent.js'
 
 test(`should return an empty object when there is no httpProxy`, async (t) => {
   t.deepEqual(await tryGetAgent({}), {})

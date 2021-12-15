@@ -1,11 +1,11 @@
-const path = require('path')
+import path from 'path'
 
-const test = require('ava')
-const execa = require('execa')
+import test from 'ava'
+import { execa } from 'execa'
 
-const cliPath = require('./utils/cli-path')
-const { withMockApi } = require('./utils/mock-api')
-const { withSiteBuilder } = require('./utils/site-builder')
+import { cliPath } from './utils/cli-path.js'
+import { withMockApi } from './utils/mock-api.js'
+import { withSiteBuilder } from './utils/site-builder.js'
 
 const defaultEnvs = {
   NETLIFY_AUTH_TOKEN: 'fake-token',

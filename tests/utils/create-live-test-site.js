@@ -1,12 +1,12 @@
-const {
-  env: { NETLIFY_TEST_ACCOUNT_SLUG },
-} = require('process')
+import { env } from 'process'
 
-const stripAnsi = require('strip-ansi')
+import stripAnsi from 'strip-ansi'
 
-const callCli = require('./call-cli')
+import callCli from './call-cli.js'
 
-const generateSiteName = function (prefix) {
+const { NETLIFY_TEST_ACCOUNT_SLUG } = env
+
+export const generateSiteName = function (prefix) {
   const randomString = Math.random()
     .toString(BASE_36)
     .replace(/[^a-z]+/g, '')
@@ -21,7 +21,7 @@ const listAccounts = async function () {
   return JSON.parse(await callCli(['api', 'listAccountsForUser']))
 }
 
-const createLiveTestSite = async function (siteName) {
+export const createLiveTestSite = async function (siteName) {
   console.log(`Creating new site for tests: ${siteName}`)
   const accounts = await listAccounts()
   if (!Array.isArray(accounts) || accounts.length <= 0) {
@@ -48,5 +48,3 @@ const createLiveTestSite = async function (siteName) {
 
   throw new Error(`Failed creating site: ${cliResponse}`)
 }
-
-module.exports = { generateSiteName, createLiveTestSite }

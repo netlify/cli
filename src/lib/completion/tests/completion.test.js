@@ -1,12 +1,12 @@
 // @ts-check
-const fs = require('fs')
+import fs from 'fs'
 
-const test = require('ava')
-const { Argument } = require('commander')
-const sinon = require('sinon')
+import test from 'ava'
+import { Argument } from 'commander'
+import sinon from 'sinon'
 
-const { BaseCommand } = require('../../../commands/base-command')
-const { getAutocompletion } = require('../script')
+import { BaseCommand } from '../../../commands/base-command.js'
+import { getAutocompletion } from '../script.js'
 
 const createTestCommand = () => {
   const program = new BaseCommand('chef')
@@ -33,11 +33,11 @@ test.afterEach(() => {
   sinon.restore()
 })
 
-test('should generate a completion file', (t) => {
+test('should generate a completion file', async (t) => {
   const stub = sinon.stub(fs, 'writeFileSync').callsFake(() => {})
   const program = createTestCommand()
   // eslint-disable-next-line node/global-require
-  const { createAutocompletion } = require('../generate-autocompletion')
+  const { createAutocompletion } = await import('../generate-autocompletion.js')
   createAutocompletion(program)
 
   // @ts-ignore

@@ -1,12 +1,13 @@
 // @ts-check
-const { readFile } = require('fs').promises
+import { promises } from 'fs'
 
-const AsciiTable = require('ascii-table')
-const dotenv = require('dotenv')
-const isEmpty = require('lodash/isEmpty')
+import AsciiTable from 'ascii-table'
+import dotenv from 'dotenv'
+import isEmpty from 'lodash/isEmpty.js'
 
-const { exit, log, logJson } = require('../../utils')
+import { exit, log, logJson } from '../../utils/index.js'
 
+const { readFile } = promises
 /**
  * The env:import command
  * @param {string} fileName .env file to import
@@ -76,7 +77,7 @@ const envImport = async (fileName, options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createEnvImportCommand = (program) =>
+export const createEnvImportCommand = (program) =>
   program
     .command('env:import')
     .argument('<fileName>', '.env file to import')
@@ -89,5 +90,3 @@ const createEnvImportCommand = (program) =>
     .action(async (fileName, options, command) => {
       await envImport(fileName, options, command)
     })
-
-module.exports = { createEnvImportCommand }

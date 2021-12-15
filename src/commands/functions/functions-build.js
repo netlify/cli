@@ -1,10 +1,12 @@
 // @ts-check
 
-const { mkdir } = require('fs').promises
+import { promises } from 'fs'
 
-const { zipFunctions } = require('@netlify/zip-it-and-ship-it')
+import { zipFunctions } from '@netlify/zip-it-and-ship-it'
 
-const { NETLIFYDEVERR, NETLIFYDEVLOG, exit, getFunctionsDir, log } = require('../../utils')
+import { NETLIFYDEVERR, NETLIFYDEVLOG, exit, getFunctionsDir, log } from '../../utils/index.js'
+
+const { mkdir } = promises
 
 /**
  * The functions:build command
@@ -47,7 +49,7 @@ const functionsBuild = async (options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createFunctionsBuildCommand = (program) =>
+export const createFunctionsBuildCommand = (program) =>
   program
     .command('functions:build')
     .alias('function:build')
@@ -55,5 +57,3 @@ const createFunctionsBuildCommand = (program) =>
     .option('-f, --functions <directory>', 'Specify a functions directory to build to')
     .option('-s, --src <directory>', 'Specify the source directory for the functions')
     .action(functionsBuild)
-
-module.exports = { createFunctionsBuildCommand }

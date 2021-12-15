@@ -1,12 +1,12 @@
 // @ts-check
-const { exit, getToken, log, track } = require('../../utils')
+import { exit, getToken, log, track } from '../../utils/index.js'
 
 /**
  * The logout command
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-const logout = async (options, command) => {
+export const logout = async (options, command) => {
   const [accessToken, location] = await getToken()
 
   if (!accessToken) {
@@ -37,7 +37,7 @@ const logout = async (options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createLogoutCommand = (program) =>
+export const createLogoutCommand = (program) =>
   program.command('logout', { hidden: true }).description('Logout of your Netlify account').action(logout)
 
-module.exports = { createLogoutCommand, logout }
+

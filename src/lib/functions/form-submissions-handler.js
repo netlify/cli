@@ -1,15 +1,15 @@
 // @ts-check
-const { Readable } = require('stream')
+import { Readable } from 'stream'
 
-const { parse: parseContentType } = require('content-type')
-const multiparty = require('multiparty')
-const getRawBody = require('raw-body')
+import { parse as parseContentType } from 'content-type'
+import multiparty from 'multiparty'
+import getRawBody from 'raw-body'
 
-const { BACKGROUND } = require('../../utils')
-const { warn } = require('../../utils/command-helpers')
-const { capitalize } = require('../string')
+import { warn } from '../../utils/command-helpers.js'
+import { BACKGROUND } from '../../utils/index.js'
+import { capitalize } from '../string.js'
 
-const createFormSubmissionHandler = function ({ functionsRegistry, siteUrl }) {
+export const createFormSubmissionHandler = function ({ functionsRegistry, siteUrl }) {
   return async function formSubmissionHandler(req, res, next) {
     if (req.url.startsWith('/.netlify/') || req.method !== 'POST') return next()
 
@@ -144,5 +144,3 @@ const getFormHandler = function ({ functionsRegistry }) {
 
   return handlers[0]
 }
-
-module.exports = { createFormSubmissionHandler }

@@ -1,4 +1,4 @@
-const got = require('got')
+import got from 'got'
 
 const TIMEOUT = 3e5
 
@@ -13,4 +13,4 @@ const extendedGot = got.extend({
   timeout: TIMEOUT,
 })
 
-module.exports = extendedGot
+export default extendedGot

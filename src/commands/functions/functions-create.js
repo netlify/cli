@@ -1,35 +1,36 @@
 // @ts-check
-const cp = require('child_process')
-const fs = require('fs')
-const { mkdir } = require('fs').promises
-const path = require('path')
-const process = require('process')
-const { promisify } = require('util')
+import cp from 'child_process'
+import { chmodSync, createWriteStream, existsSync, lstatSync, mkdirSync, promises, readdirSync, unlinkSync } from 'fs'
+import path from 'path'
+import process from 'process'
+import { promisify } from 'util'
 
-const copy = promisify(require('copy-template-dir'))
-const findUp = require('find-up')
-const fuzzy = require('fuzzy')
-const inquirer = require('inquirer')
-const inquirerAutocompletePrompt = require('inquirer-autocomplete-prompt')
-const fetch = require('node-fetch')
-const ora = require('ora')
+import copyTemplateDir from 'copy-template-dir'
+import { execa } from 'execa'
+import findUp from 'find-up'
+import fuzzy from 'fuzzy'
+import inquirer from 'inquirer'
+import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt'
+import fetch from 'node-fetch'
+import ora from 'ora'
 
-const {
+import { getAddons, getCurrentAddon, getSiteData } from '../../utils/addons/prepare.js'
+import {
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
   chalk,
   error,
-  execa,
-
   injectEnvVariables,
   log,
   readRepoURL,
   validateRepoURL,
-} = require('../../utils')
-const { getAddons, getCurrentAddon, getSiteData } = require('../../utils/addons/prepare')
+} from '../../utils/index.js'
 
-const templatesDir = path.resolve(__dirname, '../../functions-templates')
+const copy = promisify(copyTemplateDir)
+const { mkdir } = promises
+
+const templatesDir = new URL('../../functions-templates', import.meta.url).pathname
 
 const showRustTemplates = process.env.NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE === 'true'
 
@@ -93,13 +94,19 @@ const filterRegistry = function (registry, input) {
     })
 }
 
-const formatRegistryArrayForInquirer = function (lang) {
-  const folderNames = fs.readdirSync(path.join(templatesDir, lang))
-  const registry = folderNames
-    // filter out markdown files
+const formatRegistryArrayForInquirer = async function (lang) {
+  const folderNames = readdirSync(path.join(templatesDir, lang))
+
+  let registry = folderNames
     .filter((folderName) => !folderName.endsWith('.md'))
-    // eslint-disable-next-line node/global-require, import/no-dynamic-require
-    .map((folderName) => require(path.join(templatesDir, lang, folderName, '.netlify-function-template.js')))
+    .map((folderName) => path.join(templatesDir, lang, folderName, '.netlify-function-template.mjs'))
+    // eslint-disable-next-line promise/prefer-await-to-then
+    .map((pa) => import(pa).then(({ config }) => config))
+
+  /** @type {Array<object>} */
+  registry = await Promise.all(registry)
+
+  return registry
     .sort((folderNameA, folderNameB) => {
       const priorityDiff = (folderNameA.priority || DEFAULT_PRIORITY) - (folderNameB.priority || DEFAULT_PRIORITY)
 
@@ -108,7 +115,7 @@ const formatRegistryArrayForInquirer = function (lang) {
       }
 
       // This branch is needed because `Array.prototype.sort` was not stable
-      // until Node 11, so the original sorting order from `fs.readdirSync`
+      // until Node 11, so the original sorting order from `readdirSync`
       // was not respected. We can simplify this once we drop support for
       // Node 10.
       return folderNameA - folderNameB
@@ -122,7 +129,6 @@ const formatRegistryArrayForInquirer = function (lang) {
         short: `${lang}-${t.name}`,
       }
     })
-  return registry
 }
 
 /**
@@ -163,7 +169,7 @@ const pickTemplate = async function ({ language: languageFromFlag }) {
   let templatesForLanguage
 
   try {
-    templatesForLanguage = formatRegistryArrayForInquirer(language)
+    templatesForLanguage = await formatRegistryArrayForInquirer(language)
   } catch (_) {
     throw error(`Invalid language: ${language}`)
   }
@@ -237,14 +243,14 @@ const ensureFunctionDirExists = async function (command) {
     }
   }
 
-  if (!fs.existsSync(functionsDirHolder)) {
+  if (!existsSync(functionsDirHolder)) {
     log(
       `${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(
         functionsDirHolder,
       )} does not exist yet, creating it...`,
     )
 
-    fs.mkdirSync(functionsDirHolder, { recursive: true })
+    mkdirSync(functionsDirHolder, { recursive: true })
 
     log(`${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(functionsDirHolder)} created`)
   }
@@ -265,7 +271,7 @@ const downloadFromURL = async function (command, options, argumentName, function
   const nameToUse = await getNameFromArgs(argumentName, options, functionName)
 
   const fnFolder = path.join(functionsDir, nameToUse)
-  if (fs.existsSync(`${fnFolder}.js`) && fs.lstatSync(`${fnFolder}.js`).isFile()) {
+  if (existsSync(`${fnFolder}.js`) && lstatSync(`${fnFolder}.js`).isFile()) {
     log(
       `${NETLIFYDEVWARN}: A single file version of the function ${nameToUse} already exists at ${fnFolder}.js. Terminating without further action.`,
     )
@@ -282,7 +288,7 @@ const downloadFromURL = async function (command, options, argumentName, function
       try {
         const res = await fetch(downloadUrl)
         const finalName = path.basename(name, '.js') === functionName ? `${nameToUse}.js` : name
-        const dest = fs.createWriteStream(path.join(fnFolder, finalName))
+        const dest = createWriteStream(path.join(fnFolder, finalName))
         res.body.pipe(dest)
       } catch (error_) {
         throw new Error(`Error while retrieving ${downloadUrl} ${error_}`)
@@ -297,14 +303,13 @@ const downloadFromURL = async function (command, options, argumentName, function
 
   // read, execute, and delete function template file if exists
   const fnTemplateFile = path.join(fnFolder, '.netlify-function-template.js')
-  if (fs.existsSync(fnTemplateFile)) {
-    // eslint-disable-next-line node/global-require, import/no-dynamic-require
-    const { onComplete, addons = [] } = require(fnTemplateFile)
+  if (existsSync(fnTemplateFile)) {
+    const { onComplete, addons = [] } = await import(fnTemplateFile)
 
     await installAddons(command, addons, path.resolve(fnFolder))
     await handleOnComplete({ command, onComplete })
     // delete
-    fs.unlinkSync(fnTemplateFile)
+    unlinkSync(fnTemplateFile)
   }
 }
 
@@ -323,8 +328,9 @@ const getNpmInstallPackages = (existingPackages = {}, neededPackages = {}) =>
 // we don't do this check, we may be upgrading the version of a module used in
 // another part of the project, which we don't want to do.
 const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) => {
-  // eslint-disable-next-line import/no-dynamic-require, node/global-require
-  const { dependencies: functionDependencies, devDependencies: functionDevDependencies } = require(functionPackageJson)
+  const { dependencies: functionDependencies, devDependencies: functionDevDependencies } = await import(
+    functionPackageJson
+  )
   const sitePackageJson = await findUp('package.json', { cwd: functionsDir })
   const npmInstallFlags = ['--no-audit', '--no-fund']
 
@@ -337,8 +343,7 @@ const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) 
     return
   }
 
-  // eslint-disable-next-line import/no-dynamic-require, node/global-require
-  const { dependencies: siteDependencies, devDependencies: siteDevDependencies } = require(sitePackageJson)
+  const { dependencies: siteDependencies, devDependencies: siteDevDependencies } = await import(sitePackageJson)
   const dependencies = getNpmInstallPackages(siteDependencies, functionDependencies)
   const devDependencies = getNpmInstallPackages(siteDevDependencies, functionDevDependencies)
   const npmInstallPath = path.dirname(sitePackageJson)
@@ -353,13 +358,13 @@ const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) 
 
   // We installed the function's dependencies in the site-level `package.json`,
   // so there's no reason to keep the one copied over from the template.
-  fs.unlinkSync(functionPackageJson)
+  unlinkSync(functionPackageJson)
 
   // Similarly, if the template has a `package-lock.json` file, we delete it.
   try {
     const functionPackageLock = path.join(functionPath, 'package-lock.json')
 
-    fs.unlinkSync(functionPackageLock)
+    unlinkSync(functionPackageLock)
   } catch {
     // no-op
   }
@@ -400,7 +405,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
     const { onComplete, name: templateName, lang, addons = [] } = chosenTemplate
 
     const pathToTemplate = path.join(templatesDir, lang, templateName)
-    if (!fs.existsSync(pathToTemplate)) {
+    if (!existsSync(pathToTemplate)) {
       throw new Error(
         `There isn't a corresponding directory to the selected name. Template '${templateName}' is misconfigured`,
       )
@@ -425,14 +430,14 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
         log(`${NETLIFYDEVLOG} ${chalk.greenBright('Created')} ${filePath}`)
       }
 
-      fs.chmodSync(path.resolve(filePath), TEMPLATE_PERMISSIONS)
+      chmodSync(path.resolve(filePath), TEMPLATE_PERMISSIONS)
       if (filePath.includes('package.json')) {
         functionPackageJson = path.resolve(filePath)
       }
     })
 
     // delete function template file that was copied over by copydir
-    fs.unlinkSync(path.join(functionPath, '.netlify-function-template.js'))
+    unlinkSync(path.join(functionPath, '.netlify-function-template.js'))
 
     // npm install
     if (functionPackageJson !== undefined) {
@@ -557,7 +562,7 @@ const installAddons = async function (command, functionAddons, fnPath) {
 // but have retired that to force every scaffolded function to be a directory
 const ensureFunctionPathIsOk = function (functionsDir, name) {
   const functionPath = path.join(functionsDir, name)
-  if (fs.existsSync(functionPath)) {
+  if (existsSync(functionPath)) {
     log(`${NETLIFYDEVLOG} Function ${functionPath} already exists, cancelling...`)
     process.exit(1)
   }
@@ -582,7 +587,7 @@ const functionsCreate = async (name, options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createFunctionsCreateCommand = (program) =>
+export const createFunctionsCreateCommand = (program) =>
   program
     .command('functions:create')
     .alias('function:create')
@@ -597,5 +602,3 @@ const createFunctionsCreateCommand = (program) =>
       'netlify functions:create --name hello-world',
     ])
     .action(functionsCreate)
-
-module.exports = { createFunctionsCreateCommand }

@@ -1,10 +1,10 @@
-const path = require('path')
+import path from 'path'
 
-const test = require('ava')
+import test from 'ava'
 
-const { createSiteBuilder } = require('../../tests/utils/site-builder')
+import { createSiteBuilder } from '../../tests/utils/site-builder.js'
 
-const { headersForPath, parseHeaders } = require('./headers')
+import { headersForPath, parseHeaders } from './headers.js'
 
 const headers = [
   { path: '/', headers: ['X-Frame-Options: SAMEORIGIN'] },

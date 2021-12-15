@@ -1,29 +1,29 @@
-const { join } = require('path')
+import { join } from 'path'
 
-const test = require('ava')
-const glob = require('fast-glob')
-const mock = require('mock-fs')
-const sinon = require('sinon')
+import test, { beforeEach, afterEach } from 'ava'
+import glob from 'fast-glob'
+import mock, { restore } from 'mock-fs'
+import { stub, restore as _restore } from 'sinon'
 
-const { simpleMockedFileSystem } = require('./utils/file-systems')
+import { simpleMockedFileSystem } from './utils/file-systems.js'
 
 const mockedTestFiles = Object.keys(simpleMockedFileSystem).filter((file) => file.endsWith('.test.js'))
-sinon.stub(glob, 'sync').returns(mockedTestFiles)
+stub(glob, 'sync').returns(mockedTestFiles)
 
-// eslint-disable-next-line import/order
-const { getAffectedFiles } = require('../affected-test')
+// eslint-disable-next-line import/order,import/first
+import { getAffectedFiles } from '../affected-test.js'
 
-test.beforeEach(() => {
+beforeEach(() => {
   mock(simpleMockedFileSystem)
 })
 
-test.afterEach(() => {
-  mock.restore()
-  sinon.restore()
+afterEach(() => {
+  restore()
+  _restore()
 })
 
 test('should get all files marked as affected when the package.json is touched', (t) => {
-  const consoleStub = sinon.stub(console, 'log').callsFake(() => {})
+  const consoleStub = stub(console, 'log').callsFake(() => {})
   const affectedFiles = getAffectedFiles(['package.json'])
 
   t.truthy(consoleStub.firstCall.calledWith('All files are affected based on the changeset'))
@@ -32,7 +32,7 @@ test('should get all files marked as affected when the package.json is touched',
 })
 
 test('should get all files marked as affected when the npm-shrinkwrap.json is touched', (t) => {
-  const consoleStub = sinon.stub(console, 'log').callsFake(() => {})
+  const consoleStub = stub(console, 'log').callsFake(() => {})
   const affectedFiles = getAffectedFiles(['npm-shrinkwrap.json'])
 
   t.truthy(consoleStub.firstCall.calledWith('All files are affected based on the changeset'))
@@ -41,7 +41,7 @@ test('should get all files marked as affected when the npm-shrinkwrap.json is to
 })
 
 test('should get all files marked as affected when a leaf is touched that both tests depend on', (t) => {
-  const consoleStub = sinon.stub(console, 'log').callsFake(() => {})
+  const consoleStub = stub(console, 'log').callsFake(() => {})
   const affectedFiles = getAffectedFiles([join('src/d.js')])
 
   t.truthy(consoleStub.notCalled)

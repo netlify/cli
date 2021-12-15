@@ -1,7 +1,7 @@
-const { log } = require('../../utils')
+import { log } from '../../utils/index.js'
 
-const { createOpenAdminCommand, openAdmin } = require('./open-admin')
-const { createOpenSiteCommand, openSite } = require('./open-site')
+import { createOpenAdminCommand, openAdmin } from './open-admin.js'
+import { createOpenSiteCommand, openSite } from './open-site.js'
 
 /**
  * The open command
@@ -25,7 +25,7 @@ const open = async (options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createOpenCommand = (program) => {
+export const createOpenCommand = (program) => {
   createOpenAdminCommand(program)
   createOpenSiteCommand(program)
 
@@ -37,4 +37,3 @@ const createOpenCommand = (program) => {
     .addExamples(['netlify open --site', 'netlify open --admin', 'netlify open:admin', 'netlify open:site'])
     .action(open)
 }
-module.exports = { createOpenCommand }

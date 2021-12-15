@@ -1,9 +1,11 @@
 // @ts-check
-const octokit = require('@octokit/rest')
-const test = require('ava')
-const sinon = require('sinon')
+// eslint-disable-next-line import/no-namespace
+import * as octokit from '@octokit/rest'
+import test from 'ava'
+import sinon from 'sinon'
 
-const githubAuth = require('../gh-auth')
+// eslint-disable-next-line import/no-namespace
+import * as githubAuth from '../gh-auth.js'
 
 let getAuthenticatedResponse
 
@@ -29,7 +31,8 @@ sinon.stub(githubAuth, 'getGitHubToken').callsFake(() =>
   }),
 )
 
-const { getGitHubToken } = require('./config-github')
+// eslint-disable-next-line import/first
+import { getGitHubToken } from './config-github.js'
 
 // mocked configstore
 let globalConfig

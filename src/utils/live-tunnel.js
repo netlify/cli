@@ -1,14 +1,14 @@
 // @ts-check
-const process = require('process')
+import process from 'process'
 
-const fetch = require('node-fetch')
-const pWaitFor = require('p-wait-for')
+import fetch from 'node-fetch'
+import pWaitFor from 'p-wait-for'
 
-const { fetchLatestVersion, shouldFetchLatestVersion } = require('../lib/exec-fetcher')
-const { getPathInHome } = require('../lib/settings')
+import { fetchLatestVersion, shouldFetchLatestVersion } from '../lib/exec-fetcher.js'
+import { getPathInHome } from '../lib/settings.js'
 
-const { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log } = require('./command-helpers')
-const execa = require('./execa')
+import { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log } from './command-helpers.js'
+import execa from './execa.js'
 
 const PACKAGE_NAME = 'live-tunnel-client'
 const EXEC_NAME = PACKAGE_NAME
@@ -87,7 +87,7 @@ const installTunnelClient = async function () {
   })
 }
 
-const startLiveTunnel = async ({ localPort, netlifyApiToken, siteId }) => {
+export const startLiveTunnel = async ({ localPort, netlifyApiToken, siteId }) => {
   const session = await createTunnel({
     siteId,
     netlifyApiToken,
@@ -121,5 +121,3 @@ const startLiveTunnel = async ({ localPort, netlifyApiToken, siteId }) => {
 
   return session.session_url
 }
-
-module.exports = { startLiveTunnel }

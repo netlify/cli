@@ -1,24 +1,26 @@
 // Handlers are meant to be async outside tests
 /* eslint-disable require-await */
-const { copyFile } = require('fs').promises
-const http = require('http')
-const os = require('os')
-const path = require('path')
-const process = require('process')
+import { promises } from 'fs'
+import http from 'http'
+import os from 'os'
+import path from 'path'
+import process from 'process'
 
 // eslint-disable-next-line ava/use-test
-const avaTest = require('ava')
-const { isCI } = require('ci-info')
-const dotProp = require('dot-prop')
-const FormData = require('form-data')
-const jwt = require('jsonwebtoken')
+import avaTest from 'ava'
+import { isCI } from 'ci-info'
+import dotProp from 'dot-prop'
+import FormData from 'form-data'
+import jwt from 'jsonwebtoken'
 
-const { curl } = require('./utils/curl')
-const { withDevServer } = require('./utils/dev-server')
-const { startExternalServer } = require('./utils/external-server')
-const got = require('./utils/got')
-const { withMockApi } = require('./utils/mock-api')
-const { withSiteBuilder } = require('./utils/site-builder')
+import { curl } from './utils/curl.js'
+import { withDevServer } from './utils/dev-server.js'
+import { startExternalServer } from './utils/external-server.js'
+import got from './utils/got.js'
+import { withMockApi } from './utils/mock-api.js'
+import { withSiteBuilder } from './utils/site-builder.js'
+
+const { copyFile } = promises
 
 const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
 
@@ -1718,8 +1720,8 @@ export const handler = async function () {
         .buildAsync()
 
       await Promise.all([
-        copyFile(`${__dirname}/assets/cert.pem`, `${builder.directory}/cert.pem`),
-        copyFile(`${__dirname}/assets/key.pem`, `${builder.directory}/key.pem`),
+        copyFile(new URL('assets/cert.pem', import.meta.url).pathname, `${builder.directory}/cert.pem`),
+        copyFile(new URL('assets/key.pem', import.meta.url).pathname, `${builder.directory}/key.pem`),
       ])
       await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
         const options = { https: { rejectUnauthorized: false } }

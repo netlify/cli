@@ -1,5 +1,5 @@
 // @ts-check
-const { log, logJson } = require('../../utils')
+import { log, logJson } from '../../utils/index.js'
 
 /**
  * The env:unset command
@@ -53,7 +53,7 @@ const envUnset = async (name, options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createEnvUnsetCommand = (program) =>
+export const createEnvUnsetCommand = (program) =>
   program
     .command('env:unset')
     .aliases(['env:delete', 'env:remove'])
@@ -62,5 +62,3 @@ const createEnvUnsetCommand = (program) =>
     .action(async (name, options, command) => {
       await envUnset(name, options, command)
     })
-
-module.exports = { createEnvUnsetCommand }

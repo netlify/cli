@@ -1,5 +1,1 @@
-const { createLogoutCommand } = require('./logout')
-
-module.exports = {
-  createLogoutCommand,
-}
+export { createLogoutCommand } from './logout.js'

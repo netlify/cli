@@ -1,10 +1,10 @@
-const test = require('ava')
-const backoff = require('backoff')
-const fetch = require('node-fetch')
-const sinon = require('sinon')
+import test from 'ava'
+import backoff from 'backoff'
+import fetch from 'node-fetch'
+import sinon from 'sinon'
 
-// eslint-disable-next-line import/order
-const openBrowser = require('./open-browser')
+// eslint-disable-next-line import/order,import/no-namespace
+import * as openBrowser from './open-browser.js'
 // Stub needs to be required before './gh-auth' as this uses the module
 /** @type {string} */
 let host
@@ -14,8 +14,8 @@ const stubbedModule = sinon.stub(openBrowser, 'openBrowser').callsFake(({ url })
   return Promise.resolve()
 })
 
-// eslint-disable-next-line import/order
-const { authWithNetlify } = require('./gh-auth')
+// eslint-disable-next-line import/order, import/first
+import { authWithNetlify } from './gh-auth.js'
 
 test.after(() => {
   stubbedModule.restore()

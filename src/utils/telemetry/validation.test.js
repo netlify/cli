@@ -1,6 +1,6 @@
-const test = require('ava')
+import test from 'ava'
 
-const isValidEventName = require('./validation')
+import isValidEventName from './validation.js'
 
 const getEventForProject = (projectName, eventName) => `${projectName}:${eventName}`
 

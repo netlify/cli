@@ -1,14 +1,16 @@
-const { readFile } = require('fs').promises
+import { promises } from 'fs'
 
-const test = require('ava')
-const cleanDeep = require('clean-deep')
-const execa = require('execa')
-const toml = require('toml')
+import test from 'ava'
+import cleanDeep from 'clean-deep'
+import { execa } from 'execa'
+import toml from 'toml'
 
-const cliPath = require('./utils/cli-path')
-const { CONFIRM, DOWN, answerWithValue, handleQuestions } = require('./utils/handle-questions')
-const { withMockApi } = require('./utils/mock-api')
-const { withSiteBuilder } = require('./utils/site-builder')
+import { cliPath } from './utils/cli-path.js'
+import { CONFIRM, DOWN, answerWithValue, handleQuestions } from './utils/handle-questions.js'
+import { withMockApi } from './utils/mock-api.js'
+import { withSiteBuilder } from './utils/site-builder.js'
+
+const { readFile } = promises
 
 const assertNetlifyToml = async (t, tomlDir, { command, functions, publish }) => {
   // assert netlify.toml was created with user inputs

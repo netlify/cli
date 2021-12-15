@@ -1,12 +1,12 @@
 // @ts-check
 // This file is being called by `src/utils/telemetry/telemetry.js` as a child process
 // to run a s a detached process
-const process = require('process')
+import { readFileSync } from 'fs'
+import process from 'process'
 
-const fetch = require('node-fetch')
+import fetch from 'node-fetch'
 
-const { name, version } = require('../../../package.json')
-
+const { name, version } = JSON.parse(readFileSync(new URL('../../../package.json', import.meta.url).pathname, 'utf-8'))
 const options = JSON.parse(process.argv[2])
 
 const CLIENT_ID = 'NETLIFY_CLI'

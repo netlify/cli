@@ -1,14 +1,14 @@
-const path = require('path')
-const process = require('process')
+import path from 'path'
+import process from 'process'
 
-const execa = require('execa')
-const getPort = require('get-port')
-const omit = require('omit.js').default
-const pTimeout = require('p-timeout')
-const seedrandom = require('seedrandom')
+import { execa } from 'execa'
+import getPort from 'get-port'
+import omit from 'omit.js'
+import pTimeout from 'p-timeout'
+import seedrandom from 'seedrandom'
 
-const cliPath = require('./cli-path')
-const { killProcess } = require('./process')
+import { cliPath } from './cli-path.js'
+import { killProcess } from './process.js'
 
 // each process gets a starting port based on the pid
 const rng = seedrandom(`${process.pid}`)
@@ -25,7 +25,7 @@ let currentPort = getRandomPortStart()
 
 const ENVS_TO_OMIT = ['LANG', 'LC_ALL']
 
-const getExecaOptions = ({ cwd, env }) => ({
+export const getExecaOptions = ({ cwd, env }) => ({
   cwd,
   extendEnv: false,
   env: { ...omit(process.env, ENVS_TO_OMIT), BROWSER: 'none', ...env },
@@ -70,7 +70,7 @@ const startServer = async ({ cwd, offline = true, env = {}, args = [] }) => {
   return await pTimeout(serverPromise, SERVER_START_TIMEOUT, () => ({ timeout: true, output: outputBuffer.join('') }))
 }
 
-const startDevServer = async (options, expectFailure) => {
+export const startDevServer = async (options, expectFailure) => {
   const maxAttempts = 5
   // eslint-disable-next-line fp/no-loops
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -93,7 +93,7 @@ const startDevServer = async (options, expectFailure) => {
 // 240 seconds
 const SERVER_START_TIMEOUT = 24e4
 
-const withDevServer = async (options, testHandler, expectFailure = false) => {
+export const withDevServer = async (options, testHandler, expectFailure = false) => {
   let server
   try {
     server = await startDevServer(options, expectFailure)
@@ -105,18 +105,11 @@ const withDevServer = async (options, testHandler, expectFailure = false) => {
   }
 }
 
-const tryAndLogOutput = async (func, outputBuffer) => {
+export const tryAndLogOutput = async (func, outputBuffer) => {
   try {
     await func()
   } catch (error) {
     console.log(outputBuffer.join(''))
     throw error
   }
-}
-
-module.exports = {
-  withDevServer,
-  startDevServer,
-  getExecaOptions,
-  tryAndLogOutput,
 }

@@ -1,6 +1,6 @@
 // @ts-check
-const { getBuildOptions, runBuild } = require('../../lib/build')
-const { error, exit, getToken } = require('../../utils')
+import { getBuildOptions, runBuild } from '../../lib/build.js'
+import { error, exit, getToken } from '../../utils/index.js'
 
 /**
  * @param {import('../../lib/build').BuildConfig} options
@@ -45,7 +45,7 @@ const build = async (options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createBuildCommand = (program) =>
+export const createBuildCommand = (program) =>
   program
     .command('build')
     .description('(Beta) Build on your local machine')
@@ -54,5 +54,3 @@ const createBuildCommand = (program) =>
     .option('-o, --offline', 'disables any features that require network access', false)
     .addExamples(['netlify build'])
     .action(build)
-
-module.exports = { createBuildCommand }

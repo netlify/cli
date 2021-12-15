@@ -1,7 +1,7 @@
-const os = require('os')
-const path = require('path')
+import os from 'os'
+import path from 'path'
 
-const envPaths = require('env-paths')
+import envPaths from 'env-paths'
 
 const OSBasedPaths = envPaths('netlify', { suffix: '' })
 const NETLIFY_HOME = '.netlify'
@@ -12,7 +12,7 @@ const NETLIFY_HOME = '.netlify'
  * @param {string[]} paths
  * @returns {string}
  */
-const getLegacyPathInHome = (paths) => {
+export const getLegacyPathInHome = (paths) => {
   const pathInHome = path.join(os.homedir(), NETLIFY_HOME, ...paths)
   return pathInHome
 }
@@ -22,7 +22,7 @@ const getLegacyPathInHome = (paths) => {
  * @param {string[]} paths
  * @returns {string}
  */
-const getPathInHome = (paths) => {
+export const getPathInHome = (paths) => {
   const pathInHome = path.join(OSBasedPaths.config, ...paths)
   return pathInHome
 }
@@ -32,9 +32,7 @@ const getPathInHome = (paths) => {
  * @param {string[]} paths
  * @returns {string}
  */
-const getPathInProject = (paths) => {
+export const getPathInProject = (paths) => {
   const pathInProject = path.join(NETLIFY_HOME, ...paths)
   return pathInProject
 }
-
-module.exports = { getLegacyPathInHome, getPathInHome, getPathInProject }

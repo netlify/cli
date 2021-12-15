@@ -1,5 +1,1 @@
-const { createSwitchCommand } = require('./switch')
-
-module.exports = {
-  createSwitchCommand,
-}
+export { createSwitchCommand } from './switch.js'

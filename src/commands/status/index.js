@@ -1,5 +1,1 @@
-const { createStatusCommand } = require('./status')
-
-module.exports = {
-  createStatusCommand,
-}
+export  { createStatusCommand } from './status.js'

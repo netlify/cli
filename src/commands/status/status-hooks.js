@@ -1,8 +1,8 @@
 // @ts-check
-const { get } = require('dot-prop')
-const prettyjson = require('prettyjson')
+import { get } from 'dot-prop'
+import prettyjson from 'prettyjson'
 
-const { error, log, warn } = require('../../utils')
+import { error, log, warn } from '../../utils/index.js'
 
 /**
  * The status:hooks command
@@ -63,7 +63,5 @@ Site Hook Status │
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createStatusHooksCommand = (program) =>
+export const createStatusHooksCommand = (program) =>
   program.command('status:hooks').description('Print hook information of the linked site').action(statusHooks)
-
-module.exports = { createStatusHooksCommand }

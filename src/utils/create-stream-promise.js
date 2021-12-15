@@ -1,11 +1,11 @@
-const { Buffer } = require('buffer')
+import { Buffer } from 'buffer'
 
 const SEC_TO_MILLISEC = 1e3
 
 // 6 MiB
 const DEFAULT_BYTES_LIMIT = 6e6
 
-const createStreamPromise = function (stream, timeoutSeconds, bytesLimit = DEFAULT_BYTES_LIMIT) {
+export const createStreamPromise = function (stream, timeoutSeconds, bytesLimit = DEFAULT_BYTES_LIMIT) {
   return new Promise(function streamPromiseFunc(resolve, reject) {
     let data = []
     let dataLength = 0
@@ -45,5 +45,3 @@ const createStreamPromise = function (stream, timeoutSeconds, bytesLimit = DEFAU
     })
   })
 }
-
-module.exports = { createStreamPromise }

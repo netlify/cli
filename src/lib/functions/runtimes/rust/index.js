@@ -1,16 +1,17 @@
 // @ts-check
-const { readFile } = require('fs').promises
-const { dirname, extname, join, resolve } = require('path')
-const { platform } = require('process')
+import { promises } from 'fs'
+import { dirname, extname, join, resolve } from 'path'
+import { platform } from 'process'
 
-const findUp = require('find-up')
-const toml = require('toml')
+import findUp from 'find-up'
+import toml from 'toml'
+
+import { execa } from '../../../../utils/index.js'
+import { getPathInProject } from '../../../settings.js'
+import { runFunctionsProxy } from '../../local-proxy.js'
 
 const isWindows = platform === 'win32'
-
-const { execa } = require('../../../../utils')
-const { getPathInProject } = require('../../../settings')
-const { runFunctionsProxy } = require('../../local-proxy')
+const { readFile } = promises
 
 const build = async ({ func }) => {
   const functionDirectory = dirname(func.mainFile)
@@ -30,7 +31,7 @@ const build = async ({ func }) => {
   }
 }
 
-const getBuildFunction =
+export const getBuildFunction =
   ({ func }) =>
   () =>
     build({ func })
@@ -38,12 +39,12 @@ const getBuildFunction =
 const getCrateName = async (cwd) => {
   const manifestPath = await findUp('Cargo.toml', { cwd, type: 'file' })
   const manifest = await readFile(manifestPath, 'utf-8')
-  const { package } = toml.parse(manifest)
+  const { package: name } = toml.parse(manifest)
 
-  return package.name
+  return name
 }
 
-const invokeFunction = async ({ context, event, func, timeout }) => {
+export const invokeFunction = async ({ context, event, func, timeout }) => {
   const { stdout } = await runFunctionsProxy({
     binaryPath: func.buildData.binaryPath,
     context,
@@ -68,10 +69,10 @@ const invokeFunction = async ({ context, event, func, timeout }) => {
   }
 }
 
-const onRegister = (func) => {
+export const onRegister = (func) => {
   const isSource = extname(func.mainFile) === '.rs'
 
   return isSource ? func : null
 }
 
-module.exports = { getBuildFunction, invokeFunction, name: 'rs', onRegister }
+export const name = 'rs'

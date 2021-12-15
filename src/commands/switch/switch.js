@@ -1,8 +1,8 @@
 // @ts-check
-const inquirer = require('inquirer')
+import inquirer from 'inquirer'
 
-const { chalk, log } = require('../../utils')
-const { login } = require('../login')
+import { chalk, log } from '../../utils/index.js'
+import { login } from '../login/index.js'
 
 const LOGIN_NEW = 'I would like to login to a new account'
 
@@ -44,7 +44,5 @@ const switchCommand = async (options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createSwitchCommand = (program) =>
+export const createSwitchCommand = (program) =>
   program.command('switch').description('Switch your active Netlify account').action(switchCommand)
-
-module.exports = { createSwitchCommand }

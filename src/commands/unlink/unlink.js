@@ -1,6 +1,6 @@
 // @ts-check
 
-const { exit, log, track } = require('../../utils')
+import { exit, log, track } from '../../utils/index.js'
 
 /**
  * The unlink command
@@ -42,7 +42,5 @@ const unlink = async (options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createUnlinkCommand = (program) =>
+export const createUnlinkCommand = (program) =>
   program.command('unlink').description('Unlink a local folder from a Netlify site').action(unlink)
-
-module.exports = { createUnlinkCommand }

@@ -1,13 +1,13 @@
 // @ts-check
-const { dirname, extname } = require('path')
-const { platform } = require('process')
+import { dirname, extname } from 'path'
+import { platform } from 'process'
 
-const tempy = require('tempy')
+import tempy from 'tempy'
+
+import { execa } from '../../../../utils/index.js'
+import { runFunctionsProxy } from '../../local-proxy.js'
 
 const isWindows = platform === 'win32'
-
-const { execa } = require('../../../../utils')
-const { runFunctionsProxy } = require('../../local-proxy')
 
 const build = async ({ binaryPath, functionDirectory }) => {
   try {
@@ -37,14 +37,14 @@ const checkGoInstallation = async ({ cwd }) => {
   }
 }
 
-const getBuildFunction = ({ func }) => {
+export const getBuildFunction = ({ func }) => {
   const functionDirectory = dirname(func.mainFile)
   const binaryPath = tempy.file(isWindows ? { extension: 'exe' } : undefined)
 
   return () => build({ binaryPath, functionDirectory })
 }
 
-const invokeFunction = async ({ context, event, func, timeout }) => {
+export const invokeFunction = async ({ context, event, func, timeout }) => {
   const { stdout } = await runFunctionsProxy({
     binaryPath: func.buildData.binaryPath,
     context,
@@ -69,10 +69,10 @@ const invokeFunction = async ({ context, event, func, timeout }) => {
   }
 }
 
-const onRegister = (func) => {
+export const onRegister = (func) => {
   const isSource = extname(func.mainFile) === '.go'
 
   return isSource ? func : null
 }
 
-module.exports = { getBuildFunction, invokeFunction, name: 'go', onRegister }
+export const name = 'go'

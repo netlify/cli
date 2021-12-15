@@ -1,20 +1,20 @@
 // @ts-check
-const { stat } = require('fs').promises
-const { basename, resolve } = require('path')
-const { cwd, env } = require('process')
+import { promises } from 'fs'
+import { basename, resolve } from 'path'
+import { cwd, env } from 'process'
 
-const { restoreConfig, updateConfig } = require('@netlify/config')
-const { get } = require('dot-prop')
-const inquirer = require('inquirer')
-const isObject = require('lodash/isObject')
-const prettyjson = require('prettyjson')
+import { restoreConfig, updateConfig } from '@netlify/config'
+import { get } from 'dot-prop'
+import inquirer from 'inquirer'
+import isObject from 'lodash/isObject.js'
+import prettyjson from 'prettyjson'
 
-const { cancelDeploy } = require('../../lib/api')
-const { getBuildOptions, runBuild } = require('../../lib/build')
-const { normalizeFunctionsConfig } = require('../../lib/functions/config')
-const { getLogMessage } = require('../../lib/log')
-const { startSpinner, stopSpinner } = require('../../lib/spinner')
-const {
+import { cancelDeploy } from '../../lib/api.js'
+import { getBuildOptions, runBuild } from '../../lib/build.js'
+import { normalizeFunctionsConfig } from '../../lib/functions/config.js'
+import { getLogMessage } from '../../lib/log.js'
+import { startSpinner, stopSpinner } from '../../lib/spinner.js'
+import {
   NETLIFYDEV,
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
@@ -30,10 +30,11 @@ const {
   logJson,
   openBrowser,
   warn,
-} = require('../../utils')
-const { link } = require('../link')
-const { sitesCreate } = require('../sites')
+} from '../../utils/index.js'
+import { link } from '../link/index.js'
+import { sitesCreate } from '../sites/index.js'
 
+const { stat } = promises
 const DEFAULT_DEPLOY_TIMEOUT = 1.2e6
 
 const triggerDeploy = async ({ api, siteData, siteId }) => {
@@ -575,7 +576,7 @@ const deploy = async (options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createDeployCommand = (program) =>
+export const createDeployCommand = (program) =>
   program
     .command('deploy')
     .description(
@@ -683,5 +684,3 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
       'netlify deploy --trigger',
     ])
     .action(deploy)
-
-module.exports = { createDeployCommand }

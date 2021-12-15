@@ -1,10 +1,10 @@
-const test = require('ava')
+import test from 'ava'
 
-const { isFileAsync } = require('../src/lib/fs')
+import { isFileAsync } from '../src/lib/fs.js'
 
-const callCli = require('./utils/call-cli')
-const { getCLIOptions, withMockApi } = require('./utils/mock-api')
-const { withSiteBuilder } = require('./utils/site-builder')
+import callCli from './utils/call-cli.js'
+import { getCLIOptions, withMockApi } from './utils/mock-api.js'
+import { withSiteBuilder } from './utils/site-builder.js'
 
 test('should create gitignore in repository root when is root', async (t) => {
   await withSiteBuilder('repo', async (builder) => {

@@ -1,6 +1,7 @@
-const go = require('./go')
-const js = require('./js')
-const rust = require('./rust')
+/* eslint-disable import/no-namespace,eslint-comments/disable-enable-pair */
+import * as go from './go/index.js'
+import * as js from './js/index.js'
+import * as rust from './rust/index.js'
 
 /**
  * @callback BuildFunction
@@ -43,4 +44,4 @@ const rust = require('./rust')
 
 const runtimes = [js, go, rust].reduce((res, runtime) => ({ ...res, [runtime.name]: runtime }), {})
 
-module.exports = runtimes
+export default runtimes

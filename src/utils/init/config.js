@@ -1,8 +1,8 @@
 // @ts-check
-const { chalk, log } = require('../command-helpers')
+import { chalk, log } from '../command-helpers.js'
 
-const { configGithub } = require('./config-github')
-const configManual = require('./config-manual')
+import { configGithub } from './config-github.js'
+import configManual from './config-manual.js'
 
 const logSuccess = (repoData) => {
   log()
@@ -24,7 +24,7 @@ const logSuccess = (repoData) => {
  * @param {*} config.repoData
  * @param {string} config.siteId
  */
-const configureRepo = async ({ command, manual, repoData, siteId }) => {
+export const configureRepo = async ({ command, manual, repoData, siteId }) => {
   if (manual) {
     await configManual({ command, siteId, repoData })
   } else if (repoData.provider === 'github') {
@@ -36,4 +36,3 @@ const configureRepo = async ({ command, manual, repoData, siteId }) => {
 
   logSuccess(repoData)
 }
-module.exports = { configureRepo }

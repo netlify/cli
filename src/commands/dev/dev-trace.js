@@ -1,7 +1,7 @@
 // @ts-check
-const process = require('process')
+import process from 'process'
 
-const { runProcess } = require('../../utils')
+import { runProcess } from '../../utils/index.js'
 
 /**
  * The dev:trace command
@@ -18,7 +18,7 @@ const devTrace = async () => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createDevTraceCommand = (program) =>
+export const createDevTraceCommand = (program) =>
   program
     .command('dev:trace')
     .argument('<url>', 'Sets the request URL')
@@ -43,5 +43,3 @@ This command is designed to mimic cURL's command line, so the flags are more fam
       'netlify dev:trace --cookie nf_jwt=token http://localhost/routing-path',
     ])
     .action(devTrace)
-
-module.exports = { createDevTraceCommand }

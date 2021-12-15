@@ -1,6 +1,6 @@
-const test = require('ava')
+import test from 'ava'
 
-const { getLanguage } = require('./rules-proxy')
+import { getLanguage } from './rules-proxy.js'
 
 test('getLanguage', (t) => {
   const language = getLanguage({ 'accept-language': 'ur' })

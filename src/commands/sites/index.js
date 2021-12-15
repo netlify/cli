@@ -1,7 +1,2 @@
-const { createSitesCommand } = require('./sites')
-const { sitesCreate } = require('./sites-create')
-
-module.exports = {
-  createSitesCommand,
-  sitesCreate,
-}
+export { createSitesCommand } from './sites.js'
+export { sitesCreate } from './sites-create.js'

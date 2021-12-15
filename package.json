@@ -33,10 +33,11 @@
   ],
   "license": "MIT",
   "repository": "netlify/cli",
-  "main": "src/index.js",
+  "type": "module",
+  "exports": "./src/index.js",
   "bin": {
-    "ntl": "./bin/run",
-    "netlify": "./bin/run"
+    "ntl": "./bin/run.js",
+    "netlify": "./bin/run.js"
   },
   "bugs": {
     "url": "https://github.com/netlify/cli/issues"
@@ -74,8 +75,8 @@
     "postinstall": "node ./scripts/postinstall.js"
   },
   "config": {
-    "eslint": "--ignore-path .gitignore --cache --format=codeframe --max-warnings=0 \"{src,tools,scripts,site,tests,.github}/**/*.{js,md,html}\" \"*.{js,md,html}\" \".*.{js,md,html}\"",
-    "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,tools,scripts,site,tests,.github}/**/*.{js,md,yml,json,html}\" \"*.{js,yml,json,html}\" \".*.{js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\" \"!.github/**/*.md\""
+    "eslint": "--ignore-path .gitignore --cache --format=codeframe --max-warnings=0 \"{src,tools,scripts,site,tests,.github}/**/*.{js,cjs,mjs,md,html}\" \"*.{js,cjs,mjs,md,html}\" \".*.{js,cjs,mjs,md,html}\"",
+    "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,tools,scripts,site,tests,.github}/**/*.{js,cjs,mjs,md,yml,json,html}\" \"*.{js,cjs,mjs,yml,json,html}\" \".*.{js,cjs,mjs,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\" \"!.github/**/*.md\""
   },
   "dependencies": {
     "@netlify/build": "^20.3.1",
@@ -93,7 +94,7 @@
     "backoff": "^2.5.0",
     "better-opn": "^2.1.1",
     "boxen": "^5.0.0",
-    "chalk": "^4.0.0",
+    "chalk": "^5.0.0",
     "chokidar": "^3.0.2",
     "ci-info": "^3.0.0",
     "clean-deep": "^3.0.2",
@@ -110,7 +111,7 @@
     "dotenv": "^10.0.0",
     "env-paths": "^2.2.0",
     "envinfo": "^7.3.1",
-    "execa": "^5.0.0",
+    "execa": "^6.0.0",
     "express": "^4.17.1",
     "express-logging": "^1.1.1",
     "filter-obj": "^2.0.1",
@@ -216,7 +217,7 @@
     "temp-dir": "^2.0.0",
     "tomlify-j0.4": "^3.0.0",
     "tree-kill": "^1.2.2",
-    "typescript": "^4.4.4"
+    "typescript": "^4.5.4"
   },
   "ava": {
     "files": [

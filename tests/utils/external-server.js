@@ -1,6 +1,6 @@
-const express = require('express')
+import express from 'express'
 
-const startExternalServer = () => {
+export const startExternalServer = () => {
   const app = express()
   app.use(express.urlencoded({ extended: true }))
   app.all('*', function onRequest(req, res) {
@@ -8,8 +8,4 @@ const startExternalServer = () => {
   })
 
   return app.listen()
-}
-
-module.exports = {
-  startExternalServer,
 }

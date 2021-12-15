@@ -1,13 +1,15 @@
-const { copyFile, mkdir, readFile, unlink, writeFile } = require('fs').promises
-const os = require('os')
-const path = require('path')
+import { promises } from 'fs'
+import os from 'os'
+import path from 'path'
 
-const test = require('ava')
+import test from 'ava'
 
-const { rmdirRecursiveAsync } = require('../lib/fs')
-const { getLegacyPathInHome, getPathInHome } = require('../lib/settings')
+import { rmdirRecursiveAsync } from '../lib/fs.js'
+import { getLegacyPathInHome, getPathInHome } from '../lib/settings.js'
 
-const getGlobalConfig = require('./get-global-config')
+import getGlobalConfig from './get-global-config.js'
+
+const { copyFile, mkdir, readFile, unlink, writeFile } = promises
 
 const configPath = getPathInHome(['config.json'])
 const legacyConfigPath = getLegacyPathInHome(['config.json'])

@@ -1,8 +1,8 @@
-const test = require('ava')
+import test from 'ava'
 
-const { withSiteBuilder } = require('../../tests/utils/site-builder')
+import { withSiteBuilder } from '../../tests/utils/site-builder.js'
 
-const { parseRedirects } = require('./redirects')
+import { parseRedirects } from './redirects.js'
 
 const defaultConfig = {
   redirects: [

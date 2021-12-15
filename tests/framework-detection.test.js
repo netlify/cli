@@ -1,12 +1,12 @@
-const test = require('ava')
-const execa = require('execa')
+import test from 'ava'
+import { execa } from 'execa'
 
-const cliPath = require('./utils/cli-path')
-const { getExecaOptions, withDevServer } = require('./utils/dev-server')
-const got = require('./utils/got')
-const { CONFIRM, DOWN, handleQuestions } = require('./utils/handle-questions')
-const { withSiteBuilder } = require('./utils/site-builder')
-const { normalize } = require('./utils/snapshots')
+import { cliPath } from './utils/cli-path.js'
+import { getExecaOptions, withDevServer } from './utils/dev-server.js'
+import got from './utils/got.js'
+import { CONFIRM, DOWN, handleQuestions } from './utils/handle-questions.js'
+import { withSiteBuilder } from './utils/site-builder.js'
+import { normalize } from './utils/snapshots.js'
 
 const content = 'Hello World!'
 

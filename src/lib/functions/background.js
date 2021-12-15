@@ -1,16 +1,16 @@
-const { NETLIFYDEVERR, NETLIFYDEVLOG } = require('../../utils')
+import { NETLIFYDEVERR, NETLIFYDEVLOG } from '../../utils/index.js'
 
-const { formatLambdaError, styleFunctionName } = require('./utils')
+import { formatLambdaError, styleFunctionName } from './utils.js'
 
 const BACKGROUND_FUNCTION_STATUS_CODE = 202
 
-const handleBackgroundFunction = (functionName, response) => {
+export const handleBackgroundFunction = (functionName, response) => {
   console.log(`${NETLIFYDEVLOG} Queueing background function ${styleFunctionName(functionName)} for execution`)
   response.status(BACKGROUND_FUNCTION_STATUS_CODE)
   response.end()
 }
 
-const handleBackgroundFunctionResult = (functionName, err) => {
+export const handleBackgroundFunctionResult = (functionName, err) => {
   if (err) {
     console.log(
       `${NETLIFYDEVERR} Error during background function ${styleFunctionName(functionName)} execution:`,
@@ -20,5 +20,3 @@ const handleBackgroundFunctionResult = (functionName, err) => {
     console.log(`${NETLIFYDEVLOG} Done executing background function ${styleFunctionName(functionName)}`)
   }
 }
-
-module.exports = { handleBackgroundFunction, handleBackgroundFunctionResult }

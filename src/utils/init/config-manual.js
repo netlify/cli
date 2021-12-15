@@ -1,9 +1,9 @@
 // @ts-check
-const inquirer = require('inquirer')
+import inquirer from 'inquirer'
 
-const { exit, log } = require('../command-helpers')
+import { exit, log } from '../command-helpers.js'
 
-const { createDeployKey, getBuildSettings, saveNetlifyToml, setupSite } = require('./utils')
+import { createDeployKey, getBuildSettings, saveNetlifyToml, setupSite } from './utils.js'
 
 const addDeployKey = async ({ deployKey }) => {
   log('\nGive this Netlify SSH public key access to your repository:\n')
@@ -58,7 +58,7 @@ const addDeployHook = async ({ deployHook }) => {
  * @param {*} config.repoData
  * @param {string} config.siteId
  */
-module.exports = async function configManual({ command, repoData, siteId }) {
+export default async function configManual({ command, repoData, siteId }) {
   const { netlify } = command
   const {
     api,

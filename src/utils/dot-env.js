@@ -1,14 +1,16 @@
 // @ts-check
-const { readFile } = require('fs').promises
-const path = require('path')
+import { promises } from 'fs'
+import path from 'path'
 
-const dotenv = require('dotenv')
+import dotenv from 'dotenv'
 
-const { isFileAsync } = require('../lib/fs')
+import { isFileAsync } from '../lib/fs.js'
 
-const { warn } = require('./command-helpers')
+import { warn } from './command-helpers.js'
 
-const loadDotEnvFiles = async function ({ projectDir }) {
+const { readFile } = promises
+
+export const loadDotEnvFiles = async function ({ projectDir }) {
   const response = await tryLoadDotEnvFiles({ projectDir })
 
   const filesWithWarning = response.filter((el) => el.warning)
@@ -19,7 +21,7 @@ const loadDotEnvFiles = async function ({ projectDir }) {
   return response.filter((el) => el.file && el.env)
 }
 
-const tryLoadDotEnvFiles = async ({ projectDir }) => {
+export const tryLoadDotEnvFiles = async ({ projectDir }) => {
   const dotenvFiles = ['.env', '.env.development']
   const results = await Promise.all(
     dotenvFiles.map(async (file) => {
@@ -42,5 +44,3 @@ const tryLoadDotEnvFiles = async ({ projectDir }) => {
 
   return results.filter(Boolean)
 }
-
-module.exports = { loadDotEnvFiles, tryLoadDotEnvFiles }

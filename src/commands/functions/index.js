@@ -1,5 +1,1 @@
-const { createFunctionsCommand } = require('./functions')
-
-module.exports = {
-  createFunctionsCommand,
-}
+export { createFunctionsCommand } from './functions.js'

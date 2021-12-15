@@ -1,14 +1,16 @@
 // @ts-check
-const { readFile } = require('fs').promises
-const { resolve } = require('path')
+import { promises } from 'fs'
+import { resolve } from 'path'
 
-const minimist = require('minimist')
+import minimist from 'minimist'
 
-const { execa } = require('../../../../../utils')
-const { fileExistsAsync } = require('../../../../fs')
-const { memoizedBuild } = require('../../../memoized-build')
+import { execa } from '../../../../../utils/index.js'
+import { fileExistsAsync } from '../../../../fs.js'
+import { memoizedBuild } from '../../../memoized-build.js'
 
-const detectNetlifyLambda = async function ({ packageJson } = {}) {
+const { readFile } = promises
+
+export const detectNetlifyLambda = async function ({ packageJson } = {}) {
   const { dependencies, devDependencies, scripts } = packageJson || {}
   if (!((dependencies && dependencies['netlify-lambda']) || (devDependencies && devDependencies['netlify-lambda']))) {
     return false
@@ -55,7 +57,7 @@ const detectNetlifyLambda = async function ({ packageJson } = {}) {
   return false
 }
 
-module.exports = async function handler() {
+export default async function handler() {
   const exists = await fileExistsAsync('package.json')
   if (!exists) {
     return false
@@ -65,4 +67,3 @@ module.exports = async function handler() {
   const packageJson = JSON.parse(content)
   return detectNetlifyLambda({ packageJson })
 }
-module.exports.detectNetlifyLambda = detectNetlifyLambda

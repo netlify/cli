@@ -1,42 +1,20 @@
 // @ts-check
-const commandHelpers = require('./command-helpers')
-const createStreamPromise = require('./create-stream-promise')
-const deploy = require('./deploy')
-const detectServerSettings = require('./detect-server-settings')
-const dev = require('./dev')
-const execa = require('./execa')
-const functions = require('./functions')
-const getGlobalConfig = require('./get-global-config')
-const getRepoData = require('./get-repo-data')
-const ghAuth = require('./gh-auth')
-const gitignore = require('./gitignore')
-const liveTunnel = require('./live-tunnel')
-const openBrowser = require('./open-browser')
-const parseRawFlags = require('./parse-raw-flags')
-const proxy = require('./proxy')
-const readRepoURL = require('./read-repo-url')
-const StateConfig = require('./state-config')
-const telemetry = require('./telemetry')
-const trafficMesh = require('./traffic-mesh')
-
-module.exports = {
-  ...commandHelpers,
-  ...createStreamPromise,
-  ...deploy,
-  ...detectServerSettings,
-  ...dev,
-  ...functions,
-  ...getRepoData,
-  ...ghAuth,
-  ...gitignore,
-  ...liveTunnel,
-  ...openBrowser,
-  ...parseRawFlags,
-  ...proxy,
-  ...readRepoURL,
-  ...StateConfig,
-  ...telemetry,
-  ...trafficMesh,
-  execa,
-  getGlobalConfig,
-}
+export * from './command-helpers.js'
+export * from './create-stream-promise.js'
+export * from './deploy/index.js'
+export * from './detect-server-settings.js'
+export * from './dev.js'
+export * as execa from './execa.js'
+export * from './functions/index.js'
+export { default as getGlobalConfig } from './get-global-config.js'
+export * from './get-repo-data.js'
+export * from './gh-auth.js'
+export * from './gitignore.js'
+export * from './live-tunnel.js'
+export * from './open-browser.js'
+export * from './parse-raw-flags.js'
+export * from './proxy.js'
+export * from './read-repo-url.js'
+export * from './state-config.js'
+export * from './telemetry/index.js'
+export * from './traffic-mesh.js'
