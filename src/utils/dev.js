@@ -1,15 +1,14 @@
+// @ts-check
 const process = require('process')
 
-const chalk = require('chalk')
 const { get } = require('dot-prop')
 const getPort = require('get-port')
 const isEmpty = require('lodash/isEmpty')
 
 const { supportsBackgroundFunctions } = require('../lib/account')
 
-const { error: failAndExit, log, warn } = require('./command-helpers')
+const { NETLIFYDEVLOG, chalk, error, log, warn } = require('./command-helpers')
 const { loadDotEnvFiles } = require('./dot-env')
-const { NETLIFYDEVLOG } = require('./logo')
 
 // Possible sources of environment variables. For the purpose of printing log messages only. Order does not matter.
 const ENV_VAR_SOURCES = {
@@ -44,7 +43,7 @@ const ERROR_CALL_TO_ACTION =
 
 const validateSiteInfo = ({ site, siteInfo }) => {
   if (isEmpty(siteInfo)) {
-    failAndExit(`Failed retrieving site information for site ${chalk.yellow(site.id)}. ${ERROR_CALL_TO_ACTION}`)
+    error(`Failed retrieving site information for site ${chalk.yellow(site.id)}. ${ERROR_CALL_TO_ACTION}`)
   }
 }
 
@@ -52,8 +51,8 @@ const getAccounts = async ({ api }) => {
   try {
     const accounts = await api.listAccountsForUser()
     return accounts
-  } catch (error) {
-    failAndExit(`Failed retrieving user account: ${error.message}. ${ERROR_CALL_TO_ACTION}`)
+  } catch (error_) {
+    error(`Failed retrieving user account: ${error_.message}. ${ERROR_CALL_TO_ACTION}`)
   }
 }
 
@@ -61,8 +60,8 @@ const getAddons = async ({ api, site }) => {
   try {
     const addons = await api.listServiceInstancesForSite({ siteId: site.id })
     return addons
-  } catch (error) {
-    failAndExit(`Failed retrieving addons for site ${chalk.yellow(site.id)}: ${error.message}. ${ERROR_CALL_TO_ACTION}`)
+  } catch (error_) {
+    error(`Failed retrieving addons for site ${chalk.yellow(site.id)}: ${error_.message}. ${ERROR_CALL_TO_ACTION}`)
   }
 }
 
@@ -89,8 +88,17 @@ const SYNCHRONOUS_FUNCTION_TIMEOUT = 10
 // default 15 minutes for background functions
 const BACKGROUND_FUNCTION_TIMEOUT = 900
 
-const getSiteInformation = async ({ flags = {}, api, site, siteInfo }) => {
-  if (site.id && !flags.offline) {
+/**
+ *
+ * @param {object} config
+ * @param {boolean} config.offline
+ * @param {*} config.api
+ * @param {*} config.site
+ * @param {*} config.siteInfo
+ * @returns
+ */
+const getSiteInformation = async ({ api, offline, site, siteInfo }) => {
+  if (site.id && !offline) {
     validateSiteInfo({ site, siteInfo })
     const [accounts, addons] = await Promise.all([getAccounts({ api }), getAddons({ api, site })])
 

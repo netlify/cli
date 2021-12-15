@@ -1,9 +1,11 @@
+// @ts-check
+const { readFile } = require('fs').promises
 const { resolve } = require('path')
 
-const execa = require('execa')
 const minimist = require('minimist')
 
-const { fileExistsAsync, readFileAsync } = require('../../../../fs')
+const { execa } = require('../../../../../utils')
+const { fileExistsAsync } = require('../../../../fs')
 const { memoizedBuild } = require('../../../memoized-build')
 
 const detectNetlifyLambda = async function ({ packageJson } = {}) {
@@ -59,8 +61,8 @@ module.exports = async function handler() {
     return false
   }
 
-  const content = await readFileAsync('package.json')
-  const packageJson = JSON.parse(content, { encoding: 'utf8' })
+  const content = await readFile('package.json', 'utf-8')
+  const packageJson = JSON.parse(content)
   return detectNetlifyLambda({ packageJson })
 }
 module.exports.detectNetlifyLambda = detectNetlifyLambda

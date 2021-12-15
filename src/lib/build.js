@@ -1,15 +1,24 @@
+// @ts-check
 const build = require('@netlify/build')
+
+/**
+ * The buildConfig + a missing cachedConfig
+ * @typedef BuildConfig
+ * @type {Parameters<import('@netlify/build/src/core/main')>[0] & {cachedConfig: any}}
+ */
 
 // We have already resolved the configuration using `@netlify/config`
 // This is stored as `netlify.cachedConfig` and can be passed to
 // `@netlify/build --cachedConfig`.
-const getBuildOptions = ({
-  context: {
-    netlify: { cachedConfig },
-  },
-  flags: { debug, dry, json, offline, silent },
-  token,
-}) => ({
+/**
+ *
+ * @param {object} config
+ * @param {*} config.cachedConfig
+ * @param {string} config.token
+ * @param {import('commander').OptionValues} config.options
+ * @returns {BuildConfig}
+ */
+const getBuildOptions = ({ cachedConfig, options: { debug, dry, json, offline, silent }, token }) => ({
   cachedConfig,
   token,
   dry,
@@ -24,6 +33,11 @@ const getBuildOptions = ({
   },
 })
 
+/**
+ * run the build command
+ * @param {BuildConfig} options
+ * @returns
+ */
 const runBuild = async (options) => {
   const { configMutations, netlifyConfig: newConfig, severityCode: exitCode } = await build(options)
   return { exitCode, newConfig, configMutations }

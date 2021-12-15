@@ -1,11 +1,12 @@
+// @ts-check
 const { Readable } = require('stream')
 
 const { parse: parseContentType } = require('content-type')
 const multiparty = require('multiparty')
 const getRawBody = require('raw-body')
 
+const { BACKGROUND } = require('../../utils')
 const { warn } = require('../../utils/command-helpers')
-const { BACKGROUND } = require('../../utils/get-functions')
 const { capitalize } = require('../string')
 
 const createFormSubmissionHandler = function ({ functionsRegistry, siteUrl }) {

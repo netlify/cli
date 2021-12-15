@@ -1,3 +1,4 @@
+const { writeFile } = require('fs').promises
 const path = require('path')
 
 const { zipFunction } = require('@netlify/zip-it-and-ship-it')
@@ -6,8 +7,7 @@ const makeDir = require('make-dir')
 const readPkgUp = require('read-pkg-up')
 const sourceMapSupport = require('source-map-support')
 
-const { NETLIFYDEVERR } = require('../../../../../utils/logo')
-const { writeFileAsync } = require('../../../../fs')
+const { NETLIFYDEVERR } = require('../../../../../utils')
 const { getPathInProject } = require('../../../../settings')
 const { normalizeFunctionsConfig } = require('../../../config')
 const { memoizedBuild } = require('../../../memoized-build')
@@ -47,7 +47,7 @@ const buildFunction = async ({ cache, config, directory, func, hasTypeModule, pr
   // some projects include a package.json with "type=module", forcing Node to interpret every descending file
   // as ESM. ZISI outputs CJS, so we emit an overriding directive into the output directory.
   if (hasTypeModule) {
-    await writeFileAsync(
+    await writeFile(
       path.join(functionPath, `package.json`),
       JSON.stringify({
         type: 'commonjs',

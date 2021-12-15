@@ -6,7 +6,6 @@ title: Netlify CLI deploy command
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
 Create a new deploy from the contents of a folder
-
 Deploys from the build settings found in the netlify.toml file, or settings from the API.
 
 The following environment variables can be used to override configuration file lookups and prompts:
@@ -69,12 +68,11 @@ Function entry points are determined by the file name and name of the folder the
 functions/
 ├── aFolderlessFunctionEntrypoint.js
 └── functionName/
-    ├── notTheEntryPoint.js
-    └── functionName.js
+  ├── notTheEntryPoint.js
+  └── functionName.js
 ```
 
 Support for package.json's main field, and intrinsic index.js entrypoints are coming soon.
-
 
 **Usage**
 
@@ -84,21 +82,21 @@ netlify deploy
 
 **Flags**
 
+- `alias` (*string*) - Specifies the alias for deployment, the string at the beginning of the deploy subdomain. Useful for creating predictable deployment URLs. Avoid setting an alias string to the same value as a deployed branch. `alias` doesn’t create a branch deploy and can’t be used in conjunction with the branch subdomain feature. Maximum 37 characters.
+- `auth` (*string*) - Netlify auth token to deploy with
+- `branch` (*string*) - Serves the same functionality as --alias. Deprecated and will be removed in future versions
+- `build` (*boolean*) - Run build command before deploying
 - `dir` (*string*) - Specify a folder to deploy
 - `functions` (*string*) - Specify a functions folder to deploy
+- `json` (*boolean*) - Output deployment data as JSON
+- `message` (*string*) - A short message to include in the deploy log
+- `open` (*boolean*) - Open site after deploy
 - `prod` (*boolean*) - Deploy to production
 - `prodIfUnlocked` (*boolean*) - Deploy to production if unlocked, create a draft otherwise
-- `alias` (*string*) - Specifies the alias for deployment, the string at the beginning of the deploy subdomain. Useful for creating predictable deployment URLs. Avoid setting an alias string to the same value as a deployed branch. `alias` doesn’t create a branch deploy and can’t be used in conjunction with the branch subdomain feature. Maximum 37 characters.
-- `branch` (*string*) - Serves the same functionality as --alias. Deprecated and will be removed in future versions
-- `open` (*boolean*) - Open site after deploy
-- `message` (*string*) - A short message to include in the deploy log
-- `auth` (*string*) - Netlify auth token to deploy with
 - `site` (*string*) - A site ID to deploy to
-- `json` (*boolean*) - Output deployment data as JSON
+- `skip-functions-cache` (*boolean*) - Ignore any functions created as part of a previous `build` or `deploy` commands, forcing them to be bundled again as part of the deployment
 - `timeout` (*string*) - Timeout to wait for deployment to finish
 - `trigger` (*boolean*) - Trigger a new build of your site on Netlify without uploading local files
-- `build` (*boolean*) - Run build command before deploying
-- `skip-functions-cache` (*boolean*) - Ignore any functions created as part of a previous `build` or `deploy` commands, forcing them to be bundled again as part of the deployment
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server

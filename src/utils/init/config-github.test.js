@@ -1,3 +1,4 @@
+// @ts-check
 const octokit = require('@octokit/rest')
 const test = require('ava')
 const sinon = require('sinon')

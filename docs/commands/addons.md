@@ -19,6 +19,12 @@ For more information on add-ons see our [Netlify partner add-ons docs](https://w
 netlify addons
 ```
 
+**Flags**
+
+- `debug` (*boolean*) - Print debugging information
+- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
+
 | Subcommand | description  |
 |:--------------------------- |:-----|
 | [`addons:auth`](/docs/commands/addons.md#addonsauth) | Login to add-on provider  |
@@ -84,9 +90,7 @@ netlify addons:config
 ## `addons:create`
 
 Add an add-on extension to your site
-...
 Add-ons are a way to extend the functionality of your Netlify site
-
 
 **Usage**
 
@@ -108,9 +112,7 @@ netlify addons:create
 ## `addons:delete`
 
 Remove an add-on extension to your site
-...
 Add-ons are a way to extend the functionality of your Netlify site
-
 
 **Usage**
 

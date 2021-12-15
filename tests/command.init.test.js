@@ -1,9 +1,9 @@
+const { readFile } = require('fs').promises
+
 const test = require('ava')
 const cleanDeep = require('clean-deep')
 const execa = require('execa')
 const toml = require('toml')
-
-const { readFileAsync } = require('../src/lib/fs')
 
 const cliPath = require('./utils/cli-path')
 const { CONFIRM, DOWN, answerWithValue, handleQuestions } = require('./utils/handle-questions')
@@ -12,7 +12,7 @@ const { withSiteBuilder } = require('./utils/site-builder')
 
 const assertNetlifyToml = async (t, tomlDir, { command, functions, publish }) => {
   // assert netlify.toml was created with user inputs
-  const netlifyToml = toml.parse(await readFileAsync(`${tomlDir}/netlify.toml`, 'utf8'))
+  const netlifyToml = toml.parse(await readFile(`${tomlDir}/netlify.toml`, 'utf8'))
   t.deepEqual(
     netlifyToml,
     cleanDeep({

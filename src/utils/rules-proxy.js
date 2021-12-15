@@ -1,3 +1,4 @@
+// @ts-check
 const path = require('path')
 
 const chokidar = require('chokidar')
@@ -7,7 +8,7 @@ const pFilter = require('p-filter')
 
 const { fileExistsAsync } = require('../lib/fs')
 
-const { NETLIFYDEVLOG } = require('./logo')
+const { NETLIFYDEVLOG } = require('./command-helpers')
 const { parseRedirects } = require('./redirects')
 
 const onChanges = function (files, listener) {

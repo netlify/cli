@@ -1,4 +1,5 @@
-const chalk = require('chalk')
+// @ts-check
+const { chalk } = require('../command-helpers')
 
 /* programmatically generate CLI prompts */
 module.exports = function generatePrompts(settings) {

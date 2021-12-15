@@ -68,12 +68,12 @@ const main = async (args) => {
 
   try {
     await testRun
-  } catch(error) {
+  } catch (error) {
     if (error instanceof Error) {
-      console.log(error.message);
-      process.exit(1);
+      console.log(error.message)
+      process.exit(1)
     }
-    throw error;
+    throw error
   }
 }
 

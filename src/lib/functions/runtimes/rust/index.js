@@ -1,3 +1,5 @@
+// @ts-check
+const { readFile } = require('fs').promises
 const { dirname, extname, join, resolve } = require('path')
 const { platform } = require('process')
 
@@ -6,8 +8,7 @@ const toml = require('toml')
 
 const isWindows = platform === 'win32'
 
-const execa = require('../../../../utils/execa')
-const { readFileAsync } = require('../../../fs')
+const { execa } = require('../../../../utils')
 const { getPathInProject } = require('../../../settings')
 const { runFunctionsProxy } = require('../../local-proxy')
 
@@ -36,7 +37,7 @@ const getBuildFunction =
 
 const getCrateName = async (cwd) => {
   const manifestPath = await findUp('Cargo.toml', { cwd, type: 'file' })
-  const manifest = await readFileAsync(manifestPath)
+  const manifest = await readFile(manifestPath, 'utf-8')
   const { package } = toml.parse(manifest)
 
   return package.name

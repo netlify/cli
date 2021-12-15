@@ -1,5 +1,6 @@
-const chalk = require('chalk')
 const dotProp = require('dot-prop')
+
+const { chalk } = require('../utils')
 
 const RED_BACKGROUND = chalk.red('-background')
 const [PRO, BUSINESS, ENTERPRISE] = ['Pro', 'Business', 'Enterprise'].map((plan) => chalk.magenta(plan))

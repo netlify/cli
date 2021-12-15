@@ -1,113 +1,62 @@
-const path = require('path')
+// @ts-check
+const { createMainCommand } = require('../../src/commands')
+const { sortOptions } = require('../../src/utils')
 
-const filterObj = require('filter-obj')
-const mapObj = require('map-obj')
-const { globby } = require('markdown-magic')
+const program = createMainCommand()
 
-const getFlagType = (flagData) => {
-  if (flagData.type === 'option') {
-    return flagData.options ? flagData.options.join(' | ') : 'string'
-  }
+/** @type {Array<import('../../src/commands/base-command').BaseCommand>} */
+// @ts-ignore typecast needed
+const commands = program.commands.sort((cmdA, cmdB) => cmdA.name().localeCompare(cmdB.name()))
 
-  return flagData.type
-}
+/**
+ *
+ * @param {import('../../src/commands/base-command').BaseCommand} command
+ */
+const parseCommand = function (command) {
+  // eslint-disable-next-line no-underscore-dangle
+  const args = command._args.map(({ _name: name, description }) => ({
+    name,
+    description,
+  }))
 
-const formatExamples = (examples) =>
-  Array.isArray(examples) ? examples.map((example) => example.replace('<%= config.bin %>', 'netlify')) : examples
+  const flags = command.options
+    .filter((option) => !option.hidden)
+    .sort(sortOptions)
+    .reduce((prev, cur) => {
+      const name = cur.long.replace('--', '')
+      const contentType = cur.argChoices ? cur.argChoices.join(' | ') : 'string'
 
-const isBetaPlugin = (description) => description.includes('Generate shell completion script')
-
-const formatDescription = (description) => (isBetaPlugin(description) ? `(Beta) ${description}` : description)
-
-module.exports = function generateCommandData() {
-  const commandsPath = path.join(__dirname, '..', '..', 'src/commands')
-  const completionPluginPath = path.join(__dirname, '..', '..', 'node_modules/oclif-plugin-completion/lib/commands')
-  const commands = [
-    ...globby.sync([`${commandsPath}/**/**.js`]).sort(),
-    ...globby.sync([`${completionPluginPath}/**/**.js`]).sort(),
-  ]
-
-  const allCommands = commands.map((file) => {
-    // eslint-disable-next-line node/global-require, import/no-dynamic-require
-    let data = require(file)
-    if (!data.description && data.default && data.default.description) {
-      data = data.default
-    }
-    const command = commandFromPath(file)
-    const [parentCommand] = command.split(':')
-    const parent = command === parentCommand
-    // remove hidden flags
-    const flags =
-      data.flags &&
-      mapObj(
-        filterObj(data.flags, (_, value) => value.hidden !== true),
-        (flag, flagData) => [flag, { ...flagData, type: getFlagType(flagData) }],
-      )
-    return {
-      command,
-      commandGroup: parentCommand,
-      isParent: parent,
-      path: file,
-      data: { ...data, flags },
-    }
-  })
-
-  const visibleCommands = allCommands.filter((cmd) => !cmd.data.hidden)
-
-  const groupedCommands = visibleCommands.reduce((acc, curr) => {
-    if (curr.commandGroup === curr.command) {
-      acc[curr.commandGroup] = {
-        name: curr.command,
-        usage: curr.data.usage,
-        description: formatDescription(curr.data.description),
-        flags: curr.data.flags,
-        args: curr.data.args,
-        examples: formatExamples(curr.data.examples),
-        strict: curr.data.strict,
-        commands: [],
-      }
-    }
-    return acc
-  }, {})
-
-  const groupedCommandsWithData = visibleCommands.reduce((acc, curr) => {
-    if (curr.commandGroup !== curr.command && acc[curr.commandGroup] && acc[curr.commandGroup].commands) {
-      acc[curr.commandGroup].commands = [
-        ...acc[curr.commandGroup].commands,
-        {
-          name: curr.command,
-          usage: curr.data.usage,
-          description: formatDescription(curr.data.description),
-          flags: curr.data.flags,
-          args: curr.data.args,
-          examples: formatExamples(curr.data.examples),
-          strict: curr.data.strict,
+      return {
+        ...prev,
+        [name]: {
+          description: cur.description,
+          char: cur.short,
+          type: cur.flags.includes('<') || cur.flags.includes('[') ? contentType : 'boolean',
         },
-      ]
-    }
-    return acc
-  }, groupedCommands)
+      }
+    }, {})
 
-  return groupedCommandsWithData
-}
-
-const commandFromPath = function (filePath) {
-  let normalized = path.normalize(filePath)
-
-  // console.log('commandFromPath', normalized)
-  // console.log('process.cwd()', process.cwd())
-  const rootDir = path.join(__dirname, '..', '..')
-  // Replace node_modules path for CLI plugins
-  if (normalized.includes('node_modules')) {
-    // in: /node_modules/<package-name>/src/commands/dev/exec.js
-    // out: /src/commands/dev/exec.js
-    normalized = normalized.replace(/\/node_modules\/((?:[^/]+)*)?\//, '/')
+  return {
+    name: command.name(),
+    description: command.description(),
+    commands: commands
+      // eslint-disable-next-line no-underscore-dangle
+      .filter((cmd) => cmd.name().startsWith(`${command.name()}:`) && !cmd._hidden)
+      .map((cmd) => parseCommand(cmd)),
+    examples: command.examples.length !== 0 && command.examples,
+    args: args.length !== 0 && args,
+    flags: Object.keys(flags).length !== 0 && flags,
   }
-  return normalized
-    .replace(rootDir, '')
-    .replace(/\\/g, '/')
-    .replace('.js', '')
-    .replace(/\/(src|lib)\/commands\//, '')
-    .replace('/index', '')
-    .replace(/\//g, ':')
 }
+
+const generateCommandData = function () {
+  return (
+    commands
+      // filter out sub commands
+      // eslint-disable-next-line no-underscore-dangle
+      .filter((command) => !command.name().includes(':') && !command._hidden)
+      .reduce((prev, command) => ({ ...prev, [command.name()]: parseCommand(command) }), {})
+  )
+}
+
+module.exports = { generateCommandData }

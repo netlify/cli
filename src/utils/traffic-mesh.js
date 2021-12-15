@@ -1,18 +1,18 @@
+// @ts-check
 const { EOL } = require('os')
 const path = require('path')
 const process = require('process')
 const rl = require('readline')
 
 const { getBinaryPath } = require('@netlify/routing-local-proxy')
-const execa = require('execa')
 const waitPort = require('wait-port')
 
 const { getPathInProject } = require('../lib/settings')
 const { clearSpinner, startSpinner, stopSpinner } = require('../lib/spinner')
 
-const { log } = require('./command-helpers')
+const { NETLIFYDEVERR, NETLIFYDEVLOG, NETLIFYDEVWARN, log } = require('./command-helpers')
 const { createDeferred } = require('./deferred')
-const { NETLIFYDEVERR, NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./logo')
+const execa = require('./execa')
 
 const EDGE_HANDLERS_BUNDLER_CLI_PATH = path.resolve(require.resolve('@netlify/plugin-edge-handlers'), '..', 'cli.js')
 

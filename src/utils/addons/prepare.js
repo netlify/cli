@@ -1,6 +1,5 @@
-const chalk = require('chalk')
-
-const { error, exit, log, warn } = require('../command-helpers')
+// @ts-check
+const { chalk, error, exit, log, warn } = require('../command-helpers')
 
 const ADDON_VALIDATION = {
   EXISTS: 'EXISTS',
@@ -81,17 +80,25 @@ const getAddons = async ({ api, siteId }) => {
   return addons
 }
 
-const prepareAddonCommand = async ({ addonName, context, validation }) => {
-  const { netlify } = context
+/**
+ *
+ * @param {object} config
+ * @param {import('../../commands/base-command').BaseCommand} config.command
+ * @param {string} [config.addonName]
+ * @param {keyof ADDON_VALIDATION} [config.validation]
+ */
+const prepareAddonCommand = async ({ addonName, command, validation }) => {
+  const { netlify } = command
   const { api, site } = netlify
   const siteId = site.id
   if (!siteId) {
     error('No site id found, please run inside a site folder or `netlify link`')
   }
 
-  await context.authenticate()
+  await command.authenticate()
 
   const [manifest, siteData, addons] = await Promise.all([
+    // TODO: check as `getAddonManifest` did not accept a parameter error
     addonName ? getAddonManifest({ api, addonName, error }) : Promise.resolve(),
     getSiteData({ api, siteId }),
     getAddons({ api, siteId }),

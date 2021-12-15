@@ -1,3 +1,4 @@
+// @ts-check
 const concordance = require('concordance')
 
 const { concordanceDiffOptions, concordanceOptions } = require('./options')

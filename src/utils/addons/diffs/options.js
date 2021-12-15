@@ -1,5 +1,7 @@
+// @ts-check
 const ansiStyles = require('ansi-styles')
-const chalk = require('chalk')
+
+const { chalk } = require('../../command-helpers')
 
 const forceColor = new chalk.Instance({ level: 1 })
 

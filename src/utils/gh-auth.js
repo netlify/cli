@@ -1,3 +1,4 @@
+// @ts-check
 // A simple ghauth inspired library for getting a personal access token
 const http = require('http')
 const process = require('process')

@@ -1,8 +1,7 @@
+// @ts-check
 const jwtDecode = require('jwt-decode')
 
-const { error: errorExit, log } = require('../../utils/command-helpers')
-const { getInternalFunctionsDir } = require('../../utils/functions')
-const { NETLIFYDEVERR, NETLIFYDEVLOG } = require('../../utils/logo')
+const { NETLIFYDEVERR, NETLIFYDEVLOG, error: errorExit, getInternalFunctionsDir, log } = require('../../utils')
 
 const { handleBackgroundFunction, handleBackgroundFunctionResult } = require('./background')
 const { createFormSubmissionHandler } = require('./form-submissions-handler')

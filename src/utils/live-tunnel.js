@@ -1,15 +1,14 @@
+// @ts-check
 const process = require('process')
 
-const chalk = require('chalk')
-const execa = require('execa')
 const fetch = require('node-fetch')
 const pWaitFor = require('p-wait-for')
 
 const { fetchLatestVersion, shouldFetchLatestVersion } = require('../lib/exec-fetcher')
 const { getPathInHome } = require('../lib/settings')
 
-const { log } = require('./command-helpers')
-const { NETLIFYDEVERR, NETLIFYDEVLOG } = require('./logo')
+const { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log } = require('./command-helpers')
+const execa = require('./execa')
 
 const PACKAGE_NAME = 'live-tunnel-client'
 const EXEC_NAME = PACKAGE_NAME

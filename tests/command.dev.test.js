@@ -1,5 +1,6 @@
 // Handlers are meant to be async outside tests
 /* eslint-disable require-await */
+const { copyFile } = require('fs').promises
 const http = require('http')
 const os = require('os')
 const path = require('path')
@@ -11,8 +12,6 @@ const { isCI } = require('ci-info')
 const dotProp = require('dot-prop')
 const FormData = require('form-data')
 const jwt = require('jsonwebtoken')
-
-const { copyFileAsync } = require('../src/lib/fs')
 
 const { curl } = require('./utils/curl')
 const { withDevServer } = require('./utils/dev-server')
@@ -1719,8 +1718,8 @@ export const handler = async function () {
         .buildAsync()
 
       await Promise.all([
-        copyFileAsync(`${__dirname}/assets/cert.pem`, `${builder.directory}/cert.pem`),
-        copyFileAsync(`${__dirname}/assets/key.pem`, `${builder.directory}/key.pem`),
+        copyFile(`${__dirname}/assets/cert.pem`, `${builder.directory}/cert.pem`),
+        copyFile(`${__dirname}/assets/key.pem`, `${builder.directory}/key.pem`),
       ])
       await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
         const options = { https: { rejectUnauthorized: false } }

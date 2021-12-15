@@ -1,8 +1,10 @@
+// @ts-check
+const { readFile, writeFile } = require('fs').promises
 const path = require('path')
 
 const parseIgnore = require('parse-gitignore')
 
-const { fileExistsAsync, readFileAsync, writeFileAsync } = require('../lib/fs')
+const { fileExistsAsync } = require('../lib/fs')
 
 const { log } = require('./command-helpers')
 
@@ -18,14 +20,14 @@ const ensureNetlifyIgnore = async function (dir) {
 
   /* No .gitignore file. Create one and ignore .netlify folder */
   if (!(await hasGitIgnore(dir))) {
-    await writeFileAsync(gitIgnorePath, ignoreContent, 'utf8')
+    await writeFile(gitIgnorePath, ignoreContent, 'utf8')
     return false
   }
 
   let gitIgnoreContents
   let ignorePatterns
   try {
-    gitIgnoreContents = await readFileAsync(gitIgnorePath, 'utf8')
+    gitIgnoreContents = await readFile(gitIgnorePath, 'utf8')
     ignorePatterns = parseIgnore.parse(gitIgnoreContents)
   } catch (error) {
     // ignore
@@ -35,8 +37,8 @@ const ensureNetlifyIgnore = async function (dir) {
     log()
     log('Adding local .netlify folder to .gitignore file...')
     const newContents = `${gitIgnoreContents}\n${ignoreContent}`
-    await writeFileAsync(gitIgnorePath, newContents, 'utf8')
+    await writeFile(gitIgnorePath, newContents, 'utf8')
   }
 }
 
-module.exports = ensureNetlifyIgnore
+module.exports = { ensureNetlifyIgnore }

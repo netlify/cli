@@ -1,8 +1,8 @@
+// @ts-check
 // TODO: use static `import` after migrating this repository to pure ES modules
 const netlifyRedirectParser = import('netlify-redirect-parser')
 
-const { log } = require('./command-helpers')
-const { NETLIFYDEVERR } = require('./logo')
+const { NETLIFYDEVERR, log } = require('./command-helpers')
 
 // Parse, normalize and validate all redirects from `_redirects` files
 // and `netlify.toml`

@@ -1,8 +1,10 @@
+// @ts-check
+const { readFile } = require('fs').promises
 const path = require('path')
 
 const dotenv = require('dotenv')
 
-const { isFileAsync, readFileAsync } = require('../lib/fs')
+const { isFileAsync } = require('../lib/fs')
 
 const { warn } = require('./command-helpers')
 
@@ -32,7 +34,7 @@ const tryLoadDotEnvFiles = async ({ projectDir }) => {
           warning: `Failed reading env variables from file: ${filepath}: ${error.message}`,
         }
       }
-      const content = await readFileAsync(filepath)
+      const content = await readFile(filepath, 'utf-8')
       const env = dotenv.parse(content)
       return { file, env }
     }),
