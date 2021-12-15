@@ -147,7 +147,6 @@ netlify functions:list
 
 - `functions` (*string*) - Specify a functions directory to list
 - `json` (*boolean*) - Output function data as JSON
-- `name` (*string*) - name to print
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
