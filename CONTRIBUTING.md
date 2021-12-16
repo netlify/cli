@@ -16,7 +16,7 @@ promote a positive and inclusive environment.
 
 ## Development process
 
-First fork and clone the repository. If you're not sure how to do this, please watch
+First, fork and clone the repository. If you're not sure how to do this, please watch
 [these videos](https://egghead.io/courses/how-to-contribute-to-an-open-source-project-on-github).
 
 Run:
@@ -49,16 +49,16 @@ In watch mode:
 npm run watch
 ```
 
-Make sure everything is correctly setup by running those tests first.
+Make sure everything is correctly set up by running those tests first.
 
-ESLint and Prettier are performed automatically on `git push`. However, we recommend you setup your IDE or text editor
+ESLint and Prettier have performed automatically on `git push`. However, we recommend you set up your IDE or text editor
 to run ESLint and Prettier automatically on file save. Otherwise, you should run them manually using:
 
 ```bash
 npm run format
 ```
 
-Alternatively you can setup your IDE to integrate with Prettier and ESLint for JavaScript and Markdown files.
+Alternatively, you can set up your IDE to integrate with Prettier and ESLint for JavaScript and Markdown files.
 
 To run the CLI locally:
 
@@ -68,10 +68,10 @@ To run the CLI locally:
 
 ## Architecture
 
-The CLI is written using the [oclif](https://oclif.io/) cli framework and the [netlify/js-client](https://github.com/netlify/js-client) open-api derived API client.
+The CLI is written using the [commander.js](https://github.com/tj/commander.js/) cli interface and the [netlify/js-client](https://github.com/netlify/js-client) open-api derived API client.
 
 - Commands live in the [`src/commands`](src/commands) folder.
-- The base command class which provides consistent config loading and an API client lives in [`src/utils/command.js`](src/utils/command.js).
+- The base command class which provides consistent config loading and an API client lives in [`src/commands/base-command.js`](src/commands/base-command.js).
 - Small utilities and other functionality live in [`src/utils`](src/utils).
 
 A good place to start is reading the base command README and looking at the commands folder.
@@ -112,7 +112,7 @@ Merge the release PR
 1. Create a branch named `releases/<tag>/<version>` with the version and tag you'd like to release.
 2. Push the branch to the repo.
 
-For example, a branch named `releases/rc/4.0.0` will create the version `v4.0.0-rc` and publish it under the `rc` tag.
+For example, a branch named `releases/rc.0/4.0.0` will create the version `4.0.0-rc.0` and publish it under the `rc.0` tag.
 
 ## License
 

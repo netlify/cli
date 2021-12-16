@@ -1,4 +1,4 @@
-const chalk = require('chalk')
+const { chalk } = require('../command-helpers')
 
 const { checkGitVersion, checkHelperVersion, checkLFSFilters, checkLFSVersion } = require('./requirements')
 

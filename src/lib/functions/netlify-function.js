@@ -1,7 +1,10 @@
+// @ts-check
 const { error: errorExit } = require('../../utils/command-helpers')
-const { difference } = require('../../utils/difference')
 
 const BACKGROUND_SUFFIX = '-background'
+
+// Returns a new set with all elements of `setA` that don't exist in `setB`.
+const difference = (setA, setB) => new Set([...setA].filter((item) => !setB.has(item)))
 
 class NetlifyFunction {
   constructor({ config, directory, mainFile, name, projectRoot, runtime, timeoutBackground, timeoutSynchronous }) {

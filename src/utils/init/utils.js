@@ -1,15 +1,16 @@
+// @ts-check
+const { existsSync } = require('fs')
+const { writeFile } = require('fs').promises
 const { EOL } = require('os')
 const path = require('path')
 const process = require('process')
 
-const chalk = require('chalk')
 const cleanDeep = require('clean-deep')
 const inquirer = require('inquirer')
 const isEmpty = require('lodash/isEmpty')
 
-const { fileExistsAsync, writeFileAsync } = require('../../lib/fs')
 const { normalizeBackslash } = require('../../lib/path')
-const { error: failAndExit, warn } = require('../command-helpers')
+const { chalk, error: failAndExit, warn } = require('../command-helpers')
 
 const { getFrameworkInfo } = require('./frameworks')
 const { detectNodeVersion } = require('./node-version')
@@ -204,8 +205,7 @@ const getNetlifyToml = ({
 const saveNetlifyToml = async ({ baseDir, buildCmd, buildDir, config, configPath, functionsDir, repositoryRoot }) => {
   const tomlPathParts = [repositoryRoot, baseDir, 'netlify.toml'].filter(Boolean)
   const tomlPath = path.join(...tomlPathParts)
-  const exists = await fileExistsAsync(tomlPath)
-  if (exists) {
+  if (existsSync(tomlPath)) {
     return
   }
 
@@ -226,7 +226,11 @@ const saveNetlifyToml = async ({ baseDir, buildCmd, buildDir, config, configPath
   ])
   if (makeNetlifyTOML) {
     try {
-      await writeFileAsync(tomlPath, getNetlifyToml({ command: buildCmd, publish: buildDir, functions: functionsDir }))
+      await writeFile(
+        tomlPath,
+        getNetlifyToml({ command: buildCmd, publish: buildDir, functions: functionsDir }),
+        'utf-8',
+      )
     } catch (error) {
       warn(`Failed saving Netlify toml file: ${error.message}`)
     }

@@ -1,5 +1,7 @@
-const execa = require('execa')
+// @ts-check
 const semver = require('semver')
+
+const execa = require('../execa')
 
 const checkLFSFilters = async function () {
   try {

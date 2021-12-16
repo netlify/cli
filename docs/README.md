@@ -9,6 +9,9 @@ Welcome to the Netlify CLI! This site provides online access to all help strings
 
 If you have questions, ideas, or would like to contribute, check out the [repository on Github](https://github.com/netlify/cli/).
 
+**Before you begin**
+Make sure you have [Node.js](https://nodejs.org/en/download/) version 12.20.0, 14.14.0, 16.0.0, or later.
+
 **Install the CLI**
 
 To install the CLI, pop open your terminal and install with `npm`.
@@ -56,6 +59,15 @@ Run any Netlify API method
 ### [build](/docs/commands/build.md)
 
 (Beta) Build on your local machine
+
+### [completion](/docs/commands/completion.md)
+
+(Beta) Generate shell completion script
+
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`completion:install`](/docs/commands/completion.md#completioninstall) | Generates completion script for your preferred shell  |
+
 
 ### [deploy](/docs/commands/deploy.md)
 
@@ -112,8 +124,8 @@ Handle Netlify Large Media operations
 | Subcommand | description  |
 |:--------------------------- |:-----|
 | [`lm:info`](/docs/commands/lm.md#lminfo) | Show large media requirements information.  |
-| [`lm:install`](/docs/commands/lm.md#lminstall) | Configures your computer to use Netlify Large Media.  |
-| [`lm:setup`](/docs/commands/lm.md#lmsetup) | Configures your site to use Netlify Large Media.  |
+| [`lm:install`](/docs/commands/lm.md#lminstall) | Configures your computer to use Netlify Large Media  |
+| [`lm:setup`](/docs/commands/lm.md#lmsetup) | Configures your site to use Netlify Large Media  |
 
 
 ### [login](/docs/commands/login.md)
@@ -161,16 +173,6 @@ Unlink a local folder from a Netlify site
 ### [watch](/docs/commands/watch.md)
 
 Watch for site deploy to finish
-
-### [completion](/docs/commands/completion.md)
-
-(Beta) Generate shell completion script
-
-| Subcommand | description  |
-|:--------------------------- |:-----|
-| [`completion:generate:alias`](/docs/commands/completion.md#completiongeneratealias) | Generates completion script for alias  |
-| [`completion:generate`](/docs/commands/completion.md#completiongenerate) | Generates completion script  |
-
 
 
 <!-- AUTO-GENERATED-CONTENT:END -->

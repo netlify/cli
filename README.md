@@ -1,7 +1,7 @@
 # ![Netlify CLI](cli.png)
 
 [![Coverage Status](https://codecov.io/gh/netlify/cli/branch/main/graph/badge.svg)](https://codecov.io/gh/netlify/cli)
-[![npm version][npm-img]][npm] [![downloads][dl-img]][dl] [![netlify-status][netlify-img]][netlify] [![dependencies][david-img]][david] [![security][snyk-img]][snyk][![FOSSA Status](https://app.fossa.com/api/projects/custom%2B17679%2Fgit%40github.com%3Anetlify%2Fcli.git.svg?type=shield)](https://app.fossa.com/projects/custom%2B17679%2Fgit%40github.com%3Anetlify%2Fcli.git?ref=badge_shield)
+[![npm version][npm-img]][npm] [![downloads][dl-img]][dl] [![netlify-status][netlify-img]][netlify] [![security][snyk-img]][snyk]
 
 Interact with [Netlify](http://netlify.com/) from the comfort of your CLI.
 
@@ -20,6 +20,7 @@ See the [CLI command line reference](https://cli.netlify.com/commands/) to get s
   - [addons](#addons)
   - [api](#api)
   - [build](#build)
+  - [completion](#completion)
   - [deploy](#deploy)
   - [dev](#dev)
   - [env](#env)
@@ -34,7 +35,6 @@ See the [CLI command line reference](https://cli.netlify.com/commands/) to get s
   - [switch](#switch)
   - [unlink](#unlink)
   - [watch](#watch)
-  - [completion](#completion)
 - [Contributing](#contributing)
 - [Development](#development)
 - [License](#license)
@@ -102,6 +102,15 @@ Run any Netlify API method
 
 (Beta) Build on your local machine
 
+### [completion](/docs/commands/completion.md)
+
+(Beta) Generate shell completion script
+
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`completion:install`](/docs/commands/completion.md#completioninstall) | Generates completion script for your preferred shell  |
+
+
 ### [deploy](/docs/commands/deploy.md)
 
 Create a new deploy from the contents of a folder
@@ -157,8 +166,8 @@ Handle Netlify Large Media operations
 | Subcommand | description  |
 |:--------------------------- |:-----|
 | [`lm:info`](/docs/commands/lm.md#lminfo) | Show large media requirements information.  |
-| [`lm:install`](/docs/commands/lm.md#lminstall) | Configures your computer to use Netlify Large Media.  |
-| [`lm:setup`](/docs/commands/lm.md#lmsetup) | Configures your site to use Netlify Large Media.  |
+| [`lm:install`](/docs/commands/lm.md#lminstall) | Configures your computer to use Netlify Large Media  |
+| [`lm:setup`](/docs/commands/lm.md#lmsetup) | Configures your site to use Netlify Large Media  |
 
 
 ### [login](/docs/commands/login.md)
@@ -206,16 +215,6 @@ Unlink a local folder from a Netlify site
 ### [watch](/docs/commands/watch.md)
 
 Watch for site deploy to finish
-
-### [completion](/docs/commands/completion.md)
-
-(Beta) Generate shell completion script
-
-| Subcommand | description  |
-|:--------------------------- |:-----|
-| [`completion:generate:alias`](/docs/commands/completion.md#completiongeneratealias) | Generates completion script for alias  |
-| [`completion:generate`](/docs/commands/completion.md#completiongenerate) | Generates completion script  |
-
 
 
 <!-- AUTO-GENERATED-CONTENT:END -->

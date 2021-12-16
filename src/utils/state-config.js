@@ -109,4 +109,4 @@ class StateConfig {
   }
 }
 
-module.exports = StateConfig
+module.exports = { StateConfig }

@@ -1,7 +1,7 @@
+// @ts-check
 const { Octokit } = require('@octokit/rest')
-const chalk = require('chalk')
 
-const { error: failAndExit, log } = require('../command-helpers')
+const { chalk, error: failAndExit, log } = require('../command-helpers')
 const { getGitHubToken: ghauth } = require('../gh-auth')
 
 const { createDeployKey, formatErrorMessage, getBuildSettings, saveNetlifyToml, setupSite } = require('./utils')
@@ -23,7 +23,7 @@ const PAGE_SIZE = 100
 
 /**
  * Get a valid github token
- * @returns {string}
+ * @returns {Promise<string>}
  */
 const getGitHubToken = async ({ globalConfig }) => {
   const userId = globalConfig.get('userId')
@@ -196,8 +196,15 @@ const addNotificationHooks = async ({ api, siteId, token }) => {
   log(`Netlify Notification Hooks configured!`)
 }
 
-const configGithub = async ({ context, repoName, repoOwner, siteId }) => {
-  const { netlify } = context
+/**
+ * @param {object} config
+ * @param {import('../../commands/base-command').BaseCommand} config.command
+ * @param {string} config.repoName
+ * @param {string} config.repoOwner
+ * @param {string} config.siteId
+ */
+const configGithub = async ({ command, repoName, repoOwner, siteId }) => {
+  const { netlify } = command
   const {
     api,
     cachedConfig: { configPath, env },

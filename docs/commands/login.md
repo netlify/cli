@@ -7,9 +7,7 @@ description: Login to your Netlify account
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
 Login to your Netlify account
-
 Opens a web browser to acquire an OAuth token.
-
 
 **Usage**
 

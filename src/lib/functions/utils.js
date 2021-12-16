@@ -1,6 +1,5 @@
-const chalk = require('chalk')
-
-const { warn } = require('../../utils/command-helpers')
+// @ts-check
+const { chalk, warn } = require('../../utils')
 const { getLogMessage } = require('../log')
 
 const DEFAULT_LAMBDA_OPTIONS = {

@@ -1,22 +1,7 @@
-const { isEmptyCommand } = require('../../utils/check-command-inputs')
-const showHelp = require('../../utils/show-help')
-const { TrackedCommand } = require('../../utils/telemetry/tracked-command')
+const { createSitesCommand } = require('./sites')
+const { sitesCreate } = require('./sites-create')
 
-class SitesCommand extends TrackedCommand {
-  run() {
-    const { args, flags } = this.parse(SitesCommand)
-
-    // Show help on empty sub command
-    if (isEmptyCommand(flags, args)) {
-      showHelp(this.id)
-    }
-  }
+module.exports = {
+  createSitesCommand,
+  sitesCreate,
 }
-
-SitesCommand.description = `Handle various site operations
-The sites command will help you manage all your sites
-`
-
-SitesCommand.examples = ['netlify sites:create --name my-new-site', 'netlify sites:list']
-
-module.exports = SitesCommand

@@ -1,5 +1,7 @@
+// @ts-check
 const AsciiTable = require('ascii-table')
-const chalk = require('chalk')
+
+const { chalk } = require('../command-helpers')
 
 const missingValues = function (values, manifest) {
   const display = values

@@ -1,10 +1,9 @@
 const process = require('process')
 
 const open = require('better-opn')
-const chalk = require('chalk')
 const isDockerContainer = require('is-docker')
 
-const { log } = require('./command-helpers')
+const { chalk, log } = require('./command-helpers')
 
 const unableToOpenBrowserMessage = function ({ message, url }) {
   log('---------------------------')
@@ -14,6 +13,13 @@ const unableToOpenBrowserMessage = function ({ message, url }) {
   log('---------------------------')
 }
 
+/**
+ * Opens a browser and logs a message if it is not possible
+ * @param {object} config
+ * @param {string} config.url The url to open
+ * @param {boolean} [config.silentBrowserNoneError]
+ * @returns {Promise<void>}
+ */
 const openBrowser = async function ({ silentBrowserNoneError, url }) {
   if (isDockerContainer()) {
     unableToOpenBrowserMessage({ url, message: 'Running inside a docker container' })

@@ -1,12 +1,10 @@
-const { URL } = require('url')
+// @ts-check
+const { readFile } = require('fs').promises
 
 const { HttpsProxyAgent } = require('https-proxy-agent')
 const waitPort = require('wait-port')
 
-const { exit, log } = require('../utils/command-helpers')
-const { NETLIFYDEVERR, NETLIFYDEVWARN } = require('../utils/logo')
-
-const fs = require('./fs')
+const { NETLIFYDEVERR, NETLIFYDEVWARN, exit, log } = require('../utils')
 
 // https://github.com/TooTallNate/node-https-proxy-agent/issues/89
 class HttpsProxyAgentWithCA extends HttpsProxyAgent {
@@ -68,7 +66,7 @@ const tryGetAgent = async ({ certificateFile, httpProxy }) => {
   let certificate
   if (certificateFile) {
     try {
-      certificate = await fs.readFileAsync(certificateFile)
+      certificate = await readFile(certificateFile)
     } catch (error) {
       response = { warning: `Could not read certificate file '${certificateFile}'.`, message: error.message }
     }

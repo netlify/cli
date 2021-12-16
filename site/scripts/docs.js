@@ -1,10 +1,11 @@
+// @ts-check
 const path = require('path')
 const process = require('process')
 
 const markdownMagic = require('markdown-magic')
 const stripAnsi = require('strip-ansi')
 
-const generateCommandData = require('./generate-command-data')
+const { generateCommandData } = require('./generate-command-data')
 
 process.env.DOCS_GEN = 'TRUE'
 

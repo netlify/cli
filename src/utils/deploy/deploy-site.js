@@ -83,7 +83,7 @@ const deploySite = async (
 
   if (functionsWithNativeModules.length !== 0) {
     warn(`Modules with native dependencies\n
-${functionsWithNativeModules.map(({ name }) => `- ${name}`).join('\n')}    
+${functionsWithNativeModules.map(({ name }) => `- ${name}`).join('\n')}
 
 The serverless functions above use Node.js modules with native dependencies, which
 must be installed on a system with the same architecture as the function runtime. A

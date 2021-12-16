@@ -1,6 +1,7 @@
+// @ts-check
 const { Buffer } = require('buffer')
 
-const { NETLIFYDEVERR } = require('../../utils/logo')
+const { NETLIFYDEVERR } = require('../../utils')
 
 const { detectAwsSdkError } = require('./utils')
 

@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "7.0.4",
+  "version": "8.1.5",
   "author": "Netlify Inc.",
   "contributors": [
     "Mathias Biilmann <matt@netlify.com> (https://twitter.com/biilmann)",
@@ -11,12 +11,11 @@
     "Bret Comnes <bcomnes@gmail.com> (https://bret.io)"
   ],
   "engines": {
-    "node": ">=12.20.0"
+    "node": "^12.20.0 || ^14.14.0 || >=16.0.0"
   },
   "files": [
     "/bin",
     "/npm-shrinkwrap.json",
-    "/oclif.manifest.json",
     "/scripts/postinstall.js",
     "/src/**/*.js",
     "/src/**/*.sh",
@@ -56,47 +55,39 @@
     "format:check:prettier": "cross-env-shell prettier --check $npm_package_config_prettier",
     "format:fix:prettier": "cross-env-shell prettier --write $npm_package_config_prettier",
     "test:dev": "run-s test:init:* test:dev:*",
-    "test:ci": "run-s test:init:* test:ci:*",
-    "test:init:build": "run-s build:*",
+    "test:ci": "run-s test:ci:*",
+    "test:init": "run-s test:init:*",
     "test:init:cli-version": "npm run start -- --version",
     "test:init:cli-help": "npm run start -- --help",
     "test:init:eleventy-deps": "npm ci --prefix tests/eleventy-site --no-audit",
     "test:init:hugo-deps": "npm ci --prefix tests/hugo-site --no-audit",
     "test:dev:ava": "ava --verbose",
     "test:ci:ava": "nyc -r json ava",
+    "test:affected": "node ./tools/affected-test.js",
     "docs": "node ./site/scripts/docs.js",
     "watch": "nyc --reporter=lcov ava --watch",
-    "build:manifest": "oclif-dev manifest",
-    "prepack": "npm run build:manifest && npm prune --prod",
-    "postpack": "rm -f oclif.manifest.json && npm i",
+    "prepack": "npm prune --prod",
+    "postpack": "npm i",
     "site:build": "run-s site:build:*",
     "site:build:install": "cd site && npm ci --no-audit",
     "site:build:assets": "cd site && npm run build",
     "postinstall": "node ./scripts/postinstall.js"
   },
   "config": {
-    "eslint": "--ignore-path .gitignore --cache --format=codeframe --max-warnings=0 \"{src,scripts,site,tests,.github}/**/*.{js,md,html}\" \"*.{js,md,html}\" \".*.{js,md,html}\"",
-    "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,scripts,site,tests,.github}/**/*.{js,md,yml,json,html}\" \"*.{js,yml,json,html}\" \".*.{js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\" \"!.github/**/*.md\""
+    "eslint": "--ignore-path .gitignore --cache --format=codeframe --max-warnings=0 \"{src,tools,scripts,site,tests,.github}/**/*.{js,md,html}\" \"*.{js,md,html}\" \".*.{js,md,html}\"",
+    "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,tools,scripts,site,tests,.github}/**/*.{js,md,yml,json,html}\" \"*.{js,yml,json,html}\" \".*.{js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\" \"!.github/**/*.md\""
   },
   "dependencies": {
-    "@netlify/build": "^18.25.2",
-    "@netlify/config": "^15.8.2",
-    "@netlify/framework-info": "^5.11.0",
+    "@netlify/build": "^20.3.1",
+    "@netlify/config": "^16.0.7",
+    "@netlify/framework-info": "^7.0.0",
     "@netlify/local-functions-proxy": "^1.1.1",
-    "@netlify/plugin-edge-handlers": "^1.11.22",
-    "@netlify/plugins-list": "^4.2.0",
+    "@netlify/plugin-edge-handlers": "^2.0.0",
+    "@netlify/plugins-list": "^6.2.0",
     "@netlify/routing-local-proxy": "^0.34.1",
-    "@netlify/zip-it-and-ship-it": "4.30.0",
-    "@oclif/command": "^1.6.1",
-    "@oclif/config": "^1.15.1",
-    "@oclif/errors": "^1.3.4",
-    "@oclif/parser": "^3.8.4",
-    "@oclif/plugin-help": "^3.0.0",
-    "@oclif/plugin-not-found": "^1.1.4",
-    "@oclif/plugin-plugins": "^1.9.3",
+    "@netlify/zip-it-and-ship-it": "5.2.0",
     "@octokit/rest": "^18.0.0",
     "@sindresorhus/slugify": "^1.1.0",
-    "@ungap/from-entries": "^0.2.1",
     "ansi-styles": "^5.0.0",
     "ascii-table": "0.0.9",
     "backoff": "^2.5.0",
@@ -106,7 +97,7 @@
     "chokidar": "^3.0.2",
     "ci-info": "^3.0.0",
     "clean-deep": "^3.0.2",
-    "cli-ux": "^5.5.1",
+    "commander": "^8.3.0",
     "concordance": "^5.0.0",
     "configstore": "^5.0.0",
     "content-type": "^1.0.4",
@@ -141,6 +132,7 @@
     "inquirer-autocomplete-prompt": "^1.0.1",
     "is-docker": "^2.0.0",
     "is-plain-obj": "^3.0.0",
+    "is-wsl": "^2.2.0",
     "isexe": "^2.0.0",
     "jwt-decode": "^3.0.0",
     "lambda-local": "^2.0.0",
@@ -153,13 +145,12 @@
     "minimist": "^1.2.5",
     "mock-require": "^3.0.3",
     "multiparty": "^4.2.1",
-    "netlify": "^8.0.4",
-    "netlify-headers-parser": "^4.0.1",
-    "netlify-redirect-parser": "^11.0.3",
+    "netlify": "^10.0.0",
+    "netlify-headers-parser": "^6.0.0",
+    "netlify-redirect-parser": "^13.0.0",
     "netlify-redirector": "^0.2.1",
     "node-fetch": "^2.6.0",
     "node-version-alias": "^1.0.1",
-    "oclif-plugin-completion": "^0.6.0",
     "omit.js": "^2.0.2",
     "open": "^7.0.0",
     "ora": "^5.0.0",
@@ -178,10 +169,12 @@
     "raw-body": "^2.4.1",
     "read-pkg-up": "^7.0.1",
     "resolve": "^1.12.0",
-    "semver": "^7.3.4",
+    "semver": "^7.3.5",
     "source-map-support": "^0.5.19",
     "static-server": "^2.2.1",
+    "string-similarity": "^4.0.4",
     "strip-ansi-control-characters": "^2.0.0",
+    "tabtab": "^3.0.2",
     "tempy": "^1.0.0",
     "through2-filter": "^3.0.0",
     "through2-map": "^3.0.0",
@@ -196,19 +189,21 @@
   "devDependencies": {
     "@babel/plugin-proposal-class-properties": "^7.13.0",
     "@babel/preset-react": "^7.12.13",
-    "@commitlint/cli": "^14.0.0",
-    "@commitlint/config-conventional": "^14.0.0",
-    "@netlify/eslint-config-node": "^3.3.8",
-    "@oclif/dev-cli": "^1.23.1",
-    "@oclif/test": "^1.2.5",
+    "@commitlint/cli": "^15.0.0",
+    "@commitlint/config-conventional": "^15.0.0",
+    "@netlify/eslint-config-node": "^4.0.0",
     "ava": "^3.15.0",
+    "eslint-plugin-local-rules": "file:tools/eslint-rules",
     "eslint-plugin-sort-destructure-keys": "^1.3.5",
+    "fast-glob": "^3.2.7",
     "form-data": "^4.0.0",
     "from2-string": "^1.1.0",
     "got": "^11.8.1",
+    "graphviz": "^0.0.9",
     "ini": "^2.0.0",
     "jsonwebtoken": "^8.5.1",
     "mkdirp": "^1.0.4",
+    "mock-fs": "^5.1.2",
     "nyc": "^15.0.0",
     "p-timeout": "^4.0.0",
     "pidtree": "^0.5.0",
@@ -220,11 +215,14 @@
     "supertest": "^6.1.6",
     "temp-dir": "^2.0.0",
     "tomlify-j0.4": "^3.0.0",
-    "tree-kill": "^1.2.2"
+    "tree-kill": "^1.2.2",
+    "typescript": "^4.4.4"
   },
   "ava": {
     "files": [
+      "site/**/*.test.js",
       "src/**/*.test.js",
+      "tools/**/*.test.js",
       "tests/*.test.js"
     ],
     "cache": true,
@@ -233,22 +231,6 @@
     "failWithoutAssertions": false,
     "tap": false,
     "timeout": "5m"
-  },
-  "oclif": {
-    "bin": "netlify",
-    "commands": "./src/commands",
-    "helpClass": "./src/lib/help",
-    "plugins": [
-      "@oclif/plugin-not-found",
-      "@oclif/plugin-plugins",
-      "@oclif/plugin-help",
-      "oclif-plugin-completion"
-    ],
-    "hooks": {
-      "init": [
-        "./src/hooks/init"
-      ]
-    }
   },
   "husky": {
     "hooks": {

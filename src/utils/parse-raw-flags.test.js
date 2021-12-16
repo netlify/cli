@@ -28,14 +28,7 @@ test.serial('JSONTruthy works with various inputs', (t) => {
 })
 
 test.serial('parseRawFlags works', (t) => {
-  const input = [
-    { type: 'arg', input: 'FAUNA' },
-    { type: 'arg', input: 'FOO' },
-    { type: 'arg', input: 'BAR' },
-    { type: 'arg', input: '--hey' },
-    { type: 'arg', input: 'hi' },
-    { type: 'arg', input: '--heep' },
-  ]
+  const input = ['FAUNA', 'FOO', 'BAR', '--hey', 'hi', '--heep']
 
   const expected = { hey: 'hi', heep: true }
 

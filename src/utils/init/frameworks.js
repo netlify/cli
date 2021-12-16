@@ -1,3 +1,4 @@
+// @ts-check
 const { listFrameworks } = require('@netlify/framework-info')
 
 const getFrameworkInfo = async ({ baseDirectory, nodeVersion }) => {

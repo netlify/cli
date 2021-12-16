@@ -1,6 +1,5 @@
-const chalk = require('chalk')
-
-const { log } = require('../command-helpers')
+// @ts-check
+const { chalk, log } = require('../command-helpers')
 
 const { configGithub } = require('./config-github')
 const configManual = require('./config-manual')
@@ -18,14 +17,21 @@ const logSuccess = (repoData) => {
   `)
 }
 
-const configureRepo = async ({ context, manual, repoData, siteId }) => {
+/**
+ * @param {object} config
+ * @param {import('../../commands/base-command').BaseCommand} config.command
+ * @param {boolean} config.manual
+ * @param {*} config.repoData
+ * @param {string} config.siteId
+ */
+const configureRepo = async ({ command, manual, repoData, siteId }) => {
   if (manual) {
-    await configManual({ context, siteId, repoData })
+    await configManual({ command, siteId, repoData })
   } else if (repoData.provider === 'github') {
-    await configGithub({ context, siteId, repoName: repoData.name, repoOwner: repoData.owner })
+    await configGithub({ command, siteId, repoName: repoData.name, repoOwner: repoData.owner })
   } else {
     log(`No configurator found for the provided git remote. Configuring manually...`)
-    await configManual({ context, siteId, repoData })
+    await configManual({ command, siteId, repoData })
   }
 
   logSuccess(repoData)

@@ -1,24 +1,19 @@
+// @ts-check
+const { appendFile, copyFile, readFile, writeFile } = require('fs').promises
 const os = require('os')
 const path = require('path')
 const process = require('process')
 
-const chalk = require('chalk')
 const execa = require('execa')
 const hasbin = require('hasbin')
 const Listr = require('listr')
 const pathKey = require('path-key')
 
 const { fetchLatestVersion, shouldFetchLatestVersion } = require('../../lib/exec-fetcher')
-const {
-  appendFileAsync,
-  copyFileAsync,
-  fileExistsAsync,
-  readFileAsync,
-  rmdirRecursiveAsync,
-  writeFileAsync,
-} = require('../../lib/fs')
+const { fileExistsAsync, rmdirRecursiveAsync } = require('../../lib/fs')
 const { normalizeBackslash } = require('../../lib/path')
 const { getLegacyPathInHome, getPathInHome } = require('../../lib/settings')
+const { chalk } = require('../command-helpers')
 
 const PACKAGE_NAME = 'netlify-credential-helper'
 const EXEC_NAME = 'git-credential-netlify'
@@ -154,7 +149,7 @@ Set the helper path in your environment PATH: ${getBinPath()}`
   }
 
   return await Promise.all([
-    await copyFileAsync(`${__dirname}/scripts/${shell}.sh`, incFilePath),
+    await copyFile(`${__dirname}/scripts/${shell}.sh`, incFilePath),
     await writeConfig(configFile, getInitContent(incFilePath)),
   ])
 }
@@ -165,12 +160,12 @@ const writeConfig = async function (name, initContent) {
     return
   }
 
-  const content = await readFileAsync(configPath, 'utf8')
+  const content = await readFile(configPath, 'utf8')
   if (content.includes(initContent)) {
     return
   }
 
-  return await appendFileAsync(configPath, initContent)
+  return await appendFile(configPath, initContent, 'utf-8')
 }
 
 const getCurrentCredentials = async () => {
@@ -225,7 +220,7 @@ const configureGitConfig = async function () {
   }
 
   const gitConfigPath = getGitConfigPath()
-  await writeFileAsync(gitConfigPath, helperConfig)
+  await writeFile(gitConfigPath, helperConfig, 'utf-8')
 
   return writeConfig(GIT_CONFIG, getGitConfigContent(gitConfigPath))
 }
@@ -292,8 +287,8 @@ const removeConfig = async function (name, toRemove) {
     return
   }
 
-  const content = await readFileAsync(configPath, 'utf8')
-  return await writeFileAsync(configPath, content.replace(toRemove, ''))
+  const content = await readFile(configPath, 'utf8')
+  return await writeFile(configPath, content.replace(toRemove, ''))
 }
 
 module.exports = { installPlatform, isBinInPath, getShellInfo, uninstall }

@@ -1,3 +1,4 @@
+// @ts-check
 const url = require('url')
 
 const fetch = require('node-fetch')

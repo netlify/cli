@@ -1,10 +1,8 @@
+// @ts-check
+const { mkdir } = require('fs').promises
 const { env } = require('process')
 
-const chalk = require('chalk')
-
-const { log, warn } = require('../../utils/command-helpers')
-const { NETLIFYDEVERR, NETLIFYDEVLOG } = require('../../utils/logo')
-const { mkdirRecursiveAsync } = require('../fs')
+const { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn } = require('../../utils')
 const { getLogMessage } = require('../log')
 
 const { NetlifyFunction } = require('./netlify-function')
@@ -45,7 +43,7 @@ class FunctionsRegistry {
   }
 
   static async prepareDirectoryScan(directory) {
-    await mkdirRecursiveAsync(directory)
+    await mkdir(directory, { recursive: true })
 
     // We give runtimes the opportunity to react to a directory scan and run
     // additional logic before the directory is read. So if they implement a

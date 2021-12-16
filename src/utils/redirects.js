@@ -1,11 +1,13 @@
-const { parseAllRedirects } = require('netlify-redirect-parser')
+// @ts-check
+// TODO: use static `import` after migrating this repository to pure ES modules
+const netlifyRedirectParser = import('netlify-redirect-parser')
 
-const { log } = require('./command-helpers')
-const { NETLIFYDEVERR } = require('./logo')
+const { NETLIFYDEVERR, log } = require('./command-helpers')
 
 // Parse, normalize and validate all redirects from `_redirects` files
 // and `netlify.toml`
 const parseRedirects = async function ({ configPath, redirectsFiles }) {
+  const { parseAllRedirects } = await netlifyRedirectParser
   const { errors, redirects } = await parseAllRedirects({
     redirectsFiles,
     netlifyConfigPath: configPath,

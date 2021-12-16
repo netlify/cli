@@ -1,8 +1,9 @@
+// @ts-check
 const { Buffer } = require('buffer')
+const { readFile } = require('fs').promises
 const http = require('http')
 const https = require('https')
 const path = require('path')
-const { URL, URLSearchParams } = require('url')
 
 const contentType = require('content-type')
 const cookie = require('cookie')
@@ -16,13 +17,12 @@ const pEvent = require('p-event')
 const pFilter = require('p-filter')
 const toReadableStream = require('to-readable-stream')
 
-const { fileExistsAsync, isFileAsync, readFileAsync } = require('../lib/fs')
+const { fileExistsAsync, isFileAsync } = require('../lib/fs')
 
+const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./command-helpers')
 const { createStreamPromise } = require('./create-stream-promise')
 const { headersForPath, parseHeaders } = require('./headers')
-const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./logo')
-const { createRewriter } = require('./rules-proxy')
-const { onChanges } = require('./rules-proxy')
+const { createRewriter, onChanges } = require('./rules-proxy')
 
 const isInternal = function (url) {
   return url.startsWith('/.netlify/')
@@ -84,7 +84,7 @@ const render404 = async function (publicFolder) {
   const maybe404Page = path.resolve(publicFolder, '404.html')
   try {
     const isFile = await isFileAsync(maybe404Page)
-    if (isFile) return await readFileAsync(maybe404Page)
+    if (isFile) return await readFile(maybe404Page, 'utf-8')
   } catch (error) {
     console.warn(NETLIFYDEVWARN, 'Error while serving 404.html file', error.message)
   }

@@ -1,19 +1,18 @@
+// @ts-check
 const { EOL } = require('os')
 const path = require('path')
 const process = require('process')
 
 const { getFramework, listFrameworks } = require('@netlify/framework-info')
-const chalk = require('chalk')
 const fuzzy = require('fuzzy')
 const getPort = require('get-port')
 const isPlainObject = require('is-plain-obj')
 
 const { readFileAsyncCatchError } = require('../lib/fs')
 
-const { log } = require('./command-helpers')
+const { NETLIFYDEVWARN, chalk, log } = require('./command-helpers')
 const { acquirePort } = require('./dev')
 const { getInternalFunctionsDir } = require('./functions')
-const { NETLIFYDEVWARN } = require('./logo')
 
 const formatProperty = (str) => chalk.magenta(`'${str}'`)
 const formatValue = (str) => chalk.green(`'${str}'`)
@@ -101,24 +100,24 @@ const getDefaultDist = () => {
   return process.cwd()
 }
 
-const handleStaticServer = async ({ devConfig, flags, projectDir }) => {
+/**
+ *
+ * @param {object} param0
+ * @param {import('../commands/dev/types').DevConfig} param0.devConfig
+ * @param {import('commander').OptionValues} param0.options
+ * @param {string} param0.projectDir
+ * @returns {Promise<import('./types').BaseServerSettings>}
+ */
+const handleStaticServer = async ({ devConfig, options, projectDir }) => {
   validateNumberProperty({ devConfig, property: 'staticServerPort' })
 
-  if (flags.dir) {
+  if (options.dir) {
     log(`${NETLIFYDEVWARN} Using simple static server because ${formatProperty('--dir')} flag was specified`)
   } else if (devConfig.framework === '#static') {
     log(
       `${NETLIFYDEVWARN} Using simple static server because ${formatProperty(
         '[dev.framework]',
       )} was set to ${formatValue('#static')}`,
-    )
-  }
-
-  if (devConfig.command) {
-    log(
-      `${NETLIFYDEVWARN} Ignoring command setting since using a simple static server. Configure ${formatProperty(
-        'command',
-      )} ${chalk.bold('and')} ${formatProperty('targetPort')} for a custom setup`,
     )
   }
 
@@ -130,7 +129,7 @@ const handleStaticServer = async ({ devConfig, flags, projectDir }) => {
     )
   }
 
-  const dist = flags.dir || devConfig.publish || getDefaultDist()
+  const dist = options.dir || devConfig.publish || getDefaultDist()
   log(`${NETLIFYDEVWARN} Running static server from "${path.relative(path.dirname(projectDir), dist)}"`)
 
   const frameworkPort = await acquirePort({
@@ -139,12 +138,18 @@ const handleStaticServer = async ({ devConfig, flags, projectDir }) => {
     errorMessage: 'Could not acquire configured static server port',
   })
   return {
+    ...(devConfig.command && { command: devConfig.command }),
     useStaticServer: true,
     frameworkPort,
     dist,
   }
 }
 
+/**
+ * Retrieves the settings from a framework
+ * @param {import('./types').FrameworkInfo} framework
+ * @returns {import('./types').BaseServerSettings}
+ */
 const getSettingsFromFramework = (framework) => {
   const {
     build: { directory: dist },
@@ -211,6 +216,11 @@ const detectFrameworkSettings = async ({ projectDir }) => {
 
 const hasCommandAndTargetPort = ({ devConfig }) => devConfig.command && devConfig.targetPort
 
+/**
+ * Creates settings for the custom framework
+ * @param {*} param0
+ * @returns {import('./types').BaseServerSettings}
+ */
 const handleCustomFramework = ({ devConfig }) => {
   if (!hasCommandAndTargetPort({ devConfig })) {
     throw new Error(
@@ -228,6 +238,11 @@ const handleCustomFramework = ({ devConfig }) => {
   }
 }
 
+/**
+ * Handles a forced framework and retrieves the settings for it
+ * @param {*} param0
+ * @returns {Promise<import('./types').BaseServerSettings>}
+ */
 const handleForcedFramework = async ({ devConfig, projectDir }) => {
   // this throws if `devConfig.framework` is not a supported framework
   const { command, dist, env, framework, frameworkPort, pollingStrategies } = getSettingsFromFramework(
@@ -243,24 +258,31 @@ const handleForcedFramework = async ({ devConfig, projectDir }) => {
   }
 }
 
-const detectServerSettings = async (devConfig, flags, projectDir) => {
+/**
+ * Get the server settings based on the flags and the devConfig
+ * @param {import('../commands/dev/types').DevConfig} devConfig
+ * @param {import('commander').OptionValues} options
+ * @param {string} projectDir
+ * @returns {Promise<import('./types').ServerSettings>}
+ */
+const detectServerSettings = async (devConfig, options, projectDir) => {
   validateStringProperty({ devConfig, property: 'framework' })
 
+  /** @type {Partial<import('./types').BaseServerSettings>} */
   let settings = {}
 
-  if (flags.dir || devConfig.framework === '#static') {
+  if (options.dir || devConfig.framework === '#static') {
     // serving files statically without a framework server
-    settings = await handleStaticServer({ flags, devConfig, projectDir })
+    settings = await handleStaticServer({ options, devConfig, projectDir })
   } else if (devConfig.framework === '#auto') {
     // this is the default CLI behavior
 
-    // we don't need to run the detection if both command and targetPort are configured
     const runDetection = !hasCommandAndTargetPort({ devConfig })
     const frameworkSettings = runDetection ? await detectFrameworkSettings({ projectDir }) : undefined
 
     if (frameworkSettings === undefined && runDetection) {
       log(`${NETLIFYDEVWARN} No app server detected. Using simple static server`)
-      settings = await handleStaticServer({ flags, devConfig, projectDir })
+      settings = await handleStaticServer({ options, devConfig, projectDir })
     } else {
       validateFrameworkConfig({ devConfig })
       const { command, frameworkPort, dist, framework, env, pollingStrategies = [] } = frameworkSettings || {}

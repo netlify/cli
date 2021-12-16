@@ -25,9 +25,13 @@
     "clean": "rimraf dist"
   },
   "engines": {
-    "node": ">=v12.19.0"
+    "node": "^12.20.0 || ^14.14.0 || >=16.0.0"
   },
   "license": "MIT",
+  "peerDependencies": {
+    "ava": "^3.15.0",
+    "commander": "^8.3.0"
+  },
   "dependencies": {
     "@compositor/x0": "^6.0.7",
     "@rebass/markdown": "^1.0.0",

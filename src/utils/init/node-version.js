@@ -1,8 +1,10 @@
+// @ts-check
+const { readFile } = require('fs').promises
+
 const { get } = require('dot-prop')
 const locatePath = require('locate-path')
 const nodeVersionAlias = require('node-version-alias')
 
-const { readFileAsync } = require('../../lib/fs')
 const { warn } = require('../command-helpers')
 
 const DEFAULT_NODE_VERSION = '12.18.0'
@@ -16,7 +18,7 @@ const detectNodeVersion = async ({ baseDirectory, env }) => {
   try {
     const nodeVersionFile = await locatePath(['.nvmrc', '.node-version'], { cwd: baseDirectory })
     const configuredVersion =
-      nodeVersionFile === undefined ? get(env, 'NODE_VERSION.value') : await readFileAsync(nodeVersionFile, 'utf8')
+      nodeVersionFile === undefined ? get(env, 'NODE_VERSION.value') : await readFile(nodeVersionFile, 'utf8')
 
     const version =
       configuredVersion === undefined
