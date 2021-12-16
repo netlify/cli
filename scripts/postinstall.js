@@ -24,7 +24,8 @@ const format = (message, styles) => {
 const postInstall = () => {
   // yarn plug and play seems to have an issue with reading an esm file by building up the cache.
   // as yarn pnp analyzes everything inside the postinstall
-  if (!process.env._.includes('yarn')) {
+  // yarn pnp executes it out of a .yarn folder .yarn/unplugged/netlify-cli-file-fb026a3a6d/node_modules/netlify-cli/scripts/postinstall.js
+  if (!process.argv[1].includes('.yarn')) {
     // eslint-disable-next-line node/global-require
     const { createMainCommand } = require('../src/commands')
     // eslint-disable-next-line node/global-require
