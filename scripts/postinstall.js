@@ -25,7 +25,9 @@ const postInstall = () => {
   // yarn plug and play seems to have an issue with reading an esm file by building up the cache.
   // as yarn pnp analyzes everything inside the postinstall
   if (!process.env._.includes('yarn')) {
+    // eslint-disable-next-line node/global-require
     const { createMainCommand } = require('../src/commands')
+    // eslint-disable-next-line node/global-require
     const { createAutocompletion } = require('../src/lib/completion')
 
     // create or update the autocompletion definition
