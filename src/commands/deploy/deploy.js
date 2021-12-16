@@ -3,11 +3,12 @@ const { stat } = require('fs').promises
 const { basename, resolve } = require('path')
 const { cwd, env } = require('process')
 
-const { restoreConfig, updateConfig } = require('@netlify/config')
 const { get } = require('dot-prop')
 const inquirer = require('inquirer')
 const isObject = require('lodash/isObject')
 const prettyjson = require('prettyjson')
+
+const netlifyConfigPromise = import('@netlify/config')
 
 const { cancelDeploy } = require('../../lib/api')
 const { getBuildOptions, runBuild } = require('../../lib/build')
@@ -527,6 +528,7 @@ const deploy = async (options, command) => {
   const functionsConfig = normalizeFunctionsConfig({ functionsConfig: config.functions, projectRoot: site.root })
 
   const redirectsPath = `${deployFolder}/_redirects`
+  const { restoreConfig, updateConfig } = await netlifyConfigPromise
   // @ts-ignore
   await updateConfig(configMutations, {
     buildDir: deployFolder,
