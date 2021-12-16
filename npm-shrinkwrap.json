@@ -1,12 +1,12 @@
 {
   "name": "netlify-cli",
-  "version": "8.1.5",
+  "version": "8.1.5-r.0-rc",
   "lockfileVersion": 2,
   "requires": true,
   "packages": {
     "": {
       "name": "netlify-cli",
-      "version": "8.1.5",
+      "version": "8.1.5-r.0-rc",
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
