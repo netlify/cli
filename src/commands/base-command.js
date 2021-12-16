@@ -2,13 +2,13 @@
 const process = require('process')
 const { format } = require('util')
 
-const resolveConfig = require('@netlify/config')
 const { Command, Option } = require('commander')
 const debug = require('debug')
 const merge = require('lodash/merge')
 
 // TODO: use static `import` after migrating this repository to pure ES modules
 const jsClient = import('netlify')
+const netlifyConfigPromise = import('@netlify/config')
 
 const { getAgent } = require('../lib/http-agent')
 const {
@@ -464,6 +464,7 @@ class BaseCommand extends Command {
   async getConfig(config) {
     const options = this.opts()
     const { cwd, host, offline = options.offline, pathPrefix, scheme, state, token } = config
+    const { resolveConfig } = await netlifyConfigPromise
 
     try {
       return await resolveConfig({
