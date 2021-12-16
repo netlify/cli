@@ -1,5 +1,4 @@
-const { createMainCommand } = require('../src/commands')
-const { createAutocompletion } = require('../src/lib/completion')
+const process = require('process')
 
 const id = (message) => message
 
@@ -23,9 +22,16 @@ const format = (message, styles) => {
 }
 
 const postInstall = () => {
-  // create or update the autocompletion definition
-  const program = createMainCommand()
-  createAutocompletion(program)
+  // yarn plug and play seems to have an issue with reading an esm file by building up the cache.
+  // as yarn pnp analyzes everything inside the postinstall
+  if (!process.env._.includes('yarn')) {
+    const { createMainCommand } = require('../src/commands')
+    const { createAutocompletion } = require('../src/lib/completion')
+
+    // create or update the autocompletion definition
+    const program = createMainCommand()
+    createAutocompletion(program)
+  }
 
   console.log('')
   console.log(format('Success! Netlify CLI has been installed!', ['greenBright', 'bold', 'underline']))
