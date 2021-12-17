@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "8.1.5",
+  "version": "8.1.7",
   "author": "Netlify Inc.",
   "contributors": [
     "Mathias Biilmann <matt@netlify.com> (https://twitter.com/biilmann)",
@@ -79,10 +79,10 @@
   },
   "dependencies": {
     "@netlify/build": "^20.3.1",
-    "@netlify/config": "^16.0.7",
+    "@netlify/config": "^17.0.0",
     "@netlify/framework-info": "^7.0.0",
     "@netlify/local-functions-proxy": "^1.1.1",
-    "@netlify/plugin-edge-handlers": "^2.0.0",
+    "@netlify/plugin-edge-handlers": "^3.0.0",
     "@netlify/plugins-list": "^6.2.0",
     "@netlify/routing-local-proxy": "^0.34.1",
     "@netlify/zip-it-and-ship-it": "5.2.0",
