@@ -2,9 +2,9 @@
 const { mkdir } = require('fs').promises
 const { env } = require('process')
 
-const { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn } = require('../../utils')
 const terminalLink = require('terminal-link')
 
+const { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn } = require('../../utils')
 const { getLogMessage } = require('../log')
 
 const { NetlifyFunction } = require('./netlify-function')
