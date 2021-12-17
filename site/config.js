@@ -1,11 +1,12 @@
-const path = require('path')
+import { join } from 'path'
 
-const rootDir = path.join(__dirname, '..')
+const rootDir = new URL('..', import.meta.url).pathname
 
-module.exports = {
+// eslint-disable-next-line import/no-anonymous-default-export
+export default {
   rootDir,
   docs: {
-    srcPath: path.join(rootDir, 'docs'),
-    outputPath: path.join(rootDir, 'site/src'),
+    srcPath: join(rootDir, 'docs'),
+    outputPath: join(rootDir, 'site/src'),
   },
 }

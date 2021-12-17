@@ -1,3 +1,3 @@
-export { DependencyGraph } from './dependency-graph'
-export { fileVisitor } from './file-visitor'
-export { visitorPlugins } from './visitor-plugins'
+export { DependencyGraph } from './dependency-graph.js'
+export { fileVisitor } from './file-visitor.js'
+export { visitorPlugins } from './visitor-plugins.js'

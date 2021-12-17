@@ -1,4 +1,4 @@
-export const config = {
+export default {
   name: 'serverless-ssr',
   description: 'Dynamic serverside rendering via functions',
 }

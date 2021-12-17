@@ -65,9 +65,11 @@ const buildFunction = async ({ cache, config, directory, func, hasTypeModule, pr
 // Clears the cache for any files inside the directory from which functions are
 // served.
 const clearFunctionsCache = (functionsPath) => {
-  Object.keys(require.cache)
-    .filter((key) => key.startsWith(functionsPath))
-    .forEach(decache)
+  // TODO: Talk with eduardo about that.
+  console.log('should clear function cache', functionsPath)
+  // Object.keys(require.cache)
+  //   .filter((key) => key.startsWith(functionsPath))
+  //   .forEach(decache)
 }
 
 const getTargetDirectory = async ({ errorExit }) => {

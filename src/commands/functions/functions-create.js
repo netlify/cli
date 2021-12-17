@@ -1,12 +1,13 @@
 // @ts-check
 import cp from 'child_process'
 import { chmodSync, createWriteStream, existsSync, lstatSync, mkdirSync, promises, readdirSync, unlinkSync } from 'fs'
-import path from 'path'
+import path, { join, posix } from 'path'
 import process from 'process'
 import { promisify } from 'util'
 
 import copyTemplateDir from 'copy-template-dir'
 import { execa } from 'execa'
+import glob from 'fast-glob'
 import findUp from 'find-up'
 import fuzzy from 'fuzzy'
 import inquirer from 'inquirer'
@@ -95,18 +96,33 @@ const filterRegistry = function (registry, input) {
 }
 
 const formatRegistryArrayForInquirer = async function (lang) {
-  const folderNames = readdirSync(path.join(templatesDir, lang))
+  const folderNames = readdirSync(join(templatesDir, lang))
+  // console.log(folderNames, join(templatesDir, lang))
 
   let registry = folderNames
     .filter((folderName) => !folderName.endsWith('.md'))
-    .map((folderName) => path.join(templatesDir, lang, folderName, '.netlify-function-template.mjs'))
-    // eslint-disable-next-line promise/prefer-await-to-then
-    .map((pa) => import(pa).then(({ config }) => config))
+    .map((folderName) => {
+      const res = glob.sync(`${posix.join(templatesDir, lang, folderName)}/.netlify-function-template.{mjs,cjs,js}`)
+      // lint rules collide here
+      // eslint-disable-next-line no-negated-condition
+      return res.length !== 0 ? res[0] : null
+    })
+    .filter(Boolean)
+    .map((filePath) =>
+      import(filePath)
+        // eslint-disable-next-line promise/prefer-await-to-then
+        .then((mod) => mod.default)
+        // eslint-disable-next-line promise/prefer-await-to-then
+        .catch((_error) => {
+          error(_error)
+          return null
+        }),
+    )
 
   /** @type {Array<object>} */
   registry = await Promise.all(registry)
-
   return registry
+    .filter(Boolean)
     .sort((folderNameA, folderNameB) => {
       const priorityDiff = (folderNameA.priority || DEFAULT_PRIORITY) - (folderNameB.priority || DEFAULT_PRIORITY)
 
@@ -302,14 +318,14 @@ const downloadFromURL = async function (command, options, argumentName, function
   })
 
   // read, execute, and delete function template file if exists
-  const fnTemplateFile = path.join(fnFolder, '.netlify-function-template.js')
-  if (existsSync(fnTemplateFile)) {
-    const { onComplete, addons = [] } = await import(fnTemplateFile)
+  const fnTemplateFiles = glob.sync(`${posix.join(fnFolder)}/.netlify-function-template.{mjs,cjs,js}`)
+  if (fnTemplateFiles.length !== 0) {
+    const { onComplete, addons = [] } = await import(fnTemplateFiles[0])
 
     await installAddons(command, addons, path.resolve(fnFolder))
     await handleOnComplete({ command, onComplete })
     // delete
-    unlinkSync(fnTemplateFile)
+    unlinkSync(fnTemplateFiles[0])
   }
 }
 
@@ -421,7 +437,13 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
 
     // These files will not be part of the log message because they'll likely
     // be removed before the command finishes.
-    const omittedFromOutput = new Set(['.netlify-function-template.js', 'package.json', 'package-lock.json'])
+    const omittedFromOutput = new Set([
+      '.netlify-function-template.js',
+      '.netlify-function-template.mjs',
+      '.netlify-function-template.cjs',
+      'package.json',
+      'package-lock.json',
+    ])
     const createdFiles = await copy(pathToTemplate, functionPath, vars)
     createdFiles.forEach((filePath) => {
       const filename = path.basename(filePath)
@@ -436,8 +458,11 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
       }
     })
 
-    // delete function template file that was copied over by copydir
-    unlinkSync(path.join(functionPath, '.netlify-function-template.js'))
+    const fnTemplateFiles = glob.sync(`${posix.join(functionPath)}/.netlify-function-template.{mjs,cjs,js}`)
+    if (fnTemplateFiles.length !== 0) {
+      // delete function template file that was copied over by copydir
+      unlinkSync(fnTemplateFiles[0])
+    }
 
     // npm install
     if (functionPackageJson !== undefined) {

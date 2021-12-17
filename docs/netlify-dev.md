@@ -247,7 +247,7 @@ Functions that have `node_modules` inside their own folders require these `node_
 
 **Writing your own Function Templates**
 
-Function templates can specify `addons` that they rely on as well as execute arbitrary code after installation in an `onComplete` hook, if a special `.netlify-function-template.js` file exists in the directory:
+Function templates can specify `addons` that they rely on as well as execute arbitrary code after installation in an `onComplete` hook, if a special `.netlify-function-template.{cjs,mjs,js}` file exists in the directory:
 
 ```js
 // .netlify-function-template.js

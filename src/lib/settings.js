@@ -8,7 +8,6 @@ const NETLIFY_HOME = '.netlify'
 
 /**
  * Deprecated method to get netlify's home config - ~/.netlify/...
- * @deprecated
  * @param {string[]} paths
  * @returns {string}
  */

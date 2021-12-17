@@ -1,12 +1,12 @@
-const fs = require('fs').promises
-const path = require('path')
-const util = require('util')
+import { promises as fs } from 'fs'
+import { join, dirname } from 'path'
+import { promisify } from 'util'
 
-const rimraf = require('rimraf')
+import rimraf from 'rimraf'
 
-const rimrafAsync = util.promisify(rimraf)
+const rimrafAsync = promisify(rimraf)
 
-const copyDirRecursiveAsync = async (src, dest) => {
+export const copyDirRecursiveAsync = async (src, dest) => {
   try {
     fs.mkdir(dest, { recursive: true })
   } catch {
@@ -17,8 +17,8 @@ const copyDirRecursiveAsync = async (src, dest) => {
 
   await Promise.all(
     childrenItems.map(async (item) => {
-      const srcPath = path.join(src, item)
-      const destPath = path.join(dest, item)
+      const srcPath = join(src, item)
+      const destPath = join(dest, item)
 
       const itemStat = await fs.lstat(srcPath)
 
@@ -31,20 +31,14 @@ const copyDirRecursiveAsync = async (src, dest) => {
   )
 }
 
-const ensureFilePathAsync = async (filePath) => {
+export const ensureFilePathAsync = async (filePath) => {
   try {
-    await fs.mkdir(path.dirname(filePath), { recursive: true })
+    await fs.mkdir(dirname(filePath), { recursive: true })
   } catch {
     // ignore any errors with mkdir - it will throw if the path already exists.
   }
 }
 
-const removeRecursiveAsync = async (filePath) => {
+export const removeRecursiveAsync = async (filePath) => {
   await rimrafAsync(filePath)
-}
-
-module.exports = {
-  copyDirRecursiveAsync,
-  ensureFilePathAsync,
-  removeRecursiveAsync,
 }

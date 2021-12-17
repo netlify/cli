@@ -1,6 +1,6 @@
 import chalk from 'chalk'
 
-export const config = {
+export default {
   name: 'stripe-charge',
   description: 'Stripe Charge: Charge a user with Stripe',
   async onComplete() {

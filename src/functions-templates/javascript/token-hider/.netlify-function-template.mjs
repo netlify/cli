@@ -1,6 +1,6 @@
 import chalk from 'chalk'
 
-export const config = {
+export default {
   name: 'token-hider',
   description: 'Token Hider: access APIs without exposing your API keys',
   async onComplete() {

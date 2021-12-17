@@ -1,4 +1,4 @@
-export const config = {
+export default {
   name: 'auth-fetch',
   description: 'Use `node-fetch` library and Netlify Identity to access APIs',
   onComplete() {

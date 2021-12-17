@@ -1,6 +1,6 @@
 import chalk from 'chalk'
 
-export const config = {
+export default {
   name: 'stripe-subscription',
   description: 'Stripe subscription: Create a subscription with Stripe',
   async onComplete() {

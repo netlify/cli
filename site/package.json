@@ -8,6 +8,7 @@
     "David Wells <david.wells@netlify.com> (https://davidwells.io/)",
     "Bret Comnes <bcomnes@gmail.com> (https://bret.io)"
   ],
+  "type": "module",
   "files": [
     "/src",
     "/dist"

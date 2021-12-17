@@ -1,13 +1,13 @@
-import { sync } from 'execa'
+import { execaSync } from 'execa'
 
-export const config = {
+export default {
   name: 'fauna-crud',
   description: 'CRUD function using Fauna DB',
   addons: [
     {
       addonName: 'fauna',
       addonDidInstall(fnPath) {
-        sync(fnPath + '/create-schema.js', undefined, {
+        execaSync(fnPath + '/create-schema.js', undefined, {
           stdio: 'inherit',
         })
       },

@@ -1,4 +1,4 @@
-export const config = {
+export default {
   name: 'create-user',
   description: 'Programmatically create a Netlify Identity user by invoking a function',
   onComplete() {

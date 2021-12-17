@@ -1,13 +1,13 @@
 // @ts-check
-const path = require('path')
-const process = require('process')
+import { basename, join } from 'path'
+import { env } from 'process'
 
-const markdownMagic = require('markdown-magic')
-const stripAnsi = require('strip-ansi')
+import markdownMagic from 'markdown-magic'
+import stripAnsi from 'strip-ansi'
 
-const { generateCommandData } = require('./generate-command-data')
+import { generateCommandData } from './generate-command-data.js'
 
-process.env.DOCS_GEN = 'TRUE'
+env.DOCS_GEN = 'TRUE'
 
 const commandData = generateCommandData()
 
@@ -16,7 +16,7 @@ const newLine = '\n\n'
 const config = {
   transforms: {
     GENERATE_COMMANDS_DOCS(content, options, instance) {
-      const command = path.basename(instance.originalPath, '.md')
+      const command = basename(instance.originalPath, '.md')
       // console.log('command', command)
       const info = commandData[command]
       // console.log('info', info)
@@ -46,7 +46,7 @@ const config = {
       }
     },
     GENERATE_COMMANDS_LIST(content, options, instance) {
-      const context = path.basename(instance.originalPath, '.md')
+      const context = basename(instance.originalPath, '.md')
       /* Generate Command List */
       let md = ''
       Object.keys(commandData).forEach((commandName) => {
@@ -61,8 +61,8 @@ const config = {
   },
 }
 
-const rootDir = path.join(__dirname, '..', '..')
-const markdownFiles = [path.join(rootDir, 'README.md'), path.join(rootDir, 'docs/**/**.md')]
+const rootDir = join(__dirname, '..', '..')
+const markdownFiles = [join(rootDir, 'README.md'), join(rootDir, 'docs/**/**.md')]
 
 /* Start - Docs Templating logic */
 const commandExamples = function (examples) {

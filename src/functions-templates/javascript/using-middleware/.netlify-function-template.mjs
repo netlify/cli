@@ -1,4 +1,4 @@
-export const config = {
+export default {
   name: 'using-middleware',
   description: 'Using Middleware with middy',
 }

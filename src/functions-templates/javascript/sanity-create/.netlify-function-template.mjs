@@ -1,4 +1,4 @@
-export const config = {
+export default {
   name: 'sanity-create',
   description: 'Create documents in Sanity.io',
 }

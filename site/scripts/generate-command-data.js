@@ -1,6 +1,6 @@
 // @ts-check
-const { createMainCommand } = require('../../src/commands')
-const { sortOptions } = require('../../src/utils')
+import { createMainCommand } from '../../src/commands/index.js'
+import { sortOptions } from '../../src/utils/index.js'
 
 const program = createMainCommand()
 
@@ -49,7 +49,7 @@ const parseCommand = function (command) {
   }
 }
 
-const generateCommandData = function () {
+export const generateCommandData = function () {
   return (
     commands
       // filter out sub commands
@@ -58,5 +58,3 @@ const generateCommandData = function () {
       .reduce((prev, command) => ({ ...prev, [command.name()]: parseCommand(command) }), {})
   )
 }
-
-module.exports = { generateCommandData }

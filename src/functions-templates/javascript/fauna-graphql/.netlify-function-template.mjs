@@ -1,13 +1,13 @@
-import { sync } from 'execa'
+import { execaSync } from 'execa'
 
-export const config = {
+export default {
   name: 'fauna-graphql',
   description: 'GraphQL Backend using Fauna DB',
   addons: [
     {
       addonName: 'fauna',
       addonDidInstall(fnPath) {
-        sync(fnPath + '/sync-schema.js', undefined, {
+        execaSync(fnPath + '/sync-schema.js', undefined, {
           stdio: 'inherit',
         })
       },

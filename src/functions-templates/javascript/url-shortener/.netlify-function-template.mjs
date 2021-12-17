@@ -1,6 +1,6 @@
 import chalk from 'chalk'
 
-export const config = {
+export default {
   name: 'url-shortener',
   description: 'URL Shortener: simple URL shortener with Netlify Forms!',
   async onComplete() {

@@ -62,6 +62,7 @@ const processPayloadFromFlag = async function (payloadString) {
     const pathexists = fs.existsSync(payloadpath)
     if (pathexists) {
       try {
+        console.log('try to invoke', payloadpath)
         // there is code execution potential here
         payload = await import(payloadpath)
         return payload
