@@ -12,7 +12,7 @@ const LOGIN_NEW = 'I would like to login to a new account'
  * @param {import('../base-command').BaseCommand} command
  */
 const switchCommand = async (options, command) => {
-  const availableUsersChoices = Object.values(command.netlify.globalConfig.get('users')).reduce(
+  const availableUsersChoices = Object.values(command.netlify.globalConfig.get('users') || {}).reduce(
     (prev, current) =>
       Object.assign(prev, { [current.id]: current.name ? `${current.name} (${current.email})` : current.email }),
     {},
