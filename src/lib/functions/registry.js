@@ -1,6 +1,6 @@
 // @ts-check
 const { mkdir } = require('fs').promises
-const { isAbsolute, relative, resolve } = require('path')
+const { isAbsolute, join } = require('path')
 const { env } = require('process')
 
 const { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn } = require('../../utils')
@@ -144,7 +144,10 @@ class FunctionsRegistry {
     log(`${NETLIFYDEVLOG} ${chalk.green('Loaded')} function ${chalk.yellow(name)}.`)
   }
 
-  async scan(directories) {
+  async scan(relativeDirs) {
+    const directories = relativeDirs.filter(Boolean).map((dir) => (isAbsolute(dir) ? dir : join(this.projectRoot, dir)))
+
+    // check after filtering to filter out [undefined] for example
     if (directories.length === 0) {
       return
     }
@@ -186,10 +189,7 @@ class FunctionsRegistry {
 
       const func = new NetlifyFunction({
         config: this.config,
-        directory: directories.find((directory) =>
-          // the directory can be a relative path like `netlify/functions` therefore the find will not work
-          (isAbsolute(mainFile) ? relative(this.projectRoot, mainFile) : resolve(directory)).startsWith(directory),
-        ),
+        directory: directories.find((directory) => mainFile.startsWith(directory)),
         mainFile,
         name,
         projectRoot: this.projectRoot,

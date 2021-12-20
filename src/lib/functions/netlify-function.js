@@ -1,6 +1,4 @@
 // @ts-check
-const { isAbsolute, join } = require('path')
-
 const { error: errorExit } = require('../../utils/command-helpers')
 
 const BACKGROUND_SUFFIX = '-background'
@@ -11,8 +9,7 @@ const difference = (setA, setB) => new Set([...setA].filter((item) => !setB.has(
 class NetlifyFunction {
   constructor({ config, directory, mainFile, name, projectRoot, runtime, timeoutBackground, timeoutSynchronous }) {
     this.config = config
-    // the directory needs to be always an absolute path
-    this.directory = isAbsolute(directory) ? directory : join(projectRoot, directory)
+    this.directory = directory
     this.errorExit = errorExit
     this.mainFile = mainFile
     this.name = name
