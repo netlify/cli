@@ -4,6 +4,7 @@ const { join } = require('path')
 const zisi = require('@netlify/zip-it-and-ship-it')
 const test = require('ava')
 const express = require('express')
+const mock = require('mock-fs')
 const mockRequire = require('mock-require')
 const sinon = require('sinon')
 const request = require('supertest')
@@ -16,6 +17,9 @@ const functionsPath = `functions`
 
 /** @type { express.Express} */
 let app
+
+// mock the file-system to not write on the real one with `mkdir` inside the registry.js
+mock({ node_modules: mock.load(join(__dirname, '../../../node_modules')) })
 
 test.before(async (t) => {
   const mainFile = join(projectRoot, functionsPath, 'hello.js')
