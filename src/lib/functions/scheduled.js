@@ -1,4 +1,4 @@
-const { NETLIFYDEVERR, NETLIFYDEVLOG } = require('../../utils/logo')
+const { NETLIFYDEVERR, NETLIFYDEVLOG } = require('../../utils')
 
 const { formatLambdaError, styleFunctionName } = require('./utils')
 
