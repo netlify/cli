@@ -25,9 +25,6 @@ const buildFunction = async ({ cache, config, directory, func, hasTypeModule, pr
     archiveFormat: 'none',
     basePath: projectRoot,
     config,
-    featureFlags: {
-      parseISC: true,
-    },
   }
   const functionDirectory = path.dirname(func.mainFile)
 
