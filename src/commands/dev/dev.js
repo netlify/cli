@@ -11,6 +11,7 @@ const stripAnsiCc = require('strip-ansi-control-characters')
 const waitPort = require('wait-port')
 
 const { startFunctionsServer } = require('../../lib/functions/server')
+const { startOneGraphCLISession } = require('../../lib/oneGraph/client')
 const {
   NETLIFYDEV,
   NETLIFYDEVERR,
@@ -105,12 +106,12 @@ const runCommand = (command, env = {}) => {
     }
     process.exit(1)
   })
-  ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) => {
-    process.on(signal, () => {
-      commandProcess.kill('SIGTERM', { forceKillAfterTimeout: 500 })
-      process.exit()
+    ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) => {
+      process.on(signal, () => {
+        commandProcess.kill('SIGTERM', { forceKillAfterTimeout: 500 })
+        process.exit()
+      })
     })
-  })
 
   return commandProcess
 }
@@ -231,7 +232,7 @@ const printBanner = ({ url }) => {
  */
 const dev = async (options, command) => {
   log(`${NETLIFYDEV}`)
-  const { api, config, site, siteInfo } = command.netlify
+  const { api, config, site, siteInfo, state } = command.netlify
   config.dev = { ...config.dev }
   config.build = { ...config.build }
   /** @type {import('./types').DevConfig} */
@@ -290,6 +291,16 @@ const dev = async (options, command) => {
 
   process.env.URL = url
   process.env.DEPLOY_URL = url
+
+  const oneGraphAdminToken = command.netlify.cachedConfig.env.ONEGRAPH_ADMIN_JWT && command.netlify.cachedConfig.env.ONEGRAPH_ADMIN_JWT.value;
+
+  if (oneGraphAdminToken) {
+    const netlifyToken = await command.authenticate()
+
+    startOneGraphCLISession({ netlifyToken, site, state })
+  } else {
+    console.log("No OneGraph token found, skipping OneGraph...")
+  }
 
   printBanner({ url })
 }
