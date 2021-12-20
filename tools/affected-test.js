@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // @ts-check
 const { existsSync, statSync } = require('fs')
+const { join } = require('path')
 const process = require('process')
 
 const { grey } = require('chalk')
@@ -13,7 +14,9 @@ const { DependencyGraph, fileVisitor, visitorPlugins } = require('./project-grap
 
 const getChangedFiles = async (compareTarget = 'origin/main') => {
   const { stdout } = await execa('git', ['diff', '--name-only', 'HEAD', compareTarget])
-  return stdout.split('\n')
+  // git is using posix paths so adjust them to the operating system by
+  // using nodes join function
+  return stdout.split('\n').map((filePath) => join(filePath))
 }
 
 /**
@@ -23,7 +26,9 @@ const getChangedFiles = async (compareTarget = 'origin/main') => {
  * @returns {string[]}
  */
 const getAffectedFiles = (changedFiles) => {
-  const testFiles = sync(ava.files)
+  // glob is using only posix file paths on windows we need the `\`
+  // by using join the paths are adjusted to the operating system
+  const testFiles = sync(ava.files).map((filePath) => join(filePath))
 
   // in this case all files are affected
   if (changedFiles.includes('npm-shrinkwrap.json') || changedFiles.includes('package.json')) {
