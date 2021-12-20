@@ -1,5 +1,6 @@
 // @ts-check
 const { mkdir } = require('fs').promises
+const { isAbsolute, relative, resolve } = require('path')
 const { env } = require('process')
 
 const { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn } = require('../../utils')
@@ -185,7 +186,10 @@ class FunctionsRegistry {
 
       const func = new NetlifyFunction({
         config: this.config,
-        directory: directories.find((directory) => mainFile.startsWith(directory)),
+        directory: directories.find((directory) =>
+          // the directory can be a relative path like `netlify/functions` therefore the find will not work
+          (isAbsolute(mainFile) ? relative(this.projectRoot, mainFile) : resolve(directory)).startsWith(directory),
+        ),
         mainFile,
         name,
         projectRoot: this.projectRoot,
