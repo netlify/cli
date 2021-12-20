@@ -1,25 +1,25 @@
+const fs = require('fs')
 const { platform } = require('os')
 const { join } = require('path')
 
 const zisi = require('@netlify/zip-it-and-ship-it')
 const test = require('ava')
 const express = require('express')
-const mock = require('mock-fs')
 const mockRequire = require('mock-require')
 const sinon = require('sinon')
 const request = require('supertest')
 
-const { FunctionsRegistry } = require('./registry')
-const { createHandler } = require('./server')
-
 const projectRoot = platform() === 'win32' ? 'C:\\my-functions' : `/my-functions`
 const functionsPath = `functions`
 
+// mock mkdir for the functions folder
+sinon.stub(fs.promises, 'mkdir').withArgs(join(projectRoot, functionsPath)).returns(Promise.resolve())
+
+const { FunctionsRegistry } = require('./registry')
+const { createHandler } = require('./server')
+
 /** @type { express.Express} */
 let app
-
-// mock the file-system to not write on the real one with `mkdir` inside the registry.js
-mock({ node_modules: mock.load(join(__dirname, '../../../node_modules')) })
 
 test.before(async (t) => {
   const mainFile = join(projectRoot, functionsPath, 'hello.js')
