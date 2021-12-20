@@ -22,7 +22,9 @@
     "/src/**/*.ps1",
     "/src/functions-templates/**",
     "!/src/**/node_modules/**",
-    "!/src/**/*.test.js"
+    "!/src/**/*.test.js",
+    "tools/eslint-rules/**",
+    "!tools/eslint-rules/**/*.test.js"
   ],
   "homepage": "https://github.com/netlify/cli",
   "keywords": [
