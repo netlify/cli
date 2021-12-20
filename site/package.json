@@ -38,7 +38,7 @@
     "@rebass/mdx": "^1.0.0",
     "lodash.sortby": "^4.7.0",
     "prop-types": "^15.7.2",
-    "react": "^16.14.0",
+    "react": "^17.0.0",
     "react-helmet": "^6.0.0",
     "react-instantsearch-dom": "^5.7.0",
     "react-router-dom": "^4.3.1",
