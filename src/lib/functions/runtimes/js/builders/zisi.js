@@ -1,7 +1,7 @@
 const { writeFile } = require('fs').promises
 const path = require('path')
 
-const { zipFunction } = require('@netlify/zip-it-and-ship-it')
+const { listFunction, zipFunction } = require('@netlify/zip-it-and-ship-it')
 const decache = require('decache')
 const makeDir = require('make-dir')
 const readPkgUp = require('read-pkg-up')
@@ -67,6 +67,17 @@ const buildFunction = async ({ cache, config, directory, func, hasTypeModule, pr
   return { buildPath, srcFiles, schedule }
 }
 
+/**
+ * @param {string} mainFile
+ */
+const parseForSchedule = async ({ config, mainFile, projectRoot }) => {
+  const listedFunction = await listFunction(mainFile, {
+    config: netlifyConfigToZisiConfig({ config, projectRoot }),
+  })
+
+  return listedFunction && listedFunction.schedule
+}
+
 // Clears the cache for any files inside the directory from which functions are
 // served.
 const clearFunctionsCache = (functionsPath) => {
@@ -87,10 +98,11 @@ const getTargetDirectory = async ({ errorExit }) => {
   return targetDirectory
 }
 
+const netlifyConfigToZisiConfig = ({ config, projectRoot }) =>
+  addFunctionsConfigDefaults(normalizeFunctionsConfig({ functionsConfig: config.functions, projectRoot }))
+
 module.exports = async ({ config, directory, errorExit, func, projectRoot }) => {
-  const functionsConfig = addFunctionsConfigDefaults(
-    normalizeFunctionsConfig({ functionsConfig: config.functions, projectRoot }),
-  )
+  const functionsConfig = netlifyConfigToZisiConfig({ config, projectRoot })
 
   const packageJson = await readPkgUp(func.mainFile)
   const hasTypeModule = packageJson && packageJson.packageJson.type === 'module'
@@ -123,3 +135,5 @@ module.exports = async ({ config, directory, errorExit, func, projectRoot }) => 
     target: targetDirectory,
   }
 }
+
+module.exports.parseForSchedule = parseForSchedule

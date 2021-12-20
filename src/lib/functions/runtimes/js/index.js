@@ -46,8 +46,7 @@ const getBuildFunction = async ({ config, directory, errorExit, func, projectRoo
   // main file otherwise.
   const functionDirectory = dirname(func.mainFile)
   const srcFiles = functionDirectory === directory ? [func.mainFile] : [functionDirectory]
-  const funcConfig = config.functions[func.name]
-  const schedule = funcConfig && funcConfig.schedule
+  const schedule = await detectZisiBuilder.parseForSchedule({ mainFile: func.mainFile, config, projectRoot })
 
   return () => ({ schedule, srcFiles })
 }

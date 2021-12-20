@@ -13,6 +13,7 @@ const { withDevServer } = require('./utils/dev-server')
 const got = require('./utils/got')
 const { CONFIRM, DOWN, answerWithValue, handleQuestions } = require('./utils/handle-questions')
 const { withMockApi } = require('./utils/mock-api')
+const { pause } = require('./utils/pause')
 const { killProcess } = require('./utils/process')
 const { withSiteBuilder } = require('./utils/site-builder')
 
@@ -643,6 +644,67 @@ testMatrix.forEach((args) => {
           stdio: 'inherit',
         })
         t.is(stdout, undefined)
+      })
+    })
+  })
+
+  test(testName('should detect file changes to scheduled function'), async (t) => {
+    await withSiteBuilder('site-with-isc-ping-function', async (builder) => {
+      await builder
+        .withNetlifyToml({
+          config: { functions: { directory: 'functions' } },
+        })
+        // mocking until https://github.com/netlify/functions/pull/226 landed
+        .withContentFile({
+          path: 'node_modules/@netlify/functions/package.json',
+          content: `{}`,
+        })
+        .withContentFile({
+          path: 'node_modules/@netlify/functions/index.js',
+          content: `
+          module.exports.schedule = (schedule, handler) => handler
+          `,
+        })
+        .withContentFile({
+          path: 'functions/hello-world.js',
+          content: `
+          module.exports.handler = () => {
+            return {
+              statusCode: 200
+            }
+          }
+          `.trim(),
+        })
+        .buildAsync()
+
+      await withDevServer({ cwd: builder.directory }, async (server) => {
+        const helloWorldStatusCode = () =>
+          got(`http://localhost:${server.port}/.netlify/functions/hello-world`, {
+            throwHttpErrors: false,
+            retry: null,
+          }).then((response) => response.statusCode)
+
+        t.is(await helloWorldStatusCode(), 200)
+
+        await builder
+          .withContentFile({
+            path: 'functions/hello-world.js',
+            content: `
+          const { schedule } = require('@netlify/functions')
+
+          module.exports.handler = schedule("@daily", () => {
+            return {
+              statusCode: 200
+            }
+          })
+          `.trim(),
+          })
+          .buildAsync()
+
+        const DETECT_FILE_CHANGE_DELAY = 250
+        await pause(DETECT_FILE_CHANGE_DELAY)
+
+        t.is(await helloWorldStatusCode(), 400)
       })
     })
   })
