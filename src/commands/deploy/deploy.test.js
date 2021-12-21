@@ -34,8 +34,10 @@ mock({
   src: mock.load(path.resolve(__dirname, '../../../src')),
 })
 
+// eslint-disable-next-line require-await
 const initMock = async () => {
   sinon.stub(util, 'uploadFiles').callsFake(async () => {})
+  // eslint-disable-next-line require-await
   sinon.stub(util, 'waitForDeploy').callsFake(async () => mockDeploy)
 
   // const { NetlifyAPI } = await import('netlify')
@@ -57,7 +59,7 @@ const initMock = async () => {
   return program
 }
 
-test('replace me', async (t) => {
+test('replace me', async () => {
   const program = await initMock()
 
   // eslint-disable-next-line require-await
