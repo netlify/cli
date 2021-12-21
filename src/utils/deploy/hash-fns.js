@@ -61,7 +61,11 @@ const getFunctionZips = async ({
     })
   }
 
-  return await zipIt.zipFunctions(directories, tmpDir, { basePath: rootDir, config: functionsConfig })
+  return await zipIt.zipFunctions(directories, tmpDir, {
+    basePath: rootDir,
+    config: functionsConfig,
+    featureFlags: { parseISC: true },
+  })
 }
 
 const hashFns = async (
@@ -107,7 +111,13 @@ const hashFns = async (
     normalizedPath: path.basename(functionPath, path.extname(functionPath)),
     runtime,
   }))
+  const functionSchedules = functionZips.reduce((acc, { name, schedule }) => {
+    if (!schedule) {
+      return acc
+    }
 
+    return [...acc, { name, cron: schedule }]
+  }, [])
   const functionsWithNativeModules = functionZips.filter(
     ({ nativeNodeModules }) => nativeNodeModules !== undefined && Object.keys(nativeNodeModules).length !== 0,
   )
@@ -125,7 +135,7 @@ const hashFns = async (
 
   await pump(functionStream, hasher, manifestCollector)
 
-  return { functions, functionsWithNativeModules, fnShaMap }
+  return { functionSchedules, functions, functionsWithNativeModules, fnShaMap }
 }
 
 module.exports = { hashFns }
