@@ -61,11 +61,7 @@ const getFunctionZips = async ({
     })
   }
 
-  return await zipIt.zipFunctions(directories, tmpDir, {
-    basePath: rootDir,
-    config: functionsConfig,
-    featureFlags: { parseISC: true },
-  })
+  return await zipIt.zipFunctions(directories, tmpDir, { basePath: rootDir, config: functionsConfig })
 }
 
 const hashFns = async (
