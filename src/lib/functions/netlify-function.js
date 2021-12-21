@@ -7,7 +7,17 @@ const BACKGROUND_SUFFIX = '-background'
 const difference = (setA, setB) => new Set([...setA].filter((item) => !setB.has(item)))
 
 class NetlifyFunction {
-  constructor({ config, directory, mainFile, name, projectRoot, runtime, timeoutBackground, timeoutSynchronous }) {
+  constructor({
+    config,
+    directory,
+    mainFile,
+    name,
+    projectRoot,
+    runtime,
+    settings,
+    timeoutBackground,
+    timeoutSynchronous,
+  }) {
     this.config = config
     this.directory = directory
     this.errorExit = errorExit
@@ -17,6 +27,7 @@ class NetlifyFunction {
     this.runtime = runtime
     this.timeoutBackground = timeoutBackground
     this.timeoutSynchronous = timeoutSynchronous
+    this.settings = settings
 
     // Determines whether this is a background function based on the function
     // name.
@@ -100,6 +111,10 @@ class NetlifyFunction {
     } catch (error) {
       return { result: null, error }
     }
+  }
+
+  get url() {
+    return `http://localhost:${this.settings.port}/.netlify/functions/${this.name}`
   }
 }
 
