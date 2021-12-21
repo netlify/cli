@@ -107,13 +107,9 @@ const hashFns = async (
     normalizedPath: path.basename(functionPath, path.extname(functionPath)),
     runtime,
   }))
-  const functionSchedules = functionZips.reduce((acc, { name, schedule }) => {
-    if (!schedule) {
-      return acc
-    }
-
-    return [...acc, { name, cron: schedule }]
-  }, [])
+  const functionSchedules = functionZips
+    .map(({ name, schedule }) => schedule && { name, cron: schedule })
+    .filter(Boolean)
   const functionsWithNativeModules = functionZips.filter(
     ({ nativeNodeModules }) => nativeNodeModules !== undefined && Object.keys(nativeNodeModules).length !== 0,
   )
