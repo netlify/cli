@@ -107,7 +107,9 @@ const hashFns = async (
     normalizedPath: path.basename(functionPath, path.extname(functionPath)),
     runtime,
   }))
-
+  const functionSchedules = functionZips
+    .map(({ name, schedule }) => schedule && { name, cron: schedule })
+    .filter(Boolean)
   const functionsWithNativeModules = functionZips.filter(
     ({ nativeNodeModules }) => nativeNodeModules !== undefined && Object.keys(nativeNodeModules).length !== 0,
   )
@@ -125,7 +127,7 @@ const hashFns = async (
 
   await pump(functionStream, hasher, manifestCollector)
 
-  return { functions, functionsWithNativeModules, fnShaMap }
+  return { functionSchedules, functions, functionsWithNativeModules, fnShaMap }
 }
 
 module.exports = { hashFns }
