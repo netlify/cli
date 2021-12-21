@@ -369,11 +369,11 @@ test('env:transfer should exit if current directory is not a site, and provide o
   const res = await callCli(['env:transfer', 'site_id_a'])
   t.is(
     res,
-    'Please include the site destination [siteIdB] as the second argument, or try to run this command again inside a site folder',
+    'Please include the site destination (siteIdB) as the second argument, or try to run this command again inside a site folder',
   )
 })
 
-test.only('env:transfer should return success message', async (t) => {
+test('env:transfer should return success message', async (t) => {
   const envFrom = {
     transfer_me: 'transfer_me',
   }
