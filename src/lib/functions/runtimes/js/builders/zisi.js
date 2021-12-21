@@ -70,6 +70,7 @@ const buildFunction = async ({ cache, config, directory, func, hasTypeModule, pr
 const parseForSchedule = async ({ config, mainFile, projectRoot }) => {
   const listedFunction = await listFunction(mainFile, {
     config: netlifyConfigToZisiConfig({ config, projectRoot }),
+    parseISC: true,
   })
 
   return listedFunction && listedFunction.schedule
