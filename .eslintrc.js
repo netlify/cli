@@ -2,7 +2,7 @@ const { overrides } = require('@netlify/eslint-config-node')
 
 module.exports = {
   extends: '@netlify/eslint-config-node',
-  plugins: ['sort-destructure-keys', 'local-rules'],
+  plugins: ['sort-destructure-keys'],
   rules: {
     // Those rules from @netlify/eslint-config-node are currently disabled
     // TODO: remove, so those rules are enabled
@@ -55,7 +55,12 @@ module.exports = {
     {
       files: ['src/**/*.js'],
       rules: {
-        'local-rules/no-direct-chalk-import': 2,
+        // once a solution for npm 6 is found add this to package.json
+        // "eslint-plugin-local-rules": "file:tools/eslint-rules",
+        // add it to the plugins on top: `plugins: ['sort-destructure-keys', 'local-rules'],`
+        //
+        // after that uncomment the next line
+        // 'local-rules/no-direct-chalk-import': 2,
       },
     },
   ],
