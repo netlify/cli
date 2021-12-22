@@ -86,6 +86,7 @@ netlify deploy
 - `auth` (*string*) - Netlify auth token to deploy with
 - `branch` (*string*) - Serves the same functionality as --alias. Deprecated and will be removed in future versions
 - `build` (*boolean*) - Run build command before deploying
+- `context` (*string*) - Build context
 - `dir` (*string*) - Specify a folder to deploy
 - `functions` (*string*) - Specify a functions folder to deploy
 - `json` (*boolean*) - Output deployment data as JSON
@@ -111,6 +112,7 @@ netlify deploy --prodIfUnlocked
 netlify deploy --message "A message with an $ENV_VAR"
 netlify deploy --auth $NETLIFY_AUTH_TOKEN
 netlify deploy --trigger
+netlify deploy --build --context deploy-preview
 ```
 
 
