@@ -670,6 +670,7 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
     .option('--timeout <number>', 'Timeout to wait for deployment to finish', (value) => Number.parseInt(value))
     .option('--trigger', 'Trigger a new build of your site on Netlify without uploading local files')
     .option('--build', 'Run build command before deploying')
+    .option('--context [context]', 'Build context')
     .option(
       '--skip-functions-cache',
       'Ignore any functions created as part of a previous `build` or `deploy` commands, forcing them to be bundled again as part of the deployment',
@@ -683,6 +684,7 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
       'netlify deploy --message "A message with an $ENV_VAR"',
       'netlify deploy --auth $NETLIFY_AUTH_TOKEN',
       'netlify deploy --trigger',
+      'netlify deploy --build --context deploy-preview',
     ])
     .action(deploy)
 
