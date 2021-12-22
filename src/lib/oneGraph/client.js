@@ -3,7 +3,7 @@
 const { buildClientSchema } = require('graphql')
 const fetch = require('node-fetch')
 
-const { extractFunctionsFromOperationDoc, generateFunctionsFile, generateHandler, netligraphPath, readAndParseGraphQLOperationsSourceFile, writeGraphQLOperationsSourceFile, readGraphQLOperationsSourceFile } = require("./netligraph")
+const { extractFunctionsFromOperationDoc, generateFunctionsFile, generateHandler, netligraphPath, readAndParseGraphQLOperationsSourceFile, readGraphQLOperationsSourceFile, writeGraphQLOperationsSourceFile } = require("./netligraph")
 
 const ONEDASH_APP_ID = '0b066ba6-ed39-4db8-a497-ba0be34d5b2a'
 
@@ -403,10 +403,11 @@ const monitorCLISessionEvents = (
     shouldClose = true
   }
 
-  // TODO: Convert this to recursive setTimeout
-  const handle = setInterval(async () => {
+  let handle
+
+  const helper = async () => {
     if (shouldClose) {
-      clearInterval(handle)
+      clearTimeout(handle)
       onClose()
     }
 
@@ -448,7 +449,12 @@ const monitorCLISessionEvents = (
         },
       )
     }
-  }, frequency)
+
+    handle = setTimeout(helper, frequency)
+  }
+
+  // Fire immediately to start rather than waiting the initial `frequency`
+  helper()
 
   return close
 }

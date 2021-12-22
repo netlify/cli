@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 const { parse, print } = require('graphql')
 
 let operationNodesMemo = [null, null];
@@ -218,12 +219,14 @@ const unnamedSymbols = new Set(['query', 'mutation', 'subscription']);
 
 const isOperationNamed = (operationData) => !unnamedSymbols.has(operationData.name.trim())
 
-const addLeftWhitespace = (string, padding) =>
-  string
-    .split('\n')
-    .map(line => line.padStart(padding))
-    .join('\n');
+const addLeftWhitespace = (string, padding) => {
+  const paddingString = ' '.repeat(padding);
 
+  return string
+    .split('\n')
+    .map(line => paddingString + line)
+    .join('\n');
+}
 
 const collapseExtraNewlines = (string) => string.replace(/\n{2,}/g, '\n\n')
 
@@ -296,14 +299,14 @@ const asyncFetcherInvocation = (operationDataList, pluckerStyle) => {
             ?.map((def) => {
               const name = def.variable.name.value
               const withCoercer = coercerFor(def.type, `event.queryStringParameters?.${name}`)
-              return `const ${name} = ${withCoercer}`
+              return `const ${name} = ${withCoercer};`
             })
             ?.join('\n  ') || '',
         post:
           namedOperationData.operationDefinition.variableDefinitions
             ?.map((def) => {
               const name = def.variable.name.value
-              return `const ${name} = eventBodyJson?.${name}`
+              return `const ${name} = eventBodyJson?.${name};`
             })
             .join('\n  ') || '',
       }
@@ -330,8 +333,10 @@ const asyncFetcherInvocation = (operationDataList, pluckerStyle) => {
         variableValidation = `  if (${condition}) {
     return {
       statusCode: 422,
-      body: JSON.stringify({error: 'You must supply parameters for: ${message}'}),
-    }
+      body: JSON.stringify({
+        error: 'You must supply parameters for: ${message}'
+      }),
+    };
   }`
       }
 
@@ -340,7 +345,8 @@ const asyncFetcherInvocation = (operationDataList, pluckerStyle) => {
 ${requiredVariableCount > 0 ? variableValidation : ''}
 
   const { errors: ${namedOperationData.name}Errors, data: ${namedOperationData.name
-        }Data } = await Lib.${operationFunctionName(namedOperationData)}({${params.join(', ')}}, null /* accessToken */);
+        }Data } =
+    await Netligraph.${operationFunctionName(namedOperationData)}({ ${params.join(', ')} }, accessToken);
 
   if (${namedOperationData.name}Errors) {
     console.error(JSON.stringify(${namedOperationData.name}Errors, null, 2));
@@ -412,14 +418,13 @@ ${variables}
 const subscriptionHandler = ({
   filename,
   operationData,
-}) => `/** Netlify serverless function:
-Save this snippet in \`netlify/functions/${filename}\`
-*/
-import { withSecrets } from "@sgrove/netlify-functions";
-import Lib from "../netligraphFunctions";
+}) => `import { getSecrets } from "@netlify/functions";
+import Netligraph from "../netligraphFunctions";
 
-export const handler = withSecrets(async (event, { secrets }) => {
-  const payload = Lib.parseAndVerify${operationData.name}Event(event)
+export const handler = async (event, context) => {
+  let secrets = await getSecrets(event);
+
+  const payload = Netligraph.parseAndVerify${operationData.name}Event(event);
 
   if (!payload) {
     return {
@@ -428,7 +433,7 @@ export const handler = withSecrets(async (event, { secrets }) => {
         success: false,
         error: 'Unable to verify payload signature',
       }),
-    }
+    };
   }
   const { errors: ${operationData.name}Errors, data: ${operationData.name}Data } = payload;
 
@@ -439,18 +444,18 @@ export const handler = withSecrets(async (event, { secrets }) => {
   console.log(${operationData.name}Data);
 
   /**
-  * If you want to unsubscribe from this webhook
-  * in order to stop receiving new events,
-  * simply return status 410, e.g.:
-  *
-  * return {
-  *   statusCode: 410,
-  *   body: JSON.stringify(null),
-  *   headers: {
-  *     'content-type': 'application/json',
-  *   },
-  * }
-  */
+   * If you want to unsubscribe from this webhook
+   * in order to stop receiving new events,
+   * simply return status 410, e.g.:
+   *
+   * return {
+   *   statusCode: 410,
+   *   body: JSON.stringify(null),
+   *   headers: {
+   *     'content-type': 'application/json',
+   *   },
+   * }
+   */
 
   return {
     statusCode: 200,
@@ -460,8 +465,8 @@ export const handler = withSecrets(async (event, { secrets }) => {
     headers: {
       'content-type': 'application/json',
     },
-  }
-})
+  };
+};
 `
 
 // Snippet generation!
@@ -514,14 +519,6 @@ ${operationData.type} unnamed${capitalizeFirstLetter(operationData.type)}${idx +
       options?.postHttpMethod === true ? 'post' : 'get',
     )
 
-    const netligraphClient = options.useClientAuth
-      ? `
-  // Use the incoming authorization header when making API calls on the user's behalf
-  const accessToken = event.headers["authorization"]?.split(" ")[1]
-
-`
-      : ''
-
     const passThroughResults = operationDataList
       .filter((operationData) => ['query', 'mutation', 'subscription'].includes(operationData.type))
       .map(
@@ -538,14 +535,19 @@ ${operationData.name}Data: ${operationData.name}Data`,
 
     const whitespace = 6;
 
-    const snippet = `/** Netlify serverless function:
-Save this snippet in \`netlify/functions/${filename}\`
-*/
-import { withSecrets } from "@sgrove/netlify-functions";
-import Lib from "../netligraphFunctions";
+    const snippet = `import { getSecrets } from "@netlify/functions";
+import Netligraph from "../netligraphFunctions";
 
-export const handler = withSecrets(async (event, { secrets }) => {
-  ${netligraphClient}
+export const handler = async (event, context) => {
+  // By default, all API calls use no authentication
+  let accessToken = null;
+
+  //// If you want to use the client's accessToken when making API calls on the user's behalf:
+  // accessToken = event.headers["authorization"]?.split(" ")[1]
+
+  //// If you want to use the API with your own access token:
+  // accessToken = (await getSecrets(event))?.personalOmniAccessToken
+      
   const eventBodyJson = JSON.parse(event.body || "{}");
 
   ${fetcherInvocation}
@@ -559,8 +561,8 @@ ${addLeftWhitespace(passThroughResults, whitespace)}
     headers: {
       'content-type': 'application/json',
     },
-  }
-})
+  };
+};
 
 /** 
  * Client-side invocations:
@@ -571,9 +573,10 @@ ${addLeftWhitespace(passThroughResults, whitespace)}
 /**
 ${clientSideCalls}
 */
+
 `
 
-    return collapseExtraNewlines(snippet.trim())
+    return collapseExtraNewlines(snippet)
   },
 }
 
