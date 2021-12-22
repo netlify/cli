@@ -60,6 +60,7 @@ test('netlify init existing site', async (t) => {
     name: 'site-name',
     build_settings: { repo_url: 'https://github.com/owner/repo' },
   }
+
   const routes = [
     {
       path: 'accounts',
@@ -142,6 +143,14 @@ test('netlify init new site', async (t) => {
     { question: 'Configure the following webhook for your repository', answer: CONFIRM },
   ]
 
+  const siteInfo = {
+    admin_url: 'https://app.netlify.com/sites/site-name/overview',
+    ssl_url: 'https://site-name.netlify.app/',
+    id: 'site_id',
+    name: 'site-name',
+    build_settings: { repo_url: 'https://github.com/owner/repo' },
+  }
+
   const routes = [
     {
       path: 'accounts',
@@ -151,6 +160,7 @@ test('netlify init new site', async (t) => {
       path: 'sites',
       response: [],
     },
+    { path: 'sites/site_id', response: siteInfo },
     {
       path: 'user',
       response: { name: 'test user', slug: 'test-user', email: 'user@test.com' },
@@ -234,6 +244,14 @@ test('netlify init new Next.js site', async (t) => {
     { question: 'Configure the following webhook for your repository', answer: CONFIRM },
   ]
 
+  const siteInfo = {
+    admin_url: 'https://app.netlify.com/sites/site-name/overview',
+    ssl_url: 'https://site-name.netlify.app/',
+    id: 'site_id',
+    name: 'site-name',
+    build_settings: { repo_url: 'https://github.com/owner/repo' },
+  }
+
   const routes = [
     {
       path: 'accounts',
@@ -244,6 +262,7 @@ test('netlify init new Next.js site', async (t) => {
       path: 'sites',
       response: [],
     },
+    { path: 'sites/site_id', response: siteInfo },
     {
       path: 'user',
       response: { name: 'test user', slug: 'test-user', email: 'user@test.com' },
@@ -421,6 +440,13 @@ test('netlify init monorepo root and sub directory without netlify.toml', async 
     { question: 'Configure the following webhook for your repository', answer: CONFIRM },
   ]
 
+  const siteInfo = {
+    admin_url: 'https://app.netlify.com/sites/site-name/overview',
+    ssl_url: 'https://site-name.netlify.app/',
+    id: 'site_id',
+    name: 'site-name',
+    build_settings: { repo_url: 'https://github.com/owner/repo' },
+  }
   const routes = [
     {
       path: 'accounts',
@@ -434,6 +460,7 @@ test('netlify init monorepo root and sub directory without netlify.toml', async 
       path: 'user',
       response: { name: 'test user', slug: 'test-user', email: 'user@test.com' },
     },
+    { path: 'sites/site_id', response: siteInfo },
     {
       path: 'test-account/sites',
       method: 'post',
@@ -533,11 +560,20 @@ test('netlify init monorepo root with netlify.toml, subdirectory without netlify
     { question: 'Configure the following webhook for your repository', answer: CONFIRM },
   ]
 
+  const siteInfo = {
+    admin_url: 'https://app.netlify.com/sites/site-name/overview',
+    ssl_url: 'https://site-name.netlify.app/',
+    id: 'site_id',
+    name: 'site-name',
+    build_settings: { repo_url: 'https://github.com/owner/repo' },
+  }
+
   const routes = [
     {
       path: 'accounts',
       response: [{ slug: 'test-account' }],
     },
+    { path: 'sites/site_id', response: siteInfo },
     {
       path: 'sites',
       response: [],
@@ -642,6 +678,14 @@ test('netlify init monorepo root and sub directory with netlify.toml', async (t)
     { question: 'Configure the following webhook for your repository', answer: CONFIRM },
   ]
 
+  const siteInfo = {
+    admin_url: 'https://app.netlify.com/sites/site-name/overview',
+    ssl_url: 'https://site-name.netlify.app/',
+    id: 'site_id',
+    name: 'site-name',
+    build_settings: { repo_url: 'https://github.com/owner/repo' },
+  }
+
   const routes = [
     {
       path: 'accounts',
@@ -651,6 +695,7 @@ test('netlify init monorepo root and sub directory with netlify.toml', async (t)
       path: 'sites',
       response: [],
     },
+    { path: 'sites/site_id', response: siteInfo },
     {
       path: 'user',
       response: { name: 'test user', slug: 'test-user', email: 'user@test.com' },
