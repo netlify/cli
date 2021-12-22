@@ -4509,15 +4509,12 @@
       }
     },
     "node_modules/@vercel/nft": {
-      "version": "0.17.0",
-      "resolved": "https://registry.npmjs.org/@vercel/nft/-/nft-0.17.0.tgz",
-      "integrity": "sha512-dXz4RAODHpEPl1Yfzk1UfVpZfqhY9O80FdI9sF/Hw2bXWj5022U9Z46VpdNYe8pDluSuQv/JUo/ZP4/OcsfDRw==",
+      "version": "0.17.1",
+      "resolved": "https://registry.npmjs.org/@vercel/nft/-/nft-0.17.1.tgz",
+      "integrity": "sha512-z3zknfI7JaE0PPmmYDQVtf/TCEnAYT5Y2XrCO/BfAD1sP2Wdmg1PO0L1VRIyt0zjpr6PpBYitC0Nmy0rh+qEDA==",
       "dependencies": {
         "@mapbox/node-pre-gyp": "^1.0.5",
-        "acorn": "^8.3.0",
-        "acorn-class-fields": "^1.0.0",
-        "acorn-private-class-elements": "^1.0.0",
-        "acorn-static-class-features": "^1.0.0",
+        "acorn": "^8.6.0",
         "bindings": "^1.4.0",
         "estree-walker": "2.0.2",
         "glob": "^7.1.3",
@@ -4572,20 +4569,6 @@
         "node": ">=0.4.0"
       }
     },
-    "node_modules/acorn-class-fields": {
-      "version": "1.0.0",
-      "resolved": "https://registry.npmjs.org/acorn-class-fields/-/acorn-class-fields-1.0.0.tgz",
-      "integrity": "sha512-l+1FokF34AeCXGBHkrXFmml9nOIRI+2yBnBpO5MaVAaTIJ96irWLtcCxX+7hAp6USHFCe+iyyBB4ZhxV807wmA==",
-      "dependencies": {
-        "acorn-private-class-elements": "^1.0.0"
-      },
-      "engines": {
-        "node": ">=4.8.2"
-      },
-      "peerDependencies": {
-        "acorn": "^6 || ^7 || ^8"
-      }
-    },
     "node_modules/acorn-jsx": {
       "version": "5.3.2",
       "resolved": "https://registry.npmjs.org/acorn-jsx/-/acorn-jsx-5.3.2.tgz",
@@ -4593,31 +4576,6 @@
       "dev": true,
       "peerDependencies": {
         "acorn": "^6.0.0 || ^7.0.0 || ^8.0.0"
-      }
-    },
-    "node_modules/acorn-private-class-elements": {
-      "version": "1.0.0",
-      "resolved": "https://registry.npmjs.org/acorn-private-class-elements/-/acorn-private-class-elements-1.0.0.tgz",
-      "integrity": "sha512-zYNcZtxKgVCg1brS39BEou86mIao1EV7eeREG+6WMwKbuYTeivRRs6S2XdWnboRde6G9wKh2w+WBydEyJsJ6mg==",
-      "engines": {
-        "node": ">=4.8.2"
-      },
-      "peerDependencies": {
-        "acorn": "^6.1.0 || ^7 || ^8"
-      }
-    },
-    "node_modules/acorn-static-class-features": {
-      "version": "1.0.0",
-      "resolved": "https://registry.npmjs.org/acorn-static-class-features/-/acorn-static-class-features-1.0.0.tgz",
-      "integrity": "sha512-XZJECjbmMOKvMHiNzbiPXuXpLAJfN3dAKtfIYbk1eHiWdsutlek+gS7ND4B8yJ3oqvHo1NxfafnezVmq7NXK0A==",
-      "dependencies": {
-        "acorn-private-class-elements": "^1.0.0"
-      },
-      "engines": {
-        "node": ">=4.8.2"
-      },
-      "peerDependencies": {
-        "acorn": "^6.1.0 || ^7 || ^8"
       }
     },
     "node_modules/acorn-walk": {
@@ -23873,15 +23831,12 @@
       }
     },
     "@vercel/nft": {
-      "version": "0.17.0",
-      "resolved": "https://registry.npmjs.org/@vercel/nft/-/nft-0.17.0.tgz",
-      "integrity": "sha512-dXz4RAODHpEPl1Yfzk1UfVpZfqhY9O80FdI9sF/Hw2bXWj5022U9Z46VpdNYe8pDluSuQv/JUo/ZP4/OcsfDRw==",
+      "version": "0.17.1",
+      "resolved": "https://registry.npmjs.org/@vercel/nft/-/nft-0.17.1.tgz",
+      "integrity": "sha512-z3zknfI7JaE0PPmmYDQVtf/TCEnAYT5Y2XrCO/BfAD1sP2Wdmg1PO0L1VRIyt0zjpr6PpBYitC0Nmy0rh+qEDA==",
       "requires": {
         "@mapbox/node-pre-gyp": "^1.0.5",
-        "acorn": "^8.3.0",
-        "acorn-class-fields": "^1.0.0",
-        "acorn-private-class-elements": "^1.0.0",
-        "acorn-static-class-features": "^1.0.0",
+        "acorn": "^8.6.0",
         "bindings": "^1.4.0",
         "estree-walker": "2.0.2",
         "glob": "^7.1.3",
@@ -23923,34 +23878,12 @@
       "resolved": "https://registry.npmjs.org/acorn/-/acorn-8.6.0.tgz",
       "integrity": "sha512-U1riIR+lBSNi3IbxtaHOIKdH8sLFv3NYfNv8sg7ZsNhcfl4HF2++BfqqrNAxoCLQW1iiylOj76ecnaUxz+z9yw=="
     },
-    "acorn-class-fields": {
-      "version": "1.0.0",
-      "resolved": "https://registry.npmjs.org/acorn-class-fields/-/acorn-class-fields-1.0.0.tgz",
-      "integrity": "sha512-l+1FokF34AeCXGBHkrXFmml9nOIRI+2yBnBpO5MaVAaTIJ96irWLtcCxX+7hAp6USHFCe+iyyBB4ZhxV807wmA==",
-      "requires": {
-        "acorn-private-class-elements": "^1.0.0"
-      }
-    },
     "acorn-jsx": {
       "version": "5.3.2",
       "resolved": "https://registry.npmjs.org/acorn-jsx/-/acorn-jsx-5.3.2.tgz",
       "integrity": "sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==",
       "dev": true,
       "requires": {}
-    },
-    "acorn-private-class-elements": {
-      "version": "1.0.0",
-      "resolved": "https://registry.npmjs.org/acorn-private-class-elements/-/acorn-private-class-elements-1.0.0.tgz",
-      "integrity": "sha512-zYNcZtxKgVCg1brS39BEou86mIao1EV7eeREG+6WMwKbuYTeivRRs6S2XdWnboRde6G9wKh2w+WBydEyJsJ6mg==",
-      "requires": {}
-    },
-    "acorn-static-class-features": {
-      "version": "1.0.0",
-      "resolved": "https://registry.npmjs.org/acorn-static-class-features/-/acorn-static-class-features-1.0.0.tgz",
-      "integrity": "sha512-XZJECjbmMOKvMHiNzbiPXuXpLAJfN3dAKtfIYbk1eHiWdsutlek+gS7ND4B8yJ3oqvHo1NxfafnezVmq7NXK0A==",
-      "requires": {
-        "acorn-private-class-elements": "^1.0.0"
-      }
     },
     "acorn-walk": {
       "version": "8.2.0",
