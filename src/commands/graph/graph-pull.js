@@ -3,9 +3,13 @@ const process = require('process')
 
 const { parse, printSchema } = require('graphql')
 
-
 const { ensureAppForSite, fetchEnabledServices, fetchOneGraphSchema } = require('../../lib/oneGraph/client')
-const { extractFunctionsFromOperationDoc, generateFunctionsFile, netligraphPath, readGraphQLOperationsSourceFile } = require('../../lib/oneGraph/netligraph')
+const {
+  extractFunctionsFromOperationDoc,
+  generateFunctionsFile,
+  netligraphPath,
+  readGraphQLOperationsSourceFile,
+} = require('../../lib/oneGraph/netligraph')
 const { NETLIFYDEVERR, chalk } = require('../../utils')
 
 const graphPull = async (options, command) => {
@@ -26,7 +30,7 @@ const graphPull = async (options, command) => {
   await ensureAppForSite(netlifyToken, siteId)
 
   const enabledServicesInfo = await fetchEnabledServices(netlifyToken, siteId)
-  const enabledServices = enabledServicesInfo.map(service => service.service)
+  const enabledServices = enabledServicesInfo.map((service) => service.service)
   const schema = await fetchOneGraphSchema(siteId, enabledServices)
   let operationsDoc = readGraphQLOperationsSourceFile(netligraphPath)
 
@@ -56,6 +60,5 @@ const createGraphPullCommand = (program) =>
     .action(async (options, command) => {
       await graphPull(options, command)
     })
-
 
 module.exports = { createGraphPullCommand }

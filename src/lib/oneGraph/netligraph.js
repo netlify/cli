@@ -8,13 +8,12 @@ const {
   patchSubscriptionWebhookSecretField,
   typeScriptSignatureForOperation,
   typeScriptSignatureForOperationVariables,
-} = require('./graphql-helpers');
-const { computeOperationDataList, netlifyFunctionSnippet } = require('./netligraph-code-exporter-snippets');
+} = require('./graphql-helpers')
+const { computeOperationDataList, netlifyFunctionSnippet } = require('./netligraph-code-exporter-snippets')
 
-const netligraphPath = `${process.cwd()}/netlify`;
+const netligraphPath = `${process.cwd()}/netlify`
 
-const capitalizeFirstLetter = (string) =>
-  string.charAt(0).toUpperCase() + string.slice(1)
+const capitalizeFirstLetter = (string) => string.charAt(0).toUpperCase() + string.slice(1)
 
 const generatedOneGraphClient = `
 const fetch = (appId, options) => {
@@ -127,32 +126,14 @@ const subscriptionParserName = (fn) => `parseAndVerify${fn.operationName}Event`
 
 const subscriptionFunctionName = (fn) => `subscribeTo${fn.operationName}`
 
+const generateSubscriptionFunctionTypeDefinition = (schema, fn, fragments) => {
+  const parsingFunctionReturnSignature = typeScriptSignatureForOperation(schema, fn.parsedOperation, fragments)
 
-const generateSubscriptionFunctionTypeDefinition = (
-  schema,
-  fn,
-  fragments,
-) => {
-  const parsingFunctionReturnSignature = typeScriptSignatureForOperation(
-    schema,
-    fn.parsedOperation,
-    fragments
-  )
+  const variableNames = (fn.parsedOperation.variableDefinitions || []).map((varDef) => varDef.variable.name.value)
 
-  const variableNames = (fn.parsedOperation.variableDefinitions || []).map(
-    (varDef) => varDef.variable.name.value
-  )
+  const variableSignature = typeScriptSignatureForOperationVariables(variableNames, schema, fn.parsedOperation)
 
-  const variableSignature = typeScriptSignatureForOperationVariables(
-    variableNames,
-    schema,
-    fn.parsedOperation
-  )
-
-  const jsDoc = (fn.description || '')
-    .replaceAll('*/', '!')
-    .split('\n')
-    .join('\n* ')
+  const jsDoc = (fn.description || '').replaceAll('*/', '!').split('\n').join('\n* ')
 
   return `/**
   * ${jsDoc}
@@ -172,16 +153,13 @@ const generateSubscriptionFunctionTypeDefinition = (
       * Verify the ${fn.operationName} event body is signed securely, and then parse the result.
       */
     export function ${subscriptionParserName(
-    fn
-  )} (/** A Netlify Handler Event */ event) : null | ${parsingFunctionReturnSignature}
+      fn,
+    )} (/** A Netlify Handler Event */ event) : null | ${parsingFunctionReturnSignature}
 `
 }
 
 // TODO: Handle fragments
-const generateSubscriptionFunction = (
-  schema,
-  fn,
-) => {
+const generateSubscriptionFunction = (schema, fn) => {
   const patchedWithWebhookUrl = patchSubscriptionWebhookField({
     schema,
     definition: fn.parsedOperation,
@@ -193,7 +171,7 @@ const generateSubscriptionFunction = (
   })
 
   // TODO: Don't allow unnamed operations as subscription
-  const filename = patched.name && patched.name.value || 'Unknown'
+  const filename = (patched.name && patched.name.value) || 'Unknown'
 
   const body = print(patched)
   const safeBody = body.replaceAll('${', '\\${')
@@ -226,9 +204,7 @@ const generateSubscriptionFunction = (
 
   }
 
-const ${subscriptionParserName(
-    fn
-  )} = (event) => {
+const ${subscriptionParserName(fn)} = (event) => {
   if (!verifyRequestSignature({ event: event })) {
     console.warn("Unable to verify signature for ${filename}")
     return null
@@ -253,19 +229,15 @@ const queryToFunctionDefinition = (fullSchema, persistedQuery) => {
   const basicFn = {
     id: persistedQuery.id,
     definition: persistedQuery.query,
-    description: persistedQuery.description
+    description: persistedQuery.description,
   }
 
   const body = basicFn.definition
   const safeBody = body.replaceAll('${', '\\${')
 
   const parsed = parse(body)
-  const operations = parsed.definitions.filter(
-    (def) => def.kind === 'OperationDefinition'
-  )
-  const fragments = parsed.definitions.filter(
-    (def) => def.kind === 'FragmentDefinition'
-  )
+  const operations = parsed.definitions.filter((def) => def.kind === 'OperationDefinition')
+  const fragments = parsed.definitions.filter((def) => def.kind === 'FragmentDefinition')
 
   if (!operations) {
     throw new Error(`Operation definition is required in ${basicFn.id}`)
@@ -273,21 +245,11 @@ const queryToFunctionDefinition = (fullSchema, persistedQuery) => {
 
   const [operation] = operations
 
-  const returnSignature = typeScriptSignatureForOperation(
-    fullSchema,
-    operation,
-    fragments
-  )
+  const returnSignature = typeScriptSignatureForOperation(fullSchema, operation, fragments)
 
-  const variableNames = (operation.variableDefinitions || []).map(
-    (varDef) => varDef.variable.name.value
-  )
+  const variableNames = (operation.variableDefinitions || []).map((varDef) => varDef.variable.name.value)
 
-  const variableSignature = typeScriptSignatureForOperationVariables(
-    variableNames,
-    fullSchema,
-    operation
-  )
+  const variableSignature = typeScriptSignatureForOperationVariables(variableNames, fullSchema, operation)
 
   const operationName = operation.name && operation.name.value
 
@@ -303,24 +265,19 @@ const queryToFunctionDefinition = (fullSchema, persistedQuery) => {
     variableSignature,
     returnSignature,
     operationName,
-    parsedOperation: operation
+    parsedOperation: operation,
   }
 
   return fn
 }
 
-const generateJavaScriptClient = (
-  schema,
-  operationsDoc,
-  enabledFunctions
-) => {
-  const safeOperationsDoc = operationsDoc.replaceAll('${', '\\${').replaceAll('`', '\\`');
+const generateJavaScriptClient = (schema, operationsDoc, enabledFunctions) => {
+  const safeOperationsDoc = operationsDoc.replaceAll('${', '\\${').replaceAll('`', '\\`')
   const functionDecls = enabledFunctions.map((fn) => {
     if (fn.kind === 'subscription') {
       const fragments = []
       return generateSubscriptionFunction(schema, fn, fragments)
     }
-
 
     const dynamicFunction = `const ${fn.fnName} = (
   variables,
@@ -355,10 +312,7 @@ const generateJavaScriptClient = (
         const subscriptionFnName = subscriptionFunctionName(fn)
         const parserFnName = subscriptionParserName(fn)
 
-        const jsDoc = (fn.description || '')
-          .replaceAll('*/', '')
-          .split('\n')
-          .join('\n* ')
+        const jsDoc = (fn.description || '').replaceAll('*/', '').split('\n').join('\n* ')
 
         return `/**
         * ${jsDoc}
@@ -369,16 +323,12 @@ const generateJavaScriptClient = (
          */
         ${parserFnName}:${parserFnName}`
       }
-      const jsDoc = (fn.description || '')
-        .replaceAll('*/', '')
-        .split('\n')
-        .join('\n* ')
+      const jsDoc = (fn.description || '').replaceAll('*/', '').split('\n').join('\n* ')
 
       return `/**
         * ${jsDoc}
         */
           ${fn.fnName}:${fn.fnName}`
-
     })
     .join(',\n  ')
 
@@ -471,10 +421,7 @@ export const verifyRequestSignature = (request) => {
   return source
 }
 
-const generateTypeScriptDefinitions = (
-  schema,
-  enabledFunctions
-) => {
+const generateTypeScriptDefinitions = (schema, enabledFunctions) => {
   const functionDecls = enabledFunctions.map((fn) => {
     const isSubscription = fn.kind === 'subscription'
 
@@ -487,10 +434,7 @@ const generateTypeScriptDefinitions = (
       const subscriptionFnName = subscriptionFunctionName(fn)
       const parserFnName = subscriptionParserName(fn)
 
-      const jsDoc = (fn.description || '')
-        .replaceAll('*/', '')
-        .split('\n')
-        .join('\n* ')
+      const jsDoc = (fn.description || '').replaceAll('*/', '').split('\n').join('\n* ')
 
       return `/**
       * ${jsDoc}
@@ -501,16 +445,12 @@ const generateTypeScriptDefinitions = (
        */
       ${parserFnName}:${parserFnName}`
     }
-    const jsDoc = (fn.description || ``)
-      .replaceAll('*/', '')
-      .split('\n')
-      .join('\n* ')
+    const jsDoc = (fn.description || ``).replaceAll('*/', '').split('\n').join('\n* ')
 
     return `/**
       * ${jsDoc}
       */
       export function ${fn.fnName}(variables: ${fn.variableSignature}, accessToken?: string): Promise<${fn.returnSignature}>;`
-
   })
 
   const source = `// GENERATED VIA \`netlify-plugin-netligraph\`, EDIT WITH CAUTION!
@@ -529,28 +469,22 @@ const generateFunctionsFile = (basePath, schema, operationsDoc, queries) => {
   fs.writeFileSync(`${basePath}/netligraphFunctions.d.ts`, typeDefinitionsSource, 'utf8')
 }
 
-const extractFunctionsFromOperationDoc = (
-  parsedDoc
-) => {
+const extractFunctionsFromOperationDoc = (parsedDoc) => {
   const fns = parsedDoc.definitions
     .map((next) => {
       if (next.kind !== 'OperationDefinition') {
-        return null;
+        return null
       }
 
-      const key = next.name?.value;
+      const key = next.name?.value
 
-      const directive = next.directives?.find(
-        (localDirective) => localDirective.name.value === 'netligraph'
-      );
-      const docArg =
-        directive &&
-        directive.arguments?.find((arg) => arg.name.value === 'doc');
+      const directive = next.directives?.find((localDirective) => localDirective.name.value === 'netligraph')
+      const docArg = directive && directive.arguments?.find((arg) => arg.name.value === 'doc')
 
-      const docString = docArg?.value?.value;
+      const docString = docArg?.value?.value
 
       if (!key || !docString) {
-        return null;
+        return null
       }
 
       const operation = {
@@ -558,14 +492,14 @@ const extractFunctionsFromOperationDoc = (
         description: docString,
         operation: next.operation,
         query: print(next),
-      };
+      }
 
-      return operation;
+      return operation
     })
-    .filter(Boolean);
+    .filter(Boolean)
 
-  return fns;
-};
+  return fns
+}
 
 const sourceOperationsFilename = 'netligraphOperationsLibrary.graphql'
 
@@ -601,19 +535,18 @@ const writeGraphQLOperationsSourceFile = (basePath, operationDocString) => {
 
 const generateHandler = (basePath, schema, operationId, handlerOptions) => {
   const [doc] = readAndParseGraphQLOperationsSourceFile(basePath)
-  const operation = doc.definitions.find(op => op.kind === Kind.OPERATION_DEFINITION && op.name.value === operationId)
+  const operation = doc.definitions.find((op) => op.kind === Kind.OPERATION_DEFINITION && op.name.value === operationId)
 
   if (!operation) {
     console.warn(`Operation ${operationId} not found in graphql.`)
   }
 
-
-  const odl = computeOperationDataList(({ query: print(operation), variables: [] }))
+  const odl = computeOperationDataList({ query: print(operation), variables: [] })
 
   const source = netlifyFunctionSnippet.generate({
     operationDataList: odl.operationDataList,
     schema,
-    options: handlerOptions
+    options: handlerOptions,
   })
 
   const newFunction = {
@@ -625,7 +558,6 @@ const generateHandler = (basePath, schema, operationId, handlerOptions) => {
   fs.writeFileSync(filename, source)
 }
 
-
 module.exports = {
   extractFunctionsFromOperationDoc,
   generateFunctionsFile,
@@ -633,5 +565,5 @@ module.exports = {
   netligraphPath,
   readGraphQLOperationsSourceFile,
   readAndParseGraphQLOperationsSourceFile,
-  writeGraphQLOperationsSourceFile
+  writeGraphQLOperationsSourceFile,
 }

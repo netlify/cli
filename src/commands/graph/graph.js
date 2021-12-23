@@ -8,7 +8,7 @@ const { createGraphPullCommand } = require('./graph-pull')
  * @param {import('../base-command').BaseCommand} command
  */
 const graph = (options, command) => {
-    command.help()
+  command.help()
 }
 
 /**
@@ -17,17 +17,14 @@ const graph = (options, command) => {
  * @returns
  */
 const createGraphCommand = (program) => {
-    createGraphEditCommand(program)
-    createGraphPullCommand(program)
+  createGraphEditCommand(program)
+  createGraphPullCommand(program)
 
-    return program
-        .command('graph')
-        .description('(Beta) Control the Netligraph functions for the current site')
-        .addExamples([
-            'netlify graph:pull',
-            'netlify graph:edit',
-        ])
-        .action(graph)
+  return program
+    .command('graph')
+    .description('(Beta) Control the Netligraph functions for the current site')
+    .addExamples(['netlify graph:pull', 'netlify graph:edit'])
+    .action(graph)
 }
 
 module.exports = { createGraphCommand }

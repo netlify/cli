@@ -1,145 +1,95 @@
-/* eslint-disable no-unused-vars */
 const { parse, print } = require('graphql')
 
-let operationNodesMemo = [null, null];
+let operationNodesMemo = [null, null]
 
-const getOperationNodes = (
-  query,
-) => {
+const getOperationNodes = (query) => {
   if (operationNodesMemo[0] === query && operationNodesMemo[1]) {
-    return operationNodesMemo[1];
+    return operationNodesMemo[1]
   }
-  const operationDefinitions = [];
+  const operationDefinitions = []
   try {
-    parse(query).definitions.forEach(def => {
-      if (
-        def.kind === 'FragmentDefinition' ||
-        def.kind === 'OperationDefinition'
-      ) {
-        operationDefinitions.push(def);
+    parse(query).definitions.forEach((def) => {
+      if (def.kind === 'FragmentDefinition' || def.kind === 'OperationDefinition') {
+        operationDefinitions.push(def)
       }
     })
   } catch (error) {
     // ignore
   }
-  operationNodesMemo = [query, operationDefinitions];
-  return operationDefinitions;
+  operationNodesMemo = [query, operationDefinitions]
+  return operationDefinitions
 }
 
-const getOperationName = (
-  operationDefinition
-) =>
-  operationDefinition.name
-    ? operationDefinition.name.value
-    : operationDefinition.operation;
+const getOperationName = (operationDefinition) =>
+  operationDefinition.name ? operationDefinition.name.value : operationDefinition.operation
 
 const getOperationDisplayName = (operationDefinition) =>
-  operationDefinition.name
-    ? operationDefinition.name.value
-    : `<Unnamed:${operationDefinition.operation}>`;
+  operationDefinition.name ? operationDefinition.name.value : `<Unnamed:${operationDefinition.operation}>`
 
 const formatVariableName = (name) => {
-  const uppercasePattern = /[A-Z]/g;
+  const uppercasePattern = /[A-Z]/g
 
-  return (
-    name.charAt(0).toUpperCase() +
-    name
-      .slice(1)
-      .replace(uppercasePattern, '_$&')
-      .toUpperCase()
-  );
+  return name.charAt(0).toUpperCase() + name.slice(1).replace(uppercasePattern, '_$&').toUpperCase()
 }
 
-const getUsedVariables = (
-  variables,
-  operationDefinition,
-) =>
-  (operationDefinition.variableDefinitions || []).reduce(
-    (usedVariables, variable) => {
-      const variableName = variable.variable.name.value;
-      if (variables[variableName]) {
-        usedVariables[variableName] = variables[variableName];
-      }
+const getUsedVariables = (variables, operationDefinition) =>
+  (operationDefinition.variableDefinitions || []).reduce((usedVariables, variable) => {
+    const variableName = variable.variable.name.value
+    if (variables[variableName]) {
+      usedVariables[variableName] = variables[variableName]
+    }
 
-      return usedVariables;
-    },
-    {},
-  );
+    return usedVariables
+  }, {})
 
+const findFragmentDependencies = (operationDefinitions, definition) => {
+  const fragmentByName = (name) => operationDefinitions.find((def) => def.name.value === name)
 
-const findFragmentDependencies = (
-  operationDefinitions,
-  definition,
-) => {
-  const fragmentByName = (name) =>
-    operationDefinitions.find(def => def.name.value === name);
-
-
-  const findReferencedFragments = (
-    selectionSet,
-  ) => {
-    const { selections } = selectionSet;
+  const findReferencedFragments = (selectionSet) => {
+    const { selections } = selectionSet
 
     const namedFragments = selections
-      .map(selection => {
+      .map((selection) => {
         if (selection.kind === 'FragmentSpread') {
-          return fragmentByName(selection.name.value);
+          return fragmentByName(selection.name.value)
         }
-        return null;
-
+        return null
       })
-      .filter(Boolean);
+      .filter(Boolean)
 
-    const nestedNamedFragments = selections.reduce(
-      (acc, selection) => {
-        if (
-          (selection.kind === 'Field' ||
-            selection.kind === 'SelectionNode' ||
-            selection.kind === 'InlineFragment') &&
-          selection.selectionSet !== undefined
-        ) {
-          return [...acc, ...findReferencedFragments(selection.selectionSet)];
-        }
-        return acc;
+    const nestedNamedFragments = selections.reduce((acc, selection) => {
+      if (
+        (selection.kind === 'Field' || selection.kind === 'SelectionNode' || selection.kind === 'InlineFragment') &&
+        selection.selectionSet !== undefined
+      ) {
+        return [...acc, ...findReferencedFragments(selection.selectionSet)]
+      }
+      return acc
+    }, [])
 
-      },
-      [],
-    );
+    return [...namedFragments, ...nestedNamedFragments]
+  }
 
-    return [...namedFragments, ...nestedNamedFragments];
-  };
+  const { selectionSet } = definition
 
-  const { selectionSet } = definition;
+  return findReferencedFragments(selectionSet)
+}
 
-  return findReferencedFragments(selectionSet);
-};
+const operationDataByName = (graph, name) => graph.find((operationData) => operationData.name === name)
 
-
-const operationDataByName = (graph, name) => graph.find(operationData => operationData.name === name);
-
-
-const topologicalSortHelper = (
-  { graph,
-    node,
-    temp,
-    visited },
-  result,
-) => {
-  temp[node.name] = true;
-  const neighbors = node.fragmentDependencies;
-  neighbors.forEach(fragmentDependency => {
-    const fragmentOperationData = operationDataByName(
-      graph,
-      fragmentDependency.name.value,
-    );
+const topologicalSortHelper = ({ graph, node, temp, visited }, result) => {
+  temp[node.name] = true
+  const neighbors = node.fragmentDependencies
+  neighbors.forEach((fragmentDependency) => {
+    const fragmentOperationData = operationDataByName(graph, fragmentDependency.name.value)
 
     if (!fragmentOperationData) {
-      return;
+      return
     }
 
     if (temp[fragmentOperationData.name]) {
-      console.error('The operation graph has a cycle');
-      return;
+      console.error('The operation graph has a cycle')
+      return
     }
     if (!visited[fragmentOperationData.name]) {
       topologicalSortHelper(
@@ -147,89 +97,78 @@ const topologicalSortHelper = (
           node: fragmentOperationData,
           visited,
           temp,
-          graph
+          graph,
         },
         result,
-      );
+      )
     }
   })
-  temp[node.name] = false;
-  visited[node.name] = true;
-  result.push(node);
+  temp[node.name] = false
+  visited[node.name] = true
+  result.push(node)
 }
 
 const toposort = (graph) => {
-  const result = [];
-  const visited = {};
-  const temp = {};
-  graph.forEach(node => {
+  const result = []
+  const visited = {}
+  const temp = {}
+  graph.forEach((node) => {
     if (!visited[node.name] && !temp[node.name]) {
-      topologicalSortHelper({ node, visited, temp, graph }, result);
+      topologicalSortHelper({ node, visited, temp, graph }, result)
     }
   })
-  return result;
+  return result
 }
 
-const computeOperationDataList = ({
-  query,
-  variables,
-}) => {
-  const operationDefinitions = getOperationNodes(query);
+const computeOperationDataList = ({ query, variables }) => {
+  const operationDefinitions = getOperationNodes(query)
 
-  const fragmentDefinitions = [];
+  const fragmentDefinitions = []
 
-  operationDefinitions.forEach(operationDefinition => {
+  operationDefinitions.forEach((operationDefinition) => {
     if (operationDefinition.kind === 'FragmentDefinition') {
-      fragmentDefinitions.push(operationDefinition);
+      fragmentDefinitions.push(operationDefinition)
     }
   })
 
-  const rawOperationDataList = operationDefinitions.map(
-    (
-      operationDefinition
-    ) => ({
-      query: print(operationDefinition),
-      name: getOperationName(operationDefinition),
-      displayName: getOperationDisplayName(operationDefinition),
-      // $FlowFixMe: Come back for this
-      type: operationDefinition.operation || 'fragment',
-      variableName: formatVariableName(getOperationName(operationDefinition)),
-      variables: getUsedVariables(variables, operationDefinition),
-      operationDefinition,
-      fragmentDependencies: findFragmentDependencies(
-        fragmentDefinitions,
-        operationDefinition,
-      ),
-    }),
-  );
+  const rawOperationDataList = operationDefinitions.map((operationDefinition) => ({
+    query: print(operationDefinition),
+    name: getOperationName(operationDefinition),
+    displayName: getOperationDisplayName(operationDefinition),
+    // $FlowFixMe: Come back for this
+    type: operationDefinition.operation || 'fragment',
+    variableName: formatVariableName(getOperationName(operationDefinition)),
+    variables: getUsedVariables(variables, operationDefinition),
+    operationDefinition,
+    fragmentDependencies: findFragmentDependencies(fragmentDefinitions, operationDefinition),
+  }))
 
-  const operationDataList = toposort(rawOperationDataList);
+  const operationDataList = toposort(rawOperationDataList)
 
   return {
     operationDefinitions,
     fragmentDefinitions,
     rawOperationDataList,
     operationDataList,
-  };
-};
+  }
+}
 
 const capitalizeFirstLetter = (string) => string.charAt(0).toUpperCase() + string.slice(1)
 
-const unnamedSymbols = new Set(['query', 'mutation', 'subscription']);
+const unnamedSymbols = new Set(['query', 'mutation', 'subscription'])
 
 const isOperationNamed = (operationData) => !unnamedSymbols.has(operationData.name.trim())
 
 const addLeftWhitespace = (string, padding) => {
-  const paddingString = ' '.repeat(padding);
+  const paddingString = ' '.repeat(padding)
 
   return string
     .split('\n')
-    .map(line => paddingString + line)
-    .join('\n');
+    .map((line) => paddingString + line)
+    .join('\n')
 }
 
 const collapseExtraNewlines = (string) => string.replace(/\n{2,}/g, '\n\n')
-
 
 const snippetOptions = [
   {
@@ -244,7 +183,6 @@ const snippetOptions = [
   },
 ]
 
-
 const operationFunctionName = (operationData) => {
   const { type } = operationData
 
@@ -252,15 +190,15 @@ const operationFunctionName = (operationData) => {
   switch (type) {
     case 'query':
       prefix = 'fetch'
-      break;
+      break
     case 'mutation':
       prefix = 'execute'
-      break;
+      break
     case 'subscription':
       prefix = 'subscribeTo'
-      break;
+      break
     default:
-      break;
+      break
   }
 
   const fnName = prefix + (prefix.length === 0 ? operationData.name : capitalizeFirstLetter(operationData.name))
@@ -344,8 +282,7 @@ const asyncFetcherInvocation = (operationDataList, pluckerStyle) => {
 
 ${requiredVariableCount > 0 ? variableValidation : ''}
 
-  const { errors: ${namedOperationData.name}Errors, data: ${namedOperationData.name
-        }Data } =
+  const { errors: ${namedOperationData.name}Errors, data: ${namedOperationData.name}Data } =
     await Netligraph.${operationFunctionName(namedOperationData)}({ ${params.join(', ')} }, accessToken);
 
   if (${namedOperationData.name}Errors) {
@@ -359,15 +296,11 @@ ${requiredVariableCount > 0 ? variableValidation : ''}
   return invocations
 }
 
-const clientSideInvocations = (
-  operationDataList,
-  pluckerStyle,
-  useClientAuth,
-) => {
+const clientSideInvocations = (operationDataList, pluckerStyle, useClientAuth) => {
   const invocations = operationDataList
     .filter((operationData) => ['query', 'mutation', 'subscription'].includes(operationData.type))
     .map((namedOperationData) => {
-      const whitespace = 8;
+      const whitespace = 8
 
       const params = (namedOperationData.operationDefinition.variableDefinitions || []).map(
         (def) => def.variable.name.value,
@@ -396,13 +329,20 @@ ${variables}
       }`
         : ''
 
-      return `async function ${operationFunctionName(namedOperationData)}(${useClientAuth ? 'oneGraphAuth, ' : ''
-        }params) {
+      return `async function ${operationFunctionName(namedOperationData)}(${
+        useClientAuth ? 'oneGraphAuth, ' : ''
+      }params) {
   const {${params.join(', ')}} = params || {};
-  const resp = await fetch(\`/.netlify/functions/${namedOperationData.name}${pluckerStyle === 'get' ? `?${params.map(param => `${param}=\${${param}}`).join('&')}` : ''}\`,
+  const resp = await fetch(\`/.netlify/functions/${namedOperationData.name}${
+        pluckerStyle === 'get' ? `?${params.map((param) => `${param}=\${${param}}`).join('&')}` : ''
+      }\`,
     {
-      method: "${pluckerStyle.toLocaleUpperCase()}"${pluckerStyle === 'get' ? '' : `,
-      body: JSON.stringify({${addLeftWhitespace(bodyPayload, whitespace).trim()}})${clientAuth}`}
+      method: "${pluckerStyle.toLocaleUpperCase()}"${
+        pluckerStyle === 'get'
+          ? ''
+          : `,
+      body: JSON.stringify({${addLeftWhitespace(bodyPayload, whitespace).trim()}})${clientAuth}`
+      }
     });
 
     const text = await resp.text();
@@ -416,6 +356,7 @@ ${variables}
 }
 
 const subscriptionHandler = ({
+  // eslint-disable-next-line no-unused-vars
   filename,
   operationData,
 }) => `import { getSecrets } from "@netlify/functions";
@@ -486,8 +427,8 @@ const netlifyFunctionSnippet = {
           query: `# Consider giving this ${operationData.type} a unique, descriptive
 # name in your application as a best practice
 ${operationData.type} unnamed${capitalizeFirstLetter(operationData.type)}${idx + 1} ${operationData.query
-              .trim()
-              .replace(/^(query|mutation|subscription) /i, '')}`,
+            .trim()
+            .replace(/^(query|mutation|subscription) /i, '')}`,
         }
       }
       return operationData
@@ -533,7 +474,7 @@ ${operationData.name}Data: ${operationData.name}Data`,
       options.useClientAuth,
     )
 
-    const whitespace = 6;
+    const whitespace = 6
 
     const snippet = `import { getSecrets } from "@netlify/functions";
 import Netligraph from "../netligraphFunctions";
