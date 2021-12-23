@@ -58,7 +58,9 @@ const graphEdit = async (options, command) => {
     tags: ['netlify-cli', `session:${oneGraphSessionId}`, `git-branch:${branch}`],
   })
 
-  const url = `http://localhost:8080/sites/${siteData.name}/graph/explorer?sessionId=${oneGraphSessionId}&docId=${persistedDoc.id}`
+  const host = process.env.NETLIFY_APP_HOST || `localhost:8080`
+
+  const url = `http://${host}/sites/${siteData.name}/graph/explorer?sessionId=${oneGraphSessionId}&docId=${persistedDoc.id}`
   await openBrowser({ url })
   console.timeEnd('graph:edit')
 }
