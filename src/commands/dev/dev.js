@@ -11,7 +11,7 @@ const stripAnsiCc = require('strip-ansi-control-characters')
 const waitPort = require('wait-port')
 
 const { startFunctionsServer } = require('../../lib/functions/server')
-const { startOneGraphCLISession } = require('../../lib/oneGraph/client')
+const { ensureAppForSite, startOneGraphCLISession } = require('../../lib/oneGraph/client')
 const {
   NETLIFYDEV,
   NETLIFYDEVERR,
@@ -292,14 +292,16 @@ const dev = async (options, command) => {
   process.env.URL = url
   process.env.DEPLOY_URL = url
 
-  const oneGraphAdminToken = command.netlify.cachedConfig.env.ONEGRAPH_ADMIN_JWT && command.netlify.cachedConfig.env.ONEGRAPH_ADMIN_JWT.value;
-
-  if (oneGraphAdminToken) {
+  if (site.id) {
     const netlifyToken = await command.authenticate()
-
+    await ensureAppForSite(netlifyToken, site.id)
     startOneGraphCLISession({ netlifyToken, site, state })
   } else {
-    console.log("No OneGraph token found, skipping OneGraph...")
+    console.warn(
+      `${NETLIFYDEVERR} Warning: no siteId defined, unable to start Netligraph. To enable, run ${chalk.yellow(
+        'netlify init',
+      )} or ${chalk.yellow('netlify link')}?`,
+    )
   }
 
   printBanner({ url })

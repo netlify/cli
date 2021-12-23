@@ -363,6 +363,90 @@ mutation AckCLISessionEventMutation(
       }
     }
   }
+}
+
+query AppSchemaQuery(
+  $nfToken: String!
+  $appId: String!
+) {
+  oneGraph(
+    auths: { netlifyAuth: { oauthToken: $nfToken } }
+  ) {
+    app(id: $appId) {
+      graphQLSchema {
+        appId
+        createdAt
+        id
+        services {
+          friendlyServiceName
+          logoUrl
+          service
+          slug
+          supportsCustomRedirectUri
+          supportsCustomServiceAuth
+          supportsOauthLogin
+        }
+        updatedAt
+      }
+    }
+  }
+}
+
+mutation UpsertAppForSiteMutation(
+  $nfToken: String!
+  $siteId: String!
+) {
+  oneGraph(
+    auths: { netlifyAuth: { oauthToken: $nfToken } }
+  ) {
+    upsertAppForNetlifySite(
+      input: { netlifySiteId: $siteId }
+    ) {
+      org {
+        id
+        name
+      }
+      app {
+        id
+        name
+        corsOrigins
+        customCorsOrigins {
+          friendlyServiceName
+          displayName
+          encodedValue
+        }
+      }
+    }
+  }
+}
+
+mutation CreateNewSchemaMutation(
+  $nfToken: String!
+  $input: OneGraphCreateGraphQLSchemaInput!
+) {
+  oneGraph(
+    auths: { netlifyAuth: { oauthToken: $nfToken } }
+  ) {
+    createGraphQLSchema(input: $input) {
+      app {
+        graphQLSchema {
+          id
+        }
+      }
+      graphqlSchema {
+        id
+        services {
+          friendlyServiceName
+          logoUrl
+          service
+          slug
+          supportsCustomRedirectUri
+          supportsCustomServiceAuth
+          supportsOauthLogin
+        }
+      }
+    }
+  }
 }`
 
 const fetchPersistedQuery = async (
@@ -594,7 +678,6 @@ const startOneGraphCLISession = async ({ netlifyToken, site, state }) => {
     const appOperationsDoc = readGraphQLOperationsSourceFile(netligraphPath)
     const operations = extractFunctionsFromOperationDoc(parsedDoc)
     generateFunctionsFile(netligraphPath, schema, appOperationsDoc, operations)
-    console.info("Regenerated netligraph functions files")
   }
 
   const handleEvent = async (event) => {
@@ -633,16 +716,91 @@ const startOneGraphCLISession = async ({ netlifyToken, site, state }) => {
     })
 }
 
+const fetchAppSchema = async (
+  authToken,
+  siteId
+) => {
+  const result = await fetchOneGraph(authToken, siteId, operationsDoc, 'AppSchemaQuery',
+    {
+      nfToken: authToken,
+      appId: siteId,
+    },
+  );
+
+  return result.data?.oneGraph?.app?.graphQLSchema
+};
+
+const upsertAppForSite = async (
+  authToken,
+  siteId
+) => {
+  const result = await fetchOneGraph(authToken, ONEDASH_APP_ID, operationsDoc, 'UpsertAppForSiteMutation',
+    {
+      nfToken: authToken,
+      siteId,
+    },
+  );
+
+  return result.data?.oneGraph?.upsertAppForNetlifySite?.app
+};
+
+// export type CreateNewGraphQLSchemaInput = {
+//   /* Whether to set this schema as the default for the app. Defaults to false. */
+//   setAsDefaultForApp: boolean;
+//   /* The list of services that this schema should use. Leave blank if you want to add support for all supported services. */
+//   enabledServices: string[];
+//   /* The id of the app that the schema should belong to. */
+//   appId: string;
+//   parentId: string | undefined;
+// };
+
+const createNewAppSchema = async (
+  nfToken,
+  input
+) => {
+  const result = await fetchOneGraph(null, input.appId, operationsDoc, 'CreateNewSchemaMutation',
+    {
+      nfToken, input
+    });
+
+  return result.data?.oneGraph?.createGraphQLSchema?.graphqlSchema
+};
+
+
+const ensureAppForSite = async (
+  authToken,
+  siteId
+) => {
+  const app = await upsertAppForSite(authToken, siteId)
+  const schema = await fetchAppSchema(authToken, app.id)
+  if (!schema) {
+    console.log("Creating new empty default GraphQL schema for site....")
+    await createNewAppSchema(authToken, {
+      appId: siteId,
+      enabledServices: ['ONEGRAPH'],
+      setAsDefaultForApp: true
+    })
+  }
+}
+
+const fetchEnabledServices = async (authToken, appId) => {
+  const appSchema = await fetchAppSchema(authToken, appId)
+  return appSchema?.services || []
+}
+
 
 module.exports = {
   ackCLISessionEvents,
   createCLISession,
   createPersistedQuery,
+  ensureAppForSite,
+  fetchEnabledServices,
   fetchOneGraphPersisted,
   fetchOneGraphSchemaJson,
   fetchOneGraphSchema,
   fetchPersistedQuery,
   loadCLISession,
   monitorCLISessionEvents,
-  startOneGraphCLISession
+  startOneGraphCLISession,
+  upsertAppForSite
 }

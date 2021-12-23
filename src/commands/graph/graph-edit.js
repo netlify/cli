@@ -2,26 +2,22 @@ const process = require('process')
 
 const gitRepoInfo = require('git-repo-info')
 
-const { createCLISession, createPersistedQuery, loadCLISession } = require('../../lib/oneGraph/client')
+const { createCLISession, createPersistedQuery, ensureAppForSite, loadCLISession } = require('../../lib/oneGraph/client')
 const { readGraphQLOperationsSourceFile } = require('../../lib/oneGraph/netligraph')
-const { warn } = require('../../utils/command-helpers')
+const { NETLIFYDEVERR, chalk } = require('../../utils')
 const { openBrowser } = require('../../utils/open-browser')
-
 
 const graphEdit = async (options, command) => {
     const { api, site, state } = command.netlify
     const siteId = site.id
 
-    if (!siteId) {
-        warn(`No Site ID found in current directory.
-Run \`netlify link\` to connect to this folder to a site`)
-        return false
-    }
-
-    const oneGraphAdminToken = command.netlify.cachedConfig.env.ONEGRAPH_ADMIN_JWT && command.netlify.cachedConfig.env.ONEGRAPH_ADMIN_JWT.value;
-
-    if (!oneGraphAdminToken) {
-        command.error('You must set ONEGRAPH_ADMIN_JWT in your Netlify environment variables to edit a schema from OneGraph')
+    if (!site.id) {
+        console.error(
+            `${NETLIFYDEVERR} Warning: no siteId defined, unable to start Netligraph. To enable, run ${chalk.yellow(
+                'netlify init',
+            )} or ${chalk.yellow('netlify link')}?`,
+        )
+        process.exit(1)
     }
 
     console.time("graph:edit")
@@ -31,9 +27,17 @@ Run \`netlify link\` to connect to this folder to a site`)
     const { branch } = gitRepoInfo()
     const cwd = process.cwd()
     const base = cwd;
-    const graphqlDocument = readGraphQLOperationsSourceFile(`${base}/netlify`)
+    let graphqlDocument = readGraphQLOperationsSourceFile(`${base}/netlify`)
+
+    if (graphqlDocument.trim().length === 0) {
+        graphqlDocument = `query ExampleQuery {
+  __typename
+}`
+    }
 
     const netlifyToken = await command.authenticate()
+
+    await ensureAppForSite(netlifyToken, siteId)
 
     let oneGraphSessionId = loadCLISession(state)
     if (!oneGraphSessionId) {
@@ -41,8 +45,6 @@ Run \`netlify link\` to connect to this folder to a site`)
         state.set('oneGraphSessionId', oneGraphSession.id)
         oneGraphSessionId = state.get('oneGraphSessionId')
     }
-
-    console.log(`Using OneGraph session ${oneGraphSessionId}`)
 
     const persistedDoc = await createPersistedQuery(netlifyToken, {
         appId: siteId,

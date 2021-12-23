@@ -595,7 +595,6 @@ const readAndParseGraphQLOperationsSourceFile = (basePath) => {
 
 const writeGraphQLOperationsSourceFile = (basePath, operationDocString) => {
   const graphqlSource = operationDocString
-  console.log("BasePath:", basePath)
 
   fs.writeFileSync(`${basePath}/${sourceOperationsFilename}`, graphqlSource, 'utf8')
 }

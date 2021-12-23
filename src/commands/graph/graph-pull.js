@@ -1,27 +1,47 @@
-/* eslint-disable eslint-comments/disable-enable-pair */
-/* eslint-disable no-unused-vars */
 const fs = require('fs')
+const process = require('process')
 
-const { printSchema } = require('graphql')
+const { parse, printSchema } = require('graphql')
 
-const { fetchOneGraphSchema } = require('../../lib/oneGraph/client')
-const { extractFunctionsFromOperationDoc, generateFunctionsFile, netligraphPath, readAndParseGraphQLOperationsSourceFile, readGraphQLOperationsSourceFile, writeGraphQLOperationsSourceFile } = require('../../lib/oneGraph/netligraph')
+
+const { ensureAppForSite, fetchEnabledServices, fetchOneGraphSchema } = require('../../lib/oneGraph/client')
+const { extractFunctionsFromOperationDoc, generateFunctionsFile, netligraphPath, readGraphQLOperationsSourceFile } = require('../../lib/oneGraph/netligraph')
+const { NETLIFYDEVERR, chalk } = require('../../utils')
 
 const graphPull = async (options, command) => {
   const { site } = command.netlify
   const siteId = site.id
 
-  // TODO: Get this from the app
-  const enabledServices = ['npm']
+  if (!site.id) {
+    console.error(
+      `${NETLIFYDEVERR} Warning: no siteId defined, unable to start Netligraph. To enable, run ${chalk.yellow(
+        'netlify init',
+      )} or ${chalk.yellow('netlify link')}?`,
+    )
+    process.exit(1)
+  }
 
-  const basePath = netligraphPath()
+  const netlifyToken = await command.authenticate()
+
+  await ensureAppForSite(netlifyToken, siteId)
+
+  const enabledServicesInfo = await fetchEnabledServices(netlifyToken, siteId)
+  const enabledServices = enabledServicesInfo.map(service => service.service)
   const schema = await fetchOneGraphSchema(siteId, enabledServices)
-  const [parsedDoc] = readAndParseGraphQLOperationsSourceFile(basePath)
-  const operations = extractFunctionsFromOperationDoc(parsedDoc)
-  const operationsDoc = readGraphQLOperationsSourceFile(basePath)
+  let operationsDoc = readGraphQLOperationsSourceFile(netligraphPath)
 
-  generateFunctionsFile(basePath, schema, operationsDoc, operations)
-  fs.writeFileSync(`${basePath}/netligraphSchema.graphql`, printSchema(schema))
+  if (operationsDoc.trim().length === 0) {
+    operationsDoc = `query ExampleQuery {
+__typename
+}`
+  }
+
+  const parsedDoc = parse(operationsDoc)
+
+  const operations = extractFunctionsFromOperationDoc(parsedDoc)
+
+  generateFunctionsFile(netligraphPath, schema, operationsDoc, operations)
+  fs.writeFileSync(`${netligraphPath}/netligraphSchema.graphql`, printSchema(schema))
 }
 
 /**
