@@ -178,7 +178,7 @@ const createSitesCreateCommand = (program) =>
     .command('sites:create')
     .description(
       `Create an empty site (advanced)
-Create a blank site that isn't associated with any git remote. Does not link to the current working directory.`,
+Create a blank site that isn't associated with any git remote. Will link the site to the current working directory.`,
     )
     .option('-n, --name [name]', 'name of site')
     .option('-a, --account-slug [slug]', 'account slug to create the site under')
@@ -187,7 +187,7 @@ Create a blank site that isn't associated with any git remote. Does not link to 
     .option('--disable-linking', 'create the site without linking it to current directory')
     .addHelpText(
       'after',
-      `Create a blank site that isn't associated with any git remote. Does not link to the current working directory.`,
+      `Create a blank site that isn't associated with any git remote. Will link the site to the current working directory.`,
     )
     .action(sitesCreate)
 

@@ -39,7 +39,7 @@ netlify sites:list
 ## `sites:create`
 
 Create an empty site (advanced)
-Create a blank site that isn't associated with any git remote. Does not link to the current working directory.
+Create a blank site that isn't associated with any git remote. Will link the site to the current working directory.
 
 **Usage**
 
