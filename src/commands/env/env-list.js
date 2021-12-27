@@ -6,6 +6,17 @@ const isEmpty = require('lodash/isEmpty')
 
 const { chalk, log, logJson } = require('../../utils')
 
+const logUpdatePromise = import('log-update')
+
+const getTable = ({ environment, hideValues }) => {
+  const table = new AsciiTable(`Environment variables`)
+  table.setHeading('Key', 'Value')
+  table.addRowMatrix(
+    Object.entries(environment).map(([key, value]) => [key, hideValues ? '*'.repeat(value.length) : value]),
+  )
+  return table.toString()
+}
+
 /**
  * The env:list command
  * @param {import('commander').OptionValues} options
@@ -40,35 +51,32 @@ const envList = async (options, command) => {
     return false
   }
 
-  // Prompt which environment values to list
-  const [NAMES, NAMES_AND_VALUES] = ['Key Names Only', 'Key Names and Values']
-
-  const { listEnv } = isCI
-    ? { listEnv: NAMES_AND_VALUES }
-    : await inquirer.prompt([
-        {
-          type: 'list',
-          name: 'listEnv',
-          message: 'List Environment Variable:',
-          choices: [NAMES, NAMES_AND_VALUES],
-          default: NAMES,
-        },
-      ])
-
   // List environment in a table
-  log(`Listing ${listEnv} for site: ${chalk.greenBright(siteData.name)}`)
+  log(`Listing environment variables for site: ${chalk.greenBright(siteData.name)}`)
 
-  const table = new AsciiTable(`Environment variables`)
-
-  if (listEnv === NAMES_AND_VALUES) {
-    table.setHeading('Key', 'Value')
-    table.addRowMatrix(Object.entries(environment))
-  } else {
-    table.setHeading('Key')
-    table.addRowMatrix(Object.keys(environment))
+  if (isCI) {
+    log(getTable({ environment, hideValues: false }))
+    return false
   }
 
-  log(table.toString())
+  const { default: logUpdate } = await logUpdatePromise
+
+  logUpdate(getTable({ environment, hideValues: true }))
+  const { showValues } = await inquirer.prompt([
+    {
+      type: 'confirm',
+      name: 'showValues',
+      message: 'Show values?',
+      default: false,
+    },
+  ])
+
+  if (showValues) {
+    const table = getTable({ environment, hideValues: false })
+    // since inquirer adds a prompt, we need to account for it when printing the table again
+    logUpdate(table.slice(table.indexOf('\n') + 1))
+    log(`${chalk.cyan('?')} Show values? ${chalk.cyan('Yes')}`)
+  }
 }
 
 /**
