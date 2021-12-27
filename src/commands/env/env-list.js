@@ -1,5 +1,6 @@
 // @ts-check
 const AsciiTable = require('ascii-table')
+const { isCI } = require('ci-info')
 const inquirer = require('inquirer')
 const isEmpty = require('lodash/isEmpty')
 
@@ -35,32 +36,31 @@ const envList = async (options, command) => {
   }
 
   if (isEmpty(environment)) {
-    log(`No environment variables set for site ${siteData.name}`)
+    log(`No environment variables set for site ${chalk.greenBright(siteData.name)}`)
     return false
   }
 
   // Prompt which environment values to list
-  const listOptions = ['Key Names Only', 'Key Names and Values']
+  const [NAMES, NAMES_AND_VALUES] = ['Key Names Only', 'Key Names and Values']
 
-  const { listEnv } = await inquirer.prompt([
-    {
-      type: 'list',
-      name: 'listEnv',
-      message: 'List Environment Variable:',
-      choices: listOptions,
-      default: listOptions[0],
-      filter(val) {
-        return val.toLowerCase()
-      },
-    },
-  ])
+  const { listEnv } = isCI
+    ? { listEnv: NAMES_AND_VALUES }
+    : await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'listEnv',
+          message: 'List Environment Variable:',
+          choices: [NAMES, NAMES_AND_VALUES],
+          default: NAMES,
+        },
+      ])
 
   // List environment in a table
   log(`Listing ${listEnv} for site: ${chalk.greenBright(siteData.name)}`)
 
   const table = new AsciiTable(`Environment variables`)
 
-  if (listEnv === 'key names and values') {
+  if (listEnv === NAMES_AND_VALUES) {
     table.setHeading('Key', 'Value')
     table.addRowMatrix(Object.entries(environment))
   } else {
