@@ -37,7 +37,7 @@ const createEnvCommand = (program) => {
       'netlify env:set VAR_NAME value',
       'netlify env:unset VAR_NAME',
       'netlify env:import fileName',
-      'netlify env:transfer <siteIdA> [siteIdB]',
+      'netlify env:transfer --to <to-site-id>',
     ])
     .action(env)
 }
