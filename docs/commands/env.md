@@ -25,8 +25,8 @@ netlify env
 | [`env:get`](/docs/commands/env.md#envget) | Get resolved value of specified environment variable (includes netlify.toml)  |
 | [`env:import`](/docs/commands/env.md#envimport) | Import and set environment variables from .env file  |
 | [`env:list`](/docs/commands/env.md#envlist) | Lists resolved environment variables for site (includes netlify.toml)  |
+| [`env:migrate`](/docs/commands/env.md#envmigrate) | Migrate environment variables from one site to another  |
 | [`env:set`](/docs/commands/env.md#envset) | Set value of environment variable  |
-| [`env:transfer`](/docs/commands/env.md#envtransfer) | Transfer environment variables from one site to another  |
 | [`env:unset`](/docs/commands/env.md#envunset) | Unset an environment variable which removes it from the UI  |
 
 
@@ -38,7 +38,7 @@ netlify env:get VAR_NAME
 netlify env:set VAR_NAME value
 netlify env:unset VAR_NAME
 netlify env:import fileName
-netlify env:transfer --to <to-site-id>
+netlify env:migrate --to <to-site-id>
 ```
 
 ---
@@ -102,6 +102,32 @@ netlify env:list
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
+## `env:migrate`
+
+Migrate environment variables from one site to another
+
+**Usage**
+
+```bash
+netlify env:migrate
+```
+
+**Flags**
+
+- `from` (*string*) - Site ID (From)
+- `to` (*string*) - Site ID (To)
+- `debug` (*boolean*) - Print debugging information
+- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
+
+**Examples**
+
+```bash
+netlify env:migrate --to <to-site-id>
+netlify env:migrate --to <to-site-id> --from <from-site-id>
+```
+
+---
 ## `env:set`
 
 Set value of environment variable
@@ -122,32 +148,6 @@ netlify env:set
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
-
----
-## `env:transfer`
-
-Transfer environment variables from one site to another
-
-**Usage**
-
-```bash
-netlify env:transfer
-```
-
-**Flags**
-
-- `from` (*string*) - Site ID (From)
-- `to` (*string*) - Site ID (To)
-- `debug` (*boolean*) - Print debugging information
-- `httpProxy` (*string*) - Proxy server address to route requests through.
-- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
-
-**Examples**
-
-```bash
-netlify env:transfer --to <to-site-id>
-netlify env:transfer --to <to-site-id> --from <from-site-id>
-```
 
 ---
 ## `env:unset`

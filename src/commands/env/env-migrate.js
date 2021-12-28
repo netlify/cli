@@ -14,14 +14,14 @@ const safeGetSite = async (api, siteId) => {
 }
 
 /**
- * The env:transfer command
+ * The env:migrate command
  * @param {string} siteIdA Site (From)
  * @param {string} siteIdB Site (To)
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  * @returns {Promise<boolean>}
  */
-const envTransfer = async (options, command) => {
+const envMigrate = async (options, command) => {
   const { api, site } = command.netlify
 
   if (!site.id && !options.from) {
@@ -61,7 +61,7 @@ const envTransfer = async (options, command) => {
   ] = [siteFrom, siteTo]
 
   if (isEmpty(envFrom)) {
-    log(`${chalk.greenBright(siteFrom.name)} has no environment variables, nothing to transfer`)
+    log(`${chalk.greenBright(siteFrom.name)} has no environment variables, nothing to migrate`)
     return false
   }
 
@@ -82,27 +82,27 @@ const envTransfer = async (options, command) => {
   })
 
   log(
-    `Success transfer environment variables from ${chalk.greenBright(siteFrom.name)} to ${chalk.greenBright(
+    `Successfully migrated environment variables from ${chalk.greenBright(siteFrom.name)} to ${chalk.greenBright(
       siteTo.name,
     )}`,
   )
 }
 
 /**
- * Creates the `netlify env:transfer` command
+ * Creates the `netlify env:migrate` command
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createEnvTransferCommand = (program) =>
+const createEnvMigrateCommand = (program) =>
   program
-    .command('env:transfer')
+    .command('env:migrate')
     .option('-f, --from <from>', 'Site ID (From)')
     .requiredOption('-t, --to <to>', 'Site ID (To)')
-    .description(`Transfer environment variables from one site to another`)
+    .description(`Migrate environment variables from one site to another`)
     .addExamples([
-      'netlify env:transfer --to <to-site-id>',
-      'netlify env:transfer --to <to-site-id> --from <from-site-id>',
+      'netlify env:migrate --to <to-site-id>',
+      'netlify env:migrate --to <to-site-id> --from <from-site-id>',
     ])
-    .action(envTransfer)
+    .action(envMigrate)
 
-module.exports = { createEnvTransferCommand }
+module.exports = { createEnvMigrateCommand }
