@@ -485,7 +485,7 @@ test("env:transfer should print error if --to site doesn't exist", async (t) => 
         callCli(['env:transfer', '--to', 'to-site'], getCLIOptions({ builder, apiUrl })),
       )
 
-      t.snapshot(normalize(cliResponse))
+      t.true(cliResponse.includes(`Can't find site with id to-site. Please make sure the site exists`))
     })
   })
 })
@@ -498,7 +498,7 @@ test("env:transfer should print error if --from site doesn't exist", async (t) =
         callCli(['env:transfer', '--from', 'from-site', '--to', 'to-site'], getCLIOptions({ builder, apiUrl })),
       )
 
-      t.snapshot(normalize(cliResponse))
+      t.true(cliResponse.includes(`Can't find site with id from-site. Please make sure the site exists`))
     })
   })
 })
