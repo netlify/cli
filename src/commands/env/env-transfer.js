@@ -2,7 +2,16 @@
 
 const { isEmpty } = require('lodash')
 
-const { log } = require('../../utils')
+const { chalk, error: logError, log } = require('../../utils')
+
+const safeGetSite = async (api, siteId) => {
+  try {
+    const data = await api.getSite({ siteId })
+    return { data }
+  } catch (error) {
+    return { error }
+  }
+}
 
 /**
  * The env:transfer command
@@ -12,24 +21,35 @@ const { log } = require('../../utils')
  * @param {import('../base-command').BaseCommand} command
  * @returns {Promise<boolean>}
  */
-const envTransfer = async (siteIdA, siteIdB, options, command) => {
+const envTransfer = async (options, command) => {
   const { api, site } = command.netlify
-  const siteId = {
-    from: site.id || siteIdA,
-    to: site.id ? siteIdA : siteIdB,
-  }
 
-  if (!siteId.to) {
+  if (!site.id && !options.from) {
     log(
-      'Please include the site destination (siteIdB) as the second argument, or try to run this command again inside a site folder',
+      'Please include the source site Id as the `--from` option, or run `netlify link` to link this folder to a Netlify site',
     )
     return false
   }
 
-  const [siteFrom, siteTo] = await Promise.all([
-    api.getSite({ siteId: siteId.from }),
-    api.getSite({ siteId: siteId.to }),
+  const siteId = {
+    from: options.from || site.id,
+    to: options.to,
+  }
+
+  const [{ data: siteFrom, error: errorFrom }, { data: siteTo, error: errorTo }] = await Promise.all([
+    safeGetSite(api, siteId.from),
+    safeGetSite(api, siteId.to),
   ])
+
+  if (errorFrom) {
+    logError(`Can't find site with id ${chalk.bold(siteId.from)}. Please make sure the site exists.`)
+    return false
+  }
+
+  if (errorTo) {
+    logError(`Can't find site with id ${chalk.bold(siteId.to)}. Please make sure the site exists.`)
+    return false
+  }
 
   const [
     {
@@ -41,7 +61,7 @@ const envTransfer = async (siteIdA, siteIdB, options, command) => {
   ] = [siteFrom, siteTo]
 
   if (isEmpty(envFrom)) {
-    log(`${siteFrom.name} has no environment variables, nothing to transfer`)
+    log(`${chalk.greenBright(siteFrom.name)} has no environment variables, nothing to transfer`)
     return false
   }
 
@@ -61,7 +81,11 @@ const envTransfer = async (siteIdA, siteIdB, options, command) => {
     },
   })
 
-  log(`Success transfer environment variables from "${siteFrom.name}" => "${siteTo.name}"`)
+  log(
+    `Success transfer environment variables from ${chalk.greenBright(siteFrom.name)} to ${chalk.greenBright(
+      siteTo.name,
+    )}`,
+  )
 }
 
 /**
@@ -72,11 +96,13 @@ const envTransfer = async (siteIdA, siteIdB, options, command) => {
 const createEnvTransferCommand = (program) =>
   program
     .command('env:transfer')
-    .argument('<siteIdA>', 'Site ID (From)')
-    .argument('[siteIdB]', 'Site ID (To)')
-    .description(`Transfer environment variables from "siteIdA" to "siteIdB"`)
-    .action(async (siteIdA, siteIdB, options, command) => {
-      await envTransfer(siteIdA, siteIdB, options, command)
-    })
+    .option('-f, --from <from>', 'Site ID (From)')
+    .requiredOption('-t, --to <to>', 'Site ID (To)')
+    .description(`Transfer environment variables from one site to another`)
+    .addExamples([
+      'netlify env:transfer --to <to-site-id>',
+      'netlify env:transfer --to <to-site-id> --from <from-site-id>',
+    ])
+    .action(envTransfer)
 
 module.exports = { createEnvTransferCommand }

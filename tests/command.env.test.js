@@ -461,7 +461,7 @@ test('env:import --json --replace-existing should replace all existing vars and 
   })
 })
 
-test("env:transfer should return without transfer if there's no env in site from", async (t) => {
+test("env:transfer should return without transfer if there's no env in source site", async (t) => {
   await withSiteBuilder('site-env', async (builder) => {
     await builder.buildAsync()
     const createRoutes = [
@@ -469,18 +469,51 @@ test("env:transfer should return without transfer if there's no env in site from
       { path: 'sites/site_id_a', response: { ...siteInfo, build_settings: { env: {} } } },
     ]
     await withMockApi(createRoutes, async ({ apiUrl }) => {
-      const cliResponse = await callCli(['env:transfer', 'site_id_a'], getCLIOptions({ builder, apiUrl }))
-      t.is(cliResponse, `${createRoutes[0].response.name} has no environment variables, nothing to transfer`)
+      const cliResponse = await callCli(['env:transfer', '--to', 'site_id_a'], getCLIOptions({ builder, apiUrl }))
+
+      t.snapshot(normalize(cliResponse))
     })
   })
 })
 
-test('env:transfer should exit if current directory is not a site, and provide only one arg', async (t) => {
-  const res = await callCli(['env:transfer', 'site_id_a'])
-  t.is(
-    res,
-    'Please include the site destination (siteIdB) as the second argument, or try to run this command again inside a site folder',
-  )
+test("env:transfer should print error if --to site doesn't exist", async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+    const createRoutes = [{ path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: {} } } }]
+    await withMockApi(createRoutes, async ({ apiUrl }) => {
+      const { stderr: cliResponse } = await t.throwsAsync(
+        callCli(['env:transfer', '--to', 'to-site'], getCLIOptions({ builder, apiUrl })),
+      )
+
+      t.snapshot(normalize(cliResponse))
+    })
+  })
+})
+
+test("env:transfer should print error if --from site doesn't exist", async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+    await withMockApi([], async ({ apiUrl }) => {
+      const { stderr: cliResponse } = await t.throwsAsync(
+        callCli(['env:transfer', '--from', 'from-site', '--to', 'to-site'], getCLIOptions({ builder, apiUrl })),
+      )
+
+      t.snapshot(normalize(cliResponse))
+    })
+  })
+})
+
+test('env:transfer should exit if the folder is not linked to a site, and --from is not provided', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    const cliResponse = await callCli(['env:transfer', '--to', 'site_id_a'], {
+      cwd: builder.directory,
+      extendEnv: false,
+      PATH: process.env.PATH,
+    })
+    t.snapshot(normalize(cliResponse))
+  })
 })
 
 test('env:transfer should return success message', async (t) => {
@@ -504,7 +537,18 @@ test('env:transfer should return success message', async (t) => {
       ...envTo,
     },
   }
-  const createRoutes = [
+  const expectedPatchRequest = {
+    path: 'sites/site_id_a',
+    method: 'PATCH',
+    requestBody: {
+      build_settings: newBuildSettings,
+    },
+    response: {
+      ...siteInfoTo,
+      build_settings: newBuildSettings,
+    },
+  }
+  const transferRoutes = [
     { path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: envFrom } } },
     { path: 'sites/site_id_a', response: { ...siteInfoTo, build_settings: { env: envTo } } },
     { path: 'sites/site_id/service-instances', response: [] },
@@ -512,24 +556,20 @@ test('env:transfer should return success message', async (t) => {
       path: 'accounts',
       response: [{ slug: siteInfo.account_slug }],
     },
-    {
-      path: 'sites/site_id_a',
-      method: 'PATCH',
-      requestBody: {
-        build_settings: newBuildSettings,
-      },
-      response: {
-        ...siteInfoTo,
-        build_settings: newBuildSettings,
-      },
-    },
+    expectedPatchRequest,
   ]
 
   await withSiteBuilder('site-env', async (builder) => {
     await builder.buildAsync()
-    await withMockApi(createRoutes, async ({ apiUrl }) => {
-      const cliResponse = await callCli(['env:transfer', 'site_id_a'], getCLIOptions({ apiUrl, builder }))
-      t.is(cliResponse, `Success transfer environment variables from "${siteInfo.name}" => "${siteInfoTo.name}"`)
+    await withMockApi(transferRoutes, async ({ apiUrl, requests }) => {
+      const cliResponse = await callCli(['env:transfer', '--to', 'site_id_a'], getCLIOptions({ apiUrl, builder }))
+
+      t.snapshot(normalize(cliResponse))
+
+      const patchRequest = requests.find(
+        (request) => request.method === 'PATCH' && request.path === '/api/v1/sites/site_id_a',
+      )
+      t.deepEqual(patchRequest.body, expectedPatchRequest.requestBody)
     })
   })
 })

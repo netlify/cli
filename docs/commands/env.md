@@ -26,7 +26,7 @@ netlify env
 | [`env:import`](/docs/commands/env.md#envimport) | Import and set environment variables from .env file  |
 | [`env:list`](/docs/commands/env.md#envlist) | Lists resolved environment variables for site (includes netlify.toml)  |
 | [`env:set`](/docs/commands/env.md#envset) | Set value of environment variable  |
-| [`env:transfer`](/docs/commands/env.md#envtransfer) | Transfer environment variables from "siteIdA" to "siteIdB"  |
+| [`env:transfer`](/docs/commands/env.md#envtransfer) | Transfer environment variables from one site to another  |
 | [`env:unset`](/docs/commands/env.md#envunset) | Unset an environment variable which removes it from the UI  |
 
 
@@ -126,7 +126,7 @@ netlify env:set
 ---
 ## `env:transfer`
 
-Transfer environment variables from "siteIdA" to "siteIdB"
+Transfer environment variables from one site to another
 
 **Usage**
 
@@ -134,16 +134,20 @@ Transfer environment variables from "siteIdA" to "siteIdB"
 netlify env:transfer
 ```
 
-**Arguments**
-
-- siteIdA - Site ID (From)
-- siteIdB - Site ID (To)
-
 **Flags**
 
+- `from` (*string*) - Site ID (From)
+- `to` (*string*) - Site ID (To)
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
+
+**Examples**
+
+```bash
+netlify env:transfer --to <to-site-id>
+netlify env:transfer --to <to-site-id> --from <from-site-id>
+```
 
 ---
 ## `env:unset`
