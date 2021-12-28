@@ -6,14 +6,15 @@ const isEmpty = require('lodash/isEmpty')
 
 const { chalk, log, logJson } = require('../../utils')
 
-const logUpdatePromise = import('log-update')
+const [logUpdatePromise, ansiEscapesPromise] = [import('log-update'), import('ansi-escapes')]
+
+const MASK_LENGTH = 50
+const MASK = '*'.repeat(MASK_LENGTH)
 
 const getTable = ({ environment, hideValues }) => {
   const table = new AsciiTable(`Environment variables`)
   table.setHeading('Key', 'Value')
-  table.addRowMatrix(
-    Object.entries(environment).map(([key, value]) => [key, hideValues ? '*'.repeat(value.length) : value]),
-  )
+  table.addRowMatrix(Object.entries(environment).map(([key, value]) => [key, hideValues ? MASK : value]))
   return table.toString()
 }
 
@@ -61,7 +62,8 @@ const envList = async (options, command) => {
 
   const { default: logUpdate } = await logUpdatePromise
 
-  logUpdate(getTable({ environment, hideValues: true }))
+  const tableHiddenValues = getTable({ environment, hideValues: true })
+  logUpdate(tableHiddenValues)
   const { showValues } = await inquirer.prompt([
     {
       type: 'confirm',
@@ -72,9 +74,10 @@ const envList = async (options, command) => {
   ])
 
   if (showValues) {
-    const table = getTable({ environment, hideValues: false })
+    const { default: ansiEscapes } = await ansiEscapesPromise
     // since inquirer adds a prompt, we need to account for it when printing the table again
-    logUpdate(table.slice(table.indexOf('\n') + 1))
+    log(ansiEscapes.eraseLines(3))
+    logUpdate(getTable({ environment, hideValues: false }))
     log(`${chalk.cyan('?')} Show values? ${chalk.cyan('Yes')}`)
   }
 }
