@@ -1,8 +1,14 @@
+const process = require('process')
+
 const test = require('ava')
+const execa = require('execa')
 
 const callCli = require('./utils/call-cli')
+const cliPath = require('./utils/cli-path')
+const { CONFIRM, answerWithValue, handleQuestions } = require('./utils/handle-questions')
 const { getCLIOptions, withMockApi } = require('./utils/mock-api')
 const { withSiteBuilder } = require('./utils/site-builder')
+const { normalize } = require('./utils/snapshots')
 
 const siteInfo = {
   account_slug: 'test-account',
@@ -237,6 +243,110 @@ test('env:list --json should return list of vars with netlify.toml taking priori
       const cliResponse = await callCli(['env:list', '--json'], getCLIOptions({ builder, apiUrl }), true)
 
       t.deepEqual(cliResponse, { existing_env: 'from_toml_file' })
+    })
+  })
+})
+
+test('env:list should hide variables values and prompt to show', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    const questions = [
+      {
+        question: 'Show values',
+        answer: CONFIRM,
+      },
+    ]
+
+    const envListRoutes = [
+      {
+        path: 'sites/site_id',
+        response: { ...siteInfo, build_settings: { env: { DB_ADMIN: 'admin', DB_PASSWORD: '1234' } } },
+      },
+      { path: 'sites/site_id/service-instances', response: [] },
+      {
+        path: 'accounts',
+        response: [{ slug: siteInfo.account_slug }],
+      },
+    ]
+
+    await withMockApi(envListRoutes, async ({ apiUrl }) => {
+      // we set extendEnv: false to prevent the CLI detecting GitHub Actions as CI
+      const childProcess = execa(
+        cliPath,
+        ['env:list'],
+        getCLIOptions({ apiUrl, builder, extendEnv: false, env: { PATH: process.env.PATH } }),
+      )
+
+      handleQuestions(childProcess, questions)
+
+      const { stdout: cliResponse } = await childProcess
+
+      t.snapshot(normalize(cliResponse))
+    })
+  })
+})
+
+test('env:list should hide variables values and show on confirm', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    const questions = [
+      {
+        question: 'Show values',
+        answer: answerWithValue('y'),
+      },
+    ]
+
+    const envListRoutes = [
+      {
+        path: 'sites/site_id',
+        response: { ...siteInfo, build_settings: { env: { DB_ADMIN: 'admin', DB_PASSWORD: '1234' } } },
+      },
+      { path: 'sites/site_id/service-instances', response: [] },
+      {
+        path: 'accounts',
+        response: [{ slug: siteInfo.account_slug }],
+      },
+    ]
+
+    await withMockApi(envListRoutes, async ({ apiUrl }) => {
+      // we set extendEnv: false to prevent the CLI detecting GitHub Actions as CI
+      const childProcess = execa(
+        cliPath,
+        ['env:list'],
+        getCLIOptions({ apiUrl, builder, extendEnv: false, env: { PATH: process.env.PATH } }),
+      )
+
+      handleQuestions(childProcess, questions)
+
+      const { stdout: cliResponse } = await childProcess
+
+      t.snapshot(normalize(cliResponse))
+    })
+  })
+})
+
+test('env:list should not prompt on CI', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    const envListRoutes = [
+      {
+        path: 'sites/site_id',
+        response: { ...siteInfo, build_settings: { env: { DB_ADMIN: 'admin', DB_PASSWORD: '1234' } } },
+      },
+      { path: 'sites/site_id/service-instances', response: [] },
+      {
+        path: 'accounts',
+        response: [{ slug: siteInfo.account_slug }],
+      },
+    ]
+
+    await withMockApi(envListRoutes, async ({ apiUrl }) => {
+      const cliResponse = await callCli(['env:list'], getCLIOptions({ builder, apiUrl, env: { CI: true } }))
+
+      t.snapshot(normalize(cliResponse))
     })
   })
 })
