@@ -62,8 +62,7 @@ const envList = async (options, command) => {
 
   const { default: logUpdate } = await logUpdatePromise
 
-  const tableHiddenValues = getTable({ environment, hideValues: true })
-  logUpdate(tableHiddenValues)
+  logUpdate(getTable({ environment, hideValues: true }))
   const { showValues } = await inquirer.prompt([
     {
       type: 'confirm',
