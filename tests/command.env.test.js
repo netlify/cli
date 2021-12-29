@@ -460,3 +460,116 @@ test('env:import --json --replace-existing should replace all existing vars and 
     })
   })
 })
+
+test("env:migrate should return without migrate if there's no env in source site", async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+    const createRoutes = [
+      { path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: {} } } },
+      { path: 'sites/site_id_a', response: { ...siteInfo, build_settings: { env: {} } } },
+    ]
+    await withMockApi(createRoutes, async ({ apiUrl }) => {
+      const cliResponse = await callCli(['env:migrate', '--to', 'site_id_a'], getCLIOptions({ builder, apiUrl }))
+
+      t.snapshot(normalize(cliResponse))
+    })
+  })
+})
+
+test("env:migrate should print error if --to site doesn't exist", async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+    const createRoutes = [{ path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: {} } } }]
+    await withMockApi(createRoutes, async ({ apiUrl }) => {
+      const { stderr: cliResponse } = await t.throwsAsync(
+        callCli(['env:migrate', '--to', 'to-site'], getCLIOptions({ builder, apiUrl })),
+      )
+
+      t.true(cliResponse.includes(`Can't find site with id to-site. Please make sure the site exists`))
+    })
+  })
+})
+
+test("env:migrate should print error if --from site doesn't exist", async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+    await withMockApi([], async ({ apiUrl }) => {
+      const { stderr: cliResponse } = await t.throwsAsync(
+        callCli(['env:migrate', '--from', 'from-site', '--to', 'to-site'], getCLIOptions({ builder, apiUrl })),
+      )
+
+      t.true(cliResponse.includes(`Can't find site with id from-site. Please make sure the site exists`))
+    })
+  })
+})
+
+test('env:migrate should exit if the folder is not linked to a site, and --from is not provided', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    const cliResponse = await callCli(['env:migrate', '--to', 'site_id_a'], {
+      cwd: builder.directory,
+      extendEnv: false,
+      PATH: process.env.PATH,
+    })
+    t.snapshot(normalize(cliResponse))
+  })
+})
+
+test('env:migrate should return success message', async (t) => {
+  const envFrom = {
+    migrate_me: 'migrate_me',
+  }
+
+  const envTo = {
+    existing_env: 'existing_env',
+  }
+
+  const siteInfoTo = {
+    ...siteInfo,
+    id: 'site_id_a',
+    name: 'site-name-a',
+  }
+
+  const newBuildSettings = {
+    env: {
+      ...envFrom,
+      ...envTo,
+    },
+  }
+  const expectedPatchRequest = {
+    path: 'sites/site_id_a',
+    method: 'PATCH',
+    requestBody: {
+      build_settings: newBuildSettings,
+    },
+    response: {
+      ...siteInfoTo,
+      build_settings: newBuildSettings,
+    },
+  }
+  const migrateRoutes = [
+    { path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: envFrom } } },
+    { path: 'sites/site_id_a', response: { ...siteInfoTo, build_settings: { env: envTo } } },
+    { path: 'sites/site_id/service-instances', response: [] },
+    {
+      path: 'accounts',
+      response: [{ slug: siteInfo.account_slug }],
+    },
+    expectedPatchRequest,
+  ]
+
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+    await withMockApi(migrateRoutes, async ({ apiUrl, requests }) => {
+      const cliResponse = await callCli(['env:migrate', '--to', 'site_id_a'], getCLIOptions({ apiUrl, builder }))
+
+      t.snapshot(normalize(cliResponse))
+
+      const patchRequest = requests.find(
+        (request) => request.method === 'PATCH' && request.path === '/api/v1/sites/site_id_a',
+      )
+      t.deepEqual(patchRequest.body, expectedPatchRequest.requestBody)
+    })
+  })
+})
