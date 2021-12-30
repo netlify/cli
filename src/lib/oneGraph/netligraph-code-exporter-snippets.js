@@ -1,5 +1,5 @@
+const dotProp = require('dot-prop')
 const { parse, print } = require('graphql')
-const _ = require('lodash')
 
 let operationNodesMemo = [null, null]
 
@@ -234,7 +234,7 @@ const asyncFetcherInvocation = (operationDataList, pluckerStyle) => {
 
       const pluckers = {
         get:
-          _.get(namedOperationData, ['operationDefinition', 'variableDefinitions'], [])
+          dotProp.get(namedOperationData, 'operationDefinition.variableDefinitions', [])
             .map((def) => {
               const name = def.variable.name.value
               const withCoercer = coercerFor(def.type, `event.queryStringParameters?.${name}`)
@@ -242,7 +242,7 @@ const asyncFetcherInvocation = (operationDataList, pluckerStyle) => {
             })
             .join('\n  ') || '',
         post:
-          _.get(namedOperationData, ['operationDefinition', 'variableDefinitions'], [])
+          dotProp.get(namedOperationData, 'operationDefinition.variableDefinitions', [])
             .map((def) => {
               const name = def.variable.name.value
               return `const ${name} = eventBodyJson?.${name};`
@@ -254,7 +254,7 @@ const asyncFetcherInvocation = (operationDataList, pluckerStyle) => {
 
       let requiredVariableCount = 0
 
-      if ((_.get(namedOperationData, ['operationDefinition', 'variableDefinitions'], []).length !== 0 || 0) > 0) {
+      if ((dotProp.get(namedOperationData, 'operationDefinition.variableDefinitions', []).length !== 0 || 0) > 0) {
         const requiredVariableNames = namedOperationData.operationDefinition.variableDefinitions
           .map((def) => (print(def.type).endsWith('!') ? def.variable.name.value : null))
           .filter(Boolean)
@@ -305,7 +305,7 @@ const clientSideInvocations = (operationDataList, pluckerStyle, useClientAuth) =
       )
       let bodyPayload = ''
 
-      if ((_.get(namedOperationData, ['operationDefinition', 'variableDefinitions'], []).length !== 0 || 0) > 0) {
+      if ((dotProp.get(namedOperationData, 'operationDefinition.variableDefinitions', []).length !== 0 || 0) > 0) {
         const variableNames = namedOperationData.operationDefinition.variableDefinitions.map(
           (def) => def.variable.name.value,
         )
@@ -324,20 +324,17 @@ ${variables}
       }`
         : ''
 
-      return `async function ${operationFunctionName(namedOperationData)}(${
-        useClientAuth ? 'oneGraphAuth, ' : ''
-      }params) {
+      return `async function ${operationFunctionName(namedOperationData)}(${useClientAuth ? 'oneGraphAuth, ' : ''
+        }params) {
   const {${params.join(', ')}} = params || {};
-  const resp = await fetch(\`/.netlify/functions/${namedOperationData.name}${
-        pluckerStyle === 'get' ? `?${params.map((param) => `${param}=\${${param}}`).join('&')}` : ''
-      }\`,
+  const resp = await fetch(\`/.netlify/functions/${namedOperationData.name}${pluckerStyle === 'get' ? `?${params.map((param) => `${param}=\${${param}}`).join('&')}` : ''
+        }\`,
     {
-      method: "${pluckerStyle.toLocaleUpperCase()}"${
-        pluckerStyle === 'get'
+      method: "${pluckerStyle.toLocaleUpperCase()}"${pluckerStyle === 'get'
           ? ''
           : `,
       body: JSON.stringify({${addLeftWhitespace(bodyPayload, whitespace).trim()}})${clientAuth}`
-      }
+        }
     });
 
     const text = await resp.text();
@@ -422,8 +419,8 @@ const netlifyFunctionSnippet = {
           query: `# Consider giving this ${operationData.type} a unique, descriptive
 # name in your application as a best practice
 ${operationData.type} unnamed${capitalizeFirstLetter(operationData.type)}${idx + 1} ${operationData.query
-            .trim()
-            .replace(/^(query|mutation|subscription) /i, '')}`,
+              .trim()
+              .replace(/^(query|mutation|subscription) /i, '')}`,
         }
       }
       return operationData
@@ -452,7 +449,7 @@ ${operationData.type} unnamed${capitalizeFirstLetter(operationData.type)}${idx +
 
     const fetcherInvocation = asyncFetcherInvocation(
       operationDataList,
-      _.get(options, ['postHttpMethod']) === true ? 'post' : 'get',
+      dotProp.get(options, 'postHttpMethod') === true ? 'post' : 'get',
     )
 
     const passThroughResults = operationDataList
@@ -465,7 +462,7 @@ ${operationData.name}Data: ${operationData.name}Data`,
 
     const clientSideCalls = clientSideInvocations(
       operationDataList,
-      _.get(options, ['postHttpMethod']) === true ? 'post' : 'get',
+      dotProp.get(options, 'postHttpMethod') === true ? 'post' : 'get',
       options.useClientAuth,
     )
 

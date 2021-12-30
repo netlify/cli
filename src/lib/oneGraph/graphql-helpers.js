@@ -1,3 +1,4 @@
+const dotProp = require('dot-prop')
 const {
   TypeInfo,
   getNamedType,
@@ -15,7 +16,6 @@ const {
   visit,
   visitWithTypeInfo,
 } = require('graphql')
-const _ = require('lodash')
 
 const capitalizeFirstLetter = (string) => string.charAt(0).toUpperCase() + string.slice(1)
 
@@ -41,7 +41,7 @@ const gatherAllReferencedTypes = (schema, query) => {
 const extractVariableNameStringPair = (varDef) => [varDef.variable.name.value, print(varDef.type)]
 
 const gatherVariableDefinitions = (definition) => {
-  const varDefs = _.get(definition, ['variableDefinitions', '']) || []
+  const varDefs = dotProp.get(definition, 'variableDefinitions.') || []
   return varDefs.map(extractVariableNameStringPair).sort(([left], [right]) => left.localeCompare(right))
 }
 const typeScriptForGraphQLType = (schema, gqlType) => {
@@ -149,12 +149,12 @@ const typeScriptDefinitionObjectForOperation = (schema, operationDefinition, fra
     const parentNamedType =
       // @ts-ignore
       getNamedType(parentGqlType) || getNamedType(parentGqlType.type)
-    const alias = _.get(selection, ['alias', 'value'])
-    const name = _.get(selection, ['name', 'value'])
+    const alias = dotProp.get(selection, 'alias.value')
+    const name = dotProp.get(selection, 'name.value')
     const displayedName = alias || name
     // @ts-ignore
     const field = parentNamedType.getFields()[name]
-    const gqlType = _.get(field, ['type'])
+    const gqlType = dotProp.get(field, 'type')
     if (name.startsWith('__')) {
       return [displayedName, { type: 'any', description: 'Internal GraphQL field' }]
     }
@@ -162,7 +162,7 @@ const typeScriptDefinitionObjectForOperation = (schema, operationDefinition, fra
     const isNullable = !isNonNullType(gqlType)
     const isList = isListType(gqlType) || (!isNullable && isListType(gqlType.ofType))
     const isObjectLike = isObjectType(namedType) || isUnionType(namedType) || isInterfaceType(namedType)
-    const sub = _.get(selection, ['selectionSet', 'selections'])
+    const sub = dotProp.get(selection, 'selectionSet.selections')
       // @ts-ignore
       .map(function innerHelper(innerSelection) {
         if (innerSelection.kind === 'Field') {
@@ -253,7 +253,7 @@ const typeScriptDefinitionObjectForOperation = (schema, operationDefinition, fra
     baseGqlType = schema.getType(typeName)
   }
 
-  const selections = _.get(operationDefinition, ['selectionSet', 'selections'])
+  const selections = dotProp.get(operationDefinition, 'selectionSet.selections')
   const sub = selections && selections.map((selection) => helper(baseGqlType, selection))
   if (sub) {
     // @ts-ignore
@@ -287,7 +287,7 @@ const typeScriptDefinitionObjectForOperation = (schema, operationDefinition, fra
 const typeScriptForOperation = (schema, operationDefinition, fragmentDefinitions) => {
   const typeMap = typeScriptDefinitionObjectForOperation(schema, operationDefinition, fragmentDefinitions)
   const valueHelper = (value) => {
-    if (typeof _.get(value, ['type']) === 'string') {
+    if (typeof dotProp.get(value, 'type') === 'string') {
       return value.type
     }
     if (Array.isArray(value.type)) {
@@ -346,7 +346,7 @@ const patchSubscriptionWebhookField = ({ definition, schema }) => {
     if (selection.kind !== 'Field') return selection
     const field = subscriptionType.getFields()[selection.name.value]
     const fieldHasWebhookUrlArg = field.args.some((arg) => arg.name === 'webhookUrl')
-    const selectionHasWebhookUrlArg = _.get(selection, ['arguments'], []).some((arg) => arg.name.value === 'webhookUrl')
+    const selectionHasWebhookUrlArg = dotProp.get(selection, 'arguments', []).some((arg) => arg.name.value === 'webhookUrl')
     if (fieldHasWebhookUrlArg && !selectionHasWebhookUrlArg) {
       return {
         ...selection,
@@ -377,28 +377,28 @@ const patchSubscriptionWebhookField = ({ definition, schema }) => {
   const variableDefinitions = hasWebhookVariableDefinition
     ? definition.variableDefinitions
     : [
-        ...(definition.variableDefinitions || []),
-        {
-          kind: 'VariableDefinition',
+      ...(definition.variableDefinitions || []),
+      {
+        kind: 'VariableDefinition',
+        type: {
+          kind: 'NonNullType',
           type: {
-            kind: 'NonNullType',
-            type: {
-              kind: 'NamedType',
-              name: {
-                kind: 'Name',
-                value: 'String',
-              },
-            },
-          },
-          variable: {
-            kind: 'Variable',
+            kind: 'NamedType',
             name: {
               kind: 'Name',
-              value: 'netligraphWebhookUrl',
+              value: 'String',
             },
           },
         },
-      ]
+        variable: {
+          kind: 'Variable',
+          name: {
+            kind: 'Name',
+            value: 'netligraphWebhookUrl',
+          },
+        },
+      },
+    ]
   return {
     ...definition,
     // @ts-ignore: Handle edge cases later
@@ -420,7 +420,7 @@ const patchSubscriptionWebhookSecretField = ({ definition, schema }) => {
     if (selection.kind !== 'Field') return selection
     const field = subscriptionType.getFields()[selection.name.value]
     const fieldHasWebhookSecretArg = field.args.some((arg) => arg.name === 'secret')
-    const selectionHasWebhookSecretArg = _.get(selection, ['arguments'], []).some((arg) => arg.name.value === 'secret')
+    const selectionHasWebhookSecretArg = dotProp.get(selection, 'arguments', []).some((arg) => arg.name.value === 'secret')
     if (fieldHasWebhookSecretArg && !selectionHasWebhookSecretArg) {
       return {
         ...selection,
@@ -445,34 +445,34 @@ const patchSubscriptionWebhookSecretField = ({ definition, schema }) => {
     }
     return selection
   })
-  const hasWebhookVariableDefinition = _.get(definition, ['variableDefinitions'], []).find(
+  const hasWebhookVariableDefinition = dotProp.get(definition, 'variableDefinitions', []).find(
     (varDef) => varDef.variable.name.value === 'netligraphWebhookSecret',
   )
   const variableDefinitions = hasWebhookVariableDefinition
     ? definition.variableDefinitions
     : [
-        ...(definition.variableDefinitions || []),
-        {
-          kind: 'VariableDefinition',
+      ...(definition.variableDefinitions || []),
+      {
+        kind: 'VariableDefinition',
+        type: {
+          kind: 'NonNullType',
           type: {
-            kind: 'NonNullType',
-            type: {
-              kind: 'NamedType',
-              name: {
-                kind: 'Name',
-                value: 'OneGraphSubscriptionSecretInput',
-              },
-            },
-          },
-          variable: {
-            kind: 'Variable',
+            kind: 'NamedType',
             name: {
               kind: 'Name',
-              value: 'netligraphWebhookSecret',
+              value: 'OneGraphSubscriptionSecretInput',
             },
           },
         },
-      ]
+        variable: {
+          kind: 'Variable',
+          name: {
+            kind: 'Name',
+            value: 'netligraphWebhookSecret',
+          },
+        },
+      },
+    ]
   return {
     ...definition,
     // @ts-ignore: Handle edge cases later

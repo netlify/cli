@@ -1,7 +1,7 @@
 const fs = require('fs')
 
+const dotProp = require('dot-prop')
 const { buildClientSchema, parse, printSchema } = require('graphql')
-const _ = require('lodash')
 const fetch = require('node-fetch')
 
 const { NETLIFYDEVLOG, chalk, log } = require('../../utils')
@@ -691,7 +691,7 @@ const fetchAppSchema = async (authToken, siteId) => {
     appId: siteId,
   })
 
-  return _.get(result, ['data', 'oneGraph', 'app', 'graphQLSchema'])
+  return dotProp.get(result, 'data.oneGraph.app.graphQLSchema')
 }
 
 const upsertAppForSite = async (authToken, siteId) => {
@@ -700,7 +700,7 @@ const upsertAppForSite = async (authToken, siteId) => {
     siteId,
   })
 
-  return _.get(result, ['data', 'oneGraph', 'upsertAppForNetlifySite', 'app'])
+  return dotProp.get(result, 'data.oneGraph.upsertAppForNetlifySite.app')
 }
 
 const createNewAppSchema = async (nfToken, input) => {
@@ -709,7 +709,7 @@ const createNewAppSchema = async (nfToken, input) => {
     input,
   })
 
-  return _.get(result, ['data', 'oneGraph', 'createGraphQLSchema', 'graphqlSchema'])
+  return dotProp.get(result, 'data.oneGraph.createGraphQLSchema.graphqlSchema')
 }
 
 const ensureAppForSite = async (authToken, siteId) => {
@@ -727,7 +727,7 @@ const ensureAppForSite = async (authToken, siteId) => {
 
 const fetchEnabledServices = async (authToken, appId) => {
   const appSchema = await fetchAppSchema(authToken, appId)
-  return _.get(appSchema, ['services']) || []
+  return dotProp.get(appSchema, 'services') || []
 }
 
 module.exports = {

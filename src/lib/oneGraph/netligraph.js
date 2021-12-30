@@ -1,8 +1,8 @@
 const fs = require('fs')
 const process = require('process')
 
+const dotProp = require('dot-prop')
 const { Kind, parse, print } = require('graphql')
-const _ = require('lodash')
 
 const {
   patchSubscriptionWebhookField,
@@ -500,14 +500,14 @@ const extractFunctionsFromOperationDoc = (parsedDoc) => {
         return null
       }
 
-      const key = _.get(next, ['name', 'value'])
+      const key = dotProp.get(next, 'name.value')
 
-      const directive = _.get(next, ['directives'], []).find(
+      const directive = dotProp.get(next, 'directives', []).find(
         (localDirective) => localDirective.name.value === 'netligraph',
       )
-      const docArg = _.get(directive, ['arguments']).find((arg) => arg.name.value === 'doc')
+      const docArg = dotProp.get(directive, 'arguments').find((arg) => arg.name.value === 'doc')
 
-      let docString = _.get(docArg, ['value', 'value'])
+      let docString = dotProp.get(docArg, 'value.value')
 
       if (!key) {
         return null
