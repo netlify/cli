@@ -2,7 +2,7 @@ const fs = require('fs')
 const process = require('process')
 
 const { Kind, parse, print } = require('graphql')
-const _ = require("lodash");
+const _ = require('lodash')
 
 const {
   patchSubscriptionWebhookField,
@@ -17,9 +17,9 @@ const netligraphPath = `${process.cwd()}/netlify`
 const capitalizeFirstLetter = (string) => string.charAt(0).toUpperCase() + string.slice(1)
 
 const replaceAll = (target, search, replace) => {
-  const simpleString = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return target.replace(new RegExp(simpleString, 'g'), replace);
-};
+  const simpleString = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return target.replace(new RegExp(simpleString, 'g'), replace)
+}
 
 const generatedOneGraphClient = `
 const fetch = (appId, options) => {
@@ -139,7 +139,9 @@ const generateSubscriptionFunctionTypeDefinition = (schema, fn, fragments) => {
 
   const variableSignature = typeScriptSignatureForOperationVariables(variableNames, schema, fn.parsedOperation)
 
-  const jsDoc = replaceAll((fn.description || ''), '*/', '!').split('\n').join('\n* ')
+  const jsDoc = replaceAll(fn.description || '', '*/', '!')
+    .split('\n')
+    .join('\n* ')
 
   return `/**
 * ${jsDoc}
@@ -318,7 +320,9 @@ const generateJavaScriptClient = (schema, operationsDoc, enabledFunctions) => {
         const subscriptionFnName = subscriptionFunctionName(fn)
         const parserFnName = subscriptionParserName(fn)
 
-        const jsDoc = replaceAll((fn.description || ''), '*/', '').split('\n').join('\n* ')
+        const jsDoc = replaceAll(fn.description || '', '*/', '')
+          .split('\n')
+          .join('\n* ')
 
         return `/**
   * ${jsDoc}
@@ -329,7 +333,9 @@ const generateJavaScriptClient = (schema, operationsDoc, enabledFunctions) => {
    */
   ${parserFnName}: ${parserFnName}`
       }
-      const jsDoc = replaceAll((fn.description || ''), '*/', '').split('\n').join('\n* ')
+      const jsDoc = replaceAll(fn.description || '', '*/', '')
+        .split('\n')
+        .join('\n* ')
 
       return `/**
   * ${jsDoc}
@@ -443,7 +449,9 @@ const generateTypeScriptDefinitions = (schema, enabledFunctions) => {
       const subscriptionFnName = subscriptionFunctionName(fn)
       const parserFnName = subscriptionParserName(fn)
 
-      const jsDoc = replaceAll((fn.description || ''), '*/', '').split('\n').join('\n* ')
+      const jsDoc = replaceAll(fn.description || '', '*/', '')
+        .split('\n')
+        .join('\n* ')
 
       return `/**
  * ${jsDoc}
@@ -454,7 +462,9 @@ const generateTypeScriptDefinitions = (schema, enabledFunctions) => {
    */
   ${parserFnName}: ${parserFnName}`
     }
-    const jsDoc = replaceAll((fn.description || ``), '*/', '').split('\n').join('\n* ')
+    const jsDoc = replaceAll(fn.description || ``, '*/', '')
+      .split('\n')
+      .join('\n* ')
 
     return `/**
  * ${jsDoc}
@@ -492,7 +502,9 @@ const extractFunctionsFromOperationDoc = (parsedDoc) => {
 
       const key = _.get(next, ['name', 'value'])
 
-      const directive = _.get(next, ['directives'], []).find((localDirective) => localDirective.name.value === 'netligraph')
+      const directive = _.get(next, ['directives'], []).find(
+        (localDirective) => localDirective.name.value === 'netligraph',
+      )
       const docArg = _.get(directive, ['arguments']).find((arg) => arg.name.value === 'doc')
 
       let docString = _.get(docArg, ['value', 'value'])

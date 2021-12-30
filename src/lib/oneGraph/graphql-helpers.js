@@ -15,7 +15,7 @@ const {
   visit,
   visitWithTypeInfo,
 } = require('graphql')
-const _ = require("lodash");
+const _ = require('lodash')
 
 const capitalizeFirstLetter = (string) => string.charAt(0).toUpperCase() + string.slice(1)
 
@@ -41,10 +41,8 @@ const gatherAllReferencedTypes = (schema, query) => {
 const extractVariableNameStringPair = (varDef) => [varDef.variable.name.value, print(varDef.type)]
 
 const gatherVariableDefinitions = (definition) => {
-  const varDefs = _.get(definition, ['variableDefinitions', '']) || [];
-  return varDefs.map(extractVariableNameStringPair).sort(([left], [right]) =>
-    left.localeCompare(right),
-  )
+  const varDefs = _.get(definition, ['variableDefinitions', '']) || []
+  return varDefs.map(extractVariableNameStringPair).sort(([left], [right]) => left.localeCompare(right))
 }
 const typeScriptForGraphQLType = (schema, gqlType) => {
   const scalarMap = {
@@ -212,7 +210,7 @@ const typeScriptDefinitionObjectForOperation = (schema, operationDefinition, fra
     const isEnum = isEnumType(namedType)
     const basicType = isEnum
       ? new Set(namedType.getValues().map((gqlEnum) => gqlEnum.value))
-      : scalarMap[namedType && namedType.name || 'any']
+      : scalarMap[(namedType && namedType.name) || 'any']
     let returnType
     if (isObjectLike) {
       returnType = sub ? Object.fromEntries(sub) : null
@@ -253,7 +251,7 @@ const typeScriptDefinitionObjectForOperation = (schema, operationDefinition, fra
   } else if (operationDefinition.kind === 'FragmentDefinition') {
     const typeName = operationDefinition.typeCondition.name.value
     baseGqlType = schema.getType(typeName)
-  };
+  }
 
   const selections = _.get(operationDefinition, ['selectionSet', 'selections'])
   const sub = selections && selections.map((selection) => helper(baseGqlType, selection))
@@ -373,34 +371,34 @@ const patchSubscriptionWebhookField = ({ definition, schema }) => {
     }
     return selection
   })
-  const hasWebhookVariableDefinition = definition.variableDefinitions && definition.variableDefinitions.find(
-    (varDef) => varDef.variable.name.value === 'netligraphWebhookUrl',
-  )
+  const hasWebhookVariableDefinition =
+    definition.variableDefinitions &&
+    definition.variableDefinitions.find((varDef) => varDef.variable.name.value === 'netligraphWebhookUrl')
   const variableDefinitions = hasWebhookVariableDefinition
     ? definition.variableDefinitions
     : [
-      ...(definition.variableDefinitions || []),
-      {
-        kind: 'VariableDefinition',
-        type: {
-          kind: 'NonNullType',
+        ...(definition.variableDefinitions || []),
+        {
+          kind: 'VariableDefinition',
           type: {
-            kind: 'NamedType',
+            kind: 'NonNullType',
+            type: {
+              kind: 'NamedType',
+              name: {
+                kind: 'Name',
+                value: 'String',
+              },
+            },
+          },
+          variable: {
+            kind: 'Variable',
             name: {
               kind: 'Name',
-              value: 'String',
+              value: 'netligraphWebhookUrl',
             },
           },
         },
-        variable: {
-          kind: 'Variable',
-          name: {
-            kind: 'Name',
-            value: 'netligraphWebhookUrl',
-          },
-        },
-      },
-    ]
+      ]
   return {
     ...definition,
     // @ts-ignore: Handle edge cases later
@@ -453,28 +451,28 @@ const patchSubscriptionWebhookSecretField = ({ definition, schema }) => {
   const variableDefinitions = hasWebhookVariableDefinition
     ? definition.variableDefinitions
     : [
-      ...(definition.variableDefinitions || []),
-      {
-        kind: 'VariableDefinition',
-        type: {
-          kind: 'NonNullType',
+        ...(definition.variableDefinitions || []),
+        {
+          kind: 'VariableDefinition',
           type: {
-            kind: 'NamedType',
+            kind: 'NonNullType',
+            type: {
+              kind: 'NamedType',
+              name: {
+                kind: 'Name',
+                value: 'OneGraphSubscriptionSecretInput',
+              },
+            },
+          },
+          variable: {
+            kind: 'Variable',
             name: {
               kind: 'Name',
-              value: 'OneGraphSubscriptionSecretInput',
+              value: 'netligraphWebhookSecret',
             },
           },
         },
-        variable: {
-          kind: 'Variable',
-          name: {
-            kind: 'Name',
-            value: 'netligraphWebhookSecret',
-          },
-        },
-      },
-    ]
+      ]
   return {
     ...definition,
     // @ts-ignore: Handle edge cases later

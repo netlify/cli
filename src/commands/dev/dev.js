@@ -106,12 +106,12 @@ const runCommand = (command, env = {}) => {
     }
     process.exit(1)
   })
-    ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) => {
-      process.on(signal, () => {
-        commandProcess.kill('SIGTERM', { forceKillAfterTimeout: 500 })
-        process.exit()
-      })
+  ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) => {
+    process.on(signal, () => {
+      commandProcess.kill('SIGTERM', { forceKillAfterTimeout: 500 })
+      process.exit()
     })
+  })
 
   return commandProcess
 }
@@ -292,7 +292,7 @@ const dev = async (options, command) => {
   process.env.URL = url
   process.env.DEPLOY_URL = url
 
-  const startNetligraphWatcher = Boolean(site.id);
+  const startNetligraphWatcher = Boolean(site.id)
 
   if (startNetligraphWatcher) {
     const netlifyToken = await command.authenticate()

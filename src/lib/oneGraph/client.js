@@ -1,7 +1,7 @@
 const fs = require('fs')
 
 const { buildClientSchema, parse, printSchema } = require('graphql')
-const _ = require("lodash");
+const _ = require('lodash')
 const fetch = require('node-fetch')
 
 const { NETLIFYDEVLOG, chalk, log } = require('../../utils')
@@ -445,7 +445,6 @@ mutation CreateNewSchemaMutation(
   }
 }`
 
-
 const fetchPersistedQuery = async (authToken, appId, docId) => {
   const response = await fetchOneGraph(authToken, ONEDASH_APP_ID, operationsDoc, 'PersistedQueryQuery', {
     nfToken: authToken,
@@ -467,7 +466,7 @@ const monitorCLISessionEvents = ({ appId, authToken, onClose, onError, onEvents,
     const enabledServicesInfo = await fetchEnabledServices(netlifyToken, siteId)
     const newEnabledServices = enabledServicesInfo.map((service) => service.service)
 
-    if (enabledServices.sort().join(",") !== newEnabledServices.sort().join(',')) {
+    if (enabledServices.sort().join(',') !== newEnabledServices.sort().join(',')) {
       log(`${NETLIFYDEVLOG} ${chalk.magenta('Reloading')} Netligraph schema...`)
       await refetchAndGenerateFromOneGraph(state, netlifyToken, siteId)
       log(`${NETLIFYDEVLOG} ${chalk.green('Reloaded')} Netligraph schema and regenerated functions`)
@@ -579,7 +578,9 @@ const refetchAndGenerateFromOneGraph = async (state, netlifyToken, siteId) => {
   await ensureAppForSite(netlifyToken, siteId)
 
   const enabledServicesInfo = await fetchEnabledServices(netlifyToken, siteId)
-  const enabledServices = enabledServicesInfo.map((service) => service.service).sort((aString, bString) => aString.localeCompare(bString))
+  const enabledServices = enabledServicesInfo
+    .map((service) => service.service)
+    .sort((aString, bString) => aString.localeCompare(bString))
   const schema = await fetchOneGraphSchema(siteId, enabledServices)
   let currentOperationsDoc = readGraphQLOperationsSourceFile(netligraphPath)
 
@@ -609,7 +610,6 @@ const startOneGraphCLISession = async ({ netlifyToken, site, state }) => {
     oneGraphSessionId = state.get('oneGraphSessionId')
   }
 
-
   const enabledServices = []
   const schema = await fetchOneGraphSchema(site.id, enabledServices)
 
@@ -634,9 +634,9 @@ const startOneGraphCLISession = async ({ netlifyToken, site, state }) => {
       case 'OneGraphNetlifyCliSessionTestEvent':
         return friendlyEventName(payload)
       case 'OneGraphNetlifyCliSessionGenerateHandlerEvent':
-        return "Generate handler as Netlify function "
+        return 'Generate handler as Netlify function '
       case 'OneGraphNetlifyCliSessionPersistedLibraryUpdatedEvent':
-        return "Sync Netligraph operations library"
+        return 'Sync Netligraph operations library'
       default: {
         return `Unrecognized event (${__typename})`
       }
