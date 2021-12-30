@@ -1,5 +1,5 @@
 // @ts-check
-const build = require('@netlify/build')
+const netlifyBuildPromise = import('@netlify/build')
 
 /**
  * The buildConfig + a missing cachedConfig
@@ -39,6 +39,7 @@ const getBuildOptions = ({ cachedConfig, options: { debug, dry, json, offline, s
  * @returns
  */
 const runBuild = async (options) => {
+  const { default: build } = await netlifyBuildPromise
   const { configMutations, netlifyConfig: newConfig, severityCode: exitCode } = await build(options)
   return { exitCode, newConfig, configMutations }
 }

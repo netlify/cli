@@ -1,8 +1,22 @@
 // @ts-check
 const AsciiTable = require('ascii-table')
+const { isCI } = require('ci-info')
+const inquirer = require('inquirer')
 const isEmpty = require('lodash/isEmpty')
 
-const { log, logJson } = require('../../utils')
+const { chalk, log, logJson } = require('../../utils')
+
+const [logUpdatePromise, ansiEscapesPromise] = [import('log-update'), import('ansi-escapes')]
+
+const MASK_LENGTH = 50
+const MASK = '*'.repeat(MASK_LENGTH)
+
+const getTable = ({ environment, hideValues }) => {
+  const table = new AsciiTable(`Environment variables`)
+  table.setHeading('Key', 'Value')
+  table.addRowMatrix(Object.entries(environment).map(([key, value]) => [key, hideValues ? MASK : value]))
+  return table.toString()
+}
 
 /**
  * The env:list command
@@ -34,17 +48,37 @@ const envList = async (options, command) => {
   }
 
   if (isEmpty(environment)) {
-    log(`No environment variables set for site ${siteData.name}`)
+    log(`No environment variables set for site ${chalk.greenBright(siteData.name)}`)
     return false
   }
 
-  // List environment variables using a table
-  log(`site: ${siteData.name}`)
-  const table = new AsciiTable(`Environment variables`)
+  // List environment in a table
+  log(`Listing environment variables for site: ${chalk.greenBright(siteData.name)}`)
 
-  table.setHeading('Key', 'Value')
-  table.addRowMatrix(Object.entries(environment))
-  log(table.toString())
+  if (isCI) {
+    log(getTable({ environment, hideValues: false }))
+    return false
+  }
+
+  const { default: logUpdate } = await logUpdatePromise
+
+  logUpdate(getTable({ environment, hideValues: true }))
+  const { showValues } = await inquirer.prompt([
+    {
+      type: 'confirm',
+      name: 'showValues',
+      message: 'Show values?',
+      default: false,
+    },
+  ])
+
+  if (showValues) {
+    const { default: ansiEscapes } = await ansiEscapesPromise
+    // since inquirer adds a prompt, we need to account for it when printing the table again
+    log(ansiEscapes.eraseLines(3))
+    logUpdate(getTable({ environment, hideValues: false }))
+    log(`${chalk.cyan('?')} Show values? ${chalk.cyan('Yes')}`)
+  }
 }
 
 /**
