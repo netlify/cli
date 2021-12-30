@@ -1,20 +1,10 @@
-const fs = require('fs')
 const process = require('process')
 
-const { parse, printSchema } = require('graphql')
-
-const { ensureAppForSite, fetchEnabledServices, fetchOneGraphSchema } = require('../../lib/oneGraph/client')
-const {
-  extractFunctionsFromOperationDoc,
-  generateFunctionsFile,
-  netligraphPath,
-  readGraphQLOperationsSourceFile,
-} = require('../../lib/oneGraph/netligraph')
+const { refetchAndGenerateFromOneGraph } = require('../../lib/oneGraph/client')
 const { NETLIFYDEVERR, chalk } = require('../../utils')
 
 const graphPull = async (options, command) => {
   const { site } = command.netlify
-  const siteId = site.id
 
   if (!site.id) {
     console.error(
@@ -26,26 +16,7 @@ const graphPull = async (options, command) => {
   }
 
   const netlifyToken = await command.authenticate()
-
-  await ensureAppForSite(netlifyToken, siteId)
-
-  const enabledServicesInfo = await fetchEnabledServices(netlifyToken, siteId)
-  const enabledServices = enabledServicesInfo.map((service) => service.service)
-  const schema = await fetchOneGraphSchema(siteId, enabledServices)
-  let operationsDoc = readGraphQLOperationsSourceFile(netligraphPath)
-
-  if (operationsDoc.trim().length === 0) {
-    operationsDoc = `query ExampleQuery {
-__typename
-}`
-  }
-
-  const parsedDoc = parse(operationsDoc)
-
-  const operations = extractFunctionsFromOperationDoc(parsedDoc)
-
-  generateFunctionsFile(netligraphPath, schema, operationsDoc, operations)
-  fs.writeFileSync(`${netligraphPath}/netligraphSchema.graphql`, printSchema(schema))
+  refetchAndGenerateFromOneGraph(state, netlifyToken, site.id)
 }
 
 /**

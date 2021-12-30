@@ -60,7 +60,7 @@ const graphEdit = async (options, command) => {
 
   const host = process.env.NETLIFY_APP_HOST || `localhost:8080`
 
-  const url = `http://${host}/sites/${siteData.name}/graph/explorer?sessionId=${oneGraphSessionId}&docId=${persistedDoc.id}`
+  const url = `http://${host}/sites/${siteData.name}/graph/explorer?cliSessionId=${oneGraphSessionId}&docId=${persistedDoc.id}`
   await openBrowser({ url })
   console.timeEnd('graph:edit')
 }

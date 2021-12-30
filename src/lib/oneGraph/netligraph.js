@@ -15,6 +15,11 @@ const netligraphPath = `${process.cwd()}/netlify`
 
 const capitalizeFirstLetter = (string) => string.charAt(0).toUpperCase() + string.slice(1)
 
+const replaceAll = (target, search, replace) => {
+  const simpleString = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+  return target.replace(new RegExp(simpleString, 'g'), replace);
+};
+
 const generatedOneGraphClient = `
 const fetch = (appId, options) => {
   var reqBody = options.body || null
@@ -133,28 +138,28 @@ const generateSubscriptionFunctionTypeDefinition = (schema, fn, fragments) => {
 
   const variableSignature = typeScriptSignatureForOperationVariables(variableNames, schema, fn.parsedOperation)
 
-  const jsDoc = (fn.description || '').replaceAll('*/', '!').split('\n').join('\n* ')
+  const jsDoc = replaceAll((fn.description || ''), '*/', '!').split('\n').join('\n* ')
 
   return `/**
-  * ${jsDoc}
-  */
- export function ${subscriptionFunctionName(fn)} (
-    /**
-     * This will be available in your webhook handler as a query parameter.
-     * Use this to keep track of which subscription you're receiving
-     * events for.
-     */
-    netligraphWebhookId: string,
-    variables: ${variableSignature},
-    accessToken?: string | null
-    ) : void
+* ${jsDoc}
+*/
+export function ${subscriptionFunctionName(fn)} (
+  /**
+   * This will be available in your webhook handler as a query parameter.
+   * Use this to keep track of which subscription you're receiving
+   * events for.
+   */
+  netligraphWebhookId: string,
+  variables: ${variableSignature},
+  accessToken?: string | null
+  ) : void
 
-     /**
-      * Verify the ${fn.operationName} event body is signed securely, and then parse the result.
-      */
-    export function ${subscriptionParserName(
-      fn,
-    )} (/** A Netlify Handler Event */ event) : null | ${parsingFunctionReturnSignature}
+/**
+ * Verify the ${fn.operationName} event body is signed securely, and then parse the result.
+ */
+export function ${subscriptionParserName(
+    fn,
+  )} (/** A Netlify Handler Event */ event) : null | ${parsingFunctionReturnSignature}
 `
 }
 
@@ -174,35 +179,34 @@ const generateSubscriptionFunction = (schema, fn) => {
   const filename = (patched.name && patched.name.value) || 'Unknown'
 
   const body = print(patched)
-  const safeBody = body.replaceAll('${', '\\${')
+  const safeBody = replaceAll(body, '${', '\\${')
 
   return `const ${subscriptionFunctionName(fn)} = async (
-    /**
-     * This will be available in your webhook handler as a query parameter.
-     * Use this to keep track of which subscription you're receiving
-     * events for.
-     */
-    netligraphWebhookId,
-    variables,
-    accessToken,
-    ) => {
-      const netligraphWebhookUrl = \`\${process.env.DEPLOY_URL}/.netlify/functions/${filename}?netligraphWebhookId=\${netligraphWebhookId}\`
-      const secret = process.env.NETLIGRAPH_WEBHOOK_SECRET
-      const fullVariables = {...variables, netligraphWebhookUrl: netligraphWebhookUrl, netligraphWebhookSecret: { hmacSha256Key: secret }}
+  /**
+   * This will be available in your webhook handler as a query parameter.
+   * Use this to keep track of which subscription you're receiving
+   * events for.
+   */
+  netligraphWebhookId,
+  variables,
+  accessToken,
+  ) => {
+    const netligraphWebhookUrl = \`\${process.env.DEPLOY_URL}/.netlify/functions/${filename}?netligraphWebhookId=\${netligraphWebhookId}\`
+    const secret = process.env.NETLIGRAPH_WEBHOOK_SECRET
+    const fullVariables = {...variables, netligraphWebhookUrl: netligraphWebhookUrl, netligraphWebhookSecret: { hmacSha256Key: secret }}
 
-      const persistedInput = {
-        doc_id: "${fn.id}",
-        oeprationName: "${fn.operationName}",
-        variables: fullVariables,
-        accessToken: accessToken
-      }
+    const persistedInput = {
+      doc_id: "${fn.id}",
+      oeprationName: "${fn.operationName}",
+      variables: fullVariables,
+      accessToken: accessToken
+    }
 
-      const subscriptionOperationDoc = \`${safeBody}\`;
+    const subscriptionOperationDoc = \`${safeBody}\`;
 
-      const result = await // fetchOneGraphPersisted(persistedInput)
-                     fetchOneGraph(accessToken, subscriptionOperationDoc, "${fn.operationName}", fullVariables)
-
-  }
+    // const result = await fetchOneGraphPersisted(persistedInput)
+    const result = await fetchOneGraph(accessToken, subscriptionOperationDoc, "${fn.operationName}", fullVariables)
+}
 
 const ${subscriptionParserName(fn)} = (event) => {
   if (!verifyRequestSignature({ event: event })) {
@@ -233,7 +237,7 @@ const queryToFunctionDefinition = (fullSchema, persistedQuery) => {
   }
 
   const body = basicFn.definition
-  const safeBody = body.replaceAll('${', '\\${')
+  const safeBody = replaceAll(body, '${', '\\${')
 
   const parsed = parse(body)
   const operations = parsed.definitions.filter((def) => def.kind === 'OperationDefinition')
@@ -272,7 +276,8 @@ const queryToFunctionDefinition = (fullSchema, persistedQuery) => {
 }
 
 const generateJavaScriptClient = (schema, operationsDoc, enabledFunctions) => {
-  const safeOperationsDoc = operationsDoc.replaceAll('${', '\\${').replaceAll('`', '\\`')
+  const operationsWithoutTemplateDollar = replaceAll(operationsDoc, '${', '\\${')
+  const safeOperationsDoc = replaceAll(operationsWithoutTemplateDollar, '`', '\\`')
   const functionDecls = enabledFunctions.map((fn) => {
     if (fn.kind === 'subscription') {
       const fragments = []
@@ -295,8 +300,8 @@ const generateJavaScriptClient = (schema, operationsDoc, enabledFunctions) => {
     const staticFunction = `const ${fn.fnName} = (
   variables,
   accessToken,
-  ) => {
-//  return fetchOneGraphPersisted(accessToken, "${fn.id}", "${fn.operationName}", variables)
+) => {
+  // return fetchOneGraphPersisted(accessToken, "${fn.id}", "${fn.operationName}", variables)
   return fetchOneGraph(accessToken, operationsDoc, "${fn.operationName}", variables)
 }
 
@@ -312,23 +317,23 @@ const generateJavaScriptClient = (schema, operationsDoc, enabledFunctions) => {
         const subscriptionFnName = subscriptionFunctionName(fn)
         const parserFnName = subscriptionParserName(fn)
 
-        const jsDoc = (fn.description || '').replaceAll('*/', '').split('\n').join('\n* ')
+        const jsDoc = replaceAll((fn.description || ''), '*/', '').split('\n').join('\n* ')
 
         return `/**
-        * ${jsDoc}
-        */
-          ${subscriptionFnName}:${subscriptionFnName},
-        /**
-         * Verify the event body is signed securely, and then parse the result.
-         */
-        ${parserFnName}:${parserFnName}`
+  * ${jsDoc}
+  */
+  ${subscriptionFnName}:${subscriptionFnName},
+  /**
+   * Verify the event body is signed securely, and then parse the result.
+   */
+  ${parserFnName}: ${parserFnName}`
       }
-      const jsDoc = (fn.description || '').replaceAll('*/', '').split('\n').join('\n* ')
+      const jsDoc = replaceAll((fn.description || ''), '*/', '').split('\n').join('\n* ')
 
       return `/**
-        * ${jsDoc}
-        */
-          ${fn.fnName}:${fn.fnName}`
+  * ${jsDoc}
+  */
+  ${fn.fnName}: ${fn.fnName}`
     })
     .join(',\n  ')
 
@@ -402,13 +407,16 @@ export const verifyRequestSignature = (request) => {
   return verifySignature({ secret, signature, body: body || '' })
 }
 
-  ${functionDecls.join('\n\n')}
+${functionDecls.join('\n\n')}
   
-  const functions = {
-    ${exportedFunctionsObjectProperties}
-  }
-    
-  export default functions
+/**
+ * The generated Netligraph library with your operations
+ */
+const functions = {
+  ${exportedFunctionsObjectProperties}
+}
+
+export default functions
   `
 
   // const formatted = Prettier.format(source, {
@@ -434,23 +442,28 @@ const generateTypeScriptDefinitions = (schema, enabledFunctions) => {
       const subscriptionFnName = subscriptionFunctionName(fn)
       const parserFnName = subscriptionParserName(fn)
 
-      const jsDoc = (fn.description || '').replaceAll('*/', '').split('\n').join('\n* ')
+      const jsDoc = replaceAll((fn.description || ''), '*/', '').split('\n').join('\n* ')
 
       return `/**
-      * ${jsDoc}
-      */
-        ${subscriptionFnName}:${subscriptionFnName},
-      /**
-       * Verify the event body is signed securely, and then parse the result.
-       */
-      ${parserFnName}:${parserFnName}`
+ * ${jsDoc}
+ */
+  ${subscriptionFnName}: ${subscriptionFnName},
+  /**
+   * Verify the event body is signed securely, and then parse the result.
+   */
+  ${parserFnName}: ${parserFnName}`
     }
-    const jsDoc = (fn.description || ``).replaceAll('*/', '').split('\n').join('\n* ')
+    const jsDoc = replaceAll((fn.description || ``), '*/', '').split('\n').join('\n* ')
 
     return `/**
-      * ${jsDoc}
-      */
-      export function ${fn.fnName}(variables: ${fn.variableSignature}, accessToken?: string): Promise<${fn.returnSignature}>;`
+ * ${jsDoc}
+ */
+export function ${fn.fnName}(
+  variables: ${fn.variableSignature},
+  accessToken?: string
+): Promise<
+  ${fn.returnSignature}
+>;`
   })
 
   const source = `// GENERATED VIA \`netlify-plugin-netligraph\`, EDIT WITH CAUTION!
@@ -481,10 +494,14 @@ const extractFunctionsFromOperationDoc = (parsedDoc) => {
       const directive = next.directives?.find((localDirective) => localDirective.name.value === 'netligraph')
       const docArg = directive && directive.arguments?.find((arg) => arg.name.value === 'doc')
 
-      const docString = docArg?.value?.value
+      let docString = docArg?.value?.value
 
-      if (!key || !docString) {
+      if (!key) {
         return null
+      }
+
+      if (!docString) {
+        docString = ''
       }
 
       const operation = {
@@ -553,7 +570,7 @@ const generateHandler = (basePath, schema, operationId, handlerOptions) => {
     functionName: operationId,
   }
 
-  const filename = `netlify/functions/${newFunction.functionName}.ts`
+  const filename = `netlify/functions/${newFunction.functionName}.js`
 
   fs.writeFileSync(filename, source)
 }

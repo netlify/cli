@@ -1,8 +1,10 @@
 /* eslint-disable eslint-comments/disable-enable-pair */
 /* eslint-disable no-unused-vars */
-const { buildClientSchema } = require('graphql')
+const { buildClientSchema, parse, printSchema } = require('graphql')
 const fetch = require('node-fetch')
+const fs = require('fs')
 
+const { NETLIFYDEVLOG, chalk, log } = require('../../utils')
 const {
   extractFunctionsFromOperationDoc,
   generateFunctionsFile,
@@ -449,6 +451,7 @@ mutation CreateNewSchemaMutation(
   }
 }`
 
+
 const fetchPersistedQuery = async (authToken, appId, docId) => {
   const response = await fetchOneGraph(authToken, ONEDASH_APP_ID, operationsDoc, 'PersistedQueryQuery', {
     nfToken: authToken,
@@ -461,9 +464,21 @@ const fetchPersistedQuery = async (authToken, appId, docId) => {
   return persistedQuery
 }
 
-const monitorCLISessionEvents = (appId, authToken, sessionId, { onClose, onError, onEvents }) => {
+const monitorCLISessionEvents = (appId, authToken, sessionId, state, { onClose, onError, onEvents }) => {
   const frequency = 5000
   let shouldClose = false
+
+  const enabledServiceWatcher = async (authToken, appId) => {
+    let enabledServices = state.get('oneGraphEnabledServices') || ['onegraph']
+    const enabledServicesInfo = await fetchEnabledServices(authToken, appId)
+    const newEnabledServices = enabledServicesInfo.map((service) => service.service)
+
+    if (enabledServices.sort().join(",") !== newEnabledServices.sort().join(',')) {
+      log(`${NETLIFYDEVLOG} ${chalk.magenta('Reloading')} Netligraph schema...`)
+      await refetchAndGenerateFromOneGraph(state, authToken, appId)
+      log(`${NETLIFYDEVLOG} ${chalk.green('Reloaded')} Netligraph schema and regenerated functions`)
+    }
+  }
 
   const close = () => {
     shouldClose = true
@@ -500,6 +515,8 @@ const monitorCLISessionEvents = (appId, authToken, sessionId, { onClose, onError
         eventIds: ackIds,
       })
     }
+
+    await enabledServiceWatcher(authToken, appId)
 
     handle = setTimeout(helper, frequency)
   }
@@ -568,6 +585,30 @@ const createPersistedQuery = async (netlifyToken, { appId, description, document
   return persistedQuery
 }
 
+const refetchAndGenerateFromOneGraph = async (state, netlifyToken, siteId) => {
+  await ensureAppForSite(netlifyToken, siteId)
+
+  const enabledServicesInfo = await fetchEnabledServices(netlifyToken, siteId)
+  const enabledServices = enabledServicesInfo.map((service) => service.service).sort((a, b) => a.localeCompare(b))
+  const schema = await fetchOneGraphSchema(siteId, enabledServices)
+  let operationsDoc = readGraphQLOperationsSourceFile(netligraphPath)
+
+  if (operationsDoc.trim().length === 0) {
+    operationsDoc = `query ExampleQuery {
+__typename
+}`
+  }
+
+  const parsedDoc = parse(operationsDoc)
+
+  const operations = extractFunctionsFromOperationDoc(parsedDoc)
+
+  state.set('oneGraphEnabledServices', enabledServices)
+
+  generateFunctionsFile(netligraphPath, schema, operationsDoc, operations)
+  fs.writeFileSync(`${netligraphPath}/netligraphSchema.graphql`, printSchema(schema))
+}
+
 const loadCLISession = (state) => state.get('oneGraphSessionId')
 
 const startOneGraphCLISession = async ({ netlifyToken, site, state }) => {
@@ -578,7 +619,8 @@ const startOneGraphCLISession = async ({ netlifyToken, site, state }) => {
     oneGraphSessionId = state.get('oneGraphSessionId')
   }
 
-  const enabledServices = ['npm', 'github', 'rss']
+
+  const enabledServices = []
   const schema = await fetchOneGraphSchema(site.id, enabledServices)
 
   const updateGraphQLOperationsFile = async (docId) => {
@@ -594,6 +636,22 @@ const startOneGraphCLISession = async ({ netlifyToken, site, state }) => {
     const appOperationsDoc = readGraphQLOperationsSourceFile(netligraphPath)
     const operations = extractFunctionsFromOperationDoc(parsedDoc)
     generateFunctionsFile(netligraphPath, schema, appOperationsDoc, operations)
+  }
+
+  const friendlyEventName = (event) => {
+    const { __typename, payload } = event
+    switch (__typename) {
+      case 'OneGraphNetlifyCliSessionTestEvent':
+        return friendlyEventName(payload)
+        break
+      case 'OneGraphNetlifyCliSessionGenerateHandlerEvent':
+        return "Generate handler as Netlify function "
+      case 'OneGraphNetlifyCliSessionPersistedLibraryUpdatedEvent':
+        return "Sync Netligraph operations library"
+      default: {
+        return `Unrecognized event (${__typename})`
+      }
+    }
   }
 
   const handleEvent = async (event) => {
@@ -615,11 +673,14 @@ const startOneGraphCLISession = async ({ netlifyToken, site, state }) => {
     }
   }
 
-  monitorCLISessionEvents(site.id, netlifyToken, oneGraphSessionId, {
+  monitorCLISessionEvents(site.id, netlifyToken, oneGraphSessionId, state, {
     onEvents: (events) => {
-      console.time('events:process')
-      events.forEach(handleEvent)
-      console.timeEnd('events:process')
+      events.forEach((event) => {
+        const eventName = friendlyEventName(event)
+        log(`${NETLIFYDEVLOG} ${chalk.magenta('Handling')} Netligraph event: ${eventName}...`)
+        handleEvent(event)
+        log(`${NETLIFYDEVLOG} ${chalk.green('Finished handling')} Netligraph event: ${eventName}...`)
+      })
       return events.map((event) => event.id)
     },
     onError: (error) => {
@@ -698,6 +759,7 @@ module.exports = {
   fetchPersistedQuery,
   loadCLISession,
   monitorCLISessionEvents,
+  refetchAndGenerateFromOneGraph,
   startOneGraphCLISession,
   upsertAppForSite,
 }
