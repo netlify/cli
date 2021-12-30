@@ -1,0 +1,2 @@
+Don't use replaceAll, it's not available in node 14
+End files in .js not .ts

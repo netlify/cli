@@ -4,7 +4,7 @@ const { refetchAndGenerateFromOneGraph } = require('../../lib/oneGraph/client')
 const { NETLIFYDEVERR, chalk } = require('../../utils')
 
 const graphPull = async (options, command) => {
-  const { site } = command.netlify
+  const { site, state } = command.netlify
 
   if (!site.id) {
     console.error(

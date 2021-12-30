@@ -1,10 +1,10 @@
-/* eslint-disable eslint-comments/disable-enable-pair */
-/* eslint-disable no-unused-vars */
-const { buildClientSchema, parse, printSchema } = require('graphql')
-const fetch = require('node-fetch')
 const fs = require('fs')
 
+const { buildClientSchema, parse, printSchema } = require('graphql')
+const fetch = require('node-fetch')
+
 const { NETLIFYDEVLOG, chalk, log } = require('../../utils')
+
 const {
   extractFunctionsFromOperationDoc,
   generateFunctionsFile,
@@ -16,13 +16,6 @@ const {
 } = require('./netligraph')
 
 const ONEDASH_APP_ID = '0b066ba6-ed39-4db8-a497-ba0be34d5b2a'
-
-// We mock out onegraph-auth to provide just enough functionality to work with server-side auth tokens
-const makeAuth = (appId, authToken) => ({
-  appId,
-  authHeaders: () => ({ Authorization: `Bearer ${authToken}` }),
-  accessToken: () => ({ accessToken: authToken }),
-})
 
 const httpOkLow = 200
 const httpOkHigh = 299
@@ -464,18 +457,18 @@ const fetchPersistedQuery = async (authToken, appId, docId) => {
   return persistedQuery
 }
 
-const monitorCLISessionEvents = (appId, authToken, sessionId, state, { onClose, onError, onEvents }) => {
+const monitorCLISessionEvents = ({ appId, authToken, onClose, onError, onEvents, sessionId, state }) => {
   const frequency = 5000
   let shouldClose = false
 
-  const enabledServiceWatcher = async (authToken, appId) => {
-    let enabledServices = state.get('oneGraphEnabledServices') || ['onegraph']
-    const enabledServicesInfo = await fetchEnabledServices(authToken, appId)
+  const enabledServiceWatcher = async (netlifyToken, siteId) => {
+    const enabledServices = state.get('oneGraphEnabledServices') || ['onegraph']
+    const enabledServicesInfo = await fetchEnabledServices(netlifyToken, siteId)
     const newEnabledServices = enabledServicesInfo.map((service) => service.service)
 
     if (enabledServices.sort().join(",") !== newEnabledServices.sort().join(',')) {
       log(`${NETLIFYDEVLOG} ${chalk.magenta('Reloading')} Netligraph schema...`)
-      await refetchAndGenerateFromOneGraph(state, authToken, appId)
+      await refetchAndGenerateFromOneGraph(state, netlifyToken, siteId)
       log(`${NETLIFYDEVLOG} ${chalk.green('Reloaded')} Netligraph schema and regenerated functions`)
     }
   }
@@ -493,11 +486,7 @@ const monitorCLISessionEvents = (appId, authToken, sessionId, state, { onClose, 
     }
 
     const first = 1000
-    const next = await fetchOneGraph(authToken, appId, operationsDoc, 'CLISessionEventsQuery', {
-      nfToken: authToken,
-      sessionId,
-      first,
-    })
+    const next = await fetchCLISessionEvents(authToken, appId, sessionId, first)
 
     if (next.errors) {
       next.errors.forEach((error) => {
@@ -589,23 +578,23 @@ const refetchAndGenerateFromOneGraph = async (state, netlifyToken, siteId) => {
   await ensureAppForSite(netlifyToken, siteId)
 
   const enabledServicesInfo = await fetchEnabledServices(netlifyToken, siteId)
-  const enabledServices = enabledServicesInfo.map((service) => service.service).sort((a, b) => a.localeCompare(b))
+  const enabledServices = enabledServicesInfo.map((service) => service.service).sort((aString, bString) => aString.localeCompare(bString))
   const schema = await fetchOneGraphSchema(siteId, enabledServices)
-  let operationsDoc = readGraphQLOperationsSourceFile(netligraphPath)
+  let currentOperationsDoc = readGraphQLOperationsSourceFile(netligraphPath)
 
-  if (operationsDoc.trim().length === 0) {
-    operationsDoc = `query ExampleQuery {
+  if (currentOperationsDoc.trim().length === 0) {
+    currentOperationsDoc = `query ExampleQuery {
 __typename
 }`
   }
 
-  const parsedDoc = parse(operationsDoc)
+  const parsedDoc = parse(currentOperationsDoc)
 
   const operations = extractFunctionsFromOperationDoc(parsedDoc)
 
   state.set('oneGraphEnabledServices', enabledServices)
 
-  generateFunctionsFile(netligraphPath, schema, operationsDoc, operations)
+  generateFunctionsFile(netligraphPath, schema, currentOperationsDoc, operations)
   fs.writeFileSync(`${netligraphPath}/netligraphSchema.graphql`, printSchema(schema))
 }
 
@@ -643,7 +632,6 @@ const startOneGraphCLISession = async ({ netlifyToken, site, state }) => {
     switch (__typename) {
       case 'OneGraphNetlifyCliSessionTestEvent':
         return friendlyEventName(payload)
-        break
       case 'OneGraphNetlifyCliSessionGenerateHandlerEvent':
         return "Generate handler as Netlify function "
       case 'OneGraphNetlifyCliSessionPersistedLibraryUpdatedEvent':
@@ -673,7 +661,11 @@ const startOneGraphCLISession = async ({ netlifyToken, site, state }) => {
     }
   }
 
-  monitorCLISessionEvents(site.id, netlifyToken, oneGraphSessionId, state, {
+  monitorCLISessionEvents({
+    appId: site.id,
+    authToken: netlifyToken,
+    sessionId: oneGraphSessionId,
+    state,
     onEvents: (events) => {
       events.forEach((event) => {
         const eventName = friendlyEventName(event)
@@ -709,16 +701,6 @@ const upsertAppForSite = async (authToken, siteId) => {
 
   return result.data?.oneGraph?.upsertAppForNetlifySite?.app
 }
-
-// export type CreateNewGraphQLSchemaInput = {
-//   /* Whether to set this schema as the default for the app. Defaults to false. */
-//   setAsDefaultForApp: boolean;
-//   /* The list of services that this schema should use. Leave blank if you want to add support for all supported services. */
-//   enabledServices: string[];
-//   /* The id of the app that the schema should belong to. */
-//   appId: string;
-//   parentId: string | undefined;
-// };
 
 const createNewAppSchema = async (nfToken, input) => {
   const result = await fetchOneGraph(null, input.appId, operationsDoc, 'CreateNewSchemaMutation', {

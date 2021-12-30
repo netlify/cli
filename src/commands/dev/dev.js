@@ -292,7 +292,7 @@ const dev = async (options, command) => {
   process.env.URL = url
   process.env.DEPLOY_URL = url
 
-  const startNetligraphWatcher = !!site.id;
+  const startNetligraphWatcher = Boolean(site.id);
 
   if (startNetligraphWatcher) {
     const netlifyToken = await command.authenticate()

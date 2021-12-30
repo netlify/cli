@@ -1,5 +1,3 @@
-/* eslint-disable unicorn/no-nested-ternary */
-/* eslint-disable no-nested-ternary */
 const {
   TypeInfo,
   getNamedType,
@@ -233,18 +231,28 @@ const typeScriptDefinitionObjectForOperation = (schema, operationDefinition, fra
     // @ts-ignore
     console.warn('No returnType!', basicType, namedType.name, selection)
   }
-  const baseGqlType =
-    operationDefinition.kind === 'OperationDefinition'
-      ? operationDefinition.operation === 'query'
-        ? schema.getQueryType()
-        : operationDefinition.operation === 'mutation'
-        ? schema.getMutationType()
-        : operationDefinition.operation === 'subscription'
-        ? schema.getSubscriptionType()
-        : null
-      : operationDefinition.kind === 'FragmentDefinition'
-      ? schema.getType(operationDefinition.typeCondition.name.value)
-      : null
+
+  let baseGqlType = null
+
+  if (operationDefinition.kind === 'OperationDefinition') {
+    switch (operationDefinition.operation) {
+      case 'query':
+        baseGqlType = schema.getQueryType()
+        break
+      case 'mutation':
+        baseGqlType = schema.getMutationType()
+        break
+      case 'subscription':
+        baseGqlType = schema.getSubscriptionType()
+        break
+      default:
+        break
+    }
+  } else if (operationDefinition.kind === 'FragmentDefinition') {
+    const typeName = operationDefinition.typeCondition.name.value
+    baseGqlType = schema.getType(typeName)
+  };
+
   const selections = operationDefinition.selectionSet?.selections
   const sub = selections?.map((selection) => helper(baseGqlType, selection))
   if (sub) {
@@ -369,28 +377,28 @@ const patchSubscriptionWebhookField = ({ definition, schema }) => {
   const variableDefinitions = hasWebhookVariableDefinition
     ? definition.variableDefinitions
     : [
-        ...(definition.variableDefinitions || []),
-        {
-          kind: 'VariableDefinition',
+      ...(definition.variableDefinitions || []),
+      {
+        kind: 'VariableDefinition',
+        type: {
+          kind: 'NonNullType',
           type: {
-            kind: 'NonNullType',
-            type: {
-              kind: 'NamedType',
-              name: {
-                kind: 'Name',
-                value: 'String',
-              },
-            },
-          },
-          variable: {
-            kind: 'Variable',
+            kind: 'NamedType',
             name: {
               kind: 'Name',
-              value: 'netligraphWebhookUrl',
+              value: 'String',
             },
           },
         },
-      ]
+        variable: {
+          kind: 'Variable',
+          name: {
+            kind: 'Name',
+            value: 'netligraphWebhookUrl',
+          },
+        },
+      },
+    ]
   return {
     ...definition,
     // @ts-ignore: Handle edge cases later
@@ -443,28 +451,28 @@ const patchSubscriptionWebhookSecretField = ({ definition, schema }) => {
   const variableDefinitions = hasWebhookVariableDefinition
     ? definition.variableDefinitions
     : [
-        ...(definition.variableDefinitions || []),
-        {
-          kind: 'VariableDefinition',
+      ...(definition.variableDefinitions || []),
+      {
+        kind: 'VariableDefinition',
+        type: {
+          kind: 'NonNullType',
           type: {
-            kind: 'NonNullType',
-            type: {
-              kind: 'NamedType',
-              name: {
-                kind: 'Name',
-                value: 'OneGraphSubscriptionSecretInput',
-              },
-            },
-          },
-          variable: {
-            kind: 'Variable',
+            kind: 'NamedType',
             name: {
               kind: 'Name',
-              value: 'netligraphWebhookSecret',
+              value: 'OneGraphSubscriptionSecretInput',
             },
           },
         },
-      ]
+        variable: {
+          kind: 'Variable',
+          name: {
+            kind: 'Name',
+            value: 'netligraphWebhookSecret',
+          },
+        },
+      },
+    ]
   return {
     ...definition,
     // @ts-ignore: Handle edge cases later

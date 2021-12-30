@@ -16,7 +16,7 @@ const netligraphPath = `${process.cwd()}/netlify`
 const capitalizeFirstLetter = (string) => string.charAt(0).toUpperCase() + string.slice(1)
 
 const replaceAll = (target, search, replace) => {
-  const simpleString = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+  const simpleString = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return target.replace(new RegExp(simpleString, 'g'), replace);
 };
 
