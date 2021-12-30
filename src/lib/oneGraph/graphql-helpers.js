@@ -39,11 +39,12 @@ const gatherAllReferencedTypes = (schema, query) => {
 
 const extractVariableNameStringPair = (varDef) => [varDef.variable.name.value, print(varDef.type)]
 
-const gatherVariableDefinitions = (definition) =>
-  (definition?.variableDefinitions?.map(extractVariableNameStringPair) || []).sort(([left], [right]) =>
+const gatherVariableDefinitions = (definition) => {
+  const varDefs = _.get(definition, ['variableDefinitions', '']) || [];
+  return varDefs.map(extractVariableNameStringPair).sort(([left], [right]) =>
     left.localeCompare(right),
   )
-
+}
 const typeScriptForGraphQLType = (schema, gqlType) => {
   const scalarMap = {
     String: 'string',
@@ -81,7 +82,7 @@ const typeScriptForGraphQLType = (schema, gqlType) => {
 
   const namedType = getNamedType(gqlType)
   // @ts-ignore metaprogramming
-  const basicType = scalarMap[namedType?.name] || 'any'
+  const basicType = scalarMap[namedType && namedType.name] || 'any'
   return basicType
 }
 
@@ -149,12 +150,12 @@ const typeScriptDefinitionObjectForOperation = (schema, operationDefinition, fra
     const parentNamedType =
       // @ts-ignore
       getNamedType(parentGqlType) || getNamedType(parentGqlType.type)
-    const alias = selection.alias?.value
-    const name = selection?.name?.value
+    const alias = _.get(selection, ['alias', 'value'])
+    const name = _.get(selection, ['name', 'value'])
     const displayedName = alias || name
     // @ts-ignore
     const field = parentNamedType.getFields()[name]
-    const gqlType = field?.type
+    const gqlType = _.get(field, ['type'])
     if (name.startsWith('__')) {
       return [displayedName, { type: 'any', description: 'Internal GraphQL field' }]
     }
@@ -162,7 +163,7 @@ const typeScriptDefinitionObjectForOperation = (schema, operationDefinition, fra
     const isNullable = !isNonNullType(gqlType)
     const isList = isListType(gqlType) || (!isNullable && isListType(gqlType.ofType))
     const isObjectLike = isObjectType(namedType) || isUnionType(namedType) || isInterfaceType(namedType)
-    const sub = selection.selectionSet?.selections
+    const sub = _.get(selection, ['selectionSet', 'selections'])
       // @ts-ignore
       .map(function innerHelper(innerSelection) {
         if (innerSelection.kind === 'Field') {
@@ -210,7 +211,7 @@ const typeScriptDefinitionObjectForOperation = (schema, operationDefinition, fra
     const isEnum = isEnumType(namedType)
     const basicType = isEnum
       ? new Set(namedType.getValues().map((gqlEnum) => gqlEnum.value))
-      : scalarMap[namedType?.name || 'any']
+      : scalarMap[namedType && namedType.name || 'any']
     let returnType
     if (isObjectLike) {
       returnType = sub ? Object.fromEntries(sub) : null
@@ -225,7 +226,7 @@ const typeScriptDefinitionObjectForOperation = (schema, operationDefinition, fra
       for (let idx = 0; idx < nestingLevel; idx++) {
         finalType = [finalType]
       }
-      const entry = [displayedName, { type: finalType, description: field?.description }]
+      const entry = [displayedName, { type: finalType, description: field && field.description }]
       return entry
     }
     // @ts-ignore
@@ -253,8 +254,8 @@ const typeScriptDefinitionObjectForOperation = (schema, operationDefinition, fra
     baseGqlType = schema.getType(typeName)
   };
 
-  const selections = operationDefinition.selectionSet?.selections
-  const sub = selections?.map((selection) => helper(baseGqlType, selection))
+  const selections = _.get(operationDefinition, ['selectionSet', 'selections'])
+  const sub = selections && selections.map((selection) => helper(baseGqlType, selection))
   if (sub) {
     // @ts-ignore
     const object = Object.fromEntries(sub)
@@ -287,7 +288,7 @@ const typeScriptDefinitionObjectForOperation = (schema, operationDefinition, fra
 const typeScriptForOperation = (schema, operationDefinition, fragmentDefinitions) => {
   const typeMap = typeScriptDefinitionObjectForOperation(schema, operationDefinition, fragmentDefinitions)
   const valueHelper = (value) => {
-    if (value?.type && typeof value.type === 'string') {
+    if (typeof _.get(value, ['type']) === 'string') {
       return value.type
     }
     if (Array.isArray(value.type)) {
@@ -346,7 +347,7 @@ const patchSubscriptionWebhookField = ({ definition, schema }) => {
     if (selection.kind !== 'Field') return selection
     const field = subscriptionType.getFields()[selection.name.value]
     const fieldHasWebhookUrlArg = field.args.some((arg) => arg.name === 'webhookUrl')
-    const selectionHasWebhookUrlArg = selection.arguments?.some((arg) => arg.name.value === 'webhookUrl')
+    const selectionHasWebhookUrlArg = _.get(selection, ['arguments'], []).some((arg) => arg.name.value === 'webhookUrl')
     if (fieldHasWebhookUrlArg && !selectionHasWebhookUrlArg) {
       return {
         ...selection,
@@ -371,7 +372,7 @@ const patchSubscriptionWebhookField = ({ definition, schema }) => {
     }
     return selection
   })
-  const hasWebhookVariableDefinition = definition.variableDefinitions?.find(
+  const hasWebhookVariableDefinition = definition.variableDefinitions && definition.variableDefinitions.find(
     (varDef) => varDef.variable.name.value === 'netligraphWebhookUrl',
   )
   const variableDefinitions = hasWebhookVariableDefinition
@@ -420,7 +421,7 @@ const patchSubscriptionWebhookSecretField = ({ definition, schema }) => {
     if (selection.kind !== 'Field') return selection
     const field = subscriptionType.getFields()[selection.name.value]
     const fieldHasWebhookSecretArg = field.args.some((arg) => arg.name === 'secret')
-    const selectionHasWebhookSecretArg = selection.arguments?.some((arg) => arg.name.value === 'secret')
+    const selectionHasWebhookSecretArg = _.get(selection, ['arguments'], []).some((arg) => arg.name.value === 'secret')
     if (fieldHasWebhookSecretArg && !selectionHasWebhookSecretArg) {
       return {
         ...selection,
@@ -445,7 +446,7 @@ const patchSubscriptionWebhookSecretField = ({ definition, schema }) => {
     }
     return selection
   })
-  const hasWebhookVariableDefinition = definition.variableDefinitions?.find(
+  const hasWebhookVariableDefinition = _.get(definition, ['variableDefinitions'], []).find(
     (varDef) => varDef.variable.name.value === 'netligraphWebhookSecret',
   )
   const variableDefinitions = hasWebhookVariableDefinition

@@ -489,12 +489,12 @@ const extractFunctionsFromOperationDoc = (parsedDoc) => {
         return null
       }
 
-      const key = next.name?.value
+      const key = _.get(next, ['name', 'value'])
 
-      const directive = next.directives?.find((localDirective) => localDirective.name.value === 'netligraph')
-      const docArg = directive && directive.arguments?.find((arg) => arg.name.value === 'doc')
+      const directive = _.get(next, ['directives'], []).find((localDirective) => localDirective.name.value === 'netligraph')
+      const docArg = _.get(directive, ['arguments']).find((arg) => arg.name.value === 'doc')
 
-      let docString = docArg?.value?.value
+      let docString = _.get(docArg, ['value', 'value'])
 
       if (!key) {
         return null
