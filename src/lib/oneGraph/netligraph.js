@@ -2,6 +2,7 @@ const fs = require('fs')
 const process = require('process')
 
 const { Kind, parse, print } = require('graphql')
+const _ = require("lodash");
 
 const {
   patchSubscriptionWebhookField,

@@ -1,4 +1,5 @@
 const { parse, print } = require('graphql')
+const _ = require("lodash");
 
 let operationNodesMemo = [null, null]
 
