@@ -1,14 +1,15 @@
 {
-  "name": "netlify-cli",
+  "name": "@sgrove/netlify-cli",
   "description": "Netlify command line tool",
-  "version": "8.1.7",
+  "version": "8.1.8-beta.3",
   "author": "Netlify Inc.",
   "contributors": [
     "Mathias Biilmann <matt@netlify.com> (https://twitter.com/biilmann)",
     "David Calavera <david@netlify.com> (https://twitter.com/calavera)",
     "David Wells <david.wells@netlify.com> (https://davidwells.io/)",
     "Raees Iqbal <raees@netlify.com> (https://raeesbhatti.com/)",
-    "Bret Comnes <bcomnes@gmail.com> (https://bret.io)"
+    "Bret Comnes <bcomnes@gmail.com> (https://bret.io)",
+    "Sean Grove <sean.s.grove@netlify.com> (https://twitter.com/sgrove)"
   ],
   "engines": {
     "node": "^12.20.0 || ^14.14.0 || >=16.0.0"
@@ -42,8 +43,6 @@
     "url": "https://github.com/netlify/cli/issues"
   },
   "scripts": {
-    "prepublishOnly": "run-s prepublishOnly:*",
-    "prepublishOnly:test": "run-local \"npm test\"",
     "start": "node ./bin/run",
     "test": "run-s format test:dev",
     "format": "run-s format:check-fix:*",
@@ -142,10 +141,12 @@
     "lodash": "^4.17.20",
     "log-symbols": "^4.0.0",
     "make-dir": "^3.0.0",
+    "markdown-magic": "^2.5.2",
     "memoize-one": "^6.0.0",
     "minimist": "^1.2.5",
     "mock-require": "^3.0.3",
     "multiparty": "^4.2.1",
+    "netlify": "^10.1.0",
     "netlify-headers-parser": "^6.0.0",
     "netlify-redirect-parser": "^13.0.0",
     "netlify-redirector": "^0.2.1",
