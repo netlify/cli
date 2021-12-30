@@ -255,7 +255,7 @@ const asyncFetcherInvocation = (operationDataList, pluckerStyle) => {
       let requiredVariableCount = 0
 
       if (
-        (_.get(namedOperationData, ['operationDefinition', 'variableDefinitions'], []).length || 0) > 0
+        (_.get(namedOperationData, ['operationDefinition', 'variableDefinitions'], []).length !== 0 || 0) > 0
       ) {
         const requiredVariableNames = namedOperationData.operationDefinition.variableDefinitions
           .map((def) => (print(def.type).endsWith('!') ? def.variable.name.value : null))
@@ -308,7 +308,7 @@ const clientSideInvocations = (operationDataList, pluckerStyle, useClientAuth) =
       let bodyPayload = ''
 
       if (
-        (_.get(namedOperationData, ['operationDefinition', 'variableDefinitions'], []).length || 0) > 0
+        (_.get(namedOperationData, ['operationDefinition', 'variableDefinitions'], []).length !== 0 || 0) > 0
       ) {
         const variableNames = namedOperationData.operationDefinition.variableDefinitions.map(
           (def) => def.variable.name.value,
