@@ -348,13 +348,12 @@ ${variables}
 }
 
 const subscriptionHandler = ({
-  // eslint-disable-next-line no-unused-vars
-  filename,
+  netligraphConfig,
   operationData,
-}) => `import { getSecrets } from "@netlify/functions";
-import Netligraph from "../netligraphFunctions";
+}) => `${imp(netligraphConfig, "{ getSecrets }", "@netlify/functions")}
+${imp(netligraphConfig, "Netligraph", "./netligraph")}
 
-export const handler = async (event, context) => {
+${exp(netligraphConfig, "handler")} = async (event, context) => {
   let secrets = await getSecrets(event);
 
   const payload = Netligraph.parseAndVerify${operationData.name}Event(event);
@@ -402,6 +401,22 @@ export const handler = async (event, context) => {
 };
 `
 
+const imp = (netligraphConfig, name, package) => {
+  if (netligraphConfig.moduleType === 'commonjs') {
+    return `const ${name} = require("${package}")`
+  }
+
+  return `import ${name} from "${package}"`
+}
+
+const exp = (netligraphConfig, name) => {
+  if (netligraphConfig.moduleType === 'commonjs') {
+    return `exports.${name}`
+  }
+
+  return `export const ${name}`
+}
+
 // Snippet generation!
 const netlifyFunctionSnippet = {
   language: 'JavaScript',
@@ -409,7 +424,7 @@ const netlifyFunctionSnippet = {
   name: 'Netlify Function',
   options: snippetOptions,
   generate: (opts) => {
-    const { options } = opts
+    const { netligraphConfig, options } = opts
 
     const operationDataList = opts.operationDataList.map((operationData, idx) => {
       if (!isOperationNamed(operationData)) {
@@ -434,13 +449,13 @@ ${operationData.type} unnamed${capitalizeFirstLetter(operationData.type)}${idx +
       return '// No operation found'
     }
 
-    const filename = `${firstOperation.name}.js`
+    const filename = `${firstOperation.name}.${netligraphConfig.extension}`
 
     const isSubscription = firstOperation.type === 'subscription'
 
     if (isSubscription) {
       const result = subscriptionHandler({
-        filename,
+        netligraphConfig,
         operationData: firstOperation,
       })
 
@@ -468,10 +483,10 @@ ${operationData.name}Data: ${operationData.name}Data`,
 
     const whitespace = 6
 
-    const snippet = `import { getSecrets } from "@netlify/functions";
-import Netligraph from "../netligraphFunctions";
+    const snippet = `${imp(netligraphConfig, '{ getSecrets }', '@netlify/functions')};
+${imp(netligraphConfig, "Netligraph", "./netligraph")}
 
-export const handler = async (event, context) => {
+${exp(netligraphConfig, "handler")} = async (event, context) => {
   // By default, all API calls use no authentication
   let accessToken = null;
 

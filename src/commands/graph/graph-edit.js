@@ -8,7 +8,7 @@ const {
   ensureAppForSite,
   loadCLISession,
 } = require('../../lib/oneGraph/client')
-const { readGraphQLOperationsSourceFile } = require('../../lib/oneGraph/netligraph')
+const { defaultExampleOperationsDoc, getNetligraphConfig, readGraphQLOperationsSourceFile } = require('../../lib/oneGraph/netligraph')
 const { NETLIFYDEVERR, chalk } = require('../../utils')
 const { openBrowser } = require('../../utils/open-browser')
 
@@ -29,15 +29,14 @@ const graphEdit = async (options, command) => {
 
   const siteData = await api.getSite({ siteId })
 
+  const netligraphConfig = getNetligraphConfig({ command, options })
+
   const { branch } = gitRepoInfo()
-  const cwd = process.cwd()
-  const base = cwd
-  let graphqlDocument = readGraphQLOperationsSourceFile(`${base}/netlify`)
+
+  let graphqlDocument = readGraphQLOperationsSourceFile(netligraphConfig)
 
   if (graphqlDocument.trim().length === 0) {
-    graphqlDocument = `query ExampleQuery {
-  __typename
-}`
+    graphqlDocument = defaultExampleOperationsDoc
   }
 
   const netlifyToken = await command.authenticate()

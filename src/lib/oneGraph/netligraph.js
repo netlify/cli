@@ -1,8 +1,10 @@
 const fs = require('fs')
-const process = require('process')
 
 const dotProp = require('dot-prop')
-const { Kind, parse, print } = require('graphql')
+const { Kind, parse, print, printSchema } = require('graphql')
+const makeDir = require('make-dir');
+
+const { getFunctionsDir } = require('../../utils')
 
 const {
   patchSubscriptionWebhookField,
@@ -12,8 +14,6 @@ const {
 } = require('./graphql-helpers')
 const { computeOperationDataList, netlifyFunctionSnippet } = require('./netligraph-code-exporter-snippets')
 
-const netligraphPath = `${process.cwd()}/netlify`
-
 const capitalizeFirstLetter = (string) => string.charAt(0).toUpperCase() + string.slice(1)
 
 const replaceAll = (target, search, replace) => {
@@ -21,7 +21,62 @@ const replaceAll = (target, search, replace) => {
   return target.replace(new RegExp(simpleString, 'g'), replace)
 }
 
-const generatedOneGraphClient = `
+const sourceOperationsFilename = 'netligraphOperationsLibrary.graphql'
+
+const defaultNetligraphConfig = {
+  extension: "mjs",
+  netligraphPath: "netlify",
+  moduleType: "commonjs"
+}
+
+/**
+ * Return a full Netligraph config with any defaults overridden by netlify.toml
+ * @param {import('../base-command').BaseCommand} command
+ */
+const getNetligraphConfig = ({ command, options }) => {
+  const { config } = command.netlify
+  const userSpecifiedConfig = config && config.netligraph
+  const functionsPath = getFunctionsDir({ config, options })
+  const netligraphPath = `${functionsPath}/netligraph`
+  const baseConfig = { ...defaultNetligraphConfig, ...userSpecifiedConfig, netligraphPath }
+  const netligraphImplementationFilename = `${baseConfig.netligraphPath}/index.${baseConfig.extension}`
+  const netligraphTypeDefinitionsFilename = `${baseConfig.netligraphPath}/index.d.ts`
+  const graphQLOperationsSourceFilename = `${baseConfig.netligraphPath}/${sourceOperationsFilename}`
+  const graphQLSchemaFilename = 'netligraphSchema.graphql'
+  const fullConfig = {
+    functionsPath,
+    netligraphImplementationFilename,
+    netligraphTypeDefinitionsFilename,
+    graphQLOperationsSourceFilename,
+    graphQLSchemaFilename,
+    ...baseConfig
+  }
+
+  return fullConfig
+}
+
+const ensureNetligraphPath = (netligraphConfig) => {
+  makeDir.sync(netligraphConfig.netligraphPath)
+}
+
+const ensureFunctionsPath = (netligraphConfig) => {
+  makeDir.sync(netligraphConfig.functionsPath)
+}
+
+const defaultExampleOperationsDoc = `query ExampleQuery @netligraph(doc: "An example query to start with.") {
+  __typename
+}`
+
+const generatedOneGraphClient = (netligraphConfig) => {
+  const exp = (name) => {
+    if (netligraphConfig.moduleType === 'commonjs') {
+      return `exports.${name}`
+    }
+
+    return `export const ${name}`
+  }
+
+  return `
 const fetch = (appId, options) => {
   var reqBody = options.body || null
   const userHeaders = options.headers || {}
@@ -73,7 +128,7 @@ const fetch = (appId, options) => {
   })
 }
 
-export async function fetchOneGraphPersisted(
+${exp("fetchOneGraphPersisted")} = async function fetchOneGraphPersisted(
   accessToken,
   docId,
   operationName,
@@ -100,7 +155,7 @@ export async function fetchOneGraphPersisted(
   return JSON.parse(result)
 }
 
-export async function fetchOneGraph(
+${exp("fetchOneGraph")} = async function fetchOneGraph(
   accessToken,
   query,
   operationName,
@@ -126,7 +181,7 @@ export async function fetchOneGraph(
   // @ts-ignore
   return JSON.parse(result)
 }
-`
+`}
 
 const subscriptionParserName = (fn) => `parseAndVerify${fn.operationName}Event`
 
@@ -278,7 +333,7 @@ const queryToFunctionDefinition = (fullSchema, persistedQuery) => {
   return fn
 }
 
-const generateJavaScriptClient = (schema, operationsDoc, enabledFunctions) => {
+const generateJavaScriptClient = (netligraphConfig, schema, operationsDoc, enabledFunctions) => {
   const operationsWithoutTemplateDollar = replaceAll(operationsDoc, '${', '\\${')
   const safeOperationsDoc = replaceAll(operationsWithoutTemplateDollar, '`', '\\`')
   const functionDecls = enabledFunctions.map((fn) => {
@@ -312,6 +367,14 @@ const generateJavaScriptClient = (schema, operationsDoc, enabledFunctions) => {
     return fn.id ? staticFunction : dynamicFunction
   })
 
+  const exp = (name) => {
+    if (netligraphConfig.moduleType === 'commonjs') {
+      return `exports.${name}`
+    }
+
+    return `export const ${name}`
+  }
+
   const exportedFunctionsObjectProperties = enabledFunctions
     .map((fn) => {
       const isSubscription = fn.kind === 'subscription'
@@ -344,11 +407,29 @@ const generateJavaScriptClient = (schema, operationsDoc, enabledFunctions) => {
     })
     .join(',\n  ')
 
-  const source = `// GENERATED VIA \`netlify-plugin-netligraph\`, EDIT WITH CAUTION!
-import https from 'https'
-import crypto from 'crypto'
+  const dummyHandler = `${exp("handler")} = async (event, context) => {
+  // return a 401 json response
+  return {
+    statusCode: 401,
+    body: JSON.stringify({
+      message: 'Unauthorized',
+    }),
+  }
+}`
 
-export const verifySignature = (input) => {
+  const imp = (name, package) => {
+    if (netligraphConfig.moduleType === 'commonjs') {
+      return `const ${name} = require("${package}")`
+    }
+
+    return `import ${name} from "${package}"`
+  }
+
+  const source = `// GENERATED VIA \`netlify-plugin-netligraph\`, EDIT WITH CAUTION!
+${imp("https", "https")}
+${imp("crypto", "crypto")}
+
+${exp("verifySignature")} = (input) => {
   const secret = input.secret
   const body = input.body
   const signature = input.signature
@@ -396,9 +477,9 @@ export const verifySignature = (input) => {
 
 const operationsDoc = \`${safeOperationsDoc}\`
 
-${generatedOneGraphClient}
+${generatedOneGraphClient(netligraphConfig)}
 
-export const verifyRequestSignature = (request) => {
+${exp("verifyRequestSignature")} = (request) => {
   const event = request.event
   const secret = process.env.NETLIGRAPH_WEBHOOK_SECRET
   const signature = event.headers['x-onegraph-signature']
@@ -423,20 +504,14 @@ const functions = {
   ${exportedFunctionsObjectProperties}
 }
 
-export default functions
-  `
+${netligraphConfig.moduleType === 'commonjs' ? 'exports.default = functions' : "export default functions"}
 
-  // const formatted = Prettier.format(source, {
-  //     tabWidth: 2,
-  //     semi: false,
-  //     singleQuote: true,
-  //     parser: 'babel-ts',
-  // })
+${dummyHandler}`
 
   return source
 }
 
-const generateTypeScriptDefinitions = (schema, enabledFunctions) => {
+const generateTypeScriptDefinitions = (netligraphConfig, schema, enabledFunctions) => {
   const functionDecls = enabledFunctions.map((fn) => {
     const isSubscription = fn.kind === 'subscription'
 
@@ -445,23 +520,6 @@ const generateTypeScriptDefinitions = (schema, enabledFunctions) => {
       return generateSubscriptionFunctionTypeDefinition(schema, fn, fragments)
     }
 
-    if (isSubscription) {
-      const subscriptionFnName = subscriptionFunctionName(fn)
-      const parserFnName = subscriptionParserName(fn)
-
-      const jsDoc = replaceAll(fn.description || '', '*/', '')
-        .split('\n')
-        .join('\n* ')
-
-      return `/**
- * ${jsDoc}
- */
-  ${subscriptionFnName}: ${subscriptionFnName},
-  /**
-   * Verify the event body is signed securely, and then parse the result.
-   */
-  ${parserFnName}: ${parserFnName}`
-    }
     const jsDoc = replaceAll(fn.description || ``, '*/', '')
       .split('\n')
       .join('\n* ')
@@ -484,13 +542,14 @@ ${functionDecls.join('\n\n')}
   return source
 }
 
-const generateFunctionsFile = (basePath, schema, operationsDoc, queries) => {
+const generateFunctionsFile = (netligraphConfig, schema, operationsDoc, queries) => {
   const functionDefinitions = queries.map((query) => queryToFunctionDefinition(schema, query))
-  const clientSource = generateJavaScriptClient(schema, operationsDoc, functionDefinitions)
-  const typeDefinitionsSource = generateTypeScriptDefinitions(schema, functionDefinitions)
+  const clientSource = generateJavaScriptClient(netligraphConfig, schema, operationsDoc, functionDefinitions)
+  const typeDefinitionsSource = generateTypeScriptDefinitions(netligraphConfig, schema, functionDefinitions)
 
-  fs.writeFileSync(`${basePath}/netligraphFunctions.mjs`, clientSource, 'utf8')
-  fs.writeFileSync(`${basePath}/netligraphFunctions.d.ts`, typeDefinitionsSource, 'utf8')
+  ensureNetligraphPath(netligraphConfig)
+  fs.writeFileSync(netligraphConfig.netligraphImplementationFilename, clientSource, 'utf8')
+  fs.writeFileSync(netligraphConfig.netligraphTypeDefinitionsFilename, typeDefinitionsSource, 'utf8')
 }
 
 const extractFunctionsFromOperationDoc = (parsedDoc) => {
@@ -505,7 +564,7 @@ const extractFunctionsFromOperationDoc = (parsedDoc) => {
       const directive = dotProp.get(next, 'directives', []).find(
         (localDirective) => localDirective.name.value === 'netligraph',
       )
-      const docArg = dotProp.get(directive, 'arguments').find((arg) => arg.name.value === 'doc')
+      const docArg = dotProp.get(directive, 'arguments', []).find((arg) => arg.name.value === 'doc')
 
       let docString = dotProp.get(docArg, 'value.value')
 
@@ -531,11 +590,13 @@ const extractFunctionsFromOperationDoc = (parsedDoc) => {
   return fns
 }
 
-const sourceOperationsFilename = 'netligraphOperationsLibrary.graphql'
 
-const readGraphQLOperationsSourceFile = (basePath) => {
-  const fullFilename = `${basePath}/${sourceOperationsFilename}`
+const readGraphQLOperationsSourceFile = (netligraphConfig) => {
+  ensureNetligraphPath(netligraphConfig)
+
+  const fullFilename = netligraphConfig.graphQLOperationsSourceFilename
   if (!fs.existsSync(fullFilename)) {
+    fs.writeFileSync(fullFilename, '')
     fs.closeSync(fs.openSync(fullFilename, 'w'))
   }
   const source = fs.readFileSync(fullFilename, 'utf8')
@@ -543,28 +604,23 @@ const readGraphQLOperationsSourceFile = (basePath) => {
   return source
 }
 
-const readAndParseGraphQLOperationsSourceFile = (basePath) => {
-  const source = readGraphQLOperationsSourceFile(basePath)
-
-  try {
-    const parsedGraphQLDoc = parse(source, {
-      noLocation: true,
-    })
-
-    return [parsedGraphQLDoc]
-  } catch (error) {
-    return []
-  }
-}
-
-const writeGraphQLOperationsSourceFile = (basePath, operationDocString) => {
+const writeGraphQLOperationsSourceFile = (netligraphConfig, operationDocString) => {
   const graphqlSource = operationDocString
 
-  fs.writeFileSync(`${basePath}/${sourceOperationsFilename}`, graphqlSource, 'utf8')
+  ensureNetligraphPath(netligraphConfig)
+  fs.writeFileSync(netligraphConfig.graphQLOperationsSourceFilename, graphqlSource, 'utf8')
 }
 
-const generateHandler = (basePath, schema, operationId, handlerOptions) => {
-  const [doc] = readAndParseGraphQLOperationsSourceFile(basePath)
+const writeGraphQLSchemaFile = (netligraphConfig, schema) => {
+  const graphqlSource = printSchema(schema)
+
+  ensureNetligraphPath(netligraphConfig)
+  fs.writeFileSync(netligraphConfig.graphQLSchemaFilename, graphqlSource, 'utf8')
+}
+
+const generateHandler = (netligraphConfig, schema, operationId, handlerOptions) => {
+  const operationsDoc = readGraphQLOperationsSourceFile(netligraphConfig)
+  const doc = parse(operationsDoc)
   const operation = doc.definitions.find((op) => op.kind === Kind.OPERATION_DEFINITION && op.name.value === operationId)
 
   if (!operation) {
@@ -574,6 +630,7 @@ const generateHandler = (basePath, schema, operationId, handlerOptions) => {
   const odl = computeOperationDataList({ query: print(operation), variables: [] })
 
   const source = netlifyFunctionSnippet.generate({
+    netligraphConfig,
     operationDataList: odl.operationDataList,
     schema,
     options: handlerOptions,
@@ -583,17 +640,19 @@ const generateHandler = (basePath, schema, operationId, handlerOptions) => {
     functionName: operationId,
   }
 
-  const filename = `netlify/functions/${newFunction.functionName}.js`
+  const filename = `${netligraphConfig.functionsPath}/${newFunction.functionName}.${netligraphConfig.extension}`
 
+  ensureFunctionsPath(netligraphConfig)
   fs.writeFileSync(filename, source)
 }
 
 module.exports = {
+  defaultExampleOperationsDoc,
   extractFunctionsFromOperationDoc,
   generateFunctionsFile,
   generateHandler,
-  netligraphPath,
+  getNetligraphConfig,
   readGraphQLOperationsSourceFile,
-  readAndParseGraphQLOperationsSourceFile,
   writeGraphQLOperationsSourceFile,
+  writeGraphQLSchemaFile
 }

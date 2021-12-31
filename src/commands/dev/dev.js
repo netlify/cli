@@ -12,6 +12,7 @@ const waitPort = require('wait-port')
 
 const { startFunctionsServer } = require('../../lib/functions/server')
 const { ensureAppForSite, startOneGraphCLISession } = require('../../lib/oneGraph/client')
+const { getNetligraphConfig } = require('../../lib/oneGraph/netligraph')
 const {
   NETLIFYDEV,
   NETLIFYDEVERR,
@@ -106,12 +107,12 @@ const runCommand = (command, env = {}) => {
     }
     process.exit(1)
   })
-  ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) => {
-    process.on(signal, () => {
-      commandProcess.kill('SIGTERM', { forceKillAfterTimeout: 500 })
-      process.exit()
+    ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) => {
+      process.on(signal, () => {
+        commandProcess.kill('SIGTERM', { forceKillAfterTimeout: 500 })
+        process.exit()
+      })
     })
-  })
 
   return commandProcess
 }
@@ -292,18 +293,25 @@ const dev = async (options, command) => {
   process.env.URL = url
   process.env.DEPLOY_URL = url
 
-  const startNetligraphWatcher = Boolean(site.id)
+  const startNetligraphWatcher = Boolean(options.netligraph)
 
-  if (startNetligraphWatcher) {
-    const netlifyToken = await command.authenticate()
-    await ensureAppForSite(netlifyToken, site.id)
-    startOneGraphCLISession({ netlifyToken, site, state })
-  } else {
+  if (startNetligraphWatcher && options.offline) {
+    console.warn(
+      `${NETLIFYDEVERR} Warning: unable to start Netligraph in offline mode`,
+    )
+  } else if (startNetligraphWatcher && !(site.id)) {
     console.warn(
       `${NETLIFYDEVERR} Warning: no siteId defined, unable to start Netligraph. To enable, run ${chalk.yellow(
         'netlify init',
       )} or ${chalk.yellow('netlify link')}?`,
     )
+  } else if (startNetligraphWatcher) {
+    const netlifyToken = await command.authenticate()
+    await ensureAppForSite(netlifyToken, site.id)
+    const netligraphConfig = getNetligraphConfig({ command, options })
+    startOneGraphCLISession({ netligraphConfig, netlifyToken, site, state })
+  } else {
+    console.log("Skipping netligraph....")
   }
 
   printBanner({ url })
@@ -347,6 +355,12 @@ const createDevCommand = (program) => {
       new Option(
         '-g ,--locationDb <path>',
         'specify the path to a local GeoIP location database in MMDB format',
+      ).hideHelp(),
+    )
+    .addOption(
+      new Option(
+        '--netligraph',
+        'enable netligraph support',
       ).hideHelp(),
     )
     .addExamples(['netlify dev', 'netlify dev -d public', 'netlify dev -c "hugo server -w" --targetPort 1313'])

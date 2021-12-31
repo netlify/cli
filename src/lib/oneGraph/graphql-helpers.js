@@ -66,9 +66,12 @@ const typeScriptForGraphQLType = (schema, gqlType) => {
 */
 `
         : ''
-      return `${description}"${field.name}"${nullable ? '?' : ''}: ${type}`
+      return `
+${description} ${field.name}${nullable ? '?' : ''}: ${type}`
     })
-    return `{${fields.join(', ')}}`
+    return `{
+  ${fields.join('; ')}
+}`
   }
   if (isWrappingType(gqlType)) {
     return typeScriptForGraphQLType(schema, gqlType.ofType)
@@ -98,14 +101,14 @@ const typeScriptSignatureForOperationVariables = (variableNames, schema, operati
   const typesObject = variables.map(([varName, varDef]) => {
     const printedType = print(varDef.type)
     const parsedType = parseType(printedType)
-    // @ts-ignore
     const gqlType = typeFromAST(schema, parsedType)
-    // @ts-ignore
     const tsType = typeScriptForGraphQLType(schema, gqlType)
     return [varName, tsType]
   })
-  const typeFields = typesObject.map(([name, tsType]) => `"${name}": ${tsType}`).join(', ')
-  const types = `{${typeFields}}`
+  const typeFields = typesObject.map(([name, tsType]) => `${name}: ${tsType}`).join(', ')
+  const types = `{
+  ${typeFields}
+}`
   return types === '' ? 'null' : types
 }
 
@@ -156,13 +159,15 @@ const typeScriptDefinitionObjectForOperation = (schema, operationDefinition, fra
     const field = parentNamedType.getFields()[name]
     const gqlType = dotProp.get(field, 'type')
     if (name.startsWith('__')) {
-      return [displayedName, { type: 'any', description: 'Internal GraphQL field' }]
+      return [displayedName, {
+        type: 'any', description: 'Internal GraphQL field', nullable: true,
+      }]
     }
     const namedType = getNamedType(gqlType)
     const isNullable = !isNonNullType(gqlType)
     const isList = isListType(gqlType) || (!isNullable && isListType(gqlType.ofType))
     const isObjectLike = isObjectType(namedType) || isUnionType(namedType) || isInterfaceType(namedType)
-    const sub = dotProp.get(selection, 'selectionSet.selections')
+    const sub = dotProp.get(selection, 'selectionSet.selections', [])
       // @ts-ignore
       .map(function innerHelper(innerSelection) {
         if (innerSelection.kind === 'Field') {
@@ -225,7 +230,7 @@ const typeScriptDefinitionObjectForOperation = (schema, operationDefinition, fra
       for (let idx = 0; idx < nestingLevel; idx++) {
         finalType = [finalType]
       }
-      const entry = [displayedName, { type: finalType, description: field && field.description }]
+      const entry = [displayedName, { type: finalType, description: field && field.description, nullable: isNullable }]
       return entry
     }
     // @ts-ignore
@@ -261,10 +266,12 @@ const typeScriptDefinitionObjectForOperation = (schema, operationDefinition, fra
     const result = {
       data: {
         type: object,
-        description: 'Any data retrieved by the const function be returned here',
+        nullable: true,
+        description: 'Any data retrieved by the function be returned here',
       },
       errors: {
         type: ['any'],
+        nullable: true,
         description: 'Any errors in the function will be returned here',
       },
     }
@@ -275,10 +282,12 @@ const typeScriptDefinitionObjectForOperation = (schema, operationDefinition, fra
     data: {
       // @ts-ignore
       type: 'any',
-      description: 'Any data retrieved by the const function be returned here',
+      nullable: true,
+      description: 'Any data retrieved by the function be returned here',
     },
     errors: {
       type: ['any'],
+      nullable: true,
       description: 'Any errors in the function will be returned here',
     },
   }
@@ -302,7 +311,7 @@ const typeScriptForOperation = (schema, operationDefinition, fragmentDefinitions
     if (typeof value.type === 'object') {
       const fields = objectHelper(value.type)
       return `{
-      ${fields.join(', ')}
+      ${fields.join('; ')}
   }`
     }
   }
@@ -311,16 +320,18 @@ const typeScriptForOperation = (schema, operationDefinition, fragmentDefinitions
     Object.entries(obj).map(([name, value]) => {
       const { description } = value
       const tsType = valueHelper(value)
+      const { nullable } = value;
       const doc = description
         ? `/**
 * ${description}
 */
 `
         : ''
-      return `${doc}"${name}": ${tsType}`
+      return `
+${doc} ${name}${nullable ? '?' : ''}: ${tsType}`
     })
 
-  const fields = objectHelper(typeMap).join(', ')
+  const fields = objectHelper(typeMap).join('; ')
   return `{${fields}}`
 }
 
@@ -345,6 +356,10 @@ const patchSubscriptionWebhookField = ({ definition, schema }) => {
   const newSelections = definition.selectionSet.selections.map((selection) => {
     if (selection.kind !== 'Field') return selection
     const field = subscriptionType.getFields()[selection.name.value]
+    if (!field) {
+      console.warn("Unable to subscription, you may need to enable additional services. Missing field:", selection.name.value)
+      return selection
+    }
     const fieldHasWebhookUrlArg = field.args.some((arg) => arg.name === 'webhookUrl')
     const selectionHasWebhookUrlArg = dotProp.get(selection, 'arguments', []).some((arg) => arg.name.value === 'webhookUrl')
     if (fieldHasWebhookUrlArg && !selectionHasWebhookUrlArg) {
@@ -419,6 +434,10 @@ const patchSubscriptionWebhookSecretField = ({ definition, schema }) => {
   const newSelections = definition.selectionSet.selections.map((selection) => {
     if (selection.kind !== 'Field') return selection
     const field = subscriptionType.getFields()[selection.name.value]
+    if (!field) {
+      console.warn("Unable to subscription, you may need to enable additional services. Missing field:", selection.name.value)
+      return selection
+    }
     const fieldHasWebhookSecretArg = field.args.some((arg) => arg.name === 'secret')
     const selectionHasWebhookSecretArg = dotProp.get(selection, 'arguments', []).some((arg) => arg.name.value === 'secret')
     if (fieldHasWebhookSecretArg && !selectionHasWebhookSecretArg) {

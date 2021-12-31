@@ -1,6 +1,7 @@
 const process = require('process')
 
 const { refetchAndGenerateFromOneGraph } = require('../../lib/oneGraph/client')
+const { getNetligraphConfig } = require('../../lib/oneGraph/netligraph')
 const { NETLIFYDEVERR, chalk } = require('../../utils')
 
 const graphPull = async (options, command) => {
@@ -15,8 +16,10 @@ const graphPull = async (options, command) => {
     process.exit(1)
   }
 
+  const netligraphConfig = getNetligraphConfig({ command, options })
   const netlifyToken = await command.authenticate()
-  refetchAndGenerateFromOneGraph(state, netlifyToken, site.id)
+  const siteId = site.id
+  await refetchAndGenerateFromOneGraph({ netligraphConfig, netlifyToken, state, siteId })
 }
 
 /**
