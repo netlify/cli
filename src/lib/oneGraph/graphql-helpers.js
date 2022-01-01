@@ -357,7 +357,7 @@ const patchSubscriptionWebhookField = ({ definition, schema }) => {
     if (selection.kind !== 'Field') return selection
     const field = subscriptionType.getFields()[selection.name.value]
     if (!field) {
-      console.warn("Unable to subscription, you may need to enable additional services. Missing field:", selection.name.value)
+      console.warn("Unable to find subscription service field, you may need to enable additional services. Missing field:", selection.name.value)
       return selection
     }
     const fieldHasWebhookUrlArg = field.args.some((arg) => arg.name === 'webhookUrl')
@@ -435,7 +435,7 @@ const patchSubscriptionWebhookSecretField = ({ definition, schema }) => {
     if (selection.kind !== 'Field') return selection
     const field = subscriptionType.getFields()[selection.name.value]
     if (!field) {
-      console.warn("Unable to subscription, you may need to enable additional services. Missing field:", selection.name.value)
+      console.warn("Unable to find subscription service field, you may need to enable additional services. Missing field:", selection.name.value)
       return selection
     }
     const fieldHasWebhookSecretArg = field.args.some((arg) => arg.name === 'secret')

@@ -350,7 +350,7 @@ ${variables}
 const subscriptionHandler = ({
   netligraphConfig,
   operationData,
-}) => `${imp(netligraphConfig, "{ getSecrets }", "@netlify/functions")}
+}) => `${imp(netligraphConfig, "{ getSecrets }", "@sgrove/netlify-functions")}
 ${imp(netligraphConfig, "Netligraph", "./netligraph")}
 
 ${exp(netligraphConfig, "handler")} = async (event, context) => {
@@ -483,7 +483,7 @@ ${operationData.name}Data: ${operationData.name}Data`,
 
     const whitespace = 6
 
-    const snippet = `${imp(netligraphConfig, '{ getSecrets }', '@netlify/functions')};
+    const snippet = `${imp(netligraphConfig, '{ getSecrets }', '@sgrove/netlify-functions')};
 ${imp(netligraphConfig, "Netligraph", "./netligraph")}
 
 ${exp(netligraphConfig, "handler")} = async (event, context) => {
@@ -494,7 +494,7 @@ ${exp(netligraphConfig, "handler")} = async (event, context) => {
   // accessToken = event.headers["authorization"]?.split(" ")[1]
 
   //// If you want to use the API with your own access token:
-  // accessToken = (await getSecrets(event))?.personalOmniAccessToken
+  // accessToken = (await getSecrets(event))?.oneGraph?.bearerToken;
       
   const eventBodyJson = JSON.parse(event.body || "{}");
 

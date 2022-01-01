@@ -674,10 +674,10 @@ const startOneGraphCLISession = async ({ netlifyToken, netligraphConfig, site, s
     sessionId: oneGraphSessionId,
     state,
     onEvents: (events) => {
-      events.forEach((event) => {
+      events.forEach(async (event) => {
         const eventName = friendlyEventName(event)
         log(`${NETLIFYDEVLOG} ${chalk.magenta('Handling')} Netligraph event: ${eventName}...`)
-        handleEvent(event)
+        await handleEvent(event)
         log(`${NETLIFYDEVLOG} ${chalk.green('Finished handling')} Netligraph event: ${eventName}...`)
       })
       return events.map((event) => event.id)

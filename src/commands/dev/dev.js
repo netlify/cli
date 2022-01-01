@@ -305,6 +305,7 @@ const dev = async (options, command) => {
         'netlify init',
       )} or ${chalk.yellow('netlify link')}?`,
     )
+    process.exit(1)
   } else if (startNetligraphWatcher) {
     const netlifyToken = await command.authenticate()
     await ensureAppForSite(netlifyToken, site.id)

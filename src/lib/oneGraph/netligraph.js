@@ -67,16 +67,8 @@ const defaultExampleOperationsDoc = `query ExampleQuery @netligraph(doc: "An exa
   __typename
 }`
 
-const generatedOneGraphClient = (netligraphConfig) => {
-  const exp = (name) => {
-    if (netligraphConfig.moduleType === 'commonjs') {
-      return `exports.${name}`
-    }
-
-    return `export const ${name}`
-  }
-
-  return `
+const generatedOneGraphClient = () =>
+  `
 const fetch = (appId, options) => {
   var reqBody = options.body || null
   const userHeaders = options.headers || {}
@@ -128,7 +120,7 @@ const fetch = (appId, options) => {
   })
 }
 
-${exp("fetchOneGraphPersisted")} = async function fetchOneGraphPersisted(
+const fetchOneGraphPersisted = async function fetchOneGraphPersisted(
   accessToken,
   docId,
   operationName,
@@ -155,7 +147,7 @@ ${exp("fetchOneGraphPersisted")} = async function fetchOneGraphPersisted(
   return JSON.parse(result)
 }
 
-${exp("fetchOneGraph")} = async function fetchOneGraph(
+const fetchOneGraph = async function fetchOneGraph(
   accessToken,
   query,
   operationName,
@@ -181,11 +173,27 @@ ${exp("fetchOneGraph")} = async function fetchOneGraph(
   // @ts-ignore
   return JSON.parse(result)
 }
-`}
+`
 
 const subscriptionParserName = (fn) => `parseAndVerify${fn.operationName}Event`
 
 const subscriptionFunctionName = (fn) => `subscribeTo${fn.operationName}`
+
+const exp = (netligraphConfig, name) => {
+  if (netligraphConfig.moduleType === 'commonjs') {
+    return `exports.${name}`
+  }
+
+  return `export const ${name}`
+}
+
+const imp = (netligraphConfig, name, package) => {
+  if (netligraphConfig.moduleType === 'commonjs') {
+    return `const ${name} = require("${package}")`
+  }
+
+  return `import ${name} from "${package}"`
+}
 
 const generateSubscriptionFunctionTypeDefinition = (schema, fn, fragments) => {
   const parsingFunctionReturnSignature = typeScriptSignatureForOperation(schema, fn.parsedOperation, fragments)
@@ -201,7 +209,7 @@ const generateSubscriptionFunctionTypeDefinition = (schema, fn, fragments) => {
   return `/**
 * ${jsDoc}
 */
-export function ${subscriptionFunctionName(fn)} (
+export function ${subscriptionFunctionName(fn)}(
   /**
    * This will be available in your webhook handler as a query parameter.
    * Use this to keep track of which subscription you're receiving
@@ -342,7 +350,7 @@ const generateJavaScriptClient = (netligraphConfig, schema, operationsDoc, enabl
       return generateSubscriptionFunction(schema, fn, fragments)
     }
 
-    const dynamicFunction = `const ${fn.fnName} = (
+    const dynamicFunction = `${exp(netligraphConfig, fn.fnName)} = (
   variables,
   accessToken,
   ) => {
@@ -355,7 +363,7 @@ const generateJavaScriptClient = (netligraphConfig, schema, operationsDoc, enabl
 
   `
 
-    const staticFunction = `const ${fn.fnName} = (
+    const staticFunction = `${exp(netligraphConfig, fn.fnName)} = (
   variables,
   accessToken,
 ) => {
@@ -366,14 +374,6 @@ const generateJavaScriptClient = (netligraphConfig, schema, operationsDoc, enabl
 `
     return fn.id ? staticFunction : dynamicFunction
   })
-
-  const exp = (name) => {
-    if (netligraphConfig.moduleType === 'commonjs') {
-      return `exports.${name}`
-    }
-
-    return `export const ${name}`
-  }
 
   const exportedFunctionsObjectProperties = enabledFunctions
     .map((fn) => {
@@ -396,6 +396,7 @@ const generateJavaScriptClient = (netligraphConfig, schema, operationsDoc, enabl
    */
   ${parserFnName}: ${parserFnName}`
       }
+
       const jsDoc = replaceAll(fn.description || '', '*/', '')
         .split('\n')
         .join('\n* ')
@@ -403,11 +404,11 @@ const generateJavaScriptClient = (netligraphConfig, schema, operationsDoc, enabl
       return `/**
   * ${jsDoc}
   */
-  ${fn.fnName}: ${fn.fnName}`
+  ${fn.fnName}: ${netligraphConfig.moduleType === "commonjs" ? "exports." : ""}${fn.fnName}`
     })
     .join(',\n  ')
 
-  const dummyHandler = `${exp("handler")} = async (event, context) => {
+  const dummyHandler = `${exp(netligraphConfig, "handler")} = async (event, context) => {
   // return a 401 json response
   return {
     statusCode: 401,
@@ -417,19 +418,11 @@ const generateJavaScriptClient = (netligraphConfig, schema, operationsDoc, enabl
   }
 }`
 
-  const imp = (name, package) => {
-    if (netligraphConfig.moduleType === 'commonjs') {
-      return `const ${name} = require("${package}")`
-    }
-
-    return `import ${name} from "${package}"`
-  }
-
   const source = `// GENERATED VIA \`netlify-plugin-netligraph\`, EDIT WITH CAUTION!
-${imp("https", "https")}
-${imp("crypto", "crypto")}
+${imp(netligraphConfig, "https", "https")}
+${imp(netligraphConfig, "crypto", "crypto")}
 
-${exp("verifySignature")} = (input) => {
+${exp(netligraphConfig, "verifySignature")} = (input) => {
   const secret = input.secret
   const body = input.body
   const signature = input.signature
@@ -477,9 +470,9 @@ ${exp("verifySignature")} = (input) => {
 
 const operationsDoc = \`${safeOperationsDoc}\`
 
-${generatedOneGraphClient(netligraphConfig)}
+${generatedOneGraphClient()}
 
-${exp("verifyRequestSignature")} = (request) => {
+${exp(netligraphConfig, "verifyRequestSignature")} = (request) => {
   const event = request.event
   const secret = process.env.NETLIGRAPH_WEBHOOK_SECRET
   const signature = event.headers['x-onegraph-signature']
@@ -615,12 +608,17 @@ const writeGraphQLSchemaFile = (netligraphConfig, schema) => {
   const graphqlSource = printSchema(schema)
 
   ensureNetligraphPath(netligraphConfig)
-  fs.writeFileSync(netligraphConfig.graphQLSchemaFilename, graphqlSource, 'utf8')
+  fs.writeFileSync(`${netligraphConfig.netligraphPath}/${netligraphConfig.graphQLSchemaFilename}`, graphqlSource, 'utf8')
 }
 
 const generateHandler = (netligraphConfig, schema, operationId, handlerOptions) => {
-  const operationsDoc = readGraphQLOperationsSourceFile(netligraphConfig)
-  const doc = parse(operationsDoc)
+  let currentOperationsDoc = readGraphQLOperationsSourceFile(netligraphConfig)
+
+  if (currentOperationsDoc.trim().length === 0) {
+    currentOperationsDoc = defaultExampleOperationsDoc
+  }
+
+  const doc = parse(currentOperationsDoc)
   const operation = doc.definitions.find((op) => op.kind === Kind.OPERATION_DEFINITION && op.name.value === operationId)
 
   if (!operation) {
