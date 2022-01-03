@@ -76,7 +76,6 @@
         "make-dir": "^3.0.0",
         "memoize-one": "^6.0.0",
         "minimist": "^1.2.5",
-        "mock-require": "^3.0.3",
         "multiparty": "^4.2.1",
         "netlify": "^10.1.1",
         "netlify-headers-parser": "^6.0.0",
@@ -134,6 +133,7 @@
         "ini": "^2.0.0",
         "jsonwebtoken": "^8.5.1",
         "mock-fs": "^5.1.2",
+        "mock-require": "^3.0.3",
         "nyc": "^15.0.0",
         "p-timeout": "^4.0.0",
         "seedrandom": "^3.0.5",
@@ -10694,7 +10694,8 @@
     "node_modules/get-caller-file": {
       "version": "1.0.3",
       "resolved": "https://registry.npmjs.org/get-caller-file/-/get-caller-file-1.0.3.tgz",
-      "integrity": "sha512-3t6rVToeoZfYSGd8YoLFR2DJkiQrIiUrGcjvFX2mDw3bn6k2OtwHN0TNCLbBO+w8qTvimhDkv+LSscbJY1vE6w=="
+      "integrity": "sha512-3t6rVToeoZfYSGd8YoLFR2DJkiQrIiUrGcjvFX2mDw3bn6k2OtwHN0TNCLbBO+w8qTvimhDkv+LSscbJY1vE6w==",
+      "dev": true
     },
     "node_modules/get-intrinsic": {
       "version": "1.1.1",
@@ -14372,6 +14373,7 @@
       "version": "3.0.3",
       "resolved": "https://registry.npmjs.org/mock-require/-/mock-require-3.0.3.tgz",
       "integrity": "sha512-lLzfLHcyc10MKQnNUCv7dMcoY/2Qxd6wJfbqCcVk3LDb8An4hF6ohk5AztrvgKhJCqj36uyzi/p5se+tvyD+Wg==",
+      "dev": true,
       "dependencies": {
         "get-caller-file": "^1.0.2",
         "normalize-path": "^2.1.1"
@@ -14384,6 +14386,7 @@
       "version": "2.1.1",
       "resolved": "https://registry.npmjs.org/normalize-path/-/normalize-path-2.1.1.tgz",
       "integrity": "sha1-GrKLVW4Zg2Oowab35vogE3/mrtk=",
+      "dev": true,
       "dependencies": {
         "remove-trailing-separator": "^1.0.1"
       },
@@ -28742,7 +28745,8 @@
     "get-caller-file": {
       "version": "1.0.3",
       "resolved": "https://registry.npmjs.org/get-caller-file/-/get-caller-file-1.0.3.tgz",
-      "integrity": "sha512-3t6rVToeoZfYSGd8YoLFR2DJkiQrIiUrGcjvFX2mDw3bn6k2OtwHN0TNCLbBO+w8qTvimhDkv+LSscbJY1vE6w=="
+      "integrity": "sha512-3t6rVToeoZfYSGd8YoLFR2DJkiQrIiUrGcjvFX2mDw3bn6k2OtwHN0TNCLbBO+w8qTvimhDkv+LSscbJY1vE6w==",
+      "dev": true
     },
     "get-intrinsic": {
       "version": "1.1.1",
@@ -31461,6 +31465,7 @@
       "version": "3.0.3",
       "resolved": "https://registry.npmjs.org/mock-require/-/mock-require-3.0.3.tgz",
       "integrity": "sha512-lLzfLHcyc10MKQnNUCv7dMcoY/2Qxd6wJfbqCcVk3LDb8An4hF6ohk5AztrvgKhJCqj36uyzi/p5se+tvyD+Wg==",
+      "dev": true,
       "requires": {
         "get-caller-file": "^1.0.2",
         "normalize-path": "^2.1.1"
@@ -31470,6 +31475,7 @@
           "version": "2.1.1",
           "resolved": "https://registry.npmjs.org/normalize-path/-/normalize-path-2.1.1.tgz",
           "integrity": "sha1-GrKLVW4Zg2Oowab35vogE3/mrtk=",
+          "dev": true,
           "requires": {
             "remove-trailing-separator": "^1.0.1"
           }
