@@ -260,7 +260,7 @@ const Hits = ({ searchResults }) => {
         },
       },
     }
-    const slug = highlightedHit.url.replace(/https:\/\/cli.netlify.com/, '')
+    const slug = highlightedHit.url.replace('https://cli.netlify.com', '')
     return (
       <HitsOverlay key={index}>
         <a href={slug}>
