@@ -46,14 +46,13 @@ const config = {
       }
     },
     GENERATE_COMMANDS_LIST(content, options, instance) {
-      const context = path.basename(instance.originalPath, '.md')
       /* Generate Command List */
       let md = ''
       Object.keys(commandData).forEach((commandName) => {
         const info = commandData[commandName]
-        md += commandListTitle(commandName, context)
+        md += commandListTitle(commandName)
         md += commandListDescription(stripAnsi(info.description))
-        md += commandListSubCommandDisplay(info.commands, context)
+        md += commandListSubCommandDisplay(info.commands)
       })
 
       return md
