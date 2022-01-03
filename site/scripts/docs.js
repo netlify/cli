@@ -45,7 +45,7 @@ const config = {
         return md
       }
     },
-    GENERATE_COMMANDS_LIST(content, options, instance) {
+    GENERATE_COMMANDS_LIST() {
       /* Generate Command List */
       let md = ''
       Object.keys(commandData).forEach((commandName) => {
