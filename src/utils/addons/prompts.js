@@ -20,7 +20,7 @@ module.exports = function generatePrompts(settings) {
         console.log('')
       }
 
-      // Handle shorthand config. Probably will be removed. Severly limited + not great UX
+      // Handle shorthand config. Probably will be removed. Severely limited + not great UX
       if (typeof setting === 'string' || typeof setting === 'boolean') {
         if (typeof setting === 'string') {
           prompt = {
