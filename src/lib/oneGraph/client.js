@@ -278,18 +278,39 @@ query ListPersistedQueries(
     $nfToken: String!
     $appId: String!
     $name: String!
+    $metadata: JSON
   ) {
     oneGraph(
       auths: { netlifyAuth: { oauthToken: $nfToken } }
     ) {
       createNetlifyCliSession(
-        input: { appId: $appId, name: $name }
+        input: { appId: $appId, name: $name, metadata: metadata }
       ) {
         session {
           id
           appId
           netlifyUserId
           name
+        }
+      }
+    }
+  }
+  
+  mutation UpdateCLISessionMetadataMutation(
+    $nfToken: String!
+    $sessionId: String!
+    $metadata: JSON!
+  ) {
+    oneGraph(
+      auths: { netlifyAuth: { oauthToken: $nfToken } }
+    ) {
+      updateNetlifyCliSession(
+        input: { id: $sessionId, metadata: $metadata }
+      ) {
+        session {
+          id
+          name
+          metadata
         }
       }
     }
@@ -530,11 +551,12 @@ const monitorCLISessionEvents = ({ appId, authToken, netligraphConfig, onClose, 
   return close
 }
 
-const createCLISession = async (netlifyToken, appId, name) => {
+const createCLISession = async (netlifyToken, appId, name, metadata) => {
   const result = await fetchOneGraph(null, appId, internalOperationsDoc, 'CreateCLISessionMutation', {
     nfToken: netlifyToken,
     appId,
     name,
+    metadata
   })
 
   const session =
@@ -542,6 +564,22 @@ const createCLISession = async (netlifyToken, appId, name) => {
     result.data.oneGraph &&
     result.data.oneGraph.createNetlifyCliSession &&
     result.data.oneGraph.createNetlifyCliSession.session
+
+  return session
+}
+
+const updateCLISessionMetadata = async (netlifyToken, appId, sessionId, metadata) => {
+  const result = await fetchOneGraph(null, appId, internalOperationsDoc, 'UpdateCLISessionMetadataMutation', {
+    nfToken: netlifyToken,
+    sessionId,
+    metadata
+  })
+
+  const session =
+    result.data &&
+    result.data.oneGraph &&
+    result.data.oneGraph.updateNetlifyCliSession &&
+    result.data.oneGraph.updateNetlifyCliSession.session
 
   return session
 }
@@ -749,5 +787,6 @@ module.exports = {
   monitorCLISessionEvents,
   refetchAndGenerateFromOneGraph,
   startOneGraphCLISession,
+  updateCLISessionMetadata,
   upsertAppForSite,
 }

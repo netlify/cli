@@ -7,6 +7,7 @@ const {
   createPersistedQuery,
   ensureAppForSite,
   loadCLISession,
+  updateCLISessionMetadata,
 } = require('../../lib/oneGraph/client')
 const { defaultExampleOperationsDoc, getNetligraphConfig, readGraphQLOperationsSourceFile } = require('../../lib/oneGraph/netligraph')
 const { NETLIFYDEVERR, chalk } = require('../../utils')
@@ -57,9 +58,11 @@ const graphEdit = async (options, command) => {
     tags: ['netlify-cli', `session:${oneGraphSessionId}`, `git-branch:${branch}`],
   })
 
+  await updateCLISessionMetadata(netlifyToken, siteId, oneGraphSessionId, { docId: persistedDoc.id })
+
   const host = process.env.NETLIFY_APP_HOST || `localhost:8080`
 
-  const url = `http://${host}/sites/${siteData.name}/graph/explorer?cliSessionId=${oneGraphSessionId}&docId=${persistedDoc.id}`
+  const url = `http://${host}/sites/${siteData.name}/graph/explorer?cliSessionId=${oneGraphSessionId}`
   await openBrowser({ url })
   console.timeEnd('graph:edit')
 }
