@@ -3,31 +3,4 @@
   ignorePresets: [':prHourlyLimit2'],
   semanticCommits: true,
   dependencyDashboard: true,
-  packageRules: [
-    {
-      // Those cannot be upgraded to a major version until we switch to ESM
-      packageNames: [
-        '@sindresorhus/slugify',
-        'ansi-styles',
-        'better-opn',
-        'chalk',
-        'configstore',
-        'http-proxy-middleware',
-        'inquirer',
-        'is-plain-obj',
-        'log-symbols',
-        'node-version-alias',
-        'path-key',
-        'p-map',
-        'p-timeout',
-        'p-wait-for',
-        'read-pkg-up',
-        'strip-ansi',
-        'to-readable-stream',
-      ],
-      major: {
-        enabled: false,
-      },
-    },
-  ],
 }
