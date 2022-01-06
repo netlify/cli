@@ -163,7 +163,6 @@ const createSiteBuilder = ({ siteName }) => {
     buildAsync: async () => {
       // eslint-disable-next-line fp/no-loops
       for (const task of tasks) {
-        // eslint-disable-next-line no-await-in-loop
         await task()
       }
 
