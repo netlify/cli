@@ -3,6 +3,7 @@ const fs = require('fs')
 const path = require('path')
 const process = require('process')
 
+const CronParser = require('cron-parser')
 const inquirer = require('inquirer')
 const fetch = require('node-fetch')
 
@@ -129,6 +130,13 @@ const getFunctionToTrigger = function (options, argumentName) {
   return argumentName
 }
 
+const getNextRun = function (schedule) {
+  const cron = CronParser.parseExpression(schedule, {
+    tz: 'Etc/UTC',
+  })
+  return cron.next().toDate()
+}
+
 /**
  * The functions:invoke command
  * @param {string} nameArgument
@@ -149,13 +157,18 @@ const functionsInvoke = async (nameArgument, options, command) => {
 
   const functions = await getFunctions(functionsDir)
   const functionToTrigger = await getNameFromArgs(functions, options, nameArgument)
+  const functionObj = functions.find((func) => func.name === functionToTrigger)
 
-  const headers = {
-    'user-agent': 'netlify-cli',
-  }
+  let headers
   let body = {}
 
-  if (eventTriggeredFunctions.has(functionToTrigger)) {
+  if (functionObj.schedule) {
+    body.next_run = getNextRun(functionObj.schedule)
+    headers = {
+      'user-agent': 'Netlify Clockwork',
+      'X-NF-Event': 'schedule',
+    }
+  } else if (eventTriggeredFunctions.has(functionToTrigger)) {
     /** handle event triggered fns  */
     // https://www.netlify.com/docs/functions/#event-triggered-functions
     const [name, event] = functionToTrigger.split('-')
@@ -203,8 +216,10 @@ const functionsInvoke = async (nameArgument, options, command) => {
       isAuthenticated = options.identity
     }
     if (isAuthenticated) {
-      headers.authorization =
-        'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzb3VyY2UiOiJuZXRsaWZ5IGZ1bmN0aW9uczp0cmlnZ2VyIiwidGVzdERhdGEiOiJORVRMSUZZX0RFVl9MT0NBTExZX0VNVUxBVEVEX0pXVCJ9.Xb6vOFrfLUZmyUkXBbCvU4bM7q8tPilF0F03Wupap_c'
+      headers = {
+        authorization:
+          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzb3VyY2UiOiJuZXRsaWZ5IGZ1bmN0aW9uczp0cmlnZ2VyIiwidGVzdERhdGEiOiJORVRMSUZZX0RFVl9MT0NBTExZX0VNVUxBVEVEX0pXVCJ9.Xb6vOFrfLUZmyUkXBbCvU4bM7q8tPilF0F03Wupap_c',
+      }
       // you can decode this https://jwt.io/
       // {
       //   "source": "netlify functions:trigger",

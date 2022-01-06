@@ -107,10 +107,12 @@ const createHandler = function ({ functionsRegistry }) {
 
       handleBackgroundFunctionResult(functionName, error)
     } else if (await func.isScheduled()) {
-      if (event.headers['user-agent'] !== 'netlify-cli') {
+      if (event.headers['user-agent'] !== 'Netlify Clockwork') {
         return response
           .status(400)
-          .send(`Scheduled function cannot be requested via HTTP. Invoke using 'netlify functions:invoke ${functionName}' instead.`)
+          .send(
+            `Scheduled function cannot be requested via HTTP. Invoke using 'netlify functions:invoke ${functionName}' instead.`,
+          )
       }
 
       handleScheduledFunction(functionName, response)

@@ -588,7 +588,10 @@ testMatrix.forEach((args) => {
           throwHttpErrors: false,
           retry: null,
         })
-        t.is(response.body, 'Scheduled functions can only be invoked using `netlify functions:invoke`.')
+        t.is(
+          response.body,
+          "Scheduled function cannot be requested via HTTP. Invoke using 'netlify functions:invoke hello-world' instead.",
+        )
         t.is(response.statusCode, 400)
 
         const stdout = await callCli(['functions:invoke', 'hello-world', '--identity', `--port=${server.port}`], {
@@ -636,7 +639,10 @@ testMatrix.forEach((args) => {
           throwHttpErrors: false,
           retry: null,
         })
-        t.is(response.body, 'Scheduled functions can only be invoked using `netlify functions:invoke`.')
+        t.is(
+          response.body,
+          "Scheduled function cannot be requested via HTTP. Invoke using 'netlify functions:invoke hello-world' instead.",
+        )
         t.is(response.statusCode, 400)
 
         const stdout = await callCli(['functions:invoke', 'hello-world', '--identity', `--port=${server.port}`], {

@@ -103,6 +103,7 @@
     "content-type": "^1.0.4",
     "cookie": "^0.4.0",
     "copy-template-dir": "^1.4.0",
+    "cron-parser": "^4.2.1",
     "debug": "^4.1.1",
     "decache": "^4.6.0",
     "del": "^6.0.0",
