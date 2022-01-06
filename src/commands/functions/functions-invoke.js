@@ -7,7 +7,7 @@ const CronParser = require('cron-parser')
 const inquirer = require('inquirer')
 const fetch = require('node-fetch')
 
-const { BACKGROUND, NETLIFYDEVWARN, chalk, error, exit, getFunctions } = require('../../utils')
+const { BACKGROUND, CLOCKWORK_USERAGENT, NETLIFYDEVWARN, chalk, error, exit, getFunctions } = require('../../utils')
 
 // https://www.netlify.com/docs/functions/#event-triggered-functions
 const events = [
@@ -165,7 +165,7 @@ const functionsInvoke = async (nameArgument, options, command) => {
   if (functionObj.schedule) {
     body.next_run = getNextRun(functionObj.schedule)
     headers = {
-      'user-agent': 'Netlify Clockwork',
+      'user-agent': CLOCKWORK_USERAGENT,
       'X-NF-Event': 'schedule',
     }
   } else if (eventTriggeredFunctions.has(functionToTrigger)) {

@@ -1,7 +1,14 @@
 // @ts-check
 const jwtDecode = require('jwt-decode')
 
-const { NETLIFYDEVERR, NETLIFYDEVLOG, error: errorExit, getInternalFunctionsDir, log } = require('../../utils')
+const {
+  CLOCKWORK_USERAGENT,
+  NETLIFYDEVERR,
+  NETLIFYDEVLOG,
+  error: errorExit,
+  getInternalFunctionsDir,
+  log,
+} = require('../../utils')
 
 const { handleBackgroundFunction, handleBackgroundFunctionResult } = require('./background')
 const { createFormSubmissionHandler } = require('./form-submissions-handler')
@@ -107,7 +114,7 @@ const createHandler = function ({ functionsRegistry }) {
 
       handleBackgroundFunctionResult(functionName, error)
     } else if (await func.isScheduled()) {
-      if (event.headers['user-agent'] !== 'Netlify Clockwork') {
+      if (event.headers['user-agent'] !== CLOCKWORK_USERAGENT) {
         return response
           .status(400)
           .send(
