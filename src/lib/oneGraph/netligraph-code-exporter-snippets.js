@@ -1,6 +1,8 @@
 const dotProp = require('dot-prop')
 const { parse, print } = require('graphql')
 
+const { munge } = require("./codegen-helpers")
+
 let operationNodesMemo = [null, null]
 
 const getOperationNodes = (query) => {
@@ -232,20 +234,22 @@ const asyncFetcherInvocation = (operationDataList, pluckerStyle) => {
         (def) => def.variable.name.value,
       )
 
+      const invocationParams = params.map((param) => `${param}: ${munge(param)}`)
+
       const pluckers = {
         get:
           dotProp.get(namedOperationData, 'operationDefinition.variableDefinitions', [])
             .map((def) => {
               const name = def.variable.name.value
               const withCoercer = coercerFor(def.type, `event.queryStringParameters?.${name}`)
-              return `const ${name} = ${withCoercer};`
+              return `const ${munge(name)} = ${withCoercer};`
             })
             .join('\n  ') || '',
         post:
           dotProp.get(namedOperationData, 'operationDefinition.variableDefinitions', [])
             .map((def) => {
               const name = def.variable.name.value
-              return `const ${name} = eventBodyJson?.${name};`
+              return `const ${munge(name)} = eventBodyJson?.${name};`
             })
             .join('\n  ') || '',
       }
@@ -262,7 +266,7 @@ const asyncFetcherInvocation = (operationDataList, pluckerStyle) => {
         requiredVariableCount = requiredVariableNames.length
 
         // TODO: Filter nullable variables
-        const condition = requiredVariableNames.map((name) => `${name} === undefined || ${name} === null`).join(' || ')
+        const condition = requiredVariableNames.map((name) => `${munge(name)} === undefined || ${munge(name)} === null`).join(' || ')
 
         const message = requiredVariableNames.map((name) => `\`${name}\``).join(', ')
 
@@ -281,7 +285,7 @@ const asyncFetcherInvocation = (operationDataList, pluckerStyle) => {
 ${requiredVariableCount > 0 ? variableValidation : ''}
 
   const { errors: ${namedOperationData.name}Errors, data: ${namedOperationData.name}Data } =
-    await Netligraph.${operationFunctionName(namedOperationData)}({ ${params.join(', ')} }, accessToken);
+    await Netligraph.${operationFunctionName(namedOperationData)}({ ${invocationParams.join(', ')} }, accessToken);
 
   if (${namedOperationData.name}Errors) {
     console.error(JSON.stringify(${namedOperationData.name}Errors, null, 2));
