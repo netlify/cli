@@ -22,7 +22,7 @@ const formatRepoAndOwner = ({ repoName, repoOwner }) => ({
 const PAGE_SIZE = 100
 
 /**
- * Get a valid github token
+ * Get a valid GitHub token
  * @returns {Promise<string>}
  */
 const getGitHubToken = async ({ globalConfig }) => {
@@ -50,7 +50,7 @@ const getGitHubToken = async ({ globalConfig }) => {
 }
 
 /**
- * Retrieves the Github octokit client
+ * Retrieves the GitHub octokit client
  * @param {string} token
  * @returns {Octokit}
  */

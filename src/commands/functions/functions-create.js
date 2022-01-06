@@ -253,7 +253,7 @@ const ensureFunctionDirExists = async function (command) {
 }
 
 /**
- * Download files from a given github URL
+ * Download files from a given GitHub URL
  * @param {import('../base-command').BaseCommand} command
  * @param {import('commander').OptionValues} options
  * @param {string} argumentName
