@@ -3,7 +3,6 @@ const os = require('os')
 const process = require('process')
 const { format, inspect } = require('util')
 
-// eslint-disable-next-line local-rules/no-direct-chalk-import
 const { Instance: ChalkInstance } = require('chalk')
 const WSL = require('is-wsl')
 const { default: omit } = require('omit.js')

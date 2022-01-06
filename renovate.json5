@@ -3,33 +3,4 @@
   ignorePresets: [':prHourlyLimit2'],
   semanticCommits: true,
   dependencyDashboard: true,
-  packageRules: [
-    {
-      // Those cannot be upgraded to a major version until we drop support for Node 10
-      packageNames: [
-        'path-type',
-        'open',
-        'inquirer',
-        'p-timeout',
-        'configstore',
-        'p-wait-for',
-        'path-key',
-        'strip-ansi',
-        '@sindresorhus/slugify',
-        'ansi-styles',
-        'is-plain-obj',
-        'log-symbols',
-        'random-item',
-        'better-opn',
-        'to-readable-stream',
-        'http-proxy-middleware',
-        'p-map',
-        'node-version-alias',
-        'read-pkg-up',
-      ],
-      major: {
-        enabled: false,
-      },
-    },
-  ],
 }
