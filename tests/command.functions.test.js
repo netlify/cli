@@ -590,7 +590,7 @@ testMatrix.forEach((args) => {
         })
         t.is(
           response.body,
-          "Scheduled function cannot be requested via HTTP. Invoke using 'netlify functions:invoke hello-world' instead.",
+          "Scheduled function cannot be requested via HTTP. Invoke using the 'netlify functions:invoke hello-world' command instead.",
         )
         t.is(response.statusCode, 400)
 
@@ -641,7 +641,7 @@ testMatrix.forEach((args) => {
         })
         t.is(
           response.body,
-          "Scheduled function cannot be requested via HTTP. Invoke using 'netlify functions:invoke hello-world' instead.",
+          "Scheduled function cannot be requested via HTTP. Invoke using the 'netlify functions:invoke hello-world' command instead.",
         )
         t.is(response.statusCode, 400)
 

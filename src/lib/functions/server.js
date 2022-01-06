@@ -118,7 +118,7 @@ const createHandler = function ({ functionsRegistry }) {
         return response
           .status(400)
           .send(
-            `Scheduled function cannot be requested via HTTP. Invoke using 'netlify functions:invoke ${functionName}' instead.`,
+            `Scheduled function cannot be requested via HTTP. Invoke using the 'netlify functions:invoke ${functionName}' command instead.`,
           )
       }
 
