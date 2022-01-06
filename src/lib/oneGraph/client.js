@@ -1,3 +1,5 @@
+const os = require('os')
+
 const dotProp = require('dot-prop')
 const { buildClientSchema, parse } = require('graphql')
 const fetch = require('node-fetch')
@@ -88,9 +90,11 @@ const fetchOneGraph = async (
 
   const body = JSON.stringify(payload)
   try {
-    const result = await basicPost(`https://serve.onegraph.com/graphql?app_id=${appId}`, {
+    const result = await basicPost(`https://serve.onegraph.com/graphql?app_id=${appId}&show_metrics=false`, {
       method: 'POST',
       headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
         Authorization: accessToken ? `Bearer ${accessToken}` : '',
       },
       body,
@@ -552,12 +556,14 @@ const monitorCLISessionEvents = ({ appId, authToken, netligraphConfig, onClose, 
 }
 
 const createCLISession = async (netlifyToken, appId, name, metadata) => {
-  const result = await fetchOneGraph(null, appId, internalOperationsDoc, 'CreateCLISessionMutation', {
+  const payload = {
     nfToken: netlifyToken,
     appId,
     name,
     metadata
-  })
+  }
+
+  const result = await fetchOneGraph(null, appId, internalOperationsDoc, 'CreateCLISessionMutation', payload)
 
   const session =
     result.data &&
@@ -646,7 +652,8 @@ const loadCLISession = (state) => state.get('oneGraphSessionId')
 const startOneGraphCLISession = async ({ netlifyToken, netligraphConfig, site, state }) => {
   let oneGraphSessionId = loadCLISession(state)
   if (!oneGraphSessionId) {
-    const oneGraphSession = await createCLISession(netlifyToken, site.id, 'testing')
+    const sessionName = generateSessionName()
+    const oneGraphSession = await createCLISession(netlifyToken, site.id, sessionName)
     state.set('oneGraphSessionId', oneGraphSession.id)
     oneGraphSessionId = state.get('oneGraphSessionId')
   }
@@ -662,6 +669,7 @@ const startOneGraphCLISession = async ({ netlifyToken, netligraphConfig, site, s
     }
 
     const doc = persistedDoc.query
+
     writeGraphQLOperationsSourceFile(netligraphConfig, doc)
     const appOperationsDoc = readGraphQLOperationsSourceFile(netligraphConfig)
     const parsedDoc = parse(appOperationsDoc, {
@@ -679,7 +687,7 @@ const startOneGraphCLISession = async ({ netlifyToken, netligraphConfig, site, s
       case 'OneGraphNetlifyCliSessionGenerateHandlerEvent':
         return 'Generate handler as Netlify function '
       case 'OneGraphNetlifyCliSessionPersistedLibraryUpdatedEvent':
-        return 'Sync Netligraph operations library'
+        return `Sync Netligraph operations library`
       default: {
         return `Unrecognized event (${__typename})`
       }
@@ -690,13 +698,13 @@ const startOneGraphCLISession = async ({ netlifyToken, netligraphConfig, site, s
     const { __typename, payload } = await event
     switch (__typename) {
       case 'OneGraphNetlifyCliSessionTestEvent':
-        handleEvent(payload)
+        await handleEvent(payload)
         break
       case 'OneGraphNetlifyCliSessionGenerateHandlerEvent':
-        generateHandler(netligraphConfig, schema, payload.operationId, payload)
+        await generateHandler(netligraphConfig, schema, payload.operationId, payload)
         break
       case 'OneGraphNetlifyCliSessionPersistedLibraryUpdatedEvent':
-        updateGraphQLOperationsFile(payload.docId)
+        await updateGraphQLOperationsFile(payload.docId)
         break
       default: {
         console.log('Unrecognized event received', __typename, payload)
@@ -774,6 +782,13 @@ const fetchEnabledServices = async (authToken, appId) => {
   return dotProp.get(appSchema, 'services')
 }
 
+const generateSessionName = () => {
+  const userInfo = os.userInfo('utf-8')
+  const sessionName = `${userInfo.username}-${Date.now()}`
+  console.log(`${NETLIFYDEVLOG} Generated netligraph session name: ${sessionName}`)
+  return sessionName
+}
+
 module.exports = {
   ackCLISessionEvents,
   createCLISession,
@@ -783,6 +798,7 @@ module.exports = {
   fetchOneGraphSchemaJson,
   fetchOneGraphSchema,
   fetchPersistedQuery,
+  generateSessionName,
   loadCLISession,
   monitorCLISessionEvents,
   refetchAndGenerateFromOneGraph,

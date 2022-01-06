@@ -1,7 +1,8 @@
+const { randomUUID } = require('crypto');
 const fs = require('fs')
 
 const dotProp = require('dot-prop')
-const { Kind, parse, print, printSchema } = require('graphql')
+const { parse, print, printSchema } = require('graphql')
 const makeDir = require('make-dir');
 
 const { getFunctionsDir } = require('../../utils')
@@ -12,7 +13,7 @@ const {
   typeScriptSignatureForOperation,
   typeScriptSignatureForOperationVariables,
 } = require('./graphql-helpers')
-const { computeOperationDataList, netlifyFunctionSnippet } = require('./netligraph-code-exporter-snippets')
+const { computeOperationDataList, netlifyFunctionSnippet } = require('./netligraph-code-exporter-snippets');
 
 const capitalizeFirstLetter = (string) => string.charAt(0).toUpperCase() + string.slice(1)
 
@@ -536,7 +537,7 @@ ${functionDecls.join('\n\n')}
 }
 
 const generateFunctionsFile = (netligraphConfig, schema, operationsDoc, queries) => {
-  const functionDefinitions = queries.map((query) => queryToFunctionDefinition(schema, query))
+  const functionDefinitions = Object.values(queries).map((query) => queryToFunctionDefinition(schema, query))
   const clientSource = generateJavaScriptClient(netligraphConfig, schema, operationsDoc, functionDefinitions)
   const typeDefinitionsSource = generateTypeScriptDefinitions(netligraphConfig, schema, functionDefinitions)
 
@@ -545,8 +546,24 @@ const generateFunctionsFile = (netligraphConfig, schema, operationsDoc, queries)
   fs.writeFileSync(netligraphConfig.netligraphTypeDefinitionsFilename, typeDefinitionsSource, 'utf8')
 }
 
+const pluckDirectiveArgValue = (
+  directive,
+  argName,
+) => {
+  const targetArg = dotProp.get(directive, 'arguments', []).find((arg) => arg.name.value === argName);
+  if (!targetArg?.value) {
+    return null;
+  }
+
+  if (targetArg.value.kind === 'StringValue') {
+    return targetArg.value.value;
+  }
+
+  return null;
+};
+
 const extractFunctionsFromOperationDoc = (parsedDoc) => {
-  const fns = parsedDoc.definitions
+  const functionEntries = parsedDoc.definitions
     .map((next) => {
       if (next.kind !== 'OperationDefinition') {
         return null
@@ -557,30 +574,31 @@ const extractFunctionsFromOperationDoc = (parsedDoc) => {
       const directive = dotProp.get(next, 'directives', []).find(
         (localDirective) => localDirective.name.value === 'netligraph',
       )
-      const docArg = dotProp.get(directive, 'arguments', []).find((arg) => arg.name.value === 'doc')
 
-      let docString = dotProp.get(docArg, 'value.value')
-
-      if (!key) {
+      if (!directive) {
         return null
       }
 
-      if (!docString) {
-        docString = ''
+      const docString = pluckDirectiveArgValue(directive, 'doc') || ''
+      let id = pluckDirectiveArgValue(directive, 'id')
+
+      if (!id) {
+        id = randomUUID()
       }
 
       const operation = {
-        id: key,
+        id,
+        name: key,
         description: docString,
         operation: next.operation,
         query: print(next),
       }
 
-      return operation
+      return [id, operation];
     })
     .filter(Boolean)
 
-  return fns
+  return Object.fromEntries(functionEntries);
 }
 
 
@@ -618,14 +636,15 @@ const generateHandler = (netligraphConfig, schema, operationId, handlerOptions) 
     currentOperationsDoc = defaultExampleOperationsDoc
   }
 
-  const doc = parse(currentOperationsDoc)
-  const operation = doc.definitions.find((op) => op.kind === Kind.OPERATION_DEFINITION && op.name.value === operationId)
+  const parsedDoc = parse(currentOperationsDoc)
+  const operations = extractFunctionsFromOperationDoc(parsedDoc)
+  const operation = operations[operationId]
 
   if (!operation) {
     console.warn(`Operation ${operationId} not found in graphql.`)
   }
 
-  const odl = computeOperationDataList({ query: print(operation), variables: [] })
+  const odl = computeOperationDataList({ query: operation.query, variables: [] })
 
   const source = netlifyFunctionSnippet.generate({
     netligraphConfig,
@@ -634,11 +653,7 @@ const generateHandler = (netligraphConfig, schema, operationId, handlerOptions) 
     options: handlerOptions,
   })
 
-  const newFunction = {
-    functionName: operationId,
-  }
-
-  const filename = `${netligraphConfig.functionsPath}/${newFunction.functionName}.${netligraphConfig.extension}`
+  const filename = `${netligraphConfig.functionsPath}/${operation.name}.${netligraphConfig.extension}`
 
   ensureFunctionsPath(netligraphConfig)
   fs.writeFileSync(filename, source)

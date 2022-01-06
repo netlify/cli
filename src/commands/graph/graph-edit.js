@@ -6,6 +6,7 @@ const {
   createCLISession,
   createPersistedQuery,
   ensureAppForSite,
+  generateSessionName,
   loadCLISession,
   updateCLISessionMetadata,
 } = require('../../lib/oneGraph/client')
@@ -46,7 +47,8 @@ const graphEdit = async (options, command) => {
 
   let oneGraphSessionId = loadCLISession(state)
   if (!oneGraphSessionId) {
-    const oneGraphSession = await createCLISession(netlifyToken, site.id, 'testing')
+    const sessionName = generateSessionName()
+    const oneGraphSession = await createCLISession(netlifyToken, site.id, sessionName)
     state.set('oneGraphSessionId', oneGraphSession.id)
     oneGraphSessionId = state.get('oneGraphSessionId')
   }
