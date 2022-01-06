@@ -15,7 +15,7 @@ const readRepoURL = async function (_url) {
   // eslint-disable-next-line node/no-deprecated-api
   const URL = url.parse(_url)
   const repoHost = validateRepoURL(_url)
-  if (repoHost !== GITHUB) throw new Error('only github repos are supported for now')
+  if (repoHost !== GITHUB) throw new Error('only GitHub repos are supported for now')
   const [ownerAndRepo, contentsPath] = parseRepoURL(repoHost, URL)
   const folderContents = await getRepoURLContents(repoHost, ownerAndRepo, contentsPath)
   return folderContents
