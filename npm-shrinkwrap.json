@@ -1,12 +1,12 @@
 {
   "name": "netlify-cli",
-  "version": "8.6.7",
+  "version": "8.6.9",
   "lockfileVersion": 2,
   "requires": true,
   "packages": {
     "": {
       "name": "netlify-cli",
-      "version": "8.6.7",
+      "version": "8.6.9",
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
@@ -52,7 +52,7 @@
         "from2-array": "^0.0.4",
         "fuzzy": "^0.1.3",
         "get-port": "^5.1.0",
-        "gh-release-fetch": "^2.0.0",
+        "gh-release-fetch": "^3.0.0",
         "git-repo-info": "^2.1.0",
         "gitconfiglocal": "^2.1.0",
         "hasbin": "^1.2.3",
@@ -73,7 +73,6 @@
         "lodash": "^4.17.20",
         "log-symbols": "^4.0.0",
         "log-update": "^5.0.0",
-        "make-dir": "^3.0.0",
         "memoize-one": "^6.0.0",
         "minimist": "^1.2.5",
         "multiparty": "^4.2.1",
@@ -10774,20 +10773,19 @@
       }
     },
     "node_modules/gh-release-fetch": {
-      "version": "2.0.4",
-      "resolved": "https://registry.npmjs.org/gh-release-fetch/-/gh-release-fetch-2.0.4.tgz",
-      "integrity": "sha512-PALrCv6MuxEKsj5Oz9G81iU6pxvoxgpSnwbtIqAkQ6m6fioFicNznZUl/aOW92rK2k8cuaM48Rd59G7eV2QsTA==",
+      "version": "3.0.0",
+      "resolved": "https://registry.npmjs.org/gh-release-fetch/-/gh-release-fetch-3.0.0.tgz",
+      "integrity": "sha512-P7Anj35Y4kI3RBoQ+M8Z2U9ittORYyRNLb55+5yGGXmm3Mazgkq4MPqsHH9S7+pNWFpE2BtAWeF6twzz6JY3Bw==",
       "dependencies": {
         "@types/download": "^8.0.0",
         "@types/node-fetch": "^2.1.6",
         "@types/semver": "^7.0.0",
         "download": "^8.0.0",
-        "make-dir": "^3.1.0",
         "node-fetch": "^2.3.0",
         "semver": "^7.0.0"
       },
       "engines": {
-        "node": ">=10"
+        "node": "^12.20.0 || ^14.14.0 || >=16.0.0"
       }
     },
     "node_modules/git-raw-commits": {
@@ -28804,15 +28802,14 @@
       "integrity": "sha1-3BXKHGcjh8p2vTesCjlbogQqLCg="
     },
     "gh-release-fetch": {
-      "version": "2.0.4",
-      "resolved": "https://registry.npmjs.org/gh-release-fetch/-/gh-release-fetch-2.0.4.tgz",
-      "integrity": "sha512-PALrCv6MuxEKsj5Oz9G81iU6pxvoxgpSnwbtIqAkQ6m6fioFicNznZUl/aOW92rK2k8cuaM48Rd59G7eV2QsTA==",
+      "version": "3.0.0",
+      "resolved": "https://registry.npmjs.org/gh-release-fetch/-/gh-release-fetch-3.0.0.tgz",
+      "integrity": "sha512-P7Anj35Y4kI3RBoQ+M8Z2U9ittORYyRNLb55+5yGGXmm3Mazgkq4MPqsHH9S7+pNWFpE2BtAWeF6twzz6JY3Bw==",
       "requires": {
         "@types/download": "^8.0.0",
         "@types/node-fetch": "^2.1.6",
         "@types/semver": "^7.0.0",
         "download": "^8.0.0",
-        "make-dir": "^3.1.0",
         "node-fetch": "^2.3.0",
         "semver": "^7.0.0"
       }

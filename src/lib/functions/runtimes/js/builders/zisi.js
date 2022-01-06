@@ -1,9 +1,8 @@
-const { writeFile } = require('fs').promises
+const { mkdir, writeFile } = require('fs').promises
 const path = require('path')
 
 const { zipFunction } = require('@netlify/zip-it-and-ship-it')
 const decache = require('decache')
-const makeDir = require('make-dir')
 const readPkgUp = require('read-pkg-up')
 const sourceMapSupport = require('source-map-support')
 
@@ -72,7 +71,7 @@ const getTargetDirectory = async ({ errorExit }) => {
   const targetDirectory = path.resolve(getPathInProject(['functions-serve']))
 
   try {
-    await makeDir(targetDirectory)
+    await mkdir(targetDirectory, { recursive: true })
   } catch (error) {
     errorExit(`${NETLIFYDEVERR} Could not create directory: ${targetDirectory}`)
   }
