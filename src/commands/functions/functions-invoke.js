@@ -159,7 +159,7 @@ const functionsInvoke = async (nameArgument, options, command) => {
   const functionToTrigger = await getNameFromArgs(functions, options, nameArgument)
   const functionObj = functions.find((func) => func.name === functionToTrigger)
 
-  let headers
+  let headers = {}
   let body = {}
 
   if (functionObj.schedule) {
