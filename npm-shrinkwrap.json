@@ -1,12 +1,12 @@
 {
   "name": "netlify-cli",
-  "version": "8.6.7",
+  "version": "8.6.8",
   "lockfileVersion": 2,
   "requires": true,
   "packages": {
     "": {
       "name": "netlify-cli",
-      "version": "8.6.7",
+      "version": "8.6.8",
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
@@ -73,7 +73,6 @@
         "lodash": "^4.17.20",
         "log-symbols": "^4.0.0",
         "log-update": "^5.0.0",
-        "make-dir": "^3.0.0",
         "memoize-one": "^6.0.0",
         "minimist": "^1.2.5",
         "multiparty": "^4.2.1",

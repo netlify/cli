@@ -109,12 +109,12 @@ const authWithToken = async () => {
     const { login: user } = await octokit.users.getAuthenticated()
     return { token, user, provider: 'github' }
   }
-  const error = new Error('Github authentication failed')
+  const error = new Error('GitHub authentication failed')
   throw error
 }
 
 /**
- * Get a github token
+ * Get a GitHub token
  * @returns {Promise<Token>} Returns a Promise with a token object
  */
 const getGitHubToken = async () => {
