@@ -102,15 +102,14 @@ const getPersonalAccessToken = async () => {
  */
 const authWithToken = async () => {
   const { token } = await getPersonalAccessToken()
-  if (token) {
-    const octokit = new Octokit({
-      auth: `token ${token}`,
-    })
-    const { login: user } = await octokit.users.getAuthenticated()
-    return { token, user, provider: 'github' }
+  if (!token) {
+    throw new Error('GitHub authentication failed')
   }
-  const error = new Error('GitHub authentication failed')
-  throw error
+
+  const octokit = new Octokit({ auth: `token ${token}` })
+  const { login: user } = await octokit.users.getAuthenticated()
+
+  return { token, user, provider: 'github' }
 }
 
 /**
@@ -121,11 +120,8 @@ const getGitHubToken = async () => {
   log('')
 
   const withNetlify = await promptForAuthMethod()
-  if (withNetlify) {
-    return await authWithNetlify()
-  }
 
-  return await authWithToken()
+  return withNetlify ? await authWithNetlify() : await authWithToken()
 }
 
 module.exports = { getGitHubToken, authWithNetlify }
