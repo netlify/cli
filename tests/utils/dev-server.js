@@ -75,7 +75,6 @@ const startDevServer = async (options, expectFailure) => {
   // eslint-disable-next-line fp/no-loops
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      // eslint-disable-next-line no-await-in-loop
       const { timeout, ...server } = await startServer(options)
       if (timeout) {
         throw new Error(`Timed out starting dev server.\nServer Output:\n${server.output}`)
