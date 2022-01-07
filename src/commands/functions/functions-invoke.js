@@ -187,7 +187,7 @@ const functionsInvoke = async (nameArgument, options, command) => {
     }
   } else {
     // NOT an event triggered function, but may still want to simulate authentication locally
-    const isAuthenticated = options.identity || false
+    const isAuthenticated = Boolean(options.identity)
 
     if (isAuthenticated) {
       headers = {
