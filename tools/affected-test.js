@@ -62,7 +62,7 @@ const main = async (args) => {
     return
   }
   console.log(`Running affected Tests: \n${grey([...affectedFiles].join(', '))}`)
-  const testRun = execa('nyc', ['-r', 'json', 'ava', ...affectedFiles], {
+  const testRun = execa('c8', ['-r', 'json', 'ava', ...affectedFiles], {
     stdio: 'inherit',
     preferLocal: true,
   })
