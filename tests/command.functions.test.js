@@ -16,6 +16,27 @@ const { withMockApi } = require('./utils/mock-api')
 const { killProcess } = require('./utils/process')
 const { withSiteBuilder } = require('./utils/site-builder')
 
+test('should return function response when invoked with no identity argument', async (t) => {
+  await withSiteBuilder('function-invoke-with-no-identity-argument', async (builder) => {
+    builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
+      path: 'test-invoke.js',
+      handler: async () => ({
+        statusCode: 200,
+        body: 'success',
+      }),
+    })
+
+    await builder.buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async (server) => {
+      const stdout = await callCli(['functions:invoke', 'test-invoke', `--port=${server.port}`], {
+        cwd: builder.directory,
+      })
+      t.is(stdout, 'success')
+    })
+  })
+})
+
 test('should return function response when invoked', async (t) => {
   await withSiteBuilder('site-with-ping-function', async (builder) => {
     builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({

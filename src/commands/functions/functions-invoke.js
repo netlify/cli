@@ -23,6 +23,7 @@ const events = [
   'identity-signup',
   'identity-login',
 ]
+
 const eventTriggeredFunctions = new Set([...events, ...events.map((name) => `${name}${BACKGROUND}`)])
 
 const DEFAULT_PORT = 8888
@@ -186,20 +187,8 @@ const functionsInvoke = async (nameArgument, options, command) => {
     }
   } else {
     // NOT an event triggered function, but may still want to simulate authentication locally
-    let isAuthenticated = false
-    if (typeof options.identity === 'undefined') {
-      const { isAuthed } = await inquirer.prompt([
-        {
-          type: 'confirm',
-          name: 'isAuthed',
-          message: `Invoke with emulated Netlify Identity authentication headers? (pass --identity/--no-identity to override)`,
-          default: true,
-        },
-      ])
-      isAuthenticated = isAuthed
-    } else {
-      isAuthenticated = options.identity
-    }
+    const isAuthenticated = options.identity || false
+
     if (isAuthenticated) {
       headers = {
         authorization:
