@@ -642,6 +642,7 @@ const generateHandler = (netligraphConfig, schema, operationId, handlerOptions) 
 
   if (!operation) {
     console.warn(`Operation ${operationId} not found in graphql.`)
+    return
   }
 
   const odl = computeOperationDataList({ query: operation.query, variables: [] })
