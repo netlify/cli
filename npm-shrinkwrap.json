@@ -22,6 +22,7 @@
         "@sindresorhus/slugify": "^1.1.0",
         "ansi-escapes": "^5.0.0",
         "ansi-styles": "^5.0.0",
+        "ansi2html": "^0.0.1",
         "ascii-table": "0.0.9",
         "backoff": "^2.5.0",
         "better-opn": "^2.1.1",
@@ -4525,6 +4526,17 @@
       },
       "funding": {
         "url": "https://github.com/chalk/ansi-styles?sponsor=1"
+      }
+    },
+    "node_modules/ansi2html": {
+      "version": "0.0.1",
+      "resolved": "https://registry.npmjs.org/ansi2html/-/ansi2html-0.0.1.tgz",
+      "integrity": "sha1-u4gARhtECvALkb89c2al4LhHO6g=",
+      "bin": {
+        "ansi2html": "bin/ansi2html"
+      },
+      "engines": {
+        "node": ">0.4"
       }
     },
     "node_modules/any-observable": {
@@ -23806,6 +23818,11 @@
       "version": "5.2.0",
       "resolved": "https://registry.npmjs.org/ansi-styles/-/ansi-styles-5.2.0.tgz",
       "integrity": "sha512-Cxwpt2SfTzTtXcfOlzGEee8O+c+MmUgGrNiBcXnuWxuFJHe6a5Hz7qwhwe5OgaSYI0IJvkLqWX1ASG+cJOkEiA=="
+    },
+    "ansi2html": {
+      "version": "0.0.1",
+      "resolved": "https://registry.npmjs.org/ansi2html/-/ansi2html-0.0.1.tgz",
+      "integrity": "sha1-u4gARhtECvALkb89c2al4LhHO6g="
     },
     "any-observable": {
       "version": "0.3.0",

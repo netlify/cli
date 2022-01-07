@@ -1,19 +1,12 @@
 // @ts-check
 const jwtDecode = require('jwt-decode')
 
-const {
-  CLOCKWORK_USERAGENT,
-  NETLIFYDEVERR,
-  NETLIFYDEVLOG,
-  error: errorExit,
-  getInternalFunctionsDir,
-  log,
-} = require('../../utils')
+const { NETLIFYDEVERR, NETLIFYDEVLOG, error: errorExit, getInternalFunctionsDir, log } = require('../../utils')
 
 const { handleBackgroundFunction, handleBackgroundFunctionResult } = require('./background')
 const { createFormSubmissionHandler } = require('./form-submissions-handler')
 const { FunctionsRegistry } = require('./registry')
-const { handleScheduledFunction, handleScheduledFunctionResult } = require('./scheduled')
+const { handleScheduledFunction } = require('./scheduled')
 const { handleSynchronousFunction } = require('./synchronous')
 const { shouldBase64Encode } = require('./utils')
 
@@ -114,19 +107,14 @@ const createHandler = function ({ functionsRegistry }) {
 
       handleBackgroundFunctionResult(functionName, error)
     } else if (await func.isScheduled()) {
-      if (event.headers['user-agent'] !== CLOCKWORK_USERAGENT) {
-        return response
-          .status(400)
-          .send(
-            `Scheduled function cannot be requested via HTTP. Invoke using the 'netlify functions:invoke ${functionName}' command instead.`,
-          )
-      }
+      const { error, result } = await func.invoke(event, clientContext)
 
-      handleScheduledFunction(functionName, response)
-
-      const { error } = await func.invoke(event, clientContext)
-
-      handleScheduledFunctionResult(functionName, error)
+      handleScheduledFunction({
+        error,
+        result,
+        request,
+        response,
+      })
     } else {
       const { error, result } = await func.invoke(event, clientContext)
 
