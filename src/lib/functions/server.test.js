@@ -1,3 +1,4 @@
+const fs = require('fs')
 const { platform } = require('os')
 const { join } = require('path')
 
@@ -8,11 +9,14 @@ const mockRequire = require('mock-require')
 const sinon = require('sinon')
 const request = require('supertest')
 
-const { FunctionsRegistry } = require('./registry')
-const { createHandler } = require('./server')
-
 const projectRoot = platform() === 'win32' ? 'C:\\my-functions' : `/my-functions`
 const functionsPath = `functions`
+
+// mock mkdir for the functions folder
+sinon.stub(fs.promises, 'mkdir').withArgs(join(projectRoot, functionsPath)).returns(Promise.resolve())
+
+const { FunctionsRegistry } = require('./registry')
+const { createHandler } = require('./server')
 
 /** @type { express.Express} */
 let app
