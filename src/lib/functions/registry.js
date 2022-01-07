@@ -1,5 +1,6 @@
 // @ts-check
 const { mkdir } = require('fs').promises
+const { isAbsolute, join } = require('path')
 const { env } = require('process')
 
 const terminalLink = require('terminal-link')
@@ -146,7 +147,10 @@ class FunctionsRegistry {
     log(`${NETLIFYDEVLOG} ${chalk.green('Loaded')} function ${terminalLink(chalk.yellow(name), func.url)}.`)
   }
 
-  async scan(directories) {
+  async scan(relativeDirs) {
+    const directories = relativeDirs.filter(Boolean).map((dir) => (isAbsolute(dir) ? dir : join(this.projectRoot, dir)))
+
+    // check after filtering to filter out [undefined] for example
     if (directories.length === 0) {
       return
     }
