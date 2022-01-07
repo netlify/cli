@@ -196,7 +196,7 @@ const forwardMessagesToLog = ({ subprocess }) => {
       stopSpinner({
         spinner,
         error: true,
-        text: `${NETLIFYDEVERR} An error occured while bundling processing the messages from routing-local-proxy: ${err}`,
+        text: `${NETLIFYDEVERR} An error occurred while bundling processing the messages from routing-local-proxy: ${err}`,
       })
 
       firstBundleReject(err)

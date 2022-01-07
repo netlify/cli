@@ -162,7 +162,7 @@ const logExistingRepoSetupAndExit = ({ repoUrl, siteName }) => {
   log()
   log(chalk.underline.bold(`Success`))
   log(`This site "${siteName}" is configured to automatically deploy via ${repoUrl}`)
-  // TODO add support for changing github repo in site:config command
+  // TODO add support for changing GitHub repo in site:config command
   exit()
 }
 

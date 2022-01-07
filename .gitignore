@@ -1,6 +1,5 @@
 *-debug.log
 *-error.log
-/.nyc_output
 /dist
 /tmp
 node_modules
@@ -15,7 +14,6 @@ vendor
 # osx
 .DS_STORE
 .vscode
-coverage
 test-site
 site/dist
 site-cra
