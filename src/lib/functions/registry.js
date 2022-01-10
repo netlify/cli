@@ -143,6 +143,9 @@ class FunctionsRegistry {
       )
     }
 
+    // This fixes the bug described here https://github.com/netlify/zip-it-and-ship-it/issues/637
+    // If the current function's file has a '.zip' extension, we ignore it to prevent unrecoverable
+    // errors when it's called and log a descriptive message of the issue to the console.
     if (func.mainFile.toLowerCase().endsWith(ZIP_EXTENSION)) {
       log(
         `${NETLIFYDEVERR} Unable to load the function ${terminalLink(chalk.yellow(name), func.url)}. Invalid file '${
