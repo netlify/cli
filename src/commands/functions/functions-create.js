@@ -164,7 +164,7 @@ const pickTemplate = async function ({ language: languageFromFlag }) {
 
   try {
     templatesForLanguage = formatRegistryArrayForInquirer(language)
-  } catch (_) {
+  } catch {
     throw error(`Invalid language: ${language}`)
   }
 

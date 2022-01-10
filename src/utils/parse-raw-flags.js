@@ -38,10 +38,10 @@ const aggressiveJSONParse = function (value) {
   let parsed
   try {
     parsed = JSON.parse(value)
-  } catch (error) {
+  } catch {
     try {
       parsed = JSON.parse(`"${value}"`)
-    } catch (error_) {
+    } catch {
       parsed = value
     }
   }
