@@ -1,6 +1,6 @@
 // @ts-check
 const { mkdir } = require('fs').promises
-const { isAbsolute, join } = require('path')
+const { extname, isAbsolute, join } = require('path')
 const { env } = require('process')
 
 const terminalLink = require('terminal-link')
@@ -145,7 +145,7 @@ class FunctionsRegistry {
 
     // This fixes the bug described here https://github.com/netlify/zip-it-and-ship-it/issues/637
     // If the current function's file is a zip bundle, we ignore it and log a helpful message.
-    if (func.mainFile.toLowerCase().endsWith(ZIP_EXTENSION)) {
+    if (extname(func.mainFile) === ZIP_EXTENSION) {
       log(`${NETLIFYDEVWARN} Skipped bundled function. Unzip the archive to load it from source.`)
       return
     }
