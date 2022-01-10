@@ -100,7 +100,7 @@
     "clean-deep": "^3.0.2",
     "commander": "^8.3.0",
     "concordance": "^5.0.0",
-    "configstore": "^5.0.0",
+    "configstore": "^6.0.0",
     "content-type": "^1.0.4",
     "cookie": "^0.4.0",
     "copy-template-dir": "^1.4.0",
