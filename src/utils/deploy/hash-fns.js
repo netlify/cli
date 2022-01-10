@@ -42,7 +42,7 @@ const getFunctionZips = async ({
       })
 
       return functions
-    } catch (error) {
+    } catch {
       statusCb({
         type: 'functions-manifest',
         msg: 'Ignored invalid or expired functions cache',

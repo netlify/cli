@@ -13,7 +13,7 @@ const testMatrix = [{ args: [] }, { args: ['esbuild'] }]
 const testName = (title, args) => (args.length <= 0 ? title : `${title} - ${args.join(' ')}`)
 
 const WAIT_INTERVAL = 1800
-const WAIT_TIMEOUT = 30000
+const WAIT_TIMEOUT = 30_000
 const WAIT_WRITE = 3000
 
 const gotCatch404 = async (url, options) => {

@@ -346,9 +346,7 @@ const formatSettingsArrForInquirer = function (frameworks) {
       short: `${framework.name}-${command}`,
     })),
   )
-  // Replace by .flatMap() when Node.js support >= 11.0.0
-  // eslint-disable-next-line unicorn/prefer-spread
-  return [].concat(...formattedArr)
+  return formattedArr.flat()
 }
 
 module.exports = {
