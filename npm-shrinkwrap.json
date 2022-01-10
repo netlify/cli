@@ -71,7 +71,7 @@
         "listr": "^0.14.3",
         "locate-path": "^6.0.0",
         "lodash": "^4.17.20",
-        "log-symbols": "^4.0.0",
+        "log-symbols": "^5.0.0",
         "log-update": "^5.0.0",
         "memoize-one": "^6.0.0",
         "minimist": "^1.2.5",
@@ -120,7 +120,7 @@
       },
       "devDependencies": {
         "@babel/preset-react": "^7.12.13",
-        "@commitlint/cli": "^16.0.2",
+        "@commitlint/cli": "^16.0.0",
         "@commitlint/config-conventional": "^16.0.0",
         "@netlify/eslint-config-node": "^4.0.6",
         "ava": "^3.15.0",
@@ -13185,15 +13185,37 @@
       }
     },
     "node_modules/log-symbols": {
-      "version": "4.1.0",
-      "resolved": "https://registry.npmjs.org/log-symbols/-/log-symbols-4.1.0.tgz",
-      "integrity": "sha512-8XPvpAA8uyhfteu8pIvQxpJZ7SYYdpUivZpGy6sFsBuKRY/7rQGavedeB8aK+Zkyq6upMFVL/9AW6vOYzfRyLg==",
+      "version": "5.1.0",
+      "resolved": "https://registry.npmjs.org/log-symbols/-/log-symbols-5.1.0.tgz",
+      "integrity": "sha512-l0x2DvrW294C9uDCoQe1VSU4gf529FkSZ6leBl4TiqZH/e+0R7hSfHQBNut2mNygDgHwvYHfFLn6Oxb3VWj2rA==",
       "dependencies": {
-        "chalk": "^4.1.0",
-        "is-unicode-supported": "^0.1.0"
+        "chalk": "^5.0.0",
+        "is-unicode-supported": "^1.1.0"
       },
       "engines": {
-        "node": ">=10"
+        "node": ">=12"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/sindresorhus"
+      }
+    },
+    "node_modules/log-symbols/node_modules/chalk": {
+      "version": "5.0.0",
+      "resolved": "https://registry.npmjs.org/chalk/-/chalk-5.0.0.tgz",
+      "integrity": "sha512-/duVOqst+luxCQRKEo4bNxinsOQtMP80ZYm7mMqzuh5PociNL0PvmHFvREJ9ueYL2TxlHjBcmLCdmocx9Vg+IQ==",
+      "engines": {
+        "node": "^12.17.0 || ^14.13 || >=16.0.0"
+      },
+      "funding": {
+        "url": "https://github.com/chalk/chalk?sponsor=1"
+      }
+    },
+    "node_modules/log-symbols/node_modules/is-unicode-supported": {
+      "version": "1.1.0",
+      "resolved": "https://registry.npmjs.org/is-unicode-supported/-/is-unicode-supported-1.1.0.tgz",
+      "integrity": "sha512-lDcxivp8TJpLG75/DpatAqNzOpDPSpED8XNtrpBHTdQ2InQ1PbW78jhwSxyxhhu+xbVSast2X38bwj8atwoUQA==",
+      "engines": {
+        "node": ">=12"
       },
       "funding": {
         "url": "https://github.com/sponsors/sindresorhus"
@@ -15465,6 +15487,21 @@
         "log-symbols": "^4.1.0",
         "strip-ansi": "^6.0.0",
         "wcwidth": "^1.0.1"
+      },
+      "engines": {
+        "node": ">=10"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/sindresorhus"
+      }
+    },
+    "node_modules/ora/node_modules/log-symbols": {
+      "version": "4.1.0",
+      "resolved": "https://registry.npmjs.org/log-symbols/-/log-symbols-4.1.0.tgz",
+      "integrity": "sha512-8XPvpAA8uyhfteu8pIvQxpJZ7SYYdpUivZpGy6sFsBuKRY/7rQGavedeB8aK+Zkyq6upMFVL/9AW6vOYzfRyLg==",
+      "dependencies": {
+        "chalk": "^4.1.0",
+        "is-unicode-supported": "^0.1.0"
       },
       "engines": {
         "node": ">=10"
@@ -29863,12 +29900,24 @@
       }
     },
     "log-symbols": {
-      "version": "4.1.0",
-      "resolved": "https://registry.npmjs.org/log-symbols/-/log-symbols-4.1.0.tgz",
-      "integrity": "sha512-8XPvpAA8uyhfteu8pIvQxpJZ7SYYdpUivZpGy6sFsBuKRY/7rQGavedeB8aK+Zkyq6upMFVL/9AW6vOYzfRyLg==",
+      "version": "5.1.0",
+      "resolved": "https://registry.npmjs.org/log-symbols/-/log-symbols-5.1.0.tgz",
+      "integrity": "sha512-l0x2DvrW294C9uDCoQe1VSU4gf529FkSZ6leBl4TiqZH/e+0R7hSfHQBNut2mNygDgHwvYHfFLn6Oxb3VWj2rA==",
       "requires": {
-        "chalk": "^4.1.0",
-        "is-unicode-supported": "^0.1.0"
+        "chalk": "^5.0.0",
+        "is-unicode-supported": "^1.1.0"
+      },
+      "dependencies": {
+        "chalk": {
+          "version": "5.0.0",
+          "resolved": "https://registry.npmjs.org/chalk/-/chalk-5.0.0.tgz",
+          "integrity": "sha512-/duVOqst+luxCQRKEo4bNxinsOQtMP80ZYm7mMqzuh5PociNL0PvmHFvREJ9ueYL2TxlHjBcmLCdmocx9Vg+IQ=="
+        },
+        "is-unicode-supported": {
+          "version": "1.1.0",
+          "resolved": "https://registry.npmjs.org/is-unicode-supported/-/is-unicode-supported-1.1.0.tgz",
+          "integrity": "sha512-lDcxivp8TJpLG75/DpatAqNzOpDPSpED8XNtrpBHTdQ2InQ1PbW78jhwSxyxhhu+xbVSast2X38bwj8atwoUQA=="
+        }
       }
     },
     "log-update": {
@@ -31593,6 +31642,17 @@
         "log-symbols": "^4.1.0",
         "strip-ansi": "^6.0.0",
         "wcwidth": "^1.0.1"
+      },
+      "dependencies": {
+        "log-symbols": {
+          "version": "4.1.0",
+          "resolved": "https://registry.npmjs.org/log-symbols/-/log-symbols-4.1.0.tgz",
+          "integrity": "sha512-8XPvpAA8uyhfteu8pIvQxpJZ7SYYdpUivZpGy6sFsBuKRY/7rQGavedeB8aK+Zkyq6upMFVL/9AW6vOYzfRyLg==",
+          "requires": {
+            "chalk": "^4.1.0",
+            "is-unicode-supported": "^0.1.0"
+          }
+        }
       }
     },
     "os-homedir": {
