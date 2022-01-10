@@ -364,8 +364,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
           plugin: {
             onPreBuild: async ({ netlifyConfig }) => {
               // eslint-disable-next-line node/global-require
-              const [fs, util] = [require('fs'), require('util')]
-              const [writeFile, mkdir] = [fs.writeFile, fs.mkdir].map(util.promisify)
+              const { mkdir, writeFile } = require('fs').promises
 
               const generatedFunctionsDir = 'new_functions'
               netlifyConfig.functions.directory = generatedFunctionsDir
