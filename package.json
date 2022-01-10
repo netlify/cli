@@ -98,7 +98,6 @@
     "chokidar": "^3.0.2",
     "ci-info": "^3.0.0",
     "clean-deep": "^3.0.2",
-    "colors": "^1.4.0",
     "commander": "^8.3.0",
     "concordance": "^5.0.0",
     "configstore": "^5.0.0",
