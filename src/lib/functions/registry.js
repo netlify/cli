@@ -12,6 +12,8 @@ const { NetlifyFunction } = require('./netlify-function')
 const runtimes = require('./runtimes')
 const { watchDebounced } = require('./watcher')
 
+const ZIP_EXTENSION = '.zip'
+
 class FunctionsRegistry {
   constructor({ capabilities, config, isConnected = false, projectRoot, settings, timeouts }) {
     this.capabilities = capabilities
@@ -139,6 +141,15 @@ class FunctionsRegistry {
       warn(
         `Function name '${func.name}' is invalid. It should consist only of alphanumeric characters, hyphen & underscores.`,
       )
+    }
+
+    if (func.mainFile.toLowerCase().endsWith(ZIP_EXTENSION)) {
+      log(
+        `${NETLIFYDEVERR} Unable to load the function ${terminalLink(chalk.yellow(name), func.url)}. Invalid file '${
+          func.mainFile
+        }'.`,
+      )
+      return
     }
 
     this.functions.set(name, func)
