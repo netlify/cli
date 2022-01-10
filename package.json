@@ -149,7 +149,7 @@
     "netlify-redirect-parser": "^13.0.0",
     "netlify-redirector": "^0.2.1",
     "node-fetch": "^2.6.0",
-    "node-version-alias": "^1.0.1",
+    "node-version-alias": "^2.0.0",
     "omit.js": "^2.0.2",
     "ora": "^5.0.0",
     "p-event": "^4.2.0",
