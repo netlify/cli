@@ -143,11 +143,11 @@ class FunctionsRegistry {
       )
     }
 
-    if (func.mainFile.endsWith(ZIP_EXTENSION)) {
+    if (func.mainFile.toLowerCase().endsWith(ZIP_EXTENSION)) {
       log(
         `${NETLIFYDEVERR} Unable to load the function ${terminalLink(chalk.yellow(name), func.url)}. Invalid file '${
           func.mainFile
-        }' .`,
+        }'.`,
       )
       return
     }
