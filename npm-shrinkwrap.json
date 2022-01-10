@@ -106,7 +106,7 @@
         "terminal-link": "^2.1.1",
         "through2-filter": "^3.0.0",
         "through2-map": "^3.0.0",
-        "to-readable-stream": "^2.1.0",
+        "to-readable-stream": "^3.0.0",
         "toml": "^3.0.0",
         "update-notifier": "^5.0.0",
         "uuid": "^8.0.0",
@@ -120,13 +120,13 @@
       },
       "devDependencies": {
         "@babel/preset-react": "^7.12.13",
-        "@commitlint/cli": "^16.0.2",
+        "@commitlint/cli": "^16.0.0",
         "@commitlint/config-conventional": "^16.0.0",
         "@netlify/eslint-config-node": "^4.0.6",
         "ava": "^3.15.0",
         "c8": "^7.11.0",
         "eslint-plugin-sort-destructure-keys": "^1.3.5",
-        "fast-glob": "^3.2.10",
+        "fast-glob": "^3.2.7",
         "form-data": "^4.0.0",
         "got": "^11.8.1",
         "graphviz": "^0.0.9",
@@ -2603,6 +2603,14 @@
       },
       "funding": {
         "url": "https://github.com/sponsors/ljharb"
+      }
+    },
+    "node_modules/@netlify/build/node_modules/to-readable-stream": {
+      "version": "2.1.0",
+      "resolved": "https://registry.npmjs.org/to-readable-stream/-/to-readable-stream-2.1.0.tgz",
+      "integrity": "sha512-o3Qa6DGg1CEXshSdvWNX2sN4QHqg03SPq7U6jPXRahlQdl5dK8oXjkU/2/sGrnOZKeGV1zLSO8qPwyKklPPE7w==",
+      "engines": {
+        "node": ">=8"
       }
     },
     "node_modules/@netlify/build/node_modules/type-fest": {
@@ -9902,6 +9910,14 @@
       "dependencies": {
         "has-flag": "^4.0.0"
       },
+      "engines": {
+        "node": ">=8"
+      }
+    },
+    "node_modules/fetch-node-website/node_modules/to-readable-stream": {
+      "version": "2.1.0",
+      "resolved": "https://registry.npmjs.org/to-readable-stream/-/to-readable-stream-2.1.0.tgz",
+      "integrity": "sha512-o3Qa6DGg1CEXshSdvWNX2sN4QHqg03SPq7U6jPXRahlQdl5dK8oXjkU/2/sGrnOZKeGV1zLSO8qPwyKklPPE7w==",
       "engines": {
         "node": ">=8"
       }
@@ -19027,11 +19043,14 @@
       }
     },
     "node_modules/to-readable-stream": {
-      "version": "2.1.0",
-      "resolved": "https://registry.npmjs.org/to-readable-stream/-/to-readable-stream-2.1.0.tgz",
-      "integrity": "sha512-o3Qa6DGg1CEXshSdvWNX2sN4QHqg03SPq7U6jPXRahlQdl5dK8oXjkU/2/sGrnOZKeGV1zLSO8qPwyKklPPE7w==",
+      "version": "3.0.0",
+      "resolved": "https://registry.npmjs.org/to-readable-stream/-/to-readable-stream-3.0.0.tgz",
+      "integrity": "sha512-vD2LytT6DxPynBa1xbMtswY9gGqj27wNbh2uvI5OhBe+mrGLurRWRQZyQn3812sqlQRtUJwaKVshG+PoGwbPDQ==",
       "engines": {
-        "node": ">=8"
+        "node": ">=12"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/sindresorhus"
       }
     },
     "node_modules/to-regex": {
@@ -21873,6 +21892,11 @@
             "is-core-module": "^2.2.0",
             "path-parse": "^1.0.6"
           }
+        },
+        "to-readable-stream": {
+          "version": "2.1.0",
+          "resolved": "https://registry.npmjs.org/to-readable-stream/-/to-readable-stream-2.1.0.tgz",
+          "integrity": "sha512-o3Qa6DGg1CEXshSdvWNX2sN4QHqg03SPq7U6jPXRahlQdl5dK8oXjkU/2/sGrnOZKeGV1zLSO8qPwyKklPPE7w=="
         },
         "type-fest": {
           "version": "0.21.3",
@@ -27418,6 +27442,11 @@
           "requires": {
             "has-flag": "^4.0.0"
           }
+        },
+        "to-readable-stream": {
+          "version": "2.1.0",
+          "resolved": "https://registry.npmjs.org/to-readable-stream/-/to-readable-stream-2.1.0.tgz",
+          "integrity": "sha512-o3Qa6DGg1CEXshSdvWNX2sN4QHqg03SPq7U6jPXRahlQdl5dK8oXjkU/2/sGrnOZKeGV1zLSO8qPwyKklPPE7w=="
         },
         "type-fest": {
           "version": "0.10.0",
@@ -34336,9 +34365,9 @@
       }
     },
     "to-readable-stream": {
-      "version": "2.1.0",
-      "resolved": "https://registry.npmjs.org/to-readable-stream/-/to-readable-stream-2.1.0.tgz",
-      "integrity": "sha512-o3Qa6DGg1CEXshSdvWNX2sN4QHqg03SPq7U6jPXRahlQdl5dK8oXjkU/2/sGrnOZKeGV1zLSO8qPwyKklPPE7w=="
+      "version": "3.0.0",
+      "resolved": "https://registry.npmjs.org/to-readable-stream/-/to-readable-stream-3.0.0.tgz",
+      "integrity": "sha512-vD2LytT6DxPynBa1xbMtswY9gGqj27wNbh2uvI5OhBe+mrGLurRWRQZyQn3812sqlQRtUJwaKVshG+PoGwbPDQ=="
     },
     "to-regex": {
       "version": "3.0.2",
