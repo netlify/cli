@@ -14,7 +14,7 @@
         "@netlify/config": "^17.0.3",
         "@netlify/framework-info": "^7.0.0",
         "@netlify/local-functions-proxy": "^1.1.1",
-        "@netlify/plugin-edge-handlers": "^3.0.0",
+        "@netlify/plugin-edge-handlers": "^3.0.2",
         "@netlify/plugins-list": "^6.2.0",
         "@netlify/routing-local-proxy": "^0.34.1",
         "@netlify/zip-it-and-ship-it": "5.4.0",
@@ -3300,9 +3300,9 @@
       "integrity": "sha512-lfNB/QYDgaP07pwm/nWEaWPvRAAGyhxvJqNzvxMijc7A4uwquMjlbYve8yYyd0LJXPwgBpGobwiQj5RA76xzUQ=="
     },
     "node_modules/@netlify/plugin-edge-handlers": {
-      "version": "3.0.0",
-      "resolved": "https://registry.npmjs.org/@netlify/plugin-edge-handlers/-/plugin-edge-handlers-3.0.0.tgz",
-      "integrity": "sha512-lolaK+xaY0Hud4tE89baA9FrwxebTvSTVTeQAEK3a9yj1o0jZrEzaBW9kGZ89lwANb4Mghz3PLaksOlEH179MA==",
+      "version": "3.0.2",
+      "resolved": "https://registry.npmjs.org/@netlify/plugin-edge-handlers/-/plugin-edge-handlers-3.0.2.tgz",
+      "integrity": "sha512-MEJ2A5+5/EB5aqB1S/4vfEA30BKJnDpQ1yT439u9GvvFz6iDrMEi3IrlUdmevrnG6W9j1hYqvvCPPrBSnXLaeg==",
       "dependencies": {
         "@babel/core": "^7.11.4",
         "@babel/preset-env": "^7.11.5",
@@ -3314,14 +3314,12 @@
         "@types/node": "^16.0.0",
         "buffer-es6": "^4.9.3",
         "del": "^6.0.0",
-        "make-dir": "^3.1.0",
         "node-fetch": "^2.6.1",
         "path-type": "^4.0.0",
         "process-es6": "^0.11.6",
         "rollup": "^2.23.1",
         "rollup-plugin-node-polyfills": "^0.2.1",
-        "rollup-plugin-terser": "^7.0.2",
-        "typescript": "^4.1.5"
+        "rollup-plugin-terser": "^7.0.2"
       },
       "bin": {
         "plugin-build-edge-handlers": "src/cli.js"
@@ -3331,9 +3329,9 @@
       }
     },
     "node_modules/@netlify/plugin-edge-handlers/node_modules/@types/node": {
-      "version": "16.11.15",
-      "resolved": "https://registry.npmjs.org/@types/node/-/node-16.11.15.tgz",
-      "integrity": "sha512-LMGR7iUjwZRxoYnfc9+YELxwqkaLmkJlo4/HUvOMyGvw9DaHO0gtAbH2FUdoFE6PXBTYZIT7x610r7kdo8o1fQ=="
+      "version": "16.11.19",
+      "resolved": "https://registry.npmjs.org/@types/node/-/node-16.11.19.tgz",
+      "integrity": "sha512-BPAcfDPoHlRQNKktbsbnpACGdypPFBuX4xQlsWDE7B8XXcfII+SpOLay3/qZmCLb39kV5S1RTYwXdkx2lwLYng=="
     },
     "node_modules/@netlify/plugins-list": {
       "version": "6.2.0",
@@ -22367,9 +22365,9 @@
       "integrity": "sha512-lfNB/QYDgaP07pwm/nWEaWPvRAAGyhxvJqNzvxMijc7A4uwquMjlbYve8yYyd0LJXPwgBpGobwiQj5RA76xzUQ=="
     },
     "@netlify/plugin-edge-handlers": {
-      "version": "3.0.0",
-      "resolved": "https://registry.npmjs.org/@netlify/plugin-edge-handlers/-/plugin-edge-handlers-3.0.0.tgz",
-      "integrity": "sha512-lolaK+xaY0Hud4tE89baA9FrwxebTvSTVTeQAEK3a9yj1o0jZrEzaBW9kGZ89lwANb4Mghz3PLaksOlEH179MA==",
+      "version": "3.0.2",
+      "resolved": "https://registry.npmjs.org/@netlify/plugin-edge-handlers/-/plugin-edge-handlers-3.0.2.tgz",
+      "integrity": "sha512-MEJ2A5+5/EB5aqB1S/4vfEA30BKJnDpQ1yT439u9GvvFz6iDrMEi3IrlUdmevrnG6W9j1hYqvvCPPrBSnXLaeg==",
       "requires": {
         "@babel/core": "^7.11.4",
         "@babel/preset-env": "^7.11.5",
@@ -22381,20 +22379,18 @@
         "@types/node": "^16.0.0",
         "buffer-es6": "^4.9.3",
         "del": "^6.0.0",
-        "make-dir": "^3.1.0",
         "node-fetch": "^2.6.1",
         "path-type": "^4.0.0",
         "process-es6": "^0.11.6",
         "rollup": "^2.23.1",
         "rollup-plugin-node-polyfills": "^0.2.1",
-        "rollup-plugin-terser": "^7.0.2",
-        "typescript": "^4.1.5"
+        "rollup-plugin-terser": "^7.0.2"
       },
       "dependencies": {
         "@types/node": {
-          "version": "16.11.15",
-          "resolved": "https://registry.npmjs.org/@types/node/-/node-16.11.15.tgz",
-          "integrity": "sha512-LMGR7iUjwZRxoYnfc9+YELxwqkaLmkJlo4/HUvOMyGvw9DaHO0gtAbH2FUdoFE6PXBTYZIT7x610r7kdo8o1fQ=="
+          "version": "16.11.19",
+          "resolved": "https://registry.npmjs.org/@types/node/-/node-16.11.19.tgz",
+          "integrity": "sha512-BPAcfDPoHlRQNKktbsbnpACGdypPFBuX4xQlsWDE7B8XXcfII+SpOLay3/qZmCLb39kV5S1RTYwXdkx2lwLYng=="
         }
       }
     },
