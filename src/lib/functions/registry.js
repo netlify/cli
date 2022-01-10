@@ -5,7 +5,7 @@ const { env } = require('process')
 
 const terminalLink = require('terminal-link')
 
-const { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn } = require('../../utils')
+const { NETLIFYDEVERR, NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, log, warn } = require('../../utils')
 const { getLogMessage } = require('../log')
 
 const { NetlifyFunction } = require('./netlify-function')
@@ -144,13 +144,10 @@ class FunctionsRegistry {
     }
 
     // This fixes the bug described here https://github.com/netlify/zip-it-and-ship-it/issues/637
-    // If the current function's file has a '.zip' extension, we ignore it to prevent unrecoverable
-    // errors when it's called and log a descriptive message of the issue to the console.
+    // If the current function's file is a zip bundle, we ignore it and log a helpful message.
     if (func.mainFile.toLowerCase().endsWith(ZIP_EXTENSION)) {
       log(
-        `${NETLIFYDEVERR} Unable to load the function ${terminalLink(chalk.yellow(name), func.url)}. Invalid file '${
-          func.mainFile
-        }'.`,
+        `${NETLIFYDEVWARN} Skipped bundled function. Unzip the archive to load it from source.`,
       )
       return
     }
