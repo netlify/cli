@@ -120,7 +120,7 @@
       },
       "devDependencies": {
         "@babel/preset-react": "^7.12.13",
-        "@commitlint/cli": "^16.0.0",
+        "@commitlint/cli": "^16.0.2",
         "@commitlint/config-conventional": "^16.0.0",
         "@netlify/eslint-config-node": "^4.0.6",
         "ava": "^3.15.0",
@@ -1874,9 +1874,9 @@
       "integrity": "sha512-htzFO1Zc57S8kgdRK9mLcPVTW1BY2ijfH7Dk2CeZmspTWKdKqSo1iwmqrq2WtRjFlo8aRZYgLX0wFrDXF/9DLA=="
     },
     "node_modules/@commitlint/cli": {
-      "version": "16.0.1",
-      "resolved": "https://registry.npmjs.org/@commitlint/cli/-/cli-16.0.1.tgz",
-      "integrity": "sha512-61gGRy65WiVDRsqP0dAR2fAgE3qrTBW3fgz9MySv32y5Ib3ZXXDDq6bGyQqi2dSaPuDYzNCRwwlC7mmQM73T/g==",
+      "version": "16.0.2",
+      "resolved": "https://registry.npmjs.org/@commitlint/cli/-/cli-16.0.2.tgz",
+      "integrity": "sha512-Jt7iaBjoLGC5Nq4dHPTvTYnqPGkElFPBtTXTvBpTgatZApczyjI2plE0oG4GYWPp1suHIS/VdVDOMpPZjGVusg==",
       "dev": true,
       "dependencies": {
         "@commitlint/format": "^16.0.0",
@@ -21317,9 +21317,9 @@
       "integrity": "sha512-htzFO1Zc57S8kgdRK9mLcPVTW1BY2ijfH7Dk2CeZmspTWKdKqSo1iwmqrq2WtRjFlo8aRZYgLX0wFrDXF/9DLA=="
     },
     "@commitlint/cli": {
-      "version": "16.0.1",
-      "resolved": "https://registry.npmjs.org/@commitlint/cli/-/cli-16.0.1.tgz",
-      "integrity": "sha512-61gGRy65WiVDRsqP0dAR2fAgE3qrTBW3fgz9MySv32y5Ib3ZXXDDq6bGyQqi2dSaPuDYzNCRwwlC7mmQM73T/g==",
+      "version": "16.0.2",
+      "resolved": "https://registry.npmjs.org/@commitlint/cli/-/cli-16.0.2.tgz",
+      "integrity": "sha512-Jt7iaBjoLGC5Nq4dHPTvTYnqPGkElFPBtTXTvBpTgatZApczyjI2plE0oG4GYWPp1suHIS/VdVDOMpPZjGVusg==",
       "dev": true,
       "requires": {
         "@commitlint/format": "^16.0.0",
