@@ -15,7 +15,7 @@
         "@netlify/framework-info": "^8.0.0",
         "@netlify/local-functions-proxy": "^1.1.1",
         "@netlify/plugin-edge-handlers": "^3.0.2",
-        "@netlify/plugins-list": "^6.2.0",
+        "@netlify/plugins-list": "^6.2.1",
         "@netlify/routing-local-proxy": "^0.34.1",
         "@netlify/zip-it-and-ship-it": "5.4.0",
         "@octokit/rest": "^18.0.0",
@@ -92,7 +92,7 @@
         "parse-github-url": "^1.0.2",
         "parse-gitignore": "^1.0.1",
         "path-key": "^3.1.1",
-        "prettyjson": "^1.2.5",
+        "prettyjson": "^1.2.1",
         "pump": "^3.0.0",
         "raw-body": "^2.4.1",
         "read-pkg-up": "^7.0.1",
@@ -3322,9 +3322,9 @@
       "integrity": "sha512-BPAcfDPoHlRQNKktbsbnpACGdypPFBuX4xQlsWDE7B8XXcfII+SpOLay3/qZmCLb39kV5S1RTYwXdkx2lwLYng=="
     },
     "node_modules/@netlify/plugins-list": {
-      "version": "6.2.0",
-      "resolved": "https://registry.npmjs.org/@netlify/plugins-list/-/plugins-list-6.2.0.tgz",
-      "integrity": "sha512-ZkrNrq1A/pVt32XsSLye9We0v+f0yqnOMD32Yu17KoMsL6AVF0KOyiAqjuJFNOZlusTkLgmZuMAbtmriybP0AQ==",
+      "version": "6.2.1",
+      "resolved": "https://registry.npmjs.org/@netlify/plugins-list/-/plugins-list-6.2.1.tgz",
+      "integrity": "sha512-/sXe4hjTFgKnRDFDiqU1qLvRCc+JtOqTLFf3aMNA6Xp7bSKGtTYJFOwTpPIUUOyLaDqbBdU3IOjemc6EtyC8qg==",
       "engines": {
         "node": "^12.20.0 || ^14.14.0 || >=16.0.0"
       }
@@ -22350,9 +22350,9 @@
       }
     },
     "@netlify/plugins-list": {
-      "version": "6.2.0",
-      "resolved": "https://registry.npmjs.org/@netlify/plugins-list/-/plugins-list-6.2.0.tgz",
-      "integrity": "sha512-ZkrNrq1A/pVt32XsSLye9We0v+f0yqnOMD32Yu17KoMsL6AVF0KOyiAqjuJFNOZlusTkLgmZuMAbtmriybP0AQ=="
+      "version": "6.2.1",
+      "resolved": "https://registry.npmjs.org/@netlify/plugins-list/-/plugins-list-6.2.1.tgz",
+      "integrity": "sha512-/sXe4hjTFgKnRDFDiqU1qLvRCc+JtOqTLFf3aMNA6Xp7bSKGtTYJFOwTpPIUUOyLaDqbBdU3IOjemc6EtyC8qg=="
     },
     "@netlify/routing-local-proxy": {
       "version": "0.34.1",
