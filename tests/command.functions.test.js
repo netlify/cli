@@ -465,7 +465,7 @@ test('throws an error when the --language flag contains an unsupported value', a
 })
 
 const DEFAULT_PORT = 9999
-const SERVE_TIMEOUT = 180000
+const SERVE_TIMEOUT = 180_000
 
 const withFunctionsServer = async ({ builder, args = [], port = DEFAULT_PORT }, testHandler) => {
   let ps

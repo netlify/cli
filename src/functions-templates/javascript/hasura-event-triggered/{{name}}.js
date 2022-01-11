@@ -20,7 +20,7 @@ const handler = async (event) => {
   let request
   try {
     request = JSON.parse(event.body)
-  } catch (error) {
+  } catch {
     return { statusCode: 400, body: 'c annot parse hasura event' }
   }
 

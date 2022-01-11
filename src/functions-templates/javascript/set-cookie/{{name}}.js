@@ -1,7 +1,7 @@
 const cookie = require('cookie')
 
 // 14 days
-const COOKIE_MAX_AGE = 12096e5
+const COOKIE_MAX_AGE = 12_096e5
 
 const handler = async () => {
   const myCookie = cookie.serialize('my_cookie', 'lolHi', {
