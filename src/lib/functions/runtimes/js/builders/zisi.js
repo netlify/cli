@@ -72,7 +72,7 @@ const getTargetDirectory = async ({ errorExit }) => {
 
   try {
     await mkdir(targetDirectory, { recursive: true })
-  } catch (error) {
+  } catch {
     errorExit(`${NETLIFYDEVERR} Could not create directory: ${targetDirectory}`)
   }
 
