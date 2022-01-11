@@ -1,0 +1,43 @@
+name: E2E Testing for CLI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # check daily to notice potential package manager issues
+    - cron: '0 1 * * *' # At 01:00 daily
+
+
+jobs:
+  e2e:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    env:
+      DEBUG: true
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macOS-latest, windows-latest]
+        node-version: ['12.x', '*']
+        package-manager: ['npm', 'yarn', 'pnpm']
+      fail-fast: false
+
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: 'npm-shrinkwrap.json'
+          check-latest: true
+      - name: Install dependencies
+        run: npm ci --no-audit
+      - name: Install pnpm
+        run: npm install -g pnpm
+        if: "${{ matrix.package-manager == 'pnpm' && !steps.release-check.outputs.IS_RELEASE}}"
+      - run: npm run e2e -- ${{ matrix.package-manager }}
