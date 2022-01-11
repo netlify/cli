@@ -92,7 +92,7 @@
         "parse-github-url": "^1.0.2",
         "parse-gitignore": "^1.0.1",
         "path-key": "^3.1.1",
-        "prettyjson": "^1.2.1",
+        "prettyjson": "^1.2.5",
         "pump": "^3.0.0",
         "raw-body": "^2.4.1",
         "read-pkg-up": "^7.0.1",
@@ -16363,11 +16363,11 @@
       }
     },
     "node_modules/prettyjson": {
-      "version": "1.2.1",
-      "resolved": "https://registry.npmjs.org/prettyjson/-/prettyjson-1.2.1.tgz",
-      "integrity": "sha1-/P+rQdGcq0365eV15kJGYZsS0ok=",
+      "version": "1.2.5",
+      "resolved": "https://registry.npmjs.org/prettyjson/-/prettyjson-1.2.5.tgz",
+      "integrity": "sha512-rksPWtoZb2ZpT5OVgtmy0KHVM+Dca3iVwWY9ifwhcexfjebtgjg3wmrUt9PvJ59XIYBcknQeYHD8IAnVlh9lAw==",
       "dependencies": {
-        "colors": "^1.1.2",
+        "colors": "1.4.0",
         "minimist": "^1.2.0"
       },
       "bin": {
@@ -32204,11 +32204,11 @@
       }
     },
     "prettyjson": {
-      "version": "1.2.1",
-      "resolved": "https://registry.npmjs.org/prettyjson/-/prettyjson-1.2.1.tgz",
-      "integrity": "sha1-/P+rQdGcq0365eV15kJGYZsS0ok=",
+      "version": "1.2.5",
+      "resolved": "https://registry.npmjs.org/prettyjson/-/prettyjson-1.2.5.tgz",
+      "integrity": "sha512-rksPWtoZb2ZpT5OVgtmy0KHVM+Dca3iVwWY9ifwhcexfjebtgjg3wmrUt9PvJ59XIYBcknQeYHD8IAnVlh9lAw==",
       "requires": {
-        "colors": "^1.1.2",
+        "colors": "1.4.0",
         "minimist": "^1.2.0"
       }
     },
