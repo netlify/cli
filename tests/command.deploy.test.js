@@ -747,4 +747,8 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
     await callCli(['sites:delete', siteId, '--force'])
   })
 }
+
+test('always pass, used for forked PRs', (t) => {
+  t.pass()
+})
 /* eslint-enable require-await */
