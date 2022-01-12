@@ -16,7 +16,7 @@ const getOperationNodes = (query) => {
         operationDefinitions.push(def)
       }
     })
-  } catch (error) {
+  } catch {
     // ignore
   }
   operationNodesMemo = [query, operationDefinitions]

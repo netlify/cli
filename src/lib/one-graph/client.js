@@ -31,7 +31,7 @@ const basicPost = async (url, options) => {
     'Content-Length': reqBody.length,
   }
 
-  const timeoutMilliseconds = 30000
+  const timeoutMilliseconds = 30_000
 
   const resp = await fetch(url, {
     method: 'POST',
@@ -106,7 +106,7 @@ const fetchOneGraph = async (
       console.log('fetchOneGraph errors', JSON.stringify(value, null, 2))
     }
     return value
-  } catch (error) {
+  } catch {
     return {}
   }
 }
@@ -134,7 +134,7 @@ const fetchOneGraphPersisted = async (
     })
 
     return JSON.parse(result)
-  } catch (error) {
+  } catch {
     return {}
   }
 }

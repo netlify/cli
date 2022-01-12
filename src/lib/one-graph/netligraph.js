@@ -3,7 +3,6 @@ const fs = require('fs')
 
 const dotProp = require('dot-prop')
 const { parse, print, printSchema } = require('graphql')
-const makeDir = require('make-dir')
 
 const { getFunctionsDir } = require('../../utils')
 
@@ -57,11 +56,11 @@ const getNetligraphConfig = ({ command, options }) => {
 }
 
 const ensureNetligraphPath = (netligraphConfig) => {
-  makeDir.sync(netligraphConfig.netligraphPath)
+  fs.mkdirSync(netligraphConfig.netligraphPath, { recursive: true })
 }
 
 const ensureFunctionsPath = (netligraphConfig) => {
-  makeDir.sync(netligraphConfig.functionsPath)
+  fs.mkdirSync(netligraphConfig.functionsPath, { recursive: true })
 }
 
 const defaultExampleOperationsDoc = `query ExampleQuery @netligraph(doc: "An example query to start with.") {
