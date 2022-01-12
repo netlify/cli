@@ -107,12 +107,12 @@ const runCommand = (command, env = {}) => {
     }
     process.exit(1)
   })
-  ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) => {
-    process.on(signal, () => {
-      commandProcess.kill('SIGTERM', { forceKillAfterTimeout: 500 })
-      process.exit()
+    ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) => {
+      process.on(signal, () => {
+        commandProcess.kill('SIGTERM', { forceKillAfterTimeout: 500 })
+        process.exit()
+      })
     })
-  })
 
   return commandProcess
 }
@@ -296,10 +296,10 @@ const dev = async (options, command) => {
   const startNetligraphWatcher = Boolean(options.netligraph)
 
   if (startNetligraphWatcher && options.offline) {
-    console.warn(`${NETLIFYDEVERR} Warning: unable to start Netligraph in offline mode`)
+    console.warn(`${NETLIFYDEVERR} Warning: unable to start Netlify Graph in offline mode`)
   } else if (startNetligraphWatcher && !site.id) {
     console.warn(
-      `${NETLIFYDEVERR} Warning: no siteId defined, unable to start Netligraph. To enable, run ${chalk.yellow(
+      `${NETLIFYDEVERR} Warning: no siteId defined, unable to start Netlify Graph. To enable, run ${chalk.yellow(
         'netlify init',
       )} or ${chalk.yellow('netlify link')}?`,
     )

@@ -14,7 +14,7 @@ const {
   readGraphQLOperationsSourceFile,
   writeGraphQLOperationsSourceFile,
   writeGraphQLSchemaFile,
-} = require('./netligraph')
+} = require('./netlify-graph')
 
 const ONEDASH_APP_ID = '0b066ba6-ed39-4db8-a497-ba0be34d5b2a'
 
@@ -514,10 +514,10 @@ const monitorCLISessionEvents = ({
       log(
         `${NETLIFYDEVLOG} ${chalk.magenta(
           'Reloading',
-        )} Netligraph schema..., ${enabledServicesCompareKey} => ${newEnabledServicesCompareKey}`,
+        )} Netlify Graph schema..., ${enabledServicesCompareKey} => ${newEnabledServicesCompareKey}`,
       )
       await refetchAndGenerateFromOneGraph({ netligraphConfig, state, netlifyToken, siteId })
-      log(`${NETLIFYDEVLOG} ${chalk.green('Reloaded')} Netligraph schema and regenerated functions`)
+      log(`${NETLIFYDEVLOG} ${chalk.green('Reloaded')} Netlify Graph schema and regenerated functions`)
     }
   }
 
@@ -700,7 +700,7 @@ const startOneGraphCLISession = async ({ netlifyToken, netligraphConfig, site, s
       case 'OneGraphNetlifyCliSessionGenerateHandlerEvent':
         return 'Generate handler as Netlify function '
       case 'OneGraphNetlifyCliSessionPersistedLibraryUpdatedEvent':
-        return `Sync Netligraph operations library`
+        return `Sync Netlify Graph operations library`
       default: {
         return `Unrecognized event (${__typename})`
       }
@@ -735,9 +735,9 @@ const startOneGraphCLISession = async ({ netlifyToken, netligraphConfig, site, s
     onEvents: (events) => {
       events.forEach(async (event) => {
         const eventName = friendlyEventName(event)
-        log(`${NETLIFYDEVLOG} ${chalk.magenta('Handling')} Netligraph event: ${eventName}...`)
+        log(`${NETLIFYDEVLOG} ${chalk.magenta('Handling')} Netlify Graph event: ${eventName}...`)
         await handleEvent(event)
-        log(`${NETLIFYDEVLOG} ${chalk.green('Finished handling')} Netligraph event: ${eventName}...`)
+        log(`${NETLIFYDEVLOG} ${chalk.green('Finished handling')} Netlify Graph event: ${eventName}...`)
       })
       return events.map((event) => event.id)
     },
@@ -798,7 +798,7 @@ const fetchEnabledServices = async (authToken, appId) => {
 const generateSessionName = () => {
   const userInfo = os.userInfo('utf-8')
   const sessionName = `${userInfo.username}-${Date.now()}`
-  console.log(`${NETLIFYDEVLOG} Generated netligraph session name: ${sessionName}`)
+  console.log(`${NETLIFYDEVLOG} Generated Netlify Graph session name: ${sessionName}`)
   return sessionName
 }
 

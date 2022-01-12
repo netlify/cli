@@ -1,6 +1,6 @@
 ---
 title: Netlify CLI graph command
-description: Sync and edit your Netligraph library
+description: Sync and edit your Netlify Graph library
 ---
 
 # `graph`

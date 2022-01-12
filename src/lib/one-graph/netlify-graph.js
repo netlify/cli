@@ -12,7 +12,7 @@ const {
   typeScriptSignatureForOperation,
   typeScriptSignatureForOperationVariables,
 } = require('./graphql-helpers')
-const { computeOperationDataList, netlifyFunctionSnippet } = require('./netligraph-code-exporter-snippets')
+const { computeOperationDataList, netlifyFunctionSnippet } = require('./netlify-graph-code-exporter-snippets')
 
 const capitalizeFirstLetter = (string) => string.charAt(0).toUpperCase() + string.slice(1)
 
