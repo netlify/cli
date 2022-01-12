@@ -36,7 +36,7 @@ const getVerdaccioConfig = (storage) => ({
     '@*/*': {
       access: '$all',
       publish: 'noone',
-      proxy: 'npmjs'
+      proxy: 'npmjs',
     },
     'netlify-cli': {
       access: '$all',
@@ -45,7 +45,7 @@ const getVerdaccioConfig = (storage) => ({
     '**': {
       access: '$all',
       publish: 'noone',
-      proxy: 'npmjs'
+      proxy: 'npmjs',
     },
   },
 })

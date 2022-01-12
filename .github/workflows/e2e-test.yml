@@ -9,7 +9,6 @@ on:
     # check daily to notice potential package manager issues
     - cron: '0 1 * * *' # At 01:00 daily
 
-
 jobs:
   e2e:
     runs-on: ${{ matrix.os }}
