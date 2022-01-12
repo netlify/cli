@@ -24,7 +24,7 @@ const graphEdit = async (options, command) => {
 
   if (!site.id) {
     console.error(
-      `${NETLIFYDEVERR} Warning: no siteId defined, unable to start Netligraph. To enable, run ${chalk.yellow(
+      `${NETLIFYDEVERR} Warning: no siteId defined, unable to start Netlify Graph. To enable, run ${chalk.yellow(
         'netlify init',
       )} or ${chalk.yellow('netlify link')}?`,
     )

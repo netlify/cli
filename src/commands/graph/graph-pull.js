@@ -9,7 +9,7 @@ const graphPull = async (options, command) => {
 
   if (!site.id) {
     console.error(
-      `${NETLIFYDEVERR} Warning: no siteId defined, unable to start Netligraph. To enable, run ${chalk.yellow(
+      `${NETLIFYDEVERR} Warning: no siteId defined, unable to start Netlify Graph. To enable, run ${chalk.yellow(
         'netlify init',
       )} or ${chalk.yellow('netlify link')}?`,
     )
@@ -30,7 +30,7 @@ const graphPull = async (options, command) => {
 const createGraphPullCommand = (program) =>
   program
     .command('graph:pull')
-    .description('Pull down your local Netligraph schema and regenerate your local functions')
+    .description('Pull down your local Netlify Graph schema and regenerate your local functions')
     .action(async (options, command) => {
       await graphPull(options, command)
     })

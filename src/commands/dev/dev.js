@@ -107,12 +107,12 @@ const runCommand = (command, env = {}) => {
     }
     process.exit(1)
   })
-  ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) => {
-    process.on(signal, () => {
-      commandProcess.kill('SIGTERM', { forceKillAfterTimeout: 500 })
-      process.exit()
+    ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) => {
+      process.on(signal, () => {
+        commandProcess.kill('SIGTERM', { forceKillAfterTimeout: 500 })
+        process.exit()
+      })
     })
-  })
 
   return commandProcess
 }
@@ -354,7 +354,7 @@ const createDevCommand = (program) => {
         'specify the path to a local GeoIP location database in MMDB format',
       ).hideHelp(),
     )
-    .addOption(new Option('--netligraph', 'enable netligraph support').hideHelp())
+    .addOption(new Option('--graph', 'enable Netlify Graph support').hideHelp())
     .addExamples(['netlify dev', 'netlify dev -d public', 'netlify dev -c "hugo server -w" --targetPort 1313'])
     .action(dev)
 }

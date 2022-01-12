@@ -22,7 +22,7 @@ const createGraphCommand = (program) => {
 
   return program
     .command('graph')
-    .description('(Beta) Control the Netligraph functions for the current site')
+    .description('(Beta) Control the Netlify Graph functions for the current site')
     .addExamples(['netlify graph:pull', 'netlify graph:edit'])
     .action(graph)
 }

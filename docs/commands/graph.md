@@ -6,7 +6,7 @@ description: Sync and edit your Netligraph library
 # `graph`
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
-(Beta) Control the Netligraph functions for the current site
+(Beta) Control the Netlify Graph functions for the current site
 
 **Usage**
 
@@ -23,7 +23,7 @@ netlify graph
 | Subcommand | description  |
 |:--------------------------- |:-----|
 | [`graph:edit`](/docs/commands/graph.md#graphedit) | Launch the browser to edit your local graph functions from Netlify  |
-| [`graph:pull`](/docs/commands/graph.md#graphpull) | Pull down your local Netligraph schema and regenerate your local functions  |
+| [`graph:pull`](/docs/commands/graph.md#graphpull) | Pull down your local Netlify Graph schema and regenerate your local functions  |
 
 
 **Examples**
@@ -53,7 +53,7 @@ netlify graph:edit
 ---
 ## `graph:pull`
 
-Pull down your local Netligraph schema and regenerate your local functions
+Pull down your local Netlify Graph schema and regenerate your local functions
 
 **Usage**
 

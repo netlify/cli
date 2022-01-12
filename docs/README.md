@@ -112,12 +112,12 @@ Manage netlify functions
 
 ### [graph](/docs/commands/graph.md)
 
-(Beta) Control the Netligraph functions for the current site
+(Beta) Control the Netlify Graph functions for the current site
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
 | [`graph:edit`](/docs/commands/graph.md#graphedit) | Launch the browser to edit your local graph functions from Netlify  |
-| [`graph:pull`](/docs/commands/graph.md#graphpull) | Pull down your local Netligraph schema and regenerate your local functions  |
+| [`graph:pull`](/docs/commands/graph.md#graphpull) | Pull down your local Netlify Graph schema and regenerate your local functions  |
 
 
 ### [init](/docs/commands/init.md)
