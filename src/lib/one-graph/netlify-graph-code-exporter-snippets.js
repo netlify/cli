@@ -332,17 +332,20 @@ ${variables}
       }`
         : ''
 
-      return `async function ${operationFunctionName(namedOperationData)}(${useClientAuth ? 'oneGraphAuth, ' : ''
-        }params) {
+      return `async function ${operationFunctionName(namedOperationData)}(${
+        useClientAuth ? 'oneGraphAuth, ' : ''
+      }params) {
   const {${params.join(', ')}} = params || {};
-  const resp = await fetch(\`/.netlify/functions/${namedOperationData.name}${pluckerStyle === 'get' ? `?${params.map((param) => `${param}=\${${param}}`).join('&')}` : ''
-        }\`,
+  const resp = await fetch(\`/.netlify/functions/${namedOperationData.name}${
+        pluckerStyle === 'get' ? `?${params.map((param) => `${param}=\${${param}}`).join('&')}` : ''
+      }\`,
     {
-      method: "${pluckerStyle.toLocaleUpperCase()}"${pluckerStyle === 'get'
+      method: "${pluckerStyle.toLocaleUpperCase()}"${
+        pluckerStyle === 'get'
           ? ''
           : `,
       body: JSON.stringify({${addLeftWhitespace(bodyPayload, whitespace).trim()}})${clientAuth}`
-        }
+      }
     });
 
     const text = await resp.text();
@@ -443,8 +446,8 @@ const netlifyFunctionSnippet = {
           query: `# Consider giving this ${operationData.type} a unique, descriptive
 # name in your application as a best practice
 ${operationData.type} unnamed${capitalizeFirstLetter(operationData.type)}${idx + 1} ${operationData.query
-              .trim()
-              .replace(/^(query|mutation|subscription) /i, '')}`,
+            .trim()
+            .replace(/^(query|mutation|subscription) /i, '')}`,
         }
       }
       return operationData
