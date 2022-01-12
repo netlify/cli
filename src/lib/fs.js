@@ -1,11 +1,10 @@
 // @ts-check
 const {
   constants,
-  promises: { access, readFile, rm, stat },
+  promises: { access, readFile, rm, rmdir, stat },
 } = require('fs')
 const { version } = require('process')
 
-const del = require('del')
 const { gte, parse } = require('semver')
 
 const NODE_VERSION = parse(version)
@@ -40,7 +39,7 @@ const rmdirRecursiveAsync = async (path) => {
   if (gte(NODE_VERSION, '14.14.0')) {
     return await rm(path, { force: true, recursive: true })
   }
-  await del(path, { force: true })
+  await rmdir(path, { force: true, recursive: true })
 }
 
 /**
