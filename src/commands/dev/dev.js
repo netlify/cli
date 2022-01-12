@@ -107,12 +107,12 @@ const runCommand = (command, env = {}) => {
     }
     process.exit(1)
   })
-    ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) => {
-      process.on(signal, () => {
-        commandProcess.kill('SIGTERM', { forceKillAfterTimeout: 500 })
-        process.exit()
-      })
+  ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) => {
+    process.on(signal, () => {
+      commandProcess.kill('SIGTERM', { forceKillAfterTimeout: 500 })
+      process.exit()
     })
+  })
 
   return commandProcess
 }
