@@ -301,3 +301,31 @@ test('should pass framework-info env to framework sub process', async (t) => {
     t.snapshot(normalize(error.stdout))
   })
 })
+
+test('should start static service for frameworks without port, forced framework', async (t) => {
+  await withSiteBuilder('site-with-remix', async (builder) => {
+    await builder.withNetlifyToml({ config: { dev: { framework: 'remix' } } }).buildAsync()
+
+    // a failure is expected since this is not a true remix project
+    const error = await t.throwsAsync(() => withDevServer({ cwd: builder.directory }, () => {}, true))
+    t.snapshot(normalize(error.stdout))
+  })
+})
+
+test('should start static service for frameworks without port, detected framework', async (t) => {
+  await withSiteBuilder('site-with-remix', async (builder) => {
+    await builder
+      .withPackageJson({
+        packageJson: {
+          dependencies: { remix: '^1.0.0', '@remix-run/netlify': '^1.0.0' },
+          scripts: {},
+        },
+      })
+      .withContentFile({ path: 'remix.config.js', content: '' })
+      .buildAsync()
+
+    // a failure is expected since this is not a true remix project
+    const error = await t.throwsAsync(() => withDevServer({ cwd: builder.directory }, () => {}, true))
+    t.snapshot(normalize(error.stdout))
+  })
+})
