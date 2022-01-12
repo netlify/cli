@@ -9,8 +9,12 @@ const {
   generateSessionName,
   loadCLISession,
   updateCLISessionMetadata,
-} = require('../../lib/oneGraph/client')
-const { defaultExampleOperationsDoc, getNetligraphConfig, readGraphQLOperationsSourceFile } = require('../../lib/oneGraph/netligraph')
+} = require('../../lib/one-graph/client')
+const {
+  defaultExampleOperationsDoc,
+  getNetligraphConfig,
+  readGraphQLOperationsSourceFile,
+} = require('../../lib/one-graph/netligraph')
 const { NETLIFYDEVERR, chalk } = require('../../utils')
 const { openBrowser } = require('../../utils/open-browser')
 

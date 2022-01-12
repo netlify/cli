@@ -1,7 +1,7 @@
 const dotProp = require('dot-prop')
 const { parse, print } = require('graphql')
 
-const { munge } = require("./codegen-helpers")
+const { munge } = require('./codegen-helpers')
 
 let operationNodesMemo = [null, null]
 
@@ -238,7 +238,8 @@ const asyncFetcherInvocation = (operationDataList, pluckerStyle) => {
 
       const pluckers = {
         get:
-          dotProp.get(namedOperationData, 'operationDefinition.variableDefinitions', [])
+          dotProp
+            .get(namedOperationData, 'operationDefinition.variableDefinitions', [])
             .map((def) => {
               const name = def.variable.name.value
               const withCoercer = coercerFor(def.type, `event.queryStringParameters?.${name}`)
@@ -246,7 +247,8 @@ const asyncFetcherInvocation = (operationDataList, pluckerStyle) => {
             })
             .join('\n  ') || '',
         post:
-          dotProp.get(namedOperationData, 'operationDefinition.variableDefinitions', [])
+          dotProp
+            .get(namedOperationData, 'operationDefinition.variableDefinitions', [])
             .map((def) => {
               const name = def.variable.name.value
               return `const ${munge(name)} = eventBodyJson?.${name};`
@@ -266,7 +268,9 @@ const asyncFetcherInvocation = (operationDataList, pluckerStyle) => {
         requiredVariableCount = requiredVariableNames.length
 
         // TODO: Filter nullable variables
-        const condition = requiredVariableNames.map((name) => `${munge(name)} === undefined || ${munge(name)} === null`).join(' || ')
+        const condition = requiredVariableNames
+          .map((name) => `${munge(name)} === undefined || ${munge(name)} === null`)
+          .join(' || ')
 
         const message = requiredVariableNames.map((name) => `\`${name}\``).join(', ')
 
@@ -328,17 +332,20 @@ ${variables}
       }`
         : ''
 
-      return `async function ${operationFunctionName(namedOperationData)}(${useClientAuth ? 'oneGraphAuth, ' : ''
-        }params) {
+      return `async function ${operationFunctionName(namedOperationData)}(${
+        useClientAuth ? 'oneGraphAuth, ' : ''
+      }params) {
   const {${params.join(', ')}} = params || {};
-  const resp = await fetch(\`/.netlify/functions/${namedOperationData.name}${pluckerStyle === 'get' ? `?${params.map((param) => `${param}=\${${param}}`).join('&')}` : ''
-        }\`,
+  const resp = await fetch(\`/.netlify/functions/${namedOperationData.name}${
+        pluckerStyle === 'get' ? `?${params.map((param) => `${param}=\${${param}}`).join('&')}` : ''
+      }\`,
     {
-      method: "${pluckerStyle.toLocaleUpperCase()}"${pluckerStyle === 'get'
+      method: "${pluckerStyle.toLocaleUpperCase()}"${
+        pluckerStyle === 'get'
           ? ''
           : `,
       body: JSON.stringify({${addLeftWhitespace(bodyPayload, whitespace).trim()}})${clientAuth}`
-        }
+      }
     });
 
     const text = await resp.text();
@@ -351,13 +358,14 @@ ${variables}
   return invocations
 }
 
-const subscriptionHandler = ({
+const subscriptionHandler = ({ netligraphConfig, operationData }) => `${imp(
   netligraphConfig,
-  operationData,
-}) => `${imp(netligraphConfig, "{ getSecrets }", "@sgrove/netlify-functions")}
-${imp(netligraphConfig, "Netligraph", "./netligraph")}
+  '{ getSecrets }',
+  '@sgrove/netlify-functions',
+)}
+${imp(netligraphConfig, 'Netligraph', './netligraph')}
 
-${exp(netligraphConfig, "handler")} = async (event, context) => {
+${exp(netligraphConfig, 'handler')} = async (event, context) => {
   let secrets = await getSecrets(event);
 
   const payload = Netligraph.parseAndVerify${operationData.name}Event(event);
@@ -438,8 +446,8 @@ const netlifyFunctionSnippet = {
           query: `# Consider giving this ${operationData.type} a unique, descriptive
 # name in your application as a best practice
 ${operationData.type} unnamed${capitalizeFirstLetter(operationData.type)}${idx + 1} ${operationData.query
-              .trim()
-              .replace(/^(query|mutation|subscription) /i, '')}`,
+            .trim()
+            .replace(/^(query|mutation|subscription) /i, '')}`,
         }
       }
       return operationData
@@ -488,9 +496,9 @@ ${operationData.name}Data: ${operationData.name}Data`,
     const whitespace = 6
 
     const snippet = `${imp(netligraphConfig, '{ getSecrets }', '@sgrove/netlify-functions')};
-${imp(netligraphConfig, "Netligraph", "./netligraph")}
+${imp(netligraphConfig, 'Netligraph', './netligraph')}
 
-${exp(netligraphConfig, "handler")} = async (event, context) => {
+${exp(netligraphConfig, 'handler')} = async (event, context) => {
   // By default, all API calls use no authentication
   let accessToken = null;
 

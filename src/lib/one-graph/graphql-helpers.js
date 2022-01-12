@@ -159,15 +159,21 @@ const typeScriptDefinitionObjectForOperation = (schema, operationDefinition, fra
     const field = parentNamedType.getFields()[name]
     const gqlType = dotProp.get(field, 'type')
     if (name.startsWith('__')) {
-      return [displayedName, {
-        type: 'any', description: 'Internal GraphQL field', nullable: true,
-      }]
+      return [
+        displayedName,
+        {
+          type: 'any',
+          description: 'Internal GraphQL field',
+          nullable: true,
+        },
+      ]
     }
     const namedType = getNamedType(gqlType)
     const isNullable = !isNonNullType(gqlType)
     const isList = isListType(gqlType) || (!isNullable && isListType(gqlType.ofType))
     const isObjectLike = isObjectType(namedType) || isUnionType(namedType) || isInterfaceType(namedType)
-    const sub = dotProp.get(selection, 'selectionSet.selections', [])
+    const sub = dotProp
+      .get(selection, 'selectionSet.selections', [])
       // @ts-ignore
       .map(function innerHelper(innerSelection) {
         if (innerSelection.kind === 'Field') {
@@ -320,7 +326,7 @@ const typeScriptForOperation = (schema, operationDefinition, fragmentDefinitions
     Object.entries(obj).map(([name, value]) => {
       const { description } = value
       const tsType = valueHelper(value)
-      const { nullable } = value;
+      const { nullable } = value
       const doc = description
         ? `/**
 * ${description}
@@ -357,11 +363,16 @@ const patchSubscriptionWebhookField = ({ definition, schema }) => {
     if (selection.kind !== 'Field') return selection
     const field = subscriptionType.getFields()[selection.name.value]
     if (!field) {
-      console.warn("Unable to find subscription service field, you may need to enable additional services. Missing field:", selection.name.value)
+      console.warn(
+        'Unable to find subscription service field, you may need to enable additional services. Missing field:',
+        selection.name.value,
+      )
       return selection
     }
     const fieldHasWebhookUrlArg = field.args.some((arg) => arg.name === 'webhookUrl')
-    const selectionHasWebhookUrlArg = dotProp.get(selection, 'arguments', []).some((arg) => arg.name.value === 'webhookUrl')
+    const selectionHasWebhookUrlArg = dotProp
+      .get(selection, 'arguments', [])
+      .some((arg) => arg.name.value === 'webhookUrl')
     if (fieldHasWebhookUrlArg && !selectionHasWebhookUrlArg) {
       return {
         ...selection,
@@ -392,28 +403,28 @@ const patchSubscriptionWebhookField = ({ definition, schema }) => {
   const variableDefinitions = hasWebhookVariableDefinition
     ? definition.variableDefinitions
     : [
-      ...(definition.variableDefinitions || []),
-      {
-        kind: 'VariableDefinition',
-        type: {
-          kind: 'NonNullType',
+        ...(definition.variableDefinitions || []),
+        {
+          kind: 'VariableDefinition',
           type: {
-            kind: 'NamedType',
+            kind: 'NonNullType',
+            type: {
+              kind: 'NamedType',
+              name: {
+                kind: 'Name',
+                value: 'String',
+              },
+            },
+          },
+          variable: {
+            kind: 'Variable',
             name: {
               kind: 'Name',
-              value: 'String',
+              value: 'netligraphWebhookUrl',
             },
           },
         },
-        variable: {
-          kind: 'Variable',
-          name: {
-            kind: 'Name',
-            value: 'netligraphWebhookUrl',
-          },
-        },
-      },
-    ]
+      ]
   return {
     ...definition,
     // @ts-ignore: Handle edge cases later
@@ -435,11 +446,16 @@ const patchSubscriptionWebhookSecretField = ({ definition, schema }) => {
     if (selection.kind !== 'Field') return selection
     const field = subscriptionType.getFields()[selection.name.value]
     if (!field) {
-      console.warn("Unable to find subscription service field, you may need to enable additional services. Missing field:", selection.name.value)
+      console.warn(
+        'Unable to find subscription service field, you may need to enable additional services. Missing field:',
+        selection.name.value,
+      )
       return selection
     }
     const fieldHasWebhookSecretArg = field.args.some((arg) => arg.name === 'secret')
-    const selectionHasWebhookSecretArg = dotProp.get(selection, 'arguments', []).some((arg) => arg.name.value === 'secret')
+    const selectionHasWebhookSecretArg = dotProp
+      .get(selection, 'arguments', [])
+      .some((arg) => arg.name.value === 'secret')
     if (fieldHasWebhookSecretArg && !selectionHasWebhookSecretArg) {
       return {
         ...selection,
@@ -464,34 +480,34 @@ const patchSubscriptionWebhookSecretField = ({ definition, schema }) => {
     }
     return selection
   })
-  const hasWebhookVariableDefinition = dotProp.get(definition, 'variableDefinitions', []).find(
-    (varDef) => varDef.variable.name.value === 'netligraphWebhookSecret',
-  )
+  const hasWebhookVariableDefinition = dotProp
+    .get(definition, 'variableDefinitions', [])
+    .find((varDef) => varDef.variable.name.value === 'netligraphWebhookSecret')
   const variableDefinitions = hasWebhookVariableDefinition
     ? definition.variableDefinitions
     : [
-      ...(definition.variableDefinitions || []),
-      {
-        kind: 'VariableDefinition',
-        type: {
-          kind: 'NonNullType',
+        ...(definition.variableDefinitions || []),
+        {
+          kind: 'VariableDefinition',
           type: {
-            kind: 'NamedType',
+            kind: 'NonNullType',
+            type: {
+              kind: 'NamedType',
+              name: {
+                kind: 'Name',
+                value: 'OneGraphSubscriptionSecretInput',
+              },
+            },
+          },
+          variable: {
+            kind: 'Variable',
             name: {
               kind: 'Name',
-              value: 'OneGraphSubscriptionSecretInput',
+              value: 'netligraphWebhookSecret',
             },
           },
         },
-        variable: {
-          kind: 'Variable',
-          name: {
-            kind: 'Name',
-            value: 'netligraphWebhookSecret',
-          },
-        },
-      },
-    ]
+      ]
   return {
     ...definition,
     // @ts-ignore: Handle edge cases later

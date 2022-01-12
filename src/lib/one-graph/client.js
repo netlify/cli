@@ -13,7 +13,7 @@ const {
   generateHandler,
   readGraphQLOperationsSourceFile,
   writeGraphQLOperationsSourceFile,
-  writeGraphQLSchemaFile
+  writeGraphQLSchemaFile,
 } = require('./netligraph')
 
 const ONEDASH_APP_ID = '0b066ba6-ed39-4db8-a497-ba0be34d5b2a'
@@ -94,7 +94,7 @@ const fetchOneGraph = async (
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
+        Accept: 'application/json',
         Authorization: accessToken ? `Bearer ${accessToken}` : '',
       },
       body,
@@ -486,7 +486,16 @@ const fetchPersistedQuery = async (authToken, appId, docId) => {
   return persistedQuery
 }
 
-const monitorCLISessionEvents = ({ appId, authToken, netligraphConfig, onClose, onError, onEvents, sessionId, state }) => {
+const monitorCLISessionEvents = ({
+  appId,
+  authToken,
+  netligraphConfig,
+  onClose,
+  onError,
+  onEvents,
+  sessionId,
+  state,
+}) => {
   const frequency = 5000
   let shouldClose = false
 
@@ -494,7 +503,7 @@ const monitorCLISessionEvents = ({ appId, authToken, netligraphConfig, onClose, 
     const enabledServices = state.get('oneGraphEnabledServices') || ['onegraph']
     const enabledServicesInfo = await fetchEnabledServices(netlifyToken, siteId)
     if (!enabledServicesInfo) {
-      console.warn("Unable to fetch enabled services for site for code generation")
+      console.warn('Unable to fetch enabled services for site for code generation')
       return
     }
     const newEnabledServices = enabledServicesInfo.map((service) => service.service)
@@ -502,7 +511,11 @@ const monitorCLISessionEvents = ({ appId, authToken, netligraphConfig, onClose, 
     const newEnabledServicesCompareKey = newEnabledServices.sort().join(',')
 
     if (enabledServicesCompareKey !== newEnabledServicesCompareKey) {
-      log(`${NETLIFYDEVLOG} ${chalk.magenta('Reloading')} Netligraph schema..., ${enabledServicesCompareKey} => ${newEnabledServicesCompareKey}`)
+      log(
+        `${NETLIFYDEVLOG} ${chalk.magenta(
+          'Reloading',
+        )} Netligraph schema..., ${enabledServicesCompareKey} => ${newEnabledServicesCompareKey}`,
+      )
       await refetchAndGenerateFromOneGraph({ netligraphConfig, state, netlifyToken, siteId })
       log(`${NETLIFYDEVLOG} ${chalk.green('Reloaded')} Netligraph schema and regenerated functions`)
     }
@@ -560,7 +573,7 @@ const createCLISession = async (netlifyToken, appId, name, metadata) => {
     nfToken: netlifyToken,
     appId,
     name,
-    metadata
+    metadata,
   }
 
   const result = await fetchOneGraph(null, appId, internalOperationsDoc, 'CreateCLISessionMutation', payload)
@@ -578,7 +591,7 @@ const updateCLISessionMetadata = async (netlifyToken, appId, sessionId, metadata
   const result = await fetchOneGraph(null, appId, internalOperationsDoc, 'UpdateCLISessionMetadataMutation', {
     nfToken: netlifyToken,
     sessionId,
-    metadata
+    metadata,
   })
 
   const session =
@@ -625,7 +638,7 @@ const refetchAndGenerateFromOneGraph = async ({ netlifyToken, netligraphConfig, 
 
   const enabledServicesInfo = await fetchEnabledServices(netlifyToken, siteId)
   if (!enabledServicesInfo) {
-    console.warn("Unable to fetch enabled services for site for code generation")
+    console.warn('Unable to fetch enabled services for site for code generation')
     return
   }
 
