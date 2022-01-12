@@ -748,7 +748,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
   })
 }
 
-test('always pass, used for forked PRs', (t) => {
+test('always pass, used for forked PRs since ava fails when no tests are present', (t) => {
   t.pass()
 })
 /* eslint-enable require-await */
