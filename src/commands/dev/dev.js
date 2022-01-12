@@ -12,7 +12,7 @@ const waitPort = require('wait-port')
 
 const { startFunctionsServer } = require('../../lib/functions/server')
 const { ensureAppForSite, startOneGraphCLISession } = require('../../lib/one-graph/client')
-const { getNetligraphConfig } = require('../../lib/one-graph/netligraph')
+const { getNetligraphConfig } = require('../../lib/one-graph/netlify-graph')
 const {
   NETLIFYDEV,
   NETLIFYDEVERR,
