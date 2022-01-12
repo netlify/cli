@@ -39,7 +39,7 @@ const rmdirRecursiveAsync = async (path) => {
   if (gte(NODE_VERSION, '14.14.0')) {
     return await rm(path, { force: true, recursive: true })
   }
-  await rmdir(path, { force: true, recursive: true })
+  await rmdir(path, { recursive: true })
 }
 
 /**
