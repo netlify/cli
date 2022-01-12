@@ -547,7 +547,7 @@ const generateFunctionsFile = (netligraphConfig, schema, operationsDoc, queries)
 
 const pluckDirectiveArgValue = (directive, argName) => {
   const targetArg = dotProp.get(directive, 'arguments', []).find((arg) => arg.name.value === argName)
-  if (!targetArg?.value) {
+  if (!(targetArg && targetArg.value)) {
     return null
   }
 
