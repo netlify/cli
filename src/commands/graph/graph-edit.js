@@ -14,7 +14,7 @@ const {
   defaultExampleOperationsDoc,
   getNetligraphConfig,
   readGraphQLOperationsSourceFile,
-} = require('../../lib/one-graph/netligraph')
+} = require('../../lib/one-graph/netlify-graph')
 const { NETLIFYDEVERR, chalk } = require('../../utils')
 const { openBrowser } = require('../../utils/open-browser')
 

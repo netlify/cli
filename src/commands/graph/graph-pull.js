@@ -1,7 +1,7 @@
 const process = require('process')
 
 const { refetchAndGenerateFromOneGraph } = require('../../lib/one-graph/client')
-const { getNetligraphConfig } = require('../../lib/one-graph/netligraph')
+const { getNetligraphConfig } = require('../../lib/one-graph/netlify-graph')
 const { NETLIFYDEVERR, chalk } = require('../../utils')
 
 const graphPull = async (options, command) => {
