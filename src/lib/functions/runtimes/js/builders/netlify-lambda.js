@@ -25,7 +25,6 @@ const detectNetlifyLambda = async function ({ packageJson } = {}) {
     if (functionDirectories.length === 1) {
       const srcFiles = [resolve(functionDirectories[0])]
 
-      // eslint-disable-next-line no-await-in-loop
       const yarnExists = await fileExistsAsync('yarn.lock')
       const buildCommand = () => execa(yarnExists ? 'yarn' : 'npm', ['run', key])
 

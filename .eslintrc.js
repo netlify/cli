@@ -31,7 +31,6 @@ module.exports = {
         sourceType: 'module',
         babelOptions: {
           presets: ['@babel/preset-react'],
-          plugins: ['@babel/plugin-proposal-class-properties'],
         },
       },
       rules: {

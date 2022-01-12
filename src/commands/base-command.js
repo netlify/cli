@@ -41,8 +41,8 @@ const FALLBACK_HELP_CMD_WIDTH = 80
 const HELP_$ = NETLIFY_CYAN('$')
 // indent on commands or description on the help page
 const HELP_INDENT_WIDTH = 2
-// seperator width between term and description
-const HELP_SEPERATOR_WIDTH = 5
+// separator width between term and description
+const HELP_SEPARATOR_WIDTH = 5
 
 /**
  * Formats a help list correctly with the correct indent
@@ -213,7 +213,7 @@ class BaseCommand extends Command {
         const bang = isCommand ? `${HELP_$} ` : ''
 
         if (description) {
-          const pad = termWidth + HELP_SEPERATOR_WIDTH
+          const pad = termWidth + HELP_SEPARATOR_WIDTH
           const fullText = `${bang}${term.padEnd(pad - (isCommand ? 2 : 0))}${chalk.grey(description)}`
           return helper.wrap(fullText, helpWidth - HELP_INDENT_WIDTH, pad)
         }

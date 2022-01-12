@@ -4,7 +4,6 @@ const process = require('process')
 
 const dotProp = require('dot-prop')
 const findUp = require('find-up')
-const makeDir = require('make-dir')
 const writeFileAtomic = require('write-file-atomic')
 
 const { getPathInProject } = require('../lib/settings')
@@ -30,7 +29,7 @@ class StateConfig {
 
   get all() {
     try {
-      return JSON.parse(fs.readFileSync(this.path, 'utf8'))
+      return JSON.parse(fs.readFileSync(this.path))
     } catch (error) {
       // Don't create if it doesn't exist
       if (error.code === 'ENOENT' || error.code === 'ENOTDIR') {
@@ -55,7 +54,7 @@ class StateConfig {
   set all(val) {
     try {
       // Make sure the folder exists as it could have been deleted in the meantime
-      makeDir.sync(path.dirname(this.path))
+      fs.mkdirSync(path.dirname(this.path), { recursive: true })
       writeFileAtomic.sync(this.path, JSON.stringify(val, null, '\t'))
     } catch (error) {
       // Improve the message of permission errors

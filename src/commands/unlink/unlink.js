@@ -20,7 +20,7 @@ const unlink = async (options, command) => {
   try {
     // @ts-ignore types from API are wrong they cannot recognize `getSite` of API
     siteData = await command.netlify.api.getSite({ siteId })
-  } catch (error) {
+  } catch {
     // ignore errors if we can't get the site
   }
 
