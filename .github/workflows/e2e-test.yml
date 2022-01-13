@@ -2,15 +2,12 @@ name: E2E Testing for CLI
 
 on:
   push:
-    branches: ['e2e-tests-for-cli']
-  #     - main
-  #     - e2e-test-for-cli
-  # pull_request:
-  #   branches:
-  #     - main
-  # schedule:
-  #   # check daily to notice potential package manager issues
-  #   - cron: '0 1 * * *' # At 01:00 daily
+    branches: ['main']
+  pull_request:
+    branches: ['main']
+  schedule:
+    # check daily to notice potential package manager issues
+    - cron: '0 1 * * *' # At 01:00 daily
 
 jobs:
   e2e:
@@ -20,9 +17,8 @@ jobs:
       DEBUG: true
     strategy:
       matrix:
-        # os: [ubuntu-latest, macOS-latest, windows-latest]
-        os: [ubuntu-latest]
-        node-version: ['12.x', 'latest']
+        os: [ubuntu-latest, macOS-latest, windows-latest]
+        node-version: ['12.x', '*']
         package-manager: ['npm', 'yarn', 'pnpm']
       fail-fast: false
 
@@ -54,7 +50,7 @@ jobs:
           custom_payload: |
             {
               attachments: [{
-                title: '${{ matrix.os }} E2E Test on ${{ matrix.node-version }} with ${{ matrix.package-manager }} failed!',
+                title: 'E2E Test Failed! (${{ matrix.os }},node-${{ matrix.node-version }},${{ matrix.package-manager }})',
                 color: 'danger',
                 text: `${process.env.AS_WORKFLOW}\n\nEither something broke or a test is flaky.\n\nConsider doing something about it :fire_engine:`,
               }]
