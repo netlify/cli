@@ -4,7 +4,7 @@ const fs = require('fs')
 const dotProp = require('dot-prop')
 const { parse, print, printSchema } = require('graphql')
 
-const { NETLIFYDEVERR, detectServerSettings, getFunctionsDir, log } = require('../../utils')
+const { detectServerSettings, error, getFunctionsDir, warn } = require('../../utils')
 
 const {
   patchSubscriptionWebhookField,
@@ -51,8 +51,8 @@ const getNetligraphConfig = async ({ command, options }) => {
   let settings = {}
   try {
     settings = await detectServerSettings(devConfig, options, site.root)
-  } catch (error) {
-    log(NETLIFYDEVERR, error.message)
+  } catch (detectServerSettingsError) {
+    error(detectServerSettingsError.message)
   }
 
   const framework = settings.framework || userSpecifiedConfig.framework
@@ -334,7 +334,8 @@ const queryToFunctionDefinition = (fullSchema, persistedQuery) => {
   const fragments = parsed.definitions.filter((def) => def.kind === 'FragmentDefinition')
 
   if (!operations) {
-    throw new Error(`Operation definition is required in ${basicFn.id}`)
+    error(`Operation definition is required in ${basicFn.id}`)
+    return
   }
 
   const [operation] = operations
@@ -348,7 +349,8 @@ const queryToFunctionDefinition = (fullSchema, persistedQuery) => {
   const operationName = operation.name && operation.name.value
 
   if (!operationName) {
-    throw new Error(`Operation name is required in ${basicFn.definition}\n\tfound: ${JSON.stringify(operation.name)}`)
+    error(`Operation name is required in ${basicFn.definition}\n\tfound: ${JSON.stringify(operation.name)}`)
+    return
   }
 
   const fn = {
@@ -677,7 +679,7 @@ const generateHandlerSource = ({ handlerOptions, netligraphConfig, operationId, 
   const operation = operations[operationId]
 
   if (!operation) {
-    console.warn(`Operation ${operationId} not found in graphql.`, Object.keys(operations))
+    warn(`Operation ${operationId} not found in graphql.`, Object.keys(operations))
     return
   }
 

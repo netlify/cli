@@ -18,6 +18,12 @@ const {
 const { NETLIFYDEVERR, chalk, error } = require('../../utils')
 const { openBrowser } = require('../../utils/open-browser')
 
+/**
+ * Creates the `netlify graph:edit` command
+ * @param {import('commander').OptionValues} options
+ * @param {import('../base-command').BaseCommand} program
+ * @returns
+ */
 const graphEdit = async (options, command) => {
   const { api, site, state } = command.netlify
   const siteId = site.id
@@ -26,9 +32,9 @@ const graphEdit = async (options, command) => {
     error(
       `${NETLIFYDEVERR} Warning: no siteId defined, unable to start Netlify Graph. To enable, run ${chalk.yellow(
         'netlify init',
-      )} or ${chalk.yellow('netlify link')}?`,
+      )} or ${chalk.yellow('netlify link')}`,
     )
-    process.exit(1)
+    return
   }
 
   const siteData = await api.getSite({ siteId })

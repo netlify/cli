@@ -1,7 +1,5 @@
 /* eslint-disable eslint-comments/disable-enable-pair */
 /* eslint-disable fp/no-loops */
-const process = require('process')
-
 const { buildSchema } = require('graphql')
 
 const {
@@ -12,18 +10,24 @@ const {
   refetchAndGenerateFromOneGraph,
 } = require('../../lib/one-graph/client')
 const { getNetligraphConfig, readGraphQLSchemaFile } = require('../../lib/one-graph/netlify-graph')
-const { NETLIFYDEVERR, chalk, error, warn } = require('../../utils')
+const { chalk, error, warn } = require('../../utils')
 
+/**
+ * Creates the `netlify graph:pull` command
+ * @param {import('commander').OptionValues} options
+ * @param {import('../base-command').BaseCommand} program
+ * @returns
+ */
 const graphPull = async (options, command) => {
   const { site, state } = command.netlify
 
   if (!site.id) {
     error(
-      `${NETLIFYDEVERR} Warning: no siteId defined, unable to start Netlify Graph. To enable, run ${chalk.yellow(
+      `No siteId defined, unable to start Netlify Graph. To enable, run ${chalk.yellow(
         'netlify init',
-      )} or ${chalk.yellow('netlify link')}?`,
+      )} or ${chalk.yellow('netlify link')}`,
     )
-    process.exit(1)
+    return
   }
 
   const netligraphConfig = await getNetligraphConfig({ command, options })
@@ -45,20 +49,20 @@ const graphPull = async (options, command) => {
   try {
     schema = buildSchema(schemaString)
   } catch (buildSchemaError) {
-    error(`${NETLIFYDEVERR} Error parsing schema: ${buildSchemaError.message}`)
-    process.exit(1)
+    error(`Error parsing schema: ${buildSchemaError.message}`)
+    return
   }
 
   if (!schema) {
-    error(`${NETLIFYDEVERR} Failed to fetch and update Netlify GraphQL schem`)
-    process.exit(1)
+    error(`Failed to fetch and update Netlify GraphQL schema`)
+    return
   }
 
   const next = await fetchCliSessionEvents({ appId: siteId, authToken: netlifyToken, sessionId: oneGraphSessionId })
 
   if (next.errors) {
-    error(`${NETLIFYDEVERR} Failed to fetch Netlify Graph cli session events`, next.errors)
-    process.exit(1)
+    error(`Failed to fetch Netlify Graph cli session events`, next.errors)
+    return
   }
 
   if (next.events) {
@@ -85,7 +89,7 @@ const graphPull = async (options, command) => {
 const createGraphPullCommand = (program) =>
   program
     .command('graph:pull')
-    .description('Pull down your local Netlify Graph schema and regenerate your local functions')
+    .description('Pull down your local Netlify Graph schema, and process Graph edit events')
     .action(async (options, command) => {
       await graphPull(options, command)
     })

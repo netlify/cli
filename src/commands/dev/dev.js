@@ -20,6 +20,7 @@ const {
   NETLIFYDEVWARN,
   chalk,
   detectServerSettings,
+  error,
   exit,
   getSiteInformation,
   injectEnvVariables,
@@ -48,10 +49,10 @@ const startStaticServer = async ({ settings }) => {
   log(`\n${NETLIFYDEVLOG} Static server listening to`, settings.frameworkPort)
 }
 
-const isNonExistingCommandError = ({ command, error }) => {
+const isNonExistingCommandError = ({ command, error: commandError }) => {
   // `ENOENT` is only returned for non Windows systems
   // See https://github.com/sindresorhus/execa/pull/447
-  if (error.code === 'ENOENT') {
+  if (commandError.code === 'ENOENT') {
     return true
   }
 
@@ -62,7 +63,8 @@ const isNonExistingCommandError = ({ command, error }) => {
 
   // this only works on English versions of Windows
   return (
-    typeof error.message === 'string' && error.message.includes('is not recognized as an internal or external command')
+    typeof commandError.message === 'string' &&
+    commandError.message.includes('is not recognized as an internal or external command')
   )
 }
 
@@ -264,8 +266,8 @@ const dev = async (options, command) => {
   let settings = {}
   try {
     settings = await detectServerSettings(devConfig, options, site.root)
-  } catch (error) {
-    log(NETLIFYDEVERR, error.message)
+  } catch (detectServerSettingsError) {
+    error(detectServerSettingsError.message)
     exit(1)
   }
 
@@ -296,14 +298,14 @@ const dev = async (options, command) => {
   const startNetligraphWatcher = Boolean(options.graph)
 
   if (startNetligraphWatcher && options.offline) {
-    warn(`${NETLIFYDEVERR} Warning: unable to start Netlify Graph in offline mode`)
+    warn(`Unable to start Netlify Graph in offline mode`)
   } else if (startNetligraphWatcher && !site.id) {
-    warn(
-      `${NETLIFYDEVERR} Warning: no siteId defined, unable to start Netlify Graph. To enable, run ${chalk.yellow(
+    error(
+      `No siteId defined, unable to start Netlify Graph. To enable, run ${chalk.yellow(
         'netlify init',
       )} or ${chalk.yellow('netlify link')}?`,
     )
-    process.exit(1)
+    return
   } else if (startNetligraphWatcher) {
     const netlifyToken = await command.authenticate()
     await ensureAppForSite(netlifyToken, site.id)
