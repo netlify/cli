@@ -1,14 +1,10 @@
 name: E2E Testing for CLI
 
 on:
-  # push:
-  #   branches: [main]
+  push:
+    branches: [main]
   pull_request:
-    types: [ assigned, opened, synchronize, reopened ]
-    # branches: [main]
-  schedule:
-    # check daily to notice potential package manager issues
-    - cron: '0 1 * * *' # At 01:00 daily
+    branches: [main]
 
 jobs:
   e2e:
