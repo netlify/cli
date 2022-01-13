@@ -22,10 +22,8 @@ jobs:
       matrix:
         # os: [ubuntu-latest, macOS-latest, windows-latest]
         os: [ubuntu-latest]
-        # node-version: ['12.x', '*']
-        node-version: [ '*']
-        # package-manager: ['npm', 'yarn', 'pnpm']
-        package-manager: ['npm']
+        node-version: ['12.x', 'latest']
+        package-manager: ['npm', 'yarn', 'pnpm']
       fail-fast: false
 
     steps:
@@ -56,17 +54,9 @@ jobs:
           custom_payload: |
             {
               attachments: [{
-                title: '${{ matrix.os }} E2E Test on ${{ matrix.node-version }} with ${{ matrix.package-manager }} failed',
+                title: '${{ matrix.os }} E2E Test on ${{ matrix.node-version }} with ${{ matrix.package-manager }} failed!',
                 color: 'danger',
-                text: `
-                workflow: ${process.env.AS_WORKFLOW}
-                job: ${process.env.AS_JOB}
-
-                Either something broke or a test is flaky.
-
-                Consider doing something about it. :fire_engine:`,
-              },{
-                text: `Consider doing something about it :fire_engine:  `
+                text: `${process.env.AS_WORKFLOW}\n\nEither something broke or a test is flaky.\n\nConsider doing something about it :fire_engine:`,
               }]
             }
         env:
