@@ -53,11 +53,10 @@ jobs:
         with:
           status: custom
           fields: workflow
-          job_name: ${{ matrix.os }} E2E Test on ${{ matrix.node-version }} with ${{ matrix.package-manager }}
           custom_payload: |
             {
               attachments: [{
-                title: 'CLI End to End test failed',
+                title: '${{ matrix.os }} E2E Test on ${{ matrix.node-version }} with ${{ matrix.package-manager }} failed',
                 color: 'danger',
                 text: `
                 workflow: ${process.env.AS_WORKFLOW}
@@ -66,6 +65,8 @@ jobs:
                 Either something broke or a test is flaky.
 
                 Consider doing something about it. :fire_engine:`,
+              },{
+                text: `Consider doing something about it :fire_engine:  `
               }]
             }
         env:
