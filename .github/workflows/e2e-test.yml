@@ -4,7 +4,11 @@ on:
   push:
     branches: [main]
   pull_request:
+    types: [synchronize, opened, reopened, edited]
     branches: [main]
+  schedule:
+    # check daily to notice potential package manager issues
+    - cron: '0 1 * * *' # At 01:00 daily
 
 jobs:
   e2e:
@@ -36,8 +40,7 @@ jobs:
       - name: Install pnpm
         run: npm install -g pnpm
         if: "${{ matrix.package-manager == 'pnpm' && !steps.release-check.outputs.IS_RELEASE}}"
-      # - run: npm run e2e -- ${{ matrix.package-manager }}
-      - run: node -e "process.exit(1)" #test the failing slack notification
+      - run: npm run e2e -- ${{ matrix.package-manager }}
       - name: Notify Slack
         uses: 8398a7/action-slack@v3
         if: failure()
