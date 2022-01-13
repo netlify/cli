@@ -1,0 +1,29 @@
+name: Maintaining Contributors List
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  update-contributors:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '*'
+          cache: 'npm'
+          cache-dependency-path: 'npm-shrinkwrap.json'
+          check-latest: true
+      - name: Install dependencies
+        run: npm ci --no-audit
+      - name: Generate Contributors
+        run: node ./tools/contributors.mjs ${{ secrets.GITHUB_TOKEN }}
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: 'chore: update contributors field'
+          file_pattern: package.json
+          commit_user_name: Contributors[bot]
