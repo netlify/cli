@@ -8,13 +8,13 @@ const fetch = require('node-fetch')
 const prettyjson = require('prettyjson')
 const { v4: uuidv4 } = require('uuid')
 
-const { chalk, error, getRepoData, log, logJson, track, warn } = require('../../utils')
+const { chalk, error, log, logJson, track, warn } = require('../../utils')
 // const { authWithNetlify } = require('../../utils/gh-auth')
-const { configureRepo } = require('../../utils/init/config')
 const { getGitHubToken } = require('../../utils/init/config-github')
 
 const SITE_NAME_SUGGESTION_SUFFIX_LENGTH = 5
 
+// Templates are hardcoded for now
 const templates = [
   {
     name: 'Next.js Starter',
@@ -43,7 +43,10 @@ const sitesCreate = async (options, command) => {
 
   await command.authenticate()
 
-  // List templates
+  console.log(
+    `Choose one of our starter templates. Netlify will create a new repo for this template in your GitHub account.`,
+  )
+
   const templateUrl = await inquirer.prompt([
     {
       type: 'list',
@@ -80,6 +83,7 @@ const sitesCreate = async (options, command) => {
 
   // Allow the user to reenter site name if selected one isn't available
   const inputSiteName = async (name) => {
+    let siteSuggestion
     if (!user) user = await api.getCurrentUser()
 
     if (!name) {
@@ -101,7 +105,7 @@ const sitesCreate = async (options, command) => {
         `the-great-${slug}-site${suffix}`,
         `isnt-${slug}-awesome${suffix}`,
       ]
-      const siteSuggestion = sample(suggestions)
+      siteSuggestion = sample(suggestions)
 
       console.log(
         `Choose a unique site name (e.g. ${siteSuggestion}.netlify.app) or leave it blank for a random name. You can update the site name later.`,
@@ -118,17 +122,11 @@ const sitesCreate = async (options, command) => {
       name = nameInput
     }
 
-    const body = {}
-    if (typeof name === 'string') {
-      body.name = name.trim()
-    }
     try {
-      console.log(templateUrl)
-      console.log(options)
       //   const token = await authWithNetlify()
-      //   console.log('TOKEN', token)
       const { globalConfig } = command.netlify
       const ghToken = await getGitHubToken({ globalConfig })
+      const siteName = name ? name.trim() : siteSuggestion
 
       // Create new repo from template
       const createGhRepoResp = await fetch(`https://api.github.com/repos/${templateUrl.templateName}/generate`, {
@@ -137,36 +135,34 @@ const sitesCreate = async (options, command) => {
           Authorization: `token ${ghToken}`,
         },
         body: JSON.stringify({
-          name: `${name}`,
+          name: siteName,
         }),
       })
       const resp = await createGhRepoResp.json()
-      console.log('RESP', resp)
 
-      const newSite = await api.createSiteInTeam({
-        accountSlug,
-        body: {
-          repo: {
-            provider: 'github',
-            id: resp.id,
-            repo: resp.full_name,
-            private: false,
-            branch: resp.default_branch,
-            // installation_id: 123456,
+      if (resp?.errors?.length) {
+        if (resp.errors[0].includes('Name already exists on this account')) {
+          throw new Error('Duplicate repo')
+        }
+      } else {
+        site = await api.createSiteInTeam({
+          accountSlug,
+          body: {
+            repo: {
+              provider: 'github',
+              repo: resp.full_name,
+              private: resp.private,
+              branch: resp.default_branch,
+            },
+            name: siteName,
           },
-        },
-      })
-
-      const test = await newSite
-      console.log('YEP??', test)
-
-      //   site = await api.createSiteInTeam({
-      //     accountSlug,
-      //     body,
-      //   })
+        })
+      }
     } catch (error_) {
-      if (error_.status === 422) {
-        warn(`${name}.netlify.app already exists. Please try a different slug.`)
+      if (error_.status === 422 || error_.message === 'Duplicate repo') {
+        warn(
+          `${name}.netlify.app already exists or a repository named ${name} already exists on this account. Please try a different slug.`,
+        )
         await inputSiteName()
       } else {
         error(`createSiteInTeam error: ${error_.status}: ${error_.message}`)
@@ -185,6 +181,7 @@ const sitesCreate = async (options, command) => {
       'Admin URL': site.admin_url,
       URL: siteUrl,
       'Site ID': site.id,
+      'Repo URL': site.build_settings.repo_url,
     }),
   )
 
@@ -193,12 +190,6 @@ const sitesCreate = async (options, command) => {
     adminUrl: site.admin_url,
     siteUrl,
   })
-
-  if (options.withCi) {
-    log('Configuring CI')
-    const repoData = await getRepoData()
-    await configureRepo({ command, siteId: site.id, repoData, manual: options.manual })
-  }
 
   if (options.json) {
     logJson(
@@ -242,14 +233,12 @@ const createSitesFromTemplateCommand = (program) =>
   program
     .command('sites:create-template')
     .description(
-      `Create a site from a starter template
+      `(Beta) Create a site from a starter template
 Create a site from a starter template.`,
     )
     .option('-n, --name [name]', 'name of site')
     .option('-a, --account-slug [slug]', 'account slug to create the site under')
-    .option('-c, --with-ci', 'initialize CI hooks during site creation')
-    .option('-m, --manual', 'force manual CI setup.  Used --with-ci flag')
-    .addHelpText('after', `Create a site from starter template.`)
+    .addHelpText('after', `(Beta) Create a site from starter template.`)
     .action(sitesCreate)
 
 module.exports = { createSitesFromTemplateCommand, sitesCreate }
