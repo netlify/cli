@@ -1,5 +1,6 @@
 const dotProp = require('dot-prop')
 const { parse, print } = require('graphql')
+
 const { error } = require('../../utils')
 
 const { munge } = require('./codegen-helpers')

@@ -13,7 +13,6 @@ const {
   typeScriptSignatureForOperationVariables,
 } = require('./graphql-helpers')
 const { computeOperationDataList, netlifyFunctionSnippet } = require('./netlify-graph-code-exporter-snippets')
-const { nextjsFunctionSnippet } = require('./nextjs-graph-code-exporter-snippets')
 
 const capitalizeFirstLetter = (string) => string.charAt(0).toUpperCase() + string.slice(1)
 
@@ -684,20 +683,12 @@ const generateHandlerSource = ({ handlerOptions, netligraphConfig, operationId, 
 
   const odl = computeOperationDataList({ query: operation.query, variables: [] })
 
-  const source = netligraphConfig.framework === "Next.js" ?
-    nextjsFunctionSnippet.generate({
-      netligraphConfig,
-      operationDataList: odl.operationDataList,
-      schema,
-      options: handlerOptions,
-    })
-    :
-    netlifyFunctionSnippet.generate({
-      netligraphConfig,
-      operationDataList: odl.operationDataList,
-      schema,
-      options: handlerOptions,
-    })
+  const source = netlifyFunctionSnippet.generate({
+    netligraphConfig,
+    operationDataList: odl.operationDataList,
+    schema,
+    options: handlerOptions,
+  })
 
   return { source, operation }
 }

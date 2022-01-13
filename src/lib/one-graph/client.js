@@ -16,7 +16,7 @@ const {
   writeGraphQLOperationsSourceFile,
   writeGraphQLSchemaFile,
 } = require('./netlify-graph')
-const { internalOperationsDoc } = require("./oneGraphClientGraphQLOperations")
+const { internalOperationsDoc } = require("./one-graph-client-graphql-operations")
 
 
 const ONEDASH_APP_ID = '0b066ba6-ed39-4db8-a497-ba0be34d5b2a'
