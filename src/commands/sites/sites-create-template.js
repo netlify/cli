@@ -140,7 +140,7 @@ const sitesCreate = async (options, command) => {
       })
       const resp = await createGhRepoResp.json()
 
-      if (resp?.errors?.length) {
+      if (resp.errors) {
         if (resp.errors[0].includes('Name already exists on this account')) {
           throw new Error('Duplicate repo')
         }
