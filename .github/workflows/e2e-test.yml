@@ -39,4 +39,23 @@ jobs:
       - name: Install pnpm
         run: npm install -g pnpm
         if: "${{ matrix.package-manager == 'pnpm' && !steps.release-check.outputs.IS_RELEASE}}"
-      - run: npm run e2e -- ${{ matrix.package-manager }}
+      # - run: npm run e2e -- ${{ matrix.package-manager }}
+      - run: node -e "process.exit(1)" #test the failing slack notification
+      - name: Notify Slack
+        uses: 8398a7/action-slack@v3
+        if: failure()
+        with:
+          status: custom
+          fields: workflow
+          custom_payload: |
+            {
+              username: 'CLI fire fighter :female-firefighter:',
+              icon_emoji: ':fire_extinguisher:',
+              attachments: [{
+                title: 'CLI End to End test failed',
+                color: 'danger',
+                text: `${process.env.AS_WORKFLOW}\nEither something broke or a test is flaky.\nConsider doing something about it. :mag:`,
+              }]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
