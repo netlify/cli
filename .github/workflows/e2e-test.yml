@@ -20,9 +20,12 @@ jobs:
       DEBUG: true
     strategy:
       matrix:
-        os: [ubuntu-latest, macOS-latest, windows-latest]
-        node-version: ['12.x', '*']
-        package-manager: ['npm', 'yarn', 'pnpm']
+        # os: [ubuntu-latest, macOS-latest, windows-latest]
+        os: [ubuntu-latest]
+        # node-version: ['12.x', '*']
+        node-version: [ '*']
+        # package-manager: ['npm', 'yarn', 'pnpm']
+        package-manager: ['npm']
       fail-fast: false
 
     steps:
@@ -50,14 +53,19 @@ jobs:
         with:
           status: custom
           fields: workflow
+          job_name: ${{ matrix.os }} E2E Test on ${{ matrix.node-version }} with ${{ matrix.package-manager }}
           custom_payload: |
             {
-              username: 'CLI fire fighter :female-firefighter:',
-              icon_emoji: ':fire_extinguisher:',
               attachments: [{
                 title: 'CLI End to End test failed',
                 color: 'danger',
-                text: `${process.env.AS_WORKFLOW}\nEither something broke or a test is flaky.\nConsider doing something about it. :mag:`,
+                text: `
+                workflow: ${process.env.AS_WORKFLOW}
+                job: ${process.env.AS_JOB}
+
+                Either something broke or a test is flaky.
+
+                Consider doing something about it. :fire_engine:`,
               }]
             }
         env:
