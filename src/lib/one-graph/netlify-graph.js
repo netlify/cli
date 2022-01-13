@@ -535,10 +535,21 @@ ${functionDecls.join('\n\n')}
   return source
 }
 
-const generateFunctionsFile = (netligraphConfig, schema, operationsDoc, queries) => {
+const generateFunctionsSource = (netligraphConfig, schema, operationsDoc, queries) => {
   const functionDefinitions = Object.values(queries).map((query) => queryToFunctionDefinition(schema, query))
   const clientSource = generateJavaScriptClient(netligraphConfig, schema, operationsDoc, functionDefinitions)
   const typeDefinitionsSource = generateTypeScriptDefinitions(netligraphConfig, schema, functionDefinitions)
+
+  return {
+    clientSource,
+    typeDefinitionsSource,
+    functionDefinitions
+  }
+}
+
+
+const generateFunctionsFile = (netligraphConfig, schema, operationsDoc, queries) => {
+  const { clientSource, typeDefinitionsSource } = generateFunctionsSource(netligraphConfig, schema, operationsDoc, queries)
 
   ensureNetligraphPath(netligraphConfig)
   fs.writeFileSync(netligraphConfig.netligraphImplementationFilename, clientSource, 'utf8')
@@ -628,14 +639,17 @@ const writeGraphQLSchemaFile = (netligraphConfig, schema) => {
   )
 }
 
-const generateHandler = (netligraphConfig, schema, operationId, handlerOptions) => {
-  let currentOperationsDoc = readGraphQLOperationsSourceFile(netligraphConfig)
 
-  if (currentOperationsDoc.trim().length === 0) {
-    currentOperationsDoc = defaultExampleOperationsDoc
-  }
+const readGraphQLSchemaFile = (netligraphConfig) => {
+  ensureNetligraphPath(netligraphConfig)
+  return fs.readFileSync(
+    `${netligraphConfig.netligraphPath}/${netligraphConfig.graphQLSchemaFilename}`,
+    'utf8',
+  )
+}
 
-  const parsedDoc = parse(currentOperationsDoc)
+const generateHandlerSource = ({ handlerOptions, netligraphConfig, operationId, operationsDoc, schema }) => {
+  const parsedDoc = parse(operationsDoc)
   const operations = extractFunctionsFromOperationDoc(parsedDoc)
   const operation = operations[operationId]
 
@@ -653,6 +667,18 @@ const generateHandler = (netligraphConfig, schema, operationId, handlerOptions) 
     options: handlerOptions,
   })
 
+  return { source, operation }
+}
+
+
+const generateHandler = (netligraphConfig, schema, operationId, handlerOptions) => {
+  let currentOperationsDoc = readGraphQLOperationsSourceFile(netligraphConfig)
+  if (currentOperationsDoc.trim().length === 0) {
+    currentOperationsDoc = defaultExampleOperationsDoc
+  }
+
+  const { operation, source } = generateHandlerSource({ netligraphConfig, schema, operationsDoc: currentOperationsDoc, operationId, handlerOptions })
+
   const filename = `${netligraphConfig.functionsPath}/${operation.name}.${netligraphConfig.extension}`
 
   ensureFunctionsPath(netligraphConfig)
@@ -662,10 +688,13 @@ const generateHandler = (netligraphConfig, schema, operationId, handlerOptions) 
 module.exports = {
   defaultExampleOperationsDoc,
   extractFunctionsFromOperationDoc,
+  generateFunctionsSource,
   generateFunctionsFile,
   generateHandler,
+  generateHandlerSource,
   getNetligraphConfig,
   readGraphQLOperationsSourceFile,
+  readGraphQLSchemaFile,
   writeGraphQLOperationsSourceFile,
   writeGraphQLSchemaFile,
 }

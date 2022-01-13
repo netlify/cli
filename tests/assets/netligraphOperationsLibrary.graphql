@@ -1,0 +1,11 @@
+query ExampleQuery($package: String!) @netligraph(id: "d86699fb-ddfc-4833-9d9a-f3497cb7c992", doc: "A test query to snapshot") {
+  npm {
+    package(name: $package) {
+      id
+      readme
+      license {
+        url
+      }
+    }
+  }
+}
