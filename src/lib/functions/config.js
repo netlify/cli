@@ -12,6 +12,7 @@ const normalizeFunctionsConfig = ({ functionsConfig = {}, projectRoot }) =>
         ignoredNodeModules: config.ignored_node_modules,
         nodeBundler: config.node_bundler === 'esbuild' ? 'esbuild_zisi' : config.node_bundler,
         processDynamicNodeImports: true,
+        schedule: config.schedule,
       },
     }),
     {},
