@@ -1,10 +1,11 @@
+/* eslint-disable eslint-comments/disable-enable-pair */
+/* eslint-disable fp/no-loops */
 const os = require('os')
 
-const dotProp = require('dot-prop')
 const { buildClientSchema, parse } = require('graphql')
 const fetch = require('node-fetch')
 
-const { NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, log } = require('../../utils')
+const { NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, error, log, warn } = require('../../utils')
 
 const {
   defaultExampleOperationsDoc,
@@ -15,11 +16,14 @@ const {
   writeGraphQLOperationsSourceFile,
   writeGraphQLSchemaFile,
 } = require('./netlify-graph')
+const { internalOperationsDoc } = require("./oneGraphClientGraphQLOperations")
+
 
 const ONEDASH_APP_ID = '0b066ba6-ed39-4db8-a497-ba0be34d5b2a'
 
 const httpOkLow = 200
 const httpOkHigh = 299
+const basicPostTimeoutMilliseconds = 30_000
 
 const basicPost = async (url, options) => {
   const reqBody = options.body || ''
@@ -31,12 +35,10 @@ const basicPost = async (url, options) => {
     'Content-Length': reqBody.length,
   }
 
-  const timeoutMilliseconds = 30_000
-
   const resp = await fetch(url, {
     method: 'POST',
     headers,
-    timeout: timeoutMilliseconds,
+    timeout: basicPostTimeoutMilliseconds,
     compress: true,
     body: reqBody,
   })
@@ -44,8 +46,9 @@ const basicPost = async (url, options) => {
   const respBody = await resp.text()
 
   if (resp.status < httpOkLow || resp.status > httpOkHigh) {
-    console.warn('Response:', respBody)
-    throw new Error(`Netlify OneGraph return non - OK HTTP status code: ${resp.status}`)
+    warn('Response:', respBody)
+    error(`Netlify OneGraph return invalid HTTP status code: ${resp.status}`)
+    return respBody
   }
 
   return respBody
@@ -63,8 +66,8 @@ const fetchOneGraphSchemaJson = async (appId, enabledServices) => {
     })
 
     return JSON.parse(response)
-  } catch (error) {
-    console.error('Error fetching schema:', error)
+  } catch (postError) {
+    postError('Error fetching schema:', postError)
   }
 }
 
@@ -74,14 +77,24 @@ const fetchOneGraphSchema = async (appId, enabledServices) => {
   return schema
 }
 
-const fetchOneGraph = async (
-  accessToken,
-  appId,
-  query,
-  operationName,
-  variables,
-  // eslint-disable-next-line max-params
-) => {
+/**
+ * Fetch data from OneGraph
+ * @param {object} config
+ * @param {string|null} config.accessToken The (typically netlify) access token that is used for authentication, if any
+ * @param {string} config.appId The app to query against, typically the siteId
+ * @param {string} config.query The full GraphQL operation doc
+ * @param {string} config.operationName The operation to execute inside of the GraphQL operation doc
+ * @param {object} config.variables The variables to pass to the GraphQL operation
+ */
+const fetchOneGraph = async (config) => {
+  const {
+    accessToken,
+    appId,
+    operationName,
+    query,
+    variables
+  } = config
+
   const payload = {
     query,
     variables,
@@ -103,7 +116,7 @@ const fetchOneGraph = async (
     // @ts-ignore
     const value = JSON.parse(result)
     if (value.errors) {
-      console.warn(`${NETLIFYDEVWARN} fetchOneGraph errors`, operationName, JSON.stringify(value, null, 2))
+      warn(`${NETLIFYDEVWARN} fetchOneGraph errors`, operationName, JSON.stringify(value, null, 2))
     }
     return value
   } catch {
@@ -111,14 +124,24 @@ const fetchOneGraph = async (
   }
 }
 
-const fetchOneGraphPersisted = async (
-  appId,
-  accessToken,
-  docId,
-  operationName,
-  variables,
-  // eslint-disable-next-line max-params
-) => {
+/**
+ * Fetch data from OneGraph using a previously persisted query
+ * @param {object} config
+ * @param {string|null} config.accessToken The (typically netlify) access token that is used for authentication, if any
+ * @param {string} config.appId The app to query against, typically the siteId
+ * @param {string} config.docId The id of the previously persisted GraphQL operation doc
+ * @param {string} config.operationName The operation to execute inside of the GraphQL operation doc
+ * @param {object} config.variables The variables to pass to the GraphQL operation
+ */
+const fetchOneGraphPersisted = async (config) => {
+  const {
+    accessToken,
+    appId,
+    docId,
+    operationName,
+    variables,
+  } = config;
+
   const payload = {
     doc_id: docId,
     variables,
@@ -139,346 +162,17 @@ const fetchOneGraphPersisted = async (
   }
 }
 
-const internalOperationsDoc = `mutation CreatePersistedQueryMutation(
-  $nfToken: String!
-  $appId: String!
-  $query: String!
-  $tags: [String!]!
-  $description: String!
-) {
-  oneGraph(
-    auths: { netlifyAuth: { oauthToken: $nfToken } }
-  ) {
-    createPersistedQuery(
-      input: {
-        query: $query
-        appId: $appId
-        tags: $tags
-        description: $description
-      }
-    ) {
-      persistedQuery {
-        id
-      }
-    }
-  }
-}
-
-query ListPersistedQueries(
-    $appId: String!
-    $first: Int!
-    $after: String
-    $tags: [String!]!
-  ) {
-    oneGraph {
-      app(id: $appId) {
-        id
-        persistedQueries(
-          first: $first
-          after: $after
-          tags: $tags
-        ) {
-          pageInfo {
-            hasNextPage
-            endCursor
-          }
-          nodes {
-            id
-            query
-            fixedVariables
-            freeVariables
-            allowedOperationNames
-            tags
-            description
-          }
-        }
-      }
-    }
-  }
-  
-  subscription ListPersistedQueriesSubscription(
-    $appId: String!
-    $first: Int!
-    $after: String
-    $tags: [String!]!
-  ) {
-    poll(
-      onlyTriggerWhenPayloadChanged: true
-      schedule: { every: { minutes: 1 } }
-    ) {
-      query {
-        oneGraph {
-          app(id: $appId) {
-            id
-            persistedQueries(
-              first: $first
-              after: $after
-              tags: $tags
-            ) {
-              pageInfo {
-                hasNextPage
-                endCursor
-              }
-              nodes {
-                id
-                query
-                fixedVariables
-                freeVariables
-                allowedOperationNames
-                tags
-                description
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  
-  query PersistedQueriesQuery(
-    $nfToken: String!
-    $appId: String!
-  ) {
-    oneGraph(
-      auths: { netlifyAuth: { oauthToken: $nfToken } }
-    ) {
-      app(id: $appId) {
-        persistedQueries {
-          nodes {
-            id
-            query
-            allowedOperationNames
-            description
-            freeVariables
-            fixedVariables
-            tags
-          }
-        }
-      }
-    }
-  }
-  
-  query PersistedQueryQuery(
-    $nfToken: String!
-    $appId: String!
-    $id: String!
-  ) {
-    oneGraph(
-      auths: { netlifyAuth: { oauthToken: $nfToken } }
-    ) {
-      persistedQuery(appId: $appId, id: $id) {
-        id
-        query
-        allowedOperationNames
-        description
-        freeVariables
-        fixedVariables
-        tags
-      }
-    }
-  }
-  
-  mutation CreateCLISessionMutation(
-    $nfToken: String!
-    $appId: String!
-    $name: String!
-    $metadata: JSON
-  ) {
-    oneGraph(
-      auths: { netlifyAuth: { oauthToken: $nfToken } }
-    ) {
-      createNetlifyCliSession(
-        input: { appId: $appId, name: $name, metadata: metadata }
-      ) {
-        session {
-          id
-          appId
-          netlifyUserId
-          name
-        }
-      }
-    }
-  }
-  
-  mutation UpdateCLISessionMetadataMutation(
-    $nfToken: String!
-    $sessionId: String!
-    $metadata: JSON!
-  ) {
-    oneGraph(
-      auths: { netlifyAuth: { oauthToken: $nfToken } }
-    ) {
-      updateNetlifyCliSession(
-        input: { id: $sessionId, metadata: $metadata }
-      ) {
-        session {
-          id
-          name
-          metadata
-        }
-      }
-    }
-  }
-  
-  mutation CreateCLISessionEventMutation(
-    $nfToken: String!
-    $sessionId: String!
-    $payload: JSON!
-  ) {
-    oneGraph(
-      auths: { netlifyAuth: { oauthToken: $nfToken } }
-    ) {
-      createNetlifyCliTestEvent(
-        input: {
-          data: { payload: $payload }
-          sessionId: $sessionId
-        }
-      ) {
-        event {
-          id
-          createdAt
-          sessionId
-        }
-      }
-    }
-  }
-  
-query CLISessionEventsQuery(
-  $nfToken: String!
-  $sessionId: String!
-  $first: Int!
-) {
-  oneGraph(
-    auths: { netlifyAuth: { oauthToken: $nfToken } }
-  ) {
-    netlifyCliEvents(sessionId: $sessionId, first: $first) {
-      __typename
-      createdAt
-      id
-      sessionId
-      ... on OneGraphNetlifyCliSessionLogEvent {
-        id
-        message
-        sessionId
-        createdAt
-      }
-      ... on OneGraphNetlifyCliSessionTestEvent {
-        id
-        createdAt
-        payload
-        sessionId
-      }
-    }
-  }
-}
-  
-mutation AckCLISessionEventMutation(
-  $nfToken: String!
-  $sessionId: String!
-  $eventIds: [String!]!
-) {
-  oneGraph(
-    auths: { netlifyAuth: { oauthToken: $nfToken } }
-  ) {
-    ackNetlifyCliEvents(
-      input: { eventIds: $eventIds, sessionId: $sessionId }
-    ) {
-      events {
-        id
-      }
-    }
-  }
-}
-
-query AppSchemaQuery(
-  $nfToken: String!
-  $appId: String!
-) {
-  oneGraph(
-    auths: { netlifyAuth: { oauthToken: $nfToken } }
-  ) {
-    app(id: $appId) {
-      graphQLSchema {
-        appId
-        createdAt
-        id
-        services {
-          friendlyServiceName
-          logoUrl
-          service
-          slug
-          supportsCustomRedirectUri
-          supportsCustomServiceAuth
-          supportsOauthLogin
-        }
-        updatedAt
-      }
-    }
-  }
-}
-
-mutation UpsertAppForSiteMutation(
-  $nfToken: String!
-  $siteId: String!
-) {
-  oneGraph(
-    auths: { netlifyAuth: { oauthToken: $nfToken } }
-  ) {
-    upsertAppForNetlifySite(
-      input: { netlifySiteId: $siteId }
-    ) {
-      org {
-        id
-        name
-      }
-      app {
-        id
-        name
-        corsOrigins
-        customCorsOrigins {
-          friendlyServiceName
-          displayName
-          encodedValue
-        }
-      }
-    }
-  }
-}
-
-mutation CreateNewSchemaMutation(
-  $nfToken: String!
-  $input: OneGraphCreateGraphQLSchemaInput!
-) {
-  oneGraph(
-    auths: { netlifyAuth: { oauthToken: $nfToken } }
-  ) {
-    createGraphQLSchema(input: $input) {
-      app {
-        graphQLSchema {
-          id
-        }
-      }
-      graphqlSchema {
-        id
-        services {
-          friendlyServiceName
-          logoUrl
-          service
-          slug
-          supportsCustomRedirectUri
-          supportsCustomServiceAuth
-          supportsOauthLogin
-        }
-      }
-    }
-  }
-}`
-
 const fetchPersistedQuery = async (authToken, appId, docId) => {
-  const response = await fetchOneGraph(authToken, ONEDASH_APP_ID, internalOperationsDoc, 'PersistedQueryQuery', {
-    nfToken: authToken,
-    appId,
-    id: docId,
+  const response = await fetchOneGraph({
+    accessToken: authToken,
+    appId: ONEDASH_APP_ID,
+    query: internalOperationsDoc,
+    operationName: 'PersistedQueryQuery',
+    variables: {
+      nfToken: authToken,
+      appId,
+      id: docId,
+    }
   })
 
   const persistedQuery = response.data && response.data.oneGraph && response.data.oneGraph.persistedQuery
@@ -487,11 +181,18 @@ const fetchPersistedQuery = async (authToken, appId, docId) => {
 }
 
 const fetchCliSessionEvents = async ({ appId, authToken, sessionId }) => {
-  const first = 1000
-  const next = await fetchOneGraph(null, appId, internalOperationsDoc, 'CLISessionEventsQuery', {
-    nfToken: authToken,
-    sessionId,
-    first,
+  // Grab the first 1000 events so we can chew through as many at a time as possible
+  const desiredEventCount = 1000
+  const next = await fetchOneGraph({
+    accessToken: null,
+    appId,
+    query: internalOperationsDoc,
+    operationName: 'CLISessionEventsQuery',
+    variables: {
+      nfToken: authToken,
+      sessionId,
+      first: desiredEventCount,
+    }
   })
 
   if (next.errors) {
@@ -520,7 +221,7 @@ const monitorCLISessionEvents = ({
     const enabledServices = state.get('oneGraphEnabledServices') || ['onegraph']
     const enabledServicesInfo = await fetchEnabledServices(netlifyToken, siteId)
     if (!enabledServicesInfo) {
-      console.warn('Unable to fetch enabled services for site for code generation')
+      warn('Unable to fetch enabled services for site for code generation')
       return
     }
     const newEnabledServices = enabledServicesInfo.map((service) => service.service)
@@ -553,15 +254,15 @@ const monitorCLISessionEvents = ({
     const next = await fetchCliSessionEvents({ appId, authToken, sessionId })
 
     if (next.errors) {
-      next.errors.forEach((error) => {
-        onError(error)
+      next.errors.forEach((fetchEventError) => {
+        onError(fetchEventError)
       })
     }
 
     const { events } = next
 
     if (events.length !== 0) {
-      const ackIds = onEvents(events)
+      const ackIds = await onEvents(events)
       await ackCLISessionEvents({ appId, authToken, sessionId, eventIds: ackIds })
     }
 
@@ -584,7 +285,13 @@ const createCLISession = async (netlifyToken, appId, name, metadata) => {
     metadata,
   }
 
-  const result = await fetchOneGraph(null, appId, internalOperationsDoc, 'CreateCLISessionMutation', payload)
+  const result = await fetchOneGraph({
+    accessToken: null,
+    appId,
+    query: internalOperationsDoc,
+    operationName: 'CreateCLISessionMutation',
+    variables: payload
+  })
 
   const session =
     result.data &&
@@ -596,10 +303,15 @@ const createCLISession = async (netlifyToken, appId, name, metadata) => {
 }
 
 const updateCLISessionMetadata = async (netlifyToken, appId, sessionId, metadata) => {
-  const result = await fetchOneGraph(null, appId, internalOperationsDoc, 'UpdateCLISessionMetadataMutation', {
-    nfToken: netlifyToken,
-    sessionId,
-    metadata,
+  const result = await fetchOneGraph({
+    accessToken: null, appId,
+    query: internalOperationsDoc,
+    operationName: 'UpdateCLISessionMetadataMutation',
+    variables: {
+      nfToken: netlifyToken,
+      sessionId,
+      metadata,
+    }
   })
 
   const session =
@@ -612,10 +324,16 @@ const updateCLISessionMetadata = async (netlifyToken, appId, sessionId, metadata
 }
 
 const ackCLISessionEvents = async ({ appId, authToken, eventIds, sessionId }) => {
-  const result = await fetchOneGraph(null, appId, internalOperationsDoc, 'AckCLISessionEventMutation', {
-    nfToken: authToken,
-    sessionId,
-    eventIds,
+  const result = await fetchOneGraph({
+    accessToken: null,
+    appId,
+    query: internalOperationsDoc,
+    operationName: 'AckCLISessionEventMutation',
+    variables: {
+      nfToken: authToken,
+      sessionId,
+      eventIds,
+    }
   })
 
   const events = result.data && result.data.oneGraph && result.data.oneGraph.ackNetlifyCliEvents
@@ -624,12 +342,18 @@ const ackCLISessionEvents = async ({ appId, authToken, eventIds, sessionId }) =>
 }
 
 const createPersistedQuery = async (netlifyToken, { appId, description, document, tags }) => {
-  const result = await fetchOneGraph(null, appId, internalOperationsDoc, 'CreatePersistedQueryMutation', {
-    nfToken: netlifyToken,
+  const result = await fetchOneGraph({
+    accessToken: null,
     appId,
-    query: document,
-    tags,
-    description,
+    query: internalOperationsDoc,
+    operationName: 'CreatePersistedQueryMutation',
+    variables: {
+      nfToken: netlifyToken,
+      appId,
+      query: document,
+      tags,
+      description,
+    }
   })
 
   const persistedQuery =
@@ -646,7 +370,7 @@ const refetchAndGenerateFromOneGraph = async ({ netlifyToken, netligraphConfig, 
 
   const enabledServicesInfo = await fetchEnabledServices(netlifyToken, siteId)
   if (!enabledServicesInfo) {
-    console.warn('Unable to fetch enabled services for site for code generation')
+    warn('Unable to fetch enabled services for site for code generation')
     return
   }
 
@@ -671,7 +395,7 @@ const refetchAndGenerateFromOneGraph = async ({ netlifyToken, netligraphConfig, 
 const updateGraphQLOperationsFile = async ({ authToken, docId, netligraphConfig, schema, siteId }) => {
   const persistedDoc = await fetchPersistedQuery(authToken, siteId, docId)
   if (!persistedDoc) {
-    console.warn('No persisted doc found for:', docId)
+    warn('No persisted doc found for:', docId)
     return
   }
 
@@ -714,7 +438,7 @@ const handleCliSessionEvent = async ({ authToken, event, netligraphConfig, schem
       await updateGraphQLOperationsFile({ authToken, docId: payload.docId, netligraphConfig, schema, siteId })
       break
     default: {
-      console.warn(
+      warn(
         `${NETLIFYDEVWARN} Unrecognized event received, you may need to upgrade your CLI version`,
         __typename,
         payload,
@@ -744,56 +468,74 @@ const startOneGraphCLISession = async ({ netlifyToken, netligraphConfig, site, s
     netligraphConfig,
     sessionId: oneGraphSessionId,
     state,
-    onEvents: (events) => {
-      events.forEach(async (event) => {
+    onEvents: async (events) => {
+      for (const event of events) {
         const eventName = friendlyEventName(event)
         log(`${NETLIFYDEVLOG} ${chalk.magenta('Handling')} Netlify Graph event: ${eventName}...`)
         await handleCliSessionEvent({ authToken: netlifyToken, event, netligraphConfig, schema, siteId: site.id })
         log(`${NETLIFYDEVLOG} ${chalk.green('Finished handling')} Netlify Graph event: ${eventName}...`)
-      })
+      }
       return events.map((event) => event.id)
     },
-    onError: (error) => {
-      console.error(`OneGraph: ${error}`)
+    onError: (fetchEventError) => {
+      error(`Netlify Graph upstream error: ${fetchEventError}`)
     },
     onClose: () => {
-      console.debug('OneGraph: closed')
+      log('Netlify Graph upstream closed')
     },
   })
 }
 
 const fetchAppSchema = async (authToken, siteId) => {
-  const result = await fetchOneGraph(authToken, siteId, internalOperationsDoc, 'AppSchemaQuery', {
-    nfToken: authToken,
+  const result = await fetchOneGraph({
+    accessToken: authToken,
     appId: siteId,
+    query: internalOperationsDoc,
+    operationName: 'AppSchemaQuery',
+    variables: {
+      nfToken: authToken,
+      appId: siteId,
+    }
   })
 
-  return dotProp.get(result, 'data.oneGraph.app.graphQLSchema')
+  return result.data && result.data.oneGraph && result.data.oneGraph.app && result.data.oneGraph.app.graphQLSchema
 }
 
 const upsertAppForSite = async (authToken, siteId) => {
-  const result = await fetchOneGraph(authToken, ONEDASH_APP_ID, internalOperationsDoc, 'UpsertAppForSiteMutation', {
-    nfToken: authToken,
-    siteId,
+  const result = await fetchOneGraph({
+    accessToken: authToken,
+    appId: ONEDASH_APP_ID,
+    query: internalOperationsDoc,
+    operationName: 'UpsertAppForSiteMutation',
+    variables: {
+      nfToken: authToken,
+      siteId,
+    }
   })
 
-  return dotProp.get(result, 'data.oneGraph.upsertAppForNetlifySite.app')
+  return result.data && result.data.oneGraph && result.data.oneGraph.upsertAppForNetlifySite && result.data.oneGraph.upsertAppForNetlifySite.app
 }
 
 const createNewAppSchema = async (nfToken, input) => {
-  const result = await fetchOneGraph(null, input.appId, internalOperationsDoc, 'CreateNewSchemaMutation', {
-    nfToken,
-    input,
+  const result = await fetchOneGraph({
+    accessToken: null,
+    appId: input.appId,
+    query: internalOperationsDoc,
+    operationName: 'CreateNewSchemaMutation',
+    variables: {
+      nfToken,
+      input,
+    }
   })
 
-  return dotProp.get(result, 'data.oneGraph.createGraphQLSchema.graphqlSchema')
+  return result.data && result.data.oneGraph && result.data.oneGraph.createGraphQLSchema && result.data.oneGraph.createGraphQLSchema.graphqlSchema
 }
 
 const ensureAppForSite = async (authToken, siteId) => {
   const app = await upsertAppForSite(authToken, siteId)
   const schema = await fetchAppSchema(authToken, app.id)
   if (!schema) {
-    console.log(`${NETLIFYDEVLOG} Creating new empty default GraphQL schema for site....`)
+    log(`${NETLIFYDEVLOG} Creating new empty default GraphQL schema for site....`)
     await createNewAppSchema(authToken, {
       appId: siteId,
       enabledServices: ['ONEGRAPH'],
@@ -804,13 +546,13 @@ const ensureAppForSite = async (authToken, siteId) => {
 
 const fetchEnabledServices = async (authToken, appId) => {
   const appSchema = await fetchAppSchema(authToken, appId)
-  return dotProp.get(appSchema, 'services')
+  return appSchema && appSchema.services
 }
 
 const generateSessionName = () => {
   const userInfo = os.userInfo('utf-8')
   const sessionName = `${userInfo.username}-${Date.now()}`
-  console.log(`${NETLIFYDEVLOG} Generated Netlify Graph session name: ${sessionName}`)
+  log(`${NETLIFYDEVLOG} Generated Netlify Graph session name: ${sessionName}`)
   return sessionName
 }
 

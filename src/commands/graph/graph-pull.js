@@ -1,3 +1,5 @@
+/* eslint-disable eslint-comments/disable-enable-pair */
+/* eslint-disable fp/no-loops */
 const process = require('process')
 
 const { buildSchema } = require('graphql')
@@ -10,13 +12,13 @@ const {
   refetchAndGenerateFromOneGraph,
 } = require('../../lib/one-graph/client')
 const { getNetligraphConfig, readGraphQLSchemaFile } = require('../../lib/one-graph/netlify-graph')
-const { NETLIFYDEVERR, chalk } = require('../../utils')
+const { NETLIFYDEVERR, chalk, error, warn } = require('../../utils')
 
 const graphPull = async (options, command) => {
   const { site, state } = command.netlify
 
   if (!site.id) {
-    console.error(
+    error(
       `${NETLIFYDEVERR} Warning: no siteId defined, unable to start Netlify Graph. To enable, run ${chalk.yellow(
         'netlify init',
       )} or ${chalk.yellow('netlify link')}?`,
@@ -24,7 +26,7 @@ const graphPull = async (options, command) => {
     process.exit(1)
   }
 
-  const netligraphConfig = getNetligraphConfig({ command, options })
+  const netligraphConfig = await getNetligraphConfig({ command, options })
   const netlifyToken = await command.authenticate()
   const siteId = site.id
   await refetchAndGenerateFromOneGraph({ netligraphConfig, netlifyToken, state, siteId })
@@ -32,7 +34,7 @@ const graphPull = async (options, command) => {
   const oneGraphSessionId = loadCLISession(state)
 
   if (!oneGraphSessionId) {
-    console.warn('No local Netlify Graph session found, skipping command queue drain')
+    warn('No local Netlify Graph session found, skipping command queue drain')
     return
   }
 
@@ -42,31 +44,29 @@ const graphPull = async (options, command) => {
 
   try {
     schema = buildSchema(schemaString)
-  } catch (error) {
-    console.error(`${NETLIFYDEVERR} Error parsing schema: ${error.message}`)
+  } catch (buildSchemaError) {
+    error(`${NETLIFYDEVERR} Error parsing schema: ${buildSchemaError.message}`)
     process.exit(1)
   }
 
   if (!schema) {
-    console.error(`${NETLIFYDEVERR} Failed to fetch and update Netlify GraphQL schem`)
+    error(`${NETLIFYDEVERR} Failed to fetch and update Netlify GraphQL schem`)
     process.exit(1)
   }
 
   const next = await fetchCliSessionEvents({ appId: siteId, authToken: netlifyToken, sessionId: oneGraphSessionId })
 
   if (next.errors) {
-    console.error(`${NETLIFYDEVERR} Failed to fetch Netlify Graph cli session events`, next.errors)
+    error(`${NETLIFYDEVERR} Failed to fetch Netlify Graph cli session events`, next.errors)
     process.exit(1)
   }
 
   if (next.events) {
     const ackIds = []
-    const handled = next.events.map(async (event) => {
+    for (const event of next.events) {
       await handleCliSessionEvent({ authToken: netlifyToken, event, netligraphConfig, schema, siteId: site.id })
       ackIds.push(event.id)
-    })
-
-    await Promise.all(handled)
+    }
 
     await ackCLISessionEvents({
       appId: siteId,

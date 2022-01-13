@@ -4,7 +4,7 @@ const fs = require('fs')
 const dotProp = require('dot-prop')
 const { parse, print, printSchema } = require('graphql')
 
-const { getFunctionsDir } = require('../../utils')
+const { NETLIFYDEVERR, detectServerSettings, getFunctionsDir, log } = require('../../utils')
 
 const {
   patchSubscriptionWebhookField,
@@ -13,6 +13,7 @@ const {
   typeScriptSignatureForOperationVariables,
 } = require('./graphql-helpers')
 const { computeOperationDataList, netlifyFunctionSnippet } = require('./netlify-graph-code-exporter-snippets')
+const { nextjsFunctionSnippet } = require('./nextjs-graph-code-exporter-snippets')
 
 const capitalizeFirstLetter = (string) => string.charAt(0).toUpperCase() + string.slice(1)
 
@@ -24,7 +25,7 @@ const replaceAll = (target, search, replace) => {
 const sourceOperationsFilename = 'netligraphOperationsLibrary.graphql'
 
 const defaultNetligraphConfig = {
-  extension: 'mjs',
+  extension: 'js',
   netligraphPath: 'netlify',
   moduleType: 'commonjs',
 }
@@ -33,23 +34,47 @@ const defaultNetligraphConfig = {
  * Return a full Netligraph config with any defaults overridden by netlify.toml
  * @param {import('../base-command').BaseCommand} command
  */
-const getNetligraphConfig = ({ command, options }) => {
-  const { config } = command.netlify
-  const userSpecifiedConfig = config && config.netligraph
-  const functionsPath = getFunctionsDir({ config, options })
-  const netligraphPath = `${functionsPath}/netligraph`
+const getNetligraphConfig = async ({ command, options }) => {
+  const { config, site } = command.netlify
+  config.dev = { ...config.dev }
+  config.build = { ...config.build }
+  const userSpecifiedConfig = (config && config.graph) || {}
+  /** @type {import('./types').DevConfig} */
+  const devConfig = {
+    framework: '#auto',
+    ...(config.functionsDirectory && { functions: config.functionsDirectory }),
+    ...(config.build.publish && { publish: config.build.publish }),
+    ...config.dev,
+    ...options,
+  }
+
+  /** @type {Partial<import('../../utils/types').ServerSettings>} */
+  let settings = {}
+  try {
+    settings = await detectServerSettings(devConfig, options, site.root)
+  } catch (error) {
+    log(NETLIFYDEVERR, error.message)
+  }
+
+  const framework = settings.framework || userSpecifiedConfig.framework
+  const isNextjs = framework === 'Next.js'
+  const functionsPath = isNextjs ? 'pages/api' : getFunctionsDir({ config, options }) || `functions`
+  const netligraphPath = isNextjs ? 'lib/netligraph' : `${functionsPath}/netligraph`
   const baseConfig = { ...defaultNetligraphConfig, ...userSpecifiedConfig, netligraphPath }
   const netligraphImplementationFilename = `${baseConfig.netligraphPath}/index.${baseConfig.extension}`
   const netligraphTypeDefinitionsFilename = `${baseConfig.netligraphPath}/index.d.ts`
   const graphQLOperationsSourceFilename = `${baseConfig.netligraphPath}/${sourceOperationsFilename}`
   const graphQLSchemaFilename = 'netligraphSchema.graphql'
+  const netligraphRequirePath = isNextjs ? '../../lib/netligraph' : `./netligraph`
   const fullConfig = {
+    ...baseConfig,
     functionsPath,
     netligraphImplementationFilename,
     netligraphTypeDefinitionsFilename,
     graphQLOperationsSourceFilename,
     graphQLSchemaFilename,
-    ...baseConfig,
+    netligraphRequirePath,
+    framework,
   }
 
   return fullConfig
@@ -367,7 +392,6 @@ const generateJavaScriptClient = (netligraphConfig, schema, operationsDoc, enabl
   variables,
   accessToken,
 ) => {
-  // return fetchOneGraphPersisted(accessToken, "${fn.id}", "${fn.operationName}", variables)
   return fetchOneGraph(accessToken, operationsDoc, "${fn.operationName}", variables)
 }
 
@@ -418,7 +442,7 @@ const generateJavaScriptClient = (netligraphConfig, schema, operationsDoc, enabl
   }
 }`
 
-  const source = `// GENERATED VIA \`netlify-plugin-netligraph\`, EDIT WITH CAUTION!
+  const source = `// GENERATED VIA NETLIFY AUTOMATED DEV TOOLS, EDIT WITH CAUTION!
 ${imp(netligraphConfig, 'https', 'https')}
 ${imp(netligraphConfig, 'crypto', 'crypto')}
 
@@ -528,7 +552,7 @@ export function ${fn.fnName}(
 >;`
   })
 
-  const source = `// GENERATED VIA \`netlify-plugin-netligraph\`, EDIT WITH CAUTION!
+  const source = `// GENERATED VIA NETLIFY AUTOMATED DEV TOOLS, EDIT WITH CAUTION!
 ${functionDecls.join('\n\n')}
 `
 
@@ -654,18 +678,26 @@ const generateHandlerSource = ({ handlerOptions, netligraphConfig, operationId, 
   const operation = operations[operationId]
 
   if (!operation) {
-    console.warn(`Operation ${operationId} not found in graphql.`)
+    console.warn(`Operation ${operationId} not found in graphql.`, Object.keys(operations))
     return
   }
 
   const odl = computeOperationDataList({ query: operation.query, variables: [] })
 
-  const source = netlifyFunctionSnippet.generate({
-    netligraphConfig,
-    operationDataList: odl.operationDataList,
-    schema,
-    options: handlerOptions,
-  })
+  const source = netligraphConfig.framework === "Next.js" ?
+    nextjsFunctionSnippet.generate({
+      netligraphConfig,
+      operationDataList: odl.operationDataList,
+      schema,
+      options: handlerOptions,
+    })
+    :
+    netlifyFunctionSnippet.generate({
+      netligraphConfig,
+      operationDataList: odl.operationDataList,
+      schema,
+      options: handlerOptions,
+    })
 
   return { source, operation }
 }
@@ -676,13 +708,19 @@ const generateHandler = (netligraphConfig, schema, operationId, handlerOptions) 
     currentOperationsDoc = defaultExampleOperationsDoc
   }
 
-  const { operation, source } = generateHandlerSource({
+  const handlerSource = generateHandlerSource({
     netligraphConfig,
     schema,
     operationsDoc: currentOperationsDoc,
     operationId,
     handlerOptions,
   })
+
+  if (!(handlerSource && handlerSource.source)) {
+    return
+  }
+
+  const { operation, source } = handlerSource
 
   const filename = `${netligraphConfig.functionsPath}/${operation.name}.${netligraphConfig.extension}`
 

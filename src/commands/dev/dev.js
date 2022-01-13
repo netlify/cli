@@ -107,12 +107,12 @@ const runCommand = (command, env = {}) => {
     }
     process.exit(1)
   })
-  ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) => {
-    process.on(signal, () => {
-      commandProcess.kill('SIGTERM', { forceKillAfterTimeout: 500 })
-      process.exit()
+    ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) => {
+      process.on(signal, () => {
+        commandProcess.kill('SIGTERM', { forceKillAfterTimeout: 500 })
+        process.exit()
+      })
     })
-  })
 
   return commandProcess
 }
@@ -296,9 +296,9 @@ const dev = async (options, command) => {
   const startNetligraphWatcher = Boolean(options.graph)
 
   if (startNetligraphWatcher && options.offline) {
-    console.warn(`${NETLIFYDEVERR} Warning: unable to start Netlify Graph in offline mode`)
+    warn(`${NETLIFYDEVERR} Warning: unable to start Netlify Graph in offline mode`)
   } else if (startNetligraphWatcher && !site.id) {
-    console.warn(
+    warn(
       `${NETLIFYDEVERR} Warning: no siteId defined, unable to start Netlify Graph. To enable, run ${chalk.yellow(
         'netlify init',
       )} or ${chalk.yellow('netlify link')}?`,
@@ -307,7 +307,7 @@ const dev = async (options, command) => {
   } else if (startNetligraphWatcher) {
     const netlifyToken = await command.authenticate()
     await ensureAppForSite(netlifyToken, site.id)
-    const netligraphConfig = getNetligraphConfig({ command, options })
+    const netligraphConfig = await getNetligraphConfig({ command, options })
     startOneGraphCLISession({ netligraphConfig, netlifyToken, site, state })
   }
 

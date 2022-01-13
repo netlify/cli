@@ -17,6 +17,8 @@ const {
   visitWithTypeInfo,
 } = require('graphql')
 
+const { warn } = require('../../utils')
+
 const capitalizeFirstLetter = (string) => string.charAt(0).toUpperCase() + string.slice(1)
 
 const gatherAllReferencedTypes = (schema, query) => {
@@ -29,6 +31,7 @@ const gatherAllReferencedTypes = (schema, query) => {
         const fullType = typeInfo.getType()
         if (fullType) {
           const typ = getNamedType(fullType)
+          // We don't want to pick up the `OneMe` type since that should be hidden from the end developer for the first few releases
           if (typ) types.add(typ.name.toLocaleLowerCase().replace('oneme', ''))
         }
       },
@@ -126,7 +129,7 @@ const listCount = (gqlType) => {
     }
     totalCount += 1
     if (totalCount > maximumDepth) {
-      console.warn('Bailing on potential infinite recursion')
+      warn('Bailing on potential infinite recursion')
       return errorSigil
     }
     inspectedType = inspectedType.ofType
@@ -240,7 +243,7 @@ const typeScriptDefinitionObjectForOperation = (schema, operationDefinition, fra
       return entry
     }
     // @ts-ignore
-    console.warn('No returnType!', basicType, namedType.name, selection)
+    warn('No returnType!', basicType, namedType.name, selection)
   }
 
   let baseGqlType = null
@@ -363,7 +366,7 @@ const patchSubscriptionWebhookField = ({ definition, schema }) => {
     if (selection.kind !== 'Field') return selection
     const field = subscriptionType.getFields()[selection.name.value]
     if (!field) {
-      console.warn(
+      warn(
         'Unable to find subscription service field, you may need to enable additional services. Missing field:',
         selection.name.value,
       )
@@ -403,28 +406,28 @@ const patchSubscriptionWebhookField = ({ definition, schema }) => {
   const variableDefinitions = hasWebhookVariableDefinition
     ? definition.variableDefinitions
     : [
-        ...(definition.variableDefinitions || []),
-        {
-          kind: 'VariableDefinition',
+      ...(definition.variableDefinitions || []),
+      {
+        kind: 'VariableDefinition',
+        type: {
+          kind: 'NonNullType',
           type: {
-            kind: 'NonNullType',
-            type: {
-              kind: 'NamedType',
-              name: {
-                kind: 'Name',
-                value: 'String',
-              },
-            },
-          },
-          variable: {
-            kind: 'Variable',
+            kind: 'NamedType',
             name: {
               kind: 'Name',
-              value: 'netligraphWebhookUrl',
+              value: 'String',
             },
           },
         },
-      ]
+        variable: {
+          kind: 'Variable',
+          name: {
+            kind: 'Name',
+            value: 'netligraphWebhookUrl',
+          },
+        },
+      },
+    ]
   return {
     ...definition,
     // @ts-ignore: Handle edge cases later
@@ -446,7 +449,7 @@ const patchSubscriptionWebhookSecretField = ({ definition, schema }) => {
     if (selection.kind !== 'Field') return selection
     const field = subscriptionType.getFields()[selection.name.value]
     if (!field) {
-      console.warn(
+      warn(
         'Unable to find subscription service field, you may need to enable additional services. Missing field:',
         selection.name.value,
       )
@@ -486,28 +489,28 @@ const patchSubscriptionWebhookSecretField = ({ definition, schema }) => {
   const variableDefinitions = hasWebhookVariableDefinition
     ? definition.variableDefinitions
     : [
-        ...(definition.variableDefinitions || []),
-        {
-          kind: 'VariableDefinition',
+      ...(definition.variableDefinitions || []),
+      {
+        kind: 'VariableDefinition',
+        type: {
+          kind: 'NonNullType',
           type: {
-            kind: 'NonNullType',
-            type: {
-              kind: 'NamedType',
-              name: {
-                kind: 'Name',
-                value: 'OneGraphSubscriptionSecretInput',
-              },
-            },
-          },
-          variable: {
-            kind: 'Variable',
+            kind: 'NamedType',
             name: {
               kind: 'Name',
-              value: 'netligraphWebhookSecret',
+              value: 'OneGraphSubscriptionSecretInput',
             },
           },
         },
-      ]
+        variable: {
+          kind: 'Variable',
+          name: {
+            kind: 'Name',
+            value: 'netligraphWebhookSecret',
+          },
+        },
+      },
+    ]
   return {
     ...definition,
     // @ts-ignore: Handle edge cases later

@@ -13,11 +13,11 @@ const {
 const { normalize } = require('./utils/snapshots')
 
 const netligraphConfig = {
-  extension: 'mjs',
+  extension: 'js',
   netligraphPath: 'netlify',
   moduleType: 'commonjs',
   functionsPath: 'functions',
-  netligraphImplementationFilename: 'dummy/index.mjs',
+  netligraphImplementationFilename: 'dummy/index.js',
   netligraphTypeDefinitionsFilename: 'dummy/index.d.ts',
   graphQLOperationsSourceFilename: 'dummy/netligraphOperationsLibrary.graphql',
   graphQLSchemaFilename: 'dummy/netligraphSchema.graphql',
@@ -26,26 +26,25 @@ const netligraphConfig = {
 const loadAsset = (filename) => fs.readFileSync(join(__dirname, 'assets', filename), 'utf8')
 
 test('netlify graph function codegen', (t) => {
-  const schemaString = loadAsset('../assets/netligraphSchema.graphql')
+  const schemaString = loadAsset('../assets/netlifyGraphSchema.graphql')
   const schema = buildSchema(schemaString)
 
-  const appOperationsDoc = loadAsset('../assets/netligraphOperationsLibrary.graphql')
+  const appOperationsDoc = loadAsset('../assets/netlifyGraphOperationsLibrary.graphql')
   const parsedDoc = parse(appOperationsDoc, {
     noLocation: true,
   })
 
   const operations = extractFunctionsFromOperationDoc(parsedDoc)
   const generatedFunctions = generateFunctionsSource(netligraphConfig, schema, appOperationsDoc, operations)
-  console.log('!!!!!!!!!!!!!!!!!!!!! generatedFunctions', generatedFunctions)
 
   t.snapshot(normalize(JSON.stringify(generatedFunctions)))
 })
 
 test('netlify graph handler codegen', (t) => {
-  const schemaString = loadAsset('../assets/netligraphSchema.graphql')
+  const schemaString = loadAsset('../assets/netlifyGraphSchema.graphql')
   const schema = buildSchema(schemaString)
 
-  const appOperationsDoc = loadAsset('../assets/netligraphOperationsLibrary.graphql')
+  const appOperationsDoc = loadAsset('../assets/netlifyGraphOperationsLibrary.graphql')
 
   // From the asset GraphQL file
   const operationId = 'd86699fb-ddfc-4833-9d9a-f3497cb7c992'
@@ -57,8 +56,6 @@ test('netlify graph handler codegen', (t) => {
     operationId,
     handlerOptions,
   })
-
-  console.log('!!!!!!!!!!!!!!!!!!!!! generatedHandler', generatedHandler)
 
   t.snapshot(normalize(JSON.stringify(generatedHandler)))
 })

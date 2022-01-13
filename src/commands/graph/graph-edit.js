@@ -15,7 +15,7 @@ const {
   getNetligraphConfig,
   readGraphQLOperationsSourceFile,
 } = require('../../lib/one-graph/netlify-graph')
-const { NETLIFYDEVERR, chalk } = require('../../utils')
+const { NETLIFYDEVERR, chalk, error } = require('../../utils')
 const { openBrowser } = require('../../utils/open-browser')
 
 const graphEdit = async (options, command) => {
@@ -23,7 +23,7 @@ const graphEdit = async (options, command) => {
   const siteId = site.id
 
   if (!site.id) {
-    console.error(
+    error(
       `${NETLIFYDEVERR} Warning: no siteId defined, unable to start Netlify Graph. To enable, run ${chalk.yellow(
         'netlify init',
       )} or ${chalk.yellow('netlify link')}?`,
@@ -31,11 +31,9 @@ const graphEdit = async (options, command) => {
     process.exit(1)
   }
 
-  console.time('graph:edit')
-
   const siteData = await api.getSite({ siteId })
 
-  const netligraphConfig = getNetligraphConfig({ command, options })
+  const netligraphConfig = await getNetligraphConfig({ command, options })
 
   const { branch } = gitRepoInfo()
 
@@ -70,7 +68,6 @@ const graphEdit = async (options, command) => {
 
   const url = `http://${host}/sites/${siteData.name}/graph/explorer?cliSessionId=${oneGraphSessionId}`
   await openBrowser({ url })
-  console.timeEnd('graph:edit')
 }
 
 /**
