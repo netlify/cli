@@ -406,28 +406,28 @@ const patchSubscriptionWebhookField = ({ definition, schema }) => {
   const variableDefinitions = hasWebhookVariableDefinition
     ? definition.variableDefinitions
     : [
-      ...(definition.variableDefinitions || []),
-      {
-        kind: 'VariableDefinition',
-        type: {
-          kind: 'NonNullType',
+        ...(definition.variableDefinitions || []),
+        {
+          kind: 'VariableDefinition',
           type: {
-            kind: 'NamedType',
+            kind: 'NonNullType',
+            type: {
+              kind: 'NamedType',
+              name: {
+                kind: 'Name',
+                value: 'String',
+              },
+            },
+          },
+          variable: {
+            kind: 'Variable',
             name: {
               kind: 'Name',
-              value: 'String',
+              value: 'netligraphWebhookUrl',
             },
           },
         },
-        variable: {
-          kind: 'Variable',
-          name: {
-            kind: 'Name',
-            value: 'netligraphWebhookUrl',
-          },
-        },
-      },
-    ]
+      ]
   return {
     ...definition,
     // @ts-ignore: Handle edge cases later
@@ -489,28 +489,28 @@ const patchSubscriptionWebhookSecretField = ({ definition, schema }) => {
   const variableDefinitions = hasWebhookVariableDefinition
     ? definition.variableDefinitions
     : [
-      ...(definition.variableDefinitions || []),
-      {
-        kind: 'VariableDefinition',
-        type: {
-          kind: 'NonNullType',
+        ...(definition.variableDefinitions || []),
+        {
+          kind: 'VariableDefinition',
           type: {
-            kind: 'NamedType',
+            kind: 'NonNullType',
+            type: {
+              kind: 'NamedType',
+              name: {
+                kind: 'Name',
+                value: 'OneGraphSubscriptionSecretInput',
+              },
+            },
+          },
+          variable: {
+            kind: 'Variable',
             name: {
               kind: 'Name',
-              value: 'OneGraphSubscriptionSecretInput',
+              value: 'netligraphWebhookSecret',
             },
           },
         },
-        variable: {
-          kind: 'Variable',
-          name: {
-            kind: 'Name',
-            value: 'netligraphWebhookSecret',
-          },
-        },
-      },
-    ]
+      ]
   return {
     ...definition,
     // @ts-ignore: Handle edge cases later

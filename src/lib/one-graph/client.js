@@ -16,8 +16,7 @@ const {
   writeGraphQLOperationsSourceFile,
   writeGraphQLSchemaFile,
 } = require('./netlify-graph')
-const { internalOperationsDoc } = require("./one-graph-client-graphql-operations")
-
+const { internalOperationsDoc } = require('./one-graph-client-graphql-operations')
 
 const ONEDASH_APP_ID = '0b066ba6-ed39-4db8-a497-ba0be34d5b2a'
 
@@ -87,13 +86,7 @@ const fetchOneGraphSchema = async (appId, enabledServices) => {
  * @param {object} config.variables The variables to pass to the GraphQL operation
  */
 const fetchOneGraph = async (config) => {
-  const {
-    accessToken,
-    appId,
-    operationName,
-    query,
-    variables
-  } = config
+  const { accessToken, appId, operationName, query, variables } = config
 
   const payload = {
     query,
@@ -134,13 +127,7 @@ const fetchOneGraph = async (config) => {
  * @param {object} config.variables The variables to pass to the GraphQL operation
  */
 const fetchOneGraphPersisted = async (config) => {
-  const {
-    accessToken,
-    appId,
-    docId,
-    operationName,
-    variables,
-  } = config;
+  const { accessToken, appId, docId, operationName, variables } = config
 
   const payload = {
     doc_id: docId,
@@ -172,7 +159,7 @@ const fetchPersistedQuery = async (authToken, appId, docId) => {
       nfToken: authToken,
       appId,
       id: docId,
-    }
+    },
   })
 
   const persistedQuery = response.data && response.data.oneGraph && response.data.oneGraph.persistedQuery
@@ -192,7 +179,7 @@ const fetchCliSessionEvents = async ({ appId, authToken, sessionId }) => {
       nfToken: authToken,
       sessionId,
       first: desiredEventCount,
-    }
+    },
   })
 
   if (next.errors) {
@@ -290,7 +277,7 @@ const createCLISession = async (netlifyToken, appId, name, metadata) => {
     appId,
     query: internalOperationsDoc,
     operationName: 'CreateCLISessionMutation',
-    variables: payload
+    variables: payload,
   })
 
   const session =
@@ -304,14 +291,15 @@ const createCLISession = async (netlifyToken, appId, name, metadata) => {
 
 const updateCLISessionMetadata = async (netlifyToken, appId, sessionId, metadata) => {
   const result = await fetchOneGraph({
-    accessToken: null, appId,
+    accessToken: null,
+    appId,
     query: internalOperationsDoc,
     operationName: 'UpdateCLISessionMetadataMutation',
     variables: {
       nfToken: netlifyToken,
       sessionId,
       metadata,
-    }
+    },
   })
 
   const session =
@@ -333,7 +321,7 @@ const ackCLISessionEvents = async ({ appId, authToken, eventIds, sessionId }) =>
       nfToken: authToken,
       sessionId,
       eventIds,
-    }
+    },
   })
 
   const events = result.data && result.data.oneGraph && result.data.oneGraph.ackNetlifyCliEvents
@@ -353,7 +341,7 @@ const createPersistedQuery = async (netlifyToken, { appId, description, document
       query: document,
       tags,
       description,
-    }
+    },
   })
 
   const persistedQuery =
@@ -495,7 +483,7 @@ const fetchAppSchema = async (authToken, siteId) => {
     variables: {
       nfToken: authToken,
       appId: siteId,
-    }
+    },
   })
 
   return result.data && result.data.oneGraph && result.data.oneGraph.app && result.data.oneGraph.app.graphQLSchema
@@ -510,10 +498,15 @@ const upsertAppForSite = async (authToken, siteId) => {
     variables: {
       nfToken: authToken,
       siteId,
-    }
+    },
   })
 
-  return result.data && result.data.oneGraph && result.data.oneGraph.upsertAppForNetlifySite && result.data.oneGraph.upsertAppForNetlifySite.app
+  return (
+    result.data &&
+    result.data.oneGraph &&
+    result.data.oneGraph.upsertAppForNetlifySite &&
+    result.data.oneGraph.upsertAppForNetlifySite.app
+  )
 }
 
 const createNewAppSchema = async (nfToken, input) => {
@@ -525,10 +518,15 @@ const createNewAppSchema = async (nfToken, input) => {
     variables: {
       nfToken,
       input,
-    }
+    },
   })
 
-  return result.data && result.data.oneGraph && result.data.oneGraph.createGraphQLSchema && result.data.oneGraph.createGraphQLSchema.graphqlSchema
+  return (
+    result.data &&
+    result.data.oneGraph &&
+    result.data.oneGraph.createGraphQLSchema &&
+    result.data.oneGraph.createGraphQLSchema.graphqlSchema
+  )
 }
 
 const ensureAppForSite = async (authToken, siteId) => {

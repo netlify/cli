@@ -334,5 +334,5 @@ const internalOperationsDoc = `mutation CreatePersistedQueryMutation(
   }`
 
 module.exports = {
-    internalOperationsDoc
+  internalOperationsDoc,
 }
