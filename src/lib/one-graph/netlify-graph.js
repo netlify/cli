@@ -543,13 +543,17 @@ const generateFunctionsSource = (netligraphConfig, schema, operationsDoc, querie
   return {
     clientSource,
     typeDefinitionsSource,
-    functionDefinitions
+    functionDefinitions,
   }
 }
 
-
 const generateFunctionsFile = (netligraphConfig, schema, operationsDoc, queries) => {
-  const { clientSource, typeDefinitionsSource } = generateFunctionsSource(netligraphConfig, schema, operationsDoc, queries)
+  const { clientSource, typeDefinitionsSource } = generateFunctionsSource(
+    netligraphConfig,
+    schema,
+    operationsDoc,
+    queries,
+  )
 
   ensureNetligraphPath(netligraphConfig)
   fs.writeFileSync(netligraphConfig.netligraphImplementationFilename, clientSource, 'utf8')
@@ -639,13 +643,9 @@ const writeGraphQLSchemaFile = (netligraphConfig, schema) => {
   )
 }
 
-
 const readGraphQLSchemaFile = (netligraphConfig) => {
   ensureNetligraphPath(netligraphConfig)
-  return fs.readFileSync(
-    `${netligraphConfig.netligraphPath}/${netligraphConfig.graphQLSchemaFilename}`,
-    'utf8',
-  )
+  return fs.readFileSync(`${netligraphConfig.netligraphPath}/${netligraphConfig.graphQLSchemaFilename}`, 'utf8')
 }
 
 const generateHandlerSource = ({ handlerOptions, netligraphConfig, operationId, operationsDoc, schema }) => {
@@ -670,14 +670,19 @@ const generateHandlerSource = ({ handlerOptions, netligraphConfig, operationId, 
   return { source, operation }
 }
 
-
 const generateHandler = (netligraphConfig, schema, operationId, handlerOptions) => {
   let currentOperationsDoc = readGraphQLOperationsSourceFile(netligraphConfig)
   if (currentOperationsDoc.trim().length === 0) {
     currentOperationsDoc = defaultExampleOperationsDoc
   }
 
-  const { operation, source } = generateHandlerSource({ netligraphConfig, schema, operationsDoc: currentOperationsDoc, operationId, handlerOptions })
+  const { operation, source } = generateHandlerSource({
+    netligraphConfig,
+    schema,
+    operationsDoc: currentOperationsDoc,
+    operationId,
+    handlerOptions,
+  })
 
   const filename = `${netligraphConfig.functionsPath}/${operation.name}.${netligraphConfig.extension}`
 

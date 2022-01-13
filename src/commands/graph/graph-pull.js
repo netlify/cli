@@ -2,7 +2,13 @@ const process = require('process')
 
 const { buildSchema } = require('graphql')
 
-const { ackCLISessionEvents, fetchCliSessionEvents, handleCliSessionEvent, loadCLISession, refetchAndGenerateFromOneGraph } = require('../../lib/one-graph/client')
+const {
+  ackCLISessionEvents,
+  fetchCliSessionEvents,
+  handleCliSessionEvent,
+  loadCLISession,
+  refetchAndGenerateFromOneGraph,
+} = require('../../lib/one-graph/client')
 const { getNetligraphConfig, readGraphQLSchemaFile } = require('../../lib/one-graph/netlify-graph')
 const { NETLIFYDEVERR, chalk } = require('../../utils')
 
@@ -26,13 +32,13 @@ const graphPull = async (options, command) => {
   const oneGraphSessionId = loadCLISession(state)
 
   if (!oneGraphSessionId) {
-    console.warn("No local Netlify Graph session found, skipping command queue drain")
+    console.warn('No local Netlify Graph session found, skipping command queue drain')
     return
   }
 
   const schemaString = readGraphQLSchemaFile(netligraphConfig)
 
-  let schema;
+  let schema
 
   try {
     schema = buildSchema(schemaString)
@@ -62,7 +68,12 @@ const graphPull = async (options, command) => {
 
     await Promise.all(handled)
 
-    await ackCLISessionEvents({ appId: siteId, authToken: netlifyToken, sessionId: oneGraphSessionId, eventIds: ackIds })
+    await ackCLISessionEvents({
+      appId: siteId,
+      authToken: netlifyToken,
+      sessionId: oneGraphSessionId,
+      eventIds: ackIds,
+    })
   }
 }
 

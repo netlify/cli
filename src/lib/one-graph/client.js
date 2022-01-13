@@ -500,7 +500,6 @@ const fetchCliSessionEvents = async ({ appId, authToken, sessionId }) => {
 
   const events = (next.data && next.data.oneGraph && next.data.oneGraph.netlifyCliEvents) || []
 
-
   return { events }
 }
 
@@ -715,12 +714,15 @@ const handleCliSessionEvent = async ({ authToken, event, netligraphConfig, schem
       await updateGraphQLOperationsFile({ authToken, docId: payload.docId, netligraphConfig, schema, siteId })
       break
     default: {
-      console.warn(`${NETLIFYDEVWARN} Unrecognized event received, you may need to upgrade your CLI version`, __typename, payload)
+      console.warn(
+        `${NETLIFYDEVWARN} Unrecognized event received, you may need to upgrade your CLI version`,
+        __typename,
+        payload,
+      )
       break
     }
   }
 }
-
 
 const loadCLISession = (state) => state.get('oneGraphSessionId')
 
