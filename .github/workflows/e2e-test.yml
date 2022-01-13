@@ -2,9 +2,12 @@ name: E2E Testing for CLI
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - e2e-test-for-cli
   pull_request:
-    branches: [main]
+    branches:
+      - main
   schedule:
     # check daily to notice potential package manager issues
     - cron: '0 1 * * *' # At 01:00 daily
