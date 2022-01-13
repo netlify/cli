@@ -308,7 +308,7 @@ test('should start static service for frameworks without port, forced framework'
 
     // a failure is expected since this is not a true remix project
     const error = await t.throwsAsync(() => withDevServer({ cwd: builder.directory }, () => {}, true))
-    t.snapshot(normalize(error.stdout))
+    t.true(error.stdout.includes(`Failed running command: remix watch. Please verify 'remix' exists`))
   })
 })
 
@@ -326,6 +326,6 @@ test('should start static service for frameworks without port, detected framewor
 
     // a failure is expected since this is not a true remix project
     const error = await t.throwsAsync(() => withDevServer({ cwd: builder.directory }, () => {}, true))
-    t.snapshot(normalize(error.stdout))
+    t.true(error.stdout.includes(`Failed running command: remix watch. Please verify 'remix' exists`))
   })
 })
