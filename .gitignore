@@ -30,3 +30,4 @@ site/src/**/*.md
 .eslintcache
 tests/hugo-site/resources
 tests/hugo-site/out
+tests/hugo-site/.hugo_build.lock
