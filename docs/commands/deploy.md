@@ -86,7 +86,7 @@ netlify deploy
 - `auth` (*string*) - Netlify auth token to deploy with
 - `branch` (*string*) - Serves the same functionality as --alias. Deprecated and will be removed in future versions
 - `build` (*boolean*) - Run build command before deploying
-- `context` (*string*) - Build context
+- `context` (*string*) - Context to use when resolving build configuration
 - `dir` (*string*) - Specify a folder to deploy
 - `functions` (*string*) - Specify a functions folder to deploy
 - `json` (*boolean*) - Output deployment data as JSON
