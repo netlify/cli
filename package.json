@@ -42,6 +42,7 @@
     "url": "https://github.com/netlify/cli/issues"
   },
   "scripts": {
+    "prepare": "husky install node_modules/@netlify/eslint-config-node/.husky/",
     "prepublishOnly": "run-s prepublishOnly:*",
     "prepublishOnly:test": "run-local \"npm test\"",
     "start": "node ./bin/run",
@@ -221,11 +222,5 @@
     "failWithoutAssertions": false,
     "tap": false,
     "timeout": "5m"
-  },
-  "husky": {
-    "hooks": {
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
-      "pre-push": "npm run format"
-    }
   }
 }
