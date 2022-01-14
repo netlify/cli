@@ -20,7 +20,7 @@ jobs:
           cache-dependency-path: 'npm-shrinkwrap.json'
           check-latest: true
       - name: Install dependencies
-        run: npm install --production --no-audit
+        run: npm ci --no-audit
       - name: Get size
         run: du -sk node_modules | cut -f1 > .delta.packageSize && echo "kb (Package size)" >> .delta.packageSize
       - name: Run Delta
