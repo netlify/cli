@@ -95,9 +95,7 @@ const waitForDeploy = async (api, deployId, siteId, timeout) => {
 // Transform the fileShaMap and fnShaMap into a generic shaMap that file-uploader.js can use
 const getUploadList = (required, shaMap) => {
   if (!required || !shaMap) return []
-  // TODO: use `Array.flatMap()` instead once we remove support for Node <11.0.0
-  // eslint-disable-next-line unicorn/prefer-spread
-  return [].concat(...required.map((sha) => shaMap[sha]))
+  return required.flatMap((sha) => shaMap[sha])
 }
 
 module.exports = {

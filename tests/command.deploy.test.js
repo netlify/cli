@@ -364,8 +364,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
           plugin: {
             onPreBuild: async ({ netlifyConfig }) => {
               // eslint-disable-next-line node/global-require
-              const [fs, util] = [require('fs'), require('util')]
-              const [writeFile, mkdir] = [fs.writeFile, fs.mkdir].map(util.promisify)
+              const { mkdir, writeFile } = require('fs').promises
 
               const generatedFunctionsDir = 'new_functions'
               netlifyConfig.functions.directory = generatedFunctionsDir
@@ -748,4 +747,8 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
     await callCli(['sites:delete', siteId, '--force'])
   })
 }
+
+test('always pass, used for forked PRs since ava fails when no tests are present', (t) => {
+  t.pass()
+})
 /* eslint-enable require-await */

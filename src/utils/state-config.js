@@ -29,7 +29,7 @@ class StateConfig {
 
   get all() {
     try {
-      return JSON.parse(fs.readFileSync(this.path, 'utf8'))
+      return JSON.parse(fs.readFileSync(this.path))
     } catch (error) {
       // Don't create if it doesn't exist
       if (error.code === 'ENOENT' || error.code === 'ENOTDIR') {
