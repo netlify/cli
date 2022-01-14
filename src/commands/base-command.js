@@ -471,9 +471,9 @@ class BaseCommand extends Command {
         config: options.config,
         cwd,
         context:
-          options.context || process.env.CONTEXT || ['dev', 'dev:exec', 'dev:trace'].includes(this.name())
-            ? 'dev'
-            : undefined,
+          options.context ||
+          process.env.CONTEXT ||
+          (['dev', 'dev:exec', 'dev:trace'].includes(this.name()) ? 'dev' : undefined),
         debug: this.opts().debug,
         siteId: options.siteId || (typeof options.site === 'string' && options.site) || state.get('siteId'),
         token,
