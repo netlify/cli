@@ -21,6 +21,7 @@ netlify dev
 - `dir` (*string*) - dir with static files
 - `framework` (*string*) - framework to use. Defaults to #auto which automatically detects a framework
 - `functions` (*string*) - specify a functions folder to serve
+- `functionsPort` (*string*) - port of functions server
 - `live` (*boolean*) - start a public live session
 - `offline` (*boolean*) - disables any features that require network access
 - `port` (*string*) - port of netlify dev
