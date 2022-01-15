@@ -42,7 +42,9 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-          cache-dependency-path: 'npm-shrinkwrap.json'
+          cache-dependency-path: |
+            npm-shrinkwrap.json
+            **/package-lock.json
           check-latest: true
       - name: Install core dependencies
         run: npm ci --no-audit
