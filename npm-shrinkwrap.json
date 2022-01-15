@@ -95,7 +95,6 @@
         "prettyjson": "^1.2.1",
         "pump": "^3.0.0",
         "raw-body": "^2.4.1",
-        "read-pkg-up": "^7.0.1",
         "semver": "^7.3.5",
         "source-map-support": "^0.5.19",
         "static-server": "^2.2.1",

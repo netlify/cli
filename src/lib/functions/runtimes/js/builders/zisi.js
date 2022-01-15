@@ -1,9 +1,9 @@
-const { mkdir, writeFile } = require('fs').promises
+const { mkdir, readFile, writeFile } = require('fs').promises
 const path = require('path')
 
 const { zipFunction } = require('@netlify/zip-it-and-ship-it')
 const decache = require('decache')
-const readPkgUp = require('read-pkg-up')
+const findUp = require('find-up')
 const sourceMapSupport = require('source-map-support')
 
 const { NETLIFYDEVERR } = require('../../../../../utils')
@@ -79,13 +79,26 @@ const getTargetDirectory = async ({ errorExit }) => {
   return targetDirectory
 }
 
+const readPackageJson = async (func) => {
+  const cwd = path.dirname(func.mainFile)
+  const packageJsonPath = await findUp('package.json', { cwd, type: 'file' })
+
+  if (!packageJsonPath) {
+    return
+  }
+
+  const packageJson = await readFile(packageJsonPath, 'utf-8')
+
+  return JSON.parse(packageJson)
+}
+
 module.exports = async ({ config, directory, errorExit, func, projectRoot }) => {
   const functionsConfig = addFunctionsConfigDefaults(
     normalizeFunctionsConfig({ functionsConfig: config.functions, projectRoot }),
   )
 
-  const packageJson = await readPkgUp(func.mainFile)
-  const hasTypeModule = packageJson && packageJson.packageJson.type === 'module'
+  const packageJson = await readPackageJson(func)
+  const hasTypeModule = packageJson && packageJson.type === 'module'
 
   // We must use esbuild for certain file extensions.
   const mustTranspile = ['.mjs', '.ts'].includes(path.extname(func.mainFile))
