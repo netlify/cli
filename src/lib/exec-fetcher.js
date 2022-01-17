@@ -64,15 +64,26 @@ const shouldFetchLatestVersion = async ({ binPath, execArgs, execName, latestVer
       latestVersion,
     })
     return outdated
-  } catch (error) {
+  } catch (error_) {
     if (exists) {
       log(NETLIFYDEVWARN, `failed checking for new version of '${packageName}'. Using existing version`)
       return false
     }
-    throw error
+    throw error_
   }
 }
 
+/**
+ * Tries to get the latest release from the github releases to download the binary.
+ * Is throwing an error if there is no binary that matches the system os or arch
+ * @param {object} config
+ * @param {string} config.destination
+ * @param {string} config.execName
+ * @param {string} config.destination
+ * @param {string} config.extension
+ * @param {string} config.packageName
+ * @param {string} [config.latestVersion ]
+ */
 const fetchLatestVersion = async ({ destination, execName, extension, latestVersion, packageName }) => {
   const win = isWindows()
   const platform = win ? 'windows' : process.platform
@@ -92,21 +103,25 @@ const fetchLatestVersion = async ({ destination, execName, extension, latestVers
 
   try {
     await fetch
-  } catch {
-    const qs = stringify({
-      assignees: '',
-      labels: 'type: bug',
-      template: 'bug_report.md',
-      title: `${execName} is not supported on ${platform} with CPU architecture ${process.arch}`,
-    })
-    const issueLink = terminalLink('Create a new CLI issue', `https://github.com/netlify/cli/issues/new?${qs}`)
+  } catch (error_) {
+    if (typeof error_ === 'object' && 'statusCode' in error_ && error_.statusCode === 404) {
+      const qs = stringify({
+        assignees: '',
+        labels: 'type: bug',
+        template: 'bug_report.md',
+        title: `${execName} is not supported on ${platform} with CPU architecture ${process.arch}`,
+      })
+      const issueLink = terminalLink('Create a new CLI issue', `https://github.com/netlify/cli/issues/new?${qs}`)
 
-    error(`The operating system ${chalk.cyan(platform)} with the CPU architecture ${chalk.cyan(
-      process.arch,
-    )} is currently not supported!
+      error(`The operating system ${chalk.cyan(platform)} with the CPU architecture ${chalk.cyan(
+        process.arch,
+      )} is currently not supported!
 
 Please open up an issue on our CLI repository so that we can support it:
 ${issueLink}`)
+    }
+
+    error(error_)
   }
 }
 
