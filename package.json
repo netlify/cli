@@ -67,8 +67,6 @@
     "test:affected": "node ./tools/affected-test.js",
     "docs": "node ./site/scripts/docs.js",
     "watch": "c8 --reporter=lcov ava --watch",
-    "prepack": "npm prune --prod",
-    "postpack": "npm i",
     "site:build": "run-s site:build:*",
     "site:build:install": "cd site && npm ci --no-audit",
     "site:build:assets": "cd site && npm run build",
