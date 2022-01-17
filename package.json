@@ -136,7 +136,7 @@
     "is-wsl": "^2.2.0",
     "isexe": "^2.0.0",
     "jwt-decode": "^3.0.0",
-    "lambda-local": "2.0.0",
+    "lambda-local": "2.0.1",
     "listr": "^0.14.3",
     "locate-path": "^6.0.0",
     "lodash": "^4.17.20",
