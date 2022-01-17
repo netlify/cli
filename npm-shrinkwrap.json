@@ -40,7 +40,7 @@
         "decache": "^4.6.0",
         "del": "^6.0.0",
         "dot-prop": "^6.0.0",
-        "dotenv": "^10.0.0",
+        "dotenv": "^13.0.0",
         "env-paths": "^2.2.0",
         "envinfo": "^7.3.1",
         "execa": "^5.0.0",
@@ -7574,11 +7574,11 @@
       }
     },
     "node_modules/dotenv": {
-      "version": "10.0.0",
-      "resolved": "https://registry.npmjs.org/dotenv/-/dotenv-10.0.0.tgz",
-      "integrity": "sha512-rlBi9d8jpv9Sf1klPjNfFAuWDjKLwTIJJ/VxtoTwIR6hnZxcEOQCZg2oIL3MWBYw5GpUDKOEnND7LXTbIpQ03Q==",
+      "version": "13.0.1",
+      "resolved": "https://registry.npmjs.org/dotenv/-/dotenv-13.0.1.tgz",
+      "integrity": "sha512-u3KAkK+VHk01+D7V6SFtSJl2JScX1Yi4anKsKXS4oT8s8LnL5xgJe7XFAZ1bSsOfAmxU54OwOuhaLv3v70oXgw==",
       "engines": {
-        "node": ">=10"
+        "node": ">=12"
       }
     },
     "node_modules/download": {
@@ -12324,6 +12324,14 @@
       "integrity": "sha512-QrWXB+ZQSVPmIWIhtEO9H+gwHaMGYiF5ChvoJ+K9ZGHG/sVsa6yiesAD1GC/x46sET00Xlwo1u49RVVVzvcSkw==",
       "engines": {
         "node": ">= 10"
+      }
+    },
+    "node_modules/lambda-local/node_modules/dotenv": {
+      "version": "10.0.0",
+      "resolved": "https://registry.npmjs.org/dotenv/-/dotenv-10.0.0.tgz",
+      "integrity": "sha512-rlBi9d8jpv9Sf1klPjNfFAuWDjKLwTIJJ/VxtoTwIR6hnZxcEOQCZg2oIL3MWBYw5GpUDKOEnND7LXTbIpQ03Q==",
+      "engines": {
+        "node": ">=10"
       }
     },
     "node_modules/latest-version": {
@@ -25554,9 +25562,9 @@
       }
     },
     "dotenv": {
-      "version": "10.0.0",
-      "resolved": "https://registry.npmjs.org/dotenv/-/dotenv-10.0.0.tgz",
-      "integrity": "sha512-rlBi9d8jpv9Sf1klPjNfFAuWDjKLwTIJJ/VxtoTwIR6hnZxcEOQCZg2oIL3MWBYw5GpUDKOEnND7LXTbIpQ03Q=="
+      "version": "13.0.1",
+      "resolved": "https://registry.npmjs.org/dotenv/-/dotenv-13.0.1.tgz",
+      "integrity": "sha512-u3KAkK+VHk01+D7V6SFtSJl2JScX1Yi4anKsKXS4oT8s8LnL5xgJe7XFAZ1bSsOfAmxU54OwOuhaLv3v70oXgw=="
     },
     "download": {
       "version": "8.0.0",
@@ -29076,6 +29084,11 @@
           "version": "7.2.0",
           "resolved": "https://registry.npmjs.org/commander/-/commander-7.2.0.tgz",
           "integrity": "sha512-QrWXB+ZQSVPmIWIhtEO9H+gwHaMGYiF5ChvoJ+K9ZGHG/sVsa6yiesAD1GC/x46sET00Xlwo1u49RVVVzvcSkw=="
+        },
+        "dotenv": {
+          "version": "10.0.0",
+          "resolved": "https://registry.npmjs.org/dotenv/-/dotenv-10.0.0.tgz",
+          "integrity": "sha512-rlBi9d8jpv9Sf1klPjNfFAuWDjKLwTIJJ/VxtoTwIR6hnZxcEOQCZg2oIL3MWBYw5GpUDKOEnND7LXTbIpQ03Q=="
         }
       }
     },
