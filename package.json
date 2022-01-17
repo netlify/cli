@@ -143,7 +143,7 @@
     "memoize-one": "^6.0.0",
     "minimist": "^1.2.5",
     "multiparty": "^4.2.1",
-    "netlify": "^10.1.1",
+    "netlify": "^10.1.2",
     "netlify-headers-parser": "^6.0.0",
     "netlify-redirect-parser": "^13.0.0",
     "netlify-redirector": "^0.2.1",
