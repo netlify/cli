@@ -86,8 +86,9 @@ const shouldFetchLatestVersion = async ({ binPath, execArgs, execName, latestVer
  */
 const fetchLatestVersion = async ({ destination, execName, extension, latestVersion, packageName }) => {
   const win = isWindows()
+  const arch = process.arch === 'x64' ? 'amd64' : process.arch
   const platform = win ? 'windows' : process.platform
-  const pkgName = `${execName}-${platform}-${process.arch}.${extension}`
+  const pkgName = `${execName}-${platform}-${arch}.${extension}`
 
   const release = {
     repository: getRepository({ packageName }),
@@ -109,12 +110,12 @@ const fetchLatestVersion = async ({ destination, execName, extension, latestVers
         assignees: '',
         labels: 'type: bug',
         template: 'bug_report.md',
-        title: `${execName} is not supported on ${platform} with CPU architecture ${process.arch}`,
+        title: `${execName} is not supported on ${platform} with CPU architecture ${arch}`,
       })
       const issueLink = terminalLink('Create a new CLI issue', `https://github.com/netlify/cli/issues/new?${qs}`)
 
       error(`The operating system ${chalk.cyan(platform)} with the CPU architecture ${chalk.cyan(
-        process.arch,
+        arch,
       )} is currently not supported!
 
 Please open up an issue on our CLI repository so that we can support it:

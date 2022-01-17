@@ -34,7 +34,7 @@ test('should test if an error is thrown if the cpu architecture and the os are n
   // eslint-disable-next-line prefer-promise-reject-errors
   fetchLatestSpy.returns(Promise.reject({ statusCode: 404 }))
 
-  const error = await t.throwsAsync(
+  const { message } = await t.throwsAsync(
     fetchLatestVersion({
       packageName: 'traffic-mesh-agent',
       execName: 'traffic-mesh',
@@ -43,7 +43,7 @@ test('should test if an error is thrown if the cpu architecture and the os are n
     }),
   )
 
-  t.regex(error.message, /The operating system windows with the CPU architecture amd64 is currently not supported!/)
+  t.regex(message, /The operating system windows with the CPU architecture amd64 is currently not supported!/)
 })
 
 test('should provide the error if it is not a 404', async (t) => {
@@ -61,6 +61,26 @@ test('should provide the error if it is not a 404', async (t) => {
   )
 
   t.is(message, error.message)
+})
+
+test('should map linux x64 to amd64 arch', async (t) => {
+  Object.defineProperties(processSpy, {
+    platform: { value: 'linux' },
+    arch: { value: 'x64' },
+  })
+  // eslint-disable-next-line prefer-promise-reject-errors
+  fetchLatestSpy.returns(Promise.reject({ statusCode: 404 }))
+
+  const { message } = await t.throwsAsync(
+    fetchLatestVersion({
+      packageName: 'traffic-mesh-agent',
+      execName: 'traffic-mesh',
+      destination: t.context.binPath,
+      extension: 'zip',
+    }),
+  )
+
+  t.regex(message, /The operating system linux with the CPU architecture amd64 is currently not supported!/)
 })
 
 test('should not throw when the request passes', async (t) => {
