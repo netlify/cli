@@ -15,7 +15,7 @@
         "@netlify/framework-info": "^8.0.2",
         "@netlify/local-functions-proxy": "^1.1.1",
         "@netlify/plugin-edge-handlers": "^3.0.4",
-        "@netlify/plugins-list": "^6.2.1",
+        "@netlify/plugins-list": "^6.3.0",
         "@netlify/routing-local-proxy": "^0.34.1",
         "@netlify/zip-it-and-ship-it": "^5.4.0",
         "@octokit/rest": "^18.0.0",
@@ -120,7 +120,7 @@
       },
       "devDependencies": {
         "@babel/preset-react": "^7.12.13",
-        "@netlify/eslint-config-node": "^4.1.3",
+        "@netlify/eslint-config-node": "^4.1.4",
         "ava": "^3.15.0",
         "c8": "^7.11.0",
         "eslint-plugin-sort-destructure-keys": "^1.3.5",
@@ -2696,9 +2696,9 @@
       }
     },
     "node_modules/@netlify/eslint-config-node": {
-      "version": "4.1.3",
-      "resolved": "https://registry.npmjs.org/@netlify/eslint-config-node/-/eslint-config-node-4.1.3.tgz",
-      "integrity": "sha512-Ri3cfEhXLnsrwfqHFaCzITTHlB6N2Xj75rswokB2WYBPq2WkdmJt/6q5iuMSbkESO3L5e32jZiS+ubtOV9/QwA==",
+      "version": "4.1.4",
+      "resolved": "https://registry.npmjs.org/@netlify/eslint-config-node/-/eslint-config-node-4.1.4.tgz",
+      "integrity": "sha512-kExcSZvLMuwcZGf3U79T7xdNcvXDEcLqRINShAd+fLRuweVp20neZaCMSqhu/qn3G2RDfe/0xFY1k/BIbnXVEA==",
       "dev": true,
       "dependencies": {
         "@babel/core": "^7.13.8",
@@ -3040,9 +3040,9 @@
       }
     },
     "node_modules/@netlify/plugins-list": {
-      "version": "6.2.1",
-      "resolved": "https://registry.npmjs.org/@netlify/plugins-list/-/plugins-list-6.2.1.tgz",
-      "integrity": "sha512-/sXe4hjTFgKnRDFDiqU1qLvRCc+JtOqTLFf3aMNA6Xp7bSKGtTYJFOwTpPIUUOyLaDqbBdU3IOjemc6EtyC8qg==",
+      "version": "6.3.0",
+      "resolved": "https://registry.npmjs.org/@netlify/plugins-list/-/plugins-list-6.3.0.tgz",
+      "integrity": "sha512-z6zoaQ/yNj4WMck8G2sWCKUaBkbsStWVpMwQjltWCw9ZhCjRVHF4101Meon9tptyA23gxi8HbzZqgP+WVHPdFg==",
       "engines": {
         "node": "^12.20.0 || ^14.14.0 || >=16.0.0"
       }
@@ -21877,9 +21877,9 @@
       "integrity": "sha512-tiKmDcHM2riSVN79c0mJY/67EBDafXQAMitHuLiCDAMdtz3kfv+NqdVG5krgf5lWR8Uf8AeZrUW5Q9RP25REvw=="
     },
     "@netlify/eslint-config-node": {
-      "version": "4.1.3",
-      "resolved": "https://registry.npmjs.org/@netlify/eslint-config-node/-/eslint-config-node-4.1.3.tgz",
-      "integrity": "sha512-Ri3cfEhXLnsrwfqHFaCzITTHlB6N2Xj75rswokB2WYBPq2WkdmJt/6q5iuMSbkESO3L5e32jZiS+ubtOV9/QwA==",
+      "version": "4.1.4",
+      "resolved": "https://registry.npmjs.org/@netlify/eslint-config-node/-/eslint-config-node-4.1.4.tgz",
+      "integrity": "sha512-kExcSZvLMuwcZGf3U79T7xdNcvXDEcLqRINShAd+fLRuweVp20neZaCMSqhu/qn3G2RDfe/0xFY1k/BIbnXVEA==",
       "dev": true,
       "requires": {
         "@babel/core": "^7.13.8",
@@ -22088,9 +22088,9 @@
       }
     },
     "@netlify/plugins-list": {
-      "version": "6.2.1",
-      "resolved": "https://registry.npmjs.org/@netlify/plugins-list/-/plugins-list-6.2.1.tgz",
-      "integrity": "sha512-/sXe4hjTFgKnRDFDiqU1qLvRCc+JtOqTLFf3aMNA6Xp7bSKGtTYJFOwTpPIUUOyLaDqbBdU3IOjemc6EtyC8qg=="
+      "version": "6.3.0",
+      "resolved": "https://registry.npmjs.org/@netlify/plugins-list/-/plugins-list-6.3.0.tgz",
+      "integrity": "sha512-z6zoaQ/yNj4WMck8G2sWCKUaBkbsStWVpMwQjltWCw9ZhCjRVHF4101Meon9tptyA23gxi8HbzZqgP+WVHPdFg=="
     },
     "@netlify/routing-local-proxy": {
       "version": "0.34.1",
