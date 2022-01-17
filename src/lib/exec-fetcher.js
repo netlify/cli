@@ -1,13 +1,15 @@
 // @ts-check
 const path = require('path')
 const process = require('process')
+const { stringify } = require('querystring')
 
 const { fetchLatest, fetchVersion, newerVersion, updateAvailable } = require('gh-release-fetch')
 const isExe = require('isexe')
+const terminalLink = require('terminal-link')
 
 // cannot directly import from ../utils as it would create a circular dependency.
 // the file `src/utils/live-tunnel.js` depends on this file
-const { NETLIFYDEVWARN, log } = require('../utils/command-helpers')
+const { NETLIFYDEVWARN, chalk, error, log } = require('../utils/command-helpers')
 const execa = require('../utils/execa')
 
 const isWindows = () => process.platform === 'win32'
@@ -74,15 +76,38 @@ const shouldFetchLatestVersion = async ({ binPath, execArgs, execName, latestVer
 const fetchLatestVersion = async ({ destination, execName, extension, latestVersion, packageName }) => {
   const win = isWindows()
   const platform = win ? 'windows' : process.platform
+  const pkgName = `${execName}-${platform}-${process.arch}.${extension}`
+
   const release = {
     repository: getRepository({ packageName }),
-    package: `${execName}-${platform}-amd64.${extension}`,
+    package: pkgName,
     destination,
     extract: true,
   }
 
   const options = getOptions()
-  await (latestVersion ? fetchVersion({ ...release, version: latestVersion }, options) : fetchLatest(release, options))
+  const fetch = latestVersion
+    ? fetchVersion({ ...release, version: latestVersion }, options)
+    : fetchLatest(release, options)
+
+  try {
+    await fetch
+  } catch {
+    const qs = stringify({
+      assignees: '',
+      labels: 'type: bug',
+      template: 'bug_report.md',
+      title: `${execName} is not supported on ${platform} with CPU architecture ${process.arch}`,
+    })
+    const issueLink = terminalLink('Create a new CLI issue', `https://github.com/netlify/cli/issues/new?${qs}`)
+
+    error(`The operating system ${chalk.cyan(platform)} with the CPU architecture ${chalk.cyan(
+      process.arch,
+    )} is currently not supported!
+
+Please open up an issue on our CLI repository so that we can support it:
+${issueLink}`)
+  }
 }
 
 module.exports = { getExecName, shouldFetchLatestVersion, fetchLatestVersion }

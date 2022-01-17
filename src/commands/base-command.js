@@ -303,12 +303,14 @@ class BaseCommand extends Command {
     debug(`${this.name()}:onEnd`)(`Status: ${status}`)
     debug(`${this.name()}:onEnd`)(`Duration: ${duration}ms`)
 
-    await track('command', {
-      ...payload,
-      command: this.name(),
-      duration,
-      status,
-    })
+    try {
+      await track('command', {
+        ...payload,
+        command: this.name(),
+        duration,
+        status,
+      })
+    } catch {}
 
     if (error_ !== undefined) {
       error(error_ instanceof Error ? error_ : format(error_), { exit: false })
