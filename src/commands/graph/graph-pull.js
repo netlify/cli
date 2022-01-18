@@ -87,7 +87,7 @@ const graphPull = async (options, command) => {
 const createGraphPullCommand = (program) =>
   program
     .command('graph:pull')
-    .description('Pull down your local Netlify Graph schema, and process Graph edit events')
+    .description('Pull down your local Netlify Graph schema, and process pending Graph edit events')
     .action(async (options, command) => {
       await graphPull(options, command)
     })
