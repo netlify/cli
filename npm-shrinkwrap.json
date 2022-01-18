@@ -17,7 +17,7 @@
         "@netlify/plugin-edge-handlers": "^3.0.4",
         "@netlify/plugins-list": "^6.3.0",
         "@netlify/routing-local-proxy": "^0.34.1",
-        "@netlify/zip-it-and-ship-it": "^5.4.0",
+        "@netlify/zip-it-and-ship-it": "^5.4.1",
         "@octokit/rest": "^18.0.0",
         "@sindresorhus/slugify": "^1.1.0",
         "ansi-escapes": "^5.0.0",
@@ -3162,9 +3162,9 @@
       }
     },
     "node_modules/@netlify/zip-it-and-ship-it": {
-      "version": "5.4.0",
-      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-5.4.0.tgz",
-      "integrity": "sha512-JVUr7S6GTHnPpwtD+g/+qzhKvhXwXoHGeisaHt1YYARRRd+XdvwFYo8yY2JzT7hM26uz99tpKwzDSfcL+WR1rQ==",
+      "version": "5.4.1",
+      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-5.4.1.tgz",
+      "integrity": "sha512-ArusY1DrK+neNs1EF8vHbBHCBP4PI9fFVQxH1Zcuz0rvF9Q1vCiG2g8nL6JsJTW4eUibvy96BGD22egOvxpxtA==",
       "dependencies": {
         "@babel/parser": "^7.15.7",
         "@netlify/esbuild": "^0.13.6",
@@ -3183,7 +3183,6 @@
         "is-builtin-module": "^3.1.0",
         "junk": "^3.1.0",
         "locate-path": "^6.0.0",
-        "make-dir": "^3.1.0",
         "merge-options": "^3.0.4",
         "minimatch": "^3.0.4",
         "p-map": "^4.0.0",
@@ -24182,9 +24181,9 @@
       }
     },
     "@netlify/zip-it-and-ship-it": {
-      "version": "5.4.0",
-      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-5.4.0.tgz",
-      "integrity": "sha512-JVUr7S6GTHnPpwtD+g/+qzhKvhXwXoHGeisaHt1YYARRRd+XdvwFYo8yY2JzT7hM26uz99tpKwzDSfcL+WR1rQ==",
+      "version": "5.4.1",
+      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-5.4.1.tgz",
+      "integrity": "sha512-ArusY1DrK+neNs1EF8vHbBHCBP4PI9fFVQxH1Zcuz0rvF9Q1vCiG2g8nL6JsJTW4eUibvy96BGD22egOvxpxtA==",
       "requires": {
         "@babel/parser": "^7.15.7",
         "@netlify/esbuild": "^0.13.6",
@@ -24203,7 +24202,6 @@
         "is-builtin-module": "^3.1.0",
         "junk": "^3.1.0",
         "locate-path": "^6.0.0",
-        "make-dir": "^3.1.0",
         "merge-options": "^3.0.4",
         "minimatch": "^3.0.4",
         "p-map": "^4.0.0",
