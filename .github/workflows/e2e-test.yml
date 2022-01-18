@@ -41,7 +41,7 @@ jobs:
       - run: npm run e2e
       - name: Notify Slack
         uses: 8398a7/action-slack@v3
-        if: failure()
+        if: ${{ github.event_name == 'schedule' && failure() }}
         with:
           status: custom
           fields: workflow
