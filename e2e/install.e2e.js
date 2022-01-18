@@ -11,9 +11,6 @@ const { version } = require('../package.json')
 
 const { packageManagerConfig, packageManagerExists } = require('./utils')
 
-const [packageManager] = process.argv.slice(2)
-const testSuite = packageManagerExists(packageManager) ? test : test.skip
-
 /**
  * Prepares the workspace for the test suite to run
  * @param {string} folderName
@@ -21,23 +18,32 @@ const testSuite = packageManagerExists(packageManager) ? test : test.skip
 const prepare = async (folderName) => {
   const folder = join(process.env.E2E_TEST_WORKSPACE, folderName)
   await mkdir(folder, { recursive: true })
-  process.chdir(folder)
+  return folder
 }
 
-testSuite(`${packageManager} → should install the cli and run the help command`, async (t) => {
-  await prepare(`${packageManager}-try-install`)
-  const { install: installCmd, lockFile } = packageManagerConfig[packageManager]
-  console.log(`$ ${installCmd[0]} ${installCmd[1].join(' ')}`)
-  await execa(...installCmd, { stdio: 'inherit' })
+Object.entries(packageManagerConfig).forEach(([packageManager, { install: installCmd, lockFile }]) => {
+  /** @type {import('ava').TestInterface} */
+  const testSuite = packageManagerExists(packageManager) ? test : test.skip
 
-  t.is(existsSync(lockFile), true)
+  testSuite(`${packageManager} → should install the cli and run the help command`, async (t) => {
+    const cwd = await prepare(`${packageManager}-try-install`)
+    await execa(...installCmd, { stdio: process.env.DEBUG ? 'inherit' : 'ignore', cwd })
 
-  const binary = resolve(`./node_modules/.bin/netlify${platform() === 'win32' ? '.cmd' : ''}`)
+    t.is(existsSync(join(cwd, lockFile)), true, `Generated lock file ${lockFile} does not exists in ${cwd}`)
 
-  console.log(`$ ${binary} help`)
-  const { stdout } = await execa(binary, ['help'])
+    const binary = resolve(join(cwd, `./node_modules/.bin/netlify${platform() === 'win32' ? '.cmd' : ''}`))
+    const { stdout } = await execa(binary, ['help'], { cwd })
 
-  t.is(stdout.trim().startsWith('VERSION'), true)
-  t.is(stdout.includes(`netlify-cli/${version}`), true)
-  t.is(stdout.includes(`$ netlify [COMMAND]`), true)
+    t.is(stdout.trim().startsWith('VERSION'), true, `Help command does not start with 'VERSION':\n\n${stdout}`)
+    t.is(
+      stdout.includes(`netlify-cli/${version}`),
+      true,
+      `Help command does not include 'netlify-cli/${version}':\n\n${stdout}`,
+    )
+    t.is(
+      stdout.includes(`$ netlify [COMMAND]`),
+      true,
+      `Help command does not include '$ netlify [COMMAND]':\n\n${stdout}`,
+    )
+  })
 })

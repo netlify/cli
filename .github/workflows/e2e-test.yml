@@ -20,7 +20,6 @@ jobs:
       matrix:
         os: [ubuntu-latest, macOS-latest, windows-latest]
         node-version: ['12.x', '*']
-        package-manager: ['npm', 'yarn', 'pnpm']
       fail-fast: false
 
     steps:
@@ -39,8 +38,7 @@ jobs:
         run: npm ci --no-audit
       - name: Install pnpm
         run: npm install -g pnpm
-        if: "${{ matrix.package-manager == 'pnpm' && !steps.release-check.outputs.IS_RELEASE}}"
-      - run: npm run e2e -- ${{ matrix.package-manager }}
+      - run: npm run e2e
       - name: Notify Slack
         uses: 8398a7/action-slack@v3
         if: failure()
@@ -50,7 +48,7 @@ jobs:
           custom_payload: |
             {
               attachments: [{
-                title: 'E2E Test Failed! (${{ matrix.os }},node-${{ matrix.node-version }},${{ matrix.package-manager }})',
+                title: 'E2E Test Failed! (${{ matrix.os }},node-${{ matrix.node-version }}',
                 color: 'danger',
                 text: `${process.env.AS_WORKFLOW}\n\nEither something broke or a test is flaky.\n\nConsider doing something about it :fire_engine:`,
               }]
