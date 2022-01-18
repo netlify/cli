@@ -18,7 +18,7 @@ export type BaseServerSettings = {
   dist: string
 
   // static serving
-  useStaticServer?: true
+  useStaticServer?: boolean
 
   // Framework specific part
   /** A port where a proxy can listen to it */
