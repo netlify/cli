@@ -115,7 +115,7 @@ const monitorCLISessionEvents = (input) => {
  * @param {string} input.netlifyToken The (typically netlify) access token that is used for authentication, if any
  * @param {NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
  * @param {state} input.state A function to call to set/get the current state of the local Netlify project
- * @returns {Promise<undefined>}
+ * @returns {Promise<void>}
  */
 const refetchAndGenerateFromOneGraph = async (input) => {
   const { netlifyGraphConfig, netlifyToken, siteId, state } = input

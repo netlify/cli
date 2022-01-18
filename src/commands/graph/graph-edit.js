@@ -64,7 +64,7 @@ const graphEdit = async (options, command) => {
 
   await updateCLISessionMetadata(netlifyToken, siteId, oneGraphSessionId, { docId: persistedDoc.id })
 
-  const host = process.env.NETLIFY_APP_HOST || `localhost:8080`
+  const host = 'app.netlify.com' || process.env.NETLIFY_APP_HOST
 
   const url = `http://${host}/sites/${siteData.name}/graph/explorer?cliSessionId=${oneGraphSessionId}`
   await openBrowser({ url })
