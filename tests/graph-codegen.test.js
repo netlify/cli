@@ -2,25 +2,26 @@ const fs = require('fs')
 const { join } = require('path')
 
 const test = require('ava')
-const { buildSchema, parse } = require('graphql')
 
 const {
+  buildSchema,
   extractFunctionsFromOperationDoc,
   generateFunctionsSource,
   generateHandlerSource,
-} = require('../src/lib/one-graph/netlify-graph')
+  parse,
+} = require('../src/lib/one-graph/cli-netlify-graph')
 
 const { normalize } = require('./utils/snapshots')
 
-const netligraphConfig = {
+const netlifyGraphConfig = {
   extension: 'js',
-  netligraphPath: 'netlify',
+  netlifyGraphPath: 'netlify',
   moduleType: 'commonjs',
   functionsPath: 'functions',
-  netligraphImplementationFilename: 'dummy/index.js',
-  netligraphTypeDefinitionsFilename: 'dummy/index.d.ts',
-  graphQLOperationsSourceFilename: 'dummy/netligraphOperationsLibrary.graphql',
-  graphQLSchemaFilename: 'dummy/netligraphSchema.graphql',
+  netlifyGraphImplementationFilename: 'dummy/index.js',
+  netlifyGraphTypeDefinitionsFilename: 'dummy/index.d.ts',
+  graphQLOperationsSourceFilename: 'dummy/netlifyGraphOperationsLibrary.graphql',
+  graphQLSchemaFilename: 'dummy/netlifyGraphSchema.graphql',
 }
 
 const loadAsset = (filename) => fs.readFileSync(join(__dirname, 'assets', filename), 'utf8')
@@ -35,7 +36,7 @@ test('netlify graph function codegen', (t) => {
   })
 
   const operations = extractFunctionsFromOperationDoc(parsedDoc)
-  const generatedFunctions = generateFunctionsSource(netligraphConfig, schema, appOperationsDoc, operations)
+  const generatedFunctions = generateFunctionsSource(netlifyGraphConfig, schema, appOperationsDoc, operations)
 
   t.snapshot(normalize(JSON.stringify(generatedFunctions)))
 })
@@ -50,7 +51,7 @@ test('netlify graph handler codegen', (t) => {
   const operationId = 'd86699fb-ddfc-4833-9d9a-f3497cb7c992'
   const handlerOptions = {}
   const generatedHandler = generateHandlerSource({
-    netligraphConfig,
+    netlifyGraphConfig,
     schema,
     operationsDoc: appOperationsDoc,
     operationId,

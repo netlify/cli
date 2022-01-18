@@ -2,21 +2,16 @@ const process = require('process')
 
 const gitRepoInfo = require('git-repo-info')
 
-const {
-  createCLISession,
-  createPersistedQuery,
-  ensureAppForSite,
-  generateSessionName,
-  loadCLISession,
-  updateCLISessionMetadata,
-} = require('../../lib/one-graph/client')
+const { OneGraphCliClient, generateSessionName, loadCLISession } = require('../../lib/one-graph/cli-client')
 const {
   defaultExampleOperationsDoc,
-  getNetligraphConfig,
+  getNetlifyGraphConfig,
   readGraphQLOperationsSourceFile,
-} = require('../../lib/one-graph/netlify-graph')
+} = require('../../lib/one-graph/cli-netlify-graph')
 const { NETLIFYDEVERR, chalk, error } = require('../../utils')
 const { openBrowser } = require('../../utils/open-browser')
+
+const { createCLISession, createPersistedQuery, ensureAppForSite, updateCLISessionMetadata } = OneGraphCliClient
 
 /**
  * Creates the `netlify graph:edit` command
@@ -39,11 +34,11 @@ const graphEdit = async (options, command) => {
 
   const siteData = await api.getSite({ siteId })
 
-  const netligraphConfig = await getNetligraphConfig({ command, options })
+  const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options })
 
   const { branch } = gitRepoInfo()
 
-  let graphqlDocument = readGraphQLOperationsSourceFile(netligraphConfig)
+  let graphqlDocument = readGraphQLOperationsSourceFile(netlifyGraphConfig)
 
   if (graphqlDocument.trim().length === 0) {
     graphqlDocument = defaultExampleOperationsDoc

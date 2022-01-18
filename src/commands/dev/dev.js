@@ -11,8 +11,8 @@ const stripAnsiCc = require('strip-ansi-control-characters')
 const waitPort = require('wait-port')
 
 const { startFunctionsServer } = require('../../lib/functions/server')
-const { ensureAppForSite, startOneGraphCLISession } = require('../../lib/one-graph/client')
-const { getNetligraphConfig } = require('../../lib/one-graph/netlify-graph')
+const { OneGraphCliClient, startOneGraphCLISession } = require('../../lib/one-graph/cli-client')
+const { getNetlifyGraphConfig } = require('../../lib/one-graph/cli-netlify-graph')
 const {
   NETLIFYDEV,
   NETLIFYDEVERR,
@@ -295,22 +295,22 @@ const dev = async (options, command) => {
   process.env.URL = url
   process.env.DEPLOY_URL = url
 
-  const startNetligraphWatcher = Boolean(options.graph)
+  const startNetlifyGraphWatcher = Boolean(options.graph)
 
-  if (startNetligraphWatcher && options.offline) {
+  if (startNetlifyGraphWatcher && options.offline) {
     warn(`Unable to start Netlify Graph in offline mode`)
-  } else if (startNetligraphWatcher && !site.id) {
+  } else if (startNetlifyGraphWatcher && !site.id) {
     error(
       `No siteId defined, unable to start Netlify Graph. To enable, run ${chalk.yellow(
         'netlify init',
       )} or ${chalk.yellow('netlify link')}?`,
     )
     return
-  } else if (startNetligraphWatcher) {
+  } else if (startNetlifyGraphWatcher) {
     const netlifyToken = await command.authenticate()
-    await ensureAppForSite(netlifyToken, site.id)
-    const netligraphConfig = await getNetligraphConfig({ command, options })
-    startOneGraphCLISession({ netligraphConfig, netlifyToken, site, state })
+    await OneGraphCliClient.ensureAppForSite(netlifyToken, site.id)
+    const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options })
+    startOneGraphCLISession({ netlifyGraphConfig, netlifyToken, site, state })
   }
 
   printBanner({ url })

@@ -1,15 +1,12 @@
 /* eslint-disable eslint-comments/disable-enable-pair */
 /* eslint-disable fp/no-loops */
-const { buildSchema } = require('graphql')
-
 const {
-  ackCLISessionEvents,
-  fetchCliSessionEvents,
+  OneGraphCliClient,
   handleCliSessionEvent,
   loadCLISession,
   refetchAndGenerateFromOneGraph,
-} = require('../../lib/one-graph/client')
-const { getNetligraphConfig, readGraphQLSchemaFile } = require('../../lib/one-graph/netlify-graph')
+} = require('../../lib/one-graph/cli-client')
+const { buildSchema, getNetlifyGraphConfig, readGraphQLSchemaFile } = require('../../lib/one-graph/cli-netlify-graph')
 const { chalk, error, warn } = require('../../utils')
 
 /**
@@ -30,10 +27,11 @@ const graphPull = async (options, command) => {
     return
   }
 
-  const netligraphConfig = await getNetligraphConfig({ command, options })
+  const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options })
   const netlifyToken = await command.authenticate()
   const siteId = site.id
-  await refetchAndGenerateFromOneGraph({ netligraphConfig, netlifyToken, state, siteId })
+
+  await refetchAndGenerateFromOneGraph({ netlifyGraphConfig, netlifyToken, state, siteId })
 
   const oneGraphSessionId = loadCLISession(state)
 
@@ -42,7 +40,7 @@ const graphPull = async (options, command) => {
     return
   }
 
-  const schemaString = readGraphQLSchemaFile(netligraphConfig)
+  const schemaString = readGraphQLSchemaFile(netlifyGraphConfig)
 
   let schema
 
@@ -58,7 +56,11 @@ const graphPull = async (options, command) => {
     return
   }
 
-  const next = await fetchCliSessionEvents({ appId: siteId, authToken: netlifyToken, sessionId: oneGraphSessionId })
+  const next = await OneGraphCliClient.fetchCliSessionEvents({
+    appId: siteId,
+    authToken: netlifyToken,
+    sessionId: oneGraphSessionId,
+  })
 
   if (next.errors) {
     error(`Failed to fetch Netlify Graph cli session events`, next.errors)
@@ -68,11 +70,11 @@ const graphPull = async (options, command) => {
   if (next.events) {
     const ackIds = []
     for (const event of next.events) {
-      await handleCliSessionEvent({ authToken: netlifyToken, event, netligraphConfig, schema, siteId: site.id })
+      await handleCliSessionEvent({ authToken: netlifyToken, event, netlifyGraphConfig, schema, siteId: site.id })
       ackIds.push(event.id)
     }
 
-    await ackCLISessionEvents({
+    await OneGraphCliClient.ackCLISessionEvents({
       appId: siteId,
       authToken: netlifyToken,
       sessionId: oneGraphSessionId,
