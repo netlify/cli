@@ -73,6 +73,17 @@ const shouldFetchLatestVersion = async ({ binPath, execArgs, execName, latestVer
   }
 }
 
+const getArch = () => {
+  switch (process.arch) {
+    case 'x64':
+      return 'amd64'
+    case 'ia32':
+      return '386'
+    default:
+      return process.arch
+  }
+}
+
 /**
  * Tries to get the latest release from the github releases to download the binary.
  * Is throwing an error if there is no binary that matches the system os or arch
@@ -86,7 +97,7 @@ const shouldFetchLatestVersion = async ({ binPath, execArgs, execName, latestVer
  */
 const fetchLatestVersion = async ({ destination, execName, extension, latestVersion, packageName }) => {
   const win = isWindows()
-  const arch = process.arch === 'x64' ? 'amd64' : process.arch
+  const arch = getArch()
   const platform = win ? 'windows' : process.platform
   const pkgName = `${execName}-${platform}-${arch}.${extension}`
 
@@ -126,4 +137,4 @@ ${issueLink}`)
   }
 }
 
-module.exports = { getExecName, shouldFetchLatestVersion, fetchLatestVersion }
+module.exports = { getArch, getExecName, shouldFetchLatestVersion, fetchLatestVersion }

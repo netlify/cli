@@ -1,6 +1,7 @@
 // @ts-check
-const process = require('process')
 
+/** @type {import('ava').TestInterface} */
+// @ts-ignore
 const test = require('ava')
 const proxyquire = require('proxyquire')
 const sinon = require('sinon')
@@ -9,20 +10,35 @@ const sinon = require('sinon')
 const processSpy = {}
 const fetchLatestSpy = sinon.stub()
 
-const { fetchLatestVersion, getExecName } = proxyquire('./exec-fetcher', {
+const { fetchLatestVersion, getArch, getExecName } = proxyquire('./exec-fetcher', {
   'gh-release-fetch': {
     fetchLatest: fetchLatestSpy,
   },
   process: processSpy,
 })
 
-test(`should postix exec with .exe on windows`, (t) => {
+test(`should use 386 if process architecture is ia32`, (t) => {
+  Object.defineProperty(processSpy, 'arch', { value: 'ia32' })
+  t.is(getArch(), '386')
+})
+
+test(`should use amd64 if process architecture is x64`, (t) => {
+  Object.defineProperty(processSpy, 'arch', { value: 'x64' })
+  t.is(getArch(), 'amd64')
+})
+
+test(`should append .exe on windows for the executable name`, (t) => {
+  Object.defineProperty(processSpy, 'platform', { value: 'win32' })
   const execName = 'some-binary-file'
-  if (process.platform === 'win32') {
-    t.is(getExecName({ execName }), `${execName}.exe`)
-  } else {
-    t.is(getExecName({ execName }), execName)
-  }
+  t.is(getExecName({ execName }), `${execName}.exe`)
+})
+
+test(`should not append anything on linux or darwin to executable`, (t) => {
+  Object.defineProperty(processSpy, 'platform', { value: 'darwin' })
+  const execName = 'some-binary-file'
+  t.is(getExecName({ execName }), execName)
+  Object.defineProperty(processSpy, 'platform', { value: 'linux' })
+  t.is(getExecName({ execName }), execName)
 })
 
 test('should test if an error is thrown if the cpu architecture and the os are not available', async (t) => {

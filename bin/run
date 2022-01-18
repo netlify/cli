@@ -1,7 +1,5 @@
 #!/usr/bin/env node
-/* eslint-disable promise/prefer-await-to-then,promise/prefer-await-to-callbacks,eslint-comments/disable-enable-pair */
 const process = require('process')
-const { format } = require('util')
 
 const updateNotifier = require('update-notifier')
 
@@ -26,5 +24,6 @@ if (require.main === module) {
 
   const program = createMainCommand()
 
+  // eslint-disable-next-line promise/prefer-await-to-then
   program.parseAsync(process.argv).catch((error_) => program.onEnd(error_))
 }
