@@ -470,7 +470,11 @@ class BaseCommand extends Command {
       return await resolveConfig({
         config: options.config,
         cwd,
-        context: options.context || this.name(),
+        context:
+          options.context ||
+          process.env.CONTEXT ||
+          // Dev commands have a default context of `dev`, otherwise we let netlify/config handle default behavior
+          (['dev', 'dev:exec', 'dev:trace'].includes(this.name()) ? 'dev' : undefined),
         debug: this.opts().debug,
         siteId: options.siteId || (typeof options.site === 'string' && options.site) || state.get('siteId'),
         token,
