@@ -43,6 +43,8 @@
     "url": "https://github.com/netlify/cli/issues"
   },
   "scripts": {
+    "prepublishOnly": "run-s prepublishOnly:*",
+    "prepublishOnly:test": "run-local \"npm test\"",
     "start": "node ./bin/run",
     "test": "run-s format test:dev",
     "format": "run-s format:check-fix:*",
