@@ -70,7 +70,7 @@ const graphPull = async (options, command) => {
   if (next.events) {
     const ackIds = []
     for (const event of next.events) {
-      await handleCliSessionEvent({ authToken: netlifyToken, event, netlifyGraphConfig, schema, siteId: site.id })
+      await handleCliSessionEvent({ netlifyToken, event, netlifyGraphConfig, schema, siteId: site.id })
       ackIds.push(event.id)
     }
 

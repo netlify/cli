@@ -79,7 +79,7 @@
         "multiparty": "^4.2.1",
         "netlify": "^10.1.1",
         "netlify-headers-parser": "^6.0.0",
-        "netlify-onegraph-internal": "0.0.2",
+        "netlify-onegraph-internal": "0.0.10",
         "netlify-redirect-parser": "^13.0.0",
         "netlify-redirector": "^0.2.1",
         "node-fetch": "^2.6.0",
@@ -14108,12 +14108,13 @@
       }
     },
     "node_modules/netlify-onegraph-internal": {
-      "version": "0.0.2",
-      "resolved": "https://registry.npmjs.org/netlify-onegraph-internal/-/netlify-onegraph-internal-0.0.2.tgz",
-      "integrity": "sha512-jCATlMB8XhiK2uMeyYeVOCOlUyC5xWDP+5IxxGI1er2MQvaj29URzVNl5DJnpIVrr3/kqBPiBAcwa64UDtMaiw==",
+      "version": "0.0.10",
+      "resolved": "https://registry.npmjs.org/netlify-onegraph-internal/-/netlify-onegraph-internal-0.0.10.tgz",
+      "integrity": "sha512-vZ6sDpxyZjslKC9RUjdFLACK35eY00c+d1FxyRIXmwDCGJSoDbtnORstFWx3Dzp9k4yeR0xgm8ToBu62N7Pd+w==",
       "dependencies": {
         "graphql": "16.1.0",
-        "node-fetch": "^2.6.0"
+        "node-fetch": "^2.6.0",
+        "uuid": "^8.3.2"
       }
     },
     "node_modules/netlify-redirect-parser": {
@@ -30635,12 +30636,13 @@
       }
     },
     "netlify-onegraph-internal": {
-      "version": "0.0.2",
-      "resolved": "https://registry.npmjs.org/netlify-onegraph-internal/-/netlify-onegraph-internal-0.0.2.tgz",
-      "integrity": "sha512-jCATlMB8XhiK2uMeyYeVOCOlUyC5xWDP+5IxxGI1er2MQvaj29URzVNl5DJnpIVrr3/kqBPiBAcwa64UDtMaiw==",
+      "version": "0.0.10",
+      "resolved": "https://registry.npmjs.org/netlify-onegraph-internal/-/netlify-onegraph-internal-0.0.10.tgz",
+      "integrity": "sha512-vZ6sDpxyZjslKC9RUjdFLACK35eY00c+d1FxyRIXmwDCGJSoDbtnORstFWx3Dzp9k4yeR0xgm8ToBu62N7Pd+w==",
       "requires": {
         "graphql": "16.1.0",
-        "node-fetch": "^2.6.0"
+        "node-fetch": "^2.6.0",
+        "uuid": "^8.3.2"
       }
     },
     "netlify-redirect-parser": {

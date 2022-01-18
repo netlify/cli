@@ -1,11 +1,20 @@
 const fs = require('fs')
 const path = require('path')
 
-const { GraphQL, NetlifyGraph } = require('netlify-onegraph-internal')
+const { GraphQL, InternalConsole, NetlifyGraph } = require('netlify-onegraph-internal')
 
-const { detectServerSettings, error, getFunctionsDir } = require('../../utils')
+const { detectServerSettings, error, getFunctionsDir, log, warn } = require('../../utils')
 
 const { printSchema } = GraphQL
+
+const internalConsole = {
+  log,
+  warn,
+  error,
+  debug: console.debug,
+}
+
+InternalConsole.registerConsole(internalConsole)
 
 /**
  * Return a full NetlifyGraph config with any defaults overridden by netlify.toml
@@ -174,11 +183,17 @@ const generateHandler = (netlifyGraphConfig, schema, operationId, handlerOptions
 
   const { operation, source } = handlerSource
 
-  const filenameArr = [...netlifyGraphConfig.functionsPath, `${operation.name}.${netlifyGraphConfig.extension}`]
-  const fullFilename = path.join(...filenameArr)
+  const operationName = (operation.name && operation.name.value) || 'Unnamed'
+
+  const filenameArr = [
+    path.sep,
+    ...netlifyGraphConfig.functionsPath,
+    `${operationName}.${netlifyGraphConfig.extension}`,
+  ]
+  const absoluteFilename = path.resolve(...filenameArr)
 
   ensureFunctionsPath(netlifyGraphConfig)
-  fs.writeFileSync(fullFilename, source)
+  fs.writeFileSync(absoluteFilename, source)
 }
 
 // Export the minimal set of functions that are required for Netlify Graph

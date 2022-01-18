@@ -2,7 +2,7 @@
 /* eslint-disable fp/no-loops */
 const os = require('os')
 
-const { GraphQL, OneGraphClient } = require('netlify-onegraph-internal')
+const { GraphQL, InternalConsole, OneGraphClient } = require('netlify-onegraph-internal')
 const { NetlifyGraph } = require('netlify-onegraph-internal')
 
 const { chalk, error, log, warn } = require('../../utils')
@@ -20,11 +20,20 @@ const {
 const { parse } = GraphQL
 const { defaultExampleOperationsDoc, extractFunctionsFromOperationDoc } = NetlifyGraph
 
+const internalConsole = {
+  log,
+  warn,
+  error,
+  debug: console.debug,
+}
+
+InternalConsole.registerConsole(internalConsole)
+
 /**
  * Start polling for CLI events for a given session to process locally
  * @param {object} input
  * @param {string} input.appId The app to query against, typically the siteId
- * @param {string} input.authToken The (typically netlify) access token that is used for authentication, if any
+ * @param {string} input.netlifyToken The (typically netlify) access token that is used for authentication, if any
  * @param {NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
  * @param {function} input.onClose A function to call when the polling loop is closed
  * @param {function} input.onError A function to call when an error occurs
@@ -34,14 +43,14 @@ const { defaultExampleOperationsDoc, extractFunctionsFromOperationDoc } = Netlif
  * @returns
  */
 const monitorCLISessionEvents = (input) => {
-  const { appId, authToken, netlifyGraphConfig, onClose, onError, onEvents, sessionId, state } = input
+  const { appId, netlifyGraphConfig, netlifyToken, onClose, onError, onEvents, sessionId, state } = input
 
   const frequency = 5000
   let shouldClose = false
 
-  const enabledServiceWatcher = async (netlifyToken, siteId) => {
+  const enabledServiceWatcher = async (innerNetlifyToken, siteId) => {
     const enabledServices = state.get('oneGraphEnabledServices') || ['onegraph']
-    const enabledServicesInfo = await OneGraphClient.fetchEnabledServices(netlifyToken, siteId)
+    const enabledServicesInfo = await OneGraphClient.fetchEnabledServices(innerNetlifyToken, siteId)
     if (!enabledServicesInfo) {
       warn('Unable to fetch enabled services for site for code generation')
       return
@@ -56,7 +65,7 @@ const monitorCLISessionEvents = (input) => {
           'Reloading',
         )} Netlify Graph schema..., ${enabledServicesCompareKey} => ${newEnabledServicesCompareKey}`,
       )
-      await refetchAndGenerateFromOneGraph({ netlifyGraphConfig, state, netlifyToken, siteId })
+      await refetchAndGenerateFromOneGraph({ netlifyGraphConfig, state, netlifyToken: innerNetlifyToken, siteId })
       log(`${chalk.green('Reloaded')} Netlify Graph schema and regenerated functions`)
     }
   }
@@ -73,7 +82,7 @@ const monitorCLISessionEvents = (input) => {
       onClose()
     }
 
-    const next = await OneGraphClient.fetchCliSessionEvents({ appId, authToken, sessionId })
+    const next = await OneGraphClient.fetchCliSessionEvents({ appId, authToken: netlifyToken, sessionId })
 
     if (next.errors) {
       next.errors.forEach((fetchEventError) => {
@@ -85,10 +94,10 @@ const monitorCLISessionEvents = (input) => {
 
     if (events.length !== 0) {
       const ackIds = await onEvents(events)
-      await OneGraphClient.ackCLISessionEvents({ appId, authToken, sessionId, eventIds: ackIds })
+      await OneGraphClient.ackCLISessionEvents({ appId, authToken: netlifyToken, sessionId, eventIds: ackIds })
     }
 
-    await enabledServiceWatcher(authToken, appId)
+    await enabledServiceWatcher(netlifyToken, appId)
 
     handle = setTimeout(helper, frequency)
   }
@@ -122,22 +131,16 @@ const refetchAndGenerateFromOneGraph = async (input) => {
     .map((service) => service.service)
     .sort((aString, bString) => aString.localeCompare(bString))
   const schema = await OneGraphClient.fetchOneGraphSchema(siteId, enabledServices)
-  console.log('Reading from source file...')
+
   let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
-  console.log('Reading from source file...done')
   if (currentOperationsDoc.trim().length === 0) {
-    console.log('5', currentOperationsDoc)
     currentOperationsDoc = defaultExampleOperationsDoc
   }
-  console.log('6', currentOperationsDoc)
 
   const parsedDoc = parse(currentOperationsDoc)
-  console.log('Extract funcions from source file...', parsedDoc)
   const operations = extractFunctionsFromOperationDoc(parsedDoc)
 
-  console.log('Generating functions file...')
   generateFunctionsFile(netlifyGraphConfig, schema, currentOperationsDoc, operations)
-  console.log('Writing schema to disk...')
   writeGraphQLSchemaFile(netlifyGraphConfig, schema)
   state.set('oneGraphEnabledServices', enabledServices)
 }
@@ -146,15 +149,15 @@ const refetchAndGenerateFromOneGraph = async (input) => {
  *
  * @param {object} input
  * @param {string} input.siteId The site id to query against
- * @param {string} input.authToken The (typically netlify) access token that is used for authentication, if any
+ * @param {string} input.netlifyToken The (typically netlify) access token that is used for authentication, if any
  * @param {string} input.docId The GraphQL operations document id to fetch
  * @param {string} input.schema The GraphQL schema to use when generating code
  * @param {NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
  * @returns
  */
 const updateGraphQLOperationsFile = async (input) => {
-  const { authToken, docId, netlifyGraphConfig, schema, siteId } = input
-  const persistedDoc = await OneGraphClient.fetchPersistedQuery(authToken, siteId, docId)
+  const { docId, netlifyGraphConfig, netlifyToken, schema, siteId } = input
+  const persistedDoc = await OneGraphClient.fetchPersistedQuery(netlifyToken, siteId, docId)
   if (!persistedDoc) {
     warn('No persisted doc found for:', docId)
     return
@@ -171,17 +174,17 @@ const updateGraphQLOperationsFile = async (input) => {
   generateFunctionsFile(netlifyGraphConfig, schema, appOperationsDoc, operations)
 }
 
-const handleCliSessionEvent = async ({ authToken, event, netlifyGraphConfig, schema, siteId }) => {
+const handleCliSessionEvent = async ({ event, netlifyGraphConfig, netlifyToken, schema, siteId }) => {
   const { __typename, payload } = await event
   switch (__typename) {
     case 'OneGraphNetlifyCliSessionTestEvent':
-      await handleCliSessionEvent({ authToken, event: payload, netlifyGraphConfig, schema, siteId })
+      await handleCliSessionEvent({ netlifyToken, event: payload, netlifyGraphConfig, schema, siteId })
       break
     case 'OneGraphNetlifyCliSessionGenerateHandlerEvent':
       await generateHandler(netlifyGraphConfig, schema, payload.operationId, payload)
       break
     case 'OneGraphNetlifyCliSessionPersistedLibraryUpdatedEvent':
-      await updateGraphQLOperationsFile({ authToken, docId: payload.docId, netlifyGraphConfig, schema, siteId })
+      await updateGraphQLOperationsFile({ netlifyToken, docId: payload.docId, netlifyGraphConfig, schema, siteId })
       break
     default: {
       warn(`Unrecognized event received, you may need to upgrade your CLI version`, __typename, payload)
@@ -222,16 +225,16 @@ const startOneGraphCLISession = async (input) => {
 
   monitorCLISessionEvents({
     appId: site.id,
-    authToken: netlifyToken,
+    netlifyToken,
     netlifyGraphConfig,
     sessionId: oneGraphSessionId,
     state,
     onEvents: async (events) => {
       for (const event of events) {
         const eventName = OneGraphClient.friendlyEventName(event)
-        log(`${chalk.magenta('Handling')} Netlify Graph event: ${eventName}...`)
-        await handleCliSessionEvent({ authToken: netlifyToken, event, netlifyGraphConfig, schema, siteId: site.id })
-        log(`${chalk.green('Finished handling')} Netlify Graph event: ${eventName}...`)
+        log(`${chalk.magenta('Handling')} Netlify Graph: ${eventName}...`)
+        await handleCliSessionEvent({ netlifyToken, event, netlifyGraphConfig, schema, siteId: site.id })
+        log(`${chalk.green('Finished handling')} Netlify Graph: ${eventName}...`)
       }
       return events.map((event) => event.id)
     },
@@ -255,7 +258,14 @@ const generateSessionName = () => {
   return sessionName
 }
 
-const OneGraphCliClient = { createCLISession, createPersistedQuery, ensureAppForSite, updateCLISessionMetadata }
+const OneGraphCliClient = {
+  ackCLISessionEvents: OneGraphClient.ackCLISessionEvents,
+  createCLISession,
+  createPersistedQuery,
+  fetchCliSessionEvents: OneGraphClient.fetchCliSessionEvents,
+  ensureAppForSite,
+  updateCLISessionMetadata,
+}
 
 module.exports = {
   OneGraphCliClient,
