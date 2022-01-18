@@ -109,12 +109,12 @@ const runCommand = (command, env = {}) => {
     }
     process.exit(1)
   })
-  ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) => {
-    process.on(signal, () => {
-      commandProcess.kill('SIGTERM', { forceKillAfterTimeout: 500 })
-      process.exit()
+    ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) => {
+      process.on(signal, () => {
+        commandProcess.kill('SIGTERM', { forceKillAfterTimeout: 500 })
+        process.exit()
+      })
     })
-  })
 
   return commandProcess
 }
@@ -267,8 +267,7 @@ const dev = async (options, command) => {
   try {
     settings = await detectServerSettings(devConfig, options, site.root)
   } catch (detectServerSettingsError) {
-    error(detectServerSettingsError.message)
-    exit(1)
+    error(detectServerSettingsError)
   }
 
   command.setAnalyticsPayload({ projectType: settings.framework || 'custom', live: options.live })
@@ -303,9 +302,8 @@ const dev = async (options, command) => {
     error(
       `No siteId defined, unable to start Netlify Graph. To enable, run ${chalk.yellow(
         'netlify init',
-      )} or ${chalk.yellow('netlify link')}?`,
+      )} or ${chalk.yellow('netlify link')}.`,
     )
-    return
   } else if (startNetlifyGraphWatcher) {
     const netlifyToken = await command.authenticate()
     await OneGraphCliClient.ensureAppForSite(netlifyToken, site.id)

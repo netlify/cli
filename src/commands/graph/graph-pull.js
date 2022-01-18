@@ -24,7 +24,6 @@ const graphPull = async (options, command) => {
         'netlify init',
       )} or ${chalk.yellow('netlify link')}`,
     )
-    return
   }
 
   const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options })
@@ -48,12 +47,10 @@ const graphPull = async (options, command) => {
     schema = buildSchema(schemaString)
   } catch (buildSchemaError) {
     error(`Error parsing schema: ${buildSchemaError.message}`)
-    return
   }
 
   if (!schema) {
     error(`Failed to fetch and update Netlify GraphQL schema`)
-    return
   }
 
   const next = await OneGraphCliClient.fetchCliSessionEvents({
@@ -64,7 +61,6 @@ const graphPull = async (options, command) => {
 
   if (next.errors) {
     error(`Failed to fetch Netlify Graph cli session events`, next.errors)
-    return
   }
 
   if (next.events) {

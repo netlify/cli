@@ -29,7 +29,6 @@ const graphEdit = async (options, command) => {
         'netlify init',
       )} or ${chalk.yellow('netlify link')}`,
     )
-    return
   }
 
   const siteData = await api.getSite({ siteId })
