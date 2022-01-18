@@ -23,7 +23,7 @@ netlify graph
 | Subcommand | description  |
 |:--------------------------- |:-----|
 | [`graph:edit`](/docs/commands/graph.md#graphedit) | Launch the browser to edit your local graph functions from Netlify  |
-| [`graph:pull`](/docs/commands/graph.md#graphpull) | Pull down your local Netlify Graph schema and regenerate your local functions  |
+| [`graph:pull`](/docs/commands/graph.md#graphpull) | Pull down your local Netlify Graph schema, and process pending Graph edit events  |
 
 
 **Examples**
@@ -53,7 +53,7 @@ netlify graph:edit
 ---
 ## `graph:pull`
 
-Pull down your local Netlify Graph schema and regenerate your local functions
+Pull down your local Netlify Graph schema, and process pending Graph edit events
 
 **Usage**
 
