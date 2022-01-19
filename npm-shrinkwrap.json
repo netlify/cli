@@ -10,7 +10,7 @@
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
-        "@netlify/build": "^26.1.4",
+        "@netlify/build": "^26.1.5",
         "@netlify/config": "^17.0.3",
         "@netlify/framework-info": "^8.0.2",
         "@netlify/local-functions-proxy": "^1.1.1",
@@ -2387,9 +2387,9 @@
       }
     },
     "node_modules/@netlify/build": {
-      "version": "26.1.4",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-26.1.4.tgz",
-      "integrity": "sha512-05NGq1kChEifsvCdqX9rw0jHMKsdbD60Nj9bOBLrByGvw5FJ92949gpazjAggfLQoaIPZTLkPGZO86L0nu/MZw==",
+      "version": "26.1.5",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-26.1.5.tgz",
+      "integrity": "sha512-9rL+Lts+L/iDXPH1g+ZpDEwLw7POqsuwYdCdFFkxAUJLmi4Eea3ssexl3FYWuqalfrKgyn8iE+8BAGW1LBowLA==",
       "dependencies": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^4.0.0",
@@ -2441,7 +2441,7 @@
         "ts-node": "^10.4.0",
         "update-notifier": "^5.0.0",
         "uuid": "^8.0.0",
-        "yargs": "^16.0.0"
+        "yargs": "^17.3.1"
       },
       "bin": {
         "netlify-build": "src/core/bin.js"
@@ -2600,20 +2600,28 @@
       }
     },
     "node_modules/@netlify/build/node_modules/yargs": {
-      "version": "16.2.0",
-      "resolved": "https://registry.npmjs.org/yargs/-/yargs-16.2.0.tgz",
-      "integrity": "sha512-D1mvvtDG0L5ft/jGWkLpG1+m0eQxOfaBvTNELraWj22wSVUMWxZUvYgJYcKh6jGGIkJFhH4IZPQhR4TKpc8mBw==",
+      "version": "17.3.1",
+      "resolved": "https://registry.npmjs.org/yargs/-/yargs-17.3.1.tgz",
+      "integrity": "sha512-WUANQeVgjLbNsEmGk20f+nlHgOqzRFpiGWVaBrYGYIGANIIu3lWjoyi0fNlFmJkvfhCZ6BXINe7/W2O2bV4iaA==",
       "dependencies": {
         "cliui": "^7.0.2",
         "escalade": "^3.1.1",
         "get-caller-file": "^2.0.5",
         "require-directory": "^2.1.1",
-        "string-width": "^4.2.0",
+        "string-width": "^4.2.3",
         "y18n": "^5.0.5",
-        "yargs-parser": "^20.2.2"
+        "yargs-parser": "^21.0.0"
       },
       "engines": {
-        "node": ">=10"
+        "node": ">=12"
+      }
+    },
+    "node_modules/@netlify/build/node_modules/yargs-parser": {
+      "version": "21.0.0",
+      "resolved": "https://registry.npmjs.org/yargs-parser/-/yargs-parser-21.0.0.tgz",
+      "integrity": "sha512-z9kApYUOCwoeZ78rfRYYWdiU/iNL6mwwYlkkZfJoyMR1xps+NEBX5X7XmRpxkZHhXJ6+Ey00IwKxBBSW9FIjyA==",
+      "engines": {
+        "node": ">=12"
       }
     },
     "node_modules/@netlify/cache-utils": {
@@ -23694,9 +23702,9 @@
       }
     },
     "@netlify/build": {
-      "version": "26.1.4",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-26.1.4.tgz",
-      "integrity": "sha512-05NGq1kChEifsvCdqX9rw0jHMKsdbD60Nj9bOBLrByGvw5FJ92949gpazjAggfLQoaIPZTLkPGZO86L0nu/MZw==",
+      "version": "26.1.5",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-26.1.5.tgz",
+      "integrity": "sha512-9rL+Lts+L/iDXPH1g+ZpDEwLw7POqsuwYdCdFFkxAUJLmi4Eea3ssexl3FYWuqalfrKgyn8iE+8BAGW1LBowLA==",
       "requires": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^4.0.0",
@@ -23748,7 +23756,7 @@
         "ts-node": "^10.4.0",
         "update-notifier": "^5.0.0",
         "uuid": "^8.0.0",
-        "yargs": "^16.0.0"
+        "yargs": "^17.3.1"
       },
       "dependencies": {
         "@sindresorhus/is": {
@@ -23849,18 +23857,23 @@
           "integrity": "sha512-0pfFzegeDWJHJIAmTLRP2DwHjdF5s7jo9tuztdQxAhINCdvS+3nGINqPd00AphqJR/0LhANUS6/+7SCb98YOfA=="
         },
         "yargs": {
-          "version": "16.2.0",
-          "resolved": "https://registry.npmjs.org/yargs/-/yargs-16.2.0.tgz",
-          "integrity": "sha512-D1mvvtDG0L5ft/jGWkLpG1+m0eQxOfaBvTNELraWj22wSVUMWxZUvYgJYcKh6jGGIkJFhH4IZPQhR4TKpc8mBw==",
+          "version": "17.3.1",
+          "resolved": "https://registry.npmjs.org/yargs/-/yargs-17.3.1.tgz",
+          "integrity": "sha512-WUANQeVgjLbNsEmGk20f+nlHgOqzRFpiGWVaBrYGYIGANIIu3lWjoyi0fNlFmJkvfhCZ6BXINe7/W2O2bV4iaA==",
           "requires": {
             "cliui": "^7.0.2",
             "escalade": "^3.1.1",
             "get-caller-file": "^2.0.5",
             "require-directory": "^2.1.1",
-            "string-width": "^4.2.0",
+            "string-width": "^4.2.3",
             "y18n": "^5.0.5",
-            "yargs-parser": "^20.2.2"
+            "yargs-parser": "^21.0.0"
           }
+        },
+        "yargs-parser": {
+          "version": "21.0.0",
+          "resolved": "https://registry.npmjs.org/yargs-parser/-/yargs-parser-21.0.0.tgz",
+          "integrity": "sha512-z9kApYUOCwoeZ78rfRYYWdiU/iNL6mwwYlkkZfJoyMR1xps+NEBX5X7XmRpxkZHhXJ6+Ey00IwKxBBSW9FIjyA=="
         }
       }
     },
