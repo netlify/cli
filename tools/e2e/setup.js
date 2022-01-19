@@ -123,9 +123,14 @@ const setup = async () => {
 ------------------------------------------`)
 
     writeFileSync(join(workspace, '.npmrc'), registryWithAuth, 'utf-8')
-  } catch (_error) {
+  } catch (error_) {
     await cleanup()
-    throw _error
+    throw new Error(
+      `npm publish failed for registry ${url.href}
+Be sure not to have a ~/.npmrc in your home folder that specifies a different registry.
+
+${error_ instanceof Error ? error_.message : error_}`,
+    )
   }
 
   return {
