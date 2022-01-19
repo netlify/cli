@@ -10,7 +10,7 @@
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
-        "@netlify/build": "^26.1.6",
+        "@netlify/build": "^26.1.7",
         "@netlify/config": "^17.0.3",
         "@netlify/framework-info": "^8.0.2",
         "@netlify/local-functions-proxy": "^1.1.1",
@@ -2387,9 +2387,9 @@
       }
     },
     "node_modules/@netlify/build": {
-      "version": "26.1.6",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-26.1.6.tgz",
-      "integrity": "sha512-1JCVWHMww0QT5ss5Se7M87q8JFdbfdugsa8C9RNmosHRKfNj9i0WoFejHeLGJLm+py0tUiXr6+G/0U7IJecauQ==",
+      "version": "26.1.7",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-26.1.7.tgz",
+      "integrity": "sha512-WZiXVp3doX+Ryd0M/MfBtDwMZjGZImD12mSkWQ7bSZTTFuLwBUfQCRraSB17iBavRHJk6xb/1RaMKFFwPRjsmw==",
       "dependencies": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^4.0.0",
@@ -2401,6 +2401,7 @@
         "@netlify/run-utils": "^4.0.0",
         "@netlify/zip-it-and-ship-it": "^5.4.1",
         "@sindresorhus/slugify": "^1.1.0",
+        "@types/node": "^16.0.0",
         "ansi-escapes": "^4.3.2",
         "chalk": "^4.1.2",
         "clean-stack": "^3.0.1",
@@ -2439,6 +2440,7 @@
         "supports-color": "^8.0.0",
         "tmp-promise": "^3.0.2",
         "ts-node": "^10.4.0",
+        "typescript": "^4.5.4",
         "update-notifier": "^5.0.0",
         "uuid": "^8.0.0",
         "yargs": "^17.3.1"
@@ -2460,6 +2462,11 @@
       "funding": {
         "url": "https://github.com/sindresorhus/is?sponsor=1"
       }
+    },
+    "node_modules/@netlify/build/node_modules/@types/node": {
+      "version": "16.11.21",
+      "resolved": "https://registry.npmjs.org/@types/node/-/node-16.11.21.tgz",
+      "integrity": "sha512-Pf8M1XD9i1ksZEcCP8vuSNwooJ/bZapNmIzpmsMaL+jMI+8mEYU3PKvs+xDNuQcJWF/x24WzY4qxLtB0zNow9A=="
     },
     "node_modules/@netlify/build/node_modules/ansi-escapes": {
       "version": "4.3.2",
@@ -23702,9 +23709,9 @@
       }
     },
     "@netlify/build": {
-      "version": "26.1.6",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-26.1.6.tgz",
-      "integrity": "sha512-1JCVWHMww0QT5ss5Se7M87q8JFdbfdugsa8C9RNmosHRKfNj9i0WoFejHeLGJLm+py0tUiXr6+G/0U7IJecauQ==",
+      "version": "26.1.7",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-26.1.7.tgz",
+      "integrity": "sha512-WZiXVp3doX+Ryd0M/MfBtDwMZjGZImD12mSkWQ7bSZTTFuLwBUfQCRraSB17iBavRHJk6xb/1RaMKFFwPRjsmw==",
       "requires": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^4.0.0",
@@ -23716,6 +23723,7 @@
         "@netlify/run-utils": "^4.0.0",
         "@netlify/zip-it-and-ship-it": "^5.4.1",
         "@sindresorhus/slugify": "^1.1.0",
+        "@types/node": "^16.0.0",
         "ansi-escapes": "^4.3.2",
         "chalk": "^4.1.2",
         "clean-stack": "^3.0.1",
@@ -23754,6 +23762,7 @@
         "supports-color": "^8.0.0",
         "tmp-promise": "^3.0.2",
         "ts-node": "^10.4.0",
+        "typescript": "^4.5.4",
         "update-notifier": "^5.0.0",
         "uuid": "^8.0.0",
         "yargs": "^17.3.1"
@@ -23763,6 +23772,11 @@
           "version": "2.1.1",
           "resolved": "https://registry.npmjs.org/@sindresorhus/is/-/is-2.1.1.tgz",
           "integrity": "sha512-/aPsuoj/1Dw/kzhkgz+ES6TxG0zfTMGLwuK2ZG00k/iJzYHTLCE8mVU8EPqEOp/lmxPoq1C1C9RYToRKb2KEfg=="
+        },
+        "@types/node": {
+          "version": "16.11.21",
+          "resolved": "https://registry.npmjs.org/@types/node/-/node-16.11.21.tgz",
+          "integrity": "sha512-Pf8M1XD9i1ksZEcCP8vuSNwooJ/bZapNmIzpmsMaL+jMI+8mEYU3PKvs+xDNuQcJWF/x24WzY4qxLtB0zNow9A=="
         },
         "ansi-escapes": {
           "version": "4.3.2",
