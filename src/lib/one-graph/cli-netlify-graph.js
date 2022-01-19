@@ -53,9 +53,7 @@ const getNetlifyGraphConfig = async ({ command, options }) => {
   const isNextjs = framework === 'Next.js'
   const detectedFunctionsPathString = getFunctionsDir({ config, options })
   const detectedFunctionsPath = detectedFunctionsPathString ? detectedFunctionsPathString.split(path.sep) : null
-  const functionsPath = isNextjs
-    ? [...siteRoot, 'pages', 'api']
-    : [...siteRoot, detectedFunctionsPath] || [...siteRoot, 'functions']
+  const functionsPath = isNextjs ? [...siteRoot, 'pages', 'api'] : [...siteRoot, detectedFunctionsPath]
   const netlifyGraphPath = isNextjs
     ? [...siteRoot, 'lib', 'netlifyGraph']
     : [...siteRoot, ...NetlifyGraph.defaultNetlifyGraphConfig.netlifyGraphPath]
@@ -208,7 +206,11 @@ const generateHandler = (netlifyGraphConfig, schema, operationId, handlerOptions
 
   ensureFunctionsPath(netlifyGraphConfig)
 
-  exportedFiles?.forEach((exportedFile) => {
+  if (!exportedFiles) {
+    return
+  }
+
+  exportedFiles.forEach((exportedFile) => {
     const { content } = exportedFile
     const isNamed = exportedFile.kind === 'NamedExportedFile'
 
