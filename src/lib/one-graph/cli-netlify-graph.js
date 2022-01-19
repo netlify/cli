@@ -53,8 +53,12 @@ const getNetlifyGraphConfig = async ({ command, options }) => {
   const isNextjs = framework === 'Next.js'
   const detectedFunctionsPathString = getFunctionsDir({ config, options })
   const detectedFunctionsPath = detectedFunctionsPathString ? detectedFunctionsPathString.split(path.sep) : null
-  const functionsPath = isNextjs ? [...siteRoot, 'pages', 'api'] : [...siteRoot, detectedFunctionsPath] || [...siteRoot, 'functions']
-  const netlifyGraphPath = isNextjs ? [...siteRoot, 'lib', 'netlifyGraph'] : [...siteRoot, ...NetlifyGraph.defaultNetlifyGraphConfig.netlifyGraphPath]
+  const functionsPath = isNextjs
+    ? [...siteRoot, 'pages', 'api']
+    : [...siteRoot, detectedFunctionsPath] || [...siteRoot, 'functions']
+  const netlifyGraphPath = isNextjs
+    ? [...siteRoot, 'lib', 'netlifyGraph']
+    : [...siteRoot, ...NetlifyGraph.defaultNetlifyGraphConfig.netlifyGraphPath]
   const baseConfig = { ...NetlifyGraph.defaultNetlifyGraphConfig, ...userSpecifiedConfig }
   const netlifyGraphImplementationFilename = [...netlifyGraphPath, `index.${baseConfig.extension}`]
   const netlifyGraphTypeDefinitionsFilename = [...netlifyGraphPath, `index.d.ts`]
@@ -74,7 +78,7 @@ const getNetlifyGraphConfig = async ({ command, options }) => {
     netlifyGraphRequirePath,
     framework,
     language,
-    moduleType
+    moduleType,
   }
 
   return fullConfig
@@ -113,7 +117,11 @@ const generateFunctionsFile = (netlifyGraphConfig, schema, operationsDoc, querie
 
   ensureNetlifyGraphPath(netlifyGraphConfig)
   fs.writeFileSync(path.resolve(...netlifyGraphConfig.netlifyGraphImplementationFilename), clientSource, 'utf8')
-  fs.writeFileSync(path.resolve(...netlifyGraphConfig.netlifyGraphTypeDefinitionsFilename), typeDefinitionsSource, 'utf8')
+  fs.writeFileSync(
+    path.resolve(...netlifyGraphConfig.netlifyGraphTypeDefinitionsFilename),
+    typeDefinitionsSource,
+    'utf8',
+  )
 }
 
 /**
@@ -191,7 +199,7 @@ const generateHandler = (netlifyGraphConfig, schema, operationId, handlerOptions
     operationsDoc: currentOperationsDoc,
   })
 
-  if (!(result)) {
+  if (!result) {
     warn(`No handler was generated for operationId ${operationId}`)
     return
   }
@@ -202,7 +210,7 @@ const generateHandler = (netlifyGraphConfig, schema, operationId, handlerOptions
 
   exportedFiles?.forEach((exportedFile) => {
     const { content } = exportedFile
-    const isNamed = exportedFile.kind === "NamedExportedFile"
+    const isNamed = exportedFile.kind === 'NamedExportedFile'
 
     let filenameArr
 
@@ -212,25 +220,22 @@ const generateHandler = (netlifyGraphConfig, schema, operationId, handlerOptions
       const operationName = (operation.name && operation.name.value) || 'Unnamed'
       const fileExtension = netlifyGraphConfig.language === 'typescript' ? 'ts' : netlifyGraphConfig.extension
       const defaultBaseFilename = `${operationName}.${fileExtension}`
-      const baseFilename = defaultBaseFilename;
+      const baseFilename = defaultBaseFilename
 
-      filenameArr = [
-        ...netlifyGraphConfig.functionsPath,
-        baseFilename
-      ]
+      filenameArr = [...netlifyGraphConfig.functionsPath, baseFilename]
     }
 
     const absoluteFilename = path.resolve(...filenameArr)
 
-    fs.writeFileSync(absoluteFilename, content);
-  });
+    fs.writeFileSync(absoluteFilename, content)
+  })
 }
 
 // Export the minimal set of functions that are required for Netlify Graph
 const { buildSchema, parse } = GraphQL
 
 /**
- * 
+ *
  * @param {object} options
  * @param {string} options.siteName The name of the site as used in the Netlify UI url scheme
  * @param {string} options.oneGraphSessionId The oneGraph session id to use when generating the graph-edit link

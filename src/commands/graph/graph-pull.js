@@ -46,7 +46,7 @@ const graphPull = async (options, command) => {
   try {
     schema = buildSchema(schemaString)
   } catch (buildSchemaError) {
-    error(`Error parsing schema: ${buildSchemaError.message}`)
+    error(`Error parsing schema: ${buildSchemaError}`)
   }
 
   if (!schema) {
