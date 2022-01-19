@@ -52,6 +52,13 @@ module.exports = {
       },
     },
     {
+      files: ['e2e/**/*.js'],
+      rules: {
+        'ava/no-ignored-test-files': 0,
+        'id-length': 0,
+      },
+    },
+    {
       files: ['src/**/*.js'],
       rules: {
         // once a solution for npm 6 is found add this to package.json
