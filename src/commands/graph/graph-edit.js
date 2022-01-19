@@ -1,10 +1,9 @@
-const process = require('process')
-
 const gitRepoInfo = require('git-repo-info')
 
 const { OneGraphCliClient, generateSessionName, loadCLISession } = require('../../lib/one-graph/cli-client')
 const {
   defaultExampleOperationsDoc,
+  getGraphEditUrlBySiteName,
   getNetlifyGraphConfig,
   readGraphQLOperationsSourceFile,
 } = require('../../lib/one-graph/cli-netlify-graph')
@@ -20,7 +19,7 @@ const { createCLISession, createPersistedQuery, ensureAppForSite, updateCLISessi
  * @returns
  */
 const graphEdit = async (options, command) => {
-  const { api, site, state } = command.netlify
+  const { api, site, siteInfo, state } = command.netlify
   const siteId = site.id
 
   if (!site.id) {
@@ -30,9 +29,6 @@ const graphEdit = async (options, command) => {
       )} or ${chalk.yellow('netlify link')}`,
     )
   }
-
-  const siteData = await api.getSite({ siteId })
-
   const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options })
 
   const { branch } = gitRepoInfo()
@@ -64,10 +60,19 @@ const graphEdit = async (options, command) => {
 
   await updateCLISessionMetadata(netlifyToken, siteId, oneGraphSessionId, { docId: persistedDoc.id })
 
-  const host = 'app.netlify.com' || process.env.NETLIFY_APP_HOST
+  let siteName = siteInfo.name
 
-  const url = `http://${host}/sites/${siteData.name}/graph/explorer?cliSessionId=${oneGraphSessionId}`
-  await openBrowser({ url })
+  if (!siteName) {
+    const siteData = await api.getSite({ siteId })
+    siteName = siteData.name
+    if (!siteName) {
+      error(`No site name found for siteId ${siteId}`)
+    }
+  }
+
+  const graphEditUrl = getGraphEditUrlBySiteName({ siteName, oneGraphSessionId })
+
+  await openBrowser({ url: graphEditUrl })
 }
 
 /**

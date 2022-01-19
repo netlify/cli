@@ -109,12 +109,12 @@ const runCommand = (command, env = {}) => {
     }
     process.exit(1)
   })
-  ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) => {
-    process.on(signal, () => {
-      commandProcess.kill('SIGTERM', { forceKillAfterTimeout: 500 })
-      process.exit()
+    ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) => {
+      process.on(signal, () => {
+        commandProcess.kill('SIGTERM', { forceKillAfterTimeout: 500 })
+        process.exit()
+      })
     })
-  })
 
   return commandProcess
 }
@@ -308,6 +308,9 @@ const dev = async (options, command) => {
     const netlifyToken = await command.authenticate()
     await OneGraphCliClient.ensureAppForSite(netlifyToken, site.id)
     const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options })
+
+    log(`Starting Netlify Graph session, to edit your library run \`netlify graph:edit\` in another tab`)
+
     startOneGraphCLISession({ netlifyGraphConfig, netlifyToken, site, state })
   }
 

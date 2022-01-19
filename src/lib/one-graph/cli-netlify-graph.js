@@ -1,5 +1,6 @@
 const fs = require('fs')
 const path = require('path')
+const process = require('process')
 
 const { GraphQL, InternalConsole, NetlifyGraph } = require('netlify-onegraph-internal')
 
@@ -40,27 +41,40 @@ const getNetlifyGraphConfig = async ({ command, options }) => {
   try {
     settings = await detectServerSettings(devConfig, options, site.root)
   } catch (detectServerSettingsError) {
-    error(detectServerSettingsError.message)
+    error(detectServerSettingsError)
   }
+
+  const siteRoot = [path.sep, ...site.root.split(path.sep).filter((part) => part !== '')]
+
+  const tsConfig = 'tsconfig.json'
+  const autodetectedLanguage = fs.existsSync(tsConfig) ? 'typescript' : 'javascript'
 
   const framework = settings.framework || userSpecifiedConfig.framework
   const isNextjs = framework === 'Next.js'
   const detectedFunctionsPathString = getFunctionsDir({ config, options })
   const detectedFunctionsPath = detectedFunctionsPathString ? detectedFunctionsPathString.split(path.sep) : null
-  const functionsPath = isNextjs ? ['pages', 'api'] : detectedFunctionsPath || [`functions`]
+  const functionsPath = isNextjs ? [...siteRoot, 'pages', 'api'] : [...siteRoot, detectedFunctionsPath] || [...siteRoot, 'functions']
+  const netlifyGraphPath = isNextjs ? [...siteRoot, 'lib', 'netlifyGraph'] : [...siteRoot, ...NetlifyGraph.defaultNetlifyGraphConfig.netlifyGraphPath]
   const baseConfig = { ...NetlifyGraph.defaultNetlifyGraphConfig, ...userSpecifiedConfig }
-  const netlifyGraphImplementationFilename = [...baseConfig.netlifyGraphPath, `index.${baseConfig.extension}`]
-  const netlifyGraphTypeDefinitionsFilename = [...baseConfig.netlifyGraphPath, `index.d.ts`]
-  const graphQLOperationsSourceFilename = [...baseConfig.netlifyGraphPath, NetlifyGraph.defaultSourceOperationsFilename]
+  const netlifyGraphImplementationFilename = [...netlifyGraphPath, `index.${baseConfig.extension}`]
+  const netlifyGraphTypeDefinitionsFilename = [...netlifyGraphPath, `index.d.ts`]
+  const graphQLOperationsSourceFilename = [...netlifyGraphPath, NetlifyGraph.defaultSourceOperationsFilename]
+  const graphQLSchemaFilename = [...netlifyGraphPath, NetlifyGraph.defaultGraphQLSchemaFilename]
   const netlifyGraphRequirePath = isNextjs ? ['..', '..', 'lib', 'netlifyGraph'] : [`./netlifyGraph`]
+  const language = userSpecifiedConfig.language || autodetectedLanguage
+  const moduleType = baseConfig.moduleType || isNextjs ? 'esm' : 'commonjs'
   const fullConfig = {
     ...baseConfig,
     functionsPath,
+    netlifyGraphPath,
     netlifyGraphImplementationFilename,
     netlifyGraphTypeDefinitionsFilename,
     graphQLOperationsSourceFilename,
+    graphQLSchemaFilename,
     netlifyGraphRequirePath,
     framework,
+    language,
+    moduleType
   }
 
   return fullConfig
@@ -71,7 +85,7 @@ const getNetlifyGraphConfig = async ({ command, options }) => {
  * @param {NetlifyGraphConfig} netlifyGraphConfig
  */
 const ensureNetlifyGraphPath = (netlifyGraphConfig) => {
-  fs.mkdirSync(path.join(...netlifyGraphConfig.netlifyGraphPath), { recursive: true })
+  fs.mkdirSync(path.resolve(...netlifyGraphConfig.netlifyGraphPath), { recursive: true })
 }
 
 /**
@@ -79,7 +93,7 @@ const ensureNetlifyGraphPath = (netlifyGraphConfig) => {
  * @param {NetlifyGraphConfig} netlifyGraphConfig
  */
 const ensureFunctionsPath = (netlifyGraphConfig) => {
-  fs.mkdirSync(path.join(...netlifyGraphConfig.functionsPath), { recursive: true })
+  fs.mkdirSync(path.resolve(...netlifyGraphConfig.functionsPath), { recursive: true })
 }
 
 /**
@@ -98,8 +112,8 @@ const generateFunctionsFile = (netlifyGraphConfig, schema, operationsDoc, querie
   )
 
   ensureNetlifyGraphPath(netlifyGraphConfig)
-  fs.writeFileSync(path.join(...netlifyGraphConfig.netlifyGraphImplementationFilename), clientSource, 'utf8')
-  fs.writeFileSync(path.join(...netlifyGraphConfig.netlifyGraphTypeDefinitionsFilename), typeDefinitionsSource, 'utf8')
+  fs.writeFileSync(path.resolve(...netlifyGraphConfig.netlifyGraphImplementationFilename), clientSource, 'utf8')
+  fs.writeFileSync(path.resolve(...netlifyGraphConfig.netlifyGraphTypeDefinitionsFilename), typeDefinitionsSource, 'utf8')
 }
 
 /**
@@ -110,7 +124,7 @@ const generateFunctionsFile = (netlifyGraphConfig, schema, operationsDoc, querie
 const readGraphQLOperationsSourceFile = (netlifyGraphConfig) => {
   ensureNetlifyGraphPath(netlifyGraphConfig)
 
-  const fullFilename = path.join(...netlifyGraphConfig.graphQLOperationsSourceFilename)
+  const fullFilename = path.resolve(...netlifyGraphConfig.graphQLOperationsSourceFilename)
   if (!fs.existsSync(fullFilename)) {
     fs.writeFileSync(fullFilename, '')
     fs.closeSync(fs.openSync(fullFilename, 'w'))
@@ -130,7 +144,7 @@ const writeGraphQLOperationsSourceFile = (netlifyGraphConfig, operationDocString
   const graphqlSource = operationDocString
 
   ensureNetlifyGraphPath(netlifyGraphConfig)
-  fs.writeFileSync(path.join(...netlifyGraphConfig.graphQLOperationsSourceFilename), graphqlSource, 'utf8')
+  fs.writeFileSync(path.resolve(...netlifyGraphConfig.graphQLOperationsSourceFilename), graphqlSource, 'utf8')
 }
 
 /**
@@ -142,7 +156,7 @@ const writeGraphQLSchemaFile = (netlifyGraphConfig, schema) => {
   const graphqlSource = printSchema(schema)
 
   ensureNetlifyGraphPath(netlifyGraphConfig)
-  fs.writeFileSync(path.join(...netlifyGraphConfig.graphQLSchemaFilename), graphqlSource, 'utf8')
+  fs.writeFileSync(path.resolve(...netlifyGraphConfig.graphQLSchemaFilename), graphqlSource, 'utf8')
 }
 
 /**
@@ -152,7 +166,7 @@ const writeGraphQLSchemaFile = (netlifyGraphConfig, schema) => {
  */
 const readGraphQLSchemaFile = (netlifyGraphConfig) => {
   ensureNetlifyGraphPath(netlifyGraphConfig)
-  return fs.readFileSync(path.join(...netlifyGraphConfig.graphQLSchemaFilename), 'utf8')
+  return fs.readFileSync(path.resolve(...netlifyGraphConfig.graphQLSchemaFilename), 'utf8')
 }
 
 /**
@@ -169,7 +183,7 @@ const generateHandler = (netlifyGraphConfig, schema, operationId, handlerOptions
     currentOperationsDoc = NetlifyGraph.defaultExampleOperationsDoc
   }
 
-  const handlerSource = NetlifyGraph.generateHandlerSource({
+  const result = NetlifyGraph.generateHandlerSource({
     handlerOptions,
     schema,
     netlifyGraphConfig,
@@ -177,27 +191,58 @@ const generateHandler = (netlifyGraphConfig, schema, operationId, handlerOptions
     operationsDoc: currentOperationsDoc,
   })
 
-  if (!(handlerSource && handlerSource.source)) {
+  if (!(result)) {
+    warn(`No handler was generated for operationId ${operationId}`)
     return
   }
 
-  const { operation, source } = handlerSource
-
-  const operationName = (operation.name && operation.name.value) || 'Unnamed'
-
-  const filenameArr = [
-    path.sep,
-    ...netlifyGraphConfig.functionsPath,
-    `${operationName}.${netlifyGraphConfig.extension}`,
-  ]
-  const absoluteFilename = path.resolve(...filenameArr)
+  const { exportedFiles, operation } = result
 
   ensureFunctionsPath(netlifyGraphConfig)
-  fs.writeFileSync(absoluteFilename, source)
+
+  exportedFiles?.forEach((exportedFile) => {
+    const { content } = exportedFile
+    const isNamed = exportedFile.kind === "NamedExportedFile"
+
+    let filenameArr
+
+    if (isNamed) {
+      filenameArr = [...exportedFile.name]
+    } else {
+      const operationName = (operation.name && operation.name.value) || 'Unnamed'
+      const fileExtension = netlifyGraphConfig.language === 'typescript' ? 'ts' : netlifyGraphConfig.extension
+      const defaultBaseFilename = `${operationName}.${fileExtension}`
+      const baseFilename = defaultBaseFilename;
+
+      filenameArr = [
+        ...netlifyGraphConfig.functionsPath,
+        baseFilename
+      ]
+    }
+
+    const absoluteFilename = path.resolve(...filenameArr)
+
+    fs.writeFileSync(absoluteFilename, content);
+  });
 }
 
 // Export the minimal set of functions that are required for Netlify Graph
 const { buildSchema, parse } = GraphQL
+
+/**
+ * 
+ * @param {object} options
+ * @param {string} options.siteName The name of the site as used in the Netlify UI url scheme
+ * @param {string} options.oneGraphSessionId The oneGraph session id to use when generating the graph-edit link
+ * @returns {string} The url to the Netlify Graph UI for the current session
+ */
+const getGraphEditUrlBySiteName = ({ oneGraphSessionId, siteName }) => {
+  const host = 'app.netlify.com' || process.env.NETLIFY_APP_HOST
+  // http because app.netlify.com will redirect to https, and localhost will still work for development
+  const url = `http://${host}/sites/${siteName}/graph/explorer?cliSessionId=${oneGraphSessionId}`
+
+  return url
+}
 
 module.exports = {
   buildSchema,
@@ -207,6 +252,7 @@ module.exports = {
   generateFunctionsFile,
   generateHandlerSource: NetlifyGraph.generateHandlerSource,
   generateHandler,
+  getGraphEditUrlBySiteName,
   getNetlifyGraphConfig,
   parse,
   readGraphQLOperationsSourceFile,
