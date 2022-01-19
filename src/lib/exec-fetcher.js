@@ -1,7 +1,6 @@
 // @ts-check
 const path = require('path')
 const process = require('process')
-const { stringify } = require('querystring')
 
 const { fetchLatest, fetchVersion, newerVersion, updateAvailable } = require('gh-release-fetch')
 const isExe = require('isexe')
@@ -117,13 +116,16 @@ const fetchLatestVersion = async ({ destination, execName, extension, latestVers
     await fetch
   } catch (error_) {
     if (typeof error_ === 'object' && 'statusCode' in error_ && error_.statusCode === 404) {
-      const qs = stringify({
-        assignees: '',
-        labels: 'type: bug',
-        template: 'bug_report.md',
-        title: `${execName} is not supported on ${platform} with CPU architecture ${arch}`,
-      })
-      const issueLink = terminalLink('Create a new CLI issue', `https://github.com/netlify/cli/issues/new?${qs}`)
+      const createIssueLink = new URL('https://github.com/netlify/cli/issues/new')
+      createIssueLink.searchParams.set('assignees', '')
+      createIssueLink.searchParams.set('labels', 'type: bug')
+      createIssueLink.searchParams.set('template', 'bug_report.md')
+      createIssueLink.searchParams.set(
+        'title',
+        `${execName} is not supported on ${platform} with CPU architecture ${arch}`,
+      )
+
+      const issueLink = terminalLink('Create a new CLI issue', createIssueLink.href)
 
       error(`The operating system ${chalk.cyan(platform)} with the CPU architecture ${chalk.cyan(
         arch,
