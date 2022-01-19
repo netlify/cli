@@ -1,71 +1,113 @@
 // @ts-check
-const { stat } = require('fs').promises
-const path = require('path')
-const process = require('process')
 
+/** @type {import('ava').TestInterface} */
+// @ts-ignore
 const test = require('ava')
-const tempDirectory = require('temp-dir')
-const { v4: uuid } = require('uuid')
+const proxyquire = require('proxyquire')
+const sinon = require('sinon')
 
-const { fetchLatestVersion, getExecName, shouldFetchLatestVersion } = require('./exec-fetcher')
-const { rmdirRecursiveAsync } = require('./fs')
+// is not a function therefore use Object.defineProperty to mock it
+const processSpy = {}
+const fetchLatestSpy = sinon.stub()
 
-test.beforeEach((t) => {
-  const directory = path.join(tempDirectory, `netlify-cli-exec-fetcher`, uuid())
-  t.context.binPath = directory
+const { fetchLatestVersion, getArch, getExecName } = proxyquire('./exec-fetcher', {
+  'gh-release-fetch': {
+    fetchLatest: fetchLatestSpy,
+  },
+  process: processSpy,
 })
 
-test.afterEach(async (t) => {
-  await rmdirRecursiveAsync(t.context.binPath)
+test(`should use 386 if process architecture is ia32`, (t) => {
+  Object.defineProperty(processSpy, 'arch', { value: 'ia32' })
+  t.is(getArch(), '386')
 })
 
-test(`should postix exec with .exe on windows`, (t) => {
+test(`should use amd64 if process architecture is x64`, (t) => {
+  Object.defineProperty(processSpy, 'arch', { value: 'x64' })
+  t.is(getArch(), 'amd64')
+})
+
+test(`should append .exe on windows for the executable name`, (t) => {
+  Object.defineProperty(processSpy, 'platform', { value: 'win32' })
   const execName = 'some-binary-file'
-  if (process.platform === 'win32') {
-    t.is(getExecName({ execName }), `${execName}.exe`)
-  } else {
-    t.is(getExecName({ execName }), execName)
-  }
+  t.is(getExecName({ execName }), `${execName}.exe`)
 })
 
-const packages = [
-  // Disabled since failing on CI due to GitHub API limits when fetching releases
-  // TODO: Re-enabled when we can think of a solution
-  // {
-  //   packageName: 'traffic-mesh-agent',
-  //   execName: 'traffic-mesh',
-  //   execArgs: ['--version'],
-  //   pattern: '\\sv(.+)',
-  //   extension: 'zip',
-  // },
-]
-
-packages.forEach(({ execArgs, execName, extension, packageName, pattern }) => {
-  test(`${packageName} - should return true on empty directory`, async (t) => {
-    const { binPath } = t.context
-    const actual = await shouldFetchLatestVersion({ binPath, packageName, execName, execArgs, pattern })
-    t.is(actual, true)
-  })
-
-  test(`${packageName} - should return false after latest version is fetched`, async (t) => {
-    const { binPath } = t.context
-
-    await fetchLatestVersion({ packageName, execName, destination: binPath, extension })
-
-    const actual = await shouldFetchLatestVersion({ binPath, packageName, execName, execArgs, pattern })
-    t.is(actual, false)
-  })
-
-  test(`${packageName} - should download latest version on empty directory`, async (t) => {
-    const { binPath } = t.context
-
-    await fetchLatestVersion({ packageName, execName, destination: binPath, extension })
-
-    const execPath = path.join(binPath, getExecName({ execName }))
-    const stats = await stat(execPath)
-    t.is(stats.size >= FILE_MIN_SIZE, true)
-  })
+test(`should not append anything on linux or darwin to executable`, (t) => {
+  Object.defineProperty(processSpy, 'platform', { value: 'darwin' })
+  const execName = 'some-binary-file'
+  t.is(getExecName({ execName }), execName)
+  Object.defineProperty(processSpy, 'platform', { value: 'linux' })
+  t.is(getExecName({ execName }), execName)
 })
 
-// 5 KiB
-const FILE_MIN_SIZE = 5e3
+test('should test if an error is thrown if the cpu architecture and the os are not available', async (t) => {
+  Object.defineProperties(processSpy, {
+    platform: { value: 'windows' },
+    arch: { value: 'amd64' },
+  })
+
+  // eslint-disable-next-line prefer-promise-reject-errors
+  fetchLatestSpy.returns(Promise.reject({ statusCode: 404 }))
+
+  const { message } = await t.throwsAsync(
+    fetchLatestVersion({
+      packageName: 'traffic-mesh-agent',
+      execName: 'traffic-mesh',
+      destination: t.context.binPath,
+      extension: 'zip',
+    }),
+  )
+
+  t.regex(message, /The operating system windows with the CPU architecture amd64 is currently not supported!/)
+})
+
+test('should provide the error if it is not a 404', async (t) => {
+  const error = new Error('Got Rate limited for example')
+
+  fetchLatestSpy.returns(Promise.reject(error))
+
+  const { message } = await t.throwsAsync(
+    fetchLatestVersion({
+      packageName: 'traffic-mesh-agent',
+      execName: 'traffic-mesh',
+      destination: t.context.binPath,
+      extension: 'zip',
+    }),
+  )
+
+  t.is(message, error.message)
+})
+
+test('should map linux x64 to amd64 arch', async (t) => {
+  Object.defineProperties(processSpy, {
+    platform: { value: 'linux' },
+    arch: { value: 'x64' },
+  })
+  // eslint-disable-next-line prefer-promise-reject-errors
+  fetchLatestSpy.returns(Promise.reject({ statusCode: 404 }))
+
+  const { message } = await t.throwsAsync(
+    fetchLatestVersion({
+      packageName: 'traffic-mesh-agent',
+      execName: 'traffic-mesh',
+      destination: t.context.binPath,
+      extension: 'zip',
+    }),
+  )
+
+  t.regex(message, /The operating system linux with the CPU architecture amd64 is currently not supported!/)
+})
+
+test('should not throw when the request passes', async (t) => {
+  fetchLatestSpy.returns(Promise.resolve())
+
+  await t.notThrowsAsync(
+    fetchLatestVersion({
+      packageName: 'traffic-mesh-agent',
+      execName: 'traffic-mesh',
+      destination: t.context.binPath,
+      extension: 'zip',
+    }),
+  )
+})
