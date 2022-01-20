@@ -92,9 +92,10 @@ test('netlify graph handler codegen', (t) => {
     sources.push([dummyPath, content])
   })
 
-  const textualSource = sources.sort(
-    ([filenameA], [filenameB]) => filenameA[0].localeCompare(filenameB[0])
-  ).map(([filename, content]) => `${filename}: ${content}`).join('/-----------------/')
+  const textualSource = sources
+    .sort(([filenameA], [filenameB]) => filenameA[0].localeCompare(filenameB[0]))
+    .map(([filename, content]) => `${filename}: ${content}`)
+    .join('/-----------------/')
 
   t.snapshot(normalize(JSON.stringify(textualSource)))
 })
