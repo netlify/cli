@@ -17,7 +17,7 @@ const netlifyGraphConfig = {
   extension: 'js',
   netlifyGraphPath: 'netlify',
   moduleType: 'commonjs',
-  functionsPath: 'functions',
+  functionsPath: ['functions'],
   netlifyGraphImplementationFilename: 'dummy/index.js',
   netlifyGraphTypeDefinitionsFilename: 'dummy/index.d.ts',
   graphQLOperationsSourceFilename: 'dummy/netlifyGraphOperationsLibrary.graphql',
@@ -50,7 +50,7 @@ test('netlify graph handler codegen', (t) => {
   // From the asset GraphQL file
   const operationId = 'd86699fb-ddfc-4833-9d9a-f3497cb7c992'
   const handlerOptions = {}
-  const generatedHandler = generateHandlerSource({
+  const result = generateHandlerSource({
     netlifyGraphConfig,
     schema,
     operationsDoc: appOperationsDoc,
@@ -58,5 +58,43 @@ test('netlify graph handler codegen', (t) => {
     handlerOptions,
   })
 
-  t.snapshot(normalize(JSON.stringify(generatedHandler)))
+  if (!result) {
+    return
+  }
+
+  const { exportedFiles, operation } = result
+
+  if (!exportedFiles) {
+    return
+  }
+
+  const sources = []
+
+  exportedFiles.forEach((exportedFile) => {
+    const { content } = exportedFile
+    const isNamed = exportedFile.kind === 'NamedExportedFile'
+
+    let filenameArr
+
+    if (isNamed) {
+      filenameArr = [...exportedFile.name]
+    } else {
+      const operationName = (operation.name && operation.name.value) || 'Unnamed'
+      const fileExtension = netlifyGraphConfig.language === 'typescript' ? 'ts' : netlifyGraphConfig.extension
+      const defaultBaseFilename = `${operationName}.${fileExtension}`
+      const baseFilename = defaultBaseFilename
+
+      filenameArr = [...netlifyGraphConfig.functionsPath, baseFilename]
+    }
+
+    const dummyPath = filenameArr.join('|')
+
+    sources.push([dummyPath, content])
+  })
+
+  const textualSource = sources.sort(
+    ([filenameA], [filenameB]) => filenameA[0].localeCompare(filenameB[0])
+  ).map(([filename, content]) => `${filename}: ${content}`).join('/-----------------/')
+
+  t.snapshot(normalize(JSON.stringify(textualSource)))
 })
