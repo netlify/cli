@@ -3,7 +3,7 @@ const { EOL } = require('os')
 const path = require('path')
 const process = require('process')
 
-const { getFramework, listFrameworks } = require('@netlify/framework-info')
+const frameworkInfoPromise = import('@netlify/framework-info')
 const fuzzy = require('fuzzy')
 const getPort = require('get-port')
 const isPlainObject = require('is-plain-obj')
@@ -182,6 +182,7 @@ const getSettingsFromFramework = (framework) => {
 const hasDevCommand = (framework) => Array.isArray(framework.dev.commands) && framework.dev.commands.length !== 0
 
 const detectFrameworkSettings = async ({ projectDir }) => {
+  const { listFrameworks } = await frameworkInfoPromise
   const projectFrameworks = await listFrameworks({ projectDir })
   const frameworks = projectFrameworks.filter((framework) => hasDevCommand(framework))
 
@@ -276,6 +277,7 @@ const mergeSettings = async ({ devConfig, frameworkSettings = {} }) => {
  */
 const handleForcedFramework = async ({ devConfig, projectDir }) => {
   // this throws if `devConfig.framework` is not a supported framework
+  const { getFramework } = await frameworkInfoPromise
   const frameworkSettings = getSettingsFromFramework(await getFramework(devConfig.framework, { projectDir }))
   return mergeSettings({ devConfig, frameworkSettings })
 }

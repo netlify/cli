@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/* eslint-disable eslint-comments/disable-enable-pair, promise/prefer-await-to-callbacks */
 const { join } = require('path')
 const process = require('process')
 
@@ -11,9 +10,12 @@ const { setup } = require('./setup')
 const main = async () => {
   const { cleanup, registry, workspace } = await setup()
 
-  let statusCode = 0
+  // By default assume it is failing, so we don't have to set it when something goes wrong
+  // if it is going successful it will be set
+  let statusCode = 1
 
   try {
+    console.log('Start running ava tests for **/*.e2e.js')
     const { exitCode } = await execa('ava', ['**/*.e2e.js', '--config', join(process.cwd(), 'e2e.config.cjs')], {
       stdio: 'inherit',
       env: {
@@ -21,18 +23,17 @@ const main = async () => {
         E2E_TEST_REGISTRY: registry,
       },
     })
-
     statusCode = exitCode
-  } catch (_error) {
+  } catch (error_) {
     await cleanup()
-    console.error(_error instanceof Error ? _error.message : _error)
+    console.error(error_ instanceof Error ? error_.message : error_)
   }
 
   await cleanup()
   process.exit(statusCode)
 }
 
-main().catch((error) => {
-  console.error(error)
+main().catch((error_) => {
+  console.error(error_ instanceof Error ? error_.message : error_)
   process.exit(1)
 })
