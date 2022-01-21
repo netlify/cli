@@ -88,7 +88,6 @@ EXAMPLES
 The command will automatically open your preferred browser to serve the application. You can customize this behaviour by using the `BROWSER` environment variable:
 
 ```bash
-$ BROWSER=firefox netlify dev # this would use firefox instead of your preferred one
 $ BROWSER=none netlify dev # this will disable the auto opening of the browser
 ```
 

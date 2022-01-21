@@ -339,7 +339,6 @@ const createDevCommand = (program) => {
       'netlify dev',
       'netlify dev -d public',
       'netlify dev -c "hugo server -w" --targetPort 1313',
-      'BROWSER=firefox netlify dev # auto open firefox instead of preferred browser',
       'BROWSER=none netlify dev # disable browser auto opening',
     ])
     .action(dev)
