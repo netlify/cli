@@ -213,6 +213,10 @@ const serveRedirect = async function ({ match, options, proxy, req, res }) {
 
     const destURL = stripOrigin(dest)
 
+    if (isExternal(match)) {
+      return proxyToExternalUrl({ req, res, dest, destURL })
+    }
+
     if (isRedirect(match)) {
       res.writeHead(match.status, {
         Location: destURL,
@@ -220,10 +224,6 @@ const serveRedirect = async function ({ match, options, proxy, req, res }) {
       })
       res.end(`Redirecting to ${destURL}`)
       return
-    }
-
-    if (isExternal(match)) {
-      return proxyToExternalUrl({ req, res, dest, destURL })
     }
 
     const ct = req.headers['content-type'] ? contentType.parse(req).type : ''
