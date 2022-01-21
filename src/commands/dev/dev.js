@@ -266,8 +266,9 @@ const dev = async (options, command) => {
   let settings = {}
   try {
     settings = await detectServerSettings(devConfig, options, site.root)
-  } catch (detectServerSettingsError) {
-    error(detectServerSettingsError)
+  } catch (error_) {
+    log(NETLIFYDEVERR, error_.message)
+    exit(1)
   }
 
   command.setAnalyticsPayload({ projectType: settings.framework || 'custom', live: options.live })
