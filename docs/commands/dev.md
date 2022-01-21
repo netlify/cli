@@ -42,6 +42,7 @@ netlify dev
 netlify dev
 netlify dev -d public
 netlify dev -c "hugo server -w" --targetPort 1313
+BROWSER=none netlify dev # disable browser auto opening
 ```
 
 ---
