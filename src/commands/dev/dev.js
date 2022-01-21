@@ -335,7 +335,12 @@ const createDevCommand = (program) => {
         'specify the path to a local GeoIP location database in MMDB format',
       ).hideHelp(),
     )
-    .addExamples(['netlify dev', 'netlify dev -d public', 'netlify dev -c "hugo server -w" --targetPort 1313'])
+    .addExamples([
+      'netlify dev',
+      'netlify dev -d public',
+      'netlify dev -c "hugo server -w" --targetPort 1313',
+      'BROWSER=none netlify dev # disable browser auto opening',
+    ])
     .action(dev)
 }
 module.exports = { createDevCommand }
