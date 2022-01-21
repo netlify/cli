@@ -85,6 +85,13 @@ EXAMPLES
   $ netlify dev -c "hugo server -w" --targetPort 1313
 ```
 
+The command will automatically open your preferred browser to serve the application. You can customize this behaviour by using the `BROWSER` environment variable:
+
+```bash
+$ BROWSER=firefox netlify dev # this would use firefox instead of your preferred one
+$ BROWSER=none netlify dev # this will disable the auto opening of the browser
+```
+
 ## Live Share
 
 To share your ongoing dev session with a coworker, just run Netlify Dev with a `--live` flag:
