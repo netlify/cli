@@ -53,7 +53,7 @@ const getNetlifyGraphConfig = async ({ command, options }) => {
   const isNextjs = framework === 'Next.js'
   const detectedFunctionsPathString = getFunctionsDir({ config, options })
   const detectedFunctionsPath = detectedFunctionsPathString ? detectedFunctionsPathString.split(path.sep) : null
-  const functionsPath = isNextjs ? [...siteRoot, 'pages', 'api'] : [...siteRoot, detectedFunctionsPath]
+  const functionsPath = isNextjs ? [...siteRoot, 'pages', 'api'] : [...siteRoot, ...detectedFunctionsPath]
   const netlifyGraphPath = isNextjs
     ? [...siteRoot, 'lib', 'netlifyGraph']
     : [...siteRoot, ...NetlifyGraph.defaultNetlifyGraphConfig.netlifyGraphPath]
