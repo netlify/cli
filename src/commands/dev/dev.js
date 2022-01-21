@@ -109,12 +109,12 @@ const runCommand = (command, env = {}) => {
     }
     process.exit(1)
   })
-  ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) => {
-    process.on(signal, () => {
-      commandProcess.kill('SIGTERM', { forceKillAfterTimeout: 500 })
-      process.exit()
+    ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) => {
+      process.on(signal, () => {
+        commandProcess.kill('SIGTERM', { forceKillAfterTimeout: 500 })
+        process.exit()
+      })
     })
-  })
 
   return commandProcess
 }
@@ -359,7 +359,12 @@ const createDevCommand = (program) => {
       ).hideHelp(),
     )
     .addOption(new Option('--graph', 'enable Netlify Graph support').hideHelp())
-    .addExamples(['netlify dev', 'netlify dev -d public', 'netlify dev -c "hugo server -w" --targetPort 1313'])
+    .addExamples([
+      'netlify dev',
+      'netlify dev -d public',
+      'netlify dev -c "hugo server -w" --targetPort 1313',
+      'BROWSER=none netlify dev # disable browser auto opening',
+    ])
     .action(dev)
 }
 module.exports = { createDevCommand }
