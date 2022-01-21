@@ -621,7 +621,7 @@ test('netlify init monorepo root with netlify.toml, subdirectory without netlify
   })
 })
 
-test('netlify init monorepo root and sub directory with netlify.toml', async (t) => {
+windowsSkip('netlify init monorepo root and sub directory with netlify.toml', async (t) => {
   const initQuestions = [
     {
       question: 'Create & configure a new site',
