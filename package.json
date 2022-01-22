@@ -149,7 +149,7 @@
     "netlify-onegraph-internal": "0.0.15",
     "netlify-redirect-parser": "^13.0.1",
     "netlify-redirector": "^0.2.1",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^3.1.1",
     "node-version-alias": "^1.0.1",
     "omit.js": "^2.0.2",
     "ora": "^5.0.0",
