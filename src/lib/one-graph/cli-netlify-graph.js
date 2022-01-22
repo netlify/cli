@@ -18,6 +18,13 @@ const internalConsole = {
 InternalConsole.registerConsole(internalConsole)
 
 /**
+ * Remove any relative path components from the given path
+ * @param {string[]} items Filesystem path items to filter
+ * @return {string[]} Filtered filesystem path items
+ */
+const filterRelativePathItems = (items) => items.filter((part) => part !== '')
+
+/**
  * Return a full NetlifyGraph config with any defaults overridden by netlify.toml
  * @param {import('../base-command').BaseCommand} command
  * @return {NetlifyGraphConfig} NetlifyGraphConfig
@@ -44,7 +51,7 @@ const getNetlifyGraphConfig = async ({ command, options }) => {
     error(detectServerSettingsError)
   }
 
-  const siteRoot = [path.sep, ...site.root.split(path.sep).filter((part) => part !== '')]
+  const siteRoot = [path.sep, ...filterRelativePathItems(site.root.split(path.sep))]
 
   const tsConfig = 'tsconfig.json'
   const autodetectedLanguage = fs.existsSync(tsConfig) ? 'typescript' : 'javascript'
@@ -53,10 +60,12 @@ const getNetlifyGraphConfig = async ({ command, options }) => {
   const isNextjs = framework === 'Next.js'
   const detectedFunctionsPathString = getFunctionsDir({ config, options })
   const detectedFunctionsPath = detectedFunctionsPathString ? detectedFunctionsPathString.split(path.sep) : null
-  const functionsPath = isNextjs ? [...siteRoot, 'pages', 'api'] : [...siteRoot, ...detectedFunctionsPath]
-  const netlifyGraphPath = isNextjs
-    ? [...siteRoot, 'lib', 'netlifyGraph']
-    : [...siteRoot, ...NetlifyGraph.defaultNetlifyGraphConfig.netlifyGraphPath]
+  const functionsPath = filterRelativePathItems(isNextjs ? [...siteRoot, 'pages', 'api'] : [...detectedFunctionsPath])
+  const netlifyGraphPath = filterRelativePathItems(
+    isNextjs
+      ? [...siteRoot, 'lib', 'netlifyGraph']
+      : [...siteRoot, ...NetlifyGraph.defaultNetlifyGraphConfig.netlifyGraphPath],
+  )
   const baseConfig = { ...NetlifyGraph.defaultNetlifyGraphConfig, ...userSpecifiedConfig }
   const netlifyGraphImplementationFilename = [...netlifyGraphPath, `index.${baseConfig.extension}`]
   const netlifyGraphTypeDefinitionsFilename = [...netlifyGraphPath, `index.d.ts`]
@@ -224,7 +233,7 @@ const generateHandler = (netlifyGraphConfig, schema, operationId, handlerOptions
       const defaultBaseFilename = `${operationName}.${fileExtension}`
       const baseFilename = defaultBaseFilename
 
-      filenameArr = [...netlifyGraphConfig.functionsPath, baseFilename]
+      filenameArr = [path.sep, ...netlifyGraphConfig.functionsPath, baseFilename]
     }
 
     const absoluteFilename = path.resolve(...filenameArr)
