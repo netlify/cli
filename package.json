@@ -8,7 +8,8 @@
     "David Calavera <david@netlify.com> (https://twitter.com/calavera)",
     "David Wells <david.wells@netlify.com> (https://davidwells.io/)",
     "Raees Iqbal <raees@netlify.com> (https://raeesbhatti.com/)",
-    "Bret Comnes <bcomnes@gmail.com> (https://bret.io)"
+    "Bret Comnes <bcomnes@gmail.com> (https://bret.io)",
+    "Sean Grove <sean.s.grove@netlify.com> (https://twitter.com/sgrove)"
   ],
   "engines": {
     "node": "^12.20.0 || ^14.14.0 || >=16.0.0"
@@ -121,6 +122,7 @@
     "gh-release-fetch": "^3.0.0",
     "git-repo-info": "^2.1.0",
     "gitconfiglocal": "^2.1.0",
+    "graphql": "^16.1.0",
     "hasbin": "^1.2.3",
     "hasha": "^5.2.2",
     "http-proxy": "^1.18.0",
@@ -144,6 +146,7 @@
     "multiparty": "^4.2.1",
     "netlify": "^10.1.2",
     "netlify-headers-parser": "^6.0.1",
+    "netlify-onegraph-internal": "0.0.15",
     "netlify-redirect-parser": "^13.0.1",
     "netlify-redirector": "^0.2.1",
     "node-fetch": "^2.6.0",

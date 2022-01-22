@@ -25,6 +25,7 @@ See the [CLI command line reference](https://cli.netlify.com/commands/) to get s
   - [dev](#dev)
   - [env](#env)
   - [functions](#functions)
+  - [graph](#graph)
   - [init](#init)
   - [link](#link)
   - [lm](#lm)
@@ -150,6 +151,16 @@ Manage netlify functions
 | [`functions:invoke`](/docs/commands/functions.md#functionsinvoke) | Trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions  |
 | [`functions:list`](/docs/commands/functions.md#functionslist) | List functions that exist locally  |
 | [`functions:serve`](/docs/commands/functions.md#functionsserve) | (Beta) Serve functions locally  |
+
+
+### [graph](/docs/commands/graph.md)
+
+(Beta) Control the Netlify Graph functions for the current site
+
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`graph:edit`](/docs/commands/graph.md#graphedit) | Launch the browser to edit your local graph functions from Netlify  |
+| [`graph:pull`](/docs/commands/graph.md#graphpull) | Pull down your local Netlify Graph schema, and process pending Graph edit events  |
 
 
 ### [init](/docs/commands/init.md)
