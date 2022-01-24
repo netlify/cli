@@ -587,94 +587,6 @@ const testMatrix = [{ node_bundler: undefined }, { node_bundler: 'esbuild' }]
 testMatrix.forEach((args) => {
   const testName = (title) => `${title} - ${JSON.stringify(args)}`
 
-  test(testName('should allow config-defined scheduled functions to only be called via invoke'), async (t) => {
-    await withSiteBuilder('site-with-ping-function', async (builder) => {
-      await builder
-        .withNetlifyToml({
-          config: {
-            functions: { ...args, directory: 'functions', 'hello-world': { schedule: '* * * * *' } },
-          },
-        })
-        .withFunction({
-          path: 'hello-world.js',
-          handler: async () => {
-            console.log('hello world')
-            return { statusCode: 200 }
-          },
-        })
-        .buildAsync()
-
-      await withDevServer({ cwd: builder.directory }, async (server) => {
-        const response = await got(`http://localhost:${server.port}/.netlify/functions/hello-world`, {
-          throwHttpErrors: false,
-          retry: null,
-        })
-        t.is(
-          response.body,
-          "Scheduled function cannot be requested via HTTP. Invoke using the 'netlify functions:invoke hello-world' command instead.",
-        )
-        t.is(response.statusCode, 400)
-
-        const stdout = await callCli(['functions:invoke', 'hello-world', '--identity', `--port=${server.port}`], {
-          cwd: builder.directory,
-          stdio: 'inherit',
-        })
-        t.is(stdout, undefined)
-      })
-    })
-  })
-
-  test(testName('should allow ISC-defined scheduled functions to only be called via invoke'), async (t) => {
-    await withSiteBuilder('site-with-isc-ping-function', async (builder) => {
-      await builder
-        .withNetlifyToml({
-          config: { functions: { directory: 'functions' } },
-        })
-        // mocking until https://github.com/netlify/functions/pull/226 landed
-        .withContentFile({
-          path: 'node_modules/@netlify/functions/package.json',
-          content: `{}`,
-        })
-        .withContentFile({
-          path: 'node_modules/@netlify/functions/index.js',
-          content: `
-          module.exports.schedule = (schedule, handler) => handler
-          `,
-        })
-        .withContentFile({
-          path: 'functions/hello-world.js',
-          content: `
-          const { schedule } = require('@netlify/functions')
-
-          module.exports.handler = schedule('@daily', () => {
-            return {
-              statusCode: 200
-            }
-          })
-          `.trim(),
-        })
-        .buildAsync()
-
-      await withDevServer({ cwd: builder.directory }, async (server) => {
-        const response = await got(`http://localhost:${server.port}/.netlify/functions/hello-world`, {
-          throwHttpErrors: false,
-          retry: null,
-        })
-        t.is(
-          response.body,
-          "Scheduled function cannot be requested via HTTP. Invoke using the 'netlify functions:invoke hello-world' command instead.",
-        )
-        t.is(response.statusCode, 400)
-
-        const stdout = await callCli(['functions:invoke', 'hello-world', '--identity', `--port=${server.port}`], {
-          cwd: builder.directory,
-          stdio: 'inherit',
-        })
-        t.is(stdout, undefined)
-      })
-    })
-  })
-
   test(testName('should serve helpful tips and tricks'), async (t) => {
     await withSiteBuilder('site-with-isc-ping-function', async (builder) => {
       await builder
@@ -712,8 +624,9 @@ testMatrix.forEach((args) => {
           throwHttpErrors: false,
           retry: null,
         })
-        const regex = /.*Your function returned `body`, `level`. Is this an accident\?.*/
-        t.regex(plainTextResponse.body, regex)
+        const youReturnedBodyRegex = /.*Your function returned `body`, `level`. Is this an accident\?.*/
+        t.regex(plainTextResponse.body, youReturnedBodyRegex)
+        t.regex(plainTextResponse.body, /.*You performed an HTTP request.*/)
         t.is(plainTextResponse.statusCode, 200)
 
         const htmlResponse = await got(`http://localhost:${server.port}/.netlify/functions/hello-world`, {
@@ -729,7 +642,7 @@ testMatrix.forEach((args) => {
         const stdout = await callCli(['functions:invoke', 'hello-world', '--identity', `--port=${server.port}`], {
           cwd: builder.directory,
         })
-        t.regex(stdout, regex)
+        t.regex(stdout, youReturnedBodyRegex)
       })
     })
   })
@@ -764,13 +677,13 @@ testMatrix.forEach((args) => {
         .buildAsync()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
-        const helloWorldStatusCode = () =>
+        const helloWorldBody = () =>
           got(`http://localhost:${server.port}/.netlify/functions/hello-world`, {
             throwHttpErrors: false,
             retry: null,
-          }).then((response) => response.statusCode)
+          }).then((response) => response.body)
 
-        t.is(await helloWorldStatusCode(), 200)
+        t.is(await helloWorldBody(), '')
 
         await builder
           .withContentFile({
@@ -780,7 +693,8 @@ testMatrix.forEach((args) => {
 
           module.exports.handler = schedule("@daily", () => {
             return {
-              statusCode: 200
+              statusCode: 200,
+              body: "test"
             }
           })
           `.trim(),
@@ -790,7 +704,8 @@ testMatrix.forEach((args) => {
         const DETECT_FILE_CHANGE_DELAY = 250
         await pause(DETECT_FILE_CHANGE_DELAY)
 
-        t.is(await helloWorldStatusCode(), 400)
+        const warningMessage = await helloWorldBody()
+        t.true(warningMessage.includes('Your function returned `body`'))
       })
     })
   })
