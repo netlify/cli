@@ -5,7 +5,7 @@ const { CLOCKWORK_USERAGENT } = require('../../utils')
 const { formatLambdaError } = require('./utils')
 
 const handleScheduledFunction = ({ error, request, response, result }) => {
-  const acceptsHtml = request.headers.accept?.includes('text/html')
+  const acceptsHtml = request.headers.accept && request.headers.accept.includes('text/html')
   const paragraph = (text) => {
     text = text.trim()
 
