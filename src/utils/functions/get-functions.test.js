@@ -37,6 +37,7 @@ test('should return object with function details for a directory with js files',
         mainFile: path.join(builder.directory, 'functions', 'index.js'),
         isBackground: false,
         runtime: 'js',
+        schedule: undefined,
         urlPath: '/.netlify/functions/index',
       },
     ])
@@ -64,6 +65,7 @@ test('should mark background functions based on filenames', async (t) => {
         mainFile: path.join(builder.directory, 'functions', 'bar-background', 'bar-background.js'),
         isBackground: true,
         runtime: 'js',
+        schedule: undefined,
         urlPath: '/.netlify/functions/bar-background',
       },
       {
@@ -71,6 +73,7 @@ test('should mark background functions based on filenames', async (t) => {
         mainFile: path.join(builder.directory, 'functions', 'foo-background.js'),
         isBackground: true,
         runtime: 'js',
+        schedule: undefined,
         urlPath: '/.netlify/functions/foo-background',
       },
     ])
