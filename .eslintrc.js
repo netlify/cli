@@ -31,7 +31,6 @@ module.exports = {
         sourceType: 'module',
         babelOptions: {
           presets: ['@babel/preset-react'],
-          plugins: ['@babel/plugin-proposal-class-properties'],
         },
       },
       rules: {
@@ -50,6 +49,13 @@ module.exports = {
         'import/no-unresolved': 0,
         'node/no-missing-require': 0,
         'node/no-unsupported-features/es-syntax': 0,
+      },
+    },
+    {
+      files: ['e2e/**/*.js'],
+      rules: {
+        'ava/no-ignored-test-files': 0,
+        'id-length': 0,
       },
     },
     {

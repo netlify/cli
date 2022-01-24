@@ -179,7 +179,7 @@ const error = (message = '', options = {}) => {
     if (process.env.DEBUG) {
       process.stderr.write(` ${bang}   Warning: ${err.stack.split('\n').join(`\n ${bang}   `)}`)
     } else {
-      process.stderr.write(` ${bang}   ${err.name}: ${err.message}\n`)
+      process.stderr.write(` ${bang}   ${chalk.red(`${err.name}:`)} ${err.message}\n`)
     }
   } else {
     throw err

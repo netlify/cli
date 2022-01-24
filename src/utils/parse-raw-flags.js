@@ -17,7 +17,7 @@ const parseRawFlags = function (raw) {
       const next = array[index + 1]
       if (!next) {
         acc[key] = true
-      } else if (next && next && /^-{1,2}/.test(next)) {
+      } else if (/^-{1,2}/.test(next)) {
         acc[key] = true
       } else {
         acc[key] = next ? aggressiveJSONParse(next) : true
@@ -38,10 +38,10 @@ const aggressiveJSONParse = function (value) {
   let parsed
   try {
     parsed = JSON.parse(value)
-  } catch (error) {
+  } catch {
     try {
       parsed = JSON.parse(`"${value}"`)
-    } catch (error_) {
+    } catch {
       parsed = value
     }
   }

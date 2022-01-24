@@ -73,6 +73,7 @@ Local dev server
 | [`env:get`](/docs/commands/env.md#envget) | Get resolved value of specified environment variable (includes netlify.toml)  |
 | [`env:import`](/docs/commands/env.md#envimport) | Import and set environment variables from .env file  |
 | [`env:list`](/docs/commands/env.md#envlist) | Lists resolved environment variables for site (includes netlify.toml)  |
+| [`env:migrate`](/docs/commands/env.md#envmigrate) | Migrate environment variables from one site to another  |
 | [`env:set`](/docs/commands/env.md#envset) | Set value of environment variable  |
 | [`env:unset`](/docs/commands/env.md#envunset) | Unset an environment variable which removes it from the UI  |
 
@@ -88,6 +89,16 @@ Manage netlify functions
 | [`functions:invoke`](/docs/commands/functions.md#functionsinvoke) | Trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions  |
 | [`functions:list`](/docs/commands/functions.md#functionslist) | List functions that exist locally  |
 | [`functions:serve`](/docs/commands/functions.md#functionsserve) | (Beta) Serve functions locally  |
+
+
+### [graph](/docs/commands/graph.md)
+
+(Beta) Control the Netlify Graph functions for the current site
+
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`graph:edit`](/docs/commands/graph.md#graphedit) | Launch the browser to edit your local graph functions from Netlify  |
+| [`graph:pull`](/docs/commands/graph.md#graphpull) | Pull down your local Netlify Graph schema, and process pending Graph edit events  |
 
 
 ### [init](/docs/commands/init.md)

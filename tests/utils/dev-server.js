@@ -32,7 +32,7 @@ const getExecaOptions = ({ cwd, env }) => ({
   encoding: 'utf8',
 })
 
-const startServer = async ({ cwd, offline = true, env = {}, args = [] }) => {
+const startServer = async ({ cwd, offline = true, env = {}, args = [], expectFailure = false }) => {
   const tryPort = currentPort
   currentPort += 1
   const port = await getPort({ port: tryPort })
@@ -49,7 +49,7 @@ const startServer = async ({ cwd, offline = true, env = {}, args = [] }) => {
     let selfKilled = false
     ps.stdout.on('data', (data) => {
       outputBuffer.push(data)
-      if (data.includes('Server now ready on')) {
+      if (!expectFailure && data.includes('Server now ready on')) {
         resolve({
           url,
           host,
@@ -75,8 +75,7 @@ const startDevServer = async (options, expectFailure) => {
   // eslint-disable-next-line fp/no-loops
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      // eslint-disable-next-line no-await-in-loop
-      const { timeout, ...server } = await startServer(options)
+      const { timeout, ...server } = await startServer({ ...options, expectFailure })
       if (timeout) {
         throw new Error(`Timed out starting dev server.\nServer Output:\n${server.output}`)
       }
