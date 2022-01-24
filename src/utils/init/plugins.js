@@ -1,5 +1,3 @@
-const fetch = require('node-fetch')
-
 // TODO: use static `import` after migrating this repository to pure ES modules
 const netlifyPluginsList = import('@netlify/plugins-list')
 
@@ -9,6 +7,8 @@ const PLUGINS_LIST_TIMEOUT = 6e4
 const getPluginsList = async () => {
   const { pluginsList, pluginsUrl } = await netlifyPluginsList
   try {
+    // TODO: use static `import` after migrating this repository to pure ES modules
+    const { default: fetch } = await import('node-fetch')
     const response = await fetch(pluginsUrl, { timeout: PLUGINS_LIST_TIMEOUT })
     return await response.json()
   } catch {

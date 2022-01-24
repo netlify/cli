@@ -11,7 +11,6 @@ const findUp = require('find-up')
 const fuzzy = require('fuzzy')
 const inquirer = require('inquirer')
 const inquirerAutocompletePrompt = require('inquirer-autocomplete-prompt')
-const fetch = require('node-fetch')
 const ora = require('ora')
 
 const {
@@ -260,6 +259,8 @@ const ensureFunctionDirExists = async function (command) {
  * @param {string} functionsDir
  */
 const downloadFromURL = async function (command, options, argumentName, functionsDir) {
+  // TODO: use static `import` after migrating this repository to pure ES modules
+  const { default: fetch } = await import('node-fetch')
   const folderContents = await readRepoURL(options.url)
   const [functionName] = options.url.split('/').slice(-1)
   const nameToUse = await getNameFromArgs(argumentName, options, functionName)

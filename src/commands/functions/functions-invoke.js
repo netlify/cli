@@ -4,7 +4,6 @@ const path = require('path')
 const process = require('process')
 
 const inquirer = require('inquirer')
-const fetch = require('node-fetch')
 
 const { BACKGROUND, NETLIFYDEVWARN, chalk, error, exit, getFunctions } = require('../../utils')
 
@@ -205,6 +204,8 @@ const functionsInvoke = async (nameArgument, options, command) => {
   body = { ...body, ...payload }
 
   try {
+    // TODO: use static `import` after migrating this repository to pure ES modules
+    const { default: fetch } = await import('node-fetch')
     const response = await fetch(
       `http://localhost:${port}/.netlify/functions/${functionToTrigger}${formatQstring(options.querystring)}`,
       {

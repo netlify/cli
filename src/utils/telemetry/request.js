@@ -3,8 +3,6 @@
 // to run a s a detached process
 const process = require('process')
 
-const fetch = require('node-fetch')
-
 const { name, version } = require('../../../package.json')
 
 const options = JSON.parse(process.argv[2])
@@ -18,6 +16,8 @@ const API_URL = options.type && options.type === 'track' ? TRACK_URL : IDENTIFY_
 // Make telemetry call
 const makeRequest = async function () {
   try {
+    // TODO: use static `import` after migrating this repository to pure ES modules
+    const { default: fetch } = await import('node-fetch')
     await fetch(API_URL, {
       method: 'POST',
       headers: {

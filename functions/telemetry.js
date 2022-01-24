@@ -1,5 +1,3 @@
-const fetch = require('node-fetch')
-
 const TELEMETRY_SERVICE_URL = 'https://cli-telemetry.netlify.engineering'
 
 // This function is a workaround for our inability to redirect traffic to a ntl function in another site
@@ -17,6 +15,8 @@ const handler = async function ({ path, httpMethod, headers, body }) {
     }, {})
 
   try {
+    // TODO: use static `import` after migrating this repository to pure ES modules
+    const { default: fetch } = await import('node-fetch')
     const response = await fetch(`${TELEMETRY_SERVICE_URL}${upstreamPath}`, {
       method: httpMethod,
       headers: upstreamHeaders,

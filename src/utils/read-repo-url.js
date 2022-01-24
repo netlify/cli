@@ -1,8 +1,6 @@
 // @ts-check
 const url = require('url')
 
-const fetch = require('node-fetch')
-
 // supported repo host types
 const GITHUB = 'GitHub'
 
@@ -22,6 +20,8 @@ const readRepoURL = async function (_url) {
 }
 
 const getRepoURLContents = async function (repoHost, ownerAndRepo, contentsPath) {
+  // TODO: use static `import` after migrating this repository to pure ES modules
+  const { default: fetch } = await import('node-fetch')
   // naive joining strategy for now
   if (repoHost === GITHUB) {
     // https://developer.github.com/v3/repos/contents/#get-contents

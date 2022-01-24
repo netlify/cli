@@ -1,5 +1,3 @@
-const fetch = require('node-fetch')
-
 const { warn } = require('../utils/command-helpers')
 
 const getHeaders = ({ token }) => ({
@@ -29,6 +27,8 @@ const getApiUrl = ({ api }) => `${api.scheme}://${api.host}${api.pathPrefix}`
 
 const apiPost = async ({ api, data, path }) => {
   const apiUrl = getApiUrl({ api })
+  // TODO: use static `import` after migrating this repository to pure ES modules
+  const { default: fetch } = await import('node-fetch')
   const response = await fetch(`${apiUrl}/${path}`, {
     method: 'POST',
     body: JSON.stringify(data),
@@ -57,6 +57,8 @@ const uploadEdgeHandlers = async ({ api, bundleBuffer, deployId, manifest }) => 
     throw new Error('Missing upload URL')
   }
 
+  // TODO: use static `import` after migrating this repository to pure ES modules
+  const { default: fetch } = await import('node-fetch')
   const putResponse = await fetch(uploadUrl, {
     method: 'PUT',
     body: bundleBuffer,

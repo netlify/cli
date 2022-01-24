@@ -1,6 +1,5 @@
 const test = require('ava')
 const backoff = require('backoff')
-const fetch = require('node-fetch')
 const sinon = require('sinon')
 
 // eslint-disable-next-line import/order
@@ -22,6 +21,8 @@ test.after(() => {
 })
 
 test('should check if the authWithNetlify is working', async (t) => {
+  // TODO: use static `import` after migrating this repository to pure ES modules
+  const { default: fetch } = await import('node-fetch')
   const promise = authWithNetlify()
   // wait for server to be started
   await new Promise((resolve, reject) => {

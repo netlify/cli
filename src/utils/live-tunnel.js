@@ -1,7 +1,6 @@
 // @ts-check
 const process = require('process')
 
-const fetch = require('node-fetch')
 const pWaitFor = require('p-wait-for')
 
 const { fetchLatestVersion, shouldFetchLatestVersion } = require('../lib/exec-fetcher')
@@ -32,6 +31,8 @@ const createTunnel = async function ({ netlifyApiToken, siteId }) {
   log(`${NETLIFYDEVLOG} Creating Live Tunnel for ${siteId}`)
   const url = `https://api.netlify.com/api/v1/live_sessions?site_id=${siteId}`
 
+  // TODO: use static `import` after migrating this repository to pure ES modules
+  const { default: fetch } = await import('node-fetch')
   const response = await fetch(url, {
     method: 'POST',
     headers: {
@@ -94,6 +95,8 @@ const startLiveTunnel = async ({ localPort, netlifyApiToken, siteId }) => {
   })
 
   const isLiveTunnelReady = async function () {
+    // TODO: use static `import` after migrating this repository to pure ES modules
+    const { default: fetch } = await import('node-fetch')
     const url = `https://api.netlify.com/api/v1/live_sessions/${session.id}`
     const response = await fetch(url, {
       method: 'GET',
