@@ -1,15 +1,18 @@
 // @ts-check
 const { mkdir } = require('fs').promises
+const { extname, isAbsolute, join } = require('path')
 const { env } = require('process')
 
 const terminalLink = require('terminal-link')
 
-const { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn } = require('../../utils')
+const { NETLIFYDEVERR, NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, log, warn } = require('../../utils')
 const { getLogMessage } = require('../log')
 
 const { NetlifyFunction } = require('./netlify-function')
 const runtimes = require('./runtimes')
 const { watchDebounced } = require('./watcher')
+
+const ZIP_EXTENSION = '.zip'
 
 class FunctionsRegistry {
   constructor({ capabilities, config, isConnected = false, projectRoot, settings, timeouts }) {
@@ -140,13 +143,23 @@ class FunctionsRegistry {
       )
     }
 
+    // This fixes the bug described here https://github.com/netlify/zip-it-and-ship-it/issues/637
+    // If the current function's file is a zip bundle, we ignore it and log a helpful message.
+    if (extname(func.mainFile) === ZIP_EXTENSION) {
+      log(`${NETLIFYDEVWARN} Skipped bundled function ${chalk.yellow(name)}. Unzip the archive to load it from source.`)
+      return
+    }
+
     this.functions.set(name, func)
     this.buildFunctionAndWatchFiles(func)
 
     log(`${NETLIFYDEVLOG} ${chalk.green('Loaded')} function ${terminalLink(chalk.yellow(name), func.url)}.`)
   }
 
-  async scan(directories) {
+  async scan(relativeDirs) {
+    const directories = relativeDirs.filter(Boolean).map((dir) => (isAbsolute(dir) ? dir : join(this.projectRoot, dir)))
+
+    // check after filtering to filter out [undefined] for example
     if (directories.length === 0) {
       return
     }

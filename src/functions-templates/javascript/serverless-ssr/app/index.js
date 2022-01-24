@@ -57,7 +57,7 @@ module.exports = function expressApp(functionName) {
 
         <div>
           <a href='https://github.com/DavidWells/netlify-functions-express' target='_blank'>
-            See the source code on github
+            See the source code on GitHub
           </a>
         </div>
       </body>

@@ -61,7 +61,7 @@ const invokeFunction = async ({ context, event, func, timeout }) => {
       headers,
       statusCode,
     }
-  } catch (error) {
+  } catch {
     return {
       statusCode: 500,
     }

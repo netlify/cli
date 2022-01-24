@@ -91,6 +91,16 @@ Manage netlify functions
 | [`functions:serve`](/docs/commands/functions.md#functionsserve) | (Beta) Serve functions locally  |
 
 
+### [graph](/docs/commands/graph.md)
+
+(Beta) Control the Netlify Graph functions for the current site
+
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`graph:edit`](/docs/commands/graph.md#graphedit) | Launch the browser to edit your local graph functions from Netlify  |
+| [`graph:pull`](/docs/commands/graph.md#graphpull) | Pull down your local Netlify Graph schema, and process pending Graph edit events  |
+
+
 ### [init](/docs/commands/init.md)
 
 Configure continuous deployment for a new or existing site. To create a new site without continuous deployment, use `netlify sites:create`
