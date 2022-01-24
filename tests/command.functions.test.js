@@ -675,6 +675,65 @@ testMatrix.forEach((args) => {
     })
   })
 
+  test(testName('should serve helpful tips and tricks'), async (t) => {
+    await withSiteBuilder('site-with-isc-ping-function', async (builder) => {
+      await builder
+        .withNetlifyToml({
+          config: { functions: { directory: 'functions' } },
+        })
+        // mocking until https://github.com/netlify/functions/pull/226 landed
+        .withContentFile({
+          path: 'node_modules/@netlify/functions/package.json',
+          content: `{}`,
+        })
+        .withContentFile({
+          path: 'node_modules/@netlify/functions/index.js',
+          content: `
+          module.exports.schedule = (schedule, handler) => handler
+          `,
+        })
+        .withContentFile({
+          path: 'functions/hello-world.js',
+          content: `
+          const { schedule } = require('@netlify/functions')
+
+          module.exports.handler = schedule('@daily', () => {
+            return {
+              statusCode: 200,
+              body: "hello world"
+            }
+          })
+          `.trim(),
+        })
+        .buildAsync()
+
+      await withDevServer({ cwd: builder.directory }, async (server) => {
+        const plainTextResponse = await got(`http://localhost:${server.port}/.netlify/functions/hello-world`, {
+          throwHttpErrors: false,
+          retry: null,
+        })
+        const regex = /.*Your function returned `body`, `level`. Is this an accident\?.*/
+        t.regex(plainTextResponse.body, regex)
+        t.is(plainTextResponse.statusCode, 200)
+
+        const htmlResponse = await got(`http://localhost:${server.port}/.netlify/functions/hello-world`, {
+          throwHttpErrors: false,
+          retry: null,
+          headers: {
+            accept: 'text/html',
+          },
+        })
+        t.regex(htmlResponse.body, /.*<link.*/)
+        t.is(htmlResponse.statusCode, 200)
+
+        const stdout = await callCli(['functions:invoke', 'hello-world', '--identity', `--port=${server.port}`], {
+          cwd: builder.directory,
+        })
+        t.regex(stdout, regex)
+      })
+    })
+  })
+
   test(testName('should detect file changes to scheduled function'), async (t) => {
     await withSiteBuilder('site-with-isc-ping-function', async (builder) => {
       await builder
