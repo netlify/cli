@@ -25,6 +25,8 @@ jobs:
         run: npm run site:build:install
       - name: Generate Contributors
         run: node ./tools/contributors.mjs ${{ secrets.GITHUB_TOKEN }}
+      - name: Format the package.json file
+        run: npm run format:fix:prettier
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: 'chore: update contributors field'
