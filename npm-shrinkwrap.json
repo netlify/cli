@@ -1,12 +1,12 @@
 {
   "name": "netlify-cli",
-  "version": "8.13.2",
+  "version": "8.14.0",
   "lockfileVersion": 2,
   "requires": true,
   "packages": {
     "": {
       "name": "netlify-cli",
-      "version": "8.13.2",
+      "version": "8.14.0",
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
@@ -79,7 +79,7 @@
         "multiparty": "^4.2.1",
         "netlify": "^10.1.2",
         "netlify-headers-parser": "^6.0.1",
-        "netlify-onegraph-internal": "0.0.15",
+        "netlify-onegraph-internal": "0.0.16",
         "netlify-redirect-parser": "^13.0.1",
         "netlify-redirector": "^0.2.1",
         "node-fetch": "^2.6.0",
@@ -15052,9 +15052,9 @@
       }
     },
     "node_modules/netlify-onegraph-internal": {
-      "version": "0.0.15",
-      "resolved": "https://registry.npmjs.org/netlify-onegraph-internal/-/netlify-onegraph-internal-0.0.15.tgz",
-      "integrity": "sha512-PlUro29zk/D+9/8NLQOx8Qw58KWvZo/42uR+7YMqSx9pMtgvtqKWqpAGGf0iCy4eAwe/XLT/eCQR6k/dIBbZHw==",
+      "version": "0.0.16",
+      "resolved": "https://registry.npmjs.org/netlify-onegraph-internal/-/netlify-onegraph-internal-0.0.16.tgz",
+      "integrity": "sha512-reQ/C7ztbYCDMXqFLSw0rBwOi866sqdBjagUs6Ug6LXDkCIGHBTjMX0iwNhEn7+/WzV4f1lJj66NhdjF5Q4/aQ==",
       "dependencies": {
         "graphql": "16.0.0",
         "node-fetch": "^2.6.0",
@@ -32840,9 +32840,9 @@
       }
     },
     "netlify-onegraph-internal": {
-      "version": "0.0.15",
-      "resolved": "https://registry.npmjs.org/netlify-onegraph-internal/-/netlify-onegraph-internal-0.0.15.tgz",
-      "integrity": "sha512-PlUro29zk/D+9/8NLQOx8Qw58KWvZo/42uR+7YMqSx9pMtgvtqKWqpAGGf0iCy4eAwe/XLT/eCQR6k/dIBbZHw==",
+      "version": "0.0.16",
+      "resolved": "https://registry.npmjs.org/netlify-onegraph-internal/-/netlify-onegraph-internal-0.0.16.tgz",
+      "integrity": "sha512-reQ/C7ztbYCDMXqFLSw0rBwOi866sqdBjagUs6Ug6LXDkCIGHBTjMX0iwNhEn7+/WzV4f1lJj66NhdjF5Q4/aQ==",
       "requires": {
         "graphql": "16.0.0",
         "node-fetch": "^2.6.0",
