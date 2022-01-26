@@ -1,4 +1,5 @@
 /* eslint-disable require-await */
+import { readFileSync } from 'fs'
 import { join } from 'path'
 
 import test from 'ava'
@@ -8,7 +9,6 @@ import { tryAndLogOutput, withDevServer } from './utils/dev-server.js'
 import got from './utils/got.js'
 import { pause } from './utils/pause.js'
 import { withSiteBuilder } from './utils/site-builder.js'
-import { readFileSync } from 'fs'
 
 const testMatrix = [{ args: [] }, { args: ['esbuild'] }]
 const testName = (title, args) => (args.length <= 0 ? title : `${title} - ${args.join(' ')}`)

@@ -1,10 +1,10 @@
 // @ts-check
-import path from 'path'
 import process from 'process'
+import { fileURLToPath } from 'url'
 
 import { isCI } from 'ci-info'
+import { execa } from 'execa'
 
-import execa from '../execa.js'
 import getGlobalConfig from '../get-global-config.js'
 
 import isValidEventName from './validation.js'
@@ -14,21 +14,21 @@ const isTelemetryDisabled = function (config) {
 }
 
 const send = function (type, payload) {
-  const requestFile = new URL('request.js', import.meta.url).pathname
+  const requestFile = fileURLToPath(new URL('request.js', import.meta.url).pathname)
   const options = JSON.stringify({
     data: payload,
     type,
   })
 
-  const args = [process.execPath, [requestFile, options]]
+  const args = [requestFile, options]
   if (process.env.NETLIFY_TEST_TELEMETRY_WAIT === 'true') {
-    return execa(...args, {
+    return execa(process.execPath, args, {
       stdio: 'inherit',
     })
   }
 
   // spawn detached child process to handle send
-  execa(...args, {
+  execa(process.execPath, args, {
     detached: true,
     stdio: 'ignore',
   }).unref()

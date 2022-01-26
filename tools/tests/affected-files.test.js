@@ -1,6 +1,6 @@
 import { join } from 'path'
 
-import test, { beforeEach, afterEach } from 'ava'
+import test from 'ava'
 import glob from 'fast-glob'
 import mock, { restore } from 'mock-fs'
 import { stub, restore as _restore } from 'sinon'
@@ -13,11 +13,11 @@ stub(glob, 'sync').returns(mockedTestFiles)
 // eslint-disable-next-line import/order,import/first
 import { getAffectedFiles } from '../affected-test.js'
 
-beforeEach(() => {
+test.beforeEach(() => {
   mock(simpleMockedFileSystem)
 })
 
-afterEach(() => {
+test.afterEach(() => {
   restore()
   _restore()
 })

@@ -1,14 +1,14 @@
 import test from 'ava'
 import backoff from 'backoff'
 import fetch from 'node-fetch'
-import sinon from 'sinon'
+import { stub } from 'sinon'
 
 // eslint-disable-next-line import/order,import/no-namespace
 import * as openBrowser from './open-browser.js'
 // Stub needs to be required before './gh-auth' as this uses the module
 /** @type {string} */
 let host
-const stubbedModule = sinon.stub(openBrowser, 'openBrowser').callsFake(({ url }) => {
+const stubbedModule = stub(openBrowser, 'openBrowser').callsFake(({ url }) => {
   const params = new URLSearchParams(url.slice(url.indexOf('?') + 1))
   host = params.get('host')
   return Promise.resolve()

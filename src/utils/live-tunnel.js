@@ -1,6 +1,7 @@
 // @ts-check
 import process from 'process'
 
+import { execa } from 'execa'
 import fetch from 'node-fetch'
 import pWaitFor from 'p-wait-for'
 
@@ -8,7 +9,6 @@ import { fetchLatestVersion, shouldFetchLatestVersion } from '../lib/exec-fetche
 import { getPathInHome } from '../lib/settings.js'
 
 import { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log } from './command-helpers.js'
-import execa from './execa.js'
 
 const PACKAGE_NAME = 'live-tunnel-client'
 const EXEC_NAME = PACKAGE_NAME

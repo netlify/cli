@@ -1,11 +1,11 @@
-import test, { beforeEach } from 'ava'
+import test from 'ava'
 
 import { DependencyGraph } from '../project-graph/index.js'
 
 /** @type {DependencyGraph} */
 let graph
 
-beforeEach(() => {
+test.beforeEach(() => {
   graph = new DependencyGraph()
   graph.addDependency('tests/a.js', 'src/nested/a.js')
   graph.addDependency('tests/c.js', 'src/c/index.js')

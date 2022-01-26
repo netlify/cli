@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 // @ts-check
-import { existsSync, statSync } from 'fs'
-import process, { on, exit, argv } from 'process'
-import { fileURLToPath } from 'url'
+import { existsSync, readFileSync, statSync } from 'fs'
 import { join } from 'path'
+import process from 'process'
+import { fileURLToPath } from 'url'
 
 import chalk from 'chalk'
 import { execa } from 'execa'
-import { sync } from 'fast-glob'
+import glob from 'fast-glob'
 
-import { ava } from '../package.json'
+const { ava } = JSON.parse(readFileSync(fileURLToPath(new URL('../package.json', import.meta.url)), 'utf-8'))
 
 import { DependencyGraph, fileVisitor, visitorPlugins } from './project-graph/index.js'
 
@@ -29,7 +29,7 @@ export const getChangedFiles = async (compareTarget = 'origin/main') => {
 export const getAffectedFiles = (changedFiles) => {
   // glob is using only posix file paths on windows we need the `\`
   // by using join the paths are adjusted to the operating system
-  const testFiles = sync(ava.files).map((filePath) => join(filePath))
+  const testFiles = glob.sync(ava.files).map((filePath) => join(filePath))
 
   // in this case all files are affected
   if (changedFiles.includes('npm-shrinkwrap.json') || changedFiles.includes('package.json')) {
@@ -68,7 +68,7 @@ const main = async (args) => {
     preferLocal: true,
   })
 
-  on('exit', () => {
+  process.on('exit', () => {
     testRun.kill()
   })
 
@@ -77,7 +77,7 @@ const main = async (args) => {
   } catch (error) {
     if (error instanceof Error) {
       console.log(error.message)
-      exit(1)
+      process.exit(1)
     }
     throw error
   }
@@ -92,10 +92,10 @@ const main = async (args) => {
 //
 // The default is when running without arguments a git diff target off 'origin/master'
 if (fileURLToPath(import.meta.url) === process.argv[1]) {
-  const args = argv.slice(2)
+  const args = process.argv.slice(2)
   // eslint-disable-next-line promise/prefer-await-to-callbacks,promise/prefer-await-to-then
   main(args).catch((error) => {
     console.error(error)
-    exit(1)
+    process.exit(1)
   })
 }

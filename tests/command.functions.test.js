@@ -1,5 +1,6 @@
 // Handlers are meant to be async outside tests
 /* eslint-disable require-await */
+import { readFileSync } from 'fs'
 import { join } from 'path'
 
 import test from 'ava'
@@ -17,7 +18,6 @@ import { CONFIRM, DOWN, answerWithValue, handleQuestions } from './utils/handle-
 import { withMockApi } from './utils/mock-api.js'
 import { killProcess } from './utils/process.js'
 import { withSiteBuilder } from './utils/site-builder.js'
-import { readFileSync } from 'fs'
 
 test('should return function response when invoked with no identity argument', async (t) => {
   await withSiteBuilder('function-invoke-with-no-identity-argument', async (builder) => {

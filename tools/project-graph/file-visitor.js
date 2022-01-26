@@ -2,15 +2,7 @@
 import { existsSync, readFileSync, statSync } from 'fs'
 import { dirname, join, parse } from 'path'
 
-import {
-  createSourceFile,
-  ScriptTarget,
-  ScriptKind,
-  isCallExpression,
-  isStringLiteral,
-  isImportDeclaration,
-  visitNode,
-} from 'typescript'
+import ts from 'typescript'
 
 import { DependencyGraph } from './dependency-graph.js'
 
@@ -54,7 +46,7 @@ export const fileVisitor = function (fileName, state, parent) {
 
   const folder = dirname(fileName)
   const fileContent = readFileSync(fileName, 'utf-8')
-  const sourceFile = createSourceFile(fileName, fileContent, ScriptTarget.ES2020, true, ScriptKind.JS)
+  const sourceFile = ts.createSourceFile(fileName, fileContent, ts.ScriptTarget.ES2020, true, ts.ScriptKind.JS)
 
   /**
    * Resolves a javascript import location
@@ -91,13 +83,14 @@ export const fileVisitor = function (fileName, state, parent) {
    * Visits a typescript node
    * @type {ts.Visitor}
    */
+  // @ts-ignore
   const visitor = function (node) {
     // TODO: once we need import specifiers (esm or typescript add them here)
-    if (isCallExpression(node) && node.expression.getText() === 'require' && isStringLiteral(node.arguments[0])) {
+    if (ts.isCallExpression(node) && node.expression.getText() === 'require' && ts.isStringLiteral(node.arguments[0])) {
       visitDependency(node.arguments[0].text)
     }
 
-    if (isImportDeclaration(node) && isStringLiteral(node.moduleSpecifier)) {
+    if (ts.isImportDeclaration(node) && ts.isStringLiteral(node.moduleSpecifier)) {
       visitDependency(node.moduleSpecifier.text)
     }
 
@@ -110,11 +103,11 @@ export const fileVisitor = function (fileName, state, parent) {
     })
 
     node.getChildren().forEach((childNode) => {
-      visitNode(childNode, visitor)
+      ts.visitNode(childNode, visitor)
     })
   }
   // start visiting the sourceFile
-  visitNode(sourceFile, visitor)
+  ts.visitNode(sourceFile, visitor)
 
   // add node to graph
   state.graph.addFile(fileName)

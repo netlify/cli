@@ -56,5 +56,3 @@ export const shouldBase64Encode = function (contentType) {
 }
 
 export const styleFunctionName = (name) => chalk.magenta(name)
-
-

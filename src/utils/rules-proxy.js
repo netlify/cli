@@ -92,5 +92,3 @@ export const createRewriter = async function ({ configPath, distDir, jwtRoleClai
     return match
   }
 }
-
-

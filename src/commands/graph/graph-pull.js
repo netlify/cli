@@ -1,6 +1,11 @@
 /* eslint-disable eslint-comments/disable-enable-pair */
 /* eslint-disable fp/no-loops */
-import { OneGraphCliClient, handleCliSessionEvent, loadCLISession, refetchAndGenerateFromOneGraph } from '../../lib/one-graph/cli-client.js'
+import {
+  OneGraphCliClient,
+  handleCliSessionEvent,
+  loadCLISession,
+  refetchAndGenerateFromOneGraph,
+} from '../../lib/one-graph/cli-client.js'
 import { buildSchema, getNetlifyGraphConfig, readGraphQLSchemaFile } from '../../lib/one-graph/cli-netlify-graph.js'
 import { chalk, error, warn } from '../../utils/index.js'
 

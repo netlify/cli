@@ -185,7 +185,7 @@ const pickTemplate = async function ({ language: languageFromFlag }) {
   let templatesForLanguage
 
   try {
-    templatesForLanguage  = await formatRegistryArrayForInquirer(language)
+    templatesForLanguage = await formatRegistryArrayForInquirer(language)
   } catch {
     throw error(`Invalid language: ${language}`)
   }

@@ -4,6 +4,7 @@ import os from 'os'
 import process from 'process'
 import { format, inspect } from 'util'
 
+// eslint-disable-next-line node/no-missing-import
 import { Chalk } from 'chalk'
 import WSL from 'is-wsl'
 import omit from 'omit.js'

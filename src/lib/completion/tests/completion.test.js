@@ -3,7 +3,7 @@ import fs from 'fs'
 
 import test from 'ava'
 import { Argument } from 'commander'
-import sinon from 'sinon'
+import { stub, restore } from 'sinon'
 
 import { BaseCommand } from '../../../commands/base-command.js'
 import { getAutocompletion } from '../script.js'
@@ -30,23 +30,22 @@ const createTestCommand = () => {
 }
 
 test.afterEach(() => {
-  sinon.restore()
+  restore()
 })
 
 test('should generate a completion file', async (t) => {
-  const stub = sinon.stub(fs, 'writeFileSync').callsFake(() => {})
+  const writeStub = stub(fs, 'writeFileSync').callsFake(() => {})
   const program = createTestCommand()
-  // eslint-disable-next-line node/global-require
   const { createAutocompletion } = await import('../generate-autocompletion.js')
   createAutocompletion(program)
 
   // @ts-ignore
-  t.true(stub.getCall(0).args[0].endsWith('autocompletion.json'), 'should write a autocompletion file')
+  t.true(writeStub.getCall(0).args[0].endsWith('autocompletion.json'), 'should write a autocompletion file')
 
   // @ts-ignore
-  t.snapshot(JSON.parse(stub.getCall(0).args[1]))
+  t.snapshot(JSON.parse(writeStub.getCall(0).args[1]))
 
-  stub.restore()
+  writeStub.restore()
 })
 
 const cookingFixtures = {

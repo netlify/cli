@@ -1,5 +1,3 @@
-import path from 'path'
-
 import test from 'ava'
 
 import { startDevServer } from './utils/dev-server.js'

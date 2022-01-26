@@ -1,11 +1,11 @@
 // @ts-check
 import test from 'ava'
 import proxyquire from 'proxyquire'
-import sinon from 'sinon'
+import { stub } from 'sinon'
 
 // is not a function therefore use Object.defineProperty to mock it
 const processSpy = {}
-const fetchLatestSpy = sinon.stub()
+const fetchLatestSpy = stub()
 
 const { fetchLatestVersion, getArch, getExecName } = proxyquire('./exec-fetcher', {
   'gh-release-fetch': {

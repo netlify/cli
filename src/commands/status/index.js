@@ -1,1 +1,1 @@
-export  { createStatusCommand } from './status.js'
+export { createStatusCommand } from './status.js'

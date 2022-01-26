@@ -49,10 +49,16 @@ module.exports = {
     // Example functions
     {
       files: ['src/functions-templates/**/*.js'],
+      parserOptions: {
+        sourceType: 'script',
+      },
       rules: {
-        'require-await': 0,
+        'import/extensions': 0,
         'import/no-unresolved': 0,
-        'node/no-missing-require': 0,
+        'no-implicit-globals': 0,
+        'no-undef': 0,
+        'require-await': 0,
+        // 'node/no-missing-require': 0,
         'node/no-unsupported-features/es-syntax': 0,
       },
     },

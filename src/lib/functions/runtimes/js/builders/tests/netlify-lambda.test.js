@@ -1,5 +1,5 @@
 import test from 'ava'
-import sinon from 'sinon'
+import { createSandbox } from 'sinon'
 
 import { detectNetlifyLambda } from '../netlify-lambda.js'
 
@@ -16,7 +16,7 @@ test(`should not match if netlify-lambda is missing from dependencies`, async (t
 })
 
 test.serial('should not match if netlify-lambda is missing functions directory', async (t) => {
-  const sandbox = sinon.createSandbox()
+  const sandbox = createSandbox()
 
   const packageJson = {
     scripts: {
@@ -39,7 +39,7 @@ test.serial('should not match if netlify-lambda is missing functions directory',
 })
 
 test.serial('should not match if netlify-lambda contains multiple function directories', async (t) => {
-  const sandbox = sinon.createSandbox()
+  const sandbox = createSandbox()
 
   const packageJson = {
     scripts: {

@@ -1,7 +1,7 @@
 import { join } from 'path'
 import { format } from 'util'
 
-import test, { before, after } from 'ava'
+import test from 'ava'
 import mock, { restore } from 'mock-fs'
 
 import { normalize } from '../../tests/utils/snapshots.js'
@@ -9,11 +9,11 @@ import { DependencyGraph, fileVisitor } from '../project-graph/index.js'
 
 import { esModuleMockedFileSystem } from './utils/file-systems.js'
 
-before(() => {
+test.before(() => {
   mock(esModuleMockedFileSystem)
 })
 
-after(() => {
+test.after(() => {
   restore()
 })
 

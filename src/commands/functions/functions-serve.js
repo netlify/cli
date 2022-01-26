@@ -59,5 +59,3 @@ export const createFunctionsServeCommand = (program) =>
     .option('-o, --offline', 'disables any features that require network access')
     .addHelpText('after', 'Helpful for debugging functions.')
     .action(functionsServe)
-
-

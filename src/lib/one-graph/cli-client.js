@@ -2,12 +2,9 @@
 /* eslint-disable fp/no-loops */
 import os from 'os'
 
-import { GraphQL, InternalConsole, OneGraphClient } from 'netlify-onegraph-internal'
-import { NetlifyGraph } from 'netlify-onegraph-internal'
+import { GraphQL, InternalConsole, OneGraphClient, NetlifyGraph } from 'netlify-onegraph-internal'
 
 import { chalk, error, log, warn } from '../../utils/index.js'
-
-const { createCLISession, createPersistedQuery, ensureAppForSite, updateCLISessionMetadata } = OneGraphClient
 
 import {
   generateFunctionsFile,
@@ -16,6 +13,8 @@ import {
   writeGraphQLOperationsSourceFile,
   writeGraphQLSchemaFile,
 } from './cli-netlify-graph.js'
+
+const { createCLISession, createPersistedQuery, ensureAppForSite, updateCLISessionMetadata } = OneGraphClient
 
 const { parse } = GraphQL
 const { defaultExampleOperationsDoc, extractFunctionsFromOperationDoc } = NetlifyGraph
@@ -251,7 +250,7 @@ export const startOneGraphCLISession = async (input) => {
  * Generate a session name that can be identified as belonging to the current checkout
  * @returns {string} The name of the session to create
  */
- export const generateSessionName = () => {
+export const generateSessionName = () => {
   const userInfo = os.userInfo({ encoding: 'utf-8' })
   const sessionName = `${userInfo.username}-${Date.now()}`
   log(`Generated Netlify Graph session name: ${sessionName}`)

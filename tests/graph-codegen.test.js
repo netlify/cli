@@ -1,9 +1,16 @@
 import { readFileSync } from 'fs'
-import { join } from 'path'
+import { join, dirname } from 'path'
+import { fileURLToPath } from 'url'
 
 import test from 'ava'
 
-import { buildSchema, extractFunctionsFromOperationDoc, generateFunctionsSource, generateHandlerSource, parse } from '../src/lib/one-graph/cli-netlify-graph.js'
+import {
+  buildSchema,
+  extractFunctionsFromOperationDoc,
+  generateFunctionsSource,
+  generateHandlerSource,
+  parse,
+} from '../src/lib/one-graph/cli-netlify-graph.js'
 
 import { normalize } from './utils/snapshots.js'
 
@@ -18,7 +25,9 @@ const netlifyGraphConfig = {
   graphQLSchemaFilename: 'dummy/netlifyGraphSchema.graphql',
 }
 
-const loadAsset = (filename) => readFileSync(join(__dirname, 'assets', filename), 'utf8')
+const base = dirname(fileURLToPath(new URL(import.meta.url)))
+
+const loadAsset = (filename) => readFileSync(join(base, 'assets', filename), 'utf8')
 
 test('netlify graph function codegen', (t) => {
   const schemaString = loadAsset('../assets/netlifyGraphSchema.graphql')

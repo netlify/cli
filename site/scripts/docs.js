@@ -1,6 +1,7 @@
 // @ts-check
-import { basename, join } from 'path'
+import { basename, dirname, join } from 'path'
 import { env } from 'process'
+import { fileURLToPath } from 'url'
 
 import markdownMagic from 'markdown-magic'
 import stripAnsi from 'strip-ansi'
@@ -60,7 +61,7 @@ const config = {
   },
 }
 
-const rootDir = join(__dirname, '..', '..')
+const rootDir = dirname(fileURLToPath(new URL('../../', import.meta.url)))
 const markdownFiles = [join(rootDir, 'README.md'), join(rootDir, 'docs/**/**.md')]
 
 /* Start - Docs Templating logic */

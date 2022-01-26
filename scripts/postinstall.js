@@ -1,5 +1,7 @@
 import process from 'process'
 
+// lint rule is wrong it is a dependency
+// eslint-disable-next-line node/no-missing-import
 import chalk from 'chalk'
 
 import { createMainCommand } from '../src/commands/index.js'

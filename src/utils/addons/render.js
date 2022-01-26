@@ -37,5 +37,3 @@ export const configValues = function (addonName, values, currentValue) {
   })
   console.log(table.toString())
 }
-
-

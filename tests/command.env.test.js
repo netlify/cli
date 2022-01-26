@@ -1,7 +1,7 @@
 import process from 'process'
 
 import test from 'ava'
-import execa from 'execa'
+import { execa } from 'execa'
 
 import callCli from './utils/call-cli.js'
 import { cliPath } from './utils/cli-path.js'

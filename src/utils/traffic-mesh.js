@@ -6,6 +6,7 @@ import process from 'process'
 import rl from 'readline'
 
 import { getBinaryPath } from '@netlify/routing-local-proxy'
+import { execa } from 'execa'
 import waitPort from 'wait-port'
 
 import { getPathInProject } from '../lib/settings.js'
@@ -13,7 +14,6 @@ import { clearSpinner, startSpinner, stopSpinner } from '../lib/spinner.js'
 
 import { NETLIFYDEVERR, NETLIFYDEVLOG, NETLIFYDEVWARN, log } from './command-helpers.js'
 import { createDeferred } from './deferred.js'
-import execa from './execa.js'
 
 const { resolve } = createRequire(import.meta.url)
 

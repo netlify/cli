@@ -2,14 +2,14 @@
 // eslint-disable-next-line import/no-namespace
 import * as octokit from '@octokit/rest'
 import test from 'ava'
-import sinon from 'sinon'
+import { stub } from 'sinon'
 
 // eslint-disable-next-line import/no-namespace
 import * as githubAuth from '../gh-auth.js'
 
 let getAuthenticatedResponse
 
-const octokitStub = sinon.stub(octokit, 'Octokit').callsFake(() => ({
+const octokitStub = stub(octokit, 'Octokit').callsFake(() => ({
   rest: {
     users: {
       getAuthenticated: () => {
@@ -23,7 +23,7 @@ const octokitStub = sinon.stub(octokit, 'Octokit').callsFake(() => ({
 }))
 
 // stub the await ghauth() call for a new token
-sinon.stub(githubAuth, 'getGitHubToken').callsFake(() =>
+stub(githubAuth, 'getGitHubToken').callsFake(() =>
   Promise.resolve({
     provider: 'github',
     token: 'new_token',

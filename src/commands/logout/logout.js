@@ -39,5 +39,3 @@ export const logout = async (options, command) => {
  */
 export const createLogoutCommand = (program) =>
   program.command('logout', { hidden: true }).description('Logout of your Netlify account').action(logout)
-
-

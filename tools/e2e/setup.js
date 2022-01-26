@@ -5,7 +5,7 @@ import { cwd, env } from 'process'
 
 import { execa } from 'execa'
 import getPort from 'get-port'
-import startVerdaccio from 'verdaccio'
+import verdaccio from 'verdaccio'
 
 import { rmdirRecursiveAsync } from '../../src/lib/fs.js'
 
@@ -66,7 +66,7 @@ export const startRegistry = async () => {
       reject(new Error('Starting Verdaccio Timed out'))
     }, VERDACCIO_TIMEOUT_MILLISECONDS)
 
-    startVerdaccio(getVerdaccioConfig(storage), freePort, storage, '1.0.0', 'verdaccio', (webServer, { port }) => {
+    verdaccio.default(getVerdaccioConfig(storage), freePort, storage, '1.0.0', 'verdaccio', (webServer, { port }) => {
       webServer.listen(port, 'localhost', () => {
         resolve({ url: new URL(`http://localhost:${port}/`), storage })
       })

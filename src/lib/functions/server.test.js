@@ -6,7 +6,7 @@ import zisi from '@netlify/zip-it-and-ship-it'
 import test from 'ava'
 import express from 'express'
 import mockRequire from 'mock-require'
-import sinon from 'sinon'
+import { stub } from 'sinon'
 import request from 'supertest'
 
 import { FunctionsRegistry } from './registry.js'
@@ -16,14 +16,14 @@ const projectRoot = platform() === 'win32' ? 'C:\\my-functions' : `/my-functions
 const functionsPath = `functions`
 
 // mock mkdir for the functions folder
-sinon.stub(fs.promises, 'mkdir').withArgs(join(projectRoot, functionsPath)).returns(Promise.resolve())
+stub(fs.promises, 'mkdir').withArgs(join(projectRoot, functionsPath)).returns(Promise.resolve())
 
 /** @type { express.Express} */
 let app
 
 test.before(async (t) => {
   const mainFile = join(projectRoot, functionsPath, 'hello.js')
-  t.context.zisiStub = sinon.stub(zisi, 'listFunctions').returns(
+  t.context.zisiStub = stub(zisi, 'listFunctions').returns(
     Promise.resolve([
       {
         name: 'hello',

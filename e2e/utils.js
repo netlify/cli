@@ -1,8 +1,9 @@
 import { execSync } from 'child_process'
 import { readFileSync } from 'fs'
+import { fileURLToPath } from 'url'
 import { env } from 'process'
 
-const { version } = JSON.parse(readFileSync('../package.json', 'utf-8'))
+const { version } = JSON.parse(readFileSync(fileURLToPath(new URL('../package.json', import.meta.url)), 'utf-8'))
 
 /**
  * Checks if a package manager exists

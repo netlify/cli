@@ -82,8 +82,8 @@ test.skip('should return additional watch dirs when functions requires a file ou
     await builder
       .withFunction({
         path: 'index.js',
-        // eslint-disable-next-line require-await
         handler: async () => {
+          // eslint-disable-next-line node/no-missing-import,import/no-unresolved,import/extensions
           const { logHello } = await import('../utils')
           logHello()
           return { statusCode: 200, body: 'Logged Hello!' }

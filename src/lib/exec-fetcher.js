@@ -2,14 +2,14 @@
 import path from 'path'
 import process from 'process'
 
+import { execa } from 'execa'
 import { fetchLatest, fetchVersion, newerVersion, updateAvailable } from 'gh-release-fetch'
 import isExe from 'isexe'
 import terminalLink from 'terminal-link'
 
 // cannot directly import from ../utils as it would create a circular dependency.
 // the file `src/utils/live-tunnel.js` depends on this file
-import { NETLIFYDEVWARN, chalk, error, log  } from '../utils/command-helpers.js'
-import execa from '../utils/execa.js'
+import { NETLIFYDEVWARN, chalk, error, log } from '../utils/command-helpers.js'
 
 const isWindows = () => process.platform === 'win32'
 

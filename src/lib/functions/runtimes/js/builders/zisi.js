@@ -5,7 +5,12 @@ import { zipFunction } from '@netlify/zip-it-and-ship-it'
 import readPkgUp from 'read-pkg-up'
 import sourceMapSupport from 'source-map-support'
 
-const { writeFile } = promises
+import { NETLIFYDEVERR } from '../../../../../utils/index.js'
+import { getPathInProject } from '../../../../settings.js'
+import { normalizeFunctionsConfig } from '../../../config.js'
+import { memoizedBuild } from '../../../memoized-build.js'
+
+const { mkdir, writeFile } = promises
 
 const addFunctionsConfigDefaults = (config) => ({
   ...config,

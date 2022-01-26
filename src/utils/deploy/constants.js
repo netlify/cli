@@ -17,5 +17,3 @@ export const UPLOAD_MAX_DELAY = 9e4
 
 // 1 second
 export const DEPLOY_POLL = 1e3
-
-

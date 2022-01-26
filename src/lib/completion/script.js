@@ -56,15 +56,13 @@ export const getAutocompletion = function (env, program) {
   }
 }
 
-if (require.main === module) {
-  const env = parseEnv(process.env)
+const env = parseEnv(process.env)
 
-  if (existsSync(AUTOCOMPLETION_FILE)) {
-    const program = JSON.parse(readFileSync(AUTOCOMPLETION_FILE, 'utf-8'))
-    const autocomplete = getAutocompletion(env, program)
+if (existsSync(AUTOCOMPLETION_FILE)) {
+  const program = JSON.parse(readFileSync(AUTOCOMPLETION_FILE, 'utf-8'))
+  const autocomplete = getAutocompletion(env, program)
 
-    if (autocomplete && autocomplete.length !== 0) {
-      log(autocomplete)
-    }
+  if (autocomplete && autocomplete.length !== 0) {
+    log(autocomplete)
   }
 }
