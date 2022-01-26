@@ -308,7 +308,7 @@ const dev = async (options, command) => {
   } else if (startNetlifyGraphWatcher) {
     const netlifyToken = await command.authenticate()
     await OneGraphCliClient.ensureAppForSite(netlifyToken, site.id)
-    const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options })
+    const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options, settings })
 
     log(`Starting Netlify Graph session, to edit your library run \`netlify graph:edit\` in another tab`)
 

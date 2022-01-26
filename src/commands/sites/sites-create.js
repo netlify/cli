@@ -8,6 +8,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 import { chalk, error, getRepoData, log, logJson, track, warn } from '../../utils/index.js'
 import { configureRepo } from '../../utils/init/config.js'
+import { link } from '../link/index.js'
 
 const SITE_NAME_SUGGESTION_SUFFIX_LENGTH = 5
 
@@ -158,6 +159,11 @@ export const sitesCreate = async (options, command) => {
     )
   }
 
+  if (!options.disableLinking) {
+    log()
+    await link({ id: site.id }, command)
+  }
+
   return site
 }
 
@@ -171,14 +177,15 @@ export const createSitesCreateCommand = (program) =>
     .command('sites:create')
     .description(
       `Create an empty site (advanced)
-Create a blank site that isn't associated with any git remote. Does not link to the current working directory.`,
+Create a blank site that isn't associated with any git remote. Will link the site to the current working directory.`,
     )
     .option('-n, --name [name]', 'name of site')
     .option('-a, --account-slug [slug]', 'account slug to create the site under')
     .option('-c, --with-ci', 'initialize CI hooks during site creation')
     .option('-m, --manual', 'force manual CI setup.  Used --with-ci flag')
+    .option('--disable-linking', 'create the site without linking it to current directory')
     .addHelpText(
       'after',
-      `Create a blank site that isn't associated with any git remote. Does not link to the current working directory.`,
+      `Create a blank site that isn't associated with any git remote. Will link the site to the current working directory.`,
     )
     .action(sitesCreate)

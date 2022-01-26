@@ -275,16 +275,13 @@ export const link = async (options, command) => {
     return exit()
   }
 
-  // If already linked to site. exit and prompt for unlink
   if (siteData) {
+    // If already linked to site. exit and prompt for unlink
     log(`Site already linked to "${siteData.name}"`)
     log(`Admin url: ${siteData.admin_url}`)
     log()
     log(`To unlink this site, run: ${chalk.cyanBright('netlify unlink')}`)
-    return exit()
-  }
-
-  if (options.id) {
+  } else if (options.id) {
     try {
       // @ts-ignore types from API are wrong they cannot recognize `getSite` of API
       siteData = await api.getSite({ site_id: options.id })
@@ -305,11 +302,7 @@ export const link = async (options, command) => {
       linkType: 'manual',
       kind: 'byId',
     })
-
-    return exit()
-  }
-
-  if (options.name) {
+  } else if (options.name) {
     let results
     try {
       results = await listSites({
@@ -340,11 +333,9 @@ export const link = async (options, command) => {
       linkType: 'manual',
       kind: 'byName',
     })
-
-    return exit()
+  } else {
+    siteData = await linkPrompt(command.netlify, options)
   }
-
-  siteData = await linkPrompt(command.netlify, options)
   return siteData
 }
 
