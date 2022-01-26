@@ -6,7 +6,7 @@ import process from 'process'
 
 import cleanDeep from 'clean-deep'
 import inquirer from 'inquirer'
-import isEmpty from 'lodash/isEmpty.js'
+import { isEmpty } from 'lodash-es'
 
 import { normalizeBackslash } from '../../lib/path.js'
 import { chalk, error as failAndExit, warn } from '../command-helpers.js'

@@ -52,21 +52,21 @@ export const deploySite = async (
     phase: 'start',
   })
 
-  const [{ files, filesShaMap }, { fnShaMap, functions, functionsWithNativeModules }] = await Promise.all([
-    hashFiles(dir, configPath, { concurrentHash, hashAlgorithm, assetType, statusCb, filter }),
-    hashFns(fnDir, {
-      functionsConfig,
-      tmpDir,
-      concurrentHash,
-      hashAlgorithm,
-      statusCb,
-      assetType,
-      rootDir,
-      manifestPath,
-      skipFunctionsCache,
-    }),
-  ])
-
+  const [{ files, filesShaMap }, { fnShaMap, functionSchedules, functions, functionsWithNativeModules }] =
+    await Promise.all([
+      hashFiles(dir, configPath, { concurrentHash, hashAlgorithm, assetType, statusCb, filter }),
+      hashFns(fnDir, {
+        functionsConfig,
+        tmpDir,
+        concurrentHash,
+        hashAlgorithm,
+        statusCb,
+        assetType,
+        rootDir,
+        manifestPath,
+        skipFunctionsCache,
+      }),
+    ])
   const filesCount = Object.keys(files).length
   const functionsCount = Object.keys(functions).length
   const hasFunctionDirectories = fnDir.length !== 0
@@ -106,6 +106,7 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
     body: {
       files,
       functions,
+      function_schedules: functionSchedules,
       async: Object.keys(files).length > syncFileLimit,
       branch,
       draft,

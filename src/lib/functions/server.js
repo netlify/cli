@@ -183,6 +183,7 @@ export const startFunctionsServer = async ({
       config,
       isConnected: Boolean(siteUrl),
       projectRoot: site.root,
+      settings,
       timeouts,
     })
 

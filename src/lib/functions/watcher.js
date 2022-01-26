@@ -1,7 +1,7 @@
 // @ts-check
 import chokidar from 'chokidar'
 import decache from 'decache'
-import debounce from 'lodash/debounce.js'
+import { debounce } from 'lodash-es'
 import pEvent from 'p-event'
 
 const DEBOUNCE_WAIT = 100

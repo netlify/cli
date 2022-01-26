@@ -33,7 +33,7 @@ const testMatrix = [
 
 const testName = (title, args) => (args.length <= 0 ? title : `${title} - ${args.join(' ')}`)
 
-const JWT_EXPIRY = 1893456000
+const JWT_EXPIRY = 1_893_456_000
 const getToken = ({ jwtRolePath = 'app_metadata.authorization.roles', jwtSecret = 'secret', roles }) => {
   const payload = {
     exp: JWT_EXPIRY,

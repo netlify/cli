@@ -1,3 +1,4 @@
+import fs from 'fs'
 import { platform } from 'os'
 import { join } from 'path'
 
@@ -13,6 +14,9 @@ import { createHandler } from './server.js'
 
 const projectRoot = platform() === 'win32' ? 'C:\\my-functions' : `/my-functions`
 const functionsPath = `functions`
+
+// mock mkdir for the functions folder
+sinon.stub(fs.promises, 'mkdir').withArgs(join(projectRoot, functionsPath)).returns(Promise.resolve())
 
 /** @type { express.Express} */
 let app
@@ -37,6 +41,8 @@ test.before(async (t) => {
     projectRoot,
     config: {},
     timeouts: { syncFunctions: 1, backgroundFunctions: 1 },
+    // eslint-disable-next-line no-magic-numbers
+    settings: { port: 8888 },
   })
   await functionsRegistry.scan([functionsPath])
   app = express()

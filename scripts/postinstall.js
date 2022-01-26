@@ -1,12 +1,19 @@
+import process from 'process'
+
 import chalk from 'chalk'
 
 import { createMainCommand } from '../src/commands/index.js'
 import { createAutocompletion } from '../src/lib/completion/index.js'
 
 const postInstall = () => {
-  // create or update the autocompletion definition
-  const program = createMainCommand()
-  createAutocompletion(program)
+  // yarn plug and play seems to have an issue with reading an esm file by building up the cache.
+  // as yarn pnp analyzes everything inside the postinstall
+  // yarn pnp executes it out of a .yarn folder .yarn/unplugged/netlify-cli-file-fb026a3a6d/node_modules/netlify-cli/scripts/postinstall.js
+  if (!process.argv[1].includes('.yarn')) {
+    // create or update the autocompletion definition
+    const program = createMainCommand()
+    createAutocompletion(program)
+  }
 
   console.log('')
   console.log(chalk.greenBright.bold.underline('Success! Netlify CLI has been installed!'))

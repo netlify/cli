@@ -7,7 +7,7 @@ export const checkLFSFilters = async function () {
   try {
     const { stdout } = await execa('git', ['config', '--get-regexp', 'filter.lfs'])
     return stdout.length !== 0
-  } catch (error) {
+  } catch {
     return false
   }
 }
@@ -16,7 +16,7 @@ const getHelperVersion = async function () {
   try {
     const { stdout } = await execa('git-credential-netlify', ['version'])
     return stdout
-  } catch (error) {
+  } catch {
     throw new Error(`Check that Netlify's Git Credential helper is installed and updated to the latest version`)
   }
 }
@@ -36,7 +36,7 @@ export const checkGitVersion = async function () {
   try {
     const { stdout } = await execa('git', ['--version'])
     return stdout.split(' ').pop()
-  } catch (error) {
+  } catch {
     throw new Error('Check that Git is installed in your system')
   }
 }
@@ -45,7 +45,7 @@ const getLFSVersion = async function () {
   try {
     const { stdout } = await execa('git-lfs', ['version'])
     return stdout
-  } catch (error) {
+  } catch {
     throw new Error('Check that Git LFS is installed in your system')
   }
 }

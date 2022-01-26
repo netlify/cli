@@ -105,5 +105,5 @@ const retryUpload = (uploadFn, maxRetry) =>
       reject(lastError)
     })
 
-    tryUpload(0, 0)
+    tryUpload()
   })

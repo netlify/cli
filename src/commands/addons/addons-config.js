@@ -1,6 +1,6 @@
 // @ts-check
 import inquirer from 'inquirer'
-import isEmpty from 'lodash/isEmpty.js'
+import { isEmpty } from 'lodash-es'
 
 import compare from '../../utils/addons/compare.js'
 import diffValues from '../../utils/addons/diffs/index.js'

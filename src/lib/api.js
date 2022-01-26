@@ -20,7 +20,7 @@ const getErrorMessage = async ({ response }) => {
 const checkResponse = async ({ response }) => {
   if (!response.ok) {
     const message = await getErrorMessage({ response }).catch(() => {})
-    const errorPostfix = message && message ? ` and message '${message}'` : ''
+    const errorPostfix = message ? ` and message '${message}'` : ''
     throw new Error(`Request failed with status '${response.status}'${errorPostfix}`)
   }
 }

@@ -1,3 +1,5 @@
+import process from 'process'
+
 import test from 'ava'
 
 import { isFileAsync } from '../src/lib/fs.js'
@@ -5,6 +7,13 @@ import { isFileAsync } from '../src/lib/fs.js'
 import callCli from './utils/call-cli.js'
 import { getCLIOptions, withMockApi } from './utils/mock-api.js'
 import { withSiteBuilder } from './utils/site-builder.js'
+
+// TODO: Flaky tests enable once fixed
+/**
+ * As some of the tests are flaky on windows machines I will skip them for now
+ * @type {import('ava').TestInterface}
+ */
+const windowsSkip = process.platform === 'win32' ? test.skip : test
 
 test('should create gitignore in repository root when is root', async (t) => {
   await withSiteBuilder('repo', async (builder) => {
@@ -18,7 +27,7 @@ test('should create gitignore in repository root when is root', async (t) => {
   })
 })
 
-test('should create gitignore in repository root when cwd is subdirectory', async (t) => {
+windowsSkip('should create gitignore in repository root when cwd is subdirectory', async (t) => {
   await withSiteBuilder('monorepo', async (builder) => {
     const projectPath = 'projects/project1'
     await builder.withGit().withNetlifyToml({ config: {}, pathPrefix: projectPath }).buildAsync()

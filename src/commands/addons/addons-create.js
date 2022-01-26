@@ -1,6 +1,6 @@
 // @ts-check
 import inquirer from 'inquirer'
-import isEmpty from 'lodash/isEmpty.js'
+import { isEmpty } from 'lodash-es'
 
 import { ADDON_VALIDATION, prepareAddonCommand } from '../../utils/addons/prepare.js'
 import generatePrompts from '../../utils/addons/prompts.js'

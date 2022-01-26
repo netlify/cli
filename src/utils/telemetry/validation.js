@@ -4,7 +4,7 @@
 import { log } from '../command-helpers.js'
 
 export default function isValidEventName(eventName, config) {
-  const validProject = [config.projectName] || []
+  const validProject = [config.projectName]
   const validObjects = config.objects || []
   const matches = eventName.match(/([a-zA-Z]*):([a-zA-Z]*)_([a-zA-Z]*$)/)
   if (!containsSeparators(eventName) || !matches) {

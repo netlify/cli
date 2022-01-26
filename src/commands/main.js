@@ -8,15 +8,15 @@ import { findBestMatch } from 'string-similarity'
 
 import {
   BANG,
-  NETLIFY_CYAN,
-  USER_AGENT,
   chalk,
   error,
   execa,
   exit,
   getGlobalConfig,
   log,
+  NETLIFY_CYAN,
   track,
+  USER_AGENT,
   warn,
 } from '../utils/index.js'
 
@@ -29,6 +29,7 @@ import { createDeployCommand } from './deploy/index.js'
 import { createDevCommand } from './dev/index.js'
 import { createEnvCommand } from './env/index.js'
 import { createFunctionsCommand } from './functions/index.js'
+import { createGraphCommand } from './graph/index.js'
 import { createInitCommand } from './init/index.js'
 import { createLinkCommand } from './link/index.js'
 import { createLmCommand } from './lm/index.js'
@@ -171,6 +172,7 @@ export const createMainCommand = () => {
   createDevCommand(program)
   createEnvCommand(program)
   createFunctionsCommand(program)
+  createGraphCommand(program)
   createInitCommand(program)
   createLinkCommand(program)
   createLmCommand(program)

@@ -28,7 +28,7 @@ const makeRequest = async function () {
       body: JSON.stringify(options.data),
     })
     process.exit()
-  } catch (error) {
+  } catch {
     process.exit(1)
   }
 }

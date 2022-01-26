@@ -13,7 +13,7 @@ const testMatrix = [{ args: [] }, { args: ['esbuild'] }]
 const testName = (title, args) => (args.length <= 0 ? title : `${title} - ${args.join(' ')}`)
 
 const WAIT_INTERVAL = 1800
-const WAIT_TIMEOUT = 30000
+const WAIT_TIMEOUT = 30_000
 const WAIT_WRITE = 3000
 
 const gotCatch404 = async (url, options) => {
@@ -486,7 +486,7 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
-  test.skip(testName(`should pick up new function files even through debounce`, args), async (t) => {
+  test(testName(`should pick up new function files even through debounce`, args), async (t) => {
     await withSiteBuilder('function-file-updates', async (builder) => {
       await builder
         .withNetlifyToml({

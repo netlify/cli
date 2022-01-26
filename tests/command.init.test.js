@@ -1,4 +1,5 @@
 import { promises } from 'fs'
+import process from 'process'
 
 import test from 'ava'
 import cleanDeep from 'clean-deep'
@@ -11,6 +12,13 @@ import { withMockApi } from './utils/mock-api.js'
 import { withSiteBuilder } from './utils/site-builder.js'
 
 const { readFile } = promises
+
+// TODO: Flaky tests enable once fixed
+/**
+ * As some of the tests are flaky on windows machines I will skip them for now
+ * @type {import('ava').TestInterface}
+ */
+const windowsSkip = process.platform === 'win32' ? test.skip : test
 
 const assertNetlifyToml = async (t, tomlDir, { command, functions, publish }) => {
   // assert netlify.toml was created with user inputs
@@ -390,7 +398,7 @@ test('netlify init existing Next.js site with existing plugins', async () => {
   })
 })
 
-test('netlify init monorepo root and sub directory without netlify.toml', async (t) => {
+windowsSkip('netlify init monorepo root and sub directory without netlify.toml', async (t) => {
   const initQuestions = [
     {
       question: 'Create & configure a new site',
@@ -615,7 +623,7 @@ test('netlify init monorepo root with netlify.toml, subdirectory without netlify
   })
 })
 
-test('netlify init monorepo root and sub directory with netlify.toml', async (t) => {
+windowsSkip('netlify init monorepo root and sub directory with netlify.toml', async (t) => {
   const initQuestions = [
     {
       question: 'Create & configure a new site',

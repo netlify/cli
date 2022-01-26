@@ -10,7 +10,7 @@ import isPlainObject from 'is-plain-obj'
 
 import { readFileAsyncCatchError } from '../lib/fs.js'
 
-import { NETLIFYDEVWARN, chalk, log } from './command-helpers.js'
+import { chalk, log, NETLIFYDEVWARN } from './command-helpers.js'
 import { acquirePort } from './dev.js'
 import { getInternalFunctionsDir } from './functions/index.js'
 
@@ -100,6 +100,16 @@ const getDefaultDist = () => {
   return process.cwd()
 }
 
+const getStaticServerPort = async ({ devConfig }) => {
+  const port = await acquirePort({
+    configuredPort: devConfig.staticServerPort,
+    defaultPort: DEFAULT_STATIC_PORT,
+    errorMessage: 'Could not acquire configured static server port',
+  })
+
+  return port
+}
+
 /**
  *
  * @param {object} param0
@@ -132,11 +142,7 @@ const handleStaticServer = async ({ devConfig, options, projectDir }) => {
   const dist = options.dir || devConfig.publish || getDefaultDist()
   log(`${NETLIFYDEVWARN} Running static server from "${path.relative(path.dirname(projectDir), dist)}"`)
 
-  const frameworkPort = await acquirePort({
-    configuredPort: devConfig.staticServerPort,
-    defaultPort: DEFAULT_STATIC_PORT,
-    errorMessage: 'Could not acquire configured static server port',
-  })
+  const frameworkPort = await getStaticServerPort({ devConfig })
   return {
     ...(devConfig.command && { command: devConfig.command }),
     useStaticServer: true,
@@ -156,7 +162,7 @@ const getSettingsFromFramework = (framework) => {
     dev: {
       commands: [command],
       port: frameworkPort,
-      pollingStrategies,
+      pollingStrategies = [],
     },
     name: frameworkName,
     staticAssetsDirectory: staticDir,
@@ -236,6 +242,31 @@ const handleCustomFramework = ({ devConfig }) => {
   }
 }
 
+const mergeSettings = async ({ devConfig, frameworkSettings = {} }) => {
+  const {
+    command: frameworkCommand,
+    frameworkPort: frameworkDetectedPort,
+    dist,
+    framework,
+    env,
+    pollingStrategies = [],
+  } = frameworkSettings
+
+  const command = devConfig.command || frameworkCommand
+  const frameworkPort = devConfig.targetPort || frameworkDetectedPort
+  // if the framework doesn't start a server, we use a static one
+  const useStaticServer = !(command && frameworkPort)
+  return {
+    command,
+    frameworkPort: useStaticServer ? await getStaticServerPort({ devConfig }) : frameworkPort,
+    dist: devConfig.publish || dist || getDefaultDist(),
+    framework,
+    env,
+    pollingStrategies,
+    useStaticServer,
+  }
+}
+
 /**
  * Handles a forced framework and retrieves the settings for it
  * @param {*} param0
@@ -243,17 +274,8 @@ const handleCustomFramework = ({ devConfig }) => {
  */
 const handleForcedFramework = async ({ devConfig, projectDir }) => {
   // this throws if `devConfig.framework` is not a supported framework
-  const { command, dist, env, framework, frameworkPort, pollingStrategies } = getSettingsFromFramework(
-    await getFramework(devConfig.framework, { projectDir }),
-  )
-  return {
-    command: devConfig.command || command,
-    frameworkPort: devConfig.targetPort || frameworkPort,
-    dist: devConfig.publish || dist,
-    framework,
-    env,
-    pollingStrategies,
-  }
+  const frameworkSettings = getSettingsFromFramework(await getFramework(devConfig.framework, { projectDir }))
+  return mergeSettings({ devConfig, frameworkSettings })
 }
 
 /**
@@ -283,15 +305,7 @@ export const detectServerSettings = async (devConfig, options, projectDir) => {
       settings = await handleStaticServer({ options, devConfig, projectDir })
     } else {
       validateFrameworkConfig({ devConfig })
-      const { command, frameworkPort, dist, framework, env, pollingStrategies = [] } = frameworkSettings || {}
-      settings = {
-        command: devConfig.command || command,
-        frameworkPort: devConfig.targetPort || frameworkPort,
-        dist: devConfig.publish || dist || getDefaultDist(),
-        framework,
-        env,
-        pollingStrategies,
-      }
+      settings = await mergeSettings({ devConfig, frameworkSettings })
     }
   } else if (devConfig.framework === '#custom') {
     validateFrameworkConfig({ devConfig })
@@ -344,7 +358,5 @@ const formatSettingsArrForInquirer = function (frameworks) {
       short: `${framework.name}-${command}`,
     })),
   )
-  // Replace by .flatMap() when Node.js support >= 11.0.0
-  // eslint-disable-next-line unicorn/prefer-spread
-  return [].concat(...formattedArr)
+  return formattedArr.flat()
 }

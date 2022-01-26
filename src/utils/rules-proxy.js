@@ -73,7 +73,7 @@ export const createRewriter = async function ({ configPath, distDir, jwtRoleClai
     const cookieValues = cookie.parse(req.headers.cookie || '')
     const headers = {
       'x-language': cookieValues.nf_lang || getLanguage(req.headers),
-      'x-country': cookieValues.nf_country || getCountry(req),
+      'x-country': cookieValues.nf_country || getCountry(),
       ...req.headers,
     }
 

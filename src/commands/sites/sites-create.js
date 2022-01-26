@@ -2,8 +2,7 @@
 
 import slugify from '@sindresorhus/slugify'
 import inquirer from 'inquirer'
-import pick from 'lodash/pick.js'
-import sample from 'lodash/sample.js'
+import { pick, sample } from 'lodash-es'
 import prettyjson from 'prettyjson'
 import { v4 as uuidv4 } from 'uuid'
 

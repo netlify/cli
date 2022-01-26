@@ -3,6 +3,7 @@
 import { existsSync, statSync } from 'fs'
 import process, { on, exit, argv } from 'process'
 import { fileURLToPath } from 'url'
+import { join } from 'path'
 
 import chalk from 'chalk'
 import { execa } from 'execa'
@@ -14,7 +15,9 @@ import { DependencyGraph, fileVisitor, visitorPlugins } from './project-graph/in
 
 export const getChangedFiles = async (compareTarget = 'origin/main') => {
   const { stdout } = await execa('git', ['diff', '--name-only', 'HEAD', compareTarget])
-  return stdout.split('\n')
+  // git is using posix paths so adjust them to the operating system by
+  // using nodes join function
+  return stdout.split('\n').map((filePath) => join(filePath))
 }
 
 /**
@@ -24,7 +27,9 @@ export const getChangedFiles = async (compareTarget = 'origin/main') => {
  * @returns {string[]}
  */
 export const getAffectedFiles = (changedFiles) => {
-  const testFiles = sync(ava.files)
+  // glob is using only posix file paths on windows we need the `\`
+  // by using join the paths are adjusted to the operating system
+  const testFiles = sync(ava.files).map((filePath) => join(filePath))
 
   // in this case all files are affected
   if (changedFiles.includes('npm-shrinkwrap.json') || changedFiles.includes('package.json')) {
@@ -58,7 +63,7 @@ const main = async (args) => {
     return
   }
   console.log(`Running affected Tests: \n${chalk.grey([...affectedFiles].join(', '))}`)
-  const testRun = execa('nyc', ['-r', 'json', 'ava', ...affectedFiles], {
+  const testRun = execa('c8', ['-r', 'json', 'ava', ...affectedFiles], {
     stdio: 'inherit',
     preferLocal: true,
   })

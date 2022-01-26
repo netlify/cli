@@ -1,10 +1,12 @@
 // @ts-check
 import { promises } from 'fs'
+import { extname, isAbsolute, join } from 'path'
 import { env } from 'process'
 
 import { listFunctions } from '@netlify/zip-it-and-ship-it'
+import terminalLink from 'terminal-link'
 
-import { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn } from '../../utils/index.js'
+import { chalk, log, NETLIFYDEVERR, NETLIFYDEVLOG, NETLIFYDEVWARN, warn } from '../../utils/index.js'
 import { getLogMessage } from '../log.js'
 
 import { NetlifyFunction } from './netlify-function.js'
@@ -13,13 +15,16 @@ import { watchDebounced } from './watcher.js'
 
 const { mkdir } = promises
 
+const ZIP_EXTENSION = '.zip'
+
 export class FunctionsRegistry {
-  constructor({ capabilities, config, isConnected = false, projectRoot, timeouts }) {
+  constructor({ capabilities, config, isConnected = false, projectRoot, settings, timeouts }) {
     this.capabilities = capabilities
     this.config = config
     this.isConnected = isConnected
     this.projectRoot = projectRoot
     this.timeouts = timeouts
+    this.settings = settings
 
     // An object to be shared among all functions in the registry. It can be
     // used to cache the results of the build function — e.g. it's used in
@@ -138,13 +143,23 @@ export class FunctionsRegistry {
       )
     }
 
+    // This fixes the bug described here https://github.com/netlify/zip-it-and-ship-it/issues/637
+    // If the current function's file is a zip bundle, we ignore it and log a helpful message.
+    if (extname(func.mainFile) === ZIP_EXTENSION) {
+      log(`${NETLIFYDEVWARN} Skipped bundled function ${chalk.yellow(name)}. Unzip the archive to load it from source.`)
+      return
+    }
+
     this.functions.set(name, func)
     this.buildFunctionAndWatchFiles(func)
 
-    log(`${NETLIFYDEVLOG} ${chalk.green('Loaded')} function ${chalk.yellow(name)}.`)
+    log(`${NETLIFYDEVLOG} ${chalk.green('Loaded')} function ${terminalLink(chalk.yellow(name), func.url)}.`)
   }
 
-  async scan(directories) {
+  async scan(relativeDirs) {
+    const directories = relativeDirs.filter(Boolean).map((dir) => (isAbsolute(dir) ? dir : join(this.projectRoot, dir)))
+
+    // check after filtering to filter out [undefined] for example
     if (directories.length === 0) {
       return
     }
@@ -193,6 +208,7 @@ export class FunctionsRegistry {
         runtime,
         timeoutBackground: this.timeouts.backgroundFunctions,
         timeoutSynchronous: this.timeouts.syncFunctions,
+        settings: this.settings,
       })
 
       this.registerFunction(name, func)

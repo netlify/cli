@@ -21,19 +21,10 @@ try {
   console.log(error)
 }
 
-/** @type {Error} */
-let caughtError
-
 const program = createMainCommand()
 
 try {
   await program.parseAsync(process.argv)
-} catch (error) {
-  caughtError = error
+} catch (error_) {
+  program.onEnd(error_)
 }
-
-// long running commands like dev server cannot be caught by a post action hook
-// they are running on the main command
-process.on('exit', () => {
-  program.onEnd(caughtError)
-})

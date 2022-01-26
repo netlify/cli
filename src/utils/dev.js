@@ -3,7 +3,7 @@ import process from 'process'
 
 import { get } from 'dot-prop'
 import getPort from 'get-port'
-import isEmpty from 'lodash/isEmpty.js'
+import { isEmpty } from 'lodash-es'
 
 import { supportsBackgroundFunctions } from '../lib/account.js'
 

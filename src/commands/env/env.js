@@ -2,6 +2,7 @@
 import { createEnvGetCommand } from './env-get.js'
 import { createEnvImportCommand } from './env-import.js'
 import { createEnvListCommand } from './env-list.js'
+import { createEnvMigrateCommand } from './env-migrate.js'
 import { createEnvSetCommand } from './env-set.js'
 import { createEnvUnsetCommand } from './env-unset.js'
 
@@ -25,6 +26,7 @@ export const createEnvCommand = (program) => {
   createEnvListCommand(program)
   createEnvSetCommand(program)
   createEnvUnsetCommand(program)
+  createEnvMigrateCommand(program)
 
   return program
     .command('env')
@@ -35,6 +37,7 @@ export const createEnvCommand = (program) => {
       'netlify env:set VAR_NAME value',
       'netlify env:unset VAR_NAME',
       'netlify env:import fileName',
+      'netlify env:migrate --to <to-site-id>',
     ])
     .action(env)
 }

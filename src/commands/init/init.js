@@ -1,7 +1,7 @@
 // @ts-check
 import dotProp from 'dot-prop'
 import inquirer from 'inquirer'
-import isEmpty from 'lodash/isEmpty.js'
+import { isEmpty } from 'lodash-es'
 
 import { chalk, ensureNetlifyIgnore, exit, getRepoData, log, track } from '../../utils/index.js'
 import { configureRepo } from '../../utils/init/config.js'
@@ -162,7 +162,7 @@ const logExistingRepoSetupAndExit = ({ repoUrl, siteName }) => {
   log()
   log(chalk.underline.bold(`Success`))
   log(`This site "${siteName}" is configured to automatically deploy via ${repoUrl}`)
-  // TODO add support for changing github repo in site:config command
+  // TODO add support for changing GitHub repo in site:config command
   exit()
 }
 

@@ -89,6 +89,21 @@ test('should run in dry mode when the --dry flag is set', async (t) => {
   })
 })
 
+test('should run the production context when context is not defined', async (t) => {
+  await withSiteBuilder('context-site', async (builder) => {
+    builder.withNetlifyToml({
+      config: {
+        build: { command: 'echo testCommand' },
+        context: { production: { command: 'echo testProduction' } },
+      },
+    })
+
+    await builder.buildAsync()
+
+    await runBuildCommand(t, builder.directory, { flags: ['--offline'], output: 'testProduction' })
+  })
+})
+
 test('should run the staging context command when the --context option is set to staging', async (t) => {
   await withSiteBuilder('context-site', async (builder) => {
     builder.withNetlifyToml({
@@ -100,8 +115,25 @@ test('should run the staging context command when the --context option is set to
 
     await builder.buildAsync()
 
-    await withMockApi(routes, async ({ apiUrl }) => {
-      await runBuildCommand(t, builder.directory, { apiUrl, flags: ['--context=staging'], output: 'testStaging' })
+    await runBuildCommand(t, builder.directory, { flags: ['--context=staging', '--offline'], output: 'testStaging' })
+  })
+})
+
+test('should run the staging context command when the context env variable is set', async (t) => {
+  await withSiteBuilder('context-site', async (builder) => {
+    builder.withNetlifyToml({
+      config: {
+        build: { command: 'echo testCommand' },
+        context: { staging: { command: 'echo testStaging' } },
+      },
+    })
+
+    await builder.buildAsync()
+
+    await runBuildCommand(t, builder.directory, {
+      flags: ['--offline'],
+      output: 'testStaging',
+      env: { CONTEXT: 'staging' },
     })
   })
 })

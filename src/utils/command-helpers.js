@@ -4,7 +4,6 @@ import os from 'os'
 import process from 'process'
 import { format, inspect } from 'util'
 
-// eslint-disable-next-line local-rules/no-direct-chalk-import
 import { Chalk } from 'chalk'
 import WSL from 'is-wsl'
 import omit from 'omit.js'
@@ -182,7 +181,7 @@ export const error = (message = '', options = {}) => {
     if (process.env.DEBUG) {
       process.stderr.write(` ${bang}   Warning: ${err.stack.split('\n').join(`\n ${bang}   `)}`)
     } else {
-      process.stderr.write(` ${bang}   ${err.name}: ${err.message}\n`)
+      process.stderr.write(` ${bang}   ${chalk.red(`${err.name}:`)} ${err.message}\n`)
     }
   } else {
     throw err

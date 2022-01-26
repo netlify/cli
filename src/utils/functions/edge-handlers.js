@@ -20,7 +20,7 @@ const validateEdgeHandlerFolder = async ({ site }) => {
       error(`Edge Handlers folder ${EDGE_HANDLERS_FOLDER} must be a path to a directory`)
     }
     return resolvedFolder
-  } catch (error_) {
+  } catch {
     // ignore errors at the moment
     // TODO: report error if 'edge_handlers' config exists after
     // https://github.com/netlify/build/pull/1829 is published

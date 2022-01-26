@@ -2,15 +2,8 @@ import { promises } from 'fs'
 import path from 'path'
 
 import { zipFunction } from '@netlify/zip-it-and-ship-it'
-import decache from 'decache'
-import makeDir from 'make-dir'
 import readPkgUp from 'read-pkg-up'
 import sourceMapSupport from 'source-map-support'
-
-import { NETLIFYDEVERR } from '../../../../../utils/index.js'
-import { getPathInProject } from '../../../../settings.js'
-import { normalizeFunctionsConfig } from '../../../config.js'
-import { memoizedBuild } from '../../../memoized-build.js'
 
 const { writeFile } = promises
 
@@ -76,8 +69,8 @@ const getTargetDirectory = async ({ errorExit }) => {
   const targetDirectory = path.resolve(getPathInProject(['functions-serve']))
 
   try {
-    await makeDir(targetDirectory)
-  } catch (error) {
+    await mkdir(targetDirectory, { recursive: true })
+  } catch {
     errorExit(`${NETLIFYDEVERR} Could not create directory: ${targetDirectory}`)
   }
 

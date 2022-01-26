@@ -1,8 +1,22 @@
 // @ts-check
+import ansiEscapes from 'ansi-escapes'
 import AsciiTable from 'ascii-table'
-import isEmpty from 'lodash/isEmpty.js'
+import { isCI } from 'ci-info'
+import inquirer from 'inquirer'
+import { isEmpty } from 'lodash-es'
+import logUpdate from 'log-update'
 
-import { log, logJson } from '../../utils/index.js'
+import { chalk, log, logJson } from '../../utils/index.js'
+
+const MASK_LENGTH = 50
+const MASK = '*'.repeat(MASK_LENGTH)
+
+const getTable = ({ environment, hideValues }) => {
+  const table = new AsciiTable(`Environment variables`)
+  table.setHeading('Key', 'Value')
+  table.addRowMatrix(Object.entries(environment).map(([key, value]) => [key, hideValues ? MASK : value]))
+  return table.toString()
+}
 
 /**
  * The env:list command
@@ -34,17 +48,34 @@ const envList = async (options, command) => {
   }
 
   if (isEmpty(environment)) {
-    log(`No environment variables set for site ${siteData.name}`)
+    log(`No environment variables set for site ${chalk.greenBright(siteData.name)}`)
     return false
   }
 
-  // List environment variables using a table
-  log(`site: ${siteData.name}`)
-  const table = new AsciiTable(`Environment variables`)
+  // List environment in a table
+  log(`Listing environment variables for site: ${chalk.greenBright(siteData.name)}`)
 
-  table.setHeading('Key', 'Value')
-  table.addRowMatrix(Object.entries(environment))
-  log(table.toString())
+  if (isCI) {
+    log(getTable({ environment, hideValues: false }))
+    return false
+  }
+
+  logUpdate(getTable({ environment, hideValues: true }))
+  const { showValues } = await inquirer.prompt([
+    {
+      type: 'confirm',
+      name: 'showValues',
+      message: 'Show values?',
+      default: false,
+    },
+  ])
+
+  if (showValues) {
+    // since inquirer adds a prompt, we need to account for it when printing the table again
+    log(ansiEscapes.eraseLines(3))
+    logUpdate(getTable({ environment, hideValues: false }))
+    log(`${chalk.cyan('?')} Show values? ${chalk.cyan('Yes')}`)
+  }
 }
 
 /**

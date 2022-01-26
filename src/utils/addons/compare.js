@@ -1,4 +1,5 @@
-import isEqual from 'lodash/isEqual.js'
+
+import { isEqual } from 'lodash-es'
 
 export default function compare(oldValues, newValues) {
   const initialData = {

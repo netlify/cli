@@ -3,7 +3,7 @@ import { join, relative } from 'path'
 import { cwd } from 'process'
 
 import inquirer from 'inquirer'
-import isEmpty from 'lodash/isEmpty.js'
+import { isEmpty } from 'lodash-es'
 
 import { listSites } from '../../lib/api.js'
 import { chalk, ensureNetlifyIgnore, error, exit, getRepoData, log, track } from '../../utils/index.js'

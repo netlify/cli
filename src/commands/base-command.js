@@ -2,10 +2,10 @@
 import process from 'process'
 import { format } from 'util'
 
-import resolveConfig from '@netlify/config'
+import { resolveConfig } from '@netlify/config'
 import { Command, Option } from 'commander'
 import debug from 'debug'
-import merge from 'lodash/merge.js'
+import { merge } from 'lodash-es'
 import { NetlifyAPI } from 'netlify'
 
 import { getAgent } from '../lib/http-agent.js'
@@ -39,8 +39,8 @@ const FALLBACK_HELP_CMD_WIDTH = 80
 const HELP_$ = NETLIFY_CYAN('$')
 // indent on commands or description on the help page
 const HELP_INDENT_WIDTH = 2
-// seperator width between term and description
-const HELP_SEPERATOR_WIDTH = 5
+// separator width between term and description
+const HELP_SEPARATOR_WIDTH = 5
 
 /**
  * Formats a help list correctly with the correct indent
@@ -211,7 +211,7 @@ export class BaseCommand extends Command {
         const bang = isCommand ? `${HELP_$} ` : ''
 
         if (description) {
-          const pad = termWidth + HELP_SEPERATOR_WIDTH
+          const pad = termWidth + HELP_SEPARATOR_WIDTH
           const fullText = `${bang}${term.padEnd(pad - (isCommand ? 2 : 0))}${chalk.grey(description)}`
           return helper.wrap(fullText, helpWidth - HELP_INDENT_WIDTH, pad)
         }
@@ -301,12 +301,14 @@ export class BaseCommand extends Command {
     debug(`${this.name()}:onEnd`)(`Status: ${status}`)
     debug(`${this.name()}:onEnd`)(`Duration: ${duration}ms`)
 
-    await track('command', {
-      ...payload,
-      command: this.name(),
-      duration,
-      status,
-    })
+    try {
+      await track('command', {
+        ...payload,
+        command: this.name(),
+        duration,
+        status,
+      })
+    } catch {}
 
     if (error_ !== undefined) {
       error(error_ instanceof Error ? error_ : format(error_), { exit: false })
@@ -466,7 +468,11 @@ export class BaseCommand extends Command {
       return await resolveConfig({
         config: options.config,
         cwd,
-        context: options.context || this.name(),
+        context:
+          options.context ||
+          process.env.CONTEXT ||
+          // Dev commands have a default context of `dev`, otherwise we let netlify/config handle default behavior
+          (['dev', 'dev:exec', 'dev:trace'].includes(this.name()) ? 'dev' : undefined),
         debug: this.opts().debug,
         siteId: options.siteId || (typeof options.site === 'string' && options.site) || state.get('siteId'),
         token,

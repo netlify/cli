@@ -16,6 +16,27 @@ import { withMockApi } from './utils/mock-api.js'
 import { killProcess } from './utils/process.js'
 import { withSiteBuilder } from './utils/site-builder.js'
 
+test('should return function response when invoked with no identity argument', async (t) => {
+  await withSiteBuilder('function-invoke-with-no-identity-argument', async (builder) => {
+    builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
+      path: 'test-invoke.js',
+      handler: async () => ({
+        statusCode: 200,
+        body: 'success',
+      }),
+    })
+
+    await builder.buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async (server) => {
+      const stdout = await callCli(['functions:invoke', 'test-invoke', `--port=${server.port}`], {
+        cwd: builder.directory,
+      })
+      t.is(stdout, 'success')
+    })
+  })
+})
+
 test('should return function response when invoked', async (t) => {
   await withSiteBuilder('site-with-ping-function', async (builder) => {
     builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
@@ -444,7 +465,7 @@ test('throws an error when the --language flag contains an unsupported value', a
 })
 
 const DEFAULT_PORT = 9999
-const SERVE_TIMEOUT = 180000
+const SERVE_TIMEOUT = 180_000
 
 const withFunctionsServer = async ({ builder, args = [], port = DEFAULT_PORT }, testHandler) => {
   let ps

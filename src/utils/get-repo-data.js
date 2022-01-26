@@ -6,7 +6,7 @@ import util from 'util'
 import findUp from 'find-up'
 import gitRepoInfo from 'git-repo-info'
 import gitconfiglocal from 'gitconfiglocal'
-import isEmpty from 'lodash/isEmpty.js'
+import { isEmpty } from 'lodash-es'
 import parseGitRemote from 'parse-github-url'
 
 import { log } from './command-helpers.js'

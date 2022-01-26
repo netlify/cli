@@ -1,8 +1,14 @@
+import process from 'process'
+
 import test from 'ava'
+import execa from 'execa'
 
 import callCli from './utils/call-cli.js'
+import { cliPath } from './utils/cli-path.js'
+import { answerWithValue, CONFIRM, handleQuestions } from './utils/handle-questions.js'
 import { getCLIOptions, withMockApi } from './utils/mock-api.js'
 import { withSiteBuilder } from './utils/site-builder.js'
+import { normalize } from './utils/snapshots.js'
 
 const siteInfo = {
   account_slug: 'test-account',
@@ -241,6 +247,110 @@ test('env:list --json should return list of vars with netlify.toml taking priori
   })
 })
 
+test('env:list should hide variables values and prompt to show', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    const questions = [
+      {
+        question: 'Show values',
+        answer: CONFIRM,
+      },
+    ]
+
+    const envListRoutes = [
+      {
+        path: 'sites/site_id',
+        response: { ...siteInfo, build_settings: { env: { DB_ADMIN: 'admin', DB_PASSWORD: '1234' } } },
+      },
+      { path: 'sites/site_id/service-instances', response: [] },
+      {
+        path: 'accounts',
+        response: [{ slug: siteInfo.account_slug }],
+      },
+    ]
+
+    await withMockApi(envListRoutes, async ({ apiUrl }) => {
+      // we set extendEnv: false to prevent the CLI detecting GitHub Actions as CI
+      const childProcess = execa(
+        cliPath,
+        ['env:list'],
+        getCLIOptions({ apiUrl, builder, extendEnv: false, env: { PATH: process.env.PATH } }),
+      )
+
+      handleQuestions(childProcess, questions)
+
+      const { stdout: cliResponse } = await childProcess
+
+      t.snapshot(normalize(cliResponse))
+    })
+  })
+})
+
+test('env:list should hide variables values and show on confirm', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    const questions = [
+      {
+        question: 'Show values',
+        answer: answerWithValue('y'),
+      },
+    ]
+
+    const envListRoutes = [
+      {
+        path: 'sites/site_id',
+        response: { ...siteInfo, build_settings: { env: { DB_ADMIN: 'admin', DB_PASSWORD: '1234' } } },
+      },
+      { path: 'sites/site_id/service-instances', response: [] },
+      {
+        path: 'accounts',
+        response: [{ slug: siteInfo.account_slug }],
+      },
+    ]
+
+    await withMockApi(envListRoutes, async ({ apiUrl }) => {
+      // we set extendEnv: false to prevent the CLI detecting GitHub Actions as CI
+      const childProcess = execa(
+        cliPath,
+        ['env:list'],
+        getCLIOptions({ apiUrl, builder, extendEnv: false, env: { PATH: process.env.PATH } }),
+      )
+
+      handleQuestions(childProcess, questions)
+
+      const { stdout: cliResponse } = await childProcess
+
+      t.snapshot(normalize(cliResponse))
+    })
+  })
+})
+
+test('env:list should not prompt on CI', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    const envListRoutes = [
+      {
+        path: 'sites/site_id',
+        response: { ...siteInfo, build_settings: { env: { DB_ADMIN: 'admin', DB_PASSWORD: '1234' } } },
+      },
+      { path: 'sites/site_id/service-instances', response: [] },
+      {
+        path: 'accounts',
+        response: [{ slug: siteInfo.account_slug }],
+      },
+    ]
+
+    await withMockApi(envListRoutes, async ({ apiUrl }) => {
+      const cliResponse = await callCli(['env:list'], getCLIOptions({ builder, apiUrl, env: { CI: true } }))
+
+      t.snapshot(normalize(cliResponse))
+    })
+  })
+})
+
 test('env:set --json should be able to set var with empty value', async (t) => {
   await withSiteBuilder('site-env', async (builder) => {
     await builder.buildAsync()
@@ -347,6 +457,119 @@ test('env:import --json --replace-existing should replace all existing vars and 
       )
 
       t.deepEqual(cliResponse, newBuildSettings.env)
+    })
+  })
+})
+
+test("env:migrate should return without migrate if there's no env in source site", async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+    const createRoutes = [
+      { path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: {} } } },
+      { path: 'sites/site_id_a', response: { ...siteInfo, build_settings: { env: {} } } },
+    ]
+    await withMockApi(createRoutes, async ({ apiUrl }) => {
+      const cliResponse = await callCli(['env:migrate', '--to', 'site_id_a'], getCLIOptions({ builder, apiUrl }))
+
+      t.snapshot(normalize(cliResponse))
+    })
+  })
+})
+
+test("env:migrate should print error if --to site doesn't exist", async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+    const createRoutes = [{ path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: {} } } }]
+    await withMockApi(createRoutes, async ({ apiUrl }) => {
+      const { stderr: cliResponse } = await t.throwsAsync(
+        callCli(['env:migrate', '--to', 'to-site'], getCLIOptions({ builder, apiUrl })),
+      )
+
+      t.true(cliResponse.includes(`Can't find site with id to-site. Please make sure the site exists`))
+    })
+  })
+})
+
+test("env:migrate should print error if --from site doesn't exist", async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+    await withMockApi([], async ({ apiUrl }) => {
+      const { stderr: cliResponse } = await t.throwsAsync(
+        callCli(['env:migrate', '--from', 'from-site', '--to', 'to-site'], getCLIOptions({ builder, apiUrl })),
+      )
+
+      t.true(cliResponse.includes(`Can't find site with id from-site. Please make sure the site exists`))
+    })
+  })
+})
+
+test('env:migrate should exit if the folder is not linked to a site, and --from is not provided', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    const cliResponse = await callCli(['env:migrate', '--to', 'site_id_a'], {
+      cwd: builder.directory,
+      extendEnv: false,
+      PATH: process.env.PATH,
+    })
+    t.snapshot(normalize(cliResponse))
+  })
+})
+
+test('env:migrate should return success message', async (t) => {
+  const envFrom = {
+    migrate_me: 'migrate_me',
+  }
+
+  const envTo = {
+    existing_env: 'existing_env',
+  }
+
+  const siteInfoTo = {
+    ...siteInfo,
+    id: 'site_id_a',
+    name: 'site-name-a',
+  }
+
+  const newBuildSettings = {
+    env: {
+      ...envFrom,
+      ...envTo,
+    },
+  }
+  const expectedPatchRequest = {
+    path: 'sites/site_id_a',
+    method: 'PATCH',
+    requestBody: {
+      build_settings: newBuildSettings,
+    },
+    response: {
+      ...siteInfoTo,
+      build_settings: newBuildSettings,
+    },
+  }
+  const migrateRoutes = [
+    { path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: envFrom } } },
+    { path: 'sites/site_id_a', response: { ...siteInfoTo, build_settings: { env: envTo } } },
+    { path: 'sites/site_id/service-instances', response: [] },
+    {
+      path: 'accounts',
+      response: [{ slug: siteInfo.account_slug }],
+    },
+    expectedPatchRequest,
+  ]
+
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+    await withMockApi(migrateRoutes, async ({ apiUrl, requests }) => {
+      const cliResponse = await callCli(['env:migrate', '--to', 'site_id_a'], getCLIOptions({ apiUrl, builder }))
+
+      t.snapshot(normalize(cliResponse))
+
+      const patchRequest = requests.find(
+        (request) => request.method === 'PATCH' && request.path === '/api/v1/sites/site_id_a',
+      )
+      t.deepEqual(patchRequest.body, expectedPatchRequest.requestBody)
     })
   })
 })

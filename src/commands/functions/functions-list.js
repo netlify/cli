@@ -89,7 +89,6 @@ Helpful for making sure that you have formatted your functions correctly
 
 NOT the same as listing the functions that have been deployed. For that info you need to go to your Netlify deploy log.`,
     )
-    .option('-n, --name <name>', 'name to print')
     .option('-f, --functions <dir>', 'Specify a functions directory to list')
     .option('--json', 'Output function data as JSON')
     .action(functionsList)

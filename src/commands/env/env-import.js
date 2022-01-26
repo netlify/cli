@@ -3,7 +3,7 @@ import { promises } from 'fs'
 
 import AsciiTable from 'ascii-table'
 import dotenv from 'dotenv'
-import isEmpty from 'lodash/isEmpty.js'
+import { isEmpty } from 'lodash-es'
 
 import { exit, log, logJson } from '../../utils/index.js'
 

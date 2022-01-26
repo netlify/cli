@@ -2,7 +2,7 @@ const { overrides } = require('@netlify/eslint-config-node')
 
 module.exports = {
   extends: '@netlify/eslint-config-node',
-  plugins: ['sort-destructure-keys', 'local-rules'],
+  plugins: ['sort-destructure-keys'],
   parserOptions: {
     sourceType: 'module',
   },
@@ -36,7 +36,6 @@ module.exports = {
         sourceType: 'module',
         babelOptions: {
           presets: ['@babel/preset-react'],
-          plugins: ['@babel/plugin-proposal-class-properties'],
         },
       },
       rules: {
@@ -58,9 +57,21 @@ module.exports = {
       },
     },
     {
+      files: ['e2e/**/*.js'],
+      rules: {
+        'ava/no-ignored-test-files': 0,
+        'id-length': 0,
+      },
+    },
+    {
       files: ['src/**/*.js'],
       rules: {
-        'local-rules/no-direct-chalk-import': 2,
+        // once a solution for npm 6 is found add this to package.json
+        // "eslint-plugin-local-rules": "file:tools/eslint-rules",
+        // add it to the plugins on top: `plugins: ['sort-destructure-keys', 'local-rules'],`
+        //
+        // after that uncomment the next line
+        // 'local-rules/no-direct-chalk-import': 2,
       },
     },
   ],
