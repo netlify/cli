@@ -1,4 +1,5 @@
 /* eslint-disable require-await */
+import { promises } from 'fs'
 import { join } from 'path'
 import process from 'process'
 
@@ -12,6 +13,8 @@ import callCli from './utils/call-cli.js'
 import { createLiveTestSite, generateSiteName } from './utils/create-live-test-site.js'
 import got from './utils/got.js'
 import { withSiteBuilder } from './utils/site-builder.js'
+
+const { mkdir, writeFile } = promises
 
 const EDGE_HANDLER_MIN_LENGTH = 50
 const SITE_NAME = generateSiteName('netlify-test-deploy-')
@@ -363,9 +366,6 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
           name: 'mutator',
           plugin: {
             onPreBuild: async ({ netlifyConfig }) => {
-              // eslint-disable-next-line node/global-require
-              const { mkdir, writeFile } = require('fs').promises
-
               const generatedFunctionsDir = 'new_functions'
               netlifyConfig.functions.directory = generatedFunctionsDir
 

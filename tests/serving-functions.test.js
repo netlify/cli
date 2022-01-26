@@ -8,6 +8,7 @@ import { tryAndLogOutput, withDevServer } from './utils/dev-server.js'
 import got from './utils/got.js'
 import { pause } from './utils/pause.js'
 import { withSiteBuilder } from './utils/site-builder.js'
+import { readFileSync } from 'fs'
 
 const testMatrix = [{ args: [] }, { args: ['esbuild'] }]
 const testName = (title, args) => (args.length <= 0 ? title : `${title} - ${args.join(' ')}`)
@@ -798,9 +799,7 @@ test('Serves functions that dynamically load files included in the `functions.in
         path: 'hello.js',
         handler: async (event) => {
           const { name } = event.queryStringParameters
-
-          // eslint-disable-next-line import/no-dynamic-require, node/global-require
-          const { data } = require(`../files/${name}.json`)
+          const { data } = JSON.parse(readFileSync(`../files/${name}.json`, 'utf-8'))
 
           return {
             statusCode: 200,

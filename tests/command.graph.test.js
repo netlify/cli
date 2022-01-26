@@ -1,7 +1,7 @@
-const test = require('ava')
+import test from 'ava'
 
-const callCli = require('./utils/call-cli')
-const { normalize } = require('./utils/snapshots')
+import callCli from './utils/call-cli.js'
+import { normalize } from './utils/snapshots.js'
 
 test('netlify graph', async (t) => {
   const cliResponse = await callCli(['graph'])

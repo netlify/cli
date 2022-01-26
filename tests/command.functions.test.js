@@ -1,5 +1,7 @@
 // Handlers are meant to be async outside tests
 /* eslint-disable require-await */
+import { join } from 'path'
+
 import test from 'ava'
 import { execa } from 'execa'
 import getPort from 'get-port'
@@ -15,6 +17,7 @@ import { CONFIRM, DOWN, answerWithValue, handleQuestions } from './utils/handle-
 import { withMockApi } from './utils/mock-api.js'
 import { killProcess } from './utils/process.js'
 import { withSiteBuilder } from './utils/site-builder.js'
+import { readFileSync } from 'fs'
 
 test('should return function response when invoked with no identity argument', async (t) => {
   await withSiteBuilder('function-invoke-with-no-identity-argument', async (builder) => {
@@ -189,8 +192,8 @@ test('should install function template dependencies on a site-level `package.jso
 
       await childProcess
 
-      // eslint-disable-next-line import/no-dynamic-require, node/global-require
-      const { dependencies } = require(`${builder.directory}/package.json`)
+      const jsonPath = join(builder.directory, 'package.json')
+      const { dependencies } = JSON.parse(readFileSync(jsonPath, 'utf-8'))
 
       // NOTE: Ideally we should be running this test with a specific template,
       // but `inquirer-autocomplete-prompt` doesn't seem to work with the way
