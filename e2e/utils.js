@@ -1,7 +1,7 @@
 import { execSync } from 'child_process'
 import { readFileSync } from 'fs'
-import { fileURLToPath } from 'url'
 import { env } from 'process'
+import { fileURLToPath } from 'url'
 
 const { version } = JSON.parse(readFileSync(fileURLToPath(new URL('../package.json', import.meta.url)), 'utf-8'))
 
