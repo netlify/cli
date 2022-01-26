@@ -6,7 +6,7 @@ import { execa } from 'execa'
 
 import { setup } from './setup.js'
 
-try {
+const main = async () => {
   const { cleanup, registry, workspace } = await setup()
 
   // By default assume it is failing, so we don't have to set it when something goes wrong
@@ -30,7 +30,9 @@ try {
 
   await cleanup()
   exit(statusCode)
-} catch (error_) {
+}
+
+main().catch((error_) => {
   console.error(error_ instanceof Error ? error_.message : error_)
   exit(1)
-}
+})

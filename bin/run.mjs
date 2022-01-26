@@ -24,8 +24,6 @@ try {
 
 const program = createMainCommand()
 
-try {
-  await program.parseAsync(process.argv)
-} catch (error_) {
+program.parseAsync(process.argv).catch((error_) => {
   program.onEnd(error_)
-}
+})
