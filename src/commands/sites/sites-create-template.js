@@ -129,11 +129,6 @@ const sitesCreate = async (options, command) => {
     }
 
     try {
-      // In case the user picked a site's name that already existed, we shouldn't ask to authenticate again.
-      if (!ghToken) {
-        ghToken = await getGitHubToken()
-      }
-
       const siteName = name ? name.trim() : siteSuggestion
 
       // Create new repo from template
@@ -167,7 +162,6 @@ const sitesCreate = async (options, command) => {
         })
       }
     } catch (error_) {
-      console.log('ERROR??', error)
       if (error_.status === 422 || error_.message === 'Duplicate repo') {
         warn(
           `${name}.netlify.app already exists or a repository named ${name} already exists on this account. Please try a different slug.`,
@@ -177,6 +171,10 @@ const sitesCreate = async (options, command) => {
         error(`createSiteInTeam error: ${error_.status}: ${error_.message}`)
       }
     }
+  }
+  // In case the user picked a site's name that already existed, we shouldn't ask to authenticate again.
+  if (!ghToken) {
+    ghToken = await getGitHubToken()
   }
   await inputSiteName(nameFlag)
 
