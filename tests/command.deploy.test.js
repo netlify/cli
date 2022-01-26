@@ -146,7 +146,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
         },
       ).json()
 
-      t.deepEqual(omit(rest, ['created_at', 'sha']), {
+      t.deepEqual(omit.default(rest, ['created_at', 'sha']), {
         content_type: 'application/javascript',
         handlers: ['index'],
         valid: true,

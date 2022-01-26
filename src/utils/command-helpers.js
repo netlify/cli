@@ -199,5 +199,5 @@ export const exit = (code = 0) => {
 // This removes it.
 export const normalizeConfig = (config) =>
   config.build.publishOrigin === 'default'
-    ? { ...config, build: omit(config.build, ['publish', 'publishOrigin']) }
+    ? { ...config, build: omit.default(config.build, ['publish', 'publishOrigin']) }
     : config

@@ -28,7 +28,7 @@ const ENVS_TO_OMIT = ['LANG', 'LC_ALL']
 export const getExecaOptions = ({ cwd, env }) => ({
   cwd,
   extendEnv: false,
-  env: { ...omit(process.env, ENVS_TO_OMIT), BROWSER: 'none', ...env },
+  env: { ...omit.default(process.env, ENVS_TO_OMIT), BROWSER: 'none', ...env },
   encoding: 'utf8',
 })
 
