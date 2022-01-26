@@ -1,4 +1,4 @@
-import { fileURLToPath} from 'url'
+import { fileURLToPath } from 'url'
 
 import test from 'ava'
 

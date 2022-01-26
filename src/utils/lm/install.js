@@ -3,6 +3,7 @@ import { promises } from 'fs'
 import os from 'os'
 import path from 'path'
 import process from 'process'
+import { fileURLToPath } from 'url'
 
 import { execa } from 'execa'
 import hasbin from 'hasbin'
@@ -16,7 +17,6 @@ import { getLegacyPathInHome, getPathInHome } from '../../lib/settings.js'
 import { chalk } from '../command-helpers.js'
 
 import { checkGitLFSVersionStep, checkGitVersionStep, checkLFSFiltersStep } from './steps.js'
-import { fileURLToPath } from 'url'
 
 const { appendFile, copyFile, readFile, writeFile } = promises
 
