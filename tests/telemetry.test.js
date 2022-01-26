@@ -1,5 +1,6 @@
 import { readFileSync } from 'fs'
 import process from 'process'
+import { fileURLToPath } from 'url'
 
 import test from 'ava'
 import { version as uuidVersion } from 'uuid'
@@ -7,7 +8,7 @@ import { version as uuidVersion } from 'uuid'
 import callCli from './utils/call-cli.js'
 import { withMockApi } from './utils/mock-api.js'
 
-const { name, version } = JSON.parse(readFileSync('../package.json.js'))
+const { name, version } = JSON.parse(readFileSync(fileURLToPath(new URL('../package.json', import.meta.url))))
 
 const getCLIOptions = (apiUrl) => ({
   env: {
