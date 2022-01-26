@@ -9,13 +9,19 @@ const prettyjson = require('prettyjson')
 const { v4: uuidv4 } = require('uuid')
 
 const { chalk, error, log, logJson, track, warn } = require('../../utils')
-// const { authWithNetlify } = require('../../utils/gh-auth')
-const { getGitHubToken } = require('../../utils/init/config-github')
+const { getGitHubToken } = require('../../utils/gh-auth')
 
 const SITE_NAME_SUGGESTION_SUFFIX_LENGTH = 5
 
+let ghToken
+
 // Templates are hardcoded for now
 const templates = [
+  {
+    name: 'Next.js Blog theme',
+    sourceCodeUrl: 'https://github.com/netlify-templates/nextjs-blog-theme',
+    slug: 'netlify-templates/nextjs-blog-theme',
+  },
   {
     name: 'Next.js Starter',
     sourceCodeUrl: 'https://github.com/netlify-templates/next-netlify-starter',
@@ -123,16 +129,18 @@ const sitesCreate = async (options, command) => {
     }
 
     try {
-      //   const token = await authWithNetlify()
-      const { globalConfig } = command.netlify
-      const ghToken = await getGitHubToken({ globalConfig })
+      // In case the user picked a site's name that already existed, we shouldn't ask to authenticate again.
+      if (!ghToken) {
+        ghToken = await getGitHubToken()
+      }
+
       const siteName = name ? name.trim() : siteSuggestion
 
       // Create new repo from template
       const createGhRepoResp = await fetch(`https://api.github.com/repos/${templateUrl.templateName}/generate`, {
         method: 'POST',
         headers: {
-          Authorization: `token ${ghToken}`,
+          Authorization: `token ${ghToken.token}`,
         },
         body: JSON.stringify({
           name: siteName,
@@ -159,6 +167,7 @@ const sitesCreate = async (options, command) => {
         })
       }
     } catch (error_) {
+      console.log('ERROR??', error)
       if (error_.status === 422 || error_.message === 'Duplicate repo') {
         warn(
           `${name}.netlify.app already exists or a repository named ${name} already exists on this account. Please try a different slug.`,
