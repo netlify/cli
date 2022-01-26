@@ -3,6 +3,7 @@ import cp from 'child_process'
 import { chmodSync, createWriteStream, existsSync, lstatSync, mkdirSync, promises, readdirSync, unlinkSync } from 'fs'
 import path, { join, posix } from 'path'
 import process from 'process'
+import { fileURLToPath } from 'url'
 import { promisify } from 'util'
 
 import copyTemplateDir from 'copy-template-dir'
@@ -31,7 +32,7 @@ import {
 const copy = promisify(copyTemplateDir)
 const { mkdir } = promises
 
-const templatesDir = new URL('../../functions-templates', import.meta.url).pathname
+const templatesDir = fileURLToPath(new URL('../../functions-templates', import.meta.url))
 
 const showRustTemplates = process.env.NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE === 'true'
 

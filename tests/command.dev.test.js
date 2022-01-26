@@ -5,6 +5,7 @@ import http from 'http'
 import os from 'os'
 import path from 'path'
 import process from 'process'
+import { fileURLToPath } from 'url'
 
 // eslint-disable-next-line ava/use-test
 import avaTest from 'ava'
@@ -1720,8 +1721,8 @@ export const handler = async function () {
         .buildAsync()
 
       await Promise.all([
-        copyFile(new URL('assets/cert.pem', import.meta.url).pathname, `${builder.directory}/cert.pem`),
-        copyFile(new URL('assets/key.pem', import.meta.url).pathname, `${builder.directory}/key.pem`),
+        copyFile(fileURLToPath(new URL('assets/cert.pem', import.meta.url)), `${builder.directory}/cert.pem`),
+        copyFile(fileURLToPath(new URL('assets/key.pem', import.meta.url)), `${builder.directory}/key.pem`),
       ])
       await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
         const options = { https: { rejectUnauthorized: false } }

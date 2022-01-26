@@ -16,6 +16,7 @@ import { getLegacyPathInHome, getPathInHome } from '../../lib/settings.js'
 import { chalk } from '../command-helpers.js'
 
 import { checkGitLFSVersionStep, checkGitVersionStep, checkLFSFiltersStep } from './steps.js'
+import { fileURLToPath } from 'url'
 
 const { appendFile, copyFile, readFile, writeFile } = promises
 
@@ -123,7 +124,7 @@ const setupWindowsPath = async function () {
     return true
   }
 
-  const scriptPath = new URL('srcipts/path.ps1', import.meta.url).pathname
+  const scriptPath = fileURLToPath(new URL('srcipts/path.ps1', import.meta.url))
   return await execa(
     'powershell',
     ['-ExecutionPolicy', 'unrestricted', '-windowstyle', 'hidden', '-File', scriptPath, getBinPath()],

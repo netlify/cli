@@ -1,3 +1,5 @@
+import { fileURLToPath} from 'url'
+
 import test from 'ava'
 
 import { startDevServer } from './utils/dev-server.js'
@@ -5,7 +7,7 @@ import got from './utils/got.js'
 
 test.before(async (t) => {
   const server = await startDevServer({
-    cwd: new URL('hugo-site', import.meta.url).pathname,
+    cwd: fileURLToPath(new URL('hugo-site', import.meta.url)),
     // required so configuration won't be resolved from the current CLI repo linked site
     args: ['--offline'],
   })

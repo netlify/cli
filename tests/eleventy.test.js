@@ -1,10 +1,12 @@
+import { fileURLToPath } from 'url'
+
 import test from 'ava'
 
 import { startDevServer } from './utils/dev-server.js'
 import got from './utils/got.js'
 
 test.before(async (t) => {
-  const server = await startDevServer({ cwd: new URL('eleventy-site', import.meta.url).pathname })
+  const server = await startDevServer({ cwd: fileURLToPath(new URL('eleventy-site', import.meta.url)) })
 
   t.context.server = server
 })

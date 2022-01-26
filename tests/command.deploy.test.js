@@ -2,6 +2,7 @@
 import { promises } from 'fs'
 import { join } from 'path'
 import process from 'process'
+import { fileURLToPath } from 'url'
 
 import test from 'ava'
 import omit from 'omit.js'
@@ -561,7 +562,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
   })
 
   test.serial('should deploy pre-bundled functions when a valid manifest file is found', async (t) => {
-    const bundledFunctionPath = new URL('assets/bundled-function-1.zip', import.meta.url).pathname
+    const bundledFunctionPath = fileURLToPath(new URL('assets/bundled-function-1.zip', import.meta.url))
     const bundledFunctionData = {
       mainFile: '/some/path/bundled-function-1.js',
       name: 'bundled-function-1',
@@ -682,7 +683,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
     'should not deploy pre-bundled functions when the manifest file is older than the configured TTL',
     async (t) => {
       const age = 18e4
-      const bundledFunctionPath = new URL('assets/bundled-function-1.zip', import.meta.url).pathname
+      const bundledFunctionPath = fileURLToPath(new URL('assets/bundled-function-1.zip', import.meta.url))
       const bundledFunctionData = {
         mainFile: '/some/path/bundled-function-1.js',
         name: 'bundled-function-1',

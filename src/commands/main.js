@@ -1,6 +1,7 @@
 // @ts-check
 import { readFileSync } from 'fs'
 import process from 'process'
+import { fileURLToPath } from 'url'
 
 import { Option } from 'commander'
 import inquirer from 'inquirer'
@@ -44,7 +45,7 @@ import { createWatchCommand } from './watch/index.js'
 
 const SUGGESTION_TIMEOUT = 1e4
 
-const pkg = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url).pathname, 'utf-8'))
+const pkg = JSON.parse(readFileSync(fileURLToPath(new URL('../../package.json', import.meta.url)), 'utf-8'))
 
 const getVersionPage = async () => {
   // performance optimization - load envinfo on demand

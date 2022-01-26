@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { readFileSync } from 'fs'
 import process from 'process'
+import { fileURLToPath } from 'url'
 
 import updateNotifier from 'update-notifier'
 
@@ -9,7 +10,7 @@ import { createMainCommand } from '../src/commands/index.js'
 // 12 hours
 const UPDATE_CHECK_INTERVAL = 432e5
 
-const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url).pathname), 'utf-8')
+const pkg = JSON.parse(readFileSync(fileURLToPath(new URL('../package.json', import.meta.url))), 'utf-8')
 
 try {
   updateNotifier({

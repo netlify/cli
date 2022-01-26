@@ -2,6 +2,7 @@
 import { readFileSync } from 'fs'
 import os from 'os'
 import process from 'process'
+import { fileURLToPath } from 'url'
 import { format, inspect } from 'util'
 
 // eslint-disable-next-line node/no-missing-import
@@ -13,7 +14,9 @@ import { clearSpinner, startSpinner } from '../lib/spinner.js'
 
 import getGlobalConfig from './get-global-config.js'
 
-const { name, version } = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url).pathname, 'utf-8'))
+const { name, version } = JSON.parse(
+  readFileSync(fileURLToPath(new URL('../../package.json', import.meta.url)), 'utf-8'),
+)
 
 /** The parsed process argv without the binary only arguments and flags */
 const argv = process.argv.slice(2)

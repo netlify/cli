@@ -3,10 +3,13 @@
 // to run a s a detached process
 import { readFileSync } from 'fs'
 import process from 'process'
+import { fileURLToPath } from 'url'
 
 import fetch from 'node-fetch'
 
-const { name, version } = JSON.parse(readFileSync(new URL('../../../package.json', import.meta.url).pathname, 'utf-8'))
+const { name, version } = JSON.parse(
+  readFileSync(fileURLToPath(new URL('../../../package.json', import.meta.url)), 'utf-8'),
+)
 const options = JSON.parse(process.argv[2])
 
 const CLIENT_ID = 'NETLIFY_CLI'

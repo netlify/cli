@@ -14,7 +14,7 @@ const isTelemetryDisabled = function (config) {
 }
 
 const send = function (type, payload) {
-  const requestFile = fileURLToPath(new URL('request.js', import.meta.url).pathname)
+  const requestFile = fileURLToPath(new URL('request.js', import.meta.url))
   const options = JSON.stringify({
     data: payload,
     type,
