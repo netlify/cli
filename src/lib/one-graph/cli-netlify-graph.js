@@ -29,7 +29,7 @@ const filterRelativePathItems = (items) => items.filter((part) => part !== '')
  * @param {import('../base-command').BaseCommand} command
  * @return {NetlifyGraphConfig} NetlifyGraphConfig
  */
-const getNetlifyGraphConfig = async ({ command, options }) => {
+const getNetlifyGraphConfig = async ({ command, options, settings }) => {
   const { config, site } = command.netlify
   config.dev = { ...config.dev }
   config.build = { ...config.build }
@@ -44,11 +44,12 @@ const getNetlifyGraphConfig = async ({ command, options }) => {
   }
 
   /** @type {Partial<import('../../utils/types').ServerSettings>} */
-  let settings = {}
-  try {
-    settings = await detectServerSettings(devConfig, options, site.root)
-  } catch (detectServerSettingsError) {
-    error(detectServerSettingsError)
+  if (!settings) {
+    try {
+      settings = await detectServerSettings(devConfig, options, site.root)
+    } catch (detectServerSettingsError) {
+      error(detectServerSettingsError)
+    }
   }
 
   const siteRoot = [path.sep, ...filterRelativePathItems(site.root.split(path.sep))]
