@@ -91,4 +91,4 @@ const handleScheduledFunction = ({ error, request, response, result }) => {
   response.send(message)
 }
 
-module.exports = { handleScheduledFunction }
+module.exports = { handleScheduledFunction, buildHelpResponse }
