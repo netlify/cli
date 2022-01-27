@@ -64,7 +64,10 @@ const buildFunction = async ({ cache, config, directory, func, hasTypeModule, pr
 }
 
 /**
- * @param {string} mainFile
+ * @param {object} params
+ * @param {unknown} params.config
+ * @param {string} params.mainFile
+ * @param {string} params.projectRoot
  */
 const parseForSchedule = async ({ config, mainFile, projectRoot }) => {
   const listedFunction = await listFunction(mainFile, {
