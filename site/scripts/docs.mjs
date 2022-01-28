@@ -64,7 +64,6 @@ const config = {
   },
 }
 
-
 /* Start - Docs Templating logic */
 const commandExamples = function (examples) {
   if (!examples || examples.length === 0) {
