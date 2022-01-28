@@ -624,7 +624,7 @@ testMatrix.forEach((args) => {
           throwHttpErrors: false,
           retry: null,
         })
-        const youReturnedBodyRegex = /.*Your function returned `body`, `level`. Is this an accident\?.*/
+        const youReturnedBodyRegex = /.*Your function returned `body`. Is this an accident\?.*/
         t.regex(plainTextResponse.body, youReturnedBodyRegex)
         t.regex(plainTextResponse.body, /.*You performed an HTTP request.*/)
         t.is(plainTextResponse.statusCode, 200)

@@ -42,7 +42,11 @@ There was an error during execution of your scheduled function:
   }
 
   if (result) {
-    const { statusCode } = result
+    // lambda emulator adds level field, which isn't user-provided
+    const returnValue = { ...result }
+    delete returnValue.level
+
+    const { statusCode } = returnValue
     if (statusCode >= 500) {
       message += paragraph(`
 Your function returned a status code of <code>${statusCode}</code>.
@@ -51,7 +55,7 @@ At the moment, Netlify does nothing about that. In the future, there might be a 
     }
 
     const allowedKeys = new Set(['statusCode'])
-    const returnedKeys = Object.keys(result)
+    const returnedKeys = Object.keys(returnValue)
     const ignoredKeys = returnedKeys.filter((key) => !allowedKeys.has(key))
 
     if (ignoredKeys.length !== 0) {
