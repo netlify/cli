@@ -59,4 +59,3 @@ export const createAddonsDeleteCommand = (program) =>
     )
     .option('-f, --force', 'delete without prompting (useful for CI)')
     .action(addonsDelete)
-
