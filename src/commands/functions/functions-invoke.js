@@ -3,10 +3,11 @@ const fs = require('fs')
 const path = require('path')
 const process = require('process')
 
+const CronParser = require('cron-parser')
 const inquirer = require('inquirer')
 const fetch = require('node-fetch')
 
-const { BACKGROUND, NETLIFYDEVWARN, chalk, error, exit, getFunctions } = require('../../utils')
+const { BACKGROUND, CLOCKWORK_USERAGENT, NETLIFYDEVWARN, chalk, error, exit, getFunctions } = require('../../utils')
 
 // https://www.netlify.com/docs/functions/#event-triggered-functions
 const events = [
@@ -130,6 +131,13 @@ const getFunctionToTrigger = function (options, argumentName) {
   return argumentName
 }
 
+const getNextRun = function (schedule) {
+  const cron = CronParser.parseExpression(schedule, {
+    tz: 'Etc/UTC',
+  })
+  return cron.next().toDate()
+}
+
 /**
  * The functions:invoke command
  * @param {string} nameArgument
@@ -150,11 +158,18 @@ const functionsInvoke = async (nameArgument, options, command) => {
 
   const functions = await getFunctions(functionsDir)
   const functionToTrigger = await getNameFromArgs(functions, options, nameArgument)
+  const functionObj = functions.find((func) => func.name === functionToTrigger)
 
   let headers = {}
   let body = {}
 
-  if (eventTriggeredFunctions.has(functionToTrigger)) {
+  if (functionObj.schedule) {
+    body.next_run = getNextRun(functionObj.schedule)
+    headers = {
+      'user-agent': CLOCKWORK_USERAGENT,
+      'X-NF-Event': 'schedule',
+    }
+  } else if (eventTriggeredFunctions.has(functionToTrigger)) {
     /** handle event triggered fns  */
     // https://www.netlify.com/docs/functions/#event-triggered-functions
     const [name, event] = functionToTrigger.split('-')

@@ -1,19 +1,10 @@
-const fs = require('fs')
-const { platform } = require('os')
+const { mkdirSync, mkdtempSync, writeFileSync } = require('fs')
+const { tmpdir } = require('os')
 const { join } = require('path')
 
-const zisi = require('@netlify/zip-it-and-ship-it')
 const test = require('ava')
 const express = require('express')
-const mockRequire = require('mock-require')
-const sinon = require('sinon')
 const request = require('supertest')
-
-const projectRoot = platform() === 'win32' ? 'C:\\my-functions' : `/my-functions`
-const functionsPath = `functions`
-
-// mock mkdir for the functions folder
-sinon.stub(fs.promises, 'mkdir').withArgs(join(projectRoot, functionsPath)).returns(Promise.resolve())
 
 const { FunctionsRegistry } = require('./registry')
 const { createHandler } = require('./server')
@@ -21,22 +12,14 @@ const { createHandler } = require('./server')
 /** @type { express.Express} */
 let app
 
-test.before(async (t) => {
-  const mainFile = join(projectRoot, functionsPath, 'hello.js')
-  t.context.zisiStub = sinon.stub(zisi, 'listFunctions').returns(
-    Promise.resolve([
-      {
-        name: 'hello',
-        mainFile,
-        runtime: 'js',
-        extension: '.js',
-      },
-    ]),
-  )
+test.before(async () => {
+  const projectRoot = mkdtempSync(join(tmpdir(), 'functions-server-project-root'))
+  const functionsDirectory = join(projectRoot, 'functions')
+  mkdirSync(functionsDirectory)
 
-  mockRequire(mainFile, {
-    handler: (event) => ({ statusCode: 200, body: event.rawUrl }),
-  })
+  const mainFile = join(functionsDirectory, 'hello.js')
+  writeFileSync(mainFile, `exports.handler = (event) => ({ statusCode: 200, body: event.rawUrl })`)
+
   const functionsRegistry = new FunctionsRegistry({
     projectRoot,
     config: {},
@@ -44,13 +27,9 @@ test.before(async (t) => {
     // eslint-disable-next-line no-magic-numbers
     settings: { port: 8888 },
   })
-  await functionsRegistry.scan([functionsPath])
+  await functionsRegistry.scan([functionsDirectory])
   app = express()
   app.all('*', createHandler({ functionsRegistry }))
-})
-
-test.after((t) => {
-  t.context.zisiStub.restore()
 })
 
 test('should get the url as the `rawUrl` inside the function', async (t) => {
