@@ -1,5 +1,5 @@
 // @ts-check
-const { existsSync, mkdirSync, writeFileSync } = require('fs')
+const { existsSync, mkdirSync, writeFileSync, fstat } = require('fs')
 const { dirname } = require('path')
 
 const { sortOptions, warn } = require('../../utils')
@@ -8,7 +8,7 @@ const { AUTOCOMPLETION_FILE } = require('./constants')
 
 /**
  * Create or updates the autocompletion information for the CLI
- * @param {import('../../commands/base-command').BaseCommand} program
+ * @param {import('../../commands/base-command.mjs').BaseCommand} program
  * @returns {void}
  */
 const createAutocompletion = (program) => {
@@ -31,6 +31,7 @@ const createAutocompletion = (program) => {
     if (!existsSync(dirname(AUTOCOMPLETION_FILE))) {
       mkdirSync(dirname(AUTOCOMPLETION_FILE), { recursive: true })
     }
+
     writeFileSync(AUTOCOMPLETION_FILE, JSON.stringify(autocomplete), 'utf-8')
   } catch (error_) {
     // Sometimes it can happen that the autocomplete generation in the postinstall script lacks permissions

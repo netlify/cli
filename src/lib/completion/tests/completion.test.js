@@ -5,10 +5,11 @@ const test = require('ava')
 const { Argument } = require('commander')
 const sinon = require('sinon')
 
-const { BaseCommand } = require('../../../commands/base-command')
 const { getAutocompletion } = require('../script')
 
-const createTestCommand = () => {
+const createTestCommand = async () => {
+  // eslint-disable-next-line import/extensions
+  const { BaseCommand } = await import('../../../commands/base-command.mjs')
   const program = new BaseCommand('chef')
 
   program
@@ -29,24 +30,28 @@ const createTestCommand = () => {
   return program
 }
 
-test.afterEach(() => {
-  sinon.restore()
+test.beforeEach((t) => {
+  t.context.sandbox = sinon.createSandbox()
 })
 
-test('should generate a completion file', (t) => {
-  const stub = sinon.stub(fs, 'writeFileSync').callsFake(() => {})
-  const program = createTestCommand()
+test.afterEach((t) => {
+  t.context.sandbox.restore()
+})
+
+test.serial('should generate a completion file', async (t) => {
+  const writeFileStub = t.context.sandbox.stub(fs, 'writeFileSync').callsFake(() => {})
+  const program = await createTestCommand()
   // eslint-disable-next-line node/global-require
   const { createAutocompletion } = require('../generate-autocompletion')
   createAutocompletion(program)
 
   // @ts-ignore
-  t.true(stub.getCall(0).args[0].endsWith('autocompletion.json'), 'should write a autocompletion file')
+  t.true(writeFileStub.getCall(0).args[0].endsWith('autocompletion.json'), 'should write a autocompletion file')
 
   // @ts-ignore
-  t.snapshot(JSON.parse(stub.getCall(0).args[1]))
+  t.snapshot(JSON.parse(writeFileStub.getCall(0).args[1]))
 
-  stub.restore()
+  writeFileStub.restore()
 })
 
 const cookingFixtures = {

@@ -215,9 +215,11 @@
   },
   "ava": {
     "files": [
-      "site/**/*.test.js",
       "src/**/*.test.js",
+      "src/**/*.test.mjs",
       "tools/**/*.test.js",
+      "tools/**/*.test.mjs",
+      "tests/*.test.mjs",
       "tests/*.test.js"
     ],
     "cache": true,
