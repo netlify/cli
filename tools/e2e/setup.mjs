@@ -1,14 +1,19 @@
-const { mkdtemp } = require('fs').promises
-const { appendFileSync, existsSync, readFileSync, writeFileSync } = require('fs')
-const { homedir, tmpdir } = require('os')
-const { join, sep } = require('path')
-const process = require('process')
+import { appendFileSync, existsSync, promises, readFileSync, writeFileSync } from 'fs'
+import { homedir, tmpdir } from 'os'
+import { join, sep } from 'path'
+import { cwd, env } from 'process'
 
-const execa = require('execa')
-const getPort = require('get-port')
-const startVerdaccio = require('verdaccio').default
+import del from 'del'
+import execa from 'execa'
+import getPort from 'get-port'
+import verdaccio from 'verdaccio'
 
-const { rmdirRecursiveAsync } = require('../../src/lib/fs')
+// TODO: remove this once `../../src/lib/fs.js` is an esm module as well
+const rmdirRecursiveAsync = async (path) => {
+  await del(path, { force: true })
+}
+
+const { mkdtemp } = promises
 
 // eslint-disable-next-line no-magic-numbers
 const VERDACCIO_TIMEOUT_MILLISECONDS = 60 * 1000
@@ -54,7 +59,7 @@ const getVerdaccioConfig = (storage) => ({
  * Start verdaccio registry and store artifacts in a new temporary folder on the os
  * @returns {Promise<{ url: URL; storage: string; }>}
  */
-const startRegistry = async () => {
+export const startRegistry = async () => {
   // generate a random starting port to avoid race condition inside the promise when running a large
   // number in parallel
   const startPort = Math.floor(Math.random() * END_PORT_RANGE) + START_PORT_RANGE
@@ -65,7 +70,7 @@ const startRegistry = async () => {
       reject(new Error('Starting Verdaccio Timed out'))
     }, VERDACCIO_TIMEOUT_MILLISECONDS)
 
-    startVerdaccio(getVerdaccioConfig(storage), freePort, storage, '1.0.0', 'verdaccio', (webServer, { port }) => {
+    verdaccio.default(getVerdaccioConfig(storage), freePort, storage, '1.0.0', 'verdaccio', (webServer, { port }) => {
       webServer.listen(port, 'localhost', () => {
         resolve({ url: new URL(`http://localhost:${port}/`), storage })
       })
@@ -82,7 +87,7 @@ const startRegistry = async () => {
  *   cleanup: () => Promise<void>
  * }
  */
-const setup = async () => {
+export const setup = async () => {
   const { storage, url } = await startRegistry()
   const workspace = await mkdtemp(`${tmpdir()}${sep}e2e-test-`)
 
@@ -112,8 +117,8 @@ const setup = async () => {
     }
 
     // publish the CLI package to our registry
-    await execa('npm', ['publish', `--registry=${url}`, '--tag=testing', process.cwd()], {
-      stdio: process.env.DEBUG ? 'inherit' : 'ignore',
+    await execa('npm', ['publish', `--registry=${url}`, '--tag=testing', cwd()], {
+      stdio: env.DEBUG ? 'inherit' : 'ignore',
     })
 
     console.log(`------------------------------------------
@@ -139,5 +144,3 @@ ${error_ instanceof Error ? error_.message : error_}`,
     cleanup,
   }
 }
-
-module.exports = { startRegistry, setup }
