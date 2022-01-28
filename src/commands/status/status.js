@@ -9,7 +9,7 @@ const { createStatusHooksCommand } = require('./status-hooks')
 /**
  * The status command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').BaseCommand} command
  */
 const status = async (options, command) => {
   const { api, globalConfig, site } = command.netlify
@@ -109,7 +109,7 @@ const status = async (options, command) => {
 
 /**
  * Creates the `netlify status` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').BaseCommand} program
  * @returns
  */
 const createStatusCommand = (program) => {

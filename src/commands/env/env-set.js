@@ -6,7 +6,7 @@ const { log, logJson } = require('../../utils')
  * @param {string} name Environment variable name
  * @param {string} value Value to set to
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').BaseCommand} command
  * @returns {Promise<boolean>}
  */
 const envSet = async (name, value, options, command) => {
@@ -51,7 +51,7 @@ const envSet = async (name, value, options, command) => {
 
 /**
  * Creates the `netlify env:set` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').BaseCommand} program
  * @returns
  */
 const createEnvSetCommand = (program) =>

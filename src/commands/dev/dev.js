@@ -231,7 +231,7 @@ const printBanner = ({ url }) => {
 /**
  * The dev command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').BaseCommand} command
  */
 const dev = async (options, command) => {
   log(`${NETLIFYDEV}`)
@@ -320,7 +320,7 @@ const dev = async (options, command) => {
 
 /**
  * Creates the `netlify dev` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').BaseCommand} program
  * @returns
  */
 const createDevCommand = (program) => {

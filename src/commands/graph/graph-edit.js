@@ -15,7 +15,7 @@ const { createCLISession, createPersistedQuery, ensureAppForSite, updateCLISessi
 /**
  * Creates the `netlify graph:edit` command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').BaseCommand} program
  * @returns
  */
 const graphEdit = async (options, command) => {
@@ -77,7 +77,7 @@ const graphEdit = async (options, command) => {
 
 /**
  * Creates the `netlify graph:edit` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').BaseCommand} program
  * @returns
  */
 const createGraphEditCommand = (program) =>

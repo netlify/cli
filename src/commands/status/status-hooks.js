@@ -7,7 +7,7 @@ const { error, log, warn } = require('../../utils')
 /**
  * The status:hooks command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').BaseCommand} command
  */
 const statusHooks = async (options, command) => {
   const { api, site } = command.netlify
@@ -60,7 +60,7 @@ Site Hook Status │
 
 /**
  * Creates the `netlify status:hooks` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').BaseCommand} program
  * @returns
  */
 const createStatusHooksCommand = (program) =>

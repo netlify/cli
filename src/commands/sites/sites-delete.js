@@ -7,7 +7,7 @@ const { chalk, error, exit, log } = require('../../utils')
  * The sites:delete command
  * @param {string} siteId
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').BaseCommand} command
  */
 const sitesDelete = async (siteId, options, command) => {
   command.setAnalyticsPayload({ force: options.force })
@@ -89,7 +89,7 @@ const sitesDelete = async (siteId, options, command) => {
 
 /**
  * Creates the `netlify sites:delete` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').BaseCommand} program
  * @returns
  */
 const createSitesDeleteCommand = (program) =>

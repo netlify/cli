@@ -1,14 +1,16 @@
 // @ts-check
+import AsciiTable from 'ascii-table'
 
-const AsciiTable = require('ascii-table')
+import addonsPrepare from '../../utils/addons/prepare.js'
+import utils from '../../utils/index.js'
 
-const { log, logJson } = require('../../utils')
-const { prepareAddonCommand } = require('../../utils/addons/prepare')
-
+// TODO: use named import once it's esm
+const { log, logJson } = utils
+const { prepareAddonCommand } = addonsPrepare
 /**
  * The addons:list command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').BaseCommand} command
  * @returns {Promise<boolean>}
  */
 const addonsList = async (options, command) => {
@@ -46,10 +48,10 @@ const addonsList = async (options, command) => {
 
 /**
  * Creates the `netlify addons:list` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').BaseCommand} program
  * @returns
  */
-const createAddonsListCommand = (program) =>
+export const createAddonsListCommand = (program) =>
   program
     .command('addons:list')
     .alias('addon:list')
@@ -58,5 +60,3 @@ const createAddonsListCommand = (program) =>
     .action(async (options, command) => {
       await addonsList(options, command)
     })
-
-module.exports = { createAddonsListCommand }

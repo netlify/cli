@@ -11,7 +11,7 @@ const { exit, log, logJson } = require('../../utils')
  * The env:import command
  * @param {string} fileName .env file to import
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').BaseCommand} command
  * @returns {Promise<boolean>}
  */
 const envImport = async (fileName, options, command) => {
@@ -73,7 +73,7 @@ const envImport = async (fileName, options, command) => {
 
 /**
  * Creates the `netlify env:import` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').BaseCommand} program
  * @returns
  */
 const createEnvImportCommand = (program) =>

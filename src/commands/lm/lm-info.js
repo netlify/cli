@@ -33,7 +33,7 @@ const lmInfo = async () => {
 
 /**
  * Creates the `netlify lm:info` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').BaseCommand} program
  * @returns
  */
 const createLmInfoCommand = (program) =>

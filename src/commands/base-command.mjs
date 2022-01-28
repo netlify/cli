@@ -1,16 +1,17 @@
 // @ts-check
-const process = require('process')
-const { format } = require('util')
+import { hrtime, env, cwd as _cwd } from 'process'
+import { format } from 'util'
 
-const { Command, Option } = require('commander')
-const debug = require('debug')
-const merge = require('lodash/merge')
+import { resolveConfig } from '@netlify/config'
+import { Command, Option } from 'commander'
+import debug from 'debug'
+import { merge } from 'lodash-es'
+import { NetlifyAPI } from 'netlify'
 
-// TODO: use static `import` after migrating this repository to pure ES modules
-const jsClient = import('netlify')
-const netlifyConfigPromise = import('@netlify/config')
+import httpAgent from '../lib/http-agent.js'
+import utils from '../utils/index.js'
 
-const { getAgent } = require('../lib/http-agent')
+const { getAgent } = httpAgent
 const {
   NETLIFY_CYAN,
   StateConfig,
@@ -28,7 +29,7 @@ const {
   pollForToken,
   sortOptions,
   track,
-} = require('../utils')
+} = utils
 
 // Netlify CLI client id. Lives in bot@netlify.com
 // TODO: setup client for multiple environments
@@ -57,7 +58,7 @@ const formatHelpList = (textArray) => textArray.join('\n').replace(/^/gm, ' '.re
  * @returns
  */
 const getDuration = function (startTime) {
-  const durationNs = process.hrtime.bigint() - startTime
+  const durationNs = hrtime.bigint() - startTime
   return Math.round(Number(durationNs / BigInt(NANO_SECS_TO_MSECS)))
 }
 
@@ -79,12 +80,12 @@ const getDuration = function (startTime) {
  */
 
 /** Base command class that provides tracking and config initialization */
-class BaseCommand extends Command {
+export class BaseCommand extends Command {
   /** @type {NetlifyOptions} */
   netlify
 
   /** @type {{ startTime: bigint, payload?: any}} */
-  analytics = { startTime: process.hrtime.bigint() }
+  analytics = { startTime: hrtime.bigint() }
 
   /**
    * IMPORTANT this function will be called for each command!
@@ -104,17 +105,17 @@ class BaseCommand extends Command {
         .option(
           '--httpProxyCertificateFilename [file]',
           'Certificate file to use when connecting using a proxy server',
-          process.env.NETLIFY_PROXY_CERTIFICATE_FILENAME,
+          env.NETLIFY_PROXY_CERTIFICATE_FILENAME,
         )
         .option(
           '--httpProxy [address]',
           'Proxy server address to route requests through.',
-          process.env.HTTP_PROXY || process.env.HTTPS_PROXY,
+          env.HTTP_PROXY || env.HTTPS_PROXY,
         )
         .option('--debug', 'Print debugging information')
         .hook('preAction', async (_parentCommand, actionCommand) => {
           debug(`${name}:preAction`)('start')
-          this.analytics = { startTime: process.hrtime.bigint() }
+          this.analytics = { startTime: hrtime.bigint() }
           // @ts-ignore cannot type actionCommand as BaseCommand
           await this.init(actionCommand)
           debug(`${name}:preAction`)('end')
@@ -327,7 +328,7 @@ class BaseCommand extends Command {
   }
 
   async expensivelyAuthenticate() {
-    const webUI = process.env.NETLIFY_WEB_UI || 'https://app.netlify.com'
+    const webUI = env.NETLIFY_WEB_UI || 'https://app.netlify.com'
     log(`Logging into your Netlify account...`)
 
     // Create ticket for auth
@@ -399,7 +400,7 @@ class BaseCommand extends Command {
   async init(actionCommand) {
     debug(`${actionCommand.name()}:init`)('start')
     const options = actionCommand.opts()
-    const cwd = options.cwd || process.cwd()
+    const cwd = options.cwd || _cwd()
     // Get site id & build state
     const state = new StateConfig(cwd)
 
@@ -409,12 +410,11 @@ class BaseCommand extends Command {
       userAgent: USER_AGENT,
     }
 
-    if (process.env.NETLIFY_API_URL) {
-      const apiUrl = new URL(process.env.NETLIFY_API_URL)
+    if (env.NETLIFY_API_URL) {
+      const apiUrl = new URL(env.NETLIFY_API_URL)
       apiUrlOpts.scheme = apiUrl.protocol.slice(0, -1)
       apiUrlOpts.host = apiUrl.host
-      apiUrlOpts.pathPrefix =
-        process.env.NETLIFY_API_URL === `${apiUrl.protocol}//${apiUrl.host}` ? '/api/v1' : apiUrl.pathname
+      apiUrlOpts.pathPrefix = env.NETLIFY_API_URL === `${apiUrl.protocol}//${apiUrl.host}` ? '/api/v1' : apiUrl.pathname
     }
 
     const cachedConfig = await actionCommand.getConfig({ cwd, state, token, ...apiUrlOpts })
@@ -427,7 +427,6 @@ class BaseCommand extends Command {
     })
     const apiOpts = { ...apiUrlOpts, agent }
     const globalConfig = await getGlobalConfig()
-    const { NetlifyAPI } = await jsClient
 
     actionCommand.netlify = {
       // api methods
@@ -461,12 +460,11 @@ class BaseCommand extends Command {
   /**
    * Find and resolve the Netlify configuration
    * @param {*} config
-   * @returns {ReturnType<import('@netlify/config/src/main')>}
+   * @returns {Promise<ReturnType<import('@netlify/config/src/main')>>}
    */
   async getConfig(config) {
     const options = this.opts()
     const { cwd, host, offline = options.offline, pathPrefix, scheme, state, token } = config
-    const { resolveConfig } = await netlifyConfigPromise
 
     try {
       return await resolveConfig({
@@ -474,7 +472,7 @@ class BaseCommand extends Command {
         cwd,
         context:
           options.context ||
-          process.env.CONTEXT ||
+          env.CONTEXT ||
           // Dev commands have a default context of `dev`, otherwise we let netlify/config handle default behavior
           (['dev', 'dev:exec', 'dev:trace'].includes(this.name()) ? 'dev' : undefined),
         debug: this.opts().debug,
@@ -505,5 +503,3 @@ class BaseCommand extends Command {
     }
   }
 }
-
-module.exports = { BaseCommand }

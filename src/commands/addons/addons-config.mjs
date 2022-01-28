@@ -1,14 +1,19 @@
 // @ts-check
-const inquirer = require('inquirer')
-const isEmpty = require('lodash/isEmpty')
+import inquirer from 'inquirer'
+import { isEmpty } from 'lodash-es'
 
-const { chalk, error, log, parseRawFlags } = require('../../utils')
-const compare = require('../../utils/addons/compare')
-const diffValues = require('../../utils/addons/diffs')
-const { ADDON_VALIDATION, prepareAddonCommand } = require('../../utils/addons/prepare')
-const generatePrompts = require('../../utils/addons/prompts')
-const render = require('../../utils/addons/render')
-const { missingConfigValues, requiredConfigValues, updateConfigValues } = require('../../utils/addons/validation')
+import compare from '../../utils/addons/compare.js'
+import diffValues from '../../utils/addons/diffs/index.js'
+import addonsPrepare from '../../utils/addons/prepare.js'
+import generatePrompts from '../../utils/addons/prompts.js'
+import addonsRender from '../../utils/addons/render.js'
+import addonsValidation from '../../utils/addons/validation.js'
+import utils from '../../utils/index.js'
+
+const { chalk, error, log, parseRawFlags } = utils
+const { ADDON_VALIDATION, prepareAddonCommand } = addonsPrepare
+const { configValues: _configValues } = addonsRender
+const { missingConfigValues, requiredConfigValues, updateConfigValues } = addonsValidation
 
 const update = async function ({ addonName, api, currentConfig, instanceId, newConfig, siteId }) {
   const codeDiff = diffValues(currentConfig, newConfig)
@@ -40,7 +45,7 @@ const update = async function ({ addonName, api, currentConfig, instanceId, newC
  * The addons:config command
  * @param {string} addonName
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').BaseCommand} command
  * @returns {Promise<boolean>}
  */
 const addonsConfig = async (addonName, options, command) => {
@@ -64,7 +69,7 @@ const addonsConfig = async (addonName, options, command) => {
   log(` ${chalk.yellowBright.bold(words)}`)
   if (hasConfig) {
     if (!rawFlags.silent) {
-      render.configValues(addonName, manifest.config, currentConfig)
+      _configValues(addonName, manifest.config, currentConfig)
     }
   } else {
     // For addons without manifest. TODO remove once we enforce manifests
@@ -162,10 +167,10 @@ const addonsConfig = async (addonName, options, command) => {
 
 /**
  * Creates the `netlify addons:config` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').BaseCommand} program
  * @returns
  */
-const createAddonsConfigCommand = (program) =>
+export const createAddonsConfigCommand = (program) =>
   program
     .command('addons:config')
     .alias('addon:config')
@@ -176,5 +181,3 @@ const createAddonsConfigCommand = (program) =>
     .action(async (addonName, options, command) => {
       await addonsConfig(addonName, options, command)
     })
-
-module.exports = { createAddonsConfigCommand }

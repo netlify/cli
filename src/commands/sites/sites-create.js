@@ -16,7 +16,7 @@ const SITE_NAME_SUGGESTION_SUFFIX_LENGTH = 5
 /**
  * The sites:create command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').BaseCommand} command
  */
 const sitesCreate = async (options, command) => {
   const { api } = command.netlify
@@ -170,7 +170,7 @@ const sitesCreate = async (options, command) => {
 
 /**
  * Creates the `netlify sites:create` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').BaseCommand} program
  * @returns
  */
 const createSitesCreateCommand = (program) =>

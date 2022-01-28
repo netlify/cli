@@ -26,7 +26,7 @@ const filterRelativePathItems = (items) => items.filter((part) => part !== '')
 
 /**
  * Return a full NetlifyGraph config with any defaults overridden by netlify.toml
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').BaseCommand} command
  * @return {NetlifyGraphConfig} NetlifyGraphConfig
  */
 const getNetlifyGraphConfig = async ({ command, options, settings }) => {

@@ -1,54 +1,46 @@
 // @ts-check
-const process = require('process')
+import { readFileSync } from 'fs'
+import { argv } from 'process'
+import { fileURLToPath } from 'url'
 
-const { Option } = require('commander')
-const inquirer = require('inquirer')
-const { findBestMatch } = require('string-similarity')
+import { Option } from 'commander'
+import inquirer from 'inquirer'
+import { findBestMatch } from 'string-similarity'
 
-const pkg = require('../../package.json')
-const {
-  BANG,
-  NETLIFY_CYAN,
-  USER_AGENT,
-  chalk,
-  error,
-  execa,
-  exit,
-  getGlobalConfig,
-  log,
-  track,
-  warn,
-} = require('../utils')
+import utils from '../utils/index.js'
 
-const { createAddonsCommand } = require('./addons')
-const { createApiCommand } = require('./api')
-const { BaseCommand } = require('./base-command')
-const { createBuildCommand } = require('./build')
-const { createCompletionCommand } = require('./completion')
-const { createDeployCommand } = require('./deploy')
-const { createDevCommand } = require('./dev')
-const { createEnvCommand } = require('./env')
-const { createFunctionsCommand } = require('./functions')
-const { createGraphCommand } = require('./graph')
-const { createInitCommand } = require('./init')
-const { createLinkCommand } = require('./link')
-const { createLmCommand } = require('./lm')
-const { createLoginCommand } = require('./login')
-const { createLogoutCommand } = require('./logout')
-const { createOpenCommand } = require('./open')
-const { createSitesCommand } = require('./sites')
-const { createStatusCommand } = require('./status')
-const { createSwitchCommand } = require('./switch')
-const { createUnlinkCommand } = require('./unlink')
-const { createWatchCommand } = require('./watch')
+import { createAddonsCommand } from './addons/index.mjs'
+import api from './api/index.js'
+import { BaseCommand } from './base-command.mjs'
+import build from './build/index.js'
+import completion from './completion/index.js'
+import deploy from './deploy/index.js'
+import dev from './dev/index.js'
+import env from './env/index.js'
+import functions from './functions/index.js'
+import graph from './graph/index.js'
+import init from './init/index.js'
+import link from './link/index.js'
+import lm from './lm/index.js'
+import login from './login/index.js'
+import logout from './logout/index.js'
+import open from './open/index.js'
+import sites from './sites/index.js'
+import status from './status/index.js'
+import { createSwitchCommand } from './switch/index.mjs'
+import unlink from './unlink/index.js'
+import watch from './watch/index.js'
+
+const { BANG, NETLIFY_CYAN, USER_AGENT, chalk, error, execa, exit, getGlobalConfig, log, track, warn } = utils
+
+const { bugs } = JSON.parse(readFileSync(fileURLToPath(new URL('../../package.json', import.meta.url)), 'utf-8'))
 
 const SUGGESTION_TIMEOUT = 1e4
 
 const getVersionPage = async () => {
   // performance optimization - load envinfo on demand
-  // eslint-disable-next-line node/global-require
-  const envinfo = require('envinfo')
-  const data = await envinfo.run({
+  const { run } = await import('envinfo')
+  const data = await run({
     System: ['OS', 'CPU'],
     Binaries: ['Node', 'Yarn', 'npm'],
     Browsers: ['Chrome', 'Edge', 'Firefox', 'Safari'],
@@ -67,9 +59,9 @@ ${USER_AGENT}
 /**
  * The main CLI command without any command (root action)
  * @param {import('commander').OptionValues} options
- * @param {import('./base-command').BaseCommand} command
+ * @param {import('./base-command.mjs').BaseCommand} command
  */
-const mainCommand = async function (options, command) {
+export const mainCommand = async function (options, command) {
   const globalConfig = await getGlobalConfig()
 
   if (options.telemetryDisable) {
@@ -99,7 +91,7 @@ const mainCommand = async function (options, command) {
   if (command.args.length === 0) {
     const title = `${chalk.bgBlack.cyan('⬥ Netlify CLI')}`
     const docsMsg = `${chalk.greenBright('Read the docs:')} https://www.netlify.com/docs/cli`
-    const supportMsg = `${chalk.magentaBright('Support and bugs:')} ${pkg.bugs.url}`
+    const supportMsg = `${chalk.magentaBright('Support and bugs:')} ${bugs.url}`
 
     console.log()
     console.log(title)
@@ -152,37 +144,37 @@ const mainCommand = async function (options, command) {
     error(`Run ${NETLIFY_CYAN(`${command.name()} help`)} for a list of available commands.`)
   }
 
-  await execa(process.argv[0], [process.argv[1], suggestion], { stdio: 'inherit' })
+  await execa(argv[0], [argv[1], suggestion], { stdio: 'inherit' })
 }
 
 /**
  * Creates the `netlify-cli` command
  * Promise is needed as the envinfo is a promise
- * @returns {import('./base-command').BaseCommand}
+ * @returns {import('./base-command.mjs').BaseCommand}
  */
-const createMainCommand = () => {
+export const createMainCommand = () => {
   const program = new BaseCommand('netlify')
   // register all the commands
   createAddonsCommand(program)
-  createApiCommand(program)
-  createBuildCommand(program)
-  createCompletionCommand(program)
-  createDeployCommand(program)
-  createDevCommand(program)
-  createEnvCommand(program)
-  createFunctionsCommand(program)
-  createGraphCommand(program)
-  createInitCommand(program)
-  createLinkCommand(program)
-  createLmCommand(program)
-  createLoginCommand(program)
-  createLogoutCommand(program)
-  createOpenCommand(program)
-  createSitesCommand(program)
-  createStatusCommand(program)
+  api.createApiCommand(program)
+  build.createBuildCommand(program)
+  completion.createCompletionCommand(program)
+  deploy.createDeployCommand(program)
+  dev.createDevCommand(program)
+  env.createEnvCommand(program)
+  functions.createFunctionsCommand(program)
+  graph.createGraphCommand(program)
+  init.createInitCommand(program)
+  link.createLinkCommand(program)
+  lm.createLmCommand(program)
+  login.createLoginCommand(program)
+  logout.createLogoutCommand(program)
+  open.createOpenCommand(program)
+  sites.createSitesCommand(program)
+  status.createStatusCommand(program)
   createSwitchCommand(program)
-  createUnlinkCommand(program)
-  createWatchCommand(program)
+  unlink.createUnlinkCommand(program)
+  watch.createWatchCommand(program)
 
   program
     .version(USER_AGENT, '-V')
@@ -204,5 +196,3 @@ const createMainCommand = () => {
 
   return program
 }
-
-module.exports = { createMainCommand }

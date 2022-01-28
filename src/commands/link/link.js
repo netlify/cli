@@ -11,7 +11,7 @@ const { chalk, ensureNetlifyIgnore, error, exit, getRepoData, log, track } = req
 
 /**
  *
- * @param {import('../base-command').NetlifyOptions} netlify
+ * @param {import('../base-command.mjs').NetlifyOptions} netlify
  * @param {import('commander').OptionValues} options
  */
 const linkPrompt = async (netlify, options) => {
@@ -246,7 +246,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
 /**
  * The link command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').BaseCommand} command
  */
 const link = async (options, command) => {
   await command.authenticate()
@@ -342,7 +342,7 @@ const link = async (options, command) => {
 
 /**
  * Creates the `netlify link` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').BaseCommand} program
  * @returns
  */
 const createLinkCommand = (program) =>

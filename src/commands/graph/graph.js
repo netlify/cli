@@ -5,7 +5,7 @@ const { createGraphPullCommand } = require('./graph-pull')
 /**
  * The graph command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').BaseCommand} command
  */
 const graph = (options, command) => {
   command.help()
@@ -13,7 +13,7 @@ const graph = (options, command) => {
 
 /**
  * Creates the `netlify graph` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').BaseCommand} program
  * @returns
  */
 const createGraphCommand = (program) => {

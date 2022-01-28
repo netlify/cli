@@ -10,7 +10,7 @@ const { chalk, error, exit, log, logJson } = require('../../utils')
  * The api command
  * @param {string} apiMethod
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').BaseCommand} command
  */
 const apiCommand = async (apiMethod, options, command) => {
   const { api } = command.netlify
@@ -54,7 +54,7 @@ const apiCommand = async (apiMethod, options, command) => {
 
 /**
  * Creates the `netlify api` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').BaseCommand} program
  * @returns
  */
 const createApiCommand = (program) =>

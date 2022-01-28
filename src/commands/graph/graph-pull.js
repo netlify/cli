@@ -12,7 +12,7 @@ const { chalk, error, warn } = require('../../utils')
 /**
  * Creates the `netlify graph:pull` command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').BaseCommand} program
  * @returns
  */
 const graphPull = async (options, command) => {
@@ -81,7 +81,7 @@ const graphPull = async (options, command) => {
 
 /**
  * Creates the `netlify graph:pull` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').BaseCommand} program
  * @returns
  */
 const createGraphPullCommand = (program) =>

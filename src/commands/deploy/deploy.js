@@ -443,7 +443,7 @@ const printResults = ({ deployToProduction, json, results, runBuildCommand }) =>
 /**
  * The deploy command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').BaseCommand} command
  */
 const deploy = async (options, command) => {
   const { api, site } = command.netlify
@@ -578,7 +578,7 @@ const deploy = async (options, command) => {
 
 /**
  * Creates the `netlify deploy` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').BaseCommand} program
  * @returns
  */
 const createDeployCommand = (program) =>

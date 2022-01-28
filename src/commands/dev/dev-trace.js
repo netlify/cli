@@ -15,7 +15,7 @@ const devTrace = async () => {
 
 /**
  * Creates the `netlify dev:trace` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').BaseCommand} program
  * @returns
  */
 const createDevTraceCommand = (program) =>

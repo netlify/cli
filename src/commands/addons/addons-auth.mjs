@@ -1,13 +1,15 @@
 // @ts-check
+import addonsPrepare from '../../utils/addons/prepare.js'
+import utils from '../../utils/index.js'
 
-const { exit, log, openBrowser } = require('../../utils')
-const { ADDON_VALIDATION, prepareAddonCommand } = require('../../utils/addons/prepare')
+const { exit, log, openBrowser } = utils
+const { ADDON_VALIDATION, prepareAddonCommand } = addonsPrepare
 
 /**
  * The addons:auth command
  * @param {string} addonName
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').BaseCommand} command
  * @returns {Promise<boolean>}
  */
 const addonsAuth = async (addonName, options, command) => {
@@ -34,10 +36,10 @@ const addonsAuth = async (addonName, options, command) => {
 
 /**
  * Creates the `netlify addons:auth` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').BaseCommand} program
  * @returns
  */
-const createAddonsAuthCommand = (program) =>
+export const createAddonsAuthCommand = (program) =>
   program
     .command('addons:auth')
     .alias('addon:auth')
@@ -46,5 +48,3 @@ const createAddonsAuthCommand = (program) =>
     .action(async (addonName, options, command) => {
       await addonsAuth(addonName, options, command)
     })
-
-module.exports = { createAddonsAuthCommand }

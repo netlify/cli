@@ -6,7 +6,7 @@ const { createSitesListCommand } = require('./sites-list')
 /**
  * The sites command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').BaseCommand} command
  */
 const sites = (options, command) => {
   command.help()
@@ -14,7 +14,7 @@ const sites = (options, command) => {
 
 /**
  * Creates the `netlify sites` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').BaseCommand} program
  * @returns
  */
 const createSitesCommand = (program) => {

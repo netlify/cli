@@ -5,7 +5,7 @@ const { log, logJson } = require('../../utils')
  * The env:unset command
  * @param {string} name Environment variable name
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').BaseCommand} command
  * @returns {Promise<boolean>}
  */
 const envUnset = async (name, options, command) => {
@@ -50,7 +50,7 @@ const envUnset = async (name, options, command) => {
 
 /**
  * Creates the `netlify env:unset` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').BaseCommand} program
  * @returns
  */
 const createEnvUnsetCommand = (program) =>

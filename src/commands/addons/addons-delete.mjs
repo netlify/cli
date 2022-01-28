@@ -1,14 +1,17 @@
 // @ts-check
-const inquirer = require('inquirer')
+import inquirer from 'inquirer'
 
-const { error, exit, log } = require('../../utils')
-const { ADDON_VALIDATION, prepareAddonCommand } = require('../../utils/addons/prepare')
+import addonsPrepare from '../../utils/addons/prepare.js'
+import utils from '../../utils/index.js'
 
+// TODO: use named import once it's esm
+const { error, exit, log } = utils
+const { ADDON_VALIDATION, prepareAddonCommand } = addonsPrepare
 /**
  * The addons:delete command
  * @param {string} addonName
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').BaseCommand} command
  */
 const addonsDelete = async (addonName, options, command) => {
   const { addon } = await prepareAddonCommand({
@@ -43,10 +46,10 @@ const addonsDelete = async (addonName, options, command) => {
 
 /**
  * Creates the `netlify addons:delete` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').BaseCommand} program
  * @returns
  */
-const createAddonsDeleteCommand = (program) =>
+export const createAddonsDeleteCommand = (program) =>
   program
     .command('addons:delete')
     .alias('addon:delete')
@@ -57,4 +60,3 @@ const createAddonsDeleteCommand = (program) =>
     .option('-f, --force', 'delete without prompting (useful for CI)')
     .action(addonsDelete)
 
-module.exports = { createAddonsDeleteCommand }

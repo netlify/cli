@@ -1,15 +1,15 @@
 // @ts-check
 
-const { createAddonsAuthCommand } = require('./addons-auth')
-const { createAddonsConfigCommand } = require('./addons-config')
-const { createAddonsCreateCommand } = require('./addons-create')
-const { createAddonsDeleteCommand } = require('./addons-delete')
-const { createAddonsListCommand } = require('./addons-list')
+import { createAddonsAuthCommand } from './addons-auth.mjs'
+import { createAddonsConfigCommand } from './addons-config.mjs'
+import { createAddonsCreateCommand } from './addons-create.mjs'
+import { createAddonsDeleteCommand } from './addons-delete.mjs'
+import { createAddonsListCommand } from './addons-list.mjs'
 
 /**
  * The addons command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').BaseCommand} command
  */
 const addons = (options, command) => {
   command.help()
@@ -17,10 +17,10 @@ const addons = (options, command) => {
 
 /**
  * Creates the `netlify addons` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').BaseCommand} program
  * @returns
  */
-const createAddonsCommand = (program) => {
+export const createAddonsCommand = (program) => {
   createAddonsAuthCommand(program)
   createAddonsConfigCommand(program)
   createAddonsCreateCommand(program)
@@ -41,4 +41,3 @@ const createAddonsCommand = (program) => {
     ])
     .action(addons)
 }
-module.exports = { createAddonsCommand }

@@ -18,7 +18,7 @@ const safeGetSite = async (api, siteId) => {
  * @param {string} siteIdA Site (From)
  * @param {string} siteIdB Site (To)
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').BaseCommand} command
  * @returns {Promise<boolean>}
  */
 const envMigrate = async (options, command) => {
@@ -90,7 +90,7 @@ const envMigrate = async (options, command) => {
 
 /**
  * Creates the `netlify env:migrate` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').BaseCommand} program
  * @returns
  */
 const createEnvMigrateCommand = (program) =>

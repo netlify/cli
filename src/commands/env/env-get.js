@@ -5,7 +5,7 @@ const { log, logJson } = require('../../utils')
  * The env:get command
  * @param {string} name Environment variable name
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').BaseCommand} command
  */
 const envGet = async (name, options, command) => {
   const { api, cachedConfig, site } = command.netlify
@@ -36,7 +36,7 @@ const envGet = async (name, options, command) => {
 
 /**
  * Creates the `netlify env:get` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').BaseCommand} program
  * @returns
  */
 const createEnvGetCommand = (program) =>
