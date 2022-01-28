@@ -1,5 +1,5 @@
 // @ts-check
-const { existsSync, mkdirSync, writeFileSync, fstat } = require('fs')
+const { existsSync, fstat, mkdirSync, writeFileSync } = require('fs')
 const { dirname } = require('path')
 
 const { sortOptions, warn } = require('../../utils')
