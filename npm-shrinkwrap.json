@@ -117,8 +117,8 @@
         "write-file-atomic": "^3.0.0"
       },
       "bin": {
-        "netlify": "bin/run",
-        "ntl": "bin/run"
+        "netlify": "bin/run.mjs",
+        "ntl": "bin/run.mjs"
       },
       "devDependencies": {
         "@babel/preset-react": "^7.12.13",

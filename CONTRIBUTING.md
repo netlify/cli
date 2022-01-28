@@ -35,7 +35,7 @@ npm test
 
 Running some integration tests requires an active Netlify account to create a live site.
 
-You can either provide a [Netlify Auth Token](https://docs.netlify.com/cli/get-started/#obtain-a-token-in-the-netlify-ui) (through the `NETLIFY_AUTH_TOKEN` environment variable) or login via `./bin/run login` before running the tests.
+You can either provide a [Netlify Auth Token](https://docs.netlify.com/cli/get-started/#obtain-a-token-in-the-netlify-ui) (through the `NETLIFY_AUTH_TOKEN` environment variable) or login via `./bin/run.mjs login` before running the tests.
 
 The tests don't count towards Netlify build minutes since they build a site locally and deploy it using the API.
 
@@ -63,7 +63,7 @@ Alternatively, you can set up your IDE to integrate with Prettier and ESLint for
 To run the CLI locally:
 
 ```bash
-./bin/run [command]
+./bin/run.mjs [command]
 ```
 
 ## Architecture
