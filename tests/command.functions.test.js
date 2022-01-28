@@ -697,7 +697,7 @@ test('should detect file changes to scheduled function', async (t) => {
         })
         .buildAsync()
 
-      const DETECT_FILE_CHANGE_DELAY = 250
+      const DETECT_FILE_CHANGE_DELAY = 500
       await pause(DETECT_FILE_CHANGE_DELAY)
 
       const warningMessage = await helloWorldBody()
