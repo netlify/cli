@@ -15,10 +15,10 @@ const buildHelpResponse = ({ error, headers, path, result }) => {
     }
 
     text = text
-      .replaceAll('<pre><code>', '```\n')
-      .replaceAll('</code></pre>', '\n```')
-      .replaceAll(`<code>`, '`')
-      .replaceAll(`</code>`, '`')
+      .replace(/<pre><code>/gm, '```\n')
+      .replace(/<\/code><\/pre>/gm, '\n```')
+      .replace(/<code>/gm, '`')
+      .replace(/<\/code>/gm, '`')
 
     return `${text}\n\n`
   }
