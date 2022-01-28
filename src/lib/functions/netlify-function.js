@@ -32,6 +32,7 @@ class NetlifyFunction {
     // Determines whether this is a background function based on the function
     // name.
     this.isBackground = name.endsWith(BACKGROUND_SUFFIX)
+    this.schedule = null
 
     // List of the function's source files. This starts out as an empty set
     // and will get populated on every build.
@@ -42,6 +43,12 @@ class NetlifyFunction {
     // same as https://github.com/netlify/bitballoon/blob/fbd7881e6c8e8c48e7a0145da4ee26090c794108/app/models/deploy.rb#L482
     // eslint-disable-next-line unicorn/better-regex
     return /^[A-Za-z0-9_-]+$/.test(this.name)
+  }
+
+  async isScheduled() {
+    await this.buildQueue
+
+    return Boolean(this.schedule)
   }
 
   // The `build` method transforms source files into invocable functions. Its
@@ -61,12 +68,13 @@ class NetlifyFunction {
     this.buildQueue = buildFunction({ cache })
 
     try {
-      const { srcFiles, ...buildData } = await this.buildQueue
+      const { schedule, srcFiles, ...buildData } = await this.buildQueue
       const srcFilesSet = new Set(srcFiles)
       const srcFilesDiff = this.getSrcFilesDiff(srcFilesSet)
 
       this.buildData = buildData
       this.srcFiles = srcFilesSet
+      this.schedule = schedule
 
       return { srcFilesDiff }
     } catch (error) {
