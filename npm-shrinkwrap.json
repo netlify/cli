@@ -22,6 +22,7 @@
         "@sindresorhus/slugify": "^1.1.0",
         "ansi-escapes": "^5.0.0",
         "ansi-styles": "^5.0.0",
+        "ansi2html": "^0.0.1",
         "ascii-table": "0.0.9",
         "backoff": "^2.5.0",
         "better-opn": "^3.0.0",
@@ -36,6 +37,7 @@
         "content-type": "^1.0.4",
         "cookie": "^0.4.0",
         "copy-template-dir": "^1.4.0",
+        "cron-parser": "^4.2.1",
         "debug": "^4.1.1",
         "decache": "^4.6.0",
         "del": "^6.0.0",
@@ -134,7 +136,6 @@
         "ini": "^2.0.0",
         "jsonwebtoken": "^8.5.1",
         "mock-fs": "^5.1.2",
-        "mock-require": "^3.0.3",
         "p-timeout": "^4.0.0",
         "proxyquire": "^2.1.3",
         "seedrandom": "^3.0.5",
@@ -4424,6 +4425,17 @@
       },
       "funding": {
         "url": "https://github.com/chalk/ansi-styles?sponsor=1"
+      }
+    },
+    "node_modules/ansi2html": {
+      "version": "0.0.1",
+      "resolved": "https://registry.npmjs.org/ansi2html/-/ansi2html-0.0.1.tgz",
+      "integrity": "sha1-u4gARhtECvALkb89c2al4LhHO6g=",
+      "bin": {
+        "ansi2html": "bin/ansi2html"
+      },
+      "engines": {
+        "node": ">0.4"
       }
     },
     "node_modules/any-observable": {
@@ -10887,12 +10899,6 @@
         "node": ">=6.0"
       }
     },
-    "node_modules/get-caller-file": {
-      "version": "1.0.3",
-      "resolved": "https://registry.npmjs.org/get-caller-file/-/get-caller-file-1.0.3.tgz",
-      "integrity": "sha512-3t6rVToeoZfYSGd8YoLFR2DJkiQrIiUrGcjvFX2mDw3bn6k2OtwHN0TNCLbBO+w8qTvimhDkv+LSscbJY1vE6w==",
-      "dev": true
-    },
     "node_modules/get-intrinsic": {
       "version": "1.1.1",
       "resolved": "https://registry.npmjs.org/get-intrinsic/-/get-intrinsic-1.1.1.tgz",
@@ -14768,31 +14774,6 @@
       "dev": true,
       "engines": {
         "node": ">=12.0.0"
-      }
-    },
-    "node_modules/mock-require": {
-      "version": "3.0.3",
-      "resolved": "https://registry.npmjs.org/mock-require/-/mock-require-3.0.3.tgz",
-      "integrity": "sha512-lLzfLHcyc10MKQnNUCv7dMcoY/2Qxd6wJfbqCcVk3LDb8An4hF6ohk5AztrvgKhJCqj36uyzi/p5se+tvyD+Wg==",
-      "dev": true,
-      "dependencies": {
-        "get-caller-file": "^1.0.2",
-        "normalize-path": "^2.1.1"
-      },
-      "engines": {
-        "node": ">=4.3.0"
-      }
-    },
-    "node_modules/mock-require/node_modules/normalize-path": {
-      "version": "2.1.1",
-      "resolved": "https://registry.npmjs.org/normalize-path/-/normalize-path-2.1.1.tgz",
-      "integrity": "sha1-GrKLVW4Zg2Oowab35vogE3/mrtk=",
-      "dev": true,
-      "dependencies": {
-        "remove-trailing-separator": "^1.0.1"
-      },
-      "engines": {
-        "node": ">=0.10.0"
       }
     },
     "node_modules/module-definition": {
@@ -24813,6 +24794,11 @@
       "resolved": "https://registry.npmjs.org/ansi-styles/-/ansi-styles-5.2.0.tgz",
       "integrity": "sha512-Cxwpt2SfTzTtXcfOlzGEee8O+c+MmUgGrNiBcXnuWxuFJHe6a5Hz7qwhwe5OgaSYI0IJvkLqWX1ASG+cJOkEiA=="
     },
+    "ansi2html": {
+      "version": "0.0.1",
+      "resolved": "https://registry.npmjs.org/ansi2html/-/ansi2html-0.0.1.tgz",
+      "integrity": "sha1-u4gARhtECvALkb89c2al4LhHO6g="
+    },
     "any-observable": {
       "version": "0.3.0",
       "resolved": "https://registry.npmjs.org/any-observable/-/any-observable-0.3.0.tgz",
@@ -29735,12 +29721,6 @@
         "node-source-walk": "^4.0.0"
       }
     },
-    "get-caller-file": {
-      "version": "1.0.3",
-      "resolved": "https://registry.npmjs.org/get-caller-file/-/get-caller-file-1.0.3.tgz",
-      "integrity": "sha512-3t6rVToeoZfYSGd8YoLFR2DJkiQrIiUrGcjvFX2mDw3bn6k2OtwHN0TNCLbBO+w8qTvimhDkv+LSscbJY1vE6w==",
-      "dev": true
-    },
     "get-intrinsic": {
       "version": "1.1.1",
       "resolved": "https://registry.npmjs.org/get-intrinsic/-/get-intrinsic-1.1.1.tgz",
@@ -32620,27 +32600,6 @@
       "resolved": "https://registry.npmjs.org/mock-fs/-/mock-fs-5.1.2.tgz",
       "integrity": "sha512-YkjQkdLulFrz0vD4BfNQdQRVmgycXTV7ykuHMlyv+C8WCHazpkiQRDthwa02kSyo8wKnY9wRptHfQLgmf0eR+A==",
       "dev": true
-    },
-    "mock-require": {
-      "version": "3.0.3",
-      "resolved": "https://registry.npmjs.org/mock-require/-/mock-require-3.0.3.tgz",
-      "integrity": "sha512-lLzfLHcyc10MKQnNUCv7dMcoY/2Qxd6wJfbqCcVk3LDb8An4hF6ohk5AztrvgKhJCqj36uyzi/p5se+tvyD+Wg==",
-      "dev": true,
-      "requires": {
-        "get-caller-file": "^1.0.2",
-        "normalize-path": "^2.1.1"
-      },
-      "dependencies": {
-        "normalize-path": {
-          "version": "2.1.1",
-          "resolved": "https://registry.npmjs.org/normalize-path/-/normalize-path-2.1.1.tgz",
-          "integrity": "sha1-GrKLVW4Zg2Oowab35vogE3/mrtk=",
-          "dev": true,
-          "requires": {
-            "remove-trailing-separator": "^1.0.1"
-          }
-        }
-      }
     },
     "module-definition": {
       "version": "3.3.1",

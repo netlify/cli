@@ -6,6 +6,7 @@ const { NETLIFYDEVERR, NETLIFYDEVLOG, error: errorExit, getInternalFunctionsDir,
 const { handleBackgroundFunction, handleBackgroundFunctionResult } = require('./background')
 const { createFormSubmissionHandler } = require('./form-submissions-handler')
 const { FunctionsRegistry } = require('./registry')
+const { handleScheduledFunction } = require('./scheduled')
 const { handleSynchronousFunction } = require('./synchronous')
 const { shouldBase64Encode } = require('./utils')
 
@@ -105,6 +106,15 @@ const createHandler = function ({ functionsRegistry }) {
       const { error } = await func.invoke(event, clientContext)
 
       handleBackgroundFunctionResult(functionName, error)
+    } else if (await func.isScheduled()) {
+      const { error, result } = await func.invoke(event, clientContext)
+
+      handleScheduledFunction({
+        error,
+        result,
+        request,
+        response,
+      })
     } else {
       const { error, result } = await func.invoke(event, clientContext)
 
