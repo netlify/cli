@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Docs site for Netlify CLI",
   "private": true,
+  "type": "module",
   "author": "Netlify Inc.",
   "contributors": [
     "David Wells <david.wells@netlify.com> (https://davidwells.io/)",
