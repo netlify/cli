@@ -17,13 +17,13 @@
   "files": [
     "/bin",
     "/npm-shrinkwrap.json",
-    "/scripts/postinstall.js",
+    "/scripts/postinstall.mjs",
     "/src/**/*.js",
-    "/src/**/*.sh",
-    "/src/**/*.ps1",
+    "/src/**/*.mjs",
     "/src/functions-templates/**",
     "!/src/**/node_modules/**",
-    "!/src/**/*.test.js"
+    "!/src/**/*.test.js",
+    "!/src/**/*.test.mjs"
   ],
   "homepage": "https://github.com/netlify/cli",
   "keywords": [
@@ -70,7 +70,7 @@
     "site:build": "run-s site:build:*",
     "site:build:install": "cd site && npm ci --no-audit",
     "site:build:assets": "cd site && npm run build",
-    "postinstall": "node ./scripts/postinstall.js"
+    "postinstall": "node ./scripts/postinstall.mjs"
   },
   "config": {
     "eslint": "--ignore-path .gitignore --cache --format=codeframe --max-warnings=0 \"{src,tools,scripts,site,tests,.github}/**/*.{mjs,cjs,js,md,html}\" \"*.{mjs,cjs,js,md,html}\" \".*.{mjs,cjs,js,md,html}\"",
