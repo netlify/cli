@@ -583,30 +583,26 @@ test('should trigger background function from event', async (t) => {
   })
 })
 
-const testMatrix = [{ node_bundler: undefined }, { node_bundler: 'esbuild' }]
-testMatrix.forEach((args) => {
-  const testName = (title) => `${title} - ${JSON.stringify(args)}`
-
-  test(testName('should serve helpful tips and tricks'), async (t) => {
-    await withSiteBuilder('site-with-isc-ping-function', async (builder) => {
-      await builder
-        .withNetlifyToml({
-          config: { functions: { directory: 'functions' } },
-        })
-        // mocking until https://github.com/netlify/functions/pull/226 landed
-        .withContentFile({
-          path: 'node_modules/@netlify/functions/package.json',
-          content: `{}`,
-        })
-        .withContentFile({
-          path: 'node_modules/@netlify/functions/index.js',
-          content: `
+test('should serve helpful tips and tricks', async (t) => {
+  await withSiteBuilder('site-with-isc-ping-function', async (builder) => {
+    await builder
+      .withNetlifyToml({
+        config: { functions: { directory: 'functions' } },
+      })
+      // mocking until https://github.com/netlify/functions/pull/226 landed
+      .withContentFile({
+        path: 'node_modules/@netlify/functions/package.json',
+        content: `{}`,
+      })
+      .withContentFile({
+        path: 'node_modules/@netlify/functions/index.js',
+        content: `
           module.exports.schedule = (schedule, handler) => handler
           `,
-        })
-        .withContentFile({
-          path: 'functions/hello-world.js',
-          content: `
+      })
+      .withContentFile({
+        path: 'functions/hello-world.js',
+        content: `
           const { schedule } = require('@netlify/functions')
 
           module.exports.handler = schedule('@daily', () => {
@@ -616,79 +612,79 @@ testMatrix.forEach((args) => {
             }
           })
           `.trim(),
-        })
-        .buildAsync()
-
-      await withDevServer({ cwd: builder.directory }, async (server) => {
-        const plainTextResponse = await got(`http://localhost:${server.port}/.netlify/functions/hello-world`, {
-          throwHttpErrors: false,
-          retry: null,
-        })
-        const youReturnedBodyRegex = /.*Your function returned `body`. Is this an accident\?.*/
-        t.regex(plainTextResponse.body, youReturnedBodyRegex)
-        t.regex(plainTextResponse.body, /.*You performed an HTTP request.*/)
-        t.is(plainTextResponse.statusCode, 200)
-
-        const htmlResponse = await got(`http://localhost:${server.port}/.netlify/functions/hello-world`, {
-          throwHttpErrors: false,
-          retry: null,
-          headers: {
-            accept: 'text/html',
-          },
-        })
-        t.regex(htmlResponse.body, /.*<link.*/)
-        t.is(htmlResponse.statusCode, 200)
-
-        const stdout = await callCli(['functions:invoke', 'hello-world', '--identity', `--port=${server.port}`], {
-          cwd: builder.directory,
-        })
-        t.regex(stdout, youReturnedBodyRegex)
       })
+      .buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async (server) => {
+      const plainTextResponse = await got(`http://localhost:${server.port}/.netlify/functions/hello-world`, {
+        throwHttpErrors: false,
+        retry: null,
+      })
+      const youReturnedBodyRegex = /.*Your function returned `body`. Is this an accident\?.*/
+      t.regex(plainTextResponse.body, youReturnedBodyRegex)
+      t.regex(plainTextResponse.body, /.*You performed an HTTP request.*/)
+      t.is(plainTextResponse.statusCode, 200)
+
+      const htmlResponse = await got(`http://localhost:${server.port}/.netlify/functions/hello-world`, {
+        throwHttpErrors: false,
+        retry: null,
+        headers: {
+          accept: 'text/html',
+        },
+      })
+      t.regex(htmlResponse.body, /.*<link.*/)
+      t.is(htmlResponse.statusCode, 200)
+
+      const stdout = await callCli(['functions:invoke', 'hello-world', '--identity', `--port=${server.port}`], {
+        cwd: builder.directory,
+      })
+      t.regex(stdout, youReturnedBodyRegex)
     })
   })
+})
 
-  test(testName('should detect file changes to scheduled function'), async (t) => {
-    await withSiteBuilder('site-with-isc-ping-function', async (builder) => {
-      await builder
-        .withNetlifyToml({
-          config: { functions: { directory: 'functions' } },
-        })
-        // mocking until https://github.com/netlify/functions/pull/226 landed
-        .withContentFile({
-          path: 'node_modules/@netlify/functions/package.json',
-          content: `{}`,
-        })
-        .withContentFile({
-          path: 'node_modules/@netlify/functions/index.js',
-          content: `
+test('should detect file changes to scheduled function', async (t) => {
+  await withSiteBuilder('site-with-isc-ping-function', async (builder) => {
+    await builder
+      .withNetlifyToml({
+        config: { functions: { directory: 'functions' } },
+      })
+      // mocking until https://github.com/netlify/functions/pull/226 landed
+      .withContentFile({
+        path: 'node_modules/@netlify/functions/package.json',
+        content: `{}`,
+      })
+      .withContentFile({
+        path: 'node_modules/@netlify/functions/index.js',
+        content: `
           module.exports.schedule = (schedule, handler) => handler
           `,
-        })
-        .withContentFile({
-          path: 'functions/hello-world.js',
-          content: `
+      })
+      .withContentFile({
+        path: 'functions/hello-world.js',
+        content: `
           module.exports.handler = () => {
             return {
               statusCode: 200
             }
           }
           `.trim(),
-        })
-        .buildAsync()
+      })
+      .buildAsync()
 
-      await withDevServer({ cwd: builder.directory }, async (server) => {
-        const helloWorldBody = () =>
-          got(`http://localhost:${server.port}/.netlify/functions/hello-world`, {
-            throwHttpErrors: false,
-            retry: null,
-          }).then((response) => response.body)
+    await withDevServer({ cwd: builder.directory }, async (server) => {
+      const helloWorldBody = () =>
+        got(`http://localhost:${server.port}/.netlify/functions/hello-world`, {
+          throwHttpErrors: false,
+          retry: null,
+        }).then((response) => response.body)
 
-        t.is(await helloWorldBody(), '')
+      t.is(await helloWorldBody(), '')
 
-        await builder
-          .withContentFile({
-            path: 'functions/hello-world.js',
-            content: `
+      await builder
+        .withContentFile({
+          path: 'functions/hello-world.js',
+          content: `
           const { schedule } = require('@netlify/functions')
 
           module.exports.handler = schedule("@daily", () => {
@@ -698,15 +694,14 @@ testMatrix.forEach((args) => {
             }
           })
           `.trim(),
-          })
-          .buildAsync()
+        })
+        .buildAsync()
 
-        const DETECT_FILE_CHANGE_DELAY = 250
-        await pause(DETECT_FILE_CHANGE_DELAY)
+      const DETECT_FILE_CHANGE_DELAY = 250
+      await pause(DETECT_FILE_CHANGE_DELAY)
 
-        const warningMessage = await helloWorldBody()
-        t.true(warningMessage.includes('Your function returned `body`'))
-      })
+      const warningMessage = await helloWorldBody()
+      t.true(warningMessage.includes('Your function returned `body`'))
     })
   })
 })
