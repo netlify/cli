@@ -6,6 +6,7 @@ const getPort = require('get-port')
 const waitPort = require('wait-port')
 
 const fs = require('../src/lib/fs')
+const { NetlifyFunction } = require('../src/lib/functions/netlify-function')
 
 const callCli = require('./utils/call-cli')
 const cliPath = require('./utils/cli-path')
@@ -17,25 +18,18 @@ const { pause } = require('./utils/pause')
 const { killProcess } = require('./utils/process')
 const { withSiteBuilder } = require('./utils/site-builder')
 
-test('should return function response when invoked with no identity argument', async (t) => {
-  await withSiteBuilder('function-invoke-with-no-identity-argument', async (builder) => {
-    builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
-      path: 'test-invoke.js',
-      handler: async () => ({
-        statusCode: 200,
-        body: 'success',
-      }),
-    })
+test('should return the correct function url for a NetlifyFunction object', (t) => {
+  const port = 7331
+  const functionName = 'test-function'
 
-    await builder.buildAsync()
+  const functionUrl = `http://localhost:${port}/.netlify/functions/${functionName}`
 
-    await withDevServer({ cwd: builder.directory }, async (server) => {
-      const stdout = await callCli(['functions:invoke', 'test-invoke', `--port=${server.port}`], {
-        cwd: builder.directory,
-      })
-      t.is(stdout, 'success')
-    })
+  const ntlFunction = new NetlifyFunction({
+    name: functionName,
+    settings: { functionsPort: port },
   })
+
+  t.is(ntlFunction.url, functionUrl)
 })
 
 test('should return function response when invoked', async (t) => {
