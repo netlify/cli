@@ -1,10 +1,10 @@
 import { join } from 'path'
 import { format } from 'util'
 
-import test  from 'ava'
+import test from 'ava'
 import mock, { restore } from 'mock-fs'
 
-import  snapshots  from '../../tests/utils/snapshots.js'
+import snapshots from '../../tests/utils/snapshots.js'
 import { DependencyGraph, fileVisitor } from '../project-graph/index.mjs'
 
 import { esModuleMockedFileSystem } from './utils/file-systems.mjs'
