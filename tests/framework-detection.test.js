@@ -142,7 +142,8 @@ test('should throw when forcing a non supported framework', async (t) => {
   })
 })
 
-test('should detect a known framework', async (t) => {
+// flaky
+test.skip('should detect a known framework', async (t) => {
   await withSiteBuilder('site-with-cra', async (builder) => {
     await builder
       .withPackageJson({

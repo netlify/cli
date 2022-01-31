@@ -643,7 +643,8 @@ test('should serve helpful tips and tricks', async (t) => {
   })
 })
 
-test('should detect file changes to scheduled function', async (t) => {
+// flaky test
+test.skip('should detect file changes to scheduled function', async (t) => {
   await withSiteBuilder('site-with-isc-ping-function', async (builder) => {
     await builder
       .withNetlifyToml({
