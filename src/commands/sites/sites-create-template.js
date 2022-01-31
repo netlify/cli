@@ -49,25 +49,31 @@ const sitesCreate = async (options, command) => {
 
   await command.authenticate()
 
-  console.log(
-    `Choose one of our starter templates. Netlify will create a new repo for this template in your GitHub account.`,
-  )
+  let { url: templateUrl } = options
 
-  const templateUrl = await inquirer.prompt([
-    {
-      type: 'list',
-      name: 'templateName',
-      message: 'Template:',
-      choices: templates.map((template) => ({
-        value: template.slug,
-        name: template.name,
-      })),
-    },
-  ])
+  if (templateUrl) {
+    const urlFromOptions = new URL(templateUrl)
+    templateUrl = { templateName: urlFromOptions.pathname.slice(1) }
+  } else {
+    log(`Choose one of our starter templates. Netlify will create a new repo for this template in your GitHub account.`)
+
+    templateUrl = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'templateName',
+        message: 'Template:',
+        choices: templates.map((template) => ({
+          value: template.slug,
+          name: template.name,
+        })),
+      },
+    ])
+  }
 
   const accounts = await api.listAccountsForUser()
 
   let { accountSlug } = options
+
   if (!accountSlug) {
     const { accountSlug: accountSlugInput } = await inquirer.prompt([
       {
@@ -113,7 +119,7 @@ const sitesCreate = async (options, command) => {
       ]
       siteSuggestion = sample(suggestions)
 
-      console.log(
+      log(
         `Choose a unique site name (e.g. ${siteSuggestion}.netlify.app) or leave it blank for a random name. You can update the site name later.`,
       )
       const { name: nameInput } = await inquirer.prompt([
@@ -145,7 +151,9 @@ const sitesCreate = async (options, command) => {
 
       if (resp.errors) {
         if (resp.errors[0].includes('Name already exists on this account')) {
-          throw new Error('Duplicate repo')
+          throw new Error(
+            `Oh no! We found already a repository with this name. It seems you have already created a template with the name ${templateUrl.templateName}. Please try to run the command again and provide a different name.`,
+          )
         }
       } else {
         site = await api.createSiteInTeam({
@@ -244,6 +252,7 @@ const createSitesFromTemplateCommand = (program) =>
 Create a site from a starter template.`,
     )
     .option('-n, --name [name]', 'name of site')
+    .option('-u, --url [url]', 'template url')
     .option('-a, --account-slug [slug]', 'account slug to create the site under')
     .addHelpText('after', `(Beta) Create a site from starter template.`)
     .action(sitesCreate)
