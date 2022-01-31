@@ -75,6 +75,7 @@ netlify sites:create-template
 
 - `account-slug` (*string*) - account slug to create the site under
 - `name` (*string*) - name of site
+- `url` (*string*) - template url
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
