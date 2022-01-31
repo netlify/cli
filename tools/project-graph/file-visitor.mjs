@@ -1,17 +1,17 @@
 // @ts-check
-const { existsSync, readFileSync, statSync } = require('fs')
-const { dirname, join, parse } = require('path')
+import { existsSync, readFileSync, statSync } from 'fs'
+import { dirname, join, parse } from 'path'
 
-const ts = require('typescript')
+import ts from 'typescript'
 
-const { DependencyGraph } = require('./dependency-graph')
+import { DependencyGraph } from './dependency-graph.mjs'
 
 /**
  * tries to resolve a relative javascript module based on its specifier
  * @param {string} moduleSpecifier
  * @returns {(string|null)}
  */
-const resolveRelativeModule = (moduleSpecifier) => {
+export const resolveRelativeModule = (moduleSpecifier) => {
   if (existsSync(moduleSpecifier) && statSync(moduleSpecifier).isFile()) {
     return moduleSpecifier
   }
@@ -21,16 +21,17 @@ const resolveRelativeModule = (moduleSpecifier) => {
   if (existsSync(`${moduleSpecifier}/index.js`)) {
     return `${moduleSpecifier}/index.js`
   }
+
   return null
 }
 
 /**
  * Parses the dependencies out of a file
  * @param {string} fileName
- * @param {import('./types').VisitorState} state
+ * @param {import('./types.d').VisitorState} state
  * @param {any} parent
  */
-const fileVisitor = function (fileName, state, parent) {
+export const fileVisitor = function (fileName, state, parent) {
   if (!state) {
     state = { graph: new DependencyGraph(), visitorPlugins: [] }
   }
@@ -115,5 +116,3 @@ const fileVisitor = function (fileName, state, parent) {
     state.graph.addDependency(parent, fileName)
   }
 }
-
-module.exports = { fileVisitor, resolveRelativeModule }
