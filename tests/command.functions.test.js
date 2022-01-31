@@ -643,7 +643,6 @@ test('should serve helpful tips and tricks', async (t) => {
   })
 })
 
-
 test('should emulate next_run for scheduled functions', async (t) => {
   await withSiteBuilder('site-with-isc-ping-function', async (builder) => {
     await builder
@@ -685,7 +684,6 @@ test('should emulate next_run for scheduled functions', async (t) => {
     })
   })
 })
-
 
 test('should detect netlify-toml defined scheduled functions', async (t) => {
   await withSiteBuilder('site-with-netlify-toml-ping-function', async (builder) => {
