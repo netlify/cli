@@ -150,11 +150,14 @@ const sitesCreate = async (options, command) => {
       const resp = await createGhRepoResp.json()
 
       if (resp.errors) {
-        if (resp.errors[0].includes('Name already exists on this account')) {
-          throw new Error(
-            `Oh no! We found already a repository with this name. It seems you have already created a template with the name ${templateUrl.templateName}. Please try to run the command again and provide a different name.`,
-          )
-        }
+        const error_ = resp.errors[0].includes('Name already exists on this account')
+          ? new Error(
+              `Oh no! We found already a repository with this name. It seems you have already created a template with the name ${templateUrl.templateName}. Please try to run the command again and provide a different name.`,
+            )
+          : new Error(
+              `Oops! Seems like something went wrong trying to create the repository. We're getting the following error: '${resp.errors[0]}'. You can try to re-run this command again or open an issue in our repository: https://github.com/netlify/cli/issues`,
+            )
+        throw error_
       } else {
         site = await api.createSiteInTeam({
           accountSlug,
