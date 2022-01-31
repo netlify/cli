@@ -679,7 +679,7 @@ test('should emulate next_run for scheduled functions', async (t) => {
         throwHttpErrors: false,
         retry: null,
       })
-      
+
       t.is(response.statusCode, 200)
     })
   })
