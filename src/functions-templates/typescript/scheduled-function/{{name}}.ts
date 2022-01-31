@@ -1,6 +1,6 @@
-import { Handler, schedule } from '@netlify/functions';
+import { schedule } from '@netlify/functions';
 
-export const handler: Handler = schedule("* * * * *", () => {
+export const handler = schedule("* * * * *", () => {
     console.log(`Function executed at ${new Date()}.`);
 
     return {
