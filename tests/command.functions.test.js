@@ -643,6 +643,29 @@ test('should serve helpful tips and tricks', async (t) => {
   })
 })
 
+test('should detect netlify-toml defined scheduled functions', async (t) => {
+  await withSiteBuilder('site-with-netlify-toml-ping-function', async (builder) => {
+    await builder
+      .withNetlifyToml({
+        config: { functions: { directory: 'functions', 'test-1': { schedule: '@daily' } } },
+      })
+      .withFunction({
+        path: 'test-1.js',
+        handler: async () => ({
+          statusCode: 200,
+        }),
+      })
+      .buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async (server) => {
+      const stdout = await callCli(['functions:invoke', 'test-1', `--port=${server.port}`], {
+        cwd: builder.directory,
+      })
+      t.is(stdout, '')
+    })
+  })
+})
+
 test('should detect file changes to scheduled function', async (t) => {
   await withSiteBuilder('site-with-isc-ping-function', async (builder) => {
     await builder
