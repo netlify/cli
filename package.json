@@ -63,7 +63,7 @@
     "test:init:hugo-deps": "npm ci --prefix tests/hugo-site --no-audit",
     "test:dev:ava": "ava --verbose",
     "test:ci:ava": "c8 -r json ava",
-    "test:affected": "node ./tools/affected-test.js",
+    "test:affected": "node ./tools/affected-test.mjs",
     "e2e": "node ./tools/e2e/run.mjs",
     "docs": "node ./site/scripts/docs.js",
     "watch": "c8 --reporter=lcov ava --watch",
@@ -73,7 +73,7 @@
     "postinstall": "node ./scripts/postinstall.js"
   },
   "config": {
-    "eslint": "--ignore-path .gitignore --cache --format=codeframe --max-warnings=0 \"{src,tools,scripts,site,tests,.github}/**/*.{mjs,cjs,js,md,html}\" \"*.{mjs,cjs,js,md,html}\" \".*.{mjs,cjs,js,md,html}\"",
+    "eslint": "--ignore-path .gitignore --cache --format=codeframe --max-warnings=0 \"{src,scripts,site,tests,.github}/**/*.{mjs,cjs,js,md,html}\" \"*.{mjs,cjs,js,md,html}\" \".*.{mjs,cjs,js,md,html}\"",
     "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,tools,scripts,site,tests,.github}/**/*.{mjs,cjs,js,md,yml,json,html}\" \"*.{mjs,cjs,js,yml,json,html}\" \".*.{mjs,cjs,js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\" \"!.github/**/*.md\""
   },
   "dependencies": {
@@ -218,6 +218,7 @@
       "site/**/*.test.js",
       "src/**/*.test.js",
       "tools/**/*.test.js",
+      "tools/**/*.test.mjs",
       "tests/*.test.js"
     ],
     "cache": true,

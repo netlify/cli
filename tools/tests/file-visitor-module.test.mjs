@@ -1,27 +1,27 @@
-const { join } = require('path')
-const { format } = require('util')
+import { join } from 'path'
+import { format } from 'util'
 
-const test = require('ava')
-const mock = require('mock-fs')
+import test  from 'ava'
+import mock, { restore } from 'mock-fs'
 
-const { normalize } = require('../../tests/utils/snapshots')
-const { DependencyGraph, fileVisitor } = require('../project-graph')
+import  snapshots  from '../../tests/utils/snapshots.js'
+import { DependencyGraph, fileVisitor } from '../project-graph/index.mjs'
 
-const { simpleMockedFileSystem } = require('./utils/file-systems')
+import { esModuleMockedFileSystem } from './utils/file-systems.mjs'
 
 test.before(() => {
-  mock(simpleMockedFileSystem)
+  mock(esModuleMockedFileSystem)
 })
 
 test.after(() => {
-  mock.restore()
+  restore()
 })
 
-test('should visit the files that are dependents from the provided main file', (t) => {
+test('should visit the files that are dependents from the provided main file based on imports', (t) => {
   const graph = new DependencyGraph()
   fileVisitor(join('tests/a.test.js'), { graph, visitorPlugins: [] })
   t.is(
-    normalize(graph.visualize().to_dot()),
+    snapshots.normalize(graph.visualize().to_dot()),
     `digraph G {
   "src/nested/b.js";
   "src/nested/a.js";
@@ -37,12 +37,12 @@ test('should visit the files that are dependents from the provided main file', (
   )
 })
 
-test('should merge the graph with files from a different entry point', (t) => {
+test('should merge the graph with files from a different entry point based on imports', (t) => {
   const graph = new DependencyGraph()
   fileVisitor(join('tests/a.test.js'), { graph, visitorPlugins: [] })
   fileVisitor(join('tests/c.test.js'), { graph, visitorPlugins: [] })
   t.is(
-    normalize(graph.visualize().to_dot()),
+    snapshots.normalize(graph.visualize().to_dot()),
     `digraph G {
   "src/nested/b.js";
   "src/nested/a.js";
@@ -62,7 +62,7 @@ test('should merge the graph with files from a different entry point', (t) => {
   )
 })
 
-test('should build a list of affected files based on a file', (t) => {
+test('should build a list of affected files based on a file with imports', (t) => {
   const graph = new DependencyGraph()
   fileVisitor(join('tests/a.test.js'), { graph, visitorPlugins: [] })
   fileVisitor(join('tests/c.test.js'), { graph, visitorPlugins: [] })
