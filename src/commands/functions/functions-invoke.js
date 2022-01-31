@@ -148,7 +148,7 @@ const functionsInvoke = async (nameArgument, options, command) => {
     console.warn(`${NETLIFYDEVWARN} "port" flag was not specified. Attempting to connect to localhost:8888 by default`)
   const port = options.port || DEFAULT_PORT
 
-  const functions = await getFunctions(functionsDir)
+  const functions = await getFunctions(functionsDir, config)
   const functionToTrigger = await getNameFromArgs(functions, options, nameArgument)
   const functionObj = functions.find((func) => func.name === functionToTrigger)
 
