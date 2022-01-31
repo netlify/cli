@@ -1,7 +1,7 @@
 {
   "name": "{{name}}",
   "version": "1.0.0",
-  "description": "netlify functions:create - scheduled function in javascript",
+  "description": "netlify functions:create - scheduled function in JavaScript",
   "main": "{{name}}.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
