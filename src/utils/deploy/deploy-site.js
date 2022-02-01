@@ -1,6 +1,7 @@
 const cleanDeep = require('clean-deep')
 const tempy = require('tempy')
 
+const edgeHandlers = require('../../lib/edge-handlers')
 const { rmdirRecursiveAsync } = require('../../lib/fs')
 const { warn } = require('../command-helpers')
 
@@ -52,9 +53,18 @@ const deploySite = async (
     phase: 'start',
   })
 
+  const edgeHandlersPath = edgeHandlers.internalPath
   const [{ files, filesShaMap }, { fnShaMap, functionSchedules, functions, functionsWithNativeModules }] =
     await Promise.all([
-      hashFiles(dir, configPath, { concurrentHash, hashAlgorithm, assetType, statusCb, filter }),
+      hashFiles({
+        assetType,
+        concurrentHash,
+        directories: [configPath, dir, edgeHandlersPath],
+        filter,
+        hashAlgorithm,
+        normalizer: edgeHandlers.deployFileNormalizer,
+        statusCb,
+      }),
       hashFns(fnDir, {
         functionsConfig,
         tmpDir,
@@ -67,13 +77,18 @@ const deploySite = async (
         skipFunctionsCache,
       }),
     ])
-  const filesCount = Object.keys(files).length
+  const edgeHandlersCount = Object.keys(files).filter(edgeHandlers.isEdgeHandlerFile).length
+  const filesCount = Object.keys(files).length - edgeHandlersCount
   const functionsCount = Object.keys(functions).length
-  const hasFunctionDirectories = fnDir.length !== 0
+  const stats = buildStatsString([
+    filesCount > 0 && `${filesCount} files`,
+    functionsCount > 0 && `${functionsCount} functions`,
+    edgeHandlersCount > 0 && `${edgeHandlersCount} Edge Handlers`,
+  ])
 
   statusCb({
     type: 'hashing',
-    msg: `Finished hashing ${filesCount} files${hasFunctionDirectories ? ` and ${functionsCount} functions` : ''}`,
+    msg: `Finished hashing ${stats}`,
     phase: 'stop',
   })
 
@@ -161,6 +176,13 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
     uploadList,
   }
   return deployManifest
+}
+
+const buildStatsString = (possibleParts) => {
+  const parts = possibleParts.filter(Boolean)
+  const message = parts.slice(0, -1).join(', ')
+
+  return parts.length > 1 ? `${message} and ${parts[parts.length - 1]}` : message
 }
 
 module.exports = { deploySite }
