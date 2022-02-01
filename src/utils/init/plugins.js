@@ -16,7 +16,7 @@ const getPluginsList = async () => {
   }
 }
 
-const getPluginInfo = (list, packageName) => list.find(({ package }) => package === packageName)
+const getPluginInfo = (list, packageName) => list.find((item) => item.package === packageName)
 
 const isPluginInstalled = (configPlugins, plugin) =>
   configPlugins.some(({ package: configPlugin }) => configPlugin === plugin)
@@ -33,6 +33,6 @@ const getPluginsToInstall = ({ installSinglePlugin, plugins, recommendedPlugins 
 }
 
 const getUIPlugins = (configPlugins) =>
-  configPlugins.filter(({ origin }) => origin === 'ui').map(({ package }) => ({ package }))
+  configPlugins.filter(({ origin }) => origin === 'ui').map((plugin) => ({ package: plugin.package }))
 
 module.exports = { getPluginsList, getPluginInfo, getRecommendPlugins, getPluginsToInstall, getUIPlugins }

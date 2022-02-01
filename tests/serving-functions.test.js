@@ -1,13 +1,16 @@
 /* eslint-disable require-await */
 const { join } = require('path')
 
-const test = require('ava')
 const pWaitFor = require('p-wait-for')
 
 const { tryAndLogOutput, withDevServer } = require('./utils/dev-server')
 const got = require('./utils/got')
 const { pause } = require('./utils/pause')
 const { withSiteBuilder } = require('./utils/site-builder')
+
+// Increase Timeout as some tests are taking really long 🤯
+// eslint-disable-next-line no-magic-numbers,unicorn/numeric-separators-style
+jest.setTimeout(8_000)
 
 const testMatrix = [{ args: [] }, { args: ['esbuild'] }]
 const testName = (title, args) => (args.length <= 0 ? title : `${title} - ${args.join(' ')}`)
@@ -28,7 +31,7 @@ const gotCatch404 = async (url, options) => {
 }
 
 testMatrix.forEach(({ args }) => {
-  test(testName('Updates a JavaScript function when its main file is modified', args), async (t) => {
+  test(testName('Updates a JavaScript function when its main file is modified', args), async () => {
     await withSiteBuilder('js-function-update-main-file', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -51,7 +54,7 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port }) => {
         await tryAndLogOutput(
-          async () => t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'Hello'),
+          async () => expect(await got(`http://localhost:${port}/.netlify/functions/hello`).text()).toBe('Hello'),
           outputBuffer,
         )
 
@@ -83,7 +86,7 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
-  test.skip(testName('Updates a TypeScript function when its main file is modified', args), async (t) => {
+  test.skip(testName('Updates a TypeScript function when its main file is modified', args), async () => {
     await withSiteBuilder('ts-function-update-main-file', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -98,33 +101,32 @@ testMatrix.forEach(({ args }) => {
         .withContentFile({
           path: 'functions/hello.ts',
           content: `
-  interface Book {
-    title: string
-    author: string
-  }
-
-  const handler = async () => {
-    const book1: Book = {
-      title: 'Modern Web Development on the JAMStack',
-      author: 'Mathias Biilmann & Phil Hawksworth'
+    interface Book {
+      title: string
+      author: string
     }
 
-    return {
-      statusCode: 200,
-      body: book1.title
-    }
-  }
+    const handler = async () => {
+      const book1: Book = {
+        title: 'Modern Web Development on the JAMStack',
+        author: 'Mathias Biilmann & Phil Hawksworth'
+      }
 
-  export { handler }
-            `,
+      return {
+        statusCode: 200,
+        body: book1.title
+      }
+    }
+
+    export { handler }
+              `,
         })
         .buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port }) => {
         await tryAndLogOutput(
           async () =>
-            t.is(
-              await got(`http://localhost:${port}/.netlify/functions/hello`).text(),
+            expect(await got(`http://localhost:${port}/.netlify/functions/hello`).text()).toBe(
               'Modern Web Development on the JAMStack',
             ),
           outputBuffer,
@@ -136,25 +138,25 @@ testMatrix.forEach(({ args }) => {
           .withContentFile({
             path: 'functions/hello.ts',
             content: `
-  interface Book {
-    title: string
-    author: string
-  }
-
-  const handler = async () => {
-    const book1: Book = {
-      title: 'Modern Web Development on the Jamstack',
-      author: 'Mathias Biilmann & Phil Hawksworth'
+    interface Book {
+      title: string
+      author: string
     }
 
-    return {
-      statusCode: 200,
-      body: book1.title
-    }
-  }
+    const handler = async () => {
+      const book1: Book = {
+        title: 'Modern Web Development on the Jamstack',
+        author: 'Mathias Biilmann & Phil Hawksworth'
+      }
 
-  export { handler }
-            `,
+      return {
+        statusCode: 200,
+        body: book1.title
+      }
+    }
+
+    export { handler }
+              `,
           })
           .buildAsync()
 
@@ -174,7 +176,7 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
-  test(testName('Updates a JavaScript function when a supporting file is modified', args), async (t) => {
+  test(testName('Updates a JavaScript function when a supporting file is modified', args), async () => {
     await withSiteBuilder('js-function-update-supporting-file', async (builder) => {
       const functionsConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -196,7 +198,7 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port }) => {
         await tryAndLogOutput(async () => {
-          t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'WOOF!')
+          expect(await got(`http://localhost:${port}/.netlify/functions/hello`).text()).toBe('WOOF!')
         }, outputBuffer)
 
         await pause(WAIT_WRITE)
@@ -221,7 +223,7 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
-  test(testName('Updates a TypeScript function when a supporting file is modified', args), async (t) => {
+  test(testName('Updates a TypeScript function when a supporting file is modified', args), async () => {
     await withSiteBuilder('ts-function-update-supporting-file', async (builder) => {
       const functionsConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -271,8 +273,7 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port }) => {
         await tryAndLogOutput(async () => {
-          t.is(
-            await got(`http://localhost:${port}/.netlify/functions/hello`).text(),
+          expect(await got(`http://localhost:${port}/.netlify/functions/hello`).text()).toBe(
             'Modern Web Development on the JAMStack',
           )
         }, outputBuffer)
@@ -306,7 +307,7 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
-  test(testName('Adds a new JavaScript function when a function file is created', args), async (t) => {
+  test(testName('Adds a new JavaScript function when a function file is created', args), async () => {
     await withSiteBuilder('js-function-create-function-file', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -324,7 +325,7 @@ testMatrix.forEach(({ args }) => {
         await tryAndLogOutput(async () => {
           const unauthenticatedResponse = await gotCatch404(`http://localhost:${port}/.netlify/functions/hello`)
 
-          t.is(unauthenticatedResponse.statusCode, 404)
+          expect(unauthenticatedResponse.statusCode).toBe(404)
         }, outputBuffer)
 
         await pause(WAIT_WRITE)
@@ -359,7 +360,7 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
-  test.skip(testName('Adds a new TypeScript function when a function file is created', args), async (t) => {
+  test.skip(testName('Adds a new TypeScript function when a function file is created', args), async () => {
     await withSiteBuilder('ts-function-create-function-file', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -385,7 +386,7 @@ testMatrix.forEach(({ args }) => {
         await tryAndLogOutput(async () => {
           const unauthenticatedResponse = await gotCatch404(`http://localhost:${port}/.netlify/functions/hello`)
 
-          t.is(unauthenticatedResponse.statusCode, 404)
+          expect(unauthenticatedResponse.statusCode).toBe(404)
         }, outputBuffer)
 
         await pause(WAIT_WRITE)
@@ -394,25 +395,25 @@ testMatrix.forEach(({ args }) => {
           .withContentFile({
             path: 'functions/hello.ts',
             content: `
-  interface Book {
-    title: string
-    author: string
-  }
-
-  const handler = async () => {
-    const book1: Book = {
-      title: 'Modern Web Development on the Jamstack',
-      author: 'Mathias Biilmann & Phil Hawksworth'
+    interface Book {
+      title: string
+      author: string
     }
 
-    return {
-      statusCode: 200,
-      body: book1.title
-    }
-  }
+    const handler = async () => {
+      const book1: Book = {
+        title: 'Modern Web Development on the Jamstack',
+        author: 'Mathias Biilmann & Phil Hawksworth'
+      }
 
-  export { handler }
-          `,
+      return {
+        statusCode: 200,
+        body: book1.title
+      }
+    }
+
+    export { handler }
+            `,
           })
           .buildAsync()
 
@@ -436,7 +437,7 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
-  test(testName('Removes a function when a function file is deleted', args), async (t) => {
+  test(testName('Removes a function when a function file is deleted', args), async () => {
     await withSiteBuilder('function-remove-function-file', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -459,7 +460,7 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port }) => {
         await tryAndLogOutput(async () => {
-          t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'Hello')
+          expect(await got(`http://localhost:${port}/.netlify/functions/hello`).text()).toBe('Hello')
         }, outputBuffer)
 
         await pause(WAIT_WRITE)
@@ -486,7 +487,7 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
-  test(testName(`should pick up new function files even through debounce`, args), async (t) => {
+  test(testName(`should pick up new function files even through debounce`, args), async () => {
     await withSiteBuilder('function-file-updates', async (builder) => {
       await builder
         .withNetlifyToml({
@@ -515,7 +516,7 @@ exports.handler = () => ({
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const resp = await got.get(`${server.url}/.netlify/functions/hello`)
-        t.is(resp.body, 'foo')
+        expect(resp.body).toBe('foo')
 
         await builder
           .withContentFile({
@@ -535,12 +536,12 @@ exports.handler = () => ({
         await pause(DEBOUNCE_WAIT)
 
         const resp2 = await got.get(`${server.url}/.netlify/functions/hello`)
-        t.is(resp2.body, 'bar')
+        expect(resp2.body).toBe('bar')
       })
     })
   })
 
-  test(testName('Serves functions from the internal functions directory', args), async (t) => {
+  test(testName('Serves functions from the internal functions directory', args), async () => {
     await withSiteBuilder('function-internal', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -564,7 +565,7 @@ exports.handler = () => ({
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port }) => {
         await tryAndLogOutput(async () => {
-          t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'Internal')
+          expect(await got(`http://localhost:${port}/.netlify/functions/hello`).text()).toBe('Internal')
         }, outputBuffer)
 
         await pause(WAIT_WRITE)
@@ -600,7 +601,7 @@ exports.handler = () => ({
     })
   })
 
-  test(testName('User functions take precedence over internal functions', args), async (t) => {
+  test(testName('User functions take precedence over internal functions', args), async () => {
     await withSiteBuilder('function-internal-priority', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -631,7 +632,7 @@ exports.handler = () => ({
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port }) => {
         await tryAndLogOutput(async () => {
-          t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'User')
+          expect(await got(`http://localhost:${port}/.netlify/functions/hello`).text()).toBe('User')
         }, outputBuffer)
 
         await pause(WAIT_WRITE)
@@ -674,7 +675,7 @@ exports.handler = () => ({
     })
   })
 
-  test(testName('Serves functions with a `.mjs` extension', args), async (t) => {
+  test(testName('Serves functions with a `.mjs` extension', args), async () => {
     await withSiteBuilder('function-mjs', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -703,13 +704,13 @@ exports.handler = () => ({
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port }) => {
         await tryAndLogOutput(async () => {
-          t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'Hello, world!')
+          expect(await got(`http://localhost:${port}/.netlify/functions/hello`).text()).toBe('Hello, world!')
         }, outputBuffer)
       })
     })
   })
 
-  test(testName('Serves functions inside a "type=module" package', args), async (t) => {
+  test(testName('Serves functions inside a "type=module" package', args), async () => {
     await withSiteBuilder('function-type-module', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -738,13 +739,13 @@ exports.handler = () => ({
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port }) => {
         await tryAndLogOutput(async () => {
-          t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'hello from es module!')
+          expect(await got(`http://localhost:${port}/.netlify/functions/hello`).text()).toBe('hello from es module!')
         }, outputBuffer)
       })
     })
   })
 
-  test(testName('Resembles base64 encoding of production', args), async (t) => {
+  test(testName('Resembles base64 encoding of production', args), async () => {
     await withSiteBuilder('function-base64-encoding', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -767,21 +768,20 @@ exports.handler = () => ({
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port }) => {
         await tryAndLogOutput(async () => {
-          t.is(
+          expect(
             await got(`http://localhost:${port}/.netlify/functions/echoEncoding`, {
               headers: {
                 'Content-Type': 'multipart/form-data',
               },
             }).text(),
-            'base64',
-          )
+          ).toBe('base64')
         }, outputBuffer)
       })
     })
   })
 })
 
-test('Serves functions that dynamically load files included in the `functions.included_files` config property', async (t) => {
+test('Serves functions that dynamically load files included in the `functions.included_files` config property', async () => {
   await withSiteBuilder('function-with-included-files', async (builder) => {
     await builder
       .withContentFiles([
@@ -818,14 +818,14 @@ test('Serves functions that dynamically load files included in the `functions.in
 
     await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, port }) => {
       await tryAndLogOutput(async () => {
-        t.is(await got(`http://localhost:${port}/.netlify/functions/hello?name=one`).text(), 'one')
-        t.is(await got(`http://localhost:${port}/.netlify/functions/hello?name=two`).text(), 'two')
+        expect(await got(`http://localhost:${port}/.netlify/functions/hello?name=one`).text()).toBe('one')
+        expect(await got(`http://localhost:${port}/.netlify/functions/hello?name=two`).text()).toBe('two')
       }, outputBuffer)
     })
   })
 })
 
-test('Uses sourcemaps to show correct paths and locations in stack trace', async (t) => {
+test('Uses sourcemaps to show correct paths and locations in stack trace', async () => {
   await withSiteBuilder('function-with-sourcemaps', async (builder) => {
     await builder
       .withFunction({
@@ -845,17 +845,16 @@ test('Uses sourcemaps to show correct paths and locations in stack trace', async
     await withDevServer({ cwd: builder.directory }, async ({ port }) => {
       try {
         await got(`http://localhost:${port}/.netlify/functions/hello`)
-
-        t.fail()
       } catch (error) {
-        t.true(error.response.body.includes(join(builder.directory, 'functions', 'hello.js')))
-        t.false(error.response.body.includes(join('.netlify', 'functions-serve')))
+        expect(error.response.body.includes(join(builder.directory, 'functions', 'hello.js'))).toBe(true)
+        expect(error.response.body.includes(join('.netlify', 'functions-serve'))).toBe(false)
       }
     })
   })
+  expect.assertions(2)
 })
 
-test('Populates the `event` argument', async (t) => {
+test('Populates the `event` argument', async () => {
   await withSiteBuilder('function-event', async (builder) => {
     await builder
       .withFunction({
@@ -879,10 +878,10 @@ test('Populates the `event` argument', async (t) => {
           `http://localhost:${port}/.netlify/functions/hello?net=lify&jam=stack`,
         ).json()
 
-        t.is(httpMethod, 'GET')
-        t.is(path, '/.netlify/functions/hello')
-        t.is(rawQuery, 'net=lify&jam=stack')
-        t.is(rawUrl, `http://localhost:${port}/.netlify/functions/hello?net=lify&jam=stack`)
+        expect(httpMethod).toBe('GET')
+        expect(path).toBe('/.netlify/functions/hello')
+        expect(rawQuery).toBe('net=lify&jam=stack')
+        expect(rawUrl).toBe(`http://localhost:${port}/.netlify/functions/hello?net=lify&jam=stack`)
       }, outputBuffer)
     })
   })

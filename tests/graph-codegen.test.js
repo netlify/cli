@@ -1,8 +1,6 @@
 const fs = require('fs')
 const { join } = require('path')
 
-const test = require('ava')
-
 const {
   buildSchema,
   extractFunctionsFromOperationDoc,
@@ -26,7 +24,7 @@ const netlifyGraphConfig = {
 
 const loadAsset = (filename) => fs.readFileSync(join(__dirname, 'assets', filename), 'utf8')
 
-test('netlify graph function codegen', (t) => {
+test('netlify graph function codegen', () => {
   const schemaString = loadAsset('../assets/netlifyGraphSchema.graphql')
   const schema = buildSchema(schemaString)
 
@@ -38,10 +36,10 @@ test('netlify graph function codegen', (t) => {
   const operations = extractFunctionsFromOperationDoc(parsedDoc)
   const generatedFunctions = generateFunctionsSource(netlifyGraphConfig, schema, appOperationsDoc, operations)
 
-  t.snapshot(normalize(JSON.stringify(generatedFunctions)))
+  expect(normalize(JSON.stringify(generatedFunctions))).toMatchSnapshot()
 })
 
-test('netlify graph handler codegen', (t) => {
+test('netlify graph handler codegen', () => {
   const schemaString = loadAsset('../assets/netlifyGraphSchema.graphql')
   const schema = buildSchema(schemaString)
 
@@ -97,5 +95,5 @@ test('netlify graph handler codegen', (t) => {
     .map(([filename, content]) => `${filename}: ${content}`)
     .join('/-----------------/')
 
-  t.snapshot(normalize(JSON.stringify(textualSource)))
+  expect(normalize(JSON.stringify(textualSource))).toMatchSnapshot()
 })

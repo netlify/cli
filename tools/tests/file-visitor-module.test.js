@@ -1,84 +1,53 @@
+const fs = require('fs')
 const { join } = require('path')
 const { format } = require('util')
 
-const test = require('ava')
-const mock = require('mock-fs')
+const { Volume } = require('memfs')
 
 const { normalize } = require('../../tests/utils/snapshots')
 const { DependencyGraph, fileVisitor } = require('../project-graph')
 
 const { esModuleMockedFileSystem } = require('./utils/file-systems')
 
-test.before(() => {
-  mock(esModuleMockedFileSystem)
+jest.mock('fs', () => {
+  const actualFS = jest.requireActual('fs')
+  // eslint-disable-next-line node/global-require
+  const unionFS = require('unionfs').default
+
+  unionFS.reset = () => {
+    // fss is unionfs' list of overlays
+    unionFS.fss = [actualFS]
+  }
+  return unionFS.use(actualFS)
 })
 
-test.after(() => {
-  mock.restore()
+beforeEach(() => {
+  const vol = Volume.fromJSON(esModuleMockedFileSystem)
+  // in this case we don't want to have the actual underlying fs so we clear them
+  // we only have the fs from the volume now.
+  fs.fss = []
+  fs.use(vol)
 })
 
-test('should visit the files that are dependents from the provided main file based on imports', (t) => {
+test('should visit the files that are dependents from the provided main file based on imports', () => {
   const graph = new DependencyGraph()
   fileVisitor(join('tests/a.test.js'), { graph, visitorPlugins: [] })
-  t.is(
-    normalize(graph.visualize().to_dot()),
-    `digraph G {
-  "src/nested/b.js";
-  "src/nested/a.js";
-  "src/c/index.js";
-  "src/d.js";
-  "tests/a.test.js";
-  "src/nested/a.js" -> "src/nested/b.js";
-  "src/nested/a.js" -> "src/c/index.js";
-  "src/c/index.js" -> "src/d.js";
-  "tests/a.test.js" -> "src/nested/a.js";
-}
-`,
-  )
+  expect(normalize(graph.visualize().to_dot())).toMatchSnapshot()
 })
 
-test('should merge the graph with files from a different entry point based on imports', (t) => {
-  const graph = new DependencyGraph()
-  fileVisitor(join('tests/a.test.js'), { graph, visitorPlugins: [] })
-  fileVisitor(join('tests/c.test.js'), { graph, visitorPlugins: [] })
-  t.is(
-    normalize(graph.visualize().to_dot()),
-    `digraph G {
-  "src/nested/b.js";
-  "src/nested/a.js";
-  "src/c/index.js";
-  "src/d.js";
-  "tests/a.test.js";
-  "tests/c.test.js";
-  "tests/utils.js";
-  "src/nested/a.js" -> "src/nested/b.js";
-  "src/nested/a.js" -> "src/c/index.js";
-  "src/c/index.js" -> "src/d.js";
-  "tests/a.test.js" -> "src/nested/a.js";
-  "tests/c.test.js" -> "src/c/index.js";
-  "tests/c.test.js" -> "tests/utils.js";
-}
-`,
-  )
-})
-
-test('should build a list of affected files based on a file with imports', (t) => {
+test('should merge the graph with files from a different entry point based on imports', () => {
   const graph = new DependencyGraph()
   fileVisitor(join('tests/a.test.js'), { graph, visitorPlugins: [] })
   fileVisitor(join('tests/c.test.js'), { graph, visitorPlugins: [] })
 
-  t.is(
-    format([...graph.affected([join('src/d.js')])]).replace(/\\+/gm, '/'),
-    `[
-  'src/d.js',
-  'src/c/index.js',
-  'src/nested/a.js',
-  'tests/a.test.js',
-  'tests/c.test.js'
-]`,
-  )
-  t.is(
-    format([...graph.affected([join('tests/utils.js')])]).replace(/\\+/gm, '/'),
-    "[ 'tests/utils.js', 'tests/c.test.js' ]",
-  )
+  expect(normalize(graph.visualize().to_dot())).toMatchSnapshot()
+})
+
+test('should build a list of affected files based on a file with imports', () => {
+  const graph = new DependencyGraph()
+  fileVisitor(join('tests/a.test.js'), { graph, visitorPlugins: [] })
+  fileVisitor(join('tests/c.test.js'), { graph, visitorPlugins: [] })
+
+  expect(format([...graph.affected([join('src/d.js')])]).replace(/\\+/gm, '/')).toMatchSnapshot()
+  expect(format([...graph.affected([join('tests/utils.js')])]).replace(/\\+/gm, '/')).toMatchSnapshot()
 })

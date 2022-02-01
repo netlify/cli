@@ -2,18 +2,23 @@ const { mkdirSync, mkdtempSync, writeFileSync } = require('fs')
 const { tmpdir } = require('os')
 const { join } = require('path')
 
-const test = require('ava')
 const express = require('express')
 const request = require('supertest')
+
+const { rmdirRecursiveAsync } = require('../fs')
 
 const { FunctionsRegistry } = require('./registry')
 const { createHandler } = require('./server')
 
+// the fixture has no pkg json so mock it away
+jest.mock('read-pkg-up')
+
 /** @type { express.Express} */
 let app
 
-test.before(async () => {
-  const projectRoot = mkdtempSync(join(tmpdir(), 'functions-server-project-root'))
+const projectRoot = mkdtempSync(join(tmpdir(), 'functions-server-project-root'))
+
+beforeAll(async () => {
   const functionsDirectory = join(projectRoot, 'functions')
   mkdirSync(functionsDirectory)
 
@@ -32,33 +37,37 @@ test.before(async () => {
   app.all('*', createHandler({ functionsRegistry }))
 })
 
-test('should get the url as the `rawUrl` inside the function', async (t) => {
+afterAll(async () => {
+  await rmdirRecursiveAsync(projectRoot)
+})
+
+test('should get the url as the `rawUrl` inside the function', async () => {
   await request(app)
     .get('/hello')
     .expect((res) => {
-      t.is(res.status, 200)
-      t.regex(res.text, /^http:\/\/127.0.0.1:\d+?\/hello$/)
+      expect(res.status).toBe(200)
+      expect(res.text).toMatch(/^http:\/\/127.0.0.1:\d+?\/hello$/)
     })
 })
 
-test('should get the original url as the `rawUrl` when the header was provided by the proxy', async (t) => {
+test('should get the original url as the `rawUrl` when the header was provided by the proxy', async () => {
   await request(app)
     .get('/hello')
     .set('x-netlify-original-pathname', '/orig')
     .expect((res) => {
-      t.is(res.status, 200)
+      expect(res.status).toBe(200)
       console.log(res.text)
-      t.regex(res.text, /^http:\/\/127.0.0.1:\d+?\/orig$/)
+      expect(res.text).toMatch(/^http:\/\/127.0.0.1:\d+?\/orig$/)
     })
 })
 
-test('should check if query params are passed to the `rawUrl` when redirected', async (t) => {
+test('should check if query params are passed to the `rawUrl` when redirected', async () => {
   await request(app)
     .get('/hello?jam=stack')
     .set('x-netlify-original-pathname', '/orig')
     .expect((res) => {
-      t.is(res.status, 200)
+      expect(res.status).toBe(200)
       console.log(res.text)
-      t.regex(res.text, /^http:\/\/127.0.0.1:\d+?\/orig\?jam=stack$/)
+      expect(res.text).toMatch(/^http:\/\/127.0.0.1:\d+?\/orig\?jam=stack$/)
     })
 })

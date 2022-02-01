@@ -1,4 +1,3 @@
-const test = require('ava')
 const pWaitFor = require('p-wait-for')
 
 const { tryAndLogOutput, withDevServer } = require('./utils/dev-server')
@@ -11,7 +10,7 @@ const WAIT_INTERVAL = 600
 const WAIT_TIMEOUT = 3000
 const WAIT_WRITE = 1000
 
-test('Updates a Rust function when a file is modified', async (t) => {
+test('Updates a Rust function when a file is modified', async () => {
   await withSiteBuilder('rust-function-update', async (builder) => {
     await builder
       .withNetlifyToml({
@@ -76,7 +75,7 @@ test('Updates a Rust function when a file is modified', async (t) => {
       async ({ outputBuffer, port }) => {
         try {
           await tryAndLogOutput(async () => {
-            t.is(await got(`http://localhost:${port}/.netlify/functions/rust-func`).text(), originalBody)
+            expect(await got(`http://localhost:${port}/.netlify/functions/rust-func`).text()).toBe(originalBody)
           }, outputBuffer)
 
           await pause(WAIT_WRITE)

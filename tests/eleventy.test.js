@@ -1,62 +1,59 @@
 const path = require('path')
 
-const test = require('ava')
-
 const { startDevServer } = require('./utils/dev-server')
 const got = require('./utils/got')
 
-test.before(async (t) => {
-  const server = await startDevServer({ cwd: path.join(__dirname, 'eleventy-site') })
+let server
 
-  t.context.server = server
+beforeAll(async () => {
+  server = await startDevServer({ cwd: path.join(__dirname, 'eleventy-site') })
 })
 
-test.after(async (t) => {
-  const { server } = t.context
+afterAll(async () => {
   await server.close()
 })
 
-test('homepage', async (t) => {
-  const { url } = t.context.server
+test('homepage', async () => {
+  const { url } = server
   const response = await got(`${url}/`).text()
 
-  t.true(response.includes('Eleventy Site'))
+  expect(response.includes('Eleventy Site')).toBe(true)
 })
 
-test('redirect test', async (t) => {
-  const { url } = t.context.server
+test('redirect test', async () => {
+  const { url } = server
   const { body, headers, statusCode } = await got(`${url}/something`, { followRedirect: false })
 
-  t.is(statusCode, 301)
-  t.is(headers.location, `/otherthing`)
-  t.is(body, 'Redirecting to /otherthing')
+  expect(statusCode).toBe(301)
+  expect(headers.location).toBe(`/otherthing`)
+  expect(body).toBe('Redirecting to /otherthing')
 })
 
 // TODO: un-skip this once https://github.com/netlify/cli/issues/1242 is fixed
-test.skip('normal rewrite', async (t) => {
-  const { url } = t.context.server
+test.skip('normal rewrite', async () => {
+  const { url } = server
   const { body, headers, statusCode } = await got(`${url}/doesnt-exist`)
 
-  t.is(statusCode, 200)
-  t.true(headers['content-type'].startsWith('text/html'))
-  t.true(body.includes('Eleventy Site'))
+  expect(statusCode).toBe(200)
+  expect(headers['content-type'].startsWith('text/html')).toBe(true)
+  expect(body.includes('Eleventy Site')).toBe(true)
 })
 
-test('force rewrite', async (t) => {
-  const { url } = t.context.server
+test('force rewrite', async () => {
+  const { url } = server
   const { body, headers, statusCode } = await got(`${url}/force`)
 
-  t.is(statusCode, 200)
-  t.true(headers['content-type'].startsWith('text/html'))
-  t.true(body.includes('<h1>Test content</h1>'))
+  expect(statusCode).toBe(200)
+  expect(headers['content-type'].startsWith('text/html')).toBe(true)
+  expect(body.includes('<h1>Test content</h1>')).toBe(true)
 })
 
-test('functions rewrite echo without body', async (t) => {
-  const { host, port, url } = t.context.server
+test('functions rewrite echo without body', async () => {
+  const { host, port, url } = server
   const response = await got(`${url}/api/echo?ding=dong`).json()
 
-  t.is(response.body, undefined)
-  t.deepEqual(response.headers, {
+  expect(response.body).toBe(undefined)
+  expect(response.headers).toEqual({
     accept: 'application/json',
     'accept-encoding': 'gzip, deflate, br',
     'client-ip': '127.0.0.1',
@@ -65,14 +62,14 @@ test('functions rewrite echo without body', async (t) => {
     'user-agent': 'got (https://github.com/sindresorhus/got)',
     'x-forwarded-for': '::ffff:127.0.0.1',
   })
-  t.is(response.httpMethod, 'GET')
-  t.is(response.isBase64Encoded, true)
-  t.is(response.path, '/api/echo')
-  t.deepEqual(response.queryStringParameters, { ding: 'dong' })
+  expect(response.httpMethod).toBe('GET')
+  expect(response.isBase64Encoded).toBe(true)
+  expect(response.path).toBe('/api/echo')
+  expect(response.queryStringParameters).toEqual({ ding: 'dong' })
 })
 
-test('functions rewrite echo with body', async (t) => {
-  const { host, port, url } = t.context.server
+test('functions rewrite echo with body', async () => {
+  const { host, port, url } = server
   const response = await got
     .post(`${url}/api/echo?ding=dong`, {
       headers: {
@@ -82,8 +79,8 @@ test('functions rewrite echo with body', async (t) => {
     })
     .json()
 
-  t.is(response.body, 'some=thing')
-  t.deepEqual(response.headers, {
+  expect(response.body).toBe('some=thing')
+  expect(response.headers).toEqual({
     accept: 'application/json',
     'accept-encoding': 'gzip, deflate, br',
     'client-ip': '127.0.0.1',
@@ -94,17 +91,17 @@ test('functions rewrite echo with body', async (t) => {
     'user-agent': 'got (https://github.com/sindresorhus/got)',
     'x-forwarded-for': '::ffff:127.0.0.1',
   })
-  t.is(response.httpMethod, 'POST')
-  t.is(response.isBase64Encoded, false)
-  t.is(response.path, '/api/echo')
-  t.deepEqual(response.queryStringParameters, { ding: 'dong' })
+  expect(response.httpMethod).toBe('POST')
+  expect(response.isBase64Encoded).toBe(false)
+  expect(response.path).toBe('/api/echo')
+  expect(response.queryStringParameters).toEqual({ ding: 'dong' })
 })
 
-test('functions echo with multiple query params', async (t) => {
-  const { host, port, url } = t.context.server
+test('functions echo with multiple query params', async () => {
+  const { host, port, url } = server
   const response = await got(`${url}/.netlify/functions/echo?category=a&category=b`).json()
 
-  t.deepEqual(response.headers, {
+  expect(response.headers).toEqual({
     accept: 'application/json',
     'accept-encoding': 'gzip, deflate, br',
     'client-ip': '127.0.0.1',
@@ -113,9 +110,9 @@ test('functions echo with multiple query params', async (t) => {
     'user-agent': 'got (https://github.com/sindresorhus/got)',
     'x-forwarded-for': '::ffff:127.0.0.1',
   })
-  t.is(response.httpMethod, 'GET')
-  t.is(response.isBase64Encoded, true)
-  t.is(response.path, '/.netlify/functions/echo')
-  t.deepEqual(response.queryStringParameters, { category: 'a, b' })
-  t.deepEqual(response.multiValueQueryStringParameters, { category: ['a', 'b'] })
+  expect(response.httpMethod).toBe('GET')
+  expect(response.isBase64Encoded).toBe(true)
+  expect(response.path).toBe('/.netlify/functions/echo')
+  expect(response.queryStringParameters).toEqual({ category: 'a, b' })
+  expect(response.multiValueQueryStringParameters).toEqual({ category: ['a', 'b'] })
 })

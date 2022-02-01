@@ -1,0 +1,68 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`should generate a completion file 1`] = `
+Object {
+  "bake": Object {
+    "description": "Cooks something",
+    "name": "bake",
+    "options": Array [
+      Object {
+        "description": "cook it fast",
+        "name": "--fast",
+      },
+      Object {
+        "description": "Print debugging information",
+        "name": "--debug",
+      },
+      Object {
+        "description": "Proxy server address to route requests through.",
+        "name": "--httpProxy",
+      },
+      Object {
+        "description": "Certificate file to use when connecting using a proxy server",
+        "name": "--httpProxyCertificateFilename",
+      },
+    ],
+  },
+  "bake:pizza": Object {
+    "description": "bakes a pizza",
+    "name": "bake:pizza",
+    "options": Array [
+      Object {
+        "description": "Type of pizza",
+        "name": "--type",
+      },
+      Object {
+        "description": "Print debugging information",
+        "name": "--debug",
+      },
+      Object {
+        "description": "Proxy server address to route requests through.",
+        "name": "--httpProxy",
+      },
+      Object {
+        "description": "Certificate file to use when connecting using a proxy server",
+        "name": "--httpProxyCertificateFilename",
+      },
+    ],
+  },
+  "taste": Object {
+    "description": "tastes something",
+    "name": "taste",
+    "options": Array [
+      Object {
+        "description": "Print debugging information",
+        "name": "--debug",
+      },
+      Object {
+        "description": "Proxy server address to route requests through.",
+        "name": "--httpProxy",
+      },
+      Object {
+        "description": "Certificate file to use when connecting using a proxy server",
+        "name": "--httpProxyCertificateFilename",
+      },
+    ],
+  },
+}
+`;

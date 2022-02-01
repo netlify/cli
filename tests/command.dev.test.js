@@ -6,9 +6,6 @@ const os = require('os')
 const path = require('path')
 const process = require('process')
 
-// eslint-disable-next-line ava/use-test
-const avaTest = require('ava')
-const { isCI } = require('ci-info')
 const dotProp = require('dot-prop')
 const FormData = require('form-data')
 const jwt = require('jsonwebtoken')
@@ -19,8 +16,6 @@ const { startExternalServer } = require('./utils/external-server')
 const got = require('./utils/got')
 const { withMockApi } = require('./utils/mock-api')
 const { withSiteBuilder } = require('./utils/site-builder')
-
-const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
 
 const testMatrix = [
   { args: [] },
@@ -58,22 +53,22 @@ const setupRoleBasedRedirectsSite = (builder) => {
   return builder
 }
 
-const validateRoleBasedRedirectsSite = async ({ args, builder, jwtRolePath, jwtSecret, t }) => {
+const validateRoleBasedRedirectsSite = async ({ args, builder, jwtRolePath, jwtSecret }) => {
   const adminToken = getToken({ jwtSecret, jwtRolePath, roles: ['admin'] })
   const editorToken = getToken({ jwtSecret, jwtRolePath, roles: ['editor'] })
 
   await withDevServer({ cwd: builder.directory, args }, async (server) => {
     const unauthenticatedResponse = await got(`${server.url}/admin`, { throwHttpErrors: false })
-    t.is(unauthenticatedResponse.statusCode, 404)
-    t.is(unauthenticatedResponse.body, 'Not Found')
+    expect(unauthenticatedResponse.statusCode).toBe(404)
+    expect(unauthenticatedResponse.body).toBe('Not Found')
 
     const authenticatedResponse = await got(`${server.url}/admin/foo`, {
       headers: {
         cookie: `nf_jwt=${adminToken}`,
       },
     })
-    t.is(authenticatedResponse.statusCode, 200)
-    t.is(authenticatedResponse.body, '<html>foo</html>')
+    expect(authenticatedResponse.statusCode).toBe(200)
+    expect(authenticatedResponse.body).toBe('<html>foo</html>')
 
     const wrongRoleResponse = await got(`${server.url}/admin/foo`, {
       headers: {
@@ -81,13 +76,13 @@ const validateRoleBasedRedirectsSite = async ({ args, builder, jwtRolePath, jwtS
       },
       throwHttpErrors: false,
     })
-    t.is(wrongRoleResponse.statusCode, 404)
-    t.is(wrongRoleResponse.body, 'Not Found')
+    expect(wrongRoleResponse.statusCode).toBe(404)
+    expect(wrongRoleResponse.body).toBe('Not Found')
   })
 }
 
 testMatrix.forEach(({ args }) => {
-  test(testName('should return index file when / is accessed', args), async (t) => {
+  test(testName('should return index file when / is accessed', args), async () => {
     await withSiteBuilder('site-with-index-file', async (builder) => {
       builder.withContentFile({
         path: 'index.html',
@@ -98,12 +93,12 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(server.url).text()
-        t.is(response, '<h1>⊂◉‿◉つ</h1>')
+        expect(response).toBe('<h1>⊂◉‿◉つ</h1>')
       })
     })
   })
 
-  test(testName('should return user defined headers when / is accessed', args), async (t) => {
+  test(testName('should return user defined headers when / is accessed', args), async () => {
     await withSiteBuilder('site-with-headers-on-root', async (builder) => {
       builder.withContentFile({
         path: 'index.html',
@@ -118,12 +113,12 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const { headers } = await got(server.url)
-        t.is(headers[headerName.toLowerCase()], headerValue)
+        expect(headers[headerName.toLowerCase()]).toBe(headerValue)
       })
     })
   })
 
-  test(testName('should return user defined headers when non-root path is accessed', args), async (t) => {
+  test(testName('should return user defined headers when non-root path is accessed', args), async () => {
     await withSiteBuilder('site-with-headers-on-non-root', async (builder) => {
       builder.withContentFile({
         path: 'foo/index.html',
@@ -138,12 +133,12 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const { headers } = await got(`${server.url}/foo`)
-        t.is(headers[headerName.toLowerCase()], headerValue)
+        expect(headers[headerName.toLowerCase()]).toBe(headerValue)
       })
     })
   })
 
-  test(testName('should return response from a function with setTimeout', args), async (t) => {
+  test(testName('should return response from a function with setTimeout', args), async () => {
     await withSiteBuilder('site-with-set-timeout-function', async (builder) => {
       builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
         path: 'timeout.js',
@@ -166,14 +161,14 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/.netlify/functions/timeout`).text()
-        t.is(response, 'ping')
+        expect(response).toBe('ping')
         const builderResponse = await got(`${server.url}/.netlify/builders/timeout`).text()
-        t.is(builderResponse, 'ping')
+        expect(builderResponse).toBe('ping')
       })
     })
   })
 
-  test(testName('should fail when no metadata is set for builder function', args), async (t) => {
+  test(testName('should fail when no metadata is set for builder function', args), async () => {
     await withSiteBuilder('site-with-misconfigured-builder-function', async (builder) => {
       builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
         path: 'builder.js',
@@ -187,21 +182,20 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/.netlify/functions/builder`)
-        t.is(response.body, 'ping')
-        t.is(response.statusCode, 200)
+        expect(response.body).toBe('ping')
+        expect(response.statusCode).toBe(200)
         const builderResponse = await got(`${server.url}/.netlify/builders/builder`, {
           throwHttpErrors: false,
         })
-        t.is(
-          builderResponse.body,
+        expect(builderResponse.body).toBe(
           `{"message":"Function is not an on-demand builder. See https://ntl.fyi/create-builder for how to convert a function to a builder."}`,
         )
-        t.is(builderResponse.statusCode, 400)
+        expect(builderResponse.statusCode).toBe(400)
       })
     })
   })
 
-  test(testName('should serve function from a subdirectory', args), async (t) => {
+  test(testName('should serve function from a subdirectory', args), async () => {
     await withSiteBuilder('site-with-from-subdirectory', async (builder) => {
       builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
         path: path.join('echo', 'echo.js'),
@@ -216,14 +210,14 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/.netlify/functions/echo`).text()
-        t.is(response, 'ping')
+        expect(response).toBe('ping')
         const builderResponse = await got(`${server.url}/.netlify/builders/echo`).text()
-        t.is(builderResponse, 'ping')
+        expect(builderResponse).toBe('ping')
       })
     })
   })
 
-  test(testName('should pass .env.development vars to function', args), async (t) => {
+  test(testName('should pass .env.development vars to function', args), async () => {
     await withSiteBuilder('site-with-env-development', async (builder) => {
       builder
         .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
@@ -241,14 +235,14 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/.netlify/functions/env`).text()
-        t.is(response, 'FROM_DEV_FILE')
+        expect(response).toBe('FROM_DEV_FILE')
         const builderResponse = await got(`${server.url}/.netlify/builders/env`).text()
-        t.is(builderResponse, 'FROM_DEV_FILE')
+        expect(builderResponse).toBe('FROM_DEV_FILE')
       })
     })
   })
 
-  test(testName('should pass process env vars to function', args), async (t) => {
+  test(testName('should pass process env vars to function', args), async () => {
     await withSiteBuilder('site-with-process-env', async (builder) => {
       builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
         path: 'env.js',
@@ -263,14 +257,14 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, env: { TEST: 'FROM_PROCESS_ENV' }, args }, async (server) => {
         const response = await got(`${server.url}/.netlify/functions/env`).text()
-        t.is(response, 'FROM_PROCESS_ENV')
+        expect(response).toBe('FROM_PROCESS_ENV')
         const builderResponse = await got(`${server.url}/.netlify/builders/env`).text()
-        t.is(builderResponse, 'FROM_PROCESS_ENV')
+        expect(builderResponse).toBe('FROM_PROCESS_ENV')
       })
     })
   })
 
-  test(testName('should pass [build.environment] env vars to function', args), async (t) => {
+  test(testName('should pass [build.environment] env vars to function', args), async () => {
     await withSiteBuilder('site-with-build-environment', async (builder) => {
       builder
         .withNetlifyToml({
@@ -289,14 +283,14 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/.netlify/functions/env`).text()
-        t.is(response, 'FROM_CONFIG_FILE')
+        expect(response).toBe('FROM_CONFIG_FILE')
         const builderResponse = await got(`${server.url}/.netlify/builders/env`).text()
-        t.is(builderResponse, 'FROM_CONFIG_FILE')
+        expect(builderResponse).toBe('FROM_CONFIG_FILE')
       })
     })
   })
 
-  test(testName('[context.dev.environment] should override [build.environment]', args), async (t) => {
+  test(testName('[context.dev.environment] should override [build.environment]', args), async () => {
     await withSiteBuilder('site-with-build-environment', async (builder) => {
       builder
         .withNetlifyToml({
@@ -318,12 +312,12 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/.netlify/functions/env`).text()
-        t.is(response, 'DEV_CONTEXT')
+        expect(response).toBe('DEV_CONTEXT')
       })
     })
   })
 
-  test(testName('should use [build.environment] and not [context.production.environment]', args), async (t) => {
+  test(testName('should use [build.environment] and not [context.production.environment]', args), async () => {
     await withSiteBuilder('site-with-build-environment', async (builder) => {
       builder
         .withNetlifyToml({
@@ -345,12 +339,12 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/.netlify/functions/env`).text()
-        t.is(response, 'DEFAULT_CONTEXT')
+        expect(response).toBe('DEFAULT_CONTEXT')
       })
     })
   })
 
-  test(testName('should override .env.development with process env', args), async (t) => {
+  test(testName('should override .env.development with process env', args), async () => {
     await withSiteBuilder('site-with-override', async (builder) => {
       builder
         .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
@@ -367,12 +361,12 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, env: { TEST: 'FROM_PROCESS_ENV' }, args }, async (server) => {
         const response = await got(`${server.url}/.netlify/functions/env`).text()
-        t.is(response, 'FROM_PROCESS_ENV')
+        expect(response).toBe('FROM_PROCESS_ENV')
       })
     })
   })
 
-  test(testName('should override [build.environment] with process env', args), async (t) => {
+  test(testName('should override [build.environment] with process env', args), async () => {
     await withSiteBuilder('site-with-build-environment-override', async (builder) => {
       builder
         .withNetlifyToml({
@@ -390,12 +384,12 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, env: { TEST: 'FROM_PROCESS_ENV' }, args }, async (server) => {
         const response = await got(`${server.url}/.netlify/functions/env`).text()
-        t.is(response, 'FROM_PROCESS_ENV')
+        expect(response).toBe('FROM_PROCESS_ENV')
       })
     })
   })
 
-  test(testName('should override value of the NETLIFY_DEV env variable', args), async (t) => {
+  test(testName('should override value of the NETLIFY_DEV env variable', args), async () => {
     await withSiteBuilder('site-with-netlify-dev-override', async (builder) => {
       builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
         path: 'env.js',
@@ -411,13 +405,13 @@ testMatrix.forEach(({ args }) => {
         { cwd: builder.directory, env: { NETLIFY_DEV: 'FROM_PROCESS_ENV' }, args },
         async (server) => {
           const response = await got(`${server.url}/.netlify/functions/env`).text()
-          t.is(response, 'true')
+          expect(response).toBe('true')
         },
       )
     })
   })
 
-  test(testName('should set value of the CONTEXT env variable', args), async (t) => {
+  test(testName('should set value of the CONTEXT env variable', args), async () => {
     await withSiteBuilder('site-with-context-override', async (builder) => {
       builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
         path: 'env.js',
@@ -431,12 +425,12 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/.netlify/functions/env`).text()
-        t.is(response, 'dev')
+        expect(response).toBe('dev')
       })
     })
   })
 
-  test(testName('should redirect using a wildcard when set in netlify.toml', args), async (t) => {
+  test(testName('should redirect using a wildcard when set in netlify.toml', args), async () => {
     await withSiteBuilder('site-with-redirect-function', async (builder) => {
       builder
         .withNetlifyToml({
@@ -457,12 +451,12 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/api/ping`).text()
-        t.is(response, 'ping')
+        expect(response).toBe('ping')
       })
     })
   })
 
-  test(testName('should pass undefined body to functions event for GET requests when redirecting', args), async (t) => {
+  test(testName('should pass undefined body to functions event for GET requests when redirecting', args), async () => {
     await withSiteBuilder('site-with-get-echo-function', async (builder) => {
       builder
         .withNetlifyToml({
@@ -483,17 +477,17 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/api/echo?ding=dong`).json()
-        t.is(response.body, undefined)
-        t.is(response.headers.host, `${server.host}:${server.port}`)
-        t.is(response.httpMethod, 'GET')
-        t.is(response.isBase64Encoded, true)
-        t.is(response.path, '/api/echo')
-        t.deepEqual(response.queryStringParameters, { ding: 'dong' })
+        expect(response.body).toBe(undefined)
+        expect(response.headers.host).toBe(`${server.host}:${server.port}`)
+        expect(response.httpMethod).toBe('GET')
+        expect(response.isBase64Encoded).toBe(true)
+        expect(response.path).toBe('/api/echo')
+        expect(response.queryStringParameters).toEqual({ ding: 'dong' })
       })
     })
   })
 
-  test(testName('should pass body to functions event for POST requests when redirecting', args), async (t) => {
+  test(testName('should pass body to functions event for POST requests when redirecting', args), async () => {
     await withSiteBuilder('site-with-post-echo-function', async (builder) => {
       builder
         .withNetlifyToml({
@@ -522,19 +516,19 @@ testMatrix.forEach(({ args }) => {
           })
           .json()
 
-        t.is(response.body, 'some=thing')
-        t.is(response.headers.host, `${server.host}:${server.port}`)
-        t.is(response.headers['content-type'], 'application/x-www-form-urlencoded')
-        t.is(response.headers['content-length'], '10')
-        t.is(response.httpMethod, 'POST')
-        t.is(response.isBase64Encoded, false)
-        t.is(response.path, '/api/echo')
-        t.deepEqual(response.queryStringParameters, { ding: 'dong' })
+        expect(response.body).toBe('some=thing')
+        expect(response.headers.host).toBe(`${server.host}:${server.port}`)
+        expect(response.headers['content-type']).toBe('application/x-www-form-urlencoded')
+        expect(response.headers['content-length']).toBe('10')
+        expect(response.httpMethod).toBe('POST')
+        expect(response.isBase64Encoded).toBe(false)
+        expect(response.path).toBe('/api/echo')
+        expect(response.queryStringParameters).toEqual({ ding: 'dong' })
       })
     })
   })
 
-  test(testName('should return an empty body for a function with no body when redirecting', args), async (t) => {
+  test(testName('should return an empty body for a function with no body when redirecting', args), async () => {
     await withSiteBuilder('site-with-no-body-function', async (builder) => {
       builder
         .withNetlifyToml({
@@ -560,13 +554,13 @@ testMatrix.forEach(({ args }) => {
           body: 'some=thing',
         })
 
-        t.is(response.body, '')
-        t.is(response.statusCode, 200)
+        expect(response.body).toBe('')
+        expect(response.statusCode).toBe(200)
       })
     })
   })
 
-  test(testName('should handle multipart form data when redirecting', args), async (t) => {
+  test(testName('should handle multipart form data when redirecting', args), async () => {
     await withSiteBuilder('site-with-multi-part-function', async (builder) => {
       builder
         .withNetlifyToml({
@@ -598,19 +592,19 @@ testMatrix.forEach(({ args }) => {
           })
           .json()
 
-        t.is(response.headers.host, `${server.host}:${server.port}`)
-        t.is(response.headers['content-type'], `multipart/form-data; boundary=${expectedBoundary}`)
-        t.is(response.headers['content-length'], '164')
-        t.is(response.httpMethod, 'POST')
-        t.is(response.isBase64Encoded, true)
-        t.is(response.path, '/api/echo')
-        t.deepEqual(response.queryStringParameters, { ding: 'dong' })
-        t.is(response.body, expectedResponseBody)
+        expect(response.headers.host).toBe(`${server.host}:${server.port}`)
+        expect(response.headers['content-type']).toBe(`multipart/form-data; boundary=${expectedBoundary}`)
+        expect(response.headers['content-length']).toBe('164')
+        expect(response.httpMethod).toBe('POST')
+        expect(response.isBase64Encoded).toBe(true)
+        expect(response.path).toBe('/api/echo')
+        expect(response.queryStringParameters).toEqual({ ding: 'dong' })
+        expect(response.body).toBe(expectedResponseBody)
       })
     })
   })
 
-  test(testName('should return 404 when redirecting to a non existing function', args), async (t) => {
+  test(testName('should return 404 when redirecting to a non existing function', args), async () => {
     await withSiteBuilder('site-with-missing-function', async (builder) => {
       builder.withNetlifyToml({
         config: {
@@ -628,12 +622,12 @@ testMatrix.forEach(({ args }) => {
           })
           .catch((error) => error.response)
 
-        t.is(response.statusCode, 404)
+        expect(response.statusCode).toBe(404)
       })
     })
   })
 
-  test(testName('should parse function query parameters using simple parsing', args), async (t) => {
+  test(testName('should parse function query parameters using simple parsing', args), async () => {
     await withSiteBuilder('site-with-multi-part-function', async (builder) => {
       builder
         .withNetlifyToml({
@@ -655,13 +649,13 @@ testMatrix.forEach(({ args }) => {
         const response1 = await got(`${server.url}/.netlify/functions/echo?category[SOMETHING][]=something`).json()
         const response2 = await got(`${server.url}/.netlify/functions/echo?category=one&category=two`).json()
 
-        t.deepEqual(response1.queryStringParameters, { 'category[SOMETHING][]': 'something' })
-        t.deepEqual(response2.queryStringParameters, { category: 'one, two' })
+        expect(response1.queryStringParameters).toEqual({ 'category[SOMETHING][]': 'something' })
+        expect(response2.queryStringParameters).toEqual({ category: 'one, two' })
       })
     })
   })
 
-  test(testName('should handle form submission', args), async (t) => {
+  test(testName('should handle form submission', args), async () => {
     await withSiteBuilder('site-with-form', async (builder) => {
       builder
         .withContentFile({
@@ -694,14 +688,14 @@ testMatrix.forEach(({ args }) => {
 
         const body = JSON.parse(response.body)
 
-        t.is(response.headers.host, `${server.host}:${server.port}`)
-        t.is(response.headers['content-length'], '276')
-        t.is(response.headers['content-type'], 'application/json')
-        t.is(response.httpMethod, 'POST')
-        t.is(response.isBase64Encoded, false)
-        t.is(response.path, '/')
-        t.deepEqual(response.queryStringParameters, { ding: 'dong' })
-        t.deepEqual(body, {
+        expect(response.headers.host).toBe(`${server.host}:${server.port}`)
+        expect(response.headers['content-length']).toBe('276')
+        expect(response.headers['content-type']).toBe('application/json')
+        expect(response.httpMethod).toBe('POST')
+        expect(response.isBase64Encoded).toBe(false)
+        expect(response.path).toBe('/')
+        expect(response.queryStringParameters).toEqual({ ding: 'dong' })
+        expect(body).toEqual({
           payload: {
             created_at: body.payload.created_at,
             data: {
@@ -726,7 +720,7 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
-  test(testName('should handle form submission with a background function', args), async (t) => {
+  test(testName('should handle form submission with a background function', args), async () => {
     await withSiteBuilder('site-with-form-background-function', async (builder) => {
       await builder
         .withContentFile({
@@ -753,13 +747,13 @@ testMatrix.forEach(({ args }) => {
         const response = await got.post(`${server.url}/?ding=dong`, {
           body: form,
         })
-        t.is(response.statusCode, 202)
-        t.is(response.body, '')
+        expect(response.statusCode).toBe(202)
+        expect(response.body).toBe('')
       })
     })
   })
 
-  test(testName('should not handle form submission when content type is `text/plain`', args), async (t) => {
+  test(testName('should not handle form submission when content type is `text/plain`', args), async () => {
     await withSiteBuilder('site-with-form-text-plain', async (builder) => {
       builder
         .withContentFile({
@@ -790,12 +784,12 @@ testMatrix.forEach(({ args }) => {
             },
           })
           .catch((error) => error.response)
-        t.is(response.body, 'Method Not Allowed')
+        expect(response.body).toBe('Method Not Allowed')
       })
     })
   })
 
-  test(testName('should return existing local file even when rewrite matches when force=false', args), async (t) => {
+  test(testName('should return existing local file even when rewrite matches when force=false', args), async () => {
     await withSiteBuilder('site-with-shadowing-force-false', async (builder) => {
       builder
         .withContentFile({
@@ -816,12 +810,12 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/foo?ping=pong`).text()
-        t.is(response, '<html><h1>foo')
+        expect(response).toBe('<html><h1>foo')
       })
     })
   })
 
-  test(testName('should return existing local file even when redirect matches when force=false', args), async (t) => {
+  test(testName('should return existing local file even when redirect matches when force=false', args), async () => {
     await withSiteBuilder('site-with-shadowing-force-false', async (builder) => {
       builder
         .withContentFile({
@@ -842,12 +836,12 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/foo?ping=pong`).text()
-        t.is(response, '<html><h1>foo')
+        expect(response).toBe('<html><h1>foo')
       })
     })
   })
 
-  test(testName('should ignore existing local file when redirect matches and force=true', args), async (t) => {
+  test(testName('should ignore existing local file when redirect matches and force=true', args), async () => {
     await withSiteBuilder('site-with-shadowing-force-true', async (builder) => {
       builder
         .withContentFile({
@@ -868,12 +862,12 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/foo`).text()
-        t.is(response, '<html><h1>not-foo')
+        expect(response).toBe('<html><h1>not-foo')
       })
     })
   })
 
-  test(testName('should use existing file when rule contains file extension and force=false', args), async (t) => {
+  test(testName('should use existing file when rule contains file extension and force=false', args), async () => {
     await withSiteBuilder('site-with-shadowing-file-extension-force-false', async (builder) => {
       builder
         .withContentFile({
@@ -894,12 +888,12 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/foo.html`).text()
-        t.is(response, '<html><h1>foo')
+        expect(response).toBe('<html><h1>foo')
       })
     })
   })
 
-  test(testName('should redirect when rule contains file extension and force=true', args), async (t) => {
+  test(testName('should redirect when rule contains file extension and force=true', args), async () => {
     await withSiteBuilder('site-with-shadowing-file-extension-force-true', async (builder) => {
       builder
         .withContentFile({
@@ -920,12 +914,12 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/foo.html`).text()
-        t.is(response, '<html><h1>not-foo')
+        expect(response).toBe('<html><h1>not-foo')
       })
     })
   })
 
-  test(testName('should redirect from sub directory to root directory', args), async (t) => {
+  test(testName('should redirect from sub directory to root directory', args), async () => {
     await withSiteBuilder('site-with-shadowing-sub-to-root', async (builder) => {
       builder
         .withContentFile({
@@ -951,14 +945,14 @@ testMatrix.forEach(({ args }) => {
         // TODO: check why this doesn't redirect
         const response3 = await got(`${server.url}/not-foo/index.html`).text()
 
-        t.is(response1, '<html><h1>foo')
-        t.is(response2, '<html><h1>foo')
-        t.is(response3, '<html><h1>not-foo')
+        expect(response1).toBe('<html><h1>foo')
+        expect(response2).toBe('<html><h1>foo')
+        expect(response3).toBe('<html><h1>not-foo')
       })
     })
   })
 
-  test(testName('should return 404.html if exists for non existing routes', args), async (t) => {
+  test(testName('should return 404.html if exists for non existing routes', args), async () => {
     await withSiteBuilder('site-with-shadowing-404', async (builder) => {
       builder.withContentFile({
         path: '404.html',
@@ -969,12 +963,12 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/non-existent`, { throwHttpErrors: false })
-        t.is(response.body, '<h1>404 - Page not found</h1>')
+        expect(response.body).toBe('<h1>404 - Page not found</h1>')
       })
     })
   })
 
-  test(testName('should return 404.html from publish folder if exists for non existing routes', args), async (t) => {
+  test(testName('should return 404.html from publish folder if exists for non existing routes', args), async () => {
     await withSiteBuilder('site-with-shadowing-404-in-publish-folder', async (builder) => {
       builder
         .withContentFile({
@@ -993,13 +987,13 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/non-existent`, { throwHttpErrors: false })
-        t.is(response.statusCode, 404)
-        t.is(response.body, '<h1>404 - My Custom 404 Page</h1>')
+        expect(response.statusCode).toBe(404)
+        expect(response.body).toBe('<h1>404 - My Custom 404 Page</h1>')
       })
     })
   })
 
-  test(testName('should return 404 for redirect', args), async (t) => {
+  test(testName('should return 404 for redirect', args), async () => {
     await withSiteBuilder('site-with-shadowing-404-redirect', async (builder) => {
       builder
         .withContentFile({
@@ -1016,13 +1010,13 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/test-404`, { throwHttpErrors: false })
-        t.is(response.statusCode, 404)
-        t.is(response.body, '<html><h1>foo')
+        expect(response.statusCode).toBe(404)
+        expect(response.body).toBe('<html><h1>foo')
       })
     })
   })
 
-  test(testName('should ignore 404 redirect for existing file', args), async (t) => {
+  test(testName('should ignore 404 redirect for existing file', args), async () => {
     await withSiteBuilder('site-with-shadowing-404-redirect-existing', async (builder) => {
       builder
         .withContentFile({
@@ -1044,13 +1038,13 @@ testMatrix.forEach(({ args }) => {
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/test-404`)
 
-        t.is(response.statusCode, 200)
-        t.is(response.body, '<html><h1>This page actually exists')
+        expect(response.statusCode).toBe(200)
+        expect(response.body).toBe('<html><h1>This page actually exists')
       })
     })
   })
 
-  test(testName('should follow 404 redirect even with existing file when force=true', args), async (t) => {
+  test(testName('should follow 404 redirect even with existing file when force=true', args), async () => {
     await withSiteBuilder('site-with-shadowing-404-redirect-force', async (builder) => {
       builder
         .withContentFile({
@@ -1072,13 +1066,13 @@ testMatrix.forEach(({ args }) => {
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/test-404`, { throwHttpErrors: false })
 
-        t.is(response.statusCode, 404)
-        t.is(response.body, '<html><h1>foo')
+        expect(response.statusCode).toBe(404)
+        expect(response.body).toBe('<html><h1>foo')
       })
     })
   })
 
-  test(testName('should source redirects file from publish directory', args), async (t) => {
+  test(testName('should source redirects file from publish directory', args), async () => {
     await withSiteBuilder('site-redirects-file-inside-publish', async (builder) => {
       builder
         .withContentFile({
@@ -1100,13 +1094,13 @@ testMatrix.forEach(({ args }) => {
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/test`)
 
-        t.is(response.statusCode, 200)
-        t.is(response.body, 'index')
+        expect(response.statusCode).toBe(200)
+        expect(response.body).toBe('index')
       })
     })
   })
 
-  test(testName('should redirect requests to an external server', args), async (t) => {
+  test(testName('should redirect requests to an external server', args), async () => {
     await withSiteBuilder('site-redirects-file-to-external', async (builder) => {
       const externalServer = startExternalServer()
       const { port } = externalServer.address()
@@ -1118,7 +1112,7 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const getResponse = await got(`${server.url}/api/ping`).json()
-        t.deepEqual(getResponse, { body: {}, method: 'GET', url: '/ping' })
+        expect(getResponse).toEqual({ body: {}, method: 'GET', url: '/ping' })
 
         const postResponse = await got
           .post(`${server.url}/api/ping`, {
@@ -1128,14 +1122,14 @@ testMatrix.forEach(({ args }) => {
             body: 'param=value',
           })
           .json()
-        t.deepEqual(postResponse, { body: { param: 'value' }, method: 'POST', url: '/ping' })
+        expect(postResponse).toEqual({ body: { param: 'value' }, method: 'POST', url: '/ping' })
       })
 
       externalServer.close()
     })
   })
 
-  test(testName('should redirect POST request if content-type is missing', args), async (t) => {
+  test(testName('should redirect POST request if content-type is missing', args), async () => {
     await withSiteBuilder('site-with-post-no-content-type', async (builder) => {
       builder.withNetlifyToml({
         config: {
@@ -1167,12 +1161,12 @@ testMatrix.forEach(({ args }) => {
         })
 
         // we're testing Netlify Dev didn't crash
-        t.is(data, 'Method Not Allowed')
+        expect(data).toBe('Method Not Allowed')
       })
     })
   })
 
-  test(testName('should return .html file when file and folder have the same name', args), async (t) => {
+  test(testName('should return .html file when file and folder have the same name', args), async () => {
     await withSiteBuilder('site-with-same-name-for-file-and-folder', async (builder) => {
       builder
         .withContentFile({
@@ -1189,13 +1183,13 @@ testMatrix.forEach(({ args }) => {
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/foo`)
 
-        t.is(response.statusCode, 200)
-        t.is(response.body, '<html><h1>foo')
+        expect(response.statusCode).toBe(200)
+        expect(response.body).toBe('<html><h1>foo')
       })
     })
   })
 
-  test(testName('should not shadow an existing file that has unsafe URL characters', args), async (t) => {
+  test(testName('should not shadow an existing file that has unsafe URL characters', args), async () => {
     await withSiteBuilder('site-with-unsafe-url-file-names', async (builder) => {
       builder
         .withContentFile({
@@ -1225,13 +1219,13 @@ testMatrix.forEach(({ args }) => {
           got(`${server.url}/files/[file_with_brackets]`).text(),
         ])
 
-        t.is(spaces, '<html>file with spaces</html>')
-        t.is(brackets, '<html>file with brackets</html>')
+        expect(spaces).toBe('<html>file with spaces</html>')
+        expect(brackets).toBe('<html>file with brackets</html>')
       })
     })
   })
 
-  test(testName('should follow redirect for fully qualified rule', args), async (t) => {
+  test(testName('should follow redirect for fully qualified rule', args), async () => {
     await withSiteBuilder('site-with-fully-qualified-redirect-rule', async (builder) => {
       const publicDir = 'public'
       builder
@@ -1259,13 +1253,13 @@ testMatrix.forEach(({ args }) => {
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/hello-world`)
 
-        t.is(response.statusCode, 200)
-        t.is(response.body, '<html>hello</html>')
+        expect(response.statusCode).toBe(200)
+        expect(response.body).toBe('<html>hello</html>')
       })
     })
   })
 
-  test(testName('should return 202 ok and empty response for background function', args), async (t) => {
+  test(testName('should return 202 ok and empty response for background function', args), async () => {
     await withSiteBuilder('site-with-background-function', async (builder) => {
       builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
         path: 'hello-background.js',
@@ -1278,21 +1272,21 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/.netlify/functions/hello-background`)
-        t.is(response.statusCode, 202)
-        t.is(response.body, '')
+        expect(response.statusCode).toBe(202)
+        expect(response.body).toBe('')
       })
     })
   })
 
-  test(testName('should enforce role based redirects with default secret and role path', args), async (t) => {
+  test(testName('should enforce role based redirects with default secret and role path', args), async () => {
     await withSiteBuilder('site-with-default-role-based-redirects', async (builder) => {
       setupRoleBasedRedirectsSite(builder)
       await builder.buildAsync()
-      await validateRoleBasedRedirectsSite({ builder, args, t })
+      await validateRoleBasedRedirectsSite({ builder, args })
     })
   })
 
-  test(testName('should enforce role based redirects with custom secret and role path', args), async (t) => {
+  test(testName('should enforce role based redirects with custom secret and role path', args), async () => {
     await withSiteBuilder('site-with-custom-role-based-redirects', async (builder) => {
       const jwtSecret = 'custom'
       const jwtRolePath = 'roles'
@@ -1305,11 +1299,11 @@ testMatrix.forEach(({ args }) => {
         },
       })
       await builder.buildAsync()
-      await validateRoleBasedRedirectsSite({ builder, args, t, jwtSecret, jwtRolePath })
+      await validateRoleBasedRedirectsSite({ builder, args, jwtSecret, jwtRolePath })
     })
   })
 
-  test(testName('routing-local-proxy serves edge handlers with --edgeHandlers flag', args), async (t) => {
+  test(testName('routing-local-proxy serves edge handlers with --edgeHandlers flag', args), async () => {
     await withSiteBuilder('site-with-fully-qualified-redirect-rule', async (builder) => {
       const publicDir = 'public'
       builder
@@ -1357,13 +1351,13 @@ testMatrix.forEach(({ args }) => {
           followRedirect: false,
         })
 
-        t.is(response.statusCode, 301)
-        t.is(response.headers.location, 'https://google.com/')
+        expect(response.statusCode).toBe(301)
+        expect(response.headers.location).toBe('https://google.com/')
       })
     })
   })
 
-  test(testName('routing-local-proxy serves edge handlers with deprecated --trafficMesh flag', args), async (t) => {
+  test(testName('routing-local-proxy serves edge handlers with deprecated --trafficMesh flag', args), async () => {
     await withSiteBuilder('site-with-fully-qualified-redirect-rule', async (builder) => {
       const publicDir = 'public'
       builder
@@ -1411,13 +1405,13 @@ testMatrix.forEach(({ args }) => {
           followRedirect: false,
         })
 
-        t.is(response.statusCode, 301)
-        t.is(response.headers.location, 'https://google.com/')
+        expect(response.statusCode).toBe(301)
+        expect(response.headers.location).toBe('https://google.com/')
       })
     })
   })
 
-  test(testName('routing-local-proxy builds projects w/o edge handlers', args), async (t) => {
+  test(testName('routing-local-proxy builds projects w/o edge handlers', args), async () => {
     await withSiteBuilder('site-with-fully-qualified-redirect-rule', async (builder) => {
       const publicDir = 'public'
       builder
@@ -1438,12 +1432,12 @@ testMatrix.forEach(({ args }) => {
       await withDevServer({ cwd: builder.directory, args: [...args, '--edgeHandlers'] }, async (server) => {
         const response = await got(`${server.url}/index.html`)
 
-        t.is(response.statusCode, 200)
+        expect(response.statusCode).toBe(200)
       })
     })
   })
 
-  test(testName('redirect with country cookie', args), async (t) => {
+  test(testName('redirect with country cookie', args), async () => {
     await withSiteBuilder('site-with-country-cookie', async (builder) => {
       builder
         .withContentFiles([
@@ -1468,13 +1462,13 @@ testMatrix.forEach(({ args }) => {
             cookie: `nf_country=ES`,
           },
         })
-        t.is(response.statusCode, 200)
-        t.is(response.body, '<html>index in spanish</html>')
+        expect(response.statusCode).toBe(200)
+        expect(response.body).toBe('<html>index in spanish</html>')
       })
     })
   })
 
-  test(testName(`doesn't hang when sending a application/json POST request to function server`, args), async (t) => {
+  test(testName(`doesn't hang when sending a application/json POST request to function server`, args), async () => {
     await withSiteBuilder('site-with-functions', async (builder) => {
       const functionsPort = 6666
       await builder
@@ -1490,13 +1484,13 @@ testMatrix.forEach(({ args }) => {
           body: '{}',
           throwHttpErrors: false,
         })
-        t.is(response.statusCode, 404)
-        t.is(response.body, 'Function not found...')
+        expect(response.statusCode).toBe(404)
+        expect(response.body).toBe('Function not found...')
       })
     })
   })
 
-  test(testName(`catches invalid function names`, args), async (t) => {
+  test(testName(`catches invalid function names`, args), async () => {
     await withSiteBuilder('site-with-functions', async (builder) => {
       const functionsPort = 6667
       await builder
@@ -1519,13 +1513,15 @@ testMatrix.forEach(({ args }) => {
           body: '{}',
           throwHttpErrors: false,
         })
-        t.is(response.statusCode, 400)
-        t.is(response.body, 'Function name should consist only of alphanumeric characters, hyphen & underscores.')
+        expect(response.statusCode).toBe(400)
+        expect(response.body).toBe(
+          'Function name should consist only of alphanumeric characters, hyphen & underscores.',
+        )
       })
     })
   })
 
-  test(testName('should handle query params in redirects', args), async (t) => {
+  test(testName('should handle query params in redirects', args), async () => {
     await withSiteBuilder('site-with-query-redirects', async (builder) => {
       await builder
         .withContentFile({
@@ -1564,21 +1560,21 @@ testMatrix.forEach(({ args }) => {
         ])
 
         // query params should be taken from the request
-        t.deepEqual(fromFunction.multiValueQueryStringParameters, { foo: ['1', '2'], bar: ['1', '2'] })
+        expect(fromFunction.multiValueQueryStringParameters).toEqual({ foo: ['1', '2'], bar: ['1', '2'] })
 
         // query params should be passed through from the request
-        t.is(queryPassthrough.headers.location, '/?foo=1&foo=2&bar=1&bar=2')
+        expect(queryPassthrough.headers.location).toBe('/?foo=1&foo=2&bar=1&bar=2')
 
         // query params should be taken from the redirect rule
-        t.is(queryInRedirect.headers.location, '/?a=1&a=2')
+        expect(queryInRedirect.headers.location).toBe('/?a=1&a=2')
 
         // query params should be taken from the redirect rule
-        t.is(withParamMatching.headers.location, '/?param=1')
+        expect(withParamMatching.headers.location).toBe('/?param=1')
       })
     })
   })
 
-  test(testName('Should not use the ZISI function bundler if not using esbuild', args), async (t) => {
+  test(testName('Should not use the ZISI function bundler if not using esbuild', args), async () => {
     await withSiteBuilder('site-with-esm-function', async (builder) => {
       builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withContentFile({
         path: path.join('functions', 'esm-function', 'esm-function.js'),
@@ -1594,15 +1590,19 @@ export async function handler(event, context) {
 
       await builder.buildAsync()
 
-      await t.throwsAsync(() =>
-        withDevServer({ cwd: builder.directory, args }, async (server) =>
+      try {
+        await withDevServer({ cwd: builder.directory, args }, async (server) =>
           got(`${server.url}/.netlify/functions/esm-function`).text(),
-        ),
-      )
+        )
+      } catch {
+        // should throw
+        expect(true).toBe(true)
+      }
     })
+    expect.assertions(1)
   })
 
-  test(testName('Should use the ZISI function bundler and serve ESM functions if using esbuild', args), async (t) => {
+  test(testName('Should use the ZISI function bundler and serve ESM functions if using esbuild', args), async () => {
     await withSiteBuilder('site-with-esm-function', async (builder) => {
       builder
         .withNetlifyToml({ config: { functions: { directory: 'functions', node_bundler: 'esbuild' } } })
@@ -1622,14 +1622,14 @@ export async function handler(event, context) {
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/.netlify/functions/esm-function`).text()
-        t.is(response, 'esm')
+        expect(response).toBe('esm')
       })
     })
   })
 
   test(
     testName('Should use the ZISI function bundler and serve TypeScript functions if using esbuild', args),
-    async (t) => {
+    async () => {
       await withSiteBuilder('site-with-ts-function', async (builder) => {
         builder
           .withNetlifyToml({ config: { functions: { directory: 'functions', node_bundler: 'esbuild' } } })
@@ -1654,7 +1654,7 @@ export const handler = async function () {
 
         await withDevServer({ cwd: builder.directory, args }, async (server) => {
           const response = await got(`${server.url}/.netlify/functions/ts-function`).text()
-          t.is(response, 'ts')
+          expect(response).toBe('ts')
         })
       })
     },
@@ -1662,7 +1662,7 @@ export const handler = async function () {
 
   test(
     testName('Should use the ZISI function bundler and serve TypeScript functions if not using esbuild', args),
-    async (t) => {
+    async () => {
       await withSiteBuilder('site-with-ts-function', async (builder) => {
         builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withContentFile({
           path: path.join('functions', 'ts-function', 'ts-function.ts'),
@@ -1685,13 +1685,13 @@ export const handler = async function () {
 
         await withDevServer({ cwd: builder.directory, args }, async (server) => {
           const response = await got(`${server.url}/.netlify/functions/ts-function`).text()
-          t.is(response, 'ts')
+          expect(response).toBe('ts')
         })
       })
     },
   )
 
-  test(testName(`should start https server when https dev block is configured`, args), async (t) => {
+  test(testName(`should start https server when https dev block is configured`, args), async () => {
     await withSiteBuilder('sites-with-https-certificate', async (builder) => {
       await builder
         .withNetlifyToml({
@@ -1723,13 +1723,13 @@ export const handler = async function () {
       ])
       await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
         const options = { https: { rejectUnauthorized: false } }
-        t.is(await got(`https://localhost:${port}`, options).text(), 'index')
-        t.is(await got(`https://localhost:${port}/api/hello`, options).text(), 'Hello World')
+        expect(await got(`https://localhost:${port}`, options).text()).toBe('index')
+        expect(await got(`https://localhost:${port}/api/hello`, options).text()).toBe('Hello World')
       })
     })
   })
 
-  test(testName(`should use custom functions timeouts`, args), async (t) => {
+  test(testName(`should use custom functions timeouts`, args), async () => {
     await withSiteBuilder('site-with-custom-functions-timeout', async (builder) => {
       await builder
         .withNetlifyToml({
@@ -1782,12 +1782,16 @@ export const handler = async function () {
             },
           },
           async ({ url }) => {
-            const error = await t.throwsAsync(() => got(`${url}/.netlify/functions/hello`))
-            t.true(error.response.body.includes('TimeoutError: Task timed out after 1.00 seconds'))
+            try {
+              await got(`${url}/.netlify/functions/hello`)
+            } catch (error) {
+              error.message.includes('TimeoutError: Task timed out after 1.00 seconds').toBe(true)
+            }
           },
         )
       })
     })
+    expect.assertions(1)
   })
 
   // we need curl to reproduce this issue
@@ -1822,7 +1826,7 @@ export const handler = async function () {
     })
   }
 
-  test(testName(`serves non ascii static files correctly`, args), async (t) => {
+  test(testName(`serves non ascii static files correctly`, args), async () => {
     await withSiteBuilder('site-with-non-ascii-files', async (builder) => {
       await builder
         .withContentFile({
@@ -1839,12 +1843,12 @@ export const handler = async function () {
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/${encodeURIComponent('范.txt')}`)
-        t.is(response.body, 'success')
+        expect(response.body).toBe('success')
       })
     })
   })
 
-  test(testName(`returns headers set by function`, args), async (t) => {
+  test(testName(`returns headers set by function`, args), async () => {
     await withSiteBuilder('site-with-function-with-custom-headers', async (builder) => {
       await builder
         .withFunction({
@@ -1862,16 +1866,16 @@ export const handler = async function () {
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/.netlify/functions/custom-headers`)
-        t.is(response.headers['single-value-header'], 'custom-value')
-        t.is(response.headers['multi-value-header'], 'custom-value1, custom-value2')
+        expect(response.headers['single-value-header']).toBe('custom-value')
+        expect(response.headers['multi-value-header']).toBe('custom-value1, custom-value2')
         const builderResponse = await got(`${server.url}/.netlify/builders/custom-headers`)
-        t.is(builderResponse.headers['single-value-header'], 'custom-value')
-        t.is(builderResponse.headers['multi-value-header'], 'custom-value1, custom-value2')
+        expect(builderResponse.headers['single-value-header']).toBe('custom-value')
+        expect(builderResponse.headers['multi-value-header']).toBe('custom-value1, custom-value2')
       })
     })
   })
 
-  test(testName('should match redirect when path is URL encoded', args), async (t) => {
+  test(testName('should match redirect when path is URL encoded', args), async () => {
     await withSiteBuilder('site-with-encoded-redirect', async (builder) => {
       await builder
         .withContentFile({ path: 'static/special[test].txt', content: `special` })
@@ -1883,31 +1887,32 @@ export const handler = async function () {
           got(`${server.url}/_next/static/special[test].txt`).text(),
           got(`${server.url}/_next/static/special%5Btest%5D.txt`).text(),
         ])
-        t.is(response1, 'special')
-        t.is(response2, 'special')
+        expect(response1).toBe('special')
+        expect(response2).toBe('special')
       })
     })
   })
 
-  test(testName(`should not redirect POST request to functions server when it doesn't exists`, args), async (t) => {
+  test(testName(`should not redirect POST request to functions server when it doesn't exists`, args), async () => {
     await withSiteBuilder('site-with-post-request', async (builder) => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         // an error is expected since we're sending a POST request to a static server
         // the important thing is that it's not proxied to the functions server
-        const error = await t.throwsAsync(() =>
-          got.post(`${server.url}/api/test`, {
+        try {
+          await got.post(`${server.url}/api/test`, {
             headers: {
               'content-type': 'application/x-www-form-urlencoded',
             },
             body: 'some=thing',
-          }),
-        )
-
-        t.is(error.message, 'Response code 405 (Method Not Allowed)')
+          })
+        } catch (error) {
+          expect(error.message).toBe('Response code 405 (Method Not Allowed)')
+        }
       })
     })
   })
+  expect.assertions(1)
 })
 /* eslint-enable require-await */

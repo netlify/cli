@@ -1,7 +1,6 @@
 const { readFile } = require('fs').promises
 const process = require('process')
 
-const test = require('ava')
 const cleanDeep = require('clean-deep')
 const execa = require('execa')
 const toml = require('toml')
@@ -18,18 +17,17 @@ const { withSiteBuilder } = require('./utils/site-builder')
  */
 const windowsSkip = process.platform === 'win32' ? test.skip : test
 
-const assertNetlifyToml = async (t, tomlDir, { command, functions, publish }) => {
+const assertNetlifyToml = async (tomlDir, { command, functions, publish }) => {
   // assert netlify.toml was created with user inputs
   const netlifyToml = toml.parse(await readFile(`${tomlDir}/netlify.toml`, 'utf8'))
-  t.deepEqual(
-    netlifyToml,
+  expect(netlifyToml).toEqual(
     cleanDeep({
       build: { command, functions, publish },
     }),
   )
 }
 
-test('netlify init existing site', async (t) => {
+test('netlify init existing site', async () => {
   const [command, publish, functions] = ['custom-build-command', 'custom-publish', 'custom-functions']
   const initQuestions = [
     {
@@ -116,12 +114,12 @@ test('netlify init existing site', async (t) => {
 
       await childProcess
 
-      await assertNetlifyToml(t, builder.directory, { command, functions, publish })
+      await assertNetlifyToml(builder.directory, { command, functions, publish })
     })
   })
 })
 
-test('netlify init new site', async (t) => {
+test('netlify init new site', async () => {
   const [command, publish, functions] = ['custom-build-command', 'custom-publish', 'custom-functions']
   const initQuestions = [
     {
@@ -213,12 +211,12 @@ test('netlify init new site', async (t) => {
 
       await childProcess
 
-      await assertNetlifyToml(t, builder.directory, { command, functions, publish })
+      await assertNetlifyToml(builder.directory, { command, functions, publish })
     })
   })
 })
 
-test('netlify init new Next.js site', async (t) => {
+test('netlify init new Next.js site', async () => {
   const [command, publish, functions] = ['custom-build-command', 'custom-publish', 'custom-functions']
   const initQuestions = [
     {
@@ -317,7 +315,7 @@ test('netlify init new Next.js site', async (t) => {
 
       await childProcess
 
-      await assertNetlifyToml(t, builder.directory, { command, functions, publish })
+      await assertNetlifyToml(builder.directory, { command, functions, publish })
     })
   })
 })
@@ -415,7 +413,7 @@ test('netlify init existing Next.js site with existing plugins', async () => {
   })
 })
 
-windowsSkip('netlify init monorepo root and sub directory without netlify.toml', async (t) => {
+windowsSkip('netlify init monorepo root and sub directory without netlify.toml', async () => {
   const initQuestions = [
     {
       question: 'Create & configure a new site',
@@ -526,7 +524,7 @@ windowsSkip('netlify init monorepo root and sub directory without netlify.toml',
 
       await childProcess
 
-      await assertNetlifyToml(t, `${builder.directory}/projects/project1`, {
+      await assertNetlifyToml(`${builder.directory}/projects/project1`, {
         command: '# no build command',
         functions: 'netlify/functions',
         publish: '.',
@@ -535,7 +533,7 @@ windowsSkip('netlify init monorepo root and sub directory without netlify.toml',
   })
 })
 
-test('netlify init monorepo root with netlify.toml, subdirectory without netlify.toml', async (t) => {
+test('netlify init monorepo root with netlify.toml, subdirectory without netlify.toml', async () => {
   const initQuestions = [
     {
       question: 'Create & configure a new site',
@@ -648,7 +646,7 @@ test('netlify init monorepo root with netlify.toml, subdirectory without netlify
 
       await childProcess
 
-      await assertNetlifyToml(t, `${builder.directory}/projects/project2`, {
+      await assertNetlifyToml(`${builder.directory}/projects/project2`, {
         command: '# no build command',
         functions: 'netlify/functions',
         publish: '.',
@@ -657,7 +655,7 @@ test('netlify init monorepo root with netlify.toml, subdirectory without netlify
   })
 })
 
-windowsSkip('netlify init monorepo root and sub directory with netlify.toml', async (t) => {
+windowsSkip('netlify init monorepo root and sub directory with netlify.toml', async () => {
   const initQuestions = [
     {
       question: 'Create & configure a new site',
@@ -767,7 +765,7 @@ windowsSkip('netlify init monorepo root and sub directory with netlify.toml', as
 
       await childProcess
 
-      await assertNetlifyToml(t, `${builder.directory}/projects/project2`, {
+      await assertNetlifyToml(`${builder.directory}/projects/project2`, {
         command: 'echo "hello"',
       })
     })

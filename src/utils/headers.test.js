@@ -1,7 +1,5 @@
 const path = require('path')
 
-const test = require('ava')
-
 const { createSiteBuilder } = require('../../tests/utils/site-builder')
 
 const { headersForPath, parseHeaders } = require('./headers')
@@ -41,8 +39,11 @@ const headers = [
   },
 ]
 
-test.before(async (t) => {
-  const builder = createSiteBuilder({ siteName: 'site-for-detecting-server' })
+/** @type {ReturnType<createSiteBuilder>} */
+let builder
+
+beforeAll(async () => {
+  builder = createSiteBuilder({ siteName: 'site-for-detecting-server' })
   builder
     .withHeadersFile({
       headers,
@@ -59,16 +60,19 @@ test.before(async (t) => {
     })
 
   await builder.buildAsync()
-
-  t.context.builder = builder
 })
 
-test.after(async (t) => {
-  await t.context.builder.cleanupAsync()
+afterAll(async () => {
+  await builder.cleanupAsync()
 })
 
-const parseHeadersFile = async function (t, fixtureName) {
-  const normalizedHeadersFile = path.resolve(t.context.builder.directory, fixtureName)
+/**
+ *
+ * @param {string} fixtureName
+ * @returns {Promise<any>}
+ */
+const parseHeadersFile = async function (fixtureName) {
+  const normalizedHeadersFile = path.resolve(builder.directory, fixtureName)
   return await parseHeaders({ headersFiles: [normalizedHeadersFile] })
 }
 
@@ -80,18 +84,18 @@ const normalizeHeader = function ({ for: forPath, values }) {
 /**
  * Pass if we can load the test headers without throwing an error.
  */
-test('_headers: syntax validates as expected', async (t) => {
-  await parseHeadersFile(t, '_headers')
+test('_headers: syntax validates as expected', async () => {
+  await parseHeadersFile('_headers')
 })
 
-test('_headers: does not throw on invalid syntax', async (t) => {
-  await t.notThrowsAsync(parseHeadersFile(t, '_invalid_headers'))
+test('_headers: does not throw on invalid syntax', async () => {
+  await parseHeadersFile('_invalid_headers')
 })
 
-test('_headers: validate rules', async (t) => {
-  const rules = await parseHeadersFile(t, '_headers')
+test('_headers: validate rules', async () => {
+  const rules = await parseHeadersFile('_headers')
   const normalizedHeaders = rules.map(normalizeHeader)
-  t.deepEqual(normalizedHeaders, [
+  expect(normalizedHeaders).toEqual([
     {
       for: '/',
       values: {
@@ -139,36 +143,36 @@ test('_headers: validate rules', async (t) => {
   ])
 })
 
-test('_headers: headersForPath testing', async (t) => {
-  const rules = await parseHeadersFile(t, '_headers')
-  t.deepEqual(headersForPath(rules, '/'), {
+test('_headers: headersForPath testing', async () => {
+  const rules = await parseHeadersFile('_headers')
+  expect(headersForPath(rules, '/')).toEqual({
     'X-Frame-Options': 'SAMEORIGIN',
     'X-Frame-Thing': 'SAMEORIGIN',
   })
-  t.deepEqual(headersForPath(rules, '/placeholder'), {
+  expect(headersForPath(rules, '/placeholder')).toEqual({
     'X-Frame-Thing': 'SAMEORIGIN',
   })
-  t.deepEqual(headersForPath(rules, '/static-path/placeholder'), {
+  expect(headersForPath(rules, '/static-path/placeholder')).toEqual({
     'X-Frame-Thing': 'SAMEORIGIN',
     'X-Frame-Options': 'DENY',
     'X-XSS-Protection': '1; mode=block',
     'cache-control': 'max-age=0, no-cache, no-store, must-revalidate',
   })
-  t.deepEqual(headersForPath(rules, '/static-path'), {
+  expect(headersForPath(rules, '/static-path')).toEqual({
     'X-Frame-Thing': 'SAMEORIGIN',
     'X-Frame-Options': 'DENY',
     'X-XSS-Protection': '1; mode=block',
     'cache-control': 'max-age=0, no-cache, no-store, must-revalidate',
   })
-  t.deepEqual(headersForPath(rules, '/placeholder/index.html'), {
+  expect(headersForPath(rules, '/placeholder/index.html')).toEqual({
     'X-Frame-Options': 'SAMEORIGIN',
     'X-Frame-Thing': 'SAMEORIGIN',
   })
-  t.deepEqual(headersForPath(rules, '/placeholder/_next/static/chunks/placeholder'), {
+  expect(headersForPath(rules, '/placeholder/_next/static/chunks/placeholder')).toEqual({
     'X-Frame-Thing': 'SAMEORIGIN',
     'cache-control': 'public, max-age=31536000, immutable',
   })
-  t.deepEqual(headersForPath(rules, '/directory/placeholder/test.html'), {
+  expect(headersForPath(rules, '/directory/placeholder/test.html')).toEqual({
     'X-Frame-Thing': 'SAMEORIGIN',
     'X-Frame-Options': 'test',
   })

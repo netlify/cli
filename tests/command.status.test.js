@@ -1,5 +1,3 @@
-const test = require('ava')
-
 const callCli = require('./utils/call-cli')
 const { getCLIOptions, withMockApi } = require('./utils/mock-api')
 const { withSiteBuilder } = require('./utils/site-builder')
@@ -25,21 +23,21 @@ const routes = [
   { path: 'user', response: user },
 ]
 
-test('should print status for a linked site', async (t) => {
+test('should print status for a linked site', async () => {
   await withSiteBuilder('linked-site', async (builder) => {
     await builder.buildAsync()
 
     await withMockApi(routes, async ({ apiUrl }) => {
       const output = await callCli(['status', '--json'], getCLIOptions({ builder, apiUrl }), true)
       const { account, siteData } = output
-      t.deepEqual(siteData, {
+      expect(siteData).toEqual({
         'admin-url': 'https://app.netlify.com/sites/test-site/overview',
         'site-id': 'site_id',
         'site-name': 'site-name',
         'site-url': 'https://test-site.netlify.app/',
       })
-      t.is(typeof account.Email, 'string')
-      t.is(typeof account.Name, 'string')
+      expect(typeof account.Email).toBe('string')
+      expect(typeof account.Name).toBe('string')
     })
   })
 })

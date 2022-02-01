@@ -1,5 +1,4 @@
 /* eslint-disable require-await */
-const test = require('ava')
 const tempy = require('tempy')
 
 const { withSiteBuilder } = require('../../../tests/utils/site-builder')
@@ -7,7 +6,7 @@ const { withSiteBuilder } = require('../../../tests/utils/site-builder')
 const { DEFAULT_CONCURRENT_HASH } = require('./constants')
 const { hashFns } = require('./hash-fns')
 
-test('Hashes files in a folder', async (t) => {
+test('Hashes files in a folder', async () => {
   await withSiteBuilder('site-with-functions', async (builder) => {
     await builder
       .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
@@ -28,20 +27,16 @@ test('Hashes files in a folder', async (t) => {
       statusCb() {},
     })
 
-    t.is(Object.entries(functions).length, expectedFunctions.length)
-    t.is(Object.entries(fnShaMap).length, expectedFunctions.length)
+    expect(Object.entries(functions).length).toBe(expectedFunctions.length)
+    expect(Object.entries(fnShaMap).length).toBe(expectedFunctions.length)
 
     expectedFunctions.forEach((functionPath) => {
       const sha = functions[functionPath]
-      t.truthy(sha, `includes the ${functionPath} file`)
+      expect(sha).toBeTruthy()
 
       const functionsObjArray = fnShaMap[sha]
       functionsObjArray.forEach((fileObj) => {
-        t.is(
-          fileObj.normalizedPath,
-          functionPath,
-          'functionPath normalizedPath property should equal to function path from functions array',
-        )
+        expect(fileObj.normalizedPath).toBe(functionPath)
       })
     })
   })

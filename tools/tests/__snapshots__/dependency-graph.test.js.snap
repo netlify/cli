@@ -1,0 +1,17 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`should test if all parents are affected by changing a src file on the bottom 1`] = `
+Set {
+  "src/d.js",
+  "src/c/index.js",
+  "src/nested/a.js",
+  "tests/a.js",
+  "tests/c.js",
+}
+`;
+
+exports[`should test only the root leaf is affected if the root one is passed 1`] = `
+Set {
+  "tests/a.js",
+}
+`;

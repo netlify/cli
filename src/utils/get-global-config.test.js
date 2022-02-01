@@ -2,8 +2,6 @@ const { copyFile, mkdir, readFile, unlink, writeFile } = require('fs').promises
 const os = require('os')
 const path = require('path')
 
-const test = require('ava')
-
 const { rmdirRecursiveAsync } = require('../lib/fs')
 const { getLegacyPathInHome, getPathInHome } = require('../lib/settings')
 
@@ -13,13 +11,15 @@ const configPath = getPathInHome(['config.json'])
 const legacyConfigPath = getLegacyPathInHome(['config.json'])
 const tmpConfigBackupPath = path.join(os.tmpdir(), `netlify-config-backup-${Date.now()}`)
 
-test.before('backup current user config if exists', async () => {
+// backup current user config if exists
+beforeAll(async () => {
   try {
     await copyFile(configPath, tmpConfigBackupPath)
   } catch {}
 })
 
-test.after.always('cleanup tmp directory and legacy config', async () => {
+// cleanup tmp directory and legacy config
+afterAll(async () => {
   try {
     // Restore user config if exists
     await mkdir(getPathInHome([]))
@@ -31,7 +31,8 @@ test.after.always('cleanup tmp directory and legacy config', async () => {
   await rmdirRecursiveAsync(getLegacyPathInHome([]))
 })
 
-test.beforeEach('recreate clean config directories', async () => {
+// recreate clean config directories
+beforeEach(async () => {
   // Remove config dirs
   await rmdirRecursiveAsync(getPathInHome([]))
   await rmdirRecursiveAsync(getLegacyPathInHome([]))
@@ -42,28 +43,28 @@ test.beforeEach('recreate clean config directories', async () => {
 
 // Not running tests in parallel as we're messing with the same config files
 
-test.serial('should use legacy config values as default if exists', async (t) => {
+test('should use legacy config values as default if exists', async () => {
   const legacyConfig = { someOldKey: 'someOldValue', overrideMe: 'oldValue' }
   const newConfig = { overrideMe: 'newValue' }
   await writeFile(legacyConfigPath, JSON.stringify(legacyConfig))
   await writeFile(configPath, JSON.stringify(newConfig))
 
   const globalConfig = await getGlobalConfig()
-  t.is(globalConfig.get('someOldKey'), legacyConfig.someOldKey)
-  t.is(globalConfig.get('overrideMe'), newConfig.overrideMe)
+  expect(globalConfig.get('someOldKey')).toBe(legacyConfig.someOldKey)
+  expect(globalConfig.get('overrideMe')).toBe(newConfig.overrideMe)
 })
 
-test.serial('should not throw if legacy config is invalid JSON', async (t) => {
+test('should not throw if legacy config is invalid JSON', async () => {
   await writeFile(legacyConfigPath, 'NotJson')
-  await t.notThrowsAsync(getGlobalConfig)
+  await getGlobalConfig()
 })
 
-test.serial("should create config in netlify's config dir if none exists and store new values", async (t) => {
+test("should create config in netlify's config dir if none exists and store new values", async () => {
   // Remove config dirs
   await rmdirRecursiveAsync(getPathInHome([]))
   await rmdirRecursiveAsync(getLegacyPathInHome([]))
   const globalConfig = await getGlobalConfig()
   globalConfig.set('newProp', 'newValue')
   const configFile = JSON.parse(await readFile(configPath, 'utf-8'))
-  t.deepEqual(globalConfig.all, configFile)
+  expect(globalConfig.all).toEqual(configFile)
 })

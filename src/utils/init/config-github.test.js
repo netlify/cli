@@ -1,6 +1,5 @@
 // @ts-check
 const octokit = require('@octokit/rest')
-const test = require('ava')
 const sinon = require('sinon')
 
 const githubAuth = require('../gh-auth')
@@ -34,7 +33,7 @@ const { getGitHubToken } = require('./config-github')
 // mocked configstore
 let globalConfig
 
-test.beforeEach(() => {
+beforeEach(() => {
   const values = new Map()
   globalConfig = {
     values: new Map(),
@@ -51,13 +50,13 @@ test.beforeEach(() => {
   })
 })
 
-test.serial('should create a octokit client with the provided token if the token is valid', async (t) => {
+test('should create a octokit client with the provided token if the token is valid', async () => {
   getAuthenticatedResponse = { status: 200 }
   const token = await getGitHubToken({ globalConfig })
-  t.is(octokitStub.callCount, 1)
-  t.deepEqual(octokitStub.getCall(0).args[0], { auth: 'token old_token' })
-  t.is(token, 'old_token')
-  t.deepEqual(globalConfig.get(`users.spongebob.auth.github`), {
+  expect(octokitStub.callCount).toBe(1)
+  expect(octokitStub.getCall(0).args[0]).toEqual({ auth: 'token old_token' })
+  expect(token).toBe('old_token')
+  expect(globalConfig.get(`users.spongebob.auth.github`)).toEqual({
     provider: 'github',
     token: 'old_token',
     user: 'spongebob',
@@ -65,14 +64,14 @@ test.serial('should create a octokit client with the provided token if the token
   octokitStub.resetHistory()
 })
 
-test.serial('should renew the github token when the provided token is not valid', async (t) => {
+test('should renew the github token when the provided token is not valid', async () => {
   getAuthenticatedResponse = new Error('Bad Credentials')
   getAuthenticatedResponse.status = 401
   const token = await getGitHubToken({ globalConfig })
-  t.is(octokitStub.callCount, 1)
-  t.is(token, 'new_token')
-  t.deepEqual(octokitStub.getCall(0).args[0], { auth: 'token old_token' })
-  t.deepEqual(globalConfig.get(`users.spongebob.auth.github`), {
+  expect(octokitStub.callCount).toBe(1)
+  expect(token).toBe('new_token')
+  expect(octokitStub.getCall(0).args[0]).toEqual({ auth: 'token old_token' })
+  expect(globalConfig.get(`users.spongebob.auth.github`)).toEqual({
     provider: 'github',
     token: 'new_token',
     user: 'spongebob',

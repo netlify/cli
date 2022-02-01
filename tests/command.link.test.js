@@ -1,7 +1,5 @@
 const process = require('process')
 
-const test = require('ava')
-
 const { isFileAsync } = require('../src/lib/fs')
 
 const callCli = require('./utils/call-cli')
@@ -15,19 +13,24 @@ const { withSiteBuilder } = require('./utils/site-builder')
  */
 const windowsSkip = process.platform === 'win32' ? test.skip : test
 
-test('should create gitignore in repository root when is root', async (t) => {
+beforeEach(() => {
+  // mock console warn to not pollute stdout
+  jest.spyOn(console, 'warn').mockImplementation(() => {})
+})
+
+test('should create gitignore in repository root when is root', async () => {
   await withSiteBuilder('repo', async (builder) => {
     await builder.withGit().buildAsync()
 
     await withMockApi([], async ({ apiUrl }) => {
       await callCli(['link'], getCLIOptions({ builder, apiUrl }))
 
-      t.true(await isFileAsync(`${builder.directory}/.gitignore`))
+      expect(await isFileAsync(`${builder.directory}/.gitignore`)).toBe(true)
     })
   })
 })
 
-windowsSkip('should create gitignore in repository root when cwd is subdirectory', async (t) => {
+windowsSkip('should create gitignore in repository root when cwd is subdirectory', async () => {
   await withSiteBuilder('monorepo', async (builder) => {
     const projectPath = 'projects/project1'
     await builder.withGit().withNetlifyToml({ config: {}, pathPrefix: projectPath }).buildAsync()
@@ -36,7 +39,7 @@ windowsSkip('should create gitignore in repository root when cwd is subdirectory
       const options = getCLIOptions({ builder, apiUrl })
       await callCli(['link'], { ...options, cwd: `${builder.directory}/${projectPath}` })
 
-      t.true(await isFileAsync(`${builder.directory}/.gitignore`))
+      expect(await isFileAsync(`${builder.directory}/.gitignore`)).toBe(true)
     })
   })
 })

@@ -1,14 +1,12 @@
-const test = require('ava')
-
 const callCli = require('./utils/call-cli')
 const { normalize } = require('./utils/snapshots')
 
-test('netlify graph', async (t) => {
+test('netlify graph', async () => {
   const cliResponse = await callCli(['graph'])
-  t.snapshot(normalize(cliResponse))
+  expect(normalize(cliResponse)).toMatchSnapshot()
 })
 
-test('netlify graph completion', async (t) => {
+test('netlify graph completion', async () => {
   const cliResponse = await callCli(['graph', 'pull'])
-  t.snapshot(normalize(cliResponse))
+  expect(normalize(cliResponse)).toMatchSnapshot()
 })

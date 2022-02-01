@@ -24,6 +24,12 @@ module.exports = {
   },
   overrides: [
     ...overrides,
+    {
+      files: ['**/*.test.mjs', '**/*.test.js'],
+      env: {
+        jest: true,
+      },
+    },
     // Documentation site's browser JavaScript
     {
       files: ['site/src/**/*.js'],

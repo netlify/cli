@@ -1,6 +1,5 @@
 // Handlers are meant to be async outside tests
 /* eslint-disable require-await */
-const test = require('ava')
 const execa = require('execa')
 const getPort = require('get-port')
 const waitPort = require('wait-port')
@@ -17,7 +16,11 @@ const { pause } = require('./utils/pause')
 const { killProcess } = require('./utils/process')
 const { withSiteBuilder } = require('./utils/site-builder')
 
-test('should return function response when invoked with no identity argument', async (t) => {
+// Some tests take more than 5 seconds which is the default timeout
+// eslint-disable-next-line no-magic-numbers
+jest.setTimeout(8000)
+
+test('should return function response when invoked with no identity argument', async () => {
   await withSiteBuilder('function-invoke-with-no-identity-argument', async (builder) => {
     builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
       path: 'test-invoke.js',
@@ -33,12 +36,12 @@ test('should return function response when invoked with no identity argument', a
       const stdout = await callCli(['functions:invoke', 'test-invoke', `--port=${server.port}`], {
         cwd: builder.directory,
       })
-      t.is(stdout, 'success')
+      expect(stdout).toBe('success')
     })
   })
 })
 
-test('should return function response when invoked', async (t) => {
+test('should return function response when invoked', async () => {
   await withSiteBuilder('site-with-ping-function', async (builder) => {
     builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
       path: 'ping.js',
@@ -54,12 +57,12 @@ test('should return function response when invoked', async (t) => {
       const stdout = await callCli(['functions:invoke', 'ping', '--identity', `--port=${server.port}`], {
         cwd: builder.directory,
       })
-      t.is(stdout, 'ping')
+      expect(stdout).toBe('ping')
     })
   })
 })
 
-test('should create a new function directory when none is found', async (t) => {
+test('should create a new function directory when none is found', async () => {
   const siteInfo = {
     admin_url: 'https://app.netlify.com/sites/site-name/overview',
     ssl_url: 'https://site-name.netlify.app/',
@@ -118,12 +121,12 @@ test('should create a new function directory when none is found', async (t) => {
 
       await childProcess
 
-      t.is(await fs.fileExistsAsync(`${builder.directory}/test/functions/hello-world/hello-world.js`), true)
+      expect(await fs.fileExistsAsync(`${builder.directory}/test/functions/hello-world/hello-world.js`)).toBe(true)
     })
   })
 })
 
-test('should install function template dependencies on a site-level `package.json` if one is found', async (t) => {
+test('should install function template dependencies on a site-level `package.json` if one is found', async () => {
   const siteInfo = {
     admin_url: 'https://app.netlify.com/sites/site-name/overview',
     ssl_url: 'https://site-name.netlify.app/',
@@ -198,16 +201,18 @@ test('should install function template dependencies on a site-level `package.jso
       // we're mocking prompt responses with `handleQuestions`. Instead, we're
       // choosing the second template in the list, assuming it's the first one
       // that contains a `package.json` (currently that's `apollo-graphql`).
-      t.is(await fs.fileExistsAsync(`${builder.directory}/test/functions/apollo-graphql/apollo-graphql.js`), true)
-      t.is(await fs.fileExistsAsync(`${builder.directory}/test/functions/apollo-graphql/package.json`), false)
-      t.is(typeof dependencies['apollo-server-lambda'], 'string')
+      expect(await fs.fileExistsAsync(`${builder.directory}/test/functions/apollo-graphql/apollo-graphql.js`)).toBe(
+        true,
+      )
+      expect(await fs.fileExistsAsync(`${builder.directory}/test/functions/apollo-graphql/package.json`)).toBe(false)
+      expect(typeof dependencies['apollo-server-lambda']).toBe('string')
 
-      t.is(dependencies['@netlify/functions'], '^0.1.0')
+      expect(dependencies['@netlify/functions']).toBe('^0.1.0')
     })
   })
 })
 
-test('should install function template dependencies in the function sub-directory if no site-level `package.json` is found', async (t) => {
+test('should install function template dependencies in the function sub-directory if no site-level `package.json` is found', async () => {
   const siteInfo = {
     admin_url: 'https://app.netlify.com/sites/site-name/overview',
     ssl_url: 'https://site-name.netlify.app/',
@@ -271,13 +276,15 @@ test('should install function template dependencies in the function sub-director
       // we're mocking prompt responses with `handleQuestions`. Instead, we're
       // choosing the second template in the list, assuming it's the first one
       // that contains a `package.json` (currently that's `apollo-graphql`).
-      t.is(await fs.fileExistsAsync(`${builder.directory}/test/functions/apollo-graphql/apollo-graphql.js`), true)
-      t.is(await fs.fileExistsAsync(`${builder.directory}/test/functions/apollo-graphql/package.json`), true)
+      expect(await fs.fileExistsAsync(`${builder.directory}/test/functions/apollo-graphql/apollo-graphql.js`)).toBe(
+        true,
+      )
+      expect(await fs.fileExistsAsync(`${builder.directory}/test/functions/apollo-graphql/package.json`)).toBe(true)
     })
   })
 })
 
-test('should not create a new function directory when one is found', async (t) => {
+test('should not create a new function directory when one is found', async () => {
   const siteInfo = {
     admin_url: 'https://app.netlify.com/sites/site-name/overview',
     ssl_url: 'https://site-name.netlify.app/',
@@ -334,12 +341,12 @@ test('should not create a new function directory when one is found', async (t) =
 
       await childProcess
 
-      t.is(await fs.fileExistsAsync(`${builder.directory}/functions/hello-world/hello-world.js`), true)
+      expect(await fs.fileExistsAsync(`${builder.directory}/functions/hello-world/hello-world.js`)).toBe(true)
     })
   })
 })
 
-test('should only show function templates for the language specified via the --language flag, if one is present', async (t) => {
+test('should only show function templates for the language specified via the --language flag, if one is present', async () => {
   const siteInfo = {
     admin_url: 'https://app.netlify.com/sites/site-name/overview',
     ssl_url: 'https://site-name.netlify.app/',
@@ -394,12 +401,12 @@ test('should only show function templates for the language specified via the --l
 
       await childProcess
 
-      t.is(await fs.fileExistsAsync(`${builder.directory}/test/functions/hello-world/hello-world.js`), true)
+      expect(await fs.fileExistsAsync(`${builder.directory}/test/functions/hello-world/hello-world.js`)).toBe(true)
     })
   })
 })
 
-test('throws an error when the --language flag contains an unsupported value', async (t) => {
+test('throws an error when the --language flag contains an unsupported value', async () => {
   const siteInfo = {
     admin_url: 'https://app.netlify.com/sites/site-name/overview',
     ssl_url: 'https://site-name.netlify.app/',
@@ -454,15 +461,14 @@ test('throws an error when the --language flag contains an unsupported value', a
 
       try {
         await childProcess
-
-        t.fail()
       } catch (error) {
-        t.true(error.message.includes('Invalid language: coffeescript'))
+        expect(error.message.includes('Invalid language: coffeescript')).toBe(true)
       }
 
-      t.is(await fs.fileExistsAsync(`${builder.directory}/test/functions/hello-world/hello-world.js`), false)
+      expect(await fs.fileExistsAsync(`${builder.directory}/test/functions/hello-world/hello-world.js`)).toBe(false)
     })
   })
+  expect.assertions(2)
 })
 
 const DEFAULT_PORT = 9999
@@ -492,7 +498,7 @@ const withFunctionsServer = async ({ builder, args = [], port = DEFAULT_PORT }, 
   }
 }
 
-test.skip('should serve functions on default port', async (t) => {
+test.skip('should serve functions on default port', async () => {
   await withSiteBuilder('site-with-ping-function', async (builder) => {
     await builder
       .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
@@ -507,12 +513,12 @@ test.skip('should serve functions on default port', async (t) => {
 
     await withFunctionsServer({ builder }, async () => {
       const response = await got(`http://localhost:9999/.netlify/functions/ping`, { retry: 1 }).text()
-      t.is(response, 'ping')
+      expect(response).toBe('ping')
     })
   })
 })
 
-test.skip('should serve functions on custom port', async (t) => {
+test.skip('should serve functions on custom port', async () => {
   await withSiteBuilder('site-with-ping-function', async (builder) => {
     await builder
       .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
@@ -528,12 +534,12 @@ test.skip('should serve functions on custom port', async (t) => {
     const port = await getPort()
     await withFunctionsServer({ builder, args: ['--port', port], port }, async () => {
       const response = await got(`http://localhost:${port}/.netlify/functions/ping`).text()
-      t.is(response, 'ping')
+      expect(response).toBe('ping')
     })
   })
 })
 
-test.skip('should use settings from netlify.toml dev', async (t) => {
+test.skip('should use settings from netlify.toml dev', async () => {
   await withSiteBuilder('site-with-ping-function', async (builder) => {
     const port = await getPort()
     await builder
@@ -552,12 +558,12 @@ test.skip('should use settings from netlify.toml dev', async (t) => {
 
     await withFunctionsServer({ builder, port }, async () => {
       const response = await got(`http://localhost:${port}/.netlify/functions/ping`).text()
-      t.is(response, 'ping')
+      expect(response).toBe('ping')
     })
   })
 })
 
-test('should trigger background function from event', async (t) => {
+test('should trigger background function from event', async () => {
   await withSiteBuilder('site-with-ping-function', async (builder) => {
     await builder
       .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
@@ -578,12 +584,12 @@ test('should trigger background function from event', async (t) => {
         },
       )
       // background functions always return an empty response
-      t.is(stdout, '')
+      expect(stdout).toBe('')
     })
   })
 })
 
-test('should serve helpful tips and tricks', async (t) => {
+test('should serve helpful tips and tricks', async () => {
   await withSiteBuilder('site-with-isc-ping-function', async (builder) => {
     await builder
       .withNetlifyToml({
@@ -621,9 +627,9 @@ test('should serve helpful tips and tricks', async (t) => {
         retry: null,
       })
       const youReturnedBodyRegex = /.*Your function returned `body`. Is this an accident\?.*/
-      t.regex(plainTextResponse.body, youReturnedBodyRegex)
-      t.regex(plainTextResponse.body, /.*You performed an HTTP request.*/)
-      t.is(plainTextResponse.statusCode, 200)
+      expect(plainTextResponse.body).toMatch(youReturnedBodyRegex)
+      expect(plainTextResponse.body).toMatch(/.*You performed an HTTP request.*/)
+      expect(plainTextResponse.statusCode).toBe(200)
 
       const htmlResponse = await got(`http://localhost:${server.port}/.netlify/functions/hello-world`, {
         throwHttpErrors: false,
@@ -632,18 +638,18 @@ test('should serve helpful tips and tricks', async (t) => {
           accept: 'text/html',
         },
       })
-      t.regex(htmlResponse.body, /.*<link.*/)
-      t.is(htmlResponse.statusCode, 200)
+      expect(htmlResponse.body).toMatch(/.*<link.*/)
+      expect(htmlResponse.statusCode).toBe(200)
 
       const stdout = await callCli(['functions:invoke', 'hello-world', '--identity', `--port=${server.port}`], {
         cwd: builder.directory,
       })
-      t.regex(stdout, youReturnedBodyRegex)
+      expect(stdout).toMatch(youReturnedBodyRegex)
     })
   })
 })
 
-test('should detect netlify-toml defined scheduled functions', async (t) => {
+test('should detect netlify-toml defined scheduled functions', async () => {
   await withSiteBuilder('site-with-netlify-toml-ping-function', async (builder) => {
     await builder
       .withNetlifyToml({
@@ -661,12 +667,13 @@ test('should detect netlify-toml defined scheduled functions', async (t) => {
       const stdout = await callCli(['functions:invoke', 'test-1', `--port=${server.port}`], {
         cwd: builder.directory,
       })
-      t.is(stdout, '')
+      expect(stdout).toBe('')
     })
   })
+  expect.assertions(1)
 })
 
-test('should detect file changes to scheduled function', async (t) => {
+test('should detect file changes to scheduled function', async () => {
   await withSiteBuilder('site-with-isc-ping-function', async (builder) => {
     await builder
       .withNetlifyToml({
@@ -702,7 +709,7 @@ test('should detect file changes to scheduled function', async (t) => {
           retry: null,
         }).then((response) => response.body)
 
-      t.is(await helloWorldBody(), '')
+      expect(await helloWorldBody()).toBe('')
 
       await builder
         .withContentFile({
@@ -724,12 +731,12 @@ test('should detect file changes to scheduled function', async (t) => {
       await pause(DETECT_FILE_CHANGE_DELAY)
 
       const warningMessage = await helloWorldBody()
-      t.true(warningMessage.includes('Your function returned `body`'))
+      expect(warningMessage.includes('Your function returned `body`')).toBe(true)
     })
   })
 })
 
-test('should inject env variables', async (t) => {
+test('should inject env variables', async () => {
   await withSiteBuilder('site-with-env-function', async (builder) => {
     await builder
       .withNetlifyToml({
@@ -748,7 +755,7 @@ test('should inject env variables', async (t) => {
     const port = await getPort()
     await withFunctionsServer({ builder, args: ['--port', port], port }, async () => {
       const response = await got(`http://localhost:${port}/.netlify/functions/echo-env`).text()
-      t.is(response, 'FROM_CONFIG_FILE')
+      expect(response).toBe('FROM_CONFIG_FILE')
     })
   })
 })

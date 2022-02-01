@@ -1,10 +1,8 @@
-const test = require('ava')
-
 const isValidEventName = require('./validation')
 
 const getEventForProject = (projectName, eventName) => `${projectName}:${eventName}`
 
-test('validate failed with eventName without underscore', (t) => {
+test('validate failed with eventName without underscore', () => {
   const projectName = 'testProject'
   const event = 'test'
   const config = {
@@ -12,10 +10,10 @@ test('validate failed with eventName without underscore', (t) => {
     objects: ['test'],
   }
   const result = isValidEventName(getEventForProject(projectName, event), config)
-  t.is(result, false)
+  expect(result).toBe(false)
 })
 
-test('validate failed with eventName without colon', (t) => {
+test('validate failed with eventName without colon', () => {
   const projectName = 'testProject'
   const event = 'test_eventName'
   const config = {
@@ -23,10 +21,10 @@ test('validate failed with eventName without colon', (t) => {
     objects: ['test'],
   }
   const result = isValidEventName(`${projectName}${event}`, config)
-  t.is(result, false)
+  expect(result).toBe(false)
 })
 
-test('validate pass with eventName with only underscore', (t) => {
+test('validate pass with eventName with only underscore', () => {
   const projectName = 'testProject'
   const event = 'test_name'
   const config = {
@@ -34,10 +32,10 @@ test('validate pass with eventName with only underscore', (t) => {
     objects: ['test'],
   }
   const result = isValidEventName(getEventForProject(projectName, event), config)
-  t.is(result, true)
+  expect(result).toBe(true)
 })
 
-test('validate pass with eventName with underscore and camelCase', (t) => {
+test('validate pass with eventName with underscore and camelCase', () => {
   const projectName = 'testProject'
   const event = 'test_eventName'
   const config = {
@@ -45,10 +43,10 @@ test('validate pass with eventName with underscore and camelCase', (t) => {
     objects: ['test'],
   }
   const result = isValidEventName(getEventForProject(projectName, event), config)
-  t.is(result, true)
+  expect(result).toBe(true)
 })
 
-test('project in event should be pass in config', (t) => {
+test('project in event should be pass in config', () => {
   const projectName = 'anotherProjectName'
   const event = 'test_eventName'
   const config = {
@@ -56,10 +54,10 @@ test('project in event should be pass in config', (t) => {
     objects: ['test'],
   }
   const result = isValidEventName(getEventForProject(projectName, event), config)
-  t.is(result, false)
+  expect(result).toBe(false)
 })
 
-test('object in event should be pass in config.objects', (t) => {
+test('object in event should be pass in config.objects', () => {
   const projectName = 'testProject'
   const event = 'event_eventName'
   const config = {
@@ -67,5 +65,5 @@ test('object in event should be pass in config.objects', (t) => {
     objects: ['test'],
   }
   const result = isValidEventName(getEventForProject(projectName, event), config)
-  t.is(result, false)
+  expect(result).toBe(false)
 })

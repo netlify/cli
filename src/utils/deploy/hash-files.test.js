@@ -1,11 +1,9 @@
-const test = require('ava')
-
 const { withSiteBuilder } = require('../../../tests/utils/site-builder')
 
 const { DEFAULT_CONCURRENT_HASH } = require('./constants')
 const { hashFiles } = require('./hash-files')
 
-test('Hashes files in a folder', async (t) => {
+test('Hashes files in a folder', async () => {
   await withSiteBuilder('site-with-content', async (builder) => {
     await builder
       .withNetlifyToml({ config: { build: { publish: 'public' } } })
@@ -22,20 +20,16 @@ test('Hashes files in a folder', async (t) => {
       statusCb() {},
     })
 
-    t.is(Object.entries(files).length, expectedFiles.length)
-    t.is(Object.entries(filesShaMap).length, expectedFiles.length)
+    expect(Object.entries(files).length).toBe(expectedFiles.length)
+    expect(Object.entries(filesShaMap).length).toBe(expectedFiles.length)
 
     expectedFiles.forEach((filePath) => {
       const sha = files[filePath]
-      t.truthy(sha, `includes the ${filePath} file`)
+      expect(sha).toBeTruthy()
 
       const fileObjArray = filesShaMap[sha]
       fileObjArray.forEach((fileObj) => {
-        t.is(
-          fileObj.normalizedPath,
-          filePath,
-          'fileObj normalizedPath property should equal to file path from files array',
-        )
+        expect(fileObj.normalizedPath).toBe(filePath)
       })
     })
   })

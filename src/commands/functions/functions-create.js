@@ -97,7 +97,8 @@ const formatRegistryArrayForInquirer = function (lang) {
   const folderNames = fs.readdirSync(path.join(templatesDir, lang))
   const registry = folderNames
     // filter out markdown files
-    .filter((folderName) => !folderName.endsWith('.md'))
+    // On mac os it could fail in the tests if there is a .DS_Store in the folder
+    .filter((folderName) => !folderName.endsWith('.md') && folderName !== '.DS_Store')
     // eslint-disable-next-line node/global-require, import/no-dynamic-require
     .map((folderName) => require(path.join(templatesDir, lang, folderName, '.netlify-function-template.js')))
     .sort((folderNameA, folderNameB) => {
@@ -162,6 +163,12 @@ const pickTemplate = async function ({ language: languageFromFlag }) {
 
   let templatesForLanguage
 
+  console.log(`
+
+
+  here ${language}
+
+  `)
   try {
     templatesForLanguage = formatRegistryArrayForInquirer(language)
   } catch {

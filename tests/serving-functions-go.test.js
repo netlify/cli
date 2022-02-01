@@ -1,4 +1,3 @@
-const test = require('ava')
 const pWaitFor = require('p-wait-for')
 
 const { tryAndLogOutput, withDevServer } = require('./utils/dev-server')
@@ -11,7 +10,7 @@ const WAIT_INTERVAL = 600
 const WAIT_TIMEOUT = 3000
 const WAIT_WRITE = 1000
 
-test('Updates a Go function when a file is modified', async (t) => {
+test('Updates a Go function when a file is modified', async () => {
   const originalBody = 'Hello, world!'
   const updatedBody = 'Hello, Netlify!'
   const [execaMock, removeExecaMock] = await createExecaMock(`
@@ -84,7 +83,7 @@ test('Updates a Go function when a file is modified', async (t) => {
         },
         async ({ outputBuffer, port }) => {
           await tryAndLogOutput(async () => {
-            t.is(await got(`http://localhost:${port}/.netlify/functions/go-func`).text(), originalBody)
+            expect(await got(`http://localhost:${port}/.netlify/functions/go-func`).text()).toBe(originalBody)
           }, outputBuffer)
 
           await pause(WAIT_WRITE)

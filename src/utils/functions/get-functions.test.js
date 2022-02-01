@@ -1,27 +1,26 @@
 const path = require('path')
 
-const test = require('ava')
 const sortOn = require('sort-on')
 
 const { withSiteBuilder } = require('../../../tests/utils/site-builder')
 
 const { getFunctions, getFunctionsAndWatchDirs } = require('./get-functions')
 
-test('should return empty object when an empty string is provided', async (t) => {
+test('should return empty object when an empty string is provided', async () => {
   const funcs = await getFunctions('')
-  t.deepEqual(funcs, [])
+  expect(funcs).toEqual([])
 })
 
-test('should return an empty object for a directory with no js files', async (t) => {
+test('should return an empty object for a directory with no js files', async () => {
   await withSiteBuilder('site-without-functions', async (builder) => {
     await builder.buildAsync()
 
     const funcs = await getFunctions(builder.directory)
-    t.deepEqual(funcs, [])
+    expect(funcs).toEqual([])
   })
 })
 
-test('should return object with function details for a directory with js files', async (t) => {
+test('should return object with function details for a directory with js files', async () => {
   await withSiteBuilder('site-without-functions', async (builder) => {
     builder.withFunction({
       path: 'index.js',
@@ -31,7 +30,7 @@ test('should return object with function details for a directory with js files',
 
     const functions = path.join(builder.directory, 'functions')
     const funcs = await getFunctions(functions)
-    t.deepEqual(funcs, [
+    expect(funcs).toEqual([
       {
         name: 'index',
         mainFile: path.join(builder.directory, 'functions', 'index.js'),
@@ -44,7 +43,7 @@ test('should return object with function details for a directory with js files',
   })
 })
 
-test('should mark background functions based on filenames', async (t) => {
+test('should mark background functions based on filenames', async () => {
   await withSiteBuilder('site-without-functions', async (builder) => {
     builder
       .withFunction({
@@ -59,7 +58,7 @@ test('should mark background functions based on filenames', async (t) => {
 
     const functions = path.join(builder.directory, 'functions')
     const funcs = await getFunctions(functions)
-    t.deepEqual(sortOn(funcs, ['mainFile', 'extension']), [
+    expect(sortOn(funcs, ['mainFile', 'extension'])).toEqual([
       {
         name: 'bar-background',
         mainFile: path.join(builder.directory, 'functions', 'bar-background', 'bar-background.js'),
@@ -80,7 +79,7 @@ test('should mark background functions based on filenames', async (t) => {
   })
 })
 
-test.skip('should return additional watch dirs when functions requires a file outside function dir', async (t) => {
+test.skip('should return additional watch dirs when functions requires a file outside function dir', async () => {
   await withSiteBuilder('site-with-functions-require-outside-functions-dir', async (builder) => {
     await builder
       .withFunction({
@@ -100,7 +99,7 @@ test.skip('should return additional watch dirs when functions requires a file ou
       .buildAsync()
 
     const { functions, watchDirs } = await getFunctionsAndWatchDirs(path.join(builder.directory, 'functions'))
-    t.deepEqual(functions, [
+    expect(functions).toEqual([
       {
         name: 'index',
         mainFile: path.join(builder.directory, 'functions', 'index.js'),
@@ -109,6 +108,6 @@ test.skip('should return additional watch dirs when functions requires a file ou
         urlPath: '/.netlify/functions/index',
       },
     ])
-    t.deepEqual(watchDirs, [path.join(builder.directory, 'functions'), path.join(builder.directory, 'utils')])
+    expect(watchDirs).toEqual([path.join(builder.directory, 'functions'), path.join(builder.directory, 'utils')])
   })
 })

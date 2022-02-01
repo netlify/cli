@@ -1,6 +1,5 @@
 const process = require('process')
 
-const test = require('ava')
 const { version: uuidVersion } = require('uuid')
 
 const { name, version } = require('../package.json')
@@ -24,34 +23,34 @@ const routes = [
   { path: 'sites', response: [] },
 ]
 
-test.serial('should not track --telemetry-disable', async (t) => {
+test('should not track --telemetry-disable', async () => {
   await withMockApi(routes, async ({ apiUrl, requests }) => {
     await callCli(['--telemetry-disable'], getCLIOptions(apiUrl))
-    t.deepEqual(requests, [])
+    expect(requests).toEqual([])
   })
 })
 
 const UUID_VERSION = 4
 
-test.serial('should track --telemetry-enable', async (t) => {
+test('should track --telemetry-enable', async () => {
   await withMockApi(routes, async ({ apiUrl, requests }) => {
     await callCli(['--telemetry-enable'], getCLIOptions(apiUrl))
-    t.is(requests.length, 1)
-    t.is(requests[0].method, 'POST')
-    t.is(requests[0].path, '/api/v1/track')
-    t.is(requests[0].headers['user-agent'], `${name}/${version}`)
-    t.is(requests[0].body.event, 'cli:user_telemetryEnabled')
-    t.is(uuidVersion(requests[0].body.anonymousId), UUID_VERSION)
-    t.deepEqual(requests[0].body.properties, {})
+    expect(requests.length).toBe(1)
+    expect(requests[0].method).toBe('POST')
+    expect(requests[0].path).toBe('/api/v1/track')
+    expect(requests[0].headers['user-agent']).toBe(`${name}/${version}`)
+    expect(requests[0].body.event).toBe('cli:user_telemetryEnabled')
+    expect(uuidVersion(requests[0].body.anonymousId)).toBe(UUID_VERSION)
+    expect(requests[0].body.properties).toEqual({})
   })
 })
 
-test('should send netlify-cli/<version> user-agent', async (t) => {
+test('should send netlify-cli/<version> user-agent', async () => {
   await withMockApi(routes, async ({ apiUrl, requests }) => {
     await callCli(['api', 'listSites'], getCLIOptions(apiUrl))
-    t.true(requests.length !== 0)
+    expect(requests.length !== 0).toBe(true)
     // example: netlify-cli/6.14.25 darwin-x64 node-v16.13.0
     const userAgent = requests[0].headers['user-agent']
-    t.assert(userAgent.startsWith(`${name}/${version}`))
+    expect(userAgent.startsWith(`${name}/${version}`)).toBeTruthy()
   })
 })

@@ -38,9 +38,11 @@ const getBuildFunction =
 const getCrateName = async (cwd) => {
   const manifestPath = await findUp('Cargo.toml', { cwd, type: 'file' })
   const manifest = await readFile(manifestPath, 'utf-8')
-  const { package } = toml.parse(manifest)
+  const {
+    package: { name },
+  } = toml.parse(manifest)
 
-  return package.name
+  return name
 }
 
 const invokeFunction = async ({ context, event, func, timeout }) => {

@@ -1,4 +1,3 @@
-const test = require('ava')
 const backoff = require('backoff')
 const fetch = require('node-fetch')
 const sinon = require('sinon')
@@ -17,11 +16,11 @@ const stubbedModule = sinon.stub(openBrowser, 'openBrowser').callsFake(({ url })
 // eslint-disable-next-line import/order
 const { authWithNetlify } = require('./gh-auth')
 
-test.after(() => {
+afterAll(() => {
   stubbedModule.restore()
 })
 
-test('should check if the authWithNetlify is working', async (t) => {
+test('should check if the authWithNetlify is working', async () => {
   const promise = authWithNetlify()
   // wait for server to be started
   await new Promise((resolve, reject) => {
@@ -43,8 +42,8 @@ test('should check if the authWithNetlify is working', async (t) => {
   await fetch(new URL(`?${params.toString()}`, host))
   const result = await promise
 
-  t.is(typeof result, 'object')
-  t.deepEqual(result, {
+  expect(typeof result).toBe('object')
+  expect(result).toEqual({
     user: 'spongebob',
     token: 'gho_some-token',
     provider: 'github',

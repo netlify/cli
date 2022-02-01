@@ -1,6 +1,5 @@
 const path = require('path')
 
-const test = require('ava')
 const execa = require('execa')
 
 const cliPath = require('./utils/cli-path')
@@ -17,7 +16,6 @@ const defaultEnvs = {
 //  - its exit code is `exitCode`
 //  - that its output contains `output`
 const runBuildCommand = async function (
-  t,
   cwd,
   { apiUrl, exitCode: expectedExitCode = 0, output, flags = [], env = defaultEnvs } = {},
 ) {
@@ -35,8 +33,8 @@ const runBuildCommand = async function (
     console.error(all)
   }
 
-  t.true(all.includes(output))
-  t.is(exitCode, expectedExitCode)
+  expect(all.includes(output)).toBe(true)
+  expect(exitCode).toBe(expectedExitCode)
 }
 
 const siteInfo = {
@@ -53,43 +51,43 @@ const routes = [
   },
 ]
 
-test('should print output for a successful command', async (t) => {
+test('should print output for a successful command', async () => {
   await withSiteBuilder('success-site', async (builder) => {
     builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } })
 
     await builder.buildAsync()
 
     await withMockApi(routes, async ({ apiUrl }) => {
-      await runBuildCommand(t, builder.directory, { apiUrl, output: 'testCommand' })
+      await runBuildCommand(builder.directory, { apiUrl, output: 'testCommand' })
     })
   })
 })
 
-test('should print output for a failed command', async (t) => {
+test('should print output for a failed command', async () => {
   await withSiteBuilder('failure-site', async (builder) => {
     builder.withNetlifyToml({ config: { build: { command: 'doesNotExist' } } })
 
     await builder.buildAsync()
 
     await withMockApi(routes, async ({ apiUrl }) => {
-      await runBuildCommand(t, builder.directory, { apiUrl, exitCode: 2, output: 'doesNotExist' })
+      await runBuildCommand(builder.directory, { apiUrl, exitCode: 2, output: 'doesNotExist' })
     })
   })
 })
 
-test('should run in dry mode when the --dry flag is set', async (t) => {
+test('should run in dry mode when the --dry flag is set', async () => {
   await withSiteBuilder('success-site', async (builder) => {
     builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } })
 
     await builder.buildAsync()
 
     await withMockApi(routes, async ({ apiUrl }) => {
-      await runBuildCommand(t, builder.directory, { apiUrl, flags: ['--dry'], output: 'If this looks good to you' })
+      await runBuildCommand(builder.directory, { apiUrl, flags: ['--dry'], output: 'If this looks good to you' })
     })
   })
 })
 
-test('should run the production context when context is not defined', async (t) => {
+test('should run the production context when context is not defined', async () => {
   await withSiteBuilder('context-site', async (builder) => {
     builder.withNetlifyToml({
       config: {
@@ -100,11 +98,11 @@ test('should run the production context when context is not defined', async (t) 
 
     await builder.buildAsync()
 
-    await runBuildCommand(t, builder.directory, { flags: ['--offline'], output: 'testProduction' })
+    await runBuildCommand(builder.directory, { flags: ['--offline'], output: 'testProduction' })
   })
 })
 
-test('should run the staging context command when the --context option is set to staging', async (t) => {
+test('should run the staging context command when the --context option is set to staging', async () => {
   await withSiteBuilder('context-site', async (builder) => {
     builder.withNetlifyToml({
       config: {
@@ -115,11 +113,11 @@ test('should run the staging context command when the --context option is set to
 
     await builder.buildAsync()
 
-    await runBuildCommand(t, builder.directory, { flags: ['--context=staging', '--offline'], output: 'testStaging' })
+    await runBuildCommand(builder.directory, { flags: ['--context=staging', '--offline'], output: 'testStaging' })
   })
 })
 
-test('should run the staging context command when the context env variable is set', async (t) => {
+test('should run the staging context command when the context env variable is set', async () => {
   await withSiteBuilder('context-site', async (builder) => {
     builder.withNetlifyToml({
       config: {
@@ -130,7 +128,7 @@ test('should run the staging context command when the context env variable is se
 
     await builder.buildAsync()
 
-    await runBuildCommand(t, builder.directory, {
+    await runBuildCommand(builder.directory, {
       flags: ['--offline'],
       output: 'testStaging',
       env: { CONTEXT: 'staging' },
@@ -138,19 +136,19 @@ test('should run the staging context command when the context env variable is se
   })
 })
 
-test('should print debug information when the --debug flag is set', async (t) => {
+test('should print debug information when the --debug flag is set', async () => {
   await withSiteBuilder('success-site', async (builder) => {
     builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } })
 
     await builder.buildAsync()
 
     await withMockApi(routes, async ({ apiUrl }) => {
-      await runBuildCommand(t, builder.directory, { apiUrl, flags: ['--debug'], output: 'Resolved config' })
+      await runBuildCommand(builder.directory, { apiUrl, flags: ['--debug'], output: 'Resolved config' })
     })
   })
 })
 
-test('should use root directory netlify.toml when runs in subdirectory', async (t) => {
+test('should use root directory netlify.toml when runs in subdirectory', async () => {
   await withSiteBuilder('subdir-site', async (builder) => {
     builder
       .withNetlifyToml({ config: { build: { command: 'echo testCommand' } } })
@@ -159,31 +157,31 @@ test('should use root directory netlify.toml when runs in subdirectory', async (
     await builder.buildAsync()
 
     await withMockApi(routes, async ({ apiUrl }) => {
-      await runBuildCommand(t, path.join(builder.directory, 'subdir'), { apiUrl, output: 'testCommand' })
+      await runBuildCommand(path.join(builder.directory, 'subdir'), { apiUrl, output: 'testCommand' })
     })
   })
 })
 
-test('should error when using invalid netlify.toml', async (t) => {
+test('should error when using invalid netlify.toml', async () => {
   await withSiteBuilder('wrong-config-site', async (builder) => {
     builder.withNetlifyToml({ config: { build: { command: false } } })
 
     await builder.buildAsync()
 
     await withMockApi(routes, async ({ apiUrl }) => {
-      await runBuildCommand(t, builder.directory, { apiUrl, exitCode: 1, output: 'Invalid syntax' })
+      await runBuildCommand(builder.directory, { apiUrl, exitCode: 1, output: 'Invalid syntax' })
     })
   })
 })
 
-test('should error when a site id is missing', async (t) => {
+test('should error when a site id is missing', async () => {
   await withSiteBuilder('no-site-id-site', async (builder) => {
     builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } })
 
     await builder.buildAsync()
 
     await withMockApi(routes, async ({ apiUrl }) => {
-      await runBuildCommand(t, builder.directory, {
+      await runBuildCommand(builder.directory, {
         apiUrl,
         exitCode: 1,
         output: 'Could not find the site ID',
@@ -193,11 +191,11 @@ test('should error when a site id is missing', async (t) => {
   })
 })
 
-test('should not require a linked site when offline flag is set', async (t) => {
+test('should not require a linked site when offline flag is set', async () => {
   await withSiteBuilder('success-site', async (builder) => {
     await builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } }).buildAsync()
 
-    await runBuildCommand(t, builder.directory, {
+    await runBuildCommand(builder.directory, {
       output: 'testCommand',
       flags: ['--offline'],
       env: {},
@@ -205,18 +203,18 @@ test('should not require a linked site when offline flag is set', async (t) => {
   })
 })
 
-test('should not send network requests when offline flag is set', async (t) => {
+test('should not send network requests when offline flag is set', async () => {
   await withSiteBuilder('success-site', async (builder) => {
     await builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } }).buildAsync()
 
     await withMockApi(routes, async ({ apiUrl, requests }) => {
-      await runBuildCommand(t, builder.directory, {
+      await runBuildCommand(builder.directory, {
         apiUrl,
         output: 'testCommand',
         flags: ['--offline'],
       })
 
-      t.is(requests.length, 0)
+      expect(requests.length).toBe(0)
     })
   })
 })

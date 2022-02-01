@@ -1,4 +1,3 @@
-const test = require('ava')
 const { RuleTester } = require('eslint')
 
 const rule = require('./index')
@@ -6,8 +5,8 @@ const rule = require('./index')
 // eslint-disable-next-line no-magic-numbers
 const ruleTester = new RuleTester({ parserOptions: { ecmaVersion: 2020 } })
 
-test('should run the specified testRunner', (t) => {
-  t.notThrows(() => {
+test.skip('should run the specified testRunner', () => {
+  expect(() => {
     ruleTester.run('no-direct-chalk-import', rule, {
       valid: [
         {
@@ -29,5 +28,5 @@ test('should run the specified testRunner', (t) => {
         },
       ],
     })
-  }, 'Rule scenario should not throw')
+  }).not.toThrowError('Rule scenario should not throw')
 })

@@ -1,9 +1,7 @@
 // @ts-check
 const fs = require('fs')
 
-const test = require('ava')
 const { Argument } = require('commander')
-const sinon = require('sinon')
 
 const { BaseCommand } = require('../../../commands/base-command')
 const { getAutocompletion } = require('../script')
@@ -29,24 +27,20 @@ const createTestCommand = () => {
   return program
 }
 
-test.afterEach(() => {
-  sinon.restore()
+afterEach(() => {
+  jest.resetAllMocks()
 })
 
-test('should generate a completion file', (t) => {
-  const stub = sinon.stub(fs, 'writeFileSync').callsFake(() => {})
+test('should generate a completion file', () => {
+  const writeFileSpy = jest.spyOn(fs, 'writeFileSync').mockImplementation(() => {})
   const program = createTestCommand()
   // eslint-disable-next-line node/global-require
   const { createAutocompletion } = require('../generate-autocompletion')
   createAutocompletion(program)
 
   // @ts-ignore
-  t.true(stub.getCall(0).args[0].endsWith('autocompletion.json'), 'should write a autocompletion file')
-
-  // @ts-ignore
-  t.snapshot(JSON.parse(stub.getCall(0).args[1]))
-
-  stub.restore()
+  expect(writeFileSpy).toHaveBeenCalledTimes(1)
+  expect(JSON.parse(writeFileSpy.mock.calls[0][1])).toMatchSnapshot()
 })
 
 const cookingFixtures = {
@@ -66,76 +60,76 @@ const cookingFixtures = {
   },
 }
 
-test('should not autocomplete anything when completion is turned off', (t) => {
+test('should not autocomplete anything when completion is turned off', () => {
   // @ts-ignore
-  t.is(getAutocompletion({}, cookingFixtures), undefined)
+  expect(getAutocompletion({}, cookingFixtures)).toBe(undefined)
   // @ts-ignore
-  t.is(getAutocompletion({ complete: false }, cookingFixtures), undefined)
+  expect(getAutocompletion({ complete: false }, cookingFixtures)).toBe(undefined)
   // @ts-ignore
-  t.is(getAutocompletion({ complete: false, words: 2 }, cookingFixtures), undefined)
+  expect(getAutocompletion({ complete: false, words: 2 }, cookingFixtures)).toBe(undefined)
 })
 
-test('should get the correct autocompletion for the base command', (t) => {
+test('should get the correct autocompletion for the base command', () => {
   // @ts-ignore
   const completion = getAutocompletion({ complete: true, words: 1, lastPartial: '' }, cookingFixtures)
-  t.deepEqual(completion, [
+  expect(completion).toEqual([
     { name: 'cook', description: 'cooking' },
     { name: 'bake', description: 'baking' },
   ])
 })
 
-test('should get the correct autocompletion for the base command if there is already a word', (t) => {
+test('should get the correct autocompletion for the base command if there is already a word', () => {
   // @ts-ignore
   const completion = getAutocompletion({ complete: true, words: 1, lastPartial: 'ba' }, cookingFixtures)
-  t.deepEqual(completion, [{ name: 'bake', description: 'baking' }])
+  expect(completion).toEqual([{ name: 'bake', description: 'baking' }])
 })
 
-test('should get no flags if the command has no flags', (t) => {
+test('should get no flags if the command has no flags', () => {
   const completion = getAutocompletion(
     // @ts-ignore
     { complete: true, words: 2, lastPartial: '', line: 'netlify cook' },
     cookingFixtures,
   )
-  t.deepEqual(completion, [])
+  expect(completion).toEqual([])
 })
 
-test('should get the correct flags for the command', (t) => {
+test('should get the correct flags for the command', () => {
   const completion = getAutocompletion(
     // @ts-ignore
     { complete: true, words: 2, lastPartial: '', line: 'netlify bake' },
     cookingFixtures,
   )
-  t.deepEqual(completion, cookingFixtures.bake.options)
+  expect(completion).toEqual(cookingFixtures.bake.options)
 })
 
-test('should get the correct left over flags for the command', (t) => {
+test('should get the correct left over flags for the command', () => {
   const completion = getAutocompletion(
     // @ts-ignore
     { complete: true, words: 3, lastPartial: '', line: 'netlify bake --heat' },
     cookingFixtures,
   )
-  t.deepEqual(completion, [
+  expect(completion).toEqual([
     { name: '--duration', description: 'duration' },
     { name: '--heat-type', description: 'type' },
   ])
 })
 
-test('should get no results if the command has no left over flags anymore', (t) => {
+test('should get no results if the command has no left over flags anymore', () => {
   const completion = getAutocompletion(
     // @ts-ignore
     // eslint-disable-next-line no-magic-numbers
     { complete: true, words: 4, lastPartial: '', line: 'netlify bake --heat --heat-type --duration' },
     cookingFixtures,
   )
-  t.deepEqual(completion, [])
+  expect(completion).toEqual([])
 })
 
-test('should autocomplete flags', (t) => {
+test('should autocomplete flags', () => {
   const completion = getAutocompletion(
     // @ts-ignore
     // eslint-disable-next-line no-magic-numbers
     { complete: true, words: 4, lastPartial: '--hea', line: 'netlify bake --heat --hea' },
     cookingFixtures,
   )
-  t.deepEqual(completion, [{ name: '--heat-type', description: 'type' }])
+  expect(completion).toEqual([{ name: '--heat-type', description: 'type' }])
 })
