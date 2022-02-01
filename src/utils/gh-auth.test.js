@@ -26,7 +26,6 @@ test('should check if the authWithNetlify is working', async () => {
   await new Promise((resolve, reject) => {
     const fibonacciBackoff = backoff.fibonacci()
     const check = () => (host ? resolve() : fibonacciBackoff.backoff())
-    // eslint-disable-next-line no-magic-numbers
     fibonacciBackoff.failAfter(10)
     fibonacciBackoff.on('ready', check)
     fibonacciBackoff.on('fail', reject)

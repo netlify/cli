@@ -29,6 +29,9 @@ module.exports = {
       env: {
         jest: true,
       },
+      rules: {
+        'no-magic-numbers': 0,
+      },
     },
     // Documentation site's browser JavaScript
     {

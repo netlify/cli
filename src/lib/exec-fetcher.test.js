@@ -1,113 +1,114 @@
 // @ts-check
+const process = require('process')
 
-/** @type {import('ava').TestInterface} */
-// @ts-ignore
-const test = require('ava')
-const proxyquire = require('proxyquire')
-const sinon = require('sinon')
+const ghReleaseFetch = require('gh-release-fetch')
+const stripAnsi = require('strip-ansi')
 
-// is not a function therefore use Object.defineProperty to mock it
-const processSpy = {}
-const fetchLatestSpy = sinon.stub()
+const fetchLatestSpy = jest.spyOn(ghReleaseFetch, 'fetchLatest')
 
-const { fetchLatestVersion, getArch, getExecName } = proxyquire('./exec-fetcher', {
-  'gh-release-fetch': {
-    fetchLatest: fetchLatestSpy,
-  },
-  process: processSpy,
+const { fetchLatestVersion, getArch, getExecName } = require('./exec-fetcher')
+
+afterEach(() => {
+  jest.clearAllMocks()
 })
 
-test(`should use 386 if process architecture is ia32`, (t) => {
-  Object.defineProperty(processSpy, 'arch', { value: 'ia32' })
-  t.is(getArch(), '386')
+test(`should use 386 if process architecture is ia32`, () => {
+  Object.defineProperty(process, 'arch', { value: 'ia32' })
+  expect(getArch()).toBe('386')
 })
 
-test(`should use amd64 if process architecture is x64`, (t) => {
-  Object.defineProperty(processSpy, 'arch', { value: 'x64' })
-  t.is(getArch(), 'amd64')
+test(`should use amd64 if process architecture is x64`, () => {
+  Object.defineProperty(process, 'arch', { value: 'x64' })
+  expect(getArch()).toBe('amd64')
 })
 
-test(`should append .exe on windows for the executable name`, (t) => {
-  Object.defineProperty(processSpy, 'platform', { value: 'win32' })
+test(`should append .exe on windows for the executable name`, () => {
+  Object.defineProperty(process, 'platform', { value: 'win32' })
   const execName = 'some-binary-file'
-  t.is(getExecName({ execName }), `${execName}.exe`)
+  expect(getExecName({ execName })).toBe(`${execName}.exe`)
 })
 
-test(`should not append anything on linux or darwin to executable`, (t) => {
-  Object.defineProperty(processSpy, 'platform', { value: 'darwin' })
+test(`should not append anything on linux or darwin to executable`, () => {
+  Object.defineProperty(process, 'platform', { value: 'darwin' })
   const execName = 'some-binary-file'
-  t.is(getExecName({ execName }), execName)
-  Object.defineProperty(processSpy, 'platform', { value: 'linux' })
-  t.is(getExecName({ execName }), execName)
+  expect(getExecName({ execName })).toBe(execName)
+  Object.defineProperty(process, 'platform', { value: 'linux' })
+  expect(getExecName({ execName })).toBe(execName)
 })
 
-test('should test if an error is thrown if the cpu architecture and the os are not available', async (t) => {
-  Object.defineProperties(processSpy, {
+test('should test if an error is thrown if the cpu architecture and the os are not available', async () => {
+  Object.defineProperties(process, {
     platform: { value: 'windows' },
     arch: { value: 'amd64' },
   })
 
   // eslint-disable-next-line prefer-promise-reject-errors
-  fetchLatestSpy.returns(Promise.reject({ statusCode: 404 }))
+  fetchLatestSpy.mockReturnValue(Promise.reject({ statusCode: 404 }))
 
-  const { message } = await t.throwsAsync(
-    fetchLatestVersion({
+  try {
+    await fetchLatestVersion({
       packageName: 'traffic-mesh-agent',
       execName: 'traffic-mesh',
-      destination: t.context.binPath,
+      destination: '',
       extension: 'zip',
-    }),
-  )
-
-  t.regex(message, /The operating system windows with the CPU architecture amd64 is currently not supported!/)
+    })
+  } catch (error) {
+    expect(stripAnsi(error.message)).toMatch(
+      'The operating system windows with the CPU architecture amd64 is currently not supported!',
+    )
+  }
+  expect.assertions(1)
 })
 
-test('should provide the error if it is not a 404', async (t) => {
+test('should provide the error if it is not a 404', async () => {
   const error = new Error('Got Rate limited for example')
 
-  fetchLatestSpy.returns(Promise.reject(error))
+  fetchLatestSpy.mockReturnValue(Promise.reject(error))
 
-  const { message } = await t.throwsAsync(
-    fetchLatestVersion({
+  try {
+    await fetchLatestVersion({
       packageName: 'traffic-mesh-agent',
       execName: 'traffic-mesh',
-      destination: t.context.binPath,
+      destination: '',
       extension: 'zip',
-    }),
-  )
-
-  t.is(message, error.message)
+    })
+  } catch (error_) {
+    expect(error_.message).toBe(error.message)
+  }
+  expect.assertions(1)
 })
 
-test('should map linux x64 to amd64 arch', async (t) => {
-  Object.defineProperties(processSpy, {
+test('should map linux x64 to amd64 arch', async () => {
+  Object.defineProperties(process, {
     platform: { value: 'linux' },
     arch: { value: 'x64' },
   })
   // eslint-disable-next-line prefer-promise-reject-errors
-  fetchLatestSpy.returns(Promise.reject({ statusCode: 404 }))
+  fetchLatestSpy.mockReturnValue(Promise.reject({ statusCode: 404 }))
 
-  const { message } = await t.throwsAsync(
-    fetchLatestVersion({
+  try {
+    await fetchLatestVersion({
       packageName: 'traffic-mesh-agent',
       execName: 'traffic-mesh',
-      destination: t.context.binPath,
+      destination: '',
       extension: 'zip',
-    }),
-  )
-
-  t.regex(message, /The operating system linux with the CPU architecture amd64 is currently not supported!/)
+    })
+  } catch (error) {
+    expect(stripAnsi(error.message)).toMatch(
+      'The operating system linux with the CPU architecture amd64 is currently not supported!',
+    )
+  }
+  expect.assertions(1)
 })
 
-test('should not throw when the request passes', async (t) => {
-  fetchLatestSpy.returns(Promise.resolve())
+test('should not throw when the request passes', async () => {
+  fetchLatestSpy.mockReturnValue(Promise.resolve())
 
-  await t.notThrowsAsync(
-    fetchLatestVersion({
-      packageName: 'traffic-mesh-agent',
-      execName: 'traffic-mesh',
-      destination: t.context.binPath,
-      extension: 'zip',
-    }),
-  )
+  // should just pass
+  await fetchLatestVersion({
+    packageName: 'traffic-mesh-agent',
+    execName: 'traffic-mesh',
+    destination: '',
+    extension: 'zip',
+  })
 })

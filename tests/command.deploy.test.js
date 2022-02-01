@@ -2,6 +2,7 @@
 const { join } = require('path')
 const process = require('process')
 
+const debug = require('debug')('tests')
 const omit = require('omit.js').default
 
 const { supportsEdgeHandlers } = require('../src/lib/account')
@@ -48,6 +49,8 @@ const shouldTest = process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true' ? test : tes
 let siteId
 let account
 
+jest.retryTimes(5)
+
 beforeAll(async () => {
   const site = await createLiveTestSite(SITE_NAME)
   // eslint-disable-next-line prefer-destructuring
@@ -57,7 +60,7 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
-  console.log(`deleting test site "${SITE_NAME}". ${siteId}`)
+  debug(`deleting test site "${SITE_NAME}". ${siteId}`)
   await callCli(['sites:delete', siteId, '--force'])
 })
 
@@ -107,7 +110,7 @@ shouldTest('should deploy site when publish directory set in netlify.toml', asyn
 
 shouldTest('should deploy edge handlers when directory exists', async () => {
   if (!supportsEdgeHandlers(account)) {
-    console.warn(`Skipping edge handlers deploy test for account ${account.slug}`)
+    debug(`Skipping edge handlers deploy test for account ${account.slug}`)
     return
   }
   await withSiteBuilder('site-with-public-folder', async (builder) => {
@@ -125,7 +128,7 @@ shouldTest('should deploy edge handlers when directory exists', async () => {
       .withEdgeHandlers({
         handlers: {
           onRequest: (event) => {
-            console.log(`Incoming request for ${event.request.url}`)
+            debug(`Incoming request for ${event.request.url}`)
           },
         },
       })

@@ -2,7 +2,6 @@ const { RuleTester } = require('eslint')
 
 const rule = require('./index')
 
-// eslint-disable-next-line no-magic-numbers
 const ruleTester = new RuleTester({ parserOptions: { ecmaVersion: 2020 } })
 
 test.skip('should run the specified testRunner', () => {

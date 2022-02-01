@@ -2,6 +2,7 @@ const process = require('process')
 
 const callCli = require('./utils/call-cli')
 const { withSiteBuilder } = require('./utils/site-builder')
+const { normalize } = require('./utils/snapshots')
 
 test('should pass .env variables to exec command', async () => {
   await withSiteBuilder('site-env-file', async (builder) => {
@@ -13,7 +14,9 @@ test('should pass .env variables to exec command', async () => {
       cwd: builder.directory,
     })
 
-    expect(output.includes('Injected .env file env var: TEST')).toBe(true)
-    expect(output.includes('TEST=ENV_VAR')).toBe(true)
+    const normalizedOutput = normalize(output)
+
+    expect(normalizedOutput.includes('Injected .env file env var: TEST')).toBe(true)
+    expect(normalizedOutput.includes('TEST=ENV_VAR')).toBe(true)
   })
 })

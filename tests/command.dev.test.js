@@ -18,8 +18,8 @@ const { withMockApi } = require('./utils/mock-api')
 const { withSiteBuilder } = require('./utils/site-builder')
 
 // Increase Timeout as some tests are taking really long 🤯
-// eslint-disable-next-line no-magic-numbers
 jest.setTimeout(15_000)
+jest.retryTimes(5)
 
 const testMatrix = [
   { args: [] },

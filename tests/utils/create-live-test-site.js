@@ -2,6 +2,7 @@ const {
   env: { NETLIFY_TEST_ACCOUNT_SLUG },
 } = require('process')
 
+const debug = require('debug')('tests')
 const stripAnsi = require('strip-ansi')
 
 const callCli = require('./call-cli')
@@ -22,7 +23,7 @@ const listAccounts = async function () {
 }
 
 const createLiveTestSite = async function (siteName) {
-  console.log(`Creating new site for tests: ${siteName}`)
+  debug(`Creating new site for tests: ${siteName}`)
   const accounts = await listAccounts()
   if (!Array.isArray(accounts) || accounts.length <= 0) {
     throw new Error(`Can't find suitable account to create a site`)
@@ -31,7 +32,7 @@ const createLiveTestSite = async function (siteName) {
     ? accounts.find(({ slug }) => slug === NETLIFY_TEST_ACCOUNT_SLUG)
     : accounts[0]
   const accountSlug = account.slug
-  console.log(`Using account ${accountSlug} to create site: ${siteName}`)
+  debug(`Using account ${accountSlug} to create site: ${siteName}`)
   const cliResponse = await callCli(['sites:create', '--name', siteName, '--account-slug', accountSlug])
 
   const isSiteCreated = /Site Created/.test(cliResponse)
@@ -42,7 +43,7 @@ const createLiveTestSite = async function (siteName) {
   const matches = /Site ID:\s+([a-zA-Z\d-]+)/m.exec(stripAnsi(cliResponse))
   if (matches && Object.prototype.hasOwnProperty.call(matches, 1) && matches[1]) {
     const [, siteId] = matches
-    console.log(`Done creating site ${siteName} for account '${accountSlug}'. Site Id: ${siteId}`)
+    debug(`Done creating site ${siteName} for account '${accountSlug}'. Site Id: ${siteId}`)
     return { siteId, account }
   }
 

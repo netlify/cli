@@ -12,7 +12,6 @@ const { getCLIOptions, startMockApi } = require('./utils/mock-api')
 const { createSiteBuilder } = require('./utils/site-builder')
 
 // The test can take a little bit longer than the default 5s
-// eslint-disable-next-line no-magic-numbers
 jest.setTimeout(7000)
 
 let execOptions

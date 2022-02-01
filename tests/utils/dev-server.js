@@ -1,6 +1,7 @@
 const path = require('path')
 const process = require('process')
 
+const debug = require('debug')('tests')
 const execa = require('execa')
 const getPort = require('get-port')
 const omit = require('omit.js').default
@@ -38,7 +39,8 @@ const startServer = async ({ cwd, offline = true, env = {}, args = [], expectFai
   const port = await getPort({ port: tryPort })
   const host = 'localhost'
   const url = `http://${host}:${port}`
-  console.log(`Starting dev server on port: ${port} in directory ${path.basename(cwd)}`)
+
+  debug(`Starting dev server on port: ${port} in directory ${path.basename(cwd)}`)
   const ps = execa(
     cliPath,
     ['dev', offline ? '--offline' : '', '-p', port, '--staticServerPort', port + FRAMEWORK_PORT_SHIFT, ...args],
@@ -108,7 +110,7 @@ const tryAndLogOutput = async (func, outputBuffer) => {
   try {
     await func()
   } catch (error) {
-    console.log(outputBuffer.join(''))
+    debug(outputBuffer.join(''))
     throw error
   }
 }

@@ -117,7 +117,6 @@ test('should get the correct left over flags for the command', () => {
 test('should get no results if the command has no left over flags anymore', () => {
   const completion = getAutocompletion(
     // @ts-ignore
-    // eslint-disable-next-line no-magic-numbers
     { complete: true, words: 4, lastPartial: '', line: 'netlify bake --heat --heat-type --duration' },
     cookingFixtures,
   )
@@ -127,7 +126,6 @@ test('should get no results if the command has no left over flags anymore', () =
 test('should autocomplete flags', () => {
   const completion = getAutocompletion(
     // @ts-ignore
-    // eslint-disable-next-line no-magic-numbers
     { complete: true, words: 4, lastPartial: '--hea', line: 'netlify bake --heat --hea' },
     cookingFixtures,
   )
