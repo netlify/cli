@@ -2,7 +2,8 @@
 const config = {
   testEnvironment: 'node',
   verbose: true,
-  // testTimeout: 6_000,
+  // eslint-disable-next-line no-magic-numbers
+  testTimeout: 10_000,
   testMatch: ['**/*.test.{js,mjs}'],
   moduleFileExtensions: ['js', 'mjs'],
   collectCoverageFrom: ['**/*.{mjs,js,cjs}', '!**/node_modules/**'],

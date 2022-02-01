@@ -18,7 +18,7 @@ const { withSiteBuilder } = require('./utils/site-builder')
 
 // Some tests take more than 5 seconds which is the default timeout
 // eslint-disable-next-line no-magic-numbers
-jest.setTimeout(8000)
+jest.setTimeout(15_000)
 
 test('should return function response when invoked with no identity argument', async () => {
   await withSiteBuilder('function-invoke-with-no-identity-argument', async (builder) => {

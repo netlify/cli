@@ -16,6 +16,6 @@ const normalizers = [
 ]
 
 const normalize = (inputString) =>
-stripAnsi(normalizers.reduce((acc, { pattern, value }) => acc.replace(pattern, value), inputString))
+  stripAnsi(normalizers.reduce((acc, { pattern, value }) => acc.replace(pattern, value), inputString))
 
 module.exports = { normalize }

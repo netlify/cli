@@ -9,8 +9,8 @@ const { pause } = require('./utils/pause')
 const { withSiteBuilder } = require('./utils/site-builder')
 
 // Increase Timeout as some tests are taking really long 🤯
-// eslint-disable-next-line no-magic-numbers,unicorn/numeric-separators-style
-jest.setTimeout(8_000)
+// eslint-disable-next-line no-magic-numbers
+jest.setTimeout(15_000)
 
 const testMatrix = [{ args: [] }, { args: ['esbuild'] }]
 const testName = (title, args) => (args.length <= 0 ? title : `${title} - ${args.join(' ')}`)
