@@ -8,36 +8,31 @@ const fetch = require('node-fetch')
 const prettyjson = require('prettyjson')
 const { v4: uuidv4 } = require('uuid')
 
-const { chalk, error, log, logJson, track, warn } = require('../../utils')
+const { chalk, error, getRepoData, log, logJson, track, warn } = require('../../utils')
+const { configureRepo } = require('../../utils/init/config')
 const { getGitHubToken } = require('../../utils/init/config-github')
 
 const SITE_NAME_SUGGESTION_SUFFIX_LENGTH = 5
 
 let ghToken
 
-// Templates are hardcoded for now
-const templates = [
-  {
-    name: 'Next.js Blog theme',
-    sourceCodeUrl: 'https://github.com/netlify-templates/nextjs-blog-theme',
-    slug: 'netlify-templates/nextjs-blog-theme',
-  },
-  {
-    name: 'Next.js Starter',
-    sourceCodeUrl: 'https://github.com/netlify-templates/next-netlify-starter',
-    slug: 'netlify-templates/next-netlify-starter',
-  },
-  {
-    name: 'Nuxt.js Starter',
-    sourceCodeUrl: 'https://github.com/Gomah/bluise',
-    slug: 'Gomah/bluise',
-  },
-  {
-    name: 'Hugo Blog',
-    sourceCodeUrl: 'https://github.com/netlify-templates/one-click-hugo-cms',
-    slug: 'netlify-templates/one-click-hugo-cms',
-  },
-]
+const fetchTemplates = async (token) => {
+  const templatesFromGithubOrg = await fetch(`https://api.github.com/orgs/netlify-templates/repos`, {
+    method: 'GET',
+    headers: {
+      Authorization: `token ${token}`,
+    },
+  })
+  const allTemplates = await templatesFromGithubOrg.json()
+
+  return allTemplates
+    .filter((repo) => !repo.archived && !repo.private && !repo.disabled)
+    .map((template) => ({
+      name: template.name,
+      sourceCodeUrl: template.html_url,
+      slug: template.full_name,
+    }))
+}
 
 /**
  * The sites:create-template command
@@ -48,6 +43,11 @@ const sitesCreate = async (options, command) => {
   const { api } = command.netlify
 
   await command.authenticate()
+
+  const { globalConfig } = command.netlify
+  ghToken = await getGitHubToken({ globalConfig })
+
+  const templates = await fetchTemplates(ghToken)
 
   let { url: templateUrl } = options
 
@@ -141,7 +141,7 @@ const sitesCreate = async (options, command) => {
       const createGhRepoResp = await fetch(`https://api.github.com/repos/${templateUrl.templateName}/generate`, {
         method: 'POST',
         headers: {
-          Authorization: `token ${ghToken.token}`,
+          Authorization: `token ${ghToken}`,
         },
         body: JSON.stringify({
           name: siteName,
@@ -185,8 +185,6 @@ const sitesCreate = async (options, command) => {
       }
     }
   }
-  const { globalConfig } = command.netlify
-  ghToken = await getGitHubToken({ globalConfig })
 
   await inputSiteName(nameFlag)
 
@@ -204,11 +202,17 @@ const sitesCreate = async (options, command) => {
     }),
   )
 
-  track('sites_created', {
+  track('sites_createdFromTemplate', {
     siteId: site.id,
     adminUrl: site.admin_url,
     siteUrl,
   })
+
+  if (options.withCi) {
+    log('Configuring CI')
+    const repoData = await getRepoData()
+    await configureRepo({ command, siteId: site.id, repoData, manual: options.manual })
+  }
 
   if (options.json) {
     logJson(
@@ -258,6 +262,7 @@ Create a site from a starter template.`,
     .option('-n, --name [name]', 'name of site')
     .option('-u, --url [url]', 'template url')
     .option('-a, --account-slug [slug]', 'account slug to create the site under')
+    .option('-c, --with-ci', 'initialize CI hooks during site creation')
     .addHelpText('after', `(Beta) Create a site from starter template.`)
     .action(sitesCreate)
 
