@@ -649,6 +649,49 @@ test('should serve helpful tips and tricks', async () => {
   })
 })
 
+test('should emulate next_run for scheduled functions', async () => {
+  await withSiteBuilder('site-with-isc-ping-function', async (builder) => {
+    await builder
+      .withNetlifyToml({
+        config: { functions: { directory: 'functions' } },
+      })
+      // mocking until https://github.com/netlify/functions/pull/226 landed
+      .withContentFile({
+        path: 'node_modules/@netlify/functions/package.json',
+        content: `{}`,
+      })
+      .withContentFile({
+        path: 'node_modules/@netlify/functions/index.js',
+        content: `
+          module.exports.schedule = (schedule, handler) => handler
+          `,
+      })
+      .withContentFile({
+        path: 'functions/hello-world.js',
+        content: `
+          const { schedule } = require('@netlify/functions')
+          module.exports.handler = schedule("@daily", (event) => {
+            const { next_run } = JSON.parse(event.body)
+            return {
+              statusCode: !!next_run ? 200 : 400,
+            }
+          })
+          `.trim(),
+      })
+      .buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async (server) => {
+      const response = await got(`http://localhost:${server.port}/.netlify/functions/hello-world`, {
+        throwHttpErrors: false,
+        retry: null,
+      })
+
+      expect(response.statusCode).toBe(200)
+    })
+  })
+  expect.assertions(1)
+})
+
 test('should detect netlify-toml defined scheduled functions', async () => {
   await withSiteBuilder('site-with-netlify-toml-ping-function', async (builder) => {
     await builder
