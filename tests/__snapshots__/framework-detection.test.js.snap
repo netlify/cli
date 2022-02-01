@@ -112,9 +112,9 @@ sh: react-scripts: command not found
 ◈ Netlify Dev ◈
 ? Multiple possible start commands found (Use arrow keys or type to search)
 > [Gatsby] 'npm run develop' 
-  [Create React App] 'npm run start' [2A[37D[75C[2B[2K[1A[2K[1A[2K[G? Multiple possible start commands found 
+  [Create React App] 'npm run start' ? Multiple possible start commands found 
   [Gatsby] 'npm run develop' 
-> [Create React App] 'npm run start' [2A[37D[41C[2B[2K[1A[2K[1A[2K[G? Multiple possible start commands found Create React App-npm run start[71D[71C
+> [Create React App] 'npm run start' ? Multiple possible start commands found Create React App-npm run start
 Add 'framework = \\"create-react-app\\"' to the [dev] section of your netlify.toml to avoid this selection prompt next time
 ◈ Starting Netlify Dev with Create React App
 

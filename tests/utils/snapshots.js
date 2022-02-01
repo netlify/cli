@@ -1,3 +1,5 @@
+const stripAnsi = require('strip-ansi')
+
 const normalizers = [
   { pattern: /netlify-cli\/.+node-.+/g, value: 'netlify-cli/test-version test-os test-node-version' },
   // normalize random ports
@@ -14,6 +16,6 @@ const normalizers = [
 ]
 
 const normalize = (inputString) =>
-  normalizers.reduce((acc, { pattern, value }) => acc.replace(pattern, value), inputString)
+stripAnsi(normalizers.reduce((acc, { pattern, value }) => acc.replace(pattern, value), inputString))
 
 module.exports = { normalize }

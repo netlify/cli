@@ -51,6 +51,6 @@ test('should send netlify-cli/<version> user-agent', async () => {
     expect(requests.length !== 0).toBe(true)
     // example: netlify-cli/6.14.25 darwin-x64 node-v16.13.0
     const userAgent = requests[0].headers['user-agent']
-    expect(userAgent.startsWith(`${name}/${version}`)).toBeTruthy()
+    expect(userAgent.trim()).toMatch(new RegExp(`^${name}/${version}`, 'gm'))
   })
 })
