@@ -9,7 +9,7 @@ const prettyjson = require('prettyjson')
 const { v4: uuidv4 } = require('uuid')
 
 const { chalk, error, log, logJson, track, warn } = require('../../utils')
-const { getGitHubToken } = require('../../utils/gh-auth')
+const { getGitHubToken } = require('../../utils/init/config-github')
 
 const SITE_NAME_SUGGESTION_SUFFIX_LENGTH = 5
 
@@ -150,14 +150,16 @@ const sitesCreate = async (options, command) => {
       const resp = await createGhRepoResp.json()
 
       if (resp.errors) {
-        const error_ = resp.errors[0].includes('Name already exists on this account')
-          ? new Error(
-              `Oh no! We found already a repository with this name. It seems you have already created a template with the name ${templateUrl.templateName}. Please try to run the command again and provide a different name.`,
-            )
-          : new Error(
-              `Oops! Seems like something went wrong trying to create the repository. We're getting the following error: '${resp.errors[0]}'. You can try to re-run this command again or open an issue in our repository: https://github.com/netlify/cli/issues`,
-            )
-        throw error_
+        if (resp.errors[0].includes('Name already exists on this account')) {
+          warn(
+            `Oh no! We found already a repository with this name. It seems you have already created a template with the name ${templateUrl.templateName}. Please try to run the command again and provide a different name.`,
+          )
+          await inputSiteName()
+        } else {
+          throw new Error(
+            `Oops! Seems like something went wrong trying to create the repository. We're getting the following error: '${resp.errors[0]}'. You can try to re-run this command again or open an issue in our repository: https://github.com/netlify/cli/issues`,
+          )
+        }
       } else {
         site = await api.createSiteInTeam({
           accountSlug,
@@ -183,10 +185,9 @@ const sitesCreate = async (options, command) => {
       }
     }
   }
-  // In case the user picked a site's name that already existed, we shouldn't ask to authenticate again.
-  if (!ghToken) {
-    ghToken = await getGitHubToken()
-  }
+  const { globalConfig } = command.netlify
+  ghToken = await getGitHubToken({ globalConfig })
+
   await inputSiteName(nameFlag)
 
   log()
@@ -260,4 +261,4 @@ Create a site from a starter template.`,
     .addHelpText('after', `(Beta) Create a site from starter template.`)
     .action(sitesCreate)
 
-module.exports = { createSitesFromTemplateCommand, sitesCreate }
+module.exports = { createSitesFromTemplateCommand }
