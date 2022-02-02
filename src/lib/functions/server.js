@@ -106,7 +106,7 @@ const createHandler = function ({ config, functionsRegistry }) {
       rawQuery,
     }
 
-    if (config.authlify && config.authlify.authlifyTokenId != null) {
+    if (config && config.authlify && config.authlify.authlifyTokenId != null) {
       const { authlifyTokenId, netlifyToken, siteId } = config.authlify
       event.authlifyToken = generateAuthlifyJWT(netlifyToken, authlifyTokenId, siteId)
     }
