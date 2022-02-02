@@ -22,6 +22,7 @@ const {
   detectServerSettings,
   error,
   exit,
+  generateAuthlifyJWT,
   getSiteInformation,
   injectEnvVariables,
   log,
@@ -253,7 +254,29 @@ const dev = async (options, command) => {
     )
   }
 
-  await injectEnvVariables({ env: command.netlify.cachedConfig.env, site })
+  const startNetlifyGraphWatcher = Boolean(options.graph)
+  const netlifyToken = await command.authenticate()
+  let authlifyJWT
+
+  if (startNetlifyGraphWatcher) {
+    authlifyJWT = generateAuthlifyJWT(netlifyToken, siteInfo.authlify_token_id, site.id)
+  }
+
+  await injectEnvVariables({
+    env: Object.assign(
+      command.netlify.cachedConfig.env,
+      authlifyJWT == null
+        ? {}
+        : {
+            ONEGRAPH_AUTHLIFY_TOKEN: {
+              sources: ['general'],
+              value: authlifyJWT,
+            },
+          },
+    ),
+    site,
+  })
+
   const { addonsUrls, capabilities, siteUrl, timeouts } = await getSiteInformation({
     // inherited from base command --offline
     offline: options.offline,
@@ -273,8 +296,16 @@ const dev = async (options, command) => {
 
   command.setAnalyticsPayload({ projectType: settings.framework || 'custom', live: options.live })
 
+  const configWithAuthlify = Object.assign(config, {
+    authlify: {
+      netlifyToken,
+      authlifyTokenId: siteInfo.authlify_token_id,
+      siteId: site.id,
+    },
+  })
+
   await startFunctionsServer({
-    config,
+    config: configWithAuthlify,
     settings,
     site,
     siteUrl,
@@ -295,8 +326,6 @@ const dev = async (options, command) => {
   process.env.URL = url
   process.env.DEPLOY_URL = url
 
-  const startNetlifyGraphWatcher = Boolean(options.graph)
-
   if (startNetlifyGraphWatcher && options.offline) {
     warn(`Unable to start Netlify Graph in offline mode`)
   } else if (startNetlifyGraphWatcher && !site.id) {
@@ -306,7 +335,6 @@ const dev = async (options, command) => {
       )} or ${chalk.yellow('netlify link')}.`,
     )
   } else if (startNetlifyGraphWatcher) {
-    const netlifyToken = await command.authenticate()
     await OneGraphCliClient.ensureAppForSite(netlifyToken, site.id)
     const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options, settings })
 
