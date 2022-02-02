@@ -207,7 +207,7 @@ const generateAuthlifyJWT = (netlifyToken, authlifyTokenId, siteId) => {
   }
 
   return jwt.sign(
-    claims,
+    { 'https://netlify.com/jwt/claims': claims },
     // doesn't matter. OneGraph doesn't check the signature. The presence of
     // the Netlify API bearer token is enough because we've authenticated the
     // user through `command.authenticate()`
