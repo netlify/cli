@@ -35,8 +35,8 @@ test('netlify graph function codegen', (t) => {
     noLocation: true,
   })
 
-  const operations = extractFunctionsFromOperationDoc(parsedDoc)
-  const generatedFunctions = generateFunctionsSource(netlifyGraphConfig, schema, appOperationsDoc, operations)
+  const { fragments, functions } = extractFunctionsFromOperationDoc(parsedDoc)
+  const generatedFunctions = generateFunctionsSource(netlifyGraphConfig, schema, appOperationsDoc, functions, fragments)
 
   t.snapshot(normalize(JSON.stringify(generatedFunctions)))
 })
