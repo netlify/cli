@@ -1,5 +1,3 @@
-const process = require('process')
-
 const test = require('ava')
 const execa = require('execa')
 const stripAnsi = require('strip-ansi')
@@ -13,9 +11,7 @@ const { withMockApi } = require('./utils/mock-api')
  * @type {import('ava').TestInterface}
  */
 
-const windowsSkip = process.platform === 'win32' ? test.skip : test
-
-windowsSkip.skip('netlify sites:create-template', async (t) => {
+test.skip('netlify sites:create-template', async (t) => {
   const siteTemplateQuestions = [
     { question: 'Template: (Use arrow keys)', answer: CONFIRM },
     { question: 'Team: (Use arrow keys)', answer: CONFIRM },
