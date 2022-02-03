@@ -15,7 +15,7 @@
         "@netlify/framework-info": "^9.0.0",
         "@netlify/local-functions-proxy": "^1.1.1",
         "@netlify/plugin-edge-handlers": "^3.0.4",
-        "@netlify/plugins-list": "^6.3.1",
+        "@netlify/plugins-list": "^6.6.0",
         "@netlify/routing-local-proxy": "^0.34.1",
         "@netlify/zip-it-and-ship-it": "^5.5.0",
         "@octokit/rest": "^18.0.0",
@@ -57,7 +57,7 @@
         "gh-release-fetch": "^3.0.0",
         "git-repo-info": "^2.1.0",
         "gitconfiglocal": "^2.1.0",
-        "graphql": "^16.3.0",
+        "graphql": "^16.1.0",
         "hasbin": "^1.2.3",
         "hasha": "^5.2.2",
         "http-proxy": "^1.18.0",
@@ -148,7 +148,7 @@
         "tomlify-j0.4": "^3.0.0",
         "tree-kill": "^1.2.2",
         "typescript": "^4.4.4",
-        "verdaccio": "^5.5.2"
+        "verdaccio": "^5.4.0"
       },
       "engines": {
         "node": "^12.20.0 || ^14.14.0 || >=16.0.0"
@@ -2911,9 +2911,9 @@
       }
     },
     "node_modules/@netlify/plugins-list": {
-      "version": "6.3.2",
-      "resolved": "https://registry.npmjs.org/@netlify/plugins-list/-/plugins-list-6.3.2.tgz",
-      "integrity": "sha512-rQ6sZirWDGEJ52xGm1fMolZ9GoxTpAvql7bfzBp8qsBNj7CHbDa0iCJKvSUpNSXx82wLFhFrUHWT5MntLj/D/w==",
+      "version": "6.6.0",
+      "resolved": "https://registry.npmjs.org/@netlify/plugins-list/-/plugins-list-6.6.0.tgz",
+      "integrity": "sha512-JaRh4NO4k5c7GfwJPVySAXhX7VO0zj23DNr4chVyh/q7q/jNZGsUQcvHfM6OyT3zWFlDjb5BrEf4CKFGYt8g5A==",
       "engines": {
         "node": "^12.20.0 || ^14.14.0 || >=16.0.0"
       }
@@ -23633,9 +23633,9 @@
       }
     },
     "@netlify/plugins-list": {
-      "version": "6.3.2",
-      "resolved": "https://registry.npmjs.org/@netlify/plugins-list/-/plugins-list-6.3.2.tgz",
-      "integrity": "sha512-rQ6sZirWDGEJ52xGm1fMolZ9GoxTpAvql7bfzBp8qsBNj7CHbDa0iCJKvSUpNSXx82wLFhFrUHWT5MntLj/D/w=="
+      "version": "6.6.0",
+      "resolved": "https://registry.npmjs.org/@netlify/plugins-list/-/plugins-list-6.6.0.tgz",
+      "integrity": "sha512-JaRh4NO4k5c7GfwJPVySAXhX7VO0zj23DNr4chVyh/q7q/jNZGsUQcvHfM6OyT3zWFlDjb5BrEf4CKFGYt8g5A=="
     },
     "@netlify/routing-local-proxy": {
       "version": "0.34.1",
