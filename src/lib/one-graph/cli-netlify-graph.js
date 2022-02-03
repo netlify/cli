@@ -32,7 +32,7 @@ const filterRelativePathItems = (items) => items.filter((part) => part !== '')
  */
 const makeDefaultNetlifGraphConfig = ({ baseConfig, detectedFunctionsPath }) => {
   const functionsPath = filterRelativePathItems([...detectedFunctionsPath])
-  const webhookBasePath = "/.netlify/functions"
+  const webhookBasePath = '/.netlify/functions'
   const netlifyGraphPath = [...functionsPath, 'netlifyGraph']
   const netlifyGraphImplementationFilename = [...netlifyGraphPath, `index.${baseConfig.extension}`]
   const netlifyGraphTypeDefinitionsFilename = [...netlifyGraphPath, `index.d.ts`]
@@ -62,7 +62,7 @@ const makeDefaultNetlifGraphConfig = ({ baseConfig, detectedFunctionsPath }) => 
  */
 const makeDefaultNextJsNetlifGraphConfig = ({ baseConfig, siteRoot }) => {
   const functionsPath = filterRelativePathItems([...siteRoot, 'pages', 'api'])
-  const webhookBasePath = "/api"
+  const webhookBasePath = '/api'
   const netlifyGraphPath = filterRelativePathItems([...siteRoot, 'lib', 'netlifyGraph'])
   const netlifyGraphImplementationFilename = [...netlifyGraphPath, `index.${baseConfig.extension}`]
   const netlifyGraphTypeDefinitionsFilename = [...netlifyGraphPath, `index.d.ts`]
@@ -92,8 +92,11 @@ const makeDefaultNextJsNetlifGraphConfig = ({ baseConfig, siteRoot }) => {
  */
 const makeDefaultRemixNetlifGraphConfig = ({ baseConfig, detectedFunctionsPath, siteRoot }) => {
   const functionsPath = filterRelativePathItems([...detectedFunctionsPath])
-  const webhookBasePath = "/webhooks"
-  const netlifyGraphPath = filterRelativePathItems([...siteRoot, ...NetlifyGraph.defaultNetlifyGraphConfig.netlifyGraphPath])
+  const webhookBasePath = '/webhooks'
+  const netlifyGraphPath = filterRelativePathItems([
+    ...siteRoot,
+    ...NetlifyGraph.defaultNetlifyGraphConfig.netlifyGraphPath,
+  ])
   const netlifyGraphImplementationFilename = [...netlifyGraphPath, `index.${baseConfig.extension}`]
   const netlifyGraphTypeDefinitionsFilename = [...netlifyGraphPath, `index.d.ts`]
   const graphQLOperationsSourceFilename = [...netlifyGraphPath, NetlifyGraph.defaultSourceOperationsFilename]
@@ -116,8 +119,8 @@ const makeDefaultRemixNetlifGraphConfig = ({ baseConfig, detectedFunctionsPath, 
 
 const defaultFrameworkLookup = {
   'Next.js': makeDefaultNextJsNetlifGraphConfig,
-  "Remix": makeDefaultRemixNetlifGraphConfig,
-  "default": makeDefaultNetlifGraphConfig,
+  Remix: makeDefaultRemixNetlifGraphConfig,
+  default: makeDefaultNetlifGraphConfig,
 }
 
 /**
@@ -145,7 +148,7 @@ const getNetlifyGraphConfig = async ({ command, options, settings }) => {
       settings = await detectServerSettings(devConfig, options, site.root)
     } catch (detectServerSettingsError) {
       settings = {}
-      warn("Error while auto-detecting project settings, Netlify Graph encounter problems", detectServerSettingsError)
+      warn('Error while auto-detecting project settings, Netlify Graph encounter problems', detectServerSettingsError)
     }
   }
 
@@ -158,21 +161,46 @@ const getNetlifyGraphConfig = async ({ command, options, settings }) => {
   const makeDefaultFrameworkConfig = defaultFrameworkLookup[framework] || defaultFrameworkLookup.default
 
   const detectedFunctionsPathString = getFunctionsDir({ config, options })
-  const detectedFunctionsPath = detectedFunctionsPathString ? [path.sep, ...detectedFunctionsPathString.split(path.sep)] : null
+  const detectedFunctionsPath = detectedFunctionsPathString
+    ? [path.sep, ...detectedFunctionsPathString.split(path.sep)]
+    : null
   const baseConfig = { ...NetlifyGraph.defaultNetlifyGraphConfig, ...userSpecifiedConfig }
   const defaultFrameworkConfig = makeDefaultFrameworkConfig({ baseConfig, detectedFunctionsPath, siteRoot })
 
-  const functionsPath = userSpecifiedConfig.functionsPath?.split(path.sep) || defaultFrameworkConfig.functionsPath
-  const netlifyGraphPath = userSpecifiedConfig.netlifyGraphPath?.split(path.sep) || defaultFrameworkConfig.netlifyGraphPath
-  const netlifyGraphImplementationFilename = userSpecifiedConfig.netlifyGraphImplementationFilename?.split(path.sep) || defaultFrameworkConfig.netlifyGraphImplementationFilename
-  const netlifyGraphTypeDefinitionsFilename = userSpecifiedConfig.netlifyGraphTypeDefinitionsFilename?.split(path.sep) || defaultFrameworkConfig.netlifyGraphTypeDefinitionsFilename
-  const graphQLOperationsSourceFilename = userSpecifiedConfig.graphQLOperationsSourceFilename?.split(path.sep) || defaultFrameworkConfig.graphQLOperationsSourceFilename
-  const graphQLSchemaFilename = userSpecifiedConfig.graphQLSchemaFilename?.split(path.sep) || defaultFrameworkConfig.graphQLSchemaFilename
-  const netlifyGraphRequirePath = userSpecifiedConfig.netlifyGraphRequirePath?.split(path.sep) || defaultFrameworkConfig.netlifyGraphRequirePath
-  const moduleType = userSpecifiedConfig.moduleType?.split(path.sep) || defaultFrameworkConfig.moduleType
-  const language = userSpecifiedConfig.language?.split(path.sep) || autodetectedLanguage
-  const webhookBasePath = userSpecifiedConfig.webhookBasePath?.split(path.sep) || defaultFrameworkConfig.webhookBasePath
-  const customGeneratorFile = userSpecifiedConfig.customGeneratorFile?.split(path.sep)
+  const functionsPath =
+    (userSpecifiedConfig.functionsPath && userSpecifiedConfig.functionsPath.split(path.sep)) ||
+    defaultFrameworkConfig.functionsPath
+  const netlifyGraphPath =
+    (userSpecifiedConfig.netlifyGraphPath && userSpecifiedConfig.netlifyGraphPath.split(path.sep)) ||
+    defaultFrameworkConfig.netlifyGraphPath
+  const netlifyGraphImplementationFilename =
+    (userSpecifiedConfig.netlifyGraphImplementationFilename &&
+      userSpecifiedConfig.netlifyGraphImplementationFilename.split(path.sep)) ||
+    defaultFrameworkConfig.netlifyGraphImplementationFilename
+  const netlifyGraphTypeDefinitionsFilename =
+    (userSpecifiedConfig.netlifyGraphTypeDefinitionsFilename &&
+      userSpecifiedConfig.netlifyGraphTypeDefinitionsFilename.split(path.sep)) ||
+    defaultFrameworkConfig.netlifyGraphTypeDefinitionsFilename
+  const graphQLOperationsSourceFilename =
+    (userSpecifiedConfig.graphQLOperationsSourceFilename &&
+      userSpecifiedConfig.graphQLOperationsSourceFilename.split(path.sep)) ||
+    defaultFrameworkConfig.graphQLOperationsSourceFilename
+  const graphQLSchemaFilename =
+    (userSpecifiedConfig.graphQLSchemaFilename && userSpecifiedConfig.graphQLSchemaFilename.split(path.sep)) ||
+    defaultFrameworkConfig.graphQLSchemaFilename
+  const netlifyGraphRequirePath =
+    (userSpecifiedConfig.netlifyGraphRequirePath && userSpecifiedConfig.netlifyGraphRequirePath.split(path.sep)) ||
+    defaultFrameworkConfig.netlifyGraphRequirePath
+  const moduleType =
+    (userSpecifiedConfig.moduleType && userSpecifiedConfig.moduleType.split(path.sep)) ||
+    defaultFrameworkConfig.moduleType
+  const language =
+    (userSpecifiedConfig.language && userSpecifiedConfig.language.split(path.sep)) || autodetectedLanguage
+  const webhookBasePath =
+    (userSpecifiedConfig.webhookBasePath && userSpecifiedConfig.webhookBasePath.split(path.sep)) ||
+    defaultFrameworkConfig.webhookBasePath
+  const customGeneratorFile =
+    userSpecifiedConfig.customGeneratorFile && userSpecifiedConfig.customGeneratorFile.split(path.sep)
   const runtimeTargetEnv = userSpecifiedConfig.runtimeTargetEnv || defaultFrameworkConfig.runtimeTargetEnv || 'node'
 
   const fullConfig = {
@@ -189,7 +217,7 @@ const getNetlifyGraphConfig = async ({ command, options, settings }) => {
     language,
     moduleType,
     customGeneratorFile,
-    runtimeTargetEnv
+    runtimeTargetEnv,
   }
 
   return fullConfig
@@ -226,7 +254,7 @@ const generateFunctionsFile = ({ fragments, functions, netlifyGraphConfig, opera
     schema,
     operationsDoc,
     functions,
-    fragments
+    fragments,
   )
 
   ensureNetlifyGraphPath(netlifyGraphConfig)
