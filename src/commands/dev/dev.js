@@ -255,10 +255,10 @@ const dev = async (options, command) => {
   }
 
   const startNetlifyGraphWatcher = Boolean(options.graph)
-  const netlifyToken = await command.authenticate()
   let authlifyJWT
 
   if (startNetlifyGraphWatcher) {
+    const netlifyToken = await command.authenticate()
     authlifyJWT = generateAuthlifyJWT(netlifyToken, siteInfo.authlify_token_id, site.id)
   }
 
@@ -296,13 +296,23 @@ const dev = async (options, command) => {
 
   command.setAnalyticsPayload({ projectType: settings.framework || 'custom', live: options.live })
 
-  const configWithAuthlify = Object.assign(config, {
-    authlify: {
-      netlifyToken,
-      authlifyTokenId: siteInfo.authlify_token_id,
-      siteId: site.id,
-    },
-  })
+  let configWithAuthlify
+
+  if (siteInfo.authlify_token_id) {
+    const netlifyToken = command.authenticate()
+    // Only inject the authlify config if a token ID exists. This prevents
+    // calling command.authenticate() (which opens a browser window) if the
+    // user hasn't enabled API Authentication
+    configWithAuthlify = Object.assign(config, {
+      authlify: {
+        netlifyToken,
+        authlifyTokenId: siteInfo.authlify_token_id,
+        siteId: site.id,
+      },
+    })
+  } else {
+    configWithAuthlify = config
+  }
 
   await startFunctionsServer({
     config: configWithAuthlify,
@@ -335,6 +345,7 @@ const dev = async (options, command) => {
       )} or ${chalk.yellow('netlify link')}.`,
     )
   } else if (startNetlifyGraphWatcher) {
+    const netlifyToken = await command.authenticate()
     await OneGraphCliClient.ensureAppForSite(netlifyToken, site.id)
     const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options, settings })
 
