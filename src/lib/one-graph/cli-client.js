@@ -138,9 +138,9 @@ const refetchAndGenerateFromOneGraph = async (input) => {
   }
 
   const parsedDoc = parse(currentOperationsDoc)
-  const operations = extractFunctionsFromOperationDoc(parsedDoc)
+  const { fragments, functions } = extractFunctionsFromOperationDoc(parsedDoc)
 
-  generateFunctionsFile(netlifyGraphConfig, schema, currentOperationsDoc, operations)
+  generateFunctionsFile({ netlifyGraphConfig, schema, operationsDoc: currentOperationsDoc, functions, fragments })
   writeGraphQLSchemaFile(netlifyGraphConfig, schema)
   state.set('oneGraphEnabledServices', enabledServices)
 }
@@ -170,8 +170,8 @@ const updateGraphQLOperationsFile = async (input) => {
   const parsedDoc = parse(appOperationsDoc, {
     noLocation: true,
   })
-  const operations = extractFunctionsFromOperationDoc(parsedDoc)
-  generateFunctionsFile(netlifyGraphConfig, schema, appOperationsDoc, operations)
+  const { fragments, functions } = extractFunctionsFromOperationDoc(parsedDoc)
+  generateFunctionsFile({ netlifyGraphConfig, schema, operationsDoc: appOperationsDoc, functions, fragments })
 }
 
 const handleCliSessionEvent = async ({ event, netlifyGraphConfig, netlifyToken, schema, siteId }) => {
