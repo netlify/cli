@@ -1,8 +1,8 @@
 // @ts-check
-const { createMainCommand } = require('../../src/commands')
-const { sortOptions } = require('../../src/utils')
+import main from '../../src/commands/index.js'
+import utils from '../../src/utils/index.js'
 
-const program = createMainCommand()
+const program = main.createMainCommand()
 
 /** @type {Array<import('../../src/commands/base-command').BaseCommand>} */
 // @ts-ignore typecast needed
@@ -21,7 +21,7 @@ const parseCommand = function (command) {
 
   const flags = command.options
     .filter((option) => !option.hidden)
-    .sort(sortOptions)
+    .sort(utils.sortOptions)
     .reduce((prev, cur) => {
       const name = cur.long.replace('--', '')
       const contentType = cur.argChoices ? cur.argChoices.join(' | ') : 'string'
@@ -49,7 +49,7 @@ const parseCommand = function (command) {
   }
 }
 
-const generateCommandData = function () {
+export const generateCommandData = function () {
   return (
     commands
       // filter out sub commands
@@ -58,5 +58,3 @@ const generateCommandData = function () {
       .reduce((prev, command) => ({ ...prev, [command.name()]: parseCommand(command) }), {})
   )
 }
-
-module.exports = { generateCommandData }
