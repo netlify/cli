@@ -8,8 +8,6 @@ const { grey } = require('chalk')
 const execa = require('execa')
 const { sync } = require('fast-glob')
 
-const { ava } = require('../package.json')
-
 const { DependencyGraph, fileVisitor, visitorPlugins } = require('./project-graph')
 
 const getChangedFiles = async (compareTarget = 'origin/main') => {
@@ -28,10 +26,14 @@ const getChangedFiles = async (compareTarget = 'origin/main') => {
 const getAffectedFiles = (changedFiles) => {
   // glob is using only posix file paths on windows we need the `\`
   // by using join the paths are adjusted to the operating system
-  const testFiles = sync(ava.files).map((filePath) => join(filePath))
+  const testFiles = sync(['tests/integration/**/*.test.js']).map((filePath) => join(filePath))
 
   // in this case all files are affected
-  if (changedFiles.includes('npm-shrinkwrap.json') || changedFiles.includes('package.json')) {
+  if (
+    changedFiles.includes('npm-shrinkwrap.json') ||
+    changedFiles.includes('package.json') ||
+    changedFiles.includes(join('.github', 'workflows', 'main.yml'))
+  ) {
     console.log('All files are affected based on the changeset')
     return testFiles
   }
