@@ -92,9 +92,7 @@ const sitesCreate = async (options, command) => {
 
   // Allow the user to reenter site name if selected one isn't available
   const inputSiteName = async (name) => {
-    let siteSuggestion
-
-    const inputName = await getSiteNameInput(name, user, api)
+    const { name: inputName, siteSuggestion } = await getSiteNameInput(name, user, api)
 
     try {
       const siteName = inputName ? inputName.trim() : siteSuggestion

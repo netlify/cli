@@ -14,6 +14,7 @@ const { link } = require('../link')
 const SITE_NAME_SUGGESTION_SUFFIX_LENGTH = 5
 
 const getSiteNameInput = async (name, user, api) => {
+  let siteSuggestion
   if (!user) user = await api.getCurrentUser()
 
   if (!name) {
@@ -35,7 +36,7 @@ const getSiteNameInput = async (name, user, api) => {
       `the-great-${slug}-site${suffix}`,
       `isnt-${slug}-awesome${suffix}`,
     ]
-    const siteSuggestion = sample(suggestions)
+    siteSuggestion = sample(suggestions)
 
     console.log(
       `Choose a unique site name (e.g. ${siteSuggestion}.netlify.app) or leave it blank for a random name. You can update the site name later.`,
@@ -52,7 +53,7 @@ const getSiteNameInput = async (name, user, api) => {
     name = nameInput
   }
 
-  return name
+  return { name, siteSuggestion }
 }
 
 /**
@@ -89,7 +90,7 @@ const sitesCreate = async (options, command) => {
 
   // Allow the user to reenter site name if selected one isn't available
   const inputSiteName = async (name) => {
-    const siteName = await getSiteNameInput(name, user, api)
+    const { name: siteName } = await getSiteNameInput(name, user, api)
 
     const body = {}
     if (typeof siteName === 'string') {
