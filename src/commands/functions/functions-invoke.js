@@ -3,7 +3,6 @@ const fs = require('fs')
 const path = require('path')
 const process = require('process')
 
-const CronParser = require('cron-parser')
 const inquirer = require('inquirer')
 const fetch = require('node-fetch')
 
@@ -131,13 +130,6 @@ const getFunctionToTrigger = function (options, argumentName) {
   return argumentName
 }
 
-const getNextRun = function (schedule) {
-  const cron = CronParser.parseExpression(schedule, {
-    tz: 'Etc/UTC',
-  })
-  return cron.next().toDate()
-}
-
 /**
  * The functions:invoke command
  * @param {string} nameArgument
@@ -156,7 +148,7 @@ const functionsInvoke = async (nameArgument, options, command) => {
     console.warn(`${NETLIFYDEVWARN} "port" flag was not specified. Attempting to connect to localhost:8888 by default`)
   const port = options.port || DEFAULT_PORT
 
-  const functions = await getFunctions(functionsDir)
+  const functions = await getFunctions(functionsDir, config)
   const functionToTrigger = await getNameFromArgs(functions, options, nameArgument)
   const functionObj = functions.find((func) => func.name === functionToTrigger)
 
@@ -164,10 +156,8 @@ const functionsInvoke = async (nameArgument, options, command) => {
   let body = {}
 
   if (functionObj.schedule) {
-    body.next_run = getNextRun(functionObj.schedule)
     headers = {
       'user-agent': CLOCKWORK_USERAGENT,
-      'X-NF-Event': 'schedule',
     }
   } else if (eventTriggeredFunctions.has(functionToTrigger)) {
     /** handle event triggered fns  */

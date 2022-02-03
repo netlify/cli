@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "8.15.1",
+  "version": "8.15.3",
   "author": "Netlify Inc.",
   "contributors": [
     "Mathias Biilmann <matt@netlify.com> (https://twitter.com/biilmann)",
@@ -55,14 +55,14 @@
     "format:check:prettier": "cross-env-shell prettier --check $npm_package_config_prettier",
     "format:fix:prettier": "cross-env-shell prettier --write $npm_package_config_prettier",
     "test:dev": "run-s test:init:* test:dev:*",
-    "test:ci": "run-s test:ci:*",
     "test:init": "run-s test:init:*",
     "test:init:cli-version": "npm run start -- --version",
     "test:init:cli-help": "npm run start -- --help",
-    "test:init:eleventy-deps": "npm ci --prefix tests/eleventy-site --no-audit",
-    "test:init:hugo-deps": "npm ci --prefix tests/hugo-site --no-audit",
+    "test:init:eleventy-deps": "npm ci --prefix tests/integration/eleventy-site --no-audit",
+    "test:init:hugo-deps": "npm ci --prefix tests/integration/hugo-site --no-audit",
     "test:dev:ava": "ava --verbose",
-    "test:ci:ava": "c8 -r json ava",
+    "test:ci:ava:unit": "c8 -r json ava --no-worker-threads tests/unit/**/*.test.js tools/**/*.test.js",
+    "test:ci:ava:integration": "c8 -r json ava --concurrency 1 --no-worker-threads tests/integration/**/*.test.js",
     "test:affected": "node ./tools/affected-test.js",
     "e2e": "node ./tools/e2e/run.mjs",
     "docs": "node ./site/scripts/docs.js",
@@ -215,10 +215,8 @@
   },
   "ava": {
     "files": [
-      "site/**/*.test.js",
-      "src/**/*.test.js",
       "tools/**/*.test.js",
-      "tests/*.test.js"
+      "tests/**/*.test.js"
     ],
     "cache": true,
     "concurrency": 5,
