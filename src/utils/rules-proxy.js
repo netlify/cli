@@ -11,12 +11,19 @@ const { fileExistsAsync } = require('../lib/fs')
 const { NETLIFYDEVLOG } = require('./command-helpers')
 const { parseRedirects } = require('./redirects')
 
+const watchers = []
+
 const onChanges = function (files, listener) {
   files.forEach((file) => {
     const watcher = chokidar.watch(file)
     watcher.on('change', listener)
     watcher.on('unlink', listener)
+    watchers.push(watcher)
   })
+}
+
+const getWatchers = function () {
+  return watchers
 }
 
 const getLanguage = function (headers) {
@@ -97,4 +104,5 @@ module.exports = {
   onChanges,
   getLanguage,
   createRewriter,
+  getWatchers,
 }
