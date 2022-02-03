@@ -1,10 +1,19 @@
 // @ts-check
+const CronParser = require('cron-parser')
+
 const { error: errorExit } = require('../../utils/command-helpers')
 
 const BACKGROUND_SUFFIX = '-background'
 
 // Returns a new set with all elements of `setA` that don't exist in `setB`.
 const difference = (setA, setB) => new Set([...setA].filter((item) => !setB.has(item)))
+
+const getNextRun = function (schedule) {
+  const cron = CronParser.parseExpression(schedule, {
+    tz: 'Etc/UTC',
+  })
+  return cron.next().toDate()
+}
 
 class NetlifyFunction {
   constructor({
@@ -32,6 +41,7 @@ class NetlifyFunction {
     // Determines whether this is a background function based on the function
     // name.
     this.isBackground = name.endsWith(BACKGROUND_SUFFIX)
+    this.schedule = null
 
     // List of the function's source files. This starts out as an empty set
     // and will get populated on every build.
@@ -42,6 +52,20 @@ class NetlifyFunction {
     // same as https://github.com/netlify/bitballoon/blob/fbd7881e6c8e8c48e7a0145da4ee26090c794108/app/models/deploy.rb#L482
     // eslint-disable-next-line unicorn/better-regex
     return /^[A-Za-z0-9_-]+$/.test(this.name)
+  }
+
+  async isScheduled() {
+    await this.buildQueue
+
+    return Boolean(this.schedule)
+  }
+
+  async getNextRun() {
+    if (!(await this.isScheduled())) {
+      return null
+    }
+
+    return getNextRun(this.schedule)
   }
 
   // The `build` method transforms source files into invocable functions. Its
@@ -61,12 +85,13 @@ class NetlifyFunction {
     this.buildQueue = buildFunction({ cache })
 
     try {
-      const { srcFiles, ...buildData } = await this.buildQueue
+      const { schedule, srcFiles, ...buildData } = await this.buildQueue
       const srcFilesSet = new Set(srcFiles)
       const srcFilesDiff = this.getSrcFilesDiff(srcFilesSet)
 
       this.buildData = buildData
       this.srcFiles = srcFilesSet
+      this.schedule = schedule
 
       return { srcFilesDiff }
     } catch (error) {

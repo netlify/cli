@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-const { join } = require('path')
-const process = require('process')
+import { join } from 'path'
+import { cwd, exit } from 'process'
 
-const execa = require('execa')
+import execa from 'execa'
 
-const { setup } = require('./setup')
+import { setup } from './setup.mjs'
 
 /** The main test runner function */
 const main = async () => {
@@ -16,7 +16,7 @@ const main = async () => {
 
   try {
     console.log('Start running ava tests for **/*.e2e.js')
-    const { exitCode } = await execa('ava', ['**/*.e2e.js', '--config', join(process.cwd(), 'e2e.config.cjs')], {
+    const { exitCode } = await execa('ava', ['**/*.e2e.mjs', '--config', join(cwd(), 'e2e.config.mjs')], {
       stdio: 'inherit',
       env: {
         E2E_TEST_WORKSPACE: workspace,
@@ -30,10 +30,10 @@ const main = async () => {
   }
 
   await cleanup()
-  process.exit(statusCode)
+  exit(statusCode)
 }
 
 main().catch((error_) => {
   console.error(error_ instanceof Error ? error_.message : error_)
-  process.exit(1)
+  exit(1)
 })
