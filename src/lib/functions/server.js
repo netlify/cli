@@ -1,11 +1,19 @@
 // @ts-check
 const jwtDecode = require('jwt-decode')
 
-const { NETLIFYDEVERR, NETLIFYDEVLOG, error: errorExit, getInternalFunctionsDir, log } = require('../../utils')
+const {
+  CLOCKWORK_USERAGENT,
+  NETLIFYDEVERR,
+  NETLIFYDEVLOG,
+  error: errorExit,
+  getInternalFunctionsDir,
+  log,
+} = require('../../utils')
 
 const { handleBackgroundFunction, handleBackgroundFunctionResult } = require('./background')
 const { createFormSubmissionHandler } = require('./form-submissions-handler')
 const { FunctionsRegistry } = require('./registry')
+const { handleScheduledFunction } = require('./scheduled')
 const { handleSynchronousFunction } = require('./synchronous')
 const { shouldBase64Encode } = require('./utils')
 
@@ -105,6 +113,29 @@ const createHandler = function ({ functionsRegistry }) {
       const { error } = await func.invoke(event, clientContext)
 
       handleBackgroundFunctionResult(functionName, error)
+    } else if (await func.isScheduled()) {
+      const { error, result } = await func.invoke(
+        {
+          ...event,
+          body: JSON.stringify({
+            next_run: await func.getNextRun(),
+          }),
+          isBase64Encoded: false,
+          headers: {
+            ...event.headers,
+            'user-agent': CLOCKWORK_USERAGENT,
+            'X-NF-Event': 'schedule',
+          },
+        },
+        clientContext,
+      )
+
+      handleScheduledFunction({
+        error,
+        result,
+        request,
+        response,
+      })
     } else {
       const { error, result } = await func.invoke(event, clientContext)
 
