@@ -243,10 +243,13 @@ const ensureFunctionsPath = (netlifyGraphConfig) => {
 
 /**
  * Generate a library file with type definitions for a given NetlifyGraphConfig, operationsDoc, and schema, writing them to the filesystem
- * @param {NetlifyGraphConfig} netlifyGraphConfig
- * @param {GraphQLSchema} schema The schema to use when generating the functions and their types
- * @param {string} operationsDoc The GraphQL operations doc to use when generating the functions
- * @param {NetlifyGraph.ParsedFunction} functions The parsed queries with metadata to use when generating library functions
+ * @param {object} context
+ * @param {NetlifyGraphConfig} context.netlifyGraphConfig
+ * @param {GraphQLSchema} context.schema The schema to use when generating the functions and their types
+ * @param {string} context.operationsDoc The GraphQL operations doc to use when generating the functions
+ * @param {NetlifyGraph.ParsedFunction} context.functions The parsed queries with metadata to use when generating library functions
+ * @param {NetlifyGraph.ParsedFragment} context.fragments The parsed queries with metadata to use when generating library functions
+ * @returns {void} Void, effectfully writes the generated library to the filesystem
  */
 const generateFunctionsFile = ({ fragments, functions, netlifyGraphConfig, operationsDoc, schema }) => {
   const { clientSource, typeDefinitionsSource } = NetlifyGraph.generateFunctionsSource(
