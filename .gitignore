@@ -28,6 +28,6 @@ site/src/**/*.md
 
 # tests
 .eslintcache
-tests/hugo-site/resources
-tests/hugo-site/out
-tests/hugo-site/.hugo_build.lock
+tests/integration/hugo-site/resources
+tests/integration/hugo-site/out
+tests/integration/hugo-site/.hugo_build.lock
