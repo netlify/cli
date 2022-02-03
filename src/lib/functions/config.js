@@ -13,6 +13,7 @@ const normalizeFunctionsConfig = ({ functionsConfig = {}, projectRoot }) =>
         nodeBundler: config.node_bundler === 'esbuild' ? 'esbuild_zisi' : config.node_bundler,
         processDynamicNodeImports: true,
         schedule: config.schedule,
+        zipGo: true,
       },
     }),
     {},

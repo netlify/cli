@@ -1,7 +1,7 @@
 const { mkdir, writeFile } = require('fs').promises
 const path = require('path')
 
-const { zipFunction } = require('@netlify/zip-it-and-ship-it')
+const { listFunction, zipFunction } = require('@netlify/zip-it-and-ship-it')
 const decache = require('decache')
 const readPkgUp = require('read-pkg-up')
 const sourceMapSupport = require('source-map-support')
@@ -35,7 +35,11 @@ const buildFunction = async ({ cache, config, directory, func, hasTypeModule, pr
   // root of the functions directory (e.g. `functions/my-func.js`). In
   // this case, we use `mainFile` as the function path of `zipFunction`.
   const entryPath = functionDirectory === directory ? func.mainFile : functionDirectory
-  const { inputs, path: functionPath } = await memoizedBuild({
+  const {
+    inputs,
+    path: functionPath,
+    schedule,
+  } = await memoizedBuild({
     cache,
     cacheKey: `zisi-${entryPath}`,
     command: () => zipFunction(entryPath, targetDirectory, zipOptions),
@@ -56,7 +60,22 @@ const buildFunction = async ({ cache, config, directory, func, hasTypeModule, pr
 
   clearFunctionsCache(targetDirectory)
 
-  return { buildPath, srcFiles }
+  return { buildPath, srcFiles, schedule }
+}
+
+/**
+ * @param {object} params
+ * @param {unknown} params.config
+ * @param {string} params.mainFile
+ * @param {string} params.projectRoot
+ */
+const parseForSchedule = async ({ config, mainFile, projectRoot }) => {
+  const listedFunction = await listFunction(mainFile, {
+    config: netlifyConfigToZisiConfig({ config, projectRoot }),
+    parseISC: true,
+  })
+
+  return listedFunction && listedFunction.schedule
 }
 
 // Clears the cache for any files inside the directory from which functions are
@@ -79,10 +98,11 @@ const getTargetDirectory = async ({ errorExit }) => {
   return targetDirectory
 }
 
+const netlifyConfigToZisiConfig = ({ config, projectRoot }) =>
+  addFunctionsConfigDefaults(normalizeFunctionsConfig({ functionsConfig: config.functions, projectRoot }))
+
 module.exports = async ({ config, directory, errorExit, func, projectRoot }) => {
-  const functionsConfig = addFunctionsConfigDefaults(
-    normalizeFunctionsConfig({ functionsConfig: config.functions, projectRoot }),
-  )
+  const functionsConfig = netlifyConfigToZisiConfig({ config, projectRoot })
 
   const packageJson = await readPkgUp(func.mainFile)
   const hasTypeModule = packageJson && packageJson.packageJson.type === 'module'
@@ -115,3 +135,5 @@ module.exports = async ({ config, directory, errorExit, func, projectRoot }) => 
     target: targetDirectory,
   }
 }
+
+module.exports.parseForSchedule = parseForSchedule

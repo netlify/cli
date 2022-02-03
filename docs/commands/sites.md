@@ -39,7 +39,7 @@ netlify sites:list
 ## `sites:create`
 
 Create an empty site (advanced)
-Create a blank site that isn't associated with any git remote. Does not link to the current working directory.
+Create a blank site that isn't associated with any git remote. Will link the site to the current working directory.
 
 **Usage**
 
@@ -50,6 +50,7 @@ netlify sites:create
 **Flags**
 
 - `account-slug` (*string*) - account slug to create the site under
+- `disable-linking` (*boolean*) - create the site without linking it to current directory
 - `manual` (*boolean*) - force manual CI setup.  Used --with-ci flag
 - `name` (*string*) - name of site
 - `with-ci` (*boolean*) - initialize CI hooks during site creation

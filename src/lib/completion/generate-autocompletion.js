@@ -2,7 +2,7 @@
 const { existsSync, mkdirSync, writeFileSync } = require('fs')
 const { dirname } = require('path')
 
-const { sortOptions } = require('../../utils')
+const { sortOptions, warn } = require('../../utils')
 
 const { AUTOCOMPLETION_FILE } = require('./constants')
 
@@ -12,25 +12,33 @@ const { AUTOCOMPLETION_FILE } = require('./constants')
  * @returns {void}
  */
 const createAutocompletion = (program) => {
-  const autocomplete = program.commands.reduce(
-    (prev, cmd) => ({
-      ...prev,
-      [cmd.name()]: {
-        name: cmd.name(),
-        description: cmd.description().split('\n')[0],
-        options: cmd.options
-          .filter((option) => !option.hidden)
-          .sort(sortOptions)
-          .map((opt) => ({ name: `--${opt.name()}`, description: opt.description })),
-      },
-    }),
-    {},
-  )
+  try {
+    const autocomplete = program.commands.reduce(
+      (prev, cmd) => ({
+        ...prev,
+        [cmd.name()]: {
+          name: cmd.name(),
+          description: cmd.description().split('\n')[0],
+          options: cmd.options
+            .filter((option) => !option.hidden)
+            .sort(sortOptions)
+            .map((opt) => ({ name: `--${opt.name()}`, description: opt.description })),
+        },
+      }),
+      {},
+    )
 
-  if (!existsSync(dirname(AUTOCOMPLETION_FILE))) {
-    mkdirSync(dirname(AUTOCOMPLETION_FILE), { recursive: true })
+    if (!existsSync(dirname(AUTOCOMPLETION_FILE))) {
+      mkdirSync(dirname(AUTOCOMPLETION_FILE), { recursive: true })
+    }
+    writeFileSync(AUTOCOMPLETION_FILE, JSON.stringify(autocomplete), 'utf-8')
+  } catch (error_) {
+    // Sometimes it can happen that the autocomplete generation in the postinstall script lacks permissions
+    // to write files to the home directory of the user. Therefore just warn with the error and don't break install.
+    if (error_ instanceof Error) {
+      warn(`could not create autocompletion.\n${error_.message}`)
+    }
   }
-  writeFileSync(AUTOCOMPLETION_FILE, JSON.stringify(autocomplete), 'utf-8')
 }
 
 module.exports = { createAutocompletion }

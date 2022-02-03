@@ -303,12 +303,14 @@ class BaseCommand extends Command {
     debug(`${this.name()}:onEnd`)(`Status: ${status}`)
     debug(`${this.name()}:onEnd`)(`Duration: ${duration}ms`)
 
-    await track('command', {
-      ...payload,
-      command: this.name(),
-      duration,
-      status,
-    })
+    try {
+      await track('command', {
+        ...payload,
+        command: this.name(),
+        duration,
+        status,
+      })
+    } catch {}
 
     if (error_ !== undefined) {
       error(error_ instanceof Error ? error_ : format(error_), { exit: false })
@@ -470,7 +472,11 @@ class BaseCommand extends Command {
       return await resolveConfig({
         config: options.config,
         cwd,
-        context: options.context || this.name(),
+        context:
+          options.context ||
+          process.env.CONTEXT ||
+          // Dev commands have a default context of `dev`, otherwise we let netlify/config handle default behavior
+          (['dev', 'dev:exec', 'dev:trace'].includes(this.name()) ? 'dev' : undefined),
         debug: this.opts().debug,
         siteId: options.siteId || (typeof options.site === 'string' && options.site) || state.get('siteId'),
         token,

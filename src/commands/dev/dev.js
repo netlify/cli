@@ -11,6 +11,8 @@ const stripAnsiCc = require('strip-ansi-control-characters')
 const waitPort = require('wait-port')
 
 const { startFunctionsServer } = require('../../lib/functions/server')
+const { OneGraphCliClient, startOneGraphCLISession } = require('../../lib/one-graph/cli-client')
+const { getNetlifyGraphConfig } = require('../../lib/one-graph/cli-netlify-graph')
 const {
   NETLIFYDEV,
   NETLIFYDEVERR,
@@ -18,6 +20,7 @@ const {
   NETLIFYDEVWARN,
   chalk,
   detectServerSettings,
+  error,
   exit,
   getSiteInformation,
   injectEnvVariables,
@@ -46,10 +49,10 @@ const startStaticServer = async ({ settings }) => {
   log(`\n${NETLIFYDEVLOG} Static server listening to`, settings.frameworkPort)
 }
 
-const isNonExistingCommandError = ({ command, error }) => {
+const isNonExistingCommandError = ({ command, error: commandError }) => {
   // `ENOENT` is only returned for non Windows systems
   // See https://github.com/sindresorhus/execa/pull/447
-  if (error.code === 'ENOENT') {
+  if (commandError.code === 'ENOENT') {
     return true
   }
 
@@ -60,7 +63,8 @@ const isNonExistingCommandError = ({ command, error }) => {
 
   // this only works on English versions of Windows
   return (
-    typeof error.message === 'string' && error.message.includes('is not recognized as an internal or external command')
+    typeof commandError.message === 'string' &&
+    commandError.message.includes('is not recognized as an internal or external command')
   )
 }
 
@@ -231,7 +235,7 @@ const printBanner = ({ url }) => {
  */
 const dev = async (options, command) => {
   log(`${NETLIFYDEV}`)
-  const { api, config, site, siteInfo } = command.netlify
+  const { api, config, site, siteInfo, state } = command.netlify
   config.dev = { ...config.dev }
   config.build = { ...config.build }
   /** @type {import('./types').DevConfig} */
@@ -262,8 +266,8 @@ const dev = async (options, command) => {
   let settings = {}
   try {
     settings = await detectServerSettings(devConfig, options, site.root)
-  } catch (error) {
-    log(NETLIFYDEVERR, error.message)
+  } catch (error_) {
+    log(NETLIFYDEVERR, error_.message)
     exit(1)
   }
 
@@ -291,6 +295,26 @@ const dev = async (options, command) => {
   process.env.URL = url
   process.env.DEPLOY_URL = url
 
+  const startNetlifyGraphWatcher = Boolean(options.graph)
+
+  if (startNetlifyGraphWatcher && options.offline) {
+    warn(`Unable to start Netlify Graph in offline mode`)
+  } else if (startNetlifyGraphWatcher && !site.id) {
+    error(
+      `No siteId defined, unable to start Netlify Graph. To enable, run ${chalk.yellow(
+        'netlify init',
+      )} or ${chalk.yellow('netlify link')}.`,
+    )
+  } else if (startNetlifyGraphWatcher) {
+    const netlifyToken = await command.authenticate()
+    await OneGraphCliClient.ensureAppForSite(netlifyToken, site.id)
+    const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options, settings })
+
+    log(`Starting Netlify Graph session, to edit your library run \`netlify graph:edit\` in another tab`)
+
+    startOneGraphCLISession({ netlifyGraphConfig, netlifyToken, site, state })
+  }
+
   printBanner({ url })
 }
 
@@ -316,6 +340,7 @@ const createDevCommand = (program) => {
     .option('-f ,--functions <folder>', 'specify a functions folder to serve')
     .option('-o ,--offline', 'disables any features that require network access')
     .option('-l, --live', 'start a public live session', false)
+    .option('--functionsPort <port>', 'port of functions server', (value) => Number.parseInt(value))
     .addOption(
       new Option('--staticServerPort <port>', 'port of the static app server used when no framework is detected')
         .argParser((value) => Number.parseInt(value))
@@ -334,7 +359,13 @@ const createDevCommand = (program) => {
         'specify the path to a local GeoIP location database in MMDB format',
       ).hideHelp(),
     )
-    .addExamples(['netlify dev', 'netlify dev -d public', 'netlify dev -c "hugo server -w" --targetPort 1313'])
+    .addOption(new Option('--graph', 'enable Netlify Graph support').hideHelp())
+    .addExamples([
+      'netlify dev',
+      'netlify dev -d public',
+      'netlify dev -c "hugo server -w" --targetPort 1313',
+      'BROWSER=none netlify dev # disable browser auto opening',
+    ])
     .action(dev)
 }
 module.exports = { createDevCommand }
