@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "8.14.1",
+  "version": "8.15.3",
   "author": "Netlify Inc.",
   "contributors": [
     "Mathias Biilmann <matt@netlify.com> (https://twitter.com/biilmann)",
@@ -55,16 +55,16 @@
     "format:check:prettier": "cross-env-shell prettier --check $npm_package_config_prettier",
     "format:fix:prettier": "cross-env-shell prettier --write $npm_package_config_prettier",
     "test:dev": "run-s test:init:* test:dev:*",
-    "test:ci": "run-s test:ci:*",
     "test:init": "run-s test:init:*",
     "test:init:cli-version": "npm run start -- --version",
     "test:init:cli-help": "npm run start -- --help",
-    "test:init:eleventy-deps": "npm ci --prefix tests/eleventy-site --no-audit",
-    "test:init:hugo-deps": "npm ci --prefix tests/hugo-site --no-audit",
+    "test:init:eleventy-deps": "npm ci --prefix tests/integration/eleventy-site --no-audit",
+    "test:init:hugo-deps": "npm ci --prefix tests/integration/hugo-site --no-audit",
     "test:dev:ava": "ava --verbose",
-    "test:ci:ava": "c8 -r json ava",
+    "test:ci:ava:unit": "c8 -r json ava --no-worker-threads tests/unit/**/*.test.js tools/**/*.test.js",
+    "test:ci:ava:integration": "c8 -r json ava --concurrency 1 --no-worker-threads tests/integration/**/*.test.js",
     "test:affected": "node ./tools/affected-test.js",
-    "e2e": "node ./tools/e2e/run.js",
+    "e2e": "node ./tools/e2e/run.mjs",
     "docs": "node ./site/scripts/docs.js",
     "watch": "c8 --reporter=lcov ava --watch",
     "site:build": "run-s site:build:*",
@@ -73,8 +73,8 @@
     "postinstall": "node ./scripts/postinstall.js"
   },
   "config": {
-    "eslint": "--ignore-path .gitignore --cache --format=codeframe --max-warnings=0 \"{src,tools,scripts,site,tests,.github}/**/*.{js,md,html}\" \"*.{js,md,html}\" \".*.{js,md,html}\"",
-    "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,tools,scripts,site,tests,.github}/**/*.{js,md,yml,json,html}\" \"*.{js,yml,json,html}\" \".*.{js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\" \"!.github/**/*.md\""
+    "eslint": "--ignore-path .gitignore --cache --format=codeframe --max-warnings=0 \"{src,tools,scripts,site,tests,.github}/**/*.{mjs,cjs,js,md,html}\" \"*.{mjs,cjs,js,md,html}\" \".*.{mjs,cjs,js,md,html}\"",
+    "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,tools,scripts,site,tests,.github}/**/*.{mjs,cjs,js,md,yml,json,html}\" \"*.{mjs,cjs,js,yml,json,html}\" \".*.{mjs,cjs,js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\" \"!.github/**/*.md\""
   },
   "dependencies": {
     "@netlify/build": "^26.2.0",
@@ -89,6 +89,7 @@
     "@sindresorhus/slugify": "^1.1.0",
     "ansi-escapes": "^5.0.0",
     "ansi-styles": "^5.0.0",
+    "ansi2html": "^0.0.1",
     "ascii-table": "0.0.9",
     "backoff": "^2.5.0",
     "better-opn": "^3.0.0",
@@ -103,6 +104,7 @@
     "content-type": "^1.0.4",
     "cookie": "^0.4.0",
     "copy-template-dir": "^1.4.0",
+    "cron-parser": "^4.2.1",
     "debug": "^4.1.1",
     "decache": "^4.6.0",
     "del": "^6.0.0",
@@ -146,7 +148,7 @@
     "multiparty": "^4.2.1",
     "netlify": "^10.1.2",
     "netlify-headers-parser": "^6.0.1",
-    "netlify-onegraph-internal": "0.0.16",
+    "netlify-onegraph-internal": "0.0.18",
     "netlify-redirect-parser": "^13.0.1",
     "netlify-redirector": "^0.2.1",
     "node-fetch": "^2.6.0",
@@ -197,7 +199,6 @@
     "ini": "^2.0.0",
     "jsonwebtoken": "^8.5.1",
     "mock-fs": "^5.1.2",
-    "mock-require": "^3.0.3",
     "p-timeout": "^4.0.0",
     "proxyquire": "^2.1.3",
     "seedrandom": "^3.0.5",
@@ -214,10 +215,8 @@
   },
   "ava": {
     "files": [
-      "site/**/*.test.js",
-      "src/**/*.test.js",
       "tools/**/*.test.js",
-      "tests/*.test.js"
+      "tests/**/*.test.js"
     ],
     "cache": true,
     "concurrency": 5,

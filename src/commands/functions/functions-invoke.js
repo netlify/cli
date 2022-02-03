@@ -6,7 +6,7 @@ const process = require('process')
 const inquirer = require('inquirer')
 const fetch = require('node-fetch')
 
-const { BACKGROUND, NETLIFYDEVWARN, chalk, error, exit, getFunctions } = require('../../utils')
+const { BACKGROUND, CLOCKWORK_USERAGENT, NETLIFYDEVWARN, chalk, error, exit, getFunctions } = require('../../utils')
 
 // https://www.netlify.com/docs/functions/#event-triggered-functions
 const events = [
@@ -148,13 +148,18 @@ const functionsInvoke = async (nameArgument, options, command) => {
     console.warn(`${NETLIFYDEVWARN} "port" flag was not specified. Attempting to connect to localhost:8888 by default`)
   const port = options.port || DEFAULT_PORT
 
-  const functions = await getFunctions(functionsDir)
+  const functions = await getFunctions(functionsDir, config)
   const functionToTrigger = await getNameFromArgs(functions, options, nameArgument)
+  const functionObj = functions.find((func) => func.name === functionToTrigger)
 
   let headers = {}
   let body = {}
 
-  if (eventTriggeredFunctions.has(functionToTrigger)) {
+  if (functionObj.schedule) {
+    headers = {
+      'user-agent': CLOCKWORK_USERAGENT,
+    }
+  } else if (eventTriggeredFunctions.has(functionToTrigger)) {
     /** handle event triggered fns  */
     // https://www.netlify.com/docs/functions/#event-triggered-functions
     const [name, event] = functionToTrigger.split('-')
