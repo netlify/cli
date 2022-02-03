@@ -1,18 +1,15 @@
 // @ts-check
 
-const slugify = require('@sindresorhus/slugify')
 const inquirer = require('inquirer')
 const pick = require('lodash/pick')
-const sample = require('lodash/sample')
 const fetch = require('node-fetch')
 const prettyjson = require('prettyjson')
-const { v4: uuidv4 } = require('uuid')
 
 const { chalk, error, getRepoData, log, logJson, track, warn } = require('../../utils')
 const { configureRepo } = require('../../utils/init/config')
 const { getGitHubToken } = require('../../utils/init/config-github')
 
-const SITE_NAME_SUGGESTION_SUFFIX_LENGTH = 5
+const { getSiteNameInput } = require('./sites-create')
 
 let ghToken
 
@@ -96,46 +93,11 @@ const sitesCreate = async (options, command) => {
   // Allow the user to reenter site name if selected one isn't available
   const inputSiteName = async (name) => {
     let siteSuggestion
-    if (!user) user = await api.getCurrentUser()
 
-    if (!name) {
-      let { slug } = user
-      let suffix = ''
-
-      // If the user doesn't have a slug, we'll compute one. Because `full_name` is not guaranteed to be unique, we
-      // append a short randomly-generated ID to reduce the likelihood of a conflict.
-      if (!slug) {
-        slug = slugify(user.full_name || user.email)
-        suffix = `-${uuidv4().slice(0, SITE_NAME_SUGGESTION_SUFFIX_LENGTH)}`
-      }
-
-      const suggestions = [
-        `super-cool-site-by-${slug}${suffix}`,
-        `the-awesome-${slug}-site${suffix}`,
-        `${slug}-makes-great-sites${suffix}`,
-        `netlify-thinks-${slug}-is-great${suffix}`,
-        `the-great-${slug}-site${suffix}`,
-        `isnt-${slug}-awesome${suffix}`,
-      ]
-      siteSuggestion = sample(suggestions)
-
-      log(
-        `Choose a unique site name (e.g. ${siteSuggestion}.netlify.app) or leave it blank for a random name. You can update the site name later.`,
-      )
-      const { name: nameInput } = await inquirer.prompt([
-        {
-          type: 'input',
-          name: 'name',
-          message: 'Site name (optional):',
-          filter: (val) => (val === '' ? undefined : val),
-          validate: (input) => /^[a-zA-Z\d-]+$/.test(input) || 'Only alphanumeric characters and hyphens are allowed',
-        },
-      ])
-      name = nameInput
-    }
+    const inputName = await getSiteNameInput(name, user, api)
 
     try {
-      const siteName = name ? name.trim() : siteSuggestion
+      const siteName = inputName ? inputName.trim() : siteSuggestion
 
       // Create new repo from template
       const createGhRepoResp = await fetch(`https://api.github.com/repos/${templateUrl.templateName}/generate`, {
