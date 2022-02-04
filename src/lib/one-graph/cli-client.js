@@ -1,8 +1,8 @@
 /* eslint-disable eslint-comments/disable-enable-pair */
 /* eslint-disable fp/no-loops */
+const crypto = require('crypto')
 const os = require('os')
 const path = require('path')
-const crypto = require('crypto')
 
 const gitRepoInfo = require('git-repo-info')
 const { GraphQL, InternalConsole, OneGraphClient } = require('netlify-onegraph-internal')
@@ -30,7 +30,7 @@ const internalConsole = {
   debug: console.debug,
 }
 
-let witnessedIncomingDocumentHashes = []
+const witnessedIncomingDocumentHashes = []
 
 // Keep track of which document hashes we've received from the server so we can ignore events from the filesystem based on them
 InternalConsole.registerConsole(internalConsole)
@@ -233,7 +233,9 @@ const updateGraphQLOperationsFileFromPersistedDoc = async (input) => {
 
   const hash = quickHash(doc)
 
-  if (witnessedIncomingDocumentHashes.length > 10) {
+  const relevantHasLength = 10;
+
+  if (witnessedIncomingDocumentHashes.length > relevantHasLength) {
     witnessedIncomingDocumentHashes.shift()
   }
 
