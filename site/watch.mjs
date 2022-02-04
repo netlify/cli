@@ -1,17 +1,17 @@
 /* Syncs blog content from repo to /site/blog */
-const fs = require('fs').promises
-const path = require('path')
+import { promises as fs } from 'fs'
+import { join } from 'path'
 
-const sane = require('sane')
+import sane from 'sane'
 
-const config = require('./config')
-const { ensureFilePathAsync, removeRecursiveAsync } = require('./fs')
+import { docs } from './config.mjs'
+import { ensureFilePathAsync, removeRecursiveAsync } from './fs.mjs'
 
-const watcher = sane(config.docs.srcPath, { glob: ['**/*.md'] })
+const watcher = sane(docs.srcPath, { glob: ['**/*.md'] })
 
 /* Watch Files */
 watcher.on('ready', function onReady() {
-  console.log(`Watching ${config.docs.srcPath} files for changes`)
+  console.log(`Watching ${docs.srcPath} files for changes`)
 })
 
 watcher.on('change', async function onChange(filepath) {
@@ -33,8 +33,8 @@ watcher.on('delete', async function onDelete(filepath) {
 /* utils */
 const getFullPath = function (filePath) {
   return {
-    src: path.join(config.docs.srcPath, filePath),
-    destination: path.join(config.docs.outputPath, filePath),
+    src: join(docs.srcPath, filePath),
+    destination: join(docs.outputPath, filePath),
   }
 }
 
