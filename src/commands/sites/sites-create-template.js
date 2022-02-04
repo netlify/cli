@@ -159,7 +159,6 @@ const sitesCreate = async (options, command) => {
       URL: siteUrl,
       'Site ID': site.id,
       'Repo URL': site.build_settings.repo_url,
-      'SSH Repo URL': `git@github.com:${site.build_settings.repo_path}.git`,
     }),
   )
 
