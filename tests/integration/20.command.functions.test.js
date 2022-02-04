@@ -172,7 +172,7 @@ test('should install function template dependencies on a site-level `package.jso
       },
       {
         question: 'Pick a template',
-        answer: answerWithValue(`${DOWN}${CONFIRM}`),
+        answer: answerWithValue(`${DOWN}${DOWN}${CONFIRM}`),
       },
       {
         question: 'Name your function',
@@ -248,7 +248,7 @@ test('should install function template dependencies in the function sub-director
       },
       {
         question: 'Pick a template',
-        answer: answerWithValue(`${DOWN}${CONFIRM}`),
+        answer: answerWithValue(`${DOWN}${DOWN}${CONFIRM}`),
       },
       {
         question: 'Name your function',
