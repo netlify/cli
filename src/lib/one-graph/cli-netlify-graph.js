@@ -241,7 +241,7 @@ const ensureFunctionsPath = (netlifyGraphConfig) => {
   fs.mkdirSync(fullPath, { recursive: true })
 }
 
-let disablePrettierDueToPreviousError = false;
+let disablePrettierDueToPreviousError = false
 
 const runPrettier = async (filePath) => {
   if (disablePrettierDueToPreviousError) {
@@ -265,7 +265,6 @@ const runPrettier = async (filePath) => {
     }
   }
 }
-
 
 /**
  * Generate a library file with type definitions for a given NetlifyGraphConfig, operationsDoc, and schema, writing them to the filesystem

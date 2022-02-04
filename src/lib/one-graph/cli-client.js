@@ -128,7 +128,7 @@ const monitorOperationFile = async ({ netlifyGraphConfig, onAdd, onChange, onUnl
   const newWatcher = await watchDebounced([filePath], {
     onAdd,
     onChange,
-    onUnlink
+    onUnlink,
   })
 
   return newWatcher
@@ -203,9 +203,9 @@ const regenerateFunctionsFileFromOperationsFile = (input) => {
  * @returns hex digest of the input string
  */
 const quickHash = (input) => {
-  const hashSum = crypto.createHash('md5');
-  hashSum.update(input);
-  return hashSum.digest('hex');
+  const hashSum = crypto.createHash('md5')
+  hashSum.update(input)
+  return hashSum.digest('hex')
 }
 
 /**
@@ -233,7 +233,7 @@ const updateGraphQLOperationsFileFromPersistedDoc = async (input) => {
 
   const hash = quickHash(doc)
 
-  const relevantHasLength = 10;
+  const relevantHasLength = 10
 
   if (witnessedIncomingDocumentHashes.length > relevantHasLength) {
     witnessedIncomingDocumentHashes.shift()
@@ -252,7 +252,13 @@ const handleCliSessionEvent = async ({ event, netlifyGraphConfig, netlifyToken, 
       await generateHandler(netlifyGraphConfig, schema, payload.operationId, payload)
       break
     case 'OneGraphNetlifyCliSessionPersistedLibraryUpdatedEvent':
-      await updateGraphQLOperationsFileFromPersistedDoc({ netlifyToken, docId: payload.docId, netlifyGraphConfig, schema, siteId })
+      await updateGraphQLOperationsFileFromPersistedDoc({
+        netlifyToken,
+        docId: payload.docId,
+        netlifyGraphConfig,
+        schema,
+        siteId,
+      })
       break
     default: {
       warn(`Unrecognized event received, you may need to upgrade your CLI version`, __typename, payload)
@@ -260,7 +266,6 @@ const handleCliSessionEvent = async ({ event, netlifyGraphConfig, netlifyToken, 
     }
   }
 }
-
 
 const persistNewOperationsDocForSession = async ({ netlifyToken, oneGraphSessionId, operationsDoc, siteId }) => {
   const { branch } = gitRepoInfo()
@@ -270,18 +275,13 @@ const persistNewOperationsDocForSession = async ({ netlifyToken, oneGraphSession
     description: 'Temporary snapshot of local queries',
     document: operationsDoc,
     tags: ['netlify-cli', `session:${oneGraphSessionId}`, `git-branch:${branch}`, `local-change`],
-  };
+  }
   const persistedDoc = await createPersistedQuery(netlifyToken, payload)
   const newMetadata = await { docId: persistedDoc.id }
-  const result = await OneGraphClient.updateCLISessionMetadata(
-    netlifyToken,
-    siteId,
-    oneGraphSessionId,
-    newMetadata
-  );
+  const result = await OneGraphClient.updateCLISessionMetadata(netlifyToken, siteId, oneGraphSessionId, newMetadata)
 
   if (result.errors) {
-    warn("Unable to update session metadata with updated operations doc", result.errors)
+    warn('Unable to update session metadata with updated operations doc', result.errors)
   }
 }
 
@@ -315,23 +315,31 @@ const startOneGraphCLISession = async (input) => {
   const enabledServices = []
   const schema = await OneGraphClient.fetchOneGraphSchema(site.id, enabledServices)
 
-  monitorOperationFile(
-    {
-      netlifyGraphConfig,
-      onChange: async (filePath) => {
-        log('NetlifyGraph operation file changed at', filePath, 'updating function library...')
-        regenerateFunctionsFileFromOperationsFile({ netlifyGraphConfig, schema })
-        const newOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
-        await persistNewOperationsDocForSession({ netlifyToken, oneGraphSessionId, operationsDoc: newOperationsDoc, siteId: site.id })
-      },
-      onAdd: async (filePath) => {
-        log('NetlifyGraph operation file created at', filePath, 'creating function library...')
-        regenerateFunctionsFileFromOperationsFile({ netlifyGraphConfig, schema })
-        const newOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
-        await persistNewOperationsDocForSession({ netlifyToken, oneGraphSessionId, operationsDoc: newOperationsDoc, siteId: site.id })
-      }
-    }
-  )
+  monitorOperationFile({
+    netlifyGraphConfig,
+    onChange: async (filePath) => {
+      log('NetlifyGraph operation file changed at', filePath, 'updating function library...')
+      regenerateFunctionsFileFromOperationsFile({ netlifyGraphConfig, schema })
+      const newOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
+      await persistNewOperationsDocForSession({
+        netlifyToken,
+        oneGraphSessionId,
+        operationsDoc: newOperationsDoc,
+        siteId: site.id,
+      })
+    },
+    onAdd: async (filePath) => {
+      log('NetlifyGraph operation file created at', filePath, 'creating function library...')
+      regenerateFunctionsFileFromOperationsFile({ netlifyGraphConfig, schema })
+      const newOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
+      await persistNewOperationsDocForSession({
+        netlifyToken,
+        oneGraphSessionId,
+        operationsDoc: newOperationsDoc,
+        siteId: site.id,
+      })
+    },
+  })
 
   monitorCLISessionEvents({
     appId: site.id,
