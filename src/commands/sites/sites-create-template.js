@@ -36,7 +36,7 @@ const fetchTemplates = async (token) => {
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-const sitesCreate = async (options, command) => {
+const sitesCreateTemplate = async (options, command) => {
   const { api } = command.netlify
 
   await command.authenticate()
@@ -224,6 +224,6 @@ Create a site from a starter template.`,
     .option('-a, --account-slug [slug]', 'account slug to create the site under')
     .option('-c, --with-ci', 'initialize CI hooks during site creation')
     .addHelpText('after', `(Beta) Create a site from starter template.`)
-    .action(sitesCreate)
+    .action(sitesCreateTemplate)
 
-module.exports = { createSitesFromTemplateCommand }
+module.exports = { createSitesFromTemplateCommand, fetchTemplates }

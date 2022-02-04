@@ -1,22 +1,36 @@
-const test = require('ava')
-const execa = require('execa')
-const stripAnsi = require('strip-ansi')
+const process = require('process')
 
-const cliPath = require('./utils/cli-path')
-const { CONFIRM, answerWithValue, handleQuestions } = require('./utils/handle-questions')
+const test = require('ava')
+const sinon = require('sinon')
+// const stripAnsi = require('strip-ansi')
+
+// Important to do the mocks before the code that uses it is required
+// in this case the mocks have to be done before the createSitesFromTemplateCommand
+// is required!
+/* eslint-disable import/order */
+const github = require('../../src/utils/init/config-github')
+// mock the getGithubToken method with a fake token
+sinon.stub(github, 'getGitHubToken').callsFake(() => 'my-token')
+
+/* eslint-enable import/order */
+
+const { BaseCommand } = require('../../src/commands/base-command')
+const { createSitesFromTemplateCommand } = require('../../src/commands/sites/sites-create-template')
+
+// const { CONFIRM, answerWithValue, handleQuestions } = require('./utils/handle-questions')
 const { withMockApi } = require('./utils/mock-api')
+
 // TODO: Flaky tests enable once fixed
 /**
  * As some of the tests are flaky on windows machines I will skip them for now
  * @type {import('ava').TestInterface}
  */
-
-test.skip('netlify sites:create-template', async (t) => {
-  const siteTemplateQuestions = [
-    { question: 'Template: (Use arrow keys)', answer: CONFIRM },
-    { question: 'Team: (Use arrow keys)', answer: CONFIRM },
-    { question: 'Site name (optional)', answer: answerWithValue('test-site-name') },
-  ]
+test.skip('netlify sites:create-template', async () => {
+  // const siteTemplateQuestions = [
+  //   { question: 'Template: (Use arrow keys)', answer: CONFIRM },
+  //   { question: 'Team: (Use arrow keys)', answer: CONFIRM },
+  //   { question: 'Site name (optional)', answer: answerWithValue('test-site-name') },
+  // ]
 
   const siteInfo = {
     admin_url: 'https://app.netlify.com/sites/site-name/overview',
@@ -48,14 +62,23 @@ test.skip('netlify sites:create-template', async (t) => {
   ]
 
   await withMockApi(routes, async ({ apiUrl }) => {
-    const childProcess = execa(cliPath, ['sites:create-template'], {
-      env: { NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
+    Object.defineProperty(process, 'env', {
+      value: {
+        NETLIFY_API_URL: apiUrl,
+        NETLIFY_AUTH_TOKEN: 'fake-token',
+      },
     })
-    handleQuestions(childProcess, siteTemplateQuestions)
-    const { stdout } = await childProcess
 
-    const formattedOutput = JSON.stringify(stripAnsi(stdout)).replace(/\\n/g, '')
+    const program = new BaseCommand('netlify')
+    createSitesFromTemplateCommand(program)
 
-    t.true(formattedOutput.includes(siteInfo.id))
+    await program.parseAsync(['', '', 'sites:create-template'])
+
+    //   handleQuestions(childProcess, siteTemplateQuestions)
+    //   const { stdout } = await childProcess
+
+    //   const formattedOutput = JSON.stringify(stripAnsi(stdout)).replace(/\\n/g, '')
+
+    //   t.true(formattedOutput.includes(siteInfo.id))
   })
 })
