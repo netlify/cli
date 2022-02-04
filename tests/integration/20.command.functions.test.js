@@ -8,6 +8,7 @@ const getPort = require('get-port')
 const waitPort = require('wait-port')
 
 const fs = require('../../src/lib/fs')
+const { NetlifyFunction } = require('../../src/lib/functions/netlify-function')
 
 const callCli = require('./utils/call-cli')
 const cliPath = require('./utils/cli-path')
@@ -20,6 +21,20 @@ const { killProcess } = require('./utils/process')
 const { withSiteBuilder } = require('./utils/site-builder')
 
 const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
+
+test('should return the correct function url for a NetlifyFunction object', (t) => {
+  const port = 7331
+  const functionName = 'test-function'
+
+  const functionUrl = `http://localhost:${port}/.netlify/functions/${functionName}`
+
+  const ntlFunction = new NetlifyFunction({
+    name: functionName,
+    settings: { functionsPort: port },
+  })
+
+  t.is(ntlFunction.url, functionUrl)
+})
 
 test('should return function response when invoked with no identity argument', async (t) => {
   await withSiteBuilder('function-invoke-with-no-identity-argument', async (builder) => {
