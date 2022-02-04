@@ -4,7 +4,7 @@ const process = require('process')
 
 const { GraphQL, InternalConsole, NetlifyGraph } = require('netlify-onegraph-internal')
 
-const { detectServerSettings, error, getFunctionsDir, log, warn } = require('../../utils')
+const { detectServerSettings, error, execa, getFunctionsDir, log, warn } = require('../../utils')
 
 const { printSchema } = GraphQL
 
@@ -241,6 +241,32 @@ const ensureFunctionsPath = (netlifyGraphConfig) => {
   fs.mkdirSync(fullPath, { recursive: true })
 }
 
+let disablePrettierDueToPreviousError = false;
+
+const runPrettier = async (filePath) => {
+  if (disablePrettierDueToPreviousError) {
+    return
+  }
+
+  const command = `prettier --write ${filePath}`
+  try {
+    const commandProcess = execa.command(command, {
+      preferLocal: true,
+      // windowsHide needs to be false for child process to terminate properly on Windows
+      windowsHide: false,
+    })
+
+    await commandProcess
+  } catch (prettierError) {
+    if (!disablePrettierDueToPreviousError) {
+      disablePrettierDueToPreviousError = true
+      warn(prettierError)
+      warn("Error while running prettier, make sure you have installed it globally with 'npm i -g prettier'")
+    }
+  }
+}
+
+
 /**
  * Generate a library file with type definitions for a given NetlifyGraphConfig, operationsDoc, and schema, writing them to the filesystem
  * @param {object} context
@@ -267,6 +293,8 @@ const generateFunctionsFile = ({ fragments, functions, netlifyGraphConfig, opera
     typeDefinitionsSource,
     'utf8',
   )
+  runPrettier(path.resolve(...netlifyGraphConfig.netlifyGraphImplementationFilename))
+  runPrettier(path.resolve(...netlifyGraphConfig.netlifyGraphTypeDefinitionsFilename))
 }
 
 /**
@@ -384,6 +412,7 @@ const generateHandler = (netlifyGraphConfig, schema, operationId, handlerOptions
     const absoluteFilename = path.resolve(...filenameArr)
 
     fs.writeFileSync(absoluteFilename, content)
+    runPrettier(absoluteFilename)
   })
 }
 
@@ -405,6 +434,21 @@ const getGraphEditUrlBySiteName = ({ oneGraphSessionId, siteName }) => {
   return url
 }
 
+/**
+ * Get a url to the Netlify Graph UI for the current session by a site's id
+ * @param {object} options
+ * @param {string} options.siteId The name of the site as used in the Netlify UI url scheme
+ * @param {string} options.oneGraphSessionId The oneGraph session id to use when generating the graph-edit link
+ * @returns {string} The url to the Netlify Graph UI for the current session
+ */
+const getGraphEditUrlBySiteId = ({ oneGraphSessionId, siteId }) => {
+  const host = process.env.NETLIFY_APP_HOST || 'app.netlify.com'
+  // http because app.netlify.com will redirect to https, and localhost will still work for development
+  const url = `http://${host}/site-redirect/${siteId}/graph/explorer?cliSessionId=${oneGraphSessionId}`
+
+  return url
+}
+
 module.exports = {
   buildSchema,
   defaultExampleOperationsDoc: NetlifyGraph.defaultExampleOperationsDoc,
@@ -413,6 +457,7 @@ module.exports = {
   generateFunctionsFile,
   generateHandlerSource: NetlifyGraph.generateHandlerSource,
   generateHandler,
+  getGraphEditUrlBySiteId,
   getGraphEditUrlBySiteName,
   getNetlifyGraphConfig,
   parse,
