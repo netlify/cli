@@ -1,0 +1,4 @@
+/api/*  /.netlify/functions/:splat 200
+
+# Must be last in list or all redirects will 404
+/* /404.html 404

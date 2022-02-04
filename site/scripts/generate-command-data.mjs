@@ -1,16 +1,16 @@
 // @ts-check
-import main from '../../src/commands/index.js'
+import { createMainCommand } from '../../src/commands/index.mjs'
 import utils from '../../src/utils/index.js'
 
-const program = main.createMainCommand()
+const program = createMainCommand()
 
-/** @type {Array<import('../../src/commands/base-command').BaseCommand>} */
+/** @type {Array<import('../../src/commands/base-command.mjs').BaseCommand>} */
 // @ts-ignore typecast needed
 const commands = program.commands.sort((cmdA, cmdB) => cmdA.name().localeCompare(cmdB.name()))
 
 /**
  *
- * @param {import('../../src/commands/base-command').BaseCommand} command
+ * @param {import('../../src/commands/base-command.mjs').BaseCommand} command
  */
 const parseCommand = function (command) {
   // eslint-disable-next-line no-underscore-dangle

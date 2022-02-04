@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>http://localhost:50351/</loc>
+    <lastmod>2021-04-07T22:20:17-06:00</lastmod>
+  </url><url>
+    <loc>http://localhost:50351/categories/</loc>
+  </url><url>
+    <loc>http://localhost:50351/tags/</loc>
+  </url>
+</urlset>
