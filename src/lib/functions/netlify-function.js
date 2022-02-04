@@ -1,10 +1,19 @@
 // @ts-check
+const CronParser = require('cron-parser')
+
 const { error: errorExit } = require('../../utils/command-helpers')
 
 const BACKGROUND_SUFFIX = '-background'
 
 // Returns a new set with all elements of `setA` that don't exist in `setB`.
 const difference = (setA, setB) => new Set([...setA].filter((item) => !setB.has(item)))
+
+const getNextRun = function (schedule) {
+  const cron = CronParser.parseExpression(schedule, {
+    tz: 'Etc/UTC',
+  })
+  return cron.next().toDate()
+}
 
 class NetlifyFunction {
   constructor({
@@ -49,6 +58,14 @@ class NetlifyFunction {
     await this.buildQueue
 
     return Boolean(this.schedule)
+  }
+
+  async getNextRun() {
+    if (!(await this.isScheduled())) {
+      return null
+    }
+
+    return getNextRun(this.schedule)
   }
 
   // The `build` method transforms source files into invocable functions. Its

@@ -4,7 +4,7 @@ const { format } = require('util')
 const test = require('ava')
 const mock = require('mock-fs')
 
-const { normalize } = require('../../tests/utils/snapshots')
+const { normalize } = require('../../tests/integration/utils/snapshots')
 const { DependencyGraph, fileVisitor } = require('../project-graph')
 
 const { simpleMockedFileSystem } = require('./utils/file-systems')

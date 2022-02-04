@@ -1,7 +1,15 @@
 // @ts-check
 const jwtDecode = require('jwt-decode')
 
-const { NETLIFYDEVERR, NETLIFYDEVLOG, error: errorExit, getInternalFunctionsDir, log } = require('../../utils')
+const {
+  CLOCKWORK_USERAGENT,
+  NETLIFYDEVERR,
+  NETLIFYDEVLOG,
+  error: errorExit,
+  generateAuthlifyJWT,
+  getInternalFunctionsDir,
+  log,
+} = require('../../utils')
 
 const { handleBackgroundFunction, handleBackgroundFunctionResult } = require('./background')
 const { createFormSubmissionHandler } = require('./form-submissions-handler')
@@ -37,7 +45,7 @@ const buildClientContext = function (headers) {
   }
 }
 
-const createHandler = function ({ functionsRegistry }) {
+const createHandler = function ({ config, functionsRegistry }) {
   return async function handler(request, response) {
     // handle proxies without path re-writes (http-servr)
     const cleanPath = request.path.replace(/^\/.netlify\/(functions|builders)/, '')
@@ -98,6 +106,11 @@ const createHandler = function ({ functionsRegistry }) {
       rawQuery,
     }
 
+    if (config && config.authlify && config.authlify.authlifyTokenId != null) {
+      const { authlifyTokenId, netlifyToken, siteId } = config.authlify
+      event.authlifyToken = generateAuthlifyJWT(netlifyToken, authlifyTokenId, siteId)
+    }
+
     const clientContext = buildClientContext(request.headers) || {}
 
     if (func.isBackground) {
@@ -107,7 +120,21 @@ const createHandler = function ({ functionsRegistry }) {
 
       handleBackgroundFunctionResult(functionName, error)
     } else if (await func.isScheduled()) {
-      const { error, result } = await func.invoke(event, clientContext)
+      const { error, result } = await func.invoke(
+        {
+          ...event,
+          body: JSON.stringify({
+            next_run: await func.getNextRun(),
+          }),
+          isBase64Encoded: false,
+          headers: {
+            ...event.headers,
+            'user-agent': CLOCKWORK_USERAGENT,
+            'X-NF-Event': 'schedule',
+          },
+        },
+        clientContext,
+      )
 
       handleScheduledFunction({
         error,
@@ -133,14 +160,14 @@ const createHandler = function ({ functionsRegistry }) {
   }
 }
 
-const getFunctionsServer = function ({ buildersPrefix, functionsPrefix, functionsRegistry, siteUrl }) {
+const getFunctionsServer = function ({ buildersPrefix, config, functionsPrefix, functionsRegistry, siteUrl }) {
   // performance optimization, load express on demand
   // eslint-disable-next-line node/global-require
   const express = require('express')
   // eslint-disable-next-line node/global-require
   const expressLogging = require('express-logging')
   const app = express()
-  const functionHandler = createHandler({ functionsRegistry })
+  const functionHandler = createHandler({ config, functionsRegistry })
 
   app.set('query parser', 'simple')
 
@@ -197,6 +224,7 @@ const startFunctionsServer = async ({
     await functionsRegistry.scan(functionsDirectories)
 
     const server = getFunctionsServer({
+      config,
       functionsRegistry,
       siteUrl,
       functionsPrefix,
