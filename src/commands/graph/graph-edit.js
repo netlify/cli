@@ -3,7 +3,7 @@ const gitRepoInfo = require('git-repo-info')
 const { OneGraphCliClient, generateSessionName, loadCLISession } = require('../../lib/one-graph/cli-client')
 const {
   defaultExampleOperationsDoc,
-  getGraphEditUrlBySiteName,
+  getGraphEditUrlBySiteId,
   getNetlifyGraphConfig,
   readGraphQLOperationsSourceFile,
 } = require('../../lib/one-graph/cli-netlify-graph')
@@ -19,7 +19,7 @@ const { createCLISession, createPersistedQuery, ensureAppForSite, updateCLISessi
  * @returns
  */
 const graphEdit = async (options, command) => {
-  const { api, site, siteInfo, state } = command.netlify
+  const { site, state } = command.netlify
   const siteId = site.id
 
   if (!site.id) {
@@ -60,17 +60,7 @@ const graphEdit = async (options, command) => {
 
   await updateCLISessionMetadata(netlifyToken, siteId, oneGraphSessionId, { docId: persistedDoc.id })
 
-  let siteName = siteInfo.name
-
-  if (!siteName) {
-    const siteData = await api.getSite({ siteId })
-    siteName = siteData.name
-    if (!siteName) {
-      error(`No site name found for siteId ${siteId}`)
-    }
-  }
-
-  const graphEditUrl = getGraphEditUrlBySiteName({ siteName, oneGraphSessionId })
+  const graphEditUrl = getGraphEditUrlBySiteId({ siteId, oneGraphSessionId })
 
   await openBrowser({ url: graphEditUrl })
 }

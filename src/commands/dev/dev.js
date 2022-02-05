@@ -11,8 +11,18 @@ const stripAnsiCc = require('strip-ansi-control-characters')
 const waitPort = require('wait-port')
 
 const { startFunctionsServer } = require('../../lib/functions/server')
-const { OneGraphCliClient, startOneGraphCLISession } = require('../../lib/one-graph/cli-client')
-const { getNetlifyGraphConfig } = require('../../lib/one-graph/cli-netlify-graph')
+const {
+  OneGraphCliClient,
+  loadCLISession,
+  persistNewOperationsDocForSession,
+  startOneGraphCLISession,
+} = require('../../lib/one-graph/cli-client')
+const {
+  defaultExampleOperationsDoc,
+  getGraphEditUrlBySiteId,
+  getNetlifyGraphConfig,
+  readGraphQLOperationsSourceFile,
+} = require('../../lib/one-graph/cli-netlify-graph')
 const {
   NETLIFYDEV,
   NETLIFYDEVERR,
@@ -349,9 +359,29 @@ const dev = async (options, command) => {
     await OneGraphCliClient.ensureAppForSite(netlifyToken, site.id)
     const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options, settings })
 
-    log(`Starting Netlify Graph session, to edit your library run \`netlify graph:edit\` in another tab`)
+    let graphqlDocument = readGraphQLOperationsSourceFile(netlifyGraphConfig)
 
-    startOneGraphCLISession({ netlifyGraphConfig, netlifyToken, site, state })
+    if (!graphqlDocument || graphqlDocument.trim().length === 0) {
+      graphqlDocument = defaultExampleOperationsDoc
+    }
+
+    await startOneGraphCLISession({ netlifyGraphConfig, netlifyToken, site, state })
+
+    // Should be created by startOneGraphCLISession
+    const oneGraphSessionId = loadCLISession(state)
+
+    await persistNewOperationsDocForSession({
+      netlifyToken,
+      oneGraphSessionId,
+      operationsDoc: graphqlDocument,
+      siteId: site.id,
+    })
+
+    const graphEditUrl = getGraphEditUrlBySiteId({ siteId: site.id, oneGraphSessionId })
+
+    log(
+      `Starting Netlify Graph session, to edit your library visit ${graphEditUrl} or run \`netlify graph:edit\` in another tab`,
+    )
   }
 
   printBanner({ url })
