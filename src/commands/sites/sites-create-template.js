@@ -41,8 +41,12 @@ const sitesCreateTemplate = async (options, command) => {
   let { url: templateUrl } = options
 
   if (templateUrl) {
-    const urlFromOptions = new URL(templateUrl)
-    templateUrl = { templateName: urlFromOptions.pathname.slice(1) }
+    try {
+      const urlFromOptions = new URL(templateUrl)
+      templateUrl = { templateName: urlFromOptions.pathname.slice(1) }
+    } catch (error_) {
+      throw new Error(error_)
+    }
   } else {
     const templates = await fetchTemplates(ghToken)
 

@@ -32,9 +32,7 @@ const createRepoStub = sinon.stub(templatesUtils, 'createRepo').callsFake(() => 
 
 const jsonRenderSpy = sinon.spy(prettyjson, 'render')
 
-const { createSitesFromTemplateCommand } = require('../../src/commands/sites/sites-create-template')
-
-const { fetchTemplates } = require('../../src/commands/sites/sites-create-template')
+const { createSitesFromTemplateCommand, fetchTemplates } = require('../../src/commands/sites/sites-create-template')
 
 /* eslint-enable import/order */
 const { withMockApi } = require('./utils/mock-api')
@@ -129,6 +127,30 @@ test.serial('should not fetch templates if one is passed as option', async (t) =
     ])
 
     t.truthy(getTemplatesStub.notCalled)
+  })
+  inquirerStub.restore()
+})
+
+test.serial('should throw an error if the URL option is not a valid URL', async (t) => {
+  const inquirerStub = sinon.stub(inquirer, 'prompt').callsFake(() => Promise.resolve({ accountSlug: 'test-account' }))
+
+  await withMockApi(routes, async ({ apiUrl }) => {
+    Object.defineProperty(process, 'env', {
+      value: {
+        NETLIFY_API_URL: apiUrl,
+        NETLIFY_AUTH_TOKEN: 'fake-token',
+      },
+    })
+
+    const program = new BaseCommand('netlify')
+
+    createSitesFromTemplateCommand(program)
+
+    const error = await t.throwsAsync(async () => {
+      await program.parseAsync(['', '', 'sites:create-template', '-u', 'not-a-url'])
+    })
+
+    t.truthy(error.message.includes('Invalid URL'))
   })
   inquirerStub.restore()
 })
