@@ -2,27 +2,21 @@
 
 const inquirer = require('inquirer')
 const pick = require('lodash/pick')
-const fetch = require('node-fetch')
 const prettyjson = require('prettyjson')
 
 const { chalk, error, getRepoData, log, logJson, track, warn } = require('../../utils')
 const { configureRepo } = require('../../utils/init/config')
 const { getGitHubToken } = require('../../utils/init/config-github')
+const { createRepo, getTemplatesFromGitHub } = require('../../utils/sites/utils')
 
 const { getSiteNameInput } = require('./sites-create')
 
 let ghToken
 
 const fetchTemplates = async (token) => {
-  const templatesFromGithubOrg = await fetch(`https://api.github.com/orgs/netlify-templates/repos`, {
-    method: 'GET',
-    headers: {
-      Authorization: `token ${token}`,
-    },
-  })
-  const allTemplates = await templatesFromGithubOrg.json()
+  const templatesFromGithubOrg = await getTemplatesFromGitHub(token)
 
-  return allTemplates
+  return templatesFromGithubOrg
     .filter((repo) => !repo.archived && !repo.private && !repo.disabled)
     .map((template) => ({
       name: template.name,
@@ -44,14 +38,14 @@ const sitesCreateTemplate = async (options, command) => {
   const { globalConfig } = command.netlify
   ghToken = await getGitHubToken({ globalConfig })
 
-  const templates = await fetchTemplates(ghToken)
-
   let { url: templateUrl } = options
 
   if (templateUrl) {
     const urlFromOptions = new URL(templateUrl)
     templateUrl = { templateName: urlFromOptions.pathname.slice(1) }
   } else {
+    const templates = await fetchTemplates(ghToken)
+
     log(`Choose one of our starter templates. Netlify will create a new repo for this template in your GitHub account.`)
 
     templateUrl = await inquirer.prompt([
@@ -98,26 +92,17 @@ const sitesCreateTemplate = async (options, command) => {
       const siteName = inputName ? inputName.trim() : siteSuggestion
 
       // Create new repo from template
-      const createGhRepoResp = await fetch(`https://api.github.com/repos/${templateUrl.templateName}/generate`, {
-        method: 'POST',
-        headers: {
-          Authorization: `token ${ghToken}`,
-        },
-        body: JSON.stringify({
-          name: siteName,
-        }),
-      })
-      const resp = await createGhRepoResp.json()
+      const repoResp = await createRepo(templateUrl, ghToken, siteName)
 
-      if (resp.errors) {
-        if (resp.errors[0].includes('Name already exists on this account')) {
+      if (repoResp.errors) {
+        if (repoResp.errors[0].includes('Name already exists on this account')) {
           warn(
             `Oh no! We found already a repository with this name. It seems you have already created a template with the name ${templateUrl.templateName}. Please try to run the command again and provide a different name.`,
           )
           await inputSiteName()
         } else {
           throw new Error(
-            `Oops! Seems like something went wrong trying to create the repository. We're getting the following error: '${resp.errors[0]}'. You can try to re-run this command again or open an issue in our repository: https://github.com/netlify/cli/issues`,
+            `Oops! Seems like something went wrong trying to create the repository. We're getting the following error: '${repoResp.errors[0]}'. You can try to re-run this command again or open an issue in our repository: https://github.com/netlify/cli/issues`,
           )
         }
       } else {
@@ -126,9 +111,9 @@ const sitesCreateTemplate = async (options, command) => {
           body: {
             repo: {
               provider: 'github',
-              repo: resp.full_name,
-              private: resp.private,
-              branch: resp.default_branch,
+              repo: repoResp.full_name,
+              private: repoResp.private,
+              branch: repoResp.default_branch,
             },
             name: siteName,
           },

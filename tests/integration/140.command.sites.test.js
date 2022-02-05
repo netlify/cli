@@ -1,65 +1,79 @@
 const process = require('process')
 
 const test = require('ava')
+const inquirer = require('inquirer')
+const prettyjson = require('prettyjson')
 const sinon = require('sinon')
-// const stripAnsi = require('strip-ansi')
 
 // Important to do the mocks before the code that uses it is required
 // in this case the mocks have to be done before the createSitesFromTemplateCommand
 // is required!
 /* eslint-disable import/order */
+const { BaseCommand } = require('../../src/commands/base-command')
 const github = require('../../src/utils/init/config-github')
 // mock the getGithubToken method with a fake token
-sinon.stub(github, 'getGitHubToken').callsFake(() => 'my-token')
+const gitMock = sinon.stub(github, 'getGitHubToken').callsFake(() => 'my-token')
 
-/* eslint-enable import/order */
+const templatesUtils = require('../../src/utils/sites/utils')
 
-const { BaseCommand } = require('../../src/commands/base-command')
+const getTemplatesStub = sinon.stub(templatesUtils, 'getTemplatesFromGitHub').callsFake(() => [
+  {
+    name: 'next-starter',
+    html_url: 'http://github.com/netlify-templates/next-starter',
+    full_name: 'netlify-templates/next-starter',
+  },
+])
+
+const createRepoStub = sinon.stub(templatesUtils, 'createRepo').callsFake(() => ({
+  full_name: 'Next starter',
+  private: false,
+  branch: 'main',
+}))
+
+const jsonRenderSpy = sinon.spy(prettyjson, 'render')
+
 const { createSitesFromTemplateCommand } = require('../../src/commands/sites/sites-create-template')
 
-// const { CONFIRM, answerWithValue, handleQuestions } = require('./utils/handle-questions')
+const { fetchTemplates } = require('../../src/commands/sites/sites-create-template')
+
+/* eslint-enable import/order */
 const { withMockApi } = require('./utils/mock-api')
 
-// TODO: Flaky tests enable once fixed
-/**
- * As some of the tests are flaky on windows machines I will skip them for now
- * @type {import('ava').TestInterface}
- */
-test.skip('netlify sites:create-template', async () => {
-  // const siteTemplateQuestions = [
-  //   { question: 'Template: (Use arrow keys)', answer: CONFIRM },
-  //   { question: 'Team: (Use arrow keys)', answer: CONFIRM },
-  //   { question: 'Site name (optional)', answer: answerWithValue('test-site-name') },
-  // ]
+test.afterEach(() => {
+  sinon.restore()
+})
 
-  const siteInfo = {
-    admin_url: 'https://app.netlify.com/sites/site-name/overview',
-    ssl_url: 'https://site-name.netlify.app/',
-    id: 'site_id',
-    name: 'site-name',
-    build_settings: { repo_url: 'https://github.com/owner/repo' },
-  }
+const siteInfo = {
+  admin_url: 'https://app.netlify.com/sites/site-name/overview',
+  ssl_url: 'https://site-name.netlify.app/',
+  id: 'site_id',
+  name: 'site-name',
+  build_settings: { repo_url: 'https://github.com/owner/repo' },
+}
 
-  const routes = [
-    {
-      path: 'accounts',
-      response: [{ slug: 'test-account' }],
-    },
-    {
-      path: 'sites',
-      response: [],
-    },
-    { path: 'sites/site_id', response: siteInfo },
-    {
-      path: 'user',
-      response: { name: 'test user', slug: 'test-user', email: 'user@test.com' },
-    },
-    {
-      path: 'test-account/sites',
-      method: 'post',
-      response: { id: 'site_id', name: 'test-site-name' },
-    },
-  ]
+const routes = [
+  {
+    path: 'accounts',
+    response: [{ slug: 'test-account' }],
+  },
+  {
+    path: 'sites',
+    response: [],
+  },
+  { path: 'sites/site_id', response: siteInfo },
+  {
+    path: 'user',
+    response: { name: 'test user', slug: 'test-user', email: 'user@test.com' },
+  },
+  {
+    path: 'test-account/sites',
+    method: 'post',
+    response: siteInfo,
+  },
+]
+
+test('netlify sites:create-template', async (t) => {
+  const inquirerStub = sinon.stub(inquirer, 'prompt').callsFake(() => Promise.resolve({ accountSlug: 'test-account' }))
 
   await withMockApi(routes, async ({ apiUrl }) => {
     Object.defineProperty(process, 'env', {
@@ -70,15 +84,73 @@ test.skip('netlify sites:create-template', async () => {
     })
 
     const program = new BaseCommand('netlify')
+
     createSitesFromTemplateCommand(program)
 
     await program.parseAsync(['', '', 'sites:create-template'])
 
-    //   handleQuestions(childProcess, siteTemplateQuestions)
-    //   const { stdout } = await childProcess
+    t.truthy(gitMock.called)
+    t.truthy(getTemplatesStub.called)
+    t.truthy(createRepoStub.called)
 
-    //   const formattedOutput = JSON.stringify(stripAnsi(stdout)).replace(/\\n/g, '')
+    t.truthy(
+      jsonRenderSpy.calledWith({
+        'Admin URL': siteInfo.admin_url,
+        URL: siteInfo.ssl_url,
+        'Site ID': siteInfo.id,
+        'Repo URL': siteInfo.build_settings.repo_url,
+      }),
+    )
+  })
+  inquirerStub.restore()
+})
 
-    //   t.true(formattedOutput.includes(siteInfo.id))
+test.serial('should not fetch templates if one is passed as option', async (t) => {
+  const inquirerStub = sinon.stub(inquirer, 'prompt').callsFake(() => Promise.resolve({ accountSlug: 'test-account' }))
+
+  await withMockApi(routes, async ({ apiUrl }) => {
+    Object.defineProperty(process, 'env', {
+      value: {
+        NETLIFY_API_URL: apiUrl,
+        NETLIFY_AUTH_TOKEN: 'fake-token',
+      },
+    })
+
+    const program = new BaseCommand('netlify')
+
+    createSitesFromTemplateCommand(program)
+
+    await program.parseAsync([
+      '',
+      '',
+      'sites:create-template',
+      '-u',
+      'http://github.com/netlify-templates/next-starter',
+    ])
+
+    t.truthy(getTemplatesStub.notCalled)
+  })
+  inquirerStub.restore()
+})
+
+test.serial('should return an array of templates with name, source code url and slug', async (t) => {
+  await withMockApi(routes, async ({ apiUrl }) => {
+    Object.defineProperty(process, 'env', {
+      value: {
+        NETLIFY_API_URL: apiUrl,
+        NETLIFY_AUTH_TOKEN: 'fake-token',
+      },
+    })
+
+    const templates = await fetchTemplates('fake-token')
+
+    t.truthy(getTemplatesStub.calledWith('fake-token'))
+    t.deepEqual(templates, [
+      {
+        name: 'next-starter',
+        sourceCodeUrl: 'http://github.com/netlify-templates/next-starter',
+        slug: 'netlify-templates/next-starter',
+      },
+    ])
   })
 })
