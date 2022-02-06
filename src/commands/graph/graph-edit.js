@@ -1,3 +1,4 @@
+// @ts-check
 const gitRepoInfo = require('git-repo-info')
 
 const { OneGraphCliClient, generateSessionName, loadCLISession } = require('../../lib/one-graph/cli-client')
@@ -15,7 +16,7 @@ const { createCLISession, createPersistedQuery, ensureAppForSite, updateCLISessi
 /**
  * Creates the `netlify graph:edit` command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command').BaseCommand} command
  * @returns
  */
 const graphEdit = async (options, command) => {
@@ -46,7 +47,7 @@ const graphEdit = async (options, command) => {
   let oneGraphSessionId = loadCLISession(state)
   if (!oneGraphSessionId) {
     const sessionName = generateSessionName()
-    const oneGraphSession = await createCLISession(netlifyToken, site.id, sessionName)
+    const oneGraphSession = await createCLISession(netlifyToken, site.id, sessionName, null)
     state.set('oneGraphSessionId', oneGraphSession.id)
     oneGraphSessionId = state.get('oneGraphSessionId')
   }
