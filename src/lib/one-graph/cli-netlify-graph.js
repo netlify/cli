@@ -20,7 +20,6 @@ InternalConsole.registerConsole(internalConsole)
 
 const { extractFunctionsFromOperationDoc } = NetlifyGraph
 
-
 /**
  * Remove any relative path components from the given path
  * @param {string[]} items Filesystem path items to filter
@@ -158,7 +157,13 @@ const getNetlifyGraphConfig = async ({ command, options, settings }) => {
       settings = await detectServerSettings(devConfig, options, site.root)
     } catch (detectServerSettingsError) {
       settings = {}
-      warn(`Error while auto-detecting project settings, Netlify Graph encounter problems: ${JSON.stringify(detectServerSettingsError, null, 2)}`)
+      warn(
+        `Error while auto-detecting project settings, Netlify Graph encounter problems: ${JSON.stringify(
+          detectServerSettingsError,
+          null,
+          2,
+        )}`,
+      )
     }
   }
 
@@ -381,7 +386,7 @@ const generateHandlerByOperationId = (netlifyGraphConfig, schema, operationId, h
     operationsDoc: currentOperationsDoc,
   }
 
-  console.log("NetlifyGraph.generateHandlerSource:", NetlifyGraph.generateHandlerSource.toString())
+  console.log('NetlifyGraph.generateHandlerSource:', NetlifyGraph.generateHandlerSource.toString())
 
   const result = NetlifyGraph.generateHandlerSource(payload)
 
@@ -444,7 +449,9 @@ const generateHandlerByOperationName = (netlifyGraphConfig, schema, operationNam
   const parsedDoc = parse(currentOperationsDoc)
   const { functions } = extractFunctionsFromOperationDoc(parsedDoc)
 
-  const operation = Object.values(functions).find((potentialOperation) => potentialOperation.operationName === operationName)
+  const operation = Object.values(functions).find(
+    (potentialOperation) => potentialOperation.operationName === operationName,
+  )
 
   if (!operation) {
     warn(`No operation named ${operationName} was found in the operations doc`)

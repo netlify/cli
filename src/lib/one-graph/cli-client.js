@@ -265,7 +265,13 @@ const handleCliSessionEvent = async ({ event, netlifyGraphConfig, netlifyToken, 
       })
       break
     default: {
-      warn(`Unrecognized event received, you may need to upgrade your CLI version: ${__typename}: ${JSON.stringify(payload, null, 2)}`)
+      warn(
+        `Unrecognized event received, you may need to upgrade your CLI version: ${__typename}: ${JSON.stringify(
+          payload,
+          null,
+          2,
+        )}`,
+      )
       break
     }
   }

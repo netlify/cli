@@ -40,11 +40,11 @@ const baseNetlifyGraphConfig = {
   netlifyGraphTypeDefinitionsFilename: ['dummy', 'index.d.ts'],
   graphQLOperationsSourceFilename: ['dummy', 'netlifyGraphOperationsLibrary.graphql'],
   graphQLSchemaFilename: ['dummy', 'netlifyGraphSchema.graphql'],
-  webhookBasePath: "/webhooks",
-  netlifyGraphRequirePath: [".", "netlifyGraph"],
-  framework: "#custom",
-  language: "javascript",
-  runtimeTargetEnv: "node"
+  webhookBasePath: '/webhooks',
+  netlifyGraphRequirePath: ['.', 'netlifyGraph'],
+  framework: '#custom',
+  language: 'javascript',
+  runtimeTargetEnv: 'node',
 }
 
 const loadAsset = (filename) => fs.readFileSync(path.join(__dirname, 'assets', filename), 'utf8')
@@ -57,7 +57,7 @@ const parsedDoc = parse(appOperationsDoc, {
 })
 
 /**
- * 
+ *
  * @param {object} input
  * @param {Record<string, any>} input.handlerOptions
  * @param {string} input.operationId
@@ -65,7 +65,7 @@ const parsedDoc = parse(appOperationsDoc, {
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig
  * @param {GraphQL.GraphQLSchema} input.schema
  * @param {string[]} input.outDir
- * @returns 
+ * @returns
  */
 const generateHandlerText = ({ handlerOptions, netlifyGraphConfig, operationId, operationsDoc, outDir, schema }) => {
   const result = generateHandlerSource({
@@ -130,11 +130,10 @@ const generateHandlerText = ({ handlerOptions, netlifyGraphConfig, operationId, 
   return textualSource
 }
 
-
 const testGenerateFunctionLibraryAndRuntime = ({ frameworkName, language, name, runtimeTargetEnv }) => {
   // @ts-ignore
   test(`netlify graph function library (+runtime) codegen [${frameworkName}-${name}-${language}]`, (t) => {
-    const outDirPath = path.join(process.cwd(), "_test_out")
+    const outDirPath = path.join(process.cwd(), '_test_out')
     const outDir = [path.sep, ...outDirPath.split(path.sep), `netlify-graph-test-${frameworkName}`]
 
     /**
@@ -144,7 +143,13 @@ const testGenerateFunctionLibraryAndRuntime = ({ frameworkName, language, name, 
     const netlifyGraphConfig = { ...baseNetlifyGraphConfig, runtimeTargetEnv }
 
     const { fragments, functions } = extractFunctionsFromOperationDoc(parsedDoc)
-    const generatedFunctions = generateFunctionsSource(netlifyGraphConfig, commonSchema, appOperationsDoc, functions, fragments)
+    const generatedFunctions = generateFunctionsSource(
+      netlifyGraphConfig,
+      commonSchema,
+      appOperationsDoc,
+      functions,
+      fragments,
+    )
     const clientDefinitionsFilenameArr = [...outDir, 'netlifyGraph', 'index.js']
     // const functionDefinitionsFilenameArr = [...outDir, 'netlifyGraph', 'index.js']
     const typescriptFilenameArr = [...outDir, 'netlifyGraph', 'index.d.ts']
@@ -181,7 +186,13 @@ test('netlify graph function library (+runtime) codegen [browser]', (t) => {
   const netlifyGraphConfig = { ...baseNetlifyGraphConfig, runtimeTargetEnv: 'browser' }
 
   const { fragments, functions } = extractFunctionsFromOperationDoc(parsedDoc)
-  const generatedFunctions = generateFunctionsSource(netlifyGraphConfig, commonSchema, appOperationsDoc, functions, fragments)
+  const generatedFunctions = generateFunctionsSource(
+    netlifyGraphConfig,
+    commonSchema,
+    appOperationsDoc,
+    functions,
+    fragments,
+  )
 
   t.snapshot(normalize(JSON.stringify(generatedFunctions)))
 })
@@ -189,7 +200,7 @@ test('netlify graph function library (+runtime) codegen [browser]', (t) => {
 const testGenerateHandlerSource = ({ frameworkName, language, name, operationId }) => {
   // @ts-ignore
   test(`netlify graph handler codegen [${frameworkName}-${name}-${language}]`, (t) => {
-    const outDirPath = path.join(process.cwd(), "_test_out")
+    const outDirPath = path.join(process.cwd(), '_test_out')
     const outDir = [path.sep, ...outDirPath.split(path.sep), `netlify-graph-test-${frameworkName}`]
 
     /**
@@ -203,37 +214,79 @@ const testGenerateHandlerSource = ({ frameworkName, language, name, operationId 
      * @type Record<string, any>
      */
     const handlerOptions = {}
-    const textualSource = generateHandlerText({ handlerOptions, netlifyGraphConfig, operationId, operationsDoc: appOperationsDoc, schema: commonSchema, outDir })
+    const textualSource = generateHandlerText({
+      handlerOptions,
+      netlifyGraphConfig,
+      operationId,
+      operationsDoc: appOperationsDoc,
+      schema: commonSchema,
+      outDir,
+    })
 
     t.snapshot(normalize(JSON.stringify(textualSource)))
   })
 }
 
-const frameworks = [
-  "#custom",
-  "Next.js",
-  "Remix",
-  "unknown"
-]
+const frameworks = ['#custom', 'Next.js', 'Remix', 'unknown']
 
 const queryWithFragmentOperationId = 'e2394c86-260c-4646-88df-7bc7370de666'
 frameworks.forEach((frameworkName) => {
-  testGenerateFunctionLibraryAndRuntime({ frameworkName, language: 'javascript', name: 'node', runtimeTargetEnv: 'node' })
-  testGenerateFunctionLibraryAndRuntime({ frameworkName, language: 'javascript', name: 'browser', runtimeTargetEnv: 'browser' })
-  testGenerateHandlerSource({ frameworkName, operationId: queryWithFragmentOperationId, name: 'queryWithFragment', language: "javascript" })
+  testGenerateFunctionLibraryAndRuntime({
+    frameworkName,
+    language: 'javascript',
+    name: 'node',
+    runtimeTargetEnv: 'node',
+  })
+  testGenerateFunctionLibraryAndRuntime({
+    frameworkName,
+    language: 'javascript',
+    name: 'browser',
+    runtimeTargetEnv: 'browser',
+  })
+  testGenerateHandlerSource({
+    frameworkName,
+    operationId: queryWithFragmentOperationId,
+    name: 'queryWithFragment',
+    language: 'javascript',
+  })
 })
 
 frameworks.forEach((frameworkName) => {
-  testGenerateFunctionLibraryAndRuntime({ frameworkName, language: 'typescript', name: 'node', runtimeTargetEnv: 'node' })
-  testGenerateFunctionLibraryAndRuntime({ frameworkName, language: 'typescript', name: 'browser', runtimeTargetEnv: 'browser' })
-  testGenerateHandlerSource({ frameworkName, operationId: queryWithFragmentOperationId, name: 'queryWithFragment', language: "typescript" })
+  testGenerateFunctionLibraryAndRuntime({
+    frameworkName,
+    language: 'typescript',
+    name: 'node',
+    runtimeTargetEnv: 'node',
+  })
+  testGenerateFunctionLibraryAndRuntime({
+    frameworkName,
+    language: 'typescript',
+    name: 'browser',
+    runtimeTargetEnv: 'browser',
+  })
+  testGenerateHandlerSource({
+    frameworkName,
+    operationId: queryWithFragmentOperationId,
+    name: 'queryWithFragment',
+    language: 'typescript',
+  })
 })
 
 const subscriptionWithFragmentOperationId = 'e3d4bb8b-2fb5-9898-b051-db6027224112'
 frameworks.forEach((frameworkName) => {
-  testGenerateHandlerSource({ frameworkName, operationId: subscriptionWithFragmentOperationId, name: 'subscriptionWithFragment', language: "javascript" })
+  testGenerateHandlerSource({
+    frameworkName,
+    operationId: subscriptionWithFragmentOperationId,
+    name: 'subscriptionWithFragment',
+    language: 'javascript',
+  })
 })
 
 frameworks.forEach((frameworkName) => {
-  testGenerateHandlerSource({ frameworkName, operationId: subscriptionWithFragmentOperationId, name: 'subscriptionWithFragment', language: "typescript" })
+  testGenerateHandlerSource({
+    frameworkName,
+    operationId: subscriptionWithFragmentOperationId,
+    name: 'subscriptionWithFragment',
+    language: 'typescript',
+  })
 })
