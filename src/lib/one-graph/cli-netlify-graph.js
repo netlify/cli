@@ -18,6 +18,9 @@ const internalConsole = {
 
 InternalConsole.registerConsole(internalConsole)
 
+const { extractFunctionsFromOperationDoc } = NetlifyGraph
+
+
 /**
  * Remove any relative path components from the given path
  * @param {string[]} items Filesystem path items to filter
@@ -364,7 +367,7 @@ const readGraphQLSchemaFile = (netlifyGraphConfig) => {
  * @param {object} handlerOptions The options to use when generating the handler
  * @returns
  */
-const generateHandler = (netlifyGraphConfig, schema, operationId, handlerOptions) => {
+const generateHandlerByOperationId = (netlifyGraphConfig, schema, operationId, handlerOptions) => {
   let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
   if (currentOperationsDoc.trim().length === 0) {
     currentOperationsDoc = NetlifyGraph.defaultExampleOperationsDoc
@@ -424,6 +427,33 @@ const generateHandler = (netlifyGraphConfig, schema, operationId, handlerOptions
   })
 }
 
+/**
+ * Given a NetlifyGraphConfig, read the appropriate files and write a handler for the given operationId to the filesystem
+ * @param {NetlifyGraph.NetlifyGraphConfig} netlifyGraphConfig
+ * @param {GraphQL.GraphQLSchema} schema The GraphQL schema to use when generating the handler
+ * @param {string} operationName The name of the operation to use when generating the handler
+ * @param {object} handlerOptions The options to use when generating the handler
+ * @returns
+ */
+const generateHandlerByOperationName = (netlifyGraphConfig, schema, operationName, handlerOptions) => {
+  let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
+  if (currentOperationsDoc.trim().length === 0) {
+    currentOperationsDoc = NetlifyGraph.defaultExampleOperationsDoc
+  }
+
+  const parsedDoc = parse(currentOperationsDoc)
+  const { functions } = extractFunctionsFromOperationDoc(parsedDoc)
+
+  const operation = Object.values(functions).find((potentialOperation) => potentialOperation.operationName === operationName)
+
+  if (!operation) {
+    warn(`No operation named ${operationName} was found in the operations doc`)
+    return
+  }
+
+  generateHandlerByOperationId(netlifyGraphConfig, schema, operation.id, handlerOptions)
+}
+
 // Export the minimal set of functions that are required for Netlify Graph
 const { buildSchema, parse } = GraphQL
 
@@ -464,13 +494,15 @@ module.exports = {
   generateFunctionsSource: NetlifyGraph.generateFunctionsSource,
   generateFunctionsFile,
   generateHandlerSource: NetlifyGraph.generateHandlerSource,
-  generateHandler,
+  generateHandlerByOperationId,
+  generateHandlerByOperationName,
   getGraphEditUrlBySiteId,
   getGraphEditUrlBySiteName,
   getNetlifyGraphConfig,
   parse,
   readGraphQLOperationsSourceFile,
   readGraphQLSchemaFile,
+  runPrettier,
   writeGraphQLOperationsSourceFile,
   writeGraphQLSchemaFile,
 }

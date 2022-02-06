@@ -14,7 +14,7 @@ const { watchDebounced } = require('../functions/watcher')
 
 const {
   generateFunctionsFile,
-  generateHandler,
+  generateHandlerByOperationId,
   readGraphQLOperationsSourceFile,
   writeGraphQLOperationsSourceFile,
   writeGraphQLSchemaFile,
@@ -253,7 +253,7 @@ const handleCliSessionEvent = async ({ event, netlifyGraphConfig, netlifyToken, 
       await handleCliSessionEvent({ netlifyToken, event: payload, netlifyGraphConfig, schema, siteId })
       break
     case 'OneGraphNetlifyCliSessionGenerateHandlerEvent':
-      await generateHandler(netlifyGraphConfig, schema, payload.operationId, payload)
+      await generateHandlerByOperationId(netlifyGraphConfig, schema, payload.operationId, payload)
       break
     case 'OneGraphNetlifyCliSessionPersistedLibraryUpdatedEvent':
       await updateGraphQLOperationsFileFromPersistedDoc({
@@ -391,6 +391,7 @@ const OneGraphCliClient = {
 
 module.exports = {
   OneGraphCliClient,
+  extractFunctionsFromOperationDoc,
   handleCliSessionEvent,
   generateSessionName,
   loadCLISession,
