@@ -3,6 +3,7 @@ const fs = require('fs')
 const path = require('path')
 const process = require('process')
 
+const { execaSync } = require("execa")
 const { GraphQL, InternalConsole, NetlifyGraph } = require('netlify-onegraph-internal')
 
 const { detectServerSettings, error, execa, getFunctionsDir, log, warn } = require('../../utils')
@@ -263,13 +264,13 @@ const runPrettier = async (filePath) => {
     return
   }
 
-  const command = `prettier --write ${filePath}`
   try {
-    const commandProcess = execa.command(command, {
-      preferLocal: true,
-      // windowsHide needs to be false for child process to terminate properly on Windows
-      windowsHide: false,
-    })
+    const commandProcess = execa("prettier", ["--write", filePath],
+      {
+        preferLocal: true,
+        // windowsHide needs to be false for child process to terminate properly on Windows
+        windowsHide: false,
+      })
 
     await commandProcess
   } catch (prettierError) {
