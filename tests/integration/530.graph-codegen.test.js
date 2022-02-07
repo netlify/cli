@@ -52,7 +52,12 @@ const baseNetlifyGraphConfig = {
  * @constant
  * @type {("esm" | "commonjs")[]}
  */
-const moduleTypes = ['esm', 'commonjs']
+const moduleTypes = ['esm',
+  /**
+   * Restore this when we have a way to generate commonjs modules with typescript enabled
+   */
+  //  'commonjs'
+]
 
 const loadAsset = (filename) => fs.readFileSync(path.join(__dirname, 'assets', filename), 'utf8')
 const schemaString = loadAsset('../assets/netlifyGraphSchema.graphql')
