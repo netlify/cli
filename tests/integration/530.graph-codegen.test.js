@@ -129,7 +129,7 @@ const generateHandlerText = ({ handlerOptions, netlifyGraphConfig, operationId, 
     .sort(([filenameA], [filenameB]) => filenameA[0].localeCompare(filenameB[0]))
     .map(([_, baseFilenameArr, content]) => {
       // Strip the outDir from the filename so the output is the same regardless of where the tests are run
-      const filename = baseFilenameArr.join("|")
+      const filename = baseFilenameArr.join('|')
       return `${filename}: ${content}`
     })
     .join('/-----------------/')
