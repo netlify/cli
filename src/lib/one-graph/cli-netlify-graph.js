@@ -34,7 +34,7 @@ const filterRelativePathItems = (items) => items.filter((part) => part !== '')
  * @param {string[]} context.detectedFunctionsPath
  * @param {string[]} context.siteRoot
  */
-const makeDefaultNetlifGraphConfig = ({ baseConfig, detectedFunctionsPath }) => {
+const makeDefaultNetlifyGraphConfig = ({ baseConfig, detectedFunctionsPath }) => {
   const functionsPath = filterRelativePathItems([...detectedFunctionsPath])
   const webhookBasePath = '/.netlify/functions'
   const netlifyGraphPath = [...functionsPath, 'netlifyGraph']
@@ -65,7 +65,7 @@ const makeDefaultNetlifGraphConfig = ({ baseConfig, detectedFunctionsPath }) => 
  * @param {string[]} context.detectedFunctionsPath
  * @param {string[]} context.siteRoot
  */
-const makeDefaultNextJsNetlifGraphConfig = ({ baseConfig, siteRoot }) => {
+const makeDefaultNextJsNetlifyGraphConfig = ({ baseConfig, siteRoot }) => {
   const functionsPath = filterRelativePathItems([...siteRoot, 'pages', 'api'])
   const webhookBasePath = '/api'
   const netlifyGraphPath = filterRelativePathItems([...siteRoot, 'lib', 'netlifyGraph'])
@@ -96,7 +96,7 @@ const makeDefaultNextJsNetlifGraphConfig = ({ baseConfig, siteRoot }) => {
  * @param {string[]} context.detectedFunctionsPath
  * @param {string[]} context.siteRoot
  */
-const makeDefaultRemixNetlifGraphConfig = ({ baseConfig, detectedFunctionsPath, siteRoot }) => {
+const makeDefaultRemixNetlifyGraphConfig = ({ baseConfig, detectedFunctionsPath, siteRoot }) => {
   const functionsPath = filterRelativePathItems([...detectedFunctionsPath])
   const webhookBasePath = '/webhooks'
   const netlifyGraphPath = filterRelativePathItems([
@@ -124,9 +124,9 @@ const makeDefaultRemixNetlifGraphConfig = ({ baseConfig, detectedFunctionsPath, 
 }
 
 const defaultFrameworkLookup = {
-  'Next.js': makeDefaultNextJsNetlifGraphConfig,
-  Remix: makeDefaultRemixNetlifGraphConfig,
-  default: makeDefaultNetlifGraphConfig,
+  'Next.js': makeDefaultNextJsNetlifyGraphConfig,
+  Remix: makeDefaultRemixNetlifyGraphConfig,
+  default: makeDefaultNetlifyGraphConfig,
 }
 
 /**
@@ -182,9 +182,11 @@ const getNetlifyGraphConfig = async ({ command, options, settings }) => {
   const baseConfig = { ...NetlifyGraph.defaultNetlifyGraphConfig, ...userSpecifiedConfig }
   const defaultFrameworkConfig = makeDefaultFrameworkConfig({ baseConfig, detectedFunctionsPath, siteRoot })
 
+  const userSpecifiedFunctionPath =
+    userSpecifiedConfig.functionsPath && userSpecifiedConfig.functionsPath.split(path.sep)
+
   const functionsPath =
-    (userSpecifiedConfig.functionsPath && userSpecifiedConfig.functionsPath.split(path.sep)) ||
-    defaultFrameworkConfig.functionsPath
+    (userSpecifiedFunctionPath && [...siteRoot, ...userSpecifiedFunctionPath]) || defaultFrameworkConfig.functionsPath
   const netlifyGraphPath =
     (userSpecifiedConfig.netlifyGraphPath && userSpecifiedConfig.netlifyGraphPath.split(path.sep)) ||
     defaultFrameworkConfig.netlifyGraphPath
@@ -384,8 +386,6 @@ const generateHandlerByOperationId = (netlifyGraphConfig, schema, operationId, h
     operationId,
     operationsDoc: currentOperationsDoc,
   }
-
-  console.log('NetlifyGraph.generateHandlerSource:', NetlifyGraph.generateHandlerSource.toString())
 
   const result = NetlifyGraph.generateHandlerSource(payload)
 
