@@ -43,7 +43,9 @@ const createGraphHandlerCommand = (program) =>
   program
     .command('graph:handler')
     .argument('<name>', 'Operation name')
-    .description('Generate a handler for a Graph operation given its name')
+    .description(
+      'Generate a handler for a Graph operation given its name. See `graph:operations` for a list of operations.',
+    )
     .action(async (operationName, options, command) => {
       await graphHandler(operationName, options, command)
     })
