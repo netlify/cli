@@ -52,7 +52,8 @@ const baseNetlifyGraphConfig = {
  * @constant
  * @type {("esm" | "commonjs")[]}
  */
-const moduleTypes = ['esm',
+const moduleTypes = [
+  'esm',
   /**
    * Restore this when we have a way to generate commonjs modules with typescript enabled
    */
