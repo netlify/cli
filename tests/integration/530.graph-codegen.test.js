@@ -125,7 +125,7 @@ const generateHandlerText = ({ handlerOptions, netlifyGraphConfig, operationId, 
   const textualSource = sources
     .sort(([filenameA], [filenameB]) => filenameA[0].localeCompare(filenameB[0]))
     .map(([filename, content]) => {
-      // Strip the ouDir from the filename
+      // Strip the outDir from the filename so the output is the same regardless of where the tests are run
       const relativePath = path.relative(process.cwd(), filename)
       return `${relativePath}: ${content}`
     })
