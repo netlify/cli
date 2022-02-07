@@ -36,7 +36,7 @@ const graphOperations = async (options, command) => {
       other: [],
     }
 
-    // Sort the operations by type and add them to the correct array in sorted
+    // Sort the operations by name and add them to the correct array under the operation type in sorted
     Object.values(functions)
       .sort((aItem, bItem) => aItem.operationName.localeCompare(bItem.operationName))
       .forEach((operation) => {
