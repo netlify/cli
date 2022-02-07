@@ -264,12 +264,11 @@ const runPrettier = async (filePath) => {
   }
 
   try {
-    const commandProcess = execa("prettier", ["--write", filePath],
-      {
-        preferLocal: true,
-        // windowsHide needs to be false for child process to terminate properly on Windows
-        windowsHide: false,
-      })
+    const commandProcess = execa('prettier', ['--write', filePath], {
+      preferLocal: true,
+      // windowsHide needs to be false for child process to terminate properly on Windows
+      windowsHide: false,
+    })
 
     await commandProcess
   } catch (prettierError) {

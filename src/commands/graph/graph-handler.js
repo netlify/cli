@@ -1,9 +1,9 @@
 // @ts-check
 const {
-    buildSchema,
-    generateHandlerByOperationName,
-    getNetlifyGraphConfig,
-    readGraphQLSchemaFile,
+  buildSchema,
+  generateHandlerByOperationName,
+  getNetlifyGraphConfig,
+  readGraphQLSchemaFile,
 } = require('../../lib/one-graph/cli-netlify-graph')
 const { error } = require('../../utils')
 
@@ -15,23 +15,23 @@ const { error } = require('../../utils')
  * @returns
  */
 const graphHandler = async (operationName, options, command) => {
-    const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options })
+  const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options })
 
-    const schemaString = readGraphQLSchemaFile(netlifyGraphConfig)
+  const schemaString = readGraphQLSchemaFile(netlifyGraphConfig)
 
-    let schema
+  let schema
 
-    try {
-        schema = buildSchema(schemaString)
-    } catch (buildSchemaError) {
-        error(`Error parsing schema: ${buildSchemaError}`)
-    }
+  try {
+    schema = buildSchema(schemaString)
+  } catch (buildSchemaError) {
+    error(`Error parsing schema: ${buildSchemaError}`)
+  }
 
-    if (!schema) {
-        error(`Failed to fetch and update Netlify GraphQL schema`)
-    }
+  if (!schema) {
+    error(`Failed to fetch and update Netlify GraphQL schema`)
+  }
 
-    generateHandlerByOperationName(netlifyGraphConfig, schema, operationName, {})
+  generateHandlerByOperationName(netlifyGraphConfig, schema, operationName, {})
 }
 
 /**
@@ -40,12 +40,12 @@ const graphHandler = async (operationName, options, command) => {
  * @returns
  */
 const createGraphHandlerCommand = (program) =>
-    program
-        .command('graph:handler')
-        .argument('<name>', 'Operation name')
-        .description('Generate a handler for a Graph operation given its name')
-        .action(async (operationName, options, command) => {
-            await graphHandler(operationName, options, command)
-        })
+  program
+    .command('graph:handler')
+    .argument('<name>', 'Operation name')
+    .description('Generate a handler for a Graph operation given its name')
+    .action(async (operationName, options, command) => {
+      await graphHandler(operationName, options, command)
+    })
 
 module.exports = { createGraphHandlerCommand }
