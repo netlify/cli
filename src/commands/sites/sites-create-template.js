@@ -11,8 +11,6 @@ const { createRepo, getTemplatesFromGitHub } = require('../../utils/sites/utils'
 
 const { getSiteNameInput } = require('./sites-create')
 
-let ghToken
-
 const fetchTemplates = async (token) => {
   const templatesFromGithubOrg = await getTemplatesFromGitHub(token)
 
@@ -36,17 +34,13 @@ const sitesCreateTemplate = async (options, command) => {
   await command.authenticate()
 
   const { globalConfig } = command.netlify
-  ghToken = await getGitHubToken({ globalConfig })
+  const ghToken = await getGitHubToken({ globalConfig })
 
   let { url: templateUrl } = options
 
   if (templateUrl) {
-    try {
-      const urlFromOptions = new URL(templateUrl)
-      templateUrl = { templateName: urlFromOptions.pathname.slice(1) }
-    } catch (error_) {
-      throw new Error(error_)
-    }
+    const urlFromOptions = new URL(templateUrl)
+    templateUrl = { templateName: urlFromOptions.pathname.slice(1) }
   } else {
     const templates = await fetchTemplates(ghToken)
 
