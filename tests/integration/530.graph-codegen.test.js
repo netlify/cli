@@ -124,7 +124,11 @@ const generateHandlerText = ({ handlerOptions, netlifyGraphConfig, operationId, 
 
   const textualSource = sources
     .sort(([filenameA], [filenameB]) => filenameA[0].localeCompare(filenameB[0]))
-    .map(([filename, content]) => `${filename}: ${content}`)
+    .map(([filename, content]) => {
+      // Strip the ouDir from the filename
+      const relativePath = path.relative(process.cwd(), filename)
+      return `${relativePath}: ${content}`
+    })
     .join('/-----------------/')
 
   return textualSource
