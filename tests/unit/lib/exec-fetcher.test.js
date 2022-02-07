@@ -1,51 +1,56 @@
 // @ts-check
+const process = require('process')
 
 /** @type {import('ava').TestInterface} */
 // @ts-ignore
 const test = require('ava')
-const proxyquire = require('proxyquire')
 const sinon = require('sinon')
 
-// is not a function therefore use Object.defineProperty to mock it
-const processSpy = {}
-const fetchLatestSpy = sinon.stub()
+const { rewiremock } = require('../../integration/utils/rewiremock')
 
-const { fetchLatestVersion, getArch, getExecName } = proxyquire('../../../src/lib/exec-fetcher', {
+const fetchLatestSpy = sinon.stub()
+// eslint-disable-next-line node/global-require
+const { fetchLatestVersion, getArch, getExecName } = rewiremock.proxy(() => require('../../../src/lib/exec-fetcher'), {
   'gh-release-fetch': {
     fetchLatest: fetchLatestSpy,
   },
-  process: processSpy,
+})
+
+test.beforeEach((t) => {
+  t.context.sandbox = sinon.createSandbox()
+})
+
+test.afterEach((t) => {
+  t.context.sandbox.restore()
 })
 
 test(`should use 386 if process architecture is ia32`, (t) => {
-  Object.defineProperty(processSpy, 'arch', { value: 'ia32' })
+  t.context.sandbox.stub(process, 'arch').value('ia32')
   t.is(getArch(), '386')
 })
 
 test(`should use amd64 if process architecture is x64`, (t) => {
-  Object.defineProperty(processSpy, 'arch', { value: 'x64' })
+  t.context.sandbox.stub(process, 'arch').value('x64')
   t.is(getArch(), 'amd64')
 })
 
 test(`should append .exe on windows for the executable name`, (t) => {
-  Object.defineProperty(processSpy, 'platform', { value: 'win32' })
+  t.context.sandbox.stub(process, 'platform').value('win32')
   const execName = 'some-binary-file'
   t.is(getExecName({ execName }), `${execName}.exe`)
 })
 
 test(`should not append anything on linux or darwin to executable`, (t) => {
-  Object.defineProperty(processSpy, 'platform', { value: 'darwin' })
+  t.context.sandbox.stub(process, 'platform').value('darwin')
   const execName = 'some-binary-file'
   t.is(getExecName({ execName }), execName)
-  Object.defineProperty(processSpy, 'platform', { value: 'linux' })
+  t.context.sandbox.stub(process, 'platform').value('linux')
   t.is(getExecName({ execName }), execName)
 })
 
 test('should test if an error is thrown if the cpu architecture and the os are not available', async (t) => {
-  Object.defineProperties(processSpy, {
-    platform: { value: 'windows' },
-    arch: { value: 'amd64' },
-  })
+  t.context.sandbox.stub(process, 'platform').value('windows')
+  t.context.sandbox.stub(process, 'arch').value('amd64')
 
   // eslint-disable-next-line prefer-promise-reject-errors
   fetchLatestSpy.returns(Promise.reject({ statusCode: 404 }))
@@ -80,10 +85,9 @@ test('should provide the error if it is not a 404', async (t) => {
 })
 
 test('should map linux x64 to amd64 arch', async (t) => {
-  Object.defineProperties(processSpy, {
-    platform: { value: 'linux' },
-    arch: { value: 'x64' },
-  })
+  t.context.sandbox.stub(process, 'platform').value('linux')
+  t.context.sandbox.stub(process, 'arch').value('x64')
+
   // eslint-disable-next-line prefer-promise-reject-errors
   fetchLatestSpy.returns(Promise.reject({ statusCode: 404 }))
 
