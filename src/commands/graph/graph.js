@@ -1,6 +1,7 @@
 // @ts-check
 const { createGraphEditCommand } = require('./graph-edit')
 const { createGraphHandlerCommand } = require('./graph-handler')
+const { createGraphLibraryCommand } = require('./graph-library')
 const { createGraphOperationCommand } = require('./graph-operations')
 const { createGraphPullCommand } = require('./graph-pull')
 
@@ -21,6 +22,7 @@ const graph = (options, command) => {
 const createGraphCommand = (program) => {
   createGraphEditCommand(program)
   createGraphHandlerCommand(program)
+  createGraphLibraryCommand(program)
   createGraphOperationCommand(program)
   createGraphPullCommand(program)
 

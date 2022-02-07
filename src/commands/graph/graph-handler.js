@@ -28,7 +28,7 @@ const graphHandler = async (operationName, options, command) => {
   }
 
   if (!schema) {
-    error(`Failed to fetch and update Netlify GraphQL schema`)
+    error(`Failed to parse Netlify GraphQL schema`)
   }
 
   generateHandlerByOperationName(netlifyGraphConfig, schema, operationName, {})

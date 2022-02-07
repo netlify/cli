@@ -24,6 +24,7 @@ netlify graph
 |:--------------------------- |:-----|
 | [`graph:edit`](/docs/commands/graph.md#graphedit) | Launch the browser to edit your local graph functions from Netlify  |
 | [`graph:handler`](/docs/commands/graph.md#graphhandler) | Generate a handler for a Graph operation given its name. See `graph:operations` for a list of operations.  |
+| [`graph:library`](/docs/commands/graph.md#graphlibrary) | Generate the Graph function library  |
 | [`graph:operations`](/docs/commands/graph.md#graphoperations) | List all of the locally available operations  |
 | [`graph:pull`](/docs/commands/graph.md#graphpull) | Pull down your local Netlify Graph schema, and process pending Graph edit events  |
 
@@ -66,6 +67,23 @@ netlify graph:handler
 **Arguments**
 
 - name - Operation name
+
+**Flags**
+
+- `debug` (*boolean*) - Print debugging information
+- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
+
+---
+## `graph:library`
+
+Generate the Graph function library
+
+**Usage**
+
+```bash
+netlify graph:library
+```
 
 **Flags**
 
