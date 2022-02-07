@@ -284,7 +284,7 @@ const persistNewOperationsDocForSession = async ({ netlifyToken, oneGraphSession
     appId: siteId,
     description: 'Temporary snapshot of local queries',
     document: operationsDoc,
-    tags: ['netlify-cli', `session: ${oneGraphSessionId}`, `git - branch: ${branch}`, `local - change`],
+    tags: ['netlify-cli', `session:${oneGraphSessionId}`, `git-branch:${branch}`, `local-change`],
   }
   const persistedDoc = await createPersistedQuery(netlifyToken, payload)
   const newMetadata = await { docId: persistedDoc.id }
@@ -381,7 +381,7 @@ const startOneGraphCLISession = async (input) => {
  */
 const generateSessionName = () => {
   const userInfo = os.userInfo({ encoding: 'utf-8' })
-  const sessionName = `${userInfo.username} - ${Date.now()}`
+  const sessionName = `${userInfo.username}-${Date.now()}`
   log(`Generated Netlify Graph session name: ${sessionName}`)
   return sessionName
 }
