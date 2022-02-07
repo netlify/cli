@@ -1,5 +1,6 @@
 // @ts-check
 const { createSitesCreateCommand } = require('./sites-create')
+const { createSitesFromTemplateCommand } = require('./sites-create-template')
 const { createSitesDeleteCommand } = require('./sites-delete')
 const { createSitesListCommand } = require('./sites-list')
 
@@ -19,6 +20,7 @@ const sites = (options, command) => {
  */
 const createSitesCommand = (program) => {
   createSitesCreateCommand(program)
+  createSitesFromTemplateCommand(program)
   createSitesListCommand(program)
   createSitesDeleteCommand(program)
 
