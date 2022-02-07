@@ -1,10 +1,11 @@
+/* eslint-disable eslint-comments/disable-enable-pair */
+/* eslint-disable no-unused-vars */
 // @ts-check
 const fs = require('fs')
 const path = require('path')
 const process = require('process')
 
 const test = require('ava')
-// eslint-disable-next-line no-unused-vars
 const { GraphQL, NetlifyGraph } = require('netlify-onegraph-internal')
 
 const { runPrettier } = require('../../src/lib/one-graph/cli-netlify-graph')
@@ -92,18 +93,20 @@ const generateHandlerText = ({ handlerOptions, netlifyGraphConfig, operationId, 
     const { content } = exportedFile
     const isNamed = exportedFile.kind === 'NamedExportedFile'
 
-    let filenameArr
+    let baseFilenameArr
 
     if (isNamed) {
-      filenameArr = [...outDir, ...exportedFile.name]
+      baseFilenameArr = [...exportedFile.name]
     } else {
       const operationName = (operation.name && operation.name.value) || 'Unnamed'
       const fileExtension = netlifyGraphConfig.language === 'typescript' ? 'ts' : netlifyGraphConfig.extension
       const defaultBaseFilename = `${operationName}.${fileExtension}`
       const baseFilename = defaultBaseFilename
 
-      filenameArr = [...outDir, baseFilename]
+      baseFilenameArr = [baseFilename]
     }
+
+    const filenameArr = [...outDir, ...baseFilenameArr]
 
     const filePath = path.resolve(...filenameArr)
     const parentDir = filenameArr.slice(0, -1)
@@ -115,7 +118,7 @@ const generateHandlerText = ({ handlerOptions, netlifyGraphConfig, operationId, 
 
     const prettierContent = fs.readFileSync(filePath, 'utf-8')
 
-    sources.push([filePath, prettierContent])
+    sources.push([filePath, baseFilenameArr, prettierContent])
   })
 
   if (sources.length === 0) {
@@ -124,10 +127,10 @@ const generateHandlerText = ({ handlerOptions, netlifyGraphConfig, operationId, 
 
   const textualSource = sources
     .sort(([filenameA], [filenameB]) => filenameA[0].localeCompare(filenameB[0]))
-    .map(([filename, content]) => {
+    .map(([_, baseFilenameArr, content]) => {
       // Strip the outDir from the filename so the output is the same regardless of where the tests are run
-      const relativePath = path.relative(process.cwd(), filename)
-      return `${relativePath}: ${content}`
+      const filename = baseFilenameArr.join("|")
+      return `${filename}: ${content}`
     })
     .join('/-----------------/')
 
