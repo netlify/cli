@@ -3,7 +3,6 @@ const fs = require('fs')
 const path = require('path')
 const process = require('process')
 
-const { execaSync } = require("execa")
 const { GraphQL, InternalConsole, NetlifyGraph } = require('netlify-onegraph-internal')
 
 const { detectServerSettings, error, execa, getFunctionsDir, log, warn } = require('../../utils')
