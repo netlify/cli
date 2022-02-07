@@ -14,7 +14,7 @@
         "@netlify/config": "^17.0.6",
         "@netlify/framework-info": "^9.0.0",
         "@netlify/local-functions-proxy": "^1.1.1",
-        "@netlify/plugin-edge-handlers": "^3.0.4",
+        "@netlify/plugin-edge-handlers": "^3.0.5",
         "@netlify/plugins-list": "^6.7.0",
         "@netlify/routing-local-proxy": "^0.34.1",
         "@netlify/zip-it-and-ship-it": "^5.6.0",
@@ -3058,9 +3058,9 @@
       "integrity": "sha512-lfNB/QYDgaP07pwm/nWEaWPvRAAGyhxvJqNzvxMijc7A4uwquMjlbYve8yYyd0LJXPwgBpGobwiQj5RA76xzUQ=="
     },
     "node_modules/@netlify/plugin-edge-handlers": {
-      "version": "3.0.4",
-      "resolved": "https://registry.npmjs.org/@netlify/plugin-edge-handlers/-/plugin-edge-handlers-3.0.4.tgz",
-      "integrity": "sha512-w6PkvBSsmVblPBj1QVwUDJALuYeD8SyD5YMrTF5c9XrR7tjAWqtJQcw8bsuYqdDr8sEwRjUNyydPd/Zt5kEBLA==",
+      "version": "3.0.5",
+      "resolved": "https://registry.npmjs.org/@netlify/plugin-edge-handlers/-/plugin-edge-handlers-3.0.5.tgz",
+      "integrity": "sha512-2o1kXxCrRpYKyzsRobdPqlxWZpgznO1a6e+gOsWP/p2b2NDwO/dCCkLPJk1rKZdRgE3x8fVqGOcyYx5RlxaWVg==",
       "dependencies": {
         "@babel/core": "^7.11.4",
         "@babel/preset-env": "^7.11.5",
@@ -24725,9 +24725,9 @@
       "integrity": "sha512-lfNB/QYDgaP07pwm/nWEaWPvRAAGyhxvJqNzvxMijc7A4uwquMjlbYve8yYyd0LJXPwgBpGobwiQj5RA76xzUQ=="
     },
     "@netlify/plugin-edge-handlers": {
-      "version": "3.0.4",
-      "resolved": "https://registry.npmjs.org/@netlify/plugin-edge-handlers/-/plugin-edge-handlers-3.0.4.tgz",
-      "integrity": "sha512-w6PkvBSsmVblPBj1QVwUDJALuYeD8SyD5YMrTF5c9XrR7tjAWqtJQcw8bsuYqdDr8sEwRjUNyydPd/Zt5kEBLA==",
+      "version": "3.0.5",
+      "resolved": "https://registry.npmjs.org/@netlify/plugin-edge-handlers/-/plugin-edge-handlers-3.0.5.tgz",
+      "integrity": "sha512-2o1kXxCrRpYKyzsRobdPqlxWZpgznO1a6e+gOsWP/p2b2NDwO/dCCkLPJk1rKZdRgE3x8fVqGOcyYx5RlxaWVg==",
       "requires": {
         "@babel/core": "^7.11.4",
         "@babel/preset-env": "^7.11.5",
