@@ -48,6 +48,12 @@ const baseNetlifyGraphConfig = {
   runtimeTargetEnv: 'node',
 }
 
+/**
+ * @constant
+ * @type {("esm" | "commonjs")[]}
+ */
+const moduleTypes = ['esm', 'commonjs']
+
 const loadAsset = (filename) => fs.readFileSync(path.join(__dirname, 'assets', filename), 'utf8')
 const schemaString = loadAsset('../assets/netlifyGraphSchema.graphql')
 const commonSchema = buildSchema(schemaString)
@@ -138,99 +144,82 @@ const generateHandlerText = ({ handlerOptions, netlifyGraphConfig, operationId, 
 }
 
 const testGenerateFunctionLibraryAndRuntime = ({ frameworkName, language, name, runtimeTargetEnv }) => {
-  // @ts-ignore
-  test(`netlify graph function library (+runtime) codegen [${frameworkName}-${name}-${language}]`, (t) => {
-    const outDirPath = path.join(process.cwd(), '_test_out')
-    const outDir = [path.sep, ...outDirPath.split(path.sep), `netlify-graph-test-${frameworkName}`]
+  moduleTypes.forEach((moduleType) => {
+    // @ts-ignore
+    test(`netlify graph function library (+runtime) codegen [${frameworkName}-${name}-${language}-${moduleType}]`, (t) => {
+      const outDirPath = path.join(process.cwd(), '_test_out')
+      const outDir = [path.sep, ...outDirPath.split(path.sep), `netlify-graph-test-${frameworkName}-${moduleType}`]
 
-    /**
-     * @constant
-     * @type {NetlifyGraph.NetlifyGraphConfig}
-     */
-    const netlifyGraphConfig = { ...baseNetlifyGraphConfig, runtimeTargetEnv }
+      /**
+       * @constant
+       * @type {NetlifyGraph.NetlifyGraphConfig}
+       */
+      const netlifyGraphConfig = { ...baseNetlifyGraphConfig, runtimeTargetEnv, moduleType }
 
-    const { fragments, functions } = extractFunctionsFromOperationDoc(parsedDoc)
-    const generatedFunctions = generateFunctionsSource(
-      netlifyGraphConfig,
-      commonSchema,
-      appOperationsDoc,
-      functions,
-      fragments,
-    )
-    const clientDefinitionsFilenameArr = [...outDir, 'netlifyGraph', 'index.js']
-    // const functionDefinitionsFilenameArr = [...outDir, 'netlifyGraph', 'index.js']
-    const typescriptFilenameArr = [...outDir, 'netlifyGraph', 'index.d.ts']
+      const { fragments, functions } = extractFunctionsFromOperationDoc(parsedDoc)
+      const generatedFunctions = generateFunctionsSource(
+        netlifyGraphConfig,
+        commonSchema,
+        appOperationsDoc,
+        functions,
+        fragments,
+      )
+      const clientDefinitionsFilenameArr = [...outDir, 'netlifyGraph', 'index.js']
+      const typescriptFilenameArr = [...outDir, 'netlifyGraph', 'index.d.ts']
 
-    const writeFile = (filenameArr, content) => {
-      const filePath = path.resolve(...filenameArr)
-      const parentDir = filenameArr.slice(0, -1)
+      const writeFile = (filenameArr, content) => {
+        const filePath = path.resolve(...filenameArr)
+        const parentDir = filenameArr.slice(0, -1)
 
-      ensurePath(parentDir)
-      fs.writeFileSync(filePath, content, 'utf8')
-      // Run prettier to help normalize the output (and also make sure we're generating parsable code)
-      runPrettier(filePath)
-    }
+        ensurePath(parentDir)
+        fs.writeFileSync(filePath, content, 'utf8')
+        // Run prettier to help normalize the output (and also make sure we're generating parsable code)
+        runPrettier(filePath)
+      }
 
-    writeFile(typescriptFilenameArr, generatedFunctions.typeDefinitionsSource)
-    writeFile(clientDefinitionsFilenameArr, generatedFunctions.clientSource)
+      writeFile(typescriptFilenameArr, generatedFunctions.typeDefinitionsSource)
+      writeFile(clientDefinitionsFilenameArr, generatedFunctions.clientSource)
 
-    const prettierGeneratedFunctions = {
-      functionDefinitions: generatedFunctions.functionDefinitions,
-      typeDefinitionsSource: fs.readFileSync(path.resolve(...typescriptFilenameArr), 'utf-8'),
-      clientSource: fs.readFileSync(path.resolve(...clientDefinitionsFilenameArr), 'utf-8'),
-    }
+      const prettierGeneratedFunctions = {
+        functionDefinitions: generatedFunctions.functionDefinitions,
+        typeDefinitionsSource: fs.readFileSync(path.resolve(...typescriptFilenameArr), 'utf-8'),
+        clientSource: fs.readFileSync(path.resolve(...clientDefinitionsFilenameArr), 'utf-8'),
+      }
 
-    t.snapshot(normalize(JSON.stringify(prettierGeneratedFunctions)))
+      t.snapshot(normalize(JSON.stringify(prettierGeneratedFunctions)))
+    })
   })
 }
 
-// @ts-ignore
-test('netlify graph function library (+runtime) codegen [browser]', (t) => {
-  /**
-   * @constant
-   * @type {NetlifyGraph.NetlifyGraphConfig}
-   */
-  const netlifyGraphConfig = { ...baseNetlifyGraphConfig, runtimeTargetEnv: 'browser' }
-
-  const { fragments, functions } = extractFunctionsFromOperationDoc(parsedDoc)
-  const generatedFunctions = generateFunctionsSource(
-    netlifyGraphConfig,
-    commonSchema,
-    appOperationsDoc,
-    functions,
-    fragments,
-  )
-
-  t.snapshot(normalize(JSON.stringify(generatedFunctions)))
-})
-
 const testGenerateHandlerSource = ({ frameworkName, language, name, operationId }) => {
-  // @ts-ignore
-  test(`netlify graph handler codegen [${frameworkName}-${name}-${language}]`, (t) => {
-    const outDirPath = path.join(process.cwd(), '_test_out')
-    const outDir = [path.sep, ...outDirPath.split(path.sep), `netlify-graph-test-${frameworkName}`]
+  moduleTypes.forEach((moduleType) => {
+    // @ts-ignore
+    test(`netlify graph handler codegen [${frameworkName}-${name}-${language}-${moduleType}]`, (t) => {
+      const outDirPath = path.join(process.cwd(), '_test_out')
+      const outDir = [path.sep, ...outDirPath.split(path.sep), `netlify-graph-test-${frameworkName}-${moduleType}`]
 
-    /**
-     * @constant
-     * @type {NetlifyGraph.NetlifyGraphConfig}
-     */
-    const netlifyGraphConfig = { ...baseNetlifyGraphConfig, framework: frameworkName, language }
+      /**
+       * @constant
+       * @type {NetlifyGraph.NetlifyGraphConfig}
+       */
+      const netlifyGraphConfig = { ...baseNetlifyGraphConfig, framework: frameworkName, language, moduleType }
 
-    /**
-     * @constant
-     * @type Record<string, any>
-     */
-    const handlerOptions = {}
-    const textualSource = generateHandlerText({
-      handlerOptions,
-      netlifyGraphConfig,
-      operationId,
-      operationsDoc: appOperationsDoc,
-      schema: commonSchema,
-      outDir,
+      /**
+       * @constant
+       * @type Record<string, any>
+       */
+      const handlerOptions = {}
+      const textualSource = generateHandlerText({
+        handlerOptions,
+        netlifyGraphConfig,
+        operationId,
+        operationsDoc: appOperationsDoc,
+        schema: commonSchema,
+        outDir,
+      })
+
+      t.snapshot(normalize(JSON.stringify(textualSource)))
     })
-
-    t.snapshot(normalize(JSON.stringify(textualSource)))
   })
 }
 
