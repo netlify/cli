@@ -23,7 +23,7 @@ netlify graph
 | Subcommand | description  |
 |:--------------------------- |:-----|
 | [`graph:edit`](/docs/commands/graph.md#graphedit) | Launch the browser to edit your local graph functions from Netlify  |
-| [`graph:handler`](/docs/commands/graph.md#graphhandler) | Generate a handler for a Graph operation given its name  |
+| [`graph:handler`](/docs/commands/graph.md#graphhandler) | Generate a handler for a Graph operation given its name. See `graph:operations` for a list of operations.  |
 | [`graph:operations`](/docs/commands/graph.md#graphoperations) | List all of the locally available operations  |
 | [`graph:pull`](/docs/commands/graph.md#graphpull) | Pull down your local Netlify Graph schema, and process pending Graph edit events  |
 
@@ -55,7 +55,7 @@ netlify graph:edit
 ---
 ## `graph:handler`
 
-Generate a handler for a Graph operation given its name
+Generate a handler for a Graph operation given its name. See `graph:operations` for a list of operations.
 
 **Usage**
 
