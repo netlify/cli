@@ -83,7 +83,7 @@
         "netlify": "^10.1.2",
         "netlify-headers-parser": "^6.0.1",
         "netlify-onegraph-internal": "0.0.18",
-        "netlify-redirect-parser": "^13.0.1",
+        "netlify-redirect-parser": "^13.0.2",
         "netlify-redirector": "^0.2.1",
         "node-fetch": "^2.6.0",
         "node-version-alias": "^1.0.1",
@@ -15584,17 +15584,47 @@
       }
     },
     "node_modules/netlify-redirect-parser": {
-      "version": "13.0.1",
-      "resolved": "https://registry.npmjs.org/netlify-redirect-parser/-/netlify-redirect-parser-13.0.1.tgz",
-      "integrity": "sha512-TnEafRUQajzpe9s/k5eHjpcIOPydumS2DCxaf+ltnNBSk4KGkphy5srvQdm16YADeTtcnsQ4NQjnjm7VAu+oHg==",
+      "version": "13.0.2",
+      "resolved": "https://registry.npmjs.org/netlify-redirect-parser/-/netlify-redirect-parser-13.0.2.tgz",
+      "integrity": "sha512-mrPx+pSaPv3HCJzCcAsQikNaa1/3gIe6NwOCd7qUAej9g8iiy0P2D4X0AGTPgqbbGz4xZN1azier46S8QIdn+A==",
       "dependencies": {
-        "filter-obj": "^2.0.2",
-        "is-plain-obj": "^3.0.0",
-        "path-exists": "^4.0.0",
+        "filter-obj": "^3.0.0",
+        "is-plain-obj": "^4.0.0",
+        "path-exists": "^5.0.0",
         "toml": "^3.0.0"
       },
       "engines": {
         "node": "^12.20.0 || ^14.14.0 || >=16.0.0"
+      }
+    },
+    "node_modules/netlify-redirect-parser/node_modules/filter-obj": {
+      "version": "3.0.0",
+      "resolved": "https://registry.npmjs.org/filter-obj/-/filter-obj-3.0.0.tgz",
+      "integrity": "sha512-oQZM+QmVni8MsYzcq9lgTHD/qeLqaG8XaOPOW7dzuSafVxSUlH1+1ZDefj2OD9f2XsmG5lFl2Euc9NI4jgwFWg==",
+      "engines": {
+        "node": "^12.20.0 || ^14.13.1 || >=16.0.0"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/sindresorhus"
+      }
+    },
+    "node_modules/netlify-redirect-parser/node_modules/is-plain-obj": {
+      "version": "4.0.0",
+      "resolved": "https://registry.npmjs.org/is-plain-obj/-/is-plain-obj-4.0.0.tgz",
+      "integrity": "sha512-NXRbBtUdBioI73y/HmOhogw/U5msYPC9DAtGkJXeFcFWSFZw0mCUsPxk/snTuJHzNKA8kLBK4rH97RMB1BfCXw==",
+      "engines": {
+        "node": ">=12"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/sindresorhus"
+      }
+    },
+    "node_modules/netlify-redirect-parser/node_modules/path-exists": {
+      "version": "5.0.0",
+      "resolved": "https://registry.npmjs.org/path-exists/-/path-exists-5.0.0.tgz",
+      "integrity": "sha512-RjhtfwJOxzcFmNOi6ltcbcu4Iu+FL3zEj83dk4kAS+fVpTxXLO1b38RvJgT/0QwvV/L3aY9TAnyv0EOqW4GoMQ==",
+      "engines": {
+        "node": "^12.20.0 || ^14.13.1 || >=16.0.0"
       }
     },
     "node_modules/netlify-redirector": {
@@ -34299,14 +34329,31 @@
       }
     },
     "netlify-redirect-parser": {
-      "version": "13.0.1",
-      "resolved": "https://registry.npmjs.org/netlify-redirect-parser/-/netlify-redirect-parser-13.0.1.tgz",
-      "integrity": "sha512-TnEafRUQajzpe9s/k5eHjpcIOPydumS2DCxaf+ltnNBSk4KGkphy5srvQdm16YADeTtcnsQ4NQjnjm7VAu+oHg==",
+      "version": "13.0.2",
+      "resolved": "https://registry.npmjs.org/netlify-redirect-parser/-/netlify-redirect-parser-13.0.2.tgz",
+      "integrity": "sha512-mrPx+pSaPv3HCJzCcAsQikNaa1/3gIe6NwOCd7qUAej9g8iiy0P2D4X0AGTPgqbbGz4xZN1azier46S8QIdn+A==",
       "requires": {
-        "filter-obj": "^2.0.2",
-        "is-plain-obj": "^3.0.0",
-        "path-exists": "^4.0.0",
+        "filter-obj": "^3.0.0",
+        "is-plain-obj": "^4.0.0",
+        "path-exists": "^5.0.0",
         "toml": "^3.0.0"
+      },
+      "dependencies": {
+        "filter-obj": {
+          "version": "3.0.0",
+          "resolved": "https://registry.npmjs.org/filter-obj/-/filter-obj-3.0.0.tgz",
+          "integrity": "sha512-oQZM+QmVni8MsYzcq9lgTHD/qeLqaG8XaOPOW7dzuSafVxSUlH1+1ZDefj2OD9f2XsmG5lFl2Euc9NI4jgwFWg=="
+        },
+        "is-plain-obj": {
+          "version": "4.0.0",
+          "resolved": "https://registry.npmjs.org/is-plain-obj/-/is-plain-obj-4.0.0.tgz",
+          "integrity": "sha512-NXRbBtUdBioI73y/HmOhogw/U5msYPC9DAtGkJXeFcFWSFZw0mCUsPxk/snTuJHzNKA8kLBK4rH97RMB1BfCXw=="
+        },
+        "path-exists": {
+          "version": "5.0.0",
+          "resolved": "https://registry.npmjs.org/path-exists/-/path-exists-5.0.0.tgz",
+          "integrity": "sha512-RjhtfwJOxzcFmNOi6ltcbcu4Iu+FL3zEj83dk4kAS+fVpTxXLO1b38RvJgT/0QwvV/L3aY9TAnyv0EOqW4GoMQ=="
+        }
       }
     },
     "netlify-redirector": {
