@@ -9,7 +9,8 @@ const gitRepoInfo = require('git-repo-info')
 const { GraphQL, InternalConsole, OneGraphClient } = require('netlify-onegraph-internal')
 const { NetlifyGraph } = require('netlify-onegraph-internal')
 
-const { chalk, error, log, warn } = require('../../utils')
+// eslint-disable-next-line no-unused-vars
+const { StateConfig, chalk, error, log, warn } = require('../../utils')
 const { watchDebounced } = require('../functions/watcher')
 
 const {
@@ -48,7 +49,7 @@ InternalConsole.registerConsole(internalConsole)
  * @param {function} input.onError A function to call when an error occurs
  * @param {function} input.onEvents A function to call when CLI events are received and need to be processed
  * @param {string} input.sessionId The session id to monitor CLI events for
- * @param {any} input.state A function to call to set/get the current state of the local Netlify project
+ * @param {StateConfig} input.state A function to call to set/get the current state of the local Netlify project
  * @returns
  */
 const monitorCLISessionEvents = (input) => {
@@ -144,7 +145,7 @@ const monitorOperationFile = async ({ netlifyGraphConfig, onAdd, onChange, onUnl
  * @param {string} input.siteId The id of the site to query against
  * @param {string} input.netlifyToken The (typically netlify) access token that is used for authentication, if any
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
- * @param {any} input.state A function to call to set/get the current state of the local Netlify project
+ * @param {StateConfig} input.state A function to call to set/get the current state of the local Netlify project
  * @returns {Promise<void>}
  */
 const refetchAndGenerateFromOneGraph = async (input) => {
@@ -297,7 +298,7 @@ const persistNewOperationsDocForSession = async ({ netlifyToken, oneGraphSession
 
 /**
  * Load the CLI session id from the local state
- * @param {any} state
+ * @param {StateConfig} state
  * @returns
  */
 const loadCLISession = (state) => state.get('oneGraphSessionId')
@@ -307,7 +308,7 @@ const loadCLISession = (state) => state.get('oneGraphSessionId')
  * @param {object} input
  * @param {string} input.netlifyToken The (typically netlify) access token that is used for authentication, if any
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
- * @param {any} input.state A function to call to set/get the current state of the local Netlify project
+ * @param {StateConfig} input.state A function to call to set/get the current state of the local Netlify project
  * @param {any} input.site The site object
  */
 const startOneGraphCLISession = async (input) => {
