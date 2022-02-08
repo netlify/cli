@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "8.19.3",
+  "version": "9.0.0",
   "author": "Netlify Inc.",
   "contributors": [
     "Abraham Schilling <AbrahamSchilling@gmail.com> (https://gitlab.com/n4bb12)",
@@ -230,7 +230,7 @@
     "decache": "^4.6.0",
     "del": "^6.0.0",
     "dot-prop": "^6.0.0",
-    "dotenv": "^10.0.0",
+    "dotenv": "^16.0.0",
     "env-paths": "^2.2.0",
     "envinfo": "^7.3.1",
     "execa": "^5.0.0",
