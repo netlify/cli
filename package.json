@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "8.18.1",
+  "version": "8.19.0",
   "author": "Netlify Inc.",
   "contributors": [
     "Mathias Biilmann <matt@netlify.com> (https://twitter.com/biilmann)",
@@ -43,6 +43,7 @@
     "url": "https://github.com/netlify/cli/issues"
   },
   "scripts": {
+    "snap": "ava --verbose -u",
     "prepare": "husky install node_modules/@netlify/eslint-config-node/.husky/",
     "start": "node ./bin/run",
     "test": "run-s format test:dev",
@@ -149,7 +150,7 @@
     "multiparty": "^4.2.1",
     "netlify": "^11.0.0",
     "netlify-headers-parser": "^6.0.1",
-    "netlify-onegraph-internal": "0.0.18",
+    "netlify-onegraph-internal": "0.0.28",
     "netlify-redirect-parser": "^13.0.2",
     "netlify-redirector": "^0.2.1",
     "node-fetch": "^2.6.0",
