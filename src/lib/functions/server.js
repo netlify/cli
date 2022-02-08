@@ -45,7 +45,33 @@ const buildClientContext = function (headers) {
   }
 }
 
-const createHandler = function ({ config, functionsRegistry }) {
+const createHandler = async function (options) {
+  const { api, command, config, functionsRegistry, site, siteInfo } = options
+  const frequency = 5000
+
+  const helper = async (maybeSiteData) => {
+    const siteData = await (maybeSiteData || api.getSite({ siteId: site.id }))
+    const authlifyTokenId = siteData && siteData.authlify_token_id
+
+    if (authlifyTokenId) {
+      const netlifyToken = command.authenticate()
+      // Only inject the authlify config if a token ID exists. This prevents
+      // calling command.authenticate() (which opens a browser window) if the
+      // user hasn't enabled API Authentication
+      config.authlify = {
+        netlifyToken,
+        authlifyTokenId: siteData.authlify_token_id,
+        siteId: site.id,
+      }
+    } else {
+      delete config.authlify
+    }
+
+    setTimeout(helper, frequency)
+  }
+
+  await helper(siteInfo)
+
   return async function handler(request, response) {
     // handle proxies without path re-writes (http-servr)
     const cleanPath = request.path.replace(/^\/.netlify\/(functions|builders)/, '')
@@ -160,14 +186,15 @@ const createHandler = function ({ config, functionsRegistry }) {
   }
 }
 
-const getFunctionsServer = function ({ buildersPrefix, config, functionsPrefix, functionsRegistry, siteUrl }) {
+const getFunctionsServer = async function (options) {
+  const { buildersPrefix = '', functionsPrefix = '', functionsRegistry, siteUrl } = options
   // performance optimization, load express on demand
   // eslint-disable-next-line node/global-require
   const express = require('express')
   // eslint-disable-next-line node/global-require
   const expressLogging = require('express-logging')
   const app = express()
-  const functionHandler = createHandler({ config, functionsRegistry })
+  const functionHandler = await createHandler(options)
 
   app.set('query parser', 'simple')
 
@@ -195,16 +222,8 @@ const getFunctionsServer = function ({ buildersPrefix, config, functionsPrefix, 
   return app
 }
 
-const startFunctionsServer = async ({
-  buildersPrefix = '',
-  capabilities,
-  config,
-  functionsPrefix = '',
-  settings,
-  site,
-  siteUrl,
-  timeouts,
-}) => {
+const startFunctionsServer = async (options) => {
+  const { capabilities, config, settings, site, siteUrl, timeouts } = options
   const internalFunctionsDir = await getInternalFunctionsDir({ base: site.root })
 
   // The order of the function directories matters. Leftmost directories take
@@ -223,13 +242,7 @@ const startFunctionsServer = async ({
 
     await functionsRegistry.scan(functionsDirectories)
 
-    const server = getFunctionsServer({
-      config,
-      functionsRegistry,
-      siteUrl,
-      functionsPrefix,
-      buildersPrefix,
-    })
+    const server = await getFunctionsServer(options)
 
     await startWebServer({ server, settings })
   }

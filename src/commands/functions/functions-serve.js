@@ -34,8 +34,10 @@ const functionsServe = async (options, command) => {
 
   await startFunctionsServer({
     config,
+    api,
     settings: { functions: functionsDir, functionsPort },
     site,
+    siteInfo,
     siteUrl,
     capabilities,
     timeouts,

@@ -306,28 +306,13 @@ const dev = async (options, command) => {
 
   command.setAnalyticsPayload({ projectType: settings.framework || 'custom', live: options.live })
 
-  let configWithAuthlify
-
-  if (siteInfo.authlify_token_id) {
-    const netlifyToken = command.authenticate()
-    // Only inject the authlify config if a token ID exists. This prevents
-    // calling command.authenticate() (which opens a browser window) if the
-    // user hasn't enabled API Authentication
-    configWithAuthlify = Object.assign(config, {
-      authlify: {
-        netlifyToken,
-        authlifyTokenId: siteInfo.authlify_token_id,
-        siteId: site.id,
-      },
-    })
-  } else {
-    configWithAuthlify = config
-  }
-
   await startFunctionsServer({
-    config: configWithAuthlify,
+    api,
+    command,
+    config,
     settings,
     site,
+    siteInfo,
     siteUrl,
     capabilities,
     timeouts,
