@@ -1,3 +1,4 @@
+// @ts-check
 /* eslint-disable eslint-comments/disable-enable-pair */
 /* eslint-disable fp/no-loops */
 const crypto = require('crypto')
@@ -8,12 +9,13 @@ const gitRepoInfo = require('git-repo-info')
 const { GraphQL, InternalConsole, OneGraphClient } = require('netlify-onegraph-internal')
 const { NetlifyGraph } = require('netlify-onegraph-internal')
 
-const { chalk, error, log, warn } = require('../../utils')
+// eslint-disable-next-line no-unused-vars
+const { StateConfig, chalk, error, log, warn } = require('../../utils')
 const { watchDebounced } = require('../functions/watcher')
 
 const {
   generateFunctionsFile,
-  generateHandler,
+  generateHandlerByOperationId,
   readGraphQLOperationsSourceFile,
   writeGraphQLOperationsSourceFile,
   writeGraphQLSchemaFile,
@@ -30,9 +32,11 @@ const internalConsole = {
   debug: console.debug,
 }
 
+/**
+ * Keep track of which document hashes we've received from the server so we can ignore events from the filesystem based on them
+ */
 const witnessedIncomingDocumentHashes = []
 
-// Keep track of which document hashes we've received from the server so we can ignore events from the filesystem based on them
 InternalConsole.registerConsole(internalConsole)
 
 /**
@@ -40,12 +44,12 @@ InternalConsole.registerConsole(internalConsole)
  * @param {object} input
  * @param {string} input.appId The app to query against, typically the siteId
  * @param {string} input.netlifyToken The (typically netlify) access token that is used for authentication, if any
- * @param {NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
+ * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
  * @param {function} input.onClose A function to call when the polling loop is closed
  * @param {function} input.onError A function to call when an error occurs
  * @param {function} input.onEvents A function to call when CLI events are received and need to be processed
  * @param {string} input.sessionId The session id to monitor CLI events for
- * @param {state} input.state A function to call to set/get the current state of the local Netlify project
+ * @param {StateConfig} input.state A function to call to set/get the current state of the local Netlify project
  * @returns
  */
 const monitorCLISessionEvents = (input) => {
@@ -117,15 +121,16 @@ const monitorCLISessionEvents = (input) => {
 /**
  * Monitor the operations document for changes
  * @param {object} input
- * @param {NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
- * @param {function} input.onAdd A callback function to handle when the operations document is added
- * @param {function} input.onChange A callback function to handle when the operations document is changed
- * @param {function} input.onUnlink A callback function to handle when the operations document is unlinked
- * @returns {Promise<watcher>}
+ * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
+ * @param {() => void} input.onAdd A callback function to handle when the operations document is added
+ * @param {() => void} input.onChange A callback function to handle when the operations document is changed
+ * @param {() => void=} input.onUnlink A callback function to handle when the operations document is unlinked
+ * @returns {Promise<any>}
  */
 const monitorOperationFile = async ({ netlifyGraphConfig, onAdd, onChange, onUnlink }) => {
   const filePath = path.resolve(...netlifyGraphConfig.graphQLOperationsSourceFilename)
   const newWatcher = await watchDebounced([filePath], {
+    depth: 1,
     onAdd,
     onChange,
     onUnlink,
@@ -139,8 +144,8 @@ const monitorOperationFile = async ({ netlifyGraphConfig, onAdd, onChange, onUnl
  * @param {object} input
  * @param {string} input.siteId The id of the site to query against
  * @param {string} input.netlifyToken The (typically netlify) access token that is used for authentication, if any
- * @param {NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
- * @param {state} input.state A function to call to set/get the current state of the local Netlify project
+ * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
+ * @param {StateConfig} input.state A function to call to set/get the current state of the local Netlify project
  * @returns {Promise<void>}
  */
 const refetchAndGenerateFromOneGraph = async (input) => {
@@ -174,8 +179,8 @@ const refetchAndGenerateFromOneGraph = async (input) => {
 /**
  * Regenerate the function library based on the current operations document on disk
  * @param {object} input
- * @param {string} input.schema The GraphQL schema to use when generating code
- * @param {NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
+ * @param {GraphQL.GraphQLSchema} input.schema The GraphQL schema to use when generating code
+ * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
  * @returns
  */
 const regenerateFunctionsFileFromOperationsFile = (input) => {
@@ -214,15 +219,15 @@ const quickHash = (input) => {
  * @param {string} input.siteId The site id to query against
  * @param {string} input.netlifyToken The (typically netlify) access token that is used for authentication, if any
  * @param {string} input.docId The GraphQL operations document id to fetch
- * @param {string} input.schema The GraphQL schema to use when generating code
- * @param {NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
+ * @param {GraphQL.GraphQLSchema} input.schema The GraphQL schema to use when generating code
+ * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
  * @returns
  */
 const updateGraphQLOperationsFileFromPersistedDoc = async (input) => {
   const { docId, netlifyGraphConfig, netlifyToken, schema, siteId } = input
   const persistedDoc = await OneGraphClient.fetchPersistedQuery(netlifyToken, siteId, docId)
   if (!persistedDoc) {
-    warn('No persisted doc found for:', docId)
+    warn(`No persisted doc found for: ${docId}`)
     return
   }
 
@@ -249,7 +254,11 @@ const handleCliSessionEvent = async ({ event, netlifyGraphConfig, netlifyToken, 
       await handleCliSessionEvent({ netlifyToken, event: payload, netlifyGraphConfig, schema, siteId })
       break
     case 'OneGraphNetlifyCliSessionGenerateHandlerEvent':
-      await generateHandler(netlifyGraphConfig, schema, payload.operationId, payload)
+      if (!payload.operationId || !payload.operationId.id) {
+        warn(`No operation id found in payload, ${JSON.stringify(payload, null, 2)}`)
+        return
+      }
+      generateHandlerByOperationId(netlifyGraphConfig, schema, payload.operationId.id, payload)
       break
     case 'OneGraphNetlifyCliSessionPersistedLibraryUpdatedEvent':
       await updateGraphQLOperationsFileFromPersistedDoc({
@@ -261,7 +270,13 @@ const handleCliSessionEvent = async ({ event, netlifyGraphConfig, netlifyToken, 
       })
       break
     default: {
-      warn(`Unrecognized event received, you may need to upgrade your CLI version`, __typename, payload)
+      warn(
+        `Unrecognized event received, you may need to upgrade your CLI version: ${__typename}: ${JSON.stringify(
+          payload,
+          null,
+          2,
+        )}`,
+      )
       break
     }
   }
@@ -281,13 +296,13 @@ const persistNewOperationsDocForSession = async ({ netlifyToken, oneGraphSession
   const result = await OneGraphClient.updateCLISessionMetadata(netlifyToken, siteId, oneGraphSessionId, newMetadata)
 
   if (result.errors) {
-    warn('Unable to update session metadata with updated operations doc', result.errors)
+    warn(`Unable to update session metadata with updated operations doc ${JSON.stringify(result.errors, null, 2)}`)
   }
 }
 
 /**
  * Load the CLI session id from the local state
- * @param {state} state
+ * @param {StateConfig} state
  * @returns
  */
 const loadCLISession = (state) => state.get('oneGraphSessionId')
@@ -296,9 +311,9 @@ const loadCLISession = (state) => state.get('oneGraphSessionId')
  * Idemponentially save the CLI session id to the local state and start monitoring for CLI events, upstream schema changes, and local operation file changes
  * @param {object} input
  * @param {string} input.netlifyToken The (typically netlify) access token that is used for authentication, if any
- * @param {NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
- * @param {state} input.state A function to call to set/get the current state of the local Netlify project
- * @param {site} input.site The site object
+ * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
+ * @param {StateConfig} input.state A function to call to set/get the current state of the local Netlify project
+ * @param {any} input.site The site object
  */
 const startOneGraphCLISession = async (input) => {
   const { netlifyGraphConfig, netlifyToken, site, state } = input
@@ -387,6 +402,7 @@ const OneGraphCliClient = {
 
 module.exports = {
   OneGraphCliClient,
+  extractFunctionsFromOperationDoc,
   handleCliSessionEvent,
   generateSessionName,
   loadCLISession,
