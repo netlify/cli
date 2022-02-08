@@ -17,7 +17,7 @@
         "@netlify/plugin-edge-handlers": "^3.0.6",
         "@netlify/plugins-list": "^6.9.0",
         "@netlify/routing-local-proxy": "^0.34.1",
-        "@netlify/zip-it-and-ship-it": "^5.7.1",
+        "@netlify/zip-it-and-ship-it": "^5.7.2",
         "@octokit/rest": "^18.0.0",
         "@sindresorhus/slugify": "^1.1.0",
         "ansi-escapes": "^5.0.0",
