@@ -254,7 +254,11 @@ const handleCliSessionEvent = async ({ event, netlifyGraphConfig, netlifyToken, 
       await handleCliSessionEvent({ netlifyToken, event: payload, netlifyGraphConfig, schema, siteId })
       break
     case 'OneGraphNetlifyCliSessionGenerateHandlerEvent':
-      await generateHandlerByOperationId(netlifyGraphConfig, schema, payload.operationId, payload)
+      if (!payload.operationId || !payload.operationId.id) {
+        warn(`No operation id found in payload, ${JSON.stringify(payload, null, 2)}`)
+        return
+      }
+      generateHandlerByOperationId(netlifyGraphConfig, schema, payload.operationId.id, payload)
       break
     case 'OneGraphNetlifyCliSessionPersistedLibraryUpdatedEvent':
       await updateGraphQLOperationsFileFromPersistedDoc({
