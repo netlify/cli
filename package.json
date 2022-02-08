@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "9.0.1",
+  "version": "9.0.2",
   "author": "Netlify Inc.",
   "contributors": [
     "Abraham Schilling <AbrahamSchilling@gmail.com> (https://gitlab.com/n4bb12)",
@@ -198,14 +198,14 @@
     "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,tools,scripts,site,tests,.github}/**/*.{mjs,cjs,js,md,yml,json,html}\" \"*.{mjs,cjs,js,yml,json,html}\" \".*.{mjs,cjs,js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\" \"!.github/**/*.md\""
   },
   "dependencies": {
-    "@netlify/build": "^26.2.3",
-    "@netlify/config": "^17.0.6",
+    "@netlify/build": "^26.2.5",
+    "@netlify/config": "^17.0.7",
     "@netlify/framework-info": "^9.0.0",
     "@netlify/local-functions-proxy": "^1.1.1",
     "@netlify/plugin-edge-handlers": "^3.0.6",
     "@netlify/plugins-list": "^6.9.0",
     "@netlify/routing-local-proxy": "^0.34.1",
-    "@netlify/zip-it-and-ship-it": "^5.7.1",
+    "@netlify/zip-it-and-ship-it": "^5.7.2",
     "@octokit/rest": "^18.0.0",
     "@sindresorhus/slugify": "^1.1.0",
     "ansi-escapes": "^5.0.0",
