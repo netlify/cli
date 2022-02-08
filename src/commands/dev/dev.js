@@ -32,9 +32,7 @@ const {
   detectServerSettings,
   error,
   exit,
-  generateAuthlifyJWT,
   getSiteInformation,
-  injectEnvVariables,
   log,
   openBrowser,
   startForwardProxy,
@@ -265,28 +263,6 @@ const dev = async (options, command) => {
   }
 
   const startNetlifyGraphWatcher = Boolean(options.graph)
-  let authlifyJWT
-
-  if (startNetlifyGraphWatcher) {
-    const netlifyToken = await command.authenticate()
-    authlifyJWT = generateAuthlifyJWT(netlifyToken, siteInfo.authlify_token_id, site.id)
-  }
-
-  await injectEnvVariables({
-    env: Object.assign(
-      command.netlify.cachedConfig.env,
-      authlifyJWT == null
-        ? {}
-        : {
-            ONEGRAPH_AUTHLIFY_TOKEN: {
-              sources: ['general'],
-              value: authlifyJWT,
-            },
-          },
-    ),
-    site,
-  })
-
   const { addonsUrls, capabilities, siteUrl, timeouts } = await getSiteInformation({
     // inherited from base command --offline
     offline: options.offline,

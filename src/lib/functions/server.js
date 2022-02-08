@@ -6,8 +6,9 @@ const {
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
   error: errorExit,
-  generateAuthlifyJWT,
+  generateNetlifyGraphJWT,
   getInternalFunctionsDir,
+  injectEnvVariables,
   log,
 } = require('../../utils')
 
@@ -45,24 +46,44 @@ const buildClientContext = function (headers) {
   }
 }
 
-const createHandler = async function (options) {
-  const { api, command, config, functionsRegistry, site, siteInfo } = options
+const startPollingForAPIAuthentication = async function (options) {
+  const { api, command, config, site, siteInfo } = options
   const frequency = 5000
 
   const helper = async (maybeSiteData) => {
     const siteData = await (maybeSiteData || api.getSite({ siteId: site.id }))
     const authlifyTokenId = siteData && siteData.authlify_token_id
 
-    if (authlifyTokenId) {
-      const netlifyToken = command.authenticate()
+    const existingAuthlifyTokenId = config && config.netlifyGraphConfig && config.netlifyGraphConfig.authlifyTokenId
+    console.log('polling', authlifyTokenId, existingAuthlifyTokenId)
+    if (authlifyTokenId && authlifyTokenId !== existingAuthlifyTokenId) {
+      const netlifyToken = await command.authenticate()
       // Only inject the authlify config if a token ID exists. This prevents
       // calling command.authenticate() (which opens a browser window) if the
       // user hasn't enabled API Authentication
-      config.authlify = {
+      const netlifyGraphConfig = {
         netlifyToken,
         authlifyTokenId: siteData.authlify_token_id,
         siteId: site.id,
       }
+      config.netlifyGraphConfig = netlifyGraphConfig
+
+      const netlifyGraphJWT = generateNetlifyGraphJWT(netlifyGraphConfig)
+
+      await injectEnvVariables({
+        env: Object.assign(
+          command.netlify.cachedConfig.env,
+          netlifyGraphJWT == null
+            ? {}
+            : {
+                ONEGRAPH_AUTHLIFY_TOKEN: {
+                  sources: ['general'],
+                  value: netlifyGraphJWT,
+                },
+              },
+        ),
+        site,
+      })
     } else {
       delete config.authlify
     }
@@ -71,6 +92,12 @@ const createHandler = async function (options) {
   }
 
   await helper(siteInfo)
+}
+
+const createHandler = function (options) {
+  const { config, functionsRegistry } = options
+
+  startPollingForAPIAuthentication(options)
 
   return async function handler(request, response) {
     // handle proxies without path re-writes (http-servr)
@@ -133,8 +160,10 @@ const createHandler = async function (options) {
     }
 
     if (config && config.authlify && config.authlify.authlifyTokenId != null) {
-      const { authlifyTokenId, netlifyToken, siteId } = config.authlify
-      event.authlifyToken = generateAuthlifyJWT(netlifyToken, authlifyTokenId, siteId)
+      // XXX(anmonteiro): this name is deprecated. Delete after 3/31/2022
+      const jwt = generateNetlifyGraphJWT(config.netlifyGraphConfig)
+      event.authlifyToken = jwt
+      event.netlifyGraphToken = jwt
     }
 
     const clientContext = buildClientContext(request.headers) || {}
@@ -242,7 +271,7 @@ const startFunctionsServer = async (options) => {
 
     await functionsRegistry.scan(functionsDirectories)
 
-    const server = await getFunctionsServer(options)
+    const server = await getFunctionsServer(Object.assign(options, { functionsRegistry }))
 
     await startWebServer({ server, settings })
   }
