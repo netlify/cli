@@ -50,7 +50,7 @@ const getSiteNameInput = async (name, user, api) => {
         validate: (input) => /^[a-zA-Z\d-]+$/.test(input) || 'Only alphanumeric characters and hyphens are allowed',
       },
     ])
-    name = nameInput
+    name = nameInput || siteSuggestion
   }
 
   return { name, siteSuggestion }
