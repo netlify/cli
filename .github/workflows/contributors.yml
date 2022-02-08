@@ -1,0 +1,21 @@
+name: Maintaining Contributors List
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  update-contributors:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
+      - uses: netlify/update-contributors-action@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: 'chore: update contributors field'
+          file_pattern: package.json
+          commit_user_name: Contributors[bot]

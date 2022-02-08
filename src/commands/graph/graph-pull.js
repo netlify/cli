@@ -1,3 +1,4 @@
+// @ts-check
 /* eslint-disable eslint-comments/disable-enable-pair */
 /* eslint-disable fp/no-loops */
 const {
@@ -12,7 +13,7 @@ const { chalk, error, warn } = require('../../utils')
 /**
  * Creates the `netlify graph:pull` command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command').BaseCommand} command
  * @returns
  */
 const graphPull = async (options, command) => {
@@ -60,7 +61,7 @@ const graphPull = async (options, command) => {
   })
 
   if (next.errors) {
-    error(`Failed to fetch Netlify Graph cli session events`, next.errors)
+    error(`Failed to fetch Netlify Graph cli session events: ${JSON.stringify(next.errors, null, 2)}`)
   }
 
   if (next.events) {
