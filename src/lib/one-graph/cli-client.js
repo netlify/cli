@@ -16,6 +16,7 @@ const { watchDebounced } = require('../functions/watcher')
 const {
   generateFunctionsFile,
   generateHandlerByOperationId,
+  normalizeOperationsDoc,
   readGraphQLOperationsSourceFile,
   writeGraphQLOperationsSourceFile,
   writeGraphQLSchemaFile,
@@ -231,7 +232,8 @@ const updateGraphQLOperationsFileFromPersistedDoc = async (input) => {
     return
   }
 
-  const doc = persistedDoc.query
+  // Sorts the operations stably, prepends the @netlify directive, etc.
+  const doc = normalizeOperationsDoc(persistedDoc.query)
 
   writeGraphQLOperationsSourceFile(netlifyGraphConfig, doc)
   regenerateFunctionsFileFromOperationsFile({ netlifyGraphConfig, schema })
