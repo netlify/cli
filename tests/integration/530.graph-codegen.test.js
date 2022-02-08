@@ -35,6 +35,7 @@ const ensurePath = (filePath) => {
 const baseNetlifyGraphConfig = {
   extension: 'js',
   netlifyGraphPath: ['netlify'],
+  graphQLConfigJsonFilename: ['.graphqlrc.json'],
   moduleType: 'esm',
   functionsPath: ['functions'],
   netlifyGraphImplementationFilename: ['dummy', 'index.js'],
