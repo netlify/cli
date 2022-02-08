@@ -158,7 +158,7 @@ const getNetlifyGraphConfig = async ({ command, options, settings }) => {
     } catch (detectServerSettingsError) {
       settings = {}
       warn(
-        `Error while auto-detecting project settings, Netlify Graph encounter problems: ${JSON.stringify(
+        `Error while auto-detecting project settings, Netlify Graph encountered problems: ${JSON.stringify(
           detectServerSettingsError,
           null,
           2,
