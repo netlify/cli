@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "8.19.0",
+  "version": "8.19.2",
   "author": "Netlify Inc.",
   "contributors": [
     "Abraham Schilling <AbrahamSchilling@gmail.com> (https://gitlab.com/n4bb12)",
@@ -164,7 +164,6 @@
     "url": "https://github.com/netlify/cli/issues"
   },
   "scripts": {
-    "snap": "ava --verbose -u",
     "prepare": "husky install node_modules/@netlify/eslint-config-node/.husky/",
     "start": "node ./bin/run",
     "test": "run-s format test:dev",
@@ -206,7 +205,7 @@
     "@netlify/plugin-edge-handlers": "^3.0.6",
     "@netlify/plugins-list": "^6.9.0",
     "@netlify/routing-local-proxy": "^0.34.1",
-    "@netlify/zip-it-and-ship-it": "^5.6.0",
+    "@netlify/zip-it-and-ship-it": "^5.7.0",
     "@octokit/rest": "^18.0.0",
     "@sindresorhus/slugify": "^1.1.0",
     "ansi-escapes": "^5.0.0",
@@ -271,7 +270,7 @@
     "multiparty": "^4.2.1",
     "netlify": "^11.0.0",
     "netlify-headers-parser": "^6.0.1",
-    "netlify-onegraph-internal": "0.0.28",
+    "netlify-onegraph-internal": "0.0.32",
     "netlify-redirect-parser": "^13.0.2",
     "netlify-redirector": "^0.2.1",
     "node-fetch": "^2.6.0",
