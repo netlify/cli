@@ -15,6 +15,7 @@ jobs:
 
       - name: Vale
         uses: errata-ai/vale-action@v1.4.3
+        continue-on-error: true
         with:
           styles: https://vale-library.netlify.app/styles.zip
           files: '["docs", "src", "README.md", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md"]'
