@@ -25,5 +25,10 @@ if (require.main === module) {
   const program = createMainCommand()
 
   // eslint-disable-next-line promise/prefer-await-to-then
-  program.parseAsync(process.argv).catch((error_) => program.onEnd(error_))
+  program
+    .parseAsync(process.argv)
+    .then(() => {
+      program.onEnd()
+    })
+    .catch((error_) => program.onEnd(error_))
 }
