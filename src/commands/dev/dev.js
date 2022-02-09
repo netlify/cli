@@ -286,6 +286,7 @@ const dev = async (options, command) => {
     api,
     command,
     config,
+    isGraphEnabled: startNetlifyGraphWatcher,
     settings,
     site,
     siteInfo,

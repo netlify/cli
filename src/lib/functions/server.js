@@ -97,7 +97,9 @@ const startPollingForAPIAuthentication = async function (options) {
 const createHandler = function (options) {
   const { config, functionsRegistry } = options
 
-  startPollingForAPIAuthentication(options)
+  if (options.isGraphEnabled) {
+    startPollingForAPIAuthentication(options)
+  }
 
   return async function handler(request, response) {
     // handle proxies without path re-writes (http-servr)
