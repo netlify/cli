@@ -228,7 +228,6 @@ const testGenerateHandlerSource = ({ frameworkName, language, name, operationId 
       outDir,
     })
 
-
     textualSources.forEach(([filename, content]) => {
       // @ts-ignore
       test(`netlify graph handler codegen [${frameworkName}-${name}-${language}-${moduleType}]:/${filename}`, (t) => {
