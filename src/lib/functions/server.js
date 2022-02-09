@@ -1,4 +1,6 @@
 // @ts-check
+const process = require('process')
+
 const jwtDecode = require('jwt-decode')
 
 const {
@@ -6,7 +8,7 @@ const {
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
   error: errorExit,
-  generateAuthlifyJWT,
+  generateNetlifyGraphJWT,
   getInternalFunctionsDir,
   log,
 } = require('../../utils')
@@ -45,7 +47,49 @@ const buildClientContext = function (headers) {
   }
 }
 
-const createHandler = function ({ config, functionsRegistry }) {
+const startPollingForAPIAuthentication = async function (options) {
+  const { api, command, config, site, siteInfo } = options
+  const frequency = 5000
+
+  const helper = async (maybeSiteData) => {
+    const siteData = await (maybeSiteData || api.getSite({ siteId: site.id }))
+    const authlifyTokenId = siteData && siteData.authlify_token_id
+
+    const existingAuthlifyTokenId = config && config.netlifyGraphConfig && config.netlifyGraphConfig.authlifyTokenId
+    if (authlifyTokenId && authlifyTokenId !== existingAuthlifyTokenId) {
+      const netlifyToken = await command.authenticate()
+      // Only inject the authlify config if a token ID exists. This prevents
+      // calling command.authenticate() (which opens a browser window) if the
+      // user hasn't enabled API Authentication
+      const netlifyGraphConfig = {
+        netlifyToken,
+        authlifyTokenId: siteData.authlify_token_id,
+        siteId: site.id,
+      }
+      config.netlifyGraphConfig = netlifyGraphConfig
+
+      const netlifyGraphJWT = generateNetlifyGraphJWT(netlifyGraphConfig)
+
+      if (netlifyGraphJWT != null) {
+        process.env.ONEGRAPH_AUTHLIFY_TOKEN = netlifyGraphJWT
+      }
+    } else {
+      delete config.authlify
+    }
+
+    setTimeout(helper, frequency)
+  }
+
+  await helper(siteInfo)
+}
+
+const createHandler = function (options) {
+  const { config, functionsRegistry } = options
+
+  if (options.isGraphEnabled) {
+    startPollingForAPIAuthentication(options)
+  }
+
   return async function handler(request, response) {
     // handle proxies without path re-writes (http-servr)
     const cleanPath = request.path.replace(/^\/.netlify\/(functions|builders)/, '')
@@ -107,8 +151,10 @@ const createHandler = function ({ config, functionsRegistry }) {
     }
 
     if (config && config.authlify && config.authlify.authlifyTokenId != null) {
-      const { authlifyTokenId, netlifyToken, siteId } = config.authlify
-      event.authlifyToken = generateAuthlifyJWT(netlifyToken, authlifyTokenId, siteId)
+      // XXX(anmonteiro): this name is deprecated. Delete after 3/31/2022
+      const jwt = generateNetlifyGraphJWT(config.netlifyGraphConfig)
+      event.authlifyToken = jwt
+      event.netlifyGraphToken = jwt
     }
 
     const clientContext = buildClientContext(request.headers) || {}
@@ -160,14 +206,15 @@ const createHandler = function ({ config, functionsRegistry }) {
   }
 }
 
-const getFunctionsServer = function ({ buildersPrefix, config, functionsPrefix, functionsRegistry, siteUrl }) {
+const getFunctionsServer = function (options) {
+  const { buildersPrefix = '', functionsPrefix = '', functionsRegistry, siteUrl } = options
   // performance optimization, load express on demand
   // eslint-disable-next-line node/global-require
   const express = require('express')
   // eslint-disable-next-line node/global-require
   const expressLogging = require('express-logging')
   const app = express()
-  const functionHandler = createHandler({ config, functionsRegistry })
+  const functionHandler = createHandler(options)
 
   app.set('query parser', 'simple')
 
@@ -195,16 +242,8 @@ const getFunctionsServer = function ({ buildersPrefix, config, functionsPrefix, 
   return app
 }
 
-const startFunctionsServer = async ({
-  buildersPrefix = '',
-  capabilities,
-  config,
-  functionsPrefix = '',
-  settings,
-  site,
-  siteUrl,
-  timeouts,
-}) => {
+const startFunctionsServer = async (options) => {
+  const { capabilities, config, settings, site, siteUrl, timeouts } = options
   const internalFunctionsDir = await getInternalFunctionsDir({ base: site.root })
 
   // The order of the function directories matters. Leftmost directories take
@@ -223,13 +262,7 @@ const startFunctionsServer = async ({
 
     await functionsRegistry.scan(functionsDirectories)
 
-    const server = getFunctionsServer({
-      config,
-      functionsRegistry,
-      siteUrl,
-      functionsPrefix,
-      buildersPrefix,
-    })
+    const server = getFunctionsServer(Object.assign(options, { functionsRegistry }))
 
     await startWebServer({ server, settings })
   }
