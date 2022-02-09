@@ -164,6 +164,7 @@
     "url": "https://github.com/netlify/cli/issues"
   },
   "scripts": {
+    "snap": "ava --verbose -u tests/integration/**/*graph*.test.js",
     "prepare": "husky install node_modules/@netlify/eslint-config-node/.husky/",
     "start": "node ./bin/run",
     "test": "run-s format test:dev",
@@ -270,7 +271,7 @@
     "multiparty": "^4.2.1",
     "netlify": "^11.0.0",
     "netlify-headers-parser": "^6.0.1",
-    "netlify-onegraph-internal": "0.0.36",
+    "netlify-onegraph-internal": "0.0.37",
     "netlify-redirect-parser": "^13.0.2",
     "netlify-redirector": "^0.2.1",
     "node-fetch": "^2.6.0",
