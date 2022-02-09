@@ -814,4 +814,29 @@ test('should inject env variables', async (t) => {
   })
 })
 
+test('should handle content-types with charset', async (t) => {
+  await withSiteBuilder('site-with-env-function', async (builder) => {
+    await builder
+      .withNetlifyToml({
+        config: { functions: { directory: 'functions' } },
+      })
+      .withFunction({
+        path: 'echo-event.js',
+        handler: async (event) => ({
+          statusCode: 200,
+          body: JSON.stringify(event),
+        }),
+      })
+      .buildAsync()
+
+    const port = await getPort()
+    await withFunctionsServer({ builder, args: ['--port', port], port }, async () => {
+      const response = await got(`http://localhost:${port}/.netlify/functions/echo-event`, {
+        headers: { 'content-type': 'application/json; charset=utf-8' },
+      }).json()
+      t.is(response.isBase64Encoded, false)
+    })
+  })
+})
+
 /* eslint-enable require-await */
