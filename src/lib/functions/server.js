@@ -214,7 +214,7 @@ const getFunctionsServer = async function (options) {
   // eslint-disable-next-line node/global-require
   const expressLogging = require('express-logging')
   const app = express()
-  const functionHandler = await createHandler(options)
+  const functionHandler = createHandler(options)
 
   app.set('query parser', 'simple')
 
