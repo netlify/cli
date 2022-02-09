@@ -22,6 +22,7 @@ netlify graph
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
+| [`graph:config:write`](/docs/commands/graph.md#graphconfigwrite) | Write a .graphqlrc.json file to the current directory for use with local tooling (e.g. the graphql extension for vscode)  |
 | [`graph:edit`](/docs/commands/graph.md#graphedit) | Launch the browser to edit your local graph functions from Netlify  |
 | [`graph:handler`](/docs/commands/graph.md#graphhandler) | Generate a handler for a Graph operation given its name. See `graph:operations` for a list of operations.  |
 | [`graph:library`](/docs/commands/graph.md#graphlibrary) | Generate the Graph function library  |
@@ -35,6 +36,23 @@ netlify graph
 netlify graph:pull
 netlify graph:edit
 ```
+
+---
+## `graph:config:write`
+
+Write a .graphqlrc.json file to the current directory for use with local tooling (e.g. the graphql extension for vscode)
+
+**Usage**
+
+```bash
+netlify graph:config:write
+```
+
+**Flags**
+
+- `debug` (*boolean*) - Print debugging information
+- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
 ## `graph:edit`
