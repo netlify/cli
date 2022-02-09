@@ -206,7 +206,7 @@ const createHandler = function (options) {
   }
 }
 
-const getFunctionsServer = async function (options) {
+const getFunctionsServer = function (options) {
   const { buildersPrefix = '', functionsPrefix = '', functionsRegistry, siteUrl } = options
   // performance optimization, load express on demand
   // eslint-disable-next-line node/global-require
@@ -262,7 +262,7 @@ const startFunctionsServer = async (options) => {
 
     await functionsRegistry.scan(functionsDirectories)
 
-    const server = await getFunctionsServer(Object.assign(options, { functionsRegistry }))
+    const server = getFunctionsServer(Object.assign(options, { functionsRegistry }))
 
     await startWebServer({ server, settings })
   }
