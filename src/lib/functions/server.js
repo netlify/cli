@@ -71,7 +71,9 @@ const startPollingForAPIAuthentication = async function (options) {
       const netlifyGraphJWT = generateNetlifyGraphJWT(netlifyGraphConfig)
 
       if (netlifyGraphJWT != null) {
+        // XXX(anmonteiro): this name is deprecated. Delete after 3/31/2022
         process.env.ONEGRAPH_AUTHLIFY_TOKEN = netlifyGraphJWT
+        process.env.NETLIFY_GRAPH_TOKEN = netlifyGraphJWT
       }
     } else {
       delete config.authlify
