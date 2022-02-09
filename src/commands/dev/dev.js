@@ -33,6 +33,7 @@ const {
   error,
   exit,
   getSiteInformation,
+  injectEnvVariables,
   log,
   openBrowser,
   startForwardProxy,
@@ -263,6 +264,8 @@ const dev = async (options, command) => {
   }
 
   const startNetlifyGraphWatcher = Boolean(options.graph)
+  await injectEnvVariables({ env: command.netlify.cachedConfig.env, site })
+
   const { addonsUrls, capabilities, siteUrl, timeouts } = await getSiteInformation({
     // inherited from base command --offline
     offline: options.offline,

@@ -1,4 +1,6 @@
 // @ts-check
+const process = require('process')
+
 const jwtDecode = require('jwt-decode')
 
 const {
@@ -8,7 +10,6 @@ const {
   error: errorExit,
   generateNetlifyGraphJWT,
   getInternalFunctionsDir,
-  injectEnvVariables,
   log,
 } = require('../../utils')
 
@@ -55,7 +56,6 @@ const startPollingForAPIAuthentication = async function (options) {
     const authlifyTokenId = siteData && siteData.authlify_token_id
 
     const existingAuthlifyTokenId = config && config.netlifyGraphConfig && config.netlifyGraphConfig.authlifyTokenId
-    console.log('polling', authlifyTokenId, existingAuthlifyTokenId)
     if (authlifyTokenId && authlifyTokenId !== existingAuthlifyTokenId) {
       const netlifyToken = await command.authenticate()
       // Only inject the authlify config if a token ID exists. This prevents
@@ -70,20 +70,9 @@ const startPollingForAPIAuthentication = async function (options) {
 
       const netlifyGraphJWT = generateNetlifyGraphJWT(netlifyGraphConfig)
 
-      await injectEnvVariables({
-        env: Object.assign(
-          command.netlify.cachedConfig.env,
-          netlifyGraphJWT == null
-            ? {}
-            : {
-                ONEGRAPH_AUTHLIFY_TOKEN: {
-                  sources: ['general'],
-                  value: netlifyGraphJWT,
-                },
-              },
-        ),
-        site,
-      })
+      if (netlifyGraphJWT != null) {
+        process.env.ONEGRAPH_AUTHLIFY_TOKEN = netlifyGraphJWT
+      }
     } else {
       delete config.authlify
     }
