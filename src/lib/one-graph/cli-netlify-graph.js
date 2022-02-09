@@ -478,7 +478,7 @@ const { buildSchema, parse } = GraphQL
 const getGraphEditUrlBySiteName = ({ oneGraphSessionId, siteName }) => {
   const host = process.env.NETLIFY_APP_HOST || 'app.netlify.com'
   // http because app.netlify.com will redirect to https, and localhost will still work for development
-  const url = `http://${host}/sites/${siteName}/graph/explorer?cliSessionId=${oneGraphSessionId}`
+  const url = `http://${host}/sites/app/${siteName}/graph/explorer/${oneGraphSessionId}`
 
   return url
 }
@@ -493,7 +493,7 @@ const getGraphEditUrlBySiteName = ({ oneGraphSessionId, siteName }) => {
 const getGraphEditUrlBySiteId = ({ oneGraphSessionId, siteId }) => {
   const host = process.env.NETLIFY_APP_HOST || 'app.netlify.com'
   // http because app.netlify.com will redirect to https, and localhost will still work for development
-  const url = `http://${host}/site-redirect/${siteId}/graph/explorer?cliSessionId=${oneGraphSessionId}`
+  const url = `http://${host}/site-redirect/${siteId}/graph/explorer/${oneGraphSessionId}`
 
   return url
 }
