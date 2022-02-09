@@ -3,7 +3,7 @@ const fs = require('fs')
 const path = require('path')
 const process = require('process')
 
-const { GraphQL, InternalConsole, NetlifyGraph } = require('netlify-onegraph-internal')
+const { GraphQL, GraphQLHelpers, InternalConsole, NetlifyGraph } = require('netlify-onegraph-internal')
 
 const { detectServerSettings, error, execa, getFunctionsDir, log, warn } = require('../../utils')
 
@@ -202,6 +202,10 @@ const getNetlifyGraphConfig = async ({ command, options, settings }) => {
     (userSpecifiedConfig.graphQLOperationsSourceFilename &&
       userSpecifiedConfig.graphQLOperationsSourceFilename.split(path.sep)) ||
     defaultFrameworkConfig.graphQLOperationsSourceFilename
+  const graphQLConfigJsonFilename =
+    (userSpecifiedConfig.graphQLConfigJsonFilename && userSpecifiedConfig.graphQLConfigJsonFilename.split(path.sep)) ||
+    defaultFrameworkConfig.graphQLConfigJsonFilename ||
+    baseConfig.graphQLConfigJsonFilename
   const graphQLSchemaFilename =
     (userSpecifiedConfig.graphQLSchemaFilename && userSpecifiedConfig.graphQLSchemaFilename.split(path.sep)) ||
     defaultFrameworkConfig.graphQLSchemaFilename
@@ -229,6 +233,7 @@ const getNetlifyGraphConfig = async ({ command, options, settings }) => {
     netlifyGraphTypeDefinitionsFilename,
     graphQLOperationsSourceFilename,
     graphQLSchemaFilename,
+    graphQLConfigJsonFilename,
     netlifyGraphRequirePath,
     framework,
     language,
@@ -505,6 +510,7 @@ module.exports = {
   getGraphEditUrlBySiteId,
   getGraphEditUrlBySiteName,
   getNetlifyGraphConfig,
+  normalizeOperationsDoc: GraphQLHelpers.normalizeOperationsDoc,
   parse,
   readGraphQLOperationsSourceFile,
   readGraphQLSchemaFile,
