@@ -310,7 +310,7 @@ const getCLISession = async ({ netlifyToken, oneGraphSessionId, siteId }) => {
  */
 const getCLISessionMetadata = async ({ netlifyToken, oneGraphSessionId, siteId }) => {
   const { errors, session } = await getCLISession({ netlifyToken, oneGraphSessionId, siteId })
-  return { metadata: session?.metadata, errors }
+  return { metadata: session && session.metadata, errors }
 }
 
 /**
