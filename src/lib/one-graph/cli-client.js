@@ -24,7 +24,7 @@ const {
 
 const { parse } = GraphQL
 const { defaultExampleOperationsDoc, extractFunctionsFromOperationDoc } = NetlifyGraph
-const { createCLISession, createPersistedQuery, ensureAppForSite, updateCLISessionMetadata } = OneGraphClient
+const { createPersistedQuery, ensureAppForSite, updateCLISessionMetadata } = OneGraphClient
 
 const internalConsole = {
   log,
@@ -284,9 +284,89 @@ const handleCliSessionEvent = async ({ event, netlifyGraphConfig, netlifyToken, 
   }
 }
 
-const persistNewOperationsDocForSession = async ({ netlifyToken, oneGraphSessionId, operationsDoc, siteId }) => {
-  const { branch } = gitRepoInfo()
+/**
+ *
+ * @param {object} input
+ * @param {string} input.netlifyToken The (typically netlify) access token that is used for authentication, if any
+ * @param {string} input.oneGraphSessionId The id of the cli session to fetch the current metadata for
+ * @param {object} input.siteId The site object that contains the root file path for the site
+ */
+const getCLISession = async ({ netlifyToken, oneGraphSessionId, siteId }) => {
+  const input = {
+    appId: siteId,
+    sessionId: oneGraphSessionId,
+    authToken: netlifyToken,
+    desiredEventCount: 1,
+  }
+  return await OneGraphClient.fetchCliSession(input)
+}
 
+/**
+ *
+ * @param {object} input
+ * @param {string} input.netlifyToken The (typically netlify) access token that is used for authentication, if any
+ * @param {string} input.oneGraphSessionId The id of the cli session to fetch the current metadata for
+ * @param {string} input.siteId The site object that contains the root file path for the site
+ */
+const getCLISessionMetadata = async ({ netlifyToken, oneGraphSessionId, siteId }) => {
+  const { errors, session } = await getCLISession({ netlifyToken, oneGraphSessionId, siteId })
+  return { metadata: session && session.metadata, errors }
+}
+
+/**
+ * Look at the current project, filesystem, etc. and determine relevant metadata for a cli session
+ * @param {object} input
+ * @param {string} input.siteRoot The root file path for the site
+ * @returns {Record<string, any>} Any locally detected facts that are relevant to include in the cli session metadata
+ */
+const detectLocalCLISessionMetadata = ({ siteRoot }) => {
+  const { branch } = gitRepoInfo()
+  const hostname = os.hostname()
+  const userInfo = os.userInfo({ encoding: 'utf-8' })
+  const { username } = userInfo
+
+  const detectedMetadata = {
+    gitBranch: branch,
+    hostname,
+    username,
+    siteRoot,
+  }
+
+  return detectedMetadata
+}
+
+/**
+ * Fetch the existing cli session metadata if it exists, and mutate it remotely with the passed in metadata
+ * @param {object} input
+ * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig The (typically netlify) access token that is used for authentication, if any
+ * @param {string} input.netlifyToken The (typically netlify) access token that is used for authentication, if any
+ * @param {string} input.oneGraphSessionId The id of the cli session to fetch the current metadata for
+ * @param {string} input.siteId The site object that contains the root file path for the site
+ * @param {string} input.siteRoot The root file path for the site
+ * @param {object} input.newMetadata The metadata to merge into (with priority) the existing metadata
+ * @returns {Promise<object>}
+ */
+const upsertMergeCLISessionMetadata = async ({ netlifyToken, newMetadata, oneGraphSessionId, siteId, siteRoot }) => {
+  const { errors, metadata } = await getCLISessionMetadata({ netlifyToken, oneGraphSessionId, siteId })
+  if (errors) {
+    warn(`Error fetching cli session metadata: ${JSON.stringify(errors, null, 2)}`)
+  }
+
+  const detectedMetadata = detectLocalCLISessionMetadata({ siteRoot })
+
+  const finalMetadata = { ...metadata, ...detectedMetadata, ...newMetadata }
+  return OneGraphClient.updateCLISessionMetadata(netlifyToken, siteId, oneGraphSessionId, finalMetadata)
+}
+
+const persistNewOperationsDocForSession = async ({
+  netlifyGraphConfig,
+  netlifyToken,
+  oneGraphSessionId,
+  operationsDoc,
+  siteId,
+  siteRoot,
+}) => {
+  const { branch } = gitRepoInfo()
   const payload = {
     appId: siteId,
     description: 'Temporary snapshot of local queries',
@@ -295,11 +375,23 @@ const persistNewOperationsDocForSession = async ({ netlifyToken, oneGraphSession
   }
   const persistedDoc = await createPersistedQuery(netlifyToken, payload)
   const newMetadata = await { docId: persistedDoc.id }
-  const result = await OneGraphClient.updateCLISessionMetadata(netlifyToken, siteId, oneGraphSessionId, newMetadata)
+  const result = await upsertMergeCLISessionMetadata({
+    netlifyGraphConfig,
+    netlifyToken,
+    siteId,
+    oneGraphSessionId,
+    newMetadata,
+    siteRoot,
+  })
 
   if (result.errors) {
     warn(`Unable to update session metadata with updated operations doc ${JSON.stringify(result.errors, null, 2)}`)
   }
+}
+
+const createCLISession = ({ metadata, netlifyToken, sessionName, siteId }) => {
+  const result = OneGraphClient.createCLISession(netlifyToken, siteId, sessionName, metadata)
+  return result
 }
 
 /**
@@ -324,7 +416,12 @@ const startOneGraphCLISession = async (input) => {
   if (!oneGraphSessionId) {
     const sessionName = generateSessionName()
     const sessionMetadata = {}
-    const oneGraphSession = await OneGraphClient.createCLISession(netlifyToken, site.id, sessionName, sessionMetadata)
+    const oneGraphSession = await createCLISession({
+      netlifyToken,
+      siteId: site.id,
+      sessionName,
+      metadata: sessionMetadata,
+    })
     state.set('oneGraphSessionId', oneGraphSession.id)
     oneGraphSessionId = state.get('oneGraphSessionId')
   }
@@ -339,10 +436,12 @@ const startOneGraphCLISession = async (input) => {
       regenerateFunctionsFileFromOperationsFile({ netlifyGraphConfig, schema })
       const newOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
       await persistNewOperationsDocForSession({
+        netlifyGraphConfig,
         netlifyToken,
         oneGraphSessionId,
         operationsDoc: newOperationsDoc,
         siteId: site.id,
+        siteRoot: site.root,
       })
     },
     onAdd: async (filePath) => {
@@ -350,10 +449,12 @@ const startOneGraphCLISession = async (input) => {
       regenerateFunctionsFileFromOperationsFile({ netlifyGraphConfig, schema })
       const newOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
       await persistNewOperationsDocForSession({
+        netlifyGraphConfig,
         netlifyToken,
         oneGraphSessionId,
         operationsDoc: newOperationsDoc,
         siteId: site.id,
+        siteRoot: site.root,
       })
     },
   })
@@ -395,7 +496,6 @@ const generateSessionName = () => {
 
 const OneGraphCliClient = {
   ackCLISessionEvents: OneGraphClient.ackCLISessionEvents,
-  createCLISession,
   createPersistedQuery,
   fetchCliSessionEvents: OneGraphClient.fetchCliSessionEvents,
   ensureAppForSite,
@@ -404,6 +504,7 @@ const OneGraphCliClient = {
 
 module.exports = {
   OneGraphCliClient,
+  createCLISession,
   extractFunctionsFromOperationDoc,
   handleCliSessionEvent,
   generateSessionName,
@@ -412,4 +513,5 @@ module.exports = {
   persistNewOperationsDocForSession,
   refetchAndGenerateFromOneGraph,
   startOneGraphCLISession,
+  upsertMergeCLISessionMetadata,
 }
