@@ -194,12 +194,12 @@ const acquirePort = async ({ configuredPort, defaultPort, errorMessage }) => {
   return acquiredPort
 }
 
-// Generates an Authlify JWT with the following claims:
+// Generates a Netlify Graph JWT with the following claims:
 // - site_id
 // - netlify_token -- the bearer token for the Netlify API
 // - authlify_token_id -- the authlify token ID stored for the site after
 //   enabling API Authentication.
-const generateAuthlifyJWT = (netlifyToken, authlifyTokenId, siteId) => {
+const generateNetlifyGraphJWT = ({ authlifyTokenId, netlifyToken, siteId }) => {
   const claims = {
     netlify_token: netlifyToken,
     authlify_token_id: authlifyTokenId,
@@ -219,5 +219,5 @@ module.exports = {
   getSiteInformation,
   injectEnvVariables,
   acquirePort,
-  generateAuthlifyJWT,
+  generateNetlifyGraphJWT,
 }
