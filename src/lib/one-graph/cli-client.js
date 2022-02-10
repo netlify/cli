@@ -285,7 +285,7 @@ const handleCliSessionEvent = async ({ event, netlifyGraphConfig, netlifyToken, 
 }
 
 /**
- * 
+ *
  * @param {object} input
  * @param {string} input.netlifyToken The (typically netlify) access token that is used for authentication, if any
  * @param {string} input.oneGraphSessionId The id of the cli session to fetch the current metadata for
@@ -296,7 +296,7 @@ const getCLISession = async ({ netlifyToken, oneGraphSessionId, siteId }) => {
     appId: siteId,
     sessionId: oneGraphSessionId,
     authToken: netlifyToken,
-    desiredEventCount: 1
+    desiredEventCount: 1,
   }
   return await OneGraphClient.fetchCliSession(input)
 }
@@ -329,7 +329,7 @@ const detectLocalCLISessionMetadata = ({ siteRoot }) => {
     gitBranch: branch,
     hostname,
     username,
-    siteRoot
+    siteRoot,
   }
 
   return detectedMetadata
@@ -358,7 +358,14 @@ const upsertMergeCLISessionMetadata = async ({ netlifyToken, newMetadata, oneGra
   return OneGraphClient.updateCLISessionMetadata(netlifyToken, siteId, oneGraphSessionId, finalMetadata)
 }
 
-const persistNewOperationsDocForSession = async ({ netlifyGraphConfig, netlifyToken, oneGraphSessionId, operationsDoc, siteId, siteRoot }) => {
+const persistNewOperationsDocForSession = async ({
+  netlifyGraphConfig,
+  netlifyToken,
+  oneGraphSessionId,
+  operationsDoc,
+  siteId,
+  siteRoot,
+}) => {
   const { branch } = gitRepoInfo()
   const payload = {
     appId: siteId,
@@ -369,7 +376,12 @@ const persistNewOperationsDocForSession = async ({ netlifyGraphConfig, netlifyTo
   const persistedDoc = await createPersistedQuery(netlifyToken, payload)
   const newMetadata = await { docId: persistedDoc.id }
   const result = await upsertMergeCLISessionMetadata({
-    netlifyGraphConfig, netlifyToken, siteId, oneGraphSessionId, newMetadata, siteRoot
+    netlifyGraphConfig,
+    netlifyToken,
+    siteId,
+    oneGraphSessionId,
+    newMetadata,
+    siteRoot,
   })
 
   if (result.errors) {
@@ -404,7 +416,12 @@ const startOneGraphCLISession = async (input) => {
   if (!oneGraphSessionId) {
     const sessionName = generateSessionName()
     const sessionMetadata = {}
-    const oneGraphSession = await createCLISession({ netlifyToken, siteId: site.id, sessionName, metadata: sessionMetadata })
+    const oneGraphSession = await createCLISession({
+      netlifyToken,
+      siteId: site.id,
+      sessionName,
+      metadata: sessionMetadata,
+    })
     state.set('oneGraphSessionId', oneGraphSession.id)
     oneGraphSessionId = state.get('oneGraphSessionId')
   }
@@ -424,7 +441,7 @@ const startOneGraphCLISession = async (input) => {
         oneGraphSessionId,
         operationsDoc: newOperationsDoc,
         siteId: site.id,
-        siteRoot: site.root
+        siteRoot: site.root,
       })
     },
     onAdd: async (filePath) => {
@@ -437,7 +454,7 @@ const startOneGraphCLISession = async (input) => {
         oneGraphSessionId,
         operationsDoc: newOperationsDoc,
         siteId: site.id,
-        siteRoot: site.root
+        siteRoot: site.root,
       })
     },
   })
@@ -496,5 +513,5 @@ module.exports = {
   persistNewOperationsDocForSession,
   refetchAndGenerateFromOneGraph,
   startOneGraphCLISession,
-  upsertMergeCLISessionMetadata
+  upsertMergeCLISessionMetadata,
 }

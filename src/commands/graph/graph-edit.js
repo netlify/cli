@@ -1,7 +1,13 @@
 // @ts-check
 const gitRepoInfo = require('git-repo-info')
 
-const { OneGraphCliClient, createCLISession, generateSessionName, loadCLISession, upsertMergeCLISessionMetadata } = require('../../lib/one-graph/cli-client')
+const {
+  OneGraphCliClient,
+  createCLISession,
+  generateSessionName,
+  loadCLISession,
+  upsertMergeCLISessionMetadata,
+} = require('../../lib/one-graph/cli-client')
 const {
   defaultExampleOperationsDoc,
   getGraphEditUrlBySiteId,
@@ -61,7 +67,12 @@ const graphEdit = async (options, command) => {
   const newMetadata = { docId: persistedDoc.id }
 
   await upsertMergeCLISessionMetadata({
-    netlifyGraphConfig, netlifyToken, siteId, siteRoot: site.root, oneGraphSessionId, newMetadata
+    netlifyGraphConfig,
+    netlifyToken,
+    siteId,
+    siteRoot: site.root,
+    oneGraphSessionId,
+    newMetadata,
   })
 
   const graphEditUrl = getGraphEditUrlBySiteId({ siteId, oneGraphSessionId })

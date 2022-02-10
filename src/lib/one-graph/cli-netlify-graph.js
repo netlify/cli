@@ -167,7 +167,7 @@ const getNetlifyGraphConfig = async ({ command, options, settings }) => {
     }
   }
 
-  const defaulFunctionsPath = ["netlify", "functions"]
+  const defaulFunctionsPath = ['netlify', 'functions']
 
   const siteRoot = [path.sep, ...filterRelativePathItems(site.root.split(path.sep))]
 
