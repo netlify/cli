@@ -10,7 +10,7 @@ const { GraphQL, InternalConsole, OneGraphClient } = require('netlify-onegraph-i
 const { NetlifyGraph } = require('netlify-onegraph-internal')
 
 // eslint-disable-next-line no-unused-vars
-const { StateConfig, chalk, error, log, warn } = require('../../utils')
+const { StateConfig, USER_AGENT, chalk, error, log, warn } = require('../../utils')
 const { watchDebounced } = require('../functions/watcher')
 
 const {
@@ -324,12 +324,14 @@ const detectLocalCLISessionMetadata = ({ siteRoot }) => {
   const hostname = os.hostname()
   const userInfo = os.userInfo({ encoding: 'utf-8' })
   const { username } = userInfo
+  const cliVersion = USER_AGENT
 
   const detectedMetadata = {
     gitBranch: branch,
     hostname,
     username,
     siteRoot,
+    cliVersion
   }
 
   return detectedMetadata

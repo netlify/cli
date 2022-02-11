@@ -280,10 +280,11 @@ const runPrettier = async (filePath) => {
     })
 
     await commandProcess
+    // eslint-disable-next-line unicorn/prefer-optional-catch-binding
   } catch (prettierError) {
+    // It would be nice to log this error to help debugging, but it's potentially a bit scary for the dev to see it
     if (!disablePrettierDueToPreviousError) {
       disablePrettierDueToPreviousError = true
-      warn(prettierError)
       warn("Error while running prettier, make sure you have installed it globally with 'npm i -g prettier'")
     }
   }
