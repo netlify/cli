@@ -429,7 +429,7 @@ const startOneGraphCLISession = async (input) => {
   const enabledServices = []
   const schema = await OneGraphClient.fetchOneGraphSchema(site.id, enabledServices)
 
-  monitorOperationFile({
+  const opsFileWatcher = monitorOperationFile({
     netlifyGraphConfig,
     onChange: async (filePath) => {
       log('NetlifyGraph operation file changed at', filePath, 'updating function library...')
@@ -459,7 +459,7 @@ const startOneGraphCLISession = async (input) => {
     },
   })
 
-  monitorCLISessionEvents({
+  const cliEventsCloseFn = monitorCLISessionEvents({
     appId: site.id,
     netlifyToken,
     netlifyGraphConfig,
@@ -481,6 +481,12 @@ const startOneGraphCLISession = async (input) => {
       log('Netlify Graph upstream closed')
     },
   })
+
+  return async () => {
+    const watcher = await opsFileWatcher
+    watcher.close()
+    cliEventsCloseFn()
+  }
 }
 
 /**

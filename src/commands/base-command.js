@@ -1,4 +1,5 @@
 // @ts-check
+const events = require('events')
 const process = require('process')
 const { format } = require('util')
 
@@ -10,6 +11,7 @@ const merge = require('lodash/merge')
 const jsClient = import('netlify')
 const netlifyConfigPromise = import('@netlify/config')
 
+const { watchDebounced } = require('../lib/functions/watcher')
 const { getAgent } = require('../lib/http-agent')
 const {
   NETLIFY_CYAN,
@@ -429,6 +431,18 @@ class BaseCommand extends Command {
     const apiOpts = { ...apiUrlOpts, agent }
     const globalConfig = await getGlobalConfig()
     const { NetlifyAPI } = await jsClient
+    const configWatcher = new events.EventEmitter()
+
+    watchDebounced(configPath, {
+      depth: 1,
+      onChange: async () => {
+        const { config: newConfig } = await actionCommand.getConfig({ cwd, state, token, ...apiUrlOpts })
+
+        const normalizedNewConfig = normalizeConfig(newConfig)
+        configWatcher.emit('change', normalizedNewConfig)
+        actionCommand.netlify.config = normalizedNewConfig
+      },
+    })
 
     actionCommand.netlify = {
       // api methods
@@ -455,6 +469,8 @@ class BaseCommand extends Command {
       globalConfig,
       // state of current site dir
       state,
+      // netlify.toml file watcher
+      configWatcher,
     }
     debug(`${this.name()}:init`)('end')
   }
