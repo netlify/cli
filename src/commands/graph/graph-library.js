@@ -9,7 +9,7 @@ const {
   readGraphQLOperationsSourceFile,
   readGraphQLSchemaFile,
 } = require('../../lib/one-graph/cli-netlify-graph')
-const { error } = require('../../utils')
+const { error, log } = require('../../utils')
 
 /**
  * Creates the `netlify graph:library` command
@@ -42,7 +42,14 @@ const graphLibrary = async (options, command) => {
   const parsedDoc = parse(currentOperationsDoc)
   const { fragments, functions } = extractFunctionsFromOperationDoc(parsedDoc)
 
-  generateFunctionsFile({ netlifyGraphConfig, schema, operationsDoc: currentOperationsDoc, functions, fragments })
+  generateFunctionsFile({
+    logger: log,
+    netlifyGraphConfig,
+    schema,
+    operationsDoc: currentOperationsDoc,
+    functions,
+    fragments,
+  })
 }
 
 /**

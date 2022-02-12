@@ -5,7 +5,7 @@ const process = require('process')
 
 const { GraphQL, GraphQLHelpers, InternalConsole, NetlifyGraph } = require('netlify-onegraph-internal')
 
-const { detectServerSettings, error, execa, getFunctionsDir, log, warn } = require('../../utils')
+const { chalk, detectServerSettings, error, execa, getFunctionsDir, log, warn } = require('../../utils')
 
 const { printSchema } = GraphQL
 
@@ -298,9 +298,10 @@ const runPrettier = async (filePath) => {
  * @param {string} context.operationsDoc The GraphQL operations doc to use when generating the functions
  * @param {Record<string, NetlifyGraph.ExtractedFunction>} context.functions The parsed queries with metadata to use when generating library functions
  * @param {Record<string, NetlifyGraph.ExtractedFragment>} context.fragments The parsed queries with metadata to use when generating library functions
+ * @param {(message: string) => void=} context.logger A function that if provided will be used to log messages
  * @returns {void} Void, effectfully writes the generated library to the filesystem
  */
-const generateFunctionsFile = ({ fragments, functions, netlifyGraphConfig, operationsDoc, schema }) => {
+const generateFunctionsFile = ({ fragments, functions, logger, netlifyGraphConfig, operationsDoc, schema }) => {
   const { clientSource, typeDefinitionsSource } = NetlifyGraph.generateFunctionsSource(
     netlifyGraphConfig,
     schema,
@@ -310,12 +311,15 @@ const generateFunctionsFile = ({ fragments, functions, netlifyGraphConfig, opera
   )
 
   ensureNetlifyGraphPath(netlifyGraphConfig)
-  fs.writeFileSync(path.resolve(...netlifyGraphConfig.netlifyGraphImplementationFilename), clientSource, 'utf8')
-  fs.writeFileSync(
-    path.resolve(...netlifyGraphConfig.netlifyGraphTypeDefinitionsFilename),
-    typeDefinitionsSource,
-    'utf8',
-  )
+  const implementationResolvedPath = path.resolve(...netlifyGraphConfig.netlifyGraphImplementationFilename)
+  fs.writeFileSync(implementationResolvedPath, clientSource, 'utf8')
+  const implementationRelativePath = path.relative(process.cwd(), implementationResolvedPath)
+  logger && logger(`Wrote ${chalk.cyan(implementationRelativePath)}`)
+
+  const typeDefinitionsResolvedPath = path.resolve(...netlifyGraphConfig.netlifyGraphTypeDefinitionsFilename)
+  fs.writeFileSync(typeDefinitionsResolvedPath, typeDefinitionsSource, 'utf8')
+  const typeDefinitionsRelativePath = path.relative(process.cwd(), typeDefinitionsResolvedPath)
+  logger && logger(`Wrote ${chalk.cyan(typeDefinitionsRelativePath)}`)
   runPrettier(path.resolve(...netlifyGraphConfig.netlifyGraphImplementationFilename))
   runPrettier(path.resolve(...netlifyGraphConfig.netlifyGraphTypeDefinitionsFilename))
 }
@@ -341,26 +345,36 @@ const readGraphQLOperationsSourceFile = (netlifyGraphConfig) => {
 
 /**
  * Write an operations doc to the filesystem using the given NetlifyGraphConfig
- * @param {NetlifyGraph.NetlifyGraphConfig} netlifyGraphConfig
- * @param {string} operationsDocString The GraphQL operations doc to write
+ * @param {object} input
+ * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
+ * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig
+ * @param {string} input.operationsDocString The GraphQL operations doc to write
  */
-const writeGraphQLOperationsSourceFile = (netlifyGraphConfig, operationsDocString) => {
+const writeGraphQLOperationsSourceFile = ({ logger, netlifyGraphConfig, operationsDocString }) => {
   const graphqlSource = operationsDocString
 
   ensureNetlifyGraphPath(netlifyGraphConfig)
-  fs.writeFileSync(path.resolve(...netlifyGraphConfig.graphQLOperationsSourceFilename), graphqlSource, 'utf8')
+  const resolvedPath = path.resolve(...netlifyGraphConfig.graphQLOperationsSourceFilename)
+  fs.writeFileSync(resolvedPath, graphqlSource, 'utf8')
+  const relativePath = path.relative(process.cwd(), resolvedPath)
+  logger && logger(`Wrote ${chalk.cyan(relativePath)}`)
 }
 
 /**
  * Write a GraphQL Schema printed in SDL format to the filesystem using the given NetlifyGraphConfig
- * @param {NetlifyGraph.NetlifyGraphConfig} netlifyGraphConfig
- * @param {GraphQL.GraphQLSchema} schema The GraphQL schema to print and write to the filesystem
+ * @param {object} input
+ * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
+ * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig
+ * @param {GraphQL.GraphQLSchema} input.schema The GraphQL schema to print and write to the filesystem
  */
-const writeGraphQLSchemaFile = (netlifyGraphConfig, schema) => {
+const writeGraphQLSchemaFile = ({ logger, netlifyGraphConfig, schema }) => {
   const graphqlSource = printSchema(schema)
 
   ensureNetlifyGraphPath(netlifyGraphConfig)
-  fs.writeFileSync(path.resolve(...netlifyGraphConfig.graphQLSchemaFilename), graphqlSource, 'utf8')
+  const resolvedPath = path.resolve(...netlifyGraphConfig.graphQLSchemaFilename)
+  fs.writeFileSync(resolvedPath, graphqlSource, 'utf8')
+  const relativePath = path.relative(process.cwd(), resolvedPath)
+  logger && logger(`Wrote ${chalk.cyan(relativePath)}`)
 }
 
 /**
@@ -375,19 +389,21 @@ const readGraphQLSchemaFile = (netlifyGraphConfig) => {
 
 /**
  * Given a NetlifyGraphConfig, read the appropriate files and write a handler for the given operationId to the filesystem
- * @param {NetlifyGraph.NetlifyGraphConfig} netlifyGraphConfig
- * @param {GraphQL.GraphQLSchema} schema The GraphQL schema to use when generating the handler
- * @param {string} operationId The operationId to use when generating the handler
- * @param {object} handlerOptions The options to use when generating the handler
+ * @param {object} input
+ * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig
+ * @param {GraphQL.GraphQLSchema} input.schema The GraphQL schema to use when generating the handler
+ * @param {string} input.operationId The operationId to use when generating the handler
+ * @param {object} input.handlerOptions The options to use when generating the handler
+ * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
  * @returns
  */
-const generateHandlerByOperationId = (netlifyGraphConfig, schema, operationId, handlerOptions) => {
+const generateHandlerByOperationId = ({ handlerOptions, logger, netlifyGraphConfig, operationId, schema }) => {
   let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
   if (currentOperationsDoc.trim().length === 0) {
     currentOperationsDoc = NetlifyGraph.defaultExampleOperationsDoc
   }
 
-  const payload = {
+  const generateHandlerPayload = {
     handlerOptions,
     schema,
     netlifyGraphConfig,
@@ -395,7 +411,7 @@ const generateHandlerByOperationId = (netlifyGraphConfig, schema, operationId, h
     operationsDoc: currentOperationsDoc,
   }
 
-  const result = NetlifyGraph.generateHandlerSource(payload)
+  const result = NetlifyGraph.generateHandlerSource(generateHandlerPayload)
 
   if (!result) {
     warn(`No handler was generated for operationId ${operationId}`)
@@ -435,19 +451,23 @@ const generateHandlerByOperationId = (netlifyGraphConfig, schema, operationId, h
     const absoluteFilename = path.resolve(...filenameArr)
 
     fs.writeFileSync(absoluteFilename, content)
+    const relativePath = path.relative(process.cwd(), absoluteFilename)
+    logger && logger(`Wrote ${chalk.cyan(relativePath)}`)
     runPrettier(absoluteFilename)
   })
 }
 
 /**
  * Given a NetlifyGraphConfig, read the appropriate files and write a handler for the given operationId to the filesystem
- * @param {NetlifyGraph.NetlifyGraphConfig} netlifyGraphConfig
- * @param {GraphQL.GraphQLSchema} schema The GraphQL schema to use when generating the handler
- * @param {string} operationName The name of the operation to use when generating the handler
- * @param {object} handlerOptions The options to use when generating the handler
+ * @param {object} input
+ * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig
+ * @param {GraphQL.GraphQLSchema} input.schema The GraphQL schema to use when generating the handler
+ * @param {string} input.operationName The name of the operation to use when generating the handler
+ * @param {object} input.handlerOptions The options to use when generating the handler
+ * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
  * @returns
  */
-const generateHandlerByOperationName = (netlifyGraphConfig, schema, operationName, handlerOptions) => {
+const generateHandlerByOperationName = ({ handlerOptions, logger, netlifyGraphConfig, operationName, schema }) => {
   let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
   if (currentOperationsDoc.trim().length === 0) {
     currentOperationsDoc = NetlifyGraph.defaultExampleOperationsDoc
@@ -465,7 +485,7 @@ const generateHandlerByOperationName = (netlifyGraphConfig, schema, operationNam
     return
   }
 
-  generateHandlerByOperationId(netlifyGraphConfig, schema, operation.id, handlerOptions)
+  generateHandlerByOperationId({ logger, netlifyGraphConfig, schema, operationId: operation.id, handlerOptions })
 }
 
 // Export the minimal set of functions that are required for Netlify Graph

@@ -147,10 +147,11 @@ const monitorOperationFile = async ({ netlifyGraphConfig, onAdd, onChange, onUnl
  * @param {string} input.netlifyToken The (typically netlify) access token that is used for authentication, if any
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
  * @param {StateConfig} input.state A function to call to set/get the current state of the local Netlify project
+ * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
  * @returns {Promise<void>}
  */
 const refetchAndGenerateFromOneGraph = async (input) => {
-  const { netlifyGraphConfig, netlifyToken, siteId, state } = input
+  const { logger, netlifyGraphConfig, netlifyToken, siteId, state } = input
   await OneGraphClient.ensureAppForSite(netlifyToken, siteId)
 
   const enabledServicesInfo = await OneGraphClient.fetchEnabledServices(netlifyToken, siteId)
@@ -162,6 +163,7 @@ const refetchAndGenerateFromOneGraph = async (input) => {
   const enabledServices = enabledServicesInfo
     .map((service) => service.service)
     .sort((aString, bString) => aString.localeCompare(bString))
+
   const schema = await OneGraphClient.fetchOneGraphSchema(siteId, enabledServices)
 
   let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
@@ -172,8 +174,15 @@ const refetchAndGenerateFromOneGraph = async (input) => {
   const parsedDoc = parse(currentOperationsDoc)
   const { fragments, functions } = extractFunctionsFromOperationDoc(parsedDoc)
 
-  generateFunctionsFile({ netlifyGraphConfig, schema, operationsDoc: currentOperationsDoc, functions, fragments })
-  writeGraphQLSchemaFile(netlifyGraphConfig, schema)
+  generateFunctionsFile({
+    logger,
+    netlifyGraphConfig,
+    schema,
+    operationsDoc: currentOperationsDoc,
+    functions,
+    fragments,
+  })
+  writeGraphQLSchemaFile({ logger, netlifyGraphConfig, schema })
   state.set('oneGraphEnabledServices', enabledServices)
 }
 
@@ -220,12 +229,13 @@ const quickHash = (input) => {
  * @param {string} input.siteId The site id to query against
  * @param {string} input.netlifyToken The (typically netlify) access token that is used for authentication, if any
  * @param {string} input.docId The GraphQL operations document id to fetch
+ * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
  * @param {GraphQL.GraphQLSchema} input.schema The GraphQL schema to use when generating code
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
  * @returns
  */
 const updateGraphQLOperationsFileFromPersistedDoc = async (input) => {
-  const { docId, netlifyGraphConfig, netlifyToken, schema, siteId } = input
+  const { docId, logger, netlifyGraphConfig, netlifyToken, schema, siteId } = input
   const persistedDoc = await OneGraphClient.fetchPersistedQuery(netlifyToken, siteId, docId)
   if (!persistedDoc) {
     warn(`No persisted doc found for: ${docId}`)
@@ -233,12 +243,12 @@ const updateGraphQLOperationsFileFromPersistedDoc = async (input) => {
   }
 
   // Sorts the operations stably, prepends the @netlify directive, etc.
-  const doc = normalizeOperationsDoc(persistedDoc.query)
+  const operationsDocString = normalizeOperationsDoc(persistedDoc.query)
 
-  writeGraphQLOperationsSourceFile(netlifyGraphConfig, doc)
+  writeGraphQLOperationsSourceFile({ logger, netlifyGraphConfig, operationsDocString })
   regenerateFunctionsFileFromOperationsFile({ netlifyGraphConfig, schema })
 
-  const hash = quickHash(doc)
+  const hash = quickHash(operationsDocString)
 
   const relevantHasLength = 10
 
@@ -260,7 +270,12 @@ const handleCliSessionEvent = async ({ event, netlifyGraphConfig, netlifyToken, 
         warn(`No operation id found in payload, ${JSON.stringify(payload, null, 2)}`)
         return
       }
-      generateHandlerByOperationId(netlifyGraphConfig, schema, payload.operationId.id, payload)
+      generateHandlerByOperationId({
+        netlifyGraphConfig,
+        schema,
+        operationId: payload.operationId.id,
+        handlerOptions: payload,
+      })
       break
     case 'OneGraphNetlifyCliSessionPersistedLibraryUpdatedEvent':
       await updateGraphQLOperationsFileFromPersistedDoc({
@@ -331,7 +346,7 @@ const detectLocalCLISessionMetadata = ({ siteRoot }) => {
     hostname,
     username,
     siteRoot,
-    cliVersion
+    cliVersion,
   }
 
   return detectedMetadata
