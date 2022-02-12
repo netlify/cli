@@ -1,9 +1,10 @@
 // @ts-check
 const fs = require('fs')
 const path = require('path')
+const process = require('process')
 
 const { getNetlifyGraphConfig } = require('../../lib/one-graph/cli-netlify-graph')
-const { NETLIFYDEVERR, chalk, error } = require('../../utils')
+const { NETLIFYDEVERR, chalk, error, log } = require('../../utils')
 
 /**
  * Creates the `netlify graph:config:write` command
@@ -33,8 +34,10 @@ const graphConfigWrite = async (options, command) => {
   }
 
   const filePath = path.resolve(...netlifyGraphConfig.graphQLConfigJsonFilename)
-
   fs.writeFileSync(filePath, JSON.stringify(graphQLConfig, null, 2))
+
+  const relativePath = path.relative(process.cwd(), filePath)
+  log(`Wrote ${chalk.cyan(relativePath)}`)
 }
 
 /**
