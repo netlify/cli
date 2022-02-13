@@ -17,8 +17,7 @@ const { error, log } = require('../../utils')
 const { parse } = GraphQL
 
 // @ts-ignore
-inquirer.registerPrompt('search-list', inquirerFuzzySearchPrompt);
-
+inquirer.registerPrompt('search-list', inquirerFuzzySearchPrompt)
 
 /**
  * Creates the `netlify graph:handler` command
@@ -28,7 +27,6 @@ inquirer.registerPrompt('search-list', inquirerFuzzySearchPrompt);
  * @returns
  */
 const graphHandler = async (userOperationName, options, command) => {
-
   const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options })
 
   const schemaString = readGraphQLSchemaFile(netlifyGraphConfig)
@@ -56,8 +54,9 @@ const graphHandler = async (userOperationName, options, command) => {
       const parsedDoc = parse(currentOperationsDoc)
       const { functions } = extractFunctionsFromOperationDoc(parsedDoc)
 
-      const sorted = Object.values(functions)
-        .sort((aItem, bItem) => aItem.operationName.localeCompare(bItem.operationName))
+      const sorted = Object.values(functions).sort((aItem, bItem) =>
+        aItem.operationName.localeCompare(bItem.operationName),
+      )
 
       const perPage = 50
 
@@ -68,15 +67,16 @@ const graphHandler = async (userOperationName, options, command) => {
           message: 'For which operation would you like to generate a handler?',
           paginated: true,
           pageSize: perPage,
-          choices: sorted.map((operation) => ({ name: `${operation.operationName} (${operation.kind})`, value: operation.operationName })),
+          choices: sorted.map((operation) => ({
+            name: `${operation.operationName} (${operation.kind})`,
+            value: operation.operationName,
+          })),
         },
       ])
 
       if (selectedOperationName) {
         operationName = selectedOperationName
       }
-
-
     } catch (parseError) {
       parseError(`Error parsing operations library: ${parseError}`)
     }
