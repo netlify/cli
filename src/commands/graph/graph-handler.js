@@ -61,7 +61,8 @@ const graphHandler = async (userOperationName, options, command) => {
         value: operation.operationName,
       }))
 
-      const filterOperationNames = (operationChoices, input) => operationChoices.filter((operation) => (operation.value.toLowerCase().match(input.toLowerCase())))
+      const filterOperationNames = (operationChoices, input) =>
+        operationChoices.filter((operation) => operation.value.toLowerCase().match(input.toLowerCase()))
 
       // eslint-disable-next-line node/global-require
       const inquirerAutocompletePrompt = require('inquirer-autocomplete-prompt')
