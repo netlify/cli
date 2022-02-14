@@ -440,7 +440,6 @@ class BaseCommand extends Command {
 
         const normalizedNewConfig = normalizeConfig(newConfig)
         configWatcher.emit('change', normalizedNewConfig)
-        actionCommand.netlify.config = normalizedNewConfig
       },
     })
 
