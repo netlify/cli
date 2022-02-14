@@ -91,13 +91,15 @@ let cleanupStarted = false
  * @param {number=} input.exitCode The exit code to return when exiting the process after cleanup
  */
 const cleanupBeforeExit = async ({ exitCode }) => {
-  if (cleanupStarted) {
-    // If cleanup has started, then wherever started it will be responsible for exiting
-  } else {
+  // If cleanup has started, then wherever started it will be responsible for exiting
+  if (!cleanupStarted) {
     cleanupStarted = true
-    // eslint-disable-next-line no-unused-vars
-    const cleanupFinished = await Promise.all(cleanupWork.map((cleanup) => cleanup()))
-    process.exit(exitCode)
+    try {
+      // eslint-disable-next-line no-unused-vars
+      const cleanupFinished = await Promise.all(cleanupWork.map((cleanup) => cleanup()))
+    } finally {
+      process.exit(exitCode)
+    }
   }
 }
 
@@ -144,9 +146,9 @@ const runCommand = (command, env = {}) => {
 
       return await cleanupBeforeExit({ exitCode: 1 })
     })
-  ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) => {
-    process.on(signal, async () => await cleanupBeforeExit({}))
-  })
+    ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) => {
+      process.on(signal, async () => await cleanupBeforeExit({}))
+    })
 
   return commandProcess
 }
