@@ -5,7 +5,7 @@ const {
   getNetlifyGraphConfig,
   readGraphQLSchemaFile,
 } = require('../../lib/one-graph/cli-netlify-graph')
-const { error } = require('../../utils')
+const { error, log } = require('../../utils')
 
 /**
  * Creates the `netlify graph:handler` command
@@ -31,7 +31,7 @@ const graphHandler = async (operationName, options, command) => {
     error(`Failed to parse Netlify GraphQL schema`)
   }
 
-  generateHandlerByOperationName(netlifyGraphConfig, schema, operationName, {})
+  generateHandlerByOperationName({ logger: log, netlifyGraphConfig, schema, operationName, handlerOptions: {} })
 }
 
 /**

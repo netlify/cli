@@ -14,7 +14,7 @@ const {
   getNetlifyGraphConfig,
   readGraphQLOperationsSourceFile,
 } = require('../../lib/one-graph/cli-netlify-graph')
-const { NETLIFYDEVERR, chalk, error } = require('../../utils')
+const { NETLIFYDEVERR, chalk, error, log } = require('../../utils')
 const { openBrowser } = require('../../utils/open-browser')
 
 const { createPersistedQuery, ensureAppForSite } = OneGraphCliClient
@@ -77,6 +77,7 @@ const graphEdit = async (options, command) => {
 
   const graphEditUrl = getGraphEditUrlBySiteId({ siteId, oneGraphSessionId })
 
+  log(`Opening graph:edit session at ${chalk.cyan(graphEditUrl)}`)
   await openBrowser({ url: graphEditUrl })
 }
 
