@@ -10,8 +10,7 @@ const { GraphQL, InternalConsole, OneGraphClient } = require('netlify-onegraph-i
 const { NetlifyGraph } = require('netlify-onegraph-internal')
 
 // eslint-disable-next-line no-unused-vars
-const { StateConfig, USER_AGENT, chalk, error, log, warn } = require('../../utils')
-const { watchDebounced } = require('../functions/watcher')
+const { StateConfig, USER_AGENT, chalk, error, log, warn, watchDebounced } = require('../../utils')
 
 const {
   generateFunctionsFile,

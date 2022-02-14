@@ -11,7 +11,6 @@ const merge = require('lodash/merge')
 const jsClient = import('netlify')
 const netlifyConfigPromise = import('@netlify/config')
 
-const { watchDebounced } = require('../lib/functions/watcher')
 const { getAgent } = require('../lib/http-agent')
 const {
   NETLIFY_CYAN,
@@ -30,6 +29,7 @@ const {
   pollForToken,
   sortOptions,
   track,
+  watchDebounced,
 } = require('../utils')
 
 // Netlify CLI client id. Lives in bot@netlify.com
