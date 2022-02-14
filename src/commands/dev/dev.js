@@ -87,6 +87,21 @@ const cleanupWork = []
 let cleanupStarted = false
 
 /**
+ * @param {object} input
+ * @param {number=} input.exitCode The exit code to return when exiting the process after cleanup
+ */
+const cleanupBeforeExit = async ({ exitCode }) => {
+  if (cleanupStarted) {
+    // If cleanup has started, then wherever started it will be responsible for exiting
+  } else {
+    cleanupStarted = true
+    // eslint-disable-next-line no-unused-vars
+    const cleanupFinished = await Promise.all(cleanupWork.map((cleanup) => cleanup()))
+    process.exit(exitCode)
+  }
+}
+
+/**
  * Run a command and pipe stdout, stderr and stdin
  * @param {string} command
  * @param {NodeJS.ProcessEnv} env
@@ -114,7 +129,6 @@ const runCommand = (command, env = {}) => {
     .then(async () => {
       const result = await commandProcess
       const [commandWithoutArgs] = command.split(' ')
-      // eslint-disable-next-line promise/always-return
       if (result.failed && isNonExistingCommandError({ command: commandWithoutArgs, error: result })) {
         log(
           NETLIFYDEVERR,
@@ -127,31 +141,11 @@ const runCommand = (command, env = {}) => {
 
         log(`${errorMessage}. Shutting down Netlify Dev server`)
       }
-    })
-    // eslint-disable-next-line promise/prefer-await-to-then
-    .then(() => {
-      // eslint-disable-next-line promise/always-return
-      if (!cleanupStarted) {
-        cleanupStarted = true
-        const cleanupFinished = Promise.all(cleanupWork.map((cleanup) => cleanup()))
-        return cleanupFinished
-      }
-    })
-    // eslint-disable-next-line promise/prefer-await-to-then,promise/always-return
-    .then(() => {
-      process.exit(1)
+
+      return await cleanupBeforeExit({ exitCode: 1 })
     })
   ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) => {
-    process.on(signal, async () => {
-      if (!cleanupStarted) {
-        // eslint-disable-next-line no-unused-vars
-        const cleanupFinished = await Promise.all(cleanupWork.map((cleanup) => cleanup()))
-        cleanupStarted = true
-      }
-
-      commandProcess.kill('SIGTERM', { forceKillAfterTimeout: 500 })
-      process.exit()
-    })
+    process.on(signal, async () => await cleanupBeforeExit({}))
   })
 
   return commandProcess
