@@ -10,8 +10,7 @@ const { GraphQL, InternalConsole, OneGraphClient } = require('netlify-onegraph-i
 const { NetlifyGraph } = require('netlify-onegraph-internal')
 
 // eslint-disable-next-line no-unused-vars
-const { StateConfig, USER_AGENT, chalk, error, log, warn } = require('../../utils')
-const { watchDebounced } = require('../functions/watcher')
+const { StateConfig, USER_AGENT, chalk, error, log, warn, watchDebounced } = require('../../utils')
 
 const {
   generateFunctionsFile,
@@ -114,7 +113,7 @@ const monitorCLISessionEvents = (input) => {
   const helper = async () => {
     if (shouldClose) {
       clearTimeout(handle)
-      onClose()
+      onClose && onClose()
     }
 
     const next = await OneGraphClient.fetchCliSessionEvents({ appId, authToken: netlifyToken, sessionId })
@@ -465,7 +464,7 @@ const startOneGraphCLISession = async (input) => {
   const enabledServices = []
   const schema = await OneGraphClient.fetchOneGraphSchema(site.id, enabledServices)
 
-  monitorOperationFile({
+  const opsFileWatcher = monitorOperationFile({
     netlifyGraphConfig,
     onChange: async (filePath) => {
       log('NetlifyGraph operation file changed at', filePath, 'updating function library...')
@@ -495,7 +494,7 @@ const startOneGraphCLISession = async (input) => {
     },
   })
 
-  monitorCLISessionEvents({
+  const cliEventsCloseFn = monitorCLISessionEvents({
     appId: site.id,
     netlifyToken,
     netlifyGraphConfig,
@@ -514,10 +513,13 @@ const startOneGraphCLISession = async (input) => {
     onError: (fetchEventError) => {
       error(`Netlify Graph upstream error: ${fetchEventError}`)
     },
-    onClose: () => {
-      log('Netlify Graph upstream closed')
-    },
   })
+
+  return async function unregisterWatchers() {
+    const watcher = await opsFileWatcher
+    watcher.close()
+    cliEventsCloseFn()
+  }
 }
 
 /**

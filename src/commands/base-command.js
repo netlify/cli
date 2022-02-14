@@ -1,4 +1,5 @@
 // @ts-check
+const events = require('events')
 const process = require('process')
 const { format } = require('util')
 
@@ -28,6 +29,7 @@ const {
   pollForToken,
   sortOptions,
   track,
+  watchDebounced,
 } = require('../utils')
 
 // Netlify CLI client id. Lives in bot@netlify.com
@@ -118,6 +120,11 @@ class BaseCommand extends Command {
           // @ts-ignore cannot type actionCommand as BaseCommand
           await this.init(actionCommand)
           debug(`${name}:preAction`)('end')
+        })
+        .hook('postAction', async () => {
+          if (this.configWatcherHandle) {
+            await this.configWatcherHandle.close()
+          }
         })
     )
   }
@@ -430,6 +437,24 @@ class BaseCommand extends Command {
     const globalConfig = await getGlobalConfig()
     const { NetlifyAPI } = await jsClient
 
+    const configWatcher = new events.EventEmitter()
+
+    // Only set up a watcher if we know the config path.
+    if (configPath) {
+      const configWatcherHandle = await watchDebounced(configPath, {
+        depth: 1,
+        onChange: async () => {
+          const { config: newConfig } = await actionCommand.getConfig({ cwd, state, token, ...apiUrlOpts })
+
+          const normalizedNewConfig = normalizeConfig(newConfig)
+          configWatcher.emit('change', normalizedNewConfig)
+        },
+      })
+
+      // chokidar handler
+      this.configWatcherHandle = configWatcherHandle
+    }
+
     actionCommand.netlify = {
       // api methods
       api: new NetlifyAPI(token || '', apiOpts),
@@ -455,6 +480,8 @@ class BaseCommand extends Command {
       globalConfig,
       // state of current site dir
       state,
+      // netlify.toml file watcher
+      configWatcher,
     }
     debug(`${this.name()}:init`)('end')
   }

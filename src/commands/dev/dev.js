@@ -346,28 +346,44 @@ const dev = async (options, command) => {
   } else if (startNetlifyGraphWatcher) {
     const netlifyToken = await command.authenticate()
     await OneGraphCliClient.ensureAppForSite(netlifyToken, site.id)
-    const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options, settings })
 
-    let graphqlDocument = readGraphQLOperationsSourceFile(netlifyGraphConfig)
+    let stopWatchingCLISessions
 
-    if (!graphqlDocument || graphqlDocument.trim().length === 0) {
-      graphqlDocument = defaultExampleOperationsDoc
+    const createOrResumeSession = async function () {
+      const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options, settings })
+
+      let graphqlDocument = readGraphQLOperationsSourceFile(netlifyGraphConfig)
+
+      if (!graphqlDocument || graphqlDocument.trim().length === 0) {
+        graphqlDocument = defaultExampleOperationsDoc
+      }
+
+      stopWatchingCLISessions = await startOneGraphCLISession({ netlifyGraphConfig, netlifyToken, site, state })
+
+      // Should be created by startOneGraphCLISession
+      const oneGraphSessionId = loadCLISession(state)
+
+      await persistNewOperationsDocForSession({
+        netlifyGraphConfig,
+        netlifyToken,
+        oneGraphSessionId,
+        operationsDoc: graphqlDocument,
+        siteId: site.id,
+        siteRoot: site.root,
+      })
+
+      return oneGraphSessionId
     }
 
-    await startOneGraphCLISession({ netlifyGraphConfig, netlifyToken, site, state })
-
-    // Should be created by startOneGraphCLISession
-    const oneGraphSessionId = loadCLISession(state)
-
-    await persistNewOperationsDocForSession({
-      netlifyGraphConfig,
-      netlifyToken,
-      oneGraphSessionId,
-      operationsDoc: graphqlDocument,
-      siteId: site.id,
-      siteRoot: site.root,
+    //
+    // Set up a handler for config changes.
+    command.netlify.configWatcher.on('change', (newConfig) => {
+      command.netlify.config = newConfig
+      stopWatchingCLISessions()
+      createOrResumeSession()
     })
 
+    const oneGraphSessionId = await createOrResumeSession()
     const cleanupSession = () => markCliSessionInactive({ netlifyToken, sessionId: oneGraphSessionId, siteId: site.id })
 
     cleanupWork.push(cleanupSession)
