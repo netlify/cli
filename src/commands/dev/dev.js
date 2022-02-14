@@ -146,9 +146,9 @@ const runCommand = (command, env = {}) => {
 
       return await cleanupBeforeExit({ exitCode: 1 })
     })
-    ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) => {
-      process.on(signal, async () => await cleanupBeforeExit({}))
-    })
+  ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) => {
+    process.on(signal, async () => await cleanupBeforeExit({}))
+  })
 
   return commandProcess
 }
