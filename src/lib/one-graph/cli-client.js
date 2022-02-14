@@ -371,6 +371,7 @@ const upsertMergeCLISessionMetadata = async ({ netlifyToken, newMetadata, oneGra
 
   const detectedMetadata = detectLocalCLISessionMetadata({ siteRoot })
 
+  // @ts-ignore
   const finalMetadata = { ...metadata, ...detectedMetadata, ...newMetadata }
   return OneGraphClient.updateCLISessionMetadata(netlifyToken, siteId, oneGraphSessionId, finalMetadata)
 }
