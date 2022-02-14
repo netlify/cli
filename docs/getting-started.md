@@ -10,7 +10,7 @@ This guide will walk you through installing and creating your first site with th
 
 Lets get rolling with the Netlify CLI.
 
-1. **Install the CLI locally**
+1. **Install the CLI globally**
 
    ```bash
    npm install netlify-cli -g

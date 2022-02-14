@@ -8,7 +8,7 @@ const {
   refetchAndGenerateFromOneGraph,
 } = require('../../lib/one-graph/cli-client')
 const { buildSchema, getNetlifyGraphConfig, readGraphQLSchemaFile } = require('../../lib/one-graph/cli-netlify-graph')
-const { chalk, error, warn } = require('../../utils')
+const { chalk, error, log, warn } = require('../../utils')
 
 /**
  * Creates the `netlify graph:pull` command
@@ -31,12 +31,14 @@ const graphPull = async (options, command) => {
   const netlifyToken = await command.authenticate()
   const siteId = site.id
 
-  await refetchAndGenerateFromOneGraph({ netlifyGraphConfig, netlifyToken, state, siteId })
+  await refetchAndGenerateFromOneGraph({ logger: log, netlifyGraphConfig, netlifyToken, state, siteId })
 
   const oneGraphSessionId = loadCLISession(state)
 
   if (!oneGraphSessionId) {
-    warn('No local Netlify Graph session found, skipping command queue drain')
+    warn(
+      'No local Netlify Graph session found, skipping command queue drain. Create a new session by running `netlify graph:edit`.',
+    )
     return
   }
 
