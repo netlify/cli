@@ -39,8 +39,8 @@ const graphHandler = async (userOperationName, options, command) => {
     error(`Failed to parse Netlify GraphQL schema`)
   }
 
-  let operationName
-  if (!userOperationName) {
+  let operationName = userOperationName
+  if (!operationName) {
     try {
       let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
       if (currentOperationsDoc.trim().length === 0) {
