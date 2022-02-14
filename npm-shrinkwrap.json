@@ -61,7 +61,7 @@
         "hasbin": "^1.2.3",
         "hasha": "^5.2.2",
         "http-proxy": "^1.18.0",
-        "http-proxy-middleware": "^2.0.3",
+        "http-proxy-middleware": "^2.0.0",
         "https-proxy-agent": "^5.0.0",
         "inquirer": "^6.5.1",
         "inquirer-autocomplete-prompt": "^1.0.1",
@@ -117,7 +117,7 @@
         "uuid": "^8.0.0",
         "wait-port": "^0.2.2",
         "winston": "^3.2.1",
-        "write-file-atomic": "^4.0.0"
+        "write-file-atomic": "^4.0.1"
       },
       "bin": {
         "netlify": "bin/run",
@@ -23642,37 +23642,16 @@
       "integrity": "sha1-tSQ9jz7BqjXxNkYFvA0QNuMKtp8="
     },
     "node_modules/write-file-atomic": {
-      "version": "4.0.0",
-      "resolved": "https://registry.npmjs.org/write-file-atomic/-/write-file-atomic-4.0.0.tgz",
-      "integrity": "sha512-JhcWoKffJNF7ivO9yflBhc7tn3wKnokMUfWpBriM9yCXj4ePQnRPcWglBkkg1AHC8nsW/EfxwwhqsLtOy59djA==",
+      "version": "4.0.1",
+      "resolved": "https://registry.npmjs.org/write-file-atomic/-/write-file-atomic-4.0.1.tgz",
+      "integrity": "sha512-nSKUxgAbyioruk6hU87QzVbY279oYT6uiwgDoujth2ju4mJ+TZau7SQBhtbTmUyuNYTuXnSyRn66FV0+eCgcrQ==",
       "dependencies": {
         "imurmurhash": "^0.1.4",
-        "is-typedarray": "^1.0.0",
-        "signal-exit": "^3.0.2",
-        "typedarray-to-buffer": "^4.0.0"
+        "signal-exit": "^3.0.7"
       },
       "engines": {
         "node": "^12.13.0 || ^14.15.0 || >=16"
       }
-    },
-    "node_modules/write-file-atomic/node_modules/typedarray-to-buffer": {
-      "version": "4.0.0",
-      "resolved": "https://registry.npmjs.org/typedarray-to-buffer/-/typedarray-to-buffer-4.0.0.tgz",
-      "integrity": "sha512-6dOYeZfS3O9RtRD1caom0sMxgK59b27+IwoNy8RDPsmslSGOyU+mpTamlaIW7aNKi90ZQZ9DFaZL3YRoiSCULQ==",
-      "funding": [
-        {
-          "type": "github",
-          "url": "https://github.com/sponsors/feross"
-        },
-        {
-          "type": "patreon",
-          "url": "https://www.patreon.com/feross"
-        },
-        {
-          "type": "consulting",
-          "url": "https://feross.org/support"
-        }
-      ]
     },
     "node_modules/ws": {
       "version": "7.5.6",
@@ -41431,21 +41410,12 @@
       "integrity": "sha1-tSQ9jz7BqjXxNkYFvA0QNuMKtp8="
     },
     "write-file-atomic": {
-      "version": "4.0.0",
-      "resolved": "https://registry.npmjs.org/write-file-atomic/-/write-file-atomic-4.0.0.tgz",
-      "integrity": "sha512-JhcWoKffJNF7ivO9yflBhc7tn3wKnokMUfWpBriM9yCXj4ePQnRPcWglBkkg1AHC8nsW/EfxwwhqsLtOy59djA==",
+      "version": "4.0.1",
+      "resolved": "https://registry.npmjs.org/write-file-atomic/-/write-file-atomic-4.0.1.tgz",
+      "integrity": "sha512-nSKUxgAbyioruk6hU87QzVbY279oYT6uiwgDoujth2ju4mJ+TZau7SQBhtbTmUyuNYTuXnSyRn66FV0+eCgcrQ==",
       "requires": {
         "imurmurhash": "^0.1.4",
-        "is-typedarray": "^1.0.0",
-        "signal-exit": "^3.0.2",
-        "typedarray-to-buffer": "^4.0.0"
-      },
-      "dependencies": {
-        "typedarray-to-buffer": {
-          "version": "4.0.0",
-          "resolved": "https://registry.npmjs.org/typedarray-to-buffer/-/typedarray-to-buffer-4.0.0.tgz",
-          "integrity": "sha512-6dOYeZfS3O9RtRD1caom0sMxgK59b27+IwoNy8RDPsmslSGOyU+mpTamlaIW7aNKi90ZQZ9DFaZL3YRoiSCULQ=="
-        }
+        "signal-exit": "^3.0.7"
       }
     },
     "ws": {
