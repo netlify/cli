@@ -23,7 +23,13 @@ const {
 
 const { parse } = GraphQL
 const { defaultExampleOperationsDoc, extractFunctionsFromOperationDoc } = NetlifyGraph
-const { createPersistedQuery, ensureAppForSite, updateCLISessionMetadata } = OneGraphClient
+const {
+  createPersistedQuery,
+  ensureAppForSite,
+  executeMarkCliSessionActiveHeartbeat,
+  executeMarkCliSessionInactive,
+  updateCLISessionMetadata,
+} = OneGraphClient
 
 const internalConsole = {
   log,
@@ -50,13 +56,31 @@ InternalConsole.registerConsole(internalConsole)
  * @param {function} input.onEvents A function to call when CLI events are received and need to be processed
  * @param {string} input.sessionId The session id to monitor CLI events for
  * @param {StateConfig} input.state A function to call to set/get the current state of the local Netlify project
+ * @param {any} input.site The site object
  * @returns
  */
 const monitorCLISessionEvents = (input) => {
-  const { appId, netlifyGraphConfig, netlifyToken, onClose, onError, onEvents, sessionId, state } = input
+  const { appId, netlifyGraphConfig, netlifyToken, onClose, onError, onEvents, sessionId, site, state } = input
 
   const frequency = 5000
+  // 30 minutes
+  const defaultHeartbeatFrequency = 1_800_000
   let shouldClose = false
+  let nextMarkActiveHeartbeat = defaultHeartbeatFrequency
+
+  const markActiveHelper = async () => {
+    const fullSession = await OneGraphClient.fetchCliSession({ authToken: netlifyToken, appId, sessionId })
+    // @ts-ignore
+    const heartbeatIntervalms = fullSession.session.cliHeartbeatIntervalMs || defaultHeartbeatFrequency
+    nextMarkActiveHeartbeat = heartbeatIntervalms
+    const markCLISessionActiveResult = await executeMarkCliSessionActiveHeartbeat(netlifyToken, site.id, sessionId)
+    if (markCLISessionActiveResult.errors && markCLISessionActiveResult.errors.length !== 0) {
+      warn(`Failed to mark CLI session active: ${markCLISessionActiveResult.errors.join(', ')}`)
+    }
+    setTimeout(markActiveHelper, nextMarkActiveHeartbeat)
+  }
+
+  setTimeout(markActiveHelper, nextMarkActiveHeartbeat)
 
   const enabledServiceWatcher = async (innerNetlifyToken, siteId) => {
     const enabledServices = state.get('oneGraphEnabledServices') || ['onegraph']
@@ -370,6 +394,7 @@ const upsertMergeCLISessionMetadata = async ({ netlifyToken, newMetadata, oneGra
 
   const detectedMetadata = detectLocalCLISessionMetadata({ siteRoot })
 
+  // @ts-ignore
   const finalMetadata = { ...metadata, ...detectedMetadata, ...newMetadata }
   return OneGraphClient.updateCLISessionMetadata(netlifyToken, siteId, oneGraphSessionId, finalMetadata)
 }
@@ -428,19 +453,13 @@ const loadCLISession = (state) => state.get('oneGraphSessionId')
 const startOneGraphCLISession = async (input) => {
   const { netlifyGraphConfig, netlifyToken, site, state } = input
   OneGraphClient.ensureAppForSite(netlifyToken, site.id)
-  let oneGraphSessionId = loadCLISession(state)
-  if (!oneGraphSessionId) {
-    const sessionName = generateSessionName()
-    const sessionMetadata = {}
-    const oneGraphSession = await createCLISession({
-      netlifyToken,
-      siteId: site.id,
-      sessionName,
-      metadata: sessionMetadata,
-    })
-    state.set('oneGraphSessionId', oneGraphSession.id)
-    oneGraphSessionId = state.get('oneGraphSessionId')
-  }
+
+  const oneGraphSessionId = await ensureCLISession({
+    metadata: {},
+    netlifyToken,
+    site,
+    state,
+  })
 
   const enabledServices = []
   const schema = await OneGraphClient.fetchOneGraphSchema(site.id, enabledServices)
@@ -480,6 +499,7 @@ const startOneGraphCLISession = async (input) => {
     netlifyToken,
     netlifyGraphConfig,
     sessionId: oneGraphSessionId,
+    site,
     state,
     onEvents: async (events) => {
       for (const event of events) {
@@ -503,6 +523,20 @@ const startOneGraphCLISession = async (input) => {
 }
 
 /**
+ * Mark a session as inactive so it doesn't show up in any UI lists, and potentially becomes available to GC later
+ * @param {object} input
+ * @param {string} input.netlifyToken The (typically netlify) access token that is used for authentication, if any
+ * @param {string} input.siteId A function to call to set/get the current state of the local Netlify project
+ * @param {string} input.sessionId The session id to monitor CLI events for
+ */
+const markCliSessionInactive = async ({ netlifyToken, sessionId, siteId }) => {
+  const result = await executeMarkCliSessionInactive(netlifyToken, siteId, sessionId)
+  if (result.errors) {
+    warn(`Unable to mark CLI session ${sessionId} inactive: ${JSON.stringify(result.errors, null, 2)}`)
+  }
+}
+
+/**
  * Generate a session name that can be identified as belonging to the current checkout
  * @returns {string} The name of the session to create
  */
@@ -511,6 +545,70 @@ const generateSessionName = () => {
   const sessionName = `${userInfo.username}-${Date.now()}`
   log(`Generated Netlify Graph session name: ${sessionName}`)
   return sessionName
+}
+
+/**
+ * Ensures a cli session exists for the current checkout, or errors out if it doesn't and cannot create one.
+ */
+const ensureCLISession = async ({ metadata, netlifyToken, site, state }) => {
+  let oneGraphSessionId = loadCLISession(state)
+  let parentCliSessionId = null
+
+  // Validate that session still exists and we can access it
+  try {
+    if (oneGraphSessionId) {
+      const sessionEvents = await OneGraphClient.fetchCliSessionEvents({
+        appId: site.id,
+        authToken: netlifyToken,
+        sessionId: oneGraphSessionId,
+      })
+      if (sessionEvents.errors) {
+        warn(`Unable to fetch cli session: ${JSON.stringify(sessionEvents.errors, null, 2)}`)
+        log(`Creating new cli session`)
+        parentCliSessionId = oneGraphSessionId
+        oneGraphSessionId = null
+      }
+    }
+  } catch (fetchSessionError) {
+    warn(`Unable to fetch cli session events: ${JSON.stringify(fetchSessionError, null, 2)}`)
+    oneGraphSessionId = null
+  }
+
+  if (!oneGraphSessionId) {
+    // If we can't access the session in the state.json or it doesn't exist, create a new one
+    const sessionName = generateSessionName()
+    const detectedMetadata = detectLocalCLISessionMetadata({ siteRoot: site.root })
+    const newSessionMetadata = parentCliSessionId ? { parentCliSessionId } : {}
+    const sessionMetadata = {
+      ...detectedMetadata,
+      ...newSessionMetadata,
+      ...metadata,
+    }
+    const oneGraphSession = await createCLISession({
+      netlifyToken,
+      siteId: site.id,
+      sessionName,
+      metadata: sessionMetadata,
+    })
+    state.set('oneGraphSessionId', oneGraphSession.id)
+    oneGraphSessionId = state.get('oneGraphSessionId')
+  }
+
+  if (!oneGraphSessionId) {
+    error('Unable to create or access Netlify Graph CLI session')
+  }
+
+  const { errors: markCLISessionActiveErrors } = await executeMarkCliSessionActiveHeartbeat(
+    netlifyToken,
+    site.id,
+    oneGraphSessionId,
+  )
+
+  if (markCLISessionActiveErrors) {
+    warn(`Unable to mark cli session active: ${JSON.stringify(markCLISessionActiveErrors, null, 2)}`)
+  }
+
+  return oneGraphSessionId
 }
 
 const OneGraphCliClient = {
@@ -524,10 +622,12 @@ const OneGraphCliClient = {
 module.exports = {
   OneGraphCliClient,
   createCLISession,
+  ensureCLISession,
   extractFunctionsFromOperationDoc,
   handleCliSessionEvent,
   generateSessionName,
   loadCLISession,
+  markCliSessionInactive,
   monitorCLISessionEvents,
   persistNewOperationsDocForSession,
   refetchAndGenerateFromOneGraph,
