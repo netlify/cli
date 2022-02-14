@@ -14,6 +14,7 @@ const { startFunctionsServer } = require('../../lib/functions/server')
 const {
   OneGraphCliClient,
   loadCLISession,
+  markCliSessionInactive,
   persistNewOperationsDocForSession,
   startOneGraphCLISession,
 } = require('../../lib/one-graph/cli-client')
@@ -79,6 +80,13 @@ const isNonExistingCommandError = ({ command, error: commandError }) => {
 }
 
 /**
+ * @type {(() => Promise<void>)[]} - array of functions to run before the process exits
+ */
+const cleanupWork = []
+
+let cleanupStarted = false
+
+/**
  * Run a command and pipe stdout, stderr and stdin
  * @param {string} command
  * @param {NodeJS.ProcessEnv} env
@@ -100,27 +108,47 @@ const runCommand = (command, env = {}) => {
 
   // we can't try->await->catch since we don't want to block on the framework server which
   // is a long running process
-  // eslint-disable-next-line promise/catch-or-return,promise/prefer-await-to-then
-  commandProcess.then(async () => {
-    const result = await commandProcess
-    const [commandWithoutArgs] = command.split(' ')
-    // eslint-disable-next-line promise/always-return
-    if (result.failed && isNonExistingCommandError({ command: commandWithoutArgs, error: result })) {
-      log(
-        NETLIFYDEVERR,
-        `Failed running command: ${command}. Please verify ${chalk.magenta(`'${commandWithoutArgs}'`)} exists`,
-      )
-    } else {
-      const errorMessage = result.failed
-        ? `${NETLIFYDEVERR} ${result.shortMessage}`
-        : `${NETLIFYDEVWARN} "${command}" exited with code ${result.exitCode}`
+  // eslint-disable-next-line promise/catch-or-return
+  commandProcess
+    // eslint-disable-next-line promise/prefer-await-to-then
+    .then(async () => {
+      const result = await commandProcess
+      const [commandWithoutArgs] = command.split(' ')
+      // eslint-disable-next-line promise/always-return
+      if (result.failed && isNonExistingCommandError({ command: commandWithoutArgs, error: result })) {
+        log(
+          NETLIFYDEVERR,
+          `Failed running command: ${command}. Please verify ${chalk.magenta(`'${commandWithoutArgs}'`)} exists`,
+        )
+      } else {
+        const errorMessage = result.failed
+          ? `${NETLIFYDEVERR} ${result.shortMessage}`
+          : `${NETLIFYDEVWARN} "${command}" exited with code ${result.exitCode}`
 
-      log(`${errorMessage}. Shutting down Netlify Dev server`)
-    }
-    process.exit(1)
-  })
+        log(`${errorMessage}. Shutting down Netlify Dev server`)
+      }
+    })
+    // eslint-disable-next-line promise/prefer-await-to-then
+    .then(() => {
+      // eslint-disable-next-line promise/always-return
+      if (!cleanupStarted) {
+        cleanupStarted = true
+        const cleanupFinished = Promise.all(cleanupWork.map((cleanup) => cleanup()))
+        return cleanupFinished
+      }
+    })
+    // eslint-disable-next-line promise/prefer-await-to-then,promise/always-return
+    .then(() => {
+      process.exit(1)
+    })
   ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) => {
-    process.on(signal, () => {
+    process.on(signal, async () => {
+      if (!cleanupStarted) {
+        // eslint-disable-next-line no-unused-vars
+        const cleanupFinished = await Promise.all(cleanupWork.map((cleanup) => cleanup()))
+        cleanupStarted = true
+      }
+
       commandProcess.kill('SIGTERM', { forceKillAfterTimeout: 500 })
       process.exit()
     })
@@ -336,11 +364,17 @@ const dev = async (options, command) => {
     const oneGraphSessionId = loadCLISession(state)
 
     await persistNewOperationsDocForSession({
+      netlifyGraphConfig,
       netlifyToken,
       oneGraphSessionId,
       operationsDoc: graphqlDocument,
       siteId: site.id,
+      siteRoot: site.root,
     })
+
+    const cleanupSession = () => markCliSessionInactive({ netlifyToken, sessionId: oneGraphSessionId, siteId: site.id })
+
+    cleanupWork.push(cleanupSession)
 
     const graphEditUrl = getGraphEditUrlBySiteId({ siteId: site.id, oneGraphSessionId })
 

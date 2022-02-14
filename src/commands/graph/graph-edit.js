@@ -1,13 +1,7 @@
 // @ts-check
 const gitRepoInfo = require('git-repo-info')
 
-const {
-  OneGraphCliClient,
-  createCLISession,
-  generateSessionName,
-  loadCLISession,
-  upsertMergeCLISessionMetadata,
-} = require('../../lib/one-graph/cli-client')
+const { OneGraphCliClient, ensureCLISession, upsertMergeCLISessionMetadata } = require('../../lib/one-graph/cli-client')
 const {
   defaultExampleOperationsDoc,
   getGraphEditUrlBySiteId,
@@ -48,13 +42,12 @@ const graphEdit = async (options, command) => {
 
   await ensureAppForSite(netlifyToken, siteId)
 
-  let oneGraphSessionId = loadCLISession(state)
-  if (!oneGraphSessionId) {
-    const sessionName = generateSessionName()
-    const oneGraphSession = await createCLISession({ netlifyToken, siteId: site.id, sessionName, metadata: {} })
-    state.set('oneGraphSessionId', oneGraphSession.id)
-    oneGraphSessionId = state.get('oneGraphSessionId')
-  }
+  const oneGraphSessionId = await ensureCLISession({
+    metadata: {},
+    netlifyToken,
+    site,
+    state,
+  })
 
   const { branch } = gitRepoInfo()
   const persistedDoc = await createPersistedQuery(netlifyToken, {
