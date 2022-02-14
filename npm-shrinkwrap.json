@@ -11,7 +11,7 @@
       "license": "MIT",
       "dependencies": {
         "@netlify/build": "^26.3.1",
-        "@netlify/config": "^17.0.8",
+        "@netlify/config": "^17.0.9",
         "@netlify/framework-info": "^9.0.0",
         "@netlify/local-functions-proxy": "^1.1.1",
         "@netlify/plugin-edge-handlers": "^3.0.6",
@@ -3467,9 +3467,9 @@
       }
     },
     "node_modules/@netlify/config": {
-      "version": "17.0.8",
-      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-17.0.8.tgz",
-      "integrity": "sha512-8yD5ZLpGNeFm7hiaAXv8vgi18ieQfFPw9PrO13QEiuIozyHkBR6NR1/A0FdHtPZoPD8SPBsoVm0/XmYBhBOnKA==",
+      "version": "17.0.9",
+      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-17.0.9.tgz",
+      "integrity": "sha512-qd7q2aiZVyO2Mou3ltR9sgSFckMU8E+YBwHOasyleH6EJjRIV3uuT/K4e3SSwB6k+f26MOHCjz+87ecN04/26A==",
       "dependencies": {
         "chalk": "^5.0.0",
         "cron-parser": "^4.1.0",
@@ -3485,7 +3485,7 @@
         "js-yaml": "^4.0.0",
         "map-obj": "^5.0.0",
         "netlify": "^11.0.0",
-        "netlify-headers-parser": "^6.0.1",
+        "netlify-headers-parser": "^6.0.2",
         "netlify-redirect-parser": "^13.0.2",
         "omit.js": "^2.0.2",
         "p-locate": "^6.0.0",
@@ -3540,18 +3540,18 @@
       }
     },
     "node_modules/@netlify/config/node_modules/execa": {
-      "version": "6.0.0",
-      "resolved": "https://registry.npmjs.org/execa/-/execa-6.0.0.tgz",
-      "integrity": "sha512-m4wU9j4Z9nXXoqT8RSfl28JSwmMNLFF69OON8H/lL3NeU0tNpGz313bcOfYoBBHokB0dC2tMl3VUcKgHELhL2Q==",
+      "version": "6.1.0",
+      "resolved": "https://registry.npmjs.org/execa/-/execa-6.1.0.tgz",
+      "integrity": "sha512-QVWlX2e50heYJcCPG0iWtf8r0xjEYfz/OYLGDYH+IyjWezzPNxz63qNFOu0l4YftGWuizFVZHHs8PrLU5p2IDA==",
       "dependencies": {
         "cross-spawn": "^7.0.3",
         "get-stream": "^6.0.1",
         "human-signals": "^3.0.1",
         "is-stream": "^3.0.0",
         "merge-stream": "^2.0.0",
-        "npm-run-path": "^5.0.1",
+        "npm-run-path": "^5.1.0",
         "onetime": "^6.0.0",
-        "signal-exit": "^3.0.5",
+        "signal-exit": "^3.0.7",
         "strip-final-newline": "^3.0.0"
       },
       "engines": {
@@ -26556,9 +26556,9 @@
       }
     },
     "@netlify/config": {
-      "version": "17.0.8",
-      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-17.0.8.tgz",
-      "integrity": "sha512-8yD5ZLpGNeFm7hiaAXv8vgi18ieQfFPw9PrO13QEiuIozyHkBR6NR1/A0FdHtPZoPD8SPBsoVm0/XmYBhBOnKA==",
+      "version": "17.0.9",
+      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-17.0.9.tgz",
+      "integrity": "sha512-qd7q2aiZVyO2Mou3ltR9sgSFckMU8E+YBwHOasyleH6EJjRIV3uuT/K4e3SSwB6k+f26MOHCjz+87ecN04/26A==",
       "requires": {
         "chalk": "^5.0.0",
         "cron-parser": "^4.1.0",
@@ -26574,7 +26574,7 @@
         "js-yaml": "^4.0.0",
         "map-obj": "^5.0.0",
         "netlify": "^11.0.0",
-        "netlify-headers-parser": "^6.0.1",
+        "netlify-headers-parser": "^6.0.2",
         "netlify-redirect-parser": "^13.0.2",
         "omit.js": "^2.0.2",
         "p-locate": "^6.0.0",
@@ -26605,18 +26605,18 @@
           "integrity": "sha512-/veY75JbMK4j1yjvuUxuVsiS/hr/4iHs9FTT6cgTexxdE0Ly/glccBAkloH/DofkjRbZU3bnoj38mOmhkZ0lHw=="
         },
         "execa": {
-          "version": "6.0.0",
-          "resolved": "https://registry.npmjs.org/execa/-/execa-6.0.0.tgz",
-          "integrity": "sha512-m4wU9j4Z9nXXoqT8RSfl28JSwmMNLFF69OON8H/lL3NeU0tNpGz313bcOfYoBBHokB0dC2tMl3VUcKgHELhL2Q==",
+          "version": "6.1.0",
+          "resolved": "https://registry.npmjs.org/execa/-/execa-6.1.0.tgz",
+          "integrity": "sha512-QVWlX2e50heYJcCPG0iWtf8r0xjEYfz/OYLGDYH+IyjWezzPNxz63qNFOu0l4YftGWuizFVZHHs8PrLU5p2IDA==",
           "requires": {
             "cross-spawn": "^7.0.3",
             "get-stream": "^6.0.1",
             "human-signals": "^3.0.1",
             "is-stream": "^3.0.0",
             "merge-stream": "^2.0.0",
-            "npm-run-path": "^5.0.1",
+            "npm-run-path": "^5.1.0",
             "onetime": "^6.0.0",
-            "signal-exit": "^3.0.5",
+            "signal-exit": "^3.0.7",
             "strip-final-newline": "^3.0.0"
           }
         },
