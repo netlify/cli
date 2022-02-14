@@ -122,7 +122,9 @@ class BaseCommand extends Command {
           debug(`${name}:preAction`)('end')
         })
         .hook('postAction', async () => {
-          await this.configWatcherHandle.close()
+          if (this.configWatcherHandle) {
+            await this.configWatcherHandle.close()
+          }
         })
     )
   }
@@ -436,18 +438,22 @@ class BaseCommand extends Command {
     const { NetlifyAPI } = await jsClient
 
     const configWatcher = new events.EventEmitter()
-    const configWatcherHandle = await watchDebounced(configPath, {
-      depth: 1,
-      onChange: async () => {
-        const { config: newConfig } = await actionCommand.getConfig({ cwd, state, token, ...apiUrlOpts })
 
-        const normalizedNewConfig = normalizeConfig(newConfig)
-        configWatcher.emit('change', normalizedNewConfig)
-      },
-    })
+    // Only set up a watcher if we know the config path.
+    if (configPath) {
+      const configWatcherHandle = await watchDebounced(configPath, {
+        depth: 1,
+        onChange: async () => {
+          const { config: newConfig } = await actionCommand.getConfig({ cwd, state, token, ...apiUrlOpts })
 
-    // chokidar handler
-    this.configWatcherHandle = configWatcherHandle
+          const normalizedNewConfig = normalizeConfig(newConfig)
+          configWatcher.emit('change', normalizedNewConfig)
+        },
+      })
+
+      // chokidar handler
+      this.configWatcherHandle = configWatcherHandle
+    }
 
     actionCommand.netlify = {
       // api methods
