@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "9.4.0",
+  "version": "9.4.1",
   "author": "Netlify Inc.",
   "contributors": [
     "Abraham Schilling <AbrahamSchilling@gmail.com> (https://gitlab.com/n4bb12)",
@@ -116,6 +116,7 @@
     "Tim Trautman (timtrautman.com)",
     "Tom Dyson (https://wagtail.io/)",
     "Travis Horn <travis@travishorn.com> (https://twitter.com/horn_travis)",
+    "Try Ajitiono <ballinst@gmail.com> (https://twitter.com/Ajiballinst)",
     "Victor Dadfar",
     "Wayne (https://twitter.com/waynehoover_)",
     "XhmikosR <xhmikosr@gmail.com> (https://twitter.com/xhmikosr)",
