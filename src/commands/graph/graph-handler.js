@@ -1,6 +1,5 @@
 // @ts-check
 const inquirer = require('inquirer')
-const inquirerFuzzySearchPrompt = require('inquirer-search-list')
 const { GraphQL } = require('netlify-onegraph-internal')
 
 const {
@@ -15,9 +14,6 @@ const {
 const { error, log } = require('../../utils')
 
 const { parse } = GraphQL
-
-// @ts-ignore
-inquirer.registerPrompt('search-list', inquirerFuzzySearchPrompt)
 
 /**
  * Creates the `netlify graph:handler` command
@@ -60,19 +56,33 @@ const graphHandler = async (userOperationName, options, command) => {
 
       const perPage = 50
 
-      const { selectedOperation: selectedOperationName } = await inquirer.prompt([
-        {
-          type: 'search-list',
-          name: 'selectedOperation',
-          message: 'For which operation would you like to generate a handler?',
-          paginated: true,
-          pageSize: perPage,
-          choices: sorted.map((operation) => ({
-            name: `${operation.operationName} (${operation.kind})`,
-            value: operation.operationName,
-          })),
+      const allOperationChoices = sorted.map((operation) => ({
+        name: `${operation.operationName} (${operation.kind})`,
+        value: operation.operationName,
+      }))
+
+      const filterOperationNames = (operationChoices, input) => operationChoices.filter((operation) => (operation.value.toLowerCase().match(input.toLowerCase())))
+
+      // eslint-disable-next-line node/global-require
+      const inquirerAutocompletePrompt = require('inquirer-autocomplete-prompt')
+      /** multiple matching detectors, make the user choose */
+      inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
+
+      const { selectedOperationName } = await inquirer.prompt({
+        name: 'selectedOperationName',
+        message: `For which operation would you like to generate a handler?`,
+        type: 'autocomplete',
+        pageSize: perPage,
+        source(_, input) {
+          if (!input || input === '') {
+            return allOperationChoices
+          }
+
+          const filteredChoices = filterOperationNames(allOperationChoices, input)
+          // only show filtered results
+          return filteredChoices
         },
-      ])
+      })
 
       if (selectedOperationName) {
         operationName = selectedOperationName
