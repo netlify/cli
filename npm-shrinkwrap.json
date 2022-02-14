@@ -81,7 +81,7 @@
         "minimist": "^1.2.5",
         "multiparty": "^4.2.1",
         "netlify": "^11.0.0",
-        "netlify-headers-parser": "^6.0.1",
+        "netlify-headers-parser": "^6.0.2",
         "netlify-onegraph-internal": "0.0.50",
         "netlify-redirect-parser": "^13.0.2",
         "netlify-redirector": "^0.2.1",
@@ -17122,18 +17122,59 @@
       }
     },
     "node_modules/netlify-headers-parser": {
-      "version": "6.0.1",
-      "resolved": "https://registry.npmjs.org/netlify-headers-parser/-/netlify-headers-parser-6.0.1.tgz",
-      "integrity": "sha512-4S1WBAe7M5QwB4OZ1rq4bw2hEwhP1G4nCk2OCD7zkTQgVoWUGzgjmn2vuTaDPuoj0s26sfTLD4Es+cPHN9m/+A==",
+      "version": "6.0.2",
+      "resolved": "https://registry.npmjs.org/netlify-headers-parser/-/netlify-headers-parser-6.0.2.tgz",
+      "integrity": "sha512-ahDNi7R+Io4iMylyFrOfRUcBUELrXCT0hNVdqPKTHhH917NHiDCH69f6IhhqbzSaZ2/zGFPBrxA3FzJ48yXs3Q==",
       "dependencies": {
-        "escape-string-regexp": "^4.0.0",
-        "is-plain-obj": "^3.0.0",
-        "map-obj": "^4.2.1",
-        "path-exists": "^4.0.0",
+        "escape-string-regexp": "^5.0.0",
+        "is-plain-obj": "^4.0.0",
+        "map-obj": "^5.0.0",
+        "path-exists": "^5.0.0",
         "toml": "^3.0.0"
       },
       "engines": {
         "node": "^12.20.0 || ^14.14.0 || >=16.0.0"
+      }
+    },
+    "node_modules/netlify-headers-parser/node_modules/escape-string-regexp": {
+      "version": "5.0.0",
+      "resolved": "https://registry.npmjs.org/escape-string-regexp/-/escape-string-regexp-5.0.0.tgz",
+      "integrity": "sha512-/veY75JbMK4j1yjvuUxuVsiS/hr/4iHs9FTT6cgTexxdE0Ly/glccBAkloH/DofkjRbZU3bnoj38mOmhkZ0lHw==",
+      "engines": {
+        "node": ">=12"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/sindresorhus"
+      }
+    },
+    "node_modules/netlify-headers-parser/node_modules/is-plain-obj": {
+      "version": "4.0.0",
+      "resolved": "https://registry.npmjs.org/is-plain-obj/-/is-plain-obj-4.0.0.tgz",
+      "integrity": "sha512-NXRbBtUdBioI73y/HmOhogw/U5msYPC9DAtGkJXeFcFWSFZw0mCUsPxk/snTuJHzNKA8kLBK4rH97RMB1BfCXw==",
+      "engines": {
+        "node": ">=12"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/sindresorhus"
+      }
+    },
+    "node_modules/netlify-headers-parser/node_modules/map-obj": {
+      "version": "5.0.0",
+      "resolved": "https://registry.npmjs.org/map-obj/-/map-obj-5.0.0.tgz",
+      "integrity": "sha512-2L3MIgJynYrZ3TYMriLDLWocz15okFakV6J12HXvMXDHui2x/zgChzg1u9mFFGbbGWE+GsLpQByt4POb9Or+uA==",
+      "engines": {
+        "node": "^12.20.0 || ^14.13.1 || >=16.0.0"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/sindresorhus"
+      }
+    },
+    "node_modules/netlify-headers-parser/node_modules/path-exists": {
+      "version": "5.0.0",
+      "resolved": "https://registry.npmjs.org/path-exists/-/path-exists-5.0.0.tgz",
+      "integrity": "sha512-RjhtfwJOxzcFmNOi6ltcbcu4Iu+FL3zEj83dk4kAS+fVpTxXLO1b38RvJgT/0QwvV/L3aY9TAnyv0EOqW4GoMQ==",
+      "engines": {
+        "node": "^12.20.0 || ^14.13.1 || >=16.0.0"
       }
     },
     "node_modules/netlify-onegraph-internal": {
@@ -36783,15 +36824,37 @@
       }
     },
     "netlify-headers-parser": {
-      "version": "6.0.1",
-      "resolved": "https://registry.npmjs.org/netlify-headers-parser/-/netlify-headers-parser-6.0.1.tgz",
-      "integrity": "sha512-4S1WBAe7M5QwB4OZ1rq4bw2hEwhP1G4nCk2OCD7zkTQgVoWUGzgjmn2vuTaDPuoj0s26sfTLD4Es+cPHN9m/+A==",
+      "version": "6.0.2",
+      "resolved": "https://registry.npmjs.org/netlify-headers-parser/-/netlify-headers-parser-6.0.2.tgz",
+      "integrity": "sha512-ahDNi7R+Io4iMylyFrOfRUcBUELrXCT0hNVdqPKTHhH917NHiDCH69f6IhhqbzSaZ2/zGFPBrxA3FzJ48yXs3Q==",
       "requires": {
-        "escape-string-regexp": "^4.0.0",
-        "is-plain-obj": "^3.0.0",
-        "map-obj": "^4.2.1",
-        "path-exists": "^4.0.0",
+        "escape-string-regexp": "^5.0.0",
+        "is-plain-obj": "^4.0.0",
+        "map-obj": "^5.0.0",
+        "path-exists": "^5.0.0",
         "toml": "^3.0.0"
+      },
+      "dependencies": {
+        "escape-string-regexp": {
+          "version": "5.0.0",
+          "resolved": "https://registry.npmjs.org/escape-string-regexp/-/escape-string-regexp-5.0.0.tgz",
+          "integrity": "sha512-/veY75JbMK4j1yjvuUxuVsiS/hr/4iHs9FTT6cgTexxdE0Ly/glccBAkloH/DofkjRbZU3bnoj38mOmhkZ0lHw=="
+        },
+        "is-plain-obj": {
+          "version": "4.0.0",
+          "resolved": "https://registry.npmjs.org/is-plain-obj/-/is-plain-obj-4.0.0.tgz",
+          "integrity": "sha512-NXRbBtUdBioI73y/HmOhogw/U5msYPC9DAtGkJXeFcFWSFZw0mCUsPxk/snTuJHzNKA8kLBK4rH97RMB1BfCXw=="
+        },
+        "map-obj": {
+          "version": "5.0.0",
+          "resolved": "https://registry.npmjs.org/map-obj/-/map-obj-5.0.0.tgz",
+          "integrity": "sha512-2L3MIgJynYrZ3TYMriLDLWocz15okFakV6J12HXvMXDHui2x/zgChzg1u9mFFGbbGWE+GsLpQByt4POb9Or+uA=="
+        },
+        "path-exists": {
+          "version": "5.0.0",
+          "resolved": "https://registry.npmjs.org/path-exists/-/path-exists-5.0.0.tgz",
+          "integrity": "sha512-RjhtfwJOxzcFmNOi6ltcbcu4Iu+FL3zEj83dk4kAS+fVpTxXLO1b38RvJgT/0QwvV/L3aY9TAnyv0EOqW4GoMQ=="
+        }
       }
     },
     "netlify-onegraph-internal": {
