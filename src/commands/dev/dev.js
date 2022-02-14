@@ -351,12 +351,13 @@ const dev = async (options, command) => {
     }
 
     // Set up a handler for config changes.
-    command.netlify.configWatcher.on('change', () => {
+    command.netlify.configWatcher.on('change', (newConfig) => {
+      command.netlify.config = newConfig
       stopWatchingCLISessions()
       startWork()
     })
 
-    const graphEditUrl = startWork()
+    const graphEditUrl = await startWork()
 
     log(
       `Starting Netlify Graph session, to edit your library visit ${graphEditUrl} or run \`netlify graph:edit\` in another tab`,

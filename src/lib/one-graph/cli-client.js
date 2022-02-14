@@ -90,7 +90,7 @@ const monitorCLISessionEvents = (input) => {
   const helper = async () => {
     if (shouldClose) {
       clearTimeout(handle)
-      onClose()
+      onClose && onClose()
     }
 
     const next = await OneGraphClient.fetchCliSessionEvents({ appId, authToken: netlifyToken, sessionId })
@@ -493,9 +493,6 @@ const startOneGraphCLISession = async (input) => {
     },
     onError: (fetchEventError) => {
       error(`Netlify Graph upstream error: ${fetchEventError}`)
-    },
-    onClose: () => {
-      log('Netlify Graph upstream closed')
     },
   })
 
