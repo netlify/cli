@@ -495,7 +495,7 @@ const startOneGraphCLISession = async (input) => {
     },
   })
 
-  return async () => {
+  return async function unregisterWatchers() {
     const watcher = await opsFileWatcher
     watcher.close()
     cliEventsCloseFn()
