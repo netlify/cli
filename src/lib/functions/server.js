@@ -108,7 +108,7 @@ const createHandler = function (options) {
       rawQuery,
     }
 
-    if (config && config.authlify && config.authlify.authlifyTokenId != null) {
+    if (config && config.netlifyGraphConfig && config.netlifyGraphConfig.authlifyTokenId != null) {
       // XXX(anmonteiro): this name is deprecated. Delete after 3/31/2022
       const jwt = generateNetlifyGraphJWT(config.netlifyGraphConfig)
       event.authlifyToken = jwt

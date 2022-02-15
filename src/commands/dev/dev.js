@@ -292,7 +292,7 @@ const startPollingForAPIAuthentication = async function (options) {
         process.env.NETLIFY_GRAPH_TOKEN = netlifyGraphJWT
       }
     } else {
-      delete config.authlify
+      delete config.netlifyGraphConfig
     }
 
     setTimeout(helper, frequency)
