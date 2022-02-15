@@ -218,7 +218,7 @@ const getNetlifyGraphConfig = async ({ command, options, settings }) => {
     (userSpecifiedConfig.moduleType && userSpecifiedConfig.moduleType.split(path.sep)) ||
     defaultFrameworkConfig.moduleType
   const language =
-    (userSpecifiedConfig.language && userSpecifiedConfig.language.split(path.sep)) || autodetectedLanguage
+    (userSpecifiedConfig.language && userSpecifiedConfig.language) || autodetectedLanguage
   const webhookBasePath =
     (userSpecifiedConfig.webhookBasePath && userSpecifiedConfig.webhookBasePath.split(path.sep)) ||
     defaultFrameworkConfig.webhookBasePath
