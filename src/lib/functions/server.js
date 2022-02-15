@@ -1,6 +1,4 @@
 // @ts-check
-const process = require('process')
-
 const jwtDecode = require('jwt-decode')
 
 const {
@@ -47,50 +45,8 @@ const buildClientContext = function (headers) {
   }
 }
 
-const startPollingForAPIAuthentication = async function (options) {
-  const { api, command, config, site, siteInfo } = options
-  const frequency = 5000
-
-  const helper = async (maybeSiteData) => {
-    const siteData = await (maybeSiteData || api.getSite({ siteId: site.id }))
-    const authlifyTokenId = siteData && siteData.authlify_token_id
-
-    const existingAuthlifyTokenId = config && config.netlifyGraphConfig && config.netlifyGraphConfig.authlifyTokenId
-    if (authlifyTokenId && authlifyTokenId !== existingAuthlifyTokenId) {
-      const netlifyToken = await command.authenticate()
-      // Only inject the authlify config if a token ID exists. This prevents
-      // calling command.authenticate() (which opens a browser window) if the
-      // user hasn't enabled API Authentication
-      const netlifyGraphConfig = {
-        netlifyToken,
-        authlifyTokenId: siteData.authlify_token_id,
-        siteId: site.id,
-      }
-      config.netlifyGraphConfig = netlifyGraphConfig
-
-      const netlifyGraphJWT = generateNetlifyGraphJWT(netlifyGraphConfig)
-
-      if (netlifyGraphJWT != null) {
-        // XXX(anmonteiro): this name is deprecated. Delete after 3/31/2022
-        process.env.ONEGRAPH_AUTHLIFY_TOKEN = netlifyGraphJWT
-        process.env.NETLIFY_GRAPH_TOKEN = netlifyGraphJWT
-      }
-    } else {
-      delete config.authlify
-    }
-
-    setTimeout(helper, frequency)
-  }
-
-  await helper(siteInfo)
-}
-
 const createHandler = function (options) {
   const { config, functionsRegistry } = options
-
-  if (options.isGraphEnabled) {
-    startPollingForAPIAuthentication(options)
-  }
 
   return async function handler(request, response) {
     // handle proxies without path re-writes (http-servr)
