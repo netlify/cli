@@ -3,7 +3,9 @@ const { createGraphConfigWriteCommand } = require('./graph-config-write')
 const { createGraphEditCommand } = require('./graph-edit')
 const { createGraphHandlerCommand } = require('./graph-handler')
 const { createGraphLibraryCommand } = require('./graph-library')
-const { createGraphOperationCommand } = require('./graph-operations')
+const { createGraphOperationsCommand } = require('./graph-operations')
+const { createGraphOperationsImportCommand } = require('./graph-operations-import')
+const { createGraphOperationsShareCommand } = require('./graph-operations-share')
 const { createGraphPullCommand } = require('./graph-pull')
 
 /**
@@ -25,7 +27,9 @@ const createGraphCommand = (program) => {
   createGraphEditCommand(program)
   createGraphHandlerCommand(program)
   createGraphLibraryCommand(program)
-  createGraphOperationCommand(program)
+  createGraphOperationsCommand(program)
+  createGraphOperationsImportCommand(program)
+  createGraphOperationsShareCommand(program)
   createGraphPullCommand(program)
 
   return program
