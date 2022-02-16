@@ -7,12 +7,13 @@ import markdownMagic from 'markdown-magic'
 import stripAnsi from 'strip-ansi'
 
 import { generateCommandData } from './generate-command-data.mjs'
+import {normalizeBackslash} from "../../src/lib/path.js";
 
 const rootDir = fileURLToPath(new URL('../..', import.meta.url))
 const isWindows = platform === 'win32'
 const markdownFiles = [
-  isWindows ? join(rootDir, 'README.md').replace(/\\/g, '/') : join(rootDir, 'README.md'),
-  isWindows ? join(rootDir, 'docs/**/**.md').replace(/\\/g, '/') : join(rootDir, 'docs/**/**.md'),
+  isWindows ? normalizeBackslash(join(rootDir, 'README.md')) : join(rootDir, 'README.md'),
+  isWindows ? normalizeBackslash(join(rootDir, 'docs/**/**.md')) : join(rootDir, 'docs/**/**.md'),
 ]
 
 env.DOCS_GEN = 'TRUE'
