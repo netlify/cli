@@ -19,6 +19,7 @@ netlify dev
 
 - `command` (*string*) - command to run
 - `dir` (*string*) - dir with static files
+- `env` (*string*) - set the env files priority
 - `framework` (*string*) - framework to use. Defaults to #auto which automatically detects a framework
 - `functions` (*string*) - specify a functions folder to serve
 - `functionsPort` (*string*) - port of functions server

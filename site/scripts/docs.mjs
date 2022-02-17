@@ -1,6 +1,6 @@
 // @ts-check
 import { basename, join } from 'path'
-import { env, platform } from 'process'
+import { env } from 'process'
 import { fileURLToPath } from 'url'
 
 import markdownMagic from 'markdown-magic'
@@ -9,11 +9,7 @@ import stripAnsi from 'strip-ansi'
 import { generateCommandData } from './generate-command-data.mjs'
 
 const rootDir = fileURLToPath(new URL('../..', import.meta.url))
-const isWindows = platform === 'win32'
-const markdownFiles = [
-  isWindows ? join(rootDir, 'README.md').replace(/\\/g, '/') : join(rootDir, 'README.md'),
-  isWindows ? join(rootDir, 'docs/**/**.md').replace(/\\/g, '/') : join(rootDir, 'docs/**/**.md'),
-]
+const markdownFiles = [join(rootDir, 'README.md'), join(rootDir, 'docs/**/**.md')]
 
 env.DOCS_GEN = 'TRUE'
 
