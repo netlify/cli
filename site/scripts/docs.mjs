@@ -1,19 +1,18 @@
 // @ts-check
 import { basename, join } from 'path'
-import { env, platform } from 'process'
+import { env } from 'process'
 import { fileURLToPath } from 'url'
 
 import markdownMagic from 'markdown-magic'
 import stripAnsi from 'strip-ansi'
 
-import { generateCommandData } from './generate-command-data.mjs'
 import {normalizeBackslash} from "../../src/lib/path.js";
 
-const rootDir = fileURLToPath(new URL('../..', import.meta.url))
-const isWindows = platform === 'win32'
-const markdownFiles = [
-  isWindows ? normalizeBackslash(join(rootDir, 'README.md')) : join(rootDir, 'README.md'),
-  isWindows ? normalizeBackslash(join(rootDir, 'docs/**/**.md')) : join(rootDir, 'docs/**/**.md'),
+import { generateCommandData } from './generate-command-data.mjs'
+
+const rootDir = normalizeBackslash(fileURLToPath(new URL('../..', import.meta.url)))
+const markdownFiles = [normalizeBackslash(join(rootDir, 'README.md')),
+  normalizeBackslash(join(rootDir, 'docs/**/**.md')),
 ]
 
 env.DOCS_GEN = 'TRUE'
