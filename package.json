@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "9.6.4",
+  "version": "9.6.5",
   "author": "Netlify Inc.",
   "contributors": [
     "Abraham Schilling <AbrahamSchilling@gmail.com> (https://gitlab.com/n4bb12)",
@@ -46,6 +46,7 @@
     "Gergely Nemeth (https://twitter.com/nthgergo)",
     "HonkingGoose",
     "Ian Martorell <ianmartorell@gmail.com>",
+    "Ibrahima",
     "Jacob Schatz",
     "Jake Jarvis <jake@jarv.is> (https://twitter.com/jakejarvis)",
     "Jakob Warkotsch <j.warkotsch@gmail.com>",
