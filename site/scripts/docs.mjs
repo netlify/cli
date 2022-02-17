@@ -1,5 +1,5 @@
 // @ts-check
-import { basename, join } from 'path'
+import { basename } from 'path'
 import { env } from 'process'
 import { fileURLToPath } from 'url'
 
@@ -11,10 +11,7 @@ import { normalizeBackslash } from '../../src/lib/path.js'
 import { generateCommandData } from './generate-command-data.mjs'
 
 const rootDir = normalizeBackslash(fileURLToPath(new URL('../..', import.meta.url)))
-const markdownFiles = [
-  normalizeBackslash(join(rootDir, 'README.md')),
-  normalizeBackslash(join(rootDir, 'docs/**/**.md')),
-]
+const markdownFiles = [`${rootDir}/README.md`, `${rootDir}/docs/**/**.md`]
 
 env.DOCS_GEN = 'TRUE'
 
