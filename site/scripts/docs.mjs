@@ -6,12 +6,13 @@ import { fileURLToPath } from 'url'
 import markdownMagic from 'markdown-magic'
 import stripAnsi from 'strip-ansi'
 
-import {normalizeBackslash} from "../../src/lib/path.js";
+import { normalizeBackslash } from '../../src/lib/path.js'
 
 import { generateCommandData } from './generate-command-data.mjs'
 
 const rootDir = normalizeBackslash(fileURLToPath(new URL('../..', import.meta.url)))
-const markdownFiles = [normalizeBackslash(join(rootDir, 'README.md')),
+const markdownFiles = [
+  normalizeBackslash(join(rootDir, 'README.md')),
   normalizeBackslash(join(rootDir, 'docs/**/**.md')),
 ]
 
