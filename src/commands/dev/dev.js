@@ -326,7 +326,7 @@ const dev = async (options, command) => {
     )
   }
   if (options.env) {
-    devConfig.envPriority = options.env.split(' ')
+    devConfig.envFiles = options.env.split(' ')
   }
   await injectEnvVariables({ devConfig, env: command.netlify.cachedConfig.env, site })
 

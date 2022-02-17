@@ -141,7 +141,7 @@ const getEnvSourceName = (source) => {
 // dot-env files and the process itself, and injects into `process.env`.
 const injectEnvVariables = async ({ devConfig, env, site }) => {
   const environment = new Map(Object.entries(env))
-  const dotEnvFiles = await loadDotEnvFiles({ envPriority: devConfig.envPriority, projectDir: site.root })
+  const dotEnvFiles = await loadDotEnvFiles({ envFiles: devConfig.envFiles, projectDir: site.root })
 
   dotEnvFiles.forEach(({ env: fileEnv, file }) => {
     Object.keys(fileEnv).forEach((key) => {

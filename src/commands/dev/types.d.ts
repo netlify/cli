@@ -18,5 +18,5 @@ export type DevConfig = {
     keyFile: string
     certFile: string
   },
-  envPriority?:string[]
+  envFiles?:string[]
 }
