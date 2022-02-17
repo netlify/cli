@@ -325,8 +325,7 @@ const dev = async (options, command) => {
       '--trafficMesh and -t are deprecated and will be removed in the near future. Please use --edgeHandlers or -e instead.',
     )
   }
-
-  await injectEnvVariables({ env: command.netlify.cachedConfig.env, site })
+  await injectEnvVariables({ devConfig, env: command.netlify.cachedConfig.env, site })
 
   const { addonsUrls, capabilities, siteUrl, timeouts } = await getSiteInformation({
     // inherited from base command --offline

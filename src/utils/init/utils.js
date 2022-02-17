@@ -198,6 +198,7 @@ const getNetlifyToml = ({
   #  command = "yarn start" # Command to start your dev server
   #  port = 3000 # Port that the dev server will be listening on
   #  publish = "dist" # Folder with the static content for _redirect file
+  #  env_priority = [ ".env", ".env.local", ".env.development", ".env.development.local" ]
 
   ## more info on configuring this file: https://www.netlify.com/docs/netlify-toml-reference/
 `

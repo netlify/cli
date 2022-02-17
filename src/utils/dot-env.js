@@ -8,8 +8,8 @@ const { isFileAsync } = require('../lib/fs')
 
 const { warn } = require('./command-helpers')
 
-const loadDotEnvFiles = async function ({ projectDir }) {
-  const response = await tryLoadDotEnvFiles({ projectDir })
+const loadDotEnvFiles = async function ({ envPriority, projectDir }) {
+  const response = await tryLoadDotEnvFiles({ projectDir, dotenvFiles: envPriority })
 
   const filesWithWarning = response.filter((el) => el.warning)
   filesWithWarning.forEach((el) => {
@@ -19,8 +19,9 @@ const loadDotEnvFiles = async function ({ projectDir }) {
   return response.filter((el) => el.file && el.env)
 }
 
-const tryLoadDotEnvFiles = async ({ projectDir }) => {
-  const dotenvFiles = ['.env', '.env.development']
+const defaultEnvPriority = ['.env', '.env.development', '.env.local', '.env.development.local']
+
+const tryLoadDotEnvFiles = async ({ projectDir, dotenvFiles = defaultEnvPriority }) => {
   const results = await Promise.all(
     dotenvFiles.map(async (file) => {
       const filepath = path.resolve(projectDir, file)
