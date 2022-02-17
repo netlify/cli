@@ -326,7 +326,7 @@ const dev = async (options, command) => {
     )
   }
   if (options.env) {
-    devConfig.envFiles = options.env.split(' ')
+    devConfig.envFiles = options.env
   }
   await injectEnvVariables({ devConfig, env: command.netlify.cachedConfig.env, site })
 
@@ -465,7 +465,7 @@ const createDevCommand = (program) => {
     .option('-o ,--offline', 'disables any features that require network access')
     .option('-l, --live', 'start a public live session', false)
     .option('--functionsPort <port>', 'port of functions server', (value) => Number.parseInt(value))
-    .option('-e, --env <env>', 'set the env files priority', false)
+    .option('-e, --env <env>', 'set the env files priority', (value) =>value.split(','))
     .addOption(
       new Option('--staticServerPort <port>', 'port of the static app server used when no framework is detected')
         .argParser((value) => Number.parseInt(value))
