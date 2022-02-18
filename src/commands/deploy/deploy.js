@@ -7,6 +7,7 @@ const { get } = require('dot-prop')
 const inquirer = require('inquirer')
 const isObject = require('lodash/isObject')
 const prettyjson = require('prettyjson')
+const { validate: uuidValidate } = require('uuid')
 
 const netlifyConfigPromise = import('@netlify/config')
 
@@ -302,6 +303,7 @@ const runDeploy = async ({
 }) => {
   let results
   let deployId
+
   try {
     if (deployToProduction) {
       await prepareProductionDeploy({ siteData, api })
@@ -462,6 +464,20 @@ const deploy = async (options, command) => {
   await command.authenticate(options.auth)
 
   let siteId = options.site || site.id
+
+  // replace site name by id if a match is found
+  if (options.site) {
+    const isSiteId = uuidValidate(options.site)
+    if (!isSiteId) {
+      const siteName = options.site
+      const matchingSites = await api.listSites({ options: { name: siteName, filter: 'all' } })
+      const matchedSite = matchingSites.find((el) => el.name === siteName)
+      if (matchedSite) {
+        siteId = matchedSite.id
+      }
+    }
+  }
+
   let siteData = {}
   if (siteId) {
     try {
@@ -669,7 +685,7 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
     .option('-o, --open', 'Open site after deploy', false)
     .option('-m, --message <message>', 'A short message to include in the deploy log')
     .option('-a, --auth <token>', 'Netlify auth token to deploy with', env.NETLIFY_AUTH_TOKEN)
-    .option('-s, --site <id>', 'A site ID to deploy to', env.NETLIFY_SITE_ID)
+    .option('-s, --site <name-or-id>', 'A site name or ID to deploy to', env.NETLIFY_SITE_ID)
     .option('--json', 'Output deployment data as JSON')
     .option('--timeout <number>', 'Timeout to wait for deployment to finish', (value) => Number.parseInt(value))
     .option('--trigger', 'Trigger a new build of your site on Netlify without uploading local files')
@@ -682,6 +698,7 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
     )
     .addExamples([
       'netlify deploy',
+      'netlify deploy --site my-first-site',
       'netlify deploy --prod',
       'netlify deploy --prod --open',
       'netlify deploy --prodIfUnlocked',
