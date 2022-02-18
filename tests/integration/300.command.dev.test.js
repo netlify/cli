@@ -261,7 +261,7 @@ testMatrix.forEach(({ args }) => {
   test(testName('should pass .env vars to function', args), async (t) => {
     await withSiteBuilder('site-with-env-files', async (builder) => {
       builder
-        .withNetlifyToml({ config: { env: { envFiles: ['.env.development', '.env'] } } })
+        .withNetlifyToml({ config: { env: { env_files: ['.env.development', '.env'] } } })
         .withEnvFile({ path: '.env.development', env: { TEST: 'FROM_ENV_DEV_FILE' } })
         .withEnvFile({ path: '.env', env: { TEST: 'FROM_ENV_FILE' } })
         .withFunction({
