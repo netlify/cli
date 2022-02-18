@@ -141,7 +141,7 @@ Netlify Dev will attempt to detect the site generator or build command that you 
   targetPort = 3000 # # The port for your application server, framework or site generator
   port = 8888 # The port that the netlify dev will be accessible on
   publish = "dist" # If you use a _redirect file, provide the path to your static content folder
-  env_files = [ ".env", ".env.development" ] # The env files to use in priority order
+  envFiles = [ ".env", ".env.development" ] # The env files to use in priority order
 ```
 
 Or you if your project is being detected incorrectly or positive by multiple
