@@ -122,6 +122,7 @@ Netlify Dev is meant to work with zero config for the majority of users, by usin
   jwtRolePath = "app_metadata.authorization.roles" # Object path we should look for role values for JWT based redirects
   autoLaunch = true # a Boolean value that determines if Netlify Dev launches the local server address in your browser
   # to start an https server instead of an http one, configure a certificate and key files
+  envFiles = [ ".env", ".env.development" ] # The env files to use in priority order
   [dev.https]
     certFile = "cert.pem" # path to the certificate file
     keyFile = "key.pem" # path to the private key file
