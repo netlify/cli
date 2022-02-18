@@ -283,5 +283,29 @@ testMatrix.forEach(({ args }) => {
       })
     })
   })
+  test(testName('should pass .env vars to function', args), async (t) => {
+    await withSiteBuilder('site-with-build-environment', async (builder) => {
+      builder
+        .withNetlifyToml({
+          config: { env: { env_files: ['.env.development', '.env'] }, functions: { directory: 'functions' } },
+        })
+        .withEnvFile({ path: '.env.development', env: { TEST: 'FROM_ENV_DEV_FILE' } })
+        .withEnvFile({ path: '.env', env: { TEST: 'FROM_ENV_FILE' } })
+        .withFunction({
+          path: 'env.js',
+          handler: async () => ({
+            statusCode: 200,
+            body: `${process.env.TEST}`,
+            metadata: { builder_function: true },
+          }),
+        })
+
+      await builder.buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async (server) => {
+        t.true(server.output.includes('Ignored .env file'))
+      })
+    })
+  })
 })
 /* eslint-enable require-await */
