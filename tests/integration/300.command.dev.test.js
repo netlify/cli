@@ -283,7 +283,7 @@ testMatrix.forEach(({ args }) => {
       })
     })
   })
-  test(testName('should pass .env vars to function', args), async (t) => {
+  test(testName('should use .env vars instead of .env.development vars', args), async (t) => {
     await withSiteBuilder('site-with-build-environment', async (builder) => {
       builder
         .withNetlifyToml({
