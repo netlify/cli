@@ -5,12 +5,11 @@ const { env } = require('process')
 
 const terminalLink = require('terminal-link')
 
-const { NETLIFYDEVERR, NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, log, warn } = require('../../utils')
+const { NETLIFYDEVERR, NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, log, warn, watchDebounced } = require('../../utils')
 const { getLogMessage } = require('../log')
 
 const { NetlifyFunction } = require('./netlify-function')
 const runtimes = require('./runtimes')
-const { watchDebounced } = require('./watcher')
 
 const ZIP_EXTENSION = '.zip'
 
