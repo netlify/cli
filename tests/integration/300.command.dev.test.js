@@ -262,7 +262,7 @@ testMatrix.forEach(({ args }) => {
     await withSiteBuilder('site-with-env-files', async (builder) => {
       builder
         .withNetlifyToml({
-          config: { env: { envFiles: ['.env.development', '.env'] }, functions: { directory: 'functions' } },
+          config: { dev: { envFiles: ['.env.development', '.env'] }, functions: { directory: 'functions' } },
         })
         .withEnvFile({ path: '.env.development', env: { TEST: 'FROM_ENV_DEV_FILE' } })
         .withEnvFile({ path: '.env', env: { TEST: 'FROM_ENV_FILE' } })
