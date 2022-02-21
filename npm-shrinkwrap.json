@@ -11,7 +11,7 @@
       "license": "MIT",
       "dependencies": {
         "@netlify/build": "^26.3.4",
-        "@netlify/config": "^17.0.10",
+        "@netlify/config": "^17.0.11",
         "@netlify/framework-info": "^9.0.2",
         "@netlify/local-functions-proxy": "^1.1.1",
         "@netlify/plugin-edge-handlers": "^3.0.6",
@@ -3110,9 +3110,9 @@
       }
     },
     "node_modules/@netlify/config": {
-      "version": "17.0.10",
-      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-17.0.10.tgz",
-      "integrity": "sha512-wplCI2Tbd6BIk4N99pKNn095vKhm+swkl6rDO9c8IRNrNLGj0vBp7e8lzURiwEXj9QmomoWTh+FJGenY5bZFFQ==",
+      "version": "17.0.11",
+      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-17.0.11.tgz",
+      "integrity": "sha512-4wrmtBxbyukHnXPqbk3wEoyIwShkQMh3wqyonvZiREWFLTuqizc4lo2kYfz3W/Hw2l6TOJHGvhK6/KZjwz+ASQ==",
       "dependencies": {
         "chalk": "^5.0.0",
         "cron-parser": "^4.1.0",
@@ -3129,7 +3129,7 @@
         "map-obj": "^5.0.0",
         "netlify": "^11.0.0",
         "netlify-headers-parser": "^6.0.2",
-        "netlify-redirect-parser": "^13.0.2",
+        "netlify-redirect-parser": "^13.0.3",
         "omit.js": "^2.0.2",
         "p-locate": "^6.0.0",
         "path-exists": "^5.0.0",
@@ -26547,9 +26547,9 @@
       }
     },
     "@netlify/config": {
-      "version": "17.0.10",
-      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-17.0.10.tgz",
-      "integrity": "sha512-wplCI2Tbd6BIk4N99pKNn095vKhm+swkl6rDO9c8IRNrNLGj0vBp7e8lzURiwEXj9QmomoWTh+FJGenY5bZFFQ==",
+      "version": "17.0.11",
+      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-17.0.11.tgz",
+      "integrity": "sha512-4wrmtBxbyukHnXPqbk3wEoyIwShkQMh3wqyonvZiREWFLTuqizc4lo2kYfz3W/Hw2l6TOJHGvhK6/KZjwz+ASQ==",
       "requires": {
         "chalk": "^5.0.0",
         "cron-parser": "^4.1.0",
@@ -26566,7 +26566,7 @@
         "map-obj": "^5.0.0",
         "netlify": "^11.0.0",
         "netlify-headers-parser": "^6.0.2",
-        "netlify-redirect-parser": "^13.0.2",
+        "netlify-redirect-parser": "^13.0.3",
         "omit.js": "^2.0.2",
         "p-locate": "^6.0.0",
         "path-exists": "^5.0.0",
