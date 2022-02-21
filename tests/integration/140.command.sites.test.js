@@ -37,8 +37,11 @@ const { createSitesFromTemplateCommand, fetchTemplates } = require('../../src/co
 /* eslint-enable import/order */
 const { withMockApi } = require('./utils/mock-api')
 
-test.afterEach(() => {
-  sinon.restore()
+test.beforeEach(() => {
+  gitMock.resetHistory()
+  getTemplatesStub.resetHistory()
+  createRepoStub.resetHistory()
+  jsonRenderSpy.resetHistory()
 })
 
 const siteInfo = {
@@ -70,7 +73,7 @@ const routes = [
   },
 ]
 
-test('netlify sites:create-template', async (t) => {
+test.serial('netlify sites:create-template', async (t) => {
   const inquirerStub = sinon.stub(inquirer, 'prompt').callsFake(() => Promise.resolve({ accountSlug: 'test-account' }))
 
   await withMockApi(routes, async ({ apiUrl }) => {
