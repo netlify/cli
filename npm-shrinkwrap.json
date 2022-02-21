@@ -10,7 +10,7 @@
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
-        "@netlify/build": "^26.3.4",
+        "@netlify/build": "^26.3.5",
         "@netlify/config": "^17.0.11",
         "@netlify/framework-info": "^9.0.2",
         "@netlify/local-functions-proxy": "^1.1.1",
@@ -2358,9 +2358,9 @@
       }
     },
     "node_modules/@netlify/build": {
-      "version": "26.3.4",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-26.3.4.tgz",
-      "integrity": "sha512-9IkibAaKrcbzzVIfu3B9Z12y8Tfs76f9wLA421zaDC66nqxr/VpS+mnaLXXkDezzW3jSX7sTYjux6Em/sxsH5w==",
+      "version": "26.3.5",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-26.3.5.tgz",
+      "integrity": "sha512-scMxcFn5fRPpwUwiTK5y6cK3TySaGX6aThbfLf/4X2X6Bad+oVOzyT+2ObwGAqBJdyZNelLTcsv60ndGak6iiA==",
       "dependencies": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^4.0.0",
@@ -2368,7 +2368,7 @@
         "@netlify/functions-utils": "^4.0.0",
         "@netlify/git-utils": "^4.0.0",
         "@netlify/plugin-edge-handlers": "^3.0.6",
-        "@netlify/plugins-list": "^6.11.0",
+        "@netlify/plugins-list": "^6.12.0",
         "@netlify/run-utils": "^4.0.0",
         "@netlify/zip-it-and-ship-it": "5.8.0",
         "@sindresorhus/slugify": "^2.0.0",
@@ -26082,9 +26082,9 @@
       }
     },
     "@netlify/build": {
-      "version": "26.3.4",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-26.3.4.tgz",
-      "integrity": "sha512-9IkibAaKrcbzzVIfu3B9Z12y8Tfs76f9wLA421zaDC66nqxr/VpS+mnaLXXkDezzW3jSX7sTYjux6Em/sxsH5w==",
+      "version": "26.3.5",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-26.3.5.tgz",
+      "integrity": "sha512-scMxcFn5fRPpwUwiTK5y6cK3TySaGX6aThbfLf/4X2X6Bad+oVOzyT+2ObwGAqBJdyZNelLTcsv60ndGak6iiA==",
       "requires": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^4.0.0",
@@ -26092,7 +26092,7 @@
         "@netlify/functions-utils": "^4.0.0",
         "@netlify/git-utils": "^4.0.0",
         "@netlify/plugin-edge-handlers": "^3.0.6",
-        "@netlify/plugins-list": "^6.11.0",
+        "@netlify/plugins-list": "^6.12.0",
         "@netlify/run-utils": "^4.0.0",
         "@netlify/zip-it-and-ship-it": "5.8.0",
         "@sindresorhus/slugify": "^2.0.0",
