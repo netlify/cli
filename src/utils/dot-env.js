@@ -19,7 +19,8 @@ const loadDotEnvFiles = async function ({ envFiles, projectDir }) {
   return response.filter((el) => el.file && el.env)
 }
 
-const defaultEnvFiles = ['.env', '.env.development']
+// in the user configuration, the order is highest to lowest
+const defaultEnvFiles = ['.env.development', '.env']
 
 const tryLoadDotEnvFiles = async ({ projectDir, dotenvFiles = defaultEnvFiles }) => {
   const results = await Promise.all(
@@ -41,7 +42,8 @@ const tryLoadDotEnvFiles = async ({ projectDir, dotenvFiles = defaultEnvFiles })
     }),
   )
 
-  return results.filter(Boolean)
+  // we return in order of lowest to highest priority
+  return results.filter(Boolean).reverse()
 }
 
 module.exports = { loadDotEnvFiles, tryLoadDotEnvFiles }
