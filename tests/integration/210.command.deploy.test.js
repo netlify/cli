@@ -68,7 +68,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
     })
   })
 
-  test.only('should deploy site by name', async (t) => {
+  test.serial('should deploy site by name', async (t) => {
     await withSiteBuilder('site-with-public-folder', async (builder) => {
       const content = '<h1>⊂◉‿◉つ</h1>'
       builder
