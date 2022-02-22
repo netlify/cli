@@ -123,7 +123,6 @@ Netlify Dev is meant to work with zero config for the majority of users, by usin
   autoLaunch = true # a Boolean value that determines if Netlify Dev launches the local server address in your browser
   envFiles = [".env.development", ".env"] # The env files to use, ordered by priority (left - highest, right - lowest)
   # to start an https server instead of an http one, configure a certificate and key files
-  envFiles = [ ".env", ".env.development" ] # The env files to use in priority order
   [dev.https]
     certFile = "cert.pem" # path to the certificate file
     keyFile = "key.pem" # path to the private key file
