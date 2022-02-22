@@ -17,5 +17,6 @@ export type DevConfig = {
   https?: {
     keyFile: string
     certFile: string
-  }
+  },
+  envFiles?:string[]
 }

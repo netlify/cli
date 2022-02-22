@@ -326,7 +326,7 @@ const dev = async (options, command) => {
     )
   }
 
-  await injectEnvVariables({ env: command.netlify.cachedConfig.env, site })
+  await injectEnvVariables({ devConfig, env: command.netlify.cachedConfig.env, site })
 
   const { addonsUrls, capabilities, siteUrl, timeouts } = await getSiteInformation({
     // inherited from base command --offline

@@ -258,5 +258,39 @@ testMatrix.forEach(({ args }) => {
       })
     })
   })
+
+  test(testName('should inject env vars based on [dev].envFiles file order', args), async (t) => {
+    await withSiteBuilder('site-with-env-files', async (builder) => {
+      builder
+        .withNetlifyToml({
+          config: {
+            dev: { envFiles: ['.env.production', '.env.development', '.env'] },
+            functions: { directory: 'functions' },
+          },
+        })
+        .withEnvFile({ path: '.env.production', env: { TEST: 'FROM_PRODUCTION_FILE' } })
+        .withEnvFile({
+          path: '.env.development',
+          env: { TEST: 'FROM_DEVELOPMENT_FILE', TEST2: 'FROM_DEVELOPMENT_FILE' },
+        })
+        .withEnvFile({ path: '.env', env: { TEST: 'FROM_DEFAULT_FILE', TEST2: 'FROM_DEFAULT_FILE' } })
+        .withFunction({
+          path: 'env.js',
+          handler: async () => ({
+            statusCode: 200,
+            body: `${process.env.TEST}__${process.env.TEST2}`,
+          }),
+        })
+
+      await builder.buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async (server) => {
+        const response = await got(`${server.url}/.netlify/functions/env`).text()
+        t.is(response, 'FROM_PRODUCTION_FILE__FROM_DEVELOPMENT_FILE')
+        t.true(server.output.includes('Ignored .env.development file'))
+        t.true(server.output.includes('Ignored .env file'))
+      })
+    })
+  })
 })
 /* eslint-enable require-await */
