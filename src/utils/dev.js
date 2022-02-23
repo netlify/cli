@@ -215,9 +215,17 @@ const generateNetlifyGraphJWT = ({ authlifyTokenId, netlifyToken, siteId }) => {
   )
 }
 
+const processOnExit = (fn) => {
+  const signals = ['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit']
+  signals.forEach((signal) => {
+    process.on(signal, fn)
+  })
+}
+
 module.exports = {
   getSiteInformation,
   injectEnvVariables,
   acquirePort,
   generateNetlifyGraphJWT,
+  processOnExit,
 }

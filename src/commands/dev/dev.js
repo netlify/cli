@@ -1,4 +1,5 @@
 // @ts-check
+const events = require('events')
 const path = require('path')
 const process = require('process')
 const { promisify } = require('util')
@@ -35,13 +36,17 @@ const {
   exit,
   generateNetlifyGraphJWT,
   getSiteInformation,
+  getToken,
   injectEnvVariables,
   log,
+  normalizeConfig,
   openBrowser,
+  processOnExit,
   startForwardProxy,
   startLiveTunnel,
   startProxy,
   warn,
+  watchDebounced,
 } = require('../../utils')
 
 const { createDevExecCommand } = require('./dev-exec')
@@ -147,9 +152,7 @@ const runCommand = (command, env = {}) => {
 
       return await cleanupBeforeExit({ exitCode: 1 })
     })
-  ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) => {
-    process.on(signal, async () => await cleanupBeforeExit({}))
-  })
+  processOnExit(async () => await cleanupBeforeExit({}))
 
   return commandProcess
 }
@@ -417,9 +420,31 @@ const dev = async (options, command) => {
       return oneGraphSessionId
     }
 
-    //
+    const configWatcher = new events.EventEmitter()
+
+    // Only set up a watcher if we know the config path.
+    const { configPath } = command.netlify.site
+    if (configPath) {
+      // chokidar handle
+      command.configWatcherHandle = await watchDebounced(configPath, {
+        depth: 1,
+        onChange: async () => {
+          const cwd = options.cwd || process.cwd()
+          const [token] = await getToken(options.auth)
+          const { config: newConfig } = await command.getConfig({ cwd, state, token, ...command.netlify.apiUrlOpts })
+
+          const normalizedNewConfig = normalizeConfig(newConfig)
+          configWatcher.emit('change', normalizedNewConfig)
+        },
+      })
+
+      processOnExit(async () => {
+        await command.configWatcherHandle.close()
+      })
+    }
+
     // Set up a handler for config changes.
-    command.netlify.configWatcher.on('change', (newConfig) => {
+    configWatcher.on('change', (newConfig) => {
       command.netlify.config = newConfig
       stopWatchingCLISessions()
       createOrResumeSession()
@@ -486,8 +511,10 @@ const createDevCommand = (program) => {
       'netlify dev',
       'netlify dev -d public',
       'netlify dev -c "hugo server -w" --targetPort 1313',
+      'netlify dev --graph',
       'BROWSER=none netlify dev # disable browser auto opening',
     ])
     .action(dev)
 }
+
 module.exports = { createDevCommand }
