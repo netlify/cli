@@ -529,7 +529,7 @@ const deploy = async (options, command) => {
     deployFolder,
     functionsFolder,
   })
-  const siteEnv = get(siteData, 'build_settings.env', {})
+  const siteEnv = get(siteData, 'build_settings.env')
   const functionsConfig = normalizeFunctionsConfig({
     functionsConfig: config.functions,
     projectRoot: site.root,

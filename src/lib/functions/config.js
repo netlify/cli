@@ -1,7 +1,7 @@
 // The function configuration keys returned by @netlify/config are not an exact
 // match to the properties that @netlify/zip-it-and-ship-it expects. We do that
 // translation here.
-const normalizeFunctionsConfig = ({ functionsConfig = {}, projectRoot, siteEnv }) =>
+const normalizeFunctionsConfig = ({ functionsConfig = {}, projectRoot, siteEnv = {} }) =>
   Object.entries(functionsConfig).reduce(
     (result, [pattern, config]) => ({
       ...result,
