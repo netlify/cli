@@ -530,7 +530,7 @@ const startOneGraphCLISession = async (input) => {
     onError: (fetchEventError) => {
       error(`Netlify Graph upstream error: ${fetchEventError}`)
     },
-    onClose: () => { }
+    onClose: () => {}
   })
 
   return async function unregisterWatchers() {
