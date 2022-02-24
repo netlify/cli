@@ -11,7 +11,7 @@
       "license": "MIT",
       "dependencies": {
         "@netlify/build": "^26.3.7",
-        "@netlify/config": "^17.0.13",
+        "@netlify/config": "^17.0.14",
         "@netlify/framework-info": "^9.0.2",
         "@netlify/local-functions-proxy": "^1.1.1",
         "@netlify/plugin-edge-handlers": "^3.0.6",
@@ -3465,9 +3465,9 @@
       }
     },
     "node_modules/@netlify/config": {
-      "version": "17.0.13",
-      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-17.0.13.tgz",
-      "integrity": "sha512-Qx2r+t0wA0/f7CxWdMgoqIWYSZgiFeSZOw41a2AJiWIEAPHmpes4YtmThSu3oSG3qUjAfKcon8gqL/4K5IG0/Q==",
+      "version": "17.0.14",
+      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-17.0.14.tgz",
+      "integrity": "sha512-tXVO1nJ/Iwy9x5UtBpKEtru/ccAwrnSmW4p3yxFxJdIggmdClcu3wo/XZexBRPZ6hFPbltewwUVpVKQVtQREkQ==",
       "dependencies": {
         "chalk": "^5.0.0",
         "cron-parser": "^4.1.0",
@@ -26552,8 +26552,7 @@
           "integrity": "sha512-i7jDUfrVBWc+7OKcBzEe5n7fbv3i2fWtxKzzCvOjnzSxMfWMigAhtfJ7qzZNGFNMsCCd67+uz553dYKWXPvCKw=="
         },
         "@netlify/zip-it-and-ship-it": {
-          "version": "5.8.0",
-          "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-5.8.0.tgz",
+          "version": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-5.8.0.tgz",
           "integrity": "sha512-Tr6/x19us7xCuHHHdZxKzAyR2jPLBCgHwmNvRsv1WWyptElm+srd0Xku5RzK1P/FdOySkub2d5iy+NHeSrbLLQ==",
           "requires": {
             "@babel/parser": "7.16.8",
@@ -27192,9 +27191,9 @@
       }
     },
     "@netlify/config": {
-      "version": "17.0.13",
-      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-17.0.13.tgz",
-      "integrity": "sha512-Qx2r+t0wA0/f7CxWdMgoqIWYSZgiFeSZOw41a2AJiWIEAPHmpes4YtmThSu3oSG3qUjAfKcon8gqL/4K5IG0/Q==",
+      "version": "17.0.14",
+      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-17.0.14.tgz",
+      "integrity": "sha512-tXVO1nJ/Iwy9x5UtBpKEtru/ccAwrnSmW4p3yxFxJdIggmdClcu3wo/XZexBRPZ6hFPbltewwUVpVKQVtQREkQ==",
       "requires": {
         "chalk": "^5.0.0",
         "cron-parser": "^4.1.0",
