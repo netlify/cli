@@ -33,6 +33,7 @@ const {
   detectServerSettings,
   error,
   exit,
+  generateNetlifyGraphJWT,
   getSiteInformation,
   injectEnvVariables,
   log,
@@ -262,6 +263,44 @@ const printBanner = ({ url }) => {
   )
 }
 
+const startPollingForAPIAuthentication = async function (options) {
+  const { api, command, config, site, siteInfo } = options
+  const frequency = 5000
+
+  const helper = async (maybeSiteData) => {
+    const siteData = await (maybeSiteData || api.getSite({ siteId: site.id }))
+    const authlifyTokenId = siteData && siteData.authlify_token_id
+
+    const existingAuthlifyTokenId = config && config.netlifyGraphConfig && config.netlifyGraphConfig.authlifyTokenId
+    if (authlifyTokenId && authlifyTokenId !== existingAuthlifyTokenId) {
+      const netlifyToken = await command.authenticate()
+      // Only inject the authlify config if a token ID exists. This prevents
+      // calling command.authenticate() (which opens a browser window) if the
+      // user hasn't enabled API Authentication
+      const netlifyGraphConfig = {
+        netlifyToken,
+        authlifyTokenId: siteData.authlify_token_id,
+        siteId: site.id,
+      }
+      config.netlifyGraphConfig = netlifyGraphConfig
+
+      const netlifyGraphJWT = generateNetlifyGraphJWT(netlifyGraphConfig)
+
+      if (netlifyGraphJWT != null) {
+        // XXX(anmonteiro): this name is deprecated. Delete after 3/31/2022
+        process.env.ONEGRAPH_AUTHLIFY_TOKEN = netlifyGraphJWT
+        process.env.NETLIFY_GRAPH_TOKEN = netlifyGraphJWT
+      }
+    } else {
+      delete config.netlifyGraphConfig
+    }
+
+    setTimeout(helper, frequency)
+  }
+
+  await helper(siteInfo)
+}
+
 /**
  * The dev command
  * @param {import('commander').OptionValues} options
@@ -287,8 +326,7 @@ const dev = async (options, command) => {
     )
   }
 
-  const startNetlifyGraphWatcher = Boolean(options.graph)
-  await injectEnvVariables({ env: command.netlify.cachedConfig.env, site })
+  await injectEnvVariables({ devConfig, env: command.netlify.cachedConfig.env, site })
 
   const { addonsUrls, capabilities, siteUrl, timeouts } = await getSiteInformation({
     // inherited from base command --offline
@@ -309,11 +347,15 @@ const dev = async (options, command) => {
 
   command.setAnalyticsPayload({ projectType: settings.framework || 'custom', live: options.live })
 
+  const startNetlifyGraphWatcher = Boolean(options.graph)
+  if (startNetlifyGraphWatcher) {
+    startPollingForAPIAuthentication({ api, command, config, site, siteInfo })
+  }
+
   await startFunctionsServer({
     api,
     command,
     config,
-    isGraphEnabled: startNetlifyGraphWatcher,
     settings,
     site,
     siteInfo,
