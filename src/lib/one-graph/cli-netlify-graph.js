@@ -336,7 +336,16 @@ const generateFunctionsFile = async ({ fragments, functions, logger, netlifyGrap
  * @param {string} context.netlifyToken The (typically netlify) access token that is used for authentication, if any
  * @returns {Promise<void>} Void, effectfully writes the generated library to the filesystem
  */
-const generatePersistedFunctionsFile = async ({ fragments, functions, logger, netlifyGraphConfig, netlifyToken, operationsDoc, schema, siteId }) => {
+const generatePersistedFunctionsFile = async ({
+  fragments,
+  functions,
+  logger,
+  netlifyGraphConfig,
+  netlifyToken,
+  operationsDoc,
+  schema,
+  siteId,
+}) => {
   const { clientSource, typeDefinitionsSource } = await NetlifyGraph.generatePersistedFunctionsSource(
     netlifyGraphConfig,
     netlifyToken,

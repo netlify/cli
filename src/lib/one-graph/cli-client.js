@@ -418,15 +418,15 @@ const persistNewOperationsDocForSession = async ({
     },
     {
       accessToken: netlifyToken,
-      siteId
-    }
+      siteId,
+    },
   )
 
   const persistedDoc =
     persistedResult.data &&
     persistedResult.data.oneGraph &&
     persistedResult.data.oneGraph.createPersistedQuery &&
-    persistedResult.data.oneGraph.createPersistedQuery.persistedQuery;
+    persistedResult.data.oneGraph.createPersistedQuery.persistedQuery
 
   if (!persistedDoc) {
     warn(`Failed to create persisted query for editing, ${JSON.stringify(persistedResult, null, 2)}`)
@@ -530,7 +530,7 @@ const startOneGraphCLISession = async (input) => {
     onError: (fetchEventError) => {
       error(`Netlify Graph upstream error: ${fetchEventError}`)
     },
-    onClose: () => {}
+    onClose: () => {},
   })
 
   return async function unregisterWatchers() {

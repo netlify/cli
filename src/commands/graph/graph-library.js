@@ -61,7 +61,7 @@ const graphLibrary = async (options, command) => {
       functions,
       fragments,
       siteId: site.id,
-      netlifyToken
+      netlifyToken,
     })
   } else {
     await generateFunctionsFile({
@@ -85,8 +85,10 @@ const createGraphLibraryCommand = (program) =>
     .command('graph:library')
     .description('Generate the Graph function library')
     .addOption(
-      new Option('--production', 'Generate a type-compatible library ready for production based on persisted queries')
-        .hideHelp()
+      new Option(
+        '--production',
+        'Generate a type-compatible library ready for production based on persisted queries',
+      ).hideHelp(),
     )
     .action(async (options, command) => {
       await graphLibrary(options, command)

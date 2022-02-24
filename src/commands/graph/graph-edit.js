@@ -60,15 +60,15 @@ const graphEdit = async (options, command) => {
     },
     {
       accessToken: netlifyToken,
-      siteId
-    }
+      siteId,
+    },
   )
 
   const persistedDoc =
     persistedResult.data &&
     persistedResult.data.oneGraph &&
     persistedResult.data.oneGraph.createPersistedQuery &&
-    persistedResult.data.oneGraph.createPersistedQuery.persistedQuery;
+    persistedResult.data.oneGraph.createPersistedQuery.persistedQuery
 
   if (!persistedDoc) {
     error(`${NETLIFYDEVERR} Failed to create persisted query for editing, ${JSON.stringify(persistedResult, null, 2)}`)
