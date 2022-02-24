@@ -1,15 +1,18 @@
 // @ts-check
+const { Option } = require('commander')
+
 const {
   buildSchema,
   defaultExampleOperationsDoc,
   extractFunctionsFromOperationDoc,
   generateFunctionsFile,
+  generatePersistedFunctionsFile,
   getNetlifyGraphConfig,
   parse,
   readGraphQLOperationsSourceFile,
   readGraphQLSchemaFile,
 } = require('../../lib/one-graph/cli-netlify-graph')
-const { error, log } = require('../../utils')
+const { error, log, warn } = require('../../utils')
 
 /**
  * Creates the `netlify graph:library` command
@@ -18,6 +21,7 @@ const { error, log } = require('../../utils')
  * @returns
  */
 const graphLibrary = async (options, command) => {
+  const { site } = command.netlify
   const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options })
 
   const schemaString = readGraphQLSchemaFile(netlifyGraphConfig)
@@ -36,20 +40,39 @@ const graphLibrary = async (options, command) => {
 
   let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
   if (currentOperationsDoc.trim().length === 0) {
+    if (options.production) {
+      warn('No Graph operations library found, skipping production client generation.')
+      return
+    }
     currentOperationsDoc = defaultExampleOperationsDoc
   }
 
   const parsedDoc = parse(currentOperationsDoc)
   const { fragments, functions } = extractFunctionsFromOperationDoc(parsedDoc)
 
-  generateFunctionsFile({
-    logger: log,
-    netlifyGraphConfig,
-    schema,
-    operationsDoc: currentOperationsDoc,
-    functions,
-    fragments,
-  })
+  if (options.production) {
+    const netlifyToken = await command.authenticate()
+
+    await generatePersistedFunctionsFile({
+      logger: log,
+      netlifyGraphConfig,
+      schema,
+      operationsDoc: currentOperationsDoc,
+      functions,
+      fragments,
+      siteId: site.id,
+      netlifyToken
+    })
+  } else {
+    await generateFunctionsFile({
+      logger: log,
+      netlifyGraphConfig,
+      schema,
+      operationsDoc: currentOperationsDoc,
+      functions,
+      fragments,
+    })
+  }
 }
 
 /**
@@ -61,6 +84,10 @@ const createGraphLibraryCommand = (program) =>
   program
     .command('graph:library')
     .description('Generate the Graph function library')
+    .addOption(
+      new Option('--production', 'Generate a type-compatible library ready for production based on persisted queries')
+        .hideHelp()
+    )
     .action(async (options, command) => {
       await graphLibrary(options, command)
     })

@@ -11,7 +11,7 @@ const {
 const { NETLIFYDEVERR, chalk, error, log } = require('../../utils')
 const { openBrowser } = require('../../utils/open-browser')
 
-const { createPersistedQuery, ensureAppForSite } = OneGraphCliClient
+const { ensureAppForSite, executeCreatePersistedQueryMutation } = OneGraphCliClient
 
 /**
  * Creates the `netlify graph:edit` command
@@ -50,12 +50,29 @@ const graphEdit = async (options, command) => {
   })
 
   const { branch } = gitRepoInfo()
-  const persistedDoc = await createPersistedQuery(netlifyToken, {
-    appId: siteId,
-    description: 'Temporary snapshot of local queries',
-    document: graphqlDocument,
-    tags: ['netlify-cli', `session:${oneGraphSessionId}`, `git-branch:${branch}`],
-  })
+  const persistedResult = await executeCreatePersistedQueryMutation(
+    {
+      nfToken: netlifyToken,
+      appId: siteId,
+      description: 'Temporary snapshot of local queries',
+      query: graphqlDocument,
+      tags: ['netlify-cli', `session:${oneGraphSessionId}`, `git-branch:${branch}`],
+    },
+    {
+      accessToken: netlifyToken,
+      siteId
+    }
+  )
+
+  const persistedDoc =
+    persistedResult.data &&
+    persistedResult.data.oneGraph &&
+    persistedResult.data.oneGraph.createPersistedQuery &&
+    persistedResult.data.oneGraph.createPersistedQuery.persistedQuery;
+
+  if (!persistedDoc) {
+    error(`${NETLIFYDEVERR} Failed to create persisted query for editing, ${JSON.stringify(persistedResult, null, 2)}`)
+  }
 
   const newMetadata = { docId: persistedDoc.id }
 

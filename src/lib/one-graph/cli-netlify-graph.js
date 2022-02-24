@@ -299,11 +299,49 @@ const runPrettier = async (filePath) => {
  * @param {Record<string, NetlifyGraph.ExtractedFunction>} context.functions The parsed queries with metadata to use when generating library functions
  * @param {Record<string, NetlifyGraph.ExtractedFragment>} context.fragments The parsed queries with metadata to use when generating library functions
  * @param {(message: string) => void=} context.logger A function that if provided will be used to log messages
- * @returns {void} Void, effectfully writes the generated library to the filesystem
+ * @returns {Promise<void>} Void, effectfully writes the generated library to the filesystem
  */
-const generateFunctionsFile = ({ fragments, functions, logger, netlifyGraphConfig, operationsDoc, schema }) => {
-  const { clientSource, typeDefinitionsSource } = NetlifyGraph.generateFunctionsSource(
+const generateFunctionsFile = async ({ fragments, functions, logger, netlifyGraphConfig, operationsDoc, schema }) => {
+  const { clientSource, typeDefinitionsSource } = await NetlifyGraph.generateFunctionsSource(
     netlifyGraphConfig,
+    schema,
+    operationsDoc,
+    functions,
+    fragments,
+  )
+
+  ensureNetlifyGraphPath(netlifyGraphConfig)
+  const implementationResolvedPath = path.resolve(...netlifyGraphConfig.netlifyGraphImplementationFilename)
+  fs.writeFileSync(implementationResolvedPath, clientSource, 'utf8')
+  const implementationRelativePath = path.relative(process.cwd(), implementationResolvedPath)
+  logger && logger(`Wrote ${chalk.cyan(implementationRelativePath)}`)
+
+  const typeDefinitionsResolvedPath = path.resolve(...netlifyGraphConfig.netlifyGraphTypeDefinitionsFilename)
+  fs.writeFileSync(typeDefinitionsResolvedPath, typeDefinitionsSource, 'utf8')
+  const typeDefinitionsRelativePath = path.relative(process.cwd(), typeDefinitionsResolvedPath)
+  logger && logger(`Wrote ${chalk.cyan(typeDefinitionsRelativePath)}`)
+  runPrettier(path.resolve(...netlifyGraphConfig.netlifyGraphImplementationFilename))
+  runPrettier(path.resolve(...netlifyGraphConfig.netlifyGraphTypeDefinitionsFilename))
+}
+
+/**
+ * Generate a library file based on persisted queries with type definitions for a given NetlifyGraphConfig, operationsDoc, and schema, writing them to the filesystem
+ * @param {object} context
+ * @param {NetlifyGraph.NetlifyGraphConfig} context.netlifyGraphConfig
+ * @param {GraphQL.GraphQLSchema} context.schema The schema to use when generating the functions and their types
+ * @param {string} context.operationsDoc The GraphQL operations doc to use when generating the functions
+ * @param {Record<string, NetlifyGraph.ExtractedFunction>} context.functions The parsed queries with metadata to use when generating library functions
+ * @param {Record<string, NetlifyGraph.ExtractedFragment>} context.fragments The parsed queries with metadata to use when generating library functions
+ * @param {(message: string) => void=} context.logger A function that if provided will be used to log messages
+ * @param {string} context.siteId The app to query against, typically the siteId
+ * @param {string} context.netlifyToken The (typically netlify) access token that is used for authentication, if any
+ * @returns {Promise<void>} Void, effectfully writes the generated library to the filesystem
+ */
+const generatePersistedFunctionsFile = async ({ fragments, functions, logger, netlifyGraphConfig, netlifyToken, operationsDoc, schema, siteId }) => {
+  const { clientSource, typeDefinitionsSource } = await NetlifyGraph.generatePersistedFunctionsSource(
+    netlifyGraphConfig,
+    netlifyToken,
+    siteId,
     schema,
     operationsDoc,
     functions,
@@ -527,6 +565,7 @@ module.exports = {
   extractFunctionsFromOperationDoc: NetlifyGraph.extractFunctionsFromOperationDoc,
   generateFunctionsSource: NetlifyGraph.generateFunctionsSource,
   generateFunctionsFile,
+  generatePersistedFunctionsFile,
   generateHandlerSource: NetlifyGraph.generateHandlerSource,
   generateHandlerByOperationId,
   generateHandlerByOperationName,
