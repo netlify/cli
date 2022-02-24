@@ -11,7 +11,7 @@
       "license": "MIT",
       "dependencies": {
         "@netlify/build": "^26.3.5",
-        "@netlify/config": "^17.0.12",
+        "@netlify/config": "^17.0.13",
         "@netlify/framework-info": "^9.0.2",
         "@netlify/local-functions-proxy": "^1.1.1",
         "@netlify/plugin-edge-handlers": "^3.0.6",
@@ -99,7 +99,7 @@
         "path-key": "^3.1.1",
         "prettyjson": "^1.2.1",
         "pump": "^3.0.0",
-        "raw-body": "^2.5.0",
+        "raw-body": "^2.4.1",
         "read-pkg-up": "^7.0.1",
         "semver": "^7.3.5",
         "source-map-support": "^0.5.19",
@@ -3110,9 +3110,9 @@
       }
     },
     "node_modules/@netlify/config": {
-      "version": "17.0.12",
-      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-17.0.12.tgz",
-      "integrity": "sha512-6z+AamvN2eqSYbMK87yuYkU1HRLiyOpP2GPZXthvuGD0lRb+uyFrHaCHoEinEBjnUGZDan/w/lkQHX8JjI2qiQ==",
+      "version": "17.0.13",
+      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-17.0.13.tgz",
+      "integrity": "sha512-Qx2r+t0wA0/f7CxWdMgoqIWYSZgiFeSZOw41a2AJiWIEAPHmpes4YtmThSu3oSG3qUjAfKcon8gqL/4K5IG0/Q==",
       "dependencies": {
         "chalk": "^5.0.0",
         "cron-parser": "^4.1.0",
@@ -26597,9 +26597,9 @@
       }
     },
     "@netlify/config": {
-      "version": "17.0.12",
-      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-17.0.12.tgz",
-      "integrity": "sha512-6z+AamvN2eqSYbMK87yuYkU1HRLiyOpP2GPZXthvuGD0lRb+uyFrHaCHoEinEBjnUGZDan/w/lkQHX8JjI2qiQ==",
+      "version": "17.0.13",
+      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-17.0.13.tgz",
+      "integrity": "sha512-Qx2r+t0wA0/f7CxWdMgoqIWYSZgiFeSZOw41a2AJiWIEAPHmpes4YtmThSu3oSG3qUjAfKcon8gqL/4K5IG0/Q==",
       "requires": {
         "chalk": "^5.0.0",
         "cron-parser": "^4.1.0",
