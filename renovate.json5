@@ -3,4 +3,10 @@
   ignorePresets: [':prHourlyLimit2'],
   semanticCommits: true,
   dependencyDashboard: true,
+  packageRules: [
+    {
+      matchPackageNames: ['netlify-onegraph-internal'],
+      enabled: false,
+    },
+  ],
 }
