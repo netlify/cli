@@ -632,6 +632,7 @@ const ensureCLISession = async ({ metadata, netlifyToken, site, state }) => {
 const OneGraphCliClient = {
   ackCLISessionEvents: OneGraphClient.ackCLISessionEvents,
   executeCreatePersistedQueryMutation: OneGraphClient.executeCreatePersistedQueryMutation,
+  executeCreatePersistQueryTokenMutation: OneGraphClient.executeCreatePersistQueryTokenMutation,
   fetchCliSessionEvents: OneGraphClient.fetchCliSessionEvents,
   ensureAppForSite,
   updateCLISessionMetadata,
