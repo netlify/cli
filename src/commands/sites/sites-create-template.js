@@ -30,7 +30,7 @@ const sitesCreateTemplate = async (options, command) => {
   const { globalConfig } = command.netlify
   const ghToken = await getGitHubToken({ globalConfig })
   let { url: templateUrl } = options
-  if(command.args.length){
+  if(command.args.length !== 0){
     const repository = command.args[0]
     let root;
     if(await templateExists(ghToken,netlifyTemplatesRepo, repository)
