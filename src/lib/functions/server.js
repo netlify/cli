@@ -120,7 +120,8 @@ const createHandler = function (options) {
     if (func.isBackground) {
       handleBackgroundFunction(functionName, response)
 
-      const { error } = await func.invoke(event, clientContext)
+      // background functions do not receive a clientContext
+      const { error } = await func.invoke(event)
 
       handleBackgroundFunctionResult(functionName, error)
     } else if (await func.isScheduled()) {
