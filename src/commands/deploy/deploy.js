@@ -7,7 +7,6 @@ const { get } = require('dot-prop')
 const inquirer = require('inquirer')
 const isObject = require('lodash/isObject')
 const prettyjson = require('prettyjson')
-const { validate: uuidValidate } = require('uuid')
 
 const netlifyConfigPromise = import('@netlify/config')
 
@@ -465,23 +464,25 @@ const deploy = async (options, command) => {
 
   let siteId = options.site || site.id
 
-  // replace site name by id if a match is found
-  if (options.site) {
-    const isSiteId = uuidValidate(options.site)
-    if (!isSiteId) {
-      const siteName = options.site
-      const matchingSites = await api.listSites({ options: { name: siteName, filter: 'all' } })
-      const matchedSite = matchingSites.find((el) => el.name === siteName)
-      if (matchedSite) {
-        siteId = matchedSite.id
-      }
-    }
-  }
-
   let siteData = {}
   if (siteId) {
     try {
-      siteData = await api.getSite({ siteId })
+      const [{ siteError, siteFoundById }, [siteFoundByName]] = await Promise.all([
+        api
+          .getSite({ siteId })
+          .then((data) => ({ siteFoundById: data }))
+          .catch((error_) => ({ siteError: error_ })),
+        api.listSites({ name: options.site, filter: 'all', per_page: 1 }),
+      ])
+
+      if (siteFoundById) {
+        siteData = siteFoundById
+      } else if (siteFoundByName && siteFoundByName.name === options.site) {
+        siteData = siteFoundByName
+        siteId = siteFoundByName.id
+      } else {
+        throw siteError
+      }
     } catch (error_) {
       // TODO specifically handle known cases (e.g. no account access)
       if (error_.status === 404) {
