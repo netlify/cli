@@ -19,28 +19,29 @@ const fetchTemplates = async (token) => {
       slug: template.full_name,
     }))
 }
-const templateExists= async (token,root, repoShorthand)=>{
+const templateExists = async (token, root, repoShorthand) => {
   const templatesFromGithubOrg = await getTemplatesFromGitHub(token)
-  return templatesFromGithubOrg.some((templateFromGithubOrg)=>templateFromGithubOrg.html_url==`https://github.com/${root?(`${root}/`):""}${repoShorthand}`)
+  return templatesFromGithubOrg.some(
+    (templateFromGithubOrg) =>
+      templateFromGithubOrg.html_url === `https://github.com/${root ? `${root}/` : ''}${repoShorthand}`,
+  )
 }
 const sitesCreateTemplate = async (options, command) => {
-  const netlifyTemplatesRepo = "netlify-templates"
+  const netlifyTemplatesRepo = 'netlify-templates'
   const { api } = command.netlify
   await command.authenticate()
   const { globalConfig } = command.netlify
   const ghToken = await getGitHubToken({ globalConfig })
   let { url: templateUrl } = options
-  if(command.args.length !== 0){
-    const repository = command.args[0]
-    let root;
-    if(await templateExists(ghToken,netlifyTemplatesRepo, repository)
-    ){
-      root =netlifyTemplatesRepo
+  if (command.args.length !== 0) {
+    const [repository] = command.args
+    let root
+    if (await templateExists(ghToken, netlifyTemplatesRepo, repository)) {
+      root = netlifyTemplatesRepo
     }
-    const urlFromArg = new URL(`https://github.com/${root?(`${root}/`):""}${repository}`)
-    templateUrl = { templateName: urlFromArg.pathname.slice(1)
-  }}
-    else if (templateUrl) {
+    const urlFromArg = new URL(`https://github.com/${root ? `${root}/` : ''}${repository}`)
+    templateUrl = { templateName: urlFromArg.pathname.slice(1) }
+  } else if (templateUrl) {
     const urlFromOptions = new URL(templateUrl)
     templateUrl = { templateName: urlFromOptions.pathname.slice(1) }
   } else {
