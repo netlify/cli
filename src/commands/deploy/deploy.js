@@ -467,17 +467,17 @@ const deploy = async (options, command) => {
   let siteData = {}
   if (siteId) {
     try {
-      const [{ siteError, siteFoundById }, [siteFoundByName]] = await Promise.all([
+      const [{ siteError, siteFoundById }, sites] = await Promise.all([
         api
           .getSite({ siteId })
           .then((data) => ({ siteFoundById: data }))
           .catch((error_) => ({ siteError: error_ })),
-        api.listSites({ name: options.site, filter: 'all', per_page: 1 }),
+        api.listSites({ name: options.site, filter: 'all' }),
       ])
-
+      const siteFoundByName = sites.find((filteredSite) => filteredSite.name === options.site)
       if (siteFoundById) {
         siteData = siteFoundById
-      } else if (siteFoundByName && siteFoundByName.name === options.site) {
+      } else if (siteFoundByName) {
         siteData = siteFoundByName
         siteId = siteFoundByName.id
       } else {
