@@ -26,7 +26,7 @@ const templateExists = async (token, root, repoShorthand) => {
       templateFromGithubOrg.html_url === `https://github.com/${root ? `${root}/` : ''}${repoShorthand}`,
   )
 }
-const sitesCreateTemplate = async (repository,options, command) => {
+const sitesCreateTemplate = async (repository, options, command) => {
   const netlifyTemplatesRepo = 'netlify-templates'
   const { api } = command.netlify
   await command.authenticate()
