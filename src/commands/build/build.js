@@ -1,6 +1,6 @@
 // @ts-check
 const { getBuildOptions, runBuild } = require('../../lib/build')
-const { error, exit, getToken, generateNetlifyGraphJWT } = require('../../utils')
+const { error, exit, generateNetlifyGraphJWT, getToken } = require('../../utils')
 
 /**
  * @param {import('../../lib/build').BuildConfig} options
@@ -15,7 +15,7 @@ const checkOptions = ({ cachedConfig: { siteInfo = {} }, token }) => {
   }
 }
 
-const injectNetlifyGraphEnv = async function (command, { api, site, buildOptions }) {
+const injectNetlifyGraphEnv = async function (command, { api, buildOptions, site }) {
   const siteData = await api.getSite({ siteId: site.id })
   const authlifyTokenId = siteData && siteData.authlify_token_id
 
@@ -58,11 +58,10 @@ const build = async (options, command) => {
     options,
   })
 
-  const { api, site } = command.netlify
-  await injectNetlifyGraphEnv(command, { api, site, buildOptions })
-
   if (!options.offline) {
     checkOptions(buildOptions)
+    const { api, site } = command.netlify
+    await injectNetlifyGraphEnv(command, { api, site, buildOptions })
   }
 
   const { exitCode } = await runBuild(buildOptions)
