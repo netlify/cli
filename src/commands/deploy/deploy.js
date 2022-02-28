@@ -546,7 +546,12 @@ const deploy = async (options, command) => {
     deployFolder,
     functionsFolder,
   })
-  const functionsConfig = normalizeFunctionsConfig({ functionsConfig: config.functions, projectRoot: site.root })
+  const siteEnv = get(siteData, 'build_settings.env')
+  const functionsConfig = normalizeFunctionsConfig({
+    functionsConfig: config.functions,
+    projectRoot: site.root,
+    siteEnv,
+  })
 
   const redirectsPath = `${deployFolder}/_redirects`
   const { restoreConfig, updateConfig } = await netlifyConfigPromise
