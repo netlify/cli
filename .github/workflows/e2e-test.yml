@@ -13,7 +13,7 @@ on:
 jobs:
   e2e:
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 10
+    timeout-minutes: 20
     env:
       DEBUG: true
     strategy:

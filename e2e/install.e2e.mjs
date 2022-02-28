@@ -24,7 +24,7 @@ const prepare = async (folderName) => {
 
 Object.entries(packageManagerConfig).forEach(([packageManager, { install: installCmd, lockFile }]) => {
   /** @type {import('ava').TestInterface} */
-  const testSuite = packageManagerExists(packageManager) ? test : test.skip
+  const testSuite = packageManagerExists(packageManager) ? test.serial : test.skip
 
   testSuite(`${packageManager} → should install the cli and run the help command`, async (t) => {
     const cwd = await prepare(`${packageManager}-try-install`)
