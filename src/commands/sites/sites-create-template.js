@@ -1,3 +1,5 @@
+// @ts-check
+
 const inquirer = require('inquirer')
 const pick = require('lodash/pick')
 const prettyjson = require('prettyjson')
@@ -11,6 +13,7 @@ const { getSiteNameInput } = require('./sites-create')
 
 const fetchTemplates = async (token) => {
   const templatesFromGithubOrg = await getTemplatesFromGitHub(token)
+
   return templatesFromGithubOrg
     .filter((repo) => !repo.archived && !repo.private && !repo.disabled)
     .map((template) => ({
@@ -26,12 +29,21 @@ const templateExists = async (token, root, repoShorthand) => {
       templateFromGithubOrg.html_url === `https://github.com/${root ? `${root}/` : ''}${repoShorthand}`,
   )
 }
+/**
+ * The sites:create-template command
+ * @param repository {string}
+ * @param {import('commander').OptionValues} options
+ * @param {import('../base-command').BaseCommand} command
+ */
 const sitesCreateTemplate = async (repository, options, command) => {
   const netlifyTemplatesRepo = 'netlify-templates'
   const { api } = command.netlify
+
   await command.authenticate()
+
   const { globalConfig } = command.netlify
   const ghToken = await getGitHubToken({ globalConfig })
+
   let { url: templateUrl } = options
   if (repository) {
     let root
@@ -45,7 +57,9 @@ const sitesCreateTemplate = async (repository, options, command) => {
     templateUrl = { templateName: urlFromOptions.pathname.slice(1) }
   } else {
     const templates = await fetchTemplates(ghToken)
+
     log(`Choose one of our starter templates. Netlify will create a new repo for this template in your GitHub account.`)
+
     templateUrl = await inquirer.prompt([
       {
         type: 'list',
@@ -58,8 +72,11 @@ const sitesCreateTemplate = async (repository, options, command) => {
       },
     ])
   }
+
   const accounts = await api.listAccountsForUser()
+
   let { accountSlug } = options
+
   if (!accountSlug) {
     const { accountSlug: accountSlugInput } = await inquirer.prompt([
       {
@@ -74,14 +91,21 @@ const sitesCreateTemplate = async (repository, options, command) => {
     ])
     accountSlug = accountSlugInput
   }
+
   const { name: nameFlag } = options
   let user
   let site
+
+  // Allow the user to reenter site name if selected one isn't available
   const inputSiteName = async (name) => {
     const { name: inputName, siteSuggestion } = await getSiteNameInput(name, user, api)
+
     try {
       const siteName = inputName ? inputName.trim() : siteSuggestion
+
+      // Create new repo from template
       const repoResp = await createRepo(templateUrl, ghToken, siteName)
+
       if (repoResp.errors) {
         if (repoResp.errors[0].includes('Name already exists on this account')) {
           warn(
@@ -118,10 +142,13 @@ const sitesCreateTemplate = async (repository, options, command) => {
       }
     }
   }
+
   await inputSiteName(nameFlag)
+
   log()
   log(chalk.greenBright.bold.underline(`Site Created`))
   log()
+
   const siteUrl = site.ssl_url || site.url
   log(
     prettyjson.render({
@@ -131,16 +158,19 @@ const sitesCreateTemplate = async (repository, options, command) => {
       'Repo URL': site.build_settings.repo_url,
     }),
   )
+
   track('sites_createdFromTemplate', {
     siteId: site.id,
     adminUrl: site.admin_url,
     siteUrl,
   })
+
   if (options.withCi) {
     log('Configuring CI')
     const repoData = await getRepoData()
     await configureRepo({ command, siteId: site.id, repoData, manual: options.manual })
   }
+
   if (options.json) {
     logJson(
       pick(site, [
@@ -170,8 +200,15 @@ const sitesCreateTemplate = async (repository, options, command) => {
       ]),
     )
   }
+
   return site
 }
+
+/**
+ * Creates the `netlify sites:create-template` command
+ * @param {import('../base-command').BaseCommand} program
+ * @returns
+ */
 const createSitesFromTemplateCommand = (program) =>
   program
     .command('sites:create-template')
@@ -186,4 +223,5 @@ Create a site from a starter template.`,
     .argument('[repository]', 'repository to use as starter template')
     .addHelpText('after', `(Beta) Create a site from starter template.`)
     .action(sitesCreateTemplate)
+
 module.exports = { createSitesFromTemplateCommand, fetchTemplates }
