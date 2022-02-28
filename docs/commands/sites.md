@@ -71,6 +71,10 @@ Create a site from a starter template.
 netlify sites:create-template
 ```
 
+**Arguments**
+
+- repository - repository to use as starter template
+
 **Flags**
 
 - `account-slug` (*string*) - account slug to create the site under

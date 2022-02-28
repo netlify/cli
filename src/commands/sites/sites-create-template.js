@@ -26,15 +26,14 @@ const templateExists = async (token, root, repoShorthand) => {
       templateFromGithubOrg.html_url === `https://github.com/${root ? `${root}/` : ''}${repoShorthand}`,
   )
 }
-const sitesCreateTemplate = async (options, command) => {
+const sitesCreateTemplate = async (repository,options, command) => {
   const netlifyTemplatesRepo = 'netlify-templates'
   const { api } = command.netlify
   await command.authenticate()
   const { globalConfig } = command.netlify
   const ghToken = await getGitHubToken({ globalConfig })
   let { url: templateUrl } = options
-  if (command.args.length !== 0) {
-    const [repository] = command.args
+  if (repository) {
     let root
     if (await templateExists(ghToken, netlifyTemplatesRepo, repository)) {
       root = netlifyTemplatesRepo
@@ -184,6 +183,7 @@ Create a site from a starter template.`,
     .option('-u, --url [url]', 'template url')
     .option('-a, --account-slug [slug]', 'account slug to create the site under')
     .option('-c, --with-ci', 'initialize CI hooks during site creation')
+    .argument('[repository]', 'repository to use as starter template')
     .addHelpText('after', `(Beta) Create a site from starter template.`)
     .action(sitesCreateTemplate)
 module.exports = { createSitesFromTemplateCommand, fetchTemplates }
