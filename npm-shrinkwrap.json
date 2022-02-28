@@ -1,12 +1,12 @@
 {
   "name": "netlify-cli",
-  "version": "9.8.3",
+  "version": "9.8.4",
   "lockfileVersion": 2,
   "requires": true,
   "packages": {
     "": {
       "name": "netlify-cli",
-      "version": "9.8.3",
+      "version": "9.8.4",
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
@@ -15,7 +15,7 @@
         "@netlify/framework-info": "^9.0.2",
         "@netlify/local-functions-proxy": "^1.1.1",
         "@netlify/plugin-edge-handlers": "^3.0.6",
-        "@netlify/plugins-list": "^6.13.1",
+        "@netlify/plugins-list": "^6.14.0",
         "@netlify/routing-local-proxy": "^0.34.1",
         "@netlify/zip-it-and-ship-it": "^5.9.0",
         "@octokit/rest": "^18.0.0",
@@ -125,7 +125,7 @@
       },
       "devDependencies": {
         "@babel/preset-react": "^7.12.13",
-        "@netlify/eslint-config-node": "^5.1.5",
+        "@netlify/eslint-config-node": "^5.1.6",
         "ava": "^4.0.0",
         "c8": "^7.11.0",
         "eslint-plugin-sort-destructure-keys": "^1.3.5",
@@ -3451,9 +3451,9 @@
       }
     },
     "node_modules/@netlify/eslint-config-node": {
-      "version": "5.1.5",
-      "resolved": "https://registry.npmjs.org/@netlify/eslint-config-node/-/eslint-config-node-5.1.5.tgz",
-      "integrity": "sha512-Ug2uvKPY+ImkZM9/LgE/o0iztLebENguTCTMU4prxyD2D1wXTHy+c93j9k0GCmqO+xUQr0uh4+cTp1LyVwC+oA==",
+      "version": "5.1.6",
+      "resolved": "https://registry.npmjs.org/@netlify/eslint-config-node/-/eslint-config-node-5.1.6.tgz",
+      "integrity": "sha512-eVxIgtv9DCvcsxsJkQHLhnCo5UJieytr8UgjuiRry2pambzlZxO2CHNg8ynZ027Q+JRkr+4beyGmhgek9ZlUVA==",
       "dev": true,
       "dependencies": {
         "@babel/core": "^7.13.8",
@@ -5622,9 +5622,9 @@
       }
     },
     "node_modules/@verdaccio/ui-theme": {
-      "version": "6.0.0-6-next.16",
-      "resolved": "https://registry.npmjs.org/@verdaccio/ui-theme/-/ui-theme-6.0.0-6-next.16.tgz",
-      "integrity": "sha512-FbYl3273qaA0/fRwrvE876/HuvU81zjsnR70rCEojBelDuddl3xbY1LVdvthCjUGuIj2SUNpTzGhyROdqHJUCg==",
+      "version": "6.0.0-6-next.18",
+      "resolved": "https://registry.npmjs.org/@verdaccio/ui-theme/-/ui-theme-6.0.0-6-next.18.tgz",
+      "integrity": "sha512-ofh4yke0950ry+ilWCdFIjHPadKK9xvjC/nzKEaKEFAxJxTt90guZNp++l1rz/LAQ7BMAX905G/2N//6M85+tw==",
       "dev": true
     },
     "node_modules/abab": {
@@ -19352,9 +19352,9 @@
       }
     },
     "node_modules/pino": {
-      "version": "6.13.4",
-      "resolved": "https://registry.npmjs.org/pino/-/pino-6.13.4.tgz",
-      "integrity": "sha512-g4tHSISmQJYUEKEMVdaZ+ZokWwFnTwZL5JPn+lnBVZ1BuBbrSchrXwQINknkM5+Q4fF6U9NjiI8PWwwMDHt9zA==",
+      "version": "6.14.0",
+      "resolved": "https://registry.npmjs.org/pino/-/pino-6.14.0.tgz",
+      "integrity": "sha512-iuhEDel3Z3hF9Jfe44DPXR8l07bhjuFY3GMHIXbjnY9XcafbyDDwl2sN2vw2GjMPf5Nkoe+OFao7ffn9SXaKDg==",
       "dev": true,
       "dependencies": {
         "fast-redact": "^3.0.0",
@@ -23678,16 +23678,16 @@
       }
     },
     "node_modules/verdaccio": {
-      "version": "5.6.0",
-      "resolved": "https://registry.npmjs.org/verdaccio/-/verdaccio-5.6.0.tgz",
-      "integrity": "sha512-dSy87kjtu3YxAxSm7dcT5sQuHKQ+Y4qSwMX6fO978kYHOPHKH1RtuzpAj2sBaPXDg09HekrUPlhlEjT8WWRL6Q==",
+      "version": "5.6.2",
+      "resolved": "https://registry.npmjs.org/verdaccio/-/verdaccio-5.6.2.tgz",
+      "integrity": "sha512-r0BI31Dt5RnXxpCdWPTGXSthIg4XRB6onYRXziEi1stHd1TmwzAV35Jiv7FXu25Rwvh8dHGSozTxKi0t3kbjGg==",
       "dev": true,
       "dependencies": {
         "@verdaccio/commons-api": "10.2.0",
         "@verdaccio/local-storage": "10.2.0",
         "@verdaccio/readme": "10.3.2",
         "@verdaccio/streams": "10.2.0",
-        "@verdaccio/ui-theme": "6.0.0-6-next.16",
+        "@verdaccio/ui-theme": "6.0.0-6-next.18",
         "async": "3.2.3",
         "body-parser": "1.19.1",
         "clipanion": "3.1.0",
@@ -23716,7 +23716,7 @@
         "minimatch": "3.0.4",
         "mkdirp": "1.0.4",
         "mv": "2.1.1",
-        "pino": "6.13.4",
+        "pino": "6.14.0",
         "pkginfo": "0.4.1",
         "prettier-bytes": "^1.0.4",
         "pretty-ms": "^7.0.1",
@@ -26778,9 +26778,9 @@
       "integrity": "sha512-tiKmDcHM2riSVN79c0mJY/67EBDafXQAMitHuLiCDAMdtz3kfv+NqdVG5krgf5lWR8Uf8AeZrUW5Q9RP25REvw=="
     },
     "@netlify/eslint-config-node": {
-      "version": "5.1.5",
-      "resolved": "https://registry.npmjs.org/@netlify/eslint-config-node/-/eslint-config-node-5.1.5.tgz",
-      "integrity": "sha512-Ug2uvKPY+ImkZM9/LgE/o0iztLebENguTCTMU4prxyD2D1wXTHy+c93j9k0GCmqO+xUQr0uh4+cTp1LyVwC+oA==",
+      "version": "5.1.6",
+      "resolved": "https://registry.npmjs.org/@netlify/eslint-config-node/-/eslint-config-node-5.1.6.tgz",
+      "integrity": "sha512-eVxIgtv9DCvcsxsJkQHLhnCo5UJieytr8UgjuiRry2pambzlZxO2CHNg8ynZ027Q+JRkr+4beyGmhgek9ZlUVA==",
       "dev": true,
       "requires": {
         "@babel/core": "^7.13.8",
@@ -28300,9 +28300,9 @@
       "dev": true
     },
     "@verdaccio/ui-theme": {
-      "version": "6.0.0-6-next.16",
-      "resolved": "https://registry.npmjs.org/@verdaccio/ui-theme/-/ui-theme-6.0.0-6-next.16.tgz",
-      "integrity": "sha512-FbYl3273qaA0/fRwrvE876/HuvU81zjsnR70rCEojBelDuddl3xbY1LVdvthCjUGuIj2SUNpTzGhyROdqHJUCg==",
+      "version": "6.0.0-6-next.18",
+      "resolved": "https://registry.npmjs.org/@verdaccio/ui-theme/-/ui-theme-6.0.0-6-next.18.tgz",
+      "integrity": "sha512-ofh4yke0950ry+ilWCdFIjHPadKK9xvjC/nzKEaKEFAxJxTt90guZNp++l1rz/LAQ7BMAX905G/2N//6M85+tw==",
       "dev": true
     },
     "abab": {
@@ -38739,9 +38739,9 @@
       }
     },
     "pino": {
-      "version": "6.13.4",
-      "resolved": "https://registry.npmjs.org/pino/-/pino-6.13.4.tgz",
-      "integrity": "sha512-g4tHSISmQJYUEKEMVdaZ+ZokWwFnTwZL5JPn+lnBVZ1BuBbrSchrXwQINknkM5+Q4fF6U9NjiI8PWwwMDHt9zA==",
+      "version": "6.14.0",
+      "resolved": "https://registry.npmjs.org/pino/-/pino-6.14.0.tgz",
+      "integrity": "sha512-iuhEDel3Z3hF9Jfe44DPXR8l07bhjuFY3GMHIXbjnY9XcafbyDDwl2sN2vw2GjMPf5Nkoe+OFao7ffn9SXaKDg==",
       "dev": true,
       "requires": {
         "fast-redact": "^3.0.0",
@@ -42114,16 +42114,16 @@
       "integrity": "sha1-IpnwLG3tMNSllhsLn3RSShj2NPw="
     },
     "verdaccio": {
-      "version": "5.6.0",
-      "resolved": "https://registry.npmjs.org/verdaccio/-/verdaccio-5.6.0.tgz",
-      "integrity": "sha512-dSy87kjtu3YxAxSm7dcT5sQuHKQ+Y4qSwMX6fO978kYHOPHKH1RtuzpAj2sBaPXDg09HekrUPlhlEjT8WWRL6Q==",
+      "version": "5.6.2",
+      "resolved": "https://registry.npmjs.org/verdaccio/-/verdaccio-5.6.2.tgz",
+      "integrity": "sha512-r0BI31Dt5RnXxpCdWPTGXSthIg4XRB6onYRXziEi1stHd1TmwzAV35Jiv7FXu25Rwvh8dHGSozTxKi0t3kbjGg==",
       "dev": true,
       "requires": {
         "@verdaccio/commons-api": "10.2.0",
         "@verdaccio/local-storage": "10.2.0",
         "@verdaccio/readme": "10.3.2",
         "@verdaccio/streams": "10.2.0",
-        "@verdaccio/ui-theme": "6.0.0-6-next.16",
+        "@verdaccio/ui-theme": "6.0.0-6-next.18",
         "async": "3.2.3",
         "body-parser": "1.19.1",
         "clipanion": "3.1.0",
@@ -42152,7 +42152,7 @@
         "minimatch": "3.0.4",
         "mkdirp": "1.0.4",
         "mv": "2.1.1",
-        "pino": "6.13.4",
+        "pino": "6.14.0",
         "pkginfo": "0.4.1",
         "prettier-bytes": "^1.0.4",
         "pretty-ms": "^7.0.1",
