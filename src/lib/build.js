@@ -18,11 +18,12 @@ const netlifyBuildPromise = import('@netlify/build')
  * @param {import('commander').OptionValues} config.options
  * @returns {BuildConfig}
  */
-const getBuildOptions = ({ cachedConfig, options: { debug, dry, json, offline, silent }, token }) => ({
+const getBuildOptions = ({ cachedConfig, options: { context, debug, dry, json, offline, silent }, token }) => ({
   cachedConfig,
   token,
   dry,
   debug,
+  context,
   mode: 'cli',
   telemetry: false,
   // buffer = true will not stream output
