@@ -63,7 +63,6 @@ const getFunctionZips = async ({
 
   const featureFlags = {
     zisi_detect_esm: true,
-    zisi_pure_esm: true,
   }
 
   return await zipIt.zipFunctions(directories, tmpDir, { basePath: rootDir, config: functionsConfig, featureFlags })
