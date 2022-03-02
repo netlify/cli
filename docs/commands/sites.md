@@ -88,6 +88,7 @@ netlify sites:create-template
 **Examples**
 
 ```bash
+netlify sites:create-template
 netlify sites:create-template nextjs-blog-theme
 netlify sites:create-template my-github-profile/my-template
 ```

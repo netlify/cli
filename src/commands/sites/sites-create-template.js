@@ -239,6 +239,7 @@ Create a site from a starter template.`,
     .argument('[repository]', 'repository to use as starter template')
     .addHelpText('after', `(Beta) Create a site from starter template.`)
     .addExamples([
+      'netlify sites:create-template',
       'netlify sites:create-template nextjs-blog-theme',
       'netlify sites:create-template my-github-profile/my-template',
     ])
