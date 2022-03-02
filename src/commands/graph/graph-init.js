@@ -6,7 +6,7 @@ const { v4: uuidv4 } = require('uuid')
 const { OneGraphCliClient, ensureCLISession } = require('../../lib/one-graph/cli-client')
 const { NETLIFYDEVERR, chalk, error, log } = require('../../utils')
 
-const { ensureAppForSite, executeCreatePersistQueryTokenMutation } = OneGraphCliClient
+const { ensureAppForSite, executeCreateApiTokenMutation } = OneGraphCliClient
 
 /**
  * Creates the `netlify graph:init` command
@@ -55,31 +55,30 @@ const graphInit = async (options, command) => {
     newEnv.NETLIFY_GRAPH_WEBHOOK_SECRET = secret
   }
 
-  if (!env.NETLIFY_GRAPH_PERSIST_QUERY_TOKEN) {
-    envChanged = true
-    const variables = {
-      nfToken: netlifyToken,
-      input: {
-        appId: siteId,
-      },
-    }
-    console.log(variables)
-    const result = await executeCreatePersistQueryTokenMutation(variables, {
-      siteId,
-    })
+  envChanged = true
+  const variables = {
+    nfToken: netlifyToken,
+    input: {
+      appId: siteId,
+      scopes: ["MODIFY_SCHEMA", "PERSIST_QUERY"],
+    },
+  }
 
-    const token =
-      result.data &&
-      result.data.oneGraph &&
-      result.data.oneGraph.createPersitQueryToken &&
-      result.data.oneGraph.createPersitQueryToken.accessToken &&
-      result.data.oneGraph.createPersitQueryToken.accessToken.token
+  const result = await executeCreateApiTokenMutation(variables, {
+    siteId,
+  });
 
-    if (token) {
-      newEnv.NETLIFY_GRAPH_PERSIST_QUERY_TOKEN = token
-    } else {
-      error(`Unable to create Netlify Graph persist query token: ${JSON.stringify(result.errors, null, 2)}`)
-    }
+  const token =
+    result.data &&
+    result.data.oneGraph &&
+    result.data.oneGraph.createApiToken &&
+    result.data.oneGraph.createApiToken.accessToken &&
+    result.data.oneGraph.createApiToken.accessToken.token
+
+  if (token) {
+    newEnv.NETLIFY_GRAPH_PERSIST_QUERY_TOKEN = token
+  } else {
+    error(`Unable to create Netlify Graph persist query token: ${JSON.stringify(result.errors, null, 2)}`)
   }
 
   if (envChanged) {

@@ -8,9 +8,11 @@ const {
   generateFunctionsFile,
   generatePersistedFunctionsFile,
   getNetlifyGraphConfig,
+  normalizeOperationsDoc,
   parse,
   readGraphQLOperationsSourceFile,
   readGraphQLSchemaFile,
+  writeGraphQLOperationsSourceFile,
 } = require('../../lib/one-graph/cli-netlify-graph')
 const { error, log, warn } = require('../../utils')
 
@@ -47,6 +49,8 @@ const graphLibrary = async (options, command) => {
     currentOperationsDoc = defaultExampleOperationsDoc
   }
 
+  const normalizedOperationsDoc = normalizeOperationsDoc(currentOperationsDoc);
+
   const parsedDoc = parse(currentOperationsDoc)
   const { fragments, functions } = extractFunctionsFromOperationDoc(parsedDoc)
 
@@ -73,6 +77,12 @@ const graphLibrary = async (options, command) => {
       fragments,
     })
   }
+
+  writeGraphQLOperationsSourceFile({
+    logger: log,
+    netlifyGraphConfig,
+    operationsDocString: normalizedOperationsDoc
+  })
 }
 
 /**

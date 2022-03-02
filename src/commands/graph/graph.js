@@ -8,6 +8,7 @@ const { createGraphOperationsCommand } = require('./graph-operations')
 const { createGraphOperationsImportCommand } = require('./graph-operations-import')
 const { createGraphOperationsShareCommand } = require('./graph-operations-share')
 const { createGraphPullCommand } = require('./graph-pull')
+const { createGraphSessionResetCommand } = require('./graph-session-reset')
 
 /**
  * The graph command
@@ -33,6 +34,7 @@ const createGraphCommand = (program) => {
   createGraphOperationsImportCommand(program)
   createGraphOperationsShareCommand(program)
   createGraphPullCommand(program)
+  createGraphSessionResetCommand(program)
 
   return program
     .command('graph')

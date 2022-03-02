@@ -127,8 +127,14 @@ const monitorCLISessionEvents = (input) => {
     const { events } = next
 
     if (events.length !== 0) {
-      const ackIds = await onEvents(events)
-      await OneGraphClient.ackCLISessionEvents({ appId, authToken: netlifyToken, sessionId, eventIds: ackIds })
+      let ackIds = [];
+      try {
+        ackIds = await onEvents(events)
+      } catch (eventHandlerError) {
+        warn(`Error handling event: ${eventHandlerError}`)
+      } finally {
+        await OneGraphClient.ackCLISessionEvents({ appId, authToken: netlifyToken, sessionId, eventIds: ackIds })
+      }
     }
 
     await enabledServiceWatcher(netlifyToken, appId)
@@ -530,7 +536,7 @@ const startOneGraphCLISession = async (input) => {
     onError: (fetchEventError) => {
       error(`Netlify Graph upstream error: ${fetchEventError}`)
     },
-    onClose: () => {},
+    onClose: () => { },
   })
 
   return async function unregisterWatchers() {
@@ -632,7 +638,7 @@ const ensureCLISession = async ({ metadata, netlifyToken, site, state }) => {
 const OneGraphCliClient = {
   ackCLISessionEvents: OneGraphClient.ackCLISessionEvents,
   executeCreatePersistedQueryMutation: OneGraphClient.executeCreatePersistedQueryMutation,
-  executeCreatePersistQueryTokenMutation: OneGraphClient.executeCreatePersistQueryTokenMutation,
+  executeCreateApiTokenMutation: OneGraphClient.executeCreateApiTokenMutation,
   fetchCliSessionEvents: OneGraphClient.fetchCliSessionEvents,
   ensureAppForSite,
   updateCLISessionMetadata,
