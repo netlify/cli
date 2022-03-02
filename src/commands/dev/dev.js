@@ -348,7 +348,7 @@ const dev = async (options, command) => {
     exit(1)
   }
 
-  command.setAnalyticsPayload({ projectType: settings.framework || 'custom', live: options.live })
+  command.setAnalyticsPayload({ projectType: settings.framework || 'custom', live: options.live, graph: options.graph })
 
   const startNetlifyGraphWatcher = Boolean(options.graph)
   if (startNetlifyGraphWatcher) {
