@@ -302,6 +302,7 @@ const runDeploy = async ({
 }) => {
   let results
   let deployId
+
   try {
     if (deployToProduction) {
       await prepareProductionDeploy({ siteData, api })
@@ -462,10 +463,26 @@ const deploy = async (options, command) => {
   await command.authenticate(options.auth)
 
   let siteId = options.site || site.id
+
   let siteData = {}
   if (siteId) {
     try {
-      siteData = await api.getSite({ siteId })
+      const [{ siteError, siteFoundById }, sites] = await Promise.all([
+        api
+          .getSite({ siteId })
+          .then((data) => ({ siteFoundById: data }))
+          .catch((error_) => ({ siteError: error_ })),
+        api.listSites({ name: options.site, filter: 'all' }),
+      ])
+      const siteFoundByName = sites.find((filteredSite) => filteredSite.name === options.site)
+      if (siteFoundById) {
+        siteData = siteFoundById
+      } else if (siteFoundByName) {
+        siteData = siteFoundByName
+        siteId = siteFoundByName.id
+      } else {
+        throw siteError
+      }
     } catch (error_) {
       // TODO specifically handle known cases (e.g. no account access)
       if (error_.status === 404) {
@@ -674,7 +691,7 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
     .option('-o, --open', 'Open site after deploy', false)
     .option('-m, --message <message>', 'A short message to include in the deploy log')
     .option('-a, --auth <token>', 'Netlify auth token to deploy with', env.NETLIFY_AUTH_TOKEN)
-    .option('-s, --site <id>', 'A site ID to deploy to', env.NETLIFY_SITE_ID)
+    .option('-s, --site <name-or-id>', 'A site name or ID to deploy to', env.NETLIFY_SITE_ID)
     .option('--json', 'Output deployment data as JSON')
     .option('--timeout <number>', 'Timeout to wait for deployment to finish', (value) => Number.parseInt(value))
     .option('--trigger', 'Trigger a new build of your site on Netlify without uploading local files')
@@ -687,6 +704,7 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
     )
     .addExamples([
       'netlify deploy',
+      'netlify deploy --site my-first-site',
       'netlify deploy --prod',
       'netlify deploy --prod --open',
       'netlify deploy --prodIfUnlocked',
