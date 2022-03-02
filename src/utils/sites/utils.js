@@ -12,8 +12,27 @@ const getTemplatesFromGitHub = async (token) => {
   return allTemplates
 }
 
-const createRepo = async (templateUrl, ghToken, siteName) => {
-  const resp = await fetch(`https://api.github.com/repos/${templateUrl.templateName}/generate`, {
+const validateTemplate = async ({ ghToken, templateName }) => {
+  const response = await fetch(`https://api.github.com/repos/${templateName}`, {
+    headers: {
+      Authorization: `token ${ghToken}`,
+    },
+  })
+
+  if (response.status === 404) {
+    return { exists: false }
+  }
+
+  if (!response.ok) {
+    throw new Error(`Error fetching template ${templateName}: ${await response.text()}`)
+  }
+
+  const data = await response.json()
+  return { exists: true, isTemplate: data.is_template }
+}
+
+const createRepo = async (templateName, ghToken, siteName) => {
+  const resp = await fetch(`https://api.github.com/repos/${templateName}/generate`, {
     method: 'POST',
     headers: {
       Authorization: `token ${ghToken}`,
@@ -27,4 +46,4 @@ const createRepo = async (templateUrl, ghToken, siteName) => {
   return data
 }
 
-module.exports = { getTemplatesFromGitHub, createRepo }
+module.exports = { getTemplatesFromGitHub, createRepo, validateTemplate }
