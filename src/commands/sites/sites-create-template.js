@@ -2,12 +2,14 @@
 
 const inquirer = require('inquirer')
 const pick = require('lodash/pick')
+const parseGitHubUrl = require('parse-github-url')
 const prettyjson = require('prettyjson')
+const terminalLink = require('terminal-link')
 
 const { chalk, error, getRepoData, log, logJson, track, warn } = require('../../utils')
 const { configureRepo } = require('../../utils/init/config')
 const { getGitHubToken } = require('../../utils/init/config-github')
-const { createRepo, getTemplatesFromGitHub } = require('../../utils/sites/utils')
+const { createRepo, getTemplatesFromGitHub, validateTemplate } = require('../../utils/sites/utils')
 
 const { getSiteNameInput } = require('./sites-create')
 
@@ -22,13 +24,39 @@ const fetchTemplates = async (token) => {
       slug: template.full_name,
     }))
 }
-const templateExists = async (token, root, repoShorthand) => {
-  const templatesFromGithubOrg = await getTemplatesFromGitHub(token)
-  return templatesFromGithubOrg.some(
-    (templateFromGithubOrg) =>
-      templateFromGithubOrg.html_url === `https://github.com/${root ? `${root}/` : ''}${repoShorthand}`,
-  )
+
+const getTemplateName = async ({ ghToken, options, repository }) => {
+  if (repository) {
+    const { repo } = parseGitHubUrl(repository)
+    return repo || `netlify-templates/${repository}`
+  }
+
+  if (options.url) {
+    const urlFromOptions = new URL(options.url)
+    return urlFromOptions.pathname.slice(1)
+  }
+
+  const templates = await fetchTemplates(ghToken)
+
+  log(`Choose one of our starter templates. Netlify will create a new repo for this template in your GitHub account.`)
+
+  const { templateName } = await inquirer.prompt([
+    {
+      type: 'list',
+      name: 'templateName',
+      message: 'Template:',
+      choices: templates.map((template) => ({
+        value: template.slug,
+        name: template.name,
+      })),
+    },
+  ])
+
+  return templateName
 }
+
+const getGitHubLink = ({ options, templateName }) => options.url || `https://github.com/${templateName}`
+
 /**
  * The sites:create-template command
  * @param repository {string}
@@ -36,7 +64,6 @@ const templateExists = async (token, root, repoShorthand) => {
  * @param {import('../base-command').BaseCommand} command
  */
 const sitesCreateTemplate = async (repository, options, command) => {
-  const netlifyTemplatesRepo = 'netlify-templates'
   const { api } = command.netlify
 
   await command.authenticate()
@@ -44,33 +71,22 @@ const sitesCreateTemplate = async (repository, options, command) => {
   const { globalConfig } = command.netlify
   const ghToken = await getGitHubToken({ globalConfig })
 
-  let { url: templateUrl } = options
-  if (repository) {
-    let root
-    if (await templateExists(ghToken, netlifyTemplatesRepo, repository)) {
-      root = netlifyTemplatesRepo
-    }
-    const urlFromArg = new URL(`https://github.com/${root ? `${root}/` : ''}${repository}`)
-    templateUrl = { templateName: urlFromArg.pathname.slice(1) }
-  } else if (templateUrl) {
-    const urlFromOptions = new URL(templateUrl)
-    templateUrl = { templateName: urlFromOptions.pathname.slice(1) }
-  } else {
-    const templates = await fetchTemplates(ghToken)
-
-    log(`Choose one of our starter templates. Netlify will create a new repo for this template in your GitHub account.`)
-
-    templateUrl = await inquirer.prompt([
-      {
-        type: 'list',
-        name: 'templateName',
-        message: 'Template:',
-        choices: templates.map((template) => ({
-          value: template.slug,
-          name: template.name,
-        })),
-      },
-    ])
+  const templateName = await getTemplateName({ ghToken, options, repository })
+  const { exists, isTemplate } = await validateTemplate({ templateName, ghToken })
+  if (!exists) {
+    const githubLink = getGitHubLink({ options, templateName })
+    error(
+      `Could not find template ${chalk.bold(templateName)}. Please verify it exists and you can ${terminalLink(
+        'access to it on GitHub',
+        githubLink,
+      )}`,
+    )
+    return
+  }
+  if (!isTemplate) {
+    const githubLink = getGitHubLink({ options, templateName })
+    error(`${terminalLink(chalk.bold(templateName), githubLink)} is not a valid GitHub template`)
+    return
   }
 
   const accounts = await api.listAccountsForUser()
@@ -104,12 +120,12 @@ const sitesCreateTemplate = async (repository, options, command) => {
       const siteName = inputName ? inputName.trim() : siteSuggestion
 
       // Create new repo from template
-      const repoResp = await createRepo(templateUrl, ghToken, siteName)
+      const repoResp = await createRepo(templateName, ghToken, siteName)
 
       if (repoResp.errors) {
         if (repoResp.errors[0].includes('Name already exists on this account')) {
           warn(
-            `Oh no! We found already a repository with this name. It seems you have already created a template with the name ${templateUrl.templateName}. Please try to run the command again and provide a different name.`,
+            `Oh no! We found already a repository with this name. It seems you have already created a template with the name ${templateName}. Please try to run the command again and provide a different name.`,
           )
           await inputSiteName()
         } else {
@@ -222,6 +238,10 @@ Create a site from a starter template.`,
     .option('-c, --with-ci', 'initialize CI hooks during site creation')
     .argument('[repository]', 'repository to use as starter template')
     .addHelpText('after', `(Beta) Create a site from starter template.`)
+    .addExamples([
+      'netlify sites:create-template nextjs-blog-theme',
+      'netlify sites:create-template my-github-profile/my-template',
+    ])
     .action(sitesCreateTemplate)
 
 module.exports = { createSitesFromTemplateCommand, fetchTemplates }
