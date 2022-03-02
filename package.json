@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "9.8.4",
+  "version": "9.10.0",
   "author": "Netlify Inc.",
   "contributors": [
     "Abraham Schilling <AbrahamSchilling@gmail.com> (https://gitlab.com/n4bb12)",
@@ -200,12 +200,12 @@
     "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,tools,scripts,site,tests,.github}/**/*.{mjs,cjs,js,md,yml,json,html}\" \"*.{mjs,cjs,js,yml,json,html}\" \".*.{mjs,cjs,js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\" \"!site/package-lock.json\" \"!.github/**/*.md\""
   },
   "dependencies": {
-    "@netlify/build": "^26.3.10",
-    "@netlify/config": "^17.0.15",
+    "@netlify/build": "^26.3.12",
+    "@netlify/config": "^17.0.16",
     "@netlify/framework-info": "^9.0.2",
     "@netlify/local-functions-proxy": "^1.1.1",
-    "@netlify/plugin-edge-handlers": "^3.0.6",
-    "@netlify/plugins-list": "^6.14.0",
+    "@netlify/plugin-edge-handlers": "^3.0.7",
+    "@netlify/plugins-list": "^6.15.0",
     "@netlify/routing-local-proxy": "^0.34.1",
     "@netlify/zip-it-and-ship-it": "^5.9.0",
     "@octokit/rest": "^18.0.0",
@@ -273,7 +273,7 @@
     "netlify": "^11.0.0",
     "netlify-headers-parser": "^6.0.2",
     "netlify-onegraph-internal": "0.0.50",
-    "netlify-redirect-parser": "^13.0.4",
+    "netlify-redirect-parser": "^13.0.5",
     "netlify-redirector": "^0.2.1",
     "node-fetch": "^2.6.0",
     "node-version-alias": "^1.0.1",
