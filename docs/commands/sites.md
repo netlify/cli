@@ -85,6 +85,13 @@ netlify sites:create-template
 - `httpProxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
+**Examples**
+
+```bash
+netlify sites:create-template nextjs-blog-theme
+netlify sites:create-template my-github-profile/my-template
+```
+
 ---
 ## `sites:delete`
 
