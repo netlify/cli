@@ -127,7 +127,7 @@ const monitorCLISessionEvents = (input) => {
     const { events } = next
 
     if (events.length !== 0) {
-      let ackIds = [];
+      let ackIds = []
       try {
         ackIds = await onEvents(events)
       } catch (eventHandlerError) {
@@ -536,7 +536,7 @@ const startOneGraphCLISession = async (input) => {
     onError: (fetchEventError) => {
       error(`Netlify Graph upstream error: ${fetchEventError}`)
     },
-    onClose: () => { },
+    onClose: () => {},
   })
 
   return async function unregisterWatchers() {

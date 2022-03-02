@@ -49,7 +49,7 @@ const graphLibrary = async (options, command) => {
     currentOperationsDoc = defaultExampleOperationsDoc
   }
 
-  const normalizedOperationsDoc = normalizeOperationsDoc(currentOperationsDoc);
+  const normalizedOperationsDoc = normalizeOperationsDoc(currentOperationsDoc)
 
   const parsedDoc = parse(currentOperationsDoc)
   const { fragments, functions } = extractFunctionsFromOperationDoc(parsedDoc)
@@ -81,7 +81,7 @@ const graphLibrary = async (options, command) => {
   writeGraphQLOperationsSourceFile({
     logger: log,
     netlifyGraphConfig,
-    operationsDocString: normalizedOperationsDoc
+    operationsDocString: normalizedOperationsDoc,
   })
 }
 

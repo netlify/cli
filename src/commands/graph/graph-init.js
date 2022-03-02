@@ -60,13 +60,13 @@ const graphInit = async (options, command) => {
     nfToken: netlifyToken,
     input: {
       appId: siteId,
-      scopes: ["MODIFY_SCHEMA", "PERSIST_QUERY"],
+      scopes: ['MODIFY_SCHEMA', 'PERSIST_QUERY'],
     },
   }
 
   const result = await executeCreateApiTokenMutation(variables, {
     siteId,
-  });
+  })
 
   const token =
     result.data &&
