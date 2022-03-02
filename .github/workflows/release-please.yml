@@ -20,7 +20,7 @@ jobs:
           package-name: 'netlify-cli'
       - uses: actions/checkout@v2
         if: ${{ steps.release.outputs.release_created }}
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: '*'
           cache: 'npm'
