@@ -3,6 +3,7 @@ const process = require('process')
 
 const { get } = require('dot-prop')
 const getPort = require('get-port')
+const jwt = require('jsonwebtoken')
 const isEmpty = require('lodash/isEmpty')
 
 const { supportsBackgroundFunctions } = require('../lib/account')
@@ -138,9 +139,9 @@ const getEnvSourceName = (source) => {
 
 // Takes a set of environment variables in the format provided by @netlify/config, augments it with variables from both
 // dot-env files and the process itself, and injects into `process.env`.
-const injectEnvVariables = async ({ env, site }) => {
+const injectEnvVariables = async ({ devConfig, env, site }) => {
   const environment = new Map(Object.entries(env))
-  const dotEnvFiles = await loadDotEnvFiles({ projectDir: site.root })
+  const dotEnvFiles = await loadDotEnvFiles({ envFiles: devConfig.envFiles, projectDir: site.root })
 
   dotEnvFiles.forEach(({ env: fileEnv, file }) => {
     Object.keys(fileEnv).forEach((key) => {
@@ -193,8 +194,38 @@ const acquirePort = async ({ configuredPort, defaultPort, errorMessage }) => {
   return acquiredPort
 }
 
+// Generates a Netlify Graph JWT with the following claims:
+// - site_id
+// - netlify_token -- the bearer token for the Netlify API
+// - authlify_token_id -- the authlify token ID stored for the site after
+//   enabling API Authentication.
+const generateNetlifyGraphJWT = ({ authlifyTokenId, netlifyToken, siteId }) => {
+  const claims = {
+    netlify_token: netlifyToken,
+    authlify_token_id: authlifyTokenId,
+    site_id: siteId,
+  }
+
+  return jwt.sign(
+    { 'https://netlify.com/jwt/claims': claims },
+    // doesn't matter. OneGraph doesn't check the signature. The presence of
+    // the Netlify API bearer token is enough because we've authenticated the
+    // user through `command.authenticate()`
+    'NOT_SIGNED',
+  )
+}
+
+const processOnExit = (fn) => {
+  const signals = ['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit']
+  signals.forEach((signal) => {
+    process.on(signal, fn)
+  })
+}
+
 module.exports = {
   getSiteInformation,
   injectEnvVariables,
   acquirePort,
+  generateNetlifyGraphJWT,
+  processOnExit,
 }

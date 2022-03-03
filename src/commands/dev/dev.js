@@ -1,4 +1,5 @@
 // @ts-check
+const events = require('events')
 const path = require('path')
 const process = require('process')
 const { promisify } = require('util')
@@ -11,8 +12,19 @@ const stripAnsiCc = require('strip-ansi-control-characters')
 const waitPort = require('wait-port')
 
 const { startFunctionsServer } = require('../../lib/functions/server')
-const { OneGraphCliClient, startOneGraphCLISession } = require('../../lib/one-graph/cli-client')
-const { getNetlifyGraphConfig } = require('../../lib/one-graph/cli-netlify-graph')
+const {
+  OneGraphCliClient,
+  loadCLISession,
+  markCliSessionInactive,
+  persistNewOperationsDocForSession,
+  startOneGraphCLISession,
+} = require('../../lib/one-graph/cli-client')
+const {
+  defaultExampleOperationsDoc,
+  getGraphEditUrlBySiteId,
+  getNetlifyGraphConfig,
+  readGraphQLOperationsSourceFile,
+} = require('../../lib/one-graph/cli-netlify-graph')
 const {
   NETLIFYDEV,
   NETLIFYDEVERR,
@@ -22,14 +34,19 @@ const {
   detectServerSettings,
   error,
   exit,
+  generateNetlifyGraphJWT,
   getSiteInformation,
+  getToken,
   injectEnvVariables,
   log,
+  normalizeConfig,
   openBrowser,
+  processOnExit,
   startForwardProxy,
   startLiveTunnel,
   startProxy,
   warn,
+  watchDebounced,
 } = require('../../utils')
 
 const { createDevExecCommand } = require('./dev-exec')
@@ -69,6 +86,30 @@ const isNonExistingCommandError = ({ command, error: commandError }) => {
 }
 
 /**
+ * @type {(() => Promise<void>)[]} - array of functions to run before the process exits
+ */
+const cleanupWork = []
+
+let cleanupStarted = false
+
+/**
+ * @param {object} input
+ * @param {number=} input.exitCode The exit code to return when exiting the process after cleanup
+ */
+const cleanupBeforeExit = async ({ exitCode }) => {
+  // If cleanup has started, then wherever started it will be responsible for exiting
+  if (!cleanupStarted) {
+    cleanupStarted = true
+    try {
+      // eslint-disable-next-line no-unused-vars
+      const cleanupFinished = await Promise.all(cleanupWork.map((cleanup) => cleanup()))
+    } finally {
+      process.exit(exitCode)
+    }
+  }
+}
+
+/**
  * Run a command and pipe stdout, stderr and stdin
  * @param {string} command
  * @param {NodeJS.ProcessEnv} env
@@ -90,31 +131,28 @@ const runCommand = (command, env = {}) => {
 
   // we can't try->await->catch since we don't want to block on the framework server which
   // is a long running process
-  // eslint-disable-next-line promise/catch-or-return,promise/prefer-await-to-then
-  commandProcess.then(async () => {
-    const result = await commandProcess
-    const [commandWithoutArgs] = command.split(' ')
-    // eslint-disable-next-line promise/always-return
-    if (result.failed && isNonExistingCommandError({ command: commandWithoutArgs, error: result })) {
-      log(
-        NETLIFYDEVERR,
-        `Failed running command: ${command}. Please verify ${chalk.magenta(`'${commandWithoutArgs}'`)} exists`,
-      )
-    } else {
-      const errorMessage = result.failed
-        ? `${NETLIFYDEVERR} ${result.shortMessage}`
-        : `${NETLIFYDEVWARN} "${command}" exited with code ${result.exitCode}`
+  // eslint-disable-next-line promise/catch-or-return
+  commandProcess
+    // eslint-disable-next-line promise/prefer-await-to-then
+    .then(async () => {
+      const result = await commandProcess
+      const [commandWithoutArgs] = command.split(' ')
+      if (result.failed && isNonExistingCommandError({ command: commandWithoutArgs, error: result })) {
+        log(
+          NETLIFYDEVERR,
+          `Failed running command: ${command}. Please verify ${chalk.magenta(`'${commandWithoutArgs}'`)} exists`,
+        )
+      } else {
+        const errorMessage = result.failed
+          ? `${NETLIFYDEVERR} ${result.shortMessage}`
+          : `${NETLIFYDEVWARN} "${command}" exited with code ${result.exitCode}`
 
-      log(`${errorMessage}. Shutting down Netlify Dev server`)
-    }
-    process.exit(1)
-  })
-  ;['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'].forEach((signal) => {
-    process.on(signal, () => {
-      commandProcess.kill('SIGTERM', { forceKillAfterTimeout: 500 })
-      process.exit()
+        log(`${errorMessage}. Shutting down Netlify Dev server`)
+      }
+
+      return await cleanupBeforeExit({ exitCode: 1 })
     })
-  })
+  processOnExit(async () => await cleanupBeforeExit({}))
 
   return commandProcess
 }
@@ -228,6 +266,44 @@ const printBanner = ({ url }) => {
   )
 }
 
+const startPollingForAPIAuthentication = async function (options) {
+  const { api, command, config, site, siteInfo } = options
+  const frequency = 5000
+
+  const helper = async (maybeSiteData) => {
+    const siteData = await (maybeSiteData || api.getSite({ siteId: site.id }))
+    const authlifyTokenId = siteData && siteData.authlify_token_id
+
+    const existingAuthlifyTokenId = config && config.netlifyGraphConfig && config.netlifyGraphConfig.authlifyTokenId
+    if (authlifyTokenId && authlifyTokenId !== existingAuthlifyTokenId) {
+      const netlifyToken = await command.authenticate()
+      // Only inject the authlify config if a token ID exists. This prevents
+      // calling command.authenticate() (which opens a browser window) if the
+      // user hasn't enabled API Authentication
+      const netlifyGraphConfig = {
+        netlifyToken,
+        authlifyTokenId: siteData.authlify_token_id,
+        siteId: site.id,
+      }
+      config.netlifyGraphConfig = netlifyGraphConfig
+
+      const netlifyGraphJWT = generateNetlifyGraphJWT(netlifyGraphConfig)
+
+      if (netlifyGraphJWT != null) {
+        // XXX(anmonteiro): this name is deprecated. Delete after 3/31/2022
+        process.env.ONEGRAPH_AUTHLIFY_TOKEN = netlifyGraphJWT
+        process.env.NETLIFY_GRAPH_TOKEN = netlifyGraphJWT
+      }
+    } else {
+      delete config.netlifyGraphConfig
+    }
+
+    setTimeout(helper, frequency)
+  }
+
+  await helper(siteInfo)
+}
+
 /**
  * The dev command
  * @param {import('commander').OptionValues} options
@@ -253,7 +329,8 @@ const dev = async (options, command) => {
     )
   }
 
-  await injectEnvVariables({ env: command.netlify.cachedConfig.env, site })
+  await injectEnvVariables({ devConfig, env: command.netlify.cachedConfig.env, site })
+
   const { addonsUrls, capabilities, siteUrl, timeouts } = await getSiteInformation({
     // inherited from base command --offline
     offline: options.offline,
@@ -271,12 +348,20 @@ const dev = async (options, command) => {
     exit(1)
   }
 
-  command.setAnalyticsPayload({ projectType: settings.framework || 'custom', live: options.live })
+  command.setAnalyticsPayload({ projectType: settings.framework || 'custom', live: options.live, graph: options.graph })
+
+  const startNetlifyGraphWatcher = Boolean(options.graph)
+  if (startNetlifyGraphWatcher) {
+    startPollingForAPIAuthentication({ api, command, config, site, siteInfo })
+  }
 
   await startFunctionsServer({
+    api,
+    command,
     config,
     settings,
     site,
+    siteInfo,
     siteUrl,
     capabilities,
     timeouts,
@@ -295,8 +380,6 @@ const dev = async (options, command) => {
   process.env.URL = url
   process.env.DEPLOY_URL = url
 
-  const startNetlifyGraphWatcher = Boolean(options.graph)
-
   if (startNetlifyGraphWatcher && options.offline) {
     warn(`Unable to start Netlify Graph in offline mode`)
   } else if (startNetlifyGraphWatcher && !site.id) {
@@ -308,11 +391,75 @@ const dev = async (options, command) => {
   } else if (startNetlifyGraphWatcher) {
     const netlifyToken = await command.authenticate()
     await OneGraphCliClient.ensureAppForSite(netlifyToken, site.id)
-    const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options, settings })
 
-    log(`Starting Netlify Graph session, to edit your library run \`netlify graph:edit\` in another tab`)
+    let stopWatchingCLISessions
 
-    startOneGraphCLISession({ netlifyGraphConfig, netlifyToken, site, state })
+    const createOrResumeSession = async function () {
+      const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options, settings })
+
+      let graphqlDocument = readGraphQLOperationsSourceFile(netlifyGraphConfig)
+
+      if (!graphqlDocument || graphqlDocument.trim().length === 0) {
+        graphqlDocument = defaultExampleOperationsDoc
+      }
+
+      stopWatchingCLISessions = await startOneGraphCLISession({ netlifyGraphConfig, netlifyToken, site, state })
+
+      // Should be created by startOneGraphCLISession
+      const oneGraphSessionId = loadCLISession(state)
+
+      await persistNewOperationsDocForSession({
+        netlifyGraphConfig,
+        netlifyToken,
+        oneGraphSessionId,
+        operationsDoc: graphqlDocument,
+        siteId: site.id,
+        siteRoot: site.root,
+      })
+
+      return oneGraphSessionId
+    }
+
+    const configWatcher = new events.EventEmitter()
+
+    // Only set up a watcher if we know the config path.
+    const { configPath } = command.netlify.site
+    if (configPath) {
+      // chokidar handle
+      command.configWatcherHandle = await watchDebounced(configPath, {
+        depth: 1,
+        onChange: async () => {
+          const cwd = options.cwd || process.cwd()
+          const [token] = await getToken(options.auth)
+          const { config: newConfig } = await command.getConfig({ cwd, state, token, ...command.netlify.apiUrlOpts })
+
+          const normalizedNewConfig = normalizeConfig(newConfig)
+          configWatcher.emit('change', normalizedNewConfig)
+        },
+      })
+
+      processOnExit(async () => {
+        await command.configWatcherHandle.close()
+      })
+    }
+
+    // Set up a handler for config changes.
+    configWatcher.on('change', (newConfig) => {
+      command.netlify.config = newConfig
+      stopWatchingCLISessions()
+      createOrResumeSession()
+    })
+
+    const oneGraphSessionId = await createOrResumeSession()
+    const cleanupSession = () => markCliSessionInactive({ netlifyToken, sessionId: oneGraphSessionId, siteId: site.id })
+
+    cleanupWork.push(cleanupSession)
+
+    const graphEditUrl = getGraphEditUrlBySiteId({ siteId: site.id, oneGraphSessionId })
+
+    log(
+      `Starting Netlify Graph session, to edit your library visit ${graphEditUrl} or run \`netlify graph:edit\` in another tab`,
+    )
   }
 
   printBanner({ url })
@@ -364,8 +511,10 @@ const createDevCommand = (program) => {
       'netlify dev',
       'netlify dev -d public',
       'netlify dev -c "hugo server -w" --targetPort 1313',
+      'netlify dev --graph',
       'BROWSER=none netlify dev # disable browser auto opening',
     ])
     .action(dev)
 }
+
 module.exports = { createDevCommand }

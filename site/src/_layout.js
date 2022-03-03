@@ -1,3 +1,4 @@
+import algoliasearch from 'algoliasearch/lite.js'
 import PropTypes from 'prop-types'
 import React from 'react'
 import { Helmet } from 'react-helmet'
@@ -8,6 +9,8 @@ import styled from 'styled-components'
 import { borderColor } from 'styled-system'
 
 const breakpoint = `@media screen and (min-width: 48em)`
+
+const searchClient = algoliasearch('4RTNPM1QF9', '0ab695b5d73241c475f6b0bfed125bcf')
 
 export const Root = styled.div`
   min-height: 100vh;
@@ -400,7 +403,7 @@ export default class Layout extends React.Component {
 
         <Root>
           {menu && <Overlay onClick={() => update(close)} />}
-          <InstantSearch appId={'4RTNPM1QF9'} apiKey={'0ab695b5d73241c475f6b0bfed125bcf'} indexName={'cli-docs'}>
+          <InstantSearch searchClient={searchClient} indexName="cli-docs">
             <Configure />
             <Sidebar open={menu} onClick={() => update(close)}>
               <Nav

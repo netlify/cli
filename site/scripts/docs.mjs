@@ -1,15 +1,17 @@
 // @ts-check
-import { basename, join } from 'path'
+import { basename } from 'path'
 import { env } from 'process'
 import { fileURLToPath } from 'url'
 
 import markdownMagic from 'markdown-magic'
 import stripAnsi from 'strip-ansi'
 
+import { normalizeBackslash } from '../../src/lib/path.js'
+
 import { generateCommandData } from './generate-command-data.mjs'
 
-const rootDir = fileURLToPath(new URL('../..', import.meta.url))
-const markdownFiles = [join(rootDir, 'README.md'), join(rootDir, 'docs/**/**.md')]
+const rootDir = normalizeBackslash(fileURLToPath(new URL('../..', import.meta.url)))
+const markdownFiles = [`${rootDir}/README.md`, `${rootDir}/docs/**/**.md`]
 
 env.DOCS_GEN = 'TRUE'
 
@@ -21,33 +23,33 @@ const config = {
   transforms: {
     GENERATE_COMMANDS_DOCS(content, options, instance) {
       const command = basename(instance.originalPath, '.md')
-      // console.log('command', command)
       const info = commandData[command]
-      // console.log('info', info)
-      if (info) {
-        let md = ''
-        // Parent Command
-        md += formatDescription(stripAnsi(info.description))
-        md += formatUsage(command, info)
-        md += formatArgs(info.args)
-        md += formatFlags(info.flags)
-        md += commandListSubCommandDisplay(info.commands)
-        md += commandExamples(info.examples)
-        if (info.commands.length !== 0) {
-          md += `---\n`
-          info.commands.forEach((subCmd) => {
-            // Child Commands
-            md += formatSubCommandTitle(subCmd.name)
-            md += formatDescription(stripAnsi(subCmd.description))
-            md += formatUsage(subCmd.name, subCmd)
-            md += formatArgs(subCmd.args)
-            md += formatFlags(subCmd.flags)
-            md += commandExamples(subCmd.examples)
-            md += `---\n`
-          })
-        }
-        return md
+
+      if (!info) {
+        return
       }
+      let md = ''
+      // Parent Command
+      md += formatDescription(stripAnsi(info.description))
+      md += formatUsage(command, info)
+      md += formatArgs(info.args)
+      md += formatFlags(info.flags)
+      md += commandListSubCommandDisplay(info.commands)
+      md += commandExamples(info.examples)
+      if (info.commands.length !== 0) {
+        md += `---\n`
+        info.commands.forEach((subCmd) => {
+          // Child Commands
+          md += formatSubCommandTitle(subCmd.name)
+          md += formatDescription(stripAnsi(subCmd.description))
+          md += formatUsage(subCmd.name, subCmd)
+          md += formatArgs(subCmd.args)
+          md += formatFlags(subCmd.flags)
+          md += commandExamples(subCmd.examples)
+          md += `---\n`
+        })
+      }
+      return md
     },
     GENERATE_COMMANDS_LIST() {
       /* Generate Command List */

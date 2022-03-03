@@ -6,6 +6,7 @@ const {
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
   error: errorExit,
+  generateNetlifyGraphJWT,
   getInternalFunctionsDir,
   log,
 } = require('../../utils')
@@ -44,7 +45,9 @@ const buildClientContext = function (headers) {
   }
 }
 
-const createHandler = function ({ functionsRegistry }) {
+const createHandler = function (options) {
+  const { config, functionsRegistry } = options
+
   return async function handler(request, response) {
     // handle proxies without path re-writes (http-servr)
     const cleanPath = request.path.replace(/^\/.netlify\/(functions|builders)/, '')
@@ -105,12 +108,20 @@ const createHandler = function ({ functionsRegistry }) {
       rawQuery,
     }
 
+    if (config && config.netlifyGraphConfig && config.netlifyGraphConfig.authlifyTokenId != null) {
+      // XXX(anmonteiro): this name is deprecated. Delete after 3/31/2022
+      const jwt = generateNetlifyGraphJWT(config.netlifyGraphConfig)
+      event.authlifyToken = jwt
+      event.netlifyGraphToken = jwt
+    }
+
     const clientContext = buildClientContext(request.headers) || {}
 
     if (func.isBackground) {
       handleBackgroundFunction(functionName, response)
 
-      const { error } = await func.invoke(event, clientContext)
+      // background functions do not receive a clientContext
+      const { error } = await func.invoke(event)
 
       handleBackgroundFunctionResult(functionName, error)
     } else if (await func.isScheduled()) {
@@ -154,14 +165,15 @@ const createHandler = function ({ functionsRegistry }) {
   }
 }
 
-const getFunctionsServer = function ({ buildersPrefix, functionsPrefix, functionsRegistry, siteUrl }) {
+const getFunctionsServer = function (options) {
+  const { buildersPrefix = '', functionsPrefix = '', functionsRegistry, siteUrl } = options
   // performance optimization, load express on demand
   // eslint-disable-next-line node/global-require
   const express = require('express')
   // eslint-disable-next-line node/global-require
   const expressLogging = require('express-logging')
   const app = express()
-  const functionHandler = createHandler({ functionsRegistry })
+  const functionHandler = createHandler(options)
 
   app.set('query parser', 'simple')
 
@@ -189,16 +201,8 @@ const getFunctionsServer = function ({ buildersPrefix, functionsPrefix, function
   return app
 }
 
-const startFunctionsServer = async ({
-  buildersPrefix = '',
-  capabilities,
-  config,
-  functionsPrefix = '',
-  settings,
-  site,
-  siteUrl,
-  timeouts,
-}) => {
+const startFunctionsServer = async (options) => {
+  const { capabilities, config, settings, site, siteUrl, timeouts } = options
   const internalFunctionsDir = await getInternalFunctionsDir({ base: site.root })
 
   // The order of the function directories matters. Leftmost directories take
@@ -217,12 +221,7 @@ const startFunctionsServer = async ({
 
     await functionsRegistry.scan(functionsDirectories)
 
-    const server = getFunctionsServer({
-      functionsRegistry,
-      siteUrl,
-      functionsPrefix,
-      buildersPrefix,
-    })
+    const server = getFunctionsServer(Object.assign(options, { functionsRegistry }))
 
     await startWebServer({ server, settings })
   }

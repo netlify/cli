@@ -8,6 +8,7 @@ const getPort = require('get-port')
 const waitPort = require('wait-port')
 
 const fs = require('../../src/lib/fs')
+const { NetlifyFunction } = require('../../src/lib/functions/netlify-function')
 
 const callCli = require('./utils/call-cli')
 const cliPath = require('./utils/cli-path')
@@ -20,6 +21,20 @@ const { killProcess } = require('./utils/process')
 const { withSiteBuilder } = require('./utils/site-builder')
 
 const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
+
+test('should return the correct function url for a NetlifyFunction object', (t) => {
+  const port = 7331
+  const functionName = 'test-function'
+
+  const functionUrl = `http://localhost:${port}/.netlify/functions/${functionName}`
+
+  const ntlFunction = new NetlifyFunction({
+    name: functionName,
+    settings: { functionsPort: port },
+  })
+
+  t.is(ntlFunction.url, functionUrl)
+})
 
 test('should return function response when invoked with no identity argument', async (t) => {
   await withSiteBuilder('function-invoke-with-no-identity-argument', async (builder) => {
@@ -172,7 +187,7 @@ test('should install function template dependencies on a site-level `package.jso
       },
       {
         question: 'Pick a template',
-        answer: answerWithValue(`${DOWN}${CONFIRM}`),
+        answer: answerWithValue(`${DOWN}${DOWN}${CONFIRM}`),
       },
       {
         question: 'Name your function',
@@ -248,7 +263,7 @@ test('should install function template dependencies in the function sub-director
       },
       {
         question: 'Pick a template',
-        answer: answerWithValue(`${DOWN}${CONFIRM}`),
+        answer: answerWithValue(`${DOWN}${DOWN}${CONFIRM}`),
       },
       {
         question: 'Name your function',
@@ -795,6 +810,31 @@ test('should inject env variables', async (t) => {
     await withFunctionsServer({ builder, args: ['--port', port], port }, async () => {
       const response = await got(`http://localhost:${port}/.netlify/functions/echo-env`).text()
       t.is(response, 'FROM_CONFIG_FILE')
+    })
+  })
+})
+
+test('should handle content-types with charset', async (t) => {
+  await withSiteBuilder('site-with-env-function', async (builder) => {
+    await builder
+      .withNetlifyToml({
+        config: { functions: { directory: 'functions' } },
+      })
+      .withFunction({
+        path: 'echo-event.js',
+        handler: async (event) => ({
+          statusCode: 200,
+          body: JSON.stringify(event),
+        }),
+      })
+      .buildAsync()
+
+    const port = await getPort()
+    await withFunctionsServer({ builder, args: ['--port', port], port }, async () => {
+      const response = await got(`http://localhost:${port}/.netlify/functions/echo-event`, {
+        headers: { 'content-type': 'application/json; charset=utf-8' },
+      }).json()
+      t.is(response.isBase64Encoded, false)
     })
   })
 })

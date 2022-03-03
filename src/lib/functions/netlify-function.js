@@ -131,7 +131,13 @@ class NetlifyFunction {
   }
 
   get url() {
-    return `http://localhost:${this.settings.port}/.netlify/functions/${this.name}`
+    // This line fixes the issue here https://github.com/netlify/cli/issues/4116
+    // Not sure why `settings.port` was used here nor does a valid reference exist.
+    // However, it remains here to serve whatever purpose for which it was added.
+    const port = this.settings.port || this.settings.functionsPort
+
+    const url = new URL(`/.netlify/functions/${this.name}`, `http://localhost:${port}`)
+    return url.href
   }
 }
 

@@ -1,8 +1,7 @@
 // @ts-check
+import { digraph } from 'graphviz'
 
-const graphviz = require('graphviz')
-
-class DependencyGraph {
+export class DependencyGraph {
   /** @type {Map<string, Set<string>>} */
   graph = new Map()
 
@@ -66,10 +65,10 @@ class DependencyGraph {
   /**
    * Visualizes a dependency graph the output is a graphviz graph
    * that can be printed to `.to_dot()` or rendered to a png file
-   * @returns {graphviz.Graph}
+   * @returns {import('graphviz').Graph}
    */
   visualize() {
-    const graph = graphviz.digraph('G')
+    const graph = digraph('G')
     this.graph.forEach((edges, node) => {
       graph.addNode(node)
       edges.forEach((edge) => {
@@ -80,5 +79,3 @@ class DependencyGraph {
     return graph
   }
 }
-
-module.exports = { DependencyGraph }

@@ -7,6 +7,7 @@ misc
 coverage
 .idea
 .vscode
+!.vscode/launch.json
 .github/styles
 
 # node sdk
@@ -31,3 +32,5 @@ site/src/**/*.md
 tests/integration/hugo-site/resources
 tests/integration/hugo-site/out
 tests/integration/hugo-site/.hugo_build.lock
+_test_out/**
+

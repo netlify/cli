@@ -8,8 +8,8 @@ const { injectEnvVariables } = require('../../utils')
  * @param {import('../base-command.mjs').BaseCommand} command
  */
 const devExec = async (cmd, options, command) => {
-  const { cachedConfig, site } = command.netlify
-  await injectEnvVariables({ env: cachedConfig.env, site })
+  const { cachedConfig, config, site } = command.netlify
+  await injectEnvVariables({ devConfig: { ...config.dev }, env: cachedConfig.env, site })
 
   await execa(cmd, command.args.slice(1), {
     stdio: 'inherit',

@@ -1,0 +1,20 @@
+{
+  "name": "{{name}}",
+  "version": "1.0.0",
+  "description": "netlify functions:create - scheduled function in JavaScript",
+  "main": "{{name}}.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "netlify",
+    "serverless",
+    "javascript",
+    "schedule"
+  ],
+  "author": "Netlify",
+  "license": "MIT",
+  "dependencies": {
+    "@netlify/functions": "^1.0.0"
+  }
+}

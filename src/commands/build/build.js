@@ -1,6 +1,6 @@
 // @ts-check
 const { getBuildOptions, runBuild } = require('../../lib/build')
-const { error, exit, getToken } = require('../../utils')
+const { error, exit, generateNetlifyGraphJWT, getToken } = require('../../utils')
 
 /**
  * @param {import('../../lib/build').BuildConfig} options
@@ -12,6 +12,32 @@ const checkOptions = ({ cachedConfig: { siteInfo = {} }, token }) => {
 
   if (!token) {
     error('Could not find the access token. Please run netlify login.')
+  }
+}
+
+const injectNetlifyGraphEnv = async function (command, { api, buildOptions, site }) {
+  const siteData = await api.getSite({ siteId: site.id })
+  const authlifyTokenId = siteData && siteData.authlify_token_id
+
+  if (authlifyTokenId) {
+    const netlifyToken = await command.authenticate()
+    // Only inject the authlify config if a token ID exists. This prevents
+    // calling command.authenticate() (which opens a browser window) if the
+    // user hasn't enabled API Authentication
+    const netlifyGraphConfig = {
+      netlifyToken,
+      authlifyTokenId,
+      siteId: site.id,
+    }
+
+    const netlifyGraphJWT = generateNetlifyGraphJWT(netlifyGraphConfig)
+
+    if (netlifyGraphJWT != null) {
+      // XXX(anmonteiro): this name is deprecated. Delete after 3/31/2022
+      const varData = { sources: ['general'], value: netlifyGraphJWT }
+      buildOptions.cachedConfig.env.ONEGRAPH_AUTHLIFY_TOKEN = varData
+      buildOptions.cachedConfig.env.NETLIFY_GRAPH_TOKEN = varData
+    }
   }
 }
 
@@ -34,6 +60,8 @@ const build = async (options, command) => {
 
   if (!options.offline) {
     checkOptions(buildOptions)
+    const { api, site } = command.netlify
+    await injectNetlifyGraphEnv(command, { api, site, buildOptions })
   }
 
   const { exitCode } = await runBuild(buildOptions)

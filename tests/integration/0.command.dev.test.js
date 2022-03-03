@@ -199,6 +199,25 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
+  test(testName('should follow 301 redirect to an external server', args), async (t) => {
+    await withSiteBuilder('site-redirects-file-to-external-301', async (builder) => {
+      const externalServer = startExternalServer()
+      const { port } = externalServer.address()
+      builder.withRedirectsFile({
+        redirects: [{ from: '/api/*', to: `http://localhost:${port}/:splat`, status: 301 }],
+      })
+
+      await builder.buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async (server) => {
+        const response = await got(`${server.url}/api/ping`).json()
+        t.deepEqual(response, { body: {}, method: 'GET', url: '/ping' })
+      })
+
+      externalServer.close()
+    })
+  })
+
   test(testName('should redirect POST request if content-type is missing', args), async (t) => {
     await withSiteBuilder('site-with-post-no-content-type', async (builder) => {
       builder.withNetlifyToml({

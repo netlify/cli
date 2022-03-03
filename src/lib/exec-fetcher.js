@@ -8,7 +8,7 @@ const terminalLink = require('terminal-link')
 
 // cannot directly import from ../utils as it would create a circular dependency.
 // the file `src/utils/live-tunnel.js` depends on this file
-const { NETLIFYDEVWARN, chalk, error, log } = require('../utils/command-helpers')
+const { NETLIFYDEVWARN, error, log } = require('../utils/command-helpers')
 const execa = require('../utils/execa')
 
 const isWindows = () => process.platform === 'win32'
@@ -127,9 +127,7 @@ const fetchLatestVersion = async ({ destination, execName, extension, latestVers
 
       const issueLink = terminalLink('Create a new CLI issue', createIssueLink.href)
 
-      error(`The operating system ${chalk.cyan(platform)} with the CPU architecture ${chalk.cyan(
-        arch,
-      )} is currently not supported!
+      error(`The operating system ${platform} with the CPU architecture ${arch} is currently not supported!
 
 Please open up an issue on our CLI repository so that we can support it:
 ${issueLink}`)

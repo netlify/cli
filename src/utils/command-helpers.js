@@ -4,8 +4,12 @@ const process = require('process')
 const { format, inspect } = require('util')
 
 const { Instance: ChalkInstance } = require('chalk')
+const chokidar = require('chokidar')
+const decache = require('decache')
 const WSL = require('is-wsl')
+const debounce = require('lodash/debounce')
 const { default: omit } = require('omit.js')
+const pEvent = require('p-event')
 
 const { name, version } = require('../../package.json')
 const { clearSpinner, startSpinner } = require('../lib/spinner')
@@ -46,8 +50,6 @@ const USER_AGENT = `${name}/${version} ${platform}-${arch} node-${process.versio
 
 /** A list of base command flags that needs to be sorted down on documentation and on help pages */
 const BASE_FLAGS = new Set(['--debug', '--httpProxy', '--httpProxyCertificateFilename'])
-
-const { NETLIFY_AUTH_TOKEN } = process.env
 
 // eslint-disable-next-line no-magic-numbers
 const NETLIFY_CYAN = chalk.rgb(40, 180, 170)
@@ -121,6 +123,7 @@ const getToken = async (tokenFromOptions) => {
     return [tokenFromOptions, 'flag']
   }
   // 2. then Check ENV var
+  const { NETLIFY_AUTH_TOKEN } = process.env
   if (NETLIFY_AUTH_TOKEN && NETLIFY_AUTH_TOKEN !== 'null') {
     return [NETLIFY_AUTH_TOKEN, 'env']
   }
@@ -199,6 +202,34 @@ const normalizeConfig = (config) =>
     ? { ...config, build: omit(config.build, ['publish', 'publishOrigin']) }
     : config
 
+const DEBOUNCE_WAIT = 100
+
+const watchDebounced = async (target, { depth, onAdd = () => {}, onChange = () => {}, onUnlink = () => {} }) => {
+  const watcher = chokidar.watch(target, { depth, ignored: /node_modules/, ignoreInitial: true })
+
+  await pEvent(watcher, 'ready')
+
+  const debouncedOnChange = debounce(onChange, DEBOUNCE_WAIT)
+  const debouncedOnUnlink = debounce(onUnlink, DEBOUNCE_WAIT)
+  const debouncedOnAdd = debounce(onAdd, DEBOUNCE_WAIT)
+
+  watcher
+    .on('change', (path) => {
+      decache(path)
+      debouncedOnChange(path)
+    })
+    .on('unlink', (path) => {
+      decache(path)
+      debouncedOnUnlink(path)
+    })
+    .on('add', (path) => {
+      decache(path)
+      debouncedOnAdd(path)
+    })
+
+  return watcher
+}
+
 module.exports = {
   BANG,
   chalk,
@@ -218,4 +249,5 @@ module.exports = {
   sortOptions,
   USER_AGENT,
   warn,
+  watchDebounced,
 }

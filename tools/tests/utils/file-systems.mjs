@@ -1,11 +1,11 @@
-const { join } = require('path')
+import { join } from 'path'
 
 const baseFiles = {
   'npm-shrinkwrap.json': '',
   'README.md': '',
 }
 
-const simpleMockedFileSystem = {
+export const simpleMockedFileSystem = {
   [join('src/nested/a.js')]: `const b = require('./b');const asdf = require('asdf'); const {c} = require('../c');`,
   [join('src/nested/b.js')]: '',
   [join('src/c/index.js')]: `const d = require('../d');`,
@@ -16,7 +16,7 @@ const simpleMockedFileSystem = {
   ...baseFiles,
 }
 
-const esModuleMockedFileSystem = {
+export const esModuleMockedFileSystem = {
   [join('src/nested/a.js')]: `import b from './b';import asdf from 'asdf'; import {c} from '../c';`,
   [join('src/nested/b.js')]: '',
   [join('src/c/index.js')]: `import * as d from '../d';`,
@@ -27,7 +27,7 @@ const esModuleMockedFileSystem = {
   ...baseFiles,
 }
 
-const callCliMockedFileSystem = {
+export const callCliMockedFileSystem = {
   [join('src/commands/dev.js')]: `const {c} = require('../utils/c');`,
   [join('src/commands/build/index.js')]: `const {c} = require('../../utils/c');`,
   [join('src/utils/c.js')]: '',
@@ -35,5 +35,3 @@ const callCliMockedFileSystem = {
   [join('tests/c.test.js')]: ` `,
   ...baseFiles,
 }
-
-module.exports = { simpleMockedFileSystem, callCliMockedFileSystem, esModuleMockedFileSystem }

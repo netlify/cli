@@ -1,13 +1,14 @@
 // @ts-check
-const { join } = require('path')
+import { join } from 'path'
 
-const ts = require('typescript')
+import ts from 'typescript'
+
+import { resolveRelativeModule } from './file-visitor.mjs'
 
 const COMMANDS = 'src/commands'
-const { resolveRelativeModule } = require('./file-visitor')
 
 /** @type {import('./types').visitorPlugin[]} */
-module.exports = [
+export const visitorPlugins = [
   (node) => {
     // check if `await execa(cliPath, ['build', ...flags], {` is used for the command
     if (

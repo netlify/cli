@@ -477,8 +477,14 @@ const createFunctionAddon = async function ({ addonName, addons, api, siteData, 
  * @param {(command: import('../base-command.mjs').BaseCommand) => any} config.onComplete
  */
 const handleOnComplete = async ({ command, onComplete }) => {
+  const { config } = command.netlify
+
   if (onComplete) {
-    await injectEnvVariables({ env: command.netlify.cachedConfig.env, site: command.netlify.site })
+    await injectEnvVariables({
+      devConfig: { ...config.dev },
+      env: command.netlify.cachedConfig.env,
+      site: command.netlify.site,
+    })
     await onComplete.call(command)
   }
 }
@@ -491,6 +497,8 @@ const handleOnComplete = async ({ command, onComplete }) => {
  * @param {string} config.fnPath
  */
 const handleAddonDidInstall = async ({ addonCreated, addonDidInstall, command, fnPath }) => {
+  const { config } = command.netlify
+
   if (!addonCreated || !addonDidInstall) {
     return
   }
@@ -508,7 +516,11 @@ const handleAddonDidInstall = async ({ addonCreated, addonDidInstall, command, f
     return
   }
 
-  await injectEnvVariables({ env: command.netlify.cachedConfig.env, site: command.netlify.site })
+  await injectEnvVariables({
+    devConfig: { ...config.dev },
+    env: command.netlify.cachedConfig.env,
+    site: command.netlify.site,
+  })
   addonDidInstall(fnPath)
 }
 

@@ -24,6 +24,7 @@ netlify sites
 | Subcommand | description  |
 |:--------------------------- |:-----|
 | [`sites:create`](/docs/commands/sites.md#sitescreate) | Create an empty site (advanced)  |
+| [`sites:create-template`](/docs/commands/sites.md#sitescreate-template) | (Beta) Create a site from a starter template  |
 | [`sites:delete`](/docs/commands/sites.md#sitesdelete) | Delete a site  |
 | [`sites:list`](/docs/commands/sites.md#siteslist) | List all sites you have access to  |
 
@@ -57,6 +58,40 @@ netlify sites:create
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
+
+---
+## `sites:create-template`
+
+(Beta) Create a site from a starter template
+Create a site from a starter template.
+
+**Usage**
+
+```bash
+netlify sites:create-template
+```
+
+**Arguments**
+
+- repository - repository to use as starter template
+
+**Flags**
+
+- `account-slug` (*string*) - account slug to create the site under
+- `name` (*string*) - name of site
+- `url` (*string*) - template url
+- `with-ci` (*boolean*) - initialize CI hooks during site creation
+- `debug` (*boolean*) - Print debugging information
+- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
+
+**Examples**
+
+```bash
+netlify sites:create-template
+netlify sites:create-template nextjs-blog-theme
+netlify sites:create-template my-github-profile/my-template
+```
 
 ---
 ## `sites:delete`

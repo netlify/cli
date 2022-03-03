@@ -1,10 +1,391 @@
-query ExampleQuery($package: String!) @netlify(id: "d86699fb-ddfc-4833-9d9a-f3497cb7c992", doc: "A test query to snapshot") {
-  npm {
-    package(name: $package) {
+fragment LoggedInServicesFragment on OneGraphServiceMetadata @netlify(id: """12b5bdea-9bab-4124-a731-5e697b1553be""", doc: """Subset of LoggedInServices""") {
+  friendlyServiceName
+  service
+  isLoggedIn
+  usedTestFlow
+  serviceInfo {
+    logoUrl
+    availableScopes {
+      category
+      scope
+      display
+      isDefault
+      isRequired
+      description
+      title
+    }
+  }
+  grantedScopes {
+    scope
+  }
+  foreignUserId
+}
+
+fragment ServiceAuthFragment on OneGraphServiceAuth @netlify(id: """12b5bdea-9bab-4164-a731-5e697b1553be""", doc: """Basic info on a Service Auth""") {
+  id
+  service
+  clientId
+  revealTokens
+  scopes
+}
+
+fragment AppCORSOriginFragment on OneGraphApp @netlify(id: """e3d4bb8b-2fb5-48d8-b051-db6027224145""", doc: """Allowed CORS origins for calls to a site's Graph.""") {
+  id
+  corsOrigins
+  customCorsOrigins {
+    friendlyServiceName
+    displayName
+    encodedValue
+  }
+  netlifySiteNames
+}
+
+mutation UpdateCLISessionMetadataMutation($nfToken: String!, $sessionId: String!, $metadata: JSON!) @netlify(id: """16a58acb-8188-4a47-bc93-1f4a5ef805c0""", doc: """Modify the metadata of an existing CLI session (an intentionally untype bag of `JSON`).""") {
+  oneGraph(auths: {netlifyAuth: {oauthToken: $nfToken}}) {
+    updateNetlifyCliSession(input: {id: $sessionId, metadata: $metadata}) {
+      session {
+        id
+        name
+        metadata
+        createdAt
+        lastEventAt
+      }
+    }
+  }
+}
+
+query AppSchemaQuery($nfToken: String!, $appId: String!) @netlify(id: """30aeff10-e743-473e-bae0-438a48074edc""", doc: """
+Get the _metadata_ about a site's current GraphQL schema:
+
+- enabled services
+- schema id
+- creation date
+
+etc.
+""") {
+  oneGraph(auths: {netlifyAuth: {oauthToken: $nfToken}}) {
+    app(id: $appId) {
+      graphQLSchema {
+        appId
+        createdAt
+        id
+        services {
+          friendlyServiceName
+          logoUrl
+          service
+          slug
+          supportsCustomRedirectUri
+          supportsCustomServiceAuth
+          supportsOauthLogin
+        }
+        updatedAt
+      }
+    }
+  }
+}
+
+mutation DestroyTokenMutation($nfToken: String!, $token: String, $authlifyTokenId: String) @netlify(id: """3d069fc8-3a03-40c8-8637-ddcf33692c34""", doc: """Delete a OneGraph personal token for a user's site""") {
+  oneGraph(auths: {netlifyAuth: {oauthToken: $nfToken}}) {
+    destroyToken(token: $token, authlifyTokenId: $authlifyTokenId)
+  }
+}
+
+mutation SignOutServicesMutation($services: [OneGraphServiceEnum!]!, $nfToken: String!, $authlifyTokenId: String!) @netlify(id: """3d069fc8-3a03-40c8-8637-ddcf33692c99""", doc: """Sign out of a service associated with a Authlify token""") {
+  signoutServices(
+    data: {services: $services, anchorAuth: {netlifyAuth: {oauthToken: $nfToken}}, authlifyTokenId: $authlifyTokenId}
+  ) {
+    me {
+      serviceMetadata {
+        loggedInServices {
+          ...LoggedInServicesFragment
+        }
+      }
+    }
+  }
+}
+
+mutation AddAuthsMutation($siteId: String! $authlifyTokenId: String, $sToken: String!, $nfToken: String!) @netlify(id: """47c6abec-7e34-4ec1-ae7d-b3303828b0ce""", doc: """Update a service's (i.e. GitHub) enabled scope permissions""") {
+  oneGraph {
+    addAuthsToPersonalToken(
+      input: {anchorAuth: {netlifyAuth: {oauthToken: $nfToken}}, sacrificialToken: $sToken, authlifyTokenId: $authlifyTokenId, appId: $siteId}
+    ) {
+      accessToken {
+        netlifyId
+        token
+      }
+    }
+  }
+}
+
+mutation CreateNewSchemaMutation($nfToken: String!, $input: OneGraphCreateGraphQLSchemaInput!) @netlify(id: """4fc2298a-225b-4329-b3f3-a8f8bc0513a8""", doc: """Create a new GraphQL schema for an app with a set of services enabled. Note that this just makes the schema _available_ for the app to use, it doesn't set it as the default for all queries to use.""") {
+  oneGraph(auths: {netlifyAuth: {oauthToken: $nfToken}}) {
+    createGraphQLSchema(input: $input) {
+      app {
+        graphQLSchema {
+          id
+        }
+      }
+      graphqlSchema {
+        id
+        services {
+          friendlyServiceName
+          logoUrl
+          service
+          slug
+          supportsCustomRedirectUri
+          supportsCustomServiceAuth
+          supportsOauthLogin
+        }
+      }
+    }
+  }
+}
+
+mutation DeleteServiceAuthMutation($siteId: String!, $serviceAuthId: String!, $nfToken: String!) @netlify(id: """5c7bb879-a810-4a7e-8aec-55d05fd9c172""", doc: """Delete a custom service auth""") {
+  oneGraph(auths: {netlifyAuth: {oauthToken: $nfToken}}) {
+    destroyServiceAuth(data: {appId: $siteId, serviceAuthId: $serviceAuthId}) {
+      app {
+        serviceAuths {
+          ...ServiceAuthFragment
+        }
+      }
+    }
+  }
+}
+
+mutation CreatePersistedQueryMutation($nfToken: String!, $appId: String!, $query: String!, $tags: [String!]!, $description: String!, $parent: OneGraphCreatePersistedQueryParentInput) @netlify(id: """5e855574-a316-4060-955c-85b1f8898c29""", doc: """Given a document with GraphQL operations, persist them to OneGraph (with not specific metadata, e.g. cache TTL or auth) for later retrieval _or_ execution.""") {
+  oneGraph(auths: {netlifyAuth: {oauthToken: $nfToken}}) {
+    createPersistedQuery(
+      input: {query: $query, appId: $appId, tags: $tags, description: $description, parent: $parent}
+    ) {
+      persistedQuery {
+        id
+      }
+    }
+  }
+}
+
+query FindLoggedInServicesQuery($nfToken: String!, $authlifyTokenId: String!) @netlify(id: """68c383e7-2e2f-4e6c-9a72-a5d095498ba3""", doc: """Fetch all logged-in OneGraph services (GitHub, Spotify, etc.) for a user's site""") {
+  oneGraph(auths: {netlifyAuth: {oauthToken: $nfToken}}) {
+    authlifyToken(authlifyTokenId: $authlifyTokenId) {
+      serviceMetadata {
+        loggedInServices {
+          usedTestFlow
+          friendlyServiceName
+          ...LoggedInServicesFragment
+        }
+      }
+    }
+  }
+}
+
+mutation SetServiceAuthMutation($service: OneGraphCustomServiceAuthServiceEnum!, $clientId: String!, $clientSecret: String!, $siteId: String!, $nfToken: String!) @netlify(id: """694dfc01-3844-431d-9e56-7089c101fe08""", doc: """Create a custom service auth""") {
+  oneGraph(auths: {netlifyAuth: {oauthToken: $nfToken}}) {
+    createServiceAuth(
+      data: {service: $service, clientId: $clientId, clientSecret: $clientSecret, appId: $siteId, revealTokens: true}
+    ) {
+      app {
+        serviceAuths {
+          ...ServiceAuthFragment
+        }
+      }
+    }
+  }
+}
+
+mutation CreateCLISessionEventMutation($nfToken: String!, $sessionId: String!, $payload: JSON!) @netlify(id: """6f42e462-7cbf-4d95-880b-16eb55ed7a1a""", doc: """Create a new session for the Netlify CLI to communicate with the React UI via events.""") {
+  oneGraph(auths: {netlifyAuth: {oauthToken: $nfToken}}) {
+    createNetlifyCliTestEvent(
+      input: {data: {payload: $payload}, sessionId: $sessionId}
+    ) {
+      event {
+        id
+        createdAt
+        sessionId
+      }
+    }
+  }
+}
+
+query CliSessionByIdQuery($nfToken: String!, $id: String!) @netlify(id: """6f9a0536-25f7-4b8f-ad1f-5a39edd923bb""", doc: """Get a Netlify CLI session by its id""") {
+  oneGraph(auths: {netlifyAuth: {oauthToken: $nfToken}}) {
+    netlifyCliSession(id: $id) {
       id
-      readme
-      license {
-        url
+      name
+      netlifyUserId
+      events {
+        createdAt
+      }
+      createdAt
+      lastEventAt
+      metadata
+    }
+  }
+}
+
+query Deprecated_FindLoggedInServicesQuery @netlify(id: """9ffe3872-4ae8-4f86-b5b7-ffcdfe7843fd""", doc: """(Deprecated) Find logged in services""") {
+  me {
+    serviceMetadata {
+      loggedInServices {
+        ...LoggedInServicesFragment
+      }
+    }
+  }
+}
+
+mutation CreateEmptyPersonalTokenMutation($nfToken: String!, $siteId: String!) @netlify(id: """a64681f1-014c-4413-8a7d-b188c4dd5f55""", doc: """Create a new OneGraph personal token for a user's site""") {
+  oneGraph(auths: {netlifyAuth: {oauthToken: $nfToken}}) {
+    createPersonalTokenWithNetlifySiteAnchor(
+      input: {name: "Netlify AuthManager Token", netlifySiteId: $siteId}
+    ) {
+      accessToken {
+        token
+        name
+        anchor
+        netlifyId
+      }
+    }
+  }
+}
+
+query ServiceListQuery($logoStyle: OneGraphAppLogoStyleEnum = ROUNDED_RECTANGLE) @netlify(id: """a6969eb4-5e17-43fb-a325-11566f7d1db3""", doc: """Retrieve a list of _all_ supported services from OneGraph""") {
+  oneGraph {
+    services {
+      friendlyServiceName
+      logoUrl(style: $logoStyle)
+      service
+      slug
+      supportsCustomRedirectUri
+      supportsCustomServiceAuth
+      supportsOauthLogin
+    }
+  }
+}
+
+query AuthlifyTokenIdForPersonalToken($personalToken: String!) @netlify(id: """da5acd46-f2f1-4f24-aff9-1fe36d9c999b""", doc: null) {
+  oneGraph {
+    personalToken(accessToken: $personalToken) {
+      netlifyId
+    }
+  }
+}
+
+query PersistedQueryQuery($nfToken: String!, $appId: String!, $id: String!) @netlify(id: """dfbf037c-a603-46a9-8ca2-ac0069c05db2""", doc: """Retrieve a previously persisted operations doc""") {
+  oneGraph(auths: {netlifyAuth: {oauthToken: $nfToken}}) {
+    persistedQuery(appId: $appId, id: $id) {
+      id
+      query
+      allowedOperationNames
+      description
+      freeVariables
+      fixedVariables
+      tags
+    }
+  }
+}
+
+query CliSessionsByAppIdQuery($nfToken: String!, $appId: String!) @netlify(id: """e09d703b-468c-4c94-b098-f1ba09fdf692""", doc: """List all the CLI sessions belonging to a site""") {
+  oneGraph(auths: {netlifyAuth: {oauthToken: $nfToken}}) {
+    netlifyCliSessionsByAppId(appId: $appId, first: 10) {
+      id
+      name
+      netlifyUserId
+      events {
+        createdAt
+      }
+      createdAt
+      lastEventAt
+      metadata
+    }
+  }
+}
+
+query ListServicesQuery($nfToken: String!, $siteId: String!, $logoStyle: OneGraphAppLogoStyleEnum = ROUNDED_RECTANGLE) @netlify(id: """e2394c86-260c-4646-88df-7bc7370de666""", doc: """Fetch all available OneGraph services (GitHub, Spotify, etc.), as well as any custom service auths that may be installed for a site.""") {
+  oneGraph(auths: {netlifyAuth: {oauthToken: $nfToken}}) {
+    services(filter: {supportsOauthLogin: true}) {
+      friendlyServiceName
+      service
+      slug
+      logoUrl(style: $logoStyle)
+      availableScopes {
+        category
+        scope
+        display
+        isDefault
+        isRequired
+        description
+        title
+      }
+    }
+    app(id: $siteId) {
+      serviceAuths {
+        ...ServiceAuthFragment
+      }
+    }
+  }
+}
+
+mutation UpsertAppForSiteMutation($nfToken: String!, $siteId: String!) @netlify(id: """e3d3bb8b-2fb5-48d8-b051-db602722419f""", doc: """Ensure that an app resource exists on the OneGraph servers for a given site.""") {
+  oneGraph(auths: {netlifyAuth: {oauthToken: $nfToken}}) {
+    upsertAppForNetlifySite(input: {netlifySiteId: $siteId}) {
+      org {
+        id
+        name
+      }
+      app {
+        id
+        name
+        corsOrigins
+        customCorsOrigins {
+          friendlyServiceName
+          displayName
+          encodedValue
+        }
+      }
+    }
+  }
+}
+
+mutation AddCORSOriginMutation($nfToken: String!, $input: OneGraphAddCORSOriginToAppInput!) @netlify(id: """e3d4bb8b-2fb5-48d8-b051-db6027224101""", doc: """Add additional allowed CORS origins for calls to a site's Graph.""") {
+  oneGraph(auths: {netlifyAuth: {oauthToken: $nfToken}}) {
+    addCORSOriginToApp(input: $input) {
+      app {
+        ...AppCORSOriginFragment
+      }
+    }
+  }
+}
+
+mutation RemoveCORSOriginMutation($nfToken: String!, $input: OneGraphRemoveCORSOriginFromAppInput!) @netlify(id: """e3d4bb8b-2fb5-48d8-b051-db6027224112""", doc: """Remove the given CORS origins for calls to a site's Graph.""") {
+  oneGraph(auths: {netlifyAuth: {oauthToken: $nfToken}}) {
+    removeCORSOriginFromApp(input: $input) {
+      app {
+        ...AppCORSOriginFragment
+      }
+    }
+  }
+}
+
+query CORSOriginsQuery($siteId: String!, $nfToken: String!) @netlify(id: """e3d4bb8b-2fb5-48d8-b051-db6027224190""", doc: """List the allowed CORS origins for calls to a site's Graph.""") {
+  oneGraph(auths: {netlifyAuth: {oauthToken: $nfToken}}) {
+    app(id: $siteId) {
+      ...AppCORSOriginFragment
+    }
+  }
+}
+
+subscription TestSubscription($minutes: Int = 1) @netlify(id: """e3d4bb8b-2fb5-9898-b051-db6027224112""", doc: """A subscription with variables and a fragment to test code generation.""") {
+  poll(
+    schedule: {every: {minutes: $minutes}}
+    onlyTriggerWhenPayloadChanged: true
+  ) {
+    query {
+      me {
+        serviceMetadata {
+          loggedInServices {
+            ...LoggedInServicesFragment
+          }
+        }
       }
     }
   }

@@ -1,16 +1,20 @@
 #!/usr/bin/env node
 // @ts-check
-const { existsSync, statSync } = require('fs')
-const { join } = require('path')
-const process = require('process')
+import { existsSync, readFileSync, statSync } from 'fs'
+import { join } from 'path'
+import process from 'process'
+import { fileURLToPath } from 'url'
 
-const { grey } = require('chalk')
-const execa = require('execa')
-const { sync } = require('fast-glob')
+import chalk from 'chalk'
+import execa from 'execa'
+import glob from 'fast-glob'
 
-const { DependencyGraph, fileVisitor, visitorPlugins } = require('./project-graph')
+import { DependencyGraph, fileVisitor, visitorPlugins } from './project-graph/index.mjs'
 
-const getChangedFiles = async (compareTarget = 'origin/main') => {
+export const TEST_MATCHING_GLOB = /\.test\.m?js$/gm
+const { ava } = JSON.parse(readFileSync(fileURLToPath(new URL('../package.json', import.meta.url)), 'utf-8'))
+
+export const getChangedFiles = async (compareTarget = 'origin/main') => {
   const { stdout } = await execa('git', ['diff', '--name-only', 'HEAD', compareTarget])
   // git is using posix paths so adjust them to the operating system by
   // using nodes join function
@@ -23,10 +27,10 @@ const getChangedFiles = async (compareTarget = 'origin/main') => {
  * @param {string[]} changedFiles
  * @returns {string[]}
  */
-const getAffectedFiles = (changedFiles) => {
+export const getAffectedFiles = (changedFiles) => {
   // glob is using only posix file paths on windows we need the `\`
   // by using join the paths are adjusted to the operating system
-  const testFiles = sync(['tests/integration/**/*.test.js']).map((filePath) => join(filePath))
+  const testFiles = glob.sync(['tests/integration/**/*.test.js']).map((filePath) => join(filePath))
 
   // in this case all files are affected
   if (
@@ -44,7 +48,7 @@ const getAffectedFiles = (changedFiles) => {
     fileVisitor(file, { graph, visitorPlugins })
   })
 
-  return [...graph.affected(changedFiles, (file) => file.endsWith('.test.js'))]
+  return [...graph.affected(changedFiles, (file) => file.match(TEST_MATCHING_GLOB) !== null)]
 }
 
 /**
@@ -63,7 +67,7 @@ const main = async (args) => {
     console.log('No files where affected by the changeset!')
     return
   }
-  console.log(`Running affected Tests: \n${grey([...affectedFiles].join(', '))}`)
+  console.log(`Running affected Tests: \n${chalk.grey([...affectedFiles].join(', '))}`)
   const testRun = execa('c8', ['-r', 'json', 'ava', ...affectedFiles], {
     stdio: 'inherit',
     preferLocal: true,
@@ -92,7 +96,7 @@ const main = async (args) => {
 // $ npm run test:affected -- HEAD~1
 //
 // The default is when running without arguments a git diff target off 'origin/master'
-if (require.main === module) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2)
   // eslint-disable-next-line promise/prefer-await-to-callbacks,promise/prefer-await-to-then
   main(args).catch((error) => {
@@ -100,5 +104,3 @@ if (require.main === module) {
     process.exit(1)
   })
 }
-
-module.exports = { getChangedFiles, getAffectedFiles }

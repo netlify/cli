@@ -17,7 +17,7 @@ const functionsServe = async (options, command) => {
 
   const functionsDir = getFunctionsDir({ options, config }, join('netlify', 'functions'))
 
-  await injectEnvVariables({ env: command.netlify.cachedConfig.env, site })
+  await injectEnvVariables({ devConfig: { ...config.dev }, env: command.netlify.cachedConfig.env, site })
 
   const { capabilities, siteUrl, timeouts } = await getSiteInformation({
     offline: options.offline,
@@ -34,8 +34,10 @@ const functionsServe = async (options, command) => {
 
   await startFunctionsServer({
     config,
+    api,
     settings: { functions: functionsDir, functionsPort },
     site,
+    siteInfo,
     siteUrl,
     capabilities,
     timeouts,

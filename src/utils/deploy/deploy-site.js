@@ -37,6 +37,7 @@ const deploySite = async (
     maxRetry = DEFAULT_MAX_RETRY,
     // API calls this the 'title'
     message: title,
+    siteEnv,
     skipFunctionsCache,
     statusCb = () => {
       /* default to noop */
@@ -65,6 +66,7 @@ const deploySite = async (
         rootDir,
         manifestPath,
         skipFunctionsCache,
+        siteEnv,
       }),
     ])
   const filesCount = Object.keys(files).length

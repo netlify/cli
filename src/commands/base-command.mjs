@@ -301,13 +301,14 @@ export class BaseCommand extends Command {
     const duration = getDuration(startTime)
     const status = error_ === undefined ? 'success' : 'error'
 
-    debug(`${this.name()}:onEnd`)(`Status: ${status}`)
-    debug(`${this.name()}:onEnd`)(`Duration: ${duration}ms`)
+    const command = Array.isArray(this.args) ? this.args[0] : this.name()
+
+    debug(`${this.name()}:onEnd`)(`Command: ${command}. Status: ${status}. Duration: ${duration}ms`)
 
     try {
       await track('command', {
         ...payload,
-        command: this.name(),
+        command,
         duration,
         status,
       })
@@ -431,6 +432,7 @@ export class BaseCommand extends Command {
     actionCommand.netlify = {
       // api methods
       api: new NetlifyAPI(token || '', apiOpts),
+      apiOpts,
       repositoryRoot,
       // current site context
       site: {

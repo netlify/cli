@@ -1,6 +1,6 @@
-const test = require('ava')
+import test from 'ava'
 
-const { DependencyGraph } = require('../project-graph')
+import { DependencyGraph } from '../project-graph/index.mjs'
 
 /** @type {DependencyGraph} */
 let graph

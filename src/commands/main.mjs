@@ -135,7 +135,7 @@ export const mainCommand = async function (options, command) {
     }, SUGGESTION_TIMEOUT)
 
     // eslint-disable-next-line promise/catch-or-return
-    prompt.then((value) => resolve(value))
+    prompt.then((value) => resolve(value.suggestion))
   })
   // create new log line
   log()

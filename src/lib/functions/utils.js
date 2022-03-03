@@ -38,6 +38,8 @@ const shouldBase64Encode = function (contentType) {
     return true
   }
 
+  const [contentTypeSegment] = contentType.split(';')
+  contentType = contentTypeSegment
   contentType = contentType.toLowerCase()
 
   if (contentType.startsWith('text/')) {
