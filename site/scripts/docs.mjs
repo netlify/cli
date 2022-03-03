@@ -23,33 +23,35 @@ const config = {
   transforms: {
     GENERATE_COMMANDS_DOCS(content, options, instance) {
       const command = basename(instance.originalPath, '.md')
-      // console.log('command', command)
+      console.log('command', command)
       const info = commandData[command]
-      // console.log('info', info)
-      if (info) {
-        let md = ''
-        // Parent Command
-        md += formatDescription(stripAnsi(info.description))
-        md += formatUsage(command, info)
-        md += formatArgs(info.args)
-        md += formatFlags(info.flags)
-        md += commandListSubCommandDisplay(info.commands)
-        md += commandExamples(info.examples)
-        if (info.commands.length !== 0) {
-          md += `---\n`
-          info.commands.forEach((subCmd) => {
-            // Child Commands
-            md += formatSubCommandTitle(subCmd.name)
-            md += formatDescription(stripAnsi(subCmd.description))
-            md += formatUsage(subCmd.name, subCmd)
-            md += formatArgs(subCmd.args)
-            md += formatFlags(subCmd.flags)
-            md += commandExamples(subCmd.examples)
-            md += `---\n`
-          })
-        }
-        return md
+      console.log({ info, command })
+
+      if (!info) {
+        return
       }
+      let md = ''
+      // Parent Command
+      md += formatDescription(stripAnsi(info.description))
+      md += formatUsage(command, info)
+      md += formatArgs(info.args)
+      md += formatFlags(info.flags)
+      md += commandListSubCommandDisplay(info.commands)
+      md += commandExamples(info.examples)
+      if (info.commands.length !== 0) {
+        md += `---\n`
+        info.commands.forEach((subCmd) => {
+          // Child Commands
+          md += formatSubCommandTitle(subCmd.name)
+          md += formatDescription(stripAnsi(subCmd.description))
+          md += formatUsage(subCmd.name, subCmd)
+          md += formatArgs(subCmd.args)
+          md += formatFlags(subCmd.flags)
+          md += commandExamples(subCmd.examples)
+          md += `---\n`
+        })
+      }
+      return md
     },
     GENERATE_COMMANDS_LIST() {
       /* Generate Command List */
