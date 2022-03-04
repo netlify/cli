@@ -1,0 +1,43 @@
+name: Bug report
+description: Create a report to help us improve
+title: Please replace with a clear and descriptive title
+labels: ['type: bug']
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for reporting this bug!
+  - type: textarea
+    attributes:
+      label: Describe the bug
+      placeholder: A clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        Step-by-step instructions on how to reproduce the behavior.
+
+        Example:
+        1. Run `git clone git@github.com:owner/repo-with-cli-bug.git`
+        2. Navigate to the cloned repository
+        3. Run `netlify dev`
+        4. See that the CLI exits with an error
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Configuration
+      placeholder: If possible, please copy/paste below your `netlify.toml`.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Environment
+      description: |
+        Enter the following command in a terminal and copy/paste its output:
+        ```bash
+        npx envinfo --system --binaries --npmPackages netlify-cli --npmGlobalPackages netlify-cli
+        ```
+    validations:
+      required: true
