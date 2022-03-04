@@ -333,6 +333,7 @@ const generateFunctionsFile = async ({ fragments, functions, logger, netlifyGrap
  * @param {Record<string, NetlifyGraph.ExtractedFragment>} context.fragments The parsed queries with metadata to use when generating library functions
  * @param {(message: string) => void=} context.logger A function that if provided will be used to log messages
  * @param {string} context.siteId The app to query against, typically the siteId
+ * @param {string} context.schemaId The schemaId for the generated client to query against
  * @param {string} context.netlifyToken The (typically netlify) access token that is used for authentication, if any
  * @returns {Promise<void>} Void, effectfully writes the generated library to the filesystem
  */
@@ -344,6 +345,7 @@ const generatePersistedFunctionsFile = async ({
   netlifyToken,
   operationsDoc,
   schema,
+  schemaId,
   siteId,
 }) => {
   const { clientSource, typeDefinitionsSource } = await NetlifyGraph.generatePersistedFunctionsSource(
@@ -354,6 +356,7 @@ const generatePersistedFunctionsFile = async ({
     operationsDoc,
     functions,
     fragments,
+    schemaId,
   )
 
   ensureNetlifyGraphPath(netlifyGraphConfig)

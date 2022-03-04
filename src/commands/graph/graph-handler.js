@@ -25,8 +25,6 @@ const { parse } = GraphQL
 const graphHandler = async (userOperationName, options, command) => {
   const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options })
 
-  console.debug(netlifyGraphConfig)
-
   const schemaString = readGraphQLSchemaFile(netlifyGraphConfig)
 
   let schema

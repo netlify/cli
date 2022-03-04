@@ -2,6 +2,7 @@
 const inquirer = require('inquirer')
 // eslint-disable-next-line no-unused-vars
 const { GraphQL, GraphQLHelpers, NetlifyGraph } = require('netlify-onegraph-internal')
+const { OneGraphClient } = require('netlify-onegraph-internal')
 
 const {
   defaultExampleOperationsDoc,
@@ -21,7 +22,10 @@ const { parse } = GraphQL
  * @returns
  */
 const graphOperationsShare = async (userOperationName, options, command) => {
+  const { site } = command.netlify
   const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options })
+  const netlifyToken = await command.authenticate()
+  const siteId = site.id
 
   let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
   if (currentOperationsDoc.trim().length === 0) {
@@ -85,7 +89,7 @@ const graphOperationsShare = async (userOperationName, options, command) => {
       }
     }
   } catch (parseError) {
-    parseError(`Error parsing operations library: ${parseError}`)
+    error(`Error parsing operations library: ${parseError}`)
   }
 
   if (!targetOperation) {
@@ -107,13 +111,44 @@ const graphOperationsShare = async (userOperationName, options, command) => {
     })
 
     if (!confirm) {
-      error('Operation sharing cancelled')
+      log('Operation sharing cancelled')
+      return
     }
   }
 
-  log('Sharing operation...')
+  log(`Sharing operation ${operationName}...`)
 
-  log(`Finished sharing operation ${operationName}`)
+  const result = await OneGraphClient.executeCreateSharedDocumentMutation(
+    {
+      input: {
+        body: targetOperation.operationString,
+        description: targetOperation.description,
+        siteId,
+      },
+      nfToken: netlifyToken,
+    },
+    {
+      siteId,
+    },
+  )
+
+  if (result.errors) {
+    error(`Error sharing operation: ${JSON.stringify(result, null, 2)}`)
+  }
+
+  const sharedDocument =
+    result.data &&
+    result.data.oneGraph &&
+    result.data.oneGraph.createSharedDocument &&
+    result.data.oneGraph.createSharedDocument.sharedDocument
+
+  if (!sharedDocument) {
+    error('Error sharing operation, no shared document returned')
+  }
+
+  log(
+    `Finished sharing operation ${operationName}, importable with \`ntl graph:operations:import ${sharedDocument.id}\``,
+  )
 }
 
 /**

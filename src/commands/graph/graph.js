@@ -6,6 +6,7 @@ const { createGraphInitCommand } = require('./graph-init')
 const { createGraphLibraryCommand } = require('./graph-library')
 const { createGraphOperationsCommand } = require('./graph-operations')
 const { createGraphOperationsImportCommand } = require('./graph-operations-import')
+const { createGraphOperationsSearchCommand } = require('./graph-operations-search')
 const { createGraphOperationsShareCommand } = require('./graph-operations-share')
 const { createGraphPullCommand } = require('./graph-pull')
 const { createGraphSessionResetCommand } = require('./graph-session-reset')
@@ -35,6 +36,7 @@ const createGraphCommand = (program) => {
   createGraphOperationsShareCommand(program)
   createGraphPullCommand(program)
   createGraphSessionResetCommand(program)
+  createGraphOperationsSearchCommand(program)
 
   return program
     .command('graph')

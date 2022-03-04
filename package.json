@@ -272,7 +272,7 @@
     "multiparty": "^4.2.1",
     "netlify": "^11.0.0",
     "netlify-headers-parser": "^6.0.2",
-    "netlify-onegraph-internal": "0.0.50",
+    "netlify-onegraph-internal": "0.1.18",
     "netlify-redirect-parser": "^13.0.5",
     "netlify-redirector": "^0.2.1",
     "node-fetch": "^2.6.0",

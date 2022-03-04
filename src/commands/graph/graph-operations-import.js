@@ -1,118 +1,56 @@
 // @ts-check
-const inquirer = require('inquirer')
-// eslint-disable-next-line no-unused-vars
-const { GraphQL, GraphQLHelpers, NetlifyGraph } = require('netlify-onegraph-internal')
+const { OneGraphClient } = require('netlify-onegraph-internal')
 
-const {
-  defaultExampleOperationsDoc,
-  extractFunctionsFromOperationDoc,
-  getNetlifyGraphConfig,
-  readGraphQLOperationsSourceFile,
-} = require('../../lib/one-graph/cli-netlify-graph')
-const { error, log } = require('../../utils')
+const { getNetlifyGraphConfig } = require('../../lib/one-graph/cli-netlify-graph')
+const { error } = require('../../utils')
 
-const { parse } = GraphQL
+const { importOperationHelper } = require('./import-operation-helper')
 
 /**
  * Creates the `netlify graph:operations:import` command
- * @param {string} userOperationName
+ * @param {string} operationId
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  * @returns
  */
-const graphOperationsImport = async (userOperationName, options, command) => {
+const graphOperationsImport = async (operationId, options, command) => {
+  const { site, state } = command.netlify
+  const netlifyToken = await command.authenticate()
+  const siteId = site.id
   const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options })
 
-  let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
-  if (currentOperationsDoc.trim().length === 0) {
-    currentOperationsDoc = defaultExampleOperationsDoc
+  const result = await OneGraphClient.fetchSharedDocumentQuery(
+    {
+      id: operationId,
+      nfToken: netlifyToken,
+    },
+    {
+      siteId,
+    },
+  )
+
+  const sharedDocument = result.data && result.data.oneGraph && result.data.oneGraph.sharedDocument
+
+  if (!sharedDocument) {
+    error(`Unable to import operation with id ${operationId}, ${JSON.stringify(result, null, 2)}`)
   }
 
-  /**
-   * @type {NetlifyGraph.ExtractedFunction | NetlifyGraph.ExtractedFragment}
-   */
-  let targetOperation
+  let errorMessage = null
 
-  let operationName = userOperationName
-  try {
-    const parsedDoc = parse(currentOperationsDoc)
-    const { fragments, functions } = extractFunctionsFromOperationDoc(parsedDoc)
+  importOperationHelper({
+    error: (message) => {
+      errorMessage = message
+    },
+    netlifyGraphConfig,
+    operationId,
+    sharedDocument,
+    site,
+    state,
+  })
 
-    const sorted = Object.values(functions).sort((aItem, bItem) =>
-      aItem.operationName.localeCompare(bItem.operationName),
-    )
-
-    const perPage = 50
-
-    const allOperationChoices = sorted.map((operation) => ({
-      name: `${operation.operationName} (${operation.kind})`,
-      value: operation,
-    }))
-
-    const filterOperationNames = (operationChoices, input) =>
-      operationChoices.filter((operation) =>
-        (operation.value.operationName || operation.value.fragmentName).toLowerCase().match(input.toLowerCase()),
-      )
-    // eslint-disable-next-line node/global-require
-    const inquirerAutocompletePrompt = require('inquirer-autocomplete-prompt')
-    /** multiple matching detectors, make the user choose */
-    inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
-
-    if (operationName) {
-      targetOperation = functions[operationName] || fragments[operationName]
-    } else {
-      const { selectedOperation } = await inquirer.prompt({
-        name: 'selectedOperation',
-        message: `Which operation would you like to submit for others to use?`,
-        type: 'autocomplete',
-        pageSize: perPage,
-        source(_, input) {
-          if (!input || input === '') {
-            return allOperationChoices
-          }
-
-          const filteredChoices = filterOperationNames(allOperationChoices, input)
-          // only show filtered results
-          return filteredChoices
-        },
-      })
-
-      if (selectedOperation) {
-        targetOperation = selectedOperation
-        // eslint-disable-next-line prefer-destructuring
-        operationName = selectedOperation.operationName
-      }
-    }
-  } catch (parseError) {
-    parseError(`Error parsing operations library: ${parseError}`)
+  if (errorMessage) {
+    error(errorMessage)
   }
-
-  if (!targetOperation) {
-    error(`No operation found with name ${operationName}`)
-  }
-
-  const hardCodedValues = GraphQLHelpers.gatherHardcodedValues(targetOperation.operationString)
-
-  if (hardCodedValues.length !== 0) {
-    log(`The following values are hardcoded in the operation:`)
-    hardCodedValues.forEach(([name, value]) => {
-      log(`\t${name}: ${value}`)
-    })
-
-    const { confirm } = await inquirer.prompt({
-      name: 'confirm',
-      message: 'Are you sure you want to import this operation? These values will be visible to others.',
-      type: 'confirm',
-    })
-
-    if (!confirm) {
-      error('Operation sharing cancelled')
-    }
-  }
-
-  log('Sharing operation...')
-
-  log(`Finished sharing operation ${operationName}`)
 }
 
 /**
@@ -123,7 +61,7 @@ const graphOperationsImport = async (userOperationName, options, command) => {
 const createGraphOperationsImportCommand = (program) =>
   program
     .command('graph:operations:import')
-    .argument('[name]', 'Operation name')
+    .argument('<id>', 'Operation id')
     .description(
       'Import an operation from the Netlify community to incorporate into your app and regenerate your function library',
     )
