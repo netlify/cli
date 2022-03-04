@@ -29,8 +29,6 @@ body:
     attributes:
       label: Configuration
       placeholder: If possible, please copy/paste below your `netlify.toml`.
-    validations:
-      required: true
   - type: textarea
     attributes:
       label: Environment
