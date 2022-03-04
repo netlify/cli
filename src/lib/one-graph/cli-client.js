@@ -16,8 +16,9 @@ const {
   generateFunctionsFile,
   generateHandlerByOperationId,
   normalizeOperationsDoc,
-  readGraphQLOperationsSourceFile,
-  writeGraphQLOperationsSourceFile,
+  potentiallyMigrateLegacySingleOperationsFileToMultipleOperationsFiles,
+  readGraphQLOperationsSourceFiles,
+  writeGraphQLOperationsSourceFiles,
   writeGraphQLSchemaFile,
 } = require('./cli-netlify-graph')
 
@@ -193,9 +194,11 @@ const refetchAndGenerateFromOneGraph = async (input) => {
     .map((service) => service.service)
     .sort((aString, bString) => aString.localeCompare(bString))
 
+  potentiallyMigrateLegacySingleOperationsFileToMultipleOperationsFiles(netlifyGraphConfig)
+
   const schema = await OneGraphClient.fetchOneGraphSchema(siteId, enabledServices)
 
-  let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
+  let currentOperationsDoc = readGraphQLOperationsSourceFiles(netlifyGraphConfig)
   if (currentOperationsDoc.trim().length === 0) {
     currentOperationsDoc = defaultExampleOperationsDoc
   }
@@ -222,10 +225,10 @@ const refetchAndGenerateFromOneGraph = async (input) => {
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
  * @returns
  */
-const regenerateFunctionsFileFromOperationsFile = (input) => {
+const regenerateFunctionsFileFromOperationsFiles = (input) => {
   const { netlifyGraphConfig, schema } = input
 
-  const appOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
+  const appOperationsDoc = readGraphQLOperationsSourceFiles(netlifyGraphConfig)
 
   const hash = quickHash(appOperationsDoc)
 
@@ -274,8 +277,8 @@ const updateGraphQLOperationsFileFromPersistedDoc = async (input) => {
   // Sorts the operations stably, prepends the @netlify directive, etc.
   const operationsDocString = normalizeOperationsDoc(persistedDoc.query)
 
-  writeGraphQLOperationsSourceFile({ logger, netlifyGraphConfig, operationsDocString })
-  regenerateFunctionsFileFromOperationsFile({ netlifyGraphConfig, schema })
+  writeGraphQLOperationsSourceFiles({ logger, netlifyGraphConfig, operationsDocString })
+  regenerateFunctionsFileFromOperationsFiles({ netlifyGraphConfig, schema })
 
   const hash = quickHash(operationsDocString)
 
@@ -491,8 +494,8 @@ const startOneGraphCLISession = async (input) => {
     netlifyGraphConfig,
     onChange: async (filePath) => {
       log('NetlifyGraph operation file changed at', filePath, 'updating function library...')
-      regenerateFunctionsFileFromOperationsFile({ netlifyGraphConfig, schema })
-      const newOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
+      regenerateFunctionsFileFromOperationsFiles({ netlifyGraphConfig, schema })
+      const newOperationsDoc = readGraphQLOperationsSourceFiles(netlifyGraphConfig)
       await persistNewOperationsDocForSession({
         netlifyGraphConfig,
         netlifyToken,
@@ -504,8 +507,8 @@ const startOneGraphCLISession = async (input) => {
     },
     onAdd: async (filePath) => {
       log('NetlifyGraph operation file created at', filePath, 'creating function library...')
-      regenerateFunctionsFileFromOperationsFile({ netlifyGraphConfig, schema })
-      const newOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
+      regenerateFunctionsFileFromOperationsFiles({ netlifyGraphConfig, schema })
+      const newOperationsDoc = readGraphQLOperationsSourceFiles(netlifyGraphConfig)
       await persistNewOperationsDocForSession({
         netlifyGraphConfig,
         netlifyToken,
@@ -536,6 +539,7 @@ const startOneGraphCLISession = async (input) => {
     onError: (fetchEventError) => {
       error(`Netlify Graph upstream error: ${fetchEventError}`)
     },
+    // eslint-disable-next-line unicorn/empty-brace-spaces
     onClose: () => {},
   })
 

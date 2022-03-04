@@ -5,7 +5,7 @@ const {
   defaultExampleOperationsDoc,
   extractFunctionsFromOperationDoc,
   getNetlifyGraphConfig,
-  readGraphQLOperationsSourceFile,
+  readGraphQLOperationsSourceFiles,
 } = require('../../lib/one-graph/cli-netlify-graph')
 const { log } = require('../../utils')
 
@@ -20,7 +20,7 @@ const { parse } = GraphQL
 const graphOperations = async (options, command) => {
   const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options })
   try {
-    let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
+    let currentOperationsDoc = readGraphQLOperationsSourceFiles(netlifyGraphConfig)
     if (currentOperationsDoc.trim().length === 0) {
       currentOperationsDoc = defaultExampleOperationsDoc
     }

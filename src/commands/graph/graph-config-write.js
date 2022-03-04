@@ -26,11 +26,14 @@ const graphConfigWrite = async (options, command) => {
   const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options })
 
   const schemaPath = netlifyGraphConfig.graphQLSchemaFilename.join('/')
+  const documentsPath = netlifyGraphConfig.graphQLOperationsSourceDirectory.join('/')
 
   // Support tools that looks for the schema under different keys
   const graphQLConfig = {
     schema: [schemaPath],
     schemaPath: [schemaPath],
+    // Point to documents directory so that shared fragments work
+    documents: `${documentsPath}/*.graphql`,
   }
 
   const filePath = path.resolve(...netlifyGraphConfig.graphQLConfigJsonFilename)

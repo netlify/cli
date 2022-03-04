@@ -14,9 +14,9 @@ const {
   extractFunctionsFromOperationDoc,
   generateFunctionsFile,
   normalizeOperationsDoc,
-  readGraphQLOperationsSourceFile,
+  readGraphQLOperationsSourceFiles,
   readGraphQLSchemaFile,
-  writeGraphQLOperationsSourceFile,
+  writeGraphQLOperationsSourceFiles,
   writeGraphQLSchemaFile,
 } = require('../../lib/one-graph/cli-netlify-graph')
 // eslint-disable-next-line no-unused-vars
@@ -53,7 +53,7 @@ const importOperationHelper = async ({ error, netlifyGraphConfig, operationId, s
 
   const enabledServices = getEnabledGraphServices({ state })
 
-  let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
+  let currentOperationsDoc = readGraphQLOperationsSourceFiles(netlifyGraphConfig)
   if (currentOperationsDoc.trim().length === 0) {
     currentOperationsDoc = defaultExampleOperationsDoc
   }
@@ -188,9 +188,9 @@ ${sharedDocument.body}`
       return error(`Failed to parse Netlify GraphQL schema`)
     }
 
-    writeGraphQLOperationsSourceFile({ logger: log, netlifyGraphConfig, operationsDocString })
+    writeGraphQLOperationsSourceFiles({ logger: log, netlifyGraphConfig, operationsDocString })
 
-    const operationsDocFromDisk = readGraphQLOperationsSourceFile(netlifyGraphConfig)
+    const operationsDocFromDisk = readGraphQLOperationsSourceFiles(netlifyGraphConfig)
 
     const { fragments, functions } = extractFunctionsFromOperationDoc(parse(operationsDocFromDisk))
 

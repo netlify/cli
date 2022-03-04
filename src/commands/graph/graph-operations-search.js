@@ -5,7 +5,10 @@ const inquirer = require('inquirer')
 const { GraphQL } = require('netlify-onegraph-internal')
 const { OneGraphClient } = require('netlify-onegraph-internal')
 
-const { getNetlifyGraphConfig } = require('../../lib/one-graph/cli-netlify-graph')
+const {
+  getNetlifyGraphConfig,
+  potentiallyMigrateLegacySingleOperationsFileToMultipleOperationsFiles,
+} = require('../../lib/one-graph/cli-netlify-graph')
 const { error, log } = require('../../utils')
 
 const { importOperationHelper } = require('./import-operation-helper')
@@ -165,6 +168,8 @@ ${selectedOperation.description}`,
   }
 
   let errorMessage = null
+
+  potentiallyMigrateLegacySingleOperationsFileToMultipleOperationsFiles(netlifyGraphConfig)
 
   importOperationHelper({
     error: (message) => {

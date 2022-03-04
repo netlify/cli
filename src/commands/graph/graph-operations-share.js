@@ -8,7 +8,8 @@ const {
   defaultExampleOperationsDoc,
   extractFunctionsFromOperationDoc,
   getNetlifyGraphConfig,
-  readGraphQLOperationsSourceFile,
+  potentiallyMigrateLegacySingleOperationsFileToMultipleOperationsFiles,
+  readGraphQLOperationsSourceFiles,
 } = require('../../lib/one-graph/cli-netlify-graph')
 const { error, log } = require('../../utils')
 
@@ -24,10 +25,12 @@ const { parse } = GraphQL
 const graphOperationsShare = async (userOperationName, options, command) => {
   const { site } = command.netlify
   const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options })
+  potentiallyMigrateLegacySingleOperationsFileToMultipleOperationsFiles(netlifyGraphConfig)
+
   const netlifyToken = await command.authenticate()
   const siteId = site.id
 
-  let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
+  let currentOperationsDoc = readGraphQLOperationsSourceFiles(netlifyGraphConfig)
   if (currentOperationsDoc.trim().length === 0) {
     currentOperationsDoc = defaultExampleOperationsDoc
   }

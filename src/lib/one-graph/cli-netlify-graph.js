@@ -7,7 +7,7 @@ const { GraphQL, GraphQLHelpers, InternalConsole, NetlifyGraph } = require('netl
 
 const { chalk, detectServerSettings, error, execa, getFunctionsDir, log, warn } = require('../../utils')
 
-const { printSchema } = GraphQL
+const { Kind, print, printSchema } = GraphQL
 
 const internalConsole = {
   log,
@@ -19,6 +19,16 @@ const internalConsole = {
 InternalConsole.registerConsole(internalConsole)
 
 const { extractFunctionsFromOperationDoc } = NetlifyGraph
+
+/**
+ * Removes all files (non-recusively) from the given directory
+ * @param {string} directory
+ * @return {void}
+ */
+const cleanDirectory = (directory) => {
+  // eslint-disable-next-line array-callback-return
+  fs.readdirSync(directory).forEach((filename) => fs.rmSync(path.resolve(directory, filename)))
+}
 
 /**
  * Remove any relative path components from the given path
@@ -41,6 +51,7 @@ const makeDefaultNetlifyGraphConfig = ({ baseConfig, detectedFunctionsPath }) =>
   const netlifyGraphImplementationFilename = [...netlifyGraphPath, `index.${baseConfig.extension}`]
   const netlifyGraphTypeDefinitionsFilename = [...netlifyGraphPath, `index.d.ts`]
   const graphQLOperationsSourceFilename = [...netlifyGraphPath, NetlifyGraph.defaultSourceOperationsFilename]
+  const graphQLOperationsSourceDirectory = [...netlifyGraphPath, ...NetlifyGraph.defaultSourceOperationsDirectoryName]
   const graphQLSchemaFilename = [...netlifyGraphPath, NetlifyGraph.defaultGraphQLSchemaFilename]
   const netlifyGraphRequirePath = [`./netlifyGraph`]
   const moduleType = baseConfig.moduleType || 'esm'
@@ -51,6 +62,7 @@ const makeDefaultNetlifyGraphConfig = ({ baseConfig, detectedFunctionsPath }) =>
     netlifyGraphPath,
     netlifyGraphImplementationFilename,
     netlifyGraphTypeDefinitionsFilename,
+    graphQLOperationsSourceDirectory,
     graphQLOperationsSourceFilename,
     graphQLSchemaFilename,
     netlifyGraphRequirePath,
@@ -73,6 +85,7 @@ const makeDefaultNextJsNetlifyGraphConfig = ({ baseConfig, siteRoot }) => {
   const netlifyGraphTypeDefinitionsFilename = [...netlifyGraphPath, `index.d.ts`]
   const graphQLOperationsSourceFilename = [...netlifyGraphPath, NetlifyGraph.defaultSourceOperationsFilename]
   const graphQLSchemaFilename = [...netlifyGraphPath, NetlifyGraph.defaultGraphQLSchemaFilename]
+  const graphQLOperationsSourceDirectory = [...netlifyGraphPath, ...NetlifyGraph.defaultSourceOperationsDirectoryName]
   const netlifyGraphRequirePath = ['..', '..', 'lib', 'netlifyGraph']
   const moduleType = baseConfig.moduleType || 'esm'
 
@@ -82,6 +95,7 @@ const makeDefaultNextJsNetlifyGraphConfig = ({ baseConfig, siteRoot }) => {
     netlifyGraphPath,
     netlifyGraphImplementationFilename,
     netlifyGraphTypeDefinitionsFilename,
+    graphQLOperationsSourceDirectory,
     graphQLOperationsSourceFilename,
     graphQLSchemaFilename,
     netlifyGraphRequirePath,
@@ -106,6 +120,7 @@ const makeDefaultRemixNetlifyGraphConfig = ({ baseConfig, detectedFunctionsPath,
   const netlifyGraphImplementationFilename = [...netlifyGraphPath, `index.${baseConfig.extension}`]
   const netlifyGraphTypeDefinitionsFilename = [...netlifyGraphPath, `index.d.ts`]
   const graphQLOperationsSourceFilename = [...netlifyGraphPath, NetlifyGraph.defaultSourceOperationsFilename]
+  const graphQLOperationsSourceDirectory = [...netlifyGraphPath, ...NetlifyGraph.defaultSourceOperationsDirectoryName]
   const graphQLSchemaFilename = [...netlifyGraphPath, NetlifyGraph.defaultGraphQLSchemaFilename]
   const netlifyGraphRequirePath = [`../../netlify/functions/netlifyGraph`]
   const moduleType = 'esm'
@@ -116,6 +131,7 @@ const makeDefaultRemixNetlifyGraphConfig = ({ baseConfig, detectedFunctionsPath,
     netlifyGraphPath,
     netlifyGraphImplementationFilename,
     netlifyGraphTypeDefinitionsFilename,
+    graphQLOperationsSourceDirectory,
     graphQLOperationsSourceFilename,
     graphQLSchemaFilename,
     netlifyGraphRequirePath,
@@ -200,10 +216,17 @@ const getNetlifyGraphConfig = async ({ command, options, settings }) => {
     (userSpecifiedConfig.netlifyGraphTypeDefinitionsFilename &&
       userSpecifiedConfig.netlifyGraphTypeDefinitionsFilename.split(path.sep)) ||
     defaultFrameworkConfig.netlifyGraphTypeDefinitionsFilename
+
+  const graphQLOperationsSourceDirectory =
+    (userSpecifiedConfig.graphQLOperationsSourceDirectory &&
+      userSpecifiedConfig.graphQLOperationsSourceDirectory.split(path.sep)) ||
+    defaultFrameworkConfig.graphQLOperationsSourceDirectory
+
   const graphQLOperationsSourceFilename =
     (userSpecifiedConfig.graphQLOperationsSourceFilename &&
       userSpecifiedConfig.graphQLOperationsSourceFilename.split(path.sep)) ||
     defaultFrameworkConfig.graphQLOperationsSourceFilename
+
   const graphQLConfigJsonFilename =
     (userSpecifiedConfig.graphQLConfigJsonFilename && userSpecifiedConfig.graphQLConfigJsonFilename.split(path.sep)) ||
     defaultFrameworkConfig.graphQLConfigJsonFilename ||
@@ -232,6 +255,7 @@ const getNetlifyGraphConfig = async ({ command, options, settings }) => {
     netlifyGraphPath,
     netlifyGraphImplementationFilename,
     netlifyGraphTypeDefinitionsFilename,
+    graphQLOperationsSourceDirectory,
     graphQLOperationsSourceFilename,
     graphQLSchemaFilename,
     graphQLConfigJsonFilename,
@@ -252,6 +276,15 @@ const getNetlifyGraphConfig = async ({ command, options, settings }) => {
  */
 const ensureNetlifyGraphPath = (netlifyGraphConfig) => {
   const fullPath = path.resolve(...netlifyGraphConfig.netlifyGraphPath)
+  fs.mkdirSync(fullPath, { recursive: true })
+}
+
+/**
+ * Given a NetlifyGraphConfig, ensure that the netlifyGraphOperationsSourcePath exists
+ * @param {NetlifyGraph.NetlifyGraphConfig} netlifyGraphConfig
+ */
+const ensureNetlifyGraphOperationsPath = (netlifyGraphConfig) => {
+  const fullPath = path.resolve(...netlifyGraphConfig.graphQLOperationsSourceDirectory)
   fs.mkdirSync(fullPath, { recursive: true })
 }
 
@@ -376,18 +409,111 @@ const generatePersistedFunctionsFile = async ({
 /**
  * Using the given NetlifyGraphConfig, read the GraphQL operations file and return the _unparsed_ GraphQL operations doc
  * @param {NetlifyGraph.NetlifyGraphConfig} netlifyGraphConfig
- * @returns {string} GraphQL operations doc
+ * @returns {void} Performs effectful filesystem operations
  */
-const readGraphQLOperationsSourceFile = (netlifyGraphConfig) => {
+const potentiallyMigrateLegacySingleOperationsFileToMultipleOperationsFiles = (netlifyGraphConfig) => {
+  ensureNetlifyGraphOperationsPath(netlifyGraphConfig)
+
+  const legacySourceGraphQLFile = readLegacyGraphQLOperationsSourceFile(netlifyGraphConfig)
+
+  if (legacySourceGraphQLFile) {
+    const legacyParsedDoc = parse(legacySourceGraphQLFile)
+
+    const { fragments: legacyFragments, functions: legacyFunctions } =
+      NetlifyGraph.extractFunctionsFromOperationDoc(legacyParsedDoc)
+
+    log('Legacy operations file found, migrating...')
+
+    log('Migrating functions...')
+    Object.values(legacyFunctions).forEach((fn) => {
+      const filename = path.resolve(
+        ...netlifyGraphConfig.graphQLOperationsSourceDirectory,
+        `${fn.operationName}.graphql`,
+      )
+      log(`Migrating ${fn.operationName} to ${chalk.magenta(filename)}...`)
+      fs.writeFileSync(filename, fn.operationString, 'utf8')
+    })
+
+    log('Migrating fragments...')
+    Object.values(legacyFragments).forEach((fn) => {
+      const filename = path.resolve(
+        ...netlifyGraphConfig.graphQLOperationsSourceDirectory,
+        `${fn.fragmentName}.graphql`,
+      )
+      log(`Migrating ${fn.fragmentName} to ${chalk.magenta(filename)}...`)
+      fs.writeFileSync(filename, fn.operationString, 'utf8')
+    })
+
+    log(
+      `Deleting legacy operations file... ${chalk.green(
+        path.resolve(...netlifyGraphConfig.graphQLOperationsSourceFilename),
+      )}`,
+    )
+    fs.unlinkSync(path.resolve(...netlifyGraphConfig.graphQLOperationsSourceFilename))
+    log(`${chalk.green('✔')} Finished migrating legacy operations file to multiple operations file`)
+  }
+}
+
+/**
+ * Using the given NetlifyGraphConfig, read the GraphQL operations file and return the _unparsed_ GraphQL operations doc
+ * @param {NetlifyGraph.NetlifyGraphConfig} netlifyGraphConfig
+ * @returns {string | null} GraphQL operations doc
+ */
+const readLegacyGraphQLOperationsSourceFile = (netlifyGraphConfig) => {
   ensureNetlifyGraphPath(netlifyGraphConfig)
 
   const fullFilename = path.resolve(...netlifyGraphConfig.graphQLOperationsSourceFilename)
   if (!fs.existsSync(fullFilename)) {
-    fs.writeFileSync(fullFilename, '')
-    fs.closeSync(fs.openSync(fullFilename, 'w'))
+    return null
   }
 
   const source = fs.readFileSync(fullFilename, 'utf8')
+
+  return source
+}
+
+/**
+ * Using the given NetlifyGraphConfig, read all of the GraphQL operation files and return the _unparsed_ GraphQL operations doc
+ * @param {NetlifyGraph.NetlifyGraphConfig} netlifyGraphConfig
+ * @returns {string | null} GraphQL operations doc
+ */
+const readGraphQLOperationsSourceFiles = (netlifyGraphConfig) => {
+  ensureNetlifyGraphPath(netlifyGraphConfig)
+
+  const operationsPath = path.resolve(...netlifyGraphConfig.graphQLOperationsSourceDirectory)
+
+  const operationFiles = []
+
+  const filenames = fs.readdirSync(operationsPath)
+  filenames.forEach((filename) => {
+    if (/.*\.(graphql?)/gi.test(filename)) {
+      const content = fs.readFileSync(path.resolve(operationsPath, filename), 'utf8')
+      const file = {
+        name: filename,
+        path: path.resolve(operationsPath, filename),
+        content,
+        parsedOperation: parse(content),
+      }
+
+      operationFiles.push(file)
+    }
+  })
+
+  const emptyDocDefinitionNode = {
+    kind: Kind.DOCUMENT,
+    definitions: [],
+  }
+
+  const parsedDoc = operationFiles.reduce((acc, file) => {
+    const { parsedOperation } = file
+    const { definitions } = parsedOperation
+    return {
+      kind: Kind.DOCUMENT,
+      definitions: [...acc.definitions, ...definitions],
+    }
+  }, emptyDocDefinitionNode)
+
+  const source = print(parsedDoc)
 
   return source
 }
@@ -399,14 +525,35 @@ const readGraphQLOperationsSourceFile = (netlifyGraphConfig) => {
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig
  * @param {string} input.operationsDocString The GraphQL operations doc to write
  */
-const writeGraphQLOperationsSourceFile = ({ logger, netlifyGraphConfig, operationsDocString }) => {
+const writeGraphQLOperationsSourceFiles = ({ logger, netlifyGraphConfig, operationsDocString }) => {
   const graphqlSource = operationsDocString
+  const parsedDoc = parse(GraphQLHelpers.normalizeOperationsDoc(graphqlSource))
 
-  ensureNetlifyGraphPath(netlifyGraphConfig)
-  const resolvedPath = path.resolve(...netlifyGraphConfig.graphQLOperationsSourceFilename)
-  fs.writeFileSync(resolvedPath, graphqlSource, 'utf8')
-  const relativePath = path.relative(process.cwd(), resolvedPath)
-  logger && logger(`Wrote ${chalk.cyan(relativePath)}`)
+  ensureNetlifyGraphOperationsPath(netlifyGraphConfig)
+
+  const { fragments, functions } = NetlifyGraph.extractFunctionsFromOperationDoc(parsedDoc)
+
+  cleanDirectory(path.resolve(...netlifyGraphConfig.graphQLOperationsSourceDirectory))
+
+  Object.values(functions).forEach((fn) => {
+    const filename = path.resolve(...netlifyGraphConfig.graphQLOperationsSourceDirectory, `${fn.operationName}.graphql`)
+    fs.writeFileSync(filename, fn.operationString, 'utf8')
+  })
+
+  Object.values(fragments).forEach((fn) => {
+    const filename = path.resolve(...netlifyGraphConfig.graphQLOperationsSourceDirectory, `${fn.fragmentName}.graphql`)
+    fs.writeFileSync(filename, fn.operationString, 'utf8')
+  })
+
+  const functionCount = Object.keys(functions).length
+  const fragmentCount = Object.keys(fragments).length
+
+  logger &&
+    logger(
+      `${chalk.green('✔')} Wrote ${functionCount} functions and ${fragmentCount} fragments to ${chalk.green(
+        path.resolve(...netlifyGraphConfig.graphQLOperationsSourceDirectory),
+      )}`,
+    )
 }
 
 /**
@@ -447,7 +594,7 @@ const readGraphQLSchemaFile = (netlifyGraphConfig) => {
  * @returns
  */
 const generateHandlerByOperationId = ({ handlerOptions, logger, netlifyGraphConfig, operationId, schema }) => {
-  let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
+  let currentOperationsDoc = readGraphQLOperationsSourceFiles(netlifyGraphConfig)
   if (currentOperationsDoc.trim().length === 0) {
     currentOperationsDoc = NetlifyGraph.defaultExampleOperationsDoc
   }
@@ -517,7 +664,7 @@ const generateHandlerByOperationId = ({ handlerOptions, logger, netlifyGraphConf
  * @returns
  */
 const generateHandlerByOperationName = ({ handlerOptions, logger, netlifyGraphConfig, operationName, schema }) => {
-  let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
+  let currentOperationsDoc = readGraphQLOperationsSourceFiles(netlifyGraphConfig)
   if (currentOperationsDoc.trim().length === 0) {
     currentOperationsDoc = NetlifyGraph.defaultExampleOperationsDoc
   }
@@ -585,9 +732,11 @@ module.exports = {
   getNetlifyGraphConfig,
   normalizeOperationsDoc: GraphQLHelpers.normalizeOperationsDoc,
   parse,
-  readGraphQLOperationsSourceFile,
+  potentiallyMigrateLegacySingleOperationsFileToMultipleOperationsFiles,
+  readLegacyGraphQLOperationsSourceFile,
+  readGraphQLOperationsSourceFiles,
   readGraphQLSchemaFile,
   runPrettier,
-  writeGraphQLOperationsSourceFile,
+  writeGraphQLOperationsSourceFiles,
   writeGraphQLSchemaFile,
 }

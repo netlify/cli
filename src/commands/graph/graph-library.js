@@ -10,9 +10,10 @@ const {
   getNetlifyGraphConfig,
   normalizeOperationsDoc,
   parse,
-  readGraphQLOperationsSourceFile,
+  potentiallyMigrateLegacySingleOperationsFileToMultipleOperationsFiles,
+  readGraphQLOperationsSourceFiles,
   readGraphQLSchemaFile,
-  writeGraphQLOperationsSourceFile,
+  writeGraphQLOperationsSourceFiles,
 } = require('../../lib/one-graph/cli-netlify-graph')
 const { error, log, warn } = require('../../utils')
 
@@ -25,6 +26,7 @@ const { error, log, warn } = require('../../utils')
 const graphLibrary = async (options, command) => {
   const { site } = command.netlify
   const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options })
+  potentiallyMigrateLegacySingleOperationsFileToMultipleOperationsFiles(netlifyGraphConfig)
 
   const schemaString = readGraphQLSchemaFile(netlifyGraphConfig)
 
@@ -40,7 +42,7 @@ const graphLibrary = async (options, command) => {
     error(`Failed to parse Netlify GraphQL schema`)
   }
 
-  let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
+  let currentOperationsDoc = readGraphQLOperationsSourceFiles(netlifyGraphConfig)
   if (currentOperationsDoc.trim().length === 0) {
     if (options.production) {
       warn('No Graph operations library found, skipping production client generation.')
@@ -78,7 +80,7 @@ const graphLibrary = async (options, command) => {
     })
   }
 
-  writeGraphQLOperationsSourceFile({
+  writeGraphQLOperationsSourceFiles({
     logger: log,
     netlifyGraphConfig,
     operationsDocString: normalizedOperationsDoc,

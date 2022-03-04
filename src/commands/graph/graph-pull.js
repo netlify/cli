@@ -7,7 +7,12 @@ const {
   loadCLISession,
   refetchAndGenerateFromOneGraph,
 } = require('../../lib/one-graph/cli-client')
-const { buildSchema, getNetlifyGraphConfig, readGraphQLSchemaFile } = require('../../lib/one-graph/cli-netlify-graph')
+const {
+  buildSchema,
+  getNetlifyGraphConfig,
+  potentiallyMigrateLegacySingleOperationsFileToMultipleOperationsFiles,
+  readGraphQLSchemaFile,
+} = require('../../lib/one-graph/cli-netlify-graph')
 const { chalk, error, log, warn } = require('../../utils')
 
 /**
@@ -28,6 +33,8 @@ const graphPull = async (options, command) => {
   }
 
   const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options })
+  potentiallyMigrateLegacySingleOperationsFileToMultipleOperationsFiles(netlifyGraphConfig)
+
   const netlifyToken = await command.authenticate()
   const siteId = site.id
 

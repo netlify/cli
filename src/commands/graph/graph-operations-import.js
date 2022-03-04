@@ -1,7 +1,10 @@
 // @ts-check
 const { OneGraphClient } = require('netlify-onegraph-internal')
 
-const { getNetlifyGraphConfig } = require('../../lib/one-graph/cli-netlify-graph')
+const {
+  getNetlifyGraphConfig,
+  potentiallyMigrateLegacySingleOperationsFileToMultipleOperationsFiles,
+} = require('../../lib/one-graph/cli-netlify-graph')
 const { error } = require('../../utils')
 
 const { importOperationHelper } = require('./import-operation-helper')
@@ -36,6 +39,8 @@ const graphOperationsImport = async (operationId, options, command) => {
   }
 
   let errorMessage = null
+
+  potentiallyMigrateLegacySingleOperationsFileToMultipleOperationsFiles(netlifyGraphConfig)
 
   importOperationHelper({
     error: (message) => {

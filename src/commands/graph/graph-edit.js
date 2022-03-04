@@ -6,7 +6,8 @@ const {
   defaultExampleOperationsDoc,
   getGraphEditUrlBySiteId,
   getNetlifyGraphConfig,
-  readGraphQLOperationsSourceFile,
+  potentiallyMigrateLegacySingleOperationsFileToMultipleOperationsFiles,
+  readGraphQLOperationsSourceFiles,
 } = require('../../lib/one-graph/cli-netlify-graph')
 const { NETLIFYDEVERR, chalk, error, log } = require('../../utils')
 const { openBrowser } = require('../../utils/open-browser')
@@ -31,8 +32,9 @@ const graphEdit = async (options, command) => {
     )
   }
   const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options })
+  potentiallyMigrateLegacySingleOperationsFileToMultipleOperationsFiles(netlifyGraphConfig)
 
-  let graphqlDocument = readGraphQLOperationsSourceFile(netlifyGraphConfig)
+  let graphqlDocument = readGraphQLOperationsSourceFiles(netlifyGraphConfig)
 
   if (graphqlDocument.trim().length === 0) {
     graphqlDocument = defaultExampleOperationsDoc

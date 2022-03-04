@@ -8,7 +8,8 @@ const {
   extractFunctionsFromOperationDoc,
   generateHandlerByOperationName,
   getNetlifyGraphConfig,
-  readGraphQLOperationsSourceFile,
+  potentiallyMigrateLegacySingleOperationsFileToMultipleOperationsFiles,
+  readGraphQLOperationsSourceFiles,
   readGraphQLSchemaFile,
 } = require('../../lib/one-graph/cli-netlify-graph')
 const { error, log } = require('../../utils')
@@ -24,6 +25,8 @@ const { parse } = GraphQL
  */
 const graphHandler = async (userOperationName, options, command) => {
   const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options })
+
+  potentiallyMigrateLegacySingleOperationsFileToMultipleOperationsFiles(netlifyGraphConfig)
 
   const schemaString = readGraphQLSchemaFile(netlifyGraphConfig)
 
@@ -42,7 +45,7 @@ const graphHandler = async (userOperationName, options, command) => {
   let operationName = userOperationName
   if (!operationName) {
     try {
-      let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
+      let currentOperationsDoc = readGraphQLOperationsSourceFiles(netlifyGraphConfig)
       if (currentOperationsDoc.trim().length === 0) {
         currentOperationsDoc = defaultExampleOperationsDoc
       }
@@ -72,6 +75,7 @@ const graphHandler = async (userOperationName, options, command) => {
       const { selectedOperationName } = await inquirer.prompt({
         name: 'selectedOperationName',
         message: `For which operation would you like to generate a handler?`,
+        // @ts-ignore
         type: 'autocomplete',
         pageSize: perPage,
         source(_, input) {

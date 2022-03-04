@@ -23,7 +23,7 @@ const {
   defaultExampleOperationsDoc,
   getGraphEditUrlBySiteId,
   getNetlifyGraphConfig,
-  readGraphQLOperationsSourceFile,
+  readGraphQLOperationsSourceFiles,
 } = require('../../lib/one-graph/cli-netlify-graph')
 const {
   NETLIFYDEV,
@@ -397,7 +397,7 @@ const dev = async (options, command) => {
     const createOrResumeSession = async function () {
       const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options, settings })
 
-      let graphqlDocument = readGraphQLOperationsSourceFile(netlifyGraphConfig)
+      let graphqlDocument = readGraphQLOperationsSourceFiles(netlifyGraphConfig)
 
       if (!graphqlDocument || graphqlDocument.trim().length === 0) {
         graphqlDocument = defaultExampleOperationsDoc
