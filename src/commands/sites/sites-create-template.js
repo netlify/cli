@@ -1,5 +1,6 @@
 // @ts-check
 
+const clone = require('git-clone')
 const inquirer = require('inquirer')
 const pick = require('lodash/pick')
 const prettyjson = require('prettyjson')
@@ -116,6 +117,15 @@ const sitesCreateTemplate = async (options, command) => {
             name: siteName,
           },
         })
+        const { cloneConfirm } = await inquirer.prompt({
+          type: 'confirm',
+          name: 'cloneConfirm',
+          message: `Do you want to clone the repository? You will find it in the git-clones folder`,
+          default: false,
+        })
+        if (cloneConfirm) {
+          clone(repoResp.html_url, `git-clones/${repoResp.name}`)
+        }
       }
     } catch (error_) {
       if (error_.status === 422 || error_.message === 'Duplicate repo') {
