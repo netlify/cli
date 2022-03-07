@@ -14,7 +14,7 @@ jobs:
           private-key: ${{ secrets.TOKENS_PRIVATE_KEY }}
           app-id: ${{ secrets.TOKENS_APP_ID }}
       - name: Git checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref }}
           token: ${{ steps.get-token.outputs.token }}
