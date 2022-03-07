@@ -124,8 +124,8 @@ const sitesCreateTemplate = async (options, command) => {
           default: false,
         })
         if (cloneConfirm) {
-          await clone(repoResp.git_url, `git-clones/${repoResp.name}`)
-          log(`Repo cloned successfully. You can find it under git-clones/${repoResp.name}`)
+          await clone(repoResp.git_url, `${repoResp.name}`)
+          log(`Repo cloned successfully. You can find it under ${repoResp.name}`)
         }
       }
     } catch (error_) {
