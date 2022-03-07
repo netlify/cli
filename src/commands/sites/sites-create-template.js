@@ -112,6 +112,7 @@ const sitesCreateTemplate = async (repository, options, command) => {
   const { name: nameFlag } = options
   let user
   let site
+  let repoResp
 
   // Allow the user to reenter site name if selected one isn't available
   const inputSiteName = async (name) => {
@@ -121,7 +122,7 @@ const sitesCreateTemplate = async (repository, options, command) => {
       const siteName = inputName ? inputName.trim() : siteSuggestion
 
       // Create new repo from template
-      const repoResp = await createRepo(templateName, ghToken, siteName)
+      repoResp = await createRepo(templateName, ghToken, siteName)
 
       if (repoResp.errors) {
         if (repoResp.errors[0].includes('Name already exists on this account')) {
@@ -147,16 +148,6 @@ const sitesCreateTemplate = async (repository, options, command) => {
             name: siteName,
           },
         })
-        const { cloneConfirm } = await inquirer.prompt({
-          type: 'confirm',
-          name: 'cloneConfirm',
-          message: `Do you want to clone the repository?`,
-          default: false,
-        })
-        if (cloneConfirm) {
-          await clone(repoResp.git_url, `${repoResp.name}`)
-          log(`Repo cloned successfully. You can find it under ${repoResp.name}`)
-        }
       }
     } catch (error_) {
       if (error_.status === 422 || error_.message === 'Duplicate repo') {
@@ -191,6 +182,18 @@ const sitesCreateTemplate = async (repository, options, command) => {
     adminUrl: site.admin_url,
     siteUrl,
   })
+
+  const { cloneConfirm } = await inquirer.prompt({
+    type: 'confirm',
+    name: 'cloneConfirm',
+    message: `Do you want to clone the repository?`,
+    default: true,
+  })
+  if (cloneConfirm) {
+    log()
+    await clone(repoResp.git_url, `${repoResp.name}`)
+    log(`🚀 Repository cloned successfully. You can find it under the ${chalk.magenta(repoResp.name)} folder`)
+  }
 
   if (options.withCi) {
     log('Configuring CI')
