@@ -1,6 +1,6 @@
 // @ts-check
 
-const clone = require('git-clone')
+const clone = require('git-clone/promise')
 const inquirer = require('inquirer')
 const pick = require('lodash/pick')
 const prettyjson = require('prettyjson')
@@ -120,11 +120,15 @@ const sitesCreateTemplate = async (options, command) => {
         const { cloneConfirm } = await inquirer.prompt({
           type: 'confirm',
           name: 'cloneConfirm',
-          message: `Do you want to clone the repository? You will find it in the git-clones folder`,
+          message: `Do you want to clone the repository?`,
           default: false,
         })
         if (cloneConfirm) {
          clone(repoResp.git_url, `git-clones/${repoResp.name}`)
+         .then((res)=>log(`Repo cloned successfully. You can find it under git-clones/${repoResp.name}`))
+         .catch(error_=>{
+           error(`Clone error: ${error_}`)
+         })
         }
       }
     } catch (error_) {
