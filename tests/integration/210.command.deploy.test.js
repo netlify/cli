@@ -68,6 +68,30 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
     })
   })
 
+  test.serial('should deploy site by name', async (t) => {
+    await withSiteBuilder('site-with-public-folder', async (builder) => {
+      const content = '<h1>⊂◉‿◉つ</h1>'
+      builder
+        .withContentFile({
+          path: 'public/index.html',
+          content,
+        })
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'public' },
+          },
+        })
+
+      await builder.buildAsync()
+
+      const deploy = await callCli(['deploy', '--json', '--site', SITE_NAME], {
+        cwd: builder.directory,
+      }).then((output) => JSON.parse(output))
+
+      await validateDeploy({ deploy, siteName: SITE_NAME, content, t })
+    })
+  })
+
   test.serial('should deploy site when publish directory set in netlify.toml', async (t) => {
     await withSiteBuilder('site-with-public-folder', async (builder) => {
       const content = '<h1>⊂◉‿◉つ</h1>'

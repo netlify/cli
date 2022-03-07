@@ -132,6 +132,29 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
+  test(testName('background function clientContext,identity should be null', args), async (t) => {
+    await withSiteBuilder('site-with-background-function', async (builder) => {
+      await builder
+        .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
+        .withFunction({
+          path: 'hello-background.js',
+          handler: (_, context) => {
+            console.log(`__CLIENT_CONTEXT__START__${JSON.stringify(context)}__CLIENT_CONTEXT__END__`)
+          },
+        })
+        .buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, url }) => {
+        await got(`${url}/.netlify/functions/hello-background`)
+
+        const output = outputBuffer.toString()
+        const context = JSON.parse(output.match(/__CLIENT_CONTEXT__START__(.*)__CLIENT_CONTEXT__END__/)[1])
+        t.is(context.clientContext, null)
+        t.is(context.identity, null)
+      })
+    })
+  })
+
   test(testName('should enforce role based redirects with default secret and role path', args), async (t) => {
     await withSiteBuilder('site-with-default-role-based-redirects', async (builder) => {
       setupRoleBasedRedirectsSite(builder)
