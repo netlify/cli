@@ -124,7 +124,7 @@ const sitesCreateTemplate = async (options, command) => {
           default: false,
         })
         if (cloneConfirm) {
-          clone(repoResp.html_url, `git-clones/${repoResp.name}`)
+         clone(repoResp.git_url, `git-clones/${repoResp.name}`)
         }
       }
     } catch (error_) {
