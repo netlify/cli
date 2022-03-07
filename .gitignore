@@ -34,6 +34,3 @@ tests/integration/hugo-site/out
 tests/integration/hugo-site/.hugo_build.lock
 _test_out/**
 
-# cloned templates
-git-clones
-
