@@ -24,7 +24,7 @@ jobs:
       - name: Get size
         run: du -sk node_modules | cut -f1 > .delta.packageSize && echo "kb (Package size)" >> .delta.packageSize
       - name: Run Delta
-        uses: netlify/delta-action@v3
+        uses: netlify/delta-action@v2
         with:
           title: '📊 Benchmark results'
           token: ${{ secrets.GITHUB_TOKEN }}
