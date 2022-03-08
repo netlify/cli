@@ -30,6 +30,11 @@ const createRepoStub = sinon.stub(templatesUtils, 'createRepo').callsFake(() => 
   branch: 'main',
 }))
 
+const validateTemplateStub = sinon.stub(templatesUtils, 'validateTemplate').callsFake(() => ({
+  exists: true,
+  isTemplate: true,
+}))
+
 const jsonRenderSpy = sinon.spy(prettyjson, 'render')
 
 const { createSitesFromTemplateCommand, fetchTemplates } = require('../../src/commands/sites/sites-create-template')
@@ -37,11 +42,15 @@ const { createSitesFromTemplateCommand, fetchTemplates } = require('../../src/co
 /* eslint-enable import/order */
 const { withMockApi } = require('./utils/mock-api')
 
+const inquirerStub = sinon.stub(inquirer, 'prompt').callsFake(() => Promise.resolve({ accountSlug: 'test-account' }))
+
 test.beforeEach(() => {
+  inquirerStub.resetHistory()
   gitMock.resetHistory()
   getTemplatesStub.resetHistory()
   createRepoStub.resetHistory()
   jsonRenderSpy.resetHistory()
+  validateTemplateStub.resetHistory()
 })
 
 const siteInfo = {
@@ -74,8 +83,6 @@ const routes = [
 ]
 
 test.serial('netlify sites:create-template', async (t) => {
-  const inquirerStub = sinon.stub(inquirer, 'prompt').callsFake(() => Promise.resolve({ accountSlug: 'test-account' }))
-
   await withMockApi(routes, async ({ apiUrl }) => {
     Object.defineProperty(process, 'env', {
       value: {
@@ -103,12 +110,9 @@ test.serial('netlify sites:create-template', async (t) => {
       }),
     )
   })
-  inquirerStub.restore()
 })
 
 test.serial('should not fetch templates if one is passed as option', async (t) => {
-  const inquirerStub = sinon.stub(inquirer, 'prompt').callsFake(() => Promise.resolve({ accountSlug: 'test-account' }))
-
   await withMockApi(routes, async ({ apiUrl }) => {
     Object.defineProperty(process, 'env', {
       value: {
@@ -131,12 +135,9 @@ test.serial('should not fetch templates if one is passed as option', async (t) =
 
     t.truthy(getTemplatesStub.notCalled)
   })
-  inquirerStub.restore()
 })
 
 test.serial('should throw an error if the URL option is not a valid URL', async (t) => {
-  const inquirerStub = sinon.stub(inquirer, 'prompt').callsFake(() => Promise.resolve({ accountSlug: 'test-account' }))
-
   await withMockApi(routes, async ({ apiUrl }) => {
     Object.defineProperty(process, 'env', {
       value: {
@@ -155,7 +156,6 @@ test.serial('should throw an error if the URL option is not a valid URL', async 
 
     t.truthy(error.message.includes('Invalid URL'))
   })
-  inquirerStub.restore()
 })
 
 test.serial('should return an array of templates with name, source code url and slug', async (t) => {

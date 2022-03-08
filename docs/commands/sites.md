@@ -71,6 +71,10 @@ Create a site from a starter template.
 netlify sites:create-template
 ```
 
+**Arguments**
+
+- repository - repository to use as starter template
+
 **Flags**
 
 - `account-slug` (*string*) - account slug to create the site under
@@ -80,6 +84,14 @@ netlify sites:create-template
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
+
+**Examples**
+
+```bash
+netlify sites:create-template
+netlify sites:create-template nextjs-blog-theme
+netlify sites:create-template my-github-profile/my-template
+```
 
 ---
 ## `sites:delete`
