@@ -137,6 +137,26 @@ testMatrix.forEach(({ args }) => {
     })
   })
 
+  test(testName('should replicate Lambda behaviour for synchronous return values', args), async (t) => {
+    await withSiteBuilder('site-replicate-aws-sync-behaviour', async (builder) => {
+      builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
+        path: 'env.js',
+        handler: () => ({
+          statusCode: 200,
+        }),
+      })
+
+      await builder.buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async (server) => {
+        const response = await got(`${server.url}/.netlify/functions/env`, {
+          throwHttpErrors: false,
+        })
+        t.true(response.body.startsWith('no lambda response.'))
+      })
+    })
+  })
+
   test(testName('should redirect using a wildcard when set in netlify.toml', args), async (t) => {
     await withSiteBuilder('site-with-redirect-function', async (builder) => {
       builder

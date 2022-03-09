@@ -50,6 +50,9 @@ const validateLambdaResponse = (lambdaResponse) => {
   if (lambdaResponse === undefined) {
     return { error: 'lambda response was undefined. check your function code again' }
   }
+  if (lambdaResponse === null) {
+    return { error: 'no lambda response. check your function code again. make sure to return a promise or use the callback.' }
+  }
   if (!Number(lambdaResponse.statusCode)) {
     return {
       error: `Your function response must have a numerical statusCode. You gave: $ ${lambdaResponse.statusCode}`,
