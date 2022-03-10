@@ -7,7 +7,7 @@ const { GraphQL, GraphQLHelpers, InternalConsole, NetlifyGraph } = require('netl
 
 const { chalk, detectServerSettings, error, execa, getFunctionsDir, log, warn } = require('../../utils')
 
-const { Kind, print, printSchema } = GraphQL
+const { Kind, lexicographicSortSchema, print, printSchema } = GraphQL
 
 const internalConsole = {
   log,
@@ -486,7 +486,7 @@ const readGraphQLOperationsSourceFiles = (netlifyGraphConfig) => {
 
   const filenames = fs.readdirSync(operationsPath)
   filenames.forEach((filename) => {
-    if (/.*\.(graphql?)/gi.test(filename)) {
+    if (/.+\.graphql$/gi.test(filename)) {
       const content = fs.readFileSync(path.resolve(operationsPath, filename), 'utf8')
       const file = {
         name: filename,
@@ -564,7 +564,7 @@ const writeGraphQLOperationsSourceFiles = ({ logger, netlifyGraphConfig, operati
  * @param {GraphQL.GraphQLSchema} input.schema The GraphQL schema to print and write to the filesystem
  */
 const writeGraphQLSchemaFile = ({ logger, netlifyGraphConfig, schema }) => {
-  const graphqlSource = printSchema(schema)
+  const graphqlSource = printSchema(lexicographicSortSchema(schema))
 
   ensureNetlifyGraphPath(netlifyGraphConfig)
   const resolvedPath = path.resolve(...netlifyGraphConfig.graphQLSchemaFilename)

@@ -3,8 +3,10 @@
 /* eslint-disable fp/no-loops */
 const {
   OneGraphCliClient,
+  ensureSchemaForApp,
   handleCliSessionEvent,
   loadCLISession,
+  readNetlifyGraphJson,
   refetchAndGenerateFromOneGraph,
 } = require('../../lib/one-graph/cli-client')
 const {
@@ -38,7 +40,11 @@ const graphPull = async (options, command) => {
   const netlifyToken = await command.authenticate()
   const siteId = site.id
 
-  await refetchAndGenerateFromOneGraph({ logger: log, netlifyGraphConfig, netlifyToken, state, siteId })
+  await ensureSchemaForApp({ netlifyToken, site })
+
+  const netlifyGraphJson = readNetlifyGraphJson({ siteRoot: site.root })
+
+  await refetchAndGenerateFromOneGraph({ logger: log, netlifyGraphConfig, netlifyToken, schemaId: netlifyGraphJson.schemaId, site })
 
   const oneGraphSessionId = loadCLISession(state)
 
