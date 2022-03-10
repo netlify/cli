@@ -101,9 +101,9 @@ const monitorCLISessionEvents = (input) => {
         nfToken: netlifyToken,
       },
       {
-        siteId
-      }
-    );
+        siteId,
+      },
+    )
 
     if (schemaResult.errors) {
       warn(`Unable to fetch current schema: ${JSON.stringify(schemaResult, null, 2)}`)
@@ -114,11 +114,7 @@ const monitorCLISessionEvents = (input) => {
 
     if (newSchema.id !== netlifyGraphJson.schemaId) {
       const newEnabledServices = newSchema.services.map((service) => service.service).sort()
-      log(
-        `${chalk.magenta(
-          'Reloading',
-        )} Netlify Graph schema...,`,
-      )
+      log(`${chalk.magenta('Reloading')} Netlify Graph schema...,`)
       netlifyGraphJson = {
         ...netlifyGraphJson,
         schemaId: newSchema.id,
@@ -127,11 +123,14 @@ const monitorCLISessionEvents = (input) => {
 
       writeNetlifyGraphJson({ siteRoot: site.root, netlifyGraphJson })
 
-      await refetchAndGenerateFromOneGraph({ netlifyGraphConfig, site, netlifyToken: innerNetlifyToken, schemaId: newSchema.id })
+      await refetchAndGenerateFromOneGraph({
+        netlifyGraphConfig,
+        site,
+        netlifyToken: innerNetlifyToken,
+        schemaId: newSchema.id,
+      })
       log(`${chalk.green('Reloaded')} Netlify Graph schema and regenerated functions`)
     }
-
-
 
     let handle
 
@@ -212,10 +211,14 @@ const refetchAndGenerateFromOneGraph = async (input) => {
   const siteId = site.id
   await OneGraphClient.ensureAppForSite(netlifyToken, siteId)
 
-  let newSchema;
+  let newSchema
 
   try {
-    newSchema = await OneGraphClient.fetchOneGraphSchemaById({ accessToken: netlifyToken, schemaId: input.schemaId, siteId })
+    newSchema = await OneGraphClient.fetchOneGraphSchemaById({
+      accessToken: netlifyToken,
+      schemaId: input.schemaId,
+      siteId,
+    })
   } catch (fetchSchemaError) {
     error(`Failed to fetch schema: ${fetchSchemaError}`)
   }
@@ -226,9 +229,9 @@ const refetchAndGenerateFromOneGraph = async (input) => {
       nfToken: netlifyToken,
     },
     {
-      siteId
-    }
-  );
+      siteId,
+    },
+  )
 
   if (schemaMetadataResult.errors) {
     warn(`Unable to fetch current schema metadata: ${JSON.stringify(schemaMetadataResult, null, 2)}`)
@@ -378,8 +381,7 @@ const handleCliSessionEvent = async ({ event, netlifyGraphConfig, netlifyToken, 
           payload,
           null,
           2,
-        )
-        } `,
+        )} `,
       )
       break
     }
@@ -525,12 +527,12 @@ const createCLISession = ({ metadata, netlifyToken, sessionName, siteId }) => {
  */
 const loadCLISession = (state) => state.get('oneGraphSessionId')
 
-const NETLIFY_GRAPH_JSON_FILENAME = "netlifyGraph.json"
+const NETLIFY_GRAPH_JSON_FILENAME = 'netlifyGraph.json'
 
 /**
  * Ensure the local Netlify Graph JSON file exists, and load it
  * @params {string} input.siteRoot The root file path for the site
- * @returns {object} 
+ * @returns {object}
  */
 const readNetlifyGraphJson = ({ siteRoot }) => {
   const filePath = path.join(siteRoot, NETLIFY_GRAPH_JSON_FILENAME)
@@ -550,7 +552,7 @@ const readNetlifyGraphJson = ({ siteRoot }) => {
  * @params {object} input
  * @params {object} input.netlifyGraphJson JSON object to write to disk
  * @params {string} input.siteRoot The root file path for the site
- * @returns {object} 
+ * @returns {object}
  */
 const writeNetlifyGraphJson = ({ netlifyGraphJson, siteRoot }) => {
   const filePath = path.join(siteRoot, NETLIFY_GRAPH_JSON_FILENAME)
@@ -565,7 +567,7 @@ const ensureSchemaForApp = async ({ netlifyToken, site }) => {
   if (!schemaId) {
     const input = {
       appId: site.id,
-      enabledServices: ["ONEGRAPH"],
+      enabledServices: ['ONEGRAPH'],
       externalGraphQLSchemas: [],
       parentId: null,
       salesforceSchemaId: null,
@@ -575,19 +577,19 @@ const ensureSchemaForApp = async ({ netlifyToken, site }) => {
     const newSchemaResult = await OneGraphClient.executeCreateGraphQLSchemaMutation(
       {
         input,
-        nfToken: netlifyToken
+        nfToken: netlifyToken,
       },
       {
-        siteId: site.id
-      }
-    );
+        siteId: site.id,
+      },
+    )
 
     if (newSchemaResult.errors) {
       error(`Unable to create schema: ${JSON.stringify(newSchemaResult, null, 2)} `)
     }
 
     const newSchema = newSchemaResult.data.oneGraph.createGraphQLSchema.graphQLSchema
-    const enabledServices = newSchema.services.map(service => ({ service: service.service, enabled: true }))
+    const enabledServices = newSchema.services.map((service) => ({ service: service.service, enabled: true }))
 
     schemaId = newSchema.id
 
@@ -674,7 +676,7 @@ const startOneGraphCLISession = async (input) => {
       error(`Netlify Graph upstream error: ${fetchEventError} `)
     },
     // eslint-disable-next-line unicorn/empty-brace-spaces
-    onClose: () => { },
+    onClose: () => {},
   })
 
   return async function unregisterWatchers() {
@@ -801,5 +803,3 @@ module.exports = {
   startOneGraphCLISession,
   upsertMergeCLISessionMetadata,
 }
-
-

@@ -44,7 +44,13 @@ const graphPull = async (options, command) => {
 
   const netlifyGraphJson = readNetlifyGraphJson({ siteRoot: site.root })
 
-  await refetchAndGenerateFromOneGraph({ logger: log, netlifyGraphConfig, netlifyToken, schemaId: netlifyGraphJson.schemaId, site })
+  await refetchAndGenerateFromOneGraph({
+    logger: log,
+    netlifyGraphConfig,
+    netlifyToken,
+    schemaId: netlifyGraphJson.schemaId,
+    site,
+  })
 
   const oneGraphSessionId = loadCLISession(state)
 
