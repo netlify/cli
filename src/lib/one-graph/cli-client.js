@@ -675,8 +675,9 @@ const startOneGraphCLISession = async (input) => {
     onError: (fetchEventError) => {
       error(`Netlify Graph upstream error: ${fetchEventError} `)
     },
-    // eslint-disable-next-line unicorn/empty-brace-spaces
-    onClose: () => {},
+    onClose: () => {
+      log('Netlify Graph upstream session closed')
+    },
   })
 
   return async function unregisterWatchers() {
