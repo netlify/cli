@@ -5,15 +5,15 @@ on:
   pull_request:
     branches: [main]
 jobs:
-  release-please:
+  get-template:
     runs-on: ubuntu-latest
     steps:
-      - uses: navikt/github-app-token-generator@2d70c12368d1958155af4d283f9f21c9a2a8cb98
-        id: get-token
-        with:
-          private-key: ${{ secrets.TOKENS_PRIVATE_KEY }}
-          app-id: ${{ secrets.TOKENS_APP_ID }}
+      # - uses: navikt/github-app-token-generator@2d70c12368d1958155af4d283f9f21c9a2a8cb98
+      #   id: get-token
+      #   with:
+      #     private-key: ${{ secrets.TOKENS_PRIVATE_KEY }}
+      #     app-id: ${{ secrets.TOKENS_APP_ID }}
       - uses: actions/checkout@v3
-        repository: netlify/internal-shared-templates
-        if: ${{ steps.release.outputs.release_created }}
-        token: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          repository: 'netlify/internal-shared-templates'
+          token: ${{ secrets.GITHUB_TOKEN }}
