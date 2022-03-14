@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
     steps:
-      - uses: navikt/github-app-token-generator@2d70c12368d1958155af4d283f9f21c9a2a8cb98
+      - uses: navikt/github-app-token-generator@a9cd374e271b8aef573b8c16ac46c44fb89b02db
         id: get-token
         with:
           private-key: ${{ secrets.TOKENS_PRIVATE_KEY }}
