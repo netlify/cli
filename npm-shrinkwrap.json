@@ -62,7 +62,7 @@
         "hasbin": "^1.2.3",
         "hasha": "^5.2.2",
         "http-proxy": "^1.18.0",
-        "http-proxy-middleware": "^2.0.0",
+        "http-proxy-middleware": "^2.0.4",
         "https-proxy-agent": "^5.0.0",
         "inquirer": "^6.5.1",
         "inquirer-autocomplete-prompt": "^1.0.1",
@@ -13642,9 +13642,9 @@
       }
     },
     "node_modules/http-proxy-middleware": {
-      "version": "2.0.3",
-      "resolved": "https://registry.npmjs.org/http-proxy-middleware/-/http-proxy-middleware-2.0.3.tgz",
-      "integrity": "sha512-1bloEwnrHMnCoO/Gcwbz7eSVvW50KPES01PecpagI+YLNLci4AcuKJrujW4Mc3sBLpFxMSlsLNHS5Nl/lvrTPA==",
+      "version": "2.0.4",
+      "resolved": "https://registry.npmjs.org/http-proxy-middleware/-/http-proxy-middleware-2.0.4.tgz",
+      "integrity": "sha512-m/4FxX17SUvz4lJ5WPXOHDUuCwIqXLfLHs1s0uZ3oYjhoXlx9csYxaOa0ElDEJ+h8Q4iJ1s+lTMbiCa4EXIJqg==",
       "dependencies": {
         "@types/http-proxy": "^1.17.8",
         "http-proxy": "^1.18.1",
@@ -34380,9 +34380,9 @@
       }
     },
     "http-proxy-middleware": {
-      "version": "2.0.3",
-      "resolved": "https://registry.npmjs.org/http-proxy-middleware/-/http-proxy-middleware-2.0.3.tgz",
-      "integrity": "sha512-1bloEwnrHMnCoO/Gcwbz7eSVvW50KPES01PecpagI+YLNLci4AcuKJrujW4Mc3sBLpFxMSlsLNHS5Nl/lvrTPA==",
+      "version": "2.0.4",
+      "resolved": "https://registry.npmjs.org/http-proxy-middleware/-/http-proxy-middleware-2.0.4.tgz",
+      "integrity": "sha512-m/4FxX17SUvz4lJ5WPXOHDUuCwIqXLfLHs1s0uZ3oYjhoXlx9csYxaOa0ElDEJ+h8Q4iJ1s+lTMbiCa4EXIJqg==",
       "requires": {
         "@types/http-proxy": "^1.17.8",
         "http-proxy": "^1.18.1",
