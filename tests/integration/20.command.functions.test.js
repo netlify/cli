@@ -624,7 +624,7 @@ test('should serve helpful tips and tricks', async (t) => {
         content: `
           const { schedule } = require('@netlify/functions')
 
-          module.exports.handler = schedule('@daily', () => {
+          module.exports.handler = schedule('@daily', async () => {
             return {
               statusCode: 200,
               body: "hello world"
@@ -683,7 +683,7 @@ test('should emulate next_run for scheduled functions', async (t) => {
         path: 'functions/hello-world.js',
         content: `
           const { schedule } = require('@netlify/functions')
-          module.exports.handler = schedule("@daily", (event) => {
+          module.exports.handler = schedule("@daily", async (event) => {
             const { next_run } = JSON.parse(event.body)
             return {
               statusCode: !!next_run ? 200 : 400,
@@ -747,7 +747,7 @@ test('should detect file changes to scheduled function', async (t) => {
       .withContentFile({
         path: 'functions/hello-world.js',
         content: `
-          module.exports.handler = () => {
+          module.exports.handler = async () => {
             return {
               statusCode: 200
             }
@@ -771,7 +771,7 @@ test('should detect file changes to scheduled function', async (t) => {
           content: `
           const { schedule } = require('@netlify/functions')
 
-          module.exports.handler = schedule("@daily", () => {
+          module.exports.handler = schedule("@daily", async () => {
             return {
               statusCode: 200,
               body: "test"
