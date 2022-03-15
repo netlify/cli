@@ -125,7 +125,9 @@ const fetchLatestVersion = async ({ destination, execName, extension, latestVers
         `${execName} is not supported on ${platform} with CPU architecture ${arch}`,
       )
 
-      const issueLink = terminalLink('Create a new CLI issue', createIssueLink.href)
+      const issueLink = terminalLink('Create a new CLI issue', createIssueLink.href, {
+        fallback: () => `Create a new CLI issue ${createIssueLink.href}`,
+      })
 
       error(`The operating system ${platform} with the CPU architecture ${arch} is currently not supported!
 

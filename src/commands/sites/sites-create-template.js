@@ -80,13 +80,20 @@ const sitesCreateTemplate = async (repository, options, command) => {
       `Could not find template ${chalk.bold(templateName)}. Please verify it exists and you can ${terminalLink(
         'access to it on GitHub',
         githubLink,
+        {
+          fallback: () => `access to it on GitHub ${githubLink}`,
+        },
       )}`,
     )
     return
   }
   if (!isTemplate) {
     const githubLink = getGitHubLink({ options, templateName })
-    error(`${terminalLink(chalk.bold(templateName), githubLink)} is not a valid GitHub template`)
+    error(
+      `${terminalLink(chalk.bold(templateName), githubLink, {
+        fallback: () => `${chalk.bold(templateName)} ${githubLink}`,
+      })} is not a valid GitHub template`,
+    )
     return
   }
 
