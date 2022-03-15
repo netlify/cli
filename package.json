@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "9.13.1",
+  "version": "9.13.2",
   "author": "Netlify Inc.",
   "contributors": [
     "Abraham Schilling <AbrahamSchilling@gmail.com> (https://gitlab.com/n4bb12)",
@@ -68,6 +68,7 @@
     "Kyle Rollins <kyleblankrollins@gmail.com> (kyleblankrollins.com)",
     "Leon Hennings",
     "Liran Tal <liran.tal@gmail.com> (https://twitter.com/liran_tal)",
+    "Louis DeScioli (https://twitter.com/descioli)",
     "Lukas Holzer <lukas.holzer@netlify.com> (https://twitter.com/luka5c0m)",
     "Marcus Weiner",
     "Mark Bello <mark@markbello.dev> (https://markbello.dev)",
