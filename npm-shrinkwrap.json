@@ -15,7 +15,7 @@
         "@netlify/framework-info": "^9.0.2",
         "@netlify/local-functions-proxy": "^1.1.1",
         "@netlify/plugin-edge-handlers": "^3.0.7",
-        "@netlify/plugins-list": "^6.16.0",
+        "@netlify/plugins-list": "^6.16.1",
         "@netlify/routing-local-proxy": "^0.34.1",
         "@netlify/zip-it-and-ship-it": "^5.9.0",
         "@octokit/rest": "^18.0.0",
@@ -62,7 +62,7 @@
         "hasbin": "^1.2.3",
         "hasha": "^5.2.2",
         "http-proxy": "^1.18.0",
-        "http-proxy-middleware": "^2.0.4",
+        "http-proxy-middleware": "^2.0.0",
         "https-proxy-agent": "^5.0.0",
         "inquirer": "^6.5.1",
         "inquirer-autocomplete-prompt": "^1.0.1",
@@ -149,7 +149,7 @@
         "tomlify-j0.4": "^3.0.0",
         "tree-kill": "^1.2.2",
         "typescript": "^4.4.4",
-        "verdaccio": "^5.8.0"
+        "verdaccio": "^5.4.0"
       },
       "engines": {
         "node": "^12.20.0 || ^14.14.0 || >=16.0.0"
@@ -4317,9 +4317,9 @@
       }
     },
     "node_modules/@netlify/plugins-list": {
-      "version": "6.16.0",
-      "resolved": "https://registry.npmjs.org/@netlify/plugins-list/-/plugins-list-6.16.0.tgz",
-      "integrity": "sha512-wfPmtfHW7WY6oivVfkHY6yo2hiMjvsP97/vKIn+mzpjmua+nCC3aIfbU+JJGnH8HwKq7UAbC2bwLNQhvQdYsuQ==",
+      "version": "6.16.1",
+      "resolved": "https://registry.npmjs.org/@netlify/plugins-list/-/plugins-list-6.16.1.tgz",
+      "integrity": "sha512-DCgAJvCniSmXghDVvWSa5dgAWYVpOUfRLTVvv0V/GXDd1VkvpHtmZ0FD+AE8hxqSfmY8FLuagh6USi8xeBfwaA==",
       "engines": {
         "node": "^12.20.0 || ^14.14.0 || >=16.0.0"
       }
@@ -27237,9 +27237,9 @@
       }
     },
     "@netlify/plugins-list": {
-      "version": "6.16.0",
-      "resolved": "https://registry.npmjs.org/@netlify/plugins-list/-/plugins-list-6.16.0.tgz",
-      "integrity": "sha512-wfPmtfHW7WY6oivVfkHY6yo2hiMjvsP97/vKIn+mzpjmua+nCC3aIfbU+JJGnH8HwKq7UAbC2bwLNQhvQdYsuQ=="
+      "version": "6.16.1",
+      "resolved": "https://registry.npmjs.org/@netlify/plugins-list/-/plugins-list-6.16.1.tgz",
+      "integrity": "sha512-DCgAJvCniSmXghDVvWSa5dgAWYVpOUfRLTVvv0V/GXDd1VkvpHtmZ0FD+AE8hxqSfmY8FLuagh6USi8xeBfwaA=="
     },
     "@netlify/routing-local-proxy": {
       "version": "0.34.1",
