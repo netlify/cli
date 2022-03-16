@@ -4,11 +4,10 @@ const process = require('process')
 
 const { fetchLatest, fetchVersion, newerVersion, updateAvailable } = require('gh-release-fetch')
 const isExe = require('isexe')
-const terminalLink = require('terminal-link')
 
 // cannot directly import from ../utils as it would create a circular dependency.
 // the file `src/utils/live-tunnel.js` depends on this file
-const { NETLIFYDEVWARN, error, log } = require('../utils/command-helpers')
+const { NETLIFYDEVWARN, error, getTerminalLink, log } = require('../utils/command-helpers')
 const execa = require('../utils/execa')
 
 const isWindows = () => process.platform === 'win32'
@@ -125,9 +124,7 @@ const fetchLatestVersion = async ({ destination, execName, extension, latestVers
         `${execName} is not supported on ${platform} with CPU architecture ${arch}`,
       )
 
-      const issueLink = terminalLink('Create a new CLI issue', createIssueLink.href, {
-        fallback: () => `Create a new CLI issue ${createIssueLink.href}`,
-      })
+      const issueLink = getTerminalLink('Create a new CLI issue', createIssueLink.href)
 
       error(`The operating system ${platform} with the CPU architecture ${arch} is currently not supported!
 

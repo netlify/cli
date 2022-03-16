@@ -5,9 +5,8 @@ const inquirer = require('inquirer')
 const pick = require('lodash/pick')
 const parseGitHubUrl = require('parse-github-url')
 const prettyjson = require('prettyjson')
-const terminalLink = require('terminal-link')
 
-const { chalk, error, getRepoData, log, logJson, track, warn } = require('../../utils')
+const { chalk, error, getRepoData, getTerminalLink, log, logJson, track, warn } = require('../../utils')
 const { configureRepo } = require('../../utils/init/config')
 const { getGitHubToken } = require('../../utils/init/config-github')
 const { createRepo, getTemplatesFromGitHub, validateTemplate } = require('../../utils/sites/utils')
@@ -77,23 +76,16 @@ const sitesCreateTemplate = async (repository, options, command) => {
   if (!exists) {
     const githubLink = getGitHubLink({ options, templateName })
     error(
-      `Could not find template ${chalk.bold(templateName)}. Please verify it exists and you can ${terminalLink(
+      `Could not find template ${chalk.bold(templateName)}. Please verify it exists and you can ${getTerminalLink(
         'access to it on GitHub',
         githubLink,
-        {
-          fallback: () => `access to it on GitHub ${githubLink}`,
-        },
       )}`,
     )
     return
   }
   if (!isTemplate) {
     const githubLink = getGitHubLink({ options, templateName })
-    error(
-      `${terminalLink(chalk.bold(templateName), githubLink, {
-        fallback: () => `${chalk.bold(templateName)} ${githubLink}`,
-      })} is not a valid GitHub template`,
-    )
+    error(`${getTerminalLink(chalk.bold(templateName), githubLink)} is not a valid GitHub template`)
     return
   }
 
