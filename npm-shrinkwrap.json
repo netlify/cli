@@ -10,7 +10,7 @@
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
-        "@netlify/build": "^26.4.0",
+        "@netlify/build": "^26.5.0",
         "@netlify/config": "^17.0.18",
         "@netlify/framework-info": "^9.0.2",
         "@netlify/local-functions-proxy": "^1.1.1",
@@ -2359,9 +2359,9 @@
       }
     },
     "node_modules/@netlify/build": {
-      "version": "26.4.0",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-26.4.0.tgz",
-      "integrity": "sha512-Xr4HR7gr+B34x8WwFcFU8+AOVoaPkWBchhPH9K+hJggzFf9CyCodMMwHo5+obkg6aNJtVcGQZTmZXtI9Tu8twQ==",
+      "version": "26.5.0",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-26.5.0.tgz",
+      "integrity": "sha512-aF6H6CnWcggf5ObDYMzreGq9tKtny95Ys9GhxCMxoQxfhcw3kab984Xj1epk3wlKNt1vJbZ3bndlme3LDG/cOg==",
       "dependencies": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^4.0.0",
@@ -2504,9 +2504,9 @@
       }
     },
     "node_modules/@netlify/build/node_modules/chalk": {
-      "version": "5.0.0",
-      "resolved": "https://registry.npmjs.org/chalk/-/chalk-5.0.0.tgz",
-      "integrity": "sha512-/duVOqst+luxCQRKEo4bNxinsOQtMP80ZYm7mMqzuh5PociNL0PvmHFvREJ9ueYL2TxlHjBcmLCdmocx9Vg+IQ==",
+      "version": "5.0.1",
+      "resolved": "https://registry.npmjs.org/chalk/-/chalk-5.0.1.tgz",
+      "integrity": "sha512-Fo07WOYGqMfCWHOzSXOt2CxDbC6skS/jO9ynEcmpANMoPrD+W1r1K6Vx7iNm+AQmETU1Xr2t+n8nzkV9t6xh3w==",
       "engines": {
         "node": "^12.17.0 || ^14.13 || >=16.0.0"
       },
@@ -26043,9 +26043,9 @@
       }
     },
     "@netlify/build": {
-      "version": "26.4.0",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-26.4.0.tgz",
-      "integrity": "sha512-Xr4HR7gr+B34x8WwFcFU8+AOVoaPkWBchhPH9K+hJggzFf9CyCodMMwHo5+obkg6aNJtVcGQZTmZXtI9Tu8twQ==",
+      "version": "26.5.0",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-26.5.0.tgz",
+      "integrity": "sha512-aF6H6CnWcggf5ObDYMzreGq9tKtny95Ys9GhxCMxoQxfhcw3kab984Xj1epk3wlKNt1vJbZ3bndlme3LDG/cOg==",
       "requires": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^4.0.0",
@@ -26149,9 +26149,9 @@
           }
         },
         "chalk": {
-          "version": "5.0.0",
-          "resolved": "https://registry.npmjs.org/chalk/-/chalk-5.0.0.tgz",
-          "integrity": "sha512-/duVOqst+luxCQRKEo4bNxinsOQtMP80ZYm7mMqzuh5PociNL0PvmHFvREJ9ueYL2TxlHjBcmLCdmocx9Vg+IQ=="
+          "version": "5.0.1",
+          "resolved": "https://registry.npmjs.org/chalk/-/chalk-5.0.1.tgz",
+          "integrity": "sha512-Fo07WOYGqMfCWHOzSXOt2CxDbC6skS/jO9ynEcmpANMoPrD+W1r1K6Vx7iNm+AQmETU1Xr2t+n8nzkV9t6xh3w=="
         },
         "decompress-response": {
           "version": "5.0.0",
