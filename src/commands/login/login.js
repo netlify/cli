@@ -29,6 +29,8 @@ const login = async (options, command) => {
     log()
     log(`Run ${chalk.cyanBright('netlify status')} for account details`)
     log()
+    log(`or run ${chalk.cyanBright('netlify switch')} to switch accounts`)
+    log()
     log(`To see all available commands run: ${chalk.cyanBright('netlify help')}`)
     log()
     return exit()
