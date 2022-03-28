@@ -13012,9 +13012,9 @@
       }
     },
     "node_modules/gh-release-fetch": {
-      "version": "3.0.1",
-      "resolved": "https://registry.npmjs.org/gh-release-fetch/-/gh-release-fetch-3.0.1.tgz",
-      "integrity": "sha512-gV6V6+T0kKppzh/+YXpI/jl8ZgvjMY4oyWR3DAmPsqk9ILhk8TEneLFjBBM3kO7OfZ3dWCvuQu5M0DSh/Hz21w==",
+      "version": "3.0.2",
+      "resolved": "https://registry.npmjs.org/gh-release-fetch/-/gh-release-fetch-3.0.2.tgz",
+      "integrity": "sha512-xcX1uaOVDvsm+io4bvJfBFpQCLfoI3DsFay2GBMUtEnNInbNFFZqxTh7X0WIorCDtOmtos5atp2BGHAGEzmlAg==",
       "dependencies": {
         "@types/download": "^8.0.0",
         "@types/node-fetch": "^2.1.6",
@@ -33926,9 +33926,9 @@
       }
     },
     "gh-release-fetch": {
-      "version": "3.0.1",
-      "resolved": "https://registry.npmjs.org/gh-release-fetch/-/gh-release-fetch-3.0.1.tgz",
-      "integrity": "sha512-gV6V6+T0kKppzh/+YXpI/jl8ZgvjMY4oyWR3DAmPsqk9ILhk8TEneLFjBBM3kO7OfZ3dWCvuQu5M0DSh/Hz21w==",
+      "version": "3.0.2",
+      "resolved": "https://registry.npmjs.org/gh-release-fetch/-/gh-release-fetch-3.0.2.tgz",
+      "integrity": "sha512-xcX1uaOVDvsm+io4bvJfBFpQCLfoI3DsFay2GBMUtEnNInbNFFZqxTh7X0WIorCDtOmtos5atp2BGHAGEzmlAg==",
       "requires": {
         "@types/download": "^8.0.0",
         "@types/node-fetch": "^2.1.6",
