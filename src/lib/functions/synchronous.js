@@ -1,5 +1,7 @@
 // @ts-check
 const { Buffer } = require('buffer')
+const fs = require('fs')
+const pathModule = require('path')
 
 const { NETLIFYDEVERR } = require('../../utils')
 
@@ -36,14 +38,26 @@ const handleSynchronousFunction = function (err, result, response) {
   response.end()
 }
 
-const formatLambdaLocalError = (err) => `${err.errorType}: ${err.errorMessage}\n  ${err.stackTrace.join('\n  ')}`
+const formatLambdaLocalError = (err) =>
+  JSON.stringify({
+    errorType: err.errorType,
+    errorMessage: err.errorMessage,
+    trace: err.stackTrace,
+  })
 
 const handleErr = function (err, response) {
+  const errorTemplateFile = fs.readFileSync(pathModule.join(__dirname, './templates/function-error.html'), 'utf-8')
+  const errorString = typeof err === 'string' ? err : formatLambdaLocalError(err)
+  let updatedErrorTemplate = errorTemplateFile
+
   detectAwsSdkError({ err })
 
   response.statusCode = 500
-  const errorString = typeof err === 'string' ? err : formatLambdaLocalError(err)
-  response.end(errorString)
+
+  const regexPattern = /<!--@ERROR-DETAILS-->/g
+  updatedErrorTemplate = updatedErrorTemplate.replace(regexPattern, errorString)
+
+  response.end(updatedErrorTemplate)
 }
 
 const validateLambdaResponse = (lambdaResponse) => {
