@@ -17,9 +17,10 @@ const pEvent = require('p-event')
 const pFilter = require('p-filter')
 const toReadableStream = require('to-readable-stream')
 
+const edgeFunctions = require('../lib/edge-functions')
 const { fileExistsAsync, isFileAsync } = require('../lib/fs')
 
-const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./command-helpers')
+const { NETLIFYDEVLOG, NETLIFYDEVWARN, log, warn } = require('./command-helpers')
 const { createStreamPromise } = require('./create-stream-promise')
 const { headersForPath, parseHeaders } = require('./headers')
 const { createRewriter, onChanges } = require('./rules-proxy')
@@ -303,8 +304,22 @@ const initializeProxy = async function ({ configPath, distDir, port, projectDir 
     }
   })
 
-  proxy.on('error', (err) => console.error('error while proxying request:', err.message))
+  proxy.on('error', (_, req, res) => {
+    res.writeHead(500, {
+      'Content-Type': 'text/plain',
+    })
+
+    const message = edgeFunctions.isEdgeFunctionsRequest(req)
+      ? 'There was an error with an Edge Handler. Please check the terminal for more details.'
+      : 'Could not proxy request.'
+
+    res.end(message)
+  })
   proxy.on('proxyReq', (proxyReq, req) => {
+    if (edgeFunctions.isEdgeFunctionsRequest(req)) {
+      edgeFunctions.handleProxyRequest(req, proxyReq)
+    }
+
     // eslint-disable-next-line no-underscore-dangle
     if (req.__expectHeader) {
       // eslint-disable-next-line no-underscore-dangle
@@ -359,10 +374,16 @@ const initializeProxy = async function ({ configPath, distDir, port, projectDir 
   return handlers
 }
 
-const onRequest = async ({ addonsUrls, functionsServer, proxy, rewriter, settings }, req, res) => {
+const onRequest = async ({ addonsUrls, edgeFunctionsProxy, functionsServer, proxy, rewriter, settings }, req, res) => {
   req.originalBody = ['GET', 'OPTIONS', 'HEAD'].includes(req.method)
     ? null
     : await createStreamPromise(req, BYTES_LIMIT)
+
+  const edgeFunctionsProxyURL = await edgeFunctionsProxy(req, res)
+
+  if (edgeFunctionsProxyURL !== undefined) {
+    return proxy.web(req, res, { target: edgeFunctionsProxyURL })
+  }
 
   if (isFunction(settings.functionsPort, req.url)) {
     return proxy.web(req, res, { target: functionsServer })
@@ -399,9 +420,9 @@ const onRequest = async ({ addonsUrls, functionsServer, proxy, rewriter, setting
   proxy.web(req, res, options)
 }
 
-const startProxy = async function (settings, addonsUrls, configPath, projectDir) {
+const startProxy = async function ({ addonsUrls, config, configPath, configWatcher, projectDir, settings }) {
   const functionsServer = settings.functionsPort ? `http://localhost:${settings.functionsPort}` : null
-
+  const edgeFunctionsProxy = await edgeFunctions.initializeProxy({ config, configWatcher, log, settings, warn })
   const proxy = await initializeProxy({
     port: settings.frameworkPort,
     distDir: settings.dist,
@@ -417,7 +438,14 @@ const startProxy = async function (settings, addonsUrls, configPath, projectDir)
     configPath,
   })
 
-  const onRequestWithOptions = onRequest.bind(undefined, { proxy, rewriter, settings, addonsUrls, functionsServer })
+  const onRequestWithOptions = onRequest.bind(undefined, {
+    proxy,
+    rewriter,
+    settings,
+    addonsUrls,
+    functionsServer,
+    edgeFunctionsProxy,
+  })
   const server = settings.https
     ? https.createServer({ cert: settings.https.cert, key: settings.https.key }, onRequestWithOptions)
     : http.createServer(onRequestWithOptions)

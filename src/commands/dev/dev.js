@@ -42,7 +42,6 @@ const {
   normalizeConfig,
   openBrowser,
   processOnExit,
-  startForwardProxy,
   startLiveTunnel,
   startProxy,
   warn,
@@ -50,7 +49,6 @@ const {
 } = require('../../utils')
 
 const { createDevExecCommand } = require('./dev-exec')
-const { createDevTraceCommand } = require('./dev-trace')
 
 const startStaticServer = async ({ settings }) => {
   const server = new StaticServer({
@@ -198,37 +196,28 @@ const FRAMEWORK_PORT_TIMEOUT = 6e5
 
 /**
  *
- * @param {object} config
- * @param {*} config.addonsUrls
- * @param {import('commander').OptionValues} config.options
- * @param {*} config.settings
- * @param {*} config.site
+ * @param {object} params
+ * @param {*} params.addonsUrls
+ * @param {import('../base-command').NetlifyOptions["config"]} params.config
+ * @param {*} params.settings
+ * @param {*} params.site
  * @returns
  */
-const startProxyServer = async ({ addonsUrls, options, settings, site }) => {
-  let url
-  if (options.edgeHandlers || options.trafficMesh) {
-    url = await startForwardProxy({
-      port: settings.port,
-      frameworkPort: settings.frameworkPort,
-      functionsPort: settings.functionsPort,
-      publishDir: settings.dist,
-      debug: options.debug,
-      locationDb: options.locationDb,
-      jwtRolesPath: settings.jwtRolePath,
-      jwtSecret: settings.jwtSecret,
-    })
-    if (!url) {
-      log(NETLIFYDEVERR, `Unable to start forward proxy on port '${settings.port}'`)
-      exit(1)
-    }
-  } else {
-    url = await startProxy(settings, addonsUrls, site.configPath, site.root)
-    if (!url) {
-      log(NETLIFYDEVERR, `Unable to start proxy server on port '${settings.port}'`)
-      exit(1)
-    }
+const startProxyServer = async ({ addonsUrls, config, configWatcher, settings, site }) => {
+  const url = await startProxy({
+    addonsUrls,
+    config,
+    configPath: site.configPath,
+    configWatcher,
+    projectDir: site.root,
+    settings,
+  })
+
+  if (!url) {
+    log(NETLIFYDEVERR, `Unable to start proxy server on port '${settings.port}'`)
+    exit(1)
   }
+
   return url
 }
 
@@ -312,6 +301,7 @@ const startPollingForAPIAuthentication = async function (options) {
 const dev = async (options, command) => {
   log(`${NETLIFYDEV}`)
   const { api, config, site, siteInfo, state } = command.netlify
+  const configWatcher = new events.EventEmitter()
   config.dev = { ...config.dev }
   config.build = { ...config.build }
   /** @type {import('./types').DevConfig} */
@@ -321,12 +311,6 @@ const dev = async (options, command) => {
     ...(config.build.publish && { publish: config.build.publish }),
     ...config.dev,
     ...options,
-  }
-
-  if (options.trafficMesh) {
-    warn(
-      '--trafficMesh and -t are deprecated and will be removed in the near future. Please use --edgeHandlers or -e instead.',
-    )
   }
 
   await injectEnvVariables({ devConfig, env: command.netlify.cachedConfig.env, site })
@@ -368,7 +352,7 @@ const dev = async (options, command) => {
   })
   await startFrameworkServer({ settings })
 
-  let url = await startProxyServer({ options, settings, site, addonsUrls })
+  let url = await startProxyServer({ options, settings, site, addonsUrls, config, configWatcher })
 
   const liveTunnelUrl = await handleLiveTunnel({ options, site, api, settings })
   url = liveTunnelUrl || url
@@ -420,8 +404,6 @@ const dev = async (options, command) => {
       return oneGraphSessionId
     }
 
-    const configWatcher = new events.EventEmitter()
-
     // Only set up a watcher if we know the config path.
     const { configPath } = command.netlify.site
     if (configPath) {
@@ -472,7 +454,6 @@ const dev = async (options, command) => {
  */
 const createDevCommand = (program) => {
   createDevExecCommand(program)
-  createDevTraceCommand(program)
 
   return program
     .command('dev')
@@ -492,13 +473,6 @@ const createDevCommand = (program) => {
       new Option('--staticServerPort <port>', 'port of the static app server used when no framework is detected')
         .argParser((value) => Number.parseInt(value))
         .hideHelp(),
-    )
-    .addOption(new Option('-e ,--edgeHandlers', 'activates the Edge Handlers runtime').hideHelp())
-    .addOption(
-      new Option(
-        '-t ,--trafficMesh',
-        '(DEPRECATED: use --edgeHandlers or -e instead) uses Traffic Mesh for proxying requests',
-      ).hideHelp(),
     )
     .addOption(
       new Option(

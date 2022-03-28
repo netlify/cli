@@ -8,7 +8,7 @@ const inquirer = require('inquirer')
 const isObject = require('lodash/isObject')
 const prettyjson = require('prettyjson')
 
-const netlifyConfigPromise = import('@netlify/config')
+const netlifyConfigPromise = import('@netlify-labs/config-internal')
 
 const { cancelDeploy } = require('../../lib/api')
 const { getBuildOptions, runBuild } = require('../../lib/build')
@@ -20,7 +20,6 @@ const {
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
   chalk,
-  deployEdgeHandlers,
   deploySite,
   error,
   exit,
@@ -314,12 +313,6 @@ const runDeploy = async ({
     results = await api.createSiteDeploy({ siteId, title, body: { draft, branch: alias } })
     deployId = results.id
 
-    await deployEdgeHandlers({
-      site,
-      deployId,
-      api,
-      silent,
-    })
     const internalFunctionsFolder = await getInternalFunctionsDir({ base: site.root })
 
     // The order of the directories matter: zip-it-and-ship-it will prioritize

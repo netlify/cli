@@ -1,7 +1,10 @@
 {
-  "name": "netlify-cli",
+  "name": "@netlify-labs/cli-internal",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "description": "Netlify command line tool",
-  "version": "9.13.3",
+  "version": "2.0.2",
   "author": "Netlify Inc.",
   "contributors": [
     "Abraham Schilling <AbrahamSchilling@gmail.com> (https://gitlab.com/n4bb12)",
@@ -151,7 +154,7 @@
     "!/src/**/node_modules/**",
     "!/src/**/*.test.js"
   ],
-  "homepage": "https://github.com/netlify/cli",
+  "homepage": "https://github.com/netlify-labs/cli-internal",
   "keywords": [
     "api",
     "cli",
@@ -159,14 +162,14 @@
     "static"
   ],
   "license": "MIT",
-  "repository": "netlify/cli",
+  "repository": "netlify-labs/cli-internal",
   "main": "src/index.js",
   "bin": {
-    "ntl": "./bin/run",
-    "netlify": "./bin/run"
+    "ntl-internal": "./bin/run",
+    "netlify-internal": "./bin/run"
   },
   "bugs": {
-    "url": "https://github.com/netlify/cli/issues"
+    "url": "https://github.com/netlify-labs/cli-internal/issues"
   },
   "scripts": {
     "prepare": "husky install node_modules/@netlify/eslint-config-node/.husky/",
@@ -203,13 +206,13 @@
     "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,tools,scripts,site,tests,.github}/**/*.{mjs,cjs,js,md,yml,json,html}\" \"*.{mjs,cjs,js,yml,json,html}\" \".*.{mjs,cjs,js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\" \"!site/package-lock.json\" \"!.github/**/*.md\""
   },
   "dependencies": {
-    "@netlify/build": "^26.5.0",
-    "@netlify/config": "^17.0.18",
+    "@netlify-labs/build-internal": "^27.0.3",
+    "@netlify-labs/config-internal": "^17.0.18",
+    "@netlify-labs/edge-bundler": "^0.6.0",
     "@netlify/framework-info": "^9.0.2",
     "@netlify/local-functions-proxy": "^1.1.1",
     "@netlify/plugin-edge-handlers": "^3.0.7",
     "@netlify/plugins-list": "^6.16.1",
-    "@netlify/routing-local-proxy": "^0.34.1",
     "@netlify/zip-it-and-ship-it": "^5.9.0",
     "@octokit/rest": "^18.0.0",
     "@sindresorhus/slugify": "^1.1.0",

@@ -13,6 +13,8 @@ jobs:
       matrix:
         os: [ubuntu-latest, macOS-latest, windows-latest]
         node-version: ['*']
+    env:
+      PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
     steps:
       # Sets an output parameter if this is a release PR
       - name: Check for release
@@ -57,6 +59,8 @@ jobs:
           - os: windows-latest
             node-version: '12.x'
       fail-fast: false
+    env:
+      PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
     steps:
       # Sets an output parameter if this is a release PR
       - name: Check for release
@@ -82,6 +86,10 @@ jobs:
           cache-dependency-path: 'npm-shrinkwrap.json'
           check-latest: true
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x
       - name: Install core dependencies
         run: npm ci --no-audit
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'

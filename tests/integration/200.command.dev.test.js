@@ -16,12 +16,7 @@ const { withSiteBuilder } = require('./utils/site-builder')
 
 const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
 
-const testMatrix = [
-  { args: [] },
-
-  // some tests are still failing with this enabled
-  // { args: ['--edgeHandlers'] }
-]
+const testMatrix = [{ args: [] }]
 
 const testName = (title, args) => (args.length <= 0 ? title : `${title} - ${args.join(' ')}`)
 
