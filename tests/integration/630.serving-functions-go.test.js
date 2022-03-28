@@ -112,3 +112,72 @@ test('Updates a Go function when a file is modified', async (t) => {
     }
   })
 })
+
+// Reproduction test to verify the abscence/presence of a Go scheduled function
+test('Detects a Go scheduled function using netlify-toml config', async (t) => {
+  const [execaMock, removeExecaMock] = await createExecaMock(`
+    const { writeFileSync } = require('fs')
+
+    const handler = (...args) => {
+      if (args[0].includes('local-functions-proxy')) {
+        const response = {
+          statusCode: 200
+        }
+
+        return {
+          stderr: '',
+          stdout: JSON.stringify(response)
+        }
+      }
+    }
+
+    module.exports = (...args) => ({
+      ...handler(...args) || {},
+      stderr: { pipe: () => {} }
+    })
+  `)
+
+  await withSiteBuilder('go-scheduled-function', async (builder) => {
+    try {
+      await builder
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'public' },
+            functions: { directory: 'src/', 'go-scheduled-function': { schedule: '@daily' } },
+          },
+        })
+        .withContentFiles([
+          {
+            path: 'go.mod',
+            content: `<mock go.mod>`,
+          },
+          {
+            path: 'go.sum',
+            content: `<mock go.sum>`,
+          },
+          {
+            path: 'src/go-scheduled-function/main.go',
+            content: `<mock main.go>`,
+          },
+        ])
+        .buildAsync()
+
+      await withDevServer(
+        {
+          cwd: builder.directory,
+          env: execaMock,
+        },
+        async ({ port }) => {
+          const response = await got(`http://localhost:${port}/.netlify/functions/go-scheduled-function`)
+          
+          t.regex(response.body, /You performed an HTTP request/)
+          t.regex(response.body, /Your function returned `body`/)
+          
+          t.is(response.statusCode, 200)
+        },
+      )
+    } finally {
+      await removeExecaMock()
+    }
+  })
+})
