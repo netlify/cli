@@ -239,7 +239,7 @@
         <span class="fn-name"><!--@FUNCTION-NAME--></span>
       </div>
       <script>
-        ;(function () {
+        ;(function () { // eslint-disable-line func-names
           const rawErrorDetails = document.querySelector('.raw-error-details code').textContent
           const errorMessageDetailsElement = document.querySelector('.error-message-details')
           const errorTypeElement = document.querySelector('.error-type')
@@ -254,7 +254,7 @@
           const logsLink = document.querySelector('.fn-logs-link')
 
           // NO request ID Option Provided - only expected to happen in local dev scenarios
-          if (requestIdElement.textContent.trim().length > 0) {
+          if (requestIdElement.textContent.trim().length !== 0) {
             requestIdContainerElement.classList.remove('hidden')
           }
 
@@ -262,8 +262,8 @@
           let parsedErrorDetails
           try {
             parsedErrorDetails = JSON.parse(rawErrorDetails.trim())
-          } catch (e) {
-            console.error(e)
+          } catch (error) {
+            console.error(error)
             document.body.classList.add('no-js')
             return
           }
@@ -273,8 +273,8 @@
           }
 
           const hasTrace =
-            (Array.isArray(parsedErrorDetails.trace) && parsedErrorDetails.trace.length > 0) ||
-            (Array.isArray(parsedErrorDetails.stackTrace) && parsedErrorDetails.stackTrace.length > 0)
+            (Array.isArray(parsedErrorDetails.trace) && parsedErrorDetails.trace.length !== 0) ||
+            (Array.isArray(parsedErrorDetails.stackTrace) && parsedErrorDetails.stackTrace.length !== 0)
 
           if (parsedErrorDetails && hasTrace) {
             stackTraceElement.classList.remove('hidden')
@@ -296,11 +296,11 @@
             if (errorTypes.includes(parsedErrorDetails.errorType)) {
               const mdnLink = document.createElement('a')
               mdnLink.href =
-                'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/' +
-                parsedErrorDetails.errorType
+                `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/${
+        parsedErrorDetails.errorType}`
               mdnLink.textContent = parsedErrorDetails.errorType
               mdnLink.target = '_blank'
-              errorTypeElement.appendChild(mdnLink)
+              errorTypeElement.append(mdnLink)
             } else {
               errorTypeElement.textContent = parsedErrorDetails.errorType
             }
@@ -317,13 +317,15 @@
 
           // Go errors currently use "stackTrace" with a different structure than "trace"
           // map these into a shared format.
-          if (Array.isArray(parsedErrorDetails.stackTrace) && parsedErrorDetails.stackTrace.length > 0) {
+          if (Array.isArray(parsedErrorDetails.stackTrace) && parsedErrorDetails.stackTrace.length !== 0) {
             parsedErrorDetails.trace = parsedErrorDetails.stackTrace.reduce((newTrace, traceDetail) => {
               let traceLine = ''
               if (traceDetail.path) {
+                /* eslint-disable no-negated-condition */
                 traceLine += `${traceDetail.path}${traceDetail.line !== undefined ? `:${traceDetail.line}` : ''} ${
                   traceDetail.label !== undefined ? `${traceDetail.label} ` : ''
                 }`
+                /* eslint-enable no-negated-condition */
                 if (traceLine) {
                   newTrace.push(traceLine)
                 }
@@ -332,7 +334,7 @@
             }, [])
           }
 
-          if (Array.isArray(parsedErrorDetails.trace) && parsedErrorDetails.trace.length > 0) {
+          if (Array.isArray(parsedErrorDetails.trace) && parsedErrorDetails.trace.length !== 0) {
             stackTraceCodeElement.textContent = parsedErrorDetails.trace.join('\n')
           } else {
             stackTraceCodeElement.remove()
