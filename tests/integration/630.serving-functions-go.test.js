@@ -169,10 +169,10 @@ test('Detects a Go scheduled function using netlify-toml config', async (t) => {
         },
         async ({ port }) => {
           const response = await got(`http://localhost:${port}/.netlify/functions/go-scheduled-function`)
-          
+
           t.regex(response.body, /You performed an HTTP request/)
           t.regex(response.body, /Your function returned `body`/)
-          
+
           t.is(response.statusCode, 200)
         },
       )
