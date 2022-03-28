@@ -239,7 +239,9 @@
         <span class="fn-name"><!--@FUNCTION-NAME--></span>
       </div>
       <script>
-        ;(function () { // eslint-disable-line func-names
+        /* eslint eslint-comments/no-use: off */
+        // eslint-disable-next-line func-names
+        ;(function () {
           const rawErrorDetails = document.querySelector('.raw-error-details code').textContent
           const errorMessageDetailsElement = document.querySelector('.error-message-details')
           const errorTypeElement = document.querySelector('.error-type')
@@ -295,9 +297,7 @@
             ]
             if (errorTypes.includes(parsedErrorDetails.errorType)) {
               const mdnLink = document.createElement('a')
-              mdnLink.href =
-                `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/${
-        parsedErrorDetails.errorType}`
+              mdnLink.href = `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/${parsedErrorDetails.errorType}`
               mdnLink.textContent = parsedErrorDetails.errorType
               mdnLink.target = '_blank'
               errorTypeElement.append(mdnLink)
