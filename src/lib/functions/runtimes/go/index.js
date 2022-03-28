@@ -56,7 +56,7 @@ const getBuildFunction = ({ func }) => {
   return async () => {
     // From the current function directory, we look up parent directories for the netlify.toml file.
     // If we find one, we parse it to see if a schedule is defined for the current function. It's okay
-    // if we don't find one, we just assume the function is not scheduled (i.e. undefined).
+    // if we don't find any, we just assume the function is not scheduled (i.e. undefined).
     const schedule = await parseForSchedule({ cwd: functionDirectory, functionName: func.name })
 
     const { binaryPath: newBinaryPath, srcFiles } = await build({
