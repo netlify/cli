@@ -177,6 +177,7 @@ class FunctionsRegistry {
         buildGoSource: true,
         buildRustSource: env.NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE === 'true',
       },
+      config: this.config
     })
 
     // Before registering any functions, we look for any functions that were on
@@ -214,7 +215,7 @@ class FunctionsRegistry {
         runtime,
         timeoutBackground: this.timeouts.backgroundFunctions,
         timeoutSynchronous: this.timeouts.syncFunctions,
-        settings: this.settings,
+        settings: this.settings
       })
 
       this.registerFunction(name, func)

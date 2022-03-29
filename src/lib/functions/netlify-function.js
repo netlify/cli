@@ -25,7 +25,7 @@ class NetlifyFunction {
     runtime,
     settings,
     timeoutBackground,
-    timeoutSynchronous,
+    timeoutSynchronous
   }) {
     this.config = config
     this.directory = directory
@@ -41,7 +41,7 @@ class NetlifyFunction {
     // Determines whether this is a background function based on the function
     // name.
     this.isBackground = name.endsWith(BACKGROUND_SUFFIX)
-    this.schedule = null
+    this.schedule = config.functions[name]?.schedule
 
     // List of the function's source files. This starts out as an empty set
     // and will get populated on every build.
@@ -91,7 +91,7 @@ class NetlifyFunction {
 
       this.buildData = buildData
       this.srcFiles = srcFilesSet
-      this.schedule = schedule
+      this.schedule = schedule || this.schedule
 
       return { srcFilesDiff }
     } catch (error) {
