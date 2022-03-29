@@ -42,8 +42,8 @@ class NetlifyFunction {
     // name.
     this.isBackground = name.endsWith(BACKGROUND_SUFFIX)
 
-    const scheduledFunc = config && config.functions && config.functions[name]
-    this.schedule = scheduledFunc && scheduledFunc.schedule
+    const functionConfig = config.functions && config.functions[name]
+    this.schedule = functionConfig && functionConfig.schedule
 
     // List of the function's source files. This starts out as an empty set
     // and will get populated on every build.
