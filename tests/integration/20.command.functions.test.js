@@ -31,7 +31,7 @@ test('should return the correct function url for a NetlifyFunction object', (t) 
   const ntlFunction = new NetlifyFunction({
     name: functionName,
     settings: { functionsPort: port },
-    config: { functions : {}},
+    config: { functions: {} },
   })
 
   t.is(ntlFunction.url, functionUrl)
