@@ -41,7 +41,9 @@ class NetlifyFunction {
     // Determines whether this is a background function based on the function
     // name.
     this.isBackground = name.endsWith(BACKGROUND_SUFFIX)
-    this.schedule = config.functions[name]?.schedule
+
+    const scheduledFunc = config.functions[name]
+    this.schedule = scheduledFunc && scheduledFunc.schedule
 
     // List of the function's source files. This starts out as an empty set
     // and will get populated on every build.
