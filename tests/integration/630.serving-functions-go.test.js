@@ -123,9 +123,7 @@ test('Detects a Go scheduled function using netlify-toml config', async (t) => {
         const { body } = JSON.parse(args[1][1])
         const { next_run } = JSON.parse(body)
 
-        assert.notEqual(next_run, undefined)
-        assert.notEqual(next_run, null)
-        assert.notEqual(next_run, '')
+        assert.ok(next_run)
 
         const response = {
           statusCode: 200
