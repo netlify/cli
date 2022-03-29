@@ -116,10 +116,17 @@ test('Updates a Go function when a file is modified', async (t) => {
 // Reproduction test to verify the abscence/presence of a Go scheduled function
 test('Detects a Go scheduled function using netlify-toml config', async (t) => {
   const [execaMock, removeExecaMock] = await createExecaMock(`
-    const { writeFileSync } = require('fs')
+    const assert = require('assert')
 
     const handler = (...args) => {
       if (args[0].includes('local-functions-proxy')) {
+        const { body } = JSON.parse(args[1][1])
+        const { next_run } = JSON.parse(body)
+
+        assert.notEqual(next_run, undefined)
+        assert.notEqual(next_run, null)
+        assert.notEqual(next_run, '')
+
         const response = {
           statusCode: 200
         }
