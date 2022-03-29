@@ -41,7 +41,7 @@ const getBuildFunction = ({ func }) => {
   const functionDirectory = dirname(func.mainFile)
   const binaryPath = tempy.file(isWindows ? { extension: 'exe' } : undefined)
 
-  return () => build({ binaryPath, functionDirectory})
+  return () => build({ binaryPath, functionDirectory })
 }
 
 const invokeFunction = async ({ context, event, func, timeout }) => {

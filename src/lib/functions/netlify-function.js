@@ -25,7 +25,7 @@ class NetlifyFunction {
     runtime,
     settings,
     timeoutBackground,
-    timeoutSynchronous
+    timeoutSynchronous,
   }) {
     this.config = config
     this.directory = directory
