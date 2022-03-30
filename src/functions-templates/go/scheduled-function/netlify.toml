@@ -1,0 +1,12 @@
+[build]
+command = "make build"
+functions = "functions"
+
+[build.environment]
+GO_VERSION = "1.17.6"
+
+[functions]
+directory = "src/"
+
+[functions.hourly-schedule]
+schedule = "@hourly"
