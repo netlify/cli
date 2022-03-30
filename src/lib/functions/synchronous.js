@@ -1,7 +1,7 @@
 // @ts-check
 const { Buffer } = require('buffer')
-const fs = require('fs')
-const pathModule = require('path')
+const { readFileSync } = require('fs')
+const { join } = require('path')
 
 const { NETLIFYDEVERR } = require('../../utils')
 
@@ -17,15 +17,15 @@ const addHeaders = (headers, response) => {
   })
 }
 
-const handleSynchronousFunction = function (err, result, response) {
+const handleSynchronousFunction = function (err, result, request, response) {
   if (err) {
-    return handleErr(err, response)
+    return handleErr(err, request, response)
   }
 
   const { error } = validateLambdaResponse(result)
   if (error) {
     console.log(`${NETLIFYDEVERR} ${error}`)
-    return handleErr(error, response)
+    return handleErr(error, request, response)
   }
 
   response.statusCode = result.statusCode
@@ -45,19 +45,25 @@ const formatLambdaLocalError = (err) =>
     trace: err.stackTrace,
   })
 
-const handleErr = function (err, response) {
-  const errorTemplateFile = fs.readFileSync(pathModule.join(__dirname, './templates/function-error.html'), 'utf-8')
-  const errorString = typeof err === 'string' ? err : formatLambdaLocalError(err)
-  let updatedErrorTemplate = errorTemplateFile
+const renderErrorTemplate = (errString) => {
+  const regexPattern = /<!--@ERROR-DETAILS-->/g
+  const errorTemplateFile = readFileSync(join(__dirname, './templates/function-error.html'), 'utf-8')
 
+  return errorTemplateFile.replace(regexPattern, errString)
+}
+
+const processRenderedResponse = (err, request) => {
+  const errorString = typeof err === 'string' ? err : formatLambdaLocalError(err)
+  const acceptsHtml = request.headers?.accept?.includes('text/html')
+
+  return acceptsHtml ? renderErrorTemplate(errorString) : errorString
+}
+
+const handleErr = function (err, request, response) {
   detectAwsSdkError({ err })
 
   response.statusCode = 500
-
-  const regexPattern = /<!--@ERROR-DETAILS-->/g
-  updatedErrorTemplate = updatedErrorTemplate.replace(regexPattern, errorString)
-
-  response.end(updatedErrorTemplate)
+  response.end(processRenderedResponse(err, request))
 }
 
 const validateLambdaResponse = (lambdaResponse) => {
