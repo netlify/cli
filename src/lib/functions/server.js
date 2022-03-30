@@ -113,6 +113,7 @@ const createHandler = function (options) {
       const jwt = generateNetlifyGraphJWT(config.netlifyGraphConfig)
       event.authlifyToken = jwt
       event.netlifyGraphToken = jwt
+      event.headers['X-Nf-Graph-Token'] = jwt
     }
 
     const clientContext = buildClientContext(request.headers) || {}
