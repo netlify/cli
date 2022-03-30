@@ -11,6 +11,7 @@ const StaticServer = require('static-server')
 const stripAnsiCc = require('strip-ansi-control-characters')
 const waitPort = require('wait-port')
 
+const { promptEditorHelper } = require('../../lib/edge-functions')
 const { startFunctionsServer } = require('../../lib/functions/server')
 const {
   OneGraphCliClient,
@@ -300,7 +301,7 @@ const startPollingForAPIAuthentication = async function (options) {
  */
 const dev = async (options, command) => {
   log(`${NETLIFYDEV}`)
-  const { api, config, site, siteInfo, state } = command.netlify
+  const { api, config, repositoryRoot, site, siteInfo, state } = command.netlify
   const configWatcher = new events.EventEmitter()
   config.dev = { ...config.dev }
   config.build = { ...config.build }
@@ -314,6 +315,7 @@ const dev = async (options, command) => {
   }
 
   await injectEnvVariables({ devConfig, env: command.netlify.cachedConfig.env, site })
+  await promptEditorHelper({ chalk, config, log, NETLIFYDEVLOG, repositoryRoot, state })
 
   const { addonsUrls, capabilities, siteUrl, timeouts } = await getSiteInformation({
     // inherited from base command --offline

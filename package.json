@@ -208,7 +208,7 @@
   "dependencies": {
     "@netlify-labs/build-internal": "^27.0.3",
     "@netlify-labs/config-internal": "^17.0.18",
-    "@netlify-labs/edge-bundler": "^0.6.0",
+    "@netlify-labs/edge-bundler": "^0.7.0",
     "@netlify/framework-info": "^9.0.2",
     "@netlify/local-functions-proxy": "^1.1.1",
     "@netlify/plugin-edge-handlers": "^3.0.7",
@@ -310,6 +310,7 @@
     "through2-map": "^3.0.0",
     "to-readable-stream": "^2.1.0",
     "toml": "^3.0.0",
+    "unixify": "^1.0.0",
     "update-notifier": "^5.0.0",
     "uuid": "^8.0.0",
     "wait-port": "^0.2.2",

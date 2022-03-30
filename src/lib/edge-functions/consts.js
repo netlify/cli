@@ -1,3 +1,4 @@
+const DEFAULT_SRC_DIR = 'netlify/edge-functions'
 const DIST_IMPORT_MAP_PATH = 'edge-functions-import-map.json'
 const INTERNAL_EDGE_FUNCTIONS_FOLDER = 'edge-functions'
 const EDGE_FUNCTIONS_FOLDER = 'edge-functions-dist'
@@ -10,6 +11,7 @@ const SERVER_POLL_INTERNAL = 1e3
 const SERVER_POLL_TIMEOUT = 1e4
 
 module.exports = {
+  DEFAULT_SRC_DIR,
   DIST_IMPORT_MAP_PATH,
   INTERNAL_EDGE_FUNCTIONS_FOLDER,
   EDGE_FUNCTIONS_FOLDER,

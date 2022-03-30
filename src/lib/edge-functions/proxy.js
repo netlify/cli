@@ -29,7 +29,7 @@ const getDownloadUpdateFunctions = () => {
   }
 
   const onBeforeDownload = () => {
-    spinner = startSpinner({ text: 'Setting up Edge Functions environment...' })
+    spinner = startSpinner({ text: 'Setting up the Edge Functions environment. This may take a couple of minutes.' })
   }
 
   return {
