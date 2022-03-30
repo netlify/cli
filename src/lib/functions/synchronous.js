@@ -38,12 +38,14 @@ const handleSynchronousFunction = function (err, result, request, response) {
   response.end()
 }
 
-const formatLambdaLocalError = (err) =>
-  JSON.stringify({
-    errorType: err.errorType,
-    errorMessage: err.errorMessage,
-    trace: err.stackTrace,
-  })
+const formatLambdaLocalError = (err, acceptsHtml) =>
+  acceptsHtml
+    ? JSON.stringify({
+        errorType: err.errorType,
+        errorMessage: err.errorMessage,
+        trace: err.stackTrace,
+      })
+    : `${err.errorType}: ${err.errorMessage}\n ${err.stackTrace.join('\n ')}`
 
 const renderErrorTemplate = (errString) => {
   const regexPattern = /<!--@ERROR-DETAILS-->/g
@@ -53,8 +55,8 @@ const renderErrorTemplate = (errString) => {
 }
 
 const processRenderedResponse = (err, request) => {
-  const errorString = typeof err === 'string' ? err : formatLambdaLocalError(err)
-  const acceptsHtml = request.headers?.accept?.includes('text/html')
+  const acceptsHtml = request.headers && request.headers.accept && request.headers.accept.includes('text/html')
+  const errorString = typeof err === 'string' ? err : formatLambdaLocalError(err, acceptsHtml)
 
   return acceptsHtml ? renderErrorTemplate(errorString) : errorString
 }
