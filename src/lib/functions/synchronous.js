@@ -1,6 +1,6 @@
 // @ts-check
 const { Buffer } = require('buffer')
-const { readFileSync } = require('fs')
+const { readFile } = require('fs').promises
 const { join } = require('path')
 
 const { NETLIFYDEVERR } = require('../../utils')
@@ -47,25 +47,27 @@ const formatLambdaLocalError = (err, acceptsHtml) =>
       })
     : `${err.errorType}: ${err.errorMessage}\n ${err.stackTrace.join('\n ')}`
 
-const renderErrorTemplate = (errString) => {
+const renderErrorTemplate = async (errString) => {
   const regexPattern = /<!--@ERROR-DETAILS-->/g
-  const errorTemplateFile = readFileSync(join(__dirname, './templates/function-error.html'), 'utf-8')
+  let errorTemplateFile
+  // eslint-disable-next-line prefer-const
+  errorTemplateFile = errorTemplateFile || (await readFile(join(__dirname, './templates/function-error.html'), 'utf-8'))
 
   return errorTemplateFile.replace(regexPattern, errString)
 }
 
-const processRenderedResponse = (err, request) => {
+const processRenderedResponse = async (err, request) => {
   const acceptsHtml = request.headers && request.headers.accept && request.headers.accept.includes('text/html')
   const errorString = typeof err === 'string' ? err : formatLambdaLocalError(err, acceptsHtml)
 
-  return acceptsHtml ? renderErrorTemplate(errorString) : errorString
+  return acceptsHtml ? await renderErrorTemplate(errorString) : errorString
 }
 
-const handleErr = function (err, request, response) {
+const handleErr = async (err, request, response) => {
   detectAwsSdkError({ err })
 
   response.statusCode = 500
-  response.end(processRenderedResponse(err, request))
+  response.end(await processRenderedResponse(err, request))
 }
 
 const validateLambdaResponse = (lambdaResponse) => {
