@@ -161,7 +161,7 @@ const createHandler = function (options) {
         return
       }
 
-      handleSynchronousFunction(error, result, response)
+      handleSynchronousFunction(error, result, request, response)
     }
   }
 }
