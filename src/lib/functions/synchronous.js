@@ -47,10 +47,10 @@ const formatLambdaLocalError = (err, acceptsHtml) =>
       })
     : `${err.errorType}: ${err.errorMessage}\n ${err.stackTrace.join('\n ')}`
 
+let errorTemplateFile
+
 const renderErrorTemplate = async (errString) => {
   const regexPattern = /<!--@ERROR-DETAILS-->/g
-  let errorTemplateFile
-  // eslint-disable-next-line prefer-const
   errorTemplateFile = errorTemplateFile || (await readFile(join(__dirname, './templates/function-error.html'), 'utf-8'))
 
   return errorTemplateFile.replace(regexPattern, errString)
