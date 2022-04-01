@@ -51,9 +51,14 @@ let errorTemplateFile
 
 const renderErrorTemplate = async (errString) => {
   const regexPattern = /<!--@ERROR-DETAILS-->/g
-  errorTemplateFile = errorTemplateFile || (await readFile(join(__dirname, './templates/function-error.html'), 'utf-8'))
+  const templatePath = './templates/function-error.html'
 
-  return errorTemplateFile.replace(regexPattern, errString)
+  try {
+    errorTemplateFile = errorTemplateFile || (await readFile(join(__dirname, templatePath), 'utf-8'))
+    return errorTemplateFile.replace(regexPattern, errString)
+  } catch {
+    return errString
+  }
 }
 
 const processRenderedResponse = async (err, request) => {
