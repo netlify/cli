@@ -16,6 +16,7 @@ module.exports = {
     'no-process-exit': 0,
     'fp/no-loops': 'error',
     'import/max-dependencies': 0,
+    'n/no-process-exit': 0,
     'n/no-sync': 0,
     'sort-destructure-keys/sort-destructure-keys': 2,
     'unicorn/consistent-destructuring': 0,

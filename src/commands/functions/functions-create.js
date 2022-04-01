@@ -98,7 +98,7 @@ const formatRegistryArrayForInquirer = function (lang) {
   const registry = folderNames
     // filter out markdown files
     .filter((folderName) => !folderName.endsWith('.md'))
-    // eslint-disable-next-line node/global-require, import/no-dynamic-require
+    // eslint-disable-next-line n/global-require, import/no-dynamic-require
     .map((folderName) => require(path.join(templatesDir, lang, folderName, '.netlify-function-template.js')))
     .sort((folderNameA, folderNameB) => {
       const priorityDiff = (folderNameA.priority || DEFAULT_PRIORITY) - (folderNameB.priority || DEFAULT_PRIORITY)
@@ -298,7 +298,7 @@ const downloadFromURL = async function (command, options, argumentName, function
   // read, execute, and delete function template file if exists
   const fnTemplateFile = path.join(fnFolder, '.netlify-function-template.js')
   if (fs.existsSync(fnTemplateFile)) {
-    // eslint-disable-next-line node/global-require, import/no-dynamic-require
+    // eslint-disable-next-line n/global-require, import/no-dynamic-require
     const { onComplete, addons = [] } = require(fnTemplateFile)
 
     await installAddons(command, addons, path.resolve(fnFolder))
@@ -323,7 +323,7 @@ const getNpmInstallPackages = (existingPackages = {}, neededPackages = {}) =>
 // we don't do this check, we may be upgrading the version of a module used in
 // another part of the project, which we don't want to do.
 const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) => {
-  // eslint-disable-next-line import/no-dynamic-require, node/global-require
+  // eslint-disable-next-line import/no-dynamic-require, n/global-require
   const { dependencies: functionDependencies, devDependencies: functionDevDependencies } = require(functionPackageJson)
   const sitePackageJson = await findUp('package.json', { cwd: functionsDir })
   const npmInstallFlags = ['--no-audit', '--no-fund']
@@ -337,7 +337,7 @@ const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) 
     return
   }
 
-  // eslint-disable-next-line import/no-dynamic-require, node/global-require
+  // eslint-disable-next-line import/no-dynamic-require, n/global-require
   const { dependencies: siteDependencies, devDependencies: siteDevDependencies } = require(sitePackageJson)
   const dependencies = getNpmInstallPackages(siteDependencies, functionDependencies)
   const devDependencies = getNpmInstallPackages(siteDevDependencies, functionDevDependencies)

@@ -362,7 +362,7 @@ export default class Layout extends React.Component {
 
   state = {
     menu: false,
-    // eslint-disable-next-line no-invalid-this
+
     update: (fn) => this.setState(fn),
   }
 
