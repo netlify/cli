@@ -367,7 +367,7 @@ const initializeProxy = async function ({ configPath, distDir, port, projectDir 
         typeof req[shouldGenerateETag] === 'function' &&
         req[shouldGenerateETag]({ statusCode: responseStatus }) === true
       ) {
-        const etag = generateETag(responseBody)
+        const etag = generateETag(responseBody, { weak: true })
 
         if (req.headers['if-none-match'] === etag) {
           responseStatus = 304
@@ -413,9 +413,6 @@ const onRequest = async ({ addonsUrls, edgeFunctionsProxy, functionsServer, prox
   const edgeFunctionsProxyURL = await edgeFunctionsProxy(req, res)
 
   if (edgeFunctionsProxyURL !== undefined) {
-    // We always want to generate an ETag for Edge Functions requests.
-    req[shouldGenerateETag] = () => true
-
     return proxy.web(req, res, { target: edgeFunctionsProxyURL })
   }
 
