@@ -9059,9 +9059,9 @@
       "integrity": "sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ=="
     },
     "node_modules/cron-parser": {
-      "version": "4.2.1",
-      "resolved": "https://registry.npmjs.org/cron-parser/-/cron-parser-4.2.1.tgz",
-      "integrity": "sha512-5sJBwDYyCp+0vU5b7POl8zLWfgV5fOHxlc45FWoWdHecGC7MQHCjx0CHivCMRnGFovghKhhyYM+Zm9DcY5qcHg==",
+      "version": "4.3.0",
+      "resolved": "https://registry.npmjs.org/cron-parser/-/cron-parser-4.3.0.tgz",
+      "integrity": "sha512-mK6qJ6k9Kn0/U7Cv6LKQnReUW3GqAW4exgwmHJGb3tPgcy0LrS+PeqxPPiwL8uW/4IJsMsCZrCc4vf1nnXMjzA==",
       "dependencies": {
         "luxon": "^1.28.0"
       },
@@ -30903,9 +30903,9 @@
       "integrity": "sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ=="
     },
     "cron-parser": {
-      "version": "4.2.1",
-      "resolved": "https://registry.npmjs.org/cron-parser/-/cron-parser-4.2.1.tgz",
-      "integrity": "sha512-5sJBwDYyCp+0vU5b7POl8zLWfgV5fOHxlc45FWoWdHecGC7MQHCjx0CHivCMRnGFovghKhhyYM+Zm9DcY5qcHg==",
+      "version": "4.3.0",
+      "resolved": "https://registry.npmjs.org/cron-parser/-/cron-parser-4.3.0.tgz",
+      "integrity": "sha512-mK6qJ6k9Kn0/U7Cv6LKQnReUW3GqAW4exgwmHJGb3tPgcy0LrS+PeqxPPiwL8uW/4IJsMsCZrCc4vf1nnXMjzA==",
       "requires": {
         "luxon": "^1.28.0"
       }
