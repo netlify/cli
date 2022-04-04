@@ -4,6 +4,7 @@ const http = require('http')
 // eslint-disable-next-line ava/use-test
 const avaTest = require('ava')
 const { isCI } = require('ci-info')
+const fetch = require('node-fetch')
 
 const { withDevServer } = require('./utils/dev-server')
 const { startExternalServer } = require('./utils/external-server')
@@ -23,6 +24,7 @@ test('should return 404.html if exists for non existing routes', async (t) => {
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response = await got(`${server.url}/non-existent`, { throwHttpErrors: false })
+      t.is(response.headers.etag, undefined)
       t.is(response.body, '<h1>404 - Page not found</h1>')
     })
   })
@@ -48,6 +50,7 @@ test('should return 404.html from publish folder if exists for non existing rout
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response = await got(`${server.url}/non-existent`, { throwHttpErrors: false })
       t.is(response.statusCode, 404)
+      t.is(response.headers.etag, undefined)
       t.is(response.body, '<h1>404 - My Custom 404 Page</h1>')
     })
   })
@@ -70,6 +73,7 @@ test('should return 404 for redirect', async (t) => {
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response = await got(`${server.url}/test-404`, { throwHttpErrors: false })
+      t.truthy(response.headers.etag)
       t.is(response.statusCode, 404)
       t.is(response.body, '<html><h1>foo')
     })
@@ -300,6 +304,52 @@ test('should not shadow an existing file that has unsafe URL characters', async 
 
       t.is(spaces, '<html>file with spaces</html>')
       t.is(brackets, '<html>file with brackets</html>')
+    })
+  })
+})
+
+test('should generate an ETag for static assets', async (t) => {
+  await withSiteBuilder('site-with-static-assets', async (builder) => {
+    builder
+      .withContentFile({
+        path: 'public/index.html',
+        content: '<html>index</html>',
+      })
+      .withNetlifyToml({
+        config: {
+          build: { publish: 'public' },
+          redirects: [{ from: '/*', to: '/index.html', status: 200 }],
+        },
+      })
+
+    await builder.buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async (server) => {
+      const res1 = await fetch(`${server.url}`)
+      const etag = res1.headers.get('etag')
+
+      t.truthy(etag)
+      t.is(res1.status, 200)
+      t.truthy(await res1.text())
+
+      const res2 = await fetch(`${server.url}`, {
+        headers: {
+          'if-none-match': etag,
+        },
+      })
+
+      t.is(res2.status, 304)
+      t.falsy(await res2.text())
+
+      const res3 = await fetch(`${server.url}`, {
+        headers: {
+          'if-none-match': 'stale-etag',
+        },
+      })
+
+      t.truthy(res3.headers.get('etag'))
+      t.is(res3.status, 200)
+      t.truthy(await res3.text())
     })
   })
 })

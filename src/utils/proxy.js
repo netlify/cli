@@ -8,6 +8,7 @@ const path = require('path')
 const contentType = require('content-type')
 const cookie = require('cookie')
 const { get } = require('dot-prop')
+const generateETag = require('etag')
 const httpProxy = require('http-proxy')
 const { createProxyMiddleware } = require('http-proxy-middleware')
 const jwtDecode = require('jwt-decode')
@@ -24,6 +25,8 @@ const { NETLIFYDEVLOG, NETLIFYDEVWARN, log, warn } = require('./command-helpers'
 const { createStreamPromise } = require('./create-stream-promise')
 const { headersForPath, parseHeaders } = require('./headers')
 const { createRewriter, onChanges } = require('./rules-proxy')
+
+const shouldGenerateETag = Symbol('Internal: response should generate ETag')
 
 const isInternal = function (url) {
   return url.startsWith('/.netlify/')
@@ -345,16 +348,44 @@ const initializeProxy = async function ({ configPath, distDir, port, projectDir 
       return serveRedirect({ req, res, proxy: handlers, match: null, options: req.proxyOptions })
     }
 
+    const responseData = []
     const requestURL = new URL(req.url, `http://${req.headers.host || 'localhost'}`)
     const headersRules = headersForPath(headers, requestURL.pathname)
-    Object.entries(headersRules).forEach(([key, val]) => {
-      res.setHeader(key, val)
-    })
-    res.writeHead(req.proxyOptions.status || proxyRes.statusCode, proxyRes.headers)
+
     proxyRes.on('data', function onData(data) {
-      res.write(data)
+      responseData.push(data)
     })
+
     proxyRes.on('end', function onEnd() {
+      const responseBody = Buffer.concat(responseData)
+
+      let responseStatus = req.proxyOptions.status || proxyRes.statusCode
+
+      // `req[shouldGenerateETag]` may contain a function that determines
+      // whether the response should have an ETag header.
+      if (
+        typeof req[shouldGenerateETag] === 'function' &&
+        req[shouldGenerateETag]({ statusCode: responseStatus }) === true
+      ) {
+        const etag = generateETag(responseBody)
+
+        if (req.headers['if-none-match'] === etag) {
+          responseStatus = 304
+        }
+
+        res.setHeader('etag', etag)
+      }
+
+      Object.entries(headersRules).forEach(([key, val]) => {
+        res.setHeader(key, val)
+      })
+
+      res.writeHead(responseStatus, proxyRes.headers)
+
+      if (responseStatus !== 304) {
+        res.write(responseBody)
+      }
+
       res.end()
     })
   })
@@ -382,6 +413,9 @@ const onRequest = async ({ addonsUrls, edgeFunctionsProxy, functionsServer, prox
   const edgeFunctionsProxyURL = await edgeFunctionsProxy(req, res)
 
   if (edgeFunctionsProxyURL !== undefined) {
+    // We always want to generate an ETag for Edge Functions requests.
+    req[shouldGenerateETag] = () => true
+
     return proxy.web(req, res, { target: edgeFunctionsProxyURL })
   }
 
@@ -405,7 +439,17 @@ const onRequest = async ({ addonsUrls, edgeFunctionsProxy, functionsServer, prox
     framework: settings.framework,
   }
 
-  if (match) return serveRedirect({ req, res, proxy, match, options })
+  if (match) {
+    // We don't want to generate an ETag for 3xx redirects.
+    req[shouldGenerateETag] = ({ statusCode }) => statusCode < 300 || statusCode >= 400
+
+    return serveRedirect({ req, res, proxy, match, options })
+  }
+
+  // The request will be served by the framework server, which means we want to
+  // generate an ETag unless we're rendering an error page. The only way for
+  // us to know that is by looking at the status code
+  req[shouldGenerateETag] = ({ statusCode }) => statusCode >= 200 && statusCode < 300
 
   const ct = req.headers['content-type'] ? contentType.parse(req).type : ''
   if (
@@ -464,4 +508,4 @@ const startProxy = async function ({ addonsUrls, config, configPath, configWatch
 
 const BYTES_LIMIT = 30
 
-module.exports = { startProxy }
+module.exports = { shouldGenerateETag, startProxy }

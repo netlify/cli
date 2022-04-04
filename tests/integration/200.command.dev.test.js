@@ -358,9 +358,11 @@ export const handler = async function () {
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/.netlify/functions/custom-headers`)
+        t.falsy(response.headers.etag)
         t.is(response.headers['single-value-header'], 'custom-value')
         t.is(response.headers['multi-value-header'], 'custom-value1, custom-value2')
         const builderResponse = await got(`${server.url}/.netlify/builders/custom-headers`)
+        t.falsy(builderResponse.headers.etag)
         t.is(builderResponse.headers['single-value-header'], 'custom-value')
         t.is(builderResponse.headers['multi-value-header'], 'custom-value1, custom-value2')
       })
