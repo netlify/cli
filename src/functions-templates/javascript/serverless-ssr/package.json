@@ -19,6 +19,6 @@
     "express": "^4.17.1",
     "morgan": "^1.10.0",
     "node-fetch": "^2.6.1",
-    "serverless-http": "^2.0.0"
+    "serverless-http": "^3.0.0"
   }
 }

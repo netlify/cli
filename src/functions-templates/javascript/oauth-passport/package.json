@@ -20,6 +20,6 @@
     "passport": "^0.5.0",
     "passport-github2": "^0.1.12",
     "passport-jwt": "^4.0.0",
-    "serverless-http": "^2.0.2"
+    "serverless-http": "^3.0.0"
   }
 }
