@@ -36,7 +36,7 @@
     "algoliasearch": "^4.12.1",
     "lodash.sortby": "^4.7.0",
     "prop-types": "^15.7.2",
-    "react": "^16.14.0",
+    "react": "^18.0.0",
     "react-helmet": "^6.0.0",
     "react-instantsearch-dom": "^6.0.0",
     "react-router-dom": "^4.3.1",
