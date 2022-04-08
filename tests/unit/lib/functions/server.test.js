@@ -18,7 +18,7 @@ test.before(async () => {
   mkdirSync(functionsDirectory)
 
   const mainFile = join(functionsDirectory, 'hello.js')
-  writeFileSync(mainFile, `exports.handler = (event) => ({ statusCode: 200, body: event.rawUrl })`)
+  writeFileSync(mainFile, `exports.handler = async (event) => ({ statusCode: 200, body: event.rawUrl })`)
 
   const functionsRegistry = new FunctionsRegistry({
     projectRoot,
