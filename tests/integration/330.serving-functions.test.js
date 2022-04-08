@@ -510,7 +510,7 @@ testMatrix.forEach(({ args }) => {
           path: 'functions/hello/index.js',
           content: `
 const response = require("./dist")
-exports.handler = () => ({
+exports.handler = async () => ({
   statusCode: 200,
   body: response
 })`,
