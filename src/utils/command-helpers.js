@@ -10,6 +10,7 @@ const WSL = require('is-wsl')
 const debounce = require('lodash/debounce')
 const { default: omit } = require('omit.js')
 const pEvent = require('p-event')
+const terminalLink = require('terminal-link')
 
 const { name, version } = require('../../package.json')
 const { clearSpinner, startSpinner } = require('../lib/spinner')
@@ -230,11 +231,14 @@ const watchDebounced = async (target, { depth, onAdd = () => {}, onChange = () =
   return watcher
 }
 
+const getTerminalLink = (text, url) => terminalLink(text, url, { fallback: () => `${text} ${url}` })
+
 module.exports = {
   BANG,
   chalk,
   error,
   exit,
+  getTerminalLink,
   getToken,
   log,
   logJson,

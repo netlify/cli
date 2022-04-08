@@ -3,9 +3,16 @@ const { mkdir } = require('fs').promises
 const { extname, isAbsolute, join } = require('path')
 const { env } = require('process')
 
-const terminalLink = require('terminal-link')
-
-const { NETLIFYDEVERR, NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, log, warn, watchDebounced } = require('../../utils')
+const {
+  NETLIFYDEVERR,
+  NETLIFYDEVLOG,
+  NETLIFYDEVWARN,
+  chalk,
+  getTerminalLink,
+  log,
+  warn,
+  watchDebounced,
+} = require('../../utils')
 const { getLogMessage } = require('../log')
 
 const { NetlifyFunction } = require('./netlify-function')
@@ -152,7 +159,7 @@ class FunctionsRegistry {
     this.functions.set(name, func)
     this.buildFunctionAndWatchFiles(func)
 
-    log(`${NETLIFYDEVLOG} ${chalk.green('Loaded')} function ${terminalLink(chalk.yellow(name), func.url)}.`)
+    log(`${NETLIFYDEVLOG} ${chalk.green('Loaded')} function ${getTerminalLink(chalk.yellow(name), func.url)}.`)
   }
 
   async scan(relativeDirs) {
@@ -170,6 +177,7 @@ class FunctionsRegistry {
         buildGoSource: true,
         buildRustSource: env.NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE === 'true',
       },
+      config: this.config,
     })
 
     // Before registering any functions, we look for any functions that were on

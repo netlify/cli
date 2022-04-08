@@ -113,6 +113,7 @@ const createHandler = function (options) {
       const jwt = generateNetlifyGraphJWT(config.netlifyGraphConfig)
       event.authlifyToken = jwt
       event.netlifyGraphToken = jwt
+      event.headers['X-Nf-Graph-Token'] = jwt
     }
 
     const clientContext = buildClientContext(request.headers) || {}
@@ -160,7 +161,7 @@ const createHandler = function (options) {
         return
       }
 
-      handleSynchronousFunction(error, result, response)
+      handleSynchronousFunction(error, result, request, response)
     }
   }
 }

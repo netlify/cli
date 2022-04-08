@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "9.13.0",
+  "version": "9.16.3",
   "author": "Netlify Inc.",
   "contributors": [
     "Abraham Schilling <AbrahamSchilling@gmail.com> (https://gitlab.com/n4bb12)",
@@ -48,7 +48,7 @@
     "Gergely Nemeth (https://twitter.com/nthgergo)",
     "HonkingGoose",
     "Ian Martorell <ianmartorell@gmail.com>",
-    "Ibrahima G. Coulibaly <ibracool99@gmail.com>",
+    "Ibrahima G. Coulibaly",
     "Jackie Macharia (wangoimacharia.dev)",
     "Jacob Schatz",
     "Jake Jarvis <jake@jarv.is> (https://twitter.com/jakejarvis)",
@@ -151,6 +151,7 @@
     "/src/**/*.sh",
     "/src/**/*.ps1",
     "/src/functions-templates/**",
+    "/src/lib/functions/templates/**",
     "!/src/**/node_modules/**",
     "!/src/**/*.test.js"
   ],
@@ -203,15 +204,15 @@
   },
   "config": {
     "eslint": "--ignore-path .gitignore --cache --format=codeframe --max-warnings=0 \"{src,scripts,site,tests,.github}/**/*.{mjs,cjs,js,md,html}\" \"*.{mjs,cjs,js,md,html}\" \".*.{mjs,cjs,js,md,html}\"",
-    "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,tools,scripts,site,tests,.github}/**/*.{mjs,cjs,js,md,yml,json,html}\" \"*.{mjs,cjs,js,yml,json,html}\" \".*.{mjs,cjs,js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\" \"!site/package-lock.json\" \"!.github/**/*.md\""
+    "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,tools,scripts,site,tests,.github}/**/*.{mjs,cjs,js,md,yml,json,html}\" \"*.{mjs,cjs,js,yml,json,html}\" \".*.{mjs,cjs,js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\" \"!**/*/package-lock.json\" \"!.github/**/*.md\""
   },
   "dependencies": {
-    "@netlify/build": "^26.4.0",
-    "@netlify/config": "^17.0.18",
+    "@netlify/build": "^26.5.2",
+    "@netlify/config": "^17.0.20",
     "@netlify/framework-info": "^9.0.2",
     "@netlify/local-functions-proxy": "^1.1.1",
     "@netlify/plugin-edge-handlers": "^3.0.7",
-    "@netlify/plugins-list": "^6.16.0",
+    "@netlify/plugins-list": "^6.19.0",
     "@netlify/routing-local-proxy": "^0.34.1",
     "@netlify/zip-it-and-ship-it": "^5.9.0",
     "@octokit/rest": "^18.0.0",
@@ -277,7 +278,7 @@
     "memoize-one": "^6.0.0",
     "minimist": "^1.2.5",
     "multiparty": "^4.2.1",
-    "netlify": "^11.0.0",
+    "netlify": "^11.0.1",
     "netlify-headers-parser": "^6.0.2",
     "netlify-onegraph-internal": "0.0.50",
     "netlify-redirect-parser": "^13.0.5",
@@ -318,7 +319,7 @@
   },
   "devDependencies": {
     "@babel/preset-react": "^7.12.13",
-    "@netlify/eslint-config-node": "^5.1.6",
+    "@netlify/eslint-config-node": "^5.1.8",
     "ava": "^4.0.0",
     "c8": "^7.11.0",
     "eslint-plugin-sort-destructure-keys": "^1.3.5",
