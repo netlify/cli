@@ -422,9 +422,9 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
 
     const createdFiles = moveWatchedFilesIntoCurrentWorkingDirectory({
       copiedFiles: await copy(pathToTemplate, functionPath, vars),
-      watchedFiles: FILES_TO_COPY_TO_WORKING_DIR
+      watchedFiles: FILES_TO_COPY_TO_WORKING_DIR,
     })
-    
+
     createdFiles.forEach((filePath) => {
       const filename = path.basename(filePath)
 
@@ -577,17 +577,16 @@ const moveWatchedFilesIntoCurrentWorkingDirectory = ({ copiedFiles, watchedFiles
   watchedFiles.forEach((watchedFileName) => {
     const index = copiedFiles.findIndex((copiedFilePath) => copiedFilePath.endsWith(watchedFileName))
 
-    if (index === -1) 
-      return
-    
+    if (index === -1) return
+
     const cwdFilePath = path.join(process.cwd(), watchedFileName)
     const copiedFilePath = copiedFiles[index]
 
-     // we move the copied file to the current working directory
+    // we move the copied file to the current working directory
     fs.renameSync(copiedFilePath, cwdFilePath)
 
     // update the copiedFiles array to reflect the new path
-    copiedFiles[index] = cwdFilePath 
+    copiedFiles[index] = cwdFilePath
   })
 
   return copiedFiles
