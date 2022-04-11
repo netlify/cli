@@ -4,8 +4,13 @@ on:
     branches:
       # releases/<tag>/<version>
       - releases/*/*
+permissions:
+  contents: read
+
 jobs:
   prerelease:
+    permissions:
+      contents: write  # for Git to git push
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

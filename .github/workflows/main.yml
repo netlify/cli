@@ -130,6 +130,8 @@ jobs:
           flags: ${{ steps.test-coverage-flags.outputs.os }},${{ steps.test-coverage-flags.outputs.node }}
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
   all:
+    permissions:
+      contents: none
     needs: [build, test]
     runs-on: ubuntu-latest
     steps:
