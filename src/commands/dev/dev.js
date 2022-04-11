@@ -200,16 +200,17 @@ const FRAMEWORK_PORT_TIMEOUT = 6e5
  * @param {object} params
  * @param {*} params.addonsUrls
  * @param {import('../base-command').NetlifyOptions["config"]} params.config
+ * @param {() => Promise<object>} params.getUpdatedConfig
  * @param {*} params.settings
  * @param {*} params.site
  * @returns
  */
-const startProxyServer = async ({ addonsUrls, config, configWatcher, settings, site }) => {
+const startProxyServer = async ({ addonsUrls, config, getUpdatedConfig, settings, site }) => {
   const url = await startProxy({
     addonsUrls,
     config,
     configPath: site.configPath,
-    configWatcher,
+    getUpdatedConfig,
     projectDir: site.root,
     settings,
   })
@@ -302,7 +303,6 @@ const startPollingForAPIAuthentication = async function (options) {
 const dev = async (options, command) => {
   log(`${NETLIFYDEV}`)
   const { api, config, repositoryRoot, site, siteInfo, state } = command.netlify
-  const configWatcher = new events.EventEmitter()
   config.dev = { ...config.dev }
   config.build = { ...config.build }
   /** @type {import('./types').DevConfig} */
@@ -354,7 +354,16 @@ const dev = async (options, command) => {
   })
   await startFrameworkServer({ settings })
 
-  let url = await startProxyServer({ options, settings, site, addonsUrls, config, configWatcher })
+  // TODO: We should consolidate this with the existing config watcher.
+  const getUpdatedConfig = async () => {
+    const cwd = options.cwd || process.cwd()
+    const { config: newConfig } = await command.getConfig({ cwd, offline: true, state })
+    const normalizedNewConfig = normalizeConfig(newConfig)
+
+    return normalizedNewConfig
+  }
+
+  let url = await startProxyServer({ settings, site, addonsUrls, config, getUpdatedConfig })
 
   const liveTunnelUrl = await handleLiveTunnel({ options, site, api, settings })
   url = liveTunnelUrl || url
@@ -405,6 +414,8 @@ const dev = async (options, command) => {
 
       return oneGraphSessionId
     }
+
+    const configWatcher = new events.EventEmitter()
 
     // Only set up a watcher if we know the config path.
     const { configPath } = command.netlify.site

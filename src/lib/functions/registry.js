@@ -71,7 +71,7 @@ class FunctionsRegistry {
     )
   }
 
-  async buildFunctionAndWatchFiles(func, { verbose } = {}) {
+  async buildFunctionAndWatchFiles(func, { verbose = false } = {}) {
     if (verbose) {
       log(`${NETLIFYDEVLOG} ${chalk.magenta('Reloading')} function ${chalk.yellow(func.name)}...`)
     }

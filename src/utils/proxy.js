@@ -21,7 +21,7 @@ const toReadableStream = require('to-readable-stream')
 const edgeFunctions = require('../lib/edge-functions')
 const { fileExistsAsync, isFileAsync } = require('../lib/fs')
 
-const { NETLIFYDEVLOG, NETLIFYDEVWARN, log, warn } = require('./command-helpers')
+const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./command-helpers')
 const { createStreamPromise } = require('./create-stream-promise')
 const { headersForPath, parseHeaders } = require('./headers')
 const { createRewriter, onChanges } = require('./rules-proxy')
@@ -313,7 +313,7 @@ const initializeProxy = async function ({ configPath, distDir, port, projectDir 
     })
 
     const message = edgeFunctions.isEdgeFunctionsRequest(req)
-      ? 'There was an error with an Edge Handler. Please check the terminal for more details.'
+      ? 'There was an error with an Edge Function. Please check the terminal for more details.'
       : 'Could not proxy request.'
 
     res.end(message)
@@ -461,9 +461,14 @@ const onRequest = async ({ addonsUrls, edgeFunctionsProxy, functionsServer, prox
   proxy.web(req, res, options)
 }
 
-const startProxy = async function ({ addonsUrls, config, configPath, configWatcher, projectDir, settings }) {
+const startProxy = async function ({ addonsUrls, config, configPath, getUpdatedConfig, projectDir, settings }) {
   const functionsServer = settings.functionsPort ? `http://localhost:${settings.functionsPort}` : null
-  const edgeFunctionsProxy = await edgeFunctions.initializeProxy({ config, configWatcher, log, settings, warn })
+  const edgeFunctionsProxy = await edgeFunctions.initializeProxy({
+    config,
+    configPath,
+    getUpdatedConfig,
+    settings,
+  })
   const proxy = await initializeProxy({
     port: settings.frameworkPort,
     distDir: settings.dist,

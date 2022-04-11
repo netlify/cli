@@ -2,24 +2,20 @@
 const { env } = require('process')
 
 const getAvailablePort = require('get-port')
-const fetch = require('node-fetch')
-const pWaitFor = require('p-wait-for')
 const { v4: generateUUID } = require('uuid')
 
+const { NETLIFYDEVERR, chalk } = require('../../utils/command-helpers')
 const { getPathInProject } = require('../settings')
 const { startSpinner, stopSpinner } = require('../spinner')
 
-const { DIST_IMPORT_MAP_PATH, SERVER_POLL_INTERNAL, SERVER_POLL_TIMEOUT } = require('./consts')
+const { DIST_IMPORT_MAP_PATH } = require('./consts')
 const headers = require('./headers')
 const { getInternalFunctions } = require('./internal')
+const { EdgeFunctionsRegistry } = require('./registry')
 
 const headersSymbol = Symbol('Edge Functions Headers')
 
-const getDeclarations = (config, internalFunctions = []) => {
-  const { edge_functions: userFunctions = [] } = config
-
-  return [...internalFunctions, ...userFunctions]
-}
+const LOCAL_HOST = '127.0.0.1'
 
 const getDownloadUpdateFunctions = () => {
   let spinner
@@ -44,26 +40,23 @@ const handleProxyRequest = (req, proxyReq) => {
   })
 }
 
-const initializeProxy = async ({ config, configWatcher, log, settings, warn }) => {
+const initializeProxy = async ({ config, configPath, getUpdatedConfig, settings }) => {
   const { functions: internalFunctions, importMap, path: internalFunctionsPath } = await getInternalFunctions()
-  const { port: localPort } = settings
+  const { port: mainPort } = settings
   const userFunctionsPath = config.build.edge_functions
+  const isolatePort = await getAvailablePort()
 
-  let manifest = {
-    routes: [],
-  }
-
-  const port = await getAvailablePort()
-  const server = startServerAndWatchForChanges({
+  // Initializes the server, bootstrapping the Deno CLI and downloading it from
+  // the network if needed. We don't want to wait for that to be completed, or
+  // the command will be left hanging.
+  const server = prepareServer({
     config,
-    configWatcher,
+    configPath,
     directories: [internalFunctionsPath, userFunctionsPath].filter(Boolean),
+    getUpdatedConfig,
     importMaps: [importMap].filter(Boolean),
     internalFunctions,
-    log,
-    onManifestChange: (newManifest) => (manifest = newManifest),
-    port,
-    warn,
+    port: isolatePort,
   })
   const hasEdgeFunctions = userFunctionsPath !== undefined || internalFunctions.length !== 0
 
@@ -72,10 +65,12 @@ const initializeProxy = async ({ config, configWatcher, log, settings, warn }) =
       return
     }
 
-    // Waiting for the Deno server to become available.
-    await server
+    const { registry } = await server
 
-    const url = new URL(req.url, `http://127.0.0.1:${localPort}`)
+    await registry.initialize()
+
+    const manifest = await registry.getManifest()
+    const url = new URL(req.url, `http://${LOCAL_HOST}:${mainPort}`)
     const routes = manifest.routes.map((route) => ({
       ...route,
       pattern: new RegExp(route.pattern),
@@ -88,77 +83,51 @@ const initializeProxy = async ({ config, configWatcher, log, settings, warn }) =
 
     req[headersSymbol] = {
       [headers.Functions]: matchingFunctions.join(','),
+      [headers.PassHost]: `${LOCAL_HOST}:${mainPort}`,
       [headers.Passthrough]: 'passthrough',
       [headers.RequestID]: generateUUID(),
-      [headers.PassHost]: `127.0.0.1:${localPort}`,
     }
 
-    return `http://127.0.0.1:${port}`
+    return `http://${LOCAL_HOST}:${isolatePort}`
   }
 }
 
 const isEdgeFunctionsRequest = (req) => req[headersSymbol] !== undefined
 
-const startServer = async ({ directories, importMaps = [], port, warn }) => {
-  const { serve } = await import('@netlify-labs/edge-bundler')
+const prepareServer = async ({
+  config,
+  configPath,
+  directories,
+  getUpdatedConfig,
+  importMaps,
+  internalFunctions,
+  port,
+}) => {
+  const bundler = await import('@netlify-labs/edge-bundler')
   const distImportMapPath = getPathInProject([DIST_IMPORT_MAP_PATH])
-  const { getManifest } = await serve(port, directories, {
+  const runIsolate = await bundler.serve({
     ...getDownloadUpdateFunctions(),
     debug: env.NETLIFY_DENO_DEBUG === 'true',
     distImportMapPath,
+    formatExportTypeError: (name) =>
+      `${NETLIFYDEVERR} ${chalk.red('Failed')} to load Edge Function ${chalk.yellow(
+        name,
+      )}. The file does not seem to have a function as the default export.`,
+    formatImportError: (name) => `${NETLIFYDEVERR} ${chalk.red('Failed')} to run Edge Function ${chalk.yellow(name)}:`,
     importMaps,
-  })
-  const isDenoServerReady = async () => {
-    try {
-      await fetch(`http://127.0.0.1:${port}`)
-    } catch {
-      return false
-    }
-
-    return true
-  }
-
-  try {
-    await pWaitFor(isDenoServerReady, {
-      interval: SERVER_POLL_INTERNAL,
-      timeout: SERVER_POLL_TIMEOUT,
-    })
-  } catch {
-    warn('Could not initialize Edge Functions server. Execution of Edge Functions will be disabled.')
-  }
-
-  return { getManifest }
-}
-
-const startServerAndWatchForChanges = async ({
-  config,
-  configWatcher,
-  directories,
-  importMaps,
-  internalFunctions,
-  log,
-  onManifestChange,
-  port,
-  warn,
-}) => {
-  const { getManifest } = await startServer({
-    directories,
-    importMaps,
-    log,
     port,
-    warn,
   })
-  const declarations = getDeclarations(config, internalFunctions)
-  const manifest = getManifest(declarations)
-
-  onManifestChange(manifest)
-
-  configWatcher.on('change', (newConfig) => {
-    const newDeclarations = getDeclarations(newConfig, internalFunctions)
-    const newManifest = getManifest(newDeclarations)
-
-    onManifestChange(newManifest)
+  const registry = new EdgeFunctionsRegistry({
+    bundler,
+    config,
+    configPath,
+    directories,
+    getUpdatedConfig,
+    internalFunctions,
+    runIsolate,
   })
+
+  return { registry, runIsolate }
 }
 
 module.exports = { handleProxyRequest, initializeProxy, isEdgeFunctionsRequest }
