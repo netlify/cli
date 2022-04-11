@@ -123,7 +123,7 @@ jobs:
           echo "::set-output name=node::node_${node//[.*]/}"
         shell: bash
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
-      - uses: codecov/codecov-action@v2
+      - uses: codecov/codecov-action@v3
         continue-on-error: true
         with:
           file: coverage/coverage-final.json
