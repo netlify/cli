@@ -210,7 +210,7 @@ test('should install function template dependencies on a site-level `package.jso
 
       await childProcess
 
-      // eslint-disable-next-line import/no-dynamic-require, node/global-require
+      // eslint-disable-next-line import/no-dynamic-require, n/global-require
       const { dependencies } = require(`${builder.directory}/package.json`)
 
       // NOTE: Ideally we should be running this test with a specific template,
@@ -801,7 +801,7 @@ test('should inject env variables', async (t) => {
         path: 'echo-env.js',
         handler: async () => ({
           statusCode: 200,
-          // eslint-disable-next-line node/prefer-global/process
+          // eslint-disable-next-line n/prefer-global/process
           body: `${process.env.TEST}`,
         }),
       })

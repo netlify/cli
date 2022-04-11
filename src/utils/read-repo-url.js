@@ -12,7 +12,7 @@ const GITHUB = 'GitHub'
  */
 const readRepoURL = async function (_url) {
   // TODO: use `url.URL()` instead
-  // eslint-disable-next-line node/no-deprecated-api
+  // eslint-disable-next-line n/no-deprecated-api
   const URL = url.parse(_url)
   const repoHost = validateRepoURL(_url)
   if (repoHost !== GITHUB) throw new Error('only GitHub repos are supported for now')
@@ -38,7 +38,7 @@ const getRepoURLContents = async function (repoHost, ownerAndRepo, contentsPath)
 
 const validateRepoURL = function (_url) {
   // TODO: use `url.URL()` instead
-  // eslint-disable-next-line node/no-deprecated-api
+  // eslint-disable-next-line n/no-deprecated-api
   const URL = url.parse(_url)
   if (URL.host !== 'github.com') return null
   // other validation logic here

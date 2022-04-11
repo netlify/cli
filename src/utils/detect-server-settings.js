@@ -192,9 +192,9 @@ const detectFrameworkSettings = async ({ projectDir }) => {
 
   if (frameworks.length > 1) {
     // performance optimization, load inquirer on demand
-    // eslint-disable-next-line node/global-require
+    // eslint-disable-next-line n/global-require
     const inquirer = require('inquirer')
-    // eslint-disable-next-line node/global-require
+    // eslint-disable-next-line n/global-require
     const inquirerAutocompletePrompt = require('inquirer-autocomplete-prompt')
     /** multiple matching detectors, make the user choose */
     inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)

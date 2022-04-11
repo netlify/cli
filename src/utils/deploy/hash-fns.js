@@ -27,7 +27,7 @@ const getFunctionZips = async ({
 
   if (manifestPath) {
     try {
-      // eslint-disable-next-line import/no-dynamic-require, node/global-require
+      // eslint-disable-next-line import/no-dynamic-require, n/global-require
       const { functions, timestamp } = require(manifestPath)
       const manifestAge = Date.now() - timestamp
 
