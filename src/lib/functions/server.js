@@ -169,9 +169,9 @@ const createHandler = function (options) {
 const getFunctionsServer = function (options) {
   const { buildersPrefix = '', functionsPrefix = '', functionsRegistry, siteUrl } = options
   // performance optimization, load express on demand
-  // eslint-disable-next-line node/global-require
+  // eslint-disable-next-line n/global-require
   const express = require('express')
-  // eslint-disable-next-line node/global-require
+  // eslint-disable-next-line n/global-require
   const expressLogging = require('express-logging')
   const app = express()
   const functionHandler = createHandler(options)

@@ -48,7 +48,7 @@ class FunctionsRegistry {
     this.functionWatchers = new Map()
 
     // Performance optimization: load '@netlify/zip-it-and-ship-it' on demand.
-    // eslint-disable-next-line node/global-require
+    // eslint-disable-next-line n/global-require
     const { listFunctions } = require('@netlify/zip-it-and-ship-it')
 
     this.listFunctions = listFunctions
