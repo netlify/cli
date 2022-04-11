@@ -42,6 +42,8 @@ const languages = [
   showRustTemplates && { name: 'Rust', value: 'rust' },
 ]
 
+const FILES_TO_COPY_TO_WORKING_DIR = ['netlify.toml', 'go.mod', 'go.sum']
+
 /**
  * prompt for a name if name not supplied
  * @param {string} argumentName
@@ -417,7 +419,12 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
     // These files will not be part of the log message because they'll likely
     // be removed before the command finishes.
     const omittedFromOutput = new Set(['.netlify-function-template.js', 'package.json', 'package-lock.json'])
-    const createdFiles = await copy(pathToTemplate, functionPath, vars)
+
+    const createdFiles = moveWatchedFilesIntoCurrentWorkingDirectory({
+      copiedFiles: await copy(pathToTemplate, functionPath, vars),
+      watchedFiles: FILES_TO_COPY_TO_WORKING_DIR
+    })
+    
     createdFiles.forEach((filePath) => {
       const filename = path.basename(filePath)
 
@@ -563,6 +570,27 @@ const installAddons = async function (command, functionAddons, fnPath) {
     }
   })
   return Promise.all(arr)
+}
+
+// Move watched files into the current working directory and return the updated copied file list.
+const moveWatchedFilesIntoCurrentWorkingDirectory = ({ copiedFiles, watchedFiles }) => {
+  watchedFiles.forEach((watchedFileName) => {
+    const index = copiedFiles.findIndex((copiedFilePath) => copiedFilePath.endsWith(watchedFileName))
+
+    if (index === -1) 
+      return
+    
+    const cwdFilePath = path.join(process.cwd(), watchedFileName)
+    const copiedFilePath = copiedFiles[index]
+
+     // we move the copied file to the current working directory
+    fs.renameSync(copiedFilePath, cwdFilePath)
+
+    // update the copiedFiles array to reflect the new path
+    copiedFiles[index] = cwdFilePath 
+  })
+
+  return copiedFiles
 }
 
 // we used to allow for a --dir command,

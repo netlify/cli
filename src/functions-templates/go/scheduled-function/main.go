@@ -15,7 +15,7 @@ type requestBody struct {
 	NextRun time.Time `json:"next_run"`
 }
 
-// The schedule for this function is defined inside the netlify.toml file. To learn about scheduled functions 
+// The schedule for this function is defined inside the netlify.toml file. To learn about scheduled functions
 // and supported cron extensions, visit https://ntl.fyi/sched-func.
 func handler(ctx context.Context, request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
 	requestBody := requestBody{}
