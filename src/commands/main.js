@@ -47,7 +47,7 @@ const SUGGESTION_TIMEOUT = 1e4
 
 const getVersionPage = async () => {
   // performance optimization - load envinfo on demand
-  // eslint-disable-next-line node/global-require
+  // eslint-disable-next-line n/global-require
   const envinfo = require('envinfo')
   const data = await envinfo.run({
     System: ['OS', 'CPU'],

@@ -4,7 +4,7 @@ const { join, resolve } = require('path')
 const getRecipe = (name) => {
   const recipePath = resolve(__dirname, '../../recipes', name)
 
-  // eslint-disable-next-line import/no-dynamic-require, node/global-require
+  // eslint-disable-next-line import/no-dynamic-require, n/global-require
   const recipe = require(recipePath)
 
   return recipe
@@ -17,7 +17,7 @@ const listRecipes = async () => {
     recipeNames.map((name) => {
       const recipePath = join(recipesPath, name)
 
-      // eslint-disable-next-line import/no-dynamic-require, node/global-require
+      // eslint-disable-next-line import/no-dynamic-require, n/global-require
       const recipe = require(recipePath)
 
       return {

@@ -29,9 +29,11 @@
     "Cassidy Williams (https://twitter.com/cassidoo)",
     "Charlie Depman <cdepman@gmail.com> (depman.dev)",
     "Charlie Depman <cdepman@gmail.com> (depman.dev)",
+    "Charlie Depman <cdepman@gmail.com> (depman.dev)",
     "Cole Bosmann",
     "Dan Croak (https://twitter.com/croaky)",
     "Dan Loewenherz <dan@lionheartsw.com> (https://twitter.com/dwlz)",
+    "Daniel Woelfel <dwwoelfel@gmail.com> (https://twitter.com/danielwoelfel)",
     "Dave Ackerman <dmackerman@gmail.com>",
     "David Calavera <david@netlify.com> (https://twitter.com/calavera)",
     "David Lemler <dlemler@pm.me> (https://twitter.com/davidlemlerm)",
@@ -49,7 +51,7 @@
     "Gergely Nemeth (https://twitter.com/nthgergo)",
     "HonkingGoose",
     "Ian Martorell <ianmartorell@gmail.com>",
-    "Ibrahima",
+    "Ibrahima G. Coulibaly",
     "Jackie Macharia (wangoimacharia.dev)",
     "Jacob Schatz",
     "Jake Jarvis <jake@jarv.is> (https://twitter.com/jakejarvis)",
@@ -151,6 +153,7 @@
     "/src/**/*.sh",
     "/src/**/*.ps1",
     "/src/functions-templates/**",
+    "/src/lib/functions/templates/**",
     "!/src/**/node_modules/**",
     "!/src/**/*.test.js"
   ],
@@ -203,7 +206,7 @@
   },
   "config": {
     "eslint": "--ignore-path .gitignore --cache --format=codeframe --max-warnings=0 \"{src,scripts,site,tests,.github}/**/*.{mjs,cjs,js,md,html}\" \"*.{mjs,cjs,js,md,html}\" \".*.{mjs,cjs,js,md,html}\"",
-    "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,tools,scripts,site,tests,.github}/**/*.{mjs,cjs,js,md,yml,json,html}\" \"*.{mjs,cjs,js,yml,json,html}\" \".*.{mjs,cjs,js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\" \"!site/package-lock.json\" \"!.github/**/*.md\""
+    "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,tools,scripts,site,tests,.github}/**/*.{mjs,cjs,js,md,yml,json,html}\" \"*.{mjs,cjs,js,yml,json,html}\" \".*.{mjs,cjs,js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\" \"!**/*/package-lock.json\" \"!.github/**/*.md\""
   },
   "dependencies": {
     "@netlify-labs/build-internal": "^27.3.0",
@@ -211,8 +214,7 @@
     "@netlify-labs/edge-bundler": "^0.9.0",
     "@netlify/framework-info": "^9.0.2",
     "@netlify/local-functions-proxy": "^1.1.1",
-    "@netlify/plugin-edge-handlers": "^3.0.7",
-    "@netlify/plugins-list": "^6.16.1",
+    "@netlify/plugins-list": "^6.19.0",
     "@netlify/zip-it-and-ship-it": "^5.9.0",
     "@octokit/rest": "^18.0.0",
     "@sindresorhus/slugify": "^1.1.0",
@@ -278,7 +280,7 @@
     "memoize-one": "^6.0.0",
     "minimist": "^1.2.5",
     "multiparty": "^4.2.1",
-    "netlify": "^11.0.0",
+    "netlify": "^11.0.1",
     "netlify-headers-parser": "^6.0.2",
     "netlify-onegraph-internal": "0.0.50",
     "netlify-redirect-parser": "^13.0.5",
@@ -320,7 +322,7 @@
   },
   "devDependencies": {
     "@babel/preset-react": "^7.12.13",
-    "@netlify/eslint-config-node": "^5.1.7",
+    "@netlify/eslint-config-node": "^6.0.0",
     "ava": "^4.0.0",
     "c8": "^7.11.0",
     "eslint-plugin-sort-destructure-keys": "^1.3.5",

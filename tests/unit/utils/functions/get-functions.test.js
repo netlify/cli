@@ -86,7 +86,7 @@ test.skip('should return additional watch dirs when functions requires a file ou
         path: 'index.js',
         // eslint-disable-next-line require-await
         handler: async () => {
-          // eslint-disable-next-line node/global-require, import/no-unresolved
+          // eslint-disable-next-line n/global-require, import/no-unresolved
           const { logHello } = require('../utils')
           logHello()
           return { statusCode: 200, body: 'Logged Hello!' }

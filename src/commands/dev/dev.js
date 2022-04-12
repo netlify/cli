@@ -285,7 +285,9 @@ const startPollingForAPIAuthentication = async function (options) {
         process.env.ONEGRAPH_AUTHLIFY_TOKEN = netlifyGraphJWT
         process.env.NETLIFY_GRAPH_TOKEN = netlifyGraphJWT
       }
-    } else {
+    } else if (!authlifyTokenId) {
+      // If there's no `authlifyTokenId`, it's because the user disabled API
+      // Auth. Delete the config in this case.
       delete config.netlifyGraphConfig
     }
 

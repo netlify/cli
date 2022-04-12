@@ -363,7 +363,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
           name: 'mutator',
           plugin: {
             onPreBuild: async ({ netlifyConfig }) => {
-              // eslint-disable-next-line node/global-require
+              // eslint-disable-next-line n/global-require
               const { mkdir, writeFile } = require('fs').promises
 
               const generatedFunctionsDir = 'new_functions'

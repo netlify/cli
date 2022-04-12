@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Invocation Failed</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+      :root {
+        --colorDefaultTextColor: #a3a9ac;
+        --colorDefaultTextColorCard: #2d3b41;
+        --colorBgApp: rgb(14, 30, 37);
+        --colorBgInverse: hsl(175, 48%, 98%);
+        --colorTextMuted: rgb(100, 110, 115);
+        --colorError: #d32254;
+        --colorBgCard: #fff;
+        --colorShadow: #0e1e251f;
+        --colorErrorText: rgb(142, 11, 48);
+        --colorCardTitleCard: #2d3b41;
+        --colorStackText: #222;
+        --colorCodeText: #f5f5f5;
+      }
+
+      body {
+        background-color: var(--colorBgApp);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif,
+          'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+        color: var(--colorDefaultTextColor);
+      }
+
+      main {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100vw;
+      }
+
+      a,
+      a:visited,
+      a:hover,
+      a:focus {
+        color: var(--colorDefaultTextColor);
+        border-bottom: 1px solid var(--colorDefaultTextColor);
+        text-decoration: none;
+      }
+
+      section {
+        width: 80%;
+        max-width: 800px;
+        margin: 40px auto;
+        position: relative;
+        padding: 24px;
+      }
+
+      section.card {
+        border-radius: 8px;
+        background: var(--colorBgCard);
+        box-shadow: 0px 2px 4px rgba(14, 30, 37, 0.12);
+        border-top-width: 8px;
+        border-top-style: solid;
+        border-top-color: var(--colorError);
+        padding: 24px;
+        color: var(--colorDefaultTextColorCard);
+      }
+
+      .card h1 {
+        display: flex;
+        align-items: center;
+        margin-top: 0;
+      }
+      .card h1 svg {
+        margin-right: 16px;
+      }
+      .card a {
+        color: var(--colorDefaultTextColorCard);
+      }
+
+      p.error-message {
+        color: var(--colorErrorText);
+      }
+
+      h1 {
+        margin-bottom: 24px;
+      }
+
+      h2 {
+        font-size: 22px;
+        margin: 0;
+      }
+
+      .card h2,
+      .card h3,
+      .card h1 {
+        color: var(--colorCardTitleCard);
+      }
+
+      h3 {
+        font-size: 18px;
+        margin: 0;
+        color: var(--colorCardTitleCard);
+      }
+
+      pre {
+        background-color: var(--colorCodeText);
+        color: var(--colorStackText);
+        overflow: scroll;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 16px;
+      }
+
+      .no-js pre {
+        white-space: pre-wrap;
+      }
+
+      .inline-code {
+        background-color: var(--colorCodeText);
+        color: var(--colorStackText);
+        overflow: scroll;
+        padding: 4px 8px;
+        border-radius: 8px;
+        font-size: 16px;
+      }
+
+      ul,
+      li {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      svg {
+        width: 40px;
+        height: 40px;
+      }
+
+      .sad path {
+        fill: #d32254;
+      }
+
+      .next-steps li {
+        margin: 16px 0;
+      }
+
+      .connection-details {
+        display: block;
+        margin-top: 32px;
+      }
+
+      .error-message-details {
+        font-family: monospace;
+        padding: 8px 12px;
+      }
+
+      .stack-trace {
+        margin-top: 32px;
+      }
+
+      .no-js .error-message-details,
+      .no-js .stack-trace {
+        display: none;
+      }
+
+      .raw-error-details,
+      .hidden {
+        display: none;
+      }
+
+      .no-js .raw-error-details {
+        display: block;
+      }
+    </style>
+  </head>
+
+  <body class="netlify-function-error-page no-js">
+    <script>
+      document.body.classList.remove('no-js')
+    </script>
+
+    <main>
+      <section class="card">
+        <header>
+          <h1>
+            <svg
+              class="sad"
+              aria-hidden="true"
+              width="22"
+              height="22"
+              viewBox="0 0 22 22"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                fill-rule="evenodd"
+                clip-rule="evenodd"
+                d="M11 21.5C16.799 21.5 21.5 16.799 21.5 11C21.5 5.20101 16.799 0.5 11 0.5C5.20101 0.5 0.5 5.20101 0.5 11C0.5 16.799 5.20101 21.5 11 21.5ZM12.125 6.125C12.125 5.82663 12.0065 5.54048 11.7955 5.3295C11.5845 5.11853 11.2984 5 11 5C10.7016 5 10.4155 5.11853 10.2045 5.3295C9.99353 5.54048 9.875 5.82663 9.875 6.125V11.375C9.875 11.6734 9.99353 11.9595 10.2045 12.1705C10.4155 12.3815 10.7016 12.5 11 12.5C11.2984 12.5 11.5845 12.3815 11.7955 12.1705C12.0065 11.9595 12.125 11.6734 12.125 11.375V6.125ZM12.5 15.5C12.5 15.8978 12.342 16.2794 12.0607 16.5607C11.7794 16.842 11.3978 17 11 17C10.6022 17 10.2206 16.842 9.93934 16.5607C9.65804 16.2794 9.5 15.8978 9.5 15.5C9.5 15.1022 9.65804 14.7206 9.93934 14.4393C10.2206 14.158 10.6022 14 11 14C11.3978 14 11.7794 14.158 12.0607 14.4393C12.342 14.7206 12.5 15.1022 12.5 15.5Z"
+                fill="#900B31"
+              />
+            </svg>
+            This function has crashed
+          </h1>
+          <p>An unhandled error in the function code triggered the following message:</p>
+          <p class="error-message-details hidden inline-code">
+            <span class="error-type"></span><span class="error-message"></span>
+          </p>
+        </header>
+
+        <pre class="raw-error-details"><code><!--@ERROR-DETAILS--></code></pre>
+
+        <div class="stack-trace hidden">
+          <h3>Stack trace</h3>
+          <pre><code></code></pre>
+        </div>
+
+        <div class="request-id-container hidden">
+          <h3 class="connection-details">Connection details</h3>
+          <p>
+            Netlify internal ID: <span class="inline-code request-id"><!--@REQUEST-ID--></span>
+          </p>
+        </div>
+      </section>
+
+      <section class="next-steps">
+        <h1>Next steps</h1>
+        <ul>
+          <li>Site visitors: Contact the site owner or try again.</li>
+          <li>
+            Site owners: Review the
+            <a class="fn-logs-link" href="https://docs.netlify.com/functions/logs/#access-function-logs" target="_blank"
+              >function logs</a
+            >
+            for more info.
+          </li>
+        </ul>
+      </section>
+
+      <div class="hidden">
+        <span class="site-id"><!--@SITE-ID--></span>
+        <span class="deploy-id"><!--@DEPLOY-ID--></span>
+        <span class="fn-name"><!--@FUNCTION-NAME--></span>
+      </div>
+      <script>
+        /* eslint eslint-comments/no-use: off */
+        // eslint-disable-next-line func-names
+        ;(function () {
+          const rawErrorDetails = document.querySelector('.raw-error-details code').textContent
+          const errorMessageDetailsElement = document.querySelector('.error-message-details')
+          const errorTypeElement = document.querySelector('.error-type')
+          const errorMessageElement = document.querySelector('.error-message')
+          const stackTraceElement = document.querySelector('.stack-trace')
+          const stackTraceCodeElement = document.querySelector('.stack-trace code')
+          const requestIdContainerElement = document.querySelector('.request-id-container')
+          const requestIdElement = document.querySelector('.request-id')
+          const siteIdVal = document.querySelector('.site-id').textContent.trim()
+          const deployIdVal = document.querySelector('.deploy-id').textContent.trim()
+          const fnNameVal = document.querySelector('.fn-name').textContent.trim()
+          const logsLink = document.querySelector('.fn-logs-link')
+
+          // NO request ID Option Provided - only expected to happen in local dev scenarios
+          if (requestIdElement.textContent.trim().length !== 0) {
+            requestIdContainerElement.classList.remove('hidden')
+          }
+
+          // Enriching the error details
+          let parsedErrorDetails
+          try {
+            parsedErrorDetails = JSON.parse(rawErrorDetails.trim())
+          } catch (error) {
+            console.error(error)
+            document.body.classList.add('no-js')
+            return
+          }
+
+          if (!parsedErrorDetails) {
+            return
+          }
+
+          const hasTrace =
+            (Array.isArray(parsedErrorDetails.trace) && parsedErrorDetails.trace.length !== 0) ||
+            (Array.isArray(parsedErrorDetails.stackTrace) && parsedErrorDetails.stackTrace.length !== 0)
+
+          if (parsedErrorDetails && hasTrace) {
+            stackTraceElement.classList.remove('hidden')
+          }
+
+          if (parsedErrorDetails.errorType) {
+            // enriching error types via allowing them to be linked to a relevant MDN article if they are in the known list
+            // https://developer.mozilla.org/en-US/docs/web/javascript/reference/global_objects/error#error_types
+            const errorTypes = [
+              'EvalError',
+              'RangeError',
+              'ReferenceError',
+              'SyntaxError',
+              'TypeError',
+              'URIError',
+              'AggregateError',
+              'InternalError',
+            ]
+            if (errorTypes.includes(parsedErrorDetails.errorType)) {
+              const mdnLink = document.createElement('a')
+              mdnLink.href = `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/${parsedErrorDetails.errorType}`
+              mdnLink.textContent = parsedErrorDetails.errorType
+              mdnLink.target = '_blank'
+              errorTypeElement.append(mdnLink)
+            } else {
+              errorTypeElement.textContent = parsedErrorDetails.errorType
+            }
+          }
+
+          if (parsedErrorDetails.errorMessage || parsedErrorDetails.errorType) {
+            errorMessageDetailsElement.classList.remove('hidden')
+          }
+
+          if (parsedErrorDetails.errorMessage) {
+            errorMessageElement.textContent =
+              (parsedErrorDetails.errorType ? ' - ' : ' ') + parsedErrorDetails.errorMessage
+          }
+
+          // Go errors currently use "stackTrace" with a different structure than "trace"
+          // map these into a shared format.
+          if (Array.isArray(parsedErrorDetails.stackTrace) && parsedErrorDetails.stackTrace.length !== 0) {
+            parsedErrorDetails.trace = parsedErrorDetails.stackTrace.reduce((newTrace, traceDetail) => {
+              let traceLine = ''
+              if (traceDetail.path) {
+                /* eslint-disable no-negated-condition */
+                traceLine += `${traceDetail.path}${traceDetail.line !== undefined ? `:${traceDetail.line}` : ''} ${
+                  traceDetail.label !== undefined ? `${traceDetail.label} ` : ''
+                }`
+                /* eslint-enable no-negated-condition */
+                if (traceLine) {
+                  newTrace.push(traceLine)
+                }
+              }
+              return newTrace
+            }, [])
+          }
+
+          if (Array.isArray(parsedErrorDetails.trace) && parsedErrorDetails.trace.length !== 0) {
+            stackTraceCodeElement.textContent = parsedErrorDetails.trace.join('\n')
+          } else {
+            stackTraceCodeElement.remove()
+          }
+
+          // only create the dynamic link if we have all of the relevant details
+          // Add a defensive check for "undefined" accidentally being put into the template
+          if (
+            deployIdVal &&
+            deployIdVal !== 'undefined' &&
+            siteIdVal &&
+            siteIdVal !== 'undefined' &&
+            fnNameVal &&
+            siteIdVal !== 'undefined'
+          ) {
+            logsLink.href = `https://app.netlify.com/site-fn-logs/${siteIdVal}/${deployIdVal}/${fnNameVal}`
+          }
+        })()
+      </script>
+    </main>
+  </body>
+</html>

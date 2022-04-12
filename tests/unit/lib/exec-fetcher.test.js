@@ -9,7 +9,7 @@ const sinon = require('sinon')
 const { rewiremock } = require('../../integration/utils/rewiremock')
 
 const fetchLatestSpy = sinon.stub()
-// eslint-disable-next-line node/global-require
+// eslint-disable-next-line n/global-require
 const { fetchLatestVersion, getArch, getExecName } = rewiremock.proxy(() => require('../../../src/lib/exec-fetcher'), {
   'gh-release-fetch': {
     fetchLatest: fetchLatestSpy,

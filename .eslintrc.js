@@ -16,7 +16,8 @@ module.exports = {
     'no-process-exit': 0,
     'fp/no-loops': 'error',
     'import/max-dependencies': 0,
-    'node/no-sync': 0,
+    'n/no-process-exit': 0,
+    'n/no-sync': 0,
     'sort-destructure-keys/sort-destructure-keys': 2,
     'unicorn/consistent-destructuring': 0,
     // TODO: harmonize with filename snake_case in other Netlify Dev projects
@@ -47,8 +48,8 @@ module.exports = {
       rules: {
         'require-await': 0,
         'import/no-unresolved': 0,
-        'node/no-missing-require': 0,
-        'node/no-unsupported-features/es-syntax': 0,
+        'n/no-missing-require': 0,
+        'n/no-unsupported-features/es-syntax': 0,
       },
     },
     {

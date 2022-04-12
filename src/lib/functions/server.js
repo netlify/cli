@@ -113,6 +113,7 @@ const createHandler = function (options) {
       const jwt = generateNetlifyGraphJWT(config.netlifyGraphConfig)
       event.authlifyToken = jwt
       event.netlifyGraphToken = jwt
+      event.headers['X-Nf-Graph-Token'] = jwt
     }
 
     const clientContext = buildClientContext(request.headers) || {}
@@ -160,7 +161,7 @@ const createHandler = function (options) {
         return
       }
 
-      handleSynchronousFunction(error, result, response)
+      handleSynchronousFunction(error, result, request, response)
     }
   }
 }
@@ -168,9 +169,9 @@ const createHandler = function (options) {
 const getFunctionsServer = function (options) {
   const { buildersPrefix = '', functionsPrefix = '', functionsRegistry, siteUrl } = options
   // performance optimization, load express on demand
-  // eslint-disable-next-line node/global-require
+  // eslint-disable-next-line n/global-require
   const express = require('express')
-  // eslint-disable-next-line node/global-require
+  // eslint-disable-next-line n/global-require
   const expressLogging = require('express-logging')
   const app = express()
   const functionHandler = createHandler(options)

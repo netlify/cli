@@ -86,6 +86,26 @@ test('should override [build.environment] with process env', async (t) => {
   })
 })
 
+test('should replicate Lambda behaviour for synchronous return values', async (t) => {
+  await withSiteBuilder('site-replicate-aws-sync-behaviour', async (builder) => {
+    builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
+      path: 'env.js',
+      handler: () => ({
+        statusCode: 200,
+      }),
+    })
+
+    await builder.buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async (server) => {
+      const response = await got(`${server.url}/.netlify/functions/env`, {
+        throwHttpErrors: false,
+      })
+      t.true(response.body.startsWith('no lambda response.'))
+    })
+  })
+})
+
 test('should override value of the NETLIFY_DEV env variable', async (t) => {
   await withSiteBuilder('site-with-netlify-dev-override', async (builder) => {
     builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({

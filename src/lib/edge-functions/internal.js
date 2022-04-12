@@ -39,7 +39,7 @@ const getInternalFunctions = async () => {
     }
 
     const manifestPath = path.join(internalPath, 'manifest.json')
-    // eslint-disable-next-line import/no-dynamic-require, node/global-require
+    // eslint-disable-next-line import/no-dynamic-require, n/global-require
     const manifest = require(manifestPath)
 
     if (manifest.version !== 1) {
