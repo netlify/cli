@@ -4,7 +4,7 @@
     "registry": "https://npm.pkg.github.com"
   },
   "description": "Netlify command line tool",
-  "version": "2.3.0",
+  "version": "2.5.0",
   "author": "Netlify Inc.",
   "contributors": [
     "Abraham Schilling <AbrahamSchilling@gmail.com> (https://gitlab.com/n4bb12)",
