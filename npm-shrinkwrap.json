@@ -10,9 +10,9 @@
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
-        "@netlify-labs/build-internal": "^27.3.0",
+        "@netlify-labs/build-internal": "^27.4.0",
         "@netlify-labs/config-internal": "^17.0.18",
-        "@netlify-labs/edge-bundler": "^0.9.0",
+        "@netlify-labs/edge-bundler": "^0.10.1",
         "@netlify/framework-info": "^9.0.2",
         "@netlify/local-functions-proxy": "^1.1.1",
         "@netlify/plugins-list": "^6.19.0",
@@ -1178,18 +1178,18 @@
       "integrity": "sha1-jFoUlNIGbFcMw7/kSWF1rMTVAqs="
     },
     "node_modules/@netlify-labs/build-internal": {
-      "version": "27.3.0",
-      "resolved": "https://npm.pkg.github.com/download/@netlify-labs/build-internal/27.3.0/23fd8486a6c8f0b167a15b6eb59de060971a90228f5c16fa322a052662e30a6d",
-      "integrity": "sha512-Uqe0HkwkBnOHr2ULagH+TDn7Te84NJ9DQaVr28w+hF4MdJZCmUWrj5qsoydxKaunw3TkIq6sZbWm7SWNs06qKQ==",
+      "version": "27.4.0",
+      "resolved": "https://npm.pkg.github.com/download/@netlify-labs/build-internal/27.4.0/6f0c81351a2931e963d19824712eb9249e5d3850bb28a2e9f9f6d4815084656c",
+      "integrity": "sha512-0l+LTWamPxttWXfAORpGu5KXAuoF2S2kalB+8fUX25QQLI2hCQh7m/S0vwUjJ8fVpthvckz4Pl8Pd1jqYjVteQ==",
       "license": "MIT",
       "dependencies": {
         "@bugsnag/js": "^7.0.0",
         "@netlify-labs/config-internal": "^17.0.18",
-        "@netlify-labs/edge-bundler": "^0.9.0",
+        "@netlify-labs/edge-bundler": "^0.10.1",
         "@netlify/cache-utils": "^4.0.0",
         "@netlify/functions-utils": "^4.0.0",
         "@netlify/git-utils": "^4.0.0",
-        "@netlify/plugins-list": "^6.16.1",
+        "@netlify/plugins-list": "^6.19.0",
         "@netlify/run-utils": "^4.0.0",
         "@netlify/zip-it-and-ship-it": "5.9.0",
         "@sindresorhus/slugify": "^2.0.0",
@@ -2178,9 +2178,9 @@
       }
     },
     "node_modules/@netlify-labs/edge-bundler": {
-      "version": "0.9.0",
-      "resolved": "https://npm.pkg.github.com/download/@netlify-labs/edge-bundler/0.9.0/8e4f441f018fbace563f51d75471b27ab6b994d34a2372fb621e57bf3ae40207",
-      "integrity": "sha512-NKiQQEUUMBW28Uk1GeSy5yhiBm+VS4aZxJcnvsaCOJcRWxwcHMHpaZ3Kw0CDHcJ/GwrK1pu+DYtJcnEkARWxuw==",
+      "version": "0.10.1",
+      "resolved": "https://npm.pkg.github.com/download/@netlify-labs/edge-bundler/0.10.1/2c4cbe3eaf8cabf9014d87dcdd202f08b0c3a725dbe7ed97b89ce72bd4eb0615",
+      "integrity": "sha512-4PT/G0XDgGmuPpMcKUwr0ftQQUuFB3HMp/OSOLXSXLDRRBQtl4+8h2oFHU0ZBVr0aynSSkDNWrx/1+R3qo9Rvw==",
       "license": "MIT",
       "dependencies": {
         "common-path-prefix": "^3.0.0",
@@ -23523,17 +23523,17 @@
       }
     },
     "@netlify-labs/build-internal": {
-      "version": "27.3.0",
-      "resolved": "https://npm.pkg.github.com/download/@netlify-labs/build-internal/27.3.0/23fd8486a6c8f0b167a15b6eb59de060971a90228f5c16fa322a052662e30a6d",
-      "integrity": "sha512-Uqe0HkwkBnOHr2ULagH+TDn7Te84NJ9DQaVr28w+hF4MdJZCmUWrj5qsoydxKaunw3TkIq6sZbWm7SWNs06qKQ==",
+      "version": "27.4.0",
+      "resolved": "https://npm.pkg.github.com/download/@netlify-labs/build-internal/27.4.0/6f0c81351a2931e963d19824712eb9249e5d3850bb28a2e9f9f6d4815084656c",
+      "integrity": "sha512-0l+LTWamPxttWXfAORpGu5KXAuoF2S2kalB+8fUX25QQLI2hCQh7m/S0vwUjJ8fVpthvckz4Pl8Pd1jqYjVteQ==",
       "requires": {
         "@bugsnag/js": "^7.0.0",
         "@netlify-labs/config-internal": "^17.0.18",
-        "@netlify-labs/edge-bundler": "^0.9.0",
+        "@netlify-labs/edge-bundler": "^0.10.1",
         "@netlify/cache-utils": "^4.0.0",
         "@netlify/functions-utils": "^4.0.0",
         "@netlify/git-utils": "^4.0.0",
-        "@netlify/plugins-list": "^6.16.1",
+        "@netlify/plugins-list": "^6.19.0",
         "@netlify/run-utils": "^4.0.0",
         "@netlify/zip-it-and-ship-it": "5.9.0",
         "@sindresorhus/slugify": "^2.0.0",
@@ -24126,9 +24126,9 @@
       }
     },
     "@netlify-labs/edge-bundler": {
-      "version": "0.9.0",
-      "resolved": "https://npm.pkg.github.com/download/@netlify-labs/edge-bundler/0.9.0/8e4f441f018fbace563f51d75471b27ab6b994d34a2372fb621e57bf3ae40207",
-      "integrity": "sha512-NKiQQEUUMBW28Uk1GeSy5yhiBm+VS4aZxJcnvsaCOJcRWxwcHMHpaZ3Kw0CDHcJ/GwrK1pu+DYtJcnEkARWxuw==",
+      "version": "0.10.1",
+      "resolved": "https://npm.pkg.github.com/download/@netlify-labs/edge-bundler/0.10.1/2c4cbe3eaf8cabf9014d87dcdd202f08b0c3a725dbe7ed97b89ce72bd4eb0615",
+      "integrity": "sha512-4PT/G0XDgGmuPpMcKUwr0ftQQUuFB3HMp/OSOLXSXLDRRBQtl4+8h2oFHU0ZBVr0aynSSkDNWrx/1+R3qo9Rvw==",
       "requires": {
         "common-path-prefix": "^3.0.0",
         "del": "^6.0.0",
