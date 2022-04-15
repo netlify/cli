@@ -10,9 +10,9 @@
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
-        "@netlify-labs/build-internal": "^27.4.0",
+        "@netlify-labs/build-internal": "^27.5.0",
         "@netlify-labs/config-internal": "^17.0.18",
-        "@netlify-labs/edge-bundler": "^0.10.1",
+        "@netlify-labs/edge-bundler": "^0.11.0",
         "@netlify/framework-info": "^9.0.2",
         "@netlify/local-functions-proxy": "^1.1.1",
         "@netlify/plugins-list": "^6.19.0",
@@ -1178,14 +1178,14 @@
       "integrity": "sha1-jFoUlNIGbFcMw7/kSWF1rMTVAqs="
     },
     "node_modules/@netlify-labs/build-internal": {
-      "version": "27.4.0",
-      "resolved": "https://npm.pkg.github.com/download/@netlify-labs/build-internal/27.4.0/6f0c81351a2931e963d19824712eb9249e5d3850bb28a2e9f9f6d4815084656c",
-      "integrity": "sha512-0l+LTWamPxttWXfAORpGu5KXAuoF2S2kalB+8fUX25QQLI2hCQh7m/S0vwUjJ8fVpthvckz4Pl8Pd1jqYjVteQ==",
+      "version": "27.5.0",
+      "resolved": "https://npm.pkg.github.com/download/@netlify-labs/build-internal/27.5.0/bc34fb19e025bd5f0691c43124c154ac09b8713fd442a4d9f3f346a41965487d",
+      "integrity": "sha512-DUt0ztM9EmAlPS3w4EY+TBiP6TyU2YMXXMpzDp4/fKGkvbNcKNsIqLrCpQMKFZrsUWPNCqLaxHqs0+Br8teXEw==",
       "license": "MIT",
       "dependencies": {
         "@bugsnag/js": "^7.0.0",
         "@netlify-labs/config-internal": "^17.0.18",
-        "@netlify-labs/edge-bundler": "^0.10.1",
+        "@netlify-labs/edge-bundler": "^0.11.0",
         "@netlify/cache-utils": "^4.0.0",
         "@netlify/functions-utils": "^4.0.0",
         "@netlify/git-utils": "^4.0.0",
@@ -2178,9 +2178,9 @@
       }
     },
     "node_modules/@netlify-labs/edge-bundler": {
-      "version": "0.10.1",
-      "resolved": "https://npm.pkg.github.com/download/@netlify-labs/edge-bundler/0.10.1/2c4cbe3eaf8cabf9014d87dcdd202f08b0c3a725dbe7ed97b89ce72bd4eb0615",
-      "integrity": "sha512-4PT/G0XDgGmuPpMcKUwr0ftQQUuFB3HMp/OSOLXSXLDRRBQtl4+8h2oFHU0ZBVr0aynSSkDNWrx/1+R3qo9Rvw==",
+      "version": "0.11.0",
+      "resolved": "https://npm.pkg.github.com/download/@netlify-labs/edge-bundler/0.11.0/8059e7db1d5bf84711b633c62f62ad90c62515a793a675a532920ee21e5ccf09",
+      "integrity": "sha512-Ezfe1FpKjJzLfbbXggfjPQle4zvv60wrP8mz2wKFQ+ykUtYKb95XZo6mvojTq65JctwfsVkmvPMs9XkGCaC6jQ==",
       "license": "MIT",
       "dependencies": {
         "common-path-prefix": "^3.0.0",
@@ -23523,13 +23523,13 @@
       }
     },
     "@netlify-labs/build-internal": {
-      "version": "27.4.0",
-      "resolved": "https://npm.pkg.github.com/download/@netlify-labs/build-internal/27.4.0/6f0c81351a2931e963d19824712eb9249e5d3850bb28a2e9f9f6d4815084656c",
-      "integrity": "sha512-0l+LTWamPxttWXfAORpGu5KXAuoF2S2kalB+8fUX25QQLI2hCQh7m/S0vwUjJ8fVpthvckz4Pl8Pd1jqYjVteQ==",
+      "version": "27.5.0",
+      "resolved": "https://npm.pkg.github.com/download/@netlify-labs/build-internal/27.5.0/bc34fb19e025bd5f0691c43124c154ac09b8713fd442a4d9f3f346a41965487d",
+      "integrity": "sha512-DUt0ztM9EmAlPS3w4EY+TBiP6TyU2YMXXMpzDp4/fKGkvbNcKNsIqLrCpQMKFZrsUWPNCqLaxHqs0+Br8teXEw==",
       "requires": {
         "@bugsnag/js": "^7.0.0",
         "@netlify-labs/config-internal": "^17.0.18",
-        "@netlify-labs/edge-bundler": "^0.10.1",
+        "@netlify-labs/edge-bundler": "^0.11.0",
         "@netlify/cache-utils": "^4.0.0",
         "@netlify/functions-utils": "^4.0.0",
         "@netlify/git-utils": "^4.0.0",
@@ -24126,9 +24126,9 @@
       }
     },
     "@netlify-labs/edge-bundler": {
-      "version": "0.10.1",
-      "resolved": "https://npm.pkg.github.com/download/@netlify-labs/edge-bundler/0.10.1/2c4cbe3eaf8cabf9014d87dcdd202f08b0c3a725dbe7ed97b89ce72bd4eb0615",
-      "integrity": "sha512-4PT/G0XDgGmuPpMcKUwr0ftQQUuFB3HMp/OSOLXSXLDRRBQtl4+8h2oFHU0ZBVr0aynSSkDNWrx/1+R3qo9Rvw==",
+      "version": "0.11.0",
+      "resolved": "https://npm.pkg.github.com/download/@netlify-labs/edge-bundler/0.11.0/8059e7db1d5bf84711b633c62f62ad90c62515a793a675a532920ee21e5ccf09",
+      "integrity": "sha512-Ezfe1FpKjJzLfbbXggfjPQle4zvv60wrP8mz2wKFQ+ykUtYKb95XZo6mvojTq65JctwfsVkmvPMs9XkGCaC6jQ==",
       "requires": {
         "common-path-prefix": "^3.0.0",
         "del": "^6.0.0",
