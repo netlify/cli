@@ -1,12 +1,12 @@
 {
   "name": "netlify-cli",
-  "version": "9.16.6",
+  "version": "9.16.7",
   "lockfileVersion": 2,
   "requires": true,
   "packages": {
     "": {
       "name": "netlify-cli",
-      "version": "9.16.6",
+      "version": "9.16.7",
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
