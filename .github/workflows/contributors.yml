@@ -1,0 +1,28 @@
+name: Maintaining Contributors List
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  update-contributors:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
+    steps:
+      - uses: navikt/github-app-token-generator@a9cd374e271b8aef573b8c16ac46c44fb89b02db
+        id: get-token
+        with:
+          private-key: ${{ secrets.TOKENS_PRIVATE_KEY }}
+          app-id: ${{ secrets.TOKENS_APP_ID }}
+      - name: Git checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ steps.get-token.outputs.token }}
+      - uses: netlify/update-contributors-action@v1
+        with:
+          github-token: ${{ steps.get-token.outputs.token }}
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: 'chore: update contributors field'
+          file_pattern: package.json
+          commit_user_name: Contributors[bot]
