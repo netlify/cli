@@ -180,7 +180,7 @@ class EdgeFunctionsRegistry {
       return
     }
 
-    log(`${NETLIFYDEVLOG} ${chalk.magenta('Reloading')} Edge Functions...`)
+    log(`${NETLIFYDEVLOG} ${chalk.magenta('Reloading')} edge functions...`)
 
     try {
       await this.build(this.functions)
@@ -188,14 +188,14 @@ class EdgeFunctionsRegistry {
       const functionNames = [...matchingFunctions]
 
       if (functionNames.length === 0) {
-        log(`${NETLIFYDEVLOG} ${chalk.green('Reloaded')} Edge Functions`)
+        log(`${NETLIFYDEVLOG} ${chalk.green('Reloaded')} edge functions`)
       } else {
         functionNames.forEach((functionName) => {
-          log(`${NETLIFYDEVLOG} ${chalk.green('Reloaded')} Edge Function ${chalk.yellow(functionName)}`)
+          log(`${NETLIFYDEVLOG} ${chalk.green('Reloaded')} edge function ${chalk.yellow(functionName)}`)
         })
       }
     } catch {
-      log(`${NETLIFYDEVERR} ${chalk.red('Failed')} reloading Edge Function`)
+      log(`${NETLIFYDEVERR} ${chalk.red('Failed')} reloading edge function`)
     }
   }
 
@@ -217,16 +217,16 @@ class EdgeFunctionsRegistry {
   }
 
   static logAddedFunction(func) {
-    log(`${NETLIFYDEVLOG} ${chalk.green('Loaded')} Edge Function ${chalk.yellow(func.name)}`)
+    log(`${NETLIFYDEVLOG} ${chalk.green('Loaded')} edge function ${chalk.yellow(func.name)}`)
   }
 
   static logDeletedFunction(func) {
-    log(`${NETLIFYDEVLOG} ${chalk.magenta('Removed')} Edge Function ${chalk.yellow(func.name)}`)
+    log(`${NETLIFYDEVLOG} ${chalk.magenta('Removed')} edge function ${chalk.yellow(func.name)}`)
   }
 
   processGraph(graph) {
     if (!graph) {
-      warn('Could not process Edge Functions dependency graph. Live reload will not be available.')
+      warn('Could not process edge functions dependency graph. Live reload will not be available.')
 
       return
     }
