@@ -85,7 +85,7 @@ const deploySite = async (
   const stats = buildStatsString([
     filesCount > 0 && `${filesCount} files`,
     functionsCount > 0 && `${functionsCount} functions`,
-    edgeFunctionsCount > 0 && `${edgeFunctionsCount} Edge Functions`,
+    edgeFunctionsCount > 0 && 'edge functions',
   ])
 
   statusCb({
