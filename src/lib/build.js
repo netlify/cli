@@ -1,10 +1,10 @@
 // @ts-check
-const netlifyBuildPromise = import('@netlify-labs/build-internal')
+const netlifyBuildPromise = import('@netlify/build')
 
 /**
  * The buildConfig + a missing cachedConfig
  * @typedef BuildConfig
- * @type {Parameters<import('@netlify-labs/build-internal/src/core/main')>[0] & {cachedConfig: any}}
+ * @type {Parameters<import('@netlify/build/src/core/main')>[0] & {cachedConfig: any}}
  */
 
 // We have already resolved the configuration using `@netlify/config`

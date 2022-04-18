@@ -103,7 +103,7 @@ const prepareServer = async ({
   internalFunctions,
   port,
 }) => {
-  const bundler = await import('@netlify-labs/edge-bundler')
+  const bundler = await import('@netlify/edge-bundler')
   const distImportMapPath = getPathInProject([DIST_IMPORT_MAP_PATH])
   const runIsolate = await bundler.serve({
     ...getDownloadUpdateFunctions(),

@@ -8,7 +8,7 @@ const inquirer = require('inquirer')
 const isObject = require('lodash/isObject')
 const prettyjson = require('prettyjson')
 
-const netlifyConfigPromise = import('@netlify-labs/config-internal')
+const netlifyConfigPromise = import('@netlify/config')
 
 const { cancelDeploy } = require('../../lib/api')
 const { getBuildOptions, runBuild } = require('../../lib/build')

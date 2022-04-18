@@ -1,7 +1,5 @@
 const normalizers = [
   { pattern: /netlify-cli\/.+node-.+/g, value: 'netlify-cli/test-version test-os test-node-version' },
-  // remove once we ship Edge Functions
-  { pattern: /@netlify-labs\/cli-internal\/.+node-.+/g, value: 'netlify-cli/test-version test-os test-node-version' },
   // normalize random ports
   { pattern: /\d{5}/g, value: '88888' },
   // windows specific

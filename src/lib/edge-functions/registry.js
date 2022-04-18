@@ -18,7 +18,7 @@ const { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn, watchDebounced } = requi
 class EdgeFunctionsRegistry {
   /**
    * @param {Object} opts
-   * @param {import('@netlify-labs/edge-bundler')} opts.bundler
+   * @param {import('@netlify/edge-bundler')} opts.bundler
    * @param {object} opts.config
    * @param {string} opts.configPath
    * @param {string[]} opts.directories
@@ -28,7 +28,7 @@ class EdgeFunctionsRegistry {
    */
   constructor({ bundler, config, configPath, directories, getUpdatedConfig, internalFunctions, runIsolate }) {
     /**
-     * @type {import('@netlify-labs/edge-bundler')}
+     * @type {import('@netlify/edge-bundler')}
      */
     this.bundler = bundler
 

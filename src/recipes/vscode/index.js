@@ -28,7 +28,7 @@ const getEdgeFunctionsPath = ({ config, repositoryRoot }) =>
 const getSettingsPath = (repositoryRoot) => join(repositoryRoot, '.vscode', 'settings.json')
 
 const run = async ({ config, repositoryRoot }) => {
-  const { DenoBridge } = await import('@netlify-labs/edge-bundler')
+  const { DenoBridge } = await import('@netlify/edge-bundler')
   const deno = new DenoBridge({
     onBeforeDownload: () =>
       log(`${NETLIFYDEVWARN} Setting up the Edge Functions environment. This may take a couple of minutes.`),

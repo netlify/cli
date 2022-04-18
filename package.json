@@ -1,8 +1,5 @@
 {
-  "name": "@netlify-labs/cli-internal",
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
-  },
+  "name": "@netlify/cli",
   "description": "Netlify command line tool",
   "version": "9.16.6",
   "author": "Netlify Inc.",
@@ -157,7 +154,7 @@
     "!/src/**/node_modules/**",
     "!/src/**/*.test.js"
   ],
-  "homepage": "https://github.com/netlify-labs/cli-internal",
+  "homepage": "https://github.com/netlify/cli",
   "keywords": [
     "api",
     "cli",
@@ -165,14 +162,14 @@
     "static"
   ],
   "license": "MIT",
-  "repository": "netlify-labs/cli-internal",
+  "repository": "netlify/cli",
   "main": "src/index.js",
   "bin": {
     "ntl-internal": "./bin/run",
     "netlify-internal": "./bin/run"
   },
   "bugs": {
-    "url": "https://github.com/netlify-labs/cli-internal/issues"
+    "url": "https://github.com/netlify/cli/issues"
   },
   "scripts": {
     "prepare": "husky install node_modules/@netlify/eslint-config-node/.husky/",
@@ -209,8 +206,9 @@
     "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,tools,scripts,site,tests,.github}/**/*.{mjs,cjs,js,md,yml,json,html}\" \"*.{mjs,cjs,js,yml,json,html}\" \".*.{mjs,cjs,js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\" \"!**/*/package-lock.json\" \"!.github/**/*.md\""
   },
   "dependencies": {
-    "@netlify/build": "^26.5.3",
-    "@netlify/config": "^17.0.20",
+    "@netlify/build": "^27.0.0",
+    "@netlify/config": "^18.0.0",
+    "@netlify/edge-bundler": "^0.12.0",
     "@netlify/framework-info": "^9.0.2",
     "@netlify/local-functions-proxy": "^1.1.1",
     "@netlify/plugins-list": "^6.19.0",

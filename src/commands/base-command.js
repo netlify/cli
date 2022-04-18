@@ -8,7 +8,7 @@ const merge = require('lodash/merge')
 
 // TODO: use static `import` after migrating this repository to pure ES modules
 const jsClient = import('netlify')
-const netlifyConfigPromise = import('@netlify-labs/config-internal')
+const netlifyConfigPromise = import('@netlify/config')
 
 const { getAgent } = require('../lib/http-agent')
 const {
