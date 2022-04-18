@@ -10,12 +10,22 @@
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
+<<<<<<< HEAD
         "@netlify/build": "^27.0.0",
         "@netlify/config": "^18.0.0",
         "@netlify/edge-bundler": "^0.12.0",
         "@netlify/framework-info": "^9.0.2",
         "@netlify/local-functions-proxy": "^1.1.1",
         "@netlify/plugins-list": "^6.19.0",
+=======
+        "@netlify/build": "^26.5.3",
+        "@netlify/config": "^17.0.20",
+        "@netlify/framework-info": "^9.0.2",
+        "@netlify/local-functions-proxy": "^1.1.1",
+        "@netlify/plugin-edge-handlers": "^3.0.7",
+        "@netlify/plugins-list": "^6.19.0",
+        "@netlify/routing-local-proxy": "^0.34.1",
+>>>>>>> upstream
         "@netlify/zip-it-and-ship-it": "^5.9.0",
         "@octokit/rest": "^18.0.0",
         "@sindresorhus/slugify": "^1.1.0",
@@ -1173,9 +1183,15 @@
       }
     },
     "node_modules/@netlify/build": {
+<<<<<<< HEAD
       "version": "27.0.0",
       "resolved": "https://registry.npmjs.org/@netlify/build/-/build-27.0.0.tgz",
       "integrity": "sha512-VH4auAKu6pyvGR1KwpezbbXB7tYnKkC7YnhoOXpeFPuHZH6cirVsmHaRHoTAQ+txdpT9MiYKLOYP3vJEnFFR4w==",
+=======
+      "version": "26.5.3",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-26.5.3.tgz",
+      "integrity": "sha512-O16lFUI6/uooWIvgrO/fQphx4vAGTW9GDAQ3hvo5M64XFdu+9W/OU0fB0fAPAJp+wGM+/hZI5JSS6rCG+TWifg==",
+>>>>>>> upstream
       "dependencies": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^4.0.0",
@@ -1183,6 +1199,10 @@
         "@netlify/edge-bundler": "^0.12.0",
         "@netlify/functions-utils": "^4.0.0",
         "@netlify/git-utils": "^4.0.0",
+<<<<<<< HEAD
+=======
+        "@netlify/plugin-edge-handlers": "^3.0.7",
+>>>>>>> upstream
         "@netlify/plugins-list": "^6.19.0",
         "@netlify/run-utils": "^4.0.0",
         "@netlify/zip-it-and-ship-it": "5.9.0",
@@ -1821,6 +1841,31 @@
         "url": "https://github.com/sponsors/sindresorhus"
       }
     },
+<<<<<<< HEAD
+=======
+    "node_modules/@netlify/build/node_modules/read-pkg-up/node_modules/type-fest": {
+      "version": "2.12.2",
+      "resolved": "https://registry.npmjs.org/type-fest/-/type-fest-2.12.2.tgz",
+      "integrity": "sha512-qt6ylCGpLjZ7AaODxbpyBZSs9fCI9SkL3Z9q2oxMBQhs/uyY+VD8jHA8ULCGmWQJlBgqvO3EJeAngOHD8zQCrQ==",
+      "engines": {
+        "node": ">=12.20"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/sindresorhus"
+      }
+    },
+    "node_modules/@netlify/build/node_modules/read-pkg/node_modules/type-fest": {
+      "version": "2.12.2",
+      "resolved": "https://registry.npmjs.org/type-fest/-/type-fest-2.12.2.tgz",
+      "integrity": "sha512-qt6ylCGpLjZ7AaODxbpyBZSs9fCI9SkL3Z9q2oxMBQhs/uyY+VD8jHA8ULCGmWQJlBgqvO3EJeAngOHD8zQCrQ==",
+      "engines": {
+        "node": ">=12.20"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/sindresorhus"
+      }
+    },
+>>>>>>> upstream
     "node_modules/@netlify/build/node_modules/string-width": {
       "version": "5.1.2",
       "resolved": "https://registry.npmjs.org/string-width/-/string-width-5.1.2.tgz",
@@ -2005,9 +2050,15 @@
       }
     },
     "node_modules/@netlify/config": {
+<<<<<<< HEAD
       "version": "18.0.0",
       "resolved": "https://registry.npmjs.org/@netlify/config/-/config-18.0.0.tgz",
       "integrity": "sha512-bhVRlWANKr28xf6HaRjc72ihUB1hiyF32xgaRUraoKyQg9srM4qB1FhfQuNLuF2uAwdGmUEeqFap3AC56qBiLw==",
+=======
+      "version": "17.0.20",
+      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-17.0.20.tgz",
+      "integrity": "sha512-X5dZe3ALUoxw2p9NVvraoMrZF73FlHdPhopW0nJItBmiA/y8LyKupa/KVCBxKf6R02KnYORr0YUnIeZbIO3syw==",
+>>>>>>> upstream
       "dependencies": {
         "chalk": "^5.0.0",
         "cron-parser": "^4.1.0",
@@ -11972,7 +12023,10 @@
       "version": "1.0.3",
       "resolved": "https://registry.npmjs.org/has-symbols/-/has-symbols-1.0.3.tgz",
       "integrity": "sha512-l3LCuF6MgDNwTDKkdYGEihYjt5pRPbEg46rtlmnSPlUbgmB8LOIrKJbYYFBSbnPaJexMKtiPO8hmeRjRz2Td+A==",
+<<<<<<< HEAD
       "dev": true,
+=======
+>>>>>>> upstream
       "engines": {
         "node": ">= 0.4"
       },
@@ -23718,9 +23772,15 @@
       }
     },
     "@netlify/build": {
+<<<<<<< HEAD
       "version": "27.0.0",
       "resolved": "https://registry.npmjs.org/@netlify/build/-/build-27.0.0.tgz",
       "integrity": "sha512-VH4auAKu6pyvGR1KwpezbbXB7tYnKkC7YnhoOXpeFPuHZH6cirVsmHaRHoTAQ+txdpT9MiYKLOYP3vJEnFFR4w==",
+=======
+      "version": "26.5.3",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-26.5.3.tgz",
+      "integrity": "sha512-O16lFUI6/uooWIvgrO/fQphx4vAGTW9GDAQ3hvo5M64XFdu+9W/OU0fB0fAPAJp+wGM+/hZI5JSS6rCG+TWifg==",
+>>>>>>> upstream
       "requires": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^4.0.0",
@@ -23728,6 +23788,10 @@
         "@netlify/edge-bundler": "^0.12.0",
         "@netlify/functions-utils": "^4.0.0",
         "@netlify/git-utils": "^4.0.0",
+<<<<<<< HEAD
+=======
+        "@netlify/plugin-edge-handlers": "^3.0.7",
+>>>>>>> upstream
         "@netlify/plugins-list": "^6.19.0",
         "@netlify/run-utils": "^4.0.0",
         "@netlify/zip-it-and-ship-it": "5.9.0",
@@ -24113,6 +24177,16 @@
             "normalize-package-data": "^3.0.2",
             "parse-json": "^5.2.0",
             "type-fest": "^2.0.0"
+<<<<<<< HEAD
+=======
+          },
+          "dependencies": {
+            "type-fest": {
+              "version": "2.12.2",
+              "resolved": "https://registry.npmjs.org/type-fest/-/type-fest-2.12.2.tgz",
+              "integrity": "sha512-qt6ylCGpLjZ7AaODxbpyBZSs9fCI9SkL3Z9q2oxMBQhs/uyY+VD8jHA8ULCGmWQJlBgqvO3EJeAngOHD8zQCrQ=="
+            }
+>>>>>>> upstream
           }
         },
         "read-pkg-up": {
@@ -24123,6 +24197,16 @@
             "find-up": "^6.3.0",
             "read-pkg": "^7.1.0",
             "type-fest": "^2.5.0"
+<<<<<<< HEAD
+=======
+          },
+          "dependencies": {
+            "type-fest": {
+              "version": "2.12.2",
+              "resolved": "https://registry.npmjs.org/type-fest/-/type-fest-2.12.2.tgz",
+              "integrity": "sha512-qt6ylCGpLjZ7AaODxbpyBZSs9fCI9SkL3Z9q2oxMBQhs/uyY+VD8jHA8ULCGmWQJlBgqvO3EJeAngOHD8zQCrQ=="
+            }
+>>>>>>> upstream
           }
         },
         "string-width": {
@@ -24235,9 +24319,15 @@
       }
     },
     "@netlify/config": {
+<<<<<<< HEAD
       "version": "18.0.0",
       "resolved": "https://registry.npmjs.org/@netlify/config/-/config-18.0.0.tgz",
       "integrity": "sha512-bhVRlWANKr28xf6HaRjc72ihUB1hiyF32xgaRUraoKyQg9srM4qB1FhfQuNLuF2uAwdGmUEeqFap3AC56qBiLw==",
+=======
+      "version": "17.0.20",
+      "resolved": "https://registry.npmjs.org/@netlify/config/-/config-17.0.20.tgz",
+      "integrity": "sha512-X5dZe3ALUoxw2p9NVvraoMrZF73FlHdPhopW0nJItBmiA/y8LyKupa/KVCBxKf6R02KnYORr0YUnIeZbIO3syw==",
+>>>>>>> upstream
       "requires": {
         "chalk": "^5.0.0",
         "cron-parser": "^4.1.0",
@@ -24969,6 +25059,44 @@
       "version": "6.19.0",
       "resolved": "https://registry.npmjs.org/@netlify/plugins-list/-/plugins-list-6.19.0.tgz",
       "integrity": "sha512-EuRZgOhP7QE0H5Sn4+LvsOKL+rcUn+ny6dzwK1V+Rj2HV0cBW2JMGxWj2IEAI1Qb0xU/Gy+Ib+bX23dCvm5LdQ=="
+<<<<<<< HEAD
+=======
+    },
+    "@netlify/routing-local-proxy": {
+      "version": "0.34.1",
+      "resolved": "https://registry.npmjs.org/@netlify/routing-local-proxy/-/routing-local-proxy-0.34.1.tgz",
+      "integrity": "sha512-FuzgxdxC7wJXUT08qPTtHiKwjFDHh3ViCDZwxwjm8CjOKYz+9NjhmIffkbEFl6R+uH6IV/3R6gVDL5Fb5hwRbQ==",
+      "requires": {
+        "@netlify/routing-local-proxy-darwin-arm64": "^0.34.1",
+        "@netlify/routing-local-proxy-darwin-x64": "^0.34.1",
+        "@netlify/routing-local-proxy-linux-x64": "^0.34.1",
+        "@netlify/routing-local-proxy-win32-x64": "^0.34.1"
+      }
+    },
+    "@netlify/routing-local-proxy-darwin-arm64": {
+      "version": "0.34.1",
+      "resolved": "https://registry.npmjs.org/@netlify/routing-local-proxy-darwin-arm64/-/routing-local-proxy-darwin-arm64-0.34.1.tgz",
+      "integrity": "sha512-QswoXdmvmwx76bNdA0TcwfbK1NUIo5BjcS4bpE96wtUPr3SNn4pSoOip9/Tae2JbLGl7efdEkgBE1J6rMiu/kA==",
+      "optional": true
+    },
+    "@netlify/routing-local-proxy-darwin-x64": {
+      "version": "0.34.1",
+      "resolved": "https://registry.npmjs.org/@netlify/routing-local-proxy-darwin-x64/-/routing-local-proxy-darwin-x64-0.34.1.tgz",
+      "integrity": "sha512-x5mukoDWGl+jpVsyNZjRBrP1m93AFrVI/afodQbu45nyW78fpNALhqJPGoI2ixe/Z5HKaYl+ItvI+J4wAVFseQ==",
+      "optional": true
+    },
+    "@netlify/routing-local-proxy-linux-x64": {
+      "version": "0.34.1",
+      "resolved": "https://registry.npmjs.org/@netlify/routing-local-proxy-linux-x64/-/routing-local-proxy-linux-x64-0.34.1.tgz",
+      "integrity": "sha512-dquodOP1VC2RtJcr2bp/DzTq0JXtk2cZDtJmaasMxxbxZmwL9R+63ypWsgdvGTSdZDKkwzzHAg3a7qGHVIl4ow==",
+      "optional": true
+    },
+    "@netlify/routing-local-proxy-win32-x64": {
+      "version": "0.34.1",
+      "resolved": "https://registry.npmjs.org/@netlify/routing-local-proxy-win32-x64/-/routing-local-proxy-win32-x64-0.34.1.tgz",
+      "integrity": "sha512-Dy1OPqlHXCDIJoEor709Ysx76UiAgrse1GF5wdieTVtWnQ7culo8+LVCwubwQezVCCbdjTke9LfMWbP91zBojg==",
+      "optional": true
+>>>>>>> upstream
     },
     "@netlify/run-utils": {
       "version": "4.0.1",
@@ -31661,8 +31789,12 @@
     "has-symbols": {
       "version": "1.0.3",
       "resolved": "https://registry.npmjs.org/has-symbols/-/has-symbols-1.0.3.tgz",
+<<<<<<< HEAD
       "integrity": "sha512-l3LCuF6MgDNwTDKkdYGEihYjt5pRPbEg46rtlmnSPlUbgmB8LOIrKJbYYFBSbnPaJexMKtiPO8hmeRjRz2Td+A==",
       "dev": true
+=======
+      "integrity": "sha512-l3LCuF6MgDNwTDKkdYGEihYjt5pRPbEg46rtlmnSPlUbgmB8LOIrKJbYYFBSbnPaJexMKtiPO8hmeRjRz2Td+A=="
+>>>>>>> upstream
     },
     "has-to-string-tag-x": {
       "version": "1.4.1",
