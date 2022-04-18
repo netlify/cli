@@ -1,5 +1,5 @@
 {
-  "name": "@netlify/cli",
+  "name": "netlify-cli",
   "description": "Netlify command line tool",
   "version": "9.16.7",
   "author": "Netlify Inc.",
@@ -165,8 +165,8 @@
   "repository": "netlify/cli",
   "main": "src/index.js",
   "bin": {
-    "ntl-internal": "./bin/run",
-    "netlify-internal": "./bin/run"
+    "ntl": "./bin/run",
+    "netlify": "./bin/run"
   },
   "bugs": {
     "url": "https://github.com/netlify/cli/issues"
