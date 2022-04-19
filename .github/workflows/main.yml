@@ -82,6 +82,10 @@ jobs:
           cache-dependency-path: 'npm-shrinkwrap.json'
           check-latest: true
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x
       - name: Install core dependencies
         run: npm ci --no-audit
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
