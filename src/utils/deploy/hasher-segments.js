@@ -24,8 +24,16 @@ const hasherCtor = ({ concurrentHash, hashAlgorithm }) => {
 }
 
 // Inject normalized file names into normalizedPath and assetType
-const fileNormalizerCtor = ({ assetType }) =>
-  map((fileObj) => ({ ...fileObj, assetType, normalizedPath: normalizePath(fileObj.relname) }))
+const fileNormalizerCtor = ({ assetType, normalizer: normalizeFunction }) =>
+  map((fileObj) => {
+    const normalizedFile = { ...fileObj, assetType, normalizedPath: normalizePath(fileObj.relname) }
+
+    if (normalizeFunction !== undefined) {
+      return normalizeFunction(normalizedFile)
+    }
+
+    return normalizedFile
+  })
 
 // A writable stream segment ctor that normalizes file paths, and writes shaMap's
 const manifestCollectorCtor = (filesObj, shaMap, { assetType, statusCb }) => {

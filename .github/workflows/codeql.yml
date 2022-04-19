@@ -28,6 +28,8 @@ jobs:
         uses: github/codeql-action/init@v1
         with:
           languages: 'javascript'
+          paths-ignore:
+            - '**/*.test.js'
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v1

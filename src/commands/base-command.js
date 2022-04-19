@@ -421,7 +421,6 @@ class BaseCommand extends Command {
     const cachedConfig = await actionCommand.getConfig({ cwd, state, token, ...apiUrlOpts })
     const { buildDir, config, configPath, repositoryRoot, siteInfo } = cachedConfig
     const normalizedConfig = normalizeConfig(config)
-
     const agent = await getAgent({
       httpProxy: options.httpProxy,
       certificateFile: options.httpProxyCertificateFilename,
@@ -478,7 +477,7 @@ class BaseCommand extends Command {
           options.context ||
           process.env.CONTEXT ||
           // Dev commands have a default context of `dev`, otherwise we let netlify/config handle default behavior
-          (['dev', 'dev:exec', 'dev:trace'].includes(this.name()) ? 'dev' : undefined),
+          (['dev', 'dev:exec'].includes(this.name()) ? 'dev' : undefined),
         debug: this.opts().debug,
         siteId: options.siteId || (typeof options.site === 'string' && options.site) || state.get('siteId'),
         token,
