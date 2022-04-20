@@ -85,6 +85,19 @@ const sitesCreate = async (options, command) => {
   }
 
   const { name: nameFlag } = options
+
+  // netlify sites:create --name
+  if (nameFlag === true) {
+    error('Please specify site name, example: --name <site_name>')
+    return
+  }
+  // netlify sites:create --name <A string of more than 63 words>
+  const MAX_SITE_NAME_LENGTH = 63
+  if (typeof nameFlag === 'string' && nameFlag.length > MAX_SITE_NAME_LENGTH) {
+    error(`--name should be less than 64 characters, input length: ${nameFlag.length}`)
+    return
+  }
+
   let user
   let site
 
