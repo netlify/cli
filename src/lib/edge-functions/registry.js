@@ -166,7 +166,10 @@ class EdgeFunctionsRegistry {
 
   getDeclarations(config) {
     const { edge_functions: userFunctions = [] } = config
-    const declarations = [...this.internalFunctions, ...userFunctions]
+
+    // The order is important, since we want to run user-defined functions
+    // before internal functions.
+    const declarations = [...userFunctions, ...this.internalFunctions]
 
     return declarations
   }
