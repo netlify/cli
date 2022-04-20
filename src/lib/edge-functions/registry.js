@@ -224,6 +224,45 @@ class EdgeFunctionsRegistry {
     log(`${NETLIFYDEVLOG} ${chalk.magenta('Removed')} edge function ${chalk.yellow(func.name)}`)
   }
 
+  /**
+   * @param {string} urlPath
+   */
+  async matchURLPath(urlPath) {
+    // `generateManifest` will only include functions for which there is both a
+    // function file and a config declaration, but we want to catch cases where
+    // a config declaration exists without a matching function file. To do that
+    // we compute a list of functions from the declarations (the `path` doesn't
+    // really matter) and later on match the resulting routes against the list
+    // of functions we have in the registry. Any functions found in the former
+    // but not the latter are treated as orphaned declarations.
+    const functions = this.declarations.map((declaration) => ({ name: declaration.function, path: '' }))
+    const manifest = await this.bundler.generateManifest({
+      declarations: this.declarations,
+      functions,
+    })
+    const routes = manifest.routes.map((route) => ({
+      ...route,
+      pattern: new RegExp(route.pattern),
+    }))
+    const orphanedDeclarations = new Set()
+    const functionNames = routes
+      .filter(({ pattern }) => pattern.test(urlPath))
+      .map((route) => {
+        const matchingFunction = this.functions.find(({ name }) => name === route.function)
+
+        if (matchingFunction === undefined) {
+          orphanedDeclarations.add(route.function)
+
+          return null
+        }
+
+        return matchingFunction.name
+      })
+      .filter(Boolean)
+
+    return { functionNames, orphanedDeclarations }
+  }
+
   processGraph(graph) {
     if (!graph) {
       warn('Could not process edge functions dependency graph. Live reload will not be available.')

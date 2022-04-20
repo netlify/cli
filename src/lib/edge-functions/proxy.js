@@ -1,10 +1,11 @@
 // @ts-check
-const { env } = require('process')
+const { relative } = require('path')
+const { cwd, env } = require('process')
 
 const getAvailablePort = require('get-port')
 const { v4: generateUUID } = require('uuid')
 
-const { NETLIFYDEVERR, chalk } = require('../../utils/command-helpers')
+const { NETLIFYDEVERR, NETLIFYDEVWARN, chalk, log } = require('../../utils/command-helpers')
 const { getPathInProject } = require('../settings')
 const { startSpinner, stopSpinner } = require('../spinner')
 
@@ -69,20 +70,29 @@ const initializeProxy = async ({ config, configPath, getUpdatedConfig, settings 
 
     await registry.initialize()
 
-    const manifest = await registry.getManifest()
     const url = new URL(req.url, `http://${LOCAL_HOST}:${mainPort}`)
-    const routes = manifest.routes.map((route) => ({
-      ...route,
-      pattern: new RegExp(route.pattern),
-    }))
-    const matchingFunctions = routes.filter(({ pattern }) => pattern.test(url.pathname)).map((route) => route.function)
+    const { functionNames, orphanedDeclarations } = await registry.matchURLPath(url.pathname)
 
-    if (matchingFunctions.length === 0) {
+    // If the request matches a config declaration for an Edge Function without
+    // a matching function file, we warn the user.
+    orphanedDeclarations.forEach((functionName) => {
+      log(
+        `${NETLIFYDEVWARN} Request to ${chalk.yellow(
+          url.pathname,
+        )} matches declaration for edge function ${chalk.yellow(
+          functionName,
+        )}, but there's no matching function file in ${chalk.yellow(
+          relative(cwd(), userFunctionsPath),
+        )}. Please visit ${chalk.blue('https://ntl.fyi/edge-create')} for more information.`,
+      )
+    })
+
+    if (functionNames.length === 0) {
       return
     }
 
     req[headersSymbol] = {
-      [headers.Functions]: matchingFunctions.join(','),
+      [headers.Functions]: functionNames.join(','),
       [headers.PassHost]: `${LOCAL_HOST}:${mainPort}`,
       [headers.Passthrough]: 'passthrough',
       [headers.RequestID]: generateUUID(),
