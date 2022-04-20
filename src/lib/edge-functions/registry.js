@@ -1,13 +1,5 @@
 // @ts-check
-const {
-  NETLIFYDEVERR,
-  NETLIFYDEVLOG,
-  NETLIFYDEVWARN,
-  chalk,
-  log,
-  warn,
-  watchDebounced,
-} = require('../../utils/command-helpers')
+const { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn, watchDebounced } = require('../../utils/command-helpers')
 
 /**
  * @typedef EdgeFunction
@@ -235,19 +227,6 @@ class EdgeFunctionsRegistry {
     log(`${NETLIFYDEVLOG} ${chalk.magenta('Removed')} edge function ${chalk.yellow(func.name)}`)
   }
 
-  static logDuplicateFunctions(functions) {
-    const functionNames = functions.map(({ name }) => name)
-    const duplicateFunctions = functionNames.filter((name, index) => functionNames.slice(index + 1).includes(name))
-
-    duplicateFunctions.forEach((functionName) => {
-      log(
-        `${NETLIFYDEVWARN} The edge function ${chalk.yellow(
-          functionName,
-        )} has a naming collision with an edge function created by a Build Plugin. To solve this, rename your function or disable the Build Plugin.`,
-      )
-    })
-  }
-
   processGraph(graph) {
     if (!graph) {
       warn('Could not process edge functions dependency graph. Live reload will not be available.')
@@ -295,8 +274,6 @@ class EdgeFunctionsRegistry {
 
   async scan(directories) {
     const functions = await this.bundler.find(directories)
-
-    EdgeFunctionsRegistry.logDuplicateFunctions(functions)
 
     functions.forEach((func) => {
       EdgeFunctionsRegistry.logAddedFunction(func)
