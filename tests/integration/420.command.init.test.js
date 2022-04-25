@@ -21,7 +21,6 @@ const windowsSkip = process.platform === 'win32' ? test.skip : test
 const assertNetlifyToml = async (t, tomlDir, { command, functions, publish }) => {
   // assert netlify.toml was created with user inputs
   const netlifyToml = toml.parse(await readFile(`${tomlDir}/netlify.toml`, 'utf8'))
-  console.log(netlifyToml)
   t.deepEqual(
     netlifyToml,
     cleanDeep({
