@@ -3,6 +3,8 @@ const DIST_IMPORT_MAP_PATH = 'edge-functions-import-map.json'
 const INTERNAL_EDGE_FUNCTIONS_FOLDER = 'edge-functions'
 const EDGE_FUNCTIONS_FOLDER = 'edge-functions-dist'
 const PUBLIC_URL_PATH = '.netlify/internal/edge-functions'
+const EDGE_FUNCTIONS_DIST = '.netlify/edge-functions-dist'
+const INTERNAL_SRC_DIR = '.netlify/edge-functions'
 
 // 1 second
 const SERVER_POLL_INTERNAL = 1e3
@@ -18,4 +20,6 @@ module.exports = {
   PUBLIC_URL_PATH,
   SERVER_POLL_INTERNAL,
   SERVER_POLL_TIMEOUT,
+  EDGE_FUNCTIONS_DIST,
+  INTERNAL_SRC_DIR,
 }
