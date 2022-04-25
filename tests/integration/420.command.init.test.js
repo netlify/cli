@@ -323,8 +323,8 @@ test('netlify init new Next.js site', async (t) => {
   })
 })
 
-test('netlify init new Next.js site with correct default build directory', async (t) => {
-  const [command, publish, functions] = ['custom-build-command', '.next', 'custom-functions']
+test('netlify init new Next.js site with correct default build directory and build command', async (t) => {
+  const [command, publish, functions] = ['next build', '.next', 'custom-functions']
   const initQuestions = [
     {
       question: 'Create & configure a new site',
@@ -334,7 +334,7 @@ test('netlify init new Next.js site with correct default build directory', async
     { question: 'Site name (optional)', answer: answerWithValue('test-site-name') },
     {
       question: 'Your build command (hugo build/yarn run build/etc)',
-      answer: answerWithValue(command),
+      answer: CONFIRM,
     },
     {
       question: 'Directory to deploy (blank for current dir)',
@@ -520,8 +520,8 @@ test('netlify init existing Next.js site with existing plugins', async () => {
   })
 })
 
-test('netlify init new Gatsby site with correct default build directory', async (t) => {
-  const [command, publish, functions] = ['custom-build-command', 'public', 'custom-functions']
+test('netlify init new Gatsby site with correct default build directory and build command', async (t) => {
+  const [command, publish, functions] = ['gatsby build', 'public', 'custom-functions']
   const initQuestions = [
     {
       question: 'Create & configure a new site',
@@ -531,7 +531,7 @@ test('netlify init new Gatsby site with correct default build directory', async 
     { question: 'Site name (optional)', answer: answerWithValue('test-site-name') },
     {
       question: 'Your build command (hugo build/yarn run build/etc)',
-      answer: answerWithValue(command),
+      answer: CONFIRM,
     },
     {
       question: 'Directory to deploy (blank for current dir)',
