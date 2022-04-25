@@ -21,6 +21,7 @@ const windowsSkip = process.platform === 'win32' ? test.skip : test
 const assertNetlifyToml = async (t, tomlDir, { command, functions, publish }) => {
   // assert netlify.toml was created with user inputs
   const netlifyToml = toml.parse(await readFile(`${tomlDir}/netlify.toml`, 'utf8'))
+  console.log(netlifyToml)
   t.deepEqual(
     netlifyToml,
     cleanDeep({
@@ -322,6 +323,110 @@ test('netlify init new Next.js site', async (t) => {
   })
 })
 
+test('netlify init new Next.js site with correct default build directory', async (t) => {
+  const [command, publish, functions] = ['custom-build-command', '.next', 'custom-functions']
+  const initQuestions = [
+    {
+      question: 'Create & configure a new site',
+      answer: answerWithValue(DOWN),
+    },
+    { question: 'Team: (Use arrow keys)', answer: CONFIRM },
+    { question: 'Site name (optional)', answer: answerWithValue('test-site-name') },
+    {
+      question: 'Your build command (hugo build/yarn run build/etc)',
+      answer: answerWithValue(command),
+    },
+    {
+      question: 'Directory to deploy (blank for current dir)',
+      answer: CONFIRM,
+    },
+    {
+      question: 'Netlify functions folder',
+      answer: answerWithValue(functions),
+    },
+    {
+      question: 'OK to install',
+      answer: CONFIRM,
+    },
+    {
+      question: 'No netlify.toml detected',
+      answer: CONFIRM,
+    },
+    { question: 'Give this Netlify SSH public key access to your repository', answer: CONFIRM },
+    { question: 'The SSH URL of the remote git repo', answer: CONFIRM },
+    { question: 'Configure the following webhook for your repository', answer: CONFIRM },
+  ]
+
+  const siteInfo = {
+    admin_url: 'https://app.netlify.com/sites/site-name/overview',
+    ssl_url: 'https://site-name.netlify.app/',
+    id: 'site_id',
+    name: 'site-name',
+    build_settings: { repo_url: 'https://github.com/owner/repo' },
+  }
+
+  const routes = [
+    {
+      path: 'accounts',
+      response: [{ slug: 'test-account' }],
+    },
+
+    {
+      path: 'sites',
+      response: [],
+    },
+    { path: 'sites/site_id', response: siteInfo },
+    {
+      path: 'user',
+      response: { name: 'test user', slug: 'test-user', email: 'user@test.com' },
+    },
+    {
+      path: 'test-account/sites',
+      method: 'post',
+      response: { id: 'site_id', name: 'test-site-name' },
+    },
+    { path: 'deploy_keys', method: 'post', response: { public_key: 'public_key' } },
+    {
+      path: 'sites/site_id',
+      method: 'patch',
+      response: { deploy_hook: 'deploy_hook' },
+      requestBody: {
+        plugins: [{ package: '@netlify/plugin-nextjs' }],
+        repo: {
+          allowed_branches: ['main'],
+          cmd: command,
+          dir: publish,
+          provider: 'manual',
+          repo_branch: 'main',
+          repo_path: 'git@github.com:owner/repo.git',
+          functions_dir: functions,
+        },
+      },
+    },
+  ]
+
+  await withSiteBuilder('new-site', async (builder) => {
+    await builder
+      .withGit()
+      .withPackageJson({ packageJson: { dependencies: { next: '^10.0.0' } } })
+      .buildAsync()
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      // --manual is used to avoid the config-github flow that uses GitHub API
+      const childProcess = execa(cliPath, ['init', '--manual'], {
+        cwd: builder.directory,
+        env: { NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
+      })
+
+      handleQuestions(childProcess, initQuestions)
+
+      await childProcess
+
+      await assertNetlifyToml(t, builder.directory, { command, functions, publish })
+    })
+  })
+})
+
 test('netlify init existing Next.js site with existing plugins', async () => {
   const [command, publish, functions] = ['custom-build-command', 'custom-publish', 'custom-functions']
   const initQuestions = [
@@ -411,6 +516,114 @@ test('netlify init existing Next.js site with existing plugins', async () => {
       handleQuestions(childProcess, initQuestions)
 
       await childProcess
+    })
+  })
+})
+
+test('netlify init new Gatsby site with correct default build directory', async (t) => {
+  const [command, publish, functions] = ['custom-build-command', 'public', 'custom-functions']
+  const initQuestions = [
+    {
+      question: 'Create & configure a new site',
+      answer: answerWithValue(DOWN),
+    },
+    { question: 'Team: (Use arrow keys)', answer: CONFIRM },
+    { question: 'Site name (optional)', answer: answerWithValue('test-site-name') },
+    {
+      question: 'Your build command (hugo build/yarn run build/etc)',
+      answer: answerWithValue(command),
+    },
+    {
+      question: 'Directory to deploy (blank for current dir)',
+      answer: CONFIRM,
+    },
+    {
+      question: 'Netlify functions folder',
+      answer: answerWithValue(functions),
+    },
+    {
+      question: 'OK to install',
+      answer: CONFIRM,
+    },
+    {
+      question: 'No netlify.toml detected',
+      answer: CONFIRM,
+    },
+    { question: 'Give this Netlify SSH public key access to your repository', answer: CONFIRM },
+    { question: 'The SSH URL of the remote git repo', answer: CONFIRM },
+    { question: 'Configure the following webhook for your repository', answer: CONFIRM },
+  ]
+
+  const siteInfo = {
+    admin_url: 'https://app.netlify.com/sites/site-name/overview',
+    ssl_url: 'https://site-name.netlify.app/',
+    id: 'site_id',
+    name: 'site-name',
+    build_settings: { repo_url: 'https://github.com/owner/repo' },
+  }
+
+  const routes = [
+    {
+      path: 'accounts',
+      response: [{ slug: 'test-account' }],
+    },
+
+    {
+      path: 'sites',
+      response: [],
+    },
+    { path: 'sites/site_id', response: siteInfo },
+    {
+      path: 'user',
+      response: { name: 'test user', slug: 'test-user', email: 'user@test.com' },
+    },
+    {
+      path: 'test-account/sites',
+      method: 'post',
+      response: { id: 'site_id', name: 'test-site-name' },
+    },
+    { path: 'deploy_keys', method: 'post', response: { public_key: 'public_key' } },
+    {
+      path: 'sites/site_id',
+      method: 'patch',
+      response: { deploy_hook: 'deploy_hook' },
+      requestBody: {
+        plugins: [{ package: '@netlify/plugin-gatsby' }],
+        repo: {
+          allowed_branches: ['main'],
+          cmd: command,
+          dir: publish,
+          provider: 'manual',
+          repo_branch: 'main',
+          repo_path: 'git@github.com:owner/repo.git',
+          functions_dir: functions,
+        },
+      },
+    },
+  ]
+
+  await withSiteBuilder('new-site', async (builder) => {
+    await builder
+      .withGit()
+      .withContentFile({
+        content: '',
+        path: 'gatsby-config.js',
+      })
+      .withPackageJson({ packageJson: { dependencies: { gatsby: '4.11.0' } } })
+      .buildAsync()
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      // --manual is used to avoid the config-github flow that uses GitHub API
+      const childProcess = execa(cliPath, ['init', '--manual'], {
+        cwd: builder.directory,
+        env: { NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
+      })
+
+      handleQuestions(childProcess, initQuestions)
+
+      await childProcess
+
+      await assertNetlifyToml(t, builder.directory, { command, functions, publish })
     })
   })
 })
