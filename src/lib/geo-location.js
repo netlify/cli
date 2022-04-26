@@ -67,4 +67,4 @@ const getGeoLocationFromAPI = async () => {
   return geo
 }
 
-module.exports = { getGeoLocation }
+module.exports = { getGeoLocation, mockLocation }
