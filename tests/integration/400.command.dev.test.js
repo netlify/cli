@@ -8,7 +8,7 @@ const avaTest = require('ava')
 const { isCI } = require('ci-info')
 const FormData = require('form-data')
 
-const { getLocalXForwardFor } = require('../lib/util')
+const { originalIP } = require('../lib/local-ip')
 
 const { withDevServer } = require('./utils/dev-server')
 const got = require('./utils/got')
@@ -407,7 +407,7 @@ test('should handle form submission', async (t) => {
         payload: {
           created_at: body.payload.created_at,
           data: {
-            ip: getLocalXForwardFor(),
+            ip: originalIP,
             some: 'thing',
             user_agent: 'got (https://github.com/sindresorhus/got)',
           },
