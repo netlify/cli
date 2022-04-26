@@ -8,6 +8,8 @@ const avaTest = require('ava')
 const { isCI } = require('ci-info')
 const FormData = require('form-data')
 
+const { getLocalXForwardFor } = require('../lib/util')
+
 const { withDevServer } = require('./utils/dev-server')
 const got = require('./utils/got')
 const { withSiteBuilder } = require('./utils/site-builder')
@@ -401,19 +403,11 @@ test('should handle form submission', async (t) => {
         .json()
 
       const body = JSON.parse(response.body)
-
-      t.is(response.headers.host, `${server.host}:${server.port}`)
-      t.is(response.headers['content-length'], '276')
-      t.is(response.headers['content-type'], 'application/json')
-      t.is(response.httpMethod, 'POST')
-      t.is(response.isBase64Encoded, false)
-      t.is(response.path, '/')
-      t.deepEqual(response.queryStringParameters, { ding: 'dong' })
-      t.deepEqual(body, {
+      const expectedBody = {
         payload: {
           created_at: body.payload.created_at,
           data: {
-            ip: '::ffff:127.0.0.1',
+            ip: getLocalXForwardFor(),
             some: 'thing',
             user_agent: 'got (https://github.com/sindresorhus/got)',
           },
@@ -429,7 +423,16 @@ test('should handle form submission', async (t) => {
           ],
           site_url: '',
         },
-      })
+      }
+
+      t.is(response.headers.host, `${server.host}:${server.port}`)
+      t.is(response.headers['content-length'], JSON.stringify(expectedBody).length.toString())
+      t.is(response.headers['content-type'], 'application/json')
+      t.is(response.httpMethod, 'POST')
+      t.is(response.isBase64Encoded, false)
+      t.is(response.path, '/')
+      t.deepEqual(response.queryStringParameters, { ding: 'dong' })
+      t.deepEqual(body, expectedBody)
     })
   })
 })
