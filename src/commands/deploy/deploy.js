@@ -13,7 +13,6 @@ const netlifyConfigPromise = import('@netlify/config')
 
 const { cancelDeploy } = require('../../lib/api')
 const { getBuildOptions, runBuild } = require('../../lib/build')
-const { DEFAULT_SRC_DIR, EDGE_FUNCTIONS_DIST, INTERNAL_SRC_DIR } = require('../../lib/edge-functions/consts')
 const { normalizeFunctionsConfig } = require('../../lib/functions/config')
 const { getLogMessage } = require('../../lib/log')
 const { startSpinner, stopSpinner } = require('../../lib/spinner')
@@ -390,7 +389,7 @@ const handleBuild = async ({ cachedConfig, options }) => {
  */
 const bundleEdgeFunctions = async (options) => {
   const { runCoreStep } = await runCoreStepPromise
-  await runCoreStep('edgeFunctionsBundling', options)
+  await runCoreStep(['edgeFunctionsBundling'], Object.assign(options, { buffer: true }))
 }
 
 /**
@@ -542,20 +541,7 @@ const deploy = async (options, command) => {
 
   // build flag wasn't used and edge functions exist
   if (!options.build && edgeFunctionsConfig && edgeFunctionsConfig.length !== 0) {
-    const edgeBundleOptions = {
-      debug: false,
-      buildDir: site.root,
-      featureFlags: { functionsBundlingManifest: true },
-      netlifyConfig: config,
-      constants: {
-        EDGE_FUNCTIONS_DIST,
-        EDGE_FUNCTIONS_SRC: DEFAULT_SRC_DIR,
-        INTERNAL_EDGE_FUNCTIONS_SRC: INTERNAL_SRC_DIR,
-        IS_LOCAL: true,
-      },
-    }
-
-    await bundleEdgeFunctions(edgeBundleOptions)
+    await bundleEdgeFunctions(options)
   }
 
   log(
