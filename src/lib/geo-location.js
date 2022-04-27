@@ -1,3 +1,4 @@
+// @ts-check
 const fetch = require('node-fetch')
 
 const API_URL = 'https://netlifind.netlify.app'
@@ -9,6 +10,18 @@ const CACHE_TTL = 8.64e7
 // 10 seconds
 const REQUEST_TIMEOUT = 1e4
 
+/**
+ * @typedef GeoLocation
+ * @type {object}
+ * @property {string} city
+ * @property {object} country
+ * @property {string} country.code
+ * @property {string} country.name
+ * @property {object} country
+ * @property {string} country.code
+ * @property {string} country.name
+ */
+
 // The default location to be used if we're unable to talk to the API.
 const mockLocation = {
   city: 'San Francisco',
@@ -16,6 +29,17 @@ const mockLocation = {
   subdivision: { code: 'CA', name: 'California' },
 }
 
+/**
+ * Returns geolocation data from a remote API, the local cache, or a mock
+ * location, depending on the mode selected.
+ *
+ * @param {object} params
+ * @param {string} params.geolocationMode
+ * @param {"cache"|"update"|"mock"} params.mode
+ * @param {boolean} params.offline
+ * @param {import('../utils/state-config').StateConfig} params.state
+ * @returns {Promise<GeoLocation>}
+ */
 const getGeoLocation = async ({ mode, offline, state }) => {
   const cacheObject = state.get(STATE_GEO_PROPERTY)
 
@@ -57,6 +81,11 @@ const getGeoLocation = async ({ mode, offline, state }) => {
   }
 }
 
+/**
+ * Returns geolocation data from a remote API
+ *
+ * @returns {Promise<GeoLocation>}
+ */
 const getGeoLocationFromAPI = async () => {
   const res = await fetch(API_URL, {
     method: 'GET',
