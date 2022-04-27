@@ -6,6 +6,7 @@ const getAvailablePort = require('get-port')
 const { v4: generateUUID } = require('uuid')
 
 const { NETLIFYDEVERR, NETLIFYDEVWARN, chalk, log } = require('../../utils/command-helpers')
+const { getGeoLocation } = require('../geo-location')
 const { getPathInProject } = require('../settings')
 const { startSpinner, stopSpinner } = require('../spinner')
 
@@ -41,7 +42,7 @@ const handleProxyRequest = (req, proxyReq) => {
   })
 }
 
-const initializeProxy = async ({ config, configPath, getUpdatedConfig, settings }) => {
+const initializeProxy = async ({ config, configPath, geolocationMode, getUpdatedConfig, offline, settings, state }) => {
   const { functions: internalFunctions, importMap, path: internalFunctionsPath } = await getInternalFunctions()
   const { port: mainPort } = settings
   const userFunctionsPath = config.build.edge_functions
@@ -66,7 +67,13 @@ const initializeProxy = async ({ config, configPath, getUpdatedConfig, settings 
       return
     }
 
-    const { registry } = await server
+    const [geoLocation, { registry }] = await Promise.all([
+      getGeoLocation({ mode: geolocationMode, offline, state }),
+      server,
+    ])
+
+    // Setting header with geolocation.
+    req.headers[headers.Geo] = JSON.stringify(geoLocation)
 
     await registry.initialize()
 
