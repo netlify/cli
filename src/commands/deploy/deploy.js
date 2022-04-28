@@ -8,7 +8,7 @@ const inquirer = require('inquirer')
 const isObject = require('lodash/isObject')
 const prettyjson = require('prettyjson')
 
-const runCoreStepPromise = import('@netlify/build/src/steps')
+const runCoreStepPromise = import('@netlify/build')
 const netlifyConfigPromise = import('@netlify/config')
 
 const { cancelDeploy } = require('../../lib/api')
@@ -388,8 +388,8 @@ const handleBuild = async ({ cachedConfig, options }) => {
  * @returns
  */
 const bundleEdgeFunctions = async (options) => {
-  const { runCoreStep } = await runCoreStepPromise
-  await runCoreStep(['edgeFunctionsBundling'], Object.assign(options, { buffer: true }))
+  const { runCoreSteps } = await runCoreStepPromise
+  await runCoreSteps(['edge_functions_bundling'], Object.assign(options, { buffer: true }))
 }
 
 /**
