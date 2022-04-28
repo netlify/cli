@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "10.0.0",
+  "version": "10.1.0",
   "author": "Netlify Inc.",
   "contributors": [
     "Abraham Schilling <AbrahamSchilling@gmail.com> (https://gitlab.com/n4bb12)",
@@ -331,6 +331,7 @@
     "husky": "^7.0.4",
     "ini": "^2.0.0",
     "mock-fs": "^5.1.2",
+    "nock": "^13.2.4",
     "p-timeout": "^4.0.0",
     "rewiremock": "^3.14.3",
     "seedrandom": "^3.0.5",

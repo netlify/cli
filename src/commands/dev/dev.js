@@ -201,18 +201,33 @@ const FRAMEWORK_PORT_TIMEOUT = 6e5
  * @param {*} params.addonsUrls
  * @param {import('../base-command').NetlifyOptions["config"]} params.config
  * @param {() => Promise<object>} params.getUpdatedConfig
+ * @param {string} params.geolocationMode
  * @param {*} params.settings
+ * @param {boolean} params.offline
  * @param {*} params.site
+ * @param {import('../../utils/state-config').StateConfig} params.state
  * @returns
  */
-const startProxyServer = async ({ addonsUrls, config, getUpdatedConfig, settings, site }) => {
+const startProxyServer = async ({
+  addonsUrls,
+  config,
+  geolocationMode,
+  getUpdatedConfig,
+  offline,
+  settings,
+  site,
+  state,
+}) => {
   const url = await startProxy({
     addonsUrls,
     config,
     configPath: site.configPath,
+    geolocationMode,
     getUpdatedConfig,
+    offline,
     projectDir: site.root,
     settings,
+    state,
   })
 
   if (!url) {
@@ -365,7 +380,16 @@ const dev = async (options, command) => {
     return normalizedNewConfig
   }
 
-  let url = await startProxyServer({ settings, site, addonsUrls, config, getUpdatedConfig })
+  let url = await startProxyServer({
+    addonsUrls,
+    config,
+    geolocationMode: options.geo,
+    getUpdatedConfig,
+    offline: options.offline,
+    settings,
+    site,
+    state,
+  })
 
   const liveTunnelUrl = await handleLiveTunnel({ options, site, api, settings })
   url = liveTunnelUrl || url
@@ -485,15 +509,17 @@ const createDevCommand = (program) => {
     .option('-l, --live', 'start a public live session', false)
     .option('--functionsPort <port>', 'port of functions server', (value) => Number.parseInt(value))
     .addOption(
+      new Option(
+        '--geo <mode>',
+        'force geolocation data to be updated, use cached data from the last 24h if found, or use a mock location',
+      )
+        .choices(['cache', 'mock', 'update'])
+        .default('cache'),
+    )
+    .addOption(
       new Option('--staticServerPort <port>', 'port of the static app server used when no framework is detected')
         .argParser((value) => Number.parseInt(value))
         .hideHelp(),
-    )
-    .addOption(
-      new Option(
-        '-g ,--locationDb <path>',
-        'specify the path to a local GeoIP location database in MMDB format',
-      ).hideHelp(),
     )
     .addOption(new Option('--graph', 'enable Netlify Graph support').hideHelp())
     .addExamples([

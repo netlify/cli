@@ -1,12 +1,12 @@
 {
   "name": "netlify-cli",
-  "version": "10.0.0",
+  "version": "10.1.0",
   "lockfileVersion": 2,
   "requires": true,
   "packages": {
     "": {
       "name": "netlify-cli",
-      "version": "10.0.0",
+      "version": "10.1.0",
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
@@ -138,6 +138,7 @@
         "husky": "^7.0.4",
         "ini": "^2.0.0",
         "mock-fs": "^5.1.2",
+        "nock": "^13.2.4",
         "p-timeout": "^4.0.0",
         "rewiremock": "^3.14.3",
         "seedrandom": "^3.0.5",
@@ -14405,6 +14406,12 @@
       "resolved": "https://registry.npmjs.org/lodash.once/-/lodash.once-4.1.1.tgz",
       "integrity": "sha1-DdOXEhPHxW34gJd9UEyI+0cal6w="
     },
+    "node_modules/lodash.set": {
+      "version": "4.3.2",
+      "resolved": "https://registry.npmjs.org/lodash.set/-/lodash.set-4.3.2.tgz",
+      "integrity": "sha1-2HV7HagH3eJIFrDWqEvqGnYjCyM=",
+      "dev": true
+    },
     "node_modules/lodash.some": {
       "version": "4.6.0",
       "resolved": "https://registry.npmjs.org/lodash.some/-/lodash.some-4.6.0.tgz",
@@ -15829,6 +15836,21 @@
       "dev": true,
       "dependencies": {
         "isarray": "0.0.1"
+      }
+    },
+    "node_modules/nock": {
+      "version": "13.2.4",
+      "resolved": "https://registry.npmjs.org/nock/-/nock-13.2.4.tgz",
+      "integrity": "sha512-8GPznwxcPNCH/h8B+XZcKjYPXnUV5clOKCjAqyjsiqA++MpNx9E9+t8YPp0MbThO+KauRo7aZJ1WuIZmOrT2Ug==",
+      "dev": true,
+      "dependencies": {
+        "debug": "^4.1.0",
+        "json-stringify-safe": "^5.0.1",
+        "lodash.set": "^4.3.2",
+        "propagate": "^2.0.0"
+      },
+      "engines": {
+        "node": ">= 10.13"
       }
     },
     "node_modules/node-domexception": {
@@ -18234,6 +18256,15 @@
       "resolved": "https://registry.npmjs.org/react-is/-/react-is-16.13.1.tgz",
       "integrity": "sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==",
       "dev": true
+    },
+    "node_modules/propagate": {
+      "version": "2.0.1",
+      "resolved": "https://registry.npmjs.org/propagate/-/propagate-2.0.1.tgz",
+      "integrity": "sha512-vGrhOavPSTz4QVNuBNdcNXePNdNMaO1xj9yBeH1ScQPjk/rhg9sSlCXPhMkFuaNNW/syTvYqsnbIJxMBfRbbag==",
+      "dev": true,
+      "engines": {
+        "node": ">= 8"
+      }
     },
     "node_modules/proxy-addr": {
       "version": "2.0.7",
@@ -33416,6 +33447,12 @@
       "resolved": "https://registry.npmjs.org/lodash.once/-/lodash.once-4.1.1.tgz",
       "integrity": "sha1-DdOXEhPHxW34gJd9UEyI+0cal6w="
     },
+    "lodash.set": {
+      "version": "4.3.2",
+      "resolved": "https://registry.npmjs.org/lodash.set/-/lodash.set-4.3.2.tgz",
+      "integrity": "sha1-2HV7HagH3eJIFrDWqEvqGnYjCyM=",
+      "dev": true
+    },
     "lodash.some": {
       "version": "4.6.0",
       "resolved": "https://registry.npmjs.org/lodash.some/-/lodash.some-4.6.0.tgz",
@@ -34484,6 +34521,18 @@
             "isarray": "0.0.1"
           }
         }
+      }
+    },
+    "nock": {
+      "version": "13.2.4",
+      "resolved": "https://registry.npmjs.org/nock/-/nock-13.2.4.tgz",
+      "integrity": "sha512-8GPznwxcPNCH/h8B+XZcKjYPXnUV5clOKCjAqyjsiqA++MpNx9E9+t8YPp0MbThO+KauRo7aZJ1WuIZmOrT2Ug==",
+      "dev": true,
+      "requires": {
+        "debug": "^4.1.0",
+        "json-stringify-safe": "^5.0.1",
+        "lodash.set": "^4.3.2",
+        "propagate": "^2.0.0"
       }
     },
     "node-domexception": {
@@ -36299,6 +36348,12 @@
           "dev": true
         }
       }
+    },
+    "propagate": {
+      "version": "2.0.1",
+      "resolved": "https://registry.npmjs.org/propagate/-/propagate-2.0.1.tgz",
+      "integrity": "sha512-vGrhOavPSTz4QVNuBNdcNXePNdNMaO1xj9yBeH1ScQPjk/rhg9sSlCXPhMkFuaNNW/syTvYqsnbIJxMBfRbbag==",
+      "dev": true
     },
     "proxy-addr": {
       "version": "2.0.7",
