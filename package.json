@@ -190,7 +190,6 @@
     "test:init:cli-help": "npm run start -- --help",
     "test:init:eleventy-deps": "npm ci --prefix tests/integration/eleventy-site --no-audit",
     "test:init:hugo-deps": "npm ci --prefix tests/integration/hugo-site --no-audit",
-    "test:dev:certs": "openssl req -x509 -out localhost.crt -keyout localhost.key -newkey rsa:2048 -nodes -sha256 -subj '/CN=localhost' -extensions EXT -config certconf",
     "test:dev:ava": "ava --verbose",
     "test:ci:ava:unit": "c8 -r json ava --no-worker-threads tests/unit/**/*.test.js tools/**/*.test.js",
     "test:ci:ava:integration": "c8 -r json ava --concurrency 1 --no-worker-threads tests/integration/**/*.test.js",
@@ -201,7 +200,8 @@
     "site:build": "run-s site:build:*",
     "site:build:install": "cd site && npm ci --no-audit",
     "site:build:assets": "cd site && npm run build",
-    "postinstall": "node ./scripts/postinstall.js"
+    "postinstall": "node ./scripts/postinstall.js",
+    "certs": "openssl req -x509 -out localhost.crt -keyout localhost.key -newkey rsa:2048 -nodes -sha256 -subj '/CN=localhost' -extensions EXT -config certconf"
   },
   "config": {
     "eslint": "--ignore-path .gitignore --cache --format=codeframe --max-warnings=0 \"{src,scripts,site,tests,.github}/**/*.{mjs,cjs,js,md,html}\" \"*.{mjs,cjs,js,md,html}\" \".*.{mjs,cjs,js,md,html}\"",
