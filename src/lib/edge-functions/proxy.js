@@ -101,9 +101,13 @@ const initializeProxy = async ({ config, configPath, geolocationMode, getUpdated
 
     req[headersSymbol] = {
       [headers.Functions]: functionNames.join(','),
-      [headers.PassHost]: `localhost:${mainPort}`,
+      [headers.ForwardedHost]: `localhost:${mainPort}`,
       [headers.Passthrough]: 'passthrough',
       [headers.RequestID]: generateUUID(),
+    }
+
+    if (settings.https) {
+      req[headersSymbol][headers.ForwardedProtocol] = 'https'
     }
 
     return `http://${LOCAL_HOST}:${isolatePort}`
