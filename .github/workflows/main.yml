@@ -42,6 +42,8 @@ jobs:
       - name: Generate self-signed certificates
         run: npm run certs
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
+        env:
+          MSYS_NO_PATHCONV: 1
       - name: Run unit tests
         run: npm run test:ci:ava:unit
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
