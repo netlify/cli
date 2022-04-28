@@ -7,6 +7,7 @@ const path = require('path')
 // eslint-disable-next-line ava/use-test
 const avaTest = require('ava')
 const { isCI } = require('ci-info')
+const { Response } = require('node-fetch')
 
 const { curl } = require('./utils/curl')
 const { withDevServer } = require('./utils/dev-server')
@@ -194,7 +195,13 @@ export const handler = async function () {
           config: {
             build: { publish: 'public' },
             functions: { directory: 'functions' },
-            dev: { https: { certFile: 'cert.pem', keyFile: 'key.pem' } },
+            dev: { https: { certFile: 'localhost.crt', keyFile: 'localhost.key' } },
+            edge_functions: [
+              {
+                function: 'hello',
+                path: '/',
+              },
+            ],
           },
         })
         .withContentFile({
@@ -211,15 +218,30 @@ export const handler = async function () {
             body: 'Hello World',
           }),
         })
+        .withEdgeFunction({
+          handler: async (req, { next }) => {
+            if (!req.url.includes('?ef=true')) {
+              return
+            }
+
+            // eslint-disable-next-line n/callback-return
+            const res = await next()
+            const text = await res.text()
+
+            return new Response(text.toUpperCase(), res)
+          },
+          name: 'hello',
+        })
         .buildAsync()
 
       await Promise.all([
-        copyFile(`${__dirname}/assets/cert.pem`, `${builder.directory}/cert.pem`),
-        copyFile(`${__dirname}/assets/key.pem`, `${builder.directory}/key.pem`),
+        copyFile(`${__dirname}/assets/localhost.crt`, `${builder.directory}/localhost.crt`),
+        copyFile(`${__dirname}/assets/localhost.key`, `${builder.directory}/localhost.key`),
       ])
       await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
         const options = { https: { rejectUnauthorized: false } }
         t.is(await got(`https://localhost:${port}`, options).text(), 'index')
+        t.is(await got(`https://localhost:${port}?ef=true`, options).text(), 'INDEX')
         t.is(await got(`https://localhost:${port}/api/hello`, options).text(), 'Hello World')
       })
     })
