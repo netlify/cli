@@ -235,8 +235,8 @@ export const handler = async function () {
         .buildAsync()
 
       await Promise.all([
-        copyFile(`${__dirname}/assets/localhost.crt`, `${builder.directory}/localhost.crt`),
-        copyFile(`${__dirname}/assets/localhost.key`, `${builder.directory}/localhost.key`),
+        copyFile(`${__dirname}/../../localhost.crt`, `${builder.directory}/localhost.crt`),
+        copyFile(`${__dirname}/../../localhost.key`, `${builder.directory}/localhost.key`),
       ])
       await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
         const options = { https: { rejectUnauthorized: false } }

@@ -42,9 +42,9 @@ jobs:
       - name: Generate self-signed certificates for integration tests
         uses: kofemann/action-create-certificate@v0.0.4
         with:
-          hostcert: 'tests/integration/assets/localhost.crt'
-          hostkey: 'tests/integration/assets/localhost.key'
-          cachain: 'tests/integration/assets/localhost.pem'
+          hostcert: 'localhost.crt'
+          hostkey: 'localhost.key'
+          cachain: 'localhost.pem'
       - name: Run unit tests
         run: npm run test:ci:ava:unit
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'

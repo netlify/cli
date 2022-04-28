@@ -190,7 +190,7 @@
     "test:init:cli-help": "npm run start -- --help",
     "test:init:eleventy-deps": "npm ci --prefix tests/integration/eleventy-site --no-audit",
     "test:init:hugo-deps": "npm ci --prefix tests/integration/hugo-site --no-audit",
-    "test:dev:certs": "openssl req -x509 -out tests/integration/assets/localhost.crt -keyout tests/integration/assets/localhost.key -newkey rsa:2048 -nodes -sha256 -subj '/CN=localhost' -extensions EXT -config tests/integration/assets/certconf",
+    "test:dev:certs": "openssl req -x509 -out localhost.crt -keyout localhost.key -newkey rsa:2048 -nodes -sha256 -subj '/CN=localhost' -extensions EXT -config certconf",
     "test:dev:ava": "ava --verbose",
     "test:ci:ava:unit": "c8 -r json ava --no-worker-threads tests/unit/**/*.test.js tools/**/*.test.js",
     "test:ci:ava:integration": "c8 -r json ava --concurrency 1 --no-worker-threads tests/integration/**/*.test.js",
