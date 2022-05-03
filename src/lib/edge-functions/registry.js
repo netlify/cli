@@ -1,4 +1,6 @@
 // @ts-check
+const { fileURLToPath } = require('url')
+
 const { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn, watchDebounced } = require('../../utils/command-helpers')
 
 /**
@@ -24,9 +26,19 @@ class EdgeFunctionsRegistry {
    * @param {string[]} opts.directories
    * @param {() => Promise<object>} opts.getUpdatedConfig
    * @param {EdgeFunction[]} opts.internalFunctions
+   * @param {string} opts.projectDir
    * @param {(functions: EdgeFunction[]) => Promise<object>} opts.runIsolate
    */
-  constructor({ bundler, config, configPath, directories, getUpdatedConfig, internalFunctions, runIsolate }) {
+  constructor({
+    bundler,
+    config,
+    configPath,
+    directories,
+    getUpdatedConfig,
+    internalFunctions,
+    projectDir,
+    runIsolate,
+  }) {
     /**
      * @type {import('@netlify/edge-bundler')}
      */
@@ -87,7 +99,7 @@ class EdgeFunctionsRegistry {
      */
     this.initialScan = this.scan(directories)
 
-    this.setupWatchers()
+    this.setupWatchers({ projectDir })
   }
 
   /**
@@ -283,7 +295,12 @@ class EdgeFunctionsRegistry {
     const dependencyPaths = new Map()
 
     graph.modules.forEach(({ dependencies = [], specifier }) => {
-      const functionMatch = functionPaths.get(specifier)
+      if (!specifier.startsWith('file://')) {
+        return
+      }
+
+      const path = fileURLToPath(specifier)
+      const functionMatch = functionPaths.get(path)
 
       if (!functionMatch) {
         return
@@ -301,9 +318,10 @@ class EdgeFunctionsRegistry {
         }
 
         const { specifier: dependencyURL } = dependency.code
-        const functions = dependencyPaths.get(dependencyURL) || []
+        const dependencyPath = fileURLToPath(dependencyURL)
+        const functions = dependencyPaths.get(dependencyPath) || []
 
-        dependencyPaths.set(dependencyURL, [...functions, functionMatch])
+        dependencyPaths.set(dependencyPath, [...functions, functionMatch])
       })
     })
 
@@ -323,7 +341,7 @@ class EdgeFunctionsRegistry {
     return functions
   }
 
-  async setupWatchers() {
+  async setupWatchers({ projectDir }) {
     // Creating a watcher for the config file. When it changes, we update the
     // declarations and see if we need to register or unregister any functions.
     this.configWatcher = await watchDebounced(this.configPath, {
@@ -336,8 +354,11 @@ class EdgeFunctionsRegistry {
       },
     })
 
-    // Creating a watcher for each source directory.
-    await Promise.all(this.directories.map((directory) => this.setupWatcherForDirectory(directory)))
+    // While functions are guaranteed to be inside one of the configured
+    // directories, they might be importing files that are located in
+    // parent directories. So we watch the entire project directory for
+    // changes.
+    await this.setupWatcherForDirectory(projectDir)
   }
 
   async setupWatcherForDirectory(directory) {

@@ -42,7 +42,16 @@ const handleProxyRequest = (req, proxyReq) => {
   })
 }
 
-const initializeProxy = async ({ config, configPath, geolocationMode, getUpdatedConfig, offline, settings, state }) => {
+const initializeProxy = async ({
+  config,
+  configPath,
+  geolocationMode,
+  getUpdatedConfig,
+  offline,
+  projectDir,
+  settings,
+  state,
+}) => {
   const { functions: internalFunctions, importMap, path: internalFunctionsPath } = await getInternalFunctions()
   const { port: mainPort } = settings
   const userFunctionsPath = config.build.edge_functions
@@ -59,6 +68,7 @@ const initializeProxy = async ({ config, configPath, geolocationMode, getUpdated
     importMaps: [importMap].filter(Boolean),
     internalFunctions,
     port: isolatePort,
+    projectDir,
   })
   const hasEdgeFunctions = userFunctionsPath !== undefined || internalFunctions.length !== 0
 
@@ -119,6 +129,7 @@ const prepareServer = async ({
   importMaps,
   internalFunctions,
   port,
+  projectDir,
 }) => {
   const bundler = await import('@netlify/edge-bundler')
   const distImportMapPath = getPathInProject([DIST_IMPORT_MAP_PATH])
@@ -141,6 +152,7 @@ const prepareServer = async ({
     directories,
     getUpdatedConfig,
     internalFunctions,
+    projectDir,
     runIsolate,
   })
 
