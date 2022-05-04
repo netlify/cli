@@ -22,6 +22,7 @@ netlify dev
 - `framework` (*string*) - framework to use. Defaults to #auto which automatically detects a framework
 - `functions` (*string*) - specify a functions folder to serve
 - `functionsPort` (*string*) - port of functions server
+- `geo` (*cache | mock | update*) - force geolocation data to be updated, use cached data from the last 24h if found, or use a mock location
 - `live` (*boolean*) - start a public live session
 - `offline` (*boolean*) - disables any features that require network access
 - `port` (*string*) - port of netlify dev
@@ -33,7 +34,6 @@ netlify dev
 | Subcommand | description  |
 |:--------------------------- |:-----|
 | [`dev:exec`](/docs/commands/dev.md#devexec) | Exec command  |
-| [`dev:trace`](/docs/commands/dev.md#devtrace) | Trace command  |
 
 
 **Examples**
@@ -72,41 +72,6 @@ netlify dev:exec
 
 ```bash
 netlify dev:exec npm run bootstrap
-```
-
----
-## `dev:trace`
-
-Trace command
-
-**Usage**
-
-```bash
-netlify dev:trace
-```
-
-**Arguments**
-
-- url - Sets the request URL
-
-**Flags**
-
-- `cookie` (*string*) - Request cookie, this flag can be used multiple times. Example: "nf_jwt=token"
-- `header` (*string*) - Request header, this flag can be used multiple times. Example: "Host: netlify.test"
-- `request` (*string*) - Specifies a custom request method [default: GET]
-- `watch` (*string*) - Path to the publish directory
-- `debug` (*boolean*) - Print debugging information
-- `httpProxy` (*string*) - Proxy server address to route requests through.
-- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
-
-**Examples**
-
-```bash
-netlify dev:trace http://localhost/routing-path
-netlify dev:trace -w dist-directory http://localhost/routing-path
-netlify dev:trace -X POST http://localhost/routing-path
-netlify dev:trace -H "Accept-Language es" http://localhost/routing-path
-netlify dev:trace --cookie nf_jwt=token http://localhost/routing-path
 ```
 
 ---

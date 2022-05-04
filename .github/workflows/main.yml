@@ -20,7 +20,7 @@ jobs:
         run: echo "::set-output name=IS_RELEASE::true"
         if: "${{ startsWith(github.head_ref, 'release-') }}"
       - name: Git checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
@@ -70,7 +70,7 @@ jobs:
           REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\TCPIP\Parameters /v TcpTimedWaitDelay /t REG_DWORD /d 30 /f
         if: "${{ matrix.os == 'windows-latest' && !steps.release-check.outputs.IS_RELEASE }}"
       - name: Git checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
@@ -82,6 +82,10 @@ jobs:
           cache-dependency-path: 'npm-shrinkwrap.json'
           check-latest: true
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x
       - name: Install core dependencies
         run: npm ci --no-audit
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
@@ -93,6 +97,10 @@ jobs:
           if_true: 'npm run test:affected ${{ github.event.pull_request.base.sha }}' # on pull requests test with the project graph only the affected tests
           if_false: 'npm run test:ci:ava:integration' # on the base branch run all the tests as security measure
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
+      - name: Generate self-signed certificates
+        run: npm run certs
+        if: '${{!steps.release-check.outputs.IS_RELEASE}}'
+        shell: bash
       - name: Prepare tests
         run: npm run test:init
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
@@ -123,7 +131,7 @@ jobs:
           echo "::set-output name=node::node_${node//[.*]/}"
         shell: bash
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
-      - uses: codecov/codecov-action@v2
+      - uses: codecov/codecov-action@v3
         continue-on-error: true
         with:
           file: coverage/coverage-final.json

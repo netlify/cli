@@ -8,6 +8,7 @@ const path = require('path')
 const contentType = require('content-type')
 const cookie = require('cookie')
 const { get } = require('dot-prop')
+const generateETag = require('etag')
 const httpProxy = require('http-proxy')
 const { createProxyMiddleware } = require('http-proxy-middleware')
 const jwtDecode = require('jwt-decode')
@@ -17,12 +18,15 @@ const pEvent = require('p-event')
 const pFilter = require('p-filter')
 const toReadableStream = require('to-readable-stream')
 
+const edgeFunctions = require('../lib/edge-functions')
 const { fileExistsAsync, isFileAsync } = require('../lib/fs')
 
 const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./command-helpers')
 const { createStreamPromise } = require('./create-stream-promise')
 const { headersForPath, parseHeaders } = require('./headers')
 const { createRewriter, onChanges } = require('./rules-proxy')
+
+const shouldGenerateETag = Symbol('Internal: response should generate ETag')
 
 const isInternal = function (url) {
   return url.startsWith('/.netlify/')
@@ -303,8 +307,22 @@ const initializeProxy = async function ({ configPath, distDir, port, projectDir 
     }
   })
 
-  proxy.on('error', (err) => console.error('error while proxying request:', err.message))
+  proxy.on('error', (_, req, res) => {
+    res.writeHead(500, {
+      'Content-Type': 'text/plain',
+    })
+
+    const message = edgeFunctions.isEdgeFunctionsRequest(req)
+      ? 'There was an error with an Edge Function. Please check the terminal for more details.'
+      : 'Could not proxy request.'
+
+    res.end(message)
+  })
   proxy.on('proxyReq', (proxyReq, req) => {
+    if (edgeFunctions.isEdgeFunctionsRequest(req)) {
+      edgeFunctions.handleProxyRequest(req, proxyReq)
+    }
+
     // eslint-disable-next-line no-underscore-dangle
     if (req.__expectHeader) {
       // eslint-disable-next-line no-underscore-dangle
@@ -330,16 +348,44 @@ const initializeProxy = async function ({ configPath, distDir, port, projectDir 
       return serveRedirect({ req, res, proxy: handlers, match: null, options: req.proxyOptions })
     }
 
+    const responseData = []
     const requestURL = new URL(req.url, `http://${req.headers.host || 'localhost'}`)
     const headersRules = headersForPath(headers, requestURL.pathname)
-    Object.entries(headersRules).forEach(([key, val]) => {
-      res.setHeader(key, val)
-    })
-    res.writeHead(req.proxyOptions.status || proxyRes.statusCode, proxyRes.headers)
+
     proxyRes.on('data', function onData(data) {
-      res.write(data)
+      responseData.push(data)
     })
+
     proxyRes.on('end', function onEnd() {
+      const responseBody = Buffer.concat(responseData)
+
+      let responseStatus = req.proxyOptions.status || proxyRes.statusCode
+
+      // `req[shouldGenerateETag]` may contain a function that determines
+      // whether the response should have an ETag header.
+      if (
+        typeof req[shouldGenerateETag] === 'function' &&
+        req[shouldGenerateETag]({ statusCode: responseStatus }) === true
+      ) {
+        const etag = generateETag(responseBody, { weak: true })
+
+        if (req.headers['if-none-match'] === etag) {
+          responseStatus = 304
+        }
+
+        res.setHeader('etag', etag)
+      }
+
+      Object.entries(headersRules).forEach(([key, val]) => {
+        res.setHeader(key, val)
+      })
+
+      res.writeHead(responseStatus, proxyRes.headers)
+
+      if (responseStatus !== 304) {
+        res.write(responseBody)
+      }
+
       res.end()
     })
   })
@@ -359,10 +405,16 @@ const initializeProxy = async function ({ configPath, distDir, port, projectDir 
   return handlers
 }
 
-const onRequest = async ({ addonsUrls, functionsServer, proxy, rewriter, settings }, req, res) => {
+const onRequest = async ({ addonsUrls, edgeFunctionsProxy, functionsServer, proxy, rewriter, settings }, req, res) => {
   req.originalBody = ['GET', 'OPTIONS', 'HEAD'].includes(req.method)
     ? null
     : await createStreamPromise(req, BYTES_LIMIT)
+
+  const edgeFunctionsProxyURL = await edgeFunctionsProxy(req, res)
+
+  if (edgeFunctionsProxyURL !== undefined) {
+    return proxy.web(req, res, { target: edgeFunctionsProxyURL })
+  }
 
   if (isFunction(settings.functionsPort, req.url)) {
     return proxy.web(req, res, { target: functionsServer })
@@ -384,7 +436,17 @@ const onRequest = async ({ addonsUrls, functionsServer, proxy, rewriter, setting
     framework: settings.framework,
   }
 
-  if (match) return serveRedirect({ req, res, proxy, match, options })
+  if (match) {
+    // We don't want to generate an ETag for 3xx redirects.
+    req[shouldGenerateETag] = ({ statusCode }) => statusCode < 300 || statusCode >= 400
+
+    return serveRedirect({ req, res, proxy, match, options })
+  }
+
+  // The request will be served by the framework server, which means we want to
+  // generate an ETag unless we're rendering an error page. The only way for
+  // us to know that is by looking at the status code
+  req[shouldGenerateETag] = ({ statusCode }) => statusCode >= 200 && statusCode < 300
 
   const ct = req.headers['content-type'] ? contentType.parse(req).type : ''
   if (
@@ -399,9 +461,27 @@ const onRequest = async ({ addonsUrls, functionsServer, proxy, rewriter, setting
   proxy.web(req, res, options)
 }
 
-const startProxy = async function (settings, addonsUrls, configPath, projectDir) {
+const startProxy = async function ({
+  addonsUrls,
+  config,
+  configPath,
+  geolocationMode,
+  getUpdatedConfig,
+  offline,
+  projectDir,
+  settings,
+  state,
+}) {
   const functionsServer = settings.functionsPort ? `http://localhost:${settings.functionsPort}` : null
-
+  const edgeFunctionsProxy = await edgeFunctions.initializeProxy({
+    config,
+    configPath,
+    geolocationMode,
+    getUpdatedConfig,
+    offline,
+    settings,
+    state,
+  })
   const proxy = await initializeProxy({
     port: settings.frameworkPort,
     distDir: settings.dist,
@@ -417,7 +497,14 @@ const startProxy = async function (settings, addonsUrls, configPath, projectDir)
     configPath,
   })
 
-  const onRequestWithOptions = onRequest.bind(undefined, { proxy, rewriter, settings, addonsUrls, functionsServer })
+  const onRequestWithOptions = onRequest.bind(undefined, {
+    proxy,
+    rewriter,
+    settings,
+    addonsUrls,
+    functionsServer,
+    edgeFunctionsProxy,
+  })
   const server = settings.https
     ? https.createServer({ cert: settings.https.cert, key: settings.https.key }, onRequestWithOptions)
     : http.createServer(onRequestWithOptions)
@@ -436,4 +523,4 @@ const startProxy = async function (settings, addonsUrls, configPath, projectDir)
 
 const BYTES_LIMIT = 30
 
-module.exports = { startProxy }
+module.exports = { shouldGenerateETag, startProxy }

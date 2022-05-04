@@ -31,6 +31,7 @@ test('should return the correct function url for a NetlifyFunction object', (t) 
   const ntlFunction = new NetlifyFunction({
     name: functionName,
     settings: { functionsPort: port },
+    config: { functions: { [functionName]: {} } },
   })
 
   t.is(ntlFunction.url, functionUrl)
@@ -209,7 +210,7 @@ test('should install function template dependencies on a site-level `package.jso
 
       await childProcess
 
-      // eslint-disable-next-line import/no-dynamic-require, node/global-require
+      // eslint-disable-next-line import/no-dynamic-require, n/global-require
       const { dependencies } = require(`${builder.directory}/package.json`)
 
       // NOTE: Ideally we should be running this test with a specific template,
@@ -624,7 +625,7 @@ test('should serve helpful tips and tricks', async (t) => {
         content: `
           const { schedule } = require('@netlify/functions')
 
-          module.exports.handler = schedule('@daily', () => {
+          module.exports.handler = schedule('@daily', async () => {
             return {
               statusCode: 200,
               body: "hello world"
@@ -683,7 +684,7 @@ test('should emulate next_run for scheduled functions', async (t) => {
         path: 'functions/hello-world.js',
         content: `
           const { schedule } = require('@netlify/functions')
-          module.exports.handler = schedule("@daily", (event) => {
+          module.exports.handler = schedule("@daily", async (event) => {
             const { next_run } = JSON.parse(event.body)
             return {
               statusCode: !!next_run ? 200 : 400,
@@ -747,7 +748,7 @@ test('should detect file changes to scheduled function', async (t) => {
       .withContentFile({
         path: 'functions/hello-world.js',
         content: `
-          module.exports.handler = () => {
+          module.exports.handler = async () => {
             return {
               statusCode: 200
             }
@@ -771,7 +772,7 @@ test('should detect file changes to scheduled function', async (t) => {
           content: `
           const { schedule } = require('@netlify/functions')
 
-          module.exports.handler = schedule("@daily", () => {
+          module.exports.handler = schedule("@daily", async () => {
             return {
               statusCode: 200,
               body: "test"
@@ -800,7 +801,7 @@ test('should inject env variables', async (t) => {
         path: 'echo-env.js',
         handler: async () => ({
           statusCode: 200,
-          // eslint-disable-next-line node/prefer-global/process
+          // eslint-disable-next-line n/prefer-global/process
           body: `${process.env.TEST}`,
         }),
       })

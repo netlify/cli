@@ -54,6 +54,7 @@ const navOrder = [
   'open',
   'sites',
   'status',
+  'switch',
   'unlink',
   'watch',
   'netlify-dev',
