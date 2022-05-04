@@ -66,12 +66,10 @@ const createSiteBuilder = ({ siteName }) => {
       })
       return builder
     },
-    withEdgeHandlers: ({ fileName = 'index.js', handlers }) => {
-      const dest = path.join(directory, 'netlify/edge-handlers', fileName)
+    withEdgeFunction: ({ handler, name = 'function' }) => {
+      const dest = path.join(directory, 'netlify/edge-functions', `${name}.js`)
       tasks.push(async () => {
-        const content = Object.entries(handlers)
-          .map(([event, handler]) => `export const ${event} = ${handler.toString()}`)
-          .join(os.EOL)
+        const content = `export default ${handler.toString()}`
         await ensureDir(path.dirname(dest))
         await writeFile(dest, content)
       })

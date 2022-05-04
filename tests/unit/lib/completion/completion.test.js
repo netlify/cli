@@ -36,7 +36,7 @@ test.afterEach(() => {
 test('should generate a completion file', (t) => {
   const stub = sinon.stub(fs, 'writeFileSync').callsFake(() => {})
   const program = createTestCommand()
-  // eslint-disable-next-line node/global-require
+  // eslint-disable-next-line n/global-require
   const { createAutocompletion } = require('../../../../src/lib/completion/generate-autocompletion')
   createAutocompletion(program)
 

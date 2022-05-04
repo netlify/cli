@@ -144,7 +144,7 @@ Netlify Dev will attempt to detect the site generator or build command that you 
   publish = "dist" # If you use a _redirect file, provide the path to your static content folder
 ```
 
-Or you if your project is being detected incorrectly or positive by multiple
+If your project is being detected incorrectly or positive by multiple
 detectors you can specify `framework` option to test only one detector
 against your project.
 

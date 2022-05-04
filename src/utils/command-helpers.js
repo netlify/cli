@@ -10,6 +10,7 @@ const WSL = require('is-wsl')
 const debounce = require('lodash/debounce')
 const { default: omit } = require('omit.js')
 const pEvent = require('p-event')
+const terminalLink = require('terminal-link')
 
 const { name, version } = require('../../package.json')
 const { clearSpinner, startSpinner } = require('../lib/spinner')
@@ -204,6 +205,16 @@ const normalizeConfig = (config) =>
 
 const DEBOUNCE_WAIT = 100
 
+/**
+ * Adds a file watcher to a path or set of paths and debounces the events.
+ *
+ * @param {string | string[]} target
+ * @param {Object} opts
+ * @param {number} [opts.depth]
+ * @param {() => any} [opts.onAdd]
+ * @param {() => any} [opts.onChange]
+ * @param {() => any} [opts.onUnlink]
+ */
 const watchDebounced = async (target, { depth, onAdd = () => {}, onChange = () => {}, onUnlink = () => {} }) => {
   const watcher = chokidar.watch(target, { depth, ignored: /node_modules/, ignoreInitial: true })
 
@@ -230,11 +241,14 @@ const watchDebounced = async (target, { depth, onAdd = () => {}, onChange = () =
   return watcher
 }
 
+const getTerminalLink = (text, url) => terminalLink(text, url, { fallback: () => `${text} ${url}` })
+
 module.exports = {
   BANG,
   chalk,
   error,
   exit,
+  getTerminalLink,
   getToken,
   log,
   logJson,

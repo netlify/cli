@@ -7,6 +7,7 @@ const path = require('path')
 // eslint-disable-next-line ava/use-test
 const avaTest = require('ava')
 const { isCI } = require('ci-info')
+const { Response } = require('node-fetch')
 
 const { curl } = require('./utils/curl')
 const { withDevServer } = require('./utils/dev-server')
@@ -16,12 +17,7 @@ const { withSiteBuilder } = require('./utils/site-builder')
 
 const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
 
-const testMatrix = [
-  { args: [] },
-
-  // some tests are still failing with this enabled
-  // { args: ['--edgeHandlers'] }
-]
+const testMatrix = [{ args: [] }]
 
 const testName = (title, args) => (args.length <= 0 ? title : `${title} - ${args.join(' ')}`)
 
@@ -199,7 +195,13 @@ export const handler = async function () {
           config: {
             build: { publish: 'public' },
             functions: { directory: 'functions' },
-            dev: { https: { certFile: 'cert.pem', keyFile: 'key.pem' } },
+            dev: { https: { certFile: 'localhost.crt', keyFile: 'localhost.key' } },
+            edge_functions: [
+              {
+                function: 'hello',
+                path: '/',
+              },
+            ],
           },
         })
         .withContentFile({
@@ -216,15 +218,30 @@ export const handler = async function () {
             body: 'Hello World',
           }),
         })
+        .withEdgeFunction({
+          handler: async (req, { next }) => {
+            if (!req.url.includes('?ef=true')) {
+              return
+            }
+
+            // eslint-disable-next-line n/callback-return
+            const res = await next()
+            const text = await res.text()
+
+            return new Response(text.toUpperCase(), res)
+          },
+          name: 'hello',
+        })
         .buildAsync()
 
       await Promise.all([
-        copyFile(`${__dirname}/assets/cert.pem`, `${builder.directory}/cert.pem`),
-        copyFile(`${__dirname}/assets/key.pem`, `${builder.directory}/key.pem`),
+        copyFile(`${__dirname}/../../localhost.crt`, `${builder.directory}/localhost.crt`),
+        copyFile(`${__dirname}/../../localhost.key`, `${builder.directory}/localhost.key`),
       ])
       await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
         const options = { https: { rejectUnauthorized: false } }
         t.is(await got(`https://localhost:${port}`, options).text(), 'index')
+        t.is(await got(`https://localhost:${port}?ef=true`, options).text(), 'INDEX')
         t.is(await got(`https://localhost:${port}/api/hello`, options).text(), 'Hello World')
       })
     })
@@ -363,9 +380,11 @@ export const handler = async function () {
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/.netlify/functions/custom-headers`)
+        t.falsy(response.headers.etag)
         t.is(response.headers['single-value-header'], 'custom-value')
         t.is(response.headers['multi-value-header'], 'custom-value1, custom-value2')
         const builderResponse = await got(`${server.url}/.netlify/builders/custom-headers`)
+        t.falsy(builderResponse.headers.etag)
         t.is(builderResponse.headers['single-value-header'], 'custom-value')
         t.is(builderResponse.headers['multi-value-header'], 'custom-value1, custom-value2')
       })

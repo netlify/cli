@@ -9,7 +9,7 @@ const { createMainCommand } = require('../src/commands')
 const UPDATE_CHECK_INTERVAL = 432e5
 
 if (require.main === module) {
-  // eslint-disable-next-line node/global-require
+  // eslint-disable-next-line n/global-require
   const pkg = require('../package.json')
 
   try {
