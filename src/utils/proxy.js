@@ -479,6 +479,7 @@ const startProxy = async function ({
     geolocationMode,
     getUpdatedConfig,
     offline,
+    projectDir,
     settings,
     state,
   })
