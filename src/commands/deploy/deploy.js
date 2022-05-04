@@ -389,7 +389,15 @@ const handleBuild = async ({ cachedConfig, options }) => {
  */
 const bundleEdgeFunctions = async (options) => {
   const { runCoreSteps } = await runCoreStepPromise
-  await runCoreSteps(['edge_functions_bundling'], Object.assign(options, { buffer: true }))
+  const { logs, severityCode, success } = await runCoreSteps(
+    ['edge_functions_bundling'],
+    Object.assign(options, { buffer: true }),
+  )
+
+  if (!success) {
+    log([logs.stdout.join('\n'), logs.stderr.join('\n')].filter(Boolean).join('\n\n'))
+    exit(severityCode)
+  }
 }
 
 /**
