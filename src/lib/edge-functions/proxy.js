@@ -52,6 +52,7 @@ const initializeProxy = async ({ config, configPath, geolocationMode, getUpdated
   // the network if needed. We don't want to wait for that to be completed, or
   // the command will be left hanging.
   const server = prepareServer({
+    certificatePath: settings.https ? settings.https.certFilePath : undefined,
     config,
     configPath,
     directories: [internalFunctionsPath, userFunctionsPath].filter(Boolean),
@@ -100,9 +101,13 @@ const initializeProxy = async ({ config, configPath, geolocationMode, getUpdated
 
     req[headersSymbol] = {
       [headers.Functions]: functionNames.join(','),
-      [headers.PassHost]: `${LOCAL_HOST}:${mainPort}`,
+      [headers.ForwardedHost]: `localhost:${mainPort}`,
       [headers.Passthrough]: 'passthrough',
       [headers.RequestID]: generateUUID(),
+    }
+
+    if (settings.https) {
+      req[headersSymbol][headers.ForwardedProtocol] = 'https'
     }
 
     return `http://${LOCAL_HOST}:${isolatePort}`
@@ -112,6 +117,7 @@ const initializeProxy = async ({ config, configPath, geolocationMode, getUpdated
 const isEdgeFunctionsRequest = (req) => req[headersSymbol] !== undefined
 
 const prepareServer = async ({
+  certificatePath,
   config,
   configPath,
   directories,
@@ -124,6 +130,7 @@ const prepareServer = async ({
   const distImportMapPath = getPathInProject([DIST_IMPORT_MAP_PATH])
   const runIsolate = await bundler.serve({
     ...getDownloadUpdateFunctions(),
+    certificatePath,
     debug: env.NETLIFY_DENO_DEBUG === 'true',
     distImportMapPath,
     formatExportTypeError: (name) =>
