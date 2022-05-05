@@ -11,6 +11,7 @@ const { Response } = require('node-fetch')
 
 const { withDevServer } = require('./utils/dev-server')
 const got = require('./utils/got')
+const { pause } = require('./utils/pause')
 const { withSiteBuilder } = require('./utils/site-builder')
 
 const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
@@ -377,4 +378,95 @@ test(`catches invalid function names`, async (t) => {
     })
   })
 })
+
+test('should detect content changes in edge functions', async (t) => {
+  await withSiteBuilder('site-with-edge-functions', async (builder) => {
+    const publicDir = 'public'
+    await builder
+      .withNetlifyToml({
+        config: {
+          build: {
+            publish: publicDir,
+            edge_functions: 'netlify/edge-functions',
+          },
+          edge_functions: [
+            {
+              function: 'hello',
+              path: '/hello',
+            },
+          ],
+        },
+      })
+      .withEdgeFunction({
+        handler: () => new Response('Hello world'),
+        name: 'hello',
+      })
+
+    await builder.buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async ({ port }) => {
+      const helloWorldBody = () => got(`http://localhost:${port}/hello`).then((response) => response.body)
+
+      await builder
+        .withEdgeFunction({
+          handler: () => new Response('Hello builder'),
+          name: 'hello',
+        })
+        .buildAsync()
+
+      const DETECT_FILE_CHANGE_DELAY = 500
+      await pause(DETECT_FILE_CHANGE_DELAY)
+
+      const helloWorldMessage = await helloWorldBody()
+
+      t.is(helloWorldMessage, 'Hello builder')
+    })
+  })
+})
+
+test('should detect deleted edge functions', async (t) => {
+  await withSiteBuilder('site-with-edge-functions', async (builder) => {
+    const publicDir = 'public'
+    builder
+      .withNetlifyToml({
+        config: {
+          build: {
+            publish: publicDir,
+            edge_functions: 'netlify/edge-functions',
+          },
+          edge_functions: [
+            {
+              function: 'auth',
+              path: '/auth',
+            },
+          ],
+        },
+      })
+      .withEdgeFunction({
+        handler: () => new Response('Auth response'),
+        name: 'auth',
+      })
+
+    await builder.buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async ({ port }) => {
+      const authBody = () =>
+        got(`http://localhost:${port}/auth`, { throwHttpErrors: false }).then((response) => response.body)
+
+      await builder
+        .withoutFile({
+          path: 'netlify/edge-functions/auth.js',
+        })
+        .buildAsync()
+
+      const DETECT_FILE_CHANGE_DELAY = 500
+      await pause(DETECT_FILE_CHANGE_DELAY)
+
+      const authMsg = await authBody()
+
+      t.is(authMsg, 'Not Found')
+    })
+  })
+})
+
 /* eslint-enable require-await */
