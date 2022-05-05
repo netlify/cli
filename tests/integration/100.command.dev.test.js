@@ -451,9 +451,7 @@ test('should detect deleted edge functions', async (t) => {
     await builder.buildAsync()
 
     await withDevServer({ cwd: builder.directory }, async ({ port }) => {
-      const authResponseMessage = await got(`http://localhost:${port}/auth`).then(
-        (response) => response.body,
-      )
+      const authResponseMessage = await got(`http://localhost:${port}/auth`).then((response) => response.body)
 
       await builder
         .withoutFile({
