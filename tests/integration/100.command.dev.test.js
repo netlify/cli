@@ -405,7 +405,7 @@ test('should detect content changes in edge functions', async (t) => {
     await builder.buildAsync()
 
     await withDevServer({ cwd: builder.directory }, async ({ port }) => {
-      const helloWorldBody = () => got(`http://localhost:${port}/hello`).then((response) => response.body)
+      const helloWorldMessage = await got(`http://localhost:${port}/hello`).then((response) => response.body)
 
       await builder
         .withEdgeFunction({
@@ -417,9 +417,10 @@ test('should detect content changes in edge functions', async (t) => {
       const DETECT_FILE_CHANGE_DELAY = 500
       await pause(DETECT_FILE_CHANGE_DELAY)
 
-      const helloWorldMessage = await helloWorldBody()
+      const helloBuilderMessage = await got(`http://localhost:${port}/hello`).then((response) => response.body)
 
-      t.is(helloWorldMessage, 'Hello builder')
+      t.is(helloWorldMessage, 'Hello world')
+      t.is(helloBuilderMessage, 'Hello builder')
     })
   })
 })
@@ -450,8 +451,9 @@ test('should detect deleted edge functions', async (t) => {
     await builder.buildAsync()
 
     await withDevServer({ cwd: builder.directory }, async ({ port }) => {
-      const authBody = () =>
-        got(`http://localhost:${port}/auth`, { throwHttpErrors: false }).then((response) => response.body)
+      const authResponseMessage = await got(`http://localhost:${port}/auth`).then(
+        (response) => response.body,
+      )
 
       await builder
         .withoutFile({
@@ -462,9 +464,12 @@ test('should detect deleted edge functions', async (t) => {
       const DETECT_FILE_CHANGE_DELAY = 500
       await pause(DETECT_FILE_CHANGE_DELAY)
 
-      const authMsg = await authBody()
+      const authNotFoundMessage = await got(`http://localhost:${port}/auth`, { throwHttpErrors: false }).then(
+        (response) => response.body,
+      )
 
-      t.is(authMsg, 'Not Found')
+      t.is(authResponseMessage, 'Auth response')
+      t.is(authNotFoundMessage, 'Not Found')
     })
   })
 })
