@@ -275,6 +275,10 @@ const deployProgressCb = function () {
         }
         return
       }
+      case 'error':
+        stopSpinner({ error: true, spinner: events[event.type], text: event.msg })
+        delete events[event.type]
+        return
       case 'stop':
       default: {
         stopSpinner({ spinner: events[event.type], text: event.msg })
@@ -389,15 +393,31 @@ const handleBuild = async ({ cachedConfig, options }) => {
  */
 const bundleEdgeFunctions = async (options) => {
   const { runCoreSteps } = await runCoreStepPromise
-  const { logs, severityCode, success } = await runCoreSteps(
-    ['edge_functions_bundling'],
-    Object.assign(options, { buffer: true }),
-  )
+  const statusCb = options.silent ? () => {} : deployProgressCb()
+
+  statusCb({
+    type: 'edge-functions-bundling',
+    msg: 'Bundling edge functions...\n',
+    phase: 'start',
+  })
+
+  const { severityCode, success } = await runCoreSteps(['edge_functions_bundling'], { ...options, buffer: true })
 
   if (!success) {
-    log([logs.stdout.join('\n'), logs.stderr.join('\n')].filter(Boolean).join('\n\n'))
+    statusCb({
+      type: 'edge-functions-bundling',
+      msg: 'Deploy aborted due to error while bundling edge functions',
+      phase: 'error',
+    })
+
     exit(severityCode)
   }
+
+  statusCb({
+    type: 'edge-functions-bundling',
+    msg: 'Finished bundling edge functions',
+    phase: 'stop',
+  })
 }
 
 /**
