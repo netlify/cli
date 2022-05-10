@@ -8,6 +8,7 @@ const pTimeout = require('p-timeout')
 const seedrandom = require('seedrandom')
 
 const cliPath = require('./cli-path')
+const { handleQuestions } = require('./handle-questions')
 const { killProcess } = require('./process')
 
 // each process gets a starting port based on the pid
@@ -32,7 +33,7 @@ const getExecaOptions = ({ cwd, env }) => ({
   encoding: 'utf8',
 })
 
-const startServer = async ({ cwd, offline = true, env = {}, args = [], expectFailure = false }) => {
+const startServer = async ({ cwd, offline = true, env = {}, args = [], expectFailure = false, prompt }) => {
   const tryPort = currentPort
   currentPort += 1
   const port = await getPort({ port: tryPort })
@@ -44,6 +45,13 @@ const startServer = async ({ cwd, offline = true, env = {}, args = [], expectFai
     ['dev', offline ? '--offline' : '', '-p', port, '--staticServerPort', port + FRAMEWORK_PORT_SHIFT, ...args],
     getExecaOptions({ cwd, env }),
   )
+
+  const promptHistory = []
+
+  if (prompt) {
+    handleQuestions(ps, prompt, promptHistory)
+  }
+
   const outputBuffer = []
   const serverPromise = new Promise((resolve, reject) => {
     let selfKilled = false
@@ -60,6 +68,7 @@ const startServer = async ({ cwd, offline = true, env = {}, args = [], expectFai
             selfKilled = true
             await killProcess(ps)
           },
+          promptHistory,
         })
       }
     })

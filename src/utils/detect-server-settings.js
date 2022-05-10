@@ -46,7 +46,7 @@ const readHttpsSettings = async (options) => {
     throw new Error(`Error reading certificate file: ${certError.message}`)
   }
 
-  return { key, cert }
+  return { key, cert, keyFilePath: path.resolve(keyFile), certFilePath: path.resolve(certFile) }
 }
 
 const validateStringProperty = ({ devConfig, property }) => {

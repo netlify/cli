@@ -82,6 +82,10 @@ jobs:
           cache-dependency-path: 'npm-shrinkwrap.json'
           check-latest: true
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x
       - name: Install core dependencies
         run: npm ci --no-audit
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
@@ -93,6 +97,10 @@ jobs:
           if_true: 'npm run test:affected ${{ github.event.pull_request.base.sha }}' # on pull requests test with the project graph only the affected tests
           if_false: 'npm run test:ci:ava:integration' # on the base branch run all the tests as security measure
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
+      - name: Generate self-signed certificates
+        run: npm run certs
+        if: '${{!steps.release-check.outputs.IS_RELEASE}}'
+        shell: bash
       - name: Prepare tests
         run: npm run test:init
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'

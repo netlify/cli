@@ -5,18 +5,20 @@ const { Buffer } = require('buffer')
  * questions correctly typed or the process will keep waiting for input.
  * @param {ExecaChildProcess<string>} process
  * @param {Array<{question: string, answer: string}>} questions
+ * @param {Array<number>} prompts
  *  - questions that you know the CLI will ask and respective answers to mock
  */
-const handleQuestions = (process, questions) => {
-  const remainingQuestions = [...questions]
+const handleQuestions = (process, questions, prompts = []) => {
   let buffer = ''
   process.stdout.on('data', (data) => {
-    buffer += data
-    const index = remainingQuestions.findIndex(({ question }) => buffer.includes(question))
+    buffer = (buffer + data).replace(/\n/g, '')
+    const index = questions.findIndex(
+      ({ question }, questionIndex) => buffer.includes(question) && !prompts.includes(questionIndex),
+    )
     if (index >= 0) {
+      prompts.push(index)
       buffer = ''
-      process.stdin.write(Buffer.from(remainingQuestions[index].answer))
-      remainingQuestions.splice(index, 1)
+      process.stdin.write(Buffer.from(questions[index].answer))
     }
   })
 }

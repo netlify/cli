@@ -205,6 +205,16 @@ const normalizeConfig = (config) =>
 
 const DEBOUNCE_WAIT = 100
 
+/**
+ * Adds a file watcher to a path or set of paths and debounces the events.
+ *
+ * @param {string | string[]} target
+ * @param {Object} opts
+ * @param {number} [opts.depth]
+ * @param {() => any} [opts.onAdd]
+ * @param {() => any} [opts.onChange]
+ * @param {() => any} [opts.onUnlink]
+ */
 const watchDebounced = async (target, { depth, onAdd = () => {}, onChange = () => {}, onUnlink = () => {} }) => {
   const watcher = chokidar.watch(target, { depth, ignored: /node_modules/, ignoreInitial: true })
 
