@@ -42,7 +42,16 @@ const handleProxyRequest = (req, proxyReq) => {
   })
 }
 
-const initializeProxy = async ({ config, configPath, geolocationMode, getUpdatedConfig, offline, settings, state }) => {
+const initializeProxy = async ({
+  config,
+  configPath,
+  geolocationMode,
+  getUpdatedConfig,
+  offline,
+  projectDir,
+  settings,
+  state,
+}) => {
   const { functions: internalFunctions, importMap, path: internalFunctionsPath } = await getInternalFunctions()
   const { port: mainPort } = settings
   const userFunctionsPath = config.build.edge_functions
@@ -52,6 +61,7 @@ const initializeProxy = async ({ config, configPath, geolocationMode, getUpdated
   // the network if needed. We don't want to wait for that to be completed, or
   // the command will be left hanging.
   const server = prepareServer({
+    certificatePath: settings.https ? settings.https.certFilePath : undefined,
     config,
     configPath,
     directories: [internalFunctionsPath, userFunctionsPath].filter(Boolean),
@@ -59,6 +69,7 @@ const initializeProxy = async ({ config, configPath, geolocationMode, getUpdated
     importMaps: [importMap].filter(Boolean),
     internalFunctions,
     port: isolatePort,
+    projectDir,
   })
   const hasEdgeFunctions = userFunctionsPath !== undefined || internalFunctions.length !== 0
 
@@ -100,9 +111,13 @@ const initializeProxy = async ({ config, configPath, geolocationMode, getUpdated
 
     req[headersSymbol] = {
       [headers.Functions]: functionNames.join(','),
-      [headers.PassHost]: `${LOCAL_HOST}:${mainPort}`,
+      [headers.ForwardedHost]: `localhost:${mainPort}`,
       [headers.Passthrough]: 'passthrough',
       [headers.RequestID]: generateUUID(),
+    }
+
+    if (settings.https) {
+      req[headersSymbol][headers.ForwardedProtocol] = 'https'
     }
 
     return `http://${LOCAL_HOST}:${isolatePort}`
@@ -112,6 +127,7 @@ const initializeProxy = async ({ config, configPath, geolocationMode, getUpdated
 const isEdgeFunctionsRequest = (req) => req[headersSymbol] !== undefined
 
 const prepareServer = async ({
+  certificatePath,
   config,
   configPath,
   directories,
@@ -119,11 +135,13 @@ const prepareServer = async ({
   importMaps,
   internalFunctions,
   port,
+  projectDir,
 }) => {
   const bundler = await import('@netlify/edge-bundler')
   const distImportMapPath = getPathInProject([DIST_IMPORT_MAP_PATH])
   const runIsolate = await bundler.serve({
     ...getDownloadUpdateFunctions(),
+    certificatePath,
     debug: env.NETLIFY_DENO_DEBUG === 'true',
     distImportMapPath,
     formatExportTypeError: (name) =>
@@ -141,6 +159,7 @@ const prepareServer = async ({
     directories,
     getUpdatedConfig,
     internalFunctions,
+    projectDir,
     runIsolate,
   })
 

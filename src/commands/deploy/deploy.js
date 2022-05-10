@@ -8,6 +8,7 @@ const inquirer = require('inquirer')
 const isObject = require('lodash/isObject')
 const prettyjson = require('prettyjson')
 
+const runCoreStepPromise = import('@netlify/build')
 const netlifyConfigPromise = import('@netlify/config')
 
 const { cancelDeploy } = require('../../lib/api')
@@ -274,6 +275,10 @@ const deployProgressCb = function () {
         }
         return
       }
+      case 'error':
+        stopSpinner({ error: true, spinner: events[event.type], text: event.msg })
+        delete events[event.type]
+        return
       case 'stop':
       default: {
         stopSpinner({ spinner: events[event.type], text: event.msg })
@@ -379,6 +384,40 @@ const handleBuild = async ({ cachedConfig, options }) => {
     exit(exitCode)
   }
   return { newConfig, configMutations }
+}
+
+/**
+ *
+ * @param {object} options Bundling options
+ * @returns
+ */
+const bundleEdgeFunctions = async (options) => {
+  const { runCoreSteps } = await runCoreStepPromise
+  const statusCb = options.silent ? () => {} : deployProgressCb()
+
+  statusCb({
+    type: 'edge-functions-bundling',
+    msg: 'Bundling edge functions...\n',
+    phase: 'start',
+  })
+
+  const { severityCode, success } = await runCoreSteps(['edge_functions_bundling'], { ...options, buffer: true })
+
+  if (!success) {
+    statusCb({
+      type: 'edge-functions-bundling',
+      msg: 'Deploy aborted due to error while bundling edge functions',
+      phase: 'error',
+    })
+
+    exit(severityCode)
+  }
+
+  statusCb({
+    type: 'edge-functions-bundling',
+    msg: 'Finished bundling edge functions',
+    phase: 'stop',
+  })
 }
 
 /**
@@ -526,6 +565,12 @@ const deploy = async (options, command) => {
   const deployFolder = await getDeployFolder({ options, config, site, siteData })
   const functionsFolder = getFunctionsFolder({ options, config, site, siteData })
   const { configPath } = site
+  const edgeFunctionsConfig = command.netlify.config.edge_functions
+
+  // build flag wasn't used and edge functions exist
+  if (!options.build && edgeFunctionsConfig && edgeFunctionsConfig.length !== 0) {
+    await bundleEdgeFunctions(options)
+  }
 
   log(
     prettyjson.render({
