@@ -337,7 +337,7 @@
     "rewiremock": "^3.14.3",
     "seedrandom": "^3.0.5",
     "serialize-javascript": "^6.0.0",
-    "sinon": "^13.0.0",
+    "sinon": "^14.0.0",
     "sort-on": "^4.1.0",
     "strip-ansi": "^6.0.0",
     "supertest": "^6.1.6",
