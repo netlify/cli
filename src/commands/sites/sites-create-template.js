@@ -6,7 +6,7 @@ const pick = require('lodash/pick')
 const parseGitHubUrl = require('parse-github-url')
 const prettyjson = require('prettyjson')
 
-const { chalk, error, getRepoData, getTerminalLink, log, logJson, track, warn } = require('../../utils')
+const { chalk, error, getRepoData, getTerminalLink, gitRefExists, log, logJson, track, warn } = require('../../utils')
 const { configureRepo } = require('../../utils/init/config')
 const { getGitHubToken } = require('../../utils/init/config-github')
 const { createRepo, getTemplatesFromGitHub, validateTemplate } = require('../../utils/sites/utils')
@@ -135,6 +135,12 @@ const sitesCreateTemplate = async (repository, options, command) => {
           )
         }
       } else {
+        if (await !gitRefExists(repoResp.full_name, repoResp.default_branch)) {
+          throw new Error(
+            `The repository ${repoResp.full_name} was created but the ref, refs/heads/${repoResp.default_branch}, does not exist yet.`,
+          )
+        }
+
         site = await api.createSiteInTeam({
           accountSlug,
           body: {

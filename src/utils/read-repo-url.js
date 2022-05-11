@@ -55,8 +55,22 @@ const parseRepoURL = function (repoHost, URL) {
   throw new Error(`Unsupported host ${repoHost}`)
 }
 
+/**
+ * Checks if a git ref exists in a repository.
+ *
+ * @param {string} ownerAndRepo The owner and repository name, separated by a slash.
+ * @param {string} [ref='main'] The git ref to check.
+ * @returns true if the git ref exists, false otherwise
+ */
+const gitRefExists = async function (ownerAndRepo, ref = 'main') {
+  const res = await fetch(`https://api.github.com/repos/${ownerAndRepo}/git/refs/heads/${ref}`)
+
+  return res.status === 200
+}
+
 module.exports = {
   parseRepoURL,
   readRepoURL,
   validateRepoURL,
+  gitRefExists,
 }
