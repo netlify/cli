@@ -213,9 +213,9 @@ export const handler = async function () {
         })
         .withFunction({
           path: 'hello.js',
-          handler: async () => ({
+          handler: async (event) => ({
             statusCode: 200,
-            body: 'Hello World',
+            body: JSON.stringify({ rawUrl: event.rawUrl }),
           }),
         })
         .withEdgeFunction({
@@ -242,7 +242,9 @@ export const handler = async function () {
         const options = { https: { rejectUnauthorized: false } }
         t.is(await got(`https://localhost:${port}`, options).text(), 'index')
         t.is(await got(`https://localhost:${port}?ef=true`, options).text(), 'INDEX')
-        t.is(await got(`https://localhost:${port}/api/hello`, options).text(), 'Hello World')
+        t.deepEqual(await got(`https://localhost:${port}/api/hello`, options).json(), {
+          rawUrl: `https://localhost:${port}/api/hello`,
+        })
       })
     })
   })

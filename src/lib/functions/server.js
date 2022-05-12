@@ -89,7 +89,8 @@ const createHandler = function (options) {
       {},
     )
     const rawQuery = new URLSearchParams(request.query).toString()
-    const url = new URL(requestPath, `${request.protocol}://${request.get('host') || 'localhost'}`)
+    const protocol = options.config.dev.https ? 'https' : 'http'
+    const url = new URL(requestPath, `${protocol}://${request.get('host') || 'localhost'}`)
     url.search = rawQuery
     const rawUrl = url.toString()
     const event = {
