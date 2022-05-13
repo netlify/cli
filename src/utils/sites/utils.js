@@ -46,4 +46,23 @@ const createRepo = async (templateName, ghToken, siteName) => {
   return data
 }
 
-module.exports = { getTemplatesFromGitHub, createRepo, validateTemplate }
+/**
+ * Retrieves information about the given repository.
+ *
+ * @param {string} ownerAndRepo The owner and repo name, e.g. "netlify-templates/kpop-stack"
+ * @param {string} ghToken The GitHub token to use
+ *
+ * @returns {Promise<object>} The repository information.
+ */
+const getRepo = async (ownerAndRepo, ghToken) => {
+  const response = await fetch(`https://api.github.com/repos/${ownerAndRepo}`, {
+    method: 'GET',
+    headers: {
+      Authorization: `token ${ghToken}`,
+    },
+  })
+
+  return await response.json()
+}
+
+module.exports = { getTemplatesFromGitHub, createRepo, validateTemplate, getRepo }

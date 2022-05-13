@@ -9,7 +9,7 @@ const prettyjson = require('prettyjson')
 const { chalk, error, getRepoData, getTerminalLink, log, logJson, track, warn } = require('../../utils')
 const { configureRepo } = require('../../utils/init/config')
 const { getGitHubToken } = require('../../utils/init/config-github')
-const { createRepo, getTemplatesFromGitHub, validateTemplate } = require('../../utils/sites/utils')
+const { createRepo, getRepo, getTemplatesFromGitHub, validateTemplate } = require('../../utils/sites/utils')
 
 const { getSiteNameInput } = require('./sites-create')
 
@@ -135,14 +135,16 @@ const sitesCreateTemplate = async (repository, options, command) => {
           )
         }
       } else {
+        const { default_branch: branch, full_name: repo, private } = await getRepo(repoResp.full_name, ghToken)
+
         site = await api.createSiteInTeam({
           accountSlug,
           body: {
             repo: {
               provider: 'github',
-              repo: repoResp.full_name,
-              private: repoResp.private,
-              branch: repoResp.default_branch,
+              repo,
+              private,
+              branch,
             },
             name: siteName,
           },
