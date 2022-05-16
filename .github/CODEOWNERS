@@ -1,8 +1,8 @@
-.github/CODEOWNERS       @netlify/netlify-dev
-docs/                    @netlify/netlify-dev @netlify/docs
-site/                    @netlify/netlify-dev @netlify/docs
-/scripts/docs.js         @netlify/netlify-dev @netlify/docs
-/src/functions-templates @netlify/compute
-/src/lib/functions       @netlify/compute
-/src/lib/edge-functions  @netlify/compute
-/src/utils/functions     @netlify/compute
+.github/CODEOWNERS        @netlify/netlify-dev
+docs/                     @netlify/netlify-dev @netlify/docs
+site/                     @netlify/netlify-dev @netlify/docs
+/scripts/docs.js          @netlify/netlify-dev @netlify/docs
+/src/functions-templates/ @netlify/compute
+/src/lib/functions/       @netlify/compute
+/src/lib/edge-functions/  @netlify/compute
+/src/utils/functions/     @netlify/compute
