@@ -45,6 +45,8 @@ const handleProxyRequest = (req, proxyReq) => {
 const initializeProxy = async ({
   config,
   configPath,
+  edgeInspect,
+  edgeInspectBrk,
   geolocationMode,
   getUpdatedConfig,
   offline,
@@ -65,6 +67,8 @@ const initializeProxy = async ({
     config,
     configPath,
     directories: [internalFunctionsPath, userFunctionsPath].filter(Boolean),
+    edgeInspect,
+    edgeInspectBrk,
     getUpdatedConfig,
     importMaps: [importMap].filter(Boolean),
     internalFunctions,
@@ -131,6 +135,8 @@ const prepareServer = async ({
   config,
   configPath,
   directories,
+  edgeInspect,
+  edgeInspectBrk,
   getUpdatedConfig,
   importMaps,
   internalFunctions,
@@ -144,6 +150,8 @@ const prepareServer = async ({
     certificatePath,
     debug: env.NETLIFY_DENO_DEBUG === 'true',
     distImportMapPath,
+    edgeInspect,
+    edgeInspectBrk,
     formatExportTypeError: (name) =>
       `${NETLIFYDEVERR} ${chalk.red('Failed')} to load Edge Function ${chalk.yellow(
         name,

@@ -200,6 +200,8 @@ const FRAMEWORK_PORT_TIMEOUT = 6e5
  * @param {object} params
  * @param {*} params.addonsUrls
  * @param {import('../base-command').NetlifyOptions["config"]} params.config
+ * @param {boolean|string} params.edgeInspect
+ * @param {boolean|string} params.edgeInspectBrk
  * @param {() => Promise<object>} params.getUpdatedConfig
  * @param {string} params.geolocationMode
  * @param {*} params.settings
@@ -211,6 +213,8 @@ const FRAMEWORK_PORT_TIMEOUT = 6e5
 const startProxyServer = async ({
   addonsUrls,
   config,
+  edgeInspect,
+  edgeInspectBrk,
   geolocationMode,
   getUpdatedConfig,
   offline,
@@ -222,6 +226,8 @@ const startProxyServer = async ({
     addonsUrls,
     config,
     configPath: site.configPath,
+    edgeInspect,
+    edgeInspectBrk,
     geolocationMode,
     getUpdatedConfig,
     offline,
@@ -383,6 +389,8 @@ const dev = async (options, command) => {
   let url = await startProxyServer({
     addonsUrls,
     config,
+    edgeInspect: options.edgeInspect,
+    edgeInspectBrk: options.edgeInspectBrk,
     geolocationMode: options.geo,
     getUpdatedConfig,
     offline: options.offline,
@@ -522,11 +530,19 @@ const createDevCommand = (program) => {
         .hideHelp(),
     )
     .addOption(new Option('--graph', 'enable Netlify Graph support').hideHelp())
+    .addOption(new Option('-e, --edgeInspect [inspectHostPort]', 'enable Deno inspect with optional inspectHostPort'))
+    .addOption(
+      new Option('-E, --edgeInspectBrk [inspectHostPort]', 'enable Deno inspect-brk with optional inspectHostPort'),
+    )
     .addExamples([
       'netlify dev',
       'netlify dev -d public',
       'netlify dev -c "hugo server -w" --targetPort 1313',
       'netlify dev --graph',
+      'netlify dev --edgeInspect',
+      'netlify dev --edgeInspect=127.0.0.1:9229',
+      'netlify dev --edgeInspectBrk',
+      'netlify dev --edgeInspectBrk=127.0.0.1:9229',
       'BROWSER=none netlify dev # disable browser auto opening',
     ])
     .action(dev)

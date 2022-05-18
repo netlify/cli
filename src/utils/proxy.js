@@ -465,6 +465,8 @@ const startProxy = async function ({
   addonsUrls,
   config,
   configPath,
+  edgeInspect,
+  edgeInspectBrk,
   geolocationMode,
   getUpdatedConfig,
   offline,
@@ -476,6 +478,8 @@ const startProxy = async function ({
   const edgeFunctionsProxy = await edgeFunctions.initializeProxy({
     config,
     configPath,
+    edgeInspect,
+    edgeInspectBrk,
     geolocationMode,
     getUpdatedConfig,
     offline,
