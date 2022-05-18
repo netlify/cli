@@ -19,6 +19,8 @@ netlify dev
 
 - `command` (*string*) - command to run
 - `dir` (*string*) - dir with static files
+- `edgeInspect` (*string*) - enable Deno inspect with optional inspectHostPort
+- `edgeInspectBrk` (*string*) - enable Deno inspect-brk with optional inspectHostPort
 - `framework` (*string*) - framework to use. Defaults to #auto which automatically detects a framework
 - `functions` (*string*) - specify a functions folder to serve
 - `functionsPort` (*string*) - port of functions server
@@ -43,6 +45,10 @@ netlify dev
 netlify dev -d public
 netlify dev -c "hugo server -w" --targetPort 1313
 netlify dev --graph
+netlify dev --edgeInspect
+netlify dev --edgeInspect=127.0.0.1:9229
+netlify dev --edgeInspectBrk
+netlify dev --edgeInspectBrk=127.0.0.1:9229
 BROWSER=none netlify dev # disable browser auto opening
 ```
 
