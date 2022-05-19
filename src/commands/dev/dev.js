@@ -196,12 +196,18 @@ const startFrameworkServer = async function ({ settings }) {
 const FRAMEWORK_PORT_TIMEOUT = 6e5
 
 /**
+ * @typedef {Object} InspectSettings
+ * @property {boolean} enabled - Inspect enabled
+ * @property {boolean} pause - Pause on breakpoints
+ * @property {string|undefined} address - Host/port override (optional)
+ */
+
+/**
  *
  * @param {object} params
  * @param {*} params.addonsUrls
  * @param {import('../base-command').NetlifyOptions["config"]} params.config
- * @param {boolean|string} params.edgeInspect
- * @param {boolean|string} params.edgeInspectBrk
+ * @param {InspectSettings} params.inspectSettings
  * @param {() => Promise<object>} params.getUpdatedConfig
  * @param {string} params.geolocationMode
  * @param {*} params.settings
@@ -213,10 +219,9 @@ const FRAMEWORK_PORT_TIMEOUT = 6e5
 const startProxyServer = async ({
   addonsUrls,
   config,
-  edgeInspect,
-  edgeInspectBrk,
   geolocationMode,
   getUpdatedConfig,
+  inspectSettings,
   offline,
   settings,
   site,
@@ -226,10 +231,9 @@ const startProxyServer = async ({
     addonsUrls,
     config,
     configPath: site.configPath,
-    edgeInspect,
-    edgeInspectBrk,
     geolocationMode,
     getUpdatedConfig,
+    inspectSettings,
     offline,
     projectDir: site.root,
     settings,
@@ -319,6 +323,30 @@ const startPollingForAPIAuthentication = async function (options) {
 }
 
 /**
+ * @param {boolean|string} edgeInspect
+ * @param {boolean|string} edgeInspectBrk
+ * @returns {InspectSettings}
+ */
+const generateInspectSettings = (edgeInspect, edgeInspectBrk) => {
+  const enabled = Boolean(edgeInspect) || Boolean(edgeInspectBrk)
+  const pause = Boolean(edgeInspectBrk)
+  const getAddress = () => {
+    if (edgeInspect) {
+      return typeof edgeInspect === 'string' ? edgeInspect : undefined
+    }
+    if (edgeInspectBrk) {
+      return typeof edgeInspectBrk === 'string' ? edgeInspectBrk : undefined
+    }
+  }
+
+  return {
+    enabled,
+    pause,
+    address: getAddress(),
+  }
+}
+
+/**
  * The dev command
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
@@ -386,13 +414,14 @@ const dev = async (options, command) => {
     return normalizedNewConfig
   }
 
+  const inspectSettings = generateInspectSettings(options.edgeInspect, options.edgeInspectBrk)
+
   let url = await startProxyServer({
     addonsUrls,
     config,
-    edgeInspect: options.edgeInspect,
-    edgeInspectBrk: options.edgeInspectBrk,
     geolocationMode: options.geo,
     getUpdatedConfig,
+    inspectSettings,
     offline: options.offline,
     settings,
     site,
@@ -530,9 +559,16 @@ const createDevCommand = (program) => {
         .hideHelp(),
     )
     .addOption(new Option('--graph', 'enable Netlify Graph support').hideHelp())
-    .addOption(new Option('-e, --edgeInspect [inspectHostPort]', 'enable Deno inspect with optional inspectHostPort'))
     .addOption(
-      new Option('-E, --edgeInspectBrk [inspectHostPort]', 'enable Deno inspect-brk with optional inspectHostPort'),
+      new Option('-e, --edgeInspect [inspectHostPort]', 'enable Deno inspect with optional inspectHostPort').conflicts(
+        'edgeInspectBrk',
+      ),
+    )
+    .addOption(
+      new Option(
+        '-E, --edgeInspectBrk [inspectHostPort]',
+        'enable Deno inspect-brk with optional inspectHostPort',
+      ).conflicts('edgeInspect'),
     )
     .addExamples([
       'netlify dev',
