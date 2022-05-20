@@ -13,7 +13,7 @@ const { invokeFunction } = rewiremock.proxy(() => require('../../../../../../src
 
 const invokeFunctionMacro = test.macro({
   async exec(t, prop, expected) {
-    runFunctionsProxySpy.returns(Promise.resolve({ stdout: JSON.stringify({ [prop]: expected }) }))
+    runFunctionsProxySpy.resolves({ stdout: JSON.stringify({ [prop]: expected }) })
 
     const match = await invokeFunction({ func: { mainFile: '', buildData: {} } })
     t.deepEqual(match[prop], expected)
