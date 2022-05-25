@@ -332,10 +332,12 @@ const generateInspectSettings = (edgeInspect, edgeInspectBrk) => {
   const pause = Boolean(edgeInspectBrk)
   const getAddress = () => {
     if (edgeInspect) {
-      return typeof edgeInspect === 'string' ? edgeInspect : undefined
+      // .slice(1) to remove the = in `=127.0.0.1:9229`
+      return typeof edgeInspect === 'string' ? edgeInspect.slice(1) : undefined
     }
     if (edgeInspectBrk) {
-      return typeof edgeInspectBrk === 'string' ? edgeInspectBrk : undefined
+      // .slice(1) to remove the = in `=127.0.0.1:9229`
+      return typeof edgeInspectBrk === 'string' ? edgeInspectBrk.slice(1) : undefined
     }
   }
 
