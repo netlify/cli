@@ -137,8 +137,9 @@ class NetlifyFunction {
     // Not sure why `settings.port` was used here nor does a valid reference exist.
     // However, it remains here to serve whatever purpose for which it was added.
     const port = this.settings.port || this.settings.functionsPort
+    const protocol = this.settings.https ? 'https' : 'http'
+    const url = new URL(`/.netlify/functions/${this.name}`, `${protocol}://localhost:${port}`)
 
-    const url = new URL(`/.netlify/functions/${this.name}`, `http://localhost:${port}`)
     return url.href
   }
 }
