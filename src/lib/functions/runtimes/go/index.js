@@ -55,11 +55,12 @@ const invokeFunction = async ({ context, event, func, timeout }) => {
   })
 
   try {
-    const { body, headers, statusCode } = JSON.parse(stdout)
+    const { body, headers, multiValueHeaders, statusCode } = JSON.parse(stdout)
 
     return {
       body,
       headers,
+      multiValueHeaders,
       statusCode,
     }
   } catch {
