@@ -568,7 +568,7 @@ const createDevCommand = (program) => {
     )
     .addOption(
       new Option(
-        '-E, --edgeInspectBrk [inspectHostPort]',
+        '-E, --edgeInspectBrk <address>,
         'enable Deno inspect-brk with optional inspectHostPort',
       ).conflicts('edgeInspect'),
     )
