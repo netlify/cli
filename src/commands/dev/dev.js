@@ -569,7 +569,7 @@ const createDevCommand = (program) => {
     .addOption(
       new Option(
         '-E, --edgeInspectBrk <address>,
-        'enable Deno inspect-brk with optional inspectHostPort',
+        'enable the V8 Inspector Protocol for Edge Functions and pause execution on the first line of code, with an optional address in the host:port format,
       ).conflicts('edgeInspect'),
     )
     .addExamples([
