@@ -562,14 +562,15 @@ const createDevCommand = (program) => {
     )
     .addOption(new Option('--graph', 'enable Netlify Graph support').hideHelp())
     .addOption(
-      new Option('-e, --edgeInspect <address>', 'enable the V8 Inspector Protocol for Edge Functions, with an optional address in the host:port format').conflicts(
-        'edgeInspectBrk',
-      ),
+      new Option(
+        '-e, --edgeInspect <address>',
+        'enable the V8 Inspector Protocol for Edge Functions, with an optional address in the host:port format',
+      ).conflicts('edgeInspectBrk'),
     )
     .addOption(
       new Option(
-        '-E, --edgeInspectBrk <address>,
-        'enable the V8 Inspector Protocol for Edge Functions and pause execution on the first line of code, with an optional address in the host:port format,
+        '-E, --edgeInspectBrk <address>',
+        'enable the V8 Inspector Protocol for Edge Functions and pause execution on the first line of code, with an optional address in the host:port format',
       ).conflicts('edgeInspect'),
     )
     .addExamples([
