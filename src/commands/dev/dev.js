@@ -332,12 +332,10 @@ const generateInspectSettings = (edgeInspect, edgeInspectBrk) => {
   const pause = Boolean(edgeInspectBrk)
   const getAddress = () => {
     if (edgeInspect) {
-      // .slice(1) to remove the = in `=127.0.0.1:9229`
-      return typeof edgeInspect === 'string' ? edgeInspect.slice(1) : undefined
+      return typeof edgeInspect === 'string' ? edgeInspect : undefined
     }
     if (edgeInspectBrk) {
-      // .slice(1) to remove the = in `=127.0.0.1:9229`
-      return typeof edgeInspectBrk === 'string' ? edgeInspectBrk.slice(1) : undefined
+      return typeof edgeInspectBrk === 'string' ? edgeInspectBrk : undefined
     }
   }
 
@@ -578,8 +576,14 @@ const createDevCommand = (program) => {
       'netlify dev -d public',
       'netlify dev -c "hugo server -w" --targetPort 1313',
       'netlify dev --graph',
+      'netlify dev -e',
+      'netlify dev -e 127.0.0.1:9229',
+      'netlify dev -e127.0.0.1:9229',
       'netlify dev --edgeInspect',
       'netlify dev --edgeInspect=127.0.0.1:9229',
+      'netlify dev -E',
+      'netlify dev -E 127.0.0.1:9229',
+      'netlify dev -E127.0.0.1:9229',
       'netlify dev --edgeInspectBrk',
       'netlify dev --edgeInspectBrk=127.0.0.1:9229',
       'BROWSER=none netlify dev # disable browser auto opening',
