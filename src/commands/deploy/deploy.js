@@ -497,7 +497,8 @@ const deploy = async (options, command) => {
   let siteId = options.site || site.id
 
   let siteData = {}
-  if (siteId) {
+
+  if (siteId && !options.newSiteName) {
     try {
       const [{ siteError, siteFoundById }, sites] = await Promise.all([
         api
@@ -523,6 +524,17 @@ const deploy = async (options, command) => {
         error(error_.message)
       }
     }
+  } else if (options.newSiteName) {
+    siteData = await sitesCreate(
+      {
+        accountSlug: options.accountName,
+        newSiteName: options.newSiteName,
+        funcEnvVariable: options.funcEnvVariable,
+      },
+      command,
+    )
+    site.id = siteData.id
+    siteId = site.id
   } else {
     log("This folder isn't linked to a site yet")
     const NEW_SITE = '+  Create & configure a new site'
@@ -714,6 +726,11 @@ functions/
 
 Support for package.json's main field, and intrinsic index.js entrypoints are coming soon.`,
     )
+    // custom commands
+    .option('--newSiteName <string>', 'Name of the new site')
+    .option('--accountName <string>', 'Account name to create the site in', null)
+    .option('--funcEnvVariable <string>', 'Netlify function env variable', null)
+    // *****************************************************************************************
     .option('-d, --dir <path>', 'Specify a folder to deploy')
     .option('-f, --functions <folder>', 'Specify a functions folder to deploy')
     .option('-p, --prod', 'Deploy to production', false)

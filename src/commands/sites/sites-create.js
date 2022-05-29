@@ -9,7 +9,6 @@ const { v4: uuidv4 } = require('uuid')
 
 const { chalk, error, getRepoData, log, logJson, track, warn } = require('../../utils')
 const { configureRepo } = require('../../utils/init/config')
-const { link } = require('../link')
 
 const SITE_NAME_SUGGESTION_SUFFIX_LENGTH = 5
 
@@ -89,19 +88,48 @@ const sitesCreate = async (options, command) => {
   let site
 
   // Allow the user to reenter site name if selected one isn't available
-  const inputSiteName = async (name) => {
-    const { name: siteName } = await getSiteNameInput(name, user, api)
+  const inputSiteName = async (name, inputOptions) => {
+    let siteName
+
+    if (inputOptions.newSiteName) {
+      // eslint-disable-next-line prefer-destructuring
+      siteName = inputOptions.newSiteName
+    } else {
+      const { name: siteNameFromFunc } = await getSiteNameInput(name, user, api)
+      siteName = siteNameFromFunc
+    }
 
     const body = {}
     if (typeof siteName === 'string') {
       body.name = siteName.trim()
     }
+
+    console.log(JSON.stringify(body))
+
     try {
       site = await api.createSiteInTeam({
         accountSlug,
         body,
       })
+
+      if (inputOptions.funcEnvVariable) {
+        const [envVariableName, envVariableValue] = inputOptions.funcEnvVariable.split(':')
+
+        const newEnv = {
+          [envVariableName]: envVariableValue,
+        }
+
+        await api.updateSite({
+          siteId: site.id,
+          body: {
+            build_settings: {
+              env: newEnv,
+            },
+          },
+        })
+      }
     } catch (error_) {
+      console.log(error_.message)
       if (error_.status === 422) {
         warn(`${siteName}.netlify.app already exists. Please try a different slug.`)
         await inputSiteName()
@@ -110,7 +138,7 @@ const sitesCreate = async (options, command) => {
       }
     }
   }
-  await inputSiteName(nameFlag)
+  await inputSiteName(nameFlag, options)
 
   log()
   log(chalk.greenBright.bold.underline(`Site Created`))
@@ -165,11 +193,6 @@ const sitesCreate = async (options, command) => {
         'id_domain',
       ]),
     )
-  }
-
-  if (!options.disableLinking) {
-    log()
-    await link({ id: site.id }, command)
   }
 
   return site
