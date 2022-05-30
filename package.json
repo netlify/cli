@@ -256,7 +256,6 @@
     "git-clone": "^0.2.0",
     "git-repo-info": "^2.1.0",
     "gitconfiglocal": "^2.1.0",
-    "graphql": "^16.1.0",
     "hasbin": "^1.2.3",
     "hasha": "^5.2.2",
     "http-proxy": "^1.18.0",
