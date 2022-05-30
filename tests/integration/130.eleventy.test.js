@@ -2,6 +2,8 @@ const path = require('path')
 
 const test = require('ava')
 
+const { clientIP, originalIP } = require('../lib/local-ip')
+
 const { startDevServer } = require('./utils/dev-server')
 const got = require('./utils/got')
 
@@ -59,11 +61,11 @@ test('functions rewrite echo without body', async (t) => {
   t.deepEqual(response.headers, {
     accept: 'application/json',
     'accept-encoding': 'gzip, deflate, br',
-    'client-ip': '127.0.0.1',
+    'client-ip': clientIP,
     connection: 'close',
     host: `${host}:${port}`,
     'user-agent': 'got (https://github.com/sindresorhus/got)',
-    'x-forwarded-for': '::ffff:127.0.0.1',
+    'x-forwarded-for': originalIP,
   })
   t.is(response.httpMethod, 'GET')
   t.is(response.isBase64Encoded, true)
@@ -86,13 +88,13 @@ test('functions rewrite echo with body', async (t) => {
   t.deepEqual(response.headers, {
     accept: 'application/json',
     'accept-encoding': 'gzip, deflate, br',
-    'client-ip': '127.0.0.1',
+    'client-ip': clientIP,
     connection: 'close',
     host: `${host}:${port}`,
     'content-type': 'application/x-www-form-urlencoded',
     'content-length': '10',
     'user-agent': 'got (https://github.com/sindresorhus/got)',
-    'x-forwarded-for': '::ffff:127.0.0.1',
+    'x-forwarded-for': originalIP,
   })
   t.is(response.httpMethod, 'POST')
   t.is(response.isBase64Encoded, false)
@@ -107,11 +109,11 @@ test('functions echo with multiple query params', async (t) => {
   t.deepEqual(response.headers, {
     accept: 'application/json',
     'accept-encoding': 'gzip, deflate, br',
-    'client-ip': '127.0.0.1',
+    'client-ip': clientIP,
     connection: 'close',
     host: `${host}:${port}`,
     'user-agent': 'got (https://github.com/sindresorhus/got)',
-    'x-forwarded-for': '::ffff:127.0.0.1',
+    'x-forwarded-for': originalIP,
   })
   t.is(response.httpMethod, 'GET')
   t.is(response.isBase64Encoded, true)

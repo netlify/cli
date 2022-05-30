@@ -461,13 +461,27 @@ const onRequest = async ({ addonsUrls, edgeFunctionsProxy, functionsServer, prox
   proxy.web(req, res, options)
 }
 
-const startProxy = async function ({ addonsUrls, config, configPath, getUpdatedConfig, projectDir, settings }) {
+const startProxy = async function ({
+  addonsUrls,
+  config,
+  configPath,
+  geolocationMode,
+  getUpdatedConfig,
+  offline,
+  projectDir,
+  settings,
+  state,
+}) {
   const functionsServer = settings.functionsPort ? `http://localhost:${settings.functionsPort}` : null
   const edgeFunctionsProxy = await edgeFunctions.initializeProxy({
     config,
     configPath,
+    geolocationMode,
     getUpdatedConfig,
+    offline,
+    projectDir,
     settings,
+    state,
   })
   const proxy = await initializeProxy({
     port: settings.frameworkPort,

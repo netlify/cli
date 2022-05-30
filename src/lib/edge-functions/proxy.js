@@ -1,10 +1,12 @@
 // @ts-check
-const { env } = require('process')
+const { relative } = require('path')
+const { cwd, env } = require('process')
 
 const getAvailablePort = require('get-port')
 const { v4: generateUUID } = require('uuid')
 
-const { NETLIFYDEVERR, chalk } = require('../../utils/command-helpers')
+const { NETLIFYDEVERR, NETLIFYDEVWARN, chalk, log } = require('../../utils/command-helpers')
+const { getGeoLocation } = require('../geo-location')
 const { getPathInProject } = require('../settings')
 const { startSpinner, stopSpinner } = require('../spinner')
 
@@ -40,7 +42,16 @@ const handleProxyRequest = (req, proxyReq) => {
   })
 }
 
-const initializeProxy = async ({ config, configPath, getUpdatedConfig, settings }) => {
+const initializeProxy = async ({
+  config,
+  configPath,
+  geolocationMode,
+  getUpdatedConfig,
+  offline,
+  projectDir,
+  settings,
+  state,
+}) => {
   const { functions: internalFunctions, importMap, path: internalFunctionsPath } = await getInternalFunctions()
   const { port: mainPort } = settings
   const userFunctionsPath = config.build.edge_functions
@@ -50,6 +61,7 @@ const initializeProxy = async ({ config, configPath, getUpdatedConfig, settings 
   // the network if needed. We don't want to wait for that to be completed, or
   // the command will be left hanging.
   const server = prepareServer({
+    certificatePath: settings.https ? settings.https.certFilePath : undefined,
     config,
     configPath,
     directories: [internalFunctionsPath, userFunctionsPath].filter(Boolean),
@@ -57,6 +69,7 @@ const initializeProxy = async ({ config, configPath, getUpdatedConfig, settings 
     importMaps: [importMap].filter(Boolean),
     internalFunctions,
     port: isolatePort,
+    projectDir,
   })
   const hasEdgeFunctions = userFunctionsPath !== undefined || internalFunctions.length !== 0
 
@@ -65,27 +78,46 @@ const initializeProxy = async ({ config, configPath, getUpdatedConfig, settings 
       return
     }
 
-    const { registry } = await server
+    const [geoLocation, { registry }] = await Promise.all([
+      getGeoLocation({ mode: geolocationMode, offline, state }),
+      server,
+    ])
+
+    // Setting header with geolocation.
+    req.headers[headers.Geo] = JSON.stringify(geoLocation)
 
     await registry.initialize()
 
-    const manifest = await registry.getManifest()
     const url = new URL(req.url, `http://${LOCAL_HOST}:${mainPort}`)
-    const routes = manifest.routes.map((route) => ({
-      ...route,
-      pattern: new RegExp(route.pattern),
-    }))
-    const matchingFunctions = routes.filter(({ pattern }) => pattern.test(url.pathname)).map((route) => route.function)
+    const { functionNames, orphanedDeclarations } = await registry.matchURLPath(url.pathname)
 
-    if (matchingFunctions.length === 0) {
+    // If the request matches a config declaration for an Edge Function without
+    // a matching function file, we warn the user.
+    orphanedDeclarations.forEach((functionName) => {
+      log(
+        `${NETLIFYDEVWARN} Request to ${chalk.yellow(
+          url.pathname,
+        )} matches declaration for edge function ${chalk.yellow(
+          functionName,
+        )}, but there's no matching function file in ${chalk.yellow(
+          relative(cwd(), userFunctionsPath),
+        )}. Please visit ${chalk.blue('https://ntl.fyi/edge-create')} for more information.`,
+      )
+    })
+
+    if (functionNames.length === 0) {
       return
     }
 
     req[headersSymbol] = {
-      [headers.Functions]: matchingFunctions.join(','),
-      [headers.PassHost]: `${LOCAL_HOST}:${mainPort}`,
+      [headers.Functions]: functionNames.join(','),
+      [headers.ForwardedHost]: `localhost:${mainPort}`,
       [headers.Passthrough]: 'passthrough',
       [headers.RequestID]: generateUUID(),
+    }
+
+    if (settings.https) {
+      req[headersSymbol][headers.ForwardedProtocol] = 'https'
     }
 
     return `http://${LOCAL_HOST}:${isolatePort}`
@@ -95,6 +127,7 @@ const initializeProxy = async ({ config, configPath, getUpdatedConfig, settings 
 const isEdgeFunctionsRequest = (req) => req[headersSymbol] !== undefined
 
 const prepareServer = async ({
+  certificatePath,
   config,
   configPath,
   directories,
@@ -102,11 +135,13 @@ const prepareServer = async ({
   importMaps,
   internalFunctions,
   port,
+  projectDir,
 }) => {
   const bundler = await import('@netlify/edge-bundler')
   const distImportMapPath = getPathInProject([DIST_IMPORT_MAP_PATH])
   const runIsolate = await bundler.serve({
     ...getDownloadUpdateFunctions(),
+    certificatePath,
     debug: env.NETLIFY_DENO_DEBUG === 'true',
     distImportMapPath,
     formatExportTypeError: (name) =>
@@ -124,6 +159,7 @@ const prepareServer = async ({
     directories,
     getUpdatedConfig,
     internalFunctions,
+    projectDir,
     runIsolate,
   })
 

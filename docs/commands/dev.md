@@ -22,6 +22,7 @@ netlify dev
 - `framework` (*string*) - framework to use. Defaults to #auto which automatically detects a framework
 - `functions` (*string*) - specify a functions folder to serve
 - `functionsPort` (*string*) - port of functions server
+- `geo` (*cache | mock | update*) - force geolocation data to be updated, use cached data from the last 24h if found, or use a mock location
 - `live` (*boolean*) - start a public live session
 - `offline` (*boolean*) - disables any features that require network access
 - `port` (*string*) - port of netlify dev
