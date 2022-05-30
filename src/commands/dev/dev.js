@@ -27,6 +27,7 @@ const {
   readGraphQLOperationsSourceFile,
 } = require('../../lib/one-graph/cli-netlify-graph')
 const {
+  BANG,
   NETLIFYDEV,
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
@@ -346,6 +347,22 @@ const generateInspectSettings = (edgeInspect, edgeInspectBrk) => {
   }
 }
 
+const validateShortFormArgs = (args) => {
+  if (args.includes('=')) {
+    throw new Error(
+      `Short form options like -e or -E don't support the '=' sign
+ ${chalk.red(BANG)}   Supported formats:
+      netlify dev -e
+      netlify dev -e 127.0.0.1:9229
+      netlify dev -e127.0.0.1:9229
+      netlify dev -E
+      netlify dev -E 127.0.0.1:9229
+      netlify dev -E127.0.0.1:9229`,
+    )
+  }
+  return args
+}
+
 /**
  * The dev command
  * @param {import('commander').OptionValues} options
@@ -563,27 +580,25 @@ const createDevCommand = (program) => {
       new Option(
         '-e, --edgeInspect [address]',
         'enable the V8 Inspector Protocol for Edge Functions, with an optional address in the host:port format',
-      ).conflicts('edgeInspectBrk'),
+      )
+        .conflicts('edgeInspectBrk')
+        .argParser(validateShortFormArgs),
     )
     .addOption(
       new Option(
         '-E, --edgeInspectBrk [address]',
         'enable the V8 Inspector Protocol for Edge Functions and pause execution on the first line of code, with an optional address in the host:port format',
-      ).conflicts('edgeInspect'),
+      )
+        .conflicts('edgeInspect')
+        .argParser(validateShortFormArgs),
     )
     .addExamples([
       'netlify dev',
       'netlify dev -d public',
       'netlify dev -c "hugo server -w" --targetPort 1313',
       'netlify dev --graph',
-      'netlify dev -e',
-      'netlify dev -e 127.0.0.1:9229',
-      'netlify dev -e127.0.0.1:9229',
       'netlify dev --edgeInspect',
       'netlify dev --edgeInspect=127.0.0.1:9229',
-      'netlify dev -E',
-      'netlify dev -E 127.0.0.1:9229',
-      'netlify dev -E127.0.0.1:9229',
       'netlify dev --edgeInspectBrk',
       'netlify dev --edgeInspectBrk=127.0.0.1:9229',
       'BROWSER=none netlify dev # disable browser auto opening',
