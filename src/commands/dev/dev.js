@@ -347,10 +347,10 @@ const generateInspectSettings = (edgeInspect, edgeInspectBrk) => {
   }
 }
 
-const validateShortFormArgs = (args) => {
+const validateShortFlagArgs = (args) => {
   if (args.includes('=')) {
     throw new Error(
-      `Short form options like -e or -E don't support the '=' sign
+      `Short flag options like -e or -E don't support the '=' sign
  ${chalk.red(BANG)}   Supported formats:
       netlify dev -e
       netlify dev -e 127.0.0.1:9229
@@ -582,7 +582,7 @@ const createDevCommand = (program) => {
         'enable the V8 Inspector Protocol for Edge Functions, with an optional address in the host:port format',
       )
         .conflicts('edgeInspectBrk')
-        .argParser(validateShortFormArgs),
+        .argParser(validateShortFlagArgs),
     )
     .addOption(
       new Option(
@@ -590,7 +590,7 @@ const createDevCommand = (program) => {
         'enable the V8 Inspector Protocol for Edge Functions and pause execution on the first line of code, with an optional address in the host:port format',
       )
         .conflicts('edgeInspect')
-        .argParser(validateShortFormArgs),
+        .argParser(validateShortFlagArgs),
     )
     .addExamples([
       'netlify dev',
