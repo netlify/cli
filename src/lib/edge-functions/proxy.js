@@ -47,6 +47,7 @@ const initializeProxy = async ({
   configPath,
   geolocationMode,
   getUpdatedConfig,
+  inspectSettings,
   offline,
   projectDir,
   settings,
@@ -67,6 +68,7 @@ const initializeProxy = async ({
     directories: [internalFunctionsPath, userFunctionsPath].filter(Boolean),
     getUpdatedConfig,
     importMaps: [importMap].filter(Boolean),
+    inspectSettings,
     internalFunctions,
     port: isolatePort,
     projectDir,
@@ -133,6 +135,7 @@ const prepareServer = async ({
   directories,
   getUpdatedConfig,
   importMaps,
+  inspectSettings,
   internalFunctions,
   port,
   projectDir,
@@ -150,6 +153,7 @@ const prepareServer = async ({
       )}. The file does not seem to have a function as the default export.`,
     formatImportError: (name) => `${NETLIFYDEVERR} ${chalk.red('Failed')} to run Edge Function ${chalk.yellow(name)}:`,
     importMaps,
+    inspectSettings,
     port,
   })
   const registry = new EdgeFunctionsRegistry({
