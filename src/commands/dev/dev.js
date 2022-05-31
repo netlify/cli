@@ -348,7 +348,7 @@ const generateInspectSettings = (edgeInspect, edgeInspectBrk) => {
 }
 
 const validateShortFlagArgs = (args) => {
-  if (args.includes('=')) {
+  if (args.startsWith('=')) {
     throw new Error(
       `Short flag options like -e or -E don't support the '=' sign
  ${chalk.red(BANG)}   Supported formats:
