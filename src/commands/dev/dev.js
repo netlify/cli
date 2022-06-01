@@ -27,6 +27,7 @@ const {
   readGraphQLOperationsSourceFile,
 } = require('../../lib/one-graph/cli-netlify-graph')
 const {
+  BANG,
   NETLIFYDEV,
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
@@ -196,10 +197,18 @@ const startFrameworkServer = async function ({ settings }) {
 const FRAMEWORK_PORT_TIMEOUT = 6e5
 
 /**
+ * @typedef {Object} InspectSettings
+ * @property {boolean} enabled - Inspect enabled
+ * @property {boolean} pause - Pause on breakpoints
+ * @property {string|undefined} address - Host/port override (optional)
+ */
+
+/**
  *
  * @param {object} params
  * @param {*} params.addonsUrls
  * @param {import('../base-command').NetlifyOptions["config"]} params.config
+ * @param {InspectSettings} params.inspectSettings
  * @param {() => Promise<object>} params.getUpdatedConfig
  * @param {string} params.geolocationMode
  * @param {*} params.settings
@@ -213,6 +222,7 @@ const startProxyServer = async ({
   config,
   geolocationMode,
   getUpdatedConfig,
+  inspectSettings,
   offline,
   settings,
   site,
@@ -224,6 +234,7 @@ const startProxyServer = async ({
     configPath: site.configPath,
     geolocationMode,
     getUpdatedConfig,
+    inspectSettings,
     offline,
     projectDir: site.root,
     settings,
@@ -313,6 +324,46 @@ const startPollingForAPIAuthentication = async function (options) {
 }
 
 /**
+ * @param {boolean|string} edgeInspect
+ * @param {boolean|string} edgeInspectBrk
+ * @returns {InspectSettings}
+ */
+const generateInspectSettings = (edgeInspect, edgeInspectBrk) => {
+  const enabled = Boolean(edgeInspect) || Boolean(edgeInspectBrk)
+  const pause = Boolean(edgeInspectBrk)
+  const getAddress = () => {
+    if (edgeInspect) {
+      return typeof edgeInspect === 'string' ? edgeInspect : undefined
+    }
+    if (edgeInspectBrk) {
+      return typeof edgeInspectBrk === 'string' ? edgeInspectBrk : undefined
+    }
+  }
+
+  return {
+    enabled,
+    pause,
+    address: getAddress(),
+  }
+}
+
+const validateShortFlagArgs = (args) => {
+  if (args.startsWith('=')) {
+    throw new Error(
+      `Short flag options like -e or -E don't support the '=' sign
+ ${chalk.red(BANG)}   Supported formats:
+      netlify dev -e
+      netlify dev -e 127.0.0.1:9229
+      netlify dev -e127.0.0.1:9229
+      netlify dev -E
+      netlify dev -E 127.0.0.1:9229
+      netlify dev -E127.0.0.1:9229`,
+    )
+  }
+  return args
+}
+
+/**
  * The dev command
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
@@ -380,11 +431,14 @@ const dev = async (options, command) => {
     return normalizedNewConfig
   }
 
+  const inspectSettings = generateInspectSettings(options.edgeInspect, options.edgeInspectBrk)
+
   let url = await startProxyServer({
     addonsUrls,
     config,
     geolocationMode: options.geo,
     getUpdatedConfig,
+    inspectSettings,
     offline: options.offline,
     settings,
     site,
@@ -522,11 +576,31 @@ const createDevCommand = (program) => {
         .hideHelp(),
     )
     .addOption(new Option('--graph', 'enable Netlify Graph support').hideHelp())
+    .addOption(
+      new Option(
+        '-e, --edgeInspect [address]',
+        'enable the V8 Inspector Protocol for Edge Functions, with an optional address in the host:port format',
+      )
+        .conflicts('edgeInspectBrk')
+        .argParser(validateShortFlagArgs),
+    )
+    .addOption(
+      new Option(
+        '-E, --edgeInspectBrk [address]',
+        'enable the V8 Inspector Protocol for Edge Functions and pause execution on the first line of code, with an optional address in the host:port format',
+      )
+        .conflicts('edgeInspect')
+        .argParser(validateShortFlagArgs),
+    )
     .addExamples([
       'netlify dev',
       'netlify dev -d public',
       'netlify dev -c "hugo server -w" --targetPort 1313',
       'netlify dev --graph',
+      'netlify dev --edgeInspect',
+      'netlify dev --edgeInspect=127.0.0.1:9229',
+      'netlify dev --edgeInspectBrk',
+      'netlify dev --edgeInspectBrk=127.0.0.1:9229',
       'BROWSER=none netlify dev # disable browser auto opening',
     ])
     .action(dev)
