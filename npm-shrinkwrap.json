@@ -141,7 +141,6 @@
         "nock": "^13.2.4",
         "p-timeout": "^4.0.0",
         "rewiremock": "^3.14.3",
-        "seedrandom": "^3.0.5",
         "serialize-javascript": "^6.0.0",
         "sinon": "^13.0.0",
         "sort-on": "^4.1.0",
@@ -20012,12 +20011,6 @@
         "node": ">=8"
       }
     },
-    "node_modules/seedrandom": {
-      "version": "3.0.5",
-      "resolved": "https://registry.npmjs.org/seedrandom/-/seedrandom-3.0.5.tgz",
-      "integrity": "sha512-8OwmbklUNzwezjGInmZ+2clQmExQPvomqjL7LFqOYqtmuxRgQYqOD3mHaU+MvZn5FLUeVxVfQjwLZW/n/JFuqg==",
-      "dev": true
-    },
     "node_modules/seek-bzip": {
       "version": "1.0.6",
       "resolved": "https://registry.npmjs.org/seek-bzip/-/seek-bzip-1.0.6.tgz",
@@ -38178,12 +38171,6 @@
       "requires": {
         "xmlchars": "^2.1.1"
       }
-    },
-    "seedrandom": {
-      "version": "3.0.5",
-      "resolved": "https://registry.npmjs.org/seedrandom/-/seedrandom-3.0.5.tgz",
-      "integrity": "sha512-8OwmbklUNzwezjGInmZ+2clQmExQPvomqjL7LFqOYqtmuxRgQYqOD3mHaU+MvZn5FLUeVxVfQjwLZW/n/JFuqg==",
-      "dev": true
     },
     "seek-bzip": {
       "version": "1.0.6",
