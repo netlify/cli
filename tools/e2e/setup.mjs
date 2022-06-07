@@ -1,7 +1,8 @@
 import { appendFileSync, existsSync, promises, readFileSync, writeFileSync } from 'fs'
-import { homedir, tmpdir } from 'os'
+import { tmpdir } from 'os'
 import { join, sep } from 'path'
 import { cwd, env } from 'process'
+import { fileURLToPath } from 'url'
 
 import del from 'del'
 import execa from 'execa'
@@ -35,6 +36,8 @@ const getVerdaccioConfig = (storage) => ({
   uplinks: {
     npmjs: {
       url: 'https://registry.npmjs.org/',
+      maxage: '1d',
+      cache: true,
     },
   },
   packages: {
@@ -64,7 +67,11 @@ export const startRegistry = async () => {
   // number in parallel
   const startPort = Math.floor(Math.random() * END_PORT_RANGE) + START_PORT_RANGE
   const freePort = await getPort({ host: 'localhost', port: startPort })
-  const storage = await mkdtemp(`${tmpdir()}${sep}verdaccio-`)
+  const storage = fileURLToPath(new URL('../../.verdaccio-storage', import.meta.url))
+
+  // Remove netlify-cli from the verdaccio storage because we are going to publish it in a second
+  await rmdirRecursiveAsync(join(storage, 'netlify-cli'))
+
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       reject(new Error('Starting Verdaccio Timed out'))
@@ -91,22 +98,17 @@ export const setup = async () => {
   const { storage, url } = await startRegistry()
   const workspace = await mkdtemp(`${tmpdir()}${sep}e2e-test-`)
 
-  const npmrc = join(homedir(), '.npmrc')
+  const npmrc = fileURLToPath(new URL('../../.npmrc', import.meta.url))
   const registryWithAuth = `//${url.hostname}:${url.port}/:_authToken=dummy`
   let backupNpmrc
 
   /** Cleans up everything */
   const cleanup = async () => {
-    // restore ~/.npmrc
-    if (backupNpmrc) {
-      writeFileSync(npmrc, backupNpmrc)
-    } else {
-      await rmdirRecursiveAsync(npmrc)
-    }
     // remote temp folders
-    await rmdirRecursiveAsync(storage)
     await rmdirRecursiveAsync(workspace)
   }
+
+  env.npm_config_registry = url
 
   try {
     if (existsSync(npmrc)) {
@@ -126,16 +128,20 @@ export const setup = async () => {
   Verdaccio: ${storage}
   Workspace: ${workspace}
 ------------------------------------------`)
-
-    writeFileSync(join(workspace, '.npmrc'), registryWithAuth, 'utf-8')
   } catch (error_) {
     await cleanup()
     throw new Error(
       `npm publish failed for registry ${url.href}
-Be sure not to have a ~/.npmrc in your home folder that specifies a different registry.
 
 ${error_ instanceof Error ? error_.message : error_}`,
     )
+  } finally {
+    // restore .npmrc
+    if (backupNpmrc) {
+      writeFileSync(npmrc, backupNpmrc)
+    } else {
+      await rmdirRecursiveAsync(npmrc)
+    }
   }
 
   return {

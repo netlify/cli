@@ -141,7 +141,6 @@
         "nock": "^13.2.4",
         "p-timeout": "^4.0.0",
         "rewiremock": "^3.14.3",
-        "seedrandom": "^3.0.5",
         "serialize-javascript": "^6.0.0",
         "sinon": "^13.0.0",
         "sort-on": "^4.1.0",
@@ -151,7 +150,7 @@
         "tomlify-j0.4": "^3.0.0",
         "tree-kill": "^1.2.2",
         "typescript": "^4.4.4",
-        "verdaccio": "^5.4.0"
+        "verdaccio": "^5.10.2"
       },
       "engines": {
         "node": "^12.20.0 || ^14.14.0 || >=16.0.0"
@@ -9877,9 +9876,9 @@
       }
     },
     "node_modules/dotenv": {
-      "version": "16.0.0",
-      "resolved": "https://registry.npmjs.org/dotenv/-/dotenv-16.0.0.tgz",
-      "integrity": "sha512-qD9WU0MPM4SWLPJy/r2Be+2WgQj8plChsyrCNQzW/0WjvcJQiKQJ9mH3ZgB3fxbUUxgc/11ZJ0Fi5KiimWGz2Q==",
+      "version": "16.0.1",
+      "resolved": "https://registry.npmjs.org/dotenv/-/dotenv-16.0.1.tgz",
+      "integrity": "sha512-1K6hR6wtk2FviQ4kEiSjFiH5rpzEVi8WW0x96aztHVMhEspNpc4DVOUTEHtEva5VThQ8IaBX1Pe4gSzpVVUsKQ==",
       "engines": {
         "node": ">=12"
       }
@@ -20523,12 +20522,6 @@
         "node": ">=8"
       }
     },
-    "node_modules/seedrandom": {
-      "version": "3.0.5",
-      "resolved": "https://registry.npmjs.org/seedrandom/-/seedrandom-3.0.5.tgz",
-      "integrity": "sha512-8OwmbklUNzwezjGInmZ+2clQmExQPvomqjL7LFqOYqtmuxRgQYqOD3mHaU+MvZn5FLUeVxVfQjwLZW/n/JFuqg==",
-      "dev": true
-    },
     "node_modules/seek-bzip": {
       "version": "1.0.6",
       "resolved": "https://registry.npmjs.org/seek-bzip/-/seek-bzip-1.0.6.tgz",
@@ -30804,9 +30797,9 @@
       }
     },
     "dotenv": {
-      "version": "16.0.0",
-      "resolved": "https://registry.npmjs.org/dotenv/-/dotenv-16.0.0.tgz",
-      "integrity": "sha512-qD9WU0MPM4SWLPJy/r2Be+2WgQj8plChsyrCNQzW/0WjvcJQiKQJ9mH3ZgB3fxbUUxgc/11ZJ0Fi5KiimWGz2Q=="
+      "version": "16.0.1",
+      "resolved": "https://registry.npmjs.org/dotenv/-/dotenv-16.0.1.tgz",
+      "integrity": "sha512-1K6hR6wtk2FviQ4kEiSjFiH5rpzEVi8WW0x96aztHVMhEspNpc4DVOUTEHtEva5VThQ8IaBX1Pe4gSzpVVUsKQ=="
     },
     "download": {
       "version": "8.0.0",
@@ -38819,12 +38812,6 @@
       "requires": {
         "xmlchars": "^2.1.1"
       }
-    },
-    "seedrandom": {
-      "version": "3.0.5",
-      "resolved": "https://registry.npmjs.org/seedrandom/-/seedrandom-3.0.5.tgz",
-      "integrity": "sha512-8OwmbklUNzwezjGInmZ+2clQmExQPvomqjL7LFqOYqtmuxRgQYqOD3mHaU+MvZn5FLUeVxVfQjwLZW/n/JFuqg==",
-      "dev": true
     },
     "seek-bzip": {
       "version": "1.0.6",
