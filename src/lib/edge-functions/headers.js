@@ -5,4 +5,5 @@ module.exports = {
   Geo: 'x-nf-geo',
   Passthrough: 'x-deno-pass',
   RequestID: 'X-NF-Request-ID',
+  IP: 'x-nf-client-connection-ip',
 }
