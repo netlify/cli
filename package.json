@@ -336,7 +336,6 @@
     "nock": "^13.2.4",
     "p-timeout": "^4.0.0",
     "rewiremock": "^3.14.3",
-    "seedrandom": "^3.0.5",
     "serialize-javascript": "^6.0.0",
     "sinon": "^13.0.0",
     "sort-on": "^4.1.0",
