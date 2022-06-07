@@ -951,7 +951,8 @@ test('Ensures watcher watches included files', async (t) => {
         .buildAsync()
 
       // wait for the watcher to rebuild the function
-      await pause(500)
+      const delay = 1000
+      await pause(delay)
 
       t.true(outputBuffer.some((buffer) => /.*Reloaded function hello.*/.test(buffer.toString())))
       await tryAndLogOutput(async () => {
