@@ -4,7 +4,6 @@ on:
   push:
     branches: [main]
   pull_request:
-    types: [synchronize, opened, reopened, edited]
     branches: [main]
   schedule:
     # check daily to notice potential package manager issues
@@ -34,6 +33,11 @@ jobs:
           cache: 'npm'
           cache-dependency-path: 'npm-shrinkwrap.json'
           check-latest: true
+      - name: Cache verdaccio storage
+        uses: actions/cache@v3
+        with:
+          path: ./.verdaccio-storage
+          key: verdaccio-e2e-cli-${{ hashFiles('./npm-shrinkwrap.json') }}
       - name: Install dependencies
         run: npm ci --no-audit
       - name: Install pnpm

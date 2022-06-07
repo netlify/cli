@@ -6,6 +6,10 @@ coverage:
     javascript:
       enable_partials: true
   status:
-    project: false
-    patch: false
+    project:
+      default:
+        informational: true
+    patch:
+      default:
+        informational: true
 comment: false
