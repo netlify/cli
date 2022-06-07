@@ -951,12 +951,13 @@ test('Ensures watcher watches included files', async (t) => {
         .buildAsync()
 
       // wait for the watcher to rebuild the function
-      const timeout = 500
-      await new Promise((resolve) => {
-        setTimeout(resolve, timeout)
-      })
+      await pause(500)
 
       t.true(outputBuffer.some((buffer) => /.*Reloaded function hello.*/.test(buffer.toString())))
+      await tryAndLogOutput(async () => {
+        t.is(await got(`http://localhost:${port}/.netlify/functions/hello?name=one`).text(), 'three')
+        t.is(await got(`http://localhost:${port}/.netlify/functions/hello?name=two`).text(), 'four')
+      }, outputBuffer)
     })
   })
 })
