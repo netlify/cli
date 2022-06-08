@@ -36,6 +36,7 @@ const buildFunction = async ({ cache, config, directory, func, hasTypeModule, pr
   // this case, we use `mainFile` as the function path of `zipFunction`.
   const entryPath = functionDirectory === directory ? func.mainFile : functionDirectory
   const {
+    includedFiles,
     inputs,
     path: functionPath,
     schedule,
@@ -60,7 +61,7 @@ const buildFunction = async ({ cache, config, directory, func, hasTypeModule, pr
 
   clearFunctionsCache(targetDirectory)
 
-  return { buildPath, srcFiles, schedule }
+  return { buildPath, includedFiles, srcFiles, schedule }
 }
 
 /**
