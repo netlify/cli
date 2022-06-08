@@ -1,9 +1,4 @@
 import { execSync } from 'child_process'
-import { readFileSync } from 'fs'
-import { env } from 'process'
-import { fileURLToPath } from 'url'
-
-const { version } = JSON.parse(readFileSync(fileURLToPath(new URL('../package.json', import.meta.url)), 'utf-8'))
 
 /**
  * Checks if a package manager exists
@@ -21,15 +16,15 @@ export const packageManagerExists = (packageManager) => {
 
 export const packageManagerConfig = {
   npm: {
-    install: ['npm', ['install', 'netlify-cli@testing', `--registry=${env.E2E_TEST_REGISTRY}`]],
+    install: ['npm', ['install', 'netlify-cli@testing']],
     lockFile: 'package-lock.json',
   },
   pnpm: {
-    install: ['pnpm', ['add', `${env.E2E_TEST_REGISTRY}netlify-cli/-/netlify-cli-${version}.tgz`]],
+    install: ['pnpm', ['add', 'netlify-cli@testing']],
     lockFile: 'pnpm-lock.yaml',
   },
   yarn: {
-    install: ['yarn', ['add', 'netlify-cli@testing', `--registry=${env.E2E_TEST_REGISTRY}`]],
+    install: ['yarn', ['add', 'netlify-cli@testing']],
     lockFile: 'yarn.lock',
   },
 }

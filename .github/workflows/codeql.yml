@@ -4,9 +4,13 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - '**/*.test.js'
   pull_request:
     branches:
       - main
+    paths-ignore:
+      - '**/*.test.js'
   schedule:
     - cron: '0 0 * * 0'
   workflow_dispatch:
@@ -27,9 +31,8 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v2
         with:
+          config-file: ./.github/codeql/codeql-config.yml
           languages: 'javascript'
-          paths-ignore:
-            - '**/*.test.js'
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2

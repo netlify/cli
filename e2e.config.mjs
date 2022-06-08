@@ -6,7 +6,7 @@ const config = {
   failFast: false,
   failWithoutAssertions: false,
   tap: false,
-  timeout: '5m',
+  timeout: '10m',
 }
 
 export default config
