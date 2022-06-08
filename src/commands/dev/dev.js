@@ -176,9 +176,10 @@ const startFrameworkServer = async function ({ settings }) {
   runCommand(settings.command, settings.env)
 
   try {
+    log(`${NETLIFYDEVLOG} Waiting for framework port ${settings.frameworkPort}. This can be configured using the 'targetPort' property in the netlify.toml`)
     const open = await waitPort({
       port: settings.frameworkPort,
-      output: 'silent',
+      output: 'dots',
       timeout: FRAMEWORK_PORT_TIMEOUT,
       ...(settings.pollingStrategies.includes('HTTP') && { protocol: 'http' }),
     })
