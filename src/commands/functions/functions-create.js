@@ -423,6 +423,7 @@ const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) 
  * @param {string} functionsDir
  * @param {boolean} isEdgeFunc
  */
+// eslint-disable-next-line max-params
 const scaffoldFromTemplate = async function (command, options, argumentName, functionsDir, isEdgeFunc) {
   // pull the rest of the metadata from the template
   const chosenTemplate = await pickTemplate(options, isEdgeFunc)
@@ -449,7 +450,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
     log(`${NETLIFYDEVLOG} Open in browser: https://github.com/netlify/cli/issues/new`)
   } else {
     const { onComplete, name: templateName, lang, addons = [] } = chosenTemplate
-
+    console.log(chosenTemplate)
     const pathToTemplate = path.join(templatesDir, lang, templateName)
     if (!fs.existsSync(pathToTemplate)) {
       throw new Error(
