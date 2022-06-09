@@ -116,6 +116,7 @@ const initializeProxy = async ({
       [headers.ForwardedHost]: `localhost:${mainPort}`,
       [headers.Passthrough]: 'passthrough',
       [headers.RequestID]: generateUUID(),
+      [headers.IP]: LOCAL_HOST,
     }
 
     if (settings.https) {
