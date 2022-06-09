@@ -182,7 +182,7 @@ const prepareServer = async ({
     log(
       `${chalk.red(
         BANG,
-      )} There was a problem setting up the Edge Functions environment and you unfortunately won't be able to run Edge Functions from CLI. More on supported platforms here: https://deno.land/manual/getting_started/installation. Error: ${
+      )} There was a problem setting up the Edge Functions environment and it's unfortunately not possible to run Edge Functions from the CLI on this platform. More on supported platforms here: https://deno.land/manual/getting_started/installation. Error: ${
         error.message
       }`,
     )
