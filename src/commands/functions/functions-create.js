@@ -201,6 +201,30 @@ const selectTypeOfFunc = async () => {
   return functionType
 }
 
+const ensureEdgeFuncDirExists = function (command) {
+  const siteId = command.netlify.site.id
+
+  if (!siteId) {
+    error(`${NETLIFYDEVERR} No site id found, please run inside a site directory o \`netlify link\`` )
+  }
+
+  const functionsDirHolder = 'netlify/edge-functions'
+
+  if (!fs.existsSync(functionsDirHolder)) {
+    log(
+      `${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(
+        functionsDirHolder,
+      )} does not exist yet, creating it...`,
+    )
+
+    fs.mkdirSync(functionsDirHolder, { recursive: true })
+
+    log(`${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(functionsDirHolder)} created`)
+  }
+  console.log(functionsDirHolder)
+  return functionsDirHolder
+}
+
 /**
  * Get functions directory (and make it if necessary)
  * @param {import('../base-command').BaseCommand} command
@@ -594,9 +618,8 @@ const ensureFunctionPathIsOk = function (functionsDir, name) {
  * @param {import('../base-command').BaseCommand} command
  */
 const functionsCreate = async (name, options, command) => {
-  const isEdgeFunc = await selectTypeOfFunc()
-  console.log(isEdgeFunc)
-  const functionsDir = await ensureFunctionDirExists(command)
+  const isEdgeFunc = await selectTypeOfFunc() === "Edge Function (Deno)"
+  const functionsDir = isEdgeFunc ? await ensureEdgeFuncDirExists(command) : await ensureFunctionDirExists(command)
 
   /* either download from URL or scaffold from template */
   const mainFunc = options.url ? downloadFromURL : scaffoldFromTemplate
