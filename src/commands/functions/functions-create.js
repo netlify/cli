@@ -128,8 +128,9 @@ const formatRegistryArrayForInquirer = function (lang) {
 /**
  * pick template from our existing templates
  * @param {import('commander').OptionValues} config
+ * 
  */
-const pickTemplate = async function ({ language: languageFromFlag }) {
+const pickTemplate = async function ({ language: languageFromFlag }, isEdgeFunc) {
   const specialCommands = [
     new inquirer.Separator(),
     {
@@ -148,8 +149,12 @@ const pickTemplate = async function ({ language: languageFromFlag }) {
   let language = languageFromFlag
 
   if (language === undefined) {
+    const langs = isEdgeFunc ? 
+                  languages.filter((lang) => lang.value === "javascript" || lang.value === "typescript") : 
+                  languages.filter(Boolean)
+
     const { language: languageFromPrompt } = await inquirer.prompt({
-      choices: languages.filter(Boolean),
+      choices: langs,
       message: 'Select the language of your function',
       name: 'language',
       type: 'list',
@@ -294,8 +299,16 @@ const ensureFunctionDirExists = async function (command) {
  * @param {import('commander').OptionValues} options
  * @param {string} argumentName
  * @param {string} functionsDir
+ * @param {boolean} isEdgeFunc
  */
-const downloadFromURL = async function (command, options, argumentName, functionsDir) {
+const downloadFromURL = async function (command, options, argumentName, functionsDir, isEdgeFunc) {
+  if (isEdgeFunc) {
+    log(
+      `${NETLIFYDEVWARN}: Downloading an edge function from a URL is currently not supported. Terminating without further action.`
+    )
+    process.exit(1)
+  }
+
   const folderContents = await readRepoURL(options.url)
   const [functionName] = options.url.split('/').slice(-1)
   const nameToUse = await getNameFromArgs(argumentName, options, functionName)
@@ -407,10 +420,11 @@ const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) 
  * @param {import('commander').OptionValues} options
  * @param {string} argumentName
  * @param {string} functionsDir
+ * @param {boolean} isEdgeFunc
  */
-const scaffoldFromTemplate = async function (command, options, argumentName, functionsDir) {
+const scaffoldFromTemplate = async function (command, options, argumentName, functionsDir, isEdgeFunc) {
   // pull the rest of the metadata from the template
-  const chosenTemplate = await pickTemplate(options)
+  const chosenTemplate = await pickTemplate(options, isEdgeFunc)
   if (chosenTemplate === 'url') {
     const { chosenUrl } = await inquirer.prompt([
       {
@@ -424,7 +438,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
     ])
     options.url = chosenUrl.trim()
     try {
-      await downloadFromURL(command, options, argumentName, functionsDir)
+      await downloadFromURL(command, options, argumentName, functionsDir, isEdgeFunc)
     } catch (error_) {
       error(`$${NETLIFYDEVERR} Error downloading from URL: ${options.url}`)
       error(error_)
@@ -618,12 +632,12 @@ const ensureFunctionPathIsOk = function (functionsDir, name) {
  * @param {import('../base-command').BaseCommand} command
  */
 const functionsCreate = async (name, options, command) => {
-  const isEdgeFunc = await selectTypeOfFunc() === "Edge Function (Deno)"
+  isEdgeFunc = await selectTypeOfFunc() === "Edge Function (Deno)"
   const functionsDir = isEdgeFunc ? await ensureEdgeFuncDirExists(command) : await ensureFunctionDirExists(command)
 
   /* either download from URL or scaffold from template */
   const mainFunc = options.url ? downloadFromURL : scaffoldFromTemplate
-  await mainFunc(command, options, name, functionsDir)
+  await mainFunc(command, options, name, functionsDir, isEdgeFunc)
 }
 
 /**
