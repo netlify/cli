@@ -93,13 +93,14 @@ const filterRegistry = function (registry, input) {
     })
 }
 
-const formatRegistryArrayForInquirer = function (lang) {
-  const folderNames = fs.readdirSync(path.join(templatesDir, lang))
+const formatRegistryArrayForInquirer = function (lang, isEdgeFunc) {
+  const functionType = isEdgeFunc ? "edge" : "serverless"
+  const folderNames = fs.readdirSync(path.join(templatesDir, lang, functionType))
   const registry = folderNames
     // filter out markdown files
     .filter((folderName) => !folderName.endsWith('.md'))
     // eslint-disable-next-line n/global-require, import/no-dynamic-require
-    .map((folderName) => require(path.join(templatesDir, lang, folderName, '.netlify-function-template.js')))
+    .map((folderName) => require(path.join(templatesDir, lang, functionType, folderName, '.netlify-function-template.js')))
     .sort((folderNameA, folderNameB) => {
       const priorityDiff = (folderNameA.priority || DEFAULT_PRIORITY) - (folderNameB.priority || DEFAULT_PRIORITY)
 
@@ -168,7 +169,7 @@ const pickTemplate = async function ({ language: languageFromFlag }, isEdgeFunc)
   let templatesForLanguage
 
   try {
-    templatesForLanguage = formatRegistryArrayForInquirer(language)
+    templatesForLanguage = formatRegistryArrayForInquirer(language, isEdgeFunc)
   } catch {
     throw error(`Invalid language: ${language}`)
   }
