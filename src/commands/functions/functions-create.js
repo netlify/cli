@@ -189,6 +189,18 @@ const pickTemplate = async function ({ language: languageFromFlag }) {
 
 const DEFAULT_PRIORITY = 999
 
+const selectTypeOfFunc = async () => {
+  const { functionType } = await inquirer.prompt([
+    {
+      name: "functionType",
+      message: "Select the type of function you'd like to create: ",
+      type: "list",
+      choices: ["Edge Function (Deno)", "Serverless Function (Node/Go)"],
+    }
+  ])
+  return functionType
+}
+
 /**
  * Get functions directory (and make it if necessary)
  * @param {import('../base-command').BaseCommand} command
@@ -248,7 +260,7 @@ const ensureFunctionDirExists = async function (command) {
 
     log(`${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(functionsDirHolder)} created`)
   }
-
+  console.log(functionsDirHolder)
   return functionsDirHolder
 }
 
@@ -582,6 +594,8 @@ const ensureFunctionPathIsOk = function (functionsDir, name) {
  * @param {import('../base-command').BaseCommand} command
  */
 const functionsCreate = async (name, options, command) => {
+  const isEdgeFunc = await selectTypeOfFunc()
+  console.log(isEdgeFunc)
   const functionsDir = await ensureFunctionDirExists(command)
 
   /* either download from URL or scaffold from template */
