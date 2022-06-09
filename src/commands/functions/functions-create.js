@@ -632,7 +632,7 @@ const ensureFunctionPathIsOk = function (functionsDir, name) {
  * @param {import('../base-command').BaseCommand} command
  */
 const functionsCreate = async (name, options, command) => {
-  isEdgeFunc = await selectTypeOfFunc() === "Edge Function (Deno)"
+  const isEdgeFunc = await selectTypeOfFunc() === "Edge Function (Deno)"
   const functionsDir = isEdgeFunc ? await ensureEdgeFuncDirExists(command) : await ensureFunctionDirExists(command)
 
   /* either download from URL or scaffold from template */
