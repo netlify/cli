@@ -290,7 +290,6 @@ const ensureFunctionDirExists = async function (command) {
 
     log(`${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(functionsDirHolder)} created`)
   }
-  console.log(functionsDirHolder)
   return functionsDirHolder
 }
 
@@ -450,8 +449,8 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
     log(`${NETLIFYDEVLOG} Open in browser: https://github.com/netlify/cli/issues/new`)
   } else {
     const { onComplete, name: templateName, lang, addons = [] } = chosenTemplate
-    console.log(chosenTemplate)
-    const pathToTemplate = path.join(templatesDir, lang, templateName)
+    const functionType = isEdgeFunc ? "edge" : "serverless"
+    const pathToTemplate = path.join(templatesDir, lang, functionType, templateName)
     if (!fs.existsSync(pathToTemplate)) {
       throw new Error(
         `There isn't a corresponding directory to the selected name. Template '${templateName}' is misconfigured`,
@@ -494,6 +493,10 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
       }).start()
       await installDeps({ functionPackageJson, functionPath, functionsDir })
       spinner.succeed(`Installed dependencies for ${name}`)
+    }
+
+    if (isEdgeFunc) {
+      registerEFInToml(name)
     }
 
     await installAddons(command, addons, path.resolve(functionPath))
@@ -615,6 +618,26 @@ const installAddons = async function (command, functionAddons, fnPath) {
     }
   })
   return Promise.all(arr)
+}
+
+const registerEFInToml = async (funcName) => {
+  if (!fs.existsSync("netlify.toml")) {
+    log(`${NETLIFYDEVLOG} \`netlify.toml\` file does not exist yet. Creating it...`)
+  }
+
+  // Todo: validate this input
+  const { funcPath } = await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'funcPath',
+      message: `What path do you want your edge function to run on?`,
+      default: '/test',
+    },
+  ])
+
+  const functionRegister = `[[edge_functions]]\nfunction = "${funcName}"\npath = "${funcPath}"`
+
+  fs.promises.appendFile('netlify.toml', functionRegister)
 }
 
 // we used to allow for a --dir command,
