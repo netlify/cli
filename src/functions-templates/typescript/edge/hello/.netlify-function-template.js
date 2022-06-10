@@ -1,4 +1,4 @@
 module.exports = {
-    name: 'log',
+    name: 'hello',
     description: 'Basic function demonstrating an edge function',
 }
