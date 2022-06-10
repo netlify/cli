@@ -99,8 +99,9 @@ const formatRegistryArrayForInquirer = function (lang, isEdgeFunc) {
   const registry = folderNames
     // filter out markdown files
     .filter((folderName) => !folderName.endsWith('.md'))
-     
+
     .map((folderName) =>
+      // eslint-disable-next-line n/global-require, import/no-dynamic-require
       require(path.join(templatesDir, lang, functionType, folderName, '.netlify-function-template.js')),
     )
     .sort((folderNameA, folderNameB) => {
