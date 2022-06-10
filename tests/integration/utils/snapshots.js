@@ -11,8 +11,6 @@ const normalizers = [
   // this is specific to npm v6
   { pattern: /@ (\w+).+\/.+netlify-cli-tests-v[\d{2}].+/, value: '$1' },
   { pattern: /It should be one of.+/gm, value: 'It should be one of: *' },
-  // remove extra '.'s resulting from different load times that lead to flaky snapshots,
-  { pattern: /\.+(?=\.)/, value: '' },
 ]
 
 const normalize = (inputString) =>

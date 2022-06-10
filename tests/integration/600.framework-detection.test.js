@@ -12,6 +12,13 @@ const { normalize } = require('./utils/snapshots')
 
 const content = 'Hello World!'
 
+// Remove extra '.'s resulting from different load times which lead to flaky snapshots
+const frameworkDetectionNormalizer = (output) => {
+  output.replace(/\.+(?=\.)/, '')
+
+  return normalize(output)
+}
+
 const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
 
 test('should default to process.cwd() and static server', async (t) => {
@@ -27,7 +34,7 @@ test('should default to process.cwd() and static server', async (t) => {
       const response = await got(url).text()
       t.is(response, content)
 
-      t.snapshot(normalize(output))
+      t.snapshot(frameworkDetectionNormalizer(output))
     })
   })
 })
@@ -45,7 +52,7 @@ test('should use static server when --dir flag is passed', async (t) => {
       const response = await got(url).text()
       t.is(response, content)
 
-      t.snapshot(normalize(output))
+      t.snapshot(frameworkDetectionNormalizer(output))
     })
   })
 })
@@ -64,7 +71,7 @@ test('should use static server when framework is set to #static', async (t) => {
       const response = await got(url).text()
       t.is(response, content)
 
-      t.snapshot(normalize(output))
+      t.snapshot(frameworkDetectionNormalizer(output))
     })
   })
 })
@@ -84,7 +91,7 @@ test('should log the command if using static server and `command` is configured'
         const response = await got(url).text()
         t.is(response, content)
 
-        t.snapshot(normalize(output))
+        t.snapshot(frameworkDetectionNormalizer(output))
       },
     )
   })
@@ -105,7 +112,7 @@ test('should warn if using static server and `targetPort` is configured', async 
         const response = await got(url).text()
         t.is(response, content)
 
-        t.snapshot(normalize(output))
+        t.snapshot(frameworkDetectionNormalizer(output))
       },
     )
   })
@@ -283,7 +290,7 @@ test('should filter frameworks with no dev command', async (t) => {
       const response = await got(url).text()
       t.is(response, content)
 
-      t.snapshot(normalize(output))
+      t.snapshot(frameworkDetectionNormalizer(output))
     })
   })
 })
