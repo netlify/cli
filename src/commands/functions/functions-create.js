@@ -94,13 +94,15 @@ const filterRegistry = function (registry, input) {
 }
 
 const formatRegistryArrayForInquirer = function (lang, isEdgeFunc) {
-  const functionType = isEdgeFunc ? "edge" : "serverless"
+  const functionType = isEdgeFunc ? 'edge' : 'serverless'
   const folderNames = fs.readdirSync(path.join(templatesDir, lang, functionType))
   const registry = folderNames
     // filter out markdown files
     .filter((folderName) => !folderName.endsWith('.md'))
     // eslint-disable-next-line n/global-require, import/no-dynamic-require
-    .map((folderName) => require(path.join(templatesDir, lang, functionType, folderName, '.netlify-function-template.js')))
+    .map((folderName) =>
+      require(path.join(templatesDir, lang, functionType, folderName, '.netlify-function-template.js')),
+    )
     .sort((folderNameA, folderNameB) => {
       const priorityDiff = (folderNameA.priority || DEFAULT_PRIORITY) - (folderNameB.priority || DEFAULT_PRIORITY)
 
@@ -129,7 +131,7 @@ const formatRegistryArrayForInquirer = function (lang, isEdgeFunc) {
 /**
  * pick template from our existing templates
  * @param {import('commander').OptionValues} config
- * 
+ *
  */
 const pickTemplate = async function ({ language: languageFromFlag }, isEdgeFunc) {
   const specialCommands = [
@@ -150,9 +152,9 @@ const pickTemplate = async function ({ language: languageFromFlag }, isEdgeFunc)
   let language = languageFromFlag
 
   if (language === undefined) {
-    const langs = isEdgeFunc ? 
-                  languages.filter((lang) => lang.value === "javascript" || lang.value === "typescript") : 
-                  languages.filter(Boolean)
+    const langs = isEdgeFunc
+      ? languages.filter((lang) => lang.value === 'javascript' || lang.value === 'typescript')
+      : languages.filter(Boolean)
 
     const { language: languageFromPrompt } = await inquirer.prompt({
       choices: langs,
@@ -198,11 +200,11 @@ const DEFAULT_PRIORITY = 999
 const selectTypeOfFunc = async () => {
   const { functionType } = await inquirer.prompt([
     {
-      name: "functionType",
+      name: 'functionType',
       message: "Select the type of function you'd like to create: ",
-      type: "list",
-      choices: ["Edge Function (Deno)", "Serverless Function (Node/Go)"],
-    }
+      type: 'list',
+      choices: ['Edge Function (Deno)', 'Serverless Function (Node/Go)'],
+    },
   ])
   return functionType
 }
@@ -211,7 +213,7 @@ const ensureEdgeFuncDirExists = function (command) {
   const siteId = command.netlify.site.id
 
   if (!siteId) {
-    error(`${NETLIFYDEVERR} No site id found, please run inside a site directory o \`netlify link\`` )
+    error(`${NETLIFYDEVERR} No site id found, please run inside a site directory o \`netlify link\``)
   }
 
   const functionsDirHolder = 'netlify/edge-functions'
@@ -301,10 +303,11 @@ const ensureFunctionDirExists = async function (command) {
  * @param {string} functionsDir
  * @param {boolean} isEdgeFunc
  */
+// eslint-disable-next-line max-params
 const downloadFromURL = async function (command, options, argumentName, functionsDir, isEdgeFunc) {
   if (isEdgeFunc) {
     log(
-      `${NETLIFYDEVWARN}: Downloading an edge function from a URL is currently not supported. Terminating without further action.`
+      `${NETLIFYDEVWARN}: Downloading an edge function from a URL is currently not supported. Terminating without further action.`,
     )
     process.exit(1)
   }
@@ -449,7 +452,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
     log(`${NETLIFYDEVLOG} Open in browser: https://github.com/netlify/cli/issues/new`)
   } else {
     const { onComplete, name: templateName, lang, addons = [] } = chosenTemplate
-    const functionType = isEdgeFunc ? "edge" : "serverless"
+    const functionType = isEdgeFunc ? 'edge' : 'serverless'
     const pathToTemplate = path.join(templatesDir, lang, functionType, templateName)
     if (!fs.existsSync(pathToTemplate)) {
       throw new Error(
@@ -621,7 +624,7 @@ const installAddons = async function (command, functionAddons, fnPath) {
 }
 
 const registerEFInToml = async (funcName) => {
-  if (!fs.existsSync("netlify.toml")) {
+  if (!fs.existsSync('netlify.toml')) {
     log(`${NETLIFYDEVLOG} \`netlify.toml\` file does not exist yet. Creating it...`)
   }
 
@@ -657,7 +660,7 @@ const ensureFunctionPathIsOk = function (functionsDir, name) {
  * @param {import('../base-command').BaseCommand} command
  */
 const functionsCreate = async (name, options, command) => {
-  const isEdgeFunc = await selectTypeOfFunc() === "Edge Function (Deno)"
+  const isEdgeFunc = (await selectTypeOfFunc()) === 'Edge Function (Deno)'
   const functionsDir = isEdgeFunc ? await ensureEdgeFuncDirExists(command) : await ensureFunctionDirExists(command)
 
   /* either download from URL or scaffold from template */
