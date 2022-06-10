@@ -14,9 +14,7 @@ const content = 'Hello World!'
 
 // Remove extra '.'s resulting from different load times which lead to flaky snapshots
 const frameworkDetectionNormalizer = (output) => {
-  output.replace(/\.+(?=\.)/, '')
-
-  return normalize(output)
+  return normalize(output.replace(/\.+(?=\.)/, ''))
 }
 
 const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
