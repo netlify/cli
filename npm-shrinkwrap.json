@@ -1,12 +1,12 @@
 {
   "name": "netlify-cli",
-  "version": "10.5.0",
+  "version": "10.5.1",
   "lockfileVersion": 2,
   "requires": true,
   "packages": {
     "": {
       "name": "netlify-cli",
-      "version": "10.5.0",
+      "version": "10.5.1",
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
@@ -16,7 +16,7 @@
         "@netlify/framework-info": "^9.0.2",
         "@netlify/local-functions-proxy": "^1.1.1",
         "@netlify/plugins-list": "^6.27.0",
-        "@netlify/zip-it-and-ship-it": "^5.10.0",
+        "@netlify/zip-it-and-ship-it": "^5.10.1",
         "@octokit/rest": "^18.0.0",
         "@sindresorhus/slugify": "^1.1.0",
         "ansi-escapes": "^5.0.0",
@@ -4208,9 +4208,9 @@
       }
     },
     "node_modules/@netlify/zip-it-and-ship-it": {
-      "version": "5.10.0",
-      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-5.10.0.tgz",
-      "integrity": "sha512-A8CyBm5fvrSObAMOfu62+ycfYlxhdrG/Gf9OF9bg2eWXY+BtQWG7OUnmg/QPykhU3uVNXFrX7psQ5kBa04/x5w==",
+      "version": "5.10.1",
+      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-5.10.1.tgz",
+      "integrity": "sha512-pZSSo1hv32sBUoBPrsWVdd774amYGDc0EhDQlA7OBJsGKexWvH/jNnsQmqtVPNaujNlH12S/v1Z1qMlZlX3PAQ==",
       "dependencies": {
         "@babel/parser": "7.16.8",
         "@netlify/esbuild": "0.14.25",
@@ -26427,9 +26427,9 @@
       }
     },
     "@netlify/zip-it-and-ship-it": {
-      "version": "5.10.0",
-      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-5.10.0.tgz",
-      "integrity": "sha512-A8CyBm5fvrSObAMOfu62+ycfYlxhdrG/Gf9OF9bg2eWXY+BtQWG7OUnmg/QPykhU3uVNXFrX7psQ5kBa04/x5w==",
+      "version": "5.10.1",
+      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-5.10.1.tgz",
+      "integrity": "sha512-pZSSo1hv32sBUoBPrsWVdd774amYGDc0EhDQlA7OBJsGKexWvH/jNnsQmqtVPNaujNlH12S/v1Z1qMlZlX3PAQ==",
       "requires": {
         "@babel/parser": "7.16.8",
         "@netlify/esbuild": "0.14.25",
