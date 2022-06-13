@@ -10,11 +10,12 @@ const { GraphQL, InternalConsole, OneGraphClient } = require('netlify-onegraph-i
 const { NetlifyGraph } = require('netlify-onegraph-internal')
 
 // eslint-disable-next-line no-unused-vars
-const { StateConfig, USER_AGENT, chalk, error, log, warn, watchDebounced } = require('../../utils')
+const { StateConfig, USER_AGENT, chalk, error, execa, log, warn, watchDebounced } = require('../../utils')
 
 const {
   generateFunctionsFile,
   generateHandlerByOperationId,
+  loadNetlifyGraphConfig,
   normalizeOperationsDoc,
   readGraphQLOperationsSourceFile,
   writeGraphQLOperationsSourceFile,
@@ -24,8 +25,8 @@ const {
 const { parse } = GraphQL
 const { defaultExampleOperationsDoc, extractFunctionsFromOperationDoc } = NetlifyGraph
 const {
-  createPersistedQuery,
   ensureAppForSite,
+  executeCreatePersistedQueryMutation,
   executeMarkCliSessionActiveHeartbeat,
   executeMarkCliSessionInactive,
   updateCLISessionMetadata,
@@ -187,7 +188,7 @@ const refetchAndGenerateFromOneGraph = async (input) => {
     .map((service) => service.service)
     .sort((aString, bString) => aString.localeCompare(bString))
 
-  const schema = await OneGraphClient.fetchOneGraphSchema(siteId, enabledServices)
+  const schema = await OneGraphClient.fetchOneGraphSchemaForServices(siteId, enabledServices)
 
   let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
   if (currentOperationsDoc.trim().length === 0) {
@@ -282,24 +283,68 @@ const updateGraphQLOperationsFileFromPersistedDoc = async (input) => {
   witnessedIncomingDocumentHashes.push(hash)
 }
 
-const handleCliSessionEvent = async ({ event, netlifyGraphConfig, netlifyToken, schema, siteId }) => {
+const handleCliSessionEvent = async ({ event, netlifyGraphConfig, netlifyToken, schema, sessionId, siteId }) => {
   const { __typename, payload } = await event
   switch (__typename) {
     case 'OneGraphNetlifyCliSessionTestEvent':
-      await handleCliSessionEvent({ netlifyToken, event: payload, netlifyGraphConfig, schema, siteId })
+      await handleCliSessionEvent({ netlifyToken, event: payload, netlifyGraphConfig, schema, sessionId, siteId })
       break
-    case 'OneGraphNetlifyCliSessionGenerateHandlerEvent':
-      if (!payload.operationId || !payload.operationId.id) {
-        warn(`No operation id found in payload, ${JSON.stringify(payload, null, 2)}`)
+    case 'OneGraphNetlifyCliSessionGenerateHandlerEvent': {
+      if (!payload.operationId && !payload.operation.id) {
+        warn(`No operation id found in payload,
+  ${JSON.stringify(payload, null, 2)}`)
         return
       }
-      generateHandlerByOperationId({
+      const files = generateHandlerByOperationId({
         netlifyGraphConfig,
         schema,
-        operationId: payload.operationId.id,
+        operationId: payload.operationId || payload.operation.id,
         handlerOptions: payload,
       })
+
+      if (!files) {
+        warn(`No files generated for operation id: ${payload.operationId || payload.operation.id}`)
+        return
+      }
+
+      const config = loadNetlifyGraphConfig()
+      for (const file of files) {
+        const fileWrittenEvent = {
+          __typename: "OneGraphNetlifyCliSessionFileWrittenEvent",
+          cliSessionId: sessionId,
+          payload: {
+            editor: config.editor,
+            filepath: file.filePath,
+            audience: 'ui'
+          }
+        };
+
+        await OneGraphClient.executeCreateCLISessionEventMutation({
+          nfToken: netlifyToken,
+          sessionId,
+          payload: fileWrittenEvent,
+        })
+      }
       break
+    }
+    case 'OneGraphNetlifyCliSessionOpenFileEvent': {
+      if (!payload.filePath) {
+        warn(`No filePath found in payload, ${JSON.stringify(payload, null, 2)}`)
+        return
+      }
+      const config = loadNetlifyGraphConfig()
+      if (config.editor) {
+        log(`Opening ${config.editor} for ${payload.filePath}`)
+        execa(config.editor, [payload.filePath], {
+          preferLocal: true,
+          // windowsHide needs to be false for child process to terminate properly on Windows
+          windowsHide: false,
+        })
+      } else {
+        warn('No editor found in config')
+      }
+      break
+    }
     case 'OneGraphNetlifyCliSessionPersistedLibraryUpdatedEvent':
       await updateGraphQLOperationsFileFromPersistedDoc({
         netlifyToken,
@@ -364,12 +409,17 @@ const detectLocalCLISessionMetadata = ({ siteRoot }) => {
   const { username } = userInfo
   const cliVersion = USER_AGENT
 
+  const config = loadNetlifyGraphConfig()
+
+  const { editor } = config
+
   const detectedMetadata = {
     gitBranch: branch,
     hostname,
     username,
     siteRoot,
     cliVersion,
+    editor
   }
 
   return detectedMetadata
@@ -414,7 +464,7 @@ const persistNewOperationsDocForSession = async ({
     document: operationsDoc,
     tags: ['netlify-cli', `session:${oneGraphSessionId}`, `git-branch:${branch}`, `local-change`],
   }
-  const persistedDoc = await createPersistedQuery(netlifyToken, payload)
+  const persistedDoc = await executeCreatePersistedQueryMutation(netlifyToken, payload)
   const newMetadata = await { docId: persistedDoc.id }
   const result = await upsertMergeCLISessionMetadata({
     netlifyGraphConfig,
@@ -462,7 +512,7 @@ const startOneGraphCLISession = async (input) => {
   })
 
   const enabledServices = []
-  const schema = await OneGraphClient.fetchOneGraphSchema(site.id, enabledServices)
+  const schema = await OneGraphClient.fetchOneGraphSchemaForServices(site.id, enabledServices)
 
   const opsFileWatcher = monitorOperationFile({
     netlifyGraphConfig,
@@ -501,14 +551,24 @@ const startOneGraphCLISession = async (input) => {
     sessionId: oneGraphSessionId,
     site,
     state,
+    onClose: () => {
+      log('CLI session closed, stopping monitoring...')
+    },
     onEvents: async (events) => {
+      const ackEventIds = [];
+
       for (const event of events) {
-        const eventName = OneGraphClient.friendlyEventName(event)
-        log(`${chalk.magenta('Handling')} Netlify Graph: ${eventName}...`)
-        await handleCliSessionEvent({ netlifyToken, event, netlifyGraphConfig, schema, siteId: site.id })
-        log(`${chalk.green('Finished handling')} Netlify Graph: ${eventName}...`)
+        const audience = OneGraphClient.eventAudience(event)
+        if (audience === 'cli') {
+          const eventName = OneGraphClient.friendlyEventName(event)
+          log(`${chalk.magenta('Handling')} Netlify Graph: ${eventName}...`)
+          await handleCliSessionEvent({ netlifyToken, event, netlifyGraphConfig, schema, sessionId: oneGraphSessionId, siteId: site.id })
+          log(`${chalk.green('Finished handling')} Netlify Graph: ${eventName}...`)
+          ackEventIds.push(event.id)
+        }
       }
-      return events.map((event) => event.id)
+
+      return ackEventIds
     },
     onError: (fetchEventError) => {
       error(`Netlify Graph upstream error: ${fetchEventError}`)
@@ -613,7 +673,7 @@ const ensureCLISession = async ({ metadata, netlifyToken, site, state }) => {
 
 const OneGraphCliClient = {
   ackCLISessionEvents: OneGraphClient.ackCLISessionEvents,
-  createPersistedQuery,
+  createPersistedQuery: executeCreatePersistedQueryMutation,
   fetchCliSessionEvents: OneGraphClient.fetchCliSessionEvents,
   ensureAppForSite,
   updateCLISessionMetadata,
