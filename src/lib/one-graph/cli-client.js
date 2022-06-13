@@ -310,14 +310,14 @@ const handleCliSessionEvent = async ({ event, netlifyGraphConfig, netlifyToken, 
       const config = loadNetlifyGraphConfig()
       for (const file of files) {
         const fileWrittenEvent = {
-          __typename: "OneGraphNetlifyCliSessionFileWrittenEvent",
+          __typename: 'OneGraphNetlifyCliSessionFileWrittenEvent',
           cliSessionId: sessionId,
           payload: {
             editor: config.editor,
             filepath: file.filePath,
-            audience: 'ui'
-          }
-        };
+            audience: 'ui',
+          },
+        }
 
         await OneGraphClient.executeCreateCLISessionEventMutation({
           nfToken: netlifyToken,
@@ -419,7 +419,7 @@ const detectLocalCLISessionMetadata = ({ siteRoot }) => {
     username,
     siteRoot,
     cliVersion,
-    editor
+    editor,
   }
 
   return detectedMetadata
@@ -555,14 +555,21 @@ const startOneGraphCLISession = async (input) => {
       log('CLI session closed, stopping monitoring...')
     },
     onEvents: async (events) => {
-      const ackEventIds = [];
+      const ackEventIds = []
 
       for (const event of events) {
         const audience = OneGraphClient.eventAudience(event)
         if (audience === 'cli') {
           const eventName = OneGraphClient.friendlyEventName(event)
           log(`${chalk.magenta('Handling')} Netlify Graph: ${eventName}...`)
-          await handleCliSessionEvent({ netlifyToken, event, netlifyGraphConfig, schema, sessionId: oneGraphSessionId, siteId: site.id })
+          await handleCliSessionEvent({
+            netlifyToken,
+            event,
+            netlifyGraphConfig,
+            schema,
+            sessionId: oneGraphSessionId,
+            siteId: site.id,
+          })
           log(`${chalk.green('Finished handling')} Netlify Graph: ${eventName}...`)
           ackEventIds.push(event.id)
         }
