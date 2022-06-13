@@ -1,3 +1,4 @@
+const { execSync } = require('child_process')
 const { join } = require('path')
 
 const inquirer = require('inquirer')
@@ -7,6 +8,7 @@ const { NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, error, log } = require('../../util
 const { applySettings, getSettings, writeSettings } = require('./settings')
 
 const description = 'Create VS Code settings for an optimal experience with Netlify projects'
+const denoExtTimeout = 15_000
 
 const getPrompt = ({ fileExists, path }) => {
   const formattedPath = chalk.underline(path)
@@ -27,6 +29,30 @@ const getEdgeFunctionsPath = ({ config, repositoryRoot }) =>
 
 const getSettingsPath = (repositoryRoot) => join(repositoryRoot, '.vscode', 'settings.json')
 
+const hasDenoVSCodeExt = () => {
+  const ext = execSync('code --list-extensions', { encoding: 'utf-8' }).trim()
+  return ext.split('\n').includes('denoland.vscode-deno')
+}
+
+const getDenoVSCodeExt = () => {
+  const extInstall = execSync('code --install-extension denoland.vscode-deno', {
+    timeout: denoExtTimeout,
+    encoding: 'utf-8',
+  })
+  console.log(extInstall)
+}
+
+const getDenoExtPrompt = () => {
+  const message = 'The Deno VSCode extension is recommended.  Would you like to install it now?'
+
+  return inquirer.prompt({
+    type: 'confirm',
+    name: 'confirm',
+    message,
+    default: true,
+  })
+}
+
 const run = async ({ config, repositoryRoot }) => {
   const { DenoBridge } = await import('@netlify/edge-bundler')
   const deno = new DenoBridge({
@@ -44,15 +70,15 @@ const run = async ({ config, repositoryRoot }) => {
     return
   }
 
+  if (!hasDenoVSCodeExt()) {
+    const { confirm: denoExtConfirm } = await getDenoExtPrompt()
+    if (denoExtConfirm) getDenoVSCodeExt()
+  }
+
   try {
     await writeSettings({ settings, settingsPath })
 
     log(`${NETLIFYDEVLOG} VS Code settings file ${fileExists ? 'updated' : 'created'}.`)
-    log(
-      `${NETLIFYDEVWARN} If you don't have the Deno VS Code extension, install it by visiting ${chalk.blue(
-        'https://ntl.fyi/deno-vscode',
-      )}.`,
-    )
   } catch {
     error('Could not write VS Code settings file.')
   }
