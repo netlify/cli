@@ -179,6 +179,7 @@ const prepareServer = async ({
 
     return { registry, runIsolate }
   } catch (error) {
+    log(`${chalk.red(BANG)} ${error.message}`)
     // return the error so we can listen for the error instance and break execution in initializeProxy()
     // using this instead of throw allows us to continue using netlify dev command if we run into a deno binary error
     return error
