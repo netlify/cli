@@ -179,14 +179,6 @@ const prepareServer = async ({
 
     return { registry, runIsolate }
   } catch (error) {
-    log(
-      `${chalk.red(
-        BANG,
-      )} There was a problem setting up the Edge Functions environment and it's unfortunately not possible to run Edge Functions from the CLI on this platform. More on supported platforms here: https://deno.land/manual/getting_started/installation. Error: ${
-        error.message
-      }`,
-    )
-
     // return the error so we can listen for the error instance and break execution in initializeProxy()
     // using this instead of throw allows us to continue using netlify dev command if we run into a deno binary error
     return error
