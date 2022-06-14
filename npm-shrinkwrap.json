@@ -16,7 +16,7 @@
         "@netlify/framework-info": "^9.0.2",
         "@netlify/local-functions-proxy": "^1.1.1",
         "@netlify/plugins-list": "^6.27.0",
-        "@netlify/zip-it-and-ship-it": "^5.10.1",
+        "@netlify/zip-it-and-ship-it": "^5.10.2",
         "@octokit/rest": "^18.0.0",
         "@sindresorhus/slugify": "^1.1.0",
         "ansi-escapes": "^5.0.0",
@@ -4208,13 +4208,13 @@
       }
     },
     "node_modules/@netlify/zip-it-and-ship-it": {
-      "version": "5.10.1",
-      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-5.10.1.tgz",
-      "integrity": "sha512-pZSSo1hv32sBUoBPrsWVdd774amYGDc0EhDQlA7OBJsGKexWvH/jNnsQmqtVPNaujNlH12S/v1Z1qMlZlX3PAQ==",
+      "version": "5.10.2",
+      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-5.10.2.tgz",
+      "integrity": "sha512-aKKIaCxM0G0aU1YfK/epZ2XN1LOMxFtQ/tsIfYZIM69fAgkTyEJ0FeLS7jeTEjPl+t+k1pdqAZiHTxDFs6gbQA==",
       "dependencies": {
         "@babel/parser": "7.16.8",
         "@netlify/esbuild": "0.14.25",
-        "@vercel/nft": "^0.19.0",
+        "@vercel/nft": "^0.20.0",
         "archiver": "^5.3.0",
         "common-path-prefix": "^3.0.0",
         "cp-file": "^9.0.0",
@@ -4297,9 +4297,9 @@
       }
     },
     "node_modules/@netlify/zip-it-and-ship-it/node_modules/@vercel/nft": {
-      "version": "0.19.1",
-      "resolved": "https://registry.npmjs.org/@vercel/nft/-/nft-0.19.1.tgz",
-      "integrity": "sha512-klR5oN7S3WJsZz0r6Xsq7o8YlFEyU3/00VmlpZzIPVFzKfbcEjXo/sVR5lQBUqNKuOzhcbxaFtzW9aOyHjmPYA==",
+      "version": "0.20.0",
+      "resolved": "https://registry.npmjs.org/@vercel/nft/-/nft-0.20.0.tgz",
+      "integrity": "sha512-+lxsJP/sG4E8UkhfrJC6evkLLfUpZrjXxqEdunr3Q9kiECi8JYBGz6B5EpU1+MmeNnRoSphLcLh/1tI998ye4w==",
       "dependencies": {
         "@mapbox/node-pre-gyp": "^1.0.5",
         "acorn": "^8.6.0",
@@ -26427,13 +26427,13 @@
       }
     },
     "@netlify/zip-it-and-ship-it": {
-      "version": "5.10.1",
-      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-5.10.1.tgz",
-      "integrity": "sha512-pZSSo1hv32sBUoBPrsWVdd774amYGDc0EhDQlA7OBJsGKexWvH/jNnsQmqtVPNaujNlH12S/v1Z1qMlZlX3PAQ==",
+      "version": "5.10.2",
+      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-5.10.2.tgz",
+      "integrity": "sha512-aKKIaCxM0G0aU1YfK/epZ2XN1LOMxFtQ/tsIfYZIM69fAgkTyEJ0FeLS7jeTEjPl+t+k1pdqAZiHTxDFs6gbQA==",
       "requires": {
         "@babel/parser": "7.16.8",
         "@netlify/esbuild": "0.14.25",
-        "@vercel/nft": "^0.19.0",
+        "@vercel/nft": "^0.20.0",
         "archiver": "^5.3.0",
         "common-path-prefix": "^3.0.0",
         "cp-file": "^9.0.0",
@@ -26497,9 +26497,9 @@
           }
         },
         "@vercel/nft": {
-          "version": "0.19.1",
-          "resolved": "https://registry.npmjs.org/@vercel/nft/-/nft-0.19.1.tgz",
-          "integrity": "sha512-klR5oN7S3WJsZz0r6Xsq7o8YlFEyU3/00VmlpZzIPVFzKfbcEjXo/sVR5lQBUqNKuOzhcbxaFtzW9aOyHjmPYA==",
+          "version": "0.20.0",
+          "resolved": "https://registry.npmjs.org/@vercel/nft/-/nft-0.20.0.tgz",
+          "integrity": "sha512-+lxsJP/sG4E8UkhfrJC6evkLLfUpZrjXxqEdunr3Q9kiECi8JYBGz6B5EpU1+MmeNnRoSphLcLh/1tI998ye4w==",
           "requires": {
             "@mapbox/node-pre-gyp": "^1.0.5",
             "acorn": "^8.6.0",
