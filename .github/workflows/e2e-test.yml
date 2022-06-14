@@ -31,13 +31,13 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-          cache-dependency-path: 'npm-shrinkwrap.json'
+          cache-dependency-path: 'package-lock.json'
           check-latest: true
       - name: Cache verdaccio storage
         uses: actions/cache@v3
         with:
           path: ./.verdaccio-storage
-          key: verdaccio-e2e-cli-${{ hashFiles('./npm-shrinkwrap.json') }}
+          key: verdaccio-e2e-cli-${{ hashFiles('./package-lock.json') }}
       - name: Install dependencies
         run: npm ci --no-audit
       - name: Install pnpm

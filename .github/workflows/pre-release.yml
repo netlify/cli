@@ -14,7 +14,7 @@ jobs:
           node-version: '*'
           cache: 'npm'
           check-latest: true
-          cache-dependency-path: 'npm-shrinkwrap.json'
+          cache-dependency-path: 'package-lock.json'
           registry-url: 'https://registry.npmjs.org'
       - name: Install core dependencies
         run: npm ci --no-audit

@@ -27,7 +27,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-          cache-dependency-path: 'npm-shrinkwrap.json'
+          cache-dependency-path: 'package-lock.json'
           check-latest: true
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
       - name: Install core dependencies
@@ -79,7 +79,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-          cache-dependency-path: 'npm-shrinkwrap.json'
+          cache-dependency-path: 'package-lock.json'
           check-latest: true
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
       - name: Setup Deno

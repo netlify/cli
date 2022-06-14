@@ -18,7 +18,7 @@ jobs:
         with:
           node-version: '*'
           cache: 'npm'
-          cache-dependency-path: 'npm-shrinkwrap.json'
+          cache-dependency-path: 'package-lock.json'
           check-latest: true
       - name: Install core dependencies
         run: npm ci --no-audit

@@ -149,7 +149,7 @@
   },
   "files": [
     "/bin",
-    "/npm-shrinkwrap.json",
+    "/package-lock.json.json",
     "/scripts/postinstall.js",
     "/src/**/*.js",
     "/src/**/*.sh",
@@ -209,7 +209,7 @@
   },
   "config": {
     "eslint": "--ignore-path .gitignore --cache --format=codeframe --max-warnings=0 \"{src,scripts,site,tests,.github}/**/*.{mjs,cjs,js,md,html}\" \"*.{mjs,cjs,js,md,html}\" \".*.{mjs,cjs,js,md,html}\"",
-    "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,tools,scripts,site,tests,.github}/**/*.{mjs,cjs,js,md,yml,json,html}\" \"*.{mjs,cjs,js,yml,json,html}\" \".*.{mjs,cjs,js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\" \"!**/*/package-lock.json\" \"!.github/**/*.md\""
+    "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,tools,scripts,site,tests,.github}/**/*.{mjs,cjs,js,md,yml,json,html}\" \"*.{mjs,cjs,js,yml,json,html}\" \".*.{mjs,cjs,js,yml,json,html}\" \"!CHANGELOG.md\" \"!package-lock.json.json\" \"!**/*/package-lock.json\" \"!.github/**/*.md\""
   },
   "dependencies": {
     "@netlify/build": "^27.1.3",

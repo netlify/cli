@@ -34,7 +34,7 @@ export const getAffectedFiles = (changedFiles) => {
 
   // in this case all files are affected
   if (
-    changedFiles.includes('npm-shrinkwrap.json') ||
+    changedFiles.includes('package-lock.json') ||
     changedFiles.includes('package.json') ||
     changedFiles.includes(join('.github', 'workflows', 'main.yml'))
   ) {
