@@ -82,7 +82,7 @@
         "multiparty": "^4.2.1",
         "netlify": "^11.0.1",
         "netlify-headers-parser": "^6.0.2",
-        "netlify-onegraph-internal": "0.3.0",
+        "netlify-onegraph-internal": "0.3.1",
         "netlify-redirect-parser": "^13.0.5",
         "netlify-redirector": "^0.2.1",
         "node-fetch": "^2.6.0",
@@ -16822,9 +16822,9 @@
       }
     },
     "node_modules/netlify-onegraph-internal": {
-      "version": "0.3.0",
-      "resolved": "https://registry.npmjs.org/netlify-onegraph-internal/-/netlify-onegraph-internal-0.3.0.tgz",
-      "integrity": "sha512-JS9gLWwG8OhnklHrQVSOGPcId98x6f3wn78hZzo3dSZDhsL7O7O5GzzYpEZQgeJzRDxBdkuKsvlGgFQEpq9umA==",
+      "version": "0.3.1",
+      "resolved": "https://registry.npmjs.org/netlify-onegraph-internal/-/netlify-onegraph-internal-0.3.1.tgz",
+      "integrity": "sha512-VU649035kx14sTFARPOgo0mF7jT7aEJlnpYS1IrGyUUwVM3wLdy6bLbn9UEng8ommRc7BHwPHWRV6NzRb2FYEQ==",
       "dependencies": {
         "graphql": "16.0.0",
         "node-fetch": "^2.6.0",
@@ -36032,9 +36032,9 @@
       }
     },
     "netlify-onegraph-internal": {
-      "version": "0.3.0",
-      "resolved": "https://registry.npmjs.org/netlify-onegraph-internal/-/netlify-onegraph-internal-0.3.0.tgz",
-      "integrity": "sha512-JS9gLWwG8OhnklHrQVSOGPcId98x6f3wn78hZzo3dSZDhsL7O7O5GzzYpEZQgeJzRDxBdkuKsvlGgFQEpq9umA==",
+      "version": "0.3.1",
+      "resolved": "https://registry.npmjs.org/netlify-onegraph-internal/-/netlify-onegraph-internal-0.3.1.tgz",
+      "integrity": "sha512-VU649035kx14sTFARPOgo0mF7jT7aEJlnpYS1IrGyUUwVM3wLdy6bLbn9UEng8ommRc7BHwPHWRV6NzRb2FYEQ==",
       "requires": {
         "graphql": "16.0.0",
         "node-fetch": "^2.6.0",
