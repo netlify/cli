@@ -215,7 +215,7 @@
     "@netlify/build": "^27.1.3",
     "@netlify/config": "^18.0.1",
     "@netlify/edge-bundler": "^1.2.0",
-    "@netlify/framework-info": "^9.0.2",
+    "@netlify/framework-info": "^9.1.0",
     "@netlify/local-functions-proxy": "^1.1.1",
     "@netlify/plugins-list": "^6.27.0",
     "@netlify/zip-it-and-ship-it": "^5.10.2",
