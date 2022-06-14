@@ -531,10 +531,11 @@ const getGraphEditUrlBySiteId = ({ oneGraphSessionId, siteId }) => {
 
 /**
  * Load `netlifyGraph.json` from the appropriate location
+ * @param {string} siteRoot The root directory of the site
  * @returns {import('netlify-onegraph-internal').NetlifyGraphJsonConfig.JsonConfig}
  */
-const loadNetlifyGraphConfig = () => {
-  const configPath = path.join(process.cwd(), 'netlifyGraph.json')
+const loadNetlifyGraphConfig = (siteRoot) => {
+  const configPath = path.join(siteRoot, 'netlifyGraph.json')
   if (fs.existsSync(configPath)) {
     // eslint-disable-next-line unicorn/prefer-json-parse-buffer
     const file = fs.readFileSync(configPath, 'utf-8')

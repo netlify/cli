@@ -283,11 +283,27 @@ const updateGraphQLOperationsFileFromPersistedDoc = async (input) => {
   witnessedIncomingDocumentHashes.push(hash)
 }
 
-const handleCliSessionEvent = async ({ event, netlifyGraphConfig, netlifyToken, schema, sessionId, siteId }) => {
+const handleCliSessionEvent = async ({
+  event,
+  netlifyGraphConfig,
+  netlifyToken,
+  schema,
+  sessionId,
+  siteId,
+  siteRoot,
+}) => {
   const { __typename, payload } = await event
   switch (__typename) {
     case 'OneGraphNetlifyCliSessionTestEvent':
-      await handleCliSessionEvent({ netlifyToken, event: payload, netlifyGraphConfig, schema, sessionId, siteId })
+      await handleCliSessionEvent({
+        netlifyToken,
+        event: payload,
+        netlifyGraphConfig,
+        schema,
+        sessionId,
+        siteId,
+        siteRoot,
+      })
       break
     case 'OneGraphNetlifyCliSessionGenerateHandlerEvent': {
       if (!payload.operationId && !payload.operation.id) {
@@ -307,7 +323,7 @@ const handleCliSessionEvent = async ({ event, netlifyGraphConfig, netlifyToken, 
         return
       }
 
-      const config = loadNetlifyGraphConfig()
+      const config = loadNetlifyGraphConfig(siteRoot)
       for (const file of files) {
         const fileWrittenEvent = {
           __typename: 'OneGraphNetlifyCliSessionFileWrittenEvent',
@@ -332,7 +348,7 @@ const handleCliSessionEvent = async ({ event, netlifyGraphConfig, netlifyToken, 
         warn(`No filePath found in payload, ${JSON.stringify(payload, null, 2)}`)
         return
       }
-      const config = loadNetlifyGraphConfig()
+      const config = loadNetlifyGraphConfig(siteRoot)
       if (config.editor) {
         log(`Opening ${config.editor} for ${payload.filePath}`)
         execa(config.editor, [payload.filePath], {
@@ -409,7 +425,7 @@ const detectLocalCLISessionMetadata = ({ siteRoot }) => {
   const { username } = userInfo
   const cliVersion = USER_AGENT
 
-  const config = loadNetlifyGraphConfig()
+  const config = loadNetlifyGraphConfig(siteRoot)
 
   const { editor } = config
 
@@ -569,6 +585,7 @@ const startOneGraphCLISession = async (input) => {
             schema,
             sessionId: oneGraphSessionId,
             siteId: site.id,
+            siteRoot: site.root,
           })
           log(`${chalk.green('Finished handling')} Netlify Graph: ${eventName}...`)
           ackEventIds.push(event.id)
