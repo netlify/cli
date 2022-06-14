@@ -3,17 +3,13 @@ const { join } = require('path')
 const process = require('process')
 
 const test = require('ava')
-const omit = require('omit.js').default
-
-const { supportsEdgeHandlers } = require('../../src/lib/account')
-const { getToken } = require('../../src/utils/command-helpers')
+const { Response } = require('node-fetch')
 
 const callCli = require('./utils/call-cli')
 const { createLiveTestSite, generateSiteName } = require('./utils/create-live-test-site')
 const got = require('./utils/got')
 const { withSiteBuilder } = require('./utils/site-builder')
 
-const EDGE_HANDLER_MIN_LENGTH = 50
 const SITE_NAME = generateSiteName('netlify-test-deploy-')
 
 const validateContent = async ({ content, path, siteUrl, t }) => {
@@ -117,13 +113,10 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
     })
   })
 
-  test.serial('should deploy edge handlers when directory exists', async (t) => {
-    if (!supportsEdgeHandlers(t.context.account)) {
-      console.warn(`Skipping edge handlers deploy test for account ${t.context.account.slug}`)
-      return
-    }
+  // TODO: Re-add when feature flag is no longer needed.
+  test.serial.skip('should deploy Edge Functions when directory exists', async (t) => {
     await withSiteBuilder('site-with-public-folder', async (builder) => {
-      const content = '<h1>⊂◉‿◉つ</h1>'
+      const content = '<h1>loud</h1>'
       builder
         .withContentFile({
           path: 'public/index.html',
@@ -131,15 +124,18 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
         })
         .withNetlifyToml({
           config: {
-            build: { publish: 'public', command: 'echo "no op"', edge_handlers: 'netlify/edge-handlers' },
+            build: { publish: 'public', command: 'echo "no op"' },
+            edge_functions: [{ function: 'yell', path: '/*' }],
           },
         })
-        .withEdgeHandlers({
-          handlers: {
-            onRequest: (event) => {
-              console.log(`Incoming request for ${event.request.url}`)
-            },
+        .withEdgeFunction({
+          handler: async (_, context) => {
+            const resp = await context.next()
+            const text = await resp.text()
+
+            return new Response(text.toUpperCase(), resp)
           },
+          name: 'yell',
         })
 
       await builder.buildAsync()
@@ -148,31 +144,11 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
         cwd: builder.directory,
         env: { NETLIFY_SITE_ID: t.context.siteId },
       }
-      // build the edge handlers first
+
       await callCli(['build'], options)
       const deploy = await callCli(['deploy', '--json'], options).then((output) => JSON.parse(output))
 
-      await validateDeploy({ deploy, siteName: SITE_NAME, content, t })
-
-      // validate edge handlers
-      // use this until we can use `netlify api`
-      const [apiToken] = await getToken()
-      const { content_length: contentLength, ...rest } = await got(
-        `https://api.netlify.com/api/v1/deploys/${deploy.deploy_id}/edge_handlers`,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${apiToken}`,
-          },
-        },
-      ).json()
-
-      t.deepEqual(omit(rest, ['created_at', 'sha']), {
-        content_type: 'application/javascript',
-        handlers: ['index'],
-        valid: true,
-      })
-      t.is(contentLength > EDGE_HANDLER_MIN_LENGTH, true)
+      await validateDeploy({ deploy, siteName: SITE_NAME, content: content.toUpperCase(), t })
     })
   })
 

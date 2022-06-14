@@ -17,7 +17,6 @@ const proxy = require('./proxy')
 const readRepoURL = require('./read-repo-url')
 const StateConfig = require('./state-config')
 const telemetry = require('./telemetry')
-const trafficMesh = require('./traffic-mesh')
 
 module.exports = {
   ...commandHelpers,
@@ -36,7 +35,6 @@ module.exports = {
   ...readRepoURL,
   ...StateConfig,
   ...telemetry,
-  ...trafficMesh,
   execa,
   getGlobalConfig,
 }

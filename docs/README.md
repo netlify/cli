@@ -80,7 +80,6 @@ Local dev server
 | Subcommand | description  |
 |:--------------------------- |:-----|
 | [`dev:exec`](/docs/commands/dev.md#devexec) | Exec command  |
-| [`dev:trace`](/docs/commands/dev.md#devtrace) | Trace command  |
 
 
 ### [env](/docs/commands/env.md)
@@ -155,6 +154,15 @@ Open settings for the site linked to the current folder
 |:--------------------------- |:-----|
 | [`open:admin`](/docs/commands/open.md#openadmin) | Opens current site admin UI in Netlify  |
 | [`open:site`](/docs/commands/open.md#opensite) | Opens current site url in browser  |
+
+
+### [recipes](/docs/commands/recipes.md)
+
+(Beta) Create and modify files in a project using pre-defined recipes
+
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`recipes:list`](/docs/commands/recipes.md#recipeslist) | (Beta) List the recipes available to create and modify files in a project  |
 
 
 ### [sites](/docs/commands/sites.md)

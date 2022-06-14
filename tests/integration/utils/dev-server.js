@@ -5,23 +5,10 @@ const execa = require('execa')
 const getPort = require('get-port')
 const omit = require('omit.js').default
 const pTimeout = require('p-timeout')
-const seedrandom = require('seedrandom')
 
 const cliPath = require('./cli-path')
+const { handleQuestions } = require('./handle-questions')
 const { killProcess } = require('./process')
-
-// each process gets a starting port based on the pid
-const rng = seedrandom(`${process.pid}`)
-const getRandomPortStart = function () {
-  const startPort = Math.floor(rng() * RANDOM_PORT_SHIFT) + RANDOM_PORT_SHIFT
-  return startPort
-}
-
-// To avoid collisions with frameworks ports
-const RANDOM_PORT_SHIFT = 1e4
-const FRAMEWORK_PORT_SHIFT = 1e3
-
-let currentPort = getRandomPortStart()
 
 const ENVS_TO_OMIT = ['LANG', 'LC_ALL']
 
@@ -32,18 +19,24 @@ const getExecaOptions = ({ cwd, env }) => ({
   encoding: 'utf8',
 })
 
-const startServer = async ({ cwd, offline = true, env = {}, args = [], expectFailure = false }) => {
-  const tryPort = currentPort
-  currentPort += 1
-  const port = await getPort({ port: tryPort })
+const startServer = async ({ cwd, offline = true, env = {}, args = [], expectFailure = false, prompt }) => {
+  const port = await getPort()
+  const staticPort = await getPort()
   const host = 'localhost'
   const url = `http://${host}:${port}`
   console.log(`Starting dev server on port: ${port} in directory ${path.basename(cwd)}`)
   const ps = execa(
     cliPath,
-    ['dev', offline ? '--offline' : '', '-p', port, '--staticServerPort', port + FRAMEWORK_PORT_SHIFT, ...args],
+    ['dev', offline ? '--offline' : '', '-p', port, '--staticServerPort', staticPort, ...args],
     getExecaOptions({ cwd, env }),
   )
+
+  const promptHistory = []
+
+  if (prompt) {
+    handleQuestions(ps, prompt, promptHistory)
+  }
+
   const outputBuffer = []
   const serverPromise = new Promise((resolve, reject) => {
     let selfKilled = false
@@ -60,6 +53,7 @@ const startServer = async ({ cwd, offline = true, env = {}, args = [], expectFai
             selfKilled = true
             await killProcess(ps)
           },
+          promptHistory,
         })
       }
     })

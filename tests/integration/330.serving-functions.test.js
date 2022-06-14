@@ -891,4 +891,75 @@ test('Populates the `event` argument', async (t) => {
     })
   })
 })
+
+test('Ensures watcher watches included files', async (t) => {
+  await withSiteBuilder('function-with-included-files-watch', async (builder) => {
+    await builder
+      .withContentFiles([
+        {
+          path: 'files/one.json',
+          content: `{"data": "one"}`,
+        },
+        {
+          path: 'files/two.json',
+          content: `{"data": "two"}`,
+        },
+      ])
+      .withFunction({
+        path: 'hello.js',
+        handler: async (event) => {
+          // eslint-disable-next-line n/global-require
+          const { readFileSync } = require('fs')
+          const { name } = event.queryStringParameters
+          const { data } = JSON.parse(readFileSync(`${__dirname}/../files/${name}.json`, 'utf-8'))
+
+          return {
+            statusCode: 200,
+            body: data,
+          }
+        },
+      })
+      .withNetlifyToml({
+        config: {
+          build: { publish: 'public' },
+          functions: {
+            directory: 'functions',
+            included_files: ['files/*'],
+            node_bundler: 'esbuild',
+          },
+        },
+      })
+      .buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, port }) => {
+      await tryAndLogOutput(async () => {
+        t.is(await got(`http://localhost:${port}/.netlify/functions/hello?name=one`).text(), 'one')
+        t.is(await got(`http://localhost:${port}/.netlify/functions/hello?name=two`).text(), 'two')
+      }, outputBuffer)
+
+      await builder
+        .withContentFiles([
+          {
+            path: 'files/one.json',
+            content: `{"data": "three"}`,
+          },
+          {
+            path: 'files/two.json',
+            content: `{"data": "four"}`,
+          },
+        ])
+        .buildAsync()
+
+      // wait for the watcher to rebuild the function
+      const delay = 1000
+      await pause(delay)
+
+      t.true(outputBuffer.some((buffer) => /.*Reloaded function hello.*/.test(buffer.toString())))
+      await tryAndLogOutput(async () => {
+        t.is(await got(`http://localhost:${port}/.netlify/functions/hello?name=one`).text(), 'three')
+        t.is(await got(`http://localhost:${port}/.netlify/functions/hello?name=two`).text(), 'four')
+      }, outputBuffer)
+    })
+  })
+})
 /* eslint-enable require-await */
