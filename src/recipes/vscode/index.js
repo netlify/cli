@@ -35,6 +35,7 @@ const hasDenoVSCodeExt = async () => {
     return extensions.split('\n').includes('denoland.vscode-deno')
   } catch {
     console.log('Error running code command.')
+    return true
   }
 }
 
