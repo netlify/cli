@@ -23,10 +23,10 @@ const getDownloadUpdateFunctions = () => {
   let spinner
 
   /**
-   * @param {boolean} hasError
+   * @param {Error | null} error
    */
-  const onAfterDownload = (hasError) => {
-    stopSpinner({ error: hasError, spinner })
+  const onAfterDownload = (error) => {
+    stopSpinner({ error: Boolean(error), spinner })
   }
 
   const onBeforeDownload = () => {
