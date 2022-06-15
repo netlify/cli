@@ -35,7 +35,11 @@ const hasDenoVSCodeExt = async () => {
 }
 
 const getDenoVSCodeExt = async () => {
-  await execa('code', ['--install-extension', 'denoland.vscode-deno']).stdout.pipe(process.stdout)
+  try {
+    await execa('code', ['--install-extension', 'denoland.vscode-deno']).stdout.pipe(process.stdout)
+  } catch {
+    console.log('Error installing extension.')
+  }
 }
 
 const getDenoExtPrompt = () => {
