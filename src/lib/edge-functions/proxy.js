@@ -1,11 +1,12 @@
 // @ts-check
 const { relative } = require('path')
 const { cwd, env } = require('process')
+const { format } = require('util')
 
 const getAvailablePort = require('get-port')
 const { v4: generateUUID } = require('uuid')
 
-const { BANG, NETLIFYDEVERR, NETLIFYDEVWARN, chalk, log } = require('../../utils/command-helpers')
+const { NETLIFYDEVERR, NETLIFYDEVWARN, chalk, error, log } = require('../../utils/command-helpers')
 const { getGeoLocation } = require('../geo-location')
 const { getPathInProject } = require('../settings')
 const { startSpinner, stopSpinner } = require('../spinner')
@@ -23,10 +24,10 @@ const getDownloadUpdateFunctions = () => {
   let spinner
 
   /**
-   * @param {Error | null} error
+   * @param {Error | null} error_
    */
-  const onAfterDownload = (error) => {
-    stopSpinner({ error: Boolean(error), spinner })
+  const onAfterDownload = (error_) => {
+    stopSpinner({ error: Boolean(error_), spinner })
   }
 
   const onBeforeDownload = () => {
@@ -77,60 +78,62 @@ const initializeProxy = async ({
     projectDir,
   })
   const hasEdgeFunctions = userFunctionsPath !== undefined || internalFunctions.length !== 0
+  let hasServerError = false
 
   return async (req) => {
-    if (req.headers[headers.Passthrough] !== undefined || !hasEdgeFunctions) {
+    if (req.headers[headers.Passthrough] !== undefined || !hasEdgeFunctions || hasServerError) {
       return
     }
 
-    const [geoLocation, preppedServer] = await Promise.all([
-      getGeoLocation({ mode: geolocationMode, offline, state }),
-      server,
-    ])
+    try {
+      const [geoLocation, { registry }] = await Promise.all([
+        getGeoLocation({ mode: geolocationMode, offline, state }),
+        server,
+      ])
 
-    if (preppedServer instanceof Error) {
-      return
+      // Setting header with geolocation.
+      req.headers[headers.Geo] = JSON.stringify(geoLocation)
+
+      await registry.initialize()
+
+      const url = new URL(req.url, `http://${LOCAL_HOST}:${mainPort}`)
+      const { functionNames, orphanedDeclarations } = await registry.matchURLPath(url.pathname)
+
+      // If the request matches a config declaration for an Edge Function without
+      // a matching function file, we warn the user.
+      orphanedDeclarations.forEach((functionName) => {
+        log(
+          `${NETLIFYDEVWARN} Request to ${chalk.yellow(
+            url.pathname,
+          )} matches declaration for edge function ${chalk.yellow(
+            functionName,
+          )}, but there's no matching function file in ${chalk.yellow(
+            relative(cwd(), userFunctionsPath),
+          )}. Please visit ${chalk.blue('https://ntl.fyi/edge-create')} for more information.`,
+        )
+      })
+
+      if (functionNames.length === 0) {
+        return
+      }
+
+      req[headersSymbol] = {
+        [headers.Functions]: functionNames.join(','),
+        [headers.ForwardedHost]: `localhost:${mainPort}`,
+        [headers.Passthrough]: 'passthrough',
+        [headers.RequestID]: generateUUID(),
+        [headers.IP]: LOCAL_HOST,
+      }
+
+      if (settings.https) {
+        req[headersSymbol][headers.ForwardedProtocol] = 'https'
+      }
+
+      return `http://${LOCAL_HOST}:${isolatePort}`
+    } catch (error_) {
+      error(error_ instanceof Error ? error_ : format(error_), { exit: false })
+      hasServerError = true
     }
-
-    // Setting header with geolocation.
-    req.headers[headers.Geo] = JSON.stringify(geoLocation)
-
-    await preppedServer.registry.initialize()
-
-    const url = new URL(req.url, `http://${LOCAL_HOST}:${mainPort}`)
-    const { functionNames, orphanedDeclarations } = await preppedServer.registry.matchURLPath(url.pathname)
-
-    // If the request matches a config declaration for an Edge Function without
-    // a matching function file, we warn the user.
-    orphanedDeclarations.forEach((functionName) => {
-      log(
-        `${NETLIFYDEVWARN} Request to ${chalk.yellow(
-          url.pathname,
-        )} matches declaration for edge function ${chalk.yellow(
-          functionName,
-        )}, but there's no matching function file in ${chalk.yellow(
-          relative(cwd(), userFunctionsPath),
-        )}. Please visit ${chalk.blue('https://ntl.fyi/edge-create')} for more information.`,
-      )
-    })
-
-    if (functionNames.length === 0) {
-      return
-    }
-
-    req[headersSymbol] = {
-      [headers.Functions]: functionNames.join(','),
-      [headers.ForwardedHost]: `localhost:${mainPort}`,
-      [headers.Passthrough]: 'passthrough',
-      [headers.RequestID]: generateUUID(),
-      [headers.IP]: LOCAL_HOST,
-    }
-
-    if (settings.https) {
-      req[headersSymbol][headers.ForwardedProtocol] = 'https'
-    }
-
-    return `http://${LOCAL_HOST}:${isolatePort}`
   }
 }
 
@@ -148,42 +151,34 @@ const prepareServer = async ({
   port,
   projectDir,
 }) => {
-  try {
-    const bundler = await import('@netlify/edge-bundler')
-    const distImportMapPath = getPathInProject([DIST_IMPORT_MAP_PATH])
-    const runIsolate = await bundler.serve({
-      ...getDownloadUpdateFunctions(),
-      certificatePath,
-      debug: env.NETLIFY_DENO_DEBUG === 'true',
-      distImportMapPath,
-      formatExportTypeError: (name) =>
-        `${NETLIFYDEVERR} ${chalk.red('Failed')} to load Edge Function ${chalk.yellow(
-          name,
-        )}. The file does not seem to have a function as the default export.`,
-      formatImportError: (name) =>
-        `${NETLIFYDEVERR} ${chalk.red('Failed')} to run Edge Function ${chalk.yellow(name)}:`,
-      importMaps,
-      inspectSettings,
-      port,
-    })
-    const registry = new EdgeFunctionsRegistry({
-      bundler,
-      config,
-      configPath,
-      directories,
-      getUpdatedConfig,
-      internalFunctions,
-      projectDir,
-      runIsolate,
-    })
+  const bundler = await import('@netlify/edge-bundler')
+  const distImportMapPath = getPathInProject([DIST_IMPORT_MAP_PATH])
+  const runIsolate = await bundler.serve({
+    ...getDownloadUpdateFunctions(),
+    certificatePath,
+    debug: env.NETLIFY_DENO_DEBUG === 'true',
+    distImportMapPath,
+    formatExportTypeError: (name) =>
+      `${NETLIFYDEVERR} ${chalk.red('Failed')} to load Edge Function ${chalk.yellow(
+        name,
+      )}. The file does not seem to have a function as the default export.`,
+    formatImportError: (name) => `${NETLIFYDEVERR} ${chalk.red('Failed')} to run Edge Function ${chalk.yellow(name)}:`,
+    importMaps,
+    inspectSettings,
+    port,
+  })
+  const registry = new EdgeFunctionsRegistry({
+    bundler,
+    config,
+    configPath,
+    directories,
+    getUpdatedConfig,
+    internalFunctions,
+    projectDir,
+    runIsolate,
+  })
 
-    return { registry, runIsolate }
-  } catch (error) {
-    log(`${chalk.red(BANG)} ${error.message}`)
-    // return the error so we can listen for the error instance and break execution in initializeProxy()
-    // using this instead of throw allows us to continue using netlify dev command if we run into a deno binary error
-    return error
-  }
+  return { registry, runIsolate }
 }
 
 module.exports = { handleProxyRequest, initializeProxy, isEdgeFunctionsRequest }
