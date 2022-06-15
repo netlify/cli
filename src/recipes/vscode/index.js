@@ -1,6 +1,5 @@
-const { execSync } = require('child_process')
+const execa = require('execa')
 const { join } = require('path')
-
 const inquirer = require('inquirer')
 
 const { NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, error, log } = require('../../utils/command-helpers')
@@ -29,21 +28,17 @@ const getEdgeFunctionsPath = ({ config, repositoryRoot }) =>
 
 const getSettingsPath = (repositoryRoot) => join(repositoryRoot, '.vscode', 'settings.json')
 
-const hasDenoVSCodeExt = () => {
-  const ext = execSync('code --list-extensions', { encoding: 'utf-8' }).trim()
-  return ext.split('\n').includes('denoland.vscode-deno')
+const hasDenoVSCodeExt = async () => {
+  const { stdout: extensions } = await execa('code', ['--list-extensions'])
+  return extensions.split('\n').includes('denoland.vscode-deno')
 }
 
-const getDenoVSCodeExt = () => {
-  const extInstall = execSync('code --install-extension denoland.vscode-deno', {
-    timeout: denoExtTimeout,
-    encoding: 'utf-8',
-  })
-  console.log(extInstall)
+const getDenoVSCodeExt = async () => {
+  await execa('code', ['--install-extension', 'denoland.vscode-deno']).stdout.pipe(process.stdout)
 }
 
 const getDenoExtPrompt = () => {
-  const message = 'The Deno VSCode extension is recommended.  Would you like to install it now?'
+  const message = 'The Deno VSCode extension is recommended. Would you like to install it now?'
 
   return inquirer.prompt({
     type: 'confirm',
@@ -70,7 +65,7 @@ const run = async ({ config, repositoryRoot }) => {
     return
   }
 
-  if (!hasDenoVSCodeExt()) {
+  if (!(await hasDenoVSCodeExt())) {
     const { confirm: denoExtConfirm } = await getDenoExtPrompt()
     if (denoExtConfirm) getDenoVSCodeExt()
   }
