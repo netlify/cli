@@ -30,21 +30,12 @@ const getEdgeFunctionsPath = ({ config, repositoryRoot }) =>
 const getSettingsPath = (repositoryRoot) => join(repositoryRoot, '.vscode', 'settings.json')
 
 const hasDenoVSCodeExt = async () => {
-  try {
-    const { stdout: extensions } = await execa('code', ['--list-extensions'])
-    return extensions.split('\n').includes('denoland.vscode-deno')
-  } catch {
-    console.log('Error running code command.')
-    return true
-  }
+  const { stdout: extensions } = await execa('code', ['--list-extensions'])
+  return extensions.split('\n').includes('denoland.vscode-deno')
 }
 
 const getDenoVSCodeExt = async () => {
-  try {
-    await execa('code', ['--install-extension', 'denoland.vscode-deno']).stdout.pipe(process.stdout)
-  } catch {
-    console.log('Error installing extension.')
-  }
+  await execa('code', ['--install-extension', 'denoland.vscode-deno']).stdout.pipe(process.stdout)
 }
 
 const getDenoExtPrompt = () => {
@@ -75,9 +66,17 @@ const run = async ({ config, repositoryRoot }) => {
     return
   }
 
-  if (!(await hasDenoVSCodeExt())) {
-    const { confirm: denoExtConfirm } = await getDenoExtPrompt()
-    if (denoExtConfirm) getDenoVSCodeExt()
+  try {
+    if (!(await hasDenoVSCodeExt())) {
+      const { confirm: denoExtConfirm } = await getDenoExtPrompt()
+      if (denoExtConfirm) getDenoVSCodeExt()
+    }
+  } catch {
+    log(
+      `${NETLIFYDEVWARN} Unable to install Deno VS Code extension, install it by visiting ${chalk.blue(
+        'https://ntl.fyi/deno-vscode',
+      )}.`,
+    )
   }
 
   try {
