@@ -298,10 +298,10 @@ const runPrettier = async (filePath) => {
  * @param {Record<string, NetlifyGraph.ExtractedFunction>} context.functions The parsed queries with metadata to use when generating library functions
  * @param {Record<string, NetlifyGraph.ExtractedFragment>} context.fragments The parsed queries with metadata to use when generating library functions
  * @param {(message: string) => void=} context.logger A function that if provided will be used to log messages
- * @returns {void} Void, effectfully writes the generated library to the filesystem
+ * @returns {Promise<void>} Void, effectfully writes the generated library to the filesystem
  */
-const generateFunctionsFile = ({ fragments, functions, logger, netlifyGraphConfig, operationsDoc, schema }) => {
-  const { clientSource, typeDefinitionsSource } = NetlifyGraph.generateFunctionsSource(
+const generateFunctionsFile = async ({ fragments, functions, logger, netlifyGraphConfig, operationsDoc, schema }) => {
+  const { clientSource, typeDefinitionsSource } = await NetlifyGraph.generateFunctionsSource(
     netlifyGraphConfig,
     schema,
     operationsDoc,
@@ -394,7 +394,7 @@ const readGraphQLSchemaFile = (netlifyGraphConfig) => {
  * @param {string} input.operationId The operationId to use when generating the handler
  * @param {object} input.handlerOptions The options to use when generating the handler
  * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
- * @returns
+ * @returns {Array<{filePath: string, prettierSuccess: boolean}>} An array of the generated handler filepaths
  */
 const generateHandlerByOperationId = ({ handlerOptions, logger, netlifyGraphConfig, operationId, schema }) => {
   let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
@@ -425,6 +425,8 @@ const generateHandlerByOperationId = ({ handlerOptions, logger, netlifyGraphConf
     return
   }
 
+  const results = []
+
   exportedFiles.forEach((exportedFile) => {
     const { content } = exportedFile
     const isNamed = exportedFile.kind === 'NamedExportedFile'
@@ -453,7 +455,14 @@ const generateHandlerByOperationId = ({ handlerOptions, logger, netlifyGraphConf
     const relativePath = path.relative(process.cwd(), absoluteFilename)
     logger && logger(`Wrote ${chalk.cyan(relativePath)}`)
     runPrettier(absoluteFilename)
+
+    results.push({
+      filePath: absoluteFilename,
+      prettierSuccess: true,
+    })
   })
+
+  return results
 }
 
 /**
@@ -520,6 +529,22 @@ const getGraphEditUrlBySiteId = ({ oneGraphSessionId, siteId }) => {
   return url
 }
 
+/**
+ * Load `netlifyGraph.json` from the appropriate location
+ * @param {string} siteRoot The root directory of the site
+ * @returns {import('netlify-onegraph-internal').NetlifyGraphJsonConfig.JsonConfig}
+ */
+const loadNetlifyGraphConfig = (siteRoot) => {
+  const configPath = path.join(siteRoot, 'netlifyGraph.json')
+  if (fs.existsSync(configPath)) {
+    // eslint-disable-next-line unicorn/prefer-json-parse-buffer
+    const file = fs.readFileSync(configPath, 'utf-8')
+    return JSON.parse(file)
+  }
+
+  return {}
+}
+
 module.exports = {
   buildSchema,
   defaultExampleOperationsDoc: NetlifyGraph.defaultExampleOperationsDoc,
@@ -532,6 +557,7 @@ module.exports = {
   getGraphEditUrlBySiteId,
   getGraphEditUrlBySiteName,
   getNetlifyGraphConfig,
+  loadNetlifyGraphConfig,
   normalizeOperationsDoc: GraphQLHelpers.normalizeOperationsDoc,
   parse,
   readGraphQLOperationsSourceFile,

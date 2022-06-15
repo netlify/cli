@@ -76,9 +76,11 @@ The CLI is written using the [commander.js](https://github.com/tj/commander.js/)
 
 A good place to start is reading the base command README and looking at the commands folder.
 
+> If you'd like to learn more on how `netlify dev` works, see [here](./docs/netlify-dev.md)
+
 ### Testing
 
-This repo uses [ava](https://github.com/avajs/ava) for testing. Any files in the `src` directory that have a `.test.js` file extension are automatically detected and run as tests.
+This repo uses [ava](https://github.com/avajs/ava) for testing. Unit tests are in the `tests/unit` folder and integration tests are in the `tests/integration` folder. We use this convention since we split tests across multiple CI machines to speed up CI time. You can read about it more [here](https://github.com/netlify/cli/issues/4178).
 
 We also test for a few other things:
 
