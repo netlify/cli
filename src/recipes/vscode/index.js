@@ -1,5 +1,7 @@
-const execa = require('execa')
 const { join } = require('path')
+const process = require('process')
+
+const execa = require('execa')
 const inquirer = require('inquirer')
 
 const { NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, error, log } = require('../../utils/command-helpers')
@@ -7,7 +9,6 @@ const { NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, error, log } = require('../../util
 const { applySettings, getSettings, writeSettings } = require('./settings')
 
 const description = 'Create VS Code settings for an optimal experience with Netlify projects'
-const denoExtTimeout = 15_000
 
 const getPrompt = ({ fileExists, path }) => {
   const formattedPath = chalk.underline(path)
