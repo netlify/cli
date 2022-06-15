@@ -5,7 +5,7 @@
   dependencyDashboard: true,
   packageRules: [
     {
-      matchPackageNames: ['netlify-onegraph-internal', 'googlecloudplatform/release-please-action'],
+      matchPackageNames: ['netlify-onegraph-internal'],
       enabled: false,
     },
   ],

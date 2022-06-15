@@ -16,6 +16,6 @@
   "author": "Netlify",
   "license": "MIT",
   "dependencies": {
-    "stripe": "^8.119.0"
+    "stripe": "^9.0.0"
   }
 }
