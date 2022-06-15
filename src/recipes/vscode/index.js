@@ -30,8 +30,12 @@ const getEdgeFunctionsPath = ({ config, repositoryRoot }) =>
 const getSettingsPath = (repositoryRoot) => join(repositoryRoot, '.vscode', 'settings.json')
 
 const hasDenoVSCodeExt = async () => {
-  const { stdout: extensions } = await execa('code', ['--list-extensions'])
-  return extensions.split('\n').includes('denoland.vscode-deno')
+  try {
+    const { stdout: extensions } = await execa('code', ['--list-extensions'])
+    return extensions.split('\n').includes('denoland.vscode-deno')
+  } catch {
+    console.log('Error running code command.')
+  }
 }
 
 const getDenoVSCodeExt = async () => {
