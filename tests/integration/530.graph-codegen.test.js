@@ -1,4 +1,6 @@
 /* eslint-disable eslint-comments/disable-enable-pair */
+/* eslint-disable unicorn/consistent-function-scoping */
+/* eslint-disable fp/no-loops */
 /* eslint-disable no-unused-vars */
 // @ts-check
 const fs = require('fs')
@@ -47,6 +49,7 @@ const baseNetlifyGraphConfig = {
   framework: '#custom',
   language: 'javascript',
   runtimeTargetEnv: 'node',
+  graphQLOperationsSourceDirectory: ['dummy'],
 }
 
 /**
@@ -150,8 +153,8 @@ const generateHandlerText = ({ handlerOptions, netlifyGraphConfig, operationId, 
   return textualSource
 }
 
-const testGenerateFunctionLibraryAndRuntime = ({ frameworkName, language, name, runtimeTargetEnv }) => {
-  moduleTypes.forEach((moduleType) => {
+const testGenerateFunctionLibraryAndRuntime = async ({ frameworkName, language, name, runtimeTargetEnv }) => {
+  for (const moduleType of moduleTypes) {
     const outDirPath = path.join(process.cwd(), '_test_out')
     const outDir = [path.sep, ...outDirPath.split(path.sep), `netlify-graph-test-${frameworkName}-${moduleType}`]
 
@@ -162,7 +165,7 @@ const testGenerateFunctionLibraryAndRuntime = ({ frameworkName, language, name, 
     const netlifyGraphConfig = { ...baseNetlifyGraphConfig, runtimeTargetEnv, moduleType }
 
     const { fragments, functions } = extractFunctionsFromOperationDoc(parsedDoc)
-    const generatedFunctions = generateFunctionsSource(
+    const generatedFunctions = await generateFunctionsSource(
       netlifyGraphConfig,
       commonSchema,
       appOperationsDoc,
@@ -200,7 +203,7 @@ const testGenerateFunctionLibraryAndRuntime = ({ frameworkName, language, name, 
     test(`netlify graph function library (+runtime) codegen [${frameworkName}-${name}-${language}-${moduleType}]:/netlifyGraph/index.d.ts`, (t) => {
       t.snapshot(generatedFunctions.typeDefinitionsSource)
     })
-  })
+  }
 }
 
 const testGenerateHandlerSource = ({ frameworkName, language, name, operationId }) => {
