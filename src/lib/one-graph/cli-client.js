@@ -136,7 +136,6 @@ const monitorCLISessionEvents = (input) => {
       } finally {
         await OneGraphClient.ackCLISessionEvents({ appId, authToken: netlifyToken, sessionId, eventIds: ackIds })
       }
-
     }
 
     await enabledServiceWatcher(netlifyToken, appId)
