@@ -85,55 +85,60 @@ const initializeProxy = async ({
       return
     }
 
+    let promiseResult
+
     try {
-      const [geoLocation, { registry }] = await Promise.all([
-        getGeoLocation({ mode: geolocationMode, offline, state }),
-        server,
-      ])
-
-      // Setting header with geolocation.
-      req.headers[headers.Geo] = JSON.stringify(geoLocation)
-
-      await registry.initialize()
-
-      const url = new URL(req.url, `http://${LOCAL_HOST}:${mainPort}`)
-      const { functionNames, orphanedDeclarations } = await registry.matchURLPath(url.pathname)
-
-      // If the request matches a config declaration for an Edge Function without
-      // a matching function file, we warn the user.
-      orphanedDeclarations.forEach((functionName) => {
-        log(
-          `${NETLIFYDEVWARN} Request to ${chalk.yellow(
-            url.pathname,
-          )} matches declaration for edge function ${chalk.yellow(
-            functionName,
-          )}, but there's no matching function file in ${chalk.yellow(
-            relative(cwd(), userFunctionsPath),
-          )}. Please visit ${chalk.blue('https://ntl.fyi/edge-create')} for more information.`,
-        )
-      })
-
-      if (functionNames.length === 0) {
-        return
-      }
-
-      req[headersSymbol] = {
-        [headers.Functions]: functionNames.join(','),
-        [headers.ForwardedHost]: `localhost:${mainPort}`,
-        [headers.Passthrough]: 'passthrough',
-        [headers.RequestID]: generateUUID(),
-        [headers.IP]: LOCAL_HOST,
-      }
-
-      if (settings.https) {
-        req[headersSymbol][headers.ForwardedProtocol] = 'https'
-      }
-
-      return `http://${LOCAL_HOST}:${isolatePort}`
+      promiseResult = await Promise.all([getGeoLocation({ mode: geolocationMode, offline, state }), server])
     } catch (error_) {
       error(error_ instanceof Error ? error_ : format(error_), { exit: false })
       hasServerError = true
     }
+
+    if (promiseResult === undefined) {
+      return
+    }
+
+    const [geoLocation, { registry }] = promiseResult
+
+    // Setting header with geolocation.
+    req.headers[headers.Geo] = JSON.stringify(geoLocation)
+
+    await registry.initialize()
+
+    const url = new URL(req.url, `http://${LOCAL_HOST}:${mainPort}`)
+    const { functionNames, orphanedDeclarations } = await registry.matchURLPath(url.pathname)
+
+    // If the request matches a config declaration for an Edge Function without
+    // a matching function file, we warn the user.
+    orphanedDeclarations.forEach((functionName) => {
+      log(
+        `${NETLIFYDEVWARN} Request to ${chalk.yellow(
+          url.pathname,
+        )} matches declaration for edge function ${chalk.yellow(
+          functionName,
+        )}, but there's no matching function file in ${chalk.yellow(
+          relative(cwd(), userFunctionsPath),
+        )}. Please visit ${chalk.blue('https://ntl.fyi/edge-create')} for more information.`,
+      )
+    })
+
+    if (functionNames.length === 0) {
+      return
+    }
+
+    req[headersSymbol] = {
+      [headers.Functions]: functionNames.join(','),
+      [headers.ForwardedHost]: `localhost:${mainPort}`,
+      [headers.Passthrough]: 'passthrough',
+      [headers.RequestID]: generateUUID(),
+      [headers.IP]: LOCAL_HOST,
+    }
+
+    if (settings.https) {
+      req[headersSymbol][headers.ForwardedProtocol] = 'https'
+    }
+
+    return `http://${LOCAL_HOST}:${isolatePort}`
   }
 }
 
