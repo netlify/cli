@@ -22,11 +22,29 @@ const REQUEST_TIMEOUT = 1e4
  * @property {string} country.name
  */
 
-// The default location to be used if we're unable to talk to the API.
-const mockLocation = {
-  city: 'San Francisco',
-  country: { code: 'US', name: 'United States' },
-  subdivision: { code: 'CA', name: 'California' },
+// If the user creates a mockGeo.json in their edge-functions folder, use that
+// Otherwise, use a default value
+let mockLocation
+
+try {
+  mockLocation = require(`${process.cwd()}/netlify/edge-functions/mockGeo.json`)
+  mockLocation = {
+    city: mockLocation.city,
+    country: {
+      code: mockLocation.country?.code,
+      name: mockLocation.country?.name,
+    },
+    subdivision: {
+      code: mockLocation.subdivision?.code,
+      subdivision: mockLocation.subdivision?.name,
+    },
+  }
+} catch {
+  mockLocation = {
+    city: 'San Francisco',
+    country: { code: 'US', name: 'United States' },
+    subdivision: { code: 'CA', name: 'California' },
+  }
 }
 
 /**
