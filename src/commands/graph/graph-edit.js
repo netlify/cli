@@ -11,7 +11,7 @@ const {
 const { NETLIFYDEVERR, chalk, error, log } = require('../../utils')
 const { openBrowser } = require('../../utils/open-browser')
 
-const { createPersistedQuery, ensureAppForSite } = OneGraphCliClient
+const { ensureAppForSite, executeCreatePersistedQuery } = OneGraphCliClient
 
 /**
  * Creates the `netlify graph:edit` command
@@ -50,7 +50,7 @@ const graphEdit = async (options, command) => {
   })
 
   const { branch } = gitRepoInfo()
-  const persistedDoc = await createPersistedQuery(netlifyToken, {
+  const persistedDoc = await executeCreatePersistedQuery(netlifyToken, {
     appId: siteId,
     description: 'Temporary snapshot of local queries',
     document: graphqlDocument,

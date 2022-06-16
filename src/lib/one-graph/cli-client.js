@@ -128,8 +128,15 @@ const monitorCLISessionEvents = (input) => {
     const { events } = next
 
     if (events.length !== 0) {
-      const ackIds = await onEvents(events)
-      await OneGraphClient.ackCLISessionEvents({ appId, authToken: netlifyToken, sessionId, eventIds: ackIds })
+      let ackIds = []
+      try {
+        ackIds = await onEvents(events)
+      } catch (eventHandlerError) {
+        warn(`Error handling event: ${eventHandlerError}`)
+      } finally {
+        await OneGraphClient.ackCLISessionEvents({ appId, authToken: netlifyToken, sessionId, eventIds: ackIds })
+      }
+
     }
 
     await enabledServiceWatcher(netlifyToken, appId)
@@ -474,14 +481,31 @@ const persistNewOperationsDocForSession = async ({
   siteRoot,
 }) => {
   const { branch } = gitRepoInfo()
-  const payload = {
-    appId: siteId,
-    description: 'Temporary snapshot of local queries',
-    document: operationsDoc,
-    tags: ['netlify-cli', `session:${oneGraphSessionId}`, `git-branch:${branch}`, `local-change`],
+  const persistedResult = await executeCreatePersistedQueryMutation(
+    {
+      nfToken: netlifyToken,
+      appId: siteId,
+      description: 'Temporary snapshot of local queries',
+      query: operationsDoc,
+      tags: ['netlify-cli', `session:${oneGraphSessionId}`, `git-branch:${branch}`, `local-change`],
+    },
+    {
+      accessToken: netlifyToken,
+      siteId,
+    },
+  )
+
+  const persistedDoc =
+    persistedResult.data &&
+    persistedResult.data.oneGraph &&
+    persistedResult.data.oneGraph.createPersistedQuery &&
+    persistedResult.data.oneGraph.createPersistedQuery.persistedQuery
+
+  if (!persistedDoc) {
+    warn(`Failed to create persisted query for editing, ${JSON.stringify(persistedResult, null, 2)}`)
   }
-  const persistedDoc = await executeCreatePersistedQueryMutation(netlifyToken, payload)
-  const newMetadata = await { docId: persistedDoc.id }
+
+  const newMetadata = { docId: persistedDoc.id }
   const result = await upsertMergeCLISessionMetadata({
     netlifyGraphConfig,
     netlifyToken,
@@ -697,7 +721,8 @@ const ensureCLISession = async ({ metadata, netlifyToken, site, state }) => {
 
 const OneGraphCliClient = {
   ackCLISessionEvents: OneGraphClient.ackCLISessionEvents,
-  createPersistedQuery: executeCreatePersistedQueryMutation,
+  executeCreatePersistedQueryMutation: OneGraphClient.executeCreatePersistedQueryMutation,
+  executeCreateApiTokenMutation: OneGraphClient.executeCreateApiTokenMutation,
   fetchCliSessionEvents: OneGraphClient.fetchCliSessionEvents,
   ensureAppForSite,
   updateCLISessionMetadata,
