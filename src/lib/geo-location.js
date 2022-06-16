@@ -1,10 +1,11 @@
 // @ts-check
-const fetch = require('node-fetch')
 const process = require('process')
+
+const fetch = require('node-fetch')
 
 const API_URL = 'https://netlifind.netlify.app'
 const STATE_GEO_PROPERTY = 'geolocation'
-const MOCK_GEO_PATH = process.cwd() + '/netlify/edge-functions/mockGeo.json'
+const MOCK_GEO_PATH = `${process.cwd()}/netlify/edge-functions/mockGeo.json`
 // 24 hours
 const CACHE_TTL = 8.64e7
 
@@ -28,6 +29,7 @@ const REQUEST_TIMEOUT = 1e4
 let mockLocation
 
 try {
+  // eslint-disable-next-line import/no-dynamic-require, n/global-require
   mockLocation = require(MOCK_GEO_PATH)
   mockLocation = {
     city: mockLocation.city,
