@@ -12,8 +12,8 @@ const { normalize } = require('./utils/snapshots')
 
 const content = 'Hello World!'
 
-// Remove loading dots as there may be zero to many resulting in failed tests
-const frameworkDetectionNormalizer = (output) => normalize(output.replace(/\.+/, ''))
+// Remove extra '.'s resulting from different load times which lead to flaky snapshots
+const frameworkDetectionNormalizer = (output) => normalize(output.replace(/\.+(?=\.)/, ''))
 
 const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
 
