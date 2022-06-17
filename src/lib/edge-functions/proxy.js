@@ -90,11 +90,8 @@ const initializeProxy = async ({
     try {
       promiseResult = await Promise.all([getGeoLocation({ mode: geolocationMode, offline, state }), server])
     } catch (error_) {
-      error(error_ instanceof Error ? error_ : format(error_), { exit: false })
+      error(error_.message, { exit: false })
       hasServerError = true
-    }
-
-    if (promiseResult === undefined) {
       return
     }
 
