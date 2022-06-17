@@ -1,7 +1,6 @@
 // @ts-check
 const { relative } = require('path')
 const { cwd, env } = require('process')
-const { format } = require('util')
 
 const getAvailablePort = require('get-port')
 const { v4: generateUUID } = require('uuid')
