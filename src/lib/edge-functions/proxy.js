@@ -23,7 +23,7 @@ const getDownloadUpdateFunctions = () => {
   let spinner
 
   /**
-   * @param {Error | null} error_
+   * @param {Error=} error_
    */
   const onAfterDownload = (error_) => {
     stopSpinner({ error: Boolean(error_), spinner })
