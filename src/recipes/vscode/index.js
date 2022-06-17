@@ -1,5 +1,4 @@
 const { join } = require('path')
-const process = require('process')
 
 const execa = require('execa')
 const inquirer = require('inquirer')
