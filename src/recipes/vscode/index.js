@@ -30,12 +30,12 @@ const getEdgeFunctionsPath = ({ config, repositoryRoot }) =>
 const getSettingsPath = (repositoryRoot) => join(repositoryRoot, '.vscode', 'settings.json')
 
 const hasDenoVSCodeExt = async () => {
-  const { stdout: extensions } = await execa('code', ['--list-extensions'])
+  const { stdout: extensions } = await execa('code', ['--list-extensions'], { stderr: 'inherit' })
   return extensions.split('\n').includes('denoland.vscode-deno')
 }
 
 const getDenoVSCodeExt = async () => {
-  await execa('code', ['--install-extension', 'denoland.vscode-deno']).stdout.pipe(process.stdout)
+  await execa('code', ['--install-extension', 'denoland.vscode-deno'], { stdio: 'inherit' })
 }
 
 const getDenoExtPrompt = () => {
@@ -73,7 +73,7 @@ const run = async ({ config, repositoryRoot }) => {
     }
   } catch {
     log(
-      `${NETLIFYDEVWARN} Unable to install Deno VS Code extension, install it by visiting ${chalk.blue(
+      `${NETLIFYDEVWARN} Unable to install Deno VS Code extension. To install it manually, visit ${chalk.blue(
         'https://ntl.fyi/deno-vscode',
       )}.`,
     )
