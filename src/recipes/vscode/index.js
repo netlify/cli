@@ -38,7 +38,7 @@ const getDenoVSCodeExt = async () => {
 }
 
 const getDenoExtPrompt = () => {
-  const message = 'The Deno VSCode extension is recommended. Would you like to install it now?'
+  const message = 'The Deno VS Code extension is recommended. Would you like to install it now?'
 
   return inquirer.prompt({
     type: 'confirm',
