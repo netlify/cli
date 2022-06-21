@@ -218,7 +218,7 @@
     "@netlify/framework-info": "^9.1.0",
     "@netlify/local-functions-proxy": "^1.1.1",
     "@netlify/plugins-list": "^6.28.0",
-    "@netlify/zip-it-and-ship-it": "^5.11.0",
+    "@netlify/zip-it-and-ship-it": "^5.11.1",
     "@octokit/rest": "^18.0.0",
     "@sindresorhus/slugify": "^1.1.0",
     "ansi-escapes": "^5.0.0",
