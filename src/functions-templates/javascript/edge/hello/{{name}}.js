@@ -1,5 +1,3 @@
-export default async (Request) => {
-  return new Response('Hello, World!', {
+export default async (Request) => new Response('Hello, World!', {
     headers: { 'content-type': 'text/html' },
   })
-}
