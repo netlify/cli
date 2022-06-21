@@ -305,7 +305,6 @@ test('should pass framework-info env to framework sub process', async (t) => {
 
     // a failure is expected since this is not a true Gatsby project
     const error = await t.throwsAsync(() => withDevServer({ cwd: builder.directory }, () => {}, true))
-    console.log(error.stdout)
     t.true(error.stdout.includes('"npm run develop" exited with code'))
   })
 })
