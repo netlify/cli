@@ -634,7 +634,7 @@ const registerEFInToml = async (funcName) => {
     {
       type: 'input',
       name: 'funcPath',
-      message: `What route do you want your edge function to be invoked on?`,
+      message: `What route do you want your edge function to be invoked on?\n  Route should begin with a '/' and can be modified in the 'netlify.toml' file.`,
       default: '/test',
     },
   ])
@@ -642,6 +642,7 @@ const registerEFInToml = async (funcName) => {
   const functionRegister = `\n\n[[edge_functions]]\nfunction = "${funcName}"\npath = "${funcPath}"`
 
   fs.promises.appendFile('netlify.toml', functionRegister)
+  log(`${NETLIFYDEVLOG} Edge function successfully registered for route ${funcPath}!`)
 }
 
 // we used to allow for a --dir command,
