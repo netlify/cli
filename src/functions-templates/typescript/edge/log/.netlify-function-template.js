@@ -1,4 +1,4 @@
 module.exports = {
-    name: 'log',
-    description: 'Basic function logging context of request',
-  }
+  name: 'log',
+  description: 'Basic function logging context of request',
+}

@@ -1,4 +1,4 @@
 module.exports = {
-    name: 'geolocation',
-    description: 'Returns the geolocation of the request',
-  }
+  name: 'geolocation',
+  description: 'Returns the geolocation of the request',
+}
