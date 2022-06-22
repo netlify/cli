@@ -634,12 +634,13 @@ const registerEFInToml = async (funcName) => {
     {
       type: 'input',
       name: 'funcPath',
-      message: `What path do you want your edge function to run on?`,
+      message: `What route do you want your edge function to be invoked on? \nRout must begin with '/'\
+      and can be configured by editing your \`netlify.toml\` file.`,
       default: '/test',
     },
   ])
 
-  const functionRegister = `[[edge_functions]]\nfunction = "${funcName}"\npath = "${funcPath}"`
+  const functionRegister = `\n[[edge_functions]]\nfunction = "${funcName}"\npath = "${funcPath}"`
 
   fs.promises.appendFile('netlify.toml', functionRegister)
 }

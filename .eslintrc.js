@@ -51,6 +51,9 @@ module.exports = {
         'n/no-missing-require': 0,
         'n/no-unsupported-features/es-syntax': 0,
       },
+      parserOptions: {
+        sourceType: 'module'
+      }
     },
     {
       files: ['e2e/**/*.js'],
