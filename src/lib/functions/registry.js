@@ -176,7 +176,6 @@ class FunctionsRegistry {
 
     const functions = await this.listFunctions(directories, {
       featureFlags: {
-        buildGoSource: true,
         buildRustSource: env.NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE === 'true',
       },
       config: this.config,
