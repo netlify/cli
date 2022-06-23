@@ -1,4 +1,4 @@
 module.exports = {
   name: 'hello',
-  description: 'Basic function demonstrating an edge function',
+  description: 'Basic function that shows async/await usage, and response formatting',
 }
