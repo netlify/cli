@@ -56,7 +56,7 @@ module.exports = {
       },
       parserOptions: {
         sourceType: 'module',
-      }
+      },
     },
     {
       files: ['e2e/**/*.js'],
