@@ -5,7 +5,7 @@ const { cwd, env } = require('process')
 const getAvailablePort = require('get-port')
 const { v4: generateUUID } = require('uuid')
 
-const { NETLIFYDEVERR, NETLIFYDEVWARN, chalk, error, log } = require('../../utils/command-helpers')
+const { NETLIFYDEVERR, NETLIFYDEVWARN, chalk, error: printError, log } = require('../../utils/command-helpers')
 const { getGeoLocation } = require('../geo-location')
 const { getPathInProject } = require('../settings')
 const { startSpinner, stopSpinner } = require('../spinner')
@@ -83,20 +83,20 @@ const initializeProxy = async ({
       return
     }
 
-    const [geoLocation, preppedServer] = await Promise.all([
+    const [geoLocation, registry] = await Promise.all([
       getGeoLocation({ mode: geolocationMode, offline, state }),
       server,
     ])
 
-    if (!preppedServer) return
+    if (!registry) return
 
     // Setting header with geolocation.
     req.headers[headers.Geo] = JSON.stringify(geoLocation)
 
-    await preppedServer.registry.initialize()
+    await registry.initialize()
 
     const url = new URL(req.url, `http://${LOCAL_HOST}:${mainPort}`)
-    const { functionNames, orphanedDeclarations } = await preppedServer.registry.matchURLPath(url.pathname)
+    const { functionNames, orphanedDeclarations } = await registry.matchURLPath(url.pathname)
 
     // If the request matches a config declaration for an Edge Function without
     // a matching function file, we warn the user.
@@ -175,9 +175,9 @@ const prepareServer = async ({
       runIsolate,
     })
 
-    return { registry, runIsolate }
-  } catch (error_) {
-    error(error_.message, { exit: false })
+    return registry
+  } catch (error) {
+    printError(error.message, { exit: false })
   }
 }
 
