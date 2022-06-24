@@ -202,7 +202,7 @@ const selectTypeOfFunc = async () => {
   const { functionType } = await inquirer.prompt([
     {
       name: 'functionType',
-      message: "Select the type of function you'd like to create: ",
+      message: "Select the type of function you'd like to create",
       type: 'list',
       choices: ['Edge Function (Deno)', 'Serverless Function (Node/Go)'],
     },
