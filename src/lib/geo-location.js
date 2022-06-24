@@ -58,7 +58,7 @@ const getGeoLocation = async ({ mode, offline, state }) => {
   // If the `--offline` option was used, we can't talk to the API, so let's
   // also use the mock location.  Otherwise, use the country code passed in by
   // the user.
-  if ((mode && mode !== 'update') || offline) {
+  if (!['cache', 'update'].includes(mode) || offline) {
     return mode === 'mock'
       ? mockLocation
       : { city: '', country: { code: mode, name: '' }, subdivision: { code: '', name: '' } }
