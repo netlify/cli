@@ -366,6 +366,19 @@ const validateShortFlagArgs = (args) => {
   return args
 }
 
+const validateGeoArgs = (arg) => {
+  if (arg !== 'mock' && arg !== 'cache' && arg.length !== 2) {
+    throw new Error(
+      `Allowable values for the geo option are 'cache', 'mock', or a two letter country code.
+      ${chalk.red(BANG)}  Supported formats:
+      netlify dev --geo=mock
+      netlify dev --geo=cache
+      netlify dev --geo=CA`,
+    )
+  }
+  return arg
+}
+
 /**
  * The dev command
  * @param {import('commander').OptionValues} options
@@ -570,7 +583,7 @@ const createDevCommand = (program) => {
         '--geo <mode>',
         'force geolocation data to be updated, use cached data from the last 24h if found, or use a mock location',
       )
-        .choices(['cache', 'mock', 'update'])
+        .argParser(validateGeoArgs)
         .default('cache'),
     )
     .addOption(

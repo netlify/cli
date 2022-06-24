@@ -2,10 +2,10 @@
 const process = require('process')
 
 const fetch = require('node-fetch')
+const mock = require('mock-fs')
 
 const API_URL = 'https://netlifind.netlify.app'
 const STATE_GEO_PROPERTY = 'geolocation'
-const MOCK_GEO_PATH = `${process.cwd()}/netlify/edge-functions/mockGeo.json`
 // 24 hours
 const CACHE_TTL = 8.64e7
 
@@ -24,30 +24,10 @@ const REQUEST_TIMEOUT = 1e4
  * @property {string} country.name
  */
 
-// If the user creates a mockGeo.json in their edge-functions folder, use that
-// Otherwise, use a default value
-let mockLocation
-
-try {
-  // eslint-disable-next-line import/no-dynamic-require, n/global-require
-  mockLocation = require(MOCK_GEO_PATH)
-  mockLocation = {
-    city: mockLocation.city,
-    country: {
-      code: mockLocation.country && mockLocation.country.code,
-      name: mockLocation.country && mockLocation.country.name,
-    },
-    subdivision: {
-      code: mockLocation.subdivision && mockLocation.subdivision.code,
-      subdivision: mockLocation.subdivision && mockLocation.subdivision.name,
-    },
-  }
-} catch {
-  mockLocation = {
-    city: 'San Francisco',
-    country: { code: 'US', name: 'United States' },
-    subdivision: { code: 'CA', name: 'California' },
-  }
+const mockLocation = {
+  city: 'San Francisco',
+  country: { code: 'US', name: 'United States' },
+  subdivision: { code: 'CA', name: 'California' },
 }
 
 /**
@@ -56,7 +36,7 @@ try {
  *
  * @param {object} params
  * @param {string} params.geolocationMode
- * @param {"cache"|"update"|"mock"} params.mode
+ * @param {string} params.mode
  * @param {boolean} params.offline
  * @param {import('../utils/state-config').StateConfig} params.state
  * @returns {Promise<GeoLocation>}
@@ -77,11 +57,14 @@ const getGeoLocation = async ({ mode, offline, state }) => {
     }
   }
 
-  // If the `--geo` option is set to `mock`, we use the mock location. Also,
-  // if the `--offline` option was used, we can't talk to the API, so let's
-  // also use the mock location.
-  if (mode === 'mock' || offline) {
-    return mockLocation
+  // If the `--geo` option is set to `mock`, we use the default mock location.
+  // If the `--offline` option was used, we can't talk to the API, so let's
+  // also use the mock location.  Otherwise, use the country code passed in by
+  // the user.
+  if (mode || offline) {
+    return mode === 'mock'
+      ? mockLocation
+      : { city: '', country: { code: mode, name: '' }, subdivision: { code: '', name: '' } }
   }
 
   // Trying to retrieve geolocation data from the API and caching it locally.
