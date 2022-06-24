@@ -1,8 +1,5 @@
 // @ts-check
-const process = require('process')
-
 const fetch = require('node-fetch')
-const mock = require('mock-fs')
 
 const API_URL = 'https://netlifind.netlify.app'
 const STATE_GEO_PROPERTY = 'geolocation'
