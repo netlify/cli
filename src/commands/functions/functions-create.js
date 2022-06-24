@@ -230,7 +230,6 @@ const ensureEdgeFuncDirExists = function (command) {
 
     log(`${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(functionsDirHolder)} created`)
   }
-  console.log(functionsDirHolder)
   return functionsDirHolder
 }
 
