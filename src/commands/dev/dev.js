@@ -367,7 +367,7 @@ const validateShortFlagArgs = (args) => {
 }
 
 const validateGeoArgs = (arg) => {
-  if (arg !== 'mock' && arg !== 'cache' && arg.length !== 2) {
+  if (!['cache', 'mock', 'update'].includes(arg) && arg.length !== 2) {
     throw new Error(
       `Allowable values for the geo option are 'cache', 'mock', or a two letter country code.
       ${chalk.red(BANG)}  Supported formats:
