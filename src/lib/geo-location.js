@@ -33,12 +33,13 @@ const mockLocation = {
  *
  * @param {object} params
  * @param {string} params.geolocationMode
- * @param {string} params.mode
+ * @param {"cache"|"update"|"mock"} params.mode
+ * @param {string} params.geoCountry
  * @param {boolean} params.offline
  * @param {import('../utils/state-config').StateConfig} params.state
  * @returns {Promise<GeoLocation>}
  */
-const getGeoLocation = async ({ mode, offline, state }) => {
+const getGeoLocation = async ({ geoCountry, mode, offline, state }) => {
   const cacheObject = state.get(STATE_GEO_PROPERTY)
 
   // If we have cached geolocation data and the `--geo` option is set to
@@ -59,9 +60,9 @@ const getGeoLocation = async ({ mode, offline, state }) => {
   // also use the mock location.  Otherwise, use the country code passed in by
   // the user.
   if (!['cache', 'update'].includes(mode) || offline) {
-    return mode === 'mock'
+    return mode === 'mock' && !geoCountry
       ? mockLocation
-      : { city: '', country: { code: mode, name: '' }, subdivision: { code: '', name: '' } }
+      : { city: '', country: { code: geoCountry, name: '' }, subdivision: { code: '', name: '' } }
   }
 
   // Trying to retrieve geolocation data from the API and caching it locally.

@@ -214,6 +214,7 @@ const FRAMEWORK_PORT_TIMEOUT = 6e5
  * @param {InspectSettings} params.inspectSettings
  * @param {() => Promise<object>} params.getUpdatedConfig
  * @param {string} params.geolocationMode
+ * @param {string} params.geoCountry
  * @param {*} params.settings
  * @param {boolean} params.offline
  * @param {*} params.site
@@ -223,6 +224,7 @@ const FRAMEWORK_PORT_TIMEOUT = 6e5
 const startProxyServer = async ({
   addonsUrls,
   config,
+  geoCountry,
   geolocationMode,
   getUpdatedConfig,
   inspectSettings,
@@ -236,6 +238,7 @@ const startProxyServer = async ({
     config,
     configPath: site.configPath,
     geolocationMode,
+    geoCountry,
     getUpdatedConfig,
     inspectSettings,
     offline,
@@ -366,17 +369,18 @@ const validateShortFlagArgs = (args) => {
   return args
 }
 
-const validateGeoArgs = (arg) => {
-  if (!['cache', 'mock', 'update'].includes(arg) && arg.length !== 2) {
+const validateGeoCountryCode = (arg) => {
+  // Validate that the arg passed is two letters only for country
+  // See https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes
+  if (arg.length !== 2 || !/[a-z]{2}/gi.test(arg)) {
     throw new Error(
-      `Allowable values for the geo option are 'cache', 'mock', or a two letter country code.
+      `The geo country code must use a two letter abbreviation.
       ${chalk.red(BANG)}  Supported formats:
-      netlify dev --geo=mock
-      netlify dev --geo=cache
-      netlify dev --geo=CA`,
+      netlify dev --geo=mock --country=CA
+      netlify dev --geo=mock --country=FR`,
     )
   }
-  return arg
+  return arg.toUpperCase()
 }
 
 /**
@@ -453,6 +457,7 @@ const dev = async (options, command) => {
     addonsUrls,
     config,
     geolocationMode: options.geo,
+    geoCountry: options.country,
     getUpdatedConfig,
     inspectSettings,
     offline: options.offline,
@@ -583,9 +588,10 @@ const createDevCommand = (program) => {
         '--geo <mode>',
         'force geolocation data to be updated, use cached data from the last 24h if found, or use a mock location',
       )
-        .argParser(validateGeoArgs)
+        .choices(['cache', 'mock', 'update'])
         .default('cache'),
     )
+    .addOption(new Option('--country <geoCountry>', 'Two letter country code').argParser(validateGeoCountryCode))
     .addOption(
       new Option('--staticServerPort <port>', 'port of the static app server used when no framework is detected')
         .argParser((value) => Number.parseInt(value))

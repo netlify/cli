@@ -48,6 +48,7 @@ const handleProxyRequest = (req, proxyReq) => {
 const initializeProxy = async ({
   config,
   configPath,
+  geoCountry,
   geolocationMode,
   getUpdatedConfig,
   inspectSettings,
@@ -87,7 +88,10 @@ const initializeProxy = async ({
     let promiseResult
 
     try {
-      promiseResult = await Promise.all([getGeoLocation({ mode: geolocationMode, offline, state }), server])
+      promiseResult = await Promise.all([
+        getGeoLocation({ mode: geolocationMode, geolocationMode, geoCountry, offline, state }),
+        server,
+      ])
     } catch (error_) {
       error(error_.message, { exit: false })
       hasServerError = true
