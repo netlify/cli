@@ -649,9 +649,11 @@ const registerEFInToml = async (funcName) => {
 
   const functionRegister = `\n\n[[edge_functions]]\nfunction = "${funcName}"\npath = "${funcPath}"`
 
-  try { 
-    fs.promises.appendFile('netlify.toml', functionRegister);
-    log(`${NETLIFYDEVLOG} Function '${funcName}' registered for route \`${funcPath}\`. To change, edit your \`netlify.toml\` file.`);
+  try {
+    fs.promises.appendFile('netlify.toml', functionRegister)
+    log(
+      `${NETLIFYDEVLOG} Function '${funcName}' registered for route \`${funcPath}\`. To change, edit your \`netlify.toml\` file.`,
+    )
   } catch {
     log(`${NETLIFYDEVERR} Unable to register function. Please check your \`netlify.toml\` file.`)
     process.exit(1)
