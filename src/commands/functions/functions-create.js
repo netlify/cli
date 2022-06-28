@@ -11,6 +11,7 @@ const findUp = require('find-up')
 const fuzzy = require('fuzzy')
 const inquirer = require('inquirer')
 const inquirerAutocompletePrompt = require('inquirer-autocomplete-prompt')
+const { file } = require('mock-fs/lib/filesystem')
 const fetch = require('node-fetch')
 const ora = require('ora')
 
@@ -445,7 +446,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
     ])
     options.url = chosenUrl.trim()
     try {
-      await downloadFromURL(command, options, argumentName, functionsDir, funcType)
+      await downloadFromURL(command, options, argumentName, functionsDir)
     } catch (error_) {
       error(`$${NETLIFYDEVERR} Error downloading from URL: ${options.url}`)
       error(error_)
@@ -630,21 +631,32 @@ const registerEFInToml = async (funcName) => {
     log(`${NETLIFYDEVLOG} \`netlify.toml\` file does not exist yet. Creating it...`)
   }
 
-  // Todo: validate this input
-  const { funcPath } = await inquirer.prompt([
+  let { funcPath } = await inquirer.prompt([
     {
       type: 'input',
       name: 'funcPath',
-      message: `What route do you want your edge function to be invoked on? \nRoute must begin with '/'\
-      and can be configured by editing your \`netlify.toml\` file.`,
+      message: `What route do you want your edge function to be invoked on? \nRoute can be configured by editing your \`netlify.toml\` file.`,
       default: '/test',
+      validate: (val) => Boolean(val),
+      // Make sure route isn't undefined and is valid
+      // Todo: add more validation?
     },
   ])
 
+  // Make sure path begins with a '/'
+  if (funcPath[0] !== '/') {
+    funcPath = `/${funcPath}`
+  }
+
   const functionRegister = `\n\n[[edge_functions]]\nfunction = "${funcName}"\npath = "${funcPath}"`
 
-  fs.promises.appendFile('netlify.toml', functionRegister)
-  log(`${NETLIFYDEVLOG} Edge function successfully registered for route ${funcPath}!`)
+  try { 
+    fs.promises.appendFile('netlify.toml', functionRegister);
+    log(`${NETLIFYDEVLOG} Function '${funcName}' registered for route \`${funcPath}\`. To change, edit your \`netlify.toml\` file.`);
+  } catch {
+    log(`${NETLIFYDEVERR} Unable to register function. Please check your \`netlify.toml\` file.`)
+    process.exit(1)
+  }
 }
 
 // we used to allow for a --dir command,
