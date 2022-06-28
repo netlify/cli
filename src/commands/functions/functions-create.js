@@ -11,7 +11,6 @@ const findUp = require('find-up')
 const fuzzy = require('fuzzy')
 const inquirer = require('inquirer')
 const inquirerAutocompletePrompt = require('inquirer-autocomplete-prompt')
-const { file } = require('mock-fs/lib/filesystem')
 const fetch = require('node-fetch')
 const ora = require('ora')
 
