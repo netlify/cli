@@ -5,7 +5,7 @@ const { cwd, env } = require('process')
 const getAvailablePort = require('get-port')
 const { v4: generateUUID } = require('uuid')
 
-const { NETLIFYDEVERR, NETLIFYDEVWARN, chalk, log } = require('../../utils/command-helpers')
+const { NETLIFYDEVERR, NETLIFYDEVWARN, chalk, error, log } = require('../../utils/command-helpers')
 const { getGeoLocation } = require('../geo-location')
 const { getPathInProject } = require('../settings')
 const { startSpinner, stopSpinner } = require('../spinner')
@@ -22,8 +22,11 @@ const LOCAL_HOST = '127.0.0.1'
 const getDownloadUpdateFunctions = () => {
   let spinner
 
-  const onAfterDownload = () => {
-    stopSpinner({ spinner })
+  /**
+   * @param {Error=} error_
+   */
+  const onAfterDownload = (error_) => {
+    stopSpinner({ error: Boolean(error_), spinner })
   }
 
   const onBeforeDownload = () => {
@@ -74,16 +77,24 @@ const initializeProxy = async ({
     projectDir,
   })
   const hasEdgeFunctions = userFunctionsPath !== undefined || internalFunctions.length !== 0
+  let hasServerError = false
 
   return async (req) => {
-    if (req.headers[headers.Passthrough] !== undefined || !hasEdgeFunctions) {
+    if (req.headers[headers.Passthrough] !== undefined || !hasEdgeFunctions || hasServerError) {
       return
     }
 
-    const [geoLocation, { registry }] = await Promise.all([
-      getGeoLocation({ mode: geolocationMode, offline, state }),
-      server,
-    ])
+    let promiseResult
+
+    try {
+      promiseResult = await Promise.all([getGeoLocation({ mode: geolocationMode, offline, state }), server])
+    } catch (error_) {
+      error(error_.message, { exit: false })
+      hasServerError = true
+      return
+    }
+
+    const [geoLocation, { registry }] = promiseResult
 
     // Setting header with geolocation.
     req.headers[headers.Geo] = JSON.stringify(geoLocation)
