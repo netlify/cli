@@ -427,10 +427,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
   const chosenTemplate = await pickTemplate(options, funcType)
   if (chosenTemplate === 'url') {
     if (funcType === 'edge') {
-      log(
-        `${NETLIFYDEVWARN}: Downloading an edge function from a URL is currently not supported. Terminating without further action.`,
-      )
-      process.exit(1)
+      error(`Downloading an edge function from a URL is currently not supported. Terminating without further action.`)
     }
 
     const { chosenUrl } = await inquirer.prompt([
