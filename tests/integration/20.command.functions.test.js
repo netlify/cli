@@ -840,4 +840,25 @@ test('should handle content-types with charset', async (t) => {
   })
 })
 
+test('should execute function when name clashes with config key names', async (t) => {
+  await withSiteBuilder('function-invoke-with-config-key-name', async (builder) => {
+    builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
+      path: 'plugins.js',
+      handler: async () => ({
+        statusCode: 200,
+        body: 'success',
+      }),
+    })
+
+    await builder.buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async (server) => {
+      const stdout = await callCli(['functions:invoke', 'plugins', `--port=${server.port}`], {
+        cwd: builder.directory,
+      })
+      t.is(stdout, 'success')
+    })
+  })
+})
+
 /* eslint-enable require-await */
