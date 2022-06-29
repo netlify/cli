@@ -40,11 +40,11 @@ const envImport = async (fileName, options, command) => {
   const siteData = await api.getSite({ siteId })
 
   const importIntoService = siteData.use_envelope ? importIntoEnvelope : importIntoMongo
-  const newEnv = await importIntoService({ api, importedEnv, options, siteData })
+  await importIntoService({ api, importedEnv, options, siteData })
 
   // Return new environment variables of site if using json flag
   if (options.json) {
-    logJson(newEnv)
+    logJson(importedEnv)
     return false
   }
 
@@ -53,12 +53,12 @@ const envImport = async (fileName, options, command) => {
   const table = new AsciiTable(`Imported environment variables`)
 
   table.setHeading('Key', 'Value')
-  table.addRowMatrix(Object.entries(newEnv))
+  table.addRowMatrix(Object.entries(importedEnv))
   log(table.toString())
 }
 
 const importIntoMongo = async ({ api, importedEnv, options, siteData }) => {
-  const { env } = siteData.build_settings
+  const { env = {} } = siteData.build_settings
   const siteId = siteData.id
 
   // Apply environment variable updates
@@ -80,20 +80,17 @@ const importIntoEnvelope = async ({ api, importedEnv, options, siteData }) => {
   // fetch env vars
   const accountId = siteData.account_slug
   const siteId = siteData.id
+  const dotEnvKeys = Object.keys(importedEnv)
   const envelopeVariables = await api.getEnvVars({ accountId, siteId })
-  const keys = envelopeVariables.map(({ key }) => key)
+  const envelopeKeys = envelopeVariables.map(({ key }) => key)
 
   // if user intends to replace all existing env vars
-  if (options.replaceExisting) {
-    // TODO: Until there's an exposed wipeSite endpoint,
-    // hit each env var with a DELETE in parallel
-    await Promise.all(keys.map((key) => api.deleteEnvVar({ accountId, siteId, key })))
-  } else {
-    // otherwise, merge; filter out env vars that already exist
-    const dotEnvEntries = Object.entries(importedEnv)
-    const filteredEntries = dotEnvEntries.filter(([key]) => !keys.includes(key))
-    importedEnv = Object.fromEntries(filteredEntries)
-  }
+  // either replace; delete all existing env vars on the site
+  // or, merge; delete only the existing env vars that would collide with new .env entries
+  const keysToDelete = options.replaceExisting ? envelopeKeys : envelopeKeys.filter((key) => dotEnvKeys.includes(key))
+
+  // delete marked env vars in parallel
+  await Promise.all(keysToDelete.map((key) => api.deleteEnvVar({ accountId, siteId, key })))
 
   // hit create endpoint
   const body = translateFromMongoToEnvelope(importedEnv)
@@ -102,8 +99,6 @@ const importIntoEnvelope = async ({ api, importedEnv, options, siteData }) => {
   } catch (error) {
     throw error.json.msg
   }
-
-  return importedEnv
 }
 
 /**
