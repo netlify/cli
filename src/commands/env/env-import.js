@@ -5,7 +5,7 @@ const AsciiTable = require('ascii-table')
 const dotenv = require('dotenv')
 const isEmpty = require('lodash/isEmpty')
 
-const { exit, log, logJson } = require('../../utils')
+const { exit, log, logJson, translateFromMongoToEnvelope } = require('../../utils')
 
 /**
  * The env:import command
@@ -23,13 +23,6 @@ const envImport = async (fileName, options, command) => {
     return false
   }
 
-  const siteData = await api.getSite({ siteId })
-
-  // Get current environment variables set in the UI
-  const {
-    build_settings: { env = {} },
-  } = siteData
-
   let importedEnv = {}
   try {
     const envFileContents = await readFile(fileName, 'utf-8')
@@ -44,8 +37,32 @@ const envImport = async (fileName, options, command) => {
     return false
   }
 
+  const siteData = await api.getSite({ siteId })
+
+  const importIntoService = siteData.use_envelope ? importIntoEnvelope : importIntoMongo
+  const newEnv = await importIntoService({ api, importedEnv, options, siteData })
+
+  // Return new environment variables of site if using json flag
+  if (options.json) {
+    logJson(newEnv)
+    return false
+  }
+
+  // List newly imported environment variables in a table
+  log(`site: ${siteData.name}`)
+  const table = new AsciiTable(`Imported environment variables`)
+
+  table.setHeading('Key', 'Value')
+  table.addRowMatrix(Object.entries(newEnv))
+  log(table.toString())
+}
+
+const importIntoMongo = async ({ api, importedEnv, options, siteData }) => {
+  const { env } = siteData.build_settings
+  const siteId = siteData.id
+
   // Apply environment variable updates
-  const siteResult = await api.updateSite({
+  await api.updateSite({
     siteId,
     body: {
       build_settings: {
@@ -56,19 +73,37 @@ const envImport = async (fileName, options, command) => {
     },
   })
 
-  // Return new environment variables of site if using json flag
-  if (options.json) {
-    logJson(siteResult.build_settings.env)
-    return false
+  return importedEnv
+}
+
+const importIntoEnvelope = async ({ api, importedEnv, options, siteData }) => {
+  // fetch env vars
+  const accountId = siteData.account_slug
+  const siteId = siteData.id
+  const envelopeVariables = await api.getEnvVars({ accountId, siteId })
+  const keys = envelopeVariables.map(({ key }) => key)
+
+  // if user intends to replace all existing env vars
+  if (options.replaceExisting) {
+    // TODO: Until there's an exposed wipeSite endpoint,
+    // hit each env var with a DELETE in parallel
+    await Promise.all(keys.map((key) => api.deleteEnvVar({ accountId, siteId, key })))
+  } else {
+    // otherwise, merge; filter out env vars that already exist
+    const dotEnvEntries = Object.entries(importedEnv)
+    const filteredEntries = dotEnvEntries.filter(([key]) => !keys.includes(key))
+    importedEnv = Object.fromEntries(filteredEntries)
   }
 
-  // List newly imported environment variables in a table
-  log(`site: ${siteData.name}`)
-  const table = new AsciiTable(`Imported environment variables`)
+  // hit create endpoint
+  const body = translateFromMongoToEnvelope(importedEnv)
+  try {
+    await api.createEnvVars({ accountId, siteId, body })
+  } catch (error) {
+    throw error.json.msg
+  }
 
-  table.setHeading('Key', 'Value')
-  table.addRowMatrix(Object.entries(importedEnv))
-  log(table.toString())
+  return importedEnv
 }
 
 /**
