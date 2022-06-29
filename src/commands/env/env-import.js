@@ -57,6 +57,10 @@ const envImport = async (fileName, options, command) => {
   log(table.toString())
 }
 
+/**
+ * Updates the imported env in the site record
+ * @returns {Promise<object>}
+ */
 const importIntoMongo = async ({ api, importedEnv, options, siteData }) => {
   const { env = {} } = siteData.build_settings
   const siteId = siteData.id
@@ -78,6 +82,10 @@ const importIntoMongo = async ({ api, importedEnv, options, siteData }) => {
   return finalEnv
 }
 
+/**
+ * Saves the imported env in the Envelope service
+ * @returns {Promise<object>}
+ */
 const importIntoEnvelope = async ({ api, importedEnv, options, siteData }) => {
   // fetch env vars
   const accountId = siteData.account_slug

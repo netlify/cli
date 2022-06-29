@@ -20,17 +20,21 @@ const envUnset = async (key, options, command) => {
   const siteData = await api.getSite({ siteId })
 
   const unsetInService = siteData.use_envelope ? unsetInEnvelope : unsetInMongo
-  const totalEnv = await unsetInService({ api, siteData, key })
+  const finalEnv = await unsetInService({ api, siteData, key })
 
   // Return new environment variables of site if using json flag
   if (options.json) {
-    logJson(totalEnv)
+    logJson(finalEnv)
     return false
   }
 
   log(`Unset environment variable ${key} for site ${siteData.name}`)
 }
 
+/**
+ * Deletes a given key from the env of a site record
+ * @returns {Promise<object>}
+ */
 const unsetInMongo = async ({ api, key, siteData }) => {
   // Get current environment variables set in the UI
   const {
@@ -55,6 +59,10 @@ const unsetInMongo = async ({ api, key, siteData }) => {
   return newEnv
 }
 
+/**
+ * Deletes a given key from the env of a site configured with Envelope
+ * @returns {Promise<object>}
+ */
 const unsetInEnvelope = async ({ api, key, siteData }) => {
   const accountId = siteData.account_slug
   const siteId = siteData.id

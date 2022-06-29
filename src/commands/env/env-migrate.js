@@ -81,6 +81,10 @@ const envMigrate = async (options, command) => {
   )
 }
 
+/**
+ * Copies the env from a site not configured with Envelope to a different site not configured with Envelope
+ * @returns {Promise<boolean>}
+ */
 const mongoToMongo = async ({ api, siteFrom, siteTo }) => {
   const [
     {
@@ -115,6 +119,10 @@ const mongoToMongo = async ({ api, siteFrom, siteTo }) => {
   return true
 }
 
+/**
+ * Copies the env from a site not configured with Envelope to a site configured with Envelope
+ * @returns {Promise<boolean>}
+ */
 const mongoToEnvelope = async ({ api, siteFrom, siteTo }) => {
   const envFrom = siteFrom.build_settings.env || {}
   const keysFrom = Object.keys(envFrom)
@@ -144,6 +152,10 @@ const mongoToEnvelope = async ({ api, siteFrom, siteTo }) => {
   return true
 }
 
+/**
+ * Copies the env from a site configured with Envelope to a site not configured with Envelope
+ * @returns {Promise<boolean>}
+ */
 const envelopeToMongo = async ({ api, siteFrom, siteTo }) => {
   const envelopeVariables = await api.getEnvVars({ accountId: siteFrom.account_slug, siteId: siteFrom.id })
   const envFrom = translateFromEnvelopeToMongo(envelopeVariables)
@@ -174,6 +186,10 @@ const envelopeToMongo = async ({ api, siteFrom, siteTo }) => {
   return true
 }
 
+/**
+ * Copies the env from a site configured with Envelope to a different site configured with Envelope
+ * @returns {Promise<boolean>}
+ */
 const envelopeToEnvelope = async ({ api, siteFrom, siteTo }) => {
   const [envelopeFrom, envelopeTo] = await Promise.all([
     api.getEnvVars({ accountId: siteFrom.account_slug, siteId: siteFrom.id }),

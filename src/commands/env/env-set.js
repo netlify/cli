@@ -22,17 +22,21 @@ const envSet = async (key, value, options, command) => {
 
   // Get current environment variables set in the UI
   const setInService = siteData.use_envelope ? setInEnvelope : setInMongo
-  const totalEnv = await setInService({ api, siteData, key, value })
+  const finalEnv = await setInService({ api, siteData, key, value })
 
   // Return new environment variables of site if using json flag
   if (options.json) {
-    logJson(totalEnv)
+    logJson(finalEnv)
     return false
   }
 
   log(`Set environment variable ${key}=${value} for site ${siteData.name}`)
 }
 
+/**
+ * Updates the env for a site record with a new key/value pair
+ * @returns {Promise<object>}
+ */
 const setInMongo = async ({ api, key, siteData, value }) => {
   const { env = {} } = siteData.build_settings
   const newEnv = {
@@ -51,6 +55,10 @@ const setInMongo = async ({ api, key, siteData, value }) => {
   return newEnv
 }
 
+/**
+ * Updates the env for a site configured with Envelope with a new key/value pair
+ * @returns {Promise<object>}
+ */
 const setInEnvelope = async ({ api, key, siteData, value }) => {
   const accountId = siteData.account_slug
   const siteId = siteData.id
