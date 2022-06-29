@@ -21,50 +21,8 @@ const envSet = async (key, value, options, command) => {
   const siteData = await api.getSite({ siteId })
 
   // Get current environment variables set in the UI
-  const {
-    build_settings: { env = {} },
-    use_envelope: useEnvelope,
-  } = siteData
-
-  let totalEnv
-  if (useEnvelope) {
-    const accountId = siteData.account_slug
-    // fetch envelope env vars
-    const envelopeVariables = await api.getEnvVars({ accountId, siteId })
-    const scopes = ['builds', 'functions', 'runtime', 'post_processing']
-    const values = [{ context: 'all', value }]
-    // check if we need to create or update
-    const exists = envelopeVariables.some((envVar) => envVar.key === key)
-    const method = exists ? api.updateEnvVar : api.createEnvVars
-    const body = exists ? { key, scopes, values } : [{ key, scopes, values }]
-
-    try {
-      await method({ accountId, siteId, key, body })
-    } catch (error) {
-      throw error.json.msg
-    }
-
-    const mongoEnv = translateFromEnvelopeToMongo(envelopeVariables)
-    totalEnv = {
-      ...mongoEnv,
-      [key]: value,
-    }
-  } else {
-    const newEnv = {
-      ...env,
-      [key]: value,
-    }
-    // Apply environment variable updates
-    await api.updateSite({
-      siteId,
-      body: {
-        build_settings: {
-          env: newEnv,
-        },
-      },
-    })
-    totalEnv = newEnv
-  }
+  const setInService = siteData.use_envelope ? setInEnvelope : setInMongo
+  const totalEnv = await setInService({ api, siteData, key, value })
 
   // Return new environment variables of site if using json flag
   if (options.json) {
@@ -73,6 +31,49 @@ const envSet = async (key, value, options, command) => {
   }
 
   log(`Set environment variable ${key}=${value} for site ${siteData.name}`)
+}
+
+const setInMongo = async ({ api, key, siteData, value }) => {
+  const { env } = siteData.build_settings
+  const newEnv = {
+    ...env,
+    [key]: value,
+  }
+  // Apply environment variable updates
+  await api.updateSite({
+    siteId: siteData.id,
+    body: {
+      build_settings: {
+        env: newEnv,
+      },
+    },
+  })
+  return newEnv
+}
+
+const setInEnvelope = async ({ api, key, siteData, value }) => {
+  const accountId = siteData.account_slug
+  const siteId = siteData.id
+  // fetch envelope env vars
+  const envelopeVariables = await api.getEnvVars({ accountId, siteId })
+  const scopes = ['builds', 'functions', 'runtime', 'post_processing']
+  const values = [{ context: 'all', value }]
+  // check if we need to create or update
+  const exists = envelopeVariables.some((envVar) => envVar.key === key)
+  const method = exists ? api.updateEnvVar : api.createEnvVars
+  const body = exists ? { key, scopes, values } : [{ key, scopes, values }]
+
+  try {
+    await method({ accountId, siteId, key, body })
+  } catch (error) {
+    throw error.json.msg
+  }
+
+  const env = translateFromEnvelopeToMongo(envelopeVariables)
+  return {
+    ...env,
+    [key]: value,
+  }
 }
 
 /**
