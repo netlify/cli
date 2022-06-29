@@ -62,7 +62,11 @@ const getGeoLocation = async ({ geoCountry, mode, offline, state }) => {
   if (!['cache', 'update'].includes(mode) || offline) {
     return mode === 'mock' && !geoCountry
       ? mockLocation
-      : { city: '', country: { code: geoCountry, name: '' }, subdivision: { code: '', name: '' } }
+      : {
+          city: 'Netlitown',
+          country: { code: geoCountry, name: 'Mock Country' },
+          subdivision: { code: 'JS', name: 'Jamstackvania' },
+        }
   }
 
   // Trying to retrieve geolocation data from the API and caching it locally.

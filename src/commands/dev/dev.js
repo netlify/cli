@@ -611,7 +611,12 @@ const createDevCommand = (program) => {
         .choices(['cache', 'mock', 'update'])
         .default('cache'),
     )
-    .addOption(new Option('--country <geoCountry>', 'Two-letter country code to use as mock geolocation (to be used with --mock)').argParser(validateGeoCountryCode))
+    .addOption(
+      new Option(
+        '--country <geoCountry>',
+        'Two-letter country code to use as mock geolocation (to be used with --mock)',
+      ).argParser(validateGeoCountryCode),
+    )
     .addOption(
       new Option('--staticServerPort <port>', 'port of the static app server used when no framework is detected')
         .argParser((value) => Number.parseInt(value))
