@@ -15,7 +15,7 @@
         "@netlify/edge-bundler": "^1.4.1",
         "@netlify/framework-info": "^9.1.0",
         "@netlify/local-functions-proxy": "^1.1.1",
-        "@netlify/plugins-list": "^6.28.0",
+        "@netlify/plugins-list": "^6.30.0",
         "@netlify/zip-it-and-ship-it": "^5.11.1",
         "@octokit/rest": "^18.0.0",
         "@sindresorhus/slugify": "^1.1.0",
@@ -3534,9 +3534,9 @@
       "integrity": "sha512-ZJF4nbLPfxsWrVgp2reCb23HMxsWl5+r+K0RtIhxcZ/RxbHVihRA9mwyzIcxPWrT5x9uAAxCr1aKGP7IdsDe+Q=="
     },
     "node_modules/@netlify/plugins-list": {
-      "version": "6.29.0",
-      "resolved": "https://registry.npmjs.org/@netlify/plugins-list/-/plugins-list-6.29.0.tgz",
-      "integrity": "sha512-H81D32COgftfzJhY+TWNtxd8EXaQS1c/Gkj3WI/v4xhsZvw/6MOzKtDopK7Mq7nYk+aKc2OqxfOuQNR02FpQug==",
+      "version": "6.30.0",
+      "resolved": "https://registry.npmjs.org/@netlify/plugins-list/-/plugins-list-6.30.0.tgz",
+      "integrity": "sha512-NF0G7rMl/FbCkZMDiihoDW70i96aF3fguHvuspucstM4ArAdMai5b3rEKSOO2SXTbmQHaAlQEpiYAPZsGwU7jg==",
       "engines": {
         "node": "^12.20.0 || ^14.14.0 || >=16.0.0"
       }
@@ -22643,9 +22643,9 @@
       }
     },
     "node_modules/winston": {
-      "version": "3.7.2",
-      "resolved": "https://registry.npmjs.org/winston/-/winston-3.7.2.tgz",
-      "integrity": "sha512-QziIqtojHBoyzUOdQvQiar1DH0Xp9nF1A1y7NVy2DGEsz82SBDtOalS0ulTRGVT14xPX3WRWkCsdcJKqNflKng==",
+      "version": "3.8.0",
+      "resolved": "https://registry.npmjs.org/winston/-/winston-3.8.0.tgz",
+      "integrity": "sha512-Iix1w8rIq2kBDkGvclO0db2CVOHYVamCIkVWcUbs567G9i2pdB+gvqLgDgxx4B4HXHYD6U4Zybh6ojepUOqcFQ==",
       "dependencies": {
         "@dabh/diagnostics": "^2.0.2",
         "async": "^3.2.3",
@@ -25065,9 +25065,9 @@
       "integrity": "sha512-ZJF4nbLPfxsWrVgp2reCb23HMxsWl5+r+K0RtIhxcZ/RxbHVihRA9mwyzIcxPWrT5x9uAAxCr1aKGP7IdsDe+Q=="
     },
     "@netlify/plugins-list": {
-      "version": "6.29.0",
-      "resolved": "https://registry.npmjs.org/@netlify/plugins-list/-/plugins-list-6.29.0.tgz",
-      "integrity": "sha512-H81D32COgftfzJhY+TWNtxd8EXaQS1c/Gkj3WI/v4xhsZvw/6MOzKtDopK7Mq7nYk+aKc2OqxfOuQNR02FpQug=="
+      "version": "6.30.0",
+      "resolved": "https://registry.npmjs.org/@netlify/plugins-list/-/plugins-list-6.30.0.tgz",
+      "integrity": "sha512-NF0G7rMl/FbCkZMDiihoDW70i96aF3fguHvuspucstM4ArAdMai5b3rEKSOO2SXTbmQHaAlQEpiYAPZsGwU7jg=="
     },
     "@netlify/run-utils": {
       "version": "4.0.1",
@@ -39695,9 +39695,9 @@
       }
     },
     "winston": {
-      "version": "3.7.2",
-      "resolved": "https://registry.npmjs.org/winston/-/winston-3.7.2.tgz",
-      "integrity": "sha512-QziIqtojHBoyzUOdQvQiar1DH0Xp9nF1A1y7NVy2DGEsz82SBDtOalS0ulTRGVT14xPX3WRWkCsdcJKqNflKng==",
+      "version": "3.8.0",
+      "resolved": "https://registry.npmjs.org/winston/-/winston-3.8.0.tgz",
+      "integrity": "sha512-Iix1w8rIq2kBDkGvclO0db2CVOHYVamCIkVWcUbs567G9i2pdB+gvqLgDgxx4B4HXHYD6U4Zybh6ojepUOqcFQ==",
       "requires": {
         "@dabh/diagnostics": "^2.0.2",
         "async": "^3.2.3",
