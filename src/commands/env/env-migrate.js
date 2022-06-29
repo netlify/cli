@@ -68,7 +68,11 @@ const envMigrate = async (options, command) => {
   } else {
     method = envelopeToEnvelope
   }
-  await method({ api, siteFrom, siteTo })
+  const success = await method({ api, siteFrom, siteTo })
+
+  if (!success) {
+    return false
+  }
 
   log(
     `Successfully migrated environment variables from ${chalk.greenBright(siteFrom.name)} to ${chalk.greenBright(
@@ -107,6 +111,8 @@ const mongoToMongo = async ({ api, siteFrom, siteTo }) => {
       },
     },
   })
+
+  return true
 }
 
 const mongoToEnvelope = async ({ api, siteFrom, siteTo }) => {
@@ -134,6 +140,8 @@ const mongoToEnvelope = async ({ api, siteFrom, siteTo }) => {
   } catch (error) {
     throw error.json.msg
   }
+
+  return true
 }
 
 const envelopeToMongo = async ({ api, siteFrom, siteTo }) => {
@@ -162,6 +170,8 @@ const envelopeToMongo = async ({ api, siteFrom, siteTo }) => {
       },
     },
   })
+
+  return true
 }
 
 const envelopeToEnvelope = async ({ api, siteFrom, siteTo }) => {
@@ -189,6 +199,8 @@ const envelopeToEnvelope = async ({ api, siteFrom, siteTo }) => {
   } catch (error) {
     throw error.json.msg
   }
+
+  return true
 }
 
 /**
