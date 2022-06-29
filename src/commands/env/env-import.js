@@ -5,7 +5,7 @@ const AsciiTable = require('ascii-table')
 const dotenv = require('dotenv')
 const isEmpty = require('lodash/isEmpty')
 
-const { exit, log, logJson, translateFromMongoToEnvelope } = require('../../utils')
+const { exit, log, logJson, translateFromEnvelopeToMongo, translateFromMongoToEnvelope } = require('../../utils')
 
 /**
  * The env:import command
@@ -40,11 +40,11 @@ const envImport = async (fileName, options, command) => {
   const siteData = await api.getSite({ siteId })
 
   const importIntoService = siteData.use_envelope ? importIntoEnvelope : importIntoMongo
-  await importIntoService({ api, importedEnv, options, siteData })
+  const finalEnv = await importIntoService({ api, importedEnv, options, siteData })
 
   // Return new environment variables of site if using json flag
   if (options.json) {
-    logJson(importedEnv)
+    logJson(finalEnv)
     return false
   }
 
@@ -61,6 +61,8 @@ const importIntoMongo = async ({ api, importedEnv, options, siteData }) => {
   const { env = {} } = siteData.build_settings
   const siteId = siteData.id
 
+  const finalEnv = options.replaceExisting ? importedEnv : { ...env, ...importedEnv }
+
   // Apply environment variable updates
   await api.updateSite({
     siteId,
@@ -68,12 +70,12 @@ const importIntoMongo = async ({ api, importedEnv, options, siteData }) => {
       build_settings: {
         // Only set imported variables if --replaceExisting or otherwise merge
         // imported ones with the current environment variables.
-        env: options.replaceExisting ? importedEnv : { ...env, ...importedEnv },
+        env: finalEnv,
       },
     },
   })
 
-  return importedEnv
+  return finalEnv
 }
 
 const importIntoEnvelope = async ({ api, importedEnv, options, siteData }) => {
@@ -98,6 +100,12 @@ const importIntoEnvelope = async ({ api, importedEnv, options, siteData }) => {
     await api.createEnvVars({ accountId, siteId, body })
   } catch (error) {
     throw error.json.msg
+  }
+
+  // return final env to aid in --json output (for testing)
+  return {
+    ...translateFromEnvelopeToMongo(envelopeVariables.filter(({ key }) => !keysToDelete.includes(key))),
+    ...importedEnv,
   }
 }
 

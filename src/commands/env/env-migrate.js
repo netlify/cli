@@ -129,9 +129,9 @@ const mongoToEnvelope = async ({ api, siteFrom, siteTo }) => {
 
   const envelopeTo = await api.getEnvVars({ accountId, siteId })
 
-  const keysToDelete = envelopeTo.filter(({ key }) => keysFrom.includes(key))
+  const envVarsToDelete = envelopeTo.filter(({ key }) => keysFrom.includes(key))
   // delete marked env vars in parallel
-  await Promise.all(keysToDelete.map((key) => api.deleteEnvVar({ accountId, siteId, key })))
+  await Promise.all(envVarsToDelete.map(({ key }) => api.deleteEnvVar({ accountId, siteId, key })))
 
   // hit create endpoint
   const body = translateFromMongoToEnvelope(envFrom)
@@ -189,9 +189,9 @@ const envelopeToEnvelope = async ({ api, siteFrom, siteTo }) => {
 
   const accountId = siteTo.account_slug
   const siteId = siteTo.id
-  const keysToDelete = envelopeTo.filter(({ key }) => keysFrom.includes(key))
+  const envVarsToDelete = envelopeTo.filter(({ key }) => keysFrom.includes(key))
   // delete marked env vars in parallel
-  await Promise.all(keysToDelete.map((key) => api.deleteEnvVar({ accountId, siteId, key })))
+  await Promise.all(envVarsToDelete.map(({ key }) => api.deleteEnvVar({ accountId, siteId, key })))
 
   // hit create endpoint
   try {
