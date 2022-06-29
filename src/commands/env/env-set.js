@@ -34,7 +34,7 @@ const envSet = async (key, value, options, command) => {
 }
 
 const setInMongo = async ({ api, key, siteData, value }) => {
-  const { env } = siteData.build_settings
+  const { env = {} } = siteData.build_settings
   const newEnv = {
     ...env,
     [key]: value,
