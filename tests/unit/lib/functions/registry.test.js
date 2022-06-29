@@ -7,7 +7,7 @@ const sinon = require('sinon')
 
 const { FunctionsRegistry } = require('../../../../src/lib/functions/registry')
 
-test('hello world', async (t) => {
+test('registry should only pass functions config to zip it ship it', async (t) => {
   const projectRoot = mkdtempSync(join(tmpdir(), 'functions-project-root'))
   const functionsDirectory = join(projectRoot, 'functions')
   mkdirSync(functionsDirectory)
