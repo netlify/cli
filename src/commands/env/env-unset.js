@@ -1,14 +1,14 @@
 // @ts-check
-const { log, logJson } = require('../../utils')
+const { log, logJson, translateFromEnvelopeToMongo } = require('../../utils')
 
 /**
  * The env:unset command
- * @param {string} name Environment variable name
+ * @param {string} key Environment variable key
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  * @returns {Promise<boolean>}
  */
-const envUnset = async (name, options, command) => {
+const envUnset = async (key, options, command) => {
   const { api, site } = command.netlify
   const siteId = site.id
 
@@ -19,6 +19,19 @@ const envUnset = async (name, options, command) => {
 
   const siteData = await api.getSite({ siteId })
 
+  const unsetInService = siteData.use_envelope ? unsetInEnvelope : unsetInMongo
+  const totalEnv = await unsetInService({ api, siteData, key })
+
+  // Return new environment variables of site if using json flag
+  if (options.json) {
+    logJson(totalEnv)
+    return false
+  }
+
+  log(`Unset environment variable ${key} for site ${siteData.name}`)
+}
+
+const unsetInMongo = async ({ api, key, siteData }) => {
   // Get current environment variables set in the UI
   const {
     build_settings: { env = {} },
@@ -27,11 +40,11 @@ const envUnset = async (name, options, command) => {
   const newEnv = env
 
   // Delete environment variable from current variables
-  delete newEnv[name]
+  delete newEnv[key]
 
   // Apply environment variable updates
-  const siteResult = await api.updateSite({
-    siteId,
+  await api.updateSite({
+    siteId: siteData.id,
     body: {
       build_settings: {
         env: newEnv,
@@ -39,13 +52,32 @@ const envUnset = async (name, options, command) => {
     },
   })
 
-  // Return new environment variables of site if using json flag
-  if (options.json) {
-    logJson(siteResult.build_settings.env)
-    return false
+  return newEnv
+}
+
+const unsetInEnvelope = async ({ api, key, siteData }) => {
+  const accountId = siteData.account_slug
+  const siteId = siteData.id
+  // fetch envelope env vars
+  const envelopeVariables = await api.getEnvVars({ accountId, siteId })
+
+  // check if the given key exists
+  const env = translateFromEnvelopeToMongo(envelopeVariables)
+  if (!env[key]) {
+    // if not, no need to call delete; return early
+    return env
   }
 
-  log(`Unset environment variable ${name} for site ${siteData.name}`)
+  // delete the given key
+  try {
+    await api.deleteEnvVar({ accountId, siteId, key })
+  } catch (error) {
+    throw error.json.msg
+  }
+
+  delete env[key]
+
+  return env
 }
 
 /**
@@ -57,10 +89,10 @@ const createEnvUnsetCommand = (program) =>
   program
     .command('env:unset')
     .aliases(['env:delete', 'env:remove'])
-    .argument('<name>', 'Environment variable name')
+    .argument('<key>', 'Environment variable key')
     .description('Unset an environment variable which removes it from the UI')
-    .action(async (name, options, command) => {
-      await envUnset(name, options, command)
+    .action(async (key, options, command) => {
+      await envUnset(key, options, command)
     })
 
 module.exports = { createEnvUnsetCommand }
