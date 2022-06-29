@@ -18,7 +18,7 @@ netlify dev
 **Flags**
 
 - `command` (*string*) - command to run
-- `country` (*string*) - Two letter country code
+- `country` (*string*) - Two-letter country code to use as mock geolocation (to be used with --mock)
 - `dir` (*string*) - dir with static files
 - `edgeInspect` (*string*) - enable the V8 Inspector Protocol for Edge Functions, with an optional address in the host:port format
 - `edgeInspectBrk` (*string*) - enable the V8 Inspector Protocol for Edge Functions and pause execution on the first line of code, with an optional address in the host:port format
