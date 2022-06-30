@@ -12,10 +12,10 @@
       "dependencies": {
         "@netlify/build": "^27.3.1",
         "@netlify/config": "^18.1.0",
-        "@netlify/edge-bundler": "^1.4.1",
+        "@netlify/edge-bundler": "^1.4.2",
         "@netlify/framework-info": "^9.1.0",
         "@netlify/local-functions-proxy": "^1.1.1",
-        "@netlify/plugins-list": "^6.28.0",
+        "@netlify/plugins-list": "^6.30.0",
         "@netlify/zip-it-and-ship-it": "^5.11.1",
         "@octokit/rest": "^18.0.0",
         "@sindresorhus/slugify": "^1.1.0",
@@ -2301,9 +2301,9 @@
       }
     },
     "node_modules/@netlify/edge-bundler": {
-      "version": "1.4.1",
-      "resolved": "https://registry.npmjs.org/@netlify/edge-bundler/-/edge-bundler-1.4.1.tgz",
-      "integrity": "sha512-sgahUAtGiOHGT/mznoxsLrUmKKq8pzEitS4i5CNHFbdPcY2wUnqHTiKGNLEl1VLtenyLRa6RAujjxRVpYE90mg==",
+      "version": "1.4.2",
+      "resolved": "https://registry.npmjs.org/@netlify/edge-bundler/-/edge-bundler-1.4.2.tgz",
+      "integrity": "sha512-grllAfoFzZu6m63pkcm8GqoG8wng6AIKNjY/Ay6UTMn+E2lBgB6pw2fF7xT8mGYWSB2TLdRlQ4RyPE/DUoyoIQ==",
       "dependencies": {
         "common-path-prefix": "^3.0.0",
         "del": "^6.0.0",
@@ -3534,9 +3534,9 @@
       "integrity": "sha512-ZJF4nbLPfxsWrVgp2reCb23HMxsWl5+r+K0RtIhxcZ/RxbHVihRA9mwyzIcxPWrT5x9uAAxCr1aKGP7IdsDe+Q=="
     },
     "node_modules/@netlify/plugins-list": {
-      "version": "6.29.0",
-      "resolved": "https://registry.npmjs.org/@netlify/plugins-list/-/plugins-list-6.29.0.tgz",
-      "integrity": "sha512-H81D32COgftfzJhY+TWNtxd8EXaQS1c/Gkj3WI/v4xhsZvw/6MOzKtDopK7Mq7nYk+aKc2OqxfOuQNR02FpQug==",
+      "version": "6.30.0",
+      "resolved": "https://registry.npmjs.org/@netlify/plugins-list/-/plugins-list-6.30.0.tgz",
+      "integrity": "sha512-NF0G7rMl/FbCkZMDiihoDW70i96aF3fguHvuspucstM4ArAdMai5b3rEKSOO2SXTbmQHaAlQEpiYAPZsGwU7jg==",
       "engines": {
         "node": "^12.20.0 || ^14.14.0 || >=16.0.0"
       }
@@ -24382,9 +24382,9 @@
       }
     },
     "@netlify/edge-bundler": {
-      "version": "1.4.1",
-      "resolved": "https://registry.npmjs.org/@netlify/edge-bundler/-/edge-bundler-1.4.1.tgz",
-      "integrity": "sha512-sgahUAtGiOHGT/mznoxsLrUmKKq8pzEitS4i5CNHFbdPcY2wUnqHTiKGNLEl1VLtenyLRa6RAujjxRVpYE90mg==",
+      "version": "1.4.2",
+      "resolved": "https://registry.npmjs.org/@netlify/edge-bundler/-/edge-bundler-1.4.2.tgz",
+      "integrity": "sha512-grllAfoFzZu6m63pkcm8GqoG8wng6AIKNjY/Ay6UTMn+E2lBgB6pw2fF7xT8mGYWSB2TLdRlQ4RyPE/DUoyoIQ==",
       "requires": {
         "common-path-prefix": "^3.0.0",
         "del": "^6.0.0",
@@ -25065,9 +25065,9 @@
       "integrity": "sha512-ZJF4nbLPfxsWrVgp2reCb23HMxsWl5+r+K0RtIhxcZ/RxbHVihRA9mwyzIcxPWrT5x9uAAxCr1aKGP7IdsDe+Q=="
     },
     "@netlify/plugins-list": {
-      "version": "6.29.0",
-      "resolved": "https://registry.npmjs.org/@netlify/plugins-list/-/plugins-list-6.29.0.tgz",
-      "integrity": "sha512-H81D32COgftfzJhY+TWNtxd8EXaQS1c/Gkj3WI/v4xhsZvw/6MOzKtDopK7Mq7nYk+aKc2OqxfOuQNR02FpQug=="
+      "version": "6.30.0",
+      "resolved": "https://registry.npmjs.org/@netlify/plugins-list/-/plugins-list-6.30.0.tgz",
+      "integrity": "sha512-NF0G7rMl/FbCkZMDiihoDW70i96aF3fguHvuspucstM4ArAdMai5b3rEKSOO2SXTbmQHaAlQEpiYAPZsGwU7jg=="
     },
     "@netlify/run-utils": {
       "version": "4.0.1",
