@@ -107,7 +107,7 @@ const importIntoEnvelope = async ({ api, importedEnv, options, siteData }) => {
   try {
     await api.createEnvVars({ accountId, siteId, body })
   } catch (error) {
-    throw error.json.msg
+    throw error.json ? error.json.msg : error
   }
 
   // return final env to aid in --json output (for testing)

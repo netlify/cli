@@ -79,6 +79,8 @@ const envMigrate = async (options, command) => {
       siteTo.name,
     )}`,
   )
+
+  return true
 }
 
 /**
@@ -146,7 +148,7 @@ const mongoToEnvelope = async ({ api, siteFrom, siteTo }) => {
   try {
     await api.createEnvVars({ accountId, siteId, body })
   } catch (error) {
-    throw error.json.msg
+    throw error.json ? error.json.msg : error
   }
 
   return true
@@ -213,7 +215,7 @@ const envelopeToEnvelope = async ({ api, siteFrom, siteTo }) => {
   try {
     await api.createEnvVars({ accountId, siteId, body: envelopeFrom })
   } catch (error) {
-    throw error.json.msg
+    throw error.json ? error.json.msg : error
   }
 
   return true

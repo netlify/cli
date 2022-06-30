@@ -74,7 +74,7 @@ const setInEnvelope = async ({ api, key, siteData, value }) => {
   try {
     await method({ accountId, siteId, key, body })
   } catch (error) {
-    throw error.json.msg
+    throw error.json ? error.json.msg : error
   }
 
   const env = translateFromEnvelopeToMongo(envelopeVariables)

@@ -80,7 +80,7 @@ const unsetInEnvelope = async ({ api, key, siteData }) => {
   try {
     await api.deleteEnvVar({ accountId, siteId, key })
   } catch (error) {
-    throw error.json.msg
+    throw error.json ? error.json.msg : error
   }
 
   delete env[key]
