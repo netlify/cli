@@ -11,7 +11,7 @@
       "license": "MIT",
       "dependencies": {
         "@netlify/build": "^27.3.2",
-        "@netlify/config": "^18.1.0",
+        "@netlify/config": "^18.1.1",
         "@netlify/edge-bundler": "^1.4.2",
         "@netlify/framework-info": "^9.1.0",
         "@netlify/local-functions-proxy": "^1.1.1",
@@ -2279,9 +2279,9 @@
       }
     },
     "node_modules/@netlify/config/node_modules/type-fest": {
-      "version": "2.14.0",
-      "resolved": "https://registry.npmjs.org/type-fest/-/type-fest-2.14.0.tgz",
-      "integrity": "sha512-hQnTQkFjL5ik6HF2fTAM8ycbr94UbQXK364wF930VHb0dfBJ5JBP8qwrR8TaK9zwUEk7meruo2JAUDMwvuxd/w==",
+      "version": "2.15.1",
+      "resolved": "https://registry.npmjs.org/type-fest/-/type-fest-2.15.1.tgz",
+      "integrity": "sha512-LYSjcIz3NmoQksXq/3/B7Nfad+T8mkaI628agAAnHCpXPTBRMK2ygt3eABpzII8CbZZM8dLdVQ4Gr8ousjFjMw==",
       "engines": {
         "node": ">=12.20"
       },
@@ -24370,9 +24370,9 @@
           "integrity": "sha512-dOESqjYr96iWYylGObzd39EuNTa5VJxyvVAEm5Jnh7KGo75V43Hk1odPQkNDyXNmUR6k+gEiDVXnjB8HJ3crXw=="
         },
         "type-fest": {
-          "version": "2.14.0",
-          "resolved": "https://registry.npmjs.org/type-fest/-/type-fest-2.14.0.tgz",
-          "integrity": "sha512-hQnTQkFjL5ik6HF2fTAM8ycbr94UbQXK364wF930VHb0dfBJ5JBP8qwrR8TaK9zwUEk7meruo2JAUDMwvuxd/w=="
+          "version": "2.15.1",
+          "resolved": "https://registry.npmjs.org/type-fest/-/type-fest-2.15.1.tgz",
+          "integrity": "sha512-LYSjcIz3NmoQksXq/3/B7Nfad+T8mkaI628agAAnHCpXPTBRMK2ygt3eABpzII8CbZZM8dLdVQ4Gr8ousjFjMw=="
         },
         "yocto-queue": {
           "version": "1.0.0",
