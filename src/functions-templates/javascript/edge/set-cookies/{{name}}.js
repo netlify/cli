@@ -17,7 +17,6 @@ export default async (request, context) => {
         'Cookie value has been cleared. Reload this page without the "action" parameter to see the new state.',
       )
     default:
-      
   }
 
   const value = context.cookies.get('action')

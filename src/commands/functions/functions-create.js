@@ -182,12 +182,16 @@ const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
     message: 'Pick a template',
     type: 'autocomplete',
     source(answersSoFar, input) {
+      // if Edge Functions template, don't show url option
+      const edgeCommands = specialCommands.filter((val) => val.value !== 'url')
+      const parsedSpecialCommands = funcType === 'edge' ? edgeCommands : specialCommands
+
       if (!input || input === '') {
         // show separators
-        return [...templatesForLanguage, ...specialCommands]
+        return [...templatesForLanguage, ...parsedSpecialCommands]
       }
       // only show filtered results sorted by score
-      const answers = [...filterRegistry(templatesForLanguage, input), ...specialCommands].sort(
+      const answers = [...filterRegistry(templatesForLanguage, input), ...parsedSpecialCommands].sort(
         (answerA, answerB) => answerB.score - answerA.score,
       )
       return answers
@@ -216,24 +220,29 @@ const selectTypeOfFunc = async () => {
 }
 
 const ensureEdgeFuncDirExists = function (command) {
-  const siteId = command.netlify.site.id
+  const { config, site } = command.netlify
+  const siteId = site.id
+  let functionsDirHolder = config.build.edge_functions
 
   if (!siteId) {
     error(`${NETLIFYDEVERR} No site id found, please run inside a site directory or \`netlify link\``)
   }
 
-  const functionsDirHolder = 'netlify/edge-functions'
+  if (!functionsDirHolder) {
+    log(`${NETLIFYDEVLOG} Edge Functions directory not specified in netlify.toml`)
+    functionsDirHolder = 'netlify/edge-functions'
+  }
 
   if (!fs.existsSync(functionsDirHolder)) {
     log(
-      `${NETLIFYDEVLOG} Functions directory ${chalk.magenta.inverse(
+      `${NETLIFYDEVLOG} Edge Functions directory ${chalk.magenta.inverse(
         functionsDirHolder,
       )} does not exist yet, creating it...`,
     )
 
     fs.mkdirSync(functionsDirHolder, { recursive: true })
 
-    log(`${NETLIFYDEVLOG} Functions directory ${chalk.magenta.inverse(functionsDirHolder)} created.`)
+    log(`${NETLIFYDEVLOG} Edge Functions directory ${chalk.magenta.inverse(functionsDirHolder)} created.`)
   }
   return functionsDirHolder
 }

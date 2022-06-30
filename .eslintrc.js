@@ -53,6 +53,7 @@ module.exports = {
         'import/no-anonymous-default-export': 0,
         'no-undef': 0,
         'no-unused-vars': 0,
+        'arrow-body-style': 0,
       },
       parserOptions: {
         sourceType: 'module',
