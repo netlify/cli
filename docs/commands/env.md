@@ -140,7 +140,7 @@ netlify env:set
 
 **Arguments**
 
-- name - Environment variable name
+- key - Environment variable key
 - value - Value to set to
 
 **Flags**
@@ -162,7 +162,7 @@ netlify env:unset
 
 **Arguments**
 
-- name - Environment variable name
+- key - Environment variable key
 
 **Flags**
 
