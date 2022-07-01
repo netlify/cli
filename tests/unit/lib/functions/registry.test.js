@@ -1,4 +1,3 @@
-// Node 12 requires rmdir, when upping to v14+ use rm from 'fs/promises'
 const { mkdir, mkdtemp, rm, writeFile } = require('fs').promises
 const { tmpdir } = require('os')
 const { join } = require('path')
@@ -8,27 +7,13 @@ const sinon = require('sinon')
 
 const { FunctionsRegistry } = require('../../../../src/lib/functions/registry')
 
-let projectRoot
-let functionsDirectory
-
-const createFunction = async () => {
+test('registry should only pass functions config to zip-it-and-ship-it', async (t) => {
   projectRoot = await mkdtemp(join(tmpdir(), 'functions-project-root'))
   functionsDirectory = join(projectRoot, 'functions')
   await mkdir(functionsDirectory)
   const mainFile = join(functionsDirectory, 'horse.js')
 
   await writeFile(mainFile, `exports.handler = async (event) => ({ statusCode: 200, body: event.rawUrl })`)
-}
-
-test.beforeEach(async () => {
-  await createFunction()
-})
-
-test.afterEach(async () => {
-  await rm(projectRoot, { recursive: true, force: true })
-})
-
-test('registry should only pass functions config to zip-it-and-ship-it', async (t) => {
   const functionsRegistry = new FunctionsRegistry({
     projectRoot,
     config: { functions: { '*': {} }, plugins: ['test'] },
@@ -44,4 +29,7 @@ test('registry should only pass functions config to zip-it-and-ship-it', async (
   const spyCall = functionsRegistry.listFunctions.getCall(0)
 
   t.is(spyCall.lastArg.config, functionsRegistry.config.functions)
+  t.teardown(async () => {
+    await rm(projectRoot, { recursive: true, force: true })
+  })
 })
