@@ -32,7 +32,6 @@ const mockLocation = {
  * location, depending on the mode selected.
  *
  * @param {object} params
- * @param {string} params.geolocationMode
  * @param {"cache"|"update"|"mock"} params.mode
  * @param {string} params.geoCountry
  * @param {boolean} params.offline

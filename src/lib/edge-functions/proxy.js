@@ -85,7 +85,7 @@ const initializeProxy = async ({
     }
 
     const [geoLocation, registry] = await Promise.all([
-      getGeoLocation({ mode: geolocationMode, geoCountry, geolocationMode, offline, state }),
+      getGeoLocation({ mode: geolocationMode, geoCountry, offline, state }),
       server,
     ])
 
