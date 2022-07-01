@@ -89,22 +89,7 @@ const initializeProxy = async ({
       server,
     ])
 
-<<<<<<< HEAD
-    try {
-      promiseResult = await Promise.all([
-        getGeoLocation({ mode: geolocationMode, geolocationMode, geoCountry, offline, state }),
-        server,
-      ])
-    } catch (error_) {
-      error(error_.message, { exit: false })
-      hasServerError = true
-      return
-    }
-
-    const [geoLocation, { registry }] = promiseResult
-=======
     if (!registry) return
->>>>>>> origin
 
     // Setting header with geolocation.
     req.headers[headers.Geo] = JSON.stringify(geoLocation)
