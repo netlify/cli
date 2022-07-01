@@ -37,12 +37,21 @@ const { sitesCreate } = require('../sites')
 
 const DEFAULT_DEPLOY_TIMEOUT = 1.2e6
 
-const triggerDeploy = async ({ api, siteData, siteId }) => {
+const triggerDeploy = async ({ api, options, siteData, siteId }) => {
   try {
     const siteBuild = await api.createSiteBuild({ siteId })
-    log(
-      `${NETLIFYDEV} A new deployment was triggered successfully. Visit https://app.netlify.com/sites/${siteData.name}/deploys/${siteBuild.deploy_id} to see the logs.`,
-    )
+    if (options.json) {
+      logJson({
+        site_id: siteId,
+        site_name: siteData.name,
+        deploy_id: `${siteBuild.deploy_id}`,
+        logs: `https://app.netlify.com/sites/${siteData.name}/deploys/${siteBuild.deploy_id}`,
+      })
+    } else {
+      log(
+        `${NETLIFYDEV} A new deployment was triggered successfully. Visit https://app.netlify.com/sites/${siteData.name}/deploys/${siteBuild.deploy_id} to see the logs.`,
+      )
+    }
   } catch (error_) {
     if (error_.status === 404) {
       error('Site not found. Please rerun "netlify link" and make sure that your site has CI configured.')
@@ -553,7 +562,7 @@ const deploy = async (options, command) => {
   const deployToProduction = options.prod || (options.prodIfUnlocked && !siteData.published_deploy.locked)
 
   if (options.trigger) {
-    return triggerDeploy({ api, siteId, siteData })
+    return triggerDeploy({ api, options, siteData, siteId })
   }
 
   const { newConfig, configMutations = [] } = await handleBuild({
