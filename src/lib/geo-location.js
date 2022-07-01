@@ -16,9 +16,9 @@ const REQUEST_TIMEOUT = 1e4
  * @property {object} country
  * @property {string} country.code
  * @property {string} country.name
- * @property {object} country
- * @property {string} country.code
- * @property {string} country.name
+ * @property {object} subdivision
+ * @property {string} subdivision.code
+ * @property {string} subdivision.name
  */
 
 const mockLocation = {
@@ -59,14 +59,15 @@ const getGeoLocation = async ({ geoCountry, mode, offline, state }) => {
   // If the `--offline` option was used, we can't talk to the API, so let's
   // also use the mock location.  Otherwise, use the country code passed in by
   // the user.
-  if (!['cache', 'update'].includes(mode) || offline) {
-    return mode === 'mock' && !geoCountry
-      ? mockLocation
-      : {
-          city: 'Netlitown',
-          country: { code: geoCountry, name: 'Mock Country' },
-          subdivision: { code: 'JS', name: 'Jamstackvania' },
-        }
+  if (mode === 'mock' || offline) {
+    if (geoCountry) {
+      return {
+        city: 'Netlitown',
+        country: { code: geoCountry, name: 'Mock Country' },
+        subdivision: { code: 'JS', name: 'Jamstackvania' },
+      }
+    }
+    return mockLocation
   }
 
   // Trying to retrieve geolocation data from the API and caching it locally.
