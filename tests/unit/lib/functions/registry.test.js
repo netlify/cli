@@ -8,8 +8,8 @@ const sinon = require('sinon')
 const { FunctionsRegistry } = require('../../../../src/lib/functions/registry')
 
 test('registry should only pass functions config to zip-it-and-ship-it', async (t) => {
-  projectRoot = await mkdtemp(join(tmpdir(), 'functions-project-root'))
-  functionsDirectory = join(projectRoot, 'functions')
+  const projectRoot = await mkdtemp(join(tmpdir(), 'functions-project-root'))
+  const functionsDirectory = join(projectRoot, 'functions')
   await mkdir(functionsDirectory)
   const mainFile = join(functionsDirectory, 'horse.js')
 
