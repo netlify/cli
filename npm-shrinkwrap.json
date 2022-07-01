@@ -10,7 +10,7 @@
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
-        "@netlify/build": "^27.3.2",
+        "@netlify/build": "^27.3.3",
         "@netlify/config": "^18.1.1",
         "@netlify/edge-bundler": "^1.4.2",
         "@netlify/framework-info": "^9.1.0",
@@ -1177,14 +1177,14 @@
       }
     },
     "node_modules/@netlify/build": {
-      "version": "27.3.2",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-27.3.2.tgz",
-      "integrity": "sha512-QoaRwx+qt7582mXSZP0s3YCsK2/xUOsEfhx2Q3PvYKKdVDGjx5MROMuCdc480e8KPWsTTUheB2+A5RuB9dpcLQ==",
+      "version": "27.3.3",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-27.3.3.tgz",
+      "integrity": "sha512-n7lGpd2gcUE7Iy12Du5UvWI4kuooSwnSG6yvhRk0egOSq7yRBmAkT8evnzAcjgfq2Ze0JNO/9x8epDKOCeDtbQ==",
       "dependencies": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^4.0.0",
         "@netlify/config": "^18.1.1",
-        "@netlify/edge-bundler": "^1.4.1",
+        "@netlify/edge-bundler": "^1.4.2",
         "@netlify/functions-utils": "^4.2.0",
         "@netlify/git-utils": "^4.0.0",
         "@netlify/plugins-list": "^6.29.0",
@@ -23705,14 +23705,14 @@
       }
     },
     "@netlify/build": {
-      "version": "27.3.2",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-27.3.2.tgz",
-      "integrity": "sha512-QoaRwx+qt7582mXSZP0s3YCsK2/xUOsEfhx2Q3PvYKKdVDGjx5MROMuCdc480e8KPWsTTUheB2+A5RuB9dpcLQ==",
+      "version": "27.3.3",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-27.3.3.tgz",
+      "integrity": "sha512-n7lGpd2gcUE7Iy12Du5UvWI4kuooSwnSG6yvhRk0egOSq7yRBmAkT8evnzAcjgfq2Ze0JNO/9x8epDKOCeDtbQ==",
       "requires": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^4.0.0",
         "@netlify/config": "^18.1.1",
-        "@netlify/edge-bundler": "^1.4.1",
+        "@netlify/edge-bundler": "^1.4.2",
         "@netlify/functions-utils": "^4.2.0",
         "@netlify/git-utils": "^4.0.0",
         "@netlify/plugins-list": "^6.29.0",
