@@ -118,14 +118,6 @@ test('`getGeoLocation` returns mock geolocation data if `mode: "mock"`', async (
 })
 
 test('`getGeoLocation` returns mock geolocation data if valid country code set', async (t) => {
-  let hasCalledStateSet = false
-
-  const actualLocation = {
-    city: 'Anytown',
-    country: { code: 'US', name: 'United States' },
-    subdivision: { code: 'HI', name: 'Maui' },
-  }
-
   const returnedLocation = {
     city: 'Netlitown',
     country: { code: 'CA', name: 'Mock Country' },
@@ -134,19 +126,11 @@ test('`getGeoLocation` returns mock geolocation data if valid country code set',
 
   const mockState = {
     get() {},
-    set() {
-      hasCalledStateSet = true
-    },
+    set() {},
   }
-
-  const mockRequest = nock('https://netlifind.netlify.app').get('/').reply(200, {
-    geo: actualLocation,
-  })
 
   const geo = await getGeoLocation({ mode: 'mock', state: mockState, geoCountry: 'CA' })
 
-  t.false(mockRequest.isDone())
-  t.false(hasCalledStateSet)
   t.deepEqual(geo, returnedLocation)
 })
 
