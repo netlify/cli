@@ -1,12 +1,11 @@
 // @ts-check
 
-const clone = require('git-clone/promise')
 const inquirer = require('inquirer')
 const pick = require('lodash/pick')
 const parseGitHubUrl = require('parse-github-url')
 const prettyjson = require('prettyjson')
 
-const { chalk, error, getRepoData, getTerminalLink, log, logJson, track, warn } = require('../../utils')
+const { chalk, error, execa, getRepoData, getTerminalLink, log, logJson, track, warn } = require('../../utils')
 const { configureRepo } = require('../../utils/init/config')
 const { getGitHubToken } = require('../../utils/init/config-github')
 const { createRepo, getTemplatesFromGitHub, validateTemplate } = require('../../utils/sites/utils')
@@ -190,7 +189,7 @@ const sitesCreateTemplate = async (repository, options, command) => {
   })
   if (cloneConfirm) {
     log()
-    await clone(repoResp.git_url, `${repoResp.name}`)
+    await execa('git', ['clone', repoResp.clone_url, `${repoResp.name}`])
     log(`🚀 Repository cloned successfully. You can find it under the ${chalk.magenta(repoResp.name)} folder`)
   }
 
