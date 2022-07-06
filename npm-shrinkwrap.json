@@ -30,7 +30,7 @@
         "chokidar": "^3.0.2",
         "ci-info": "^3.0.0",
         "clean-deep": "^3.0.2",
-        "commander": "^9.0.0",
+        "commander": "^9.2.0",
         "concordance": "^5.0.0",
         "configstore": "^5.0.0",
         "content-type": "^1.0.4",
