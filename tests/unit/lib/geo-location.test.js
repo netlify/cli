@@ -134,16 +134,16 @@ test('`getGeoLocation` returns mock geolocation data if valid country code set',
   t.deepEqual(geo, returnedLocation)
 })
 
-test('`getGeoLocation` ignores country code when not using mock or offline mode', async (t) => {
+test('`getGeoLocation` mocks country code when not using mock flag', async (t) => {
   const mockState = {
     get() {},
     set() {},
   }
 
   const returnedLocation = {
-    city: 'Netlify Town',
-    country: { code: 'NF', name: 'Netlify' },
-    subdivision: { code: 'JS', name: 'Jamstack' },
+    city: 'Netlitown',
+    country: { code: 'CA', name: 'Mock Country' },
+    subdivision: { code: 'JS', name: 'Jamstackvania' },
   }
 
   const geo = await getGeoLocation({ mode: 'update', offline: false, state: mockState, geoCountry: 'CA' })
