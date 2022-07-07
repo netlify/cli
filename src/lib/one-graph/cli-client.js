@@ -86,7 +86,9 @@ const monitorCLISessionEvents = (input) => {
 
   const enabledServiceWatcher = async (innerNetlifyToken, siteId) => {
     const enabledServices = state.get('oneGraphEnabledServices') || ['onegraph']
-    const enabledServicesInfo = await OneGraphClient.fetchEnabledServices(innerNetlifyToken, siteId)
+    const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId: appId, nfToken: netlifyToken })
+
+    const enabledServicesInfo = await OneGraphClient.fetchEnabledServices(jwt, siteId)
     if (!enabledServicesInfo) {
       warn('Unable to fetch enabled services for site for code generation')
       return
@@ -184,9 +186,11 @@ const monitorOperationFile = async ({ netlifyGraphConfig, onAdd, onChange, onUnl
  */
 const refetchAndGenerateFromOneGraph = async (input) => {
   const { logger, netlifyGraphConfig, netlifyToken, siteId, state } = input
-  await OneGraphClient.ensureAppForSite(netlifyToken, siteId)
+  const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
 
-  const enabledServicesInfo = await OneGraphClient.fetchEnabledServices(netlifyToken, siteId)
+  await OneGraphClient.ensureAppForSite(jwt, siteId)
+
+  const enabledServicesInfo = await OneGraphClient.fetchEnabledServices(jwt, siteId)
   if (!enabledServicesInfo) {
     warn('Unable to fetch enabled services for site for code generation')
     return
@@ -268,7 +272,8 @@ const quickHash = (input) => {
  */
 const updateGraphQLOperationsFileFromPersistedDoc = async (input) => {
   const { docId, logger, netlifyGraphConfig, netlifyToken, schema, siteId } = input
-  const persistedDoc = await OneGraphClient.fetchPersistedQuery(netlifyToken, siteId, docId)
+  const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
+  const persistedDoc = await OneGraphClient.fetchPersistedQuery(jwt, siteId, docId)
   if (!persistedDoc) {
     warn(`No persisted doc found for: ${docId}`)
     return
@@ -476,7 +481,9 @@ const upsertMergeCLISessionMetadata = async ({ netlifyToken, newMetadata, oneGra
 
   // @ts-ignore
   const finalMetadata = { ...metadata, ...detectedMetadata, ...newMetadata }
-  return OneGraphClient.updateCLISessionMetadata(netlifyToken, siteId, oneGraphSessionId, finalMetadata)
+  const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
+
+  return OneGraphClient.updateCLISessionMetadata(jwt, siteId, oneGraphSessionId, finalMetadata)
 }
 
 const persistNewOperationsDocForSession = async ({
@@ -527,8 +534,9 @@ const persistNewOperationsDocForSession = async ({
   }
 }
 
-const createCLISession = ({ metadata, netlifyToken, sessionName, siteId }) => {
-  const result = OneGraphClient.createCLISession(netlifyToken, siteId, sessionName, metadata)
+const createCLISession = async ({ metadata, netlifyToken, sessionName, siteId }) => {
+  const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
+  const result = OneGraphClient.createCLISession(jwt, siteId, sessionName, metadata)
   return result
 }
 
@@ -549,7 +557,8 @@ const loadCLISession = (state) => state.get('oneGraphSessionId')
  */
 const startOneGraphCLISession = async (input) => {
   const { netlifyGraphConfig, netlifyToken, site, state } = input
-  OneGraphClient.ensureAppForSite(netlifyToken, site.id)
+  const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId: site.id, nfToken: netlifyToken })
+  OneGraphClient.ensureAppForSite(jwt, site.id)
 
   const oneGraphSessionId = await ensureCLISession({
     metadata: {},
@@ -672,11 +681,11 @@ const ensureCLISession = async ({ metadata, netlifyToken, site, state }) => {
   // Validate that session still exists and we can access it
   try {
     if (oneGraphSessionId) {
-      const graphJwt = await OneGraphClient.getGraphJwtForSite({ siteId: site.id, nfToken: netlifyToken })
+      const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId: site.id, nfToken: netlifyToken })
 
       const sessionEvents = await OneGraphClient.fetchCliSessionEvents({
         appId: site.id,
-        jwt: graphJwt.jwt,
+        jwt,
         sessionId: oneGraphSessionId,
       })
       if (sessionEvents.errors) {
