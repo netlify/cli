@@ -28,6 +28,7 @@ netlify dev
 - `live` (*boolean*) - start a public live session
 - `offline` (*boolean*) - disables any features that require network access
 - `port` (*string*) - port of netlify dev
+- `sessionId` (*string*) - (Graph) connect to cloud session with ID [sessionId]
 - `targetPort` (*string*) - port of target app server
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.

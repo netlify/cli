@@ -113,8 +113,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
     })
   })
 
-  // TODO: Re-add when feature flag is no longer needed.
-  test.serial.skip('should deploy Edge Functions when directory exists', async (t) => {
+  test.serial('should deploy Edge Functions when directory exists', async (t) => {
     await withSiteBuilder('site-with-public-folder', async (builder) => {
       const content = '<h1>loud</h1>'
       builder

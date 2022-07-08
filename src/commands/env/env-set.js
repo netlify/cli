@@ -1,15 +1,15 @@
 // @ts-check
-const { log, logJson } = require('../../utils')
+const { log, logJson, translateFromEnvelopeToMongo } = require('../../utils')
 
 /**
  * The env:set command
- * @param {string} name Environment variable name
+ * @param {string} key Environment variable key
  * @param {string} value Value to set to
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  * @returns {Promise<boolean>}
  */
-const envSet = async (name, value, options, command) => {
+const envSet = async (key, value, options, command) => {
   const { api, site } = command.netlify
   const siteId = site.id
 
@@ -21,32 +21,67 @@ const envSet = async (name, value, options, command) => {
   const siteData = await api.getSite({ siteId })
 
   // Get current environment variables set in the UI
-  const {
-    build_settings: { env = {} },
-  } = siteData
+  const setInService = siteData.use_envelope ? setInEnvelope : setInMongo
+  const finalEnv = await setInService({ api, siteData, key, value })
 
-  const newEnv = {
-    ...env,
-    [name]: value,
+  // Return new environment variables of site if using json flag
+  if (options.json) {
+    logJson(finalEnv)
+    return false
   }
 
+  log(`Set environment variable ${key}=${value} for site ${siteData.name}`)
+}
+
+/**
+ * Updates the env for a site record with a new key/value pair
+ * @returns {Promise<object>}
+ */
+const setInMongo = async ({ api, key, siteData, value }) => {
+  const { env = {} } = siteData.build_settings
+  const newEnv = {
+    ...env,
+    [key]: value,
+  }
   // Apply environment variable updates
-  const siteResult = await api.updateSite({
-    siteId,
+  await api.updateSite({
+    siteId: siteData.id,
     body: {
       build_settings: {
         env: newEnv,
       },
     },
   })
+  return newEnv
+}
 
-  // Return new environment variables of site if using json flag
-  if (options.json) {
-    logJson(siteResult.build_settings.env)
-    return false
+/**
+ * Updates the env for a site configured with Envelope with a new key/value pair
+ * @returns {Promise<object>}
+ */
+const setInEnvelope = async ({ api, key, siteData, value }) => {
+  const accountId = siteData.account_slug
+  const siteId = siteData.id
+  // fetch envelope env vars
+  const envelopeVariables = await api.getEnvVars({ accountId, siteId })
+  const scopes = ['builds', 'functions', 'runtime', 'post_processing']
+  const values = [{ context: 'all', value }]
+  // check if we need to create or update
+  const exists = envelopeVariables.some((envVar) => envVar.key === key)
+  const method = exists ? api.updateEnvVar : api.createEnvVars
+  const body = exists ? { key, scopes, values } : [{ key, scopes, values }]
+
+  try {
+    await method({ accountId, siteId, key, body })
+  } catch (error) {
+    throw error.json ? error.json.msg : error
   }
 
-  log(`Set environment variable ${name}=${value} for site ${siteData.name}`)
+  const env = translateFromEnvelopeToMongo(envelopeVariables)
+  return {
+    ...env,
+    [key]: value,
+  }
 }
 
 /**
@@ -57,11 +92,11 @@ const envSet = async (name, value, options, command) => {
 const createEnvSetCommand = (program) =>
   program
     .command('env:set')
-    .argument('<name>', 'Environment variable name')
+    .argument('<key>', 'Environment variable key')
     .argument('[value]', 'Value to set to', '')
     .description('Set value of environment variable')
-    .action(async (name, value, options, command) => {
-      await envSet(name, value, options, command)
+    .action(async (key, value, options, command) => {
+      await envSet(key, value, options, command)
     })
 
 module.exports = { createEnvSetCommand }
