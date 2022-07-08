@@ -551,6 +551,7 @@ const loadCLISession = (state) => state.get('oneGraphSessionId')
  * Idemponentially save the CLI session id to the local state and start monitoring for CLI events, upstream schema changes, and local operation file changes
  * @param {object} input
  * @param {string} input.netlifyToken The (typically netlify) access token that is used for authentication, if any
+ * @param {string | undefined} input.oneGraphSessionId The session ID to use for this CLI session (default: read from state)
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
  * @param {StateConfig} input.state A function to call to set/get the current state of the local Netlify project
  * @param {any} input.site The site object
@@ -565,6 +566,7 @@ const startOneGraphCLISession = async (input) => {
     netlifyToken,
     site,
     state,
+    oneGraphSessionId: input.oneGraphSessionId,
   })
 
   const enabledServices = []
@@ -674,8 +676,9 @@ const generateSessionName = () => {
 /**
  * Ensures a cli session exists for the current checkout, or errors out if it doesn't and cannot create one.
  */
-const ensureCLISession = async ({ metadata, netlifyToken, site, state }) => {
-  let oneGraphSessionId = loadCLISession(state)
+const ensureCLISession = async (input) => {
+  const { metadata, netlifyToken, site, state } = input
+  let oneGraphSessionId = input.oneGraphSessionId ? input.oneGraphSessionId : loadCLISession(state)
   let parentCliSessionId = null
 
   // Validate that session still exists and we can access it
@@ -716,14 +719,14 @@ const ensureCLISession = async ({ metadata, netlifyToken, site, state }) => {
       sessionName,
       metadata: sessionMetadata,
     })
-    state.set('oneGraphSessionId', oneGraphSession.id)
-    oneGraphSessionId = state.get('oneGraphSessionId')
+    oneGraphSessionId = oneGraphSession.id
   }
 
   if (!oneGraphSessionId) {
     error('Unable to create or access Netlify Graph CLI session')
   }
 
+  state.set('oneGraphSessionId', oneGraphSessionId)
   const { errors: markCLISessionActiveErrors } = await executeMarkCliSessionActiveHeartbeat(
     netlifyToken,
     site.id,
