@@ -83,8 +83,8 @@ const startDevServer = async (options, expectFailure) => {
   }
 }
 
-// 240 seconds
-const SERVER_START_TIMEOUT = 24e4
+// 300 seconds
+const SERVER_START_TIMEOUT = 30e4
 
 const withDevServer = async (options, testHandler, expectFailure = false) => {
   let server
