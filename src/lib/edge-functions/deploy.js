@@ -1,6 +1,5 @@
 // @ts-check
 const { stat } = require('fs').promises
-const path = require('path')
 
 const { getPathInProject } = require('../settings')
 
@@ -10,7 +9,7 @@ const distPath = getPathInProject([EDGE_FUNCTIONS_FOLDER])
 
 const deployFileNormalizer = (file) => {
   const isEdgeFunction = file.root === distPath
-  const normalizedPath = isEdgeFunction ? path.join(PUBLIC_URL_PATH, file.normalizedPath) : file.normalizedPath
+  const normalizedPath = isEdgeFunction ? `${PUBLIC_URL_PATH}/${file.normalizedPath}` : file.normalizedPath
 
   return {
     ...file,
@@ -32,7 +31,7 @@ const getDistPathIfExists = async () => {
   }
 }
 
-const isEdgeFunctionFile = (filePath) => filePath.startsWith(`${PUBLIC_URL_PATH}${path.sep}`)
+const isEdgeFunctionFile = (filePath) => filePath.startsWith(`${PUBLIC_URL_PATH}/`)
 
 module.exports = {
   deployFileNormalizer,
