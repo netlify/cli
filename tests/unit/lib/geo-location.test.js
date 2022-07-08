@@ -119,9 +119,9 @@ test('`getGeoLocation` returns mock geolocation data if `mode: "mock"`', async (
 
 test('`getGeoLocation` returns mock geolocation data if valid country code set', async (t) => {
   const returnedLocation = {
-    city: 'Netlitown',
+    city: 'Mock City',
     country: { code: 'CA', name: 'Mock Country' },
-    subdivision: { code: 'JS', name: 'Jamstackvania' },
+    subdivision: { code: 'SD', name: 'Mock Subdivision' },
   }
 
   const mockState = {
@@ -141,9 +141,9 @@ test('`getGeoLocation` mocks country code when not using mock flag', async (t) =
   }
 
   const returnedLocation = {
-    city: 'Netlitown',
+    city: 'Mock City',
     country: { code: 'CA', name: 'Mock Country' },
-    subdivision: { code: 'JS', name: 'Jamstackvania' },
+    subdivision: { code: 'SD', name: 'Mock Subdivision' },
   }
 
   const geo = await getGeoLocation({ mode: 'update', offline: false, state: mockState, geoCountry: 'CA' })
