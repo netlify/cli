@@ -94,15 +94,16 @@ const filterRegistry = function (registry, input) {
 }
 
 const formatRegistryArrayForInquirer = function (lang, funcType) {
-  const folderNames = fs.readdirSync(path.join(templatesDir, lang, funcType))
+  const folderNames = fs.readdirSync(path.join(templatesDir, lang))
   const registry = folderNames
     // filter out markdown files
     .filter((folderName) => !folderName.endsWith('.md'))
 
     .map((folderName) =>
       // eslint-disable-next-line n/global-require, import/no-dynamic-require
-      require(path.join(templatesDir, lang, funcType, folderName, '.netlify-function-template.js')),
+      require(path.join(templatesDir, lang, folderName, '.netlify-function-template.js')),
     )
+    .filter((folderName) => folderName.functionType === funcType)
     .sort((folderNameA, folderNameB) => {
       const priorityDiff = (folderNameA.priority || DEFAULT_PRIORITY) - (folderNameB.priority || DEFAULT_PRIORITY)
 
@@ -457,7 +458,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
     log(`${NETLIFYDEVLOG} Open in browser: https://github.com/netlify/cli/issues/new`)
   } else {
     const { onComplete, name: templateName, lang, addons = [] } = chosenTemplate
-    const pathToTemplate = path.join(templatesDir, lang, funcType, templateName)
+    const pathToTemplate = path.join(templatesDir, lang, templateName)
     if (!fs.existsSync(pathToTemplate)) {
       throw new Error(
         `There isn't a corresponding directory to the selected name. Template '${templateName}' is misconfigured`,
