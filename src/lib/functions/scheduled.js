@@ -1,6 +1,4 @@
-const AnsiToHtml = require('ansi-to-html')
-
-const ansiToHtml = new AnsiToHtml()
+const ansi2html = require('ansi2html')
 
 const { CLOCKWORK_USERAGENT } = require('../../utils')
 
@@ -13,7 +11,7 @@ const buildHelpResponse = ({ error, headers, path, result }) => {
     text = text.trim()
 
     if (acceptsHtml) {
-      return ansiToHtml.toHtml(`<p>${text}</p>`)
+      return ansi2html(`<p>${text}</p>`)
     }
 
     text = text

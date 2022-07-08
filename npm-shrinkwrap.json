@@ -21,7 +21,7 @@
         "@sindresorhus/slugify": "^1.1.0",
         "ansi-escapes": "^5.0.0",
         "ansi-styles": "^5.0.0",
-        "ansi-to-html": "^0.7.2",
+        "ansi2html": "^0.0.1",
         "ascii-table": "0.0.9",
         "backoff": "^2.5.0",
         "better-opn": "^3.0.0",
@@ -5380,26 +5380,15 @@
         "url": "https://github.com/chalk/ansi-styles?sponsor=1"
       }
     },
-    "node_modules/ansi-to-html": {
-      "version": "0.7.2",
-      "resolved": "https://registry.npmjs.org/ansi-to-html/-/ansi-to-html-0.7.2.tgz",
-      "integrity": "sha512-v6MqmEpNlxF+POuyhKkidusCHWWkaLcGRURzivcU3I9tv7k4JVhFcnukrM5Rlk2rUywdZuzYAZ+kbZqWCnfN3g==",
-      "dependencies": {
-        "entities": "^2.2.0"
-      },
+    "node_modules/ansi2html": {
+      "version": "0.0.1",
+      "resolved": "https://registry.npmjs.org/ansi2html/-/ansi2html-0.0.1.tgz",
+      "integrity": "sha1-u4gARhtECvALkb89c2al4LhHO6g=",
       "bin": {
-        "ansi-to-html": "bin/ansi-to-html"
+        "ansi2html": "bin/ansi2html"
       },
       "engines": {
-        "node": ">=8.0.0"
-      }
-    },
-    "node_modules/ansi-to-html/node_modules/entities": {
-      "version": "2.2.0",
-      "resolved": "https://registry.npmjs.org/entities/-/entities-2.2.0.tgz",
-      "integrity": "sha512-p92if5Nz619I0w+akJrLZH0MX0Pb5DX39XOwQTtXSdQQOaYH03S1uIQp4mhOZtAXrxq4ViO67YTiLBo2638o9A==",
-      "funding": {
-        "url": "https://github.com/fb55/entities?sponsor=1"
+        "node": ">0.4"
       }
     },
     "node_modules/any-observable": {
@@ -26874,20 +26863,10 @@
       "resolved": "https://registry.npmjs.org/ansi-styles/-/ansi-styles-5.2.0.tgz",
       "integrity": "sha512-Cxwpt2SfTzTtXcfOlzGEee8O+c+MmUgGrNiBcXnuWxuFJHe6a5Hz7qwhwe5OgaSYI0IJvkLqWX1ASG+cJOkEiA=="
     },
-    "ansi-to-html": {
-      "version": "0.7.2",
-      "resolved": "https://registry.npmjs.org/ansi-to-html/-/ansi-to-html-0.7.2.tgz",
-      "integrity": "sha512-v6MqmEpNlxF+POuyhKkidusCHWWkaLcGRURzivcU3I9tv7k4JVhFcnukrM5Rlk2rUywdZuzYAZ+kbZqWCnfN3g==",
-      "requires": {
-        "entities": "^2.2.0"
-      },
-      "dependencies": {
-        "entities": {
-          "version": "2.2.0",
-          "resolved": "https://registry.npmjs.org/entities/-/entities-2.2.0.tgz",
-          "integrity": "sha512-p92if5Nz619I0w+akJrLZH0MX0Pb5DX39XOwQTtXSdQQOaYH03S1uIQp4mhOZtAXrxq4ViO67YTiLBo2638o9A=="
-        }
-      }
+    "ansi2html": {
+      "version": "0.0.1",
+      "resolved": "https://registry.npmjs.org/ansi2html/-/ansi2html-0.0.1.tgz",
+      "integrity": "sha1-u4gARhtECvALkb89c2al4LhHO6g="
     },
     "any-observable": {
       "version": "0.3.0",
