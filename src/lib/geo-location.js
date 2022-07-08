@@ -61,9 +61,9 @@ const getGeoLocation = async ({ geoCountry, mode, offline, state }) => {
   if (mode === 'mock' || offline || geoCountry) {
     if (geoCountry) {
       return {
-        city: 'Netlitown',
+        city: 'Mock City',
         country: { code: geoCountry, name: 'Mock Country' },
-        subdivision: { code: 'JS', name: 'Jamstackvania' },
+        subdivision: { code: 'SD', name: 'Mock Subdivision' },
       }
     }
     return mockLocation
