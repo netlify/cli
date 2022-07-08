@@ -518,7 +518,13 @@ const dev = async (options, command) => {
         graphqlDocument = defaultExampleOperationsDoc
       }
 
-      stopWatchingCLISessions = await startOneGraphCLISession({ netlifyGraphConfig, netlifyToken, site, state })
+      stopWatchingCLISessions = await startOneGraphCLISession({
+        netlifyGraphConfig,
+        netlifyToken,
+        site,
+        state,
+        oneGraphSessionId: options.sessionId,
+      })
 
       // Should be created by startOneGraphCLISession
       const oneGraphSessionId = loadCLISession(state)
@@ -622,6 +628,7 @@ const createDevCommand = (program) => {
         .hideHelp(),
     )
     .addOption(new Option('--graph', 'enable Netlify Graph support').hideHelp())
+    .addOption(new Option('--sessionId [sessionId]', '(Graph) connect to cloud session with ID [sessionId]'))
     .addOption(
       new Option(
         '-e, --edgeInspect [address]',
