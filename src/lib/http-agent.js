@@ -2,8 +2,9 @@
 const { readFile } = require('fs').promises
 
 const { HttpsProxyAgent } = require('https-proxy-agent')
-const waitPort = require('wait-port')
 
+// eslint-disable-next-line n/no-unpublished-require
+const waitPort = require('../../vendor/wait-port')
 const { NETLIFYDEVERR, NETLIFYDEVWARN, exit, log } = require('../utils')
 
 // https://github.com/TooTallNate/node-https-proxy-agent/issues/89
