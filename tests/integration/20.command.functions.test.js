@@ -5,10 +5,10 @@ const avaTest = require('ava')
 const { isCI } = require('ci-info')
 const execa = require('execa')
 const getPort = require('get-port')
-const waitPort = require('wait-port')
 
 const fs = require('../../src/lib/fs')
 const { NetlifyFunction } = require('../../src/lib/functions/netlify-function')
+const waitPort = require('../../vendor/wait-port')
 
 const callCli = require('./utils/call-cli')
 const cliPath = require('./utils/cli-path')
