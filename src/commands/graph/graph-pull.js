@@ -56,9 +56,10 @@ const graphPull = async (options, command) => {
     error(`Failed to fetch and update Netlify GraphQL schema`)
   }
 
+  const { jwt } = await OneGraphCliClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
   const next = await OneGraphCliClient.fetchCliSessionEvents({
     appId: siteId,
-    authToken: netlifyToken,
+    jwt,
     sessionId: oneGraphSessionId,
   })
 
@@ -83,7 +84,7 @@ const graphPull = async (options, command) => {
 
     await OneGraphCliClient.ackCLISessionEvents({
       appId: siteId,
-      authToken: netlifyToken,
+      jwt,
       sessionId: oneGraphSessionId,
       eventIds: ackIds,
     })

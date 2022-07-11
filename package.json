@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "10.7.1",
+  "version": "10.8.0",
   "author": "Netlify Inc.",
   "contributors": [
     "Abraham Schilling <AbrahamSchilling@gmail.com> (https://gitlab.com/n4bb12)",
@@ -287,7 +287,7 @@
     "multiparty": "^4.2.1",
     "netlify": "^11.0.2",
     "netlify-headers-parser": "^6.0.2",
-    "netlify-onegraph-internal": "0.3.1",
+    "netlify-onegraph-internal": "0.3.6",
     "netlify-redirect-parser": "^13.0.5",
     "netlify-redirector": "^0.2.1",
     "node-fetch": "^2.6.0",
