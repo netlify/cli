@@ -159,7 +159,8 @@
     "/src/functions-templates/**",
     "/src/lib/functions/templates/**",
     "!/src/**/node_modules/**",
-    "!/src/**/*.test.js"
+    "!/src/**/*.test.js",
+    "/vendor"
   ],
   "homepage": "https://github.com/netlify/cli",
   "keywords": [
