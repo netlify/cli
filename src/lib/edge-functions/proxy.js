@@ -5,7 +5,7 @@ const { cwd, env } = require('process')
 const getAvailablePort = require('get-port')
 const { v4: generateUUID } = require('uuid')
 
-const { NETLIFYDEVERR, NETLIFYDEVWARN, chalk, log } = require('../../utils/command-helpers')
+const { NETLIFYDEVERR, NETLIFYDEVWARN, chalk, error: printError, log } = require('../../utils/command-helpers')
 const { getGeoLocation } = require('../geo-location')
 const { getPathInProject } = require('../settings')
 const { startSpinner, stopSpinner } = require('../spinner')
@@ -22,8 +22,11 @@ const LOCAL_HOST = '127.0.0.1'
 const getDownloadUpdateFunctions = () => {
   let spinner
 
-  const onAfterDownload = () => {
-    stopSpinner({ spinner })
+  /**
+   * @param {Error=} error_
+   */
+  const onAfterDownload = (error_) => {
+    stopSpinner({ error: Boolean(error_), spinner })
   }
 
   const onBeforeDownload = () => {
@@ -80,10 +83,12 @@ const initializeProxy = async ({
       return
     }
 
-    const [geoLocation, { registry }] = await Promise.all([
+    const [geoLocation, registry] = await Promise.all([
       getGeoLocation({ mode: geolocationMode, offline, state }),
       server,
     ])
+
+    if (!registry) return
 
     // Setting header with geolocation.
     req.headers[headers.Geo] = JSON.stringify(geoLocation)
@@ -141,34 +146,39 @@ const prepareServer = async ({
   port,
   projectDir,
 }) => {
-  const bundler = await import('@netlify/edge-bundler')
-  const distImportMapPath = getPathInProject([DIST_IMPORT_MAP_PATH])
-  const runIsolate = await bundler.serve({
-    ...getDownloadUpdateFunctions(),
-    certificatePath,
-    debug: env.NETLIFY_DENO_DEBUG === 'true',
-    distImportMapPath,
-    formatExportTypeError: (name) =>
-      `${NETLIFYDEVERR} ${chalk.red('Failed')} to load Edge Function ${chalk.yellow(
-        name,
-      )}. The file does not seem to have a function as the default export.`,
-    formatImportError: (name) => `${NETLIFYDEVERR} ${chalk.red('Failed')} to run Edge Function ${chalk.yellow(name)}:`,
-    importMaps,
-    inspectSettings,
-    port,
-  })
-  const registry = new EdgeFunctionsRegistry({
-    bundler,
-    config,
-    configPath,
-    directories,
-    getUpdatedConfig,
-    internalFunctions,
-    projectDir,
-    runIsolate,
-  })
+  try {
+    const bundler = await import('@netlify/edge-bundler')
+    const distImportMapPath = getPathInProject([DIST_IMPORT_MAP_PATH])
+    const runIsolate = await bundler.serve({
+      ...getDownloadUpdateFunctions(),
+      certificatePath,
+      debug: env.NETLIFY_DENO_DEBUG === 'true',
+      distImportMapPath,
+      formatExportTypeError: (name) =>
+        `${NETLIFYDEVERR} ${chalk.red('Failed')} to load Edge Function ${chalk.yellow(
+          name,
+        )}. The file does not seem to have a function as the default export.`,
+      formatImportError: (name) =>
+        `${NETLIFYDEVERR} ${chalk.red('Failed')} to run Edge Function ${chalk.yellow(name)}:`,
+      importMaps,
+      inspectSettings,
+      port,
+    })
+    const registry = new EdgeFunctionsRegistry({
+      bundler,
+      config,
+      configPath,
+      directories,
+      getUpdatedConfig,
+      internalFunctions,
+      projectDir,
+      runIsolate,
+    })
 
-  return { registry, runIsolate }
+    return registry
+  } catch (error) {
+    printError(error.message, { exit: false })
+  }
 }
 
 module.exports = { handleProxyRequest, initializeProxy, isEdgeFunctionsRequest }

@@ -19,7 +19,7 @@ jobs:
             { prefix: 'security', type: 'security' },
           ]
     steps:
-      - uses: netlify/pr-labeler-action@v1.0.0
+      - uses: netlify/pr-labeler-action@v1.1.0
         if: startsWith(github.event.pull_request.title, matrix.pr.prefix)
         with:
           token: '${{ secrets.GITHUB_TOKEN }}'

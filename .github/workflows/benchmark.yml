@@ -1,4 +1,4 @@
-name: Package size
+name: Calculate package size
 
 on:
   push:
@@ -23,8 +23,10 @@ jobs:
         run: npm ci --no-audit && npm prune --production
       - name: Get size
         run: du -sk node_modules | cut -f1 > .delta.packageSize && echo "kb (Package size)" >> .delta.packageSize
-      - name: Run Delta
-        uses: netlify/delta-action@v2
+      - name: Upload deltas
+        uses: actions/upload-artifact@v3
         with:
-          title: '📊 Benchmark results'
-          token: ${{ secrets.GITHUB_TOKEN }}
+          name: delta-action-deltas
+          retention-days: 7
+          path: |
+            .delta.*
