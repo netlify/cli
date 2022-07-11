@@ -10,9 +10,6 @@ coverage
 !.vscode/launch.json
 .github/styles
 
-# node sdk
-vendor
-
 # osx
 .DS_STORE
 
