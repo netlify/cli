@@ -9,8 +9,8 @@ const { Option } = require('commander')
 const execa = require('execa')
 const StaticServer = require('static-server')
 const stripAnsiCc = require('strip-ansi-control-characters')
-const waitPort = require('wait-port')
 
+const waitPort = require('../../../vendor/wait-port')
 const { promptEditorHelper } = require('../../lib/edge-functions')
 const { startFunctionsServer } = require('../../lib/functions/server')
 const {
