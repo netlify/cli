@@ -161,8 +161,7 @@
     "/src/functions-templates/**",
     "/src/lib/functions/templates/**",
     "!/src/**/node_modules/**",
-    "!/src/**/*.test.js",
-    "/vendor"
+    "!/src/**/*.test.js"
   ],
   "homepage": "https://github.com/netlify/cli",
   "keywords": [
@@ -322,7 +321,7 @@
     "unixify": "^1.0.0",
     "update-notifier": "^5.0.0",
     "uuid": "^8.0.0",
-    "wait-port": "0.2.9",
+    "wait-port": "^0.2.14",
     "winston": "^3.2.1",
     "write-file-atomic": "^4.0.0"
   },
