@@ -16,7 +16,7 @@ const fetchTemplates = async (token) => {
   const templatesFromGithubOrg = await getTemplatesFromGitHub(token)
 
   return templatesFromGithubOrg
-    .filter((repo) => !repo.archived && !repo.private && !repo.disabled)
+    .filter((repo) => !repo.archived && !repo.disabled)
     .map((template) => ({
       name: template.name,
       sourceCodeUrl: template.html_url,
