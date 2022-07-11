@@ -49,7 +49,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, macOS-latest, windows-latest]
         node-version: [12.x, '*']
-        machine: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11']
+        machine: ['0', '1', '2', '3', '4', '5', '6', '7', '8']
 
         exclude:
           - os: macOS-latest
@@ -121,7 +121,7 @@ jobs:
           # split tests across multiple machines
           # https://github.com/avajs/ava/blob/1cda8c7e/readme.md#parallel-runs-in-ci
           CI_NODE_INDEX: ${{ matrix.machine }}
-          CI_NODE_TOTAL: 12
+          CI_NODE_TOTAL: 9
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
       - name: Get test coverage flags
         id: test-coverage-flags
