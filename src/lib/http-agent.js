@@ -3,7 +3,6 @@ const { readFile } = require('fs').promises
 
 const { HttpsProxyAgent } = require('https-proxy-agent')
 
-// eslint-disable-next-line n/no-unpublished-require
 const waitPort = require('../../vendor/wait-port')
 const { NETLIFYDEVERR, NETLIFYDEVWARN, exit, log } = require('../utils')
 

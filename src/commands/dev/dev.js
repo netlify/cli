@@ -10,7 +10,6 @@ const execa = require('execa')
 const StaticServer = require('static-server')
 const stripAnsiCc = require('strip-ansi-control-characters')
 
-// eslint-disable-next-line n/no-unpublished-require
 const waitPort = require('../../../vendor/wait-port')
 const { promptEditorHelper } = require('../../lib/edge-functions')
 const { startFunctionsServer } = require('../../lib/functions/server')
