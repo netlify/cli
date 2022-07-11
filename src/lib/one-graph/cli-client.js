@@ -70,7 +70,8 @@ const monitorCLISessionEvents = (input) => {
   let nextMarkActiveHeartbeat = defaultHeartbeatFrequency
 
   const markActiveHelper = async () => {
-    const fullSession = await OneGraphClient.fetchCliSession({ authToken: netlifyToken, appId, sessionId })
+    const graphJwt = await OneGraphClient.getGraphJwtForSite({ siteId: appId, nfToken: netlifyToken })
+    const fullSession = await OneGraphClient.fetchCliSession({ jwt: graphJwt.jwt, appId, sessionId })
     // @ts-ignore
     const heartbeatIntervalms = fullSession.session.cliHeartbeatIntervalMs || defaultHeartbeatFrequency
     nextMarkActiveHeartbeat = heartbeatIntervalms
@@ -85,12 +86,14 @@ const monitorCLISessionEvents = (input) => {
 
   const enabledServiceWatcher = async (innerNetlifyToken, siteId) => {
     const enabledServices = state.get('oneGraphEnabledServices') || ['onegraph']
-    const enabledServicesInfo = await OneGraphClient.fetchEnabledServices(innerNetlifyToken, siteId)
+    const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId: appId, nfToken: netlifyToken })
+
+    const enabledServicesInfo = await OneGraphClient.fetchEnabledServices(jwt, siteId)
     if (!enabledServicesInfo) {
       warn('Unable to fetch enabled services for site for code generation')
       return
     }
-    const newEnabledServices = enabledServicesInfo.map((service) => service.service)
+    const newEnabledServices = enabledServicesInfo.map((service) => service.graphQLField)
     const enabledServicesCompareKey = enabledServices.sort().join(',')
     const newEnabledServicesCompareKey = newEnabledServices.sort().join(',')
 
@@ -117,15 +120,16 @@ const monitorCLISessionEvents = (input) => {
       onClose && onClose()
     }
 
-    const next = await OneGraphClient.fetchCliSessionEvents({ appId, authToken: netlifyToken, sessionId })
+    const graphJwt = await OneGraphClient.getGraphJwtForSite({ siteId: appId, nfToken: netlifyToken })
+    const next = await OneGraphClient.fetchCliSessionEvents({ appId, jwt: graphJwt.jwt, sessionId })
 
-    if (next.errors) {
+    if (next && next.errors) {
       next.errors.forEach((fetchEventError) => {
         onError(fetchEventError)
       })
     }
 
-    const { events } = next
+    const events = (next && next.events) || []
 
     if (events.length !== 0) {
       let ackIds = []
@@ -134,7 +138,7 @@ const monitorCLISessionEvents = (input) => {
       } catch (eventHandlerError) {
         warn(`Error handling event: ${eventHandlerError}`)
       } finally {
-        await OneGraphClient.ackCLISessionEvents({ appId, authToken: netlifyToken, sessionId, eventIds: ackIds })
+        await OneGraphClient.ackCLISessionEvents({ appId, jwt: graphJwt.jwt, sessionId, eventIds: ackIds })
       }
     }
 
@@ -182,16 +186,18 @@ const monitorOperationFile = async ({ netlifyGraphConfig, onAdd, onChange, onUnl
  */
 const refetchAndGenerateFromOneGraph = async (input) => {
   const { logger, netlifyGraphConfig, netlifyToken, siteId, state } = input
-  await OneGraphClient.ensureAppForSite(netlifyToken, siteId)
+  const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
 
-  const enabledServicesInfo = await OneGraphClient.fetchEnabledServices(netlifyToken, siteId)
+  await OneGraphClient.ensureAppForSite(jwt, siteId)
+
+  const enabledServicesInfo = await OneGraphClient.fetchEnabledServices(jwt, siteId)
   if (!enabledServicesInfo) {
     warn('Unable to fetch enabled services for site for code generation')
     return
   }
 
   const enabledServices = enabledServicesInfo
-    .map((service) => service.service)
+    .map((service) => service.graphQLField)
     .sort((aString, bString) => aString.localeCompare(bString))
 
   const schema = await OneGraphClient.fetchOneGraphSchemaForServices(siteId, enabledServices)
@@ -266,7 +272,8 @@ const quickHash = (input) => {
  */
 const updateGraphQLOperationsFileFromPersistedDoc = async (input) => {
   const { docId, logger, netlifyGraphConfig, netlifyToken, schema, siteId } = input
-  const persistedDoc = await OneGraphClient.fetchPersistedQuery(netlifyToken, siteId, docId)
+  const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
+  const persistedDoc = await OneGraphClient.fetchPersistedQuery(jwt, siteId, docId)
   if (!persistedDoc) {
     warn(`No persisted doc found for: ${docId}`)
     return
@@ -341,11 +348,15 @@ const handleCliSessionEvent = async ({
           },
         }
 
-        await OneGraphClient.executeCreateCLISessionEventMutation({
-          nfToken: netlifyToken,
-          sessionId,
-          payload: fileWrittenEvent,
-        })
+        const graphJwt = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
+
+        await OneGraphClient.executeCreateCLISessionEventMutation(
+          {
+            sessionId,
+            payload: fileWrittenEvent,
+          },
+          { accesToken: graphJwt.jwt },
+        )
       }
       break
     }
@@ -397,10 +408,12 @@ const handleCliSessionEvent = async ({
  * @param {object} input.siteId The site object that contains the root file path for the site
  */
 const getCLISession = async ({ netlifyToken, oneGraphSessionId, siteId }) => {
+  const graphJwt = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
+
   const input = {
     appId: siteId,
     sessionId: oneGraphSessionId,
-    authToken: netlifyToken,
+    jwt: graphJwt.jwt,
     desiredEventCount: 1,
   }
   return await OneGraphClient.fetchCliSession(input)
@@ -468,7 +481,9 @@ const upsertMergeCLISessionMetadata = async ({ netlifyToken, newMetadata, oneGra
 
   // @ts-ignore
   const finalMetadata = { ...metadata, ...detectedMetadata, ...newMetadata }
-  return OneGraphClient.updateCLISessionMetadata(netlifyToken, siteId, oneGraphSessionId, finalMetadata)
+  const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
+
+  return OneGraphClient.updateCLISessionMetadata(jwt, siteId, oneGraphSessionId, finalMetadata)
 }
 
 const persistNewOperationsDocForSession = async ({
@@ -519,8 +534,9 @@ const persistNewOperationsDocForSession = async ({
   }
 }
 
-const createCLISession = ({ metadata, netlifyToken, sessionName, siteId }) => {
-  const result = OneGraphClient.createCLISession(netlifyToken, siteId, sessionName, metadata)
+const createCLISession = async ({ metadata, netlifyToken, sessionName, siteId }) => {
+  const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
+  const result = OneGraphClient.createCLISession(jwt, siteId, sessionName, metadata)
   return result
 }
 
@@ -542,7 +558,8 @@ const loadCLISession = (state) => state.get('oneGraphSessionId')
  */
 const startOneGraphCLISession = async (input) => {
   const { netlifyGraphConfig, netlifyToken, site, state } = input
-  OneGraphClient.ensureAppForSite(netlifyToken, site.id)
+  const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId: site.id, nfToken: netlifyToken })
+  OneGraphClient.ensureAppForSite(jwt, site.id)
 
   const oneGraphSessionId = await ensureCLISession({
     metadata: {},
@@ -667,9 +684,11 @@ const ensureCLISession = async (input) => {
   // Validate that session still exists and we can access it
   try {
     if (oneGraphSessionId) {
+      const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId: site.id, nfToken: netlifyToken })
+
       const sessionEvents = await OneGraphClient.fetchCliSessionEvents({
         appId: site.id,
-        authToken: netlifyToken,
+        jwt,
         sessionId: oneGraphSessionId,
       })
       if (sessionEvents.errors) {
@@ -728,6 +747,7 @@ const OneGraphCliClient = {
   fetchCliSessionEvents: OneGraphClient.fetchCliSessionEvents,
   ensureAppForSite,
   updateCLISessionMetadata,
+  getGraphJwtForSite: OneGraphClient.getGraphJwtForSite,
 }
 
 module.exports = {
