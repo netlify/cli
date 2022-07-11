@@ -87,7 +87,7 @@ class NetlifyFunction {
     this.buildQueue = buildFunction({ cache })
 
     try {
-      const { schedule, srcFiles, ...buildData } = await this.buildQueue
+      const { includedFiles = [], schedule, srcFiles, ...buildData } = await this.buildQueue
       const srcFilesSet = new Set(srcFiles)
       const srcFilesDiff = this.getSrcFilesDiff(srcFilesSet)
 
@@ -95,7 +95,7 @@ class NetlifyFunction {
       this.srcFiles = srcFilesSet
       this.schedule = schedule || this.schedule
 
-      return { srcFilesDiff }
+      return { includedFiles, srcFilesDiff }
     } catch (error) {
       return { error }
     }
