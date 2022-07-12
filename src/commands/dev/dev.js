@@ -9,8 +9,8 @@ const { Option } = require('commander')
 const execa = require('execa')
 const StaticServer = require('static-server')
 const stripAnsiCc = require('strip-ansi-control-characters')
+const waitPort = require('wait-port')
 
-const waitPort = require('../../../vendor/wait-port')
 const { promptEditorHelper } = require('../../lib/edge-functions')
 const { startFunctionsServer } = require('../../lib/functions/server')
 const {
@@ -234,6 +234,7 @@ const FRAMEWORK_PORT_TIMEOUT = 6e5
  * @param {InspectSettings} params.inspectSettings
  * @param {() => Promise<object>} params.getUpdatedConfig
  * @param {string} params.geolocationMode
+ * @param {string} params.geoCountry
  * @param {*} params.settings
  * @param {boolean} params.offline
  * @param {*} params.site
@@ -243,6 +244,7 @@ const FRAMEWORK_PORT_TIMEOUT = 6e5
 const startProxyServer = async ({
   addonsUrls,
   config,
+  geoCountry,
   geolocationMode,
   getUpdatedConfig,
   inspectSettings,
@@ -256,6 +258,7 @@ const startProxyServer = async ({
     config,
     configPath: site.configPath,
     geolocationMode,
+    geoCountry,
     getUpdatedConfig,
     inspectSettings,
     offline,
@@ -386,6 +389,19 @@ const validateShortFlagArgs = (args) => {
   return args
 }
 
+const validateGeoCountryCode = (arg) => {
+  // Validate that the arg passed is two letters only for country
+  // See https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes
+  if (!/^[a-z]{2}$/i.test(arg)) {
+    throw new Error(
+      `The geo country code must use a two letter abbreviation.
+      ${chalk.red(BANG)}  Example:
+      netlify dev --geo=mock --country=FR`,
+    )
+  }
+  return arg.toUpperCase()
+}
+
 /**
  * The dev command
  * @param {import('commander').OptionValues} options
@@ -460,6 +476,7 @@ const dev = async (options, command) => {
     addonsUrls,
     config,
     geolocationMode: options.geo,
+    geoCountry: options.country,
     getUpdatedConfig,
     inspectSettings,
     offline: options.offline,
@@ -598,6 +615,12 @@ const createDevCommand = (program) => {
       )
         .choices(['cache', 'mock', 'update'])
         .default('cache'),
+    )
+    .addOption(
+      new Option(
+        '--country <geoCountry>',
+        'Two-letter country code (ISO 3166-1 alpha-2, https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements) to use as mock geolocation (enables --geo=mock autmatically)',
+      ).argParser(validateGeoCountryCode),
     )
     .addOption(
       new Option('--staticServerPort <port>', 'port of the static app server used when no framework is detected')

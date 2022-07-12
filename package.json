@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "10.7.1",
+  "version": "10.8.0",
   "author": "Netlify Inc.",
   "contributors": [
     "Abraham Schilling <AbrahamSchilling@gmail.com> (https://gitlab.com/n4bb12)",
@@ -92,6 +92,7 @@
     "Nicolas Gonzalez",
     "Pankaj Patil <pankaj.patil2099@hotmail.com> (https://twitter.com/pankajpatil16)",
     "Peter",
+    "Prince Wilson (https://twitter.com/maxcell)",
     "Rachael Stavchansky",
     "Raees Iqbal <raees@netlify.com> (https://raeesbhatti.com/)",
     "Ricardo Mendes <rokusu@gmail.com> (https://twitter.com/locks)",
@@ -160,8 +161,7 @@
     "/src/functions-templates/**",
     "/src/lib/functions/templates/**",
     "!/src/**/node_modules/**",
-    "!/src/**/*.test.js",
-    "/vendor"
+    "!/src/**/*.test.js"
   ],
   "homepage": "https://github.com/netlify/cli",
   "keywords": [
@@ -221,7 +221,7 @@
     "@netlify/edge-bundler": "^1.5.0",
     "@netlify/framework-info": "^9.1.0",
     "@netlify/local-functions-proxy": "^1.1.1",
-    "@netlify/plugins-list": "^6.30.0",
+    "@netlify/plugins-list": "^6.32.0",
     "@netlify/zip-it-and-ship-it": "^5.12.0",
     "@octokit/rest": "^18.0.0",
     "@sindresorhus/slugify": "^1.1.0",
@@ -287,7 +287,7 @@
     "multiparty": "^4.2.1",
     "netlify": "^11.0.2",
     "netlify-headers-parser": "^6.0.2",
-    "netlify-onegraph-internal": "0.3.1",
+    "netlify-onegraph-internal": "0.3.6",
     "netlify-redirect-parser": "^13.0.5",
     "netlify-redirector": "^0.2.1",
     "node-fetch": "^2.6.0",
@@ -321,7 +321,7 @@
     "unixify": "^1.0.0",
     "update-notifier": "^5.0.0",
     "uuid": "^8.0.0",
-    "wait-port": "0.2.9",
+    "wait-port": "^0.2.14",
     "winston": "^3.2.1",
     "write-file-atomic": "^4.0.0"
   },

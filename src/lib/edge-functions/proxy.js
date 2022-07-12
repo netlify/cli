@@ -48,6 +48,7 @@ const handleProxyRequest = (req, proxyReq) => {
 const initializeProxy = async ({
   config,
   configPath,
+  geoCountry,
   geolocationMode,
   getUpdatedConfig,
   inspectSettings,
@@ -84,7 +85,7 @@ const initializeProxy = async ({
     }
 
     const [geoLocation, registry] = await Promise.all([
-      getGeoLocation({ mode: geolocationMode, offline, state }),
+      getGeoLocation({ mode: geolocationMode, geoCountry, offline, state }),
       server,
     ])
 
