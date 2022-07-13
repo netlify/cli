@@ -218,9 +218,9 @@ test('env:import --json --replace-existing should replace all existing vars and 
   })
 })
 
-test('env:migrate should return success message (mongo to envelope)', async (t) => {
+test('env:clone should return success message (mongo to envelope)', async (t) => {
   const envFrom = {
-    MIGRATE_ME: 'migrate_me',
+    CLONE_ME: 'clone_me',
     EXISTING_VAR: 'from',
   }
 
@@ -238,7 +238,7 @@ test('env:migrate should return success message (mongo to envelope)', async (t) 
     name: 'site-name-b',
   }
 
-  const migrateRoutes = [
+  const cloneRoutes = [
     { path: 'sites/site_id', response: siteInfo },
     { path: 'sites/site_id_a', response: siteInfoFrom },
     { path: 'sites/site_id_b', response: siteInfoTo },
@@ -265,9 +265,9 @@ test('env:migrate should return success message (mongo to envelope)', async (t) 
 
   await withSiteBuilder('site-env', async (builder) => {
     await builder.buildAsync()
-    await withMockApi(migrateRoutes, async ({ apiUrl, requests }) => {
+    await withMockApi(cloneRoutes, async ({ apiUrl, requests }) => {
       const cliResponse = await callCli(
-        ['env:migrate', '--from', 'site_id_a', '--to', 'site_id_b'],
+        ['env:clone', '--from', 'site_id_a', '--to', 'site_id_b'],
         getCLIOptions({ apiUrl, builder }),
       )
 
@@ -281,15 +281,15 @@ test('env:migrate should return success message (mongo to envelope)', async (t) 
       )
 
       t.is(postRequest.body.length, 2)
-      t.is(postRequest.body[0].key, 'MIGRATE_ME')
-      t.is(postRequest.body[0].values[0].value, 'migrate_me')
+      t.is(postRequest.body[0].key, 'CLONE_ME')
+      t.is(postRequest.body[0].values[0].value, 'clone_me')
       t.is(postRequest.body[1].key, 'EXISTING_VAR')
       t.is(postRequest.body[1].values[0].value, 'from')
     })
   })
 })
 
-test('env:migrate should return success message (envelope to mongo)', async (t) => {
+test('env:clone should return success message (envelope to mongo)', async (t) => {
   const siteInfoFrom = {
     ...siteInfo,
     id: 'site_id_a',
@@ -297,7 +297,7 @@ test('env:migrate should return success message (envelope to mongo)', async (t) 
   }
 
   const envTo = {
-    MIGRATE_ME: 'migrate_me',
+    CLONE_ME: 'clone_me',
     EXISTING_VAR: 'to',
   }
 
@@ -315,7 +315,7 @@ test('env:migrate should return success message (envelope to mongo)', async (t) 
     OTHER_VAR: 'envelope-value',
   }
 
-  const migrateRoutes = [
+  const cloneRoutes = [
     { path: 'sites/site_id', response: siteInfo },
     { path: 'sites/site_id_a', response: siteInfoFrom },
     { path: 'sites/site_id_b', response: siteInfoTo },
@@ -337,9 +337,9 @@ test('env:migrate should return success message (envelope to mongo)', async (t) 
 
   await withSiteBuilder('site-env', async (builder) => {
     await builder.buildAsync()
-    await withMockApi(migrateRoutes, async ({ apiUrl, requests }) => {
+    await withMockApi(cloneRoutes, async ({ apiUrl, requests }) => {
       const cliResponse = await callCli(
-        ['env:migrate', '--from', 'site_id_a', '--to', 'site_id_b'],
+        ['env:clone', '--from', 'site_id_a', '--to', 'site_id_b'],
         getCLIOptions({ apiUrl, builder }),
       )
 
@@ -354,7 +354,7 @@ test('env:migrate should return success message (envelope to mongo)', async (t) 
   })
 })
 
-test('env:migrate should return success message (envelope to envelope)', async (t) => {
+test('env:clone should return success message (envelope to envelope)', async (t) => {
   const siteInfoFrom = {
     ...siteInfo,
     id: 'site_id_a',
@@ -367,7 +367,7 @@ test('env:migrate should return success message (envelope to envelope)', async (
     name: 'site-name-b',
   }
 
-  const migrateRoutes = [
+  const cloneRoutes = [
     { path: 'sites/site_id', response: siteInfo },
     { path: 'sites/site_id_a', response: siteInfoFrom },
     { path: 'sites/site_id_b', response: siteInfoTo },
@@ -399,9 +399,9 @@ test('env:migrate should return success message (envelope to envelope)', async (
 
   await withSiteBuilder('site-env', async (builder) => {
     await builder.buildAsync()
-    await withMockApi(migrateRoutes, async ({ apiUrl, requests }) => {
+    await withMockApi(cloneRoutes, async ({ apiUrl, requests }) => {
       const cliResponse = await callCli(
-        ['env:migrate', '--from', 'site_id_a', '--to', 'site_id_b'],
+        ['env:clone', '--from', 'site_id_a', '--to', 'site_id_b'],
         getCLIOptions({ apiUrl, builder }),
       )
 
