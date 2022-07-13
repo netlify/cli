@@ -205,7 +205,7 @@ const DEFAULT_PRIORITY = 999
 
 const selectTypeOfFunc = async () => {
   const functionTypes = [
-    { name: 'Edge Function (Deno)', value: 'edge' },
+    { name: 'Edge function (Deno)', value: 'edge' },
     { name: 'Serverless Function (Node/Go)', value: 'serverless' },
   ]
 
@@ -230,7 +230,6 @@ const ensureEdgeFuncDirExists = function (command) {
   }
 
   if (!functionsDirHolder) {
-    log(`${NETLIFYDEVLOG} Edge Functions directory not specified in netlify.toml`)
     functionsDirHolder = 'netlify/edge-functions'
   }
 
@@ -637,7 +636,7 @@ const registerEFInToml = async (funcName) => {
     {
       type: 'input',
       name: 'funcPath',
-      message: `What route do you want your edge function to be invoked on? \nRoute can be configured by editing your \`netlify.toml\` file.`,
+      message: `What route do you want your edge function to be invoked on?`,
       default: '/test',
       validate: (val) => Boolean(val),
       // Make sure route isn't undefined and is valid
@@ -658,8 +657,7 @@ const registerEFInToml = async (funcName) => {
       `${NETLIFYDEVLOG} Function '${funcName}' registered for route \`${funcPath}\`. To change, edit your \`netlify.toml\` file.`,
     )
   } catch {
-    log(`${NETLIFYDEVERR} Unable to register function. Please check your \`netlify.toml\` file.`)
-    process.exit(1)
+    error(`${NETLIFYDEVERR} Unable to register function. Please check your \`netlify.toml\` file.`)
   }
 }
 
