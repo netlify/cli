@@ -18,6 +18,7 @@ netlify dev
 **Flags**
 
 - `command` (*string*) - command to run
+- `country` (*string*) - Two-letter country code (ISO 3166-1 alpha-2, https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements) to use as mock geolocation (enables --geo=mock autmatically)
 - `dir` (*string*) - dir with static files
 - `edgeInspect` (*string*) - enable the V8 Inspector Protocol for Edge Functions, with an optional address in the host:port format
 - `edgeInspectBrk` (*string*) - enable the V8 Inspector Protocol for Edge Functions and pause execution on the first line of code, with an optional address in the host:port format
