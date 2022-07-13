@@ -20,8 +20,12 @@ jobs:
           workflow_conclusion: success
           name: delta-action-deltas
           github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Get PR number
+        if: github.event.workflow_run.event == 'pull_request'
+        id: pr_number
+        run: echo "::set-output name=pr_number::$(cat pr_number)"
       - name: Post deltas to GitHub
         uses: netlify/delta-action@v4
         with:
           title: '📊 Benchmark results'
-          token: ${{ secrets.GITHUB_TOKEN }}
+          pr_number: ${{ steps.pr_number.outputs.pr_number }}
