@@ -25,7 +25,7 @@ netlify env
 | [`env:get`](/docs/commands/env.md#envget) | Get resolved value of specified environment variable (includes netlify.toml)  |
 | [`env:import`](/docs/commands/env.md#envimport) | Import and set environment variables from .env file  |
 | [`env:list`](/docs/commands/env.md#envlist) | Lists resolved environment variables for site (includes netlify.toml)  |
-| [`env:migrate`](/docs/commands/env.md#envmigrate) | Migrate environment variables from one site to another  |
+| [`env:clone`](/docs/commands/env.md#envclone) | Clone environment variables from one site to another  |
 | [`env:set`](/docs/commands/env.md#envset) | Set value of environment variable  |
 | [`env:unset`](/docs/commands/env.md#envunset) | Unset an environment variable which removes it from the UI  |
 
@@ -38,7 +38,7 @@ netlify env:get VAR_NAME
 netlify env:set VAR_NAME value
 netlify env:unset VAR_NAME
 netlify env:import fileName
-netlify env:migrate --to <to-site-id>
+netlify env:clone --to <to-site-id>
 ```
 
 ---
@@ -102,14 +102,14 @@ netlify env:list
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
-## `env:migrate`
+## `env:clone`
 
-Migrate environment variables from one site to another
+Clone environment variables from one site to another
 
 **Usage**
 
 ```bash
-netlify env:migrate
+netlify env:clone
 ```
 
 **Flags**
@@ -123,8 +123,8 @@ netlify env:migrate
 **Examples**
 
 ```bash
-netlify env:migrate --to <to-site-id>
-netlify env:migrate --to <to-site-id> --from <from-site-id>
+netlify env:clone --to <to-site-id>
+netlify env:clone --to <to-site-id> --from <from-site-id>
 ```
 
 ---
