@@ -1,8 +1,8 @@
 // @ts-check
+const { createEnvCloneCommand } = require('./env-clone')
 const { createEnvGetCommand } = require('./env-get')
 const { createEnvImportCommand } = require('./env-import')
 const { createEnvListCommand } = require('./env-list')
-const { createEnvCloneCommand } = require('./env-clone')
 const { createEnvSetCommand } = require('./env-set')
 const { createEnvUnsetCommand } = require('./env-unset')
 
