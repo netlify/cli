@@ -107,6 +107,10 @@ test('should create a new function directory when none is found', async (t) => {
 
     const createFunctionQuestions = [
       {
+        question: "Select the type of function you'd like to create",
+        answer: answerWithValue(`${DOWN}${CONFIRM}`),
+      },
+      {
         question: 'Enter the path, relative to your site',
         answer: answerWithValue('test/functions'),
       },
@@ -178,6 +182,10 @@ test('should install function template dependencies on a site-level `package.jso
     await builder.buildAsync()
 
     const createFunctionQuestions = [
+      {
+        question: "Select the type of function you'd like to create",
+        answer: answerWithValue(`${DOWN}${CONFIRM}`),
+      },
       {
         question: 'Enter the path, relative to your site',
         answer: answerWithValue('test/functions'),
@@ -255,6 +263,10 @@ test('should install function template dependencies in the function sub-director
 
     const createFunctionQuestions = [
       {
+        question: "Select the type of function you'd like to create",
+        answer: answerWithValue(`${DOWN}${CONFIRM}`),
+      },
+      {
         question: 'Enter the path, relative to your site',
         answer: answerWithValue('test/functions'),
       },
@@ -327,6 +339,10 @@ test('should not create a new function directory when one is found', async (t) =
 
     const createFunctionQuestions = [
       {
+        question: "Select the type of function you'd like to create",
+        answer: answerWithValue(`${DOWN}${CONFIRM}`),
+      },
+      {
         question: 'Select the language of your function',
         answer: answerWithValue(CONFIRM),
       },
@@ -387,6 +403,10 @@ test('should only show function templates for the language specified via the --l
 
     const createFunctionQuestions = [
       {
+        question: "Select the type of function you'd like to create",
+        answer: answerWithValue(`${DOWN}${CONFIRM}`),
+      },
+      {
         question: 'Enter the path, relative to your site',
         answer: answerWithValue('test/functions'),
       },
@@ -446,6 +466,10 @@ test('throws an error when the --language flag contains an unsupported value', a
     await builder.buildAsync()
 
     const createFunctionQuestions = [
+      {
+        question: "Select the type of function you'd like to create",
+        answer: answerWithValue(`${DOWN}${CONFIRM}`),
+      },
       {
         question: 'Enter the path, relative to your site',
         answer: answerWithValue('test/functions'),
