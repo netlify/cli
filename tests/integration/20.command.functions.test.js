@@ -147,6 +147,74 @@ test('should create a new function directory when none is found', async (t) => {
   })
 })
 
+test('should create a new edge function directory when none is found', async (t) => {
+  const siteInfo = {
+    admin_url: 'https://app.netlify.com/sites/site-name/overview',
+    ssl_url: 'https://site-name.netlify.app/',
+    id: 'site_id',
+    name: 'site-name',
+    build_settings: { repo_url: 'https://github.com/owner/repo' },
+  }
+
+  const routes = [
+    {
+      path: 'accounts',
+      response: [{ slug: 'test-account' }],
+    },
+    { path: 'sites/site_id/service-instances', response: [] },
+    { path: 'sites/site_id', response: siteInfo },
+    {
+      path: 'sites',
+      response: [siteInfo],
+    },
+    { path: 'sites/site_id', method: 'patch', response: {} },
+  ]
+
+  await withSiteBuilder('site-with-no-functions-dir', async (builder) => {
+    await builder.buildAsync()
+
+    const createFunctionQuestions = [
+      {
+        question: "Select the type of function you'd like to create",
+        answer: answerWithValue(CONFIRM),
+      },
+      {
+        question: 'Select the language of your function',
+        answer: answerWithValue(CONFIRM),
+      },
+      {
+        question: 'Pick a template',
+        answer: answerWithValue(CONFIRM),
+      },
+      {
+        question: 'Name your function',
+        answer: answerWithValue(CONFIRM),
+      },
+      {
+        question: 'What route do you want your edge function to be invoked on?',
+        answer: answerWithValue('/test'),
+      },
+    ]
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      const childProcess = execa(cliPath, ['functions:create'], {
+        env: {
+          NETLIFY_API_URL: apiUrl,
+          NETLIFY_SITE_ID: 'site_id',
+          NETLIFY_AUTH_TOKEN: 'fake-token',
+        },
+        cwd: builder.directory,
+      })
+
+      handleQuestions(childProcess, createFunctionQuestions)
+
+      await childProcess
+
+      t.is(await fs.fileExistsAsync(`${builder.directory}/netlify/edge-functions/hello/hello.js`), true)
+    })
+  })
+})
+
 test('should install function template dependencies on a site-level `package.json` if one is found', async (t) => {
   const siteInfo = {
     admin_url: 'https://app.netlify.com/sites/site-name/overview',
