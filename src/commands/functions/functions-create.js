@@ -206,7 +206,7 @@ const DEFAULT_PRIORITY = 999
 const selectTypeOfFunc = async () => {
   const functionTypes = [
     { name: 'Edge function (Deno)', value: 'edge' },
-    { name: 'Serverless Function (Node/Go)', value: 'serverless' },
+    { name: 'Serverless function (Node/Go)', value: 'serverless' },
   ]
 
   const { functionType } = await inquirer.prompt([
