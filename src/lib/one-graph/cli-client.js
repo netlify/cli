@@ -188,7 +188,7 @@ const refetchAndGenerateFromOneGraph = async (input) => {
 
   await OneGraphClient.ensureAppForSite(jwt, siteId)
 
-  const enabledServicesInfo = await OneGraphClient.fetchEnabledServices(input.jwt, siteId)
+  const enabledServicesInfo = await OneGraphClient.fetchEnabledServices(jwt, siteId)
   if (!enabledServicesInfo) {
     warn('Unable to fetch enabled services for site for code generation')
     return
