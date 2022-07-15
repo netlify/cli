@@ -75,7 +75,7 @@ const monitorCLISessionEvents = (input) => {
     // @ts-ignore
     const heartbeatIntervalms = fullSession.session.cliHeartbeatIntervalMs || defaultHeartbeatFrequency
     nextMarkActiveHeartbeat = heartbeatIntervalms
-    const markCLISessionActiveResult = await executeMarkCliSessionActiveHeartbeat(netlifyToken, site.id, sessionId)
+    const markCLISessionActiveResult = await executeMarkCliSessionActiveHeartbeat(graphJwt.jwt, site.id, sessionId)
     if (markCLISessionActiveResult.errors && markCLISessionActiveResult.errors.length !== 0) {
       warn(`Failed to mark CLI session active: ${markCLISessionActiveResult.errors.join(', ')}`)
     }
@@ -84,9 +84,8 @@ const monitorCLISessionEvents = (input) => {
 
   setTimeout(markActiveHelper, nextMarkActiveHeartbeat)
 
-  const enabledServiceWatcher = async (innerNetlifyToken, siteId) => {
+  const enabledServiceWatcher = async (jwt, siteId) => {
     const enabledServices = state.get('oneGraphEnabledServices') || ['onegraph']
-    const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId: appId, nfToken: netlifyToken })
 
     const enabledServicesInfo = await OneGraphClient.fetchEnabledServices(jwt, siteId)
     if (!enabledServicesInfo) {
@@ -103,7 +102,7 @@ const monitorCLISessionEvents = (input) => {
           'Reloading',
         )} Netlify Graph schema..., ${enabledServicesCompareKey} => ${newEnabledServicesCompareKey}`,
       )
-      await refetchAndGenerateFromOneGraph({ netlifyGraphConfig, state, netlifyToken: innerNetlifyToken, siteId })
+      await refetchAndGenerateFromOneGraph({ netlifyGraphConfig, state, jwt, siteId })
       log(`${chalk.green('Reloaded')} Netlify Graph schema and regenerated functions`)
     }
   }
@@ -142,7 +141,7 @@ const monitorCLISessionEvents = (input) => {
       }
     }
 
-    await enabledServiceWatcher(netlifyToken, appId)
+    await enabledServiceWatcher(graphJwt.jwt, appId)
 
     handle = setTimeout(helper, frequency)
   }
@@ -178,15 +177,14 @@ const monitorOperationFile = async ({ netlifyGraphConfig, onAdd, onChange, onUnl
  * Fetch the schema for a site, and regenerate all of the downstream files
  * @param {object} input
  * @param {string} input.siteId The id of the site to query against
- * @param {string} input.netlifyToken The (typically netlify) access token that is used for authentication, if any
+ * @param {string} input.jwt The Graph JWT
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
  * @param {StateConfig} input.state A function to call to set/get the current state of the local Netlify project
  * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
  * @returns {Promise<void>}
  */
 const refetchAndGenerateFromOneGraph = async (input) => {
-  const { logger, netlifyGraphConfig, netlifyToken, siteId, state } = input
-  const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
+  const { jwt, logger, netlifyGraphConfig, siteId, state } = input
 
   await OneGraphClient.ensureAppForSite(jwt, siteId)
 
@@ -403,17 +401,15 @@ const handleCliSessionEvent = async ({
 /**
  *
  * @param {object} input
- * @param {string} input.netlifyToken The (typically netlify) access token that is used for authentication, if any
+ * @param {string} input.jwt The GraphJWT string
  * @param {string} input.oneGraphSessionId The id of the cli session to fetch the current metadata for
  * @param {object} input.siteId The site object that contains the root file path for the site
  */
-const getCLISession = async ({ netlifyToken, oneGraphSessionId, siteId }) => {
-  const graphJwt = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
-
+const getCLISession = async ({ jwt, oneGraphSessionId, siteId }) => {
   const input = {
     appId: siteId,
     sessionId: oneGraphSessionId,
-    jwt: graphJwt.jwt,
+    jwt,
     desiredEventCount: 1,
   }
   return await OneGraphClient.fetchCliSession(input)
@@ -422,12 +418,12 @@ const getCLISession = async ({ netlifyToken, oneGraphSessionId, siteId }) => {
 /**
  *
  * @param {object} input
- * @param {string} input.netlifyToken The (typically netlify) access token that is used for authentication, if any
+ * @param {string} input.jwt The GraphJWT string
  * @param {string} input.oneGraphSessionId The id of the cli session to fetch the current metadata for
  * @param {string} input.siteId The site object that contains the root file path for the site
  */
-const getCLISessionMetadata = async ({ netlifyToken, oneGraphSessionId, siteId }) => {
-  const { errors, session } = await getCLISession({ netlifyToken, oneGraphSessionId, siteId })
+const getCLISessionMetadata = async ({ jwt, oneGraphSessionId, siteId }) => {
+  const { errors, session } = await getCLISession({ jwt, oneGraphSessionId, siteId })
   return { metadata: session && session.metadata, errors }
 }
 
@@ -464,15 +460,15 @@ const detectLocalCLISessionMetadata = ({ siteRoot }) => {
  * Fetch the existing cli session metadata if it exists, and mutate it remotely with the passed in metadata
  * @param {object} input
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig The (typically netlify) access token that is used for authentication, if any
- * @param {string} input.netlifyToken The (typically netlify) access token that is used for authentication, if any
+ * @param {string} input.jwt The Graph JWT string
  * @param {string} input.oneGraphSessionId The id of the cli session to fetch the current metadata for
  * @param {string} input.siteId The site object that contains the root file path for the site
  * @param {string} input.siteRoot The root file path for the site
  * @param {object} input.newMetadata The metadata to merge into (with priority) the existing metadata
  * @returns {Promise<object>}
  */
-const upsertMergeCLISessionMetadata = async ({ netlifyToken, newMetadata, oneGraphSessionId, siteId, siteRoot }) => {
-  const { errors, metadata } = await getCLISessionMetadata({ netlifyToken, oneGraphSessionId, siteId })
+const upsertMergeCLISessionMetadata = async ({ jwt, newMetadata, oneGraphSessionId, siteId, siteRoot }) => {
+  const { errors, metadata } = await getCLISessionMetadata({ jwt, oneGraphSessionId, siteId })
   if (errors) {
     warn(`Error fetching cli session metadata: ${JSON.stringify(errors, null, 2)}`)
   }
@@ -481,7 +477,6 @@ const upsertMergeCLISessionMetadata = async ({ netlifyToken, newMetadata, oneGra
 
   // @ts-ignore
   const finalMetadata = { ...metadata, ...detectedMetadata, ...newMetadata }
-  const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
 
   return OneGraphClient.updateCLISessionMetadata(jwt, siteId, oneGraphSessionId, finalMetadata)
 }
@@ -495,16 +490,16 @@ const persistNewOperationsDocForSession = async ({
   siteRoot,
 }) => {
   const { branch } = gitRepoInfo()
+  const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
   const persistedResult = await executeCreatePersistedQueryMutation(
     {
-      nfToken: netlifyToken,
       appId: siteId,
       description: 'Temporary snapshot of local queries',
       query: operationsDoc,
       tags: ['netlify-cli', `session:${oneGraphSessionId}`, `git-branch:${branch}`, `local-change`],
     },
     {
-      accessToken: netlifyToken,
+      accessToken: jwt,
       siteId,
     },
   )
@@ -522,7 +517,7 @@ const persistNewOperationsDocForSession = async ({
   const newMetadata = { docId: persistedDoc.id }
   const result = await upsertMergeCLISessionMetadata({
     netlifyGraphConfig,
-    netlifyToken,
+    jwt,
     siteId,
     oneGraphSessionId,
     newMetadata,
@@ -656,7 +651,8 @@ const startOneGraphCLISession = async (input) => {
  * @param {string} input.sessionId The session id to monitor CLI events for
  */
 const markCliSessionInactive = async ({ netlifyToken, sessionId, siteId }) => {
-  const result = await executeMarkCliSessionInactive(netlifyToken, siteId, sessionId)
+  const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
+  const result = await executeMarkCliSessionInactive(jwt, siteId, sessionId)
   if (result.errors) {
     warn(`Unable to mark CLI session ${sessionId} inactive: ${JSON.stringify(result.errors, null, 2)}`)
   }
@@ -680,12 +676,11 @@ const ensureCLISession = async (input) => {
   const { metadata, netlifyToken, site, state } = input
   let oneGraphSessionId = input.oneGraphSessionId ? input.oneGraphSessionId : loadCLISession(state)
   let parentCliSessionId = null
+  const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId: site.id, nfToken: netlifyToken })
 
   // Validate that session still exists and we can access it
   try {
     if (oneGraphSessionId) {
-      const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId: site.id, nfToken: netlifyToken })
-
       const sessionEvents = await OneGraphClient.fetchCliSessionEvents({
         appId: site.id,
         jwt,
@@ -728,7 +723,7 @@ const ensureCLISession = async (input) => {
 
   state.set('oneGraphSessionId', oneGraphSessionId)
   const { errors: markCLISessionActiveErrors } = await executeMarkCliSessionActiveHeartbeat(
-    netlifyToken,
+    jwt,
     site.id,
     oneGraphSessionId,
   )
