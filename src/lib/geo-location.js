@@ -27,9 +27,7 @@ const mockLocation = {
   subdivision: { code: 'CA', name: 'California' },
 }
 
-const isCacheEligible = (cacheObj, mode, country) => {
-  return cacheObj !== undefined && mode === 'cache' && (cacheObj.data.country.code === country || !country)
-}
+const isCacheEligible = (cacheObj, mode, country) => cacheObj !== undefined && mode === 'cache' && (cacheObj.data.country.code === country || !country)
 
 /**
  * Returns geolocation data from a remote API, the local cache, or a mock
