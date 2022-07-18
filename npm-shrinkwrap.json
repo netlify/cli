@@ -12,7 +12,7 @@
       "dependencies": {
         "@netlify/build": "^27.4.0",
         "@netlify/config": "^18.1.1",
-        "@netlify/edge-bundler": "^1.5.0",
+        "@netlify/edge-bundler": "^1.6.0",
         "@netlify/framework-info": "^9.1.1",
         "@netlify/local-functions-proxy": "^1.1.1",
         "@netlify/plugins-list": "^6.33.0",
@@ -2305,9 +2305,9 @@
       }
     },
     "node_modules/@netlify/edge-bundler": {
-      "version": "1.5.0",
-      "resolved": "https://registry.npmjs.org/@netlify/edge-bundler/-/edge-bundler-1.5.0.tgz",
-      "integrity": "sha512-vkF0cw1B8/AP6leqS9bsxL7HQ5Te/E+/sVDjJ5OHNHdDsKQFOn13wWSlMRaT0yX04f4QOjXxv0IMSlDfQjHLSQ==",
+      "version": "1.6.0",
+      "resolved": "https://registry.npmjs.org/@netlify/edge-bundler/-/edge-bundler-1.6.0.tgz",
+      "integrity": "sha512-z363DvVE4fMcVoOplX8J2EweRcyvpm4Pfuxz0JbJlejz+ScKl9kpZB3sUArtsUT1nsy+mMMlaRkqWyO/2WI7sw==",
       "dependencies": {
         "common-path-prefix": "^3.0.0",
         "del": "^6.0.0",
@@ -2383,9 +2383,9 @@
       }
     },
     "node_modules/@netlify/edge-bundler/node_modules/node-fetch": {
-      "version": "3.2.6",
-      "resolved": "https://registry.npmjs.org/node-fetch/-/node-fetch-3.2.6.tgz",
-      "integrity": "sha512-LAy/HZnLADOVkVPubaxHDft29booGglPFDr2Hw0J1AercRh01UiVFm++KMDnJeH9sHgNB4hsXPii7Sgym/sTbw==",
+      "version": "3.2.8",
+      "resolved": "https://registry.npmjs.org/node-fetch/-/node-fetch-3.2.8.tgz",
+      "integrity": "sha512-KtpD1YhGszhntMpBDyp5lyagk8KIMopC1LEb7cQUAh7zcosaX5uK8HnbNb2i3NTQK3sIawCItS0uFC3QzcLHdg==",
       "dependencies": {
         "data-uri-to-buffer": "^4.0.0",
         "fetch-blob": "^3.1.4",
@@ -24338,9 +24338,9 @@
       }
     },
     "@netlify/edge-bundler": {
-      "version": "1.5.0",
-      "resolved": "https://registry.npmjs.org/@netlify/edge-bundler/-/edge-bundler-1.5.0.tgz",
-      "integrity": "sha512-vkF0cw1B8/AP6leqS9bsxL7HQ5Te/E+/sVDjJ5OHNHdDsKQFOn13wWSlMRaT0yX04f4QOjXxv0IMSlDfQjHLSQ==",
+      "version": "1.6.0",
+      "resolved": "https://registry.npmjs.org/@netlify/edge-bundler/-/edge-bundler-1.6.0.tgz",
+      "integrity": "sha512-z363DvVE4fMcVoOplX8J2EweRcyvpm4Pfuxz0JbJlejz+ScKl9kpZB3sUArtsUT1nsy+mMMlaRkqWyO/2WI7sw==",
       "requires": {
         "common-path-prefix": "^3.0.0",
         "del": "^6.0.0",
@@ -24392,9 +24392,9 @@
           "integrity": "sha512-LnQR4bZ9IADDRSkvpqMGvt/tEJWclzklNgSw48V5EAaAeDd6qGvN8ei6k5p0tvxSR171VmGyHuTiAOfxAbr8kA=="
         },
         "node-fetch": {
-          "version": "3.2.6",
-          "resolved": "https://registry.npmjs.org/node-fetch/-/node-fetch-3.2.6.tgz",
-          "integrity": "sha512-LAy/HZnLADOVkVPubaxHDft29booGglPFDr2Hw0J1AercRh01UiVFm++KMDnJeH9sHgNB4hsXPii7Sgym/sTbw==",
+          "version": "3.2.8",
+          "resolved": "https://registry.npmjs.org/node-fetch/-/node-fetch-3.2.8.tgz",
+          "integrity": "sha512-KtpD1YhGszhntMpBDyp5lyagk8KIMopC1LEb7cQUAh7zcosaX5uK8HnbNb2i3NTQK3sIawCItS0uFC3QzcLHdg==",
           "requires": {
             "data-uri-to-buffer": "^4.0.0",
             "fetch-blob": "^3.1.4",
