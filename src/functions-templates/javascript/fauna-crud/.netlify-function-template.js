@@ -2,6 +2,7 @@ const execa = require('execa')
 module.exports = {
   name: 'fauna-crud',
   description: 'CRUD function using Fauna DB',
+  functionType: 'serverless',
   addons: [
     {
       addonName: 'fauna',

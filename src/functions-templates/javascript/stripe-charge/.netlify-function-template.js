@@ -3,6 +3,7 @@ const chalk = require('chalk')
 module.exports = {
   name: 'stripe-charge',
   description: 'Stripe Charge: Charge a user with Stripe',
+  functionType: 'serverless',
   async onComplete() {
     console.log(`${chalk.yellow('stripe-charge')} function created from template!`)
     if (!process.env.STRIPE_SECRET_KEY) {

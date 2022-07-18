@@ -3,6 +3,7 @@ const chalk = require('chalk')
 module.exports = {
   name: 'token-hider',
   description: 'Token Hider: access APIs without exposing your API keys',
+  functionType: 'serverless',
   async onComplete() {
     console.log(`${chalk.yellow('token-hider')} function created from template!`)
     if (!process.env.API_URL || !process.env.API_TOKEN) {
