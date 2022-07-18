@@ -27,9 +27,6 @@ const mockLocation = {
   subdivision: { code: 'CA', name: 'California' },
 }
 
-const isCacheEligible = (cacheObj, mode, country) =>
-  cacheObj !== undefined && mode === 'cache' && (cacheObj.data.country.code === country || !country)
-
 /**
  * Returns geolocation data from a remote API, the local cache, or a mock
  * location, depending on the mode selected.
@@ -43,10 +40,11 @@ const isCacheEligible = (cacheObj, mode, country) =>
  */
 const getGeoLocation = async ({ geoCountry, mode, offline, state }) => {
   const cacheObject = state.get(STATE_GEO_PROPERTY)
+  if (geoCountry) mode = 'mock'
 
   // If we have cached geolocation data and the `--geo` option is set to
   // `cache`, let's try to use it.
-  if (isCacheEligible(cacheObject, mode, geoCountry)) {
+  if (cacheObject !== undefined && (mode === 'cache' || cacheObject.data.country.code === geoCountry)) {
     const age = Date.now() - cacheObject.timestamp
 
     // Let's use the cached data if it's not older than the TTL. Also, if the
