@@ -16,7 +16,7 @@
         "@netlify/framework-info": "^9.1.1",
         "@netlify/local-functions-proxy": "^1.1.1",
         "@netlify/plugins-list": "^6.35.0",
-        "@netlify/zip-it-and-ship-it": "^5.13.1",
+        "@netlify/zip-it-and-ship-it": "^5.13.2",
         "@octokit/rest": "^18.0.0",
         "@sindresorhus/slugify": "^1.1.0",
         "ansi-escapes": "^5.0.0",
@@ -4079,9 +4079,9 @@
       }
     },
     "node_modules/@netlify/zip-it-and-ship-it": {
-      "version": "5.13.1",
-      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-5.13.1.tgz",
-      "integrity": "sha512-1lb6II3aXmuDtNvb49PZlNX51JZydmxE2C27AaqO7OI0A+hXtVf7gGhitRMKuL1lhORpD5S9IgdD/1DwAkUvCQ==",
+      "version": "5.13.2",
+      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-5.13.2.tgz",
+      "integrity": "sha512-WOS0XRlHgSMBzrzEik2Q1o8tMj5/DOeSA6YgpL8UubEkSmgiFGvcHXDSLN4802wYNU9aVbmAwLhn25ZcfJip8Q==",
       "dependencies": {
         "@babel/parser": "7.16.8",
         "@netlify/binary-info": "^1.0.0",
@@ -25938,9 +25938,9 @@
       }
     },
     "@netlify/zip-it-and-ship-it": {
-      "version": "5.13.1",
-      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-5.13.1.tgz",
-      "integrity": "sha512-1lb6II3aXmuDtNvb49PZlNX51JZydmxE2C27AaqO7OI0A+hXtVf7gGhitRMKuL1lhORpD5S9IgdD/1DwAkUvCQ==",
+      "version": "5.13.2",
+      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-5.13.2.tgz",
+      "integrity": "sha512-WOS0XRlHgSMBzrzEik2Q1o8tMj5/DOeSA6YgpL8UubEkSmgiFGvcHXDSLN4802wYNU9aVbmAwLhn25ZcfJip8Q==",
       "requires": {
         "@babel/parser": "7.16.8",
         "@netlify/binary-info": "^1.0.0",
