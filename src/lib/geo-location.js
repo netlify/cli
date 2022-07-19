@@ -41,7 +41,7 @@ const mockLocation = {
 const getGeoLocation = async ({ geoCountry, mode, offline, state }) => {
   const cacheObject = state.get(STATE_GEO_PROPERTY)
 
-  // If `--country` was used, we also set `--mode=mock`. 
+  // If `--country` was used, we also set `--mode=mock`.
   if (geoCountry) {
     mode = 'mock'
   }
