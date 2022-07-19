@@ -4,9 +4,9 @@
 
 These guidelines will help you send a pull request.
 
-If you're submitting an issue instead, please skip this document.
+If you’re submitting an issue instead, please skip this document.
 
-If your pull request is related to a typo or the documentation being unclear, please click on the relevant page's `Edit`
+If your pull request is related to a typo or the documentation being unclear, please select on the relevant page’s `Edit`
 button (pencil icon) and directly suggest a correction instead.
 
 This project was made with ❤️. The simplest way to give back is by starring and sharing it online.
@@ -16,7 +16,7 @@ promote a positive and inclusive environment.
 
 ## Development process
 
-First, fork and clone the repository. If you're not sure how to do this, please watch
+First, fork and clone the repository. If you’re not sure how to do this, please watch
 [these videos](https://egghead.io/courses/how-to-contribute-to-an-open-source-project-on-github).
 
 Run:
@@ -39,7 +39,7 @@ Running some integration tests requires an active Netlify account to create a li
 
 You can either provide a [Netlify Auth Token](https://docs.netlify.com/cli/get-started/#obtain-a-token-in-the-netlify-ui) (through the `NETLIFY_AUTH_TOKEN` environment variable) or login via `./bin/run login` before running the tests.
 
-The tests don't count towards Netlify build minutes since they build a site locally and deploy it using the API.
+The tests don’t count towards Netlify build minutes since they build a site locally and deploy it using the API.
 
 > You can disable these tests by setting the `NETLIFY_TEST_DISABLE_LIVE` environment variable to `true`.
 
@@ -78,7 +78,7 @@ The CLI is written using the [commander.js](https://github.com/tj/commander.js/)
 
 A good place to start is reading the base command README and looking at the commands folder.
 
-> If you'd like to learn more on how `netlify dev` works, see [here](./docs/netlify-dev.md)
+> If you’d like to learn more on how `netlify dev` works, check [here](./docs/netlify-dev.md)
 
 ### Testing
 
@@ -102,8 +102,8 @@ We also test for a few other things:
 We actively welcome your pull requests.
 
 1. Fork the repo and create your branch from `main`.
-2. If you've added code that should be tested, add tests.
-3. If you've changed APIs, update the documentation.
+2. If you’ve added code that should be tested, add tests.
+3. If you’ve changed APIs, update the documentation.
 4. Run `npm test` to run linting, formatting and tests.
 5. Make sure to sync the docs by running `npm run docs`.
 
@@ -113,7 +113,7 @@ Merge the release PR
 
 ### Creating a prerelease
 
-1. Create a branch named `releases/<tag>/<version>` with the version and tag you'd like to release.
+1. Create a branch named `releases/<tag>/<version>` with the version and tag you’d like to release.
 2. Push the branch to the repo.
 
 For example, a branch named `releases/rc.0/4.0.0` will create the version `4.0.0-rc.0` and publish it under the `rc.0` tag.
