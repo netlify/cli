@@ -48,6 +48,8 @@ const getGeoLocation = async ({ geoCountry, mode, offline, state }) => {
 
   // If we have cached geolocation data and the `--geo` option is set to
   // `cache`, let's try to use it.
+  // Or, if the country we're trying to mock is the same one as we have in the
+  // cache, let's use the cache instead of the mock.
   if (cacheObject !== undefined && (mode === 'cache' || cacheObject.data.country.code === geoCountry)) {
     const age = Date.now() - cacheObject.timestamp
 
