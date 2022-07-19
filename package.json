@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "10.10.1",
+  "version": "10.10.2",
   "author": "Netlify Inc.",
   "contributors": [
     "Abraham Schilling <AbrahamSchilling@gmail.com> (https://gitlab.com/n4bb12)",
@@ -224,7 +224,7 @@
     "@netlify/framework-info": "^9.1.1",
     "@netlify/local-functions-proxy": "^1.1.1",
     "@netlify/plugins-list": "^6.35.0",
-    "@netlify/zip-it-and-ship-it": "^5.13.1",
+    "@netlify/zip-it-and-ship-it": "^5.13.2",
     "@octokit/rest": "^18.0.0",
     "@sindresorhus/slugify": "^1.1.0",
     "ansi-escapes": "^5.0.0",
