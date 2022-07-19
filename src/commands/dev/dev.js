@@ -198,6 +198,8 @@ const startFrameworkServer = async function ({ settings }) {
   try {
     const open = await waitPort({
       port: settings.frameworkPort,
+      // Cannot use `localhost` as it may point to IPv4 or IPv6 depending on node version and OS
+      host: '127.0.0.1',
       output: 'silent',
       timeout: FRAMEWORK_PORT_TIMEOUT,
       ...(settings.pollingStrategies.includes('HTTP') && { protocol: 'http' }),
