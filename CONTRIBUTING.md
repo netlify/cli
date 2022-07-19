@@ -33,6 +33,8 @@ npm test
 
 **NOTE:**
 
+In order to run all tests, make sure to have [Git LFS](https://git-lfs.github.com/) installed on your system.
+
 Running some integration tests requires an active Netlify account to create a live site.
 
 You can either provide a [Netlify Auth Token](https://docs.netlify.com/cli/get-started/#obtain-a-token-in-the-netlify-ui) (through the `NETLIFY_AUTH_TOKEN` environment variable) or login via `./bin/run login` before running the tests.
