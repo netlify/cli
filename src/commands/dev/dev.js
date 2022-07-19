@@ -621,7 +621,7 @@ const createDevCommand = (program) => {
     .addOption(
       new Option(
         '--country <geoCountry>',
-        'Two-letter country code (ISO 3166-1 alpha-2, https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements) to use as mock geolocation (enables --geo=mock automatically)',
+        'Two-letter country code (https://ntl.fyi/country-codes) to use as mock geolocation (enables --geo=mock automatically)',
       ).argParser(validateGeoCountryCode),
     )
     .addOption(
