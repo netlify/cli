@@ -1,5 +1,8 @@
 // @ts-check
+const { Option } = require('commander')
+
 const { log, logJson } = require('../../utils')
+const { getEnvelopeEnv } = require('../../utils/env')
 
 /**
  * The env:get command
@@ -8,6 +11,7 @@ const { log, logJson } = require('../../utils')
  * @param {import('../base-command').BaseCommand} command
  */
 const envGet = async (name, options, command) => {
+  const { context, scope } = options
   const { api, cachedConfig, site } = command.netlify
   const siteId = site.id
 
@@ -16,9 +20,19 @@ const envGet = async (name, options, command) => {
     return false
   }
 
-  const siteData = await api.getSite({ siteId })
+  const { siteInfo } = cachedConfig
+  let { env } = cachedConfig
 
-  const { value } = cachedConfig.env[name] || {}
+  if (siteInfo.use_envelope) {
+    env = await getEnvelopeEnv({ api, context, env, scope, siteInfo })
+  } else if (context !== 'dev' || scope !== 'any') {
+    log(
+      'The --context and --scope flags are only available on sites that have upgraded to the new environment variable experience.',
+    )
+    return false
+  }
+
+  const { value } = env[name] || {}
 
   // Return json response for piping commands
   if (options.json) {
@@ -27,7 +41,7 @@ const envGet = async (name, options, command) => {
   }
 
   if (!value) {
-    log(`Environment variable ${name} not set for site ${siteData.name}`)
+    log(`Environment variable ${name} not set for site ${siteInfo.name}`)
     return false
   }
 
@@ -43,6 +57,16 @@ const createEnvGetCommand = (program) =>
   program
     .command('env:get')
     .argument('<name>', 'Environment variable name')
+    .addOption(
+      new Option('-c, --context <context>', '[Beta] Specify a deploy context')
+        .choices(['production', 'deploy-preview', 'branch-deploy', 'dev'])
+        .default('dev'),
+    )
+    .addOption(
+      new Option('-s, --scope <scope>', '[Beta] Specify a scope')
+        .choices(['builds', 'functions', 'post_processing', 'runtime', 'any'])
+        .default('any'),
+    )
     .description('Get resolved value of specified environment variable (includes netlify.toml)')
     .action(async (name, options, command) => {
       await envGet(name, options, command)

@@ -6,15 +6,12 @@ const inquirer = require('inquirer')
 const isEmpty = require('lodash/isEmpty')
 
 const { chalk, log, logJson } = require('../../utils')
-const { getEnvelopeMetadata, getRawEnvelope, getScopes } = require('../../utils/env')
+const { getEnvelopeEnv, getHumanReadableScopes } = require('../../utils/env')
 
 const [logUpdatePromise, ansiEscapesPromise] = [import('log-update'), import('ansi-escapes')]
 
 const MASK_LENGTH = 50
 const MASK = '*'.repeat(MASK_LENGTH)
-
-const filterEnvBySource = (env, source) =>
-  Object.fromEntries(Object.entries(env).filter(([, variable]) => variable.sources[0] === source))
 
 const getTable = ({ environment, hideValues, scopesColumn }) => {
   const table = new AsciiTable(`Environment variables`)
@@ -22,7 +19,14 @@ const getTable = ({ environment, hideValues, scopesColumn }) => {
   table.setHeading(...headings)
   table.addRowMatrix(
     Object.entries(environment).map(([key, variable]) =>
-      [key, hideValues ? MASK : variable.value, scopesColumn && getScopes(variable.scopes)].filter(Boolean),
+      [
+        // Key
+        key,
+        // Value
+        hideValues ? MASK : variable.value,
+        // Scope
+        scopesColumn && getHumanReadableScopes(variable.scopes),
+      ].filter(Boolean),
     ),
   )
   return table.toString()
@@ -49,26 +53,7 @@ const envList = async (options, command) => {
   let environment = env
 
   if (isUsingEnvelope) {
-    const [accountEnvelopeItems, siteEnvelopeItems] = await Promise.all([
-      getRawEnvelope({ api, accountId: siteInfo.account_slug }),
-      getRawEnvelope({ api, accountId: siteInfo.account_slug, siteId }),
-    ])
-
-    const accountEnv = getEnvelopeMetadata({ envelopeItems: accountEnvelopeItems, context, scope })
-    const siteEnv = getEnvelopeMetadata({ envelopeItems: siteEnvelopeItems, context, scope })
-    const configFileEnv = filterEnvBySource(env, 'configFile')
-    const addonsEnv = filterEnvBySource(env, 'addons')
-
-    // filter out configFile env vars if a non-configFile scope is passed
-    const includeConfigEnvVars = ['any', 'builds', 'post_processing'].includes(scope)
-
-    // Sources of environment variables, in ascending order of precedence.
-    environment = {
-      ...accountEnv,
-      ...(includeConfigEnvVars ? addonsEnv : {}),
-      ...siteEnv,
-      ...(includeConfigEnvVars ? configFileEnv : {}),
-    }
+    environment = await getEnvelopeEnv({ api, context, env, scope, siteInfo })
   } else if (context !== 'dev' || scope !== 'any') {
     log(
       'The --context and --scope flags are only available on sites that have upgraded to the new environment variable experience.',

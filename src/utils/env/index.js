@@ -1,6 +1,8 @@
 const findValueFromContext = (values, context) => values.find((val) => [context, 'all'].includes(val.context))
+const filterEnvBySource = (env, source) =>
+  Object.fromEntries(Object.entries(env).filter(([, variable]) => variable.sources[0] === source))
 
-const getRawEnvelope = async function ({ accountId, api, siteId }) {
+const getEnvelopeResponse = async function ({ accountId, api, siteId }) {
   if (accountId === undefined) {
     return {}
   }
@@ -9,7 +11,7 @@ const getRawEnvelope = async function ({ accountId, api, siteId }) {
     return envelopeItems
   } catch {
     // Collaborators aren't allowed to read shared env vars,
-    // so return an empty array in that case
+    // so return an empty array silently in that case
     return []
   }
 }
@@ -35,15 +37,15 @@ const getFilteredAndSortedEnvelope = function ({ context = 'dev', envelopeItems 
  * }
  *
  **/
-const getEnvelopeDictionary = function ({ context = 'dev', envelopeItems = [], scope = 'any' }) {
-  return getFilteredAndSortedEnvelope({ context, envelopeItems, scope }).reduce((acc, cur) => {
-    const { value } = findValueFromContext(cur.values, context)
-    return {
-      ...acc,
-      [cur.key]: value,
-    }
-  }, {})
-}
+// const getEnvelopeDictionary = function ({ context = 'dev', envelopeItems = [], scope = 'any' }) {
+//   return getFilteredAndSortedEnvelope({ context, envelopeItems, scope }).reduce((acc, cur) => {
+//     const { value } = findValueFromContext(cur.values, context)
+//     return {
+//       ...acc,
+//       [cur.key]: value,
+//     }
+//   }, {})
+// }
 
 /**
  *
@@ -62,7 +64,7 @@ const getEnvelopeDictionary = function ({ context = 'dev', envelopeItems = [], s
  * }
  *
  **/
-const getEnvelopeMetadata = function ({ context = 'dev', envelopeItems = [], scope = 'any' }) {
+const getEnvVarMetadata = function ({ context = 'dev', envelopeItems = [], scope = 'any' }) {
   return getFilteredAndSortedEnvelope({ context, envelopeItems, scope }).reduce((acc, cur) => {
     const { value } = findValueFromContext(cur.values, context)
     return {
@@ -76,7 +78,37 @@ const getEnvelopeMetadata = function ({ context = 'dev', envelopeItems = [], sco
   }, {})
 }
 
-const getScopes = (scopes) => {
+const getEnvelopeEnv = async ({ api, context, env, scope, siteInfo }) => {
+  let responses
+  try {
+    responses = await Promise.all([
+      getEnvelopeResponse({ api, accountId: siteInfo.account_slug }),
+      getEnvelopeResponse({ api, accountId: siteInfo.account_slug, siteId: siteInfo.id }),
+    ])
+  } catch (error) {
+    console.error(error)
+    return false
+  }
+  const [accountEnvelopeItems, siteEnvelopeItems] = responses
+
+  const accountEnv = getEnvVarMetadata({ envelopeItems: accountEnvelopeItems, context, scope })
+  const siteEnv = getEnvVarMetadata({ envelopeItems: siteEnvelopeItems, context, scope })
+  const configFileEnv = filterEnvBySource(env, 'configFile')
+  const addonsEnv = filterEnvBySource(env, 'addons')
+
+  // filter out configFile env vars if a non-configFile scope is passed
+  const includeConfigEnvVars = ['any', 'builds', 'post_processing'].includes(scope)
+
+  // Sources of environment variables, in ascending order of precedence.
+  return {
+    ...accountEnv,
+    ...(includeConfigEnvVars ? addonsEnv : {}),
+    ...siteEnv,
+    ...(includeConfigEnvVars ? configFileEnv : {}),
+  }
+}
+
+const getHumanReadableScopes = (scopes) => {
   const AVAILABLE_SCOPES = {
     builds: 'Builds',
     functions: 'Functions',
@@ -135,10 +167,8 @@ const translateFromEnvelopeToMongo = (envVars = []) =>
     }, {})
 
 module.exports = {
-  getEnvelopeDictionary,
-  getEnvelopeMetadata,
-  getRawEnvelope,
-  getScopes,
+  getEnvelopeEnv,
+  getHumanReadableScopes,
   translateFromEnvelopeToMongo,
   translateFromMongoToEnvelope,
 }
