@@ -1,8 +1,12 @@
 // @ts-check
 const fetch = require('node-fetch')
 
+const COUNTRY_CODES = require('../utils/geo/isoCountries.json')
+const SUBDIVISION_CODES = require('../utils/geo/isoSubdivisions.json')
+
 const API_URL = 'https://netlifind.netlify.app'
 const STATE_GEO_PROPERTY = 'geolocation'
+
 // 24 hours
 const CACHE_TTL = 8.64e7
 
@@ -21,7 +25,7 @@ const REQUEST_TIMEOUT = 1e4
  * @property {string} subdivision.name
  */
 
-const mockLocation = {
+let mockLocation = {
   city: 'San Francisco',
   country: { code: 'US', name: 'United States' },
   subdivision: { code: 'CA', name: 'California' },
@@ -34,23 +38,42 @@ const mockLocation = {
  * @param {object} params
  * @param {"cache"|"update"|"mock"} params.mode
  * @param {string} params.geoCountry
+ * @param {string} params.geoSubdivision
  * @param {boolean} params.offline
  * @param {import('../utils/state-config').StateConfig} params.state
  * @returns {Promise<GeoLocation>}
  */
-const getGeoLocation = async ({ geoCountry, mode, offline, state }) => {
+const getGeoLocation = async ({ geoCountry, geoSubdivision, mode, offline, state }) => {
   const cacheObject = state.get(STATE_GEO_PROPERTY)
 
   // If `--country` was used, we also set `--mode=mock`.
-  if (geoCountry) {
+  // '--subdivision flag only valid with --country
+  if (geoCountry || geoSubdivision) {
     mode = 'mock'
+    if (geoCountry) {
+      mockLocation = {
+        city: 'Mock City',
+        country: {
+          code: geoCountry,
+          name: COUNTRY_CODES[geoCountry] || 'Mock Country - Invalid Code',
+        },
+        subdivision: {
+          code: geoSubdivision || 'SD',
+          name: SUBDIVISION_CODES.find((s) => s.code === `${geoCountry}-${geoSubdivision}`)?.name || 'Mock Subdivision',
+        },
+      }
+    }
   }
 
   // If we have cached geolocation data and the `--geo` option is set to
   // `cache`, let's try to use it.
   // Or, if the country we're trying to mock is the same one as we have in the
   // cache, let's use the cache instead of the mock.
-  if (cacheObject !== undefined && (mode === 'cache' || cacheObject.data.country.code === geoCountry)) {
+  if (
+    cacheObject !== undefined &&
+    (mode === 'cache' ||
+      (cacheObject.data.country.code === geoCountry && cacheObject.data.subdivision.code === geoSubdivision))
+  ) {
     const age = Date.now() - cacheObject.timestamp
 
     // Let's use the cached data if it's not older than the TTL. Also, if the
@@ -65,14 +88,7 @@ const getGeoLocation = async ({ geoCountry, mode, offline, state }) => {
   // If the `--offline` option was used, we can't talk to the API, so let's
   // also use the mock location.  Otherwise, use the country code passed in by
   // the user.
-  if (mode === 'mock' || offline || geoCountry) {
-    if (geoCountry) {
-      return {
-        city: 'Mock City',
-        country: { code: geoCountry, name: 'Mock Country' },
-        subdivision: { code: 'SD', name: 'Mock Subdivision' },
-      }
-    }
+  if (mode === 'mock' || offline || geoCountry || geoSubdivision) {
     return mockLocation
   }
 

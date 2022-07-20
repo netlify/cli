@@ -120,7 +120,7 @@ test('`getGeoLocation` returns mock geolocation data if `mode: "mock"`', async (
 test('`getGeoLocation` returns mock geolocation data if valid country code set', async (t) => {
   const returnedLocation = {
     city: 'Mock City',
-    country: { code: 'CA', name: 'Mock Country' },
+    country: { code: 'CA', name: 'Canada' },
     subdivision: { code: 'SD', name: 'Mock Subdivision' },
   }
 
@@ -129,7 +129,76 @@ test('`getGeoLocation` returns mock geolocation data if valid country code set',
     set() {},
   }
 
-  const geo = await getGeoLocation({ mode: 'mock', state: mockState, geoCountry: 'CA' })
+  const geo = await getGeoLocation({ mode: 'mock', state: mockState, geoCountry: 'CA', geoSubdivision: '' })
+
+  t.deepEqual(geo, returnedLocation)
+})
+
+test('`getGeoLocation` mocks subdivision when passing valid code', async (t) => {
+  const mockState = {
+    get() {},
+    set() {},
+  }
+
+  const returnedLocation = {
+    city: 'Mock City',
+    country: { code: 'AD', name: 'Andorra' },
+    subdivision: { code: '07', name: 'Andorra la Vella' },
+  }
+
+  const geo = await getGeoLocation({
+    mode: 'mock',
+    offline: false,
+    state: mockState,
+    geoCountry: 'AD',
+    geoSubdivision: '07',
+  })
+
+  t.deepEqual(geo, returnedLocation)
+})
+
+test('`getGeoLocation` returns default mock location when passing subdivision without country', async (t) => {
+  const mockState = {
+    get() {},
+    set() {},
+  }
+
+  const expectedLocation = {
+    city: 'San Francisco',
+    country: { code: 'US', name: 'United States' },
+    subdivision: { code: 'CA', name: 'California' },
+  }
+
+  const geo = await getGeoLocation({
+    mode: 'mock',
+    offline: false,
+    state: mockState,
+    geoCountry: '',
+    geoSubdivision: 'NC',
+  })
+
+  t.deepEqual(geo, expectedLocation)
+})
+
+test('`getGeoLocation` mocks country with default subdivision with no subdivision flag', async (t) => {
+  const mockState = {
+    get() {},
+    set() {},
+  }
+
+  const returnedLocation = {
+    city: 'Mock City',
+    country: { code: 'MX', name: 'Mexico' },
+    subdivision: { code: 'SD', name: 'Mock Subdivision' },
+  }
+
+  const geo = await getGeoLocation({
+    mode: 'mock',
+    offline: false,
+    state: mockState,
+    geoCountry: 'MX',
+    geoSubdivision: '',
+  })
 
   t.deepEqual(geo, returnedLocation)
 })
@@ -142,11 +211,17 @@ test('`getGeoLocation` mocks country code when not using mock flag', async (t) =
 
   const returnedLocation = {
     city: 'Mock City',
-    country: { code: 'CA', name: 'Mock Country' },
+    country: { code: 'CA', name: 'Canada' },
     subdivision: { code: 'SD', name: 'Mock Subdivision' },
   }
 
-  const geo = await getGeoLocation({ mode: 'update', offline: false, state: mockState, geoCountry: 'CA' })
+  const geo = await getGeoLocation({
+    mode: 'mock',
+    offline: false,
+    state: mockState,
+    geoCountry: 'CA',
+    geoSubdivision: '',
+  })
 
   t.deepEqual(geo, returnedLocation)
 })

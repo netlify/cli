@@ -30,6 +30,7 @@ netlify dev
 - `offline` (*boolean*) - disables any features that require network access
 - `port` (*string*) - port of netlify dev
 - `sessionId` (*string*) - (Graph) connect to cloud session with ID [sessionId]
+- `subdivision` (*string*) - ISO-3166-2 code for country subdvision to use as mock geolocation (enables --geo=mock automatically
 - `targetPort` (*string*) - port of target app server
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.
