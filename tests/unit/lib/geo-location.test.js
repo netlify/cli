@@ -1,7 +1,7 @@
 const test = require('ava')
 const nock = require('nock')
 
-const { getGeoLocation, mockLocation } = require('../../../src/lib/geo-location')
+const { defaultMockLocation, getGeoLocation } = require('../../../src/lib/geo-location')
 
 test('`getGeoLocation` returns geolocation data from the API if `mode: "cache"`', async (t) => {
   let hasCalledStateSet = false
@@ -114,7 +114,7 @@ test('`getGeoLocation` returns mock geolocation data if `mode: "mock"`', async (
 
   t.false(mockRequest.isDone())
   t.false(hasCalledStateSet)
-  t.deepEqual(geo, mockLocation)
+  t.deepEqual(geo, defaultMockLocation)
 })
 
 test('`getGeoLocation` returns mock geolocation data if valid country code set', async (t) => {
@@ -129,7 +129,7 @@ test('`getGeoLocation` returns mock geolocation data if valid country code set',
     set() {},
   }
 
-  const geo = await getGeoLocation({ mode: 'mock', state: mockState, geoCountry: 'CA', geoSubdivision: '' })
+  const geo = await getGeoLocation({ mode: 'mock', state: mockState, geoCountry: 'CA', geoSubdivision: undefined })
 
   t.deepEqual(geo, returnedLocation)
 })
@@ -170,11 +170,11 @@ test('`getGeoLocation` returns default mock location when passing subdivision wi
   }
 
   const geo = await getGeoLocation({
+    geoCountry: undefined,
+    geoSubdivision: 'NC',
     mode: 'mock',
     offline: false,
     state: mockState,
-    geoCountry: '',
-    geoSubdivision: 'NC',
   })
 
   t.deepEqual(geo, expectedLocation)

@@ -1,10 +1,8 @@
 // @ts-check
 const fetch = require('node-fetch')
 
-/* eslint-disable n/no-unpublished-require */
 const COUNTRY_CODES = require('../utils/geo/isoCountries.json')
 const SUBDIVISION_CODES = require('../utils/geo/isoSubdivisions.json')
-/* eslint-enable n/no-unpublished-require */
 
 const API_URL = 'https://netlifind.netlify.app'
 const STATE_GEO_PROPERTY = 'geolocation'
@@ -27,7 +25,7 @@ const REQUEST_TIMEOUT = 1e4
  * @property {string} subdivision.name
  */
 
-let mockLocation = {
+const defaultMockLocation = {
   city: 'San Francisco',
   country: { code: 'US', name: 'United States' },
   subdivision: { code: 'CA', name: 'California' },
@@ -46,6 +44,7 @@ let mockLocation = {
  * @returns {Promise<GeoLocation>}
  */
 const getGeoLocation = async ({ geoCountry, geoSubdivision, mode, offline, state }) => {
+  let mockLocation = defaultMockLocation
   const cacheObject = state.get(STATE_GEO_PROPERTY)
 
   // If `--country` was used, we also set `--mode=mock`.
@@ -129,4 +128,4 @@ const getGeoLocationFromAPI = async () => {
   return geo
 }
 
-module.exports = { getGeoLocation, mockLocation }
+module.exports = { getGeoLocation, defaultMockLocation }
