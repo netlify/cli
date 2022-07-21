@@ -18,6 +18,7 @@ netlify dev
 **Flags**
 
 - `command` (*string*) - command to run
+- `context` (*production | deploy-preview | branch-deploy | dev*) - [Beta] Specify a deploy context for environment variables
 - `country` (*string*) - Two-letter country code (ISO 3166-1 alpha-2, https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements) to use as mock geolocation (enables --geo=mock autmatically)
 - `dir` (*string*) - dir with static files
 - `edgeInspect` (*string*) - enable the V8 Inspector Protocol for Edge Functions, with an optional address in the host:port format
@@ -46,6 +47,7 @@ netlify dev
 netlify dev
 netlify dev -d public
 netlify dev -c "hugo server -w" --targetPort 1313
+netlify dev --context production
 netlify dev --graph
 netlify dev --edgeInspect
 netlify dev --edgeInspect=127.0.0.1:9229
