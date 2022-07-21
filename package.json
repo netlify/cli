@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "10.9.0",
+  "version": "10.10.2",
   "author": "Netlify Inc.",
   "contributors": [
     "Abraham Schilling <AbrahamSchilling@gmail.com> (https://gitlab.com/n4bb12)",
@@ -219,13 +219,13 @@
     "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,tools,scripts,site,tests,.github}/**/*.{mjs,cjs,js,md,yml,json,html}\" \"*.{mjs,cjs,js,yml,json,html}\" \".*.{mjs,cjs,js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\" \"!**/*/package-lock.json\" \"!.github/**/*.md\""
   },
   "dependencies": {
-    "@netlify/build": "^27.3.3",
+    "@netlify/build": "^27.4.2",
     "@netlify/config": "^18.1.1",
-    "@netlify/edge-bundler": "^1.5.0",
-    "@netlify/framework-info": "^9.1.0",
+    "@netlify/edge-bundler": "^1.6.0",
+    "@netlify/framework-info": "^9.1.1",
     "@netlify/local-functions-proxy": "^1.1.1",
-    "@netlify/plugins-list": "^6.33.0",
-    "@netlify/zip-it-and-ship-it": "^5.12.0",
+    "@netlify/plugins-list": "^6.35.0",
+    "@netlify/zip-it-and-ship-it": "^5.13.2",
     "@octokit/rest": "^18.0.0",
     "@sindresorhus/slugify": "^1.1.0",
     "ansi-escapes": "^5.0.0",
@@ -288,7 +288,7 @@
     "memoize-one": "^6.0.0",
     "minimist": "^1.2.5",
     "multiparty": "^4.2.1",
-    "netlify": "^11.0.2",
+    "netlify": "^11.0.4",
     "netlify-headers-parser": "^6.0.2",
     "netlify-onegraph-internal": "0.3.6",
     "netlify-redirect-parser": "^13.0.5",
@@ -324,13 +324,13 @@
     "unixify": "^1.0.0",
     "update-notifier": "^5.0.0",
     "uuid": "^8.0.0",
-    "wait-port": "^0.2.14",
+    "wait-port": "^0.3.0",
     "winston": "^3.2.1",
     "write-file-atomic": "^4.0.0"
   },
   "devDependencies": {
     "@babel/preset-react": "^7.12.13",
-    "@netlify/eslint-config-node": "^6.0.0",
+    "@netlify/eslint-config-node": "^7.0.0",
     "ava": "^4.0.0",
     "c8": "^7.11.0",
     "eslint-plugin-sort-destructure-keys": "^1.3.5",
