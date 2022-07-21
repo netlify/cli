@@ -1,8 +1,7 @@
 // @ts-check
 const { Option } = require('commander')
 
-const { log, logJson } = require('../../utils')
-const { getEnvelopeEnv } = require('../../utils/env')
+const { error, getEnvelopeEnv, log, logJson } = require('../../utils')
 
 /**
  * The env:get command
@@ -26,7 +25,7 @@ const envGet = async (name, options, command) => {
   if (siteInfo.use_envelope) {
     env = await getEnvelopeEnv({ api, context, env, scope, siteInfo })
   } else if (context !== 'dev' || scope !== 'any') {
-    log(
+    error(
       'The --context and --scope flags are only available on sites that have upgraded to the new environment variable experience.',
     )
     return false

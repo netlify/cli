@@ -5,8 +5,7 @@ const { Option } = require('commander')
 const inquirer = require('inquirer')
 const isEmpty = require('lodash/isEmpty')
 
-const { chalk, log, logJson } = require('../../utils')
-const { getEnvelopeEnv, getHumanReadableScopes } = require('../../utils/env')
+const { chalk, error, getEnvelopeEnv, getHumanReadableScopes, log, logJson } = require('../../utils')
 
 const [logUpdatePromise, ansiEscapesPromise] = [import('log-update'), import('ansi-escapes')]
 
@@ -55,14 +54,16 @@ const envList = async (options, command) => {
   if (isUsingEnvelope) {
     environment = await getEnvelopeEnv({ api, context, env, scope, siteInfo })
   } else if (context !== 'dev' || scope !== 'any') {
-    log(
+    error(
       'The --context and --scope flags are only available on sites that have upgraded to the new environment variable experience.',
     )
     return false
-  } else {
-    // filter out general sources
-    environment = Object.fromEntries(Object.entries(env).filter(([, variable]) => variable.sources[0] !== 'general'))
   }
+
+  // filter out general sources
+  environment = Object.fromEntries(
+    Object.entries(environment).filter(([, variable]) => variable.sources[0] !== 'general'),
+  )
 
   // Return json response for piping commands
   if (options.json) {

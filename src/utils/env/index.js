@@ -54,17 +54,19 @@ const getFilteredAndSortedEnvelope = function ({ context = 'dev', envelopeItems 
  *   FOO: {
  *     context: 'dev',
  *     scopes: ['builds', 'functions'],
+ *     sources: ['ui'],
  *     value: 'bar',
  *   },
  *   BAZ: {
  *     context: 'dev',
- *     scopes: ['functions'],
+ *     scopes: ['runtime'],
+ *     sources: ['account'],
  *     value: 'bang',
  *   },
  * }
  *
  **/
-const getEnvVarMetadata = function ({ context = 'dev', envelopeItems = [], scope = 'any' }) {
+const getEnvVarMetadata = function ({ context = 'dev', envelopeItems = [], scope = 'any', source }) {
   return getFilteredAndSortedEnvelope({ context, envelopeItems, scope }).reduce((acc, cur) => {
     const { value } = findValueFromContext(cur.values, context)
     return {
@@ -72,13 +74,14 @@ const getEnvVarMetadata = function ({ context = 'dev', envelopeItems = [], scope
       [cur.key]: {
         context,
         scopes: cur.scopes,
+        sources: [source],
         value,
       },
     }
   }, {})
 }
 
-const getEnvelopeEnv = async ({ api, context, env, scope, siteInfo }) => {
+const getEnvelopeEnv = async ({ api, context, env, scope = 'any', siteInfo }) => {
   let responses
   try {
     responses = await Promise.all([
@@ -91,16 +94,18 @@ const getEnvelopeEnv = async ({ api, context, env, scope, siteInfo }) => {
   }
   const [accountEnvelopeItems, siteEnvelopeItems] = responses
 
-  const accountEnv = getEnvVarMetadata({ envelopeItems: accountEnvelopeItems, context, scope })
-  const siteEnv = getEnvVarMetadata({ envelopeItems: siteEnvelopeItems, context, scope })
-  const configFileEnv = filterEnvBySource(env, 'configFile')
+  const accountEnv = getEnvVarMetadata({ envelopeItems: accountEnvelopeItems, context, scope, source: 'account' })
+  const siteEnv = getEnvVarMetadata({ envelopeItems: siteEnvelopeItems, context, scope, source: 'ui' })
+  const generalEnv = filterEnvBySource(env, 'general')
   const addonsEnv = filterEnvBySource(env, 'addons')
+  const configFileEnv = filterEnvBySource(env, 'configFile')
 
   // filter out configFile env vars if a non-configFile scope is passed
   const includeConfigEnvVars = ['any', 'builds', 'post_processing'].includes(scope)
 
   // Sources of environment variables, in ascending order of precedence.
   return {
+    ...generalEnv,
     ...accountEnv,
     ...(includeConfigEnvVars ? addonsEnv : {}),
     ...siteEnv,

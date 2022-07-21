@@ -14,7 +14,7 @@ const { loadDotEnvFiles } = require('./dot-env')
 // Possible sources of environment variables. For the purpose of printing log messages only. Order does not matter.
 const ENV_VAR_SOURCES = {
   account: {
-    name: 'shared build settings',
+    name: 'shared',
     printFn: chalk.magenta,
   },
   addons: {
@@ -34,7 +34,7 @@ const ENV_VAR_SOURCES = {
     printFn: chalk.red,
   },
   ui: {
-    name: 'build settings',
+    name: 'site',
     printFn: chalk.blue,
   },
 }

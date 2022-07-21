@@ -38,6 +38,7 @@ const {
   error,
   exit,
   generateNetlifyGraphJWT,
+  getEnvelopeEnv,
   getSiteInformation,
   getToken,
   injectEnvVariables,
@@ -421,7 +422,15 @@ const dev = async (options, command) => {
     ...options,
   }
 
-  await injectEnvVariables({ devConfig, env: command.netlify.cachedConfig.env, site })
+  let { env } = command.netlify.cachedConfig
+  if (siteInfo.use_envelope) {
+    env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })
+  } else if (options.context !== 'dev') {
+    log('The --context flag is only available on sites that have upgraded to the new environment variable experience.')
+    exit(1)
+  }
+
+  await injectEnvVariables({ devConfig, env, site })
   await promptEditorHelper({ chalk, config, log, NETLIFYDEVLOG, repositoryRoot, state })
 
   const { addonsUrls, capabilities, siteUrl, timeouts } = await getSiteInformation({
@@ -600,6 +609,11 @@ const createDevCommand = (program) => {
       `Local dev server\nThe dev command will run a local dev server with Netlify's proxy and redirect rules`,
     )
     .option('-c ,--command <command>', 'command to run')
+    .addOption(
+      new Option('--context <context>', '[Beta] Specify a deploy context for environment variables')
+        .choices(['production', 'deploy-preview', 'branch-deploy', 'dev'])
+        .default('dev'),
+    )
     .option('-p ,--port <port>', 'port of netlify dev', (value) => Number.parseInt(value))
     .option('--targetPort <port>', 'port of target app server', (value) => Number.parseInt(value))
     .option('--framework <name>', 'framework to use. Defaults to #auto which automatically detects a framework')
@@ -649,6 +663,7 @@ const createDevCommand = (program) => {
       'netlify dev',
       'netlify dev -d public',
       'netlify dev -c "hugo server -w" --targetPort 1313',
+      'netlify dev --context production',
       'netlify dev --graph',
       'netlify dev --edgeInspect',
       'netlify dev --edgeInspect=127.0.0.1:9229',
