@@ -159,6 +159,7 @@
     "/npm-shrinkwrap.json",
     "/scripts/postinstall.js",
     "/src/**/*.js",
+    "/src/utils/geo/*.json",
     "/src/**/*.sh",
     "/src/**/*.ps1",
     "/src/functions-templates/**",
