@@ -426,8 +426,10 @@ const dev = async (options, command) => {
   if (siteInfo.use_envelope) {
     env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })
   } else if (options.context !== 'dev') {
-    error(
-      'The --context flag is only available on sites that have upgraded to the new environment variable experience.',
+    log(
+      `To specify a context, please run ${chalk.yellowBright(
+        'netlify open:admin',
+      )} and opt in to the new Environment Variables experience`,
     )
     exit(1)
   }
@@ -612,7 +614,7 @@ const createDevCommand = (program) => {
     )
     .option('-c ,--command <command>', 'command to run')
     .addOption(
-      new Option('--context <context>', '[Beta] Specify a deploy context for environment variables')
+      new Option('--context <context>', 'Specify a deploy context for environment variables')
         .choices(['production', 'deploy-preview', 'branch-deploy', 'dev'])
         .default('dev'),
     )

@@ -1,7 +1,7 @@
 // @ts-check
 const { Option } = require('commander')
 
-const { error, getEnvelopeEnv, log, logJson } = require('../../utils')
+const { chalk, getEnvelopeEnv, log, logJson } = require('../../utils')
 
 /**
  * The env:get command
@@ -25,8 +25,10 @@ const envGet = async (name, options, command) => {
   if (siteInfo.use_envelope) {
     env = await getEnvelopeEnv({ api, context, env, scope, siteInfo })
   } else if (context !== 'dev' || scope !== 'any') {
-    error(
-      'The --context and --scope flags are only available on sites that have upgraded to the new environment variable experience.',
+    log(
+      `To specify a context or scope, please run ${chalk.yellowBright(
+        'netlify open:admin',
+      )} and opt in to the new Environment Variables experience`,
     )
     return false
   }
@@ -57,12 +59,12 @@ const createEnvGetCommand = (program) =>
     .command('env:get')
     .argument('<name>', 'Environment variable name')
     .addOption(
-      new Option('-c, --context <context>', '[Beta] Specify a deploy context')
+      new Option('-c, --context <context>', 'Specify a deploy context')
         .choices(['production', 'deploy-preview', 'branch-deploy', 'dev'])
         .default('dev'),
     )
     .addOption(
-      new Option('-s, --scope <scope>', '[Beta] Specify a scope')
+      new Option('-s, --scope <scope>', 'Specify a scope')
         .choices(['builds', 'functions', 'post_processing', 'runtime', 'any'])
         .default('any'),
     )
