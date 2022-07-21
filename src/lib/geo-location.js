@@ -1,8 +1,10 @@
 // @ts-check
 const fetch = require('node-fetch')
 
+/* eslint-disable n/no-unpublished-require */
 const COUNTRY_CODES = require('../utils/geo/isoCountries.json')
 const SUBDIVISION_CODES = require('../utils/geo/isoSubdivisions.json')
+/* eslint-enable n/no-unpublished-require */
 
 const API_URL = 'https://netlifind.netlify.app'
 const STATE_GEO_PROPERTY = 'geolocation'
@@ -50,6 +52,8 @@ const getGeoLocation = async ({ geoCountry, geoSubdivision, mode, offline, state
   // '--subdivision flag only valid with --country
   if (geoCountry || geoSubdivision) {
     mode = 'mock'
+    const sub = SUBDIVISION_CODES.find((sd) => sd.code === `${geoCountry}-${geoSubdivision}`)
+
     if (geoCountry) {
       mockLocation = {
         city: 'Mock City',
@@ -59,7 +63,7 @@ const getGeoLocation = async ({ geoCountry, geoSubdivision, mode, offline, state
         },
         subdivision: {
           code: geoSubdivision || 'SD',
-          name: SUBDIVISION_CODES.find((s) => s.code === `${geoCountry}-${geoSubdivision}`)?.name || 'Mock Subdivision',
+          name: sub ? sub.name : 'Mock Subdivision',
         },
       }
     }
