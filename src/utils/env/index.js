@@ -28,44 +28,23 @@ const getFilteredAndSortedEnvelope = function ({ context = 'dev', envelopeItems 
   )
 }
 
-/**
- *
- * Outputs in a format like
- * {
- *   FOO: 'bar',
- *   BAZ: 'bang',
- * }
- *
- **/
-// const getEnvelopeDictionary = function ({ context = 'dev', envelopeItems = [], scope = 'any' }) {
-//   return getFilteredAndSortedEnvelope({ context, envelopeItems, scope }).reduce((acc, cur) => {
-//     const { value } = findValueFromContext(cur.values, context)
-//     return {
-//       ...acc,
-//       [cur.key]: value,
-//     }
-//   }, {})
+//
+// Outputs in a format like
+// {
+//    FOO: {
+//      context: 'dev',
+//      scopes: ['builds', 'functions'],
+//      sources: ['ui'],
+//      value: 'bar',
+//    },
+//    BAZ: {
+//      context: 'dev',
+//      scopes: ['runtime'],
+//      sources: ['account'],
+//      value: 'bang',
+//    },
 // }
-
-/**
- *
- * Outputs in a format like
- * {
- *   FOO: {
- *     context: 'dev',
- *     scopes: ['builds', 'functions'],
- *     sources: ['ui'],
- *     value: 'bar',
- *   },
- *   BAZ: {
- *     context: 'dev',
- *     scopes: ['runtime'],
- *     sources: ['account'],
- *     value: 'bang',
- *   },
- * }
- *
- **/
+//
 const getEnvVarMetadata = function ({ context = 'dev', envelopeItems = [], scope = 'any', source }) {
   return getFilteredAndSortedEnvelope({ context, envelopeItems, scope }).reduce((acc, cur) => {
     const { value } = findValueFromContext(cur.values, context)

@@ -426,7 +426,9 @@ const dev = async (options, command) => {
   if (siteInfo.use_envelope) {
     env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })
   } else if (options.context !== 'dev') {
-    log('The --context flag is only available on sites that have upgraded to the new environment variable experience.')
+    error(
+      'The --context flag is only available on sites that have upgraded to the new environment variable experience.',
+    )
     exit(1)
   }
 
