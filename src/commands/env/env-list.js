@@ -5,7 +5,7 @@ const { Option } = require('commander')
 const inquirer = require('inquirer')
 const isEmpty = require('lodash/isEmpty')
 
-const { chalk, error, getEnvelopeEnv, getHumanReadableScopes, log, logJson } = require('../../utils')
+const { chalk, getEnvelopeEnv, getHumanReadableScopes, log, logJson } = require('../../utils')
 
 const [logUpdatePromise, ansiEscapesPromise] = [import('log-update'), import('ansi-escapes')]
 
