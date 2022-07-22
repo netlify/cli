@@ -8,8 +8,6 @@ const avaTest = require('ava')
 const { isCI } = require('ci-info')
 const FormData = require('form-data')
 
-const { originalIP } = require('../lib/local-ip')
-
 const { withDevServer } = require('./utils/dev-server')
 const got = require('./utils/got')
 const { withSiteBuilder } = require('./utils/site-builder')
@@ -407,7 +405,7 @@ test('should handle form submission', async (t) => {
         payload: {
           created_at: body.payload.created_at,
           data: {
-            ip: originalIP,
+            ip: '::ffff:127.0.0.1',
             some: 'thing',
             user_agent: 'got (https://github.com/sindresorhus/got)',
           },
