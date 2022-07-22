@@ -266,7 +266,7 @@ test('env:list --scope should log an error message', async (t) => {
 
     await withMockApi(routes, async ({ apiUrl }) => {
       const { stderr: cliResponse } = await t.throwsAsync(
-        callCli(['env:list', '--scope', 'production'], getCLIOptions({ builder, apiUrl })),
+        callCli(['env:list', '--scope', 'functions'], getCLIOptions({ builder, apiUrl })),
       )
 
       t.true(cliResponse.includes(`opt in to the new Environment Variables experience`))

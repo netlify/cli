@@ -23,7 +23,7 @@ const envGet = async (name, options, command) => {
   let { env } = cachedConfig
 
   if (siteInfo.use_envelope) {
-    env = await getEnvelopeEnv({ api, context, env, scope, siteInfo })
+    env = await getEnvelopeEnv({ api, context, env, key: name, scope, siteInfo })
   } else if (context !== 'dev' || scope !== 'any') {
     error(
       `To specify a context or scope, please run ${chalk.yellowBright(

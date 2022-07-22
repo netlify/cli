@@ -19,14 +19,21 @@ const filterEnvBySource = (env, source) =>
  * Fetches data from Envelope
  * @param {string} accountId - The account id
  * @param {object} api - The api singleton object
+ * @param {string} key - If present, fetch a single key (case-sensitive)
  * @param {string} siteId - The site id
  * @returns {Array<object>} An array of environment variables from the Envelope service
  */
-const fetchEnvelopeItems = async function ({ accountId, api, siteId }) {
+const fetchEnvelopeItems = async function ({ accountId, api, key, siteId }) {
   if (accountId === undefined) {
     return {}
   }
   try {
+    // if a single key is passed, fetch that single env var
+    if (key) {
+      const envelopeItem = await api.getEnvVar({ accountId, key, siteId })
+      return [envelopeItem]
+    }
+    // otherwise, fetch the entire list of env vars
     const envelopeItems = await api.getEnvVars({ accountId, siteId })
     return envelopeItems
   } catch {
@@ -85,16 +92,17 @@ const formatEnvelopeData = ({ context = 'dev', envelopeItems = [], scope = 'any'
  * @param {object} api - The api singleton object
  * @param {enum<dev,branch-deploy,deploy-preview,production>} context - The deploy context of the environment variable
  * @param {object} env - The dictionary of environment variables
+ * @param {string} key - If present, fetch a single key (case-sensitive)
  * @param {enum<any,builds,functions,runtime,post_processing>} scope - The scope of the environment variables
  * @param {object} siteInfo - The site object
  * @returns {object} An object of environment variables keys and their metadata
  */
-const getEnvelopeEnv = async ({ api, context = 'dev', env, scope = 'any', siteInfo }) => {
+const getEnvelopeEnv = async ({ api, context = 'dev', env, key = '', scope = 'any', siteInfo }) => {
   const { account_slug: accountId, id: siteId } = siteInfo
 
   const [accountEnvelopeItems, siteEnvelopeItems] = await Promise.all([
-    fetchEnvelopeItems({ api, accountId }),
-    fetchEnvelopeItems({ api, accountId, siteId }),
+    fetchEnvelopeItems({ api, accountId, key }),
+    fetchEnvelopeItems({ api, accountId, key, siteId }),
   ])
 
   const accountEnv = formatEnvelopeData({ context, envelopeItems: accountEnvelopeItems, scope, source: 'account' })

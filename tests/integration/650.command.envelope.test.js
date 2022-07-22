@@ -14,38 +14,45 @@ const siteInfo = {
   name: 'site-name',
   use_envelope: true,
 }
-const envelopeResponse = [
-  {
-    key: 'EXISTING_VAR',
-    scopes: ['builds', 'functions'],
-    values: [
-      {
-        context: 'production',
-        value: 'envelope-prod-value',
-      },
-      {
-        context: 'dev',
-        value: 'envelope-dev-value',
-      },
-    ],
-  },
-  {
-    key: 'OTHER_VAR',
-    scopes: ['builds', 'functions', 'runtime', 'post_processing'],
-    values: [
-      {
-        context: 'all',
-        value: 'envelope-all-value',
-      },
-    ],
-  },
-]
+const existingVar = {
+  key: 'EXISTING_VAR',
+  scopes: ['builds', 'functions'],
+  values: [
+    {
+      context: 'production',
+      value: 'envelope-prod-value',
+    },
+    {
+      context: 'dev',
+      value: 'envelope-dev-value',
+    },
+  ],
+}
+const otherVar = {
+  key: 'OTHER_VAR',
+  scopes: ['builds', 'functions', 'runtime', 'post_processing'],
+  values: [
+    {
+      context: 'all',
+      value: 'envelope-all-value',
+    },
+  ],
+}
+const envelopeResponse = [existingVar, otherVar]
 const routes = [
   { path: 'sites/site_id', response: siteInfo },
   { path: 'sites/site_id/service-instances', response: [] },
   {
     path: 'accounts',
     response: [{ slug: siteInfo.account_slug }],
+  },
+  {
+    path: 'accounts/test-account/env/EXISTING_VAR',
+    response: existingVar,
+  },
+  {
+    path: 'accounts/test-account/env/OTHER_VAR',
+    response: otherVar,
   },
   {
     path: 'accounts/test-account/env',
