@@ -1,8 +1,28 @@
+/**
+ * Finds a matching environment variable value from a given context
+ * @param {Array<object>} values - An array of environment variable values from Envelope
+ * @param {enum<dev,branch-deploy,deploy-preview,production>} context - The deploy context of the environment variable value
+ * @returns {object<context: enum<dev,branch-deploy,deploy-preview,production>, value: string>} The matching environment variable value object
+ */
 const findValueFromContext = (values, context) => values.find((val) => [context, 'all'].includes(val.context))
+
+/**
+ * Finds environment variables that match a given source
+ * @param {object} env - The dictionary of environment variables
+ * @param {enum<general,account,addons,ui,configFile>} source - The source of the environment variable
+ * @returns {object} The dictionary of env vars that match the given source
+ */
 const filterEnvBySource = (env, source) =>
   Object.fromEntries(Object.entries(env).filter(([, variable]) => variable.sources[0] === source))
 
-const getEnvelopeResponse = async function ({ accountId, api, siteId }) {
+/**
+ * Fetches data from Envelope
+ * @param {string} accountId - The account id
+ * @param {object} api - The api singleton object
+ * @param {string} siteId - The site id
+ * @returns {Array<object>} An array of environment variables from the Envelope service
+ */
+const fetchEnvelopeItems = async function ({ accountId, api, siteId }) {
   if (accountId === undefined) {
     return {}
   }
@@ -16,65 +36,69 @@ const getEnvelopeResponse = async function ({ accountId, api, siteId }) {
   }
 }
 
-const getFilteredAndSortedEnvelope = function ({ context = 'dev', envelopeItems = [], scope = 'any' }) {
-  return (
-    envelopeItems
-      // filter by context
-      .filter(({ values }) => Boolean(findValueFromContext(values, context)))
-      // filter by scope
-      .filter(({ scopes }) => (scope === 'any' ? true : scopes.includes(scope)))
-      // sort alphabetically, case insensitive
-      .sort((left, right) => (left.key.toLowerCase() < right.key.toLowerCase() ? -1 : 1))
-  )
-}
+/**
+ * Filters and sorts data from Envelope by a given context and/or scope
+ * @param {enum<dev,branch-deploy,deploy-preview,production>} context - The deploy context of the environment variable value
+ * @param {Array<object>} envelopeItems - An array of environment variables from the Envelope service
+ * @param {enum<any,builds,functions,runtime,post_processing>} scope - The scope of the environment variables
+ * @param {enum<general,account,addons,ui,configFile>} source - The source of the environment variable
+ * @returns {object} A dicionary in the following format:
+ * {
+ *   FOO: {
+ *     context: 'dev',
+ *     scopes: ['builds', 'functions'],
+ *     sources: ['ui'],
+ *     value: 'bar',
+ *   },
+ *   BAZ: {
+ *     context: 'dev',
+ *     scopes: ['runtime'],
+ *     sources: ['account'],
+ *     value: 'bang',
+ *   },
+ * }
+ */
+const formatEnvelopeData = ({ context = 'dev', envelopeItems = [], scope = 'any', source }) =>
+  envelopeItems
+    // filter by context
+    .filter(({ values }) => Boolean(findValueFromContext(values, context)))
+    // filter by scope
+    .filter(({ scopes }) => (scope === 'any' ? true : scopes.includes(scope)))
+    // sort alphabetically, case insensitive
+    .sort((left, right) => (left.key.toLowerCase() < right.key.toLowerCase() ? -1 : 1))
+    // format the data
+    .reduce((acc, cur) => {
+      const { context: ctx, value } = findValueFromContext(cur.values, context)
+      return {
+        ...acc,
+        [cur.key]: {
+          context: ctx,
+          scopes: cur.scopes,
+          sources: [source],
+          value,
+        },
+      }
+    }, {})
 
-//
-// Outputs in a format like
-// {
-//    FOO: {
-//      context: 'dev',
-//      scopes: ['builds', 'functions'],
-//      sources: ['ui'],
-//      value: 'bar',
-//    },
-//    BAZ: {
-//      context: 'dev',
-//      scopes: ['runtime'],
-//      sources: ['account'],
-//      value: 'bang',
-//    },
-// }
-//
-const getEnvVarMetadata = function ({ context = 'dev', envelopeItems = [], scope = 'any', source }) {
-  return getFilteredAndSortedEnvelope({ context, envelopeItems, scope }).reduce((acc, cur) => {
-    const { value } = findValueFromContext(cur.values, context)
-    return {
-      ...acc,
-      [cur.key]: {
-        context,
-        scopes: cur.scopes,
-        sources: [source],
-        value,
-      },
-    }
-  }, {})
-}
+/**
+ * Collects env vars from multiple sources and arranges them in the correct order of precedence
+ * @param {object} api - The api singleton object
+ * @param {enum<dev,branch-deploy,deploy-preview,production>} context - The deploy context of the environment variable
+ * @param {object} env - The dictionary of environment variables
+ * @param {enum<any,builds,functions,runtime,post_processing>} scope - The scope of the environment variables
+ * @param {object} siteInfo - The site object
+ * @returns {object} An object of environment variables keys and their metadata
+ */
+const getEnvelopeEnv = async ({ api, context = 'dev', env, scope = 'any', siteInfo }) => {
+  const { account_slug: accountId, id: siteId } = siteInfo
 
-const getEnvelopeEnv = async ({ api, context, env, scope = 'any', siteInfo }) => {
-  let responses
-  try {
-    responses = await Promise.all([
-      getEnvelopeResponse({ api, accountId: siteInfo.account_slug }),
-      getEnvelopeResponse({ api, accountId: siteInfo.account_slug, siteId: siteInfo.id }),
-    ])
-  } catch (error) {
-    console.error(error)
-    return false
-  }
-  const [accountEnvelopeItems, siteEnvelopeItems] = responses
+  const [accountEnvelopeItems, siteEnvelopeItems] = await Promise.all([
+    fetchEnvelopeItems({ api, accountId }),
+    fetchEnvelopeItems({ api, accountId, siteId }),
+  ])
 
-  const accountEnv = getEnvVarMetadata({ envelopeItems: accountEnvelopeItems, context, scope, source: 'account' })
-  const siteEnv = getEnvVarMetadata({ envelopeItems: siteEnvelopeItems, context, scope, source: 'ui' })
+  const accountEnv = formatEnvelopeData({ context, envelopeItems: accountEnvelopeItems, scope, source: 'account' })
+  const siteEnv = formatEnvelopeData({ context, envelopeItems: siteEnvelopeItems, scope, source: 'ui' })
   const generalEnv = filterEnvBySource(env, 'general')
   const addonsEnv = filterEnvBySource(env, 'addons')
   const configFileEnv = filterEnvBySource(env, 'configFile')
@@ -92,6 +116,11 @@ const getEnvelopeEnv = async ({ api, context, env, scope = 'any', siteInfo }) =>
   }
 }
 
+/**
+ * Returns a human-readable, comma-separated list of scopes
+ * @param {Array<enum<builds,functions,runtime,post_processing>>} scopes - An array of scopes
+ * @returns {string} A human-readable, comma-separated list of scopes
+ */
 const getHumanReadableScopes = (scopes) => {
   const AVAILABLE_SCOPES = {
     builds: 'Builds',
@@ -151,6 +180,9 @@ const translateFromEnvelopeToMongo = (envVars = []) =>
     }, {})
 
 module.exports = {
+  findValueFromContext,
+  filterEnvBySource,
+  formatEnvelopeData,
   getEnvelopeEnv,
   getHumanReadableScopes,
   translateFromEnvelopeToMongo,
