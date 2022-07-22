@@ -42,7 +42,11 @@ const envGet = async (name, options, command) => {
   }
 
   if (!value) {
-    log(`Environment variable ${name} not set for site ${siteInfo.name}`)
+    log(
+      `No value set in the ${chalk.magentaBright(context)} context for environment variable ${chalk.yellowBright(
+        name,
+      )}`,
+    )
     return false
   }
 
