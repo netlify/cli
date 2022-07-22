@@ -1,4 +1,4 @@
-import type { Context } from "netlify:edge";
+import type { Context } from "https://edge.netlify.com";
 
 export default async (request: Request, context: Context) => {
   const url = new URL(request.url);
