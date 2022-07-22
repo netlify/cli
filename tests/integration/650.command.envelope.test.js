@@ -149,6 +149,64 @@ test('env:get --scope should not find the value for the given scope when not pre
   })
 })
 
+test('env:list --json should return the object of keys and values', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    const finalEnv = {
+      EXISTING_VAR: 'envelope-dev-value',
+      OTHER_VAR: 'envelope-all-value',
+    }
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      const cliResponse = await callCli(['env:list', '--json'], getCLIOptions({ builder, apiUrl }), true)
+
+      t.deepEqual(cliResponse, finalEnv)
+    })
+  })
+})
+
+test('env:list --context should return the keys and values for the given context', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    const finalEnv = {
+      EXISTING_VAR: 'envelope-prod-value',
+      OTHER_VAR: 'envelope-all-value',
+    }
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      const cliResponse = await callCli(
+        ['env:list', '--context', 'production', '--json'],
+        getCLIOptions({ builder, apiUrl }),
+        true,
+      )
+
+      t.deepEqual(cliResponse, finalEnv)
+    })
+  })
+})
+
+test('env:list --scope should return the keys and values for the given scope', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    const finalEnv = {
+      OTHER_VAR: 'envelope-all-value',
+    }
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      const cliResponse = await callCli(
+        ['env:list', '--scope', 'runtime', '--json'],
+        getCLIOptions({ builder, apiUrl }),
+        true,
+      )
+
+      t.deepEqual(cliResponse, finalEnv)
+    })
+  })
+})
+
 test('env:set --json should create and return new var', async (t) => {
   await withSiteBuilder('site-env', async (builder) => {
     await builder.buildAsync()

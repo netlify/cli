@@ -5,7 +5,7 @@ const { Option } = require('commander')
 const inquirer = require('inquirer')
 const isEmpty = require('lodash/isEmpty')
 
-const { chalk, getEnvelopeEnv, getHumanReadableScopes, log, logJson } = require('../../utils')
+const { chalk, error, getEnvelopeEnv, getHumanReadableScopes, log, logJson } = require('../../utils')
 
 const [logUpdatePromise, ansiEscapesPromise] = [import('log-update'), import('ansi-escapes')]
 
@@ -54,7 +54,7 @@ const envList = async (options, command) => {
   if (isUsingEnvelope) {
     environment = await getEnvelopeEnv({ api, context, env, scope, siteInfo })
   } else if (context !== 'dev' || scope !== 'any') {
-    log(
+    error(
       `To specify a context or scope, please run ${chalk.yellowBright(
         'netlify open:admin',
       )} and opt in to the new Environment Variables experience`,
