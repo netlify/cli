@@ -37,16 +37,20 @@ const uploadFiles = async (api, deployId, uploadList, { concurrentUpload, maxRet
         break
       }
       case 'function': {
-        response = await await retryUpload(
-          () =>
-            api.uploadDeployFunction({
-              body: readStreamCtor,
-              deployId,
-              name: encodeURI(normalizedPath),
-              runtime,
-            }),
-          maxRetry,
-        )
+        response = await retryUpload((retryCount) => {
+          const params = {
+            body: readStreamCtor,
+            deployId,
+            name: encodeURI(normalizedPath),
+            runtime,
+          }
+
+          if (retryCount > 0) {
+            params.xNfRetryCount = retryCount
+          }
+
+          return api.uploadDeployFunction(params)
+        }, maxRetry)
         break
       }
       default: {
@@ -71,6 +75,8 @@ const uploadFiles = async (api, deployId, uploadList, { concurrentUpload, maxRet
 const retryUpload = (uploadFn, maxRetry) =>
   new Promise((resolve, reject) => {
     let lastError
+    let retryCount = 0
+
     const fibonacciBackoff = backoff.fibonacci({
       randomisationFactor: UPLOAD_RANDOM_FACTOR,
       initialDelay: UPLOAD_INITIAL_DELAY,
@@ -79,10 +85,12 @@ const retryUpload = (uploadFn, maxRetry) =>
 
     const tryUpload = async () => {
       try {
-        const results = await uploadFn()
+        const results = await uploadFn(retryCount)
         return resolve(results)
       } catch (error) {
         lastError = error
+        retryCount += 1
+
         // observed errors: 408, 401 (4** swallowed), 502
         if (error.status >= 400 || error.name === 'FetchError') {
           fibonacciBackoff.backoff()
