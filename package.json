@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "10.10.2",
+  "version": "10.11.0",
   "author": "Netlify Inc.",
   "contributors": [
     "Abraham Schilling <AbrahamSchilling@gmail.com> (https://gitlab.com/n4bb12)",
@@ -219,9 +219,9 @@
     "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,tools,scripts,site,tests,.github}/**/*.{mjs,cjs,js,md,yml,json,html}\" \"*.{mjs,cjs,js,yml,json,html}\" \".*.{mjs,cjs,js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\" \"!**/*/package-lock.json\" \"!.github/**/*.md\""
   },
   "dependencies": {
-    "@netlify/build": "^27.4.1",
+    "@netlify/build": "^27.4.2",
     "@netlify/config": "^18.1.1",
-    "@netlify/edge-bundler": "^1.6.0",
+    "@netlify/edge-bundler": "^1.7.0",
     "@netlify/framework-info": "^9.1.1",
     "@netlify/local-functions-proxy": "^1.1.1",
     "@netlify/plugins-list": "^6.35.0",
@@ -288,7 +288,7 @@
     "memoize-one": "^6.0.0",
     "minimist": "^1.2.5",
     "multiparty": "^4.2.1",
-    "netlify": "^11.0.4",
+    "netlify": "^12.0.0",
     "netlify-headers-parser": "^6.0.2",
     "netlify-onegraph-internal": "0.3.6",
     "netlify-redirect-parser": "^13.0.5",
