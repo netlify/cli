@@ -48,6 +48,34 @@ test('env:get --json should return empty object if var not set', async (t) => {
   })
 })
 
+test('env:get --context should log an error message', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      const { stderr: cliResponse } = await t.throwsAsync(
+        callCli(['env:get', 'SOME_VAR', '--context', 'production'], getCLIOptions({ builder, apiUrl })),
+      )
+
+      t.true(cliResponse.includes(`opt in to the new Environment Variables experience`))
+    })
+  })
+})
+
+test('env:get --scope should log an error message', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      const { stderr: cliResponse } = await t.throwsAsync(
+        callCli(['env:get', 'SOME_VAR', '--scope', 'functions'], getCLIOptions({ builder, apiUrl })),
+      )
+
+      t.true(cliResponse.includes(`opt in to the new Environment Variables experience`))
+    })
+  })
+})
+
 test('env:set --json should create and return new var', async (t) => {
   await withSiteBuilder('site-env', async (builder) => {
     await builder.buildAsync()

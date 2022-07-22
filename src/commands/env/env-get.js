@@ -1,7 +1,7 @@
 // @ts-check
 const { Option } = require('commander')
 
-const { chalk, getEnvelopeEnv, log, logJson } = require('../../utils')
+const { chalk, error, getEnvelopeEnv, log, logJson } = require('../../utils')
 
 /**
  * The env:get command
@@ -25,7 +25,7 @@ const envGet = async (name, options, command) => {
   if (siteInfo.use_envelope) {
     env = await getEnvelopeEnv({ api, context, env, scope, siteInfo })
   } else if (context !== 'dev' || scope !== 'any') {
-    log(
+    error(
       `To specify a context or scope, please run ${chalk.yellowBright(
         'netlify open:admin',
       )} and opt in to the new Environment Variables experience`,
