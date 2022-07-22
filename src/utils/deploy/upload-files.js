@@ -86,6 +86,7 @@ const retryUpload = (uploadFn, maxRetry) =>
     const tryUpload = async () => {
       try {
         const results = await uploadFn(retryCount)
+
         return resolve(results)
       } catch (error) {
         lastError = error
