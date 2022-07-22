@@ -75,7 +75,6 @@ const uploadFiles = async (api, deployId, uploadList, { concurrentUpload, maxRet
 const retryUpload = (uploadFn, maxRetry) =>
   new Promise((resolve, reject) => {
     let lastError
-    let retryCount = 0
 
     const fibonacciBackoff = backoff.fibonacci({
       randomisationFactor: UPLOAD_RANDOM_FACTOR,
@@ -83,14 +82,13 @@ const retryUpload = (uploadFn, maxRetry) =>
       maxDelay: UPLOAD_MAX_DELAY,
     })
 
-    const tryUpload = async () => {
+    const tryUpload = async (retryIndex = -1) => {
       try {
-        const results = await uploadFn(retryCount)
+        const results = await uploadFn(retryIndex + 1)
 
         return resolve(results)
       } catch (error) {
         lastError = error
-        retryCount += 1
 
         // observed errors: 408, 401 (4** swallowed), 502
         if (error.status >= 400 || error.name === 'FetchError') {
