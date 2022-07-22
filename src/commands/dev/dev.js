@@ -427,13 +427,6 @@ const dev = async (options, command) => {
   let { env } = command.netlify.cachedConfig
   if (siteInfo.use_envelope) {
     env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })
-  } else if (options.context !== 'dev') {
-    log(
-      `To specify a context, please run ${chalk.yellowBright(
-        'netlify open:admin',
-      )} and opt in to the new Environment Variables experience`,
-    )
-    exit(1)
   }
 
   await injectEnvVariables({ devConfig, env, site })

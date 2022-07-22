@@ -19,7 +19,15 @@ const getExecaOptions = ({ cwd, env }) => ({
   encoding: 'utf8',
 })
 
-const startServer = async ({ cwd, offline = true, env = {}, args = [], expectFailure = false, prompt }) => {
+const startServer = async ({
+  cwd,
+  context = 'dev',
+  offline = true,
+  env = {},
+  args = [],
+  expectFailure = false,
+  prompt,
+}) => {
   const port = await getPort()
   const staticPort = await getPort()
   const host = 'localhost'
@@ -27,7 +35,7 @@ const startServer = async ({ cwd, offline = true, env = {}, args = [], expectFai
   console.log(`Starting dev server on port: ${port} in directory ${path.basename(cwd)}`)
   const ps = execa(
     cliPath,
-    ['dev', offline ? '--offline' : '', '-p', port, '--staticServerPort', staticPort, ...args],
+    ['dev', offline ? '--offline' : '', '-p', port, '--staticServerPort', staticPort, '--context', context, ...args],
     getExecaOptions({ cwd, env }),
   )
 
