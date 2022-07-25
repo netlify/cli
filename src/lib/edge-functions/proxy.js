@@ -55,6 +55,7 @@ const initializeProxy = async ({
   offline,
   projectDir,
   settings,
+  siteInfo,
   state,
 }) => {
   const { functions: internalFunctions, importMap, path: internalFunctionsPath } = await getInternalFunctions()
@@ -93,6 +94,7 @@ const initializeProxy = async ({
 
     // Setting header with geolocation.
     req.headers[headers.Geo] = JSON.stringify(geoLocation)
+    req.headers[headers.Site] = btoa(JSON.stringify({ id: siteInfo.site_id, name: siteInfo.name, url: siteInfo.url }))
 
     await registry.initialize()
 

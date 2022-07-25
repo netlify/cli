@@ -240,6 +240,7 @@ const FRAMEWORK_PORT_TIMEOUT = 6e5
  * @param {*} params.settings
  * @param {boolean} params.offline
  * @param {*} params.site
+ * @param {*} params.siteInfo
  * @param {import('../../utils/state-config').StateConfig} params.state
  * @returns
  */
@@ -253,8 +254,10 @@ const startProxyServer = async ({
   offline,
   settings,
   site,
+  siteInfo,
   state,
 }) => {
+  console.log({ site })
   const url = await startProxy({
     addonsUrls,
     config,
@@ -267,8 +270,8 @@ const startProxyServer = async ({
     projectDir: site.root,
     settings,
     state,
+    siteInfo,
   })
-
   if (!url) {
     log(NETLIFYDEVERR, `Unable to start proxy server on port '${settings.port}'`)
     exit(1)
@@ -484,6 +487,7 @@ const dev = async (options, command) => {
     offline: options.offline,
     settings,
     site,
+    siteInfo,
     state,
   })
 

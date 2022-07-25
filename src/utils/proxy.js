@@ -472,6 +472,7 @@ const startProxy = async function ({
   offline,
   projectDir,
   settings,
+  siteInfo,
   state,
 }) {
   const functionsServer = settings.functionsPort ? `http://127.0.0.1:${settings.functionsPort}` : null
@@ -485,6 +486,7 @@ const startProxy = async function ({
     offline,
     projectDir,
     settings,
+    siteInfo,
     state,
   })
   const proxy = await initializeProxy({
