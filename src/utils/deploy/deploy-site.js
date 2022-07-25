@@ -54,7 +54,7 @@ const deploySite = async (
     phase: 'start',
   })
 
-  const edgeFunctionsDistPath = await edgeFunctions.getDistPathIfExists()
+  const edgeFunctionsDistPath = await edgeFunctions.getDistPathIfExists({ rootDir })
   const [{ files, filesShaMap }, { fnShaMap, functionSchedules, functions, functionsWithNativeModules }] =
     await Promise.all([
       hashFiles({
@@ -63,7 +63,7 @@ const deploySite = async (
         directories: [configPath, dir, edgeFunctionsDistPath].filter(Boolean),
         filter,
         hashAlgorithm,
-        normalizer: edgeFunctions.deployFileNormalizer,
+        normalizer: edgeFunctions.deployFileNormalizer.bind(null, rootDir),
         statusCb,
       }),
       hashFns(fnDir, {
