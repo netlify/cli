@@ -10,7 +10,7 @@
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
-        "@netlify/build": "^27.4.2",
+        "@netlify/build": "^27.5.0",
         "@netlify/config": "^18.1.2",
         "@netlify/edge-bundler": "^1.7.0",
         "@netlify/framework-info": "^9.1.1",
@@ -1189,14 +1189,14 @@
       "integrity": "sha512-4wMPu9iN3/HL97QblBsBay3E1etIciR84izI3U+4iALY+JHCrI+a2jO0qbAZ/nxKoegypYEaiiqWXylm+/zfrw=="
     },
     "node_modules/@netlify/build": {
-      "version": "27.4.2",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-27.4.2.tgz",
-      "integrity": "sha512-Gs9cyxRQFqxVHm6QTRzN3cdTjx5eAXFTMIEgQJyu9OIxvEpvnuUyih1XtVCQbk8IDsoJkGiUyFdZGbK74vi05g==",
+      "version": "27.5.0",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-27.5.0.tgz",
+      "integrity": "sha512-xsoaYmJEmnyWKMPk+W//WbBrBuZm9Oee9lXj+W8oQTtFaYdmPk4X/QN2+YfkmKOf+E303uRERtDuNOrBIkPOPw==",
       "dependencies": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^4.0.0",
-        "@netlify/config": "^18.1.1",
-        "@netlify/edge-bundler": "^1.6.0",
+        "@netlify/config": "^18.1.2",
+        "@netlify/edge-bundler": "^1.7.0",
         "@netlify/functions-utils": "^4.2.2",
         "@netlify/git-utils": "^4.0.0",
         "@netlify/plugins-list": "^6.35.0",
@@ -1776,9 +1776,9 @@
       }
     },
     "node_modules/@netlify/build/node_modules/read-pkg-up/node_modules/type-fest": {
-      "version": "2.16.0",
-      "resolved": "https://registry.npmjs.org/type-fest/-/type-fest-2.16.0.tgz",
-      "integrity": "sha512-qpaThT2HQkFb83gMOrdKVsfCN7LKxP26Yq+smPzY1FqoHRjqmjqHXA7n5Gkxi8efirtbeEUxzfEdePthQWCuHw==",
+      "version": "2.17.0",
+      "resolved": "https://registry.npmjs.org/type-fest/-/type-fest-2.17.0.tgz",
+      "integrity": "sha512-U+g3/JVXnOki1kLSc+xZGPRll3Ah9u2VIG6Sn9iH9YX6UkPERmt6O/0fIyTgsd2/whV0+gAaHAg8fz6sG1QzMA==",
       "engines": {
         "node": ">=12.20"
       },
@@ -1787,9 +1787,9 @@
       }
     },
     "node_modules/@netlify/build/node_modules/read-pkg/node_modules/type-fest": {
-      "version": "2.16.0",
-      "resolved": "https://registry.npmjs.org/type-fest/-/type-fest-2.16.0.tgz",
-      "integrity": "sha512-qpaThT2HQkFb83gMOrdKVsfCN7LKxP26Yq+smPzY1FqoHRjqmjqHXA7n5Gkxi8efirtbeEUxzfEdePthQWCuHw==",
+      "version": "2.17.0",
+      "resolved": "https://registry.npmjs.org/type-fest/-/type-fest-2.17.0.tgz",
+      "integrity": "sha512-U+g3/JVXnOki1kLSc+xZGPRll3Ah9u2VIG6Sn9iH9YX6UkPERmt6O/0fIyTgsd2/whV0+gAaHAg8fz6sG1QzMA==",
       "engines": {
         "node": ">=12.20"
       },
@@ -23814,14 +23814,14 @@
       "integrity": "sha512-4wMPu9iN3/HL97QblBsBay3E1etIciR84izI3U+4iALY+JHCrI+a2jO0qbAZ/nxKoegypYEaiiqWXylm+/zfrw=="
     },
     "@netlify/build": {
-      "version": "27.4.2",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-27.4.2.tgz",
-      "integrity": "sha512-Gs9cyxRQFqxVHm6QTRzN3cdTjx5eAXFTMIEgQJyu9OIxvEpvnuUyih1XtVCQbk8IDsoJkGiUyFdZGbK74vi05g==",
+      "version": "27.5.0",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-27.5.0.tgz",
+      "integrity": "sha512-xsoaYmJEmnyWKMPk+W//WbBrBuZm9Oee9lXj+W8oQTtFaYdmPk4X/QN2+YfkmKOf+E303uRERtDuNOrBIkPOPw==",
       "requires": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^4.0.0",
-        "@netlify/config": "^18.1.1",
-        "@netlify/edge-bundler": "^1.6.0",
+        "@netlify/config": "^18.1.2",
+        "@netlify/edge-bundler": "^1.7.0",
         "@netlify/functions-utils": "^4.2.2",
         "@netlify/git-utils": "^4.0.0",
         "@netlify/plugins-list": "^6.35.0",
@@ -24168,9 +24168,9 @@
           },
           "dependencies": {
             "type-fest": {
-              "version": "2.16.0",
-              "resolved": "https://registry.npmjs.org/type-fest/-/type-fest-2.16.0.tgz",
-              "integrity": "sha512-qpaThT2HQkFb83gMOrdKVsfCN7LKxP26Yq+smPzY1FqoHRjqmjqHXA7n5Gkxi8efirtbeEUxzfEdePthQWCuHw=="
+              "version": "2.17.0",
+              "resolved": "https://registry.npmjs.org/type-fest/-/type-fest-2.17.0.tgz",
+              "integrity": "sha512-U+g3/JVXnOki1kLSc+xZGPRll3Ah9u2VIG6Sn9iH9YX6UkPERmt6O/0fIyTgsd2/whV0+gAaHAg8fz6sG1QzMA=="
             }
           }
         },
@@ -24185,9 +24185,9 @@
           },
           "dependencies": {
             "type-fest": {
-              "version": "2.16.0",
-              "resolved": "https://registry.npmjs.org/type-fest/-/type-fest-2.16.0.tgz",
-              "integrity": "sha512-qpaThT2HQkFb83gMOrdKVsfCN7LKxP26Yq+smPzY1FqoHRjqmjqHXA7n5Gkxi8efirtbeEUxzfEdePthQWCuHw=="
+              "version": "2.17.0",
+              "resolved": "https://registry.npmjs.org/type-fest/-/type-fest-2.17.0.tgz",
+              "integrity": "sha512-U+g3/JVXnOki1kLSc+xZGPRll3Ah9u2VIG6Sn9iH9YX6UkPERmt6O/0fIyTgsd2/whV0+gAaHAg8fz6sG1QzMA=="
             }
           }
         },
