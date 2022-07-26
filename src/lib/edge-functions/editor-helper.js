@@ -7,6 +7,7 @@ const { runRecipe } = require('../../commands/recipes')
 const STATE_PROMPT_PROPERTY = 'promptVSCodeSettings'
 
 const promptEditorHelper = async ({ NETLIFYDEVLOG, chalk, config, log, repositoryRoot, state }) => {
+  if (env.NODE_ENV === 'test') return
   const isVSCode = env.TERM_PROGRAM === 'vscode'
   const hasShownPrompt = Boolean(state.get(STATE_PROMPT_PROPERTY))
   const hasEdgeFunctions = Boolean(config.edge_functions && config.edge_functions.length !== 0)
