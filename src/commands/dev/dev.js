@@ -257,7 +257,6 @@ const startProxyServer = async ({
   siteInfo,
   state,
 }) => {
-  console.log({ site })
   const url = await startProxy({
     addonsUrls,
     config,
