@@ -174,7 +174,7 @@ test('should enforce role based redirects with custom secret and role path', asy
 })
 
 test('Serves an Edge Function that terminates a response', async (t) => {
-  await withSiteBuilder('site-with-fully-qualified-redirect-rule', async (builder) => {
+  await withSiteBuilder('site-with-edge-function-that-terminates-response', async (builder) => {
     const publicDir = 'public'
     builder
       .withNetlifyToml({
@@ -214,7 +214,7 @@ test('Serves an Edge Function that terminates a response', async (t) => {
 })
 
 test('Serves an Edge Function with a rewrite', async (t) => {
-  await withSiteBuilder('site-with-fully-qualified-redirect-rule', async (builder) => {
+  await withSiteBuilder('site-with-edge-function-that-rewrites', async (builder) => {
     const publicDir = 'public'
     builder
       .withNetlifyToml({
@@ -317,7 +317,7 @@ test('Serves an Edge Function that includes context with site information', asyn
 })
 
 test('Serves an Edge Function that transforms the response', async (t) => {
-  await withSiteBuilder('site-with-fully-qualified-redirect-rule', async (builder) => {
+  await withSiteBuilder('site-with-edge-function-that-transforms-response', async (builder) => {
     const publicDir = 'public'
     builder
       .withNetlifyToml({
