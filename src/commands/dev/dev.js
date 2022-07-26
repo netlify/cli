@@ -598,6 +598,7 @@ const createDevCommand = (program) => {
 
   return program
     .command('dev')
+    .alias('develop')
     .description(
       `Local dev server\nThe dev command will run a local dev server with Netlify's proxy and redirect rules`,
     )
