@@ -18,6 +18,7 @@ netlify dev
 **Flags**
 
 - `command` (*string*) - command to run
+- `country` (*string*) - Two-letter country code (https://ntl.fyi/country-codes) to use as mock geolocation (enables --geo=mock automatically)
 - `dir` (*string*) - dir with static files
 - `edgeInspect` (*string*) - enable the V8 Inspector Protocol for Edge Functions, with an optional address in the host:port format
 - `edgeInspectBrk` (*string*) - enable the V8 Inspector Protocol for Edge Functions and pause execution on the first line of code, with an optional address in the host:port format
@@ -28,6 +29,7 @@ netlify dev
 - `live` (*boolean*) - start a public live session
 - `offline` (*boolean*) - disables any features that require network access
 - `port` (*string*) - port of netlify dev
+- `sessionId` (*string*) - (Graph) connect to cloud session with ID [sessionId]
 - `targetPort` (*string*) - port of target app server
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.

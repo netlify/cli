@@ -26,6 +26,7 @@ const {
   getNetlifyGraphConfig,
   readGraphQLOperationsSourceFile,
 } = require('../../lib/one-graph/cli-netlify-graph')
+const { startSpinner, stopSpinner } = require('../../lib/spinner')
 const {
   BANG,
   NETLIFYDEV,
@@ -115,7 +116,7 @@ const cleanupBeforeExit = async ({ exitCode }) => {
  * @param {NodeJS.ProcessEnv} env
  * @returns {execa.ExecaChildProcess<string>}
  */
-const runCommand = (command, env = {}) => {
+const runCommand = (command, env = {}, spinner = null) => {
   const commandProcess = execa.command(command, {
     preferLocal: true,
     // we use reject=false to avoid rejecting synchronously when the command doesn't exist
@@ -125,8 +126,23 @@ const runCommand = (command, env = {}) => {
     windowsHide: false,
   })
 
-  commandProcess.stdout.pipe(stripAnsiCc.stream()).pipe(process.stdout)
-  commandProcess.stderr.pipe(stripAnsiCc.stream()).pipe(process.stderr)
+  // This ensures that an active spinner stays at the bottom of the commandline
+  // even though the actual framework command might be outputting stuff
+  const pipeDataWithSpinner = (writeStream, chunk) => {
+    if (spinner && spinner.isSpinning) {
+      spinner.clear()
+      spinner.isSilent = true
+    }
+    writeStream.write(chunk, () => {
+      if (spinner && spinner.isSpinning) {
+        spinner.isSilent = false
+        spinner.render()
+      }
+    })
+  }
+
+  commandProcess.stdout.pipe(stripAnsiCc.stream()).on('data', pipeDataWithSpinner.bind(null, process.stdout))
+  commandProcess.stderr.pipe(stripAnsiCc.stream()).on('data', pipeDataWithSpinner.bind(null, process.stderr))
   process.stdin.pipe(commandProcess.stdin)
 
   // we can't try->await->catch since we don't want to block on the framework server which
@@ -173,15 +189,18 @@ const startFrameworkServer = async function ({ settings }) {
 
   log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.framework || 'custom config'}`)
 
-  runCommand(settings.command, settings.env)
+  const spinner = startSpinner({
+    text: `Waiting for framework port ${settings.frameworkPort}. This can be configured using the 'targetPort' property in the netlify.toml`,
+  })
+
+  runCommand(settings.command, settings.env, spinner)
 
   try {
-    log(
-      `${NETLIFYDEVLOG} Waiting for framework port ${settings.frameworkPort}. This can be configured using the 'targetPort' property in the netlify.toml`,
-    )
     const open = await waitPort({
       port: settings.frameworkPort,
-      output: 'dots',
+      // Cannot use `localhost` as it may point to IPv4 or IPv6 depending on node version and OS
+      host: '127.0.0.1',
+      output: 'silent',
       timeout: FRAMEWORK_PORT_TIMEOUT,
       ...(settings.pollingStrategies.includes('HTTP') && { protocol: 'http' }),
     })
@@ -189,7 +208,10 @@ const startFrameworkServer = async function ({ settings }) {
     if (!open) {
       throw new Error(`Timed out waiting for port '${settings.frameworkPort}' to be open`)
     }
+
+    stopSpinner({ error: false, spinner })
   } catch {
+    stopSpinner({ error: true, spinner })
     log(NETLIFYDEVERR, `Netlify Dev could not connect to localhost:${settings.frameworkPort}.`)
     log(NETLIFYDEVERR, `Please make sure your framework server is running on port ${settings.frameworkPort}`)
     exit(1)
@@ -214,6 +236,7 @@ const FRAMEWORK_PORT_TIMEOUT = 6e5
  * @param {InspectSettings} params.inspectSettings
  * @param {() => Promise<object>} params.getUpdatedConfig
  * @param {string} params.geolocationMode
+ * @param {string} params.geoCountry
  * @param {*} params.settings
  * @param {boolean} params.offline
  * @param {*} params.site
@@ -223,6 +246,7 @@ const FRAMEWORK_PORT_TIMEOUT = 6e5
 const startProxyServer = async ({
   addonsUrls,
   config,
+  geoCountry,
   geolocationMode,
   getUpdatedConfig,
   inspectSettings,
@@ -236,6 +260,7 @@ const startProxyServer = async ({
     config,
     configPath: site.configPath,
     geolocationMode,
+    geoCountry,
     getUpdatedConfig,
     inspectSettings,
     offline,
@@ -366,6 +391,19 @@ const validateShortFlagArgs = (args) => {
   return args
 }
 
+const validateGeoCountryCode = (arg) => {
+  // Validate that the arg passed is two letters only for country
+  // See https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes
+  if (!/^[a-z]{2}$/i.test(arg)) {
+    throw new Error(
+      `The geo country code must use a two letter abbreviation.
+      ${chalk.red(BANG)}  Example:
+      netlify dev --geo=mock --country=FR`,
+    )
+  }
+  return arg.toUpperCase()
+}
+
 /**
  * The dev command
  * @param {import('commander').OptionValues} options
@@ -440,6 +478,7 @@ const dev = async (options, command) => {
     addonsUrls,
     config,
     geolocationMode: options.geo,
+    geoCountry: options.country,
     getUpdatedConfig,
     inspectSettings,
     offline: options.offline,
@@ -481,7 +520,13 @@ const dev = async (options, command) => {
         graphqlDocument = defaultExampleOperationsDoc
       }
 
-      stopWatchingCLISessions = await startOneGraphCLISession({ netlifyGraphConfig, netlifyToken, site, state })
+      stopWatchingCLISessions = await startOneGraphCLISession({
+        netlifyGraphConfig,
+        netlifyToken,
+        site,
+        state,
+        oneGraphSessionId: options.sessionId,
+      })
 
       // Should be created by startOneGraphCLISession
       const oneGraphSessionId = loadCLISession(state)
@@ -575,11 +620,18 @@ const createDevCommand = (program) => {
         .default('cache'),
     )
     .addOption(
+      new Option(
+        '--country <geoCountry>',
+        'Two-letter country code (https://ntl.fyi/country-codes) to use as mock geolocation (enables --geo=mock automatically)',
+      ).argParser(validateGeoCountryCode),
+    )
+    .addOption(
       new Option('--staticServerPort <port>', 'port of the static app server used when no framework is detected')
         .argParser((value) => Number.parseInt(value))
         .hideHelp(),
     )
     .addOption(new Option('--graph', 'enable Netlify Graph support').hideHelp())
+    .addOption(new Option('--sessionId [sessionId]', '(Graph) connect to cloud session with ID [sessionId]'))
     .addOption(
       new Option(
         '-e, --edgeInspect [address]',

@@ -173,13 +173,11 @@ class FunctionsRegistry {
     }
 
     await Promise.all(directories.map((path) => FunctionsRegistry.prepareDirectoryScan(path)))
-
     const functions = await this.listFunctions(directories, {
       featureFlags: {
-        buildGoSource: true,
         buildRustSource: env.NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE === 'true',
       },
-      config: this.config,
+      config: this.config.functions,
     })
 
     // Before registering any functions, we look for any functions that were on

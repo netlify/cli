@@ -1,7 +1,16 @@
 const fetch = require('node-fetch')
 
 const getTemplatesFromGitHub = async (token) => {
-  const templates = await fetch(`https://api.github.com/orgs/netlify-templates/repos`, {
+  const getPublicGitHubReposFromOrg = new URL(`https://api.github.com/orgs/netlify-templates/repos`)
+  // GitHub returns 30 by default and we want to avoid our limit
+  // due to our archived repositories at any given time
+  const REPOS_PER_PAGE = 70
+
+  getPublicGitHubReposFromOrg.searchParams.set('type', 'public')
+  getPublicGitHubReposFromOrg.searchParams.set('sort', 'full_name')
+  getPublicGitHubReposFromOrg.searchParams.set('per_page', REPOS_PER_PAGE)
+
+  const templates = await fetch(getPublicGitHubReposFromOrg, {
     method: 'GET',
     headers: {
       Authorization: `token ${token}`,
