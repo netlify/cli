@@ -92,9 +92,9 @@ const initializeProxy = async ({
 
     if (!registry) return
 
-    // Setting header with geolocation.
+    // Setting header with geolocation and site info.
     req.headers[headers.Geo] = JSON.stringify(geoLocation)
-    req.headers[headers.Site] = btoa(JSON.stringify({ id: siteInfo.site_id, name: siteInfo.name, url: siteInfo.url }))
+    req.headers[headers.Site] = btoa(JSON.stringify({ id: siteInfo.id, name: siteInfo.name, url: siteInfo.url }))
 
     await registry.initialize()
 
