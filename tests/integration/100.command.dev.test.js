@@ -254,7 +254,7 @@ test('Serves an Edge Function with a rewrite', async (t) => {
 })
 
 test('Serves an Edge Function that includes context with site information', async (t) => {
-  await withSiteBuilder('site-with-fully-qualified-redirect-rule', async (builder) => {
+  await withSiteBuilder('site-with-edge-function-printing-site-info', async (builder) => {
     const publicDir = 'public'
     builder
       .withNetlifyToml({
