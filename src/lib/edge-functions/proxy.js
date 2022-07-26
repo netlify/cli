@@ -1,4 +1,5 @@
 // @ts-check
+const { Buffer } = require('buffer')
 const { relative } = require('path')
 const { cwd, env } = require('process')
 
@@ -94,7 +95,9 @@ const initializeProxy = async ({
 
     // Setting header with geolocation and site info.
     req.headers[headers.Geo] = JSON.stringify(geoLocation)
-    req.headers[headers.Site] = btoa(JSON.stringify({ id: siteInfo.id, name: siteInfo.name, url: siteInfo.url }))
+    req.headers[headers.Site] = Buffer.from(
+      JSON.stringify({ id: siteInfo.id, name: siteInfo.name, url: siteInfo.url }),
+    ).toString('base64')
 
     await registry.initialize()
 
