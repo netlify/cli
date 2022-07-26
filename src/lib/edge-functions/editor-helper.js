@@ -7,7 +7,10 @@ const { runRecipe } = require('../../commands/recipes')
 const STATE_PROMPT_PROPERTY = 'promptVSCodeSettings'
 
 const promptEditorHelper = async ({ NETLIFYDEVLOG, chalk, config, log, repositoryRoot, state }) => {
+  // This prevents tests from hanging when running them inside the VS Code
+  // terminal, as otherwise we'll show the prompt and wait for a response.
   if (env.NODE_ENV === 'test') return
+    
   const isVSCode = env.TERM_PROGRAM === 'vscode'
   const hasShownPrompt = Boolean(state.get(STATE_PROMPT_PROPERTY))
   const hasEdgeFunctions = Boolean(config.edge_functions && config.edge_functions.length !== 0)
