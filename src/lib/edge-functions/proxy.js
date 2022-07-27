@@ -1,4 +1,5 @@
 // @ts-check
+const { Buffer } = require('buffer')
 const { relative } = require('path')
 const { cwd, env } = require('process')
 
@@ -45,6 +46,13 @@ const handleProxyRequest = (req, proxyReq) => {
   })
 }
 
+const createSiteInfoHeader = (siteInfo = {}) => {
+  const { id, name, url } = siteInfo
+  const site = { id, name, url }
+  const siteString = JSON.stringify(site)
+  return Buffer.from(siteString).toString('base64')
+}
+
 const initializeProxy = async ({
   config,
   configPath,
@@ -55,6 +63,7 @@ const initializeProxy = async ({
   offline,
   projectDir,
   settings,
+  siteInfo,
   state,
 }) => {
   const { functions: internalFunctions, importMap, path: internalFunctionsPath } = await getInternalFunctions()
@@ -91,8 +100,9 @@ const initializeProxy = async ({
 
     if (!registry) return
 
-    // Setting header with geolocation.
+    // Setting header with geolocation and site info.
     req.headers[headers.Geo] = JSON.stringify(geoLocation)
+    req.headers[headers.Site] = createSiteInfoHeader(siteInfo)
 
     await registry.initialize()
 
@@ -182,4 +192,4 @@ const prepareServer = async ({
   }
 }
 
-module.exports = { handleProxyRequest, initializeProxy, isEdgeFunctionsRequest }
+module.exports = { handleProxyRequest, initializeProxy, isEdgeFunctionsRequest, createSiteInfoHeader }

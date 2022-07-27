@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "10.11.2",
+  "version": "10.12.1",
   "author": "Netlify Inc.",
   "contributors": [
     "Abraham Schilling <AbrahamSchilling@gmail.com> (https://gitlab.com/n4bb12)",
@@ -69,7 +69,7 @@
     "Joshua T. (http://localhost:8080)",
     "João Antunes <me@jgantunes.com> (https://twitter.com/jgantunes)",
     "Karagulamos (https://twitter.com/karagulamos)",
-    "Karin Hendrikse (khendrikse.netlify.app)",
+    "Karin Hendrikse <khendrikse.netlify.app>",
     "Kaspar Emanuel <kaspar@monostable.co.uk> (https://twitter.com/kaspar_e)",
     "Keiko Oda (https://keikooda.net/)",
     "Krasimir Nedelchev (https://github.com/kaykayehnn)",
@@ -290,7 +290,7 @@
     "multiparty": "^4.2.1",
     "netlify": "^12.0.0",
     "netlify-headers-parser": "^6.0.2",
-    "netlify-onegraph-internal": "0.3.6",
+    "netlify-onegraph-internal": "0.3.9",
     "netlify-redirect-parser": "^13.0.5",
     "netlify-redirector": "^0.2.1",
     "node-fetch": "^2.6.0",
