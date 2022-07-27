@@ -61,7 +61,8 @@ InternalConsole.registerConsole(internalConsole)
  * @returns
  */
 const monitorCLISessionEvents = (input) => {
-  const { appId, netlifyGraphConfig, netlifyToken, onClose, onError, onEvents, sessionId, site, state } = input
+  const { appId, netlifyGraphConfig, netlifyToken, onClose, onError, onEvents, site, state } = input
+  const currentSessionId = input.sessionId
 
   const frequency = 5000
   // 30 minutes
@@ -71,11 +72,15 @@ const monitorCLISessionEvents = (input) => {
 
   const markActiveHelper = async () => {
     const graphJwt = await OneGraphClient.getGraphJwtForSite({ siteId: appId, nfToken: netlifyToken })
-    const fullSession = await OneGraphClient.fetchCliSession({ jwt: graphJwt.jwt, appId, sessionId })
+    const fullSession = await OneGraphClient.fetchCliSession({ jwt: graphJwt.jwt, appId, sessionId: currentSessionId })
     // @ts-ignore
     const heartbeatIntervalms = fullSession.session.cliHeartbeatIntervalMs || defaultHeartbeatFrequency
     nextMarkActiveHeartbeat = heartbeatIntervalms
-    const markCLISessionActiveResult = await executeMarkCliSessionActiveHeartbeat(graphJwt.jwt, site.id, sessionId)
+    const markCLISessionActiveResult = await executeMarkCliSessionActiveHeartbeat(
+      graphJwt.jwt,
+      site.id,
+      currentSessionId,
+    )
     if (markCLISessionActiveResult.errors && markCLISessionActiveResult.errors.length !== 0) {
       warn(`Failed to mark CLI session active: ${markCLISessionActiveResult.errors.join(', ')}`)
     }
@@ -84,10 +89,10 @@ const monitorCLISessionEvents = (input) => {
 
   setTimeout(markActiveHelper, nextMarkActiveHeartbeat)
 
-  const enabledServiceWatcher = async (jwt, siteId) => {
+  const enabledServiceWatcher = async (jwt, { appId: siteId, sessionId }) => {
     const enabledServices = state.get('oneGraphEnabledServices') || ['onegraph']
 
-    const enabledServicesInfo = await OneGraphClient.fetchEnabledServices(jwt, siteId)
+    const enabledServicesInfo = await OneGraphClient.fetchEnabledServicesForSession(jwt, siteId, sessionId)
     if (!enabledServicesInfo) {
       warn('Unable to fetch enabled services for site for code generation')
       return
@@ -102,7 +107,7 @@ const monitorCLISessionEvents = (input) => {
           'Reloading',
         )} Netlify Graph schema..., ${enabledServicesCompareKey} => ${newEnabledServicesCompareKey}`,
       )
-      await refetchAndGenerateFromOneGraph({ netlifyGraphConfig, state, jwt, siteId })
+      await refetchAndGenerateFromOneGraph({ netlifyGraphConfig, state, jwt, siteId, sessionId })
       log(`${chalk.green('Reloaded')} Netlify Graph schema and regenerated functions`)
     }
   }
@@ -120,7 +125,7 @@ const monitorCLISessionEvents = (input) => {
     }
 
     const graphJwt = await OneGraphClient.getGraphJwtForSite({ siteId: appId, nfToken: netlifyToken })
-    const next = await OneGraphClient.fetchCliSessionEvents({ appId, jwt: graphJwt.jwt, sessionId })
+    const next = await OneGraphClient.fetchCliSessionEvents({ appId, jwt: graphJwt.jwt, sessionId: currentSessionId })
 
     if (next && next.errors) {
       next.errors.forEach((fetchEventError) => {
@@ -137,11 +142,16 @@ const monitorCLISessionEvents = (input) => {
       } catch (eventHandlerError) {
         warn(`Error handling event: ${eventHandlerError}`)
       } finally {
-        await OneGraphClient.ackCLISessionEvents({ appId, jwt: graphJwt.jwt, sessionId, eventIds: ackIds })
+        await OneGraphClient.ackCLISessionEvents({
+          appId,
+          jwt: graphJwt.jwt,
+          sessionId: currentSessionId,
+          eventIds: ackIds,
+        })
       }
     }
 
-    await enabledServiceWatcher(graphJwt.jwt, appId)
+    await enabledServiceWatcher(graphJwt.jwt, { appId, sessionId: currentSessionId })
 
     handle = setTimeout(helper, frequency)
   }
@@ -178,6 +188,7 @@ const monitorOperationFile = async ({ netlifyGraphConfig, onAdd, onChange, onUnl
  * @param {object} input
  * @param {string} input.siteId The id of the site to query against
  * @param {string} input.jwt The Graph JWT
+ * @param {string} input.sessionId The session ID for the current session
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
  * @param {StateConfig} input.state A function to call to set/get the current state of the local Netlify project
  * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
@@ -188,7 +199,7 @@ const refetchAndGenerateFromOneGraph = async (input) => {
 
   await OneGraphClient.ensureAppForSite(jwt, siteId)
 
-  const enabledServicesInfo = await OneGraphClient.fetchEnabledServices(jwt, siteId)
+  const enabledServicesInfo = await OneGraphClient.fetchEnabledServicesForSession(jwt, siteId, input.sessionId)
   if (!enabledServicesInfo) {
     warn('Unable to fetch enabled services for site for code generation')
     return
