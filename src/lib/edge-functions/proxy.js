@@ -1,4 +1,5 @@
 // @ts-check
+const { Buffer } = require('buffer')
 const { relative } = require('path')
 const { cwd, env } = require('process')
 
@@ -55,6 +56,7 @@ const initializeProxy = async ({
   offline,
   projectDir,
   settings,
+  siteInfo,
   state,
 }) => {
   const { functions: internalFunctions, importMap, path: internalFunctionsPath } = await getInternalFunctions()
@@ -91,8 +93,11 @@ const initializeProxy = async ({
 
     if (!registry) return
 
-    // Setting header with geolocation.
+    // Setting header with geolocation and site info.
     req.headers[headers.Geo] = JSON.stringify(geoLocation)
+    req.headers[headers.Site] = Buffer.from(
+      JSON.stringify({ id: siteInfo.id, name: siteInfo.name, url: siteInfo.url }),
+    ).toString('base64')
 
     await registry.initialize()
 
