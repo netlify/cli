@@ -46,6 +46,13 @@ const handleProxyRequest = (req, proxyReq) => {
   })
 }
 
+const createSiteInfoHeader = (siteInfo = {}) => {
+  const { id, name, url } = siteInfo
+  const site = { id, name, url }
+  const siteString = JSON.stringify(site)
+  return Buffer.from(siteString).toString('base64')
+}
+
 const initializeProxy = async ({
   config,
   configPath,
@@ -95,9 +102,7 @@ const initializeProxy = async ({
 
     // Setting header with geolocation and site info.
     req.headers[headers.Geo] = JSON.stringify(geoLocation)
-    req.headers[headers.Site] = Buffer.from(
-      JSON.stringify({ id: siteInfo.id, name: siteInfo.name, url: siteInfo.url }),
-    ).toString('base64')
+    req.headers[headers.Site] = createSiteInfoHeader(siteInfo)
 
     await registry.initialize()
 
@@ -187,4 +192,4 @@ const prepareServer = async ({
   }
 }
 
-module.exports = { handleProxyRequest, initializeProxy, isEdgeFunctionsRequest }
+module.exports = { handleProxyRequest, initializeProxy, isEdgeFunctionsRequest, createSiteInfoHeader }
