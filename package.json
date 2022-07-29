@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "10.12.1",
+  "version": "10.13.0",
   "author": "Netlify Inc.",
   "contributors": [
     "Abraham Schilling <AbrahamSchilling@gmail.com> (https://gitlab.com/n4bb12)",
