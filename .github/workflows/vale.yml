@@ -24,7 +24,6 @@ jobs:
 
       - name: Vale
         uses: errata-ai/vale-action@v2
-        continue-on-error: true
         with:
           files: '["docs", "src", "README.md", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md"]'
           fail_on_error: true
