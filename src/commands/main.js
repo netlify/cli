@@ -99,7 +99,7 @@ const mainCommand = async function (options, command) {
   // if no command show the header and the help
   if (command.args.length === 0) {
     const title = `${chalk.bgBlack.cyan('⬥ Netlify CLI')}`
-    const docsMsg = `${chalk.greenBright('Read the docs:')} https://www.netlify.com/docs/cli`
+    const docsMsg = `${chalk.greenBright('Read the docs:')} https://docs.netlify.com/cli/get-started/`
     const supportMsg = `${chalk.magentaBright('Support and bugs:')} ${pkg.bugs.url}`
 
     console.log()

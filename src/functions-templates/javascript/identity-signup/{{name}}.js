@@ -3,7 +3,7 @@
 //
 // more:
 // https://www.netlify.com/blog/2019/02/21/the-role-of-roles-and-how-to-set-them-in-netlify-identity/
-// https://www.netlify.com/docs/functions/#identity-and-functions
+// https://docs.netlify.com/functions/functions-and-identity/
 
 const handler = async function (event) {
   const data = JSON.parse(event.body)

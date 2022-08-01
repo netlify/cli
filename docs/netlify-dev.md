@@ -32,8 +32,8 @@ With project detectors, it automatically detects common tools like Gatsby, Hugo,
 ## Prerequisites
 
 - You should have the latest Netlify CLI version. Run `npm install -g netlify-cli` to be sure.
-- You should be [logged in on Netlify CLI](https://www.netlify.com/docs/cli/#authentication)
-- Your project should be linked to a `siteID` on Netlify (using [netlify init](https://www.netlify.com/docs/cli/#continuous-deployment) or [netlify link](https://www.netlify.com/docs/cli/#linking-and-unlinking-sites)). You can confirm this has been done if you have a `.netlify` folder with a `state.json` file containing your `siteID`.
+- You should be [logged in on Netlify CLI](https://docs.netlify.com/cli/get-started/#authentication)
+- Your project should be linked to a `siteID` on Netlify (using [netlify init](https://docs.netlify.com/cli/get-started/#continuous-deployment) or [netlify link](https://docs.netlify.com/cli/get-started/#linking-and-unlinking-sites)). You can confirm this has been done if you have a `.netlify` folder with a `state.json` file containing your `siteID`.
 
 This is how we pull down your build environment variables and manage your addons on your local machine.
 
@@ -189,7 +189,7 @@ Netlify Dev tries to acquire these ports but if any of them is not available (al
 
 ## Redirects
 
-Netlify Dev has the ability emulate the [redirect capability](https://www.netlify.com/docs/redirects/) Netlify provide on the [ADN](https://netlify.com/features/adn) in your local environment. The same redirect rules which you configure to run on the edge, will also work in your local builds.
+Netlify Dev has the ability emulate the [redirect capability](https://docs.netlify.com/routing/redirects/) Netlify provide on the [ADN](https://netlify.com/features/adn) in your local environment. The same redirect rules which you configure to run on the edge, will also work in your local builds.
 
 Netlify dev supports redirect rules defined in either `_redirects` or `netlify.toml` files.
 
@@ -199,7 +199,7 @@ The order of precedence for applying redirect rules is:
 1. `netlify.toml` file (in the project's publish folder)
 1. `netlify.toml` file (in the project's root folder)
 
-See the [Redirects Documentation](https://www.netlify.com/docs/redirects/) for more information on Netlify's redirect and proxying capabilities.
+See the [Redirects Documentation](https://docs.netlify.com/routing/redirects/) for more information on Netlify's redirect and proxying capabilities.
 
 ## Environment Variables
 
@@ -298,7 +298,7 @@ netlify functions:invoke myfunction --querystring "foo=1"
 netlify functions:invoke myfunction --payload "./pathTo.json"
 ```
 
-There are special cases for [event triggered functions](https://www.netlify.com/docs/functions/?utm_source=blog&utm_medium=netlifydev&utm_campaign=devex#event-triggered-functions) (eg `identity-signup`) which will also give you mock data for testing. This makes manual local testing of event triggered functions possible, which drastically improves the development experience.
+There are special cases for [event triggered functions](https://docs.netlify.com/functions/trigger-on-events/) (eg `identity-signup`) which will also give you mock data for testing. This makes manual local testing of event triggered functions possible, which drastically improves the development experience.
 
 This is a new feature; ideas and feedback and issues and PR's welcome!
 
@@ -330,7 +330,7 @@ We may offer detection for more function builders in future, and also let you sp
 
 Add-ons are a way for Netlify users to extend the functionality of their Jamstack site/app.
 
-Check out [Add-on docs](https://www.netlify.com/docs/partner-add-ons/) here.
+Check out [Add-on docs](https://docs.netlify.com/integrations/partner-add-ons/get-started/) here.
 
 To try out an add-on with Netlify dev, run the `netlify addons:create` command:
 
