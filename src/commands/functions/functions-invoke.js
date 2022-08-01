@@ -8,7 +8,7 @@ const fetch = require('node-fetch')
 
 const { BACKGROUND, CLOCKWORK_USERAGENT, NETLIFYDEVWARN, chalk, error, exit, getFunctions } = require('../../utils')
 
-// https://www.netlify.com/docs/functions/#event-triggered-functions
+// https://docs.netlify.com/functions/trigger-on-events/
 const events = [
   'deploy-building',
   'deploy-succeeded',
@@ -161,10 +161,10 @@ const functionsInvoke = async (nameArgument, options, command) => {
     }
   } else if (eventTriggeredFunctions.has(functionToTrigger)) {
     /** handle event triggered fns  */
-    // https://www.netlify.com/docs/functions/#event-triggered-functions
+    // https://docs.netlify.com/functions/trigger-on-events/
     const [name, event] = functionToTrigger.split('-')
     if (name === 'identity') {
-      // https://www.netlify.com/docs/functions/#identity-event-functions
+      // https://docs.netlify.com/functions/functions-and-identity/#trigger-functions-on-identity-events
       body.event = event
       body.user = {
         id: '1111a1a1-a11a-1111-aa11-aaa11111a11a',
@@ -182,7 +182,7 @@ const functionsInvoke = async (nameArgument, options, command) => {
       }
     } else {
       // non identity functions seem to have a different shape
-      // https://www.netlify.com/docs/functions/#event-function-payloads
+      // https://docs.netlify.com/functions/trigger-on-events/#payload
       body.payload = {
         TODO: 'mock up payload data better',
       }
