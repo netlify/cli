@@ -66,7 +66,11 @@ const monitorCLISessionEvents = (input) => {
   const markActiveHelper = async () => {
     try {
       const graphJwt = await OneGraphClient.getGraphJwtForSite({ siteId: appId, nfToken: netlifyToken })
-      const fullSession = await OneGraphClient.fetchCliSession({ jwt: graphJwt.jwt, appId, sessionId: currentSessionId })
+      const fullSession = await OneGraphClient.fetchCliSession({
+        jwt: graphJwt.jwt,
+        appId,
+        sessionId: currentSessionId,
+      })
       const heartbeatIntervalms = fullSession.session.cliHeartbeatIntervalMs || defaultHeartbeatFrequency
       nextMarkActiveHeartbeat = heartbeatIntervalms
       const markCLISessionActiveResult = await OneGraphClient.executeMarkCliSessionActiveHeartbeat(
@@ -180,7 +184,7 @@ const monitorOperationFile = async ({ netlifyGraphConfig, onAdd, onChange, onUnl
     error('Please configure `graphQLOperationsSourceFilename` in your `netlify.toml` [graph] section')
   }
 
-  const filePath = path.resolve(...netlifyGraphConfig.graphQLOperationsSourceFilename || [])
+  const filePath = path.resolve(...(netlifyGraphConfig.graphQLOperationsSourceFilename || []))
   const newWatcher = await watchDebounced([filePath], {
     depth: 1,
     onAdd,
@@ -374,7 +378,6 @@ const handleCliSessionEvent = async ({
         }
 
         try {
-
           const graphJwt = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
 
           await OneGraphClient.executeCreateCLISessionEventMutation(
@@ -525,7 +528,13 @@ const persistNewOperationsDocForSession = async ({
     GraphQL.parse(operationsDoc)
   } catch (parseError) {
     // TODO: We should send a message to the web UI that the current GraphQL operations file can't be sync because it's invalid
-    warn(`Unable to sync Graph operations file. Please ensure that your GraphQL operations file is valid GraphQL. Found error: ${JSON.stringify(parseError, null, 2)}`)
+    warn(
+      `Unable to sync Graph operations file. Please ensure that your GraphQL operations file is valid GraphQL. Found error: ${JSON.stringify(
+        parseError,
+        null,
+        2,
+      )}`,
+    )
     return
   }
 
