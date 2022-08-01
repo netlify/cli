@@ -33,9 +33,15 @@ const graphPull = async (options, command) => {
 
   const { jwt } = await OneGraphCliClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
 
-  await refetchAndGenerateFromOneGraph({ logger: log, netlifyGraphConfig, jwt, state, siteId })
-
   const oneGraphSessionId = loadCLISession(state)
+  await refetchAndGenerateFromOneGraph({
+    logger: log,
+    netlifyGraphConfig,
+    jwt,
+    state,
+    siteId,
+    sessionId: oneGraphSessionId,
+  })
 
   if (!oneGraphSessionId) {
     warn(
