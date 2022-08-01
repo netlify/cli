@@ -385,7 +385,7 @@ const handleCliSessionEvent = async ({
               sessionId,
               payload: fileWrittenEvent,
             },
-            { accesToken: graphJwt.jwt },
+            { accessToken: graphJwt.jwt },
           )
         } catch {
           warn(`Unable to reach Netlify Graph servers in order to notify handler files written to disk`)
