@@ -31,9 +31,17 @@ const graphPull = async (options, command) => {
   const netlifyToken = await command.authenticate()
   const siteId = site.id
 
-  await refetchAndGenerateFromOneGraph({ logger: log, netlifyGraphConfig, netlifyToken, state, siteId })
+  const { jwt } = await OneGraphCliClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
 
   const oneGraphSessionId = loadCLISession(state)
+  await refetchAndGenerateFromOneGraph({
+    logger: log,
+    netlifyGraphConfig,
+    jwt,
+    state,
+    siteId,
+    sessionId: oneGraphSessionId,
+  })
 
   if (!oneGraphSessionId) {
     warn(
@@ -58,7 +66,7 @@ const graphPull = async (options, command) => {
 
   const next = await OneGraphCliClient.fetchCliSessionEvents({
     appId: siteId,
-    authToken: netlifyToken,
+    jwt,
     sessionId: oneGraphSessionId,
   })
 
@@ -83,7 +91,7 @@ const graphPull = async (options, command) => {
 
     await OneGraphCliClient.ackCLISessionEvents({
       appId: siteId,
-      authToken: netlifyToken,
+      jwt,
       sessionId: oneGraphSessionId,
       eventIds: ackIds,
     })

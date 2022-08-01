@@ -11,6 +11,7 @@ const { Response } = require('node-fetch')
 
 const { withDevServer } = require('./utils/dev-server')
 const got = require('./utils/got')
+const { withMockApi } = require('./utils/mock-api')
 const { pause } = require('./utils/pause')
 const { withSiteBuilder } = require('./utils/site-builder')
 
@@ -173,7 +174,7 @@ test('should enforce role based redirects with custom secret and role path', asy
 })
 
 test('Serves an Edge Function that terminates a response', async (t) => {
-  await withSiteBuilder('site-with-fully-qualified-redirect-rule', async (builder) => {
+  await withSiteBuilder('site-with-edge-function-that-terminates-response', async (builder) => {
     const publicDir = 'public'
     builder
       .withNetlifyToml({
@@ -213,7 +214,7 @@ test('Serves an Edge Function that terminates a response', async (t) => {
 })
 
 test('Serves an Edge Function with a rewrite', async (t) => {
-  await withSiteBuilder('site-with-fully-qualified-redirect-rule', async (builder) => {
+  await withSiteBuilder('site-with-edge-function-that-rewrites', async (builder) => {
     const publicDir = 'public'
     builder
       .withNetlifyToml({
@@ -252,8 +253,71 @@ test('Serves an Edge Function with a rewrite', async (t) => {
   })
 })
 
+test('Serves an Edge Function that includes context with site information', async (t) => {
+  await withSiteBuilder('site-with-edge-function-printing-site-info', async (builder) => {
+    const publicDir = 'public'
+    builder
+      .withNetlifyToml({
+        config: {
+          build: {
+            publish: publicDir,
+            edge_functions: 'netlify/edge-functions',
+          },
+          edge_functions: [
+            {
+              function: 'siteContext',
+              path: '/*',
+            },
+          ],
+        },
+      })
+      .withEdgeFunction({
+        handler: async (_, context) => new Response(JSON.stringify(context.site)),
+        name: 'siteContext',
+      })
+
+    await builder.buildAsync()
+
+    const siteInfo = {
+      account_slug: 'test-account',
+      id: 'site_id',
+      name: 'site-name',
+      url: 'site-url',
+    }
+
+    const routes = [
+      { path: 'sites/site_id', response: siteInfo },
+      { path: 'sites/site_id/service-instances', response: [] },
+      {
+        path: 'accounts',
+        response: [{ slug: siteInfo.account_slug }],
+      },
+    ]
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      await withDevServer(
+        {
+          cwd: builder.directory,
+          offline: false,
+          env: {
+            NETLIFY_API_URL: apiUrl,
+            NETLIFY_SITE_ID: 'site_id',
+            NETLIFY_AUTH_TOKEN: 'fake-token',
+          },
+        },
+        async (server) => {
+          const response = await got(`${server.url}`)
+
+          t.is(response.statusCode, 200)
+          t.is(response.body, '{"id":"site_id","name":"site-name","url":"site-url"}')
+        },
+      )
+    })
+  })
+})
+
 test('Serves an Edge Function that transforms the response', async (t) => {
-  await withSiteBuilder('site-with-fully-qualified-redirect-rule', async (builder) => {
+  await withSiteBuilder('site-with-edge-function-that-transforms-response', async (builder) => {
     const publicDir = 'public'
     builder
       .withNetlifyToml({

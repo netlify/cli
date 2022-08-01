@@ -1,5 +1,6 @@
 // @ts-check
 const gitRepoInfo = require('git-repo-info')
+const { OneGraphClient } = require('netlify-onegraph-internal')
 
 const { OneGraphCliClient, ensureCLISession, upsertMergeCLISessionMetadata } = require('../../lib/one-graph/cli-client')
 const {
@@ -11,7 +12,7 @@ const {
 const { NETLIFYDEVERR, chalk, error, log } = require('../../utils')
 const { openBrowser } = require('../../utils/open-browser')
 
-const { createPersistedQuery, ensureAppForSite } = OneGraphCliClient
+const { ensureAppForSite, executeCreatePersistedQueryMutation } = OneGraphCliClient
 
 /**
  * Creates the `netlify graph:edit` command
@@ -50,18 +51,33 @@ const graphEdit = async (options, command) => {
   })
 
   const { branch } = gitRepoInfo()
-  const persistedDoc = await createPersistedQuery(netlifyToken, {
-    appId: siteId,
-    description: 'Temporary snapshot of local queries',
-    document: graphqlDocument,
-    tags: ['netlify-cli', `session:${oneGraphSessionId}`, `git-branch:${branch}`],
-  })
+  const persistedResult = await executeCreatePersistedQueryMutation(
+    {
+      nfToken: netlifyToken,
+      appId: siteId,
+      description: 'Temporary snapshot of local queries',
+      query: graphqlDocument,
+      tags: ['netlify-cli', `session:${oneGraphSessionId}`, `git-branch:${branch}`],
+    },
+    {
+      accessToken: netlifyToken,
+
+      siteId,
+    },
+  )
+
+  const persistedDoc =
+    persistedResult.data &&
+    persistedResult.data.oneGraph &&
+    persistedResult.data.oneGraph.createPersistedQuery &&
+    persistedResult.data.oneGraph.createPersistedQuery.persistedQuery
 
   const newMetadata = { docId: persistedDoc.id }
 
+  const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
   await upsertMergeCLISessionMetadata({
     netlifyGraphConfig,
-    netlifyToken,
+    jwt,
     siteId,
     siteRoot: site.root,
     oneGraphSessionId,

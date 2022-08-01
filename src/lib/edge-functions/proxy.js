@@ -1,11 +1,12 @@
 // @ts-check
+const { Buffer } = require('buffer')
 const { relative } = require('path')
 const { cwd, env } = require('process')
 
 const getAvailablePort = require('get-port')
 const { v4: generateUUID } = require('uuid')
 
-const { NETLIFYDEVERR, NETLIFYDEVWARN, chalk, error, log } = require('../../utils/command-helpers')
+const { NETLIFYDEVERR, NETLIFYDEVWARN, chalk, error: printError, log } = require('../../utils/command-helpers')
 const { getGeoLocation } = require('../geo-location')
 const { getPathInProject } = require('../settings')
 const { startSpinner, stopSpinner } = require('../spinner')
@@ -45,15 +46,24 @@ const handleProxyRequest = (req, proxyReq) => {
   })
 }
 
+const createSiteInfoHeader = (siteInfo = {}) => {
+  const { id, name, url } = siteInfo
+  const site = { id, name, url }
+  const siteString = JSON.stringify(site)
+  return Buffer.from(siteString).toString('base64')
+}
+
 const initializeProxy = async ({
   config,
   configPath,
+  geoCountry,
   geolocationMode,
   getUpdatedConfig,
   inspectSettings,
   offline,
   projectDir,
   settings,
+  siteInfo,
   state,
 }) => {
   const { functions: internalFunctions, importMap, path: internalFunctionsPath } = await getInternalFunctions()
@@ -77,27 +87,22 @@ const initializeProxy = async ({
     projectDir,
   })
   const hasEdgeFunctions = userFunctionsPath !== undefined || internalFunctions.length !== 0
-  let hasServerError = false
 
   return async (req) => {
-    if (req.headers[headers.Passthrough] !== undefined || !hasEdgeFunctions || hasServerError) {
+    if (req.headers[headers.Passthrough] !== undefined || !hasEdgeFunctions) {
       return
     }
 
-    let promiseResult
+    const [geoLocation, registry] = await Promise.all([
+      getGeoLocation({ mode: geolocationMode, geoCountry, offline, state }),
+      server,
+    ])
 
-    try {
-      promiseResult = await Promise.all([getGeoLocation({ mode: geolocationMode, offline, state }), server])
-    } catch (error_) {
-      error(error_.message, { exit: false })
-      hasServerError = true
-      return
-    }
+    if (!registry) return
 
-    const [geoLocation, { registry }] = promiseResult
-
-    // Setting header with geolocation.
+    // Setting header with geolocation and site info.
     req.headers[headers.Geo] = JSON.stringify(geoLocation)
+    req.headers[headers.Site] = createSiteInfoHeader(siteInfo)
 
     await registry.initialize()
 
@@ -152,34 +157,39 @@ const prepareServer = async ({
   port,
   projectDir,
 }) => {
-  const bundler = await import('@netlify/edge-bundler')
-  const distImportMapPath = getPathInProject([DIST_IMPORT_MAP_PATH])
-  const runIsolate = await bundler.serve({
-    ...getDownloadUpdateFunctions(),
-    certificatePath,
-    debug: env.NETLIFY_DENO_DEBUG === 'true',
-    distImportMapPath,
-    formatExportTypeError: (name) =>
-      `${NETLIFYDEVERR} ${chalk.red('Failed')} to load Edge Function ${chalk.yellow(
-        name,
-      )}. The file does not seem to have a function as the default export.`,
-    formatImportError: (name) => `${NETLIFYDEVERR} ${chalk.red('Failed')} to run Edge Function ${chalk.yellow(name)}:`,
-    importMaps,
-    inspectSettings,
-    port,
-  })
-  const registry = new EdgeFunctionsRegistry({
-    bundler,
-    config,
-    configPath,
-    directories,
-    getUpdatedConfig,
-    internalFunctions,
-    projectDir,
-    runIsolate,
-  })
+  try {
+    const bundler = await import('@netlify/edge-bundler')
+    const distImportMapPath = getPathInProject([DIST_IMPORT_MAP_PATH])
+    const runIsolate = await bundler.serve({
+      ...getDownloadUpdateFunctions(),
+      certificatePath,
+      debug: env.NETLIFY_DENO_DEBUG === 'true',
+      distImportMapPath,
+      formatExportTypeError: (name) =>
+        `${NETLIFYDEVERR} ${chalk.red('Failed')} to load Edge Function ${chalk.yellow(
+          name,
+        )}. The file does not seem to have a function as the default export.`,
+      formatImportError: (name) =>
+        `${NETLIFYDEVERR} ${chalk.red('Failed')} to run Edge Function ${chalk.yellow(name)}:`,
+      importMaps,
+      inspectSettings,
+      port,
+    })
+    const registry = new EdgeFunctionsRegistry({
+      bundler,
+      config,
+      configPath,
+      directories,
+      getUpdatedConfig,
+      internalFunctions,
+      projectDir,
+      runIsolate,
+    })
 
-  return { registry, runIsolate }
+    return registry
+  } catch (error) {
+    printError(error.message, { exit: false })
+  }
 }
 
-module.exports = { handleProxyRequest, initializeProxy, isEdgeFunctionsRequest }
+module.exports = { handleProxyRequest, initializeProxy, isEdgeFunctionsRequest, createSiteInfoHeader }

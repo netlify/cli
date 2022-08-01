@@ -5,7 +5,7 @@ description: All Netlify CLI commands
 
 # Netlify CLI Command List
 
-Welcome to the Netlify CLI! This site provides online access to all help strings in the Netlify CLI. For a more in-depth guide, please see our [Getting Started](https://www.netlify.com/docs/cli/) guide on our main docs site.
+Welcome to the Netlify CLI! This site provides online access to all help strings in the Netlify CLI. For a more in-depth guide, please see our [Getting Started](https://docs.netlify.com/cli/get-started/) guide on our main docs site.
 
 If you have questions, ideas, or would like to contribute, check out the [repository on GitHub](https://github.com/netlify/cli/).
 
@@ -88,10 +88,10 @@ Local dev server
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
+| [`env:clone`](/docs/commands/env.md#envclone) | Clone environment variables from one site to another  |
 | [`env:get`](/docs/commands/env.md#envget) | Get resolved value of specified environment variable (includes netlify.toml)  |
 | [`env:import`](/docs/commands/env.md#envimport) | Import and set environment variables from .env file  |
 | [`env:list`](/docs/commands/env.md#envlist) | Lists resolved environment variables for site (includes netlify.toml)  |
-| [`env:migrate`](/docs/commands/env.md#envmigrate) | Migrate environment variables from one site to another  |
 | [`env:set`](/docs/commands/env.md#envset) | Set value of environment variable  |
 | [`env:unset`](/docs/commands/env.md#envunset) | Unset an environment variable which removes it from the UI  |
 

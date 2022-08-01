@@ -1,6 +1,6 @@
 // @ts-check
 const { stat } = require('fs').promises
-const path = require('path')
+const { join } = require('path')
 
 const { getPathInProject } = require('../settings')
 
@@ -8,9 +8,10 @@ const { EDGE_FUNCTIONS_FOLDER, PUBLIC_URL_PATH } = require('./consts')
 
 const distPath = getPathInProject([EDGE_FUNCTIONS_FOLDER])
 
-const deployFileNormalizer = (file) => {
-  const isEdgeFunction = file.root === distPath
-  const normalizedPath = isEdgeFunction ? path.join(PUBLIC_URL_PATH, file.normalizedPath) : file.normalizedPath
+const deployFileNormalizer = (rootDir, file) => {
+  const absoluteDistPath = join(rootDir, distPath)
+  const isEdgeFunction = file.root === absoluteDistPath
+  const normalizedPath = isEdgeFunction ? `${PUBLIC_URL_PATH}/${file.normalizedPath}` : file.normalizedPath
 
   return {
     ...file,
@@ -18,21 +19,22 @@ const deployFileNormalizer = (file) => {
   }
 }
 
-const getDistPathIfExists = async () => {
+const getDistPathIfExists = async ({ rootDir }) => {
   try {
-    const stats = await stat(distPath)
+    const absoluteDistPath = join(rootDir, distPath)
+    const stats = await stat(absoluteDistPath)
 
     if (!stats.isDirectory()) {
-      throw new Error(`Path ${distPath} must be a directory.`)
+      throw new Error(`Path ${absoluteDistPath} must be a directory.`)
     }
 
-    return distPath
+    return absoluteDistPath
   } catch {
     // no-op
   }
 }
 
-const isEdgeFunctionFile = (filePath) => filePath.startsWith(`${PUBLIC_URL_PATH}${path.sep}`)
+const isEdgeFunctionFile = (filePath) => filePath.startsWith(`${PUBLIC_URL_PATH}/`)
 
 module.exports = {
   deployFileNormalizer,

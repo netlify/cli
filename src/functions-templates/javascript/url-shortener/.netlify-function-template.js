@@ -3,6 +3,7 @@ const chalk = require('chalk')
 module.exports = {
   name: 'url-shortener',
   description: 'URL Shortener: simple URL shortener with Netlify Forms!',
+  functionType: 'serverless',
   async onComplete() {
     console.log(`${chalk.yellow('url-shortener')} function created from template!`)
     if (!process.env.ROUTES_FORM_ID || !process.env.API_AUTH) {

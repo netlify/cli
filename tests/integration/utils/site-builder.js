@@ -66,8 +66,8 @@ const createSiteBuilder = ({ siteName }) => {
       })
       return builder
     },
-    withEdgeFunction: ({ handler, name = 'function' }) => {
-      const dest = path.join(directory, 'netlify/edge-functions', `${name}.js`)
+    withEdgeFunction: ({ handler, name = 'function', pathPrefix = '' }) => {
+      const dest = path.join(directory, pathPrefix, 'netlify/edge-functions', `${name}.js`)
       tasks.push(async () => {
         const content = `export default ${handler.toString()}`
         await ensureDir(path.dirname(dest))

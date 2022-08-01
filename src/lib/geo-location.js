@@ -3,7 +3,6 @@ const fetch = require('node-fetch')
 
 const API_URL = 'https://netlifind.netlify.app'
 const STATE_GEO_PROPERTY = 'geolocation'
-
 // 24 hours
 const CACHE_TTL = 8.64e7
 
@@ -17,12 +16,11 @@ const REQUEST_TIMEOUT = 1e4
  * @property {object} country
  * @property {string} country.code
  * @property {string} country.name
- * @property {object} country
- * @property {string} country.code
- * @property {string} country.name
+ * @property {object} subdivision
+ * @property {string} subdivision.code
+ * @property {string} subdivision.name
  */
 
-// The default location to be used if we're unable to talk to the API.
 const mockLocation = {
   city: 'San Francisco',
   country: { code: 'US', name: 'United States' },
@@ -34,18 +32,25 @@ const mockLocation = {
  * location, depending on the mode selected.
  *
  * @param {object} params
- * @param {string} params.geolocationMode
  * @param {"cache"|"update"|"mock"} params.mode
+ * @param {string} params.geoCountry
  * @param {boolean} params.offline
  * @param {import('../utils/state-config').StateConfig} params.state
  * @returns {Promise<GeoLocation>}
  */
-const getGeoLocation = async ({ mode, offline, state }) => {
+const getGeoLocation = async ({ geoCountry, mode, offline, state }) => {
   const cacheObject = state.get(STATE_GEO_PROPERTY)
+
+  // If `--country` was used, we also set `--mode=mock`.
+  if (geoCountry) {
+    mode = 'mock'
+  }
 
   // If we have cached geolocation data and the `--geo` option is set to
   // `cache`, let's try to use it.
-  if (cacheObject !== undefined && mode === 'cache') {
+  // Or, if the country we're trying to mock is the same one as we have in the
+  // cache, let's use the cache instead of the mock.
+  if (cacheObject !== undefined && (mode === 'cache' || cacheObject.data.country.code === geoCountry)) {
     const age = Date.now() - cacheObject.timestamp
 
     // Let's use the cached data if it's not older than the TTL. Also, if the
@@ -56,10 +61,18 @@ const getGeoLocation = async ({ mode, offline, state }) => {
     }
   }
 
-  // If the `--geo` option is set to `mock`, we use the mock location. Also,
-  // if the `--offline` option was used, we can't talk to the API, so let's
-  // also use the mock location.
-  if (mode === 'mock' || offline) {
+  // If the `--geo` option is set to `mock`, we use the default mock location.
+  // If the `--offline` option was used, we can't talk to the API, so let's
+  // also use the mock location.  Otherwise, use the country code passed in by
+  // the user.
+  if (mode === 'mock' || offline || geoCountry) {
+    if (geoCountry) {
+      return {
+        city: 'Mock City',
+        country: { code: geoCountry, name: 'Mock Country' },
+        subdivision: { code: 'SD', name: 'Mock Subdivision' },
+      }
+    }
     return mockLocation
   }
 

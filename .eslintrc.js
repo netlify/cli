@@ -50,6 +50,13 @@ module.exports = {
         'import/no-unresolved': 0,
         'n/no-missing-require': 0,
         'n/no-unsupported-features/es-syntax': 0,
+        'import/no-anonymous-default-export': 0,
+        'no-undef': 0,
+        'no-unused-vars': 0,
+        'arrow-body-style': 0,
+      },
+      parserOptions: {
+        sourceType: 'module',
       },
     },
     {

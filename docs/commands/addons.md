@@ -6,7 +6,7 @@ title: Netlify CLI addons command
 
 The addons command will manage Netlify addons.
 
-For more information on add-ons see our [Netlify partner add-ons docs](https://www.netlify.com/docs/partner-add-ons/)
+For more information on add-ons see our [Netlify partner add-ons docs](https://docs.netlify.com/integrations/partner-add-ons/get-started/)
 
 ## About
 
