@@ -298,7 +298,7 @@ netlify functions:invoke myfunction --querystring "foo=1"
 netlify functions:invoke myfunction --payload "./pathTo.json"
 ```
 
-There are special cases for [event triggered functions](https://docs.netlify.com/functions/trigger-on-events) (eg `identity-signup`) which will also give you mock data for testing. This makes manual local testing of event triggered functions possible, which drastically improves the development experience.
+There are special cases for [event triggered functions](https://docs.netlify.com/functions/trigger-on-events/) (eg `identity-signup`) which will also give you mock data for testing. This makes manual local testing of event triggered functions possible, which drastically improves the development experience.
 
 This is a new feature; ideas and feedback and issues and PR's welcome!
 
