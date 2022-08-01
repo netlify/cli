@@ -1,10 +1,12 @@
 // @ts-check
 const { Buffer } = require('buffer')
 
+const { OneGraphClient } = require('netlify-onegraph-internal')
 const { v4: uuidv4 } = require('uuid')
 
 const { OneGraphCliClient, ensureCLISession } = require('../../lib/one-graph/cli-client')
-const { chalk, error, log } = require('../../utils')
+const { NETLIFYDEVERR, chalk, error, exit, getToken, log } = require('../../utils')
+const { msg } = require('../login/login')
 
 const { ensureAppForSite, executeCreateApiTokenMutation } = OneGraphCliClient
 
@@ -20,15 +22,44 @@ const graphInit = async (options, command) => {
 
   if (!siteId) {
     error(
-      `No siteId defined, unable to start Netlify Graph. To enable, run ${chalk.yellow(
+      `${NETLIFYDEVERR} Warning: no siteId defined, unable to start Netlify Graph. To enable, run ${chalk.yellow(
         'netlify init',
       )} or ${chalk.yellow('netlify link')}`,
     )
   }
 
-  const netlifyToken = await command.authenticate()
-  // @ts-ignore: we need better types for our api object
-  const siteData = await api.getSite({ siteId })
+  let [netlifyToken, loginLocation] = await getToken()
+  if (!netlifyToken) {
+    netlifyToken = await command.authenticate()
+  }
+
+  let siteData = null
+  try {
+    // @ts-ignore: we need better types for our api object
+    siteData = await api.getSite({ siteId })
+  } catch (error_) {
+    if (netlifyToken && error_.status === 401) {
+      log(`Already logged in ${msg(loginLocation)}`)
+      log()
+      log(`Run ${chalk.cyanBright('netlify status')} for account details`)
+      log()
+      log(`or run ${chalk.cyanBright('netlify switch')} to switch accounts`)
+      log()
+      log(`To see all available commands run: ${chalk.cyanBright('netlify help')}`)
+      log()
+      return exit()
+    }
+    throw error_
+  }
+
+  if (netlifyToken == null) {
+    error(
+      `${NETLIFYDEVERR} Error: Unable to start Netlify Graph without a login. To enable, run ${chalk.yellow(
+        'netlify login',
+      )} first`,
+    )
+    return exit()
+  }
 
   await ensureAppForSite(netlifyToken, siteId)
 
@@ -58,15 +89,16 @@ const graphInit = async (options, command) => {
 
   if (!env.NETLIFY_GRAPH_PERSIST_QUERY_TOKEN) {
     const variables = {
-      nfToken: netlifyToken,
       input: {
         appId: siteId,
         scopes: ['MODIFY_SCHEMA', 'PERSIST_QUERY'],
       },
     }
 
+    const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
     const result = await executeCreateApiTokenMutation(variables, {
       siteId,
+      accessToken: jwt,
     })
 
     const token =
