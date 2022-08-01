@@ -24,13 +24,6 @@ const {
 
 const { parse } = GraphQL
 const { defaultExampleOperationsDoc, extractFunctionsFromOperationDoc } = NetlifyGraph
-const {
-  ensureAppForSite,
-  executeCreatePersistedQueryMutation,
-  executeMarkCliSessionActiveHeartbeat,
-  executeMarkCliSessionInactive,
-  updateCLISessionMetadata,
-} = OneGraphClient
 
 const internalConsole = {
   log,
@@ -71,18 +64,25 @@ const monitorCLISessionEvents = (input) => {
   let nextMarkActiveHeartbeat = defaultHeartbeatFrequency
 
   const markActiveHelper = async () => {
-    const graphJwt = await OneGraphClient.getGraphJwtForSite({ siteId: appId, nfToken: netlifyToken })
-    const fullSession = await OneGraphClient.fetchCliSession({ jwt: graphJwt.jwt, appId, sessionId: currentSessionId })
-    // @ts-ignore
-    const heartbeatIntervalms = fullSession.session.cliHeartbeatIntervalMs || defaultHeartbeatFrequency
-    nextMarkActiveHeartbeat = heartbeatIntervalms
-    const markCLISessionActiveResult = await executeMarkCliSessionActiveHeartbeat(
-      graphJwt.jwt,
-      site.id,
-      currentSessionId,
-    )
-    if (markCLISessionActiveResult.errors && markCLISessionActiveResult.errors.length !== 0) {
-      warn(`Failed to mark CLI session active: ${markCLISessionActiveResult.errors.join(', ')}`)
+    try {
+      const graphJwt = await OneGraphClient.getGraphJwtForSite({ siteId: appId, nfToken: netlifyToken })
+      const fullSession = await OneGraphClient.fetchCliSession({
+        jwt: graphJwt.jwt,
+        appId,
+        sessionId: currentSessionId,
+      })
+      const heartbeatIntervalms = fullSession.session.cliHeartbeatIntervalMs || defaultHeartbeatFrequency
+      nextMarkActiveHeartbeat = heartbeatIntervalms
+      const markCLISessionActiveResult = await OneGraphClient.executeMarkCliSessionActiveHeartbeat(
+        graphJwt.jwt,
+        site.id,
+        currentSessionId,
+      )
+      if (markCLISessionActiveResult.errors && markCLISessionActiveResult.errors.length !== 0) {
+        warn(`Failed to mark CLI session active: ${markCLISessionActiveResult.errors.join(', ')}`)
+      }
+    } catch {
+      warn(`Unable to reach Netlify Graph servers in order to mark CLI session active`)
     }
     setTimeout(markActiveHelper, nextMarkActiveHeartbeat)
   }
@@ -92,23 +92,27 @@ const monitorCLISessionEvents = (input) => {
   const enabledServiceWatcher = async (jwt, { appId: siteId, sessionId }) => {
     const enabledServices = state.get('oneGraphEnabledServices') || ['onegraph']
 
-    const enabledServicesInfo = await OneGraphClient.fetchEnabledServicesForSession(jwt, siteId, sessionId)
-    if (!enabledServicesInfo) {
-      warn('Unable to fetch enabled services for site for code generation')
-      return
-    }
-    const newEnabledServices = enabledServicesInfo.map((service) => service.graphQLField)
-    const enabledServicesCompareKey = enabledServices.sort().join(',')
-    const newEnabledServicesCompareKey = newEnabledServices.sort().join(',')
+    try {
+      const enabledServicesInfo = await OneGraphClient.fetchEnabledServicesForSession(jwt, siteId, sessionId)
+      if (!enabledServicesInfo) {
+        warn('Unable to fetch enabled services for site for code generation')
+        return
+      }
+      const newEnabledServices = enabledServicesInfo.map((service) => service.graphQLField)
+      const enabledServicesCompareKey = enabledServices.sort().join(',')
+      const newEnabledServicesCompareKey = newEnabledServices.sort().join(',')
 
-    if (enabledServicesCompareKey !== newEnabledServicesCompareKey) {
-      log(
-        `${chalk.magenta(
-          'Reloading',
-        )} Netlify Graph schema..., ${enabledServicesCompareKey} => ${newEnabledServicesCompareKey}`,
-      )
-      await refetchAndGenerateFromOneGraph({ netlifyGraphConfig, state, jwt, siteId, sessionId })
-      log(`${chalk.green('Reloaded')} Netlify Graph schema and regenerated functions`)
+      if (enabledServicesCompareKey !== newEnabledServicesCompareKey) {
+        log(
+          `${chalk.magenta(
+            'Reloading',
+          )} Netlify Graph schema..., ${enabledServicesCompareKey} => ${newEnabledServicesCompareKey}`,
+        )
+        await refetchAndGenerateFromOneGraph({ netlifyGraphConfig, state, jwt, siteId, sessionId })
+        log(`${chalk.green('Reloaded')} Netlify Graph schema and regenerated functions`)
+      }
+    } catch {
+      warn(`Unable to reach Netlify Graph servers in order to fetch enabled Graph services`)
     }
   }
 
@@ -119,39 +123,43 @@ const monitorCLISessionEvents = (input) => {
   let handle
 
   const helper = async () => {
-    if (shouldClose) {
-      clearTimeout(handle)
-      onClose && onClose()
-    }
+    try {
+      if (shouldClose) {
+        clearTimeout(handle)
+        onClose && onClose()
+      }
 
-    const graphJwt = await OneGraphClient.getGraphJwtForSite({ siteId: appId, nfToken: netlifyToken })
-    const next = await OneGraphClient.fetchCliSessionEvents({ appId, jwt: graphJwt.jwt, sessionId: currentSessionId })
+      const graphJwt = await OneGraphClient.getGraphJwtForSite({ siteId: appId, nfToken: netlifyToken })
+      const next = await OneGraphClient.fetchCliSessionEvents({ appId, jwt: graphJwt.jwt, sessionId: currentSessionId })
 
-    if (next && next.errors) {
-      next.errors.forEach((fetchEventError) => {
-        onError(fetchEventError)
-      })
-    }
-
-    const events = (next && next.events) || []
-
-    if (events.length !== 0) {
-      let ackIds = []
-      try {
-        ackIds = await onEvents(events)
-      } catch (eventHandlerError) {
-        warn(`Error handling event: ${eventHandlerError}`)
-      } finally {
-        await OneGraphClient.ackCLISessionEvents({
-          appId,
-          jwt: graphJwt.jwt,
-          sessionId: currentSessionId,
-          eventIds: ackIds,
+      if (next && next.errors) {
+        next.errors.forEach((fetchEventError) => {
+          onError(fetchEventError)
         })
       }
-    }
 
-    await enabledServiceWatcher(graphJwt.jwt, { appId, sessionId: currentSessionId })
+      const events = (next && next.events) || []
+
+      if (events.length !== 0) {
+        let ackIds = []
+        try {
+          ackIds = await onEvents(events)
+        } catch (eventHandlerError) {
+          warn(`Error handling event: ${eventHandlerError}`)
+        } finally {
+          await OneGraphClient.ackCLISessionEvents({
+            appId,
+            jwt: graphJwt.jwt,
+            sessionId: currentSessionId,
+            eventIds: ackIds,
+          })
+        }
+      }
+
+      await enabledServiceWatcher(graphJwt.jwt, { appId, sessionId: currentSessionId })
+    } catch {
+      warn(`Unable to reach Netlify Graph servers in order to sync Graph session`)
+    }
 
     handle = setTimeout(helper, frequency)
   }
@@ -172,7 +180,11 @@ const monitorCLISessionEvents = (input) => {
  * @returns {Promise<any>}
  */
 const monitorOperationFile = async ({ netlifyGraphConfig, onAdd, onChange, onUnlink }) => {
-  const filePath = path.resolve(...netlifyGraphConfig.graphQLOperationsSourceFilename)
+  if (!netlifyGraphConfig.graphQLOperationsSourceFilename) {
+    error('Please configure `graphQLOperationsSourceFilename` in your `netlify.toml` [graph] section')
+  }
+
+  const filePath = path.resolve(...(netlifyGraphConfig.graphQLOperationsSourceFilename || []))
   const newWatcher = await watchDebounced([filePath], {
     depth: 1,
     onAdd,
@@ -210,6 +222,10 @@ const refetchAndGenerateFromOneGraph = async (input) => {
     .sort((aString, bString) => aString.localeCompare(bString))
 
   const schema = await OneGraphClient.fetchOneGraphSchemaForServices(siteId, enabledServices)
+
+  if (!schema) {
+    error('Unable to fetch schema from Netlify Graph')
+  }
 
   let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
   if (currentOperationsDoc.trim().length === 0) {
@@ -280,29 +296,33 @@ const quickHash = (input) => {
  * @returns
  */
 const updateGraphQLOperationsFileFromPersistedDoc = async (input) => {
-  const { docId, logger, netlifyGraphConfig, netlifyToken, schema, siteId } = input
-  const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
-  const persistedDoc = await OneGraphClient.fetchPersistedQuery(jwt, siteId, docId)
-  if (!persistedDoc) {
-    warn(`No persisted doc found for: ${docId}`)
-    return
+  try {
+    const { docId, logger, netlifyGraphConfig, netlifyToken, schema, siteId } = input
+    const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
+    const persistedDoc = await OneGraphClient.fetchPersistedQuery(jwt, siteId, docId)
+    if (!persistedDoc) {
+      warn(`No persisted doc found for: ${docId}`)
+      return
+    }
+
+    // Sorts the operations stably, prepends the @netlify directive, etc.
+    const operationsDocString = normalizeOperationsDoc(persistedDoc.query)
+
+    writeGraphQLOperationsSourceFile({ logger, netlifyGraphConfig, operationsDocString })
+    regenerateFunctionsFileFromOperationsFile({ netlifyGraphConfig, schema })
+
+    const hash = quickHash(operationsDocString)
+
+    const relevantHasLength = 10
+
+    if (witnessedIncomingDocumentHashes.length > relevantHasLength) {
+      witnessedIncomingDocumentHashes.shift()
+    }
+
+    witnessedIncomingDocumentHashes.push(hash)
+  } catch {
+    warn(`Unable to reach Netlify Graph servers in order to update Graph operations file`)
   }
-
-  // Sorts the operations stably, prepends the @netlify directive, etc.
-  const operationsDocString = normalizeOperationsDoc(persistedDoc.query)
-
-  writeGraphQLOperationsSourceFile({ logger, netlifyGraphConfig, operationsDocString })
-  regenerateFunctionsFileFromOperationsFile({ netlifyGraphConfig, schema })
-
-  const hash = quickHash(operationsDocString)
-
-  const relevantHasLength = 10
-
-  if (witnessedIncomingDocumentHashes.length > relevantHasLength) {
-    witnessedIncomingDocumentHashes.shift()
-  }
-
-  witnessedIncomingDocumentHashes.push(hash)
 }
 
 const handleCliSessionEvent = async ({
@@ -357,15 +377,19 @@ const handleCliSessionEvent = async ({
           },
         }
 
-        const graphJwt = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
+        try {
+          const graphJwt = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
 
-        await OneGraphClient.executeCreateCLISessionEventMutation(
-          {
-            sessionId,
-            payload: fileWrittenEvent,
-          },
-          { accesToken: graphJwt.jwt },
-        )
+          await OneGraphClient.executeCreateCLISessionEventMutation(
+            {
+              sessionId,
+              payload: fileWrittenEvent,
+            },
+            { accessToken: graphJwt.jwt },
+          )
+        } catch {
+          warn(`Unable to reach Netlify Graph servers in order to notify handler files written to disk`)
+        }
       }
       break
     }
@@ -500,9 +524,23 @@ const persistNewOperationsDocForSession = async ({
   siteId,
   siteRoot,
 }) => {
+  try {
+    GraphQL.parse(operationsDoc)
+  } catch (parseError) {
+    // TODO: We should send a message to the web UI that the current GraphQL operations file can't be sync because it's invalid
+    warn(
+      `Unable to sync Graph operations file. Please ensure that your GraphQL operations file is valid GraphQL. Found error: ${JSON.stringify(
+        parseError,
+        null,
+        2,
+      )}`,
+    )
+    return
+  }
+
   const { branch } = gitRepoInfo()
   const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
-  const persistedResult = await executeCreatePersistedQueryMutation(
+  const persistedResult = await OneGraphClient.executeCreatePersistedQueryMutation(
     {
       appId: siteId,
       description: 'Temporary snapshot of local queries',
@@ -663,7 +701,7 @@ const startOneGraphCLISession = async (input) => {
  */
 const markCliSessionInactive = async ({ netlifyToken, sessionId, siteId }) => {
   const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
-  const result = await executeMarkCliSessionInactive(jwt, siteId, sessionId)
+  const result = await OneGraphClient.executeMarkCliSessionInactive(jwt, siteId, sessionId)
   if (result.errors) {
     warn(`Unable to mark CLI session ${sessionId} inactive: ${JSON.stringify(result.errors, null, 2)}`)
   }
@@ -733,7 +771,7 @@ const ensureCLISession = async (input) => {
   }
 
   state.set('oneGraphSessionId', oneGraphSessionId)
-  const { errors: markCLISessionActiveErrors } = await executeMarkCliSessionActiveHeartbeat(
+  const { errors: markCLISessionActiveErrors } = await OneGraphClient.executeMarkCliSessionActiveHeartbeat(
     jwt,
     site.id,
     oneGraphSessionId,
@@ -751,8 +789,8 @@ const OneGraphCliClient = {
   executeCreatePersistedQueryMutation: OneGraphClient.executeCreatePersistedQueryMutation,
   executeCreateApiTokenMutation: OneGraphClient.executeCreateApiTokenMutation,
   fetchCliSessionEvents: OneGraphClient.fetchCliSessionEvents,
-  ensureAppForSite,
-  updateCLISessionMetadata,
+  ensureAppForSite: OneGraphClient.ensureAppForSite,
+  updateCLISessionMetadata: OneGraphClient.updateCLISessionMetadata,
   getGraphJwtForSite: OneGraphClient.getGraphJwtForSite,
 }
 

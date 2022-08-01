@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "10.12.1",
+  "version": "10.13.0",
   "author": "Netlify Inc.",
   "contributors": [
     "Abraham Schilling <AbrahamSchilling@gmail.com> (https://gitlab.com/n4bb12)",
@@ -226,7 +226,7 @@
     "@netlify/framework-info": "^9.1.1",
     "@netlify/local-functions-proxy": "^1.1.1",
     "@netlify/plugins-list": "^6.35.0",
-    "@netlify/zip-it-and-ship-it": "^5.13.2",
+    "@netlify/zip-it-and-ship-it": "^5.13.3",
     "@octokit/rest": "^18.0.0",
     "@sindresorhus/slugify": "^1.1.0",
     "ansi-escapes": "^5.0.0",
@@ -291,7 +291,7 @@
     "multiparty": "^4.2.1",
     "netlify": "^12.0.0",
     "netlify-headers-parser": "^6.0.2",
-    "netlify-onegraph-internal": "0.3.9",
+    "netlify-onegraph-internal": "0.4.0",
     "netlify-redirect-parser": "^13.0.5",
     "netlify-redirector": "^0.2.1",
     "node-fetch": "^2.6.0",
