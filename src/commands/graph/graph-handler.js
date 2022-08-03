@@ -1,19 +1,14 @@
+/* eslint-disable eslint-comments/disable-enable-pair */
+/* eslint-disable no-unused-vars */
 // @ts-check
-const inquirer = require('inquirer')
-const { GraphQL } = require('netlify-onegraph-internal')
-
 const {
+  autocompleteOperationNames,
   buildSchema,
-  defaultExampleOperationsDoc,
-  extractFunctionsFromOperationDoc,
   generateHandlerByOperationName,
   getNetlifyGraphConfig,
-  readGraphQLOperationsSourceFile,
   readGraphQLSchemaFile,
 } = require('../../lib/one-graph/cli-netlify-graph')
 const { error, log } = require('../../utils')
-
-const { parse } = GraphQL
 
 /**
  * Creates the `netlify graph:handler` command
@@ -35,69 +30,21 @@ const graphHandler = async (userOperationName, options, command) => {
     error(`Error parsing schema: ${buildSchemaError}`)
   }
 
-  if (!schema) {
-    error(`Failed to parse Netlify GraphQL schema`)
-  }
-
   let operationName = userOperationName
   if (!operationName) {
-    try {
-      let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
-      if (currentOperationsDoc.trim().length === 0) {
-        currentOperationsDoc = defaultExampleOperationsDoc
-      }
-
-      const parsedDoc = parse(currentOperationsDoc)
-      const { functions } = extractFunctionsFromOperationDoc(parsedDoc)
-
-      const sorted = Object.values(functions).sort((aItem, bItem) =>
-        aItem.operationName.localeCompare(bItem.operationName),
-      )
-
-      const perPage = 50
-
-      const allOperationChoices = sorted.map((operation) => ({
-        name: `${operation.operationName} (${operation.kind})`,
-        value: operation.operationName,
-      }))
-
-      const filterOperationNames = (operationChoices, input) =>
-        operationChoices.filter((operation) => operation.value.toLowerCase().match(input.toLowerCase()))
-
-      // eslint-disable-next-line n/global-require
-      const inquirerAutocompletePrompt = require('inquirer-autocomplete-prompt')
-      /** multiple matching detectors, make the user choose */
-      inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
-
-      const { selectedOperationName } = await inquirer.prompt({
-        name: 'selectedOperationName',
-        message: `For which operation would you like to generate a handler?`,
-        type: 'autocomplete',
-        pageSize: perPage,
-        source(_, input) {
-          if (!input || input === '') {
-            return allOperationChoices
-          }
-
-          const filteredChoices = filterOperationNames(allOperationChoices, input)
-          // only show filtered results
-          return filteredChoices
-        },
-      })
-
-      if (selectedOperationName) {
-        operationName = selectedOperationName
-      }
-    } catch (parseError) {
-      parseError(`Error parsing operations library: ${parseError}`)
-    }
+    operationName = await autocompleteOperationNames({ netlifyGraphConfig })
   }
 
   if (!operationName) {
     error(`No operation name provided`)
   }
 
-  generateHandlerByOperationName({ logger: log, netlifyGraphConfig, schema, operationName, handlerOptions: {} })
+  if (schema) {
+    // TODO
+    // generateHandlerByOperationName({ logger: log, netlifyGraphConfig, schema, ope/rationName, handlerOptions: {} })
+  } else {
+    error(`Failed to parse Netlify GraphQL schema`)
+  }
 }
 
 /**

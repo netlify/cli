@@ -1,4 +1,6 @@
 // @ts-check
+const { GraphQL } = require('netlify-onegraph-internal')
+
 const {
   buildSchema,
   defaultExampleOperationsDoc,
@@ -20,7 +22,17 @@ const { error, log } = require('../../utils')
 const graphLibrary = async (options, command) => {
   const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options })
 
+  const schemaId = 'TODO_SCHEMA'
+
   const schemaString = readGraphQLSchemaFile(netlifyGraphConfig)
+
+  let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
+  if (currentOperationsDoc.trim().length === 0) {
+    currentOperationsDoc = defaultExampleOperationsDoc
+  }
+
+  const parsedDoc = parse(currentOperationsDoc)
+  const { fragments, functions } = extractFunctionsFromOperationDoc(GraphQL, parsedDoc)
 
   let schema
 
@@ -32,24 +44,20 @@ const graphLibrary = async (options, command) => {
 
   if (!schema) {
     error(`Failed to parse Netlify GraphQL schema`)
+    return
   }
 
-  let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
-  if (currentOperationsDoc.trim().length === 0) {
-    currentOperationsDoc = defaultExampleOperationsDoc
-  }
-
-  const parsedDoc = parse(currentOperationsDoc)
-  const { fragments, functions } = extractFunctionsFromOperationDoc(parsedDoc)
-
-  generateFunctionsFile({
+  const payload = {
     logger: log,
     netlifyGraphConfig,
     schema,
+    schemaId,
     operationsDoc: currentOperationsDoc,
     functions,
     fragments,
-  })
+  }
+
+  generateFunctionsFile(payload)
 }
 
 /**

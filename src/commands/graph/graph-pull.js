@@ -33,11 +33,14 @@ const graphPull = async (options, command) => {
 
   const { jwt } = await OneGraphCliClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
 
+  const schemaId = 'TODO_SCHEMA'
+
   const oneGraphSessionId = loadCLISession(state)
   await refetchAndGenerateFromOneGraph({
     logger: log,
     netlifyGraphConfig,
     jwt,
+    schemaId,
     state,
     siteId,
     sessionId: oneGraphSessionId,
@@ -70,6 +73,10 @@ const graphPull = async (options, command) => {
     sessionId: oneGraphSessionId,
   })
 
+  if (!next) {
+    return
+  }
+
   if (next.errors) {
     error(`Failed to fetch Netlify Graph cli session events: ${JSON.stringify(next.errors, null, 2)}`)
   }
@@ -82,6 +89,7 @@ const graphPull = async (options, command) => {
         event,
         netlifyGraphConfig,
         schema,
+        schemaId,
         sessionId: oneGraphSessionId,
         siteId: site.id,
         siteRoot: site.root,
