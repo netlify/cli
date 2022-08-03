@@ -21,7 +21,7 @@ const { ensureAppForSite, executeCreatePersistedQueryMutation } = OneGraphCliCli
  * @returns
  */
 const graphEdit = async (options, command) => {
-  const { site, state } = command.netlify
+  const { config, site, state } = command.netlify
   const siteId = site.id
 
   if (!site.id) {
@@ -44,6 +44,7 @@ const graphEdit = async (options, command) => {
   await ensureAppForSite(netlifyToken, siteId)
 
   const oneGraphSessionId = await ensureCLISession({
+    config,
     metadata: {},
     netlifyToken,
     site,
@@ -76,7 +77,7 @@ const graphEdit = async (options, command) => {
 
   const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
   await upsertMergeCLISessionMetadata({
-    netlifyGraphConfig,
+    config,
     jwt,
     siteId,
     siteRoot: site.root,

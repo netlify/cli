@@ -14,6 +14,7 @@ const { StateConfig, USER_AGENT, chalk, error, execa, log, warn, watchDebounced 
 
 const {
   generateFunctionsFile,
+  getCodegenModule,
   loadNetlifyGraphConfig,
   normalizeOperationsDoc,
   readGraphQLOperationsSourceFile,
@@ -84,8 +85,17 @@ const monitorCLISessionEvents = (input) => {
       site.id,
       currentSessionId,
     )
-    if (markCLISessionActiveResult.errors && markCLISessionActiveResult.errors.length !== 0) {
-      warn(`Failed to mark CLI session active: ${markCLISessionActiveResult.errors.join(', ')}`)
+    if (
+      !markCLISessionActiveResult ||
+      (markCLISessionActiveResult.errors && markCLISessionActiveResult.errors.length !== 0)
+    ) {
+      warn(
+        `Failed to mark CLI session active: ${
+          markCLISessionActiveResult &&
+          markCLISessionActiveResult.errors &&
+          markCLISessionActiveResult.errors.join(', ')
+        }`,
+      )
     }
     setTimeout(markActiveHelper, nextMarkActiveHeartbeat)
   }
@@ -489,7 +499,11 @@ const getCLISession = async ({ jwt, oneGraphSessionId, siteId }) => {
  * @param {string} input.siteId The site object that contains the root file path for the site
  */
 const getCLISessionMetadata = async ({ jwt, oneGraphSessionId, siteId }) => {
-  const { errors, session } = await getCLISession({ jwt, oneGraphSessionId, siteId })
+  const result = await getCLISession({ jwt, oneGraphSessionId, siteId })
+  if (!result) {
+    warn(`Unable to fetch CLI session metadata`)
+  }
+  const { errors, session } = result
   return { metadata: session && session.metadata, errors }
 }
 
@@ -497,18 +511,38 @@ const getCLISessionMetadata = async ({ jwt, oneGraphSessionId, siteId }) => {
  * Look at the current project, filesystem, etc. and determine relevant metadata for a cli session
  * @param {object} input
  * @param {string} input.siteRoot The root file path for the site
- * @returns {Record<string, any>} Any locally detected facts that are relevant to include in the cli session metadata
+ * @param {object} input.config The parsed netlify.toml config file
+ * @returns {Promise<Record<string, any>>} Any locally detected facts that are relevant to include in the cli session metadata
  */
-const detectLocalCLISessionMetadata = ({ siteRoot }) => {
+const detectLocalCLISessionMetadata = async ({ config, siteRoot }) => {
   const { branch } = gitRepoInfo()
   const hostname = os.hostname()
   const userInfo = os.userInfo({ encoding: 'utf-8' })
   const { username } = userInfo
   const cliVersion = USER_AGENT
 
-  const config = loadNetlifyGraphConfig(siteRoot)
+  const graphConfig = loadNetlifyGraphConfig(siteRoot)
 
-  const { editor } = config
+  // TODO: Editor should be defined elsewhere
+  const { editor } = graphConfig
+
+  let codegen = {}
+
+  const codegenModule = await getCodegenModule({ config })
+
+  if (codegenModule) {
+    codegen = {
+      id: codegenModule.id,
+      version: codegenModule.id,
+      generators: codegenModule.generators.map((generator) => ({
+        id: generator.id,
+        name: generator.name,
+        options: generator.generateHandlerOptions,
+        supportedDefinitionTypes: generator.supportedDefinitionTypes,
+        version: generator.version,
+      })),
+    }
+  }
 
   const detectedMetadata = {
     gitBranch: branch,
@@ -517,6 +551,7 @@ const detectLocalCLISessionMetadata = ({ siteRoot }) => {
     siteRoot,
     cliVersion,
     editor,
+    codegen,
   }
 
   return detectedMetadata
@@ -525,7 +560,7 @@ const detectLocalCLISessionMetadata = ({ siteRoot }) => {
 /**
  * Fetch the existing cli session metadata if it exists, and mutate it remotely with the passed in metadata
  * @param {object} input
- * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig The (typically netlify) access token that is used for authentication, if any
+ * @param {object} input.config The parsed netlify.toml file
  * @param {string} input.jwt The Graph JWT string
  * @param {string} input.oneGraphSessionId The id of the cli session to fetch the current metadata for
  * @param {string} input.siteId The site object that contains the root file path for the site
@@ -533,22 +568,24 @@ const detectLocalCLISessionMetadata = ({ siteRoot }) => {
  * @param {object} input.newMetadata The metadata to merge into (with priority) the existing metadata
  * @returns {Promise<object>}
  */
-const upsertMergeCLISessionMetadata = async ({ jwt, newMetadata, oneGraphSessionId, siteId, siteRoot }) => {
+const upsertMergeCLISessionMetadata = async ({ config, jwt, newMetadata, oneGraphSessionId, siteId, siteRoot }) => {
   const { errors, metadata } = await getCLISessionMetadata({ jwt, oneGraphSessionId, siteId })
   if (errors) {
     warn(`Error fetching cli session metadata: ${JSON.stringify(errors, null, 2)}`)
   }
 
-  const detectedMetadata = detectLocalCLISessionMetadata({ siteRoot })
+  const detectedMetadata = await detectLocalCLISessionMetadata({ config, siteRoot })
 
   // @ts-ignore
   const finalMetadata = { ...metadata, ...detectedMetadata, ...newMetadata }
 
-  return OneGraphClient.updateCLISessionMetadata(jwt, siteId, oneGraphSessionId, finalMetadata)
+  const result = OneGraphClient.updateCLISessionMetadata(jwt, siteId, oneGraphSessionId, finalMetadata)
+
+  return result
 }
 
 const persistNewOperationsDocForSession = async ({
-  netlifyGraphConfig,
+  config,
   netlifyToken,
   oneGraphSessionId,
   operationsDoc,
@@ -582,7 +619,7 @@ const persistNewOperationsDocForSession = async ({
 
   const newMetadata = { docId: persistedDoc.id }
   const result = await upsertMergeCLISessionMetadata({
-    netlifyGraphConfig,
+    config,
     jwt,
     siteId,
     oneGraphSessionId,
@@ -590,7 +627,7 @@ const persistNewOperationsDocForSession = async ({
     siteRoot,
   })
 
-  if (result.errors) {
+  if (!result || result.errors) {
     warn(`Unable to update session metadata with updated operations doc ${JSON.stringify(result.errors, null, 2)}`)
   }
 }
@@ -611,6 +648,7 @@ const loadCLISession = (state) => state.get('oneGraphSessionId')
 /**
  * Idemponentially save the CLI session id to the local state and start monitoring for CLI events, upstream schema changes, and local operation file changes
  * @param {object} input
+ * @param {object} input.config
  * @param {string} input.netlifyToken The (typically netlify) access token that is used for authentication, if any
  * @param {string | undefined} input.oneGraphSessionId The session ID to use for this CLI session (default: read from state)
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
@@ -618,12 +656,14 @@ const loadCLISession = (state) => state.get('oneGraphSessionId')
  * @param {any} input.site The site object
  */
 const startOneGraphCLISession = async (input) => {
-  const { netlifyGraphConfig, netlifyToken, site, state } = input
+  const { config, netlifyGraphConfig, netlifyToken, site, state } = input
   const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId: site.id, nfToken: netlifyToken })
   OneGraphClient.ensureAppForSite(jwt, site.id)
   let schemaId = 'TODO_SCHEMA'
 
   const oneGraphSessionId = await ensureCLISession({
+    config,
+    netlifyGraphConfig,
     metadata: {},
     netlifyToken,
     site,
@@ -646,7 +686,7 @@ const startOneGraphCLISession = async (input) => {
       regenerateFunctionsFileFromOperationsFile({ netlifyGraphConfig, schema, schemaId })
       const newOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
       await persistNewOperationsDocForSession({
-        netlifyGraphConfig,
+        config,
         netlifyToken,
         oneGraphSessionId,
         operationsDoc: newOperationsDoc,
@@ -664,7 +704,7 @@ const startOneGraphCLISession = async (input) => {
       regenerateFunctionsFileFromOperationsFile({ netlifyGraphConfig, schema, schemaId })
       const newOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
       await persistNewOperationsDocForSession({
-        netlifyGraphConfig,
+        config,
         netlifyToken,
         oneGraphSessionId,
         operationsDoc: newOperationsDoc,
@@ -735,7 +775,7 @@ const startOneGraphCLISession = async (input) => {
 const markCliSessionInactive = async ({ netlifyToken, sessionId, siteId }) => {
   const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
   const result = await executeMarkCliSessionInactive(jwt, siteId, sessionId)
-  if (result.errors) {
+  if (!result || result.errors) {
     warn(`Unable to mark CLI session ${sessionId} inactive: ${JSON.stringify(result.errors, null, 2)}`)
   }
 }
@@ -755,7 +795,7 @@ const generateSessionName = () => {
  * Ensures a cli session exists for the current checkout, or errors out if it doesn't and cannot create one.
  */
 const ensureCLISession = async (input) => {
-  const { metadata, netlifyToken, site, state } = input
+  const { config, metadata, netlifyToken, site, state } = input
   let oneGraphSessionId = input.oneGraphSessionId ? input.oneGraphSessionId : loadCLISession(state)
   let parentCliSessionId = null
   const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId: site.id, nfToken: netlifyToken })
@@ -770,7 +810,7 @@ const ensureCLISession = async (input) => {
           sessionId: oneGraphSessionId,
         })) || {}
 
-      if (sessionEvents.errors) {
+      if (!sessionEvents || sessionEvents.errors) {
         warn(`Unable to fetch cli session: ${JSON.stringify(sessionEvents.errors, null, 2)}`)
         log(`Creating new cli session`)
         parentCliSessionId = oneGraphSessionId
@@ -782,10 +822,22 @@ const ensureCLISession = async (input) => {
     oneGraphSessionId = null
   }
 
-  if (!oneGraphSessionId) {
+  if (oneGraphSessionId) {
+    await upsertMergeCLISessionMetadata({
+      jwt,
+      config,
+      newMetadata: {},
+      oneGraphSessionId,
+      siteId: site.id,
+      siteRoot: site.root,
+    })
+  } else {
     // If we can't access the session in the state.json or it doesn't exist, create a new one
     const sessionName = generateSessionName()
-    const detectedMetadata = detectLocalCLISessionMetadata({ siteRoot: site.root })
+    const detectedMetadata = await detectLocalCLISessionMetadata({
+      config,
+      siteRoot: site.root,
+    })
     const newSessionMetadata = parentCliSessionId ? { parentCliSessionId } : {}
     const sessionMetadata = {
       ...detectedMetadata,
