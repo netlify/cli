@@ -22,7 +22,7 @@ const testMatrix = [{ args: [] }]
 const testName = (title, args) => (args.length <= 0 ? title : `${title} - ${args.join(' ')}`)
 
 testMatrix.forEach(({ args }) => {
-  test(testName('should handle query params in redirects', args), async (t) => {
+  test.only(testName('should handle query params in redirects', args), async (t) => {
     await withSiteBuilder('site-with-query-redirects', async (builder) => {
       await builder
         .withContentFile({
@@ -61,7 +61,8 @@ testMatrix.forEach(({ args }) => {
         ])
 
         // query params should be taken from the request
-        t.deepEqual(fromFunction.multiValueQueryStringParameters, { foo: ['1', '2'], bar: ['1', '2'] })
+        // eslint-disable-next-line id-length
+        t.deepEqual(fromFunction.multiValueQueryStringParameters, { a: ['1', '2'] })
 
         // query params should be passed through from the request
         t.is(queryPassthrough.headers.location, '/?foo=1&foo=2&bar=1&bar=2')
