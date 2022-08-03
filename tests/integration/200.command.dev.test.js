@@ -22,7 +22,7 @@ const testMatrix = [{ args: [] }]
 const testName = (title, args) => (args.length <= 0 ? title : `${title} - ${args.join(' ')}`)
 
 testMatrix.forEach(({ args }) => {
-  test.only(testName('should handle query params in redirects', args), async (t) => {
+  test(testName('should handle query params in redirects', args), async (t) => {
     await withSiteBuilder('site-with-query-redirects', async (builder) => {
       await builder
         .withContentFile({
