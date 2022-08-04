@@ -611,7 +611,6 @@ const persistNewOperationsDocForSession = async ({
     return
   }
 
-  const operationsDocHash = NetlifyGraphLockfile.hashOperations(operationsDoc)
   const lockfile = readLockfile({ siteRoot })
 
   if (!lockfile) {
@@ -622,12 +621,9 @@ const persistNewOperationsDocForSession = async ({
     )
   }
 
-  if (lockfile && lockfile.locked.operationsHash === operationsDocHash) {
-    // Don't bother persisting operations if they have the same hash as what we
-    // have locked
-    log(`[graph]: Operations file is identical to locked GraphQL document, skipping synchronization`)
-    return
-  }
+  // NOTE(anmonteiro): We still persist a new operations document because we
+  // might be checking out someone else's branch whose session we don't have
+  // access to.
 
   const { branch } = gitRepoInfo()
   const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
@@ -884,6 +880,7 @@ const ensureCLISession = async (input) => {
       // TODO(anmonteiro): remove this in the future?
       if (lockfile == null && session.metadata.schemaId) {
         const currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
+        log(`Generating Netlify Graph lockfile at ${NetlifyGraphLockfile.defaultLockFileName}`)
 
         const newLockfile = NetlifyGraphLockfile.createLockfile({
           schemaId: session.metadata.schemaId,
