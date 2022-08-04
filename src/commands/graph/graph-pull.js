@@ -34,6 +34,13 @@ const graphPull = async (options, command) => {
   const { jwt } = await OneGraphCliClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
 
   const oneGraphSessionId = loadCLISession(state)
+  if (!oneGraphSessionId) {
+    warn(
+      'No local Netlify Graph session found, skipping command queue drain. Create a new session by running `netlify graph:edit`.',
+    )
+    return
+  }
+
   await refetchAndGenerateFromOneGraph({
     logger: log,
     netlifyGraphConfig,
@@ -42,13 +49,6 @@ const graphPull = async (options, command) => {
     siteId,
     sessionId: oneGraphSessionId,
   })
-
-  if (!oneGraphSessionId) {
-    warn(
-      'No local Netlify Graph session found, skipping command queue drain. Create a new session by running `netlify graph:edit`.',
-    )
-    return
-  }
 
   const schemaString = readGraphQLSchemaFile(netlifyGraphConfig)
 
