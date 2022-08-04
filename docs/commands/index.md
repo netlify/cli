@@ -102,7 +102,7 @@ Manage netlify functions
 | [`graph:init`](/docs/commands/graph.md#graphinit) | Initialize all the resources for Netlify Graph  |
 | [`graph:library`](/docs/commands/graph.md#graphlibrary) | Generate the Graph function library  |
 | [`graph:operations`](/docs/commands/graph.md#graphoperations) | List all of the locally available operations  |
-| [`graph:pull`](/docs/commands/graph.md#graphpull) | Pull down your local Netlify Graph schema, and process pending Graph edit events  |
+| [`graph:pull`](/docs/commands/graph.md#graphpull) | Pull your remote Netlify Graph schema locally, and process pending Graph edit events  |
 
 
 ### [init](/docs/commands/init.md)

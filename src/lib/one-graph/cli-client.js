@@ -2,12 +2,13 @@
 /* eslint-disable eslint-comments/disable-enable-pair */
 /* eslint-disable fp/no-loops */
 const crypto = require('crypto')
+const { readFileSync, writeFileSync } = require('fs')
 const os = require('os')
 const path = require('path')
 
 const gitRepoInfo = require('git-repo-info')
 const { GraphQL, InternalConsole, OneGraphClient } = require('netlify-onegraph-internal')
-const { NetlifyGraph } = require('netlify-onegraph-internal')
+const { NetlifyGraph, NetlifyGraphLockfile } = require('netlify-onegraph-internal')
 
 // eslint-disable-next-line no-unused-vars
 const { StateConfig, USER_AGENT, chalk, error, execa, log, warn, watchDebounced } = require('../../utils')
@@ -274,6 +275,33 @@ const regenerateFunctionsFileFromOperationsFile = (input) => {
 }
 
 /**
+ * Lockfile Operations
+ */
+
+/**
+ * Persist the Netlify Graph lockfile on disk
+ * @param {object} input
+ * @param {string} input.siteRoot The GraphQL schema to use when generating code
+ * @param {NetlifyGraphLockfile.V0_format} input.lockfile
+ */
+const writeLockfile = ({ lockfile, siteRoot }) => {
+  writeFileSync(path.join(siteRoot, NetlifyGraphLockfile.defaultLockFileName), JSON.stringify(lockfile, null, 2))
+}
+
+/**
+ * Read the Netlify Graph lockfile from disk, if it exists
+ * @param {object} input
+ * @param {string} input.siteRoot The GraphQL schema to use when generating code
+ * @return {NetlifyGraphLockfile.V0_format | undefined}
+ */
+const readLockfile = ({ siteRoot }) => {
+  try {
+    const buf = readFileSync(path.join(siteRoot, NetlifyGraphLockfile.defaultLockFileName))
+    return JSON.parse(buf.toString('utf8'))
+  } catch {}
+}
+
+/**
  * Compute a md5 hash of a string
  * @param {string} input String to compute a quick md5 hash for
  * @returns hex digest of the input string
@@ -285,7 +313,8 @@ const quickHash = (input) => {
 }
 
 /**
- * Fetch a persisted operations doc by its id, write it to the system, and regenerate the library
+ * Fetch a persisted operations doc by its id, normalize it for Netlify Graph
+ * and return its contents as a string
  * @param {object} input
  * @param {string} input.siteId The site id to query against
  * @param {string} input.netlifyToken The (typically netlify) access token that is used for authentication, if any
@@ -293,11 +322,11 @@ const quickHash = (input) => {
  * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
  * @param {GraphQL.GraphQLSchema} input.schema The GraphQL schema to use when generating code
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
- * @returns
+ * @returns {Promise<string | undefined>}
  */
-const updateGraphQLOperationsFileFromPersistedDoc = async (input) => {
+const fetchGraphQLOperationsLibraryFromPersistedDoc = async (input) => {
   try {
-    const { docId, logger, netlifyGraphConfig, netlifyToken, schema, siteId } = input
+    const { docId, netlifyToken, siteId } = input
     const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
     const persistedDoc = await OneGraphClient.fetchPersistedQuery(jwt, siteId, docId)
     if (!persistedDoc) {
@@ -308,21 +337,63 @@ const updateGraphQLOperationsFileFromPersistedDoc = async (input) => {
     // Sorts the operations stably, prepends the @netlify directive, etc.
     const operationsDocString = normalizeOperationsDoc(persistedDoc.query)
 
-    writeGraphQLOperationsSourceFile({ logger, netlifyGraphConfig, operationsDocString })
-    regenerateFunctionsFileFromOperationsFile({ netlifyGraphConfig, schema })
-
-    const hash = quickHash(operationsDocString)
-
-    const relevantHasLength = 10
-
-    if (witnessedIncomingDocumentHashes.length > relevantHasLength) {
-      witnessedIncomingDocumentHashes.shift()
-    }
-
-    witnessedIncomingDocumentHashes.push(hash)
+    return operationsDocString
   } catch {
     warn(`Unable to reach Netlify Graph servers in order to update Graph operations file`)
   }
+}
+
+/**
+ * Fetch a persisted operations doc by its id, write it to the system, and regenerate the library
+ * @param {object} input
+ * @param {string} input.operationsDocString The contents of the GraphQL operations document
+ * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
+ * @param {GraphQL.GraphQLSchema} input.schema The GraphQL schema to use when generating code
+ * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
+ * @returns
+ */
+const updateGraphQLOperationsFileFromPersistedDoc = (input) => {
+  const { logger, netlifyGraphConfig, operationsDocString, schema } = input
+
+  writeGraphQLOperationsSourceFile({ logger, netlifyGraphConfig, operationsDocString })
+  regenerateFunctionsFileFromOperationsFile({ netlifyGraphConfig, schema })
+
+  const hash = quickHash(operationsDocString)
+
+  const relevantHasLength = 10
+
+  if (witnessedIncomingDocumentHashes.length > relevantHasLength) {
+    witnessedIncomingDocumentHashes.shift()
+  }
+
+  witnessedIncomingDocumentHashes.push(hash)
+}
+
+/**
+ * Fetch a persisted operations doc by its id, write it to the system, and regenerate the library
+ * @param {object} input
+ * @param {string} input.siteId The site id to query against
+ * @param {string} input.schemaId The schema ID to query against
+ * @param {string} input.siteRoot Path to the root of the project
+ * @param {string} input.netlifyToken The (typically netlify) access token that is used for authentication, if any
+ * @param {string} input.docId The GraphQL operations document id to fetch
+ * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
+ * @param {GraphQL.GraphQLSchema} input.schema The GraphQL schema to use when generating code
+ * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
+ * @returns {Promise<string | undefined>}
+ */
+const handleOperationsLibraryPersistedEvent = async (input) => {
+  const { schemaId, siteRoot } = input
+  const operationsFileContents = await fetchGraphQLOperationsLibraryFromPersistedDoc(input)
+
+  if (!operationsFileContents) {
+    // `fetch` already warned
+    return
+  }
+
+  const lockfile = NetlifyGraphLockfile.createLockfile({ operationsFileContents, schemaId })
+  writeLockfile({ siteRoot, lockfile })
+  updateGraphQLOperationsFileFromPersistedDoc({ ...input, operationsDocString: operationsFileContents })
 }
 
 const handleCliSessionEvent = async ({
@@ -412,12 +483,14 @@ const handleCliSessionEvent = async ({
       break
     }
     case 'OneGraphNetlifyCliSessionPersistedLibraryUpdatedEvent':
-      await updateGraphQLOperationsFileFromPersistedDoc({
+      await handleOperationsLibraryPersistedEvent({
         netlifyToken,
         docId: payload.docId,
+        schemaId: payload.schemaId,
         netlifyGraphConfig,
         schema,
         siteId,
+        siteRoot,
       })
       break
     default: {
@@ -538,6 +611,20 @@ const persistNewOperationsDocForSession = async ({
     return
   }
 
+  const lockfile = readLockfile({ siteRoot })
+
+  if (!lockfile) {
+    warn(
+      `can't find a lockfile for the project while running trying to persist operations for session. To pull a remote schema (and create a lockfile), run ${chalk.yellow(
+        'netlify graph:pull',
+      )} `,
+    )
+  }
+
+  // NOTE(anmonteiro): We still persist a new operations document because we
+  // might be checking out someone else's branch whose session we don't have
+  // access to.
+
   const { branch } = gitRepoInfo()
   const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
   const persistedResult = await OneGraphClient.executeCreatePersistedQueryMutation(
@@ -575,6 +662,15 @@ const persistNewOperationsDocForSession = async ({
 
   if (result.errors) {
     warn(`Unable to update session metadata with updated operations doc ${JSON.stringify(result.errors, null, 2)}`)
+  } else if (lockfile != null) {
+    // Now that we've persisted the document, lock it in the lockfile
+    const currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
+
+    const newLockfile = NetlifyGraphLockfile.createLockfile({
+      schemaId: lockfile.locked.schemaId,
+      operationsFileContents: currentOperationsDoc,
+    })
+    writeLockfile({ siteRoot, lockfile: newLockfile })
   }
 }
 
@@ -611,6 +707,7 @@ const startOneGraphCLISession = async (input) => {
     site,
     state,
     oneGraphSessionId: input.oneGraphSessionId,
+    netlifyGraphConfig,
   })
 
   const enabledServices = []
@@ -719,28 +816,80 @@ const generateSessionName = () => {
 }
 
 /**
+ * Mark a session as inactive so it doesn't show up in any UI lists, and potentially becomes available to GC later
+ * @param {object} input
+ * @param {{metadata: {schemaId:string}; id: string; appId: string; name?: string}} input.session The current session
+ * @param {string} input.netlifyToken The (typically netlify) access token that is used for authentication, if any
+ * @param {NetlifyGraphLockfile.V0_format | undefined} input.lockfile A function to call to set/get the current state of the local Netlify project
+ */
+const idempotentlyUpdateSessionSchemaIdFromLockfile = async (input) => {
+  const { lockfile, netlifyToken, session } = input
+  const sessionSchemaId = session.metadata && session.metadata.schemaId
+  const lockfileSchemaId = lockfile && lockfile.locked.schemaId
+
+  if (lockfileSchemaId != null && sessionSchemaId !== lockfileSchemaId) {
+    // Local schema always wins, update the session metadata to reflect that
+    const siteId = session.appId
+    const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
+
+    log(`Found new lockfile, overwriting session ${session.name || session.id}`)
+    return OneGraphClient.updateCLISessionMetadata(jwt, siteId, session.id, {
+      ...session.metadata,
+      schemaId: lockfileSchemaId,
+    })
+  }
+}
+
+/**
  * Ensures a cli session exists for the current checkout, or errors out if it doesn't and cannot create one.
+ * @param {object} input
+ * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
+ * @param {object} input.metadata
+ * @param {string} input.netlifyToken
+ * @param {StateConfig} input.state
+ * @param {string} [input.oneGraphSessionId]
+ * @param {any} input.site The site object
  */
 const ensureCLISession = async (input) => {
-  const { metadata, netlifyToken, site, state } = input
+  const { metadata, netlifyGraphConfig, netlifyToken, site, state } = input
   let oneGraphSessionId = input.oneGraphSessionId ? input.oneGraphSessionId : loadCLISession(state)
   let parentCliSessionId = null
   const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId: site.id, nfToken: netlifyToken })
 
+  const lockfile = readLockfile({ siteRoot: site.root })
+
   // Validate that session still exists and we can access it
   try {
     if (oneGraphSessionId) {
-      const sessionEvents = await OneGraphClient.fetchCliSessionEvents({
+      const { errors, session } = await OneGraphClient.fetchCliSession({
         appId: site.id,
         jwt,
         sessionId: oneGraphSessionId,
+        desiredEventCount: 0,
       })
-      if (sessionEvents.errors) {
-        warn(`Unable to fetch cli session: ${JSON.stringify(sessionEvents.errors, null, 2)}`)
+      if (errors) {
+        warn(`Unable to fetch cli session: ${JSON.stringify(errors, null, 2)}`)
         log(`Creating new cli session`)
         parentCliSessionId = oneGraphSessionId
         oneGraphSessionId = null
       }
+
+      // During the transition to lockfiles, write a lockfile if one isn't
+      // found. Later, only handling a 'OneGraphNetlifyCliSessionPersistedLibraryUpdatedEvent'
+      // will create or update the lockfile
+      // TODO(anmonteiro): remove this in the future?
+      if (lockfile == null && session.metadata.schemaId) {
+        const currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
+        log(`Generating Netlify Graph lockfile at ${NetlifyGraphLockfile.defaultLockFileName}`)
+
+        const newLockfile = NetlifyGraphLockfile.createLockfile({
+          schemaId: session.metadata.schemaId,
+          operationsFileContents: currentOperationsDoc,
+        })
+        writeLockfile({ siteRoot: site.root, lockfile: newLockfile })
+      }
+
+      await idempotentlyUpdateSessionSchemaIdFromLockfile({ session, lockfile, netlifyToken })
     }
   } catch (fetchSessionError) {
     warn(`Unable to fetch cli session events: ${JSON.stringify(fetchSessionError, null, 2)}`)
@@ -752,17 +901,25 @@ const ensureCLISession = async (input) => {
     const sessionName = generateSessionName()
     const detectedMetadata = detectLocalCLISessionMetadata({ siteRoot: site.root })
     const newSessionMetadata = parentCliSessionId ? { parentCliSessionId } : {}
+
     const sessionMetadata = {
       ...detectedMetadata,
       ...newSessionMetadata,
       ...metadata,
     }
+
+    if (lockfile != null) {
+      log(`Creating new session "${sessionName}" from lockfile`)
+      sessionMetadata.schemaId = lockfile.locked.schemaId
+    }
+
     const oneGraphSession = await createCLISession({
       netlifyToken,
       siteId: site.id,
       sessionName,
       metadata: sessionMetadata,
     })
+
     oneGraphSessionId = oneGraphSession.id
   }
 
@@ -808,4 +965,5 @@ module.exports = {
   refetchAndGenerateFromOneGraph,
   startOneGraphCLISession,
   upsertMergeCLISessionMetadata,
+  readLockfile,
 }

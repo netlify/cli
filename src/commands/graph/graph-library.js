@@ -1,4 +1,5 @@
 // @ts-check
+const { readLockfile } = require('../../lib/one-graph/cli-client')
 const {
   buildSchema,
   defaultExampleOperationsDoc,
@@ -9,7 +10,7 @@ const {
   readGraphQLOperationsSourceFile,
   readGraphQLSchemaFile,
 } = require('../../lib/one-graph/cli-netlify-graph')
-const { error, log } = require('../../utils')
+const { NETLIFYDEVERR, chalk, error, log } = require('../../utils')
 
 /**
  * Creates the `netlify graph:library` command
@@ -42,10 +43,23 @@ const graphLibrary = async (options, command) => {
   const parsedDoc = parse(currentOperationsDoc)
   const { fragments, functions } = extractFunctionsFromOperationDoc(parsedDoc)
 
+  const lockfile = readLockfile({ siteRoot: command.netlify.site.root })
+
+  if (lockfile == null) {
+    error(
+      `${NETLIFYDEVERR} Error: no lockfile found, unable to run \`netlify graph:library\`. To pull a remote schema (and create a lockfile), run ${chalk.yellow(
+        'netlify graph:pull',
+      )} `,
+    )
+  }
+
+  const schemaId = lockfile && lockfile.locked.schemaId
+
   generateFunctionsFile({
     logger: log,
     netlifyGraphConfig,
     schema,
+    schemaId,
     operationsDoc: currentOperationsDoc,
     functions,
     fragments,

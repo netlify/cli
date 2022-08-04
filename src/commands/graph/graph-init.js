@@ -5,6 +5,7 @@ const { OneGraphClient } = require('netlify-onegraph-internal')
 const { v4: uuidv4 } = require('uuid')
 
 const { OneGraphCliClient, ensureCLISession } = require('../../lib/one-graph/cli-client')
+const { getNetlifyGraphConfig } = require('../../lib/one-graph/cli-netlify-graph')
 const { NETLIFYDEVERR, chalk, error, exit, getToken, log } = require('../../utils')
 const { msg } = require('../login/login')
 
@@ -63,11 +64,13 @@ const graphInit = async (options, command) => {
 
   await ensureAppForSite(netlifyToken, siteId)
 
+  const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options })
   await ensureCLISession({
     metadata: {},
     netlifyToken,
     site,
     state,
+    netlifyGraphConfig,
   })
 
   let envChanged = false
