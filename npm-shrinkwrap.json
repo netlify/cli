@@ -81,7 +81,7 @@
         "multiparty": "^4.2.1",
         "netlify": "^12.0.0",
         "netlify-headers-parser": "^6.0.2",
-        "netlify-onegraph-internal": "0.4.1",
+        "netlify-onegraph-internal": "0.4.2",
         "netlify-redirect-parser": "^13.0.5",
         "netlify-redirector": "^0.2.1",
         "node-fetch": "^2.6.0",
@@ -16384,12 +16384,13 @@
       }
     },
     "node_modules/netlify-onegraph-internal": {
-      "version": "0.4.1",
-      "resolved": "https://registry.npmjs.org/netlify-onegraph-internal/-/netlify-onegraph-internal-0.4.1.tgz",
-      "integrity": "sha512-b+9gNOJHUeFZ9DoUDYuOLxMhtfIibEO6PZKSj3Xf5TtV9k536uX2c963kldb3VQ2HfIv9S5H5iirgkXcJfzXHw==",
+      "version": "0.4.2",
+      "resolved": "https://registry.npmjs.org/netlify-onegraph-internal/-/netlify-onegraph-internal-0.4.2.tgz",
+      "integrity": "sha512-3TGD/s2FGjx9NcOcMPMMUxamy3IVY9O0ZZ176FuHVDmLAc5l8mj0ZNoUbhdrXfZjes62Gt6/YynCJxGShE6oUA==",
       "dependencies": {
         "graphql": "16.0.0",
         "node-fetch": "^2.6.0",
+        "rusha": "^0.8.14",
         "uuid": "^8.3.2"
       }
     },
@@ -19976,6 +19977,11 @@
       "dependencies": {
         "queue-microtask": "^1.2.2"
       }
+    },
+    "node_modules/rusha": {
+      "version": "0.8.14",
+      "resolved": "https://registry.npmjs.org/rusha/-/rusha-0.8.14.tgz",
+      "integrity": "sha512-cLgakCUf6PedEu15t8kbsjnwIFFR2D4RfL+W3iWFJ4iac7z4B0ZI8fxy4R3J956kAI68HclCFGL8MPoUVC3qVA=="
     },
     "node_modules/rxjs": {
       "version": "6.6.7",
@@ -35257,12 +35263,13 @@
       }
     },
     "netlify-onegraph-internal": {
-      "version": "0.4.1",
-      "resolved": "https://registry.npmjs.org/netlify-onegraph-internal/-/netlify-onegraph-internal-0.4.1.tgz",
-      "integrity": "sha512-b+9gNOJHUeFZ9DoUDYuOLxMhtfIibEO6PZKSj3Xf5TtV9k536uX2c963kldb3VQ2HfIv9S5H5iirgkXcJfzXHw==",
+      "version": "0.4.2",
+      "resolved": "https://registry.npmjs.org/netlify-onegraph-internal/-/netlify-onegraph-internal-0.4.2.tgz",
+      "integrity": "sha512-3TGD/s2FGjx9NcOcMPMMUxamy3IVY9O0ZZ176FuHVDmLAc5l8mj0ZNoUbhdrXfZjes62Gt6/YynCJxGShE6oUA==",
       "requires": {
         "graphql": "16.0.0",
         "node-fetch": "^2.6.0",
+        "rusha": "^0.8.14",
         "uuid": "^8.3.2"
       },
       "dependencies": {
@@ -37944,6 +37951,11 @@
       "requires": {
         "queue-microtask": "^1.2.2"
       }
+    },
+    "rusha": {
+      "version": "0.8.14",
+      "resolved": "https://registry.npmjs.org/rusha/-/rusha-0.8.14.tgz",
+      "integrity": "sha512-cLgakCUf6PedEu15t8kbsjnwIFFR2D4RfL+W3iWFJ4iac7z4B0ZI8fxy4R3J956kAI68HclCFGL8MPoUVC3qVA=="
     },
     "rxjs": {
       "version": "6.6.7",
