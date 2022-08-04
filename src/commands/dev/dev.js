@@ -537,6 +537,7 @@ const dev = async (options, command) => {
 
       await persistNewOperationsDocForSession({
         config,
+        netlifyGraphConfig,
         netlifyToken,
         oneGraphSessionId,
         operationsDoc: graphqlDocument,
