@@ -31,10 +31,10 @@ const filterRelativePathItems = (items) => items.filter((part) => part !== '')
 
 /**
  * Return the default Netlify Graph configuration for a generic site
- * @param {object} context
- * @param {object} context.baseConfig
- * @param {string[]} context.detectedFunctionsPath
- * @param {string[]} context.siteRoot
+ * @param {object} input
+ * @param {object} input.baseConfig
+ * @param {string[]} input.detectedFunctionsPath
+ * @param {string[]} input.siteRoot
  */
 const makeDefaultNetlifyGraphConfig = ({ baseConfig, detectedFunctionsPath }) => {
   const functionsPath = filterRelativePathItems([...detectedFunctionsPath])
@@ -62,10 +62,10 @@ const makeDefaultNetlifyGraphConfig = ({ baseConfig, detectedFunctionsPath }) =>
 
 /**
  * Return the default Netlify Graph configuration for a Nextjs site
- * @param {object} context
- * @param {object} context.baseConfig
- * @param {string[]} context.detectedFunctionsPath
- * @param {string[]} context.siteRoot
+ * @param {object} input
+ * @param {object} input.baseConfig
+ * @param {string[]} input.detectedFunctionsPath
+ * @param {string[]} input.siteRoot
  */
 const makeDefaultNextJsNetlifyGraphConfig = ({ baseConfig, siteRoot }) => {
   const functionsPath = filterRelativePathItems([...siteRoot, 'pages', 'api'])
@@ -93,10 +93,10 @@ const makeDefaultNextJsNetlifyGraphConfig = ({ baseConfig, siteRoot }) => {
 
 /**
  * Return the default Netlify Graph configuration for a Remix site
- * @param {object} context
- * @param {object} context.baseConfig
- * @param {string[]} context.detectedFunctionsPath
- * @param {string[]} context.siteRoot
+ * @param {object} input
+ * @param {object} input.baseConfig
+ * @param {string[]} input.detectedFunctionsPath
+ * @param {string[]} input.siteRoot
  */
 const makeDefaultRemixNetlifyGraphConfig = ({ baseConfig, detectedFunctionsPath, siteRoot }) => {
   const functionsPath = filterRelativePathItems([...detectedFunctionsPath])
@@ -293,15 +293,15 @@ const runPrettier = async (filePath) => {
 
 /**
  * Generate a library file with type definitions for a given NetlifyGraphConfig, operationsDoc, and schema, writing them to the filesystem
- * @param {object} context
- * @param {NetlifyGraph.NetlifyGraphConfig} context.netlifyGraphConfig
- * @param {GraphQL.GraphQLSchema} context.schema The schema to use when generating the functions and their types
- * @param {string} context.schemaId The id of the schema to use when fetching Graph data
- * @param {string} context.operationsDoc The GraphQL operations doc to use when generating the functions
- * @param {Record<string, NetlifyGraph.ExtractedFunction>} context.functions The parsed queries with metadata to use when generating library functions
- * @param {Record<string, NetlifyGraph.ExtractedFragment>} context.fragments The parsed queries with metadata to use when generating library functions
- * @param {CodegenHelpers.GenerateRuntimeFunction} context.generate
- * @param {(message: string) => void=} context.logger A function that if provided will be used to log messages
+ * @param {object} input
+ * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig
+ * @param {GraphQL.GraphQLSchema} input.schema The schema to use when generating the functions and their types
+ * @param {string} input.schemaId The id of the schema to use when fetching Graph data
+ * @param {string} input.operationsDoc The GraphQL operations doc to use when generating the functions
+ * @param {Record<string, NetlifyGraph.ExtractedFunction>} input.functions The parsed queries with metadata to use when generating library functions
+ * @param {Record<string, NetlifyGraph.ExtractedFragment>} input.fragments The parsed queries with metadata to use when generating library functions
+ * @param {CodegenHelpers.GenerateRuntimeFunction} input.generate
+ * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
  * @returns {Promise<void>} Void, effectfully writes the generated library to the filesystem
  */
 const generateRuntime = async ({
@@ -344,39 +344,41 @@ const generateRuntime = async ({
 
 /**
  * Generate a library file with type definitions for a given NetlifyGraphConfig, operationsDoc, and schema, writing them to the filesystem
- * @param {object} context
- * @param {NetlifyGraph.NetlifyGraphConfig} context.netlifyGraphConfig
- * @param {string} context.schemaId
- * @param {GraphQL.GraphQLSchema} context.schema The schema to use when generating the functions and their types
- * @param {string} context.operationsDoc The GraphQL operations doc to use when generating the functions
- * @param {Record<string, NetlifyGraph.ExtractedFunction>} context.functions The parsed queries with metadata to use when generating library functions
- * @param {Record<string, NetlifyGraph.ExtractedFragment>} context.fragments The parsed queries with metadata to use when generating library functions
- * @param {(message: string) => void=} context.logger A function that if provided will be used to log messages
+ * @param {object} input
+ * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig
+ * @param {object} input.config The parsed netlify.toml file
+ * @param {string} input.schemaId
+ * @param {GraphQL.GraphQLSchema} input.schema The schema to use when generating the functions and their types
+ * @param {string} input.operationsDoc The GraphQL operations doc to use when generating the functions
+ * @param {Record<string, NetlifyGraph.ExtractedFunction>} input.functions The parsed queries with metadata to use when generating library functions
+ * @param {Record<string, NetlifyGraph.ExtractedFragment>} input.fragments The parsed queries with metadata to use when generating library functions
+ * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
  * @returns {Promise<void>} Void, effectfully writes the generated library to the filesystem
  */
-const generateFunctionsFile = async ({ fragments, functions, logger, netlifyGraphConfig, operationsDoc, schema }) => {
-  log('OpsDoc:', operationsDoc)
-  const { clientSource, typeDefinitionsSource } = await NetlifyGraph.generateFunctionsSource(
-    GraphQL,
-    netlifyGraphConfig,
+const generateFunctionsFile = async ({ config, netlifyGraphConfig, operationsDoc, schema }) => {
+  const parsedDoc = GraphQL.parse(operationsDoc)
+
+  const extracted = extractFunctionsFromOperationDoc(GraphQL, parsedDoc)
+
+  const codegenModule = await getCodegenModule({ config })
+  if (!codegenModule) {
+    error(
+      `No Graph codegen module specified in netlify.toml under the [graph] header. Please specify 'codeGenerators' field and try again.`,
+    )
+    return
+  }
+  const schemaMetadata = { id: 'TODO_SCHEMA' }
+
+  await generateRuntime({
+    generate: codegenModule.generateRuntime,
     schema,
+    schemaId: schemaMetadata.id,
+    netlifyGraphConfig,
+    logger: log,
+    fragments: extracted.fragments,
+    functions: extracted.functions,
     operationsDoc,
-    functions,
-    fragments,
-  )
-
-  ensureNetlifyGraphPath(netlifyGraphConfig)
-  const implementationResolvedPath = path.resolve(...netlifyGraphConfig.netlifyGraphImplementationFilename)
-  fs.writeFileSync(implementationResolvedPath, clientSource, 'utf8')
-  const implementationRelativePath = path.relative(process.cwd(), implementationResolvedPath)
-  logger && logger(`Wrote ${chalk.cyan(implementationRelativePath)}`)
-
-  const typeDefinitionsResolvedPath = path.resolve(...netlifyGraphConfig.netlifyGraphTypeDefinitionsFilename)
-  fs.writeFileSync(typeDefinitionsResolvedPath, typeDefinitionsSource, 'utf8')
-  const typeDefinitionsRelativePath = path.relative(process.cwd(), typeDefinitionsResolvedPath)
-  logger && logger(`Wrote ${chalk.cyan(typeDefinitionsRelativePath)}`)
-  runPrettier(path.resolve(...netlifyGraphConfig.netlifyGraphImplementationFilename))
-  runPrettier(path.resolve(...netlifyGraphConfig.netlifyGraphTypeDefinitionsFilename))
+  })
 }
 
 /**

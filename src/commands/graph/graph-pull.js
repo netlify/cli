@@ -17,7 +17,7 @@ const { chalk, error, log, warn } = require('../../utils')
  * @returns
  */
 const graphPull = async (options, command) => {
-  const { site, state } = command.netlify
+  const { config, site, state } = command.netlify
 
   if (!site.id) {
     error(
@@ -37,6 +37,7 @@ const graphPull = async (options, command) => {
 
   const oneGraphSessionId = loadCLISession(state)
   await refetchAndGenerateFromOneGraph({
+    config,
     logger: log,
     netlifyGraphConfig,
     jwt,
@@ -85,6 +86,7 @@ const graphPull = async (options, command) => {
     const ackIds = []
     for (const event of next.events) {
       await handleCliSessionEvent({
+        config,
         netlifyToken,
         event,
         netlifyGraphConfig,

@@ -20,6 +20,7 @@ const { error, log } = require('../../utils')
  * @returns
  */
 const graphLibrary = async (options, command) => {
+  const { config } = command
   const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options })
 
   const schemaId = 'TODO_SCHEMA'
@@ -48,6 +49,7 @@ const graphLibrary = async (options, command) => {
   }
 
   const payload = {
+    config,
     logger: log,
     netlifyGraphConfig,
     schema,
