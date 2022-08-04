@@ -384,7 +384,6 @@ const updateGraphQLOperationsFileFromPersistedDoc = (input) => {
  */
 const handleOperationsLibraryPersistedEvent = async (input) => {
   const { schemaId, siteRoot } = input
-  // await updateGraphQLOperationsFileFromPersistedDoc()
   const operationsFileContents = await fetchGraphQLOperationsLibraryFromPersistedDoc(input)
 
   if (!operationsFileContents) {
@@ -827,7 +826,7 @@ const generateSessionName = () => {
  * @param {string} input.netlifyToken The (typically netlify) access token that is used for authentication, if any
  * @param {NetlifyGraphLockfile.V0_format | undefined} input.lockfile A function to call to set/get the current state of the local Netlify project
  */
-const maybeUpdateSessionFromLockfile = async (input) => {
+const idempotentlyUpdateSessionSchemaIdFromLockfile = async (input) => {
   const { lockfile, netlifyToken, session } = input
   const sessionSchemaId = session.metadata && session.metadata.schemaId
   const lockfileSchemaId = lockfile && lockfile.locked.schemaId
@@ -893,7 +892,7 @@ const ensureCLISession = async (input) => {
         writeLockfile({ siteRoot: site.root, lockfile: newLockfile })
       }
 
-      await maybeUpdateSessionFromLockfile({ session, lockfile, netlifyToken })
+      await idempotentlyUpdateSessionSchemaIdFromLockfile({ session, lockfile, netlifyToken })
     }
   } catch (fetchSessionError) {
     warn(`Unable to fetch cli session events: ${JSON.stringify(fetchSessionError, null, 2)}`)
