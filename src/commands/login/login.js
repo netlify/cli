@@ -54,4 +54,4 @@ Opens a web browser to acquire an OAuth token.`,
     .option('--new', 'Login to new Netlify account')
     .action(login)
 
-module.exports = { createLoginCommand, login }
+module.exports = { createLoginCommand, login, msg }

@@ -49,6 +49,7 @@ const graphEdit = async (options, command) => {
     netlifyToken,
     site,
     state,
+    netlifyGraphConfig,
   })
 
   const { branch } = gitRepoInfo()

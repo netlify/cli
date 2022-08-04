@@ -355,7 +355,7 @@ const generateRuntime = async ({
  * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
  * @returns {Promise<void>} Void, effectfully writes the generated library to the filesystem
  */
-const generateFunctionsFile = async ({ config, netlifyGraphConfig, operationsDoc, schema }) => {
+const generateFunctionsFile = async ({ config, netlifyGraphConfig, operationsDoc, schema, schemaId }) => {
   const parsedDoc = GraphQL.parse(operationsDoc)
 
   const extracted = extractFunctionsFromOperationDoc(GraphQL, parsedDoc)
@@ -367,12 +367,11 @@ const generateFunctionsFile = async ({ config, netlifyGraphConfig, operationsDoc
     )
     return
   }
-  const schemaMetadata = { id: 'TODO_SCHEMA' }
 
   await generateRuntime({
     generate: codegenModule.generateRuntime,
     schema,
-    schemaId: schemaMetadata.id,
+    schemaId,
     netlifyGraphConfig,
     logger: log,
     fragments: extracted.fragments,

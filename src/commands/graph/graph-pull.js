@@ -1,14 +1,19 @@
 // @ts-check
 /* eslint-disable eslint-comments/disable-enable-pair */
 /* eslint-disable fp/no-loops */
+const { OneGraphClient } = require('netlify-onegraph-internal')
+
 const {
   OneGraphCliClient,
+  ensureCLISession,
   handleCliSessionEvent,
   loadCLISession,
+  readLockfile,
+  readSchemaIdFromLockfile,
   refetchAndGenerateFromOneGraph,
 } = require('../../lib/one-graph/cli-client')
 const { buildSchema, getNetlifyGraphConfig, readGraphQLSchemaFile } = require('../../lib/one-graph/cli-netlify-graph')
-const { chalk, error, log, warn } = require('../../utils')
+const { NETLIFYDEVERR, chalk, error, log, warn } = require('../../utils')
 
 /**
  * Creates the `netlify graph:pull` command
@@ -33,9 +38,36 @@ const graphPull = async (options, command) => {
 
   const { jwt } = await OneGraphCliClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
 
-  const schemaId = 'TODO_SCHEMA'
+  let oneGraphSessionId = loadCLISession(state)
+  let lockfile = readLockfile({ siteRoot: command.netlify.site.root })
 
-  const oneGraphSessionId = loadCLISession(state)
+  if (!oneGraphSessionId || !lockfile) {
+    warn(
+      'No local Netlify Graph session found, skipping command queue drain. Create a new session by running `netlify graph:edit`.',
+    )
+    oneGraphSessionId = await ensureCLISession({
+      config,
+      netlifyGraphConfig,
+      metadata: {},
+      netlifyToken,
+      site,
+      state,
+    })
+
+    lockfile = readLockfile({ siteRoot: command.netlify.site.root })
+  }
+
+  if (lockfile === undefined) {
+    error(
+      `${NETLIFYDEVERR} Error: no lockfile found, unable to run \`netlify graph:library\`. To pull a remote schema (and create a lockfile), run ${chalk.yellow(
+        'netlify graph:pull',
+      )} `,
+    )
+    return
+  }
+
+  const { schemaId } = lockfile.locked
+
   await refetchAndGenerateFromOneGraph({
     config,
     logger: log,
@@ -46,13 +78,6 @@ const graphPull = async (options, command) => {
     siteId,
     sessionId: oneGraphSessionId,
   })
-
-  if (!oneGraphSessionId) {
-    warn(
-      'No local Netlify Graph session found, skipping command queue drain. Create a new session by running `netlify graph:edit`.',
-    )
-    return
-  }
 
   const schemaString = readGraphQLSchemaFile(netlifyGraphConfig)
 
@@ -85,18 +110,30 @@ const graphPull = async (options, command) => {
   if (next.events) {
     const ackIds = []
     for (const event of next.events) {
-      await handleCliSessionEvent({
-        config,
-        netlifyToken,
-        event,
-        netlifyGraphConfig,
-        schema,
-        schemaId,
-        sessionId: oneGraphSessionId,
-        siteId: site.id,
-        siteRoot: site.root,
-      })
-      ackIds.push(event.id)
+      const audience = event.audience || OneGraphClient.eventAudience(event)
+
+      if (audience === 'CLI') {
+        const eventName = OneGraphClient.friendlyEventName(event)
+        log(`${chalk.magenta('Handling')} Netlify Graph: ${eventName}...`)
+        const nextSchemaId = readSchemaIdFromLockfile({ siteRoot: site.root })
+
+        if (!nextSchemaId) {
+          warn('Unable to load schemaId from Netlify Graph lockfile, run graph:pull to update')
+          return
+        }
+        await handleCliSessionEvent({
+          config,
+          netlifyToken,
+          event,
+          netlifyGraphConfig,
+          schema,
+          schemaId: nextSchemaId,
+          sessionId: oneGraphSessionId,
+          siteId: site.id,
+          siteRoot: site.root,
+        })
+        ackIds.push(event.id)
+      }
     }
 
     await OneGraphCliClient.ackCLISessionEvents({
@@ -116,7 +153,7 @@ const graphPull = async (options, command) => {
 const createGraphPullCommand = (program) =>
   program
     .command('graph:pull')
-    .description('Pull down your local Netlify Graph schema, and process pending Graph edit events')
+    .description('Pull your remote Netlify Graph schema locally, and process pending Graph edit events')
     .action(async (options, command) => {
       await graphPull(options, command)
     })
