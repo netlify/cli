@@ -1,6 +1,7 @@
 // @ts-check
 /* eslint-disable eslint-comments/disable-enable-pair */
 /* eslint-disable fp/no-loops */
+/* eslint-disable no-underscore-dangle */
 const crypto = require('crypto')
 const { readFileSync, writeFileSync } = require('fs')
 const os = require('os')
@@ -11,6 +12,8 @@ const gitRepoInfo = require('git-repo-info')
 const {
   // eslint-disable-next-line no-unused-vars
   CliEventHelper,
+  // eslint-disable-next-line no-unused-vars
+  CodegenHelpers,
   GraphQL,
   InternalConsole,
   NetlifyGraph,
@@ -41,6 +44,9 @@ const internalConsole = {
   error,
   debug: console.debug,
 }
+
+/** @type {string | null} */
+let currentPersistedDocId = null
 
 /**
  * Keep track of which document hashes we've received from the server so we can ignore events from the filesystem based on them
@@ -425,6 +431,8 @@ const fetchGraphQLOperationsLibraryFromPersistedDoc = async (input) => {
     // Sorts the operations stably, prepends the @netlify directive, etc.
     const operationsDocString = normalizeOperationsDoc(GraphQL, persistedDoc.query)
 
+    currentPersistedDocId = docId
+
     return operationsDocString
   } catch {
     warn(`Unable to reach Netlify Graph servers in order to update Graph operations file`)
@@ -487,27 +495,44 @@ const handleOperationsLibraryPersistedEvent = async (input) => {
   updateGraphQLOperationsFileFromPersistedDoc({ ...input, operationsDocString: operationsFileContents })
 }
 
+/**
+ *
+ * @param {object} input
+ * @param {any} input.site The site object
+ * @param {CliEventHelper.CliEvent} input.event
+ * @param {GraphQL.GraphQLSchema} input.schema The GraphQL schema to use when generating code
+ * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
+ * @param {object} input.config The parsed netlify.toml config file
+ * @param {string} input.docId The GraphQL operations document id to fetch
+ * @param {string} input.netlifyToken The (typically netlify) access token that is used for authentication, if any
+ * @param {string} input.schemaId The schemaId for the current session
+ * @param {string} input.sessionId The session ID to use for this CLI session (default: read from state)
+ * @param {string} input.siteId The site id to query against
+ * @param {string} input.siteRoot Path to the root of the project
+ * @returns {Promise<void>}
+ */
 const handleCliSessionEvent = async ({
   config,
+  docId,
   event,
   netlifyGraphConfig,
   netlifyToken,
   schema,
   schemaId,
   sessionId,
+  site,
   siteId,
   siteRoot,
 }) => {
-  const { __typename } = await event
-  switch (__typename) {
+  switch (event.__typename) {
     case 'OneGraphNetlifyCliSessionTestEvent': {
-      /** @type {CliEventHelper.OneGraphNetlifyCliSessionTestEvent} */
-      const localEvent = event
-      const { payload } = localEvent
+      const { payload } = event
 
       await handleCliSessionEvent({
         config,
+        docId,
         netlifyToken,
+        // @ts-ignore
         event: payload,
         netlifyGraphConfig,
         schema,
@@ -515,31 +540,31 @@ const handleCliSessionEvent = async ({
         sessionId,
         siteId,
         siteRoot,
+        site,
       })
+
       break
     }
     case 'OneGraphNetlifyCliSessionGenerateHandlerEvent': {
-      /** @type {CliEventHelper.OneGraphNetlifyCliSessionGenerateHandlerEvent} */
-      const localEvent = event
-      const { payload } = localEvent
+      const { payload } = event
 
       if (!payload.operationId) {
         warn(`No operation id found in payload,
-  ${JSON.stringify(payload, null, 2)}`)
+${JSON.stringify(payload, null, 2)}`)
         return
       }
 
       const codegenModule = await getCodegenModule({ config })
       if (!codegenModule) {
         error(
-          `No Graph codegen module specified in netlify.toml under the [graph] header. Please specify 'codeGenerators' field and try again.`,
+          `No Netlify Graph codegen module specified in netlify.toml under the [graph] header. Please specify 'codeGenerator' field and try again.`,
         )
         return
       }
 
-      const codeGenerator = await getCodegenFunctionById({ config, id: payload.codeGeneratorId })
+      const codeGenerator = await getCodegenFunctionById({ config, id: payload.codegenId })
       if (!codeGenerator) {
-        warn(`Unable to find Netlify Graph code generator with id "${payload.codeGeneratorId}"`)
+        warn(`Unable to find Netlify Graph code generator with id "${payload.codegenId}"`)
         return
       }
 
@@ -560,8 +585,9 @@ const handleCliSessionEvent = async ({
 
       for (const file of files) {
         /** @type {CliEventHelper.OneGraphNetlifyCliSessionFileWrittenEvent} */
-        // @ts-expect-error: TODO (sg): verify this works
         const fileWrittenEvent = {
+          id: crypto.randomUUID(),
+          createdAt: Date.now().toString(),
           __typename: 'OneGraphNetlifyCliSessionFileWrittenEvent',
           sessionId,
           payload: {
@@ -585,41 +611,21 @@ const handleCliSessionEvent = async ({
           warn(`Unable to reach Netlify Graph servers in order to notify handler files written to disk`)
         }
       }
+
       break
     }
     case 'OneGraphNetlifyCliSessionOpenFileEvent': {
-      /** @type {CliEventHelper.OneGraphNetlifyCliSessionOpenFileEvent} */
-      const localEvent = event
-      const { payload } = localEvent
+      break
+    }
+    case 'OneGraphNetlifyCliSessionMetadataRequestEvent': {
+      const graphJwt = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
 
-      if (!payload.filePath) {
-        warn(`No filePath found in payload, ${JSON.stringify(payload, null, 2)}`)
-        return
-      }
-
-      const editor = process.env.EDITOR || null
-
-      if (!editor) {
-        warn(
-          `No $EDITOR environmental variable defined. Please define an env var with e.g. $EDITOR="code" for the best end-to-end Netlify Graph experience`,
-        )
-        return
-      }
-
-      if (editor) {
-        log(`Opening ${editor} for ${payload.filePath}`)
-        execa(editor, [payload.filePath], {
-          preferLocal: true,
-          // windowsHide needs to be false for child process to terminate properly on Windows
-          windowsHide: false,
-        })
-      }
+      const input = { config, docId, jwt: graphJwt.jwt, schemaId, sessionId, siteRoot }
+      await publishCliSessionMetadataPublishEvent(input)
       break
     }
     case 'OneGraphNetlifyCliSessionPersistedLibraryUpdatedEvent': {
-      /** @type {CliEventHelper.OneGraphNetlifyCliSessionPersistedLibraryUpdatedEvent} */
-      const localEvent = event
-      const { payload } = localEvent
+      const { payload } = event
       await handleOperationsLibraryPersistedEvent({
         config,
         netlifyToken,
@@ -630,17 +636,17 @@ const handleCliSessionEvent = async ({
         siteId,
         siteRoot,
       })
+
       break
     }
     default: {
       warn(
-        `Unrecognized event received, you may need to upgrade your CLI version: ${__typename}: ${JSON.stringify(
+        `Unrecognized event received, you may need to upgrade your CLI version: ${event.__typename}: ${JSON.stringify(
           event,
           null,
           2,
         )}`,
       )
-      break
     }
   }
 }
@@ -683,7 +689,7 @@ const getCLISessionMetadata = async ({ jwt, oneGraphSessionId, siteId }) => {
  * @param {object} input
  * @param {string} input.siteRoot The root file path for the site
  * @param {object} input.config The parsed netlify.toml config file
- * @returns {Promise<Record<string, any>>} Any locally detected facts that are relevant to include in the cli session metadata
+ * @returns {Promise<CliEventHelper.DetectedLocalCLISessionMetadata>} Any locally detected facts that are relevant to include in the cli session metadata
  */
 const detectLocalCLISessionMetadata = async ({ config, siteRoot }) => {
   const { branch } = gitRepoInfo()
@@ -694,7 +700,8 @@ const detectLocalCLISessionMetadata = async ({ config, siteRoot }) => {
 
   const editor = process.env.EDITOR || null
 
-  let codegen = {}
+  /** @type {CodegenHelpers.CodegenModuleMeta | null} */
+  let codegen = null
 
   const codegenModule = await getCodegenModule({ config })
 
@@ -705,7 +712,7 @@ const detectLocalCLISessionMetadata = async ({ config, siteRoot }) => {
       generators: codegenModule.generators.map((generator) => ({
         id: generator.id,
         name: generator.name,
-        options: generator.generateHandlerOptions,
+        options: generator.generateHandlerOptions || null,
         supportedDefinitionTypes: generator.supportedDefinitionTypes,
         version: generator.version,
       })),
@@ -723,6 +730,50 @@ const detectLocalCLISessionMetadata = async ({ config, siteRoot }) => {
   }
 
   return detectedMetadata
+}
+
+/**
+ *
+ * @param {object} input
+ * @param {string} input.jwt The GraphJWT string
+ * @param {string} input.sessionId The id of the cli session to fetch the current metadata for
+ * @param {object} input.config The parsed netlify.toml config file
+ * @param {string} input.siteRoot Path to the root of the project
+ * @param {string} input.docId The GraphQL operations document id to fetch
+ * @param {string} input.schemaId The GraphQL schemaId to use when generating code
+ */
+const publishCliSessionMetadataPublishEvent = async ({ config, docId, jwt, schemaId, sessionId, siteRoot }) => {
+  const detectedMetadata = await detectLocalCLISessionMetadata({ config, siteRoot })
+
+  /** @type {CliEventHelper.OneGraphNetlifyCliSessionMetadataPublishEvent} */
+  const event = {
+    __typename: 'OneGraphNetlifyCliSessionMetadataPublishEvent',
+    audience: 'UI',
+    createdAt: Date.now.toString(),
+    id: crypto.randomUUID(),
+    sessionId,
+    payload: {
+      cliVersion: detectedMetadata.cliVersion,
+      editor: detectedMetadata.editor,
+      siteRoot: detectedMetadata.siteRoot,
+      siteRootFriendly: detectedMetadata.siteRoot,
+      persistedDocId: docId,
+      schemaId,
+      codegenModule: detectedMetadata.codegen,
+    },
+  }
+
+  try {
+    await OneGraphClient.executeCreateCLISessionEventMutation(
+      {
+        sessionId,
+        payload: event,
+      },
+      { accessToken: jwt },
+    )
+  } catch {
+    warn(`Unable to reach Netlify Graph servers in order to notify handler files written to disk`)
+  }
 }
 
 /**
@@ -814,6 +865,8 @@ const persistNewOperationsDocForSession = async ({
     warn(`Failed to create persisted query for editing, ${JSON.stringify(persistedResult, null, 2)}`)
   }
 
+  currentPersistedDocId = persistedDoc.id
+
   const newMetadata = { docId: persistedDoc.id }
   const result = await upsertMergeCLISessionMetadata({
     config,
@@ -864,6 +917,7 @@ const loadCLISession = (state) => state.get('oneGraphSessionId')
 const startOneGraphCLISession = async (input) => {
   const { config, netlifyGraphConfig, netlifyToken, site, state } = input
   const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId: site.id, nfToken: netlifyToken })
+
   OneGraphClient.ensureAppForSite(jwt, site.id)
 
   const oneGraphSessionId = await ensureCLISession({
@@ -964,14 +1018,26 @@ const startOneGraphCLISession = async (input) => {
             return
           }
 
+          if (!schema) {
+            warn('Unable to load schema from for Netlify Graph, run graph:pull to update')
+            return
+          }
+
+          if (!currentPersistedDocId) {
+            warn('Unable to read current persisted Graph library doc id')
+            return
+          }
+
           await handleCliSessionEvent({
             config,
+            docId: currentPersistedDocId,
             netlifyToken,
             event,
             netlifyGraphConfig,
             schema,
             schemaId,
             sessionId: oneGraphSessionId,
+            site,
             siteId: site.id,
             siteRoot: site.root,
           })

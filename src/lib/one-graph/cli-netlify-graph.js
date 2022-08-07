@@ -363,7 +363,7 @@ const generateFunctionsFile = async ({ config, netlifyGraphConfig, operationsDoc
   const codegenModule = await getCodegenModule({ config })
   if (!codegenModule) {
     error(
-      `No Graph codegen module specified in netlify.toml under the [graph] header. Please specify 'codeGenerators' field and try again.`,
+      `No Netlify Graph codegen module specified in netlify.toml under the [graph] header. Please specify 'codeGenerator' field and try again.`,
     )
     return
   }
@@ -454,14 +454,7 @@ const readGraphQLSchemaFile = (netlifyGraphConfig) => {
  * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
  * @returns {Array<{filePath: string, prettierSuccess: boolean}> | undefined} An array of the generated handler filepaths
  */
-const generateHandlerByOperationId = ({
-  generate,
-  handlerOptions,
-  logger,
-  netlifyGraphConfig,
-  operationId,
-  schema,
-}) => {
+const generateHandlerByOperationId = ({ generate, handlerOptions, netlifyGraphConfig, operationId, schema }) => {
   let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
   if (currentOperationsDoc.trim().length === 0) {
     currentOperationsDoc = NetlifyGraph.defaultExampleOperationsDoc
@@ -478,6 +471,8 @@ const generateHandlerByOperationId = ({
     operationsDoc: currentOperationsDoc,
   }
 
+  log('Generate!')
+
   const result = NetlifyGraph.generateCustomHandlerSource(generateHandlerPayload)
 
   if (!result) {
@@ -487,9 +482,13 @@ const generateHandlerByOperationId = ({
 
   const { exportedFiles, operation } = result
 
+  log('Ensure path...')
+
   ensureFunctionsPath(netlifyGraphConfig)
+  log('\t done!')
 
   if (!exportedFiles) {
+    warn(`No exported files from Netlify Graph code generator`)
     return
   }
 
@@ -521,7 +520,7 @@ const generateHandlerByOperationId = ({
 
     fs.writeFileSync(absoluteFilename, content)
     const relativePath = path.relative(process.cwd(), absoluteFilename)
-    logger && logger(`Wrote ${chalk.cyan(relativePath)}`)
+    log(`Wrote ${chalk.cyan(relativePath)}`)
     runPrettier(absoluteFilename)
 
     results.push({
@@ -742,9 +741,16 @@ let codegenModule = null
 
 const dynamicallyLoadCodegenModule = async ({ config, cwd }) => {
   const basePath = cwd || process.cwd()
-  const importPath = config.graph.codeGenerators
+  const importPath = config.graph.codeGenerator
 
   try {
+    if (!importPath) {
+      warn(
+        `No Netlify Graph codegen module specified in netlify.toml under the [graph] header. Please specify 'codeGenerator' field and try again.`,
+      )
+      return
+    }
+
     const absolute = [basePath, 'node_modules', ...importPath.split('/'), 'index.js']
     const relativePath = path.join(basePath, importPath)
     const absoluteOrNodePath = path.resolve(...absolute)
@@ -810,7 +816,7 @@ const autocompleteCodegenModules = async ({ config }) => {
     return null
   }
 
-  log(`Using Graph Codegen module ${codegenModule.id} [${codegenModule.version}] from '${config.graph.codeGenerators}'`)
+  log(`Using Graph Codegen module ${codegenModule.id} [${codegenModule.version}] from '${config.graph.codeGenerator}'`)
 
   const allGeneratorChoices = codegenModule.generators
     // eslint-disable-next-line id-length
