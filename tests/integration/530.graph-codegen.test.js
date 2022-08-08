@@ -1,5 +1,4 @@
 /* eslint-disable eslint-comments/disable-enable-pair */
-/* eslint-disable array-callback-return */
 /* eslint-disable no-unused-vars */
 // @ts-check
 const fs = require('fs')
