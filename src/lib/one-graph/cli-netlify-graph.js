@@ -1,11 +1,20 @@
+/* eslint-disable eslint-comments/disable-enable-pair */
+/* eslint-disable no-else-return */
 // @ts-check
 const fs = require('fs')
 const path = require('path')
 const process = require('process')
 
 const inquirer = require('inquirer')
-// eslint-disable-next-line no-unused-vars
-const { CodegenHelpers, GraphQL, GraphQLHelpers, InternalConsole, NetlifyGraph } = require('netlify-onegraph-internal')
+const {
+  // eslint-disable-next-line no-unused-vars
+  CodegenHelpers,
+  GraphQL,
+  GraphQLHelpers,
+  IncludedCodegen,
+  InternalConsole,
+  NetlifyGraph,
+} = require('netlify-onegraph-internal')
 
 const { chalk, detectServerSettings, error, execa, getFunctionsDir, log, warn } = require('../../utils')
 
@@ -742,6 +751,17 @@ const autocompleteOperationNames = async ({ netlifyGraphConfig }) => {
 const dynamicallyLoadCodegenModule = async ({ config, cwd }) => {
   const basePath = cwd || process.cwd()
   const importPath = config.graph.codeGenerator
+
+  // We currently include some default code generators for the most common framework
+  // use-cases. We still require it to be explicitly configured in netlify.toml,
+  // but we don't require an additional package install for it.
+  const includedCodegenModule = IncludedCodegen.includedCodegenModules.find(
+    (codegenModule) => codegenModule.sigil === importPath,
+  )
+
+  if (includedCodegenModule) {
+    return includedCodegenModule
+  }
 
   try {
     if (!importPath) {

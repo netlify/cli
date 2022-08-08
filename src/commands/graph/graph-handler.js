@@ -86,7 +86,7 @@ const createGraphHandlerCommand = (program) =>
   program
     .command('graph:handler')
     .argument('[name]', 'Operation name')
-    .option('-c, --codegen <id>', 'Code generator to use')
+    .option('-c, --codegen <id>', 'The id of the specific code generator to use')
     .description(
       'Generate a handler for a Graph operation given its name. See `graph:operations` for a list of operations.',
     )
