@@ -1,6 +1,6 @@
 /* eslint-disable eslint-comments/disable-enable-pair */
-/* eslint-disable no-unused-vars */
 // @ts-check
+
 const {
   autocompleteCodegenModules,
   autocompleteOperationNames,
