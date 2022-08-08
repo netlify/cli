@@ -58,11 +58,7 @@ const graphPull = async (options, command) => {
   }
 
   if (lockfile === undefined) {
-    error(
-      `${NETLIFYDEVERR} Error: no lockfile found, unable to run \`netlify graph:library\`. To pull a remote schema (and create a lockfile), run ${chalk.yellow(
-        'netlify graph:pull',
-      )} `,
-    )
+    error(`${NETLIFYDEVERR} Error: unable to create lockfile for site and session, exiting.`)
     return
   }
 

@@ -471,8 +471,6 @@ const generateHandlerByOperationId = ({ generate, handlerOptions, netlifyGraphCo
     operationsDoc: currentOperationsDoc,
   }
 
-  log('Generate!')
-
   const result = NetlifyGraph.generateCustomHandlerSource(generateHandlerPayload)
 
   if (!result) {
@@ -482,10 +480,9 @@ const generateHandlerByOperationId = ({ generate, handlerOptions, netlifyGraphCo
 
   const { exportedFiles, operation } = result
 
-  log('Ensure path...')
+  log('Ensure destinatino path exists...')
 
   ensureFunctionsPath(netlifyGraphConfig)
-  log('\t done!')
 
   if (!exportedFiles) {
     warn(`No exported files from Netlify Graph code generator`)
@@ -736,10 +733,12 @@ const autocompleteOperationNames = async ({ netlifyGraphConfig }) => {
     error(`Error parsing operations library: ${parseError}`)
   }
 }
-
-/** @type {CodegenHelpers.CodegenModule | null} */
-let codegenModule = null
-
+/**
+ * @param {object} input
+ * @param {object} input.config The parsed netlify.toml file
+ * @param {string=} input.cwd The optional directory to use as a base path when resolving codegen modules
+ * @returns {Promise<CodegenHelpers.CodegenModule | void>} codegenModule
+ */
 const dynamicallyLoadCodegenModule = async ({ config, cwd }) => {
   const basePath = cwd || process.cwd()
   const importPath = config.graph.codeGenerator
@@ -790,29 +789,24 @@ const dynamicallyLoadCodegenModule = async ({ config, cwd }) => {
       }
     }
 
-    codegenModule = newModule || null
+    return newModule
   } catch (error_) {
     warn(`Failed to load Graph code generator, please make sure that ${importPath} is either exists as a local file or is listed in your package.json under devDependencies, and that it's a commonjs (not esm) dependency.
 
 ${error_}`)
-    return null
   }
 }
 
-const getCodegenModule = async ({ config }) => {
-  await dynamicallyLoadCodegenModule({ config, cwd: null })
-
-  return codegenModule
-}
+const getCodegenModule = ({ config }) => dynamicallyLoadCodegenModule({ config })
 
 const getCodegenFunctionById = async ({ config, id }) => {
-  await dynamicallyLoadCodegenModule({ config, cwd: null })
+  const codegenModule = await getCodegenModule({ config })
 
   return codegenModule && codegenModule.generators && codegenModule.generators.find((generator) => generator.id === id)
 }
 
 const autocompleteCodegenModules = async ({ config }) => {
-  await dynamicallyLoadCodegenModule({ config, cwd: null })
+  const codegenModule = await getCodegenModule({ config })
   if (!codegenModule || !codegenModule.generators) {
     return null
   }
