@@ -23,7 +23,6 @@ const { normalize } = require('./utils/snapshots')
  */
 const ensurePath = (filePath) => {
   const fullPath = path.resolve(...filePath)
-  console.log('Create path:', fullPath)
   fs.mkdirSync(fullPath, { recursive: true })
 }
 
@@ -48,18 +47,6 @@ const baseNetlifyGraphConfig = {
   runtimeTargetEnv: 'node',
   graphQLOperationsSourceDirectory: ['dummy'],
 }
-
-/**
- * @constant
- * @type {("esm" | "commonjs")[]}
- */
-const moduleTypes = [
-  'esm',
-  /**
-   * Restore this when we have a way to generate commonjs modules with typescript enabled
-   */
-  //  'commonjs'
-]
 
 const loadAsset = (filename) => fs.readFileSync(path.join(__dirname, 'assets', filename), 'utf8')
 const schemaString = loadAsset('../assets/netlifyGraphSchema.graphql')
@@ -135,7 +122,6 @@ const generateHandlerText = ({
     const parentDir = filePathArr.slice(0, -1)
 
     ensurePath(parentDir)
-    console.log('generateHandlerText:', filePath)
     fs.writeFileSync(filePath, content, 'utf8')
     // Run prettier to help normalize the output
     runPrettier(filePath)
@@ -185,7 +171,6 @@ const testGenerateRuntime = async ({ codegenModule }) => {
     const parentDir = filePathArr.slice(0, -1)
 
     ensurePath(parentDir)
-    console.log('testGenerateRuntime:', filePath)
     fs.writeFileSync(filePath, file.content, 'utf8')
     // Run prettier to help normalize the output (and also make sure we're generating parsable code)
     runPrettier(filePath)
