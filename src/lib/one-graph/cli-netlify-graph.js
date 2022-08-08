@@ -1,5 +1,5 @@
 /* eslint-disable eslint-comments/disable-enable-pair */
-/* eslint-disable no-else-return */
+ 
 // @ts-check
 const fs = require('fs')
 const path = require('path')
