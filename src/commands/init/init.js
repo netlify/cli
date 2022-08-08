@@ -57,7 +57,7 @@ const logGitSetupInstructionsAndExit = () => {
 
    ${chalk.cyanBright.bold('git init')}
 
-2. Commit your files
+2. Add your files
 
    ${chalk.cyanBright.bold('git add .')}
 
