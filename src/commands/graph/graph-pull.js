@@ -108,31 +108,44 @@ const graphPull = async (options, command) => {
   }
 
   if (next.events) {
-    const ackIds = []
+    const ackEventIds = []
     for (const event of next.events) {
-      const audience = event.audience || OneGraphClient.eventAudience(event)
+      try {
+        const audience = event.audience || OneGraphClient.eventAudience(event)
 
-      if (audience === 'CLI') {
-        const eventName = OneGraphClient.friendlyEventName(event)
-        log(`${chalk.magenta('Handling')} Netlify Graph: ${eventName}...`)
-        const nextSchemaId = readSchemaIdFromLockfile({ siteRoot: site.root })
+        if (audience === 'CLI') {
+          const eventName = OneGraphClient.friendlyEventName(event)
+          log(`${chalk.magenta('Handling')} Netlify Graph: ${eventName}...`)
+          const nextSchemaId = readSchemaIdFromLockfile({ siteRoot: site.root })
 
-        if (!nextSchemaId) {
-          warn('Unable to load schemaId from Netlify Graph lockfile, run graph:pull to update')
-          return
+          if (!nextSchemaId) {
+            warn('Unable to load schemaId from Netlify Graph lockfile, run graph:pull to update')
+            return
+          }
+
+          if (!schema) {
+            warn('Unable to load schema from for Netlify Graph, run graph:pull to update')
+            return
+          }
+
+          await handleCliSessionEvent({
+            config,
+            netlifyToken,
+            // @ts-expect-error
+            event,
+            netlifyGraphConfig,
+            schema,
+            schemaId: nextSchemaId,
+            sessionId: oneGraphSessionId,
+            siteId: site.id,
+            siteRoot: site.root,
+          })
+          ackEventIds.push(event.id)
         }
-        await handleCliSessionEvent({
-          config,
-          netlifyToken,
-          event,
-          netlifyGraphConfig,
-          schema,
-          schemaId: nextSchemaId,
-          sessionId: oneGraphSessionId,
-          siteId: site.id,
-          siteRoot: site.root,
-        })
-        ackIds.push(event.id)
+      } catch (error_) {
+        warn(`Error processing individual Netlify Graph event, skipping:
+${JSON.stringify(error_, null, 2)}`)
+        ackEventIds.push(event.id)
       }
     }
 
@@ -140,7 +153,7 @@ const graphPull = async (options, command) => {
       appId: siteId,
       jwt,
       sessionId: oneGraphSessionId,
-      eventIds: ackIds,
+      eventIds: ackEventIds,
     })
   }
 }

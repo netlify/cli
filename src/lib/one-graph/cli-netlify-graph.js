@@ -711,12 +711,13 @@ const autocompleteOperationNames = async ({ netlifyGraphConfig }) => {
     // eslint-disable-next-line n/global-require
     const inquirerAutocompletePrompt = require('inquirer-autocomplete-prompt')
     /** multiple matching detectors, make the user choose */
+    // @ts-ignore
     inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
 
+    // @ts-ignore
     const { selectedOperationName } = await inquirer.prompt({
       name: 'selectedOperationName',
       message: `For which operation would you like to generate a handler?`,
-      // @ts-expect-error
       type: 'autocomplete',
       pageSize: perPage,
       source(_, input) {
@@ -833,14 +834,15 @@ const autocompleteCodegenModules = async ({ config }) => {
   // eslint-disable-next-line n/global-require
   const inquirerAutocompletePrompt = require('inquirer-autocomplete-prompt')
   /** multiple matching detectors, make the user choose */
+  // @ts-ignore
   inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
 
   const perPage = 50
 
+  // @ts-ignore
   const { selectedCodeGen } = await inquirer.prompt({
     name: 'selectedCodeGen',
     message: `Which codegen would you like to use?`,
-    // @ts-expect-error
     type: 'autocomplete',
     pageSize: perPage,
     source(_, input) {
