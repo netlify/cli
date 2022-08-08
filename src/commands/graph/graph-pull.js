@@ -115,12 +115,12 @@ const graphPull = async (options, command) => {
           const nextSchemaId = readSchemaIdFromLockfile({ siteRoot: site.root })
 
           if (!nextSchemaId) {
-            warn('Unable to load schemaId from Netlify Graph lockfile, run graph:pull to update')
+            warn('Unable to load schemaId from Netlify Graph lockfile')
             return
           }
 
           if (!schema) {
-            warn('Unable to load schema from for Netlify Graph, run graph:pull to update')
+            warn('Unable to load schema from for Netlify Graph')
             return
           }
 
