@@ -1,4 +1,5 @@
 // @ts-check
+const process = require('process')
 const { fileURLToPath } = require('url')
 
 const { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn, watchDebounced } = require('../../utils/command-helpers')
@@ -107,8 +108,12 @@ class EdgeFunctionsRegistry {
    */
   async build(functions) {
     try {
-      // eslint-disable-next-line n/prefer-global/process
-      const { graph, success } = await this.runIsolate(functions, process.env)
+      const { graph, success } = await this.runIsolate(functions, {
+        DEPLOY_URL: process.env.DEPLOY_URL,
+        URL: process.env.URL,
+        HTTP_PROXY: process.env.HTTP_PROXY,
+        HTTPS_PROXY: process.env.HTTPS_PROXY,
+      })
 
       if (!success) {
         throw new Error('Build error')
