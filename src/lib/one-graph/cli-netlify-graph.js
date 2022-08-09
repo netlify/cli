@@ -33,11 +33,11 @@ InternalConsole.registerConsole(internalConsole)
 const { extractFunctionsFromOperationDoc } = NetlifyGraph
 
 /**
- * Updates the netlify.toml in-place with the `graph.codeGenerator` key set to `codegenModulImportPath`
- * @param {string} codegenModulImportPath
+ * Updates the netlify.toml in-place with the `graph.codeGenerator` key set to `codegenModuleImportPath`
+ * @param {string} codegenModuleImportPath
  * @returns void
  */
-const setNetlifyTomlCodeGeneratorModule = (codegenModulImportPath) => {
+const setNetlifyTomlCodeGeneratorModule = (codegenModuleImportPath) => {
   let toml
   let filepath
 
@@ -55,7 +55,7 @@ const setNetlifyTomlCodeGeneratorModule = (codegenModulImportPath) => {
     return
   }
 
-  const entry = `  codeGenerator = "${codegenModulImportPath}"
+  const entry = `  codeGenerator = "${codegenModuleImportPath}"
 `
 
   const fullEntry = `
