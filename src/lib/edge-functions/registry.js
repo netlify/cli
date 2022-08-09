@@ -108,6 +108,7 @@ class EdgeFunctionsRegistry {
    */
   async build(functions) {
     try {
+      console.log(process.env)
       const { graph, success } = await this.runIsolate(functions, {
         DEPLOY_URL: process.env.DEPLOY_URL,
         URL: process.env.URL,

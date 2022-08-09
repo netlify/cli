@@ -31,6 +31,8 @@ const startServer = async ({ cwd, offline = true, env = {}, args = [], expectFai
     getExecaOptions({ cwd, env }),
   )
 
+  ps.stdout.pipe(process.stdout)
+
   const promptHistory = []
 
   if (prompt) {
