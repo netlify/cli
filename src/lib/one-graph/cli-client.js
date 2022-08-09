@@ -1126,9 +1126,6 @@ const startOneGraphCLISession = async (input) => {
     onSchemaIdChange: (newSchemaId) => {
       log('Netlify Graph schemaId changed:', newSchemaId)
     },
-    onSchemaIdChange: (newSchemaId) => {
-      log('Netlify Graph schemaId changed:', newSchemaId)
-    },
     onEvents: async (events) => {
       const ackEventIds = []
 
