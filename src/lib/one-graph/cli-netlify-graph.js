@@ -33,16 +33,21 @@ InternalConsole.registerConsole(internalConsole)
 const { extractFunctionsFromOperationDoc } = NetlifyGraph
 
 /**
- * Updates the netlify.toml in-place with the `graph.codeGenerator` key set to `codegenModuleImportPath`
- * @param {string} codegenModuleImportPath
+ * Updates the netlify.toml in-place with the `graph.codeGenerator` key set to `codegenModuleImportPath
+ * It's a very hacky, string-based implementation for because
+ * 1. There isn't a good toml parser/updater/pretty-printer that preserves formatting and comments
+ * 2. We want to make minimal changes to `netlify.toml`
+ * @param {object} input
+ * @param {string} input.siteRoot
+ * @param {string} input.codegenModuleImportPath
  * @returns void
  */
-const setNetlifyTomlCodeGeneratorModule = (codegenModuleImportPath) => {
+const setNetlifyTomlCodeGeneratorModule = ({ codegenModuleImportPath, siteRoot }) => {
   let toml
   let filepath
 
   try {
-    const filepathArr = ['/', ...process.cwd().split(path.sep), 'netlify.toml']
+    const filepathArr = [...siteRoot.split(path.sep), 'netlify.toml']
     filepath = path.resolve(...filepathArr)
     const configText = fs.readFileSync(filepath, 'utf-8')
 

@@ -632,42 +632,57 @@ ${JSON.stringify(payload, null, 2)}`)
 
       const editor = process.env.EDITOR || null
 
-      for (const file of files) {
-        /** @type {CliEventHelper.OneGraphNetlifyCliSessionFileWrittenEvent} */
-        const fileWrittenEvent = {
-          id: crypto.randomUUID(),
-          createdAt: new Date().toString(),
-          __typename: 'OneGraphNetlifyCliSessionFileWrittenEvent',
-          sessionId,
-          payload: {
-            editor,
-            filePath: file.filePath,
+      /** @type {CliEventHelper.OneGraphNetlifyCliSessionFilesWrittenEvent} */
+      const filesWrittenEvent = {
+        id: crypto.randomUUID(),
+        createdAt: new Date().toString(),
+        __typename: 'OneGraphNetlifyCliSessionFilesWrittenEvent',
+        sessionId,
+        payload: {
+          editor,
+          filePaths: files.map((file) => file.filePath),
+        },
+        audience: 'UI',
+      }
+
+      try {
+        const graphJwt = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
+
+        await OneGraphClient.executeCreateCLISessionEventMutation(
+          {
+            sessionId,
+            payload: filesWrittenEvent,
           },
-          audience: 'UI',
-        }
-
-        try {
-          const graphJwt = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
-
-          await OneGraphClient.executeCreateCLISessionEventMutation(
-            {
-              sessionId,
-              payload: fileWrittenEvent,
-            },
-            { accessToken: graphJwt.jwt },
-          )
-        } catch {
-          warn(`Unable to reach Netlify Graph servers in order to notify handler files written to disk`)
-        }
+          { accessToken: graphJwt.jwt },
+        )
+      } catch {
+        warn(`Unable to reach Netlify Graph servers in order to notify handler files written to disk`)
       }
 
       break
     }
     case 'OneGraphNetlifyCliSessionOpenFileEvent': {
+      if (!event.payload.filePath) {
+        warn(`No filePath found in payload, ${JSON.stringify(event.payload, null, 2)}`)
+        return
+      }
+
+      const editor = process.env.EDITOR || null
+
+      if (editor) {
+        log(`Opening ${editor} for ${event.payload.filePath}`)
+        execa(editor, [event.payload.filePath], {
+          preferLocal: true,
+          // windowsHide needs to be false for child process to terminate properly on Windows
+          windowsHide: false,
+        })
+      } else {
+        warn('No $EDITOR set in env vars')
+      }
       break
     }
     case 'OneGraphNetlifyCliSessionSetGraphCodegenModuleEvent': {
-      setNetlifyTomlCodeGeneratorModule(event.payload.codegenModuleImportPath)
+      setNetlifyTomlCodeGeneratorModule({ codegenModuleImportPath: event.payload.codegenModuleImportPath, siteRoot })
       break
     }
     case 'OneGraphNetlifyCliSessionMetadataRequestEvent': {
