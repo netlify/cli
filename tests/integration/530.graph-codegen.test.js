@@ -116,7 +116,7 @@ const generateHandlerText = ({
       baseFilenameArr = [baseFilename]
     }
 
-    const filePathArr = [...outDir, ...baseFilenameArr]
+    const filePathArr = [...outDir, ...baseFilenameArr].map((step) => step.replace(':', '___'))
 
     const filePath = path.resolve(...filePathArr)
     const parentDir = filePathArr.slice(0, -1)
@@ -165,7 +165,7 @@ const testGenerateRuntime = async ({ codegenModule }) => {
       `netlify-graph-test-${codegenModule.id}-${codegenModule.version}`,
     ]
 
-    const filePathArr = [...outDir, ...file.name]
+    const filePathArr = [...outDir, ...file.name].map((step) => step.replace(':', '___'))
 
     const filePath = path.resolve(...filePathArr)
     const parentDir = filePathArr.slice(0, -1)
@@ -198,7 +198,7 @@ const testGenerateRuntime = async ({ codegenModule }) => {
   })
 
   generatedRuntime.forEach((runtimeFile) => {
-    const filepath = runtimeFile.name.join('/')
+    const filepath = runtimeFile.name.map((step) => step.replace(':', '___')).join('/')
     // @ts-ignore
     test(`netlify graph function library runtime codegen library [${codegenModule.id}-${codegenModule.version}]:./${filepath}}`, (t) => {
       t.snapshot(runtimeFile.content)
