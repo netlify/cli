@@ -27,7 +27,7 @@ class EdgeFunctionsRegistry {
    * @param {() => Promise<object>} opts.getUpdatedConfig
    * @param {EdgeFunction[]} opts.internalFunctions
    * @param {string} opts.projectDir
-   * @param {(functions: EdgeFunction[]) => Promise<object>} opts.runIsolate
+   * @param {(functions: EdgeFunction[], env?: NodeJS.ProcessEnv) => Promise<object>} opts.runIsolate
    */
   constructor({
     bundler,
@@ -65,7 +65,7 @@ class EdgeFunctionsRegistry {
     this.internalFunctions = internalFunctions
 
     /**
-     * @type {(functions: EdgeFunction[]) => Promise<object>}
+     * @type {(functions: EdgeFunction[], env?: NodeJS.ProcessEnv) => Promise<object>}
      */
     this.runIsolate = runIsolate
 
@@ -107,7 +107,8 @@ class EdgeFunctionsRegistry {
    */
   async build(functions) {
     try {
-      const { graph, success } = await this.runIsolate(functions)
+      // eslint-disable-next-line n/prefer-global/process
+      const { graph, success } = await this.runIsolate(functions, process.env)
 
       if (!success) {
         throw new Error('Build error')
