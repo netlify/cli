@@ -524,6 +524,7 @@ const dev = async (options, command) => {
       }
 
       stopWatchingCLISessions = await startOneGraphCLISession({
+        config,
         netlifyGraphConfig,
         netlifyToken,
         site,
@@ -535,6 +536,7 @@ const dev = async (options, command) => {
       const oneGraphSessionId = loadCLISession(state)
 
       await persistNewOperationsDocForSession({
+        config,
         netlifyGraphConfig,
         netlifyToken,
         oneGraphSessionId,

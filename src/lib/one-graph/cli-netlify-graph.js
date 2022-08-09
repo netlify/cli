@@ -1,9 +1,21 @@
+/* eslint-disable eslint-comments/disable-enable-pair */
+
 // @ts-check
 const fs = require('fs')
 const path = require('path')
 const process = require('process')
 
-const { GraphQL, GraphQLHelpers, InternalConsole, NetlifyGraph } = require('netlify-onegraph-internal')
+const inquirer = require('inquirer')
+const inquirerAutocompletePrompt = require('inquirer-autocomplete-prompt')
+const {
+  // eslint-disable-next-line no-unused-vars
+  CodegenHelpers,
+  GraphQL,
+  GraphQLHelpers,
+  IncludedCodegen,
+  InternalConsole,
+  NetlifyGraph,
+} = require('netlify-onegraph-internal')
 
 const { chalk, detectServerSettings, error, execa, getFunctionsDir, log, warn } = require('../../utils')
 
@@ -29,10 +41,10 @@ const filterRelativePathItems = (items) => items.filter((part) => part !== '')
 
 /**
  * Return the default Netlify Graph configuration for a generic site
- * @param {object} context
- * @param {object} context.baseConfig
- * @param {string[]} context.detectedFunctionsPath
- * @param {string[]} context.siteRoot
+ * @param {object} input
+ * @param {object} input.baseConfig
+ * @param {string[]} input.detectedFunctionsPath
+ * @param {string[]} input.siteRoot
  */
 const makeDefaultNetlifyGraphConfig = ({ baseConfig, detectedFunctionsPath }) => {
   const functionsPath = filterRelativePathItems([...detectedFunctionsPath])
@@ -60,10 +72,10 @@ const makeDefaultNetlifyGraphConfig = ({ baseConfig, detectedFunctionsPath }) =>
 
 /**
  * Return the default Netlify Graph configuration for a Nextjs site
- * @param {object} context
- * @param {object} context.baseConfig
- * @param {string[]} context.detectedFunctionsPath
- * @param {string[]} context.siteRoot
+ * @param {object} input
+ * @param {object} input.baseConfig
+ * @param {string[]} input.detectedFunctionsPath
+ * @param {string[]} input.siteRoot
  */
 const makeDefaultNextJsNetlifyGraphConfig = ({ baseConfig, siteRoot }) => {
   const functionsPath = filterRelativePathItems([...siteRoot, 'pages', 'api'])
@@ -91,10 +103,10 @@ const makeDefaultNextJsNetlifyGraphConfig = ({ baseConfig, siteRoot }) => {
 
 /**
  * Return the default Netlify Graph configuration for a Remix site
- * @param {object} context
- * @param {object} context.baseConfig
- * @param {string[]} context.detectedFunctionsPath
- * @param {string[]} context.siteRoot
+ * @param {object} input
+ * @param {object} input.baseConfig
+ * @param {string[]} input.detectedFunctionsPath
+ * @param {string[]} input.siteRoot
  */
 const makeDefaultRemixNetlifyGraphConfig = ({ baseConfig, detectedFunctionsPath, siteRoot }) => {
   const functionsPath = filterRelativePathItems([...detectedFunctionsPath])
@@ -133,7 +145,7 @@ const defaultFrameworkLookup = {
  * Return a full NetlifyGraph config with any defaults overridden by netlify.toml
  * @param {object} input
  * @param {import('../../commands/base-command').BaseCommand} input.command
- * @param {import('commander').OptionValues} input.options
+ * @param {import('commander').CommandOptions} input.options
  * @param {Partial<import('../../utils/types').ServerSettings>=} input.settings
  * @return {Promise<NetlifyGraph.NetlifyGraphConfig>} NetlifyGraphConfig
  */
@@ -290,37 +302,119 @@ const runPrettier = async (filePath) => {
 }
 
 /**
+ * Generate a library file with type definitions for a given NetlifyGraphConfig, operationsDoc, and schema, returning the in-memory source
+ * @param {object} input
+ * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig
+ * @param {GraphQL.GraphQLSchema} input.schema The schema to use when generating the functions and their types
+ * @param {string} input.schemaId The id of the schema to use when fetching Graph data
+ * @param {string} input.operationsDoc The GraphQL operations doc to use when generating the functions
+ * @param {Record<string, NetlifyGraph.ExtractedFunction>} input.functions The parsed queries with metadata to use when generating library functions
+ * @param {Record<string, NetlifyGraph.ExtractedFragment>} input.fragments The parsed queries with metadata to use when generating library functions
+ * @param {CodegenHelpers.GenerateRuntimeFunction} input.generate
+ * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
+ * @returns {Promise<CodegenHelpers.NamedExportedFile[]>} In-memory files
+ */
+const generateRuntimeSource = async ({
+  fragments,
+  functions,
+  generate,
+  netlifyGraphConfig,
+  operationsDoc,
+  schema,
+  schemaId,
+}) => {
+  const runtime = await NetlifyGraph.generateRuntime({
+    GraphQL,
+    netlifyGraphConfig,
+    schema,
+    operationsDoc,
+    operations: functions,
+    fragments,
+    generate,
+    schemaId,
+  })
+
+  return runtime
+}
+
+/**
  * Generate a library file with type definitions for a given NetlifyGraphConfig, operationsDoc, and schema, writing them to the filesystem
- * @param {object} context
- * @param {NetlifyGraph.NetlifyGraphConfig} context.netlifyGraphConfig
- * @param {GraphQL.GraphQLSchema} context.schema The schema to use when generating the functions and their types
- * @param {string} context.operationsDoc The GraphQL operations doc to use when generating the functions
- * @param {Record<string, NetlifyGraph.ExtractedFunction>} context.functions The parsed queries with metadata to use when generating library functions
- * @param {Record<string, NetlifyGraph.ExtractedFragment>} context.fragments The parsed queries with metadata to use when generating library functions
- * @param {(message: string) => void=} context.logger A function that if provided will be used to log messages
+ * @param {object} input
+ * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig
+ * @param {GraphQL.GraphQLSchema} input.schema The schema to use when generating the functions and their types
+ * @param {string} input.schemaId The id of the schema to use when fetching Graph data
+ * @param {string} input.operationsDoc The GraphQL operations doc to use when generating the functions
+ * @param {Record<string, NetlifyGraph.ExtractedFunction>} input.functions The parsed queries with metadata to use when generating library functions
+ * @param {Record<string, NetlifyGraph.ExtractedFragment>} input.fragments The parsed queries with metadata to use when generating library functions
+ * @param {CodegenHelpers.GenerateRuntimeFunction} input.generate
+ * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
  * @returns {Promise<void>} Void, effectfully writes the generated library to the filesystem
  */
-const generateFunctionsFile = async ({ fragments, functions, logger, netlifyGraphConfig, operationsDoc, schema }) => {
-  const { clientSource, typeDefinitionsSource } = await NetlifyGraph.generateFunctionsSource(
+const generateRuntime = async ({
+  fragments,
+  functions,
+  generate,
+  logger,
+  netlifyGraphConfig,
+  operationsDoc,
+  schema,
+  schemaId,
+}) => {
+  const runtime = await generateRuntimeSource({
     netlifyGraphConfig,
     schema,
     operationsDoc,
     functions,
     fragments,
-  )
+    generate,
+    schemaId,
+  })
 
-  ensureNetlifyGraphPath(netlifyGraphConfig)
-  const implementationResolvedPath = path.resolve(...netlifyGraphConfig.netlifyGraphImplementationFilename)
-  fs.writeFileSync(implementationResolvedPath, clientSource, 'utf8')
-  const implementationRelativePath = path.relative(process.cwd(), implementationResolvedPath)
-  logger && logger(`Wrote ${chalk.cyan(implementationRelativePath)}`)
+  runtime.forEach((file) => {
+    const implementationResolvedPath = path.resolve(...file.name)
+    fs.writeFileSync(implementationResolvedPath, file.content, 'utf8')
+    const implementationRelativePath = path.relative(process.cwd(), implementationResolvedPath)
+    logger && logger(`Wrote ${chalk.cyan(implementationRelativePath)}`)
+    runPrettier(path.resolve(...file.name))
+  })
+}
 
-  const typeDefinitionsResolvedPath = path.resolve(...netlifyGraphConfig.netlifyGraphTypeDefinitionsFilename)
-  fs.writeFileSync(typeDefinitionsResolvedPath, typeDefinitionsSource, 'utf8')
-  const typeDefinitionsRelativePath = path.relative(process.cwd(), typeDefinitionsResolvedPath)
-  logger && logger(`Wrote ${chalk.cyan(typeDefinitionsRelativePath)}`)
-  runPrettier(path.resolve(...netlifyGraphConfig.netlifyGraphImplementationFilename))
-  runPrettier(path.resolve(...netlifyGraphConfig.netlifyGraphTypeDefinitionsFilename))
+/**
+ * Generate a library file with type definitions for a given NetlifyGraphConfig, operationsDoc, and schema, writing them to the filesystem
+ * @param {object} input
+ * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig
+ * @param {object} input.config The parsed netlify.toml file
+ * @param {string} input.schemaId
+ * @param {GraphQL.GraphQLSchema} input.schema The schema to use when generating the functions and their types
+ * @param {string} input.operationsDoc The GraphQL operations doc to use when generating the functions
+ * @param {Record<string, NetlifyGraph.ExtractedFunction>} input.functions The parsed queries with metadata to use when generating library functions
+ * @param {Record<string, NetlifyGraph.ExtractedFragment>} input.fragments The parsed queries with metadata to use when generating library functions
+ * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
+ * @returns {Promise<void>} Void, effectfully writes the generated library to the filesystem
+ */
+const generateFunctionsFile = async ({ config, netlifyGraphConfig, operationsDoc, schema, schemaId }) => {
+  const parsedDoc = GraphQL.parse(operationsDoc)
+
+  const extracted = extractFunctionsFromOperationDoc(GraphQL, parsedDoc)
+
+  const codegenModule = await getCodegenModule({ config })
+  if (!codegenModule) {
+    error(
+      `No Netlify Graph codegen module specified in netlify.toml under the [graph] header. Please specify 'codeGenerator' field and try again.`,
+    )
+    return
+  }
+
+  await generateRuntime({
+    generate: codegenModule.generateRuntime,
+    schema,
+    schemaId,
+    netlifyGraphConfig,
+    logger: log,
+    fragments: extracted.fragments,
+    functions: extracted.functions,
+    operationsDoc,
+  })
 }
 
 /**
@@ -331,7 +425,7 @@ const generateFunctionsFile = async ({ fragments, functions, logger, netlifyGrap
 const readGraphQLOperationsSourceFile = (netlifyGraphConfig) => {
   ensureNetlifyGraphPath(netlifyGraphConfig)
 
-  const fullFilename = path.resolve(...netlifyGraphConfig.graphQLOperationsSourceFilename)
+  const fullFilename = path.resolve(...(netlifyGraphConfig.graphQLOperationsSourceFilename || []))
   if (!fs.existsSync(fullFilename)) {
     fs.writeFileSync(fullFilename, '')
     fs.closeSync(fs.openSync(fullFilename, 'w'))
@@ -353,7 +447,7 @@ const writeGraphQLOperationsSourceFile = ({ logger, netlifyGraphConfig, operatio
   const graphqlSource = operationsDocString
 
   ensureNetlifyGraphPath(netlifyGraphConfig)
-  const resolvedPath = path.resolve(...netlifyGraphConfig.graphQLOperationsSourceFilename)
+  const resolvedPath = path.resolve(...(netlifyGraphConfig.graphQLOperationsSourceFilename || []))
   fs.writeFileSync(resolvedPath, graphqlSource, 'utf8')
   const relativePath = path.relative(process.cwd(), resolvedPath)
   logger && logger(`Wrote ${chalk.cyan(relativePath)}`)
@@ -389,28 +483,64 @@ const readGraphQLSchemaFile = (netlifyGraphConfig) => {
 /**
  * Given a NetlifyGraphConfig, read the appropriate files and write a handler for the given operationId to the filesystem
  * @param {object} input
+ * @param {CodegenHelpers.GenerateHandlerFunction} input.generate
+ * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig
+ * @param {GraphQL.GraphQLSchema} input.schema The GraphQL schema to use when generating the handler
+ * @param {string} input.operationId The operationId to use when generating the handler
+ * @param {string} input.operationsDoc The document containing the operation with operationId and any fragment dependency to use when generating the handler
+ * @param {object} input.handlerOptions The options to use when generating the handler
+ * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
+ * @returns {{exportedFiles: CodegenHelpers.ExportedFile[]; operation: GraphQL.OperationDefinitionNode;} | undefined} The generated files
+ */
+const generateHandlerSourceByOperationId = ({
+  generate,
+  handlerOptions,
+  netlifyGraphConfig,
+  operationId,
+  operationsDoc,
+  schema,
+}) => {
+  const generateHandlerPayload = {
+    GraphQL,
+    generate,
+    handlerOptions,
+    schema,
+    schemaString: GraphQL.printSchema(schema),
+    netlifyGraphConfig,
+    operationId,
+    operationsDoc,
+  }
+
+  const result = NetlifyGraph.generateCustomHandlerSource(generateHandlerPayload)
+
+  return result
+}
+
+/**
+ * Given a NetlifyGraphConfig, read the appropriate files and write a handler for the given operationId to the filesystem
+ * @param {object} input
+ * @param {CodegenHelpers.GenerateHandlerFunction} input.generate
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig
  * @param {GraphQL.GraphQLSchema} input.schema The GraphQL schema to use when generating the handler
  * @param {string} input.operationId The operationId to use when generating the handler
  * @param {object} input.handlerOptions The options to use when generating the handler
  * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
- * @returns {Array<{filePath: string, prettierSuccess: boolean}>} An array of the generated handler filepaths
+ * @returns {Array<{filePath: string, prettierSuccess: boolean}> | undefined} An array of the generated handler filepaths
  */
-const generateHandlerByOperationId = ({ handlerOptions, logger, netlifyGraphConfig, operationId, schema }) => {
+const generateHandlerByOperationId = ({ generate, handlerOptions, netlifyGraphConfig, operationId, schema }) => {
   let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
   if (currentOperationsDoc.trim().length === 0) {
     currentOperationsDoc = NetlifyGraph.defaultExampleOperationsDoc
   }
 
-  const generateHandlerPayload = {
+  const result = generateHandlerSourceByOperationId({
+    generate,
     handlerOptions,
-    schema,
     netlifyGraphConfig,
     operationId,
     operationsDoc: currentOperationsDoc,
-  }
-
-  const result = NetlifyGraph.generateHandlerSource(generateHandlerPayload)
+    schema,
+  })
 
   if (!result) {
     warn(`No handler was generated for operationId ${operationId}`)
@@ -419,9 +549,12 @@ const generateHandlerByOperationId = ({ handlerOptions, logger, netlifyGraphConf
 
   const { exportedFiles, operation } = result
 
+  log('Ensure destination path exists...')
+
   ensureFunctionsPath(netlifyGraphConfig)
 
   if (!exportedFiles) {
+    warn(`No exported files from Netlify Graph code generator`)
     return
   }
 
@@ -453,7 +586,7 @@ const generateHandlerByOperationId = ({ handlerOptions, logger, netlifyGraphConf
 
     fs.writeFileSync(absoluteFilename, content)
     const relativePath = path.relative(process.cwd(), absoluteFilename)
-    logger && logger(`Wrote ${chalk.cyan(relativePath)}`)
+    log(`Wrote ${chalk.cyan(relativePath)}`)
     runPrettier(absoluteFilename)
 
     results.push({
@@ -468,21 +601,29 @@ const generateHandlerByOperationId = ({ handlerOptions, logger, netlifyGraphConf
 /**
  * Given a NetlifyGraphConfig, read the appropriate files and write a handler for the given operationId to the filesystem
  * @param {object} input
+ * @param {CodegenHelpers.GenerateHandlerFunction} input.generate
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig
  * @param {GraphQL.GraphQLSchema} input.schema The GraphQL schema to use when generating the handler
  * @param {string} input.operationName The name of the operation to use when generating the handler
  * @param {object} input.handlerOptions The options to use when generating the handler
- * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
+ * @param {(message: string) => void} input.logger A function that if provided will be used to log messages
  * @returns
  */
-const generateHandlerByOperationName = ({ handlerOptions, logger, netlifyGraphConfig, operationName, schema }) => {
+const generateHandlerByOperationName = ({
+  generate,
+  handlerOptions,
+  logger,
+  netlifyGraphConfig,
+  operationName,
+  schema,
+}) => {
   let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
   if (currentOperationsDoc.trim().length === 0) {
     currentOperationsDoc = NetlifyGraph.defaultExampleOperationsDoc
   }
 
   const parsedDoc = parse(currentOperationsDoc)
-  const { functions } = extractFunctionsFromOperationDoc(parsedDoc)
+  const { functions } = extractFunctionsFromOperationDoc(GraphQL, parsedDoc)
 
   const operation = Object.values(functions).find(
     (potentialOperation) => potentialOperation.operationName === operationName,
@@ -493,7 +634,69 @@ const generateHandlerByOperationName = ({ handlerOptions, logger, netlifyGraphCo
     return
   }
 
-  generateHandlerByOperationId({ logger, netlifyGraphConfig, schema, operationId: operation.id, handlerOptions })
+  generateHandlerByOperationId({
+    logger,
+    generate,
+    netlifyGraphConfig,
+    schema,
+    operationId: operation.id,
+    handlerOptions,
+  })
+}
+
+/**
+ * Given a NetlifyGraphConfig, read the appropriate files and write a handler for the given operationId to the filesystem
+ * @param {object} input
+ * @param {CodegenHelpers.GenerateHandlerPreviewFunction} input.generate
+ * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig
+ * @param {GraphQL.GraphQLSchema} input.schema The GraphQL schema to use when generating the handler
+ * @param {string} input.operationName The name of the operation to use when generating the handler
+ * @param {object} input.handlerOptions The options to use when generating the handler
+ * @param {(message: string) => void} input.logger A function that if provided will be used to log messages
+ * @returns {CodegenHelpers.ExportedFile | undefined}
+ */
+const generateHandlerPreviewByOperationName = ({
+  generate,
+  handlerOptions,
+  netlifyGraphConfig,
+  operationName,
+  schema,
+}) => {
+  let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
+  if (currentOperationsDoc.trim().length === 0) {
+    currentOperationsDoc = NetlifyGraph.defaultExampleOperationsDoc
+  }
+
+  const parsedDoc = parse(currentOperationsDoc)
+  const { functions } = extractFunctionsFromOperationDoc(GraphQL, parsedDoc)
+
+  const operation = Object.values(functions).find(
+    (potentialOperation) => potentialOperation.operationName === operationName,
+  )
+
+  if (!operation) {
+    warn(`No operation named ${operationName} was found in the operations doc`)
+    return
+  }
+
+  const generateHandlerPreviewPayload = {
+    GraphQL,
+    generate,
+    handlerOptions,
+    schema,
+    schemaString: GraphQL.printSchema(schema),
+    netlifyGraphConfig,
+    operationId: operation.id,
+    operationsDoc: currentOperationsDoc,
+  }
+
+  const preview = NetlifyGraph.generatePreview(generateHandlerPreviewPayload)
+
+  if (!preview) {
+    return
+  }
+
+  return preview.exportedFile
 }
 
 // Export the minimal set of functions that are required for Netlify Graph
@@ -545,7 +748,192 @@ const loadNetlifyGraphConfig = (siteRoot) => {
   return {}
 }
 
+const autocompleteOperationNames = async ({ netlifyGraphConfig }) => {
+  try {
+    let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
+    if (currentOperationsDoc.trim().length === 0) {
+      currentOperationsDoc = NetlifyGraph.defaultExampleOperationsDoc
+    }
+
+    const parsedDoc = parse(currentOperationsDoc)
+    const extracted = extractFunctionsFromOperationDoc(GraphQL, parsedDoc)
+
+    const { functions } = extracted
+
+    const sorted = Object.values(functions).sort((aItem, bItem) =>
+      aItem.operationName.localeCompare(bItem.operationName),
+    )
+
+    const perPage = 50
+
+    const allOperationChoices = sorted.map((operation) => ({
+      name: `${operation.operationName} (${operation.kind})`,
+      value: operation.operationName,
+    }))
+
+    const filterOperationNames = (operationChoices, input) =>
+      operationChoices.filter((operation) => operation.value.toLowerCase().match(input.toLowerCase()))
+
+    /** multiple matching detectors, make the user choose */
+    // @ts-ignore
+    inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
+
+    // @ts-ignore
+    const { selectedOperationName } = await inquirer.prompt({
+      name: 'selectedOperationName',
+      message: `For which operation would you like to generate a handler?`,
+      type: 'autocomplete',
+      pageSize: perPage,
+      source(_, input) {
+        if (!input || input === '') {
+          return allOperationChoices
+        }
+
+        const filteredChoices = filterOperationNames(allOperationChoices, input)
+        // only show filtered results
+        return filteredChoices
+      },
+    })
+
+    return selectedOperationName
+  } catch (parseError) {
+    error(`Error parsing operations library: ${parseError}`)
+  }
+}
+/**
+ * @param {object} input
+ * @param {object} input.config The parsed netlify.toml file
+ * @param {string=} input.cwd The optional directory to use as a base path when resolving codegen modules
+ * @returns {Promise<CodegenHelpers.CodegenModule | void>} codegenModule
+ */
+const dynamicallyLoadCodegenModule = async ({ config, cwd }) => {
+  const basePath = cwd || process.cwd()
+  const importPath = config.graph.codeGenerator
+
+  // We currently include some default code generators for the most common framework
+  // use-cases. We still require it to be explicitly configured in netlify.toml,
+  // but we don't require an additional package install for it.
+  const includedCodegenModule = IncludedCodegen.includedCodegenModules.find(
+    (codegenModule) => codegenModule.sigil === importPath,
+  )
+
+  if (includedCodegenModule) {
+    return includedCodegenModule
+  }
+
+  try {
+    if (!importPath) {
+      warn(
+        `No Netlify Graph codegen module specified in netlify.toml under the [graph] header. Please specify 'codeGenerator' field and try again.`,
+      )
+      return
+    }
+
+    const absolute = [basePath, 'node_modules', ...importPath.split('/'), 'index.js']
+    const relativePath = path.join(basePath, importPath)
+    const absoluteOrNodePath = path.resolve(...absolute)
+
+    const finalPath = fs.existsSync(relativePath) ? relativePath : absoluteOrNodePath
+
+    /** @type {CodegenHelpers.CodegenModule | undefined} */
+    let newModule
+    try {
+      // eslint-disable-next-line import/no-dynamic-require, n/global-require
+      newModule = require(finalPath)
+    } catch {
+      // eslint-disable-next-line import/no-dynamic-require
+      newModule = await import(finalPath)
+    }
+
+    if (newModule) {
+      const hasGenerators = Array.isArray(newModule.generators)
+      let generatorsConform = true
+      if (hasGenerators) {
+        newModule.generators.forEach((generator) => {
+          const hasId = Boolean(generator.id)
+          const hasName = Boolean(generator.name)
+          const hasVersion = Boolean(generator.version)
+          const hasGenerator = Boolean(generator.generateHandler)
+
+          if (!hasId || !hasName || !hasVersion || !hasGenerator) {
+            generatorsConform = false
+          }
+        })
+      }
+
+      if (!generatorsConform) {
+        warn(`Generator ${importPath} does not conform to expected module declaration type, ignoring...`)
+        return
+      }
+    }
+
+    return newModule
+  } catch (error_) {
+    warn(`Failed to load Graph code generator, please make sure that ${importPath} either exists as a local file or is listed in your package.json under devDependencies, and can be 'require'd or 'import'ed.
+
+${error_}`)
+  }
+}
+
+const getCodegenModule = ({ config }) => dynamicallyLoadCodegenModule({ config })
+
+const getCodegenFunctionById = async ({ config, id }) => {
+  const codegenModule = await getCodegenModule({ config })
+
+  return codegenModule && codegenModule.generators && codegenModule.generators.find((generator) => generator.id === id)
+}
+
+const autocompleteCodegenModules = async ({ config }) => {
+  const codegenModule = await getCodegenModule({ config })
+  if (!codegenModule || !codegenModule.generators) {
+    return null
+  }
+
+  log(`Using Graph Codegen module ${codegenModule.id} [${codegenModule.version}] from '${config.graph.codeGenerator}'`)
+
+  const allGeneratorChoices = codegenModule.generators
+    // eslint-disable-next-line id-length
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((codeGen) => ({
+      name: `${codeGen.name} [${codeGen.id}]`,
+      value: codeGen.name,
+    }))
+
+  // eslint-disable-next-line unicorn/consistent-function-scoping
+  const filterModuleNames = (moduleChoices, input) =>
+    moduleChoices.filter((moduleChoice) => moduleChoice.name.toLowerCase().match(input.toLowerCase()))
+
+  /** multiple matching detectors, make the user choose */
+  // @ts-ignore
+  inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
+
+  const perPage = 50
+
+  // @ts-ignore
+  const { selectedCodeGen } = await inquirer.prompt({
+    name: 'selectedCodeGen',
+    message: `Which codegen would you like to use?`,
+    type: 'autocomplete',
+    pageSize: perPage,
+    source(_, input) {
+      if (!input || input === '') {
+        return allGeneratorChoices
+      }
+
+      const filteredChoices = filterModuleNames(allGeneratorChoices, input)
+      // only show filtered results
+      return filteredChoices
+    },
+  })
+
+  return codegenModule.generators.find(
+    (dynamicallyImportedModule) => dynamicallyImportedModule.name === selectedCodeGen,
+  )
+}
+
 module.exports = {
+  autocompleteCodegenModules,
+  autocompleteOperationNames,
   buildSchema,
   defaultExampleOperationsDoc: NetlifyGraph.defaultExampleOperationsDoc,
   extractFunctionsFromOperationDoc: NetlifyGraph.extractFunctionsFromOperationDoc,
@@ -554,6 +942,12 @@ module.exports = {
   generateHandlerSource: NetlifyGraph.generateHandlerSource,
   generateHandlerByOperationId,
   generateHandlerByOperationName,
+  generateHandlerPreviewByOperationName,
+  generateHandlerSourceByOperationId,
+  generateRuntime,
+  generateRuntimeSource,
+  getCodegenFunctionById,
+  getCodegenModule,
   getGraphEditUrlBySiteId,
   getGraphEditUrlBySiteName,
   getNetlifyGraphConfig,
