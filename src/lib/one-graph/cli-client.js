@@ -9,6 +9,7 @@ const path = require('path')
 const process = require('process')
 
 const gitRepoInfo = require('git-repo-info')
+const WSL = require('is-wsl')
 const {
   // eslint-disable-next-line no-unused-vars
   CliEventHelper,
@@ -21,6 +22,9 @@ const {
   OneGraphClient,
 } = require('netlify-onegraph-internal')
 
+const frameworkInfoPromise = import('@netlify/framework-info')
+
+const { version } = require('../../../package.json')
 // eslint-disable-next-line no-unused-vars
 const { StateConfig, USER_AGENT, chalk, error, execa, log, warn, watchDebounced } = require('../../utils')
 
@@ -31,6 +35,7 @@ const {
   getCodegenModule,
   normalizeOperationsDoc,
   readGraphQLOperationsSourceFile,
+  setNetlifyTomlCodeGeneratorModule,
   writeGraphQLOperationsSourceFile,
   writeGraphQLSchemaFile,
 } = require('./cli-netlify-graph')
@@ -156,6 +161,7 @@ const monitorCLISessionEvents = (input) => {
       if (shouldClose) {
         clearTimeout(handle)
         onClose && onClose()
+        return
       }
 
       const graphJwt = await OneGraphClient.getGraphJwtForSite({ siteId: appId, nfToken: netlifyToken })
@@ -626,42 +632,72 @@ ${JSON.stringify(payload, null, 2)}`)
 
       const editor = process.env.EDITOR || null
 
-      for (const file of files) {
-        /** @type {CliEventHelper.OneGraphNetlifyCliSessionFileWrittenEvent} */
-        const fileWrittenEvent = {
-          id: crypto.randomUUID(),
-          createdAt: new Date().toString(),
-          __typename: 'OneGraphNetlifyCliSessionFileWrittenEvent',
-          sessionId,
-          payload: {
-            editor,
-            filePath: file.filePath,
+      /** @type {CliEventHelper.OneGraphNetlifyCliSessionFilesWrittenEvent} */
+      const filesWrittenEvent = {
+        id: crypto.randomUUID(),
+        createdAt: new Date().toString(),
+        __typename: 'OneGraphNetlifyCliSessionFilesWrittenEvent',
+        sessionId,
+        payload: {
+          editor,
+          filePaths: files.map((file) => file.filePath),
+        },
+        audience: 'UI',
+      }
+
+      try {
+        const graphJwt = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
+
+        await OneGraphClient.executeCreateCLISessionEventMutation(
+          {
+            sessionId,
+            payload: filesWrittenEvent,
           },
-          audience: 'UI',
-        }
-
-        try {
-          const graphJwt = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
-
-          await OneGraphClient.executeCreateCLISessionEventMutation(
-            {
-              sessionId,
-              payload: fileWrittenEvent,
-            },
-            { accessToken: graphJwt.jwt },
-          )
-        } catch {
-          warn(`Unable to reach Netlify Graph servers in order to notify handler files written to disk`)
-        }
+          { accessToken: graphJwt.jwt },
+        )
+      } catch {
+        warn(`Unable to reach Netlify Graph servers in order to notify handler files written to disk`)
       }
 
       break
     }
     case 'OneGraphNetlifyCliSessionOpenFileEvent': {
+      if (!event.payload.filePath) {
+        warn(`No filePath found in payload, ${JSON.stringify(event.payload, null, 2)}`)
+        return
+      }
+
+      const editor = process.env.EDITOR || null
+
+      if (editor) {
+        log(`Opening ${editor} for ${event.payload.filePath}`)
+        execa(editor, [event.payload.filePath], {
+          preferLocal: true,
+          // windowsHide needs to be false for child process to terminate properly on Windows
+          windowsHide: false,
+        })
+      } else {
+        warn('No $EDITOR set in env vars')
+      }
+      break
+    }
+    case 'OneGraphNetlifyCliSessionSetGraphCodegenModuleEvent': {
+      setNetlifyTomlCodeGeneratorModule({ codegenModuleImportPath: event.payload.codegenModuleImportPath, siteRoot })
       break
     }
     case 'OneGraphNetlifyCliSessionMetadataRequestEvent': {
       const graphJwt = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
+
+      const { minimumCliVersionExpected } = event.payload
+
+      const cliIsOutOfDateForUI =
+        version.localeCompare(minimumCliVersionExpected, undefined, { numeric: true, sensitivity: 'base' }) === -1
+
+      if (cliIsOutOfDateForUI) {
+        warn(
+          `The Netlify Graph UI expects the netlify-cli to be at least at version "${minimumCliVersionExpected}", but you're running ${version}. You may need to upgrade for a stable experience.`,
+        )
+      }
 
       const input = { config, docId, jwt: graphJwt.jwt, schemaId, sessionId, siteRoot }
       await publishCliSessionMetadataPublishEvent(input)
@@ -742,11 +778,25 @@ const getCLISessionMetadata = async ({ jwt, oneGraphSessionId, siteId }) => {
  * @returns {Promise<CliEventHelper.DetectedLocalCLISessionMetadata>} Any locally detected facts that are relevant to include in the cli session metadata
  */
 const detectLocalCLISessionMetadata = async ({ config, siteRoot }) => {
+  // @ts-ignore
+  const { listFrameworks } = await frameworkInfoPromise
+
+  /** @type {string | null} */
+  let framework = null
+
+  try {
+    const frameworks = await listFrameworks({ projectDir: siteRoot })
+    framework = frameworks[0].id || null
+  } catch {}
+
   const { branch } = gitRepoInfo()
   const hostname = os.hostname()
   const userInfo = os.userInfo({ encoding: 'utf-8' })
   const { username } = userInfo
-  const cliVersion = USER_AGENT
+  const cliVersion = version
+
+  const platform = WSL ? 'wsl' : os.platform()
+  const arch = os.arch() === 'ia32' ? 'x86' : os.arch()
 
   const editor = process.env.EDITOR || null
 
@@ -776,7 +826,11 @@ const detectLocalCLISessionMetadata = async ({ config, siteRoot }) => {
     siteRoot,
     cliVersion,
     editor,
+    platform,
+    arch,
+    nodeVersion: process.version,
     codegen,
+    framework,
   }
 
   return detectedMetadata
@@ -810,6 +864,10 @@ const publishCliSessionMetadataPublishEvent = async ({ config, docId, jwt, schem
       persistedDocId: docId,
       schemaId,
       codegenModule: detectedMetadata.codegen,
+      arch: detectedMetadata.arch,
+      nodeVersion: detectedMetadata.nodeVersion,
+      platform: detectedMetadata.platform,
+      framework: detectedMetadata.framework,
     },
   }
 
@@ -1078,7 +1136,7 @@ const startOneGraphCLISession = async (input) => {
     site,
     state,
     onClose: () => {
-      log('CLI session closed, stopping monitoring...')
+      log('CLI session closed, stopping monitor...')
     },
     onSchemaIdChange: (newSchemaId) => {
       log('Netlify Graph schemaId changed:', newSchemaId)

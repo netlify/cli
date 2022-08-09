@@ -514,6 +514,9 @@ const dev = async (options, command) => {
 
     let stopWatchingCLISessions
 
+    let liveConfig = { ...config }
+    let isRestartingSession = false
+
     const createOrResumeSession = async function () {
       const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options, settings })
 
@@ -524,7 +527,7 @@ const dev = async (options, command) => {
       }
 
       stopWatchingCLISessions = await startOneGraphCLISession({
-        config,
+        config: liveConfig,
         netlifyGraphConfig,
         netlifyToken,
         site,
@@ -536,7 +539,7 @@ const dev = async (options, command) => {
       const oneGraphSessionId = loadCLISession(state)
 
       await persistNewOperationsDocForSession({
-        config,
+        config: liveConfig,
         netlifyGraphConfig,
         netlifyToken,
         oneGraphSessionId,
@@ -572,10 +575,16 @@ const dev = async (options, command) => {
     }
 
     // Set up a handler for config changes.
-    configWatcher.on('change', (newConfig) => {
+    configWatcher.on('change', async (newConfig) => {
       command.netlify.config = newConfig
-      stopWatchingCLISessions()
-      createOrResumeSession()
+      liveConfig = newConfig
+      if (isRestartingSession) {
+        return
+      }
+      stopWatchingCLISessions && stopWatchingCLISessions()
+      isRestartingSession = true
+      await createOrResumeSession()
+      isRestartingSession = false
     })
 
     const oneGraphSessionId = await createOrResumeSession()
