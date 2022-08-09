@@ -33,6 +33,61 @@ InternalConsole.registerConsole(internalConsole)
 const { extractFunctionsFromOperationDoc } = NetlifyGraph
 
 /**
+ * Updates the netlify.toml in-place with the `graph.codeGenerator` key set to `codegenModulImportPath`
+ * @param {string} codegenModulImportPath
+ * @returns void
+ */
+const setNetlifyTomlCodeGeneratorModule = (codegenModulImportPath) => {
+  let toml
+  let filepath
+
+  try {
+    const filepathArr = ['/', ...process.cwd().split(path.sep), 'netlify.toml']
+    filepath = path.resolve(...filepathArr)
+    const configText = fs.readFileSync(filepath, 'utf-8')
+
+    toml = configText
+  } catch (error_) {
+    warn(`Error reading netlify.toml for Netlify Graph codegenModule update: ${error_}`)
+  }
+
+  if (!filepath) {
+    return
+  }
+
+  const entry = `  codeGenerator = "${codegenModulImportPath}"
+`
+
+  const fullEntry = `
+[graph]
+${entry}`
+
+  if (!toml) {
+    fs.writeFileSync(filepath, fullEntry, 'utf-8')
+    return
+  }
+
+  const EOL = '\n'
+  let lines = toml.split(EOL)
+  const graphKeyLine = lines.findIndex((line) => line.trim().startsWith('[graph]'))
+  const hasGraphKey = graphKeyLine !== -1
+  const codegenKeyLine = lines.findIndex((line) => line.trim().startsWith('codeGenerator'))
+  const hasCodegenKeyLine = codegenKeyLine !== 1
+
+  if (hasCodegenKeyLine) {
+    lines.splice(codegenKeyLine, 1, entry)
+  } else if (hasGraphKey) {
+    lines.splice(graphKeyLine, 0, entry)
+  } else {
+    lines = [...lines, ...fullEntry.split(EOL)]
+  }
+
+  const newToml = lines.join(EOL)
+
+  fs.writeFileSync(filepath, newToml, 'utf-8')
+}
+
+/**
  * Remove any relative path components from the given path
  * @param {string[]} items Filesystem path items to filter
  * @return {string[]} Filtered filesystem path items
@@ -800,6 +855,10 @@ const autocompleteOperationNames = async ({ netlifyGraphConfig }) => {
     error(`Error parsing operations library: ${parseError}`)
   }
 }
+
+/** @type {string | undefined} */
+let lastWarnedFailedCodegenModule
+
 /**
  * @param {object} input
  * @param {object} input.config The parsed netlify.toml file
@@ -869,9 +928,13 @@ const dynamicallyLoadCodegenModule = async ({ config, cwd }) => {
 
     return newModule
   } catch (error_) {
-    warn(`Failed to load Graph code generator, please make sure that ${importPath} either exists as a local file or is listed in your package.json under devDependencies, and can be 'require'd or 'import'ed.
+    if (lastWarnedFailedCodegenModule !== importPath) {
+      warn(`Failed to load Graph code generator, please make sure that "${importPath}" either exists as a local file or is listed in your package.json under devDependencies, and can be 'require'd or 'import'ed.
 
 ${error_}`)
+
+      lastWarnedFailedCodegenModule = importPath
+    }
   }
 }
 
@@ -956,6 +1019,7 @@ module.exports = {
   parse,
   readGraphQLOperationsSourceFile,
   readGraphQLSchemaFile,
+  setNetlifyTomlCodeGeneratorModule,
   runPrettier,
   writeGraphQLOperationsSourceFile,
   writeGraphQLSchemaFile,
