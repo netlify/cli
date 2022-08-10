@@ -83,7 +83,7 @@ const monitorCLISessionEvents = (input) => {
 
   const frequency = 5000
   // 30 minutes
-  const defaultHeartbeatFrequency = 1_800_000
+  const defaultHeartbeatFrequency = 30_000
   let shouldClose = false
   let nextMarkActiveHeartbeat = defaultHeartbeatFrequency
 
@@ -95,8 +95,10 @@ const monitorCLISessionEvents = (input) => {
         appId,
         sessionId: currentSessionId,
       })
+
       const heartbeatIntervalms = fullSession.session.cliHeartbeatIntervalMs || defaultHeartbeatFrequency
       nextMarkActiveHeartbeat = heartbeatIntervalms
+
       const markCLISessionActiveResult = await OneGraphClient.executeMarkCliSessionActiveHeartbeat(
         graphJwt.jwt,
         site.id,
@@ -640,7 +642,11 @@ ${JSON.stringify(payload, null, 2)}`)
         sessionId,
         payload: {
           editor,
-          filePaths: files.map((file) => file.filePath),
+          // @ts-expect-error
+          files: files.map((file) => ({
+            name: file.name,
+            filePath: file.filePath,
+          })),
         },
         audience: 'UI',
       }

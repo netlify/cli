@@ -47,7 +47,7 @@ const setNetlifyTomlCodeGeneratorModule = ({ codegenModuleImportPath, siteRoot }
   let filepath
 
   try {
-    const filepathArr = [...siteRoot.split(path.sep), 'netlify.toml']
+    const filepathArr = ['/', ...siteRoot.split(path.sep), 'netlify.toml']
     filepath = path.resolve(...filepathArr)
     const configText = fs.readFileSync(filepath, 'utf-8')
 
@@ -585,7 +585,7 @@ const generateHandlerSourceByOperationId = ({
  * @param {string} input.operationId The operationId to use when generating the handler
  * @param {object} input.handlerOptions The options to use when generating the handler
  * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
- * @returns {Array<{filePath: string, prettierSuccess: boolean}> | undefined} An array of the generated handler filepaths
+ * @returns {Array<{filePath: string, name:string, prettierSuccess: boolean}> | undefined} An array of the generated handler filepaths
  */
 const generateHandlerByOperationId = ({ generate, handlerOptions, netlifyGraphConfig, operationId, schema }) => {
   let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
@@ -618,6 +618,7 @@ const generateHandlerByOperationId = ({ generate, handlerOptions, netlifyGraphCo
     return
   }
 
+  /** @type {Array<{filePath: string, name:string, prettierSuccess: boolean}>} */
   const results = []
 
   exportedFiles.forEach((exportedFile) => {
@@ -650,6 +651,7 @@ const generateHandlerByOperationId = ({ generate, handlerOptions, netlifyGraphCo
     runPrettier(absoluteFilename)
 
     results.push({
+      name: filenameArr.slice(-1)[0],
       filePath: absoluteFilename,
       prettierSuccess: true,
     })
