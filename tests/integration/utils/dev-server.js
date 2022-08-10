@@ -55,6 +55,11 @@ const startServer = async ({ cwd, offline = true, env = {}, args = [], expectFai
           port,
           errorBuffer,
           outputBuffer,
+          get output() {
+            // this is a getter so we do the actual joining as late as possible as the array might still get
+            // populated after we resolve here
+            return outputBuffer.join('')
+          },
           close: async () => {
             selfKilled = true
             await killProcess(ps)
