@@ -37,10 +37,11 @@ testMatrix.forEach(({ args }) => {
         })
         .withRedirectsFile({
           redirects: [
-            { from: `/api/*`, to: `/.netlify/functions/echo?a=1&a=2`, status: '200' },
-            { from: `/foo`, to: `/`, status: '302' },
-            { from: `/bar`, to: `/?a=1&a=2`, status: '302' },
-            { from: `/test id=:id`, to: `/?param=:id` },
+            { from: '/api/*', to: '/.netlify/functions/echo?a=1&a=2', status: '200' },
+            { from: '/foo', to: '/', status: '302' },
+            { from: '/bar', to: '/?a=1&a=2', status: '302' },
+            { from: '/test id=:id', to: '/?param=:id' },
+            { from: '/baz/*', to: '/.netlify/functions/echo?query=:splat' },
           ],
         })
         .withFunction({
@@ -53,14 +54,16 @@ testMatrix.forEach(({ args }) => {
         .buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const [fromFunction, queryPassthrough, queryInRedirect, withParamMatching] = await Promise.all([
-          got(`${server.url}/api/test?foo=1&foo=2&bar=1&bar=2`).json(),
-          got(`${server.url}/foo?foo=1&foo=2&bar=1&bar=2`, { followRedirect: false }),
-          got(`${server.url}/bar?foo=1&foo=2&bar=1&bar=2`, { followRedirect: false }),
-          got(`${server.url}/test?id=1`, { followRedirect: false }),
-        ])
+        const [fromFunction, queryPassthrough, queryInRedirect, withParamMatching, functionWithSplat] =
+          await Promise.all([
+            got(`${server.url}/api/test?foo=1&foo=2&bar=1&bar=2`).json(),
+            got(`${server.url}/foo?foo=1&foo=2&bar=1&bar=2`, { followRedirect: false }),
+            got(`${server.url}/bar?foo=1&foo=2&bar=1&bar=2`, { followRedirect: false }),
+            got(`${server.url}/test?id=1`, { followRedirect: false }),
+            got(`${server.url}/baz/abc`).json(),
+          ])
 
-        // query params should be taken from the request
+        // query params should be taken from redirect rule for functions
         // eslint-disable-next-line id-length
         t.deepEqual(fromFunction.multiValueQueryStringParameters, { a: ['1', '2'] })
 
@@ -72,6 +75,9 @@ testMatrix.forEach(({ args }) => {
 
         // query params should be taken from the redirect rule
         t.is(withParamMatching.headers.location, '/?param=1')
+
+        // splat should be passed as query param in function redirects
+        t.deepEqual(functionWithSplat.queryStringParameters, { query: 'abc' })
       })
     })
   })
