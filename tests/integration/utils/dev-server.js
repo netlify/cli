@@ -48,7 +48,7 @@ const startServer = async ({ cwd, offline = true, env = {}, args = [], expectFai
     })
     ps.stdout.on('data', (data) => {
       outputBuffer.push(data)
-      if (!expectFailure && data.includes('Edge function server running')) {
+      if (!expectFailure && data.includes('Edge functions server running')) {
         resolve({
           url,
           host,

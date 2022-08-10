@@ -183,7 +183,10 @@ const prepareServer = async ({
       port,
     })
 
-    log(`${NETLIFYDEVLOG} Edge function server running`)
+    // We use this message in tests to know when edge functions are ready
+    if (env.NODE_ENV === 'test' || env.DEBUG) {
+      log(`${NETLIFYDEVLOG} Edge functions server running`)
+    }
 
     const registry = new EdgeFunctionsRegistry({
       bundler,
