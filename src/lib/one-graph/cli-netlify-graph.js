@@ -874,7 +874,11 @@ let lastWarnedFailedCodegenModule
  */
 const dynamicallyLoadCodegenModule = async ({ config, cwd }) => {
   const basePath = cwd || process.cwd()
-  const importPath = config.graph.codeGenerator
+  const importPath = config.graph && config.graph.codeGenerator
+
+  if (!importPath) {
+    return
+  }
 
   // We currently include some default code generators for the most common framework
   // use-cases. We still require it to be explicitly configured in netlify.toml,
