@@ -233,6 +233,7 @@ const FRAMEWORK_PORT_TIMEOUT = 6e5
  * @param {object} params
  * @param {*} params.addonsUrls
  * @param {import('../base-command').NetlifyOptions["config"]} params.config
+ * @param {import('../base-command').NetlifyOptions["cachedConfig"]['env']} params.env
  * @param {InspectSettings} params.inspectSettings
  * @param {() => Promise<object>} params.getUpdatedConfig
  * @param {string} params.geolocationMode
@@ -247,6 +248,7 @@ const FRAMEWORK_PORT_TIMEOUT = 6e5
 const startProxyServer = async ({
   addonsUrls,
   config,
+  env,
   geoCountry,
   geolocationMode,
   getUpdatedConfig,
@@ -261,6 +263,7 @@ const startProxyServer = async ({
     addonsUrls,
     config,
     configPath: site.configPath,
+    env,
     geolocationMode,
     geoCountry,
     getUpdatedConfig,
@@ -479,6 +482,7 @@ const dev = async (options, command) => {
   let url = await startProxyServer({
     addonsUrls,
     config,
+    env: command.netlify.cachedConfig.env,
     geolocationMode: options.geo,
     geoCountry: options.country,
     getUpdatedConfig,

@@ -27,13 +27,14 @@ class EdgeFunctionsRegistry {
    * @param {() => Promise<object>} opts.getUpdatedConfig
    * @param {EdgeFunction[]} opts.internalFunctions
    * @param {string} opts.projectDir
-   * @param {(functions: EdgeFunction[]) => Promise<object>} opts.runIsolate
+   * @param {(functions: EdgeFunction[], env?: NodeJS.ProcessEnv) => Promise<object>} opts.runIsolate
    */
   constructor({
     bundler,
     config,
     configPath,
     directories,
+    env,
     getUpdatedConfig,
     internalFunctions,
     projectDir,
@@ -65,7 +66,7 @@ class EdgeFunctionsRegistry {
     this.internalFunctions = internalFunctions
 
     /**
-     * @type {(functions: EdgeFunction[]) => Promise<object>}
+     * @type {(functions: EdgeFunction[], env?: NodeJS.ProcessEnv) => Promise<object>}
      */
     this.runIsolate = runIsolate
 
@@ -78,6 +79,11 @@ class EdgeFunctionsRegistry {
      * @type {EdgeFunctionDeclaration[]}
      */
     this.declarations = this.getDeclarations(config)
+
+    /**
+     * @type {Record<string, string>}
+     */
+    this.env = EdgeFunctionsRegistry.getEnvironmentVariables(env)
 
     /**
      * @type {Map<string, import('chokidar').FSWatcher>}
@@ -107,7 +113,7 @@ class EdgeFunctionsRegistry {
    */
   async build(functions) {
     try {
-      const { graph, success } = await this.runIsolate(functions)
+      const { graph, success } = await this.runIsolate(functions, this.env)
 
       if (!success) {
         throw new Error('Build error')
@@ -176,6 +182,20 @@ class EdgeFunctionsRegistry {
     const declarations = [...userFunctions, ...this.internalFunctions]
 
     return declarations
+  }
+
+  static getEnvironmentVariables(envConfig) {
+    const env = Object.create(null)
+    Object.entries(envConfig).forEach(([key, variable]) => {
+      if (variable.sources.includes('ui')) {
+        env[key] = variable.value
+      }
+    })
+
+    env.DENO_REGION = 'local'
+    env.DENO_DEPLOYMENT_ID = 'xxx='
+
+    return env
   }
 
   getManifest() {

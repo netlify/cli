@@ -536,4 +536,83 @@ test('should detect deleted edge functions', async (t) => {
   })
 })
 
+test('should have only allowed environment variables set', async (t) => {
+  const siteInfo = {
+    account_slug: 'test-account',
+    id: 'site_id',
+    name: 'site-name',
+    build_settings: {
+      env: {
+        SECRET_ENV: 'true',
+      },
+    },
+  }
+
+  const routes = [
+    { path: 'sites/site_id', response: siteInfo },
+    { path: 'sites/site_id/service-instances', response: [] },
+    {
+      path: 'accounts',
+      response: [{ slug: siteInfo.account_slug }],
+    },
+  ]
+  await withSiteBuilder('site-with-edge-functions-and-env', async (builder) => {
+    const publicDir = 'public'
+    builder
+      .withNetlifyToml({
+        config: {
+          build: {
+            publish: publicDir,
+            edge_functions: 'netlify/edge-functions',
+          },
+          edge_functions: [
+            {
+              function: 'env',
+              path: '/env',
+            },
+          ],
+        },
+      })
+      .withEdgeFunction({
+        // eslint-disable-next-line no-undef
+        handler: () => new Response(`${JSON.stringify(Deno.env.toObject())}`),
+        name: 'env',
+      })
+
+    await builder.buildAsync()
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      await withDevServer(
+        {
+          cwd: builder.directory,
+          offline: false,
+          env: {
+            NETLIFY_API_URL: apiUrl,
+            NETLIFY_SITE_ID: 'site_id',
+            NETLIFY_AUTH_TOKEN: 'fake-token',
+          },
+        },
+        async ({ port }) => {
+          const response = await got(`http://localhost:${port}/env`).then((edgeResponse) =>
+            JSON.parse(edgeResponse.body),
+          )
+          const envKeys = Object.keys(response)
+
+          t.true(envKeys.includes('DENO_DEPLOYMENT_ID'))
+          t.is(response.DENO_DEPLOYMENT_ID, 'xxx=')
+          t.true(envKeys.includes('DENO_REGION'))
+          t.is(response.DENO_REGION, 'local')
+          t.true(envKeys.includes('SECRET_ENV'))
+          t.is(response.SECRET_ENV, 'true')
+
+          t.false(envKeys.includes('NODE_ENV'))
+          t.false(envKeys.includes('NETLIFY_DEV'))
+          t.false(envKeys.includes('DEPLOY_URL'))
+          t.false(envKeys.includes('URL'))
+        },
+      )
+    })
+  })
+})
+
 /* eslint-enable require-await */
