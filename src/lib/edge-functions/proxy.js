@@ -6,14 +6,7 @@ const { cwd, env } = require('process')
 const getAvailablePort = require('get-port')
 const { v4: generateUUID } = require('uuid')
 
-const {
-  NETLIFYDEVERR,
-  NETLIFYDEVLOG,
-  NETLIFYDEVWARN,
-  chalk,
-  error: printError,
-  log,
-} = require('../../utils/command-helpers')
+const { NETLIFYDEVERR, NETLIFYDEVWARN, chalk, error: printError, log } = require('../../utils/command-helpers')
 const { getGeoLocation } = require('../geo-location')
 const { getPathInProject } = require('../settings')
 const { startSpinner, stopSpinner } = require('../spinner')
@@ -182,12 +175,6 @@ const prepareServer = async ({
       inspectSettings,
       port,
     })
-
-    // We use this message in tests to know when edge functions are ready
-    if (env.NODE_ENV === 'test' || env.DEBUG) {
-      log(`${NETLIFYDEVLOG} Edge functions server running`)
-    }
-
     const registry = new EdgeFunctionsRegistry({
       bundler,
       config,

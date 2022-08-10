@@ -48,24 +48,29 @@ const startServer = async ({ cwd, offline = true, env = {}, args = [], expectFai
     })
     ps.stdout.on('data', (data) => {
       outputBuffer.push(data)
-      if (!expectFailure && data.includes('Edge functions server running')) {
-        resolve({
-          url,
-          host,
-          port,
-          errorBuffer,
-          outputBuffer,
-          get output() {
-            // this is a getter so we do the actual joining as late as possible as the array might still get
-            // populated after we resolve here
-            return outputBuffer.join('')
-          },
-          close: async () => {
-            selfKilled = true
-            await killProcess(ps)
-          },
-          promptHistory,
-        })
+      if (!expectFailure && data.includes('Server now ready on')) {
+        setImmediate(() =>
+          resolve({
+            url,
+            host,
+            port,
+            errorBuffer,
+            outputBuffer,
+            get output() {
+              // this are getters so we do the actual joining as late as possible as the array might still get
+              // populated after we resolve here
+              return outputBuffer.join('')
+            },
+            get error() {
+              return errorBuffer.join('')
+            },
+            close: async () => {
+              selfKilled = true
+              await killProcess(ps)
+            },
+            promptHistory,
+          }),
+        )
       }
     })
     // eslint-disable-next-line promise/prefer-await-to-callbacks,promise/prefer-await-to-then
@@ -82,7 +87,7 @@ const startDevServer = async (options, expectFailure) => {
     try {
       const { timeout, ...server } = await startServer({ ...options, expectFailure })
       if (timeout) {
-        throw new Error(`Timed out starting dev server.\nServer Output:\n${server.outputBuffer.join('')}`)
+        throw new Error(`Timed out starting dev server.\nServer Output:\n${server.output}`)
       }
       return server
     } catch (error) {
@@ -104,8 +109,8 @@ const withDevServer = async (options, testHandler, expectFailure = false) => {
     return await testHandler(server)
   } catch (error) {
     if (server && !expectFailure) {
-      error.stdout = server.outputBuffer.join('')
-      error.stderr = server.errorBuffer.join('')
+      error.stdout = server.output
+      error.stderr = server.error
     }
     throw error
   } finally {
