@@ -57,7 +57,7 @@ const startServer = async ({ cwd, offline = true, env = {}, args = [], expectFai
             errorBuffer,
             outputBuffer,
             get output() {
-              // this are getters so we do the actual joining as late as possible as the array might still get
+              // these are getters so we do the actual joining as late as possible as the array might still get
               // populated after we resolve here
               return outputBuffer.join('')
             },
