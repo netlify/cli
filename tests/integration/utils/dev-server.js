@@ -24,7 +24,9 @@ const startServer = async ({ cwd, offline = true, env = {}, args = [], expectFai
   const staticPort = await getPort()
   const host = 'localhost'
   const url = `http://${host}:${port}`
+
   console.log(`Starting dev server on port: ${port} in directory ${path.basename(cwd)}`)
+
   const ps = execa(
     cliPath,
     ['dev', offline ? '--offline' : '', '-p', port, '--staticServerPort', staticPort, ...args],
@@ -38,16 +40,20 @@ const startServer = async ({ cwd, offline = true, env = {}, args = [], expectFai
   }
 
   const outputBuffer = []
+  const errorBuffer = []
   const serverPromise = new Promise((resolve, reject) => {
     let selfKilled = false
+    ps.stderr.on('data', (data) => {
+      errorBuffer.push(data)
+    })
     ps.stdout.on('data', (data) => {
       outputBuffer.push(data)
-      if (!expectFailure && data.includes('Server now ready on')) {
+      if (!expectFailure && data.includes('Edge function server running')) {
         resolve({
           url,
           host,
           port,
-          output: outputBuffer.join(''),
+          errorBuffer,
           outputBuffer,
           close: async () => {
             selfKilled = true
@@ -71,7 +77,7 @@ const startDevServer = async (options, expectFailure) => {
     try {
       const { timeout, ...server } = await startServer({ ...options, expectFailure })
       if (timeout) {
-        throw new Error(`Timed out starting dev server.\nServer Output:\n${server.output}`)
+        throw new Error(`Timed out starting dev server.\nServer Output:\n${server.outputBuffer.join('')}`)
       }
       return server
     } catch (error) {
@@ -91,6 +97,12 @@ const withDevServer = async (options, testHandler, expectFailure = false) => {
   try {
     server = await startDevServer(options, expectFailure)
     return await testHandler(server)
+  } catch (error) {
+    if (server) {
+      console.log(server.outputBuffer.join(''))
+      console.log(server.errorBuffer.join(''))
+    }
+    throw error
   } finally {
     if (server) {
       await server.close()

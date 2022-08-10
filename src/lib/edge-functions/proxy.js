@@ -6,7 +6,14 @@ const { cwd, env } = require('process')
 const getAvailablePort = require('get-port')
 const { v4: generateUUID } = require('uuid')
 
-const { NETLIFYDEVERR, NETLIFYDEVWARN, chalk, error: printError, log } = require('../../utils/command-helpers')
+const {
+  NETLIFYDEVERR,
+  NETLIFYDEVLOG,
+  NETLIFYDEVWARN,
+  chalk,
+  error: printError,
+  log,
+} = require('../../utils/command-helpers')
 const { getGeoLocation } = require('../geo-location')
 const { getPathInProject } = require('../settings')
 const { startSpinner, stopSpinner } = require('../spinner')
@@ -175,6 +182,9 @@ const prepareServer = async ({
       inspectSettings,
       port,
     })
+
+    log(`${NETLIFYDEVLOG} Edge function server running`)
+
     const registry = new EdgeFunctionsRegistry({
       bundler,
       config,
