@@ -187,7 +187,11 @@ class EdgeFunctionsRegistry {
   static getEnvironmentVariables(envConfig) {
     const env = Object.create(null)
     Object.entries(envConfig).forEach(([key, variable]) => {
-      if (variable.sources.includes('ui')) {
+      if (
+        variable.sources.includes('ui') ||
+        variable.sources.includes('account') ||
+        variable.sources.includes('addons')
+      ) {
         env[key] = variable.value
       }
     })
