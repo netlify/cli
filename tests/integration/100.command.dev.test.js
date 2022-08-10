@@ -598,8 +598,9 @@ test('should have only allowed environment variables set', async (t) => {
           )
           const envKeys = Object.keys(response)
 
-          t.true(envKeys.includes('DENO_DEPLOYMENT_ID'))
-          t.is(response.DENO_DEPLOYMENT_ID, 'xxx=')
+          t.false(envKeys.includes('DENO_DEPLOYMENT_ID'))
+          // t.true(envKeys.includes('DENO_DEPLOYMENT_ID'))
+          // t.is(response.DENO_DEPLOYMENT_ID, 'xxx=')
           t.true(envKeys.includes('DENO_REGION'))
           t.is(response.DENO_REGION, 'local')
           t.true(envKeys.includes('SECRET_ENV'))

@@ -197,7 +197,9 @@ class EdgeFunctionsRegistry {
     })
 
     env.DENO_REGION = 'local'
-    env.DENO_DEPLOYMENT_ID = 'xxx='
+    // We use it in the bootstrap layer to detect whether we're running in production or not
+    // (see https://github.com/netlify/edge-functions-bootstrap/blob/main/src/bootstrap/environment.ts#L2)
+    // env.DENO_DEPLOYMENT_ID = 'xxx='
 
     return env
   }
