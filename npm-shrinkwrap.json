@@ -12,7 +12,7 @@
       "dependencies": {
         "@netlify/build": "^27.8.1",
         "@netlify/config": "^18.1.2",
-        "@netlify/edge-bundler": "^1.8.0",
+        "@netlify/edge-bundler": "^1.12.1",
         "@netlify/framework-info": "^9.2.0",
         "@netlify/local-functions-proxy": "^1.1.1",
         "@netlify/plugins-list": "^6.37.0",
@@ -2541,9 +2541,9 @@
       }
     },
     "node_modules/@netlify/edge-bundler": {
-      "version": "1.8.0",
-      "resolved": "https://registry.npmjs.org/@netlify/edge-bundler/-/edge-bundler-1.8.0.tgz",
-      "integrity": "sha512-A9AqvNCpskKq1ScphTRwEP/iv0CnvUStWVfGVIrLHzzM3qegZeHJyiWUZ81CYScLceaVrj1DtQ68vNEhP+9JSA==",
+      "version": "1.12.1",
+      "resolved": "https://registry.npmjs.org/@netlify/edge-bundler/-/edge-bundler-1.12.1.tgz",
+      "integrity": "sha512-yROvOGpapj79wJIIjtuGX/p82gZt2K8on13cTg1tfCGRrGOvE+RNSKi5XuAXpocceyDJXnEyETXsc0mdpMMdhg==",
       "dependencies": {
         "common-path-prefix": "^3.0.0",
         "del": "^6.0.0",
@@ -2553,6 +2553,7 @@
         "node-fetch": "^3.1.1",
         "node-stream-zip": "^1.15.0",
         "p-wait-for": "^4.1.0",
+        "path-key": "^4.0.0",
         "semver": "^7.3.5",
         "tmp-promise": "^3.0.3",
         "uuid": "^8.3.2"
@@ -24550,9 +24551,9 @@
       }
     },
     "@netlify/edge-bundler": {
-      "version": "1.8.0",
-      "resolved": "https://registry.npmjs.org/@netlify/edge-bundler/-/edge-bundler-1.8.0.tgz",
-      "integrity": "sha512-A9AqvNCpskKq1ScphTRwEP/iv0CnvUStWVfGVIrLHzzM3qegZeHJyiWUZ81CYScLceaVrj1DtQ68vNEhP+9JSA==",
+      "version": "1.12.1",
+      "resolved": "https://registry.npmjs.org/@netlify/edge-bundler/-/edge-bundler-1.12.1.tgz",
+      "integrity": "sha512-yROvOGpapj79wJIIjtuGX/p82gZt2K8on13cTg1tfCGRrGOvE+RNSKi5XuAXpocceyDJXnEyETXsc0mdpMMdhg==",
       "requires": {
         "common-path-prefix": "^3.0.0",
         "del": "^6.0.0",
@@ -24562,6 +24563,7 @@
         "node-fetch": "^3.1.1",
         "node-stream-zip": "^1.15.0",
         "p-wait-for": "^4.1.0",
+        "path-key": "^4.0.0",
         "semver": "^7.3.5",
         "tmp-promise": "^3.0.3",
         "uuid": "^8.3.2"
