@@ -98,9 +98,9 @@ const withDevServer = async (options, testHandler, expectFailure = false) => {
     server = await startDevServer(options, expectFailure)
     return await testHandler(server)
   } catch (error) {
-    if (server) {
-      console.log(server.outputBuffer.join(''))
-      console.log(server.errorBuffer.join(''))
+    if (server && !expectFailure) {
+      error.stdout = server.outputBuffer.join('')
+      error.stderr = server.errorBuffer.join('')
     }
     throw error
   } finally {
