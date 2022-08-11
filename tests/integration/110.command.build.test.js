@@ -9,7 +9,6 @@ const { withSiteBuilder } = require('./utils/site-builder')
 
 const defaultEnvs = {
   NETLIFY_AUTH_TOKEN: 'fake-token',
-  NETLIFY_SITE_ID: 'site_id',
   FORCE_COLOR: '1',
 }
 
@@ -19,7 +18,7 @@ const defaultEnvs = {
 const runBuildCommand = async function (
   t,
   cwd,
-  { apiUrl, exitCode: expectedExitCode = 0, output, flags = [], env = defaultEnvs } = {},
+  { apiUrl, exitCode: expectedExitCode = 0, output: outputs, flags = [], env = defaultEnvs } = {},
 ) {
   const { all, exitCode } = await execa(cliPath, ['build', ...flags], {
     reject: false,
@@ -35,7 +34,12 @@ const runBuildCommand = async function (
     console.error(all)
   }
 
-  t.true(all.includes(output))
+  if (!Array.isArray(outputs)) {
+    outputs = [outputs]
+  }
+  outputs.forEach((output) => {
+    t.true(all.includes(output), `Output of build command does not include '${output}'`)
+  })
   t.is(exitCode, expectedExitCode)
 }
 
@@ -43,6 +47,12 @@ const siteInfo = {
   account_slug: 'test-account',
   id: 'site_id',
   name: 'site-name',
+}
+const siteInfoWithCommand = {
+  ...siteInfo,
+  build_settings: {
+    cmd: 'echo uiCommand',
+  },
 }
 const routes = [
   { path: 'sites/site_id', response: siteInfo },
@@ -52,10 +62,60 @@ const routes = [
     response: [{ slug: siteInfo.account_slug }],
   },
 ]
+const routesWithCommand = [...routes]
+routesWithCommand.splice(0, 1, { path: 'sites/site_id', response: siteInfoWithCommand })
+
+test('should use build command from UI', async (t) => {
+  await withSiteBuilder('success-site', async (builder) => {
+    builder.withNetlifyToml({ config: {} }).withStateFile({ siteId: siteInfo.id })
+
+    await builder.buildAsync()
+    await withMockApi(routesWithCommand, async ({ apiUrl }) => {
+      await runBuildCommand(t, builder.directory, { apiUrl, output: 'uiCommand' })
+    })
+  })
+})
+
+test('should use build command from UI with build plugin', async (t) => {
+  await withSiteBuilder('success-site', async (builder) => {
+    builder
+      .withNetlifyToml({
+        config: {
+          plugins: [{ package: '/plugins/' }],
+        },
+      })
+      .withStateFile({ siteId: siteInfo.id })
+      .withBuildPlugin({
+        name: 'index',
+        plugin: {
+          onPreBuild: ({ netlifyConfig }) => {
+            console.log('test-pre-build')
+
+            netlifyConfig.build.environment ||= {}
+            netlifyConfig.build.environment.TEST_123 = '12345'
+          },
+        },
+      })
+
+    await builder.buildAsync()
+    await withMockApi(routesWithCommand, async ({ apiUrl }) => {
+      await runBuildCommand(t, builder.directory, {
+        apiUrl,
+        output: ['uiCommand', 'test-pre-build'],
+        env: {
+          NETLIFY_AUTH_TOKEN: 'fake-token',
+          FORCE_COLOR: '1',
+        },
+      })
+    })
+  })
+})
 
 test('should print output for a successful command', async (t) => {
   await withSiteBuilder('success-site', async (builder) => {
-    builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } })
+    builder
+      .withNetlifyToml({ config: { build: { command: 'echo testCommand' } } })
+      .withStateFile({ siteId: siteInfo.id })
 
     await builder.buildAsync()
 
@@ -67,7 +127,7 @@ test('should print output for a successful command', async (t) => {
 
 test('should print output for a failed command', async (t) => {
   await withSiteBuilder('failure-site', async (builder) => {
-    builder.withNetlifyToml({ config: { build: { command: 'doesNotExist' } } })
+    builder.withNetlifyToml({ config: { build: { command: 'doesNotExist' } } }).withStateFile({ siteId: siteInfo.id })
 
     await builder.buildAsync()
 
@@ -79,7 +139,9 @@ test('should print output for a failed command', async (t) => {
 
 test('should run in dry mode when the --dry flag is set', async (t) => {
   await withSiteBuilder('success-site', async (builder) => {
-    builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } })
+    builder
+      .withNetlifyToml({ config: { build: { command: 'echo testCommand' } } })
+      .withStateFile({ siteId: siteInfo.id })
 
     await builder.buildAsync()
 
@@ -140,7 +202,9 @@ test('should run the staging context command when the context env variable is se
 
 test('should print debug information when the --debug flag is set', async (t) => {
   await withSiteBuilder('success-site', async (builder) => {
-    builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } })
+    builder
+      .withNetlifyToml({ config: { build: { command: 'echo testCommand' } } })
+      .withStateFile({ siteId: siteInfo.id })
 
     await builder.buildAsync()
 
@@ -154,6 +218,7 @@ test('should use root directory netlify.toml when runs in subdirectory', async (
   await withSiteBuilder('subdir-site', async (builder) => {
     builder
       .withNetlifyToml({ config: { build: { command: 'echo testCommand' } } })
+      .withStateFile({ siteId: siteInfo.id })
       .withContentFile({ path: path.join('subdir', '.gitkeep'), content: '' })
 
     await builder.buildAsync()
