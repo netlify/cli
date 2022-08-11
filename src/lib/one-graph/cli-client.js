@@ -1,24 +1,41 @@
 // @ts-check
 /* eslint-disable eslint-comments/disable-enable-pair */
 /* eslint-disable fp/no-loops */
+/* eslint-disable no-underscore-dangle */
 const crypto = require('crypto')
 const { readFileSync, writeFileSync } = require('fs')
 const os = require('os')
 const path = require('path')
+const process = require('process')
 
 const gitRepoInfo = require('git-repo-info')
-const { GraphQL, InternalConsole, OneGraphClient } = require('netlify-onegraph-internal')
-const { NetlifyGraph, NetlifyGraphLockfile } = require('netlify-onegraph-internal')
+const WSL = require('is-wsl')
+const {
+  // eslint-disable-next-line no-unused-vars
+  CliEventHelper,
+  // eslint-disable-next-line no-unused-vars
+  CodegenHelpers,
+  GraphQL,
+  InternalConsole,
+  NetlifyGraph,
+  NetlifyGraphLockfile,
+  OneGraphClient,
+} = require('netlify-onegraph-internal')
 
+const frameworkInfoPromise = import('@netlify/framework-info')
+
+const { version } = require('../../../package.json')
 // eslint-disable-next-line no-unused-vars
 const { StateConfig, USER_AGENT, chalk, error, execa, log, warn, watchDebounced } = require('../../utils')
 
 const {
   generateFunctionsFile,
   generateHandlerByOperationId,
-  loadNetlifyGraphConfig,
+  getCodegenFunctionById,
+  getCodegenModule,
   normalizeOperationsDoc,
   readGraphQLOperationsSourceFile,
+  setNetlifyTomlCodeGeneratorModule,
   writeGraphQLOperationsSourceFile,
   writeGraphQLSchemaFile,
 } = require('./cli-netlify-graph')
@@ -33,6 +50,9 @@ const internalConsole = {
   debug: console.debug,
 }
 
+/** @type {string | null} */
+let currentPersistedDocId = null
+
 /**
  * Keep track of which document hashes we've received from the server so we can ignore events from the filesystem based on them
  */
@@ -45,22 +65,25 @@ InternalConsole.registerConsole(internalConsole)
  * @param {object} input
  * @param {string} input.appId The app to query against, typically the siteId
  * @param {string} input.netlifyToken The (typically netlify) access token that is used for authentication, if any
+ * @param {object} input.config The parsed netlify.toml file
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
  * @param {function} input.onClose A function to call when the polling loop is closed
  * @param {function} input.onError A function to call when an error occurs
  * @param {function} input.onEvents A function to call when CLI events are received and need to be processed
+ * @param {function} input.onSchemaIdChange A function to call when the CLI schemaId has changed
  * @param {string} input.sessionId The session id to monitor CLI events for
  * @param {StateConfig} input.state A function to call to set/get the current state of the local Netlify project
  * @param {any} input.site The site object
  * @returns
  */
 const monitorCLISessionEvents = (input) => {
-  const { appId, netlifyGraphConfig, netlifyToken, onClose, onError, onEvents, site, state } = input
+  const { appId, config, netlifyGraphConfig, netlifyToken, onClose, onError, onEvents, site, state } = input
   const currentSessionId = input.sessionId
+  // TODO (sg): Track changing schemaId for a session
 
   const frequency = 5000
   // 30 minutes
-  const defaultHeartbeatFrequency = 1_800_000
+  const defaultHeartbeatFrequency = 30_000
   let shouldClose = false
   let nextMarkActiveHeartbeat = defaultHeartbeatFrequency
 
@@ -72,8 +95,10 @@ const monitorCLISessionEvents = (input) => {
         appId,
         sessionId: currentSessionId,
       })
+
       const heartbeatIntervalms = fullSession.session.cliHeartbeatIntervalMs || defaultHeartbeatFrequency
       nextMarkActiveHeartbeat = heartbeatIntervalms
+
       const markCLISessionActiveResult = await OneGraphClient.executeMarkCliSessionActiveHeartbeat(
         graphJwt.jwt,
         site.id,
@@ -94,12 +119,12 @@ const monitorCLISessionEvents = (input) => {
     const enabledServices = state.get('oneGraphEnabledServices') || ['onegraph']
 
     try {
-      const enabledServicesInfo = await OneGraphClient.fetchEnabledServicesForSession(jwt, siteId, sessionId)
-      if (!enabledServicesInfo) {
+      const graphQLSchemaInfo = await OneGraphClient.fetchGraphQLSchemaForSession(jwt, siteId, input.sessionId)
+      if (!graphQLSchemaInfo) {
         warn('Unable to fetch enabled services for site for code generation')
         return
       }
-      const newEnabledServices = enabledServicesInfo.map((service) => service.graphQLField)
+      const newEnabledServices = graphQLSchemaInfo.services.map((service) => service.graphQLField)
       const enabledServicesCompareKey = enabledServices.sort().join(',')
       const newEnabledServicesCompareKey = newEnabledServices.sort().join(',')
 
@@ -109,7 +134,17 @@ const monitorCLISessionEvents = (input) => {
             'Reloading',
           )} Netlify Graph schema..., ${enabledServicesCompareKey} => ${newEnabledServicesCompareKey}`,
         )
-        await refetchAndGenerateFromOneGraph({ netlifyGraphConfig, state, jwt, siteId, sessionId })
+
+        const schemaId = graphQLSchemaInfo.id
+
+        if (!schemaId) {
+          warn(`Unable to read schemaId from Netlify Graph session, not regenerating code`)
+          return
+        }
+
+        mergeLockfile({ siteRoot: site.root, schemaId })
+
+        await refetchAndGenerateFromOneGraph({ config, netlifyGraphConfig, state, jwt, schemaId, siteId, sessionId })
         log(`${chalk.green('Reloaded')} Netlify Graph schema and regenerated functions`)
       }
     } catch {
@@ -128,6 +163,7 @@ const monitorCLISessionEvents = (input) => {
       if (shouldClose) {
         clearTimeout(handle)
         onClose && onClose()
+        return
       }
 
       const graphJwt = await OneGraphClient.getGraphJwtForSite({ siteId: appId, nfToken: netlifyToken })
@@ -205,24 +241,65 @@ const monitorOperationFile = async ({ netlifyGraphConfig, onAdd, onChange, onUnl
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
  * @param {StateConfig} input.state A function to call to set/get the current state of the local Netlify project
  * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
- * @returns {Promise<void>}
+ * @returns {Promise<Record<string, unknown> | undefined>}
  */
-const refetchAndGenerateFromOneGraph = async (input) => {
-  const { jwt, logger, netlifyGraphConfig, siteId, state } = input
+const fetchCliSessionSchema = async (input) => {
+  const { jwt, siteId } = input
 
   await OneGraphClient.ensureAppForSite(jwt, siteId)
 
-  const enabledServicesInfo = await OneGraphClient.fetchEnabledServicesForSession(jwt, siteId, input.sessionId)
-  if (!enabledServicesInfo) {
-    warn('Unable to fetch enabled services for site for code generation')
+  const schemaInfo = await OneGraphClient.fetchNetlifySessionSchemaQuery(
+    { sessionId: input.sessionId },
+    {
+      accessToken: jwt,
+      siteId,
+    },
+  )
+
+  if (!schemaInfo) {
+    warn('Unable to fetch schema for session')
     return
   }
 
-  const enabledServices = enabledServicesInfo
+  try {
+    const schemaMetadata = schemaInfo.data.oneGraph.netlifyCliSession.graphQLSchema
+    return schemaMetadata
+  } catch {}
+}
+
+/**
+ * Fetch the schema for a site, and regenerate all of the downstream files
+ * @param {object} input
+ * @param {string} input.siteId The id of the site to query against
+ * @param {string} input.jwt The Graph JWT
+ * @param {object} input.config The parsed netlify.toml file
+ * @param {string} input.sessionId The session ID for the current session
+ * @param {string} input.schemaId The schemaId for the current session
+ * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
+ * @param {StateConfig} input.state A function to call to set/get the current state of the local Netlify project
+ * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
+ * @returns {Promise<void>}
+ */
+const refetchAndGenerateFromOneGraph = async (input) => {
+  const { config, jwt, logger, netlifyGraphConfig, schemaId, siteId, state } = input
+
+  await OneGraphClient.ensureAppForSite(jwt, siteId)
+
+  const graphQLSchemaInfo = await OneGraphClient.fetchGraphQLSchemaForSession(jwt, siteId, input.sessionId)
+  if (!graphQLSchemaInfo) {
+    warn('Unable to fetch schema info for site for code generation')
+    return
+  }
+
+  const enabledServices = graphQLSchemaInfo.services
     .map((service) => service.graphQLField)
     .sort((aString, bString) => aString.localeCompare(bString))
 
-  const schema = await OneGraphClient.fetchOneGraphSchemaForServices(siteId, enabledServices)
+  const schema = await OneGraphClient.fetchOneGraphSchemaById({
+    siteId,
+    schemaId: graphQLSchemaInfo.id,
+    accessToken: jwt,
+  })
 
   if (!schema) {
     error('Unable to fetch schema from Netlify Graph')
@@ -234,15 +311,22 @@ const refetchAndGenerateFromOneGraph = async (input) => {
   }
 
   const parsedDoc = parse(currentOperationsDoc)
-  const { fragments, functions } = extractFunctionsFromOperationDoc(parsedDoc)
+  const { fragments, functions } = extractFunctionsFromOperationDoc(GraphQL, parsedDoc)
+
+  if (!schema) {
+    warn('Unable to parse schema, please run graph:pull to update')
+    return
+  }
 
   generateFunctionsFile({
+    config,
     logger,
     netlifyGraphConfig,
     schema,
     operationsDoc: currentOperationsDoc,
     functions,
     fragments,
+    schemaId,
   })
   writeGraphQLSchemaFile({ logger, netlifyGraphConfig, schema })
   state.set('oneGraphEnabledServices', enabledServices)
@@ -251,12 +335,14 @@ const refetchAndGenerateFromOneGraph = async (input) => {
 /**
  * Regenerate the function library based on the current operations document on disk
  * @param {object} input
+ * @param {object} input.config The parsed netlify.toml file
  * @param {GraphQL.GraphQLSchema} input.schema The GraphQL schema to use when generating code
+ * @param {string} input.schemaId The GraphQL schemaId to use when generating code
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
  * @returns
  */
 const regenerateFunctionsFileFromOperationsFile = (input) => {
-  const { netlifyGraphConfig, schema } = input
+  const { config, netlifyGraphConfig, schema, schemaId } = input
 
   const appOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
 
@@ -270,13 +356,34 @@ const regenerateFunctionsFileFromOperationsFile = (input) => {
   const parsedDoc = parse(appOperationsDoc, {
     noLocation: true,
   })
-  const { fragments, functions } = extractFunctionsFromOperationDoc(parsedDoc)
-  generateFunctionsFile({ netlifyGraphConfig, schema, operationsDoc: appOperationsDoc, functions, fragments })
+  const { fragments, functions } = extractFunctionsFromOperationDoc(GraphQL, parsedDoc)
+  generateFunctionsFile({
+    config,
+    netlifyGraphConfig,
+    schema,
+    operationsDoc: appOperationsDoc,
+    functions,
+    fragments,
+    schemaId,
+  })
 }
 
 /**
  * Lockfile Operations
  */
+
+/**
+ * Read the Netlify Graph lockfile from disk, if it exists
+ * @param {object} input
+ * @param {string} input.siteRoot The GraphQL schema to use when generating code
+ * @return {NetlifyGraphLockfile.V0_format | undefined}
+ */
+const readLockfile = ({ siteRoot }) => {
+  try {
+    const buf = readFileSync(path.join(siteRoot, NetlifyGraphLockfile.defaultLockFileName))
+    return JSON.parse(buf.toString('utf8'))
+  } catch {}
+}
 
 /**
  * Persist the Netlify Graph lockfile on disk
@@ -289,15 +396,45 @@ const writeLockfile = ({ lockfile, siteRoot }) => {
 }
 
 /**
- * Read the Netlify Graph lockfile from disk, if it exists
+ * Persist the Netlify Graph lockfile on disk
  * @param {object} input
  * @param {string} input.siteRoot The GraphQL schema to use when generating code
- * @return {NetlifyGraphLockfile.V0_format | undefined}
+ * @param {string=} input.schemaId
+ * @param {string=} input.operationsHash
  */
-const readLockfile = ({ siteRoot }) => {
+const mergeLockfile = ({ operationsHash, schemaId, siteRoot }) => {
+  const lockfile = readLockfile({ siteRoot })
+  if (lockfile) {
+    /** @type {NetlifyGraphLockfile.V0_format} */
+    const newLockfile = {
+      ...lockfile,
+      locked: {
+        ...lockfile.locked,
+      },
+    }
+
+    if (operationsHash) {
+      newLockfile.locked.operationsHash = operationsHash
+    }
+
+    if (schemaId) {
+      newLockfile.locked.schemaId = schemaId
+    }
+
+    writeFileSync(path.join(siteRoot, NetlifyGraphLockfile.defaultLockFileName), JSON.stringify(newLockfile, null, 2))
+  }
+}
+
+/**
+ * Read the Netlify Graph schemaId from the lockfile on disk, if it exists
+ * @param {object} input
+ * @param {string} input.siteRoot The GraphQL schema to use when generating code
+ * @return {string | undefined}
+ */
+const readSchemaIdFromLockfile = ({ siteRoot }) => {
   try {
-    const buf = readFileSync(path.join(siteRoot, NetlifyGraphLockfile.defaultLockFileName))
-    return JSON.parse(buf.toString('utf8'))
+    const lockfile = readLockfile({ siteRoot })
+    return lockfile && lockfile.locked.schemaId
   } catch {}
 }
 
@@ -319,8 +456,10 @@ const quickHash = (input) => {
  * @param {string} input.siteId The site id to query against
  * @param {string} input.netlifyToken The (typically netlify) access token that is used for authentication, if any
  * @param {string} input.docId The GraphQL operations document id to fetch
+ * @param {object} input.config The parsed netlify.toml file
  * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
  * @param {GraphQL.GraphQLSchema} input.schema The GraphQL schema to use when generating code
+ * @param {string} input.schemaId The GraphQL schemaId to use when generating code
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
  * @returns {Promise<string | undefined>}
  */
@@ -335,7 +474,9 @@ const fetchGraphQLOperationsLibraryFromPersistedDoc = async (input) => {
     }
 
     // Sorts the operations stably, prepends the @netlify directive, etc.
-    const operationsDocString = normalizeOperationsDoc(persistedDoc.query)
+    const operationsDocString = normalizeOperationsDoc(GraphQL, persistedDoc.query)
+
+    currentPersistedDocId = docId
 
     return operationsDocString
   } catch {
@@ -346,17 +487,19 @@ const fetchGraphQLOperationsLibraryFromPersistedDoc = async (input) => {
 /**
  * Fetch a persisted operations doc by its id, write it to the system, and regenerate the library
  * @param {object} input
+ * @param {object} input.config The parsed netlify.toml config file
  * @param {string} input.operationsDocString The contents of the GraphQL operations document
  * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
  * @param {GraphQL.GraphQLSchema} input.schema The GraphQL schema to use when generating code
+ * @param {string} input.schemaId The GraphQL schemaId to use when generating code
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
  * @returns
  */
 const updateGraphQLOperationsFileFromPersistedDoc = (input) => {
-  const { logger, netlifyGraphConfig, operationsDocString, schema } = input
+  const { config, logger, netlifyGraphConfig, operationsDocString, schema, schemaId } = input
 
   writeGraphQLOperationsSourceFile({ logger, netlifyGraphConfig, operationsDocString })
-  regenerateFunctionsFileFromOperationsFile({ netlifyGraphConfig, schema })
+  regenerateFunctionsFileFromOperationsFile({ config, netlifyGraphConfig, schema, schemaId })
 
   const hash = quickHash(operationsDocString)
 
@@ -372,6 +515,7 @@ const updateGraphQLOperationsFileFromPersistedDoc = (input) => {
 /**
  * Fetch a persisted operations doc by its id, write it to the system, and regenerate the library
  * @param {object} input
+ * @param {object} input.config The parsed netlify.toml config file
  * @param {string} input.siteId The site id to query against
  * @param {string} input.schemaId The schema ID to query against
  * @param {string} input.siteRoot Path to the root of the project
@@ -396,94 +540,186 @@ const handleOperationsLibraryPersistedEvent = async (input) => {
   updateGraphQLOperationsFileFromPersistedDoc({ ...input, operationsDocString: operationsFileContents })
 }
 
+/**
+ *
+ * @param {object} input
+ * @param {any} input.site The site object
+ * @param {CliEventHelper.CliEvent} input.event
+ * @param {GraphQL.GraphQLSchema} input.schema The GraphQL schema to use when generating code
+ * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
+ * @param {object} input.config The parsed netlify.toml config file
+ * @param {string} input.docId The GraphQL operations document id to fetch
+ * @param {string} input.netlifyToken The (typically netlify) access token that is used for authentication, if any
+ * @param {string} input.schemaId The schemaId for the current session
+ * @param {string} input.sessionId The session ID to use for this CLI session (default: read from state)
+ * @param {string} input.siteId The site id to query against
+ * @param {string} input.siteRoot Path to the root of the project
+ * @returns {Promise<void>}
+ */
 const handleCliSessionEvent = async ({
+  config,
+  docId,
   event,
   netlifyGraphConfig,
   netlifyToken,
   schema,
+  schemaId,
   sessionId,
+  site,
   siteId,
   siteRoot,
 }) => {
-  const { __typename, payload } = await event
-  switch (__typename) {
-    case 'OneGraphNetlifyCliSessionTestEvent':
+  switch (event.__typename) {
+    case 'OneGraphNetlifyCliSessionTestEvent': {
+      const { payload } = event
+
       await handleCliSessionEvent({
+        config,
+        docId,
         netlifyToken,
+        // @ts-ignore
         event: payload,
         netlifyGraphConfig,
         schema,
+        schemaId,
         sessionId,
         siteId,
         siteRoot,
+        site,
       })
+
       break
+    }
     case 'OneGraphNetlifyCliSessionGenerateHandlerEvent': {
-      if (!payload.operationId && !payload.operation.id) {
+      const { payload } = event
+
+      if (!payload.operationId) {
         warn(`No operation id found in payload,
-  ${JSON.stringify(payload, null, 2)}`)
+${JSON.stringify(payload, null, 2)}`)
         return
       }
+
+      const codegenModule = await getCodegenModule({ config })
+      if (!codegenModule) {
+        error(
+          `No Netlify Graph codegen module specified in netlify.toml under the [graph] header. Please specify 'codeGenerator' field and try again.`,
+        )
+        return
+      }
+
+      const codeGenerator = await getCodegenFunctionById({ config, id: payload.codegenId })
+      if (!codeGenerator) {
+        warn(
+          `Unable to find Netlify Graph code generator with id "${payload.codegenId}" from ${JSON.stringify(
+            payload,
+            null,
+            2,
+          )}`,
+        )
+        return
+      }
+
       const files = generateHandlerByOperationId({
         netlifyGraphConfig,
         schema,
-        operationId: payload.operationId || payload.operation.id,
+        operationId: payload.operationId,
         handlerOptions: payload,
+        generate: codeGenerator.generateHandler,
       })
 
       if (!files) {
-        warn(`No files generated for operation id: ${payload.operationId || payload.operation.id}`)
+        warn(`No files generated for operation id: ${payload.operationId}`)
         return
       }
 
-      const config = loadNetlifyGraphConfig(siteRoot)
-      for (const file of files) {
-        const fileWrittenEvent = {
-          __typename: 'OneGraphNetlifyCliSessionFileWrittenEvent',
-          cliSessionId: sessionId,
-          payload: {
-            editor: config.editor,
-            filepath: file.filePath,
-            audience: 'ui',
-          },
-        }
+      const editor = process.env.EDITOR || null
 
-        try {
-          const graphJwt = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
-
-          await OneGraphClient.executeCreateCLISessionEventMutation(
-            {
-              sessionId,
-              payload: fileWrittenEvent,
-            },
-            { accessToken: graphJwt.jwt },
-          )
-        } catch {
-          warn(`Unable to reach Netlify Graph servers in order to notify handler files written to disk`)
-        }
+      /** @type {CliEventHelper.OneGraphNetlifyCliSessionFilesWrittenEvent} */
+      const filesWrittenEvent = {
+        id: crypto.randomUUID(),
+        createdAt: new Date().toString(),
+        __typename: 'OneGraphNetlifyCliSessionFilesWrittenEvent',
+        sessionId,
+        payload: {
+          editor,
+          // @ts-expect-error
+          files: files.map((file) => ({
+            name: file.name,
+            filePath: file.filePath,
+          })),
+        },
+        audience: 'UI',
       }
+
+      try {
+        const graphJwt = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
+
+        await OneGraphClient.executeCreateCLISessionEventMutation(
+          {
+            sessionId,
+            payload: filesWrittenEvent,
+          },
+          { accessToken: graphJwt.jwt },
+        )
+      } catch {
+        warn(`Unable to reach Netlify Graph servers in order to notify handler files written to disk`)
+      }
+
       break
     }
     case 'OneGraphNetlifyCliSessionOpenFileEvent': {
-      if (!payload.filePath) {
-        warn(`No filePath found in payload, ${JSON.stringify(payload, null, 2)}`)
+      if (!event.payload.filePath) {
+        warn(`No filePath found in payload, ${JSON.stringify(event.payload, null, 2)}`)
         return
       }
-      const config = loadNetlifyGraphConfig(siteRoot)
-      if (config.editor) {
-        log(`Opening ${config.editor} for ${payload.filePath}`)
-        execa(config.editor, [payload.filePath], {
+
+      const editor = process.env.EDITOR || null
+
+      if (editor) {
+        log(`Opening ${editor} for ${event.payload.filePath}`)
+        execa(editor, [event.payload.filePath], {
           preferLocal: true,
           // windowsHide needs to be false for child process to terminate properly on Windows
           windowsHide: false,
         })
       } else {
-        warn('No editor found in config')
+        warn('No $EDITOR set in env vars')
       }
       break
     }
-    case 'OneGraphNetlifyCliSessionPersistedLibraryUpdatedEvent':
+    case 'OneGraphNetlifyCliSessionSetGraphCodegenModuleEvent': {
+      setNetlifyTomlCodeGeneratorModule({ codegenModuleImportPath: event.payload.codegenModuleImportPath, siteRoot })
+      break
+    }
+    case 'OneGraphNetlifyCliSessionMetadataRequestEvent': {
+      const graphJwt = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
+
+      const { minimumCliVersionExpected } = event.payload
+
+      const cliIsOutOfDateForUI =
+        version.localeCompare(minimumCliVersionExpected, undefined, { numeric: true, sensitivity: 'base' }) === -1
+
+      if (cliIsOutOfDateForUI) {
+        warn(
+          `The Netlify Graph UI expects the netlify-cli to be at least at version "${minimumCliVersionExpected}", but you're running ${version}. You may need to upgrade for a stable experience.`,
+        )
+      }
+
+      const input = { config, docId, jwt: graphJwt.jwt, schemaId, sessionId, siteRoot }
+      await publishCliSessionMetadataPublishEvent(input)
+      break
+    }
+    case 'OneGraphNetlifyCliSessionPersistedLibraryUpdatedEvent': {
+      const { payload } = event
+
+      if (!payload.schemaId || !payload.docId) {
+        warn(`Malformed library update event, missing schemaId or docId in payload:
+  ${JSON.stringify(event, null, 2)}`)
+        break
+      }
+
       await handleOperationsLibraryPersistedEvent({
+        config,
         netlifyToken,
         docId: payload.docId,
         schemaId: payload.schemaId,
@@ -492,16 +728,17 @@ const handleCliSessionEvent = async ({
         siteId,
         siteRoot,
       })
+
       break
+    }
     default: {
       warn(
-        `Unrecognized event received, you may need to upgrade your CLI version: ${__typename}: ${JSON.stringify(
-          payload,
+        `Unrecognized event received, you may need to upgrade your CLI version: ${event.__typename}: ${JSON.stringify(
+          event,
           null,
           2,
         )}`,
       )
-      break
     }
   }
 }
@@ -531,7 +768,11 @@ const getCLISession = async ({ jwt, oneGraphSessionId, siteId }) => {
  * @param {string} input.siteId The site object that contains the root file path for the site
  */
 const getCLISessionMetadata = async ({ jwt, oneGraphSessionId, siteId }) => {
-  const { errors, session } = await getCLISession({ jwt, oneGraphSessionId, siteId })
+  const result = await getCLISession({ jwt, oneGraphSessionId, siteId })
+  if (!result) {
+    warn(`Unable to fetch CLI session metadata`)
+  }
+  const { errors, session } = result
   return { metadata: session && session.metadata, errors }
 }
 
@@ -539,18 +780,50 @@ const getCLISessionMetadata = async ({ jwt, oneGraphSessionId, siteId }) => {
  * Look at the current project, filesystem, etc. and determine relevant metadata for a cli session
  * @param {object} input
  * @param {string} input.siteRoot The root file path for the site
- * @returns {Record<string, any>} Any locally detected facts that are relevant to include in the cli session metadata
+ * @param {object} input.config The parsed netlify.toml config file
+ * @returns {Promise<CliEventHelper.DetectedLocalCLISessionMetadata>} Any locally detected facts that are relevant to include in the cli session metadata
  */
-const detectLocalCLISessionMetadata = ({ siteRoot }) => {
+const detectLocalCLISessionMetadata = async ({ config, siteRoot }) => {
+  // @ts-ignore
+  const { listFrameworks } = await frameworkInfoPromise
+
+  /** @type {string | null} */
+  let framework = null
+
+  try {
+    const frameworks = await listFrameworks({ projectDir: siteRoot })
+    framework = frameworks[0].id || null
+  } catch {}
+
   const { branch } = gitRepoInfo()
   const hostname = os.hostname()
   const userInfo = os.userInfo({ encoding: 'utf-8' })
   const { username } = userInfo
-  const cliVersion = USER_AGENT
+  const cliVersion = version
 
-  const config = loadNetlifyGraphConfig(siteRoot)
+  const platform = WSL ? 'wsl' : os.platform()
+  const arch = os.arch() === 'ia32' ? 'x86' : os.arch()
 
-  const { editor } = config
+  const editor = process.env.EDITOR || null
+
+  /** @type {CodegenHelpers.CodegenModuleMeta | null} */
+  let codegen = null
+
+  const codegenModule = await getCodegenModule({ config })
+
+  if (codegenModule) {
+    codegen = {
+      id: codegenModule.id,
+      version: codegenModule.id,
+      generators: codegenModule.generators.map((generator) => ({
+        id: generator.id,
+        name: generator.name,
+        options: generator.generateHandlerOptions || null,
+        supportedDefinitionTypes: generator.supportedDefinitionTypes,
+        version: generator.version,
+      })),
+    }
+  }
 
   const detectedMetadata = {
     gitBranch: branch,
@@ -559,15 +832,68 @@ const detectLocalCLISessionMetadata = ({ siteRoot }) => {
     siteRoot,
     cliVersion,
     editor,
+    platform,
+    arch,
+    nodeVersion: process.version,
+    codegen,
+    framework,
   }
 
   return detectedMetadata
 }
 
 /**
+ *
+ * @param {object} input
+ * @param {string} input.jwt The GraphJWT string
+ * @param {string} input.sessionId The id of the cli session to fetch the current metadata for
+ * @param {object} input.config The parsed netlify.toml config file
+ * @param {string} input.siteRoot Path to the root of the project
+ * @param {string} input.docId The GraphQL operations document id to fetch
+ * @param {string} input.schemaId The GraphQL schemaId to use when generating code
+ */
+const publishCliSessionMetadataPublishEvent = async ({ config, docId, jwt, schemaId, sessionId, siteRoot }) => {
+  const detectedMetadata = await detectLocalCLISessionMetadata({ config, siteRoot })
+
+  /** @type {CliEventHelper.OneGraphNetlifyCliSessionMetadataPublishEvent} */
+  const event = {
+    __typename: 'OneGraphNetlifyCliSessionMetadataPublishEvent',
+    audience: 'UI',
+    createdAt: new Date().toString(),
+    id: crypto.randomUUID(),
+    sessionId,
+    payload: {
+      cliVersion: detectedMetadata.cliVersion,
+      editor: detectedMetadata.editor,
+      siteRoot: detectedMetadata.siteRoot,
+      siteRootFriendly: detectedMetadata.siteRoot,
+      persistedDocId: docId,
+      schemaId,
+      codegenModule: detectedMetadata.codegen,
+      arch: detectedMetadata.arch,
+      nodeVersion: detectedMetadata.nodeVersion,
+      platform: detectedMetadata.platform,
+      framework: detectedMetadata.framework,
+    },
+  }
+
+  try {
+    await OneGraphClient.executeCreateCLISessionEventMutation(
+      {
+        sessionId,
+        payload: event,
+      },
+      { accessToken: jwt },
+    )
+  } catch {
+    warn(`Unable to reach Netlify Graph servers in order to publish CLI session data for the Graph UI`)
+  }
+}
+
+/**
  * Fetch the existing cli session metadata if it exists, and mutate it remotely with the passed in metadata
  * @param {object} input
- * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig The (typically netlify) access token that is used for authentication, if any
+ * @param {object} input.config The parsed netlify.toml file
  * @param {string} input.jwt The Graph JWT string
  * @param {string} input.oneGraphSessionId The id of the cli session to fetch the current metadata for
  * @param {string} input.siteId The site object that contains the root file path for the site
@@ -575,21 +901,24 @@ const detectLocalCLISessionMetadata = ({ siteRoot }) => {
  * @param {object} input.newMetadata The metadata to merge into (with priority) the existing metadata
  * @returns {Promise<object>}
  */
-const upsertMergeCLISessionMetadata = async ({ jwt, newMetadata, oneGraphSessionId, siteId, siteRoot }) => {
+const upsertMergeCLISessionMetadata = async ({ config, jwt, newMetadata, oneGraphSessionId, siteId, siteRoot }) => {
   const { errors, metadata } = await getCLISessionMetadata({ jwt, oneGraphSessionId, siteId })
   if (errors) {
     warn(`Error fetching cli session metadata: ${JSON.stringify(errors, null, 2)}`)
   }
 
-  const detectedMetadata = detectLocalCLISessionMetadata({ siteRoot })
+  const detectedMetadata = await detectLocalCLISessionMetadata({ config, siteRoot })
 
   // @ts-ignore
   const finalMetadata = { ...metadata, ...detectedMetadata, ...newMetadata }
 
-  return OneGraphClient.updateCLISessionMetadata(jwt, siteId, oneGraphSessionId, finalMetadata)
+  const result = OneGraphClient.updateCLISessionMetadata(jwt, siteId, oneGraphSessionId, finalMetadata)
+
+  return result
 }
 
 const persistNewOperationsDocForSession = async ({
+  config,
   netlifyGraphConfig,
   netlifyToken,
   oneGraphSessionId,
@@ -650,9 +979,11 @@ const persistNewOperationsDocForSession = async ({
     warn(`Failed to create persisted query for editing, ${JSON.stringify(persistedResult, null, 2)}`)
   }
 
+  currentPersistedDocId = persistedDoc.id
+
   const newMetadata = { docId: persistedDoc.id }
   const result = await upsertMergeCLISessionMetadata({
-    netlifyGraphConfig,
+    config,
     jwt,
     siteId,
     oneGraphSessionId,
@@ -660,12 +991,13 @@ const persistNewOperationsDocForSession = async ({
     siteRoot,
   })
 
-  if (result.errors) {
+  if (!result || result.errors) {
     warn(`Unable to update session metadata with updated operations doc ${JSON.stringify(result.errors, null, 2)}`)
   } else if (lockfile != null) {
     // Now that we've persisted the document, lock it in the lockfile
     const currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
 
+    /** @type {NetlifyGraphLockfile.V0_format} */
     const newLockfile = NetlifyGraphLockfile.createLockfile({
       schemaId: lockfile.locked.schemaId,
       operationsFileContents: currentOperationsDoc,
@@ -690,6 +1022,7 @@ const loadCLISession = (state) => state.get('oneGraphSessionId')
 /**
  * Idemponentially save the CLI session id to the local state and start monitoring for CLI events, upstream schema changes, and local operation file changes
  * @param {object} input
+ * @param {object} input.config
  * @param {string} input.netlifyToken The (typically netlify) access token that is used for authentication, if any
  * @param {string | undefined} input.oneGraphSessionId The session ID to use for this CLI session (default: read from state)
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
@@ -697,18 +1030,49 @@ const loadCLISession = (state) => state.get('oneGraphSessionId')
  * @param {any} input.site The site object
  */
 const startOneGraphCLISession = async (input) => {
-  const { netlifyGraphConfig, netlifyToken, site, state } = input
-  const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId: site.id, nfToken: netlifyToken })
-  OneGraphClient.ensureAppForSite(jwt, site.id)
+  const { config, netlifyGraphConfig, netlifyToken, site, state } = input
+  const getJwt = async () => {
+    const accessToken = await OneGraphClient.getGraphJwtForSite({ siteId: site.id, nfToken: netlifyToken })
+    return accessToken.jwt
+  }
+
+  OneGraphClient.ensureAppForSite(await getJwt(), site.id)
 
   const oneGraphSessionId = await ensureCLISession({
+    config,
+    netlifyGraphConfig,
     metadata: {},
     netlifyToken,
     site,
     state,
     oneGraphSessionId: input.oneGraphSessionId,
-    netlifyGraphConfig,
   })
+
+  const syncUIHelper = async () => {
+    const schemaId = readSchemaIdFromLockfile({ siteRoot: site.root })
+
+    if (!schemaId) {
+      warn('Unable to load schemaId from Netlify Graph lockfile, run graph:pull to update')
+      return
+    }
+
+    if (!currentPersistedDocId) {
+      warn('Unable to read current persisted Graph library doc id')
+      return
+    }
+
+    const syncSessionMetadataInput = {
+      config,
+      docId: currentPersistedDocId,
+      jwt: await getJwt(),
+      schemaId,
+      sessionId: oneGraphSessionId,
+      siteRoot: site.root,
+    }
+    await publishCliSessionMetadataPublishEvent(syncSessionMetadataInput)
+  }
+
+  await syncUIHelper()
 
   const enabledServices = []
   const schema = await OneGraphClient.fetchOneGraphSchemaForServices(site.id, enabledServices)
@@ -717,9 +1081,22 @@ const startOneGraphCLISession = async (input) => {
     netlifyGraphConfig,
     onChange: async (filePath) => {
       log('NetlifyGraph operation file changed at', filePath, 'updating function library...')
-      regenerateFunctionsFileFromOperationsFile({ netlifyGraphConfig, schema })
+      if (!schema) {
+        warn('Unable to load schema, run graph:pull to update')
+        return
+      }
+
+      const schemaId = readSchemaIdFromLockfile({ siteRoot: site.root })
+
+      if (!schemaId) {
+        warn('Unable to load schemaId from Netlify Graph lockfile, run graph:pull to update')
+        return
+      }
+
+      regenerateFunctionsFileFromOperationsFile({ config, netlifyGraphConfig, schema, schemaId })
       const newOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
       await persistNewOperationsDocForSession({
+        config,
         netlifyGraphConfig,
         netlifyToken,
         oneGraphSessionId,
@@ -730,9 +1107,22 @@ const startOneGraphCLISession = async (input) => {
     },
     onAdd: async (filePath) => {
       log('NetlifyGraph operation file created at', filePath, 'creating function library...')
-      regenerateFunctionsFileFromOperationsFile({ netlifyGraphConfig, schema })
+      if (!schema) {
+        warn('Unable to load schema, run graph:pull to update')
+        return
+      }
+
+      const schemaId = readSchemaIdFromLockfile({ siteRoot: site.root })
+
+      if (!schemaId) {
+        warn('Unable to load schemaId from Netlify Graph lockfile, run graph:pull to update')
+        return
+      }
+
+      regenerateFunctionsFileFromOperationsFile({ config, netlifyGraphConfig, schema, schemaId })
       const newOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
       await persistNewOperationsDocForSession({
+        config,
         netlifyGraphConfig,
         netlifyToken,
         oneGraphSessionId,
@@ -744,6 +1134,7 @@ const startOneGraphCLISession = async (input) => {
   })
 
   const cliEventsCloseFn = monitorCLISessionEvents({
+    config,
     appId: site.id,
     netlifyToken,
     netlifyGraphConfig,
@@ -751,26 +1142,56 @@ const startOneGraphCLISession = async (input) => {
     site,
     state,
     onClose: () => {
-      log('CLI session closed, stopping monitoring...')
+      log('CLI session closed, stopping monitor...')
+    },
+    onSchemaIdChange: (newSchemaId) => {
+      log('Netlify Graph schemaId changed:', newSchemaId)
     },
     onEvents: async (events) => {
       const ackEventIds = []
 
       for (const event of events) {
-        const audience = OneGraphClient.eventAudience(event)
-        if (audience === 'cli') {
-          const eventName = OneGraphClient.friendlyEventName(event)
-          log(`${chalk.magenta('Handling')} Netlify Graph: ${eventName}...`)
-          await handleCliSessionEvent({
-            netlifyToken,
-            event,
-            netlifyGraphConfig,
-            schema,
-            sessionId: oneGraphSessionId,
-            siteId: site.id,
-            siteRoot: site.root,
-          })
-          log(`${chalk.green('Finished handling')} Netlify Graph: ${eventName}...`)
+        try {
+          const audience = event.audience || OneGraphClient.eventAudience(event)
+          if (audience === 'CLI') {
+            ackEventIds.push(event.id)
+            const eventName = OneGraphClient.friendlyEventName(event)
+            log(`${chalk.magenta('Handling')} Netlify Graph: ${eventName}...`)
+            const schemaId = readSchemaIdFromLockfile({ siteRoot: site.root })
+
+            if (!schemaId) {
+              warn('Unable to load schemaId from Netlify Graph lockfile, run graph:pull to update')
+              return
+            }
+
+            if (!schema) {
+              warn('Unable to load schema from for Netlify Graph, run graph:pull to update')
+              return
+            }
+
+            if (!currentPersistedDocId) {
+              warn('Unable to read current persisted Graph library doc id')
+              return
+            }
+
+            await handleCliSessionEvent({
+              config,
+              docId: currentPersistedDocId,
+              netlifyToken,
+              event,
+              netlifyGraphConfig,
+              schema,
+              schemaId,
+              sessionId: oneGraphSessionId,
+              site,
+              siteId: site.id,
+              siteRoot: site.root,
+            })
+            log(`${chalk.green('Finished handling')} Netlify Graph: ${eventName}...`)
+          }
+        } catch (error_) {
+          warn(`Error processing individual Netlify Graph event, skipping:
+${JSON.stringify(error_, null, 2)}`)
           ackEventIds.push(event.id)
         }
       }
@@ -799,7 +1220,7 @@ const startOneGraphCLISession = async (input) => {
 const markCliSessionInactive = async ({ netlifyToken, sessionId, siteId }) => {
   const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
   const result = await OneGraphClient.executeMarkCliSessionInactive(jwt, siteId, sessionId)
-  if (result.errors) {
+  if (!result || result.errors) {
     warn(`Unable to mark CLI session ${sessionId} inactive: ${JSON.stringify(result.errors, null, 2)}`)
   }
 }
@@ -843,6 +1264,7 @@ const idempotentlyUpdateSessionSchemaIdFromLockfile = async (input) => {
 /**
  * Ensures a cli session exists for the current checkout, or errors out if it doesn't and cannot create one.
  * @param {object} input
+ * @param {object} input.config The parsed netlify.toml config file
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
  * @param {object} input.metadata
  * @param {string} input.netlifyToken
@@ -851,7 +1273,7 @@ const idempotentlyUpdateSessionSchemaIdFromLockfile = async (input) => {
  * @param {any} input.site The site object
  */
 const ensureCLISession = async (input) => {
-  const { metadata, netlifyGraphConfig, netlifyToken, site, state } = input
+  const { config, metadata, netlifyGraphConfig, netlifyToken, site, state } = input
   let oneGraphSessionId = input.oneGraphSessionId ? input.oneGraphSessionId : loadCLISession(state)
   let parentCliSessionId = null
   const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId: site.id, nfToken: netlifyToken })
@@ -867,11 +1289,16 @@ const ensureCLISession = async (input) => {
         sessionId: oneGraphSessionId,
         desiredEventCount: 0,
       })
+
       if (errors) {
         warn(`Unable to fetch cli session: ${JSON.stringify(errors, null, 2)}`)
         log(`Creating new cli session`)
         parentCliSessionId = oneGraphSessionId
         oneGraphSessionId = null
+      }
+
+      if (session && session.metadata && session.metadata.docId) {
+        currentPersistedDocId = session.metadata.docId
       }
 
       // During the transition to lockfiles, write a lockfile if one isn't
@@ -896,10 +1323,22 @@ const ensureCLISession = async (input) => {
     oneGraphSessionId = null
   }
 
-  if (!oneGraphSessionId) {
+  if (oneGraphSessionId) {
+    await upsertMergeCLISessionMetadata({
+      jwt,
+      config,
+      newMetadata: {},
+      oneGraphSessionId,
+      siteId: site.id,
+      siteRoot: site.root,
+    })
+  } else {
     // If we can't access the session in the state.json or it doesn't exist, create a new one
     const sessionName = generateSessionName()
-    const detectedMetadata = detectLocalCLISessionMetadata({ siteRoot: site.root })
+    const detectedMetadata = await detectLocalCLISessionMetadata({
+      config,
+      siteRoot: site.root,
+    })
     const newSessionMetadata = parentCliSessionId ? { parentCliSessionId } : {}
 
     const sessionMetadata = {
@@ -920,7 +1359,12 @@ const ensureCLISession = async (input) => {
       metadata: sessionMetadata,
     })
 
-    oneGraphSessionId = oneGraphSession.id
+    if (oneGraphSession) {
+      // @ts-expect-error
+      oneGraphSessionId = oneGraphSession.id
+    } else {
+      warn('Unable to load Netlify Graph session, please report this to Netlify support')
+    }
   }
 
   if (!oneGraphSessionId) {
@@ -946,6 +1390,7 @@ const OneGraphCliClient = {
   executeCreatePersistedQueryMutation: OneGraphClient.executeCreatePersistedQueryMutation,
   executeCreateApiTokenMutation: OneGraphClient.executeCreateApiTokenMutation,
   fetchCliSessionEvents: OneGraphClient.fetchCliSessionEvents,
+  fetchCliSessionSchema,
   ensureAppForSite: OneGraphClient.ensureAppForSite,
   updateCLISessionMetadata: OneGraphClient.updateCLISessionMetadata,
   getGraphJwtForSite: OneGraphClient.getGraphJwtForSite,
@@ -954,6 +1399,7 @@ const OneGraphCliClient = {
 module.exports = {
   OneGraphCliClient,
   createCLISession,
+  currentPersistedDocId,
   ensureCLISession,
   extractFunctionsFromOperationDoc,
   handleCliSessionEvent,
@@ -962,6 +1408,7 @@ module.exports = {
   markCliSessionInactive,
   monitorCLISessionEvents,
   persistNewOperationsDocForSession,
+  readSchemaIdFromLockfile,
   refetchAndGenerateFromOneGraph,
   startOneGraphCLISession,
   upsertMergeCLISessionMetadata,

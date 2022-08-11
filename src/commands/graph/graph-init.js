@@ -18,7 +18,7 @@ const { ensureAppForSite, executeCreateApiTokenMutation } = OneGraphCliClient
  * @returns
  */
 const graphInit = async (options, command) => {
-  const { api, site, state } = command.netlify
+  const { api, config, site, state } = command.netlify
   const siteId = site.id
 
   if (!siteId) {
@@ -66,6 +66,7 @@ const graphInit = async (options, command) => {
 
   const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options })
   await ensureCLISession({
+    config,
     metadata: {},
     netlifyToken,
     site,

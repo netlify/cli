@@ -1,4 +1,6 @@
 // @ts-check
+const { GraphQL } = require('netlify-onegraph-internal')
+
 const { readLockfile } = require('../../lib/one-graph/cli-client')
 const {
   buildSchema,
@@ -19,9 +21,18 @@ const { NETLIFYDEVERR, chalk, error, log } = require('../../utils')
  * @returns
  */
 const graphLibrary = async (options, command) => {
+  const { config } = command.netlify
   const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options })
 
   const schemaString = readGraphQLSchemaFile(netlifyGraphConfig)
+
+  let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
+  if (currentOperationsDoc.trim().length === 0) {
+    currentOperationsDoc = defaultExampleOperationsDoc
+  }
+
+  const parsedDoc = parse(currentOperationsDoc)
+  const { fragments, functions } = extractFunctionsFromOperationDoc(GraphQL, parsedDoc)
 
   let schema
 
@@ -33,29 +44,24 @@ const graphLibrary = async (options, command) => {
 
   if (!schema) {
     error(`Failed to parse Netlify GraphQL schema`)
+    return
   }
-
-  let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
-  if (currentOperationsDoc.trim().length === 0) {
-    currentOperationsDoc = defaultExampleOperationsDoc
-  }
-
-  const parsedDoc = parse(currentOperationsDoc)
-  const { fragments, functions } = extractFunctionsFromOperationDoc(parsedDoc)
 
   const lockfile = readLockfile({ siteRoot: command.netlify.site.root })
 
-  if (lockfile == null) {
+  if (lockfile === undefined) {
     error(
       `${NETLIFYDEVERR} Error: no lockfile found, unable to run \`netlify graph:library\`. To pull a remote schema (and create a lockfile), run ${chalk.yellow(
         'netlify graph:pull',
       )} `,
     )
+    return
   }
 
-  const schemaId = lockfile && lockfile.locked.schemaId
+  const { schemaId } = lockfile.locked
 
-  generateFunctionsFile({
+  const payload = {
+    config,
     logger: log,
     netlifyGraphConfig,
     schema,
@@ -63,7 +69,9 @@ const graphLibrary = async (options, command) => {
     operationsDoc: currentOperationsDoc,
     functions,
     fragments,
-  })
+  }
+
+  generateFunctionsFile(payload)
 }
 
 /**

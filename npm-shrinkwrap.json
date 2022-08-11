@@ -1,21 +1,21 @@
 {
   "name": "netlify-cli",
-  "version": "10.15.0",
+  "version": "10.16.0",
   "lockfileVersion": 2,
   "requires": true,
   "packages": {
     "": {
       "name": "netlify-cli",
-      "version": "10.15.0",
+      "version": "10.16.0",
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
         "@netlify/build": "^27.8.1",
         "@netlify/config": "^18.1.2",
-        "@netlify/edge-bundler": "^1.8.0",
-        "@netlify/framework-info": "^9.1.1",
+        "@netlify/edge-bundler": "^1.12.1",
+        "@netlify/framework-info": "^9.2.0",
         "@netlify/local-functions-proxy": "^1.1.1",
-        "@netlify/plugins-list": "^6.36.0",
+        "@netlify/plugins-list": "^6.37.0",
         "@netlify/zip-it-and-ship-it": "^5.13.4",
         "@octokit/rest": "^18.0.0",
         "@sindresorhus/slugify": "^1.1.0",
@@ -81,7 +81,7 @@
         "multiparty": "^4.2.1",
         "netlify": "^12.0.0",
         "netlify-headers-parser": "^6.0.2",
-        "netlify-onegraph-internal": "0.4.2",
+        "netlify-onegraph-internal": "0.8.1",
         "netlify-redirect-parser": "^13.0.5",
         "netlify-redirector": "^0.2.1",
         "node-fetch": "^2.6.0",
@@ -2541,9 +2541,9 @@
       }
     },
     "node_modules/@netlify/edge-bundler": {
-      "version": "1.8.0",
-      "resolved": "https://registry.npmjs.org/@netlify/edge-bundler/-/edge-bundler-1.8.0.tgz",
-      "integrity": "sha512-A9AqvNCpskKq1ScphTRwEP/iv0CnvUStWVfGVIrLHzzM3qegZeHJyiWUZ81CYScLceaVrj1DtQ68vNEhP+9JSA==",
+      "version": "1.12.1",
+      "resolved": "https://registry.npmjs.org/@netlify/edge-bundler/-/edge-bundler-1.12.1.tgz",
+      "integrity": "sha512-yROvOGpapj79wJIIjtuGX/p82gZt2K8on13cTg1tfCGRrGOvE+RNSKi5XuAXpocceyDJXnEyETXsc0mdpMMdhg==",
       "dependencies": {
         "common-path-prefix": "^3.0.0",
         "del": "^6.0.0",
@@ -2553,6 +2553,7 @@
         "node-fetch": "^3.1.1",
         "node-stream-zip": "^1.15.0",
         "p-wait-for": "^4.1.0",
+        "path-key": "^4.0.0",
         "semver": "^7.3.5",
         "tmp-promise": "^3.0.3",
         "uuid": "^8.3.2"
@@ -3205,9 +3206,9 @@
       }
     },
     "node_modules/@netlify/framework-info": {
-      "version": "9.1.1",
-      "resolved": "https://registry.npmjs.org/@netlify/framework-info/-/framework-info-9.1.1.tgz",
-      "integrity": "sha512-9UdZWvWJwVnlWKCDLuh2w4UpCCzNm6BENiOQL0ik//R5PU3gDoL2uLNIEyLy+LlEBA5ZACnZZKC11a7EJ6x/Jw==",
+      "version": "9.2.0",
+      "resolved": "https://registry.npmjs.org/@netlify/framework-info/-/framework-info-9.2.0.tgz",
+      "integrity": "sha512-H5KgXjYXYZfWbPbUG+gPLuPZ1vxUjbN2yOb8GPpfnHV8MCn9e7Q3I/1g/rq/CC0DbupF/4rGrXbkJnbdEH7prw==",
       "dependencies": {
         "ajv": "^8.0.0",
         "filter-obj": "^3.0.0",
@@ -3889,9 +3890,9 @@
       "integrity": "sha512-ni6R1xdR8EtH0iB8ixGt9ocuboW+Q8eN4ilTX8lfNHS6Y6Q2S+O/aB2n1BnAgv39wopeQsQ2meL9vfEePURl7w=="
     },
     "node_modules/@netlify/plugins-list": {
-      "version": "6.36.0",
-      "resolved": "https://registry.npmjs.org/@netlify/plugins-list/-/plugins-list-6.36.0.tgz",
-      "integrity": "sha512-vS4MtKF8a8kl/BFApM+BdHWc8XcUvgbqY/ywppPhplvifBAAmWmynaLzwMsYhiB3VsypSvD/4bQWsgkdPHpGiQ==",
+      "version": "6.37.0",
+      "resolved": "https://registry.npmjs.org/@netlify/plugins-list/-/plugins-list-6.37.0.tgz",
+      "integrity": "sha512-sThBWfyHQ0TEVjUCPlzrt0tTjA6MVIydE718Hqb7jR8x51nSkOrWgIQmaQaJWZsGErRPX2hW501Ajdh0eIW6Bw==",
       "engines": {
         "node": "^12.20.0 || ^14.14.0 || >=16.0.0"
       }
@@ -12512,6 +12513,14 @@
       "resolved": "https://registry.npmjs.org/graceful-fs/-/graceful-fs-4.2.9.tgz",
       "integrity": "sha512-NtNxqUcXgpW2iMrfqSfR73Glt39K+BLwWsPs94yR63v45T0Wbej7eRmL5cWfwEgqXnmjQp3zaJTshdRW/qC2ZQ=="
     },
+    "node_modules/graphql": {
+      "version": "16.5.0",
+      "resolved": "https://registry.npmjs.org/graphql/-/graphql-16.5.0.tgz",
+      "integrity": "sha512-qbHgh8Ix+j/qY+a/ZcJnFQ+j8ezakqPiHwPiZhV/3PgGlgf96QMBB5/f2rkiC9sgLoy/xvT6TSiaf2nTHJh5iA==",
+      "engines": {
+        "node": "^12.22.0 || ^14.16.0 || ^16.0.0 || >=17.0.0"
+      }
+    },
     "node_modules/graphviz": {
       "version": "0.0.9",
       "resolved": "https://registry.npmjs.org/graphviz/-/graphviz-0.0.9.tgz",
@@ -16310,22 +16319,14 @@
       }
     },
     "node_modules/netlify-onegraph-internal": {
-      "version": "0.4.2",
-      "resolved": "https://registry.npmjs.org/netlify-onegraph-internal/-/netlify-onegraph-internal-0.4.2.tgz",
-      "integrity": "sha512-3TGD/s2FGjx9NcOcMPMMUxamy3IVY9O0ZZ176FuHVDmLAc5l8mj0ZNoUbhdrXfZjes62Gt6/YynCJxGShE6oUA==",
+      "version": "0.8.1",
+      "resolved": "https://registry.npmjs.org/netlify-onegraph-internal/-/netlify-onegraph-internal-0.8.1.tgz",
+      "integrity": "sha512-gCBwR6wOLWiiE+MMgYtx7OVIUvsNGPPP8oe0ltkYjCATcN/e/l0/z/FrRaTGPXnR8wMBp9Kibgibskr8h5dIpg==",
       "dependencies": {
-        "graphql": "16.0.0",
+        "graphql": "16.5.0",
         "node-fetch": "^2.6.0",
         "rusha": "^0.8.14",
         "uuid": "^8.3.2"
-      }
-    },
-    "node_modules/netlify-onegraph-internal/node_modules/graphql": {
-      "version": "16.0.0",
-      "resolved": "https://registry.npmjs.org/graphql/-/graphql-16.0.0.tgz",
-      "integrity": "sha512-n9NxoRfwnpYBZB/WJ7L166gyrShuZ8qYgVaX8oxVyELcJfAwkvwPt6WlYIl90WRlzqDjaNWvLmNOSnKs5llZWQ==",
-      "engines": {
-        "node": "^12.22.0 || ^14.16.0 || >=16.0.0"
       }
     },
     "node_modules/netlify-redirect-parser": {
@@ -24550,9 +24551,9 @@
       }
     },
     "@netlify/edge-bundler": {
-      "version": "1.8.0",
-      "resolved": "https://registry.npmjs.org/@netlify/edge-bundler/-/edge-bundler-1.8.0.tgz",
-      "integrity": "sha512-A9AqvNCpskKq1ScphTRwEP/iv0CnvUStWVfGVIrLHzzM3qegZeHJyiWUZ81CYScLceaVrj1DtQ68vNEhP+9JSA==",
+      "version": "1.12.1",
+      "resolved": "https://registry.npmjs.org/@netlify/edge-bundler/-/edge-bundler-1.12.1.tgz",
+      "integrity": "sha512-yROvOGpapj79wJIIjtuGX/p82gZt2K8on13cTg1tfCGRrGOvE+RNSKi5XuAXpocceyDJXnEyETXsc0mdpMMdhg==",
       "requires": {
         "common-path-prefix": "^3.0.0",
         "del": "^6.0.0",
@@ -24562,6 +24563,7 @@
         "node-fetch": "^3.1.1",
         "node-stream-zip": "^1.15.0",
         "p-wait-for": "^4.1.0",
+        "path-key": "^4.0.0",
         "semver": "^7.3.5",
         "tmp-promise": "^3.0.3",
         "uuid": "^8.3.2"
@@ -24908,9 +24910,9 @@
       }
     },
     "@netlify/framework-info": {
-      "version": "9.1.1",
-      "resolved": "https://registry.npmjs.org/@netlify/framework-info/-/framework-info-9.1.1.tgz",
-      "integrity": "sha512-9UdZWvWJwVnlWKCDLuh2w4UpCCzNm6BENiOQL0ik//R5PU3gDoL2uLNIEyLy+LlEBA5ZACnZZKC11a7EJ6x/Jw==",
+      "version": "9.2.0",
+      "resolved": "https://registry.npmjs.org/@netlify/framework-info/-/framework-info-9.2.0.tgz",
+      "integrity": "sha512-H5KgXjYXYZfWbPbUG+gPLuPZ1vxUjbN2yOb8GPpfnHV8MCn9e7Q3I/1g/rq/CC0DbupF/4rGrXbkJnbdEH7prw==",
       "requires": {
         "ajv": "^8.0.0",
         "filter-obj": "^3.0.0",
@@ -25317,9 +25319,9 @@
       "integrity": "sha512-ni6R1xdR8EtH0iB8ixGt9ocuboW+Q8eN4ilTX8lfNHS6Y6Q2S+O/aB2n1BnAgv39wopeQsQ2meL9vfEePURl7w=="
     },
     "@netlify/plugins-list": {
-      "version": "6.36.0",
-      "resolved": "https://registry.npmjs.org/@netlify/plugins-list/-/plugins-list-6.36.0.tgz",
-      "integrity": "sha512-vS4MtKF8a8kl/BFApM+BdHWc8XcUvgbqY/ywppPhplvifBAAmWmynaLzwMsYhiB3VsypSvD/4bQWsgkdPHpGiQ=="
+      "version": "6.37.0",
+      "resolved": "https://registry.npmjs.org/@netlify/plugins-list/-/plugins-list-6.37.0.tgz",
+      "integrity": "sha512-sThBWfyHQ0TEVjUCPlzrt0tTjA6MVIydE718Hqb7jR8x51nSkOrWgIQmaQaJWZsGErRPX2hW501Ajdh0eIW6Bw=="
     },
     "@netlify/run-utils": {
       "version": "4.0.1",
@@ -31962,6 +31964,11 @@
       "resolved": "https://registry.npmjs.org/graceful-fs/-/graceful-fs-4.2.9.tgz",
       "integrity": "sha512-NtNxqUcXgpW2iMrfqSfR73Glt39K+BLwWsPs94yR63v45T0Wbej7eRmL5cWfwEgqXnmjQp3zaJTshdRW/qC2ZQ=="
     },
+    "graphql": {
+      "version": "16.5.0",
+      "resolved": "https://registry.npmjs.org/graphql/-/graphql-16.5.0.tgz",
+      "integrity": "sha512-qbHgh8Ix+j/qY+a/ZcJnFQ+j8ezakqPiHwPiZhV/3PgGlgf96QMBB5/f2rkiC9sgLoy/xvT6TSiaf2nTHJh5iA=="
+    },
     "graphviz": {
       "version": "0.0.9",
       "resolved": "https://registry.npmjs.org/graphviz/-/graphviz-0.0.9.tgz",
@@ -34788,21 +34795,14 @@
       }
     },
     "netlify-onegraph-internal": {
-      "version": "0.4.2",
-      "resolved": "https://registry.npmjs.org/netlify-onegraph-internal/-/netlify-onegraph-internal-0.4.2.tgz",
-      "integrity": "sha512-3TGD/s2FGjx9NcOcMPMMUxamy3IVY9O0ZZ176FuHVDmLAc5l8mj0ZNoUbhdrXfZjes62Gt6/YynCJxGShE6oUA==",
+      "version": "0.8.1",
+      "resolved": "https://registry.npmjs.org/netlify-onegraph-internal/-/netlify-onegraph-internal-0.8.1.tgz",
+      "integrity": "sha512-gCBwR6wOLWiiE+MMgYtx7OVIUvsNGPPP8oe0ltkYjCATcN/e/l0/z/FrRaTGPXnR8wMBp9Kibgibskr8h5dIpg==",
       "requires": {
-        "graphql": "16.0.0",
+        "graphql": "16.5.0",
         "node-fetch": "^2.6.0",
         "rusha": "^0.8.14",
         "uuid": "^8.3.2"
-      },
-      "dependencies": {
-        "graphql": {
-          "version": "16.0.0",
-          "resolved": "https://registry.npmjs.org/graphql/-/graphql-16.0.0.tgz",
-          "integrity": "sha512-n9NxoRfwnpYBZB/WJ7L166gyrShuZ8qYgVaX8oxVyELcJfAwkvwPt6WlYIl90WRlzqDjaNWvLmNOSnKs5llZWQ=="
-        }
       }
     },
     "netlify-redirect-parser": {
