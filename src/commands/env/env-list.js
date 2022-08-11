@@ -1,20 +1,33 @@
 // @ts-check
 const AsciiTable = require('ascii-table')
 const { isCI } = require('ci-info')
+const { Option } = require('commander')
 const inquirer = require('inquirer')
 const isEmpty = require('lodash/isEmpty')
 
-const { chalk, log, logJson } = require('../../utils')
+const { chalk, error, getEnvelopeEnv, getHumanReadableScopes, log, logJson } = require('../../utils')
 
 const [logUpdatePromise, ansiEscapesPromise] = [import('log-update'), import('ansi-escapes')]
 
 const MASK_LENGTH = 50
 const MASK = '*'.repeat(MASK_LENGTH)
 
-const getTable = ({ environment, hideValues }) => {
+const getTable = ({ environment, hideValues, scopesColumn }) => {
   const table = new AsciiTable(`Environment variables`)
-  table.setHeading('Key', 'Value')
-  table.addRowMatrix(Object.entries(environment).map(([key, value]) => [key, hideValues ? MASK : value]))
+  const headings = ['Key', 'Value', scopesColumn && 'Scope'].filter(Boolean)
+  table.setHeading(...headings)
+  table.addRowMatrix(
+    Object.entries(environment).map(([key, variable]) =>
+      [
+        // Key
+        key,
+        // Value
+        hideValues ? MASK : variable.value,
+        // Scope
+        scopesColumn && getHumanReadableScopes(variable.scopes),
+      ].filter(Boolean),
+    ),
+  )
   return table.toString()
 }
 
@@ -25,6 +38,7 @@ const getTable = ({ environment, hideValues }) => {
  * @returns {Promise<boolean>}
  */
 const envList = async (options, command) => {
+  const { context, scope } = options
   const { api, cachedConfig, site } = command.netlify
   const siteId = site.id
 
@@ -33,36 +47,55 @@ const envList = async (options, command) => {
     return false
   }
 
-  const siteData = await api.getSite({ siteId })
-  const environment = Object.fromEntries(
-    Object.entries(cachedConfig.env)
-      // Omitting general variables to reduce noise.
-      .filter(([, variable]) => variable.sources[0] !== 'general')
-      .map(([key, variable]) => [key, variable.value]),
+  const { env, siteInfo } = cachedConfig
+  const isUsingEnvelope = siteInfo.use_envelope
+  let environment = env
+
+  if (isUsingEnvelope) {
+    environment = await getEnvelopeEnv({ api, context, env, scope, siteInfo })
+  } else if (context !== 'dev' || scope !== 'any') {
+    error(
+      `To specify a context or scope, please run ${chalk.yellowBright(
+        'netlify open:admin',
+      )} to open the Netlify UI and opt in to the new environment variables experience from Site settings`,
+    )
+    return false
+  }
+
+  // filter out general sources
+  environment = Object.fromEntries(
+    Object.entries(environment).filter(([, variable]) => variable.sources[0] !== 'general'),
   )
 
   // Return json response for piping commands
   if (options.json) {
-    logJson(environment)
+    const envDictionary = Object.fromEntries(
+      Object.entries(environment).map(([key, variable]) => [key, variable.value]),
+    )
+    logJson(envDictionary)
     return false
   }
 
+  const forSite = `for site ${chalk.greenBright(siteInfo.name)}`
+  const withContext = isUsingEnvelope ? `in the ${chalk.magentaBright(options.context)} context` : ''
+  const withScope = isUsingEnvelope && scope !== 'any' ? `and ${chalk.yellowBright(options.scope)} scope` : ''
   if (isEmpty(environment)) {
-    log(`No environment variables set for site ${chalk.greenBright(siteData.name)}`)
+    log(`No environment variables set ${forSite} ${withContext} ${withScope}`)
     return false
   }
 
   // List environment in a table
-  log(`Listing environment variables for site: ${chalk.greenBright(siteData.name)}`)
+  const count = Object.keys(environment).length
+  log(`${count} environment variable${count === 1 ? '' : 's'} ${forSite} ${withContext} ${withScope}`)
 
   if (isCI) {
-    log(getTable({ environment, hideValues: false }))
+    log(getTable({ environment, hideValues: false, scopesColumn: isUsingEnvelope }))
     return false
   }
 
   const { default: logUpdate } = await logUpdatePromise
 
-  logUpdate(getTable({ environment, hideValues: true }))
+  logUpdate(getTable({ environment, hideValues: true, scopesColumn: isUsingEnvelope }))
   const { showValues } = await inquirer.prompt([
     {
       type: 'confirm',
@@ -76,7 +109,7 @@ const envList = async (options, command) => {
     const { default: ansiEscapes } = await ansiEscapesPromise
     // since inquirer adds a prompt, we need to account for it when printing the table again
     log(ansiEscapes.eraseLines(3))
-    logUpdate(getTable({ environment, hideValues: false }))
+    logUpdate(getTable({ environment, hideValues: false, scopesColumn: isUsingEnvelope }))
     log(`${chalk.cyan('?')} Show values? ${chalk.cyan('Yes')}`)
   }
 }
@@ -89,6 +122,16 @@ const envList = async (options, command) => {
 const createEnvListCommand = (program) =>
   program
     .command('env:list')
+    .addOption(
+      new Option('-c, --context <context>', 'Specify a deploy context')
+        .choices(['production', 'deploy-preview', 'branch-deploy', 'dev'])
+        .default('dev'),
+    )
+    .addOption(
+      new Option('-s, --scope <scope>', 'Specify a scope')
+        .choices(['builds', 'functions', 'post_processing', 'runtime', 'any'])
+        .default('any'),
+    )
     .description('Lists resolved environment variables for site (includes netlify.toml)')
     .action(async (options, command) => {
       await envList(options, command)
