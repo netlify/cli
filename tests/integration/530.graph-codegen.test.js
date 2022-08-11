@@ -7,6 +7,7 @@ const process = require('process')
 
 const test = require('ava')
 const { CodegenHelpers, GraphQL, IncludedCodegen, NetlifyGraph } = require('netlify-onegraph-internal')
+const { registerConsole } = require('netlify-onegraph-internal/dist/internalConsole')
 
 const {
   generateHandlerSourceByOperationId,
@@ -16,7 +17,6 @@ const {
 const { buildSchema, extractFunctionsFromOperationDoc, parse } = require('../../src/lib/one-graph/cli-netlify-graph')
 
 const { normalize } = require('./utils/snapshots')
-const { registerConsole } = require('netlify-onegraph-internal/dist/internalConsole')
 
 /**
  * Given a path, ensure that the path exists
