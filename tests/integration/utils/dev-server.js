@@ -32,7 +32,9 @@ const startServer = async ({
   const staticPort = await getPort()
   const host = 'localhost'
   const url = `http://${host}:${port}`
+
   console.log(`Starting dev server on port: ${port} in directory ${path.basename(cwd)}`)
+
   const ps = execa(
     cliPath,
     ['dev', offline ? '--offline' : '', '-p', port, '--staticServerPort', staticPort, '--context', context, ...args],
@@ -46,23 +48,37 @@ const startServer = async ({
   }
 
   const outputBuffer = []
+  const errorBuffer = []
   const serverPromise = new Promise((resolve, reject) => {
     let selfKilled = false
+    ps.stderr.on('data', (data) => {
+      errorBuffer.push(data)
+    })
     ps.stdout.on('data', (data) => {
       outputBuffer.push(data)
       if (!expectFailure && data.includes('Server now ready on')) {
-        resolve({
-          url,
-          host,
-          port,
-          output: outputBuffer.join(''),
-          outputBuffer,
-          close: async () => {
-            selfKilled = true
-            await killProcess(ps)
-          },
-          promptHistory,
-        })
+        setImmediate(() =>
+          resolve({
+            url,
+            host,
+            port,
+            errorBuffer,
+            outputBuffer,
+            get output() {
+              // these are getters so we do the actual joining as late as possible as the array might still get
+              // populated after we resolve here
+              return outputBuffer.join('')
+            },
+            get error() {
+              return errorBuffer.join('')
+            },
+            close: async () => {
+              selfKilled = true
+              await killProcess(ps)
+            },
+            promptHistory,
+          }),
+        )
       }
     })
     // eslint-disable-next-line promise/prefer-await-to-callbacks,promise/prefer-await-to-then
@@ -99,6 +115,12 @@ const withDevServer = async (options, testHandler, expectFailure = false) => {
   try {
     server = await startDevServer(options, expectFailure)
     return await testHandler(server)
+  } catch (error) {
+    if (server && !expectFailure) {
+      error.stdout = server.output
+      error.stderr = server.error
+    }
+    throw error
   } finally {
     if (server) {
       await server.close()

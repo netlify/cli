@@ -279,7 +279,7 @@ const initializeProxy = async function ({ configPath, distDir, port, projectDir 
   const proxy = httpProxy.createProxyServer({
     selfHandleResponse: true,
     target: {
-      host: 'localhost',
+      host: '127.0.0.1',
       port,
     },
   })
@@ -349,7 +349,7 @@ const initializeProxy = async function ({ configPath, distDir, port, projectDir 
     }
 
     const responseData = []
-    const requestURL = new URL(req.url, `http://${req.headers.host || 'localhost'}`)
+    const requestURL = new URL(req.url, `http://${req.headers.host || '127.0.0.1'}`)
     const headersRules = headersForPath(headers, requestURL.pathname)
 
     proxyRes.on('data', function onData(data) {
@@ -392,7 +392,7 @@ const initializeProxy = async function ({ configPath, distDir, port, projectDir 
 
   const handlers = {
     web: (req, res, options) => {
-      const requestURL = new URL(req.url, 'http://localhost')
+      const requestURL = new URL(req.url, 'http://127.0.0.1')
       req.proxyOptions = options
       req.alternativePaths = alternativePathsFor(requestURL.pathname).map((filePath) => filePath + requestURL.search)
       // Ref: https://nodejs.org/api/net.html#net_socket_remoteaddress
@@ -428,7 +428,7 @@ const onRequest = async ({ addonsUrls, edgeFunctionsProxy, functionsServer, prox
   const options = {
     match,
     addonsUrls,
-    target: `http://localhost:${settings.frameworkPort}`,
+    target: `http://127.0.0.1:${settings.frameworkPort}`,
     publicFolder: settings.dist,
     functionsServer,
     functionsPort: settings.functionsPort,
@@ -465,6 +465,7 @@ const startProxy = async function ({
   addonsUrls,
   config,
   configPath,
+  env,
   geoCountry,
   geolocationMode,
   getUpdatedConfig,
@@ -472,12 +473,14 @@ const startProxy = async function ({
   offline,
   projectDir,
   settings,
+  siteInfo,
   state,
 }) {
-  const functionsServer = settings.functionsPort ? `http://localhost:${settings.functionsPort}` : null
+  const functionsServer = settings.functionsPort ? `http://127.0.0.1:${settings.functionsPort}` : null
   const edgeFunctionsProxy = await edgeFunctions.initializeProxy({
     config,
     configPath,
+    env,
     geolocationMode,
     geoCountry,
     getUpdatedConfig,
@@ -485,6 +488,7 @@ const startProxy = async function ({
     offline,
     projectDir,
     settings,
+    siteInfo,
     state,
   })
   const proxy = await initializeProxy({

@@ -6,4 +6,5 @@ module.exports = {
   Passthrough: 'x-deno-pass',
   RequestID: 'X-NF-Request-ID',
   IP: 'x-nf-client-connection-ip',
+  Site: 'X-NF-Site-Info',
 }

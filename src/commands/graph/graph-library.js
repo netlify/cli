@@ -1,4 +1,7 @@
 // @ts-check
+const { GraphQL } = require('netlify-onegraph-internal')
+
+const { readLockfile } = require('../../lib/one-graph/cli-client')
 const {
   buildSchema,
   defaultExampleOperationsDoc,
@@ -9,7 +12,7 @@ const {
   readGraphQLOperationsSourceFile,
   readGraphQLSchemaFile,
 } = require('../../lib/one-graph/cli-netlify-graph')
-const { error, log } = require('../../utils')
+const { NETLIFYDEVERR, chalk, error, log } = require('../../utils')
 
 /**
  * Creates the `netlify graph:library` command
@@ -18,9 +21,18 @@ const { error, log } = require('../../utils')
  * @returns
  */
 const graphLibrary = async (options, command) => {
+  const { config } = command.netlify
   const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options })
 
   const schemaString = readGraphQLSchemaFile(netlifyGraphConfig)
+
+  let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
+  if (currentOperationsDoc.trim().length === 0) {
+    currentOperationsDoc = defaultExampleOperationsDoc
+  }
+
+  const parsedDoc = parse(currentOperationsDoc)
+  const { fragments, functions } = extractFunctionsFromOperationDoc(GraphQL, parsedDoc)
 
   let schema
 
@@ -32,24 +44,34 @@ const graphLibrary = async (options, command) => {
 
   if (!schema) {
     error(`Failed to parse Netlify GraphQL schema`)
+    return
   }
 
-  let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
-  if (currentOperationsDoc.trim().length === 0) {
-    currentOperationsDoc = defaultExampleOperationsDoc
+  const lockfile = readLockfile({ siteRoot: command.netlify.site.root })
+
+  if (lockfile === undefined) {
+    error(
+      `${NETLIFYDEVERR} Error: no lockfile found, unable to run \`netlify graph:library\`. To pull a remote schema (and create a lockfile), run ${chalk.yellow(
+        'netlify graph:pull',
+      )} `,
+    )
+    return
   }
 
-  const parsedDoc = parse(currentOperationsDoc)
-  const { fragments, functions } = extractFunctionsFromOperationDoc(parsedDoc)
+  const { schemaId } = lockfile.locked
 
-  generateFunctionsFile({
+  const payload = {
+    config,
     logger: log,
     netlifyGraphConfig,
     schema,
+    schemaId,
     operationsDoc: currentOperationsDoc,
     functions,
     fragments,
-  })
+  }
+
+  generateFunctionsFile(payload)
 }
 
 /**

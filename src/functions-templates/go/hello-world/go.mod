@@ -1,5 +1,5 @@
 module github.com/someone/{{name}}
 
-go 1.15
+go 1.19
 
-require github.com/aws/aws-lambda-go v1.32.1
+require github.com/aws/aws-lambda-go v1.34.1
