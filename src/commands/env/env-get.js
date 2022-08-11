@@ -1,5 +1,7 @@
 // @ts-check
-const { log, logJson } = require('../../utils')
+const { Option } = require('commander')
+
+const { chalk, error, getEnvelopeEnv, log, logJson } = require('../../utils')
 
 /**
  * The env:get command
@@ -8,6 +10,7 @@ const { log, logJson } = require('../../utils')
  * @param {import('../base-command').BaseCommand} command
  */
 const envGet = async (name, options, command) => {
+  const { context, scope } = options
   const { api, cachedConfig, site } = command.netlify
   const siteId = site.id
 
@@ -16,9 +19,21 @@ const envGet = async (name, options, command) => {
     return false
   }
 
-  const siteData = await api.getSite({ siteId })
+  const { siteInfo } = cachedConfig
+  let { env } = cachedConfig
 
-  const { value } = cachedConfig.env[name] || {}
+  if (siteInfo.use_envelope) {
+    env = await getEnvelopeEnv({ api, context, env, key: name, scope, siteInfo })
+  } else if (context !== 'dev' || scope !== 'any') {
+    error(
+      `To specify a context or scope, please run ${chalk.yellowBright(
+        'netlify open:admin',
+      )} to open the Netlify UI and opt in to the new environment variables experience from Site settings`,
+    )
+    return false
+  }
+
+  const { value } = env[name] || {}
 
   // Return json response for piping commands
   if (options.json) {
@@ -27,7 +42,9 @@ const envGet = async (name, options, command) => {
   }
 
   if (!value) {
-    log(`Environment variable ${name} not set for site ${siteData.name}`)
+    const withContext = `in the ${chalk.magentaBright(context)} context`
+    const withScope = scope === 'any' ? '' : ` in the ${chalk.magentaBright(context)} scope`
+    log(`No value set ${withContext}${withScope} for environment variable ${chalk.yellowBright(name)}`)
     return false
   }
 
@@ -43,6 +60,16 @@ const createEnvGetCommand = (program) =>
   program
     .command('env:get')
     .argument('<name>', 'Environment variable name')
+    .addOption(
+      new Option('-c, --context <context>', 'Specify a deploy context')
+        .choices(['production', 'deploy-preview', 'branch-deploy', 'dev'])
+        .default('dev'),
+    )
+    .addOption(
+      new Option('-s, --scope <scope>', 'Specify a scope')
+        .choices(['builds', 'functions', 'post_processing', 'runtime', 'any'])
+        .default('any'),
+    )
     .description('Get resolved value of specified environment variable (includes netlify.toml)')
     .action(async (name, options, command) => {
       await envGet(name, options, command)

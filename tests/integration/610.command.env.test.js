@@ -24,18 +24,6 @@ const routes = [
   },
 ]
 
-test('env:list --json should return empty object if no vars set', async (t) => {
-  await withSiteBuilder('site-env', async (builder) => {
-    await builder.buildAsync()
-
-    await withMockApi(routes, async ({ apiUrl }) => {
-      const cliResponse = await callCli(['env:list', '--json'], getCLIOptions({ builder, apiUrl }), true)
-
-      t.deepEqual(cliResponse, {})
-    })
-  })
-})
-
 test('env:get --json should return empty object if var not set', async (t) => {
   await withSiteBuilder('site-env', async (builder) => {
     await builder.buildAsync()
@@ -44,6 +32,34 @@ test('env:get --json should return empty object if var not set', async (t) => {
       const cliResponse = await callCli(['env:get', '--json', 'SOME_VAR'], getCLIOptions({ builder, apiUrl }), true)
 
       t.deepEqual(cliResponse, {})
+    })
+  })
+})
+
+test('env:get --context should log an error message', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      const { stderr: cliResponse } = await t.throwsAsync(
+        callCli(['env:get', 'SOME_VAR', '--context', 'production'], getCLIOptions({ builder, apiUrl })),
+      )
+
+      t.true(cliResponse.includes(`opt in to the new environment variables experience`))
+    })
+  })
+})
+
+test('env:get --scope should log an error message', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      const { stderr: cliResponse } = await t.throwsAsync(
+        callCli(['env:get', 'SOME_VAR', '--scope', 'functions'], getCLIOptions({ builder, apiUrl })),
+      )
+
+      t.true(cliResponse.includes(`opt in to the new environment variables experience`))
     })
   })
 })
@@ -214,6 +230,46 @@ test('env:get --json should return value of var from netlify.toml', async (t) =>
       )
 
       t.deepEqual(cliResponse, { from_toml_file: 'from_toml_file_value' })
+    })
+  })
+})
+
+test('env:list --json should return empty object if no vars set', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      const cliResponse = await callCli(['env:list', '--json'], getCLIOptions({ builder, apiUrl }), true)
+
+      t.deepEqual(cliResponse, {})
+    })
+  })
+})
+
+test('env:list --context should log an error message', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      const { stderr: cliResponse } = await t.throwsAsync(
+        callCli(['env:list', '--context', 'production'], getCLIOptions({ builder, apiUrl })),
+      )
+
+      t.true(cliResponse.includes(`opt in to the new environment variables experience`))
+    })
+  })
+})
+
+test('env:list --scope should log an error message', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      const { stderr: cliResponse } = await t.throwsAsync(
+        callCli(['env:list', '--scope', 'functions'], getCLIOptions({ builder, apiUrl })),
+      )
+
+      t.true(cliResponse.includes(`opt in to the new environment variables experience`))
     })
   })
 })
