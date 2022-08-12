@@ -91,7 +91,7 @@ test('should use build command from UI with build plugin', async (t) => {
           onPreBuild: ({ netlifyConfig }) => {
             console.log('test-pre-build')
 
-            netlifyConfig.build.environment ||= {}
+            netlifyConfig.build.environment = netlifyConfig.build.environment || {}
             netlifyConfig.build.environment.TEST_123 = '12345'
           },
         },
