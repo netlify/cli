@@ -7,6 +7,7 @@ const process = require('process')
 
 const test = require('ava')
 const { CodegenHelpers, GraphQL, IncludedCodegen, NetlifyGraph } = require('netlify-onegraph-internal')
+const { registerConsole } = require('netlify-onegraph-internal/dist/internalConsole')
 
 const {
   generateHandlerSourceByOperationId,
@@ -259,6 +260,8 @@ const builtInCodegenModules = IncludedCodegen.includedCodegenModules
 const queryWithFragmentOperationId = 'e2394c86-260c-4646-88df-7bc7370de666'
 
 builtInCodegenModules.forEach((codegenModule) => {
+  registerConsole(console)
+
   testGenerateRuntime({
     codegenModule,
   })
@@ -266,6 +269,8 @@ builtInCodegenModules.forEach((codegenModule) => {
 
 const subscriptionWithFragmentOperationId = 'e3d4bb8b-2fb5-9898-b051-db6027224112'
 builtInCodegenModules.forEach((codegenModule) => {
+  registerConsole(console)
+
   codegenModule.generators.forEach((codegen) => {
     testGenerateHandlerSource({
       codegenModule,

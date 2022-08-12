@@ -41,6 +41,33 @@ test('should use [build.environment] and not [context.production.environment]', 
   })
 })
 
+test('should use [context.production.environment] when --context=production', async (t) => {
+  await withSiteBuilder('site-with-build-environment', async (builder) => {
+    builder
+      .withNetlifyToml({
+        config: {
+          build: { environment: { TEST: 'DEFAULT_CONTEXT' } },
+          context: { production: { environment: { TEST: 'PRODUCTION_CONTEXT' } } },
+          functions: { directory: 'functions' },
+        },
+      })
+      .withFunction({
+        path: 'env.js',
+        handler: async () => ({
+          statusCode: 200,
+          body: `${process.env.TEST}`,
+        }),
+      })
+
+    await builder.buildAsync()
+
+    await withDevServer({ cwd: builder.directory, context: 'production' }, async (server) => {
+      const response = await got(`${server.url}/.netlify/functions/env`).text()
+      t.is(response, 'PRODUCTION_CONTEXT')
+    })
+  })
+})
+
 test('should override .env.development with process env', async (t) => {
   await withSiteBuilder('site-with-override', async (builder) => {
     builder
@@ -140,6 +167,25 @@ test('should set value of the CONTEXT env variable', async (t) => {
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response = await got(`${server.url}/.netlify/functions/env`).text()
       t.is(response, 'dev')
+    })
+  })
+})
+
+test('should set value of the CONTEXT env variable to the --context flag', async (t) => {
+  await withSiteBuilder('site-with-context-override', async (builder) => {
+    builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
+      path: 'env.js',
+      handler: async () => ({
+        statusCode: 200,
+        body: `${process.env.CONTEXT}`,
+      }),
+    })
+
+    await builder.buildAsync()
+
+    await withDevServer({ cwd: builder.directory, context: 'deploy-preview' }, async (server) => {
+      const response = await got(`${server.url}/.netlify/functions/env`).text()
+      t.is(response, 'deploy-preview')
     })
   })
 })
