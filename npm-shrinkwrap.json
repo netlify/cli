@@ -10,7 +10,7 @@
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
-        "@netlify/build": "^27.11.3",
+        "@netlify/build": "^27.11.4",
         "@netlify/config": "^18.1.4",
         "@netlify/edge-bundler": "^1.12.1",
         "@netlify/framework-info": "^9.2.0",
@@ -1189,13 +1189,13 @@
       "integrity": "sha512-4wMPu9iN3/HL97QblBsBay3E1etIciR84izI3U+4iALY+JHCrI+a2jO0qbAZ/nxKoegypYEaiiqWXylm+/zfrw=="
     },
     "node_modules/@netlify/build": {
-      "version": "27.11.3",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-27.11.3.tgz",
-      "integrity": "sha512-BLMhPSYEkM2YI//KzOH9J9zC6fmss1EHcSWirtdYe6o7Hv8nx2erCqTgLgo887JcZcKaN7HsWbJdyW+jbug5hg==",
+      "version": "27.11.4",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-27.11.4.tgz",
+      "integrity": "sha512-zUbvdN21VGQwg/jVmdpk0qgysUUtBf25hCBxrATt55g3EJVE0ygEm/wX2HV9JjO8OqpydmaaaDdRNmD29aNMAw==",
       "dependencies": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^4.0.0",
-        "@netlify/config": "^18.1.3",
+        "@netlify/config": "^18.1.4",
         "@netlify/edge-bundler": "^1.12.1",
         "@netlify/functions-utils": "^4.2.3",
         "@netlify/git-utils": "^4.0.0",
@@ -23384,13 +23384,13 @@
       "integrity": "sha512-4wMPu9iN3/HL97QblBsBay3E1etIciR84izI3U+4iALY+JHCrI+a2jO0qbAZ/nxKoegypYEaiiqWXylm+/zfrw=="
     },
     "@netlify/build": {
-      "version": "27.11.3",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-27.11.3.tgz",
-      "integrity": "sha512-BLMhPSYEkM2YI//KzOH9J9zC6fmss1EHcSWirtdYe6o7Hv8nx2erCqTgLgo887JcZcKaN7HsWbJdyW+jbug5hg==",
+      "version": "27.11.4",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-27.11.4.tgz",
+      "integrity": "sha512-zUbvdN21VGQwg/jVmdpk0qgysUUtBf25hCBxrATt55g3EJVE0ygEm/wX2HV9JjO8OqpydmaaaDdRNmD29aNMAw==",
       "requires": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^4.0.0",
-        "@netlify/config": "^18.1.3",
+        "@netlify/config": "^18.1.4",
         "@netlify/edge-bundler": "^1.12.1",
         "@netlify/functions-utils": "^4.2.3",
         "@netlify/git-utils": "^4.0.0",
