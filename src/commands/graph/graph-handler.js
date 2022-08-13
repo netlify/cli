@@ -36,6 +36,8 @@ const graphHandler = async (args, options, command) => {
   const userOperationName = args.operationName
   const userCodegenId = options.codegen
 
+  const handlerOptions = options.data ? JSON.parse(options.data) : {}
+
   let operationName = userOperationName
   if (!operationName) {
     operationName = await autocompleteOperationNames({ netlifyGraphConfig })
@@ -70,7 +72,7 @@ const graphHandler = async (args, options, command) => {
       netlifyGraphConfig,
       schema,
       operationName,
-      handlerOptions: {},
+      handlerOptions,
     })
   } else {
     error(`Failed to parse Netlify GraphQL schema`)
@@ -87,6 +89,7 @@ const createGraphHandlerCommand = (program) =>
     .command('graph:handler')
     .argument('[name]', 'Operation name')
     .option('-c, --codegen <id>', 'The id of the specific code generator to use')
+    .option("-d, --data '<json>'", 'Optional data to pass along to the code generator')
     .description(
       'Generate a handler for a Graph operation given its name. See `graph:operations` for a list of operations.',
     )
