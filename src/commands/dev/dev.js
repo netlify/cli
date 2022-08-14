@@ -430,7 +430,7 @@ const dev = async (options, command) => {
   }
 
   let { env } = command.netlify.cachedConfig
-  if (siteInfo.use_envelope) {
+  if (!options.offline && siteInfo.use_envelope) {
     env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })
   }
 
