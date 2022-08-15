@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "10.17.4",
+  "version": "10.17.5",
   "author": "Netlify Inc.",
   "contributors": [
     "@whitep4nth3r (https://twitter.com/whitep4nth3r)",
