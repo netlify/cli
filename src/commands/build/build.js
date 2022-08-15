@@ -1,3 +1,5 @@
+const process = require('process')
+
 const { Option } = require('commander')
 
 // @ts-check
@@ -55,8 +57,6 @@ const injectEnv = async function (command, { api, buildOptions, context, site, s
  */
 const build = async (options, command) => {
   command.setAnalyticsPayload({ dry: options.dry })
-  const { context } = options
-
   // Retrieve Netlify Build options
   const [token] = await getToken()
 
@@ -70,6 +70,7 @@ const build = async (options, command) => {
   if (!options.offline) {
     checkOptions(buildOptions)
     const { api, site } = command.netlify
+    const context = options.context || process.env.CONTEXT
     await injectEnv(command, { api, buildOptions, context, site, siteInfo })
   }
 
@@ -89,7 +90,7 @@ const createBuildCommand = (program) =>
     .addOption(
       new Option('--context <context>', 'Specify a deploy context for environment variables')
         .choices(['production', 'deploy-preview', 'branch-deploy', 'dev'])
-        .default('dev'),
+        .default('production'),
     )
     .option('--dry', 'Dry run: show instructions without running them', false)
     .option('-o, --offline', 'disables any features that require network access', false)
