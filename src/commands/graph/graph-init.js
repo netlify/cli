@@ -1,5 +1,6 @@
 // @ts-check
 const { Buffer } = require('buffer')
+const process = require('process')
 
 const { OneGraphClient } = require('netlify-onegraph-internal')
 const { v4: uuidv4 } = require('uuid')
@@ -46,14 +47,17 @@ const graphInit = async (options, command) => {
   await ensureAppForSite(netlifyToken, siteId)
 
   const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options })
-  await ensureCLISession({
-    config,
-    metadata: {},
-    netlifyToken,
-    site,
-    state,
-    netlifyGraphConfig,
-  })
+
+  if (process.env.NODE_ENV !== 'test') {
+    await ensureCLISession({
+      config,
+      metadata: {},
+      netlifyToken,
+      site,
+      state,
+      netlifyGraphConfig,
+    })
+  }
 
   let envChanged = false
 
