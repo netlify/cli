@@ -15,7 +15,7 @@ netlify build
 
 **Flags**
 
-- `context` (*string*) - Build context
+- `context` (*production | deploy-preview | branch-deploy | dev*) - Specify a deploy context for environment variables
 - `dry` (*boolean*) - Dry run: show instructions without running them
 - `offline` (*boolean*) - disables any features that require network access
 - `debug` (*boolean*) - Print debugging information
