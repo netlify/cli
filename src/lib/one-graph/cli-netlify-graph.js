@@ -459,7 +459,7 @@ const generateFunctionsFile = async ({ config, netlifyGraphConfig, operationsDoc
 
   const codegenModule = await getCodegenModule({ config })
   if (!codegenModule) {
-    error(
+    warn(
       `No Netlify Graph codegen module specified in netlify.toml under the [graph] header. Please specify 'codeGenerator' field and try again.`,
     )
     return
