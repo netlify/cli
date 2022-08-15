@@ -1,6 +1,7 @@
 // @ts-check
 
 const slugify = require('@sindresorhus/slugify')
+const { InvalidArgumentError } = require('commander')
 const inquirer = require('inquirer')
 const pick = require('lodash/pick')
 const sample = require('lodash/sample')
@@ -84,20 +85,6 @@ const sitesCreate = async (options, command) => {
     accountSlug = accountSlugInput
   }
 
-  const { name: nameFlag } = options
-
-  // netlify sites:create --name
-  if (nameFlag === true) {
-    error('Please specify site name, example: --name <site_name>')
-    return
-  }
-  // netlify sites:create --name <A string of more than 63 words>
-  const MAX_SITE_NAME_LENGTH = 63
-  if (typeof nameFlag === 'string' && nameFlag.length > MAX_SITE_NAME_LENGTH) {
-    error(`--name should be less than 64 characters, input length: ${nameFlag.length}`)
-    return
-  }
-
   let user
   let site
 
@@ -123,7 +110,7 @@ const sitesCreate = async (options, command) => {
       }
     }
   }
-  await inputSiteName(nameFlag)
+  await inputSiteName(options.name)
 
   log()
   log(chalk.greenBright.bold.underline(`Site Created`))
@@ -188,6 +175,16 @@ const sitesCreate = async (options, command) => {
   return site
 }
 
+const MAX_SITE_NAME_LENGTH = 63
+const validateName = function (value) {
+  // netlify sites:create --name <A string of more than 63 words>
+  if (typeof value === 'string' && value.length > MAX_SITE_NAME_LENGTH) {
+    throw new InvalidArgumentError(`--name should be less than 64 characters, input length: ${value.length}`)
+  }
+
+  return value
+}
+
 /**
  * Creates the `netlify sites:create` command
  * @param {import('../base-command').BaseCommand} program
@@ -200,8 +197,8 @@ const createSitesCreateCommand = (program) =>
       `Create an empty site (advanced)
 Create a blank site that isn't associated with any git remote. Will link the site to the current working directory.`,
     )
-    .option('-n, --name [name]', 'name of site')
-    .option('-a, --account-slug [slug]', 'account slug to create the site under')
+    .option('-n, --name <name>', 'name of site', validateName)
+    .option('-a, --account-slug <slug>', 'account slug to create the site under')
     .option('-c, --with-ci', 'initialize CI hooks during site creation')
     .option('-m, --manual', 'force manual CI setup.  Used --with-ci flag')
     .option('--disable-linking', 'create the site without linking it to current directory')

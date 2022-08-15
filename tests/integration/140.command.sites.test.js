@@ -189,20 +189,18 @@ test.serial('should throw error when name flag is incorrect', async (t) => {
         NETLIFY_AUTH_TOKEN: 'fake-token',
       },
     })
+    const exitSpy = sinon.stub(process, 'exit')
 
     const program = new BaseCommand('netlify')
 
     createSitesCreateCommand(program)
-
-    const missingNameError = await t.throwsAsync(async () => {
-      await program.parseAsync(['', '', 'sites:create', '--name'])
-    })
-    t.truthy(missingNameError.message.includes('Please specify site name'))
 
     const lengthError = await t.throwsAsync(async () => {
       const LENGTH = 64
       await program.parseAsync(['', '', 'sites:create', '--name', Array.from({ length: LENGTH }).fill('a').join('')])
     })
     t.truthy(lengthError.message.includes('--name should be less than 64 characters'))
+
+    exitSpy.restore()
   })
 })
