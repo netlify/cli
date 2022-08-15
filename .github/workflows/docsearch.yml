@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: darrenjennings/algolia-docsearch-action@da2ed379c147b356d60dbfec68bdcfacb2791a98
+      - uses: darrenjennings/algolia-docsearch-action@75b0f6d28d82eff3dd76f57a96a99490df11a250
         with:
           algolia_application_id: '4RTNPM1QF9'
           algolia_api_key: ${{ secrets.ALGOLIA_API_KEY }}

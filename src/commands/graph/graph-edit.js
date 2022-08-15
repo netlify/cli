@@ -11,7 +11,7 @@ const {
 const { NETLIFYDEVERR, chalk, error, log } = require('../../utils')
 const { openBrowser } = require('../../utils/open-browser')
 
-const { createPersistedQuery, ensureAppForSite } = OneGraphCliClient
+const { ensureAppForSite, executeCreatePersistedQueryMutation } = OneGraphCliClient
 
 /**
  * Creates the `netlify graph:edit` command
@@ -20,7 +20,7 @@ const { createPersistedQuery, ensureAppForSite } = OneGraphCliClient
  * @returns
  */
 const graphEdit = async (options, command) => {
-  const { site, state } = command.netlify
+  const { config, site, state } = command.netlify
   const siteId = site.id
 
   if (!site.id) {
@@ -39,29 +39,45 @@ const graphEdit = async (options, command) => {
   }
 
   const netlifyToken = await command.authenticate()
+  const { jwt } = await OneGraphCliClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
 
   await ensureAppForSite(netlifyToken, siteId)
 
   const oneGraphSessionId = await ensureCLISession({
+    config,
     metadata: {},
     netlifyToken,
     site,
     state,
+    netlifyGraphConfig,
   })
 
   const { branch } = gitRepoInfo()
-  const persistedDoc = await createPersistedQuery(netlifyToken, {
-    appId: siteId,
-    description: 'Temporary snapshot of local queries',
-    document: graphqlDocument,
-    tags: ['netlify-cli', `session:${oneGraphSessionId}`, `git-branch:${branch}`],
-  })
+  const persistedResult = await executeCreatePersistedQueryMutation(
+    {
+      nfToken: netlifyToken,
+      appId: siteId,
+      description: 'Temporary snapshot of local queries',
+      query: graphqlDocument,
+      tags: ['netlify-cli', `session:${oneGraphSessionId}`, `git-branch:${branch}`],
+    },
+    {
+      accessToken: jwt,
+      siteId,
+    },
+  )
+
+  const persistedDoc =
+    persistedResult.data &&
+    persistedResult.data.oneGraph &&
+    persistedResult.data.oneGraph.createPersistedQuery &&
+    persistedResult.data.oneGraph.createPersistedQuery.persistedQuery
 
   const newMetadata = { docId: persistedDoc.id }
 
   await upsertMergeCLISessionMetadata({
-    netlifyGraphConfig,
-    netlifyToken,
+    config,
+    jwt,
     siteId,
     siteRoot: site.root,
     oneGraphSessionId,

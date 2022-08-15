@@ -1,4 +1,5 @@
 // @ts-check
+const { get } = require('dot-prop')
 const jwtDecode = require('jwt-decode')
 
 const {
@@ -89,7 +90,8 @@ const createHandler = function (options) {
       {},
     )
     const rawQuery = new URLSearchParams(request.query).toString()
-    const url = new URL(requestPath, `${request.protocol}://${request.get('host') || 'localhost'}`)
+    const protocol = get(options, 'config.dev.https') ? 'https' : 'http'
+    const url = new URL(requestPath, `${protocol}://${request.get('host') || 'localhost'}`)
     url.search = rawQuery
     const rawUrl = url.toString()
     const event = {

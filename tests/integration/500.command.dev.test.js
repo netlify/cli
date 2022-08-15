@@ -96,15 +96,7 @@ test('should handle form submission', async (t) => {
         .json()
 
       const body = JSON.parse(response.body)
-
-      t.is(response.headers.host, `${server.host}:${server.port}`)
-      t.is(response.headers['content-length'], '276')
-      t.is(response.headers['content-type'], 'application/json')
-      t.is(response.httpMethod, 'POST')
-      t.is(response.isBase64Encoded, false)
-      t.is(response.path, '/')
-      t.deepEqual(response.queryStringParameters, { ding: 'dong' })
-      t.deepEqual(body, {
+      const expectedBody = {
         payload: {
           created_at: body.payload.created_at,
           data: {
@@ -124,7 +116,16 @@ test('should handle form submission', async (t) => {
           ],
           site_url: '',
         },
-      })
+      }
+
+      t.is(response.headers.host, `${server.host}:${server.port}`)
+      t.is(response.headers['content-length'], JSON.stringify(expectedBody).length.toString())
+      t.is(response.headers['content-type'], 'application/json')
+      t.is(response.httpMethod, 'POST')
+      t.is(response.isBase64Encoded, false)
+      t.is(response.path, '/')
+      t.deepEqual(response.queryStringParameters, { ding: 'dong' })
+      t.deepEqual(body, expectedBody)
     })
   })
 })

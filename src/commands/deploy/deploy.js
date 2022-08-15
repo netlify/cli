@@ -8,6 +8,7 @@ const inquirer = require('inquirer')
 const isObject = require('lodash/isObject')
 const prettyjson = require('prettyjson')
 
+const runCoreStepPromise = import('@netlify/build')
 const netlifyConfigPromise = import('@netlify/config')
 
 const { cancelDeploy } = require('../../lib/api')
@@ -36,12 +37,21 @@ const { sitesCreate } = require('../sites')
 
 const DEFAULT_DEPLOY_TIMEOUT = 1.2e6
 
-const triggerDeploy = async ({ api, siteData, siteId }) => {
+const triggerDeploy = async ({ api, options, siteData, siteId }) => {
   try {
     const siteBuild = await api.createSiteBuild({ siteId })
-    log(
-      `${NETLIFYDEV} A new deployment was triggered successfully. Visit https://app.netlify.com/sites/${siteData.name}/deploys/${siteBuild.deploy_id} to see the logs.`,
-    )
+    if (options.json) {
+      logJson({
+        site_id: siteId,
+        site_name: siteData.name,
+        deploy_id: `${siteBuild.deploy_id}`,
+        logs: `https://app.netlify.com/sites/${siteData.name}/deploys/${siteBuild.deploy_id}`,
+      })
+    } else {
+      log(
+        `${NETLIFYDEV} A new deployment was triggered successfully. Visit https://app.netlify.com/sites/${siteData.name}/deploys/${siteBuild.deploy_id} to see the logs.`,
+      )
+    }
   } catch (error_) {
     if (error_.status === 404) {
       error('Site not found. Please rerun "netlify link" and make sure that your site has CI configured.')
@@ -274,6 +284,10 @@ const deployProgressCb = function () {
         }
         return
       }
+      case 'error':
+        stopSpinner({ error: true, spinner: events[event.type], text: event.msg })
+        delete events[event.type]
+        return
       case 'stop':
       default: {
         stopSpinner({ spinner: events[event.type], text: event.msg })
@@ -379,6 +393,40 @@ const handleBuild = async ({ cachedConfig, options }) => {
     exit(exitCode)
   }
   return { newConfig, configMutations }
+}
+
+/**
+ *
+ * @param {object} options Bundling options
+ * @returns
+ */
+const bundleEdgeFunctions = async (options) => {
+  const { runCoreSteps } = await runCoreStepPromise
+  const statusCb = options.silent ? () => {} : deployProgressCb()
+
+  statusCb({
+    type: 'edge-functions-bundling',
+    msg: 'Bundling edge functions...\n',
+    phase: 'start',
+  })
+
+  const { severityCode, success } = await runCoreSteps(['edge_functions_bundling'], { ...options, buffer: true })
+
+  if (!success) {
+    statusCb({
+      type: 'edge-functions-bundling',
+      msg: 'Deploy aborted due to error while bundling edge functions',
+      phase: 'error',
+    })
+
+    exit(severityCode)
+  }
+
+  statusCb({
+    type: 'edge-functions-bundling',
+    msg: 'Finished bundling edge functions',
+    phase: 'stop',
+  })
 }
 
 /**
@@ -514,7 +562,7 @@ const deploy = async (options, command) => {
   const deployToProduction = options.prod || (options.prodIfUnlocked && !siteData.published_deploy.locked)
 
   if (options.trigger) {
-    return triggerDeploy({ api, siteId, siteData })
+    return triggerDeploy({ api, options, siteData, siteId })
   }
 
   const { newConfig, configMutations = [] } = await handleBuild({
@@ -526,6 +574,12 @@ const deploy = async (options, command) => {
   const deployFolder = await getDeployFolder({ options, config, site, siteData })
   const functionsFolder = getFunctionsFolder({ options, config, site, siteData })
   const { configPath } = site
+  const edgeFunctionsConfig = command.netlify.config.edge_functions
+
+  // build flag wasn't used and edge functions exist
+  if (!options.build && edgeFunctionsConfig && edgeFunctionsConfig.length !== 0) {
+    await bundleEdgeFunctions(options)
+  }
 
   log(
     prettyjson.render({

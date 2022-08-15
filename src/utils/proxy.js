@@ -201,10 +201,9 @@ const serveRedirect = async function ({ match, options, proxy, req, res }) {
     // construct destination URL from redirect rule match
     const dest = new URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
 
-    // We pass through request params in one of the following cases:
-    // 1. The redirect rule doesn't have any query params
-    // 2. This is a function redirect https://github.com/netlify/cli/issues/1605
-    if ([...dest.searchParams].length === 0 || isFunction(options.functionsPort, stripOrigin(dest))) {
+    // We pass through request params if the redirect rule
+    // doesn't have any query params
+    if ([...dest.searchParams].length === 0) {
       dest.searchParams.forEach((_, key) => {
         dest.searchParams.delete(key)
       })
@@ -279,7 +278,7 @@ const initializeProxy = async function ({ configPath, distDir, port, projectDir 
   const proxy = httpProxy.createProxyServer({
     selfHandleResponse: true,
     target: {
-      host: 'localhost',
+      host: '127.0.0.1',
       port,
     },
   })
@@ -349,7 +348,7 @@ const initializeProxy = async function ({ configPath, distDir, port, projectDir 
     }
 
     const responseData = []
-    const requestURL = new URL(req.url, `http://${req.headers.host || 'localhost'}`)
+    const requestURL = new URL(req.url, `http://${req.headers.host || '127.0.0.1'}`)
     const headersRules = headersForPath(headers, requestURL.pathname)
 
     proxyRes.on('data', function onData(data) {
@@ -392,7 +391,7 @@ const initializeProxy = async function ({ configPath, distDir, port, projectDir 
 
   const handlers = {
     web: (req, res, options) => {
-      const requestURL = new URL(req.url, 'http://localhost')
+      const requestURL = new URL(req.url, 'http://127.0.0.1')
       req.proxyOptions = options
       req.alternativePaths = alternativePathsFor(requestURL.pathname).map((filePath) => filePath + requestURL.search)
       // Ref: https://nodejs.org/api/net.html#net_socket_remoteaddress
@@ -428,7 +427,7 @@ const onRequest = async ({ addonsUrls, edgeFunctionsProxy, functionsServer, prox
   const options = {
     match,
     addonsUrls,
-    target: `http://localhost:${settings.frameworkPort}`,
+    target: `http://127.0.0.1:${settings.frameworkPort}`,
     publicFolder: settings.dist,
     functionsServer,
     functionsPort: settings.functionsPort,
@@ -461,13 +460,35 @@ const onRequest = async ({ addonsUrls, edgeFunctionsProxy, functionsServer, prox
   proxy.web(req, res, options)
 }
 
-const startProxy = async function ({ addonsUrls, config, configPath, getUpdatedConfig, projectDir, settings }) {
-  const functionsServer = settings.functionsPort ? `http://localhost:${settings.functionsPort}` : null
+const startProxy = async function ({
+  addonsUrls,
+  config,
+  configPath,
+  env,
+  geoCountry,
+  geolocationMode,
+  getUpdatedConfig,
+  inspectSettings,
+  offline,
+  projectDir,
+  settings,
+  siteInfo,
+  state,
+}) {
+  const functionsServer = settings.functionsPort ? `http://127.0.0.1:${settings.functionsPort}` : null
   const edgeFunctionsProxy = await edgeFunctions.initializeProxy({
     config,
     configPath,
+    env,
+    geolocationMode,
+    geoCountry,
     getUpdatedConfig,
+    inspectSettings,
+    offline,
+    projectDir,
     settings,
+    siteInfo,
+    state,
   })
   const proxy = await initializeProxy({
     port: settings.frameworkPort,

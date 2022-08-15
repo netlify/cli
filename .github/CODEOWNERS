@@ -1,4 +1,8 @@
-.github/CODEOWNERS  @netlify/netlify-dev
-docs/               @netlify/netlify-dev @netlify/docs
-site/               @netlify/netlify-dev @netlify/docs
-/scripts/docs.js    @netlify/netlify-dev @netlify/docs
+.github/CODEOWNERS        @netlify/netlify-dev
+docs/                     @netlify/netlify-dev @netlify/docs
+site/                     @netlify/netlify-dev @netlify/docs
+/scripts/docs.js          @netlify/netlify-dev @netlify/docs
+/src/functions-templates/ @netlify/runtime-pod-compute 
+/src/lib/functions/       @netlify/runtime-pod-compute 
+/src/lib/edge-functions/  @netlify/runtime-pod-compute 
+/src/utils/functions/     @netlify/runtime-pod-compute 

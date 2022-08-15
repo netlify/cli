@@ -76,7 +76,7 @@ class FunctionsRegistry {
       log(`${NETLIFYDEVLOG} ${chalk.magenta('Reloading')} function ${chalk.yellow(func.name)}...`)
     }
 
-    const { error_, srcFilesDiff } = await func.build({ cache: this.buildCache })
+    const { error_, includedFiles, srcFilesDiff } = await func.build({ cache: this.buildCache })
 
     if (error_) {
       log(
@@ -113,7 +113,9 @@ class FunctionsRegistry {
     // If there is no watcher for this function but the build produced files,
     // we create a new watcher and watch them.
     if (srcFilesDiff.added.size !== 0) {
-      const newWatcher = await watchDebounced([...srcFilesDiff.added], {
+      const filesToWatch = [...srcFilesDiff.added, ...includedFiles]
+
+      const newWatcher = await watchDebounced(filesToWatch, {
         onChange: () => {
           this.buildFunctionAndWatchFiles(func, { verbose: true })
         },
@@ -171,13 +173,11 @@ class FunctionsRegistry {
     }
 
     await Promise.all(directories.map((path) => FunctionsRegistry.prepareDirectoryScan(path)))
-
     const functions = await this.listFunctions(directories, {
       featureFlags: {
-        buildGoSource: true,
         buildRustSource: env.NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE === 'true',
       },
-      config: this.config,
+      config: this.config.functions,
     })
 
     // Before registering any functions, we look for any functions that were on

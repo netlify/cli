@@ -31,7 +31,7 @@ module.exports = function expressApp(functionName) {
       <body>
         <h1>Express via '${functionName}' ⊂◉‿◉つ</h1>
 
-        <p>I'm using Express running via a <a href='https://www.netlify.com/docs/functions/' target='_blank'>Netlify Function</a>.</p>
+        <p>I'm using Express running via a <a href='https://docs.netlify.com/functions/overview/' target='_blank'>Netlify Function</a>.</p>
 
         <p>Choose a route:</p>
 

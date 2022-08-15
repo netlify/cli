@@ -1,0 +1,31 @@
+name: Post package size
+
+on:
+  workflow_run:
+    workflows: [Calculate package size]
+    types:
+      - completed
+
+jobs:
+  post-package-size:
+    runs-on: ubuntu-latest
+    steps:
+      # This posts the status to the PR/commit
+      - uses: haya14busa/action-workflow_run-status@v1
+      - name: Download deltas
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          # This is the workflow that triggered this run
+          workflow: ${{ github.event.workflow.id }}
+          workflow_conclusion: success
+          name: delta-action-deltas
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Get PR number
+        if: github.event.workflow_run.event == 'pull_request'
+        id: pr_number
+        run: echo "::set-output name=pr_number::$(cat pr_number)"
+      - name: Post deltas to GitHub
+        uses: netlify/delta-action@v4
+        with:
+          title: '📊 Benchmark results'
+          pr_number: ${{ steps.pr_number.outputs.pr_number }}

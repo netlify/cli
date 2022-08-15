@@ -6,16 +6,15 @@ const path = require('path')
 const process = require('process')
 
 const test = require('ava')
-const { GraphQL, NetlifyGraph } = require('netlify-onegraph-internal')
+const { CodegenHelpers, GraphQL, IncludedCodegen, NetlifyGraph } = require('netlify-onegraph-internal')
+const { registerConsole } = require('netlify-onegraph-internal/dist/internalConsole')
 
-const { runPrettier } = require('../../src/lib/one-graph/cli-netlify-graph')
 const {
-  buildSchema,
-  extractFunctionsFromOperationDoc,
-  generateFunctionsSource,
-  generateHandlerSource,
-  parse,
+  generateHandlerSourceByOperationId,
+  generateRuntimeSource,
+  runPrettier,
 } = require('../../src/lib/one-graph/cli-netlify-graph')
+const { buildSchema, extractFunctionsFromOperationDoc, parse } = require('../../src/lib/one-graph/cli-netlify-graph')
 
 const { normalize } = require('./utils/snapshots')
 
@@ -47,19 +46,8 @@ const baseNetlifyGraphConfig = {
   framework: '#custom',
   language: 'javascript',
   runtimeTargetEnv: 'node',
+  graphQLOperationsSourceDirectory: ['dummy'],
 }
-
-/**
- * @constant
- * @type {("esm" | "commonjs")[]}
- */
-const moduleTypes = [
-  'esm',
-  /**
-   * Restore this when we have a way to generate commonjs modules with typescript enabled
-   */
-  //  'commonjs'
-]
 
 const loadAsset = (filename) => fs.readFileSync(path.join(__dirname, 'assets', filename), 'utf8')
 const schemaString = loadAsset('../assets/netlifyGraphSchema.graphql')
@@ -74,19 +62,29 @@ const parsedDoc = parse(appOperationsDoc, {
  *
  * @param {object} input
  * @param {Record<string, any>} input.handlerOptions
+ * @param {CodegenHelpers.Codegen} input.codegen
  * @param {string} input.operationId
  * @param {string} input.operationsDoc
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig
  * @param {GraphQL.GraphQLSchema} input.schema
  * @param {string[]} input.outDir
- * @returns {[string, string][]} - [filename, content]
+ * @returns {[string, string][] | void} - [filename, content]
  */
-const generateHandlerText = ({ handlerOptions, netlifyGraphConfig, operationId, operationsDoc, outDir, schema }) => {
-  const result = generateHandlerSource({
+const generateHandlerText = ({
+  codegen,
+  handlerOptions,
+  netlifyGraphConfig,
+  operationId,
+  operationsDoc,
+  outDir,
+  schema,
+}) => {
+  const result = generateHandlerSourceByOperationId({
+    generate: codegen.generateHandler,
     netlifyGraphConfig,
     schema,
-    operationsDoc,
     operationId,
+    operationsDoc,
     handlerOptions,
   })
 
@@ -119,10 +117,10 @@ const generateHandlerText = ({ handlerOptions, netlifyGraphConfig, operationId, 
       baseFilenameArr = [baseFilename]
     }
 
-    const filenameArr = [...outDir, ...baseFilenameArr]
+    const filePathArr = [...outDir, ...baseFilenameArr].map((step) => step.replace(':', '___'))
 
-    const filePath = path.resolve(...filenameArr)
-    const parentDir = filenameArr.slice(0, -1)
+    const filePath = path.resolve(...filePathArr)
+    const parentDir = filePathArr.slice(0, -1)
 
     ensurePath(parentDir)
     fs.writeFileSync(filePath, content, 'utf8')
@@ -150,153 +148,134 @@ const generateHandlerText = ({ handlerOptions, netlifyGraphConfig, operationId, 
   return textualSource
 }
 
-const testGenerateFunctionLibraryAndRuntime = ({ frameworkName, language, name, runtimeTargetEnv }) => {
-  moduleTypes.forEach((moduleType) => {
+/**
+ * @param {object} input
+ * @param {CodegenHelpers.CodegenModule} input.codegenModule
+ */
+const testGenerateRuntime = async ({ codegenModule }) => {
+  /**
+   *
+   * @param {CodegenHelpers.NamedExportedFile} file
+   * @returns {void}
+   */
+  const writeFile = (file) => {
     const outDirPath = path.join(process.cwd(), '_test_out')
-    const outDir = [path.sep, ...outDirPath.split(path.sep), `netlify-graph-test-${frameworkName}-${moduleType}`]
+    const outDir = [
+      path.sep,
+      ...outDirPath.split(path.sep),
+      `netlify-graph-test-${codegenModule.id}-${codegenModule.version}`,
+    ]
 
-    /**
-     * @constant
-     * @type {NetlifyGraph.NetlifyGraphConfig}
-     */
-    const netlifyGraphConfig = { ...baseNetlifyGraphConfig, runtimeTargetEnv, moduleType }
+    const filePathArr = [...outDir, ...file.name].map((step) => step.replace(':', '___'))
 
-    const { fragments, functions } = extractFunctionsFromOperationDoc(parsedDoc)
-    const generatedFunctions = generateFunctionsSource(
-      netlifyGraphConfig,
-      commonSchema,
-      appOperationsDoc,
-      functions,
-      fragments,
-    )
-    const clientDefinitionsFilenameArr = [...outDir, 'netlifyGraph', 'index.js']
-    const typescriptFilenameArr = [...outDir, 'netlifyGraph', 'index.d.ts']
+    const filePath = path.resolve(...filePathArr)
+    const parentDir = filePathArr.slice(0, -1)
 
-    const writeFile = (filenameArr, content) => {
-      const filePath = path.resolve(...filenameArr)
-      const parentDir = filenameArr.slice(0, -1)
+    ensurePath(parentDir)
+    fs.writeFileSync(filePath, file.content, 'utf8')
+    // Run prettier to help normalize the output (and also make sure we're generating parsable code)
+    runPrettier(filePath)
+  }
 
-      ensurePath(parentDir)
-      fs.writeFileSync(filePath, content, 'utf8')
-      // Run prettier to help normalize the output (and also make sure we're generating parsable code)
-      runPrettier(filePath)
-    }
+  /**
+   * @constant
+   * @type {NetlifyGraph.NetlifyGraphConfig}
+   */
+  const netlifyGraphConfig = { ...baseNetlifyGraphConfig }
 
-    writeFile(typescriptFilenameArr, generatedFunctions.typeDefinitionsSource)
-    writeFile(clientDefinitionsFilenameArr, generatedFunctions.clientSource)
+  const { fragments, functions } = extractFunctionsFromOperationDoc(GraphQL, parsedDoc)
+  const generatedRuntime = await generateRuntimeSource({
+    generate: codegenModule.generateRuntime,
+    netlifyGraphConfig,
+    schema: commonSchema,
+    schemaId: 'stable-schema-id',
+    operationsDoc: appOperationsDoc,
+    functions,
+    fragments,
+  })
 
-    const prettierGeneratedFunctions = {
-      functionDefinitions: generatedFunctions.functionDefinitions,
-      typeDefinitionsSource: fs.readFileSync(path.resolve(...typescriptFilenameArr), 'utf-8'),
-      clientSource: fs.readFileSync(path.resolve(...clientDefinitionsFilenameArr), 'utf-8'),
-    }
+  generatedRuntime.forEach((runtimeFile) => {
+    writeFile(runtimeFile)
+  })
 
+  generatedRuntime.forEach((runtimeFile) => {
+    const filepath = runtimeFile.name.map((step) => step.replace(':', '___')).join('/')
     // @ts-ignore
-    test(`netlify graph function library (+runtime) codegen library [${frameworkName}-${name}-${language}-${moduleType}]:/netlifyGraph/index.js}`, (t) => {
-      t.snapshot(generatedFunctions.clientSource)
-    })
-
-    // @ts-ignore
-    test(`netlify graph function library (+runtime) codegen [${frameworkName}-${name}-${language}-${moduleType}]:/netlifyGraph/index.d.ts`, (t) => {
-      t.snapshot(generatedFunctions.typeDefinitionsSource)
+    test(`netlify graph function library runtime codegen library [${codegenModule.id}-${codegenModule.version}]:./${filepath}}`, (t) => {
+      t.snapshot(runtimeFile.content)
     })
   })
 }
 
-const testGenerateHandlerSource = ({ frameworkName, language, name, operationId }) => {
-  moduleTypes.forEach((moduleType) => {
-    const outDirPath = path.join(process.cwd(), '_test_out')
-    const outDir = [path.sep, ...outDirPath.split(path.sep), `netlify-graph-test-${frameworkName}-${moduleType}`]
+/**
+ *
+ * @param {object} input
+ * @param {CodegenHelpers.CodegenModule} input.codegenModule
+ * @param {string} input.builtInCodegenId
+ * @param {string} input.operationId
+ */
+const testGenerateHandlerSource = ({ builtInCodegenId, codegenModule, operationId }) => {
+  const outDirPath = path.join(process.cwd(), '_test_out')
+  const outDir = [path.sep, ...outDirPath.split(path.sep), `netlify-graph-test-${builtInCodegenId}`]
 
-    /**
-     * @constant
-     * @type {NetlifyGraph.NetlifyGraphConfig}
-     */
-    const netlifyGraphConfig = { ...baseNetlifyGraphConfig, framework: frameworkName, language, moduleType }
+  const codegen = codegenModule.generators.find((generator) => generator.id === builtInCodegenId)
 
-    /**
-     * @constant
-     * @type Record<string, any>
-     */
-    const handlerOptions = {}
-    const textualSources = generateHandlerText({
+  if (!codegen) {
+    console.warn(`No built-in codegen found with id "${builtInCodegenId}"`)
+    return
+  }
+
+  /**
+   * @constant
+   * @type {NetlifyGraph.NetlifyGraphConfig}
+   */
+  const netlifyGraphConfig = { ...baseNetlifyGraphConfig }
+
+  /**
+   * @constant
+   * @type Record<string, any>
+   */
+  const handlerOptions = {}
+  const textualSources =
+    generateHandlerText({
+      codegen,
       handlerOptions,
       netlifyGraphConfig,
       operationId,
       operationsDoc: appOperationsDoc,
       schema: commonSchema,
       outDir,
-    })
+    }) || []
 
-    textualSources.forEach(([filename, content]) => {
-      // @ts-ignore
-      test(`netlify graph handler codegen [${frameworkName}-${name}-${language}-${moduleType}]:/${filename}`, (t) => {
-        t.snapshot(normalize(JSON.stringify(content)))
-      })
+  textualSources.forEach(([filename, content]) => {
+    // @ts-ignore
+    test(`netlify graph handler codegen [${codegen.id}-${codegen.version}]:/${filename}`, (t) => {
+      t.snapshot(normalize(JSON.stringify(content)))
     })
   })
 }
 
-const frameworks = ['#custom', 'Next.js', 'Remix', 'unknown']
+const builtInCodegenModules = IncludedCodegen.includedCodegenModules
 
 const queryWithFragmentOperationId = 'e2394c86-260c-4646-88df-7bc7370de666'
-frameworks.forEach((frameworkName) => {
-  testGenerateFunctionLibraryAndRuntime({
-    frameworkName,
-    language: 'javascript',
-    name: 'node',
-    runtimeTargetEnv: 'node',
-  })
-  testGenerateFunctionLibraryAndRuntime({
-    frameworkName,
-    language: 'javascript',
-    name: 'browser',
-    runtimeTargetEnv: 'browser',
-  })
-  testGenerateHandlerSource({
-    frameworkName,
-    operationId: queryWithFragmentOperationId,
-    name: 'queryWithFragment',
-    language: 'javascript',
-  })
-})
 
-frameworks.forEach((frameworkName) => {
-  testGenerateFunctionLibraryAndRuntime({
-    frameworkName,
-    language: 'typescript',
-    name: 'node',
-    runtimeTargetEnv: 'node',
-  })
-  testGenerateFunctionLibraryAndRuntime({
-    frameworkName,
-    language: 'typescript',
-    name: 'browser',
-    runtimeTargetEnv: 'browser',
-  })
-  testGenerateHandlerSource({
-    frameworkName,
-    operationId: queryWithFragmentOperationId,
-    name: 'queryWithFragment',
-    language: 'typescript',
+builtInCodegenModules.forEach((codegenModule) => {
+  registerConsole(console)
+
+  testGenerateRuntime({
+    codegenModule,
   })
 })
 
 const subscriptionWithFragmentOperationId = 'e3d4bb8b-2fb5-9898-b051-db6027224112'
-frameworks.forEach((frameworkName) => {
-  testGenerateHandlerSource({
-    frameworkName,
-    operationId: subscriptionWithFragmentOperationId,
-    name: 'subscriptionWithFragment',
-    language: 'javascript',
-  })
-})
+builtInCodegenModules.forEach((codegenModule) => {
+  registerConsole(console)
 
-frameworks.forEach((frameworkName) => {
-  testGenerateHandlerSource({
-    frameworkName,
-    operationId: subscriptionWithFragmentOperationId,
-    name: 'subscriptionWithFragment',
-    language: 'typescript',
+  codegenModule.generators.forEach((codegen) => {
+    testGenerateHandlerSource({
+      codegenModule,
+      operationId: subscriptionWithFragmentOperationId,
+      builtInCodegenId: codegen.id,
+    })
   })
 })

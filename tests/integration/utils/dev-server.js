@@ -5,24 +5,10 @@ const execa = require('execa')
 const getPort = require('get-port')
 const omit = require('omit.js').default
 const pTimeout = require('p-timeout')
-const seedrandom = require('seedrandom')
 
 const cliPath = require('./cli-path')
 const { handleQuestions } = require('./handle-questions')
 const { killProcess } = require('./process')
-
-// each process gets a starting port based on the pid
-const rng = seedrandom(`${process.pid}`)
-const getRandomPortStart = function () {
-  const startPort = Math.floor(rng() * RANDOM_PORT_SHIFT) + RANDOM_PORT_SHIFT
-  return startPort
-}
-
-// To avoid collisions with frameworks ports
-const RANDOM_PORT_SHIFT = 1e4
-const FRAMEWORK_PORT_SHIFT = 1e3
-
-let currentPort = getRandomPortStart()
 
 const ENVS_TO_OMIT = ['LANG', 'LC_ALL']
 
@@ -33,16 +19,25 @@ const getExecaOptions = ({ cwd, env }) => ({
   encoding: 'utf8',
 })
 
-const startServer = async ({ cwd, offline = true, env = {}, args = [], expectFailure = false, prompt }) => {
-  const tryPort = currentPort
-  currentPort += 1
-  const port = await getPort({ port: tryPort })
+const startServer = async ({
+  cwd,
+  context = 'dev',
+  offline = true,
+  env = {},
+  args = [],
+  expectFailure = false,
+  prompt,
+}) => {
+  const port = await getPort()
+  const staticPort = await getPort()
   const host = 'localhost'
   const url = `http://${host}:${port}`
+
   console.log(`Starting dev server on port: ${port} in directory ${path.basename(cwd)}`)
+
   const ps = execa(
     cliPath,
-    ['dev', offline ? '--offline' : '', '-p', port, '--staticServerPort', port + FRAMEWORK_PORT_SHIFT, ...args],
+    ['dev', offline ? '--offline' : '', '-p', port, '--staticServerPort', staticPort, '--context', context, ...args],
     getExecaOptions({ cwd, env }),
   )
 
@@ -53,23 +48,37 @@ const startServer = async ({ cwd, offline = true, env = {}, args = [], expectFai
   }
 
   const outputBuffer = []
+  const errorBuffer = []
   const serverPromise = new Promise((resolve, reject) => {
     let selfKilled = false
+    ps.stderr.on('data', (data) => {
+      errorBuffer.push(data)
+    })
     ps.stdout.on('data', (data) => {
       outputBuffer.push(data)
       if (!expectFailure && data.includes('Server now ready on')) {
-        resolve({
-          url,
-          host,
-          port,
-          output: outputBuffer.join(''),
-          outputBuffer,
-          close: async () => {
-            selfKilled = true
-            await killProcess(ps)
-          },
-          promptHistory,
-        })
+        setImmediate(() =>
+          resolve({
+            url,
+            host,
+            port,
+            errorBuffer,
+            outputBuffer,
+            get output() {
+              // these are getters so we do the actual joining as late as possible as the array might still get
+              // populated after we resolve here
+              return outputBuffer.join('')
+            },
+            get error() {
+              return errorBuffer.join('')
+            },
+            close: async () => {
+              selfKilled = true
+              await killProcess(ps)
+            },
+            promptHistory,
+          }),
+        )
       }
     })
     // eslint-disable-next-line promise/prefer-await-to-callbacks,promise/prefer-await-to-then
@@ -106,6 +115,12 @@ const withDevServer = async (options, testHandler, expectFailure = false) => {
   try {
     server = await startDevServer(options, expectFailure)
     return await testHandler(server)
+  } catch (error) {
+    if (server && !expectFailure) {
+      error.stdout = server.output
+      error.stderr = server.error
+    }
+    throw error
   } finally {
     if (server) {
       await server.close()

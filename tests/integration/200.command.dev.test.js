@@ -7,6 +7,7 @@ const path = require('path')
 // eslint-disable-next-line ava/use-test
 const avaTest = require('ava')
 const { isCI } = require('ci-info')
+const { Response } = require('node-fetch')
 
 const { curl } = require('./utils/curl')
 const { withDevServer } = require('./utils/dev-server')
@@ -36,10 +37,11 @@ testMatrix.forEach(({ args }) => {
         })
         .withRedirectsFile({
           redirects: [
-            { from: `/api/*`, to: `/.netlify/functions/echo?a=1&a=2`, status: '200' },
-            { from: `/foo`, to: `/`, status: '302' },
-            { from: `/bar`, to: `/?a=1&a=2`, status: '302' },
-            { from: `/test id=:id`, to: `/?param=:id` },
+            { from: '/api/*', to: '/.netlify/functions/echo?a=1&a=2', status: '200' },
+            { from: '/foo', to: '/', status: '302' },
+            { from: '/bar', to: '/?a=1&a=2', status: '302' },
+            { from: '/test id=:id', to: '/?param=:id' },
+            { from: '/baz/*', to: '/.netlify/functions/echo?query=:splat' },
           ],
         })
         .withFunction({
@@ -52,15 +54,18 @@ testMatrix.forEach(({ args }) => {
         .buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const [fromFunction, queryPassthrough, queryInRedirect, withParamMatching] = await Promise.all([
-          got(`${server.url}/api/test?foo=1&foo=2&bar=1&bar=2`).json(),
-          got(`${server.url}/foo?foo=1&foo=2&bar=1&bar=2`, { followRedirect: false }),
-          got(`${server.url}/bar?foo=1&foo=2&bar=1&bar=2`, { followRedirect: false }),
-          got(`${server.url}/test?id=1`, { followRedirect: false }),
-        ])
+        const [fromFunction, queryPassthrough, queryInRedirect, withParamMatching, functionWithSplat] =
+          await Promise.all([
+            got(`${server.url}/api/test?foo=1&foo=2&bar=1&bar=2`).json(),
+            got(`${server.url}/foo?foo=1&foo=2&bar=1&bar=2`, { followRedirect: false }),
+            got(`${server.url}/bar?foo=1&foo=2&bar=1&bar=2`, { followRedirect: false }),
+            got(`${server.url}/test?id=1`, { followRedirect: false }),
+            got(`${server.url}/baz/abc`).json(),
+          ])
 
-        // query params should be taken from the request
-        t.deepEqual(fromFunction.multiValueQueryStringParameters, { foo: ['1', '2'], bar: ['1', '2'] })
+        // query params should be taken from redirect rule for functions
+        // eslint-disable-next-line id-length
+        t.deepEqual(fromFunction.multiValueQueryStringParameters, { a: ['1', '2'] })
 
         // query params should be passed through from the request
         t.is(queryPassthrough.headers.location, '/?foo=1&foo=2&bar=1&bar=2')
@@ -70,6 +75,9 @@ testMatrix.forEach(({ args }) => {
 
         // query params should be taken from the redirect rule
         t.is(withParamMatching.headers.location, '/?param=1')
+
+        // splat should be passed as query param in function redirects
+        t.deepEqual(functionWithSplat.queryStringParameters, { query: 'abc' })
       })
     })
   })
@@ -194,7 +202,13 @@ export const handler = async function () {
           config: {
             build: { publish: 'public' },
             functions: { directory: 'functions' },
-            dev: { https: { certFile: 'cert.pem', keyFile: 'key.pem' } },
+            dev: { https: { certFile: 'localhost.crt', keyFile: 'localhost.key' } },
+            edge_functions: [
+              {
+                function: 'hello',
+                path: '/',
+              },
+            ],
           },
         })
         .withContentFile({
@@ -206,21 +220,38 @@ export const handler = async function () {
         })
         .withFunction({
           path: 'hello.js',
-          handler: async () => ({
+          handler: async (event) => ({
             statusCode: 200,
-            body: 'Hello World',
+            body: JSON.stringify({ rawUrl: event.rawUrl }),
           }),
+        })
+        .withEdgeFunction({
+          handler: async (req, { next }) => {
+            if (!req.url.includes('?ef=true')) {
+              return
+            }
+
+            // eslint-disable-next-line n/callback-return
+            const res = await next()
+            const text = await res.text()
+
+            return new Response(text.toUpperCase(), res)
+          },
+          name: 'hello',
         })
         .buildAsync()
 
       await Promise.all([
-        copyFile(`${__dirname}/assets/cert.pem`, `${builder.directory}/cert.pem`),
-        copyFile(`${__dirname}/assets/key.pem`, `${builder.directory}/key.pem`),
+        copyFile(`${__dirname}/../../localhost.crt`, `${builder.directory}/localhost.crt`),
+        copyFile(`${__dirname}/../../localhost.key`, `${builder.directory}/localhost.key`),
       ])
       await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
         const options = { https: { rejectUnauthorized: false } }
         t.is(await got(`https://localhost:${port}`, options).text(), 'index')
-        t.is(await got(`https://localhost:${port}/api/hello`, options).text(), 'Hello World')
+        t.is(await got(`https://localhost:${port}?ef=true`, options).text(), 'INDEX')
+        t.deepEqual(await got(`https://localhost:${port}/api/hello`, options).json(), {
+          rawUrl: `https://localhost:${port}/api/hello`,
+        })
       })
     })
   })

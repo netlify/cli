@@ -131,9 +131,9 @@ test('should serve function from a subdirectory', async (t) => {
   await withSiteBuilder('site-with-from-subdirectory', async (builder) => {
     builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
       path: path.join('echo', 'echo.js'),
-      handler: async () => ({
+      handler: async (event) => ({
         statusCode: 200,
-        body: 'ping',
+        body: JSON.stringify({ rawUrl: event.rawUrl }),
         metadata: { builder_function: true },
       }),
     })
@@ -141,10 +141,10 @@ test('should serve function from a subdirectory', async (t) => {
     await builder.buildAsync()
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
-      const response = await got(`${server.url}/.netlify/functions/echo`).text()
-      t.is(response, 'ping')
-      const builderResponse = await got(`${server.url}/.netlify/builders/echo`).text()
-      t.is(builderResponse, 'ping')
+      const response = await got(`${server.url}/.netlify/functions/echo`).json()
+      t.deepEqual(response, { rawUrl: `${server.url}/.netlify/functions/echo` })
+      const builderResponse = await got(`${server.url}/.netlify/builders/echo`).json()
+      t.deepEqual(builderResponse, { rawUrl: `${server.url}/.netlify/builders/echo` })
     })
   })
 })

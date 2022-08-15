@@ -26,13 +26,18 @@ const graphOperations = async (options, command) => {
     }
 
     const parsedDoc = parse(currentOperationsDoc)
-    const { fragments, functions } = extractFunctionsFromOperationDoc(parsedDoc)
+    const { fragments, functions } = extractFunctionsFromOperationDoc(GraphQL, parsedDoc)
 
     const sorted = {
+      /** @type {import('netlify-onegraph-internal/dist/netlifyGraph').ExtractedFunction[]} */
       queries: [],
+      /** @type {import('netlify-onegraph-internal/dist/netlifyGraph').ExtractedFunction[]} */
       mutations: [],
+      /** @type {import('netlify-onegraph-internal/dist/netlifyGraph').ExtractedFunction[]} */
       subscriptions: [],
+      /** @type {import('netlify-onegraph-internal/dist/netlifyGraph').ExtractedFragment[]} */
       fragments: [],
+      /** @type {any[]} */
       other: [],
     }
 
@@ -102,7 +107,7 @@ const graphOperations = async (options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createGraphOperationCommand = (program) =>
+const createGraphOperationsCommand = (program) =>
   program
     .command('graph:operations')
     .description('List all of the locally available operations')
@@ -110,4 +115,4 @@ const createGraphOperationCommand = (program) =>
       await graphOperations(options, command)
     })
 
-module.exports = { createGraphOperationCommand }
+module.exports = { createGraphOperationsCommand }

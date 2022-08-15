@@ -4,6 +4,7 @@ const createStreamPromise = require('./create-stream-promise')
 const deploy = require('./deploy')
 const detectServerSettings = require('./detect-server-settings')
 const dev = require('./dev')
+const env = require('./env')
 const execa = require('./execa')
 const functions = require('./functions')
 const getGlobalConfig = require('./get-global-config')
@@ -24,6 +25,7 @@ module.exports = {
   ...deploy,
   ...detectServerSettings,
   ...dev,
+  ...env,
   ...functions,
   ...getRepoData,
   ...ghAuth,

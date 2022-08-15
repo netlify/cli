@@ -11,6 +11,8 @@ const { Response } = require('node-fetch')
 
 const { withDevServer } = require('./utils/dev-server')
 const got = require('./utils/got')
+const { withMockApi } = require('./utils/mock-api')
+const { pause } = require('./utils/pause')
 const { withSiteBuilder } = require('./utils/site-builder')
 
 const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
@@ -172,7 +174,7 @@ test('should enforce role based redirects with custom secret and role path', asy
 })
 
 test('Serves an Edge Function that terminates a response', async (t) => {
-  await withSiteBuilder('site-with-fully-qualified-redirect-rule', async (builder) => {
+  await withSiteBuilder('site-with-edge-function-that-terminates-response', async (builder) => {
     const publicDir = 'public'
     builder
       .withNetlifyToml({
@@ -212,7 +214,7 @@ test('Serves an Edge Function that terminates a response', async (t) => {
 })
 
 test('Serves an Edge Function with a rewrite', async (t) => {
-  await withSiteBuilder('site-with-fully-qualified-redirect-rule', async (builder) => {
+  await withSiteBuilder('site-with-edge-function-that-rewrites', async (builder) => {
     const publicDir = 'public'
     builder
       .withNetlifyToml({
@@ -251,8 +253,71 @@ test('Serves an Edge Function with a rewrite', async (t) => {
   })
 })
 
+test('Serves an Edge Function that includes context with site information', async (t) => {
+  await withSiteBuilder('site-with-edge-function-printing-site-info', async (builder) => {
+    const publicDir = 'public'
+    builder
+      .withNetlifyToml({
+        config: {
+          build: {
+            publish: publicDir,
+            edge_functions: 'netlify/edge-functions',
+          },
+          edge_functions: [
+            {
+              function: 'siteContext',
+              path: '/*',
+            },
+          ],
+        },
+      })
+      .withEdgeFunction({
+        handler: async (_, context) => new Response(JSON.stringify(context.site)),
+        name: 'siteContext',
+      })
+
+    await builder.buildAsync()
+
+    const siteInfo = {
+      account_slug: 'test-account',
+      id: 'site_id',
+      name: 'site-name',
+      url: 'site-url',
+    }
+
+    const routes = [
+      { path: 'sites/site_id', response: siteInfo },
+      { path: 'sites/site_id/service-instances', response: [] },
+      {
+        path: 'accounts',
+        response: [{ slug: siteInfo.account_slug }],
+      },
+    ]
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      await withDevServer(
+        {
+          cwd: builder.directory,
+          offline: false,
+          env: {
+            NETLIFY_API_URL: apiUrl,
+            NETLIFY_SITE_ID: 'site_id',
+            NETLIFY_AUTH_TOKEN: 'fake-token',
+          },
+        },
+        async (server) => {
+          const response = await got(`${server.url}`)
+
+          t.is(response.statusCode, 200)
+          t.is(response.body, '{"id":"site_id","name":"site-name","url":"site-url"}')
+        },
+      )
+    })
+  })
+})
+
 test('Serves an Edge Function that transforms the response', async (t) => {
-  await withSiteBuilder('site-with-fully-qualified-redirect-rule', async (builder) => {
+  await withSiteBuilder('site-with-edge-function-that-transforms-response', async (builder) => {
     const publicDir = 'public'
     builder
       .withNetlifyToml({
@@ -377,4 +442,178 @@ test(`catches invalid function names`, async (t) => {
     })
   })
 })
+
+test('should detect content changes in edge functions', async (t) => {
+  await withSiteBuilder('site-with-edge-functions', async (builder) => {
+    const publicDir = 'public'
+    await builder
+      .withNetlifyToml({
+        config: {
+          build: {
+            publish: publicDir,
+            edge_functions: 'netlify/edge-functions',
+          },
+          edge_functions: [
+            {
+              function: 'hello',
+              path: '/hello',
+            },
+          ],
+        },
+      })
+      .withEdgeFunction({
+        handler: () => new Response('Hello world'),
+        name: 'hello',
+      })
+
+    await builder.buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async ({ port }) => {
+      const helloWorldMessage = await got(`http://localhost:${port}/hello`).then((response) => response.body)
+
+      await builder
+        .withEdgeFunction({
+          handler: () => new Response('Hello builder'),
+          name: 'hello',
+        })
+        .buildAsync()
+
+      const DETECT_FILE_CHANGE_DELAY = 500
+      await pause(DETECT_FILE_CHANGE_DELAY)
+
+      const helloBuilderMessage = await got(`http://localhost:${port}/hello`).then((response) => response.body)
+
+      t.is(helloWorldMessage, 'Hello world')
+      t.is(helloBuilderMessage, 'Hello builder')
+    })
+  })
+})
+
+test('should detect deleted edge functions', async (t) => {
+  await withSiteBuilder('site-with-edge-functions', async (builder) => {
+    const publicDir = 'public'
+    builder
+      .withNetlifyToml({
+        config: {
+          build: {
+            publish: publicDir,
+            edge_functions: 'netlify/edge-functions',
+          },
+          edge_functions: [
+            {
+              function: 'auth',
+              path: '/auth',
+            },
+          ],
+        },
+      })
+      .withEdgeFunction({
+        handler: () => new Response('Auth response'),
+        name: 'auth',
+      })
+
+    await builder.buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async ({ port }) => {
+      const authResponseMessage = await got(`http://localhost:${port}/auth`).then((response) => response.body)
+
+      await builder
+        .withoutFile({
+          path: 'netlify/edge-functions/auth.js',
+        })
+        .buildAsync()
+
+      const DETECT_FILE_CHANGE_DELAY = 500
+      await pause(DETECT_FILE_CHANGE_DELAY)
+
+      const authNotFoundMessage = await got(`http://localhost:${port}/auth`, { throwHttpErrors: false }).then(
+        (response) => response.body,
+      )
+
+      t.is(authResponseMessage, 'Auth response')
+      t.is(authNotFoundMessage, 'Not Found')
+    })
+  })
+})
+
+test('should have only allowed environment variables set', async (t) => {
+  const siteInfo = {
+    account_slug: 'test-account',
+    id: 'site_id',
+    name: 'site-name',
+    build_settings: {
+      env: {
+        SECRET_ENV: 'true',
+      },
+    },
+  }
+
+  const routes = [
+    { path: 'sites/site_id', response: siteInfo },
+    { path: 'sites/site_id/service-instances', response: [] },
+    {
+      path: 'accounts',
+      response: [{ slug: siteInfo.account_slug }],
+    },
+  ]
+  await withSiteBuilder('site-with-edge-functions-and-env', async (builder) => {
+    const publicDir = 'public'
+    builder
+      .withNetlifyToml({
+        config: {
+          build: {
+            publish: publicDir,
+            edge_functions: 'netlify/edge-functions',
+          },
+          edge_functions: [
+            {
+              function: 'env',
+              path: '/env',
+            },
+          ],
+        },
+      })
+      .withEdgeFunction({
+        // eslint-disable-next-line no-undef
+        handler: () => new Response(`${JSON.stringify(Deno.env.toObject())}`),
+        name: 'env',
+      })
+
+    await builder.buildAsync()
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      await withDevServer(
+        {
+          cwd: builder.directory,
+          offline: false,
+          env: {
+            NETLIFY_API_URL: apiUrl,
+            NETLIFY_SITE_ID: 'site_id',
+            NETLIFY_AUTH_TOKEN: 'fake-token',
+          },
+        },
+        async ({ port }) => {
+          const response = await got(`http://localhost:${port}/env`).then((edgeResponse) =>
+            JSON.parse(edgeResponse.body),
+          )
+          const envKeys = Object.keys(response)
+
+          t.false(envKeys.includes('DENO_DEPLOYMENT_ID'))
+          // t.true(envKeys.includes('DENO_DEPLOYMENT_ID'))
+          // t.is(response.DENO_DEPLOYMENT_ID, 'xxx=')
+          t.true(envKeys.includes('DENO_REGION'))
+          t.is(response.DENO_REGION, 'local')
+          t.true(envKeys.includes('SECRET_ENV'))
+          t.is(response.SECRET_ENV, 'true')
+
+          t.false(envKeys.includes('NODE_ENV'))
+          t.false(envKeys.includes('NETLIFY_DEV'))
+          t.false(envKeys.includes('DEPLOY_URL'))
+          t.false(envKeys.includes('URL'))
+        },
+      )
+    })
+  })
+})
+
 /* eslint-enable require-await */

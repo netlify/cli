@@ -22,6 +22,12 @@ const getTemplatesStub = sinon.stub(templatesUtils, 'getTemplatesFromGitHub').ca
     html_url: 'http://github.com/netlify-templates/next-starter',
     full_name: 'netlify-templates/next-starter',
   },
+  {
+    name: 'archived-starter',
+    html_url: 'https://github.com/netlify-templates/fake-repo',
+    full_name: 'netlify-templates/fake-repo',
+    archived: true,
+  },
 ])
 
 const createRepoStub = sinon.stub(templatesUtils, 'createRepo').callsFake(() => ({
