@@ -806,25 +806,6 @@ const detectLocalCLISessionMetadata = async ({ config, siteRoot }) => {
 
   const editor = process.env.EDITOR || null
 
-  /** @type {CodegenHelpers.CodegenModuleMeta | null} */
-  let codegen = null
-
-  const codegenModule = await getCodegenModule({ config })
-
-  if (codegenModule) {
-    codegen = {
-      id: codegenModule.id,
-      version: codegenModule.id,
-      generators: codegenModule.generators.map((generator) => ({
-        id: generator.id,
-        name: generator.name,
-        options: generator.generateHandlerOptions || null,
-        supportedDefinitionTypes: generator.supportedDefinitionTypes,
-        version: generator.version,
-      })),
-    }
-  }
-
   const detectedMetadata = {
     gitBranch: branch,
     hostname,
@@ -835,7 +816,6 @@ const detectLocalCLISessionMetadata = async ({ config, siteRoot }) => {
     platform,
     arch,
     nodeVersion: process.version,
-    codegen,
     framework,
   }
 
@@ -992,7 +972,13 @@ const persistNewOperationsDocForSession = async ({
   })
 
   if (!result || result.errors) {
-    warn(`Unable to update session metadata with updated operations doc ${JSON.stringify(result.errors, null, 2)}`)
+    warn(
+      `Unable to update session metadata with updated operations docId="${persistedDoc.id}": ${JSON.stringify(
+        result && result.errors,
+        null,
+        2,
+      )}`,
+    )
   } else if (lockfile != null) {
     // Now that we've persisted the document, lock it in the lockfile
     const currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
