@@ -98,9 +98,12 @@ test('netlify graph:init with env vars from envelope', async (t) => {
         (request) => request.method === 'POST' && request.path === '/api/v1/accounts/test-account/env',
       )
 
+      const WEBHOOK_SECRET_LENGTH = 48
       t.is(postRequest.body.length, 1)
       t.is(postRequest.body[0].key, 'NETLIFY_GRAPH_WEBHOOK_SECRET')
       t.is(postRequest.body[0].scopes[0], 'functions')
+      t.is(postRequest.body[0].values[0].context, 'all')
+      t.is(postRequest.body[0].values[0].value.length, WEBHOOK_SECRET_LENGTH)
 
       t.true(cliResponse.includes(`Finished updating Graph-related environment variables for site`))
     })
