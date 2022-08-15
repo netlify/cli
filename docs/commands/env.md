@@ -84,6 +84,8 @@ netlify env:get
 
 **Flags**
 
+- `context` (*production | deploy-preview | branch-deploy | dev*) - Specify a deploy context
+- `scope` (*builds | functions | post_processing | runtime | any*) - Specify a scope
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
@@ -123,6 +125,8 @@ netlify env:list
 
 **Flags**
 
+- `context` (*production | deploy-preview | branch-deploy | dev*) - Specify a deploy context
+- `scope` (*builds | functions | post_processing | runtime | any*) - Specify a scope
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server

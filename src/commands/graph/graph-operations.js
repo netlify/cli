@@ -26,13 +26,18 @@ const graphOperations = async (options, command) => {
     }
 
     const parsedDoc = parse(currentOperationsDoc)
-    const { fragments, functions } = extractFunctionsFromOperationDoc(parsedDoc)
+    const { fragments, functions } = extractFunctionsFromOperationDoc(GraphQL, parsedDoc)
 
     const sorted = {
+      /** @type {import('netlify-onegraph-internal/dist/netlifyGraph').ExtractedFunction[]} */
       queries: [],
+      /** @type {import('netlify-onegraph-internal/dist/netlifyGraph').ExtractedFunction[]} */
       mutations: [],
+      /** @type {import('netlify-onegraph-internal/dist/netlifyGraph').ExtractedFunction[]} */
       subscriptions: [],
+      /** @type {import('netlify-onegraph-internal/dist/netlifyGraph').ExtractedFragment[]} */
       fragments: [],
+      /** @type {any[]} */
       other: [],
     }
 

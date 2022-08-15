@@ -1,6 +1,5 @@
 // @ts-check
 const gitRepoInfo = require('git-repo-info')
-const { OneGraphClient } = require('netlify-onegraph-internal')
 
 const { OneGraphCliClient, ensureCLISession, upsertMergeCLISessionMetadata } = require('../../lib/one-graph/cli-client')
 const {
@@ -21,7 +20,7 @@ const { ensureAppForSite, executeCreatePersistedQueryMutation } = OneGraphCliCli
  * @returns
  */
 const graphEdit = async (options, command) => {
-  const { site, state } = command.netlify
+  const { config, site, state } = command.netlify
   const siteId = site.id
 
   if (!site.id) {
@@ -40,14 +39,17 @@ const graphEdit = async (options, command) => {
   }
 
   const netlifyToken = await command.authenticate()
+  const { jwt } = await OneGraphCliClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
 
   await ensureAppForSite(netlifyToken, siteId)
 
   const oneGraphSessionId = await ensureCLISession({
+    config,
     metadata: {},
     netlifyToken,
     site,
     state,
+    netlifyGraphConfig,
   })
 
   const { branch } = gitRepoInfo()
@@ -60,8 +62,7 @@ const graphEdit = async (options, command) => {
       tags: ['netlify-cli', `session:${oneGraphSessionId}`, `git-branch:${branch}`],
     },
     {
-      accessToken: netlifyToken,
-
+      accessToken: jwt,
       siteId,
     },
   )
@@ -74,9 +75,8 @@ const graphEdit = async (options, command) => {
 
   const newMetadata = { docId: persistedDoc.id }
 
-  const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
   await upsertMergeCLISessionMetadata({
-    netlifyGraphConfig,
+    config,
     jwt,
     siteId,
     siteRoot: site.root,

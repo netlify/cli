@@ -38,6 +38,7 @@ const {
   error,
   exit,
   generateNetlifyGraphJWT,
+  getEnvelopeEnv,
   getSiteInformation,
   getToken,
   injectEnvVariables,
@@ -233,6 +234,7 @@ const FRAMEWORK_PORT_TIMEOUT = 6e5
  * @param {object} params
  * @param {*} params.addonsUrls
  * @param {import('../base-command').NetlifyOptions["config"]} params.config
+ * @param {import('../base-command').NetlifyOptions["cachedConfig"]['env']} params.env
  * @param {InspectSettings} params.inspectSettings
  * @param {() => Promise<object>} params.getUpdatedConfig
  * @param {string} params.geolocationMode
@@ -247,6 +249,7 @@ const FRAMEWORK_PORT_TIMEOUT = 6e5
 const startProxyServer = async ({
   addonsUrls,
   config,
+  env,
   geoCountry,
   geolocationMode,
   getUpdatedConfig,
@@ -261,6 +264,7 @@ const startProxyServer = async ({
     addonsUrls,
     config,
     configPath: site.configPath,
+    env,
     geolocationMode,
     geoCountry,
     getUpdatedConfig,
@@ -425,7 +429,12 @@ const dev = async (options, command) => {
     ...options,
   }
 
-  await injectEnvVariables({ devConfig, env: command.netlify.cachedConfig.env, site })
+  let { env } = command.netlify.cachedConfig
+  if (siteInfo.use_envelope) {
+    env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })
+  }
+
+  await injectEnvVariables({ devConfig, env, site })
   await promptEditorHelper({ chalk, config, log, NETLIFYDEVLOG, repositoryRoot, state })
 
   const { addonsUrls, capabilities, siteUrl, timeouts } = await getSiteInformation({
@@ -479,6 +488,7 @@ const dev = async (options, command) => {
   let url = await startProxyServer({
     addonsUrls,
     config,
+    env: command.netlify.cachedConfig.env,
     geolocationMode: options.geo,
     geoCountry: options.country,
     getUpdatedConfig,
@@ -514,6 +524,9 @@ const dev = async (options, command) => {
 
     let stopWatchingCLISessions
 
+    let liveConfig = { ...config }
+    let isRestartingSession = false
+
     const createOrResumeSession = async function () {
       const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options, settings })
 
@@ -524,6 +537,7 @@ const dev = async (options, command) => {
       }
 
       stopWatchingCLISessions = await startOneGraphCLISession({
+        config: liveConfig,
         netlifyGraphConfig,
         netlifyToken,
         site,
@@ -535,6 +549,7 @@ const dev = async (options, command) => {
       const oneGraphSessionId = loadCLISession(state)
 
       await persistNewOperationsDocForSession({
+        config: liveConfig,
         netlifyGraphConfig,
         netlifyToken,
         oneGraphSessionId,
@@ -570,10 +585,16 @@ const dev = async (options, command) => {
     }
 
     // Set up a handler for config changes.
-    configWatcher.on('change', (newConfig) => {
+    configWatcher.on('change', async (newConfig) => {
       command.netlify.config = newConfig
-      stopWatchingCLISessions()
-      createOrResumeSession()
+      liveConfig = newConfig
+      if (isRestartingSession) {
+        return
+      }
+      stopWatchingCLISessions && stopWatchingCLISessions()
+      isRestartingSession = true
+      await createOrResumeSession()
+      isRestartingSession = false
     })
 
     const oneGraphSessionId = await createOrResumeSession()
@@ -606,6 +627,11 @@ const createDevCommand = (program) => {
       `Local dev server\nThe dev command will run a local dev server with Netlify's proxy and redirect rules`,
     )
     .option('-c ,--command <command>', 'command to run')
+    .addOption(
+      new Option('--context <context>', 'Specify a deploy context for environment variables')
+        .choices(['production', 'deploy-preview', 'branch-deploy', 'dev'])
+        .default('dev'),
+    )
     .option('-p ,--port <port>', 'port of netlify dev', (value) => Number.parseInt(value))
     .option('--targetPort <port>', 'port of target app server', (value) => Number.parseInt(value))
     .option('--framework <name>', 'framework to use. Defaults to #auto which automatically detects a framework')
@@ -655,6 +681,7 @@ const createDevCommand = (program) => {
       'netlify dev',
       'netlify dev -d public',
       'netlify dev -c "hugo server -w" --targetPort 1313',
+      'netlify dev --context production',
       'netlify dev --graph',
       'netlify dev --edgeInspect',
       'netlify dev --edgeInspect=127.0.0.1:9229',
