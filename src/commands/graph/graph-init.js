@@ -6,8 +6,7 @@ const { v4: uuidv4 } = require('uuid')
 
 const { OneGraphCliClient, ensureCLISession } = require('../../lib/one-graph/cli-client')
 const { getNetlifyGraphConfig } = require('../../lib/one-graph/cli-netlify-graph')
-const { NETLIFYDEVERR, chalk, error, exit, getToken, log } = require('../../utils')
-const { msg } = require('../login/login')
+const { NETLIFYDEVERR, chalk, error, exit, getToken, log, translateFromEnvelopeToMongo } = require('../../utils')
 
 const { ensureAppForSite, executeCreateApiTokenMutation } = OneGraphCliClient
 
@@ -18,7 +17,8 @@ const { ensureAppForSite, executeCreateApiTokenMutation } = OneGraphCliClient
  * @returns
  */
 const graphInit = async (options, command) => {
-  const { api, config, site, state } = command.netlify
+  const { api, config, site, siteInfo, state } = command.netlify
+  const accountId = siteInfo.account_slug
   const siteId = site.id
 
   if (!siteId) {
@@ -29,28 +29,9 @@ const graphInit = async (options, command) => {
     )
   }
 
-  let [netlifyToken, loginLocation] = await getToken()
+  let [netlifyToken] = await getToken()
   if (!netlifyToken) {
     netlifyToken = await command.authenticate()
-  }
-
-  let siteData = null
-  try {
-    // @ts-ignore: we need better types for our api object
-    siteData = await api.getSite({ siteId })
-  } catch (error_) {
-    if (netlifyToken && error_.status === 401) {
-      log(`Already logged in ${msg(loginLocation)}`)
-      log()
-      log(`Run ${chalk.cyanBright('netlify status')} for account details`)
-      log()
-      log(`or run ${chalk.cyanBright('netlify switch')} to switch accounts`)
-      log()
-      log(`To see all available commands run: ${chalk.cyanBright('netlify help')}`)
-      log()
-      return exit()
-    }
-    throw error_
   }
 
   if (netlifyToken == null) {
@@ -77,9 +58,12 @@ const graphInit = async (options, command) => {
   let envChanged = false
 
   // Get current environment variables set in the UI
-  const {
-    build_settings: { env = {} },
-  } = siteData
+  let env = (siteInfo.build_settings && siteInfo.build_settings.env) || {}
+  const isUsingEnvelope = siteInfo.use_envelope
+  if (isUsingEnvelope) {
+    const envelopeVariables = await api.getEnvVars({ accountId, siteId })
+    env = translateFromEnvelopeToMongo(envelopeVariables)
+  }
 
   const newEnv = {
     ...env,
@@ -120,8 +104,32 @@ const graphInit = async (options, command) => {
     }
   }
 
-  if (envChanged) {
-    // Apply environment variable updates
+  if (!envChanged) {
+    log(`Graph-related environment variables already set for site ${siteInfo.name}`)
+    return true
+  }
+
+  // Apply environment variable updates
+
+  // eslint-disable-next-line unicorn/prefer-ternary
+  if (isUsingEnvelope) {
+    await api.createEnvVars({
+      accountId,
+      siteId,
+      body: [
+        !env.NETLIFY_GRAPH_WEBHOOK_SECRET && {
+          key: 'NETLIFY_GRAPH_WEBHOOK_SECRET',
+          scopes: ['functions'],
+          values: [{ context: 'all', value: newEnv.NETLIFY_GRAPH_WEBHOOK_SECRET }],
+        },
+        !env.NETLIFY_GRAPH_PERSIST_QUERY_TOKEN && {
+          key: 'NETLIFY_GRAPH_PERSIST_QUERY_TOKEN',
+          scopes: ['functions'],
+          values: [{ context: 'all', value: newEnv.NETLIFY_GRAPH_PERSIST_QUERY_TOKEN }],
+        },
+      ].filter(Boolean),
+    })
+  } else {
     // @ts-ignore
     await api.updateSite({
       siteId,
@@ -131,9 +139,9 @@ const graphInit = async (options, command) => {
         },
       },
     })
-
-    log(`Finished updating Graph-related environment variables for site ${siteData.name}`)
   }
+
+  log(`Finished updating Graph-related environment variables for site ${siteInfo.name}`)
 }
 
 /**
