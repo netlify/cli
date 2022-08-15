@@ -128,7 +128,7 @@ const graphInit = async (options, command) => {
         },
         !env.NETLIFY_GRAPH_PERSIST_QUERY_TOKEN && {
           key: 'NETLIFY_GRAPH_PERSIST_QUERY_TOKEN',
-          scopes: ['functions'],
+          scopes: ['builds', 'functions'],
           values: [{ context: 'all', value: newEnv.NETLIFY_GRAPH_PERSIST_QUERY_TOKEN }],
         },
       ].filter(Boolean),
