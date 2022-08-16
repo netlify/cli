@@ -1,7 +1,5 @@
 const process = require('process')
 
-const { Option } = require('commander')
-
 // @ts-check
 const { getBuildOptions, runBuild } = require('../../lib/build')
 const { error, exit, generateNetlifyGraphJWT, getEnvelopeEnv, getToken } = require('../../utils')
@@ -70,7 +68,7 @@ const build = async (options, command) => {
   if (!options.offline) {
     checkOptions(buildOptions)
     const { api, site } = command.netlify
-    const context = options.context || process.env.CONTEXT
+    const context = { options }
     await injectEnv(command, { api, buildOptions, context, site, siteInfo })
   }
 
@@ -87,11 +85,7 @@ const createBuildCommand = (program) =>
   program
     .command('build')
     .description('(Beta) Build on your local machine')
-    .addOption(
-      new Option('--context <context>', 'Specify a deploy context for environment variables')
-        .choices(['production', 'deploy-preview', 'branch-deploy', 'dev'])
-        .default('production'),
-    )
+    .option('--context <context>', 'Specify a build context', process.env.CONTEXT || 'production')
     .option('--dry', 'Dry run: show instructions without running them', false)
     .option('-o, --offline', 'disables any features that require network access', false)
     .addExamples(['netlify build'])

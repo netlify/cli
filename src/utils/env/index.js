@@ -6,6 +6,9 @@
  */
 const findValueFromContext = (values, context) => values.find((val) => [context, 'all'].includes(val.context))
 
+const findValueFromBranch = (values, branch) =>
+  values.find((val) => val.context === 'branch' && val.context_parameter === branch)
+
 /**
  * Finds environment variables that match a given source
  * @param {object} env - The dictionary of environment variables
@@ -65,27 +68,46 @@ const fetchEnvelopeItems = async function ({ accountId, api, key, siteId }) {
  *   },
  * }
  */
-const formatEnvelopeData = ({ context = 'dev', envelopeItems = [], scope = 'any', source }) =>
-  envelopeItems
-    // filter by context
-    .filter(({ values }) => Boolean(findValueFromContext(values, context)))
-    // filter by scope
-    .filter(({ scopes }) => (scope === 'any' ? true : scopes.includes(scope)))
-    // sort alphabetically, case insensitive
-    .sort((left, right) => (left.key.toLowerCase() < right.key.toLowerCase() ? -1 : 1))
-    // format the data
-    .reduce((acc, cur) => {
-      const { context: ctx, value } = findValueFromContext(cur.values, context)
-      return {
-        ...acc,
-        [cur.key]: {
-          context: ctx,
-          scopes: cur.scopes,
-          sources: [source],
-          value,
-        },
-      }
-    }, {})
+const formatEnvelopeData = ({ context = 'dev', envelopeItems = [], scope = 'any', source }) => {
+  let branch
+  const AVAILABLE_CONTEXTS = ['production', 'deploy-preview', 'branch-deploy', 'dev']
+  if (!AVAILABLE_CONTEXTS.includes(context)) {
+    const CONTEXT_SYNONYMS = {
+      prod: 'production',
+      development: 'dev',
+    }
+    if (CONTEXT_SYNONYMS[context]) {
+      context = CONTEXT_SYNONYMS[context]
+    } else {
+      branch = context
+      context = 'branch'
+    }
+  }
+  return (
+    envelopeItems
+      // filter by context
+      .filter(({ values }) =>
+        Boolean(branch ? findValueFromBranch(values, branch) : findValueFromContext(values, context)),
+      )
+      // filter by scope
+      .filter(({ scopes }) => (scope === 'any' ? true : scopes.includes(scope)))
+      // sort alphabetically, case insensitive
+      .sort((left, right) => (left.key.toLowerCase() < right.key.toLowerCase() ? -1 : 1))
+      // format the data
+      .reduce((acc, cur) => {
+        const { context: ctx, value } = findValueFromContext(cur.values, context)
+        return {
+          ...acc,
+          [cur.key]: {
+            context: ctx,
+            scopes: cur.scopes,
+            sources: [source],
+            value,
+          },
+        }
+      }, {})
+  )
+}
 
 /**
  * Collects env vars from multiple sources and arranges them in the correct order of precedence

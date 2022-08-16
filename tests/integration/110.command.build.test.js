@@ -104,30 +104,27 @@ test('should run the production context when context is not defined', async (t) 
   })
 })
 
-test('should run the deploy-preview context command when the --context option is set to deploy-preview', async (t) => {
+test('should run the staging context command when the --context option is set to staging', async (t) => {
   await withSiteBuilder('context-site', async (builder) => {
     builder.withNetlifyToml({
       config: {
         build: { command: 'echo testCommand' },
-        context: { 'deploy-preview': { command: 'echo testDeployPreview' } },
+        context: { staging: { command: 'echo testStaging' } },
       },
     })
 
     await builder.buildAsync()
 
-    await runBuildCommand(t, builder.directory, {
-      flags: ['--context=deploy-preview', '--offline'],
-      output: 'testDeployPreview',
-    })
+    await runBuildCommand(t, builder.directory, { flags: ['--context=staging', '--offline'], output: 'testStaging' })
   })
 })
 
-test('should run the deploy-preview context command when the context env variable is set', async (t) => {
+test('should run the staging context command when the context env variable is set', async (t) => {
   await withSiteBuilder('context-site', async (builder) => {
     builder.withNetlifyToml({
       config: {
         build: { command: 'echo testCommand' },
-        context: { 'deploy-preview': { command: 'echo testDeployPreview' } },
+        context: { staging: { command: 'echo testStaging' } },
       },
     })
 
@@ -135,8 +132,8 @@ test('should run the deploy-preview context command when the context env variabl
 
     await runBuildCommand(t, builder.directory, {
       flags: ['--offline'],
-      output: 'testDeployPreview',
-      env: { CONTEXT: 'deploy-preview' },
+      output: 'testStaging',
+      env: { CONTEXT: 'staging' },
     })
   })
 })
