@@ -19,10 +19,12 @@ const existingVar = {
   scopes: ['builds', 'functions'],
   values: [
     {
+      id: '1234',
       context: 'production',
       value: 'envelope-prod-value',
     },
     {
+      id: '2345',
       context: 'dev',
       value: 'envelope-dev-value',
     },
@@ -33,6 +35,7 @@ const otherVar = {
   scopes: ['builds', 'functions', 'runtime', 'post_processing'],
   values: [
     {
+      id: '3456',
       context: 'all',
       value: 'envelope-all-value',
     },
@@ -70,6 +73,11 @@ const routes = [
   },
   {
     path: 'accounts/test-account/env/EXISTING_VAR',
+    method: 'DELETE',
+    response: {},
+  },
+  {
+    path: 'accounts/test-account/env/EXISTING_VAR/value/1234',
     method: 'DELETE',
     response: {},
   },
@@ -325,6 +333,26 @@ test('env:unset --json should remove existing variable', async (t) => {
     await withMockApi(routes, async ({ apiUrl }) => {
       const cliResponse = await callCli(
         ['env:unset', '--json', 'EXISTING_VAR'],
+        getCLIOptions({ builder, apiUrl }),
+        true,
+      )
+
+      t.deepEqual(cliResponse, finalEnv)
+    })
+  })
+})
+
+test.only('env:unset --context should remove existing variable value', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    const finalEnv = {
+      OTHER_VAR: 'envelope-all-value',
+    }
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      const cliResponse = await callCli(
+        ['env:unset', 'EXISTING_VAR', '--context', 'production', '--json'],
         getCLIOptions({ builder, apiUrl }),
         true,
       )
