@@ -54,6 +54,8 @@ const {
 
 const { createDevExecCommand } = require('./dev-exec')
 
+const netlifyBuildPromise = import('@netlify/build')
+
 const startStaticServer = async ({ settings }) => {
   const server = new StaticServer({
     rootPath: settings.dist,
@@ -417,7 +419,8 @@ const validateGeoCountryCode = (arg) => {
  */
 const dev = async (options, command) => {
   log(`${NETLIFYDEV}`)
-  const { api, config, repositoryRoot, site, siteInfo, state } = command.netlify
+  const { api, cachedConfig, config, repositoryRoot, site, siteInfo, state } = command.netlify
+  const netlifyBuild = await netlifyBuildPromise
   config.dev = { ...config.dev }
   config.build = { ...config.build }
   /** @type {import('./types').DevConfig} */
@@ -429,7 +432,7 @@ const dev = async (options, command) => {
     ...options,
   }
 
-  let { env } = command.netlify.cachedConfig
+  let { env } = cachedConfig
   if (siteInfo.use_envelope) {
     env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })
   }
@@ -449,6 +452,14 @@ const dev = async (options, command) => {
   let settings = {}
   try {
     settings = await detectServerSettings(devConfig, options, site.root)
+
+    // If there are plugins that we should be running for this site, add them
+    // to the config as if they were declared in netlify.toml.
+    if (settings.plugins) {
+      const newPlugins = settings.plugins.map((pluginName) => ({ package: pluginName, origin: 'config', inputs: {} }))
+
+      cachedConfig.config.plugins = [...newPlugins, ...cachedConfig.config.plugins]
+    }
   } catch (error_) {
     log(NETLIFYDEVERR, error_.message)
     exit(1)
@@ -472,7 +483,23 @@ const dev = async (options, command) => {
     capabilities,
     timeouts,
   })
-  await startFrameworkServer({ settings })
+
+  const startupMessage = settings.framework
+    ? `Setting up ${settings.framework} runtime`
+    : 'Setting up local development server'
+
+  log(`${NETLIFYDEVWARN} ${startupMessage}`)
+
+  const devCommand = () => startFrameworkServer({ settings })
+  const startDevOptions = await getBuildOptions({
+    cachedConfig,
+    options,
+  })
+  const { error: startDevError, success } = await netlifyBuild.startDev(devCommand, startDevOptions)
+
+  if (!success) {
+    error(`Could not start local development server\n\n${startDevError.message}\n\n${startDevError.stack}`)
+  }
 
   // TODO: We should consolidate this with the existing config watcher.
   const getUpdatedConfig = async () => {
@@ -611,6 +638,19 @@ const dev = async (options, command) => {
 
   printBanner({ url })
 }
+
+const getBuildOptions = ({ cachedConfig, options: { context, cwd, debug, dry, offline }, token }) => ({
+  cachedConfig,
+  token,
+  dry,
+  debug,
+  context,
+  mode: 'cli',
+  telemetry: false,
+  buffer: !debug,
+  offline,
+  cwd,
+})
 
 /**
  * Creates the `netlify dev` command

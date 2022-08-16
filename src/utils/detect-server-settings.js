@@ -167,6 +167,7 @@ const getSettingsFromFramework = (framework) => {
     name: frameworkName,
     staticAssetsDirectory: staticDir,
     env = {},
+    plugins,
   } = framework
 
   return {
@@ -176,6 +177,7 @@ const getSettingsFromFramework = (framework) => {
     framework: frameworkName,
     env,
     pollingStrategies: pollingStrategies.map(({ name }) => name),
+    plugins,
   }
 }
 
@@ -311,6 +313,8 @@ const detectServerSettings = async (devConfig, options, projectDir) => {
       validateFrameworkConfig({ devConfig })
       settings = await mergeSettings({ devConfig, frameworkSettings })
     }
+
+    settings.plugins = frameworkSettings && frameworkSettings.plugins
   } else if (devConfig.framework === '#custom') {
     validateFrameworkConfig({ devConfig })
     // when the users wants to configure `command` and `targetPort`
