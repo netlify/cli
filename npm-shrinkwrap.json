@@ -79,7 +79,7 @@
         "memoize-one": "^6.0.0",
         "minimist": "^1.2.5",
         "multiparty": "^4.2.1",
-        "netlify": "^12.0.0",
+        "netlify": "^12.0.1",
         "netlify-headers-parser": "^6.0.2",
         "netlify-onegraph-internal": "0.8.7",
         "netlify-redirect-parser": "^13.0.5",
@@ -3587,9 +3587,9 @@
       }
     },
     "node_modules/@netlify/open-api": {
-      "version": "2.11.0",
-      "resolved": "https://registry.npmjs.org/@netlify/open-api/-/open-api-2.11.0.tgz",
-      "integrity": "sha512-ni6R1xdR8EtH0iB8ixGt9ocuboW+Q8eN4ilTX8lfNHS6Y6Q2S+O/aB2n1BnAgv39wopeQsQ2meL9vfEePURl7w=="
+      "version": "2.12.0",
+      "resolved": "https://registry.npmjs.org/@netlify/open-api/-/open-api-2.12.0.tgz",
+      "integrity": "sha512-1n9VvO/9qM7cRB5f7NgSNqeUrovM7j9WVAY7ZQ4LtQuXSquFmO9Fku7WrV3zAUC6v2Y62fxGyJ0fRllYz5uXLw=="
     },
     "node_modules/@netlify/plugins-list": {
       "version": "6.39.0",
@@ -15923,11 +15923,11 @@
       "integrity": "sha512-AO81vsIO1k1sM4Zrd6Hu7regmJN1NSiAja10gc4bX3F0wd+9rQmcuHQaHVQCYIEC8iFXnE+mavh23GOt7wBgug=="
     },
     "node_modules/netlify": {
-      "version": "12.0.0",
-      "resolved": "https://registry.npmjs.org/netlify/-/netlify-12.0.0.tgz",
-      "integrity": "sha512-4LfNS4c/9301B0oxzosmHD7NHhOvvo4KlEmPH2AuMx9or6CXK2IP09K1MWnpdOyNA3Y/8jlUOtOTATK68jBK9A==",
+      "version": "12.0.1",
+      "resolved": "https://registry.npmjs.org/netlify/-/netlify-12.0.1.tgz",
+      "integrity": "sha512-nv16ofE2zHBbB8jQia8+opfdLmVYGrOaorhpInVz5Mkx3kVgJd7Q9c3+dVmSl4VA/4MHX6e4N7X4cH+9sj8Zhw==",
       "dependencies": {
-        "@netlify/open-api": "^2.11.0",
+        "@netlify/open-api": "^2.12.0",
         "lodash.camelcase": "^4.3.0",
         "micro-api-client": "^3.3.0",
         "node-fetch": "^3.0.0",
@@ -24770,9 +24770,9 @@
       "optional": true
     },
     "@netlify/open-api": {
-      "version": "2.11.0",
-      "resolved": "https://registry.npmjs.org/@netlify/open-api/-/open-api-2.11.0.tgz",
-      "integrity": "sha512-ni6R1xdR8EtH0iB8ixGt9ocuboW+Q8eN4ilTX8lfNHS6Y6Q2S+O/aB2n1BnAgv39wopeQsQ2meL9vfEePURl7w=="
+      "version": "2.12.0",
+      "resolved": "https://registry.npmjs.org/@netlify/open-api/-/open-api-2.12.0.tgz",
+      "integrity": "sha512-1n9VvO/9qM7cRB5f7NgSNqeUrovM7j9WVAY7ZQ4LtQuXSquFmO9Fku7WrV3zAUC6v2Y62fxGyJ0fRllYz5uXLw=="
     },
     "@netlify/plugins-list": {
       "version": "6.39.0",
@@ -34156,11 +34156,11 @@
       "integrity": "sha512-AO81vsIO1k1sM4Zrd6Hu7regmJN1NSiAja10gc4bX3F0wd+9rQmcuHQaHVQCYIEC8iFXnE+mavh23GOt7wBgug=="
     },
     "netlify": {
-      "version": "12.0.0",
-      "resolved": "https://registry.npmjs.org/netlify/-/netlify-12.0.0.tgz",
-      "integrity": "sha512-4LfNS4c/9301B0oxzosmHD7NHhOvvo4KlEmPH2AuMx9or6CXK2IP09K1MWnpdOyNA3Y/8jlUOtOTATK68jBK9A==",
+      "version": "12.0.1",
+      "resolved": "https://registry.npmjs.org/netlify/-/netlify-12.0.1.tgz",
+      "integrity": "sha512-nv16ofE2zHBbB8jQia8+opfdLmVYGrOaorhpInVz5Mkx3kVgJd7Q9c3+dVmSl4VA/4MHX6e4N7X4cH+9sj8Zhw==",
       "requires": {
-        "@netlify/open-api": "^2.11.0",
+        "@netlify/open-api": "^2.12.0",
         "lodash.camelcase": "^4.3.0",
         "micro-api-client": "^3.3.0",
         "node-fetch": "^3.0.0",
