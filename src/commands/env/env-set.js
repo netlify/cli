@@ -1,9 +1,9 @@
 // @ts-check
 const { Option } = require('commander')
 
-const { chalk, log, logJson, translateFromEnvelopeToMongo } = require('../../utils')
+const { chalk, error, log, logJson, translateFromEnvelopeToMongo } = require('../../utils')
 
-const AVAILABLE_CONTEXTS = ['production', 'deploy-preview', 'branch-deploy', 'dev']
+// const AVAILABLE_CONTEXTS = ['production', 'deploy-preview', 'branch-deploy', 'dev']
 const AVAILABLE_SCOPES = ['builds', 'functions', 'runtime', 'post_processing']
 
 /**
@@ -16,6 +16,7 @@ const AVAILABLE_SCOPES = ['builds', 'functions', 'runtime', 'post_processing']
  */
 const envSet = async (key, value, options, command) => {
   const { context, scope } = options
+
   const { api, cachedConfig, site } = command.netlify
   const siteId = site.id
 
@@ -25,10 +26,21 @@ const envSet = async (key, value, options, command) => {
   }
 
   const { siteInfo } = cachedConfig
+  let finalEnv
 
   // Get current environment variables set in the UI
-  const setInService = siteInfo.use_envelope ? setInEnvelope : setInMongo
-  const finalEnv = await setInService({ api, siteInfo, key, value, context, scope })
+  if (siteInfo.use_envelope) {
+    finalEnv = await setInEnvelope({ api, siteInfo, key, value, context, scope })
+  } else if (context || scope) {
+    error(
+      `To specify a context or scope, please run ${chalk.yellow(
+        'netlify open:admin',
+      )} to open the Netlify UI and opt in to the new environment variables experience from Site settings`,
+    )
+    return false
+  } else {
+    finalEnv = await setInMongo({ api, siteInfo, key, value })
+  }
 
   if (!finalEnv) {
     return false
@@ -40,11 +52,11 @@ const envSet = async (key, value, options, command) => {
     return false
   }
 
-  const withScope = scope === 'all' ? '' : ` scoped to ${chalk.white(scope)}`
+  const withScope = scope ? ` scoped to ${chalk.white(scope)}` : ''
   log(
     `Set environment variable ${chalk.yellow(`${key}${value ? '=' : ''}${value}`)}${withScope} in ${chalk.magenta(
-      context,
-    )} context${context === 'all' ? 's' : ''}`,
+      context || 'all',
+    )} context${context ? '' : 's'}`,
   )
 }
 
@@ -74,47 +86,45 @@ const setInMongo = async ({ api, key, siteInfo, value }) => {
  * Updates the env for a site configured with Envelope with a new key/value pair
  * @returns {Promise<object>}
  */
-const setInEnvelope = async ({ api, context = 'all', key, scope = 'all', siteInfo, value }) => {
+const setInEnvelope = async ({ api, context, key, scope, siteInfo, value }) => {
   const accountId = siteInfo.account_slug
   const siteId = siteInfo.id
   // fetch envelope env vars
   const envelopeVariables = await api.getEnvVars({ accountId, siteId })
-  const scopes = scope === 'all' ? AVAILABLE_SCOPES : scope.split(',')
-  let values = context.split(',').map((ctx) => ({ context: ctx, value }))
+  const contexts = context || ['all']
+  const scopes = scope || AVAILABLE_SCOPES
+
+  let values = contexts.map((ctx) => ({ context: ctx, value }))
 
   const existing = envelopeVariables.find((envVar) => envVar.key === key)
 
-  let method
-  let body
-  if (existing) {
-    if (!value) {
-      // eslint-disable-next-line prefer-destructuring
-      values = existing.values
-    }
-    if (context !== 'all' && scope !== 'all') {
-      console.error('Setting the context and scope at the same time on an existing env var is not allowed.')
-      return false
-    }
-    if (context === 'all') {
-      // update whole env var
-      method = api.updateEnvVar
-      body = { key, scopes, values }
-    } else {
-      // otherwise update individual value
-      method = api.setEnvVarValue
-      body = { context, value }
-    }
-  } else {
-    // create whole env var
-    method = api.createEnvVars
-    body = [{ key, scopes, values }]
-  }
-
+  const params = { accountId, siteId, key }
   try {
-    await method({ accountId, siteId, key, body })
-  } catch (error) {
-    console.log(error)
-    throw error.json ? error.json.msg : error
+    if (existing) {
+      if (!value) {
+        // eslint-disable-next-line prefer-destructuring
+        values = existing.values
+      }
+      if (context && scope) {
+        console.error('Setting the context and scope at the same time on an existing env var is not allowed.')
+        return false
+      }
+      if (context) {
+        // update individual value(s)
+        await Promise.all(values.map((val) => api.setEnvVarValue({ ...params, body: val })))
+      } else {
+        // otherwise update whole env var
+        const body = { key, scopes, values }
+        await api.updateEnvVar({ ...params, body })
+      }
+    } else {
+      // create whole env var
+      const body = [{ key, scopes, values }]
+      await api.createEnvVars({ ...params, body })
+    }
+  } catch (error_) {
+    console.log(error_)
+    throw error_.json ? error_.json.msg : error_
   }
 
   const env = translateFromEnvelopeToMongo(envelopeVariables, context)
@@ -135,14 +145,20 @@ const createEnvSetCommand = (program) =>
     .argument('<key>', 'Environment variable key')
     .argument('[value]', 'Value to set to', '')
     .addOption(
-      new Option('-c, --context <context>', 'Specify a deploy context')
-        .choices(['production', 'deploy-preview', 'branch-deploy', 'dev', 'all'])
-        .default('all'),
+      new Option('-c, --context <context...>', 'Specify a deploy context (default: all contexts)').choices([
+        'production',
+        'deploy-preview',
+        'branch-deploy',
+        'dev',
+      ]),
     )
     .addOption(
-      new Option('-s, --scope <scope>', 'Specify a scope')
-        .choices(['builds', 'functions', 'post_processing', 'runtime', 'all'])
-        .default('all'),
+      new Option('-s, --scope <scope...>', 'Specify a scope (default: all scopes)').choices([
+        'builds',
+        'functions',
+        'post_processing',
+        'runtime',
+      ]),
     )
     .description('Set value of environment variable')
     .action(async (key, value, options, command) => {
