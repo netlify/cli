@@ -828,11 +828,31 @@ const detectLocalCLISessionMetadata = async ({ siteRoot }) => {
  * @param {string} input.jwt The GraphJWT string
  * @param {string} input.sessionId The id of the cli session to fetch the current metadata for
  * @param {string} input.siteRoot Path to the root of the project
+ * @param {object} input.config The parsed netlify.toml config file
  * @param {string} input.docId The GraphQL operations document id to fetch
  * @param {string} input.schemaId The GraphQL schemaId to use when generating code
  */
-const publishCliSessionMetadataPublishEvent = async ({ docId, jwt, schemaId, sessionId, siteRoot }) => {
+const publishCliSessionMetadataPublishEvent = async ({ config, docId, jwt, schemaId, sessionId, siteRoot }) => {
   const detectedMetadata = await detectLocalCLISessionMetadata({ siteRoot })
+
+  /** @type {CodegenHelpers.CodegenModuleMeta | null} */
+  let codegen = null
+
+  const codegenModule = await getCodegenModule({ config })
+
+  if (codegenModule) {
+    codegen = {
+      id: codegenModule.id,
+      version: codegenModule.id,
+      generators: codegenModule.generators.map((generator) => ({
+        id: generator.id,
+        name: generator.name,
+        options: generator.generateHandlerOptions || null,
+        supportedDefinitionTypes: generator.supportedDefinitionTypes,
+        version: generator.version,
+      })),
+    }
+  }
 
   /** @type {CliEventHelper.OneGraphNetlifyCliSessionMetadataPublishEvent} */
   const event = {
@@ -848,7 +868,7 @@ const publishCliSessionMetadataPublishEvent = async ({ docId, jwt, schemaId, ses
       siteRootFriendly: detectedMetadata.siteRoot,
       persistedDocId: docId,
       schemaId,
-      codegenModule: detectedMetadata.codegen,
+      codegenModule: codegen,
       arch: detectedMetadata.arch,
       nodeVersion: detectedMetadata.nodeVersion,
       platform: detectedMetadata.platform,
