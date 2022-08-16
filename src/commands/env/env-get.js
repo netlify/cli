@@ -43,7 +43,7 @@ const envGet = async (name, options, command) => {
 
   if (!value) {
     const withContext = `in the ${chalk.magenta(context)} context`
-    const withScope = scope === 'any' ? '' : ` in the ${chalk.magenta(context)} scope`
+    const withScope = scope === 'any' ? '' : ` and the ${chalk.magenta(scope)} scope`
     log(`No value set ${withContext}${withScope} for environment variable ${chalk.yellow(name)}`)
     return false
   }
