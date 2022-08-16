@@ -85,17 +85,16 @@ const unsetInEnvelope = async ({ api, context, key, siteInfo }) => {
   const env = translateFromEnvelopeToMongo(envelopeVariables, context)
 
   // check if the given key exists
-  const variable = envelopeVariables.find((envVar) => envVar.key === key)
-  if (!variable) {
+  if (!envelopeVariables.some((envVar) => envVar.key === key)) {
     // if not, no need to call delete; return early
     return env
   }
 
+  // const envVar = envelopeVariables.find((envVar) => envVar.key === key)
   try {
     if (context) {
       // if a context is passed, only delete that one value
-      const value = findValueFromContext(variable.values, context)
-      // TODO: need to handle the `all` split case
+      const value = findValueFromContext(envVar.values, context)
       await api.deleteEnvVarValue({ accountId, siteId, key, id: value.id })
     } else {
       // otherwise, delete the whole key

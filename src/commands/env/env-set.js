@@ -36,11 +36,11 @@ const envSet = async (key, value, options, command) => {
     return false
   }
 
-  const withScope = scope === 'all' ? '' : ` scoped to ${chalk.whiteBright(scope)}`
+  const withScope = scope === 'all' ? '' : ` scoped to ${chalk.white(scope)}`
   log(
-    `Set environment variable ${chalk.yellowBright(
-      `${key}${value ? '=' : ''}${value}`,
-    )}${withScope} in ${chalk.magentaBright(context)} context${context === 'all' ? 's' : ''}`,
+    `Set environment variable ${chalk.yellow(`${key}${value ? '=' : ''}${value}`)}${withScope} in ${chalk.magenta(
+      context,
+    )} context${context === 'all' ? 's' : ''}`,
   )
 }
 
@@ -75,42 +75,16 @@ const setInEnvelope = async ({ api, context = 'all', key, scope = 'all', siteDat
   const siteId = siteData.id
   // fetch envelope env vars
   const envelopeVariables = await api.getEnvVars({ accountId, siteId })
-  let scopes = scope === 'all' ? AVAILABLE_SCOPES : scope.split(',')
-  let values = context.split(',').map((ctx) => ({ context: ctx, value }))
-  // check if we need to create or update
-  const existing = envelopeVariables.find((envVar) => envVar.key === key)
-  if (existing) {
-    const all = existing.values.find((val) => val.context === 'all')
-    if (scope === 'all') {
-      // eslint-disable-next-line prefer-destructuring
-      scopes = existing.scopes
-    }
-    if (!value.trim()) {
-      // eslint-disable-next-line prefer-destructuring
-      values = existing.values
-    } else if (context === 'all') {
-      values = [
-        { context, value: value || existing.values.find((val) => [context, 'all'].includes(val.context)).value },
-      ]
-    } else {
-      values = all
-        ? [
-            ...AVAILABLE_CONTEXTS.filter((ctx) => ctx !== context).map((ctx) => ({ context: ctx, value: all.value })),
-            ...values,
-          ]
-        : [...existing.values.filter((val) => val.context !== context), ...values]
-    }
-  }
-  const method = existing ? api.updateEnvVar : api.createEnvVars
-  const body = existing ? { key, scopes, values } : [{ key, scopes, values }]
+  const scopes = scope === 'all' ? AVAILABLE_SCOPES : scope.split(',')
 
   try {
-    await method({ accountId, siteId, key, body })
+    await api.setEnvVarValue({ accountId, siteId, key, body: { context, scopes, value } })
   } catch (error) {
+    console.log(error)
     throw error.json ? error.json.msg : error
   }
 
-  const env = translateFromEnvelopeToMongo(envelopeVariables)
+  const env = translateFromEnvelopeToMongo(envelopeVariables, context)
   return {
     ...env,
     [key]: value,

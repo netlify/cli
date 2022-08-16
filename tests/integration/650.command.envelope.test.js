@@ -222,7 +222,7 @@ test('env:list --scope should return the keys and values for the given scope', a
   })
 })
 
-test('env:set --json should create and return new var', async (t) => {
+test('env:set --context=dev should create and return new var in the dev context', async (t) => {
   await withSiteBuilder('site-env', async (builder) => {
     await builder.buildAsync()
 
@@ -234,7 +234,7 @@ test('env:set --json should create and return new var', async (t) => {
 
     await withMockApi(routes, async ({ apiUrl }) => {
       const cliResponse = await callCli(
-        ['env:set', '--json', 'NEW_VAR', 'new-value'],
+        ['env:set', 'NEW_VAR', 'new-value', '--context', 'dev', '--json'],
         getCLIOptions({ builder, apiUrl }),
         true,
       )
@@ -342,7 +342,7 @@ test('env:unset --json should remove existing variable', async (t) => {
   })
 })
 
-test.only('env:unset --context should remove existing variable value', async (t) => {
+test('env:unset --context should remove existing variable value', async (t) => {
   await withSiteBuilder('site-env', async (builder) => {
     await builder.buildAsync()
 
