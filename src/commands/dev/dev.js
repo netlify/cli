@@ -484,11 +484,7 @@ const dev = async (options, command) => {
     timeouts,
   })
 
-  const startupMessage = settings.framework
-    ? `Setting up ${settings.framework} runtime`
-    : 'Setting up local development server'
-
-  log(`${NETLIFYDEVWARN} ${startupMessage}`)
+  log(`${NETLIFYDEVWARN} Setting up local development server`)
 
   const devCommand = () => startFrameworkServer({ settings })
   const startDevOptions = await getBuildOptions({
