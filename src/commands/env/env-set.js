@@ -16,7 +16,7 @@ const AVAILABLE_SCOPES = ['builds', 'functions', 'runtime', 'post_processing']
  */
 const envSet = async (key, value, options, command) => {
   const { context, scope } = options
-  const { api, site } = command.netlify
+  const { api, cachedConfig, site } = command.netlify
   const siteId = site.id
 
   if (!siteId) {
@@ -24,11 +24,15 @@ const envSet = async (key, value, options, command) => {
     return false
   }
 
-  const siteData = await api.getSite({ siteId })
+  const { siteInfo } = cachedConfig
 
   // Get current environment variables set in the UI
-  const setInService = siteData.use_envelope ? setInEnvelope : setInMongo
-  const finalEnv = await setInService({ api, siteData, key, value, context, scope })
+  const setInService = siteInfo.use_envelope ? setInEnvelope : setInMongo
+  const finalEnv = await setInService({ api, siteInfo, key, value, context, scope })
+
+  if (!finalEnv) {
+    return false
+  }
 
   // Return new environment variables of site if using json flag
   if (options.json) {
@@ -48,15 +52,15 @@ const envSet = async (key, value, options, command) => {
  * Updates the env for a site record with a new key/value pair
  * @returns {Promise<object>}
  */
-const setInMongo = async ({ api, key, siteData, value }) => {
-  const { env = {} } = siteData.build_settings
+const setInMongo = async ({ api, key, siteInfo, value }) => {
+  const { env = {} } = siteInfo.build_settings
   const newEnv = {
     ...env,
     [key]: value,
   }
   // Apply environment variable updates
   await api.updateSite({
-    siteId: siteData.id,
+    siteId: siteInfo.id,
     body: {
       build_settings: {
         env: newEnv,
@@ -70,15 +74,44 @@ const setInMongo = async ({ api, key, siteData, value }) => {
  * Updates the env for a site configured with Envelope with a new key/value pair
  * @returns {Promise<object>}
  */
-const setInEnvelope = async ({ api, context = 'all', key, scope = 'all', siteData, value }) => {
-  const accountId = siteData.account_slug
-  const siteId = siteData.id
+const setInEnvelope = async ({ api, context = 'all', key, scope = 'all', siteInfo, value }) => {
+  const accountId = siteInfo.account_slug
+  const siteId = siteInfo.id
   // fetch envelope env vars
   const envelopeVariables = await api.getEnvVars({ accountId, siteId })
   const scopes = scope === 'all' ? AVAILABLE_SCOPES : scope.split(',')
+  let values = context.split(',').map((ctx) => ({ context: ctx, value }))
+
+  const existing = envelopeVariables.find((envVar) => envVar.key === key)
+
+  let method
+  let body
+  if (existing) {
+    if (!value) {
+      // eslint-disable-next-line prefer-destructuring
+      values = existing.values
+    }
+    if (context !== 'all' && scope !== 'all') {
+      console.error('Setting the context and scope at the same time on an existing env var is not allowed.')
+      return false
+    }
+    if (context === 'all') {
+      // update whole env var
+      method = api.updateEnvVar
+      body = { key, scopes, values }
+    } else {
+      // otherwise update individual value
+      method = api.setEnvVarValue
+      body = { context, value }
+    }
+  } else {
+    // create whole env var
+    method = api.createEnvVars
+    body = [{ key, scopes, values }]
+  }
 
   try {
-    await api.setEnvVarValue({ accountId, siteId, key, body: { context, scopes, value } })
+    await method({ accountId, siteId, key, body })
   } catch (error) {
     console.log(error)
     throw error.json ? error.json.msg : error
