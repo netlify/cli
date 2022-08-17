@@ -647,7 +647,7 @@ const dev = async (options, command) => {
   printBanner({ url })
 }
 
-const getBuildOptions = ({ cachedConfig, options: { context, cwd, debug, dry, offline }, token }) => ({
+const getBuildOptions = ({ cachedConfig, options: { context, cwd = process.cwd(), debug, dry, offline }, token }) => ({
   cachedConfig,
   token,
   dry,
