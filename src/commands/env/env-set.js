@@ -121,10 +121,10 @@ const setInEnvelope = async ({ api, context, key, scope, siteInfo, value }) => {
     await api.createEnvVars({ ...params, body })
   }
 
-  const env = translateFromEnvelopeToMongo(envelopeVariables, contexts[0])
+  const env = translateFromEnvelopeToMongo(envelopeVariables, context ? context[0] : 'dev')
   return {
     ...env,
-    [key]: value,
+    [key]: value || env[key],
   }
 }
 
