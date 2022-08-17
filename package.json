@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "10.17.6",
+  "version": "10.17.8",
   "author": "Netlify Inc.",
   "contributors": [
     "@whitep4nth3r (https://twitter.com/whitep4nth3r)",
@@ -205,8 +205,8 @@
     "test:init:eleventy-deps": "npm ci --prefix tests/integration/eleventy-site --no-audit",
     "test:init:hugo-deps": "npm ci --prefix tests/integration/hugo-site --no-audit",
     "test:dev:ava": "ava --verbose",
-    "test:ci:ava:unit": "c8 -r json ava --no-worker-threads tests/unit/**/*.test.js tools/**/*.test.js",
-    "test:ci:ava:integration": "c8 -r json ava --concurrency 1 --no-worker-threads tests/integration/**/*.test.js",
+    "test:ci:ava:unit": "c8 -r json ava --no-worker-threads tests/unit/ tools/",
+    "test:ci:ava:integration": "c8 -r json ava --concurrency 1 --no-worker-threads tests/integration/",
     "test:affected": "node ./tools/affected-test.mjs",
     "e2e": "node ./tools/e2e/run.mjs",
     "docs": "node ./site/scripts/docs.mjs",
@@ -222,13 +222,13 @@
     "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,tools,scripts,site,tests,.github}/**/*.{mjs,cjs,js,md,yml,json,html}\" \"*.{mjs,cjs,js,yml,json,html}\" \".*.{mjs,cjs,js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\" \"!**/*/package-lock.json\" \"!.github/**/*.md\""
   },
   "dependencies": {
-    "@netlify/build": "^27.11.4",
-    "@netlify/config": "^18.1.4",
+    "@netlify/build": "^27.14.0",
+    "@netlify/config": "^18.2.0",
     "@netlify/edge-bundler": "^1.12.1",
     "@netlify/framework-info": "^9.2.0",
     "@netlify/local-functions-proxy": "^1.1.1",
     "@netlify/plugins-list": "^6.39.0",
-    "@netlify/zip-it-and-ship-it": "^5.13.4",
+    "@netlify/zip-it-and-ship-it": "^5.13.5",
     "@octokit/rest": "^18.0.0",
     "@sindresorhus/slugify": "^1.1.0",
     "ansi-escapes": "^5.0.0",

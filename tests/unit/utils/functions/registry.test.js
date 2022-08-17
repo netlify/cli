@@ -25,5 +25,6 @@ test('should add included_files to watcher', async (t) => {
 
   await registry.buildFunctionAndWatchFiles(func)
 
-  t.deepEqual(watchDebouncedSpy.args.at(0)[0], ['myfile', 'include/*'])
+  t.is(watchDebouncedSpy.callCount, 1)
+  t.deepEqual(watchDebouncedSpy.args[0][0], ['myfile', 'include/*'])
 })

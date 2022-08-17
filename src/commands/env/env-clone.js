@@ -74,11 +74,7 @@ const envClone = async (options, command) => {
     return false
   }
 
-  log(
-    `Successfully cloned environment variables from ${chalk.greenBright(siteFrom.name)} to ${chalk.greenBright(
-      siteTo.name,
-    )}`,
-  )
+  log(`Successfully cloned environment variables from ${chalk.green(siteFrom.name)} to ${chalk.green(siteTo.name)}`)
 
   return true
 }
@@ -98,7 +94,7 @@ const mongoToMongo = async ({ api, siteFrom, siteTo }) => {
   ] = [siteFrom, siteTo]
 
   if (isEmpty(envFrom)) {
-    log(`${chalk.greenBright(siteFrom.name)} has no environment variables, nothing to clone`)
+    log(`${chalk.green(siteFrom.name)} has no environment variables, nothing to clone`)
     return false
   }
 
@@ -130,7 +126,7 @@ const mongoToEnvelope = async ({ api, siteFrom, siteTo }) => {
   const keysFrom = Object.keys(envFrom)
 
   if (isEmpty(envFrom)) {
-    log(`${chalk.greenBright(siteFrom.name)} has no environment variables, nothing to clone`)
+    log(`${chalk.green(siteFrom.name)} has no environment variables, nothing to clone`)
     return false
   }
 
@@ -163,7 +159,7 @@ const envelopeToMongo = async ({ api, siteFrom, siteTo }) => {
   const envFrom = translateFromEnvelopeToMongo(envelopeVariables)
 
   if (isEmpty(envFrom)) {
-    log(`${chalk.greenBright(siteFrom.name)} has no environment variables, nothing to clone`)
+    log(`${chalk.green(siteFrom.name)} has no environment variables, nothing to clone`)
     return false
   }
 
@@ -201,7 +197,7 @@ const envelopeToEnvelope = async ({ api, siteFrom, siteTo }) => {
   const keysFrom = envelopeFrom.map(({ key }) => key)
 
   if (isEmpty(keysFrom)) {
-    log(`${chalk.greenBright(siteFrom.name)} has no environment variables, nothing to clone`)
+    log(`${chalk.green(siteFrom.name)} has no environment variables, nothing to clone`)
     return false
   }
 
