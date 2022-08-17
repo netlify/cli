@@ -499,7 +499,7 @@ const dev = async (options, command) => {
   log(`${NETLIFYDEVWARN} Setting up local development server`)
 
   const devCommand = () => startFrameworkServer({ settings })
-  const startDevOptions = await getBuildOptions({
+  const startDevOptions = getBuildOptions({
     cachedConfig,
     options,
   })
