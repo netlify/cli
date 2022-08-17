@@ -1,11 +1,14 @@
 // Handlers are meant to be async outside tests
 /* eslint-disable require-await */
+const { promises: fs } = require('fs')
 const path = require('path')
 
 // eslint-disable-next-line ava/use-test
 const avaTest = require('ava')
 const { isCI } = require('ci-info')
 const FormData = require('form-data')
+const getPort = require('get-port')
+const tempy = require('tempy')
 
 const { withDevServer } = require('./utils/dev-server')
 const got = require('./utils/got')
@@ -358,6 +361,52 @@ test('should redirect from sub directory to root directory', async (t) => {
       t.is(response1, '<html><h1>foo')
       t.is(response2, '<html><h1>foo')
       t.is(response3, '<html><h1>not-foo')
+    })
+  })
+})
+
+test('Runs build plugins with the `onPreDev` event as part of Netlify Dev', async (t) => {
+  const userServerPort = await getPort()
+  const pluginManifest = 'name: local-plugin'
+
+  // This test plugin starts an HTTP server that we'll hit when the dev server
+  // is ready, asserting that plugins in dev mode can have long-running jobs.
+  const pluginSource = `
+    const http = require("http");  
+    
+    module.exports.onPreDev = () => {
+      const server = http.createServer((_, res) => res.end("Hello world"));
+    
+      server.listen(${userServerPort}, "localhost", () => {
+        console.log("Server is running on port ${userServerPort}");
+      });
+    }
+  `
+  const pluginDirectory = await tempy.directory()
+
+  await fs.writeFile(path.join(pluginDirectory, 'manifest.yml'), pluginManifest)
+  await fs.writeFile(path.join(pluginDirectory, 'index.js'), pluginSource)
+
+  await withSiteBuilder('site-with-custom-server-in-plugin', async (builder) => {
+    builder
+      .withNetlifyToml({
+        config: {
+          plugins: [{ package: path.relative(builder.directory, pluginDirectory) }],
+        },
+      })
+      .withContentFile({
+        path: 'foo.html',
+        content: '<html><h1>foo',
+      })
+
+    await builder.buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async (server) => {
+      const response1 = await got(`${server.url}/foo`).text()
+      const response2 = await got(`http://localhost:${userServerPort}`).text()
+
+      t.is(response1, '<html><h1>foo')
+      t.is(response2, 'Hello world')
     })
   })
 })
