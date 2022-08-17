@@ -18,8 +18,8 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - name: Install core dependencies
         run: npm ci --no-audit
-      - name: Install and build site
-        run: npm run site:build
+      - name: Install site dependencies
+        run: npm run site:build:install
       - name: Extract tag and version
         id: extract
         run: |-
