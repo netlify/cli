@@ -53,9 +53,9 @@ const envSet = async (key, value, options, command) => {
 
   const withScope = scope ? ` scoped to ${chalk.white(scope)}` : ''
   log(
-    `Set environment variable ${chalk.yellow(`${key}${value ? '=' : ''}${value}`)}${withScope} in ${chalk.magenta(
+    `Set environment variable ${chalk.yellow(`${key}${value ? '=' : ''}${value}`)}${withScope} in the ${chalk.magenta(
       context || 'all',
-    )} context${context ? '' : 's'}`,
+    )} context`,
   )
 }
 
@@ -105,7 +105,9 @@ const setInEnvelope = async ({ api, context, key, scope, siteInfo, value }) => {
         values = existing.values
       }
       if (context && scope) {
-        error('Setting the context and scope at the same time on an existing env var is not allowed.')
+        error(
+          'Setting the context and scope at the same time on an existing env var is not allowed. Run the set command separately for each update.',
+        )
         return false
       }
       if (context) {
