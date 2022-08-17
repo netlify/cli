@@ -2,6 +2,7 @@
 /* eslint-disable require-await */
 const { promises: fs } = require('fs')
 const path = require('path')
+const { cwd } = require('process')
 
 // eslint-disable-next-line ava/use-test
 const avaTest = require('ava')
@@ -401,12 +402,11 @@ test('Runs build plugins with the `onPreDev` event as part of Netlify Dev', asyn
 
     await builder.buildAsync()
 
-    await withDevServer({ cwd: builder.directory }, async (server) => {
-      const response1 = await got(`${server.url}/foo`).text()
-      const response2 = await got(`http://localhost:${userServerPort}`).text()
+    console.log('----> CWD debug', builder.directory, cwd())
 
-      t.is(response1, '<html><h1>foo')
-      t.is(response2, 'Hello world')
+    await withDevServer({ cwd: builder.directory }, async (server) => {
+      t.is(await got(`${server.url}/foo`).text(), '<html><h1>foo')
+      t.is(await got(`http://localhost:${userServerPort}`).text(), 'Hello world')
     })
   })
 })
