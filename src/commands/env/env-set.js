@@ -98,27 +98,31 @@ const setInEnvelope = async ({ api, context, key, scope, siteInfo, value }) => {
   const existing = envelopeVariables.find((envVar) => envVar.key === key)
 
   const params = { accountId, siteId, key }
-  if (existing) {
-    if (!value) {
-      // eslint-disable-next-line prefer-destructuring
-      values = existing.values
-    }
-    if (context && scope) {
-      error('Setting the context and scope at the same time on an existing env var is not allowed.')
-      return false
-    }
-    if (context) {
-      // update individual value(s)
-      await Promise.all(values.map((val) => api.setEnvVarValue({ ...params, body: val })))
+  try {
+    if (existing) {
+      if (!value) {
+        // eslint-disable-next-line prefer-destructuring
+        values = existing.values
+      }
+      if (context && scope) {
+        error('Setting the context and scope at the same time on an existing env var is not allowed.')
+        return false
+      }
+      if (context) {
+        // update individual value(s)
+        await Promise.all(values.map((val) => api.setEnvVarValue({ ...params, body: val })))
+      } else {
+        // otherwise update whole env var
+        const body = { key, scopes, values }
+        await api.updateEnvVar({ ...params, body })
+      }
     } else {
-      // otherwise update whole env var
-      const body = { key, scopes, values }
-      await api.updateEnvVar({ ...params, body })
+      // create whole env var
+      const body = [{ key, scopes, values }]
+      await api.createEnvVars({ ...params, body })
     }
-  } else {
-    // create whole env var
-    const body = [{ key, scopes, values }]
-    await api.createEnvVars({ ...params, body })
+  } catch (error_) {
+    throw error_.json ? error_.json.msg : error_
   }
 
   const env = translateFromEnvelopeToMongo(envelopeVariables, context ? context[0] : 'dev')

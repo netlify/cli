@@ -96,6 +96,11 @@ const routes = [
     method: 'DELETE',
     response: {},
   },
+  {
+    path: 'accounts/test-account/env/OTHER_VAR/value/3456',
+    method: 'DELETE',
+    response: {},
+  },
 ]
 
 test('env:get --json should return empty object if var not set', async (t) => {
@@ -443,7 +448,7 @@ test('env:unset --json should remove existing variable', async (t) => {
       OTHER_VAR: 'envelope-all-value',
     }
 
-    await withMockApi(routes, async ({ apiUrl }) => {
+    await withMockApi(routes, async ({ apiUrl, requests }) => {
       const cliResponse = await callCli(
         ['env:unset', '--json', 'EXISTING_VAR'],
         getCLIOptions({ builder, apiUrl }),
@@ -451,6 +456,9 @@ test('env:unset --json should remove existing variable', async (t) => {
       )
 
       t.deepEqual(cliResponse, finalEnv)
+
+      const deleteRequest = requests.find((request) => request.method === 'DELETE')
+      t.is(deleteRequest.path, '/api/v1/accounts/test-account/env/EXISTING_VAR')
     })
   })
 })
@@ -463,7 +471,7 @@ test('env:unset --context should remove existing variable value', async (t) => {
       OTHER_VAR: 'envelope-all-value',
     }
 
-    await withMockApi(routes, async ({ apiUrl }) => {
+    await withMockApi(routes, async ({ apiUrl, requests }) => {
       const cliResponse = await callCli(
         ['env:unset', 'EXISTING_VAR', '--context', 'production', '--json'],
         getCLIOptions({ builder, apiUrl }),
@@ -471,6 +479,36 @@ test('env:unset --context should remove existing variable value', async (t) => {
       )
 
       t.deepEqual(cliResponse, finalEnv)
+
+      const deleteRequest = requests.find((request) => request.method === 'DELETE')
+      t.is(deleteRequest.path, '/api/v1/accounts/test-account/env/EXISTING_VAR/value/1234')
+    })
+  })
+})
+
+test('env:unset --context should split up an `all` value', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    const finalEnv = {}
+
+    await withMockApi(routes, async ({ apiUrl, requests }) => {
+      const cliResponse = await callCli(
+        ['env:unset', 'OTHER_VAR', '--context', 'branch-deploy', '--json'],
+        getCLIOptions({ builder, apiUrl }),
+        true,
+      )
+
+      t.deepEqual(cliResponse, finalEnv)
+
+      const deleteRequest = requests.find((request) => request.method === 'DELETE')
+      t.is(deleteRequest.path, '/api/v1/accounts/test-account/env/OTHER_VAR/value/3456')
+
+      const patchRequests = requests.filter(
+        (request) => request.method === 'PATCH' && '/api/v1/accounts/test-account/env/OTHER_VAR',
+      )
+
+      t.is(patchRequests.length, 3)
     })
   })
 })

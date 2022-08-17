@@ -90,7 +90,7 @@ const unsetInEnvelope = async ({ api, context, key, siteInfo }) => {
   const envelopeVariables = await api.getEnvVars({ accountId, siteId })
   const contexts = context || ['all']
 
-  const env = translateFromEnvelopeToMongo(envelopeVariables, contexts[0])
+  const env = translateFromEnvelopeToMongo(envelopeVariables, context ? context[0] : 'dev')
 
   // check if the given key exists
   const variable = envelopeVariables.find((envVar) => envVar.key === key)
@@ -120,7 +120,6 @@ const unsetInEnvelope = async ({ api, context, key, siteInfo }) => {
       await api.deleteEnvVar({ accountId, siteId, key })
     }
   } catch (error_) {
-    console.log(error_)
     throw error_.json ? error_.json.msg : error_
   }
 
