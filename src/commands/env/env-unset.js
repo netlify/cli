@@ -101,7 +101,7 @@ const unsetInEnvelope = async ({ api, context, key, siteInfo }) => {
 
   const params = { accountId, siteId, key }
   try {
-    if (context.length === 0) {
+    if (context && context.length === 0) {
       // if no context passed, delete the whole key
       await api.deleteEnvVar({ accountId, siteId, key })
     } else {
