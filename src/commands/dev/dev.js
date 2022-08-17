@@ -454,9 +454,21 @@ const dev = async (options, command) => {
     settings = await detectServerSettings(devConfig, options, site.root)
 
     // If there are plugins that we should be running for this site, add them
-    // to the config as if they were declared in netlify.toml.
+    // to the config as if they were declared in netlify.toml. We must check
+    // whether the plugin has already been added by another source (like the
+    // TOML file or the UI), as we don't want to run the same plugin twice.
     if (settings.plugins) {
-      const newPlugins = settings.plugins.map((pluginName) => ({ package: pluginName, origin: 'config', inputs: {} }))
+      const { plugins: existingPlugins = [] } = cachedConfig.config
+      const existingPluginNames = new Set(existingPlugins.map((plugin) => plugin.package))
+      const newPlugins = settings.plugins
+        .map((pluginName) => {
+          if (existingPluginNames.has(pluginName)) {
+            return
+          }
+
+          return { package: pluginName, origin: 'config', inputs: {} }
+        })
+        .filter(Boolean)
 
       cachedConfig.config.plugins = [...newPlugins, ...cachedConfig.config.plugins]
     }
