@@ -655,7 +655,7 @@ const getBuildOptions = ({ cachedConfig, options: { context, cwd, debug, dry, of
   context,
   mode: 'cli',
   telemetry: false,
-  buffer: !debug,
+  buffer: false,
   offline,
   cwd,
 })
