@@ -1,7 +1,9 @@
 const { Option } = require('commander')
 
 // @ts-check
-const { chalk, error, findValueFromContext, log, logJson, translateFromEnvelopeToMongo } = require('../../utils')
+const { chalk, error, log, logJson, translateFromEnvelopeToMongo } = require('../../utils')
+
+const AVAILABLE_CONTEXTS = ['production', 'deploy-preview', 'branch-deploy', 'dev']
 
 /**
  * The env:unset command
@@ -42,7 +44,11 @@ const envUnset = async (key, options, command) => {
     return false
   }
 
-  log(`Unset environment variable ${key} for site ${siteInfo.name}`)
+  log(
+    `Unset environment variable ${chalk.yellow(key)} in ${chalk.magenta(context || 'all')} context${
+      context ? '' : 's'
+    }`,
+  )
 }
 
 /**
@@ -82,25 +88,39 @@ const unsetInEnvelope = async ({ api, context, key, siteInfo }) => {
   const siteId = siteInfo.id
   // fetch envelope env vars
   const envelopeVariables = await api.getEnvVars({ accountId, siteId })
-  const env = translateFromEnvelopeToMongo(envelopeVariables, context)
+  const contexts = context || ['all']
+
+  const env = translateFromEnvelopeToMongo(envelopeVariables, contexts[0])
 
   // check if the given key exists
-  if (!envelopeVariables.some((envVar) => envVar.key === key)) {
+  const variable = envelopeVariables.find((envVar) => envVar.key === key)
+  if (!variable) {
     // if not, no need to call delete; return early
     return env
   }
 
-  // const envVar = envelopeVariables.find((envVar) => envVar.key === key)
+  const params = { accountId, siteId, key }
   try {
-    if (context) {
-      // if a context is passed, only delete that one value
-      const value = findValueFromContext(envVar.values, context)
-      await api.deleteEnvVarValue({ accountId, siteId, key, id: value.id })
-    } else {
-      // otherwise, delete the whole key
+    if (context.length === 0) {
+      // if no context passed, delete the whole key
       await api.deleteEnvVar({ accountId, siteId, key })
+    } else {
+      // otherwise, if context(s) are passed, delete the matching contexts, and the `all` context
+      const values = variable.values.filter((val) => [...contexts, 'all'].includes(val.context))
+      if (values) {
+        await Promise.all(values.map((value) => api.deleteEnvVarValue({ ...params, id: value.id })))
+        // if this was the `all` context, we need to create 3 values in the other contexts
+        if (values.length === 1 && values[0].context === 'all') {
+          const newContexts = AVAILABLE_CONTEXTS.filter((ctx) => !context.includes(ctx))
+          const allValue = values[0].value
+          await Promise.all(
+            newContexts.map((ctx) => api.setEnvVarValue({ ...params, body: { context: ctx, value: allValue } })),
+          )
+        }
+      }
     }
   } catch (error_) {
+    console.log(error_)
     throw error_.json ? error_.json.msg : error_
   }
 
@@ -120,7 +140,7 @@ const createEnvUnsetCommand = (program) =>
     .aliases(['env:delete', 'env:remove'])
     .argument('<key>', 'Environment variable key')
     .addOption(
-      new Option('-c, --context [context]', 'Specify a deploy context').choices([
+      new Option('-c, --context <context...>', 'Specify a deploy context (default: all contexts)').choices([
         'production',
         'deploy-preview',
         'branch-deploy',

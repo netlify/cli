@@ -3,7 +3,6 @@ const { Option } = require('commander')
 
 const { chalk, error, log, logJson, translateFromEnvelopeToMongo } = require('../../utils')
 
-// const AVAILABLE_CONTEXTS = ['production', 'deploy-preview', 'branch-deploy', 'dev']
 const AVAILABLE_SCOPES = ['builds', 'functions', 'runtime', 'post_processing']
 
 /**
@@ -99,35 +98,30 @@ const setInEnvelope = async ({ api, context, key, scope, siteInfo, value }) => {
   const existing = envelopeVariables.find((envVar) => envVar.key === key)
 
   const params = { accountId, siteId, key }
-  try {
-    if (existing) {
-      if (!value) {
-        // eslint-disable-next-line prefer-destructuring
-        values = existing.values
-      }
-      if (context && scope) {
-        console.error('Setting the context and scope at the same time on an existing env var is not allowed.')
-        return false
-      }
-      if (context) {
-        // update individual value(s)
-        await Promise.all(values.map((val) => api.setEnvVarValue({ ...params, body: val })))
-      } else {
-        // otherwise update whole env var
-        const body = { key, scopes, values }
-        await api.updateEnvVar({ ...params, body })
-      }
-    } else {
-      // create whole env var
-      const body = [{ key, scopes, values }]
-      await api.createEnvVars({ ...params, body })
+  if (existing) {
+    if (!value) {
+      // eslint-disable-next-line prefer-destructuring
+      values = existing.values
     }
-  } catch (error_) {
-    console.log(error_)
-    throw error_.json ? error_.json.msg : error_
+    if (context && scope) {
+      error('Setting the context and scope at the same time on an existing env var is not allowed.')
+      return false
+    }
+    if (context) {
+      // update individual value(s)
+      await Promise.all(values.map((val) => api.setEnvVarValue({ ...params, body: val })))
+    } else {
+      // otherwise update whole env var
+      const body = { key, scopes, values }
+      await api.updateEnvVar({ ...params, body })
+    }
+  } else {
+    // create whole env var
+    const body = [{ key, scopes, values }]
+    await api.createEnvVars({ ...params, body })
   }
 
-  const env = translateFromEnvelopeToMongo(envelopeVariables, context)
+  const env = translateFromEnvelopeToMongo(envelopeVariables, contexts[0])
   return {
     ...env,
     [key]: value,
