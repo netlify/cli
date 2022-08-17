@@ -155,6 +155,13 @@ const createEnvSetCommand = (program) =>
       ]),
     )
     .description('Set value of environment variable')
+    .addExamples([
+      'netlify env:set VAR_NAME value # set in all contexts and scopes',
+      'netlify env:set VAR_NAME value --context production',
+      'netlify env:set VAR_NAME value --context production deploy-preview',
+      'netlify env:set VAR_NAME value --scope builds',
+      'netlify env:set VAR_NAME value --scope builds functions',
+    ])
     .action(async (key, value, options, command) => {
       await envSet(key, value, options, command)
     })

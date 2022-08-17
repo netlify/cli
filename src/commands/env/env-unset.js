@@ -147,6 +147,11 @@ const createEnvUnsetCommand = (program) =>
         'dev',
       ]),
     )
+    .addExamples([
+      'netlify env:unset VAR_NAME # unset in all contexts',
+      'netlify env:unset VAR_NAME --context production',
+      'netlify env:unset VAR_NAME --context production deploy-preview',
+    ])
     .description('Unset an environment variable which removes it from the UI')
     .action(async (key, options, command) => {
       await envUnset(key, options, command)

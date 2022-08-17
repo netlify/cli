@@ -149,9 +149,21 @@ netlify env:set
 
 **Flags**
 
+- `context` (*production | deploy-preview | branch-deploy | dev*) - Specify a deploy context (default: all contexts)
+- `scope` (*builds | functions | post_processing | runtime*) - Specify a scope (default: all scopes)
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
+
+**Examples**
+
+```bash
+netlify env:set VAR_NAME value # set in all contexts and scopes
+netlify env:set VAR_NAME value --context production
+netlify env:set VAR_NAME value --context production deploy-preview
+netlify env:set VAR_NAME value --scope builds
+netlify env:set VAR_NAME value --scope builds functions
+```
 
 ---
 ## `env:unset`
@@ -170,9 +182,18 @@ netlify env:unset
 
 **Flags**
 
+- `context` (*production | deploy-preview | branch-deploy | dev*) - Specify a deploy context (default: all contexts)
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
+
+**Examples**
+
+```bash
+netlify env:unset VAR_NAME # unset in all contexts
+netlify env:unset VAR_NAME --context production
+netlify env:unset VAR_NAME --context production deploy-preview
+```
 
 ---
 
