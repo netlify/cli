@@ -26,7 +26,7 @@ const envGet = async (name, options, command) => {
     env = await getEnvelopeEnv({ api, context, env, key: name, scope, siteInfo })
   } else if (context !== 'dev' || scope !== 'any') {
     error(
-      `To specify a context or scope, please run ${chalk.yellowBright(
+      `To specify a context or scope, please run ${chalk.yellow(
         'netlify open:admin',
       )} to open the Netlify UI and opt in to the new environment variables experience from Site settings`,
     )
@@ -42,9 +42,9 @@ const envGet = async (name, options, command) => {
   }
 
   if (!value) {
-    const withContext = `in the ${chalk.magentaBright(context)} context`
-    const withScope = scope === 'any' ? '' : ` in the ${chalk.magentaBright(context)} scope`
-    log(`No value set ${withContext}${withScope} for environment variable ${chalk.yellowBright(name)}`)
+    const withContext = `in the ${chalk.magenta(context)} context`
+    const withScope = scope === 'any' ? '' : ` and the ${chalk.magenta(scope)} scope`
+    log(`No value set ${withContext}${withScope} for environment variable ${chalk.yellow(name)}`)
     return false
   }
 
