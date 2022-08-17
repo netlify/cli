@@ -101,11 +101,8 @@ const unsetInEnvelope = async ({ api, context, key, siteInfo }) => {
 
   const params = { accountId, siteId, key }
   try {
-    if (context && context.length === 0) {
-      // if no context passed, delete the whole key
-      await api.deleteEnvVar({ accountId, siteId, key })
-    } else {
-      // otherwise, if context(s) are passed, delete the matching contexts, and the `all` context
+    if (context) {
+      // if context(s) are passed, delete the matching contexts, and the `all` context
       const values = variable.values.filter((val) => [...contexts, 'all'].includes(val.context))
       if (values) {
         await Promise.all(values.map((value) => api.deleteEnvVarValue({ ...params, id: value.id })))
@@ -118,6 +115,9 @@ const unsetInEnvelope = async ({ api, context, key, siteInfo }) => {
           )
         }
       }
+    } else {
+      // otherwise, if no context passed, delete the whole key
+      await api.deleteEnvVar({ accountId, siteId, key })
     }
   } catch (error_) {
     console.log(error_)
