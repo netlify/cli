@@ -1,6 +1,106 @@
 const test = require('ava')
 
-const { translateFromEnvelopeToMongo, translateFromMongoToEnvelope } = require('../../../../src/utils/env')
+const {
+  filterEnvBySource,
+  findValueFromContext,
+  formatEnvelopeData,
+  getHumanReadableScopes,
+  translateFromEnvelopeToMongo,
+  translateFromMongoToEnvelope,
+} = require('../../../../src/utils/env')
+
+test('should find a value from a given context', (t) => {
+  const values = [
+    {
+      context: 'production',
+      value: 'foo',
+    },
+    {
+      context: 'dev',
+      value: 'bar',
+    },
+  ]
+  const { value } = findValueFromContext(values, 'dev')
+  t.is(value, 'bar')
+})
+
+test('should filter an env from a given source', (t) => {
+  const env = {
+    FOO: {
+      value: 'sup',
+      sources: ['ui'],
+    },
+    BAR: {
+      value: 'nm, u?',
+      sources: ['general'],
+    },
+  }
+  const filteredEnv = filterEnvBySource(env, 'ui')
+  t.deepEqual(filteredEnv, {
+    FOO: {
+      value: 'sup',
+      sources: ['ui'],
+    },
+  })
+})
+
+test("should filter, sort, and format Envelope's response correctly", (t) => {
+  const envelopeItems = [
+    {
+      key: 'FOO',
+      scopes: ['functions'],
+      values: [
+        {
+          context: 'all',
+          value: 'bar',
+        },
+      ],
+    },
+    {
+      key: 'BAZ',
+      scopes: ['builds', 'functions', 'runtime', 'post_processing'],
+      values: [
+        {
+          context: 'production',
+          value: 'bang',
+        },
+        {
+          context: 'deploy-preview',
+          value: 'blah',
+        },
+      ],
+    },
+  ]
+
+  t.deepEqual(formatEnvelopeData({ context: 'dev', envelopeItems, scope: 'any', source: 'ui' }), {
+    FOO: { context: 'all', scopes: ['functions'], sources: ['ui'], value: 'bar' },
+  })
+  t.deepEqual(formatEnvelopeData({ context: 'deploy-preview', envelopeItems, scope: 'runtime', source: 'account' }), {
+    BAZ: {
+      context: 'deploy-preview',
+      scopes: ['builds', 'functions', 'runtime', 'post_processing'],
+      sources: ['account'],
+      value: 'blah',
+    },
+  })
+  t.deepEqual(formatEnvelopeData({ context: 'production', envelopeItems, source: 'general' }), {
+    BAZ: {
+      context: 'production',
+      scopes: ['builds', 'functions', 'runtime', 'post_processing'],
+      sources: ['general'],
+      value: 'bang',
+    },
+    FOO: { context: 'all', scopes: ['functions'], sources: ['general'], value: 'bar' },
+  })
+})
+
+test('should convert scope keys into a human-readable list', (t) => {
+  t.is(getHumanReadableScopes([]), '')
+  t.is(getHumanReadableScopes(), 'Builds, Post processing')
+  t.is(getHumanReadableScopes(['post_processing']), 'Post processing')
+  t.is(getHumanReadableScopes(['builds', 'functions']), 'Builds, Functions')
+  t.is(getHumanReadableScopes(['builds', 'functions', 'runtime', 'post_processing']), 'All')
+})
 
 test('should translate from Mongo format to Envelope format when undefined', (t) => {
   const env = translateFromMongoToEnvelope()

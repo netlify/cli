@@ -603,11 +603,12 @@ test('should have only allowed environment variables set', async (t) => {
           // t.is(response.DENO_DEPLOYMENT_ID, 'xxx=')
           t.true(envKeys.includes('DENO_REGION'))
           t.is(response.DENO_REGION, 'local')
+          t.true(envKeys.includes('NETLIFY_DEV'))
+          t.is(response.NETLIFY_DEV, 'true')
           t.true(envKeys.includes('SECRET_ENV'))
           t.is(response.SECRET_ENV, 'true')
 
           t.false(envKeys.includes('NODE_ENV'))
-          t.false(envKeys.includes('NETLIFY_DEV'))
           t.false(envKeys.includes('DEPLOY_URL'))
           t.false(envKeys.includes('URL'))
         },

@@ -459,7 +459,7 @@ const generateFunctionsFile = async ({ config, netlifyGraphConfig, operationsDoc
 
   const codegenModule = await getCodegenModule({ config })
   if (!codegenModule) {
-    error(
+    warn(
       `No Netlify Graph codegen module specified in netlify.toml under the [graph] header. Please specify 'codeGenerator' field and try again.`,
     )
     return
@@ -685,13 +685,19 @@ const generateHandlerByOperationName = ({
   }
 
   const parsedDoc = parse(currentOperationsDoc)
-  const { functions } = extractFunctionsFromOperationDoc(GraphQL, parsedDoc)
+  const { fragments, functions } = extractFunctionsFromOperationDoc(GraphQL, parsedDoc)
 
-  const operation = Object.values(functions).find(
-    (potentialOperation) => potentialOperation.operationName === operationName,
+  const functionDefinition = Object.values(functions).find(
+    (potentialDefinition) => potentialDefinition.operationName === operationName,
   )
 
-  if (!operation) {
+  const fragmentDefinition = Object.values(fragments).find(
+    (potentialDefinition) => potentialDefinition.fragmentName === operationName,
+  )
+
+  const definition = functionDefinition || fragmentDefinition
+
+  if (!definition) {
     warn(`No operation named ${operationName} was found in the operations doc`)
     return
   }
@@ -701,7 +707,7 @@ const generateHandlerByOperationName = ({
     generate,
     netlifyGraphConfig,
     schema,
-    operationId: operation.id,
+    operationId: definition.id,
     handlerOptions,
   })
 }
