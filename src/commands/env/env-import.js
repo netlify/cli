@@ -15,7 +15,7 @@ const { exit, log, logJson, translateFromEnvelopeToMongo, translateFromMongoToEn
  * @returns {Promise<boolean>}
  */
 const envImport = async (fileName, options, command) => {
-  const { api, site } = command.netlify
+  const { api, cachedConfig, site } = command.netlify
   const siteId = site.id
 
   if (!siteId) {
@@ -37,10 +37,10 @@ const envImport = async (fileName, options, command) => {
     return false
   }
 
-  const siteData = await api.getSite({ siteId })
+  const { siteInfo } = cachedConfig
 
-  const importIntoService = siteData.use_envelope ? importIntoEnvelope : importIntoMongo
-  const finalEnv = await importIntoService({ api, importedEnv, options, siteData })
+  const importIntoService = siteInfo.use_envelope ? importIntoEnvelope : importIntoMongo
+  const finalEnv = await importIntoService({ api, importedEnv, options, siteInfo })
 
   // Return new environment variables of site if using json flag
   if (options.json) {
@@ -49,7 +49,7 @@ const envImport = async (fileName, options, command) => {
   }
 
   // List newly imported environment variables in a table
-  log(`site: ${siteData.name}`)
+  log(`site: ${siteInfo.name}`)
   const table = new AsciiTable(`Imported environment variables`)
 
   table.setHeading('Key', 'Value')
@@ -61,9 +61,9 @@ const envImport = async (fileName, options, command) => {
  * Updates the imported env in the site record
  * @returns {Promise<object>}
  */
-const importIntoMongo = async ({ api, importedEnv, options, siteData }) => {
-  const { env = {} } = siteData.build_settings
-  const siteId = siteData.id
+const importIntoMongo = async ({ api, importedEnv, options, siteInfo }) => {
+  const { env = {} } = siteInfo.build_settings
+  const siteId = siteInfo.id
 
   const finalEnv = options.replaceExisting ? importedEnv : { ...env, ...importedEnv }
 
@@ -86,10 +86,10 @@ const importIntoMongo = async ({ api, importedEnv, options, siteData }) => {
  * Saves the imported env in the Envelope service
  * @returns {Promise<object>}
  */
-const importIntoEnvelope = async ({ api, importedEnv, options, siteData }) => {
+const importIntoEnvelope = async ({ api, importedEnv, options, siteInfo }) => {
   // fetch env vars
-  const accountId = siteData.account_slug
-  const siteId = siteData.id
+  const accountId = siteInfo.account_slug
+  const siteId = siteInfo.id
   const dotEnvKeys = Object.keys(importedEnv)
   const envelopeVariables = await api.getEnvVars({ accountId, siteId })
   const envelopeKeys = envelopeVariables.map(({ key }) => key)

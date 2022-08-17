@@ -1,6 +1,8 @@
+const process = require('process')
+
 // @ts-check
 const { getBuildOptions, runBuild } = require('../../lib/build')
-const { error, exit, generateNetlifyGraphJWT, getToken } = require('../../utils')
+const { error, exit, generateNetlifyGraphJWT, getEnvelopeEnv, getToken } = require('../../utils')
 
 /**
  * @param {import('../../lib/build').BuildConfig} options
@@ -15,9 +17,14 @@ const checkOptions = ({ cachedConfig: { siteInfo = {} }, token }) => {
   }
 }
 
-const injectNetlifyGraphEnv = async function (command, { api, buildOptions, site }) {
-  const siteData = await api.getSite({ siteId: site.id })
-  const authlifyTokenId = siteData && siteData.authlify_token_id
+const injectEnv = async function (command, { api, buildOptions, context, site, siteInfo }) {
+  const isUsingEnvelope = siteInfo && siteInfo.use_envelope
+  const authlifyTokenId = siteInfo && siteInfo.authlify_token_id
+
+  const { env } = buildOptions.cachedConfig
+  if (isUsingEnvelope) {
+    buildOptions.cachedConfig.env = await getEnvelopeEnv({ api, context, env, siteInfo })
+  }
 
   if (authlifyTokenId) {
     const netlifyToken = await command.authenticate()
@@ -48,12 +55,12 @@ const injectNetlifyGraphEnv = async function (command, { api, buildOptions, site
  */
 const build = async (options, command) => {
   command.setAnalyticsPayload({ dry: options.dry })
-
   // Retrieve Netlify Build options
   const [token] = await getToken()
 
+  const { cachedConfig, siteInfo } = command.netlify
   const buildOptions = await getBuildOptions({
-    cachedConfig: command.netlify.cachedConfig,
+    cachedConfig,
     token,
     options,
   })
@@ -61,7 +68,8 @@ const build = async (options, command) => {
   if (!options.offline) {
     checkOptions(buildOptions)
     const { api, site } = command.netlify
-    await injectNetlifyGraphEnv(command, { api, site, buildOptions })
+    const context = { options }
+    await injectEnv(command, { api, buildOptions, context, site, siteInfo })
   }
 
   const { exitCode } = await runBuild(buildOptions)
@@ -77,8 +85,8 @@ const createBuildCommand = (program) =>
   program
     .command('build')
     .description('(Beta) Build on your local machine')
+    .option('--context <context>', 'Specify a build context', process.env.CONTEXT || 'production')
     .option('--dry', 'Dry run: show instructions without running them', false)
-    .option('--context [context]', 'Build context')
     .option('-o, --offline', 'disables any features that require network access', false)
     .addExamples(['netlify build'])
     .action(build)

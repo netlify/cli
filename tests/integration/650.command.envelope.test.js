@@ -19,10 +19,12 @@ const existingVar = {
   scopes: ['builds', 'functions'],
   values: [
     {
+      id: '1234',
       context: 'production',
       value: 'envelope-prod-value',
     },
     {
+      id: '2345',
       context: 'dev',
       value: 'envelope-dev-value',
     },
@@ -33,6 +35,7 @@ const otherVar = {
   scopes: ['builds', 'functions', 'runtime', 'post_processing'],
   values: [
     {
+      id: '3456',
       context: 'all',
       value: 'envelope-all-value',
     },
@@ -70,11 +73,31 @@ const routes = [
   },
   {
     path: 'accounts/test-account/env/EXISTING_VAR',
+    method: 'PATCH',
+    response: {},
+  },
+  {
+    path: 'accounts/test-account/env/EXISTING_VAR',
+    method: 'DELETE',
+    response: {},
+  },
+  {
+    path: 'accounts/test-account/env/EXISTING_VAR/value/1234',
     method: 'DELETE',
     response: {},
   },
   {
     path: 'accounts/test-account/env/OTHER_VAR',
+    method: 'PATCH',
+    response: {},
+  },
+  {
+    path: 'accounts/test-account/env/OTHER_VAR',
+    method: 'DELETE',
+    response: {},
+  },
+  {
+    path: 'accounts/test-account/env/OTHER_VAR/value/3456',
     method: 'DELETE',
     response: {},
   },
@@ -214,7 +237,7 @@ test('env:list --scope should return the keys and values for the given scope', a
   })
 })
 
-test('env:set --json should create and return new var', async (t) => {
+test('env:set --context=dev should create and return new var in the dev context', async (t) => {
   await withSiteBuilder('site-env', async (builder) => {
     await builder.buildAsync()
 
@@ -224,19 +247,86 @@ test('env:set --json should create and return new var', async (t) => {
       NEW_VAR: 'new-value',
     }
 
-    await withMockApi(routes, async ({ apiUrl }) => {
+    await withMockApi(routes, async ({ apiUrl, requests }) => {
       const cliResponse = await callCli(
-        ['env:set', '--json', 'NEW_VAR', 'new-value'],
+        ['env:set', 'NEW_VAR', 'new-value', '--context', 'dev', '--json'],
         getCLIOptions({ builder, apiUrl }),
         true,
       )
 
       t.deepEqual(cliResponse, finalEnv)
+
+      const postRequest = requests.find(
+        (request) => request.method === 'POST' && request.path === '/api/v1/accounts/test-account/env',
+      )
+
+      t.is(postRequest.body[0].key, 'NEW_VAR')
+      t.is(postRequest.body[0].values[0].context, 'dev')
+      t.is(postRequest.body[0].values[0].value, 'new-value')
     })
   })
 })
 
-test('env:set --json should update existing var', async (t) => {
+test('env:set --context=dev should update an existing var in the dev context', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    const finalEnv = {
+      EXISTING_VAR: 'envelope-new-value',
+      OTHER_VAR: 'envelope-all-value',
+    }
+
+    await withMockApi(routes, async ({ apiUrl, requests }) => {
+      const cliResponse = await callCli(
+        ['env:set', 'EXISTING_VAR', 'envelope-new-value', '--context', 'dev', '--json'],
+        getCLIOptions({ builder, apiUrl }),
+        true,
+      )
+
+      t.deepEqual(cliResponse, finalEnv)
+
+      const patchRequest = requests.find(
+        (request) => request.method === 'PATCH' && request.path === '/api/v1/accounts/test-account/env/EXISTING_VAR',
+      )
+
+      t.is(patchRequest.body.context, 'dev')
+      t.is(patchRequest.body.value, 'envelope-new-value')
+    })
+  })
+})
+
+test('env:set --context should support variadic options', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    const finalEnv = {
+      EXISTING_VAR: 'multiple',
+      OTHER_VAR: 'envelope-all-value',
+    }
+
+    await withMockApi(routes, async ({ apiUrl, requests }) => {
+      const cliResponse = await callCli(
+        ['env:set', 'EXISTING_VAR', 'multiple', '--context', 'deploy-preview', 'production', '--json'],
+        getCLIOptions({ builder, apiUrl }),
+        true,
+      )
+
+      t.deepEqual(cliResponse, finalEnv)
+
+      const patchRequests = requests.filter(
+        (request) => request.method === 'PATCH' && request.path === '/api/v1/accounts/test-account/env/EXISTING_VAR',
+      )
+
+      t.is(patchRequests.length, 2)
+      t.is(patchRequests[0].body.context, 'deploy-preview')
+      t.is(patchRequests[0].body.value, 'multiple')
+      t.is(patchRequests[1].body.context, 'production')
+      t.is(patchRequests[1].body.value, 'multiple')
+    })
+  })
+})
+
+test('env:set without flags should update existing var', async (t) => {
   await withSiteBuilder('site-env', async (builder) => {
     await builder.buildAsync()
 
@@ -245,7 +335,7 @@ test('env:set --json should update existing var', async (t) => {
       OTHER_VAR: 'envelope-all-value',
     }
 
-    await withMockApi(routes, async ({ apiUrl }) => {
+    await withMockApi(routes, async ({ apiUrl, requests }) => {
       const cliResponse = await callCli(
         ['env:set', '--json', 'EXISTING_VAR', 'new-envelope-value'],
         getCLIOptions({ builder, apiUrl }),
@@ -253,6 +343,63 @@ test('env:set --json should update existing var', async (t) => {
       )
 
       t.deepEqual(cliResponse, finalEnv)
+
+      const putRequest = requests.find(
+        (request) => request.method === 'PUT' && request.path === '/api/v1/accounts/test-account/env/EXISTING_VAR',
+      )
+
+      t.is(putRequest.body.key, 'EXISTING_VAR')
+      t.is(putRequest.body.values[0].context, 'all')
+      t.is(putRequest.body.values[0].value, 'new-envelope-value')
+    })
+  })
+})
+
+test('env:set --scope should set the scope of an existing env var without needing a value', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    const finalEnv = {
+      EXISTING_VAR: 'envelope-dev-value',
+      OTHER_VAR: 'envelope-all-value',
+    }
+
+    await withMockApi(routes, async ({ apiUrl, requests }) => {
+      const cliResponse = await callCli(
+        ['env:set', 'EXISTING_VAR', '--scope', 'runtime', 'post_processing', '--json'],
+        getCLIOptions({ builder, apiUrl }),
+        true,
+      )
+
+      t.deepEqual(cliResponse, finalEnv)
+
+      const putRequest = requests.find(
+        (request) => request.method === 'PUT' && request.path === '/api/v1/accounts/test-account/env/EXISTING_VAR',
+      )
+
+      t.is(putRequest.body.values[0].context, 'production')
+      t.is(putRequest.body.values[1].context, 'dev')
+      t.is(putRequest.body.scopes[0], 'runtime')
+      t.is(putRequest.body.scopes[1], 'post_processing')
+    })
+  })
+})
+
+test('env:set should error when --scope and --context are passed on an existing env var', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      const { stderr: cliResponse } = await t.throwsAsync(
+        callCli(
+          ['env:set', 'EXISTING_VAR', '--scope', 'functions', '--context', 'production'],
+          getCLIOptions({ builder, apiUrl }),
+        ),
+      )
+
+      t.true(
+        cliResponse.includes(`Setting the context and scope at the same time on an existing env var is not allowed`),
+      )
     })
   })
 })
@@ -293,27 +440,6 @@ test('env:import --json should import new vars and override existing vars', asyn
   })
 })
 
-test('env:set --json should be able to set var with empty value', async (t) => {
-  await withSiteBuilder('site-env', async (builder) => {
-    await builder.buildAsync()
-
-    const finalEnv = {
-      EXISTING_VAR: '',
-      OTHER_VAR: 'envelope-all-value',
-    }
-
-    await withMockApi(routes, async ({ apiUrl }) => {
-      const cliResponse = await callCli(
-        ['env:set', '--json', 'EXISTING_VAR', ''],
-        getCLIOptions({ builder, apiUrl }),
-        true,
-      )
-
-      t.deepEqual(cliResponse, finalEnv)
-    })
-  })
-})
-
 test('env:unset --json should remove existing variable', async (t) => {
   await withSiteBuilder('site-env', async (builder) => {
     await builder.buildAsync()
@@ -322,7 +448,7 @@ test('env:unset --json should remove existing variable', async (t) => {
       OTHER_VAR: 'envelope-all-value',
     }
 
-    await withMockApi(routes, async ({ apiUrl }) => {
+    await withMockApi(routes, async ({ apiUrl, requests }) => {
       const cliResponse = await callCli(
         ['env:unset', '--json', 'EXISTING_VAR'],
         getCLIOptions({ builder, apiUrl }),
@@ -330,6 +456,59 @@ test('env:unset --json should remove existing variable', async (t) => {
       )
 
       t.deepEqual(cliResponse, finalEnv)
+
+      const deleteRequest = requests.find((request) => request.method === 'DELETE')
+      t.is(deleteRequest.path, '/api/v1/accounts/test-account/env/EXISTING_VAR')
+    })
+  })
+})
+
+test('env:unset --context should remove existing variable value', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    const finalEnv = {
+      OTHER_VAR: 'envelope-all-value',
+    }
+
+    await withMockApi(routes, async ({ apiUrl, requests }) => {
+      const cliResponse = await callCli(
+        ['env:unset', 'EXISTING_VAR', '--context', 'production', '--json'],
+        getCLIOptions({ builder, apiUrl }),
+        true,
+      )
+
+      t.deepEqual(cliResponse, finalEnv)
+
+      const deleteRequest = requests.find((request) => request.method === 'DELETE')
+      t.is(deleteRequest.path, '/api/v1/accounts/test-account/env/EXISTING_VAR/value/1234')
+    })
+  })
+})
+
+test('env:unset --context should split up an `all` value', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    const finalEnv = {}
+
+    await withMockApi(routes, async ({ apiUrl, requests }) => {
+      const cliResponse = await callCli(
+        ['env:unset', 'OTHER_VAR', '--context', 'branch-deploy', '--json'],
+        getCLIOptions({ builder, apiUrl }),
+        true,
+      )
+
+      t.deepEqual(cliResponse, finalEnv)
+
+      const deleteRequest = requests.find((request) => request.method === 'DELETE')
+      t.is(deleteRequest.path, '/api/v1/accounts/test-account/env/OTHER_VAR/value/3456')
+
+      const patchRequests = requests.filter(
+        (request) => request.method === 'PATCH' && '/api/v1/accounts/test-account/env/OTHER_VAR',
+      )
+
+      t.is(patchRequests.length, 3)
     })
   })
 })
