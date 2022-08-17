@@ -22,7 +22,7 @@ const getTable = ({ environment, hideValues, scopesColumn }) => {
         // Key
         key,
         // Value
-        hideValues ? MASK : variable.value,
+        hideValues ? MASK : variable.value || ' ',
         // Scope
         scopesColumn && getHumanReadableScopes(variable.scopes),
       ].filter(Boolean),
