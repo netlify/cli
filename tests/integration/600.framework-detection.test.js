@@ -293,11 +293,10 @@ test('should pass framework-info env to framework sub process', async (t) => {
     await builder
       .withPackageJson({
         packageJson: {
-          dependencies: { gatsby: '^3.0.0' },
-          scripts: { develop: 'node -p process.env.GATSBY_LOGGER' },
+          dependencies: { nuxt3: '^2.0.0' },
+          scripts: { dev: 'node -p process.env.NODE_VERSION' },
         },
       })
-      .withContentFile({ path: 'gatsby-config.js', content: '' })
       .buildAsync()
 
     // a failure is expected since this is not a true Gatsby project
