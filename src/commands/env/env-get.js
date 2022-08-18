@@ -60,16 +60,22 @@ const createEnvGetCommand = (program) =>
   program
     .command('env:get')
     .argument('<name>', 'Environment variable name')
-    .addOption(
-      new Option('-c, --context <context>', 'Specify a deploy context')
-        .choices(['production', 'deploy-preview', 'branch-deploy', 'dev'])
-        .default('dev'),
+    .option(
+      '-c, --context <context>',
+      'Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")',
+      'dev',
     )
     .addOption(
       new Option('-s, --scope <scope>', 'Specify a scope')
         .choices(['builds', 'functions', 'post_processing', 'runtime', 'any'])
         .default('any'),
     )
+    .addExamples([
+      'netlify env:get MY_VAR # get value for MY_VAR in dev context',
+      'netlify env:get --context production',
+      'netlify env:get --context branch:staging',
+      'netlify env:get --scope functions',
+    ])
     .description('Get resolved value of specified environment variable (includes netlify.toml)')
     .action(async (name, options, command) => {
       await envGet(name, options, command)
