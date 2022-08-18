@@ -12,6 +12,7 @@ export type FrameworkInfo = {
   name: FrameworkNames
   staticAssetsDirectory: string
   env: NodeJS.ProcessEnv
+  plugins?: string[]
 }
 
 export type BaseServerSettings = {
@@ -30,6 +31,7 @@ export type BaseServerSettings = {
   framework?: string
   env?: NodeJS.ProcessEnv
   pollingStrategies?: string[]
+  plugins?: string[]
 }
 
 export type ServerSettings = BaseServerSettings & {
