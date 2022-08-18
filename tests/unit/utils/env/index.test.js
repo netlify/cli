@@ -2,7 +2,7 @@ const test = require('ava')
 
 const {
   filterEnvBySource,
-  findValueFromContext,
+  findValueInValues,
   formatEnvelopeData,
   getHumanReadableScopes,
   translateFromEnvelopeToMongo,
@@ -20,8 +20,24 @@ test('should find a value from a given context', (t) => {
       value: 'bar',
     },
   ]
-  const { value } = findValueFromContext(values, 'dev')
+  const { value } = findValueInValues(values, 'dev')
   t.is(value, 'bar')
+})
+
+test('should find a value from a given branch', (t) => {
+  const values = [
+    {
+      context: 'branch',
+      context_parameter: 'staging',
+      value: 'foo',
+    },
+    {
+      context: 'dev',
+      value: 'bar',
+    },
+  ]
+  const { value } = findValueInValues(values, 'branch:staging')
+  t.is(value, 'foo')
 })
 
 test('should filter an env from a given source', (t) => {

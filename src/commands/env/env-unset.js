@@ -1,9 +1,7 @@
 const { Option } = require('commander')
 
 // @ts-check
-const { chalk, error, log, logJson, translateFromEnvelopeToMongo } = require('../../utils')
-
-const AVAILABLE_CONTEXTS = ['production', 'deploy-preview', 'branch-deploy', 'dev']
+const { AVAILABLE_CONTEXTS, chalk, error, log, logJson, translateFromEnvelopeToMongo } = require('../../utils')
 
 /**
  * The env:unset command
