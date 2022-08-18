@@ -48,7 +48,8 @@ const envUnset = async (key, options, command) => {
     return false
   }
 
-  log(`Unset environment variable ${chalk.yellow(key)} in the ${chalk.magenta(context || 'all')} context`)
+  const contextType = AVAILABLE_CONTEXTS.includes(context || 'all') ? 'context' : 'branch'
+  log(`Unset environment variable ${chalk.yellow(key)} in the ${chalk.magenta(context || 'all')} ${contextType}`)
 }
 
 /**

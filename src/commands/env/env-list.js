@@ -5,7 +5,16 @@ const { Option } = require('commander')
 const inquirer = require('inquirer')
 const isEmpty = require('lodash/isEmpty')
 
-const { chalk, error, getEnvelopeEnv, getHumanReadableScopes, log, logJson, normalizeContext } = require('../../utils')
+const {
+  AVAILABLE_CONTEXTS,
+  chalk,
+  error,
+  getEnvelopeEnv,
+  getHumanReadableScopes,
+  log,
+  logJson,
+  normalizeContext,
+} = require('../../utils')
 
 const [logUpdatePromise, ansiEscapesPromise] = [import('log-update'), import('ansi-escapes')]
 
@@ -77,7 +86,8 @@ const envList = async (options, command) => {
   }
 
   const forSite = `for site ${chalk.green(siteInfo.name)}`
-  const withContext = isUsingEnvelope ? `in the ${chalk.magenta(options.context)} context` : ''
+  const contextType = AVAILABLE_CONTEXTS.includes(context) ? 'context' : 'branch'
+  const withContext = isUsingEnvelope ? `in the ${chalk.magenta(options.context)} ${contextType}` : ''
   const withScope = isUsingEnvelope && scope !== 'any' ? `and ${chalk.yellow(options.scope)} scope` : ''
   if (isEmpty(environment)) {
     log(`No environment variables set ${forSite} ${withContext} ${withScope}`)

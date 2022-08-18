@@ -59,10 +59,11 @@ const envSet = async (key, value, options, command) => {
   }
 
   const withScope = scope ? ` scoped to ${chalk.white(scope)}` : ''
+  const contextType = AVAILABLE_CONTEXTS.includes(context || 'all') ? 'context' : 'branch'
   log(
     `Set environment variable ${chalk.yellow(`${key}${value ? '=' : ''}${value}`)}${withScope} in the ${chalk.magenta(
       context || 'all',
-    )} context`,
+    )} ${contextType}`,
   )
 }
 
