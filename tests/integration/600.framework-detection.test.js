@@ -1,5 +1,3 @@
-const { cwd } = require('process')
-
 // eslint-disable-next-line ava/use-test
 const avaTest = require('ava')
 const { isCI } = require('ci-info')
@@ -150,8 +148,6 @@ test('should throw when forcing a non supported framework', async (t) => {
 
 test('should detect a known framework', async (t) => {
   await withSiteBuilder('site-with-cra', async (builder) => {
-    console.log('----> CWD debug', builder.directory, cwd())
-
     await builder
       .withPackageJson({
         packageJson: { dependencies: { 'react-scripts': '1.0.0' }, scripts: { start: 'react-scripts start' } },
