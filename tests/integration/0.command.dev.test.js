@@ -1,5 +1,7 @@
 // Handlers are meant to be async outside tests
+const { promises: fs } = require('fs')
 const http = require('http')
+const { join } = require('path')
 
 // eslint-disable-next-line ava/use-test
 const avaTest = require('ava')
@@ -350,6 +352,46 @@ test('should generate an ETag for static assets', async (t) => {
       t.truthy(res3.headers.get('etag'))
       t.is(res3.status, 200)
       t.truthy(await res3.text())
+    })
+  })
+})
+
+test('should add `.netlify` to an existing `.gitignore` file', async (t) => {
+  await withSiteBuilder('site-with-gitignore', async (builder) => {
+    const existingGitIgnore = ['.vscode/', 'node_modules/', '!node_modules/cool_module']
+
+    await builder
+      .withContentFile({
+        path: '.gitignore',
+        content: existingGitIgnore.join('\n'),
+      })
+      .withContentFile({
+        path: 'index.html',
+        content: '<html><h1>Hi',
+      })
+      .buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async () => {
+      const contents = await fs.readFile(join(builder.directory, '.gitignore'), 'utf8')
+
+      t.deepEqual(contents, [...existingGitIgnore, '# Local Netlify folder', '.netlify', ''].join('\n'))
+    })
+  })
+})
+
+test('should create a `.gitignore` file with `.netlify`', async (t) => {
+  await withSiteBuilder('site-with-no-gitignore', async (builder) => {
+    await builder
+      .withContentFile({
+        path: 'index.html',
+        content: '<html><h1>Hi',
+      })
+      .buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async () => {
+      const contents = await fs.readFile(join(builder.directory, '.gitignore'), 'utf8')
+
+      t.deepEqual(contents, ['# Local Netlify folder', '.netlify', ''].join('\n'))
     })
   })
 })
