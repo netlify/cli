@@ -318,7 +318,7 @@ const refetchAndGenerateFromOneGraph = async (input) => {
     return
   }
 
-  generateFunctionsFile({
+  await generateFunctionsFile({
     config,
     logger,
     netlifyGraphConfig,
@@ -619,7 +619,7 @@ ${JSON.stringify(payload, null, 2)}`)
         return
       }
 
-      const files = generateHandlerByOperationId({
+      const files = await generateHandlerByOperationId({
         netlifyGraphConfig,
         schema,
         operationId: payload.operationId,

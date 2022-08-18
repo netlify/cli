@@ -550,9 +550,9 @@ const readGraphQLSchemaFile = (netlifyGraphConfig) => {
  * @param {string} input.operationsDoc The document containing the operation with operationId and any fragment dependency to use when generating the handler
  * @param {object} input.handlerOptions The options to use when generating the handler
  * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
- * @returns {{exportedFiles: CodegenHelpers.ExportedFile[]; operation: GraphQL.OperationDefinitionNode;} | undefined} The generated files
+ * @returns {Promise<{exportedFiles: CodegenHelpers.ExportedFile[]; operation: GraphQL.OperationDefinitionNode;} | undefined>} The generated files
  */
-const generateHandlerSourceByOperationId = ({
+const generateHandlerSourceByOperationId = async ({
   generate,
   handlerOptions,
   netlifyGraphConfig,
@@ -571,7 +571,7 @@ const generateHandlerSourceByOperationId = ({
     operationsDoc,
   }
 
-  const result = NetlifyGraph.generateCustomHandlerSource(generateHandlerPayload)
+  const result = await NetlifyGraph.generateCustomHandlerSource(generateHandlerPayload)
 
   return result
 }
@@ -585,15 +585,15 @@ const generateHandlerSourceByOperationId = ({
  * @param {string} input.operationId The operationId to use when generating the handler
  * @param {object} input.handlerOptions The options to use when generating the handler
  * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
- * @returns {Array<{filePath: string, name:string, prettierSuccess: boolean}> | undefined} An array of the generated handler filepaths
+ * @returns {Promise<Array<{filePath: string, name:string, prettierSuccess: boolean}> | undefined>} An array of the generated handler filepaths
  */
-const generateHandlerByOperationId = ({ generate, handlerOptions, netlifyGraphConfig, operationId, schema }) => {
+const generateHandlerByOperationId = async ({ generate, handlerOptions, netlifyGraphConfig, operationId, schema }) => {
   let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
   if (currentOperationsDoc.trim().length === 0) {
     currentOperationsDoc = NetlifyGraph.defaultExampleOperationsDoc
   }
 
-  const result = generateHandlerSourceByOperationId({
+  const result = await generateHandlerSourceByOperationId({
     generate,
     handlerOptions,
     netlifyGraphConfig,
@@ -669,9 +669,9 @@ const generateHandlerByOperationId = ({ generate, handlerOptions, netlifyGraphCo
  * @param {string} input.operationName The name of the operation to use when generating the handler
  * @param {object} input.handlerOptions The options to use when generating the handler
  * @param {(message: string) => void} input.logger A function that if provided will be used to log messages
- * @returns
+ * @returns {Promise<void>}
  */
-const generateHandlerByOperationName = ({
+const generateHandlerByOperationName = async ({
   generate,
   handlerOptions,
   logger,
@@ -696,7 +696,7 @@ const generateHandlerByOperationName = ({
     return
   }
 
-  generateHandlerByOperationId({
+  await generateHandlerByOperationId({
     logger,
     generate,
     netlifyGraphConfig,
