@@ -88,8 +88,8 @@ const createBuildCommand = (program) =>
     .option(
       '--context <context>',
       'Specify a build context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")',
-      process.env.CONTEXT || 'production',
       normalizeContext,
+      process.env.CONTEXT || 'production',
     )
     .option('--dry', 'Dry run: show instructions without running them', false)
     .option('-o, --offline', 'disables any features that require network access', false)

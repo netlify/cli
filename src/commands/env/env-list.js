@@ -125,8 +125,8 @@ const createEnvListCommand = (program) =>
     .option(
       '-c, --context <context>',
       'Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")',
-      'dev',
       normalizeContext,
+      'dev',
     )
     .addOption(
       new Option('-s, --scope <scope>', 'Specify a scope')

@@ -679,8 +679,8 @@ const createDevCommand = (program) => {
     .option(
       '--context <context>',
       'Specify a deploy context or branch for environment variables (contexts: "production", "deploy-preview", "branch-deploy", "dev")',
-      'dev',
       normalizeContext,
+      'dev',
     )
     .option('-p ,--port <port>', 'port of netlify dev', (value) => Number.parseInt(value))
     .option('--targetPort <port>', 'port of target app server', (value) => Number.parseInt(value))

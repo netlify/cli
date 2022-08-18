@@ -1,18 +1,21 @@
-const AVAILABLE_CONTEXTS = ['production', 'deploy-preview', 'branch-deploy', 'dev']
+const AVAILABLE_CONTEXTS = ['all', 'production', 'deploy-preview', 'branch-deploy', 'dev']
+const AVAILABLE_SCOPES = ['builds', 'functions', 'runtime', 'post_processing']
 
 /**
- * @param {string} context - The deploy context or branch of the environment variable value
- * @returns {string} The normalized context or branch name
+ * @param {string|undefined} context - The deploy context or branch of the environment variable value
+ * @returns {Array<string|undefined>} The normalized context or branch name
  */
 const normalizeContext = (context) => {
+  if (!context) {
+    return context
+  }
   const CONTEXT_SYNONYMS = {
     bd: 'branch-deploy',
-    development: 'dev',
     dp: 'deploy-preview',
     prod: 'production',
   }
   context = context.replace(/^branch:/, '')
-  if (context in CONTEXT_SYNONYMS) {
+  if (CONTEXT_SYNONYMS[context]) {
     context = CONTEXT_SYNONYMS[context]
   }
   return context
@@ -24,16 +27,14 @@ const normalizeContext = (context) => {
  * @param {string} context - The deploy context or branch of the environment variable value
  * @returns {object<context: enum<dev,branch-deploy,deploy-preview,production,branch>, context_parameter: <string>, value: string>} The matching environment variable value object
  */
-const findValueInValues = (values, context) => {
-  context = normalizeContext(context)
-  return values.find((val) => {
+const findValueInValues = (values, context) =>
+  values.find((val) => {
     if (!AVAILABLE_CONTEXTS.includes(context)) {
       // the "context" option passed in is actually the name of a branch
       return ['branch', 'all'].includes(val.context) && val.context_parameter === context
     }
     return [context, 'all'].includes(val.context)
   })
-}
 
 /**
  * Finds environment variables that match a given source
@@ -159,7 +160,7 @@ const getEnvelopeEnv = async ({ api, context = 'dev', env, key = '', scope = 'an
  * @returns {string} A human-readable, comma-separated list of scopes
  */
 const getHumanReadableScopes = (scopes) => {
-  const AVAILABLE_SCOPES = {
+  const HUMAN_SCOPES = {
     builds: 'Builds',
     functions: 'Functions',
     post_processing: 'Post processing',
@@ -170,11 +171,11 @@ const getHumanReadableScopes = (scopes) => {
     // env vars specified in netlify.toml are present in the `builds` and `post_processing` scope
     return 'Builds, Post processing'
   }
-  if (scopes.length === Object.keys(AVAILABLE_SCOPES).length) {
+  if (scopes.length === Object.keys(HUMAN_SCOPES).length) {
     // shorthand instead of listing every available scope
     return 'All'
   }
-  return scopes.map((scope) => AVAILABLE_SCOPES[scope]).join(', ')
+  return scopes.map((scope) => HUMAN_SCOPES[scope]).join(', ')
 }
 
 /**
@@ -219,6 +220,7 @@ const translateFromEnvelopeToMongo = (envVars = [], context = 'dev') =>
 
 module.exports = {
   AVAILABLE_CONTEXTS,
+  AVAILABLE_SCOPES,
   findValueInValues,
   filterEnvBySource,
   formatEnvelopeData,

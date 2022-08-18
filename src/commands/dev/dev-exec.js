@@ -34,8 +34,8 @@ const createDevExecCommand = (program) =>
     .option(
       '--context <context>',
       'Specify a deploy context or branch for environment variables (contexts: "production", "deploy-preview", "branch-deploy", "dev")',
-      'dev',
       normalizeContext,
+      'dev',
     )
     .description(
       'Exec command\nRuns a command within the netlify dev environment, e.g. with env variables from any installed addons',
