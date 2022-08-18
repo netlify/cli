@@ -113,7 +113,9 @@ const unsetInEnvelope = async ({ api, context, key, siteInfo }) => {
           const newContexts = AVAILABLE_CONTEXTS.filter((ctx) => !context.includes(ctx))
           const allValue = values[0].value
           await Promise.all(
-            newContexts.map((ctx) => api.setEnvVarValue({ ...params, body: { context: ctx, value: allValue } })),
+            newContexts
+              .filter((ctx) => ctx !== 'all')
+              .map((ctx) => api.setEnvVarValue({ ...params, body: { context: ctx, value: allValue } })),
           )
         }
       }
