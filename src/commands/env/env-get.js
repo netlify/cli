@@ -1,7 +1,7 @@
 // @ts-check
 const { Option } = require('commander')
 
-const { chalk, error, getEnvelopeEnv, log, logJson, normalizeContext } = require('../../utils')
+const { AVAILABLE_CONTEXTS, chalk, error, getEnvelopeEnv, log, logJson, normalizeContext } = require('../../utils')
 
 /**
  * The env:get command
@@ -42,7 +42,8 @@ const envGet = async (name, options, command) => {
   }
 
   if (!value) {
-    const withContext = `in the ${chalk.magenta(context)} context`
+    const contextType = AVAILABLE_CONTEXTS.includes(context) ? 'context' : 'branch'
+    const withContext = `in the ${chalk.magenta(context)} ${contextType}`
     const withScope = scope === 'any' ? '' : ` and the ${chalk.magenta(scope)} scope`
     log(`No value set ${withContext}${withScope} for environment variable ${chalk.yellow(name)}`)
     return false
