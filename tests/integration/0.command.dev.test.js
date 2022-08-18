@@ -372,9 +372,10 @@ test('should add `.netlify` to an existing `.gitignore` file', async (t) => {
       .buildAsync()
 
     await withDevServer({ cwd: builder.directory }, async () => {
-      const contents = await fs.readFile(join(builder.directory, '.gitignore'), 'utf8')
+      const gitignore = await fs.readFile(join(builder.directory, '.gitignore'), 'utf8')
+      const entries = gitignore.split('\n')
 
-      t.deepEqual(contents, [...existingGitIgnore, '# Local Netlify folder', '.netlify', ''].join('\n'))
+      t.true(entries.includes('.netlify'))
     })
   })
 })
@@ -389,9 +390,10 @@ test('should create a `.gitignore` file with `.netlify`', async (t) => {
       .buildAsync()
 
     await withDevServer({ cwd: builder.directory }, async () => {
-      const contents = await fs.readFile(join(builder.directory, '.gitignore'), 'utf8')
+      const gitignore = await fs.readFile(join(builder.directory, '.gitignore'), 'utf8')
+      const entries = gitignore.split('\n')
 
-      t.deepEqual(contents, ['# Local Netlify folder', '.netlify', ''].join('\n'))
+      t.true(entries.includes('.netlify'))
     })
   })
 })
