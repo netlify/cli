@@ -10,7 +10,6 @@ const normalizeContext = (context) => {
     return context
   }
   const CONTEXT_SYNONYMS = {
-    bd: 'branch-deploy',
     dp: 'deploy-preview',
     prod: 'production',
   }
@@ -88,7 +87,8 @@ const fetchEnvelopeItems = async function ({ accountId, api, key, siteId }) {
  *     value: 'bar',
  *   },
  *   BAZ: {
- *     context: 'dev',
+ *     context: 'branch',
+ *     branch: 'staging',
  *     scopes: ['runtime'],
  *     sources: ['account'],
  *     value: 'bang',
@@ -105,11 +105,12 @@ const formatEnvelopeData = ({ context = 'dev', envelopeItems = [], scope = 'any'
     .sort((left, right) => (left.key.toLowerCase() < right.key.toLowerCase() ? -1 : 1))
     // format the data
     .reduce((acc, cur) => {
-      const { context: ctx, value } = findValueInValues(cur.values, context)
+      const { context: ctx, context_parameter: branch, value } = findValueInValues(cur.values, context)
       return {
         ...acc,
         [cur.key]: {
           context: ctx,
+          branch,
           scopes: cur.scopes,
           sources: [source],
           value,
@@ -186,7 +187,7 @@ const getHumanReadableScopes = (scopes) => {
 const translateFromMongoToEnvelope = (env = {}) => {
   const envVars = Object.entries(env).map(([key, value]) => ({
     key,
-    scopes: ['builds', 'functions', 'runtime', 'post_processing'],
+    scopes: AVAILABLE_SCOPES,
     values: [
       {
         context: 'all',
@@ -208,7 +209,7 @@ const translateFromEnvelopeToMongo = (envVars = [], context = 'dev') =>
   envVars
     .sort((left, right) => (left.key.toLowerCase() < right.key.toLowerCase() ? -1 : 1))
     .reduce((acc, cur) => {
-      const envVar = cur.values.find((val) => [context, 'all'].includes(val.context))
+      const envVar = cur.values.find((val) => [context, 'all'].includes(val.context_parameter || val.context))
       if (envVar && envVar.value) {
         return {
           ...acc,
