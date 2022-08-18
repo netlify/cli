@@ -13,10 +13,10 @@ const normalizeContext = (context) => {
     dp: 'deploy-preview',
     prod: 'production',
   }
-  context = context.replace(/^branch:/, '')
-  if (CONTEXT_SYNONYMS[context]) {
+  if (context in CONTEXT_SYNONYMS) {
     context = CONTEXT_SYNONYMS[context]
   }
+  context = context.replace(/^branch:/, '')
   return context
 }
 
