@@ -1,7 +1,7 @@
 // @ts-check
 const { Option } = require('commander')
 
-const { chalk, error, getEnvelopeEnv, log, logJson } = require('../../utils')
+const { chalk, error, getEnvelopeEnv, log, logJson, normalizeContext } = require('../../utils')
 
 /**
  * The env:get command
@@ -64,6 +64,7 @@ const createEnvGetCommand = (program) =>
       '-c, --context <context>',
       'Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")',
       'dev',
+      normalizeContext,
     )
     .addOption(
       new Option('-s, --scope <scope>', 'Specify a scope')

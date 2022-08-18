@@ -2,7 +2,7 @@ const process = require('process')
 
 // @ts-check
 const { getBuildOptions, runBuild } = require('../../lib/build')
-const { error, exit, generateNetlifyGraphJWT, getEnvelopeEnv, getToken } = require('../../utils')
+const { error, exit, generateNetlifyGraphJWT, getEnvelopeEnv, getToken, normalizeContext } = require('../../utils')
 
 /**
  * @param {import('../../lib/build').BuildConfig} options
@@ -85,7 +85,12 @@ const createBuildCommand = (program) =>
   program
     .command('build')
     .description('(Beta) Build on your local machine')
-    .option('--context <context>', 'Specify a build context', process.env.CONTEXT || 'production')
+    .option(
+      '--context <context>',
+      'Specify a build context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")',
+      process.env.CONTEXT || 'production',
+      normalizeContext,
+    )
     .option('--dry', 'Dry run: show instructions without running them', false)
     .option('-o, --offline', 'disables any features that require network access', false)
     .addExamples(['netlify build'])

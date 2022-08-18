@@ -5,7 +5,7 @@ const { Option } = require('commander')
 const inquirer = require('inquirer')
 const isEmpty = require('lodash/isEmpty')
 
-const { chalk, error, getEnvelopeEnv, getHumanReadableScopes, log, logJson } = require('../../utils')
+const { chalk, error, getEnvelopeEnv, getHumanReadableScopes, log, logJson, normalizeContext } = require('../../utils')
 
 const [logUpdatePromise, ansiEscapesPromise] = [import('log-update'), import('ansi-escapes')]
 
@@ -126,6 +126,7 @@ const createEnvListCommand = (program) =>
       '-c, --context <context>',
       'Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")',
       'dev',
+      normalizeContext,
     )
     .addOption(
       new Option('-s, --scope <scope>', 'Specify a scope')

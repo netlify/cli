@@ -23,6 +23,7 @@ const {
   identify,
   log,
   normalizeConfig,
+  normalizeContext,
   openBrowser,
   padLeft,
   pollForToken,
@@ -474,7 +475,7 @@ class BaseCommand extends Command {
         config: options.config,
         cwd,
         context:
-          options.context ||
+          normalizeContext(options.context) ||
           process.env.CONTEXT ||
           // Dev commands have a default context of `dev`, otherwise we let netlify/config handle default behavior
           (['dev', 'dev:exec'].includes(this.name()) ? 'dev' : undefined),
