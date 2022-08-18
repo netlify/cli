@@ -23,7 +23,6 @@ const {
   identify,
   log,
   normalizeConfig,
-  normalizeContext,
   openBrowser,
   padLeft,
   pollForToken,
