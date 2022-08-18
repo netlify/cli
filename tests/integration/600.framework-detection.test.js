@@ -27,7 +27,7 @@ test('should default to process.cwd() and static server', async (t) => {
       const response = await got(url).text()
       t.is(response, content)
 
-      t.snapshot(normalize(output))
+      t.snapshot(normalize(output, { duration: true, filePath: true }))
     })
   })
 })
@@ -45,7 +45,7 @@ test('should use static server when --dir flag is passed', async (t) => {
       const response = await got(url).text()
       t.is(response, content)
 
-      t.snapshot(normalize(output))
+      t.snapshot(normalize(output, { duration: true, filePath: true }))
     })
   })
 })
@@ -64,7 +64,7 @@ test('should use static server when framework is set to #static', async (t) => {
       const response = await got(url).text()
       t.is(response, content)
 
-      t.snapshot(normalize(output))
+      t.snapshot(normalize(output, { duration: true, filePath: true }))
     })
   })
 })
@@ -84,7 +84,7 @@ test('should log the command if using static server and `command` is configured'
         const response = await got(url).text()
         t.is(response, content)
 
-        t.snapshot(normalize(output))
+        t.snapshot(normalize(output, { duration: true, filePath: true }))
       },
     )
   })
@@ -105,7 +105,7 @@ test('should warn if using static server and `targetPort` is configured', async 
         const response = await got(url).text()
         t.is(response, content)
 
-        t.snapshot(normalize(output))
+        t.snapshot(normalize(output, { duration: true, filePath: true }))
       },
     )
   })
@@ -123,7 +123,7 @@ test('should run `command` when both `command` and `targetPort` are configured',
         true,
       ),
     )
-    t.snapshot(normalize(error.stdout))
+    t.snapshot(normalize(error.stdout, { duration: true, filePath: true }))
   })
 })
 
@@ -133,7 +133,7 @@ test('should force a specific framework when configured', async (t) => {
 
     // a failure is expected since this is not a true create-react-app project
     const error = await t.throwsAsync(() => withDevServer({ cwd: builder.directory }, () => {}, true))
-    t.snapshot(normalize(error.stdout))
+    t.snapshot(normalize(error.stdout, { duration: true, filePath: true }))
   })
 })
 
@@ -142,7 +142,7 @@ test('should throw when forcing a non supported framework', async (t) => {
     await builder.withNetlifyToml({ config: { dev: { framework: 'to-infinity-and-beyond-js' } } }).buildAsync()
 
     const error = await t.throwsAsync(() => withDevServer({ cwd: builder.directory }, () => {}, true))
-    t.snapshot(normalize(error.stdout))
+    t.snapshot(normalize(error.stdout, { duration: true, filePath: true }))
   })
 })
 
@@ -156,7 +156,7 @@ test('should detect a known framework', async (t) => {
 
     // a failure is expected since this is not a true create-react-app project
     const error = await t.throwsAsync(() => withDevServer({ cwd: builder.directory }, () => {}, true))
-    t.snapshot(normalize(error.stdout))
+    t.snapshot(normalize(error.stdout, { duration: true, filePath: true }))
   })
 })
 
@@ -167,7 +167,7 @@ test('should throw if framework=#custom but command is missing', async (t) => {
     const error = await t.throwsAsync(() =>
       withDevServer({ cwd: builder.directory, args: ['--targetPort', '3000'] }, () => {}, true),
     )
-    t.snapshot(normalize(error.stdout))
+    t.snapshot(normalize(error.stdout, { duration: true, filePath: true }))
   })
 })
 
@@ -178,7 +178,7 @@ test('should throw if framework=#custom but targetPort is missing', async (t) =>
     const error = await t.throwsAsync(() =>
       withDevServer({ cwd: builder.directory, args: ['--command', 'echo hello'] }, () => {}, true),
     )
-    t.snapshot(normalize(error.stdout))
+    t.snapshot(normalize(error.stdout, { duration: true, filePath: true }))
   })
 })
 
@@ -193,7 +193,7 @@ test('should start custom command if framework=#custom, command and targetPort a
         true,
       ),
     )
-    t.snapshot(normalize(error.stdout))
+    t.snapshot(normalize(error.stdout, { duration: true, filePath: true }))
   })
 })
 
@@ -218,7 +218,7 @@ test(`should print specific error when command doesn't exist`, async (t) => {
         true,
       ),
     )
-    t.snapshot(normalize(error.stdout))
+    t.snapshot(normalize(error.stdout, { duration: true, filePath: true }))
   })
 })
 
@@ -247,7 +247,7 @@ test('should prompt when multiple frameworks are detected', async (t) => {
 
       await childProcess
     })
-    t.snapshot(normalize(error.stdout))
+    t.snapshot(normalize(error.stdout, { duration: true, filePath: true }))
   })
 })
 
@@ -263,7 +263,7 @@ test('should not run framework detection if command and targetPort are configure
         true,
       ),
     )
-    t.snapshot(normalize(error.stdout))
+    t.snapshot(normalize(error.stdout, { duration: true, filePath: true }))
   })
 })
 
@@ -283,7 +283,7 @@ test('should filter frameworks with no dev command', async (t) => {
       const response = await got(url).text()
       t.is(response, content)
 
-      t.snapshot(normalize(output))
+      t.snapshot(normalize(output, { duration: true, filePath: true }))
     })
   })
 })
@@ -302,7 +302,7 @@ test('should pass framework-info env to framework sub process', async (t) => {
 
     // a failure is expected since this is not a true Gatsby project
     const error = await t.throwsAsync(() => withDevServer({ cwd: builder.directory }, () => {}, true))
-    t.snapshot(normalize(error.stdout))
+    t.snapshot(normalize(error.stdout, { duration: true, filePath: true }))
   })
 })
 
