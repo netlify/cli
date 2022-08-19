@@ -55,7 +55,7 @@ const getDefaultSettings = ({
   }
 }
 
-const getPromptInputs = ({ defaultBaseDir, defaultBuildCmd, defaultBuildDir, defaultFunctionsDir }) => {
+const getPromptInputs = ({ defaultBaseDir, defaultBuildCmd, defaultBuildDir }) => {
   const inputs = [
     defaultBaseDir !== undefined && {
       type: 'input',
@@ -75,12 +75,6 @@ const getPromptInputs = ({ defaultBaseDir, defaultBuildCmd, defaultBuildDir, def
       name: 'buildDir',
       message: 'Directory to deploy (blank for current dir):',
       default: defaultBuildDir,
-    },
-    {
-      type: 'input',
-      name: 'functionsDir',
-      message: 'Netlify functions folder:',
-      default: defaultFunctionsDir,
     },
   ].filter(Boolean)
 
@@ -112,18 +106,17 @@ const getBuildSettings = async ({ config, env, repositoryRoot, siteRoot }) => {
       frameworkBuildDir,
       frameworkPlugins,
     })
-  const { baseDir, buildCmd, buildDir, functionsDir } = await inquirer.prompt(
+  const { baseDir, buildCmd, buildDir } = await inquirer.prompt(
     getPromptInputs({
       defaultBaseDir,
       defaultBuildCmd,
       defaultBuildDir,
-      defaultFunctionsDir,
     }),
   )
   const pluginsToInstall = recommendedPlugins.map((plugin) => ({ package: plugin }))
   const normalizedBaseDir = baseDir ? normalizeBackslash(baseDir) : undefined
 
-  return { baseDir: normalizedBaseDir, buildCmd, buildDir, functionsDir, pluginsToInstall }
+  return { baseDir: normalizedBaseDir, buildCmd, buildDir, functionsDir: defaultFunctionsDir, pluginsToInstall }
 }
 
 const getNetlifyToml = ({
