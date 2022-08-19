@@ -234,10 +234,6 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
   log(`Admin url: ${chalk.magentaBright(site.admin_url)}`)
   log(`Site url:  ${chalk.cyanBright(site.ssl_url || site.url)}`)
   log()
-
-  log(`Site id saved to ${path.join(netlify.site.root, '/.netlify/state.json')}`)
-  // log(`Local Config: .netlify/config.json`)
-  log()
   log(`You can now run other \`netlify\` cli commands in this directory`)
 
   return site
