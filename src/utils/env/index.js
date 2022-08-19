@@ -1,3 +1,5 @@
+const { error } = require('../command-helpers')
+
 const AVAILABLE_CONTEXTS = ['all', 'production', 'deploy-preview', 'branch-deploy', 'dev']
 const AVAILABLE_SCOPES = ['builds', 'functions', 'runtime', 'post_processing']
 
@@ -16,6 +18,10 @@ const normalizeContext = (context) => {
   context = context.toLowerCase()
   if (context in CONTEXT_SYNONYMS) {
     context = CONTEXT_SYNONYMS[context]
+  }
+  const forbiddenContexts = AVAILABLE_CONTEXTS.map((ctx) => `branch:${ctx}`)
+  if (forbiddenContexts.includes(context)) {
+    error(`The context ${context} includes a reserved keyword and is not allowed`)
   }
   context = context.replace(/^branch:/, '')
   return context
