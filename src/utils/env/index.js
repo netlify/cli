@@ -13,6 +13,7 @@ const normalizeContext = (context) => {
     dp: 'deploy-preview',
     prod: 'production',
   }
+  context = context.toLowerCase()
   if (context in CONTEXT_SYNONYMS) {
     context = CONTEXT_SYNONYMS[context]
   }
