@@ -14,7 +14,7 @@ const { chalk, error: failAndExit, warn } = require('../command-helpers')
 
 const { getFrameworkInfo } = require('./frameworks')
 const { detectNodeVersion } = require('./node-version')
-const { getPluginInfo, getPluginsList, getPluginsToInstall, getRecommendPlugins, getUIPlugins } = require('./plugins')
+const { getRecommendPlugins, getUIPlugins } = require('./plugins')
 
 const normalizeDir = ({ baseDirectory, defaultValue, dir }) => {
   if (dir === undefined) {
@@ -55,14 +55,7 @@ const getDefaultSettings = ({
   }
 }
 
-const getPromptInputs = async ({
-  defaultBaseDir,
-  defaultBuildCmd,
-  defaultBuildDir,
-  defaultFunctionsDir,
-  frameworkName,
-  recommendedPlugins,
-}) => {
+const getPromptInputs = ({ defaultBaseDir, defaultBuildCmd, defaultBuildDir, defaultFunctionsDir }) => {
   const inputs = [
     defaultBaseDir !== undefined && {
       type: 'input',
@@ -91,42 +84,7 @@ const getPromptInputs = async ({
     },
   ].filter(Boolean)
 
-  if (recommendedPlugins.length === 0) {
-    return inputs
-  }
-
-  const pluginsList = await getPluginsList()
-
-  const prefix = `Seems like this is a ${formatTitle(frameworkName)} site.${EOL}❇️  `
-  if (recommendedPlugins.length === 1) {
-    const { name } = getPluginInfo(pluginsList, recommendedPlugins[0])
-    return [
-      ...inputs,
-      {
-        type: 'confirm',
-        name: 'installSinglePlugin',
-        message: `${prefix}We're going to install this Build Plugin: ${formatTitle(
-          `${name} plugin`,
-        )}${EOL}➡️  OK to install?`,
-        default: true,
-      },
-    ]
-  }
-
-  const infos = recommendedPlugins.map((packageName) => getPluginInfo(pluginsList, packageName))
-  return [
-    ...inputs,
-    {
-      type: 'checkbox',
-      name: 'plugins',
-      message: `${prefix}We're going to install these plugins: ${infos
-        .map(({ name }) => `${name} plugin`)
-        .map(formatTitle)
-        .join(', ')}${EOL}➡️  OK to install??`,
-      choices: infos.map((info) => ({ name: `${info.name} plugin`, value: info.package })),
-      default: infos.map((info) => info.package),
-    },
-  ]
+  return inputs.filter(Boolean)
 }
 
 // `repositoryRoot === siteRoot` means the base directory wasn't detected by @netlify/config, so we use cwd()
@@ -154,22 +112,15 @@ const getBuildSettings = async ({ config, env, repositoryRoot, siteRoot }) => {
       frameworkBuildDir,
       frameworkPlugins,
     })
-  const { baseDir, buildCmd, buildDir, functionsDir, installSinglePlugin, plugins } = await inquirer.prompt(
-    await getPromptInputs({
+  const { baseDir, buildCmd, buildDir, functionsDir } = await inquirer.prompt(
+    getPromptInputs({
+      defaultBaseDir,
       defaultBuildCmd,
       defaultBuildDir,
       defaultFunctionsDir,
-      defaultBaseDir,
-      recommendedPlugins,
-      frameworkName,
     }),
   )
-  const pluginsToInstall = getPluginsToInstall({
-    plugins,
-    installSinglePlugin,
-    recommendedPlugins,
-  })
-
+  const pluginsToInstall = recommendedPlugins.map((plugin) => ({ package: plugin }))
   const normalizedBaseDir = baseDir ? normalizeBackslash(baseDir) : undefined
 
   return { baseDir: normalizedBaseDir, buildCmd, buildDir, functionsDir, pluginsToInstall }
