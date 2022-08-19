@@ -224,6 +224,8 @@ const configGithub = async ({ command, repoName, repoOwner, siteId }) => {
   })
   await saveNetlifyToml({ repositoryRoot, config, configPath, baseDir, buildCmd, buildDir, functionsDir })
 
+  log()
+
   const octokit = getGitHubClient(token)
   const [deployKey, githubRepo] = await Promise.all([
     addDeployKey({ api, octokit, repoOwner, repoName }),

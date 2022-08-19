@@ -39,16 +39,14 @@ const getSiteNameInput = async (name, user, api) => {
     ]
     siteSuggestion = sample(suggestions)
 
-    console.log(
-      `Choose a unique site name (e.g. ${siteSuggestion}.netlify.app) or leave it blank for a random name. You can update the site name later.`,
-    )
     const { name: nameInput } = await inquirer.prompt([
       {
         type: 'input',
         name: 'name',
-        message: 'Site name (optional):',
-        filter: (val) => (val === '' ? undefined : val),
-        validate: (input) => /^[a-zA-Z\d-]+$/.test(input) || 'Only alphanumeric characters and hyphens are allowed',
+        message: 'Site name (you can change it later):',
+        default: siteSuggestion,
+        validate: (input) =>
+          /^[a-zA-Z\d-]+$/.test(input || undefined) || 'Only alphanumeric characters and hyphens are allowed',
       },
     ])
     name = nameInput || siteSuggestion
