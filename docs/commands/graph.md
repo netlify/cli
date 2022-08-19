@@ -85,7 +85,7 @@ netlify graph:handler
 
 **Arguments**
 
-- name - Operation name
+- name - Operation name(s)
 
 **Flags**
 
