@@ -74,9 +74,9 @@ const createEnvGetCommand = (program) =>
     )
     .addExamples([
       'netlify env:get MY_VAR # get value for MY_VAR in dev context',
-      'netlify env:get --context production',
-      'netlify env:get --context branch:staging',
-      'netlify env:get --scope functions',
+      'netlify env:get MY_VAR --context production',
+      'netlify env:get MY_VAR --context branch:staging',
+      'netlify env:get MY_VAR --scope functions',
     ])
     .description('Get resolved value of specified environment variable (includes netlify.toml)')
     .action(async (name, options, command) => {
