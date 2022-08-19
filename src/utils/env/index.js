@@ -30,7 +30,7 @@ const findValueInValues = (values, context) =>
   values.find((val) => {
     if (!AVAILABLE_CONTEXTS.includes(context)) {
       // the "context" option passed in is actually the name of a branch
-      return ['branch', 'all'].includes(val.context) && val.context_parameter === context
+      return val.context === 'all' || val.context_parameter === context
     }
     return [context, 'all'].includes(val.context)
   })
