@@ -171,13 +171,14 @@ const translateFromMongoToEnvelope = (env = {}) => {
 /**
  * Translates an Envelope env into a Mongo env
  * @param {Array<object>} envVars - The array of Envelope env vars
+ * @param {enum<dev,branch-deploy,deploy-preview,production>} context - The deploy context of the environment variable
  * @returns {object} The env object as compatible with Mongo
  */
-const translateFromEnvelopeToMongo = (envVars = []) =>
+const translateFromEnvelopeToMongo = (envVars = [], context = 'dev') =>
   envVars
     .sort((left, right) => (left.key.toLowerCase() < right.key.toLowerCase() ? -1 : 1))
     .reduce((acc, cur) => {
-      const envVar = cur.values.find((val) => ['dev', 'all'].includes(val.context))
+      const envVar = cur.values.find((val) => [context, 'all'].includes(val.context))
       if (envVar && envVar.value) {
         return {
           ...acc,

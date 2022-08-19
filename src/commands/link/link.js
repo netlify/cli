@@ -1,8 +1,4 @@
 // @ts-check
-const { join, relative } = require('path')
-const path = require('path')
-const { cwd } = require('process')
-
 const inquirer = require('inquirer')
 const isEmpty = require('lodash/isEmpty')
 
@@ -234,10 +230,6 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
   log(`Admin url: ${chalk.magentaBright(site.admin_url)}`)
   log(`Site url:  ${chalk.cyanBright(site.ssl_url || site.url)}`)
   log()
-
-  log(`Site id saved to ${path.join(netlify.site.root, '/.netlify/state.json')}`)
-  // log(`Local Config: .netlify/config.json`)
-  log()
   log(`You can now run other \`netlify\` cli commands in this directory`)
 
   return site
@@ -296,7 +288,7 @@ const link = async (options, command) => {
 
     // Save site ID
     state.set('siteId', siteData.id)
-    log(`Linked to ${siteData.name} in ${state.path}`)
+    log(`Linked to ${siteData.name}`)
 
     await track('sites_linked', {
       siteId: siteData.id,
@@ -327,7 +319,7 @@ const link = async (options, command) => {
     const [firstSiteData] = results
     state.set('siteId', firstSiteData.id)
 
-    log(`Linked to ${firstSiteData.name} in ${relative(join(cwd(), '..'), state.path)}`)
+    log(`Linked to ${firstSiteData.name}`)
 
     await track('sites_linked', {
       siteId: (firstSiteData && firstSiteData.id) || siteId,

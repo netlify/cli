@@ -68,7 +68,7 @@ const build = async (options, command) => {
   if (!options.offline) {
     checkOptions(buildOptions)
     const { api, site } = command.netlify
-    const context = { options }
+    const { context } = options
     await injectEnv(command, { api, buildOptions, context, site, siteInfo })
   }
 

@@ -48,6 +48,15 @@ const createSiteBuilder = ({ siteName }) => {
       })
       return builder
     },
+    withStateFile: ({ siteId = '' }) => {
+      const dest = path.join(directory, '.netlify', 'state.json')
+      tasks.push(async () => {
+        const content = `{ "siteId" : "${siteId}" }`
+        await ensureDir(path.dirname(dest))
+        await writeFile(dest, content)
+      })
+      return builder
+    },
     withPackageJson: ({ packageJson, pathPrefix = '' }) => {
       const dest = path.join(directory, pathPrefix, 'package.json')
       tasks.push(async () => {

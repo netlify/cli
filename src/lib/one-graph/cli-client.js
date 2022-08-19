@@ -780,10 +780,9 @@ const getCLISessionMetadata = async ({ jwt, oneGraphSessionId, siteId }) => {
  * Look at the current project, filesystem, etc. and determine relevant metadata for a cli session
  * @param {object} input
  * @param {string} input.siteRoot The root file path for the site
- * @param {object} input.config The parsed netlify.toml config file
  * @returns {Promise<CliEventHelper.DetectedLocalCLISessionMetadata>} Any locally detected facts that are relevant to include in the cli session metadata
  */
-const detectLocalCLISessionMetadata = async ({ config, siteRoot }) => {
+const detectLocalCLISessionMetadata = async ({ siteRoot }) => {
   // @ts-ignore
   const { listFrameworks } = await frameworkInfoPromise
 
@@ -806,6 +805,36 @@ const detectLocalCLISessionMetadata = async ({ config, siteRoot }) => {
 
   const editor = process.env.EDITOR || null
 
+  const detectedMetadata = {
+    gitBranch: branch,
+    hostname,
+    username,
+    siteRoot,
+    cliVersion,
+    editor,
+    platform,
+    arch,
+    nodeVersion: process.version,
+    framework,
+    codegen: null,
+  }
+
+  return detectedMetadata
+}
+
+/**
+ *
+ * @param {object} input
+ * @param {string} input.jwt The GraphJWT string
+ * @param {string} input.sessionId The id of the cli session to fetch the current metadata for
+ * @param {string} input.siteRoot Path to the root of the project
+ * @param {object} input.config The parsed netlify.toml config file
+ * @param {string} input.docId The GraphQL operations document id to fetch
+ * @param {string} input.schemaId The GraphQL schemaId to use when generating code
+ */
+const publishCliSessionMetadataPublishEvent = async ({ config, docId, jwt, schemaId, sessionId, siteRoot }) => {
+  const detectedMetadata = await detectLocalCLISessionMetadata({ siteRoot })
+
   /** @type {CodegenHelpers.CodegenModuleMeta | null} */
   let codegen = null
 
@@ -825,36 +854,6 @@ const detectLocalCLISessionMetadata = async ({ config, siteRoot }) => {
     }
   }
 
-  const detectedMetadata = {
-    gitBranch: branch,
-    hostname,
-    username,
-    siteRoot,
-    cliVersion,
-    editor,
-    platform,
-    arch,
-    nodeVersion: process.version,
-    codegen,
-    framework,
-  }
-
-  return detectedMetadata
-}
-
-/**
- *
- * @param {object} input
- * @param {string} input.jwt The GraphJWT string
- * @param {string} input.sessionId The id of the cli session to fetch the current metadata for
- * @param {object} input.config The parsed netlify.toml config file
- * @param {string} input.siteRoot Path to the root of the project
- * @param {string} input.docId The GraphQL operations document id to fetch
- * @param {string} input.schemaId The GraphQL schemaId to use when generating code
- */
-const publishCliSessionMetadataPublishEvent = async ({ config, docId, jwt, schemaId, sessionId, siteRoot }) => {
-  const detectedMetadata = await detectLocalCLISessionMetadata({ config, siteRoot })
-
   /** @type {CliEventHelper.OneGraphNetlifyCliSessionMetadataPublishEvent} */
   const event = {
     __typename: 'OneGraphNetlifyCliSessionMetadataPublishEvent',
@@ -869,7 +868,7 @@ const publishCliSessionMetadataPublishEvent = async ({ config, docId, jwt, schem
       siteRootFriendly: detectedMetadata.siteRoot,
       persistedDocId: docId,
       schemaId,
-      codegenModule: detectedMetadata.codegen,
+      codegenModule: codegen,
       arch: detectedMetadata.arch,
       nodeVersion: detectedMetadata.nodeVersion,
       platform: detectedMetadata.platform,
@@ -901,13 +900,13 @@ const publishCliSessionMetadataPublishEvent = async ({ config, docId, jwt, schem
  * @param {object} input.newMetadata The metadata to merge into (with priority) the existing metadata
  * @returns {Promise<object>}
  */
-const upsertMergeCLISessionMetadata = async ({ config, jwt, newMetadata, oneGraphSessionId, siteId, siteRoot }) => {
+const upsertMergeCLISessionMetadata = async ({ jwt, newMetadata, oneGraphSessionId, siteId, siteRoot }) => {
   const { errors, metadata } = await getCLISessionMetadata({ jwt, oneGraphSessionId, siteId })
   if (errors) {
     warn(`Error fetching cli session metadata: ${JSON.stringify(errors, null, 2)}`)
   }
 
-  const detectedMetadata = await detectLocalCLISessionMetadata({ config, siteRoot })
+  const detectedMetadata = await detectLocalCLISessionMetadata({ siteRoot })
 
   // @ts-ignore
   const finalMetadata = { ...metadata, ...detectedMetadata, ...newMetadata }
@@ -992,7 +991,13 @@ const persistNewOperationsDocForSession = async ({
   })
 
   if (!result || result.errors) {
-    warn(`Unable to update session metadata with updated operations doc ${JSON.stringify(result.errors, null, 2)}`)
+    warn(
+      `Unable to update session metadata with updated operations docId="${persistedDoc.id}": ${JSON.stringify(
+        result && result.errors,
+        null,
+        2,
+      )}`,
+    )
   } else if (lockfile != null) {
     // Now that we've persisted the document, lock it in the lockfile
     const currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
@@ -1336,7 +1341,6 @@ const ensureCLISession = async (input) => {
     // If we can't access the session in the state.json or it doesn't exist, create a new one
     const sessionName = generateSessionName()
     const detectedMetadata = await detectLocalCLISessionMetadata({
-      config,
       siteRoot: site.root,
     })
     const newSessionMetadata = parentCliSessionId ? { parentCliSessionId } : {}

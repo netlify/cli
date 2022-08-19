@@ -24,6 +24,7 @@ class EdgeFunctionsRegistry {
    * @param {object} opts.config
    * @param {string} opts.configPath
    * @param {string[]} opts.directories
+   * @param {Record<string, string>} opts.env
    * @param {() => Promise<object>} opts.getUpdatedConfig
    * @param {EdgeFunction[]} opts.internalFunctions
    * @param {string} opts.projectDir
@@ -197,6 +198,7 @@ class EdgeFunctionsRegistry {
     })
 
     env.DENO_REGION = 'local'
+    env.NETLIFY_DEV = 'true'
     // We use it in the bootstrap layer to detect whether we're running in production or not
     // (see https://github.com/netlify/edge-functions-bootstrap/blob/main/src/bootstrap/environment.ts#L2)
     // env.DENO_DEPLOYMENT_ID = 'xxx='
