@@ -44,7 +44,7 @@ const graphHandler = async (args, options, command) => {
     operationNames = [operationName]
   }
 
-  if (!operationNames) {
+  if (!operationNames || operationNames.length === 0) {
     error(`No operation name provided`)
   }
 
