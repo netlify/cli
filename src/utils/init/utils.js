@@ -1,7 +1,6 @@
 // @ts-check
 const { existsSync } = require('fs')
 const { writeFile } = require('fs').promises
-const { EOL } = require('os')
 const path = require('path')
 const process = require('process')
 
@@ -10,6 +9,7 @@ const inquirer = require('inquirer')
 const isEmpty = require('lodash/isEmpty')
 
 const { normalizeBackslash } = require('../../lib/path')
+const { log } = require('../command-helpers')
 const { chalk, error: failAndExit, warn } = require('../command-helpers')
 
 const { getFrameworkInfo } = require('./frameworks')
@@ -106,6 +106,12 @@ const getBuildSettings = async ({ config, env, repositoryRoot, siteRoot }) => {
       frameworkBuildDir,
       frameworkPlugins,
     })
+
+  if (recommendedPlugins.length !== 0) {
+    log(`Configuring ${formatTitle(frameworkName)} runtime...`)
+    log()
+  }
+
   const { baseDir, buildCmd, buildDir } = await inquirer.prompt(
     getPromptInputs({
       defaultBaseDir,
@@ -113,6 +119,7 @@ const getBuildSettings = async ({ config, env, repositoryRoot, siteRoot }) => {
       defaultBuildDir,
     }),
   )
+
   const pluginsToInstall = recommendedPlugins.map((plugin) => ({ package: plugin }))
   const normalizedBaseDir = baseDir ? normalizeBackslash(baseDir) : undefined
 
