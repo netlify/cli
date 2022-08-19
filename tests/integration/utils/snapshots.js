@@ -1,6 +1,7 @@
-const normalizers = [
+const baseNormalizers = [
   // Information about the package and the OS
   { pattern: /netlify-cli\/.+node-.+/g, value: 'netlify-cli/test-version test-os test-node-version' },
+  { pattern: /@netlify\/build (\d+\.\d+\.\d+)/g, value: '@netlify/build 0.0.0' },
   // normalize random ports
   { pattern: /\d{5}/g, value: '88888' },
   // windows specific
@@ -23,13 +24,13 @@ const optionalNormalizers = {
 }
 
 const normalize = (inputString, { duration, filePath } = {}) => {
-  const allNormalizers = [
-    ...normalizers,
+  const normalizers = [
+    ...baseNormalizers,
     duration && optionalNormalizers.duration,
     filePath && optionalNormalizers.filePath,
   ]
 
-  return allNormalizers.filter(Boolean).reduce((acc, { pattern, value }) => acc.replace(pattern, value), inputString)
+  return normalizers.filter(Boolean).reduce((acc, { pattern, value }) => acc.replace(pattern, value), inputString)
 }
 
 module.exports = { normalize }
