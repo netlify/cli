@@ -473,7 +473,7 @@ test('netlify init existing Next.js site with existing plugins', async () => {
           provider: 'manual',
           repo_branch: 'main',
           repo_path: 'git@github.com:owner/repo.git',
-          functions_dir: 'netlify/functions',
+          functions_dir: defaultFunctionsDirectory,
         },
       },
     },
