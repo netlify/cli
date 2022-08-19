@@ -30,7 +30,7 @@ const assertNetlifyToml = async (t, tomlDir, { command, functions, publish }) =>
 }
 
 test('netlify init existing site', async (t) => {
-  const [command, publish, functions] = ['custom-build-command', 'custom-publish', 'custom-functions']
+  const [command, publish] = ['custom-build-command', 'custom-publish']
   const initQuestions = [
     {
       question: 'Create & configure a new site',
@@ -47,10 +47,6 @@ test('netlify init existing site', async (t) => {
     {
       question: 'Directory to deploy (blank for current dir)',
       answer: answerWithValue(publish),
-    },
-    {
-      question: 'Netlify functions folder',
-      answer: answerWithValue(functions),
     },
     {
       question: 'No netlify.toml detected',
@@ -94,7 +90,7 @@ test('netlify init existing site', async (t) => {
           provider: 'manual',
           repo_branch: 'main',
           repo_path: 'git@github.com:owner/repo.git',
-          functions_dir: functions,
+          functions_dir: 'netlify/functions',
         },
       },
     },
@@ -116,7 +112,7 @@ test('netlify init existing site', async (t) => {
 
       await childProcess
 
-      await assertNetlifyToml(t, builder.directory, { command, functions, publish })
+      await assertNetlifyToml(t, builder.directory, { command, functions: 'netlify/functions', publish })
     })
   })
 })
@@ -427,7 +423,7 @@ test('netlify init new Next.js site with correct default build directory and bui
 })
 
 test('netlify init existing Next.js site with existing plugins', async () => {
-  const [command, publish, functions] = ['custom-build-command', 'custom-publish', 'custom-functions']
+  const [command, publish] = ['custom-build-command', 'custom-publish', 'custom-functions']
   const initQuestions = [
     {
       question: 'Create & configure a new site',
@@ -444,10 +440,6 @@ test('netlify init existing Next.js site with existing plugins', async () => {
     {
       question: 'Directory to deploy (blank for current dir)',
       answer: answerWithValue(publish),
-    },
-    {
-      question: 'Netlify functions folder',
-      answer: answerWithValue(functions),
     },
     {
       question: 'OK to install',
@@ -491,7 +483,7 @@ test('netlify init existing Next.js site with existing plugins', async () => {
           provider: 'manual',
           repo_branch: 'main',
           repo_path: 'git@github.com:owner/repo.git',
-          functions_dir: functions,
+          functions_dir: 'netlify/functions',
         },
       },
     },
