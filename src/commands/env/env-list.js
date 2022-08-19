@@ -144,7 +144,7 @@ const createEnvListCommand = (program) =>
         .default('any'),
     )
     .addExamples([
-      'netlify env:list # list dev context and any scope',
+      'netlify env:list # list variables with values in the dev context and with any scope',
       'netlify env:list --context production',
       'netlify env:list --context branch:staging',
       'netlify env:list --scope functions',
