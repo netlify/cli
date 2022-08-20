@@ -10,7 +10,7 @@
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
-        "@netlify/build": "^27.15.5",
+        "@netlify/build": "^27.15.6",
         "@netlify/config": "^18.2.1",
         "@netlify/edge-bundler": "^1.13.0",
         "@netlify/framework-info": "^9.2.0",
@@ -1189,9 +1189,9 @@
       "integrity": "sha512-4wMPu9iN3/HL97QblBsBay3E1etIciR84izI3U+4iALY+JHCrI+a2jO0qbAZ/nxKoegypYEaiiqWXylm+/zfrw=="
     },
     "node_modules/@netlify/build": {
-      "version": "27.15.5",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-27.15.5.tgz",
-      "integrity": "sha512-DfzpiNztkB+7e0eM3B8QrXGP1Fc0ky/9ow5Mwg3+R7VeFKknVFAF8PKddQucR1vS0CW1lL1/jjcrv1M5zudVmQ==",
+      "version": "27.15.6",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-27.15.6.tgz",
+      "integrity": "sha512-ZSah6LDAG0KwWiTUfVfL/kBie7qsUj4cMSl0D7dbTBWSRpGx8MgYjlJHP3U2PgXAgmLcc4NOciGIZD/zL4yJCA==",
       "dependencies": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^4.0.0",
@@ -23374,9 +23374,9 @@
       "integrity": "sha512-4wMPu9iN3/HL97QblBsBay3E1etIciR84izI3U+4iALY+JHCrI+a2jO0qbAZ/nxKoegypYEaiiqWXylm+/zfrw=="
     },
     "@netlify/build": {
-      "version": "27.15.5",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-27.15.5.tgz",
-      "integrity": "sha512-DfzpiNztkB+7e0eM3B8QrXGP1Fc0ky/9ow5Mwg3+R7VeFKknVFAF8PKddQucR1vS0CW1lL1/jjcrv1M5zudVmQ==",
+      "version": "27.15.6",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-27.15.6.tgz",
+      "integrity": "sha512-ZSah6LDAG0KwWiTUfVfL/kBie7qsUj4cMSl0D7dbTBWSRpGx8MgYjlJHP3U2PgXAgmLcc4NOciGIZD/zL4yJCA==",
       "requires": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^4.0.0",
