@@ -35,6 +35,7 @@ const getBuildOptions = ({ cachedConfig, options: { context, cwd, debug, dry, js
   cwd,
   featureFlags: {
     functionsBundlingManifest: true,
+    edge_functions_produce_eszip: true,
   },
 })
 

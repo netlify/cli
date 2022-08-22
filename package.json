@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "11.0.0",
+  "version": "11.4.0",
   "author": "Netlify Inc.",
   "contributors": [
     "@whitep4nth3r (https://twitter.com/whitep4nth3r)",
@@ -222,12 +222,12 @@
     "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,tools,scripts,site,tests,.github}/**/*.{mjs,cjs,js,md,yml,json,html}\" \"*.{mjs,cjs,js,yml,json,html}\" \".*.{mjs,cjs,js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\" \"!**/*/package-lock.json\" \"!.github/**/*.md\""
   },
   "dependencies": {
-    "@netlify/build": "^27.14.0",
-    "@netlify/config": "^18.2.0",
+    "@netlify/build": "^27.15.6",
+    "@netlify/config": "^18.2.1",
     "@netlify/edge-bundler": "^1.13.0",
     "@netlify/framework-info": "^9.2.0",
     "@netlify/local-functions-proxy": "^1.1.1",
-    "@netlify/plugins-list": "^6.39.0",
+    "@netlify/plugins-list": "^6.40.0",
     "@netlify/zip-it-and-ship-it": "^5.13.5",
     "@octokit/rest": "^18.0.0",
     "@sindresorhus/slugify": "^1.1.0",
@@ -293,7 +293,7 @@
     "multiparty": "^4.2.1",
     "netlify": "^12.0.1",
     "netlify-headers-parser": "^6.0.2",
-    "netlify-onegraph-internal": "0.8.7",
+    "netlify-onegraph-internal": "0.10.0",
     "netlify-redirect-parser": "^13.0.5",
     "netlify-redirector": "^0.2.1",
     "node-fetch": "^2.6.0",

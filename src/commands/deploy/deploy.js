@@ -410,7 +410,13 @@ const bundleEdgeFunctions = async (options) => {
     phase: 'start',
   })
 
-  const { severityCode, success } = await runCoreSteps(['edge_functions_bundling'], { ...options, buffer: true })
+  const { severityCode, success } = await runCoreSteps(['edge_functions_bundling'], {
+    ...options,
+    buffer: true,
+    featureFlags: {
+      edge_functions_produce_eszip: true,
+    },
+  })
 
   if (!success) {
     statusCb({

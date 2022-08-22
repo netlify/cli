@@ -35,6 +35,7 @@ const {
   NETLIFYDEVWARN,
   chalk,
   detectServerSettings,
+  ensureNetlifyIgnore,
   error,
   exit,
   generateNetlifyGraphJWT,
@@ -434,6 +435,7 @@ const dev = async (options, command) => {
   }
 
   let { env } = cachedConfig
+
   if (!options.offline && siteInfo.use_envelope) {
     env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })
   }
@@ -508,6 +510,13 @@ const dev = async (options, command) => {
 
   if (!success) {
     error(`Could not start local development server\n\n${startDevError.message}\n\n${startDevError.stack}`)
+  }
+
+  // Try to add `.netlify` to `.gitignore`.
+  try {
+    await ensureNetlifyIgnore(repositoryRoot)
+  } catch {
+    // no-op
   }
 
   // TODO: We should consolidate this with the existing config watcher.
