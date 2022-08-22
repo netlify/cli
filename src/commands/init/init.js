@@ -198,6 +198,8 @@ const init = async (options, command) => {
     siteInfo = await createOrLinkSiteToRepo(command)
   }
 
+  log()
+
   // Check for existing CI setup
   const remoteBuildRepo = getRepoUrl({ siteInfo })
   if (remoteBuildRepo && !options.force) {

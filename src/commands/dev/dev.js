@@ -434,6 +434,7 @@ const dev = async (options, command) => {
   }
 
   let { env } = cachedConfig
+
   if (!options.offline && siteInfo.use_envelope) {
     env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })
   }

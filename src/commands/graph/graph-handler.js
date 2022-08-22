@@ -33,17 +33,18 @@ const graphHandler = async (args, options, command) => {
     error(`Error parsing schema: ${buildSchemaError}`)
   }
 
-  const userOperationName = args.operationName
+  const userOperationNames = args.operationNames
   const userCodegenId = options.codegen
 
   const handlerOptions = options.data ? JSON.parse(options.data) : {}
 
-  let operationName = userOperationName
-  if (!operationName) {
-    operationName = await autocompleteOperationNames({ netlifyGraphConfig })
+  let operationNames = userOperationNames
+  if (!operationNames || operationNames.length === 0) {
+    const operationName = await autocompleteOperationNames({ netlifyGraphConfig })
+    operationNames = [operationName]
   }
 
-  if (!operationName) {
+  if (!operationNames || operationNames.length === 0) {
     error(`No operation name provided`)
   }
 
@@ -66,14 +67,17 @@ const graphHandler = async (args, options, command) => {
   }
 
   if (schema) {
-    generateHandlerByOperationName({
-      generate: codeGenerator.generateHandler,
-      logger: log,
-      netlifyGraphConfig,
-      schema,
-      operationName,
-      handlerOptions,
-    })
+    /* eslint-disable fp/no-loops */
+    for (const operationName of operationNames) {
+      await generateHandlerByOperationName({
+        generate: codeGenerator.generateHandler,
+        logger: log,
+        netlifyGraphConfig,
+        schema,
+        operationName,
+        handlerOptions,
+      })
+    }
   } else {
     error(`Failed to parse Netlify GraphQL schema`)
   }
@@ -87,14 +91,14 @@ const graphHandler = async (args, options, command) => {
 const createGraphHandlerCommand = (program) =>
   program
     .command('graph:handler')
-    .argument('[name]', 'Operation name')
+    .argument('[name...]', 'Operation name(s)')
     .option('-c, --codegen <id>', 'The id of the specific code generator to use')
     .option("-d, --data '<json>'", 'Optional data to pass along to the code generator')
     .description(
       'Generate a handler for a Graph operation given its name. See `graph:operations` for a list of operations.',
     )
-    .action(async (operationName, options, command) => {
-      await graphHandler({ operationName }, options, command)
+    .action(async (operationNames, options, command) => {
+      await graphHandler({ operationNames }, options, command)
     })
 
 module.exports = { createGraphHandlerCommand }
