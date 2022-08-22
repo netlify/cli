@@ -1,9 +1,13 @@
-const { Option } = require('commander')
-
 // @ts-check
-const { chalk, error, log, logJson, translateFromEnvelopeToMongo } = require('../../utils')
-
-const AVAILABLE_CONTEXTS = ['production', 'deploy-preview', 'branch-deploy', 'dev']
+const {
+  AVAILABLE_CONTEXTS,
+  chalk,
+  error,
+  log,
+  logJson,
+  normalizeContext,
+  translateFromEnvelopeToMongo,
+} = require('../../utils')
 
 /**
  * The env:unset command
@@ -44,7 +48,8 @@ const envUnset = async (key, options, command) => {
     return false
   }
 
-  log(`Unset environment variable ${chalk.yellow(key)} in the ${chalk.magenta(context || 'all')} context`)
+  const contextType = AVAILABLE_CONTEXTS.includes(context || 'all') ? 'context' : 'branch'
+  log(`Unset environment variable ${chalk.yellow(key)} in the ${chalk.magenta(context || 'all')} ${contextType}`)
 }
 
 /**
@@ -98,8 +103,10 @@ const unsetInEnvelope = async ({ api, context, key, siteInfo }) => {
   const params = { accountId, siteId, key }
   try {
     if (context) {
-      // if context(s) are passed, delete the matching contexts, and the `all` context
-      const values = variable.values.filter((val) => [...contexts, 'all'].includes(val.context))
+      // if context(s) are passed, delete the matching contexts / branches, and the `all` context
+      const values = variable.values.filter((val) =>
+        [...contexts, 'all'].includes(val.context_parameter || val.context),
+      )
       if (values) {
         await Promise.all(values.map((value) => api.deleteEnvVarValue({ ...params, id: value.id })))
         // if this was the `all` context, we need to create 3 values in the other contexts
@@ -107,7 +114,9 @@ const unsetInEnvelope = async ({ api, context, key, siteInfo }) => {
           const newContexts = AVAILABLE_CONTEXTS.filter((ctx) => !context.includes(ctx))
           const allValue = values[0].value
           await Promise.all(
-            newContexts.map((ctx) => api.setEnvVarValue({ ...params, body: { context: ctx, value: allValue } })),
+            newContexts
+              .filter((ctx) => ctx !== 'all')
+              .map((ctx) => api.setEnvVarValue({ ...params, body: { context: ctx, value: allValue } })),
           )
         }
       }
@@ -134,13 +143,11 @@ const createEnvUnsetCommand = (program) =>
     .command('env:unset')
     .aliases(['env:delete', 'env:remove'])
     .argument('<key>', 'Environment variable key')
-    .addOption(
-      new Option('-c, --context <context...>', 'Specify a deploy context (default: all contexts)').choices([
-        'production',
-        'deploy-preview',
-        'branch-deploy',
-        'dev',
-      ]),
+    .option(
+      '-c, --context <context...>',
+      'Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev") (default: all contexts)',
+      // spread over an array for variadic options
+      (context, previous = []) => [...previous, normalizeContext(context)],
     )
     .addExamples([
       'netlify env:unset VAR_NAME # unset in all contexts',

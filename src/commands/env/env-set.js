@@ -1,9 +1,16 @@
 // @ts-check
 const { Option } = require('commander')
 
-const { chalk, error, log, logJson, translateFromEnvelopeToMongo } = require('../../utils')
-
-const AVAILABLE_SCOPES = ['builds', 'functions', 'runtime', 'post_processing']
+const {
+  AVAILABLE_CONTEXTS,
+  AVAILABLE_SCOPES,
+  chalk,
+  error,
+  log,
+  logJson,
+  normalizeContext,
+  translateFromEnvelopeToMongo,
+} = require('../../utils')
 
 /**
  * The env:set command
@@ -52,10 +59,11 @@ const envSet = async (key, value, options, command) => {
   }
 
   const withScope = scope ? ` scoped to ${chalk.white(scope)}` : ''
+  const contextType = AVAILABLE_CONTEXTS.includes(context || 'all') ? 'context' : 'branch'
   log(
     `Set environment variable ${chalk.yellow(`${key}${value ? '=' : ''}${value}`)}${withScope} in the ${chalk.magenta(
       context || 'all',
-    )} context`,
+    )} ${contextType}`,
   )
 }
 
@@ -93,7 +101,10 @@ const setInEnvelope = async ({ api, context, key, scope, siteInfo, value }) => {
   const contexts = context || ['all']
   const scopes = scope || AVAILABLE_SCOPES
 
-  let values = contexts.map((ctx) => ({ context: ctx, value }))
+  // if the passed context is unknown, it is actually a branch name
+  let values = contexts.map((ctx) =>
+    AVAILABLE_CONTEXTS.includes(ctx) ? { context: ctx, value } : { context: 'branch', context_parameter: ctx, value },
+  )
 
   const existing = envelopeVariables.find((envVar) => envVar.key === key)
 
@@ -144,13 +155,11 @@ const createEnvSetCommand = (program) =>
     .command('env:set')
     .argument('<key>', 'Environment variable key')
     .argument('[value]', 'Value to set to', '')
-    .addOption(
-      new Option('-c, --context <context...>', 'Specify a deploy context (default: all contexts)').choices([
-        'production',
-        'deploy-preview',
-        'branch-deploy',
-        'dev',
-      ]),
+    .option(
+      '-c, --context <context...>',
+      'Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev") (default: all contexts)',
+      // spread over an array for variadic options
+      (context, previous = []) => [...previous, normalizeContext(context)],
     )
     .addOption(
       new Option('-s, --scope <scope...>', 'Specify a scope (default: all scopes)').choices([
