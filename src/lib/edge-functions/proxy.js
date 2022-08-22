@@ -1,4 +1,5 @@
 // @ts-check
+const { Buffer } = require('buffer')
 const { relative } = require('path')
 const { cwd, env } = require('process')
 
@@ -45,15 +46,25 @@ const handleProxyRequest = (req, proxyReq) => {
   })
 }
 
+const createSiteInfoHeader = (siteInfo = {}) => {
+  const { id, name, url } = siteInfo
+  const site = { id, name, url }
+  const siteString = JSON.stringify(site)
+  return Buffer.from(siteString).toString('base64')
+}
+
 const initializeProxy = async ({
   config,
   configPath,
+  env: configEnv,
+  geoCountry,
   geolocationMode,
   getUpdatedConfig,
   inspectSettings,
   offline,
   projectDir,
   settings,
+  siteInfo,
   state,
 }) => {
   const { functions: internalFunctions, importMap, path: internalFunctionsPath } = await getInternalFunctions()
@@ -69,6 +80,7 @@ const initializeProxy = async ({
     config,
     configPath,
     directories: [internalFunctionsPath, userFunctionsPath].filter(Boolean),
+    env: configEnv,
     getUpdatedConfig,
     importMaps: [importMap].filter(Boolean),
     inspectSettings,
@@ -84,14 +96,15 @@ const initializeProxy = async ({
     }
 
     const [geoLocation, registry] = await Promise.all([
-      getGeoLocation({ mode: geolocationMode, offline, state }),
+      getGeoLocation({ mode: geolocationMode, geoCountry, offline, state }),
       server,
     ])
 
     if (!registry) return
 
-    // Setting header with geolocation.
+    // Setting header with geolocation and site info.
     req.headers[headers.Geo] = JSON.stringify(geoLocation)
+    req.headers[headers.Site] = createSiteInfoHeader(siteInfo)
 
     await registry.initialize()
 
@@ -139,6 +152,7 @@ const prepareServer = async ({
   config,
   configPath,
   directories,
+  env: configEnv,
   getUpdatedConfig,
   importMaps,
   inspectSettings,
@@ -169,6 +183,7 @@ const prepareServer = async ({
       config,
       configPath,
       directories,
+      env: configEnv,
       getUpdatedConfig,
       internalFunctions,
       projectDir,
@@ -181,4 +196,4 @@ const prepareServer = async ({
   }
 }
 
-module.exports = { handleProxyRequest, initializeProxy, isEdgeFunctionsRequest }
+module.exports = { handleProxyRequest, initializeProxy, isEdgeFunctionsRequest, createSiteInfoHeader }

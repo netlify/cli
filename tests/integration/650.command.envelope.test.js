@@ -14,34 +14,48 @@ const siteInfo = {
   name: 'site-name',
   use_envelope: true,
 }
-const envelopeResponse = [
-  {
-    key: 'EXISTING_VAR',
-    scopes: ['builds', 'functions', 'runtime', 'post_processing'],
-    values: [
-      {
-        context: 'all',
-        value: 'envelope-value',
-      },
-    ],
-  },
-  {
-    key: 'OTHER_VAR',
-    scopes: ['builds', 'functions', 'runtime', 'post_processing'],
-    values: [
-      {
-        context: 'all',
-        value: 'envelope-value',
-      },
-    ],
-  },
-]
+const existingVar = {
+  key: 'EXISTING_VAR',
+  scopes: ['builds', 'functions'],
+  values: [
+    {
+      id: '1234',
+      context: 'production',
+      value: 'envelope-prod-value',
+    },
+    {
+      id: '2345',
+      context: 'dev',
+      value: 'envelope-dev-value',
+    },
+  ],
+}
+const otherVar = {
+  key: 'OTHER_VAR',
+  scopes: ['builds', 'functions', 'runtime', 'post_processing'],
+  values: [
+    {
+      id: '3456',
+      context: 'all',
+      value: 'envelope-all-value',
+    },
+  ],
+}
+const envelopeResponse = [existingVar, otherVar]
 const routes = [
   { path: 'sites/site_id', response: siteInfo },
   { path: 'sites/site_id/service-instances', response: [] },
   {
     path: 'accounts',
     response: [{ slug: siteInfo.account_slug }],
+  },
+  {
+    path: 'accounts/test-account/env/EXISTING_VAR',
+    response: existingVar,
+  },
+  {
+    path: 'accounts/test-account/env/OTHER_VAR',
+    response: otherVar,
   },
   {
     path: 'accounts/test-account/env',
@@ -59,7 +73,22 @@ const routes = [
   },
   {
     path: 'accounts/test-account/env/EXISTING_VAR',
+    method: 'PATCH',
+    response: {},
+  },
+  {
+    path: 'accounts/test-account/env/EXISTING_VAR',
     method: 'DELETE',
+    response: {},
+  },
+  {
+    path: 'accounts/test-account/env/EXISTING_VAR/value/1234',
+    method: 'DELETE',
+    response: {},
+  },
+  {
+    path: 'accounts/test-account/env/OTHER_VAR',
+    method: 'PATCH',
     response: {},
   },
   {
@@ -67,21 +96,118 @@ const routes = [
     method: 'DELETE',
     response: {},
   },
+  {
+    path: 'accounts/test-account/env/OTHER_VAR/value/3456',
+    method: 'DELETE',
+    response: {},
+  },
 ]
 
-test('env:set --json should create and return new var (with envelope)', async (t) => {
+test('env:get --json should return empty object if var not set', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      const cliResponse = await callCli(['env:get', '--json', 'SOME_VAR'], getCLIOptions({ builder, apiUrl }), true)
+
+      t.deepEqual(cliResponse, {})
+    })
+  })
+})
+
+test('env:get --context should return the value for the given context when present', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      const cliResponse = await callCli(
+        ['env:get', '--json', 'EXISTING_VAR', '--context', 'production'],
+        getCLIOptions({ builder, apiUrl }),
+        true,
+      )
+
+      t.is(cliResponse.EXISTING_VAR, 'envelope-prod-value')
+    })
+  })
+})
+
+test('env:get --context should not return the value for the given context when not present', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      const cliResponse = await callCli(
+        ['env:get', '--json', 'EXISTING_VAR', '--context', 'deploy-preview'],
+        getCLIOptions({ builder, apiUrl }),
+        true,
+      )
+
+      t.is(cliResponse.EXISTING_VAR, undefined)
+    })
+  })
+})
+
+test('env:get --scope should find the value for the given scope when present', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      const cliResponse = await callCli(
+        ['env:get', '--json', 'EXISTING_VAR', '--scope', 'functions'],
+        getCLIOptions({ builder, apiUrl }),
+        true,
+      )
+
+      t.is(cliResponse.EXISTING_VAR, 'envelope-dev-value')
+    })
+  })
+})
+
+test('env:get --scope should not find the value for the given scope when not present', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      const cliResponse = await callCli(
+        ['env:get', '--json', 'EXISTING_VAR', '--scope', 'runtime'],
+        getCLIOptions({ builder, apiUrl }),
+        true,
+      )
+
+      t.is(cliResponse.EXISTING_VAR, undefined)
+    })
+  })
+})
+
+test('env:list --json should return the object of keys and values', async (t) => {
   await withSiteBuilder('site-env', async (builder) => {
     await builder.buildAsync()
 
     const finalEnv = {
-      EXISTING_VAR: 'envelope-value',
-      OTHER_VAR: 'envelope-value',
-      NEW_VAR: 'new-value',
+      EXISTING_VAR: 'envelope-dev-value',
+      OTHER_VAR: 'envelope-all-value',
+    }
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      const cliResponse = await callCli(['env:list', '--json'], getCLIOptions({ builder, apiUrl }), true)
+
+      t.deepEqual(cliResponse, finalEnv)
+    })
+  })
+})
+
+test('env:list --context should return the keys and values for the given context', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    const finalEnv = {
+      EXISTING_VAR: 'envelope-prod-value',
+      OTHER_VAR: 'envelope-all-value',
     }
 
     await withMockApi(routes, async ({ apiUrl }) => {
       const cliResponse = await callCli(
-        ['env:set', '--json', 'NEW_VAR', 'new-value'],
+        ['env:list', '--context', 'production', '--json'],
         getCLIOptions({ builder, apiUrl }),
         true,
       )
@@ -91,16 +217,125 @@ test('env:set --json should create and return new var (with envelope)', async (t
   })
 })
 
-test('env:set --json should update existing var (with envelope)', async (t) => {
+test('env:list --scope should return the keys and values for the given scope', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    const finalEnv = {
+      OTHER_VAR: 'envelope-all-value',
+    }
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      const cliResponse = await callCli(
+        ['env:list', '--scope', 'runtime', '--json'],
+        getCLIOptions({ builder, apiUrl }),
+        true,
+      )
+
+      t.deepEqual(cliResponse, finalEnv)
+    })
+  })
+})
+
+test('env:set --context=dev should create and return new var in the dev context', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    const finalEnv = {
+      EXISTING_VAR: 'envelope-dev-value',
+      OTHER_VAR: 'envelope-all-value',
+      NEW_VAR: 'new-value',
+    }
+
+    await withMockApi(routes, async ({ apiUrl, requests }) => {
+      const cliResponse = await callCli(
+        ['env:set', 'NEW_VAR', 'new-value', '--context', 'dev', '--json'],
+        getCLIOptions({ builder, apiUrl }),
+        true,
+      )
+
+      t.deepEqual(cliResponse, finalEnv)
+
+      const postRequest = requests.find(
+        (request) => request.method === 'POST' && request.path === '/api/v1/accounts/test-account/env',
+      )
+
+      t.is(postRequest.body[0].key, 'NEW_VAR')
+      t.is(postRequest.body[0].values[0].context, 'dev')
+      t.is(postRequest.body[0].values[0].value, 'new-value')
+    })
+  })
+})
+
+test('env:set --context=dev should update an existing var in the dev context', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    const finalEnv = {
+      EXISTING_VAR: 'envelope-new-value',
+      OTHER_VAR: 'envelope-all-value',
+    }
+
+    await withMockApi(routes, async ({ apiUrl, requests }) => {
+      const cliResponse = await callCli(
+        ['env:set', 'EXISTING_VAR', 'envelope-new-value', '--context', 'dev', '--json'],
+        getCLIOptions({ builder, apiUrl }),
+        true,
+      )
+
+      t.deepEqual(cliResponse, finalEnv)
+
+      const patchRequest = requests.find(
+        (request) => request.method === 'PATCH' && request.path === '/api/v1/accounts/test-account/env/EXISTING_VAR',
+      )
+
+      t.is(patchRequest.body.context, 'dev')
+      t.is(patchRequest.body.value, 'envelope-new-value')
+    })
+  })
+})
+
+test('env:set --context should support variadic options', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    const finalEnv = {
+      EXISTING_VAR: 'multiple',
+      OTHER_VAR: 'envelope-all-value',
+    }
+
+    await withMockApi(routes, async ({ apiUrl, requests }) => {
+      const cliResponse = await callCli(
+        ['env:set', 'EXISTING_VAR', 'multiple', '--context', 'deploy-preview', 'production', '--json'],
+        getCLIOptions({ builder, apiUrl }),
+        true,
+      )
+
+      t.deepEqual(cliResponse, finalEnv)
+
+      const patchRequests = requests.filter(
+        (request) => request.method === 'PATCH' && request.path === '/api/v1/accounts/test-account/env/EXISTING_VAR',
+      )
+
+      t.is(patchRequests.length, 2)
+      t.is(patchRequests[0].body.context, 'deploy-preview')
+      t.is(patchRequests[0].body.value, 'multiple')
+      t.is(patchRequests[1].body.context, 'production')
+      t.is(patchRequests[1].body.value, 'multiple')
+    })
+  })
+})
+
+test('env:set without flags should update existing var', async (t) => {
   await withSiteBuilder('site-env', async (builder) => {
     await builder.buildAsync()
 
     const finalEnv = {
       EXISTING_VAR: 'new-envelope-value',
-      OTHER_VAR: 'envelope-value',
+      OTHER_VAR: 'envelope-all-value',
     }
 
-    await withMockApi(routes, async ({ apiUrl }) => {
+    await withMockApi(routes, async ({ apiUrl, requests }) => {
       const cliResponse = await callCli(
         ['env:set', '--json', 'EXISTING_VAR', 'new-envelope-value'],
         getCLIOptions({ builder, apiUrl }),
@@ -108,11 +343,68 @@ test('env:set --json should update existing var (with envelope)', async (t) => {
       )
 
       t.deepEqual(cliResponse, finalEnv)
+
+      const putRequest = requests.find(
+        (request) => request.method === 'PUT' && request.path === '/api/v1/accounts/test-account/env/EXISTING_VAR',
+      )
+
+      t.is(putRequest.body.key, 'EXISTING_VAR')
+      t.is(putRequest.body.values[0].context, 'all')
+      t.is(putRequest.body.values[0].value, 'new-envelope-value')
     })
   })
 })
 
-test('env:import should throw error if file not exists (with envelope)', async (t) => {
+test('env:set --scope should set the scope of an existing env var without needing a value', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    const finalEnv = {
+      EXISTING_VAR: 'envelope-dev-value',
+      OTHER_VAR: 'envelope-all-value',
+    }
+
+    await withMockApi(routes, async ({ apiUrl, requests }) => {
+      const cliResponse = await callCli(
+        ['env:set', 'EXISTING_VAR', '--scope', 'runtime', 'post_processing', '--json'],
+        getCLIOptions({ builder, apiUrl }),
+        true,
+      )
+
+      t.deepEqual(cliResponse, finalEnv)
+
+      const putRequest = requests.find(
+        (request) => request.method === 'PUT' && request.path === '/api/v1/accounts/test-account/env/EXISTING_VAR',
+      )
+
+      t.is(putRequest.body.values[0].context, 'production')
+      t.is(putRequest.body.values[1].context, 'dev')
+      t.is(putRequest.body.scopes[0], 'runtime')
+      t.is(putRequest.body.scopes[1], 'post_processing')
+    })
+  })
+})
+
+test('env:set should error when --scope and --context are passed on an existing env var', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      const { stderr: cliResponse } = await t.throwsAsync(
+        callCli(
+          ['env:set', 'EXISTING_VAR', '--scope', 'functions', '--context', 'production'],
+          getCLIOptions({ builder, apiUrl }),
+        ),
+      )
+
+      t.true(
+        cliResponse.includes(`Setting the context and scope at the same time on an existing env var is not allowed`),
+      )
+    })
+  })
+})
+
+test('env:import should throw error if file not exists', async (t) => {
   await withSiteBuilder('site-env', async (builder) => {
     await builder.buildAsync()
 
@@ -122,11 +414,11 @@ test('env:import should throw error if file not exists (with envelope)', async (
   })
 })
 
-test('env:import --json should import new vars and override existing vars (with envelope)', async (t) => {
+test('env:import --json should import new vars and override existing vars', async (t) => {
   await withSiteBuilder('site-env', async (builder) => {
     const finalEnv = {
       EXISTING_VAR: 'from-dotenv',
-      OTHER_VAR: 'envelope-value',
+      OTHER_VAR: 'envelope-all-value',
       NEW_VAR: 'from-dotenv',
     }
 
@@ -148,36 +440,15 @@ test('env:import --json should import new vars and override existing vars (with 
   })
 })
 
-test('env:set --json should be able to set var with empty value (with envelope)', async (t) => {
+test('env:unset --json should remove existing variable', async (t) => {
   await withSiteBuilder('site-env', async (builder) => {
     await builder.buildAsync()
 
     const finalEnv = {
-      EXISTING_VAR: '',
-      OTHER_VAR: 'envelope-value',
+      OTHER_VAR: 'envelope-all-value',
     }
 
-    await withMockApi(routes, async ({ apiUrl }) => {
-      const cliResponse = await callCli(
-        ['env:set', '--json', 'EXISTING_VAR', ''],
-        getCLIOptions({ builder, apiUrl }),
-        true,
-      )
-
-      t.deepEqual(cliResponse, finalEnv)
-    })
-  })
-})
-
-test('env:unset --json should remove existing variable (with envelope)', async (t) => {
-  await withSiteBuilder('site-env', async (builder) => {
-    await builder.buildAsync()
-
-    const finalEnv = {
-      OTHER_VAR: 'envelope-value',
-    }
-
-    await withMockApi(routes, async ({ apiUrl }) => {
+    await withMockApi(routes, async ({ apiUrl, requests }) => {
       const cliResponse = await callCli(
         ['env:unset', '--json', 'EXISTING_VAR'],
         getCLIOptions({ builder, apiUrl }),
@@ -185,11 +456,64 @@ test('env:unset --json should remove existing variable (with envelope)', async (
       )
 
       t.deepEqual(cliResponse, finalEnv)
+
+      const deleteRequest = requests.find((request) => request.method === 'DELETE')
+      t.is(deleteRequest.path, '/api/v1/accounts/test-account/env/EXISTING_VAR')
     })
   })
 })
 
-test('env:import --json --replace-existing should replace all existing vars and return imported (with envelope)', async (t) => {
+test('env:unset --context should remove existing variable value', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    const finalEnv = {
+      OTHER_VAR: 'envelope-all-value',
+    }
+
+    await withMockApi(routes, async ({ apiUrl, requests }) => {
+      const cliResponse = await callCli(
+        ['env:unset', 'EXISTING_VAR', '--context', 'production', '--json'],
+        getCLIOptions({ builder, apiUrl }),
+        true,
+      )
+
+      t.deepEqual(cliResponse, finalEnv)
+
+      const deleteRequest = requests.find((request) => request.method === 'DELETE')
+      t.is(deleteRequest.path, '/api/v1/accounts/test-account/env/EXISTING_VAR/value/1234')
+    })
+  })
+})
+
+test('env:unset --context should split up an `all` value', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    const finalEnv = {}
+
+    await withMockApi(routes, async ({ apiUrl, requests }) => {
+      const cliResponse = await callCli(
+        ['env:unset', 'OTHER_VAR', '--context', 'branch-deploy', '--json'],
+        getCLIOptions({ builder, apiUrl }),
+        true,
+      )
+
+      t.deepEqual(cliResponse, finalEnv)
+
+      const deleteRequest = requests.find((request) => request.method === 'DELETE')
+      t.is(deleteRequest.path, '/api/v1/accounts/test-account/env/OTHER_VAR/value/3456')
+
+      const patchRequests = requests.filter(
+        (request) => request.method === 'PATCH' && '/api/v1/accounts/test-account/env/OTHER_VAR',
+      )
+
+      t.is(patchRequests.length, 3)
+    })
+  })
+})
+
+test('env:import --json --replace-existing should replace all existing vars and return imported', async (t) => {
   await withSiteBuilder('site-env', async (builder) => {
     const finalEnv = {
       EXISTING_VAR: 'from-dotenv',
@@ -218,9 +542,9 @@ test('env:import --json --replace-existing should replace all existing vars and 
   })
 })
 
-test('env:migrate should return success message (mongo to envelope)', async (t) => {
+test('env:clone should return success message (mongo to envelope)', async (t) => {
   const envFrom = {
-    MIGRATE_ME: 'migrate_me',
+    CLONE_ME: 'clone_me',
     EXISTING_VAR: 'from',
   }
 
@@ -238,7 +562,7 @@ test('env:migrate should return success message (mongo to envelope)', async (t) 
     name: 'site-name-b',
   }
 
-  const migrateRoutes = [
+  const cloneRoutes = [
     { path: 'sites/site_id', response: siteInfo },
     { path: 'sites/site_id_a', response: siteInfoFrom },
     { path: 'sites/site_id_b', response: siteInfoTo },
@@ -265,9 +589,9 @@ test('env:migrate should return success message (mongo to envelope)', async (t) 
 
   await withSiteBuilder('site-env', async (builder) => {
     await builder.buildAsync()
-    await withMockApi(migrateRoutes, async ({ apiUrl, requests }) => {
+    await withMockApi(cloneRoutes, async ({ apiUrl, requests }) => {
       const cliResponse = await callCli(
-        ['env:migrate', '--from', 'site_id_a', '--to', 'site_id_b'],
+        ['env:clone', '--from', 'site_id_a', '--to', 'site_id_b'],
         getCLIOptions({ apiUrl, builder }),
       )
 
@@ -281,15 +605,15 @@ test('env:migrate should return success message (mongo to envelope)', async (t) 
       )
 
       t.is(postRequest.body.length, 2)
-      t.is(postRequest.body[0].key, 'MIGRATE_ME')
-      t.is(postRequest.body[0].values[0].value, 'migrate_me')
+      t.is(postRequest.body[0].key, 'CLONE_ME')
+      t.is(postRequest.body[0].values[0].value, 'clone_me')
       t.is(postRequest.body[1].key, 'EXISTING_VAR')
       t.is(postRequest.body[1].values[0].value, 'from')
     })
   })
 })
 
-test('env:migrate should return success message (envelope to mongo)', async (t) => {
+test('env:clone should return success message (envelope to mongo)', async (t) => {
   const siteInfoFrom = {
     ...siteInfo,
     id: 'site_id_a',
@@ -297,7 +621,7 @@ test('env:migrate should return success message (envelope to mongo)', async (t) 
   }
 
   const envTo = {
-    MIGRATE_ME: 'migrate_me',
+    CLONE_ME: 'clone_me',
     EXISTING_VAR: 'to',
   }
 
@@ -311,11 +635,11 @@ test('env:migrate should return success message (envelope to mongo)', async (t) 
 
   const finalEnv = {
     ...envTo,
-    EXISTING_VAR: 'envelope-value',
-    OTHER_VAR: 'envelope-value',
+    EXISTING_VAR: 'envelope-dev-value',
+    OTHER_VAR: 'envelope-all-value',
   }
 
-  const migrateRoutes = [
+  const cloneRoutes = [
     { path: 'sites/site_id', response: siteInfo },
     { path: 'sites/site_id_a', response: siteInfoFrom },
     { path: 'sites/site_id_b', response: siteInfoTo },
@@ -337,9 +661,9 @@ test('env:migrate should return success message (envelope to mongo)', async (t) 
 
   await withSiteBuilder('site-env', async (builder) => {
     await builder.buildAsync()
-    await withMockApi(migrateRoutes, async ({ apiUrl, requests }) => {
+    await withMockApi(cloneRoutes, async ({ apiUrl, requests }) => {
       const cliResponse = await callCli(
-        ['env:migrate', '--from', 'site_id_a', '--to', 'site_id_b'],
+        ['env:clone', '--from', 'site_id_a', '--to', 'site_id_b'],
         getCLIOptions({ apiUrl, builder }),
       )
 
@@ -354,7 +678,7 @@ test('env:migrate should return success message (envelope to mongo)', async (t) 
   })
 })
 
-test('env:migrate should return success message (envelope to envelope)', async (t) => {
+test('env:clone should return success message (envelope to envelope)', async (t) => {
   const siteInfoFrom = {
     ...siteInfo,
     id: 'site_id_a',
@@ -367,7 +691,7 @@ test('env:migrate should return success message (envelope to envelope)', async (
     name: 'site-name-b',
   }
 
-  const migrateRoutes = [
+  const cloneRoutes = [
     { path: 'sites/site_id', response: siteInfo },
     { path: 'sites/site_id_a', response: siteInfoFrom },
     { path: 'sites/site_id_b', response: siteInfoTo },
@@ -399,9 +723,9 @@ test('env:migrate should return success message (envelope to envelope)', async (
 
   await withSiteBuilder('site-env', async (builder) => {
     await builder.buildAsync()
-    await withMockApi(migrateRoutes, async ({ apiUrl, requests }) => {
+    await withMockApi(cloneRoutes, async ({ apiUrl, requests }) => {
       const cliResponse = await callCli(
-        ['env:migrate', '--from', 'site_id_a', '--to', 'site_id_b'],
+        ['env:clone', '--from', 'site_id_a', '--to', 'site_id_b'],
         getCLIOptions({ apiUrl, builder }),
       )
 

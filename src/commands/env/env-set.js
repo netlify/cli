@@ -1,5 +1,9 @@
 // @ts-check
-const { log, logJson, translateFromEnvelopeToMongo } = require('../../utils')
+const { Option } = require('commander')
+
+const { chalk, error, log, logJson, translateFromEnvelopeToMongo } = require('../../utils')
+
+const AVAILABLE_SCOPES = ['builds', 'functions', 'runtime', 'post_processing']
 
 /**
  * The env:set command
@@ -10,7 +14,9 @@ const { log, logJson, translateFromEnvelopeToMongo } = require('../../utils')
  * @returns {Promise<boolean>}
  */
 const envSet = async (key, value, options, command) => {
-  const { api, site } = command.netlify
+  const { context, scope } = options
+
+  const { api, cachedConfig, site } = command.netlify
   const siteId = site.id
 
   if (!siteId) {
@@ -18,11 +24,26 @@ const envSet = async (key, value, options, command) => {
     return false
   }
 
-  const siteData = await api.getSite({ siteId })
+  const { siteInfo } = cachedConfig
+  let finalEnv
 
   // Get current environment variables set in the UI
-  const setInService = siteData.use_envelope ? setInEnvelope : setInMongo
-  const finalEnv = await setInService({ api, siteData, key, value })
+  if (siteInfo.use_envelope) {
+    finalEnv = await setInEnvelope({ api, siteInfo, key, value, context, scope })
+  } else if (context || scope) {
+    error(
+      `To specify a context or scope, please run ${chalk.yellow(
+        'netlify open:admin',
+      )} to open the Netlify UI and opt in to the new environment variables experience from Site settings`,
+    )
+    return false
+  } else {
+    finalEnv = await setInMongo({ api, siteInfo, key, value })
+  }
+
+  if (!finalEnv) {
+    return false
+  }
 
   // Return new environment variables of site if using json flag
   if (options.json) {
@@ -30,22 +51,27 @@ const envSet = async (key, value, options, command) => {
     return false
   }
 
-  log(`Set environment variable ${key}=${value} for site ${siteData.name}`)
+  const withScope = scope ? ` scoped to ${chalk.white(scope)}` : ''
+  log(
+    `Set environment variable ${chalk.yellow(`${key}${value ? '=' : ''}${value}`)}${withScope} in the ${chalk.magenta(
+      context || 'all',
+    )} context`,
+  )
 }
 
 /**
  * Updates the env for a site record with a new key/value pair
  * @returns {Promise<object>}
  */
-const setInMongo = async ({ api, key, siteData, value }) => {
-  const { env = {} } = siteData.build_settings
+const setInMongo = async ({ api, key, siteInfo, value }) => {
+  const { env = {} } = siteInfo.build_settings
   const newEnv = {
     ...env,
     [key]: value,
   }
   // Apply environment variable updates
   await api.updateSite({
-    siteId: siteData.id,
+    siteId: siteInfo.id,
     body: {
       build_settings: {
         env: newEnv,
@@ -59,28 +85,52 @@ const setInMongo = async ({ api, key, siteData, value }) => {
  * Updates the env for a site configured with Envelope with a new key/value pair
  * @returns {Promise<object>}
  */
-const setInEnvelope = async ({ api, key, siteData, value }) => {
-  const accountId = siteData.account_slug
-  const siteId = siteData.id
+const setInEnvelope = async ({ api, context, key, scope, siteInfo, value }) => {
+  const accountId = siteInfo.account_slug
+  const siteId = siteInfo.id
   // fetch envelope env vars
   const envelopeVariables = await api.getEnvVars({ accountId, siteId })
-  const scopes = ['builds', 'functions', 'runtime', 'post_processing']
-  const values = [{ context: 'all', value }]
-  // check if we need to create or update
-  const exists = envelopeVariables.some((envVar) => envVar.key === key)
-  const method = exists ? api.updateEnvVar : api.createEnvVars
-  const body = exists ? { key, scopes, values } : [{ key, scopes, values }]
+  const contexts = context || ['all']
+  const scopes = scope || AVAILABLE_SCOPES
 
+  let values = contexts.map((ctx) => ({ context: ctx, value }))
+
+  const existing = envelopeVariables.find((envVar) => envVar.key === key)
+
+  const params = { accountId, siteId, key }
   try {
-    await method({ accountId, siteId, key, body })
-  } catch (error) {
-    throw error.json ? error.json.msg : error
+    if (existing) {
+      if (!value) {
+        // eslint-disable-next-line prefer-destructuring
+        values = existing.values
+      }
+      if (context && scope) {
+        error(
+          'Setting the context and scope at the same time on an existing env var is not allowed. Run the set command separately for each update.',
+        )
+        return false
+      }
+      if (context) {
+        // update individual value(s)
+        await Promise.all(values.map((val) => api.setEnvVarValue({ ...params, body: val })))
+      } else {
+        // otherwise update whole env var
+        const body = { key, scopes, values }
+        await api.updateEnvVar({ ...params, body })
+      }
+    } else {
+      // create whole env var
+      const body = [{ key, scopes, values }]
+      await api.createEnvVars({ ...params, body })
+    }
+  } catch (error_) {
+    throw error_.json ? error_.json.msg : error_
   }
 
-  const env = translateFromEnvelopeToMongo(envelopeVariables)
+  const env = translateFromEnvelopeToMongo(envelopeVariables, context ? context[0] : 'dev')
   return {
     ...env,
-    [key]: value,
+    [key]: value || env[key],
   }
 }
 
@@ -94,7 +144,30 @@ const createEnvSetCommand = (program) =>
     .command('env:set')
     .argument('<key>', 'Environment variable key')
     .argument('[value]', 'Value to set to', '')
+    .addOption(
+      new Option('-c, --context <context...>', 'Specify a deploy context (default: all contexts)').choices([
+        'production',
+        'deploy-preview',
+        'branch-deploy',
+        'dev',
+      ]),
+    )
+    .addOption(
+      new Option('-s, --scope <scope...>', 'Specify a scope (default: all scopes)').choices([
+        'builds',
+        'functions',
+        'post_processing',
+        'runtime',
+      ]),
+    )
     .description('Set value of environment variable')
+    .addExamples([
+      'netlify env:set VAR_NAME value # set in all contexts and scopes',
+      'netlify env:set VAR_NAME value --context production',
+      'netlify env:set VAR_NAME value --context production deploy-preview',
+      'netlify env:set VAR_NAME value --scope builds',
+      'netlify env:set VAR_NAME value --scope builds functions',
+    ])
     .action(async (key, value, options, command) => {
       await envSet(key, value, options, command)
     })

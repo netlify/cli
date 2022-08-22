@@ -20,14 +20,14 @@ const safeGetSite = async (api, siteId) => {
 }
 
 /**
- * The env:migrate command
+ * The env:clone command
  * @param {string} siteIdA Site (From)
  * @param {string} siteIdB Site (To)
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  * @returns {Promise<boolean>}
  */
-const envMigrate = async (options, command) => {
+const envClone = async (options, command) => {
   const { api, site } = command.netlify
 
   if (!site.id && !options.from) {
@@ -74,11 +74,7 @@ const envMigrate = async (options, command) => {
     return false
   }
 
-  log(
-    `Successfully migrated environment variables from ${chalk.greenBright(siteFrom.name)} to ${chalk.greenBright(
-      siteTo.name,
-    )}`,
-  )
+  log(`Successfully cloned environment variables from ${chalk.green(siteFrom.name)} to ${chalk.green(siteTo.name)}`)
 
   return true
 }
@@ -98,7 +94,7 @@ const mongoToMongo = async ({ api, siteFrom, siteTo }) => {
   ] = [siteFrom, siteTo]
 
   if (isEmpty(envFrom)) {
-    log(`${chalk.greenBright(siteFrom.name)} has no environment variables, nothing to migrate`)
+    log(`${chalk.green(siteFrom.name)} has no environment variables, nothing to clone`)
     return false
   }
 
@@ -130,7 +126,7 @@ const mongoToEnvelope = async ({ api, siteFrom, siteTo }) => {
   const keysFrom = Object.keys(envFrom)
 
   if (isEmpty(envFrom)) {
-    log(`${chalk.greenBright(siteFrom.name)} has no environment variables, nothing to migrate`)
+    log(`${chalk.green(siteFrom.name)} has no environment variables, nothing to clone`)
     return false
   }
 
@@ -163,7 +159,7 @@ const envelopeToMongo = async ({ api, siteFrom, siteTo }) => {
   const envFrom = translateFromEnvelopeToMongo(envelopeVariables)
 
   if (isEmpty(envFrom)) {
-    log(`${chalk.greenBright(siteFrom.name)} has no environment variables, nothing to migrate`)
+    log(`${chalk.green(siteFrom.name)} has no environment variables, nothing to clone`)
     return false
   }
 
@@ -201,7 +197,7 @@ const envelopeToEnvelope = async ({ api, siteFrom, siteTo }) => {
   const keysFrom = envelopeFrom.map(({ key }) => key)
 
   if (isEmpty(keysFrom)) {
-    log(`${chalk.greenBright(siteFrom.name)} has no environment variables, nothing to migrate`)
+    log(`${chalk.green(siteFrom.name)} has no environment variables, nothing to clone`)
     return false
   }
 
@@ -222,20 +218,18 @@ const envelopeToEnvelope = async ({ api, siteFrom, siteTo }) => {
 }
 
 /**
- * Creates the `netlify env:migrate` command
+ * Creates the `netlify env:clone` command
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createEnvMigrateCommand = (program) =>
+const createEnvCloneCommand = (program) =>
   program
-    .command('env:migrate')
+    .command('env:clone')
+    .alias('env:migrate')
     .option('-f, --from <from>', 'Site ID (From)')
     .requiredOption('-t, --to <to>', 'Site ID (To)')
-    .description(`Migrate environment variables from one site to another`)
-    .addExamples([
-      'netlify env:migrate --to <to-site-id>',
-      'netlify env:migrate --to <to-site-id> --from <from-site-id>',
-    ])
-    .action(envMigrate)
+    .description(`Clone environment variables from one site to another`)
+    .addExamples(['netlify env:clone --to <to-site-id>', 'netlify env:clone --to <to-site-id> --from <from-site-id>'])
+    .action(envClone)
 
-module.exports = { createEnvMigrateCommand }
+module.exports = { createEnvCloneCommand }

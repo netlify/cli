@@ -24,18 +24,6 @@ const routes = [
   },
 ]
 
-test('env:list --json should return empty object if no vars set', async (t) => {
-  await withSiteBuilder('site-env', async (builder) => {
-    await builder.buildAsync()
-
-    await withMockApi(routes, async ({ apiUrl }) => {
-      const cliResponse = await callCli(['env:list', '--json'], getCLIOptions({ builder, apiUrl }), true)
-
-      t.deepEqual(cliResponse, {})
-    })
-  })
-})
-
 test('env:get --json should return empty object if var not set', async (t) => {
   await withSiteBuilder('site-env', async (builder) => {
     await builder.buildAsync()
@@ -44,6 +32,34 @@ test('env:get --json should return empty object if var not set', async (t) => {
       const cliResponse = await callCli(['env:get', '--json', 'SOME_VAR'], getCLIOptions({ builder, apiUrl }), true)
 
       t.deepEqual(cliResponse, {})
+    })
+  })
+})
+
+test('env:get --context should log an error message', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      const { stderr: cliResponse } = await t.throwsAsync(
+        callCli(['env:get', 'SOME_VAR', '--context', 'production'], getCLIOptions({ builder, apiUrl })),
+      )
+
+      t.true(cliResponse.includes(`opt in to the new environment variables experience`))
+    })
+  })
+})
+
+test('env:get --scope should log an error message', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      const { stderr: cliResponse } = await t.throwsAsync(
+        callCli(['env:get', 'SOME_VAR', '--scope', 'functions'], getCLIOptions({ builder, apiUrl })),
+      )
+
+      t.true(cliResponse.includes(`opt in to the new environment variables experience`))
     })
   })
 })
@@ -214,6 +230,46 @@ test('env:get --json should return value of var from netlify.toml', async (t) =>
       )
 
       t.deepEqual(cliResponse, { from_toml_file: 'from_toml_file_value' })
+    })
+  })
+})
+
+test('env:list --json should return empty object if no vars set', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      const cliResponse = await callCli(['env:list', '--json'], getCLIOptions({ builder, apiUrl }), true)
+
+      t.deepEqual(cliResponse, {})
+    })
+  })
+})
+
+test('env:list --context should log an error message', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      const { stderr: cliResponse } = await t.throwsAsync(
+        callCli(['env:list', '--context', 'production'], getCLIOptions({ builder, apiUrl })),
+      )
+
+      t.true(cliResponse.includes(`opt in to the new environment variables experience`))
+    })
+  })
+})
+
+test('env:list --scope should log an error message', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      const { stderr: cliResponse } = await t.throwsAsync(
+        callCli(['env:list', '--scope', 'functions'], getCLIOptions({ builder, apiUrl })),
+      )
+
+      t.true(cliResponse.includes(`opt in to the new environment variables experience`))
     })
   })
 })
@@ -461,7 +517,7 @@ test('env:import --json --replace-existing should replace all existing vars and 
   })
 })
 
-test("env:migrate should return without migrate if there's no env in source site", async (t) => {
+test("env:clone should return without clone if there's no env in source site", async (t) => {
   await withSiteBuilder('site-env', async (builder) => {
     await builder.buildAsync()
     const createRoutes = [
@@ -469,20 +525,20 @@ test("env:migrate should return without migrate if there's no env in source site
       { path: 'sites/site_id_a', response: { ...siteInfo, build_settings: { env: {} } } },
     ]
     await withMockApi(createRoutes, async ({ apiUrl }) => {
-      const cliResponse = await callCli(['env:migrate', '--to', 'site_id_a'], getCLIOptions({ builder, apiUrl }))
+      const cliResponse = await callCli(['env:clone', '--to', 'site_id_a'], getCLIOptions({ builder, apiUrl }))
 
       t.snapshot(normalize(cliResponse))
     })
   })
 })
 
-test("env:migrate should print error if --to site doesn't exist", async (t) => {
+test("env:clone should print error if --to site doesn't exist", async (t) => {
   await withSiteBuilder('site-env', async (builder) => {
     await builder.buildAsync()
     const createRoutes = [{ path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: {} } } }]
     await withMockApi(createRoutes, async ({ apiUrl }) => {
       const { stderr: cliResponse } = await t.throwsAsync(
-        callCli(['env:migrate', '--to', 'to-site'], getCLIOptions({ builder, apiUrl })),
+        callCli(['env:clone', '--to', 'to-site'], getCLIOptions({ builder, apiUrl })),
       )
 
       t.true(cliResponse.includes(`Can't find site with id to-site. Please make sure the site exists`))
@@ -490,12 +546,12 @@ test("env:migrate should print error if --to site doesn't exist", async (t) => {
   })
 })
 
-test("env:migrate should print error if --from site doesn't exist", async (t) => {
+test("env:clone should print error if --from site doesn't exist", async (t) => {
   await withSiteBuilder('site-env', async (builder) => {
     await builder.buildAsync()
     await withMockApi([], async ({ apiUrl }) => {
       const { stderr: cliResponse } = await t.throwsAsync(
-        callCli(['env:migrate', '--from', 'from-site', '--to', 'to-site'], getCLIOptions({ builder, apiUrl })),
+        callCli(['env:clone', '--from', 'from-site', '--to', 'to-site'], getCLIOptions({ builder, apiUrl })),
       )
 
       t.true(cliResponse.includes(`Can't find site with id from-site. Please make sure the site exists`))
@@ -503,11 +559,11 @@ test("env:migrate should print error if --from site doesn't exist", async (t) =>
   })
 })
 
-test('env:migrate should exit if the folder is not linked to a site, and --from is not provided', async (t) => {
+test('env:clone should exit if the folder is not linked to a site, and --from is not provided', async (t) => {
   await withSiteBuilder('site-env', async (builder) => {
     await builder.buildAsync()
 
-    const cliResponse = await callCli(['env:migrate', '--to', 'site_id_a'], {
+    const cliResponse = await callCli(['env:clone', '--to', 'site_id_a'], {
       cwd: builder.directory,
       extendEnv: false,
       PATH: process.env.PATH,
@@ -516,9 +572,9 @@ test('env:migrate should exit if the folder is not linked to a site, and --from 
   })
 })
 
-test('env:migrate should return success message', async (t) => {
+test('env:clone should return success message', async (t) => {
   const envFrom = {
-    migrate_me: 'migrate_me',
+    clone_me: 'clone_me',
   }
 
   const envTo = {
@@ -548,7 +604,7 @@ test('env:migrate should return success message', async (t) => {
       build_settings: newBuildSettings,
     },
   }
-  const migrateRoutes = [
+  const cloneRoutes = [
     { path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: envFrom } } },
     { path: 'sites/site_id_a', response: { ...siteInfoTo, build_settings: { env: envTo } } },
     { path: 'sites/site_id/service-instances', response: [] },
@@ -561,8 +617,8 @@ test('env:migrate should return success message', async (t) => {
 
   await withSiteBuilder('site-env', async (builder) => {
     await builder.buildAsync()
-    await withMockApi(migrateRoutes, async ({ apiUrl, requests }) => {
-      const cliResponse = await callCli(['env:migrate', '--to', 'site_id_a'], getCLIOptions({ apiUrl, builder }))
+    await withMockApi(cloneRoutes, async ({ apiUrl, requests }) => {
+      const cliResponse = await callCli(['env:clone', '--to', 'site_id_a'], getCLIOptions({ apiUrl, builder }))
 
       t.snapshot(normalize(cliResponse))
 

@@ -69,10 +69,10 @@ Local dev server
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
+| [`env:clone`](/docs/commands/env.md#envclone) | Clone environment variables from one site to another  |
 | [`env:get`](/docs/commands/env.md#envget) | Get resolved value of specified environment variable (includes netlify.toml)  |
 | [`env:import`](/docs/commands/env.md#envimport) | Import and set environment variables from .env file  |
 | [`env:list`](/docs/commands/env.md#envlist) | Lists resolved environment variables for site (includes netlify.toml)  |
-| [`env:migrate`](/docs/commands/env.md#envmigrate) | Migrate environment variables from one site to another  |
 | [`env:set`](/docs/commands/env.md#envset) | Set value of environment variable  |
 | [`env:unset`](/docs/commands/env.md#envunset) | Unset an environment variable which removes it from the UI  |
 
@@ -99,9 +99,10 @@ Manage netlify functions
 | [`graph:config:write`](/docs/commands/graph.md#graphconfigwrite) | Write a .graphqlrc.json file to the current directory for use with local tooling (e.g. the graphql extension for vscode)  |
 | [`graph:edit`](/docs/commands/graph.md#graphedit) | Launch the browser to edit your local graph functions from Netlify  |
 | [`graph:handler`](/docs/commands/graph.md#graphhandler) | Generate a handler for a Graph operation given its name. See `graph:operations` for a list of operations.  |
+| [`graph:init`](/docs/commands/graph.md#graphinit) | Initialize all the resources for Netlify Graph  |
 | [`graph:library`](/docs/commands/graph.md#graphlibrary) | Generate the Graph function library  |
 | [`graph:operations`](/docs/commands/graph.md#graphoperations) | List all of the locally available operations  |
-| [`graph:pull`](/docs/commands/graph.md#graphpull) | Pull down your local Netlify Graph schema, and process pending Graph edit events  |
+| [`graph:pull`](/docs/commands/graph.md#graphpull) | Pull your remote Netlify Graph schema locally, and process pending Graph edit events  |
 
 
 ### [init](/docs/commands/init.md)

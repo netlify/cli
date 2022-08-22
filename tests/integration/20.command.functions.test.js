@@ -5,10 +5,10 @@ const avaTest = require('ava')
 const { isCI } = require('ci-info')
 const execa = require('execa')
 const getPort = require('get-port')
+const waitPort = require('wait-port')
 
 const fs = require('../../src/lib/fs')
 const { NetlifyFunction } = require('../../src/lib/functions/netlify-function')
-const waitPort = require('../../vendor/wait-port')
 
 const callCli = require('./utils/call-cli')
 const cliPath = require('./utils/cli-path')
@@ -107,6 +107,10 @@ test('should create a new function directory when none is found', async (t) => {
 
     const createFunctionQuestions = [
       {
+        question: "Select the type of function you'd like to create",
+        answer: answerWithValue(`${DOWN}${CONFIRM}`),
+      },
+      {
         question: 'Enter the path, relative to your site',
         answer: answerWithValue('test/functions'),
       },
@@ -139,6 +143,144 @@ test('should create a new function directory when none is found', async (t) => {
       await childProcess
 
       t.is(await fs.fileExistsAsync(`${builder.directory}/test/functions/hello-world/hello-world.js`), true)
+    })
+  })
+})
+
+test('should create a new edge function directory when none is found', async (t) => {
+  const siteInfo = {
+    admin_url: 'https://app.netlify.com/sites/site-name/overview',
+    ssl_url: 'https://site-name.netlify.app/',
+    id: 'site_id',
+    name: 'site-name',
+    build_settings: { repo_url: 'https://github.com/owner/repo' },
+  }
+
+  const routes = [
+    {
+      path: 'accounts',
+      response: [{ slug: 'test-account' }],
+    },
+    { path: 'sites/site_id/service-instances', response: [] },
+    { path: 'sites/site_id', response: siteInfo },
+    {
+      path: 'sites',
+      response: [siteInfo],
+    },
+    { path: 'sites/site_id', method: 'patch', response: {} },
+  ]
+
+  await withSiteBuilder('site-with-no-functions-dir', async (builder) => {
+    await builder.buildAsync()
+
+    const createFunctionQuestions = [
+      {
+        question: "Select the type of function you'd like to create",
+        answer: answerWithValue(CONFIRM),
+      },
+      {
+        question: 'Select the language of your function',
+        answer: answerWithValue(CONFIRM),
+      },
+      {
+        question: 'Pick a template',
+        answer: answerWithValue(CONFIRM),
+      },
+      {
+        question: 'Name your function',
+        answer: answerWithValue(CONFIRM),
+      },
+      {
+        question: 'What route do you want your edge function to be invoked on?',
+        answer: answerWithValue('/test'),
+      },
+    ]
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      const childProcess = execa(cliPath, ['functions:create'], {
+        env: {
+          NETLIFY_API_URL: apiUrl,
+          NETLIFY_SITE_ID: 'site_id',
+          NETLIFY_AUTH_TOKEN: 'fake-token',
+        },
+        cwd: builder.directory,
+      })
+
+      handleQuestions(childProcess, createFunctionQuestions)
+
+      await childProcess
+
+      t.is(await fs.fileExistsAsync(`${builder.directory}/netlify/edge-functions/hello/hello.js`), true)
+    })
+  })
+})
+
+test('should use specified edge function directory when found', async (t) => {
+  const siteInfo = {
+    admin_url: 'https://app.netlify.com/sites/site-name/overview',
+    ssl_url: 'https://site-name.netlify.app/',
+    id: 'site_id',
+    name: 'site-name',
+    build_settings: { repo_url: 'https://github.com/owner/repo' },
+  }
+
+  const routes = [
+    {
+      path: 'accounts',
+      response: [{ slug: 'test-account' }],
+    },
+    { path: 'sites/site_id/service-instances', response: [] },
+    { path: 'sites/site_id', response: siteInfo },
+    {
+      path: 'sites',
+      response: [siteInfo],
+    },
+    { path: 'sites/site_id', method: 'patch', response: {} },
+  ]
+
+  await withSiteBuilder('site-with-custom-edge-functions-dir', async (builder) => {
+    builder.withNetlifyToml({ config: { build: { edge_functions: 'somethingEdgy' } } })
+
+    await builder.buildAsync()
+
+    const createFunctionQuestions = [
+      {
+        question: "Select the type of function you'd like to create",
+        answer: answerWithValue(CONFIRM),
+      },
+      {
+        question: 'Select the language of your function',
+        answer: answerWithValue(CONFIRM),
+      },
+      {
+        question: 'Pick a template',
+        answer: answerWithValue(CONFIRM),
+      },
+      {
+        question: 'Name your function',
+        answer: answerWithValue(CONFIRM),
+      },
+      {
+        question: 'What route do you want your edge function to be invoked on?',
+        answer: answerWithValue('/test'),
+      },
+    ]
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      const childProcess = execa(cliPath, ['functions:create'], {
+        env: {
+          NETLIFY_API_URL: apiUrl,
+          NETLIFY_SITE_ID: 'site_id',
+          NETLIFY_AUTH_TOKEN: 'fake-token',
+        },
+        cwd: builder.directory,
+      })
+
+      handleQuestions(childProcess, createFunctionQuestions)
+
+      await childProcess
+
+      t.true(await fs.fileExistsAsync(`${builder.directory}/somethingEdgy/hello/hello.js`))
     })
   })
 })
@@ -178,6 +320,10 @@ test('should install function template dependencies on a site-level `package.jso
     await builder.buildAsync()
 
     const createFunctionQuestions = [
+      {
+        question: "Select the type of function you'd like to create",
+        answer: answerWithValue(`${DOWN}${CONFIRM}`),
+      },
       {
         question: 'Enter the path, relative to your site',
         answer: answerWithValue('test/functions'),
@@ -255,6 +401,10 @@ test('should install function template dependencies in the function sub-director
 
     const createFunctionQuestions = [
       {
+        question: "Select the type of function you'd like to create",
+        answer: answerWithValue(`${DOWN}${CONFIRM}`),
+      },
+      {
         question: 'Enter the path, relative to your site',
         answer: answerWithValue('test/functions'),
       },
@@ -327,6 +477,10 @@ test('should not create a new function directory when one is found', async (t) =
 
     const createFunctionQuestions = [
       {
+        question: "Select the type of function you'd like to create",
+        answer: answerWithValue(`${DOWN}${CONFIRM}`),
+      },
+      {
         question: 'Select the language of your function',
         answer: answerWithValue(CONFIRM),
       },
@@ -387,6 +541,10 @@ test('should only show function templates for the language specified via the --l
 
     const createFunctionQuestions = [
       {
+        question: "Select the type of function you'd like to create",
+        answer: answerWithValue(`${DOWN}${CONFIRM}`),
+      },
+      {
         question: 'Enter the path, relative to your site',
         answer: answerWithValue('test/functions'),
       },
@@ -446,6 +604,10 @@ test('throws an error when the --language flag contains an unsupported value', a
     await builder.buildAsync()
 
     const createFunctionQuestions = [
+      {
+        question: "Select the type of function you'd like to create",
+        answer: answerWithValue(`${DOWN}${CONFIRM}`),
+      },
       {
         question: 'Enter the path, relative to your site',
         answer: answerWithValue('test/functions'),

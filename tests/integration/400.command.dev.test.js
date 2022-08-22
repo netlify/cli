@@ -8,8 +8,6 @@ const avaTest = require('ava')
 const { isCI } = require('ci-info')
 const FormData = require('form-data')
 
-const { originalIP } = require('../lib/local-ip')
-
 const { withDevServer } = require('./utils/dev-server')
 const got = require('./utils/got')
 const { withSiteBuilder } = require('./utils/site-builder')
@@ -39,6 +37,33 @@ test('should use [build.environment] and not [context.production.environment]', 
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response = await got(`${server.url}/.netlify/functions/env`).text()
       t.is(response, 'DEFAULT_CONTEXT')
+    })
+  })
+})
+
+test('should use [context.production.environment] when --context=production', async (t) => {
+  await withSiteBuilder('site-with-build-environment', async (builder) => {
+    builder
+      .withNetlifyToml({
+        config: {
+          build: { environment: { TEST: 'DEFAULT_CONTEXT' } },
+          context: { production: { environment: { TEST: 'PRODUCTION_CONTEXT' } } },
+          functions: { directory: 'functions' },
+        },
+      })
+      .withFunction({
+        path: 'env.js',
+        handler: async () => ({
+          statusCode: 200,
+          body: `${process.env.TEST}`,
+        }),
+      })
+
+    await builder.buildAsync()
+
+    await withDevServer({ cwd: builder.directory, context: 'production' }, async (server) => {
+      const response = await got(`${server.url}/.netlify/functions/env`).text()
+      t.is(response, 'PRODUCTION_CONTEXT')
     })
   })
 })
@@ -142,6 +167,25 @@ test('should set value of the CONTEXT env variable', async (t) => {
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response = await got(`${server.url}/.netlify/functions/env`).text()
       t.is(response, 'dev')
+    })
+  })
+})
+
+test('should set value of the CONTEXT env variable to the --context flag', async (t) => {
+  await withSiteBuilder('site-with-context-override', async (builder) => {
+    builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
+      path: 'env.js',
+      handler: async () => ({
+        statusCode: 200,
+        body: `${process.env.CONTEXT}`,
+      }),
+    })
+
+    await builder.buildAsync()
+
+    await withDevServer({ cwd: builder.directory, context: 'deploy-preview' }, async (server) => {
+      const response = await got(`${server.url}/.netlify/functions/env`).text()
+      t.is(response, 'deploy-preview')
     })
   })
 })
@@ -407,7 +451,7 @@ test('should handle form submission', async (t) => {
         payload: {
           created_at: body.payload.created_at,
           data: {
-            ip: originalIP,
+            ip: '::ffff:127.0.0.1',
             some: 'thing',
             user_agent: 'got (https://github.com/sindresorhus/got)',
           },

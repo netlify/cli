@@ -9,8 +9,8 @@ const { Option } = require('commander')
 const execa = require('execa')
 const StaticServer = require('static-server')
 const stripAnsiCc = require('strip-ansi-control-characters')
+const waitPort = require('wait-port')
 
-const waitPort = require('../../../vendor/wait-port')
 const { promptEditorHelper } = require('../../lib/edge-functions')
 const { startFunctionsServer } = require('../../lib/functions/server')
 const {
@@ -35,9 +35,11 @@ const {
   NETLIFYDEVWARN,
   chalk,
   detectServerSettings,
+  ensureNetlifyIgnore,
   error,
   exit,
   generateNetlifyGraphJWT,
+  getEnvelopeEnv,
   getSiteInformation,
   getToken,
   injectEnvVariables,
@@ -52,6 +54,8 @@ const {
 } = require('../../utils')
 
 const { createDevExecCommand } = require('./dev-exec')
+
+const netlifyBuildPromise = import('@netlify/build')
 
 const startStaticServer = async ({ settings }) => {
   const server = new StaticServer({
@@ -198,6 +202,8 @@ const startFrameworkServer = async function ({ settings }) {
   try {
     const open = await waitPort({
       port: settings.frameworkPort,
+      // Cannot use `localhost` as it may point to IPv4 or IPv6 depending on node version and OS
+      host: '127.0.0.1',
       output: 'silent',
       timeout: FRAMEWORK_PORT_TIMEOUT,
       ...(settings.pollingStrategies.includes('HTTP') && { protocol: 'http' }),
@@ -231,39 +237,47 @@ const FRAMEWORK_PORT_TIMEOUT = 6e5
  * @param {object} params
  * @param {*} params.addonsUrls
  * @param {import('../base-command').NetlifyOptions["config"]} params.config
+ * @param {import('../base-command').NetlifyOptions["cachedConfig"]['env']} params.env
  * @param {InspectSettings} params.inspectSettings
  * @param {() => Promise<object>} params.getUpdatedConfig
  * @param {string} params.geolocationMode
+ * @param {string} params.geoCountry
  * @param {*} params.settings
  * @param {boolean} params.offline
  * @param {*} params.site
+ * @param {*} params.siteInfo
  * @param {import('../../utils/state-config').StateConfig} params.state
  * @returns
  */
 const startProxyServer = async ({
   addonsUrls,
   config,
+  env,
+  geoCountry,
   geolocationMode,
   getUpdatedConfig,
   inspectSettings,
   offline,
   settings,
   site,
+  siteInfo,
   state,
 }) => {
   const url = await startProxy({
     addonsUrls,
     config,
     configPath: site.configPath,
+    env,
     geolocationMode,
+    geoCountry,
     getUpdatedConfig,
     inspectSettings,
     offline,
     projectDir: site.root,
     settings,
     state,
+    siteInfo,
   })
-
   if (!url) {
     log(NETLIFYDEVERR, `Unable to start proxy server on port '${settings.port}'`)
     exit(1)
@@ -386,6 +400,19 @@ const validateShortFlagArgs = (args) => {
   return args
 }
 
+const validateGeoCountryCode = (arg) => {
+  // Validate that the arg passed is two letters only for country
+  // See https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes
+  if (!/^[a-z]{2}$/i.test(arg)) {
+    throw new Error(
+      `The geo country code must use a two letter abbreviation.
+      ${chalk.red(BANG)}  Example:
+      netlify dev --geo=mock --country=FR`,
+    )
+  }
+  return arg.toUpperCase()
+}
+
 /**
  * The dev command
  * @param {import('commander').OptionValues} options
@@ -393,7 +420,8 @@ const validateShortFlagArgs = (args) => {
  */
 const dev = async (options, command) => {
   log(`${NETLIFYDEV}`)
-  const { api, config, repositoryRoot, site, siteInfo, state } = command.netlify
+  const { api, cachedConfig, config, repositoryRoot, site, siteInfo, state } = command.netlify
+  const netlifyBuild = await netlifyBuildPromise
   config.dev = { ...config.dev }
   config.build = { ...config.build }
   /** @type {import('./types').DevConfig} */
@@ -405,7 +433,13 @@ const dev = async (options, command) => {
     ...options,
   }
 
-  await injectEnvVariables({ devConfig, env: command.netlify.cachedConfig.env, site })
+  let { env } = cachedConfig
+
+  if (!options.offline && siteInfo.use_envelope) {
+    env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })
+  }
+
+  await injectEnvVariables({ devConfig, env, site })
   await promptEditorHelper({ chalk, config, log, NETLIFYDEVLOG, repositoryRoot, state })
 
   const { addonsUrls, capabilities, siteUrl, timeouts } = await getSiteInformation({
@@ -420,6 +454,26 @@ const dev = async (options, command) => {
   let settings = {}
   try {
     settings = await detectServerSettings(devConfig, options, site.root)
+
+    // If there are plugins that we should be running for this site, add them
+    // to the config as if they were declared in netlify.toml. We must check
+    // whether the plugin has already been added by another source (like the
+    // TOML file or the UI), as we don't want to run the same plugin twice.
+    if (settings.plugins) {
+      const { plugins: existingPlugins = [] } = cachedConfig.config
+      const existingPluginNames = new Set(existingPlugins.map((plugin) => plugin.package))
+      const newPlugins = settings.plugins
+        .map((pluginName) => {
+          if (existingPluginNames.has(pluginName)) {
+            return
+          }
+
+          return { package: pluginName, origin: 'config', inputs: {} }
+        })
+        .filter(Boolean)
+
+      cachedConfig.config.plugins = [...newPlugins, ...cachedConfig.config.plugins]
+    }
   } catch (error_) {
     log(NETLIFYDEVERR, error_.message)
     exit(1)
@@ -443,7 +497,26 @@ const dev = async (options, command) => {
     capabilities,
     timeouts,
   })
-  await startFrameworkServer({ settings })
+
+  log(`${NETLIFYDEVWARN} Setting up local development server`)
+
+  const devCommand = () => startFrameworkServer({ settings })
+  const startDevOptions = getBuildOptions({
+    cachedConfig,
+    options,
+  })
+  const { error: startDevError, success } = await netlifyBuild.startDev(devCommand, startDevOptions)
+
+  if (!success) {
+    error(`Could not start local development server\n\n${startDevError.message}\n\n${startDevError.stack}`)
+  }
+
+  // Try to add `.netlify` to `.gitignore`.
+  try {
+    await ensureNetlifyIgnore(repositoryRoot)
+  } catch {
+    // no-op
+  }
 
   // TODO: We should consolidate this with the existing config watcher.
   const getUpdatedConfig = async () => {
@@ -459,12 +532,15 @@ const dev = async (options, command) => {
   let url = await startProxyServer({
     addonsUrls,
     config,
+    env: command.netlify.cachedConfig.env,
     geolocationMode: options.geo,
+    geoCountry: options.country,
     getUpdatedConfig,
     inspectSettings,
     offline: options.offline,
     settings,
     site,
+    siteInfo,
     state,
   })
 
@@ -492,6 +568,9 @@ const dev = async (options, command) => {
 
     let stopWatchingCLISessions
 
+    let liveConfig = { ...config }
+    let isRestartingSession = false
+
     const createOrResumeSession = async function () {
       const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options, settings })
 
@@ -502,6 +581,7 @@ const dev = async (options, command) => {
       }
 
       stopWatchingCLISessions = await startOneGraphCLISession({
+        config: liveConfig,
         netlifyGraphConfig,
         netlifyToken,
         site,
@@ -513,6 +593,7 @@ const dev = async (options, command) => {
       const oneGraphSessionId = loadCLISession(state)
 
       await persistNewOperationsDocForSession({
+        config: liveConfig,
         netlifyGraphConfig,
         netlifyToken,
         oneGraphSessionId,
@@ -548,10 +629,16 @@ const dev = async (options, command) => {
     }
 
     // Set up a handler for config changes.
-    configWatcher.on('change', (newConfig) => {
+    configWatcher.on('change', async (newConfig) => {
       command.netlify.config = newConfig
-      stopWatchingCLISessions()
-      createOrResumeSession()
+      liveConfig = newConfig
+      if (isRestartingSession) {
+        return
+      }
+      stopWatchingCLISessions && stopWatchingCLISessions()
+      isRestartingSession = true
+      await createOrResumeSession()
+      isRestartingSession = false
     })
 
     const oneGraphSessionId = await createOrResumeSession()
@@ -569,6 +656,19 @@ const dev = async (options, command) => {
   printBanner({ url })
 }
 
+const getBuildOptions = ({ cachedConfig, options: { context, cwd = process.cwd(), debug, dry, offline }, token }) => ({
+  cachedConfig,
+  token,
+  dry,
+  debug,
+  context,
+  mode: 'cli',
+  telemetry: false,
+  buffer: false,
+  offline,
+  cwd,
+})
+
 /**
  * Creates the `netlify dev` command
  * @param {import('../base-command').BaseCommand} program
@@ -579,10 +679,16 @@ const createDevCommand = (program) => {
 
   return program
     .command('dev')
+    .alias('develop')
     .description(
       `Local dev server\nThe dev command will run a local dev server with Netlify's proxy and redirect rules`,
     )
     .option('-c ,--command <command>', 'command to run')
+    .addOption(
+      new Option('--context <context>', 'Specify a deploy context for environment variables')
+        .choices(['production', 'deploy-preview', 'branch-deploy', 'dev'])
+        .default('dev'),
+    )
     .option('-p ,--port <port>', 'port of netlify dev', (value) => Number.parseInt(value))
     .option('--targetPort <port>', 'port of target app server', (value) => Number.parseInt(value))
     .option('--framework <name>', 'framework to use. Defaults to #auto which automatically detects a framework')
@@ -598,6 +704,12 @@ const createDevCommand = (program) => {
       )
         .choices(['cache', 'mock', 'update'])
         .default('cache'),
+    )
+    .addOption(
+      new Option(
+        '--country <geoCountry>',
+        'Two-letter country code (https://ntl.fyi/country-codes) to use as mock geolocation (enables --geo=mock automatically)',
+      ).argParser(validateGeoCountryCode),
     )
     .addOption(
       new Option('--staticServerPort <port>', 'port of the static app server used when no framework is detected')
@@ -626,6 +738,7 @@ const createDevCommand = (program) => {
       'netlify dev',
       'netlify dev -d public',
       'netlify dev -c "hugo server -w" --targetPort 1313',
+      'netlify dev --context production',
       'netlify dev --graph',
       'netlify dev --edgeInspect',
       'netlify dev --edgeInspect=127.0.0.1:9229',

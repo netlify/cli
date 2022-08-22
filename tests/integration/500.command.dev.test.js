@@ -1,13 +1,14 @@
 // Handlers are meant to be async outside tests
 /* eslint-disable require-await */
+const { promises: fs } = require('fs')
 const path = require('path')
 
 // eslint-disable-next-line ava/use-test
 const avaTest = require('ava')
 const { isCI } = require('ci-info')
 const FormData = require('form-data')
-
-const { originalIP } = require('../lib/local-ip')
+const getPort = require('get-port')
+const tempy = require('tempy')
 
 const { withDevServer } = require('./utils/dev-server')
 const got = require('./utils/got')
@@ -102,7 +103,7 @@ test('should handle form submission', async (t) => {
         payload: {
           created_at: body.payload.created_at,
           data: {
-            ip: originalIP,
+            ip: '::ffff:127.0.0.1',
             some: 'thing',
             user_agent: 'got (https://github.com/sindresorhus/got)',
           },
@@ -361,6 +362,106 @@ test('should redirect from sub directory to root directory', async (t) => {
       t.is(response2, '<html><h1>foo')
       t.is(response3, '<html><h1>not-foo')
     })
+  })
+})
+
+test('Runs build plugins with the `onPreDev` event', async (t) => {
+  const userServerPort = await getPort()
+  const pluginManifest = 'name: local-plugin'
+
+  // This test plugin starts an HTTP server that we'll hit when the dev server
+  // is ready, asserting that plugins in dev mode can have long-running jobs.
+  const pluginSource = `
+    const http = require("http");
+
+    module.exports = {
+      onPreBuild: () => {
+        throw new Error("I should not run");
+      },
+
+      onPreDev: () => {
+        const server = http.createServer((_, res) => res.end("Hello world"));
+      
+        server.listen(${userServerPort}, "localhost", () => {
+          console.log("Server is running on port ${userServerPort}");
+        });
+      },
+    };
+  `
+  const pluginDirectory = await tempy.directory()
+
+  await fs.writeFile(path.join(pluginDirectory, 'manifest.yml'), pluginManifest)
+  await fs.writeFile(path.join(pluginDirectory, 'index.js'), pluginSource)
+
+  await withSiteBuilder('site-with-custom-server-in-plugin', async (builder) => {
+    builder
+      .withNetlifyToml({
+        config: {
+          plugins: [{ package: path.relative(builder.directory, pluginDirectory) }],
+        },
+      })
+      .withContentFile({
+        path: 'foo.html',
+        content: '<html><h1>foo',
+      })
+
+    await builder.buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async (server) => {
+      t.is(await got(`${server.url}/foo`).text(), '<html><h1>foo')
+      t.is(await got(`http://localhost:${userServerPort}`).text(), 'Hello world')
+    })
+  })
+})
+
+test('Handles errors from the `onPreDev` event', async (t) => {
+  const userServerPort = await getPort()
+  const pluginManifest = 'name: local-plugin'
+
+  // This test plugin starts an HTTP server that we'll hit when the dev server
+  // is ready, asserting that plugins in dev mode can have long-running jobs.
+  const pluginSource = `
+    const http = require("http");
+
+    module.exports = {
+      onPreBuild: () => {
+        throw new Error("I should not run");
+      },
+
+      onPreDev: () => {
+        throw new Error("Something went wrong");
+      },
+    };
+  `
+  const pluginDirectory = await tempy.directory()
+
+  await fs.writeFile(path.join(pluginDirectory, 'manifest.yml'), pluginManifest)
+  await fs.writeFile(path.join(pluginDirectory, 'index.js'), pluginSource)
+
+  await withSiteBuilder('site-with-custom-server-in-plugin', async (builder) => {
+    builder
+      .withNetlifyToml({
+        config: {
+          plugins: [{ package: path.relative(builder.directory, pluginDirectory) }],
+        },
+      })
+      .withContentFile({
+        path: 'foo.html',
+        content: '<html><h1>foo',
+      })
+
+    await builder.buildAsync()
+
+    await t.throwsAsync(() =>
+      withDevServer(
+        { cwd: builder.directory },
+        async (server) => {
+          t.is(await got(`${server.url}/foo`).text(), '<html><h1>foo')
+          t.is(await got(`http://localhost:${userServerPort}`).text(), 'Hello world')
+        },
+        { message: /Error: Something went wrong/ },
+      ),
+    )
   })
 })
 /* eslint-enable require-await */

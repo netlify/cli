@@ -24,16 +24,18 @@ class EdgeFunctionsRegistry {
    * @param {object} opts.config
    * @param {string} opts.configPath
    * @param {string[]} opts.directories
+   * @param {Record<string, string>} opts.env
    * @param {() => Promise<object>} opts.getUpdatedConfig
    * @param {EdgeFunction[]} opts.internalFunctions
    * @param {string} opts.projectDir
-   * @param {(functions: EdgeFunction[]) => Promise<object>} opts.runIsolate
+   * @param {(functions: EdgeFunction[], env?: NodeJS.ProcessEnv) => Promise<object>} opts.runIsolate
    */
   constructor({
     bundler,
     config,
     configPath,
     directories,
+    env,
     getUpdatedConfig,
     internalFunctions,
     projectDir,
@@ -65,7 +67,7 @@ class EdgeFunctionsRegistry {
     this.internalFunctions = internalFunctions
 
     /**
-     * @type {(functions: EdgeFunction[]) => Promise<object>}
+     * @type {(functions: EdgeFunction[], env?: NodeJS.ProcessEnv) => Promise<object>}
      */
     this.runIsolate = runIsolate
 
@@ -78,6 +80,11 @@ class EdgeFunctionsRegistry {
      * @type {EdgeFunctionDeclaration[]}
      */
     this.declarations = this.getDeclarations(config)
+
+    /**
+     * @type {Record<string, string>}
+     */
+    this.env = EdgeFunctionsRegistry.getEnvironmentVariables(env)
 
     /**
      * @type {Map<string, import('chokidar').FSWatcher>}
@@ -107,7 +114,7 @@ class EdgeFunctionsRegistry {
    */
   async build(functions) {
     try {
-      const { graph, success } = await this.runIsolate(functions)
+      const { graph, success } = await this.runIsolate(functions, this.env)
 
       if (!success) {
         throw new Error('Build error')
@@ -176,6 +183,27 @@ class EdgeFunctionsRegistry {
     const declarations = [...userFunctions, ...this.internalFunctions]
 
     return declarations
+  }
+
+  static getEnvironmentVariables(envConfig) {
+    const env = Object.create(null)
+    Object.entries(envConfig).forEach(([key, variable]) => {
+      if (
+        variable.sources.includes('ui') ||
+        variable.sources.includes('account') ||
+        variable.sources.includes('addons')
+      ) {
+        env[key] = variable.value
+      }
+    })
+
+    env.DENO_REGION = 'local'
+    env.NETLIFY_DEV = 'true'
+    // We use it in the bootstrap layer to detect whether we're running in production or not
+    // (see https://github.com/netlify/edge-functions-bootstrap/blob/main/src/bootstrap/environment.ts#L2)
+    // env.DENO_DEPLOYMENT_ID = 'xxx='
+
+    return env
   }
 
   getManifest() {

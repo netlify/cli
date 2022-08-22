@@ -57,7 +57,7 @@ const logGitSetupInstructionsAndExit = () => {
 
    ${chalk.cyanBright.bold('git init')}
 
-2. Commit your files
+2. Add your files
 
    ${chalk.cyanBright.bold('git add .')}
 
@@ -197,6 +197,8 @@ const init = async (options, command) => {
   if (isEmpty(siteInfo)) {
     siteInfo = await createOrLinkSiteToRepo(command)
   }
+
+  log()
 
   // Check for existing CI setup
   const remoteBuildRepo = getRepoUrl({ siteInfo })

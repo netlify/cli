@@ -1,6 +1,7 @@
 // @ts-check
 
 const slugify = require('@sindresorhus/slugify')
+const { InvalidArgumentError } = require('commander')
 const inquirer = require('inquirer')
 const pick = require('lodash/pick')
 const sample = require('lodash/sample')
@@ -38,16 +39,14 @@ const getSiteNameInput = async (name, user, api) => {
     ]
     siteSuggestion = sample(suggestions)
 
-    console.log(
-      `Choose a unique site name (e.g. ${siteSuggestion}.netlify.app) or leave it blank for a random name. You can update the site name later.`,
-    )
     const { name: nameInput } = await inquirer.prompt([
       {
         type: 'input',
         name: 'name',
-        message: 'Site name (optional):',
-        filter: (val) => (val === '' ? undefined : val),
-        validate: (input) => /^[a-zA-Z\d-]+$/.test(input) || 'Only alphanumeric characters and hyphens are allowed',
+        message: 'Site name (you can change it later):',
+        default: siteSuggestion,
+        validate: (input) =>
+          /^[a-zA-Z\d-]+$/.test(input || undefined) || 'Only alphanumeric characters and hyphens are allowed',
       },
     ])
     name = nameInput || siteSuggestion
@@ -84,7 +83,6 @@ const sitesCreate = async (options, command) => {
     accountSlug = accountSlugInput
   }
 
-  const { name: nameFlag } = options
   let user
   let site
 
@@ -110,7 +108,7 @@ const sitesCreate = async (options, command) => {
       }
     }
   }
-  await inputSiteName(nameFlag)
+  await inputSiteName(options.name)
 
   log()
   log(chalk.greenBright.bold.underline(`Site Created`))
@@ -175,6 +173,16 @@ const sitesCreate = async (options, command) => {
   return site
 }
 
+const MAX_SITE_NAME_LENGTH = 63
+const validateName = function (value) {
+  // netlify sites:create --name <A string of more than 63 words>
+  if (typeof value === 'string' && value.length > MAX_SITE_NAME_LENGTH) {
+    throw new InvalidArgumentError(`--name should be less than 64 characters, input length: ${value.length}`)
+  }
+
+  return value
+}
+
 /**
  * Creates the `netlify sites:create` command
  * @param {import('../base-command').BaseCommand} program
@@ -187,8 +195,8 @@ const createSitesCreateCommand = (program) =>
       `Create an empty site (advanced)
 Create a blank site that isn't associated with any git remote. Will link the site to the current working directory.`,
     )
-    .option('-n, --name [name]', 'name of site')
-    .option('-a, --account-slug [slug]', 'account slug to create the site under')
+    .option('-n, --name <name>', 'name of site', validateName)
+    .option('-a, --account-slug <slug>', 'account slug to create the site under')
     .option('-c, --with-ci', 'initialize CI hooks during site creation')
     .option('-m, --manual', 'force manual CI setup.  Used --with-ci flag')
     .option('--disable-linking', 'create the site without linking it to current directory')

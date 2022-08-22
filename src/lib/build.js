@@ -1,4 +1,6 @@
 // @ts-check
+const process = require('process')
+
 const netlifyBuildPromise = import('@netlify/build')
 
 /**
@@ -20,6 +22,7 @@ const netlifyBuildPromise = import('@netlify/build')
  */
 const getBuildOptions = ({ cachedConfig, options: { context, cwd, debug, dry, json, offline, silent }, token }) => ({
   cachedConfig,
+  siteId: cachedConfig.siteInfo.id,
   token,
   dry,
   debug,
@@ -43,6 +46,18 @@ const getBuildOptions = ({ cachedConfig, options: { context, cwd, debug, dry, js
  */
 const runBuild = async (options) => {
   const { default: build } = await netlifyBuildPromise
+
+  // If netlify NETLIFY_API_URL is set we need to pass this information to @netlify/build
+  // TODO don't use testOpts, but add real properties to do this.
+  if (process.env.NETLIFY_API_URL) {
+    const apiUrl = new URL(process.env.NETLIFY_API_URL)
+    const testOpts = {
+      scheme: apiUrl.protocol.slice(0, -1),
+      host: apiUrl.host,
+    }
+    options = { ...options, testOpts }
+  }
+
   const { configMutations, netlifyConfig: newConfig, severityCode: exitCode } = await build(options)
   return { exitCode, newConfig, configMutations }
 }

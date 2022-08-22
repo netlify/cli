@@ -1,14 +1,19 @@
 // @ts-check
 /* eslint-disable eslint-comments/disable-enable-pair */
 /* eslint-disable fp/no-loops */
+const { OneGraphClient } = require('netlify-onegraph-internal')
+
 const {
   OneGraphCliClient,
+  ensureCLISession,
   handleCliSessionEvent,
   loadCLISession,
+  readLockfile,
+  readSchemaIdFromLockfile,
   refetchAndGenerateFromOneGraph,
 } = require('../../lib/one-graph/cli-client')
 const { buildSchema, getNetlifyGraphConfig, readGraphQLSchemaFile } = require('../../lib/one-graph/cli-netlify-graph')
-const { chalk, error, log, warn } = require('../../utils')
+const { NETLIFYDEVERR, chalk, error, log, warn } = require('../../utils')
 
 /**
  * Creates the `netlify graph:pull` command
@@ -17,7 +22,7 @@ const { chalk, error, log, warn } = require('../../utils')
  * @returns
  */
 const graphPull = async (options, command) => {
-  const { site, state } = command.netlify
+  const { config, site, state } = command.netlify
 
   if (!site.id) {
     error(
@@ -31,16 +36,44 @@ const graphPull = async (options, command) => {
   const netlifyToken = await command.authenticate()
   const siteId = site.id
 
-  await refetchAndGenerateFromOneGraph({ logger: log, netlifyGraphConfig, netlifyToken, state, siteId })
+  const { jwt } = await OneGraphCliClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
 
-  const oneGraphSessionId = loadCLISession(state)
+  let oneGraphSessionId = loadCLISession(state)
+  let lockfile = readLockfile({ siteRoot: command.netlify.site.root })
 
-  if (!oneGraphSessionId) {
+  if (!oneGraphSessionId || !lockfile) {
     warn(
       'No local Netlify Graph session found, skipping command queue drain. Create a new session by running `netlify graph:edit`.',
     )
+    oneGraphSessionId = await ensureCLISession({
+      config,
+      netlifyGraphConfig,
+      metadata: {},
+      netlifyToken,
+      site,
+      state,
+    })
+
+    lockfile = readLockfile({ siteRoot: command.netlify.site.root })
+  }
+
+  if (lockfile === undefined) {
+    error(`${NETLIFYDEVERR} Error: unable to create lockfile for site and session, exiting.`)
     return
   }
+
+  const { schemaId } = lockfile.locked
+
+  await refetchAndGenerateFromOneGraph({
+    config,
+    logger: log,
+    netlifyGraphConfig,
+    jwt,
+    schemaId,
+    state,
+    siteId,
+    sessionId: oneGraphSessionId,
+  })
 
   const schemaString = readGraphQLSchemaFile(netlifyGraphConfig)
 
@@ -58,34 +91,65 @@ const graphPull = async (options, command) => {
 
   const next = await OneGraphCliClient.fetchCliSessionEvents({
     appId: siteId,
-    authToken: netlifyToken,
+    jwt,
     sessionId: oneGraphSessionId,
   })
+
+  if (!next) {
+    return
+  }
 
   if (next.errors) {
     error(`Failed to fetch Netlify Graph cli session events: ${JSON.stringify(next.errors, null, 2)}`)
   }
 
   if (next.events) {
-    const ackIds = []
+    const ackEventIds = []
     for (const event of next.events) {
-      await handleCliSessionEvent({
-        netlifyToken,
-        event,
-        netlifyGraphConfig,
-        schema,
-        sessionId: oneGraphSessionId,
-        siteId: site.id,
-        siteRoot: site.root,
-      })
-      ackIds.push(event.id)
+      try {
+        const audience = event.audience || OneGraphClient.eventAudience(event)
+
+        if (audience === 'CLI') {
+          const eventName = OneGraphClient.friendlyEventName(event)
+          log(`${chalk.magenta('Handling')} Netlify Graph: ${eventName}...`)
+          const nextSchemaId = readSchemaIdFromLockfile({ siteRoot: site.root })
+
+          if (!nextSchemaId) {
+            warn('Unable to load schemaId from Netlify Graph lockfile')
+            return
+          }
+
+          if (!schema) {
+            warn('Unable to load schema from for Netlify Graph')
+            return
+          }
+
+          await handleCliSessionEvent({
+            config,
+            netlifyToken,
+            // @ts-expect-error
+            event,
+            netlifyGraphConfig,
+            schema,
+            schemaId: nextSchemaId,
+            sessionId: oneGraphSessionId,
+            siteId: site.id,
+            siteRoot: site.root,
+          })
+          ackEventIds.push(event.id)
+        }
+      } catch (error_) {
+        warn(`Error processing individual Netlify Graph event, skipping:
+${JSON.stringify(error_, null, 2)}`)
+        ackEventIds.push(event.id)
+      }
     }
 
     await OneGraphCliClient.ackCLISessionEvents({
       appId: siteId,
-      authToken: netlifyToken,
+      jwt,
       sessionId: oneGraphSessionId,
-      eventIds: ackIds,
+      eventIds: ackEventIds,
     })
   }
 }
@@ -98,7 +162,7 @@ const graphPull = async (options, command) => {
 const createGraphPullCommand = (program) =>
   program
     .command('graph:pull')
-    .description('Pull down your local Netlify Graph schema, and process pending Graph edit events')
+    .description('Pull your remote Netlify Graph schema locally, and process pending Graph edit events')
     .action(async (options, command) => {
       await graphPull(options, command)
     })

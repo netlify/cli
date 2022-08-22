@@ -22,6 +22,12 @@ const getTemplatesStub = sinon.stub(templatesUtils, 'getTemplatesFromGitHub').ca
     html_url: 'http://github.com/netlify-templates/next-starter',
     full_name: 'netlify-templates/next-starter',
   },
+  {
+    name: 'archived-starter',
+    html_url: 'https://github.com/netlify-templates/fake-repo',
+    full_name: 'netlify-templates/fake-repo',
+    archived: true,
+  },
 ])
 
 const createRepoStub = sinon.stub(templatesUtils, 'createRepo').callsFake(() => ({
@@ -38,6 +44,7 @@ const validateTemplateStub = sinon.stub(templatesUtils, 'validateTemplate').call
 const jsonRenderSpy = sinon.spy(prettyjson, 'render')
 
 const { createSitesFromTemplateCommand, fetchTemplates } = require('../../src/commands/sites/sites-create-template')
+const { createSitesCreateCommand } = require('../../src/commands/sites/sites-create')
 
 /* eslint-enable import/order */
 const { withMockApi } = require('./utils/mock-api')
@@ -177,5 +184,29 @@ test.serial('should return an array of templates with name, source code url and 
         slug: 'netlify-templates/next-starter',
       },
     ])
+  })
+})
+
+test.serial('should throw error when name flag is incorrect', async (t) => {
+  await withMockApi(routes, async ({ apiUrl }) => {
+    Object.defineProperty(process, 'env', {
+      value: {
+        NETLIFY_API_URL: apiUrl,
+        NETLIFY_AUTH_TOKEN: 'fake-token',
+      },
+    })
+    const exitSpy = sinon.stub(process, 'exit')
+
+    const program = new BaseCommand('netlify')
+
+    createSitesCreateCommand(program)
+
+    const lengthError = await t.throwsAsync(async () => {
+      const LENGTH = 64
+      await program.parseAsync(['', '', 'sites:create', '--name', Array.from({ length: LENGTH }).fill('a').join('')])
+    })
+    t.truthy(lengthError.message.includes('--name should be less than 64 characters'))
+
+    exitSpy.restore()
   })
 })

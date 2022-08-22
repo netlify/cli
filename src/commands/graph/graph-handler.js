@@ -1,29 +1,27 @@
+/* eslint-disable eslint-comments/disable-enable-pair */
 // @ts-check
-const inquirer = require('inquirer')
-const { GraphQL } = require('netlify-onegraph-internal')
 
 const {
+  autocompleteCodegenModules,
+  autocompleteOperationNames,
   buildSchema,
-  defaultExampleOperationsDoc,
-  extractFunctionsFromOperationDoc,
   generateHandlerByOperationName,
+  getCodegenFunctionById,
+  getCodegenModule,
   getNetlifyGraphConfig,
-  readGraphQLOperationsSourceFile,
   readGraphQLSchemaFile,
 } = require('../../lib/one-graph/cli-netlify-graph')
 const { error, log } = require('../../utils')
 
-const { parse } = GraphQL
-
 /**
  * Creates the `netlify graph:handler` command
- * @param {string} userOperationName
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  * @returns
  */
-const graphHandler = async (userOperationName, options, command) => {
+const graphHandler = async (args, options, command) => {
   const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options })
+  const { config } = command.netlify
 
   const schemaString = readGraphQLSchemaFile(netlifyGraphConfig)
 
@@ -35,69 +33,54 @@ const graphHandler = async (userOperationName, options, command) => {
     error(`Error parsing schema: ${buildSchemaError}`)
   }
 
-  if (!schema) {
-    error(`Failed to parse Netlify GraphQL schema`)
+  const userOperationNames = args.operationNames
+  const userCodegenId = options.codegen
+
+  const handlerOptions = options.data ? JSON.parse(options.data) : {}
+
+  let operationNames = userOperationNames
+  if (!operationNames || operationNames.length === 0) {
+    const operationName = await autocompleteOperationNames({ netlifyGraphConfig })
+    operationNames = [operationName]
   }
 
-  let operationName = userOperationName
-  if (!operationName) {
-    try {
-      let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
-      if (currentOperationsDoc.trim().length === 0) {
-        currentOperationsDoc = defaultExampleOperationsDoc
-      }
-
-      const parsedDoc = parse(currentOperationsDoc)
-      const { functions } = extractFunctionsFromOperationDoc(parsedDoc)
-
-      const sorted = Object.values(functions).sort((aItem, bItem) =>
-        aItem.operationName.localeCompare(bItem.operationName),
-      )
-
-      const perPage = 50
-
-      const allOperationChoices = sorted.map((operation) => ({
-        name: `${operation.operationName} (${operation.kind})`,
-        value: operation.operationName,
-      }))
-
-      const filterOperationNames = (operationChoices, input) =>
-        operationChoices.filter((operation) => operation.value.toLowerCase().match(input.toLowerCase()))
-
-      // eslint-disable-next-line n/global-require
-      const inquirerAutocompletePrompt = require('inquirer-autocomplete-prompt')
-      /** multiple matching detectors, make the user choose */
-      inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
-
-      const { selectedOperationName } = await inquirer.prompt({
-        name: 'selectedOperationName',
-        message: `For which operation would you like to generate a handler?`,
-        type: 'autocomplete',
-        pageSize: perPage,
-        source(_, input) {
-          if (!input || input === '') {
-            return allOperationChoices
-          }
-
-          const filteredChoices = filterOperationNames(allOperationChoices, input)
-          // only show filtered results
-          return filteredChoices
-        },
-      })
-
-      if (selectedOperationName) {
-        operationName = selectedOperationName
-      }
-    } catch (parseError) {
-      parseError(`Error parsing operations library: ${parseError}`)
-    }
-  }
-
-  if (!operationName) {
+  if (!operationNames || operationNames.length === 0) {
     error(`No operation name provided`)
   }
 
-  generateHandlerByOperationName({ logger: log, netlifyGraphConfig, schema, operationName, handlerOptions: {} })
+  const codegenModule = await getCodegenModule({ config })
+  if (!codegenModule) {
+    error(
+      `No Netlify Graph codegen module specified in netlify.toml under the [graph] header. Please specify 'codeGenerator' field and try again.`,
+    )
+    return
+  }
+
+  let codeGenerator = userCodegenId ? await getCodegenFunctionById({ config, id: userCodegenId }) : null
+  if (!codeGenerator) {
+    codeGenerator = await autocompleteCodegenModules({ config })
+  }
+
+  if (!codeGenerator) {
+    error(`Unable to select appropriate Netlify Graph code generator`)
+    return
+  }
+
+  if (schema) {
+    /* eslint-disable fp/no-loops */
+    for (const operationName of operationNames) {
+      await generateHandlerByOperationName({
+        generate: codeGenerator.generateHandler,
+        logger: log,
+        netlifyGraphConfig,
+        schema,
+        operationName,
+        handlerOptions,
+      })
+    }
+  } else {
+    error(`Failed to parse Netlify GraphQL schema`)
+  }
 }
 
 /**
@@ -108,12 +91,14 @@ const graphHandler = async (userOperationName, options, command) => {
 const createGraphHandlerCommand = (program) =>
   program
     .command('graph:handler')
-    .argument('[name]', 'Operation name')
+    .argument('[name...]', 'Operation name(s)')
+    .option('-c, --codegen <id>', 'The id of the specific code generator to use')
+    .option("-d, --data '<json>'", 'Optional data to pass along to the code generator')
     .description(
       'Generate a handler for a Graph operation given its name. See `graph:operations` for a list of operations.',
     )
-    .action(async (operationName, options, command) => {
-      await graphHandler(operationName, options, command)
+    .action(async (operationNames, options, command) => {
+      await graphHandler({ operationNames }, options, command)
     })
 
 module.exports = { createGraphHandlerCommand }

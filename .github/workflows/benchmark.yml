@@ -23,6 +23,9 @@ jobs:
         run: npm ci --no-audit && npm prune --production
       - name: Get size
         run: du -sk node_modules | cut -f1 > .delta.packageSize && echo "kb (Package size)" >> .delta.packageSize
+      - name: Save PR number
+        if: github.event_name == 'pull_request'
+        run: echo ${{ github.event.number }} > ./pr_number
       - name: Upload deltas
         uses: actions/upload-artifact@v3
         with:
@@ -30,3 +33,4 @@ jobs:
           retention-days: 7
           path: |
             .delta.*
+            pr_number

@@ -22,10 +22,10 @@ netlify env
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
+| [`env:clone`](/docs/commands/env.md#envclone) | Clone environment variables from one site to another  |
 | [`env:get`](/docs/commands/env.md#envget) | Get resolved value of specified environment variable (includes netlify.toml)  |
 | [`env:import`](/docs/commands/env.md#envimport) | Import and set environment variables from .env file  |
 | [`env:list`](/docs/commands/env.md#envlist) | Lists resolved environment variables for site (includes netlify.toml)  |
-| [`env:migrate`](/docs/commands/env.md#envmigrate) | Migrate environment variables from one site to another  |
 | [`env:set`](/docs/commands/env.md#envset) | Set value of environment variable  |
 | [`env:unset`](/docs/commands/env.md#envunset) | Unset an environment variable which removes it from the UI  |
 
@@ -38,7 +38,33 @@ netlify env:get VAR_NAME
 netlify env:set VAR_NAME value
 netlify env:unset VAR_NAME
 netlify env:import fileName
-netlify env:migrate --to <to-site-id>
+netlify env:clone --to <to-site-id>
+```
+
+---
+## `env:clone`
+
+Clone environment variables from one site to another
+
+**Usage**
+
+```bash
+netlify env:clone
+```
+
+**Flags**
+
+- `from` (*string*) - Site ID (From)
+- `to` (*string*) - Site ID (To)
+- `debug` (*boolean*) - Print debugging information
+- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
+
+**Examples**
+
+```bash
+netlify env:clone --to <to-site-id>
+netlify env:clone --to <to-site-id> --from <from-site-id>
 ```
 
 ---
@@ -58,6 +84,8 @@ netlify env:get
 
 **Flags**
 
+- `context` (*production | deploy-preview | branch-deploy | dev*) - Specify a deploy context
+- `scope` (*builds | functions | post_processing | runtime | any*) - Specify a scope
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
@@ -97,35 +125,11 @@ netlify env:list
 
 **Flags**
 
+- `context` (*production | deploy-preview | branch-deploy | dev*) - Specify a deploy context
+- `scope` (*builds | functions | post_processing | runtime | any*) - Specify a scope
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
-
----
-## `env:migrate`
-
-Migrate environment variables from one site to another
-
-**Usage**
-
-```bash
-netlify env:migrate
-```
-
-**Flags**
-
-- `from` (*string*) - Site ID (From)
-- `to` (*string*) - Site ID (To)
-- `debug` (*boolean*) - Print debugging information
-- `httpProxy` (*string*) - Proxy server address to route requests through.
-- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
-
-**Examples**
-
-```bash
-netlify env:migrate --to <to-site-id>
-netlify env:migrate --to <to-site-id> --from <from-site-id>
-```
 
 ---
 ## `env:set`
@@ -145,9 +149,21 @@ netlify env:set
 
 **Flags**
 
+- `context` (*production | deploy-preview | branch-deploy | dev*) - Specify a deploy context (default: all contexts)
+- `scope` (*builds | functions | post_processing | runtime*) - Specify a scope (default: all scopes)
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
+
+**Examples**
+
+```bash
+netlify env:set VAR_NAME value # set in all contexts and scopes
+netlify env:set VAR_NAME value --context production
+netlify env:set VAR_NAME value --context production deploy-preview
+netlify env:set VAR_NAME value --scope builds
+netlify env:set VAR_NAME value --scope builds functions
+```
 
 ---
 ## `env:unset`
@@ -166,9 +182,18 @@ netlify env:unset
 
 **Flags**
 
+- `context` (*production | deploy-preview | branch-deploy | dev*) - Specify a deploy context (default: all contexts)
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
+
+**Examples**
+
+```bash
+netlify env:unset VAR_NAME # unset in all contexts
+netlify env:unset VAR_NAME --context production
+netlify env:unset VAR_NAME --context production deploy-preview
+```
 
 ---
 
