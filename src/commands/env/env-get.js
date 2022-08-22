@@ -1,7 +1,7 @@
 // @ts-check
 const { Option } = require('commander')
 
-const { chalk, error, getEnvelopeEnv, log, logJson } = require('../../utils')
+const { AVAILABLE_CONTEXTS, chalk, error, getEnvelopeEnv, log, logJson, normalizeContext } = require('../../utils')
 
 /**
  * The env:get command
@@ -42,7 +42,8 @@ const envGet = async (name, options, command) => {
   }
 
   if (!value) {
-    const withContext = `in the ${chalk.magenta(context)} context`
+    const contextType = AVAILABLE_CONTEXTS.includes(context) ? 'context' : 'branch'
+    const withContext = `in the ${chalk.magenta(context)} ${contextType}`
     const withScope = scope === 'any' ? '' : ` and the ${chalk.magenta(scope)} scope`
     log(`No value set ${withContext}${withScope} for environment variable ${chalk.yellow(name)}`)
     return false
@@ -60,16 +61,23 @@ const createEnvGetCommand = (program) =>
   program
     .command('env:get')
     .argument('<name>', 'Environment variable name')
-    .addOption(
-      new Option('-c, --context <context>', 'Specify a deploy context')
-        .choices(['production', 'deploy-preview', 'branch-deploy', 'dev'])
-        .default('dev'),
+    .option(
+      '-c, --context <context>',
+      'Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")',
+      normalizeContext,
+      'dev',
     )
     .addOption(
       new Option('-s, --scope <scope>', 'Specify a scope')
         .choices(['builds', 'functions', 'post_processing', 'runtime', 'any'])
         .default('any'),
     )
+    .addExamples([
+      'netlify env:get MY_VAR # get value for MY_VAR in dev context',
+      'netlify env:get MY_VAR --context production',
+      'netlify env:get MY_VAR --context branch:staging',
+      'netlify env:get MY_VAR --scope functions',
+    ])
     .description('Get resolved value of specified environment variable (includes netlify.toml)')
     .action(async (name, options, command) => {
       await envGet(name, options, command)

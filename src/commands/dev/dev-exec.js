@@ -1,7 +1,6 @@
-const { Option } = require('commander')
 const execa = require('execa')
 
-const { getEnvelopeEnv, injectEnvVariables } = require('../../utils')
+const { getEnvelopeEnv, injectEnvVariables, normalizeContext } = require('../../utils')
 
 /**
  * The dev:exec command
@@ -32,10 +31,11 @@ const createDevExecCommand = (program) =>
   program
     .command('dev:exec')
     .argument('<...cmd>', `the command that should be executed`)
-    .addOption(
-      new Option('--context <context>', 'Specify a deploy context for environment variables')
-        .choices(['production', 'deploy-preview', 'branch-deploy', 'dev'])
-        .default('dev'),
+    .option(
+      '--context <context>',
+      'Specify a deploy context or branch for environment variables (contexts: "production", "deploy-preview", "branch-deploy", "dev")',
+      normalizeContext,
+      'dev',
     )
     .description(
       'Exec command\nRuns a command within the netlify dev environment, e.g. with env variables from any installed addons',

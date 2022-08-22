@@ -5,7 +5,16 @@ const { Option } = require('commander')
 const inquirer = require('inquirer')
 const isEmpty = require('lodash/isEmpty')
 
-const { chalk, error, getEnvelopeEnv, getHumanReadableScopes, log, logJson } = require('../../utils')
+const {
+  AVAILABLE_CONTEXTS,
+  chalk,
+  error,
+  getEnvelopeEnv,
+  getHumanReadableScopes,
+  log,
+  logJson,
+  normalizeContext,
+} = require('../../utils')
 
 const [logUpdatePromise, ansiEscapesPromise] = [import('log-update'), import('ansi-escapes')]
 
@@ -77,7 +86,8 @@ const envList = async (options, command) => {
   }
 
   const forSite = `for site ${chalk.green(siteInfo.name)}`
-  const withContext = isUsingEnvelope ? `in the ${chalk.magenta(options.context)} context` : ''
+  const contextType = AVAILABLE_CONTEXTS.includes(context) ? 'context' : 'branch'
+  const withContext = isUsingEnvelope ? `in the ${chalk.magenta(options.context)} ${contextType}` : ''
   const withScope = isUsingEnvelope && scope !== 'any' ? `and ${chalk.yellow(options.scope)} scope` : ''
   if (isEmpty(environment)) {
     log(`No environment variables set ${forSite} ${withContext} ${withScope}`)
@@ -122,16 +132,23 @@ const envList = async (options, command) => {
 const createEnvListCommand = (program) =>
   program
     .command('env:list')
-    .addOption(
-      new Option('-c, --context <context>', 'Specify a deploy context')
-        .choices(['production', 'deploy-preview', 'branch-deploy', 'dev'])
-        .default('dev'),
+    .option(
+      '-c, --context <context>',
+      'Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")',
+      normalizeContext,
+      'dev',
     )
     .addOption(
       new Option('-s, --scope <scope>', 'Specify a scope')
         .choices(['builds', 'functions', 'post_processing', 'runtime', 'any'])
         .default('any'),
     )
+    .addExamples([
+      'netlify env:list # list variables with values in the dev context and with any scope',
+      'netlify env:list --context production',
+      'netlify env:list --context branch:staging',
+      'netlify env:list --scope functions',
+    ])
     .description('Lists resolved environment variables for site (includes netlify.toml)')
     .action(async (options, command) => {
       await envList(options, command)

@@ -1,10 +1,46 @@
+const { error } = require('../command-helpers')
+
+const AVAILABLE_CONTEXTS = ['all', 'production', 'deploy-preview', 'branch-deploy', 'dev']
+const AVAILABLE_SCOPES = ['builds', 'functions', 'runtime', 'post_processing']
+
+/**
+ * @param {string|undefined} context - The deploy context or branch of the environment variable value
+ * @returns {Array<string|undefined>} The normalized context or branch name
+ */
+const normalizeContext = (context) => {
+  if (!context) {
+    return context
+  }
+  const CONTEXT_SYNONYMS = {
+    dp: 'deploy-preview',
+    prod: 'production',
+  }
+  context = context.toLowerCase()
+  if (context in CONTEXT_SYNONYMS) {
+    context = CONTEXT_SYNONYMS[context]
+  }
+  const forbiddenContexts = AVAILABLE_CONTEXTS.map((ctx) => `branch:${ctx}`)
+  if (forbiddenContexts.includes(context)) {
+    error(`The context ${context} includes a reserved keyword and is not allowed`)
+  }
+  context = context.replace(/^branch:/, '')
+  return context
+}
+
 /**
  * Finds a matching environment variable value from a given context
  * @param {Array<object>} values - An array of environment variable values from Envelope
- * @param {enum<dev,branch-deploy,deploy-preview,production>} context - The deploy context of the environment variable value
- * @returns {object<context: enum<dev,branch-deploy,deploy-preview,production>, value: string>} The matching environment variable value object
+ * @param {string} context - The deploy context or branch of the environment variable value
+ * @returns {object<context: enum<dev,branch-deploy,deploy-preview,production,branch>, context_parameter: <string>, value: string>} The matching environment variable value object
  */
-const findValueFromContext = (values, context) => values.find((val) => [context, 'all'].includes(val.context))
+const findValueInValues = (values, context) =>
+  values.find((val) => {
+    if (!AVAILABLE_CONTEXTS.includes(context)) {
+      // the "context" option passed in is actually the name of a branch
+      return val.context === 'all' || val.context_parameter === context
+    }
+    return [context, 'all'].includes(val.context)
+  })
 
 /**
  * Finds environment variables that match a given source
@@ -45,7 +81,7 @@ const fetchEnvelopeItems = async function ({ accountId, api, key, siteId }) {
 
 /**
  * Filters and sorts data from Envelope by a given context and/or scope
- * @param {enum<dev,branch-deploy,deploy-preview,production>} context - The deploy context of the environment variable value
+ * @param {string} context - The deploy context or branch of the environment variable value
  * @param {Array<object>} envelopeItems - An array of environment variables from the Envelope service
  * @param {enum<any,builds,functions,runtime,post_processing>} scope - The scope of the environment variables
  * @param {enum<general,account,addons,ui,configFile>} source - The source of the environment variable
@@ -58,7 +94,8 @@ const fetchEnvelopeItems = async function ({ accountId, api, key, siteId }) {
  *     value: 'bar',
  *   },
  *   BAZ: {
- *     context: 'dev',
+ *     context: 'branch',
+ *     branch: 'staging',
  *     scopes: ['runtime'],
  *     sources: ['account'],
  *     value: 'bang',
@@ -68,18 +105,19 @@ const fetchEnvelopeItems = async function ({ accountId, api, key, siteId }) {
 const formatEnvelopeData = ({ context = 'dev', envelopeItems = [], scope = 'any', source }) =>
   envelopeItems
     // filter by context
-    .filter(({ values }) => Boolean(findValueFromContext(values, context)))
+    .filter(({ values }) => Boolean(findValueInValues(values, context)))
     // filter by scope
     .filter(({ scopes }) => (scope === 'any' ? true : scopes.includes(scope)))
     // sort alphabetically, case insensitive
     .sort((left, right) => (left.key.toLowerCase() < right.key.toLowerCase() ? -1 : 1))
     // format the data
     .reduce((acc, cur) => {
-      const { context: ctx, value } = findValueFromContext(cur.values, context)
+      const { context: ctx, context_parameter: branch, value } = findValueInValues(cur.values, context)
       return {
         ...acc,
         [cur.key]: {
           context: ctx,
+          branch,
           scopes: cur.scopes,
           sources: [source],
           value,
@@ -90,7 +128,7 @@ const formatEnvelopeData = ({ context = 'dev', envelopeItems = [], scope = 'any'
 /**
  * Collects env vars from multiple sources and arranges them in the correct order of precedence
  * @param {object} api - The api singleton object
- * @param {enum<dev,branch-deploy,deploy-preview,production>} context - The deploy context of the environment variable
+ * @param {string} context - The deploy context or branch of the environment variable
  * @param {object} env - The dictionary of environment variables
  * @param {string} key - If present, fetch a single key (case-sensitive)
  * @param {enum<any,builds,functions,runtime,post_processing>} scope - The scope of the environment variables
@@ -130,7 +168,7 @@ const getEnvelopeEnv = async ({ api, context = 'dev', env, key = '', scope = 'an
  * @returns {string} A human-readable, comma-separated list of scopes
  */
 const getHumanReadableScopes = (scopes) => {
-  const AVAILABLE_SCOPES = {
+  const HUMAN_SCOPES = {
     builds: 'Builds',
     functions: 'Functions',
     post_processing: 'Post processing',
@@ -141,11 +179,11 @@ const getHumanReadableScopes = (scopes) => {
     // env vars specified in netlify.toml are present in the `builds` and `post_processing` scope
     return 'Builds, Post processing'
   }
-  if (scopes.length === Object.keys(AVAILABLE_SCOPES).length) {
+  if (scopes.length === Object.keys(HUMAN_SCOPES).length) {
     // shorthand instead of listing every available scope
     return 'All'
   }
-  return scopes.map((scope) => AVAILABLE_SCOPES[scope]).join(', ')
+  return scopes.map((scope) => HUMAN_SCOPES[scope]).join(', ')
 }
 
 /**
@@ -156,7 +194,7 @@ const getHumanReadableScopes = (scopes) => {
 const translateFromMongoToEnvelope = (env = {}) => {
   const envVars = Object.entries(env).map(([key, value]) => ({
     key,
-    scopes: ['builds', 'functions', 'runtime', 'post_processing'],
+    scopes: AVAILABLE_SCOPES,
     values: [
       {
         context: 'all',
@@ -171,14 +209,14 @@ const translateFromMongoToEnvelope = (env = {}) => {
 /**
  * Translates an Envelope env into a Mongo env
  * @param {Array<object>} envVars - The array of Envelope env vars
- * @param {enum<dev,branch-deploy,deploy-preview,production>} context - The deploy context of the environment variable
+ * @param {string} context - The deploy context or branch of the environment variable
  * @returns {object} The env object as compatible with Mongo
  */
 const translateFromEnvelopeToMongo = (envVars = [], context = 'dev') =>
   envVars
     .sort((left, right) => (left.key.toLowerCase() < right.key.toLowerCase() ? -1 : 1))
     .reduce((acc, cur) => {
-      const envVar = cur.values.find((val) => [context, 'all'].includes(val.context))
+      const envVar = cur.values.find((val) => [context, 'all'].includes(val.context_parameter || val.context))
       if (envVar && envVar.value) {
         return {
           ...acc,
@@ -189,11 +227,14 @@ const translateFromEnvelopeToMongo = (envVars = [], context = 'dev') =>
     }, {})
 
 module.exports = {
-  findValueFromContext,
+  AVAILABLE_CONTEXTS,
+  AVAILABLE_SCOPES,
+  findValueInValues,
   filterEnvBySource,
   formatEnvelopeData,
   getEnvelopeEnv,
   getHumanReadableScopes,
+  normalizeContext,
   translateFromEnvelopeToMongo,
   translateFromMongoToEnvelope,
 }
