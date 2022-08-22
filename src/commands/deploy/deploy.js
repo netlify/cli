@@ -414,7 +414,7 @@ const bundleEdgeFunctions = async (options) => {
     ...options,
     buffer: true,
     featureFlags: {
-      'edge_functions_produce_eszip': true,
+      edge_functions_produce_eszip: true,
     },
   })
 
