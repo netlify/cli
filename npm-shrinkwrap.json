@@ -10,7 +10,7 @@
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
-        "@netlify/build": "^27.15.6",
+        "@netlify/build": "^27.15.7",
         "@netlify/config": "^18.2.2",
         "@netlify/edge-bundler": "^1.13.0",
         "@netlify/framework-info": "^9.2.0",
@@ -1189,14 +1189,14 @@
       "integrity": "sha512-4wMPu9iN3/HL97QblBsBay3E1etIciR84izI3U+4iALY+JHCrI+a2jO0qbAZ/nxKoegypYEaiiqWXylm+/zfrw=="
     },
     "node_modules/@netlify/build": {
-      "version": "27.15.6",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-27.15.6.tgz",
-      "integrity": "sha512-ZSah6LDAG0KwWiTUfVfL/kBie7qsUj4cMSl0D7dbTBWSRpGx8MgYjlJHP3U2PgXAgmLcc4NOciGIZD/zL4yJCA==",
+      "version": "27.15.7",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-27.15.7.tgz",
+      "integrity": "sha512-/3zPq1FN5FB/jcZKRcqz4ksYsOwkaCbxdXU93HK57kLHjkPdg/060G134/vA+QCcsWjdyO02VNVidelxxdPabQ==",
       "dependencies": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^4.0.0",
         "@netlify/config": "^18.2.2",
-        "@netlify/edge-bundler": "^1.13.0",
+        "@netlify/edge-bundler": "^1.14.0",
         "@netlify/functions-utils": "^4.2.4",
         "@netlify/git-utils": "^4.0.0",
         "@netlify/plugins-list": "^6.36.0",
@@ -1806,9 +1806,9 @@
       }
     },
     "node_modules/@netlify/build/node_modules/read-pkg-up/node_modules/type-fest": {
-      "version": "2.18.1",
-      "resolved": "https://registry.npmjs.org/type-fest/-/type-fest-2.18.1.tgz",
-      "integrity": "sha512-UKCINsd4qiATXD6OIlnQw9t1ux/n2ld+Nl0kzPbCONhCaUIS/BhJbNw14w6584HCQWf3frBK8vmWnGZq/sbPHQ==",
+      "version": "2.19.0",
+      "resolved": "https://registry.npmjs.org/type-fest/-/type-fest-2.19.0.tgz",
+      "integrity": "sha512-RAH822pAdBgcNMAfWnCBU3CFZcfZ/i1eZjwFU/dsLKumyuuP3niueg2UAukXYF0E2AAoc82ZSSf9J0WQBinzHA==",
       "engines": {
         "node": ">=12.20"
       },
@@ -1817,9 +1817,9 @@
       }
     },
     "node_modules/@netlify/build/node_modules/read-pkg/node_modules/type-fest": {
-      "version": "2.18.1",
-      "resolved": "https://registry.npmjs.org/type-fest/-/type-fest-2.18.1.tgz",
-      "integrity": "sha512-UKCINsd4qiATXD6OIlnQw9t1ux/n2ld+Nl0kzPbCONhCaUIS/BhJbNw14w6584HCQWf3frBK8vmWnGZq/sbPHQ==",
+      "version": "2.19.0",
+      "resolved": "https://registry.npmjs.org/type-fest/-/type-fest-2.19.0.tgz",
+      "integrity": "sha512-RAH822pAdBgcNMAfWnCBU3CFZcfZ/i1eZjwFU/dsLKumyuuP3niueg2UAukXYF0E2AAoc82ZSSf9J0WQBinzHA==",
       "engines": {
         "node": ">=12.20"
       },
@@ -2343,9 +2343,9 @@
       }
     },
     "node_modules/@netlify/edge-bundler": {
-      "version": "1.13.0",
-      "resolved": "https://registry.npmjs.org/@netlify/edge-bundler/-/edge-bundler-1.13.0.tgz",
-      "integrity": "sha512-5LDNouZP2tUt3m6NyKkEgor9PycIEq7wxUgrRSpiUcZVV7CNU/CUxxpXJb11/wEFq2bWZp3/xqzxqbR7vpqFNg==",
+      "version": "1.14.0",
+      "resolved": "https://registry.npmjs.org/@netlify/edge-bundler/-/edge-bundler-1.14.0.tgz",
+      "integrity": "sha512-DPyQmE0EKRHYlTQ35/r4/6z1uOpanT+48U/NKnCYuWkRQJcvQtT5TE5R75WABDAc05ZaKLJVOWQLU7FlXWAKYg==",
       "dependencies": {
         "common-path-prefix": "^3.0.0",
         "del": "^6.0.0",
@@ -23374,14 +23374,14 @@
       "integrity": "sha512-4wMPu9iN3/HL97QblBsBay3E1etIciR84izI3U+4iALY+JHCrI+a2jO0qbAZ/nxKoegypYEaiiqWXylm+/zfrw=="
     },
     "@netlify/build": {
-      "version": "27.15.6",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-27.15.6.tgz",
-      "integrity": "sha512-ZSah6LDAG0KwWiTUfVfL/kBie7qsUj4cMSl0D7dbTBWSRpGx8MgYjlJHP3U2PgXAgmLcc4NOciGIZD/zL4yJCA==",
+      "version": "27.15.7",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-27.15.7.tgz",
+      "integrity": "sha512-/3zPq1FN5FB/jcZKRcqz4ksYsOwkaCbxdXU93HK57kLHjkPdg/060G134/vA+QCcsWjdyO02VNVidelxxdPabQ==",
       "requires": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^4.0.0",
         "@netlify/config": "^18.2.2",
-        "@netlify/edge-bundler": "^1.13.0",
+        "@netlify/edge-bundler": "^1.14.0",
         "@netlify/functions-utils": "^4.2.4",
         "@netlify/git-utils": "^4.0.0",
         "@netlify/plugins-list": "^6.36.0",
@@ -23752,9 +23752,9 @@
           },
           "dependencies": {
             "type-fest": {
-              "version": "2.18.1",
-              "resolved": "https://registry.npmjs.org/type-fest/-/type-fest-2.18.1.tgz",
-              "integrity": "sha512-UKCINsd4qiATXD6OIlnQw9t1ux/n2ld+Nl0kzPbCONhCaUIS/BhJbNw14w6584HCQWf3frBK8vmWnGZq/sbPHQ=="
+              "version": "2.19.0",
+              "resolved": "https://registry.npmjs.org/type-fest/-/type-fest-2.19.0.tgz",
+              "integrity": "sha512-RAH822pAdBgcNMAfWnCBU3CFZcfZ/i1eZjwFU/dsLKumyuuP3niueg2UAukXYF0E2AAoc82ZSSf9J0WQBinzHA=="
             }
           }
         },
@@ -23769,9 +23769,9 @@
           },
           "dependencies": {
             "type-fest": {
-              "version": "2.18.1",
-              "resolved": "https://registry.npmjs.org/type-fest/-/type-fest-2.18.1.tgz",
-              "integrity": "sha512-UKCINsd4qiATXD6OIlnQw9t1ux/n2ld+Nl0kzPbCONhCaUIS/BhJbNw14w6584HCQWf3frBK8vmWnGZq/sbPHQ=="
+              "version": "2.19.0",
+              "resolved": "https://registry.npmjs.org/type-fest/-/type-fest-2.19.0.tgz",
+              "integrity": "sha512-RAH822pAdBgcNMAfWnCBU3CFZcfZ/i1eZjwFU/dsLKumyuuP3niueg2UAukXYF0E2AAoc82ZSSf9J0WQBinzHA=="
             }
           }
         },
@@ -24075,9 +24075,9 @@
       }
     },
     "@netlify/edge-bundler": {
-      "version": "1.13.0",
-      "resolved": "https://registry.npmjs.org/@netlify/edge-bundler/-/edge-bundler-1.13.0.tgz",
-      "integrity": "sha512-5LDNouZP2tUt3m6NyKkEgor9PycIEq7wxUgrRSpiUcZVV7CNU/CUxxpXJb11/wEFq2bWZp3/xqzxqbR7vpqFNg==",
+      "version": "1.14.0",
+      "resolved": "https://registry.npmjs.org/@netlify/edge-bundler/-/edge-bundler-1.14.0.tgz",
+      "integrity": "sha512-DPyQmE0EKRHYlTQ35/r4/6z1uOpanT+48U/NKnCYuWkRQJcvQtT5TE5R75WABDAc05ZaKLJVOWQLU7FlXWAKYg==",
       "requires": {
         "common-path-prefix": "^3.0.0",
         "del": "^6.0.0",
