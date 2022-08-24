@@ -4,6 +4,7 @@ const { readFile } = require('fs').promises
 const http = require('http')
 const https = require('https')
 const path = require('path')
+const { join } = require('path')
 
 const contentType = require('content-type')
 const cookie = require('cookie')
@@ -20,6 +21,7 @@ const toReadableStream = require('to-readable-stream')
 
 const edgeFunctions = require('../lib/edge-functions')
 const { fileExistsAsync, isFileAsync } = require('../lib/fs')
+// const { renderErrorTemplate } = require('../lib/functions/synchronous')
 
 const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./command-helpers')
 const { createStreamPromise } = require('./create-stream-promise')
@@ -359,10 +361,11 @@ const initializeProxy = async function ({ configPath, distDir, port, projectDir 
     const headersRules = headersForPath(headers, requestURL.pathname)
 
     proxyRes.on('data', function onData(data) {
+      console.log('we get here?')
       responseData.push(data)
     })
 
-    proxyRes.on('end', function onEnd() {
+    proxyRes.on('end', async function onEnd() {
       const responseBody = Buffer.concat(responseData)
 
       let responseStatus = req.proxyOptions.status || proxyRes.statusCode
@@ -385,11 +388,21 @@ const initializeProxy = async function ({ configPath, distDir, port, projectDir 
       Object.entries(headersRules).forEach(([key, val]) => {
         res.setHeader(key, val)
       })
-
       res.writeHead(responseStatus, proxyRes.headers)
+      console.log({ responseBody })
+      console.log(Buffer.from(responseBody).toString())
+
+      if (responseStatus === 500 && proxyRes.headers['x-nf-uncaught-error'] === '1') {
+        const acceptsHtml = req.headers && req.headers.accept && req.headers.accept.includes('text/html')
+        console.log('something went wrong', acceptsHtml)
+        const errorResponse = acceptsHtml ? await renderErrorTemplate(responseBody) : responseBody
+        console.log({ errorResponse: typeof errorResponse, body: typeof responseBody })
+        res.write(errorResponse)
+      }
+      console.log('got here?')
 
       if (responseStatus !== 304) {
-        res.write(responseBody)
+        // res.write(responseBody)
       }
 
       res.end()
@@ -409,6 +422,23 @@ const initializeProxy = async function ({ configPath, distDir, port, projectDir 
   }
 
   return handlers
+}
+
+let errorTemplateFile
+
+const renderErrorTemplate = async (errString) => {
+  console.log('rendererrortemplate')
+  const regexPattern = /<!--@ERROR-DETAILS-->/g
+  const templatePath = '../lib/functions/templates/function-error.html'
+  console.log({ templatePath })
+  try {
+    console.log('in try', errString)
+    errorTemplateFile = errorTemplateFile || (await readFile(join(__dirname, templatePath), 'utf-8'))
+    return errorTemplateFile.replace(regexPattern, errString)
+  } catch {
+    console.log('catching')
+    return errString
+  }
 }
 
 const onRequest = async ({ addonsUrls, edgeFunctionsProxy, functionsServer, proxy, rewriter, settings }, req, res) => {
