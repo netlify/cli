@@ -2,7 +2,17 @@ const process = require('process')
 
 // @ts-check
 const { getBuildOptions, runBuild } = require('../../lib/build')
-const { error, exit, generateNetlifyGraphJWT, getEnvelopeEnv, getToken, normalizeContext } = require('../../utils')
+const {
+  NETLIFYDEVERR,
+  detectServerSettings,
+  error,
+  exit,
+  generateNetlifyGraphJWT,
+  getEnvelopeEnv,
+  getToken,
+  log,
+  normalizeContext,
+} = require('../../utils')
 
 /**
  * @param {import('../../lib/build').BuildConfig} options
@@ -58,18 +68,54 @@ const build = async (options, command) => {
   // Retrieve Netlify Build options
   const [token] = await getToken()
 
-  const { cachedConfig, siteInfo } = command.netlify
+  const { cachedConfig, config, site, siteInfo } = command.netlify
   const buildOptions = await getBuildOptions({
     cachedConfig,
     token,
     options,
   })
+  const devConfig = {
+    framework: '#auto',
+    ...(config.functionsDirectory && { functions: config.functionsDirectory }),
+    ...(config.build.publish && { publish: config.build.publish }),
+    ...config.dev,
+    ...options,
+  }
 
   if (!options.offline) {
     checkOptions(buildOptions)
-    const { api, site } = command.netlify
+    const { api } = command.netlify
     const { context } = options
     await injectEnv(command, { api, buildOptions, context, site, siteInfo })
+  }
+
+  /** @type {Partial<import('../../utils/types').ServerSettings>} */
+  let settings = {}
+  try {
+    settings = await detectServerSettings(devConfig, options, site.root)
+
+    // If there are plugins that we should be running for this site, add them
+    // to the config as if they were declared in netlify.toml. We must check
+    // whether the plugin has already been added by another source (like the
+    // TOML file or the UI), as we don't want to run the same plugin twice.
+    if (settings.plugins) {
+      const { plugins: existingPlugins = [] } = cachedConfig.config
+      const existingPluginNames = new Set(existingPlugins.map((plugin) => plugin.package))
+      const newPlugins = settings.plugins
+        .map((pluginName) => {
+          if (existingPluginNames.has(pluginName)) {
+            return
+          }
+
+          return { package: pluginName, origin: 'config', inputs: {} }
+        })
+        .filter(Boolean)
+
+      cachedConfig.config.plugins = [...newPlugins, ...cachedConfig.config.plugins]
+    }
+  } catch (error_) {
+    log(NETLIFYDEVERR, error_.message)
+    exit(1)
   }
 
   const { exitCode } = await runBuild(buildOptions)
