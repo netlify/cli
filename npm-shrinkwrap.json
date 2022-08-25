@@ -5486,9 +5486,9 @@
       }
     },
     "node_modules/ava": {
-      "version": "4.3.1",
-      "resolved": "https://registry.npmjs.org/ava/-/ava-4.3.1.tgz",
-      "integrity": "sha512-zdSp9QxRTmN5hJeGmg+ZjUKL5yHFLMcP/0KBla8GH25XD8Xm7Uc34CDFlwqGL6JXtjNbVkJ0Zw+DqcTf4ggCCA==",
+      "version": "4.3.3",
+      "resolved": "https://registry.npmjs.org/ava/-/ava-4.3.3.tgz",
+      "integrity": "sha512-9Egq/d9R74ExrWohHeqUlexjDbgZJX5jA1Wq4KCTqc3wIfpGEK79zVy4rBtofJ9YKIxs4PzhJ8BgbW5PlAYe6w==",
       "dev": true,
       "dependencies": {
         "acorn": "^8.7.1",
@@ -26232,9 +26232,9 @@
       "dev": true
     },
     "ava": {
-      "version": "4.3.1",
-      "resolved": "https://registry.npmjs.org/ava/-/ava-4.3.1.tgz",
-      "integrity": "sha512-zdSp9QxRTmN5hJeGmg+ZjUKL5yHFLMcP/0KBla8GH25XD8Xm7Uc34CDFlwqGL6JXtjNbVkJ0Zw+DqcTf4ggCCA==",
+      "version": "4.3.3",
+      "resolved": "https://registry.npmjs.org/ava/-/ava-4.3.3.tgz",
+      "integrity": "sha512-9Egq/d9R74ExrWohHeqUlexjDbgZJX5jA1Wq4KCTqc3wIfpGEK79zVy4rBtofJ9YKIxs4PzhJ8BgbW5PlAYe6w==",
       "dev": true,
       "requires": {
         "acorn": "^8.7.1",
