@@ -70,7 +70,7 @@ const proxyToExternalUrl = function ({ dest, destURL, req, res }) {
     pathRewrite: () => destURL,
     ...(Buffer.isBuffer(req.originalBody) && { buffer: toReadableStream(req.originalBody) }),
   })
-  return handler(req, res, {})
+  return handler(req, res, () => {})
 }
 
 const handleAddonUrl = function ({ addonUrl, req, res }) {
@@ -185,7 +185,7 @@ const serveRedirect = async function ({ match, options, proxy, req, res }) {
 
   const staticFile = await getStatic(decodeURIComponent(reqUrl.pathname), options.publicFolder)
   if (staticFile) {
-    req.url = encodeURIComponent(staticFile) + reqUrl.search
+    req.url = encodeURI(staticFile) + reqUrl.search
     // if there is an existing static file and it is not a forced redirect, return the file
     if (!match.force) {
       return proxy.web(req, res, { ...options, staticFile })
@@ -214,18 +214,25 @@ const serveRedirect = async function ({ match, options, proxy, req, res }) {
       })
     }
 
-    const destURL = stripOrigin(dest)
+    let destURL = stripOrigin(dest)
 
     if (isExternal(match)) {
-      return proxyToExternalUrl({ req, res, dest, destURL })
+      if (isRedirect(match)) {
+        // This is a redirect, so we set the complete external URL as destination
+        destURL = `${dest}`
+      } else {
+        return proxyToExternalUrl({ req, res, dest, destURL })
+      }
     }
 
     if (isRedirect(match)) {
+      console.log(`${NETLIFYDEVLOG} Redirecting ${req.url} to ${destURL}`)
       res.writeHead(match.status, {
         Location: destURL,
         'Cache-Control': 'no-cache',
       })
       res.end(`Redirecting to ${destURL}`)
+
       return
     }
 
