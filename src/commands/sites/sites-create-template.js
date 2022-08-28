@@ -108,13 +108,12 @@ const sitesCreateTemplate = async (repository, options, command) => {
   }
 
   const { name: nameFlag } = options
-  let user
   let site
   let repoResp
 
   // Allow the user to reenter site name if selected one isn't available
   const inputSiteName = async (name) => {
-    const { name: inputName, siteSuggestion } = await getSiteNameInput(name, user, api)
+    const { name: inputName, siteSuggestion } = await getSiteNameInput(name)
 
     try {
       const siteName = inputName ? inputName.trim() : siteSuggestion
