@@ -556,6 +556,7 @@ const generateSiteName = () => {
 
   const suffix = `${uuidv4().slice(0, SITE_NAME_SUGGESTION_SUFFIX_LENGTH)}`
 
+  // NOTE: Suggestion should never exceed 37 chars. See https://github.com/netlify/cli/pull/5007#issuecomment-1229451412 for why
   return `${sample(left)}-${sample(right)}-${suffix}`
 }
 
