@@ -17,7 +17,6 @@
         "@netlify/local-functions-proxy": "^1.1.1",
         "@netlify/zip-it-and-ship-it": "^7.1.2",
         "@octokit/rest": "^19.0.0",
-        "@sindresorhus/slugify": "^1.1.0",
         "ansi-escapes": "^5.0.0",
         "ansi-styles": "^5.0.0",
         "ansi-to-html": "^0.7.2",
@@ -4130,44 +4129,6 @@
       },
       "funding": {
         "url": "https://github.com/sindresorhus/is?sponsor=1"
-      }
-    },
-    "node_modules/@sindresorhus/slugify": {
-      "version": "1.1.2",
-      "resolved": "https://registry.npmjs.org/@sindresorhus/slugify/-/slugify-1.1.2.tgz",
-      "integrity": "sha512-V9nR/W0Xd9TSGXpZ4iFUcFGhuOJtZX82Fzxj1YISlbSgKvIiNa7eLEZrT0vAraPOt++KHauIVNYgGRgjc13dXA==",
-      "dependencies": {
-        "@sindresorhus/transliterate": "^0.1.1",
-        "escape-string-regexp": "^4.0.0"
-      },
-      "engines": {
-        "node": ">=10"
-      },
-      "funding": {
-        "url": "https://github.com/sponsors/sindresorhus"
-      }
-    },
-    "node_modules/@sindresorhus/transliterate": {
-      "version": "0.1.2",
-      "resolved": "https://registry.npmjs.org/@sindresorhus/transliterate/-/transliterate-0.1.2.tgz",
-      "integrity": "sha512-5/kmIOY9FF32nicXH+5yLNTX4NJ4atl7jRgqAJuIn/iyDFXBktOKDxCvyGE/EzmF4ngSUvjXxQUQlQiZ5lfw+w==",
-      "dependencies": {
-        "escape-string-regexp": "^2.0.0",
-        "lodash.deburr": "^4.1.0"
-      },
-      "engines": {
-        "node": ">=10"
-      },
-      "funding": {
-        "url": "https://github.com/sponsors/sindresorhus"
-      }
-    },
-    "node_modules/@sindresorhus/transliterate/node_modules/escape-string-regexp": {
-      "version": "2.0.0",
-      "resolved": "https://registry.npmjs.org/escape-string-regexp/-/escape-string-regexp-2.0.0.tgz",
-      "integrity": "sha512-UpzcLCXolUWcNu5HtVMHYdXJjArjsF9C0aNnquZYY4uW/Vu0miy5YoWvbV345HauVvcAUnpRuhMMcqTcGOY2+w==",
-      "engines": {
-        "node": ">=8"
       }
     },
     "node_modules/@sinonjs/commons": {
@@ -9781,6 +9742,7 @@
       "version": "4.0.0",
       "resolved": "https://registry.npmjs.org/escape-string-regexp/-/escape-string-regexp-4.0.0.tgz",
       "integrity": "sha512-TtpcNJ3XAzx3Gq8sWRzJaVajRs0uVxA2YAkdb1jm2YkPz4G6egUFAyA3n5vtEIZefPk5Wa4UXbKuS5fKkJWdgA==",
+      "dev": true,
       "engines": {
         "node": ">=10"
       },
@@ -25317,31 +25279,6 @@
       "integrity": "sha512-t09vSN3MdfsyCHoFcTRCH/iUtG7OJ0CsjzB8cjAmKc/va/kIgeDI/TxsigdncE/4be734m0cvIYwNaV4i2XqAw==",
       "dev": true
     },
-    "@sindresorhus/slugify": {
-      "version": "1.1.2",
-      "resolved": "https://registry.npmjs.org/@sindresorhus/slugify/-/slugify-1.1.2.tgz",
-      "integrity": "sha512-V9nR/W0Xd9TSGXpZ4iFUcFGhuOJtZX82Fzxj1YISlbSgKvIiNa7eLEZrT0vAraPOt++KHauIVNYgGRgjc13dXA==",
-      "requires": {
-        "@sindresorhus/transliterate": "^0.1.1",
-        "escape-string-regexp": "^4.0.0"
-      }
-    },
-    "@sindresorhus/transliterate": {
-      "version": "0.1.2",
-      "resolved": "https://registry.npmjs.org/@sindresorhus/transliterate/-/transliterate-0.1.2.tgz",
-      "integrity": "sha512-5/kmIOY9FF32nicXH+5yLNTX4NJ4atl7jRgqAJuIn/iyDFXBktOKDxCvyGE/EzmF4ngSUvjXxQUQlQiZ5lfw+w==",
-      "requires": {
-        "escape-string-regexp": "^2.0.0",
-        "lodash.deburr": "^4.1.0"
-      },
-      "dependencies": {
-        "escape-string-regexp": {
-          "version": "2.0.0",
-          "resolved": "https://registry.npmjs.org/escape-string-regexp/-/escape-string-regexp-2.0.0.tgz",
-          "integrity": "sha512-UpzcLCXolUWcNu5HtVMHYdXJjArjsF9C0aNnquZYY4uW/Vu0miy5YoWvbV345HauVvcAUnpRuhMMcqTcGOY2+w=="
-        }
-      }
-    },
     "@sinonjs/commons": {
       "version": "1.8.3",
       "resolved": "https://registry.npmjs.org/@sinonjs/commons/-/commons-1.8.3.tgz",
@@ -29721,7 +29658,8 @@
     "escape-string-regexp": {
       "version": "4.0.0",
       "resolved": "https://registry.npmjs.org/escape-string-regexp/-/escape-string-regexp-4.0.0.tgz",
-      "integrity": "sha512-TtpcNJ3XAzx3Gq8sWRzJaVajRs0uVxA2YAkdb1jm2YkPz4G6egUFAyA3n5vtEIZefPk5Wa4UXbKuS5fKkJWdgA=="
+      "integrity": "sha512-TtpcNJ3XAzx3Gq8sWRzJaVajRs0uVxA2YAkdb1jm2YkPz4G6egUFAyA3n5vtEIZefPk5Wa4UXbKuS5fKkJWdgA==",
+      "dev": true
     },
     "escodegen": {
       "version": "2.0.0",
