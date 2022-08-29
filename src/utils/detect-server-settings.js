@@ -268,6 +268,7 @@ const mergeSettings = async ({ devConfig, frameworkSettings = {} }) => {
   const useStaticServer = !(command && frameworkPort)
   return {
     command,
+    buildCommand,
     frameworkPort: useStaticServer ? await getStaticServerPort({ devConfig }) : frameworkPort,
     dist: devConfig.publish || dist || getDefaultDist(),
     framework,

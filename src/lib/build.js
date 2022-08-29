@@ -1,6 +1,8 @@
 // @ts-check
 const process = require('process')
 
+const { cloneDeep } = require('lodash')
+
 const netlifyBuildPromise = import('@netlify/build')
 
 const { NETLIFYDEVERR, detectServerSettings, exit, log } = require('../utils')
@@ -54,11 +56,10 @@ const runBuild = async (buildOptions, command, commandOptions) => {
   const devConfig = {
     framework: '#auto',
     ...(config.functionsDirectory && { functions: config.functionsDirectory }),
-    ...(config.build.publish && { publish: config.build.publish }),
+    // ...(config.build.publish && { publish: config.build.publish }),
     ...config.dev,
     ...commandOptions,
   }
-  console.log({ cachedConfig })
 
   // If netlify NETLIFY_API_URL is set we need to pass this information to @netlify/build
   // TODO don't use testOpts, but add real properties to do this.
@@ -76,14 +77,21 @@ const runBuild = async (buildOptions, command, commandOptions) => {
   try {
     settings = await detectServerSettings(devConfig, commandOptions, site.root)
 
-    console.log({ settings: settings.dist })
+    console.log({ settings })
 
-    if (settings.dist) {
-      const buildPath = '/Users/sarahetter/test-projects/aug24/.next'
-      buildOptions.cachedConfig.config.build.publish = buildPath
+    const defaultConfig = { build: {} }
 
-      // console.log({ publish: buildOptions.cachedConfig.config.build.publish })
+    if (settings.buildCommand) {
+      buildOptions.cachedConfig.config.build.command = settings.buildCommand
+      defaultConfig.build.command = settings.buildCommand
     }
+    if (settings.dist) {
+      defaultConfig.build.publish = settings.dist
+    }
+
+    buildOptions.defaultConfig = defaultConfig
+
+    console.log(buildOptions.defaultConfig)
 
     // If there are plugins that we should be running for this site, add them
     // to the config as if they were declared in netlify.toml. We must check
@@ -109,7 +117,7 @@ const runBuild = async (buildOptions, command, commandOptions) => {
     exit(1)
   }
 
-  console.log({ buildOptions, config: buildOptions.cachedConfig.config })
+  console.log({ config: buildOptions.cachedConfig.config })
 
   const { configMutations, netlifyConfig: newConfig, severityCode: exitCode } = await build(buildOptions)
   return { exitCode, newConfig, configMutations }
