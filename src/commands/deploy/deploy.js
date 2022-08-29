@@ -389,7 +389,7 @@ const handleBuild = async ({ cachedConfig, command, options }) => {
     token,
     options,
   })
-  const { configMutations, exitCode, newConfig } = await runBuild(resolvedOptions, command)
+  const { configMutations, exitCode, newConfig } = await runBuild(resolvedOptions, command, options)
   if (exitCode !== 0) {
     exit(exitCode)
   }

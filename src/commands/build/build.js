@@ -72,7 +72,7 @@ const build = async (options, command) => {
     await injectEnv(command, { api, buildOptions, context, site, siteInfo })
   }
 
-  const { exitCode } = await runBuild(buildOptions, command)
+  const { exitCode } = await runBuild(buildOptions, command, options)
   exit(exitCode)
 }
 

@@ -43,11 +43,12 @@ const getBuildOptions = ({ cachedConfig, options: { context, cwd, debug, dry, js
 
 /**
  * run the build command
- * @param {BuildConfig} options
+ * @param {BuildConfig} buildOptions
  * @param {import('../commands/base-command').BaseCommand} command
+ * @param {import('commander').OptionValues} commandOptions
  * @returns
  */
-const runBuild = async (options, command) => {
+const runBuild = async (buildOptions, command, commandOptions) => {
   const { default: build } = await netlifyBuildPromise
   const { cachedConfig, config, site } = command.netlify
   const devConfig = {
@@ -55,8 +56,9 @@ const runBuild = async (options, command) => {
     ...(config.functionsDirectory && { functions: config.functionsDirectory }),
     ...(config.build.publish && { publish: config.build.publish }),
     ...config.dev,
-    ...options,
+    ...commandOptions,
   }
+  console.log({ cachedConfig })
 
   // If netlify NETLIFY_API_URL is set we need to pass this information to @netlify/build
   // TODO don't use testOpts, but add real properties to do this.
@@ -66,13 +68,22 @@ const runBuild = async (options, command) => {
       scheme: apiUrl.protocol.slice(0, -1),
       host: apiUrl.host,
     }
-    options = { ...options, testOpts }
+    buildOptions = { ...buildOptions, testOpts }
   }
 
   /** @type {Partial<import('../../utils/types').ServerSettings>} */
   let settings = {}
   try {
-    settings = await detectServerSettings(devConfig, options, site.root)
+    settings = await detectServerSettings(devConfig, commandOptions, site.root)
+
+    console.log({ settings: settings.dist })
+
+    if (settings.dist) {
+      const buildPath = '/Users/sarahetter/test-projects/aug24/.next'
+      buildOptions.cachedConfig.config.build.publish = buildPath
+
+      // console.log({ publish: buildOptions.cachedConfig.config.build.publish })
+    }
 
     // If there are plugins that we should be running for this site, add them
     // to the config as if they were declared in netlify.toml. We must check
@@ -91,14 +102,16 @@ const runBuild = async (options, command) => {
         })
         .filter(Boolean)
 
-      cachedConfig.config.plugins = [...newPlugins, ...cachedConfig.config.plugins]
+      buildOptions.cachedConfig.config.plugins = [...newPlugins, ...cachedConfig.config.plugins]
     }
   } catch (error_) {
     log(NETLIFYDEVERR, error_.message)
     exit(1)
   }
 
-  const { configMutations, netlifyConfig: newConfig, severityCode: exitCode } = await build(options)
+  console.log({ buildOptions, config: buildOptions.cachedConfig.config })
+
+  const { configMutations, netlifyConfig: newConfig, severityCode: exitCode } = await build(buildOptions)
   return { exitCode, newConfig, configMutations }
 }
 
