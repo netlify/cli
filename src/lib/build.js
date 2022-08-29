@@ -1,8 +1,6 @@
 // @ts-check
 const process = require('process')
 
-const { cloneDeep } = require('lodash')
-
 const netlifyBuildPromise = import('@netlify/build')
 
 const { NETLIFYDEVERR, detectServerSettings, exit, log } = require('../utils')
@@ -77,8 +75,6 @@ const runBuild = async (buildOptions, command, commandOptions) => {
   try {
     settings = await detectServerSettings(devConfig, commandOptions, site.root)
 
-    console.log({ settings })
-
     const defaultConfig = { build: {} }
 
     if (settings.buildCommand) {
@@ -116,8 +112,6 @@ const runBuild = async (buildOptions, command, commandOptions) => {
     log(NETLIFYDEVERR, error_.message)
     exit(1)
   }
-
-  console.log({ config: buildOptions.cachedConfig.config })
 
   const { configMutations, netlifyConfig: newConfig, severityCode: exitCode } = await build(buildOptions)
   return { exitCode, newConfig, configMutations }
