@@ -217,7 +217,7 @@ test('should follow 301 redirect to an external server', async (t) => {
   })
 })
 
-test('should rewrite POST request if content-type is missing', async (t) => {
+test('should rewrite POST request if content-type is missing and not crash dev server', async (t) => {
   await withSiteBuilder('site-with-post-no-content-type', async (builder) => {
     builder.withNetlifyToml({
       config: {
@@ -237,8 +237,8 @@ test('should rewrite POST request if content-type is missing', async (t) => {
           }),
       )
 
-      // we're testing Netlify Dev didn't crash
-      t.is(error.message, 'Response code 405 (Method Not Allowed)')
+      // Method Not Allowed
+      t.is(error.response.statusCode, 405)
     })
   })
 })
