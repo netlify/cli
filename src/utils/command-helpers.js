@@ -4,6 +4,7 @@ const os = require('os')
 const process = require('process')
 const { format, inspect } = require('util')
 
+// eslint-disable-next-line no-restricted-modules
 const { Instance: ChalkInstance } = require('chalk')
 const chokidar = require('chokidar')
 const decache = require('decache')

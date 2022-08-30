@@ -69,12 +69,14 @@ module.exports = {
     {
       files: ['src/**/*.js'],
       rules: {
-        // once a solution for npm 6 is found add this to package.json
-        // "eslint-plugin-local-rules": "file:tools/eslint-rules",
-        // add it to the plugins on top: `plugins: ['sort-destructure-keys', 'local-rules'],`
-        //
-        // after that uncomment the next line
-        // 'local-rules/no-direct-chalk-import': 2,
+        'no-restricted-modules': [
+          'error',
+          {
+            name: 'chalk',
+            message:
+              'Please use the safe chalk import that handles colors for json output. `const { chalk } = require("src/utils")`',
+          },
+        ],
       },
     },
   ],
