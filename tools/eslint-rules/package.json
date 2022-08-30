@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "main": "index.js",
   "peerDependencies": {
-    "eslint": "^7.21.0",
+    "eslint": "^8.0.0",
     "ava": "^4.0.0"
   },
   "engines": {
