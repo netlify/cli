@@ -3,6 +3,13 @@ const { overrides } = require('@netlify/eslint-config-node')
 module.exports = {
   extends: '@netlify/eslint-config-node',
   plugins: ['sort-destructure-keys'],
+  parserOptions: {
+    babelOptions: {
+      parserOpts: {
+        sourceType: 'unambiguous',
+      },
+    },
+  },
   rules: {
     // Those rules from @netlify/eslint-config-node are currently disabled
     // TODO: remove, so those rules are enabled
@@ -32,6 +39,9 @@ module.exports = {
         sourceType: 'module',
         babelOptions: {
           presets: ['@babel/preset-react'],
+          parserOpts: {
+            sourceType: 'module',
+          },
         },
       },
       rules: {
@@ -57,6 +67,11 @@ module.exports = {
       },
       parserOptions: {
         sourceType: 'module',
+        babelOptions: {
+          parserOpts: {
+            sourceType: 'module',
+          },
+        },
       },
     },
     {
