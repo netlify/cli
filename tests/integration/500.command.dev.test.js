@@ -267,15 +267,18 @@ test('should ignore existing local file when redirect matches and force=true', a
       })
       .withNetlifyToml({
         config: {
-          redirects: [{ from: '/foo', to: '/not-foo', status: 200, force: true }],
+          redirects: [{ from: '/foo', to: '/not-foo', status: 301, force: true }],
         },
       })
 
     await builder.buildAsync()
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
-      const response = await got(`${server.url}/foo`).text()
-      t.is(response, '<html><h1>not-foo')
+      const response = await got(`${server.url}/foo`, { followRedirect: false })
+      t.is(response.headers.location, `/not-foo`)
+
+      const body = await got(`${server.url}/foo`).text()
+      t.is(body, '<html><h1>not-foo')
     })
   })
 })
@@ -293,15 +296,16 @@ test('should use existing file when rule contains file extension and force=false
       })
       .withNetlifyToml({
         config: {
-          redirects: [{ from: '/foo.html', to: '/not-foo', status: 200, force: false }],
+          redirects: [{ from: '/foo.html', to: '/not-foo', status: 301, force: false }],
         },
       })
 
     await builder.buildAsync()
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
-      const response = await got(`${server.url}/foo.html`).text()
-      t.is(response, '<html><h1>foo')
+      const response = await got(`${server.url}/foo.html`, { followRedirect: false })
+      t.is(response.headers.location, undefined)
+      t.is(response.body, '<html><h1>foo')
     })
   })
 })
@@ -319,15 +323,18 @@ test('should redirect when rule contains file extension and force=true', async (
       })
       .withNetlifyToml({
         config: {
-          redirects: [{ from: '/foo.html', to: '/not-foo', status: 200, force: true }],
+          redirects: [{ from: '/foo.html', to: '/not-foo', status: 301, force: true }],
         },
       })
 
     await builder.buildAsync()
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
-      const response = await got(`${server.url}/foo.html`).text()
-      t.is(response, '<html><h1>not-foo')
+      const response = await got(`${server.url}/foo.html`, { followRedirect: false })
+      t.is(response.headers.location, `/not-foo`)
+
+      const body = await got(`${server.url}/foo.html`).text()
+      t.is(body, '<html><h1>not-foo')
     })
   })
 })
@@ -381,7 +388,7 @@ test('Runs build plugins with the `onPreDev` event', async (t) => {
 
       onPreDev: () => {
         const server = http.createServer((_, res) => res.end("Hello world"));
-      
+
         server.listen(${userServerPort}, "localhost", () => {
           console.log("Server is running on port ${userServerPort}");
         });
