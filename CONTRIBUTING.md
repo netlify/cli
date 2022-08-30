@@ -68,6 +68,12 @@ To run the CLI locally:
 ./bin/run [command]
 ```
 
+or (`DEBUG=true` enables printing stack traces when errors are thrown):
+
+```bash
+DEBUG=true ./bin/run [command]
+```
+
 ## Architecture
 
 The CLI is written using the [commander.js](https://github.com/tj/commander.js/) cli interface and the [netlify/js-client](https://github.com/netlify/js-client) open-api derived API client.
