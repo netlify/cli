@@ -119,7 +119,7 @@ const sitesCreateTemplate = async (repository, options, command) => {
       const siteName = inputName.trim()
 
       // Create new repo from template
-      repoResp = await createRepo(templateName, ghToken, siteName)
+      repoResp = await createRepo(templateName, ghToken, siteName || templateName)
 
       if (repoResp.errors) {
         if (repoResp.errors[0].includes('Name already exists on this account')) {
