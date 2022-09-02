@@ -17,10 +17,12 @@ const getSiteNameInput = async (name) => {
         message: 'Site name (you can change it later):',
         default: 'Pick for me',
         validate: (input) =>
-          /^[a-zA-Z\d-]+$/.test(input || undefined) || 'Only alphanumeric characters and hyphens are allowed',
+          input === 'Pick for me' ||
+          /^[a-zA-Z\d-]+$/.test(input || undefined) ||
+          'Only alphanumeric characters and hyphens are allowed',
       },
     ])
-    name = nameInput || ''
+    name = nameInput === 'Pick for me' ? '' : nameInput || ''
   }
 
   return { name }
