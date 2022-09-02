@@ -6,29 +6,24 @@ const prettyjson = require('prettyjson')
 
 const { chalk, error, getRepoData, log, logJson, track, warn } = require('../../utils')
 const { configureRepo } = require('../../utils/init/config')
-const { generateSiteName } = require('../../utils/sites/utils')
 const { link } = require('../link')
 
 const getSiteNameInput = async (name) => {
-  let siteSuggestion
-
   if (!name) {
-    siteSuggestion = generateSiteName()
-
     const { name: nameInput } = await inquirer.prompt([
       {
         type: 'input',
         name: 'name',
         message: 'Site name (you can change it later):',
-        default: siteSuggestion,
+        default: 'Pick for me',
         validate: (input) =>
           /^[a-zA-Z\d-]+$/.test(input || undefined) || 'Only alphanumeric characters and hyphens are allowed',
       },
     ])
-    name = nameInput || siteSuggestion
+    name = nameInput || ''
   }
 
-  return { name, siteSuggestion }
+  return { name }
 }
 
 /**

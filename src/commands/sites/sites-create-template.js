@@ -113,10 +113,10 @@ const sitesCreateTemplate = async (repository, options, command) => {
 
   // Allow the user to reenter site name if selected one isn't available
   const inputSiteName = async (name) => {
-    const { name: inputName, siteSuggestion } = await getSiteNameInput(name)
+    const { name: inputName } = await getSiteNameInput(name)
 
     try {
-      const siteName = inputName ? inputName.trim() : siteSuggestion
+      const siteName = inputName.trim()
 
       // Create new repo from template
       repoResp = await createRepo(templateName, ghToken, siteName)
