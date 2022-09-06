@@ -78,7 +78,6 @@ const runBuild = async (buildOptions, command, commandOptions) => {
     const defaultConfig = { build: {} }
 
     if (settings.buildCommand) {
-      buildOptions.cachedConfig.config.build.command = settings.buildCommand
       defaultConfig.build.command = settings.buildCommand
     }
     if (settings.dist) {

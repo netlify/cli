@@ -241,23 +241,6 @@ test('should error when using invalid netlify.toml', async (t) => {
   })
 })
 
-test('should error when a site id is missing', async (t) => {
-  await withSiteBuilder('no-site-id-site', async (builder) => {
-    builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } })
-
-    await builder.buildAsync()
-
-    await withMockApi(routes, async ({ apiUrl }) => {
-      await runBuildCommand(t, builder.directory, {
-        apiUrl,
-        exitCode: 1,
-        output: 'Could not find the site ID',
-        env: { ...defaultEnvs, NETLIFY_SITE_ID: '' },
-      })
-    })
-  })
-})
-
 test('should not require a linked site when offline flag is set', async (t) => {
   await withSiteBuilder('success-site', async (builder) => {
     await builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } }).buildAsync()
