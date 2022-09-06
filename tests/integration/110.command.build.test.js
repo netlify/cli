@@ -268,3 +268,27 @@ test('should not send network requests when offline flag is set', async (t) => {
     })
   })
 })
+
+test('should run without site id', async (t) => {
+  await withSiteBuilder('success-site', async (builder) => {
+    builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } })
+
+    await builder.buildAsync()
+    await withMockApi(routesWithCommand, async ({ apiUrl }) => {
+      await runBuildCommand(t, builder.directory, { apiUrl, output: 'testCommand' })
+    })
+  })
+})
+
+test('should add plugin if framework is detected', async (t) => {
+  await withSiteBuilder('success-site', async (builder) => {
+    builder.withPackageJson({ packageJson: { dependencies: { next: '^12.2.0' }, scripts: { build: 'next build' } } })
+
+    await builder.buildAsync()
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      // Error expected as this isn't a real next app
+      await runBuildCommand(t, builder.directory, { apiUrl, output: '@netlify/plugin-nextjs', exitCode: 2 })
+    })
+  })
+})
