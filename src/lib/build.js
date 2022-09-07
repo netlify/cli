@@ -54,7 +54,6 @@ const runBuild = async (buildOptions, command, commandOptions) => {
   const devConfig = {
     framework: '#auto',
     ...(config.functionsDirectory && { functions: config.functionsDirectory }),
-    // ...(config.build.publish && { publish: config.build.publish }),
     ...config.dev,
     ...commandOptions,
   }
@@ -87,8 +86,6 @@ const runBuild = async (buildOptions, command, commandOptions) => {
     }
 
     buildOptions.defaultConfig = defaultConfig
-
-    console.log(buildOptions.defaultConfig)
 
     // If there are plugins that we should be running for this site, add them
     // to the config as if they were declared in netlify.toml. We must check
