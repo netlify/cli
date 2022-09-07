@@ -3,7 +3,7 @@ const process = require('process')
 
 const netlifyBuildPromise = import('@netlify/build')
 
-const { NETLIFYDEVERR, detectServerSettings, exit, log } = require('../utils')
+const { NETLIFYDEVERR, detectServerSettings, error, log } = require('../utils')
 
 /**
  * The buildConfig + a missing cachedConfig
@@ -108,7 +108,7 @@ const runBuild = async (buildOptions, command, commandOptions) => {
     }
   } catch (error_) {
     log(NETLIFYDEVERR, error_.message)
-    exit(1)
+    error(error_)
   }
 
   const { configMutations, netlifyConfig: newConfig, severityCode: exitCode } = await build(buildOptions)
