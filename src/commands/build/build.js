@@ -7,11 +7,7 @@ const { error, exit, generateNetlifyGraphJWT, getEnvelopeEnv, getToken, normaliz
 /**
  * @param {import('../../lib/build').BuildConfig} options
  */
-const checkOptions = ({ cachedConfig: { siteInfo = {} }, token }) => {
-  if (!siteInfo.id) {
-    error('Could not find the site ID. Please run netlify link.')
-  }
-
+const checkOptions = ({ token }) => {
   if (!token) {
     error('Could not find the access token. Please run netlify login.')
   }
@@ -72,7 +68,7 @@ const build = async (options, command) => {
     await injectEnv(command, { api, buildOptions, context, site, siteInfo })
   }
 
-  const { exitCode } = await runBuild(buildOptions)
+  const { exitCode } = await runBuild(buildOptions, command, options)
   exit(exitCode)
 }
 
