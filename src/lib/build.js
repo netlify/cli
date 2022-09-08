@@ -106,9 +106,9 @@ const runBuild = async (buildOptions, command, commandOptions) => {
 
       buildOptions.cachedConfig.config.plugins = [...newPlugins, ...cachedConfig.config.plugins]
     }
-  } catch (error_) {
-    log(NETLIFYDEVERR, error_.message)
-    error(error_)
+  } catch (detectServerSettingsError) {
+    log(NETLIFYDEVERR, detectServerSettingsError.message)
+    error(detectServerSettingsError)
   }
 
   const { configMutations, netlifyConfig: newConfig, severityCode: exitCode } = await build(buildOptions)
