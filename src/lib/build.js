@@ -76,16 +76,16 @@ const runBuild = async (buildOptions, command, commandOptions) => {
 
     const defaultConfig = { build: {} }
 
-    if (settings.buildCommand) {
+    if (settings.buildCommand && settings.dist) {
       buildOptions.cachedConfig.config.build.command = settings.buildCommand
       defaultConfig.build.command = settings.buildCommand
-    }
-    if (settings.dist) {
       buildOptions.cachedConfig.config.build.publish = settings.buildCommand
       defaultConfig.build.publish = settings.dist
     }
 
-    buildOptions.defaultConfig = defaultConfig
+    if (defaultConfig.build.command && defaultConfig.build.publish) {
+      buildOptions.defaultConfig = defaultConfig
+    }
 
     // If there are plugins that we should be running for this site, add them
     // to the config as if they were declared in netlify.toml. We must check
