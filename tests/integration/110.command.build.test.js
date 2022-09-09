@@ -241,23 +241,6 @@ test('should error when using invalid netlify.toml', async (t) => {
   })
 })
 
-test('should error when a site id is missing', async (t) => {
-  await withSiteBuilder('no-site-id-site', async (builder) => {
-    builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } })
-
-    await builder.buildAsync()
-
-    await withMockApi(routes, async ({ apiUrl }) => {
-      await runBuildCommand(t, builder.directory, {
-        apiUrl,
-        exitCode: 1,
-        output: 'Could not find the site ID',
-        env: { ...defaultEnvs, NETLIFY_SITE_ID: '' },
-      })
-    })
-  })
-})
-
 test('should not require a linked site when offline flag is set', async (t) => {
   await withSiteBuilder('success-site', async (builder) => {
     await builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } }).buildAsync()
@@ -282,6 +265,30 @@ test('should not send network requests when offline flag is set', async (t) => {
       })
 
       t.is(requests.length, 0)
+    })
+  })
+})
+
+test('should run without site id', async (t) => {
+  await withSiteBuilder('success-site', async (builder) => {
+    builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } })
+
+    await builder.buildAsync()
+    await withMockApi(routesWithCommand, async ({ apiUrl }) => {
+      await runBuildCommand(t, builder.directory, { apiUrl, output: 'testCommand' })
+    })
+  })
+})
+
+test('should add plugin if framework is detected', async (t) => {
+  await withSiteBuilder('success-site', async (builder) => {
+    builder.withPackageJson({ packageJson: { dependencies: { next: '^12.2.0' }, scripts: { build: 'next build' } } })
+
+    await builder.buildAsync()
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      // Error expected as this isn't a real next app
+      await runBuildCommand(t, builder.directory, { apiUrl, output: '@netlify/plugin-nextjs', exitCode: 2 })
     })
   })
 })
