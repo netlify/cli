@@ -50,7 +50,6 @@ const formatLambdaLocalError = (err, acceptsHtml) =>
 let errorTemplateFile
 
 const renderErrorTemplate = async (errString) => {
-  console.log('rendererrortemplate')
   const regexPattern = /<!--@ERROR-DETAILS-->/g
   const templatePath = './templates/function-error.html'
 
@@ -65,7 +64,7 @@ const renderErrorTemplate = async (errString) => {
 const processRenderedResponse = async (err, request) => {
   const acceptsHtml = request.headers && request.headers.accept && request.headers.accept.includes('text/html')
   const errorString = typeof err === 'string' ? err : formatLambdaLocalError(err, acceptsHtml)
-  // I think this is where we show errors?
+
   return acceptsHtml ? await renderErrorTemplate(errorString) : errorString
 }
 
@@ -97,4 +96,4 @@ const validateLambdaResponse = (lambdaResponse) => {
   return {}
 }
 
-module.exports = { handleSynchronousFunction, renderErrorTemplate }
+module.exports = { handleSynchronousFunction }

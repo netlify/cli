@@ -30,6 +30,23 @@ const { createRewriter, onChanges } = require('./rules-proxy')
 
 const shouldGenerateETag = Symbol('Internal: response should generate ETag')
 
+let errorTemplateFile
+
+const renderErrorTemplate = async (errString) => {
+  console.log('rendererrortemplate')
+  const regexPattern = /<!--@ERROR-DETAILS-->/g
+  const templatePath = '../lib/functions/templates/function-error.html'
+  console.log({ templatePath })
+  try {
+    console.log('in try', errString)
+    errorTemplateFile = errorTemplateFile || (await readFile(join(__dirname, templatePath), 'utf-8'))
+    return errorTemplateFile.replace(regexPattern, errString)
+  } catch {
+    console.log('catching')
+    return errString
+  }
+}
+
 const isInternal = function (url) {
   return url.startsWith('/.netlify/')
 }
@@ -388,21 +405,23 @@ const initializeProxy = async function ({ configPath, distDir, port, projectDir 
       Object.entries(headersRules).forEach(([key, val]) => {
         res.setHeader(key, val)
       })
-      res.writeHead(responseStatus, proxyRes.headers)
-      console.log({ responseBody })
-      console.log(Buffer.from(responseBody).toString())
 
-      if (responseStatus === 500 && proxyRes.headers['x-nf-uncaught-error'] === '1') {
+      const isUncaughtError = responseStatus === 500 && proxyRes.headers['x-nf-uncaught-error'] === '1'
+
+      if (edgeFunctions.isEdgeFunctionsRequest(req) && isUncaughtError) {
         const acceptsHtml = req.headers && req.headers.accept && req.headers.accept.includes('text/html')
-        console.log('something went wrong', acceptsHtml)
         const errorResponse = acceptsHtml ? await renderErrorTemplate(responseBody) : responseBody
-        console.log({ errorResponse: typeof errorResponse, body: typeof responseBody })
+        const contentLength = Buffer.from(errorResponse, 'utf8').byteLength
+
+        res.setHeader('content-length', contentLength)
         res.write(errorResponse)
+        return res.end()
       }
-      console.log('got here?')
+
+      res.writeHead(responseStatus, proxyRes.headers)
 
       if (responseStatus !== 304) {
-        // res.write(responseBody)
+        res.write(responseBody)
       }
 
       res.end()
@@ -422,23 +441,6 @@ const initializeProxy = async function ({ configPath, distDir, port, projectDir 
   }
 
   return handlers
-}
-
-let errorTemplateFile
-
-const renderErrorTemplate = async (errString) => {
-  console.log('rendererrortemplate')
-  const regexPattern = /<!--@ERROR-DETAILS-->/g
-  const templatePath = '../lib/functions/templates/function-error.html'
-  console.log({ templatePath })
-  try {
-    console.log('in try', errString)
-    errorTemplateFile = errorTemplateFile || (await readFile(join(__dirname, templatePath), 'utf-8'))
-    return errorTemplateFile.replace(regexPattern, errString)
-  } catch {
-    console.log('catching')
-    return errString
-  }
 }
 
 const onRequest = async ({ addonsUrls, edgeFunctionsProxy, functionsServer, proxy, rewriter, settings }, req, res) => {
