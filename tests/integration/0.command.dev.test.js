@@ -1,6 +1,5 @@
 // Handlers are meant to be async outside tests
 const { promises: fs } = require('fs')
-const http = require('http')
 const { join } = require('path')
 
 // eslint-disable-next-line ava/use-test
@@ -166,7 +165,7 @@ test('should source redirects file from publish directory', async (t) => {
   })
 })
 
-test('should redirect requests to an external server', async (t) => {
+test('should rewrite requests to an external server', async (t) => {
   await withSiteBuilder('site-redirects-file-to-external', async (builder) => {
     const externalServer = startExternalServer()
     const { port } = externalServer.address()
@@ -186,6 +185,7 @@ test('should redirect requests to an external server', async (t) => {
             'Content-Type': 'application/x-www-form-urlencoded',
           },
           body: 'param=value',
+          followRedirect: false,
         })
         .json()
       t.deepEqual(postResponse, { body: { param: 'value' }, method: 'POST', url: '/ping' })
@@ -206,15 +206,18 @@ test('should follow 301 redirect to an external server', async (t) => {
     await builder.buildAsync()
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
-      const response = await got(`${server.url}/api/ping`).json()
-      t.deepEqual(response, { body: {}, method: 'GET', url: '/ping' })
+      const response = await got(`${server.url}/api/ping`, { followRedirect: false })
+      t.is(response.headers.location, `http://localhost:${port}/ping`)
+
+      const body = await got(`${server.url}/api/ping`).json()
+      t.deepEqual(body, { body: {}, method: 'GET', url: '/ping' })
     })
 
     externalServer.close()
   })
 })
 
-test('should redirect POST request if content-type is missing', async (t) => {
+test('should rewrite POST request if content-type is missing and not crash dev server', async (t) => {
   await withSiteBuilder('site-with-post-no-content-type', async (builder) => {
     builder.withNetlifyToml({
       config: {
@@ -226,27 +229,16 @@ test('should redirect POST request if content-type is missing', async (t) => {
     await builder.buildAsync()
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
-      const options = {
-        host: server.host,
-        port: server.port,
-        path: '/api/echo',
-        method: 'POST',
-      }
-      let data = ''
-      await new Promise((resolve) => {
-        const callback = (response) => {
-          response.on('data', (chunk) => {
-            data += chunk
-          })
-          response.on('end', resolve)
-        }
-        const req = http.request(options, callback)
-        req.write('param=value')
-        req.end()
-      })
+      const error = await t.throwsAsync(
+        async () =>
+          await got.post(`${server.url}/api/echo`, {
+            body: 'param=value',
+            followRedirect: false,
+          }),
+      )
 
-      // we're testing Netlify Dev didn't crash
-      t.is(data, 'Method Not Allowed')
+      // Method Not Allowed
+      t.is(error.response.statusCode, 405)
     })
   })
 })

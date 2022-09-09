@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "11.5.0",
+  "version": "11.6.0",
   "author": "Netlify Inc.",
   "contributors": [
     "@whitep4nth3r (https://twitter.com/whitep4nth3r)",
@@ -223,13 +223,13 @@
     "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,tools,scripts,site,tests,.github}/**/*.{mjs,cjs,js,md,yml,json,html}\" \"*.{mjs,cjs,js,yml,json,html}\" \".*.{mjs,cjs,js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\" \"!**/*/package-lock.json\" \"!.github/**/*.md\""
   },
   "dependencies": {
-    "@netlify/build": "^27.15.7",
-    "@netlify/config": "^18.2.2",
-    "@netlify/edge-bundler": "^1.13.0",
+    "@netlify/build": "^27.16.1",
+    "@netlify/config": "^18.2.3",
+    "@netlify/edge-bundler": "^1.14.1",
     "@netlify/framework-info": "^9.2.0",
     "@netlify/local-functions-proxy": "^1.1.1",
-    "@netlify/plugins-list": "^6.40.0",
-    "@netlify/zip-it-and-ship-it": "^5.13.5",
+    "@netlify/plugins-list": "^6.41.0",
+    "@netlify/zip-it-and-ship-it": "^6.0.0",
     "@octokit/rest": "^18.0.0",
     "@sindresorhus/slugify": "^1.1.0",
     "ansi-escapes": "^5.0.0",
@@ -296,7 +296,7 @@
     "netlify-headers-parser": "^6.0.2",
     "netlify-onegraph-internal": "0.10.0",
     "netlify-redirect-parser": "^13.0.5",
-    "netlify-redirector": "^0.2.1",
+    "netlify-redirector": "^0.3.1",
     "node-fetch": "^2.6.0",
     "node-version-alias": "^1.0.1",
     "omit.js": "^2.0.2",
