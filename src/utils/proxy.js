@@ -4,7 +4,6 @@ const { readFile } = require('fs').promises
 const http = require('http')
 const https = require('https')
 const path = require('path')
-const { join } = require('path')
 
 const contentType = require('content-type')
 const cookie = require('cookie')
@@ -21,7 +20,7 @@ const toReadableStream = require('to-readable-stream')
 
 const edgeFunctions = require('../lib/edge-functions')
 const { fileExistsAsync, isFileAsync } = require('../lib/fs')
-// const { renderErrorTemplate } = require('../lib/functions/synchronous')
+const renderErrorTemplate = require('../lib/functions/render-error-remplate')
 
 const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./command-helpers')
 const { createStreamPromise } = require('./create-stream-promise')
@@ -29,23 +28,6 @@ const { headersForPath, parseHeaders } = require('./headers')
 const { createRewriter, onChanges } = require('./rules-proxy')
 
 const shouldGenerateETag = Symbol('Internal: response should generate ETag')
-
-let errorTemplateFile
-
-const renderErrorTemplate = async (errString) => {
-  console.log('rendererrortemplate')
-  const regexPattern = /<!--@ERROR-DETAILS-->/g
-  const templatePath = '../lib/functions/templates/function-error.html'
-  console.log({ templatePath })
-  try {
-    console.log('in try', errString)
-    errorTemplateFile = errorTemplateFile || (await readFile(join(__dirname, templatePath), 'utf-8'))
-    return errorTemplateFile.replace(regexPattern, errString)
-  } catch {
-    console.log('catching')
-    return errString
-  }
-}
 
 const isInternal = function (url) {
   return url.startsWith('/.netlify/')
@@ -378,7 +360,6 @@ const initializeProxy = async function ({ configPath, distDir, port, projectDir 
     const headersRules = headersForPath(headers, requestURL.pathname)
 
     proxyRes.on('data', function onData(data) {
-      console.log('we get here?')
       responseData.push(data)
     })
 
