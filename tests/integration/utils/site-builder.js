@@ -75,10 +75,11 @@ const createSiteBuilder = ({ siteName }) => {
       })
       return builder
     },
-    withEdgeFunction: ({ handler, name = 'function', pathPrefix = '' }) => {
-      const dest = path.join(directory, pathPrefix, 'netlify/edge-functions', `${name}.js`)
+    withEdgeFunction: ({ handler, internal = false, name = 'function', pathPrefix = '' }) => {
+      const edgeFunctionsDirectory = internal ? '.netlify/edge-functions' : 'netlify/edge-functions'
+      const dest = path.join(directory, pathPrefix, edgeFunctionsDirectory, `${name}.js`)
       tasks.push(async () => {
-        const content = `export default ${handler.toString()}`
+        const content = typeof handler === 'string' ? handler : `export default ${handler.toString()}`
         await ensureDir(path.dirname(dest))
         await writeFile(dest, content)
       })
