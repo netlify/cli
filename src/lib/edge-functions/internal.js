@@ -2,6 +2,7 @@
 const { promises: fs } = require('fs')
 const path = require('path')
 const { cwd } = require('process')
+const { pathToFileURL } = require('url')
 
 const { warn } = require('../../utils/command-helpers')
 const { getPathInProject } = require('../settings')
@@ -58,7 +59,10 @@ const getInternalFunctions = async () => {
       if (importMap !== null) {
         return {
           ...data,
-          importMap,
+          importMap: {
+            baseURL: pathToFileURL(importMapPath),
+            ...importMap,
+          },
         }
       }
     }

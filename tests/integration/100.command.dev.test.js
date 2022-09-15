@@ -213,6 +213,65 @@ test('Serves an Edge Function that terminates a response', async (t) => {
   })
 })
 
+test('Serves an edge function with an import map', async (t) => {
+  await withSiteBuilder('site-with-edge-function-with-import-map', async (builder) => {
+    const publicDir = 'public'
+    builder
+      .withNetlifyToml({
+        config: {
+          build: {
+            publish: publicDir,
+            edge_functions: 'netlify/edge-functions',
+          },
+        },
+      })
+      .withContentFiles([
+        {
+          path: path.join(publicDir, 'index.html'),
+          content: '<html>index</html>',
+        },
+        {
+          path: path.join('.netlify', 'edge-functions', 'manifest.json'),
+          content: JSON.stringify({
+            functions: [{ function: 'hello', path: '/edge-function' }],
+            import_map: '../../import-map.json',
+            version: 1,
+          }),
+        },
+        {
+          path: 'import-map.json',
+          content: JSON.stringify({
+            imports: {
+              'alias:util': './util.js',
+            },
+          }),
+        },
+        {
+          path: 'util.js',
+          content: `export const name = "world"`,
+        },
+      ])
+      .withEdgeFunction({
+        handler: `
+          import { name } from 'alias:util'
+
+          export default async () => new Response('Hello, ' + name)
+        `,
+        internal: true,
+        name: 'hello',
+      })
+
+    await builder.buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async (server) => {
+      const response = await got(`${server.url}/edge-function`)
+
+      t.is(response.statusCode, 200)
+      t.is(response.body, 'Hello, world')
+    })
+  })
+})
+
 test('Serves an Edge Function with a rewrite', async (t) => {
   await withSiteBuilder('site-with-edge-function-that-rewrites', async (builder) => {
     const publicDir = 'public'
