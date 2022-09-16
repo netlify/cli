@@ -10,13 +10,13 @@
       "hasInstallScript": true,
       "license": "MIT",
       "dependencies": {
-        "@netlify/build": "^27.18.1",
+        "@netlify/build": "^27.18.2",
         "@netlify/config": "^18.2.3",
         "@netlify/edge-bundler": "^2.0.5",
         "@netlify/framework-info": "^9.2.0",
         "@netlify/local-functions-proxy": "^1.1.1",
-        "@netlify/plugins-list": "^6.43.0",
-        "@netlify/zip-it-and-ship-it": "^7.1.1",
+        "@netlify/plugins-list": "^6.44.0",
+        "@netlify/zip-it-and-ship-it": "^7.1.2",
         "@octokit/rest": "^18.0.0",
         "@sindresorhus/slugify": "^1.1.0",
         "ansi-escapes": "^5.0.0",
@@ -1194,19 +1194,19 @@
       "integrity": "sha512-4wMPu9iN3/HL97QblBsBay3E1etIciR84izI3U+4iALY+JHCrI+a2jO0qbAZ/nxKoegypYEaiiqWXylm+/zfrw=="
     },
     "node_modules/@netlify/build": {
-      "version": "27.18.1",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-27.18.1.tgz",
-      "integrity": "sha512-FLTWRom+YRdyUPpGxGex7X24c4G3S6fT8nHBjkMurGssZre9MXeTbTkSmZmfuK+ZUgt/OoUPfIzAEETfWJPXag==",
+      "version": "27.18.2",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-27.18.2.tgz",
+      "integrity": "sha512-cVUn4ifkEWxk0AnDs8GTittC0xy1S3DGZMvk6IVALLIc3kXmCqO/A71CnWvqCrcmYF2fDZB0prLumw7bVB9FLQ==",
       "dependencies": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^4.0.0",
         "@netlify/config": "^18.2.3",
         "@netlify/edge-bundler": "^2.0.5",
-        "@netlify/functions-utils": "^4.2.8",
+        "@netlify/functions-utils": "^4.2.9",
         "@netlify/git-utils": "^4.0.0",
         "@netlify/plugins-list": "^6.44.0",
         "@netlify/run-utils": "^4.0.0",
-        "@netlify/zip-it-and-ship-it": "^7.1.1",
+        "@netlify/zip-it-and-ship-it": "^7.1.2",
         "@sindresorhus/slugify": "^2.0.0",
         "@types/node": "^16.0.0",
         "ajv": "^8.11.0",
@@ -2606,9 +2606,9 @@
       }
     },
     "node_modules/@netlify/esbuild": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild/-/esbuild-0.14.25.tgz",
-      "integrity": "sha512-ko0cMTbYpajNr0Sy6kvSqR+JDvgU/vjJhO061K1h8+Zs4MlF5AUhaITkpSOrP3g45zp++IEwN1Brxr+/BIez+g==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild/-/esbuild-0.14.39.tgz",
+      "integrity": "sha512-C3xpwdT2xw6SnSb+hLQoxjtikAKiz6BjQjzlIaysHDpGbmIcmUHZ/X+dyLtCqAvf15WNK5GSBZYOlpgcOE0WZA==",
       "hasInstallScript": true,
       "bin": {
         "esbuild": "bin/esbuild"
@@ -2617,32 +2617,32 @@
         "node": ">=12"
       },
       "optionalDependencies": {
-        "@netlify/esbuild-android-64": "0.14.25",
-        "@netlify/esbuild-android-arm64": "0.14.25",
-        "@netlify/esbuild-darwin-64": "0.14.25",
-        "@netlify/esbuild-darwin-arm64": "0.14.25",
-        "@netlify/esbuild-freebsd-64": "0.14.25",
-        "@netlify/esbuild-freebsd-arm64": "0.14.25",
-        "@netlify/esbuild-linux-32": "0.14.25",
-        "@netlify/esbuild-linux-64": "0.14.25",
-        "@netlify/esbuild-linux-arm": "0.14.25",
-        "@netlify/esbuild-linux-arm64": "0.14.25",
-        "@netlify/esbuild-linux-mips64le": "0.14.25",
-        "@netlify/esbuild-linux-ppc64le": "0.14.25",
-        "@netlify/esbuild-linux-riscv64": "0.14.25",
-        "@netlify/esbuild-linux-s390x": "0.14.25",
-        "@netlify/esbuild-netbsd-64": "0.14.25",
-        "@netlify/esbuild-openbsd-64": "0.14.25",
-        "@netlify/esbuild-sunos-64": "0.14.25",
-        "@netlify/esbuild-windows-32": "0.14.25",
-        "@netlify/esbuild-windows-64": "0.14.25",
-        "@netlify/esbuild-windows-arm64": "0.14.25"
+        "@netlify/esbuild-android-64": "0.14.39",
+        "@netlify/esbuild-android-arm64": "0.14.39",
+        "@netlify/esbuild-darwin-64": "0.14.39",
+        "@netlify/esbuild-darwin-arm64": "0.14.39",
+        "@netlify/esbuild-freebsd-64": "0.14.39",
+        "@netlify/esbuild-freebsd-arm64": "0.14.39",
+        "@netlify/esbuild-linux-32": "0.14.39",
+        "@netlify/esbuild-linux-64": "0.14.39",
+        "@netlify/esbuild-linux-arm": "0.14.39",
+        "@netlify/esbuild-linux-arm64": "0.14.39",
+        "@netlify/esbuild-linux-mips64le": "0.14.39",
+        "@netlify/esbuild-linux-ppc64le": "0.14.39",
+        "@netlify/esbuild-linux-riscv64": "0.14.39",
+        "@netlify/esbuild-linux-s390x": "0.14.39",
+        "@netlify/esbuild-netbsd-64": "0.14.39",
+        "@netlify/esbuild-openbsd-64": "0.14.39",
+        "@netlify/esbuild-sunos-64": "0.14.39",
+        "@netlify/esbuild-windows-32": "0.14.39",
+        "@netlify/esbuild-windows-64": "0.14.39",
+        "@netlify/esbuild-windows-arm64": "0.14.39"
       }
     },
     "node_modules/@netlify/esbuild-android-64": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-android-64/-/esbuild-android-64-0.14.25.tgz",
-      "integrity": "sha512-z8vtc3jPgQxEcW9ldN5XwEPW0BHsaNFFZ4eIYSh0D2kxTCk1K2k6PY6+9+4wsCgyY0J5fnykCEjPj9AQBzCRpg==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-android-64/-/esbuild-android-64-0.14.39.tgz",
+      "integrity": "sha512-azq+lsvjRsKLap8ubIwSJXGyknUACqYu5h98Fvyoh40Qk4QXIVKl16JIJ4s+B7jy2k9qblEc5c4nxdDA3aGbVA==",
       "cpu": [
         "x64"
       ],
@@ -2655,9 +2655,9 @@
       }
     },
     "node_modules/@netlify/esbuild-android-arm64": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-android-arm64/-/esbuild-android-arm64-0.14.25.tgz",
-      "integrity": "sha512-M0MHkLvOsGPano1Lpbwbik09/Dku0Pl9YJKtVZimo55/pd6kUFpktUbO+VSF9gA3ihdisEkL8/Y+gc4wxLbJkg==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-android-arm64/-/esbuild-android-arm64-0.14.39.tgz",
+      "integrity": "sha512-WhIP7ePq4qMC1sxoaeB9SsJqSW6uzW7XDj/IuWl1l9r94nwxywU1sYdVLaF2mZr15njviazYjVr8x1d+ipwL3w==",
       "cpu": [
         "arm64"
       ],
@@ -2670,9 +2670,9 @@
       }
     },
     "node_modules/@netlify/esbuild-darwin-64": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-darwin-64/-/esbuild-darwin-64-0.14.25.tgz",
-      "integrity": "sha512-V1GAIfYLsCIcGfGfyAQ+VhbJ/GrzrEkMamAZd5jO1I2T1XHyPMe4vYV7W7AZzcwcYzpdlj8MXIESCODlCDXnCQ==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-darwin-64/-/esbuild-darwin-64-0.14.39.tgz",
+      "integrity": "sha512-eF4GvLYiDxtcyjFT55+h+8c8A2HltjeMezCqkt3AQSgOdu1nhlvwbBhIdg2dyM6gKEaEm5hBtTbicEDSwsLodA==",
       "cpu": [
         "x64"
       ],
@@ -2685,9 +2685,9 @@
       }
     },
     "node_modules/@netlify/esbuild-darwin-arm64": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-darwin-arm64/-/esbuild-darwin-arm64-0.14.25.tgz",
-      "integrity": "sha512-jfX7SY2ZD4NzSCDHZiAJfHKoqINxymToWv5LUml5/FJa6602o+x+ghg8vFezVaap1XTr+ULdFbHOEiqKpeFl+A==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-darwin-arm64/-/esbuild-darwin-arm64-0.14.39.tgz",
+      "integrity": "sha512-b7rtnX/VtYwNbUCxs3eulrCWJ+u2YvqDcXiIV1ka+od+N0fTx+4RrVkVp1lha9L0wEJYK9J7UWZOMLMyd1ynRg==",
       "cpu": [
         "arm64"
       ],
@@ -2700,9 +2700,9 @@
       }
     },
     "node_modules/@netlify/esbuild-freebsd-64": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-freebsd-64/-/esbuild-freebsd-64-0.14.25.tgz",
-      "integrity": "sha512-rsK6mW/zaFZSPVa+7CthO3bPeW6qBE9VtwHAm5tdXCP3+Qpl+9rQnbs1CEqqWGrNUv+ExlTVqrAUKkdrGq8IPg==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-freebsd-64/-/esbuild-freebsd-64-0.14.39.tgz",
+      "integrity": "sha512-XtusxDJt2hUKUdggbTFolMx0kJL2zEa4STI7YwpB+ukEWoW5rODZjiLZbqqYLcjDH8k4YwHaMxs103L8eButEQ==",
       "cpu": [
         "x64"
       ],
@@ -2715,9 +2715,9 @@
       }
     },
     "node_modules/@netlify/esbuild-freebsd-arm64": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-freebsd-arm64/-/esbuild-freebsd-arm64-0.14.25.tgz",
-      "integrity": "sha512-ym2Tf0dsKWJbVu3keFSs1FZezk1PXmxckuFTr0+hJMUazeNwFqJJQrY3SiN0JM7jh+VunND2RePjfsSZpcK54g==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-freebsd-arm64/-/esbuild-freebsd-arm64-0.14.39.tgz",
+      "integrity": "sha512-A9XZKai+k6kfndCtN6Dh2usT28V0+OGxzFdZsANONPQiEUTrGZCgwcHWiVlVn7SeAwPR1tKZreTnvrfj8cj7hA==",
       "cpu": [
         "arm64"
       ],
@@ -2730,9 +2730,9 @@
       }
     },
     "node_modules/@netlify/esbuild-linux-32": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-linux-32/-/esbuild-linux-32-0.14.25.tgz",
-      "integrity": "sha512-BGRAge/+6m8/lCejgLzCdq+GpN9ah3/XBp88YGgufb4h3c2CAxrq9fIlizHyZA4THHh2T/ka3rYdBOC5ciEwEw==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-linux-32/-/esbuild-linux-32-0.14.39.tgz",
+      "integrity": "sha512-ZQnqk/82YRvINY+aF+LlGfRZ19c5mH0jaxsO046GpIOPx6PcXHG8JJ2lg+vLJVe4zFPohxzabcYpwFuT4cg/GA==",
       "cpu": [
         "ia32"
       ],
@@ -2745,9 +2745,9 @@
       }
     },
     "node_modules/@netlify/esbuild-linux-64": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-linux-64/-/esbuild-linux-64-0.14.25.tgz",
-      "integrity": "sha512-yD579mskxDXrDR2vC7Dw/mEFTEuQoNYBcoKsIq+ctLiyQcKI1WCgAapJ+MCNpIDkmZp4O1uVuqIiMSyoMlv1QQ==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-linux-64/-/esbuild-linux-64-0.14.39.tgz",
+      "integrity": "sha512-IQtswVw7GAKNX/3yV390wSfSXvMWy0d5cw8csAffwBk9gupftY2lzepK4Cn6uD/aqLt3Iku33FbHop/2nPGfQA==",
       "cpu": [
         "x64"
       ],
@@ -2760,9 +2760,9 @@
       }
     },
     "node_modules/@netlify/esbuild-linux-arm": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-linux-arm/-/esbuild-linux-arm-0.14.25.tgz",
-      "integrity": "sha512-NtnVECEKNr53v11E4wJzQtf7oM3HSPShDZEcwadjuK85AIJpISZcc7Hi6k/g4PsSyGjp73hH8Jly2hh+o+ruvQ==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-linux-arm/-/esbuild-linux-arm-0.14.39.tgz",
+      "integrity": "sha512-QdOzQniOed0Bz1cTC9TMMwvtAqKayYv66H4edJlbvElC81yJZF/c9XhmYWJ6P5g4nkChZubQ5RcQwTLmrFGexg==",
       "cpu": [
         "arm"
       ],
@@ -2775,9 +2775,9 @@
       }
     },
     "node_modules/@netlify/esbuild-linux-arm64": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-linux-arm64/-/esbuild-linux-arm64-0.14.25.tgz",
-      "integrity": "sha512-t1BDP9Fb94jut9m+PE4AVaTQE40JaCJEVpszvvP/6aByR5NMQ5BrNaU8e6XZ6MS7bulYsJCEcJ8I/pPraXycqg==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-linux-arm64/-/esbuild-linux-arm64-0.14.39.tgz",
+      "integrity": "sha512-4Jie4QV6pWWuGN7TAshNMGbdTA9+VbRkv3rPIxhgK5gBfmsAV1yRKsumE4Y77J0AZNRiOriyoec4zc1qkmI3zg==",
       "cpu": [
         "arm64"
       ],
@@ -2790,9 +2790,9 @@
       }
     },
     "node_modules/@netlify/esbuild-linux-mips64le": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-linux-mips64le/-/esbuild-linux-mips64le-0.14.25.tgz",
-      "integrity": "sha512-Fo5sBkAVxxy+lEmKNo1bJD1lrVI9lpdwSzXW/I8k6ly9J8Vf2JNDYgvld4GSkNVTij5jA/zuN7aSQDEoIgx4mA==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-linux-mips64le/-/esbuild-linux-mips64le-0.14.39.tgz",
+      "integrity": "sha512-Htozxr95tw4tSd86YNbCLs1eoYQzNu/cHpzFIkuJoztZueUhl8XpRvBdob7n3kEjW1gitLWAIn8XUwSt+aJ1Tg==",
       "cpu": [
         "mips64el"
       ],
@@ -2805,9 +2805,9 @@
       }
     },
     "node_modules/@netlify/esbuild-linux-ppc64le": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-linux-ppc64le/-/esbuild-linux-ppc64le-0.14.25.tgz",
-      "integrity": "sha512-EDInkVpAqfyfmZtYI9g9E78ohPLtyZinR19/8PGtL4zZcRUP2AnEzQRtv4NkAKAlPGa8plv3SiGsg4qKeeYRFA==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-linux-ppc64le/-/esbuild-linux-ppc64le-0.14.39.tgz",
+      "integrity": "sha512-tFy0ufWIdjeuk1rPHee00TZlhr9OSF00Ufb4ROFyt2ArKuMSkWRJuDgx6MtZcAnCIN4cybo/xWl3MKTM+scnww==",
       "cpu": [
         "ppc64"
       ],
@@ -2820,9 +2820,9 @@
       }
     },
     "node_modules/@netlify/esbuild-linux-riscv64": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-linux-riscv64/-/esbuild-linux-riscv64-0.14.25.tgz",
-      "integrity": "sha512-MACKlmgawjSkNBH34AQUNoC4CX+KD4kk5KfneiBzQeV5oUW89yBf2Q/GaqiTB58Jz93juBOkWwiV0z25AmJzvg==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-linux-riscv64/-/esbuild-linux-riscv64-0.14.39.tgz",
+      "integrity": "sha512-ZzfKvwIxL7wQnYbVFpyNW0wotnLoKageUEM57RbjekesJoNQnqUR6Usm+LDZoB8iRsI58VX1IxnstP0cX8vOHw==",
       "cpu": [
         "riscv64"
       ],
@@ -2835,9 +2835,9 @@
       }
     },
     "node_modules/@netlify/esbuild-linux-s390x": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-linux-s390x/-/esbuild-linux-s390x-0.14.25.tgz",
-      "integrity": "sha512-Mti6NSFGQ6GT+C9LTn15k2JttvtMcy+c1Xxqj8GYkiOqbM7Oh6NcMlXQiHxnCCsxw5Jx0WSWjdrn/dKhdiC13A==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-linux-s390x/-/esbuild-linux-s390x-0.14.39.tgz",
+      "integrity": "sha512-yjC0mFwnuMRoh0WcF0h71MF71ytZBFEQQTRdgiGT0+gbC4UApBqnTkJdLx32RscBKi9skbMChiJ748hDJou6FA==",
       "cpu": [
         "s390x"
       ],
@@ -2850,9 +2850,9 @@
       }
     },
     "node_modules/@netlify/esbuild-netbsd-64": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-netbsd-64/-/esbuild-netbsd-64-0.14.25.tgz",
-      "integrity": "sha512-aNDKGpy926VcnA//hqw+d4k1q1ekpmhDdy0cuEib6ZS7Qb/5xGVRH6mjG8pf0TtonY9x+wiYNuQn4Dn/DwP9Kw==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-netbsd-64/-/esbuild-netbsd-64-0.14.39.tgz",
+      "integrity": "sha512-mIq4znOoz3YfTVdv3sIWfR4Zx5JgMnT4srlhC5KYVHibhxvyDdin5txldYXmR4Zv4dZd6DSuWFsn441aUegHeA==",
       "cpu": [
         "x64"
       ],
@@ -2865,9 +2865,9 @@
       }
     },
     "node_modules/@netlify/esbuild-openbsd-64": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-openbsd-64/-/esbuild-openbsd-64-0.14.25.tgz",
-      "integrity": "sha512-70W5TnRX5MroXVN0munWpF5q/AAWlamoy+PUL6cnDgc7cfnRiHHrndY++ZpWczNif8t4fQKVtC4jdUemnyb8Ag==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-openbsd-64/-/esbuild-openbsd-64-0.14.39.tgz",
+      "integrity": "sha512-+t6QdzJCngH19hV7ClpFAeFDI2ko/HNcFbiNwaXTMVLB3hWi1sJtn+fzZck5HfzN4qsajAVqZq4nwX69SSt25A==",
       "cpu": [
         "x64"
       ],
@@ -2880,9 +2880,9 @@
       }
     },
     "node_modules/@netlify/esbuild-sunos-64": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-sunos-64/-/esbuild-sunos-64-0.14.25.tgz",
-      "integrity": "sha512-UImichNlQInjErof7tuoG/8VVbrn8Y5EVVMI4M+RoCafWh9NSl4a57hohcgwbeGwl5NcGJtHg+l/WqzlHQFFsQ==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-sunos-64/-/esbuild-sunos-64-0.14.39.tgz",
+      "integrity": "sha512-HLfXG6i2p3wyyyWHeeP4ShGDJ1zRMnf9YLJLe2ezv2KqvcKw/Un/m/FBuDW1p13oSUO7ShISMzgc1dw1GGBEOQ==",
       "cpu": [
         "x64"
       ],
@@ -2895,9 +2895,9 @@
       }
     },
     "node_modules/@netlify/esbuild-windows-32": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-windows-32/-/esbuild-windows-32-0.14.25.tgz",
-      "integrity": "sha512-OFisPQBbuIH8wMRm//fs7wQ7d6t1PuLylIUsUSgignjEV3BOts4+pjtq0J8Aq9kkKoVp8HGSJjaxpc6v2ER/KA==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-windows-32/-/esbuild-windows-32-0.14.39.tgz",
+      "integrity": "sha512-ZpSQcKbVSCU3ln7mHpsL/5dWsUqCNdTnC5YAArnaOwdrlIunrsbo5j4MOZRRcGExb2uvTc/rb+D3mlGb8j1rkA==",
       "cpu": [
         "ia32"
       ],
@@ -2910,9 +2910,9 @@
       }
     },
     "node_modules/@netlify/esbuild-windows-64": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-windows-64/-/esbuild-windows-64-0.14.25.tgz",
-      "integrity": "sha512-BgIxcEcqr4pfRc9fXStIXQVpjIkBUc3XHFEjH2t2R9pcEDU4BpMsdBgj0UA2x3Z0KtwVLLCOZDvSiaL+WkiTqA==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-windows-64/-/esbuild-windows-64-0.14.39.tgz",
+      "integrity": "sha512-I3gCdO8+6IDhT4Y1ZmV4o2Gg0oELv7N4kCcE4kqclz10fWHNjf19HQNHyBJe0AWnFV5ZfT154VVD31dqgwpgFw==",
       "cpu": [
         "x64"
       ],
@@ -2925,9 +2925,9 @@
       }
     },
     "node_modules/@netlify/esbuild-windows-arm64": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-windows-arm64/-/esbuild-windows-arm64-0.14.25.tgz",
-      "integrity": "sha512-B5Neu8aXqucUthCvAwVX7IvKbNSD/n3VFiQQcH0YQ+mtbzEIRIFaEAIanGdkmLx0shVBOlY9JxIeRThGPt2/2A==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-windows-arm64/-/esbuild-windows-arm64-0.14.39.tgz",
+      "integrity": "sha512-WX52W8U1lsfWcz6NWoSpDs57lgiiMHN23seq8G2bvxzGS/tvYD3dxVLLW5UPoKSnFDyVQT7b6Zkt6AkBten1yQ==",
       "cpu": [
         "arm64"
       ],
@@ -3334,11 +3334,11 @@
       }
     },
     "node_modules/@netlify/functions-utils": {
-      "version": "4.2.8",
-      "resolved": "https://registry.npmjs.org/@netlify/functions-utils/-/functions-utils-4.2.8.tgz",
-      "integrity": "sha512-2wU/UOR2pViPkolITf3bvFTb+f+kR+NfZb7dWOU9IZnxKsB4qTioXupT6Rt1aI5p0kDRMCWuI5pBBxjlueO0Ew==",
+      "version": "4.2.9",
+      "resolved": "https://registry.npmjs.org/@netlify/functions-utils/-/functions-utils-4.2.9.tgz",
+      "integrity": "sha512-zytCz5XQ0wJ3z7RJXsfRqicQHxDiiB4LQQx8WnxpbyWS/EUiAwhPslThsSP18WyrVu1c3NAbW/9E7n3GR90NVg==",
       "dependencies": {
-        "@netlify/zip-it-and-ship-it": "^7.1.1",
+        "@netlify/zip-it-and-ship-it": "^7.1.2",
         "cpy": "^8.1.0",
         "path-exists": "^5.0.0"
       },
@@ -3794,13 +3794,13 @@
       }
     },
     "node_modules/@netlify/zip-it-and-ship-it": {
-      "version": "7.1.1",
-      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-7.1.1.tgz",
-      "integrity": "sha512-drvt9Snr+dpCsdn26MkR5YApPH+GJGGQURfF57PQy9AdL0CvEXKpx8WjS0NgF0lrj4E0ZKZLPaveZwMgvYxknw==",
+      "version": "7.1.2",
+      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-7.1.2.tgz",
+      "integrity": "sha512-WGCt5KDk5Zr+A0fhPGEgAAW2aNiGyLcZohBq4nu/4BoFtHkk+8vCZOH1lMytZiIFu0eAq00j2q4kdzyLFV0Wuw==",
       "dependencies": {
         "@babel/parser": "7.16.8",
         "@netlify/binary-info": "^1.0.0",
-        "@netlify/esbuild": "0.14.25",
+        "@netlify/esbuild": "0.14.39",
         "@vercel/nft": "^0.22.0",
         "archiver": "^5.3.0",
         "common-path-prefix": "^3.0.0",
@@ -23480,19 +23480,19 @@
       "integrity": "sha512-4wMPu9iN3/HL97QblBsBay3E1etIciR84izI3U+4iALY+JHCrI+a2jO0qbAZ/nxKoegypYEaiiqWXylm+/zfrw=="
     },
     "@netlify/build": {
-      "version": "27.18.1",
-      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-27.18.1.tgz",
-      "integrity": "sha512-FLTWRom+YRdyUPpGxGex7X24c4G3S6fT8nHBjkMurGssZre9MXeTbTkSmZmfuK+ZUgt/OoUPfIzAEETfWJPXag==",
+      "version": "27.18.2",
+      "resolved": "https://registry.npmjs.org/@netlify/build/-/build-27.18.2.tgz",
+      "integrity": "sha512-cVUn4ifkEWxk0AnDs8GTittC0xy1S3DGZMvk6IVALLIc3kXmCqO/A71CnWvqCrcmYF2fDZB0prLumw7bVB9FLQ==",
       "requires": {
         "@bugsnag/js": "^7.0.0",
         "@netlify/cache-utils": "^4.0.0",
         "@netlify/config": "^18.2.3",
         "@netlify/edge-bundler": "^2.0.5",
-        "@netlify/functions-utils": "^4.2.8",
+        "@netlify/functions-utils": "^4.2.9",
         "@netlify/git-utils": "^4.0.0",
         "@netlify/plugins-list": "^6.44.0",
         "@netlify/run-utils": "^4.0.0",
-        "@netlify/zip-it-and-ship-it": "^7.1.1",
+        "@netlify/zip-it-and-ship-it": "^7.1.2",
         "@sindresorhus/slugify": "^2.0.0",
         "@types/node": "^16.0.0",
         "ajv": "^8.11.0",
@@ -24338,150 +24338,150 @@
       }
     },
     "@netlify/esbuild": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild/-/esbuild-0.14.25.tgz",
-      "integrity": "sha512-ko0cMTbYpajNr0Sy6kvSqR+JDvgU/vjJhO061K1h8+Zs4MlF5AUhaITkpSOrP3g45zp++IEwN1Brxr+/BIez+g==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild/-/esbuild-0.14.39.tgz",
+      "integrity": "sha512-C3xpwdT2xw6SnSb+hLQoxjtikAKiz6BjQjzlIaysHDpGbmIcmUHZ/X+dyLtCqAvf15WNK5GSBZYOlpgcOE0WZA==",
       "requires": {
-        "@netlify/esbuild-android-64": "0.14.25",
-        "@netlify/esbuild-android-arm64": "0.14.25",
-        "@netlify/esbuild-darwin-64": "0.14.25",
-        "@netlify/esbuild-darwin-arm64": "0.14.25",
-        "@netlify/esbuild-freebsd-64": "0.14.25",
-        "@netlify/esbuild-freebsd-arm64": "0.14.25",
-        "@netlify/esbuild-linux-32": "0.14.25",
-        "@netlify/esbuild-linux-64": "0.14.25",
-        "@netlify/esbuild-linux-arm": "0.14.25",
-        "@netlify/esbuild-linux-arm64": "0.14.25",
-        "@netlify/esbuild-linux-mips64le": "0.14.25",
-        "@netlify/esbuild-linux-ppc64le": "0.14.25",
-        "@netlify/esbuild-linux-riscv64": "0.14.25",
-        "@netlify/esbuild-linux-s390x": "0.14.25",
-        "@netlify/esbuild-netbsd-64": "0.14.25",
-        "@netlify/esbuild-openbsd-64": "0.14.25",
-        "@netlify/esbuild-sunos-64": "0.14.25",
-        "@netlify/esbuild-windows-32": "0.14.25",
-        "@netlify/esbuild-windows-64": "0.14.25",
-        "@netlify/esbuild-windows-arm64": "0.14.25"
+        "@netlify/esbuild-android-64": "0.14.39",
+        "@netlify/esbuild-android-arm64": "0.14.39",
+        "@netlify/esbuild-darwin-64": "0.14.39",
+        "@netlify/esbuild-darwin-arm64": "0.14.39",
+        "@netlify/esbuild-freebsd-64": "0.14.39",
+        "@netlify/esbuild-freebsd-arm64": "0.14.39",
+        "@netlify/esbuild-linux-32": "0.14.39",
+        "@netlify/esbuild-linux-64": "0.14.39",
+        "@netlify/esbuild-linux-arm": "0.14.39",
+        "@netlify/esbuild-linux-arm64": "0.14.39",
+        "@netlify/esbuild-linux-mips64le": "0.14.39",
+        "@netlify/esbuild-linux-ppc64le": "0.14.39",
+        "@netlify/esbuild-linux-riscv64": "0.14.39",
+        "@netlify/esbuild-linux-s390x": "0.14.39",
+        "@netlify/esbuild-netbsd-64": "0.14.39",
+        "@netlify/esbuild-openbsd-64": "0.14.39",
+        "@netlify/esbuild-sunos-64": "0.14.39",
+        "@netlify/esbuild-windows-32": "0.14.39",
+        "@netlify/esbuild-windows-64": "0.14.39",
+        "@netlify/esbuild-windows-arm64": "0.14.39"
       }
     },
     "@netlify/esbuild-android-64": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-android-64/-/esbuild-android-64-0.14.25.tgz",
-      "integrity": "sha512-z8vtc3jPgQxEcW9ldN5XwEPW0BHsaNFFZ4eIYSh0D2kxTCk1K2k6PY6+9+4wsCgyY0J5fnykCEjPj9AQBzCRpg==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-android-64/-/esbuild-android-64-0.14.39.tgz",
+      "integrity": "sha512-azq+lsvjRsKLap8ubIwSJXGyknUACqYu5h98Fvyoh40Qk4QXIVKl16JIJ4s+B7jy2k9qblEc5c4nxdDA3aGbVA==",
       "optional": true
     },
     "@netlify/esbuild-android-arm64": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-android-arm64/-/esbuild-android-arm64-0.14.25.tgz",
-      "integrity": "sha512-M0MHkLvOsGPano1Lpbwbik09/Dku0Pl9YJKtVZimo55/pd6kUFpktUbO+VSF9gA3ihdisEkL8/Y+gc4wxLbJkg==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-android-arm64/-/esbuild-android-arm64-0.14.39.tgz",
+      "integrity": "sha512-WhIP7ePq4qMC1sxoaeB9SsJqSW6uzW7XDj/IuWl1l9r94nwxywU1sYdVLaF2mZr15njviazYjVr8x1d+ipwL3w==",
       "optional": true
     },
     "@netlify/esbuild-darwin-64": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-darwin-64/-/esbuild-darwin-64-0.14.25.tgz",
-      "integrity": "sha512-V1GAIfYLsCIcGfGfyAQ+VhbJ/GrzrEkMamAZd5jO1I2T1XHyPMe4vYV7W7AZzcwcYzpdlj8MXIESCODlCDXnCQ==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-darwin-64/-/esbuild-darwin-64-0.14.39.tgz",
+      "integrity": "sha512-eF4GvLYiDxtcyjFT55+h+8c8A2HltjeMezCqkt3AQSgOdu1nhlvwbBhIdg2dyM6gKEaEm5hBtTbicEDSwsLodA==",
       "optional": true
     },
     "@netlify/esbuild-darwin-arm64": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-darwin-arm64/-/esbuild-darwin-arm64-0.14.25.tgz",
-      "integrity": "sha512-jfX7SY2ZD4NzSCDHZiAJfHKoqINxymToWv5LUml5/FJa6602o+x+ghg8vFezVaap1XTr+ULdFbHOEiqKpeFl+A==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-darwin-arm64/-/esbuild-darwin-arm64-0.14.39.tgz",
+      "integrity": "sha512-b7rtnX/VtYwNbUCxs3eulrCWJ+u2YvqDcXiIV1ka+od+N0fTx+4RrVkVp1lha9L0wEJYK9J7UWZOMLMyd1ynRg==",
       "optional": true
     },
     "@netlify/esbuild-freebsd-64": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-freebsd-64/-/esbuild-freebsd-64-0.14.25.tgz",
-      "integrity": "sha512-rsK6mW/zaFZSPVa+7CthO3bPeW6qBE9VtwHAm5tdXCP3+Qpl+9rQnbs1CEqqWGrNUv+ExlTVqrAUKkdrGq8IPg==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-freebsd-64/-/esbuild-freebsd-64-0.14.39.tgz",
+      "integrity": "sha512-XtusxDJt2hUKUdggbTFolMx0kJL2zEa4STI7YwpB+ukEWoW5rODZjiLZbqqYLcjDH8k4YwHaMxs103L8eButEQ==",
       "optional": true
     },
     "@netlify/esbuild-freebsd-arm64": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-freebsd-arm64/-/esbuild-freebsd-arm64-0.14.25.tgz",
-      "integrity": "sha512-ym2Tf0dsKWJbVu3keFSs1FZezk1PXmxckuFTr0+hJMUazeNwFqJJQrY3SiN0JM7jh+VunND2RePjfsSZpcK54g==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-freebsd-arm64/-/esbuild-freebsd-arm64-0.14.39.tgz",
+      "integrity": "sha512-A9XZKai+k6kfndCtN6Dh2usT28V0+OGxzFdZsANONPQiEUTrGZCgwcHWiVlVn7SeAwPR1tKZreTnvrfj8cj7hA==",
       "optional": true
     },
     "@netlify/esbuild-linux-32": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-linux-32/-/esbuild-linux-32-0.14.25.tgz",
-      "integrity": "sha512-BGRAge/+6m8/lCejgLzCdq+GpN9ah3/XBp88YGgufb4h3c2CAxrq9fIlizHyZA4THHh2T/ka3rYdBOC5ciEwEw==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-linux-32/-/esbuild-linux-32-0.14.39.tgz",
+      "integrity": "sha512-ZQnqk/82YRvINY+aF+LlGfRZ19c5mH0jaxsO046GpIOPx6PcXHG8JJ2lg+vLJVe4zFPohxzabcYpwFuT4cg/GA==",
       "optional": true
     },
     "@netlify/esbuild-linux-64": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-linux-64/-/esbuild-linux-64-0.14.25.tgz",
-      "integrity": "sha512-yD579mskxDXrDR2vC7Dw/mEFTEuQoNYBcoKsIq+ctLiyQcKI1WCgAapJ+MCNpIDkmZp4O1uVuqIiMSyoMlv1QQ==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-linux-64/-/esbuild-linux-64-0.14.39.tgz",
+      "integrity": "sha512-IQtswVw7GAKNX/3yV390wSfSXvMWy0d5cw8csAffwBk9gupftY2lzepK4Cn6uD/aqLt3Iku33FbHop/2nPGfQA==",
       "optional": true
     },
     "@netlify/esbuild-linux-arm": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-linux-arm/-/esbuild-linux-arm-0.14.25.tgz",
-      "integrity": "sha512-NtnVECEKNr53v11E4wJzQtf7oM3HSPShDZEcwadjuK85AIJpISZcc7Hi6k/g4PsSyGjp73hH8Jly2hh+o+ruvQ==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-linux-arm/-/esbuild-linux-arm-0.14.39.tgz",
+      "integrity": "sha512-QdOzQniOed0Bz1cTC9TMMwvtAqKayYv66H4edJlbvElC81yJZF/c9XhmYWJ6P5g4nkChZubQ5RcQwTLmrFGexg==",
       "optional": true
     },
     "@netlify/esbuild-linux-arm64": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-linux-arm64/-/esbuild-linux-arm64-0.14.25.tgz",
-      "integrity": "sha512-t1BDP9Fb94jut9m+PE4AVaTQE40JaCJEVpszvvP/6aByR5NMQ5BrNaU8e6XZ6MS7bulYsJCEcJ8I/pPraXycqg==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-linux-arm64/-/esbuild-linux-arm64-0.14.39.tgz",
+      "integrity": "sha512-4Jie4QV6pWWuGN7TAshNMGbdTA9+VbRkv3rPIxhgK5gBfmsAV1yRKsumE4Y77J0AZNRiOriyoec4zc1qkmI3zg==",
       "optional": true
     },
     "@netlify/esbuild-linux-mips64le": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-linux-mips64le/-/esbuild-linux-mips64le-0.14.25.tgz",
-      "integrity": "sha512-Fo5sBkAVxxy+lEmKNo1bJD1lrVI9lpdwSzXW/I8k6ly9J8Vf2JNDYgvld4GSkNVTij5jA/zuN7aSQDEoIgx4mA==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-linux-mips64le/-/esbuild-linux-mips64le-0.14.39.tgz",
+      "integrity": "sha512-Htozxr95tw4tSd86YNbCLs1eoYQzNu/cHpzFIkuJoztZueUhl8XpRvBdob7n3kEjW1gitLWAIn8XUwSt+aJ1Tg==",
       "optional": true
     },
     "@netlify/esbuild-linux-ppc64le": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-linux-ppc64le/-/esbuild-linux-ppc64le-0.14.25.tgz",
-      "integrity": "sha512-EDInkVpAqfyfmZtYI9g9E78ohPLtyZinR19/8PGtL4zZcRUP2AnEzQRtv4NkAKAlPGa8plv3SiGsg4qKeeYRFA==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-linux-ppc64le/-/esbuild-linux-ppc64le-0.14.39.tgz",
+      "integrity": "sha512-tFy0ufWIdjeuk1rPHee00TZlhr9OSF00Ufb4ROFyt2ArKuMSkWRJuDgx6MtZcAnCIN4cybo/xWl3MKTM+scnww==",
       "optional": true
     },
     "@netlify/esbuild-linux-riscv64": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-linux-riscv64/-/esbuild-linux-riscv64-0.14.25.tgz",
-      "integrity": "sha512-MACKlmgawjSkNBH34AQUNoC4CX+KD4kk5KfneiBzQeV5oUW89yBf2Q/GaqiTB58Jz93juBOkWwiV0z25AmJzvg==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-linux-riscv64/-/esbuild-linux-riscv64-0.14.39.tgz",
+      "integrity": "sha512-ZzfKvwIxL7wQnYbVFpyNW0wotnLoKageUEM57RbjekesJoNQnqUR6Usm+LDZoB8iRsI58VX1IxnstP0cX8vOHw==",
       "optional": true
     },
     "@netlify/esbuild-linux-s390x": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-linux-s390x/-/esbuild-linux-s390x-0.14.25.tgz",
-      "integrity": "sha512-Mti6NSFGQ6GT+C9LTn15k2JttvtMcy+c1Xxqj8GYkiOqbM7Oh6NcMlXQiHxnCCsxw5Jx0WSWjdrn/dKhdiC13A==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-linux-s390x/-/esbuild-linux-s390x-0.14.39.tgz",
+      "integrity": "sha512-yjC0mFwnuMRoh0WcF0h71MF71ytZBFEQQTRdgiGT0+gbC4UApBqnTkJdLx32RscBKi9skbMChiJ748hDJou6FA==",
       "optional": true
     },
     "@netlify/esbuild-netbsd-64": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-netbsd-64/-/esbuild-netbsd-64-0.14.25.tgz",
-      "integrity": "sha512-aNDKGpy926VcnA//hqw+d4k1q1ekpmhDdy0cuEib6ZS7Qb/5xGVRH6mjG8pf0TtonY9x+wiYNuQn4Dn/DwP9Kw==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-netbsd-64/-/esbuild-netbsd-64-0.14.39.tgz",
+      "integrity": "sha512-mIq4znOoz3YfTVdv3sIWfR4Zx5JgMnT4srlhC5KYVHibhxvyDdin5txldYXmR4Zv4dZd6DSuWFsn441aUegHeA==",
       "optional": true
     },
     "@netlify/esbuild-openbsd-64": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-openbsd-64/-/esbuild-openbsd-64-0.14.25.tgz",
-      "integrity": "sha512-70W5TnRX5MroXVN0munWpF5q/AAWlamoy+PUL6cnDgc7cfnRiHHrndY++ZpWczNif8t4fQKVtC4jdUemnyb8Ag==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-openbsd-64/-/esbuild-openbsd-64-0.14.39.tgz",
+      "integrity": "sha512-+t6QdzJCngH19hV7ClpFAeFDI2ko/HNcFbiNwaXTMVLB3hWi1sJtn+fzZck5HfzN4qsajAVqZq4nwX69SSt25A==",
       "optional": true
     },
     "@netlify/esbuild-sunos-64": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-sunos-64/-/esbuild-sunos-64-0.14.25.tgz",
-      "integrity": "sha512-UImichNlQInjErof7tuoG/8VVbrn8Y5EVVMI4M+RoCafWh9NSl4a57hohcgwbeGwl5NcGJtHg+l/WqzlHQFFsQ==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-sunos-64/-/esbuild-sunos-64-0.14.39.tgz",
+      "integrity": "sha512-HLfXG6i2p3wyyyWHeeP4ShGDJ1zRMnf9YLJLe2ezv2KqvcKw/Un/m/FBuDW1p13oSUO7ShISMzgc1dw1GGBEOQ==",
       "optional": true
     },
     "@netlify/esbuild-windows-32": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-windows-32/-/esbuild-windows-32-0.14.25.tgz",
-      "integrity": "sha512-OFisPQBbuIH8wMRm//fs7wQ7d6t1PuLylIUsUSgignjEV3BOts4+pjtq0J8Aq9kkKoVp8HGSJjaxpc6v2ER/KA==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-windows-32/-/esbuild-windows-32-0.14.39.tgz",
+      "integrity": "sha512-ZpSQcKbVSCU3ln7mHpsL/5dWsUqCNdTnC5YAArnaOwdrlIunrsbo5j4MOZRRcGExb2uvTc/rb+D3mlGb8j1rkA==",
       "optional": true
     },
     "@netlify/esbuild-windows-64": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-windows-64/-/esbuild-windows-64-0.14.25.tgz",
-      "integrity": "sha512-BgIxcEcqr4pfRc9fXStIXQVpjIkBUc3XHFEjH2t2R9pcEDU4BpMsdBgj0UA2x3Z0KtwVLLCOZDvSiaL+WkiTqA==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-windows-64/-/esbuild-windows-64-0.14.39.tgz",
+      "integrity": "sha512-I3gCdO8+6IDhT4Y1ZmV4o2Gg0oELv7N4kCcE4kqclz10fWHNjf19HQNHyBJe0AWnFV5ZfT154VVD31dqgwpgFw==",
       "optional": true
     },
     "@netlify/esbuild-windows-arm64": {
-      "version": "0.14.25",
-      "resolved": "https://registry.npmjs.org/@netlify/esbuild-windows-arm64/-/esbuild-windows-arm64-0.14.25.tgz",
-      "integrity": "sha512-B5Neu8aXqucUthCvAwVX7IvKbNSD/n3VFiQQcH0YQ+mtbzEIRIFaEAIanGdkmLx0shVBOlY9JxIeRThGPt2/2A==",
+      "version": "0.14.39",
+      "resolved": "https://registry.npmjs.org/@netlify/esbuild-windows-arm64/-/esbuild-windows-arm64-0.14.39.tgz",
+      "integrity": "sha512-WX52W8U1lsfWcz6NWoSpDs57lgiiMHN23seq8G2bvxzGS/tvYD3dxVLLW5UPoKSnFDyVQT7b6Zkt6AkBten1yQ==",
       "optional": true
     },
     "@netlify/eslint-config-node": {
@@ -24733,11 +24733,11 @@
       }
     },
     "@netlify/functions-utils": {
-      "version": "4.2.8",
-      "resolved": "https://registry.npmjs.org/@netlify/functions-utils/-/functions-utils-4.2.8.tgz",
-      "integrity": "sha512-2wU/UOR2pViPkolITf3bvFTb+f+kR+NfZb7dWOU9IZnxKsB4qTioXupT6Rt1aI5p0kDRMCWuI5pBBxjlueO0Ew==",
+      "version": "4.2.9",
+      "resolved": "https://registry.npmjs.org/@netlify/functions-utils/-/functions-utils-4.2.9.tgz",
+      "integrity": "sha512-zytCz5XQ0wJ3z7RJXsfRqicQHxDiiB4LQQx8WnxpbyWS/EUiAwhPslThsSP18WyrVu1c3NAbW/9E7n3GR90NVg==",
       "requires": {
-        "@netlify/zip-it-and-ship-it": "^7.1.1",
+        "@netlify/zip-it-and-ship-it": "^7.1.2",
         "cpy": "^8.1.0",
         "path-exists": "^5.0.0"
       },
@@ -24989,13 +24989,13 @@
       }
     },
     "@netlify/zip-it-and-ship-it": {
-      "version": "7.1.1",
-      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-7.1.1.tgz",
-      "integrity": "sha512-drvt9Snr+dpCsdn26MkR5YApPH+GJGGQURfF57PQy9AdL0CvEXKpx8WjS0NgF0lrj4E0ZKZLPaveZwMgvYxknw==",
+      "version": "7.1.2",
+      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-7.1.2.tgz",
+      "integrity": "sha512-WGCt5KDk5Zr+A0fhPGEgAAW2aNiGyLcZohBq4nu/4BoFtHkk+8vCZOH1lMytZiIFu0eAq00j2q4kdzyLFV0Wuw==",
       "requires": {
         "@babel/parser": "7.16.8",
         "@netlify/binary-info": "^1.0.0",
-        "@netlify/esbuild": "0.14.25",
+        "@netlify/esbuild": "0.14.39",
         "@vercel/nft": "^0.22.0",
         "archiver": "^5.3.0",
         "common-path-prefix": "^3.0.0",
