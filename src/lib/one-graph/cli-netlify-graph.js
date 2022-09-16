@@ -79,7 +79,7 @@ ${entry}`
   const codegenKeyLine = lines.findIndex((line) => line.trim().startsWith('codeGenerator'))
   const hasCodegenKeyLine = codegenKeyLine !== 1
 
-  if (hasCodegenKeyLine) {
+  if (hasGraphKey && hasCodegenKeyLine) {
     lines.splice(codegenKeyLine, 1, entry)
   } else if (hasGraphKey) {
     lines.splice(graphKeyLine, 0, entry)
@@ -1017,7 +1017,6 @@ module.exports = {
   buildSchema,
   defaultExampleOperationsDoc: NetlifyGraph.defaultExampleOperationsDoc,
   extractFunctionsFromOperationDoc: NetlifyGraph.extractFunctionsFromOperationDoc,
-  generateFunctionsSource: NetlifyGraph.generateFunctionsSource,
   generateFunctionsFile,
   generateHandlerSource: NetlifyGraph.generateHandlerSource,
   generateHandlerByOperationId,
