@@ -228,7 +228,7 @@
     "@netlify/edge-bundler": "^2.0.5",
     "@netlify/framework-info": "^9.2.0",
     "@netlify/local-functions-proxy": "^1.1.1",
-    "@netlify/plugins-list": "^6.44.0",
+    "@netlify/plugins-list": "^6.45.0",
     "@netlify/zip-it-and-ship-it": "^7.1.2",
     "@octokit/rest": "^18.0.0",
     "@sindresorhus/slugify": "^1.1.0",
