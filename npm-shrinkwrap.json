@@ -6698,9 +6698,9 @@
       "dev": true
     },
     "node_modules/ci-info": {
-      "version": "3.3.2",
-      "resolved": "https://registry.npmjs.org/ci-info/-/ci-info-3.3.2.tgz",
-      "integrity": "sha512-xmDt/QIAdeZ9+nfdPsaBCpMvHNLFiLdjj59qjqn+6iPe6YmHGQ35sBnQ8uslRBXFmXkiZQOJRjvQeoGppoTjjg=="
+      "version": "3.4.0",
+      "resolved": "https://registry.npmjs.org/ci-info/-/ci-info-3.4.0.tgz",
+      "integrity": "sha512-t5QdPT5jq3o262DOQ8zA6E1tlH2upmUc4Hlvrbx1pGYJuiiHl7O7rvVNI+l8HTVhd/q3Qc9vqimkNk5yiXsAug=="
     },
     "node_modules/ci-parallel-vars": {
       "version": "1.0.1",
@@ -27216,9 +27216,9 @@
       "dev": true
     },
     "ci-info": {
-      "version": "3.3.2",
-      "resolved": "https://registry.npmjs.org/ci-info/-/ci-info-3.3.2.tgz",
-      "integrity": "sha512-xmDt/QIAdeZ9+nfdPsaBCpMvHNLFiLdjj59qjqn+6iPe6YmHGQ35sBnQ8uslRBXFmXkiZQOJRjvQeoGppoTjjg=="
+      "version": "3.4.0",
+      "resolved": "https://registry.npmjs.org/ci-info/-/ci-info-3.4.0.tgz",
+      "integrity": "sha512-t5QdPT5jq3o262DOQ8zA6E1tlH2upmUc4Hlvrbx1pGYJuiiHl7O7rvVNI+l8HTVhd/q3Qc9vqimkNk5yiXsAug=="
     },
     "ci-parallel-vars": {
       "version": "1.0.1",
