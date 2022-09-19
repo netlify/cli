@@ -8,7 +8,7 @@ version = "0.1.0"
 [dependencies]
 aws_lambda_events = "0.6.3"
 http = "0.2.8"
-lambda_runtime = "0.6.0"
+lambda_runtime = "0.6.1"
 log = "0.4.17"
 simple_logger = "1.16.0"
 tokio = "1.21.1"
