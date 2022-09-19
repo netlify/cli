@@ -14250,13 +14250,13 @@
       "integrity": "sha512-Xq9nH7KlWZmXAtodXDDRE7vs6DU1gTU8zYDHDiWLSip45Egwq3plLHzPn27NgvzL2r1LMPC1vdqh98sQxtqj4A=="
     },
     "node_modules/lambda-local": {
-      "version": "2.0.2",
-      "resolved": "https://registry.npmjs.org/lambda-local/-/lambda-local-2.0.2.tgz",
-      "integrity": "sha512-sCE0U645QdmQOx5y028kZnmvbfho4NkdAjmJuA8KdwPQS8tz9sByz281WHyEAfcBfXci/9eQxNURuL996Q8ybw==",
+      "version": "2.0.3",
+      "resolved": "https://registry.npmjs.org/lambda-local/-/lambda-local-2.0.3.tgz",
+      "integrity": "sha512-Vs55gujwdjhPL2VpXEXAWWwxiOYdnVPDsMgwOr9BqC0O1EoSXs1S8TKBmD/ySEnPVRiQfFlABcQgcykF1mkE8Q==",
       "dependencies": {
-        "commander": "^9.0.0",
-        "dotenv": "^16.0.0",
-        "winston": "^3.6.0"
+        "commander": "^9.4.0",
+        "dotenv": "^16.0.2",
+        "winston": "^3.8.2"
       },
       "bin": {
         "lambda-local": "build/cli.js"
@@ -22398,10 +22398,11 @@
       }
     },
     "node_modules/winston": {
-      "version": "3.8.1",
-      "resolved": "https://registry.npmjs.org/winston/-/winston-3.8.1.tgz",
-      "integrity": "sha512-r+6YAiCR4uI3N8eQNOg8k3P3PqwAm20cLKlzVD9E66Ch39+LZC+VH1UKf9JemQj2B3QoUHfKD7Poewn0Pr3Y1w==",
+      "version": "3.8.2",
+      "resolved": "https://registry.npmjs.org/winston/-/winston-3.8.2.tgz",
+      "integrity": "sha512-MsE1gRx1m5jdTTO9Ld/vND4krP2To+lgDoMEHGGa4HIlAUyXJtfc7CxQcGXVyz2IBpw5hbFkj2b/AtUdQwyRew==",
       "dependencies": {
+        "@colors/colors": "1.5.0",
         "@dabh/diagnostics": "^2.0.2",
         "async": "^3.2.3",
         "is-stream": "^2.0.0",
@@ -32963,13 +32964,13 @@
       "integrity": "sha512-Xq9nH7KlWZmXAtodXDDRE7vs6DU1gTU8zYDHDiWLSip45Egwq3plLHzPn27NgvzL2r1LMPC1vdqh98sQxtqj4A=="
     },
     "lambda-local": {
-      "version": "2.0.2",
-      "resolved": "https://registry.npmjs.org/lambda-local/-/lambda-local-2.0.2.tgz",
-      "integrity": "sha512-sCE0U645QdmQOx5y028kZnmvbfho4NkdAjmJuA8KdwPQS8tz9sByz281WHyEAfcBfXci/9eQxNURuL996Q8ybw==",
+      "version": "2.0.3",
+      "resolved": "https://registry.npmjs.org/lambda-local/-/lambda-local-2.0.3.tgz",
+      "integrity": "sha512-Vs55gujwdjhPL2VpXEXAWWwxiOYdnVPDsMgwOr9BqC0O1EoSXs1S8TKBmD/ySEnPVRiQfFlABcQgcykF1mkE8Q==",
       "requires": {
-        "commander": "^9.0.0",
-        "dotenv": "^16.0.0",
-        "winston": "^3.6.0"
+        "commander": "^9.4.0",
+        "dotenv": "^16.0.2",
+        "winston": "^3.8.2"
       }
     },
     "latest-version": {
@@ -39201,10 +39202,11 @@
       }
     },
     "winston": {
-      "version": "3.8.1",
-      "resolved": "https://registry.npmjs.org/winston/-/winston-3.8.1.tgz",
-      "integrity": "sha512-r+6YAiCR4uI3N8eQNOg8k3P3PqwAm20cLKlzVD9E66Ch39+LZC+VH1UKf9JemQj2B3QoUHfKD7Poewn0Pr3Y1w==",
+      "version": "3.8.2",
+      "resolved": "https://registry.npmjs.org/winston/-/winston-3.8.2.tgz",
+      "integrity": "sha512-MsE1gRx1m5jdTTO9Ld/vND4krP2To+lgDoMEHGGa4HIlAUyXJtfc7CxQcGXVyz2IBpw5hbFkj2b/AtUdQwyRew==",
       "requires": {
+        "@colors/colors": "1.5.0",
         "@dabh/diagnostics": "^2.0.2",
         "async": "^3.2.3",
         "is-stream": "^2.0.0",
