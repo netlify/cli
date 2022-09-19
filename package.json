@@ -327,7 +327,7 @@
     "toml": "^3.0.0",
     "unixify": "^1.0.0",
     "update-notifier": "^5.0.0",
-    "uuid": "^8.0.0",
+    "uuid": "^9.0.0",
     "wait-port": "^0.3.0",
     "winston": "^3.2.1",
     "write-file-atomic": "^4.0.0"
