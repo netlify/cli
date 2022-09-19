@@ -22257,9 +22257,9 @@
       }
     },
     "node_modules/wait-port": {
-      "version": "0.3.0",
-      "resolved": "https://registry.npmjs.org/wait-port/-/wait-port-0.3.0.tgz",
-      "integrity": "sha512-seNQ7j92tG5uaylFK3RrAajajzpNMOr96pcCsD8cWGtVn4XXsFUMf9vzNcZSXVaMEfuZT/0t/Wc0KN+m74QYkw==",
+      "version": "0.3.1",
+      "resolved": "https://registry.npmjs.org/wait-port/-/wait-port-0.3.1.tgz",
+      "integrity": "sha512-o8kW8xjslQDrbazXgXeDFt53l128J9xBAiG4aBmr9DcQA05jt0VBf2TE2vc9rxctgZjIuWpiXuO0gIYFo3pZSA==",
       "dependencies": {
         "chalk": "^4.1.2",
         "commander": "^9.3.0",
@@ -39091,9 +39091,9 @@
       }
     },
     "wait-port": {
-      "version": "0.3.0",
-      "resolved": "https://registry.npmjs.org/wait-port/-/wait-port-0.3.0.tgz",
-      "integrity": "sha512-seNQ7j92tG5uaylFK3RrAajajzpNMOr96pcCsD8cWGtVn4XXsFUMf9vzNcZSXVaMEfuZT/0t/Wc0KN+m74QYkw==",
+      "version": "0.3.1",
+      "resolved": "https://registry.npmjs.org/wait-port/-/wait-port-0.3.1.tgz",
+      "integrity": "sha512-o8kW8xjslQDrbazXgXeDFt53l128J9xBAiG4aBmr9DcQA05jt0VBf2TE2vc9rxctgZjIuWpiXuO0gIYFo3pZSA==",
       "requires": {
         "chalk": "^4.1.2",
         "commander": "^9.3.0",
