@@ -12,7 +12,7 @@
       "dependencies": {
         "@netlify/build": "^27.18.3",
         "@netlify/config": "^18.2.3",
-        "@netlify/edge-bundler": "^2.1.0",
+        "@netlify/edge-bundler": "^2.2.0",
         "@netlify/framework-info": "^9.2.0",
         "@netlify/local-functions-proxy": "^1.1.1",
         "@netlify/plugins-list": "^6.45.0",
@@ -2348,9 +2348,9 @@
       }
     },
     "node_modules/@netlify/edge-bundler": {
-      "version": "2.1.0",
-      "resolved": "https://registry.npmjs.org/@netlify/edge-bundler/-/edge-bundler-2.1.0.tgz",
-      "integrity": "sha512-yHb4xIZi1qiDtrL7Th7zJkJDBMmrbtRNVGllqq1hLLqDhugEtAz9AVGp3huHgl2F9D5m0l0HbpyWKG+SnZ+54A==",
+      "version": "2.2.0",
+      "resolved": "https://registry.npmjs.org/@netlify/edge-bundler/-/edge-bundler-2.2.0.tgz",
+      "integrity": "sha512-8dvI9y77TULQCcLXya4xJIt1GMTmCAJ0XIPfxjv6lbbB2XU87/tEAQ/8VOzaC2lNf+U5qG0fcrzVjjuKt3K2Sw==",
       "dependencies": {
         "@import-maps/resolve": "^1.0.1",
         "common-path-prefix": "^3.0.0",
@@ -2358,6 +2358,7 @@
         "env-paths": "^3.0.0",
         "execa": "^6.0.0",
         "find-up": "^6.3.0",
+        "get-port": "^6.1.2",
         "glob-to-regexp": "^0.4.1",
         "node-fetch": "^3.1.1",
         "node-stream-zip": "^1.15.0",
@@ -2413,6 +2414,17 @@
         "locate-path": "^7.1.0",
         "path-exists": "^5.0.0"
       },
+      "engines": {
+        "node": "^12.20.0 || ^14.13.1 || >=16.0.0"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/sindresorhus"
+      }
+    },
+    "node_modules/@netlify/edge-bundler/node_modules/get-port": {
+      "version": "6.1.2",
+      "resolved": "https://registry.npmjs.org/get-port/-/get-port-6.1.2.tgz",
+      "integrity": "sha512-BrGGraKm2uPqurfGVj/z97/zv8dPleC6x9JBNRTrDNtCkkRF4rPwrQXFgL7+I+q8QSdU4ntLQX2D7KIxSy8nGw==",
       "engines": {
         "node": "^12.20.0 || ^14.13.1 || >=16.0.0"
       },
@@ -24182,9 +24194,9 @@
       }
     },
     "@netlify/edge-bundler": {
-      "version": "2.1.0",
-      "resolved": "https://registry.npmjs.org/@netlify/edge-bundler/-/edge-bundler-2.1.0.tgz",
-      "integrity": "sha512-yHb4xIZi1qiDtrL7Th7zJkJDBMmrbtRNVGllqq1hLLqDhugEtAz9AVGp3huHgl2F9D5m0l0HbpyWKG+SnZ+54A==",
+      "version": "2.2.0",
+      "resolved": "https://registry.npmjs.org/@netlify/edge-bundler/-/edge-bundler-2.2.0.tgz",
+      "integrity": "sha512-8dvI9y77TULQCcLXya4xJIt1GMTmCAJ0XIPfxjv6lbbB2XU87/tEAQ/8VOzaC2lNf+U5qG0fcrzVjjuKt3K2Sw==",
       "requires": {
         "@import-maps/resolve": "^1.0.1",
         "common-path-prefix": "^3.0.0",
@@ -24192,6 +24204,7 @@
         "env-paths": "^3.0.0",
         "execa": "^6.0.0",
         "find-up": "^6.3.0",
+        "get-port": "^6.1.2",
         "glob-to-regexp": "^0.4.1",
         "node-fetch": "^3.1.1",
         "node-stream-zip": "^1.15.0",
@@ -24232,6 +24245,11 @@
             "locate-path": "^7.1.0",
             "path-exists": "^5.0.0"
           }
+        },
+        "get-port": {
+          "version": "6.1.2",
+          "resolved": "https://registry.npmjs.org/get-port/-/get-port-6.1.2.tgz",
+          "integrity": "sha512-BrGGraKm2uPqurfGVj/z97/zv8dPleC6x9JBNRTrDNtCkkRF4rPwrQXFgL7+I+q8QSdU4ntLQX2D7KIxSy8nGw=="
         },
         "glob-to-regexp": {
           "version": "0.4.1",
