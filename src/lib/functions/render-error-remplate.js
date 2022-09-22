@@ -3,9 +3,8 @@ const { join } = require('path')
 
 let errorTemplateFile
 
-const renderErrorTemplate = async (errString) => {
+const renderErrorTemplate = async (errString, templatePath = './templates/function-error.html') => {
   const regexPattern = /<!--@ERROR-DETAILS-->/g
-  const templatePath = './templates/function-error.html'
 
   try {
     errorTemplateFile = errorTemplateFile || (await readFile(join(__dirname, templatePath), 'utf-8'))

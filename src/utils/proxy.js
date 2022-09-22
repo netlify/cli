@@ -4,6 +4,8 @@ const { readFile } = require('fs').promises
 const http = require('http')
 const https = require('https')
 const path = require('path')
+const util = require('util')
+const zlib = require('zlib')
 
 const contentType = require('content-type')
 const cookie = require('cookie')
@@ -27,6 +29,7 @@ const { createStreamPromise } = require('./create-stream-promise')
 const { headersForPath, parseHeaders } = require('./headers')
 const { createRewriter, onChanges } = require('./rules-proxy')
 
+const decompress = util.promisify(zlib.gunzip)
 const shouldGenerateETag = Symbol('Internal: response should generate ETag')
 
 const isInternal = function (url) {
@@ -391,7 +394,14 @@ const initializeProxy = async function ({ configPath, distDir, port, projectDir 
 
       if (edgeFunctions.isEdgeFunctionsRequest(req) && isUncaughtError) {
         const acceptsHtml = req.headers && req.headers.accept && req.headers.accept.includes('text/html')
-        const errorResponse = acceptsHtml ? await renderErrorTemplate(responseBody) : responseBody
+        const decompressedBody = await decompress(responseBody)
+          .then((decompressed) => decompressed.toString())
+          .catch(() => {
+            throw new Error('Could not decompress gzip')
+          })
+        const errorResponse = acceptsHtml
+          ? await renderErrorTemplate(decompressedBody, './templates/edge-function-error.html')
+          : decompressedBody
         const contentLength = Buffer.from(errorResponse, 'utf8').byteLength
 
         res.setHeader('content-length', contentLength)
