@@ -2,8 +2,8 @@
 const { Buffer } = require('buffer')
 
 const { NETLIFYDEVERR } = require('../../utils')
+const renderErrorTemplate = require('../render-error-remplate')
 
-const renderErrorTemplate = require('./render-error-remplate')
 const { detectAwsSdkError } = require('./utils')
 
 const addHeaders = (headers, response) => {

@@ -22,7 +22,7 @@ const toReadableStream = require('to-readable-stream')
 
 const edgeFunctions = require('../lib/edge-functions')
 const { fileExistsAsync, isFileAsync } = require('../lib/fs')
-const renderErrorTemplate = require('../lib/functions/render-error-remplate')
+const renderErrorTemplate = require('../lib/render-error-remplate')
 
 const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./command-helpers')
 const { createStreamPromise } = require('./create-stream-promise')
@@ -31,6 +31,18 @@ const { createRewriter, onChanges } = require('./rules-proxy')
 
 const decompress = util.promisify(zlib.gunzip)
 const shouldGenerateETag = Symbol('Internal: response should generate ETag')
+
+const formatEdgeFunctionError = (errorBuffer, acceptsHtml) => {
+  const parsedError = JSON.parse(errorBuffer.toString())
+
+  return acceptsHtml
+    ? JSON.stringify({
+        errorType: parsedError.name,
+        errorMessage: parsedError.message,
+        trace: parsedError.stack.split('\\n'),
+      })
+    : `${parsedError.name}: ${parsedError.message}\n ${parsedError.stack}`
+}
 
 const isInternal = function (url) {
   return url.startsWith('/.netlify/')
@@ -395,13 +407,10 @@ const initializeProxy = async function ({ configPath, distDir, port, projectDir 
       if (edgeFunctions.isEdgeFunctionsRequest(req) && isUncaughtError) {
         const acceptsHtml = req.headers && req.headers.accept && req.headers.accept.includes('text/html')
         const decompressedBody = await decompress(responseBody)
-          .then((decompressed) => decompressed.toString())
-          .catch(() => {
-            throw new Error('Could not decompress gzip')
-          })
+        const formattedBody = formatEdgeFunctionError(decompressedBody, acceptsHtml)
         const errorResponse = acceptsHtml
-          ? await renderErrorTemplate(decompressedBody, './templates/edge-function-error.html')
-          : decompressedBody
+          ? await renderErrorTemplate(formattedBody, './templates/edge-function-error.html')
+          : formattedBody
         const contentLength = Buffer.from(errorResponse, 'utf8').byteLength
 
         res.setHeader('content-length', contentLength)
