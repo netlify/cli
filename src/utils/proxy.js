@@ -33,15 +33,19 @@ const decompress = util.promisify(zlib.gunzip)
 const shouldGenerateETag = Symbol('Internal: response should generate ETag')
 
 const formatEdgeFunctionError = (errorBuffer, acceptsHtml) => {
-  const parsedError = JSON.parse(errorBuffer.toString())
+  const {
+    error: { message, name, stack },
+  } = JSON.parse(errorBuffer.toString())
 
-  return acceptsHtml
-    ? JSON.stringify({
-        errorType: parsedError.name,
-        errorMessage: parsedError.message,
-        trace: parsedError.stack.split('\\n'),
-      })
-    : `${parsedError.name}: ${parsedError.message}\n ${parsedError.stack}`
+  if (!acceptsHtml) {
+    return `${name}: ${message}\n ${stack}`
+  }
+
+  return JSON.stringify({
+    errorType: name,
+    errorMessage: message,
+    trace: stack.split('\\n'),
+  })
 }
 
 const isInternal = function (url) {

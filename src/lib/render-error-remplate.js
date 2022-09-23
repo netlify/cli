@@ -3,7 +3,7 @@ const { join } = require('path')
 
 let errorTemplateFile
 
-const renderErrorTemplate = async (errString, templatePath = './templates/function-error.html') => {
+const renderErrorTemplate = async (errString, templatePath) => {
   const regexPattern = /<!--@ERROR-DETAILS-->/g
 
   try {
