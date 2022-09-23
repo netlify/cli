@@ -406,7 +406,7 @@ const initializeProxy = async function ({ configPath, distDir, port, projectDir 
         res.setHeader(key, val)
       })
 
-      const isUncaughtError = responseStatus === 500 && proxyRes.headers['x-nf-uncaught-error'] === '1'
+      const isUncaughtError = proxyRes.headers['x-nf-uncaught-error'] === '1'
 
       if (edgeFunctions.isEdgeFunctionsRequest(req) && isUncaughtError) {
         const acceptsHtml = req.headers && req.headers.accept && req.headers.accept.includes('text/html')
