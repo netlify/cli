@@ -375,11 +375,10 @@ const runDeploy = async ({
  *
  * @param {object} config
  * @param {*} config.cachedConfig
- * @param {*} config.command
  * @param {import('commander').OptionValues} config.options The options of the command
  * @returns
  */
-const handleBuild = async ({ cachedConfig, command, options }) => {
+const handleBuild = async ({ cachedConfig, options }) => {
   if (!options.build) {
     return {}
   }
@@ -389,7 +388,7 @@ const handleBuild = async ({ cachedConfig, command, options }) => {
     token,
     options,
   })
-  const { configMutations, exitCode, newConfig } = await runBuild(resolvedOptions, command, options)
+  const { configMutations, exitCode, newConfig } = await runBuild(resolvedOptions)
   if (exitCode !== 0) {
     exit(exitCode)
   }
@@ -574,7 +573,6 @@ const deploy = async (options, command) => {
 
   const { newConfig, configMutations = [] } = await handleBuild({
     cachedConfig: command.netlify.cachedConfig,
-    command,
     options,
   })
   const config = newConfig || command.netlify.config

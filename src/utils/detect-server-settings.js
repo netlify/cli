@@ -158,10 +158,7 @@ const handleStaticServer = async ({ devConfig, options, projectDir }) => {
  */
 const getSettingsFromFramework = (framework) => {
   const {
-    build: {
-      directory: dist,
-      commands: [buildCommand],
-    },
+    build: { directory: dist },
     dev: {
       commands: [command],
       port: frameworkPort,
@@ -175,7 +172,6 @@ const getSettingsFromFramework = (framework) => {
 
   return {
     command,
-    buildCommand,
     frameworkPort,
     dist: staticDir || dist,
     framework: frameworkName,
@@ -254,7 +250,6 @@ const handleCustomFramework = ({ devConfig }) => {
 const mergeSettings = async ({ devConfig, frameworkSettings = {} }) => {
   const {
     command: frameworkCommand,
-    buildCommand,
     frameworkPort: frameworkDetectedPort,
     dist,
     framework,
@@ -268,7 +263,6 @@ const mergeSettings = async ({ devConfig, frameworkSettings = {} }) => {
   const useStaticServer = !(command && frameworkPort)
   return {
     command,
-    buildCommand,
     frameworkPort: useStaticServer ? await getStaticServerPort({ devConfig }) : frameworkPort,
     dist: devConfig.publish || dist || getDefaultDist(),
     framework,
