@@ -3,7 +3,6 @@ export type FrameworkNames = '#static' | '#auto' | '#custom' | string
 export type FrameworkInfo = {
   build: {
     directory: string
-    commands: string[]
   }
   dev: {
     commands: string[]
@@ -33,8 +32,6 @@ export type BaseServerSettings = {
   env?: NodeJS.ProcessEnv
   pollingStrategies?: string[]
   plugins?: string[]
-  /** The command that was provided for the dev config */
-  buildCommand?: string
 }
 
 export type ServerSettings = BaseServerSettings & {
