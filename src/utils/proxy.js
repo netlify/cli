@@ -510,6 +510,7 @@ const startProxy = async function ({
     jwtSecret: settings.jwtSecret,
     jwtRoleClaim: settings.jwtRolePath,
     configPath,
+    geoCountry,
   })
 
   const onRequestWithOptions = onRequest.bind(undefined, {
