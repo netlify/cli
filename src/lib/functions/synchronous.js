@@ -50,7 +50,9 @@ const processRenderedResponse = async (err, request) => {
   const acceptsHtml = request.headers && request.headers.accept && request.headers.accept.includes('text/html')
   const errorString = typeof err === 'string' ? err : formatLambdaLocalError(err, acceptsHtml)
 
-  return acceptsHtml ? await renderErrorTemplate(errorString, './templates/function-error.html') : errorString
+  return acceptsHtml
+    ? await renderErrorTemplate(errorString, './templates/function-error.html', 'function')
+    : errorString
 }
 
 const handleErr = async (err, request, response) => {

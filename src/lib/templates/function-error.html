@@ -197,7 +197,9 @@
                 fill="#900B31"
               />
             </svg>
-            This function has crashed
+            This
+            <!--@FUNCTION-TYPE-->
+            has crashed
           </h1>
           <p>An unhandled error in the function code triggered the following message:</p>
           <p class="error-message-details hidden inline-code">
@@ -211,34 +213,7 @@
           <h3>Stack trace</h3>
           <pre><code></code></pre>
         </div>
-
-        <div class="request-id-container hidden">
-          <h3 class="connection-details">Connection details</h3>
-          <p>
-            Netlify internal ID: <span class="inline-code request-id"><!--@REQUEST-ID--></span>
-          </p>
-        </div>
       </section>
-
-      <section class="next-steps">
-        <h1>Next steps</h1>
-        <ul>
-          <li>Site visitors: Contact the site owner or try again.</li>
-          <li>
-            Site owners: Review the
-            <a class="fn-logs-link" href="https://docs.netlify.com/functions/logs/#access-function-logs" target="_blank"
-              >function logs</a
-            >
-            for more info.
-          </li>
-        </ul>
-      </section>
-
-      <div class="hidden">
-        <span class="site-id"><!--@SITE-ID--></span>
-        <span class="deploy-id"><!--@DEPLOY-ID--></span>
-        <span class="fn-name"><!--@FUNCTION-NAME--></span>
-      </div>
       <script>
         /* eslint eslint-comments/no-use: off */
         // eslint-disable-next-line func-names
@@ -249,17 +224,6 @@
           const errorMessageElement = document.querySelector('.error-message')
           const stackTraceElement = document.querySelector('.stack-trace')
           const stackTraceCodeElement = document.querySelector('.stack-trace code')
-          const requestIdContainerElement = document.querySelector('.request-id-container')
-          const requestIdElement = document.querySelector('.request-id')
-          const siteIdVal = document.querySelector('.site-id').textContent.trim()
-          const deployIdVal = document.querySelector('.deploy-id').textContent.trim()
-          const fnNameVal = document.querySelector('.fn-name').textContent.trim()
-          const logsLink = document.querySelector('.fn-logs-link')
-
-          // NO request ID Option Provided - only expected to happen in local dev scenarios
-          if (requestIdElement.textContent.trim().length !== 0) {
-            requestIdContainerElement.classList.remove('hidden')
-          }
 
           // Enriching the error details
           let parsedErrorDetails
@@ -339,19 +303,6 @@
             stackTraceCodeElement.textContent = parsedErrorDetails.trace.join('\n')
           } else {
             stackTraceCodeElement.remove()
-          }
-
-          // only create the dynamic link if we have all of the relevant details
-          // Add a defensive check for "undefined" accidentally being put into the template
-          if (
-            deployIdVal &&
-            deployIdVal !== 'undefined' &&
-            siteIdVal &&
-            siteIdVal !== 'undefined' &&
-            fnNameVal &&
-            siteIdVal !== 'undefined'
-          ) {
-            logsLink.href = `https://app.netlify.com/site-fn-logs/${siteIdVal}/${deployIdVal}/${fnNameVal}`
           }
         })()
       </script>

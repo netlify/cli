@@ -413,7 +413,7 @@ const initializeProxy = async function ({ configPath, distDir, port, projectDir 
         const decompressedBody = await decompress(responseBody)
         const formattedBody = formatEdgeFunctionError(decompressedBody, acceptsHtml)
         const errorResponse = acceptsHtml
-          ? await renderErrorTemplate(formattedBody, './templates/edge-function-error.html')
+          ? await renderErrorTemplate(formattedBody, './templates/function-error.html', 'edge function')
           : formattedBody
         const contentLength = Buffer.from(errorResponse, 'utf8').byteLength
 
