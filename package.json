@@ -156,7 +156,7 @@
     "swyx <shawnthe1@gmail.com> (https://twitter.com/swyx)"
   ],
   "engines": {
-    "node": "^12.20.0 || ^14.14.0 || >=16.0.0"
+    "node": "^14.16.0 || >=16.0.0"
   },
   "files": [
     "/bin",
@@ -301,7 +301,6 @@
     "node-version-alias": "^1.0.1",
     "omit.js": "^2.0.2",
     "ora": "^5.0.0",
-    "p-event": "^4.2.0",
     "p-filter": "^2.1.0",
     "p-map": "^4.0.0",
     "p-wait-for": "^3.0.0",

@@ -1,11 +1,13 @@
 ![Netlify CLI](cli.png)
 
 [![Coverage Status](https://codecov.io/gh/netlify/cli/branch/main/graph/badge.svg)](https://codecov.io/gh/netlify/cli)
-[![npm version][npm-img]][npm] [![downloads][dl-img]][dl] [![netlify-status][netlify-img]][netlify] [![security][snyk-img]][snyk]
+[![npm version][npm-img]][npm] [![downloads][dl-img]][dl] [![netlify-status][netlify-img]][netlify]
+[![security][snyk-img]][snyk]
 
 Interact with [Netlify](http://netlify.com/) from the comfort of your CLI.
 
-See the [CLI command line reference](https://cli.netlify.com/commands/) to get started and the docs on using [Netlify Dev](https://github.com/netlify/cli/blob/main/docs/netlify-dev.md) to run your site locally.
+See the [CLI command line reference](https://cli.netlify.com/commands/) to get started and the docs on using
+[Netlify Dev](https://github.com/netlify/cli/blob/main/docs/netlify-dev.md) to run your site locally.
 
 ## Table of Contents
 
@@ -13,6 +15,7 @@ See the [CLI command line reference](https://cli.netlify.com/commands/) to get s
 <details>
 <summary>Click to expand</summary>
 
+- [Table of Contents](#table-of-contents)
 - [Installation](#installation)
 - [Usage](#usage)
 - [Documentation](#documentation)
@@ -46,22 +49,28 @@ See the [CLI command line reference](https://cli.netlify.com/commands/) to get s
 
 ## Installation
 
-Netlify CLI requires [Node.js](https://nodejs.org) version 12 or above. To install, run the following command from any directory in your terminal:
+Netlify CLI requires [Node.js](https://nodejs.org) version 14 or above. To install, run the following command from any
+directory in your terminal:
 
 ```bash
 npm install netlify-cli -g
 ```
 
-When using the CLI in a CI environment we recommend installing it locally as a development dependency, instead of globally.
-To install locally, run the following command from the root directory of your project:
+When using the CLI in a CI environment we recommend installing it locally as a development dependency, instead of
+globally. To install locally, run the following command from the root directory of your project:
 
 ```bash
 npm install --save-dev netlify-cli
 ```
 
-**Important:** Running `npm install netlify-cli -g` in CI means you're always installing the latest version of the CLI, including **breaking changes**. When you install locally and use a [lock file](https://docs.npmjs.com/cli/v7/commands/npm-ci) you guarantee reproducible builds. To manage CLI updates we recommend using an automated tool like [renovate](https://github.com/renovatebot/renovate) or [dependabot](https://github.com/dependabot).
+**Important:** Running `npm install netlify-cli -g` in CI means you're always installing the latest version of the CLI,
+including **breaking changes**. When you install locally and use a
+[lock file](https://docs.npmjs.com/cli/v7/commands/npm-ci) you guarantee reproducible builds. To manage CLI updates we
+recommend using an automated tool like [renovate](https://github.com/renovatebot/renovate) or
+[dependabot](https://github.com/dependabot).
 
-Alternatively you may also use Homebrew: `brew install netlify-cli` (thanks [@cglong](https://github.com/netlify/cli/issues/291)).
+Alternatively you may also use Homebrew: `brew install netlify-cli` (thanks
+[@cglong](https://github.com/netlify/cli/issues/291)).
 
 ## Usage
 
@@ -76,25 +85,26 @@ netlify [command] help
 
 ## Documentation
 
-To learn how to log in to Netlify and start deploying sites, visit the [documentation on Netlify](https://docs.netlify.com/cli/get-started/).
+To learn how to log in to Netlify and start deploying sites, visit the
+[documentation on Netlify](https://docs.netlify.com/cli/get-started/).
 
 For a full command reference, see the list below, or visit [cli.netlify.com](https://cli.netlify.com/).
 
 ## Commands
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_LIST) -->
+
 ### [addons](/docs/commands/addons.md)
 
 (Beta) Manage Netlify Add-ons
 
-| Subcommand | description  |
-|:--------------------------- |:-----|
-| [`addons:auth`](/docs/commands/addons.md#addonsauth) | Login to add-on provider  |
-| [`addons:config`](/docs/commands/addons.md#addonsconfig) | Configure add-on settings  |
-| [`addons:create`](/docs/commands/addons.md#addonscreate) | Add an add-on extension to your site  |
-| [`addons:delete`](/docs/commands/addons.md#addonsdelete) | Remove an add-on extension to your site  |
-| [`addons:list`](/docs/commands/addons.md#addonslist) | List currently installed add-ons for site  |
-
+| Subcommand                                               | description                               |
+| :------------------------------------------------------- | :---------------------------------------- |
+| [`addons:auth`](/docs/commands/addons.md#addonsauth)     | Login to add-on provider                  |
+| [`addons:config`](/docs/commands/addons.md#addonsconfig) | Configure add-on settings                 |
+| [`addons:create`](/docs/commands/addons.md#addonscreate) | Add an add-on extension to your site      |
+| [`addons:delete`](/docs/commands/addons.md#addonsdelete) | Remove an add-on extension to your site   |
+| [`addons:list`](/docs/commands/addons.md#addonslist)     | List currently installed add-ons for site |
 
 ### [api](/docs/commands/api.md)
 
@@ -108,10 +118,9 @@ Run any Netlify API method
 
 (Beta) Generate shell completion script
 
-| Subcommand | description  |
-|:--------------------------- |:-----|
-| [`completion:install`](/docs/commands/completion.md#completioninstall) | Generates completion script for your preferred shell  |
-
+| Subcommand                                                             | description                                          |
+| :--------------------------------------------------------------------- | :--------------------------------------------------- |
+| [`completion:install`](/docs/commands/completion.md#completioninstall) | Generates completion script for your preferred shell |
 
 ### [deploy](/docs/commands/deploy.md)
 
@@ -121,56 +130,53 @@ Create a new deploy from the contents of a folder
 
 Local dev server
 
-| Subcommand | description  |
-|:--------------------------- |:-----|
-| [`dev:exec`](/docs/commands/dev.md#devexec) | Exec command  |
-
+| Subcommand                                  | description  |
+| :------------------------------------------ | :----------- |
+| [`dev:exec`](/docs/commands/dev.md#devexec) | Exec command |
 
 ### [env](/docs/commands/env.md)
 
 (Beta) Control environment variables for the current site
 
-| Subcommand | description  |
-|:--------------------------- |:-----|
-| [`env:clone`](/docs/commands/env.md#envclone) | Clone environment variables from one site to another  |
-| [`env:get`](/docs/commands/env.md#envget) | Get resolved value of specified environment variable (includes netlify.toml)  |
-| [`env:import`](/docs/commands/env.md#envimport) | Import and set environment variables from .env file  |
-| [`env:list`](/docs/commands/env.md#envlist) | Lists resolved environment variables for site (includes netlify.toml)  |
-| [`env:set`](/docs/commands/env.md#envset) | Set value of environment variable  |
-| [`env:unset`](/docs/commands/env.md#envunset) | Unset an environment variable which removes it from the UI  |
-
+| Subcommand                                      | description                                                                  |
+| :---------------------------------------------- | :--------------------------------------------------------------------------- |
+| [`env:clone`](/docs/commands/env.md#envclone)   | Clone environment variables from one site to another                         |
+| [`env:get`](/docs/commands/env.md#envget)       | Get resolved value of specified environment variable (includes netlify.toml) |
+| [`env:import`](/docs/commands/env.md#envimport) | Import and set environment variables from .env file                          |
+| [`env:list`](/docs/commands/env.md#envlist)     | Lists resolved environment variables for site (includes netlify.toml)        |
+| [`env:set`](/docs/commands/env.md#envset)       | Set value of environment variable                                            |
+| [`env:unset`](/docs/commands/env.md#envunset)   | Unset an environment variable which removes it from the UI                   |
 
 ### [functions](/docs/commands/functions.md)
 
 Manage netlify functions
 
-| Subcommand | description  |
-|:--------------------------- |:-----|
-| [`functions:build`](/docs/commands/functions.md#functionsbuild) | Build functions locally  |
-| [`functions:create`](/docs/commands/functions.md#functionscreate) | Create a new function locally  |
-| [`functions:invoke`](/docs/commands/functions.md#functionsinvoke) | Trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions  |
-| [`functions:list`](/docs/commands/functions.md#functionslist) | List functions that exist locally  |
-| [`functions:serve`](/docs/commands/functions.md#functionsserve) | (Beta) Serve functions locally  |
-
+| Subcommand                                                        | description                                                                                                                                |
+| :---------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------- |
+| [`functions:build`](/docs/commands/functions.md#functionsbuild)   | Build functions locally                                                                                                                    |
+| [`functions:create`](/docs/commands/functions.md#functionscreate) | Create a new function locally                                                                                                              |
+| [`functions:invoke`](/docs/commands/functions.md#functionsinvoke) | Trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions |
+| [`functions:list`](/docs/commands/functions.md#functionslist)     | List functions that exist locally                                                                                                          |
+| [`functions:serve`](/docs/commands/functions.md#functionsserve)   | (Beta) Serve functions locally                                                                                                             |
 
 ### [graph](/docs/commands/graph.md)
 
 (Beta) Control the Netlify Graph functions for the current site
 
-| Subcommand | description  |
-|:--------------------------- |:-----|
-| [`graph:config:write`](/docs/commands/graph.md#graphconfigwrite) | Write a .graphqlrc.json file to the current directory for use with local tooling (e.g. the graphql extension for vscode)  |
-| [`graph:edit`](/docs/commands/graph.md#graphedit) | Launch the browser to edit your local graph functions from Netlify  |
-| [`graph:handler`](/docs/commands/graph.md#graphhandler) | Generate a handler for a Graph operation given its name. See `graph:operations` for a list of operations.  |
-| [`graph:init`](/docs/commands/graph.md#graphinit) | Initialize all the resources for Netlify Graph  |
-| [`graph:library`](/docs/commands/graph.md#graphlibrary) | Generate the Graph function library  |
-| [`graph:operations`](/docs/commands/graph.md#graphoperations) | List all of the locally available operations  |
-| [`graph:pull`](/docs/commands/graph.md#graphpull) | Pull your remote Netlify Graph schema locally, and process pending Graph edit events  |
-
+| Subcommand                                                       | description                                                                                                              |
+| :--------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------- |
+| [`graph:config:write`](/docs/commands/graph.md#graphconfigwrite) | Write a .graphqlrc.json file to the current directory for use with local tooling (e.g. the graphql extension for vscode) |
+| [`graph:edit`](/docs/commands/graph.md#graphedit)                | Launch the browser to edit your local graph functions from Netlify                                                       |
+| [`graph:handler`](/docs/commands/graph.md#graphhandler)          | Generate a handler for a Graph operation given its name. See `graph:operations` for a list of operations.                |
+| [`graph:init`](/docs/commands/graph.md#graphinit)                | Initialize all the resources for Netlify Graph                                                                           |
+| [`graph:library`](/docs/commands/graph.md#graphlibrary)          | Generate the Graph function library                                                                                      |
+| [`graph:operations`](/docs/commands/graph.md#graphoperations)    | List all of the locally available operations                                                                             |
+| [`graph:pull`](/docs/commands/graph.md#graphpull)                | Pull your remote Netlify Graph schema locally, and process pending Graph edit events                                     |
 
 ### [init](/docs/commands/init.md)
 
-Configure continuous deployment for a new or existing site. To create a new site without continuous deployment, use `netlify sites:create`
+Configure continuous deployment for a new or existing site. To create a new site without continuous deployment, use
+`netlify sites:create`
 
 ### [link](/docs/commands/link.md)
 
@@ -180,12 +186,11 @@ Link a local repo or project folder to an existing site on Netlify
 
 Handle Netlify Large Media operations
 
-| Subcommand | description  |
-|:--------------------------- |:-----|
-| [`lm:info`](/docs/commands/lm.md#lminfo) | Show large media requirements information.  |
-| [`lm:install`](/docs/commands/lm.md#lminstall) | Configures your computer to use Netlify Large Media  |
-| [`lm:setup`](/docs/commands/lm.md#lmsetup) | Configures your site to use Netlify Large Media  |
-
+| Subcommand                                     | description                                         |
+| :--------------------------------------------- | :-------------------------------------------------- |
+| [`lm:info`](/docs/commands/lm.md#lminfo)       | Show large media requirements information.          |
+| [`lm:install`](/docs/commands/lm.md#lminstall) | Configures your computer to use Netlify Large Media |
+| [`lm:setup`](/docs/commands/lm.md#lmsetup)     | Configures your site to use Netlify Large Media     |
 
 ### [login](/docs/commands/login.md)
 
@@ -195,41 +200,37 @@ Login to your Netlify account
 
 Open settings for the site linked to the current folder
 
-| Subcommand | description  |
-|:--------------------------- |:-----|
-| [`open:admin`](/docs/commands/open.md#openadmin) | Opens current site admin UI in Netlify  |
-| [`open:site`](/docs/commands/open.md#opensite) | Opens current site url in browser  |
-
+| Subcommand                                       | description                            |
+| :----------------------------------------------- | :------------------------------------- |
+| [`open:admin`](/docs/commands/open.md#openadmin) | Opens current site admin UI in Netlify |
+| [`open:site`](/docs/commands/open.md#opensite)   | Opens current site url in browser      |
 
 ### [recipes](/docs/commands/recipes.md)
 
 (Beta) Create and modify files in a project using pre-defined recipes
 
-| Subcommand | description  |
-|:--------------------------- |:-----|
-| [`recipes:list`](/docs/commands/recipes.md#recipeslist) | (Beta) List the recipes available to create and modify files in a project  |
-
+| Subcommand                                              | description                                                               |
+| :------------------------------------------------------ | :------------------------------------------------------------------------ |
+| [`recipes:list`](/docs/commands/recipes.md#recipeslist) | (Beta) List the recipes available to create and modify files in a project |
 
 ### [sites](/docs/commands/sites.md)
 
 Handle various site operations
 
-| Subcommand | description  |
-|:--------------------------- |:-----|
-| [`sites:create`](/docs/commands/sites.md#sitescreate) | Create an empty site (advanced)  |
-| [`sites:create-template`](/docs/commands/sites.md#sitescreate-template) | (Beta) Create a site from a starter template  |
-| [`sites:delete`](/docs/commands/sites.md#sitesdelete) | Delete a site  |
-| [`sites:list`](/docs/commands/sites.md#siteslist) | List all sites you have access to  |
-
+| Subcommand                                                              | description                                  |
+| :---------------------------------------------------------------------- | :------------------------------------------- |
+| [`sites:create`](/docs/commands/sites.md#sitescreate)                   | Create an empty site (advanced)              |
+| [`sites:create-template`](/docs/commands/sites.md#sitescreate-template) | (Beta) Create a site from a starter template |
+| [`sites:delete`](/docs/commands/sites.md#sitesdelete)                   | Delete a site                                |
+| [`sites:list`](/docs/commands/sites.md#siteslist)                       | List all sites you have access to            |
 
 ### [status](/docs/commands/status.md)
 
 Print status information
 
-| Subcommand | description  |
-|:--------------------------- |:-----|
-| [`status:hooks`](/docs/commands/status.md#statushooks) | Print hook information of the linked site  |
-
+| Subcommand                                             | description                               |
+| :----------------------------------------------------- | :---------------------------------------- |
+| [`status:hooks`](/docs/commands/status.md#statushooks) | Print hook information of the linked site |
 
 ### [switch](/docs/commands/switch.md)
 
@@ -242,7 +243,6 @@ Unlink a local folder from a Netlify site
 ### [watch](/docs/commands/watch.md)
 
 Watch for site deploy to finish
-
 
 <!-- AUTO-GENERATED-CONTENT:END -->
 
