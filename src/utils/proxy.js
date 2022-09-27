@@ -1,5 +1,6 @@
 // @ts-check
 const { Buffer } = require('buffer')
+const { once } = require('events')
 const { readFile } = require('fs').promises
 const http = require('http')
 const https = require('https')
@@ -14,7 +15,6 @@ const { createProxyMiddleware } = require('http-proxy-middleware')
 const jwtDecode = require('jwt-decode')
 const locatePath = require('locate-path')
 const isEmpty = require('lodash/isEmpty')
-const pEvent = require('p-event')
 const pFilter = require('p-filter')
 const toReadableStream = require('to-readable-stream')
 
@@ -529,8 +529,7 @@ const startProxy = async function ({
   })
 
   server.listen({ port: settings.port })
-  // TODO: use events.once when we drop support for Node.js < 12
-  await pEvent(server, 'listening')
+  await once(server, 'listening')
 
   const scheme = settings.https ? 'https' : 'http'
   return `${scheme}://localhost:${settings.port}`
