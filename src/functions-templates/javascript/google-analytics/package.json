@@ -20,6 +20,6 @@
   "license": "MIT",
   "dependencies": {
     "node-fetch": "^2.6.1",
-    "uuid": "^8.0.0"
+    "uuid": "^9.0.0"
   }
 }
