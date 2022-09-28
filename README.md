@@ -1,11 +1,13 @@
 ![Netlify CLI](cli.png)
 
 [![Coverage Status](https://codecov.io/gh/netlify/cli/branch/main/graph/badge.svg)](https://codecov.io/gh/netlify/cli)
-[![npm version][npm-img]][npm] [![downloads][dl-img]][dl] [![netlify-status][netlify-img]][netlify] [![security][snyk-img]][snyk]
+[![npm version][npm-img]][npm] [![downloads][dl-img]][dl] [![netlify-status][netlify-img]][netlify]
+[![security][snyk-img]][snyk]
 
 Interact with [Netlify](http://netlify.com/) from the comfort of your CLI.
 
-See the [CLI command line reference](https://cli.netlify.com/commands/) to get started and the docs on using [Netlify Dev](https://github.com/netlify/cli/blob/main/docs/netlify-dev.md) to run your site locally.
+See the [CLI command line reference](https://cli.netlify.com/commands/) to get started and the docs on using
+[Netlify Dev](https://github.com/netlify/cli/blob/main/docs/netlify-dev.md) to run your site locally.
 
 ## Table of Contents
 
@@ -46,22 +48,28 @@ See the [CLI command line reference](https://cli.netlify.com/commands/) to get s
 
 ## Installation
 
-Netlify CLI requires [Node.js](https://nodejs.org) version 12 or above. To install, run the following command from any directory in your terminal:
+Netlify CLI requires [Node.js](https://nodejs.org) version 14 or above. To install, run the following command from any
+directory in your terminal:
 
 ```bash
 npm install netlify-cli -g
 ```
 
-When using the CLI in a CI environment we recommend installing it locally as a development dependency, instead of globally.
-To install locally, run the following command from the root directory of your project:
+When using the CLI in a CI environment we recommend installing it locally as a development dependency, instead of
+globally. To install locally, run the following command from the root directory of your project:
 
 ```bash
 npm install --save-dev netlify-cli
 ```
 
-**Important:** Running `npm install netlify-cli -g` in CI means you're always installing the latest version of the CLI, including **breaking changes**. When you install locally and use a [lock file](https://docs.npmjs.com/cli/v7/commands/npm-ci) you guarantee reproducible builds. To manage CLI updates we recommend using an automated tool like [renovate](https://github.com/renovatebot/renovate) or [dependabot](https://github.com/dependabot).
+**Important:** Running `npm install netlify-cli -g` in CI means you're always installing the latest version of the CLI,
+including **breaking changes**. When you install locally and use a
+[lock file](https://docs.npmjs.com/cli/v7/commands/npm-ci) you guarantee reproducible builds. To manage CLI updates we
+recommend using an automated tool like [renovate](https://github.com/renovatebot/renovate) or
+[dependabot](https://github.com/dependabot).
 
-Alternatively you may also use Homebrew: `brew install netlify-cli` (thanks [@cglong](https://github.com/netlify/cli/issues/291)).
+Alternatively you may also use Homebrew: `brew install netlify-cli` (thanks
+[@cglong](https://github.com/netlify/cli/issues/291)).
 
 ## Usage
 
@@ -76,7 +84,8 @@ netlify [command] help
 
 ## Documentation
 
-To learn how to log in to Netlify and start deploying sites, visit the [documentation on Netlify](https://docs.netlify.com/cli/get-started/).
+To learn how to log in to Netlify and start deploying sites, visit the
+[documentation on Netlify](https://docs.netlify.com/cli/get-started/).
 
 For a full command reference, see the list below, or visit [cli.netlify.com](https://cli.netlify.com/).
 
