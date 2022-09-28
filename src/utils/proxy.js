@@ -4,6 +4,7 @@ const { once } = require('events')
 const { readFile } = require('fs').promises
 const http = require('http')
 const https = require('https')
+const { isIPv6 } = require('net')
 const path = require('path')
 
 const contentType = require('content-type')
@@ -281,11 +282,11 @@ const reqToURL = function (req, pathname) {
 
 const MILLISEC_TO_SEC = 1e3
 
-const initializeProxy = async function ({ configPath, distDir, port, projectDir }) {
+const initializeProxy = async function ({ configPath, distDir, host, port, projectDir }) {
   const proxy = httpProxy.createProxyServer({
     selfHandleResponse: true,
     target: {
-      host: '127.0.0.1',
+      host,
       port,
     },
   })
@@ -434,7 +435,9 @@ const onRequest = async ({ addonsUrls, edgeFunctionsProxy, functionsServer, prox
   const options = {
     match,
     addonsUrls,
-    target: `http://127.0.0.1:${settings.frameworkPort}`,
+    target: `http://${isIPv6(settings.frameworkHost) ? `[${settings.frameworkHost}]` : settings.frameworkHost}:${
+      settings.frameworkPort
+    }`,
     publicFolder: settings.dist,
     functionsServer,
     functionsPort: settings.functionsPort,
@@ -498,6 +501,7 @@ const startProxy = async function ({
     state,
   })
   const proxy = await initializeProxy({
+    host: settings.frameworkHost,
     port: settings.frameworkPort,
     distDir: settings.dist,
     projectDir,

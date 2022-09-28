@@ -43,9 +43,9 @@ const tryGetAgent = async ({ certificateFile, httpProxy }) => {
     return { error: `${httpProxy} must have a scheme of http or https` }
   }
 
-  let open
+  let port
   try {
-    open = await waitPort({
+    port = await waitPort({
       port: Number.parseInt(proxyUrl.port) || (scheme === 'http' ? DEFAULT_HTTP_PORT : DEFAULT_HTTPS_PORT),
       host: proxyUrl.hostname,
       timeout: AGENT_PORT_TIMEOUT,
@@ -56,7 +56,7 @@ const tryGetAgent = async ({ certificateFile, httpProxy }) => {
     return { error: `${httpProxy} is not available.`, message: error.message }
   }
 
-  if (!open) {
+  if (!port.open) {
     // timeout error
     return { error: `Could not connect to '${httpProxy}'` }
   }
