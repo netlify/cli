@@ -423,8 +423,6 @@ const validateGeoCountryCode = (arg) => {
   return arg.toUpperCase()
 }
 
-const IP_VERSION_6 = 6
-
 /**
  * The dev command
  * @param {import('commander').OptionValues} options
@@ -514,7 +512,8 @@ const dev = async (options, command) => {
 
   const devCommand = async () => {
     const { ipVersion } = await startFrameworkServer({ settings })
-    settings.frameworkHost = ipVersion === IP_VERSION_6 ? '::1' : '127.0.0.1'
+    // eslint-disable-next-line no-magic-numbers
+    settings.frameworkHost = ipVersion === 6 ? '::1' : '127.0.0.1'
   }
   const startDevOptions = getBuildOptions({
     cachedConfig,
