@@ -33,11 +33,7 @@ const getLanguage = function (headers) {
   return 'en'
 }
 
-const getCountry = function () {
-  return 'us'
-}
-
-const createRewriter = async function ({ configPath, distDir, jwtRoleClaim, jwtSecret, projectDir }) {
+const createRewriter = async function ({ configPath, distDir, geoCountry, jwtRoleClaim, jwtSecret, projectDir }) {
   let matcher = null
   const redirectsFiles = [...new Set([path.resolve(distDir, '_redirects'), path.resolve(projectDir, '_redirects')])]
   let redirects = await parseRedirects({ redirectsFiles, configPath })
@@ -80,7 +76,7 @@ const createRewriter = async function ({ configPath, distDir, jwtRoleClaim, jwtS
     const cookieValues = cookie.parse(req.headers.cookie || '')
     const headers = {
       'x-language': cookieValues.nf_lang || getLanguage(req.headers),
-      'x-country': cookieValues.nf_country || getCountry(),
+      'x-country': cookieValues.nf_country || geoCountry || 'us',
       ...req.headers,
     }
 
