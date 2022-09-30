@@ -179,17 +179,24 @@ const runCommand = (command, env = {}, spinner = null) => {
 }
 
 /**
+ * @typedef StartReturnObject
+ * @property {4 | 6 | undefined=} ipVersion The version the open port was found on
+ */
+
+/**
  * Start a static server if the `useStaticServer` is provided or a framework specific server
  * @param {object} config
  * @param {Partial<import('../../utils/types').ServerSettings>} config.settings
- * @returns {Promise<void>}
+ * @returns {Promise<StartReturnObject>}
  */
 const startFrameworkServer = async function ({ settings }) {
   if (settings.useStaticServer) {
     if (settings.command) {
       runCommand(settings.command, settings.env)
     }
-    return await startStaticServer({ settings })
+    await startStaticServer({ settings })
+
+    return {}
   }
 
   log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.framework || 'custom config'}`)
@@ -200,17 +207,17 @@ const startFrameworkServer = async function ({ settings }) {
 
   runCommand(settings.command, settings.env, spinner)
 
+  let port
   try {
-    const open = await waitPort({
+    port = await waitPort({
       port: settings.frameworkPort,
-      // Cannot use `localhost` as it may point to IPv4 or IPv6 depending on node version and OS
-      host: '127.0.0.1',
+      host: 'localhost',
       output: 'silent',
       timeout: FRAMEWORK_PORT_TIMEOUT,
       ...(settings.pollingStrategies.includes('HTTP') && { protocol: 'http' }),
     })
 
-    if (!open) {
+    if (!port.open) {
       throw new Error(`Timed out waiting for port '${settings.frameworkPort}' to be open`)
     }
 
@@ -221,6 +228,8 @@ const startFrameworkServer = async function ({ settings }) {
     log(NETLIFYDEVERR, `Please make sure your framework server is running on port ${settings.frameworkPort}`)
     exit(1)
   }
+
+  return { ipVersion: port?.ipVersion }
 }
 
 // 10 minutes
@@ -501,7 +510,11 @@ const dev = async (options, command) => {
 
   log(`${NETLIFYDEVWARN} Setting up local development server`)
 
-  const devCommand = () => startFrameworkServer({ settings })
+  const devCommand = async () => {
+    const { ipVersion } = await startFrameworkServer({ settings })
+    // eslint-disable-next-line no-magic-numbers
+    settings.frameworkHost = ipVersion === 6 ? '::1' : '127.0.0.1'
+  }
   const startDevOptions = getBuildOptions({
     cachedConfig,
     options,

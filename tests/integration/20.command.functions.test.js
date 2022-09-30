@@ -660,7 +660,7 @@ const withFunctionsServer = async ({ builder, args = [], port = DEFAULT_PORT }, 
     ps.stdout.on('data', (data) => console.log(data.toString()))
     ps.stderr.on('data', (data) => console.log(data.toString()))
 
-    const open = await waitPort({
+    const { open } = await waitPort({
       port,
       output: 'silent',
       timeout: SERVE_TIMEOUT,
