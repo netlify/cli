@@ -92,7 +92,7 @@
         "p-wait-for": "^3.0.0",
         "parallel-transform": "^1.2.0",
         "parse-github-url": "^1.0.2",
-        "parse-gitignore": "^1.0.1",
+        "parse-gitignore": "^2.0.0",
         "path-key": "^3.1.1",
         "prettyjson": "^1.2.1",
         "pump": "^3.0.0",
@@ -17813,11 +17813,11 @@
       }
     },
     "node_modules/parse-gitignore": {
-      "version": "1.0.1",
-      "resolved": "https://registry.npmjs.org/parse-gitignore/-/parse-gitignore-1.0.1.tgz",
-      "integrity": "sha512-UGyowyjtx26n65kdAMWhm6/3uy5uSrpcuH7tt+QEVudiBoVS+eqHxD5kbi9oWVRwj7sCzXqwuM+rUGw7earl6A==",
+      "version": "2.0.0",
+      "resolved": "https://registry.npmjs.org/parse-gitignore/-/parse-gitignore-2.0.0.tgz",
+      "integrity": "sha512-RmVuCHWsfu0QPNW+mraxh/xjQVw/lhUCUru8Zni3Ctq3AoMhpDTq0OVdKS6iesd6Kqb7viCV3isAL43dciOSog==",
       "engines": {
-        "node": ">=6"
+        "node": ">=14"
       }
     },
     "node_modules/parse-json": {
@@ -35668,9 +35668,9 @@
       "integrity": "sha512-kgBf6avCbO3Cn6+RnzRGLkUsv4ZVqv/VfAYkRsyBcgkshNvVBkRn1FEZcW0Jb+npXQWm2vHPnnOqFteZxRRGNw=="
     },
     "parse-gitignore": {
-      "version": "1.0.1",
-      "resolved": "https://registry.npmjs.org/parse-gitignore/-/parse-gitignore-1.0.1.tgz",
-      "integrity": "sha512-UGyowyjtx26n65kdAMWhm6/3uy5uSrpcuH7tt+QEVudiBoVS+eqHxD5kbi9oWVRwj7sCzXqwuM+rUGw7earl6A=="
+      "version": "2.0.0",
+      "resolved": "https://registry.npmjs.org/parse-gitignore/-/parse-gitignore-2.0.0.tgz",
+      "integrity": "sha512-RmVuCHWsfu0QPNW+mraxh/xjQVw/lhUCUru8Zni3Ctq3AoMhpDTq0OVdKS6iesd6Kqb7viCV3isAL43dciOSog=="
     },
     "parse-json": {
       "version": "5.2.0",
