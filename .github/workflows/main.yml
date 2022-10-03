@@ -48,14 +48,14 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macOS-latest, windows-latest]
-        node-version: [12.x, '*']
+        node-version: [14.x, '*']
         machine: ['0', '1', '2', '3', '4', '5', '6']
 
         exclude:
           - os: macOS-latest
-            node-version: '12.x'
+            node-version: '14.x'
           - os: windows-latest
-            node-version: '12.x'
+            node-version: '14.x'
       fail-fast: false
     steps:
       # Sets an output parameter if this is a release PR

@@ -5,12 +5,13 @@ description: All Netlify CLI commands
 
 # Netlify CLI Command List
 
-Welcome to the Netlify CLI! This site provides online access to all help strings in the Netlify CLI. For a more in-depth guide, please see our [Getting Started](https://docs.netlify.com/cli/get-started/) guide on our main docs site.
+Welcome to the Netlify CLI! This site provides online access to all help strings in the Netlify CLI. For a more in-depth
+guide, please see our [Getting Started](https://docs.netlify.com/cli/get-started/) guide on our main docs site.
 
-If you have questions, ideas, or would like to contribute, check out the [repository on GitHub](https://github.com/netlify/cli/).
+If you have questions, ideas, or would like to contribute, check out the
+[repository on GitHub](https://github.com/netlify/cli/).
 
-**Before you begin**
-Make sure you have [Node.js](https://nodejs.org/en/download/) version 12.20.0, 14.14.0, 16.0.0, or later.
+**Before you begin** Make sure you have [Node.js](https://nodejs.org/en/download/) version 16.0.0, or later.
 
 **Install the CLI**
 
@@ -20,7 +21,8 @@ To install the CLI, pop open your terminal and install with `npm`.
 npm install netlify-cli -g
 ```
 
-**Important:** When using the CLI in a CI environment we recommend installing it locally. See more [here](https://github.com/netlify/cli#installation).
+**Important:** When using the CLI in a CI environment we recommend installing it locally. See more
+[here](https://github.com/netlify/cli#installation).
 
 **Listing commands**
 

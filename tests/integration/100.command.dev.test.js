@@ -451,6 +451,40 @@ test('redirect with country cookie', async (t) => {
   })
 })
 
+test('redirect with country flag', async (t) => {
+  await withSiteBuilder('site-with-country-flag', async (builder) => {
+    builder
+      .withContentFiles([
+        {
+          path: 'index.html',
+          content: '<html>index</html>',
+        },
+        {
+          path: 'index-es.html',
+          content: '<html>index in spanish</html>',
+        },
+      ])
+      .withRedirectsFile({
+        redirects: [{ from: `/`, to: `/index-es.html`, status: '200!', condition: 'Country=ES' }],
+      })
+
+    await builder.buildAsync()
+
+    // NOTE: default fallback for country is 'US' if no flag is provided
+    await withDevServer({ cwd: builder.directory }, async (server) => {
+      const response = await got(`${server.url}/`)
+      t.is(response.statusCode, 200)
+      t.is(response.body, '<html>index</html>')
+    })
+
+    await withDevServer({ cwd: builder.directory, args: ['--country=ES'] }, async (server) => {
+      const response = await got(`${server.url}/`)
+      t.is(response.statusCode, 200)
+      t.is(response.body, '<html>index in spanish</html>')
+    })
+  })
+})
+
 test(`doesn't hang when sending a application/json POST request to function server`, async (t) => {
   await withSiteBuilder('site-with-functions', async (builder) => {
     const functionsPort = 6666

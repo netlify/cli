@@ -1,15 +1,16 @@
 // @ts-check
+const { once } = require('events')
 const os = require('os')
 const process = require('process')
 const { format, inspect } = require('util')
 
+// eslint-disable-next-line no-restricted-modules
 const { Instance: ChalkInstance } = require('chalk')
 const chokidar = require('chokidar')
 const decache = require('decache')
 const WSL = require('is-wsl')
 const debounce = require('lodash/debounce')
 const { default: omit } = require('omit.js')
-const pEvent = require('p-event')
 const terminalLink = require('terminal-link')
 
 const { name, version } = require('../../package.json')
@@ -218,7 +219,7 @@ const DEBOUNCE_WAIT = 100
 const watchDebounced = async (target, { depth, onAdd = () => {}, onChange = () => {}, onUnlink = () => {} }) => {
   const watcher = chokidar.watch(target, { depth, ignored: /node_modules/, ignoreInitial: true })
 
-  await pEvent(watcher, 'ready')
+  await once(watcher, 'ready')
 
   const debouncedOnChange = debounce(onChange, DEBOUNCE_WAIT)
   const debouncedOnUnlink = debounce(onUnlink, DEBOUNCE_WAIT)
