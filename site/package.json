@@ -32,7 +32,7 @@
   "dependencies": {
     "@compositor/x0": "^6.0.7",
     "@rebass/markdown": "^1.0.0",
-    "@rebass/mdx": "^1.0.0",
+    "@rebass/mdx": "^2.0.0",
     "algoliasearch": "^4.12.1",
     "lodash.sortby": "^4.7.0",
     "prop-types": "^15.7.2",
