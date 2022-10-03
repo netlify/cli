@@ -4829,9 +4829,9 @@
       }
     },
     "node_modules/@verdaccio/ui-theme": {
-      "version": "6.0.0-6-next.28",
-      "resolved": "https://registry.npmjs.org/@verdaccio/ui-theme/-/ui-theme-6.0.0-6-next.28.tgz",
-      "integrity": "sha512-1sJ28aVGMiRJrSz0e8f4t+IUgt/cyYmuDLhogXHOEjEIIEcfMNyQ5bVYqq03wLVoKWEh5D6gHo1hQnVKQl1L5g==",
+      "version": "6.0.0-6-next.48",
+      "resolved": "https://registry.npmjs.org/@verdaccio/ui-theme/-/ui-theme-6.0.0-6-next.48.tgz",
+      "integrity": "sha512-1jls+cpfEXqXc1ZzqLGGNs6YCyG6B6QwDCezEkSvgKm+9A49FnSJ2n2dNIGcQYOszwHmd8EvwN98OEIx3Bbtrw==",
       "dev": true
     },
     "node_modules/abab": {
@@ -22018,16 +22018,16 @@
       }
     },
     "node_modules/verdaccio": {
-      "version": "5.15.3",
-      "resolved": "https://registry.npmjs.org/verdaccio/-/verdaccio-5.15.3.tgz",
-      "integrity": "sha512-8oEtepXF1oksGVYahi2HS1Yx9u6HD/4ukBDNDfwISmlNp7HVKJL2+kjzmDJWam88BpDNxOBU/LFXWSsEAFKFCQ==",
+      "version": "5.15.4",
+      "resolved": "https://registry.npmjs.org/verdaccio/-/verdaccio-5.15.4.tgz",
+      "integrity": "sha512-yYMqpEQCv/BfYW5K/Nq57dbx68ICP1GfK7RJ0A3SlhKgl6idT8x4cJyLjH7C4k1Tln3LIQk1/X6ZtSl7xhzwOg==",
       "dev": true,
       "dependencies": {
         "@verdaccio/commons-api": "10.2.0",
         "@verdaccio/local-storage": "10.3.1",
         "@verdaccio/readme": "10.4.1",
         "@verdaccio/streams": "10.2.0",
-        "@verdaccio/ui-theme": "6.0.0-6-next.28",
+        "@verdaccio/ui-theme": "6.0.0-6-next.48",
         "async": "3.2.4",
         "body-parser": "1.20.0",
         "clipanion": "3.1.0",
@@ -25828,9 +25828,9 @@
       "dev": true
     },
     "@verdaccio/ui-theme": {
-      "version": "6.0.0-6-next.28",
-      "resolved": "https://registry.npmjs.org/@verdaccio/ui-theme/-/ui-theme-6.0.0-6-next.28.tgz",
-      "integrity": "sha512-1sJ28aVGMiRJrSz0e8f4t+IUgt/cyYmuDLhogXHOEjEIIEcfMNyQ5bVYqq03wLVoKWEh5D6gHo1hQnVKQl1L5g==",
+      "version": "6.0.0-6-next.48",
+      "resolved": "https://registry.npmjs.org/@verdaccio/ui-theme/-/ui-theme-6.0.0-6-next.48.tgz",
+      "integrity": "sha512-1jls+cpfEXqXc1ZzqLGGNs6YCyG6B6QwDCezEkSvgKm+9A49FnSJ2n2dNIGcQYOszwHmd8EvwN98OEIx3Bbtrw==",
       "dev": true
     },
     "abab": {
@@ -38929,16 +38929,16 @@
       "integrity": "sha1-IpnwLG3tMNSllhsLn3RSShj2NPw="
     },
     "verdaccio": {
-      "version": "5.15.3",
-      "resolved": "https://registry.npmjs.org/verdaccio/-/verdaccio-5.15.3.tgz",
-      "integrity": "sha512-8oEtepXF1oksGVYahi2HS1Yx9u6HD/4ukBDNDfwISmlNp7HVKJL2+kjzmDJWam88BpDNxOBU/LFXWSsEAFKFCQ==",
+      "version": "5.15.4",
+      "resolved": "https://registry.npmjs.org/verdaccio/-/verdaccio-5.15.4.tgz",
+      "integrity": "sha512-yYMqpEQCv/BfYW5K/Nq57dbx68ICP1GfK7RJ0A3SlhKgl6idT8x4cJyLjH7C4k1Tln3LIQk1/X6ZtSl7xhzwOg==",
       "dev": true,
       "requires": {
         "@verdaccio/commons-api": "10.2.0",
         "@verdaccio/local-storage": "10.3.1",
         "@verdaccio/readme": "10.4.1",
         "@verdaccio/streams": "10.2.0",
-        "@verdaccio/ui-theme": "6.0.0-6-next.28",
+        "@verdaccio/ui-theme": "6.0.0-6-next.48",
         "async": "3.2.4",
         "body-parser": "1.20.0",
         "clipanion": "3.1.0",
