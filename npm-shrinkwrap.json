@@ -12,7 +12,7 @@
       "dependencies": {
         "@netlify/build": "^27.18.6",
         "@netlify/config": "^18.2.4",
-        "@netlify/edge-bundler": "^2.2.0",
+        "@netlify/edge-bundler": "^2.3.0",
         "@netlify/framework-info": "^9.2.0",
         "@netlify/local-functions-proxy": "^1.1.1",
         "@netlify/zip-it-and-ship-it": "^7.1.2",
@@ -2354,9 +2354,9 @@
       }
     },
     "node_modules/@netlify/edge-bundler": {
-      "version": "2.2.0",
-      "resolved": "https://registry.npmjs.org/@netlify/edge-bundler/-/edge-bundler-2.2.0.tgz",
-      "integrity": "sha512-8dvI9y77TULQCcLXya4xJIt1GMTmCAJ0XIPfxjv6lbbB2XU87/tEAQ/8VOzaC2lNf+U5qG0fcrzVjjuKt3K2Sw==",
+      "version": "2.3.0",
+      "resolved": "https://registry.npmjs.org/@netlify/edge-bundler/-/edge-bundler-2.3.0.tgz",
+      "integrity": "sha512-HiY1V3/4aQqsUZMUA2EhijX3TrmlGNJmNAhmXpTTxsMKVcPfBosR2ykrrL5capISQbg5aH+GSAlT/vfzxCYZjQ==",
       "dependencies": {
         "@import-maps/resolve": "^1.0.1",
         "common-path-prefix": "^3.0.0",
@@ -2376,7 +2376,7 @@
         "uuid": "^9.0.0"
       },
       "engines": {
-        "node": "^14.16.0 || >=16.0.0"
+        "node": "^12.20.0 || ^14.14.0 || >=16.0.0"
       }
     },
     "node_modules/@netlify/edge-bundler/node_modules/env-paths": {
@@ -24190,9 +24190,9 @@
       }
     },
     "@netlify/edge-bundler": {
-      "version": "2.2.0",
-      "resolved": "https://registry.npmjs.org/@netlify/edge-bundler/-/edge-bundler-2.2.0.tgz",
-      "integrity": "sha512-8dvI9y77TULQCcLXya4xJIt1GMTmCAJ0XIPfxjv6lbbB2XU87/tEAQ/8VOzaC2lNf+U5qG0fcrzVjjuKt3K2Sw==",
+      "version": "2.3.0",
+      "resolved": "https://registry.npmjs.org/@netlify/edge-bundler/-/edge-bundler-2.3.0.tgz",
+      "integrity": "sha512-HiY1V3/4aQqsUZMUA2EhijX3TrmlGNJmNAhmXpTTxsMKVcPfBosR2ykrrL5capISQbg5aH+GSAlT/vfzxCYZjQ==",
       "requires": {
         "@import-maps/resolve": "^1.0.1",
         "common-path-prefix": "^3.0.0",

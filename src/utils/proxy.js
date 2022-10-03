@@ -6,6 +6,8 @@ const http = require('http')
 const https = require('https')
 const { isIPv6 } = require('net')
 const path = require('path')
+const util = require('util')
+const zlib = require('zlib')
 
 const contentType = require('content-type')
 const cookie = require('cookie')
@@ -21,13 +23,31 @@ const toReadableStream = require('to-readable-stream')
 
 const edgeFunctions = require('../lib/edge-functions')
 const { fileExistsAsync, isFileAsync } = require('../lib/fs')
+const renderErrorTemplate = require('../lib/render-error-remplate')
 
 const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./command-helpers')
 const { createStreamPromise } = require('./create-stream-promise')
 const { headersForPath, parseHeaders } = require('./headers')
 const { createRewriter, onChanges } = require('./rules-proxy')
 
+const decompress = util.promisify(zlib.gunzip)
 const shouldGenerateETag = Symbol('Internal: response should generate ETag')
+
+const formatEdgeFunctionError = (errorBuffer, acceptsHtml) => {
+  const {
+    error: { message, name, stack },
+  } = JSON.parse(errorBuffer.toString())
+
+  if (!acceptsHtml) {
+    return `${name}: ${message}\n ${stack}`
+  }
+
+  return JSON.stringify({
+    errorType: name,
+    errorMessage: message,
+    trace: stack.split('\\n'),
+  })
+}
 
 const isInternal = function (url) {
   return url.startsWith('/.netlify/')
@@ -363,7 +383,7 @@ const initializeProxy = async function ({ configPath, distDir, host, port, proje
       responseData.push(data)
     })
 
-    proxyRes.on('end', function onEnd() {
+    proxyRes.on('end', async function onEnd() {
       const responseBody = Buffer.concat(responseData)
 
       let responseStatus = req.proxyOptions.status || proxyRes.statusCode
@@ -386,6 +406,22 @@ const initializeProxy = async function ({ configPath, distDir, host, port, proje
       Object.entries(headersRules).forEach(([key, val]) => {
         res.setHeader(key, val)
       })
+
+      const isUncaughtError = proxyRes.headers['x-nf-uncaught-error'] === '1'
+
+      if (edgeFunctions.isEdgeFunctionsRequest(req) && isUncaughtError) {
+        const acceptsHtml = req.headers && req.headers.accept && req.headers.accept.includes('text/html')
+        const decompressedBody = await decompress(responseBody)
+        const formattedBody = formatEdgeFunctionError(decompressedBody, acceptsHtml)
+        const errorResponse = acceptsHtml
+          ? await renderErrorTemplate(formattedBody, './templates/function-error.html', 'edge function')
+          : formattedBody
+        const contentLength = Buffer.from(errorResponse, 'utf8').byteLength
+
+        res.setHeader('content-length', contentLength)
+        res.write(errorResponse)
+        return res.end()
+      }
 
       res.writeHead(responseStatus, proxyRes.headers)
 
