@@ -166,7 +166,7 @@
     "/src/**/*.sh",
     "/src/**/*.ps1",
     "/src/functions-templates/**",
-    "/src/lib/functions/templates/**",
+    "/src/lib/templates/**",
     "!/src/**/node_modules/**",
     "!/src/**/*.test.js"
   ],
