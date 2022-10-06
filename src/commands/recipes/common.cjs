@@ -2,7 +2,7 @@ const { promises: fs } = require('fs')
 const { join, resolve } = require('path')
 
 const getRecipe = (name) => {
-  const recipePath = resolve(__dirname, '../../recipes', name)
+  const recipePath = resolve(__dirname, '../../recipes', name, 'index.cjs')
 
   // eslint-disable-next-line import/no-dynamic-require, n/global-require
   const recipe = require(recipePath)
@@ -15,7 +15,7 @@ const listRecipes = async () => {
   const recipeNames = await fs.readdir(recipesPath)
   const recipes = await Promise.all(
     recipeNames.map((name) => {
-      const recipePath = join(recipesPath, name)
+      const recipePath = join(recipesPath, name, 'index.cjs')
 
       // eslint-disable-next-line import/no-dynamic-require, n/global-require
       const recipe = require(recipePath)
