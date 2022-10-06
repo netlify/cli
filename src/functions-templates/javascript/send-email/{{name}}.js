@@ -4,7 +4,7 @@ const { promisify } = require('util')
 
 const sendMailLib = require('sendmail')
 
-const { validateEmail, validateLength } = require('./validations')
+const { validateEmail, validateLength } = require('./validations.js')
 
 const sendMail = promisify(sendMailLib())
 

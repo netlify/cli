@@ -1,5 +1,5 @@
-const generateRoute = require('./generate-route')
-const getRoute = require('./get-route')
+const generateRoute = require('./generate-route.js')
+const getRoute = require('./get-route.js')
 
 const handler = async (event) => {
   const path = event.path.replace(/\.netlify\/functions\/[^/]+/, '')
