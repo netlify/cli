@@ -88,5 +88,26 @@ module.exports = {
         ],
       },
     },
+    {
+      files: ['src/**/*.mjs', 'bin/**/*.mjs'],
+      parserOptions: {
+        sourceType: 'module',
+        babelOptions: {
+          parserOpts: {
+            sourceType: 'module',
+          },
+        },
+      },
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          {
+            name: 'chalk',
+            message:
+              'Please use the safe chalk import that handles colors for json output. `import { chalk } from "src/utils"`',
+          },
+        ],
+      },
+    },
   ],
 }
