@@ -180,7 +180,6 @@
   ],
   "license": "MIT",
   "repository": "netlify/cli",
-  "main": "src/index.cjs",
   "bin": {
     "ntl": "./bin/run.mjs",
     "netlify": "./bin/run.mjs"
