@@ -6,8 +6,8 @@ These guidelines will help you send a pull request.
 
 If you’re submitting an issue instead, please skip this document.
 
-If your pull request is related to a typo or the documentation being unclear, please select on the relevant page’s `Edit`
-button (pencil icon) and directly suggest a correction instead.
+If your pull request is related to a typo or the documentation being unclear, please select on the relevant page’s
+`Edit` button (pencil icon) and directly suggest a correction instead.
 
 This project was made with ❤️. The simplest way to give back is by starring and sharing it online.
 
@@ -37,13 +37,17 @@ In order to run all tests, make sure to have [Git LFS](https://git-lfs.github.co
 
 Running some integration tests requires an active Netlify account to create a live site.
 
-You can either provide a [Netlify Auth Token](https://docs.netlify.com/cli/get-started/#obtain-a-token-in-the-netlify-ui) (through the `NETLIFY_AUTH_TOKEN` environment variable) or login via `./bin/run login` before running the tests.
+You can either provide a
+[Netlify Auth Token](https://docs.netlify.com/cli/get-started/#obtain-a-token-in-the-netlify-ui) (through the
+`NETLIFY_AUTH_TOKEN` environment variable) or login via `./bin/run.mjs login` before running the tests.
 
 The tests don’t count towards Netlify build minutes since they build a site locally and deploy it using the API.
 
 > You can disable these tests by setting the `NETLIFY_TEST_DISABLE_LIVE` environment variable to `true`.
 
-**For Netlify employees**, our CI uses a Netlify Auth Token from a [`netlify services` account](https://app.netlify.com/teams/netlify-services/sites). Credentials for the account are in 1Password.
+**For Netlify employees**, our CI uses a Netlify Auth Token from a
+[`netlify services` account](https://app.netlify.com/teams/netlify-services/sites). Credentials for the account are in
+1Password.
 
 In watch mode:
 
@@ -65,21 +69,23 @@ Alternatively, you can set up your IDE to integrate with Prettier and ESLint for
 To run the CLI locally:
 
 ```bash
-./bin/run [command]
+./bin/run.mjs [command]
 ```
 
 or (`DEBUG=true` enables printing stack traces when errors are thrown):
 
 ```bash
-DEBUG=true ./bin/run [command]
+DEBUG=true ./bin/run.mjs [command]
 ```
 
 ## Architecture
 
-The CLI is written using the [commander.js](https://github.com/tj/commander.js/) cli interface and the [netlify/js-client](https://github.com/netlify/js-client) open-api derived API client.
+The CLI is written using the [commander.js](https://github.com/tj/commander.js/) cli interface and the
+[netlify/js-client](https://github.com/netlify/js-client) open-api derived API client.
 
 - Commands live in the [`src/commands`](src/commands) folder.
-- The base command class which provides consistent config loading and an API client lives in [`src/commands/base-command.js`](src/commands/base-command.js).
+- The base command class which provides consistent config loading and an API client lives in
+  [`src/commands/base-command.js`](src/commands/base-command.js).
 - Small utilities and other functionality live in [`src/utils`](src/utils).
 
 A good place to start is reading the base command README and looking at the commands folder.
@@ -88,7 +94,9 @@ A good place to start is reading the base command README and looking at the comm
 
 ### Testing
 
-This repo uses [ava](https://github.com/avajs/ava) for testing. Unit tests are in the `tests/unit` folder and integration tests are in the `tests/integration` folder. We use this convention since we split tests across multiple CI machines to speed up CI time. You can read about it more [here](https://github.com/netlify/cli/issues/4178).
+This repo uses [ava](https://github.com/avajs/ava) for testing. Unit tests are in the `tests/unit` folder and
+integration tests are in the `tests/integration` folder. We use this convention since we split tests across multiple CI
+machines to speed up CI time. You can read about it more [here](https://github.com/netlify/cli/issues/4178).
 
 We also test for a few other things:
 
@@ -100,7 +108,8 @@ We also test for a few other things:
 ### Lint docs per Netlify style guide
 
 1. [Install vale](https://docs.errata.ai/vale/install)
-2. Download the latest styles to the styles directory. For example: `wget -q -O styles.zip https://vale-library.netlify.app/styles.zip && unzip styles.zip -d .github/styles && rm styles.zip`
+2. Download the latest styles to the styles directory. For example:
+   `wget -q -O styles.zip https://vale-library.netlify.app/styles.zip && unzip styles.zip -d .github/styles && rm styles.zip`
 3. Run vale: `vale docs src README.md CODE_OF_CONDUCT.md CONTRIBUTING.md`
 
 ## Pull Requests
@@ -122,9 +131,10 @@ Merge the release PR
 1. Create a branch named `releases/<tag>/<version>` with the version and tag you’d like to release.
 2. Push the branch to the repo.
 
-For example, a branch named `releases/rc.0/4.0.0` will create the version `4.0.0-rc.0` and publish it under the `rc.0` tag.
+For example, a branch named `releases/rc.0/4.0.0` will create the version `4.0.0-rc.0` and publish it under the `rc.0`
+tag.
 
 ## License
 
-By contributing to Netlify Node Client, you agree that your contributions will be licensed
-under its [MIT license](LICENSE).
+By contributing to Netlify Node Client, you agree that your contributions will be licensed under its
+[MIT license](LICENSE).
