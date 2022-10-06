@@ -3,6 +3,7 @@
   "description": "Netlify command line tool",
   "version": "12.0.7",
   "author": "Netlify Inc.",
+  "type": "module",
   "contributors": [
     "@whitep4nth3r (https://twitter.com/whitep4nth3r)",
     "Abraham Schilling <AbrahamSchilling@gmail.com> (https://gitlab.com/n4bb12)",
@@ -161,8 +162,8 @@
   "files": [
     "/bin",
     "/npm-shrinkwrap.json",
-    "/scripts/postinstall.js",
-    "/src/**/*.js",
+    "/scripts/postinstall.cjs",
+    "/src/**/*.cjs",
     "/src/**/*.sh",
     "/src/**/*.ps1",
     "/src/functions-templates/**",
@@ -179,7 +180,7 @@
   ],
   "license": "MIT",
   "repository": "netlify/cli",
-  "main": "src/index.js",
+  "main": "src/index.cjs",
   "bin": {
     "ntl": "./bin/run",
     "netlify": "./bin/run"
@@ -215,7 +216,7 @@
     "site:build": "run-s site:build:*",
     "site:build:install": "cd site && npm ci --no-audit",
     "site:build:assets": "cd site && npm run build",
-    "postinstall": "node ./scripts/postinstall.js",
+    "postinstall": "node ./scripts/postinstall.cjs",
     "certs": "openssl req -x509 -out localhost.crt -keyout localhost.key -newkey rsa:2048 -nodes -sha256 -subj \"/CN=localhost\" -extensions EXT -config certconf"
   },
   "config": {
