@@ -118,8 +118,10 @@ test('should convert scope keys into a human-readable list', (t) => {
   t.is(getHumanReadableScopes([]), '')
   t.is(getHumanReadableScopes(), 'Builds, Post processing')
   t.is(getHumanReadableScopes(['post_processing']), 'Post processing')
+  t.is(getHumanReadableScopes(['post-processing']), 'Post processing')
   t.is(getHumanReadableScopes(['builds', 'functions']), 'Builds, Functions')
   t.is(getHumanReadableScopes(['builds', 'functions', 'runtime', 'post_processing']), 'All')
+  t.is(getHumanReadableScopes(['builds', 'functions', 'runtime', 'post-processing']), 'All')
 })
 
 test('should normalize a branch name or context', (t) => {

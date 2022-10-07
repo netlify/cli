@@ -85,7 +85,7 @@ netlify env:get
 **Flags**
 
 - `context` (*string*) - Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")
-- `scope` (*builds | functions | post_processing | runtime | any*) - Specify a scope
+- `scope` (*builds | functions | post-processing | runtime | any*) - Specify a scope
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
@@ -135,7 +135,7 @@ netlify env:list
 **Flags**
 
 - `context` (*string*) - Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")
-- `scope` (*builds | functions | post_processing | runtime | any*) - Specify a scope
+- `scope` (*builds | functions | post-processing | runtime | any*) - Specify a scope
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
@@ -168,7 +168,7 @@ netlify env:set
 **Flags**
 
 - `context` (*string*) - Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev") (default: all contexts)
-- `scope` (*builds | functions | post_processing | runtime*) - Specify a scope (default: all scopes)
+- `scope` (*builds | functions | post-processing | runtime*) - Specify a scope (default: all scopes)
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server

@@ -366,7 +366,7 @@ test('env:set --scope should set the scope of an existing env var without needin
 
     await withMockApi(routes, async ({ apiUrl, requests }) => {
       const cliResponse = await callCli(
-        ['env:set', 'EXISTING_VAR', '--scope', 'runtime', 'post_processing', '--json'],
+        ['env:set', 'EXISTING_VAR', '--scope', 'runtime', 'post-processing', '--json'],
         getCLIOptions({ builder, apiUrl }),
         true,
       )

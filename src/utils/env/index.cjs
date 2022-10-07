@@ -150,7 +150,7 @@ const getEnvelopeEnv = async ({ api, context = 'dev', env, key = '', scope = 'an
   const configFileEnv = filterEnvBySource(env, 'configFile')
 
   // filter out configFile env vars if a non-configFile scope is passed
-  const includeConfigEnvVars = ['any', 'builds', 'post_processing'].includes(scope)
+  const includeConfigEnvVars = /any|builds|post[-_]processing/.test(scope)
 
   // Sources of environment variables, in ascending order of precedence.
   return {
@@ -172,6 +172,7 @@ const getHumanReadableScopes = (scopes) => {
     builds: 'Builds',
     functions: 'Functions',
     post_processing: 'Post processing',
+    'post-processing': 'Post processing',
     runtime: 'Runtime',
   }
   if (!scopes) {

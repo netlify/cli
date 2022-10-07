@@ -140,7 +140,7 @@ const createEnvListCommand = (program) =>
     )
     .addOption(
       new Option('-s, --scope <scope>', 'Specify a scope')
-        .choices(['builds', 'functions', 'post_processing', 'runtime', 'any'])
+        .choices(['builds', 'functions', 'post-processing', 'runtime', 'any'])
         .default('any'),
     )
     .addExamples([
