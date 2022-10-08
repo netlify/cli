@@ -127,7 +127,10 @@ test('netlify init new site', async (t) => {
       answer: answerWithValue(DOWN),
     },
     { question: 'Team: (Use arrow keys)', answer: CONFIRM },
-    { question: 'Site name (you can change it later)', answer: answerWithValue('test-site-name') },
+    {
+      question: 'Site name (leave blank for a random name; you can change it later)',
+      answer: answerWithValue('test-site-name'),
+    },
     {
       question: 'Your build command (hugo build/yarn run build/etc)',
       answer: answerWithValue(command),
@@ -220,7 +223,10 @@ test('netlify init new Next.js site', async (t) => {
       answer: answerWithValue(DOWN),
     },
     { question: 'Team: (Use arrow keys)', answer: CONFIRM },
-    { question: 'Site name (you can change it later)', answer: answerWithValue('test-site-name') },
+    {
+      question: 'Site name (leave blank for a random name; you can change it later)',
+      answer: answerWithValue('test-site-name'),
+    },
     {
       question: 'Your build command (hugo build/yarn run build/etc)',
       answer: answerWithValue(command),
@@ -320,7 +326,10 @@ test('netlify init new Next.js site with correct default build directory and bui
       answer: answerWithValue(DOWN),
     },
     { question: 'Team: (Use arrow keys)', answer: CONFIRM },
-    { question: 'Site name (you can change it later)', answer: answerWithValue('test-site-name') },
+    {
+      question: 'Site name (leave blank for a random name; you can change it later)',
+      answer: answerWithValue('test-site-name'),
+    },
     {
       question: 'Your build command (hugo build/yarn run build/etc)',
       answer: CONFIRM,
@@ -509,7 +518,10 @@ test('netlify init new Gatsby site with correct default build directory and buil
       answer: answerWithValue(DOWN),
     },
     { question: 'Team: (Use arrow keys)', answer: CONFIRM },
-    { question: 'Site name (you can change it later)', answer: answerWithValue('test-site-name') },
+    {
+      question: 'Site name (leave blank for a random name; you can change it later)',
+      answer: answerWithValue('test-site-name'),
+    },
     {
       question: 'Your build command (hugo build/yarn run build/etc)',
       answer: CONFIRM,
@@ -612,7 +624,10 @@ windowsSkip('netlify init monorepo root and sub directory without netlify.toml',
       answer: answerWithValue(DOWN),
     },
     { question: 'Team: (Use arrow keys)', answer: CONFIRM },
-    { question: 'Site name (you can change it later)', answer: answerWithValue('test-site-name') },
+    {
+      question: 'Site name (leave blank for a random name; you can change it later)',
+      answer: answerWithValue('test-site-name'),
+    },
     {
       question: 'Base directory (e.g. projects/frontend):',
       answer: CONFIRM,
@@ -732,7 +747,10 @@ test('netlify init monorepo root with netlify.toml, subdirectory without netlify
       answer: answerWithValue(DOWN),
     },
     { question: 'Team: (Use arrow keys)', answer: CONFIRM },
-    { question: 'Site name (you can change it later)', answer: answerWithValue('test-site-name') },
+    {
+      question: 'Site name (leave blank for a random name; you can change it later)',
+      answer: answerWithValue('test-site-name'),
+    },
     {
       question: 'Base directory (e.g. projects/frontend):',
       answer: CONFIRM,
@@ -854,7 +872,10 @@ windowsSkip('netlify init monorepo root and sub directory with netlify.toml', as
       answer: answerWithValue(DOWN),
     },
     { question: 'Team: (Use arrow keys)', answer: CONFIRM },
-    { question: 'Site name (you can change it later)', answer: answerWithValue('test-site-name') },
+    {
+      question: 'Site name (leave blank for a random name; you can change it later)',
+      answer: answerWithValue('test-site-name'),
+    },
     {
       question: 'Base directory (e.g. projects/frontend):',
       answer: CONFIRM,

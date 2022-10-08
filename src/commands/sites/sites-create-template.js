@@ -108,19 +108,18 @@ const sitesCreateTemplate = async (repository, options, command) => {
   }
 
   const { name: nameFlag } = options
-  let user
   let site
   let repoResp
 
   // Allow the user to reenter site name if selected one isn't available
   const inputSiteName = async (name) => {
-    const { name: inputName, siteSuggestion } = await getSiteNameInput(name, user, api)
+    const { name: inputName } = await getSiteNameInput(name)
 
     try {
-      const siteName = inputName ? inputName.trim() : siteSuggestion
+      const siteName = inputName.trim()
 
       // Create new repo from template
-      repoResp = await createRepo(templateName, ghToken, siteName)
+      repoResp = await createRepo(templateName, ghToken, siteName || templateName)
 
       if (repoResp.errors) {
         if (repoResp.errors[0].includes('Name already exists on this account')) {
