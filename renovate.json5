@@ -8,5 +8,15 @@
       matchPackageNames: ['netlify-onegraph-internal'],
       enabled: false,
     },
+    {
+      "matchManagers": ["npm"],
+      "matchSourceUrlPrefixes": ["https://github.com/netlify/build"],
+      "groupName": "Netlify packages"
+    },
+    {
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["@netlify/zip-it-and-ship-it"],
+      "groupName": "Netlify packages"
+    },
   ],
 }
