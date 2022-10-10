@@ -1,6 +1,6 @@
 // @ts-check
-import main from '../../src/commands/index.js'
-import utils from '../../src/utils/index.js'
+import main from '../../src/commands/index.cjs'
+import utils from '../../src/utils/index.cjs'
 
 const program = main.createMainCommand()
 
