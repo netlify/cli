@@ -252,6 +252,7 @@ const FRAMEWORK_PORT_TIMEOUT = 6e5
  * @param {() => Promise<object>} params.getUpdatedConfig
  * @param {string} params.geolocationMode
  * @param {string} params.geoCountry
+ * @param {string} params.geoSubdivision
  * @param {*} params.settings
  * @param {boolean} params.offline
  * @param {*} params.site
@@ -264,6 +265,7 @@ const startProxyServer = async ({
   config,
   env,
   geoCountry,
+  geoSubdivision,
   geolocationMode,
   getUpdatedConfig,
   inspectSettings,
@@ -280,6 +282,7 @@ const startProxyServer = async ({
     env,
     geolocationMode,
     geoCountry,
+    geoSubdivision,
     getUpdatedConfig,
     inspectSettings,
     offline,
@@ -423,6 +426,21 @@ const validateGeoCountryCode = (arg) => {
   return arg.toUpperCase()
 }
 
+const validateSubdivisionCode = (arg) => {
+  // Validate that the arg passed is one-5 letters/numbers/hyphen only for
+  // subdivision
+  // See https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes
+  if (!/^[a-z\-\d]{1,5}$/i.test(arg)) {
+    throw new Error(
+      `The geo subdivision code must use between one and five alphanumeric characters with an optional hyphen.
+      ${chalk.red(BANG)}  Example:
+      netlify dev --geo=mock --country=SD --subdivision=DS
+      netlify dev --geo=mock --country=RS --subdivision=21
+      netlify dev --geo=mock --country=PR --subdivision=XX-30`,
+    )
+  }
+  return arg.toUpperCase()
+}
 /**
  * The dev command
  * @param {import('commander').OptionValues} options
@@ -549,6 +567,7 @@ const dev = async (options, command) => {
     env: command.netlify.cachedConfig.env,
     geolocationMode: options.geo,
     geoCountry: options.country,
+    geoSubdivision: options.subdivision,
     getUpdatedConfig,
     inspectSettings,
     offline: options.offline,
@@ -725,6 +744,12 @@ const createDevCommand = (program) => {
         '--country <geoCountry>',
         'Two-letter country code (https://ntl.fyi/country-codes) to use as mock geolocation (enables --geo=mock automatically)',
       ).argParser(validateGeoCountryCode),
+    )
+    .addOption(
+      new Option(
+        '--subdivision <geoSubdivison>',
+        'ISO-3166-2 code for country subdvision to use as mock geolocation (enables --geo=mock automatically',
+      ).argParser(validateSubdivisionCode),
     )
     .addOption(
       new Option('--staticServerPort <port>', 'port of the static app server used when no framework is detected')
