@@ -182,7 +182,7 @@ const error = (message = '', options = {}) => {
   if (options.exit === false) {
     const bang = chalk.red(BANG)
     if (process.env.DEBUG) {
-      process.stderr.write(` ${bang}   Warning: ${err.stack.split('\n').join(`\n ${bang}   `)}`)
+      process.stderr.write(` ${bang}   Warning: ${err.stack.split('\n').join(`\n ${bang}   `)}\n`)
     } else {
       process.stderr.write(` ${bang}   ${chalk.red(`${err.name}:`)} ${err.message}\n`)
     }
