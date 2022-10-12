@@ -28,6 +28,7 @@ const {
   pollForToken,
   sortOptions,
   track,
+  warn,
 } = require('../utils/index.cjs')
 
 // Netlify CLI client id. Lives in bot@netlify.com
@@ -497,6 +498,10 @@ class BaseCommand extends Command {
       // @todo Replace this with a mechanism for calling `resolveConfig` with more granularity (i.e. having
       // the option to say that we don't need API data.)
       if (isUserError && !offline && token) {
+        if (this.opts().debug) {
+          error(error_, { exit: false })
+          warn('Failed to resolve config, falling back to offline resolution')
+        }
         return this.getConfig({ cwd, offline: true, state, token })
       }
 
