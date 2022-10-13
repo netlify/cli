@@ -331,7 +331,12 @@ test('env:list should hide variables values and prompt to show', async (t) => {
       const childProcess = execa(
         cliPath,
         ['env:list'],
-        getCLIOptions({ apiUrl, builder, extendEnv: false, env: { PATH: process.env.PATH } }),
+        getCLIOptions({
+          apiUrl,
+          builder,
+          extendEnv: false,
+          env: { PATH: process.env.PATH, HOME: process.env.HOME, APPDATA: process.env.APPDATA },
+        }),
       )
 
       handleQuestions(childProcess, questions)
@@ -371,7 +376,12 @@ test('env:list should hide variables values and show on confirm', async (t) => {
       const childProcess = execa(
         cliPath,
         ['env:list'],
-        getCLIOptions({ apiUrl, builder, extendEnv: false, env: { PATH: process.env.PATH } }),
+        getCLIOptions({
+          apiUrl,
+          builder,
+          extendEnv: false,
+          env: { PATH: process.env.PATH, HOME: process.env.HOME, APPDATA: process.env.APPDATA },
+        }),
       )
 
       handleQuestions(childProcess, questions)
