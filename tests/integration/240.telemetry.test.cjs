@@ -15,6 +15,8 @@ const getCLIOptions = (apiUrl) => ({
     NETLIFY_TEST_TELEMETRY_WAIT: true,
     NETLIFY_API_URL: apiUrl,
     PATH: process.env.PATH,
+    HOME: process.env.HOME,
+    APPDATA: process.env.APPDATA,
   },
   extendEnv: false,
 })
