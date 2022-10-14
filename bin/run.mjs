@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url'
 
 import updateNotifier from 'update-notifier'
 
-import { createMainCommand } from '../src/commands/index.cjs'
+import { createMainCommand } from '../src/commands/index.mjs'
 
 // 12 hours
 const UPDATE_CHECK_INTERVAL = 432e5

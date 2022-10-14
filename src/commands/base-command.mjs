@@ -1,16 +1,17 @@
 // @ts-check
-const process = require('process')
-const { format } = require('util')
+import process from 'process'
+import { format } from 'util'
 
-const { Command, Option } = require('commander')
-const debug = require('debug')
-const merge = require('lodash/merge')
+import { resolveConfig } from '@netlify/config'
+import { Command, Option } from 'commander'
+import debug from 'debug'
+import merge from 'lodash/merge.js'
+import { NetlifyAPI } from 'netlify'
 
-// TODO: use static `import` after migrating this repository to pure ES modules
-const jsClient = import('netlify')
-const netlifyConfigPromise = import('@netlify/config')
+import { getAgent } from '../lib/http-agent.cjs'
+// TODO: use named imports again once the imported file is esm
+import utils from '../utils/index.cjs'
 
-const { getAgent } = require('../lib/http-agent.cjs')
 const {
   NETLIFY_CYAN,
   StateConfig,
@@ -29,7 +30,7 @@ const {
   sortOptions,
   track,
   warn,
-} = require('../utils/index.cjs')
+} = utils
 
 // Netlify CLI client id. Lives in bot@netlify.com
 // TODO: setup client for multiple environments
@@ -80,7 +81,7 @@ const getDuration = function (startTime) {
  */
 
 /** Base command class that provides tracking and config initialization */
-class BaseCommand extends Command {
+export default class BaseCommand extends Command {
   /** @type {NetlifyOptions} */
   netlify
 
@@ -428,7 +429,6 @@ class BaseCommand extends Command {
     })
     const apiOpts = { ...apiUrlOpts, agent }
     const globalConfig = await getGlobalConfig()
-    const { NetlifyAPI } = await jsClient
 
     actionCommand.netlify = {
       // api methods
@@ -468,7 +468,6 @@ class BaseCommand extends Command {
   async getConfig(config) {
     const options = this.opts()
     const { cwd, host, offline = options.offline, pathPrefix, scheme, state, token } = config
-    const { resolveConfig } = await netlifyConfigPromise
 
     try {
       return await resolveConfig({
@@ -511,5 +510,3 @@ class BaseCommand extends Command {
     }
   }
 }
-
-module.exports = { BaseCommand }

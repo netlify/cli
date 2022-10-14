@@ -9,7 +9,7 @@ const sinon = require('sinon')
 // in this case the mocks have to be done before the createSitesFromTemplateCommand
 // is required!
 /* eslint-disable import/order */
-const { BaseCommand } = require('../../src/commands/base-command.cjs')
+const baseCommandPromise = import('../../src/commands/base-command.mjs')
 const github = require('../../src/utils/init/config-github.cjs')
 // mock the getGithubToken method with a fake token
 const gitMock = sinon.stub(github, 'getGitHubToken').callsFake(() => 'my-token')
@@ -98,6 +98,7 @@ test.serial('netlify sites:create-template', async (t) => {
       },
     })
 
+    const { default: BaseCommand } = await baseCommandPromise
     const program = new BaseCommand('netlify')
 
     createSitesFromTemplateCommand(program)
@@ -128,6 +129,7 @@ test.serial('should not fetch templates if one is passed as option', async (t) =
       },
     })
 
+    const { default: BaseCommand } = await baseCommandPromise
     const program = new BaseCommand('netlify')
 
     createSitesFromTemplateCommand(program)
@@ -153,6 +155,7 @@ test.serial('should throw an error if the URL option is not a valid URL', async 
       },
     })
 
+    const { default: BaseCommand } = await baseCommandPromise
     const program = new BaseCommand('netlify')
 
     createSitesFromTemplateCommand(program)
@@ -197,6 +200,7 @@ test.serial('should throw error when name flag is incorrect', async (t) => {
     })
     const exitSpy = sinon.stub(process, 'exit')
 
+    const { default: BaseCommand } = await baseCommandPromise
     const program = new BaseCommand('netlify')
 
     createSitesCreateCommand(program)

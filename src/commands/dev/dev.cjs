@@ -222,10 +222,11 @@ const startFrameworkServer = async function ({ settings }) {
     }
 
     stopSpinner({ error: false, spinner })
-  } catch {
+  } catch (error_) {
     stopSpinner({ error: true, spinner })
-    log(NETLIFYDEVERR, `Netlify Dev could not connect to localhost:${settings.frameworkPort}.`)
+    log(NETLIFYDEVERR, `Netlify Dev could not start or connect to localhost:${settings.frameworkPort}.`)
     log(NETLIFYDEVERR, `Please make sure your framework server is running on port ${settings.frameworkPort}`)
+    error(error_)
     exit(1)
   }
 

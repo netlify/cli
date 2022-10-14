@@ -5,10 +5,10 @@ const test = require('ava')
 const { Argument } = require('commander')
 const sinon = require('sinon')
 
-const { BaseCommand } = require('../../../../src/commands/base-command.cjs')
 const { getAutocompletion } = require('../../../../src/lib/completion/script.cjs')
 
-const createTestCommand = () => {
+const createTestCommand = async () => {
+  const { default: BaseCommand } = await import('../../../../src/commands/base-command.mjs')
   const program = new BaseCommand('chef')
 
   program
@@ -33,11 +33,12 @@ test.afterEach(() => {
   sinon.restore()
 })
 
-test('should generate a completion file', (t) => {
+test('should generate a completion file', async (t) => {
   const stub = sinon.stub(fs, 'writeFileSync').callsFake(() => {})
-  const program = createTestCommand()
   // eslint-disable-next-line n/global-require
   const { createAutocompletion } = require('../../../../src/lib/completion/generate-autocompletion.cjs')
+  const program = await createTestCommand()
+
   createAutocompletion(program)
 
   // @ts-ignore

@@ -99,6 +99,7 @@ module.exports = {
         },
       },
       rules: {
+        'import/extensions': [2, 'always'],
         'no-restricted-imports': [
           'error',
           {
