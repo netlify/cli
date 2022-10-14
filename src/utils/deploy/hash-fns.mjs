@@ -100,7 +100,7 @@ const hashFns = async (
     statusCb,
     tmpDir,
   })
-  const fileObjs = functionZips.map(({ path: functionPath, runtime }) => ({
+  const fileObjs = functionZips.map(({ bundler, displayName, isInternalFunction, path: functionPath, runtime }) => ({
     filepath: functionPath,
     root: tmpDir,
     relname: path.relative(tmpDir, functionPath),
@@ -110,6 +110,9 @@ const hashFns = async (
     assetType: 'function',
     normalizedPath: path.basename(functionPath, path.extname(functionPath)),
     runtime,
+    displayName,
+    bundler,
+    isInternalFunction,
   }))
   const functionSchedules = functionZips
     .map(({ name, schedule }) => schedule && { name, cron: schedule })

@@ -14,7 +14,7 @@ const uploadFiles = async (api, deployId, uploadList, { concurrentUpload, maxRet
   })
 
   const uploadFile = async (fileObj, index) => {
-    const { assetType, filepath, normalizedPath, runtime } = fileObj
+    const { assetType, bundler, displayName, filepath, isInternalFunction, normalizedPath, runtime } = fileObj
     const readStreamCtor = () => fs.createReadStream(filepath)
 
     statusCb({
@@ -43,6 +43,9 @@ const uploadFiles = async (api, deployId, uploadList, { concurrentUpload, maxRet
             deployId,
             name: encodeURI(normalizedPath),
             runtime,
+            displayName,
+            bundler,
+            isInternalFunction,
           }
 
           if (retryCount > 0) {
