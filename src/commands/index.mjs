@@ -1,7 +1,2 @@
-const baseCommand = require('./base-command.cjs')
-const { createMainCommand } = require('./main.cjs')
-
-module.exports = {
-  ...baseCommand,
-  createMainCommand,
-}
+export { default as BaseCommand } from './base-command.mjs'
+export { createMainCommand } from './main.mjs'

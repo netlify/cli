@@ -162,8 +162,10 @@
   "files": [
     "/bin",
     "/npm-shrinkwrap.json",
-    "/scripts/postinstall.cjs",
+    "/scripts/postinstall.mjs",
     "/src/**/*.cjs",
+    "/src/**/*.js",
+    "/src/**/*.mjs",
     "/src/**/*.sh",
     "/src/**/*.ps1",
     "/src/functions-templates/**",
@@ -215,7 +217,7 @@
     "site:build": "run-s site:build:*",
     "site:build:install": "cd site && npm ci --no-audit",
     "site:build:assets": "cd site && npm run build",
-    "postinstall": "node ./scripts/postinstall.cjs",
+    "postinstall": "node ./scripts/postinstall.mjs",
     "certs": "openssl req -x509 -out localhost.crt -keyout localhost.key -newkey rsa:2048 -nodes -sha256 -subj \"/CN=localhost\" -extensions EXT -config certconf"
   },
   "config": {

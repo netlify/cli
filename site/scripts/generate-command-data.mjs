@@ -1,8 +1,8 @@
 // @ts-check
-import main from '../../src/commands/index.cjs'
+import { createMainCommand } from '../../src/commands/index.mjs'
 import utils from '../../src/utils/index.cjs'
 
-const program = main.createMainCommand()
+const program = createMainCommand()
 
 /** @type {Array<import('../../src/commands/base-command').BaseCommand>} */
 // @ts-ignore typecast needed

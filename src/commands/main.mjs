@@ -1,54 +1,46 @@
 // @ts-check
-const process = require('process')
+import { readFile } from 'fs/promises'
+import process from 'process'
+import { fileURLToPath } from 'url'
 
-const { Option } = require('commander')
-const inquirer = require('inquirer')
-const { findBestMatch } = require('string-similarity')
+import { Option } from 'commander'
+import inquirer from 'inquirer'
+import { findBestMatch } from 'string-similarity'
 
-const pkg = require('../../package.json')
-const {
-  BANG,
-  NETLIFY_CYAN,
-  USER_AGENT,
-  chalk,
-  error,
-  execa,
-  exit,
-  getGlobalConfig,
-  log,
-  track,
-  warn,
-} = require('../utils/index.cjs')
+// TODO: use named imports again once the imported file is esm
+import utils from '../utils/index.cjs'
 
-const { createAddonsCommand } = require('./addons/index.cjs')
-const { createApiCommand } = require('./api/index.cjs')
-const { BaseCommand } = require('./base-command.cjs')
-const { createBuildCommand } = require('./build/index.cjs')
-const { createCompletionCommand } = require('./completion/index.cjs')
-const { createDeployCommand } = require('./deploy/index.cjs')
-const { createDevCommand } = require('./dev/index.cjs')
-const { createEnvCommand } = require('./env/index.cjs')
-const { createFunctionsCommand } = require('./functions/index.cjs')
-const { createGraphCommand } = require('./graph/index.cjs')
-const { createInitCommand } = require('./init/index.cjs')
-const { createLinkCommand } = require('./link/index.cjs')
-const { createLmCommand } = require('./lm/index.cjs')
-const { createLoginCommand } = require('./login/index.cjs')
-const { createLogoutCommand } = require('./logout/index.cjs')
-const { createOpenCommand } = require('./open/index.cjs')
-const { createRecipesCommand, createRecipesListCommand } = require('./recipes/index.cjs')
-const { createSitesCommand } = require('./sites/index.cjs')
-const { createStatusCommand } = require('./status/index.cjs')
-const { createSwitchCommand } = require('./switch/index.cjs')
-const { createUnlinkCommand } = require('./unlink/index.cjs')
-const { createWatchCommand } = require('./watch/index.cjs')
+import { createAddonsCommand } from './addons/index.cjs'
+import { createApiCommand } from './api/index.cjs'
+import BaseCommand from './base-command.mjs'
+import { createBuildCommand } from './build/index.cjs'
+import { createCompletionCommand } from './completion/index.cjs'
+import { createDeployCommand } from './deploy/index.cjs'
+import { createDevCommand } from './dev/index.cjs'
+import { createEnvCommand } from './env/index.cjs'
+import { createFunctionsCommand } from './functions/index.cjs'
+import { createGraphCommand } from './graph/index.cjs'
+import { createInitCommand } from './init/index.cjs'
+import { createLinkCommand } from './link/index.cjs'
+import { createLmCommand } from './lm/index.cjs'
+import { createLoginCommand } from './login/index.cjs'
+import { createLogoutCommand } from './logout/index.cjs'
+import { createOpenCommand } from './open/index.cjs'
+import { createRecipesCommand, createRecipesListCommand } from './recipes/index.cjs'
+import { createSitesCommand } from './sites/index.cjs'
+import { createStatusCommand } from './status/index.cjs'
+import { createSwitchCommand } from './switch/index.cjs'
+import { createUnlinkCommand } from './unlink/index.cjs'
+import { createWatchCommand } from './watch/index.cjs'
+
+const { BANG, NETLIFY_CYAN, USER_AGENT, chalk, error, execa, exit, getGlobalConfig, log, track, warn } = utils
 
 const SUGGESTION_TIMEOUT = 1e4
 
 const getVersionPage = async () => {
   // performance optimization - load envinfo on demand
-  // eslint-disable-next-line n/global-require
-  const envinfo = require('envinfo')
+
+  const envinfo = await import('envinfo')
   const data = await envinfo.run({
     System: ['OS', 'CPU'],
     Binaries: ['Node', 'Yarn', 'npm'],
@@ -98,6 +90,8 @@ const mainCommand = async function (options, command) {
 
   // if no command show the header and the help
   if (command.args.length === 0) {
+    const pkg = JSON.parse(await readFile(fileURLToPath(new URL('../../package.json', import.meta.url))), 'utf-8')
+
     const title = `${chalk.bgBlack.cyan('⬥ Netlify CLI')}`
     const docsMsg = `${chalk.greenBright('Read the docs:')} https://docs.netlify.com/cli/get-started/`
     const supportMsg = `${chalk.magentaBright('Support and bugs:')} ${pkg.bugs.url}`
@@ -161,7 +155,7 @@ const mainCommand = async function (options, command) {
  * Promise is needed as the envinfo is a promise
  * @returns {import('./base-command').BaseCommand}
  */
-const createMainCommand = () => {
+export const createMainCommand = () => {
   const program = new BaseCommand('netlify')
   // register all the commands
   createAddonsCommand(program)
@@ -207,5 +201,3 @@ const createMainCommand = () => {
 
   return program
 }
-
-module.exports = { createMainCommand }
