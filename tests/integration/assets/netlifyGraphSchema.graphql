@@ -4631,7 +4631,7 @@ type OneGraphApp {
     """Fetch items in the list after the specified cursor"""
     after: String
 
-    """How many subsriptions to fetch"""
+    """How many subscriptions to fetch"""
     first: Int = 25
   ): OneGraphAppSubscriptionsConnection!
 
