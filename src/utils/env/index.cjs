@@ -85,7 +85,7 @@ const fetchEnvelopeItems = async function ({ accountId, api, key, siteId }) {
  * @param {Array<object>} envelopeItems - An array of environment variables from the Envelope service
  * @param {enum<any,builds,functions,runtime,post_processing>} scope - The scope of the environment variables
  * @param {enum<general,account,addons,ui,configFile>} source - The source of the environment variable
- * @returns {object} A dicionary in the following format:
+ * @returns {object} A dictionary in the following format:
  * {
  *   FOO: {
  *     context: 'dev',
