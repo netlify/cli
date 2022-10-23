@@ -1924,7 +1924,7 @@ type OneGraphExternalHoneycombConfig {
   """Id of the app that the external Honeycomb config belongs to."""
   appId: String!
 
-  """The datetime that the Honecomb config was added, in rfc3339 format."""
+  """The datetime that the Honeycomb config was added, in rfc3339 format."""
   createdAt: String!
 
   """
