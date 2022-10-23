@@ -7848,7 +7848,7 @@ netlify deploy --skip-functions-cache
 - Add global --json, --auth, && --silent flag support [`#371`](https://github.com/netlify/cli/pull/371)
 - [WIP] Add integration tests [`#254`](https://github.com/netlify/cli/pull/254)
 - Add postinstall success message [`#367`](https://github.com/netlify/cli/pull/367)
-- Remove Github token from browser history [`#364`](https://github.com/netlify/cli/pull/364)
+- Remove GitHub token from browser history [`#364`](https://github.com/netlify/cli/pull/364)
 - add release checklist notes [`#363`](https://github.com/netlify/cli/pull/363)
 
 ### Commits
@@ -7871,7 +7871,7 @@ netlify deploy --skip-functions-cache
 
 - Revert "Remove shrink-wrap pruning during pack step" [`#338`](https://github.com/netlify/cli/pull/338)
 - Allow user to choose another site name if current doesn't exist [`#342`](https://github.com/netlify/cli/pull/342)
-- Add Github login through app.netlify.com [`#348`](https://github.com/netlify/cli/pull/348)
+- Add GitHub login through app.netlify.com [`#348`](https://github.com/netlify/cli/pull/348)
 
 ### Commits
 
@@ -8633,7 +8633,7 @@ netlify deploy --skip-functions-cache
 - Incorporate some flag design to the deploy command [`#85`](https://github.com/netlify/cli/pull/85)
 - Set up our new client id [`#71`](https://github.com/netlify/cli/pull/71)
 - Fix Copy [`#64`](https://github.com/netlify/cli/pull/64)
-- Create Github deploy notifications on init [`#63`](https://github.com/netlify/cli/pull/63)
+- Create GitHub deploy notifications on init [`#63`](https://github.com/netlify/cli/pull/63)
 
 ### Fixed
 

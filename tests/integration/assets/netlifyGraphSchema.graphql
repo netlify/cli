@@ -614,17 +614,17 @@ type OneGraphEnableAuthGuardianSlackIntegrationResponsePayload {
   app: OneGraphApp
 }
 
-input OneGraphDisableGithubRepositorySubscriptionDelegationByIdInput {
+input OneGraphDisableGitHubRepositorySubscriptionDelegationByIdInput {
   """The id of the delegation."""
   id: String!
 }
 
-type OneGraphDisableGithubRepositorySubscriptionDelegationByIdResult {
+type OneGraphDisableGitHubRepositorySubscriptionDelegationByIdResult {
   """The App that delegation was disabled for."""
   app: OneGraphApp!
 }
 
-input OneGraphDisableGithubRepositorySubscriptionDelegationInput {
+input OneGraphDisableGitHubRepositorySubscriptionDelegationInput {
   """
   The name of the repo, e.g. `graphiql-explorer` in `onegraph/graphiql-explorer`.
   """
@@ -636,7 +636,7 @@ input OneGraphDisableGithubRepositorySubscriptionDelegationInput {
   repoOwner: String!
 }
 
-type OneGraphDisableGithubRepositorySubscriptionDelegationResult {
+type OneGraphDisableGitHubRepositorySubscriptionDelegationResult {
   """The GitHub repository name of app that delegation was enabled for."""
   repoName: String!
 
@@ -644,7 +644,7 @@ type OneGraphDisableGithubRepositorySubscriptionDelegationResult {
   repoOwner: String!
 }
 
-input OneGraphEnableGithubRepositorySubscriptionDelegationInput {
+input OneGraphEnableGitHubRepositorySubscriptionDelegationInput {
   """
   The name of the repo, e.g. `graphiql-explorer` in `onegraph/graphiql-explorer`.
   """
@@ -656,7 +656,7 @@ input OneGraphEnableGithubRepositorySubscriptionDelegationInput {
   repoOwner: String!
 }
 
-type OneGraphEnableGithubRepositorySubscriptionDelegationResult {
+type OneGraphEnableGitHubRepositorySubscriptionDelegationResult {
   """The GitHub repository name of app that delegation was disabled for."""
   repoName: String!
 
@@ -1543,17 +1543,17 @@ type OneGraphMutation {
   """
   Allows non-admin users to subscribe to GitHub events on OneGraph for the given repo and app.
   """
-  enableGitHubRepositorySubscriptionDelegation(input: OneGraphEnableGithubRepositorySubscriptionDelegationInput!): OneGraphEnableGithubRepositorySubscriptionDelegationResult!
+  enableGitHubRepositorySubscriptionDelegation(input: OneGraphEnableGitHubRepositorySubscriptionDelegationInput!): OneGraphEnableGitHubRepositorySubscriptionDelegationResult!
 
   """
   Remove ability for non-admin users to subscribe to GitHub events on OneGraph for the given repo and app.
   """
-  disableGitHubRepositorySubscriptionDelegation(input: OneGraphDisableGithubRepositorySubscriptionDelegationInput!): OneGraphDisableGithubRepositorySubscriptionDelegationResult!
+  disableGitHubRepositorySubscriptionDelegation(input: OneGraphDisableGitHubRepositorySubscriptionDelegationInput!): OneGraphDisableGitHubRepositorySubscriptionDelegationResult!
 
   """
   Remove ability for non-admin users to subscribe to GitHub events on OneGraph. Allows the owner of the app on OneGraph to remove delegation for a repo.
   """
-  disableGitHubRepositorySubscriptionDelegationById(input: OneGraphDisableGithubRepositorySubscriptionDelegationByIdInput!): OneGraphDisableGithubRepositorySubscriptionDelegationByIdResult!
+  disableGitHubRepositorySubscriptionDelegationById(input: OneGraphDisableGitHubRepositorySubscriptionDelegationByIdInput!): OneGraphDisableGitHubRepositorySubscriptionDelegationByIdResult!
   enableAuthGuardianSlackIntegration(input: OneGraphEnableAuthGuardianSlackIntegrationInput!): OneGraphEnableAuthGuardianSlackIntegrationResponsePayload
   disableAuthGuardianSlackIntegration(input: OneGraphDisableAuthGuardianSlackIntegrationInput!): OneGraphDisableAuthGuardianSlackIntegrationResponsePayload
   destroyApp(id: String!): OneGraphApp
@@ -2005,7 +2005,7 @@ type OneGraphExternalGraphQLSchemaConnection {
   nodes: [OneGraphExternalGraphQLSchema!]!
 }
 
-type OneGraphGithubRepositorySubscriptionDelegate {
+type OneGraphGitHubRepositorySubscriptionDelegate {
   id: String!
 
   """Name with owner (e.g. onegraph/graphiql-explorer) of the GitHub repo."""
@@ -2017,8 +2017,8 @@ type OneGraphGithubRepositorySubscriptionDelegate {
   createdAt: String!
 }
 
-type OneGraphGithubRepositorySubscriptionDelegateConnection {
-  nodes: [OneGraphGithubRepositorySubscriptionDelegate!]!
+type OneGraphGitHubRepositorySubscriptionDelegateConnection {
+  nodes: [OneGraphGitHubRepositorySubscriptionDelegate!]!
 }
 
 """Persisted query"""
@@ -4667,7 +4667,7 @@ type OneGraphApp {
   ): OneGraphPersistedQueryConnection!
 
   """GitHub repos for the app that can have subscriptions on OneGraph."""
-  gitHubRepositorySubscriptionDelegates: OneGraphGithubRepositorySubscriptionDelegateConnection!
+  gitHubRepositorySubscriptionDelegates: OneGraphGitHubRepositorySubscriptionDelegateConnection!
 
   """The Slack channel for AuthGuardian to post into upon user sign-in"""
   authGuardianSlackChannel: String

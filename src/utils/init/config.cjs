@@ -1,7 +1,7 @@
 // @ts-check
 const { chalk, log } = require('../command-helpers.cjs')
 
-const { configGithub } = require('./config-github.cjs')
+const { configGitHub } = require('./config-github.cjs')
 const configManual = require('./config-manual.cjs')
 
 const logSuccess = (repoData) => {
@@ -28,7 +28,7 @@ const configureRepo = async ({ command, manual, repoData, siteId }) => {
   if (manual) {
     await configManual({ command, siteId, repoData })
   } else if (repoData.provider === 'github') {
-    await configGithub({ command, siteId, repoName: repoData.name, repoOwner: repoData.owner })
+    await configGitHub({ command, siteId, repoName: repoData.name, repoOwner: repoData.owner })
   } else {
     log(`No configurator found for the provided git remote. Configuring manually...`)
     await configManual({ command, siteId, repoData })

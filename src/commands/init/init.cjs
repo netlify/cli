@@ -69,7 +69,7 @@ const logGitSetupInstructionsAndExit = () => {
 
 5. Link the remote repo with this local directory
 
-   ${chalk.cyanBright.bold('git remote add origin git@github.com:YourGithubName/your-repo-slug.git')}
+   ${chalk.cyanBright.bold('git remote add origin git@github.com:YourGitHubName/your-repo-slug.git')}
 
 6. Push up your files
 

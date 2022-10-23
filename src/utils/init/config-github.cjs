@@ -40,7 +40,7 @@ const getGitHubToken = async ({ globalConfig }) => {
       }
     } catch {
       log(chalk.yellow('Token is expired or invalid!'))
-      log('Generating a new Github token...')
+      log('Generating a new GitHub token...')
     }
   }
 
@@ -203,7 +203,7 @@ const addNotificationHooks = async ({ api, siteId, token }) => {
  * @param {string} config.repoOwner
  * @param {string} config.siteId
  */
-const configGithub = async ({ command, repoName, repoOwner, siteId }) => {
+const configGitHub = async ({ command, repoName, repoOwner, siteId }) => {
   const { netlify } = command
   const {
     api,
@@ -257,4 +257,4 @@ const configGithub = async ({ command, repoName, repoOwner, siteId }) => {
   await addNotificationHooks({ siteId, api, token })
 }
 
-module.exports = { configGithub, getGitHubToken }
+module.exports = { configGitHub, getGitHubToken }

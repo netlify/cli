@@ -23,9 +23,9 @@ const { createRepo, getTemplatesFromGitHub, validateTemplate } = require('../../
 const { getSiteNameInput } = require('./sites-create.cjs')
 
 const fetchTemplates = async (token) => {
-  const templatesFromGithubOrg = await getTemplatesFromGitHub(token)
+  const templatesFromGitHubOrg = await getTemplatesFromGitHub(token)
 
-  return templatesFromGithubOrg
+  return templatesFromGitHubOrg
     .filter((repo) => !repo.archived && !repo.disabled)
     .map((template) => ({
       name: template.name,
