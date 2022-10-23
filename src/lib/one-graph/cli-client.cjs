@@ -1025,7 +1025,7 @@ const createCLISession = async ({ metadata, netlifyToken, sessionName, siteId })
 const loadCLISession = (state) => state.get('oneGraphSessionId')
 
 /**
- * Idemponentially save the CLI session id to the local state and start monitoring for CLI events, upstream schema changes, and local operation file changes
+ * Idempotently save the CLI session id to the local state and start monitoring for CLI events, upstream schema changes, and local operation file changes
  * @param {object} input
  * @param {object} input.config
  * @param {string} input.netlifyToken The (typically netlify) access token that is used for authentication, if any
