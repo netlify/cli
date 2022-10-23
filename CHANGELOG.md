@@ -7598,7 +7598,7 @@ netlify deploy --skip-functions-cache
 
 ### Commits
 
-- Refactor redirects to a seperate function [`e5c0481`](https://github.com/netlify/cli/commit/e5c0481e598ed760c1c73a2a7cd6ada3835688d3)
+- Refactor redirects to a separate function [`e5c0481`](https://github.com/netlify/cli/commit/e5c0481e598ed760c1c73a2a7cd6ada3835688d3)
 
 ## [v2.18.2](https://github.com/netlify/cli/compare/v2.18.1...v2.18.2) - 2019-10-16
 
