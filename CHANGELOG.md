@@ -7714,7 +7714,7 @@ netlify deploy --skip-functions-cache
 
 - Update src/commands/deploy.js [`1086a27`](https://github.com/netlify/cli/commit/1086a2710d0317dcb58beae3c556507f62bec802)
 - Dependencies: Move @oclif/plugin-help back [`71d6b01`](https://github.com/netlify/cli/commit/71d6b01f337ce383ac8499924e4b3eadec477931)
-- Jekyll dectector: Remove -l param [`7df6cdf`](https://github.com/netlify/cli/commit/7df6cdfaf802fdea7b454d2268e81285079f3125)
+- Jekyll detector: Remove -l param [`7df6cdf`](https://github.com/netlify/cli/commit/7df6cdfaf802fdea7b454d2268e81285079f3125)
 
 ## [v2.13.0](https://github.com/netlify/cli/compare/v2.12.0...v2.13.0) - 2019-08-29
 
