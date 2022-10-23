@@ -7314,7 +7314,7 @@ netlify deploy --skip-functions-cache
 - Dev: Change functions timeout to 10s [`#725`](https://github.com/netlify/cli/pull/725)
 - Adds angular detector [`#721`](https://github.com/netlify/cli/pull/721)
 - fix: restore Netlify Functions logging [`#722`](https://github.com/netlify/cli/pull/722)
-- Tests: Dont asign NETLIFY_AUTH_TOKEN explicitly [`#718`](https://github.com/netlify/cli/pull/718)
+- Tests: Dont assign NETLIFY_AUTH_TOKEN explicitly [`#718`](https://github.com/netlify/cli/pull/718)
 
 ### Commits
 
