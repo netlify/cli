@@ -7663,14 +7663,14 @@ netlify deploy --skip-functions-cache
 
 - Fix: Fixing prettier issues, and add to scripts test:prettier [`f41e236`](https://github.com/netlify/cli/commit/f41e2365f83eff680256bc72c7450e8bd13922f2)
 - Merge `cli-utils` repository [`6bced11`](https://github.com/netlify/cli/commit/6bced11e2c9be2de143dc8ef945025d9df123c6e)
-- Dev: Move rediects logic into proxy server [`d6bee67`](https://github.com/netlify/cli/commit/d6bee67cbef01f337f00b00cf0f5a792400fd11a)
+- Dev: Move redirects logic into proxy server [`d6bee67`](https://github.com/netlify/cli/commit/d6bee67cbef01f337f00b00cf0f5a792400fd11a)
 
 ## [v2.15.0](https://github.com/netlify/cli/compare/v2.14.0...v2.15.0) - 2019-09-13
 
 ### Merged
 
 - Dev: Only pipe stdio when running create-react-app [`#528`](https://github.com/netlify/cli/pull/528)
-- RulesProxy: ignore rediect rule for base [`#527`](https://github.com/netlify/cli/pull/527)
+- RulesProxy: ignore redirect rule for base [`#527`](https://github.com/netlify/cli/pull/527)
 - Show `netlify addons` command [`#524`](https://github.com/netlify/cli/pull/524)
 
 ### Commits
