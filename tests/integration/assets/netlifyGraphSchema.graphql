@@ -786,7 +786,7 @@ type OneGraphPersistedQueryResponsePayload {
   persistedQuery: OneGraphPersistedQuery!
 }
 
-enum OneGraphDataVitualizationSupportedServiceArg {
+enum OneGraphDataVirtualizationSupportedServiceArg {
   GMAIL
 }
 
@@ -797,7 +797,7 @@ input OneGraphStartDataVirtualizationInput {
   accountId: String!
 
   """Service to enable data virtualization for"""
-  service: OneGraphDataVitualizationSupportedServiceArg!
+  service: OneGraphDataVirtualizationSupportedServiceArg!
 }
 
 """
@@ -811,7 +811,7 @@ type OneGraphDataVirtualizationDetails {
 
 type OneGraphStartDataVirtualizationPayload {
   """Organization that was updated by this mutation"""
-  dataVirutalizationDetails: OneGraphDataVirtualizationDetails!
+  dataVirtualizationDetails: OneGraphDataVirtualizationDetails!
 }
 
 input OneGraphUpdateAppByIdPatch {
