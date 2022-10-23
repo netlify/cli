@@ -7493,7 +7493,7 @@ netlify deploy --skip-functions-cache
 
 ### Merged
 
-- Fix zombie child proceses [`#628`](https://github.com/netlify/cli/pull/628)
+- Fix zombie child processes [`#628`](https://github.com/netlify/cli/pull/628)
 - Use netlify-redirect-parser package [`#611`](https://github.com/netlify/cli/pull/611)
 - Allow no configuration file with `netlify build` [`#619`](https://github.com/netlify/cli/pull/619)
 
