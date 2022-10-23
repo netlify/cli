@@ -239,7 +239,7 @@ const getNetlifyGraphConfig = async ({ command, options, settings }) => {
     }
   }
 
-  const defaulFunctionsPath = ['netlify', 'functions']
+  const defaultFunctionsPath = ['netlify', 'functions']
 
   const siteRoot = [path.sep, ...filterRelativePathItems(site.root.split(path.sep))]
 
@@ -252,7 +252,7 @@ const getNetlifyGraphConfig = async ({ command, options, settings }) => {
   const detectedFunctionsPathString = getFunctionsDir({ config, options })
   const detectedFunctionsPath = detectedFunctionsPathString
     ? [path.sep, ...detectedFunctionsPathString.split(path.sep)]
-    : defaulFunctionsPath
+    : defaultFunctionsPath
   const baseConfig = { ...NetlifyGraph.defaultNetlifyGraphConfig, ...userSpecifiedConfig }
   const defaultFrameworkConfig = makeDefaultFrameworkConfig({ baseConfig, detectedFunctionsPath, siteRoot })
 
