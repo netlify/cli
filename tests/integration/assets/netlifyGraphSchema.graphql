@@ -365,7 +365,7 @@ type OneGraphSetSlackEventWebhookSigningSecretPayload {
   """App that the slack event webhook belongs to."""
   app: OneGraphApp
 
-  """The slack event webhook that was mofified."""
+  """The slack event webhook that was modified."""
   slackEventWebhook: OneGraphSlackEventWebhook!
 
   """Custom OAuth client that the slack event webhook belongs to."""
@@ -384,7 +384,7 @@ type OneGraphSetSlackEventWebhookAppTokenPayload {
   """App that the slack event webhook belongs to."""
   app: OneGraphApp
 
-  """The slack event webhook that was mofified."""
+  """The slack event webhook that was modified."""
   slackEventWebhook: OneGraphSlackEventWebhook!
 
   """Custom OAuth client that the slack event webhook belongs to."""
