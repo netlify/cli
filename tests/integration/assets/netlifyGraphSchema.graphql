@@ -2294,7 +2294,7 @@ type OneGraphAppSubscriptionPayload {
   lastStatusCode: Int
 
   """
-  If there was an error delivering the payload to a webhook destination, this field will contain the first 512 bytes of the response we receieved from the server.
+  If there was an error delivering the payload to a webhook destination, this field will contain the first 512 bytes of the response we received from the server.
   """
   lastError: String
 }
