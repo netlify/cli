@@ -2008,7 +2008,7 @@ type OneGraphExternalGraphQLSchemaConnection {
 type OneGraphGithubRepositorySubscriptionDelegate {
   id: String!
 
-  """Name with owner (e.g. onegraph/graphiql-exporer) of the GitHub repo."""
+  """Name with owner (e.g. onegraph/graphiql-explorer) of the GitHub repo."""
   nameWithOwner: String!
 
   """
