@@ -5258,7 +5258,7 @@ type OneGraphAccessToken {
   token: String!
 
   """
-  Time that the the token expires, measured in seconds since the Unix epoch
+  Time that the token expires, measured in seconds since the Unix epoch
   """
   expireDate: Int!
 
