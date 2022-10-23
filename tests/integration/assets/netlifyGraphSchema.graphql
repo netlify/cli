@@ -957,7 +957,7 @@ input OneGraphSubscriptionSecretInput {
   To verify the signature:
   1. Extract the timestamp (1582852002 above)
   2. Extract the signature (7d797ecd431e1a98aaba2f387f2c43241a13c1f093fd9d7e661758963744549a above)
-  3. Concatenate the timestamp and the request body, separeted by a period (e.g. `t + '.' + requestBody`)
+  3. Concatenate the timestamp and the request body, separated by a period (e.g. `t + '.' + requestBody`)
   4. Compute the hmac_sha256 hash of (3)
   5. Compare the hash with the provided signature using a constant-time comparison function (e.g. crypto.timingSafeEqual in Node)
   6. Reject the request if the hash you computed does not match the provided signature or if the timestamp is too far in the past (typically, 5 minutes)
