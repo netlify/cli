@@ -5588,7 +5588,7 @@ netlify deploy --skip-functions-cache
 
 ### Features
 
-* add functions directory creation when non-existent in netlify.toml ([#1996](https://www.github.com/netlify/cli/issues/1996)) ([4911e3d](https://www.github.com/netlify/cli/commit/4911e3d584af04f572150132cf694ae2049f3dc1))
+* add functions directory creation when nonexistent in netlify.toml ([#1996](https://www.github.com/netlify/cli/issues/1996)) ([4911e3d](https://www.github.com/netlify/cli/commit/4911e3d584af04f572150132cf694ae2049f3dc1))
 * add support for shell completion ([#2028](https://www.github.com/netlify/cli/issues/2028)) ([bdde7ff](https://www.github.com/netlify/cli/commit/bdde7ff289f1cf800ea2b4bb2e725be051c7ee7b))
 
 ### [3.13.12](https://www.github.com/netlify/cli/compare/v3.13.11...v3.13.12) (2021-04-04)
@@ -6855,7 +6855,7 @@ netlify deploy --skip-functions-cache
 
 ### Merged
 
-- fix(command-env): handle non existing import file on node 8 [`#1195`](https://github.com/netlify/cli/pull/1195)
+- fix(command-env): handle nonexistent import file on node 8 [`#1195`](https://github.com/netlify/cli/pull/1195)
 
 ## [v2.60.0](https://github.com/netlify/cli/compare/v2.59.3...v2.60.0) - 2020-09-02
 

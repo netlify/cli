@@ -16,7 +16,7 @@ const { withSiteBuilder } = require('./utils/site-builder.cjs')
 
 const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
 
-test('should return 404 when redirecting to a non existing function', async (t) => {
+test('should return 404 when redirecting to a nonexistent function', async (t) => {
   await withSiteBuilder('site-with-missing-function', async (builder) => {
     builder.withNetlifyToml({
       config: {

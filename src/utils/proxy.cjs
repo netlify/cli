@@ -170,7 +170,7 @@ const serveRedirect = async function ({ match, options, proxy, req, res }) {
     const token = cookieValues.nf_jwt
 
     // Serve not found by default
-    req.url = '/.netlify/non-existent-path'
+    req.url = '/.netlify/nonexistent-path'
 
     if (token) {
       let jwtValue = {}

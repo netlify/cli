@@ -14,7 +14,7 @@ const { withSiteBuilder } = require('./utils/site-builder.cjs')
 
 const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
 
-test('should return 404.html if exists for non existing routes', async (t) => {
+test('should return 404.html if exists for nonexistent routes', async (t) => {
   await withSiteBuilder('site-with-shadowing-404', async (builder) => {
     builder.withContentFile({
       path: '404.html',
@@ -24,14 +24,14 @@ test('should return 404.html if exists for non existing routes', async (t) => {
     await builder.buildAsync()
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
-      const response = await got(`${server.url}/non-existent`, { throwHttpErrors: false })
+      const response = await got(`${server.url}/nonexistent`, { throwHttpErrors: false })
       t.is(response.headers.etag, undefined)
       t.is(response.body, '<h1>404 - Page not found</h1>')
     })
   })
 })
 
-test('should return 404.html from publish folder if exists for non existing routes', async (t) => {
+test('should return 404.html from publish folder if exists for nonexistent routes', async (t) => {
   await withSiteBuilder('site-with-shadowing-404-in-publish-folder', async (builder) => {
     builder
       .withContentFile({
@@ -49,7 +49,7 @@ test('should return 404.html from publish folder if exists for non existing rout
     await builder.buildAsync()
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
-      const response = await got(`${server.url}/non-existent`, { throwHttpErrors: false })
+      const response = await got(`${server.url}/nonexistent`, { throwHttpErrors: false })
       t.is(response.statusCode, 404)
       t.is(response.headers.etag, undefined)
       t.is(response.body, '<h1>404 - My Custom 404 Page</h1>')
