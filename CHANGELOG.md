@@ -7950,7 +7950,7 @@ netlify deploy --skip-functions-cache
 
 ### Commits
 
-- udpate deps [`5f5ce53`](https://github.com/netlify/cli/commit/5f5ce5346737ebc580160ed8262056dadbe572f3)
+- update deps [`5f5ce53`](https://github.com/netlify/cli/commit/5f5ce5346737ebc580160ed8262056dadbe572f3)
 
 ## [v2.11.18](https://github.com/netlify/cli/compare/v2.11.17...v2.11.18) - 2019-05-09
 
@@ -8102,7 +8102,7 @@ netlify deploy --skip-functions-cache
 
 ### Commits
 
-- upate toml template [`4c2d2d2`](https://github.com/netlify/cli/commit/4c2d2d23cb3b44c082da6a3a687e82dd22ec10ba)
+- update toml template [`4c2d2d2`](https://github.com/netlify/cli/commit/4c2d2d23cb3b44c082da6a3a687e82dd22ec10ba)
 - bring it to manual config as well [`177da2f`](https://github.com/netlify/cli/commit/177da2f63ce46f1ff311d287aeafaf16e89fc6a3)
 - fix netlify addons:delete bug if multiple addons exist [`f423a40`](https://github.com/netlify/cli/commit/f423a40c398ab7132c805db0a1e36a6695bddc85)
 
