@@ -113,7 +113,7 @@ test('Updates a Go function when a file is modified', async (t) => {
   })
 })
 
-// Reproduction test to verify the abscence/presence of a Go scheduled function
+// Reproduction test to verify the absence/presence of a Go scheduled function
 test('Detects a Go scheduled function using netlify-toml config', async (t) => {
   const [execaMock, removeExecaMock] = await createExecaMock(`
     const assert = require('assert')
