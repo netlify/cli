@@ -7386,7 +7386,7 @@ netlify deploy --skip-functions-cache
 ### Commits
 
 - Netlify Dev: Handle error while killing child process [`5f61065`](https://github.com/netlify/cli/commit/5f61065e63cde864a5fa67d34065931bf4df9ef5)
-- Netilfy Dev: Pass down process env to child [`99934f5`](https://github.com/netlify/cli/commit/99934f56e2b1a1ea9aad04bb41d4668740b5dda8)
+- Netlify Dev: Pass down process env to child [`99934f5`](https://github.com/netlify/cli/commit/99934f56e2b1a1ea9aad04bb41d4668740b5dda8)
 - fix detector comment [`8a9de30`](https://github.com/netlify/cli/commit/8a9de30c590a97bd2c621884c11a254682e6967d)
 
 ## [v2.29.0](https://github.com/netlify/cli/compare/v2.28.0...v2.29.0) - 2020-01-10
@@ -7694,7 +7694,7 @@ netlify deploy --skip-functions-cache
 - rename deploy path  [`#508`](https://github.com/netlify/cli/pull/508)
 - Improve analytics [`#513`](https://github.com/netlify/cli/pull/513)
 - Update ISSUE_TEMPLATE.md [`#504`](https://github.com/netlify/cli/pull/504)
-- Neltify -&gt; Netlify [`#512`](https://github.com/netlify/cli/pull/512)
+- Netlify -&gt; Netlify [`#512`](https://github.com/netlify/cli/pull/512)
 
 ### Commits
 
@@ -8047,7 +8047,7 @@ netlify deploy --skip-functions-cache
 
 ### Commits
 
-- bump netlfiy dev for chalk bug [`e4c2816`](https://github.com/netlify/cli/commit/e4c281693f2839e62dee511912346510e2ab2587)
+- bump netlify dev for chalk bug [`e4c2816`](https://github.com/netlify/cli/commit/e4c281693f2839e62dee511912346510e2ab2587)
 
 ## [v2.11.6](https://github.com/netlify/cli/compare/v2.11.5...v2.11.6) - 2019-04-10
 
