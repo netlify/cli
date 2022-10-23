@@ -4835,7 +4835,7 @@ type OneGraphServiceQuery {
     sessionId: String!
   ): [OneGraphNetlifyCliSessionEvent!]!
 
-  """Netlify CLI sessions, orderd by createdAt descending."""
+  """Netlify CLI sessions, ordered by createdAt descending."""
   netlifyCliSessionsByAppId(
     """The number of sessions to fetch. The maximum is 10."""
     first: Int = 10
