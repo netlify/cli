@@ -84,7 +84,7 @@ netlify [command] help
 
 ## Documentation
 
-To learn how to log in to Netlify and start deploying sites, visit the
+To learn how to log into Netlify and start deploying sites, visit the
 [documentation on Netlify](https://docs.netlify.com/cli/get-started/).
 
 For a full command reference, see the list below, or visit [cli.netlify.com](https://cli.netlify.com/).

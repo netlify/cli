@@ -1132,7 +1132,7 @@ input OneGraphCreateServiceAuthInput {
   """
   Developer token for the Google Ads api. This param is required for using custom OAuth credentials for Google Ads.
   
-  A developer token from Google allows your app to connect to the Google Ads API. To retrieve your developer token, sign in to your Manager Account. You must be signed-in to a Google Ads Manager Account before continuing.
+  A developer token from Google allows your app to connect to the Google Ads API. To retrieve your developer token, sign into your Manager Account. You must be signed-in to a Google Ads Manager Account before continuing.
   
   Navigate to TOOLS & SETTINGS > SETUP > API Center. The API Center option will appear only for Google Ads Manager Accounts.
   
@@ -5089,7 +5089,7 @@ input OneGraphGoogleAdsAuthArg {
   """
   A developer token from Google allows your app to connect to the Google Ads API.
   
-  To retrieve your developer token, sign in to your Manager Account. You must be signed-in to a Google Ads Manager Account before continuing. Navigate to TOOLS & SETTINGS > SETUP > API Center."
+  To retrieve your developer token, sign into your Manager Account. You must be signed-in to a Google Ads Manager Account before continuing. Navigate to TOOLS & SETTINGS > SETUP > API Center."
   """
   developerToken: String!
 }
@@ -5215,7 +5215,7 @@ The anchor is like two-factor auth for the token. It ensures that the person who
 """
 enum OneGraphAccessTokenAnchorEnum {
   """
-  Use the logged in OneGraph user. The user must be logged in to the OneGraph dashboard to use this option.
+  Use the logged in OneGraph user. The user must be logged into the OneGraph dashboard to use this option.
   """
   ONEGRAPH_USER
 

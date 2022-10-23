@@ -45,7 +45,7 @@ test('env:get --context should log an error message', async (t) => {
         callCli(['env:get', 'SOME_VAR', '--context', 'production'], getCLIOptions({ builder, apiUrl })),
       )
 
-      t.true(cliResponse.includes(`opt in to the new environment variables experience`))
+      t.true(cliResponse.includes(`opt into the new environment variables experience`))
     })
   })
 })
@@ -59,7 +59,7 @@ test('env:get --scope should log an error message', async (t) => {
         callCli(['env:get', 'SOME_VAR', '--scope', 'functions'], getCLIOptions({ builder, apiUrl })),
       )
 
-      t.true(cliResponse.includes(`opt in to the new environment variables experience`))
+      t.true(cliResponse.includes(`opt into the new environment variables experience`))
     })
   })
 })
@@ -255,7 +255,7 @@ test('env:list --context should log an error message', async (t) => {
         callCli(['env:list', '--context', 'production'], getCLIOptions({ builder, apiUrl })),
       )
 
-      t.true(cliResponse.includes(`opt in to the new environment variables experience`))
+      t.true(cliResponse.includes(`opt into the new environment variables experience`))
     })
   })
 })
@@ -269,7 +269,7 @@ test('env:list --scope should log an error message', async (t) => {
         callCli(['env:list', '--scope', 'functions'], getCLIOptions({ builder, apiUrl })),
       )
 
-      t.true(cliResponse.includes(`opt in to the new environment variables experience`))
+      t.true(cliResponse.includes(`opt into the new environment variables experience`))
     })
   })
 })

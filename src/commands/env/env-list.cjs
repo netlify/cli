@@ -66,7 +66,7 @@ const envList = async (options, command) => {
     error(
       `To specify a context or scope, please run ${chalk.yellow(
         'netlify open:admin',
-      )} to open the Netlify UI and opt in to the new environment variables experience from Site settings`,
+      )} to open the Netlify UI and opt into the new environment variables experience from Site settings`,
     )
     return false
   }
