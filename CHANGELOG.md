@@ -7980,7 +7980,7 @@ netlify deploy --skip-functions-cache
 ### Commits
 
 - bump dependencies [`636dd63`](https://github.com/netlify/cli/commit/636dd637126a41a2681c9a3fa0a4dc1090bd7e3a)
-- add install instructuions [`0948d15`](https://github.com/netlify/cli/commit/0948d155975372f904403e530440c72acadfd674)
+- add install instructions [`0948d15`](https://github.com/netlify/cli/commit/0948d155975372f904403e530440c72acadfd674)
 - Update deploy.md [`9437ec4`](https://github.com/netlify/cli/commit/9437ec484ce2725ab22af4b9e32cf15a26cc1945)
 
 ## [v2.11.14](https://github.com/netlify/cli/compare/v2.11.13...v2.11.14) - 2019-04-25
