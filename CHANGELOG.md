@@ -8301,7 +8301,7 @@ netlify deploy --skip-functions-cache
 
 ### Commits
 
-- Improve error message priting [`3b2c54a`](https://github.com/netlify/cli/commit/3b2c54ae0afb31266e150f2fa0f4a54005011a8f)
+- Improve error message printing [`3b2c54a`](https://github.com/netlify/cli/commit/3b2c54ae0afb31266e150f2fa0f4a54005011a8f)
 - Update lock file [`ad54af3`](https://github.com/netlify/cli/commit/ad54af32fbf869c4ec6c4536cb382ba6ffb406fa)
 - Update js-client to fix upload failures [`296bc9b`](https://github.com/netlify/cli/commit/296bc9b99ab72651396f4641d83a8af47752245c)
 
