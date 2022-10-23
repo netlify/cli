@@ -50,7 +50,7 @@ const createHandler = function (options) {
   const { config, functionsRegistry } = options
 
   return async function handler(request, response) {
-    // handle proxies without path re-writes (http-servr)
+    // handle proxies without path re-writes (http-server)
     const cleanPath = request.path.replace(/^\/.netlify\/(functions|builders)/, '')
     const functionName = cleanPath.split('/').find(Boolean)
     const func = functionsRegistry.get(functionName)
