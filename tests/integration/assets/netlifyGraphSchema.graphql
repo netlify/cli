@@ -5135,7 +5135,7 @@ input OneGraphCloudflareUserAuthArg {
   email: String!
 }
 
-input OneGraphChagebeeAuthArg {
+input OneGraphChargebeeAuthArg {
   """
   A [Chargebee API key](https://www.chargebee.com/docs/2.0/api_keys.html). To create a key go to **Settings** > **Configure Chargebee** > **API Keys and Webhooks** and then click on the **API Keys** tab.
   """
@@ -5204,7 +5204,7 @@ input OneGraphServiceAuths {
   crunchbaseUserKey: String
   cloudflareUserAuth: OneGraphCloudflareUserAuthArg
   clearbitAuth: String
-  chargebee: OneGraphChagebeeAuthArg
+  chargebee: OneGraphChargebeeAuthArg
   brexAuth: String
   apollo: OneGraphApolloAuthArg
   airtableApiKey: String
