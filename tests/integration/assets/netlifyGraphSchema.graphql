@@ -5078,7 +5078,7 @@ input OneGraphMuxAuthArg {
 
 input OneGraphLogdnaServiceAuthArg {
   """
-  Service Key from LogDNA. Retrive a service key from [your profile](https://app.logdna.com/manage/profile) under API Keys > Service Keys.
+  Service Key from LogDNA. Retrieve a service key from [your profile](https://app.logdna.com/manage/profile) under API Keys > Service Keys.
   """
   serviceKey: String!
 }
