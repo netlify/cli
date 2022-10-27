@@ -448,7 +448,7 @@ const dev = async (options, command) => {
 
   if (!options.offline && siteInfo.use_envelope) {
     env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })
-    log(`${NETLIFYDEVLOG} Injecting environment variable values from ${chalk.yellow('all scopes')}`)
+    log(`${NETLIFYDEVLOG} Injecting environment variable values for ${chalk.yellow('all scopes')}`)
   }
 
   await injectEnvVariables({ devConfig, env, site })
