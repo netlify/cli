@@ -150,7 +150,7 @@ const getEnvelopeEnv = async ({ api, context = 'dev', env, key = '', scope = 'an
   const configFileEnv = filterEnvBySource(env, 'configFile')
 
   // filter out configFile env vars if a non-configFile scope is passed
-  const includeConfigEnvVars = ['any', 'builds', 'post_processing'].includes(scope)
+  const includeConfigEnvVars = /any|builds|post[-_]processing/.test(scope)
 
   // Sources of environment variables, in ascending order of precedence.
   return {
@@ -168,11 +168,13 @@ const getEnvelopeEnv = async ({ api, context = 'dev', env, key = '', scope = 'an
  * @returns {string} A human-readable, comma-separated list of scopes
  */
 const getHumanReadableScopes = (scopes) => {
-  const HUMAN_SCOPES = {
-    builds: 'Builds',
-    functions: 'Functions',
-    post_processing: 'Post processing',
-    runtime: 'Runtime',
+  const HUMAN_SCOPES = ['Builds', 'Functions', 'Runtime', 'Post processing']
+  const SCOPES_MAP = {
+    builds: HUMAN_SCOPES[0],
+    functions: HUMAN_SCOPES[1],
+    runtime: HUMAN_SCOPES[2],
+    post_processing: HUMAN_SCOPES[3],
+    'post-processing': HUMAN_SCOPES[3],
   }
   if (!scopes) {
     // if `scopes` is not available, the env var comes from netlify.toml
@@ -183,7 +185,7 @@ const getHumanReadableScopes = (scopes) => {
     // shorthand instead of listing every available scope
     return 'All'
   }
-  return scopes.map((scope) => HUMAN_SCOPES[scope]).join(', ')
+  return scopes.map((scope) => SCOPES_MAP[scope]).join(', ')
 }
 
 /**
