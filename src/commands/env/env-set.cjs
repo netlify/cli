@@ -165,7 +165,7 @@ const createEnvSetCommand = (program) =>
       new Option('-s, --scope <scope...>', 'Specify a scope (default: all scopes)').choices([
         'builds',
         'functions',
-        'post_processing',
+        'post-processing',
         'runtime',
       ]),
     )
