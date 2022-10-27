@@ -6,7 +6,7 @@ description: Control environment variables for the current site
 # `env`
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
-(Beta) Control environment variables for the current site
+Control environment variables for the current site
 
 **Usage**
 

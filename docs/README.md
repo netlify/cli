@@ -86,7 +86,7 @@ Local dev server
 
 ### [env](/docs/commands/env.md)
 
-(Beta) Control environment variables for the current site
+Control environment variables for the current site
 
 | Subcommand | description  |
 |:--------------------------- |:-----|

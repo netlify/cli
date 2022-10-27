@@ -30,7 +30,7 @@ const createEnvCommand = (program) => {
 
   return program
     .command('env')
-    .description('(Beta) Control environment variables for the current site')
+    .description('Control environment variables for the current site')
     .addExamples([
       'netlify env:list',
       'netlify env:get VAR_NAME',
