@@ -23,7 +23,7 @@ jobs:
       - name: Get PR number
         if: github.event.workflow_run.event == 'pull_request'
         id: pr_number
-        run: echo "::set-output name=pr_number::$(cat pr_number)"
+        run: echo "pr_number=$(cat pr_number)" >> $GITHUB_OUTPUT
       - name: Post deltas to GitHub
         uses: netlify/delta-action@v4
         with:
