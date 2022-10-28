@@ -1,7 +1,6 @@
 const path = require('path')
 const { promisify } = require('util')
 
-const zipIt = require('@netlify/zip-it-and-ship-it')
 const fromArray = require('from2-array')
 const pump = promisify(require('pump'))
 
@@ -61,7 +60,9 @@ const getFunctionZips = async ({
     })
   }
 
-  return await zipIt.zipFunctions(directories, tmpDir, { basePath: rootDir, config: functionsConfig })
+  const { zipFunctions } = await import('@netlify/zip-it-and-ship-it')
+
+  return await zipFunctions(directories, tmpDir, { basePath: rootDir, config: functionsConfig })
 }
 
 const hashFns = async (
