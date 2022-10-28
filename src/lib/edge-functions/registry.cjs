@@ -79,7 +79,12 @@ class EdgeFunctionsRegistry {
     /**
      * @type {EdgeFunctionDeclaration[]}
      */
-    this.declarations = this.getDeclarations(config)
+    this.declarationsFromConfig = this.getDeclarationsFromConfig(config)
+
+    /**
+     * @type {EdgeFunctionDeclaration[]}
+     */
+    this.declarationsFromSource = []
 
     /**
      * @type {Record<string, string>}
@@ -102,6 +107,11 @@ class EdgeFunctionsRegistry {
     this.functionPaths = new Map()
 
     /**
+     * @type {EdgeFunction[]}
+     */
+    this.functions = []
+
+    /**
      * @type {Promise<EdgeFunction[]>}
      */
     this.initialScan = this.scan(directories)
@@ -114,13 +124,16 @@ class EdgeFunctionsRegistry {
    */
   async build(functions) {
     try {
-      const { graph, success } = await this.runIsolate(functions, this.env)
+      const { functionsConfig, graph, success } = await this.runIsolate(functions, this.env, {
+        getFunctionsConfig: true,
+      })
 
       if (!success) {
         throw new Error('Build error')
       }
 
       this.buildError = null
+      this.declarationsFromSource = functions.map((func, index) => ({ function: func.name, ...functionsConfig[index] }))
 
       this.processGraph(graph)
     } catch (error) {
@@ -141,7 +154,7 @@ class EdgeFunctionsRegistry {
         return
       }
 
-      const hasDeclaration = this.declarations.some((declaration) => declaration.function === func.name)
+      const hasDeclaration = this.declarationsFromConfig.some((declaration) => declaration.function === func.name)
 
       // We only load the function if there's a config declaration for it.
       return hasDeclaration
@@ -175,7 +188,7 @@ class EdgeFunctionsRegistry {
     }
   }
 
-  getDeclarations(config) {
+  getDeclarationsFromConfig(config) {
     const { edge_functions: userFunctions = [] } = config
 
     // The order is important, since we want to run user-defined functions
@@ -204,10 +217,6 @@ class EdgeFunctionsRegistry {
     // env.DENO_DEPLOYMENT_ID = 'xxx='
 
     return env
-  }
-
-  getManifest() {
-    return this.bundler.generateManifest({ declarations: this.declarations, functions: this.functions })
   }
 
   async handleFileChange(path) {
@@ -271,39 +280,66 @@ class EdgeFunctionsRegistry {
    * @param {string} urlPath
    */
   async matchURLPath(urlPath) {
+    const declarations = this.mergeDeclarations()
+    const manifest = await this.bundler.generateManifest({
+      declarations,
+      functions: this.functions,
+    })
+    const routes = manifest.routes.map((route) => ({
+      ...route,
+      pattern: new RegExp(route.pattern),
+    }))
+    const functionNames = routes.filter(({ pattern }) => pattern.test(urlPath)).map((route) => route.function)
+    const orphanedDeclarations = await this.matchURLPathAgainstOrphanedDeclarations(urlPath)
+
+    return { functionNames, orphanedDeclarations }
+  }
+
+  async matchURLPathAgainstOrphanedDeclarations(urlPath) {
     // `generateManifest` will only include functions for which there is both a
     // function file and a config declaration, but we want to catch cases where
     // a config declaration exists without a matching function file. To do that
     // we compute a list of functions from the declarations (the `path` doesn't
-    // really matter) and later on match the resulting routes against the list
-    // of functions we have in the registry. Any functions found in the former
-    // but not the latter are treated as orphaned declarations.
-    const functions = this.declarations.map((declaration) => ({ name: declaration.function, path: '' }))
+    // really matter).
+    const functions = this.declarationsFromConfig.map((declaration) => ({ name: declaration.function, path: '' }))
     const manifest = await this.bundler.generateManifest({
-      declarations: this.declarations,
+      declarations: this.declarationsFromConfig,
       functions,
     })
     const routes = manifest.routes.map((route) => ({
       ...route,
       pattern: new RegExp(route.pattern),
     }))
-    const orphanedDeclarations = new Set()
     const functionNames = routes
-      .filter(({ pattern }) => pattern.test(urlPath))
-      .map((route) => {
-        const matchingFunction = this.functions.find(({ name }) => name === route.function)
+      .filter((route) => {
+        const hasFunctionFile = this.functions.some((func) => func.name === route.function)
 
-        if (matchingFunction === undefined) {
-          orphanedDeclarations.add(route.function)
-
-          return null
+        if (hasFunctionFile) {
+          return false
         }
 
-        return matchingFunction.name
+        return route.pattern.test(urlPath)
       })
-      .filter(Boolean)
+      .map((route) => route.function)
 
-    return { functionNames, orphanedDeclarations }
+    return functionNames
+  }
+
+  // Merges declarations coming from the config and from the function sources.
+  mergeDeclarations() {
+    const declarations = [...this.declarationsFromConfig]
+
+    this.declarationsFromSource.forEach((declarationFromSource) => {
+      const index = declarations.findIndex(({ function: func }) => func === declarationFromSource.function)
+
+      if (index === -1) {
+        declarations.push(declarationFromSource)
+      } else {
+        declarations[index] = { ...declarations[index], ...declarationFromSource }
+      }
+    })
+
+    return declarations
   }
 
   processGraph(graph) {
@@ -376,7 +412,7 @@ class EdgeFunctionsRegistry {
       onChange: async () => {
         const newConfig = await this.getUpdatedConfig()
 
-        this.declarations = this.getDeclarations(newConfig)
+        this.declarationsFromConfig = this.getDeclarationsFromConfig(newConfig)
 
         await this.checkForAddedOrDeletedFunctions()
       },
