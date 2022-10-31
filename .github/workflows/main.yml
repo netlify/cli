@@ -17,7 +17,7 @@ jobs:
       # Sets an output parameter if this is a release PR
       - name: Check for release
         id: release-check
-        run: echo "::set-output name=IS_RELEASE::true"
+        run: echo "IS_RELEASE=true" >> $GITHUB_OUTPUT
         if: "${{ startsWith(github.head_ref, 'release-') }}"
       - name: Git checkout
         uses: actions/checkout@v3
@@ -61,7 +61,7 @@ jobs:
       # Sets an output parameter if this is a release PR
       - name: Check for release
         id: release-check
-        run: echo "::set-output name=IS_RELEASE::true"
+        run: echo "IS_RELEASE=true" >> $GITHUB_OUTPUT
         if: "${{ startsWith(github.head_ref, 'release-') }}"
       # This improves Windows network performance, we need this since we open many ports in our tests
       - name: Increase Windows port limit and reduce time wait delay
@@ -126,9 +126,9 @@ jobs:
         id: test-coverage-flags
         run: |-
           os=${{ matrix.os }}
-          node=${{ matrix.node-version }}
-          echo "::set-output name=os::${os/-latest/}"
-          echo "::set-output name=node::node_${node//[.*]/}"
+          node=$(node --version)
+          echo "os=${os/-latest/}" >> $GITHUB_OUTPUT
+          echo "node=node_${node/.*.*/}" >> $GITHUB_OUTPUT
         shell: bash
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
       - uses: codecov/codecov-action@v3

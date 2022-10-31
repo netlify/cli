@@ -28,8 +28,8 @@ jobs:
           tag_version=${branch:9}
           tag=${tag_version%/*}
           version=${tag_version##*/}
-          echo "::set-output name=tag::${tag}"
-          echo "::set-output name=version::${version}"
+          echo "tag=${tag}" >> $GITHUB_OUTPUT
+          echo "version=${version}" >> $GITHUB_OUTPUT
       - name: Log versions
         run: |-
           echo tag=${{ steps.extract.outputs.tag }}
