@@ -380,7 +380,7 @@ test('env:set --scope should set the scope of an existing env var without needin
       t.is(putRequest.body.values[0].context, 'production')
       t.is(putRequest.body.values[1].context, 'dev')
       t.is(putRequest.body.scopes[0], 'runtime')
-      t.is(putRequest.body.scopes[1], 'post_processing')
+      t.is(putRequest.body.scopes[1], 'post-processing')
     })
   })
 })
