@@ -1,8 +1,6 @@
 // @ts-check
 
-const { mkdir } = require('fs').promises
-
-const { zipFunctions } = require('@netlify/zip-it-and-ship-it')
+const { mkdir } = require('fs/promises')
 
 const { NETLIFYDEVERR, NETLIFYDEVLOG, exit, getFunctionsDir, log } = require('../../utils/index.cjs')
 
@@ -37,7 +35,9 @@ const functionsBuild = async (options, command) => {
   await mkdir(dst, { recursive: true })
 
   log(`${NETLIFYDEVLOG} Building functions`)
-  // @ts-ignore Seems that the typings of zip it and ship it are not correct
+
+  const { zipFunctions } = await import('@netlify/zip-it-and-ship-it')
+
   zipFunctions(src, dst, { skipGo: true })
   log(`${NETLIFYDEVLOG} Functions built to `, dst)
 }

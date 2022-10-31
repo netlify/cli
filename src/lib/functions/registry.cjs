@@ -46,12 +46,6 @@ class FunctionsRegistry {
     // File watchers for function files. Maps function names to objects built
     // by the `watchDebounced` utility.
     this.functionWatchers = new Map()
-
-    // Performance optimization: load '@netlify/zip-it-and-ship-it' on demand.
-    // eslint-disable-next-line n/global-require
-    const { listFunctions } = require('@netlify/zip-it-and-ship-it')
-
-    this.listFunctions = listFunctions
   }
 
   static async prepareDirectoryScan(directory) {
@@ -164,6 +158,15 @@ class FunctionsRegistry {
     log(`${NETLIFYDEVLOG} ${chalk.green('Loaded')} function ${getTerminalLink(chalk.yellow(name), func.url)}.`)
   }
 
+  // This function is here so we can mock it in tests
+  // eslint-disable-next-line class-methods-use-this
+  async listFunctions(...args) {
+    // Performance optimization: load '@netlify/zip-it-and-ship-it' on demand.
+    const { listFunctions } = await import('@netlify/zip-it-and-ship-it')
+
+    return await listFunctions(...args)
+  }
+
   async scan(relativeDirs) {
     const directories = relativeDirs.filter(Boolean).map((dir) => (isAbsolute(dir) ? dir : join(this.projectRoot, dir)))
 
@@ -173,6 +176,7 @@ class FunctionsRegistry {
     }
 
     await Promise.all(directories.map((path) => FunctionsRegistry.prepareDirectoryScan(path)))
+
     const functions = await this.listFunctions(directories, {
       featureFlags: {
         buildRustSource: env.NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE === 'true',
