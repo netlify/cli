@@ -629,6 +629,55 @@ test('should detect deleted edge functions', async (t) => {
   })
 })
 
+test('should respect in-source configuration from edge functions', async (t) => {
+  await withSiteBuilder('site-with-edge-functions', async (builder) => {
+    const publicDir = 'public'
+    await builder
+      .withNetlifyToml({
+        config: {
+          build: {
+            publish: publicDir,
+            edge_functions: 'netlify/edge-functions',
+          },
+        },
+      })
+      .withEdgeFunction({
+        config: () => ({ path: '/hello-1' }),
+        handler: () => new Response('Hello world'),
+        name: 'hello',
+      })
+
+    await builder.buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async ({ port }) => {
+      const res1 = await got(`http://localhost:${port}/hello-1`, { throwHttpErrors: false })
+
+      t.is(res1.statusCode, 200)
+      t.is(res1.body, 'Hello world')
+
+      await builder
+        .withEdgeFunction({
+          config: () => ({ path: '/hello-2' }),
+          handler: () => new Response('Hello world'),
+          name: 'hello',
+        })
+        .buildAsync()
+
+      const DETECT_FILE_CHANGE_DELAY = 500
+      await pause(DETECT_FILE_CHANGE_DELAY)
+
+      const res2 = await got(`http://localhost:${port}/hello-1`, { throwHttpErrors: false })
+
+      t.is(res2.statusCode, 404)
+
+      const res3 = await got(`http://localhost:${port}/hello-2`, { throwHttpErrors: false })
+
+      t.is(res3.statusCode, 200)
+      t.is(res3.body, 'Hello world')
+    })
+  })
+})
+
 test('should have only allowed environment variables set', async (t) => {
   const siteInfo = {
     account_slug: 'test-account',
