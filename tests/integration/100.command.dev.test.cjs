@@ -420,7 +420,7 @@ test('Serves an Edge Function that transforms the response', async (t) => {
   })
 })
 
-test.only('Serves an Edge Function that streams the response', async (t) => {
+test('Serves an Edge Function that streams the response', async (t) => {
   await withSiteBuilder('site-with-edge-function-that-transforms-response', async (builder) => {
     const publicDir = 'public'
     builder
