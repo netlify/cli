@@ -395,7 +395,7 @@ const initializeProxy = async function ({ configPath, distDir, host, port, proje
       proxyRes.on('end', function onEnd() {
         res.end()
       })
-      
+
       return
     }
 
