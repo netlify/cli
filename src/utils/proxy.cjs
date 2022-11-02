@@ -379,6 +379,26 @@ const initializeProxy = async function ({ configPath, distDir, host, port, proje
     const requestURL = new URL(req.url, `http://${req.headers.host || '127.0.0.1'}`)
     const headersRules = headersForPath(headers, requestURL.pathname)
 
+    // for streamed responses, we can't do etag generation nor error templats.
+    // we'll just stream them through!
+    const isStreamedResponse = proxyRes.headers['content-length'] === undefined
+    if (isStreamedResponse) {
+      Object.entries(headersRules).forEach(([key, val]) => {
+        res.setHeader(key, val)
+      })
+      res.writeHead(req.proxyOptions.status || proxyRes.statusCode, proxyRes.headers)
+
+      proxyRes.on('data', function onData(data) {
+        res.write(data)
+      })
+
+      proxyRes.on('end', function onEnd() {
+        res.end()
+      })
+      
+      return
+    }
+
     proxyRes.on('data', function onData(data) {
       responseData.push(data)
     })
