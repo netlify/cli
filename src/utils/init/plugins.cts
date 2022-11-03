@@ -10,7 +10,6 @@ const getRecommendPlugins = (frameworkPlugins, config) =>
 
 // @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'getUIPlugi... Remove this comment to see the full error message
 const getUIPlugins = (configPlugins) =>
-  // @ts-expect-error TS(1212) FIXME: Identifier expected. 'package' is a reserved word ... Remove this comment to see the full error message
-  configPlugins.filter(({ origin }) => origin === 'ui').map(({ package }) => ({ package }))
+  configPlugins.filter(({ origin }: $TSFixMe) => origin === 'ui').map(({ package: configPackage }: $TSFixMe) => ({ package: configPackage }))
 
 module.exports = { getRecommendPlugins, getUIPlugins }
