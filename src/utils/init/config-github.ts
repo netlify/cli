@@ -1,9 +1,13 @@
 // @ts-check
+// @ts-expect-error TS(6200) FIXME: Definitions of the following identifiers conflict ... Remove this comment to see the full error message
 const { Octokit } = require('@octokit/rest')
 
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'chalk'.
 const { chalk, error: failAndExit, log } = require('../command-helpers.cjs')
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const { getGitHubToken: ghauth } = require('../gh-auth.cjs')
 
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'createDepl... Remove this comment to see the full error message
 const { createDeployKey, formatErrorMessage, getBuildSettings, saveNetlifyToml, setupSite } = require('./utils.cjs')
 
 /**
@@ -14,7 +18,10 @@ const { createDeployKey, formatErrorMessage, getBuildSettings, saveNetlifyToml, 
  * @property {string} provider - The Provider where the token is associated with ('github').
  */
 
-const formatRepoAndOwner = ({ repoName, repoOwner }) => ({
+const formatRepoAndOwner = ({
+  repoName,
+  repoOwner
+}: $TSFixMe) => ({
   name: chalk.magenta(repoName),
   owner: chalk.magenta(repoOwner),
 })
@@ -25,7 +32,9 @@ const PAGE_SIZE = 100
  * Get a valid GitHub token
  * @returns {Promise<string>}
  */
-const getGitHubToken = async ({ globalConfig }) => {
+const getGitHubToken = async ({
+  globalConfig
+}: $TSFixMe) => {
   const userId = globalConfig.get('userId')
 
   /** @type {Token} */
@@ -54,12 +63,17 @@ const getGitHubToken = async ({ globalConfig }) => {
  * @param {string} token
  * @returns {Octokit}
  */
-const getGitHubClient = (token) =>
-  new Octokit({
-    auth: `token ${token}`,
-  })
+const getGitHubClient = (token: $TSFixMe) => new Octokit({
+  auth: `token ${token}`,
+})
 
-const addDeployKey = async ({ api, octokit, repoName, repoOwner }) => {
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'addDeployK... Remove this comment to see the full error message
+const addDeployKey = async ({
+  api,
+  octokit,
+  repoName,
+  repoOwner
+}: $TSFixMe) => {
   log('Adding deploy key to repository...')
   const key = await createDeployKey({ api })
   try {
@@ -74,7 +88,7 @@ const addDeployKey = async ({ api, octokit, repoName, repoOwner }) => {
     return key
   } catch (error) {
     let message = formatErrorMessage({ message: 'Failed adding GitHub deploy key', error })
-    if (error.status === 404) {
+    if ((error as $TSFixMe).status === 404) {
       const { name, owner } = formatRepoAndOwner({ repoName, repoOwner })
       message = `${message}. Does the repository ${name} exist and do ${owner} has the correct permissions to set up deploy keys?`
     }
@@ -82,7 +96,11 @@ const addDeployKey = async ({ api, octokit, repoName, repoOwner }) => {
   }
 }
 
-const getGitHubRepo = async ({ octokit, repoName, repoOwner }) => {
+const getGitHubRepo = async ({
+  octokit,
+  repoName,
+  repoOwner
+}: $TSFixMe) => {
   try {
     const { data } = await octokit.repos.get({
       owner: repoOwner,
@@ -91,7 +109,7 @@ const getGitHubRepo = async ({ octokit, repoName, repoOwner }) => {
     return data
   } catch (error) {
     let message = formatErrorMessage({ message: 'Failed retrieving GitHub repository information', error })
-    if (error.status === 404) {
+    if ((error as $TSFixMe).status === 404) {
       const { name, owner } = formatRepoAndOwner({ repoName, repoOwner })
       message = `${message}. Does the repository ${name} exist and accessible by ${owner}`
     }
@@ -99,14 +117,19 @@ const getGitHubRepo = async ({ octokit, repoName, repoOwner }) => {
   }
 }
 
-const hookExists = async ({ deployHook, octokit, repoName, repoOwner }) => {
+const hookExists = async ({
+  deployHook,
+  octokit,
+  repoName,
+  repoOwner
+}: $TSFixMe) => {
   try {
     const { data: hooks } = await octokit.repos.listWebhooks({
       owner: repoOwner,
       repo: repoName,
       per_page: PAGE_SIZE,
     })
-    const exists = hooks.some((hook) => hook.config.url === deployHook)
+    const exists = hooks.some((hook: $TSFixMe) => hook.config.url === deployHook)
     return exists
   } catch {
     // we don't need to fail if listHooks errors out
@@ -114,7 +137,13 @@ const hookExists = async ({ deployHook, octokit, repoName, repoOwner }) => {
   }
 }
 
-const addDeployHook = async ({ deployHook, octokit, repoName, repoOwner }) => {
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'addDeployH... Remove this comment to see the full error message
+const addDeployHook = async ({
+  deployHook,
+  octokit,
+  repoName,
+  repoOwner
+}: $TSFixMe) => {
   const exists = await hookExists({ deployHook, octokit, repoOwner, repoName })
   if (!exists) {
     try {
@@ -131,9 +160,9 @@ const addDeployHook = async ({ deployHook, octokit, repoName, repoOwner }) => {
       })
     } catch (error) {
       // Ignore exists error if the list doesn't return all installed hooks
-      if (!error.message.includes('Hook already exists on this repository')) {
+      if (!(error as $TSFixMe).message.includes('Hook already exists on this repository')) {
         let message = formatErrorMessage({ message: 'Failed creating repo hook', error })
-        if (error.status === 404) {
+        if ((error as $TSFixMe).status === 404) {
           const { name, owner } = formatRepoAndOwner({ repoName, repoOwner })
           message = `${message}. Does the repository ${name} and do ${owner} has the correct permissions to set up hooks`
         }
@@ -146,8 +175,14 @@ const addDeployHook = async ({ deployHook, octokit, repoName, repoOwner }) => {
 const GITHUB_HOOK_EVENTS = ['deploy_created', 'deploy_failed', 'deploy_building']
 const GITHUB_HOOK_TYPE = 'github_commit_status'
 
-const upsertHook = async ({ api, event, ntlHooks, siteId, token }) => {
-  const ntlHook = ntlHooks.find((hook) => hook.type === GITHUB_HOOK_TYPE && hook.event === event)
+const upsertHook = async ({
+  api,
+  event,
+  ntlHooks,
+  siteId,
+  token
+}: $TSFixMe) => {
+  const ntlHook = ntlHooks.find((hook: $TSFixMe) => hook.type === GITHUB_HOOK_TYPE && hook.event === event)
 
   if (!ntlHook || ntlHook.disabled) {
     return await api.createHookBySiteId({
@@ -172,10 +207,14 @@ const upsertHook = async ({ api, event, ntlHooks, siteId, token }) => {
   })
 }
 
-const addNotificationHooks = async ({ api, siteId, token }) => {
+const addNotificationHooks = async ({
+  api,
+  siteId,
+  token
+}: $TSFixMe) => {
   log(`Creating Netlify GitHub Notification Hooks...`)
 
-  let ntlHooks
+  let ntlHooks: $TSFixMe
   try {
     ntlHooks = await api.listHooksBySiteId({ siteId })
   } catch (error) {
@@ -203,7 +242,13 @@ const addNotificationHooks = async ({ api, siteId, token }) => {
  * @param {string} config.repoOwner
  * @param {string} config.siteId
  */
-const configGithub = async ({ command, repoName, repoOwner, siteId }) => {
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'configGith... Remove this comment to see the full error message
+const configGithub = async ({
+  command,
+  repoName,
+  repoOwner,
+  siteId
+}: $TSFixMe) => {
   const { netlify } = command
   const {
     api,
@@ -238,12 +283,12 @@ const configGithub = async ({ command, repoName, repoOwner, siteId }) => {
     repo_path: githubRepo.full_name,
     repo_branch: githubRepo.default_branch,
     allowed_branches: [githubRepo.default_branch],
-    deploy_key_id: deployKey.id,
+    deploy_key_id: (deployKey as $TSFixMe).id,
     base: baseDir,
     dir: buildDir,
     functions_dir: functionsDir,
     ...(buildCmd && { cmd: buildCmd }),
-  }
+};
 
   const updatedSite = await setupSite({
     api,
@@ -257,4 +302,5 @@ const configGithub = async ({ command, repoName, repoOwner, siteId }) => {
   await addNotificationHooks({ siteId, api, token })
 }
 
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'module'. Do you need to install ... Remove this comment to see the full error message
 module.exports = { configGithub, getGitHubToken }

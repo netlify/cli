@@ -1,11 +1,17 @@
 // @ts-check
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'inquirer'.
 const inquirer = require('inquirer')
 
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'log'.
 const { exit, log } = require('../command-helpers.cjs')
 
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'createDepl... Remove this comment to see the full error message
 const { createDeployKey, getBuildSettings, saveNetlifyToml, setupSite } = require('./utils.cjs')
 
-const addDeployKey = async ({ deployKey }) => {
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'addDeployK... Remove this comment to see the full error message
+const addDeployKey = async ({
+  deployKey
+}: $TSFixMe) => {
   log('\nGive this Netlify SSH public key access to your repository:\n')
   log(`\n${deployKey.public_key}\n\n`)
 
@@ -23,21 +29,26 @@ const addDeployKey = async ({ deployKey }) => {
   }
 }
 
-const getRepoPath = async ({ repoData }) => {
+const getRepoPath = async ({
+  repoData
+}: $TSFixMe) => {
   const { repoPath } = await inquirer.prompt([
     {
       type: 'input',
       name: 'repoPath',
       message: 'The SSH URL of the remote git repo:',
       default: repoData.url,
-      validate: (url) => SSH_URL_REGEXP.test(url) || 'The URL provided does not use the SSH protocol',
+      validate: (url: $TSFixMe) => SSH_URL_REGEXP.test(url) || 'The URL provided does not use the SSH protocol',
     },
   ])
 
   return repoPath
 }
 
-const addDeployHook = async ({ deployHook }) => {
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'addDeployH... Remove this comment to see the full error message
+const addDeployHook = async ({
+  deployHook
+}: $TSFixMe) => {
   log('\nConfigure the following webhook for your repository:\n')
   log(`\n${deployHook}\n\n`)
   const { deployHookAdded } = await inquirer.prompt([
@@ -58,7 +69,11 @@ const addDeployHook = async ({ deployHook }) => {
  * @param {*} config.repoData
  * @param {string} config.siteId
  */
-module.exports = async function configManual({ command, repoData, siteId }) {
+module.exports = async function configManual({
+  command,
+  repoData,
+  siteId
+}: $TSFixMe) {
   const { netlify } = command
   const {
     api,
@@ -100,6 +115,7 @@ module.exports = async function configManual({ command, repoData, siteId }) {
     pluginsToInstall,
   })
   const deployHookAdded = await addDeployHook({ deployHook: updatedSite.deploy_hook })
+  // @ts-expect-error TS(1345) FIXME: An expression of type 'void' cannot be tested for ... Remove this comment to see the full error message
   if (!deployHookAdded) {
     exit()
   }

@@ -1,22 +1,39 @@
 // @ts-check
+// @ts-expect-error TS(6200) FIXME: Definitions of the following identifiers conflict ... Remove this comment to see the full error message
 const { existsSync } = require('fs')
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const { writeFile } = require('fs').promises
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const path = require('path')
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const process = require('process')
 
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const cleanDeep = require('clean-deep')
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'inquirer'.
 const inquirer = require('inquirer')
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const isEmpty = require('lodash/isEmpty')
 
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const { normalizeBackslash } = require('../../lib/path.cjs')
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const { log } = require('../command-helpers.cjs')
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'warn'.
 const { chalk, error: failAndExit, warn } = require('../command-helpers.cjs')
 
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'getFramewo... Remove this comment to see the full error message
 const { getFrameworkInfo } = require('./frameworks.cjs')
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'detectNode... Remove this comment to see the full error message
 const { detectNodeVersion } = require('./node-version.cjs')
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'getRecomme... Remove this comment to see the full error message
 const { getRecommendPlugins, getUIPlugins } = require('./plugins.cjs')
 
-const normalizeDir = ({ baseDirectory, defaultValue, dir }) => {
+const normalizeDir = ({
+  baseDirectory,
+  defaultValue,
+  dir
+}: $TSFixMe) => {
   if (dir === undefined) {
     return defaultValue
   }
@@ -25,7 +42,10 @@ const normalizeDir = ({ baseDirectory, defaultValue, dir }) => {
   return relativeDir || defaultValue
 }
 
-const getDefaultBase = ({ baseDirectory, repositoryRoot }) => {
+const getDefaultBase = ({
+  baseDirectory,
+  repositoryRoot
+}: $TSFixMe) => {
   if (baseDirectory !== repositoryRoot && baseDirectory.startsWith(repositoryRoot)) {
     return path.relative(repositoryRoot, baseDirectory)
   }
@@ -37,8 +57,8 @@ const getDefaultSettings = ({
   frameworkBuildCommand,
   frameworkBuildDir,
   frameworkPlugins,
-  repositoryRoot,
-}) => {
+  repositoryRoot
+}: $TSFixMe) => {
   const recommendedPlugins = getRecommendPlugins(frameworkPlugins, config)
   const {
     command: defaultBuildCmd = frameworkBuildCommand,
@@ -55,7 +75,11 @@ const getDefaultSettings = ({
   }
 }
 
-const getPromptInputs = ({ defaultBaseDir, defaultBuildCmd, defaultBuildDir }) => {
+const getPromptInputs = ({
+  defaultBaseDir,
+  defaultBuildCmd,
+  defaultBuildDir
+}: $TSFixMe) => {
   const inputs = [
     defaultBaseDir !== undefined && {
       type: 'input',
@@ -67,7 +91,7 @@ const getPromptInputs = ({ defaultBaseDir, defaultBuildCmd, defaultBuildDir }) =
       type: 'input',
       name: 'buildCmd',
       message: 'Your build command (hugo build/yarn run build/etc):',
-      filter: (val) => (val === '' ? '# no build command' : val),
+      filter: (val: $TSFixMe) => val === '' ? '# no build command' : val,
       default: defaultBuildCmd,
     },
     {
@@ -82,10 +106,18 @@ const getPromptInputs = ({ defaultBaseDir, defaultBuildCmd, defaultBuildDir }) =
 }
 
 // `repositoryRoot === siteRoot` means the base directory wasn't detected by @netlify/config, so we use cwd()
-const getBaseDirectory = ({ repositoryRoot, siteRoot }) =>
+const getBaseDirectory = ({
+  repositoryRoot,
+  siteRoot
+}: $TSFixMe) =>
   path.normalize(repositoryRoot) === path.normalize(siteRoot) ? process.cwd() : siteRoot
 
-const getBuildSettings = async ({ config, env, repositoryRoot, siteRoot }) => {
+const getBuildSettings = async ({
+  config,
+  env,
+  repositoryRoot,
+  siteRoot
+}: $TSFixMe) => {
   const baseDirectory = getBaseDirectory({ repositoryRoot, siteRoot })
   const nodeVersion = await detectNodeVersion({ baseDirectory, env })
   const {
@@ -120,7 +152,9 @@ const getBuildSettings = async ({ config, env, repositoryRoot, siteRoot }) => {
     }),
   )
 
-  const pluginsToInstall = recommendedPlugins.map((plugin) => ({ package: plugin }))
+  const pluginsToInstall = recommendedPlugins.map((plugin: $TSFixMe) => ({
+    package: plugin
+  }))
   const normalizedBaseDir = baseDir ? normalizeBackslash(baseDir) : undefined
 
   return { baseDir: normalizedBaseDir, buildCmd, buildDir, functionsDir: defaultFunctionsDir, pluginsToInstall }
@@ -153,7 +187,15 @@ const getNetlifyToml = ({
   ## more info on configuring this file: https://docs.netlify.com/configure-builds/file-based-configuration/
 `
 
-const saveNetlifyToml = async ({ baseDir, buildCmd, buildDir, config, configPath, functionsDir, repositoryRoot }) => {
+const saveNetlifyToml = async ({
+  baseDir,
+  buildCmd,
+  buildDir,
+  config,
+  configPath,
+  functionsDir,
+  repositoryRoot
+}: $TSFixMe) => {
   const tomlPathParts = [repositoryRoot, baseDir, 'netlify.toml'].filter(Boolean)
   const tomlPath = path.join(...tomlPathParts)
   if (existsSync(tomlPath)) {
@@ -183,19 +225,24 @@ const saveNetlifyToml = async ({ baseDir, buildCmd, buildDir, config, configPath
         'utf-8',
       )
     } catch (error) {
-      warn(`Failed saving Netlify toml file: ${error.message}`)
+      warn(`Failed saving Netlify toml file: ${(error as $TSFixMe).message}`);
     }
   }
 }
 
-const formatErrorMessage = ({ error, message }) => {
+const formatErrorMessage = ({
+  error,
+  message
+}: $TSFixMe) => {
   const errorMessage = error.json ? `${error.message} - ${JSON.stringify(error.json)}` : error.message
   return `${message} with error: ${chalk.red(errorMessage)}`
 }
 
-const formatTitle = (title) => chalk.cyan(title)
+const formatTitle = (title: $TSFixMe) => chalk.cyan(title)
 
-const createDeployKey = async ({ api }) => {
+const createDeployKey = async ({
+  api
+}: $TSFixMe) => {
   try {
     const deployKey = await api.createDeployKey()
     return deployKey
@@ -205,7 +252,11 @@ const createDeployKey = async ({ api }) => {
   }
 }
 
-const updateSite = async ({ api, options, siteId }) => {
+const updateSite = async ({
+  api,
+  options,
+  siteId
+}: $TSFixMe) => {
   try {
     const updatedSite = await api.updateSite({ siteId, body: options })
     return updatedSite
@@ -215,7 +266,13 @@ const updateSite = async ({ api, options, siteId }) => {
   }
 }
 
-const setupSite = async ({ api, configPlugins, pluginsToInstall, repo, siteId }) => {
+const setupSite = async ({
+  api,
+  configPlugins,
+  pluginsToInstall,
+  repo,
+  siteId
+}: $TSFixMe) => {
   const updatedSite = await updateSite({
     siteId,
     api,
@@ -226,4 +283,5 @@ const setupSite = async ({ api, configPlugins, pluginsToInstall, repo, siteId })
   return updatedSite
 }
 
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'module'. Do you need to install ... Remove this comment to see the full error message
 module.exports = { getBuildSettings, saveNetlifyToml, formatErrorMessage, createDeployKey, updateSite, setupSite }

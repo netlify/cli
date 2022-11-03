@@ -1,10 +1,13 @@
 // @ts-check
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'chalk'.
 const { chalk, log } = require('../command-helpers.cjs')
 
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'configGith... Remove this comment to see the full error message
 const { configGithub } = require('./config-github.cjs')
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const configManual = require('./config-manual.cjs')
 
-const logSuccess = (repoData) => {
+const logSuccess = (repoData: $TSFixMe) => {
   log()
   log(chalk.greenBright.bold.underline(`Success! Netlify CI/CD Configured!`))
   log()
@@ -24,7 +27,12 @@ const logSuccess = (repoData) => {
  * @param {*} config.repoData
  * @param {string} config.siteId
  */
-const configureRepo = async ({ command, manual, repoData, siteId }) => {
+const configureRepo = async ({
+  command,
+  manual,
+  repoData,
+  siteId
+}: $TSFixMe) => {
   if (manual) {
     await configManual({ command, siteId, repoData })
   } else if (repoData.provider === 'github') {
@@ -36,4 +44,5 @@ const configureRepo = async ({ command, manual, repoData, siteId }) => {
 
   logSuccess(repoData)
 }
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'module'. Do you need to install ... Remove this comment to see the full error message
 module.exports = { configureRepo }
