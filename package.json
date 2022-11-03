@@ -355,6 +355,7 @@
     "temp-dir": "^2.0.0",
     "tomlify-j0.4": "^3.0.0",
     "tree-kill": "^1.2.2",
+    "ts-migrate": "^0.1.34",
     "typescript": "^4.4.4",
     "verdaccio": "^5.10.2"
   },
