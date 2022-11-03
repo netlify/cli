@@ -1,4 +1,3 @@
-// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const { error } = require('../command-helpers.cjs')
 
 const AVAILABLE_CONTEXTS = ['all', 'production', 'deploy-preview', 'branch-deploy', 'dev']
@@ -219,7 +218,6 @@ const getHumanReadableScopes = (scopes: $TSFixMe) => {
  * @returns {Array<object>} The array of Envelope env vars
  */
 const translateFromMongoToEnvelope = (env = {}) => {
-  // @ts-expect-error TS(2550) FIXME: Property 'entries' does not exist on type 'ObjectC... Remove this comment to see the full error message
   const envVars = Object.entries(env).map(([key, value]) => ({
     key,
     scopes: AVAILABLE_SCOPES,
@@ -242,30 +240,18 @@ const translateFromMongoToEnvelope = (env = {}) => {
  */
 const translateFromEnvelopeToMongo = (envVars = [], context = 'dev') => envVars
     .sort((left, right) => ((left as $TSFixMe).key.toLowerCase() < (right as $TSFixMe).key.toLowerCase() ? -1 : 1))
-    .reduce((acc, cur) => {
+    .reduce((acc, cur: $TSFixMe) => {
     // @ts-expect-error TS(2339) FIXME: Property 'values' does not exist on type 'never'.
-    const envVar = cur.values.find((val: $TSFixMe) => [context, 'all'].includes(val.context_parameter || val.context));
-    if (envVar && envVar.value) {
-        return {
-            ...acc,
-            // @ts-expect-error TS(2339) FIXME: Property 'key' does not exist on type 'never'.
-            [cur.key]: envVar.value,
-        };
-    }
-    return acc;
-}, {});
-      // @ts-expect-error TS(2304) FIXME: Cannot find name 'cur'.
-      const envVar = (cur as $TSFixMe).values.find((val: $TSFixMe) => [context, 'all'].includes(val.context_parameter || val.context));
+    const envVar = cur.values.find((val) => [context, 'all'].includes(val.context_parameter || val.context))
       if (envVar && envVar.value) {
         return {
-    ...acc,
-    [(cur as $TSFixMe).key]: envVar.value,
-};
+          ...acc,
+          [cur.key]: envVar.value,
+        }
       }
       return acc
     }, {})
 
-// @ts-expect-error TS(2580) FIXME: Cannot find name 'module'. Do you need to install ... Remove this comment to see the full error message
 module.exports = {
   AVAILABLE_CONTEXTS,
   AVAILABLE_SCOPES,
