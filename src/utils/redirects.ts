@@ -2,11 +2,16 @@
 // TODO: use static `import` after migrating this repository to pure ES modules
 const netlifyRedirectParser = import('netlify-redirect-parser')
 
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'NETLIFYDEV... Remove this comment to see the full error message
 const { NETLIFYDEVERR, log } = require('./command-helpers.cjs')
 
 // Parse, normalize and validate all redirects from `_redirects` files
 // and `netlify.toml`
-const parseRedirects = async function ({ configPath, redirectsFiles }) {
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'parseRedir... Remove this comment to see the full error message
+const parseRedirects = async function ({
+  configPath,
+  redirectsFiles
+}: any) {
   const { parseAllRedirects } = await netlifyRedirectParser
   const { errors, redirects } = await parseAllRedirects({
     redirectsFiles,
@@ -17,7 +22,7 @@ const parseRedirects = async function ({ configPath, redirectsFiles }) {
   return redirects.map(normalizeRedirect)
 }
 
-const handleRedirectParsingErrors = function (errors) {
+const handleRedirectParsingErrors = function (errors: any) {
   if (errors.length === 0) {
     return
   }
@@ -26,7 +31,10 @@ const handleRedirectParsingErrors = function (errors) {
   log(NETLIFYDEVERR, `Redirects syntax errors:\n${errorMessage}`)
 }
 
-const getErrorMessage = function ({ message }) {
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'getErrorMe... Remove this comment to see the full error message
+const getErrorMessage = function ({
+  message
+}: any) {
   return message
 }
 
@@ -39,7 +47,7 @@ const normalizeRedirect = function ({
   from,
   query,
   ...redirect
-}) {
+}: any) {
   return {
     ...redirect,
     origin: from,
@@ -53,4 +61,5 @@ const normalizeRedirect = function ({
   }
 }
 
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'module'. Do you need to install ... Remove this comment to see the full error message
 module.exports = { parseRedirects }

@@ -1,14 +1,23 @@
 // @ts-check
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const { dirname } = require('path')
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'process'.
 const process = require('process')
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'util'.
 const util = require('util')
 
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'findUp'.
 const findUp = require('find-up')
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const gitRepoInfo = require('git-repo-info')
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const gitconfiglocal = require('gitconfiglocal')
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'isEmpty'.
 const isEmpty = require('lodash/isEmpty')
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const parseGitRemote = require('parse-github-url')
 
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'log'.
 const { log } = require('./command-helpers.cjs')
 
 /**
@@ -17,7 +26,10 @@ const { log } = require('./command-helpers.cjs')
  * @param {string} [config.remoteName]
  * @returns
  */
-const getRepoData = async function ({ remoteName } = {}) {
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'getRepoDat... Remove this comment to see the full error message
+const getRepoData = async function ({
+  remoteName
+}: any = {}) {
   try {
     const cwd = process.cwd()
     const [gitConfig, gitDirectory] = await Promise.all([
@@ -54,13 +66,14 @@ const getRepoData = async function ({ remoteName } = {}) {
       repo,
       url,
       branch,
+      // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
       provider: PROVIDERS[host] || host,
       httpsUrl: `https://${host}/${repo}`,
     }
   } catch (error) {
     return {
-      error: error.message,
-    }
+    error: (error as any).message,
+};
   }
 }
 
@@ -69,4 +82,5 @@ const PROVIDERS = {
   'gitlab.com': 'gitlab',
 }
 
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'module'. Do you need to install ... Remove this comment to see the full error message
 module.exports = { getRepoData }

@@ -1,6 +1,8 @@
 // @ts-check
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const url = require('url')
 
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'fetch'.
 const fetch = require('node-fetch')
 
 // supported repo host types
@@ -10,7 +12,8 @@ const GITHUB = 'GitHub'
  * Takes a url like https://github.com/netlify-labs/all-the-functions/tree/master/functions/9-using-middleware
  * and returns https://api.github.com/repos/netlify-labs/all-the-functions/contents/functions/9-using-middleware
  */
-const readRepoURL = async function (_url) {
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'readRepoUR... Remove this comment to see the full error message
+const readRepoURL = async function (_url: any) {
   // TODO: use `url.URL()` instead
   // eslint-disable-next-line n/no-deprecated-api
   const URL = url.parse(_url)
@@ -21,7 +24,7 @@ const readRepoURL = async function (_url) {
   return folderContents
 }
 
-const getRepoURLContents = async function (repoHost, ownerAndRepo, contentsPath) {
+const getRepoURLContents = async function (repoHost: any, ownerAndRepo: any, contentsPath: any) {
   // naive joining strategy for now
   if (repoHost === GITHUB) {
     // https://developer.github.com/v3/repos/contents/#get-contents
@@ -33,10 +36,11 @@ const getRepoURLContents = async function (repoHost, ownerAndRepo, contentsPath)
       console.error(`Error occurred while fetching ${APIURL}`, error)
     }
   }
+  // @ts-expect-error TS(2554) FIXME: Expected 0-1 arguments, but got 2.
   throw new Error('unsupported host ', repoHost)
 }
 
-const validateRepoURL = function (_url) {
+const validateRepoURL = function (_url: any) {
   // TODO: use `url.URL()` instead
   // eslint-disable-next-line n/no-deprecated-api
   const URL = url.parse(_url)
@@ -44,7 +48,7 @@ const validateRepoURL = function (_url) {
   // other validation logic here
   return GITHUB
 }
-const parseRepoURL = function (repoHost, URL) {
+const parseRepoURL = function (repoHost: any, URL: any) {
   // naive splitting strategy for now
   if (repoHost === GITHUB) {
     // https://developer.github.com/v3/repos/contents/#get-contents
@@ -55,6 +59,7 @@ const parseRepoURL = function (repoHost, URL) {
   throw new Error(`Unsupported host ${repoHost}`)
 }
 
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'module'. Do you need to install ... Remove this comment to see the full error message
 module.exports = {
   parseRepoURL,
   readRepoURL,

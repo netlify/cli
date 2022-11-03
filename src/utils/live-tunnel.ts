@@ -1,13 +1,20 @@
 // @ts-check
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'process'.
 const process = require('process')
 
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'fetch'.
 const fetch = require('node-fetch')
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const pWaitFor = require('p-wait-for')
 
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const { fetchLatestVersion, shouldFetchLatestVersion } = require('../lib/exec-fetcher.cjs')
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'getPathInH... Remove this comment to see the full error message
 const { getPathInHome } = require('../lib/settings.cjs')
 
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'NETLIFYDEV... Remove this comment to see the full error message
 const { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log } = require('./command-helpers.cjs')
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'execa'.
 const execa = require('./execa.cjs')
 
 const PACKAGE_NAME = 'live-tunnel-client'
@@ -18,7 +25,10 @@ const TUNNEL_POLL_INTERVAL = 1e3
 // 5 minutes
 const TUNNEL_POLL_TIMEOUT = 3e5
 
-const createTunnel = async function ({ netlifyApiToken, siteId }) {
+const createTunnel = async function ({
+  netlifyApiToken,
+  siteId
+}: any) {
   await installTunnelClient()
 
   if (!siteId) {
@@ -50,7 +60,11 @@ const createTunnel = async function ({ netlifyApiToken, siteId }) {
   return data
 }
 
-const connectTunnel = function ({ localPort, netlifyApiToken, session }) {
+const connectTunnel = function ({
+  localPort,
+  netlifyApiToken,
+  session
+}: any) {
   const execPath = getPathInHome(['tunnel', 'bin', EXEC_NAME])
   const args = ['connect', '-s', session.id, '-t', netlifyApiToken, '-l', localPort]
   if (process.env.DEBUG) {
@@ -59,7 +73,7 @@ const connectTunnel = function ({ localPort, netlifyApiToken, session }) {
   }
 
   const ps = execa(execPath, args, { stdio: 'inherit' })
-  ps.on('close', (code) => process.exit(code))
+  ps.on('close', (code: any) => process.exit(code))
   ps.on('SIGINT', process.exit)
   ps.on('SIGTERM', process.exit)
 }
@@ -87,7 +101,11 @@ const installTunnelClient = async function () {
   })
 }
 
-const startLiveTunnel = async ({ localPort, netlifyApiToken, siteId }) => {
+const startLiveTunnel = async ({
+  localPort,
+  netlifyApiToken,
+  siteId
+}: any) => {
   const session = await createTunnel({
     siteId,
     netlifyApiToken,
@@ -122,4 +140,5 @@ const startLiveTunnel = async ({ localPort, netlifyApiToken, siteId }) => {
   return session.session_url
 }
 
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'module'. Do you need to install ... Remove this comment to see the full error message
 module.exports = { startLiveTunnel }

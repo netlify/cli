@@ -10,8 +10,9 @@
 // // rawFlags = {stuff: yay!}
 //
 
-const parseRawFlags = function (raw) {
-  const rawFlags = raw.reduce((acc, curr, index, array) => {
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'parseRawFl... Remove this comment to see the full error message
+const parseRawFlags = function (raw: any) {
+  const rawFlags = raw.reduce((acc: any, curr: any, index: any, array: any) => {
     if (/^-{1,2}/.test(curr)) {
       const key = curr.replace(/^-{1,2}/, '')
       const next = array[index + 1]
@@ -28,7 +29,7 @@ const parseRawFlags = function (raw) {
   return rawFlags
 }
 
-const aggressiveJSONParse = function (value) {
+const aggressiveJSONParse = function (value: any) {
   if (value === 'true') {
     return true
   }
@@ -48,6 +49,7 @@ const aggressiveJSONParse = function (value) {
   return parsed
 }
 
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'module'. Do you need to install ... Remove this comment to see the full error message
 module.exports = {
   parseRawFlags,
   aggressiveJSONParse,

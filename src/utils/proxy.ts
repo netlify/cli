@@ -1,39 +1,66 @@
 // @ts-check
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'Buffer'.
 const { Buffer } = require('buffer')
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'once'.
 const { once } = require('events')
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'readFile'.
 const { readFile } = require('fs').promises
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'http'.
 const http = require('http')
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const https = require('https')
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const { isIPv6 } = require('net')
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'path'.
 const path = require('path')
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'util'.
 const util = require('util')
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const zlib = require('zlib')
 
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const contentType = require('content-type')
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'cookie'.
 const cookie = require('cookie')
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'get'.
 const { get } = require('dot-prop')
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const generateETag = require('etag')
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const httpProxy = require('http-proxy')
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const { createProxyMiddleware } = require('http-proxy-middleware')
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const jwtDecode = require('jwt-decode')
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const locatePath = require('locate-path')
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'isEmpty'.
 const isEmpty = require('lodash/isEmpty')
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'pFilter'.
 const pFilter = require('p-filter')
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const toReadableStream = require('to-readable-stream')
 
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const edgeFunctions = require('../lib/edge-functions/index.cjs')
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'fileExists... Remove this comment to see the full error message
 const { fileExistsAsync, isFileAsync } = require('../lib/fs.cjs')
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const renderErrorTemplate = require('../lib/render-error-remplate.cjs')
 
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'NETLIFYDEV... Remove this comment to see the full error message
 const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./command-helpers.cjs')
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'createStre... Remove this comment to see the full error message
 const { createStreamPromise } = require('./create-stream-promise.cjs')
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'headersFor... Remove this comment to see the full error message
 const { headersForPath, parseHeaders } = require('./headers.cjs')
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'createRewr... Remove this comment to see the full error message
 const { createRewriter, onChanges } = require('./rules-proxy.cjs')
 
 const decompress = util.promisify(zlib.gunzip)
 const shouldGenerateETag = Symbol('Internal: response should generate ETag')
 
-const formatEdgeFunctionError = (errorBuffer, acceptsHtml) => {
+const formatEdgeFunctionError = (errorBuffer: any, acceptsHtml: any) => {
   const {
     error: { message, name, stack },
   } = JSON.parse(errorBuffer.toString())
@@ -49,20 +76,20 @@ const formatEdgeFunctionError = (errorBuffer, acceptsHtml) => {
   })
 }
 
-const isInternal = function (url) {
+const isInternal = function (url: any) {
   return url.startsWith('/.netlify/')
 }
-const isFunction = function (functionsPort, url) {
-  return functionsPort && url.match(/^\/.netlify\/(functions|builders)\/.+/)
+const isFunction = function (functionsPort: any, url: any) {
+  return functionsPort && url.match(/^\/.netlify\/(functions|builders)\/.+/);
 }
 
-const getAddonUrl = function (addonsUrls, req) {
+const getAddonUrl = function (addonsUrls: any, req: any) {
   const matches = req.url.match(/^\/.netlify\/([^/]+)(\/.*)/)
   const addonUrl = matches && addonsUrls[matches[1]]
   return addonUrl ? `${addonUrl}${matches[2]}` : null
 }
 
-const getStatic = async function (pathname, publicFolder) {
+const getStatic = async function (pathname: any, publicFolder: any) {
   const alternatives = [pathname, ...alternativePathsFor(pathname)].map((filePath) =>
     path.resolve(publicFolder, filePath.slice(1)),
   )
@@ -75,15 +102,24 @@ const getStatic = async function (pathname, publicFolder) {
   return `/${path.relative(publicFolder, file)}`
 }
 
-const isExternal = function (match) {
-  return match.to && match.to.match(/^https?:\/\//)
+const isExternal = function (match: any) {
+  return match.to && match.to.match(/^https?:\/\//);
 }
 
-const stripOrigin = function ({ hash, pathname, search }) {
+const stripOrigin = function ({
+  hash,
+  pathname,
+  search
+}: any) {
   return `${pathname}${search}${hash}`
 }
 
-const proxyToExternalUrl = function ({ dest, destURL, req, res }) {
+const proxyToExternalUrl = function ({
+  dest,
+  destURL,
+  req,
+  res
+}: any) {
   console.log(`${NETLIFYDEVLOG} Proxying to ${dest}`)
   const handler = createProxyMiddleware({
     target: dest.origin,
@@ -94,24 +130,28 @@ const proxyToExternalUrl = function ({ dest, destURL, req, res }) {
   return handler(req, res, () => {})
 }
 
-const handleAddonUrl = function ({ addonUrl, req, res }) {
+const handleAddonUrl = function ({
+  addonUrl,
+  req,
+  res
+}: any) {
   const dest = new URL(addonUrl)
   const destURL = stripOrigin(dest)
 
   return proxyToExternalUrl({ req, res, dest, destURL })
 }
 
-const isRedirect = function (match) {
+const isRedirect = function (match: any) {
   return match.status && match.status >= 300 && match.status <= 400
 }
 
-const render404 = async function (publicFolder) {
+const render404 = async function (publicFolder: any) {
   const maybe404Page = path.resolve(publicFolder, '404.html')
   try {
     const isFile = await isFileAsync(maybe404Page)
     if (isFile) return await readFile(maybe404Page, 'utf-8')
   } catch (error) {
-    console.warn(NETLIFYDEVWARN, 'Error while serving 404.html file', error.message)
+    console.warn(NETLIFYDEVWARN, 'Error while serving 404.html file', (error as any).message);
   }
 
   return 'Not Found'
@@ -120,7 +160,7 @@ const render404 = async function (publicFolder) {
 // Used as an optimization to avoid dual lookups for missing assets
 const assetExtensionRegExp = /\.(html?|png|jpg|js|css|svg|gif|ico|woff|woff2)$/
 
-const alternativePathsFor = function (url) {
+const alternativePathsFor = function (url: any) {
   if (isFunction(true, url)) {
     return []
   }
@@ -139,13 +179,20 @@ const alternativePathsFor = function (url) {
   return paths
 }
 
-const serveRedirect = async function ({ match, options, proxy, req, res }) {
+const serveRedirect = async function ({
+  match,
+  options,
+  proxy,
+  req,
+  res
+}: any) {
   if (!match) return proxy.web(req, res, options)
 
   options = options || req.proxyOptions || {}
   options.match = null
 
   if (!isEmpty(match.proxyHeaders)) {
+    // @ts-expect-error TS(2550) FIXME: Property 'entries' does not exist on type 'ObjectC... Remove this comment to see the full error message
     Object.entries(match.proxyHeaders).forEach(([key, value]) => {
       req.headers[key] = value
     })
@@ -163,7 +210,7 @@ const serveRedirect = async function ({ match, options, proxy, req, res }) {
   if (match.exceptions && match.exceptions.JWT) {
     // Some values of JWT can start with :, so, make sure to normalize them
     const expectedRoles = new Set(
-      match.exceptions.JWT.split(',').map((value) => (value.startsWith(':') ? value.slice(1) : value)),
+      match.exceptions.JWT.split(',').map((value: any) => value.startsWith(':') ? value.slice(1) : value),
     )
 
     const cookieValues = cookie.parse(req.headers.cookie || '')
@@ -177,13 +224,13 @@ const serveRedirect = async function ({ match, options, proxy, req, res }) {
       try {
         jwtValue = jwtDecode(token) || {}
       } catch (error) {
-        console.warn(NETLIFYDEVWARN, 'Error while decoding JWT provided in request', error.message)
+        console.warn(NETLIFYDEVWARN, 'Error while decoding JWT provided in request', (error as any).message);
         res.writeHead(400)
         res.end('Invalid JWT provided. Please see logs for more info.')
         return
       }
 
-      if ((jwtValue.exp || 0) < Math.round(Date.now() / MILLISEC_TO_SEC)) {
+      if (((jwtValue as any).exp || 0) < Math.round(Date.now() / MILLISEC_TO_SEC)) {
         console.warn(NETLIFYDEVWARN, 'Expired JWT provided in request', req.url)
       } else {
         const presentedRoles = get(jwtValue, options.jwtRolePath) || []
@@ -291,7 +338,7 @@ const serveRedirect = async function ({ match, options, proxy, req, res }) {
   return proxy.web(req, res, options)
 }
 
-const reqToURL = function (req, pathname) {
+const reqToURL = function (req: any, pathname: any) {
   return new URL(
     pathname,
     `${req.protocol || (req.headers.scheme && `${req.headers.scheme}:`) || 'http:'}//${
@@ -302,7 +349,13 @@ const reqToURL = function (req, pathname) {
 
 const MILLISEC_TO_SEC = 1e3
 
-const initializeProxy = async function ({ configPath, distDir, host, port, projectDir }) {
+const initializeProxy = async function ({
+  configPath,
+  distDir,
+  host,
+  port,
+  projectDir
+}: any) {
   const proxy = httpProxy.createProxyServer({
     selfHandleResponse: true,
     target: {
@@ -320,12 +373,12 @@ const initializeProxy = async function ({ configPath, distDir, host, port, proje
     const existingHeadersFiles = await pFilter(watchedHeadersFiles, fileExistsAsync)
     console.log(
       `${NETLIFYDEVLOG} Reloading headers files from`,
-      existingHeadersFiles.map((headerFile) => path.relative(projectDir, headerFile)),
+      existingHeadersFiles.map((headerFile: any) => path.relative(projectDir, headerFile)),
     )
     headers = await parseHeaders({ headersFiles, configPath })
   })
 
-  proxy.before('web', 'stream', (req) => {
+  proxy.before('web', 'stream', (req: any) => {
     // See https://github.com/http-party/node-http-proxy/issues/1219#issuecomment-511110375
     if (req.headers.expect) {
       // eslint-disable-next-line no-underscore-dangle
@@ -334,7 +387,7 @@ const initializeProxy = async function ({ configPath, distDir, host, port, proje
     }
   })
 
-  proxy.on('error', (_, req, res) => {
+  proxy.on('error', (_: any, req: any, res: any) => {
     res.writeHead(500, {
       'Content-Type': 'text/plain',
     })
@@ -345,7 +398,7 @@ const initializeProxy = async function ({ configPath, distDir, host, port, proje
 
     res.end(message)
   })
-  proxy.on('proxyReq', (proxyReq, req) => {
+  proxy.on('proxyReq', (proxyReq: any, req: any) => {
     if (edgeFunctions.isEdgeFunctionsRequest(req)) {
       edgeFunctions.handleProxyRequest(req, proxyReq)
     }
@@ -359,7 +412,7 @@ const initializeProxy = async function ({ configPath, distDir, host, port, proje
       proxyReq.write(req.originalBody)
     }
   })
-  proxy.on('proxyRes', (proxyRes, req, res) => {
+  proxy.on('proxyRes', (proxyRes: any, req: any, res: any) => {
     if (proxyRes.statusCode === 404 || proxyRes.statusCode === 403) {
       if (req.alternativePaths && req.alternativePaths.length !== 0) {
         req.url = req.alternativePaths.shift()
@@ -375,11 +428,11 @@ const initializeProxy = async function ({ configPath, distDir, host, port, proje
       return serveRedirect({ req, res, proxy: handlers, match: null, options: req.proxyOptions })
     }
 
-    const responseData = []
+    const responseData: any = []
     const requestURL = new URL(req.url, `http://${req.headers.host || '127.0.0.1'}`)
     const headersRules = headersForPath(headers, requestURL.pathname)
 
-    proxyRes.on('data', function onData(data) {
+    proxyRes.on('data', function onData(data: any) {
       responseData.push(data)
     })
 
@@ -403,6 +456,7 @@ const initializeProxy = async function ({ configPath, distDir, host, port, proje
         res.setHeader('etag', etag)
       }
 
+      // @ts-expect-error TS(2550) FIXME: Property 'entries' does not exist on type 'ObjectC... Remove this comment to see the full error message
       Object.entries(headersRules).forEach(([key, val]) => {
         res.setHeader(key, val)
       })
@@ -434,7 +488,7 @@ const initializeProxy = async function ({ configPath, distDir, host, port, proje
   })
 
   const handlers = {
-    web: (req, res, options) => {
+    web: (req: any, res: any, options: any) => {
       const requestURL = new URL(req.url, 'http://127.0.0.1')
       req.proxyOptions = options
       req.alternativePaths = alternativePathsFor(requestURL.pathname).map((filePath) => filePath + requestURL.search)
@@ -442,13 +496,20 @@ const initializeProxy = async function ({ configPath, distDir, host, port, proje
       req.headers['x-forwarded-for'] = req.connection.remoteAddress || ''
       return proxy.web(req, res, options)
     },
-    ws: (req, socket, head) => proxy.ws(req, socket, head),
+    ws: (req: any, socket: any, head: any) => proxy.ws(req, socket, head),
   }
 
   return handlers
 }
 
-const onRequest = async ({ addonsUrls, edgeFunctionsProxy, functionsServer, proxy, rewriter, settings }, req, res) => {
+const onRequest = async ({
+  addonsUrls,
+  edgeFunctionsProxy,
+  functionsServer,
+  proxy,
+  rewriter,
+  settings
+}: any, req: any, res: any) => {
   req.originalBody = ['GET', 'OPTIONS', 'HEAD'].includes(req.method)
     ? null
     : await createStreamPromise(req, BYTES_LIMIT)
@@ -483,7 +544,9 @@ const onRequest = async ({ addonsUrls, edgeFunctionsProxy, functionsServer, prox
 
   if (match) {
     // We don't want to generate an ETag for 3xx redirects.
-    req[shouldGenerateETag] = ({ statusCode }) => statusCode < 300 || statusCode >= 400
+    req[shouldGenerateETag] = ({
+      statusCode
+    }: any) => statusCode < 300 || statusCode >= 400
 
     return serveRedirect({ req, res, proxy, match, options })
   }
@@ -491,7 +554,9 @@ const onRequest = async ({ addonsUrls, edgeFunctionsProxy, functionsServer, prox
   // The request will be served by the framework server, which means we want to
   // generate an ETag unless we're rendering an error page. The only way for
   // us to know that is by looking at the status code
-  req[shouldGenerateETag] = ({ statusCode }) => statusCode >= 200 && statusCode < 300
+  req[shouldGenerateETag] = ({
+    statusCode
+  }: any) => statusCode >= 200 && statusCode < 300
 
   const ct = req.headers['content-type'] ? contentType.parse(req).type : ''
   if (
@@ -519,8 +584,8 @@ const startProxy = async function ({
   projectDir,
   settings,
   siteInfo,
-  state,
-}) {
+  state
+}: any) {
   const functionsServer = settings.functionsPort ? `http://127.0.0.1:${settings.functionsPort}` : null
   const edgeFunctionsProxy = await edgeFunctions.initializeProxy({
     config,
@@ -565,7 +630,7 @@ const startProxy = async function ({
     ? https.createServer({ cert: settings.https.cert, key: settings.https.key }, onRequestWithOptions)
     : http.createServer(onRequestWithOptions)
 
-  server.on('upgrade', function onUpgrade(req, socket, head) {
+  server.on('upgrade', function onUpgrade(req: any, socket: any, head: any) {
     proxy.ws(req, socket, head)
   })
 
@@ -578,4 +643,5 @@ const startProxy = async function ({
 
 const BYTES_LIMIT = 30
 
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'module'. Do you need to install ... Remove this comment to see the full error message
 module.exports = { shouldGenerateETag, startProxy }

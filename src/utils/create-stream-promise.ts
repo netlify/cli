@@ -1,3 +1,4 @@
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'Buffer'.
 const { Buffer } = require('buffer')
 
 const SEC_TO_MILLISEC = 1e3
@@ -5,12 +6,13 @@ const SEC_TO_MILLISEC = 1e3
 // 6 MiB
 const DEFAULT_BYTES_LIMIT = 6e6
 
-const createStreamPromise = function (stream, timeoutSeconds, bytesLimit = DEFAULT_BYTES_LIMIT) {
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'createStre... Remove this comment to see the full error message
+const createStreamPromise = function (stream: any, timeoutSeconds: any, bytesLimit = DEFAULT_BYTES_LIMIT) {
   return new Promise(function streamPromiseFunc(resolve, reject) {
-    let data = []
+    let data: any = []
     let dataLength = 0
 
-    let timeoutId = null
+    let timeoutId: any = null
     if (timeoutSeconds != null && Number.isFinite(timeoutSeconds)) {
       timeoutId = setTimeout(() => {
         data = null
@@ -18,7 +20,7 @@ const createStreamPromise = function (stream, timeoutSeconds, bytesLimit = DEFAU
       }, timeoutSeconds * SEC_TO_MILLISEC)
     }
 
-    stream.on('data', function onData(chunk) {
+    stream.on('data', function onData(chunk: any) {
       if (!Array.isArray(data)) {
         // Stream harvesting closed
         return
@@ -32,7 +34,7 @@ const createStreamPromise = function (stream, timeoutSeconds, bytesLimit = DEFAU
       }
     })
 
-    stream.on('error', function onError(error) {
+    stream.on('error', function onError(error: any) {
       data = null
       reject(error)
       clearTimeout(timeoutId)
@@ -43,7 +45,8 @@ const createStreamPromise = function (stream, timeoutSeconds, bytesLimit = DEFAU
         resolve(Buffer.concat(data))
       }
     })
-  })
+  });
 }
 
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'module'. Do you need to install ... Remove this comment to see the full error message
 module.exports = { createStreamPromise }

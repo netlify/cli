@@ -1,9 +1,14 @@
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'readFile'.
 const { readFile } = require('fs').promises
 
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const Configstore = require('configstore')
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const memoizeOne = require('memoize-one')
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const { v4: uuidv4 } = require('uuid')
 
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'getPathInH... Remove this comment to see the full error message
 const { getLegacyPathInHome, getPathInHome } = require('../lib/settings.cjs')
 
 const globalConfigDefaults = {
@@ -29,6 +34,7 @@ const getGlobalConfigOnce = async function () {
   return configStore
 }
 
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'getGlobalC... Remove this comment to see the full error message
 const getGlobalConfig = async function () {
   const retries = 3
   // eslint-disable-next-line fp/no-loops
@@ -44,4 +50,5 @@ const getGlobalConfig = async function () {
 }
 
 // Memoise config result so that we only load it once
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'module'. Do you need to install ... Remove this comment to see the full error message
 module.exports = memoizeOne(getGlobalConfig)

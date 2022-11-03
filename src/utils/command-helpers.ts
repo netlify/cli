@@ -1,11 +1,14 @@
 // @ts-check
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'once'.
 const { once } = require('events')
 const os = require('os')
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'process'.
 const process = require('process')
 const { format, inspect } = require('util')
 
 // eslint-disable-next-line no-restricted-modules
 const { Instance: ChalkInstance } = require('chalk')
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'chokidar'.
 const chokidar = require('chokidar')
 const decache = require('decache')
 const WSL = require('is-wsl')
@@ -13,9 +16,11 @@ const debounce = require('lodash/debounce')
 const { default: omit } = require('omit.js')
 const terminalLink = require('terminal-link')
 
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'name'.
 const { name, version } = require('../../package.json')
 const { clearSpinner, startSpinner } = require('../lib/spinner.cjs')
 
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'getGlobalC... Remove this comment to see the full error message
 const getGlobalConfig = require('./get-global-config.cjs')
 
 /** The parsed process argv without the binary only arguments and flags */
@@ -26,7 +31,7 @@ const argv = process.argv.slice(2)
  * @param  {boolean} noColors - disable chalk colors
  * @return {object} - default or custom chalk instance
  */
-const safeChalk = function (noColors) {
+const safeChalk = function (noColors: any) {
   if (noColors) {
     const colorlessChalk = new ChalkInstance({ level: 0 })
     return colorlessChalk
@@ -34,6 +39,7 @@ const safeChalk = function (noColors) {
   return new ChalkInstance()
 }
 
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'chalk'.
 const chalk = safeChalk(argv.includes('--json'))
 
 /**
@@ -43,7 +49,7 @@ const chalk = safeChalk(argv.includes('--json'))
  * @param {string} [filler]
  * @returns {string}
  */
-const padLeft = (str, count, filler = ' ') => str.padStart(str.length + count, filler)
+const padLeft = (str: any, count: any, filler = ' ') => str.padStart(str.length + count, filler)
 
 const platform = WSL ? 'wsl' : os.platform()
 const arch = os.arch() === 'ia32' ? 'x86' : os.arch()
@@ -57,8 +63,11 @@ const BASE_FLAGS = new Set(['--debug', '--httpProxy', '--httpProxyCertificateFil
 const NETLIFY_CYAN = chalk.rgb(40, 180, 170)
 
 const NETLIFYDEV = `${chalk.greenBright('◈')} ${NETLIFY_CYAN('Netlify Dev')} ${chalk.greenBright('◈')}`
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'NETLIFYDEV... Remove this comment to see the full error message
 const NETLIFYDEVLOG = `${chalk.greenBright('◈')}`
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'NETLIFYDEV... Remove this comment to see the full error message
 const NETLIFYDEVWARN = `${chalk.yellowBright('◈')}`
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'NETLIFYDEV... Remove this comment to see the full error message
 const NETLIFYDEVERR = `${chalk.redBright('◈')}`
 
 const BANG = process.platform === 'win32' ? '»' : '›'
@@ -71,7 +80,7 @@ const BANG = process.platform === 'win32' ? '»' : '›'
  * @example
  * options.sort(sortOptions)
  */
-const sortOptions = (optionA, optionB) => {
+const sortOptions = (optionA: any, optionB: any) => {
   // base flags should be always at the bottom
   if (BASE_FLAGS.has(optionA.long) || BASE_FLAGS.has(optionB.long)) {
     return -1
@@ -89,7 +98,10 @@ const TOKEN_TIMEOUT = 3e5
  * @param {object} config.ticket
  * @returns
  */
-const pollForToken = async ({ api, ticket }) => {
+const pollForToken = async ({
+  api,
+  ticket
+}: any) => {
   const spinner = startSpinner({ text: 'Waiting for authorization...' })
   try {
     const accessToken = await api.getAccessToken(ticket, { timeout: TOKEN_TIMEOUT })
@@ -98,7 +110,7 @@ const pollForToken = async ({ api, ticket }) => {
     }
     return accessToken
   } catch (error_) {
-    if (error_.name === 'TimeoutError') {
+    if ((error_ as any).name === 'TimeoutError') {
       error(
         `Timed out waiting for authorization. If you do not have a ${chalk.bold.greenBright(
           'Netlify',
@@ -107,6 +119,7 @@ const pollForToken = async ({ api, ticket }) => {
         )}, then run ${chalk.cyanBright('netlify login')} again.`,
       )
     } else {
+      // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
       error(error_)
     }
   } finally {
@@ -119,7 +132,7 @@ const pollForToken = async ({ api, ticket }) => {
  * @param {string} [tokenFromOptions] optional token from the provided --auth options
  * @returns {Promise<[null|string, 'flag' | 'env' |'config' |'not found']>}
  */
-const getToken = async (tokenFromOptions) => {
+const getToken = async (tokenFromOptions: any) => {
   // 1. First honor command flag --auth
   if (tokenFromOptions) {
     return [tokenFromOptions, 'flag']
@@ -153,7 +166,8 @@ const logJson = (message = '') => {
   }
 }
 
-const log = (message = '', ...args) => {
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'log'.
+const log = (message = '', ...args: any[]) => {
   // If  --silent or --json flag passed disable logger
   if (argv.includes('--json') || argv.includes('--silent') || isDefaultJson()) {
     return
@@ -166,6 +180,7 @@ const log = (message = '', ...args) => {
  * logs a warning message
  * @param {string} message
  */
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'warn'.
 const warn = (message = '') => {
   const bang = chalk.yellow(BANG)
   log(` ${bang}   Warning: ${message}`)
@@ -177,11 +192,14 @@ const warn = (message = '') => {
  * @param {object} [options]
  * @param {boolean} [options.exit]
  */
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'error'.
 const error = (message = '', options = {}) => {
+  // @ts-expect-error TS(2358) FIXME: The left-hand side of an 'instanceof' expression m... Remove this comment to see the full error message
   const err = message instanceof Error ? message : new Error(message)
-  if (options.exit === false) {
+  if ((options as any).exit === false) {
     const bang = chalk.red(BANG)
     if (process.env.DEBUG) {
+      // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
       process.stderr.write(` ${bang}   Warning: ${err.stack.split('\n').join(`\n ${bang}   `)}\n`)
     } else {
       process.stderr.write(` ${bang}   ${chalk.red(`${err.name}:`)} ${err.message}\n`)
@@ -199,10 +217,9 @@ const exit = (code = 0) => {
 // several ways. It detects it by checking if `build.publish` is `undefined`.
 // However, `@netlify/config` adds a default value to `build.publish`.
 // This removes it.
-const normalizeConfig = (config) =>
-  config.build.publishOrigin === 'default'
-    ? { ...config, build: omit(config.build, ['publish', 'publishOrigin']) }
-    : config
+const normalizeConfig = (config: any) => config.build.publishOrigin === 'default'
+  ? { ...config, build: omit(config.build, ['publish', 'publishOrigin']) }
+  : config
 
 const DEBOUNCE_WAIT = 100
 
@@ -216,7 +233,12 @@ const DEBOUNCE_WAIT = 100
  * @param {() => any} [opts.onChange]
  * @param {() => any} [opts.onUnlink]
  */
-const watchDebounced = async (target, { depth, onAdd = () => {}, onChange = () => {}, onUnlink = () => {} }) => {
+const watchDebounced = async (target: any, {
+  depth,
+  onAdd = () => {},
+  onChange = () => {},
+  onUnlink = () => {}
+}: any) => {
   const watcher = chokidar.watch(target, { depth, ignored: /node_modules/, ignoreInitial: true })
 
   await once(watcher, 'ready')
@@ -226,15 +248,15 @@ const watchDebounced = async (target, { depth, onAdd = () => {}, onChange = () =
   const debouncedOnAdd = debounce(onAdd, DEBOUNCE_WAIT)
 
   watcher
-    .on('change', (path) => {
+    .on('change', (path: any) => {
       decache(path)
       debouncedOnChange(path)
     })
-    .on('unlink', (path) => {
+    .on('unlink', (path: any) => {
       decache(path)
       debouncedOnUnlink(path)
     })
-    .on('add', (path) => {
+    .on('add', (path: any) => {
       decache(path)
       debouncedOnAdd(path)
     })
@@ -242,7 +264,7 @@ const watchDebounced = async (target, { depth, onAdd = () => {}, onChange = () =
   return watcher
 }
 
-const getTerminalLink = (text, url) => terminalLink(text, url, { fallback: () => `${text} ${url}` })
+const getTerminalLink = (text: any, url: any) => terminalLink(text, url, { fallback: () => `${text} ${url}` })
 
 module.exports = {
   BANG,

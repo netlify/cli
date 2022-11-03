@@ -1,23 +1,34 @@
 // @ts-check
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const { EOL } = require('os')
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'path'.
 const path = require('path')
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'process'.
 const process = require('process')
 
+// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module '@net... Remove this comment to see the full error message
 const frameworkInfoPromise = import('@netlify/framework-info')
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const fuzzy = require('fuzzy')
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'getPort'.
 const getPort = require('get-port')
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const isPlainObject = require('is-plain-obj')
 
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const { readFileAsyncCatchError } = require('../lib/fs.cjs')
 
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'NETLIFYDEV... Remove this comment to see the full error message
 const { NETLIFYDEVWARN, chalk, log } = require('./command-helpers.cjs')
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'acquirePor... Remove this comment to see the full error message
 const { acquirePort } = require('./dev.cjs')
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const { getInternalFunctionsDir } = require('./functions/index.cjs')
 
-const formatProperty = (str) => chalk.magenta(`'${str}'`)
-const formatValue = (str) => chalk.green(`'${str}'`)
+const formatProperty = (str: any) => chalk.magenta(`'${str}'`)
+const formatValue = (str: any) => chalk.green(`'${str}'`)
 
-const readHttpsSettings = async (options) => {
+const readHttpsSettings = async (options: any) => {
   if (!isPlainObject(options)) {
     throw new TypeError(
       `https options should be an object with ${formatProperty('keyFile')} and ${formatProperty(
@@ -49,7 +60,10 @@ const readHttpsSettings = async (options) => {
   return { key, cert, keyFilePath: path.resolve(keyFile), certFilePath: path.resolve(certFile) }
 }
 
-const validateStringProperty = ({ devConfig, property }) => {
+const validateStringProperty = ({
+  devConfig,
+  property
+}: any) => {
   if (devConfig[property] && typeof devConfig[property] !== 'string') {
     const formattedProperty = formatProperty(property)
     throw new TypeError(
@@ -58,7 +72,10 @@ const validateStringProperty = ({ devConfig, property }) => {
   }
 }
 
-const validateNumberProperty = ({ devConfig, property }) => {
+const validateNumberProperty = ({
+  devConfig,
+  property
+}: any) => {
   if (devConfig[property] && typeof devConfig[property] !== 'number') {
     const formattedProperty = formatProperty(property)
     throw new TypeError(
@@ -67,7 +84,9 @@ const validateNumberProperty = ({ devConfig, property }) => {
   }
 }
 
-const validateFrameworkConfig = ({ devConfig }) => {
+const validateFrameworkConfig = ({
+  devConfig
+}: any) => {
   validateStringProperty({ devConfig, property: 'command' })
   validateNumberProperty({ devConfig, property: 'port' })
   validateNumberProperty({ devConfig, property: 'targetPort' })
@@ -81,7 +100,10 @@ const validateFrameworkConfig = ({ devConfig }) => {
   }
 }
 
-const validateConfiguredPort = ({ detectedPort, devConfig }) => {
+const validateConfiguredPort = ({
+  detectedPort,
+  devConfig
+}: any) => {
   if (devConfig.port && devConfig.port === detectedPort) {
     const formattedPort = formatProperty('port')
     throw new Error(
@@ -100,7 +122,9 @@ const getDefaultDist = () => {
   return process.cwd()
 }
 
-const getStaticServerPort = async ({ devConfig }) => {
+const getStaticServerPort = async ({
+  devConfig
+}: any) => {
   const port = await acquirePort({
     configuredPort: devConfig.staticServerPort,
     defaultPort: DEFAULT_STATIC_PORT,
@@ -118,7 +142,11 @@ const getStaticServerPort = async ({ devConfig }) => {
  * @param {string} param0.projectDir
  * @returns {Promise<import('./types').BaseServerSettings>}
  */
-const handleStaticServer = async ({ devConfig, options, projectDir }) => {
+const handleStaticServer = async ({
+  devConfig,
+  options,
+  projectDir
+}: any) => {
   validateNumberProperty({ devConfig, property: 'staticServerPort' })
 
   if (options.dir) {
@@ -156,7 +184,7 @@ const handleStaticServer = async ({ devConfig, options, projectDir }) => {
  * @param {import('./types').FrameworkInfo} framework
  * @returns {import('./types').BaseServerSettings}
  */
-const getSettingsFromFramework = (framework) => {
+const getSettingsFromFramework = (framework: any) => {
   const {
     build: { directory: dist },
     dev: {
@@ -176,17 +204,21 @@ const getSettingsFromFramework = (framework) => {
     dist: staticDir || dist,
     framework: frameworkName,
     env,
-    pollingStrategies: pollingStrategies.map(({ name }) => name),
+    pollingStrategies: pollingStrategies.map(({
+      name
+    }: any) => name),
     plugins,
-  }
+  };
 }
 
-const hasDevCommand = (framework) => Array.isArray(framework.dev.commands) && framework.dev.commands.length !== 0
+const hasDevCommand = (framework: any) => Array.isArray(framework.dev.commands) && framework.dev.commands.length !== 0
 
-const detectFrameworkSettings = async ({ projectDir }) => {
+const detectFrameworkSettings = async ({
+  projectDir
+}: any) => {
   const { listFrameworks } = await frameworkInfoPromise
   const projectFrameworks = await listFrameworks({ projectDir })
-  const frameworks = projectFrameworks.filter((framework) => hasDevCommand(framework))
+  const frameworks = projectFrameworks.filter((framework: any) => hasDevCommand(framework))
 
   if (frameworks.length === 1) {
     return getSettingsFromFramework(frameworks[0])
@@ -194,8 +226,10 @@ const detectFrameworkSettings = async ({ projectDir }) => {
 
   if (frameworks.length > 1) {
     // performance optimization, load inquirer on demand
+    // @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
     // eslint-disable-next-line n/global-require
     const inquirer = require('inquirer')
+    // @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
     // eslint-disable-next-line n/global-require
     const inquirerAutocompletePrompt = require('inquirer-autocomplete-prompt')
     /** multiple matching detectors, make the user choose */
@@ -205,7 +239,7 @@ const detectFrameworkSettings = async ({ projectDir }) => {
       name: 'chosenFramework',
       message: `Multiple possible start commands found`,
       type: 'autocomplete',
-      source(_, input) {
+      source(_: any, input: any) {
         if (!input || input === '') {
           return scriptInquirerOptions
         }
@@ -223,14 +257,18 @@ const detectFrameworkSettings = async ({ projectDir }) => {
   }
 }
 
-const hasCommandAndTargetPort = ({ devConfig }) => devConfig.command && devConfig.targetPort
+const hasCommandAndTargetPort = ({
+  devConfig
+}: any) => devConfig.command && devConfig.targetPort
 
 /**
  * Creates settings for the custom framework
  * @param {*} param0
  * @returns {import('./types').BaseServerSettings}
  */
-const handleCustomFramework = ({ devConfig }) => {
+const handleCustomFramework = ({
+  devConfig
+}: any) => {
   if (!hasCommandAndTargetPort({ devConfig })) {
     throw new Error(
       `${formatProperty('command')} and ${formatProperty('targetPort')} properties are required when ${formatProperty(
@@ -247,7 +285,10 @@ const handleCustomFramework = ({ devConfig }) => {
   }
 }
 
-const mergeSettings = async ({ devConfig, frameworkSettings = {} }) => {
+const mergeSettings = async ({
+  devConfig,
+  frameworkSettings = {}
+}: any) => {
   const {
     command: frameworkCommand,
     frameworkPort: frameworkDetectedPort,
@@ -277,7 +318,10 @@ const mergeSettings = async ({ devConfig, frameworkSettings = {} }) => {
  * @param {*} param0
  * @returns {Promise<import('./types').BaseServerSettings>}
  */
-const handleForcedFramework = async ({ devConfig, projectDir }) => {
+const handleForcedFramework = async ({
+  devConfig,
+  projectDir
+}: any) => {
   // this throws if `devConfig.framework` is not a supported framework
   const { getFramework } = await frameworkInfoPromise
   const frameworkSettings = getSettingsFromFramework(await getFramework(devConfig.framework, { projectDir }))
@@ -291,7 +335,8 @@ const handleForcedFramework = async ({ devConfig, projectDir }) => {
  * @param {string} projectDir
  * @returns {Promise<import('./types').ServerSettings>}
  */
-const detectServerSettings = async (devConfig, options, projectDir) => {
+// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'detectServ... Remove this comment to see the full error message
+const detectServerSettings = async (devConfig: any, options: any, projectDir: any) => {
   validateStringProperty({ devConfig, property: 'framework' })
 
   /** @type {Partial<import('./types').BaseServerSettings>} */
@@ -314,7 +359,7 @@ const detectServerSettings = async (devConfig, options, projectDir) => {
       settings = await mergeSettings({ devConfig, frameworkSettings })
     }
 
-    settings.plugins = frameworkSettings && frameworkSettings.plugins
+    (settings as any).plugins = frameworkSettings && frameworkSettings.plugins;
   } else if (devConfig.framework === '#custom') {
     validateFrameworkConfig({ devConfig })
     // when the users wants to configure `command` and `targetPort`
@@ -325,14 +370,14 @@ const detectServerSettings = async (devConfig, options, projectDir) => {
     settings = await handleForcedFramework({ devConfig, projectDir })
   }
 
-  validateConfiguredPort({ devConfig, detectedPort: settings.frameworkPort })
+  validateConfiguredPort({ devConfig, detectedPort: (settings as any).frameworkPort });
 
   const acquiredPort = await acquirePort({
     configuredPort: devConfig.port,
     defaultPort: DEFAULT_PORT,
     errorMessage: `Could not acquire required ${formatProperty('port')}`,
   })
-  const functionsDir = devConfig.functions || settings.functions
+  const functionsDir = devConfig.functions || (settings as any).functions;
   const internalFunctionsDir = await getInternalFunctionsDir({ base: projectDir })
   const shouldStartFunctionsServer = Boolean(functionsDir || internalFunctionsDir)
 
@@ -347,28 +392,28 @@ const detectServerSettings = async (devConfig, options, projectDir) => {
   }
 }
 
-const filterSettings = function (scriptInquirerOptions, input) {
-  const filterOptions = scriptInquirerOptions.map((scriptInquirerOption) => scriptInquirerOption.name)
+const filterSettings = function (scriptInquirerOptions: any, input: any) {
+  const filterOptions = scriptInquirerOptions.map((scriptInquirerOption: any) => scriptInquirerOption.name)
   // TODO: remove once https://github.com/sindresorhus/eslint-plugin-unicorn/issues/1394 is fixed
   // eslint-disable-next-line unicorn/no-array-method-this-argument
   const filteredSettings = fuzzy.filter(input, filterOptions)
   const filteredSettingNames = new Set(
-    filteredSettings.map((filteredSetting) => (input ? filteredSetting.string : filteredSetting)),
+    filteredSettings.map((filteredSetting: any) => input ? filteredSetting.string : filteredSetting),
   )
-  return scriptInquirerOptions.filter((t) => filteredSettingNames.has(t.name))
+  return scriptInquirerOptions.filter((t: any) => filteredSettingNames.has(t.name));
 }
 
-const formatSettingsArrForInquirer = function (frameworks) {
-  const formattedArr = frameworks.map((framework) =>
-    framework.dev.commands.map((command) => ({
-      name: `[${chalk.yellow(framework.name)}] '${command}'`,
-      value: { ...framework, commands: [command] },
-      short: `${framework.name}-${command}`,
-    })),
+const formatSettingsArrForInquirer = function (frameworks: any) {
+  const formattedArr = frameworks.map((framework: any) => framework.dev.commands.map((command: any) => ({
+    name: `[${chalk.yellow(framework.name)}] '${command}'`,
+    value: { ...framework, commands: [command] },
+    short: `${framework.name}-${command}`
+  })),
   )
   return formattedArr.flat()
 }
 
+// @ts-expect-error TS(2580) FIXME: Cannot find name 'module'. Do you need to install ... Remove this comment to see the full error message
 module.exports = {
   detectServerSettings,
 }
