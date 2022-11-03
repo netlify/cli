@@ -1,13 +1,9 @@
-// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'inquirer'.
 const inquirer = require('inquirer')
 
-// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'log'.
 const { exit, log } = require('../command-helpers.cjs')
 
-// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'createDepl... Remove this comment to see the full error message
 const { createDeployKey, getBuildSettings, saveNetlifyToml, setupSite } = require('./utils.cjs')
 
-// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'addDeployK... Remove this comment to see the full error message
 const addDeployKey = async ({
   deployKey
 }: $TSFixMe) => {
@@ -44,7 +40,6 @@ const getRepoPath = async ({
   return repoPath
 }
 
-// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'addDeployH... Remove this comment to see the full error message
 const addDeployHook = async ({
   deployHook
 }: $TSFixMe) => {
@@ -114,7 +109,6 @@ module.exports = async function configManual({
     pluginsToInstall,
   })
   const deployHookAdded = await addDeployHook({ deployHook: updatedSite.deploy_hook })
-  // @ts-expect-error TS(1345) FIXME: An expression of type 'void' cannot be tested for ... Remove this comment to see the full error message
   if (!deployHookAdded) {
     exit()
   }

@@ -1,32 +1,18 @@
-// @ts-check
-// @ts-expect-error TS(6200) FIXME: Definitions of the following identifiers conflict ... Remove this comment to see the full error message
 const { existsSync } = require('fs')
-// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const { writeFile } = require('fs').promises
-// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const path = require('path')
-// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const process = require('process')
 
-// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const cleanDeep = require('clean-deep')
-// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'inquirer'.
 const inquirer = require('inquirer')
-// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const isEmpty = require('lodash/isEmpty')
 
-// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const { normalizeBackslash } = require('../../lib/path.cjs')
-// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const { log } = require('../command-helpers.cjs')
-// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'warn'.
 const { chalk, error: failAndExit, warn } = require('../command-helpers.cjs')
 
-// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'getFramewo... Remove this comment to see the full error message
 const { getFrameworkInfo } = require('./frameworks.cjs')
-// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'detectNode... Remove this comment to see the full error message
 const { detectNodeVersion } = require('./node-version.cjs')
-// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'getRecomme... Remove this comment to see the full error message
 const { getRecommendPlugins, getUIPlugins } = require('./plugins.cjs')
 
 const normalizeDir = ({
@@ -283,5 +269,4 @@ const setupSite = async ({
   return updatedSite
 }
 
-// @ts-expect-error TS(2580) FIXME: Cannot find name 'module'. Do you need to install ... Remove this comment to see the full error message
 module.exports = { getBuildSettings, saveNetlifyToml, formatErrorMessage, createDeployKey, updateSite, setupSite }

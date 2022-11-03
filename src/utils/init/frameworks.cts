@@ -1,8 +1,6 @@
-// @ts-check
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module '@net... Remove this comment to see the full error message
 const frameworkInfoPromise = import('@netlify/framework-info')
 
-// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'getFramewo... Remove this comment to see the full error message
 const getFrameworkInfo = async ({
   baseDirectory,
   nodeVersion
@@ -28,5 +26,4 @@ const getFrameworkInfo = async ({
   return {}
 }
 
-// @ts-expect-error TS(2580) FIXME: Cannot find name 'module'. Do you need to install ... Remove this comment to see the full error message
 module.exports = { getFrameworkInfo }

@@ -1,12 +1,8 @@
-// @ts-check
-// @ts-expect-error TS(6200) FIXME: Definitions of the following identifiers conflict ... Remove this comment to see the full error message
 const { Octokit } = require('@octokit/rest')
 
-// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'chalk'.
 const { chalk, error: failAndExit, log } = require('../command-helpers.cjs')
 const { getGitHubToken: ghauth } = require('../gh-auth.cjs')
 
-// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'createDepl... Remove this comment to see the full error message
 const { createDeployKey, formatErrorMessage, getBuildSettings, saveNetlifyToml, setupSite } = require('./utils.cjs')
 
 /**
@@ -66,7 +62,6 @@ const getGitHubClient = (token: $TSFixMe) => new Octokit({
   auth: `token ${token}`,
 })
 
-// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'addDeployK... Remove this comment to see the full error message
 const addDeployKey = async ({
   api,
   octokit,
@@ -136,7 +131,6 @@ const hookExists = async ({
   }
 }
 
-// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'addDeployH... Remove this comment to see the full error message
 const addDeployHook = async ({
   deployHook,
   octokit,
@@ -241,7 +235,6 @@ const addNotificationHooks = async ({
  * @param {string} config.repoOwner
  * @param {string} config.siteId
  */
-// @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'configGith... Remove this comment to see the full error message
 const configGithub = async ({
   command,
   repoName,

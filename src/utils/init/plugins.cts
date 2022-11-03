@@ -13,5 +13,4 @@ const getUIPlugins = (configPlugins) =>
   // @ts-expect-error TS(1212) FIXME: Identifier expected. 'package' is a reserved word ... Remove this comment to see the full error message
   configPlugins.filter(({ origin }) => origin === 'ui').map(({ package }) => ({ package }))
 
-// @ts-expect-error TS(2580) FIXME: Cannot find name 'module'. Do you need to install ... Remove this comment to see the full error message
 module.exports = { getRecommendPlugins, getUIPlugins }
