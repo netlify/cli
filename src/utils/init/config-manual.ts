@@ -1,4 +1,3 @@
-// @ts-check
 // @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'inquirer'.
 const inquirer = require('inquirer')
 

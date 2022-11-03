@@ -4,7 +4,6 @@ const { Octokit } = require('@octokit/rest')
 
 // @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'chalk'.
 const { chalk, error: failAndExit, log } = require('../command-helpers.cjs')
-// @ts-expect-error TS(2580) FIXME: Cannot find name 'require'. Do you need to install... Remove this comment to see the full error message
 const { getGitHubToken: ghauth } = require('../gh-auth.cjs')
 
 // @ts-expect-error TS(2451) FIXME: Cannot redeclare block-scoped variable 'createDepl... Remove this comment to see the full error message
@@ -302,5 +301,4 @@ const configGithub = async ({
   await addNotificationHooks({ siteId, api, token })
 }
 
-// @ts-expect-error TS(2580) FIXME: Cannot find name 'module'. Do you need to install ... Remove this comment to see the full error message
 module.exports = { configGithub, getGitHubToken }
