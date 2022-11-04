@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "12.0.11",
+  "version": "12.1.0",
   "author": "Netlify Inc.",
   "type": "module",
   "contributors": [
@@ -229,7 +229,7 @@
   "dependencies": {
     "@netlify/build": "^28.1.5",
     "@netlify/config": "^19.1.1",
-    "@netlify/edge-bundler": "^3.1.0",
+    "@netlify/edge-bundler": "^3.1.1",
     "@netlify/framework-info": "^9.3.0",
     "@netlify/local-functions-proxy": "^1.1.1",
     "@netlify/zip-it-and-ship-it": "^8.0.0",
