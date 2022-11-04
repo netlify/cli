@@ -713,11 +713,15 @@ test('should respect in-source configuration from edge functions', async (t) => 
 
     await builder.buildAsync()
 
-    await withDevServer({ cwd: builder.directory }, async ({ port }) => {
+    await withDevServer({ cwd: builder.directory }, async ({ port, waitForLogMatching }) => {
       const res1 = await got(`http://localhost:${port}/hello-1`, { throwHttpErrors: false })
 
       t.is(res1.statusCode, 200)
       t.is(res1.body, 'Hello world')
+
+      // wait for file watcher to be up and running, which might take a little
+      // if we do not wait, the next file change will not be picked up
+      await pause(500)
 
       await builder
         .withEdgeFunction({
@@ -727,8 +731,7 @@ test('should respect in-source configuration from edge functions', async (t) => 
         })
         .buildAsync()
 
-      const DETECT_FILE_CHANGE_DELAY = 500
-      await pause(DETECT_FILE_CHANGE_DELAY)
+      await waitForLogMatching('Reloaded edge function')
 
       const res2 = await got(`http://localhost:${port}/hello-1`, { throwHttpErrors: false })
 

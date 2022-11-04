@@ -227,8 +227,8 @@
     "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,tools,scripts,site,tests,.github}/**/*.{mjs,cjs,js,md,yml,json,html}\" \"*.{mjs,cjs,js,yml,json,html}\" \".*.{mjs,cjs,js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\" \"!**/*/package-lock.json\" \"!.github/**/*.md\""
   },
   "dependencies": {
-    "@netlify/build": "^28.1.5",
-    "@netlify/config": "^19.1.1",
+    "@netlify/build": "^28.1.9",
+    "@netlify/config": "^19.1.2",
     "@netlify/edge-bundler": "^3.1.1",
     "@netlify/framework-info": "^9.5.0",
     "@netlify/local-functions-proxy": "^1.1.1",
@@ -295,7 +295,7 @@
     "minimist": "^1.2.5",
     "multiparty": "^4.2.1",
     "netlify": "^13.0.1",
-    "netlify-headers-parser": "^7.0.0",
+    "netlify-headers-parser": "^7.0.1",
     "netlify-onegraph-internal": "0.10.1",
     "netlify-redirect-parser": "^14.0.1",
     "netlify-redirector": "^0.3.1",

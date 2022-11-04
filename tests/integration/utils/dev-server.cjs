@@ -64,6 +64,18 @@ const startServer = async ({
             port,
             errorBuffer,
             outputBuffer,
+            waitForLogMatching(match) {
+              // eslint-disable-next-line promise/param-names
+              return new Promise((resolveWait) => {
+                const listener = (stdoutData) => {
+                  if (stdoutData.includes(match)) {
+                    ps.removeListener('data', listener)
+                    resolveWait()
+                  }
+                }
+                ps.stdout.on('data', listener)
+              })
+            },
             get output() {
               // these are getters so we do the actual joining as late as possible as the array might still get
               // populated after we resolve here
