@@ -1,6 +1,6 @@
 // @ts-check
 const logSymbols = require('log-symbols')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'ora'.
+
 const ora = require('ora')
 
 /**
@@ -9,10 +9,10 @@ const ora = require('ora')
  * @param {string} config.text
  * @returns {ora.Ora}
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'startSpinn... Remove this comment to see the full error message
+
 const startSpinner = ({
   text
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) =>
   ora({
     text,
@@ -26,12 +26,12 @@ const startSpinner = ({
  * @param {string} [config.text]
  * @returns {void}
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'stopSpinne... Remove this comment to see the full error message
+
 const stopSpinner = ({
   error,
   spinner,
   text
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   if (!spinner) {
     return
@@ -50,10 +50,10 @@ const stopSpinner = ({
  * @param {ora.Ora} config.spinner
  * @returns {void}
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'clearSpinn... Remove this comment to see the full error message
+
 const clearSpinner = ({
   spinner
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   if (spinner) {
     spinner.stop()

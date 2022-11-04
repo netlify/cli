@@ -1,7 +1,7 @@
 // @ts-check
 const { fileURLToPath } = require('url')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'NETLIFYDEV... Remove this comment to see the full error message
+
 const { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn, watchDebounced } = require('../../utils/command-helpers.cjs')
 
 /**
@@ -18,41 +18,41 @@ const { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn, watchDebounced } = requi
  * @property {string} path
  */
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'EdgeFuncti... Remove this comment to see the full error message
+
 class EdgeFunctionsRegistry {
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   buildError: $TSFixMe;
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   bundler: $TSFixMe;
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   configPath: $TSFixMe;
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   configWatcher: $TSFixMe;
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   declarationsFromConfig: $TSFixMe;
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   declarationsFromSource: $TSFixMe;
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   dependencyPaths: $TSFixMe;
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   directories: $TSFixMe;
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   directoryWatchers: $TSFixMe;
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   env: $TSFixMe;
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   functionPaths: $TSFixMe;
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   functions: $TSFixMe;
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   getUpdatedConfig: $TSFixMe;
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   initialScan: $TSFixMe;
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   initialization: $TSFixMe;
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   internalFunctions: $TSFixMe;
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   runIsolate: $TSFixMe;
   /**
    * @param {Object} opts
@@ -76,7 +76,7 @@ class EdgeFunctionsRegistry {
     internalFunctions,
     projectDir,
     runIsolate
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   }: $TSFixMe) {
     /**
      * @type {import('@netlify/edge-bundler')}
@@ -159,7 +159,7 @@ class EdgeFunctionsRegistry {
   /**
    * @param {EdgeFunction[]} functions
    */
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   async build(functions: $TSFixMe) {
     try {
       const { functionsConfig, graph, success } = await this.runIsolate(functions, this.env, {
@@ -187,10 +187,10 @@ class EdgeFunctionsRegistry {
 
   async checkForAddedOrDeletedFunctions() {
     const functionsFound = await this.bundler.find(this.directories)
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     const newFunctions = functionsFound.filter((func: $TSFixMe) => {
       const functionExists = this.functions.some(
-        // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+        
         (existingFunc: $TSFixMe) => func.name === existingFunc.name && func.path === existingFunc.path,
       )
 
@@ -198,16 +198,16 @@ class EdgeFunctionsRegistry {
         return
       }
 
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       const hasDeclaration = this.declarationsFromConfig.some((declaration: $TSFixMe) => declaration.function === func.name)
 
       // We only load the function if there's a config declaration for it.
       return hasDeclaration
     })
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     const deletedFunctions = this.functions.filter((existingFunc: $TSFixMe) => {
       const functionExists = functionsFound.some(
-        // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+        
         (func: $TSFixMe) => func.name === existingFunc.name && func.path === existingFunc.path,
       )
 
@@ -223,12 +223,12 @@ class EdgeFunctionsRegistry {
     try {
       await this.build(functionsFound)
 
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       deletedFunctions.forEach((func: $TSFixMe) => {
         EdgeFunctionsRegistry.logDeletedFunction(func)
       })
 
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       newFunctions.forEach((func: $TSFixMe) => {
         EdgeFunctionsRegistry.logAddedFunction(func)
       })
@@ -237,7 +237,7 @@ class EdgeFunctionsRegistry {
     }
   }
 
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   getDeclarationsFromConfig(config: $TSFixMe) {
     const { edge_functions: userFunctions = [] } = config
 
@@ -248,17 +248,17 @@ class EdgeFunctionsRegistry {
     return declarations
   }
 
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   static getEnvironmentVariables(envConfig: $TSFixMe) {
     const env = Object.create(null)
     Object.entries(envConfig).forEach(([key, variable]) => {
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     if ((variable as $TSFixMe).sources.includes('ui') ||
-        // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+        
         (variable as $TSFixMe).sources.includes('account') ||
-        // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+        
         (variable as $TSFixMe).sources.includes('addons')) {
-        // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+        
         env[key] = (variable as $TSFixMe).value;
     }
 });
@@ -272,7 +272,7 @@ class EdgeFunctionsRegistry {
     return env
   }
 
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   async handleFileChange(path: $TSFixMe) {
     const matchingFunctions = new Set(
       [this.functionPaths.get(path), ...(this.dependencyPaths.get(path) || [])].filter(Boolean),
@@ -308,7 +308,7 @@ class EdgeFunctionsRegistry {
   initialize() {
     this.initialization =
       this.initialization ||
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       // eslint-disable-next-line promise/prefer-await-to-then
       this.initialScan.then(async (functions: $TSFixMe) => {
         try {
@@ -323,12 +323,12 @@ class EdgeFunctionsRegistry {
     return this.initialization
   }
 
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   static logAddedFunction(func: $TSFixMe) {
     log(`${NETLIFYDEVLOG} ${chalk.green('Loaded')} edge function ${chalk.yellow(func.name)}`)
   }
 
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   static logDeletedFunction(func: $TSFixMe) {
     log(`${NETLIFYDEVLOG} ${chalk.magenta('Removed')} edge function ${chalk.yellow(func.name)}`)
   }
@@ -336,35 +336,35 @@ class EdgeFunctionsRegistry {
   /**
    * @param {string} urlPath
    */
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   async matchURLPath(urlPath: $TSFixMe) {
     const declarations = this.mergeDeclarations()
     const manifest = await this.bundler.generateManifest({
       declarations,
       functions: this.functions,
     })
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     const routes = manifest.routes.map((route: $TSFixMe) => ({
       ...route,
       pattern: new RegExp(route.pattern)
     }))
     const functionNames = routes.filter(({
       pattern
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     }: $TSFixMe) => pattern.test(urlPath)).map((route: $TSFixMe) => route.function)
     const orphanedDeclarations = await this.matchURLPathAgainstOrphanedDeclarations(urlPath)
 
     return { functionNames, orphanedDeclarations }
   }
 
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   async matchURLPathAgainstOrphanedDeclarations(urlPath: $TSFixMe) {
     // `generateManifest` will only include functions for which there is both a
     // function file and a config declaration, but we want to catch cases where
     // a config declaration exists without a matching function file. To do that
     // we compute a list of functions from the declarations (the `path` doesn't
     // really matter).
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     const functions = this.declarationsFromConfig.map((declaration: $TSFixMe) => ({
       name: declaration.function,
       path: ''
@@ -373,15 +373,15 @@ class EdgeFunctionsRegistry {
       declarations: this.declarationsFromConfig,
       functions,
     })
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     const routes = manifest.routes.map((route: $TSFixMe) => ({
       ...route,
       pattern: new RegExp(route.pattern)
     }))
     const functionNames = routes
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       .filter((route: $TSFixMe) => {
-        // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+        
         const hasFunctionFile = this.functions.some((func: $TSFixMe) => func.name === route.function)
 
         if (hasFunctionFile) {
@@ -390,7 +390,7 @@ class EdgeFunctionsRegistry {
 
         return route.pattern.test(urlPath)
       })
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       .map((route: $TSFixMe) => route.function)
 
     return functionNames
@@ -400,7 +400,7 @@ class EdgeFunctionsRegistry {
   mergeDeclarations() {
     const declarations = [...this.declarationsFromConfig]
 
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     this.declarationsFromSource.forEach((declarationFromSource: $TSFixMe) => {
       const index = declarations.findIndex(({ function: func }) => func === declarationFromSource.function)
 
@@ -414,7 +414,7 @@ class EdgeFunctionsRegistry {
     return declarations
   }
 
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   processGraph(graph: $TSFixMe) {
     if (!graph) {
       warn('Could not process edge functions dependency graph. Live reload will not be available.')
@@ -425,7 +425,7 @@ class EdgeFunctionsRegistry {
     // Creating a Map from `this.functions` that map function paths to function
 // names. This allows us to match modules against functions in O(1) time as
 // opposed to O(n).
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 // eslint-disable-next-line unicorn/prefer-spread
 const functionPaths = new Map(Array.from(this.functions, (func) => [(func as $TSFixMe).path, (func as $TSFixMe).name]));
 
@@ -435,7 +435,7 @@ const functionPaths = new Map(Array.from(this.functions, (func) => [(func as $TS
     graph.modules.forEach(({
       dependencies = [],
       specifier
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     }: $TSFixMe) => {
       if (!specifier.startsWith('file://')) {
         return
@@ -448,7 +448,7 @@ const functionPaths = new Map(Array.from(this.functions, (func) => [(func as $TS
         return
       }
 
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       dependencies.forEach((dependency: $TSFixMe) => {
         // We're interested in tracking local dependencies, so we only look at
         // specifiers with the `file:` protocol.
@@ -472,11 +472,11 @@ const functionPaths = new Map(Array.from(this.functions, (func) => [(func as $TS
     this.functionPaths = functionPaths
   }
 
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   async scan(directories: $TSFixMe) {
     const functions = await this.bundler.find(directories)
 
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     functions.forEach((func: $TSFixMe) => {
       EdgeFunctionsRegistry.logAddedFunction(func)
     })
@@ -488,7 +488,7 @@ const functionPaths = new Map(Array.from(this.functions, (func) => [(func as $TS
 
   async setupWatchers({
     projectDir
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   }: $TSFixMe) {
     // Creating a watcher for the config file. When it changes, we update the
     // declarations and see if we need to register or unregister any functions.
@@ -509,11 +509,11 @@ const functionPaths = new Map(Array.from(this.functions, (func) => [(func as $TS
     await this.setupWatcherForDirectory(projectDir)
   }
 
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   async setupWatcherForDirectory(directory: $TSFixMe) {
     const watcher = await watchDebounced(directory, {
       onAdd: () => this.checkForAddedOrDeletedFunctions(),
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       onChange: (path: $TSFixMe) => this.handleFileChange(path),
       onUnlink: () => this.checkForAddedOrDeletedFunctions(),
     })

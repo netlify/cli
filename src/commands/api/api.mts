@@ -1,11 +1,11 @@
 // @ts-check
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AsciiTable... Remove this comment to see the full error message
+
 const AsciiTable = require('ascii-table')
 
 // TODO: use static `import` after migrating this repository to pure ES modules
 const jsClient = import('netlify')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'chalk'.
+
 const { chalk, error, exit, log, logJson } = require('../../utils/index.mjs')
 
 /**
@@ -14,7 +14,7 @@ const { chalk, error, exit, log, logJson } = require('../../utils/index.mjs')
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const apiCommand = async (apiMethod: $TSFixMe, options: $TSFixMe, command: $TSFixMe) => {
   const { api } = command.netlify
 
@@ -22,7 +22,7 @@ const apiCommand = async (apiMethod: $TSFixMe, options: $TSFixMe, command: $TSFi
     const table = new AsciiTable(`Netlify API Methods`)
     table.setHeading('API Method', 'Docs Link')
     const { methods } = await jsClient
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     methods.forEach((method: $TSFixMe) => {
       const { operationId } = method
       table.addRow(operationId, `https://open-api.netlify.com/#operation/${operationId}`)
@@ -61,7 +61,7 @@ const apiCommand = async (apiMethod: $TSFixMe, options: $TSFixMe, command: $TSFi
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createApiC... Remove this comment to see the full error message
+
 const createApiCommand = (program: $TSFixMe) => program
   .command('api')
   .argument('[apiMethod]', 'Open API method to run')

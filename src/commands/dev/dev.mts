@@ -1,102 +1,66 @@
 // @ts-check
-// @ts-expect-error TS(6200): Definitions of the following identifiers conflict ... Remove this comment to see the full error message
 const events = require('events')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'path'.
 const path = require('path')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'process'.
 const process = require('process')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'promisify'... Remove this comment to see the full error message
 const { promisify } = require('util')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'boxen'.
 const boxen = require('boxen')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'Option'.
 const { Option } = require('commander')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'execa'.
 const execa = require('execa')
 const StaticServer = require('static-server')
 const stripAnsiCc = require('strip-ansi-control-characters')
 const waitPort = require('wait-port')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'promptEdit... Remove this comment to see the full error message
 const { promptEditorHelper } = require('../../lib/edge-functions/index.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'startFunct... Remove this comment to see the full error message
 const { startFunctionsServer } = require('../../lib/functions/server.cjs')
 const {
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'OneGraphCl... Remove this comment to see the full error message
   OneGraphCliClient,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'loadCLISes... Remove this comment to see the full error message
   loadCLISession,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'markCliSes... Remove this comment to see the full error message
   markCliSessionInactive,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'persistNew... Remove this comment to see the full error message
   persistNewOperationsDocForSession,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'startOneGr... Remove this comment to see the full error message
   startOneGraphCLISession,
 } = require('../../lib/one-graph/cli-client.cjs')
 const {
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'defaultExa... Remove this comment to see the full error message
   defaultExampleOperationsDoc,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getGraphEd... Remove this comment to see the full error message
   getGraphEditUrlBySiteId,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getNetlify... Remove this comment to see the full error message
   getNetlifyGraphConfig,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'readGraphQ... Remove this comment to see the full error message
   readGraphQLOperationsSourceFile,
 } = require('../../lib/one-graph/cli-netlify-graph.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'startSpinn... Remove this comment to see the full error message
 const { startSpinner, stopSpinner } = require('../../lib/spinner.cjs')
 const {
   BANG,
   NETLIFYDEV,
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'NETLIFYDEV... Remove this comment to see the full error message
   NETLIFYDEVWARN,
   chalk,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'detectServ... Remove this comment to see the full error message
   detectServerSettings,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'ensureNetl... Remove this comment to see the full error message
   ensureNetlifyIgnore,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'error'.
   error,
   exit,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'generateNe... Remove this comment to see the full error message
   generateNetlifyGraphJWT,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getEnvelop... Remove this comment to see the full error message
   getEnvelopeEnv,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getSiteInf... Remove this comment to see the full error message
   getSiteInformation,
   getToken,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'injectEnvV... Remove this comment to see the full error message
   injectEnvVariables,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'log'.
   log,
   normalizeConfig,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'normalizeC... Remove this comment to see the full error message
   normalizeContext,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'openBrowse... Remove this comment to see the full error message
   openBrowser,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'processOnE... Remove this comment to see the full error message
   processOnExit,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'startLiveT... Remove this comment to see the full error message
   startLiveTunnel,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'startProxy... Remove this comment to see the full error message
   startProxy,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'warn'.
   warn,
   watchDebounced,
 } = require('../../utils/index.mjs')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createDevE... Remove this comment to see the full error message
 const { createDevExecCommand } = require('./dev-exec.cjs')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'netlifyBui... Remove this comment to see the full error message
+
 const netlifyBuildPromise = import('@netlify/build')
 
 const startStaticServer = async ({
   settings
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 }: $TSFixMe) => {
   const server = new StaticServer({
     rootPath: settings.dist,
@@ -114,7 +78,6 @@ const startStaticServer = async ({
 const isNonExistingCommandError = ({
   command,
   error: commandError
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 }: $TSFixMe) => {
   // `ENOENT` is only returned for non Windows systems
   // See https://github.com/sindresorhus/execa/pull/447
@@ -137,7 +100,6 @@ const isNonExistingCommandError = ({
 /**
  * @type {(() => Promise<void>)[]} - array of functions to run before the process exits
  */
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 const cleanupWork: $TSFixMe = []
 
 let cleanupStarted = false
@@ -148,7 +110,6 @@ let cleanupStarted = false
  */
 const cleanupBeforeExit = async ({
   exitCode
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 }: $TSFixMe) => {
   // If cleanup has started, then wherever started it will be responsible for exiting
   if (!cleanupStarted) {
@@ -169,7 +130,6 @@ const cleanupBeforeExit = async ({
  * @param {NodeJS.ProcessEnv} env
  * @returns {execa.ExecaChildProcess<string>}
  */
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 const runCommand = (command: $TSFixMe, env = {}, spinner = null) => {
   const commandProcess = execa.command(command, {
     preferLocal: true,
@@ -182,21 +142,14 @@ const runCommand = (command: $TSFixMe, env = {}, spinner = null) => {
 
   // This ensures that an active spinner stays at the bottom of the commandline
   // even though the actual framework command might be outputting stuff
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
   const pipeDataWithSpinner = (writeStream: $TSFixMe, chunk: $TSFixMe) => {
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
     if (spinner && (spinner as $TSFixMe).isSpinning) {
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
       (spinner as $TSFixMe).clear();
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
       (spinner as $TSFixMe).isSilent = true;
     }
     writeStream.write(chunk, () => {
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
     if (spinner && (spinner as $TSFixMe).isSpinning) {
-        // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
         (spinner as $TSFixMe).isSilent = false;
-        // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
         (spinner as $TSFixMe).render();
     }
 });
@@ -247,7 +200,6 @@ const runCommand = (command: $TSFixMe, env = {}, spinner = null) => {
  */
 const startFrameworkServer = async function ({
   settings
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 }: $TSFixMe) {
   if (settings.useStaticServer) {
     if (settings.command) {
@@ -332,7 +284,6 @@ const startProxyServer = async ({
   site,
   siteInfo,
   state
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 }: $TSFixMe) => {
   const url = await startProxy({
     addonsUrls,
@@ -371,7 +322,6 @@ const handleLiveTunnel = async ({
   options,
   settings,
   site
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 }: $TSFixMe) => {
   if (options.live) {
     const sessionUrl = await startLiveTunnel({
@@ -384,10 +334,8 @@ const handleLiveTunnel = async ({
   }
 }
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'printBanne... Remove this comment to see the full error message
 const printBanner = ({
   url
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 }: $TSFixMe) => {
   const banner = chalk.bold(`${NETLIFYDEVLOG} Server now ready on ${url}`)
 
@@ -401,12 +349,10 @@ const printBanner = ({
   )
 }
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 const startPollingForAPIAuthentication = async function (options: $TSFixMe) {
   const { api, command, config, site, siteInfo } = options
   const frequency = 5000
 
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
   const helper = async (maybeSiteData: $TSFixMe) => {
     const siteData = await (maybeSiteData || api.getSite({ siteId: site.id }))
     const authlifyTokenId = siteData && siteData.authlify_token_id
@@ -448,7 +394,6 @@ const startPollingForAPIAuthentication = async function (options: $TSFixMe) {
  * @param {boolean|string} edgeInspectBrk
  * @returns {InspectSettings}
  */
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 const generateInspectSettings = (edgeInspect: $TSFixMe, edgeInspectBrk: $TSFixMe) => {
   const enabled = Boolean(edgeInspect) || Boolean(edgeInspectBrk)
   const pause = Boolean(edgeInspectBrk)
@@ -468,7 +413,6 @@ const generateInspectSettings = (edgeInspect: $TSFixMe, edgeInspectBrk: $TSFixMe
   }
 }
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 const validateShortFlagArgs = (args: $TSFixMe) => {
   if (args.startsWith('=')) {
     throw new Error(
@@ -485,7 +429,6 @@ const validateShortFlagArgs = (args: $TSFixMe) => {
   return args
 }
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 const validateGeoCountryCode = (arg: $TSFixMe) => {
   // Validate that the arg passed is two letters only for country
   // See https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes
@@ -504,7 +447,6 @@ const validateGeoCountryCode = (arg: $TSFixMe) => {
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 const dev = async (options: $TSFixMe, command: $TSFixMe) => {
   log(`${NETLIFYDEV}`)
   const { api, cachedConfig, config, repositoryRoot, site, siteInfo, state } = command.netlify
@@ -547,14 +489,10 @@ const dev = async (options: $TSFixMe, command: $TSFixMe) => {
     // to the config as if they were declared in netlify.toml. We must check
     // whether the plugin has already been added by another source (like the
     // TOML file or the UI), as we don't want to run the same plugin twice.
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
     if ((settings as $TSFixMe).plugins) {
       const { plugins: existingPlugins = [] } = cachedConfig.config
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
       const existingPluginNames = new Set(existingPlugins.map((plugin: $TSFixMe) => plugin.package))
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
       const newPlugins = (settings as $TSFixMe).plugins
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
     .map((pluginName: $TSFixMe) => {
     if (existingPluginNames.has(pluginName)) {
         return;
@@ -566,12 +504,10 @@ const dev = async (options: $TSFixMe, command: $TSFixMe) => {
       cachedConfig.config.plugins = [...newPlugins, ...cachedConfig.config.plugins]
     }
   } catch (error_) {
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
     log(NETLIFYDEVERR, (error_ as $TSFixMe).message);
     exit(1)
   }
 
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
   command.setAnalyticsPayload({ projectType: (settings as $TSFixMe).framework || 'custom', live: options.live, graph: options.graph });
 
   const startNetlifyGraphWatcher = Boolean(options.graph)
@@ -594,17 +530,14 @@ const dev = async (options: $TSFixMe, command: $TSFixMe) => {
   log(`${NETLIFYDEVWARN} Setting up local development server`)
 
   const devCommand = async () => {
-    // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'ipVersion'... Remove this comment to see the full error message
-    const { ipVersion } = await startFrameworkServer({ settings })
-    // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'ipVersion'... Remove this comment to see the full error message
+    const {ipVersion} = await startFrameworkServer({ settings });
     // eslint-disable-next-line no-magic-numbers
-(settings as $TSFixMe).frameworkHost = ipVersion === 6 ? '::1' : '127.0.0.1';
+    (settings as $TSFixMe).frameworkHost = ipVersion === 6 ? '::1' : '127.0.0.1';
   }
   const startDevOptions = getBuildOptions({
     cachedConfig,
     options,
   })
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
   const { error: startDevError, success } = await (netlifyBuild as $TSFixMe).startDev(devCommand, startDevOptions);
 
   if (!success) {
@@ -666,7 +599,6 @@ const dev = async (options: $TSFixMe, command: $TSFixMe) => {
     const netlifyToken = await command.authenticate()
     await OneGraphCliClient.ensureAppForSite(netlifyToken, site.id)
 
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
     let stopWatchingCLISessions: $TSFixMe
 
     let liveConfig = { ...config }
@@ -730,7 +662,6 @@ const dev = async (options: $TSFixMe, command: $TSFixMe) => {
     }
 
     // Set up a handler for config changes.
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
     configWatcher.on('change', async (newConfig: $TSFixMe) => {
       command.netlify.config = newConfig
       liveConfig = newConfig
@@ -758,12 +689,11 @@ const dev = async (options: $TSFixMe, command: $TSFixMe) => {
   printBanner({ url })
 }
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getBuildOp... Remove this comment to see the full error message
+
 const getBuildOptions = ({
   cachedConfig,
   options: { context, cwd = process.cwd(), debug, dry, offline },
   token
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 }: $TSFixMe) => ({
   cachedConfig,
   token,
@@ -782,7 +712,7 @@ const getBuildOptions = ({
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createDevC... Remove this comment to see the full error message
+
 const createDevCommand = (program: $TSFixMe) => {
   createDevExecCommand(program)
 
@@ -792,32 +722,23 @@ const createDevCommand = (program: $TSFixMe) => {
     .description(`Local dev server\nThe dev command will run a local dev server with Netlify's proxy and redirect rules`)
     .option('-c ,--command <command>', 'command to run')
     .option('--context <context>', 'Specify a deploy context or branch for environment variables (contexts: "production", "deploy-preview", "branch-deploy", "dev")', normalizeContext, 'dev')
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
     .option('-p ,--port <port>', 'port of netlify dev', (value: $TSFixMe) => Number.parseInt(value))
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
     .option('--targetPort <port>', 'port of target app server', (value: $TSFixMe) => Number.parseInt(value))
     .option('--framework <name>', 'framework to use. Defaults to #auto which automatically detects a framework')
     .option('-d ,--dir <path>', 'dir with static files')
     .option('-f ,--functions <folder>', 'specify a functions folder to serve')
     .option('-o ,--offline', 'disables any features that require network access')
     .option('-l, --live', 'start a public live session', false)
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
     .option('--functionsPort <port>', 'port of functions server', (value: $TSFixMe) => Number.parseInt(value))
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
     .addOption((new Option('--geo <mode>', 'force geolocation data to be updated, use cached data from the last 24h if found, or use a mock location') as $TSFixMe).choices(['cache', 'mock', 'update'])
     .default('cache'))
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
     .addOption((new Option('--country <geoCountry>', 'Two-letter country code (https://ntl.fyi/country-codes) to use as mock geolocation (enables --geo=mock automatically)') as $TSFixMe).argParser(validateGeoCountryCode))
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
     .addOption((new Option('--staticServerPort <port>', 'port of the static app server used when no framework is detected') as $TSFixMe).argParser((value: $TSFixMe) => Number.parseInt(value))
     .hideHelp())
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
     .addOption((new Option('--graph', 'enable Netlify Graph support') as $TSFixMe).hideHelp())
     .addOption(new Option('--sessionId [sessionId]', '(Graph) connect to cloud session with ID [sessionId]'))
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
     .addOption((new Option('-e, --edgeInspect [address]', 'enable the V8 Inspector Protocol for Edge Functions, with an optional address in the host:port format') as $TSFixMe).conflicts('edgeInspectBrk')
     .argParser(validateShortFlagArgs))
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
     .addOption((new Option('-E, --edgeInspectBrk [address]', 'enable the V8 Inspector Protocol for Edge Functions and pause execution on the first line of code, with an optional address in the host:port format') as $TSFixMe).conflicts('edgeInspect')
     .argParser(validateShortFlagArgs))
     .addExamples([

@@ -10,13 +10,13 @@ const DEFAULT_NODE_VERSION = '12.18.0'
 const NVM_FLAG_PREFIX = '--'
 
 // to support NODE_VERSION=--lts, etc.
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const normalizeConfiguredVersion = (version: $TSFixMe) => version.startsWith(NVM_FLAG_PREFIX) ? version.slice(NVM_FLAG_PREFIX.length) : version
 
 const detectNodeVersion = async ({
   baseDirectory,
   env
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   try {
     const nodeVersionFile = await locatePath(['.nvmrc', '.node-version'], { cwd: baseDirectory })
@@ -30,7 +30,7 @@ const detectNodeVersion = async ({
 
     return version
   } catch (error) {
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     warn(`Failed detecting Node.js version: ${(error as $TSFixMe).message}`);
     return DEFAULT_NODE_VERSION
   }

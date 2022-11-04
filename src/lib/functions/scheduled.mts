@@ -2,10 +2,10 @@ const AnsiToHtml = require('ansi-to-html')
 
 const ansiToHtml = new AnsiToHtml()
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'CLOCKWORK_... Remove this comment to see the full error message
+
 const { CLOCKWORK_USERAGENT } = require('../../utils/index.mjs')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'formatLamb... Remove this comment to see the full error message
+
 const { formatLambdaError } = require('./utils.cjs')
 
 const buildHelpResponse = ({
@@ -13,11 +13,11 @@ const buildHelpResponse = ({
   headers,
   path,
   result
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const acceptsHtml = headers.accept && headers.accept.includes('text/html')
 
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   const paragraph = (text: $TSFixMe) => {
     text = text.trim()
 
@@ -93,13 +93,13 @@ At the moment, Netlify does nothing about that. In the future, there might be a 
       }
 }
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'handleSche... Remove this comment to see the full error message
+
 const handleScheduledFunction = ({
   error,
   request,
   response,
   result
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const { contentType, message, statusCode } = buildHelpResponse({
     error,

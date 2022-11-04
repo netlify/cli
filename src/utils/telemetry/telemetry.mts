@@ -1,25 +1,25 @@
 // @ts-check
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'path'.
+
 const path = require('path')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'process'.
+
 const process = require('process')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'isCI'.
+
 const { isCI } = require('ci-info')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'execa'.
+
 const execa = require('../execa.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getGlobalC... Remove this comment to see the full error message
+
 const getGlobalConfig = require('../get-global-config.cjs')
 
 const isValidEventName = require('./validation.cjs')
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const isTelemetryDisabled = function (config: $TSFixMe) {
   return config.get('telemetryDisabled')
 }
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const send = function (type: $TSFixMe, payload: $TSFixMe) {
   const requestFile = path.join(__dirname, 'request.cjs')
   const options = JSON.stringify({
@@ -53,7 +53,7 @@ const eventConfig = {
   ],
 }
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'track'.
+
 const track = async function (eventName: $TSFixMe, payload = {}) {
   if (isCI) {
     return
@@ -92,7 +92,7 @@ const track = async function (eventName: $TSFixMe, payload = {}) {
   return send('track', defaultData)
 }
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const identify = async function (payload: $TSFixMe) {
   if (isCI) {
     return

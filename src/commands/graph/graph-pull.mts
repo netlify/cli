@@ -1,34 +1,34 @@
 // @ts-check
 /* eslint-disable eslint-comments/disable-enable-pair */
 /* eslint-disable fp/no-loops */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'OneGraphCl... Remove this comment to see the full error message
+
 const { OneGraphClient } = require('netlify-onegraph-internal')
 
 const {
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'OneGraphCl... Remove this comment to see the full error message
+  
   OneGraphCliClient,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'ensureCLIS... Remove this comment to see the full error message
+  
   ensureCLISession,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'handleCliS... Remove this comment to see the full error message
+  
   handleCliSessionEvent,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'loadCLISes... Remove this comment to see the full error message
+  
   loadCLISession,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'readLockfi... Remove this comment to see the full error message
+  
   readLockfile,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'readSchema... Remove this comment to see the full error message
+  
   readSchemaIdFromLockfile,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'refetchAnd... Remove this comment to see the full error message
+  
   refetchAndGenerateFromOneGraph,
 } = require('../../lib/one-graph/cli-client.cjs')
 const {
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'buildSchem... Remove this comment to see the full error message
+  
   buildSchema,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getNetlify... Remove this comment to see the full error message
+  
   getNetlifyGraphConfig,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'readGraphQ... Remove this comment to see the full error message
+  
   readGraphQLSchemaFile,
 } = require('../../lib/one-graph/cli-netlify-graph.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'NETLIFYDEV... Remove this comment to see the full error message
+
 const { NETLIFYDEVERR, chalk, error, log, warn } = require('../../utils/index.mjs')
 
 /**
@@ -37,7 +37,7 @@ const { NETLIFYDEVERR, chalk, error, log, warn } = require('../../utils/index.mj
  * @param {import('../base-command').BaseCommand} command
  * @returns
  */
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const graphPull = async (options: $TSFixMe, command: $TSFixMe) => {
   const { config, site, state } = command.netlify
 
@@ -175,11 +175,11 @@ ${JSON.stringify(error_, null, 2)}`)
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createGrap... Remove this comment to see the full error message
+
 const createGraphPullCommand = (program: $TSFixMe) => program
   .command('graph:pull')
   .description('Pull your remote Netlify Graph schema locally, and process pending Graph edit events')
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   .action(async (options: $TSFixMe, command: $TSFixMe) => {
     await graphPull(options, command)
   })

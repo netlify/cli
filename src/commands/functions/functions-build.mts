@@ -1,9 +1,9 @@
 // @ts-check
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'mkdir'.
+
 const { mkdir } = require('fs/promises')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'NETLIFYDEV... Remove this comment to see the full error message
+
 const { NETLIFYDEVERR, NETLIFYDEVLOG, exit, getFunctionsDir, log } = require('../../utils/index.mjs')
 
 /**
@@ -11,7 +11,7 @@ const { NETLIFYDEVERR, NETLIFYDEVLOG, exit, getFunctionsDir, log } = require('..
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const functionsBuild = async (options: $TSFixMe, command: $TSFixMe) => {
   const { config } = command.netlify
 
@@ -51,7 +51,7 @@ const functionsBuild = async (options: $TSFixMe, command: $TSFixMe) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createFunc... Remove this comment to see the full error message
+
 const createFunctionsBuildCommand = (program: $TSFixMe) => program
   .command('functions:build')
   .alias('function:build')

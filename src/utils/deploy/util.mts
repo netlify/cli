@@ -1,13 +1,13 @@
 const { sep } = require('path')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'pWaitFor'.
+
 const pWaitFor = require('p-wait-for')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'DEPLOY_POL... Remove this comment to see the full error message
+
 const { DEPLOY_POLL } = require('./constants.cjs')
 
 // normalize windows paths to unix paths
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'normalizeP... Remove this comment to see the full error message
+
 const normalizePath = (relname: $TSFixMe) => {
   if (relname.includes('#') || relname.includes('?')) {
     throw new Error(`Invalid filename ${relname}. Deployed filenames cannot contain # or ? characters`)
@@ -21,7 +21,7 @@ const normalizePath = (relname: $TSFixMe) => {
 }
 
 // poll an async deployId until its done diffing
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'waitForDif... Remove this comment to see the full error message
+
 const waitForDiff = async (api: $TSFixMe, deployId: $TSFixMe, siteId: $TSFixMe, timeout: $TSFixMe) => {
   // capture ready deploy during poll
   let deploy
@@ -62,7 +62,7 @@ const waitForDiff = async (api: $TSFixMe, deployId: $TSFixMe, siteId: $TSFixMe, 
 }
 
 // Poll a deployId until its ready
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'waitForDep... Remove this comment to see the full error message
+
 const waitForDeploy = async (api: $TSFixMe, deployId: $TSFixMe, siteId: $TSFixMe, timeout: $TSFixMe) => {
   // capture ready deploy during poll
   let deploy
@@ -102,10 +102,10 @@ const waitForDeploy = async (api: $TSFixMe, deployId: $TSFixMe, siteId: $TSFixMe
 }
 
 // Transform the fileShaMap and fnShaMap into a generic shaMap that file-uploader.js can use
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getUploadL... Remove this comment to see the full error message
+
 const getUploadList = (required: $TSFixMe, shaMap: $TSFixMe) => {
   if (!required || !shaMap) return []
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   return required.flatMap((sha: $TSFixMe) => shaMap[sha]);
 }
 

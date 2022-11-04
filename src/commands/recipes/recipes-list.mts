@@ -1,8 +1,8 @@
 // @ts-check
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AsciiTable... Remove this comment to see the full error message
+
 const AsciiTable = require('ascii-table')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'listRecipe... Remove this comment to see the full error message
+
 const { listRecipes } = require('./common.cjs')
 
 /**
@@ -17,7 +17,7 @@ const recipesListCommand = async () => {
   recipes.forEach(({
     description,
     name
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   }: $TSFixMe) => {
     table.addRow(name, description)
   })
@@ -30,7 +30,7 @@ const recipesListCommand = async () => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createReci... Remove this comment to see the full error message
+
 const createRecipesListCommand = (program: $TSFixMe) => program
   .command('recipes:list')
   .description(`(Beta) List the recipes available to create and modify files in a project`)

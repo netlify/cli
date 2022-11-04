@@ -1,6 +1,6 @@
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'os'.
+
 const os = require('os')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'path'.
+
 const path = require('path')
 
 const envPaths = require('env-paths')
@@ -14,7 +14,7 @@ const NETLIFY_HOME = '.netlify'
  * @param {string[]} paths
  * @returns {string}
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getLegacyP... Remove this comment to see the full error message
+
 const getLegacyPathInHome = (paths: $TSFixMe) => {
   const pathInHome = path.join(os.homedir(), NETLIFY_HOME, ...paths)
   return pathInHome
@@ -25,7 +25,7 @@ const getLegacyPathInHome = (paths: $TSFixMe) => {
  * @param {string[]} paths
  * @returns {string}
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getPathInH... Remove this comment to see the full error message
+
 const getPathInHome = (paths: $TSFixMe) => {
   const pathInHome = path.join(OSBasedPaths.config, ...paths)
   return pathInHome
@@ -36,7 +36,7 @@ const getPathInHome = (paths: $TSFixMe) => {
  * @param {string[]} paths
  * @returns {string}
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getPathInP... Remove this comment to see the full error message
+
 const getPathInProject = (paths: $TSFixMe) => {
   const pathInProject = path.join(NETLIFY_HOME, ...paths)
   return pathInProject

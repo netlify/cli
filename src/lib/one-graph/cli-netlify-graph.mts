@@ -1,21 +1,20 @@
 /* eslint-disable eslint-comments/disable-enable-pair */
 
 // @ts-check
-// @ts-expect-error TS(6200): Definitions of the following identifiers conflict ... Remove this comment to see the full error message
 const fs = require('fs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'path'.
+
 const path = require('path')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'process'.
+
 const process = require('process')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'inquirer'.
+
 const inquirer = require('inquirer')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'inquirerAu... Remove this comment to see the full error message
+
 const inquirerAutocompletePrompt = require('inquirer-autocomplete-prompt')
 const {
   // eslint-disable-next-line no-unused-vars
   CodegenHelpers,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'GraphQL'.
+  
   GraphQL,
   GraphQLHelpers,
   IncludedCodegen,
@@ -23,7 +22,7 @@ const {
   NetlifyGraph,
 } = require('netlify-onegraph-internal')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'chalk'.
+
 const { chalk, detectServerSettings, error, execa, getFunctionsDir, log, warn } = require('../../utils/index.mjs')
 
 const { printSchema } = GraphQL
@@ -37,7 +36,7 @@ const internalConsole = {
 
 InternalConsole.registerConsole(internalConsole)
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'extractFun... Remove this comment to see the full error message
+
 const { extractFunctionsFromOperationDoc } = NetlifyGraph
 
 /**
@@ -53,7 +52,7 @@ const { extractFunctionsFromOperationDoc } = NetlifyGraph
 const setNetlifyTomlCodeGeneratorModule = ({
   codegenModuleImportPath,
   siteRoot
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   let toml
   let filepath
@@ -86,10 +85,10 @@ ${entry}`
 
   const EOL = '\n'
   let lines = toml.split(EOL)
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   const graphKeyLine = lines.findIndex((line: $TSFixMe) => line.trim().startsWith('[graph]'))
   const hasGraphKey = graphKeyLine !== -1
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   const codegenKeyLine = lines.findIndex((line: $TSFixMe) => line.trim().startsWith('codeGenerator'))
   const hasCodegenKeyLine = codegenKeyLine !== 1
 
@@ -111,7 +110,7 @@ ${entry}`
  * @param {string[]} items Filesystem path items to filter
  * @return {string[]} Filtered filesystem path items
  */
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const filterRelativePathItems = (items: $TSFixMe) => items.filter((part: $TSFixMe) => part !== '')
 
 /**
@@ -124,7 +123,7 @@ const filterRelativePathItems = (items: $TSFixMe) => items.filter((part: $TSFixM
 const makeDefaultNetlifyGraphConfig = ({
   baseConfig,
   detectedFunctionsPath
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const functionsPath = filterRelativePathItems([...detectedFunctionsPath])
   const webhookBasePath = '/.netlify/functions'
@@ -159,7 +158,7 @@ const makeDefaultNetlifyGraphConfig = ({
 const makeDefaultNextJsNetlifyGraphConfig = ({
   baseConfig,
   siteRoot
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const functionsPath = filterRelativePathItems([...siteRoot, 'pages', 'api'])
   const webhookBasePath = '/api'
@@ -195,7 +194,7 @@ const makeDefaultRemixNetlifyGraphConfig = ({
   baseConfig,
   detectedFunctionsPath,
   siteRoot
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const functionsPath = filterRelativePathItems([...detectedFunctionsPath])
   const webhookBasePath = '/webhooks'
@@ -237,12 +236,12 @@ const defaultFrameworkLookup = {
  * @param {Partial<import('../../utils/types').ServerSettings>=} input.settings
  * @return {Promise<NetlifyGraph.NetlifyGraphConfig>} NetlifyGraphConfig
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getNetlify... Remove this comment to see the full error message
+
 const getNetlifyGraphConfig = async ({
   command,
   options,
   settings
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const { config, site } = command.netlify
   config.dev = { ...config.dev }
@@ -357,7 +356,7 @@ const getNetlifyGraphConfig = async ({
  * Given a NetlifyGraphConfig, ensure that the netlifyGraphPath exists
  * @param {NetlifyGraph.NetlifyGraphConfig} netlifyGraphConfig
  */
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const ensureNetlifyGraphPath = (netlifyGraphConfig: $TSFixMe) => {
   const fullPath = path.resolve(...netlifyGraphConfig.netlifyGraphPath)
   fs.mkdirSync(fullPath, { recursive: true })
@@ -367,7 +366,7 @@ const ensureNetlifyGraphPath = (netlifyGraphConfig: $TSFixMe) => {
  * Given a NetlifyGraphConfig, ensure that the functionsPath exists
  * @param {NetlifyGraph.NetlifyGraphConfig} netlifyGraphConfig
  */
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const ensureFunctionsPath = (netlifyGraphConfig: $TSFixMe) => {
   const fullPath = path.resolve(...netlifyGraphConfig.functionsPath)
   fs.mkdirSync(fullPath, { recursive: true })
@@ -375,7 +374,7 @@ const ensureFunctionsPath = (netlifyGraphConfig: $TSFixMe) => {
 
 let disablePrettierDueToPreviousError = false
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const runPrettier = async (filePath: $TSFixMe) => {
   if (disablePrettierDueToPreviousError) {
     return
@@ -420,7 +419,7 @@ const generateRuntimeSource = async ({
   operationsDoc,
   schema,
   schemaId
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const runtime = await NetlifyGraph.generateRuntime({
     GraphQL,
@@ -458,7 +457,7 @@ const generateRuntime = async ({
   operationsDoc,
   schema,
   schemaId
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const runtime = await generateRuntimeSource({
     netlifyGraphConfig,
@@ -470,7 +469,7 @@ const generateRuntime = async ({
     schemaId,
   })
 
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   runtime.forEach((file: $TSFixMe) => {
     const implementationResolvedPath = path.resolve(...file.name)
     fs.writeFileSync(implementationResolvedPath, file.content, 'utf8')
@@ -493,14 +492,14 @@ const generateRuntime = async ({
  * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
  * @returns {Promise<void>} Void, effectfully writes the generated library to the filesystem
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'generateFu... Remove this comment to see the full error message
+
 const generateFunctionsFile = async ({
   config,
   netlifyGraphConfig,
   operationsDoc,
   schema,
   schemaId
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const parsedDoc = GraphQL.parse(operationsDoc)
 
@@ -531,7 +530,7 @@ const generateFunctionsFile = async ({
  * @param {NetlifyGraph.NetlifyGraphConfig} netlifyGraphConfig
  * @returns {string} GraphQL operations doc
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'readGraphQ... Remove this comment to see the full error message
+
 const readGraphQLOperationsSourceFile = (netlifyGraphConfig: $TSFixMe) => {
   ensureNetlifyGraphPath(netlifyGraphConfig)
 
@@ -557,7 +556,7 @@ const writeGraphQLOperationsSourceFile = ({
   logger,
   netlifyGraphConfig,
   operationsDocString
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const graphqlSource = operationsDocString
 
@@ -579,7 +578,7 @@ const writeGraphQLSchemaFile = ({
   logger,
   netlifyGraphConfig,
   schema
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const graphqlSource = printSchema(schema)
 
@@ -595,7 +594,7 @@ const writeGraphQLSchemaFile = ({
  * @param {NetlifyGraph.NetlifyGraphConfig} netlifyGraphConfig
  * @returns {string} GraphQL schema
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'readGraphQ... Remove this comment to see the full error message
+
 const readGraphQLSchemaFile = (netlifyGraphConfig: $TSFixMe) => {
   ensureNetlifyGraphPath(netlifyGraphConfig)
   return fs.readFileSync(path.resolve(...netlifyGraphConfig.graphQLSchemaFilename), 'utf8')
@@ -620,7 +619,7 @@ const generateHandlerSourceByOperationId = async ({
   operationId,
   operationsDoc,
   schema
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const generateHandlerPayload = {
     GraphQL,
@@ -655,7 +654,7 @@ const generateHandlerByOperationId = async ({
   netlifyGraphConfig,
   operationId,
   schema
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
   if (currentOperationsDoc.trim().length === 0) {
@@ -688,10 +687,10 @@ const generateHandlerByOperationId = async ({
   }
 
   /** @type {Array<{filePath: string, name:string, prettierSuccess: boolean}>} */
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   const results: $TSFixMe = []
 
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   exportedFiles.forEach((exportedFile: $TSFixMe) => {
     const { content } = exportedFile
     const isNamed = exportedFile.kind === 'NamedExportedFile'
@@ -742,7 +741,7 @@ const generateHandlerByOperationId = async ({
  * @param {(message: string) => void} input.logger A function that if provided will be used to log messages
  * @returns {Promise<void>}
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'generateHa... Remove this comment to see the full error message
+
 const generateHandlerByOperationName = async ({
   generate,
   handlerOptions,
@@ -750,7 +749,7 @@ const generateHandlerByOperationName = async ({
   netlifyGraphConfig,
   operationName,
   schema
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
   if (currentOperationsDoc.trim().length === 0) {
@@ -760,10 +759,10 @@ const generateHandlerByOperationName = async ({
   const parsedDoc = parse(currentOperationsDoc)
   const { fragments, functions } = extractFunctionsFromOperationDoc(GraphQL, parsedDoc)
 
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   const functionDefinition = Object.values(functions).find((potentialDefinition) => (potentialDefinition as $TSFixMe).operationName === operationName);
 
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   const fragmentDefinition = Object.values(fragments).find((potentialDefinition) => (potentialDefinition as $TSFixMe).fragmentName === operationName);
 
   const definition = functionDefinition || fragmentDefinition
@@ -778,7 +777,7 @@ const generateHandlerByOperationName = async ({
     generate,
     netlifyGraphConfig,
     schema,
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     operationId: (definition as $TSFixMe).id,
     handlerOptions,
 });
@@ -801,7 +800,7 @@ const generateHandlerPreviewByOperationName = ({
   netlifyGraphConfig,
   operationName,
   schema
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
   if (currentOperationsDoc.trim().length === 0) {
@@ -811,7 +810,7 @@ const generateHandlerPreviewByOperationName = ({
   const parsedDoc = parse(currentOperationsDoc)
   const { functions } = extractFunctionsFromOperationDoc(GraphQL, parsedDoc)
 
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   const operation = Object.values(functions).find((potentialOperation) => (potentialOperation as $TSFixMe).operationName === operationName);
 
   if (!operation) {
@@ -826,7 +825,7 @@ const generateHandlerPreviewByOperationName = ({
     schema,
     schemaString: GraphQL.printSchema(schema),
     netlifyGraphConfig,
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     operationId: (operation as $TSFixMe).id,
     operationsDoc: currentOperationsDoc,
 };
@@ -841,7 +840,7 @@ const generateHandlerPreviewByOperationName = ({
 }
 
 // Export the minimal set of functions that are required for Netlify Graph
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'buildSchem... Remove this comment to see the full error message
+
 const { buildSchema, parse } = GraphQL
 
 /**
@@ -854,7 +853,7 @@ const { buildSchema, parse } = GraphQL
 const getGraphEditUrlBySiteName = ({
   oneGraphSessionId,
   siteName
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const host = process.env.NETLIFY_APP_HOST || 'app.netlify.com'
   // http because app.netlify.com will redirect to https, and localhost will still work for development
@@ -870,11 +869,11 @@ const getGraphEditUrlBySiteName = ({
  * @param {string} options.oneGraphSessionId The oneGraph session id to use when generating the graph-edit link
  * @returns {string} The url to the Netlify Graph UI for the current session
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getGraphEd... Remove this comment to see the full error message
+
 const getGraphEditUrlBySiteId = ({
   oneGraphSessionId,
   siteId
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const host = process.env.NETLIFY_APP_HOST || 'app.netlify.com'
   // http because app.netlify.com will redirect to https, and localhost will still work for development
@@ -888,7 +887,7 @@ const getGraphEditUrlBySiteId = ({
  * @param {string} siteRoot The root directory of the site
  * @returns {import('netlify-onegraph-internal').NetlifyGraphJsonConfig.JsonConfig}
  */
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const loadNetlifyGraphConfig = (siteRoot: $TSFixMe) => {
   const configPath = path.join(siteRoot, 'netlifyGraph.json')
   if (fs.existsSync(configPath)) {
@@ -900,10 +899,10 @@ const loadNetlifyGraphConfig = (siteRoot: $TSFixMe) => {
   return {}
 }
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'autocomple... Remove this comment to see the full error message
+
 const autocompleteOperationNames = async ({
   netlifyGraphConfig
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   try {
     let currentOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
@@ -916,21 +915,21 @@ const autocompleteOperationNames = async ({
 
     const { functions } = extracted
 
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     const sorted = Object.values(functions).sort((aItem, bItem) => (aItem as $TSFixMe).operationName.localeCompare((bItem as $TSFixMe).operationName));
 
     const perPage = 50
 
     const allOperationChoices = sorted.map((operation) => ({
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     name: `${(operation as $TSFixMe).operationName} (${(operation as $TSFixMe).kind})`,
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     value: (operation as $TSFixMe).operationName,
 }));
 
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     const filterOperationNames = (operationChoices: $TSFixMe, input: $TSFixMe) =>
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       operationChoices.filter((operation: $TSFixMe) => operation.value.toLowerCase().match(input.toLowerCase()))
 
     /** multiple matching detectors, make the user choose */
@@ -941,7 +940,7 @@ const autocompleteOperationNames = async ({
       message: `For which operation would you like to generate a handler?`,
       type: 'autocomplete',
       pageSize: perPage,
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       source(_: $TSFixMe, input: $TSFixMe) {
         if (!input || input === '') {
           return allOperationChoices
@@ -960,7 +959,7 @@ const autocompleteOperationNames = async ({
 }
 
 /** @type {string | undefined} */
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 let lastWarnedFailedCodegenModule: $TSFixMe
 
 /**
@@ -972,7 +971,7 @@ let lastWarnedFailedCodegenModule: $TSFixMe
 const dynamicallyLoadCodegenModule = async ({
   config,
   cwd
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const basePath = cwd || process.cwd()
   const importPath = config.graph && config.graph.codeGenerator
@@ -985,7 +984,7 @@ const dynamicallyLoadCodegenModule = async ({
   // use-cases. We still require it to be explicitly configured in netlify.toml,
   // but we don't require an additional package install for it.
   const includedCodegenModule = IncludedCodegen.includedCodegenModules.find(
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     (codegenModule: $TSFixMe) => codegenModule.sigil === importPath,
   )
 
@@ -1021,7 +1020,7 @@ const dynamicallyLoadCodegenModule = async ({
       const hasGenerators = Array.isArray(newModule.generators)
       let generatorsConform = true
       if (hasGenerators) {
-        // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+        
         newModule.generators.forEach((generator: $TSFixMe) => {
           const hasId = Boolean(generator.id)
           const hasName = Boolean(generator.name)
@@ -1052,28 +1051,28 @@ ${error_}`)
   }
 }
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getCodegen... Remove this comment to see the full error message
+
 const getCodegenModule = ({
   config
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => dynamicallyLoadCodegenModule({ config })
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getCodegen... Remove this comment to see the full error message
+
 const getCodegenFunctionById = async ({
   config,
   id
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const codegenModule = await getCodegenModule({ config })
 
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   return codegenModule && codegenModule.generators && codegenModule.generators.find((generator: $TSFixMe) => generator.id === id);
 }
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'autocomple... Remove this comment to see the full error message
+
 const autocompleteCodegenModules = async ({
   config
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const codegenModule = await getCodegenModule({ config })
   if (!codegenModule || !codegenModule.generators) {
@@ -1083,19 +1082,19 @@ const autocompleteCodegenModules = async ({
   log(`Using Graph Codegen module ${codegenModule.id} [${codegenModule.version}] from '${config.graph.codeGenerator}'`)
 
   const allGeneratorChoices = codegenModule.generators
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     // eslint-disable-next-line id-length
     .sort((a: $TSFixMe, b: $TSFixMe) => a.name.localeCompare(b.name))
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     .map((codeGen: $TSFixMe) => ({
     name: `${codeGen.name} [${codeGen.id}]`,
     value: codeGen.name
   }))
 
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   // eslint-disable-next-line unicorn/consistent-function-scoping
   const filterModuleNames = (moduleChoices: $TSFixMe, input: $TSFixMe) =>
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     moduleChoices.filter((moduleChoice: $TSFixMe) => moduleChoice.name.toLowerCase().match(input.toLowerCase()))
 
   /** multiple matching detectors, make the user choose */
@@ -1108,7 +1107,7 @@ const autocompleteCodegenModules = async ({
     message: `Which codegen would you like to use?`,
     type: 'autocomplete',
     pageSize: perPage,
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     source(_: $TSFixMe, input: $TSFixMe) {
       if (!input || input === '') {
         return allGeneratorChoices
@@ -1121,7 +1120,7 @@ const autocompleteCodegenModules = async ({
   })
 
   return codegenModule.generators.find(
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     (dynamicallyImportedModule: $TSFixMe) => dynamicallyImportedModule.name === selectedCodeGen,
   );
 }

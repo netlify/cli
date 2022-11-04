@@ -1,21 +1,21 @@
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'process'.
+
 const process = require('process')
 
 // @ts-check
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getBuildOp... Remove this comment to see the full error message
+
 const { getBuildOptions, runBuild } = require('../../lib/build.cjs')
 const {
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'error'.
+  
   error,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'exit'.
+  
   exit,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'generateNe... Remove this comment to see the full error message
+  
   generateNetlifyGraphJWT,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getEnvelop... Remove this comment to see the full error message
+  
   getEnvelopeEnv,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getToken'.
+  
   getToken,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'normalizeC... Remove this comment to see the full error message
+  
   normalizeContext,
 } = require('../../utils/index.mjs')
 
@@ -25,7 +25,7 @@ const {
 const checkOptions = ({
   cachedConfig: { siteInfo = {} },
   token
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   if (!siteInfo.id) {
     error('Could not find the site ID. Please run netlify link.')
@@ -36,14 +36,14 @@ const checkOptions = ({
   }
 }
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const injectEnv = async function (command: $TSFixMe, {
   api,
   buildOptions,
   context,
   site,
   siteInfo
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) {
   const isUsingEnvelope = siteInfo && siteInfo.use_envelope
   const authlifyTokenId = siteInfo && siteInfo.authlify_token_id
@@ -80,11 +80,10 @@ const injectEnv = async function (command: $TSFixMe, {
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'build'.
+
 const build = async (options: $TSFixMe, command: $TSFixMe) => {
   command.setAnalyticsPayload({ dry: options.dry })
   // Retrieve Netlify Build options
-  // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
   const [token] = await getToken()
 
   const { cachedConfig, siteInfo } = command.netlify
@@ -110,7 +109,7 @@ const build = async (options: $TSFixMe, command: $TSFixMe) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createBuil... Remove this comment to see the full error message
+
 const createBuildCommand = (program: $TSFixMe) => program
   .command('build')
   .description('(Beta) Build on your local machine')

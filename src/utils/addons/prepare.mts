@@ -1,8 +1,8 @@
 // @ts-check
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'chalk'.
+
 const { chalk, error, exit, log, warn } = require('../command-helpers.cjs')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'ADDON_VALI... Remove this comment to see the full error message
+
 const ADDON_VALIDATION = {
   EXISTS: 'EXISTS',
   NOT_EXISTS: 'NOT_EXISTS',
@@ -12,7 +12,7 @@ const validateExists = ({
   addon,
   addonName,
   siteData
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   if (!addon || !addon.id) {
     log(`Add-on ${addonName} doesn't exist for ${siteData.name}`)
@@ -25,7 +25,7 @@ const validateNotExists = ({
   addon,
   addonName,
   siteData
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   if (addon && addon.id) {
     log(`The "${addonName} add-on" already exists for ${siteData.name}`)
@@ -39,11 +39,11 @@ const validateNotExists = ({
   }
 }
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getCurrent... Remove this comment to see the full error message
+
 const getCurrentAddon = ({
   addonName,
   addons
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => addons.find((addon: $TSFixMe) => addon.service_slug === addonName)
 
 const validateCurrentAddon = ({
@@ -51,7 +51,7 @@ const validateCurrentAddon = ({
   addonName,
   siteData,
   validation
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   switch (validation) {
     case ADDON_VALIDATION.EXISTS: {
@@ -72,50 +72,50 @@ const validateCurrentAddon = ({
 const getAddonManifest = async ({
   addonName,
   api
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   let manifest
   try {
     manifest = await api.showServiceManifest({ addonName })
   } catch (error_) {
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     if (typeof (error_ as $TSFixMe).message === 'string' && (error_ as $TSFixMe).message.includes('Not Found')) {
       error(`No add-on "${addonName}" found. Please double check your add-on name and try again`)
     } else {
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       error((error_ as $TSFixMe).message);
     }
   }
   return manifest
 }
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getSiteDat... Remove this comment to see the full error message
+
 const getSiteData = async ({
   api,
   siteId
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   let siteData
   try {
     siteData = await api.getSite({ siteId })
   } catch (error_) {
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     error(`Failed getting list of site data: ${(error_ as $TSFixMe).message}`);
   }
   return siteData
 }
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getAddons'... Remove this comment to see the full error message
+
 const getAddons = async ({
   api,
   siteId
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   let addons
   try {
     addons = await api.listServiceInstancesForSite({ siteId })
   } catch (error_) {
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     error(`Failed getting list of addons: ${(error_ as $TSFixMe).message}`);
   }
   return addons
@@ -128,12 +128,12 @@ const getAddons = async ({
  * @param {string} [config.addonName]
  * @param {keyof ADDON_VALIDATION} [config.validation]
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'prepareAdd... Remove this comment to see the full error message
+
 const prepareAddonCommand = async ({
   addonName,
   command,
   validation
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const { netlify } = command
   const { api, site } = netlify

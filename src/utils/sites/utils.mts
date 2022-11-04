@@ -1,7 +1,7 @@
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'fetch'.
+
 const fetch = require('node-fetch')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getTemplat... Remove this comment to see the full error message
+
 const getTemplatesFromGitHub = async (token: $TSFixMe) => {
   const getPublicGitHubReposFromOrg = new URL(`https://api.github.com/orgs/netlify-templates/repos`)
   // GitHub returns 30 by default and we want to avoid our limit
@@ -24,11 +24,11 @@ const getTemplatesFromGitHub = async (token: $TSFixMe) => {
   return allTemplates
 }
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'validateTe... Remove this comment to see the full error message
+
 const validateTemplate = async ({
   ghToken,
   templateName
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const response = await fetch(`https://api.github.com/repos/${templateName}`, {
     headers: {
@@ -48,7 +48,7 @@ const validateTemplate = async ({
   return { exists: true, isTemplate: data.is_template }
 }
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createRepo... Remove this comment to see the full error message
+
 const createRepo = async (templateName: $TSFixMe, ghToken: $TSFixMe, siteName: $TSFixMe) => {
   const resp = await fetch(`https://api.github.com/repos/${templateName}/generate`, {
     method: 'POST',

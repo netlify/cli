@@ -1,36 +1,36 @@
 // @ts-check
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'Buffer'.
+
 const { Buffer } = require('buffer')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'process'.
+
 const process = require('process')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'OneGraphCl... Remove this comment to see the full error message
+
 const { OneGraphClient } = require('netlify-onegraph-internal')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'uuidv4'.
+
 const { v4: uuidv4 } = require('uuid')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'OneGraphCl... Remove this comment to see the full error message
+
 const { OneGraphCliClient, ensureCLISession } = require('../../lib/one-graph/cli-client.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getNetlify... Remove this comment to see the full error message
+
 const { getNetlifyGraphConfig } = require('../../lib/one-graph/cli-netlify-graph.cjs')
 const {
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'NETLIFYDEV... Remove this comment to see the full error message
+  
   NETLIFYDEVERR,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'chalk'.
+  
   chalk,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'error'.
+  
   error,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'exit'.
+  
   exit,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getToken'.
+  
   getToken,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'log'.
+  
   log,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'translateF... Remove this comment to see the full error message
+  
   translateFromEnvelopeToMongo,
 } = require('../../utils/index.mjs')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'ensureAppF... Remove this comment to see the full error message
+
 const { ensureAppForSite, executeCreateApiTokenMutation } = OneGraphCliClient
 
 /**
@@ -39,7 +39,7 @@ const { ensureAppForSite, executeCreateApiTokenMutation } = OneGraphCliClient
  * @param {import('../base-command').BaseCommand} command
  * @returns
  */
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const graphInit = async (options: $TSFixMe, command: $TSFixMe) => {
   const { api, config, site, siteInfo, state } = command.netlify
   const accountId = siteInfo.account_slug
@@ -53,7 +53,6 @@ const graphInit = async (options: $TSFixMe, command: $TSFixMe) => {
     )
   }
 
-  // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
   let [netlifyToken] = await getToken()
   if (!netlifyToken) {
     netlifyToken = await command.authenticate()
@@ -176,11 +175,11 @@ const graphInit = async (options: $TSFixMe, command: $TSFixMe) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createGrap... Remove this comment to see the full error message
+
 const createGraphInitCommand = (program: $TSFixMe) => program
   .command('graph:init')
   .description('Initialize all the resources for Netlify Graph')
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   .action(async (options: $TSFixMe, command: $TSFixMe) => {
     await graphInit(options, command)
   })

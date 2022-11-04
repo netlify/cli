@@ -1,18 +1,18 @@
 // @ts-check
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'fs'.
+
 const { promises: fs } = require('fs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'path'.
+
 const path = require('path')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'cwd'.
+
 const { cwd } = require('process')
 const { pathToFileURL } = require('url')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'warn'.
+
 const { warn } = require('../../utils/command-helpers.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getPathInP... Remove this comment to see the full error message
+
 const { getPathInProject } = require('../settings.cjs')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'INTERNAL_E... Remove this comment to see the full error message
+
 const { INTERNAL_EDGE_FUNCTIONS_FOLDER } = require('./consts.cjs')
 
 /**
@@ -22,7 +22,7 @@ const { INTERNAL_EDGE_FUNCTIONS_FOLDER } = require('./consts.cjs')
  * @param {string} importMapPath
  * @returns {Promise<object | null>}
  */
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const getImportMap = async (importMapPath: $TSFixMe) => {
   try {
     const data = await fs.readFile(importMapPath)
@@ -36,7 +36,7 @@ const getImportMap = async (importMapPath: $TSFixMe) => {
   }
 }
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getInterna... Remove this comment to see the full error message
+
 const getInternalFunctions = async () => {
   const internalPath = path.join(cwd(), getPathInProject([INTERNAL_EDGE_FUNCTIONS_FOLDER]))
 

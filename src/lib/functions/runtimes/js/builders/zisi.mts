@@ -1,23 +1,23 @@
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'mkdir'.
+
 const { mkdir, writeFile } = require('fs').promises
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'path'.
+
 const path = require('path')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'decache'.
+
 const decache = require('decache')
 const readPkgUp = require('read-pkg-up')
 const sourceMapSupport = require('source-map-support')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'NETLIFYDEV... Remove this comment to see the full error message
+
 const { NETLIFYDEVERR } = require('../../../../../utils/index.mjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getPathInP... Remove this comment to see the full error message
+
 const { getPathInProject } = require('../../../../settings.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'normalizeF... Remove this comment to see the full error message
+
 const { normalizeFunctionsConfig } = require('../../../config.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'memoizedBu... Remove this comment to see the full error message
+
 const { memoizedBuild } = require('../../../memoized-build.cjs')
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const addFunctionsConfigDefaults = (config: $TSFixMe) => ({
   ...config,
 
@@ -35,7 +35,7 @@ const buildFunction = async ({
   hasTypeModule,
   projectRoot,
   targetDirectory
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const zipOptions = {
     archiveFormat: 'none',
@@ -65,7 +65,7 @@ const buildFunction = async ({
     // @ts-expect-error TS(2345): Argument of type '{ archiveFormat: string; basePat... Remove this comment to see the full error message
     command: () => zipFunction(entryPath, targetDirectory, zipOptions),
   })
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   const srcFiles = inputs.filter((inputPath: $TSFixMe) => !inputPath.includes(`${path.sep}node_modules${path.sep}`))
   const buildPath = path.join(functionPath, `${func.name}.js`)
 
@@ -95,7 +95,7 @@ const parseForSchedule = async ({
   config,
   mainFile,
   projectRoot
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const { listFunction } = await import('@netlify/zip-it-and-ship-it')
   const listedFunction = await listFunction(mainFile, {
@@ -108,7 +108,7 @@ const parseForSchedule = async ({
 
 // Clears the cache for any files inside the directory from which functions are
 // served.
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const clearFunctionsCache = (functionsPath: $TSFixMe) => {
   Object.keys(require.cache)
     .filter((key) => key.startsWith(functionsPath))
@@ -117,7 +117,7 @@ const clearFunctionsCache = (functionsPath: $TSFixMe) => {
 
 const getTargetDirectory = async ({
   errorExit
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const targetDirectory = path.resolve(getPathInProject(['functions-serve']))
 
@@ -133,7 +133,7 @@ const getTargetDirectory = async ({
 const netlifyConfigToZisiConfig = ({
   config,
   projectRoot
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) =>
   addFunctionsConfigDefaults(normalizeFunctionsConfig({ functionsConfig: config.functions, projectRoot }))
 
@@ -143,7 +143,7 @@ module.exports = async ({
   errorExit,
   func,
   projectRoot
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const functionsConfig = netlifyConfigToZisiConfig({ config, projectRoot })
 

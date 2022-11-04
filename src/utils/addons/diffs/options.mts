@@ -1,7 +1,7 @@
 // @ts-check
 const ansiStyles = require('ansi-styles')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'chalk'.
+
 const { chalk } = require('../../command-helpers.cjs')
 
 const forceColor = new chalk.Instance({ level: 1 })
@@ -102,13 +102,13 @@ const colorTheme = {
   undefined: ansiStyles.yellow,
 }
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const plugins: $TSFixMe = []
 const theme = colorTheme
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'concordanc... Remove this comment to see the full error message
+
 const concordanceOptions = { maxDepth: 3, plugins, theme }
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'concordanc... Remove this comment to see the full error message
+
 const concordanceDiffOptions = { maxDepth: 1, plugins, theme }
 
 module.exports = {

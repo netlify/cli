@@ -1,14 +1,14 @@
 // @ts-check
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'pWaitFor'.
+
 const pWaitFor = require('p-wait-for')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'prettyjson... Remove this comment to see the full error message
+
 const prettyjson = require('prettyjson')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'startSpinn... Remove this comment to see the full error message
+
 const { startSpinner, stopSpinner } = require('../../lib/spinner.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'chalk'.
+
 const { chalk, error, log } = require('../../utils/index.mjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'init'.
+
 const { init } = require('../init/index.cjs')
 
 // 1 second
@@ -26,14 +26,14 @@ const BUILD_FINISH_TIMEOUT = 12e5
  * @param {import('ora').Ora} spinner
  * @returns {Promise<boolean>}
  */
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const waitForBuildFinish = async function (api: $TSFixMe, siteId: $TSFixMe, spinner: $TSFixMe) {
   let firstPass = true
 
   const waitForBuildToFinish = async function () {
     const builds = await api.listSiteBuilds({ siteId })
     // build.error
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     const currentBuilds = builds.filter((build: $TSFixMe) => !build.done)
 
     // if build.error
@@ -62,7 +62,7 @@ const waitForBuildFinish = async function (api: $TSFixMe, siteId: $TSFixMe, spin
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const watch = async (options: $TSFixMe, command: $TSFixMe) => {
   await command.authenticate()
   const client = command.netlify.api
@@ -130,7 +130,7 @@ const watch = async (options: $TSFixMe, command: $TSFixMe) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createWatc... Remove this comment to see the full error message
+
 const createWatchCommand = (program: $TSFixMe) => program
   .command('watch')
   .description('Watch for site deploy to finish')

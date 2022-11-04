@@ -1,19 +1,19 @@
 // @ts-check
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'Listr'.
+
 const Listr = require('listr')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'error'.
+
 const { error, execa } = require('../../utils/index.mjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'installPla... Remove this comment to see the full error message
+
 const { installPlatform } = require('../../utils/lm/install.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'checkHelpe... Remove this comment to see the full error message
+
 const { checkHelperVersion } = require('../../utils/lm/requirements.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'printBanne... Remove this comment to see the full error message
+
 const { printBanner } = require('../../utils/lm/ui.cjs')
 
 const installHelperIfMissing = async function ({
   force
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) {
   let installHelper = false
   try {
@@ -32,7 +32,7 @@ const installHelperIfMissing = async function ({
   return false
 }
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const provisionService = async function (siteId: $TSFixMe, api: $TSFixMe) {
   const addonName = 'large-media'
 
@@ -47,12 +47,12 @@ const provisionService = async function (siteId: $TSFixMe, api: $TSFixMe) {
     })
   } catch (error_) {
     // error is JSONHTTPError
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 throw new Error((error_ as $TSFixMe).json.error);
   }
 }
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const configureLFSURL = async function (siteId: $TSFixMe, api: $TSFixMe) {
   const siteInfo = await api.getSite({ siteId })
   const url = `https://${siteInfo.id_domain}/.netlify/large-media`
@@ -65,7 +65,7 @@ const configureLFSURL = async function (siteId: $TSFixMe, api: $TSFixMe) {
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const lmSetup = async (options: $TSFixMe, command: $TSFixMe) => {
   await command.authenticate()
 
@@ -106,7 +106,7 @@ const lmSetup = async (options: $TSFixMe, command: $TSFixMe) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createLmSe... Remove this comment to see the full error message
+
 const createLmSetupCommand = (program: $TSFixMe) => program
   .command('lm:setup')
   .description('Configures your site to use Netlify Large Media')

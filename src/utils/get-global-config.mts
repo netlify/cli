@@ -1,12 +1,12 @@
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'readFile'.
+
 const { readFile } = require('fs').promises
 
 const Configstore = require('configstore')
 const memoizeOne = require('memoize-one')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'uuidv4'.
+
 const { v4: uuidv4 } = require('uuid')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getLegacyP... Remove this comment to see the full error message
+
 const { getLegacyPathInHome, getPathInHome } = require('../lib/settings.cjs')
 
 const globalConfigDefaults = {
@@ -32,7 +32,7 @@ const getGlobalConfigOnce = async function () {
   return configStore
 }
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getGlobalC... Remove this comment to see the full error message
+
 const getGlobalConfig = async function () {
   const retries = 3
   // eslint-disable-next-line fp/no-loops

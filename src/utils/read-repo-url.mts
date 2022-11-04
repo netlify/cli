@@ -1,7 +1,7 @@
 // @ts-check
 const url = require('url')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'fetch'.
+
 const fetch = require('node-fetch')
 
 // supported repo host types
@@ -11,7 +11,7 @@ const GITHUB = 'GitHub'
  * Takes a url like https://github.com/netlify-labs/all-the-functions/tree/master/functions/9-using-middleware
  * and returns https://api.github.com/repos/netlify-labs/all-the-functions/contents/functions/9-using-middleware
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'readRepoUR... Remove this comment to see the full error message
+
 const readRepoURL = async function (_url: $TSFixMe) {
   // TODO: use `url.URL()` instead
   // eslint-disable-next-line n/no-deprecated-api
@@ -23,7 +23,7 @@ const readRepoURL = async function (_url: $TSFixMe) {
   return folderContents
 }
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const getRepoURLContents = async function (repoHost: $TSFixMe, ownerAndRepo: $TSFixMe, contentsPath: $TSFixMe) {
   // naive joining strategy for now
   if (repoHost === GITHUB) {
@@ -39,7 +39,7 @@ const getRepoURLContents = async function (repoHost: $TSFixMe, ownerAndRepo: $TS
   throw new Error('unsupported host ', repoHost)
 }
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'validateRe... Remove this comment to see the full error message
+
 const validateRepoURL = function (_url: $TSFixMe) {
   // TODO: use `url.URL()` instead
   // eslint-disable-next-line n/no-deprecated-api
@@ -48,7 +48,7 @@ const validateRepoURL = function (_url: $TSFixMe) {
   // other validation logic here
   return GITHUB
 }
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const parseRepoURL = function (repoHost: $TSFixMe, URL: $TSFixMe) {
   // naive splitting strategy for now
   if (repoHost === GITHUB) {

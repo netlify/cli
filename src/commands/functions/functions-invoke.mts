@@ -1,35 +1,35 @@
 // @ts-check
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'fs'.
+
 const fs = require('fs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'path'.
+
 const path = require('path')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'process'.
+
 const process = require('process')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'inquirer'.
+
 const inquirer = require('inquirer')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'fetch'.
+
 const fetch = require('node-fetch')
 
 const {
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'BACKGROUND... Remove this comment to see the full error message
+  
   BACKGROUND,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'CLOCKWORK_... Remove this comment to see the full error message
+  
   CLOCKWORK_USERAGENT,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'NETLIFYDEV... Remove this comment to see the full error message
+  
   NETLIFYDEVWARN,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'chalk'.
+  
   chalk,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'error'.
+  
   error,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'exit'.
+  
   exit,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getFunctio... Remove this comment to see the full error message
+  
   getFunctions,
 } = require('../../utils/index.mjs')
 
 // https://docs.netlify.com/functions/trigger-on-events/
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'events'.
+
 const events = [
   'deploy-building',
   'deploy-succeeded',
@@ -45,14 +45,14 @@ const events = [
   'identity-login',
 ]
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const eventTriggeredFunctions = new Set([...events, ...events.map((name: $TSFixMe) => `${name}${BACKGROUND}`)])
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'DEFAULT_PO... Remove this comment to see the full error message
+
 const DEFAULT_PORT = 8888
 
 // https://stackoverflow.com/questions/3710204/how-to-check-if-a-string-is-a-valid-json-string-in-javascript-without-using-try
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const tryParseJSON = function (jsonString: $TSFixMe) {
   try {
     const parsedValue = JSON.parse(jsonString)
@@ -69,7 +69,7 @@ const tryParseJSON = function (jsonString: $TSFixMe) {
   return false
 }
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const formatQstring = function (querystring: $TSFixMe) {
   if (querystring) {
     return `?${querystring}`
@@ -78,7 +78,7 @@ const formatQstring = function (querystring: $TSFixMe) {
 }
 
 /** process payloads from flag */
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const processPayloadFromFlag = function (payloadString: $TSFixMe) {
   if (payloadString) {
     // case 1: jsonstring
@@ -110,12 +110,12 @@ const processPayloadFromFlag = function (payloadString: $TSFixMe) {
  * @param {string} [argumentName] The name that might be provided as argument (optional argument)
  * @returns {Promise<string>}
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getNameFro... Remove this comment to see the full error message
+
 const getNameFromArgs = async function (functions: $TSFixMe, options: $TSFixMe, argumentName: $TSFixMe) {
   const functionToTrigger = getFunctionToTrigger(options, argumentName)
   const functionNames = functions.map(({
     name
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   }: $TSFixMe) => name)
 
   if (functionToTrigger) {
@@ -147,7 +147,7 @@ const getNameFromArgs = async function (functions: $TSFixMe, options: $TSFixMe, 
  * @param {string} [argumentName] The name that might be provided as argument (optional argument)
  * @returns {string}
  */
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const getFunctionToTrigger = function (options: $TSFixMe, argumentName: $TSFixMe) {
   if (options.name) {
     if (argumentName) {
@@ -167,7 +167,7 @@ const getFunctionToTrigger = function (options: $TSFixMe, argumentName: $TSFixMe
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const functionsInvoke = async (nameArgument: $TSFixMe, options: $TSFixMe, command: $TSFixMe) => {
   const { config } = command.netlify
 
@@ -182,7 +182,7 @@ const functionsInvoke = async (nameArgument: $TSFixMe, options: $TSFixMe, comman
 
   const functions = await getFunctions(functionsDir, config)
   const functionToTrigger = await getNameFromArgs(functions, options, nameArgument)
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   const functionObj = functions.find((func: $TSFixMe) => func.name === functionToTrigger)
 
   let headers = {}
@@ -198,9 +198,9 @@ const functionsInvoke = async (nameArgument: $TSFixMe, options: $TSFixMe, comman
     const [name, event] = functionToTrigger.split('-')
     if (name === 'identity') {
       // https://docs.netlify.com/functions/functions-and-identity/#trigger-functions-on-identity-events
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 (body as $TSFixMe).event = event;
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       (body as $TSFixMe).user = {
     id: '1111a1a1-a11a-1111-aa11-aaa11111a11a',
     aud: '',
@@ -218,11 +218,11 @@ const functionsInvoke = async (nameArgument: $TSFixMe, options: $TSFixMe, comman
     } else {
       // non identity functions seem to have a different shape
 // https://docs.netlify.com/functions/trigger-on-events/#payload
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 (body as $TSFixMe).payload = {
     TODO: 'mock up payload data better',
 };
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       (body as $TSFixMe).site = {
     TODO: 'mock up site data better',
 };
@@ -258,7 +258,7 @@ const functionsInvoke = async (nameArgument: $TSFixMe, options: $TSFixMe, comman
     const data = await response.text()
     console.log(data)
   } catch (error_) {
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     error(`Ran into an error invoking your function: ${(error_ as $TSFixMe).message}`);
   }
 }
@@ -268,7 +268,7 @@ const functionsInvoke = async (nameArgument: $TSFixMe, options: $TSFixMe, comman
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createFunc... Remove this comment to see the full error message
+
 const createFunctionsInvokeCommand = (program: $TSFixMe) => program
   .command('functions:invoke')
   .alias('function:trigger')
@@ -289,7 +289,7 @@ const createFunctionsInvokeCommand = (program: $TSFixMe) => program
     '--no-identity',
     'simulate Netlify Identity authentication JWT. pass --no-identity to affirm unauthenticated request',
   )
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   .option('--port <port>', 'Port where netlify dev is accessible. e.g. 8888', (value: $TSFixMe) => Number.parseInt(value))
   .addExamples([
     'netlify functions:invoke',

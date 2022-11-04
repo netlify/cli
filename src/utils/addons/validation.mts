@@ -1,15 +1,15 @@
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'requiredCo... Remove this comment to see the full error message
+
 const requiredConfigValues = function (config: $TSFixMe) {
   return Object.keys(config).filter((key) => config[key].required)
 }
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'missingCon... Remove this comment to see the full error message
+
 const missingConfigValues = function (requiredConfig: $TSFixMe, providedConfig: $TSFixMe) {
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   return requiredConfig.filter((key: $TSFixMe) => !providedConfig[key]);
 }
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'updateConf... Remove this comment to see the full error message
+
 const updateConfigValues = function (allowedConfig: $TSFixMe, currentConfig: $TSFixMe, newConfig: $TSFixMe) {
   return Object.keys(allowedConfig).reduce((acc, key) => {
     if (newConfig[key]) {

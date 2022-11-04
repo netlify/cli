@@ -1,11 +1,11 @@
 // @ts-check
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AsciiTable... Remove this comment to see the full error message
+
 const AsciiTable = require('ascii-table')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'prepareAdd... Remove this comment to see the full error message
+
 const { prepareAddonCommand } = require('../../utils/addons/prepare.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'log'.
+
 const { log, logJson } = require('../../utils/index.mjs')
 
 /**
@@ -14,7 +14,7 @@ const { log, logJson } = require('../../utils/index.mjs')
  * @param {import('../base-command').BaseCommand} command
  * @returns {Promise<boolean>}
  */
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const addonsList = async (options: $TSFixMe, command: $TSFixMe) => {
   const { addons, siteData } = await prepareAddonCommand({ command })
   // Return json response for piping commands
@@ -29,7 +29,7 @@ const addonsList = async (options: $TSFixMe, command: $TSFixMe) => {
     return false
   }
 
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   const addonData = addons.map((addon: $TSFixMe) => ({
     namespace: addon.service_path.replace('/.netlify/', ''),
     name: addon.service_name,
@@ -46,7 +46,7 @@ const addonsList = async (options: $TSFixMe, command: $TSFixMe) => {
     id,
     name,
     namespace
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   }: $TSFixMe) => {
     table.addRow(namespace, name, id)
   })
@@ -59,13 +59,13 @@ const addonsList = async (options: $TSFixMe, command: $TSFixMe) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createAddo... Remove this comment to see the full error message
+
 const createAddonsListCommand = (program: $TSFixMe) => program
   .command('addons:list')
   .alias('addon:list')
   .description(`List currently installed add-ons for site`)
   .option('--json', 'Output add-on data as JSON')
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   .action(async (options: $TSFixMe, command: $TSFixMe) => {
     await addonsList(options, command)
   })

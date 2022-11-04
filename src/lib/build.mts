@@ -1,8 +1,8 @@
 // @ts-check
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'process'.
+
 const process = require('process')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'netlifyBui... Remove this comment to see the full error message
+
 const netlifyBuildPromise = import('@netlify/build')
 
 /**
@@ -22,12 +22,12 @@ const netlifyBuildPromise = import('@netlify/build')
  * @param {import('commander').OptionValues} config.options
  * @returns {BuildConfig}
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getBuildOp... Remove this comment to see the full error message
+
 const getBuildOptions = ({
   cachedConfig,
   options: { context, cwd, debug, dry, json, offline, silent },
   token
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => ({
   cachedConfig,
   siteId: cachedConfig.siteInfo.id,
@@ -54,7 +54,7 @@ const getBuildOptions = ({
  * @param {BuildConfig} options
  * @returns
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'runBuild'.
+
 const runBuild = async (options: $TSFixMe) => {
   const { default: build } = await netlifyBuildPromise
 

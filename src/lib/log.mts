@@ -1,7 +1,7 @@
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'dotProp'.
+
 const dotProp = require('dot-prop')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'chalk'.
+
 const { chalk } = require('../utils/index.mjs')
 
 const RED_BACKGROUND = chalk.red('-background')
@@ -26,7 +26,7 @@ const messages = {
   },
 }
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getLogMess... Remove this comment to see the full error message
+
 const getLogMessage = (key: $TSFixMe) => dotProp.get(messages, key, 'Missing Log Message Key')
 
 module.exports = {

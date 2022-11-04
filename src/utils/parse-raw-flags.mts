@@ -10,9 +10,9 @@
 // // rawFlags = {stuff: yay!}
 //
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'parseRawFl... Remove this comment to see the full error message
+
 const parseRawFlags = function (raw: $TSFixMe) {
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   const rawFlags = raw.reduce((acc: $TSFixMe, curr: $TSFixMe, index: $TSFixMe, array: $TSFixMe) => {
     if (/^-{1,2}/.test(curr)) {
       const key = curr.replace(/^-{1,2}/, '')
@@ -30,7 +30,7 @@ const parseRawFlags = function (raw: $TSFixMe) {
   return rawFlags
 }
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const aggressiveJSONParse = function (value: $TSFixMe) {
   if (value === 'true') {
     return true

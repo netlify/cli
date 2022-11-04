@@ -1,20 +1,20 @@
 // @ts-check
 const { InvalidArgumentError } = require('commander')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'inquirer'.
+
 const inquirer = require('inquirer')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'pick'.
+
 const pick = require('lodash/pick')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'prettyjson... Remove this comment to see the full error message
+
 const prettyjson = require('prettyjson')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'chalk'.
+
 const { chalk, error, getRepoData, log, logJson, track, warn } = require('../../utils/index.mjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'configureR... Remove this comment to see the full error message
+
 const { configureRepo } = require('../../utils/init/config.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'link'.
+
 const { link } = require('../link/index.cjs')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getSiteNam... Remove this comment to see the full error message
+
 const getSiteNameInput = async (name: $TSFixMe) => {
   if (!name) {
     const { name: nameInput } = await inquirer.prompt([
@@ -22,7 +22,7 @@ const getSiteNameInput = async (name: $TSFixMe) => {
         type: 'input',
         name: 'name',
         message: 'Site name (leave blank for a random name; you can change it later):',
-        // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+        
         validate: (input: $TSFixMe) => /^[a-zA-Z\d-]+$/.test(input || undefined) || 'Only alphanumeric characters and hyphens are allowed',
       },
     ])
@@ -37,7 +37,7 @@ const getSiteNameInput = async (name: $TSFixMe) => {
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'sitesCreat... Remove this comment to see the full error message
+
 const sitesCreate = async (options: $TSFixMe, command: $TSFixMe) => {
   const { api } = command.netlify
 
@@ -52,7 +52,7 @@ const sitesCreate = async (options: $TSFixMe, command: $TSFixMe) => {
         type: 'list',
         name: 'accountSlug',
         message: 'Team:',
-        // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+        
         choices: accounts.map((account: $TSFixMe) => ({
           value: account.slug,
           name: account.name
@@ -65,13 +65,13 @@ const sitesCreate = async (options: $TSFixMe, command: $TSFixMe) => {
   let site
 
   // Allow the user to reenter site name if selected one isn't available
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   const inputSiteName = async (name: $TSFixMe) => {
     const { name: siteName } = await getSiteNameInput(name)
 
     const body = {}
     if (typeof siteName === 'string') {
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       (body as $TSFixMe).name = siteName.trim();
     }
     try {
@@ -80,13 +80,13 @@ const sitesCreate = async (options: $TSFixMe, command: $TSFixMe) => {
         body,
       })
     } catch (error_) {
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       if ((error_ as $TSFixMe).status === 422) {
         warn(`${siteName}.netlify.app already exists. Please try a different slug.`)
         // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
         await inputSiteName()
       } else {
-        // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+        
         error(`createSiteInTeam error: ${(error_ as $TSFixMe).status}: ${(error_ as $TSFixMe).message}`);
       }
     }
@@ -164,7 +164,7 @@ const sitesCreate = async (options: $TSFixMe, command: $TSFixMe) => {
 }
 
 const MAX_SITE_NAME_LENGTH = 63
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const validateName = function (value: $TSFixMe) {
   // netlify sites:create --name <A string of more than 63 words>
   if (typeof value === 'string' && value.length > MAX_SITE_NAME_LENGTH) {
@@ -179,7 +179,7 @@ const validateName = function (value: $TSFixMe) {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createSite... Remove this comment to see the full error message
+
 const createSitesCreateCommand = (program: $TSFixMe) => program
   .command('sites:create')
   .description(

@@ -1,57 +1,57 @@
 // @ts-check
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'Buffer'.
+
 const { Buffer } = require('buffer')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'once'.
+
 const { once } = require('events')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'readFile'.
+
 const { readFile } = require('fs').promises
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'http'.
+
 const http = require('http')
 const https = require('https')
 const { isIPv6 } = require('net')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'path'.
+
 const path = require('path')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'util'.
+
 const util = require('util')
 const zlib = require('zlib')
 
 const contentType = require('content-type')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'cookie'.
+
 const cookie = require('cookie')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'get'.
+
 const { get } = require('dot-prop')
 const generateETag = require('etag')
 const httpProxy = require('http-proxy')
 const { createProxyMiddleware } = require('http-proxy-middleware')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'jwtDecode'... Remove this comment to see the full error message
+
 const jwtDecode = require('jwt-decode')
 const locatePath = require('locate-path')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'isEmpty'.
+
 const isEmpty = require('lodash/isEmpty')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'pFilter'.
+
 const pFilter = require('p-filter')
 const toReadableStream = require('to-readable-stream')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'edgeFuncti... Remove this comment to see the full error message
+
 const edgeFunctions = require('../lib/edge-functions/index.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'fileExists... Remove this comment to see the full error message
+
 const { fileExistsAsync, isFileAsync } = require('../lib/fs.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'renderErro... Remove this comment to see the full error message
+
 const renderErrorTemplate = require('../lib/render-error-remplate.cjs')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'NETLIFYDEV... Remove this comment to see the full error message
+
 const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./command-helpers.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createStre... Remove this comment to see the full error message
+
 const { createStreamPromise } = require('./create-stream-promise.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'headersFor... Remove this comment to see the full error message
+
 const { headersForPath, parseHeaders } = require('./headers.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createRewr... Remove this comment to see the full error message
+
 const { createRewriter, onChanges } = require('./rules-proxy.cjs')
 
 const decompress = util.promisify(zlib.gunzip)
 const shouldGenerateETag = Symbol('Internal: response should generate ETag')
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const formatEdgeFunctionError = (errorBuffer: $TSFixMe, acceptsHtml: $TSFixMe) => {
   const {
     error: { message, name, stack },
@@ -68,23 +68,23 @@ const formatEdgeFunctionError = (errorBuffer: $TSFixMe, acceptsHtml: $TSFixMe) =
   })
 }
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const isInternal = function (url: $TSFixMe) {
   return url.startsWith('/.netlify/')
 }
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const isFunction = function (functionsPort: $TSFixMe, url: $TSFixMe) {
   return functionsPort && url.match(/^\/.netlify\/(functions|builders)\/.+/);
 }
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const getAddonUrl = function (addonsUrls: $TSFixMe, req: $TSFixMe) {
   const matches = req.url.match(/^\/.netlify\/([^/]+)(\/.*)/)
   const addonUrl = matches && addonsUrls[matches[1]]
   return addonUrl ? `${addonUrl}${matches[2]}` : null
 }
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const getStatic = async function (pathname: $TSFixMe, publicFolder: $TSFixMe) {
   const alternatives = [pathname, ...alternativePathsFor(pathname)].map((filePath) =>
     path.resolve(publicFolder, filePath.slice(1)),
@@ -98,7 +98,7 @@ const getStatic = async function (pathname: $TSFixMe, publicFolder: $TSFixMe) {
   return `/${path.relative(publicFolder, file)}`
 }
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const isExternal = function (match: $TSFixMe) {
   return match.to && match.to.match(/^https?:\/\//);
 }
@@ -107,7 +107,7 @@ const stripOrigin = function ({
   hash,
   pathname,
   search
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) {
   return `${pathname}${search}${hash}`
 }
@@ -117,7 +117,7 @@ const proxyToExternalUrl = function ({
   destURL,
   req,
   res
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) {
   console.log(`${NETLIFYDEVLOG} Proxying to ${dest}`)
   const handler = createProxyMiddleware({
@@ -133,7 +133,7 @@ const handleAddonUrl = function ({
   addonUrl,
   req,
   res
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) {
   const dest = new URL(addonUrl)
   const destURL = stripOrigin(dest)
@@ -141,19 +141,19 @@ const handleAddonUrl = function ({
   return proxyToExternalUrl({ req, res, dest, destURL })
 }
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const isRedirect = function (match: $TSFixMe) {
   return match.status && match.status >= 300 && match.status <= 400
 }
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const render404 = async function (publicFolder: $TSFixMe) {
   const maybe404Page = path.resolve(publicFolder, '404.html')
   try {
     const isFile = await isFileAsync(maybe404Page)
     if (isFile) return await readFile(maybe404Page, 'utf-8')
   } catch (error) {
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     console.warn(NETLIFYDEVWARN, 'Error while serving 404.html file', (error as $TSFixMe).message);
   }
 
@@ -163,7 +163,7 @@ const render404 = async function (publicFolder: $TSFixMe) {
 // Used as an optimization to avoid dual lookups for missing assets
 const assetExtensionRegExp = /\.(html?|png|jpg|js|css|svg|gif|ico|woff|woff2)$/
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const alternativePathsFor = function (url: $TSFixMe) {
   if (isFunction(true, url)) {
     return []
@@ -189,7 +189,7 @@ const serveRedirect = async function ({
   proxy,
   req,
   res
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) {
   if (!match) return proxy.web(req, res, options)
 
@@ -214,7 +214,7 @@ const serveRedirect = async function ({
   if (match.exceptions && match.exceptions.JWT) {
     // Some values of JWT can start with :, so, make sure to normalize them
     const expectedRoles = new Set(
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       match.exceptions.JWT.split(',').map((value: $TSFixMe) => value.startsWith(':') ? value.slice(1) : value),
     )
 
@@ -229,14 +229,14 @@ const serveRedirect = async function ({
       try {
         jwtValue = jwtDecode(token) || {}
       } catch (error) {
-        // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+        
         console.warn(NETLIFYDEVWARN, 'Error while decoding JWT provided in request', (error as $TSFixMe).message);
         res.writeHead(400)
         res.end('Invalid JWT provided. Please see logs for more info.')
         return
       }
 
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       if (((jwtValue as $TSFixMe).exp || 0) < Math.round(Date.now() / MILLISEC_TO_SEC)) {
         console.warn(NETLIFYDEVWARN, 'Expired JWT provided in request', req.url)
       } else {
@@ -345,7 +345,7 @@ const serveRedirect = async function ({
   return proxy.web(req, res, options)
 }
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const reqToURL = function (req: $TSFixMe, pathname: $TSFixMe) {
   return new URL(
     pathname,
@@ -357,14 +357,14 @@ const reqToURL = function (req: $TSFixMe, pathname: $TSFixMe) {
 
 const MILLISEC_TO_SEC = 1e3
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'initialize... Remove this comment to see the full error message
+
 const initializeProxy = async function ({
   configPath,
   distDir,
   host,
   port,
   projectDir
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) {
   const proxy = httpProxy.createProxyServer({
     selfHandleResponse: true,
@@ -383,13 +383,13 @@ const initializeProxy = async function ({
     const existingHeadersFiles = await pFilter(watchedHeadersFiles, fileExistsAsync)
     console.log(
       `${NETLIFYDEVLOG} Reloading headers files from`,
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       existingHeadersFiles.map((headerFile: $TSFixMe) => path.relative(projectDir, headerFile)),
     )
     headers = await parseHeaders({ headersFiles, configPath })
   })
 
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   proxy.before('web', 'stream', (req: $TSFixMe) => {
     // See https://github.com/http-party/node-http-proxy/issues/1219#issuecomment-511110375
     if (req.headers.expect) {
@@ -399,7 +399,7 @@ const initializeProxy = async function ({
     }
   })
 
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   proxy.on('error', (_: $TSFixMe, req: $TSFixMe, res: $TSFixMe) => {
     res.writeHead(500, {
       'Content-Type': 'text/plain',
@@ -411,7 +411,7 @@ const initializeProxy = async function ({
 
     res.end(message)
   })
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   proxy.on('proxyReq', (proxyReq: $TSFixMe, req: $TSFixMe) => {
     if (edgeFunctions.isEdgeFunctionsRequest(req)) {
       edgeFunctions.handleProxyRequest(req, proxyReq)
@@ -426,7 +426,7 @@ const initializeProxy = async function ({
       proxyReq.write(req.originalBody)
     }
   })
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   proxy.on('proxyRes', (proxyRes: $TSFixMe, req: $TSFixMe, res: $TSFixMe) => {
     if (proxyRes.statusCode === 404 || proxyRes.statusCode === 403) {
       if (req.alternativePaths && req.alternativePaths.length !== 0) {
@@ -443,12 +443,12 @@ const initializeProxy = async function ({
       return serveRedirect({ req, res, proxy: handlers, match: null, options: req.proxyOptions })
     }
 
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     const responseData: $TSFixMe = []
     const requestURL = new URL(req.url, `http://${req.headers.host || '127.0.0.1'}`)
     const headersRules = headersForPath(headers, requestURL.pathname)
 
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     proxyRes.on('data', function onData(data: $TSFixMe) {
       responseData.push(data)
     })
@@ -504,7 +504,7 @@ const initializeProxy = async function ({
   })
 
   const handlers = {
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     web: (req: $TSFixMe, res: $TSFixMe, options: $TSFixMe) => {
       const requestURL = new URL(req.url, 'http://127.0.0.1')
       req.proxyOptions = options
@@ -513,7 +513,7 @@ const initializeProxy = async function ({
       req.headers['x-forwarded-for'] = req.connection.remoteAddress || ''
       return proxy.web(req, res, options)
     },
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     ws: (req: $TSFixMe, socket: $TSFixMe, head: $TSFixMe) => proxy.ws(req, socket, head),
   }
 
@@ -527,7 +527,7 @@ const onRequest = async ({
   proxy,
   rewriter,
   settings
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe, req: $TSFixMe, res: $TSFixMe) => {
   req.originalBody = ['GET', 'OPTIONS', 'HEAD'].includes(req.method)
     ? null
@@ -565,7 +565,7 @@ const onRequest = async ({
     // We don't want to generate an ETag for 3xx redirects.
     req[shouldGenerateETag] = ({
       statusCode
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     }: $TSFixMe) => statusCode < 300 || statusCode >= 400
 
     return serveRedirect({ req, res, proxy, match, options })
@@ -576,7 +576,7 @@ const onRequest = async ({
   // us to know that is by looking at the status code
   req[shouldGenerateETag] = ({
     statusCode
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   }: $TSFixMe) => statusCode >= 200 && statusCode < 300
 
   const ct = req.headers['content-type'] ? contentType.parse(req).type : ''
@@ -592,7 +592,7 @@ const onRequest = async ({
   proxy.web(req, res, options)
 }
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'startProxy... Remove this comment to see the full error message
+
 const startProxy = async function ({
   addonsUrls,
   config,
@@ -607,7 +607,7 @@ const startProxy = async function ({
   settings,
   siteInfo,
   state
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) {
   const functionsServer = settings.functionsPort ? `http://127.0.0.1:${settings.functionsPort}` : null
   const edgeFunctionsProxy = await edgeFunctions.initializeProxy({
@@ -653,7 +653,7 @@ const startProxy = async function ({
     ? https.createServer({ cert: settings.https.cert, key: settings.https.key }, onRequestWithOptions)
     : http.createServer(onRequestWithOptions)
 
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   server.on('upgrade', function onUpgrade(req: $TSFixMe, socket: $TSFixMe, head: $TSFixMe) {
     proxy.ws(req, socket, head)
   })

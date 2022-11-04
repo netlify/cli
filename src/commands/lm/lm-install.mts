@@ -1,7 +1,7 @@
 // @ts-check
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'installPla... Remove this comment to see the full error message
+
 const { installPlatform } = require('../../utils/lm/install.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'printBanne... Remove this comment to see the full error message
+
 const { printBanner } = require('../../utils/lm/ui.cjs')
 
 /**
@@ -10,7 +10,7 @@ const { printBanner } = require('../../utils/lm/ui.cjs')
  */
 const lmInstall = async ({
   force
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const installed = await installPlatform({ force })
   if (installed) {
@@ -23,7 +23,7 @@ const lmInstall = async ({
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createLmIn... Remove this comment to see the full error message
+
 const createLmInstallCommand = (program: $TSFixMe) => program
   .command('lm:install')
   .alias('lm:init')

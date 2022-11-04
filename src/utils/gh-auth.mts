@@ -1,21 +1,21 @@
 // @ts-check
 // A simple ghauth inspired library for getting a personal access token
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'http'.
+
 const http = require('http')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'process'.
+
 const process = require('process')
 
 const { Octokit } = require('@octokit/rest')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getPort'.
+
 const getPort = require('get-port')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'inquirer'.
+
 const inquirer = require('inquirer')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'log'.
+
 const { log } = require('./command-helpers.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createDefe... Remove this comment to see the full error message
+
 const { createDeferred } = require('./deferred.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'openBrowse... Remove this comment to see the full error message
+
 const { openBrowser } = require('./open-browser.cjs')
 
 const SERVER_PORT = 3000
@@ -55,11 +55,10 @@ const authWithNetlify = async () => {
   const port = await getPort({ port: SERVER_PORT })
   const { promise: deferredPromise, reject: deferredReject, resolve: deferredResolve } = createDeferred()
 
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   const server = http.createServer(function onRequest(req: $TSFixMe, res: $TSFixMe) {
     const parameters = new URLSearchParams(req.url.slice(req.url.indexOf('?') + 1))
     if (parameters.get('token')) {
-      // @ts-expect-error TS(2722): Cannot invoke an object which is possibly 'undefin... Remove this comment to see the full error message
       deferredResolve(Object.fromEntries(parameters))
       res.end(
         `${
@@ -72,7 +71,6 @@ const authWithNetlify = async () => {
     }
     res.end('BAD PARAMETERS')
     server.close()
-    // @ts-expect-error TS(2722): Cannot invoke an object which is possibly 'undefin... Remove this comment to see the full error message
     deferredReject(new Error('Got invalid parameters for CLI login'))
   })
 
@@ -99,7 +97,7 @@ const getPersonalAccessToken = async () => {
       type: 'input',
       name: 'token',
       message: 'Your GitHub personal access token:',
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       filter: (input: $TSFixMe) => input.trim(),
     },
   ])
@@ -127,7 +125,7 @@ const authWithToken = async () => {
  * Get a GitHub token
  * @returns {Promise<Token>} Returns a Promise with a token object
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getGitHubT... Remove this comment to see the full error message
+
 const getGitHubToken = async () => {
   log('')
 

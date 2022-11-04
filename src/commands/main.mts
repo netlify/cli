@@ -86,7 +86,7 @@ ${USER_AGENT}
  * @param {import('commander').OptionValues} options
  * @param {import('./base-command').BaseCommand} command
  */
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const mainCommand = async function (options: $TSFixMe, command: $TSFixMe) {
   const globalConfig = await getGlobalConfig()
 
@@ -133,7 +133,7 @@ const mainCommand = async function (options: $TSFixMe, command: $TSFixMe) {
 
   if (command.args[0] === 'help') {
     if (command.args[1]) {
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       const subCommand = command.commands.find((cmd: $TSFixMe) => cmd.name() === command.args[1])
       if (!subCommand) {
         error(`command ${command.args[1]} not found`)
@@ -145,7 +145,7 @@ const mainCommand = async function (options: $TSFixMe, command: $TSFixMe) {
 
   warn(`${chalk.yellow(command.args[0])} is not a ${command.name()} command.`)
 
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   const allCommands = command.commands.map((cmd: $TSFixMe) => cmd.name())
   const {
     bestMatch: { target: suggestion },
@@ -164,7 +164,7 @@ const mainCommand = async function (options: $TSFixMe, command: $TSFixMe) {
       resolve(false)
     }, SUGGESTION_TIMEOUT)
 
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     // eslint-disable-next-line promise/catch-or-return
     prompt.then((value: $TSFixMe) => resolve(value.suggestion))
   })
@@ -209,7 +209,7 @@ export const createMainCommand = () => {
   createUnlinkCommand(program)
   createWatchCommand(program)
 
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   (program as $TSFixMe).version(USER_AGENT, '-V')
     .showSuggestionAfterError(true)
     .option('--telemetry-disable', 'Disable telemetry')
@@ -220,7 +220,7 @@ export const createMainCommand = () => {
     .addOption(new Option('--verbose').hideHelp())
     .noHelpOptions()
     .configureOutput({
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     outputError: (message: $TSFixMe, write: $TSFixMe) => {
         write(` ${chalk.red(BANG)}   Error: ${message.replace(/^error:\s/g, '')}`);
         write(` ${chalk.red(BANG)}   See more help with --help\n`);

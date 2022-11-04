@@ -1,4 +1,4 @@
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'error'.
+
 const { error, exit, log, openBrowser, warn } = require('../../utils/index.mjs')
 
 /**
@@ -6,7 +6,7 @@ const { error, exit, log, openBrowser, warn } = require('../../utils/index.mjs')
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'openAdmin'... Remove this comment to see the full error message
+
 const openAdmin = async (options: $TSFixMe, command: $TSFixMe) => {
   const { api, site } = command.netlify
 
@@ -27,13 +27,13 @@ Run \`netlify link\` to connect to this folder to a site`)
     log(`> ${siteData.admin_url}`)
   } catch (error_) {
     // unauthorized
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     if ((error_ as $TSFixMe).status === 401) {
       warn(`Log in with a different account or re-link to a site you have permission for`)
       error(`Not authorized to view the currently linked site (${siteId})`)
     }
     // site not found
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     if ((error_ as $TSFixMe).status === 404) {
       log()
       log('Please double check this ID and verify you are logged in with the correct account')
@@ -54,7 +54,7 @@ Run \`netlify link\` to connect to this folder to a site`)
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createOpen... Remove this comment to see the full error message
+
 const createOpenAdminCommand = (program: $TSFixMe) => program
   .command('open:admin')
   .description('Opens current site admin UI in Netlify')

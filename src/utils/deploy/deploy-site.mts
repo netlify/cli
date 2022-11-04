@@ -1,42 +1,42 @@
 const cleanDeep = require('clean-deep')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'tempy'.
+
 const tempy = require('tempy')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'edgeFuncti... Remove this comment to see the full error message
+
 const edgeFunctions = require('../../lib/edge-functions/index.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'rmdirRecur... Remove this comment to see the full error message
+
 const { rmdirRecursiveAsync } = require('../../lib/fs.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'warn'.
+
 const { warn } = require('../command-helpers.cjs')
 
 const {
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'DEFAULT_CO... Remove this comment to see the full error message
+  
   DEFAULT_CONCURRENT_HASH,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'DEFAULT_CO... Remove this comment to see the full error message
+  
   DEFAULT_CONCURRENT_UPLOAD,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'DEFAULT_DE... Remove this comment to see the full error message
+  
   DEFAULT_DEPLOY_TIMEOUT,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'DEFAULT_MA... Remove this comment to see the full error message
+  
   DEFAULT_MAX_RETRY,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'DEFAULT_SY... Remove this comment to see the full error message
+  
   DEFAULT_SYNC_LIMIT,
 } = require('./constants.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'hashFiles'... Remove this comment to see the full error message
+
 const { hashFiles } = require('./hash-files.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'hashFns'.
+
 const { hashFns } = require('./hash-fns.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'uploadFile... Remove this comment to see the full error message
+
 const { uploadFiles } = require('./upload-files.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getUploadL... Remove this comment to see the full error message
+
 const { getUploadList, waitForDeploy, waitForDiff } = require('./util.cjs')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'deploySite... Remove this comment to see the full error message
+
 const deploySite = async (
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   api: $TSFixMe,
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   siteId: $TSFixMe,
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   dir: $TSFixMe,
   {
     assetType,
@@ -67,7 +67,7 @@ const deploySite = async (
     syncFileLimit = DEFAULT_SYNC_LIMIT,
     tmpDir = tempy.directory(),
     rootDir
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   }: $TSFixMe = {},
 ) => {
   statusCb({
@@ -124,7 +124,7 @@ const deploySite = async (
     warn(`Modules with native dependencies\n
 ${functionsWithNativeModules.map(({
       name
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     }: $TSFixMe) => `- ${name}`).join('\n')}
 
 The serverless functions above use Node.js modules with native dependencies, which
@@ -205,7 +205,7 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
   return deployManifest
 }
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const buildStatsString = (possibleParts: $TSFixMe) => {
   const parts = possibleParts.filter(Boolean)
   const message = parts.slice(0, -1).join(', ')

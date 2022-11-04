@@ -1,69 +1,73 @@
 // @ts-check
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'stat'.
+
 const { stat } = require('fs').promises
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'basename'.
+
 const { basename, resolve } = require('path')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'cwd'.
+
 const { cwd, env } = require('process')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'get'.
+
 const { get } = require('dot-prop')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'inquirer'.
+
 const inquirer = require('inquirer')
 const isObject = require('lodash/isObject')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'prettyjson... Remove this comment to see the full error message
+
 const prettyjson = require('prettyjson')
 
-const runCoreStepPromise = import('@netlify/build')
+// TODO: This should be looked at again as TS is not finding runCoreSteps as an exported member of the package
+// when it's been confirmed that it does exist and is an exported member
+// @ts-ignore
+import {runCoreSteps} from '@netlify/build'
+
 // @ts-expect-error TS(7016): Could not find a declaration file for module '@net... Remove this comment to see the full error message
 const netlifyConfigPromise = import('@netlify/config')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'cancelDepl... Remove this comment to see the full error message
+
 const { cancelDeploy } = require('../../lib/api.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getBuildOp... Remove this comment to see the full error message
+
 const { getBuildOptions, runBuild } = require('../../lib/build.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'normalizeF... Remove this comment to see the full error message
+
 const { normalizeFunctionsConfig } = require('../../lib/functions/config.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getLogMess... Remove this comment to see the full error message
+
 const { getLogMessage } = require('../../lib/log.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'startSpinn... Remove this comment to see the full error message
+
 const { startSpinner, stopSpinner } = require('../../lib/spinner.cjs')
 const {
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'NETLIFYDEV... Remove this comment to see the full error message
+  
   NETLIFYDEV,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'NETLIFYDEV... Remove this comment to see the full error message
+  
   NETLIFYDEVERR,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'NETLIFYDEV... Remove this comment to see the full error message
+  
   NETLIFYDEVLOG,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'chalk'.
+  
   chalk,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'deploySite... Remove this comment to see the full error message
+  
   deploySite,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'error'.
+  
   error,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'exit'.
+  
   exit,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getFunctio... Remove this comment to see the full error message
+  
   getFunctionsManifestPath,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getInterna... Remove this comment to see the full error message
+  
   getInternalFunctionsDir,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getToken'.
+  
   getToken,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'log'.
+  
   log,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'logJson'.
+  
   logJson,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'openBrowse... Remove this comment to see the full error message
+  
   openBrowser,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'warn'.
+  
   warn,
 } = require('../../utils/index.mjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'link'.
+
 const { link } = require('../link/index.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'sitesCreat... Remove this comment to see the full error message
+
 const { sitesCreate } = require('../sites/index.cjs')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'DEFAULT_DE... Remove this comment to see the full error message
+
 const DEFAULT_DEPLOY_TIMEOUT = 1.2e6
 
 const triggerDeploy = async ({
@@ -71,12 +75,11 @@ const triggerDeploy = async ({
   options,
   siteData,
   siteId
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   try {
     const siteBuild = await api.createSiteBuild({ siteId })
     if (options.json) {
-      // @ts-expect-error TS(2345): Argument of type '{ site_id: $TSFixMe; site_name: ... Remove this comment to see the full error message
       logJson({
         site_id: siteId,
         site_name: siteData.name,
@@ -89,11 +92,11 @@ const triggerDeploy = async ({
       )
     }
   } catch (error_) {
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     if ((error_ as $TSFixMe).status === 404) {
       error('Site not found. Please rerun "netlify link" and make sure that your site has CI configured.')
     } else {
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       error((error_ as $TSFixMe).message);
     }
   }
@@ -113,7 +116,7 @@ const getDeployFolder = async ({
   options,
   site,
   siteData
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   let deployFolder
   if (options.dir) {
@@ -133,7 +136,7 @@ const getDeployFolder = async ({
         name: 'promptPath',
         message: 'Publish directory',
         default: '.',
-        // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+        
         filter: (input: $TSFixMe) => resolve(cwd(), input),
       },
     ])
@@ -145,20 +148,20 @@ const getDeployFolder = async ({
 
 const validateDeployFolder = async ({
   deployFolder
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   /** @type {import('fs').Stats} */
   let stats
   try {
     stats = await stat(deployFolder)
   } catch (error_) {
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     if ((error_ as $TSFixMe).code === 'ENOENT') {
       return error(`No such directory ${deployFolder}! Did you forget to run a build?`)
     }
 
     // Improve the message of permission errors
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     if ((error_ as $TSFixMe).code === 'EACCES') {
       return error('Permission error when trying to access deploy folder')
     }
@@ -185,7 +188,7 @@ const getFunctionsFolder = ({
   options,
   site,
   siteData
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   let functionsFolder
   // Support "functions" and "Functions"
@@ -202,7 +205,7 @@ const getFunctionsFolder = ({
 
 const validateFunctionsFolder = async ({
   functionsFolder
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   /** @type {import('fs').Stats} */
   let stats
@@ -212,14 +215,14 @@ const validateFunctionsFolder = async ({
     try {
       stats = await stat(functionsFolder)
     } catch (error_) {
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       if ((error_ as $TSFixMe).code === 'ENOENT') {
         log(
           `Functions folder "${functionsFolder}" specified but it doesn't exist! Will proceed without deploying functions`,
         )
       }
       // Improve the message of permission errors
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       if ((error_ as $TSFixMe).code === 'EACCES') {
         error('Permission error when trying to access functions folder')
       }
@@ -236,7 +239,7 @@ const validateFunctionsFolder = async ({
 const validateFolders = async ({
   deployFolder,
   functionsFolder
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const deployFolderStat = await validateDeployFolder({ deployFolder })
   const functionsFolderStat = await validateFunctionsFolder({ functionsFolder })
@@ -246,14 +249,14 @@ const validateFolders = async ({
 const getDeployFilesFilter = ({
   deployFolder,
   site
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   // site.root === deployFolder can happen when users run `netlify deploy --dir .`
   // in that specific case we don't want to publish the repo node_modules
   // when site.root !== deployFolder the behaviour matches our buildbot
   const skipNodeModules = site.root === deployFolder
 
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   return (filename: $TSFixMe) => {
     if (filename == null) {
       return false
@@ -273,7 +276,7 @@ const getDeployFilesFilter = ({
   };
 }
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'SEC_TO_MIL... Remove this comment to see the full error message
+
 const SEC_TO_MILLISEC = 1e3
 // 100 bytes
 const SYNC_FILE_LIMIT = 1e2
@@ -281,7 +284,7 @@ const SYNC_FILE_LIMIT = 1e2
 const prepareProductionDeploy = async ({
   api,
   siteData
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   if (isObject(siteData.published_deploy) && siteData.published_deploy.locked) {
     log(`\n${NETLIFYDEVERR} Deployments are "locked" for production context of this site\n`)
@@ -300,7 +303,7 @@ const prepareProductionDeploy = async ({
   log('Deploying to main site URL...')
 }
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const hasErrorMessage = (actual: $TSFixMe, expected: $TSFixMe) => {
   if (typeof actual === 'string') {
     return actual.includes(expected)
@@ -308,13 +311,13 @@ const hasErrorMessage = (actual: $TSFixMe, expected: $TSFixMe) => {
   return false
 }
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const getJsonErrorMessage = (error_: $TSFixMe) => get(error_, 'json.message', '')
 
 const reportDeployError = ({
   error_,
   failAndExit
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   switch (true) {
     case error_.name === 'JSONHTTPError': {
@@ -350,7 +353,7 @@ const deployProgressCb = function () {
    * @type {Record<string, import('ora').Ora>}
    */
   const events = {}
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   return (event: $TSFixMe) => {
     switch (event.phase) {
       case 'start': {
@@ -400,7 +403,7 @@ const runDeploy = async ({
   siteId,
   skipFunctionsCache,
   title
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   let results
   let deployId
@@ -469,12 +472,11 @@ const runDeploy = async ({
 const handleBuild = async ({
   cachedConfig,
   options
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   if (!options.build) {
     return {}
   }
-  // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
   const [token] = await getToken()
   const resolvedOptions = await getBuildOptions({
     cachedConfig,
@@ -493,10 +495,8 @@ const handleBuild = async ({
  * @param {object} options Bundling options
  * @returns
  */
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const bundleEdgeFunctions = async (options: $TSFixMe) => {
-  // @ts-expect-error TS(2339): Property 'runCoreSteps' does not exist on type '{ ... Remove this comment to see the full error message
-  const { runCoreSteps } = await runCoreStepPromise
   const statusCb = options.silent ? () => {} : deployProgressCb()
 
   statusCb({
@@ -544,7 +544,7 @@ const printResults = ({
   json,
   results,
   runBuildCommand
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const msgData = {
     Logs: `${results.logsUrl}`,
@@ -574,11 +574,10 @@ const printResults = ({
       logs: results.logsUrl,
     }
     if (deployToProduction) {
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       (jsonData as $TSFixMe).url = results.siteUrl;
     }
 
-    // @ts-expect-error TS(2345): Argument of type '{ name: any; site_id: any; site_... Remove this comment to see the full error message
     logJson(jsonData)
     exit(0)
   } else {
@@ -598,7 +597,7 @@ const printResults = ({
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'deploy'.
+
 const deploy = async (options: $TSFixMe, command: $TSFixMe) => {
   const { api, site } = command.netlify
   const alias = options.alias || options.branch
@@ -623,17 +622,17 @@ const deploy = async (options: $TSFixMe, command: $TSFixMe) => {
       const [{ siteError, siteFoundById }, sites] = await Promise.all([
         api
           .getSite({ siteId })
-          // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+          
           .then((data: $TSFixMe) => ({
           siteFoundById: data
         }))
-          // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+          
           .catch((error_: $TSFixMe) => ({
           siteError: error_
         })),
         api.listSites({ name: options.site, filter: 'all' }),
       ])
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       const siteFoundByName = sites.find((filteredSite: $TSFixMe) => filteredSite.name === options.site)
       if (siteFoundById) {
         siteData = siteFoundById
@@ -645,11 +644,11 @@ const deploy = async (options: $TSFixMe, command: $TSFixMe) => {
       }
     } catch (error_) {
       // TODO specifically handle known cases (e.g. no account access)
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       if ((error_ as $TSFixMe).status === 404) {
         error('Site not found')
       } else {
-        // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+        
         error((error_ as $TSFixMe).message);
       }
     }
@@ -671,18 +670,18 @@ const deploy = async (options: $TSFixMe, command: $TSFixMe) => {
     // create site or search for one
     if (initChoice === NEW_SITE) {
       siteData = await sitesCreate({}, command)
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       site.id = (siteData as $TSFixMe).id;
       siteId = site.id
     } else if (initChoice === EXISTING_SITE) {
       siteData = await link({}, command)
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       site.id = (siteData as $TSFixMe).id;
       siteId = site.id
     }
   }
 
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   const deployToProduction = options.prod || (options.prodIfUnlocked && !(siteData as $TSFixMe).published_deploy.locked);
 
   if (options.trigger) {
@@ -772,7 +771,7 @@ const deploy = async (options: $TSFixMe, command: $TSFixMe) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createDepl... Remove this comment to see the full error message
+
 const createDeployCommand = (program: $TSFixMe) => program
   .command('deploy')
   .description(
@@ -862,7 +861,7 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
   .option('-a, --auth <token>', 'Netlify auth token to deploy with', env.NETLIFY_AUTH_TOKEN)
   .option('-s, --site <name-or-id>', 'A site name or ID to deploy to', env.NETLIFY_SITE_ID)
   .option('--json', 'Output deployment data as JSON')
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   .option('--timeout <number>', 'Timeout to wait for deployment to finish', (value: $TSFixMe) => Number.parseInt(value))
   .option('--trigger', 'Trigger a new build of your site on Netlify without uploading local files')
   .option('--build', 'Run build command before deploying')

@@ -5,20 +5,20 @@ const { parse: parseContentType } = require('content-type')
 const multiparty = require('multiparty')
 const getRawBody = require('raw-body')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'warn'.
+
 const { warn } = require('../../utils/command-helpers.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'BACKGROUND... Remove this comment to see the full error message
+
 const { BACKGROUND } = require('../../utils/index.mjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'capitalize... Remove this comment to see the full error message
+
 const { capitalize } = require('../string.cjs')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createForm... Remove this comment to see the full error message
+
 const createFormSubmissionHandler = function ({
   functionsRegistry,
   siteUrl
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) {
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   return async function formSubmissionHandler(req: $TSFixMe, res: $TSFixMe, next: $TSFixMe) {
     if (req.url.startsWith('/.netlify/') || req.method !== 'POST') return next()
 
@@ -53,13 +53,13 @@ const createFormSubmissionHandler = function ({
       try {
         [fields, files] = await new Promise((resolve, reject) => {
     const form = new multiparty.Form({ encoding: ct.parameters.charset || 'utf8' });
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     form.parse(fakeRequest, (err: $TSFixMe, Fields: $TSFixMe, Files: $TSFixMe) => {
         if (err)
             return reject(err);
         Files = Object.entries(Files).reduce((prev, [name, values]) => ({
             ...prev,
-            // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+            
             [name]: (values as $TSFixMe).map((value: $TSFixMe) => ({
                 filename: value.originalFilename,
                 size: value.size,
@@ -68,9 +68,9 @@ const createFormSubmissionHandler = function ({
             })),
         }), {});
         return resolve([
-            // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+            
             Object.entries(Fields).reduce((prev, [name, values]) => ({ ...prev, [name]: (values as $TSFixMe).length > 1 ? values : (values as $TSFixMe)[0] }), {}),
-            // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+            
             Object.entries(Files).reduce((prev, [name, values]) => ({ ...prev, [name]: (values as $TSFixMe).length > 1 ? values : (values as $TSFixMe)[0] }), {}),
         ]);
     });
@@ -142,7 +142,7 @@ const createFormSubmissionHandler = function ({
 
 const getFormHandler = function ({
   functionsRegistry
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) {
   const handlers = ['submission-created', `submission-created${BACKGROUND}`]
     .map((name) => functionsRegistry.get(name))

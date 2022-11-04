@@ -1,33 +1,33 @@
 // @ts-check
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AsciiTable... Remove this comment to see the full error message
+
 const AsciiTable = require('ascii-table')
 
 const {
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'error'.
+  
   error,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'exit'.
+  
   exit,
 
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getFunctio... Remove this comment to see the full error message
+  
   getFunctions,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getFunctio... Remove this comment to see the full error message
+  
   getFunctionsDir,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'log'.
+  
   log,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'logJson'.
+  
   logJson,
-  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'warn'.
+  
   warn,
 } = require('../../utils/index.mjs')
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const normalizeFunction = function (deployedFunctions: $TSFixMe, {
   name,
   urlPath: url
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) {
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   const isDeployed = deployedFunctions.some((deployedFunction: $TSFixMe) => deployedFunction.n === name)
   return { name, url, isDeployed }
 }
@@ -37,7 +37,7 @@ const normalizeFunction = function (deployedFunctions: $TSFixMe, {
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const functionsList = async (options: $TSFixMe, command: $TSFixMe) => {
   const { api, config, site } = command.netlify
 
@@ -53,13 +53,13 @@ const functionsList = async (options: $TSFixMe, command: $TSFixMe) => {
     siteData = await api.getSite({ siteId })
   } catch (error_) {
     // unauthorized
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     if ((error_ as $TSFixMe).status === 401) {
       warn(`Log in with a different account or re-link to a site you have permission for`)
       error(`Not authorized to view the currently linked site (${siteId})`)
     }
     // missing
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     if ((error_ as $TSFixMe).status === 404) {
       error(`The site this folder is linked to can't be found`)
     }
@@ -98,7 +98,7 @@ const functionsList = async (options: $TSFixMe, command: $TSFixMe) => {
     isDeployed,
     name,
     url
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   }: $TSFixMe) => {
     table.addRow(name, url, isDeployed ? 'yes' : 'no')
   })
@@ -110,7 +110,7 @@ const functionsList = async (options: $TSFixMe, command: $TSFixMe) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createFunc... Remove this comment to see the full error message
+
 const createFunctionsListCommand = (program: $TSFixMe) => program
   .command('functions:list')
   .alias('function:list')

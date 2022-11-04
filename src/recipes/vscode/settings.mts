@@ -1,16 +1,16 @@
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'fs'.
+
 const { promises: fs } = require('fs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'dirname'.
+
 const { dirname, relative } = require('path')
 
 const unixify = require('unixify')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'applySetti... Remove this comment to see the full error message
+
 const applySettings = (existingSettings: $TSFixMe, {
   denoBinary,
   edgeFunctionsPath,
   repositoryRoot
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const relativeEdgeFunctionsPath = unixify(relative(repositoryRoot, edgeFunctionsPath))
   const settings = {
@@ -38,7 +38,7 @@ const applySettings = (existingSettings: $TSFixMe, {
   return settings
 }
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getSetting... Remove this comment to see the full error message
+
 const getSettings = async (settingsPath: $TSFixMe) => {
   try {
     const stats = await fs.stat(settingsPath)
@@ -54,9 +54,9 @@ const getSettings = async (settingsPath: $TSFixMe) => {
       settings: JSON.parse(file),
     }
   } catch (error) {
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     if ((error as $TSFixMe).code !== 'ENOENT') {
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       throw new Error(`Could not open VS Code settings file: ${(error as $TSFixMe).message}`);
     }
 
@@ -67,11 +67,11 @@ const getSettings = async (settingsPath: $TSFixMe) => {
   }
 }
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'writeSetti... Remove this comment to see the full error message
+
 const writeSettings = async ({
   settings,
   settingsPath
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const serializedSettings = JSON.stringify(settings, null, 2)
 

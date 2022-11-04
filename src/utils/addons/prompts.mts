@@ -1,9 +1,9 @@
 // @ts-check
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'chalk'.
+
 const { chalk } = require('../command-helpers.cjs')
 
 /* programmatically generate CLI prompts */
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 module.exports = function generatePrompts(settings: $TSFixMe) {
     const { config, configValues } = settings;
     const configItems = Object.keys(config);
@@ -28,7 +28,7 @@ module.exports = function generatePrompts(settings: $TSFixMe) {
                 };
                 // if current stage value set show as default
                 if (configValues[key]) {
-                    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+                    
                     (prompt as $TSFixMe).default = configValues[key];
                 }
             }
@@ -55,12 +55,12 @@ module.exports = function generatePrompts(settings: $TSFixMe) {
             };
             // if value previously set show it
             if (configValues[key]) {
-                // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+                
                 (prompt as $TSFixMe).default = configValues[key];
                 // else show default value if provided
             }
             else if (setting.default) {
-                // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+                
                 (prompt as $TSFixMe).default = setting.default;
             }
             return prompt;
@@ -83,9 +83,9 @@ const noValidate = function () {
 //   return `Please enter a value this field is required`
 // }
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const validate = function (pattern: $TSFixMe) {
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   return function validateValue(value: $TSFixMe) {
     const regex = new RegExp(pattern)
     if (regex.test(value)) {

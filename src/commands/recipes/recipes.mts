@@ -1,14 +1,14 @@
 // @ts-check
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'basename'.
+
 const { basename } = require('path')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'inquirer'.
+
 const inquirer = require('inquirer')
 const { findBestMatch } = require('string-similarity')
 
 const utils = require('../../utils/command-helpers.cjs')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getRecipe'... Remove this comment to see the full error message
+
 const { getRecipe, listRecipes } = require('./common.cjs')
 
 const SUGGESTION_TIMEOUT = 1e4
@@ -31,7 +31,7 @@ const recipesCommand = async (recipeName: $TSFixMe, options: $TSFixMe, command: 
   try {
     return await runRecipe({ config, recipeName: sanitizedRecipeName, repositoryRoot })
   } catch (error) {
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     if ((error as $TSFixMe).code !== 'MODULE_NOT_FOUND') {
       throw error
     }
@@ -41,7 +41,7 @@ const recipesCommand = async (recipeName: $TSFixMe, options: $TSFixMe, command: 
     const recipes = await listRecipes()
     const recipeNames = recipes.map(({
       name
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     }: $TSFixMe) => name)
     const {
       bestMatch: { target: suggestion },
@@ -59,7 +59,7 @@ const recipesCommand = async (recipeName: $TSFixMe, options: $TSFixMe, command: 
         resolve(false)
       }, SUGGESTION_TIMEOUT)
 
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       // eslint-disable-next-line promise/catch-or-return
       prompt.then((value: $TSFixMe) => resolve(value.suggestion))
     })
@@ -70,12 +70,12 @@ const recipesCommand = async (recipeName: $TSFixMe, options: $TSFixMe, command: 
   }
 }
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'runRecipe'... Remove this comment to see the full error message
+
 const runRecipe = ({
   config,
   recipeName,
   repositoryRoot
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const recipe = getRecipe(recipeName)
 
@@ -87,7 +87,7 @@ const runRecipe = ({
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createReci... Remove this comment to see the full error message
+
 const createRecipesCommand = (program: $TSFixMe) => program
   .command('recipes')
   .argument('[name]', 'name of the recipe')

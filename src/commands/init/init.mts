@@ -1,24 +1,24 @@
 // @ts-check
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'dotProp'.
+
 const dotProp = require('dot-prop')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'inquirer'.
+
 const inquirer = require('inquirer')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'isEmpty'.
+
 const isEmpty = require('lodash/isEmpty')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'chalk'.
+
 const { chalk, ensureNetlifyIgnore, exit, getRepoData, log, track } = require('../../utils/index.mjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'configureR... Remove this comment to see the full error message
+
 const { configureRepo } = require('../../utils/init/config.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'link'.
+
 const { link } = require('../link/index.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'sitesCreat... Remove this comment to see the full error message
+
 const { sitesCreate } = require('../sites/index.cjs')
 
 const persistState = ({
   siteInfo,
   state
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   // Save to .netlify/state.json file
   state.set('siteId', siteInfo.id)
@@ -26,12 +26,12 @@ const persistState = ({
 
 const getRepoUrl = ({
   siteInfo
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => dotProp.get(siteInfo, 'build_settings.repo_url')
 
 const logExistingAndExit = ({
   siteInfo
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   log()
   log(`This site has been initialized`)
@@ -57,7 +57,7 @@ const logExistingAndExit = ({
 const createNewSiteAndExit = async ({
   command,
   state
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const siteInfo = await sitesCreate({}, command)
 
@@ -114,7 +114,7 @@ const handleNoGitRemoteAndExit = async ({
   command,
   error,
   state
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   log()
   log(`${chalk.yellow('No git remote was found, would you like to set one up?')}`)
@@ -155,7 +155,7 @@ git remote add origin https://github.com/YourUserName/RepoName.git
  * Creates a new site or links an existing one to the repository
  * @param {import('../base-command').BaseCommand} command
  */
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const createOrLinkSiteToRepo = async (command: $TSFixMe) => {
   const NEW_SITE = '+  Create & configure a new site'
   const EXISTING_SITE = '⇄  Connect this directory to an existing Netlify site'
@@ -188,7 +188,7 @@ const createOrLinkSiteToRepo = async (command: $TSFixMe) => {
 const logExistingRepoSetupAndExit = ({
   repoUrl,
   siteName
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   log()
   log(chalk.underline.bold(`Success`))
@@ -202,7 +202,7 @@ const logExistingRepoSetupAndExit = ({
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'init'.
+
 const init = async (options: $TSFixMe, command: $TSFixMe) => {
   command.setAnalyticsPayload({ manual: options.manual, force: options.force })
 
@@ -250,7 +250,7 @@ const init = async (options: $TSFixMe, command: $TSFixMe) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createInit... Remove this comment to see the full error message
+
 const createInitCommand = (program: $TSFixMe) => program
   .command('init')
   .description(

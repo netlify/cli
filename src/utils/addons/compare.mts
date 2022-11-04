@@ -1,6 +1,6 @@
 const isEqual = require('lodash/isEqual')
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 module.exports = function compare(oldValues: $TSFixMe, newValues: $TSFixMe) {
   const initialData = {
     // default everything is equal

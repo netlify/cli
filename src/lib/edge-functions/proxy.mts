@@ -1,29 +1,29 @@
 // @ts-check
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'Buffer'.
+
 const { Buffer } = require('buffer')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'relative'.
+
 const { relative } = require('path')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'cwd'.
+
 const { cwd, env } = require('process')
 
 const getAvailablePort = require('get-port')
 const { v4: generateUUID } = require('uuid')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'NETLIFYDEV... Remove this comment to see the full error message
+
 const { NETLIFYDEVERR, NETLIFYDEVWARN, chalk, error: printError, log } = require('../../utils/command-helpers.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getGeoLoca... Remove this comment to see the full error message
+
 const { getGeoLocation } = require('../geo-location.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getPathInP... Remove this comment to see the full error message
+
 const { getPathInProject } = require('../settings.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'startSpinn... Remove this comment to see the full error message
+
 const { startSpinner, stopSpinner } = require('../spinner.cjs')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'DIST_IMPOR... Remove this comment to see the full error message
+
 const { DIST_IMPORT_MAP_PATH } = require('./consts.cjs')
 const headers = require('./headers.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getInterna... Remove this comment to see the full error message
+
 const { getInternalFunctions } = require('./internal.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'EdgeFuncti... Remove this comment to see the full error message
+
 const { EdgeFunctionsRegistry } = require('./registry.cjs')
 
 const headersSymbol = Symbol('Edge Functions Headers')
@@ -31,13 +31,13 @@ const headersSymbol = Symbol('Edge Functions Headers')
 const LOCAL_HOST = '127.0.0.1'
 
 const getDownloadUpdateFunctions = () => {
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   let spinner: $TSFixMe
 
   /**
    * @param {Error=} error_
    */
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   const onAfterDownload = (error_: $TSFixMe) => {
     stopSpinner({ error: Boolean(error_), spinner })
   }
@@ -52,7 +52,7 @@ const getDownloadUpdateFunctions = () => {
   }
 }
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const handleProxyRequest = (req: $TSFixMe, proxyReq: $TSFixMe) => {
   Object.entries(req[headersSymbol]).forEach(([header, value]) => {
     proxyReq.setHeader(header, value)
@@ -67,7 +67,7 @@ const createSiteInfoHeader = (siteInfo = {}) => {
   return Buffer.from(siteString).toString('base64')
 }
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'initialize... Remove this comment to see the full error message
+
 const initializeProxy = async ({
   config,
   configPath,
@@ -81,7 +81,7 @@ const initializeProxy = async ({
   settings,
   siteInfo,
   state
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const { functions: internalFunctions, importMap, path: internalFunctionsPath } = await getInternalFunctions()
   const { port: mainPort } = settings
@@ -106,7 +106,7 @@ const initializeProxy = async ({
   })
   const hasEdgeFunctions = userFunctionsPath !== undefined || internalFunctions.length !== 0
 
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   return async (req: $TSFixMe) => {
     if (req.headers[headers.Passthrough] !== undefined || !hasEdgeFunctions) {
       return
@@ -130,7 +130,7 @@ const initializeProxy = async ({
 
     // If the request matches a config declaration for an Edge Function without
     // a matching function file, we warn the user.
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     orphanedDeclarations.forEach((functionName: $TSFixMe) => {
       log(
         `${NETLIFYDEVWARN} Request to ${chalk.yellow(
@@ -163,7 +163,7 @@ const initializeProxy = async ({
   };
 }
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const isEdgeFunctionsRequest = (req: $TSFixMe) => req[headersSymbol] !== undefined
 
 const prepareServer = async ({
@@ -178,7 +178,7 @@ const prepareServer = async ({
   internalFunctions,
   port,
   projectDir
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   try {
     const bundler = await import('@netlify/edge-bundler')
@@ -188,11 +188,11 @@ const prepareServer = async ({
       certificatePath,
       debug: env.NETLIFY_DENO_DEBUG === 'true',
       distImportMapPath,
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       formatExportTypeError: (name: $TSFixMe) => `${NETLIFYDEVERR} ${chalk.red('Failed')} to load Edge Function ${chalk.yellow(
         name,
       )}. The file does not seem to have a function as the default export.`,
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       formatImportError: (name: $TSFixMe) => `${NETLIFYDEVERR} ${chalk.red('Failed')} to run Edge Function ${chalk.yellow(name)}:`,
       importMaps,
       inspectSettings,
@@ -212,7 +212,7 @@ const prepareServer = async ({
 
     return registry
   } catch (error) {
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     printError((error as $TSFixMe).message, { exit: false });
   }
 }

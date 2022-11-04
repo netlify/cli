@@ -1,8 +1,8 @@
 // @ts-check
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'inquirer'.
+
 const inquirer = require('inquirer')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'chalk'.
+
 const { chalk, error, exit, log } = require('../../utils/index.mjs')
 
 /**
@@ -11,7 +11,7 @@ const { chalk, error, exit, log } = require('../../utils/index.mjs')
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const sitesDelete = async (siteId: $TSFixMe, options: $TSFixMe, command: $TSFixMe) => {
   command.setAnalyticsPayload({ force: options.force })
 
@@ -25,7 +25,7 @@ const sitesDelete = async (siteId: $TSFixMe, options: $TSFixMe, command: $TSFixM
   try {
     siteData = await api.getSite({ siteId })
   } catch (error_) {
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     if ((error_ as $TSFixMe).status === 404) {
       error(`No site with id ${siteId} found. Please verify the siteId & try again.`)
     }
@@ -82,11 +82,11 @@ const sitesDelete = async (siteId: $TSFixMe, options: $TSFixMe, command: $TSFixM
   try {
     await api.deleteSite({ site_id: siteId })
   } catch (error_) {
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     if ((error_ as $TSFixMe).status === 404) {
       error(`No site with id ${siteId} found. Please verify the siteId & try again.`)
     } else {
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       error(`Delete Site error: ${(error_ as $TSFixMe).status}: ${(error_ as $TSFixMe).message}`);
     }
   }
@@ -98,7 +98,7 @@ const sitesDelete = async (siteId: $TSFixMe, options: $TSFixMe, command: $TSFixM
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createSite... Remove this comment to see the full error message
+
 const createSitesDeleteCommand = (program: $TSFixMe) => program
   .command('sites:delete')
   .description('Delete a site\nThis command will permanently delete the site on Netlify. Use with caution.')

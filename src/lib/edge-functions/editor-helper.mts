@@ -1,15 +1,15 @@
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'env'.
+
 const { env } = require('process')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'inquirer'.
+
 const inquirer = require('inquirer')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'runRecipe'... Remove this comment to see the full error message
+
 const { runRecipe } = require('../../commands/recipes/index.cjs')
 
 const STATE_PROMPT_PROPERTY = 'promptVSCodeSettings'
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'promptEdit... Remove this comment to see the full error message
+
 const promptEditorHelper = async ({
   NETLIFYDEVLOG,
   chalk,
@@ -17,7 +17,7 @@ const promptEditorHelper = async ({
   log,
   repositoryRoot,
   state
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   // This prevents tests from hanging when running them inside the VS Code
   // terminal, as otherwise we'll show the prompt and wait for a response.

@@ -1,10 +1,10 @@
 // @ts-check
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'inquirer'.
+
 const inquirer = require('inquirer')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'chalk'.
+
 const { chalk, log } = require('../../utils/index.mjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'login'.
+
 const { login } = require('../login/index.cjs')
 
 const LOGIN_NEW = 'I would like to login to a new account'
@@ -14,7 +14,7 @@ const LOGIN_NEW = 'I would like to login to a new account'
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const switchCommand = async (options: $TSFixMe, command: $TSFixMe) => {
   // @ts-expect-error TS(2769): No overload matches this call.
   const availableUsersChoices = Object.values(command.netlify.globalConfig.get('users') || {}).reduce((prev, current) => Object.assign(prev, { [(current as $TSFixMe).id]: (current as $TSFixMe).name ? `${(current as $TSFixMe).name} (${(current as $TSFixMe).email})` : (current as $TSFixMe).email }), {});
@@ -49,7 +49,7 @@ const switchCommand = async (options: $TSFixMe, command: $TSFixMe) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createSwit... Remove this comment to see the full error message
+
 const createSwitchCommand = (program: $TSFixMe) => program.command('switch').description('Switch your active Netlify account').action(switchCommand)
 
 module.exports = { createSwitchCommand }

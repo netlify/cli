@@ -1,7 +1,7 @@
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'execa'.
+
 const execa = require('execa')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getEnvelop... Remove this comment to see the full error message
+
 const { getEnvelopeEnv, injectEnvVariables, normalizeContext } = require('../../utils/index.mjs')
 
 /**
@@ -9,7 +9,7 @@ const { getEnvelopeEnv, injectEnvVariables, normalizeContext } = require('../../
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const devExec = async (cmd: $TSFixMe, options: $TSFixMe, command: $TSFixMe) => {
   const { api, cachedConfig, config, site, siteInfo } = command.netlify
 
@@ -30,7 +30,7 @@ const devExec = async (cmd: $TSFixMe, options: $TSFixMe, command: $TSFixMe) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createDevE... Remove this comment to see the full error message
+
 const createDevExecCommand = (program: $TSFixMe) => program
   .command('dev:exec')
   .argument('<...cmd>', `the command that should be executed`)

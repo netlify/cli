@@ -1,21 +1,21 @@
 // @ts-check
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'process'.
+
 const process = require('process')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'get'.
+
 const { get } = require('dot-prop')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getPort'.
+
 const getPort = require('get-port')
 const jwt = require('jsonwebtoken')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'isEmpty'.
+
 const isEmpty = require('lodash/isEmpty')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'supportsBa... Remove this comment to see the full error message
+
 const { supportsBackgroundFunctions } = require('../lib/account.cjs')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'NETLIFYDEV... Remove this comment to see the full error message
+
 const { NETLIFYDEVLOG, chalk, error, log, warn } = require('./command-helpers.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'loadDotEnv... Remove this comment to see the full error message
+
 const { loadDotEnvFiles } = require('./dot-env.cjs')
 
 // Possible sources of environment variables. For the purpose of printing log messages only. Order does not matter.
@@ -52,7 +52,7 @@ const ERROR_CALL_TO_ACTION =
 const validateSiteInfo = ({
   site,
   siteInfo
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   if (isEmpty(siteInfo)) {
     error(`Failed retrieving site information for site ${chalk.yellow(site.id)}. ${ERROR_CALL_TO_ACTION}`)
@@ -61,28 +61,28 @@ const validateSiteInfo = ({
 
 const getAccounts = async ({
   api
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   try {
     const accounts = await api.listAccountsForUser()
     return accounts
   } catch (error_) {
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     error(`Failed retrieving user account: ${(error_ as $TSFixMe).message}. ${ERROR_CALL_TO_ACTION}`);
   }
 }
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getAddons'... Remove this comment to see the full error message
+
 const getAddons = async ({
   api,
   site
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   try {
     const addons = await api.listServiceInstancesForSite({ siteId: site.id })
     return addons
   } catch (error_) {
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     error(`Failed retrieving addons for site ${chalk.yellow(site.id)}: ${(error_ as $TSFixMe).message}. ${ERROR_CALL_TO_ACTION}`);
   }
 }
@@ -90,13 +90,13 @@ const getAddons = async ({
 const getAddonsInformation = ({
   addons,
   siteInfo
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const urls = Object.fromEntries(
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     addons.map((addon: $TSFixMe) => [addon.service_slug, `${siteInfo.ssl_url}${addon.service_path}`]),
   )
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   const env = Object.assign({}, ...addons.map((addon: $TSFixMe) => addon.env))
   return { urls, env }
 }
@@ -104,9 +104,9 @@ const getAddonsInformation = ({
 const getSiteAccount = ({
   accounts,
   siteInfo
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   const siteAccount = accounts.find((account: $TSFixMe) => account.slug === siteInfo.account_slug)
   if (!siteAccount) {
     warn(`Could not find account for site '${siteInfo.name}' with account slug '${siteInfo.account_slug}'`)
@@ -130,13 +130,13 @@ const BACKGROUND_FUNCTION_TIMEOUT = 900
  * @param {*} config.siteInfo
  * @returns
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getSiteInf... Remove this comment to see the full error message
+
 const getSiteInformation = async ({
   api,
   offline,
   site,
   siteInfo
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   if (site.id && !offline) {
     validateSiteInfo({ site, siteInfo })
@@ -170,7 +170,7 @@ const getSiteInformation = async ({
   }
 }
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const getEnvSourceName = (source: $TSFixMe) => {
   // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
   const { printFn = chalk.green, name = source } = ENV_VAR_SOURCES[source] || {}
@@ -180,21 +180,21 @@ const getEnvSourceName = (source: $TSFixMe) => {
 
 // Takes a set of environment variables in the format provided by @netlify/config, augments it with variables from both
 // dot-env files and the process itself, and injects into `process.env`.
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'injectEnvV... Remove this comment to see the full error message
+
 const injectEnvVariables = async ({
   devConfig,
   env,
   site
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const environment = new Map(Object.entries(env))
   const dotEnvFiles = await loadDotEnvFiles({ envFiles: devConfig.envFiles, projectDir: site.root })
 
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   dotEnvFiles.forEach(({ env: fileEnv, file }: $TSFixMe) => {
     Object.keys(fileEnv).forEach((key) => {
         const newSourceName = `${file} file`;
-        // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+        
         const sources = environment.has(key) ? [newSourceName, ...(environment as $TSFixMe).get(key).sources] : [newSourceName];
         environment.set(key, {
             sources,
@@ -206,11 +206,11 @@ const injectEnvVariables = async ({
   // eslint-disable-next-line fp/no-loops
   for (const [key, variable] of environment) {
     const existsInProcess = process.env[key] !== undefined
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     const [usedSource, ...overriddenSources] = existsInProcess ? ['process', ...(variable as $TSFixMe).sources] : (variable as $TSFixMe).sources;
     const usedSourceName = getEnvSourceName(usedSource)
 
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     overriddenSources.forEach((source: $TSFixMe) => {
       const sourceName = getEnvSourceName(source)
 
@@ -229,7 +229,7 @@ const injectEnvVariables = async ({
         log(`${NETLIFYDEVLOG} Injected ${usedSourceName} env var: ${chalk.yellow(key)}`)
       }
 
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       process.env[key] = (variable as $TSFixMe).value;
     }
   }
@@ -237,12 +237,12 @@ const injectEnvVariables = async ({
   process.env.NETLIFY_DEV = 'true'
 }
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'acquirePor... Remove this comment to see the full error message
+
 const acquirePort = async ({
   configuredPort,
   defaultPort,
   errorMessage
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const acquiredPort = await getPort({ port: configuredPort || defaultPort })
   if (configuredPort && acquiredPort !== configuredPort) {
@@ -256,12 +256,12 @@ const acquirePort = async ({
 // - netlify_token -- the bearer token for the Netlify API
 // - authlify_token_id -- the authlify token ID stored for the site after
 //   enabling API Authentication.
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'generateNe... Remove this comment to see the full error message
+
 const generateNetlifyGraphJWT = ({
   authlifyTokenId,
   netlifyToken,
   siteId
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const claims = {
     netlify_token: netlifyToken,
@@ -278,7 +278,7 @@ const generateNetlifyGraphJWT = ({
   )
 }
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'processOnE... Remove this comment to see the full error message
+
 const processOnExit = (fn: $TSFixMe) => {
   const signals = ['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit']
   signals.forEach((signal) => {

@@ -16,7 +16,7 @@ const { createDeployKey, formatErrorMessage, getBuildSettings, saveNetlifyToml, 
 const formatRepoAndOwner = ({
   repoName,
   repoOwner
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => ({
   name: chalk.magenta(repoName),
   owner: chalk.magenta(repoOwner),
@@ -30,7 +30,7 @@ const PAGE_SIZE = 100
  */
 const getGitHubToken = async ({
   globalConfig
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const userId = globalConfig.get('userId')
 
@@ -60,7 +60,7 @@ const getGitHubToken = async ({
  * @param {string} token
  * @returns {Octokit}
  */
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const getGitHubClient = (token: $TSFixMe) => new Octokit({
   auth: `token ${token}`,
 })
@@ -70,7 +70,7 @@ const addDeployKey = async ({
   octokit,
   repoName,
   repoOwner
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   log('Adding deploy key to repository...')
   const key = await createDeployKey({ api })
@@ -86,7 +86,7 @@ const addDeployKey = async ({
     return key
   } catch (error) {
     let message = formatErrorMessage({ message: 'Failed adding GitHub deploy key', error })
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     if ((error as $TSFixMe).status === 404) {
       const { name, owner } = formatRepoAndOwner({ repoName, repoOwner })
       message = `${message}. Does the repository ${name} exist and do ${owner} has the correct permissions to set up deploy keys?`
@@ -99,7 +99,7 @@ const getGitHubRepo = async ({
   octokit,
   repoName,
   repoOwner
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   try {
     const { data } = await octokit.repos.get({
@@ -109,7 +109,7 @@ const getGitHubRepo = async ({
     return data
   } catch (error) {
     let message = formatErrorMessage({ message: 'Failed retrieving GitHub repository information', error })
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     if ((error as $TSFixMe).status === 404) {
       const { name, owner } = formatRepoAndOwner({ repoName, repoOwner })
       message = `${message}. Does the repository ${name} exist and accessible by ${owner}`
@@ -123,7 +123,7 @@ const hookExists = async ({
   octokit,
   repoName,
   repoOwner
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   try {
     const { data: hooks } = await octokit.repos.listWebhooks({
@@ -131,7 +131,7 @@ const hookExists = async ({
       repo: repoName,
       per_page: PAGE_SIZE,
     })
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     const exists = hooks.some((hook: $TSFixMe) => hook.config.url === deployHook)
     return exists
   } catch {
@@ -145,7 +145,7 @@ const addDeployHook = async ({
   octokit,
   repoName,
   repoOwner
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const exists = await hookExists({ deployHook, octokit, repoOwner, repoName })
   if (!exists) {
@@ -163,10 +163,10 @@ const addDeployHook = async ({
       })
     } catch (error) {
       // Ignore exists error if the list doesn't return all installed hooks
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       if (!(error as $TSFixMe).message.includes('Hook already exists on this repository')) {
         let message = formatErrorMessage({ message: 'Failed creating repo hook', error })
-        // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+        
         if ((error as $TSFixMe).status === 404) {
           const { name, owner } = formatRepoAndOwner({ repoName, repoOwner })
           message = `${message}. Does the repository ${name} and do ${owner} has the correct permissions to set up hooks`
@@ -186,9 +186,9 @@ const upsertHook = async ({
   ntlHooks,
   siteId,
   token
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   const ntlHook = ntlHooks.find((hook: $TSFixMe) => hook.type === GITHUB_HOOK_TYPE && hook.event === event)
 
   if (!ntlHook || ntlHook.disabled) {
@@ -218,11 +218,11 @@ const addNotificationHooks = async ({
   api,
   siteId,
   token
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   log(`Creating Netlify GitHub Notification Hooks...`)
 
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   let ntlHooks: $TSFixMe
   try {
     ntlHooks = await api.listHooksBySiteId({ siteId })
@@ -256,7 +256,7 @@ const configGithub = async ({
   repoName,
   repoOwner,
   siteId
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const { netlify } = command
   const {
@@ -292,7 +292,7 @@ const configGithub = async ({
     repo_path: githubRepo.full_name,
     repo_branch: githubRepo.default_branch,
     allowed_branches: [githubRepo.default_branch],
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     deploy_key_id: (deployKey as $TSFixMe).id,
     base: baseDir,
     dir: buildDir,

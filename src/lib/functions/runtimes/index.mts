@@ -41,7 +41,7 @@ const rust = require('./rust/index.cjs')
  * @property {string} name
  */
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'runtimes'.
+
 const runtimes = [js, go, rust].reduce((res, runtime) => ({ ...res, [runtime.name]: runtime }), {})
 
 module.exports = runtimes

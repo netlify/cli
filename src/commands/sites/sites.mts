@@ -1,11 +1,11 @@
 // @ts-check
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createSite... Remove this comment to see the full error message
+
 const { createSitesFromTemplateCommand } = require('./sites-create-template.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createSite... Remove this comment to see the full error message
+
 const { createSitesCreateCommand } = require('./sites-create.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createSite... Remove this comment to see the full error message
+
 const { createSitesDeleteCommand } = require('./sites-delete.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createSite... Remove this comment to see the full error message
+
 const { createSitesListCommand } = require('./sites-list.cjs')
 
 /**
@@ -13,7 +13,7 @@ const { createSitesListCommand } = require('./sites-list.cjs')
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const sites = (options: $TSFixMe, command: $TSFixMe) => {
   command.help()
 }
@@ -23,7 +23,7 @@ const sites = (options: $TSFixMe, command: $TSFixMe) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createSite... Remove this comment to see the full error message
+
 const createSitesCommand = (program: $TSFixMe) => {
   createSitesCreateCommand(program)
   createSitesFromTemplateCommand(program)

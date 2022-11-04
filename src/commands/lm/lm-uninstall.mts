@@ -1,5 +1,5 @@
 // @ts-check
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'uninstall'... Remove this comment to see the full error message
+
 const { uninstall } = require('../../utils/lm/install.cjs')
 
 /**
@@ -14,7 +14,7 @@ const lmUninstall = async () => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createLmUn... Remove this comment to see the full error message
+
 const createLmUninstallCommand = (program: $TSFixMe) => program
   .command('lm:uninstall', { hidden: true })
   .alias('lm:remove')

@@ -1,15 +1,15 @@
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'join'.
+
 const { join } = require('path')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'execa'.
+
 const execa = require('execa')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'inquirer'.
+
 const inquirer = require('inquirer')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'NETLIFYDEV... Remove this comment to see the full error message
+
 const { NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, error, log } = require('../../utils/command-helpers.cjs')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'applySetti... Remove this comment to see the full error message
+
 const { applySettings, getSettings, writeSettings } = require('./settings.cjs')
 
 const description = 'Create VS Code settings for an optimal experience with Netlify projects'
@@ -17,7 +17,7 @@ const description = 'Create VS Code settings for an optimal experience with Netl
 const getPrompt = ({
   fileExists,
   path
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const formattedPath = chalk.underline(path)
   const message = fileExists
@@ -35,11 +35,11 @@ const getPrompt = ({
 const getEdgeFunctionsPath = ({
   config,
   repositoryRoot
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) =>
   config.build.edge_functions || join(repositoryRoot, 'netlify', 'edge-functions')
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const getSettingsPath = (repositoryRoot: $TSFixMe) => join(repositoryRoot, '.vscode', 'settings.json')
 
 const hasDenoVSCodeExt = async () => {
@@ -65,7 +65,7 @@ const getDenoExtPrompt = () => {
 const run = async ({
   config,
   repositoryRoot
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const { DenoBridge } = await import('@netlify/edge-bundler')
   const deno = new DenoBridge({

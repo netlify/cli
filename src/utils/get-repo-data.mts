@@ -1,21 +1,21 @@
 // @ts-check
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'dirname'.
+
 const { dirname } = require('path')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'process'.
+
 const process = require('process')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'util'.
+
 const util = require('util')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'findUp'.
+
 const findUp = require('find-up')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'gitRepoInf... Remove this comment to see the full error message
+
 const gitRepoInfo = require('git-repo-info')
 const gitconfiglocal = require('gitconfiglocal')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'isEmpty'.
+
 const isEmpty = require('lodash/isEmpty')
 const parseGitRemote = require('parse-github-url')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'log'.
+
 const { log } = require('./command-helpers.cjs')
 
 /**
@@ -24,10 +24,10 @@ const { log } = require('./command-helpers.cjs')
  * @param {string} [config.remoteName]
  * @returns
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getRepoDat... Remove this comment to see the full error message
+
 const getRepoData = async function ({
   remoteName
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe = {}) {
   try {
     const cwd = process.cwd()
@@ -71,7 +71,7 @@ const getRepoData = async function ({
     }
   } catch (error) {
     return {
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     error: (error as $TSFixMe).message,
 };
   }

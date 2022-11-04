@@ -1,34 +1,35 @@
 // @ts-check
 const { EOL } = require('os')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'path'.
+
 const path = require('path')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'process'.
+
 const process = require('process')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'frameworkI... Remove this comment to see the full error message
+
+// @ts-ignore
 const frameworkInfoPromise = import('@netlify/framework-info')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'fuzzy'.
+
 const fuzzy = require('fuzzy')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getPort'.
+
 const getPort = require('get-port')
 const isPlainObject = require('is-plain-obj')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'readFileAs... Remove this comment to see the full error message
+
 const { readFileAsyncCatchError } = require('../lib/fs.cjs')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'NETLIFYDEV... Remove this comment to see the full error message
+
 const { NETLIFYDEVWARN, chalk, log } = require('./command-helpers.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'acquirePor... Remove this comment to see the full error message
+
 const { acquirePort } = require('./dev.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getInterna... Remove this comment to see the full error message
+
 const { getInternalFunctionsDir } = require('./functions/index.cjs')
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const formatProperty = (str: $TSFixMe) => chalk.magenta(`'${str}'`)
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const formatValue = (str: $TSFixMe) => chalk.green(`'${str}'`)
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const readHttpsSettings = async (options: $TSFixMe) => {
   if (!isPlainObject(options)) {
     throw new TypeError(
@@ -52,11 +53,11 @@ const readHttpsSettings = async (options: $TSFixMe) => {
   ])
 
   if (keyError) {
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     throw new Error(`Error reading private key file: ${(keyError as $TSFixMe).message}`);
   }
   if (certError) {
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     throw new Error(`Error reading certificate file: ${(certError as $TSFixMe).message}`);
   }
 
@@ -66,7 +67,7 @@ const readHttpsSettings = async (options: $TSFixMe) => {
 const validateStringProperty = ({
   devConfig,
   property
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   if (devConfig[property] && typeof devConfig[property] !== 'string') {
     const formattedProperty = formatProperty(property)
@@ -79,7 +80,7 @@ const validateStringProperty = ({
 const validateNumberProperty = ({
   devConfig,
   property
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   if (devConfig[property] && typeof devConfig[property] !== 'number') {
     const formattedProperty = formatProperty(property)
@@ -91,7 +92,7 @@ const validateNumberProperty = ({
 
 const validateFrameworkConfig = ({
   devConfig
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   validateStringProperty({ devConfig, property: 'command' })
   validateNumberProperty({ devConfig, property: 'port' })
@@ -109,7 +110,7 @@ const validateFrameworkConfig = ({
 const validateConfiguredPort = ({
   detectedPort,
   devConfig
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   if (devConfig.port && devConfig.port === detectedPort) {
     const formattedPort = formatProperty('port')
@@ -119,7 +120,7 @@ const validateConfiguredPort = ({
   }
 }
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'DEFAULT_PO... Remove this comment to see the full error message
+
 const DEFAULT_PORT = 8888
 const DEFAULT_STATIC_PORT = 3999
 
@@ -132,7 +133,7 @@ const getDefaultDist = () => {
 
 const getStaticServerPort = async ({
   devConfig
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const port = await acquirePort({
     configuredPort: devConfig.staticServerPort,
@@ -155,7 +156,7 @@ const handleStaticServer = async ({
   devConfig,
   options,
   projectDir
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   validateNumberProperty({ devConfig, property: 'staticServerPort' })
 
@@ -194,7 +195,7 @@ const handleStaticServer = async ({
  * @param {import('./types').FrameworkInfo} framework
  * @returns {import('./types').BaseServerSettings}
  */
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const getSettingsFromFramework = (framework: $TSFixMe) => {
   const {
     build: { directory: dist },
@@ -217,22 +218,22 @@ const getSettingsFromFramework = (framework: $TSFixMe) => {
     env,
     pollingStrategies: pollingStrategies.map(({
       name
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     }: $TSFixMe) => name),
     plugins,
   };
 }
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const hasDevCommand = (framework: $TSFixMe) => Array.isArray(framework.dev.commands) && framework.dev.commands.length !== 0
 
 const detectFrameworkSettings = async ({
   projectDir
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const { listFrameworks } = await frameworkInfoPromise
   const projectFrameworks = await listFrameworks({ projectDir })
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   const frameworks = projectFrameworks.filter((framework: $TSFixMe) => hasDevCommand(framework))
 
   if (frameworks.length === 1) {
@@ -252,7 +253,7 @@ const detectFrameworkSettings = async ({
       name: 'chosenFramework',
       message: `Multiple possible start commands found`,
       type: 'autocomplete',
-      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      
       source(_: $TSFixMe, input: $TSFixMe) {
         if (!input || input === '') {
           return scriptInquirerOptions
@@ -273,7 +274,7 @@ const detectFrameworkSettings = async ({
 
 const hasCommandAndTargetPort = ({
   devConfig
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => devConfig.command && devConfig.targetPort
 
 /**
@@ -283,7 +284,7 @@ const hasCommandAndTargetPort = ({
  */
 const handleCustomFramework = ({
   devConfig
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   if (!hasCommandAndTargetPort({ devConfig })) {
     throw new Error(
@@ -304,7 +305,7 @@ const handleCustomFramework = ({
 const mergeSettings = async ({
   devConfig,
   frameworkSettings = {}
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const {
     command: frameworkCommand,
@@ -338,7 +339,7 @@ const mergeSettings = async ({
 const handleForcedFramework = async ({
   devConfig,
   projectDir
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   // this throws if `devConfig.framework` is not a supported framework
   const { getFramework } = await frameworkInfoPromise
@@ -353,7 +354,7 @@ const handleForcedFramework = async ({
  * @param {string} projectDir
  * @returns {Promise<import('./types').ServerSettings>}
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'detectServ... Remove this comment to see the full error message
+
 const detectServerSettings = async (devConfig: $TSFixMe, options: $TSFixMe, projectDir: $TSFixMe) => {
   validateStringProperty({ devConfig, property: 'framework' })
 
@@ -377,7 +378,7 @@ const detectServerSettings = async (devConfig: $TSFixMe, options: $TSFixMe, proj
       settings = await mergeSettings({ devConfig, frameworkSettings })
     }
 
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     (settings as $TSFixMe).plugins = frameworkSettings && frameworkSettings.plugins;
   } else if (devConfig.framework === '#custom') {
     validateFrameworkConfig({ devConfig })
@@ -389,7 +390,7 @@ const detectServerSettings = async (devConfig: $TSFixMe, options: $TSFixMe, proj
     settings = await handleForcedFramework({ devConfig, projectDir })
   }
 
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   validateConfiguredPort({ devConfig, detectedPort: (settings as $TSFixMe).frameworkPort });
 
   const acquiredPort = await acquirePort({
@@ -397,7 +398,7 @@ const detectServerSettings = async (devConfig: $TSFixMe, options: $TSFixMe, proj
     defaultPort: DEFAULT_PORT,
     errorMessage: `Could not acquire required ${formatProperty('port')}`,
   })
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   const functionsDir = devConfig.functions || (settings as $TSFixMe).functions;
   const internalFunctionsDir = await getInternalFunctionsDir({ base: projectDir })
   const shouldStartFunctionsServer = Boolean(functionsDir || internalFunctionsDir)
@@ -413,24 +414,24 @@ const detectServerSettings = async (devConfig: $TSFixMe, options: $TSFixMe, proj
   }
 }
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const filterSettings = function (scriptInquirerOptions: $TSFixMe, input: $TSFixMe) {
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   const filterOptions = scriptInquirerOptions.map((scriptInquirerOption: $TSFixMe) => scriptInquirerOption.name)
   // TODO: remove once https://github.com/sindresorhus/eslint-plugin-unicorn/issues/1394 is fixed
   // eslint-disable-next-line unicorn/no-array-method-this-argument
   const filteredSettings = fuzzy.filter(input, filterOptions)
   const filteredSettingNames = new Set(
-    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    
     filteredSettings.map((filteredSetting: $TSFixMe) => input ? filteredSetting.string : filteredSetting),
   )
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   return scriptInquirerOptions.filter((t: $TSFixMe) => filteredSettingNames.has(t.name));
 }
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const formatSettingsArrForInquirer = function (frameworks: $TSFixMe) {
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   const formattedArr = frameworks.map((framework: $TSFixMe) => framework.dev.commands.map((command: $TSFixMe) => ({
     name: `[${chalk.yellow(framework.name)}] '${command}'`,
     value: { ...framework, commands: [command] },

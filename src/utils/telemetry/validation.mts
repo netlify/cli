@@ -1,10 +1,10 @@
 /**
  * Utility to validating analytic event names for clean data
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'log'.
+
 const { log } = require('../command-helpers.cjs')
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 module.exports = function isValidEventName(eventName: $TSFixMe, config: $TSFixMe) {
   const validProject = [config.projectName]
   const validObjects = config.objects || []
@@ -33,7 +33,7 @@ module.exports = function isValidEventName(eventName: $TSFixMe, config: $TSFixMe
   return true
 }
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const containsSeparators = function (eventName: $TSFixMe) {
   const underscores = (eventName.match(/_/g) || []).length
   if (underscores !== 1) {
@@ -48,7 +48,7 @@ const containsSeparators = function (eventName: $TSFixMe) {
   return true
 }
 
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const formattingWarning = function (eventName: $TSFixMe, errorMsg: $TSFixMe) {
   log('-----------------------------')
   log('Tracking Error:')

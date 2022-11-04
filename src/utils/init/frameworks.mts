@@ -4,7 +4,7 @@ const frameworkInfoPromise = import('@netlify/framework-info')
 const getFrameworkInfo = async ({
   baseDirectory,
   nodeVersion
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe) => {
   const { listFrameworks } = await frameworkInfoPromise
   const frameworks = await listFrameworks({ projectDir: baseDirectory, nodeVersion })

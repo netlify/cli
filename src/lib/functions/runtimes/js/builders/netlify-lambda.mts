@@ -1,34 +1,34 @@
 // @ts-check
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'readFile'.
+
 const { readFile } = require('fs').promises
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'resolve'.
+
 const { resolve } = require('path')
 
 const minimist = require('minimist')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'execa'.
+
 const { execa } = require('../../../../../utils/index.mjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'fileExists... Remove this comment to see the full error message
+
 const { fileExistsAsync } = require('../../../../fs.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'memoizedBu... Remove this comment to see the full error message
+
 const { memoizedBuild } = require('../../../memoized-build.cjs')
 
 const detectNetlifyLambda = async function ({
   packageJson
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 }: $TSFixMe = {}) {
   const { dependencies, devDependencies, scripts } = packageJson || {}
   if (!((dependencies && dependencies['netlify-lambda']) || (devDependencies && devDependencies['netlify-lambda']))) {
     return false
   }
 
-  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  
   const matchingScripts = Object.entries(scripts).filter(([, script]) => (script as $TSFixMe).match(/netlify-lambda\s+build/));
 
   // eslint-disable-next-line fp/no-loops
   for (const [key, script] of matchingScripts) {
     // E.g. ["netlify-lambda", "build", "functions/folder"]
-// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+
 const match = minimist((script as $TSFixMe).split(' '));
     // We are not interested in 'netlify-lambda' and 'build' commands
     const functionDirectories = match._.slice(2)

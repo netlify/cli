@@ -1,9 +1,9 @@
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'log'.
+
 const { log } = require('../../utils/index.mjs')
 
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createOpen... Remove this comment to see the full error message
+
 const { createOpenAdminCommand, openAdmin } = require('./open-admin.cjs')
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createOpen... Remove this comment to see the full error message
+
 const { createOpenSiteCommand, openSite } = require('./open-site.cjs')
 
 /**
@@ -11,7 +11,7 @@ const { createOpenSiteCommand, openSite } = require('./open-site.cjs')
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'open'.
+
 const open = async (options: $TSFixMe, command: $TSFixMe) => {
   if (!options.site || !options.admin) {
     log(command.helpInformation())
@@ -29,7 +29,7 @@ const open = async (options: $TSFixMe, command: $TSFixMe) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createOpen... Remove this comment to see the full error message
+
 const createOpenCommand = (program: $TSFixMe) => {
   createOpenAdminCommand(program)
   createOpenSiteCommand(program)
