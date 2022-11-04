@@ -318,10 +318,15 @@ test('env:set --context should support variadic options', async (t) => {
       )
 
       t.is(patchRequests.length, 2)
-      t.is(patchRequests[0].body.context, 'deploy-preview')
-      t.is(patchRequests[0].body.value, 'multiple')
-      t.is(patchRequests[1].body.context, 'production')
-      t.is(patchRequests[1].body.value, 'multiple')
+
+      // The order of the request might not be always the same, so we need to find the request
+      const dpRequest = patchRequests.find((request) => request.body.context === 'deploy-preview')
+      t.not(dpRequest, undefined)
+      t.is(dpRequest.body.value, 'multiple')
+
+      const prodRequest = patchRequests.find((request) => request.body.context === 'production')
+      t.not(prodRequest, undefined)
+      t.is(prodRequest.body.value, 'multiple')
     })
   })
 })
