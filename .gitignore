@@ -12,6 +12,7 @@ coverage
 
 # Compiled files
 *.cjs
+*.mjs
 
 # node sdk
 vendor
