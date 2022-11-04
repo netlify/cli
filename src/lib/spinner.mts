@@ -60,4 +60,4 @@ const clearSpinner = ({
   }
 }
 
-module.exports = { clearSpinner, startSpinner, stopSpinner }
+export default { clearSpinner, startSpinner, stopSpinner }

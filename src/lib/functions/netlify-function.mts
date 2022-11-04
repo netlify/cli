@@ -2,7 +2,7 @@
 const CronParser = require('cron-parser')
 
 
-const { error: errorExit } = require('../../utils/command-helpers.cjs')
+const { error: errorExit } = require('../../utils/command-helpers.mjs')
 
 const BACKGROUND_SUFFIX = '-background'
 
@@ -184,4 +184,4 @@ class NetlifyFunction {
   }
 }
 
-module.exports = { NetlifyFunction }
+export default { NetlifyFunction }

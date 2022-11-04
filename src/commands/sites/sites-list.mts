@@ -1,9 +1,9 @@
 // @ts-check
 
 
-const { listSites } = require('../../lib/api.cjs')
+const { listSites } = require('../../lib/api.mjs')
 
-const { startSpinner, stopSpinner } = require('../../lib/spinner.cjs')
+const { startSpinner, stopSpinner } = require('../../lib/spinner.mjs')
 
 const { chalk, log, logJson } = require('../../utils/index.mjs')
 
@@ -96,4 +96,4 @@ const createSitesListCommand = (program: $TSFixMe) => program
     await sitesList(options, command)
   })
 
-module.exports = { createSitesListCommand }
+export default { createSitesListCommand }

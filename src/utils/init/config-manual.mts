@@ -1,8 +1,8 @@
 const inquirer = require('inquirer')
 
-const { exit, log } = require('../command-helpers.cjs')
+const { exit, log } = require('../command-helpers.mjs')
 
-const { createDeployKey, getBuildSettings, saveNetlifyToml, setupSite } = require('./utils.cjs')
+const { createDeployKey, getBuildSettings, saveNetlifyToml, setupSite } = require('./utils.mjs')
 
 const addDeployKey = async ({
   deployKey

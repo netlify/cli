@@ -33,20 +33,20 @@ const pFilter = require('p-filter')
 const toReadableStream = require('to-readable-stream')
 
 
-const edgeFunctions = require('../lib/edge-functions/index.cjs')
+const edgeFunctions = require('../lib/edge-functions/index.mjs')
 
-const { fileExistsAsync, isFileAsync } = require('../lib/fs.cjs')
+const { fileExistsAsync, isFileAsync } = require('../lib/fs.mjs')
 
-const renderErrorTemplate = require('../lib/render-error-remplate.cjs')
+const renderErrorTemplate = require('../lib/render-error-remplate.mjs')
 
 
-const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./command-helpers.cjs')
+const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./command-helpers.mjs')
 
-const { createStreamPromise } = require('./create-stream-promise.cjs')
+const { createStreamPromise } = require('./create-stream-promise.mjs')
 
-const { headersForPath, parseHeaders } = require('./headers.cjs')
+const { headersForPath, parseHeaders } = require('./headers.mjs')
 
-const { createRewriter, onChanges } = require('./rules-proxy.cjs')
+const { createRewriter, onChanges } = require('./rules-proxy.mjs')
 
 const decompress = util.promisify(zlib.gunzip)
 const shouldGenerateETag = Symbol('Internal: response should generate ETag')
@@ -667,4 +667,4 @@ const startProxy = async function ({
 
 const BYTES_LIMIT = 30
 
-module.exports = { shouldGenerateETag, startProxy }
+export default { shouldGenerateETag, startProxy }

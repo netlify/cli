@@ -7,7 +7,7 @@ const memoizeOne = require('memoize-one')
 const { v4: uuidv4 } = require('uuid')
 
 
-const { getLegacyPathInHome, getPathInHome } = require('../lib/settings.cjs')
+const { getLegacyPathInHome, getPathInHome } = require('../lib/settings.mjs')
 
 const globalConfigDefaults = {
   /* disable stats from being sent to Netlify */
@@ -48,4 +48,4 @@ const getGlobalConfig = async function () {
 }
 
 // Memoise config result so that we only load it once
-module.exports = memoizeOne(getGlobalConfig)
+export default memoizeOne(getGlobalConfig)

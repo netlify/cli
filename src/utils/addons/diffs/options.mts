@@ -2,7 +2,7 @@
 const ansiStyles = require('ansi-styles')
 
 
-const { chalk } = require('../../command-helpers.cjs')
+const { chalk } = require('../../command-helpers.mjs')
 
 const forceColor = new chalk.Instance({ level: 1 })
 
@@ -111,7 +111,7 @@ const concordanceOptions = { maxDepth: 3, plugins, theme }
 
 const concordanceDiffOptions = { maxDepth: 1, plugins, theme }
 
-module.exports = {
+export default {
   concordanceOptions,
   concordanceDiffOptions,
 }

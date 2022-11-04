@@ -1,9 +1,9 @@
 const { Octokit } = require('@octokit/rest')
 
-const { chalk, error: failAndExit, log } = require('../command-helpers.cjs')
-const { getGitHubToken: ghauth } = require('../gh-auth.cjs')
+const { chalk, error: failAndExit, log } = require('../command-helpers.mjs')
+const { getGitHubToken: ghauth } = require('../gh-auth.mjs')
 
-const { createDeployKey, formatErrorMessage, getBuildSettings, saveNetlifyToml, setupSite } = require('./utils.cjs')
+const { createDeployKey, formatErrorMessage, getBuildSettings, saveNetlifyToml, setupSite } = require('./utils.mjs')
 
 /**
  * @typedef Token

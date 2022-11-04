@@ -5,7 +5,7 @@ const { env } = require('process')
 const inquirer = require('inquirer')
 
 
-const { runRecipe } = require('../../commands/recipes/index.cjs')
+const { runRecipe } = require('../../commands/recipes/index.mjs')
 
 const STATE_PROMPT_PROPERTY = 'promptVSCodeSettings'
 
@@ -54,4 +54,4 @@ const promptEditorHelper = async ({
   await runRecipe({ config, recipeName: 'vscode', repositoryRoot })
 }
 
-module.exports = { promptEditorHelper }
+export default { promptEditorHelper }

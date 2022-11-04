@@ -276,4 +276,4 @@ const createEnvCloneCommand = (program: $TSFixMe) => program
   .addExamples(['netlify env:clone --to <to-site-id>', 'netlify env:clone --to <to-site-id> --from <from-site-id>'])
   .action(envClone)
 
-module.exports = { createEnvCloneCommand }
+export default { createEnvCloneCommand }

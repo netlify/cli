@@ -5,7 +5,7 @@ const backoff = require('backoff')
 const pMap = require('p-map')
 
 
-const { UPLOAD_INITIAL_DELAY, UPLOAD_MAX_DELAY, UPLOAD_RANDOM_FACTOR } = require('./constants.cjs')
+const { UPLOAD_INITIAL_DELAY, UPLOAD_MAX_DELAY, UPLOAD_RANDOM_FACTOR } = require('./constants.mjs')
 
 
 const uploadFiles = async (api: $TSFixMe, deployId: $TSFixMe, uploadList: $TSFixMe, {
@@ -129,4 +129,4 @@ const retryUpload = (uploadFn: $TSFixMe, maxRetry: $TSFixMe) =>
     tryUpload()
   })
 
-module.exports = { uploadFiles }
+export default { uploadFiles }

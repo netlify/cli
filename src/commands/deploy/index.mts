@@ -1,6 +1,6 @@
 
-const { createDeployCommand } = require('./deploy.cjs')
+import { createDeployCommand } from './deploy.mjs'
 
-module.exports = {
+export {
   createDeployCommand,
 }

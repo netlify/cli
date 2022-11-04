@@ -13,7 +13,7 @@ const process = require('process')
 const { log, parseEnv } = require('tabtab')
 
 
-const { AUTOCOMPLETION_FILE } = require('./constants.cjs')
+const { AUTOCOMPLETION_FILE } = require('./constants.mjs')
 
 /**
  * @typedef CompletionItem
@@ -82,4 +82,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { getAutocompletion }
+export default { getAutocompletion }

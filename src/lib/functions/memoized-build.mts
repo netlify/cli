@@ -36,4 +36,4 @@ const memoizedBuild = ({
   return cache[cacheKey].task
 }
 
-module.exports = { memoizedBuild }
+export default { memoizedBuild }

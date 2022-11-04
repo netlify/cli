@@ -23,15 +23,15 @@ import {runCoreSteps} from '@netlify/build'
 const netlifyConfigPromise = import('@netlify/config')
 
 
-const { cancelDeploy } = require('../../lib/api.cjs')
+const { cancelDeploy } = require('../../lib/api.mjs')
 
-const { getBuildOptions, runBuild } = require('../../lib/build.cjs')
+const { getBuildOptions, runBuild } = require('../../lib/build.mjs')
 
-const { normalizeFunctionsConfig } = require('../../lib/functions/config.cjs')
+const { normalizeFunctionsConfig } = require('../../lib/functions/config.mjs')
 
-const { getLogMessage } = require('../../lib/log.cjs')
+const { getLogMessage } = require('../../lib/log.mjs')
 
-const { startSpinner, stopSpinner } = require('../../lib/spinner.cjs')
+const { startSpinner, stopSpinner } = require('../../lib/spinner.mjs')
 const {
   
   NETLIFYDEV,
@@ -63,9 +63,9 @@ const {
   warn,
 } = require('../../utils/index.mjs')
 
-const { link } = require('../link/index.cjs')
+const { link } = require('../link/index.mjs')
 
-const { sitesCreate } = require('../sites/index.cjs')
+const { sitesCreate } = require('../sites/index.mjs')
 
 
 const DEFAULT_DEPLOY_TIMEOUT = 1.2e6
@@ -772,7 +772,7 @@ const deploy = async (options: $TSFixMe, command: $TSFixMe) => {
  * @returns
  */
 
-const createDeployCommand = (program: $TSFixMe) => program
+export const createDeployCommand = (program: $TSFixMe) => program
   .command('deploy')
   .description(
     `Create a new deploy from the contents of a folder
@@ -884,4 +884,4 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
   ])
   .action(deploy)
 
-module.exports = { createDeployCommand }
+export default { createDeployCommand }

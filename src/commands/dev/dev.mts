@@ -11,22 +11,22 @@ const StaticServer = require('static-server')
 const stripAnsiCc = require('strip-ansi-control-characters')
 const waitPort = require('wait-port')
 
-const { promptEditorHelper } = require('../../lib/edge-functions/index.cjs')
-const { startFunctionsServer } = require('../../lib/functions/server.cjs')
+const { promptEditorHelper } = require('../../lib/edge-functions/index.mjs')
+const { startFunctionsServer } = require('../../lib/functions/server.mjs')
 const {
   OneGraphCliClient,
   loadCLISession,
   markCliSessionInactive,
   persistNewOperationsDocForSession,
   startOneGraphCLISession,
-} = require('../../lib/one-graph/cli-client.cjs')
+} = require('../../lib/one-graph/cli-client.mjs')
 const {
   defaultExampleOperationsDoc,
   getGraphEditUrlBySiteId,
   getNetlifyGraphConfig,
   readGraphQLOperationsSourceFile,
-} = require('../../lib/one-graph/cli-netlify-graph.cjs')
-const { startSpinner, stopSpinner } = require('../../lib/spinner.cjs')
+} = require('../../lib/one-graph/cli-netlify-graph.mjs')
+const { startSpinner, stopSpinner } = require('../../lib/spinner.mjs')
 const {
   BANG,
   NETLIFYDEV,
@@ -54,7 +54,7 @@ const {
   watchDebounced,
 } = require('../../utils/index.mjs')
 
-const { createDevExecCommand } = require('./dev-exec.cjs')
+const { createDevExecCommand } = require('./dev-exec.mjs')
 
 
 const netlifyBuildPromise = import('@netlify/build')
@@ -713,7 +713,7 @@ const getBuildOptions = ({
  * @returns
  */
 
-const createDevCommand = (program: $TSFixMe) => {
+export const createDevCommand = (program: $TSFixMe) => {
   createDevExecCommand(program)
 
   return program
@@ -756,4 +756,4 @@ const createDevCommand = (program: $TSFixMe) => {
     .action(dev);
 }
 
-module.exports = { createDevCommand }
+export default { createDevCommand }

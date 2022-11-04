@@ -1,5 +1,4 @@
-// @ts-expect-error TS(2307): Cannot find module '../command-helpers.cjs' or its... Remove this comment to see the full error message
-import commandHelpersPkg from '../command-helpers.cjs'
+import commandHelpersPkg from '../command-helpers.mjs'
 
 const { error } = commandHelpersPkg
 

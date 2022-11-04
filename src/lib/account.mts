@@ -10,7 +10,7 @@ const supportsEdgeHandlers = (account: $TSFixMe) => supportsBooleanCapability(ac
 
 const supportsBackgroundFunctions = (account: $TSFixMe) => supportsBooleanCapability(account, 'background_functions')
 
-module.exports = {
+export default {
   supportsBackgroundFunctions,
   supportsEdgeHandlers,
 }

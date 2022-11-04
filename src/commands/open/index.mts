@@ -1,6 +1,6 @@
 
-const { createOpenCommand } = require('./open.cjs')
+import { createOpenCommand } from './open.mjs'
 
-module.exports = {
+export {
   createOpenCommand,
 }

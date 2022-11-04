@@ -8,7 +8,7 @@ const { dirname } = require('path')
 const { sortOptions, warn } = require('../../utils/index.mjs')
 
 
-const { AUTOCOMPLETION_FILE } = require('./constants.cjs')
+const { AUTOCOMPLETION_FILE } = require('./constants.mjs')
 
 /**
  * Create or updates the autocompletion information for the CLI
@@ -53,4 +53,4 @@ const createAutocompletion = (program: $TSFixMe) => {
   }
 }
 
-module.exports = { createAutocompletion }
+export default { createAutocompletion }

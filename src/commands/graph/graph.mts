@@ -1,18 +1,18 @@
 // @ts-check
 
-const { createGraphConfigWriteCommand } = require('./graph-config-write.cjs')
+const { createGraphConfigWriteCommand } = require('./graph-config-write.mjs')
 
-const { createGraphEditCommand } = require('./graph-edit.cjs')
+const { createGraphEditCommand } = require('./graph-edit.mjs')
 
-const { createGraphHandlerCommand } = require('./graph-handler.cjs')
+const { createGraphHandlerCommand } = require('./graph-handler.mjs')
 
-const { createGraphInitCommand } = require('./graph-init.cjs')
+const { createGraphInitCommand } = require('./graph-init.mjs')
 
-const { createGraphLibraryCommand } = require('./graph-library.cjs')
+const { createGraphLibraryCommand } = require('./graph-library.mjs')
 
-const { createGraphOperationsCommand } = require('./graph-operations.cjs')
+const { createGraphOperationsCommand } = require('./graph-operations.mjs')
 
-const { createGraphPullCommand } = require('./graph-pull.cjs')
+const { createGraphPullCommand } = require('./graph-pull.mjs')
 
 /**
  * The graph command
@@ -30,7 +30,7 @@ const graph = (options: $TSFixMe, command: $TSFixMe) => {
  * @returns
  */
 
-const createGraphCommand = (program: $TSFixMe) => {
+export const createGraphCommand = (program: $TSFixMe) => {
   createGraphConfigWriteCommand(program)
   createGraphEditCommand(program)
   createGraphHandlerCommand(program)
@@ -46,4 +46,4 @@ const createGraphCommand = (program: $TSFixMe) => {
     .action(graph)
 }
 
-module.exports = { createGraphCommand }
+export default { createGraphCommand }

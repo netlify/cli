@@ -1,6 +1,6 @@
 
-const { createApiCommand } = require('./api.cjs')
+import { createApiCommand } from './api.mjs'
 
-module.exports = {
+export {
   createApiCommand,
 }

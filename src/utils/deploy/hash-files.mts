@@ -6,7 +6,7 @@ const walker = require('folder-walker')
 const pump = promisify(require('pump'))
 
 
-const { fileFilterCtor, fileNormalizerCtor, hasherCtor, manifestCollectorCtor } = require('./hasher-segments.cjs')
+const { fileFilterCtor, fileNormalizerCtor, hasherCtor, manifestCollectorCtor } = require('./hasher-segments.mjs')
 
 
 const hashFiles = async ({
@@ -38,4 +38,4 @@ const hashFiles = async ({
   return { files, filesShaMap }
 }
 
-module.exports = { hashFiles }
+export default { hashFiles }

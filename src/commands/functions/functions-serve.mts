@@ -4,7 +4,7 @@
 const { join } = require('path')
 
 
-const { startFunctionsServer } = require('../../lib/functions/server.cjs')
+const { startFunctionsServer } = require('../../lib/functions/server.mjs')
 
 const { acquirePort, getFunctionsDir, getSiteInformation, injectEnvVariables } = require('../../utils/index.mjs')
 
@@ -68,4 +68,4 @@ const createFunctionsServeCommand = (program: $TSFixMe) => program
   .addHelpText('after', 'Helpful for debugging functions.')
   .action(functionsServe)
 
-module.exports = { createFunctionsServeCommand }
+export default { createFunctionsServeCommand }

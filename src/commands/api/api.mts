@@ -62,7 +62,7 @@ const apiCommand = async (apiMethod: $TSFixMe, options: $TSFixMe, command: $TSFi
  * @returns
  */
 
-const createApiCommand = (program: $TSFixMe) => program
+export const createApiCommand = (program: $TSFixMe) => program
   .command('api')
   .argument('[apiMethod]', 'Open API method to run')
   .description(
@@ -76,4 +76,4 @@ For more information on available methods checkout https://open-api.netlify.com/
   .addExamples(['netlify api --list', `netlify api getSite --data '{ "site_id": "123456" }'`])
   .action(apiCommand)
 
-module.exports = { createApiCommand }
+export default { createApiCommand }

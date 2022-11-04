@@ -1,7 +1,7 @@
 
-const { createLinkCommand, link } = require('./link.cjs')
+import { createLinkCommand, link } from './link.mjs'
 
-module.exports = {
+export {
   createLinkCommand,
   link,
 }

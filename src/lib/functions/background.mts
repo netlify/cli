@@ -2,7 +2,7 @@
 const { NETLIFYDEVERR, NETLIFYDEVLOG } = require('../../utils/index.mjs')
 
 
-const { formatLambdaError, styleFunctionName } = require('./utils.cjs')
+const { formatLambdaError, styleFunctionName } = require('./utils.mjs')
 
 const BACKGROUND_FUNCTION_STATUS_CODE = 202
 
@@ -25,4 +25,4 @@ const handleBackgroundFunctionResult = (functionName: $TSFixMe, err: $TSFixMe) =
   }
 }
 
-module.exports = { handleBackgroundFunction, handleBackgroundFunctionResult }
+export default { handleBackgroundFunction, handleBackgroundFunctionResult }

@@ -53,4 +53,4 @@ const createOpenSiteCommand = (program: $TSFixMe) => program
   .addExamples(['netlify open:site'])
   .action(openSite)
 
-module.exports = { createOpenSiteCommand, openSite }
+export default { createOpenSiteCommand, openSite }

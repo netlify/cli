@@ -12,49 +12,28 @@ import { findBestMatch } from 'string-similarity'
 // TODO: use named imports again once the imported file is esm
 import utils from '../utils/index.mjs'
 
-// @ts-expect-error TS(2307): Cannot find module './addons/index.cjs' or its cor... Remove this comment to see the full error message
-import { createAddonsCommand } from './addons/index.cjs'
-// @ts-expect-error TS(2307): Cannot find module './api/index.cjs' or its corres... Remove this comment to see the full error message
-import { createApiCommand } from './api/index.cjs'
+import { createAddonsCommand } from './addons/index.mjs'
+import { createApiCommand } from './api/index.mjs'
 import BaseCommand from './base-command.mjs'
-// @ts-expect-error TS(2307): Cannot find module './build/index.cjs' or its corr... Remove this comment to see the full error message
-import { createBuildCommand } from './build/index.cjs'
-// @ts-expect-error TS(2307): Cannot find module './completion/index.cjs' or its... Remove this comment to see the full error message
-import { createCompletionCommand } from './completion/index.cjs'
-// @ts-expect-error TS(2307): Cannot find module './deploy/index.cjs' or its cor... Remove this comment to see the full error message
-import { createDeployCommand } from './deploy/index.cjs'
-// @ts-expect-error TS(2307): Cannot find module './dev/index.cjs' or its corres... Remove this comment to see the full error message
-import { createDevCommand } from './dev/index.cjs'
-// @ts-expect-error TS(2307): Cannot find module './env/index.cjs' or its corres... Remove this comment to see the full error message
-import { createEnvCommand } from './env/index.cjs'
-// @ts-expect-error TS(2307): Cannot find module './functions/index.cjs' or its ... Remove this comment to see the full error message
-import { createFunctionsCommand } from './functions/index.cjs'
-// @ts-expect-error TS(2307): Cannot find module './graph/index.cjs' or its corr... Remove this comment to see the full error message
-import { createGraphCommand } from './graph/index.cjs'
-// @ts-expect-error TS(2307): Cannot find module './init/index.cjs' or its corre... Remove this comment to see the full error message
-import { createInitCommand } from './init/index.cjs'
-// @ts-expect-error TS(2307): Cannot find module './link/index.cjs' or its corre... Remove this comment to see the full error message
-import { createLinkCommand } from './link/index.cjs'
-// @ts-expect-error TS(2307): Cannot find module './lm/index.cjs' or its corresp... Remove this comment to see the full error message
-import { createLmCommand } from './lm/index.cjs'
-// @ts-expect-error TS(2307): Cannot find module './login/index.cjs' or its corr... Remove this comment to see the full error message
-import { createLoginCommand } from './login/index.cjs'
-// @ts-expect-error TS(2307): Cannot find module './logout/index.cjs' or its cor... Remove this comment to see the full error message
-import { createLogoutCommand } from './logout/index.cjs'
-// @ts-expect-error TS(2307): Cannot find module './open/index.cjs' or its corre... Remove this comment to see the full error message
-import { createOpenCommand } from './open/index.cjs'
-// @ts-expect-error TS(2307): Cannot find module './recipes/index.cjs' or its co... Remove this comment to see the full error message
-import { createRecipesCommand, createRecipesListCommand } from './recipes/index.cjs'
-// @ts-expect-error TS(2307): Cannot find module './sites/index.cjs' or its corr... Remove this comment to see the full error message
-import { createSitesCommand } from './sites/index.cjs'
-// @ts-expect-error TS(2307): Cannot find module './status/index.cjs' or its cor... Remove this comment to see the full error message
-import { createStatusCommand } from './status/index.cjs'
-// @ts-expect-error TS(2307): Cannot find module './switch/index.cjs' or its cor... Remove this comment to see the full error message
-import { createSwitchCommand } from './switch/index.cjs'
-// @ts-expect-error TS(2307): Cannot find module './unlink/index.cjs' or its cor... Remove this comment to see the full error message
-import { createUnlinkCommand } from './unlink/index.cjs'
-// @ts-expect-error TS(2307): Cannot find module './watch/index.cjs' or its corr... Remove this comment to see the full error message
-import { createWatchCommand } from './watch/index.cjs'
+import { createBuildCommand } from './build/index.mjs'
+import { createCompletionCommand } from './completion/index.mjs'
+import { createDeployCommand } from './deploy/index.mjs'
+import { createDevCommand } from './dev/index.mjs'
+import { createEnvCommand } from './env/index.mjs'
+import { createFunctionsCommand } from './functions/index.mjs'
+import { createGraphCommand } from './graph/index.mjs'
+import { createInitCommand } from './init/index.mjs'
+import { createLinkCommand } from './link/index.mjs'
+import { createLmCommand } from './lm/index.mjs'
+import { createLoginCommand } from './login/index.mjs'
+import { createLogoutCommand } from './logout/index.mjs'
+import { createOpenCommand } from './open/index.mjs'
+import { createRecipesCommand, createRecipesListCommand } from './recipes/index.mjs'
+import { createSitesCommand } from './sites/index.mjs'
+import { createStatusCommand } from './status/index.mjs'
+import { createSwitchCommand } from './switch/index.mjs'
+import { createUnlinkCommand } from './unlink/index.mjs'
+import { createWatchCommand } from './watch/index.mjs'
 
 const { BANG, NETLIFY_CYAN, USER_AGENT, chalk, error, execa, exit, getGlobalConfig, log, track, warn } = utils
 

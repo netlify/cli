@@ -107,4 +107,4 @@ const createSitesDeleteCommand = (program: $TSFixMe) => program
   .addExamples(['netlify sites:delete 1234-3262-1211'])
   .action(sitesDelete)
 
-module.exports = { createSitesDeleteCommand }
+export default { createSitesDeleteCommand }

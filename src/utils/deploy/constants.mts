@@ -27,7 +27,7 @@ const UPLOAD_MAX_DELAY = 9e4
 
 const DEPLOY_POLL = 1e3
 
-module.exports = {
+export default {
   DEFAULT_DEPLOY_TIMEOUT,
   DEFAULT_CONCURRENT_HASH,
   DEFAULT_CONCURRENT_UPLOAD,

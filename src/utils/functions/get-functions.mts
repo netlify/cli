@@ -1,6 +1,6 @@
 // @ts-check
 
-const { fileExistsAsync } = require('../../lib/fs.cjs')
+const { fileExistsAsync } = require('../../lib/fs.mjs')
 
 
 const getUrlPath = (functionName: $TSFixMe) => `/.netlify/functions/${functionName}`
@@ -71,4 +71,4 @@ const getFunctionsAndWatchDirs = async (functionsSrcDir: $TSFixMe) => {
   return { functions: functionsWithProps, watchDirs }
 }
 
-module.exports = { getFunctions, getFunctionsAndWatchDirs, BACKGROUND }
+export default { getFunctions, getFunctionsAndWatchDirs, BACKGROUND }

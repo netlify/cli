@@ -1,7 +1,7 @@
 
-const { createInitCommand, init } = require('./init.cjs')
+import { createInitCommand, init } from './init.mjs'
 
-module.exports = {
+export {
   createInitCommand,
   init,
 }

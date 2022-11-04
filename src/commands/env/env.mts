@@ -1,16 +1,16 @@
 // @ts-check
 
-const { createEnvCloneCommand } = require('./env-clone.cjs')
+const { createEnvCloneCommand } = require('./env-clone.mjs')
 
-const { createEnvGetCommand } = require('./env-get.cjs')
+const { createEnvGetCommand } = require('./env-get.mjs')
 
-const { createEnvImportCommand } = require('./env-import.cjs')
+const { createEnvImportCommand } = require('./env-import.mjs')
 
-const { createEnvListCommand } = require('./env-list.cjs')
+const { createEnvListCommand } = require('./env-list.mjs')
 
-const { createEnvSetCommand } = require('./env-set.cjs')
+const { createEnvSetCommand } = require('./env-set.mjs')
 
-const { createEnvUnsetCommand } = require('./env-unset.cjs')
+const { createEnvUnsetCommand } = require('./env-unset.mjs')
 
 /**
  * The env command
@@ -28,7 +28,7 @@ const env = (options: $TSFixMe, command: $TSFixMe) => {
  * @returns
  */
 
-const createEnvCommand = (program: $TSFixMe) => {
+export const createEnvCommand = (program: $TSFixMe) => {
   createEnvGetCommand(program)
   createEnvImportCommand(program)
   createEnvListCommand(program)
@@ -49,5 +49,3 @@ const createEnvCommand = (program: $TSFixMe) => {
     ])
     .action(env)
 }
-
-module.exports = { createEnvCommand }

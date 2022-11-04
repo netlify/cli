@@ -1,6 +1,6 @@
 
-const { createAutocompletion } = require('./generate-autocompletion.cjs')
+const { createAutocompletion } = require('./generate-autocompletion.mjs')
 
-module.exports = {
+export default {
   createAutocompletion,
 }

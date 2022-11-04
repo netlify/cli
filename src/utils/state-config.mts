@@ -12,7 +12,7 @@ const findUp = require('find-up')
 const writeFileAtomic = require('write-file-atomic')
 
 
-const { getPathInProject } = require('../lib/settings.cjs')
+const { getPathInProject } = require('../lib/settings.mjs')
 
 const STATE_PATH = getPathInProject(['state.json'])
 const permissionError = "You don't have access to this file."
@@ -129,4 +129,4 @@ class StateConfig {
   }
 }
 
-module.exports = { StateConfig }
+export default { StateConfig }

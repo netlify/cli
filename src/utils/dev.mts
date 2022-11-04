@@ -11,12 +11,12 @@ const jwt = require('jsonwebtoken')
 const isEmpty = require('lodash/isEmpty')
 
 
-const { supportsBackgroundFunctions } = require('../lib/account.cjs')
+const { supportsBackgroundFunctions } = require('../lib/account.mjs')
 
 
-const { NETLIFYDEVLOG, chalk, error, log, warn } = require('./command-helpers.cjs')
+const { NETLIFYDEVLOG, chalk, error, log, warn } = require('./command-helpers.mjs')
 
-const { loadDotEnvFiles } = require('./dot-env.cjs')
+const { loadDotEnvFiles } = require('./dot-env.mjs')
 
 // Possible sources of environment variables. For the purpose of printing log messages only. Order does not matter.
 const ENV_VAR_SOURCES = {
@@ -286,7 +286,7 @@ const processOnExit = (fn: $TSFixMe) => {
   })
 }
 
-module.exports = {
+export default {
   getSiteInformation,
   injectEnvVariables,
   acquirePort,

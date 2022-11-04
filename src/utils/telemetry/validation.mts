@@ -2,7 +2,7 @@
  * Utility to validating analytic event names for clean data
  */
 
-const { log } = require('../command-helpers.cjs')
+const { log } = require('../command-helpers.mjs')
 
 
 module.exports = function isValidEventName(eventName: $TSFixMe, config: $TSFixMe) {

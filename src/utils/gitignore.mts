@@ -7,10 +7,10 @@ const path = require('path')
 const parseIgnore = require('parse-gitignore')
 
 
-const { fileExistsAsync } = require('../lib/fs.cjs')
+const { fileExistsAsync } = require('../lib/fs.mjs')
 
 
-const { log } = require('./command-helpers.cjs')
+const { log } = require('./command-helpers.mjs')
 
 
 const hasGitIgnore = async function (dir: $TSFixMe) {
@@ -48,4 +48,4 @@ const ensureNetlifyIgnore = async function (dir: $TSFixMe) {
   }
 }
 
-module.exports = { ensureNetlifyIgnore }
+export default { ensureNetlifyIgnore }

@@ -61,4 +61,4 @@ const createOpenAdminCommand = (program: $TSFixMe) => program
   .addExamples(['netlify open:admin'])
   .action(openAdmin)
 
-module.exports = { createOpenAdminCommand, openAdmin }
+export default { createOpenAdminCommand, openAdmin }

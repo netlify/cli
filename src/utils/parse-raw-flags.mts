@@ -51,7 +51,7 @@ const aggressiveJSONParse = function (value: $TSFixMe) {
   return parsed
 }
 
-module.exports = {
+export default {
   parseRawFlags,
   aggressiveJSONParse,
 }

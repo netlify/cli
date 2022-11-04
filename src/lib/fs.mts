@@ -84,7 +84,7 @@ const isFileAsync = (filePath: $TSFixMe) => isType(filePath, 'isFile')
 
 const isDirectoryAsync = (filePath: $TSFixMe) => isType(filePath, 'isDirectory')
 
-module.exports = {
+export default {
   fileExistsAsync,
   isDirectoryAsync,
   isFileAsync,

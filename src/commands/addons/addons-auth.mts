@@ -1,7 +1,7 @@
 // @ts-check
 
 
-const { ADDON_VALIDATION, prepareAddonCommand } = require('../../utils/addons/prepare.cjs')
+const { ADDON_VALIDATION, prepareAddonCommand } = require('../../utils/addons/prepare.mjs')
 
 const { exit, log, openBrowser } = require('../../utils/index.mjs')
 
@@ -50,4 +50,4 @@ const createAddonsAuthCommand = (program: $TSFixMe) => program
     await addonsAuth(addonName, options, command)
   })
 
-module.exports = { createAddonsAuthCommand }
+export default { createAddonsAuthCommand }

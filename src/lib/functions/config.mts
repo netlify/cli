@@ -22,4 +22,4 @@ const normalizeFunctionsConfig = ({ functionsConfig = {}, projectRoot, siteEnv =
     },
 }), {});
 
-module.exports = { normalizeFunctionsConfig }
+export default { normalizeFunctionsConfig }

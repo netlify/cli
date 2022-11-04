@@ -1,9 +1,9 @@
 
-const { createRecipesListCommand } = require('./recipes-list.cjs')
+import { createRecipesListCommand } from './recipes-list.mjs'
 
-const { createRecipesCommand, runRecipe } = require('./recipes.cjs')
+import { createRecipesCommand, runRecipe } from './recipes.mjs'
 
-module.exports = {
+export {
   createRecipesCommand,
   createRecipesListCommand,
   runRecipe,

@@ -1,12 +1,12 @@
 // @ts-check
 
-const { createLmInfoCommand } = require('./lm-info.cjs')
+const { createLmInfoCommand } = require('./lm-info.mjs')
 
-const { createLmInstallCommand } = require('./lm-install.cjs')
+const { createLmInstallCommand } = require('./lm-install.mjs')
 
-const { createLmSetupCommand } = require('./lm-setup.cjs')
+const { createLmSetupCommand } = require('./lm-setup.mjs')
 
-const { createLmUninstallCommand } = require('./lm-uninstall.cjs')
+const { createLmUninstallCommand } = require('./lm-uninstall.mjs')
 
 /**
  * The lm command
@@ -24,7 +24,7 @@ const lm = (options: $TSFixMe, command: $TSFixMe) => {
  * @returns
  */
 
-const createLmCommand = (program: $TSFixMe) => {
+export const createLmCommand = (program: $TSFixMe) => {
   createLmInfoCommand(program)
   createLmInstallCommand(program)
   createLmSetupCommand(program)
@@ -37,4 +37,4 @@ const createLmCommand = (program: $TSFixMe) => {
     .action(lm)
 }
 
-module.exports = { createLmCommand }
+export default { createLmCommand }

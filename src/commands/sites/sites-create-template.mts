@@ -29,14 +29,14 @@ const {
   warn,
 } = require('../../utils/index.mjs')
 
-const { getGitHubToken } = require('../../utils/init/config-github.cjs')
+const { getGitHubToken } = require('../../utils/init/config-github.mjs')
 
-const { configureRepo } = require('../../utils/init/config.cjs')
+const { configureRepo } = require('../../utils/init/config.mjs')
 
-const { createRepo, getTemplatesFromGitHub, validateTemplate } = require('../../utils/sites/utils.cjs')
+const { createRepo, getTemplatesFromGitHub, validateTemplate } = require('../../utils/sites/utils.mjs')
 
 
-const { getSiteNameInput } = require('./sites-create.cjs')
+const { getSiteNameInput } = require('./sites-create.mjs')
 
 
 const fetchTemplates = async (token: $TSFixMe) => {
@@ -311,4 +311,4 @@ Create a site from a starter template.`,
   ])
   .action(sitesCreateTemplate)
 
-module.exports = { createSitesFromTemplateCommand, fetchTemplates }
+export default { createSitesFromTemplateCommand, fetchTemplates }

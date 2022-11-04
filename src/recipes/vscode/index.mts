@@ -7,10 +7,10 @@ const execa = require('execa')
 const inquirer = require('inquirer')
 
 
-const { NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, error, log } = require('../../utils/command-helpers.cjs')
+const { NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, error, log } = require('../../utils/command-helpers.mjs')
 
 
-const { applySettings, getSettings, writeSettings } = require('./settings.cjs')
+const { applySettings, getSettings, writeSettings } = require('./settings.mjs')
 
 const description = 'Create VS Code settings for an optimal experience with Netlify projects'
 
@@ -105,4 +105,4 @@ const run = async ({
   }
 }
 
-module.exports = { description, run }
+export default { description, run }

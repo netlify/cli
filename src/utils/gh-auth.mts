@@ -12,11 +12,11 @@ const getPort = require('get-port')
 const inquirer = require('inquirer')
 
 
-const { log } = require('./command-helpers.cjs')
+const { log } = require('./command-helpers.mjs')
 
-const { createDeferred } = require('./deferred.cjs')
+const { createDeferred } = require('./deferred.mjs')
 
-const { openBrowser } = require('./open-browser.cjs')
+const { openBrowser } = require('./open-browser.mjs')
 
 const SERVER_PORT = 3000
 
@@ -134,4 +134,4 @@ const getGitHubToken = async () => {
   return withNetlify ? await authWithNetlify() : await authWithToken()
 }
 
-module.exports = { getGitHubToken, authWithNetlify }
+export default { getGitHubToken, authWithNetlify }

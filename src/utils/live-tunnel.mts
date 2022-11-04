@@ -8,14 +8,14 @@ const fetch = require('node-fetch')
 const pWaitFor = require('p-wait-for')
 
 
-const { fetchLatestVersion, shouldFetchLatestVersion } = require('../lib/exec-fetcher.cjs')
+const { fetchLatestVersion, shouldFetchLatestVersion } = require('../lib/exec-fetcher.mjs')
 
-const { getPathInHome } = require('../lib/settings.cjs')
+const { getPathInHome } = require('../lib/settings.mjs')
 
 
-const { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log } = require('./command-helpers.cjs')
+const { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log } = require('./command-helpers.mjs')
 
-const execa = require('./execa.cjs')
+const execa = require('./execa.mjs')
 
 
 const PACKAGE_NAME = 'live-tunnel-client'
@@ -147,4 +147,4 @@ const startLiveTunnel = async ({
   return session.session_url
 }
 
-module.exports = { startLiveTunnel }
+export default { startLiveTunnel }

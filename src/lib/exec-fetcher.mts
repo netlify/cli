@@ -10,9 +10,9 @@ const isExe = require('isexe')
 // cannot directly import from ../utils as it would create a circular dependency.
 // the file `src/utils/live-tunnel.js` depends on this file
 
-const { NETLIFYDEVWARN, error, getTerminalLink, log } = require('../utils/command-helpers.cjs')
+const { NETLIFYDEVWARN, error, getTerminalLink, log } = require('../utils/command-helpers.mjs')
 
-const execa = require('../utils/execa.cjs')
+const execa = require('../utils/execa.mjs')
 
 
 const isWindows = () => process.platform === 'win32'
@@ -170,4 +170,4 @@ ${issueLink}`)
   }
 }
 
-module.exports = { getArch, getExecName, shouldFetchLatestVersion, fetchLatestVersion }
+export default { getArch, getExecName, shouldFetchLatestVersion, fetchLatestVersion }

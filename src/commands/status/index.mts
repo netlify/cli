@@ -1,6 +1,6 @@
 
-const { createStatusCommand } = require('./status.cjs')
+import { createStatusCommand } from './status.mjs'
 
-module.exports = {
+export {
   createStatusCommand,
 }

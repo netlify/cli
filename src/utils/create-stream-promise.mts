@@ -53,4 +53,4 @@ const createStreamPromise = function (stream: $TSFixMe, timeoutSeconds: $TSFixMe
   });
 }
 
-module.exports = { createStreamPromise }
+export default { createStreamPromise }

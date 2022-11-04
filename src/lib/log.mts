@@ -29,6 +29,6 @@ const messages = {
 
 const getLogMessage = (key: $TSFixMe) => dotProp.get(messages, key, 'Missing Log Message Key')
 
-module.exports = {
+export default {
   getLogMessage,
 }

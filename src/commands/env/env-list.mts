@@ -162,4 +162,4 @@ const createEnvListCommand = (program: $TSFixMe) => program
     await envList(options, command);
 });
 
-module.exports = { createEnvListCommand }
+export default { createEnvListCommand }

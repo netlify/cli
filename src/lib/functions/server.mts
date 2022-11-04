@@ -22,17 +22,17 @@ const {
 } = require('../../utils/index.mjs')
 
 
-const { handleBackgroundFunction, handleBackgroundFunctionResult } = require('./background.cjs')
+const { handleBackgroundFunction, handleBackgroundFunctionResult } = require('./background.mjs')
 
-const { createFormSubmissionHandler } = require('./form-submissions-handler.cjs')
+const { createFormSubmissionHandler } = require('./form-submissions-handler.mjs')
 
-const { FunctionsRegistry } = require('./registry.cjs')
+const { FunctionsRegistry } = require('./registry.mjs')
 
-const { handleScheduledFunction } = require('./scheduled.cjs')
+const { handleScheduledFunction } = require('./scheduled.mjs')
 
-const { handleSynchronousFunction } = require('./synchronous.cjs')
+const { handleSynchronousFunction } = require('./synchronous.mjs')
 
-const { shouldBase64Encode } = require('./utils.cjs')
+const { shouldBase64Encode } = require('./utils.mjs')
 
 
 const buildClientContext = function (headers: $TSFixMe) {
@@ -272,4 +272,4 @@ const startWebServer = async ({
   })
 }
 
-module.exports = { startFunctionsServer, createHandler }
+export default { startFunctionsServer, createHandler }

@@ -1,6 +1,6 @@
 // @ts-check
 
-const { uninstall } = require('../../utils/lm/install.cjs')
+const { uninstall } = require('../../utils/lm/install.mjs')
 
 /**
  * The lm:uninstall command
@@ -23,4 +23,4 @@ const createLmUninstallCommand = (program: $TSFixMe) => program
   )
   .action(lmUninstall)
 
-module.exports = { createLmUninstallCommand }
+export default { createLmUninstallCommand }

@@ -8,12 +8,12 @@ const { cwd } = require('process')
 const { pathToFileURL } = require('url')
 
 
-const { warn } = require('../../utils/command-helpers.cjs')
+const { warn } = require('../../utils/command-helpers.mjs')
 
-const { getPathInProject } = require('../settings.cjs')
+const { getPathInProject } = require('../settings.mjs')
 
 
-const { INTERNAL_EDGE_FUNCTIONS_FOLDER } = require('./consts.cjs')
+const { INTERNAL_EDGE_FUNCTIONS_FOLDER } = require('./consts.mjs')
 
 /**
  * Reads an import map from a path and returns the parsed data, if it exists
@@ -84,4 +84,4 @@ const getInternalFunctions = async () => {
   }
 }
 
-module.exports = { getInternalFunctions }
+export default { getInternalFunctions }

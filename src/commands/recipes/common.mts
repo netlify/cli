@@ -5,7 +5,7 @@ const { join, resolve } = require('path')
 
 
 const getRecipe = (name: $TSFixMe) => {
-  const recipePath = resolve(__dirname, '../../recipes', name, 'index.cjs')
+  const recipePath = resolve(__dirname, '../../recipes', name, 'index.mjs')
 
   // eslint-disable-next-line import/no-dynamic-require, n/global-require
   const recipe = require(recipePath)
@@ -20,7 +20,7 @@ const listRecipes = async () => {
   const recipes = await Promise.all(
     
     recipeNames.map((name: $TSFixMe) => {
-      const recipePath = join(recipesPath, name, 'index.cjs')
+      const recipePath = join(recipesPath, name, 'index.mjs')
 
       // eslint-disable-next-line import/no-dynamic-require, n/global-require
       const recipe = require(recipePath)
@@ -35,4 +35,4 @@ const listRecipes = async () => {
   return recipes
 }
 
-module.exports = { getRecipe, listRecipes }
+export default { getRecipe, listRecipes }

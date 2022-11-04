@@ -4,7 +4,7 @@ const { sep } = require('path')
 const pWaitFor = require('p-wait-for')
 
 
-const { DEPLOY_POLL } = require('./constants.cjs')
+const { DEPLOY_POLL } = require('./constants.mjs')
 
 // normalize windows paths to unix paths
 
@@ -109,7 +109,7 @@ const getUploadList = (required: $TSFixMe, shaMap: $TSFixMe) => {
   return required.flatMap((sha: $TSFixMe) => shaMap[sha]);
 }
 
-module.exports = {
+export default {
   normalizePath,
   waitForDiff,
   waitForDeploy,

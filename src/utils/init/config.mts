@@ -1,7 +1,7 @@
-const { chalk, log } = require('../command-helpers.cjs')
+const { chalk, log } = require('../command-helpers.mjs')
 
-const { configGithub } = require('./config-github.cjs')
-const configManual = require('./config-manual.cjs')
+const { configGithub } = require('./config-github.mjs')
+const configManual = require('./config-manual.mjs')
 
 
 const logSuccess = (repoData: $TSFixMe) => {

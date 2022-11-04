@@ -10,9 +10,9 @@ const prettyjson = require('prettyjson')
 
 const { chalk, error, getRepoData, log, logJson, track, warn } = require('../../utils/index.mjs')
 
-const { configureRepo } = require('../../utils/init/config.cjs')
+const { configureRepo } = require('../../utils/init/config.mjs')
 
-const { link } = require('../link/index.cjs')
+const { link } = require('../link/index.mjs')
 
 
 const getSiteNameInput = async (name: $TSFixMe) => {
@@ -38,7 +38,7 @@ const getSiteNameInput = async (name: $TSFixMe) => {
  * @param {import('../base-command').BaseCommand} command
  */
 
-const sitesCreate = async (options: $TSFixMe, command: $TSFixMe) => {
+export const sitesCreate = async (options: $TSFixMe, command: $TSFixMe) => {
   const { api } = command.netlify
 
   await command.authenticate()
@@ -197,4 +197,4 @@ Create a blank site that isn't associated with any git remote. Will link the sit
   )
   .action(sitesCreate)
 
-module.exports = { createSitesCreateCommand, sitesCreate, getSiteNameInput }
+export default { createSitesCreateCommand, sitesCreate, getSiteNameInput }

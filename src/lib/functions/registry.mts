@@ -25,12 +25,12 @@ const {
   watchDebounced,
 } = require('../../utils/index.mjs')
 
-const { getLogMessage } = require('../log.cjs')
+const { getLogMessage } = require('../log.mjs')
 
 
-const { NetlifyFunction } = require('./netlify-function.cjs')
+const { NetlifyFunction } = require('./netlify-function.mjs')
 
-const runtimes = require('./runtimes/index.cjs')
+const runtimes = require('./runtimes/index.mjs')
 
 const ZIP_EXTENSION = '.zip'
 
@@ -326,4 +326,4 @@ await Promise.all(Object.values(runtimes).map((runtime) => {
   }
 }
 
-module.exports = { FunctionsRegistry }
+export default { FunctionsRegistry }

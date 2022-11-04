@@ -1,6 +1,6 @@
 
-const { createEnvCommand } = require('./env.cjs')
+import {createEnvCommand} from './env.mjs'
 
-module.exports = {
+export {
   createEnvCommand,
 }

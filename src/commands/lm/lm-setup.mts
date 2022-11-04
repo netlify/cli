@@ -5,11 +5,11 @@ const Listr = require('listr')
 
 const { error, execa } = require('../../utils/index.mjs')
 
-const { installPlatform } = require('../../utils/lm/install.cjs')
+const { installPlatform } = require('../../utils/lm/install.mjs')
 
-const { checkHelperVersion } = require('../../utils/lm/requirements.cjs')
+const { checkHelperVersion } = require('../../utils/lm/requirements.mjs')
 
-const { printBanner } = require('../../utils/lm/ui.cjs')
+const { printBanner } = require('../../utils/lm/ui.mjs')
 
 const installHelperIfMissing = async function ({
   force
@@ -115,4 +115,4 @@ const createLmSetupCommand = (program: $TSFixMe) => program
   .addHelpText('after', 'It runs the install command if you have not installed the dependencies yet.')
   .action(lmSetup)
 
-module.exports = { createLmSetupCommand }
+export default { createLmSetupCommand }

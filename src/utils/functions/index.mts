@@ -1,14 +1,14 @@
 
-const edgeFunctions = require('../../lib/edge-functions/index.cjs')
+const edgeFunctions = require('../../lib/edge-functions/index.mjs')
 
 
-const constants = require('./constants.cjs')
+const constants = require('./constants.mjs')
 
-const functions = require('./functions.cjs')
+const functions = require('./functions.mjs')
 
-const getFunctions = require('./get-functions.cjs')
+const getFunctions = require('./get-functions.mjs')
 
-module.exports = {
+export default {
   ...constants,
   ...functions,
   ...edgeFunctions,

@@ -6,7 +6,7 @@ const ansiToHtml = new AnsiToHtml()
 const { CLOCKWORK_USERAGENT } = require('../../utils/index.mjs')
 
 
-const { formatLambdaError } = require('./utils.cjs')
+const { formatLambdaError } = require('./utils.mjs')
 
 const buildHelpResponse = ({
   error,
@@ -113,4 +113,4 @@ const handleScheduledFunction = ({
   response.send(message)
 }
 
-module.exports = { handleScheduledFunction, buildHelpResponse }
+export default { handleScheduledFunction, buildHelpResponse }

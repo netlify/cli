@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   ForwardedHost: 'x-forwarded-host',
   ForwardedProtocol: 'x-forwarded-proto',
   Functions: 'x-deno-functions',

@@ -16,15 +16,15 @@ const Listr = require('listr')
 const pathKey = require('path-key')
 
 
-const { fetchLatestVersion, shouldFetchLatestVersion } = require('../../lib/exec-fetcher.cjs')
+const { fetchLatestVersion, shouldFetchLatestVersion } = require('../../lib/exec-fetcher.mjs')
 
-const { fileExistsAsync, rmdirRecursiveAsync } = require('../../lib/fs.cjs')
+const { fileExistsAsync, rmdirRecursiveAsync } = require('../../lib/fs.mjs')
 
-const { normalizeBackslash } = require('../../lib/path.cjs')
+const { normalizeBackslash } = require('../../lib/path.mjs')
 
-const { getLegacyPathInHome, getPathInHome } = require('../../lib/settings.cjs')
+const { getLegacyPathInHome, getPathInHome } = require('../../lib/settings.mjs')
 
-const { chalk } = require('../command-helpers.cjs')
+const { chalk } = require('../command-helpers.mjs')
 
 
 const PACKAGE_NAME = 'netlify-credential-helper'
@@ -34,7 +34,7 @@ const EXEC_NAME = 'git-credential-netlify'
 const GIT_CONFIG = '.gitconfig'
 
 
-const { checkGitLFSVersionStep, checkGitVersionStep, checkLFSFiltersStep } = require('./steps.cjs')
+const { checkGitLFSVersionStep, checkGitVersionStep, checkLFSFiltersStep } = require('./steps.mjs')
 
 const SUPPORTED_PLATFORMS = {
   linux: 'Linux',
@@ -324,4 +324,4 @@ const removeConfig = async function (name: $TSFixMe, toRemove: $TSFixMe) {
   return await writeFile(configPath, content.replace(toRemove, ''))
 }
 
-module.exports = { installPlatform, isBinInPath, getShellInfo, uninstall }
+export default { installPlatform, isBinInPath, getShellInfo, uninstall }

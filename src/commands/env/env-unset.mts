@@ -186,4 +186,4 @@ const createEnvUnsetCommand = (program: $TSFixMe) => program
     await envUnset(key, options, command)
   })
 
-module.exports = { createEnvUnsetCommand }
+export default { createEnvUnsetCommand }

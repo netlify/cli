@@ -47,4 +47,4 @@ const createDevExecCommand = (program: $TSFixMe) => program
   .addExamples(['netlify dev:exec npm run bootstrap'])
   .action(devExec)
 
-module.exports = { createDevExecCommand }
+export default { createDevExecCommand }

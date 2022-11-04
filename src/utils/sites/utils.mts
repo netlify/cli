@@ -64,4 +64,4 @@ const createRepo = async (templateName: $TSFixMe, ghToken: $TSFixMe, siteName: $
   return data
 }
 
-module.exports = { getTemplatesFromGitHub, createRepo, validateTemplate }
+export default { getTemplatesFromGitHub, createRepo, validateTemplate }

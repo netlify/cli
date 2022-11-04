@@ -1,6 +1,6 @@
 
-const { createBuildCommand } = require('./build.cjs')
+import { createBuildCommand } from './build.mjs'
 
-module.exports = {
+export {
   createBuildCommand,
 }

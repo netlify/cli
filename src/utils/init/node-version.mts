@@ -4,7 +4,7 @@ const { get } = require('dot-prop')
 const locatePath = require('locate-path')
 const nodeVersionAlias = require('node-version-alias')
 
-const { warn } = require('../command-helpers.cjs')
+const { warn } = require('../command-helpers.mjs')
 
 const DEFAULT_NODE_VERSION = '12.18.0'
 const NVM_FLAG_PREFIX = '--'

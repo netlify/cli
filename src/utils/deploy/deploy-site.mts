@@ -3,11 +3,11 @@ const cleanDeep = require('clean-deep')
 const tempy = require('tempy')
 
 
-const edgeFunctions = require('../../lib/edge-functions/index.cjs')
+const edgeFunctions = require('../../lib/edge-functions/index.mjs')
 
-const { rmdirRecursiveAsync } = require('../../lib/fs.cjs')
+const { rmdirRecursiveAsync } = require('../../lib/fs.mjs')
 
-const { warn } = require('../command-helpers.cjs')
+const { warn } = require('../command-helpers.mjs')
 
 const {
   
@@ -20,15 +20,15 @@ const {
   DEFAULT_MAX_RETRY,
   
   DEFAULT_SYNC_LIMIT,
-} = require('./constants.cjs')
+} = require('./constants.mjs')
 
-const { hashFiles } = require('./hash-files.cjs')
+const { hashFiles } = require('./hash-files.mjs')
 
-const { hashFns } = require('./hash-fns.cjs')
+const { hashFns } = require('./hash-fns.mjs')
 
-const { uploadFiles } = require('./upload-files.cjs')
+const { uploadFiles } = require('./upload-files.mjs')
 
-const { getUploadList, waitForDeploy, waitForDiff } = require('./util.cjs')
+const { getUploadList, waitForDeploy, waitForDiff } = require('./util.mjs')
 
 
 const deploySite = async (
@@ -213,4 +213,4 @@ const buildStatsString = (possibleParts: $TSFixMe) => {
   return parts.length > 1 ? `${message} and ${parts[parts.length - 1]}` : message
 }
 
-module.exports = { deploySite }
+export default { deploySite }

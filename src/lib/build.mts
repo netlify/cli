@@ -74,4 +74,4 @@ const runBuild = async (options: $TSFixMe) => {
   return { exitCode, newConfig, configMutations }
 }
 
-module.exports = { getBuildOptions, runBuild }
+export default { getBuildOptions, runBuild }

@@ -4,16 +4,16 @@ const inquirer = require('inquirer')
 
 const isEmpty = require('lodash/isEmpty')
 
-const compare = require('../../utils/addons/compare.cjs')
-const diffValues = require('../../utils/addons/diffs/index.cjs')
+const compare = require('../../utils/addons/compare.mjs')
+const diffValues = require('../../utils/addons/diffs/index.mjs')
 
-const { ADDON_VALIDATION, prepareAddonCommand } = require('../../utils/addons/prepare.cjs')
+const { ADDON_VALIDATION, prepareAddonCommand } = require('../../utils/addons/prepare.mjs')
 
-const generatePrompts = require('../../utils/addons/prompts.cjs')
+const generatePrompts = require('../../utils/addons/prompts.mjs')
 
-const render = require('../../utils/addons/render.cjs')
+const render = require('../../utils/addons/render.mjs')
 
-const { missingConfigValues, requiredConfigValues, updateConfigValues } = require('../../utils/addons/validation.cjs')
+const { missingConfigValues, requiredConfigValues, updateConfigValues } = require('../../utils/addons/validation.mjs')
 
 const { chalk, error, log, parseRawFlags } = require('../../utils/index.mjs')
 
@@ -195,4 +195,4 @@ const createAddonsConfigCommand = (program: $TSFixMe) => program
     await addonsConfig(addonName, options, command)
   })
 
-module.exports = { createAddonsConfigCommand }
+export default { createAddonsConfigCommand }

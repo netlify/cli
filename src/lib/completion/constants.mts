@@ -1,8 +1,8 @@
 // @ts-check
 
-const { getPathInHome } = require('../settings.cjs')
+const { getPathInHome } = require('../settings.mjs')
 
 
 const AUTOCOMPLETION_FILE = getPathInHome(['autocompletion.json'])
 
-module.exports = { AUTOCOMPLETION_FILE }
+export default { AUTOCOMPLETION_FILE }

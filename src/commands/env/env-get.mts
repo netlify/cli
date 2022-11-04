@@ -94,4 +94,4 @@ const createEnvGetCommand = (program: $TSFixMe) => program
     await envGet(name, options, command);
 });
 
-module.exports = { createEnvGetCommand }
+export default { createEnvGetCommand }

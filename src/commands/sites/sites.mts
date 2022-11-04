@@ -1,12 +1,12 @@
 // @ts-check
 
-const { createSitesFromTemplateCommand } = require('./sites-create-template.cjs')
+const { createSitesFromTemplateCommand } = require('./sites-create-template.mjs')
 
-const { createSitesCreateCommand } = require('./sites-create.cjs')
+const { createSitesCreateCommand } = require('./sites-create.mjs')
 
-const { createSitesDeleteCommand } = require('./sites-delete.cjs')
+const { createSitesDeleteCommand } = require('./sites-delete.mjs')
 
-const { createSitesListCommand } = require('./sites-list.cjs')
+const { createSitesListCommand } = require('./sites-list.mjs')
 
 /**
  * The sites command
@@ -24,7 +24,7 @@ const sites = (options: $TSFixMe, command: $TSFixMe) => {
  * @returns
  */
 
-const createSitesCommand = (program: $TSFixMe) => {
+export const createSitesCommand = (program: $TSFixMe) => {
   createSitesCreateCommand(program)
   createSitesFromTemplateCommand(program)
   createSitesListCommand(program)
@@ -37,4 +37,4 @@ const createSitesCommand = (program: $TSFixMe) => {
     .action(sites)
 }
 
-module.exports = { createSitesCommand }
+export default { createSitesCommand }

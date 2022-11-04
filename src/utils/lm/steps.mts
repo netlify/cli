@@ -1,8 +1,8 @@
 
-const { chalk } = require('../command-helpers.cjs')
+const { chalk } = require('../command-helpers.mjs')
 
 
-const { checkGitVersion, checkHelperVersion, checkLFSFilters, checkLFSVersion } = require('./requirements.cjs')
+const { checkGitVersion, checkHelperVersion, checkLFSFilters, checkLFSVersion } = require('./requirements.mjs')
 
 
 const checkGitVersionStep = {
@@ -45,4 +45,4 @@ const checkHelperVersionStep = {
   },
 }
 
-module.exports = { checkGitVersionStep, checkGitLFSVersionStep, checkLFSFiltersStep, checkHelperVersionStep }
+export default { checkGitVersionStep, checkGitLFSVersionStep, checkLFSFiltersStep, checkHelperVersionStep }

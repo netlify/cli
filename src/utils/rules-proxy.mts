@@ -11,12 +11,12 @@ const redirector = require('netlify-redirector')
 const pFilter = require('p-filter')
 
 
-const { fileExistsAsync } = require('../lib/fs.cjs')
+const { fileExistsAsync } = require('../lib/fs.mjs')
 
 
-const { NETLIFYDEVLOG } = require('./command-helpers.cjs')
+const { NETLIFYDEVLOG } = require('./command-helpers.mjs')
 
-const { parseRedirects } = require('./redirects.cjs')
+const { parseRedirects } = require('./redirects.mjs')
 
 
 const watchers: $TSFixMe = []
@@ -121,7 +121,7 @@ const createRewriter = async function ({
   };
 }
 
-module.exports = {
+export default {
   onChanges,
   getLanguage,
   createRewriter,

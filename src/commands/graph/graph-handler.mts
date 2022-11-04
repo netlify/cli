@@ -18,7 +18,7 @@ const {
   getNetlifyGraphConfig,
   
   readGraphQLSchemaFile,
-} = require('../../lib/one-graph/cli-netlify-graph.cjs')
+} = require('../../lib/one-graph/cli-netlify-graph.mjs')
 
 const { error, log } = require('../../utils/index.mjs')
 
@@ -112,4 +112,4 @@ const createGraphHandlerCommand = (program: $TSFixMe) => program
     await graphHandler({ operationNames }, options, command)
   })
 
-module.exports = { createGraphHandlerCommand }
+export default { createGraphHandlerCommand }

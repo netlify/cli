@@ -10,21 +10,21 @@ const getAvailablePort = require('get-port')
 const { v4: generateUUID } = require('uuid')
 
 
-const { NETLIFYDEVERR, NETLIFYDEVWARN, chalk, error: printError, log } = require('../../utils/command-helpers.cjs')
+const { NETLIFYDEVERR, NETLIFYDEVWARN, chalk, error: printError, log } = require('../../utils/command-helpers.mjs')
 
-const { getGeoLocation } = require('../geo-location.cjs')
+const { getGeoLocation } = require('../geo-location.mjs')
 
-const { getPathInProject } = require('../settings.cjs')
+const { getPathInProject } = require('../settings.mjs')
 
-const { startSpinner, stopSpinner } = require('../spinner.cjs')
+const { startSpinner, stopSpinner } = require('../spinner.mjs')
 
 
-const { DIST_IMPORT_MAP_PATH } = require('./consts.cjs')
-const headers = require('./headers.cjs')
+const { DIST_IMPORT_MAP_PATH } = require('./consts.mjs')
+const headers = require('./headers.mjs')
 
-const { getInternalFunctions } = require('./internal.cjs')
+const { getInternalFunctions } = require('./internal.mjs')
 
-const { EdgeFunctionsRegistry } = require('./registry.cjs')
+const { EdgeFunctionsRegistry } = require('./registry.mjs')
 
 const headersSymbol = Symbol('Edge Functions Headers')
 
@@ -217,4 +217,4 @@ const prepareServer = async ({
   }
 }
 
-module.exports = { handleProxyRequest, initializeProxy, isEdgeFunctionsRequest, createSiteInfoHeader }
+export default { handleProxyRequest, initializeProxy, isEdgeFunctionsRequest, createSiteInfoHeader }

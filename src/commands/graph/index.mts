@@ -1,6 +1,6 @@
 
-const { createGraphCommand } = require('./graph.cjs')
+import {createGraphCommand} from './graph.mjs'
 
-module.exports = {
+export {
   createGraphCommand,
 }

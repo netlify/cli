@@ -2,7 +2,7 @@
 const semver = require('semver')
 
 
-const execa = require('../execa.cjs')
+const execa = require('../execa.mjs')
 
 
 const checkLFSFilters = async function () {
@@ -75,7 +75,7 @@ const matchVersion = function (out: $TSFixMe, regex: $TSFixMe, version: $TSFixMe
   return match[1]
 }
 
-module.exports = {
+export default {
   checkGitVersion,
   checkLFSVersion,
   checkLFSFilters,

@@ -9,7 +9,7 @@ const {
   ensureCLISession,
   
   upsertMergeCLISessionMetadata,
-} = require('../../lib/one-graph/cli-client.cjs')
+} = require('../../lib/one-graph/cli-client.mjs')
 const {
   
   defaultExampleOperationsDoc,
@@ -19,11 +19,11 @@ const {
   getNetlifyGraphConfig,
   
   readGraphQLOperationsSourceFile,
-} = require('../../lib/one-graph/cli-netlify-graph.cjs')
+} = require('../../lib/one-graph/cli-netlify-graph.mjs')
 
 const { NETLIFYDEVERR, chalk, error, log } = require('../../utils/index.mjs')
 
-const { openBrowser } = require('../../utils/open-browser.cjs')
+const { openBrowser } = require('../../utils/open-browser.mjs')
 
 
 const { ensureAppForSite, executeCreatePersistedQueryMutation } = OneGraphCliClient
@@ -120,4 +120,4 @@ const createGraphEditCommand = (program: $TSFixMe) => program
     await graphEdit(options, command)
   })
 
-module.exports = { createGraphEditCommand }
+export default { createGraphEditCommand }

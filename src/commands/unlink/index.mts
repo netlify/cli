@@ -1,6 +1,6 @@
 
-const { createUnlinkCommand } = require('./unlink.cjs')
+import { createUnlinkCommand } from './unlink.mjs'
 
-module.exports = {
+export {
   createUnlinkCommand,
 }

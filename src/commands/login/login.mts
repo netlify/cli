@@ -22,7 +22,7 @@ const msg = function (location: $TSFixMe) {
  * @param {import('../base-command').BaseCommand} command
  */
 
-const login = async (options: $TSFixMe, command: $TSFixMe) => {
+export const login = async (options: $TSFixMe, command: $TSFixMe) => {
   const [accessToken, location] = await getToken()
 
   command.setAnalyticsPayload({ new: options.new })
@@ -48,7 +48,7 @@ const login = async (options: $TSFixMe, command: $TSFixMe) => {
  * @returns
  */
 
-const createLoginCommand = (program: $TSFixMe) => program
+export const createLoginCommand = (program: $TSFixMe) => program
   .command('login')
   .description(
     `Login to your Netlify account
@@ -57,4 +57,4 @@ Opens a web browser to acquire an OAuth token.`,
   .option('--new', 'Login to new Netlify account')
   .action(login)
 
-module.exports = { createLoginCommand, login, msg }
+export default { createLoginCommand, login, msg }

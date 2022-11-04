@@ -11,7 +11,7 @@ const {
   getNetlifyGraphConfig,
   
   readGraphQLOperationsSourceFile,
-} = require('../../lib/one-graph/cli-netlify-graph.cjs')
+} = require('../../lib/one-graph/cli-netlify-graph.mjs')
 
 const { log } = require('../../utils/index.mjs')
 
@@ -134,4 +134,4 @@ const createGraphOperationsCommand = (program: $TSFixMe) => program
     await graphOperations(options, command)
   })
 
-module.exports = { createGraphOperationsCommand }
+export default { createGraphOperationsCommand }

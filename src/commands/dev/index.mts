@@ -1,6 +1,6 @@
 
-const { createDevCommand } = require('./dev.cjs')
+import { createDevCommand } from './dev.mjs'
 
-module.exports = {
+export {
   createDevCommand,
 }

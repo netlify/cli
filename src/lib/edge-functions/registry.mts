@@ -2,7 +2,7 @@
 const { fileURLToPath } = require('url')
 
 
-const { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn, watchDebounced } = require('../../utils/command-helpers.cjs')
+const { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn, watchDebounced } = require('../../utils/command-helpers.mjs')
 
 /**
  * @typedef EdgeFunction
@@ -522,4 +522,4 @@ const functionPaths = new Map(Array.from(this.functions, (func) => [(func as $TS
   }
 }
 
-module.exports = { EdgeFunctionsRegistry }
+export default { EdgeFunctionsRegistry }

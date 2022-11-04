@@ -11,4 +11,4 @@ const execaLib = require('execa')
 // eslint-disable-next-line import/no-dynamic-require
 const execa = env.NETLIFY_CLI_EXECA_PATH ? require(env.NETLIFY_CLI_EXECA_PATH) : execaLib
 
-module.exports = execa
+export default execa

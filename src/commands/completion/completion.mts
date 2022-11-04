@@ -5,7 +5,7 @@ const { join } = require('path')
 const { install, uninstall } = require('tabtab')
 
 
-const { createAutocompletion } = require('../../lib/completion/index.cjs')
+const { createAutocompletion } = require('../../lib/completion/index.mjs')
 
 /**
  * The completion:generate command
@@ -20,7 +20,7 @@ const completionGenerate = async (options: $TSFixMe, command: $TSFixMe) => {
 
   await install({
     name: parent.name(),
-    completer: join(__dirname, '../../lib/completion/script.cjs'),
+    completer: join(__dirname, '../../lib/completion/script.mjs'),
   })
 
   console.log(`Completion for ${parent.name()} successful installed!`)
@@ -32,7 +32,7 @@ const completionGenerate = async (options: $TSFixMe, command: $TSFixMe) => {
  * @returns
  */
 
-const createCompletionCommand = (program: $TSFixMe) => {
+export const createCompletionCommand = (program: $TSFixMe) => {
   program
     .command('completion:install')
     .alias('completion:generate')
@@ -60,4 +60,4 @@ const createCompletionCommand = (program: $TSFixMe) => {
       command.help()
     });
 }
-module.exports = { createCompletionCommand }
+export default { createCompletionCommand }

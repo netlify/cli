@@ -2,7 +2,7 @@
 const concordance = require('concordance')
 
 
-const { concordanceDiffOptions, concordanceOptions } = require('./options.cjs')
+const { concordanceDiffOptions, concordanceOptions } = require('./options.mjs')
 
 
 const formatDescriptorDiff = function (actualDescriptor: $TSFixMe, expectedDescriptor: $TSFixMe, options: $TSFixMe) {

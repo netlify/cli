@@ -9,11 +9,11 @@ const isEmpty = require('lodash/isEmpty')
 
 const { chalk, ensureNetlifyIgnore, exit, getRepoData, log, track } = require('../../utils/index.mjs')
 
-const { configureRepo } = require('../../utils/init/config.cjs')
+const { configureRepo } = require('../../utils/init/config.mjs')
 
-const { link } = require('../link/index.cjs')
+const { link } = require('../link/index.mjs')
 
-const { sitesCreate } = require('../sites/index.cjs')
+const { sitesCreate } = require('../sites/index.mjs')
 
 const persistState = ({
   siteInfo,
@@ -203,7 +203,7 @@ const logExistingRepoSetupAndExit = ({
  * @param {import('../base-command').BaseCommand} command
  */
 
-const init = async (options: $TSFixMe, command: $TSFixMe) => {
+export const init = async (options: $TSFixMe, command: $TSFixMe) => {
   command.setAnalyticsPayload({ manual: options.manual, force: options.force })
 
   const { repositoryRoot, state } = command.netlify
@@ -251,7 +251,7 @@ const init = async (options: $TSFixMe, command: $TSFixMe) => {
  * @returns
  */
 
-const createInitCommand = (program: $TSFixMe) => program
+export const createInitCommand = (program: $TSFixMe) => program
   .command('init')
   .description(
     'Configure continuous deployment for a new or existing site. To create a new site without continuous deployment, use `netlify sites:create`',
@@ -261,4 +261,4 @@ const createInitCommand = (program: $TSFixMe) => program
   .option('--gitRemoteName <name>', 'Name of Git remote to use. e.g. "origin"')
   .action(init)
 
-module.exports = { createInitCommand, init }
+export default { createInitCommand, init }

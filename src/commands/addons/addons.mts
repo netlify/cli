@@ -1,15 +1,15 @@
 // @ts-check
 
 
-const { createAddonsAuthCommand } = require('./addons-auth.cjs')
+const { createAddonsAuthCommand } = require('./addons-auth.mjs')
 
-const { createAddonsConfigCommand } = require('./addons-config.cjs')
+const { createAddonsConfigCommand } = require('./addons-config.mjs')
 
-const { createAddonsCreateCommand } = require('./addons-create.cjs')
+const { createAddonsCreateCommand } = require('./addons-create.mjs')
 
-const { createAddonsDeleteCommand } = require('./addons-delete.cjs')
+const { createAddonsDeleteCommand } = require('./addons-delete.mjs')
 
-const { createAddonsListCommand } = require('./addons-list.cjs')
+const { createAddonsListCommand } = require('./addons-list.mjs')
 
 /**
  * The addons command
@@ -27,7 +27,7 @@ const addons = (options: $TSFixMe, command: $TSFixMe) => {
  * @returns
  */
 
-const createAddonsCommand = (program: $TSFixMe) => {
+export const createAddonsCommand = (program: $TSFixMe) => {
   createAddonsAuthCommand(program)
   createAddonsConfigCommand(program)
   createAddonsCreateCommand(program)
@@ -48,4 +48,4 @@ const createAddonsCommand = (program: $TSFixMe) => {
     ])
     .action(addons)
 }
-module.exports = { createAddonsCommand }
+export default { createAddonsCommand }

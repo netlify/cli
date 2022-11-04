@@ -1,7 +1,7 @@
 
-const { createLoginCommand, login } = require('./login.cjs')
+import { createLoginCommand, login } from './login.mjs'
 
-module.exports = {
+export {
   createLoginCommand,
   login,
 }

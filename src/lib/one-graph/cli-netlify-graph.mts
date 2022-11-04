@@ -1125,7 +1125,7 @@ const autocompleteCodegenModules = async ({
   );
 }
 
-module.exports = {
+export default {
   autocompleteCodegenModules,
   autocompleteOperationNames,
   buildSchema,

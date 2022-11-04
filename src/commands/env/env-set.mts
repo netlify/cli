@@ -205,4 +205,4 @@ const createEnvSetCommand = (program: $TSFixMe) => program
     await envSet(key, value, options, command);
 });
 
-module.exports = { createEnvSetCommand }
+export default { createEnvSetCommand }

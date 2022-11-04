@@ -19,7 +19,7 @@ const {
   readSchemaIdFromLockfile,
   
   refetchAndGenerateFromOneGraph,
-} = require('../../lib/one-graph/cli-client.cjs')
+} = require('../../lib/one-graph/cli-client.mjs')
 const {
   
   buildSchema,
@@ -27,7 +27,7 @@ const {
   getNetlifyGraphConfig,
   
   readGraphQLSchemaFile,
-} = require('../../lib/one-graph/cli-netlify-graph.cjs')
+} = require('../../lib/one-graph/cli-netlify-graph.mjs')
 
 const { NETLIFYDEVERR, chalk, error, log, warn } = require('../../utils/index.mjs')
 
@@ -184,4 +184,4 @@ const createGraphPullCommand = (program: $TSFixMe) => program
     await graphPull(options, command)
   })
 
-module.exports = { createGraphPullCommand }
+export default { createGraphPullCommand }

@@ -42,4 +42,4 @@ const getPathInProject = (paths: $TSFixMe) => {
   return pathInProject
 }
 
-module.exports = { getLegacyPathInHome, getPathInHome, getPathInProject }
+export default { getLegacyPathInHome, getPathInHome, getPathInProject }

@@ -8,11 +8,11 @@ const process = require('process')
 const { isCI } = require('ci-info')
 
 
-const execa = require('../execa.cjs')
+const execa = require('../execa.mjs')
 
-const getGlobalConfig = require('../get-global-config.cjs')
+const getGlobalConfig = require('../get-global-config.mjs')
 
-const isValidEventName = require('./validation.cjs')
+const isValidEventName = require('./validation.mjs')
 
 
 const isTelemetryDisabled = function (config: $TSFixMe) {
@@ -21,7 +21,7 @@ const isTelemetryDisabled = function (config: $TSFixMe) {
 
 
 const send = function (type: $TSFixMe, payload: $TSFixMe) {
-  const requestFile = path.join(__dirname, 'request.cjs')
+  const requestFile = path.join(__dirname, 'request.mjs')
   const options = JSON.stringify({
     data: payload,
     type,
@@ -121,7 +121,7 @@ const identify = async function (payload: $TSFixMe) {
   return send('identify', identifyData)
 }
 
-module.exports = {
+export default {
   track,
   identify,
 }

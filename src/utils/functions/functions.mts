@@ -3,9 +3,9 @@
 const { resolve } = require('path')
 
 
-const { isDirectoryAsync, isFileAsync } = require('../../lib/fs.cjs')
+const { isDirectoryAsync, isFileAsync } = require('../../lib/fs.mjs')
 
-const { getPathInProject } = require('../../lib/settings.cjs')
+const { getPathInProject } = require('../../lib/settings.mjs')
 
 /**
  * retrieves the function directory out of the flags or config
@@ -49,4 +49,4 @@ const getInternalFunctionsDir = async ({
   return isDirectory ? path : null
 }
 
-module.exports = { getFunctionsDir, getInternalFunctionsDir, getFunctionsManifestPath }
+export default { getFunctionsDir, getInternalFunctionsDir, getFunctionsManifestPath }

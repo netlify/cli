@@ -175,4 +175,4 @@ const createEnvImportCommand = (program: $TSFixMe) => program
     await envImport(fileName, options, command)
   })
 
-module.exports = { createEnvImportCommand }
+export default { createEnvImportCommand }

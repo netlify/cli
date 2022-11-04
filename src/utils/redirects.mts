@@ -3,7 +3,7 @@
 const netlifyRedirectParser = import('netlify-redirect-parser')
 
 
-const { NETLIFYDEVERR, log } = require('./command-helpers.cjs')
+const { NETLIFYDEVERR, log } = require('./command-helpers.mjs')
 
 // Parse, normalize and validate all redirects from `_redirects` files
 // and `netlify.toml`
@@ -65,4 +65,4 @@ const normalizeRedirect = function ({
   }
 }
 
-module.exports = { parseRedirects }
+export default { parseRedirects }

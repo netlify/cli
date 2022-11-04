@@ -5,13 +5,13 @@ const inquirer = require('inquirer')
 const isEmpty = require('lodash/isEmpty')
 
 
-const { ADDON_VALIDATION, prepareAddonCommand } = require('../../utils/addons/prepare.cjs')
+const { ADDON_VALIDATION, prepareAddonCommand } = require('../../utils/addons/prepare.mjs')
 
-const generatePrompts = require('../../utils/addons/prompts.cjs')
+const generatePrompts = require('../../utils/addons/prompts.mjs')
 
-const render = require('../../utils/addons/render.cjs')
+const render = require('../../utils/addons/render.mjs')
 
-const { missingConfigValues, requiredConfigValues, updateConfigValues } = require('../../utils/addons/validation.cjs')
+const { missingConfigValues, requiredConfigValues, updateConfigValues } = require('../../utils/addons/validation.mjs')
 
 const { chalk, error, log, parseRawFlags } = require('../../utils/index.mjs')
 
@@ -145,4 +145,4 @@ Add-ons are a way to extend the functionality of your Netlify site`,
     await addonsCreate(addonName, options, command)
   })
 
-module.exports = { createAddonsCreateCommand }
+export default { createAddonsCreateCommand }

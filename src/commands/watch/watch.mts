@@ -5,11 +5,11 @@ const pWaitFor = require('p-wait-for')
 const prettyjson = require('prettyjson')
 
 
-const { startSpinner, stopSpinner } = require('../../lib/spinner.cjs')
+const { startSpinner, stopSpinner } = require('../../lib/spinner.mjs')
 
 const { chalk, error, log } = require('../../utils/index.mjs')
 
-const { init } = require('../init/index.cjs')
+const { init } = require('../init/index.mjs')
 
 // 1 second
 const INIT_WAIT = 1e3
@@ -131,10 +131,10 @@ const watch = async (options: $TSFixMe, command: $TSFixMe) => {
  * @returns
  */
 
-const createWatchCommand = (program: $TSFixMe) => program
+export const createWatchCommand = (program: $TSFixMe) => program
   .command('watch')
   .description('Watch for site deploy to finish')
   .addExamples([`netlify watch`, `git push && netlify watch`])
   .action(watch)
 
-module.exports = { createWatchCommand }
+export default { createWatchCommand }

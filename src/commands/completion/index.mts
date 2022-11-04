@@ -1,6 +1,6 @@
 
-const { createCompletionCommand } = require('./completion.cjs')
+import { createCompletionCommand } from './completion.mjs'
 
-module.exports = {
+export {
   createCompletionCommand,
 }

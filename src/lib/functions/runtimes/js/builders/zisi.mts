@@ -11,11 +11,11 @@ const sourceMapSupport = require('source-map-support')
 
 const { NETLIFYDEVERR } = require('../../../../../utils/index.mjs')
 
-const { getPathInProject } = require('../../../../settings.cjs')
+const { getPathInProject } = require('../../../../settings.mjs')
 
-const { normalizeFunctionsConfig } = require('../../../config.cjs')
+const { normalizeFunctionsConfig } = require('../../../config.mjs')
 
-const { memoizedBuild } = require('../../../memoized-build.cjs')
+const { memoizedBuild } = require('../../../memoized-build.mjs')
 
 
 const addFunctionsConfigDefaults = (config: $TSFixMe) => ({

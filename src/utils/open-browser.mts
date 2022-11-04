@@ -6,7 +6,7 @@ const open = require('better-opn')
 const isDockerContainer = require('is-docker')
 
 
-const { chalk, log } = require('./command-helpers.cjs')
+const { chalk, log } = require('./command-helpers.mjs')
 
 const unableToOpenBrowserMessage = function ({
   message,
@@ -52,4 +52,4 @@ const openBrowser = async function ({
   }
 }
 
-module.exports = { openBrowser }
+export default { openBrowser }

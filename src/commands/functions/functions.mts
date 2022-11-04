@@ -3,15 +3,15 @@
 const { chalk } = require('../../utils/index.mjs')
 
 
-const { createFunctionsBuildCommand } = require('./functions-build.cjs')
+const { createFunctionsBuildCommand } = require('./functions-build.mjs')
 
-const { createFunctionsCreateCommand } = require('./functions-create.cjs')
+const { createFunctionsCreateCommand } = require('./functions-create.mjs')
 
-const { createFunctionsInvokeCommand } = require('./functions-invoke.cjs')
+const { createFunctionsInvokeCommand } = require('./functions-invoke.mjs')
 
-const { createFunctionsListCommand } = require('./functions-list.cjs')
+const { createFunctionsListCommand } = require('./functions-list.mjs')
 
-const { createFunctionsServeCommand } = require('./functions-serve.cjs')
+const { createFunctionsServeCommand } = require('./functions-serve.mjs')
 
 /**
  * The functions command
@@ -29,7 +29,7 @@ const functions = (options: $TSFixMe, command: $TSFixMe) => {
  * @returns
  */
 
-const createFunctionsCommand = (program: $TSFixMe) => {
+export const createFunctionsCommand = (program: $TSFixMe) => {
   createFunctionsBuildCommand(program)
   createFunctionsCreateCommand(program)
   createFunctionsInvokeCommand(program)
@@ -52,4 +52,4 @@ The ${name} command will help you manage the functions in this site`,
     .action(functions)
 }
 
-module.exports = { createFunctionsCommand }
+export default { createFunctionsCommand }

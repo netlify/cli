@@ -1,6 +1,6 @@
 // @ts-check
 
-const { chalk, error, exit, log, warn } = require('../command-helpers.cjs')
+const { chalk, error, exit, log, warn } = require('../command-helpers.mjs')
 
 
 const ADDON_VALIDATION = {
@@ -160,4 +160,4 @@ const prepareAddonCommand = async ({
   return { manifest, addons, addon, siteData }
 }
 
-module.exports = { ADDON_VALIDATION, prepareAddonCommand, getAddonManifest, getSiteData, getAddons, getCurrentAddon }
+export default { ADDON_VALIDATION, prepareAddonCommand, getAddonManifest, getSiteData, getAddons, getCurrentAddon }

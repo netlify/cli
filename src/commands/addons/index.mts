@@ -1,6 +1,5 @@
+import { createAddonsCommand } from './addons.mjs'
 
-const { createAddonsCommand } = require('./addons.cjs')
-
-module.exports = {
+export {
   createAddonsCommand,
 }

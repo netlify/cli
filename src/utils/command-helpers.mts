@@ -21,10 +21,10 @@ const terminalLink = require('terminal-link')
 
 const { name, version } = require('../../package.json')
 
-const { clearSpinner, startSpinner } = require('../lib/spinner.cjs')
+const { clearSpinner, startSpinner } = require('../lib/spinner.mjs')
 
 
-const getGlobalConfig = require('./get-global-config.cjs')
+const getGlobalConfig = require('./get-global-config.mjs')
 
 /** The parsed process argv without the binary only arguments and flags */
 const argv = process.argv.slice(2)
@@ -287,7 +287,7 @@ const watchDebounced = async (target: $TSFixMe, {
 
 const getTerminalLink = (text: $TSFixMe, url: $TSFixMe) => terminalLink(text, url, { fallback: () => `${text} ${url}` })
 
-module.exports = {
+export default {
   BANG,
   chalk,
   error,

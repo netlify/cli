@@ -3,7 +3,7 @@
 const inquirer = require('inquirer')
 
 
-const { ADDON_VALIDATION, prepareAddonCommand } = require('../../utils/addons/prepare.cjs')
+const { ADDON_VALIDATION, prepareAddonCommand } = require('../../utils/addons/prepare.mjs')
 
 const { error, exit, log } = require('../../utils/index.mjs')
 
@@ -61,4 +61,4 @@ const createAddonsDeleteCommand = (program: $TSFixMe) => program
   .option('-f, --force', 'delete without prompting (useful for CI)')
   .action(addonsDelete)
 
-module.exports = { createAddonsDeleteCommand }
+export default { createAddonsDeleteCommand }

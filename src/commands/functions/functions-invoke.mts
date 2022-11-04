@@ -303,4 +303,4 @@ const createFunctionsInvokeCommand = (program: $TSFixMe) => program
   ])
   .action(functionsInvoke)
 
-module.exports = { createFunctionsInvokeCommand }
+export default { createFunctionsInvokeCommand }

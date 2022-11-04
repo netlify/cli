@@ -8,13 +8,13 @@ const cleanDeep = require('clean-deep')
 const inquirer = require('inquirer')
 const isEmpty = require('lodash/isEmpty')
 
-const { normalizeBackslash } = require('../../lib/path.cjs')
-const { log } = require('../command-helpers.cjs')
-const { chalk, error: failAndExit, warn } = require('../command-helpers.cjs')
+const { normalizeBackslash } = require('../../lib/path.mjs')
+const { log } = require('../command-helpers.mjs')
+const { chalk, error: failAndExit, warn } = require('../command-helpers.mjs')
 
-const { getFrameworkInfo } = require('./frameworks.cjs')
-const { detectNodeVersion } = require('./node-version.cjs')
-const { getRecommendPlugins, getUIPlugins } = require('./plugins.cjs')
+const { getFrameworkInfo } = require('./frameworks.mjs')
+const { detectNodeVersion } = require('./node-version.mjs')
+const { getRecommendPlugins, getUIPlugins } = require('./plugins.mjs')
 
 const normalizeDir = ({
   baseDirectory,

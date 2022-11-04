@@ -46,6 +46,6 @@ const unlink = async (options: $TSFixMe, command: $TSFixMe) => {
  * @returns
  */
 
-const createUnlinkCommand = (program: $TSFixMe) => program.command('unlink').description('Unlink a local folder from a Netlify site').action(unlink)
+export const createUnlinkCommand = (program: $TSFixMe) => program.command('unlink').description('Unlink a local folder from a Netlify site').action(unlink)
 
-module.exports = { createUnlinkCommand }
+export default { createUnlinkCommand }

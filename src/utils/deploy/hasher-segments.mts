@@ -5,7 +5,7 @@ const { objCtor: objFilterCtor } = require('through2-filter')
 const { obj: map } = require('through2-map')
 
 
-const { normalizePath } = require('./util.cjs')
+const { normalizePath } = require('./util.mjs')
 
 // a parallel transform stream segment ctor that hashes fileObj's created by folder-walker
 // TODO: use promises instead of callbacks
@@ -82,7 +82,7 @@ const manifestCollectorCtor = (filesObj: $TSFixMe, shaMap: $TSFixMe, {
 
 const fileFilterCtor = objFilterCtor((fileObj: $TSFixMe) => fileObj.type === 'file')
 
-module.exports = {
+export default {
   hasherCtor,
   fileNormalizerCtor,
   manifestCollectorCtor,

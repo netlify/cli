@@ -13,7 +13,7 @@ const isWindows = platform === 'win32'
 
 const { execa } = require('../../../../utils/index.mjs')
 
-const { runFunctionsProxy } = require('../../local-proxy.cjs')
+const { runFunctionsProxy } = require('../../local-proxy.mjs')
 
 
 const build = async ({
@@ -102,4 +102,4 @@ const onRegister = (func: $TSFixMe) => {
   return isSource ? func : null
 }
 
-module.exports = { getBuildFunction, invokeFunction, name: 'go', onRegister }
+export default { getBuildFunction, invokeFunction, name: 'go', onRegister }

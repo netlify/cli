@@ -2,9 +2,9 @@
 const { log } = require('../../utils/index.mjs')
 
 
-const { createOpenAdminCommand, openAdmin } = require('./open-admin.cjs')
+const { createOpenAdminCommand, openAdmin } = require('./open-admin.mjs')
 
-const { createOpenSiteCommand, openSite } = require('./open-site.cjs')
+const { createOpenSiteCommand, openSite } = require('./open-site.mjs')
 
 /**
  * The open command
@@ -30,7 +30,7 @@ const open = async (options: $TSFixMe, command: $TSFixMe) => {
  * @returns
  */
 
-const createOpenCommand = (program: $TSFixMe) => {
+export const createOpenCommand = (program: $TSFixMe) => {
   createOpenAdminCommand(program)
   createOpenSiteCommand(program)
 
@@ -42,4 +42,4 @@ const createOpenCommand = (program: $TSFixMe) => {
     .addExamples(['netlify open --site', 'netlify open --admin', 'netlify open:admin', 'netlify open:site'])
     .action(open)
 }
-module.exports = { createOpenCommand }
+export default { createOpenCommand }

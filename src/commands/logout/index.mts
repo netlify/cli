@@ -1,6 +1,6 @@
 
-const { createLogoutCommand } = require('./logout.cjs')
+import { createLogoutCommand } from './logout.mjs'
 
-module.exports = {
+export {
   createLogoutCommand,
 }

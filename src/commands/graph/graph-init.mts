@@ -10,9 +10,9 @@ const { OneGraphClient } = require('netlify-onegraph-internal')
 const { v4: uuidv4 } = require('uuid')
 
 
-const { OneGraphCliClient, ensureCLISession } = require('../../lib/one-graph/cli-client.cjs')
+const { OneGraphCliClient, ensureCLISession } = require('../../lib/one-graph/cli-client.mjs')
 
-const { getNetlifyGraphConfig } = require('../../lib/one-graph/cli-netlify-graph.cjs')
+const { getNetlifyGraphConfig } = require('../../lib/one-graph/cli-netlify-graph.mjs')
 const {
   
   NETLIFYDEVERR,
@@ -184,4 +184,4 @@ const createGraphInitCommand = (program: $TSFixMe) => program
     await graphInit(options, command)
   })
 
-module.exports = { createGraphInitCommand }
+export default { createGraphInitCommand }

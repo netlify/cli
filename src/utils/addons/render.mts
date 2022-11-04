@@ -3,7 +3,7 @@
 const AsciiTable = require('ascii-table')
 
 
-const { chalk } = require('../command-helpers.cjs')
+const { chalk } = require('../command-helpers.mjs')
 
 
 const missingValues = function (values: $TSFixMe, manifest: $TSFixMe) {
@@ -43,7 +43,7 @@ const configValues = function (addonName: $TSFixMe, values: $TSFixMe, currentVal
   console.log(table.toString())
 }
 
-module.exports = {
+export default {
   missingValues,
   configValues,
 }

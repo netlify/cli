@@ -7,7 +7,7 @@ const path = require('path')
 const process = require('process')
 
 
-const { getNetlifyGraphConfig } = require('../../lib/one-graph/cli-netlify-graph.cjs')
+const { getNetlifyGraphConfig } = require('../../lib/one-graph/cli-netlify-graph.mjs')
 
 const { NETLIFYDEVERR, chalk, error, log } = require('../../utils/index.mjs')
 
@@ -62,4 +62,4 @@ const createGraphConfigWriteCommand = (program: $TSFixMe) => program
     await graphConfigWrite(options, command)
   })
 
-module.exports = { createGraphConfigWriteCommand }
+export default { createGraphConfigWriteCommand }

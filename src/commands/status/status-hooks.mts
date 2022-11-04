@@ -76,4 +76,4 @@ Site Hook Status │
 
 const createStatusHooksCommand = (program: $TSFixMe) => program.command('status:hooks').description('Print hook information of the linked site').action(statusHooks)
 
-module.exports = { createStatusHooksCommand }
+export default { createStatusHooksCommand }

@@ -3,7 +3,7 @@
 const { GraphQL } = require('netlify-onegraph-internal')
 
 
-const { readLockfile } = require('../../lib/one-graph/cli-client.cjs')
+const { readLockfile } = require('../../lib/one-graph/cli-client.mjs')
 const {
   
   buildSchema,
@@ -21,7 +21,7 @@ const {
   readGraphQLOperationsSourceFile,
   
   readGraphQLSchemaFile,
-} = require('../../lib/one-graph/cli-netlify-graph.cjs')
+} = require('../../lib/one-graph/cli-netlify-graph.mjs')
 
 const { NETLIFYDEVERR, chalk, error, log } = require('../../utils/index.mjs')
 
@@ -100,4 +100,4 @@ const createGraphLibraryCommand = (program: $TSFixMe) => program
     await graphLibrary(options, command)
   })
 
-module.exports = { createGraphLibraryCommand }
+export default { createGraphLibraryCommand }

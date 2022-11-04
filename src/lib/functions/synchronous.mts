@@ -5,10 +5,10 @@ const { Buffer } = require('buffer')
 
 const { NETLIFYDEVERR } = require('../../utils/index.mjs')
 
-const renderErrorTemplate = require('../render-error-remplate.cjs')
+const renderErrorTemplate = require('../render-error-remplate.mjs')
 
 
-const { detectAwsSdkError } = require('./utils.cjs')
+const { detectAwsSdkError } = require('./utils.mjs')
 
 
 const addHeaders = (headers: $TSFixMe, response: $TSFixMe) => {
@@ -93,4 +93,4 @@ const validateLambdaResponse = (lambdaResponse: $TSFixMe) => {
   return {}
 }
 
-module.exports = { handleSynchronousFunction }
+export default { handleSynchronousFunction }

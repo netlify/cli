@@ -15,14 +15,14 @@ const getPort = require('get-port')
 const isPlainObject = require('is-plain-obj')
 
 
-const { readFileAsyncCatchError } = require('../lib/fs.cjs')
+const { readFileAsyncCatchError } = require('../lib/fs.mjs')
 
 
-const { NETLIFYDEVWARN, chalk, log } = require('./command-helpers.cjs')
+const { NETLIFYDEVWARN, chalk, log } = require('./command-helpers.mjs')
 
-const { acquirePort } = require('./dev.cjs')
+const { acquirePort } = require('./dev.mjs')
 
-const { getInternalFunctionsDir } = require('./functions/index.cjs')
+const { getInternalFunctionsDir } = require('./functions/index.mjs')
 
 
 const formatProperty = (str: $TSFixMe) => chalk.magenta(`'${str}'`)
@@ -441,6 +441,6 @@ const formatSettingsArrForInquirer = function (frameworks: $TSFixMe) {
   return formattedArr.flat()
 }
 
-module.exports = {
+export default {
   detectServerSettings,
 }

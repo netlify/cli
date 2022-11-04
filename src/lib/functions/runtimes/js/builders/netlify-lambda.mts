@@ -9,9 +9,9 @@ const minimist = require('minimist')
 
 const { execa } = require('../../../../../utils/index.mjs')
 
-const { fileExistsAsync } = require('../../../../fs.cjs')
+const { fileExistsAsync } = require('../../../../fs.mjs')
 
-const { memoizedBuild } = require('../../../memoized-build.cjs')
+const { memoizedBuild } = require('../../../memoized-build.mjs')
 
 const detectNetlifyLambda = async function ({
   packageJson

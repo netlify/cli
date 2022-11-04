@@ -1,6 +1,6 @@
 
-const { createWatchCommand } = require('./watch.cjs')
+import { createWatchCommand } from './watch.mjs'
 
-module.exports = {
+export {
   createWatchCommand,
 }

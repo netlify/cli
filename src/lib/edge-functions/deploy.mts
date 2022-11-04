@@ -5,10 +5,10 @@ const { stat } = require('fs').promises
 const { join } = require('path')
 
 
-const { getPathInProject } = require('../settings.cjs')
+const { getPathInProject } = require('../settings.mjs')
 
 
-const { EDGE_FUNCTIONS_FOLDER, PUBLIC_URL_PATH } = require('./consts.cjs')
+const { EDGE_FUNCTIONS_FOLDER, PUBLIC_URL_PATH } = require('./consts.mjs')
 
 const distPath = getPathInProject([EDGE_FUNCTIONS_FOLDER])
 
@@ -45,7 +45,7 @@ const getDistPathIfExists = async ({
 
 const isEdgeFunctionFile = (filePath: $TSFixMe) => filePath.startsWith(`${PUBLIC_URL_PATH}/`)
 
-module.exports = {
+export default {
   deployFileNormalizer,
   getDistPathIfExists,
   isEdgeFunctionFile,

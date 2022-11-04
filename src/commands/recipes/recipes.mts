@@ -6,10 +6,10 @@ const { basename } = require('path')
 const inquirer = require('inquirer')
 const { findBestMatch } = require('string-similarity')
 
-const utils = require('../../utils/command-helpers.cjs')
+const utils = require('../../utils/command-helpers.mjs')
 
 
-const { getRecipe, listRecipes } = require('./common.cjs')
+const { getRecipe, listRecipes } = require('./common.mjs')
 
 const SUGGESTION_TIMEOUT = 1e4
 
@@ -71,7 +71,7 @@ const recipesCommand = async (recipeName: $TSFixMe, options: $TSFixMe, command: 
 }
 
 
-const runRecipe = ({
+export const runRecipe = ({
   config,
   recipeName,
   repositoryRoot
@@ -88,7 +88,7 @@ const runRecipe = ({
  * @returns
  */
 
-const createRecipesCommand = (program: $TSFixMe) => program
+export const createRecipesCommand = (program: $TSFixMe) => program
   .command('recipes')
   .argument('[name]', 'name of the recipe')
   .description(`(Beta) Create and modify files in a project using pre-defined recipes`)
@@ -96,4 +96,4 @@ const createRecipesCommand = (program: $TSFixMe) => program
   .addExamples(['netlify recipes my-recipe', 'netlify recipes --name my-recipe'])
   .action(recipesCommand)
 
-module.exports = { createRecipesCommand, runRecipe }
+export default { createRecipesCommand, runRecipe }

@@ -53,7 +53,7 @@ const {
   setNetlifyTomlCodeGeneratorModule,
   writeGraphQLOperationsSourceFile,
   writeGraphQLSchemaFile,
-} = require('./cli-netlify-graph.cjs')
+} = require('./cli-netlify-graph.mjs')
 
 
 const { parse } = GraphQL
@@ -1514,7 +1514,7 @@ const OneGraphCliClient = {
   getGraphJwtForSite: OneGraphClient.getGraphJwtForSite,
 }
 
-module.exports = {
+export default {
   OneGraphCliClient,
   createCLISession,
   currentPersistedDocId,

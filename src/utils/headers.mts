@@ -2,7 +2,7 @@
 const netlifyHeadersParser = import('netlify-headers-parser')
 
 
-const { NETLIFYDEVERR, log } = require('./command-helpers.cjs')
+const { NETLIFYDEVERR, log } = require('./command-helpers.mjs')
 
 /**
  * Get the matching headers for `path` given a set of `rules`.
@@ -66,7 +66,7 @@ const getErrorMessage = function ({
   return message
 }
 
-module.exports = {
+export default {
   headersForPath,
   parseHeaders,
 }

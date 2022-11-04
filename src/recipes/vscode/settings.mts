@@ -79,4 +79,4 @@ const writeSettings = async ({
   await fs.writeFile(settingsPath, serializedSettings)
 }
 
-module.exports = { applySettings, getSettings, writeSettings }
+export default { applySettings, getSettings, writeSettings }

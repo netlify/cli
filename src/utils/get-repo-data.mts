@@ -16,7 +16,7 @@ const isEmpty = require('lodash/isEmpty')
 const parseGitRemote = require('parse-github-url')
 
 
-const { log } = require('./command-helpers.cjs')
+const { log } = require('./command-helpers.mjs')
 
 /**
  *
@@ -82,4 +82,4 @@ const PROVIDERS = {
   'gitlab.com': 'gitlab',
 }
 
-module.exports = { getRepoData }
+export default { getRepoData }

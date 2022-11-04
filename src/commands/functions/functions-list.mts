@@ -124,4 +124,4 @@ NOT the same as listing the functions that have been deployed. For that info you
   .option('--json', 'Output function data as JSON')
   .action(functionsList)
 
-module.exports = { createFunctionsListCommand }
+export default { createFunctionsListCommand }

@@ -1,6 +1,6 @@
 
-const { createSwitchCommand } = require('./switch.cjs')
+import { createSwitchCommand } from './switch.mjs'
 
-module.exports = {
+export {
   createSwitchCommand,
 }

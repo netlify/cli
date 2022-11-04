@@ -14,7 +14,7 @@ const SERVER_POLL_INTERNAL = 1e3
 // 10 seconds
 const SERVER_POLL_TIMEOUT = 1e4
 
-module.exports = {
+export default {
   DEFAULT_SRC_DIR,
   DIST_IMPORT_MAP_PATH,
   INTERNAL_EDGE_FUNCTIONS_FOLDER,

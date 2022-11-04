@@ -1,5 +1,5 @@
-const telemetry = require('./telemetry.cjs')
+const telemetry = require('./telemetry.mjs')
 
-module.exports = {
+export default {
   ...telemetry,
 }

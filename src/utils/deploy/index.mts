@@ -1,5 +1,5 @@
 // @ts-check
 
-const { deploySite } = require('./deploy-site.cjs')
+const { deploySite } = require('./deploy-site.mjs')
 
-module.exports = { deploySite }
+export default { deploySite }

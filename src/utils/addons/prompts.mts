@@ -1,6 +1,6 @@
 // @ts-check
 
-const { chalk } = require('../command-helpers.cjs')
+const { chalk } = require('../command-helpers.mjs')
 
 /* programmatically generate CLI prompts */
 

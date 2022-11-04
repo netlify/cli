@@ -5,7 +5,7 @@ const inquirer = require('inquirer')
 
 const { chalk, log } = require('../../utils/index.mjs')
 
-const { login } = require('../login/index.cjs')
+const { login } = require('../login/index.mjs')
 
 const LOGIN_NEW = 'I would like to login to a new account'
 
@@ -50,6 +50,6 @@ const switchCommand = async (options: $TSFixMe, command: $TSFixMe) => {
  * @returns
  */
 
-const createSwitchCommand = (program: $TSFixMe) => program.command('switch').description('Switch your active Netlify account').action(switchCommand)
+export const createSwitchCommand = (program: $TSFixMe) => program.command('switch').description('Switch your active Netlify account').action(switchCommand)
 
-module.exports = { createSwitchCommand }
+export default { createSwitchCommand }

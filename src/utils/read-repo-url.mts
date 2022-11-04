@@ -60,7 +60,7 @@ const parseRepoURL = function (repoHost: $TSFixMe, URL: $TSFixMe) {
   throw new Error(`Unsupported host ${repoHost}`)
 }
 
-module.exports = {
+export default {
   parseRepoURL,
   readRepoURL,
   validateRepoURL,

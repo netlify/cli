@@ -40,6 +40,6 @@ const logout = async (options: $TSFixMe, command: $TSFixMe) => {
  * @returns
  */
 
-const createLogoutCommand = (program: $TSFixMe) => program.command('logout', { hidden: true }).description('Logout of your Netlify account').action(logout)
+export const createLogoutCommand = (program: $TSFixMe) => program.command('logout', { hidden: true }).description('Logout of your Netlify account').action(logout)
 
-module.exports = { createLogoutCommand, logout }
+export default { createLogoutCommand, logout }

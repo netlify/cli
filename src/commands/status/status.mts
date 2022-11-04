@@ -7,7 +7,7 @@ const prettyjson = require('prettyjson')
 const { chalk, error, exit, getToken, log, logJson, warn } = require('../../utils/index.mjs')
 
 
-const { createStatusHooksCommand } = require('./status-hooks.cjs')
+const { createStatusHooksCommand } = require('./status-hooks.mjs')
 
 /**
  * The status command
@@ -123,7 +123,7 @@ const status = async (options: $TSFixMe, command: $TSFixMe) => {
  * @returns
  */
 
-const createStatusCommand = (program: $TSFixMe) => {
+export const createStatusCommand = (program: $TSFixMe) => {
   createStatusHooksCommand(program)
 
   return program
@@ -132,4 +132,4 @@ const createStatusCommand = (program: $TSFixMe) => {
     .option('--verbose', 'Output system info')
     .action(status)
 }
-module.exports = { createStatusCommand }
+export default { createStatusCommand }

@@ -23,7 +23,7 @@ const updateConfigValues = function (allowedConfig: $TSFixMe, currentConfig: $TS
   }, {})
 }
 
-module.exports = {
+export default {
   requiredConfigValues,
   missingConfigValues,
   updateConfigValues,

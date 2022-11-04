@@ -1,6 +1,6 @@
 
-const { createFunctionsCommand } = require('./functions.cjs')
+import {createFunctionsCommand} from './functions.mjs'
 
-module.exports = {
+export {
   createFunctionsCommand,
 }

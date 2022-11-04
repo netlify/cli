@@ -60,4 +60,4 @@ const createFunctionsBuildCommand = (program: $TSFixMe) => program
   .option('-s, --src <directory>', 'Specify the source directory for the functions')
   .action(functionsBuild)
 
-module.exports = { createFunctionsBuildCommand }
+export default { createFunctionsBuildCommand }

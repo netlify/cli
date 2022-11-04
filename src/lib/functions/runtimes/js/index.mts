@@ -4,8 +4,8 @@ const { dirname } = require('path')
 const lambdaLocal = require('lambda-local')
 const winston = require('winston')
 
-const detectNetlifyLambdaBuilder = require('./builders/netlify-lambda.cjs')
-const detectZisiBuilder = require('./builders/zisi.cjs')
+const detectNetlifyLambdaBuilder = require('./builders/netlify-lambda.mjs')
+const detectZisiBuilder = require('./builders/zisi.mjs')
 
 
 const SECONDS_TO_MILLISECONDS = 1e3
@@ -95,4 +95,4 @@ const onDirectoryScan = async () => {
   }
 }
 
-module.exports = { getBuildFunction, invokeFunction, name: 'js', onDirectoryScan }
+export default { getBuildFunction, invokeFunction, name: 'js', onDirectoryScan }

@@ -3,7 +3,7 @@ const process = require('process')
 
 // @ts-check
 
-const { getBuildOptions, runBuild } = require('../../lib/build.cjs')
+const { getBuildOptions, runBuild } = require('../../lib/build.mjs')
 const {
   
   error,
@@ -110,7 +110,7 @@ const build = async (options: $TSFixMe, command: $TSFixMe) => {
  * @returns
  */
 
-const createBuildCommand = (program: $TSFixMe) => program
+export const createBuildCommand = (program: $TSFixMe) => program
   .command('build')
   .description('(Beta) Build on your local machine')
   .option(
@@ -124,4 +124,4 @@ const createBuildCommand = (program: $TSFixMe) => program
   .addExamples(['netlify build'])
   .action(build)
 
-module.exports = { createBuildCommand }
+export default { createBuildCommand }

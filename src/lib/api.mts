@@ -1,5 +1,5 @@
 
-const { warn } = require('../utils/command-helpers.cjs')
+const { warn } = require('../utils/command-helpers.mjs')
 
 
 const cancelDeploy = async ({
@@ -33,4 +33,4 @@ const listSites = async ({
   return sites
 }
 
-module.exports = { cancelDeploy, listSites }
+export default { cancelDeploy, listSites }

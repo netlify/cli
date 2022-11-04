@@ -1,9 +1,9 @@
 
-const { sitesCreate } = require('./sites-create.cjs')
+import { sitesCreate } from './sites-create.mjs'
 
-const { createSitesCommand } = require('./sites.cjs')
+import { createSitesCommand } from './sites.mjs'
 
-module.exports = {
+export {
   createSitesCommand,
   sitesCreate,
 }

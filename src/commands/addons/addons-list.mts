@@ -4,7 +4,7 @@
 const AsciiTable = require('ascii-table')
 
 
-const { prepareAddonCommand } = require('../../utils/addons/prepare.cjs')
+const { prepareAddonCommand } = require('../../utils/addons/prepare.mjs')
 
 const { log, logJson } = require('../../utils/index.mjs')
 
@@ -70,4 +70,4 @@ const createAddonsListCommand = (program: $TSFixMe) => program
     await addonsList(options, command)
   })
 
-module.exports = { createAddonsListCommand }
+export default { createAddonsListCommand }

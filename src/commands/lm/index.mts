@@ -1,6 +1,6 @@
 
-const { createLmCommand } = require('./lm.cjs')
+import { createLmCommand } from './lm.mjs'
 
-module.exports = {
+export {
   createLmCommand,
 }

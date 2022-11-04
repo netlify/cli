@@ -6,11 +6,11 @@ const multiparty = require('multiparty')
 const getRawBody = require('raw-body')
 
 
-const { warn } = require('../../utils/command-helpers.cjs')
+const { warn } = require('../../utils/command-helpers.mjs')
 
 const { BACKGROUND } = require('../../utils/index.mjs')
 
-const { capitalize } = require('../string.cjs')
+const { capitalize } = require('../string.mjs')
 
 
 const createFormSubmissionHandler = function ({
@@ -161,4 +161,4 @@ const getFormHandler = function ({
   return handlers[0]
 }
 
-module.exports = { createFormSubmissionHandler }
+export default { createFormSubmissionHandler }

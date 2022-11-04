@@ -2,7 +2,7 @@
 
 const { chalk, warn } = require('../../utils/index.mjs')
 
-const { getLogMessage } = require('../log.cjs')
+const { getLogMessage } = require('../log.mjs')
 
 const DEFAULT_LAMBDA_OPTIONS = {
   verboseLevel: 3,
@@ -69,7 +69,7 @@ const shouldBase64Encode = function (contentType: $TSFixMe) {
 
 const styleFunctionName = (name: $TSFixMe) => chalk.magenta(name)
 
-module.exports = {
+export default {
   detectAwsSdkError,
   DEFAULT_LAMBDA_OPTIONS,
   formatLambdaError,

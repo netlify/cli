@@ -5,7 +5,7 @@ const inquirer = require('inquirer')
 const isEmpty = require('lodash/isEmpty')
 
 
-const { listSites } = require('../../lib/api.cjs')
+const { listSites } = require('../../lib/api.mjs')
 
 const { chalk, ensureNetlifyIgnore, error, exit, getRepoData, log, track } = require('../../utils/index.mjs')
 
@@ -255,7 +255,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
  * @param {import('../base-command').BaseCommand} command
  */
 
-const link = async (options: $TSFixMe, command: $TSFixMe) => {
+export const link = async (options: $TSFixMe, command: $TSFixMe) => {
   await command.authenticate()
 
   const {
@@ -353,7 +353,7 @@ const link = async (options: $TSFixMe, command: $TSFixMe) => {
  * @returns
  */
 
-const createLinkCommand = (program: $TSFixMe) => program
+export const createLinkCommand = (program: $TSFixMe) => program
   .command('link')
   .description('Link a local repo or project folder to an existing site on Netlify')
   .option('--id <id>', 'ID of site to link to')
@@ -362,4 +362,4 @@ const createLinkCommand = (program: $TSFixMe) => program
   .addExamples(['netlify link', 'netlify link --id 123-123-123-123', 'netlify link --name my-site-name'])
   .action(link)
 
-module.exports = { createLinkCommand, link }
+export default { createLinkCommand, link }

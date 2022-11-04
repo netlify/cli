@@ -8,7 +8,7 @@ const fromArray = require('from2-array')
 const pump = promisify(require('pump'))
 
 
-const { hasherCtor, manifestCollectorCtor } = require('./hasher-segments.cjs')
+const { hasherCtor, manifestCollectorCtor } = require('./hasher-segments.mjs')
 
 // Maximum age of functions manifest (2 minutes).
 const MANIFEST_FILE_TTL = 12e4
@@ -150,4 +150,4 @@ const hashFns = async (
   return { functionSchedules, functions, functionsWithNativeModules, fnShaMap }
 }
 
-module.exports = { hashFns }
+export default { hashFns }

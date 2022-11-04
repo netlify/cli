@@ -8,10 +8,10 @@ const path = require('path')
 const dotenv = require('dotenv')
 
 
-const { isFileAsync } = require('../lib/fs.cjs')
+const { isFileAsync } = require('../lib/fs.mjs')
 
 
-const { warn } = require('./command-helpers.cjs')
+const { warn } = require('./command-helpers.mjs')
 
 
 const loadDotEnvFiles = async function ({
@@ -65,4 +65,4 @@ const tryLoadDotEnvFiles = async ({
   return results.filter(Boolean).reverse()
 }
 
-module.exports = { loadDotEnvFiles, tryLoadDotEnvFiles }
+export default { loadDotEnvFiles, tryLoadDotEnvFiles }

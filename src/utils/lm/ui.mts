@@ -5,10 +5,10 @@ const os = require('os')
 const boxen = require('boxen')
 
 
-const { chalk, log } = require('../command-helpers.cjs')
+const { chalk, log } = require('../command-helpers.mjs')
 
 
-const { getShellInfo, isBinInPath } = require('./install.cjs')
+const { getShellInfo, isBinInPath } = require('./install.mjs')
 
 /**
  * @param {boolean} force
@@ -28,4 +28,4 @@ const printBanner = function (force: $TSFixMe) {
   }
 }
 
-module.exports = { printBanner }
+export default { printBanner }

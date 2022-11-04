@@ -26,7 +26,7 @@ const fetch = require('node-fetch')
 const ora = require('ora')
 
 
-const { getAddons, getCurrentAddon, getSiteData } = require('../../utils/addons/prepare.cjs')
+const { getAddons, getCurrentAddon, getSiteData } = require('../../utils/addons/prepare.mjs')
 const {
   
   NETLIFYDEVERR,
@@ -132,7 +132,7 @@ const formatRegistryArrayForInquirer = function (lang: $TSFixMe, funcType: $TSFi
 
     
     .map((folderName: $TSFixMe) => // eslint-disable-next-line n/global-require, import/no-dynamic-require
-  require(path.join(templatesDir, lang, folderName, '.netlify-function-template.cjs')),
+  require(path.join(templatesDir, lang, folderName, '.netlify-function-template.mjs')),
     )
     
     .filter((folderName: $TSFixMe) => folderName.functionType === funcType)
@@ -393,7 +393,7 @@ const downloadFromURL = async function (command: $TSFixMe, options: $TSFixMe, ar
   })
 
   // read, execute, and delete function template file if exists
-  const fnTemplateFile = path.join(fnFolder, '.netlify-function-template.cjs')
+  const fnTemplateFile = path.join(fnFolder, '.netlify-function-template.mjs')
   if (fs.existsSync(fnTemplateFile)) {
     // eslint-disable-next-line n/global-require, import/no-dynamic-require
     const { onComplete, addons = [] } = require(fnTemplateFile)
@@ -522,7 +522,7 @@ const scaffoldFromTemplate = async function (command: $TSFixMe, options: $TSFixM
 
     // These files will not be part of the log message because they'll likely
     // be removed before the command finishes.
-    const omittedFromOutput = new Set(['.netlify-function-template.cjs', 'package.json', 'package-lock.json'])
+    const omittedFromOutput = new Set(['.netlify-function-template.mjs', 'package.json', 'package-lock.json'])
     const createdFiles = await copy(pathToTemplate, functionPath, vars)
     
     createdFiles.forEach((filePath: $TSFixMe) => {
@@ -539,7 +539,7 @@ const scaffoldFromTemplate = async function (command: $TSFixMe, options: $TSFixM
     })
 
     // delete function template file that was copied over by copydir
-    fs.unlinkSync(path.join(functionPath, '.netlify-function-template.cjs'))
+    fs.unlinkSync(path.join(functionPath, '.netlify-function-template.mjs'))
 
     // npm install
     if (functionPackageJson !== undefined) {
@@ -784,4 +784,4 @@ const createFunctionsCreateCommand = (program: $TSFixMe) => program
   ])
   .action(functionsCreate)
 
-module.exports = { createFunctionsCreateCommand }
+export default { createFunctionsCreateCommand }

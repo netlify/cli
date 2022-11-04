@@ -54,4 +54,4 @@ const runFunctionsProxy = ({
   return proxyProcess
 }
 
-module.exports = { runFunctionsProxy }
+export default { runFunctionsProxy }

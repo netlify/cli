@@ -11,7 +11,7 @@ const {
   checkHelperVersionStep,
   
   checkLFSFiltersStep,
-} = require('../../utils/lm/steps.cjs')
+} = require('../../utils/lm/steps.mjs')
 
 /**
  * The lm:info command
@@ -45,4 +45,4 @@ const lmInfo = async () => {
 
 const createLmInfoCommand = (program: $TSFixMe) => program.command('lm:info').description('Show large media requirements information.').action(lmInfo)
 
-module.exports = { createLmInfoCommand }
+export default { createLmInfoCommand }
